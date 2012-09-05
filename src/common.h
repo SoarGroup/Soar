@@ -158,6 +158,20 @@ std::ostream &join(std::ostream &os, const C& container, const D &delim) {
 	return os;
 }
 
+template<typename T>
+int argmax(const std::vector<T> &v) {
+	if (v.empty()) {
+		return -1;
+	}
+	int m = 0;
+	for (int i = 1; i < v.size(); ++i) {
+		if (v[i] > v[m]) {
+			m = i;
+		}
+	}
+	return m;
+}
+
 /*
  Calculate the maximum difference between points in two point clouds in
  the direction of u.
@@ -337,14 +351,32 @@ typedef std::map<std::string, relation> relation_table;
 std::ostream &operator<<(std::ostream &os, const relation &r);
 std::ostream &operator<<(std::ostream &os, const relation_table &t);
 
-template <class T>
+template <typename T>
 void save_vector(const std::vector<T> &v, std::ostream &os) {
 	os << v.size() << std::endl;
 	std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
 	os << std::endl;
 }
 
-template <class T>
+template <typename T>
+void save_vector_rec(const std::vector<T> &v, std::ostream &os) {
+	os << v.size() << std::endl;
+	for (int i = 0; i < v.size(); ++i) {
+		v[i].save(os);
+	}
+	os << std::endl;
+}
+
+template <typename T>
+void save_vector_recp(const std::vector<T*> &v, std::ostream &os) {
+	os << v.size() << std::endl;
+	for (int i = 0; i < v.size(); ++i) {
+		v[i]->save(os);
+	}
+	os << std::endl;
+}
+
+template <typename T>
 void load_vector(std::vector<T> &v, std::istream &is) {
 	int n = 0;
 	T x;
@@ -358,6 +390,33 @@ void load_vector(std::vector<T> &v, std::istream &is) {
 			assert(false);
 		}
 		v.push_back(x);
+	}
+}
+
+template <typename T>
+void load_vector_rec(std::vector<T> &v, std::istream &is) {
+	int n = 0;
+	if (!(is >> n)) {
+		assert(false);
+	}
+	v.clear();
+	v.resize(n);
+	for (int i = 0; i < n; ++i) {
+		v[n].load(is);
+	}
+}
+
+template <typename T>
+void load_vector_recp(std::vector<T*> &v, std::istream &is) {
+	int n = 0;
+	if (!(is >> n)) {
+		assert(false);
+	}
+	v.clear();
+	v.resize(n);
+	for (int i = 0; i < n; ++i) {
+		v[n] = new T();
+		v[n]->load(is);
 	}
 }
 

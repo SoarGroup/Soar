@@ -19,7 +19,6 @@
 using namespace std;
 using namespace Eigen;
 
-const int INIT_NMODELS = 1;
 const bool TEST_ELIGIBILITY = false;
 const int REGRESSION_ALG = 1; // 1 = ridge regression
 
@@ -248,14 +247,31 @@ bool block_seed(const_mat_view X, const_mat_view Y, int n, double fit_thresh, in
 	return false;
 }
 
+template <typename T>
+void remove_from_vector(const vector<int> &inds, vector <T> &v) {
+	int i = 0, j = 0;
+	for (int k = 0; k < v.size(); ++k) {
+		if (i < inds.size() && k == inds[i]) {
+			++i;
+		} else {
+			if (k > j) {
+				v[j] = v[k];
+			}
+			j++;
+		}
+	}
+	assert(v.size() - inds.size() == j);
+	v.resize(j);
+}
+
 EM::EM(const std::vector<train_inst> &data, const std::vector<propvec_sig> &sigs)
-: data(data), sigs(sigs), ndata(data.size()), nmodels(0),
-  Py_z(0, 0, INIT_NMODELS, INIT_NDATA), 
-  eligible(0, 0, INIT_NMODELS, INIT_NDATA)
+: data(data), sigs(sigs), ndata(data.size()), nmodes(0)
 {
 	timers.add("e_step");
 	timers.add("m_step");
 	timers.add("new");
+	
+	assert(ndata == 0);
 }
 
 EM::~EM() {
@@ -266,17 +282,15 @@ void EM::update_eligibility() {
 	if (!TEST_ELIGIBILITY) {
 		return;
 	}
-	
-	eligible.get().fill(1);
 	for (int i = 0; i < ndata; ++i) {
-		rvec x = data[i].x;
-		for (int j = 0; j < nmodels; ++j) {
-			const rvec &c2 = models[j]->model->get_center();
+		const rvec &x = data[i].x;
+		for (int j = 0; j < nmodes; ++j) {
+			const rvec &c2 = modes[j]->model->get_center();
 			rvec d = x - c2;
-			for (int k = 0; k < nmodels; ++k) {
-				const rvec &c1 = models[k]->model->get_center();
+			for (int k = 0; k < nmodes; ++k) {
+				const rvec &c1 = modes[k]->model->get_center();
 				if (j != k && d.dot(c1 - c2) < 0) {
-					eligible(k, i) = 0;
+					em_info[i].mode_prob[k] = -1.0;
 					break;
 				}
 			}
@@ -292,14 +306,14 @@ double EM::calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, vec
 	double w;
 	if (TEST_ELIGIBILITY) {
 		assert(false); // have to fix this later, or drop eligibility altogether
-		//w = 1.0 / eligible.col(j).head(nmodels - 1).sum();
+		//w = 1.0 / eligible.col(j).head(nmodes - 1).sum();
 	} else {
-		w = 1.0 / nmodels;
+		w = 1.0 / nmodes;
 	}
 	
 	/*
 	 Each model has a signature that specifies the types and orders of
-	 objects it expects for inputs. This is recorded in models[m]->sig.
+	 objects it expects for inputs. This is recorded in modes[m]->sig.
 	 Call this the model signature.
 	 
 	 Each data point has a signature that specifies which types and
@@ -317,11 +331,11 @@ double EM::calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, vec
 	 object indices that can be assigned to position i in the model
 	 signature.
 	*/
-	propvec_sig &msig = models[m]->sig;
+	propvec_sig &msig = modes[m]->sig;
 	if (msig.empty()) {
 		// should be constant prediction
-		assert(models[m]->model->is_const());
-		if (!models[m]->model->predict(rvec(), py)) {
+		assert(modes[m]->model->is_const());
+		if (!modes[m]->model->predict(rvec(), py)) {
 			assert(false);
 		}
 		best_error = (y - py(0));
@@ -363,7 +377,7 @@ double EM::calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, vec
 		}
 		assert(s == xlen);
 		
-		if (models[m]->model->predict(xc, py)) {
+		if (modes[m]->model->predict(xc, py)) {
 			double d = gausspdf(y, py(0), MODEL_STD);
 			double p = (1.0 - EPSILON) * w * d;
 			if (p > best_prob) {
@@ -385,27 +399,29 @@ double EM::calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, vec
  don't recalculate MAP immediately because the probabilities for other
  models may change in the same round.
 */
-void EM::update_Py_z(int i, set<int> &check) {
+void EM::update_mode_prob(int i, set<int> &check, obj_map_table &obj_maps) {
 	set<int>::iterator j;
-	for (j = models[i]->stale_points.begin(); j != models[i]->stale_points.end(); ++j) {
-		double prev = Py_z(i, *j), now;
-		int m = map_mode[*j];
-		if (TEST_ELIGIBILITY && eligible(i, *j) == 0) {
-			now = 0.;
+	for (j = modes[i]->stale_points.begin(); j != modes[i]->stale_points.end(); ++j) {
+		em_data_info &dinfo = em_info[*j];
+		double prev = dinfo.mode_prob[i], now;
+		int m = dinfo.map_mode;
+		if (TEST_ELIGIBILITY && prev < 0.0) {
+			now = -1.0;
 		} else {
-			vector<int> &obj_map = models[i]->data_map[*j].obj_map;
+			vector<int> &obj_map = dinfo.obj_map;
 			double error;
-			now = calc_prob(i, sigs[data[*j].sig_index], data[*j].x, data[*j].y(0), obj_map, error);
+			now = calc_prob(i, sigs[data[*j].sig_index], data[*j].x, data[*j].y(0),
+			                obj_maps[make_pair(i, *j)], error);
 		}
 		if ((m == i && now < prev) ||
 		    (m != i && ((m == -1 && now > PNOISE) ||
-		                (m != -1 && now > Py_z(m, *j)))))
+		                (m != -1 && now > dinfo.mode_prob[m]))))
 		{
 			check.insert(*j);
 		}
-		Py_z(i, *j) = now;
+		dinfo.mode_prob[i] = now;
 	}
-	models[i]->stale_points.clear();
+	modes[i]->stale_points.clear();
 }
 
 /*
@@ -415,57 +431,55 @@ void EM::update_Py_z(int i, set<int> &check) {
  minfo.data_map.end()).
 */
 void EM::model_add_example(int m, int i, bool update) {
-	model_info &minfo = *models[m];
-	assert(minfo.data_map.find(i) != minfo.data_map.end());
-	model_data_info &dinfo = minfo.data_map[i];
+	mode_info &minfo = *modes[m];
+	em_data_info &dinfo = em_info[i];
 	
 	rvec xc(data[i].x.size());
 	int xsize = 0;
+	const propvec_sig &sig = sigs[data[i].sig_index];
 	for (int j = 0; j < dinfo.obj_map.size(); ++j) {
-		const propvec_sig &sig = sigs[data[i].sig_index];
 		int n = sig[dinfo.obj_map[j]].length;
 		int s = sig[dinfo.obj_map[j]].start;
 		xc.segment(xsize, n) = data[i].x.segment(s, n);
 		xsize += n;
 	}
 	xc.conservativeResize(xsize);
-	dinfo.row = minfo.model->size();
-	minfo.model->add_example(xc, data[i].y, update);
+	dinfo.model_row = minfo.model->add_example(xc, data[i].y, update);
+	minfo.members.insert(i);
 	minfo.stale = true;
 }
 
 void EM::model_del_example(int m, int i) {
-	model_info &minfo = *models[m];
-	assert(minfo.data_map.find(i) != minfo.data_map.end());
-	int r = minfo.data_map[i].row;
+	mode_info &minfo = *modes[m];
+	int r = em_info[i].model_row;
 	minfo.model->del_example(r);
-	minfo.data_map.erase(i);
+	minfo.members.erase(i);
 	
-	map<int, model_data_info>::iterator j;
-	for (j = minfo.data_map.begin(); j != minfo.data_map.end(); ++j) {
-		if (j->second.row > r) {
-			--(j->second.row);
+	set<int>::iterator j;
+	for (j = minfo.members.begin(); j != minfo.members.end(); ++j) {
+		if (em_info[*j].model_row > r) {
+			em_info[*j].model_row--;
 		}
 	}
-	
 	minfo.stale = true;
 }
 
 /* Recalculate MAP model for each index in points */
-void EM::update_MAP(const set<int> &points) {
+void EM::update_MAP(const set<int> &points, const obj_map_table &obj_maps) {
 	set<int>::iterator j;
 	for (j = points.begin(); j != points.end(); ++j) {
-		int prev = map_mode[*j], now;
-		if (nmodels == 0) {
+		em_data_info &dinfo = em_info[*j];
+		int prev = dinfo.map_mode, now;
+		if (nmodes == 0) {
 			now = -1;
 		} else {
-			Py_z.get().topLeftCorner(nmodels, ndata).col(*j).maxCoeff(&now);
-			if (Py_z(now, *j) < PNOISE) {
+			now = argmax(dinfo.mode_prob);
+			if (dinfo.mode_prob[now] < PNOISE) {
 				now = -1;
 			}
 		}
 		if (now != prev) {
-			map_mode[*j] = now;
+			dinfo.map_mode = now;
 			if (prev == -1) {
 				noise[data[*j].sig_index].erase(*j);
 			} else {
@@ -474,6 +488,9 @@ void EM::update_MAP(const set<int> &points) {
 			if (now == -1) {
 				noise[data[*j].sig_index].insert(*j);
 			} else {
+				obj_map_table::const_iterator i = obj_maps.find(make_pair(now, *j));
+				assert(i != obj_maps.end());
+				dinfo.obj_map = i->second;
 				model_add_example(now, *j, true);
 			}
 		}
@@ -481,16 +498,16 @@ void EM::update_MAP(const set<int> &points) {
 }
 
 void EM::new_data() {
+	em_info.push_back(em_data_info());
+	em_data_info &dinfo = em_info.back();
+	dinfo.map_mode = -1;
+	dinfo.mode_prob.resize(nmodes);
+	
+	noise[data.back().sig_index].insert(ndata);
+	for (int i = 0; i < nmodes; ++i) {
+		modes[i]->stale_points.insert(ndata);
+	}
 	++ndata;
-	Py_z.append_col();
-	if (TEST_ELIGIBILITY) {
-		eligible.append_col();
-	}
-	map_mode.push_back(-1);
-	noise[data.back().sig_index].insert(ndata - 1);
-	for (int i = 0; i < nmodels; ++i) {
-		models[i]->stale_points.insert(ndata - 1);
-	}
 }
 
 void EM::estep() {
@@ -498,27 +515,26 @@ void EM::estep() {
 	
 	set<int> check;
 	update_eligibility();
-	for (int i = 0; i < nmodels; ++i) {
-		update_Py_z(i, check);
+	
+	obj_map_table obj_maps;
+	for (int i = 0; i < nmodes; ++i) {
+		update_mode_prob(i, check, obj_maps);
 	}
 	
-	update_MAP(check);
+	update_MAP(check, obj_maps);
 }
 
 bool EM::mstep() {
 	function_timer t(timers.get(M_STEP_T));
 	
 	bool changed = false;
-	for (int i = 0; i < models.size(); ++i) {
-		model_info &minfo = *models[i];
+	for (int i = 0; i < modes.size(); ++i) {
+		mode_info &minfo = *modes[i];
 		if (minfo.stale) {
 			LinearModel *m = minfo.model;
 			if (m->needs_refit() && m->fit()) {
 				changed = true;
-				map<int, model_data_info>::const_iterator j;
-				for (j = minfo.data_map.begin(); j != minfo.data_map.end(); ++j) {
-					minfo.stale_points.insert(j->first);
-				}
+				union_sets_inplace(minfo.stale_points, minfo.members);
 			}
 			minfo.stale = false;
 		}
@@ -616,21 +632,21 @@ bool EM::unify_or_add_model() {
 		*/
 		
 		/*
-		for (int i = 0; i < nmodels; ++i) {
+		for (int i = 0; i < nmodes; ++i) {
 			LinearModel *unified(modes[i]->model->copy());
 			unified->add_examples(m->get_members());
 			unified->fit();
 			
-			double curr_error = models[i]->get_train_error();
+			double curr_error = modes[i]->model->get_train_error();
 			double uni_error = unified->get_train_error();
 			
 			if (uni_error < MODEL_ERROR_THRESH ||
 				(curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error))
 			{
-				delete models[i];
+				delete modes[i]->model;
 				delete m;
-				models[i] = unified;
-				mark_model_stale(i);
+				modes[i]->model = unified;
+				mark_mode_stale(i);
 				LOG(EMDBG) << "UNIFIED " << i << endl;
 				return true;
 			}
@@ -639,27 +655,29 @@ bool EM::unify_or_add_model() {
 		*/
 		
 		LinearModel *m = new LinearModel(REGRESSION_ALG);
-		vector<int> nonzero;
-		m->init_fit(X, Y, sigs[i->first], nonzero);
+		vector<int> obj_map;
+		m->init_fit(X, Y, sigs[i->first], obj_map);
 		
-		model_info *minfo = new model_info();
+		mode_info *minfo = new mode_info();
 		minfo->model = m;
-		for (int j = 0; j < nonzero.size(); ++j) {
-			minfo->sig.push_back(sigs[i->first][nonzero[j]]);
+		copy(seed_inds.begin(), seed_inds.end(), inserter(minfo->members, minfo->members.end()));
+		for (int j = 0; j < obj_map.size(); ++j) {
+			minfo->sig.push_back(sigs[i->first][obj_map[j]]);
 			minfo->sig.back().start = -1;  // this field has no purpose and should never be used
 		}
 		for (int j = 0; j < seed_inds.size(); ++j) {
-			model_data_info &data_info = minfo->data_map[seed_inds[j]];
-			data_info.row = j;
-			data_info.obj_map = nonzero;
+			em_data_info &dinfo = em_info[seed_inds[j]];
+			dinfo.map_mode = modes.size();
+			dinfo.model_row = j;
+			dinfo.obj_map = obj_map;
+			noise_inds.erase(seed_inds[j]);
 		}
-		models.push_back(minfo);
+		modes.push_back(minfo);
 		
-		mark_model_stale(nmodels);
-		++nmodels;
-		Py_z.append_row();
-		if (TEST_ELIGIBILITY) {
-			eligible.append_row();
+		mark_mode_stale(nmodes);
+		++nmodes;
+		for (int j = 0; j < ndata; ++j) {
+			em_info[j].mode_prob.push_back(0.0);
 		}
 		
 		return true;
@@ -667,22 +685,22 @@ bool EM::unify_or_add_model() {
 	return false;
 }
 
-void EM::mark_model_stale(int i) {
-	models[i]->stale = true;
+void EM::mark_mode_stale(int i) {
+	modes[i]->stale = true;
 	for (int j = 0; j < ndata; ++j) {
-		models[i]->stale_points.insert(j);
+		modes[i]->stale_points.insert(j);
 	}
 }
 
 bool EM::predict(int mode, const rvec &x, double &y) {
 	//timer t("EM PREDICT TIME");
-	assert(0 <= mode && mode < nmodels);
+	assert(0 <= mode && mode < nmodes);
 	if (ndata == 0) {
 		return false;
 	}
 	
 	rvec py;
-	if (!models[mode]->model->predict(x, py)) {
+	if (!modes[mode]->model->predict(x, py)) {
 		assert(false);
 	}
 	y = py(0);
@@ -690,10 +708,10 @@ bool EM::predict(int mode, const rvec &x, double &y) {
 }
 
 /*
- Remove all models that cover fewer than 2 data points.
+ Remove all modes that cover fewer than 2 data points.
 */
-bool EM::remove_models() {
-	if (nmodels == 0) {
+bool EM::remove_modes() {
+	if (nmodes == 0) {
 		return false;
 	}
 	
@@ -704,39 +722,35 @@ bool EM::remove_models() {
 	 efficient way I can think of to remove elements from the middle
 	 of vectors. index_map associates old j's to new i's.
 	*/
-	bool removed = false;
-	vector<int> index_map(nmodels);
+	vector<int> index_map(nmodes), removed;
 	int i = 0;
-	for (int j = 0; j < nmodels; ++j) {
-		if (models[j]->data_map.size() > 2) {
+	for (int j = 0; j < nmodes; ++j) {
+		if (modes[j]->members.size() > 2) {
 			index_map[j] = i;
 			if (j > i) {
-				models[i] = models[j];
-				Py_z.row(i) = Py_z.row(j);
-				if (TEST_ELIGIBILITY) {
-					eligible.row(i) = eligible.row(j);
-				}
+				modes[i] = modes[j];
 			}
 			i++;
 		} else {
 			index_map[j] = -1;
-			delete models[j];
-			removed = true;
+			delete modes[j];
+			removed.push_back(j);
 		}
+	}
+	if (removed.empty()) {
+		return false;
 	}
 	for (int j = 0; j < ndata; ++j) {
-		if (map_mode[j] >= 0) {
-			map_mode[j] = index_map[map_mode[j]];
+		em_data_info &dinfo = em_info[j];
+		if (dinfo.map_mode >= 0) {
+			dinfo.map_mode = index_map[dinfo.map_mode];
 		}
+		remove_from_vector(removed, dinfo.mode_prob);
 	}
-	
-	nmodels = i;
-	Py_z.resize(nmodels, ndata);
-	if (TEST_ELIGIBILITY) {
-		eligible.resize(nmodels, ndata);
-	}
-	models.resize(nmodels);
-	return removed;
+	assert(i == nmodes - removed.size());
+	nmodes = i;
+	modes.resize(nmodes);
+	return true;
 }
 
 bool EM::step() {
@@ -748,7 +762,7 @@ bool EM::run(int maxiters) {
 	bool changed = false;
 	for (int i = 0; i < maxiters; ++i) {
 		if (!step()) {
-			if (!remove_models() && !unify_or_add_model()) {
+			if (!remove_modes() && !unify_or_add_model()) {
 				// reached quiescence
 				return changed;
 			}
@@ -760,31 +774,13 @@ bool EM::run(int maxiters) {
 }
 
 void EM::save(ostream &os) const {
-	Py_z.save(os);
-	if (TEST_ELIGIBILITY) {
-		eligible.save(os);
-	}
-	save_vector(map_mode, os);
-	
-	os << models.size() << endl;
-	for (int i = 0; i < nmodels; ++i) {
-		models[i]->save(os);
-	}
+	save_vector_rec(em_info, os);
+	save_vector_recp(modes, os);
 }
 
 void EM::load(istream &is) {
-	Py_z.load(is);
-	if (TEST_ELIGIBILITY) {
-		eligible.load(is);
-	}
-	load_vector(map_mode, is);
-	
-	is >> nmodels;
-	for (int i = 0; i < nmodels; ++i) {
-		model_info *minfo = new model_info;
-		minfo->load(is);
-		models.push_back(minfo);
-	}
+	load_vector_rec(em_info, is);
+	load_vector_recp(modes, is);
 }
 
 int EM::best_mode(const propvec_sig &sig, const rvec &x, double y, double &besterror) const {
@@ -793,7 +789,7 @@ int EM::best_mode(const propvec_sig &sig, const rvec &x, double y, double &beste
 	rvec py;
 	vector<int> assign;
 	double error;
-	for (int i = 0; i < nmodels; ++i) {
+	for (int i = 0; i < nmodes; ++i) {
 		double p = calc_prob(i, sig, x, y, assign, error);
 		if (best == -1 || p > best_prob) {
 			best = i;
@@ -808,28 +804,25 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 	stringstream ss;
 
 	if (first_arg >= args.size()) {
-		os << "modes: " << nmodels << endl;
+		os << "modes: " << nmodes << endl;
 		os << endl << "subqueries: mode ptable timing noise" << endl;
 		return true;
 	} else if (args[first_arg] == "ptable") {
 		for (int i = 0; i < ndata; ++i) {
-			for (int j = 0; j < nmodels; ++j) {
-				os << Py_z(j, i) << "\t";
-			}
-			os << endl;
+			join(os, em_info[i].mode_prob, "\t") << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "mode") {
 		if (first_arg + 1 >= args.size()) {
-			os << "Specify a mode number (0 - " << nmodels - 1 << ")" << endl;
+			os << "Specify a mode number (0 - " << nmodes - 1 << ")" << endl;
 			return false;
 		}
 		int n;
-		if (!parse_int(args[first_arg+1], n) || n < 0 || n >= nmodels) {
+		if (!parse_int(args[first_arg+1], n) || n < 0 || n >= nmodes) {
 			os << "invalid model number" << endl;
 			return false;
 		}
-		return models[n]->model->cli_inspect(first_arg + 2, args, os);
+		return modes[n]->model->cli_inspect(first_arg + 2, args, os);
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);
 		return true;
@@ -844,3 +837,23 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 	return false;
 }
 
+void EM::get_map_modes(std::vector<int> &modes) const {
+	modes.reserve(ndata);
+	for (int i = 0; i < ndata; ++i) {
+		modes.push_back(em_info[i].map_mode);
+	}
+}
+
+void EM::em_data_info::save(ostream &os) const {
+	save_vector(mode_prob, os);
+	os << map_mode << endl;
+	save_vector(obj_map, os);
+	os << model_row << endl;
+}
+
+void EM::em_data_info::load(istream &is) {
+	load_vector(mode_prob, is);
+	is >> map_mode;
+	load_vector(obj_map, is);
+	is >> model_row;
+}

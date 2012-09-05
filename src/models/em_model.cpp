@@ -87,7 +87,9 @@ public:
 		}
 		
 		clsfr->new_data(time);
-		clsfr->update(em->get_map_modes());
+		vector<int> modes;
+		em->get_map_modes(modes);
+		clsfr->update(modes);
 	}
 	
 	void save(ostream &os) const {
@@ -128,7 +130,8 @@ public:
 			os << endl << "subqueries: train classifier em error" << endl;
 			return true;
 		} else if (args[first_arg] == "train") {
-			const vector<category> &modes = em->get_map_modes();
+			vector<int> modes;
+			em->get_map_modes(modes);
 			int ndata = data.size();
 			int start = 0, end = ndata - 1;
 			if (first_arg + 1 < args.size()) {

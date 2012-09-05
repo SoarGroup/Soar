@@ -21,7 +21,6 @@ public:
 	bool step();
 	bool run(int maxiters);
 	bool predict(int mode, const rvec &x, double &y);
-	int get_nmodels() const { return nmodels; }
 	
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
@@ -31,17 +30,23 @@ public:
 	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
-	const std::vector<int> get_map_modes() const {
-		return map_mode;
-	}
+	void get_map_modes(std::vector<int> &modes) const;
 	
 private:
-	struct model_data_info {
-		std::vector<int> obj_map;  // object variable in model -> object index in instance
-		int row;                   // the row in the model's training matrix where this instance appears
+	class em_data_info {
+	public:
+		std::vector<double> mode_prob; // mode_prob[i] = probability that data point belongs to mode i
+		int map_mode;                  // MAP (Maximum A Posteriori) mode, should always be argmax(mode_prob[i])
+		
+		// the following are always associated with the MAP mode
+		std::vector<int> obj_map;      // object variable in model -> object index in instance
+		int model_row;                 // the row in the model's training matrix where this point appears
+	
+		void save(std::ostream &os) const;
+		void load(std::istream &is);
 	};
 	
-	class model_info {
+	class mode_info {
 	public:
 		void save(std::ostream &os) {
 			assert(false);
@@ -51,22 +56,29 @@ private:
 			assert(false);
 		}
 		
-		~model_info() {
+		~mode_info() {
 			delete model;
 		}
 		
 		LinearModel *model;
 		bool stale;
 		std::set<int> stale_points;
-		std::map<int, model_data_info> data_map; // index into 'data' -> info about that training example
+		std::set<int> members;
 		propvec_sig sig;
 	};
 	
+	/*
+	 Table to store mappings from placeholders to objects for a
+	 particular linear model and data point, as calculated in
+	 calc_prob.
+	*/
+	typedef std::map<std::pair<int, int>, std::vector<int> > obj_map_table;
+	
 	void update_eligibility();
-	void update_Py_z(int i, std::set<int> &check);
-	void update_MAP(const std::set<int> &pts);
-	bool remove_models();
-	void mark_model_stale(int i);
+	void update_mode_prob(int i, std::set<int> &check, obj_map_table &obj_maps);
+	void update_MAP(const std::set<int> &pts, const obj_map_table &obj_maps);
+	bool remove_modes();
+	void mark_mode_stale(int i);
 	bool find_new_mode_inds(const std::set<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
 	double calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	void model_add_example(int m, int i, bool update);
@@ -75,15 +87,12 @@ private:
 	const std::vector<train_inst> &data;
 	const std::vector<propvec_sig> &sigs;
 	
-	dyn_mat Py_z;          // nmodels x ndata
-	dyn_mat eligible;      // nmodels x ndata
+	std::vector<em_data_info> em_info;
 	
-	std::vector<model_info*> models;
-	std::vector<int> map_mode;
+	std::vector<mode_info*> modes;
 	
 	std::map<int, std::set<int> > noise;  // sig index -> data index
-	
-	int ndata, nmodels;
+	int ndata, nmodes;
 	
 	enum Timers { E_STEP_T, M_STEP_T, NEW_T };
 	timer_set timers;
