@@ -15,10 +15,6 @@ public:
 	~EM();
 	
 	void new_data();
-	void estep();
-	bool mstep();
-	bool unify_or_add_model();
-	bool step();
 	bool run(int maxiters);
 	bool predict(int mode, const rvec &x, double &y);
 	
@@ -74,6 +70,10 @@ private:
 	*/
 	typedef std::map<std::pair<int, int>, std::vector<int> > obj_map_table;
 	
+	void estep();
+	bool mstep();
+	bool unify_or_add_model();
+	bool step();
 	void update_eligibility();
 	void update_mode_prob(int i, std::set<int> &check, obj_map_table &obj_maps);
 	void update_MAP(const std::set<int> &pts, const obj_map_table &obj_maps);
@@ -87,7 +87,7 @@ private:
 	const std::vector<train_inst> &data;
 	const std::vector<propvec_sig> &sigs;
 	
-	std::vector<em_data_info> em_info;
+	std::vector<em_data_info*> em_info;
 	
 	std::vector<mode_info*> modes;
 	

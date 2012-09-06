@@ -275,7 +275,12 @@ EM::EM(const std::vector<train_inst> &data, const std::vector<propvec_sig> &sigs
 }
 
 EM::~EM() {
-	// need to delete mode models here?
+	for (int i = 0; i < em_info.size(); ++i) {
+		delete em_info[i];
+	}
+	for (int i = 0; i < modes.size(); ++i) {
+		delete modes[i];
+	}
 }
 
 void EM::update_eligibility() {
@@ -290,7 +295,7 @@ void EM::update_eligibility() {
 			for (int k = 0; k < nmodes; ++k) {
 				const rvec &c1 = modes[k]->model->get_center();
 				if (j != k && d.dot(c1 - c2) < 0) {
-					em_info[i].mode_prob[k] = -1.0;
+					em_info[i]->mode_prob[k] = -1.0;
 					break;
 				}
 			}
@@ -400,7 +405,7 @@ double EM::calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, vec
 void EM::update_mode_prob(int i, set<int> &check, obj_map_table &obj_maps) {
 	set<int>::iterator j;
 	for (j = modes[i]->stale_points.begin(); j != modes[i]->stale_points.end(); ++j) {
-		em_data_info &dinfo = em_info[*j];
+		em_data_info &dinfo = *em_info[*j];
 		double prev = dinfo.mode_prob[i], now;
 		int m = dinfo.map_mode;
 		if (TEST_ELIGIBILITY && prev < 0.0) {
@@ -430,7 +435,7 @@ void EM::update_mode_prob(int i, set<int> &check, obj_map_table &obj_maps) {
 */
 void EM::model_add_example(int m, int i, bool update) {
 	mode_info &minfo = *modes[m];
-	em_data_info &dinfo = em_info[i];
+	em_data_info &dinfo = *em_info[i];
 	
 	rvec xc(data[i].x.size());
 	int xsize = 0;
@@ -449,14 +454,14 @@ void EM::model_add_example(int m, int i, bool update) {
 
 void EM::model_del_example(int m, int i) {
 	mode_info &minfo = *modes[m];
-	int r = em_info[i].model_row;
+	int r = em_info[i]->model_row;
 	minfo.model->del_example(r);
 	minfo.members.erase(i);
 	
 	set<int>::iterator j;
 	for (j = minfo.members.begin(); j != minfo.members.end(); ++j) {
-		if (em_info[*j].model_row > r) {
-			em_info[*j].model_row--;
+		if (em_info[*j]->model_row > r) {
+			em_info[*j]->model_row--;
 		}
 	}
 	minfo.stale = true;
@@ -466,7 +471,7 @@ void EM::model_del_example(int m, int i) {
 void EM::update_MAP(const set<int> &points, const obj_map_table &obj_maps) {
 	set<int>::iterator j;
 	for (j = points.begin(); j != points.end(); ++j) {
-		em_data_info &dinfo = em_info[*j];
+		em_data_info &dinfo = *em_info[*j];
 		int prev = dinfo.map_mode, now;
 		if (nmodes == 0) {
 			now = -1;
@@ -496,10 +501,10 @@ void EM::update_MAP(const set<int> &points, const obj_map_table &obj_maps) {
 }
 
 void EM::new_data() {
-	em_info.push_back(em_data_info());
-	em_data_info &dinfo = em_info.back();
-	dinfo.map_mode = -1;
-	dinfo.mode_prob.resize(nmodes);
+	em_data_info *dinfo = new em_data_info;
+	dinfo->map_mode = -1;
+	dinfo->mode_prob.resize(nmodes);
+	em_info.push_back(dinfo);
 	
 	noise[data.back().sig_index].insert(ndata);
 	for (int i = 0; i < nmodes; ++i) {
@@ -664,7 +669,7 @@ bool EM::unify_or_add_model() {
 			minfo->sig.back().start = -1;  // this field has no purpose and should never be used
 		}
 		for (int j = 0; j < seed_inds.size(); ++j) {
-			em_data_info &dinfo = em_info[seed_inds[j]];
+			em_data_info &dinfo = *em_info[seed_inds[j]];
 			dinfo.map_mode = modes.size();
 			dinfo.model_row = j;
 			dinfo.obj_map = obj_map;
@@ -675,7 +680,7 @@ bool EM::unify_or_add_model() {
 		mark_mode_stale(nmodes);
 		++nmodes;
 		for (int j = 0; j < ndata; ++j) {
-			em_info[j].mode_prob.push_back(0.0);
+			em_info[j]->mode_prob.push_back(0.0);
 		}
 		
 		return true;
@@ -739,7 +744,7 @@ bool EM::remove_modes() {
 		return false;
 	}
 	for (int j = 0; j < ndata; ++j) {
-		em_data_info &dinfo = em_info[j];
+		em_data_info &dinfo = *em_info[j];
 		if (dinfo.map_mode >= 0) {
 			dinfo.map_mode = index_map[dinfo.map_mode];
 		}
@@ -772,12 +777,12 @@ bool EM::run(int maxiters) {
 }
 
 void EM::save(ostream &os) const {
-	save_vector_rec(em_info, os);
+	save_vector_recp(em_info, os);
 	save_vector_recp(modes, os);
 }
 
 void EM::load(istream &is) {
-	load_vector_rec(em_info, is);
+	load_vector_recp(em_info, is);
 	load_vector_recp(modes, is);
 }
 
@@ -807,7 +812,7 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		return true;
 	} else if (args[first_arg] == "ptable") {
 		for (int i = 0; i < ndata; ++i) {
-			join(os, em_info[i].mode_prob, "\t") << endl;
+			join(os, em_info[i]->mode_prob, "\t") << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "mode") {
@@ -838,7 +843,7 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 void EM::get_map_modes(std::vector<int> &modes) const {
 	modes.reserve(ndata);
 	for (int i = 0; i < ndata; ++i) {
-		modes.push_back(em_info[i].map_mode);
+		modes.push_back(em_info[i]->map_mode);
 	}
 }
 
