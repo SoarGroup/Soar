@@ -365,8 +365,6 @@ double EM::calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, vec
 	vector<int> assign;
 	rvec xc(xlen);
 	double best_prob = -1.0;
-	static int count = 0;
-	cout << ++count << endl;
 	while (gen.next(assign)) {
 		int s = 0;
 		for (int i = 0; i < assign.size(); ++i) {

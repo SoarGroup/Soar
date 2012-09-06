@@ -346,7 +346,7 @@ void relation::expand(const relation  &r,
 	//static int count = 0;
 	//cout << "expand " << count++;
 
-	assert(!match1.empty() && match1.front() == 0 && !match1.empty() && match1.front() == 0);
+	assert(!match1.empty() && match1.front() == 0 && !match2.empty() && match2.front() == 0);
 	index_vec m1, m2, ex;
 	tuple_map::const_iterator i;
 	tuple t1, t2;
@@ -400,7 +400,7 @@ void relation::count_expansion(const relation  &r,
 							   int &matched,
 							   int &new_size) const
 {
-	assert(!match1.empty() && match1.front() == 0 && !match1.empty() && match1.front() == 0);
+	assert(!match1.empty() && match1.front() == 0 && !match2.empty() && match2.front() == 0);
 	index_vec m1, m2;
 	tuple_map::const_iterator i;
 	tuple t1, t2;
