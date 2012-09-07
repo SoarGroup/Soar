@@ -94,12 +94,13 @@ void build_prohibits_list(agent* thisAgent, instantiation *inst) {
 				// int prefs_to_check[] = {PROHIBIT_PREFERENCE_TYPE, BEST_PREFERENCE_TYPE, BETTER_PREFERENCE_TYPE, WORSE_PREFERENCE_TYPE};
 				int prefs_to_check[] = { PROHIBIT_PREFERENCE_TYPE };
 				for (int i = 0; i < 1; ++i) {
-					print(thisAgent, "\nBuilding prohibit list...\n");
+	        print(thisAgent, "\nBuilding prohibit for condition...");
 					pref = cond->bt.trace->slot->preferences[prefs_to_check[i]];
 					while (pref) {
+            print_condition(thisAgent, cond);
 						new_pref = NIL;
 						if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm) {
-							print(thisAgent, "... Found prohibit preference to add for ");
+							print(thisAgent, "\n... Found prohibit preference to add for ");
 							if (inst->prod)
 								print_with_symbols(thisAgent, "%y\n", inst->prod->name);
 							else
@@ -112,7 +113,7 @@ void build_prohibits_list(agent* thisAgent, instantiation *inst) {
 							new_pref = find_clone_for_level(pref, inst->match_goal_level);
 							if (new_pref) {
 								if (new_pref->in_tm) {
-									print(thisAgent, "... Found prohibit preference (clone) to add for ");
+									print(thisAgent, "\n... Found prohibit preference (clone) to add for ");
 									if (inst->prod)
 										print_with_symbols(thisAgent, "%y\n", inst->prod->name);
 									else
@@ -139,6 +140,7 @@ void build_prohibits_list(agent* thisAgent, instantiation *inst) {
 void build_CDPS(agent* thisAgent, instantiation *inst) {
   condition *cond;
   preference *pref, *new_pref;
+  cons *CDPS;
 
   for (cond = inst->top_of_instantiated_conditions; cond != NIL;
       cond = cond->next) {
@@ -146,14 +148,16 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
     if (cond->type == POSITIVE_CONDITION && cond->bt.trace) {
       if (cond->bt.trace->slot) {
         // Joseph suggests doing an assert here to see if it's always a context slot
-          print(thisAgent, "\nCDPS DEBUG:  Found a valid condition (positive+trace+slot):");
+        print(thisAgent, "\nBuilding CDPS for condition...");
+        if (cond->bt.trace->slot->CDPS) {
           print_condition(thisAgent, cond);
-          print(thisAgent, "Building CDPS...\n");
-          pref = static_cast<preference *>(cond->bt.trace->slot->CDPS->first);
-          while (pref) {
+          for (CDPS=cond->bt.trace->slot->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
             new_pref = NIL;
-            if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm) {
-              print(thisAgent, "CDPS DEBUG:  - Adding CD preference for production ");
+            pref = static_cast<preference *>(CDPS->first);
+            if (pref->inst->match_goal_level == inst->match_goal_level
+                && pref->in_tm) {
+              print(thisAgent,
+                  "\nCDPS DEBUG:  - Adding CDP for production ");
               if (inst->prod)
                 print_with_symbols(thisAgent, "%y\n", inst->prod->name);
               else
@@ -166,20 +170,24 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
               new_pref = find_clone_for_level(pref, inst->match_goal_level);
               if (new_pref) {
                 if (new_pref->in_tm) {
-                  print(thisAgent, "CDPS DEBUG:  - Found prohibit preference (clone) to add for ");
+                  print(thisAgent,
+                      "\nCDPS DEBUG:  - Adding CDP (clone) for production ");
                   if (inst->prod)
                     print_with_symbols(thisAgent, "%y\n", inst->prod->name);
                   else
                     print_string(thisAgent, "[dummy production] (clone)\n");
-                  print(thisAgent, "CDPS DEBUG:  - Pref (clone) adding to CDPS: ");
+                  print(thisAgent,
+                      "CDPS DEBUG:  - Pref (clone) adding to CDPS: ");
                   print_preference(thisAgent, pref);
                   push(thisAgent, new_pref, cond->bt.CDPS);
                   preference_add_ref(new_pref);
                 }
               }
             }
-            pref = pref->next;
           }
+        } else {
+          print(thisAgent, "no CDPS found.");
+        }
       }
     }
   }

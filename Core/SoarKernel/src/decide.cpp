@@ -930,47 +930,57 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   return NONE_IMPASSE_TYPE;
 }
 
-/* MMA 9-2012: This function adds a preference to the slot's CDPS */
+/* MMA 9-2012: Add a preference to a slot's CDPS */
 
-void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, instantiation *inst) {
-	condition *cond;
-	preference *new_pref;
+void add_to_CDPS(agent* thisAgent, slot *s, preference *pref) {
 
-	new_pref = NIL;
-	if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm) {
+  Bool already_exists=false;
+  cons *CDPS;
 
-		print(thisAgent, "... Found prohibit preference to add for ");
-		if (inst->prod)
-			print_with_symbols(thisAgent, "%y\n", inst->prod->name);
-		else
-			print_string(thisAgent, "[dummy production]\n");
-		print(thisAgent, "    --> Pref adding to prohibit list : ");
-		print_preference(thisAgent, pref);
-		push(thisAgent, pref, s->CDPS);
-		preference_add_ref(pref);
-	} else {
-		new_pref = find_clone_for_level(pref, inst->match_goal_level);
-		if (new_pref) {
-			if (new_pref->in_tm) {
-				print(thisAgent, "... Found prohibit preference (clone) to add for ");
-				if (inst->prod)
-					print_with_symbols(thisAgent, "%y\n", inst->prod->name);
-				else
-					print_string(thisAgent, "[dummy production]\n");
-				print(thisAgent, "    --> Pref (clone) adding to prohibit list : ");
-				print_preference(thisAgent, pref);
-				push(thisAgent, new_pref, s->CDPS);
-				preference_add_ref(new_pref);
-			}
-		}
-	}
+  print(thisAgent, "    --> Pref adding to CDPS: ");
+  print_preference(thisAgent, pref);
+
+  /* Check if preference is already in CDPS.  It may not be neccessary to check
+   * for duplicates here, since backtracing will already not backtrace
+   * through preferences it has already seen, but it may be slightly more
+   * efficient just to check here.
+   */
+
+  for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
+    if (static_cast<preference *>(CDPS->first) == pref) {
+      already_exists=true;
+      break;
+    }
+  }
+  if (already_exists) {
+    print(thisAgent, "   --> pref already exists.  Not adding.\n");
+  } else {
+    push(thisAgent, pref, s->CDPS);
+    preference_add_ref(pref);
+  }
 }
 
 /* MMA end */
 
-byte run_preference_semantics(agent* thisAgent, slot *s,
-    preference **result_candidates, bool consistency = false, bool predict =
-        false) {
+/* MMA 9-2012: Perform reinforcement learning update for one candidate */
+void RL_update_candidate(agent* thisAgent, slot *s, bool consistency, preference *candidates) {
+
+  if (!consistency && rl_enabled(thisAgent) && candidates) {
+    // perform update here for just one candidate
+    rl_tabulate_reward_values(thisAgent);
+    exploration_compute_value_of_candidate(thisAgent, candidates, s, 0);
+    rl_perform_update(thisAgent, candidates->numeric_value,
+        candidates->rl_contribution, s->id);
+  }
+}
+/* MMA end */
+
+byte run_preference_semantics(agent* thisAgent,
+                              slot *s,
+                              preference **result_candidates,
+                              bool consistency = false,
+                              bool predict = false)
+{
   preference *p, *p2, *cand, *prev_cand;
   Bool match_found, not_all_indifferent, not_all_parallel;
   preference *candidates;
@@ -1008,9 +1018,10 @@ byte run_preference_semantics(agent* thisAgent, slot *s,
     }
   }
 
-  /* MMA 8-2012:  Adding debug information for CDPS */
-  print(thisAgent, "\n---------------------\nRUNNING PREFERENCE SEMANTICS...\n---------------------\n");
-  print_with_symbols(thisAgent, "Preferences for slot:\n");
+  /* MMA 8-2012:  Print debug information for CDPS */
+  print(thisAgent,
+      "\n---------------------\nRUNNING PREFERENCE SEMANTICS...\n---------------------\n");
+  print(thisAgent, "All Preferences for slot:");
 
   for (int i = 0; i < NUM_PREFERENCE_TYPES; i++) {
     if (s->preferences[i]) {
@@ -1032,48 +1043,64 @@ byte run_preference_semantics(agent* thisAgent, slot *s,
 
   /* === Acceptables, Prohibits, Rejects === */
 
-  /* --- mark everything that's acceptable, then unmark the prohibited
-   and rejected items --- */
+  /* Mark every acceptable preference as a possible candidate */
   for (p = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p != NIL; p = p->next)
     p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+
+  /* Unmark any preferences that have a prohibit or reject.  Note that this may
+   * remove the candidate_decider_flag set in the last loop */
   for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
     p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
   for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
     p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
 
-  /* --- now scan through acceptables and build the list of candidates --- */
+  /* Build list of candidates.  These are the acceptable prefs that didn't
+   * have the CANDIDATE_DECIDER_FLAG reversed. */
   candidates = NIL;
   for (p = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
     if (p->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
       p->next_candidate = candidates;
       candidates = p;
-      /* --- unmark it, in order to prevent it from being added twice --- */
+      /* --- Unmark it, in order to prevent it from being added twice --- */
       p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
     }
   }
 
+  /* If this is not a decidable context slot, then we're done */
   if (!s->isa_context_slot) {
     *result_candidates = candidates;
     return NONE_IMPASSE_TYPE;
   }
 
-  /* === If there are only 0 or 1 candidates, we're done === */
-  if ((!candidates) || (!candidates->next_candidate)) {
-    *result_candidates = candidates;
-
-    if (!consistency && rl_enabled(thisAgent) && candidates) {
-      // perform update here for just one candidate
-      rl_tabulate_reward_values(thisAgent);
-      exploration_compute_value_of_candidate(thisAgent, candidates, s, 0);
-      rl_perform_update(thisAgent, candidates->numeric_value,
-          candidates->rl_contribution, s->id);
+  /* If there are reject or prohibit preferences,
+   * (1) add all acceptable preferences to CDPS except those with a reject or prohibit
+   *     which is equivalent to the entire candidate list at this point
+   * (2) add all reject and prohibit preferences */
+  if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]) {
+    print(thisAgent, "CDPS DEBUG:  Prohibit or Reject preference detected.  Performing stage 2 additions.\n");
+    print(thisAgent, "CDPS DEBUG:  - Adding prohibit preferences\n");
+    for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+      add_to_CDPS(thisAgent, s, p);
+    print(thisAgent, "CDPS DEBUG:  - Adding reject preferences\n");
+    for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+      add_to_CDPS(thisAgent, s, p);
+    print(thisAgent, "CDPS DEBUG:  - Adding acceptable preferences\n");
+    for (p = candidates; p != NIL; p = p->next_candidate) {
+      add_to_CDPS(thisAgent, s, p);
     }
-
-    return NONE_IMPASSE_TYPE;
   }
 
-  /* MMA 8-2012:  There was a bunch of disabled code for an old preference scheme.  Removed the #define for it
-   * and deleted the deprecated code.*/
+  /* Check if there's still a potential winning candidate */
+  if ((!candidates) || (!candidates->next_candidate)) {
+    *result_candidates = candidates;
+    if (!candidates->next_candidate) {
+      /* Add acceptable preferences to CDPS for selected operator */
+      print(thisAgent, "CDPS DEBUG:  Exit point 1.  Performing stage 1 additions.\n");
+      add_to_CDPS(thisAgent, s, candidates);
+      RL_update_candidate(thisAgent, s, consistency, candidates);
+    }
+    return NONE_IMPASSE_TYPE;
+  }
 
   /* === Better/Worse === */
   /*
@@ -1096,7 +1123,7 @@ byte run_preference_semantics(agent* thisAgent, slot *s,
       || s->preferences[WORSE_PREFERENCE_TYPE]) {
     Symbol *j, *k;
 
-    // initialize
+    /* Initialize decider flags */
     for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
       p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
       p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
@@ -1108,6 +1135,12 @@ byte run_preference_semantics(agent* thisAgent, slot *s,
     for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
       cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
     }
+
+    /* Mark any preferences that are worse than another as conflicted.  This
+     * will remove it from the candidate list and add it to the conflicted
+     * list later.  We first do this for both the referent half of better and
+     * then the value half of worse preferences.
+     */
 
     for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
       j = p->value;
@@ -1133,13 +1166,18 @@ byte run_preference_semantics(agent* thisAgent, slot *s,
       }
     }
 
-    /* --- now scan through candidates list, look for remaining candidates --- */
+    /* Check if a valid candidate still exists. */
+
     for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
       if (cand->value->common.decider_flag == CANDIDATE_DECIDER_FLAG)
         break;
     }
+
+    /* If no candidates exists, collect conflicted candidates and return as
+     * the result candidates with a conflict impasse type.
+     */
+
     if (!cand) {
-      /* --- collect conflicted candidates into new candidates list --- */
       prev_cand = NIL;
       cand = candidates;
       while (cand) {
@@ -1156,7 +1194,9 @@ byte run_preference_semantics(agent* thisAgent, slot *s,
       *result_candidates = candidates;
       return CONFLICT_IMPASSE_TYPE;
     }
-    /* --- non-conflict candidates found, remove conflicts from candidates --- */
+
+    /* Delete conflicted candidates from candidate list */
+
     prev_cand = NIL;
     cand = candidates;
     while (cand) {
@@ -2693,8 +2733,6 @@ void do_decision_phase (agent* thisAgent, bool predict)
 {	
 	predict_srand_restore_snapshot( thisAgent, !predict );
 	
-	/* phase printing moved to init_soar: do_one_top_level_phase */
-
    decide_context_slots (thisAgent, predict);
 
    if ( !predict )
