@@ -35,7 +35,7 @@ void model::init() {
 	}
 }
 
-bool model::test(const propvec_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
+bool model::test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
 	return predict(sig, x, prediction, rels);
 }
 
@@ -85,7 +85,7 @@ multi_model::~multi_model() {
 	}
 }
 
-bool multi_model::predict(const propvec_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
+bool multi_model::predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
@@ -109,7 +109,7 @@ bool multi_model::predict(const propvec_sig &sig, const rvec &x, rvec &y, const 
 	return true;
 }
 
-void multi_model::learn(const propvec_sig &sig, const rvec &x, const rvec &y, int time) {
+void multi_model::learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
 	std::list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
@@ -131,7 +131,7 @@ void multi_model::learn(const propvec_sig &sig, const rvec &x, const rvec &y, in
 	}
 }
 
-bool multi_model::test(const propvec_sig &sig, const rvec &x, const rvec &y, const relation_table &rels) {
+bool multi_model::test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels) {
 	rvec predicted(y.size());
 	predicted.setConstant(0.0);
 	test_x.push_back(x);

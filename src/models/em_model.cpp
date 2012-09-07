@@ -29,7 +29,7 @@ public:
 		delete clsfr;
 	}
 	
-	bool predict(const propvec_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
+	bool predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
 		vector<int> obj_map;
 		int mode = clsfr->classify(x, rels, obj_map);
 		if (mode < 0) {
@@ -56,7 +56,7 @@ public:
 		return 1;
 	}
 
-	void learn(const propvec_sig &sig, const rvec &x, const rvec &y, int time) {
+	void learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
 		assert(y.size() == 1);
 		
 		data.push_back(train_inst());
@@ -108,7 +108,7 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether the decision tree classification was correct.
 	*/
-	bool test(propvec_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
+	bool test(state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
 		int best, mode;
 		double best_error;
 		vector<int> assign;
@@ -178,7 +178,7 @@ public:
 
 private:
 	vector<train_inst> data;
-	vector<propvec_sig> sigs;
+	vector<state_sig> sigs;
 	
 	EM *em;
 	rel_classifier *clsfr;

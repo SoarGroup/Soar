@@ -221,7 +221,7 @@ LinearModel::LinearModel(const LinearModel &m)
 	timers.add("fit");
 }
 
-void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const propvec_sig &sig, std::vector<int> &obj_map)
+void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const state_sig &sig, std::vector<int> &obj_map)
 {
 	isconst = true;
 	for (int i = 1; i < Y.rows(); ++i) {

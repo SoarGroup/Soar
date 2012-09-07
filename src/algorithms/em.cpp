@@ -264,7 +264,7 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 	v.resize(j);
 }
 
-EM::EM(const std::vector<train_inst> &data, const std::vector<propvec_sig> &sigs)
+EM::EM(const std::vector<train_inst> &data, const std::vector<state_sig> &sigs)
 : data(data), sigs(sigs), ndata(data.size()), nmodes(0)
 {
 	timers.add("e_step");
@@ -306,7 +306,7 @@ void EM::update_eligibility() {
 /*
  Calculate probability of data point d belonging to mode m
 */
-double EM::calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
+double EM::calc_prob(int m, const state_sig &sig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
 	rvec py;
 	double w;
 	if (TEST_ELIGIBILITY) {
@@ -336,7 +336,7 @@ double EM::calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, vec
 	 object indices that can be assigned to position i in the model
 	 signature.
 	*/
-	propvec_sig &msig = modes[m]->sig;
+	state_sig &msig = modes[m]->sig;
 	if (msig.empty()) {
 		// should be constant prediction
 		assert(modes[m]->model->is_const());
@@ -439,7 +439,7 @@ void EM::model_add_example(int m, int i, bool update) {
 	
 	rvec xc(data[i].x.size());
 	int xsize = 0;
-	const propvec_sig &sig = sigs[data[i].sig_index];
+	const state_sig &sig = sigs[data[i].sig_index];
 	for (int j = 0; j < dinfo.obj_map.size(); ++j) {
 		int n = sig[dinfo.obj_map[j]].length;
 		int s = sig[dinfo.obj_map[j]].start;
@@ -786,7 +786,7 @@ void EM::load(istream &is) {
 	load_vector_recp(modes, is);
 }
 
-int EM::best_mode(const propvec_sig &sig, const rvec &x, double y, double &besterror) const {
+int EM::best_mode(const state_sig &sig, const rvec &x, double y, double &besterror) const {
 	int best = -1;
 	double best_prob = 0.0;
 	rvec py;

@@ -10,7 +10,7 @@ class null_model : public model {
 public:
 	null_model(const string &name) : model(name, "null") { init(); }
 	
-	bool predict(const propvec_sig &sig, const rvec &x, rvec &y, const relation_table &rels) { return true; }
+	bool predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels) { return true; }
 	int get_input_size() const { return 0; }
 	int get_output_size() const { return 0; }
 };

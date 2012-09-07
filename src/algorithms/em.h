@@ -11,7 +11,7 @@ class scene;
 
 class EM {
 public:
-	EM(const std::vector<train_inst> &data, const std::vector<propvec_sig> &sigs);
+	EM(const std::vector<train_inst> &data, const std::vector<state_sig> &sigs);
 	~EM();
 	
 	void new_data();
@@ -22,7 +22,7 @@ public:
 	void load(std::istream &is);
 	
 	// Return the mode with the model that best fits (x, y)
-	int best_mode(const propvec_sig &sig, const rvec &x, double y, double &besterror) const;
+	int best_mode(const state_sig &sig, const rvec &x, double y, double &besterror) const;
 	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
@@ -60,7 +60,7 @@ private:
 		bool stale;
 		std::set<int> stale_points;
 		std::set<int> members;
-		propvec_sig sig;
+		state_sig sig;
 	};
 	
 	/*
@@ -80,12 +80,12 @@ private:
 	bool remove_modes();
 	void mark_mode_stale(int i);
 	bool find_new_mode_inds(const std::set<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
-	double calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
+	double calc_prob(int m, const state_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	void model_add_example(int m, int i, bool update);
 	void model_del_example(int m, int i);
 
 	const std::vector<train_inst> &data;
-	const std::vector<propvec_sig> &sigs;
+	const std::vector<state_sig> &sigs;
 	
 	std::vector<em_data_info*> em_info;
 	

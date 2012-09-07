@@ -512,7 +512,7 @@ public:
 	}
 };
 
-typedef std::vector<sig_entry> propvec_sig;
+typedef std::vector<sig_entry> state_sig;
 
 class train_inst {
 public:

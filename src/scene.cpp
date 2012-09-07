@@ -641,7 +641,7 @@ void scene::print_relations(ostream &os) const {
 	}
 }
 
-void scene::get_signature(propvec_sig &sig) const {
+void scene::get_signature(state_sig &sig) const {
 	int start = 0;
 	for (int i = 0; i < nodes.size(); ++i) {
 		if (!nodes[i].node) {

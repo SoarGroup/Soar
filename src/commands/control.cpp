@@ -27,9 +27,8 @@ const double SCOEF = 0.5;
 const int MAXITERS = 50;
 
 bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, scene *scn, rvec &finalstate) {
-	boolvec atoms;
 	scene *scncopy = scn->clone();
-	propvec_sig sig;
+	state_sig sig;
 	
 	scncopy->get_signature(sig);
 	finalstate = initstate;
@@ -442,8 +441,7 @@ public:
 	bool evaluate(const rvec &traj, rvec &value, rvec &finalstate) {
 		function_timer t(timers.get(EVALUATE_T));
 		
-		boolvec atoms;
-		propvec_sig sig;
+		state_sig sig;
 		scn->get_signature(sig);
 		
 		if (traj.size() > 0) {
@@ -778,8 +776,7 @@ private:
 		}
 		
 		int random_step(int maxsteps) {
-			boolvec atoms;
-			propvec_sig sig;
+			state_sig sig;
 			
 			cout << "RANDOM" << endl;
 			ci->scn->get_signature(sig);

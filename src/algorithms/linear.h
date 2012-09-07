@@ -37,7 +37,7 @@ public:
 	
 	LinearModel* copy() const { return new LinearModel(*this); }
 
-	void init_fit(const_mat_view X, const_mat_view Y, const propvec_sig &sig, std::vector<int> &nonzero);
+	void init_fit(const_mat_view X, const_mat_view Y, const state_sig &sig, std::vector<int> &nonzero);
 	int  add_example(const rvec &x, const rvec &y, bool update_refit);
 	void del_example(int i);
 	bool predict(const rvec &x, rvec &y);
