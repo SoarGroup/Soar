@@ -100,30 +100,7 @@ class Cube:
 				return False
 		return True
 		
-# This world requires the agent to "lock" a cube to the cursor to move it. No collisions occur.
-class World1:
-	def __init__(self, cursor, cubes):
-		self.cursor = cursor
-		self.cubes = cubes
-		self.print_sgel()
-	
-	def print_sgel(self):
-		self.cursor.print_sgel()
-		for c in self.cubes:
-			c.print_sgel()
-		print('***')
-		sys.stdout.flush()
-	
-	def input(self, locked, d):
-		if locked:
-			for c in self.cubes:
-				if self.cursor.intersects(c):
-					c.move(d)
-		self.cursor.move(d)
-		self.print_sgel()
-
-# This world requires the agent to push the cubes with the cursor. No locking required.
-class World2:
+class World:
 	def __init__(self, cursor, cubes):
 		self.cursor = cursor
 		self.cubes = cubes
@@ -404,7 +381,7 @@ if __name__ == '__main__':
 		for c in cubes:
 			c.update_canvas()
 	
-	w = World2(cubes[0], cubes[1:])
+	w = World(cubes[0], cubes[1:])
 	input = Input(w)
 	
 	if headless:
