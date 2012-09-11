@@ -442,12 +442,39 @@ void relation::init_single(const vector<int> &s) {
 	sz = s.size();
 }
 
+void relation::add(int i) {
+	assert(arty == 1);
+	if (tuples.empty()) {
+		tuples[tuple()];
+	}
+	set<int> &s = tuples.begin()->second;
+	s.insert(i);
+	sz = s.size();
+}
+
 void relation::add(int i, const tuple &t) {
 	assert(t.size() + 1 == arty);
 	set<int> &s = tuples[t];
 	sz -= s.size();
 	s.insert(i);
 	sz += s.size();
+}
+
+void relation::del(int i, const tuple &t) {
+	assert(t.size() + 1 == arty);
+	tuple_map::iterator j = tuples.find(t);
+	if (j != tuples.end()) {
+		j->second.erase(i);
+	}
+}
+
+void relation::del(int i) {
+	assert(arty == 1);
+	if (!tuples.empty()) {
+		set<int> &s = tuples.begin()->second;
+		s.erase(i);
+		sz = s.size();
+	}
 }
 
 void relation::at_pos(int n, set<int> &elems) const {

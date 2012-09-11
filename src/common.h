@@ -317,7 +317,10 @@ public:
 	relation(int n, const std::vector<tuple> &t);
 	
 	void init_single(const std::vector<int> &s);
+	void add(int i);
 	void add(int i, const tuple &t);
+	void del(int i);
+	void del(int i, const tuple &t);
 	bool test(const tuple &t) const;
 	void slice(const index_vec &inds, relation &out) const;
 	relation &operator=(const relation &r);
