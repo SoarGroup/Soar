@@ -3,16 +3,16 @@
 
 using namespace std;
 
-
 class obj_assign_csp {
 public:
 	bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, vector<int> &out) {
 		search_state init;
 		
 		for (int i = 0; i < c.size(); ++i) {
-			for (int j = 0; j < c[i].second.size(); ++j) {
-				if (c[i].second[j] != 0) {
-					init.unassigned.insert(c[i].second[j] - 1);
+			const tuple &largs = c[i].get_args();
+			for (int j = 0; j < largs.size(); ++j) {
+				if (largs[j] != 0) {
+					init.unassigned.insert(largs[j] - 1);
 				}
 			}
 		}
@@ -22,13 +22,13 @@ public:
 		
 		vector<bool> initted(init.unassigned.size(), false);
 		for (int i = 0; i < c.size(); ++i) {
-			const relation *r = map_get(rels, c[i].first);
+			const relation *r = map_get(rels, c[i].get_name());
 			if (!r) {
 				return false;
 			}
 			r->drop_first(init.constraints[i]);
 	
-			const tuple &vars = c[i].second;
+			const tuple &vars = c[i].get_args();
 			for (int j = 1; j < vars.size(); ++j) {
 				int v = vars[j] - 1;
 				/*
@@ -138,48 +138,6 @@ private:
 	map<int, int> solution;
 };
 
-bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, vector<int> &assignments) {
-	obj_assign_csp csp;
-	return csp.test_clause(c, rels, objs, assignments);
-}
-
-bool test_clause_vec(const clause_vec &c, const relation_table &rels, const set<int> &objs, vector<int> &assignments) {
-	for (int i = 0; i < c.size(); ++i) {
-		if (test_clause(c[i], rels, objs, assignments)) {
-			cout << "found assignment" << endl;
-			map<int, int>::const_iterator j;
-			for (int j = 0; j < assignments.size(); ++j) {
-				cout << j << " -> " << assignments[j] << endl;
-			}
-			return true;
-		}
-	}
-	cout << "failed finding assignment" << endl;
-	return false;
-}
-
-void print_literal(const literal &l) {
-	cout << l.first << "(";
-	for (int i = 0; i < l.second.size(); ++i) {
-		cout << l.second[i] << ",";
-	}
-	cout << ")";
-}
-
-ostream &operator<<(ostream &os, const literal &l) {
-	os << l.first << "(";
-	for (int i = 0; i < l.second.size() - 1; ++i) {
-		os << l.second[i] << ",";
-	}
-	os << l.second.back() << ")";
-	return os;
-}
-
-ostream &operator<<(ostream &os, const clause &c) {
-	join(os, c, " & ");
-	return os;
-}
-
 /*
  A search tree structure used in FOIL::choose_literal
 */
@@ -206,6 +164,40 @@ private:
 	literal_tree **best;
 	const FOIL &foil;
 };
+
+bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, vector<int> &assignments) {
+	obj_assign_csp csp;
+	return csp.test_clause(c, rels, objs, assignments);
+}
+
+bool test_clause_vec(const clause_vec &c, const relation_table &rels, const set<int> &objs, vector<int> &assignments) {
+	for (int i = 0; i < c.size(); ++i) {
+		if (test_clause(c[i], rels, objs, assignments)) {
+			cout << "found assignment" << endl;
+			map<int, int>::const_iterator j;
+			for (int j = 0; j < assignments.size(); ++j) {
+				cout << j << " -> " << assignments[j] << endl;
+			}
+			return true;
+		}
+	}
+	cout << "failed finding assignment" << endl;
+	return false;
+}
+
+ostream &operator<<(ostream &os, const literal &l) {
+	if (l.negate) {
+		os << "~";
+	}
+	os << l.name << "(";
+	join(os, l.args, ",") << ")";
+	return os;
+}
+
+ostream &operator<<(ostream &os, const clause &c) {
+	join(os, c, " & ");
+	return os;
+}
 
 bool sequential(const vector<int> &v) {
 	for (int i = 1; i < v.size(); ++i) {
@@ -277,11 +269,11 @@ void FOIL::filter_neg_by_relation(const index_vec &rinds, const index_vec &tinds
 void FOIL::gain(const literal &l, double &g, double &maxg) const {
 	double I1, I2;
 	int new_pos_size, new_neg_size, pos_match, neg_match;
-	map<string, relation>::const_iterator ri = rels.find(l.first);
+	map<string, relation>::const_iterator ri = rels.find(l.get_name());
 	assert(ri != rels.end());
 	const relation &r = ri->second;
 	
-	const tuple &vars = l.second;
+	const tuple &vars = l.get_args();
 	tuple old_vars;
 	index_vec old_inds, new_inds;
 	for (int i = 0; i < vars.size(); ++i) {
@@ -304,8 +296,7 @@ void FOIL::gain(const literal &l, double &g, double &maxg) const {
 		g = pos_match * (I1 - I2);
 		maxg = pos_match * I1;
 	}
-	//print_literal(l);
-	//cout << " gain " << g << " max " << maxg << endl;
+	//cout << l << " gain " << g << " max " << maxg << endl;
 }
 
 double FOIL::choose_literal(literal &l) {
@@ -325,8 +316,8 @@ bool FOIL::add_clause(clause &c) {
 			return false;
 		}
 		
-		const relation &r = get_rel(l.first);
-		tuple &vars = l.second;
+		const relation &r = get_rel(l.get_name());
+		const tuple &vars = l.get_args();
 		tuple old_vars;
 		index_vec old_inds, new_inds;
 		for (int i = 0; i < vars.size(); ++i) {
@@ -356,16 +347,16 @@ bool FOIL::add_clause(clause &c) {
 bool FOIL::tuple_satisfies_literal(const tuple &t, const literal &l) {
 	tuple ground_lit;
 	tuple::const_iterator i;
-	for (i = l.second.begin(); i != l.second.end(); ++i) {
+	for (i = l.get_args().begin(); i != l.get_args().end(); ++i) {
 		ground_lit.push_back(t[*i]);
 	}
-	return get_rel(l.first).test(ground_lit);
+	return get_rel(l.get_name()).test(ground_lit);
 }
 
 bool FOIL::filter_pos_by_clause(const clause &c) {
 	int old_size = pos.size();
 	for (int i = 0; i < c.size(); ++i) {
-		pos.subtract(c[i].second, get_rel(c[i].first));
+		pos.subtract(c[i].get_args(), get_rel(c[i].get_name()));
 	}
 	return pos.size() < old_size;
 }
@@ -392,12 +383,10 @@ literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best)
 }
 
 literal_tree::literal_tree(literal_tree &par, const string &r)
-: foil(par.foil), best(par.best), expanded(false), position(0), 
-  vars_left(par.vars_left.begin() + 1, par.vars_left.end())
+: foil(par.foil), best(par.best), lit(r, tuple(foil.get_rel(r).arity(), -1), false),
+  expanded(false), position(0), vars_left(par.vars_left.begin() + 1, par.vars_left.end())
 {
-	lit.first = r;
-	lit.second.resize(foil.get_rel(r).arity(), -1);
-	lit.second[0] = 0;
+	lit.set_arg(0, 0);
 	foil.gain(lit, gain, max_gain);
 	if (*best == NULL || gain > (**best).gain) {
 		*best = this;
@@ -407,7 +396,7 @@ literal_tree::literal_tree(literal_tree &par, const string &r)
 literal_tree::literal_tree(literal_tree &par, int pos, int var)
 : foil(par.foil), position(pos), lit(par.lit), best(par.best), expanded(false)
 { 
-	lit.second[position] = var;
+	lit.set_arg(position, var);
 	tuple::const_iterator i;
 	for (i = par.vars_left.begin(); i != par.vars_left.end(); ++i) {
 		if (*i != var) {
@@ -424,7 +413,7 @@ literal_tree::~literal_tree() {
 }
 	
 void literal_tree::expand() {
-	const tuple &vars = lit.second;
+	const tuple &vars = lit.get_args();
 	for (int i = position + 1; i < vars.size(); ++i) {
 		if (vars[i] >= 0) {
 			continue;

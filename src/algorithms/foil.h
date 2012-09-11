@@ -4,7 +4,39 @@
 #include <vector>
 #include "common.h"
 
-typedef std::pair<std::string, tuple> literal;
+class literal {
+public:
+	literal() : negate(false) {}
+	
+	literal(const std::string &name, const tuple &args, bool negate)
+	: name(name), args(args), negate(negate)
+	{}
+	
+	literal(const literal &l)
+	: name(l.name), args(l.args), negate(l.negate)
+	{}
+	
+	literal &operator=(const literal &l) {
+		name = l.name;
+		args = l.args;
+		negate = l.negate;
+		return *this;
+	}
+	
+	const std::string &get_name() const { return name; }
+	const tuple &get_args() const { return args; }
+	bool negated() const { return negate; }
+	
+	void set_arg(int i, int v) { args[i] = v; }
+	
+private:
+	std::string name;
+	tuple args;
+	bool negate;
+
+	friend std::ostream &operator<<(std::ostream &os, const literal &l);
+};
+
 typedef std::vector<literal> clause;
 typedef std::vector<clause> clause_vec;
 
