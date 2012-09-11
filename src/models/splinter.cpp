@@ -11,7 +11,7 @@ class splinter_model : public model {
 public:
 	splinter_model(const string &name) : model(name, "splinter") { init(); }
 	
-	bool predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
+	bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, rvec &y) {
 		if (x.size() != 10 || y.size() != 8) {
 			return false;
 		}

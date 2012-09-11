@@ -29,7 +29,7 @@ public:
 		delete clsfr;
 	}
 	
-	bool predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
+	bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, rvec &y)  {
 		vector<int> obj_map;
 		int mode = clsfr->classify(x, rels, obj_map);
 		if (mode < 0) {

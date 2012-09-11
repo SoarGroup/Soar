@@ -36,7 +36,7 @@ void model::init() {
 }
 
 bool model::test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
-	return predict(sig, x, prediction, rels);
+	return predict(sig, x, rels, prediction);
 }
 
 bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
@@ -97,7 +97,7 @@ bool multi_model::predict(const state_sig &sig, const rvec &x, rvec &y, const re
 			assert(false); // don't know what to do with the signature when we have to slice
 			slice(x, xp, cfg->xinds);
 		}
-		if (!cfg->mdl->predict(sig, xp, yp, rels)) {
+		if (!cfg->mdl->predict(sig2, xp, rels, yp)) {
 			return false;
 		}
 		if (cfg->ally) {

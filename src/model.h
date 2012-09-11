@@ -27,7 +27,7 @@ public:
 		return type;
 	}
 	
-	virtual bool predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels) = 0;
+	virtual bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, rvec &y) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
 	virtual bool test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &predicted);
