@@ -5,7 +5,15 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "classify.h"
+#include "common.h"
+
+typedef int category;
+
+class classifier_inst {
+public:
+	boolvec attrs;
+	category cat;
+};
 
 class ID5Tree {
 public:

@@ -6,7 +6,7 @@ using namespace std;
 
 class obj_assign_csp {
 public:
-	bool test_clause(const clause &c, const relation_table &rels, vector<int> &out) {
+	bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, vector<int> &out) {
 		search_state init;
 		
 		for (int i = 0; i < c.size(); ++i) {
@@ -40,12 +40,10 @@ public:
 				set<int> &domain = init.domains[v], &cdomain = init.cdoms[make_pair(i, j - 1)];
 				r->at_pos(j, cdomain);
 				if (!initted[v]) {
-					domain = cdomain;
+					domain = objs;
 					initted[v] = true;
-				} else {
-					intersect_sets_inplace(domain, cdomain);
 				}
-				
+				intersect_sets_inplace(domain, cdomain);
 				var_pos[v].insert(make_pair(i, j - 1));
 			}
 		}
@@ -140,14 +138,14 @@ private:
 	map<int, int> solution;
 };
 
-bool test_clause(const clause &c, const relation_table &rels, vector<int> &assignments) {
+bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, vector<int> &assignments) {
 	obj_assign_csp csp;
-	return csp.test_clause(c, rels, assignments);
+	return csp.test_clause(c, rels, objs, assignments);
 }
 
-bool test_clause_vec(const clause_vec &c, const relation_table &rels, vector<int> &assignments) {
+bool test_clause_vec(const clause_vec &c, const relation_table &rels, const set<int> &objs, vector<int> &assignments) {
 	for (int i = 0; i < c.size(); ++i) {
-		if (test_clause(c[i], rels, assignments)) {
+		if (test_clause(c[i], rels, objs, assignments)) {
 			cout << "found assignment" << endl;
 			map<int, int>::const_iterator j;
 			for (int j = 0; j < assignments.size(); ++j) {
@@ -166,6 +164,20 @@ void print_literal(const literal &l) {
 		cout << l.second[i] << ",";
 	}
 	cout << ")";
+}
+
+ostream &operator<<(ostream &os, const literal &l) {
+	os << l.first << "(";
+	for (int i = 0; i < l.second.size() - 1; ++i) {
+		os << l.second[i] << ",";
+	}
+	os << l.second.back() << ")";
+	return os;
+}
+
+ostream &operator<<(ostream &os, const clause &c) {
+	join(os, c, " & ");
+	return os;
 }
 
 /*
@@ -203,6 +215,10 @@ bool sequential(const vector<int> &v) {
 	}
 	return true;
 }
+
+FOIL::FOIL(const relation &p, const relation &n, const map<string, relation> &rels) 
+: pos(p), neg(n), rels(rels), nvars(pos.arity())
+{}
 
 FOIL::FOIL(const vector<int> &p, const vector<int> &n, const map<string, relation> &rels) 
 : rels(rels), nvars(1)

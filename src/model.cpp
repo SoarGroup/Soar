@@ -85,12 +85,33 @@ multi_model::~multi_model() {
 	}
 }
 
+void multi_model::find_targets(const vector<int> &yinds, state_sig &sig) {
+	for (int i = 0; i < sig.size(); ++i) {
+		sig[i].target = -1;
+	}
+	int ntargets = 0;
+	for (int i = 0; i < yinds.size(); ++i) {
+		for (int j = 0; j < sig.size(); ++j) {
+			if (sig[j].start <= yinds[i] && 
+			    yinds[i] < sig[j].start + sig[j].length &&
+				sig[j].target == -1) 
+			{
+				sig[j].target = ntargets++;
+				break;
+			}
+		}
+	}
+}
+
 bool multi_model::predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		rvec xp, yp(cfg->ally ? y.size() : cfg->yinds.size());
 		bool success;
+		state_sig sig2 = sig;
+
+		find_targets(cfg->yinds, sig2);
 		if (cfg->allx) {
 			xp = x;
 		} else {
@@ -101,6 +122,7 @@ bool multi_model::predict(const state_sig &sig, const rvec &x, rvec &y, const re
 			return false;
 		}
 		if (cfg->ally) {
+			assert(false); // not sure how to handle this case
 			y = yp;
 		} else {
 			dassign(yp, y, cfg->yinds);
@@ -115,6 +137,7 @@ void multi_model::learn(const state_sig &sig, const rvec &x, const rvec &y, int 
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		rvec xp, yp;
+		state_sig sig2 = sig;
 		
 		if (cfg->allx) {
 			xp = x;
@@ -127,7 +150,8 @@ void multi_model::learn(const state_sig &sig, const rvec &x, const rvec &y, int 
 		} else {
 			slice(y, yp, cfg->yinds);
 		}
-		cfg->mdl->learn(sig, xp, yp, time);
+		find_targets(cfg->yinds, sig2);
+		cfg->mdl->learn(sig2, xp, yp, time);
 	}
 }
 
@@ -139,35 +163,7 @@ bool multi_model::test(const state_sig &sig, const rvec &x, const rvec &y, const
 	test_rels.push_back(rels);
 	reference_vals.push_back(y);
 
-	bool failed = false;
-	std::list<model_config*>::const_iterator i;
-	for (i = active_models.begin(); i != active_models.end(); ++i) {
-		model_config *cfg = *i;
-		rvec xp, yp, p(cfg->ally ? y.size() : cfg->yinds.size());
-		bool success;
-		if (cfg->allx) {
-			xp = x;
-		} else {
-			assert(false); // don't know what to do with the signature when we have to slice
-			slice(x, xp, cfg->xinds);
-		}
-		if (cfg->ally) {
-			yp = y;
-		} else {
-			slice(y, yp, cfg->yinds);
-		}
-		if (!cfg->mdl->test(sig, xp, yp, rels, p)) {
-			failed = true;
-			break;
-		}
-		if (cfg->ally) {
-			predicted = p;
-		} else {
-			dassign(p, predicted, cfg->yinds);
-		}
-	}
-
-	if (failed) {
+	if (!predict(sig, x, predicted, rels)) {
 		predicted_vals.push_back(rvec());
 		return false;
 	}

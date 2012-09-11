@@ -649,6 +649,7 @@ void scene::get_signature(state_sig &sig) const {
 		}
 		sig.push_back(sig_entry());
 		sig_entry &e = sig.back();
+		e.name = nodes[i].node->get_name();
 		e.start = start;
 		e.length = NUM_NATIVE_PROPS + nodes[i].props.size();
 		if (i == 0) {

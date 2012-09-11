@@ -506,29 +506,19 @@ typedef std::vector<bool> boolvec;
 
 class sig_entry {
 public:
+	std::string name;
 	int type;
 	int length;
 	int start;
+	int target;
+
+	sig_entry() : type(-1), length(-1), start(-1), target(-1) {}
 	
 	bool operator==(const sig_entry &e) const {
-		return type == e.type && length == e.length && start == e.start;
+		return name == e.name && type == e.type && length == e.length && start == e.start && target == e.target;
 	}
 };
 
 typedef std::vector<sig_entry> state_sig;
-
-class train_inst {
-public:
-	rvec x;
-	rvec y;
-	int time;
-	int sig_index;
-	
-	friend std::ostream &operator<<(std::ostream &os, const train_inst &i);
-	friend std::istream &operator>>(std::istream &is, const train_inst &i);
-};
-
-std::ostream &operator<<(std::ostream &os, const train_inst &i);
-std::istream &operator>>(std::istream &is, train_inst &i);
 
 #endif

@@ -8,8 +8,12 @@ typedef std::pair<std::string, tuple> literal;
 typedef std::vector<literal> clause;
 typedef std::vector<clause> clause_vec;
 
+std::ostream &operator<<(std::ostream &os, const literal &l);
+std::ostream &operator<<(std::ostream &os, const clause &c);
+
 class FOIL {
 public:
+	FOIL(const relation &pos, const relation &neg, const relation_table &rels) ;
 	FOIL(const std::vector<int> &pos_insts, const std::vector<int> &neg_insts, const relation_table &rels) ;
 	bool learn(clause_vec &clauses);
 	void gain(const literal &l, double &g, double &maxg) const;
@@ -30,7 +34,14 @@ private:
 	const relation_table &rels;
 };
 
-bool test_clause(const clause &c, const relation_table &rels, std::vector<int> &assignments);
-bool test_clause_vec(const clause_vec &c, const relation_table &rels, std::vector<int> &assignments);
+bool test_clause(const clause &c,
+                 const relation_table &rels,
+                 const std::set<int> &objs,
+                 std::vector<int> &assignments);
+
+bool test_clause_vec(const clause_vec &c,
+                     const relation_table &rels,
+                     const std::set<int> &objs,
+                     std::vector<int> &assignments);
 
 #endif

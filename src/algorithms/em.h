@@ -6,17 +6,18 @@
 #include "linear.h"
 #include "common.h"
 #include "timer.h"
+#include "foil.h"
 
 class scene;
 
 class EM {
 public:
-	EM(const std::vector<train_inst> &data, const std::vector<state_sig> &sigs);
+	EM(const relation_table &rel_tbl);
 	~EM();
 	
-	void new_data();
+	void learn(const state_sig &sig, const rvec &x, const rvec &y, int time);
 	bool run(int maxiters);
-	bool predict(int mode, const rvec &x, double &y);
+	bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, int &mode, rvec &y);
 	
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
@@ -29,8 +30,13 @@ public:
 	void get_map_modes(std::vector<int> &modes) const;
 	
 private:
-	class em_data_info {
+	class em_data {
 	public:
+		rvec x, y;
+		int target;
+		int time;
+		int sig_index;
+		
 		std::vector<double> mode_prob; // mode_prob[i] = probability that data point belongs to mode i
 		int map_mode;                  // MAP (Maximum A Posteriori) mode, should always be argmax(mode_prob[i])
 		
@@ -44,6 +50,12 @@ private:
 	
 	class mode_info {
 	public:
+		mode_info() : pos(1), neg(1), clauses_dirty(true) {}
+		
+		~mode_info() {
+			delete model;
+		}
+		
 		void save(std::ostream &os) {
 			assert(false);
 		}
@@ -52,15 +64,27 @@ private:
 			assert(false);
 		}
 		
-		~mode_info() {
-			delete model;
-		}
-		
+		bool cli_inspect(int first, const std::vector<std::string> &args, std::ostream &os);
+
 		LinearModel *model;
 		bool stale;
 		std::set<int> stale_points;
 		std::set<int> members;
 		state_sig sig;
+		int target; // index in sig for the target object
+		
+		// classifier stuff
+		relation pos, neg;
+		clause_vec ident_clauses;
+		
+		/*
+		 Each object the model is conditioned on needs to be
+		 identifiable with a set of first-order Horn clauses
+		 learned with FOIL.
+		*/
+		std::vector<clause_vec> obj_clauses;
+		
+		bool clauses_dirty;
 	};
 	
 	/*
@@ -80,17 +104,18 @@ private:
 	bool remove_modes();
 	void mark_mode_stale(int i);
 	bool find_new_mode_inds(const std::set<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
-	double calc_prob(int m, const state_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
-	void model_add_example(int m, int i, bool update);
-	void model_del_example(int m, int i);
-
-	const std::vector<train_inst> &data;
-	const std::vector<state_sig> &sigs;
+	double calc_prob(int m, const state_sig &sig, const rvec &x, double y, int target, std::vector<int> &best_assign, double &best_error) const;
+	void mode_add_example(int m, int i, bool update);
+	void mode_del_example(int m, int i);
+	void add_mode(int sig, LinearModel *m, const std::vector<int> &seed_inds, const std::vector<int> &obj_map);
+	void learn_obj_clause(int m, int i);
+	void update_clauses(int m);
+	void print_foil6_data(std::ostream &os, int mode) const;
 	
-	std::vector<em_data_info*> em_info;
-	
+	const relation_table &rel_tbl;
+	std::vector<em_data*> data;
+	std::vector<state_sig> sigs;
 	std::vector<mode_info*> modes;
-	
 	std::map<int, std::set<int> > noise;  // sig index -> data index
 	int ndata, nmodes;
 	
