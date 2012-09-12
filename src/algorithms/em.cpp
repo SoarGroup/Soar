@@ -454,27 +454,32 @@ void EM::mode_add_example(int m, int i, bool update) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
 	
-	rvec xc(dinfo.x.size());
-	int xsize = 0;
-	const state_sig &sig = sigs[dinfo.sig_index];
-	for (int j = 0; j < dinfo.obj_map.size(); ++j) {
-		int n = sig[dinfo.obj_map[j]].length;
-		int s = sig[dinfo.obj_map[j]].start;
-		xc.segment(xsize, n) = dinfo.x.segment(s, n);
-		xsize += n;
+	rvec xc;
+	if (!minfo.model->is_const()) {
+		xc.resize(dinfo.x.size());
+		int xsize = 0;
+		const state_sig &sig = sigs[dinfo.sig_index];
+		for (int j = 0; j < dinfo.obj_map.size(); ++j) {
+			int n = sig[dinfo.obj_map[j]].length;
+			int s = sig[dinfo.obj_map[j]].start;
+			xc.segment(xsize, n) = dinfo.x.segment(s, n);
+			xsize += n;
+		}
+		xc.conservativeResize(xsize);
 	}
-	xc.conservativeResize(xsize);
 	dinfo.model_row = minfo.model->add_example(xc, dinfo.y, update);
+	
 	minfo.members.insert(i);
 	minfo.stale = true;
-	minfo.pos.add(dinfo.time);
-	minfo.neg.del(dinfo.time);
+	minfo.add_pos(dinfo.time, dinfo.target);
+	minfo.del_neg(dinfo.time, dinfo.target);
 	minfo.clauses_dirty = true;
 }
 
 void EM::mode_del_example(int m, int i) {
 	mode_info &minfo = *modes[m];
-	int r = data[i]->model_row;
+	em_data &dinfo = *data[i];
+	int r = dinfo.model_row;
 	minfo.model->del_example(r);
 	minfo.members.erase(i);
 	
@@ -485,8 +490,8 @@ void EM::mode_del_example(int m, int i) {
 		}
 	}
 	minfo.stale = true;
-	minfo.pos.del(data[i]->time);
-	minfo.neg.add(data[i]->time);
+	minfo.del_pos(dinfo.time, dinfo.target);
+	minfo.add_neg(dinfo.time, dinfo.target);
 	minfo.clauses_dirty = true;
 }
 
@@ -559,7 +564,7 @@ void EM::learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
 	noise[sig_index].insert(ndata);
 	for (int i = 0; i < nmodes; ++i) {
 		modes[i]->stale_points.insert(ndata);
-		modes[i]->neg.add(time);
+		modes[i]->add_neg(dinfo->time, dinfo->target);
 	}
 	++ndata;
 }
@@ -729,26 +734,32 @@ void EM::add_mode(int sig, LinearModel *m, const vector<int> &seed_inds, const v
 	minfo->model = m;
 	minfo->target = -1;
 	copy(seed_inds.begin(), seed_inds.end(), inserter(minfo->members, minfo->members.end()));
-	for (int i = 0; i < obj_map.size(); ++i) {
-		if (obj_map[i] == target) {
-			minfo->target = i;
+	if (m->is_const()) {
+		minfo->target = 0;
+		minfo->sig.push_back(sigs[sig][target]);
+		minfo->sig.back().start = -1;
+	} else {
+		for (int i = 0; i < obj_map.size(); ++i) {
+			if (obj_map[i] == target) {
+				minfo->target = i;
+			}
+			minfo->sig.push_back(sigs[sig][obj_map[i]]);
+			minfo->sig.back().start = -1;  // this field has no purpose and should never be used
 		}
-		minfo->sig.push_back(sigs[sig][obj_map[i]]);
-		minfo->sig.back().start = -1;  // this field has no purpose and should never be used
 	}
 	minfo->obj_clauses.resize(minfo->sig.size());
 	for (int i = 0; i < ndata; ++i) {
 		data[i]->mode_prob.push_back(0.0);
 		// there's probably a more efficient way to initialize neg
-		minfo->neg.add(data[i]->time);
+		minfo->add_neg(data[i]->time, target);
 	}
 	for (int i = 0; i < seed_inds.size(); ++i) {
 		em_data &dinfo = *data[seed_inds[i]];
 		dinfo.map_mode = modes.size();
 		dinfo.model_row = i;
 		dinfo.obj_map = obj_map;
-		minfo->pos.add(dinfo.time);
-		minfo->neg.del(dinfo.time);
+		minfo->add_pos(dinfo.time, dinfo.target);
+		minfo->del_neg(dinfo.time, dinfo.target);
 	}
 	modes.push_back(minfo);
 	mark_mode_stale(nmodes);
@@ -828,17 +839,19 @@ bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels
 			continue;
 		}
 		
-		rvec xc(x.size());
-		int xsize = 0;
-		for (int j = 0; j < mapping.size(); ++j) {
-			int n = sig[mapping[j]].length;
-			xc.segment(xsize, n) = x.segment(sig[mapping[j]].start, n);
-			xsize += n;
-		}
-		xc.conservativeResize(xsize);
-		
 		vector<int> dummy;
 		if (test_clause_vec(minfo.ident_clauses, rels, nontarget, dummy)) {
+			rvec xc;
+			if (!minfo.model->is_const()) {
+				xc.resize(x.size());
+				int xsize = 0;
+				for (int j = 0; j < mapping.size(); ++j) {
+					int n = sig[mapping[j]].length;
+					xc.segment(xsize, n) = x.segment(sig[mapping[j]].start, n);
+					xsize += n;
+				}
+				xc.conservativeResize(xsize);
+			}
 			if (minfo.model->predict(xc, y)) {
 				mode = i;
 				return true;
@@ -1164,8 +1177,15 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 		}
 		os << endl << "object clauses" << endl;
 		for (int j = 0; j < obj_clauses.size(); ++j) {
-			for (int k = 0; k < obj_clauses[j].size(); ++k) {
-				os << obj_clauses[j][k] << endl;
+			os << setw(3) << j << ": ";
+			if (target == j) {
+				os << "target" << endl;
+			} else if (obj_clauses[j].empty()) {
+				os << "empty" << endl;
+			} else {
+				for (int k = 0; k < obj_clauses[j].size(); ++k) {
+					os << "     " << obj_clauses[j][k] << endl;
+				}
 			}
 		}
 		return true;

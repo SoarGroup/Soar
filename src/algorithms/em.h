@@ -50,7 +50,7 @@ private:
 	
 	class mode_info {
 	public:
-		mode_info() : pos(1), neg(1), clauses_dirty(true) {}
+		mode_info() : pos(2), neg(2), clauses_dirty(true), target_tuple(1) {}
 		
 		~mode_info() {
 			delete model;
@@ -62,6 +62,26 @@ private:
 		
 		void load(std::istream &is) {
 			assert(false);
+		}
+		
+		void add_pos(int t, int targ) {
+			target_tuple[0] = targ;
+			pos.add(t, target_tuple);
+		}
+		
+		void del_pos(int t, int targ) {
+			target_tuple[0] = targ;
+			pos.del(t, target_tuple);
+		}
+		
+		void add_neg(int t, int targ) {
+			target_tuple[0] = targ;
+			neg.add(t, target_tuple);
+		}
+		
+		void del_neg(int t, int targ) {
+			target_tuple[0] = targ;
+			neg.del(t, target_tuple);
 		}
 		
 		bool cli_inspect(int first, const std::vector<std::string> &args, std::ostream &os);
@@ -85,6 +105,9 @@ private:
 		std::vector<clause_vec> obj_clauses;
 		
 		bool clauses_dirty;
+	
+	private:
+		tuple target_tuple;
 	};
 	
 	/*

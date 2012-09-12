@@ -155,7 +155,7 @@ private:
 	void expand();
 
 private:
-	int position;
+	int position, nbound;
 	literal lit;
 	std::vector<literal_tree*> children;
 	tuple vars_left;
@@ -240,9 +240,6 @@ bool FOIL::learn(clause_vec &clauses) {
 		if (dead) {
 			return false;
 		}
-		//relation pos_next;
-		//pos.slice(t, pos_next);
-		//pos = pos_next;
 	}
 	return true;
 }
@@ -291,7 +288,7 @@ void FOIL::gain(const literal &l, double &g, double &maxg) const {
 		g = pos_match * (I1 - I2);
 		maxg = pos_match * I1;
 	}
-	cout << l << " gain " << g << " max " << maxg << endl;
+	LOG(FOILDBG) << l << " gain " << g << " max " << maxg << endl;
 }
 
 double FOIL::choose_literal(literal &l) {
@@ -312,7 +309,7 @@ bool FOIL::add_clause(clause &c) {
 			return false;
 		}
 		
-		cout << endl << "CHOSE " << l << endl << endl;
+		LOG(FOILDBG) << endl << "CHOSE " << l << endl << endl;
 		const relation &r = get_rel(l.get_name());
 		const tuple &vars = l.get_args();
 		tuple bound_vars, bound_inds, new_inds;
@@ -399,7 +396,7 @@ const relation &FOIL::get_rel(const string &name) const {
 }
 
 literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best) 
-: foil(foil), best(best), expanded(false), position(-1)
+: foil(foil), best(best), expanded(false), position(-1), nbound(-1)
 {
 	for (int i = 0; i < nvars; ++i) {
 		vars_left.push_back(i);
@@ -416,7 +413,8 @@ literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best)
 
 literal_tree::literal_tree(literal_tree &par, const string &r, bool negate)
 : foil(par.foil), best(par.best), lit(r, tuple(par.foil.get_rel(r).arity(), -1), negate),
-  expanded(false), position(0), vars_left(par.vars_left.begin() + 1, par.vars_left.end())
+  expanded(false), position(0), vars_left(par.vars_left.begin() + 1, par.vars_left.end()),
+  nbound(1)
 {
 	lit.set_arg(0, 0);
 	foil.gain(lit, gain, max_gain);
@@ -429,6 +427,7 @@ literal_tree::literal_tree(literal_tree &par, int pos, int var)
 : foil(par.foil), position(pos), lit(par.lit), best(par.best), expanded(false)
 { 
 	lit.set_arg(position, var);
+	nbound = par.nbound + 1;
 	tuple::const_iterator i;
 	for (i = par.vars_left.begin(); i != par.vars_left.end(); ++i) {
 		if (*i != var) {
@@ -457,7 +456,9 @@ void literal_tree::expand() {
 				delete c;
 				continue;
 			}
-			if (*best == NULL || c->gain > (**best).gain) {
+			if (*best == NULL || c->gain > (**best).gain ||
+			    (c->gain == (**best).gain && c->nbound > (**best).nbound))
+			{
 				*best = c;
 			}
 

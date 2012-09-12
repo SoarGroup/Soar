@@ -442,6 +442,7 @@ enum log_type {
 	CTRLDBG,
 	EMDBG,
 	SGEL,
+	FOILDBG,
 	NUM_LOG_TYPES,
 };
 

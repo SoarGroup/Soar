@@ -16,7 +16,8 @@ const char *log_type_names[NUM_LOG_TYPES] = {
 	"ERROR",
 	"CTRLDBG",
 	"EMDBG",
-	"SGEL"
+	"SGEL",
+	"FOILDBG"
 };
 
 void split(const string &s, const string &delim, vector<string> &fields) {
