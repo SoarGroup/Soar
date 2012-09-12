@@ -165,7 +165,7 @@ enum ni_mode {
  *  \def AGRESSIVE_ONC
  * 
  *       Setting this option enables Soar to generate operator no changes
- *       without requring a dedicated decision cycle.  This occurs when
+ *       without requiring a dedicated decision cycle.  This occurs when
  *       Soar recognizes that no productions will fire the the PE phase.
  *       This is the standard behavior in Soar 8.3.5 and Soar 8.4.5, but 
  *       is no longer standard as of Soar 8.5
