@@ -762,6 +762,43 @@ void EM::mark_mode_stale(int i) {
 	}
 }
 
+bool EM::map_objs(int mode, int target, const state_sig &sig, const relation_table &rels, vector<int> &mapping) const {
+	const mode_info &minfo = *modes[mode];
+	vector<bool> used(sig.size(), false);
+	used[target] = true;
+	
+	for (int i = 0; i < minfo.sig.size(); ++i) {
+		int obj = -1;
+		if (i == minfo.target) {
+			// target always maps to target
+			mapping[i] = target;
+		} else {
+			set<int> candidates;
+			for (int j = 0; j < used.size(); ++j) {
+				if (!used[j] && sig[j].type == minfo.sig[i].type) {
+					candidates.insert(j);
+				}
+			}
+			if (candidates.empty()) {
+				return false;
+			} else if (candidates.size() == 1 || minfo.obj_clauses[i].empty()) {
+				mapping[i] = *candidates.begin();
+			} else {
+				// need to preassign target to first position
+				assert(false);
+				vector<int> assign;
+				if (!test_clause_vec(minfo.obj_clauses[i], rels, candidates, assign)) {
+					return false;
+				}
+				assert(assign.size() >= 3);
+				mapping[i] = assign[2];
+			}
+		}
+		used[mapping[i]] = true;
+	}
+	return true;
+}
+
 bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels, int &mode, rvec &y) {
 	if (ndata == 0 || nmodes < 0) {
 		mode = -1;
@@ -781,44 +818,28 @@ bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels
 	assert(target != -1);
 		
 	for (int i = 0; i < modes.size(); ++i) {
-		if (modes[i]->sig.size() > sig.size()) {
+		mode_info &minfo = *modes[i];
+		if (minfo.sig.size() > sig.size()) {
 			continue;
 		}
-
-		mode_info &minfo = *modes[i];
+		update_clauses(i);
+		vector<int> mapping(minfo.sig.size(), -1);
+		if (!map_objs(i, target, sig, rels, mapping)) {
+			continue;
+		}
+		
 		rvec xc(x.size());
 		int xsize = 0;
-		bool success = true;
-		set<int> available = nontarget;
-
-		update_clauses(i);
-		for (int j = 0; j < minfo.obj_clauses.size(); ++j) {
-			int obj;
-			if (j == minfo.target) {
-				obj = target;
-			} else if (minfo.obj_clauses[j].empty()) {
-				obj = *available.begin();
-			} else {
-				vector<int> assign;
-				if (!test_clause_vec(minfo.obj_clauses[j], rels, available, assign)) {
-					success = false;
-					break;
-				}
-				assert(assign.size() >= 3);
-				obj = assign[2];
-			}
-			int n = sig[obj].length;
-			xc.segment(xsize, n) = x.segment(sig[obj].start, n);
+		for (int j = 0; j < mapping.size(); ++j) {
+			int n = sig[mapping[j]].length;
+			xc.segment(xsize, n) = x.segment(sig[mapping[j]].start, n);
 			xsize += n;
-			available.erase(obj);
-		}
-		if (!success) {
-			continue;
 		}
 		xc.conservativeResize(xsize);
+		
 		vector<int> dummy;
 		if (test_clause_vec(minfo.ident_clauses, rels, nontarget, dummy)) {
-			if (modes[i]->model->predict(xc, y)) {
+			if (minfo.model->predict(xc, y)) {
 				mode = i;
 				return true;
 			}
@@ -1049,7 +1070,8 @@ void EM::em_data::load(istream &is) {
 void EM::learn_obj_clause(int m, int i) {
 	relation pos_obj(3), neg_obj(3);
 	tuple objs(2);
-
+	int type = modes[m]->sig[i].type;
+	
 	set<int>::const_iterator j;
 	for (j = modes[m]->members.begin(); j != modes[m]->members.end(); ++j) {
 		const state_sig &sig = sigs[data[*j]->sig_index];
@@ -1059,7 +1081,7 @@ void EM::learn_obj_clause(int m, int i) {
 		objs[1] = o;
 		pos_obj.add(t, objs);
 		for (int k = 0; k < sig.size(); ++k) {
-			if (k != objs[0] && k != o) {
+			if (sig[k].type == type && k != objs[0] && k != o) {
 				objs[1] = k;
 				neg_obj.add(t, objs);
 			}

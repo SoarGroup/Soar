@@ -111,7 +111,8 @@ private:
 	void learn_obj_clause(int m, int i);
 	void update_clauses(int m);
 	void print_foil6_data(std::ostream &os, int mode) const;
-	
+	bool map_objs(int mode, int target, const state_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
+
 	const relation_table &rel_tbl;
 	std::vector<em_data*> data;
 	std::vector<state_sig> sigs;
