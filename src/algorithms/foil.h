@@ -54,7 +54,6 @@ public:
 	const relation &get_rel(const std::string &name) const;
 	
 private:
-	void filter_neg_by_relation(const index_vec &rinds, const index_vec &tinds, const relation &r);
 	double choose_literal(literal &l);
 	bool add_clause(clause &c);
 	bool tuple_satisfies_literal(const tuple &t, const literal &l);
@@ -62,7 +61,7 @@ private:
 
 private:
 	int nvars;
-	relation pos, neg;
+	relation pos, neg, pos_curr, neg_curr;
 	const relation_table &rels;
 };
 

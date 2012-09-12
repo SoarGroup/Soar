@@ -150,7 +150,7 @@ public:
 	double get_gain() const { return gain; }
 	
 private:
-	literal_tree(literal_tree &parent, const string &r);
+	literal_tree(literal_tree &parent, const string &r, bool negate);
 	literal_tree(literal_tree &parent, int pos, int var);
 	void expand();
 
@@ -209,7 +209,7 @@ bool sequential(const vector<int> &v) {
 }
 
 FOIL::FOIL(const relation &p, const relation &n, const map<string, relation> &rels) 
-: pos(p), neg(n), rels(rels), nvars(pos.arity())
+: pos(p), neg(n), rels(rels), nvars(p.arity())
 {}
 
 FOIL::FOIL(const vector<int> &p, const vector<int> &n, const map<string, relation> &rels) 
@@ -220,50 +220,31 @@ FOIL::FOIL(const vector<int> &p, const vector<int> &n, const map<string, relatio
 }
 
 bool FOIL::learn(clause_vec &clauses) {
+	if (neg.empty()) {
+		return true;
+	}
 	clauses.clear();
 	tuple t;
 	t.push_back(0);
 	while (!pos.empty()) {
+		pos_curr = pos;
+		neg_curr = neg;
 		clause c;
 		bool dead = false;
 		if (!add_clause(c)) {
 			dead = true;
+		} else {
+			clauses.push_back(c);
+			dead = !filter_pos_by_clause(c); // can't cover any more positive cases
 		}
-		bool reduced = filter_pos_by_clause(c);
-		if (!reduced) {
-			// can't cover any more positive cases
-			dead = true;
-		}
-		clauses.push_back(c);
 		if (dead) {
 			return false;
 		}
-		relation pos_next;
-		pos.slice(t, pos_next);
-		pos = pos_next;
+		//relation pos_next;
+		//pos.slice(t, pos_next);
+		//pos = pos_next;
 	}
 	return true;
-}
-
-void FOIL::filter_neg_by_relation(const index_vec &rinds, const index_vec &tinds, const relation &r) {
-	int end = 0;
-	tuple t;
-	bool needs_slice;
-	const relation *rp;
-	
-	if (rinds.size() < r.arity() || !sequential(rinds)) {
-		relation *rn = new relation;
-		r.slice(rinds, *rn);
-		needs_slice = true;
-		rp = const_cast<relation*>(rn);
-	} else {
-		rp = &r;
-		needs_slice = false;
-	}
-	neg.filter(tinds, *rp);
-	if (needs_slice) {
-		delete rp;
-	}
 }
 
 void FOIL::gain(const literal &l, double &g, double &maxg) const {
@@ -274,29 +255,43 @@ void FOIL::gain(const literal &l, double &g, double &maxg) const {
 	const relation &r = ri->second;
 	
 	const tuple &vars = l.get_args();
-	tuple old_vars;
-	index_vec old_inds, new_inds;
+	tuple bound_vars, bound_inds, new_inds;
 	for (int i = 0; i < vars.size(); ++i) {
 		if (vars[i] >= 0) {
-			old_vars.push_back(vars[i]);
-			old_inds.push_back(i);
+			bound_vars.push_back(vars[i]);
+			bound_inds.push_back(i);
 		} else {
 			new_inds.push_back(i);
 		}
 	}
-	pos.count_expansion(r, old_vars, old_inds, pos_match, new_pos_size);
-	neg.count_expansion(r, old_vars, old_inds, neg_match, new_neg_size);
+	if (!l.negated()) {
+		pos_curr.count_expansion(r, bound_vars, bound_inds, pos_match, new_pos_size);
+		neg_curr.count_expansion(r, bound_vars, bound_inds, neg_match, new_neg_size);
+	} else {
+		// pretty inefficent
+		relation pos_copy(pos_curr), neg_copy(neg_curr);
+		
+		relation sliced;
+		r.slice(bound_inds, sliced);
+		pos_copy.subtract(bound_vars, sliced);
+		neg_copy.subtract(bound_vars, sliced);
+		
+		new_pos_size = pos_copy.size();
+		pos_match = new_pos_size;
+		new_neg_size = neg_copy.size();
+		neg_match = new_neg_size;
+	}
 	
 	if (pos_match == 0) {
 		g = 0;
 		maxg = 0;
 	} else {
-		I1 = -log2(pos.size() / static_cast<double>(pos.size() + neg.size()));
+		I1 = -log2(pos_curr.size() / static_cast<double>(pos_curr.size() + neg_curr.size()));
 		I2 = -log2(new_pos_size / static_cast<double>(new_pos_size + new_neg_size));
 		g = pos_match * (I1 - I2);
 		maxg = pos_match * I1;
 	}
-	//cout << l << " gain " << g << " max " << maxg << endl;
+	cout << l << " gain " << g << " max " << maxg << endl;
 }
 
 double FOIL::choose_literal(literal &l) {
@@ -309,35 +304,52 @@ double FOIL::choose_literal(literal &l) {
 }
 
 bool FOIL::add_clause(clause &c) {
-	nvars = 1;
-	while (!neg.empty()) {
+	nvars = pos_curr.arity();
+	while (!neg_curr.empty()) {
 		literal l;
-		if (choose_literal(l) <= 0) {
+		double gain = choose_literal(l);
+		if (gain <= 0) {
 			return false;
 		}
 		
+		cout << endl << "CHOSE " << l << endl << endl;
 		const relation &r = get_rel(l.get_name());
 		const tuple &vars = l.get_args();
-		tuple old_vars;
-		index_vec old_inds, new_inds;
+		tuple bound_vars, bound_inds, new_inds;
 		for (int i = 0; i < vars.size(); ++i) {
 			if (vars[i] >= 0) {
-				old_vars.push_back(vars[i]);
-				old_inds.push_back(i);
+				bound_vars.push_back(vars[i]);
+				bound_inds.push_back(i);
 			} else {
 				new_inds.push_back(i);
 			}
 		}
-		filter_neg_by_relation(old_inds, old_vars, r);
 		
-		if (!new_inds.empty()) {
-			pos.expand(r, old_vars, old_inds, new_inds);
-			neg.expand(r, old_vars, old_inds, new_inds);
+		bool needs_slice;
+		const relation *rp;
+		
+		if (bound_inds.size() < r.arity() || !sequential(bound_inds)) {
+			relation *rn = new relation;
+			r.slice(bound_inds, *rn);
+			needs_slice = true;
+			rp = const_cast<relation*>(rn);
+		} else {
+			rp = &r;
+			needs_slice = false;
 		}
-		for (int i = 0; i < l.second.size(); ++i) {
-			if (l.second[i] < 0) {
-				l.second[i] = nvars++;
+		
+		if (!l.negated()) {
+			pos_curr.expand(r, bound_vars, bound_inds, new_inds);
+			neg_curr.expand(r, bound_vars, bound_inds, new_inds);
+			for (int i = 0; i < new_inds.size(); ++i) {
+				l.set_arg(new_inds[i], nvars++);
 			}
+		} else {
+			pos_curr.subtract(bound_vars, *rp);
+			neg_curr.subtract(bound_vars, *rp);
+		}
+		if (needs_slice) {
+			delete rp;
 		}
 		c.push_back(l);
 	}
@@ -350,13 +362,32 @@ bool FOIL::tuple_satisfies_literal(const tuple &t, const literal &l) {
 	for (i = l.get_args().begin(); i != l.get_args().end(); ++i) {
 		ground_lit.push_back(t[*i]);
 	}
-	return get_rel(l.get_name()).test(ground_lit);
+	bool inrel = get_rel(l.get_name()).test(ground_lit);
+	if (l.negated()) {
+		return !inrel;
+	}
+	return inrel;
 }
 
 bool FOIL::filter_pos_by_clause(const clause &c) {
 	int old_size = pos.size();
 	for (int i = 0; i < c.size(); ++i) {
-		pos.subtract(c[i].get_args(), get_rel(c[i].get_name()));
+		const tuple &args = c[i].get_args();
+		const relation &r = get_rel(c[i].get_name());
+		relation sliced;
+		tuple bound_vars, bound_inds;
+		for (int j = 0; j < args.size(); ++j) {
+			if (args[j] >= 0 && args[j] < pos.arity()) {
+				bound_vars.push_back(args[j]);
+				bound_inds.push_back(j);
+			}
+		}
+		r.slice(bound_inds, sliced);
+		if (!c[i].negated()) {
+			pos.subtract(bound_vars, sliced);
+		} else {
+			pos.intersect(bound_vars, sliced);
+		}
 	}
 	return pos.size() < old_size;
 }
@@ -377,13 +408,14 @@ literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best)
 	map<string, relation>::const_iterator i;
 	const map<string, relation> &rels = foil.get_relations();
 	for (i = rels.begin(); i != rels.end(); ++i) {
-		children.push_back(new literal_tree(*this, i->first));
+		children.push_back(new literal_tree(*this, i->first, false));
+		children.push_back(new literal_tree(*this, i->first, true));
 	}
 	expanded = true;
 }
 
-literal_tree::literal_tree(literal_tree &par, const string &r)
-: foil(par.foil), best(par.best), lit(r, tuple(foil.get_rel(r).arity(), -1), false),
+literal_tree::literal_tree(literal_tree &par, const string &r, bool negate)
+: foil(par.foil), best(par.best), lit(r, tuple(par.foil.get_rel(r).arity(), -1), negate),
   expanded(false), position(0), vars_left(par.vars_left.begin() + 1, par.vars_left.end())
 {
 	lit.set_arg(0, 0);
