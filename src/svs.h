@@ -108,7 +108,6 @@ private:
 	
 	state_sig                prev_sig;
 	rvec                     prev_pvals;
-	boolvec                  prev_atoms;
 	multi_model              *mmdl;
 	rvec                     next_out;
 	const output_spec       *outspec;

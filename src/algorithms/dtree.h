@@ -8,6 +8,7 @@
 #include "common.h"
 
 typedef int category;
+typedef std::vector<bool> boolvec;
 
 class classifier_inst {
 public:

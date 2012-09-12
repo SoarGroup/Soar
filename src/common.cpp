@@ -207,7 +207,7 @@ bool parse_int(const string &s, int &v) {
 	return true;
 }
 
-void slice_tuple(const tuple &t1, const index_vec &inds, tuple &t2) {
+void slice_tuple(const tuple &t1, const tuple &inds, tuple &t2) {
 	int n = inds.size();
 	t2.clear();
 	t2.resize(inds.size());
@@ -247,11 +247,11 @@ bool relation::test(const tuple &t) const {
 	return in_set(t[0], i->second);
 }
 	
-void relation::slice(const index_vec &inds, relation &out) const {
+void relation::slice(const tuple &inds, relation &out) const {
 	assert(0 < inds.size() && inds.size() <= arty && inds[0] == 0);
 	out.arty = inds.size();
 	out.tuples.clear();
-	index_vec tinds;
+	tuple tinds;
 	for (int i = 1; i < inds.size(); ++i) {
 		tinds.push_back(inds[i] - 1);
 	}
@@ -268,6 +268,10 @@ void relation::slice(const index_vec &inds, relation &out) const {
 	}
 }
 
+bool relation::operator==(const relation &r) {
+	return tuples == r.tuples;
+}
+
 relation &relation::operator=(const relation &r) {
 	sz = r.sz;
 	arty = r.arty;
@@ -279,10 +283,10 @@ relation &relation::operator=(const relation &r) {
  Remove all tuples in this relation that does not match any tuple in r
  along indexes inds.
 */
-void relation::filter(const index_vec &inds, const relation &r) {
+void relation::intersect(const tuple &inds, const relation &r) {
 	assert(!inds.empty() && inds.front() == 0);
 	tuple s;
-	index_vec tinds;
+	tuple tinds;
 	for (int i = 1; i < inds.size(); ++i) {
 		tinds.push_back(inds[i] - 1);
 	}
@@ -297,8 +301,12 @@ void relation::filter(const index_vec &inds, const relation &r) {
 			tuples.erase(i++);
 		} else {
 			intersect_sets_inplace(i->second, j->second);
-			sz += i->second.size();
-			++i;
+			if (i->second.empty()) {
+				tuples.erase(i++);
+			} else {
+				sz += i->second.size();
+				++i;
+			}
 		}
 	}
 }
@@ -307,10 +315,10 @@ void relation::filter(const index_vec &inds, const relation &r) {
  Remove all tuples in this relation that matches some tuple in r along indexes
  inds.
 */
-void relation::subtract(const index_vec &inds, const relation &r) {
+void relation::subtract(const tuple &inds, const relation &r) {
 	assert(!inds.empty() && inds.front() == 0);
 	tuple s;
-	index_vec tinds;
+	tuple tinds;
 	for (int i = 1; i < inds.size(); ++i) {
 		tinds.push_back(inds[i] - 1);
 	}
@@ -329,6 +337,8 @@ void relation::subtract(const index_vec &inds, const relation &r) {
 				sz += i->second.size();
 				++i;
 			}
+		} else {
+			++i;
 		}
 	}
 }
@@ -339,17 +349,12 @@ void relation::subtract(const index_vec &inds, const relation &r) {
  completion, this relation will contain all such t1's.
 */
 void relation::expand(const relation  &r,
-                      const index_vec &match1,
-                      const index_vec &match2,
-                      const index_vec &extend)
+                      const tuple &match1,
+                      const tuple &match2,
+                      const tuple &extend)
 {
-	//static int count = 0;
-	//cout << "expand " << count++;
-
 	assert(!match1.empty() && match1.front() == 0 && !match2.empty() && match2.front() == 0);
-	index_vec m1, m2, ex;
-	tuple_map::const_iterator i;
-	tuple t1, t2;
+	tuple m1, m2, ex;
 
 	for (int i = 1; i < match1.size(); ++i) {
 		m1.push_back(match1[i] - 1);
@@ -366,6 +371,7 @@ void relation::expand(const relation  &r,
 	
 	// preprocess r to avoid redundant slicing
 	vector<sliced_relation_tuple> sliced(r.tuples.size());
+	tuple_map::const_iterator i;
 	int j = 0;
 	for (i = r.tuples.begin(); i != r.tuples.end(); ++i) {
 		slice_tuple(i->first, m2, sliced[j].match);
@@ -374,6 +380,7 @@ void relation::expand(const relation  &r,
 	}
 	
 	sz = 0;
+	tuple t1, t2;
 	for (i = old_tuples.begin(); i != old_tuples.end(); ++i) {
 		slice_tuple(i->first, m1, t1);
 		for (int j = 0; j < sliced.size(); ++j) {
@@ -391,17 +398,16 @@ void relation::expand(const relation  &r,
 	}
 	
 	arty += extend.size();
-	//cout << " size = " << sz << endl;
 }
 
 void relation::count_expansion(const relation  &r,
-                               const index_vec &match1,
-                               const index_vec &match2,
+                               const tuple &match1,
+                               const tuple &match2,
 							   int &matched,
 							   int &new_size) const
 {
 	assert(!match1.empty() && match1.front() == 0 && !match2.empty() && match2.front() == 0);
-	index_vec m1, m2;
+	tuple m1, m2;
 	tuple_map::const_iterator i;
 	tuple t1, t2;
 

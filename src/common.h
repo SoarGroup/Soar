@@ -16,7 +16,6 @@
 #include "linalg.h"
 
 typedef std::vector<int> tuple;
-typedef std::vector<int> index_vec;
 
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
 void strip(std::string &s, const std::string &whitespace);
@@ -322,18 +321,19 @@ public:
 	void del(int i);
 	void del(int i, const tuple &t);
 	bool test(const tuple &t) const;
-	void slice(const index_vec &inds, relation &out) const;
+	void slice(const tuple &inds, relation &out) const;
+	bool operator==(const relation &r);
 	relation &operator=(const relation &r);
-	void expand(const relation  &r, const index_vec &match1, const index_vec &match2, const index_vec &extend);
-	void count_expansion(const relation  &r, const index_vec &match1, const index_vec &match2, int &matched, int &new_size) const;
-	void filter(const index_vec &inds, const relation &r);
-	void subtract(const index_vec &inds, const relation &r);
+	void expand(const relation &r, const tuple &match1, const tuple &match2, const tuple &extend);
+	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
+	void intersect(const tuple &inds, const relation &r);
+	void subtract(const tuple &inds, const relation &r);
 	void at_pos(int n, std::set<int> &elems) const;
 	void drop_first(std::set<tuple> &out) const;
 	
 	int size() const { return sz; }
 	int arity() const { return arty; }
-	bool empty() const { return tuples.empty(); }
+	bool empty() const { return sz == 0; }
 	
 private:
 	typedef std::map<tuple, std::set<int> > tuple_map;
@@ -501,8 +501,6 @@ private:
 };
 
 extern logger LOG;
-
-typedef std::vector<bool> boolvec;
 
 class sig_entry {
 public:

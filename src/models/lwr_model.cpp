@@ -15,7 +15,7 @@ public:
 		init();
 	}
 	
-	void learn(const rvec &x, const rvec &y, const boolvec &atoms) {
+	void learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
 		lwr.learn(x, y);
 	}
 	
