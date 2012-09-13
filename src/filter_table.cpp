@@ -214,7 +214,16 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 				bool pos = (*e.calc)(scn, args);
 				timers.stop(ii);
 				if (pos) {
-					r->add(time, inds);
+					if (e.ordered) {
+						r->add(time, inds);
+					} else {
+						// true for all permutations
+						single_combination_generator<int> gen2(inds, inds.size(), true, e.allow_repeat);
+						tuple perm;
+						while (gen2.next(perm)) {
+							r->add(time, perm);
+						}
+					}
 				}
 				inds.clear();
 			}
