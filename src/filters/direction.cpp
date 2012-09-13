@@ -9,7 +9,7 @@
 using namespace std;
 
 /*
-Calculates whether a bounding box is located to the left (-1), aligned
+Calculates whether a bounding box is located to the left (-1), overlapping
 (0), or right (1) of another bounding box along the specified axis.
 */
 bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
@@ -57,17 +57,17 @@ bool west_of(const scene *scn, const vector<const sgnode*> &args) {
 	return direction(args[0], args[1], 0, -1);
 }
 
-bool x_aligned(const scene *scn, const vector<const sgnode*> &args) {
+bool x_overlap(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 0, 0);
 }
 
-bool y_aligned(const scene *scn, const vector<const sgnode*> &args) {
+bool y_overlap(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 1, 0);
 }
 
-bool z_aligned(const scene *scn, const vector<const sgnode*> &args) {
+bool z_overlap(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 2, 0);
 }
@@ -127,15 +127,15 @@ filter *make_west_of(Symbol *root, soar_interface *si, scene *scn, filter_input 
 	return new direction_filter(root, si, input, 0, -1);
 }
 
-filter *make_x_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_x_overlap(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 0, 0);
 }
 
-filter *make_y_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_y_overlap(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 1, 0);
 }
 
-filter *make_z_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_z_overlap(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 2, 0);
 }
 
@@ -196,39 +196,39 @@ filter_table_entry west_of_fill_entry() {
 	return e;
 }
 
-filter_table_entry x_aligned_fill_entry() {
+filter_table_entry x_overlap_fill_entry() {
 	filter_table_entry e;
-	e.name = "x-aligned";
+	e.name = "x-overlap";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.ordered = false;
 	e.allow_repeat = false;
-	e.create = &make_x_aligned;
-	e.calc = &x_aligned;
+	e.create = &make_x_overlap;
+	e.calc = &x_overlap;
 	return e;
 }
 
-filter_table_entry y_aligned_fill_entry() {
+filter_table_entry y_overlap_fill_entry() {
 	filter_table_entry e;
-	e.name = "y-aligned";
+	e.name = "y-overlap";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.ordered = false;
 	e.allow_repeat = false;
-	e.create = &make_y_aligned;
-	e.calc = &y_aligned;
+	e.create = &make_y_overlap;
+	e.calc = &y_overlap;
 	return e;
 }
 
-filter_table_entry z_aligned_fill_entry() {
+filter_table_entry z_overlap_fill_entry() {
 	filter_table_entry e;
-	e.name = "z-aligned";
+	e.name = "z-overlap";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.ordered = false;
 	e.allow_repeat = false;
-	e.create = &make_z_aligned;
-	e.calc = &z_aligned;
+	e.create = &make_z_overlap;
+	e.calc = &z_overlap;
 	return e;
 }
 
