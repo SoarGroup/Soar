@@ -500,10 +500,6 @@ literal_tree::literal_tree(literal_tree &par, const string &r, bool negate)
   nbound(1)
 {
 	lit.set_arg(0, 0);
-	foil.gain(lit, gain, max_gain);
-	if (*best == NULL || gain > (**best).gain) {
-		*best = this;
-	}
 }
 
 literal_tree::literal_tree(literal_tree &par, int pos, int var)
