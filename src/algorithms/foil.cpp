@@ -3,139 +3,188 @@
 
 using namespace std;
 
-class obj_assign_csp {
+class csp_node {
 public:
-	bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, vector<int> &out) {
-		search_state init;
-		
+	csp_node() {}
+
+	csp_node(const csp_node &par)
+	: vars(par.vars), constraints(par.constraints), unassigned(par.unassigned)
+	{}
+
+	bool init(const clause &c, const relation_table &rels, const set<int> &objs) {
+		set<int> all_vars;
 		for (int i = 0; i < c.size(); ++i) {
 			const tuple &largs = c[i].get_args();
 			for (int j = 0; j < largs.size(); ++j) {
-				if (largs[j] != 0) {
-					init.unassigned.insert(largs[j] - 1);
+				if (largs[j] > 0) {
+					all_vars.insert(largs[j] - 1);
 				}
 			}
 		}
-		init.domains.resize(init.unassigned.size());
-		var_pos.resize(init.unassigned.size());
-		init.constraints.resize(c.size());
-		
-		vector<bool> initted(init.unassigned.size(), false);
+		unassigned = all_vars.size();
+		vars.resize(unassigned);
+		for (int i = 0; i < vars.size(); ++i) {
+			vars[i].domain = objs;
+		}
+
+		constraints.resize(c.size());
 		for (int i = 0; i < c.size(); ++i) {
+			constraint_info &cons = constraints[i];
 			const relation *r = map_get(rels, c[i].get_name());
 			if (!r) {
-				return false;
+				assert(false);
 			}
-			r->drop_first(init.constraints[i]);
+			r->drop_first(cons.rel);
+			const tuple &args = c[i].get_args();
 	
-			const tuple &vars = c[i].get_args();
-			for (int j = 1; j < vars.size(); ++j) {
-				int v = vars[j] - 1;
-				/*
-				 Initial domain of each variable is the
-				 intersection of all values at the
-				 corresponding positions of each predicate it
-				 appears in.
-				*/
-				set<int> &domain = init.domains[v], &cdomain = init.cdoms[make_pair(i, j - 1)];
-				r->at_pos(j, cdomain);
-				if (!initted[v]) {
-					domain = objs;
-					initted[v] = true;
+			cons.negated = c[i].negated();
+			cons.doms.resize(args.size() - 1);
+			cons.vars.resize(args.size() - 1);
+			cons.unbound = 0;
+			for (int j = 0; j < args.size() - 1; ++j) {
+				if (args[j+1] >= 0) {
+					cons.vars[j] = args[j+1] - 1;
+					r->at_pos(j+1, cons.doms[j]);
+					++cons.unbound;
+					if (!update_vardom(i, j)) {
+						return false;
+					}
+				} else {
+					cons.vars[j] = -1;
 				}
-				intersect_sets_inplace(domain, cdomain);
-				var_pos[v].insert(make_pair(i, j - 1));
 			}
-		}
-		if (!search(init)) {
-			return false;
-		}
-		out.clear();
-		for (int i = 0; i < solution.size(); ++i) {
-			assert(solution.find(i) != solution.end());
-			out.push_back(solution[i]);
 		}
 		return true;
 	}
-	
-private:
-	struct search_state {
-		vector<set<int>   >            domains;
-		vector<set<tuple> >            constraints;
-		map<pair<int, int>, set<int> > cdoms;
-		map<int, int>                  assignments;
-		set<int>                       unassigned;
-	};
-	
+
+	bool search(map<int, int> &out) {
+		if (unassigned == 0) {
+			out.clear();
+			for (int i = 0; i < vars.size(); ++i) {
+				out[i + 1] = vars[i].value;
+			}
+			return true;
+		}
+		
+		// find MRV
+		int mrv = -1;
+		for (int i = 0; i < vars.size(); ++i) {
+			if (vars[i].value >= 0) {
+				continue;
+			}
+			if (mrv < 0 || vars[i].domain.size() < vars[mrv].domain.size()) {
+				mrv = i;
+			}
+		}
+		
+		set<int>::iterator i;
+		for (i = vars[mrv].domain.begin(); i != vars[mrv].domain.end(); ++i) {
+			csp_node child(*this);
+			if (child.assign(mrv, *i) && child.search(out)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/*
 	 For each constraint c and position i that var is in, remove
 	 all tuples in c whose ith argument is not val.
 	*/
-	bool assign(int var, int val, search_state &s) {
-		s.assignments[var] = val;
-		s.unassigned.erase(var);
-		if (s.unassigned.empty()) {
+	bool assign(int v, int value) {
+		vars[v].value = value;
+		if (--unassigned == 0) {
 			return true;
 		}
 		
-		set<pair<int, int> >::const_iterator i;
-		for (i = var_pos[var].begin(); i != var_pos[var].end(); ++i) {
-			set<int> &cdom = s.cdoms[*i];
-			cdom.clear();
-			
-			set<tuple>::iterator j = s.constraints[i->first].begin();
-			while (j != s.constraints[i->first].end()) {
-				if ((*j)[i->second] != val) {
-					s.constraints[i->first].erase(j++);
-				} else {
-					cdom.insert((*j)[i->second]);
-					++j;
+		vector<bool> need_update(constraints.size(), false);
+		for (int i = 0; i < constraints.size(); ++i) {
+			constraint_info &cons = constraints[i];
+			for (int j = 0; j < cons.vars.size(); ++j) {
+				if (cons.vars[j] == v) {
+					set<tuple>::iterator k = cons.rel.begin();
+					while (k != cons.rel.end()) {
+						if ((*k)[j] != value) {
+							cons.rel.erase(k++);
+						} else {
+							++k;
+						}
+					}
+					--cons.unbound;
+					need_update[i] = true;
 				}
 			}
 		}
-		
+
 		/*
-		 Update each variable's domain to be consistent with
-		 all constraints.
+		 Update the domains of each constraint position. Then update the domain
+		 of the variable at that position.
 		*/
-		for (int i = 0; i < var_pos.size(); ++i) {
-			set<pair<int, int> >::const_iterator j;
-			for (j = var_pos[i].begin(); j != var_pos[i].end(); ++j) {
-				intersect_sets_inplace(s.domains[i], s.cdoms[*j]);
-				if (s.domains[i].empty()) {
+		for (int i = 0; i < constraints.size(); ++i) {
+			if (!need_update[i]) {
+				continue;
+			}
+			update_cdoms(i);
+			constraint_info &cons = constraints[i];
+			for (int j = 0; j < cons.vars.size(); ++j) {
+				if (!update_vardom(i, j)) {
 					return false;
 				}
 			}
 		}
 		return true;
 	}
+private:
+	struct constraint_info {
+		bool negated;
+		int unbound;
+		set<tuple> rel;
+		vector<set<int> > doms;
+		vector<int> vars;
+	};
+
+	struct var_info {
+		set<int> domain;
+		int value;
+
+		var_info() : value(-1) {}
+	};
+
+	vector<var_info>        vars;
+	vector<constraint_info> constraints;
+	int unassigned;
 	
-	bool search(search_state &s) {
-		if (s.unassigned.empty()) {
-			solution = s.assignments;
+
+	void update_cdoms(int c) {
+		constraint_info &cons = constraints[c];
+		
+		for (int i = 0; i < cons.doms.size(); ++i) {
+			cons.doms[i].clear();
+		}
+		set<tuple>::const_iterator i;
+		for (i = cons.rel.begin(); i != cons.rel.end(); ++i) {
+			for (int j = 0; j < i->size(); ++j) {
+				cons.doms[j].insert((*i)[j]);
+			}
+		}
+	}
+
+	bool update_vardom(int i, int j) {
+		constraint_info &cons = constraints[i];
+		if(cons.vars[j] < 0) {
 			return true;
 		}
-		
-		// find MRV
-		int mrv = -1;
-		set<int>::const_iterator i;
-		for (i = s.unassigned.begin(); i != s.unassigned.end(); ++i) {
-			if (mrv < 0 || s.domains[*i].size() < s.domains[mrv].size()) {
-				mrv = *i;
-			}
+		var_info &var = vars[cons.vars[j]];
+		if (var.value >= 0) {
+			return true;
 		}
-		
-		for (i = s.domains[mrv].begin(); i != s.domains[mrv].end(); ++i) {
-			search_state child = s;
-			if (assign(mrv, *i, child) && search(child)) {
-				return true;
-			}
+		if (!cons.negated) {
+			intersect_sets_inplace(var.domain, cons.doms[j]);
+		} else if (cons.unbound == 1) {
+			subtract_sets_inplace(var.domain, cons.doms[j]);
 		}
-		return false;
+		return !var.domain.empty();
 	}
-	
-	vector<set<pair<int, int> > > var_pos;
-	map<int, int> solution;
 };
 
 /*
@@ -165,12 +214,21 @@ private:
 	const FOIL &foil;
 };
 
-bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, vector<int> &assignments) {
-	obj_assign_csp csp;
-	return csp.test_clause(c, rels, objs, assignments);
+bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, map<int, int> &assignments) {
+	csp_node csp;
+	if (!csp.init(c, rels, objs)) {
+		return false;
+	}
+	map<int, int>::iterator i;
+	for (i = assignments.begin(); i != assignments.end(); ++i) {
+		if (!csp.assign(i->first - 1, i->second)) {
+			return false;
+		}
+	}
+	return csp.search(assignments);
 }
 
-bool test_clause_vec(const clause_vec &c, const relation_table &rels, const set<int> &objs, vector<int> &assignments) {
+bool test_clause_vec(const clause_vec &c, const relation_table &rels, const set<int> &objs, map<int,int> &assignments) {
 	for (int i = 0; i < c.size(); ++i) {
 		if (test_clause(c[i], rels, objs, assignments)) {
 			cout << "found assignment" << endl;
@@ -206,6 +264,31 @@ bool sequential(const vector<int> &v) {
 		}
 	}
 	return true;
+}
+
+int literal::operator<<(const std::string &s) {
+	int a, b, c;
+	if (s[0] == '~') {
+		negate = true;
+		a = 1;
+	} else {
+		negate = false;
+		a = 0;
+	}
+	b = s.find('(', a);
+	assert(b != string::npos);
+	c = s.find(')', b);
+	assert(c != string::npos);
+	name = s.substr(a, b - a);
+	vector<string> num_strs;
+	split(s.substr(b + 1, c - b - 1), ",", num_strs);
+	args.resize(num_strs.size());
+	for (int i = 0; i < num_strs.size(); ++i) {
+		if (!parse_int(num_strs[i], args[i])) {
+			assert(false);
+		}
+	}
+	return c + 1;
 }
 
 FOIL::FOIL(const relation &p, const relation &n, const map<string, relation> &rels) 

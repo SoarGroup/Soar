@@ -121,7 +121,7 @@ void intersect_sets_inplace(std::set<T> &s1, const std::set<T> &s2) {
 }
 
 template<typename T>
-void subtract_set_inplace(std::set<T> &s1, const std::set<T> &s2) {
+void subtract_sets_inplace(std::set<T> &s1, const std::set<T> &s2) {
 	typename std::set<T>::const_iterator i = s1.begin(), j = s2.begin();
 	while (i != s1.end() && j != s2.end()) {
 		if (*i == *j) {

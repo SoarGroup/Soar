@@ -331,7 +331,7 @@ void relation::subtract(const tuple &inds, const relation &r) {
 		j = r.tuples.find(s);
 		if (j != r.tuples.end()) {
 			sz -= i->second.size();
-			subtract_set_inplace(i->second, j->second);
+			subtract_sets_inplace(i->second, j->second);
 			if (i->second.empty()) {
 				tuples.erase(i++);
 			} else {

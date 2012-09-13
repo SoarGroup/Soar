@@ -28,6 +28,8 @@ public:
 	bool negated() const { return negate; }
 	
 	void set_arg(int i, int v) { args[i] = v; }
+
+	int operator<<(const std::string &s);
 	
 private:
 	std::string name;
@@ -68,11 +70,11 @@ private:
 bool test_clause(const clause &c,
                  const relation_table &rels,
                  const std::set<int> &objs,
-                 std::vector<int> &assignments);
+                 std::map<int,int> &assignments);
 
 bool test_clause_vec(const clause_vec &c,
                      const relation_table &rels,
                      const std::set<int> &objs,
-                     std::vector<int> &assignments);
+                     std::map<int,int> &assignments);
 
 #endif

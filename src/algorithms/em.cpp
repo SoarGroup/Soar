@@ -795,13 +795,12 @@ bool EM::map_objs(int mode, int target, const state_sig &sig, const relation_tab
 			} else if (candidates.size() == 1 || minfo.obj_clauses[i].empty()) {
 				mapping[i] = *candidates.begin();
 			} else {
-				// need to preassign target to first position
-				assert(false);
-				vector<int> assign;
+				map<int, int> assign;
+				assign[1] = target;
 				if (!test_clause_vec(minfo.obj_clauses[i], rels, candidates, assign)) {
 					return false;
 				}
-				assert(assign.size() >= 3);
+				assert(assign.find(2) != assign.end());
 				mapping[i] = assign[2];
 			}
 		}
@@ -817,13 +816,11 @@ bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels
 	}
 	
 	int target = -1;
-	set<int> nontarget;
+	set<int> all_objs;
 	for (int i = 0; i < sig.size(); ++i) {
+		all_objs.insert(i);
 		if (sig[i].target == 0) {
 			target = i;
-		} else {
-			assert(sig[i].target == -1);
-			nontarget.insert(i);
 		}
 	}
 	assert(target != -1);
@@ -839,8 +836,9 @@ bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels
 			continue;
 		}
 		
-		vector<int> dummy;
-		if (test_clause_vec(minfo.ident_clauses, rels, nontarget, dummy)) {
+		map<int, int> assign;
+		assign[minfo.target] = target;
+		if (test_clause_vec(minfo.ident_clauses, rels, all_objs, assign)) {
 			rvec xc;
 			if (!minfo.model->is_const()) {
 				xc.resize(x.size());
