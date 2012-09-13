@@ -166,27 +166,22 @@ void clear_CDPS (agent* thisAgent, slot *s) {
 
 	list *cond_current, *cond_old;
 	preference *pref;
-	//goal_stack_level level;
-	//level = inst->match_goal_level;
 
 	if (s->CDPS) {
-			cond_old = cond_current = s->CDPS;
-      s->CDPS = NIL;
-			for (; cond_current != NIL; cond_current = cond_current->rest) {
-				pref = static_cast<preference *>(cond_current->first);
-				/*   TODO: does the level check stuff make sense here?  This function was copied from
-				 *         deallocate_instantiation() in recmem.cpp. where a current instantiation makes
-				 *         sense. Commented out for now.
-				 */
-				//#ifdef DO_TOP_LEVEL_REF_CTS
-				//			if (level > TOP_GOAL_LEVEL)
-				//#endif
-				{
-					preference_remove_ref(thisAgent, pref);
-				}
-			}
-			free_list(thisAgent, cond_old);
-		}
+
+	  /* The CDPS should never exist on a top-level slot, so we should
+	   * not need to worry about checking for DO_TOP_LEVEL_REF_CTS. Sanity
+	   * check just to make sure, for now. */
+	  assert(s->id->id.level > TOP_GOAL_LEVEL);
+
+	  cond_old = cond_current = s->CDPS;
+	  s->CDPS = NIL;
+	  for (; cond_current != NIL; cond_current = cond_current->rest) {
+	    pref = static_cast<preference *>(cond_current->first);
+	      preference_remove_ref(thisAgent, pref);
+	  }
+	  free_list(thisAgent, cond_old);
+	}
 }
 /* MMA 8-2012 end */
 

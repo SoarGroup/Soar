@@ -52,7 +52,7 @@ typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 /* ------------------------------------------------------------------------
 			     Goal Dependency Set
 
-   The Goal Dependency Set is a data strcuture used in Operand2 to maintain
+   The Goal Dependency Set is a data structure used in Operand2 to maintain
    the integrity of a subgoal with respect to changes in supergoal WMEs.
    Whenever a WME in the goal's dependency set changes, the goal is immediately
    removed.  The routines for maintaining the GDS and determining if a goal
@@ -65,7 +65,7 @@ typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 
       wmes_in_gds:  A DLL of WMEs in the goal dependency set
 
-   The GDS is created only when necessary; that is, when an o-suppported WME
+   The GDS is created only when necessary; that is, when an o-supported WME
    is created in some subgoal and that subgoal has no GDS already.  The
    instantiations that led to the creation of the o-supported WME are 
    examined; any supergoal WMEs in these instantiations are added to the 

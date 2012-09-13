@@ -493,7 +493,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *relia
        mvp done */
 
       /* MMA 8-2012: Check for any CDPS prefs and backtrace through them */
-      print(thisAgent, "Checking CDPS for locals.\n");
+      print(thisAgent, "Checking CDPS in trace_locals.\n");
       if (cond->bt.CDPS) {
         print(thisAgent, "Found CDPS.\n");
         for (CDPS=cond->bt.CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
@@ -701,11 +701,12 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
      mvp done */
 
     /* MMA 8-2012: now backtrace through CDPS of potentials */
+    print(thisAgent, "Checking CDPS in trace_ungrounded_potentials.\n");
     if (potential->bt.CDPS) {
       for (CDPS=potential->bt.CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
         p = static_cast<preference_struct *>(CDPS->first);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-          print_string (thisAgent, "     For CDPS preference: ");
+          print_string (thisAgent, "     Backtracing through CDPS preference: ");
           xml_begin_tag(thisAgent, kTagCDPSPreference);
           print_preference (thisAgent, p);
         }

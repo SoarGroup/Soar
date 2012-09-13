@@ -146,52 +146,51 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
       cond = cond->next) {
     cond->bt.CDPS = NIL;
     if (cond->type == POSITIVE_CONDITION && cond->bt.trace) {
-      if (cond->bt.trace->slot) {
-        // Joseph suggests doing an assert here to see if it's always a context slot
-        print(thisAgent, "\nBuilding CDPS for condition...");
-        if (cond->bt.trace->slot->CDPS) {
-          print_condition(thisAgent, cond);
-          for (CDPS=cond->bt.trace->slot->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
-            new_pref = NIL;
-            pref = static_cast<preference *>(CDPS->first);
-            if (pref->inst->match_goal_level == inst->match_goal_level
-                && pref->in_tm) {
-              print(thisAgent,
-                  "\nCDPS DEBUG:  - Adding CDP for production ");
-              if (inst->prod)
-                print_with_symbols(thisAgent, "%y\n", inst->prod->name);
-              else
-                print_string(thisAgent, "[dummy production]\n");
-              print(thisAgent, "CDPS DEBUG:  - Pref adding to CDPS: ");
-              print_preference(thisAgent, pref);
-              push(thisAgent, pref, cond->bt.CDPS);
-              preference_add_ref(pref);
-            } else {
-              new_pref = find_clone_for_level(pref, inst->match_goal_level);
-              if (new_pref) {
-                if (new_pref->in_tm) {
-                  print(thisAgent,
-                      "\nCDPS DEBUG:  - Adding CDP (clone) for production ");
-                  if (inst->prod)
-                    print_with_symbols(thisAgent, "%y\n", inst->prod->name);
-                  else
-                    print_string(thisAgent, "[dummy production] (clone)\n");
-                  print(thisAgent,
-                      "CDPS DEBUG:  - Pref (clone) adding to CDPS: ");
-                  print_preference(thisAgent, pref);
-                  push(thisAgent, new_pref, cond->bt.CDPS);
-                  preference_add_ref(new_pref);
-                }
+      if (cond->bt.trace->slot->CDPS) {
+        assert(cond->bt.trace->slot->isa_context_slot);
+        print(thisAgent, "\nCopying CDPS for condition...");
+        print_condition(thisAgent, cond);
+        for (CDPS=cond->bt.trace->slot->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
+          new_pref = NIL;
+          pref = static_cast<preference *>(CDPS->first);
+          if (pref->inst->match_goal_level == inst->match_goal_level
+              && pref->in_tm) {
+            print(thisAgent,
+                "\nCDPS DEBUG:  - Adding CDP for production ");
+            if (inst->prod)
+              print_with_symbols(thisAgent, "%y\n", inst->prod->name);
+            else
+              print_string(thisAgent, "[dummy production]\n");
+            print(thisAgent, "CDPS DEBUG:  - Pref adding to CDPS: ");
+            print_preference(thisAgent, pref);
+            push(thisAgent, pref, cond->bt.CDPS);
+            preference_add_ref(pref);
+          } else {
+            new_pref = find_clone_for_level(pref, inst->match_goal_level);
+            if (new_pref) {
+              if (new_pref->in_tm) {
+                print(thisAgent,
+                    "\nCDPS DEBUG:  - Adding CDP (clone) for production ");
+                if (inst->prod)
+                  print_with_symbols(thisAgent, "%y\n", inst->prod->name);
+                else
+                  print_string(thisAgent, "[dummy production] (clone)\n");
+                print(thisAgent,
+                    "CDPS DEBUG:  - Pref (clone) adding to CDPS: ");
+                print_preference(thisAgent, pref);
+                push(thisAgent, new_pref, cond->bt.CDPS);
+                preference_add_ref(new_pref);
               }
             }
           }
-        } else {
-          print(thisAgent, "no CDPS found.");
         }
+      } else {
+        print(thisAgent, "\nCDPS DEBUG:  build_cdps called for condition with non-context slot.  No CDPS found.");
       }
     }
   }
 }
+
 
 /* -----------------------------------------------------------------------
  Find Clone For Level
@@ -993,22 +992,22 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 				cond->next) {
 			if (cond->type == POSITIVE_CONDITION) {
 
-				/* mvp 6-22-94, modified 94.01.17 by AGR with lotsa help from GAP */
-				if (cond->bt.prohibits) {
-					c_old = c = cond->bt.prohibits;
-					cond->bt.prohibits = NIL;
-					for (; c != NIL; c = c->rest) {
-						pref = static_cast<preference *>(c->first);
-#ifdef DO_TOP_LEVEL_REF_CTS
-						if (level > TOP_GOAL_LEVEL)
-#endif
-						{
-							preference_remove_ref(thisAgent, pref);
-						}
-					}
-					free_list(thisAgent, c_old);
-				}
-				/* mvp done */
+//				/* mvp 6-22-94, modified 94.01.17 by AGR with lotsa help from GAP */
+//				if (cond->bt.prohibits) {
+//					c_old = c = cond->bt.prohibits;
+//					cond->bt.prohibits = NIL;
+//					for (; c != NIL; c = c->rest) {
+//						pref = static_cast<preference *>(c->first);
+//#ifdef DO_TOP_LEVEL_REF_CTS
+//						if (level > TOP_GOAL_LEVEL)
+//#endif
+//						{
+//							preference_remove_ref(thisAgent, pref);
+//						}
+//					}
+//					free_list(thisAgent, c_old);
+//				}
+//				/* mvp done */
 
         /* MMA 9-2012 - Clear out the CDPS */
         print(thisAgent, "CDPS DEBUG:  - Clearing out CDPS in deallocate instantiation\n");
