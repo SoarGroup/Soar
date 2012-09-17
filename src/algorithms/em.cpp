@@ -838,7 +838,7 @@ bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels
 		
 		map<int, int> assign;
 		assign[minfo.target] = target;
-		if (test_clause_vec(minfo.ident_clauses, rels, all_objs, assign)) {
+		if (test_clause_vec(minfo.mode_clauses, rels, all_objs, assign)) {
 			rvec xc;
 			if (!minfo.model->is_const()) {
 				xc.resize(x.size());
@@ -924,16 +924,6 @@ bool EM::run(int maxiters) {
 	}
 	LOG(EMDBG) << "Reached max iterations without quiescence" << endl;
 	return changed;
-}
-
-void EM::save(ostream &os) const {
-	save_vector_recp(data, os);
-	save_vector_recp(modes, os);
-}
-
-void EM::load(istream &is) {
-	load_vector_recp(data, is);
-	load_vector_recp(modes, is);
 }
 
 int EM::best_mode(const state_sig &sig, const rvec &x, double y, double &besterror) const {
@@ -1040,40 +1030,6 @@ void EM::get_map_modes(std::vector<int> &modes) const {
 	}
 }
 
-void EM::em_data::save(ostream &os) const {
-	os << x << " ; " << y << " ; " << time << " " << sig_index;
-	save_vector(mode_prob, os);
-	os << map_mode << endl;
-	save_vector(obj_map, os);
-	os << model_row << endl;
-}
-
-void EM::em_data::load(istream &is) {
-	vector<double> buf;
-	read_til_semi(is, buf);
-	x.resize(buf.size());
-	for (int i = 0; i < buf.size(); ++i) {
-		x(i) = buf[i];
-	}
-	buf.clear();
-	read_til_semi(is, buf);
-	y.resize(buf.size());
-	for (int i = 0; i < buf.size(); ++i) {
-		y(i) = buf[i];
-	}
-	
-	string t, s;
-	is >> t >> s;
-	if (!parse_int(t, time) || !parse_int(s, sig_index)) {
-		assert(false);
-	}
-	
-	load_vector(mode_prob, is);
-	is >> map_mode;
-	load_vector(obj_map, is);
-	is >> model_row;
-}
-
 /*
  pos_obj and neg_obj can probably be cached and updated as data points
  are assigned to modes.
@@ -1116,10 +1072,10 @@ void EM::update_clauses(int m) {
 	}
 		
 	if (minfo.pos.empty()) {
-		minfo.ident_clauses.clear();
+		minfo.mode_clauses.clear();
 	} else {
 		FOIL foil(minfo.pos, minfo.neg, rel_tbl);
-		if (!foil.learn(minfo.ident_clauses)) {
+		if (!foil.learn(minfo.mode_clauses)) {
 			// add numeric classifier
 		}
 	}
@@ -1164,13 +1120,33 @@ void EM::print_foil6_data(ostream &os, int mode) const {
 	os << "." << endl << endl;
 }
 
+void EM::serialize(ostream &os) const {
+	::serialize(ndata, os);
+	::serialize(nmodes, os);
+	::serialize(data, os);
+	::serialize(sigs, os);
+	::serialize(modes, os);
+	::serialize(noise, os);
+}
+
+void EM::unserialize(istream &is) {
+	::unserialize(ndata, is);
+	::unserialize(nmodes, is);
+	::unserialize(data, is);
+	::unserialize(sigs, is);
+	::unserialize(modes, is);
+	::unserialize(noise, is);
+	
+	assert(data.size() == ndata && modes.size() == nmodes);
+}
+
 bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &os) {
 	if (first >= args.size()) {
 		// some kind of default action
 	} else if (args[first] == "clauses") {
 		os << "classifier" << endl;
 		clause_vec::const_iterator i;
-		for (i = ident_clauses.begin(); i != ident_clauses.end(); ++i) {
+		for (i = mode_clauses.begin(); i != mode_clauses.end(); ++i) {
 			os << *i << endl;
 		}
 		os << endl << "object clauses" << endl;
@@ -1206,3 +1182,59 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 	return false;
 }
 
+void EM::em_data::serialize(ostream &os) const {
+	::serialize(target, os);
+	::serialize(time, os);
+	::serialize(sig_index, os);
+	::serialize(map_mode, os);
+	::serialize(model_row, os);
+	::serialize(x, os);
+	::serialize(y, os);
+	::serialize(mode_prob, os);
+	::serialize(obj_map, os);
+}
+
+void EM::em_data::unserialize(istream &is) {
+	::unserialize(target, is);
+	::unserialize(time, is);
+	::unserialize(sig_index, is);
+	::unserialize(map_mode, is);
+	::unserialize(model_row, is);
+	::unserialize(x, is);
+	::unserialize(y, is);
+	::unserialize(mode_prob, is);
+	::unserialize(obj_map, is);
+}
+
+void EM::mode_info::serialize(ostream &os) const {
+	::serialize(stale, os);
+	::serialize(target, os);
+	::serialize(stale_points, os);
+	::serialize(members, os);
+	::serialize(sig, os);
+	::serialize(mode_clauses, os);
+	::serialize(obj_clauses, os);
+
+	assert(model);
+	model->serialize(os);
+	pos.serialize(os);
+	neg.serialize(os);
+}
+
+void EM::mode_info::unserialize(istream &is) {
+	::unserialize(stale, is);
+	::unserialize(target, is);
+	::unserialize(stale_points, is);
+	::unserialize(members, is);
+	::unserialize(sig, is);
+	::unserialize(mode_clauses, is);
+	::unserialize(obj_clauses, is);
+	
+	if (model) {
+		delete model;
+	}
+	model = new LinearModel;
+	model->unserialize(is);
+	pos.unserialize(is);
+	neg.unserialize(is);
+}

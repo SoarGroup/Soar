@@ -3,8 +3,9 @@
 
 #include <vector>
 #include "common.h"
+#include "serialize.h"
 
-class literal {
+class literal : public serializable {
 public:
 	literal() : negate(false) {}
 	
@@ -30,6 +31,8 @@ public:
 	void set_arg(int i, int v) { args[i] = v; }
 
 	int operator<<(const std::string &s);
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
 	
 private:
 	std::string name;
@@ -39,10 +42,11 @@ private:
 	friend std::ostream &operator<<(std::ostream &os, const literal &l);
 };
 
+std::ostream &operator<<(std::ostream &os, const literal &l);
+
 typedef std::vector<literal> clause;
 typedef std::vector<clause> clause_vec;
 
-std::ostream &operator<<(std::ostream &os, const literal &l);
 std::ostream &operator<<(std::ostream &os, const clause &c);
 
 class FOIL {

@@ -7,10 +7,11 @@
 #include "common.h"
 #include "timer.h"
 #include "foil.h"
+#include "serialize.h"
 
 class scene;
 
-class EM {
+class EM : public serializable {
 public:
 	EM(const relation_table &rel_tbl);
 	~EM();
@@ -18,19 +19,15 @@ public:
 	void learn(const state_sig &sig, const rvec &x, const rvec &y, int time);
 	bool run(int maxiters);
 	bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, int &mode, rvec &y);
-	
-	void save(std::ostream &os) const;
-	void load(std::istream &is);
-	
 	// Return the mode with the model that best fits (x, y)
 	int best_mode(const state_sig &sig, const rvec &x, double y, double &besterror) const;
-	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
-	
 	void get_map_modes(std::vector<int> &modes) const;
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
 	
 private:
-	class em_data {
+	class em_data : public serializable {
 	public:
 		rvec x, y;
 		int target;
@@ -44,25 +41,20 @@ private:
 		std::vector<int> obj_map;      // object variable in model -> object index in instance
 		int model_row;                 // the row in the model's training matrix where this point appears
 	
-		void save(std::ostream &os) const;
-		void load(std::istream &is);
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
 	};
 	
-	class mode_info {
+	class mode_info : public serializable {
 	public:
-		mode_info() : pos(2), neg(2), clauses_dirty(true), target_tuple(1) {}
+		mode_info() : pos(2), neg(2), clauses_dirty(true), target_tuple(1), model(NULL) {}
 		
 		~mode_info() {
 			delete model;
 		}
 		
-		void save(std::ostream &os) {
-			assert(false);
-		}
-		
-		void load(std::istream &is) {
-			assert(false);
-		}
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
 		
 		void add_pos(int t, int targ) {
 			target_tuple[0] = targ;
@@ -86,16 +78,18 @@ private:
 		
 		bool cli_inspect(int first, const std::vector<std::string> &args, std::ostream &os);
 
-		LinearModel *model;
 		bool stale;
+		int target; // index in sig for the target object
+		
 		std::set<int> stale_points;
 		std::set<int> members;
 		state_sig sig;
-		int target; // index in sig for the target object
+		
+		LinearModel *model;
 		
 		// classifier stuff
 		relation pos, neg;
-		clause_vec ident_clauses;
+		clause_vec mode_clauses;
 		
 		/*
 		 Each object the model is conditioned on needs to be

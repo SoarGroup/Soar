@@ -28,13 +28,6 @@ model::model(const std::string &name, const std::string &type)
 : name(name), type(type)
 {}
 
-void model::init() {
-	ifstream is(path.c_str());
-	if (is.is_open()) {
-		load(is);
-	}
-}
-
 bool model::test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
 	return predict(sig, x, rels, prediction);
 }
@@ -52,7 +45,7 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 				os << "cannot open file " << path << " for writing" << endl;
 				return false;
 			}
-			save(f);
+			serialize(f);
 			f.close();
 			os << "saved to " << path << endl;
 			return true;
@@ -67,7 +60,7 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 				os << "cannot open file " << path << " for reading" << endl;
 				return false;
 			}
-			load(f);
+			unserialize(f);
 			f.close();
 			os << "loaded from " << path << endl;
 			return true;

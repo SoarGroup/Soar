@@ -9,7 +9,7 @@ using namespace std;
 
 class splinter_model : public model {
 public:
-	splinter_model(const string &name) : model(name, "splinter") { init(); }
+	splinter_model(const string &name) : model(name, "splinter") {}
 	
 	bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, rvec &y) {
 		if (x.size() != 10 || y.size() != 8) {

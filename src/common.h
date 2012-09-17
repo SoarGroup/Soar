@@ -14,6 +14,7 @@
 #include <ostream>
 #include <fstream>
 #include "linalg.h"
+#include "serialize.h"
 
 typedef std::vector<int> tuple;
 
@@ -308,7 +309,7 @@ std::ostream& operator<<(std::ostream &os, const bbox &b);
  A relation is essentially a list of all argument values for which some
  predicate evaluates to true.
 */
-class relation {
+class relation : public serializable {
 public:
 	relation();
 	relation(int n);
@@ -322,7 +323,7 @@ public:
 	void del(int i, const tuple &t);
 	bool test(const tuple &t) const;
 	void slice(const tuple &inds, relation &out) const;
-	bool operator==(const relation &r);
+	bool operator==(const relation &r) const;
 	relation &operator=(const relation &r);
 	void expand(const relation &r, const tuple &match1, const tuple &match2, const tuple &extend);
 	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
@@ -334,6 +335,9 @@ public:
 	int size() const { return sz; }
 	int arity() const { return arty; }
 	bool empty() const { return sz == 0; }
+	
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
 	
 private:
 	typedef std::map<tuple, std::set<int> > tuple_map;
@@ -353,75 +357,6 @@ private:
 typedef std::map<std::string, relation> relation_table;
 std::ostream &operator<<(std::ostream &os, const relation &r);
 std::ostream &operator<<(std::ostream &os, const relation_table &t);
-
-template <typename T>
-void save_vector(const std::vector<T> &v, std::ostream &os) {
-	os << v.size() << std::endl;
-	std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
-	os << std::endl;
-}
-
-template <typename T>
-void save_vector_rec(const std::vector<T> &v, std::ostream &os) {
-	os << v.size() << std::endl;
-	for (int i = 0; i < v.size(); ++i) {
-		v[i].save(os);
-	}
-	os << std::endl;
-}
-
-template <typename T>
-void save_vector_recp(const std::vector<T*> &v, std::ostream &os) {
-	os << v.size() << std::endl;
-	for (int i = 0; i < v.size(); ++i) {
-		v[i]->save(os);
-	}
-	os << std::endl;
-}
-
-template <typename T>
-void load_vector(std::vector<T> &v, std::istream &is) {
-	int n = 0;
-	T x;
-	if (!(is >> n)) {
-		assert(false);
-	}
-	v.clear();
-	v.reserve(n);
-	for (int i = 0; i < n; ++i) {
-		if (!(is >> x)) {
-			assert(false);
-		}
-		v.push_back(x);
-	}
-}
-
-template <typename T>
-void load_vector_rec(std::vector<T> &v, std::istream &is) {
-	int n = 0;
-	if (!(is >> n)) {
-		assert(false);
-	}
-	v.clear();
-	v.resize(n);
-	for (int i = 0; i < n; ++i) {
-		v[n].load(is);
-	}
-}
-
-template <typename T>
-void load_vector_recp(std::vector<T*> &v, std::istream &is) {
-	int n = 0;
-	if (!(is >> n)) {
-		assert(false);
-	}
-	v.clear();
-	v.resize(n);
-	for (int i = 0; i < n; ++i) {
-		v[n] = new T();
-		v[n]->load(is);
-	}
-}
 
 inline double gausspdf(double x, double mean, double std) {
 	const double SQRT2PI = 2.5066282746310002;
@@ -503,7 +438,7 @@ private:
 
 extern logger LOG;
 
-class sig_entry {
+class sig_entry : public serializable {
 public:
 	std::string name;
 	int type;
@@ -516,6 +451,9 @@ public:
 	bool operator==(const sig_entry &e) const {
 		return name == e.name && type == e.type && length == e.length && start == e.start && target == e.target;
 	}
+	
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
 };
 
 typedef std::vector<sig_entry> state_sig;

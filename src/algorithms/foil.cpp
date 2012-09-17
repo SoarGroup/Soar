@@ -243,6 +243,18 @@ bool test_clause_vec(const clause_vec &c, const relation_table &rels, const set<
 	return false;
 }
 
+void literal::serialize(std::ostream &os) const {
+	::serialize(name, os);
+	::serialize(negate, os);
+	::serialize(args, os);
+}
+
+void literal::unserialize(std::istream &is) {
+	::unserialize(name, is);
+	::unserialize(negate, is);
+	::unserialize(args, is);
+}
+
 ostream &operator<<(ostream &os, const literal &l) {
 	if (l.negate) {
 		os << "~";

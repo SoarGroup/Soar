@@ -19,7 +19,6 @@ public:
 	: model(name, "em"), si(si), revisions(0), wm_root(NULL)
 	{
 		em = new EM(state->get_svs()->get_rels());
-		init();
 	}
 
 	~EM_model() {
@@ -50,12 +49,12 @@ public:
 		}
 	}
 	
-	void save(ostream &os) const {
-		em->save(os);
+	void serialize(ostream &os) const {
+		em->serialize(os);
 	}
 	
-	void load(istream &is) {
-		em->load(is);
+	void unserialize(istream &is) {
+		em->unserialize(is);
 	}
 	
 	/*

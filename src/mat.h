@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include "serialize.h"
 
 /*
  By default Eigen will try to align all fixed size vectors to 128-bit
@@ -43,11 +44,11 @@ typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, true,  true>
 typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, false, true> const_map_block;
 
 /*
- If you define a function argument as "const mat &" and a block or a map
- is passed into it, Eigen will implicitly create a copy of the matrix
- underlying the block or map.  Using mat_views avoids this problem,
- because they have the appropriate constructors for handling any type
- of object.
+ If you define a function argument as "const mat &" and a block or a
+ map is passed into it, the compiler will implicitly create a copy of
+ the matrix underlying the block or map. Using mat_views avoids this
+ problem, because they have the appropriate constructors for handling
+ any type of object.
 */
 class mat_view : public mat_map {
 public:
@@ -78,7 +79,7 @@ public:
  A matrix that can be efficiently dynamically resized. Uses a doubling
  memory allocation policy.
 */
-class dyn_mat {
+class dyn_mat : public serializable {
 public:
 	dyn_mat();
 	dyn_mat(int nrows, int ncols);
@@ -98,8 +99,8 @@ public:
 	void insert_col(int i, const cvec &col);
 	void remove_col(int i);
 	
-	void save(std::ostream &os) const;
-	void load(std::istream &is);
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
 	
 	double &operator()(int i, int j) {
 		assert(0 <= i && i < r && 0 <= j && j < c);
@@ -152,14 +153,14 @@ public:
 	int r, c;
 };
 
-void save_mat (std::ostream &os, const_mat_view m);
-void load_mat (std::istream &is, mat &m);
-void save_imat(std::ostream &os, const imat &m);
-void load_imat(std::istream &is, imat &m);
-void save_rvec(std::ostream &os, const rvec &v);
-void load_rvec(std::istream &is, rvec &v);
-void save_cvec(std::ostream &os, const cvec &v);
-void load_cvec(std::istream &is, cvec &v);
+void serialize  (const_mat_view m, std::ostream &os);
+void unserialize(mat &m,           std::istream &is);
+void serialize  (const imat &m,    std::ostream &os);
+void unserialize(imat &m,          std::istream &is);
+void serialize  (const rvec &v,    std::ostream &os);
+void unserialize(rvec &v,          std::istream &is);
+void serialize  (const cvec &v,    std::ostream &os);
+void unserialize(cvec &v,          std::istream &is);
 
 std::ostream& output_rvec(std::ostream &os, const rvec &v, const std::string &sep = " ");
 std::ostream& output_cvec(std::ostream &os, const cvec &v, const std::string &sep = " ");

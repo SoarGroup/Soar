@@ -5,13 +5,15 @@
 #include <string>
 #include "common.h"
 #include "timer.h"
+#include "serialize.h"
 
 bool wpcr  (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 bool ridge (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 bool OLS   (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 
-class LinearModel {
+class LinearModel : public serializable {
 public:
+	LinearModel();
 	LinearModel(int alg);
 	LinearModel(const LinearModel &m);
 	
@@ -43,9 +45,9 @@ public:
 	bool predict(const rvec &x, rvec &y);
 	bool predict(const_mat_view X, mat &Y);
 	bool fit();
-	void save(std::ostream &os) const;
+	void serialize(std::ostream &os) const;
 	// this has to be called right after the object is constructed
-	void load(std::istream &is);
+	void unserialize(std::istream &is);
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 
 private:
@@ -58,7 +60,6 @@ private:
 	bool isconst, refit;
 	mat coefs;
 	rvec xtotals, center, constvals, intercept;
-
 	int alg;
 	
 	enum Timers {PREDICT_T, FIT_T};

@@ -11,12 +11,11 @@
 #include "mat.h"
 #include "soar_interface.h"
 
-class model {
+class model : public serializable {
 public:
 	model(const std::string &name, const std::string &type);
 	virtual ~model() {}
 	
-	void init();
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
 	
 	std::string get_name() const {
@@ -32,9 +31,9 @@ public:
 	virtual int get_output_size() const = 0;
 	virtual bool test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &predicted);
 	virtual void learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {}
-	virtual void save(std::ostream &os) const {}
-	virtual void load(std::istream &is) {}
 	virtual void set_wm_root(Symbol *r) {}
+	void serialize(std::ostream &os) const {}
+	void unserialize(std::istream &is) {}
 	
 protected:
 	virtual bool cli_inspect_sub(int first_arg, const std::vector<std::string> &args, std::ostream &os) {
@@ -42,7 +41,7 @@ protected:
 	};
 
 private:
-	std::string name, type, path;
+	std::string name, type;
 	std::ofstream predlog;
 };
 

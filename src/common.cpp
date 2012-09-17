@@ -6,6 +6,7 @@
 #include <vector>
 #include <limits>
 #include "common.h"
+#include "serialize.h"
 
 using namespace std;
 
@@ -269,8 +270,8 @@ void relation::slice(const tuple &inds, relation &out) const {
 	}
 }
 
-bool relation::operator==(const relation &r) {
-	return tuples == r.tuples;
+bool relation::operator==(const relation &r) const {
+	return arty == r.arty && sz == r.sz && tuples == r.tuples;
 }
 
 relation &relation::operator=(const relation &r) {
@@ -505,6 +506,18 @@ void relation::drop_first(set<tuple> &out) const {
 	}
 }
 
+void relation::serialize(std::ostream &os) const {
+	::serialize(arty, os);
+	::serialize(sz, os);
+	::serialize(tuples, os);
+}
+
+void relation::unserialize(std::istream &is) {
+	::unserialize(arty, is);
+	::unserialize(sz, is);
+	::unserialize(tuples, is);
+}
+
 ostream &operator<<(ostream &os, const relation &r) {
 	tuple t(r.arty);
 	set<tuple> sorted;
@@ -530,4 +543,20 @@ ostream &operator<<(ostream &os, const relation_table &t) {
 		os << i->first << endl << i->second;
 	}
 	return os;
+}
+
+void sig_entry::serialize(ostream &os) const {
+	::serialize(name, os);
+	::serialize(type, os);
+	::serialize(length, os);
+	::serialize(start, os);
+	::serialize(target, os);
+}
+
+void sig_entry::unserialize(istream &is) {
+	::unserialize(name, is);
+	::unserialize(type, is);
+	::unserialize(length, is);
+	::unserialize(start, is);
+	::unserialize(target, is);
 }

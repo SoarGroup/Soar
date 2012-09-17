@@ -205,6 +205,13 @@ bool wpcr(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &i
 	return true;
 }
 
+LinearModel::LinearModel()
+: isconst(true), error(INFINITY), refit(true), alg(0)
+{
+	timers.add("predict");
+	timers.add("fit");
+}
+
 LinearModel::LinearModel(int alg) 
 : isconst(true), error(INFINITY), refit(true), alg(alg)
 {
@@ -370,19 +377,20 @@ void LinearModel::update_error() {
 	}
 }
 
-void LinearModel::save(ostream &os) const {
-	os << isconst << endl;
-	save_rvec(os, constvals);
-	xdata.save(os);
-	ydata.save(os);
+void LinearModel::serialize(ostream &os) const {
+	::serialize(alg, os);
+	::serialize(isconst, os);
+	::serialize(constvals, os);
+	xdata.serialize(os);
+	ydata.serialize(os);
 }
 
-void LinearModel::load(istream &is) {
-	int n, x;
-	is >> isconst;
-	load_rvec(is, constvals);
-	xdata.load(is);
-	ydata.load(is);
+void LinearModel::unserialize(istream &is) {
+	::unserialize(alg, is);
+	::unserialize(isconst, is);
+	::unserialize(constvals, is);
+	xdata.unserialize(is);
+	ydata.unserialize(is);
 	fit();
 }
 

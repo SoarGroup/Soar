@@ -8,7 +8,7 @@ using namespace std;
 /* Doesn't do anything */
 class null_model : public model {
 public:
-	null_model(const string &name) : model(name, "null") { init(); }
+	null_model(const string &name) : model(name, "null") {}
 	
 	bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, rvec &y) { return true; }
 	int get_input_size() const { return 0; }

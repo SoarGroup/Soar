@@ -109,22 +109,22 @@ void dyn_mat::remove_col(int i) {
 	--c;
 }
 
-void dyn_mat::save(ostream &os) const {
-	save_mat(os, buf.topLeftCorner(r, c));
+void dyn_mat::serialize(ostream &os) const {
+	::serialize(const_mat_view(buf.topLeftCorner(r, c)), os);
 }
 
-void dyn_mat::load(istream &is) {
-	load_mat(is, buf);
+void dyn_mat::unserialize(istream &is) {
+	::unserialize(buf, is);
 	r = buf.rows();
 	c = buf.cols();
 }
 
-void save_mat(ostream &os, const_mat_view m) {
+void serialize(const_mat_view m, ostream &os) {
 	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
 	os << m << endl << "end_mat" << endl;
 }
 
-void load_mat(istream &is, mat &m) {
+void unserialize(mat &m, istream &is) {
 	string token;
 	int nrows, ncols;
 	
@@ -146,12 +146,12 @@ void load_mat(istream &is, mat &m) {
 	assert(token == "end_mat");
 }
 
-void save_imat(ostream &os, const imat &m) {
+void serialize(const imat &m, ostream &os) {
 	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
 	os << m << endl << "end_mat" << endl;
 }
 
-void load_imat(istream &is, imat &m) {
+void unserialize(imat &m, istream &is) {
 	string token;
 	int nrows, ncols;
 	
@@ -173,13 +173,13 @@ void load_imat(istream &is, imat &m) {
 	assert(token == "end_mat");
 }
 
-void save_rvec(ostream &os, const rvec &v) {
+void serialize(const rvec &v, ostream &os) {
 	os << "begin_vec " << v.size() << endl;
 	os << v << endl;
 	os << "end_vec" << endl;
 }
 
-void load_rvec(istream &is, rvec &v) {
+void unserialize(rvec &v, istream &is) {
 	string token;
 	int n;
 	
@@ -197,13 +197,13 @@ void load_rvec(istream &is, rvec &v) {
 	assert(token == "end_vec");
 }
 
-void save_cvec(ostream &os, const cvec &v) {
-	save_rvec(os, v.transpose());
+void serialize(const cvec &v, ostream &os) {
+	::serialize(rvec(v.transpose()), os);
 }
 
-void load_cvec(istream &is, cvec &v) {
+void unserialize(cvec &v, istream &is) {
 	rvec v1;
-	load_rvec(is, v1);
+	::unserialize(v1, is);
 	v = v1.transpose();
 }
 

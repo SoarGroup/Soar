@@ -11,9 +11,7 @@ class lwr_model : public model {
 public:
 	lwr_model(int nnbrs, const string &name)
 	: model(name, "lwr"), lwr(nnbrs)
-	{
-		init();
-	}
+	{}
 	
 	void learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
 		lwr.learn(x, y);
