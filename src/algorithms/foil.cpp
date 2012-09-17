@@ -92,6 +92,7 @@ public:
 	 all tuples in c whose ith argument is not val.
 	*/
 	bool assign(int v, int value) {
+		assert(0 <= v && v < vars.size());
 		vars[v].value = value;
 		if (--unassigned == 0) {
 			return true;
@@ -221,7 +222,7 @@ bool test_clause(const clause &c, const relation_table &rels, const set<int> &ob
 	}
 	map<int, int>::iterator i;
 	for (i = assignments.begin(); i != assignments.end(); ++i) {
-		if (!csp.assign(i->first - 1, i->second)) {
+		if (!csp.assign(i->first, i->second)) {
 			return false;
 		}
 	}
@@ -387,7 +388,7 @@ void FOIL::gain(const literal &l, double &g, double &maxg) const {
 }
 
 double FOIL::choose_literal(literal &l) {
-	literal_tree *best_node;
+	literal_tree *best_node = NULL;
 	literal_tree root(*this, nvars, &best_node);
 	root.expand_df();
 	assert(best_node);
