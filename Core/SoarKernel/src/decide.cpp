@@ -140,7 +140,7 @@ void print_candidates(agent* thisAgent, preference * candidates)
 #define WORST_DECIDER_FLAG 5
 #define UNARY_INDIFFERENT_DECIDER_FLAG 6
 #define ALREADY_EXISTING_WME_DECIDER_FLAG 7
-#define UNARY_PARALLEL_DECIDER_FLAG 8
+
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments 
    A new preference type: unary indifferent + constant (probability) value
 */
@@ -2280,26 +2280,14 @@ void decide_non_context_slots (agent* thisAgent) {
                       Context Slot Is Decidable
   
    This returns TRUE iff the given slot (which must be a context slot)
-   is decidable.  A context slot is decidable if:
-     - it has an installed value in WM and there is a reconsider
-       preference for that value, or
-     - it has no installed value but does have changed preferences
+   is decidable.  A context slot is decidable if it has no installed
+   value but does have changed preferences
 ------------------------------------------------------------------ */
 
 Bool context_slot_is_decidable (slot *s) 
 {
-   Symbol *v;
-   preference *p;
-   
    if (!s->wmes) 
       return (s->changed != NIL);
-   
-   v = s->wmes->value;
-   for (p = s->preferences[RECONSIDER_PREFERENCE_TYPE]; p != NIL; p = p->next)
-   {
-      if (v == p->value) 
-         return TRUE;
-   }
    
    return FALSE;
 }
