@@ -144,7 +144,7 @@ void print_candidates(agent* thisAgent, preference * candidates)
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments 
    A new preference type: unary indifferent + constant (probability) value
 */
-#define UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG 9
+#define UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG 8
 
 /* ======================================================================
 
