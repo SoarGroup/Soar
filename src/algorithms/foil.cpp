@@ -1,5 +1,6 @@
 #include <cmath>
 #include "foil.h"
+#include "serialize.h"
 
 using namespace std;
 
@@ -245,15 +246,11 @@ bool test_clause_vec(const clause_vec &c, const relation_table &rels, const set<
 }
 
 void literal::serialize(std::ostream &os) const {
-	::serialize(name, os);
-	::serialize(negate, os);
-	::serialize(args, os);
+	serializer(os) << name << negate << args;
 }
 
 void literal::unserialize(std::istream &is) {
-	::unserialize(name, is);
-	::unserialize(negate, is);
-	::unserialize(args, is);
+	unserializer(is) >> name >> negate >> args;
 }
 
 ostream &operator<<(ostream &os, const literal &l) {

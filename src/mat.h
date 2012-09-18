@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include "serialize.h"
+#include "serializable.h"
 
 /*
  By default Eigen will try to align all fixed size vectors to 128-bit
@@ -147,20 +147,11 @@ public:
 	inline int cols() const {
 		return c;
 	}
-	
+
 public:
 	mat buf;
 	int r, c;
 };
-
-void serialize  (const_mat_view m, std::ostream &os);
-void unserialize(mat &m,           std::istream &is);
-void serialize  (const imat &m,    std::ostream &os);
-void unserialize(imat &m,          std::istream &is);
-void serialize  (const rvec &v,    std::ostream &os);
-void unserialize(rvec &v,          std::istream &is);
-void serialize  (const cvec &v,    std::ostream &os);
-void unserialize(cvec &v,          std::istream &is);
 
 std::ostream& output_rvec(std::ostream &os, const rvec &v, const std::string &sep = " ");
 std::ostream& output_cvec(std::ostream &os, const cvec &v, const std::string &sep = " ");

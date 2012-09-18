@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "common.h"
-#include "serialize.h"
+#include "serializable.h"
 
 class literal : public serializable {
 public:

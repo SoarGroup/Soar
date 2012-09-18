@@ -507,15 +507,11 @@ void relation::drop_first(set<tuple> &out) const {
 }
 
 void relation::serialize(std::ostream &os) const {
-	::serialize(arty, os);
-	::serialize(sz, os);
-	::serialize(tuples, os);
+	serializer(os) << arty << sz << tuples;
 }
 
 void relation::unserialize(std::istream &is) {
-	::unserialize(arty, is);
-	::unserialize(sz, is);
-	::unserialize(tuples, is);
+	unserializer(is) >> arty >> sz >> tuples;
 }
 
 ostream &operator<<(ostream &os, const relation &r) {
@@ -546,17 +542,9 @@ ostream &operator<<(ostream &os, const relation_table &t) {
 }
 
 void sig_entry::serialize(ostream &os) const {
-	::serialize(name, os);
-	::serialize(type, os);
-	::serialize(length, os);
-	::serialize(start, os);
-	::serialize(target, os);
+	serializer(os) << name << type << length << start << target;
 }
 
 void sig_entry::unserialize(istream &is) {
-	::unserialize(name, is);
-	::unserialize(type, is);
-	::unserialize(length, is);
-	::unserialize(start, is);
-	::unserialize(target, is);
+	unserializer(is) >> name >> type >> length >> start >> target;
 }

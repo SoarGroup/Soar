@@ -14,7 +14,7 @@
 #include <ostream>
 #include <fstream>
 #include "linalg.h"
-#include "serialize.h"
+#include "serializable.h"
 
 typedef std::vector<int> tuple;
 

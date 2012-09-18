@@ -7,7 +7,7 @@
 #include "common.h"
 #include "timer.h"
 #include "foil.h"
-#include "serialize.h"
+#include "serializable.h"
 
 class scene;
 

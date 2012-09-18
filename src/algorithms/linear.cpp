@@ -6,6 +6,7 @@
 #include "linear.h"
 #include "common.h"
 #include "params.h"
+#include "serialize.h"
 
 using namespace std;
 using namespace Eigen;
@@ -378,19 +379,11 @@ void LinearModel::update_error() {
 }
 
 void LinearModel::serialize(ostream &os) const {
-	::serialize(alg, os);
-	::serialize(isconst, os);
-	::serialize(constvals, os);
-	xdata.serialize(os);
-	ydata.serialize(os);
+	serializer(os) << alg << isconst << constvals << xdata << ydata;
 }
 
 void LinearModel::unserialize(istream &is) {
-	::unserialize(alg, is);
-	::unserialize(isconst, is);
-	::unserialize(constvals, is);
-	xdata.unserialize(is);
-	ydata.unserialize(is);
+	unserializer(is) >> alg >> isconst >> constvals >> xdata >> ydata;
 	fit();
 }
 

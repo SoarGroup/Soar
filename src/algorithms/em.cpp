@@ -15,6 +15,7 @@
 #include "filter_table.h"
 #include "params.h"
 #include "mat.h"
+#include "serialize.h"
 
 using namespace std;
 using namespace Eigen;
@@ -617,7 +618,7 @@ bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int>
 		em_data &dinfo = *data[i];
 		vector<int> &const_inds = const_noise_inds[dinfo.y(0)];
 		const_inds.push_back(i);
-		if (const_inds.size() >= K) {
+		if (const_inds.size() >= NOISE_SIZE_THRESH) {
 			LOG(EMDBG) << "found constant model in noise_inds" << endl;
 			mode_inds = const_inds;
 			return true;
@@ -641,13 +642,13 @@ bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int>
 		}
 	}
 	
-	if (unique_x.rows() < K) {
+	if (unique_x.rows() < NOISE_SIZE_THRESH) {
 		return false;
 	}
 	
 	vector<int> seed;
-	if (!mini_em(unique_x.get(), unique_y.get(), K, MODEL_ERROR_THRESH, 10, seed) &&
-		!block_seed(unique_x.get(), unique_y.get(), K, MODEL_ERROR_THRESH, 10, seed))
+	if (!mini_em(unique_x.get(), unique_y.get(), NOISE_SIZE_THRESH, MODEL_ERROR_THRESH, 10, seed) &&
+		!block_seed(unique_x.get(), unique_y.get(), NOISE_SIZE_THRESH, MODEL_ERROR_THRESH, 10, seed))
 	{
 		return false;
 	}
@@ -664,7 +665,7 @@ bool EM::unify_or_add_model() {
 	map<int, set<int> >::iterator i;
 	for (i = noise.begin(); i != noise.end(); ++i) {
 		std::set<int> &noise_inds = i->second;
-		if (noise_inds.size() < K) {
+		if (noise_inds.size() < NOISE_SIZE_THRESH) {
 			continue;
 		}
 	
@@ -796,6 +797,7 @@ bool EM::map_objs(int mode, int target, const state_sig &sig, const relation_tab
 				mapping[i] = *candidates.begin();
 			} else {
 				map<int, int> assign;
+				assign[0] = 0;
 				assign[1] = target;
 				if (!test_clause_vec(minfo.obj_clauses[i], rels, candidates, assign)) {
 					return false;
@@ -1121,22 +1123,11 @@ void EM::print_foil6_data(ostream &os, int mode) const {
 }
 
 void EM::serialize(ostream &os) const {
-	::serialize(ndata, os);
-	::serialize(nmodes, os);
-	::serialize(data, os);
-	::serialize(sigs, os);
-	::serialize(modes, os);
-	::serialize(noise, os);
+	serializer(os) << ndata << nmodes << data << sigs << modes << noise;
 }
 
 void EM::unserialize(istream &is) {
-	::unserialize(ndata, is);
-	::unserialize(nmodes, is);
-	::unserialize(data, is);
-	::unserialize(sigs, is);
-	::unserialize(modes, is);
-	::unserialize(noise, is);
-	
+	unserializer(is) >> ndata >> nmodes >> data >> sigs >> modes >> noise;
 	assert(data.size() == ndata && modes.size() == nmodes);
 }
 
@@ -1183,58 +1174,30 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 }
 
 void EM::em_data::serialize(ostream &os) const {
-	::serialize(target, os);
-	::serialize(time, os);
-	::serialize(sig_index, os);
-	::serialize(map_mode, os);
-	::serialize(model_row, os);
-	::serialize(x, os);
-	::serialize(y, os);
-	::serialize(mode_prob, os);
-	::serialize(obj_map, os);
+	serializer(os) << target << time << sig_index << map_mode << model_row
+	               << x << y << mode_prob << obj_map;
 }
 
 void EM::em_data::unserialize(istream &is) {
-	::unserialize(target, is);
-	::unserialize(time, is);
-	::unserialize(sig_index, is);
-	::unserialize(map_mode, is);
-	::unserialize(model_row, is);
-	::unserialize(x, is);
-	::unserialize(y, is);
-	::unserialize(mode_prob, is);
-	::unserialize(obj_map, is);
+	unserializer(is) >> target >> time >> sig_index >> map_mode >> model_row
+	                 >> x >> y >> mode_prob >> obj_map;
 }
 
 void EM::mode_info::serialize(ostream &os) const {
-	::serialize(stale, os);
-	::serialize(target, os);
-	::serialize(stale_points, os);
-	::serialize(members, os);
-	::serialize(sig, os);
-	::serialize(mode_clauses, os);
-	::serialize(obj_clauses, os);
+	serializer(os) << stale << target << stale_points << members << sig
+	               << mode_clauses << obj_clauses << pos << neg;
 
 	assert(model);
 	model->serialize(os);
-	pos.serialize(os);
-	neg.serialize(os);
 }
 
 void EM::mode_info::unserialize(istream &is) {
-	::unserialize(stale, is);
-	::unserialize(target, is);
-	::unserialize(stale_points, is);
-	::unserialize(members, is);
-	::unserialize(sig, is);
-	::unserialize(mode_clauses, is);
-	::unserialize(obj_clauses, is);
+	unserializer(is) >> stale >> target >> stale_points >> members >> sig
+	                 >> mode_clauses >> obj_clauses >> pos >> neg;
 	
 	if (model) {
 		delete model;
 	}
 	model = new LinearModel;
 	model->unserialize(is);
-	pos.unserialize(is);
-	neg.unserialize(is);
 }

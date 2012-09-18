@@ -50,7 +50,7 @@
  Number of noise instances required before EM tries to create a new
  model out of them
 */
-#define K 10
+#define NOISE_SIZE_THRESH 10
 
 /*
  Number of times EM tries to create a model from the same set of noise
@@ -79,11 +79,5 @@
  outdated model.
 */
 #define STATE_DIFF_THRESH 0.001
-
-/*
- Number of initial rows to give dynamic matrices that hold model
- training data.
-*/
-#define INIT_NDATA 1000
 
 #endif

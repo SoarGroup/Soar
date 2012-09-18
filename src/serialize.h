@@ -1,10 +1,12 @@
 /*
- The template functions defined here allow the serialization of most
- STL containers used in the rest of the code, even ones that are
- nested to arbitrary depths.
+ This file declares all non-member ::serialize and ::unserialize
+ functions for classes from external libraries, such as STL containers
+ and Eigen matrices. The template functions defined here allow the
+ serialization of most STL containers used in the rest of the code,
+ even ones that are nested to arbitrary depths.
  
- Any class that needs to be serialized should inherit from the pure
- abstract class "serializable".
+ Any class you define that needs to be serialized should inherit from
+ the pure abstract class "serializable", defined in serializable.h.
 */
 
 #ifndef SERIALIZE_H
@@ -15,6 +17,8 @@
 #include <set>
 #include <map>
 #include <cassert>
+#include "mat.h"
+#include "serializable.h"
 
 template <typename U, typename V> void serialize(const std::pair<U, V> &p, std::ostream &os);
 template <typename U, typename V> void unserialize(std::pair<U, V> &p, std::istream &is);
@@ -34,11 +38,14 @@ template <typename T> void unserialize(std::set<T> &s, std::istream &is);
 template <typename K, typename V> void serialize(const std::map<K, V> &m, std::ostream &os);
 template <typename K, typename V> void unserialize(std::map<K, V> &m, std::istream &is);
 
-class serializable {
-public:
-	virtual void serialize(std::ostream &os) const = 0;
-	virtual void unserialize(std::istream &is) = 0;
-};
+void serialize  (const_mat_view m, std::ostream &os);
+void unserialize(mat &m,           std::istream &is);
+void serialize  (const imat &m,    std::ostream &os);
+void unserialize(imat &m,          std::istream &is);
+void serialize  (const rvec &v,    std::ostream &os);
+void unserialize(rvec &v,          std::istream &is);
+void serialize  (const cvec &v,    std::ostream &os);
+void unserialize(cvec &v,          std::istream &is);
 
 inline void serialize(const serializable &p, std::ostream &os) {
 	p.serialize(os);
@@ -201,6 +208,34 @@ void unserialize(std::map<K, V> &m, std::istream &is) {
 		assert(false);
 	}
 }
+
+class serializer {
+public:
+	serializer(std::ostream &os) : os(os) {}
+
+	template <typename T>
+	serializer &operator<<(const T &obj) {
+		::serialize(obj, os);
+		return *this;
+	}
+
+private:
+	std::ostream &os;
+};
+
+class unserializer {
+public:
+	unserializer(std::istream &is) : is(is) {}
+
+	template <typename T>
+	unserializer &operator>>(T &obj) {
+		::unserialize(obj, is);
+		return *this;
+	}
+
+private:
+	std::istream &is;
+};
 
 #endif
 
