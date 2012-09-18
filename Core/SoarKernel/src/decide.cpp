@@ -864,36 +864,59 @@ void do_buffered_link_changes (agent* thisAgent) {
                   Add a preference to a slot's CDPS
    This function adds a preference to a slots's context dependent
    preference set, checking to first see whether the pref is already
-   there.  The slot's CDPS is copied to conditions' bt structs in
+   there. If an operator The slot's CDPS is copied to conditions' bt structs in
    create_instatiation.  Those copies of the CDPS are used to
    backtrace through all relevant local evaluation rules that led to the
    selection of the operator that produced a result.
 ------------------------------------------------------------------ */
 
-void add_to_CDPS(agent* thisAgent, slot *s, preference *pref) {
+void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, bool unique_value) {
 
   Bool already_exists=false;
   cons *CDPS;
+  preference *p;
 
-  print(thisAgent, "    --> Pref adding to CDPS: ");
+  print(thisAgent, "    --> Pref adding to CDPS: %i", unique_value);
   print_preference(thisAgent, pref);
 
-  /* Note that it may not be necessary to check
-   * for duplicates here, since backtracing will already not backtrace
-   * through preferences it has already seen, but it may be slightly more
-   * efficient just to check here.
-   */
-
   for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
-    if (static_cast<preference *>(CDPS->first) == pref) {
+    p = static_cast<preference *>(CDPS->first);
+    if (p == pref) {
       already_exists=true;
+      print(thisAgent, "   --> duplicate pref already exists.  Not adding.\n");
       break;
     }
-  }
+//    print(thisAgent, "   Comparing with pref ");
+//    print_preference(thisAgent, p);
 
-  if (already_exists) {
-    print(thisAgent, "   --> pref already exists.  Not adding.\n");
-  } else {
+    /* Checking if a preference is unique differs depending on the preference type */
+    if (unique_value) {
+
+      /* Better and worse preferences can be considered equivalent if they point to the same
+       * operators in the correct relative spots */
+
+      if (((pref->type == BETTER_PREFERENCE_TYPE) || (pref->type == WORSE_PREFERENCE_TYPE)) &&
+          ((p->type == BETTER_PREFERENCE_TYPE) || (p->type == WORSE_PREFERENCE_TYPE))) {
+        if (pref->type == p->type)
+          already_exists = ((pref->value == p->value) && (pref->referent == p->referent));
+        else
+          already_exists = ((pref->value == p->referent) && (pref->referent == p->value));
+
+      } else if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) &&
+          (p->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)) {
+        already_exists = (((pref->value == p->value) && (pref->referent == p->referent)) ||
+            ((pref->value == p->referent) && (pref->referent == p->value)));
+        print(thisAgent, "   Comparing binary indifferent preferences being added.\n");
+      } else {
+        already_exists = (pref->value == p->value) && (pref->type == p->type);
+      }
+      if (already_exists) {
+        print(thisAgent, "   --> equivalent pref already exists.  Not adding.\n");
+        break;
+      }
+    }
+  }
+  if (!already_exists) {
     push(thisAgent, pref, s->CDPS);
     preference_add_ref(pref);
   }
@@ -948,7 +971,7 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
   preference *p, *p2, *cand, *prev_cand;
-  Bool match_found, not_all_indifferent, not_all_parallel, do_CDPS, do_all_CDPS;
+  Bool match_found, not_all_indifferent, some_numeric, do_CDPS, do_all_CDPS;
   preference *candidates;
   Symbol *value;
   cons *CDPS, *prev_cons;
@@ -967,8 +990,8 @@ byte run_preference_semantics(agent* thisAgent,
 
   do_all_CDPS = (do_CDPS && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
 
-  print(thisAgent, "\nCDPS DEBUG:  do_all_CDPS:%i do_CDPS:%i isa:%i consis:%i level:%i sysparam:%i", do_all_CDPS, do_CDPS,
-      s->isa_context_slot, !consistency, (s->id->id.level > TOP_GOAL_LEVEL), thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
+//  print(thisAgent, "\nCDPS DEBUG:  do_all_CDPS:%i do_CDPS:%i isa:%i consis:%i level:%i sysparam:%i", do_all_CDPS, do_CDPS,
+//      s->isa_context_slot, !consistency, (s->id->id.level > TOP_GOAL_LEVEL), thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
 
   /* Empty the context-dependent preference set in the slot */
 
@@ -1014,7 +1037,7 @@ byte run_preference_semantics(agent* thisAgent,
 
     print(thisAgent,
         "\n----------------------------\nRUNNING PREFERENCE SEMANTICS...\n----------------------------\n");
-    print(thisAgent, "\nCDPS DEBUG:  do_cdps = %i , do_all_cdps = %i\n", do_CDPS, do_all_CDPS);
+    print(thisAgent, "CDPS DEBUG:  do_cdps = %i , do_all_cdps = %i\n", do_CDPS, do_all_CDPS);
     print(thisAgent, "All Preferences for slot:");
 
     for (int i = 0; i < NUM_PREFERENCE_TYPES; i++) {
@@ -1434,7 +1457,7 @@ byte run_preference_semantics(agent* thisAgent,
   for (cand = candidates; cand != NIL; cand = cand->next_candidate)
     cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
 
-  /* Mark flag for those with various indifferent preferences */
+  /* Mark flag for unary or numeric indifferent preferences */
 
   for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
@@ -1442,42 +1465,55 @@ byte run_preference_semantics(agent* thisAgent,
   for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
 
-  for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
-    if ((p->referent->fc.common_symbol_info.symbol_type
-        == INT_CONSTANT_SYMBOL_TYPE)
-        || (p->referent->fc.common_symbol_info.symbol_type
-            == FLOAT_CONSTANT_SYMBOL_TYPE))
-      p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+  // TODO: A binary indifferent can no longer be numeric.  Can remove this!
+  /* Some binary prefs are actually numeric prefs, so mark them.  These occur
+   * when a production uses a variable to set the indifferent numeric value. */
 
+  for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
+    if ((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+        || (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)) {
+      p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+      print(thisAgent, "CDPS DEBUG:  binary numeric marked.\n");
+      assert(false);
+    }
   /* Go through candidate list and make sure every binary indifferent item
    * is binary indifferent to every item on the candidate list */
 
-  not_all_indifferent = FALSE;
+  not_all_indifferent = false;
+  some_numeric = false;
+
   for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
 
-    /* If this is a unary indifferent preference, skip. */
+    /* If this is a unary indifferent preference, skip. Numeric indifferent
+     * prefs are considered to have an implicit unary indifferent pref,
+     * which is implemented here. */
 
     if (cand->value->common.decider_flag == UNARY_INDIFFERENT_DECIDER_FLAG)
       continue;
-    else if (cand->value->common.decider_flag == UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG)
+    else if (cand->value->common.decider_flag == UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) {
+      some_numeric = true;
       continue;
+    }
 
-    /* Preference is binary, so make sure there is a binary preference between
-     * its operator and every other preference's operator in the candidate list */
+    /* Candidate has either only binary indifferences or no indifference prefs
+     * at all, so make sure there is a binary preference between its operator
+     * and every other preference's operator in the candidate list */
 
     for (p = candidates; p != NIL; p = p->next_candidate) {
       if (p == cand)
         continue;
-      match_found = FALSE;
+      match_found = false;
       for (p2 = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p2 != NIL;
           p2 = p2->next)
         if (((p2->value == cand->value) && (p2->referent == p->value))
             || ((p2->value == p->value) && (p2->referent == cand->value))) {
-          match_found = TRUE;
+          match_found = true;
           break;
         }
       if (!match_found) {
-        not_all_indifferent = TRUE;
+        not_all_indifferent = true;
+        print(thisAgent, "CDPS DEBUG:  not indifferent candidate!\n");
+        print_preference(thisAgent, cand);
         break;
       }
     }
@@ -1495,10 +1531,56 @@ byte run_preference_semantics(agent* thisAgent,
         print(thisAgent, "CDPS DEBUG:  Exit point 5.  Performing stage 1 addition.\n");
         add_to_CDPS(thisAgent, s, (*result_candidates));
 
-      /* Add all indifferent preferences associates with the chosen candidate to the CDPS */
-      for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
-        if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
-          add_to_CDPS(thisAgent, s, p);
+        /* Add all indifferent preferences associated with the chosen candidate to the CDPS.*/
+
+        if (some_numeric) {
+
+          /* Note that numeric indifferent preferences are never considered duplicates, so we
+          * pass an extra argument to add_to_cdps so that it does not check for duplicates.*/
+
+          for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if (p->value == (*result_candidates)->value) {
+              print(thisAgent, "Adding numeric indifferent pref.\n");
+              add_to_CDPS(thisAgent, s, p, false);
+            }
+          }
+
+          /* Now add all binary preferences that are really numerics and any binary preferences
+           * with a candidate that does NOT have a numeric preference. */
+
+          for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
+              if ((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+                  || (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)) {
+                print(thisAgent, "Adding binary numeric preference.\n");
+                add_to_CDPS(thisAgent, s, p, false);
+              } else if ((p->referent->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
+                         (p->value->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG)) {
+                print(thisAgent, "Adding binary indifferent pref between numeric and non-numeric candidates.\n");
+                add_to_CDPS(thisAgent, s, p);
+              } else {
+                print(thisAgent, "Ignoring binary indifferent pref between two numeric candidates.\n");
+                print_preference(thisAgent, p);
+              }
+            }
+          }
+        } else {
+
+          /* Add all non-numeric preferences associated with the chosen candidate to the CDPS.*/
+
+          for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if (p->value == (*result_candidates)->value) {
+              print(thisAgent, "Adding unary indifferent pref\n");
+              add_to_CDPS(thisAgent, s, p);
+            }
+          }
+          for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
+              print(thisAgent, "Adding binary indifferent pref\n");
+              assert(p->value->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG);
+              add_to_CDPS(thisAgent, s, p);
+            }
+          }
         }
       }
     } else {
@@ -1507,24 +1589,15 @@ byte run_preference_semantics(agent* thisAgent,
     return NONE_IMPASSE_TYPE;
   }
 
-  /* Candidates are not all indifferent; for context slots this gives a tie.
-   * Note:  If we're removing parallels, this should mean it's a tie impasse for
-   * non-context slots too, so we might be able to remove this test. */
+  /* Candidates are not all indifferent, so we have a tie. */
 
-  if (s->isa_context_slot) {
-    *result_candidates = candidates;
-    if (do_CDPS) {
-      print(thisAgent, "CDPS DEBUG:  Not all indifferent.  Tie impasse. Clearing out CDPS.");
-      clear_CDPS(thisAgent, s);
-    }
-    return TIE_IMPASSE_TYPE;
-  }
-
-  /* The following should probably never occur.  It's a leftover from the parallel preference
-   * code.  Will leave in for now with an assert to test we never get here. */
-  assert(false);
   *result_candidates = candidates;
+  if (do_CDPS) {
+    print(thisAgent, "CDPS DEBUG:  Not all indifferent.  Tie impasse. Clearing out CDPS.");
+    clear_CDPS(thisAgent, s);
+  }
   return TIE_IMPASSE_TYPE;
+
 }
 
 /* **************************************************************************
