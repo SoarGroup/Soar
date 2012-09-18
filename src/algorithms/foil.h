@@ -76,9 +76,9 @@ bool test_clause(const clause &c,
                  const std::set<int> &objs,
                  std::map<int,int> &assignments);
 
-bool test_clause_vec(const clause_vec &c,
-                     const relation_table &rels,
-                     const std::set<int> &objs,
-                     std::map<int,int> &assignments);
+int test_clause_vec(const clause_vec &c,
+                    const relation_table &rels,
+                    const std::set<int> &objs,
+                    std::map<int,int> &assignments);
 
 #endif

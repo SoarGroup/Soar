@@ -331,6 +331,7 @@ public:
 	void subtract(const tuple &inds, const relation &r);
 	void at_pos(int n, std::set<int> &elems) const;
 	void drop_first(std::set<tuple> &out) const;
+	void dump(std::set<tuple> &out) const;
 	
 	int size() const { return sz; }
 	int arity() const { return arty; }

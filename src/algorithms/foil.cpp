@@ -17,11 +17,13 @@ public:
 		for (int i = 0; i < c.size(); ++i) {
 			const tuple &largs = c[i].get_args();
 			for (int j = 0; j < largs.size(); ++j) {
-				if (largs[j] > 0) {
-					all_vars.insert(largs[j] - 1);
+				if (largs[j] >= 0) {
+					all_vars.insert(largs[j]);
 				}
 			}
 		}
+		// make sure variables are sequential integers starting from 0
+		assert(*all_vars.begin() == 0 && *max_element(all_vars.begin(), all_vars.end()) == all_vars.size() - 1);
 		unassigned = all_vars.size();
 		vars.resize(unassigned);
 		for (int i = 0; i < vars.size(); ++i) {
@@ -32,26 +34,29 @@ public:
 		for (int i = 0; i < c.size(); ++i) {
 			constraint_info &cons = constraints[i];
 			const relation *r = map_get(rels, c[i].get_name());
-			if (!r) {
-				assert(false);
-			}
-			r->drop_first(cons.rel);
+			assert(r);
+			r->dump(cons.tuples);
 			const tuple &args = c[i].get_args();
 	
 			cons.negated = c[i].negated();
-			cons.doms.resize(args.size() - 1);
-			cons.vars.resize(args.size() - 1);
+			cons.doms.resize(args.size());
+			cons.vars.resize(args.size());
 			cons.unbound = 0;
-			for (int j = 0; j < args.size() - 1; ++j) {
-				if (args[j+1] >= 0) {
-					cons.vars[j] = args[j+1] - 1;
-					r->at_pos(j+1, cons.doms[j]);
+			for (int j = 0; j < args.size(); ++j) {
+				if (args[j] >= 0) {
+					cons.vars[j] = args[j];
+					r->at_pos(j, cons.doms[j]);
 					++cons.unbound;
-					if (!update_vardom(i, j)) {
-						return false;
-					}
 				} else {
 					cons.vars[j] = -1;
+				}
+			}
+		}
+		for (int i = 0; i < constraints.size(); ++i) {
+			constraint_info &cons = constraints[i];
+			for (int j = 0; j < cons.vars.size(); ++j) {
+				if (cons.vars[j] >= 0 && !update_vardom(i, j)) {
+					return false;
 				}
 			}
 		}
@@ -62,7 +67,7 @@ public:
 		if (unassigned == 0) {
 			out.clear();
 			for (int i = 0; i < vars.size(); ++i) {
-				out[i + 1] = vars[i].value;
+				out[i] = vars[i].value;
 			}
 			return true;
 		}
@@ -104,10 +109,10 @@ public:
 			constraint_info &cons = constraints[i];
 			for (int j = 0; j < cons.vars.size(); ++j) {
 				if (cons.vars[j] == v) {
-					set<tuple>::iterator k = cons.rel.begin();
-					while (k != cons.rel.end()) {
+					set<tuple>::iterator k = cons.tuples.begin();
+					while (k != cons.tuples.end()) {
 						if ((*k)[j] != value) {
-							cons.rel.erase(k++);
+							cons.tuples.erase(k++);
 						} else {
 							++k;
 						}
@@ -140,7 +145,7 @@ private:
 	struct constraint_info {
 		bool negated;
 		int unbound;
-		set<tuple> rel;
+		set<tuple> tuples;
 		vector<set<int> > doms;
 		vector<int> vars;
 	};
@@ -164,7 +169,7 @@ private:
 			cons.doms[i].clear();
 		}
 		set<tuple>::const_iterator i;
-		for (i = cons.rel.begin(); i != cons.rel.end(); ++i) {
+		for (i = cons.tuples.begin(); i != cons.tuples.end(); ++i) {
 			for (int j = 0; j < i->size(); ++j) {
 				cons.doms[j].insert((*i)[j]);
 			}
@@ -230,19 +235,19 @@ bool test_clause(const clause &c, const relation_table &rels, const set<int> &ob
 	return csp.search(assignments);
 }
 
-bool test_clause_vec(const clause_vec &c, const relation_table &rels, const set<int> &objs, map<int,int> &assignments) {
+int test_clause_vec(const clause_vec &c, const relation_table &rels, const set<int> &objs, map<int,int> &assignments) {
 	for (int i = 0; i < c.size(); ++i) {
 		if (test_clause(c[i], rels, objs, assignments)) {
-			cout << "found assignment" << endl;
+			LOG(FOILDBG) << "found assignment" << endl;
 			map<int, int>::const_iterator j;
 			for (int j = 0; j < assignments.size(); ++j) {
-				cout << j << " -> " << assignments[j] << endl;
+				LOG(FOILDBG) << j << " -> " << assignments[j] << endl;
 			}
-			return true;
+			return i;
 		}
 	}
-	cout << "failed finding assignment" << endl;
-	return false;
+	LOG(FOILDBG) << "failed finding assignment" << endl;
+	return -1;
 }
 
 void literal::serialize(std::ostream &os) const {

@@ -506,6 +506,19 @@ void relation::drop_first(set<tuple> &out) const {
 	}
 }
 
+void relation::dump(set<tuple> &out) const {
+	tuple_map::const_iterator i;
+	tuple t(arty);
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		copy(i->first.begin(), i->first.end(), t.begin() + 1);
+		set<int>::const_iterator j;
+		for (j = i->second.begin(); j != i->second.end(); ++j) {
+			t[0] = *j;
+			out.insert(t);
+		}
+	}
+}
+
 void relation::serialize(std::ostream &os) const {
 	serializer(os) << arty << sz << tuples;
 }

@@ -23,6 +23,9 @@ using namespace Eigen;
 const bool TEST_ELIGIBILITY = false;
 const int REGRESSION_ALG = 1; // 1 = ridge regression
 
+/*
+ Generate all possible combinations of sets of items
+*/
 template <typename T>
 class multi_combination_generator {
 public:
@@ -799,7 +802,7 @@ bool EM::map_objs(int mode, int target, const state_sig &sig, const relation_tab
 				map<int, int> assign;
 				assign[0] = 0;
 				assign[1] = target;
-				if (!test_clause_vec(minfo.obj_clauses[i], rels, candidates, assign)) {
+				if (test_clause_vec(minfo.obj_clauses[i], rels, candidates, assign) < 0) {
 					return false;
 				}
 				assert(assign.find(2) != assign.end());
@@ -839,8 +842,15 @@ bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels
 		}
 		
 		map<int, int> assign;
-		assign[minfo.target] = target;
-		if (test_clause_vec(minfo.mode_clauses, rels, all_objs, assign)) {
+		assign[0] = 0;
+		int c = test_clause_vec(minfo.mode_clauses, rels, all_objs, assign);
+		if (c >= 0) {
+			LOG(EMDBG) << "mode " << i << " clause " << c << " satisfied" << endl;
+			LOG(EMDBG) << minfo.mode_clauses[c] << endl;
+			map<int, int>::const_iterator j;
+			for (j = assign.begin(); j != assign.end(); ++j) {
+				LOG(EMDBG) << j->first << " = " << j->second << endl;
+			}
 			rvec xc;
 			if (!minfo.model->is_const()) {
 				xc.resize(x.size());
@@ -858,6 +868,7 @@ bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels
 			}
 		}
 	}
+	LOG(EMDBG) << "no suitable modes" << endl;
 	mode = -1;
 	return false;
 }
