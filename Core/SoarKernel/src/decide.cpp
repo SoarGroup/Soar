@@ -1484,7 +1484,7 @@ byte run_preference_semantics(agent* thisAgent,
 
   for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
 
-    /* If this is a unary indifferent preference, skip. Numeric indifferent
+    /* If this candidate has a unary indifferent preference, skip. Numeric indifferent
      * prefs are considered to have an implicit unary indifferent pref,
      * which is implemented here. */
 
@@ -1550,11 +1550,15 @@ byte run_preference_semantics(agent* thisAgent,
 
           for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
-              if ((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+              /* The following can be deleted as soon as we're sure that binary numerics are a thing of the
+               * past, which they do seem to be.
+               *
+               * if ((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
                   || (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)) {
                 print(thisAgent, "Adding binary numeric preference.\n");
                 add_to_CDPS(thisAgent, s, p, false);
-              } else if ((p->referent->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
+              } else */
+                if ((p->referent->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
                          (p->value->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG)) {
                 print(thisAgent, "Adding binary indifferent pref between numeric and non-numeric candidates.\n");
                 add_to_CDPS(thisAgent, s, p);
@@ -1566,7 +1570,8 @@ byte run_preference_semantics(agent* thisAgent,
           }
         } else {
 
-          /* Add all non-numeric preferences associated with the chosen candidate to the CDPS.*/
+          /* This decision was non-numeric, so add all non-numeric preferences associated with the
+           * chosen candidate to the CDPS.*/
 
           for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == (*result_candidates)->value) {
@@ -1832,7 +1837,6 @@ preference *make_fake_preference_for_goal_item (agent* thisAgent,
   #endif
   cond->bt.level = ap_wme->id->id.level;
   cond->bt.trace = NIL;
-  cond->bt.prohibits = NIL;
   cond->bt.CDPS = NIL;
 
   /* --- return the fake preference --- */

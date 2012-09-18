@@ -444,7 +444,7 @@ void backtrace_through_instantiation (agent* thisAgent,
 void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *reliable) {
 
   /* mvp 5-17-94 */
-  cons *c, *prohibits, *CDPS;
+  cons *c, *CDPS;
   condition *cond;
   preference *bt_pref, *p;
 
@@ -471,26 +471,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *relia
     /* --- if it has a trace at this level, backtrace through it --- */
     if (bt_pref) {
 
-      /* mvp 5-17-94 */
       backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,cond, reliable, 0);
-
-/*       check if any prohibit preferences
-      if (cond->bt.prohibits) {
-        for (prohibits=cond->bt.prohibits; prohibits!=NIL; prohibits=prohibits->rest) {
-          p = static_cast<preference_struct *>(prohibits->first);
-          if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-            print_string (thisAgent, "     Backtracing through prohibit preference: ");
-            xml_begin_tag(thisAgent, kTagProhibitPreference);
-            print_preference (thisAgent, p);
-          }
-          backtrace_through_instantiation (thisAgent, p->inst, grounds_level, cond, reliable, 6);
-
-          if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-            xml_end_tag(thisAgent, kTagProhibitPreference);
-          }
-        }
-      }
-       mvp done */
 
       /* MMA 8-2012: Check for any CDPS prefs and backtrace through them */
       print(thisAgent, "Checking CDPS in trace_locals.\n");
@@ -631,7 +612,7 @@ void trace_grounded_potentials (agent* thisAgent) {
 Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *reliable) {
 
   /* mvp 5-17-94 */
-  cons *c, *next_c, *prev_c, *prohibits, *CDPS;
+  cons *c, *next_c, *prev_c, *CDPS;
   cons *pots_to_bt;
   condition *potential;
   preference *bt_pref, *p;
@@ -681,24 +662,7 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
     bt_pref = find_clone_for_level (potential->bt.trace, 
 		                            static_cast<goal_stack_level>(grounds_level+1));
 
-    /* mvp 5-17-94 */
     backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,potential, reliable, 0);
-/*    if (potential->bt.prohibits) {
-      for (prohibits=potential->bt.prohibits; prohibits!=NIL; prohibits=prohibits->rest) {
-        p = static_cast<preference_struct *>(prohibits->first);
-        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-          print_string (thisAgent, "     For prohibit preference: ");
-          xml_begin_tag(thisAgent, kTagProhibitPreference);
-          print_preference (thisAgent, p);
-        }
-        backtrace_through_instantiation (thisAgent, p->inst, grounds_level, potential, reliable, 6);
-        
-        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-            xml_end_tag(thisAgent, kTagProhibitPreference);
-        }
-      }
-    }
-     mvp done */
 
     /* MMA 8-2012: now backtrace through CDPS of potentials */
     print(thisAgent, "Checking CDPS in trace_ungrounded_potentials.\n");

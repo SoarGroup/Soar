@@ -214,7 +214,6 @@ bool ClientTraceXML::IsTagUngroundedPotentials() const	{ return IsTag(sml_Names:
 bool ClientTraceXML::IsTagUngroundedPotential() const	{ return IsTag(sml_Names::kTagUngroundedPotential) ; }
 bool ClientTraceXML::IsTagBacktrace() const				{ return IsTag(sml_Names::kTagBacktrace) ; }
 bool ClientTraceXML::IsTagAddToPotentials() const		{ return IsTag(sml_Names::kTagAddToPotentials) ; }
-bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
 bool ClientTraceXML::IsTagCDPSPreference() const		{ return IsTag(sml_Names::kTagCDPSPreference) ; }
 bool ClientTraceXML::IsTagBacktraceResult() const		{ return IsTag(sml_Names::kTagBacktraceResult) ; }
 bool ClientTraceXML::IsTagLocalNegation() const			{ return IsTag(sml_Names::kTagLocalNegation) ; }

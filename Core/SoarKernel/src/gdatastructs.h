@@ -532,7 +532,8 @@ typedef struct bt_info_struct {
   preference *trace;        /* preference for BT, or NIL */
 
   /* mvp 5-17-94 */
-  ::list *prohibits, *CDPS;        /* list of prohibit prefs to backtrace through */
+  ::list *CDPS;            /* list of substate evaluation prefs to backtrace through,
+                              i.e. the context dependent preference set. */
 
 } bt_info;
 

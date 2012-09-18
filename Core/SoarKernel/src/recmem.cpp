@@ -77,64 +77,13 @@ typedef std::list< condition* > cond_mpool_list;
  from the rhs function to this preference adding code)*/
 wme* glbDeepCopyWMEs = NULL;
 
-/* mvp 5-17-94 */
-/* --------------------------------------------------------------------------
- Build Prohibit Preference List for Backtracing
- --------------------------------------------------------------------------*/
-
-void build_prohibits_list(agent* thisAgent, instantiation *inst) {
-	condition *cond;
-	preference *pref, *new_pref;
-
-	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
-			cond = cond->next) {
-		cond->bt.prohibits = NIL;
-		if (cond->type == POSITIVE_CONDITION && cond->bt.trace) {
-			if (cond->bt.trace->slot) {
-				// int prefs_to_check[] = {PROHIBIT_PREFERENCE_TYPE, BEST_PREFERENCE_TYPE, BETTER_PREFERENCE_TYPE, WORSE_PREFERENCE_TYPE};
-				int prefs_to_check[] = { PROHIBIT_PREFERENCE_TYPE };
-				for (int i = 0; i < 1; ++i) {
-	        print(thisAgent, "\nBuilding prohibit for condition...");
-					pref = cond->bt.trace->slot->preferences[prefs_to_check[i]];
-					while (pref) {
-            print_condition(thisAgent, cond);
-						new_pref = NIL;
-						if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm) {
-							print(thisAgent, "\n... Found prohibit preference to add for ");
-							if (inst->prod)
-								print_with_symbols(thisAgent, "%y\n", inst->prod->name);
-							else
-								print_string(thisAgent, "[dummy production]\n");
-							print(thisAgent, "    --> Pref adding to prohibit list : ");
-							print_preference(thisAgent, pref);
-							push(thisAgent, pref, cond->bt.prohibits);
-							preference_add_ref(pref);
-						} else {
-							new_pref = find_clone_for_level(pref, inst->match_goal_level);
-							if (new_pref) {
-								if (new_pref->in_tm) {
-									print(thisAgent, "\n... Found prohibit preference (clone) to add for ");
-									if (inst->prod)
-										print_with_symbols(thisAgent, "%y\n", inst->prod->name);
-									else
-										print_string(thisAgent, "[dummy production]\n");
-									print(thisAgent, "    --> Pref adding to prohibit list : ");
-									print_preference(thisAgent, pref);
-									push(thisAgent, new_pref, cond->bt.prohibits);
-									preference_add_ref(new_pref);
-								}
-							}
-						}
-						pref = pref->next;
-					}
-				}
-			}
-		}
-	}
-}
 
 /* --------------------------------------------------------------------------
- Build context-dependent preference set
+                 Build context-dependent preference set
+
+  This function will copy the CDPS from a slot to the backtrace info for the
+  corresponding condition.  The copied CDPS will later be backtraced through.
+
  --------------------------------------------------------------------------*/
 
 void build_CDPS(agent* thisAgent, instantiation *inst) {
@@ -184,8 +133,6 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
             }
           }
         }
-      } else {
-//        print(thisAgent, "\nCDPS DEBUG:  build_cdps called for condition with non-context slot.  No CDPS found.");
       }
     }
   }
@@ -875,8 +822,6 @@ void create_instantiation(agent* thisAgent, production *prod,
 		}
 	}
 
-	/* mvp 5-17-94 */
-	//build_prohibits_list(thisAgent, inst);
 	build_CDPS(thisAgent, inst);
 
 	thisAgent->production_being_fired = NIL;
@@ -991,23 +936,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 		for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
 				cond->next) {
 			if (cond->type == POSITIVE_CONDITION) {
-
-//				/* mvp 6-22-94, modified 94.01.17 by AGR with lotsa help from GAP */
-//				if (cond->bt.prohibits) {
-//					c_old = c = cond->bt.prohibits;
-//					cond->bt.prohibits = NIL;
-//					for (; c != NIL; c = c->rest) {
-//						pref = static_cast<preference *>(c->first);
-//#ifdef DO_TOP_LEVEL_REF_CTS
-//						if (level > TOP_GOAL_LEVEL)
-//#endif
-//						{
-//							preference_remove_ref(thisAgent, pref);
-//						}
-//					}
-//					free_list(thisAgent, c_old);
-//				}
-//				/* mvp done */
 
         /* MMA 9-2012 - Clear out the CDPS */
         print(thisAgent, "CDPS DEBUG:  - Clearing out CDPS in deallocate instantiation\n");

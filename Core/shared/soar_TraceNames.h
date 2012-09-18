@@ -144,7 +144,6 @@ namespace soar_TraceNames
 	static char const* const kTagLocals                 = "locals" ;
 	static char const* const kTagLocal                  = "local";
 	static char const* const kTagBacktraceResult        = "result";
-	static char const* const kTagProhibitPreference     = "prohibit-preference";
 	static char const* const kTagCDPSPreference     	  = "cdps-preference";
 	static char const* const kTagAddToPotentials        = "add-to-potentials";
 	static char const* const kTagNegated                = "negated" ;
