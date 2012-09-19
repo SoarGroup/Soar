@@ -54,13 +54,13 @@ private:
 	bool fit_sub(const_mat_view X, const_mat_view Y);
 	void update_error();
 	
-	dyn_mat xdata;
-	dyn_mat ydata;
+	int alg;
 	double error;
 	bool isconst, refit;
 	mat coefs;
 	rvec xtotals, center, constvals, intercept;
-	int alg;
+	dyn_mat xdata;
+	dyn_mat ydata;
 	
 	enum Timers {PREDICT_T, FIT_T};
 	timer_set timers;

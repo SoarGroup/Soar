@@ -108,6 +108,7 @@ private:
 	std::map<wme*, command*> curr_cmds;
 	
 	state_sig                prev_sig;
+	relation_table           prev_rels;
 	rvec                     prev_pvals;
 	multi_model              *mmdl;
 	rvec                     next_out;
@@ -144,11 +145,8 @@ public:
 	
 	drawer *get_drawer() { return &draw; }
 	const output_spec *get_output_spec() { return &outspec; }
-	int get_time() const { return time; }
 
 	void set_model_root(Symbol *root);
-	
-	const relation_table &get_rels() const { return rels; }
 	
 private:
 	void proc_input(svs_state *s);
@@ -163,11 +161,8 @@ private:
 	output_spec               outspec;
 	bool                      learn;
 	Symbol                   *model_root;
-	int                       time;
 	
 	std::map<std::string, model*> models;
-	
-	relation_table rels;
 	
 	enum Timers { INPUT_T, OUTPUT_T };
 	

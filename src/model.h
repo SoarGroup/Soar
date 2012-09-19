@@ -19,19 +19,13 @@ public:
 	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
 	
-	std::string get_name() const {
-		return name;
-	}
+	std::string get_name() const { return name; }
+	std::string get_type() const { return type; }
 	
-	std::string get_type() const {
-		return type;
-	}
-	
-	virtual bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, rvec &y) = 0;
+	virtual bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
-	virtual bool test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &predicted);
-	virtual void learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {}
+	virtual void learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {}
 	virtual void set_wm_root(Symbol *r) {}
 	void serialize(std::ostream &os) const {}
 	void unserialize(std::istream &is) {}
@@ -59,9 +53,9 @@ public:
 	multi_model(std::map<std::string, model*> *model_db);
 	~multi_model();
 	
-	bool predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels);
-	void learn(const state_sig &sig, const rvec &x, const rvec &y, int time);
-	bool test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels);
+	bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
+	void learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	bool test(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
 	
 	std::string assign_model (
 		const std::string &name, 

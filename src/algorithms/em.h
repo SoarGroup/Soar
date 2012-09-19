@@ -14,12 +14,12 @@ class scene;
 
 class EM : public serializable {
 public:
-	EM(const relation_table &rel_tbl);
+	EM();
 	~EM();
 	
-	void learn(const state_sig &sig, const rvec &x, const rvec &y, int time);
+	void learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
 	bool run(int maxiters);
-	bool predict(const state_sig &sig, const rvec &x, const relation_table &rels, int &mode, rvec &y);
+	bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
 	// Return the mode with the model that best fits (x, y)
 	int best_mode(const state_sig &sig, const rvec &x, double y, double &besterror) const;
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
@@ -130,8 +130,9 @@ private:
 	void update_clauses(int m);
 	void print_foil6_data(std::ostream &os, int mode) const;
 	bool map_objs(int mode, int target, const state_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
+	void extend_relations(const relation_table &add, int time);
 
-	const relation_table &rel_tbl;
+	relation_table rel_tbl;
 	std::vector<em_data*> data;
 	std::vector<state_sig> sigs;
 	std::vector<mode_info*> modes;

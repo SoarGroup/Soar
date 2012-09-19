@@ -283,8 +283,8 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 	v.resize(j);
 }
 
-EM::EM(const relation_table &rel_tbl)
-: rel_tbl(rel_tbl), ndata(0), nmodes(0)
+EM::EM()
+: ndata(0), nmodes(0)
 {
 	timers.add("e_step");
 	timers.add("m_step");
@@ -475,8 +475,8 @@ void EM::mode_add_example(int m, int i, bool update) {
 	
 	minfo.members.insert(i);
 	minfo.stale = true;
-	minfo.add_pos(dinfo.time, dinfo.target);
-	minfo.del_neg(dinfo.time, dinfo.target);
+	minfo.add_pos(i, dinfo.target);
+	minfo.del_neg(i, dinfo.target);
 	minfo.clauses_dirty = true;
 }
 
@@ -494,8 +494,8 @@ void EM::mode_del_example(int m, int i) {
 		}
 	}
 	minfo.stale = true;
-	minfo.del_pos(dinfo.time, dinfo.target);
-	minfo.add_neg(dinfo.time, dinfo.target);
+	minfo.del_pos(i, dinfo.target);
+	minfo.add_neg(i, dinfo.target);
 	minfo.clauses_dirty = true;
 }
 
@@ -532,7 +532,7 @@ void EM::update_MAP(const set<int> &points, const obj_map_table &obj_maps) {
 	}
 }
 
-void EM::learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
+void EM::learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	int sig_index = -1, target = -1;
 	for (int i = 0; i < sigs.size(); ++i) {
 		if (sigs[i] == sig) {
@@ -558,7 +558,6 @@ void EM::learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
 	dinfo->x = x;
 	dinfo->y = y;
 	dinfo->target = target;
-	dinfo->time = time;
 	dinfo->sig_index = sig_index;
 	
 	dinfo->map_mode = -1;
@@ -568,8 +567,9 @@ void EM::learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
 	noise[sig_index].insert(ndata);
 	for (int i = 0; i < nmodes; ++i) {
 		modes[i]->stale_points.insert(ndata);
-		modes[i]->add_neg(dinfo->time, dinfo->target);
+		modes[i]->add_neg(ndata, dinfo->target);
 	}
+	extend_relations(rels, ndata);
 	++ndata;
 }
 
@@ -755,15 +755,15 @@ void EM::add_mode(int sig, LinearModel *m, const vector<int> &seed_inds, const v
 	for (int i = 0; i < ndata; ++i) {
 		data[i]->mode_prob.push_back(0.0);
 		// there's probably a more efficient way to initialize neg
-		minfo->add_neg(data[i]->time, target);
+		minfo->add_neg(i, target);
 	}
 	for (int i = 0; i < seed_inds.size(); ++i) {
 		em_data &dinfo = *data[seed_inds[i]];
 		dinfo.map_mode = modes.size();
 		dinfo.model_row = i;
 		dinfo.obj_map = obj_map;
-		minfo->add_pos(dinfo.time, dinfo.target);
-		minfo->del_neg(dinfo.time, dinfo.target);
+		minfo->add_pos(seed_inds[i], dinfo.target);
+		minfo->del_neg(seed_inds[i], dinfo.target);
 	}
 	modes.push_back(minfo);
 	mark_mode_stale(nmodes);
@@ -814,7 +814,7 @@ bool EM::map_objs(int mode, int target, const state_sig &sig, const relation_tab
 	return true;
 }
 
-bool EM::predict(const state_sig &sig, const rvec &x, const relation_table &rels, int &mode, rvec &y) {
+bool EM::predict(const state_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y) {
 	if (ndata == 0 || nmodes < 0) {
 		mode = -1;
 		return false;
@@ -1031,6 +1031,9 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		}
 		print_foil6_data(os, mode);
 		return true;
+	} else if (args[first_arg] == "relations") {
+		os << rel_tbl << endl;
+		return true;
 	}
 
 	return false;
@@ -1056,14 +1059,13 @@ void EM::learn_obj_clause(int m, int i) {
 	for (j = modes[m]->members.begin(); j != modes[m]->members.end(); ++j) {
 		const state_sig &sig = sigs[data[*j]->sig_index];
 		int o = data[*j]->obj_map[i];
-		int t = data[*j]->time;
 		objs[0] = data[*j]->target;
 		objs[1] = o;
-		pos_obj.add(t, objs);
+		pos_obj.add(*j, objs);
 		for (int k = 0; k < sig.size(); ++k) {
 			if (sig[k].type == type && k != objs[0] && k != o) {
 				objs[1] = k;
-				neg_obj.add(t, objs);
+				neg_obj.add(*j, objs);
 			}
 		}
 	}
@@ -1127,19 +1129,10 @@ void EM::print_foil6_data(ostream &os, int mode) const {
 	os << "positive(T) #" << endl;
 	for (int j = 0; j < data.size(); ++j) {
 		if (data[j]->map_mode == mode) {
-			os << data[j]->time << endl;
+			os << j << endl;
 		}
 	}
 	os << "." << endl << endl;
-}
-
-void EM::serialize(ostream &os) const {
-	serializer(os) << ndata << nmodes << data << sigs << modes << noise;
-}
-
-void EM::unserialize(istream &is) {
-	unserializer(is) >> ndata >> nmodes >> data >> sigs >> modes >> noise;
-	assert(data.size() == ndata && modes.size() == nmodes);
 }
 
 bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &os) {
@@ -1184,19 +1177,57 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 	return false;
 }
 
+/*
+ Add tuples from a single time point into the relation table
+*/
+void EM::extend_relations(const relation_table &add, int time) {
+	set<tuple> t;
+	relation_table::const_iterator i;
+	for (i = add.begin(); i != add.end(); ++i) {
+		const string &name = i->first;
+		const relation &r = i->second;
+		relation_table::iterator j = rel_tbl.find(name);
+		if (j == rel_tbl.end()) {
+			rel_tbl[name] = r;
+		} else {
+			relation &r2 = j->second;
+			t.clear();
+			/*
+			 The assumption here is that all the tuples
+			 have the same value in the first position,
+			 since they're all from the same time.
+			*/
+			r.drop_first(t);
+			set<tuple>::const_iterator k;
+			for (k = t.begin(); k != t.end(); ++k) {
+				r2.add(time, *k);
+			}
+		}
+	}
+}
+
+void EM::serialize(ostream &os) const {
+	serializer(os) << ndata << nmodes << data << sigs << modes << noise << rel_tbl;
+}
+
+void EM::unserialize(istream &is) {
+	unserializer(is) >> ndata >> nmodes >> data >> sigs >> modes >> noise >> rel_tbl;
+	assert(data.size() == ndata && modes.size() == nmodes);
+}
+
 void EM::em_data::serialize(ostream &os) const {
-	serializer(os) << target << time << sig_index << map_mode << model_row
+	serializer(os) << target << sig_index << map_mode << model_row
 	               << x << y << mode_prob << obj_map;
 }
 
 void EM::em_data::unserialize(istream &is) {
-	unserializer(is) >> target >> time >> sig_index >> map_mode >> model_row
+	unserializer(is) >> target >> sig_index >> map_mode >> model_row
 	                 >> x >> y >> mode_prob >> obj_map;
 }
 
 void EM::mode_info::serialize(ostream &os) const {
 	serializer(os) << stale << target << stale_points << members << sig
-	               << mode_clauses << obj_clauses << pos << neg;
+	               << mode_clauses << obj_clauses << clauses_dirty << pos << neg;
 
 	assert(model);
 	model->serialize(os);
@@ -1204,7 +1235,7 @@ void EM::mode_info::serialize(ostream &os) const {
 
 void EM::mode_info::unserialize(istream &is) {
 	unserializer(is) >> stale >> target >> stale_points >> members >> sig
-	                 >> mode_clauses >> obj_clauses >> pos >> neg;
+	                 >> mode_clauses >> obj_clauses >> clauses_dirty >> pos >> neg;
 	
 	if (model) {
 		delete model;
@@ -1212,3 +1243,4 @@ void EM::mode_info::unserialize(istream &is) {
 	model = new LinearModel;
 	model->unserialize(is);
 }
+

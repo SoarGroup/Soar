@@ -222,6 +222,7 @@ void svs_state::update_models() {
 	state_sig curr_sig, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
+	relation_table curr_rels;
 	
 	if (level > 0) {
 		/* No legitimate information to learn from imagined states */
@@ -231,6 +232,7 @@ void svs_state::update_models() {
 	scn->get_properties(curr_pvals);
 	get_output(out);
 	scn->get_signature(curr_sig);
+	scn->calc_relations(curr_rels);
 	
 	// add an entry to the signature for the output
 	curr_sig.push_back(sig_entry());
@@ -246,12 +248,10 @@ void svs_state::update_models() {
 			x = prev_pvals;
 		}
 		if (test_models) {
-			relation_table rels;
-			scn->calc_relations(rels);
-			mmdl->test(curr_sig, x, curr_pvals, rels);
+			mmdl->test(curr_sig, prev_rels, x, curr_pvals);
 		}
 		if (learn_models) {
-			mmdl->learn(curr_sig, x, curr_pvals, svsp->get_time() - 1);
+			mmdl->learn(curr_sig, prev_rels, x, curr_pvals);
 		}
 	} else {
 		vector<string> pnames;
@@ -262,6 +262,7 @@ void svs_state::update_models() {
 		mmdl->set_property_vector(pnames);
 	}
 	prev_sig = curr_sig;
+	prev_rels = curr_rels;
 	prev_pvals = curr_pvals;
 }
 
@@ -357,7 +358,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 }
 
 svs::svs(agent *a)
-: learn(false), model_root(NULL), time(0)
+: learn(false), model_root(NULL)
 {
 	si = new soar_interface(a);
 	timers.add("input", true);
@@ -445,7 +446,6 @@ void svs::input_callback() {
 	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
-	get_filter_table().update_relations(topstate->get_scene(), time, rels);
 	if (learn) {
 		topstate->update_models();
 	}
@@ -454,7 +454,6 @@ void svs::input_callback() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
-	time++;
 }
 
 /*
@@ -537,17 +536,6 @@ bool svs::do_command(const vector<string> &args, stringstream &out) {
 		}
 		for (i = models.begin(); i != models.end(); ++i) {
 			out << i->first << "\t" << i->second->get_type() << endl;
-		}
-		return true;
-	} else if (args[1] == "relations") {
-		if (args.size() > 2) {
-			if (map_has(rels, args[2])) {
-				out << rels[args[2]];
-			} else {
-				out << "no such relation" << endl;
-			}
-		} else {
-			out << rels;
 		}
 		return true;
 	}

@@ -28,10 +28,6 @@ model::model(const std::string &name, const std::string &type)
 : name(name), type(type)
 {}
 
-bool model::test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
-	return predict(sig, x, rels, prediction);
-}
-
 bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
 	if (first_arg < args.size()) {
 		if (args[first_arg] == "save") {
@@ -96,7 +92,7 @@ void multi_model::find_targets(const vector<int> &yinds, state_sig &sig) {
 	}
 }
 
-bool multi_model::predict(const state_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
+bool multi_model::predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
@@ -111,7 +107,7 @@ bool multi_model::predict(const state_sig &sig, const rvec &x, rvec &y, const re
 			assert(false); // don't know what to do with the signature when we have to slice
 			slice(x, xp, cfg->xinds);
 		}
-		if (!cfg->mdl->predict(sig2, xp, rels, yp)) {
+		if (!cfg->mdl->predict(sig2, rels, xp, yp)) {
 			return false;
 		}
 		if (cfg->ally) {
@@ -124,7 +120,7 @@ bool multi_model::predict(const state_sig &sig, const rvec &x, rvec &y, const re
 	return true;
 }
 
-void multi_model::learn(const state_sig &sig, const rvec &x, const rvec &y, int time) {
+void multi_model::learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	std::list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
@@ -144,11 +140,11 @@ void multi_model::learn(const state_sig &sig, const rvec &x, const rvec &y, int 
 			slice(y, yp, cfg->yinds);
 		}
 		find_targets(cfg->yinds, sig2);
-		cfg->mdl->learn(sig2, xp, yp, time);
+		cfg->mdl->learn(sig2, rels, xp, yp);
 	}
 }
 
-bool multi_model::test(const state_sig &sig, const rvec &x, const rvec &y, const relation_table &rels) {
+bool multi_model::test(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	rvec predicted(y.size());
 	predicted.setConstant(0.0);
 	test_x.push_back(x);
@@ -156,7 +152,7 @@ bool multi_model::test(const state_sig &sig, const rvec &x, const rvec &y, const
 	test_rels.push_back(rels);
 	reference_vals.push_back(y);
 
-	if (!predict(sig, x, predicted, rels)) {
+	if (!predict(sig, rels, x, predicted)) {
 		predicted_vals.push_back(rvec());
 		return false;
 	}

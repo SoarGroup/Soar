@@ -379,11 +379,11 @@ void LinearModel::update_error() {
 }
 
 void LinearModel::serialize(ostream &os) const {
-	serializer(os) << alg << isconst << constvals << xdata << ydata;
+	serializer(os) << alg << error << isconst << xtotals << center << constvals << intercept << xdata << ydata;
 }
 
 void LinearModel::unserialize(istream &is) {
-	unserializer(is) >> alg >> isconst >> constvals >> xdata >> ydata;
+	unserializer(is) >> alg >> error >> isconst >> xtotals >> center >> constvals >> intercept >> xdata >> ydata;
 	fit();
 }
 
