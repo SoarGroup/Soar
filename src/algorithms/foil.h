@@ -53,7 +53,6 @@ std::ostream &operator<<(std::ostream &os, const clause &c);
 class FOIL {
 public:
 	FOIL(const relation &pos, const relation &neg, const relation_table &rels) ;
-	FOIL(const std::vector<int> &pos_insts, const std::vector<int> &neg_insts, const relation_table &rels) ;
 	bool learn(clause_vec &clauses);
 	void gain(const literal &l, double &g, double &maxg) const;
 

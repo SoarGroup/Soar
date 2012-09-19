@@ -310,13 +310,6 @@ FOIL::FOIL(const relation &p, const relation &n, const map<string, relation> &re
 : pos(p), neg(n), rels(rels), nvars(p.arity())
 {}
 
-FOIL::FOIL(const vector<int> &p, const vector<int> &n, const map<string, relation> &rels) 
-: rels(rels), nvars(1)
-{
-	pos.init_single(p);
-	neg.init_single(n);
-}
-
 bool FOIL::learn(clause_vec &clauses) {
 	if (neg.empty()) {
 		return true;

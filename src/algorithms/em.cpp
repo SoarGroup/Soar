@@ -475,8 +475,8 @@ void EM::mode_add_example(int m, int i, bool update) {
 	
 	minfo.members.insert(i);
 	minfo.stale = true;
-	minfo.add_pos(i, dinfo.target);
-	minfo.del_neg(i, dinfo.target);
+	minfo.pos.add(i, dinfo.target);
+	minfo.neg.del(i, dinfo.target);
 	minfo.clauses_dirty = true;
 }
 
@@ -494,8 +494,8 @@ void EM::mode_del_example(int m, int i) {
 		}
 	}
 	minfo.stale = true;
-	minfo.del_pos(i, dinfo.target);
-	minfo.add_neg(i, dinfo.target);
+	minfo.pos.del(i, dinfo.target);
+	minfo.neg.add(i, dinfo.target);
 	minfo.clauses_dirty = true;
 }
 
@@ -567,7 +567,7 @@ void EM::learn(const state_sig &sig, const relation_table &rels, const rvec &x, 
 	noise[sig_index].insert(ndata);
 	for (int i = 0; i < nmodes; ++i) {
 		modes[i]->stale_points.insert(ndata);
-		modes[i]->add_neg(ndata, dinfo->target);
+		modes[i]->neg.add(ndata, dinfo->target);
 	}
 	extend_relations(rels, ndata);
 	++ndata;
@@ -755,15 +755,15 @@ void EM::add_mode(int sig, LinearModel *m, const vector<int> &seed_inds, const v
 	for (int i = 0; i < ndata; ++i) {
 		data[i]->mode_prob.push_back(0.0);
 		// there's probably a more efficient way to initialize neg
-		minfo->add_neg(i, target);
+		minfo->neg.add(i, target);
 	}
 	for (int i = 0; i < seed_inds.size(); ++i) {
 		em_data &dinfo = *data[seed_inds[i]];
 		dinfo.map_mode = modes.size();
 		dinfo.model_row = i;
 		dinfo.obj_map = obj_map;
-		minfo->add_pos(seed_inds[i], dinfo.target);
-		minfo->del_neg(seed_inds[i], dinfo.target);
+		minfo->pos.add(seed_inds[i], dinfo.target);
+		minfo->neg.del(seed_inds[i], dinfo.target);
 	}
 	modes.push_back(minfo);
 	mark_mode_stale(nmodes);

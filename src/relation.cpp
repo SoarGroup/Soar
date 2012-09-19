@@ -3,6 +3,12 @@
 
 using namespace std;
 
+struct sliced_relation_tuple {
+	tuple match;
+	tuple extend;
+	const std::set<int> *lead;
+}; 
+
 void slice_tuple(const tuple &t1, const tuple &inds, tuple &t2) {
 	int n = inds.size();
 	t2.clear();
@@ -236,46 +242,37 @@ void relation::count_expansion(const relation  &r,
 	}
 }
 
-void relation::init_single(const vector<int> &s) {
-	tuples.clear();
-	tuples[tuple()].insert(s.begin(), s.end());
-	arty = 1;
-	sz = s.size();
-}
-
-void relation::add(int i) {
-	assert(arty == 1);
-	if (tuples.empty()) {
-		tuples[tuple()];
-	}
-	set<int> &s = tuples.begin()->second;
-	s.insert(i);
-	sz = s.size();
-}
-
 void relation::add(int i, const tuple &t) {
 	assert(t.size() + 1 == arty);
 	set<int> &s = tuples[t];
-	sz -= s.size();
-	s.insert(i);
-	sz += s.size();
+	if (s.find(i) == s.end()) {
+		s.insert(i);
+		++sz;
+	}
+}
+
+void relation::add(int i, int n) {
+	assert(arty == 2);
+	tuple t(1, n);
+	add(i, t);
 }
 
 void relation::del(int i, const tuple &t) {
 	assert(t.size() + 1 == arty);
 	tuple_map::iterator j = tuples.find(t);
 	if (j != tuples.end()) {
-		j->second.erase(i);
+		set<int>::iterator k = j->second.find(i);
+		if (k != j->second.end()) {
+			j->second.erase(k);
+			--sz;
+		}
 	}
 }
 
-void relation::del(int i) {
-	assert(arty == 1);
-	if (!tuples.empty()) {
-		set<int> &s = tuples.begin()->second;
-		s.erase(i);
-		sz = s.size();
-	}
+void relation::del(int i, int n) {
+	assert(arty == 2);
+	tuple t(1, n);
+	del(i, t);
 }
 
 void relation::at_pos(int n, set<int> &elems) const {

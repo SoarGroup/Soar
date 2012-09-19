@@ -1,6 +1,38 @@
 /*
- A relation is essentially a list of all argument values for which some
- predicate evaluates to true.
+ A relation is essentially a list of all tuples of arguments for which
+ the associated predicate evaluates to true.
+ 
+ Every relation has a time value for the first argument, with the
+ actual objects following. So intersect(5, 1, 2) means that at time 5,
+ object 1 intersects object 2. Therefore, a single relation spans the
+ entire duration of an experiment. This convention makes the FOIL
+ algorithm more straightforward to implement.
+ 
+ In most cases, a predicate will evaluate to true for some set of
+ objects for long stretches of time. For example, two objects may
+ intersect for the entire duration of an experiment. A data structure
+ optimization was made to exploit this fact: Instead of storing a
+ relation as a set of tuples, it stored as a map whose keys are the
+ tails of the tuples starting from the 2nd argument, and whose values
+ are the sets of times for which the predicate was true for the keys.
+ For example, the set of tuples:
+ 
+ (0, A, B)
+ (1, A, B)
+ (2, A, B)
+ (2, C, D)
+ (3, C, D)
+ 
+ would be stored as
+ 
+ {
+   (A, B) -> [ 0, 1, 2 ],
+   (C, D) -> [ 2, 3 ]
+ }
+ 
+ Note that I'm using A, B, C, D for clarity. The actual tuples in the
+ relation would all be integers. This optimization cuts down on memory
+ as well as the cost of operations like intersection.
 */
 
 #ifndef RELATION_H
@@ -19,10 +51,9 @@ public:
 	relation(const relation &r);
 	relation(int n, const std::vector<tuple> &t);
 	
-	void init_single(const std::vector<int> &s);
-	void add(int i);
+	void add(int i, int n);  // convenience for arity = 2
 	void add(int i, const tuple &t);
-	void del(int i);
+	void del(int i, int n);  // convenience for arity = 2
 	void del(int i, const tuple &t);
 	bool test(const tuple &t) const;
 	void slice(const tuple &inds, relation &out) const;
@@ -45,12 +76,6 @@ public:
 	
 private:
 	typedef std::map<tuple, std::set<int> > tuple_map;
-
-	struct sliced_relation_tuple {
-		tuple match;
-		tuple extend;
-		const std::set<int> *lead;
-	}; 
 
 	int sz, arty;
 	tuple_map tuples;
