@@ -10,6 +10,7 @@
 #include "drawer.h"
 #include "model.h"
 #include "timer.h"
+#include "relation.h"
 
 class command;
 class scene;

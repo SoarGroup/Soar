@@ -8,6 +8,7 @@
 #include "timer.h"
 #include "foil.h"
 #include "serializable.h"
+#include "relation.h"
 
 class scene;
 

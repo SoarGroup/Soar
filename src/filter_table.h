@@ -12,6 +12,7 @@
 #include "common.h"
 #include "timer.h"
 #include "soar_interface.h"
+#include "relation.h"
 
 class filter;
 class filter_input;

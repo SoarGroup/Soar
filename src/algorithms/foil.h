@@ -4,6 +4,7 @@
 #include <vector>
 #include "common.h"
 #include "serializable.h"
+#include "relation.h"
 
 class literal : public serializable {
 public:

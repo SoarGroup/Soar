@@ -10,6 +10,7 @@
 #include "common.h"
 #include "mat.h"
 #include "soar_interface.h"
+#include "relation.h"
 
 class model : public serializable {
 public:
