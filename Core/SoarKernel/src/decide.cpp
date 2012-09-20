@@ -935,6 +935,19 @@ void rl_update_for_one_candidate(agent* thisAgent, slot *s, bool consistency, pr
 }
 /* MMA end */
 
+//#define debug_cdps 0
+void print_cdps (agent* thisAgent, const char *format, ...) {
+#ifdef debug_cdps
+  va_list args;
+  char buf[5000];
+
+  va_start (args, format);
+  vsprintf (buf, format, args);
+  va_end (args);
+  print_string (thisAgent, buf);
+#endif
+}
+
 /* **************************************************************************
 
                          Run Preference Semantics
@@ -971,7 +984,7 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
   preference *p, *p2, *cand, *prev_cand;
-  Bool match_found, not_all_indifferent, some_numeric, do_CDPS, do_all_CDPS;
+  Bool match_found, not_all_indifferent, some_numeric, do_CDPS, do_all_CDPS, has_prohibit;
   preference *candidates;
   Symbol *value;
   cons *CDPS, *prev_cons;
@@ -1129,10 +1142,11 @@ byte run_preference_semantics(agent* thisAgent,
    *     which is equivalent to the entire candidate list at this point
    * (2) add all reject and prohibit preferences */
 
+  has_prohibit = (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]);
   if (do_CDPS) {
-    if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]) {
+    if (has_prohibit) {
       print(thisAgent, "CDPS DEBUG:  Prohibit or Reject preference detected.  Performing stage 2 additions.\n");
-      print(thisAgent, "CDPS DEBUG:  - Adding prohibit preferences\n");
+      print(thisAgent, "CDPS DEBUG:  - Adding prohibit preferences %i\n", s->preferences[PROHIBIT_PREFERENCE_TYPE]);
       for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
         add_to_CDPS(thisAgent, s, p);
       if (do_all_CDPS) {
@@ -1151,7 +1165,14 @@ byte run_preference_semantics(agent* thisAgent,
   if ((!candidates) || (!candidates->next_candidate)) {
     *result_candidates = candidates;
     if (candidates) {
-      print(thisAgent, "CDPS DEBUG:  Exit point 1.\n");
+      if (do_all_CDPS && !has_prohibit) {
+        /* Add acceptable preferences to CDPS for selected operator.  If a prohibit/reject
+         * preference existed, we already added the acceptable pref for the selected
+         * operator when processing the CDPS above, so we can skip here. */
+        print(thisAgent, "CDPS DEBUG:  Exit point 1.  Performing stage 1 addition.\n");
+        add_to_CDPS(thisAgent, s, candidates);
+      } else
+        print(thisAgent, "CDPS DEBUG:  Exit point 1.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
@@ -1262,7 +1283,8 @@ byte run_preference_semantics(agent* thisAgent,
     while (cand) {
       if (cand->value->common.decider_flag == CONFLICTED_DECIDER_FLAG) {
 
-        print(thisAgent, "CDPS DEBUG:  Worse preference found for candidate.  Removing acceptables.\n");
+        print(thisAgent, "CDPS DEBUG:  Worse preference found for candidate.  Removing acceptables for ");
+        print_preference(thisAgent, cand);
 
         /* Remove this preference from the candidate list */
         if (prev_cand)
@@ -1272,9 +1294,12 @@ byte run_preference_semantics(agent* thisAgent,
 
         /* Remove any acceptable preference for the same operator from the CDPS */
         if (do_all_CDPS && s->CDPS) {
+          print(thisAgent, "Attempting to remove acceptable preferences.\n");
             prev_cons = NIL;
             for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
               p = static_cast<preference *>(CDPS->first);
+              print(thisAgent, "Checking ");
+              print_preference(thisAgent, p);
               if ((p->value == cand->value) && (p->type == ACCEPTABLE_PREFERENCE_TYPE)) {
                 if (!prev_cons) {
                   s->CDPS = CDPS->rest;
@@ -1285,6 +1310,8 @@ byte run_preference_semantics(agent* thisAgent,
                 print_preference(thisAgent, p);
                 free_cons(thisAgent, CDPS);
                 preference_remove_ref(thisAgent, p);
+              } else {
+                prev_cons = CDPS;
               }
             }
           }
@@ -1465,19 +1492,10 @@ byte run_preference_semantics(agent* thisAgent,
   for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
 
-  // TODO: A binary indifferent can no longer be numeric.  Can remove this!
-  /* Some binary prefs are actually numeric prefs, so mark them.  These occur
-   * when a production uses a variable to set the indifferent numeric value. */
-
-  for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
-    if ((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-        || (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)) {
-      p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
-      print(thisAgent, "CDPS DEBUG:  binary numeric marked.\n");
-      assert(false);
-    }
-  /* Go through candidate list and make sure every binary indifferent item
-   * is binary indifferent to every item on the candidate list */
+  /* Go through candidate list and check for a tie impasse.  All candidates
+   * must either be unary indifferent or binary indifferent to every item on
+   * the candidate list.  This will also catch when a candidate has no
+   * indifferent preferences at all. */
 
   not_all_indifferent = false;
   some_numeric = false;
@@ -1486,7 +1504,7 @@ byte run_preference_semantics(agent* thisAgent,
 
     /* If this candidate has a unary indifferent preference, skip. Numeric indifferent
      * prefs are considered to have an implicit unary indifferent pref,
-     * which is implemented here. */
+     * which is why they are skipped too. */
 
     if (cand->value->common.decider_flag == UNARY_INDIFFERENT_DECIDER_FLAG)
       continue;
@@ -1540,30 +1558,21 @@ byte run_preference_semantics(agent* thisAgent,
 
           for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == (*result_candidates)->value) {
-              print(thisAgent, "Adding numeric indifferent pref.\n");
+              print(thisAgent, "CDPS DEBUG:  Adding numeric indifferent pref.\n");
               add_to_CDPS(thisAgent, s, p, false);
             }
           }
 
-          /* Now add all binary preferences that are really numerics and any binary preferences
-           * with a candidate that does NOT have a numeric preference. */
+          /* Now add any binary preferences with a candidate that does NOT have a numeric preference. */
 
           for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
-              /* The following can be deleted as soon as we're sure that binary numerics are a thing of the
-               * past, which they do seem to be.
-               *
-               * if ((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-                  || (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)) {
-                print(thisAgent, "Adding binary numeric preference.\n");
-                add_to_CDPS(thisAgent, s, p, false);
-              } else */
                 if ((p->referent->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
-                         (p->value->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG)) {
-                print(thisAgent, "Adding binary indifferent pref between numeric and non-numeric candidates.\n");
+                       (p->value->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG)) {
+                print(thisAgent, "CDPS DEBUG:  Adding binary indifferent pref between numeric and non-numeric candidates.\n");
                 add_to_CDPS(thisAgent, s, p);
               } else {
-                print(thisAgent, "Ignoring binary indifferent pref between two numeric candidates.\n");
+                print(thisAgent, "CDPS DEBUG:  Ignoring binary indifferent pref between two numeric candidates.\n");
                 print_preference(thisAgent, p);
               }
             }

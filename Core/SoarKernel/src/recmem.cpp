@@ -93,8 +93,9 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
 
   for (cond = inst->top_of_instantiated_conditions; cond != NIL;
       cond = cond->next) {
+    assert(cond->bt.CDPS == NIL);
     cond->bt.CDPS = NIL;
-    if (cond->type == POSITIVE_CONDITION && cond->bt.trace) {
+    if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot) {
       if (cond->bt.trace->slot->CDPS) {
         assert(cond->bt.trace->slot->isa_context_slot);
         print(thisAgent, "\nCopying CDPS for condition...");
@@ -937,9 +938,9 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 				cond->next) {
 			if (cond->type == POSITIVE_CONDITION) {
 
-        /* MMA 9-2012 - Clear out the CDPS */
-        print(thisAgent, "CDPS DEBUG:  - Clearing out CDPS in deallocate instantiation\n");
 				if (cond->bt.CDPS) {
+	        /* MMA 9-2012 - Clear out the CDPS */
+	        print(thisAgent, "CDPS DEBUG:  - Clearing out CDPS in deallocate instantiation\n");
           c_old = c = cond->bt.CDPS;
           cond->bt.CDPS = NIL;
           for (; c != NIL; c = c->rest) {
