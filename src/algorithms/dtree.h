@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "common.h"
 
 typedef int category;
 typedef std::vector<bool> boolvec;

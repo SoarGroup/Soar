@@ -75,38 +75,7 @@ ofstream& get_datavis() {
 	return f;
 }
 
-vec3 project(const vec3 &v, const vec3 &u) {
-	float m = u.squaredNorm();
-	if (m == 0.) {
-		return vec3::Zero();
-	}
-	return u * (v.dot(u) / m);
-}
-
-float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
-	int counter = 0;
-	ptlist::const_iterator i;
-	vec3 p;
-	float x, min = numeric_limits<float>::max(), max = -numeric_limits<float>::max();
-	for (i = a.begin(); i != a.end(); ++i) {
-		p = project(*i, u);
-		x = p[0] / u[0];
-		if (x < min) {
-			min = x;
-		}
-	}
-	for (i = b.begin(); i != b.end(); ++i) {
-		p = project(*i, u);
-		x = p[0] / u[0];
-		if (x > max) {
-			max = x;
-		}
-	}
-	
-	return max - min;
-}
-
-ostream &histogram(const rvec &vals, int nbins, ostream &os) {
+ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
 	assert(nbins > 0);
 	float min = vals[0], max = vals[0], binsize, hashes_per;
 	int i, b, maxcount = 0;
@@ -144,14 +113,6 @@ ostream &histogram(const rvec &vals, int nbins, ostream &os) {
 	os.precision(p);
 	os.flags(f);
 	return os;
-}
-
-ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
-	rvec v(vals.size());
-	for (int i = 0; i < vals.size(); ++i) {
-		v(i) = vals[i];
-	}
-	return histogram(v, nbins, os);
 }
 
 ostream& operator<<(ostream &os, const bbox &b) {

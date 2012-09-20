@@ -2,7 +2,7 @@
 #define LWR_H
 
 #include <iostream>
-#include "common.h"
+#include "mat.h"
 
 class LWR {
 public:

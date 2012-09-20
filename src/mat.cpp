@@ -235,3 +235,42 @@ void pick_rows(mat_view X, const vector<int> &rows) {
 		}
 	}
 }
+
+void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
+	//v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
+	// apparently rvec::Random will generate numbers outside of [0, 1]
+	for (int i = 0; i < v.size(); ++i) {
+		v(i) = min(i) + (rand() / (double) RAND_MAX) * (max(i) - min(i));
+	}
+}
+
+vec3 project(const vec3 &v, const vec3 &u) {
+	float m = u.squaredNorm();
+	if (m == 0.) {
+		return vec3::Zero();
+	}
+	return u * (v.dot(u) / m);
+}
+
+float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
+	int counter = 0;
+	ptlist::const_iterator i;
+	vec3 p;
+	float x, min = numeric_limits<float>::max(), max = -numeric_limits<float>::max();
+	for (i = a.begin(); i != a.end(); ++i) {
+		p = project(*i, u);
+		x = p[0] / u[0];
+		if (x < min) {
+			min = x;
+		}
+	}
+	for (i = b.begin(); i != b.end(); ++i) {
+		p = project(*i, u);
+		x = p[0] / u[0];
+		if (x > max) {
+			max = x;
+		}
+	}
+	
+	return max - min;
+}

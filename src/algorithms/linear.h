@@ -6,6 +6,7 @@
 #include "common.h"
 #include "timer.h"
 #include "serializable.h"
+#include "mat.h"
 
 bool wpcr  (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 bool ridge (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);

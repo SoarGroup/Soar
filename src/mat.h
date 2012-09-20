@@ -158,6 +158,7 @@ std::ostream& output_cvec(std::ostream &os, const cvec &v, const std::string &se
 std::ostream& output_mat(std::ostream &os, const const_mat_view m);
 
 bool is_normal(const_mat_view m);
+void randomize_vec(rvec &v, const rvec &min, const rvec &max);
 
 /*
  Return indices of columns that have significantly different values,
@@ -176,5 +177,135 @@ void pick_cols(const_mat_view X, const std::vector<int> &cols, mat &result);
 void pick_rows(const_mat_view X, const std::vector<int> &rows, mat &result);
 void pick_cols(mat_view X, const std::vector<int> &cols);
 void pick_cols(mat_view X, const std::vector<int> &rows);
+
+/*
+ Calculate the maximum difference between points in two point clouds in
+ the direction of u.
+ 
+  a         b
+  .<-- d -->.        returns a positive d
+ --------------> u
+ 
+  b         a
+  .<-- d -->.        returns a negative d
+ --------------> u
+*/
+float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u);
+
+class bbox {
+public:
+	bbox() {
+		min.setZero();
+		max.setZero();
+	}
+	
+	/* bounding box around single point */
+	bbox(const vec3 &v) {
+		min = v;
+		max = v;
+	}
+	
+	bbox(const ptlist &pts) {
+		if (pts.size() == 0) {
+			min.setZero();
+			max.setZero();
+		} else {
+			min = pts[0];
+			max = pts[0];
+		
+			for(int i = 1; i < pts.size(); ++i) {
+				include(pts[i]);
+			}
+		}
+	}
+	
+	bbox(const vec3 &min, const vec3 &max) : min(min), max(max) {}
+	
+	void include(const vec3 &v) {
+		for(int d = 0; d < 3; ++d) {
+			if (v[d] < min[d]) { min[d] = v[d]; }
+			if (v[d] > max[d]) { max[d] = v[d]; }
+		}
+	}
+	
+	void include(const ptlist &pts) {
+		ptlist::const_iterator i;
+		for(i = pts.begin(); i != pts.end(); ++i) {
+			include(*i);
+		}
+	}
+	
+	void include(const bbox &b) {
+		include(b.min);
+		include(b.max);
+	}
+	
+	bool intersects(const bbox &b) const {
+		int d;
+		for (d = 0; d < 3; ++d) {
+			if (max[d] < b.min[d] || min[d] > b.max[d]) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	bool contains(const bbox &b) const {
+		int d;
+		for (d = 0; d < 3; ++d) {
+			if (max[d] < b.max[d] || min[d] > b.min[d]) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	void get_vals(vec3 &minv, vec3 &maxv) const
+	{
+		minv = min; maxv = max;
+	}
+	
+	bool operator==(const bbox &b) const {
+		return min == b.min && max == b.max;
+	}
+	
+	bool operator!=(const bbox &b) const {
+		return min != b.min || max != b.max;
+	}
+	
+	bbox &operator=(const bbox &b) {
+		min = b.min;
+		max = b.max;
+		return *this;
+	}
+	
+	void reset() {
+		min.setZero();
+		max.setZero();
+	}
+	
+	vec3 get_centroid() const {
+		return (max + min) / 2.0;
+	}
+	
+	void get_points(ptlist &p) const {
+		p.push_back(vec3(min[0], min[1], min[2]));
+		p.push_back(vec3(min[0], min[1], max[2]));
+		p.push_back(vec3(min[0], max[1], min[2]));
+		p.push_back(vec3(min[0], max[1], max[2]));
+		p.push_back(vec3(max[0], min[1], min[2]));
+		p.push_back(vec3(max[0], min[1], max[2]));
+		p.push_back(vec3(max[0], max[1], min[2]));
+		p.push_back(vec3(max[0], max[1], max[2]));
+	}
+	
+	friend std::ostream& operator<<(std::ostream &os, const bbox &b);
+	
+private:
+	vec3 min;
+	vec3 max;
+};
+
+std::ostream& operator<<(std::ostream &os, const bbox &b);
 
 #endif

@@ -4,7 +4,7 @@
 #include <vector>
 #include <queue>
 #include <utility>
-#include "common.h"
+#include "mat.h"
 
 typedef std::pair<double, int> di_pair;
 typedef std::priority_queue<di_pair> di_queue;

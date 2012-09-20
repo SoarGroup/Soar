@@ -2,7 +2,7 @@
 #define LDA_H
 
 #include <vector>
-#include "common.h"
+#include "mat.h"
 
 class LDA_NN_Classifier {
 public:

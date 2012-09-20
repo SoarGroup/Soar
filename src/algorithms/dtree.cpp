@@ -7,6 +7,7 @@
 #include <cstdio>
 #include "dtree.h"
 #include "common.h"
+#include "mat.h"
 
 using namespace std;
 

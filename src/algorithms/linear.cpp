@@ -7,6 +7,7 @@
 #include "common.h"
 #include "params.h"
 #include "serialize.h"
+#include "mat.h"
 
 using namespace std;
 using namespace Eigen;
@@ -478,5 +479,3 @@ bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream
 	os << "unrecognized argument" << endl;
 	return false;
 }
-
-
