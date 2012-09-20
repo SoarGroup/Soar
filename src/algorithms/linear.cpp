@@ -252,7 +252,7 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const state_sig &
 	int ndims = 0, ndata = X.rows(), nout = Y.cols();
 	for(int i = 0; i < sig.size(); ++i) {
 		for (int j = 0; j < sig[i].length; ++j) {
-			if (coefs.row(sig[i].start + j).sum() > 0.0) {
+			if (!coefs.row(sig[i].start + j).isConstant(0.0)) {
 				obj_map.push_back(i);
 				ndims += sig[i].length;
 				break;
