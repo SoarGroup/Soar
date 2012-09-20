@@ -984,7 +984,7 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
   preference *p, *p2, *cand, *prev_cand;
-  Bool match_found, not_all_indifferent, some_numeric, do_CDPS, do_all_CDPS, has_prohibit;
+  Bool match_found, not_all_indifferent, some_numeric, do_CDPS, do_all_CDPS;
   preference *candidates;
   Symbol *value;
   cons *CDPS, *prev_cons;
@@ -1142,9 +1142,8 @@ byte run_preference_semantics(agent* thisAgent,
    *     which is equivalent to the entire candidate list at this point
    * (2) add all reject and prohibit preferences */
 
-  has_prohibit = (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]);
   if (do_CDPS) {
-    if (has_prohibit) {
+    if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]) {
       print(thisAgent, "CDPS DEBUG:  Prohibit or Reject preference detected.  Performing stage 2 additions.\n");
       print(thisAgent, "CDPS DEBUG:  - Adding prohibit preferences %i\n", s->preferences[PROHIBIT_PREFERENCE_TYPE]);
       for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
@@ -1165,14 +1164,7 @@ byte run_preference_semantics(agent* thisAgent,
   if ((!candidates) || (!candidates->next_candidate)) {
     *result_candidates = candidates;
     if (candidates) {
-      if (do_all_CDPS && !has_prohibit) {
-        /* Add acceptable preferences to CDPS for selected operator.  If a prohibit/reject
-         * preference existed, we already added the acceptable pref for the selected
-         * operator when processing the CDPS above, so we can skip here. */
-        print(thisAgent, "CDPS DEBUG:  Exit point 1.  Performing stage 1 addition.\n");
-        add_to_CDPS(thisAgent, s, candidates);
-      } else
-        print(thisAgent, "CDPS DEBUG:  Exit point 1.\n");
+      print(thisAgent, "CDPS DEBUG:  Exit point 1.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
@@ -1341,11 +1333,7 @@ byte run_preference_semantics(agent* thisAgent,
   if ((!candidates) || (!candidates->next_candidate)) {
     *result_candidates = candidates;
     if (candidates) {
-      if (do_all_CDPS) {
-        /* Add acceptable preferences to CDPS for selected operator */
-        print(thisAgent, "CDPS DEBUG:  Exit point 2.  Performing stage 1 addition.\n");
-        add_to_CDPS(thisAgent, s, candidates);
-      }
+      print(thisAgent, "CDPS DEBUG:  Exit point 2.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
@@ -1398,11 +1386,7 @@ byte run_preference_semantics(agent* thisAgent,
     *result_candidates = candidates;
     if (candidates) {
 
-      if (do_all_CDPS) {
-        /* Add acceptable preferences to CDPS for selected operator */
-        print(thisAgent, "CDPS DEBUG:  Exit point 3.  Performing stage 1 addition.\n");
-        add_to_CDPS(thisAgent, s, candidates);
-      }
+      print(thisAgent, "CDPS DEBUG:  Exit point 3.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
 
@@ -1460,11 +1444,7 @@ byte run_preference_semantics(agent* thisAgent,
   if ((!candidates) || (!candidates->next_candidate)) {
     *result_candidates = candidates;
     if (candidates) {
-      if (do_all_CDPS) {
-        /* Add acceptable preferences to CDPS for selected operator */
-        print(thisAgent, "CDPS DEBUG:  Exit point 4.  Performing stage 1 addition.\n");
-        add_to_CDPS(thisAgent, s, candidates);
-      }
+      print(thisAgent, "CDPS DEBUG:  Exit point 4.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
 
@@ -1545,9 +1525,7 @@ byte run_preference_semantics(agent* thisAgent,
       (*result_candidates)->next_candidate = NIL;
 
       if (do_all_CDPS) {
-        /* Add acceptable preferences to CDPS for selected operator */
-        print(thisAgent, "CDPS DEBUG:  Exit point 5.  Performing stage 1 addition.\n");
-        add_to_CDPS(thisAgent, s, (*result_candidates));
+        print(thisAgent, "CDPS DEBUG:  Exit point 5.\n");
 
         /* Add all indifferent preferences associated with the chosen candidate to the CDPS.*/
 
