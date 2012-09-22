@@ -32,7 +32,7 @@ bool solve(const_mat_view X, const_mat_view Y, mat &C) {
 */
 bool OLS(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
 	mat X1(X.rows(), X.cols() + 1), Y1, C;
-	vector<int> nonstatic;
+	vector<int> nonuniform;
 
 	for (int i = 0; i < X.rows(); ++i) {
 		for (int j = 0; j < X.cols(); ++j) {
@@ -44,8 +44,8 @@ bool OLS(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &in
 		}
 	}
 
-	del_static_cols(X1, X.cols(), nonstatic);
-	X1.conservativeResize(X.rows(), nonstatic.size() + 1);
+	del_uniform_cols(X1, X.cols(), nonuniform);
+	X1.conservativeResize(X.rows(), nonuniform.size() + 1);
 	X1.rightCols(1).setConstant(1.0);
 	
 	if (w.size() == X.rows()) {
@@ -62,8 +62,8 @@ bool OLS(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &in
 
 	coefs.resize(X.cols(), Y.cols());
 	coefs.setConstant(0);
-	for (int i = 0; i < nonstatic.size(); ++i) {
-		coefs.row(nonstatic[i]) = C.row(i);
+	for (int i = 0; i < nonuniform.size(); ++i) {
+		coefs.row(nonuniform[i]) = C.row(i);
 	}
 	intercept = C.bottomRows(1);
 	return true;

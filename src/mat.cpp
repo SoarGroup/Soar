@@ -166,18 +166,24 @@ bool is_normal(const_mat_view m) {
 	return true;
 }
 
-void get_nonstatic_cols(const_mat_view X, int ncols, vector<int> &nonstatic_cols) {
+bool is_uniform(const_mat_view m) {
+	if (m.rows() == 0 || m.cols() == 0) {
+		return true;
+	}
+	return m.isConstant(m(0, 0), SAME_THRESH);
+}
+
+void get_nonuniform_cols(const_mat_view X, int ncols, vector<int> &cols) {
 	for (int i = 0; i < ncols; ++i) {
-		cvec c = X.col(i).array().abs();
-		if (c.maxCoeff() > c.minCoeff() * SAME_THRESH) {
-			nonstatic_cols.push_back(i);
+		if (!is_uniform(X.col(i))) {
+			cols.push_back(i);
 		}
 	}
 }
 
-void del_static_cols(mat_view X, int ncols, vector<int> &nonstatic_cols) {
-	get_nonstatic_cols(X, ncols, nonstatic_cols);
-	pick_cols(X, nonstatic_cols);
+void del_uniform_cols(mat_view X, int ncols, vector<int> &cols) {
+	get_nonuniform_cols(X, ncols, cols);
+	pick_cols(X, cols);
 }
 
 void pick_cols(const_mat_view X, const vector<int> &cols, mat &result) {

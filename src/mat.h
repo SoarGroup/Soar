@@ -42,6 +42,8 @@ typedef Eigen::Map<const mat, Eigen::Unaligned, mat_stride> const_mat_map;
 typedef Eigen::Block<      mat_map, Eigen::Dynamic, Eigen::Dynamic, false, true> map_block;
 typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, true,  true> const_map_iblock;
 typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, false, true> const_map_block;
+typedef Eigen::Block<const_mat_map, Eigen::Dynamic, 1, false, true> const_map_col_block;
+typedef Eigen::Block<const_mat_map, 1, Eigen::Dynamic, false, true> const_map_row_block;
 
 /*
  If you define a function argument as "const mat &" and a block or a
@@ -59,19 +61,21 @@ public:
 
 class const_mat_view : public const_mat_map {
 public:
-	const_mat_view(const mat &m)               : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
-	const_mat_view(const rvec &v)              : const_mat_map(v.data(), 1, v.size(), mat_stride(1, 1)) {}
-	const_mat_view(const cvec &v)              : const_mat_map(v.data(), v.size(), 1, mat_stride(1, 1)) {}
-	const_mat_view(const mat &m, int r, int c) : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
-	const_mat_view(const mat_block &b)         : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
-	const_mat_view(const mat_iblock &b)        : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
-	const_mat_view(const const_mat_block &b)   : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
-	const_mat_view(const const_mat_iblock &b)  : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
-	const_mat_view(const const_mat_map &m)     : const_mat_map(m) {}
-	const_mat_view(const mat_map &m)           : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
-	const_mat_view(const map_block &b)         : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
-	const_mat_view(const const_map_block &b)   : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
-	const_mat_view(const_mat_view &m)          : const_mat_map(m) {}
+	const_mat_view(const mat &m)                 : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
+	const_mat_view(const rvec &v)                : const_mat_map(v.data(), 1, v.size(), mat_stride(1, 1)) {}
+	const_mat_view(const cvec &v)                : const_mat_map(v.data(), v.size(), 1, mat_stride(1, 1)) {}
+	const_mat_view(const mat &m, int r, int c)   : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
+	const_mat_view(const mat_block &b)           : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const mat_iblock &b)          : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const const_mat_block &b)     : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const const_mat_iblock &b)    : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const const_mat_map &m)       : const_mat_map(m) {}
+	const_mat_view(const mat_map &m)             : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
+	const_mat_view(const map_block &b)           : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const const_map_block &b)     : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const const_map_col_block &b) : const_mat_map(b.data(), b.rows(), 1, mat_stride(1, 1)) {}
+	const_mat_view(const const_map_row_block &b) : const_mat_map(b.data(), 1, b.cols(), mat_stride(1, 1)) {}
+	const_mat_view(const_mat_view &m)            : const_mat_map(m) {}
 };
 
 
@@ -158,6 +162,7 @@ std::ostream& output_cvec(std::ostream &os, const cvec &v, const std::string &se
 std::ostream& output_mat(std::ostream &os, const const_mat_view m);
 
 bool is_normal(const_mat_view m);
+bool is_uniform(const_mat_view X);
 void randomize_vec(rvec &v, const rvec &min, const rvec &max);
 
 /*
@@ -165,13 +170,13 @@ void randomize_vec(rvec &v, const rvec &min, const rvec &max);
  meaning the maximum absolute value of the column is greater than
  SAME_THRESH times the minimum absolute value.
 */
-void get_nonstatic_cols(const_mat_view X, int ncols, std::vector<int> &nonstatic_cols);
+void get_nonuniform_cols(const_mat_view X, int ncols, std::vector<int> &cols);
 
 /*
- Remove the static columns from the first 'cols' columns of X. This
+ Remove the static columns from the first 'ncols' columns of X. This
  will not resize the matrix.
 */
-void del_static_cols(mat_view X, int cols, std::vector<int> &nonstatic);
+void del_uniform_cols(mat_view X, int ncols, std::vector<int> &cols);
 
 void pick_cols(const_mat_view X, const std::vector<int> &cols, mat &result);
 void pick_rows(const_mat_view X, const std::vector<int> &rows, mat &result);
