@@ -3,21 +3,28 @@
 
 #include <vector>
 #include <cmath>
+#ifndef NO_SVS_TIMING
 #include "portability.h"
 #include "misc.h"
+#endif
 
 class timer_set;
 
 class timer {
 public:
+
+#ifdef NO_SVS_TIMING
+
+	timer(const std::string &name, bool basic) {}
+	inline void start() {}
+	inline double stop() { return 0.0; }
+
+#else
+
 	timer(const std::string &name, bool basic) 
 	: name(name), basic(basic), count(0), total(0), last(0), mn(0), min(INFINITY), max(0), m2(0)
 	{}
 	
-#ifdef NO_SVS_TIMING
-	inline void start() {}
-	inline double stop() { return 0.0; }
-#else
 	inline void start() {
 		t.start();
 	}
@@ -42,11 +49,17 @@ public:
 		
 		return elapsed;
 	}
+
 #endif
 	
 private:
+
+#ifndef NO_SVS_TIMING
+
 	soar_wallclock_timer t;
 	
+#endif
+
 	std::string name;
 	bool basic;
 	
@@ -60,7 +73,7 @@ private:
 	
 	friend class timer_set;
 };
-
+	
 /*
  Create an instance of this class at the beginning of a
  function. The timer will stop regardless of how the function
