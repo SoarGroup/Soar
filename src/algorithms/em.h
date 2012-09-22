@@ -43,6 +43,7 @@ private:
 		std::vector<int> obj_map;      // object variable in model -> object index in instance
 		int model_row;                 // the row in the model's training matrix where this point appears
 	
+		em_data() : target(-1), time(-1), sig_index(-1), map_mode(-1), model_row(-1) {}
 		void serialize(std::ostream &os) const;
 		void unserialize(std::istream &is);
 	};
@@ -95,20 +96,21 @@ private:
 	bool unify_or_add_model();
 	bool step();
 	void update_eligibility();
-	void update_mode_prob(int i, std::set<int> &check, obj_map_table &obj_maps);
-	void update_MAP(const std::set<int> &pts, const obj_map_table &obj_maps);
+	void update_mode_prob(int i, std::set<int> &check);
+	void update_MAP(const std::set<int> &pts);
 	bool remove_modes();
 	void mark_mode_stale(int i);
 	bool find_new_mode_inds(const std::set<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
 	double calc_prob(int m, const state_sig &sig, const rvec &x, double y, int target, std::vector<int> &best_assign, double &best_error) const;
 	void mode_add_example(int m, int i, bool update);
 	void mode_del_example(int m, int i);
-	void add_mode(int sig, LinearModel *m, const std::vector<int> &seed_inds, const std::vector<int> &obj_map);
+	void init_mode(int mode, int sig, LinearModel *m, const std::vector<int> &members, const std::vector<int> &obj_map);
 	void learn_obj_clause(int m, int i);
 	void update_clauses(int m);
 	void print_foil6_data(std::ostream &os, int mode) const;
 	bool map_objs(int mode, int target, const state_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
 	void extend_relations(const relation_table &add, int time);
+	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
 
 	relation_table rel_tbl;
 	std::vector<em_data*> data;
@@ -116,6 +118,7 @@ private:
 	std::vector<mode_info*> modes;
 	std::map<int, std::set<int> > noise;  // sig index -> data index
 	int ndata, nmodes;
+	obj_map_table obj_maps;
 	
 	enum Timers { E_STEP_T, M_STEP_T, NEW_T };
 	timer_set timers;

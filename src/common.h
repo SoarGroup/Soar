@@ -143,6 +143,15 @@ void union_sets_inplace(std::set<T> &s1, const std::set<T> &s2) {
 	}
 }
 
+template<typename A, typename B>
+void extend(A &c1, const B &c2) {
+	std::insert_iterator<A> i(c1, c1.end());
+	typename B::const_iterator j;
+	for (j = c2.begin(); j != c2.end(); ++j) {
+		i = *j;
+	}
+}
+
 template<typename C, typename D>
 std::ostream &join(std::ostream &os, const C& container, const D &delim) {
 	if (container.empty()) {

@@ -423,9 +423,10 @@ double EM::calc_prob(int m, const state_sig &sig, const rvec &x, double y, int t
  don't recalculate MAP immediately because the probabilities for other
  models may change in the same round.
 */
-void EM::update_mode_prob(int i, set<int> &check, obj_map_table &obj_maps) {
+void EM::update_mode_prob(int i, set<int> &check) {
 	set<int>::iterator j;
-	for (j = modes[i]->stale_points.begin(); j != modes[i]->stale_points.end(); ++j) {
+	mode_info &minfo = *modes[i];
+	for (j = minfo.stale_points.begin(); j != minfo.stale_points.end(); ++j) {
 		em_data &dinfo = *data[*j];
 		double prev = dinfo.mode_prob[i], now;
 		int m = dinfo.map_mode;
@@ -445,7 +446,7 @@ void EM::update_mode_prob(int i, set<int> &check, obj_map_table &obj_maps) {
 		}
 		dinfo.mode_prob[i] = now;
 	}
-	modes[i]->stale_points.clear();
+	minfo.stale_points.clear();
 }
 
 /*
@@ -500,7 +501,7 @@ void EM::mode_del_example(int m, int i) {
 }
 
 /* Recalculate MAP model for each index in points */
-void EM::update_MAP(const set<int> &points, const obj_map_table &obj_maps) {
+void EM::update_MAP(const set<int> &points) {
 	set<int>::iterator j;
 	for (j = points.begin(); j != points.end(); ++j) {
 		em_data &dinfo = *data[*j];
@@ -581,10 +582,10 @@ void EM::estep() {
 	
 	obj_map_table obj_maps;
 	for (int i = 0; i < nmodes; ++i) {
-		update_mode_prob(i, check, obj_maps);
+		update_mode_prob(i, check);
 	}
 	
-	update_MAP(check, obj_maps);
+	update_MAP(check);
 }
 
 bool EM::mstep() {
@@ -603,6 +604,22 @@ bool EM::mstep() {
 		}
 	}
 	return changed;
+}
+
+void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
+	if (rows.empty()) {
+		X.resize(0, 0);
+		Y.resize(0, 0);
+		return;
+	}
+
+	X.resize(rows.size(), data[rows[0]]->x.size());
+	Y.resize(rows.size(), 1);
+
+	for (int i = 0; i < rows.size(); ++i) {
+		X.row(i) = data[rows[i]]->x;
+		Y.row(i) = data[rows[i]]->y;
+	}
 }
 
 bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int> &mode_inds) const {
@@ -677,12 +694,11 @@ bool EM::unify_or_add_model() {
 			return false;
 		}
 		
-		mat X(seed_inds.size(), data[0]->x.size());
-		mat Y(seed_inds.size(), data[0]->y.size());
-		for (int j = 0; j < seed_inds.size(); ++j) {
-			X.row(j) = data[seed_inds[j]]->x;
-			Y.row(j) = data[seed_inds[j]]->y;
-		}
+		int xsize = data[seed_inds[0]]->x.size();
+		int ysize = data[seed_inds[0]]->y.size();
+		LinearModel *m = new LinearModel(REGRESSION_ALG);
+		int seed_sig = data[seed_inds[0]]->sig_index;
+		mat X, Y;
 	
 		/*
 		 Try to add noise data to each current model and refit. If the
@@ -690,38 +706,53 @@ bool EM::unify_or_add_model() {
 		 add the noise to that model instead of creating a new one.
 		*/
 		
-		/*
-		 I'm going to put off fixing this part up for the new style
-		 models. For now just don't do this at all.
-		*/
-		
-		/*
-		for (int i = 0; i < nmodes; ++i) {
-			LinearModel *unified(modes[i]->model->copy());
-			unified->add_examples(m->get_members());
-			unified->fit();
-			
-			double curr_error = modes[i]->model->get_train_error();
-			double uni_error = unified->get_train_error();
-			
-			if (uni_error < MODEL_ERROR_THRESH ||
-				(curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error))
-			{
-				delete modes[i]->model;
-				delete m;
-				modes[i]->model = unified;
-				mark_mode_stale(i);
-				LOG(EMDBG) << "UNIFIED " << i << endl;
-				return true;
-			}
-			delete unified;
-		}
-		*/
-		
-		LinearModel *m = new LinearModel(REGRESSION_ALG);
 		vector<int> obj_map;
-		m->init_fit(X, Y, sigs[i->first], obj_map);
-		add_mode(i->first, m, seed_inds, obj_map);
+		bool unified = false;
+		for (int j = 0; j < nmodes; ++j) {
+			mode_info &minfo = *modes[j];
+			set<int> &members = minfo.members;
+
+			bool same_sig = true;
+			set<int>::const_iterator k;
+			for (k = members.begin(); k != members.end(); ++k) {
+				if (data[*k]->sig_index != seed_sig) {
+					same_sig = false;
+					break;
+				}
+			}
+			if (!same_sig) {
+				continue;
+			}
+			vector<int> combined;
+			extend(combined, members);
+			extend(combined, seed_inds);
+			
+			fill_xy(combined, X, Y);
+			m->init_fit(X, Y, sigs[seed_sig], obj_map);
+			double curr_error = minfo.model->get_train_error();
+			double combined_error = m->get_train_error();
+			
+			if (combined_error < MODEL_ERROR_THRESH ||
+				(curr_error > 0.0 && combined_error < UNIFY_MUL_THRESH * curr_error))
+			{
+				init_mode(j, seed_sig, m, combined, obj_map);
+				LOG(EMDBG) << "UNIFIED " << j << endl;
+				unified = true;
+				break;
+			}
+		}
+		
+		if (!unified) {
+			fill_xy(seed_inds, X, Y);
+			m->init_fit(X, Y, sigs[i->first], obj_map);
+			modes.push_back(new mode_info);
+			for (int j = 0; j < ndata; ++j) {
+				data[j]->mode_prob.push_back(0.0);
+			}
+			++nmodes;
+			init_mode(nmodes - 1, i->first, m, seed_inds, obj_map);
+		}
+
 		for (int j = 0; j < seed_inds.size(); ++j) {
 			noise_inds.erase(seed_inds[j]);
 		}
@@ -730,44 +761,48 @@ bool EM::unify_or_add_model() {
 	return false;
 }
 
-void EM::add_mode(int sig, LinearModel *m, const vector<int> &seed_inds, const vector<int> &obj_map) {
-	assert(!seed_inds.empty());
+void EM::init_mode(int mode, int sig, LinearModel *m, const vector<int> &members, const vector<int> &obj_map) {
+	assert(!members.empty());
 
-	int target = data[seed_inds.front()]->target;
-	mode_info *minfo = new mode_info;
-	minfo->model = m;
-	minfo->target = -1;
-	copy(seed_inds.begin(), seed_inds.end(), inserter(minfo->members, minfo->members.end()));
+	mode_info &minfo = *modes[mode];
+	int target = data[members.front()]->target;
+	if (minfo.model) {
+		delete minfo.model;
+	}
+	minfo.model = m;
+	minfo.target = -1;
+	minfo.members.clear();
+	minfo.sig.clear();
+	extend(minfo.members, members);
 	if (m->is_const()) {
-		minfo->target = 0;
-		minfo->sig.push_back(sigs[sig][target]);
-		minfo->sig.back().start = -1;
+		minfo.target = 0;
+		minfo.sig.push_back(sigs[sig][target]);
+		minfo.sig.back().start = -1;
 	} else {
 		for (int i = 0; i < obj_map.size(); ++i) {
 			if (obj_map[i] == target) {
-				minfo->target = i;
+				minfo.target = i;
 			}
-			minfo->sig.push_back(sigs[sig][obj_map[i]]);
-			minfo->sig.back().start = -1;  // this field has no purpose and should never be used
+			minfo.sig.push_back(sigs[sig][obj_map[i]]);
+			minfo.sig.back().start = -1;  // this field has no purpose and should never be used
 		}
 	}
-	minfo->obj_clauses.resize(minfo->sig.size());
+	minfo.obj_clauses.resize(minfo.sig.size());
+	minfo.pos.clear();
+	minfo.neg.clear();
+	// there's probably a more efficient way to initialize neg
 	for (int i = 0; i < ndata; ++i) {
-		data[i]->mode_prob.push_back(0.0);
-		// there's probably a more efficient way to initialize neg
-		minfo->neg.add(i, target);
+		minfo.neg.add(i, target);
 	}
-	for (int i = 0; i < seed_inds.size(); ++i) {
-		em_data &dinfo = *data[seed_inds[i]];
-		dinfo.map_mode = modes.size();
+	for (int i = 0; i < members.size(); ++i) {
+		em_data &dinfo = *data[members[i]];
+		dinfo.map_mode = mode;
 		dinfo.model_row = i;
 		dinfo.obj_map = obj_map;
-		minfo->pos.add(seed_inds[i], dinfo.target);
-		minfo->neg.del(seed_inds[i], dinfo.target);
+		minfo.pos.add(members[i], dinfo.target);
+		minfo.neg.del(members[i], dinfo.target);
 	}
-	modes.push_back(minfo);
-	mark_mode_stale(nmodes);
-	++nmodes;
+	mark_mode_stale(mode);
 }
 
 void EM::mark_mode_stale(int i) {

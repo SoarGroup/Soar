@@ -309,6 +309,11 @@ void relation::dump(set<tuple> &out) const {
 	}
 }
 
+void relation::clear() {
+	sz = 0;
+	tuples.clear();
+}
+
 void relation::serialize(std::ostream &os) const {
 	serializer(os) << arty << sz << tuples;
 }
