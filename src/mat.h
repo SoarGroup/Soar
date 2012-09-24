@@ -32,8 +32,12 @@ typedef Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> imat
 
 typedef Eigen::Block<      mat, Eigen::Dynamic, Eigen::Dynamic, true,  true> mat_iblock; // i means inner_panel template arg = true
 typedef Eigen::Block<      mat, Eigen::Dynamic, Eigen::Dynamic, false, true> mat_block;
+typedef Eigen::Block<      mat, Eigen::Dynamic, 1,              false, true> row_block;
+typedef Eigen::Block<      mat, 1,              Eigen::Dynamic, false, true> col_block;
 typedef Eigen::Block<const mat, Eigen::Dynamic, Eigen::Dynamic, true,  true> const_mat_iblock;
 typedef Eigen::Block<const mat, Eigen::Dynamic, Eigen::Dynamic, false, true> const_mat_block;
+typedef Eigen::Block<const mat, Eigen::Dynamic, 1,              false, true> const_row_block;
+typedef Eigen::Block<const mat, 1,              Eigen::Dynamic, false, true> const_col_block;
 
 typedef Eigen::Stride<Eigen::Dynamic, 1> mat_stride;
 typedef Eigen::Map<mat, Eigen::Unaligned, mat_stride> mat_map;
@@ -61,21 +65,32 @@ public:
 
 class const_mat_view : public const_mat_map {
 public:
+	const_mat_view(const_mat_view &m)            : const_mat_map(m) {}
+	
+	// standard types
 	const_mat_view(const mat &m)                 : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
 	const_mat_view(const rvec &v)                : const_mat_map(v.data(), 1, v.size(), mat_stride(1, 1)) {}
 	const_mat_view(const cvec &v)                : const_mat_map(v.data(), v.size(), 1, mat_stride(1, 1)) {}
 	const_mat_view(const mat &m, int r, int c)   : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
+	
+	// for things like m.block
 	const_mat_view(const mat_block &b)           : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
 	const_mat_view(const mat_iblock &b)          : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
 	const_mat_view(const const_mat_block &b)     : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
 	const_mat_view(const const_mat_iblock &b)    : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	
+	// for things like m.row and m.col
+	const_mat_view(const row_block &b)           : const_mat_map(b.data(), b.rows(), 1,        mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const const_row_block &b)     : const_mat_map(b.data(), b.rows(), 1,        mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const col_block &b)           : const_mat_map(b.data(), 1,        b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const const_col_block &b)     : const_mat_map(b.data(), 1,        b.cols(), mat_stride(b.rowStride(), 1)) {}
+	
 	const_mat_view(const const_mat_map &m)       : const_mat_map(m) {}
 	const_mat_view(const mat_map &m)             : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
 	const_mat_view(const map_block &b)           : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
 	const_mat_view(const const_map_block &b)     : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
 	const_mat_view(const const_map_col_block &b) : const_mat_map(b.data(), b.rows(), 1, mat_stride(1, 1)) {}
 	const_mat_view(const const_map_row_block &b) : const_mat_map(b.data(), 1, b.cols(), mat_stride(1, 1)) {}
-	const_mat_view(const_mat_view &m)            : const_mat_map(m) {}
 };
 
 
