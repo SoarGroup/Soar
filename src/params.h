@@ -2,7 +2,7 @@
 #define PARAMS_H
 
 /* Initial lambda value for ridge regression */
-#define RLAMBDA 1e-7
+#define RIDGE_LAMBDA 1e-8
 
 /* Maximum acceptable average squared error for a linear model */
 #define MODEL_ERROR_THRESH 1e-12
@@ -79,5 +79,10 @@
  outdated model.
 */
 #define STATE_DIFF_THRESH 0.001
+
+
+#define LASSO_LAMBDA 1e-8
+#define LASSO_TOL 1e-10
+#define LASSO_MAX_ITERS 50
 
 #endif

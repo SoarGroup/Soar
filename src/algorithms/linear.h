@@ -11,6 +11,7 @@
 bool wpcr  (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 bool ridge (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 bool OLS   (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
+bool lasso (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 
 class LinearModel : public serializable {
 public:

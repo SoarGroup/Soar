@@ -69,6 +69,36 @@ bool OLS(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &in
 	return true;
 }
 
+/*
+ Assumes that X and Y are already weighted and centered, so it doesn't
+ need to compute an intercept. This is the algorithm that's in
+ textbooks.
+*/
+bool ridge_core(const_mat_view X, const_mat_view Y, mat &coefs) {
+	mat A = X.transpose() * X;
+	
+	/*
+	 Due to floating point precision limits, sometimes the preset
+	 RIDGE_LAMBDA will not change the value of a coefficient when
+	 added to it. Therefore, I find the smallest value of lambda
+	 that will result in a representable increase for all
+	 coefficients.
+	*/
+	double lambda = RIDGE_LAMBDA;
+	if (lambda > 0) {
+		for (int i = 0; i < A.cols(); ++i) {
+			double inc = nextafter(A(i, i), INFINITY) - A(i, i);
+			if (inc > lambda) {
+				lambda = inc;
+			}
+		}
+	}
+	A.diagonal().array() += lambda;
+	mat B = X.transpose() * Y;
+	coefs = A.ldlt().solve(B);
+	return true;
+}
+
 bool ridge(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
 	mat Z, V;
 	if (w.size() == 0) {
@@ -86,20 +116,55 @@ bool ridge(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &
 	rvec Vmean = V.colwise().mean();
 	Z.rowwise() -= Zmean;
 	V.rowwise() -= Vmean;
-	
-	mat A = Z.transpose() * Z;
-	double lambda = RLAMBDA;
-	for (int i = 0; i < A.cols(); ++i) {
-		double inc = nextafter(A(i, i), INFINITY) - A(i, i);
-		lambda = max(lambda, inc);
-	}
-	A.diagonal().array() += lambda;
-	mat B = Z.transpose() * V;
-	if (!solve(A, B, coefs)) {
-		return false;
-	}
+	ridge_core(Z, V, coefs);
 	intercept = Vmean - (Zmean * coefs);
+}
+
+/*
+ Implements the so-called "shooting" algorithm for lasso
+ regularization. Based on the tutorial and MATLAB code taken from
+ 
+ http://www.gautampendse.com/software/lasso/webpage/lasso_shooting.html
+*/
+bool lasso_core(const_mat_view X, const rvec &xi_norm2, const_mat_view y, double lambda, cvec &beta) {
+	int p = X.cols();
+	
+	for (int k = 0; k < LASSO_MAX_ITERS; ++k) {
+		bool improved = false;
+		for (int i = 0; i < p; ++i) {
+			double b = beta(i);
+			cvec yi = y - X * beta + beta(i) * X.col(i);
+			double deltai = yi.dot(X.col(i));
+			if (deltai < -lambda) {
+				beta(i) = (deltai + lambda) / xi_norm2(i);
+			} else if (deltai > LASSO_LAMBDA) {
+				beta(i) = (deltai - lambda) / xi_norm2(i);
+			} else {
+				beta(i) = 0;
+			}
+			if (abs(b - beta(i)) > LASSO_TOL) {
+				improved = true;
+			}
+		}
+		if (!improved) {
+			break;
+		}
+	}
 	return true;
+}
+
+bool lasso(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
+	rvec Xmean = X.colwise().mean(), Ymean = Y.colwise().mean();
+	mat Xc = X.rowwise() - Xmean;
+	mat Yc = Y.rowwise() - Ymean;
+	ridge_core(Xc, Yc, coefs);
+	rvec xi_norm2 = Xc.colwise().squaredNorm();
+	for (int i = 0; i < coefs.cols(); ++i) {
+		cvec beta = coefs.col(i);
+		lasso_core(Xc, xi_norm2, Yc.col(i), LASSO_LAMBDA, beta);
+		coefs.col(i) = beta;
+	}
+	intercept = Ymean - (Xmean * coefs);
 }
 
 /*
@@ -233,6 +298,7 @@ LinearModel::LinearModel(const LinearModel &m)
 void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const state_sig &sig, std::vector<int> &obj_map)
 {
 	isconst = true;
+	obj_map.clear();
 	for (int i = 1; i < Y.rows(); ++i) {
 		if (Y.row(i) != Y.row(0)) {
 			isconst = false;
@@ -275,6 +341,7 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const state_sig &
 	coefs = coefs2;
 	xtotals = xdata.get().colwise().sum();	
 	ydata = Y;
+	update_error();
 }
 
 int LinearModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
