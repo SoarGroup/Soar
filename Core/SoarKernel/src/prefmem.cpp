@@ -45,10 +45,13 @@ const char * preference_name[] =
   "require",
   "reject",
   "prohibit",
+  "reconsider",
   "unary indifferent",
+  "unary parallel",
   "best",
   "worst",
   "binary indifferent",
+  "binary parallel",
   "better",
   "worse",
   "numeric indifferent"};

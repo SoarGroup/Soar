@@ -157,39 +157,49 @@ typedef struct gds_struct {
 /* WARNING: preference types must be numbered 0..(NUM_PREFERENCE_TYPES-1),
    because the slot structure contains an array using these indices. Also
    make sure to update the strings in prefmem.h.  Finally, make sure the
-   helper function defined below (for e.g. preference_is_unary) still make
-   sense. */
+   helper function defined below (for e.g. preference_is_unary) use the
+   correct indices.
+
+   NOTE: Reconsider, binary and unary parallel preferences are all
+   deprecated.  Their types are not removed here because it would break
+   backward compatibility of rete fast loading/saving.  It's possible that
+   can be fixed in rete.cpp, but for now, we're just keeping the preference
+   types.  There is no code that actually uses them any more, though.*/
+
+
 
 #define ACCEPTABLE_PREFERENCE_TYPE 0
 #define REQUIRE_PREFERENCE_TYPE 1
 #define REJECT_PREFERENCE_TYPE 2
 #define PROHIBIT_PREFERENCE_TYPE 3
-#define UNARY_INDIFFERENT_PREFERENCE_TYPE 4
-#define BEST_PREFERENCE_TYPE 5
-#define WORST_PREFERENCE_TYPE 6
-#define BINARY_INDIFFERENT_PREFERENCE_TYPE 7
-#define BETTER_PREFERENCE_TYPE 8
-#define WORSE_PREFERENCE_TYPE 9
-#define NUMERIC_INDIFFERENT_PREFERENCE_TYPE 10
-#define NUM_PREFERENCE_TYPES 11
+#define RECONSIDER_PREFERENCE_TYPE 4
+#define UNARY_INDIFFERENT_PREFERENCE_TYPE 5
+#define UNARY_PARALLEL_PREFERENCE_TYPE 6
+#define BEST_PREFERENCE_TYPE 7
+#define WORST_PREFERENCE_TYPE 8
+#define BINARY_INDIFFERENT_PREFERENCE_TYPE 9
+#define BINARY_PARALLEL_PREFERENCE_TYPE 10
+#define BETTER_PREFERENCE_TYPE 11
+#define WORSE_PREFERENCE_TYPE 12
+#define NUMERIC_INDIFFERENT_PREFERENCE_TYPE 13
+#define NUM_PREFERENCE_TYPES 14
 
 #ifdef USE_MACROS
 
-#define preference_is_unary(p) ((p)<BINARY_INDIFFERENT_PREFERENCE_TYPE)
-#define preference_is_binary(p) ((p)>WORST_PREFERENCE_TYPE)
+#define preference_is_unary(p) ((p)<9)
+#define preference_is_binary(p) ((p)>8)
 
 #else
 
 inline Bool preference_is_unary(byte p)
 {
-  return (p < BINARY_INDIFFERENT_PREFERENCE_TYPE);
+  return (p < 9);
 }
 
 inline Bool preference_is_binary(byte p)
 {
-  return (p > WORST_PREFERENCE_TYPE);
+  return (p > 8);
 }
-
 #endif /* USE_MACROS */
 
 #ifdef __cplusplus

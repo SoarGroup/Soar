@@ -93,41 +93,41 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
 
   for (cond = inst->top_of_instantiated_conditions; cond != NIL;
       cond = cond->next) {
-    assert(cond->bt.CDPS == NIL);
+    //assert(cond->bt.CDPS == NIL);
     cond->bt.CDPS = NIL;
     if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot) {
       if (cond->bt.trace->slot->CDPS) {
         assert(cond->bt.trace->slot->isa_context_slot);
-        print(thisAgent, "\nCopying CDPS for condition...");
+        print_cdps(thisAgent, "\nCopying CDPS for condition...");
         print_condition(thisAgent, cond);
         for (CDPS=cond->bt.trace->slot->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
           new_pref = NIL;
           pref = static_cast<preference *>(CDPS->first);
           if (pref->inst->match_goal_level == inst->match_goal_level
               && pref->in_tm) {
-            print(thisAgent,
+            print_cdps(thisAgent,
                 "\nCDPS DEBUG:  - Adding CDP for production ");
             if (inst->prod)
               print_with_symbols(thisAgent, "%y\n", inst->prod->name);
             else
               print_string(thisAgent, "[dummy production]\n");
-            print(thisAgent, "CDPS DEBUG:  - Pref adding to CDPS: ");
-            print_preference(thisAgent, pref);
+            print_cdps(thisAgent, "CDPS DEBUG:  - Pref adding to CDPS: ");
+            print_pref_cdps(thisAgent, pref);
             push(thisAgent, pref, cond->bt.CDPS);
             preference_add_ref(pref);
           } else {
             new_pref = find_clone_for_level(pref, inst->match_goal_level);
             if (new_pref) {
               if (new_pref->in_tm) {
-                print(thisAgent,
+                print_cdps(thisAgent,
                     "\nCDPS DEBUG:  - Adding CDP (clone) for production ");
                 if (inst->prod)
                   print_with_symbols(thisAgent, "%y\n", inst->prod->name);
                 else
                   print_string(thisAgent, "[dummy production] (clone)\n");
-                print(thisAgent,
+                print_cdps(thisAgent,
                     "CDPS DEBUG:  - Pref (clone) adding to CDPS: ");
-                print_preference(thisAgent, pref);
+                print_pref_cdps(thisAgent, pref);
                 push(thisAgent, new_pref, cond->bt.CDPS);
                 preference_add_ref(new_pref);
               }
