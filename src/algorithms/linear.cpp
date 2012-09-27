@@ -12,6 +12,23 @@
 using namespace std;
 using namespace Eigen;
 
+// Residual Sum of Squares
+double RSS(const_mat_view X, const_mat_view y, const cvec &coefs, double intercept) {
+	return ((y - X * coefs).array() - intercept).matrix().squaredNorm();
+}
+
+/*
+ Mallows' Cp statistic
+
+ This statistic estimates how well a linear model will perform on
+ out-of-training examples.
+*/
+double MallowCp(const_mat_view X, const_mat_view y, const cvec &coefs, double intercept, double variance) {
+	int p = X.cols() + 1, N = X.rows();
+	double RSSp = RSS(X, y, coefs, intercept);
+	return RSSp / variance - N + 2 * p;
+}
+
 /* Assume that X is already centered */
 void pca(const_mat_view X, mat &comps) {
 	JacobiSVD<mat> svd = X.jacobiSvd(Eigen::ComputeFullV);
@@ -21,6 +38,16 @@ void pca(const_mat_view X, mat &comps) {
 bool solve(const_mat_view X, const_mat_view Y, mat &C) {
 	C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
 	return is_normal(C);
+}
+
+bool solve(const_mat_view X, const_mat_view y, cvec &coefs) {
+	assert(y.cols() == 1);
+	mat C;
+	if (!solve(X, y, C)) {
+		return false;
+	}
+	coefs = C.col(0);
+	return true;
 }
 
 /*
@@ -116,8 +143,11 @@ bool ridge(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &
 	rvec Vmean = V.colwise().mean();
 	Z.rowwise() -= Zmean;
 	V.rowwise() -= Vmean;
-	ridge_core(Z, V, coefs);
+	if (!ridge_core(Z, V, coefs)) {
+		return false;
+	}
 	intercept = Vmean - (Zmean * coefs);
+	return true;
 }
 
 /*
@@ -157,7 +187,9 @@ bool lasso(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &
 	rvec Xmean = X.colwise().mean(), Ymean = Y.colwise().mean();
 	mat Xc = X.rowwise() - Xmean;
 	mat Yc = Y.rowwise() - Ymean;
-	ridge_core(Xc, Yc, coefs);
+	if (!ridge_core(Xc, Yc, coefs)) {
+		return false;
+	}
 	rvec xi_norm2 = Xc.colwise().squaredNorm();
 	for (int i = 0; i < coefs.cols(); ++i) {
 		cvec beta = coefs.col(i);
@@ -165,6 +197,72 @@ bool lasso(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &
 		coefs.col(i) = beta;
 	}
 	intercept = Ymean - (Xmean * coefs);
+	return true;
+}
+
+/*
+ Fits a linear model to the data using as few nonzero coefficients as possible.
+ Basically, start with just the intercept, then keep adding additional
+ predictors (nonzero coefficients) to the model that lowers Mallows' Cp
+ statistic, one at a time. Stop when Cp can't be lowered further with more
+ predictors.
+
+ This is a naive version of R's step function.
+*/
+bool fstep(const_mat_view X, const_mat_view y, double variance, cvec &coefs, double &intercept) {
+	rvec Xmean = X.colwise().mean();
+	double ymean = y.mean();
+
+	mat Xc = X.rowwise() - Xmean;
+	cvec yc = y.array() - ymean;
+
+	int ncols = X.cols(), p = 0;
+	vector<int> predictors;
+	vector<bool> used(ncols, false);
+	mat Xcurr(X.rows(), ncols);
+	cvec curr_coefs;
+	double curr_Cp = MallowCp(Xcurr.leftCols(p), yc, cvec(), 0, variance);
+
+	while (p < ncols) {
+		double best_Cp = 0;
+		int best_pred = -1;
+		cvec best_c;
+		for (int i = 0; i < ncols; ++i) {
+			if (used[i]) { continue; }
+			Xcurr.col(p) = Xc.col(i);
+
+			cvec c;
+			if (!solve(Xcurr.leftCols(p + 1), yc, c)) {
+				return false;
+			}
+			double Cp = MallowCp(Xcurr.leftCols(p + 1), yc, c, 0, variance);
+			if (best_pred < 0 || Cp < best_Cp) {
+				best_Cp = Cp;
+				best_c = c;
+				best_pred = i;
+			}
+		}
+		if (best_Cp < curr_Cp) {
+			cout << "adding column " << best_pred << " Cp = " << best_Cp << endl;
+			predictors.push_back(best_pred);
+			used[best_pred] = true;
+			Xcurr.col(p) = Xc.col(best_pred);
+			curr_Cp = best_Cp;
+			curr_coefs = best_c;
+			++p;
+		} else {
+			break;
+		}
+	}
+
+	coefs.resize(ncols);
+	coefs.setConstant(0.0);
+	for (int i = 0; i < predictors.size(); ++i) {
+		coefs(predictors[i]) = curr_coefs(i);
+	}
+
+	intercept = ymean - (Xmean * coefs);
+	return true;
 }
 
 /*
@@ -273,13 +371,13 @@ bool wpcr(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &i
 }
 
 LinearModel::LinearModel()
-: isconst(true), error(INFINITY), refit(true), alg(0)
+: isconst(true), error(INFINITY), refit(true), alg(FORWARD)
 {
 	timers.add("predict");
 	timers.add("fit");
 }
 
-LinearModel::LinearModel(int alg) 
+LinearModel::LinearModel(regression_type alg) 
 : isconst(true), error(INFINITY), refit(true), alg(alg)
 {
 	timers.add("predict");
@@ -289,7 +387,8 @@ LinearModel::LinearModel(int alg)
 LinearModel::LinearModel(const LinearModel &m)
 : constvals(m.constvals), isconst(m.isconst),
   xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true),
-  coefs(m.coefs), intercept(m.intercept), alg(m.alg)
+  coefs(m.coefs), intercept(m.intercept), alg(m.alg),
+  xdata(m.xdata), ydata(m.ydata)
 {
 	timers.add("predict");
 	timers.add("fit");
@@ -451,7 +550,10 @@ void LinearModel::serialize(ostream &os) const {
 }
 
 void LinearModel::unserialize(istream &is) {
-	unserializer(is) >> alg >> error >> isconst >> xtotals >> center >> constvals >> intercept >> xdata >> ydata;
+	int a;
+	unserializer(is) >> a >> error >> isconst >> xtotals >> center >> constvals >> intercept >> xdata >> ydata;
+	assert(a == OLS || a == RIDGE || a == PCR || a == LASSO || a == FORWARD);
+	alg = static_cast<regression_type>(a);
 	fit();
 }
 
@@ -504,13 +606,25 @@ bool LinearModel::fit() {
 }
 
 bool LinearModel::fit_sub(const_mat_view X, const_mat_view Y) {
+	cvec c;
+	double inter;
 	switch (alg) {
-		case 0:
-			return OLS(X, Y, cvec(), coefs, intercept);
-		case 1:
+		case OLS:
+			return ols(X, Y, cvec(), coefs, intercept);
+		case RIDGE:
 			return ridge(X, Y, cvec(), coefs, intercept);
-		case 2:
+		case PCR:
 			return wpcr(X, Y, cvec(), coefs, intercept);
+		case FORWARD:
+			assert(Y.cols() == 1);
+			if (!fstep(X, Y, MEASURE_VAR, c, inter)) {
+				return false;
+			}
+			coefs.resize(c.size(), 1);
+			coefs.col(0) = c;
+			intercept.resize(1);
+			intercept(0) = inter;
+			return true;
 	}
 	assert(false);
 }

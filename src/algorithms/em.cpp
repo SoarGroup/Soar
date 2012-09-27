@@ -21,7 +21,7 @@ using namespace std;
 using namespace Eigen;
 
 const bool TEST_ELIGIBILITY = false;
-const int REGRESSION_ALG = 1; // 1 = ridge regression
+const LinearModel::regression_type REGRESSION_ALG = LinearModel::RIDGE;
 
 /*
  Generate all possible combinations of sets of items

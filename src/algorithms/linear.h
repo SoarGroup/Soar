@@ -12,11 +12,14 @@ bool wpcr  (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec 
 bool ridge (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 bool ols   (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 bool lasso (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
+bool fstep (const_mat_view X, const_mat_view y, double variance, cvec &coefs, double &intercept);
 
 class LinearModel : public serializable {
 public:
+	enum regression_type { OLS, RIDGE, PCR, LASSO, FORWARD };
+	
 	LinearModel();
-	LinearModel(int alg);
+	LinearModel(regression_type r);
 	LinearModel(const LinearModel &m);
 	
 	int size() {
@@ -56,7 +59,7 @@ private:
 	bool fit_sub(const_mat_view X, const_mat_view Y);
 	void update_error();
 	
-	int alg;
+	regression_type alg;
 	double error;
 	bool isconst, refit;
 	mat coefs;
