@@ -5,6 +5,7 @@
 #include "filter.h"
 #include "sgnode.h"
 #include "scene.h"
+#include "filter_table.h"
 
 using namespace std;
 
@@ -125,6 +126,8 @@ public:
 		}
 		
 		scn->get_all_nodes(nodes);
+		nodes.erase(nodes.begin()); // don't use world node
+		
 		for (i = nodes.begin(); i != nodes.end(); ++i) {
 			add_node(*i);
 		}

@@ -166,6 +166,8 @@ void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 	vector<const sgnode*> all_nodes;
 	vector<string> all_node_names;
 	scn->get_all_nodes(all_nodes);
+	all_nodes.erase(all_nodes.begin()); // don't use world node
+	
 	all_node_names.reserve(all_nodes.size());
 	for (int i = 0; i < all_nodes.size(); ++i) {
 		all_node_names.push_back(all_nodes[i]->get_name());
@@ -194,6 +196,7 @@ void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 void filter_table::update_relations(const scene *scn, int time, relation_table &rt) const {
 	vector<int> node_inds;
 	scn->get_all_node_indices(node_inds);
+	node_inds.erase(node_inds.begin());
 	
 	map<string, filter_table_entry>::const_iterator i;
 	int ii = 0;

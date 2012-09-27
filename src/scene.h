@@ -4,14 +4,13 @@
 #include <string>
 #include <map>
 #include "sgnode.h"
-#include "linalg.h"
 #include "common.h"
-#include "drawer.h"
-#include "filter_table.h"
 #include "collision.h"
+#include "relation.h"
 
 class filter;
 class filter_input;
+class drawer;
 
 class scene : public sgnode_listener {
 public:
@@ -25,7 +24,6 @@ public:
 	sgnode const* get_node(const std::string &name) const;
 	sgnode *get_node(int i);
 	sgnode const* get_node(int i) const;
-	group_node *get_group(const std::string &name);
 	
 	void get_all_nodes(std::vector<sgnode*> &nodes);
 	void get_all_nodes(std::vector<const sgnode*> &nodes) const;
@@ -45,7 +43,7 @@ public:
 	bool add_property(const std::string &obj, const std::string &prop, float val);
 	bool set_property(const std::string &obj, const std::string &prop, float val);
 	bool set_properties(const rvec &vals);
-	bool remove_property(const std::string &obj, const std::string &prop);
+	void remove_property(const std::string &obj, const std::string &prop);
 	
 	void parse_sgel(const std::string &s);
 	
@@ -58,11 +56,6 @@ public:
 	
 	void get_signature(state_sig &sig) const;
 private:
-	int parse_add(std::vector<std::string> &f, std::string &error);
-	int parse_del(std::vector<std::string> &f, std::string &error);
-	int parse_change(std::vector<std::string> &f, std::string &error);
-	int parse_property(std::vector<std::string> &f, std::string &error);
-
 	typedef std::map<std::string, float> property_map;
 	
 	struct node_info {
@@ -70,16 +63,25 @@ private:
 		property_map props;
 	};
 	
-	typedef std::vector<node_info> node_vec;
+	typedef std::map<int, node_info> node_table;
+	
+	group_node *get_group(const std::string &name);
+	node_info *get_node_info(int i);
+	const node_info *get_node_info(int i) const;
+	node_info *get_node_info(const std::string &name);
+	const node_info *get_node_info(const std::string &name) const;
+	
+	int parse_add(std::vector<std::string> &f, std::string &error);
+	int parse_del(std::vector<std::string> &f, std::string &error);
+	int parse_change(std::vector<std::string> &f, std::string &error);
+	int parse_property(std::vector<std::string> &f, std::string &error);
 
 	std::string  name;
-	std::string  rootname;
 	group_node  *root;
-	node_vec     nodes;
+	int          root_id;
+	node_table   nodes;
 	drawer      *draw;
-	
-	std::vector<bool> atomvals;
-	bool dirty;
+	bool         dirty;
 	
 	collision_detector cdetect;
 

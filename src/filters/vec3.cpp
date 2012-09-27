@@ -1,4 +1,5 @@
 #include "filter.h"
+#include "filter_table.h"
 
 using namespace std;
 
