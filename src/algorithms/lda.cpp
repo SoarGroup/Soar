@@ -11,9 +11,9 @@ bool hasnan(const_mat_view m) {
 	return (m.array() != m.array()).any();
 }
 
-void clean_data(mat &data, vector<int> &nonstatic_cols) {
-	del_static_cols(data, data.cols(), nonstatic_cols);
-	data.conservativeResize(data.rows(), nonstatic_cols.size());
+void clean_data(mat &data, vector<int> &nonuniform_cols) {
+	del_uniform_cols(data, data.cols(), nonuniform_cols);
+	data.conservativeResize(data.rows(), nonuniform_cols.size());
 	mat rand_offsets = mat::Random(data.rows(), data.cols()) / 10000;
 	data += rand_offsets;
 }

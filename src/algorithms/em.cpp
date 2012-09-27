@@ -165,11 +165,11 @@ bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int m
 	int ndata = X.rows();
 	cvec residuals(ndata), old_res(ndata);
 	cvec w(ndata);
-	vector<int> nonstatic, init_members;
-	get_nonstatic_cols(X, X.cols(), nonstatic);
-	int rank = nonstatic.size() + 1;
+	vector<int> nonuniform, init_members;
+	get_nonuniform_cols(X, X.cols(), nonuniform);
+	int rank = nonuniform.size() + 1;
 	mat Xd;
-	pick_cols(X, nonstatic, Xd);
+	pick_cols(X, nonuniform, Xd);
 	
 	for (int iter1 = 0; iter1 < maxiters; ++iter1) {
 		w.setConstant(0.0);
@@ -189,7 +189,7 @@ bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int m
 			}
 			LOG(EMDBG) << endl;
 			
-			if (!OLS(Xd, Y, w, C, intercepts)) {
+			if (!ols(Xd, Y, w, C, intercepts)) {
 				break;
 			}
 			
@@ -235,7 +235,7 @@ bool block_seed(const_mat_view X, const_mat_view Y, int n, double fit_thresh, in
 		int start = rand() % (X.rows() - MODEL_INIT_N);
 		dyn_mat Xb(X.block(start, 0, MODEL_INIT_N, xcols));
 		dyn_mat Yb(Y.block(start, 0, MODEL_INIT_N, ycols));
-		OLS(Xb.get(), Yb.get(), w, C, intercepts);
+		ols(Xb.get(), Yb.get(), w, C, intercepts);
 
 		predict_all(C, intercepts, Xb.get(), PY);
 		double e = (Yb.get() - PY).rowwise().squaredNorm().sum();
@@ -362,7 +362,7 @@ double EM::calc_prob(int m, const state_sig &sig, const rvec &x, double y, int t
 		}
 		best_error = (y - py(0));
 		best_assign.clear();
-		double d = gausspdf(y, py(0), MODEL_STD);
+		double d = gausspdf(y, py(0), MEASURE_VAR);
 		double p = (1.0 - EPSILON) * w * d;
 		return p;
 	}
@@ -402,7 +402,7 @@ double EM::calc_prob(int m, const state_sig &sig, const rvec &x, double y, int t
 		assert(s == xlen);
 		
 		if (modes[m]->model->predict(xc, py)) {
-			double d = gausspdf(y, py(0), MODEL_STD);
+			double d = gausspdf(y, py(0), MEASURE_VAR);
 			double p = (1.0 - EPSILON) * w * d;
 			if (p > best_prob) {
 				best_prob = p;

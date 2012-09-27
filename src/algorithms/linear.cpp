@@ -27,16 +27,16 @@ bool solve(const_mat_view X, const_mat_view Y, mat &C) {
  Clean up input data to avoid instability, then perform weighted least
  squares regression. Cleaning consists of:
  
- 1. Setting elements whose absolute values are smaller than ZERO_THRESH to 0
+ 1. Setting elements whose absolute values are smaller than SAME_THRESH to 0
  2. collapsing all columns whose elements are identical into a single constant column.
 */
-bool OLS(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
+bool ols(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
 	mat X1(X.rows(), X.cols() + 1), Y1, C;
 	vector<int> nonuniform;
 
 	for (int i = 0; i < X.rows(); ++i) {
 		for (int j = 0; j < X.cols(); ++j) {
-			if (fabs(X(i, j)) < ZERO_THRESH) {
+			if (fabs(X(i, j)) < SAME_THRESH) {
 				X1(i, j) = 0.0;
 			} else {
 				X1(i, j) = X(i, j);
@@ -203,7 +203,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 		projected = X1 * components;
 		for (int j = 0; j < maxcomps; ++j) {
-			OLS(projected.leftCols(j), Y1, w, coefs, inter);
+			ols(projected.leftCols(j), Y1, w, coefs, inter);
 			b = components.leftCols(i) * coefs;
 			errors(j) += (X.row(n) * b + inter - Y.row(n)).array().abs().sum();
 		}
@@ -215,7 +215,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 	}
 	projected = X * components;
-	OLS(projected.leftCols(best), Y, cvec(), coefs, inter);
+	ols(projected.leftCols(best), Y, cvec(), coefs, inter);
 	beta = components.leftCols(best) * coefs;
 	intercept = inter;
 }
@@ -236,7 +236,7 @@ bool min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &bet
 	pca(X, components);
 	projected = X * components;
 	for (int i = 0; i < projected.cols(); ++i) {
-		if (!OLS(projected.leftCols(i), Y, w, coefs, inter)) {
+		if (!ols(projected.leftCols(i), Y, w, coefs, inter)) {
 			continue;
 		}
 		b = components.leftCols(i) * coefs;

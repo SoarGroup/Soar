@@ -1,6 +1,16 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
+/*
+ Measurement variance for all continuous quantities reported by the
+ environment. In the future, there may need to be a different variance
+ associated with each measurement. For example, the variance on the
+ position of an object is probably going to be different from the
+ variance of its rotation, because the two measurements have different
+ units and scales.
+*/
+#define MEASURE_VAR 0.001
+
 /* Initial lambda value for ridge regression */
 #define RIDGE_LAMBDA 1e-8
 
@@ -15,16 +25,10 @@
 #define REFIT_MUL_THRESH 1.0001
 
 /*
- When solving linear systems, columns whose min and max values are within
- this factor of each other are removed.
+ Any two numbers within this amount of each other can be considered
+ identical. This is also used to "zero-out" very small values.
 */
-#define SAME_THRESH (1 + 1e-10)
-
-/*
- When solving linear systems, elements whose absolute value is smaller
- than this are zeroed.
-*/
-#define ZERO_THRESH 1e-15
+#define SAME_THRESH 1e-15
 
 /*
  Maximum number of times Leave One Out cross-validation will run for a
@@ -36,9 +40,6 @@
  In PCR, don't use a beta vector with a norm larger than this.
 */
 #define MAX_BETA_NORM 1.0e3
-
-/* Standard deviation of a linear model's error */
-#define MODEL_STD 0.001
 
 /* Probability that any instance is just noise */
 #define PNOISE 0.0001
