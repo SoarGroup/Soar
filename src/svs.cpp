@@ -36,6 +36,10 @@ bool handle_on_off(const vector<string> &args, int first, ostream &os, bool &var
 	return true;
 }
 
+svs_interface *make_svs(agent *a) {
+	return new svs(a);
+}
+
 sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node) 
 : soarint(si), id(ident), parent(parent), node(node)
 {

@@ -11,6 +11,7 @@
 #include "model.h"
 #include "timer.h"
 #include "relation.h"
+#include "svs_interface.h"
 
 class command;
 class scene;
@@ -120,7 +121,7 @@ private:
 	timer_set timers;
 };
 
-class svs {
+class svs : public svs_interface {
 public:
 	svs(agent *a);
 	~svs();
