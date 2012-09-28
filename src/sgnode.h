@@ -6,7 +6,7 @@
 #include <vector>
 #include <list>
 #include "common.h"
-#include "linalg.h"
+#include "mat.h"
 
 class sgnode_listener;
 class group_node;

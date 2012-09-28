@@ -2,7 +2,7 @@
 #include "filter_table.h"
 #include "common.h"
 #include "scene.h"
-#include "linalg.h"
+#include "mat.h"
 
 using namespace std;
 

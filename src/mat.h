@@ -17,7 +17,7 @@
 //#include <Eigen/src/plugins/BlockMethods.h>
 #include <Eigen/StdVector>
 
-typedef Eigen::RowVector3d vec3;
+typedef Eigen::Vector3d vec3;
 typedef std::vector<vec3> ptlist;
 
 typedef Eigen::RowVectorXd rvec;
@@ -328,5 +328,43 @@ private:
 };
 
 std::ostream& operator<<(std::ostream &os, const bbox &b);
+
+class transform3 {
+public:
+	transform3() {}
+	
+	transform3(const transform3 &t) : trans(t.trans) {}
+	
+	transform3(char type, vec3 v) {
+		switch(type) {
+			case 'p':
+				trans = Eigen::Translation<double, 3>(v);
+				break;
+			case 'r':
+				trans = Eigen::AngleAxisd(v(2), Eigen::Vector3d::UnitZ()) *
+				        Eigen::AngleAxisd(v(1), Eigen::Vector3d::UnitY()) *
+				        Eigen::AngleAxisd(v(0), Eigen::Vector3d::UnitX()) ;
+				break;
+			case 's':
+				trans = Eigen::Scaling(v);
+				break;
+			default:
+				assert(false);
+		}
+	}
+	
+	vec3 operator()(const vec3 &v) const {
+		return trans * v;
+	}
+	
+	transform3 operator*(const transform3 &t) const {
+		transform3 r;
+		r.trans = trans * t.trans;
+		return r;
+	}
+	
+private:
+	Eigen::Transform<double, 3, Eigen::Affine> trans;
+};
 
 #endif

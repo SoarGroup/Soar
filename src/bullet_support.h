@@ -4,7 +4,7 @@
 #include <fstream>
 #include <btBulletCollisionCommon.h>
 #include "common.h"
-#include "linalg.h"
+#include "mat.h"
 
 /* Draws using vis */
 class bullet_debug_drawer : public btIDebugDraw {

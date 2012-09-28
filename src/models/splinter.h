@@ -1,7 +1,7 @@
 #ifndef SPLINTER_H
 #define SPLINTER_H
 
-#include "linalg.h"
+#include "mat.h"
 
 const float wheel_diameter     = 0.25;
 const float baseline           = 0.35;
@@ -28,8 +28,8 @@ inline void splinter_update(float &px, float &py, float &vx, float &vy, float &r
 	float dleft  = dt * lrps * wheel_diameter;
 	float dright = dt * rrps * wheel_diameter;
 	
-	quaternion orient(vec3(0., 0., rz));
-	vec3 vel = orient.rotate(vec3((dleft + dright) / 2, 0., 0.));
+	Eigen::Matrix3d orient(Eigen::AngleAxis<double>(rz, vec3(0, 0, 1)));
+	vec3 vel = orient * vec3((dleft + dright) / 2, 0., 0.);
 	rtz = (dright - dleft) / baseline;
 	px += vel[0];
 	py += vel[1];

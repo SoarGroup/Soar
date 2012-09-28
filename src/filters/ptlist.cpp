@@ -1,7 +1,7 @@
 #include <list>
 #include "filter.h"
 #include "sgnode.h"
-#include "linalg.h"
+#include "mat.h"
 #include "scene.h"
 
 using namespace std;

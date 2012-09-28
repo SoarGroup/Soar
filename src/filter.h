@@ -8,7 +8,7 @@
 #include <sstream>
 #include <iterator>
 
-#include "linalg.h"
+#include "mat.h"
 #include "sgnode.h"
 #include "scene.h"
 #include "common.h"

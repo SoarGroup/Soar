@@ -3,7 +3,7 @@
 #include "soar_interface.h"
 #include "svs.h"
 #include "common.h"
-#include "linalg.h"
+#include "mat.h"
 
 using namespace std;
 
