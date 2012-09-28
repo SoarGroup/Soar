@@ -46,14 +46,72 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 	return true;
 }
 
+bool parse_vec3(vector<string> &f, int &start, vec3 &v, string &error) {
+	if (start + 3 > f.size()) {
+		start = f.size();
+		error = "expecting a number";
+		return false;
+	}
+	for (int i = 0; i < 3; ++start, ++i) {
+		if (!parse_double(f[start], v[i])) {
+			error = "expecting a number";
+			return false;
+		}
+	}
+	return true;
+}
+
+bool parse_verts(vector<string> &f, int &start, ptlist &verts, string &error) {
+	verts.clear();
+	while (start < f.size()) {
+		vec3 v;
+		int i = start;
+		if (!parse_vec3(f, start, v, error)) {
+			return (i == start);  // end of list
+		}
+		verts.push_back(v);
+	}
+	return true;
+}
+
+bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 &scale, string &error) {	
+	vec3 t;
+	char type;
+	
+	if (f[start] != "p" && f[start] != "r" && f[start] != "s") {
+		error = "expecting p, r, or s";
+		return false;
+	}
+	type = f[start++][0];
+	if (!parse_vec3(f, start, t, error)) {
+		return false;
+	}
+	switch (type) {
+		case 'p':
+			pos = t;
+			break;
+		case 'r':
+			rot = t;
+			break;
+		case 's':
+			scale = t;
+			break;
+		default:
+			assert(false);
+	}
+	return true;
+}
+
 scene::scene(const string &name, drawer *d) 
-: name(name), draw(d), dirty(true)
+: name(name), draw(d)
 {
 	root = new group_node(root_name);
 	root_id = node_counter++;
 	nodes[root_id].node = root;
 	root->listen(this);
 	node_ids[root_name] = root_id;
+	dirty = true;
+	sig_dirty = true;
 }
 
 scene::~scene() {
@@ -203,62 +261,6 @@ void scene::clear() {
 	for (int i = 0; i < root->num_children(); ++i) {
 		delete root->get_child(i);
 	}
-}
-
-bool parse_vec3(vector<string> &f, int &start, vec3 &v, string &error) {
-	if (start + 3 > f.size()) {
-		start = f.size();
-		error = "expecting a number";
-		return false;
-	}
-	for (int i = 0; i < 3; ++start, ++i) {
-		if (!parse_double(f[start], v[i])) {
-			error = "expecting a number";
-			return false;
-		}
-	}
-	return true;
-}
-
-bool parse_verts(vector<string> &f, int &start, ptlist &verts, string &error) {
-	verts.clear();
-	while (start < f.size()) {
-		vec3 v;
-		int i = start;
-		if (!parse_vec3(f, start, v, error)) {
-			return (i == start);  // end of list
-		}
-		verts.push_back(v);
-	}
-	return true;
-}
-
-bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 &scale, string &error) {	
-	vec3 t;
-	char type;
-	
-	if (f[start] != "p" && f[start] != "r" && f[start] != "s") {
-		error = "expecting p, r, or s";
-		return false;
-	}
-	type = f[start++][0];
-	if (!parse_vec3(f, start, t, error)) {
-		return false;
-	}
-	switch (type) {
-		case 'p':
-			pos = t;
-			break;
-		case 'r':
-			rot = t;
-			break;
-		case 's':
-			scale = t;
-			break;
-		default:
-			assert(false);
-	}
-	return true;
 }
 
 int scene::parse_add(vector<string> &f, string &error) {
@@ -570,6 +572,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			i = node_counter++;
 			node_ids[child->get_name()] = i;
 			nodes[i].node = child;
+			sig_dirty = true;
 			if (!child->is_group()) {
 				cdetect.add_node(child);
 			}
@@ -586,6 +589,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			}
 			nodes.erase(i);
 			node_ids.erase(n->get_name());
+			sig_dirty = true;
 			if (draw && n->get_name() != "world") {
 				draw->del(name, n);
 			}
@@ -640,7 +644,8 @@ void scene::print_relations(ostream &os) const {
 	}
 }
 
-void scene::get_signature(state_sig &sig) const {
+void scene::update_sig() const {
+	sig.clear();
 	int start = 0;
 	node_table::const_iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
@@ -656,4 +661,11 @@ void scene::get_signature(state_sig &sig) const {
 		}
 		start += e.length;
 	}
+}
+
+const state_sig &scene::get_signature() const {
+	if (sig_dirty) {
+		update_sig();
+	}
+	return sig;
 }

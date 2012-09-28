@@ -54,7 +54,8 @@ public:
 	void calc_relations(relation_table &rels) const;
 	void print_relations(std::ostream &os) const;
 	
-	void get_signature(state_sig &sig) const;
+	const state_sig &get_signature() const;
+	
 private:
 	typedef std::map<std::string, float> property_map;
 	
@@ -70,6 +71,7 @@ private:
 	const node_info *get_node_info(int i) const;
 	node_info *get_node_info(const std::string &name);
 	const node_info *get_node_info(const std::string &name) const;
+	void update_sig() const;
 	
 	int parse_add(std::vector<std::string> &f, std::string &error);
 	int parse_del(std::vector<std::string> &f, std::string &error);
@@ -82,10 +84,12 @@ private:
 	node_table   nodes;
 	drawer      *draw;
 	bool         dirty;
+	bool         sig_dirty;
 	
 	collision_detector cdetect;
 
 	std::map<std::string, int> node_ids;
+	mutable state_sig sig;
 };
 
 #endif

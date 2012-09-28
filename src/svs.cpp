@@ -231,7 +231,7 @@ void svs_state::update_models() {
 	
 	scn->get_properties(curr_pvals);
 	get_output(out);
-	scn->get_signature(curr_sig);
+	curr_sig = scn->get_signature();
 	scn->calc_relations(curr_rels);
 	
 	// add an entry to the signature for the output
