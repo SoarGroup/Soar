@@ -108,7 +108,7 @@ private:
 	/* command changes per decision cycle */
 	std::map<wme*, command*> curr_cmds;
 	
-	state_sig                prev_sig;
+	scene_sig                prev_sig;
 	relation_table           prev_rels;
 	rvec                     prev_pvals;
 	multi_model              *mmdl;

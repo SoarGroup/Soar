@@ -6,7 +6,6 @@
 #include <vector>
 #include <limits>
 #include "common.h"
-#include "serialize.h"
 
 using namespace std;
 
@@ -115,11 +114,6 @@ ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
 	return os;
 }
 
-ostream& operator<<(ostream &os, const bbox &b) {
-	os << b.min[0] << " " << b.min[1] << " " << b.min[2] << " " << b.max[0] << " " << b.max[1] << " " << b.max[2];
-	return os;
-}
-
 string get_option(const string &key) {
 	static map<string, string> options;
 	static bool first = true;
@@ -168,12 +162,4 @@ bool parse_int(const string &s, int &v) {
 		return false;
 	}
 	return true;
-}
-
-void sig_entry::serialize(ostream &os) const {
-	serializer(os) << name << type << length << start << target;
-}
-
-void sig_entry::unserialize(istream &is) {
-	unserializer(is) >> name >> type >> length >> start >> target;
 }

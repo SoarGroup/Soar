@@ -7,10 +7,31 @@
 #include "common.h"
 #include "collision.h"
 #include "relation.h"
+#include "serializable.h"
 
 class filter;
 class filter_input;
 class drawer;
+
+class sig_entry : public serializable {
+public:
+	std::string name;
+	int type;
+	int length;
+	int start;
+	int target;
+
+	sig_entry() : type(-1), length(-1), start(-1), target(-1) {}
+	
+	bool operator==(const sig_entry &e) const {
+		return name == e.name && type == e.type && length == e.length && start == e.start && target == e.target;
+	}
+	
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+};
+
+typedef std::vector<sig_entry> scene_sig;
 
 class scene : public sgnode_listener {
 public:
@@ -54,7 +75,7 @@ public:
 	void calc_relations(relation_table &rels) const;
 	void print_relations(std::ostream &os) const;
 	
-	const state_sig &get_signature() const;
+	const scene_sig &get_signature() const;
 	
 private:
 	typedef std::map<std::string, float> property_map;
@@ -89,7 +110,7 @@ private:
 	collision_detector cdetect;
 
 	std::map<std::string, int> node_ids;
-	mutable state_sig sig;
+	mutable scene_sig sig;
 };
 
 #endif

@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <ostream>
 #include <fstream>
-#include "serializable.h"
 
 typedef std::vector<int> tuple;
 
@@ -253,25 +252,5 @@ private:
 };
 
 extern logger LOG;
-
-class sig_entry : public serializable {
-public:
-	std::string name;
-	int type;
-	int length;
-	int start;
-	int target;
-
-	sig_entry() : type(-1), length(-1), start(-1), target(-1) {}
-	
-	bool operator==(const sig_entry &e) const {
-		return name == e.name && type == e.type && length == e.length && start == e.start && target == e.target;
-	}
-	
-	void serialize(std::ostream &os) const;
-	void unserialize(std::istream &is);
-};
-
-typedef std::vector<sig_entry> state_sig;
 
 #endif

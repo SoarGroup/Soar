@@ -16,7 +16,7 @@ public:
 	: model(name, "targets")
 	{}
 	
-	bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
+	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
 		y[0] = x[0] + x[4];
 		y[1] = x[1] + x[5];
 		y[2] = x[2];

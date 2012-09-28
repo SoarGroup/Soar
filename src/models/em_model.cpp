@@ -8,6 +8,7 @@
 #include "filter_table.h"
 #include "params.h"
 #include "svs.h"
+#include "scene.h"
 
 using namespace std;
 
@@ -19,7 +20,7 @@ public:
 	: model(name, "em"), si(si), revisions(0), wm_root(NULL)
 	{}
 
-	bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
+	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
 		int mode;
 		return em.predict(sig, rels, x, mode, y);
 	}
@@ -32,7 +33,7 @@ public:
 		return 1;
 	}
 
-	void learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+	void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 		assert(y.size() == 1);
 		em.learn(sig, rels, x, y);
 		if (em.run(MAXITERS)) {
@@ -55,7 +56,7 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether classification was correct.
 	*/
-	bool test(state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y, rvec &prediction) {
+	bool test(scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y, rvec &prediction) {
 		int best, mode;
 		double best_error;
 		vector<int> assign;

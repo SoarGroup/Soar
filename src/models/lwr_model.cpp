@@ -13,11 +13,11 @@ public:
 	: model(name, "lwr"), lwr(nnbrs)
 	{}
 	
-	void learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+	void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 		lwr.learn(x, y);
 	}
 	
-	bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
+	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
 		return lwr.predict(x, y);
 	}
 	

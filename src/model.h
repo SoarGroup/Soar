@@ -11,6 +11,7 @@
 #include "mat.h"
 #include "soar_interface.h"
 #include "relation.h"
+#include "scene.h"
 
 class model : public serializable {
 public:
@@ -22,10 +23,10 @@ public:
 	std::string get_name() const { return name; }
 	std::string get_type() const { return type; }
 	
-	virtual bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y) = 0;
+	virtual bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
-	virtual void learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {}
+	virtual void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {}
 	virtual void set_wm_root(Symbol *r) {}
 	void serialize(std::ostream &os) const {}
 	void unserialize(std::istream &is) {}
@@ -53,9 +54,9 @@ public:
 	multi_model(std::map<std::string, model*> *model_db);
 	~multi_model();
 	
-	bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
-	void learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
-	bool test(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
+	void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	bool test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
 	
 	std::string assign_model (
 		const std::string &name, 
@@ -86,7 +87,7 @@ private:
 	void error_stats_by_dim(int dim, int start, int end, double &mean, double &mode, double &std, double &min, double &max) const;
 	void report_model_config(model_config* c, std::ostream &os) const;
 	bool report_error(int i, const std::vector<std::string> &args, std::ostream &os) const;
-	void find_targets(const std::vector<int> &yinds, state_sig &sig);
+	void find_targets(const std::vector<int> &yinds, scene_sig &sig);
 	
 	std::list<model_config*>       active_models;
 	std::vector<std::string>       prop_vec;

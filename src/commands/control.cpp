@@ -28,7 +28,7 @@ const int MAXITERS = 50;
 
 bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, scene *scn, rvec &finalstate) {
 	scene *scncopy = scn->clone();
-	const state_sig &sig = scncopy->get_signature();
+	const scene_sig &sig = scncopy->get_signature();
 	finalstate = initstate;
 	if (traj.size() == 0) {
 		return true;
@@ -439,7 +439,7 @@ public:
 	bool evaluate(const rvec &traj, rvec &value, rvec &finalstate) {
 		function_timer t(timers.get(EVALUATE_T));
 		
-		const state_sig &sig = scn->get_signature();
+		const scene_sig &sig = scn->get_signature();
 		
 		if (traj.size() > 0) {
 			rvec x(initvals.size() + stepsize), y = initvals;
@@ -773,7 +773,7 @@ private:
 		}
 		
 		int random_step(int maxsteps) {
-			const state_sig &sig = ci->scn->get_signature();
+			const scene_sig &sig = ci->scn->get_signature();
 			
 			cout << "RANDOM" << endl;
 			rvec step(ci->outspec->size()), newval;

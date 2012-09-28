@@ -280,3 +280,8 @@ float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
 	
 	return max - min;
 }
+
+ostream& operator<<(ostream &os, const bbox &b) {
+	os << b.min[0] << " " << b.min[1] << " " << b.min[2] << " " << b.max[0] << " " << b.max[1] << " " << b.max[2];
+	return os;
+}

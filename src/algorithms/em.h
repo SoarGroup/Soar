@@ -10,6 +10,7 @@
 #include "serializable.h"
 #include "relation.h"
 #include "mat.h"
+#include "scene.h"
 
 class scene;
 
@@ -18,11 +19,11 @@ public:
 	EM();
 	~EM();
 	
-	void learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
 	bool run(int maxiters);
-	bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
+	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
 	// Return the mode with the model that best fits (x, y)
-	int best_mode(const state_sig &sig, const rvec &x, double y, double &besterror) const;
+	int best_mode(const scene_sig &sig, const rvec &x, double y, double &besterror) const;
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	void get_map_modes(std::vector<int> &modes) const;
 	void serialize(std::ostream &os) const;
@@ -66,7 +67,7 @@ private:
 		
 		std::set<int> stale_points;
 		std::set<int> members;
-		state_sig sig;
+		scene_sig sig;
 		
 		LinearModel *model;
 		
@@ -101,20 +102,20 @@ private:
 	bool remove_modes();
 	void mark_mode_stale(int i);
 	bool find_new_mode_inds(const std::set<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
-	double calc_prob(int m, const state_sig &sig, const rvec &x, double y, int target, std::vector<int> &best_assign, double &best_error) const;
+	double calc_prob(int m, const scene_sig &sig, const rvec &x, double y, int target, std::vector<int> &best_assign, double &best_error) const;
 	void mode_add_example(int m, int i, bool update);
 	void mode_del_example(int m, int i);
 	void init_mode(int mode, int sig, LinearModel *m, const std::vector<int> &members, const std::vector<int> &obj_map);
 	void learn_obj_clause(int m, int i);
 	void update_clauses(int m);
 	void print_foil6_data(std::ostream &os, int mode) const;
-	bool map_objs(int mode, int target, const state_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
+	bool map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
 	void extend_relations(const relation_table &add, int time);
 	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
 
 	relation_table rel_tbl;
 	std::vector<em_data*> data;
-	std::vector<state_sig> sigs;
+	std::vector<scene_sig> sigs;
 	std::vector<mode_info*> modes;
 	std::map<int, std::set<int> > noise;  // sig index -> data index
 	int ndata, nmodes;

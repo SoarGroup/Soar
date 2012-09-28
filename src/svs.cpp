@@ -223,7 +223,7 @@ void svs_state::clear_scene() {
 
 void svs_state::update_models() {
 	function_timer t(timers.get(MODEL_T));
-	state_sig curr_sig, out_names;
+	scene_sig curr_sig, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
 	relation_table curr_rels;

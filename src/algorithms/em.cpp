@@ -16,6 +16,7 @@
 #include "params.h"
 #include "mat.h"
 #include "serialize.h"
+#include "scene.h"
 
 using namespace std;
 using namespace Eigen;
@@ -323,7 +324,7 @@ void EM::update_eligibility() {
 /*
  Calculate probability of data point d belonging to mode m
 */
-double EM::calc_prob(int m, const state_sig &sig, const rvec &x, double y, int target, vector<int> &best_assign, double &best_error) const {
+double EM::calc_prob(int m, const scene_sig &sig, const rvec &x, double y, int target, vector<int> &best_assign, double &best_error) const {
 	rvec py;
 	double w;
 	if (TEST_ELIGIBILITY) {
@@ -353,7 +354,7 @@ double EM::calc_prob(int m, const state_sig &sig, const rvec &x, double y, int t
 	 object indices that can be assigned to position i in the model
 	 signature.
 	*/
-	state_sig &msig = modes[m]->sig;
+	scene_sig &msig = modes[m]->sig;
 	if (msig.empty()) {
 		// should be constant prediction
 		assert(modes[m]->model->is_const());
@@ -463,7 +464,7 @@ void EM::mode_add_example(int m, int i, bool update) {
 	if (!minfo.model->is_const()) {
 		xc.resize(dinfo.x.size());
 		int xsize = 0;
-		const state_sig &sig = sigs[dinfo.sig_index];
+		const scene_sig &sig = sigs[dinfo.sig_index];
 		for (int j = 0; j < dinfo.obj_map.size(); ++j) {
 			int n = sig[dinfo.obj_map[j]].length;
 			int s = sig[dinfo.obj_map[j]].start;
@@ -533,7 +534,7 @@ void EM::update_MAP(const set<int> &points) {
 	}
 }
 
-void EM::learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+void EM::learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	int sig_index = -1, target = -1;
 	for (int i = 0; i < sigs.size(); ++i) {
 		if (sigs[i] == sig) {
@@ -812,7 +813,7 @@ void EM::mark_mode_stale(int i) {
 	}
 }
 
-bool EM::map_objs(int mode, int target, const state_sig &sig, const relation_table &rels, vector<int> &mapping) const {
+bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, vector<int> &mapping) const {
 	const mode_info &minfo = *modes[mode];
 	vector<bool> used(sig.size(), false);
 	used[target] = true;
@@ -849,7 +850,7 @@ bool EM::map_objs(int mode, int target, const state_sig &sig, const relation_tab
 	return true;
 }
 
-bool EM::predict(const state_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y) {
+bool EM::predict(const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y) {
 	if (ndata == 0 || nmodes < 0) {
 		mode = -1;
 		return false;
@@ -974,7 +975,7 @@ bool EM::run(int maxiters) {
 	return changed;
 }
 
-int EM::best_mode(const state_sig &sig, const rvec &x, double y, double &besterror) const {
+int EM::best_mode(const scene_sig &sig, const rvec &x, double y, double &besterror) const {
 	int target = -1;
 	for (int i = 0; i < sig.size(); ++i) {
 		if (sig[i].target == 0) {
@@ -1092,7 +1093,7 @@ void EM::learn_obj_clause(int m, int i) {
 	
 	set<int>::const_iterator j;
 	for (j = modes[m]->members.begin(); j != modes[m]->members.end(); ++j) {
-		const state_sig &sig = sigs[data[*j]->sig_index];
+		const scene_sig &sig = sigs[data[*j]->sig_index];
 		int o = data[*j]->obj_map[i];
 		objs[0] = data[*j]->target;
 		objs[1] = o;

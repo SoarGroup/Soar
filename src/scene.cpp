@@ -11,6 +11,7 @@
 #include "drawer.h"
 #include "filter.h"
 #include "filter_table.h"
+#include "serialize.h"
 
 using namespace std;
 
@@ -100,6 +101,14 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 			assert(false);
 	}
 	return true;
+}
+
+void sig_entry::serialize(ostream &os) const {
+	serializer(os) << name << type << length << start << target;
+}
+
+void sig_entry::unserialize(istream &is) {
+	unserializer(is) >> name >> type >> length >> start >> target;
 }
 
 scene::scene(const string &name, drawer *d) 
@@ -663,7 +672,7 @@ void scene::update_sig() const {
 	}
 }
 
-const state_sig &scene::get_signature() const {
+const scene_sig &scene::get_signature() const {
 	if (sig_dirty) {
 		update_sig();
 	}

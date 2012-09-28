@@ -74,7 +74,7 @@ multi_model::~multi_model() {
 	}
 }
 
-void multi_model::find_targets(const vector<int> &yinds, state_sig &sig) {
+void multi_model::find_targets(const vector<int> &yinds, scene_sig &sig) {
 	for (int i = 0; i < sig.size(); ++i) {
 		sig[i].target = -1;
 	}
@@ -92,13 +92,13 @@ void multi_model::find_targets(const vector<int> &yinds, state_sig &sig) {
 	}
 }
 
-bool multi_model::predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
+bool multi_model::predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		rvec xp, yp(cfg->ally ? y.size() : cfg->yinds.size());
 		bool success;
-		state_sig sig2 = sig;
+		scene_sig sig2 = sig;
 
 		find_targets(cfg->yinds, sig2);
 		if (cfg->allx) {
@@ -120,13 +120,13 @@ bool multi_model::predict(const state_sig &sig, const relation_table &rels, cons
 	return true;
 }
 
-void multi_model::learn(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+void multi_model::learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	std::list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		rvec xp, yp;
-		state_sig sig2 = sig;
+		scene_sig sig2 = sig;
 		
 		if (cfg->allx) {
 			xp = x;
@@ -144,7 +144,7 @@ void multi_model::learn(const state_sig &sig, const relation_table &rels, const 
 	}
 }
 
-bool multi_model::test(const state_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+bool multi_model::test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	rvec predicted(y.size());
 	predicted.setConstant(0.0);
 	test_x.push_back(x);

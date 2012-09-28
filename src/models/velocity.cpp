@@ -14,7 +14,7 @@ public:
 	: model(name, "vel"), dims(dims) 
 	{}
 	
-	bool predict(const state_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
+	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
 		if (x.size() != dims * 2 || y.size() != dims) {
 			return false;
 		}
