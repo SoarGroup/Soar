@@ -335,7 +335,7 @@ public:
 	
 	transform3(const transform3 &t) : trans(t.trans) {}
 	
-	transform3(char type, vec3 v) {
+	transform3(char type, const vec3 &v) {
 		switch(type) {
 			case 'p':
 				trans = Eigen::Translation<double, 3>(v);
@@ -351,6 +351,14 @@ public:
 			default:
 				assert(false);
 		}
+	}
+	
+	transform3(const vec3 &p, const vec3 &r, const vec3 &s) {
+		trans = Eigen::Translation<double, 3>(p) *
+		        Eigen::AngleAxisd(r(2), Eigen::Vector3d::UnitZ()) *
+		        Eigen::AngleAxisd(r(1), Eigen::Vector3d::UnitY()) *
+		        Eigen::AngleAxisd(r(0), Eigen::Vector3d::UnitX()) *
+		        Eigen::Scaling(s);
 	}
 	
 	vec3 operator()(const vec3 &v) const {
