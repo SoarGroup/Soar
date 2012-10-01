@@ -25,33 +25,17 @@ void dassign(const rvec &source, rvec &target, const vector<int> &indexes) {
 }
 
 bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vector<int> &obj_inds, vector<int> &prop_inds) {
+	int oind, pind;
 	for (int i = 0; i < pv.size(); ++i) {
 		const string &obj = pv[i].first;
 		const string &prop = pv[i].second;
-		bool found = false;
-		for (int j = 0; j < sig.size(); ++j) {
-			if (sig[j].name == obj) {
-				const vector<string> &props = sig[i].props;
-				for (int k = 0; k < props.size(); ++k) {
-					if (props[k] == prop) {
-						found = true;
-						if (obj_inds.empty() || obj_inds.back() != j) {
-							obj_inds.push_back(j);
-						}
-						prop_inds.push_back(sig[j].start + k);
-						break;
-					}
-				}
-				if (found) {
-					break;
-				} else {
-					return false;
-				}
-			}
-		}
-		if (!found) {
+		if (!sig.get_dim(pv[i].first, pv[i].second, oind, pind)) {
 			return false;
 		}
+		if (obj_inds.empty() || obj_inds.back() != oind) {
+			obj_inds.push_back(oind);
+		}
+		prop_inds.push_back(pind);
 	}
 	return true;
 }

@@ -415,12 +415,19 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const scene_sig &
 	
 	// find relevant objects (with nonzero coefficients)
 	int ndims = 0, ndata = X.rows(), nout = Y.cols();
-	for(int i = 0; i < sig.size(); ++i) {
-		for (int j = 0; j < sig[i].length; ++j) {
-			if (!coefs.row(sig[i].start + j).isConstant(0.0)) {
-				obj_map.push_back(i);
-				ndims += sig[i].length;
+	int i = 0, obj = 0;
+	while (i < coefs.rows()) {
+		if (!coefs.row(i).isConstant(0.0)) {
+			obj_map.push_back(obj);
+			ndims += sig[obj].props.size();
+			if (obj == sig.size() - 1) {
 				break;
+			}
+			i = sig[++obj].start;
+		} else {
+			++i;
+			if (obj < sig.size() - 1 && i == sig[obj + 1].start) {
+				++obj;
 			}
 		}
 	}
@@ -429,10 +436,10 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const scene_sig &
 	mat coefs2(ndims, nout);
 	xdata.resize(ndata, ndims);
 
-	int i = 0;
+	i = 0;
 	for (int j = 0; j < obj_map.size(); ++j) {
 		int s = sig[obj_map[j]].start;
-		int l = sig[obj_map[j]].length;
+		int l = sig[obj_map[j]].props.size();
 		coefs2.block(i, 0, l, nout) = coefs.block(s, 0, l, nout);
 		xdata.get().block(0, i, ndata, l) = X.block(0, s, ndata, l);
 		i += l;

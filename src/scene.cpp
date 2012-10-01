@@ -103,12 +103,51 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 	return true;
 }
 
-void sig_entry::serialize(ostream &os) const {
-	serializer(os) << name << type << length << start << target;
+void scene_sig::entry::serialize(ostream &os) const {
+	serializer(os) << name << type << start << target << props;
 }
 
-void sig_entry::unserialize(istream &is) {
-	unserializer(is) >> name >> type >> length >> start >> target;
+void scene_sig::entry::unserialize(istream &is) {
+	unserializer(is) >> name >> type >> start >> target >> props;
+}
+
+void scene_sig::serialize(ostream &os) const {
+	::serialize(s, os);
+}
+
+void scene_sig::unserialize(istream &is) {
+	::unserialize(s, is);
+}
+
+void scene_sig::add(const scene_sig::entry &e) {
+	int curr_dim = dim();
+	s.push_back(e);
+	s.back().start = curr_dim;
+}
+
+int scene_sig::dim() const {
+	int d = 0;
+	for (int i = 0; i < s.size(); ++i) {
+		d += s[i].props.size();
+	}
+	return d;
+}
+
+bool scene_sig::get_dim(const string &obj, const string &prop, int &obj_ind, int &prop_ind) const {
+	for (int i = 0; i < s.size(); ++i) {
+		const entry &e = s[i];
+		if (e.name == obj) {
+			for (int j = 0; j < e.props.size(); ++j) {
+				if (e.props[j] == prop) {
+					obj_ind = i;
+					prop_ind = e.start + j;
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	return false;
 }
 
 scene::scene(const string &name, drawer *d) 
@@ -653,21 +692,17 @@ void scene::print_relations(ostream &os) const {
 
 void scene::update_sig() const {
 	sig.clear();
-	int start = 0;
 	node_table::const_iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		sig.push_back(sig_entry());
-		sig_entry &e = sig.back();
+		scene_sig::entry e;
 		e.name = i->second.node->get_name();
-		e.start = start;
-		e.length = NUM_NATIVE_PROPS + i->second.props.size();
+		get_property_names(i->first, e.props);
 		if (i == nodes.begin()) {
 			e.type = 0;
 		} else {
-			e.type = sig.back().length; // have to change this later
+			e.type = e.props.size(); // have to change this later
 		}
-		start += e.length;
-		get_property_names(i->first, e.props);
+		sig.add(e);
 	}
 }
 

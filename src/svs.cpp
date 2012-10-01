@@ -239,10 +239,13 @@ void svs_state::update_models() {
 	scn->calc_relations(curr_rels);
 	
 	// add an entry to the signature for the output
-	curr_sig.push_back(sig_entry());
-	curr_sig.back().type = -1;
-	curr_sig.back().length = out.size();
-	curr_sig.back().start = curr_pvals.size();
+	scene_sig::entry out_entry;
+	out_entry.name = "output";
+	out_entry.type = -1;
+	for (int i = 0; i < outspec->size(); ++i) {
+		out_entry.props.push_back(outspec->at(i).name);
+	}
+	curr_sig.add(out_entry);
 	
 	if (prev_sig == curr_sig) {
 		rvec x(prev_pvals.size() + out.size());
@@ -348,6 +351,8 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		os << "no such command" << endl;
 		return false;
+	} else if (args[first_arg] == "model") {
+		return mmdl->cli_inspect(first_arg + 1, args, os);
 	} else if (args[first_arg] == "learn_models") {
 		return handle_on_off(args, first_arg, os, learn_models);
 	} else if (args[first_arg] == "test_models") {

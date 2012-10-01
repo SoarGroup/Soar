@@ -22,7 +22,7 @@ using namespace std;
 using namespace Eigen;
 
 const bool TEST_ELIGIBILITY = false;
-const LinearModel::regression_type REGRESSION_ALG = LinearModel::RIDGE;
+const LinearModel::regression_type REGRESSION_ALG = LinearModel::FORWARD;
 
 /*
  Generate all possible combinations of sets of items
@@ -370,9 +370,7 @@ double EM::calc_prob(int m, const scene_sig &sig, const rvec &x, double y, int t
 	
 	// otherwise, check all possible assignments
 	vector<vector<int> > possibles(msig.size());
-	int xlen = 0;
 	for (int i = 0; i < msig.size(); ++i) {
-		xlen += msig[i].length;
 		if (i == modes[m]->target) {
 			possibles[i].push_back(target);
 		} else {
@@ -390,13 +388,14 @@ double EM::calc_prob(int m, const scene_sig &sig, const rvec &x, double y, int t
 	 highest probability.
 	*/
 	vector<int> assign;
+	int xlen = msig.dim();
 	rvec xc(xlen);
 	double best_prob = -1.0;
 	while (gen.next(assign)) {
 		int s = 0;
 		for (int i = 0; i < assign.size(); ++i) {
-			int l = sig[assign[i]].length;
-			assert(msig[i].length == l);
+			int l = sig[assign[i]].props.size();
+			assert(msig[i].props.size() == l);
 			xc.segment(s, l) = x.segment(sig[assign[i]].start, l);
 			s += l;
 		}
@@ -466,7 +465,7 @@ void EM::mode_add_example(int m, int i, bool update) {
 		int xsize = 0;
 		const scene_sig &sig = sigs[dinfo.sig_index];
 		for (int j = 0; j < dinfo.obj_map.size(); ++j) {
-			int n = sig[dinfo.obj_map[j]].length;
+			int n = sig[dinfo.obj_map[j]].props.size();
 			int s = sig[dinfo.obj_map[j]].start;
 			xc.segment(xsize, n) = dinfo.x.segment(s, n);
 			xsize += n;
@@ -777,15 +776,13 @@ void EM::init_mode(int mode, int sig, LinearModel *m, const vector<int> &members
 	extend(minfo.members, members);
 	if (m->is_const()) {
 		minfo.target = 0;
-		minfo.sig.push_back(sigs[sig][target]);
-		minfo.sig.back().start = -1;
+		minfo.sig.add(sigs[sig][target]);
 	} else {
 		for (int i = 0; i < obj_map.size(); ++i) {
 			if (obj_map[i] == target) {
 				minfo.target = i;
 			}
-			minfo.sig.push_back(sigs[sig][obj_map[i]]);
-			minfo.sig.back().start = -1;  // this field has no purpose and should never be used
+			minfo.sig.add(sigs[sig][obj_map[i]]);
 		}
 	}
 	minfo.obj_clauses.resize(minfo.sig.size());
@@ -892,7 +889,7 @@ bool EM::predict(const scene_sig &sig, const relation_table &rels, const rvec &x
 				xc.resize(x.size());
 				int xsize = 0;
 				for (int j = 0; j < mapping.size(); ++j) {
-					int n = sig[mapping[j]].length;
+					int n = sig[mapping[j]].props.size();
 					xc.segment(xsize, n) = x.segment(sig[mapping[j]].start, n);
 					xsize += n;
 				}
