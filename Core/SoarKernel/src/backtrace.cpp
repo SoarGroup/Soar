@@ -312,32 +312,6 @@ void backtrace_through_instantiation (agent* thisAgent,
   for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next) {
     if (c->type==POSITIVE_CONDITION) {
 
-      /* REW: begin 11.22.97 */
-      /* print (thisAgent, "\n Checking...");print_wme(c->bt.wme_);
-      if (c->bt.trace) print ("c->bt.trace exists..."); else print("\n    no c->bt.trace...");
-      if (c->bt.wme_) { 
-	print ("c->bt.wme_....");
-	if  (c->bt.wme_->preference)
-	  print("c->bt.wme_->preference");
-	else 
-	  print("\n no c->bt.wme_->preference");
-      }	else
-	print ("\nNo WME No Preference!!!!!!");
-      print("\n"); 
-      if ((c->bt.trace) && (c->bt.wme_->preference)){
-      if (c->bt.trace != c->bt.wme_->preference) {
-	print("\n bt.trace and WME preferences not equal:\n");
-	print(thisAgent, "\nWME:"); print_wme(c->bt.wme_);
-	print("\n bt.trace:"); 
-	if (c->bt.trace) print_preference(c->bt.trace); else print(" NIL\n");
-	print("\n bt.wme_->preference:"); 
-        if (c->bt.wme_->preference) print_preference(c->bt.wme_->preference);
-	else print(" NIL\n");
-	c->bt.trace = c->bt.wme_->preference;
-	c->bt.level = c->bt.wme_->id->id.level;
-      }
-      }*/
-      /* REW: end   11.22.97 */ 
       /* --- positive cond's are grounds, potentials, or locals --- */
       if (referent_of_equality_test(c->data.tests.id_test)->id.tc_num == tc) {
         add_to_grounds (thisAgent, c);
@@ -474,9 +448,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *relia
       backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,cond, reliable, 0);
 
       /* MMA 8-2012: Check for any CDPS prefs and backtrace through them */
-      print(thisAgent, "Checking CDPS in trace_locals.\n");
       if (cond->bt.CDPS) {
-        print(thisAgent, "Found CDPS.\n");
         for (CDPS=cond->bt.CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
           p = static_cast<preference_struct *>(CDPS->first);
           if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
@@ -665,7 +637,6 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
     backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,potential, reliable, 0);
 
     /* MMA 8-2012: now backtrace through CDPS of potentials */
-    print(thisAgent, "Checking CDPS in trace_ungrounded_potentials.\n");
     if (potential->bt.CDPS) {
       for (CDPS=potential->bt.CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
         p = static_cast<preference_struct *>(CDPS->first);

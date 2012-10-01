@@ -93,41 +93,20 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
 
   for (cond = inst->top_of_instantiated_conditions; cond != NIL;
       cond = cond->next) {
-    //assert(cond->bt.CDPS == NIL);
     cond->bt.CDPS = NIL;
     if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot) {
       if (cond->bt.trace->slot->CDPS) {
-        assert(cond->bt.trace->slot->isa_context_slot);
-        print_cdps(thisAgent, "\nCopying CDPS for condition...");
-        print_condition(thisAgent, cond);
         for (CDPS=cond->bt.trace->slot->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
           new_pref = NIL;
           pref = static_cast<preference *>(CDPS->first);
           if (pref->inst->match_goal_level == inst->match_goal_level
               && pref->in_tm) {
-            print_cdps(thisAgent,
-                "\nCDPS DEBUG:  - Adding CDP for production ");
-            if (inst->prod)
-              print_with_symbols(thisAgent, "%y\n", inst->prod->name);
-            else
-              print_string(thisAgent, "[dummy production]\n");
-            print_cdps(thisAgent, "CDPS DEBUG:  - Pref adding to CDPS: ");
-            print_pref_cdps(thisAgent, pref);
             push(thisAgent, pref, cond->bt.CDPS);
             preference_add_ref(pref);
           } else {
             new_pref = find_clone_for_level(pref, inst->match_goal_level);
             if (new_pref) {
               if (new_pref->in_tm) {
-                print_cdps(thisAgent,
-                    "\nCDPS DEBUG:  - Adding CDP (clone) for production ");
-                if (inst->prod)
-                  print_with_symbols(thisAgent, "%y\n", inst->prod->name);
-                else
-                  print_string(thisAgent, "[dummy production] (clone)\n");
-                print_cdps(thisAgent,
-                    "CDPS DEBUG:  - Pref (clone) adding to CDPS: ");
-                print_pref_cdps(thisAgent, pref);
                 push(thisAgent, new_pref, cond->bt.CDPS);
                 preference_add_ref(new_pref);
               }
@@ -138,7 +117,6 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
     }
   }
 }
-
 
 /* -----------------------------------------------------------------------
  Find Clone For Level
@@ -823,6 +801,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 		}
 	}
 
+	/* Copy any context-dependent preferences for conditions of this instantiation */
 	build_CDPS(thisAgent, inst);
 
 	thisAgent->production_being_fired = NIL;
@@ -940,7 +919,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 
 				if (cond->bt.CDPS) {
 	        /* MMA 9-2012 - Clear out the CDPS */
-	        print(thisAgent, "CDPS DEBUG:  - Clearing out CDPS in deallocate instantiation\n");
           c_old = c = cond->bt.CDPS;
           cond->bt.CDPS = NIL;
           for (; c != NIL; c = c->rest) {
@@ -949,8 +927,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
             if (level > TOP_GOAL_LEVEL)
 #endif
             {
-              print(thisAgent, "CDPS DEBUG:  - removing preference: ");
-              print_preference(thisAgent, pref);
               preference_remove_ref(thisAgent, pref);
             }
           }

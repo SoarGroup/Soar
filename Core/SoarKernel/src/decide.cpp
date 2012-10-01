@@ -876,42 +876,33 @@ void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, bool unique_value)
   cons *CDPS;
   preference *p;
 
-  print_cdps(thisAgent, "    --> Pref adding to CDPS: %i", unique_value);
-  print_pref_cdps(thisAgent, pref);
-
   for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
     p = static_cast<preference *>(CDPS->first);
     if (p == pref) {
       already_exists=true;
-      print_cdps(thisAgent, "   --> duplicate pref already exists.  Not adding.\n");
       break;
     }
-//    print_cdps(thisAgent, "   Comparing with pref ");
-//    print_pref_cdps(thisAgent, p);
 
-    /* Checking if a preference is unique differs depending on the preference type */
     if (unique_value) {
+      /* Checking if a preference is unique differs depending on the preference type */
 
-      /* Better and worse preferences can be considered equivalent if they point to the same
+      /* Binary preferences can be considered equivalent if they point to the same
        * operators in the correct relative spots */
-
       if (((pref->type == BETTER_PREFERENCE_TYPE) || (pref->type == WORSE_PREFERENCE_TYPE)) &&
           ((p->type == BETTER_PREFERENCE_TYPE) || (p->type == WORSE_PREFERENCE_TYPE))) {
         if (pref->type == p->type)
           already_exists = ((pref->value == p->value) && (pref->referent == p->referent));
         else
           already_exists = ((pref->value == p->referent) && (pref->referent == p->value));
-
       } else if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) &&
           (p->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)) {
         already_exists = (((pref->value == p->value) && (pref->referent == p->referent)) ||
             ((pref->value == p->referent) && (pref->referent == p->value)));
-        print_cdps(thisAgent, "   Comparing binary indifferent preferences being added.\n");
       } else {
+        /* Otherwise they are equivalent if they have the same value and type */
         already_exists = (pref->value == p->value) && (pref->type == p->type);
       }
       if (already_exists) {
-        print_cdps(thisAgent, "   --> equivalent pref already exists.  Not adding.\n");
         break;
       }
     }
@@ -922,7 +913,7 @@ void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, bool unique_value)
   }
 }
 
-/* MMA 9-2012: Perform reinforcement learning update for one valid candidate. */
+/* Perform reinforcement learning update for one valid candidate. */
 
 void rl_update_for_one_candidate(agent* thisAgent, slot *s, bool consistency, preference *candidates) {
 
@@ -932,26 +923,6 @@ void rl_update_for_one_candidate(agent* thisAgent, slot *s, bool consistency, pr
     rl_perform_update(thisAgent, candidates->numeric_value,
         candidates->rl_contribution, s->id);
   }
-}
-/* MMA end */
-
-#define debug_cdps 0
-void print_cdps (agent* thisAgent, const char *format, ...) {
-#ifdef debug_cdps
-  va_list args;
-  char buf[5000];
-
-  va_start (args, format);
-  vsprintf (buf, format, args);
-  va_end (args);
-  print_string (thisAgent, buf);
-#endif
-}
-
-void print_pref_cdps (agent* thisAgent, preference *pref) {
-#ifdef debug_cdps
-  print_preference (thisAgent, pref);
-#endif
 }
 
 /* **************************************************************************
@@ -997,9 +968,9 @@ byte run_preference_semantics(agent* thisAgent,
 
   /* Set a flag to determine if a context-dependent preference set makes sense in this context.
    * We can ignore the CDPS when:
-   * - Run_preference_semantics is called for a consistency check.
-   * - For non-context slots
-   * - For context-slots at the top level */
+   * - Run_preference_semantics is called for a consistency check (no side effects)
+   * - For non-context slots (only makes sense for operators)
+   * - For context-slots at the top level (will never be backtraced through)*/
 
   do_CDPS = (s->isa_context_slot && !consistency && (s->id->id.level > TOP_GOAL_LEVEL));
 
@@ -1008,9 +979,6 @@ byte run_preference_semantics(agent* thisAgent,
    * the system parameter CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM */
 
   do_all_CDPS = (do_CDPS && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
-
-//  print_cdps(thisAgent, "\nCDPS DEBUG:  do_all_CDPS:%i do_CDPS:%i isa:%i consis:%i level:%i sysparam:%i", do_all_CDPS, do_CDPS,
-//      s->isa_context_slot, !consistency, (s->id->id.level > TOP_GOAL_LEVEL), thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
 
   /* Empty the context-dependent preference set in the slot */
 
@@ -1054,17 +1022,16 @@ byte run_preference_semantics(agent* thisAgent,
 
   if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot) {
 
-    print_cdps(thisAgent,
+    print(thisAgent,
         "\n----------------------------\nRUNNING PREFERENCE SEMANTICS...\n----------------------------\n");
-    print_cdps(thisAgent, "CDPS DEBUG:  do_cdps = %i , do_all_cdps = %i\n", do_CDPS, do_all_CDPS);
-    print_cdps(thisAgent, "All Preferences for slot:");
+    print(thisAgent, "All Preferences for slot:");
 
     for (int i = 0; i < NUM_PREFERENCE_TYPES; i++) {
       if (s->preferences[i]) {
-        print_cdps(thisAgent, "\n   %ss:\n", preference_name[i]);
+        print(thisAgent, "\n   %ss:\n", preference_name[i]);
         for (p = s->preferences[i]; p; p = p->next) {
-          print_cdps(thisAgent, "   ");
-          print_pref_cdps(thisAgent, p);
+          print(thisAgent, "   ");
+          print_preference(thisAgent, p);
         }
       }
     }
@@ -1150,15 +1117,11 @@ byte run_preference_semantics(agent* thisAgent,
 
   if (do_CDPS) {
     if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]) {
-      print_cdps(thisAgent, "CDPS DEBUG:  Prohibit or Reject preference detected.  Performing stage 2 additions.\n");
-      print_cdps(thisAgent, "CDPS DEBUG:  - Adding prohibit preferences %i\n", s->preferences[PROHIBIT_PREFERENCE_TYPE]);
       for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
         add_to_CDPS(thisAgent, s, p);
       if (do_all_CDPS) {
-        print_cdps(thisAgent, "CDPS DEBUG:  - Adding reject preferences\n");
         for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
           add_to_CDPS(thisAgent, s, p);
-        print_cdps(thisAgent, "CDPS DEBUG:  - Adding acceptable preferences\n");
         for (p = candidates; p != NIL; p = p->next_candidate) {
           add_to_CDPS(thisAgent, s, p);
         }
@@ -1170,12 +1133,10 @@ byte run_preference_semantics(agent* thisAgent,
   if ((!candidates) || (!candidates->next_candidate)) {
     *result_candidates = candidates;
     if (candidates) {
-      print_cdps(thisAgent, "CDPS DEBUG:  Exit point 1.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
       if (do_CDPS) {
-        print_cdps(thisAgent, "CDPS DEBUG:  Exit point 1.  No candidates left.  Clearing out CDPS.");
         clear_CDPS(thisAgent, s);
       }
     }
@@ -1216,8 +1177,6 @@ byte run_preference_semantics(agent* thisAgent,
         if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG
             || k->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
           k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-          print_cdps(thisAgent, "CDPS DEBUG:  Better preference makes referent conflicted: \n");
-          print_pref_cdps(thisAgent, p);
         }
       }
     }
@@ -1231,9 +1190,6 @@ byte run_preference_semantics(agent* thisAgent,
         if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG
             || k->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
           j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-          print_cdps(thisAgent, "CDPS DEBUG:  Worse preference makes value conflicted: \n");
-          print_pref_cdps(thisAgent, p);
-
         }
       }
     }
@@ -1264,7 +1220,6 @@ byte run_preference_semantics(agent* thisAgent,
       }
       *result_candidates = candidates;
       if (do_CDPS) {
-        print_cdps(thisAgent, "CDPS DEBUG:  Better/Worst conflict impasse. Clearing out CDPS.");
         clear_CDPS(thisAgent, s);
       }
       return CONFLICT_IMPASSE_TYPE;
@@ -1275,15 +1230,10 @@ byte run_preference_semantics(agent* thisAgent,
      * list and delete acceptable preferences from the CDPS for those that
      * don't make the candidate list.*/
 
-    print_cdps(thisAgent, "CDPS DEBUG:  Adding better preferences...\n");
     prev_cand = NIL;
     cand = candidates;
     while (cand) {
       if (cand->value->common.decider_flag == CONFLICTED_DECIDER_FLAG) {
-
-        print_cdps(thisAgent, "CDPS DEBUG:  Worse preference found for candidate.  Removing acceptables for ");
-        print_pref_cdps(thisAgent, cand);
-
         /* Remove this preference from the candidate list */
         if (prev_cand)
           prev_cand->next_candidate = cand->next_candidate;
@@ -1292,20 +1242,15 @@ byte run_preference_semantics(agent* thisAgent,
 
         /* Remove any acceptable preference for the same operator from the CDPS */
         if (do_all_CDPS && s->CDPS) {
-          print_cdps(thisAgent, "Attempting to remove acceptable preferences.\n");
             prev_cons = NIL;
             for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
               p = static_cast<preference *>(CDPS->first);
-              print_cdps(thisAgent, "Checking ");
-              print_pref_cdps(thisAgent, p);
               if ((p->value == cand->value) && (p->type == ACCEPTABLE_PREFERENCE_TYPE)) {
                 if (!prev_cons) {
                   s->CDPS = CDPS->rest;
                 } else {
                   prev_cons->rest = CDPS->rest;
                 }
-                print_cdps(thisAgent, "CDPS DEBUG:  Found acceptable to remove:");
-                print_pref_cdps(thisAgent, p);
                 free_cons(thisAgent, CDPS);
                 preference_remove_ref(thisAgent, p);
               } else {
@@ -1316,7 +1261,6 @@ byte run_preference_semantics(agent* thisAgent,
       } else {
         if (do_all_CDPS) {
           /* Add better/worse preference to CDPS */
-          print_cdps(thisAgent, "CDPS DEBUG:  Valid better preferences found:\n");
           for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
               add_to_CDPS(thisAgent, s, p);
@@ -1339,12 +1283,10 @@ byte run_preference_semantics(agent* thisAgent,
   if ((!candidates) || (!candidates->next_candidate)) {
     *result_candidates = candidates;
     if (candidates) {
-      print_cdps(thisAgent, "CDPS DEBUG:  Exit point 2.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
       if (do_CDPS) {
-        print_cdps(thisAgent, "CDPS DEBUG:  Exit point 2.  No candidates left.  Clearing out CDPS.");
         clear_CDPS(thisAgent, s);
       }
     }
@@ -1371,7 +1313,6 @@ byte run_preference_semantics(agent* thisAgent,
         if (do_all_CDPS) {
           for (p = s->preferences[BEST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
-              print_cdps(thisAgent, "CDPS DEBUG:  Adding best preference to CDPS.\n");
               add_to_CDPS(thisAgent, s, p);
             }
           }
@@ -1391,14 +1332,10 @@ byte run_preference_semantics(agent* thisAgent,
   if ((!candidates) || (!candidates->next_candidate)) {
     *result_candidates = candidates;
     if (candidates) {
-
-      print_cdps(thisAgent, "CDPS DEBUG:  Exit point 3.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
-
     } else {
       if (do_CDPS) {
-        print_cdps(thisAgent, "CDPS DEBUG:  Exit point 3.  No candidates left.  Clearing out CDPS.");
         clear_CDPS(thisAgent, s);
       }
     }
@@ -1434,7 +1371,6 @@ byte run_preference_semantics(agent* thisAgent,
           /* Add this worst preference to CDPS */
           for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
-              print_cdps(thisAgent, "CDPS DEBUG:  Adding worst preference to CDPS.\n");
               add_to_CDPS(thisAgent, s, p);
             }
           }
@@ -1450,13 +1386,10 @@ byte run_preference_semantics(agent* thisAgent,
   if ((!candidates) || (!candidates->next_candidate)) {
     *result_candidates = candidates;
     if (candidates) {
-      print_cdps(thisAgent, "CDPS DEBUG:  Exit point 4.\n");
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
-
     } else {
       if (do_CDPS) {
-        print_cdps(thisAgent, "CDPS DEBUG:  Exit point 4.  No candidates left.  Clearing out CDPS.");
         clear_CDPS(thisAgent, s);
       }
     }
@@ -1516,8 +1449,6 @@ byte run_preference_semantics(agent* thisAgent,
         }
       if (!match_found) {
         not_all_indifferent = true;
-        print_cdps(thisAgent, "CDPS DEBUG:  not indifferent candidate!\n");
-        print_pref_cdps(thisAgent, cand);
         break;
       }
     }
@@ -1531,7 +1462,6 @@ byte run_preference_semantics(agent* thisAgent,
       (*result_candidates)->next_candidate = NIL;
 
       if (do_all_CDPS) {
-        print_cdps(thisAgent, "CDPS DEBUG:  Exit point 5.\n");
 
         /* Add all indifferent preferences associated with the chosen candidate to the CDPS.*/
 
@@ -1542,7 +1472,6 @@ byte run_preference_semantics(agent* thisAgent,
 
           for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == (*result_candidates)->value) {
-              print_cdps(thisAgent, "CDPS DEBUG:  Adding numeric indifferent pref.\n");
               add_to_CDPS(thisAgent, s, p, false);
             }
           }
@@ -1553,11 +1482,7 @@ byte run_preference_semantics(agent* thisAgent,
             if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
                 if ((p->referent->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
                        (p->value->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG)) {
-                print_cdps(thisAgent, "CDPS DEBUG:  Adding binary indifferent pref between numeric and non-numeric candidates.\n");
                 add_to_CDPS(thisAgent, s, p);
-              } else {
-                print_cdps(thisAgent, "CDPS DEBUG:  Ignoring binary indifferent pref between two numeric candidates.\n");
-                print_pref_cdps(thisAgent, p);
               }
             }
           }
@@ -1568,14 +1493,11 @@ byte run_preference_semantics(agent* thisAgent,
 
           for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == (*result_candidates)->value) {
-              print_cdps(thisAgent, "Adding unary indifferent pref\n");
               add_to_CDPS(thisAgent, s, p);
             }
           }
           for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
-              print_cdps(thisAgent, "Adding binary indifferent pref\n");
-              assert(p->value->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG);
               add_to_CDPS(thisAgent, s, p);
             }
           }
@@ -1591,11 +1513,9 @@ byte run_preference_semantics(agent* thisAgent,
 
   *result_candidates = candidates;
   if (do_CDPS) {
-    print_cdps(thisAgent, "CDPS DEBUG:  Not all indifferent.  Tie impasse. Clearing out CDPS.");
     clear_CDPS(thisAgent, s);
   }
   return TIE_IMPASSE_TYPE;
-
 }
 
 /* **************************************************************************
