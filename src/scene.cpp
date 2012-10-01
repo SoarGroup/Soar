@@ -433,20 +433,18 @@ void scene::parse_sgel(const string &s) {
 	}
 }
 
-void scene::get_property_names(vector<string> &names) const {
-	node_table::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		string name = i->second.node->get_name();
-		for (int j = 0; j < NUM_NATIVE_PROPS; ++j) {
-			
-			names.push_back(name + ":" + NATIVE_PROPS[j]);
-		}
-		
-		property_map::const_iterator k = i->second.props.begin();
-		property_map::const_iterator end = i->second.props.end();
-		for (; k != end; ++k) {
-			names.push_back(name + ":" + k->first);
-		}
+void scene::get_property_names(int i, vector<string> &names) const {
+	const node_info *info = get_node_info(i);
+	assert(info);
+	
+	for (int j = 0; j < NUM_NATIVE_PROPS; ++j) {
+		names.push_back(NATIVE_PROPS[j]);
+	}
+	
+	property_map::const_iterator k = info->props.begin();
+	property_map::const_iterator end = info->props.end();
+	for (; k != end; ++k) {
+		names.push_back(k->first);
 	}
 }
 
@@ -669,6 +667,7 @@ void scene::update_sig() const {
 			e.type = sig.back().length; // have to change this later
 		}
 		start += e.length;
+		get_property_names(i->first, e.props);
 	}
 }
 
@@ -678,3 +677,4 @@ const scene_sig &scene::get_signature() const {
 	}
 	return sig;
 }
+

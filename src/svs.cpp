@@ -257,13 +257,6 @@ void svs_state::update_models() {
 		if (learn_models) {
 			mmdl->learn(curr_sig, prev_rels, x, curr_pvals);
 		}
-	} else {
-		vector<string> pnames;
-		scn->get_property_names(pnames);
-		for (i = outspec->begin(); i != outspec->end(); ++i) {
-			pnames.push_back(string("output:") + i->name);
-		}
-		mmdl->set_property_vector(pnames);
 	}
 	prev_sig = curr_sig;
 	prev_rels = curr_rels;
@@ -303,19 +296,23 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 	if (args[first_arg] == "prediction") {
 		return mmdl->cli_inspect(first_arg + 1, args, os);
 	} else if (args[first_arg] == "props") {
-		vector<string> p;
+		const scene_sig &s = scn->get_signature();
 		rvec v;
-		scn->get_property_names(p);
 		scn->get_properties(v);
-		int w = 0;
-		for (int i = 0; i < p.size(); ++i) {
-			if (w < p[i].size()) {
-				w = p[i].size();
+		string::size_type w = 0;
+		for (int i = 0; i < s.size(); ++i) {
+			for (int j = 0; j < s[i].props.size(); ++j) {
+				w = max(w, s[i].name.size() + s[i].props[j].size() + 1);
 			}
 		}
 		os << left;
-		for (int i = 0; i < p.size(); ++i) {
-			os << setw(4) << i << setw(w + 1) << p[i] << setw(1) << v(i) << endl;
+		int c = 0;
+		for (int i = 0; i < s.size(); ++i) {
+			for (int j = 0; j < s[i].props.size(); ++j) {
+				string n = s[i].name + ':' + s[i].props[j];
+				os << setw(4) << c << setw(w + 1) << n << setw(1) << v(c) << endl;
+				c++;
+			}
 		}
 		return true;
 	} else if (args[first_arg] == "out") {

@@ -26,6 +26,38 @@ static model_constructor_table_entry constructor_table[] = {
 	{ "targets",     _make_targets_model_},
 };
 
+void read_list(soar_interface *si, Symbol *id, vector<string> &words) {
+	slot *s;
+	wme *w;
+	
+	if (!si->is_identifier(id)) {
+		return;
+	}
+
+	for ( s=id->id.slots; s!=NULL; s=s->next ) {
+		for ( w=s->wmes; w!=NULL; w=w->next ) {
+			if (si->is_string(w->attr)) {
+				words.push_back( w->attr->sc.name );
+				read_list(si, w->value, words);
+			}
+		}
+	}
+}
+
+bool split_props(const vector<string> &props, multi_model::prop_vec &out) {
+	vector<string> fields;
+	out.resize(props.size());
+	for (int i = 0; i < props.size(); ++i) {
+		split(props[i], ":", fields);
+		if (fields.size() != 2) {
+			return false;
+		}
+		out[i].first = fields[0];
+		out[i].second = fields[1];
+	}
+	return true;
+}
+
 model *parse_model_struct(soar_interface *si, Symbol *cmd, svs_state *state) {
 	wme *type_wme, *name_wme;
 	string name, type;
@@ -121,13 +153,11 @@ public:
 	bool update_sub() {
 		int i;
 		wme *w;
-		vector<string> inputs;
-		vector<string> outputs;
-		vector<string> new_scene_props;
-		bool all_inputs = false, all_outputs = false;
+		vector<string> inputs, outputs;
+		multi_model::prop_vec split_inputs, split_outputs;
+		bool all_inputs = false;
 		
-		scn->get_property_names(new_scene_props);
-		if (!changed() && !broken && scene_props == new_scene_props) {
+		if (!changed() && !broken) {
 			return true;
 		}
 		
@@ -144,19 +174,16 @@ public:
 			if (si->get_val(si->get_wme_val(w), v) && v == "all") {
 				all_inputs = true;
 			} else {
-				si->read_list(si->get_wme_val(w), inputs);
+				read_list(si, si->get_wme_val(w), inputs);
+				split_props(inputs, split_inputs);
 			}
 		}
 		if (si->find_child_wme(root, "outputs", w)) {
-			string v;
-			if (si->get_val(si->get_wme_val(w), v) && v == "all") {
-				all_outputs = true;
-			} else {
-				si->read_list(si->get_wme_val(w), outputs);
-			}
+			read_list(si, si->get_wme_val(w), outputs);
+			split_props(outputs, split_outputs);
 		}
 		
-		string error = mmdl->assign_model(name, inputs, all_inputs, outputs, all_outputs);
+		string error = mmdl->assign_model(name, split_inputs, all_inputs, split_outputs);
 		if (error != "") {
 			set_status(error);
 			broken = true;
@@ -165,7 +192,6 @@ public:
 		
 		set_status("success");
 		broken = false;
-		scene_props = new_scene_props;
 		return true;
 	}
 
@@ -175,7 +201,6 @@ private:
 	multi_model    *mmdl;
 	string          name;
 	bool            broken;
-	vector<string>  scene_props;
 	scene          *scn;
 };
 

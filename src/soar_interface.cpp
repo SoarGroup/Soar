@@ -110,24 +110,6 @@ bool soar_interface::find_child_wme(Symbol *id, const string &attr, wme *&w) {
 	return false;
 }
 
-void soar_interface::read_list(Symbol *id, vector<string> &words) {
-	slot *s;
-	wme *w;
-	
-	if (!is_identifier(id)) {
-		return;
-	}
-
-	for ( s=id->id.slots; s!=NULL; s=s->next ) {
-		for ( w=s->wmes; w!=NULL; w=w->next ) {
-			if (is_string(w->attr)) {
-				words.push_back( w->attr->sc.name );
-				read_list(w->value, words);
-			}
-		}
-	}
-}
-
 wme *soar_interface::make_wme(Symbol *id, Symbol *attr, Symbol *val) {
 	wme* w = soar_module::add_module_wme(agnt, id, attr, val);
 	symbol_remove_ref(agnt, val);

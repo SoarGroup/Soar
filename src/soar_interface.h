@@ -77,11 +77,7 @@ public:
 	void         set_tc_num(Symbol *s, tc_num n);
 	
 	int          get_timetag(wme *w);
-	
 	Symbol      *get_parent_state(Symbol *sym);
-	
-	void         read_list(Symbol *id, std::vector<std::string> &words);
-	
 	common_syms &get_common_syms() { return cs; }
 	
 private:

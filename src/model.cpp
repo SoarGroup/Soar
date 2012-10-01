@@ -24,6 +24,38 @@ void dassign(const rvec &source, rvec &target, const vector<int> &indexes) {
 	}
 }
 
+bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vector<int> &obj_inds, vector<int> &prop_inds) {
+	for (int i = 0; i < pv.size(); ++i) {
+		const string &obj = pv[i].first;
+		const string &prop = pv[i].second;
+		bool found = false;
+		for (int j = 0; j < sig.size(); ++j) {
+			if (sig[j].name == obj) {
+				const vector<string> &props = sig[i].props;
+				for (int k = 0; k < props.size(); ++k) {
+					if (props[k] == prop) {
+						found = true;
+						if (obj_inds.empty() || obj_inds.back() != j) {
+							obj_inds.push_back(j);
+						}
+						prop_inds.push_back(sig[j].start + k);
+						break;
+					}
+				}
+				if (found) {
+					break;
+				} else {
+					return false;
+				}
+			}
+		}
+		if (!found) {
+			return false;
+		}
+	}
+	return true;
+}
+
 model::model(const std::string &name, const std::string &type) 
 : name(name), type(type)
 {}
@@ -74,48 +106,25 @@ multi_model::~multi_model() {
 	}
 }
 
-void multi_model::find_targets(const vector<int> &yinds, scene_sig &sig) {
-	for (int i = 0; i < sig.size(); ++i) {
-		sig[i].target = -1;
-	}
-	int ntargets = 0;
-	for (int i = 0; i < yinds.size(); ++i) {
-		for (int j = 0; j < sig.size(); ++j) {
-			if (sig[j].start <= yinds[i] && 
-			    yinds[i] < sig[j].start + sig[j].length &&
-				sig[j].target == -1) 
-			{
-				sig[j].target = ntargets++;
-				break;
-			}
-		}
-	}
-}
-
 bool multi_model::predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
-		rvec xp, yp(cfg->ally ? y.size() : cfg->yinds.size());
-		bool success;
+		assert(cfg->allx); // don't know what to do with the signature when we have to slice
+		
+		rvec yp(cfg->yprops.size());
+		vector<int> yinds, yobjs;
+		
+		find_prop_inds(sig, cfg->yprops, yobjs, yinds);
 		scene_sig sig2 = sig;
-
-		find_targets(cfg->yinds, sig2);
-		if (cfg->allx) {
-			xp = x;
-		} else {
-			assert(false); // don't know what to do with the signature when we have to slice
-			slice(x, xp, cfg->xinds);
+		for (int j = 0; j < yobjs.size(); ++j) {
+			sig2[yobjs[j]].target = j;
 		}
-		if (!cfg->mdl->predict(sig2, rels, xp, yp)) {
+
+		if (!cfg->mdl->predict(sig2, rels, x, yp)) {
 			return false;
 		}
-		if (cfg->ally) {
-			assert(false); // not sure how to handle this case
-			y = yp;
-		} else {
-			dassign(yp, y, cfg->yinds);
-		}
+		dassign(yp, y, yinds);
 	}
 	return true;
 }
@@ -125,22 +134,19 @@ void multi_model::learn(const scene_sig &sig, const relation_table &rels, const 
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
-		rvec xp, yp;
-		scene_sig sig2 = sig;
+		assert(cfg->allx); // don't know what to do with the signature when we have to slice
 		
-		if (cfg->allx) {
-			xp = x;
-		} else {
-			assert(false); // don't know what to do with the signature when we have to slice
-			slice(x, xp, cfg->xinds);
+		rvec yp;
+		vector<int> yinds, yobjs;
+		
+		find_prop_inds(sig, cfg->yprops, yobjs, yinds);
+		scene_sig sig2 = sig;
+		for (int j = 0; j < yobjs.size(); ++j) {
+			sig2[yobjs[j]].target = j;
 		}
-		if (cfg->ally) {
-			yp = y;
-		} else {
-			slice(y, yp, cfg->yinds);
-		}
-		find_targets(cfg->yinds, sig2);
-		cfg->mdl->learn(sig2, rels, xp, yp);
+		
+		slice(y, yp, yinds);
+		cfg->mdl->learn(sig2, rels, x, yp);
 	}
 }
 
@@ -162,8 +168,8 @@ bool multi_model::test(const scene_sig &sig, const relation_table &rels, const r
 
 string multi_model::assign_model
 ( const string &name, 
-  const vector<string> &inputs, bool all_inputs,
-  const vector<string> &outputs, bool all_outputs )
+  const prop_vec &inputs, bool all_inputs,
+  const prop_vec &outputs)
 {
 	model *m;
 	model_config *cfg;
@@ -174,37 +180,20 @@ string multi_model::assign_model
 	cfg = new model_config();
 	cfg->name = name;
 	cfg->mdl = m;
-	cfg->allx = all_inputs;
-	cfg->ally = all_outputs;
 	
-	if (all_inputs) {
-		if (m->get_input_size() >= 0 && m->get_input_size() != prop_vec.size()) {
-			return "size mismatch";
-		}
-	} else {
+	cfg->allx = all_inputs;
+	if (!all_inputs) {
 		if (m->get_input_size() >= 0 && m->get_input_size() != inputs.size()) {
 			return "size mismatch";
 		}
 		cfg->xprops = inputs;
-		if (!find_indexes(inputs, cfg->xinds)) {
-			delete cfg;
-			return "property not found";
-		}
 	}
-	if (all_outputs) {
-		if (m->get_output_size() >= 0 && m->get_output_size() != prop_vec.size()) {
-			return "size mismatch";
-		}
-	} else {
-		if (m->get_output_size() >= 0 && m->get_output_size() != outputs.size()) {
-			return "size mismatch";
-		}
-		cfg->yprops = outputs;
-		if (!find_indexes(outputs, cfg->yinds)) {
-			delete cfg;
-			return "property not found";
-		}
+	
+	if (m->get_output_size() >= 0 && m->get_output_size() != outputs.size()) {
+		return "size mismatch";
 	}
+	cfg->yprops = outputs;
+	
 	active_models.push_back(cfg);
 	return "";
 }
@@ -217,20 +206,6 @@ void multi_model::unassign_model(const string &name) {
 			return;
 		}
 	}
-}
-
-bool multi_model::find_indexes(const vector<string> &props, vector<int> &indexes) {
-	vector<string>::const_iterator i;
-
-	for (i = props.begin(); i != props.end(); ++i) {
-		int index = find(prop_vec.begin(), prop_vec.end(), *i) - prop_vec.begin();
-		if (index == prop_vec.size()) {
-			LOG(WARN) << "PROPERTY NOT FOUND " << *i << endl;
-			return false;
-		}
-		indexes.push_back(index);
-	}
-	return true;
 }
 
 bool multi_model::report_error(int i, const vector<string> &args, ostream &os) const {
@@ -253,15 +228,6 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 		return false;
 	}
 	if (!parse_int(args[i], dim)) {
-		dim = -1;
-		for (int j = 0; j < prop_vec.size(); ++j) {
-			if (prop_vec[j] == args[i]) {
-				dim = j;
-				break;
-			}
-		}
-	}
-	if (dim < 0) {
 		os << "invalid dimension" << endl;
 		return false;
 	}
@@ -374,19 +340,15 @@ void multi_model::report_model_config(model_config* c, ostream &os) const {
 	} else {
 		os << indent << "xdims: ";
 		for (int i = 0; i < c->xprops.size(); ++i) {
-			os << c->xprops[i] << " ";
+			os << c->xprops[i].first << ":" << c->xprops[i].second << " ";
 		}
 		os << endl;
 	}
-	if (c->ally) {
-		os << indent << "ydims: all" << endl;
-	} else {
-		os << indent << "ydims: ";
-		for (int i = 0; i < c->yprops.size(); ++i) {
-			os << c->yprops[i] << " ";
-		}
-		os << endl;
+	os << indent << "ydims: ";
+	for (int i = 0; i < c->yprops.size(); ++i) {
+		os << c->yprops[i].first << ":" << c->yprops[i].second << " ";
 	}
+	os << endl;
 }
 
 bool multi_model::cli_inspect(int i, const vector<string> &args, ostream &os) const {

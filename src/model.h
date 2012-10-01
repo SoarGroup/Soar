@@ -51,46 +51,38 @@ private:
 */
 class multi_model {
 public:
+	typedef std::vector<std::pair<std::string, std::string> > prop_vec;
+	
 	multi_model(std::map<std::string, model*> *model_db);
 	~multi_model();
 	
 	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
 	bool test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	void unassign_model(const std::string &name);
 	
 	std::string assign_model (
 		const std::string &name, 
-		const std::vector<std::string> &inputs, bool all_inputs,
-		const std::vector<std::string> &outputs, bool all_outputs );
+		const prop_vec &inputs, bool all_inputs,
+		const prop_vec &outputs);
 
-	void unassign_model(const std::string &name);
-	
-	void set_property_vector(const std::vector<std::string> &props) {
-		prop_vec = props;
-	}
 	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 
 private:
 	struct model_config {
 		std::string name;
-		std::vector<std::string> xprops;
-		std::vector<std::string> yprops;
-		std::vector<int> xinds;
-		std::vector<int> yinds;
+		prop_vec xprops;
+		prop_vec yprops;
 		bool allx;
-		bool ally;
 		model *mdl;
 	};
 	
-	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes);
 	void error_stats_by_dim(int dim, int start, int end, double &mean, double &mode, double &std, double &min, double &max) const;
 	void report_model_config(model_config* c, std::ostream &os) const;
 	bool report_error(int i, const std::vector<std::string> &args, std::ostream &os) const;
-	void find_targets(const std::vector<int> &yinds, scene_sig &sig);
 	
 	std::list<model_config*>       active_models;
-	std::vector<std::string>       prop_vec;
 	std::map<std::string, model*> *model_db;
 	
 	// measuring prediction errors

@@ -20,7 +20,8 @@ public:
 	int length;
 	int start;
 	int target;
-
+	std::vector<std::string> props;
+	
 	sig_entry() : type(-1), length(-1), start(-1), target(-1) {}
 	
 	bool operator==(const sig_entry &e) const {
@@ -58,7 +59,6 @@ public:
 	bool del_node(const std::string &name);
 	void clear();
 
-	void get_property_names(std::vector<std::string> &names) const;
 	void get_properties(rvec &vals) const;
 	bool get_property(const std::string &obj, const std::string &prop, float &val) const;
 	bool add_property(const std::string &obj, const std::string &prop, float val);
@@ -93,6 +93,7 @@ private:
 	node_info *get_node_info(const std::string &name);
 	const node_info *get_node_info(const std::string &name) const;
 	void update_sig() const;
+	void get_property_names(int i, std::vector<std::string> &names) const;
 	
 	int parse_add(std::vector<std::string> &f, std::string &error);
 	int parse_del(std::vector<std::string> &f, std::string &error);
