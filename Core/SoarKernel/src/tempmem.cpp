@@ -170,9 +170,7 @@ void clear_CDPS (agent* thisAgent, slot *s) {
 	if (s->CDPS) {
 
 	  /* The CDPS should never exist on a top-level slot, so we should
-	   * not need to worry about checking for DO_TOP_LEVEL_REF_CTS. Sanity
-	   * check just to make sure, for now. */
-	  assert(s->id->id.level > TOP_GOAL_LEVEL);
+	   * not need to worry about checking for DO_TOP_LEVEL_REF_CTS. */
 
 	  cond_old = cond_current = s->CDPS;
 	  s->CDPS = NIL;
@@ -207,7 +205,8 @@ void remove_garbage_slots (agent* thisAgent) {
 #endif
 
     /* MMA 9-2012 */
-    clear_CDPS(thisAgent, s);
+    if (thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] && thisAgent->sysparams[LEARNING_ON_SYSPARAM])
+      clear_CDPS(thisAgent, s);
     /* MMA 9-2012 end */
 
     if (s->changed && (!s->isa_context_slot)) {

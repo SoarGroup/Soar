@@ -961,7 +961,7 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
   preference *p, *p2, *cand, *prev_cand;
-  Bool match_found, not_all_indifferent, some_numeric, do_CDPS, do_all_CDPS;
+  Bool match_found, not_all_indifferent, some_numeric, do_CDPS;
   preference *candidates;
   Symbol *value;
   cons *CDPS, *prev_cons;
@@ -972,13 +972,7 @@ byte run_preference_semantics(agent* thisAgent,
    * - For non-context slots (only makes sense for operators)
    * - For context-slots at the top level (will never be backtraced through)*/
 
-  do_CDPS = (s->isa_context_slot && !consistency && (s->id->id.level > TOP_GOAL_LEVEL));
-
-    /* Prohibit preferences are special and will always be added to the CDPS, so the following
-   * flag is used to determine if we add all of the other types of preferences based on
-   * the system parameter CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM */
-
-  do_all_CDPS = (do_CDPS && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
+  do_CDPS = (s->isa_context_slot && !consistency && (s->id->id.level > TOP_GOAL_LEVEL) && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] && thisAgent->sysparams[LEARNING_ON_SYSPARAM]);
 
   /* Empty the context-dependent preference set in the slot */
 
@@ -1119,12 +1113,10 @@ byte run_preference_semantics(agent* thisAgent,
     if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]) {
       for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
         add_to_CDPS(thisAgent, s, p);
-      if (do_all_CDPS) {
-        for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
-          add_to_CDPS(thisAgent, s, p);
-        for (p = candidates; p != NIL; p = p->next_candidate) {
-          add_to_CDPS(thisAgent, s, p);
-        }
+      for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        add_to_CDPS(thisAgent, s, p);
+      for (p = candidates; p != NIL; p = p->next_candidate) {
+        add_to_CDPS(thisAgent, s, p);
       }
     }
   }
@@ -1241,7 +1233,7 @@ byte run_preference_semantics(agent* thisAgent,
           candidates = cand->next_candidate;
 
         /* Remove any acceptable preference for the same operator from the CDPS */
-        if (do_all_CDPS && s->CDPS) {
+        if (do_CDPS && s->CDPS) {
             prev_cons = NIL;
             for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
               p = static_cast<preference *>(CDPS->first);
@@ -1259,7 +1251,7 @@ byte run_preference_semantics(agent* thisAgent,
             }
           }
       } else {
-        if (do_all_CDPS) {
+        if (do_CDPS) {
           /* Add better/worse preference to CDPS */
           for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
@@ -1310,7 +1302,7 @@ byte run_preference_semantics(agent* thisAgent,
     prev_cand = NIL;
     for (cand = candidates; cand != NIL; cand = cand->next_candidate)
       if (cand->value->common.decider_flag == BEST_DECIDER_FLAG) {
-        if (do_all_CDPS) {
+        if (do_CDPS) {
           for (p = s->preferences[BEST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
               add_to_CDPS(thisAgent, s, p);
@@ -1367,7 +1359,7 @@ byte run_preference_semantics(agent* thisAgent,
           candidates = cand;
         prev_cand = cand;
       } else {
-        if (do_all_CDPS) {
+        if (do_CDPS) {
           /* Add this worst preference to CDPS */
           for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
@@ -1461,7 +1453,7 @@ byte run_preference_semantics(agent* thisAgent,
       (*result_candidates) = exploration_choose_according_to_policy(thisAgent, s, candidates);
       (*result_candidates)->next_candidate = NIL;
 
-      if (do_all_CDPS) {
+      if (do_CDPS) {
 
         /* Add all indifferent preferences associated with the chosen candidate to the CDPS.*/
 

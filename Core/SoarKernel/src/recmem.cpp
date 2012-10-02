@@ -84,6 +84,12 @@ wme* glbDeepCopyWMEs = NULL;
   This function will copy the CDPS from a slot to the backtrace info for the
   corresponding condition.  The copied CDPS will later be backtraced through.
 
+  Note: Until prohibits are included explicitly as part of the CDPS, we will
+  just copy them directly from the prohibits list so that there is no
+  additional overhead.  Once the CDPS is on by default, we can eliminate the
+  second half of the big else (and not call this function at all if the
+  sysparam is not set.
+
  --------------------------------------------------------------------------*/
 
 void build_CDPS(agent* thisAgent, instantiation *inst) {
@@ -95,23 +101,43 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
       cond = cond->next) {
     cond->bt.CDPS = NIL;
     if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot) {
-      if (cond->bt.trace->slot->CDPS) {
-        for (CDPS=cond->bt.trace->slot->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
-          new_pref = NIL;
-          pref = static_cast<preference *>(CDPS->first);
-          if (pref->inst->match_goal_level == inst->match_goal_level
-              && pref->in_tm) {
-            push(thisAgent, pref, cond->bt.CDPS);
-            preference_add_ref(pref);
-          } else {
-            new_pref = find_clone_for_level(pref, inst->match_goal_level);
-            if (new_pref) {
-              if (new_pref->in_tm) {
-                push(thisAgent, new_pref, cond->bt.CDPS);
-                preference_add_ref(new_pref);
+      if (thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] && thisAgent->sysparams[LEARNING_ON_SYSPARAM]) {
+        if (cond->bt.trace->slot->CDPS) {
+          for (CDPS=cond->bt.trace->slot->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
+            new_pref = NIL;
+            pref = static_cast<preference *>(CDPS->first);
+            if (pref->inst->match_goal_level == inst->match_goal_level
+                && pref->in_tm) {
+              push(thisAgent, pref, cond->bt.CDPS);
+              preference_add_ref(pref);
+            } else {
+              new_pref = find_clone_for_level(pref, inst->match_goal_level);
+              if (new_pref) {
+                if (new_pref->in_tm) {
+                  push(thisAgent, new_pref, cond->bt.CDPS);
+                  preference_add_ref(new_pref);
+                }
               }
             }
           }
+        }
+      } else {
+        pref = cond->bt.trace->slot->preferences[PROHIBIT_PREFERENCE_TYPE];
+        while (pref) {
+          new_pref = NIL;
+          if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm) {
+            push (thisAgent, pref, cond->bt.CDPS);
+            preference_add_ref (pref);
+          } else {
+            new_pref = find_clone_for_level (pref, inst->match_goal_level);
+            if (new_pref) {
+              if (new_pref->in_tm) {
+                push (thisAgent, new_pref, cond->bt.CDPS);
+                preference_add_ref (new_pref);
+              }
+            }
+          }
+          pref = pref->next;
         }
       }
     }

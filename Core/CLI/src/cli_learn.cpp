@@ -60,7 +60,11 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
                 } else {
                     m_Result << " (not through-local-negations)";
                 }
-                if (agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]) m_Result << " (chunk through evaluation rules)";
+                if (agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]) {
+                  m_Result << " (chunk through evaluation rules)";
+                } else {
+                  m_Result << " (do not chunk through evaluation rules)";
+                }
 
             } else {
                 m_Result << "Learning is disabled.";
@@ -135,6 +139,13 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 
     if (options.test(LEARN_THROUGH_EVALUATION_RULES)) {
         set_sysparam(agnt, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, !agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
+        if (m_RawOutput) {
+          if (agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]){
+            m_Result << "\nWill include evaluation rules when backtracing.";
+          } else {
+            m_Result << "\nWill not include evaluation rules when backtracing.";
+          }
+        }
     }
 
     return true;
