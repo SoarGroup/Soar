@@ -65,7 +65,7 @@ public:
 
 class const_mat_view : public const_mat_map {
 public:
-	const_mat_view(const_mat_view &m)            : const_mat_map(m) {}
+	const_mat_view(const const_mat_view &m)      : const_mat_map(m) {}
 	
 	// standard types
 	const_mat_view(const mat &m)                 : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}

@@ -22,7 +22,7 @@ public:
 		}
 		
 		newres = (a->get_centroid() - b->get_centroid()).norm();
-		if (changed = (newres != res)) {
+		if ((changed = (newres != res))) {
 			res = newres;
 		}
 		return true;

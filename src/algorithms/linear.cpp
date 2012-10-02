@@ -619,6 +619,8 @@ bool LinearModel::fit_sub(const_mat_view X, const_mat_view Y) {
 			return ols(X, Y, cvec(), coefs, intercept);
 		case RIDGE:
 			return ridge(X, Y, cvec(), coefs, intercept);
+		case LASSO:
+			return lasso(X, Y, cvec(), coefs, intercept);
 		case PCR:
 			return wpcr(X, Y, cvec(), coefs, intercept);
 		case FORWARD:

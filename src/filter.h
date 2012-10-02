@@ -134,16 +134,16 @@ inline bool get_filter_val<float>(const filter_val *fv, float &v) {
 	const filter_val_c<float> *ffv;
 	const filter_val_c<int> *ifv;
 	
-	if (dfv = dynamic_cast<const filter_val_c<double>*>(fv)) {
+	if ((dfv = dynamic_cast<const filter_val_c<double>*>(fv))) {
 		v = dfv->get_value();
 		return true;
 	}
-	if (ffv = dynamic_cast<const filter_val_c<float>*>(fv)) {
+	if ((ffv = dynamic_cast<const filter_val_c<float>*>(fv))) {
 		v = ffv->get_value();
 		return true;
 	}
 	
-	if (ifv = dynamic_cast<const filter_val_c<int>*>(fv)) {
+	if ((ifv = dynamic_cast<const filter_val_c<int>*>(fv))) {
 		v = ifv->get_value();
 		return true;
 	}
@@ -157,16 +157,16 @@ inline bool get_filter_val<double>(const filter_val *fv, double &v) {
 	const filter_val_c<float> *ffv;
 	const filter_val_c<int> *ifv;
 	
-	if (dfv = dynamic_cast<const filter_val_c<double>*>(fv)) {
+	if ((dfv = dynamic_cast<const filter_val_c<double>*>(fv))) {
 		v = dfv->get_value();
 		return true;
 	}
-	if (ffv = dynamic_cast<const filter_val_c<float>*>(fv)) {
+	if ((ffv = dynamic_cast<const filter_val_c<float>*>(fv))) {
 		v = ffv->get_value();
 		return true;
 	}
 	
-	if (ifv = dynamic_cast<const filter_val_c<int>*>(fv)) {
+	if ((ifv = dynamic_cast<const filter_val_c<int>*>(fv))) {
 		v = ifv->get_value();
 		return true;
 	}
