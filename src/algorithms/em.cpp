@@ -1065,8 +1065,7 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		print_foil6_data(os, mode);
 		return true;
 	} else if (args[first_arg] == "relations") {
-		os << rel_tbl << endl;
-		return true;
+		return cli_inspect_relations(first_arg + 1, args, os);
 	}
 
 	return false;
@@ -1275,5 +1274,47 @@ void EM::mode_info::unserialize(istream &is) {
 	}
 	model = new LinearModel;
 	model->unserialize(is);
+}
+
+bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) const {
+	if (i >= args.size()) {
+		os << rel_tbl << endl;
+		return true;
+	}
+	const relation *r = map_get(rel_tbl, args[i]);
+	if (!r) {
+		os << "no such relation" << endl;
+		return false;
+	}
+	if (i + 1 >= args.size()) {
+		os << *r << endl;
+		return true;
+	}
+
+	// process pattern
+	vector<int> pattern;
+	for (int j = i + 1; j < args.size(); ++j) {
+		if (args[j] == "*") {
+			pattern.push_back(-1);
+		} else {
+			int obj;
+			if (!parse_int(args[j], obj)) {
+				os << "invalid pattern" << endl;
+				return false;
+			}
+			pattern.push_back(obj);
+		}
+	}
+
+	if (pattern.size() != r->arity()) {
+		os << "pattern arity doesn't match relation arity" << endl;
+		return false;
+	}
+	vector<tuple> matches;
+	r->match(pattern, matches);
+	for (int j = 0; j < matches.size(); ++j) {
+		join(os, matches[j], " ") << endl;
+	}
+	return true;
 }
 

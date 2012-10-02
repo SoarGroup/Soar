@@ -67,6 +67,7 @@ public:
 	void drop_first(std::set<tuple> &out) const;
 	void dump(std::set<tuple> &out) const;
 	void clear();
+	void match(const std::vector<int> &pat, std::vector<tuple> &matches) const;
 	
 	int size() const { return sz; }
 	int arity() const { return arty; }

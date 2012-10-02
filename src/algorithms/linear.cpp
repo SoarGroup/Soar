@@ -243,7 +243,6 @@ bool fstep(const_mat_view X, const_mat_view y, double variance, cvec &coefs, dou
 			}
 		}
 		if (best_Cp < curr_Cp) {
-			cout << "adding column " << best_pred << " Cp = " << best_Cp << endl;
 			predictors.push_back(best_pred);
 			used[best_pred] = true;
 			Xcurr.col(p) = Xc.col(best_pred);

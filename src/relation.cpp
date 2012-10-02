@@ -314,6 +314,34 @@ void relation::clear() {
 	tuples.clear();
 }
 
+void relation::match(const vector<int> &pat, vector<tuple> &matches) const {
+	assert(pat.size() == arty);
+	tuple_map::const_iterator i;
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		bool matched = true;
+		for (int j = 1; j < arty; ++j) {
+			if (pat[j] >= 0 && pat[j] != i->first[j - 1]) {
+				matched = false;
+				break;
+			}
+		}
+		if (matched) {
+			tuple t(arty);
+			copy(i->first.begin(), i->first.end(), t.begin() + 1);
+			if (pat[0] < 0) {
+				set<int>::const_iterator j;
+				for (j = i->second.begin(); j != i->second.end(); ++j) {
+					t[0] = *j;
+					matches.push_back(t);
+				}
+			} else if (in_set(pat[0], i->second)) {
+				t[0] = pat[0];
+				matches.push_back(t);
+			}
+		}
+	}
+}
+
 void relation::serialize(std::ostream &os) const {
 	serializer(os) << arty << sz << tuples;
 }

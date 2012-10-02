@@ -112,6 +112,7 @@ private:
 	bool map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
 	void extend_relations(const relation_table &add, int time);
 	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
+	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
 
 	relation_table rel_tbl;
 	std::vector<em_data*> data;
