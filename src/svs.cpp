@@ -240,6 +240,7 @@ void svs_state::update_models() {
 	
 	// add an entry to the signature for the output
 	scene_sig::entry out_entry;
+	out_entry.id = -2;
 	out_entry.name = "output";
 	out_entry.type = -1;
 	for (int i = 0; i < outspec->size(); ++i) {

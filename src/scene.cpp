@@ -104,11 +104,11 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 }
 
 void scene_sig::entry::serialize(ostream &os) const {
-	serializer(os) << name << type << start << target << props;
+	serializer(os) << id << name << type << start << target << props;
 }
 
 void scene_sig::entry::unserialize(istream &is) {
-	unserializer(is) >> name >> type >> start >> target >> props;
+	unserializer(is) >> id >> name >> type >> start >> target >> props;
 }
 
 void scene_sig::serialize(ostream &os) const {
@@ -695,6 +695,7 @@ void scene::update_sig() const {
 	node_table::const_iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
 		scene_sig::entry e;
+		e.id = i->first;
 		e.name = i->second.node->get_name();
 		get_property_names(i->first, e.props);
 		if (i == nodes.begin()) {

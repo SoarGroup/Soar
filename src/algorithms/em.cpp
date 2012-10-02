@@ -549,7 +549,7 @@ void EM::learn(const scene_sig &sig, const relation_table &rels, const rvec &x, 
 
 	for (int i = 0; i < sig.size(); ++i) {
 		if (sig[i].target == 0) {
-			target = i;
+			target = sig[i].id;
 		} else {
 			assert(sig[i].target == -1);
 		}

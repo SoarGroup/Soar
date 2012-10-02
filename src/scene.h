@@ -17,19 +17,24 @@ class scene_sig : public serializable {
 public:
 	class entry : public serializable {
 	public:
-		entry() : type(-1), start(-1), target(-1) {}
+		entry() : id(-1), type(-1), start(-1), target(-1) {}
 		
 		bool operator==(const entry &e) const {
-			return name == e.name && type == e.type && start == e.start && target == e.target && props == e.props;
+			/*
+			 don't need to compare names or props, the equivalence of those
+			 should follow from the equivalence of id and type
+			*/
+			return id == e.id && type == e.type && start == e.start && target == e.target;
 		}
 		
 		void serialize(std::ostream &os) const;
 		void unserialize(std::istream &is);
 
-		std::string name;
+		int id;
 		int type;
 		int start;
 		int target;
+		std::string name;
 		std::vector<std::string> props;
 		
 	};
