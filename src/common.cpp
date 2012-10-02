@@ -9,7 +9,7 @@
 
 using namespace std;
 
-logger LOG;
+logger LOG(std::cout);
 
 const char *log_type_names[NUM_LOG_TYPES] = {
 	"WARN",

@@ -397,6 +397,14 @@ bool FOIL::add_clause(clause &c) {
 		literal l;
 		double gain = choose_literal(l);
 		if (gain <= 0) {
+			set<int> neg_left;
+			set<int>::const_iterator i;
+			neg_curr.at_pos(0, neg_left);
+			LOG(FOILDBG) << "No more suitable literals. " << endl << "unfiltered negatives: "; 
+			for (i = neg_left.begin(); i != neg_left.end(); ++i) {
+				LOG(FOILDBG) << *i << " ";
+			}
+			LOG(FOILDBG) << endl;
 			return false;
 		}
 		

@@ -201,7 +201,7 @@ extern const char* log_type_names[NUM_LOG_TYPES];
 
 class logger {
 public:
-	logger() : is_null(false) {
+	logger(std::ostream &os) : os(os), is_null(false) {
 		on.resize(NUM_LOG_TYPES, false);
 	}
 	
@@ -218,7 +218,7 @@ public:
 	}
 
 	logger &operator()(log_type t) {
-		static logger null_logger(true);
+		static logger null_logger(os, true);
 		
 		if (is_null) {
 			return *this;
@@ -232,23 +232,26 @@ public:
 	template<class T>
 	logger &operator<<(const T& v) {
 		if (!is_null) {
-			std::cout << v;
+			os << v;
 		}
 		return *this;
 	}
 	
 	logger& operator<<(std::ostream& (*pf)(std::ostream&)) {
 		if (!is_null) {
-			pf(std::cout);
+			pf(os);
 		}
 		return *this;
 	}
+
+	std::ostream &get_ostream() { return os; }
 	
 private:
-	logger(bool is_null) : is_null(is_null) {}
+	logger(std::ostream &os, bool is_null) : os(os), is_null(is_null) {}
 
 	bool is_null;
 	std::vector<bool> on;
+	std::ostream &os;
 };
 
 extern logger LOG;
