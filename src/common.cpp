@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <cassert>
 #include "common.h"
 
 using namespace std;

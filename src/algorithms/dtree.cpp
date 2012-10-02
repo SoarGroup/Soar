@@ -761,12 +761,10 @@ bool ID5Tree::attrs_all_same() const {
 		vector<int>::const_iterator j;
 		for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 			if (insts[*i].attrs[*j] != insts[insts_here[0]].attrs[*j]) {
-				DATAVIS("'attrs all same' false" << endl)
 				return false;
 			}
 		}
 	}
-	DATAVIS("'attrs all same' true" << endl)
 	return true;
 }
 

@@ -4,8 +4,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
-#include <cassert>
-#include <cstring>
 #include <string>
 #include <vector>
 #include <map>
@@ -25,15 +23,6 @@ bool parse_int   (const std::string &s, int &v);
 void sample(int n, int low, int high, bool replace, std::vector<int> &s);
 
 std::string get_option(const std::string &key);
-
-/* I need all my files to have access to a single ofstream */
-std::ofstream& get_datavis();
-
-#if 0
-#define DATAVIS(x) get_datavis() << x;
-#else
-#define DATAVIS(x)
-#endif
 
 template <typename A, typename B>
 inline bool map_get(const std::map<A, B> &m, const A &key, B &val) {

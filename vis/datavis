@@ -1,9 +1,0 @@
-fifo=/tmp/datavis
-
-rm -f $fifo
-mkfifo $fifo
-
-while [ -p $fifo ]
-do
-	cat $fifo
-done | ./datatree.py
