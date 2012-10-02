@@ -1310,11 +1310,9 @@ bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) c
 		os << "pattern arity doesn't match relation arity" << endl;
 		return false;
 	}
-	vector<tuple> matches;
+	relation matches;
 	r->match(pattern, matches);
-	for (int j = 0; j < matches.size(); ++j) {
-		join(os, matches[j], " ") << endl;
-	}
+	os << matches << endl;
 	return true;
 }
 

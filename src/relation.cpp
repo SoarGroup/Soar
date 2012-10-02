@@ -314,7 +314,7 @@ void relation::clear() {
 	tuples.clear();
 }
 
-void relation::match(const vector<int> &pat, vector<tuple> &matches) const {
+void relation::match(const vector<int> &pat, relation &r) const {
 	assert(pat.size() == arty);
 	tuple_map::const_iterator i;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
@@ -326,17 +326,11 @@ void relation::match(const vector<int> &pat, vector<tuple> &matches) const {
 			}
 		}
 		if (matched) {
-			tuple t(arty);
-			copy(i->first.begin(), i->first.end(), t.begin() + 1);
+			set<int> &s = r.tuples[i->first];
 			if (pat[0] < 0) {
-				set<int>::const_iterator j;
-				for (j = i->second.begin(); j != i->second.end(); ++j) {
-					t[0] = *j;
-					matches.push_back(t);
-				}
+				s = i->second;
 			} else if (in_set(pat[0], i->second)) {
-				t[0] = pat[0];
-				matches.push_back(t);
+				s.insert(pat[0]);
 			}
 		}
 	}
@@ -364,7 +358,7 @@ ostream &operator<<(ostream &os, const relation &r) {
 	}
 	set<tuple>::iterator k;
 	for (k = sorted.begin(); k != sorted.end(); ++k) {
-		join(os, *k, ",") << endl;
+		join(os, *k, " ") << endl;
 	}
 	return os;
 }
