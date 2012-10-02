@@ -293,7 +293,7 @@ void convex_node::get_shape_sgel(string &s) const {
 	stringstream ss;
 	ss << "v ";
 	for (int i = 0; i < points.size(); ++i) {
-		ss << points[i] << " ";
+		ss << points[i](0) << " " << points[i](1) << " " << points[i](2) << " ";
 	}
 	s = ss.str();
 }
