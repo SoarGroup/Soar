@@ -57,24 +57,6 @@ void sample(int n, int low, int high, bool replace, vector<int> &s) {
 	}
 }
 
-ofstream& get_datavis() {
-	static bool first = true;
-	static ofstream f;
-	if (first) {
-		string path = get_option("datavis");
-		if (path.empty() || access(path.c_str(), W_OK) < 0) {
-			cout << "Datavis output to /dev/null" << endl;
-			f.open("/dev/null");
-		} else {
-			cout << "Datavis output to " << path << endl;
-			f.open(path.c_str());
-			f << "CLEAR" << endl;
-		}
-		first = false;
-	}
-	return f;
-}
-
 ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
 	assert(nbins > 0);
 	float min = vals[0], max = vals[0], binsize, hashes_per;
