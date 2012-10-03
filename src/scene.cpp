@@ -191,12 +191,12 @@ scene *scene::clone() const {
 }
 
 scene::node_info *scene::get_node_info(int i) {
-	node_info *info = map_get(nodes, i);
+	node_info *info = map_getp(nodes, i);
 	return info;
 }
 
 const scene::node_info *scene::get_node_info(int i) const {
-	const node_info *info = map_get(nodes, i);
+	const node_info *info = map_getp(nodes, i);
 	return info;
 }
 
@@ -283,9 +283,7 @@ void scene::get_all_node_indices(vector<int> &inds) const {
 void scene::get_nodes(const vector<int> &inds, vector<const sgnode*> &n) const {
 	n.resize(inds.size(), NULL);
 	for (int i = 0; i < inds.size(); ++i) {
-		const node_info *info = map_get(nodes, inds[i]);
-		assert(info);
-		n[i] = info->node;
+		n[i] = map_get(nodes, inds[i]).node;
 	}
 }
 

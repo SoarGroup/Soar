@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <ostream>
 #include <fstream>
+#include <cassert>
 
 typedef std::vector<int> tuple;
 
@@ -25,6 +26,24 @@ void sample(int n, int low, int high, bool replace, std::vector<int> &s);
 std::string get_option(const std::string &key);
 
 template <typename A, typename B>
+inline B &map_get(std::map<A, B> &m, const A &key) {
+	typename std::map<A, B>::iterator i = m.find(key);
+	if (i == m.end()) {
+		assert(false);
+	}
+	return i->second;
+}
+
+template <typename A, typename B>
+inline const B &map_get(const std::map<A, B> &m, const A &key) {
+	typename std::map<A, B>::const_iterator i = m.find(key);
+	if (i == m.end()) {
+		assert(false);
+	}
+	return i->second;
+}
+
+template <typename A, typename B>
 inline bool map_get(const std::map<A, B> &m, const A &key, B &val) {
 	typename std::map<A, B>::const_iterator i = m.find(key);
 	if (i == m.end()) {
@@ -35,7 +54,7 @@ inline bool map_get(const std::map<A, B> &m, const A &key, B &val) {
 }
 
 template <typename A, typename B>
-inline const B *map_get(const std::map<A, B> &m, const A &key) {
+inline const B *map_getp(const std::map<A, B> &m, const A &key) {
 	typename std::map<A, B>::const_iterator i = m.find(key);
 	if (i == m.end()) {
 		return NULL;
@@ -44,7 +63,7 @@ inline const B *map_get(const std::map<A, B> &m, const A &key) {
 }
 
 template <typename A, typename B>
-inline B *map_get(std::map<A, B> &m, const A &key) {
+inline B *map_getp(std::map<A, B> &m, const A &key) {
 	typename std::map<A, B>::iterator i = m.find(key);
 	if (i == m.end()) {
 		return NULL;

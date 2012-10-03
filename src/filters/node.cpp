@@ -50,10 +50,9 @@ public:
 			changed = true;
 		} else {
 			// report whether the node itself changed since the last time
-			node_info *info = map_get(nodes, const_cast<sgnode*>(res));
-			assert(info);
-			changed = info->changed;
-			info->changed = false;
+			node_info &info = map_get(nodes, const_cast<sgnode*>(res));
+			changed = info.changed;
+			info.changed = false;
 		}
 		return true;
 	}
@@ -81,13 +80,12 @@ public:
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added) {
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
-			node_info *info = map_get(nodes, n);
-			assert(info);
+			node_info &info = map_get(nodes, n);
 			std::list<const filter_params*>::const_iterator i;
-			for (i = info->params.begin(); i != info->params.end(); ++i) {
+			for (i = info.params.begin(); i != info.params.end(); ++i) {
 				mark_stale(*i);
 			}
-			info->changed = true;
+			info.changed = true;
 			if (t == sgnode::DELETED) {
 				nodes.erase(n);
 			}
@@ -144,18 +142,12 @@ public:
 				add_node(g->get_child(added_child));
 				break;
 			case sgnode::DELETED:
-				if (!map_get(results, n, r)) {
-					assert(false);
-				}
-				remove_result(r);
+				remove_result(map_get(results, n));
 				results.erase(n);
 				break;
 			case sgnode::TRANSFORM_CHANGED:
 			case sgnode::SHAPE_CHANGED:
-				if (!map_get(results, n, r)) {
-					assert(false);
-				}
-				change_result(r);
+				change_result(map_get(results, n));
 				break;
 		}
 	}

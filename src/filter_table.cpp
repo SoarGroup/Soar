@@ -203,10 +203,10 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 	for(i = t.begin(); i != t.end(); ++i, ++ii) {
 		const filter_table_entry &e = i->second;
 		if (e.calc != NULL && node_inds.size() >= e.parameters.size()) {
-			relation *r = map_get(rt, e.name);
-			if (!r) {
+			relation &r = rt[e.name];
+			if (r.arity() == 0) {
 				// +1 for the time argument
-				r = &(rt[e.name] = relation(e.parameters.size() + 1));
+				r.reset(e.parameters.size() + 1);
 			}
 			vector<const sgnode*> args;
 			tuple inds;
@@ -218,13 +218,13 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 				timers.stop(ii);
 				if (pos) {
 					if (e.ordered) {
-						r->add(time, inds);
+						r.add(time, inds);
 					} else {
 						// true for all permutations
 						single_combination_generator<int> gen2(inds, inds.size(), true, e.allow_repeat);
 						tuple perm;
 						while (gen2.next(perm)) {
-							r->add(time, perm);
+							r.add(time, perm);
 						}
 					}
 				}

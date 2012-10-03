@@ -163,7 +163,7 @@ private:
 	
 	void handle_result(filter_val *result) {
 		record *r;
-		if ((r = map_get(records, result))) {
+		if ((r = map_getp(records, result))) {
 			si->remove_wme(r->val_wme);
 			r->val_wme = make_value_wme(result, r->rec_id);
 		} else {

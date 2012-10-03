@@ -33,9 +33,8 @@ public:
 		constraints.resize(c.size());
 		for (int i = 0; i < c.size(); ++i) {
 			constraint_info &cons = constraints[i];
-			const relation *r = map_get(rels, c[i].get_name());
-			assert(r);
-			r->dump(cons.tuples);
+			const relation &r = map_get(rels, c[i].get_name());
+			r.dump(cons.tuples);
 			const tuple &args = c[i].get_args();
 	
 			cons.negated = c[i].negated();
@@ -45,7 +44,7 @@ public:
 			for (int j = 0; j < args.size(); ++j) {
 				if (args[j] >= 0) {
 					cons.vars[j] = args[j];
-					r->at_pos(j, cons.doms[j]);
+					r.at_pos(j, cons.doms[j]);
 					++cons.unbound;
 				} else {
 					cons.vars[j] = -1;

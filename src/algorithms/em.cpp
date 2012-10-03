@@ -1281,7 +1281,7 @@ bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) c
 		os << rel_tbl << endl;
 		return true;
 	}
-	const relation *r = map_get(rel_tbl, args[i]);
+	const relation *r = map_getp(rel_tbl, args[i]);
 	if (!r) {
 		os << "no such relation" << endl;
 		return false;
