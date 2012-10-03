@@ -1,11 +1,11 @@
 #include <iostream>
 #include <iomanip>
-#include <stdlib.h>
-#include <unistd.h>
 #include <string>
 #include <vector>
 #include <limits>
+#include <cstdlib>
 #include <cassert>
+#include <unistd.h>
 #include "common.h"
 
 using namespace std;
@@ -46,14 +46,19 @@ void strip(string &s, const string &whitespace) {
 	s = s.substr(begin, end - begin);
 }
 
-void sample(int n, int low, int high, bool replace, vector<int> &s) {
+void sample(int k, int low, int high, std::vector<int> &output) {
 	int range = high - low;
-	while (s.size() < n) {
-		int r = low + (rand() % range);
-		if (!replace && find(s.begin(), s.end(), r) != s.end()) {
-			continue;
+	assert(k <= range);
+	output.resize(k);
+	for (int i = 0; i < range; ++i) {
+		if (i < k) {
+			output[i] = low + i;
+		} else {
+			int r = rand() % (range + 1);
+			if (r < k) {
+				output[r] = low + i;
+			}
 		}
-		s.push_back(r);
 	}
 }
 

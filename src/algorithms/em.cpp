@@ -175,7 +175,7 @@ bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int m
 	for (int iter1 = 0; iter1 < maxiters; ++iter1) {
 		w.setConstant(0.0);
 		
-		sample(rank, 0, ndata, false, init_members);
+		sample(rank, 0, ndata, init_members);
 		for (int i = 0; i < init_members.size(); ++i) {
 			w(init_members[i]) = 1.0;
 		}

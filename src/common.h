@@ -15,15 +15,33 @@
 
 typedef std::vector<int> tuple;
 
+std::string get_option(const std::string &key);
+
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
 void strip(std::string &s, const std::string &whitespace);
 
 bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
 
-void sample(int n, int low, int high, bool replace, std::vector<int> &s);
+void sample(int k, int low, int high, std::vector<int> &output);
 
-std::string get_option(const std::string &key);
+template<typename C>
+void sample(int k, const C &input, C &output) {
+	std::vector<int> inds;
+	sample(k, 0, input.size() - 1, inds);
+	std::sort(inds.begin(), inds.end());
+	
+	typename C::const_iterator i = input.begin();
+	std::insert_iterator<C> j(output, output.begin());
+	for (int n = 0; n < inds.size(); ++n) {
+		if (n == 0) {
+			std::advance(i, inds[0]);
+		} else {
+			std::advance(i, inds[n] - inds[n-1]);
+		}
+		j = *i;
+	}
+}
 
 template <typename A, typename B>
 inline B &map_get(std::map<A, B> &m, const A &key) {
