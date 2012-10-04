@@ -435,8 +435,10 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const scene_sig &
 	mat coefs2(ndims, nout);
 	xdata.resize(ndata, ndims);
 
+	orig_sig.clear();
 	i = 0;
 	for (int j = 0; j < obj_map.size(); ++j) {
+		orig_sig.add(sig[obj_map[j]]);
 		int s = sig[obj_map[j]].start;
 		int l = sig[obj_map[j]].props.size();
 		coefs2.block(i, 0, l, nout) = coefs.block(s, 0, l, nout);
@@ -648,10 +650,20 @@ bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream
 			os << "intercept: " << intercept << endl;
 			os << "coefs:" << endl;
 			table_printer t;
-			for (int i = 0; i < coefs.rows(); ++i) {
-				t.add_row() << i << '|';
-				for (int j = 0; j < intercept.size(); ++j) {
-					t << coefs(i, j);
+			int k = 0;
+			for (int i = 0; i < orig_sig.size(); ++i) {
+				for (int j = 0; j < orig_sig[i].props.size(); ++j) {
+					t.add_row() << k;
+					if (j == 0) {
+						t << orig_sig[i].name;
+					} else {
+						t.skip(1);
+					}
+					t << orig_sig[i].props[j];
+					for (int l = 0; l < coefs.cols(); ++l) {
+						t << coefs(k, l);
+					}
+					++k;
 				}
 			}
 			t.print(os);
@@ -663,10 +675,28 @@ bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream
 		timers.report(os);
 		return true;
 	} else if (args[first_arg] == "train") {
-		for (int i = 0; i < xdata.rows(); ++i) {
-			output_rvec(os, xdata.row(i)) << " : ";
-			output_rvec(os, ydata.row(i)) << endl;
+		table_printer t;
+		t.add_row();
+		for (int i = 0; i < orig_sig.size(); ++i) {
+			t << orig_sig[i].name;
+			t.skip(orig_sig[i].props.size() - 1);
 		}
+		t.add_row();
+		for (int i = 0; i < orig_sig.size(); ++i) {
+			for (int j = 0; j < orig_sig[i].props.size(); ++j) {
+				t << orig_sig[i].props[j];
+			}
+		}
+		for (int i = 0; i < xdata.rows(); ++i) {
+			t.add_row();
+			for (int j = 0; j < xdata.cols(); ++j) {
+				t << xdata(i, j);
+			}
+			for (int j = 0; j < ydata.cols(); ++j) {
+				t << ydata(i, j);
+			}
+		}
+		t.print(os);
 		return true;
 	}
 	os << "unrecognized argument" << endl;
