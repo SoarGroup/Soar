@@ -151,3 +151,36 @@ bool parse_int(const string &s, int &v) {
 	}
 	return true;
 }
+
+table_printer &table_printer::skip(int n) {
+	rows.back().resize(rows.back().size() + n);
+	return *this;
+}
+
+table_printer &table_printer::add_row() {
+	rows.resize(rows.size() + 1);
+	return *this;
+}
+
+void table_printer::print(ostream &os) const {
+	std::vector<int> widths;
+	for (int i = 0; i < rows.size(); ++i) {
+		const vector<string> &row = rows[i];
+		if (row.size() > widths.size()) {
+			widths.resize(row.size());
+		}
+		for (int j = 0; j < row.size(); ++j) {
+			if (row[j].size() > widths[j]) {
+				widths[j] = row[j].size();
+			}
+		}
+	}
+	
+	for (int i = 0; i < rows.size(); ++i) {
+		const vector<string> &row = rows[i];
+		for (int j = 0; j < row.size(); ++j) {
+			os << setw(widths[j]) << row[j] << " ";
+		}
+		os << endl;
+	}
+}

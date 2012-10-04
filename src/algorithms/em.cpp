@@ -1010,9 +1010,12 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		os << endl << "subqueries: mode ptable timing noise train foil" << endl;
 		return true;
 	} else if (args[first_arg] == "ptable") {
+		table_printer t;
 		for (int i = 0; i < ndata; ++i) {
-			join(os, data[i]->mode_prob, "\t") << endl;
+			t.add_row() << i;
+			t.add(data[i]->mode_prob);
 		}
+		t.print(os);
 		return true;
 	} else if (args[first_arg] == "train") {
 		int start = 0, end = ndata - 1;
@@ -1028,13 +1031,34 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 				return false;
 			}
 		}
-		
-		os << "   N  CLS | DATA" << endl;  // header
+		table_printer t;
+		t.add_row() << "N" << "CLS" << "|" << "DATA";
 		for (int i = start; i <= end; ++i) {
-			os << setw(4) << i << "  " << setw(3) << data[i]->map_mode << " | ";
-			output_rvec(os, data[i]->x) << " ";
-			output_rvec(os, data[i]->y) << endl;
+			if (i == start || (i > start && data[i]->sig_index != data[i-1]->sig_index)) {
+				const scene_sig &s = sigs[data[i]->sig_index];
+				t.add_row().skip(2) << "|";
+				for (int j = 0; j < s.size(); ++j) {
+					t << s[j].name;
+					t.skip(s[j].props.size() - 1);
+				}
+				t.add_row().skip(2) << "|";
+				for (int j = 0; j < s.size(); ++j) {
+					const vector<string> &props = s[j].props;
+					for (int k = 0; k < props.size(); ++k) {
+						t << props[k];
+					}
+				}
+			}
+			t.add_row();
+			t << i << data[i]->map_mode << "|";
+			for (int j = 0; j < data[i]->x.size(); ++j) {
+				t << data[i]->x(j);
+			}
+			for (int j = 0; j < data[i]->y.size(); ++j) {
+				t << data[i]->y(j);
+			}
 		}
+		t.print(os);
 		return true;
 	} else if (args[first_arg] == "mode") {
 		if (first_arg + 1 >= args.size()) {
@@ -1177,18 +1201,23 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 			os << *i << endl;
 		}
 		os << endl << "object clauses" << endl;
+		table_printer t;
 		for (int j = 0; j < obj_clauses.size(); ++j) {
-			os << setw(3) << j << ": ";
+			t.add_row() << j;
 			if (target == j) {
-				os << "target" << endl;
+				t << "target";
 			} else if (obj_clauses[j].empty()) {
-				os << "empty" << endl;
+				t << "empty";
 			} else {
 				for (int k = 0; k < obj_clauses[j].size(); ++k) {
-					os << "     " << obj_clauses[j][k] << endl;
+					if (k > 0) {
+						t.add_row().skip(1);
+					}
+					t << obj_clauses[j][k];
 				}
 			}
 		}
+		t.print(os);
 		return true;
 	} else if (args[first] == "signature") {
 		for (int i = 0; i < sig.size(); ++i) {

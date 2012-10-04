@@ -303,29 +303,31 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		const scene_sig &s = scn->get_signature();
 		rvec v;
 		scn->get_properties(v);
-		string::size_type w = 0;
-		for (int i = 0; i < s.size(); ++i) {
-			for (int j = 0; j < s[i].props.size(); ++j) {
-				w = max(w, s[i].name.size() + s[i].props[j].size() + 1);
-			}
-		}
-		os << left;
+		table_printer t;
 		int c = 0;
 		for (int i = 0; i < s.size(); ++i) {
 			for (int j = 0; j < s[i].props.size(); ++j) {
-				string n = s[i].name + ':' + s[i].props[j];
-				os << setw(4) << c << setw(w + 1) << n << setw(1) << v(c) << endl;
+				t.add_row() << c;
+				if (j == 0) {
+					t << s[i].name;
+				} else {
+					t.skip(1);
+				}
+				t << s[i].props[j] << v(c);
 				c++;
 			}
 		}
+		t.print(os);
 		return true;
 	} else if (args[first_arg] == "out") {
 		if (next_out.size() == 0) {
 			os << "no output" << endl;
 		} else {
+			table_printer t;
 			for (int i = 0; i < next_out.size(); ++i) {
-				os << (*outspec)[i].name << " "  << next_out(i) << endl;
+				t.add_row() << (*outspec)[i].name << next_out(i);
 			}
+			t.print(os);
 		}
 		return true;
 	} else if (args[first_arg] == "relations") {

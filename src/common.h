@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <ostream>
 #include <fstream>
+#include <sstream>
 #include <cassert>
 
 typedef std::vector<int> tuple;
@@ -287,5 +288,53 @@ private:
 };
 
 extern logger LOG;
+
+class table_printer {
+public:
+	table_printer() {}
+	table_printer &add_row();
+	table_printer &skip(int n);
+	void print(std::ostream &os) const;
+	
+	template<typename T>
+	table_printer &operator<<(const T &x) {
+		ss.str("");
+		ss << x;
+		rows.back().push_back(ss.str());
+		return *this;
+	}
+	
+	template<typename T>
+	table_printer &set(int r, int c, const T &x) {
+		if (r >= rows.size()) {
+			rows.resize(r + 1);
+		}
+		std::vector<std::string> &row = rows[r];
+		if (c >= row.size()) {
+			row.resize(c + 1);
+		}
+		ss.str("");
+		ss << x;
+		row[c] = ss.str();
+		return *this;
+	}
+	
+	template<typename C>
+	table_printer &add(const C &container) {
+		std::vector<std::string> &r = rows.back();
+		r.reserve(container.size());
+		typename C::const_iterator i;
+		for (i = container.begin(); i != container.end(); ++i) {
+			ss.str("");
+			ss << *i;
+			r.push_back(ss.str());
+		}
+		return *this;
+	}
+
+private:
+	std::stringstream ss;
+	std::vector<std::vector<std::string> > rows;
+};
 
 #endif

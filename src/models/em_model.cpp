@@ -77,10 +77,11 @@ public:
 			return em.cli_inspect(first_arg + 1, args, os);
 		} else if (args[first_arg] == "error") {
 			assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
+			table_printer t;
 			for (int i = 0; i < test_modes.size(); ++i) {
-				os << setw(4) << i << " " << test_modes[i] << " " << test_best_modes[i] << " "
-				   << test_best_errors[i] << endl;
+				t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
 			}
+			t.print(os);
 		}
 		return false;
 	}

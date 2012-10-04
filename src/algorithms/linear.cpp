@@ -647,10 +647,14 @@ bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream
 		} else {
 			os << "intercept: " << intercept << endl;
 			os << "coefs:" << endl;
+			table_printer t;
 			for (int i = 0; i < coefs.rows(); ++i) {
-				os << setw(4) << i << " ";
-				output_rvec(os, coefs.row(i)) << endl;
+				t.add_row() << i << '|';
+				for (int j = 0; j < intercept.size(); ++j) {
+					t << coefs(i, j);
+				}
 			}
+			t.print(os);
 			return true;
 		}
 		os << "subqueries: timing train" << endl;
