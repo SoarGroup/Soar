@@ -99,6 +99,7 @@ slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr)
    symbol_add_ref (attr);
    s->wmes = NIL;
    s->all_preferences = NIL;
+   s->CDPS = NIL;
    
    /* JC: This is the same as all_preferences
     *  except they are indexed by type.
@@ -160,6 +161,26 @@ void mark_slot_for_possible_removal (agent* thisAgent, slot *s) {
   push (thisAgent, s, thisAgent->slots_for_possible_removal);
 }
 
+/* MMA 8-2012: Clear out and deallocate the CDPS. */
+void clear_CDPS (agent* thisAgent, slot *s) {
+
+  list *cond_current, *cond_old;
+  preference *pref;
+
+  /* The CDPS should never exist on a top-level slot, so we do
+   * not need to worry about checking for DO_TOP_LEVEL_REF_CTS. */
+
+  cond_old = cond_current = s->CDPS;
+  s->CDPS = NIL;
+  for (; cond_current != NIL; cond_current = cond_current->rest) {
+    pref = static_cast<preference *>(cond_current->first);
+    preference_remove_ref(thisAgent, pref);
+  }
+  free_list(thisAgent, cond_old);
+
+}
+/* MMA 8-2012 end */
+
 void remove_garbage_slots (agent* thisAgent) {
   cons *c;
   slot *s;
@@ -180,21 +201,25 @@ void remove_garbage_slots (agent* thisAgent) {
 #ifdef DEBUG_SLOTS
     print_with_symbols (thisAgent, "\nDeallocate slot %y ^%y", s->id, s->attr);
 #endif
-    
-    if (s->changed && (! s->isa_context_slot)) {
-      remove_from_dll (thisAgent->changed_slots, s->changed, next, prev);
-      free_with_pool (&thisAgent->dl_cons_pool, s->changed);
+
+    /* MMA 9-2012 */
+    if (s->CDPS && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM])
+      clear_CDPS(thisAgent, s);
+    /* MMA 9-2012 end */
+
+    if (s->changed && (!s->isa_context_slot)) {
+      remove_from_dll(thisAgent->changed_slots, s->changed, next, prev);
+      free_with_pool(&thisAgent->dl_cons_pool, s->changed);
     }
-    remove_from_dll (s->id->id.slots, s, next, prev);
-    symbol_remove_ref (thisAgent, s->id);
-    symbol_remove_ref (thisAgent, s->attr);
-	if ( s->wma_val_references != NIL )
-	{
-	  s->wma_val_references->~wma_sym_reference_map();
-	  free_with_pool( &( thisAgent->wma_slot_refs_pool ), s->wma_val_references );
-	  s->wma_val_references = NIL;
-	}
-    free_with_pool (&thisAgent->slot_pool, s);
+    remove_from_dll(s->id->id.slots, s, next, prev);
+    symbol_remove_ref(thisAgent, s->id);
+    symbol_remove_ref(thisAgent, s->attr);
+    if (s->wma_val_references != NIL) {
+      s->wma_val_references->~wma_sym_reference_map();
+      free_with_pool(&(thisAgent->wma_slot_refs_pool), s->wma_val_references);
+      s->wma_val_references = NIL;
+    }
+    free_with_pool(&thisAgent->slot_pool, s);
   }
 }
 

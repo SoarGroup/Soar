@@ -193,7 +193,7 @@ public:
     static char const* const kTagLocals;
     static char const* const kTagLocal;
 	static char const* const kTagBacktraceResult;
-    static char const* const kTagProhibitPreference;
+    static char const* const kTagCDPSPreference;
     static char const* const kTagAddToPotentials;
     static char const* const kTagNegated;
     static char const* const kTagNots;

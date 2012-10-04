@@ -60,7 +60,7 @@ namespace soarxml
 			m_pCurrentTag->AddRefOnHandle() ;
 		}
 
-		// Alternative contstuctor where we specify the base tag name
+		// Alternative constructor where we specify the base tag name
 		XMLTrace(char const* pTagName) 
 		{
 			m_XML = new ElementXML() ;

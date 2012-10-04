@@ -1377,17 +1377,6 @@ byte parse_preference_specifier_without_referent (agent* thisAgent) {
     if (thisAgent->lexeme.type==COMMA_LEXEME) get_lexeme(thisAgent);
     return WORST_PREFERENCE_TYPE;
     
-  case AMPERSAND_LEXEME:
-    get_lexeme(thisAgent);
-    if ((thisAgent->lexeme.type!=COMMA_LEXEME) &&
-        (thisAgent->lexeme.type!=R_PAREN_LEXEME) &&
-        (thisAgent->lexeme.type!=UP_ARROW_LEXEME) &&
-        (!is_preference_lexeme(thisAgent->lexeme.type)))
-      return BINARY_PARALLEL_PREFERENCE_TYPE;
-    /* --- forced unary preference --- */
-    if (thisAgent->lexeme.type==COMMA_LEXEME) get_lexeme(thisAgent);
-    return UNARY_PARALLEL_PREFERENCE_TYPE;
-    
   default:
     /* --- if no preference given, make it an acceptable preference --- */
     return ACCEPTABLE_PREFERENCE_TYPE;
@@ -1469,8 +1458,6 @@ action *parse_preferences (agent* thisAgent, Symbol *id,
   }
 }
 
-/* KJC begin:  10.09.98 */
-/* modified 3.99 to take out parallels and only create acceptables */
 /* -----------------------------------------------------------------
               Parse Preferences for Soar8 Non-Operators
 
@@ -1505,9 +1492,8 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
   char szPrintId[256];
 
   /* --- Note: this routine is set up so if there's not preference type
-     indicator at all, we return an acceptable preference make
-     and a parallel preference make.  For non-operators, allow
-     only REJECT_PREFERENCE_TYPE, (and UNARY_PARALLEL and ACCEPTABLE).
+     indicator at all, we return an acceptable preference make.  For
+     non-operators, allow only REJECT_PREFERENCE_TYPE, (and ACCEPTABLE).
      If any other preference type indicator is found, a warning or
      error msg (error only on binary prefs) is printed. --- */
 
@@ -1648,9 +1634,10 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
        and create new action in the path */
     new_var = make_placeholder_var(thisAgent, first_letter_from_rhs_value (attr));
 
-    /* parse_preferences actually creates the action.  eventhough
+    /* parse_preferences actually creates the action.  Even though
      there aren't really any preferences to read, we need the default
-     acceptable and parallel prefs created for all attributes in path */
+     acceptable prefs created for all attributes in path */
+
     if(strcmp(szAttribute,"operator") != 0)
     {
       new_actions = parse_preferences_soar8_non_operator (thisAgent, id, attr, 

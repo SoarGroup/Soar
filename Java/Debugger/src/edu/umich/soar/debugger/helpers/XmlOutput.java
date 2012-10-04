@@ -369,9 +369,9 @@ public class XmlOutput
         {
             text.append("For local ");
         }
-        else if (xml.IsTagProhibitPreference())
+        else if (xml.IsTagCDPSPreference())
         {
-            text.append("For prohibit preference ");
+            text.append("For CDPS preference ");
         }
         else if (xml.IsTagGrounds())
         {

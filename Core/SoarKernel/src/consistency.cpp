@@ -181,7 +181,7 @@ Bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
   }
 
   /* Determine the new impasse type, based on the preferences that exist now */
-  new_impasse_type = run_preference_semantics_for_consistency_check (thisAgent, s, &candidates);
+  new_impasse_type = run_preference_semantics(thisAgent, s, &candidates, true);
  
 #ifdef DEBUG_CONSISTENCY_CHECK 
   printf("    Impasse Type returned by run preference semantics: %d\n", new_impasse_type);

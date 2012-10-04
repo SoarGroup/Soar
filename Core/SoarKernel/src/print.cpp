@@ -918,12 +918,9 @@ char preference_type_indicator (agent* thisAgent, byte type) {
   case REQUIRE_PREFERENCE_TYPE: return '!';
   case REJECT_PREFERENCE_TYPE: return '-';
   case PROHIBIT_PREFERENCE_TYPE: return '~';
-  case RECONSIDER_PREFERENCE_TYPE: return '@';
   case NUMERIC_INDIFFERENT_PREFERENCE_TYPE: return '=';
   case UNARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
   case BINARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
-  case UNARY_PARALLEL_PREFERENCE_TYPE: return '&';
-  case BINARY_PARALLEL_PREFERENCE_TYPE: return '&';
   case BEST_PREFERENCE_TYPE: return '>';
   case BETTER_PREFERENCE_TYPE: return '>';
   case WORST_PREFERENCE_TYPE: return '<';
