@@ -1,7 +1,0 @@
-additionalCommandlineOptions=all --opt --out\=/Users/mazzin/Soar/SoarSandbox
-ch.hsr.sconsolidator.core.BuildSettingsPreferencePage_useParentScope=false
-eclipse.preferences.version=1
-environmentVariables=PATH\=${PATH}\:/opt/local/bin TERM\=dumb 
-numberOfJobs=1
-perfAccuracyProfile=default
-startingDirectory=/Users/mazzin/Soar/NewChunkingSoar
