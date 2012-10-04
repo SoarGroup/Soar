@@ -275,7 +275,7 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 		// run preference semantics "read only" via _consistency_check
 		// returns a list of candidates without deciding which one in the event of indifference
 		preference* cand = 0;
-		byte impasse_type = run_preference_semantics_for_consistency_check(soarAgent, s, &cand);
+		byte impasse_type = run_preference_semantics(soarAgent, s, &cand, true);
 
 		// if the impasse isn't NONE_IMPASSE_TYPE, there's an impasse and we don't want to print anything
 		// if we have no candidates, we don't want to print anything

@@ -37,6 +37,9 @@
 #include "wma.h"
 #include "wmem.h"
 
+/* Note that these must be in the same order as the #define variables
+ * in gdatastructs.h */
+
 const char * preference_name[] =
 { "acceptable",
   "require",

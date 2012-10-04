@@ -63,6 +63,11 @@ extern int GDS_PrintCmd (/****ClientData****/ int clientData,
                          int argc, char *argv[]);
 /* REW: end   09.15.96 */
 
+/* MMA 8-2012 */
+void add_to_CDPS (agent* thisAgent, slot *s, preference *pref, bool unique_value = true);
+void rl_update_for_one_candidate(agent* thisAgent, slot *s, bool consistency, preference *candidates);
+extern byte run_preference_semantics(agent* thisAgent, slot *s, preference **result_candidates, bool consistency = false, bool predict = false);
+/* MMA end */
 
 /* ---------------------------------------------------------------------
                       Top-Level Decider Routines
@@ -97,8 +102,6 @@ extern void print_lowest_slot_in_context_stack (agent* thisAgent);
 extern void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal);
 extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
 extern Symbol *attribute_of_existing_impasse (agent* thisAgent, Symbol *goal);
-extern byte run_preference_semantics_for_consistency_check (agent* thisAgent, 
-															slot *s, preference **result_candidates);
 
 /* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
 extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);

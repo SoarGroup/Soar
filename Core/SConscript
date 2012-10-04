@@ -3,6 +3,7 @@ import subprocess as sub
 import itertools as itl
 
 def CheckSWIG(env):
+	print('Checking SWIG',os.environ['PATH'])
 	if not env.WhereIs('swig'):
 		return False
 	

@@ -164,10 +164,10 @@ The not tags get printed as "s1 <> s2" in the text trace.
   <local>
     <wme></wme>
     <backtrace>...</backtrace>
-    <prohibit-preference>
+    <cdps-preference>
       <preference></preference>
       <backtrace>...</backtrace>
-    </prohibit-preference>
+    </cdps-preference>
     -OR-
     <add-to-potentials></add-to-potentials>
   </local>
@@ -175,7 +175,7 @@ The not tags get printed as "s1 <> s2" in the text trace.
   ...
 </locals>
 
-There might be a prohibit-preference or an add-to-potentials, but not both. 
+There might be a cdps-preference or an add-to-potentials, but not both.
 Also, if there is no backtrace child of local, then the print trace outputs "...no trace, can't BT". 
 Add-to-potentials is an empty tag just to mark when the text trace prints " --> make it a potential."
 
@@ -192,10 +192,10 @@ Add-to-potentials is an empty tag just to mark when the text trace prints " --> 
    <ungrounded-potential>
       <wme></wme>
       <backtrace>...</backtrace>
-      <prohibit-preference>
+      <cdps-preference>
          <preference></preference>
          <backtrace>...</backtrace>
-      <prohibit-preference>
+      <cdps-preference>
    </ungrounded-potential>
    <ungrounded-potential>...</ungrounded-potential>
    ...
@@ -214,7 +214,7 @@ bool ClientTraceXML::IsTagUngroundedPotentials() const	{ return IsTag(sml_Names:
 bool ClientTraceXML::IsTagUngroundedPotential() const	{ return IsTag(sml_Names::kTagUngroundedPotential) ; }
 bool ClientTraceXML::IsTagBacktrace() const				{ return IsTag(sml_Names::kTagBacktrace) ; }
 bool ClientTraceXML::IsTagAddToPotentials() const		{ return IsTag(sml_Names::kTagAddToPotentials) ; }
-bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
+bool ClientTraceXML::IsTagCDPSPreference() const		{ return IsTag(sml_Names::kTagCDPSPreference) ; }
 bool ClientTraceXML::IsTagBacktraceResult() const		{ return IsTag(sml_Names::kTagBacktraceResult) ; }
 bool ClientTraceXML::IsTagLocalNegation() const			{ return IsTag(sml_Names::kTagLocalNegation) ; }
 

@@ -140,11 +140,11 @@ void print_candidates(agent* thisAgent, preference * candidates)
 #define WORST_DECIDER_FLAG 5
 #define UNARY_INDIFFERENT_DECIDER_FLAG 6
 #define ALREADY_EXISTING_WME_DECIDER_FLAG 7
-#define UNARY_PARALLEL_DECIDER_FLAG 8
+
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments 
    A new preference type: unary indifferent + constant (probability) value
 */
-#define UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG 9
+#define UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG 8
 
 /* ======================================================================
 
@@ -826,7 +826,7 @@ void do_demotion (agent* thisAgent) {
 /* ------------------------------------------------------------------
                        Do Buffered Link Changes
 
-   This routine does all the buffered link (ownership) chages, updating
+   This routine does all the buffered link (ownership) changes, updating
    the goal stack level on all identifiers and garbage collecting
    disconnected wmes.
 ------------------------------------------------------------------ */
@@ -860,16 +860,81 @@ void do_buffered_link_changes (agent* thisAgent) {
 #endif
 }
 
+/* ------------------------------------------------------------------
+                  Add a preference to a slot's CDPS
+   This function adds a preference to a slots's context dependent
+   preference set, checking to first see whether the pref is already
+   there. If an operator The slot's CDPS is copied to conditions' bt structs in
+   create_instatiation.  Those copies of the CDPS are used to
+   backtrace through all relevant local evaluation rules that led to the
+   selection of the operator that produced a result.
+------------------------------------------------------------------ */
+
+void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, bool unique_value) {
+
+  Bool already_exists=false;
+  cons *CDPS;
+  preference *p;
+
+  for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
+    p = static_cast<preference *>(CDPS->first);
+    if (p == pref) {
+      already_exists=true;
+      break;
+    }
+
+    if (unique_value) {
+      /* Checking if a preference is unique differs depending on the preference type */
+
+      /* Binary preferences can be considered equivalent if they point to the same
+       * operators in the correct relative spots */
+      if (((pref->type == BETTER_PREFERENCE_TYPE) || (pref->type == WORSE_PREFERENCE_TYPE)) &&
+          ((p->type == BETTER_PREFERENCE_TYPE) || (p->type == WORSE_PREFERENCE_TYPE))) {
+        if (pref->type == p->type)
+          already_exists = ((pref->value == p->value) && (pref->referent == p->referent));
+        else
+          already_exists = ((pref->value == p->referent) && (pref->referent == p->value));
+      } else if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) &&
+          (p->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)) {
+        already_exists = (((pref->value == p->value) && (pref->referent == p->referent)) ||
+            ((pref->value == p->referent) && (pref->referent == p->value)));
+      } else {
+        /* Otherwise they are equivalent if they have the same value and type */
+        already_exists = (pref->value == p->value) && (pref->type == p->type);
+      }
+      if (already_exists) {
+        break;
+      }
+    }
+  }
+  if (!already_exists) {
+    push(thisAgent, pref, s->CDPS);
+    preference_add_ref(pref);
+  }
+}
+
+/* Perform reinforcement learning update for one valid candidate. */
+
+void rl_update_for_one_candidate(agent* thisAgent, slot *s, bool consistency, preference *candidates) {
+
+  if (!consistency && rl_enabled(thisAgent)) {
+    rl_tabulate_reward_values(thisAgent);
+    exploration_compute_value_of_candidate(thisAgent, candidates, s, 0);
+    rl_perform_update(thisAgent, candidates->numeric_value,
+        candidates->rl_contribution, s->id);
+  }
+}
+
 /* **************************************************************************
 
-                         Preference Semantics 
+                         Run Preference Semantics
 
    Run_preference_semantics (slot *s, preference **result_candidates) examines
-   the preferences for a given slot, and returns an impasse type for the
+   the preferences for a given slot, and returns an impasse type for thez
    slot.  The argument "result_candidates" is set to a list of candidate
    values for the slot--if the returned impasse type is NONE_IMPASSE_TYPE,
    this is the set of winners; otherwise it is the set of tied, conflicted,
-   or constraint-failured values.  This list of values is a list of preferences
+   or constraint-failure values.  This list of values is a list of preferences
    for those values, linked via the "next_candidate" field on each preference
    structure.  If there is more than one preference for a given value,
    only one is returned in the result_candidates, with (first) require
@@ -884,526 +949,566 @@ void do_buffered_link_changes (agent* thisAgent) {
    afterwards (i.e., before the next time the slot is re-decided, I think),
    we would be left with a WME still in WM (not GC'd, because of the acceptable
    preference higher up) but with a trace pointing to a deallocated require
-   preference.  This case is very obsure and unlikely to come up, but it
+   preference.  This case is very obscure and unlikely to come up, but it
    could easily cause a core dump or worse.
-   
-   Require_preference_semantics() is a helper function for
-   run_preference_semantics() that is used when there is at least one
-   require preference for the slot.
+
 ************************************************************************** */
 
-byte require_preference_semantics (agent *thisAgent, slot *s, preference **result_candidates, bool consistency) {
-  preference *p;
+byte run_preference_semantics(agent* thisAgent,
+                              slot *s,
+                              preference **result_candidates,
+                              bool consistency,
+                              bool predict)
+{
+  preference *p, *p2, *cand, *prev_cand;
+  Bool match_found, not_all_indifferent, some_numeric, do_CDPS;
   preference *candidates;
   Symbol *value;
-  
-  /* --- collect set of required items into candidates list --- */
-  for (p=s->preferences[REQUIRE_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-  candidates = NIL;
-  for (p=s->preferences[REQUIRE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-    if (p->value->common.decider_flag == NOTHING_DECIDER_FLAG) {
-      p->next_candidate = candidates;
-      candidates = p;
-      /* --- unmark it, in order to prevent it from being added twice --- */
-      p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+  cons *CDPS, *prev_cons;
+
+  /* Set a flag to determine if a context-dependent preference set makes sense in this context.
+   * We can ignore the CDPS when:
+   * - Run_preference_semantics is called for a consistency check (don't want side effects)
+   * - For non-context slots (only makes sense for operators)
+   * - For context-slots at the top level (will never be backtraced through)
+   * - when the learning system parameter is set off (note, this is independent of whether learning is on) */
+
+  do_CDPS = (s->isa_context_slot && !consistency && (s->id->id.level > TOP_GOAL_LEVEL) && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
+
+  /* Empty the context-dependent preference set in the slot */
+
+  if (do_CDPS && s->CDPS) {
+    clear_CDPS(thisAgent, s);
+  }
+
+  /* If the slot has no preferences at all, things are trivial --- */
+
+  if (!s->all_preferences) {
+    if (!s->isa_context_slot)
+      mark_slot_for_possible_removal(thisAgent, s);
+    *result_candidates = NIL;
+    return NONE_IMPASSE_TYPE;
+  }
+
+  /* If this is the true decision slot and selection has been made, attempt force selection */
+
+  if (s->isa_context_slot && !consistency) {
+    if (select_get_operator(thisAgent) != NULL) {
+      preference *force_result = select_force(thisAgent,
+          s->preferences[ACCEPTABLE_PREFERENCE_TYPE], !predict);
+
+      if (force_result) {
+        force_result->next_candidate = NIL;
+        *result_candidates = force_result;
+
+        if (!predict && rl_enabled(thisAgent)) {
+          rl_tabulate_reward_values(thisAgent);
+          exploration_compute_value_of_candidate(thisAgent, force_result, s, 0);
+          rl_perform_update(thisAgent, force_result->numeric_value,
+              force_result->rl_contribution, s->id);
+        }
+
+        return NONE_IMPASSE_TYPE;
+      }
     }
   }
-  *result_candidates = candidates;
-  
-  /* --- if more than one required item, we have a constraint failure --- */
-  if (candidates->next_candidate) return CONSTRAINT_FAILURE_IMPASSE_TYPE;
-  
-  /* --- just one require, check for require-prohibit impasse --- */
-  value = candidates->value;
-  for (p=s->preferences[PROHIBIT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    if (p->value == value) return CONSTRAINT_FAILURE_IMPASSE_TYPE;
-  
-  /* --- the lone require is the winner --- */
-  if ( !consistency && candidates && rl_enabled( thisAgent ) )
-  {
-	  rl_tabulate_reward_values( thisAgent );
-	  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-	  rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+
+  /* If debugging a context-slot, print all preferences that we're deciding through */
+
+  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot) {
+
+    print(thisAgent,
+        "\n----------------------------\nRUNNING PREFERENCE SEMANTICS...\n----------------------------\n");
+    print(thisAgent, "All Preferences for slot:");
+
+    for (int i = 0; i < NUM_PREFERENCE_TYPES; i++) {
+      if (s->preferences[i]) {
+        print(thisAgent, "\n   %ss:\n", preference_name[i]);
+        for (p = s->preferences[i]; p; p = p->next) {
+          print(thisAgent, "   ");
+          print_preference(thisAgent, p);
+        }
+      }
+    }
   }
 
-  return NONE_IMPASSE_TYPE;
-}
+  /* === Requires === */
 
-byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_candidates, bool consistency = false, bool predict = false) 
-{
-	preference *p, *p2, *cand, *prev_cand;
-	Bool match_found, not_all_indifferent, not_all_parallel;
-	preference *candidates;
+  if (s->preferences[REQUIRE_PREFERENCE_TYPE]) {
 
-	/* --- if the slot has no preferences at all, things are trivial --- */
-	if (!s->all_preferences) 
-	{
-		if (! s->isa_context_slot) mark_slot_for_possible_removal (thisAgent, s);
-		*result_candidates = NIL;
-		return NONE_IMPASSE_TYPE;
-	}
+    /* Collect set of required items into candidates list */
 
-	// if this is the true decision slot and selection has been made, attempt force selection
-	if ( s->isa_context_slot && !consistency) 
-	{
-		if ( select_get_operator( thisAgent ) != NULL )
-		{
-			preference *force_result = select_force( thisAgent, s->preferences[ACCEPTABLE_PREFERENCE_TYPE], !predict );
+    for (p=s->preferences[REQUIRE_PREFERENCE_TYPE]; p!=NIL; p=p->next)
+      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+    candidates = NIL;
+    for (p=s->preferences[REQUIRE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
+      if (p->value->common.decider_flag == NOTHING_DECIDER_FLAG) {
+        p->next_candidate = candidates;
+        candidates = p;
+        /* Unmark it, in order to prevent it from being added twice */
+        p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+      }
+    }
+    *result_candidates = candidates;
 
-			if ( force_result )
-			{
-				force_result->next_candidate = NIL;
-				*result_candidates = force_result;
+    /* Check if we have more than one required item. If so, return constraint failure. */
 
-				if ( !predict && rl_enabled( thisAgent ) )
-				{
-					rl_tabulate_reward_values( thisAgent );
-					exploration_compute_value_of_candidate( thisAgent, force_result, s, 0 );
-					rl_perform_update( thisAgent, force_result->numeric_value, force_result->rl_contribution, s->id );
-				}
+    if (candidates->next_candidate)
+      return CONSTRAINT_FAILURE_IMPASSE_TYPE;
 
-				return NONE_IMPASSE_TYPE;
-			}
-		}
-	}
+    /* Check if we have also have a prohibit preference. If so, return constraint failure.
+     * Note that this is the one difference between prohibit and reject preferences. */
 
-	/* === Requires === */
-	if (s->preferences[REQUIRE_PREFERENCE_TYPE]) {
-		return require_preference_semantics (thisAgent, s, result_candidates, consistency);
-	}
+    value = candidates->value;
+    for (p=s->preferences[PROHIBIT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
+      if (p->value == value) return CONSTRAINT_FAILURE_IMPASSE_TYPE;
 
-	/* === Acceptables, Prohibits, Rejects === */
+    /* --- We have a winner, so update RL --- */
 
-	/* --- mark everything that's acceptable, then unmark the prohibited
-	and rejected items --- */
-	for (p=s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-		p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-	for (p=s->preferences[PROHIBIT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-		p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-	for (p=s->preferences[REJECT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-		p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+    rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
 
-	/* --- now scan through acceptables and build the list of candidates --- */
-	candidates = NIL;
-	for (p=s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-		if (p->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
-			p->next_candidate = candidates;
-			candidates = p;
-			/* --- unmark it, in order to prevent it from being added twice --- */
-			p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-		}
-	}
+    return NONE_IMPASSE_TYPE;
+  }
 
-	if (!s->isa_context_slot) {
-		*result_candidates = candidates;
-		return NONE_IMPASSE_TYPE;
-	}
+  /* === Acceptables, Prohibits, Rejects === */
 
-	/* === If there are only 0 or 1 candidates, we're done === */
-	if ((!candidates) || (! candidates->next_candidate)) {
-		*result_candidates = candidates;
+  /* Mark every acceptable preference as a possible candidate */
 
-		if ( !consistency && rl_enabled( thisAgent ) && candidates )
-		{
-			// perform update here for just one candidate
-			rl_tabulate_reward_values( thisAgent );
-			exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-			rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
-		}
+  for (p = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p != NIL; p = p->next)
+    p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
 
-		return NONE_IMPASSE_TYPE;
-	}
+  /* Unmark any preferences that have a prohibit or reject.  Note that this may
+   * remove the candidate_decider_flag set in the last loop */
 
-	/* === Better/Worse === */
-#define NEW_PREFERENCES_SCHEME 1 // bug 234
-#if(NEW_PREFERENCES_SCHEME == 1)
-	// new algorithm:
-	// for each j > k:
-	//   if j is (candidate or conflicted) and k is (candidate or conflicted):
-	//     if one of (j, k) is candidate:
-	//       candidate -= k, if not already true
-	//       conflicted += k, if not already true
-	// for each j < k:
-	//   if j is (candidate or conflicted) and k is (candidate or conflicted):
-	//     if one of (j, k) is candidate:
-	//       candidate -= j, if not already true
-	//       conflicted += j, if not already true
-	// if no remaning candidates:
-	//   conflict impasse using conflicted as candidates
-	// else
-	//   pass on candidates to next filter
-	if (s->preferences[BETTER_PREFERENCE_TYPE] || s->preferences[WORSE_PREFERENCE_TYPE]) 
-	{
-		Symbol *j, *k;
+  for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+    p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+  for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+    p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
 
-		// initialize
-		for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
-		{
-			p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-			p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
-		}
-		for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
-		{
-			p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-			p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
-		}
-		for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-			cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-		}
+  /* Build list of candidates.  These are the acceptable prefs that didn't
+   * have the CANDIDATE_DECIDER_FLAG reversed by prohibit or reject prefs. */
 
-		for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
-		{
-			j = p->value;
-			k = p->referent;
-			if (j==k) 
-				continue;
-			if (j->common.decider_flag && k->common.decider_flag) 
-			{
-				if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG || k->common.decider_flag == CANDIDATE_DECIDER_FLAG)
-					k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-			}
-		}
+  candidates = NIL;
+  for (p = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+    if (p->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
+      p->next_candidate = candidates;
+      candidates = p;
+      /* --- Unmark it, in order to prevent it from being added twice --- */
+      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+    }
+  }
 
-		for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
-		{
-			j = p->value;
-			k = p->referent;
-			if (j==k) 
-				continue;
-			if (j->common.decider_flag && k->common.decider_flag) 
-			{
-				if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG || k->common.decider_flag == CANDIDATE_DECIDER_FLAG)
-					j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-			}
-		}
+  /* If this is not a decidable context slot, then we're done */
 
-		/* --- now scan through candidates list, look for remaining candidates --- */
-		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-		{
-			if (cand->value->common.decider_flag==CANDIDATE_DECIDER_FLAG) 
-				break;
-		}
-		if (!cand) {
-			/* --- collect conflicted candidates into new candidates list --- */
-			prev_cand = NIL;
-			cand = candidates;
-			while (cand) 
-			{
-				if (cand->value->common.decider_flag != CONFLICTED_DECIDER_FLAG) 
-				{
-					if (prev_cand)
-						prev_cand->next_candidate = cand->next_candidate;
-					else
-						candidates = cand->next_candidate;
-				} 
-				else 
-				{
-					prev_cand = cand;
-				}
-				cand = cand->next_candidate;
-			}
-			*result_candidates = candidates;
-			return CONFLICT_IMPASSE_TYPE;
-		}
-		/* --- non-conflict candidates found, remove conflicts from candidates --- */
-		prev_cand = NIL;
-		cand = candidates;
-		while (cand) 
-		{
-			if (cand->value->common.decider_flag == CONFLICTED_DECIDER_FLAG) 
-			{
-				if (prev_cand)
-					prev_cand->next_candidate = cand->next_candidate;
-				else
-					candidates = cand->next_candidate;
-			} 
-			else 
-			{
-				prev_cand = cand;
-			}
-			cand = cand->next_candidate;
-		}
-	}
-#else // !NEW_PREFERENCES_SCHEME
-	if (s->preferences[BETTER_PREFERENCE_TYPE] ||
-		s->preferences[WORSE_PREFERENCE_TYPE]) {
-			Symbol *j, *k;
+  if (!s->isa_context_slot) {
+    *result_candidates = candidates;
+    return NONE_IMPASSE_TYPE;
+  }
 
-			/* -------------------- Algorithm to find conflicted set: 
-			conflicted = {}
-			for each (j > k):
-			if j is (candidate or conflicted)
-			and k is (candidate or conflicted)
-			and at least one of j,k is a candidate
-			then if (k > j) or (j < k) then
-			conflicted += j, if not already true
-			conflicted += k, if not already true
-			candidate -= j, if not already true
-			candidate -= k, if not already true
-			for each (j < k):
-			if j is (candidate or conflicted)
-			and k is (candidate or conflicted)
-			and at least one of j,k is a candidate
-			then if (k < j)
-			then
-			conflicted += j, if not already true
-			conflicted += k, if not already true
-			candidate -= j, if not already true
-			candidate -= k, if not already true
-			----------------------- */
+  /* If there are reject or prohibit preferences,
+   * (1) add all acceptable preferences to CDPS except those with a reject or prohibit
+   *     which is equivalent to the entire candidate list at this point
+   * (2) add all reject and prohibit preferences */
 
-			for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-				p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-				p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
-			}
-			for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-				p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-				p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
-			}
-			for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-				cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-			}
-			for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-				j = p->value;
-				k = p->referent;
-				if (j==k) continue;
-				if (j->common.decider_flag && k->common.decider_flag) {
-					if(k->common.decider_flag != CONFLICTED_DECIDER_FLAG)
-						k->common.decider_flag = FORMER_CANDIDATE_DECIDER_FLAG;
-					if ((j->common.decider_flag!=CONFLICTED_DECIDER_FLAG) ||
-						(k->common.decider_flag!=CONFLICTED_DECIDER_FLAG)) {
-							for (p2=s->preferences[BETTER_PREFERENCE_TYPE]; p2; p2=p2->next)
-								if ((p2->value==k)&&(p2->referent==j)) {
-									j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-									k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-									break;
-								}
-								for (p2=s->preferences[WORSE_PREFERENCE_TYPE]; p2; p2=p2->next)
-									if ((p2->value==j)&&(p2->referent==k)) {
-										j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-										k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-										break;
-									}
-					}
-				}
-			}
-			for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-				j = p->value;
-				k = p->referent;
-				if (j==k) continue;
-				if (j->common.decider_flag && k->common.decider_flag) {
-					if(j->common.decider_flag != CONFLICTED_DECIDER_FLAG)
-						j->common.decider_flag = FORMER_CANDIDATE_DECIDER_FLAG;
-					if ((j->common.decider_flag!=CONFLICTED_DECIDER_FLAG) ||
-						(k->common.decider_flag!=CONFLICTED_DECIDER_FLAG)) {
-							for (p2=s->preferences[WORSE_PREFERENCE_TYPE]; p2; p2=p2->next)
-								if ((p2->value==k)&&(p2->referent==j)) {
-									j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-									k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-									break;
-								}
-					}
-				}
-			}
+  if (do_CDPS) {
+    if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]) {
+      for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        add_to_CDPS(thisAgent, s, p);
+      for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        add_to_CDPS(thisAgent, s, p);
+      for (p = candidates; p != NIL; p = p->next_candidate) {
+        add_to_CDPS(thisAgent, s, p);
+      }
+    }
+  }
 
-			/* --- now scan through candidates list, look for conflicted stuff --- */
-			for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-				if (cand->value->common.decider_flag==CONFLICTED_DECIDER_FLAG) break;
-			if (cand) {
-				/* --- collect conflicted candidates into new candidates list --- */
-				prev_cand = NIL;
-				cand = candidates;
-				while (cand) {
-					if (cand->value->common.decider_flag != CONFLICTED_DECIDER_FLAG) {
-						if (prev_cand)
-							prev_cand->next_candidate = cand->next_candidate;
-						else
-							candidates = cand->next_candidate;
-					} else {
-						prev_cand = cand;
-					}
-					cand = cand->next_candidate;
-				}
-				*result_candidates = candidates;
-				return CONFLICT_IMPASSE_TYPE;
-			}
-			/* --- no conflicts found, remove former_candidates from candidates --- */
-			prev_cand = NIL;
-			cand = candidates;
-			while (cand) {
-				if (cand->value->common.decider_flag == FORMER_CANDIDATE_DECIDER_FLAG) {
-					if (prev_cand)
-						prev_cand->next_candidate = cand->next_candidate;
-					else
-						candidates = cand->next_candidate;
-				} else {
-					prev_cand = cand;
-				}
-				cand = cand->next_candidate;
-			}
-	}
-#endif // !NEW_PREFERENCES_SCHEME
+  /* Exit point 1: Check if we're done, i.e. 0 or 1 candidates left */
+  if ((!candidates) || (!candidates->next_candidate)) {
+    *result_candidates = candidates;
+    if (candidates) {
+      /* Update RL values for the winning candidate */
+      rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
+    } else {
+      if (do_CDPS && s->CDPS) {
+        clear_CDPS(thisAgent, s);
+      }
+    }
+    return NONE_IMPASSE_TYPE;
+  }
 
-	/* === Bests === */
-	if (s->preferences[BEST_PREFERENCE_TYPE]) {
-		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-			cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-		for (p=s->preferences[BEST_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-			p->value->common.decider_flag = BEST_DECIDER_FLAG;
-		prev_cand = NIL;
-		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-			if (cand->value->common.decider_flag == BEST_DECIDER_FLAG) {
-				if (prev_cand)
-					prev_cand->next_candidate = cand;
-				else
-					candidates = cand;
-				prev_cand = cand;
-			}
-			if (prev_cand) prev_cand->next_candidate = NIL;
-	}
+  /* === Better/Worse === */
 
-	/* === Worsts === */
-	if (s->preferences[WORST_PREFERENCE_TYPE]) {
-		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-			cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-		for (p=s->preferences[WORST_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-			p->value->common.decider_flag = WORST_DECIDER_FLAG;
-		prev_cand = NIL;
-		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-			if (cand->value->common.decider_flag != WORST_DECIDER_FLAG) {
-				if (prev_cand)
-					prev_cand->next_candidate = cand;
-				else
-					candidates = cand;
-				prev_cand = cand;
-			}
-			if (prev_cand) prev_cand->next_candidate = NIL;
-	}
+  if (s->preferences[BETTER_PREFERENCE_TYPE]
+      || s->preferences[WORSE_PREFERENCE_TYPE]) {
+    Symbol *j, *k;
 
-	/* === If there are only 0 or 1 candidates, we're done === */
-	if ( !candidates || !candidates->next_candidate ) 
-	{
-		*result_candidates = candidates;
+    /* Initialize decider flags */
 
-		if ( !consistency && rl_enabled( thisAgent ) && candidates )
-		{
-			// perform update here for just one candidate
-			rl_tabulate_reward_values( thisAgent );
-			exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-			rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
-		}
+    for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+      p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
+    }
+    for (p = s->preferences[WORSE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+      p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
+    }
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+      cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+    }
 
-		return NONE_IMPASSE_TYPE;
-	}
+    /* Mark any preferences that are worse than another as conflicted.  This
+     * will either remove it from the candidate list or add it to the conflicted
+     * list later.  We first do this for both the referent half of better and
+     * then the value half of worse preferences. */
 
-	/* === Indifferents === */
-	for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-		cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-	for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-		p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
+    for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+      j = p->value;
+      k = p->referent;
+      if (j == k)
+        continue;
+      if (j->common.decider_flag && k->common.decider_flag) {
+        if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG
+            || k->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
+          k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+        }
+      }
+    }
 
+    for (p = s->preferences[WORSE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+      j = p->value;
+      k = p->referent;
+      if (j == k)
+        continue;
+      if (j->common.decider_flag && k->common.decider_flag) {
+        if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG
+            || k->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
+          j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+        }
+      }
+    }
 
-	for (p=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-		p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+    /* Check if a valid candidate still exists. */
 
-	for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-		if((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) || 
-			(p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
-			p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+      if (cand->value->common.decider_flag == CANDIDATE_DECIDER_FLAG)
+        break;
+    }
 
+    /* If no candidates exists, collect conflicted candidates and return as
+     * the result candidates with a conflict impasse type. */
 
+    if (!cand) {
+      prev_cand = NIL;
+      cand = candidates;
+      while (cand) {
+        if (cand->value->common.decider_flag != CONFLICTED_DECIDER_FLAG) {
+          if (prev_cand)
+            prev_cand->next_candidate = cand->next_candidate;
+          else
+            candidates = cand->next_candidate;
+        } else {
+          prev_cand = cand;
+        }
+        cand = cand->next_candidate;
+      }
+      *result_candidates = candidates;
+      if (do_CDPS && s->CDPS) {
+        clear_CDPS(thisAgent, s);
+      }
+      return CONFLICT_IMPASSE_TYPE;
+    }
 
-	not_all_indifferent = FALSE;
-	for (cand=candidates; cand!=NIL; cand=cand->next_candidate) 
-	{
-		if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
-			continue;
-		else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )
-			continue;
+    /* Otherwise, delete conflicted candidates from candidate list.
+     * Also add better preferences to CDPS for every item in the candidate
+     * list and delete acceptable preferences from the CDPS for those that
+     * don't make the candidate list.*/
 
-		/* --- check whether cand is binary indifferent to each other one --- */
-		for (p=candidates; p!=NIL; p=p->next_candidate) {
-			if (p==cand) continue;
-			match_found = FALSE;
-			for (p2=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p2!=NIL;
-				p2=p2->next)
-				if ( ((p2->value==cand->value)&&(p2->referent==p->value)) ||
-					((p2->value==p->value)&&(p2->referent==cand->value)) ) {
-						match_found = TRUE;
-						break;
-				}
-				if (!match_found) {
-					not_all_indifferent = TRUE;
-					break;
-				}
-		} /* end of for p loop */
-		if (not_all_indifferent) break;
-	} /* end of for cand loop */
+    prev_cand = NIL;
+    cand = candidates;
+    while (cand) {
+      if (cand->value->common.decider_flag == CONFLICTED_DECIDER_FLAG) {
+        /* Remove this preference from the candidate list */
+        if (prev_cand)
+          prev_cand->next_candidate = cand->next_candidate;
+        else
+          candidates = cand->next_candidate;
 
-	if ( !not_all_indifferent ) 
-	{
-		if ( !consistency )
-		{
-			(*result_candidates) = exploration_choose_according_to_policy( thisAgent, s, candidates ); 
-			(*result_candidates)->next_candidate = NIL;
-		}
-		else
-			*result_candidates = candidates;
+        /* Remove any acceptable preference for the same operator from the CDPS */
+        if (do_CDPS && s->CDPS) {
+            prev_cons = NIL;
+            for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
+              p = static_cast<preference *>(CDPS->first);
+              if ((p->value == cand->value) && (p->type == ACCEPTABLE_PREFERENCE_TYPE)) {
+                if (!prev_cons) {
+                  s->CDPS = CDPS->rest;
+                } else {
+                  prev_cons->rest = CDPS->rest;
+                }
+                free_cons(thisAgent, CDPS);
+                preference_remove_ref(thisAgent, p);
+              } else {
+                prev_cons = CDPS;
+              }
+            }
+          }
+      } else {
+        if (do_CDPS) {
+          /* Add better/worse preference to CDPS */
+          for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if (p->value == cand->value) {
+              add_to_CDPS(thisAgent, s, p);
+            }
+          }
+          for (p = s->preferences[WORSE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if (p->referent == cand->value) {
+              add_to_CDPS(thisAgent, s, p);
+            }
+          }
+        }
+        prev_cand = cand;
+      }
+      cand = cand->next_candidate;
+    }
+  }
 
-		return NONE_IMPASSE_TYPE;
-	}
+  /* Exit point 2: Check if we're done, i.e. 0 or 1 candidates left */
 
-	/* --- items not all indifferent; for context slots this gives a tie --- */
-	if (s->isa_context_slot) {
-		*result_candidates = candidates;
-		return TIE_IMPASSE_TYPE;
-	}
+  if ((!candidates) || (!candidates->next_candidate)) {
+    *result_candidates = candidates;
+    if (candidates) {
+      /* Update RL values for the winning candidate */
+      rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
+    } else {
+      if (do_CDPS && s->CDPS) {
+        clear_CDPS(thisAgent, s);
+      }
+    }
+    return NONE_IMPASSE_TYPE;
+  }
 
-	/* === Parallels === */
-	for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-		cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-	for (p=s->preferences[UNARY_PARALLEL_PREFERENCE_TYPE]; p; p=p->next)
-		p->value->common.decider_flag = UNARY_PARALLEL_DECIDER_FLAG;
-	not_all_parallel = FALSE;
-	for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-		/* --- if cand is unary parallel, it's fine --- */
-		if (cand->value->common.decider_flag==UNARY_PARALLEL_DECIDER_FLAG)
-			continue;
-		/* --- check whether cand is binary parallel to each other candidate --- */
-		for (p=candidates; p!=NIL; p=p->next_candidate) {
-			if (p==cand) continue;
-			match_found = FALSE;
-			for (p2=s->preferences[BINARY_PARALLEL_PREFERENCE_TYPE]; p2!=NIL;
-				p2=p2->next)
-				if ( ((p2->value==cand->value)&&(p2->referent==p->value)) ||
-					((p2->value==p->value)&&(p2->referent==cand->value)) ) {
-						match_found = TRUE;
-						break;
-				}
-				if (!match_found) {
-					not_all_parallel = TRUE;
-					break;
-				}
-		} /* end of for p loop */
-		if (not_all_parallel) break;
-	} /* end of for cand loop */
+  /* === Bests === */
 
-	*result_candidates = candidates;
+  if (s->preferences[BEST_PREFERENCE_TYPE]) {
 
-	if (! not_all_parallel) {
-		/* --- items are all parallel, so return them all --- */
-		return NONE_IMPASSE_TYPE;
-	}
+    /* Initialize decider flags for all candidates */
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+      cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
 
-	/* --- otherwise we have a tie --- */
-	return TIE_IMPASSE_TYPE;
-}
+    /* Mark flag for those with a best preference */
+    for (p = s->preferences[BEST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+      p->value->common.decider_flag = BEST_DECIDER_FLAG;
+    }
 
+    /* Reduce candidates list to only those with best preference flag and add pref to CDPS */
+    prev_cand = NIL;
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+      if (cand->value->common.decider_flag == BEST_DECIDER_FLAG) {
+        if (do_CDPS) {
+          for (p = s->preferences[BEST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if (p->value == cand->value) {
+              add_to_CDPS(thisAgent, s, p);
+            }
+          }
+        }
+        if (prev_cand)
+          prev_cand->next_candidate = cand;
+        else
+          candidates = cand;
+        prev_cand = cand;
+      }
+    if (prev_cand)
+      prev_cand->next_candidate = NIL;
+  }
 
-byte run_preference_semantics_for_consistency_check (agent* thisAgent, slot *s, preference **result_candidates) 
-{
-	return run_preference_semantics( thisAgent, s, result_candidates, true );
+  /* Exit point 3: Check if we're done, i.e. 0 or 1 candidates left */
+
+  if ((!candidates) || (!candidates->next_candidate)) {
+    *result_candidates = candidates;
+    if (candidates) {
+      /* Update RL values for the winning candidate */
+      rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
+    } else {
+      if (do_CDPS && s->CDPS) {
+        clear_CDPS(thisAgent, s);
+      }
+    }
+    return NONE_IMPASSE_TYPE;
+  }
+
+  /* === Worsts === */
+
+  if (s->preferences[WORST_PREFERENCE_TYPE]) {
+
+    /* Initialize decider flags for all candidates */
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+      cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+
+    /* Mark flag for those with a worst preference */
+    for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next)
+      p->value->common.decider_flag = WORST_DECIDER_FLAG;
+
+    /* Reduce candidates list to only those that do not have a worst preference flag.  Note
+     * that this only occurs if there is at least one candidate that doesn't have a worse
+     * preference, otherwise the candidate list is not modified. */
+
+    prev_cand = NIL;
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate)  {
+      if (cand->value->common.decider_flag != WORST_DECIDER_FLAG) {
+        if (prev_cand)
+          prev_cand->next_candidate = cand;
+        else
+          candidates = cand;
+        prev_cand = cand;
+      } else {
+        if (do_CDPS) {
+          /* Add this worst preference to CDPS */
+          for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if (p->value == cand->value) {
+              add_to_CDPS(thisAgent, s, p);
+            }
+          }
+        }
+      }
+    }
+    if (prev_cand)
+      prev_cand->next_candidate = NIL;
+  }
+
+  /* Exit point 4: Check if we're done, i.e. 0 or 1 candidates left */
+
+  if ((!candidates) || (!candidates->next_candidate)) {
+    *result_candidates = candidates;
+    if (candidates) {
+      /* Update RL values for the winning candidate */
+      rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
+    } else {
+      if (do_CDPS && s->CDPS) {
+        clear_CDPS(thisAgent, s);
+      }
+    }
+    return NONE_IMPASSE_TYPE;
+  }
+
+  /* === Indifferents === */
+
+  /* Initialize decider flags for all candidates */
+
+  for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+    cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+
+  /* Mark flag for unary or numeric indifferent preferences */
+
+  for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
+    p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
+
+  for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
+    p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+
+  /* Go through candidate list and check for a tie impasse.  All candidates
+   * must either be unary indifferent or binary indifferent to every item on
+   * the candidate list.  This will also catch when a candidate has no
+   * indifferent preferences at all. */
+
+  not_all_indifferent = false;
+  some_numeric = false;
+
+  for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+
+    /* If this candidate has a unary indifferent preference, skip. Numeric indifferent
+     * prefs are considered to have an implicit unary indifferent pref,
+     * which is why they are skipped too. */
+
+    if (cand->value->common.decider_flag == UNARY_INDIFFERENT_DECIDER_FLAG)
+      continue;
+    else if (cand->value->common.decider_flag == UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) {
+      some_numeric = true;
+      continue;
+    }
+
+    /* Candidate has either only binary indifferences or no indifference prefs
+     * at all, so make sure there is a binary preference between its operator
+     * and every other preference's operator in the candidate list */
+
+    for (p = candidates; p != NIL; p = p->next_candidate) {
+      if (p == cand)
+        continue;
+      match_found = false;
+      for (p2 = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p2 != NIL;
+          p2 = p2->next)
+        if (((p2->value == cand->value) && (p2->referent == p->value))
+            || ((p2->value == p->value) && (p2->referent == cand->value))) {
+          match_found = true;
+          break;
+        }
+      if (!match_found) {
+        not_all_indifferent = true;
+        break;
+      }
+    }
+    if (not_all_indifferent)
+      break;
+  }
+
+  if (!not_all_indifferent) {
+    if (!consistency) {
+      (*result_candidates) = exploration_choose_according_to_policy(thisAgent, s, candidates);
+      (*result_candidates)->next_candidate = NIL;
+
+      if (do_CDPS) {
+
+        /* Add all indifferent preferences associated with the chosen candidate to the CDPS.*/
+
+        if (some_numeric) {
+
+          /* Note that numeric indifferent preferences are never considered duplicates, so we
+          * pass an extra argument to add_to_cdps so that it does not check for duplicates.*/
+
+          for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if (p->value == (*result_candidates)->value) {
+              add_to_CDPS(thisAgent, s, p, false);
+            }
+          }
+
+          /* Now add any binary preferences with a candidate that does NOT have a numeric preference. */
+
+          for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
+                if ((p->referent->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
+                       (p->value->common.decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG)) {
+                add_to_CDPS(thisAgent, s, p);
+              }
+            }
+          }
+        } else {
+
+          /* This decision was non-numeric, so add all non-numeric preferences associated with the
+           * chosen candidate to the CDPS.*/
+
+          for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if (p->value == (*result_candidates)->value) {
+              add_to_CDPS(thisAgent, s, p);
+            }
+          }
+          for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value)) {
+              add_to_CDPS(thisAgent, s, p);
+            }
+          }
+        }
+      }
+    } else {
+      *result_candidates = candidates;
+    }
+    return NONE_IMPASSE_TYPE;
+  }
+
+  /* Candidates are not all indifferent, so we have a tie. */
+
+  *result_candidates = candidates;
+  if (do_CDPS && s->CDPS) {
+    clear_CDPS(thisAgent, s);
+  }
+  return TIE_IMPASSE_TYPE;
 }
 
 /* **************************************************************************
@@ -1638,7 +1743,8 @@ preference *make_fake_preference_for_goal_item (agent* thisAgent,
   #endif
   cond->bt.level = ap_wme->id->id.level;
   cond->bt.trace = NIL;
-  cond->bt.prohibits = NIL;
+  cond->bt.CDPS = NIL;
+
   /* --- return the fake preference --- */
   return pref;
 }
@@ -1919,7 +2025,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 							* the chunk will be first on the GDS list.  This order
 							* appears to be always true, although I am not 100% certain
 							* (I think it occurs this way because the chunk is
-							* necessarily added to the instantiaton list after the
+							* necessarily added to the instantiation list after the
 							* original instantiation and lists get built such older items
 							* appear further from the head of the list) . If not true,
 							* then we need to keep track of any GDS's that get created
@@ -2080,26 +2186,14 @@ void decide_non_context_slots (agent* thisAgent) {
                       Context Slot Is Decidable
   
    This returns TRUE iff the given slot (which must be a context slot)
-   is decidable.  A context slot is decidable if:
-     - it has an installed value in WM and there is a reconsider
-       preference for that value, or
-     - it has no installed value but does have changed preferences
+   is decidable.  A context slot is decidable if it has no installed
+   value but does have changed preferences
 ------------------------------------------------------------------ */
 
 Bool context_slot_is_decidable (slot *s) 
 {
-   Symbol *v;
-   preference *p;
-   
    if (!s->wmes) 
       return (s->changed != NIL);
-   
-   v = s->wmes->value;
-   for (p = s->preferences[RECONSIDER_PREFERENCE_TYPE]; p != NIL; p = p->next)
-   {
-      if (v == p->value) 
-         return TRUE;
-   }
    
    return FALSE;
 }
@@ -2762,8 +2856,6 @@ void do_decision_phase (agent* thisAgent, bool predict)
 {	
 	predict_srand_restore_snapshot( thisAgent, !predict );
 	
-	/* phase printing moved to init_soar: do_one_top_level_phase */
-
    decide_context_slots (thisAgent, predict);
 
    if ( !predict )

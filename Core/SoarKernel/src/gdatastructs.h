@@ -52,7 +52,7 @@ typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 /* ------------------------------------------------------------------------
 			     Goal Dependency Set
 
-   The Goal Dependency Set is a data strcuture used in Operand2 to maintain
+   The Goal Dependency Set is a data structure used in Operand2 to maintain
    the integrity of a subgoal with respect to changes in supergoal WMEs.
    Whenever a WME in the goal's dependency set changes, the goal is immediately
    removed.  The routines for maintaining the GDS and determining if a goal
@@ -65,7 +65,7 @@ typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 
       wmes_in_gds:  A DLL of WMEs in the goal dependency set
 
-   The GDS is created only when necessary; that is, when an o-suppported WME
+   The GDS is created only when necessary; that is, when an o-supported WME
    is created in some subgoal and that subgoal has no GDS already.  The
    instantiations that led to the creation of the o-supported WME are 
    examined; any supergoal WMEs in these instantiations are added to the 
@@ -155,7 +155,18 @@ typedef struct gds_struct {
 ------------------------------------------------------------------------ */
 
 /* WARNING: preference types must be numbered 0..(NUM_PREFERENCE_TYPES-1),
-   because the slot structure contains an array using these indices. */
+   because the slot structure contains an array using these indices. Also
+   make sure to update the strings in prefmem.h.  Finally, make sure the
+   helper function defined below (for e.g. preference_is_unary) use the
+   correct indices.
+
+   NOTE: Reconsider, binary and unary parallel preferences are all
+   deprecated.  Their types are not removed here because it would break
+   backward compatibility of rete fast loading/saving.  It's possible that
+   can be fixed in rete.cpp, but for now, we're just keeping the preference
+   types.  There is no code that actually uses them any more, though.*/
+
+
 
 #define ACCEPTABLE_PREFERENCE_TYPE 0
 #define REQUIRE_PREFERENCE_TYPE 1
@@ -189,7 +200,6 @@ inline Bool preference_is_binary(byte p)
 {
   return (p > 8);
 }
-
 #endif /* USE_MACROS */
 
 #ifdef __cplusplus
@@ -280,6 +290,12 @@ extern Bool remove_preference_from_clones (agent* thisAgent, preference *pref);
         match goal, with the pref. supported by the highest goal at the
         head of the list.
 
+      CDPS: a dll of preferences in the context-dependent preference set,
+        which is the set of all preferences that contributed to an operator's
+        selection.  This is used to allow Soar to backtrace through evaluation
+        rules in substates.  The rules that determine which preferences are
+        in the CPSD are outlined in run_preference_semantics().
+
       impasse_id:  points to the identifier of the attribute impasse object
         for this slot.  (NIL if the slot isn't impassed.)
 
@@ -310,6 +326,7 @@ typedef struct slot_struct {
   wme *acceptable_preference_wmes;  /* dll of acceptable pref. wmes */
   preference *all_preferences;      /* dll of all pref's in the slot */
   preference *preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
+  ::list *CDPS;						          /* list of prefs in the CDPS to backtrace through */
   Symbol *impasse_id;               /* NIL if slot is not impassed */
   Bool isa_context_slot;
   byte impasse_type;
@@ -525,12 +542,14 @@ typedef struct bt_info_struct {
   preference *trace;        /* preference for BT, or NIL */
 
   /* mvp 5-17-94 */
-  ::list *prohibits;          /* list of prohibit prefs to backtrace through */
+  ::list *CDPS;            /* list of substate evaluation prefs to backtrace through,
+                              i.e. the context dependent preference set. */
+
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
 typedef struct reorder_info_struct {
-  ::list *vars_requiring_bindings;           /* used only during reordering */
+  ::list *vars_requiring_bindings;         /* used only during reordering */
   struct condition_struct *next_min_cost;  /* used only during reordering */
 } reorder_info;
 
@@ -550,14 +569,14 @@ typedef struct ncc_info_struct {
 /* --- finally, the structure of a condition --- */
 typedef struct condition_struct {
   byte type;
-  Bool already_in_tc;                 /* used only by cond_is_in_tc stuff */
+  Bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
   Bool test_for_acceptable_preference;   /* for pos, neg cond's only */
   struct condition_struct *next, *prev;
   union condition_main_data_union {
     three_field_tests tests;             /* for pos, neg cond's only */
     ncc_info ncc;                        /* for ncc's only */
   } data;
-  bt_info bt;  /* for top-level positive cond's: used for BT and by the rete */
+  bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
   reorder_info reorder;  /* used only during reordering */
 } condition;
 

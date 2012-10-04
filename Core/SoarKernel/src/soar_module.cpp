@@ -162,7 +162,7 @@ namespace soar_module
 					}
 				}				
 
-				cond->bt.prohibits = NULL;
+        cond->bt.CDPS = NULL;
 
 				prev_cond = cond;
 			}
