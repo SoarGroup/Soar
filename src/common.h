@@ -32,7 +32,7 @@ void sample(int k, const C &input, C &output) {
 	std::sort(inds.begin(), inds.end());
 	
 	typename C::const_iterator i = input.begin();
-	std::insert_iterator<C> j(output, output.begin());
+	std::insert_iterator<C> j(output, output.end());
 	for (int n = 0; n < inds.size(); ++n) {
 		if (n == 0) {
 			std::advance(i, inds[0]);
@@ -132,7 +132,7 @@ int intersect_sets(const std::set<T> &s1, const std::set<T> &s2, std::set<T> &ou
 template<typename T>
 void subtract_sets(const std::set<T> &s1, const std::set<T> &s2, std::set<T> &out) {
 	out.clear();
-	std::set_difference(s1.begin(), s1.end(), s2.begin(), s2.end(), std::inserter(out, out.begin()));
+	std::set_difference(s1.begin(), s1.end(), s2.begin(), s2.end(), std::inserter(out, out.end()));
 }
 
 template<typename T>

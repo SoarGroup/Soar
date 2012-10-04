@@ -54,7 +54,7 @@ void sample(int k, int low, int high, std::vector<int> &output) {
 		if (i < k) {
 			output[i] = low + i;
 		} else {
-			int r = rand() % (range + 1);
+			int r = rand() % (i + 1);
 			if (r < k) {
 				output[r] = low + i;
 			}
