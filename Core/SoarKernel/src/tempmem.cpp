@@ -164,22 +164,20 @@ void mark_slot_for_possible_removal (agent* thisAgent, slot *s) {
 /* MMA 8-2012: Clear out and deallocate the CDPS. */
 void clear_CDPS (agent* thisAgent, slot *s) {
 
-	list *cond_current, *cond_old;
-	preference *pref;
+  list *cond_current, *cond_old;
+  preference *pref;
 
-	if (s->CDPS) {
+  /* The CDPS should never exist on a top-level slot, so we do
+   * not need to worry about checking for DO_TOP_LEVEL_REF_CTS. */
 
-	  /* The CDPS should never exist on a top-level slot, so we should
-	   * not need to worry about checking for DO_TOP_LEVEL_REF_CTS. */
+  cond_old = cond_current = s->CDPS;
+  s->CDPS = NIL;
+  for (; cond_current != NIL; cond_current = cond_current->rest) {
+    pref = static_cast<preference *>(cond_current->first);
+    preference_remove_ref(thisAgent, pref);
+  }
+  free_list(thisAgent, cond_old);
 
-	  cond_old = cond_current = s->CDPS;
-	  s->CDPS = NIL;
-	  for (; cond_current != NIL; cond_current = cond_current->rest) {
-	    pref = static_cast<preference *>(cond_current->first);
-	      preference_remove_ref(thisAgent, pref);
-	  }
-	  free_list(thisAgent, cond_old);
-	}
 }
 /* MMA 8-2012 end */
 
@@ -205,7 +203,7 @@ void remove_garbage_slots (agent* thisAgent) {
 #endif
 
     /* MMA 9-2012 */
-    if (thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] && thisAgent->sysparams[LEARNING_ON_SYSPARAM])
+    if (s->CDPS && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM])
       clear_CDPS(thisAgent, s);
     /* MMA 9-2012 end */
 

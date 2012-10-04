@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?>
+
+<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="0.411817272">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.411817272" moduleId="org.eclipse.cdt.core.settings" name="Default">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.MachO64" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="SoarSuite - Improved Chunking" buildProperties="" description="" id="0.411817272" name="Default" parent="org.eclipse.cdt.build.core.prefbase.cfg">
+					<folderInfo id="0.411817272." name="/" resourcePath="">
+						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.940176124" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.MachO64" id="org.eclipse.cdt.build.core.prefbase.toolchain.940176124.1353024250" name=""/>
+							<builder id="org.eclipse.cdt.build.core.settings.default.builder.369002260" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.1252558157" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.241521685" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1319638948" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.1706432897" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.653669989" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/ClientSML/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/KernelSML/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/pcre"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/CLI/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/shared"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/ConnectionSML/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/SoarKernel/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/ElementXML/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
+									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.2.1"/>
+									<listOptionValue builtIn="false" value="/usr/bin/../lib/clang/4.0/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.2.1/backward"/>
+									<listOptionValue builtIn="false" value="/Library/Frameworks"/>
+									<listOptionValue builtIn="false" value="/System/Library/Frameworks"/>
+								</option>
+								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.833045161" name="Symbols" superClass="org.eclipse.cdt.build.core.settings.holder.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__tune_core2__=1"/>
+									<listOptionValue builtIn="false" value="__x86_64__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_MIN_10_EXP__=(-37)"/>
+									<listOptionValue builtIn="false" value="__FLT_RADIX__=2"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_INT__=4"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_PTRDIFF_T__=8"/>
+									<listOptionValue builtIn="false" value="__WCHAR_WIDTH__=32"/>
+									<listOptionValue builtIn="false" value="__FLT_MIN__=1.17549435e-38F"/>
+									<listOptionValue builtIn="false" value="__POINTER_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="_LP64=1"/>
+									<listOptionValue builtIn="false" value="__DBL_HAS_DENORM__=1"/>
+									<listOptionValue builtIn="false" value="__CHAR32_TYPE__ unsigned=int"/>
+									<listOptionValue builtIn="false" value="__DBL_MAX_EXP__=1024"/>
+									<listOptionValue builtIn="false" value="__LDBL_MAX__=1.18973149535723176502e+4932L"/>
+									<listOptionValue builtIn="false" value="__LDBL_DENORM_MIN__=3.64519953188247460253e-4951L"/>
+									<listOptionValue builtIn="false" value="__DBL_MIN_10_EXP__=(-307)"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_POINTER__=8"/>
+									<listOptionValue builtIn="false" value="__DBL_DIG__=15"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_WINT_T__=4"/>
+									<listOptionValue builtIn="false" value="__FLT_MAX_EXP__=128"/>
+									<listOptionValue builtIn="false" value="__REGISTER_PREFIX__="/>
+									<listOptionValue builtIn="false" value="__SSE2__=1"/>
+									<listOptionValue builtIn="false" value="__USER_LABEL_PREFIX__=_"/>
+									<listOptionValue builtIn="false" value="__apple_build_version__=4210057"/>
+									<listOptionValue builtIn="false" value="__INT8_TYPE__=char"/>
+									<listOptionValue builtIn="false" value="__MMX__=1"/>
+									<listOptionValue builtIn="false" value="__DBL_MANT_DIG__=53"/>
+									<listOptionValue builtIn="false" value="__SSE3__=1"/>
+									<listOptionValue builtIn="false" value="__LDBL_MANT_DIG__=64"/>
+									<listOptionValue builtIn="false" value="__APPLE__=1"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_SIZE_T__=8"/>
+									<listOptionValue builtIn="false" value="__GNUG__=4"/>
+									<listOptionValue builtIn="false" value="__pic__=1"/>
+									<listOptionValue builtIn="false" value="__INT64_TYPE__ long long=int"/>
+									<listOptionValue builtIn="false" value="__FLT_MANT_DIG__=24"/>
+									<listOptionValue builtIn="false" value="__INTMAX_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="__DBL_DENORM_MIN__=4.9406564584124654e-324"/>
+									<listOptionValue builtIn="false" value="__NO_MATH_INLINES=1"/>
+									<listOptionValue builtIn="false" value="__SIG_ATOMIC_WIDTH__=32"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_CONSUME=1"/>
+									<listOptionValue builtIn="false" value="__SHRT_MAX__=32767"/>
+									<listOptionValue builtIn="false" value="__amd64__=1"/>
+									<listOptionValue builtIn="false" value="__BLOCKS__=1"/>
+									<listOptionValue builtIn="false" value="__WCHAR_MAX__=2147483647"/>
+									<listOptionValue builtIn="false" value="__LDBL_HAS_INFINITY__=1"/>
+									<listOptionValue builtIn="false" value="__DECIMAL_DIG__=21"/>
+									<listOptionValue builtIn="false" value="__APPLE_CC__=5621"/>
+									<listOptionValue builtIn="false" value="__SIZE_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="__cplusplus=1"/>
+									<listOptionValue builtIn="false" value="__LDBL_DIG__=18"/>
+									<listOptionValue builtIn="false" value="OBJC_NEW_PROPERTIES=1"/>
+									<listOptionValue builtIn="false" value="__CHAR_BIT__=8"/>
+									<listOptionValue builtIn="false" value="__INT_MAX__=2147483647"/>
+									<listOptionValue builtIn="false" value="__EXCEPTIONS=1"/>
+									<listOptionValue builtIn="false" value="__INTMAX_MAX__=9223372036854775807L"/>
+									<listOptionValue builtIn="false" value="__DYNAMIC__=1"/>
+									<listOptionValue builtIn="false" value="__GNUC_MINOR__=2"/>
+									<listOptionValue builtIn="false" value="__PIC__=1"/>
+									<listOptionValue builtIn="false" value="__LDBL_MIN_10_EXP__=(-4931)"/>
+									<listOptionValue builtIn="false" value="__PTRDIFF_TYPE__ long=int"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_RELEASE=3"/>
+									<listOptionValue builtIn="false" value="__CHAR16_TYPE__ unsigned=short"/>
+									<listOptionValue builtIn="false" value="__INT16_TYPE__=short"/>
+									<listOptionValue builtIn="false" value="__clang_version__ &quot;4.0=((tags/Apple/clang-421.0.57))&quot;"/>
+									<listOptionValue builtIn="false" value="__amd64=1"/>
+									<listOptionValue builtIn="false" value="__DBL_HAS_QUIET_NAN__=1"/>
+									<listOptionValue builtIn="false" value="__weak=__attribute__((objc_gc(weak)))"/>
+									<listOptionValue builtIn="false" value="__clang_major__=4"/>
+									<listOptionValue builtIn="false" value="__WINT_TYPE__=int"/>
+									<listOptionValue builtIn="false" value="__FLT_DIG__=6"/>
+									<listOptionValue builtIn="false" value="__DBL_MIN_EXP__=(-1021)"/>
+									<listOptionValue builtIn="false" value="__FLT_MIN_EXP__=(-125)"/>
+									<listOptionValue builtIn="false" value="__SSE__=1"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_SEQ_CST=5"/>
+									<listOptionValue builtIn="false" value="__INTPTR_TYPE__ long=int"/>
+									<listOptionValue builtIn="false" value="__INT32_TYPE__=int"/>
+									<listOptionValue builtIn="false" value="__LDBL_HAS_DENORM__=1"/>
+									<listOptionValue builtIn="false" value="__WCHAR_TYPE__=int"/>
+									<listOptionValue builtIn="false" value="__LDBL_HAS_QUIET_NAN__=1"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_WCHAR_T__=4"/>
+									<listOptionValue builtIn="false" value="__DBL_MAX_10_EXP__=308"/>
+									<listOptionValue builtIn="false" value="__NO_INLINE__=1"/>
+									<listOptionValue builtIn="false" value="__PRAGMA_REDEFINE_EXTNAME=1"/>
+									<listOptionValue builtIn="false" value="__SSP__=1"/>
+									<listOptionValue builtIn="false" value="__DBL_HAS_INFINITY__=1"/>
+									<listOptionValue builtIn="false" value="__PTRDIFF_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_RELAXED=0"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_DOUBLE__=8"/>
+									<listOptionValue builtIn="false" value="__WINT_WIDTH__=32"/>
+									<listOptionValue builtIn="false" value="__LONG_MAX__=9223372036854775807L"/>
+									<listOptionValue builtIn="false" value="__SCHAR_MAX__=127"/>
+									<listOptionValue builtIn="false" value="__FLT_EVAL_METHOD__=0"/>
+									<listOptionValue builtIn="false" value="__strong="/>
+									<listOptionValue builtIn="false" value="__LDBL_MIN__=3.36210314311209350626e-4932L"/>
+									<listOptionValue builtIn="false" value="__GXX_WEAK__=1"/>
+									<listOptionValue builtIn="false" value="__clang_minor__=0"/>
+									<listOptionValue builtIn="false" value="__x86_64=1"/>
+									<listOptionValue builtIn="false" value="__llvm__=1"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_SHORT__=2"/>
+									<listOptionValue builtIn="false" value="__STDC__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_HAS_DENORM__=1"/>
+									<listOptionValue builtIn="false" value="__UINTMAX_TYPE__ long unsigned=int"/>
+									<listOptionValue builtIn="false" value="__SSE2_MATH__=1"/>
+									<listOptionValue builtIn="false" value="__LDBL_EPSILON__=1.08420217248550443401e-19L"/>
+									<listOptionValue builtIn="false" value="__DBL_MIN__=2.2250738585072014e-308"/>
+									<listOptionValue builtIn="false" value="__DEPRECATED=1"/>
+									<listOptionValue builtIn="false" value="__STDC_HOSTED__=1"/>
+									<listOptionValue builtIn="false" value="__VERSION__ &quot;4.2.1 Compatible Apple Clang 4.0=((tags/Apple/clang-421.0.57))&quot;"/>
+									<listOptionValue builtIn="false" value="__FLT_MAX__=3.40282347e+38F"/>
+									<listOptionValue builtIn="false" value="__INTMAX_TYPE__ long=int"/>
+									<listOptionValue builtIn="false" value="__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__=1080"/>
+									<listOptionValue builtIn="false" value="__GNUC_PATCHLEVEL__=1"/>
+									<listOptionValue builtIn="false" value="__LDBL_MAX_10_EXP__=4932"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_LONG__=8"/>
+									<listOptionValue builtIn="false" value="__FLT_MAX_10_EXP__=38"/>
+									<listOptionValue builtIn="false" value="__core2=1"/>
+									<listOptionValue builtIn="false" value="__SSE_MATH__=1"/>
+									<listOptionValue builtIn="false" value="__FINITE_MATH_ONLY__=0"/>
+									<listOptionValue builtIn="false" value="__unsafe_unretained="/>
+									<listOptionValue builtIn="false" value="__LDBL_MAX_EXP__=16384"/>
+									<listOptionValue builtIn="false" value="__FLT_HAS_QUIET_NAN__=1"/>
+									<listOptionValue builtIn="false" value="__INTPTR_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_ACQ_REL=4"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_LONG_DOUBLE__=16"/>
+									<listOptionValue builtIn="false" value="__LP64__=1"/>
+									<listOptionValue builtIn="false" value="__core2__=1"/>
+									<listOptionValue builtIn="false" value="__private_extern__=extern"/>
+									<listOptionValue builtIn="false" value="__SSSE3__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_HAS_INFINITY__=1"/>
+									<listOptionValue builtIn="false" value="__DBL_EPSILON__=2.2204460492503131e-16"/>
+									<listOptionValue builtIn="false" value="__LONG_LONG_MAX__=9223372036854775807LL"/>
+									<listOptionValue builtIn="false" value="__clang__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_DENORM_MIN__=1.40129846e-45F"/>
+									<listOptionValue builtIn="false" value="__CONSTANT_CFSTRINGS__=1"/>
+									<listOptionValue builtIn="false" value="__block=__attribute__((__blocks__(byref)))"/>
+									<listOptionValue builtIn="false" value="__DBL_MAX__=1.7976931348623157e+308"/>
+									<listOptionValue builtIn="false" value="__clang_patchlevel__=0"/>
+									<listOptionValue builtIn="false" value="__SIZE_TYPE__ long unsigned=int"/>
+									<listOptionValue builtIn="false" value="__LITTLE_ENDIAN__=1"/>
+									<listOptionValue builtIn="false" value="__GXX_RTTI=1"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_LONG_LONG__=8"/>
+									<listOptionValue builtIn="false" value="__LDBL_MIN_EXP__=(-16381)"/>
+									<listOptionValue builtIn="false" value="__MACH__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_EPSILON__=1.19209290e-7F"/>
+									<listOptionValue builtIn="false" value="__INT64_C_SUFFIX__=LL"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_FLOAT__=4"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_ACQUIRE=2"/>
+									<listOptionValue builtIn="false" value="__GNUC_GNU_INLINE__=1"/>
+									<listOptionValue builtIn="false" value="__GXX_ABI_VERSION=1002"/>
+									<listOptionValue builtIn="false" value="__GNUC__=4"/>
+								</option>
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.517147149" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.791705673" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1098819410" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/ClientSML/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/KernelSML/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/pcre"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/CLI/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/shared"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/ConnectionSML/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/SoarKernel/src"/>
+									<listOptionValue builtIn="false" value="/Users/mazzin/Soar/NewChunkingSoar/Core/ElementXML/src"/>
+									<listOptionValue builtIn="false" value="/usr/bin/../lib/clang/4.0/include"/>
+									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
+									<listOptionValue builtIn="false" value="/Library/Frameworks"/>
+									<listOptionValue builtIn="false" value="/System/Library/Frameworks"/>
+								</option>
+								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.866975374" name="Symbols" superClass="org.eclipse.cdt.build.core.settings.holder.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__tune_core2__=1"/>
+									<listOptionValue builtIn="false" value="__x86_64__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_MIN_10_EXP__=(-37)"/>
+									<listOptionValue builtIn="false" value="__FLT_RADIX__=2"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_INT__=4"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_PTRDIFF_T__=8"/>
+									<listOptionValue builtIn="false" value="__WCHAR_WIDTH__=32"/>
+									<listOptionValue builtIn="false" value="__FLT_MIN__=1.17549435e-38F"/>
+									<listOptionValue builtIn="false" value="__POINTER_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="_LP64=1"/>
+									<listOptionValue builtIn="false" value="__DBL_HAS_DENORM__=1"/>
+									<listOptionValue builtIn="false" value="__CHAR32_TYPE__ unsigned=int"/>
+									<listOptionValue builtIn="false" value="__DBL_MAX_EXP__=1024"/>
+									<listOptionValue builtIn="false" value="__LDBL_MAX__=1.18973149535723176502e+4932L"/>
+									<listOptionValue builtIn="false" value="__LDBL_DENORM_MIN__=3.64519953188247460253e-4951L"/>
+									<listOptionValue builtIn="false" value="__DBL_MIN_10_EXP__=(-307)"/>
+									<listOptionValue builtIn="false" value="__GNUC_STDC_INLINE__=1"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_POINTER__=8"/>
+									<listOptionValue builtIn="false" value="__DBL_DIG__=15"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_WINT_T__=4"/>
+									<listOptionValue builtIn="false" value="__FLT_MAX_EXP__=128"/>
+									<listOptionValue builtIn="false" value="__REGISTER_PREFIX__="/>
+									<listOptionValue builtIn="false" value="__SSE2__=1"/>
+									<listOptionValue builtIn="false" value="__USER_LABEL_PREFIX__=_"/>
+									<listOptionValue builtIn="false" value="__apple_build_version__=4210057"/>
+									<listOptionValue builtIn="false" value="__INT8_TYPE__=char"/>
+									<listOptionValue builtIn="false" value="__MMX__=1"/>
+									<listOptionValue builtIn="false" value="__DBL_MANT_DIG__=53"/>
+									<listOptionValue builtIn="false" value="__LDBL_MANT_DIG__=64"/>
+									<listOptionValue builtIn="false" value="__APPLE__=1"/>
+									<listOptionValue builtIn="false" value="__STDC_VERSION__=199901L"/>
+									<listOptionValue builtIn="false" value="__SSE3__=1"/>
+									<listOptionValue builtIn="false" value="__pic__=1"/>
+									<listOptionValue builtIn="false" value="__INT64_TYPE__ long long=int"/>
+									<listOptionValue builtIn="false" value="__FLT_MANT_DIG__=24"/>
+									<listOptionValue builtIn="false" value="__INTMAX_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="__DBL_DENORM_MIN__=4.9406564584124654e-324"/>
+									<listOptionValue builtIn="false" value="__NO_MATH_INLINES=1"/>
+									<listOptionValue builtIn="false" value="__SIG_ATOMIC_WIDTH__=32"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_CONSUME=1"/>
+									<listOptionValue builtIn="false" value="__SHRT_MAX__=32767"/>
+									<listOptionValue builtIn="false" value="__amd64__=1"/>
+									<listOptionValue builtIn="false" value="__BLOCKS__=1"/>
+									<listOptionValue builtIn="false" value="__WCHAR_MAX__=2147483647"/>
+									<listOptionValue builtIn="false" value="__LDBL_HAS_INFINITY__=1"/>
+									<listOptionValue builtIn="false" value="__DECIMAL_DIG__=21"/>
+									<listOptionValue builtIn="false" value="__APPLE_CC__=5621"/>
+									<listOptionValue builtIn="false" value="__SIZE_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="__LDBL_DIG__=18"/>
+									<listOptionValue builtIn="false" value="OBJC_NEW_PROPERTIES=1"/>
+									<listOptionValue builtIn="false" value="__CHAR_BIT__=8"/>
+									<listOptionValue builtIn="false" value="__INT_MAX__=2147483647"/>
+									<listOptionValue builtIn="false" value="__INTMAX_MAX__=9223372036854775807L"/>
+									<listOptionValue builtIn="false" value="__DYNAMIC__=1"/>
+									<listOptionValue builtIn="false" value="__GNUC_MINOR__=2"/>
+									<listOptionValue builtIn="false" value="__PIC__=1"/>
+									<listOptionValue builtIn="false" value="__LDBL_MIN_10_EXP__=(-4931)"/>
+									<listOptionValue builtIn="false" value="__PTRDIFF_TYPE__ long=int"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_RELEASE=3"/>
+									<listOptionValue builtIn="false" value="__CHAR16_TYPE__ unsigned=short"/>
+									<listOptionValue builtIn="false" value="__INT16_TYPE__=short"/>
+									<listOptionValue builtIn="false" value="__clang_version__ &quot;4.0=((tags/Apple/clang-421.0.57))&quot;"/>
+									<listOptionValue builtIn="false" value="__amd64=1"/>
+									<listOptionValue builtIn="false" value="__DBL_HAS_QUIET_NAN__=1"/>
+									<listOptionValue builtIn="false" value="__weak=__attribute__((objc_gc(weak)))"/>
+									<listOptionValue builtIn="false" value="__clang_major__=4"/>
+									<listOptionValue builtIn="false" value="__WINT_TYPE__=int"/>
+									<listOptionValue builtIn="false" value="__FLT_DIG__=6"/>
+									<listOptionValue builtIn="false" value="__DBL_MIN_EXP__=(-1021)"/>
+									<listOptionValue builtIn="false" value="__FLT_MIN_EXP__=(-125)"/>
+									<listOptionValue builtIn="false" value="__SSE__=1"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_SEQ_CST=5"/>
+									<listOptionValue builtIn="false" value="__INTPTR_TYPE__ long=int"/>
+									<listOptionValue builtIn="false" value="__INT32_TYPE__=int"/>
+									<listOptionValue builtIn="false" value="__LDBL_HAS_DENORM__=1"/>
+									<listOptionValue builtIn="false" value="__WCHAR_TYPE__=int"/>
+									<listOptionValue builtIn="false" value="__LDBL_HAS_QUIET_NAN__=1"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_WCHAR_T__=4"/>
+									<listOptionValue builtIn="false" value="__DBL_MAX_10_EXP__=308"/>
+									<listOptionValue builtIn="false" value="__NO_INLINE__=1"/>
+									<listOptionValue builtIn="false" value="__PRAGMA_REDEFINE_EXTNAME=1"/>
+									<listOptionValue builtIn="false" value="__SSP__=1"/>
+									<listOptionValue builtIn="false" value="__DBL_HAS_INFINITY__=1"/>
+									<listOptionValue builtIn="false" value="__PTRDIFF_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_RELAXED=0"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_DOUBLE__=8"/>
+									<listOptionValue builtIn="false" value="__WINT_WIDTH__=32"/>
+									<listOptionValue builtIn="false" value="__LONG_MAX__=9223372036854775807L"/>
+									<listOptionValue builtIn="false" value="__SCHAR_MAX__=127"/>
+									<listOptionValue builtIn="false" value="__FLT_EVAL_METHOD__=0"/>
+									<listOptionValue builtIn="false" value="__strong="/>
+									<listOptionValue builtIn="false" value="__LDBL_MIN__=3.36210314311209350626e-4932L"/>
+									<listOptionValue builtIn="false" value="__clang__=1"/>
+									<listOptionValue builtIn="false" value="__clang_minor__=0"/>
+									<listOptionValue builtIn="false" value="__x86_64=1"/>
+									<listOptionValue builtIn="false" value="__llvm__=1"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_SHORT__=2"/>
+									<listOptionValue builtIn="false" value="__STDC__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_HAS_DENORM__=1"/>
+									<listOptionValue builtIn="false" value="__UINTMAX_TYPE__ long unsigned=int"/>
+									<listOptionValue builtIn="false" value="__SSE2_MATH__=1"/>
+									<listOptionValue builtIn="false" value="__LDBL_EPSILON__=1.08420217248550443401e-19L"/>
+									<listOptionValue builtIn="false" value="__DBL_MIN__=2.2250738585072014e-308"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_SIZE_T__=8"/>
+									<listOptionValue builtIn="false" value="__STDC_HOSTED__=1"/>
+									<listOptionValue builtIn="false" value="__VERSION__ &quot;4.2.1 Compatible Apple Clang 4.0=((tags/Apple/clang-421.0.57))&quot;"/>
+									<listOptionValue builtIn="false" value="__FLT_MAX__=3.40282347e+38F"/>
+									<listOptionValue builtIn="false" value="__INTMAX_TYPE__ long=int"/>
+									<listOptionValue builtIn="false" value="__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__=1080"/>
+									<listOptionValue builtIn="false" value="__GNUC_PATCHLEVEL__=1"/>
+									<listOptionValue builtIn="false" value="__LDBL_MAX_10_EXP__=4932"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_LONG__=8"/>
+									<listOptionValue builtIn="false" value="__FLT_MAX_10_EXP__=38"/>
+									<listOptionValue builtIn="false" value="__core2=1"/>
+									<listOptionValue builtIn="false" value="__SSE_MATH__=1"/>
+									<listOptionValue builtIn="false" value="__FINITE_MATH_ONLY__=0"/>
+									<listOptionValue builtIn="false" value="__unsafe_unretained="/>
+									<listOptionValue builtIn="false" value="__LDBL_MAX_EXP__=16384"/>
+									<listOptionValue builtIn="false" value="__FLT_HAS_QUIET_NAN__=1"/>
+									<listOptionValue builtIn="false" value="__INTPTR_WIDTH__=64"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_ACQ_REL=4"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_LONG_DOUBLE__=16"/>
+									<listOptionValue builtIn="false" value="__LP64__=1"/>
+									<listOptionValue builtIn="false" value="__core2__=1"/>
+									<listOptionValue builtIn="false" value="__SSSE3__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_HAS_INFINITY__=1"/>
+									<listOptionValue builtIn="false" value="__DBL_EPSILON__=2.2204460492503131e-16"/>
+									<listOptionValue builtIn="false" value="__LONG_LONG_MAX__=9223372036854775807LL"/>
+									<listOptionValue builtIn="false" value="__FLT_DENORM_MIN__=1.40129846e-45F"/>
+									<listOptionValue builtIn="false" value="__CONSTANT_CFSTRINGS__=1"/>
+									<listOptionValue builtIn="false" value="__block=__attribute__((__blocks__(byref)))"/>
+									<listOptionValue builtIn="false" value="__DBL_MAX__=1.7976931348623157e+308"/>
+									<listOptionValue builtIn="false" value="__clang_patchlevel__=0"/>
+									<listOptionValue builtIn="false" value="__SIZE_TYPE__ long unsigned=int"/>
+									<listOptionValue builtIn="false" value="__LITTLE_ENDIAN__=1"/>
+									<listOptionValue builtIn="false" value="__GXX_RTTI=1"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_LONG_LONG__=8"/>
+									<listOptionValue builtIn="false" value="__LDBL_MIN_EXP__=(-16381)"/>
+									<listOptionValue builtIn="false" value="__MACH__=1"/>
+									<listOptionValue builtIn="false" value="__FLT_EPSILON__=1.19209290e-7F"/>
+									<listOptionValue builtIn="false" value="__INT64_C_SUFFIX__=LL"/>
+									<listOptionValue builtIn="false" value="__SIZEOF_FLOAT__=4"/>
+									<listOptionValue builtIn="false" value="__ATOMIC_ACQUIRE=2"/>
+									<listOptionValue builtIn="false" value="__GXX_ABI_VERSION=1002"/>
+									<listOptionValue builtIn="false" value="__GNUC__=4"/>
+								</option>
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.54978872" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="SoarSuite - Improved Chunking.null.1493690292" name="SoarSuite - Improved Chunking"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="0.411817272">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/SoarSuite - Improved Chunking"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="ch.hsr.ifs.sconsolidator.core.buildtargets">
+		<buildTargets>
+			<target description="Kernel" targetID="ch.hsr.ifs.sconsolidator.Builder">
+				<buildTargetName>Kernel</buildTargetName>
+				<buildArguments>kernel</buildArguments>
+			</target>
+			<target description="All" targetID="ch.hsr.ifs.sconsolidator.Builder">
+				<buildTargetName>All</buildTargetName>
+				<buildArguments>all</buildArguments>
+			</target>
+			<target description="Test" targetID="ch.hsr.ifs.sconsolidator.Builder">
+				<buildTargetName>Test</buildTargetName>
+				<buildArguments>tests</buildArguments>
+			</target>
+		</buildTargets>
+	</storageModule>
+</cproject>

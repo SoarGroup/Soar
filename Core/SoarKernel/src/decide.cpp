@@ -968,15 +968,16 @@ byte run_preference_semantics(agent* thisAgent,
 
   /* Set a flag to determine if a context-dependent preference set makes sense in this context.
    * We can ignore the CDPS when:
-   * - Run_preference_semantics is called for a consistency check (no side effects)
+   * - Run_preference_semantics is called for a consistency check (don't want side effects)
    * - For non-context slots (only makes sense for operators)
-   * - For context-slots at the top level (will never be backtraced through)*/
+   * - For context-slots at the top level (will never be backtraced through)
+   * - when the learning system parameter is set off (note, this is independent of whether learning is on) */
 
-  do_CDPS = (s->isa_context_slot && !consistency && (s->id->id.level > TOP_GOAL_LEVEL) && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] && thisAgent->sysparams[LEARNING_ON_SYSPARAM]);
+  do_CDPS = (s->isa_context_slot && !consistency && (s->id->id.level > TOP_GOAL_LEVEL) && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]);
 
   /* Empty the context-dependent preference set in the slot */
 
-  if (do_CDPS) {
+  if (do_CDPS && s->CDPS) {
     clear_CDPS(thisAgent, s);
   }
 
@@ -1128,7 +1129,7 @@ byte run_preference_semantics(agent* thisAgent,
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
-      if (do_CDPS) {
+      if (do_CDPS && s->CDPS) {
         clear_CDPS(thisAgent, s);
       }
     }
@@ -1211,7 +1212,7 @@ byte run_preference_semantics(agent* thisAgent,
         cand = cand->next_candidate;
       }
       *result_candidates = candidates;
-      if (do_CDPS) {
+      if (do_CDPS && s->CDPS) {
         clear_CDPS(thisAgent, s);
       }
       return CONFLICT_IMPASSE_TYPE;
@@ -1278,7 +1279,7 @@ byte run_preference_semantics(agent* thisAgent,
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
-      if (do_CDPS) {
+      if (do_CDPS && s->CDPS) {
         clear_CDPS(thisAgent, s);
       }
     }
@@ -1327,7 +1328,7 @@ byte run_preference_semantics(agent* thisAgent,
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
-      if (do_CDPS) {
+      if (do_CDPS && s->CDPS) {
         clear_CDPS(thisAgent, s);
       }
     }
@@ -1381,7 +1382,7 @@ byte run_preference_semantics(agent* thisAgent,
       /* Update RL values for the winning candidate */
       rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
     } else {
-      if (do_CDPS) {
+      if (do_CDPS && s->CDPS) {
         clear_CDPS(thisAgent, s);
       }
     }
@@ -1504,7 +1505,7 @@ byte run_preference_semantics(agent* thisAgent,
   /* Candidates are not all indifferent, so we have a tie. */
 
   *result_candidates = candidates;
-  if (do_CDPS) {
+  if (do_CDPS && s->CDPS) {
     clear_CDPS(thisAgent, s);
   }
   return TIE_IMPASSE_TYPE;

@@ -101,7 +101,7 @@ void build_CDPS(agent* thisAgent, instantiation *inst) {
       cond = cond->next) {
     cond->bt.CDPS = NIL;
     if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot) {
-      if (thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] && thisAgent->sysparams[LEARNING_ON_SYSPARAM]) {
+        if (thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]) {
         if (cond->bt.trace->slot->CDPS) {
           for (CDPS=cond->bt.trace->slot->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
             new_pref = NIL;
@@ -790,7 +790,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 			/* TEMPORARY HACK (Ideally this should be doable through
 			 the external kernel interface but for now using a
 			 couple of global STL lists to get this information
-			 from the rhs function to this prefference adding code)
+			 from the rhs function to this preference adding code)
 
 			 Getting the next pref from the set of possible prefs
 			 added by the deep copy rhs function */
@@ -943,8 +943,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 				cond->next) {
 			if (cond->type == POSITIVE_CONDITION) {
 
-				if (cond->bt.CDPS) {
-	        /* MMA 9-2012 - Clear out the CDPS */
+			  if (cond->bt.CDPS) {
           c_old = c = cond->bt.CDPS;
           cond->bt.CDPS = NIL;
           for (; c != NIL; c = c->rest) {
@@ -958,7 +957,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
           }
           free_list(thisAgent, c_old);
         }
-				/* MMA 9-2012 */
 
 				/*	voigtjr, nlderbin:
 				 We flattened out the following recursive loop in order to prevent a stack
