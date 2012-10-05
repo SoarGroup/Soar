@@ -136,7 +136,7 @@ bool fstep(const_mat_view X, const_mat_view Y, mat &coefs) {
 	vector<int> predictors;
 	vector<bool> used(ncols, false);
 	mat Xcurr(X.rows(), ncols);
-	cvec curr_coefs;
+	cvec curr_c;
 	double curr_Cp = MallowCp(Xcurr.leftCols(p), Y, cvec(), 0, MEASURE_VAR);
 
 	while (p < ncols) {
@@ -152,18 +152,22 @@ bool fstep(const_mat_view X, const_mat_view Y, mat &coefs) {
 				return false;
 			}
 			double Cp = MallowCp(Xcurr.leftCols(p + 1), Y, c, 0, MEASURE_VAR);
-			if (best_pred < 0 || Cp < best_Cp) {
+			if (best_pred < 0 || Cp < best_Cp || 
+			    (Cp == best_Cp && c.squaredNorm() < best_c.squaredNorm()))
+			{
 				best_Cp = Cp;
 				best_c = c;
 				best_pred = i;
 			}
 		}
-		if (best_Cp < curr_Cp) {
+		if (best_Cp < curr_Cp ||
+		    (best_Cp == curr_Cp && best_c.squaredNorm() < curr_c.squaredNorm()))
+		{
 			predictors.push_back(best_pred);
 			used[best_pred] = true;
 			Xcurr.col(p) = X.col(best_pred);
 			curr_Cp = best_Cp;
-			curr_coefs = best_c;
+			curr_c = best_c;
 			++p;
 		} else {
 			break;
@@ -173,7 +177,7 @@ bool fstep(const_mat_view X, const_mat_view Y, mat &coefs) {
 	coefs.resize(ncols, 1);
 	coefs.setConstant(0.0);
 	for (int i = 0; i < predictors.size(); ++i) {
-		coefs(predictors[i], 0) = curr_coefs(i);
+		coefs(predictors[i], 0) = curr_c(i);
 	}
 	return true;
 }
