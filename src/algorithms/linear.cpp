@@ -50,58 +50,7 @@ bool solve(const_mat_view X, const_mat_view y, cvec &coefs) {
 	return true;
 }
 
-/*
- Clean up input data to avoid instability, then perform weighted least
- squares regression. Cleaning consists of:
- 
- 1. Setting elements whose absolute values are smaller than SAME_THRESH to 0
- 2. collapsing all columns whose elements are identical into a single constant column.
-*/
-bool ols(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
-	mat X1(X.rows(), X.cols() + 1), Y1, C;
-	vector<int> nonuniform;
-
-	for (int i = 0; i < X.rows(); ++i) {
-		for (int j = 0; j < X.cols(); ++j) {
-			if (fabs(X(i, j)) < SAME_THRESH) {
-				X1(i, j) = 0.0;
-			} else {
-				X1(i, j) = X(i, j);
-			}
-		}
-	}
-
-	del_uniform_cols(X1, X.cols(), nonuniform);
-	X1.conservativeResize(X.rows(), nonuniform.size() + 1);
-	X1.rightCols(1).setConstant(1.0);
-	
-	if (w.size() == X.rows()) {
-		cvec w2 = w.array().sqrt();
-		X1.array().colwise() *= w2.array();
-		Y1 = Y.array().colwise() * w2.array();
-	} else {
-		Y1 = Y;
-	}
-	
-	if (!solve(X1, Y1, C)) {
-		return false;
-	}
-
-	coefs.resize(X.cols(), Y.cols());
-	coefs.setConstant(0);
-	for (int i = 0; i < nonuniform.size(); ++i) {
-		coefs.row(nonuniform[i]) = C.row(i);
-	}
-	intercept = C.bottomRows(1);
-	return true;
-}
-
-/*
- Assumes that X and Y are already weighted and centered, so it doesn't
- need to compute an intercept. This is the algorithm that's in
- textbooks.
-*/
-bool ridge_core(const_mat_view X, const_mat_view Y, mat &coefs) {
+bool ridge(const_mat_view X, const_mat_view Y, mat &coefs) {
 	mat A = X.transpose() * X;
 	
 	/*
@@ -123,30 +72,6 @@ bool ridge_core(const_mat_view X, const_mat_view Y, mat &coefs) {
 	A.diagonal().array() += lambda;
 	mat B = X.transpose() * Y;
 	coefs = A.ldlt().solve(B);
-	return true;
-}
-
-bool ridge(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
-	mat Z, V;
-	if (w.size() == 0) {
-		Z = X;
-		V = Y;
-	} else {
-		assert(w.size() == X.rows());
-		mat W = mat::Zero(w.size(), w.size());
-		W.diagonal() = w;
-		Z = W * X;
-		V = W * Y;
-	}
-	
-	rvec Zmean = Z.colwise().mean();
-	rvec Vmean = V.colwise().mean();
-	Z.rowwise() -= Zmean;
-	V.rowwise() -= Vmean;
-	if (!ridge_core(Z, V, coefs)) {
-		return false;
-	}
-	intercept = Vmean - (Zmean * coefs);
 	return true;
 }
 
@@ -183,20 +108,16 @@ bool lasso_core(const_mat_view X, const rvec &xi_norm2, const_mat_view y, double
 	return true;
 }
 
-bool lasso(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
-	rvec Xmean = X.colwise().mean(), Ymean = Y.colwise().mean();
-	mat Xc = X.rowwise() - Xmean;
-	mat Yc = Y.rowwise() - Ymean;
-	if (!ridge_core(Xc, Yc, coefs)) {
+bool lasso(const_mat_view X, const_mat_view Y, mat &coefs) {
+	if (!ridge(X, Y, coefs)) {
 		return false;
 	}
-	rvec xi_norm2 = Xc.colwise().squaredNorm();
+	rvec xi_norm2 = X.colwise().squaredNorm();
 	for (int i = 0; i < coefs.cols(); ++i) {
 		cvec beta = coefs.col(i);
-		lasso_core(Xc, xi_norm2, Yc.col(i), LASSO_LAMBDA, beta);
+		lasso_core(X, xi_norm2, Y.col(i), LASSO_LAMBDA, beta);
 		coefs.col(i) = beta;
 	}
-	intercept = Ymean - (Xmean * coefs);
 	return true;
 }
 
@@ -209,19 +130,14 @@ bool lasso(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &
 
  This is a naive version of R's step function.
 */
-bool fstep(const_mat_view X, const_mat_view y, double variance, cvec &coefs, double &intercept) {
-	rvec Xmean = X.colwise().mean();
-	double ymean = y.mean();
-
-	mat Xc = X.rowwise() - Xmean;
-	cvec yc = y.array() - ymean;
-
+bool fstep(const_mat_view X, const_mat_view Y, mat &coefs) {
+	assert(Y.cols() == 1);
 	int ncols = X.cols(), p = 0;
 	vector<int> predictors;
 	vector<bool> used(ncols, false);
 	mat Xcurr(X.rows(), ncols);
 	cvec curr_coefs;
-	double curr_Cp = MallowCp(Xcurr.leftCols(p), yc, cvec(), 0, variance);
+	double curr_Cp = MallowCp(Xcurr.leftCols(p), Y, cvec(), 0, MEASURE_VAR);
 
 	while (p < ncols) {
 		double best_Cp = 0;
@@ -229,13 +145,13 @@ bool fstep(const_mat_view X, const_mat_view y, double variance, cvec &coefs, dou
 		cvec best_c;
 		for (int i = 0; i < ncols; ++i) {
 			if (used[i]) { continue; }
-			Xcurr.col(p) = Xc.col(i);
+			Xcurr.col(p) = X.col(i);
 
 			cvec c;
-			if (!solve(Xcurr.leftCols(p + 1), yc, c)) {
+			if (!solve(Xcurr.leftCols(p + 1), Y, c)) {
 				return false;
 			}
-			double Cp = MallowCp(Xcurr.leftCols(p + 1), yc, c, 0, variance);
+			double Cp = MallowCp(Xcurr.leftCols(p + 1), Y, c, 0, MEASURE_VAR);
 			if (best_pred < 0 || Cp < best_Cp) {
 				best_Cp = Cp;
 				best_c = c;
@@ -245,7 +161,7 @@ bool fstep(const_mat_view X, const_mat_view y, double variance, cvec &coefs, dou
 		if (best_Cp < curr_Cp) {
 			predictors.push_back(best_pred);
 			used[best_pred] = true;
-			Xcurr.col(p) = Xc.col(best_pred);
+			Xcurr.col(p) = X.col(best_pred);
 			curr_Cp = best_Cp;
 			curr_coefs = best_c;
 			++p;
@@ -254,13 +170,11 @@ bool fstep(const_mat_view X, const_mat_view y, double variance, cvec &coefs, dou
 		}
 	}
 
-	coefs.resize(ncols);
+	coefs.resize(ncols, 1);
 	coefs.setConstant(0.0);
 	for (int i = 0; i < predictors.size(); ++i) {
-		coefs(predictors[i]) = curr_coefs(i);
+		coefs(predictors[i], 0) = curr_coefs(i);
 	}
-
-	intercept = ymean - (Xmean * coefs);
 	return true;
 }
 
@@ -300,7 +214,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 		projected = X1 * components;
 		for (int j = 0; j < maxcomps; ++j) {
-			ols(projected.leftCols(j), Y1, w, coefs, inter);
+			linear_regression(OLS, projected.leftCols(j), Y1, w, coefs, inter);
 			b = components.leftCols(i) * coefs;
 			errors(j) += (X.row(n) * b + inter - Y.row(n)).array().abs().sum();
 		}
@@ -312,7 +226,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 	}
 	projected = X * components;
-	ols(projected.leftCols(best), Y, cvec(), coefs, inter);
+	linear_regression(OLS, projected.leftCols(best), Y, cvec(), coefs, inter);
 	beta = components.leftCols(best) * coefs;
 	intercept = inter;
 }
@@ -322,18 +236,17 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
  the training instances. Also prevent the beta vector from blowing up
  too much.
 */
-bool min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta, rvec &intercept) {
+bool min_train_error(const_mat_view X, const_mat_view Y, mat &beta) {
 	vector<mat> betas;
 	vector<rvec> intercepts;
 	double minerror;
 	int bestn = -1;
 	mat components, projected, coefs, b;
-	rvec inter;
 	
 	pca(X, components);
 	projected = X * components;
 	for (int i = 0; i < projected.cols(); ++i) {
-		if (!ols(projected.leftCols(i), Y, w, coefs, inter)) {
+		if (!solve(projected.leftCols(i), Y, coefs)) {
 			continue;
 		}
 		b = components.leftCols(i) * coefs;
@@ -341,31 +254,109 @@ bool min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &bet
 		if (b.squaredNorm() > MAX_BETA_NORM) {
 			break;
 		}
-		double error = ((X * b).rowwise() + inter - Y).squaredNorm();
+		double error = (X * b - Y).squaredNorm();
 		
 		if (error < MODEL_ERROR_THRESH) {
 			beta = b;
-			intercept = inter;
 			return true;
 		}
 		
 		if (bestn < 0 || error < minerror) {
 			beta = b;
-			intercept = inter;
 			minerror = error;
 		}
 	}
 	return bestn != -1;
 }
 
-bool wpcr(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
-	mat X1;
-	rvec xmean = X.colwise().mean(), inter;
-	X1 = X.rowwise() - xmean;
-	if (!min_train_error(X1, Y, w, coefs, inter)) {
+bool wpcr(const_mat_view X, const_mat_view Y, mat &coefs) {
+	if (!min_train_error(X, Y, coefs)) {
 		return false;
 	}
-	intercept = inter - (xmean * coefs);
+	return true;
+}
+
+/*
+ Clean up input data to avoid instability, then perform some form of
+ regression. Cleaning consists of:
+ 
+ 1. collapsing all columns whose elements are identical into a single constant column.
+ 2. Setting elements whose absolute values are smaller than SAME_THRESH to 0.
+ 3. Centering X and Y data so that intercepts don't need to be considered.
+*/
+bool linear_regression(regression_type t,
+                       const_mat_view X,
+                       const_mat_view Y,
+                       const cvec &w,
+                       mat &coefs,
+                       rvec &intercept) 
+{
+	mat Xc(X.rows(), X.cols()), Yc;
+	int ndims = 0;
+	vector<int> used;
+	
+	for (int i = 0; i < X.cols(); ++i) {
+		if (!is_uniform(X.col(i))) {
+			Xc.col(ndims++) = X.col(i);
+			used.push_back(i);
+		}
+	}
+	Xc.conservativeResize(X.rows(), ndims);
+	for (int i = 0; i < Xc.rows(); ++i) {
+		for (int j = 0; j < Xc.cols(); ++j) {
+			if (fabs(Xc(i, j)) < SAME_THRESH) {
+				Xc(i, j) = 0.0;
+			}
+		}
+	}
+	
+	if (w.size() > 0) {
+		for (int i = 0; i < ndims; ++i) {
+			Xc.col(i).array() *= w.array();
+		}
+		for (int i = 0; i < Yc.cols(); ++i) {
+			Yc.col(i).array() *= w.array();
+		}
+	}
+	
+	rvec Xmean = Xc.colwise().mean();
+	Xc.rowwise() -= Xmean;
+	rvec Ymean = Y.colwise().mean();
+	Yc = Y.rowwise() - Ymean;
+	
+	mat coefs1;
+	cvec c;
+	double inter;
+	bool success;
+	switch (t) {
+		case OLS:
+			success = solve(Xc, Yc, coefs1);
+			break;
+		case RIDGE:
+			success = ridge(Xc, Yc, coefs1);
+			break;
+		case LASSO:
+			success = lasso(Xc, Yc, coefs1);
+			break;
+		case PCR:
+			success = wpcr(Xc, Yc, coefs1);
+			break;
+		case FORWARD:
+			success = fstep(Xc, Yc, coefs1);
+			break;
+		default:
+			assert(false);
+	}
+	
+	if (!success) {
+		return false;
+	}
+	coefs.resize(X.cols(), Y.cols());
+	coefs.setConstant(0.0);
+	for (int i = 0; i < ndims; ++i) {
+		coefs.row(used[i]) = coefs1.row(i);
+	}
+	intercept = Ymean - (Xmean * coefs1);
 	return true;
 }
 
@@ -614,29 +605,7 @@ bool LinearModel::fit() {
 }
 
 bool LinearModel::fit_sub(const_mat_view X, const_mat_view Y) {
-	cvec c;
-	double inter;
-	switch (alg) {
-		case OLS:
-			return ols(X, Y, cvec(), coefs, intercept);
-		case RIDGE:
-			return ridge(X, Y, cvec(), coefs, intercept);
-		case LASSO:
-			return lasso(X, Y, cvec(), coefs, intercept);
-		case PCR:
-			return wpcr(X, Y, cvec(), coefs, intercept);
-		case FORWARD:
-			assert(Y.cols() == 1);
-			if (!fstep(X, Y, MEASURE_VAR, c, inter)) {
-				return false;
-			}
-			coefs.resize(c.size(), 1);
-			coefs.col(0) = c;
-			intercept.resize(1);
-			intercept(0) = inter;
-			return true;
-	}
-	assert(false);
+	return linear_regression(alg, X, Y, cvec(), coefs, intercept);
 }
 
 bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {

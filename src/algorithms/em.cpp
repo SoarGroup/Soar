@@ -22,7 +22,7 @@ using namespace std;
 using namespace Eigen;
 
 const bool TEST_ELIGIBILITY = false;
-const LinearModel::regression_type REGRESSION_ALG = LinearModel::FORWARD;
+const regression_type REGRESSION_ALG = FORWARD;
 
 /*
  Generate all possible combinations of sets of items
@@ -190,7 +190,7 @@ bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int m
 			}
 			LOG(EMDBG) << endl;
 			
-			if (!ols(Xd, Y, w, C, intercepts)) {
+			if (!linear_regression(OLS, Xd, Y, w, C, intercepts)) {
 				break;
 			}
 			
@@ -236,7 +236,7 @@ bool block_seed(const_mat_view X, const_mat_view Y, int n, double fit_thresh, in
 		int start = rand() % (X.rows() - MODEL_INIT_N);
 		dyn_mat Xb(X.block(start, 0, MODEL_INIT_N, xcols));
 		dyn_mat Yb(Y.block(start, 0, MODEL_INIT_N, ycols));
-		ols(Xb.get(), Yb.get(), w, C, intercepts);
+		linear_regression(OLS, Xb.get(), Yb.get(), w, C, intercepts);
 
 		predict_all(C, intercepts, Xb.get(), PY);
 		double e = (Yb.get() - PY).rowwise().squaredNorm().sum();

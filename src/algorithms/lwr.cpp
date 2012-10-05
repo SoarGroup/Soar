@@ -97,7 +97,7 @@ bool LWR::predict(const rvec &x, rvec &y) {
 
 	mat coefs;
 	rvec intercept;
-	wpcr(X, Y, w, coefs, intercept);
+	linear_regression(RIDGE, X, Y, w, coefs, intercept);
 	y = (x - X.colwise().mean()) * coefs + intercept;
 	return true;
 }
