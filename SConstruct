@@ -157,6 +157,8 @@ if compiler == 'g++':
 			lnflags.append(env.Literal(r'-Wl,-z,origin,-rpath,$ORIGIN'))
 		# For OSX, use -install_name (specified in Core/SConscript)
 	
+		if GetOption('static'):
+			cflags.append(CPPFLAGS='-DSTATIC_LINKED')
 	libs += [ 'pthread' ]
 
 elif compiler == 'msvc':
@@ -168,6 +170,9 @@ elif compiler == 'msvc':
 		else:
 			cflags.extend(' /MDd /Z7 /DEBUG'.split())
 			lnflags.extend(['/DEBUG'])
+		
+		if GetOption('static'):
+			cflags.extend(['/D', 'STATIC_LINKED'])
 	
 	libs += ['advapi32']    # for GetUserName
 			
