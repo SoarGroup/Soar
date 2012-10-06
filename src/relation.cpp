@@ -38,7 +38,7 @@ relation::relation(int n, const vector<tuple> &ts) : sz(ts.size()), arty(n) {
 	}
 }
 	
-bool relation::test(const tuple &t) const {
+bool relation::has(const tuple &t) const {
 	assert(t.size() == arty);
 	tuple tail(t.begin() + 1, t.end());
 	tuple_map::const_iterator i = tuples.find(tail);
@@ -144,6 +144,18 @@ void relation::subtract(const tuple &inds, const relation &r) {
 	}
 }
 
+void relation::difference(const relation &r, relation &out) const {
+	assert(arty == r.arty && arty == out.arty);
+	tuple_map::const_iterator i, j;
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		j = r.tuples.find(i->first);
+		if (j != r.tuples.end()) {
+			subtract_sets(i->second, j->second, out.tuples[i->first]);
+		}
+	}
+	out.update_size();
+}
+
 /*
  For each tuple t1 in this relation, find all tuples t2 in r such that
  t1[match1] == t2[match2], and extend t1 with t2[extend]. Upon
@@ -242,6 +254,13 @@ void relation::count_expansion(const relation  &r,
 	}
 }
 
+void relation::add(const tuple &t) {
+	assert(t.size() == arty);
+	tuple tail(arty - 1);
+	copy(t.begin() + 1, t.end(), tail.begin());
+	add(t[0], tail);
+}
+
 void relation::add(int i, const tuple &t) {
 	assert(t.size() + 1 == arty);
 	set<int> &s = tuples[t];
@@ -255,6 +274,13 @@ void relation::add(int i, int n) {
 	assert(arty == 2);
 	tuple t(1, n);
 	add(i, t);
+}
+
+void relation::del(const tuple &t) {
+	assert(t.size() == arty);
+	tuple tail(arty - 1);
+	copy(t.begin() + 1, t.end(), tail.begin());
+	del(t[0], tail);
 }
 
 void relation::del(int i, const tuple &t) {
@@ -296,30 +322,33 @@ void relation::drop_first(set<tuple> &out) const {
 	}
 }
 
-void relation::dump(set<tuple> &out) const {
-	tuple_map::const_iterator i;
-	tuple t(arty);
-	for (i = tuples.begin(); i != tuples.end(); ++i) {
-		copy(i->first.begin(), i->first.end(), t.begin() + 1);
-		set<int>::const_iterator j;
-		for (j = i->second.begin(); j != i->second.end(); ++j) {
-			t[0] = *j;
-			out.insert(t);
-		}
-	}
-}
-
 void relation::clear() {
 	sz = 0;
 	tuples.clear();
 }
 
-void relation::match(const vector<int> &pat, relation &r) const {
-	assert(pat.size() == arty);
+void relation::reset(int new_arity) {
+	tuples.clear();
+	sz = 0;
+	arty = new_arity;
+}
+
+/*
+ Puts any tuple matching pattern pat into r. Any negate element in pat
+ is considered a wild card. If pat is shorter than the relation's
+ arity, the difference is considered to be wild cards.
+*/
+void relation::match(const tuple &pat, relation &r) const {
+	assert(pat.size() <= arty && arty == r.arty);
+	if (pat.empty()) {
+		r.tuples = tuples;
+		return;
+	}
+	
 	tuple_map::const_iterator i;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		bool matched = true;
-		for (int j = 1; j < arty; ++j) {
+		for (int j = 1; j < pat.size(); ++j) {
 			if (pat[j] >= 0 && pat[j] != i->first[j - 1]) {
 				matched = false;
 				break;
@@ -333,6 +362,84 @@ void relation::match(const vector<int> &pat, relation &r) const {
 				s.insert(pat[0]);
 			}
 		}
+	}
+	r.update_size();
+}
+
+/*
+ Keep only the tuples that match pattern pat.
+*/
+void relation::filter(const tuple &pat) {
+	assert(pat.size() <= arty);
+	if (pat.empty()) {
+		return;
+	}
+	
+	tuple_map::iterator i;
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		bool matched = true;
+		for (int j = 1; j < pat.size(); ++j) {
+			if (pat[j] >= 0 && pat[j] != i->first[j - 1]) {
+				matched = false;
+				break;
+			}
+		}
+		set<int> &s = i->second;
+		if (!matched) {
+			s.clear();
+		} else if (pat[0] >= 0) {
+			bool found = in_set(pat[0], s);
+			s.clear();
+			if (found) {
+				s.insert(pat[0]);
+			}
+		}
+	}
+	update_size();
+}
+
+void relation::update_size() {
+	sz = 0;
+	tuple_map::iterator i = tuples.begin();
+	while (i != tuples.end()) {
+		if (i->second.empty()) {
+			tuples.erase(i++);
+		} else {
+			sz += i->second.size();
+			++i;
+		}
+	}
+}
+
+void relation::sample(int k, relation &s) const {
+	assert(k <= sz && s.arty == arty);
+	
+	if (k == sz) {
+		s = *this;
+		return;
+	}
+	vector<tuple> reservoir(k);
+	tuple_map::const_iterator i;
+	set<int>::const_iterator j;
+	int n = 0;
+	tuple t(arty);
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		copy(i->first.begin(), i->first.end(), t.begin() + 1);
+		for (j = i->second.begin(); j != i->second.end(); ++j) {
+			t[0] = *j;
+			if (n < k) {
+				reservoir[n] = t;
+			} else {
+				int r = rand() % (n + 1);
+				if (r < k) {
+					reservoir[r] = t;
+				}
+			}
+			++n;
+		}
+	}
+	for (int ii = 0; ii < k; ++ii) {
+		s.add(reservoir[ii]);
 	}
 }
 

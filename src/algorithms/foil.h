@@ -53,22 +53,28 @@ std::ostream &operator<<(std::ostream &os, const clause &c);
 class FOIL {
 public:
 	FOIL(const relation &pos, const relation &neg, const relation_table &rels) ;
-	bool learn(clause_vec &clauses);
+	bool learn(clause_vec &clauses, relation &uncovered);
 	void gain(const literal &l, double &g, double &maxg) const;
 
 	const relation_table &get_relations() const { return rels; }
 	const relation &get_rel(const std::string &name) const;
 	
 private:
-	double choose_literal(literal &l);
+	double choose_literal(literal &l, int nvars);
 	bool add_clause(clause &c);
 	bool tuple_satisfies_literal(const tuple &t, const literal &l);
 	bool filter_pos_by_clause(const clause &c);
+	double clause_success_rate(const clause &c) const;
 
 private:
-	int nvars;
-	relation pos, neg, pos_curr, neg_curr;
+	/*
+	 I store the test sets as vectors instead of relations because
+	 it's easier to index into.
+	*/
+	std::vector<tuple> pos_test, neg_test;
+	relation pos, neg, pos_grow, neg_grow;
 	const relation_table &rels;
+	int nvars;
 };
 
 bool test_clause(const clause &c,

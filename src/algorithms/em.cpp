@@ -1126,8 +1126,11 @@ void EM::learn_obj_clause(int m, int i) {
 		}
 	}
 	
+	relation uncovered;
 	FOIL foil(pos_obj, neg_obj, rel_tbl);
-	foil.learn(modes[m]->obj_clauses[i]);
+	if (!foil.learn(modes[m]->obj_clauses[i], uncovered)) {
+		// respond to this situation appropriately
+	}
 }
 
 void EM::update_clauses(int m) {
@@ -1145,8 +1148,9 @@ void EM::update_clauses(int m) {
 	if (minfo.pos.empty()) {
 		minfo.mode_clauses.clear();
 	} else {
+		relation uncovered;
 		FOIL foil(minfo.pos, minfo.neg, rel_tbl);
-		if (!foil.learn(minfo.mode_clauses)) {
+		if (!foil.learn(minfo.mode_clauses, uncovered)) {
 			// add numeric classifier
 		}
 	}

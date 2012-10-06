@@ -46,16 +46,34 @@
 
 class relation : public serializable {
 public:
+	/*
+	class const_iterator {
+	public:
+		const_iterator &operator=(const const_iterator &i);
+		const tuple &operator*() const;
+		
+	private:
+		const_iterator(const relation &r);
+		
+		const relation &r;
+		tuple t;
+		tuple_map::const_iterator i;
+		std::set<int>::const_iterator j;
+	};
+	*/
+	
 	relation();
 	relation(int n);
 	relation(const relation &r);
 	relation(int n, const std::vector<tuple> &t);
 	
+	void add(const tuple &t);
 	void add(int i, int n);  // convenience for arity = 2
 	void add(int i, const tuple &t);
+	void del(const tuple &t);
 	void del(int i, int n);  // convenience for arity = 2
 	void del(int i, const tuple &t);
-	bool test(const tuple &t) const;
+	bool has(const tuple &t) const;
 	void slice(const tuple &inds, relation &out) const;
 	bool operator==(const relation &r) const;
 	relation &operator=(const relation &r);
@@ -63,20 +81,39 @@ public:
 	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
 	void intersect(const tuple &inds, const relation &r);
 	void subtract(const tuple &inds, const relation &r);
+	void difference(const relation &r, relation &out) const;
 	void at_pos(int n, std::set<int> &elems) const;
 	void drop_first(std::set<tuple> &out) const;
-	void dump(std::set<tuple> &out) const;
 	void clear();
-	void match(const std::vector<int> &pat, relation &r) const;
+	void reset(int new_arity);
+	void match(const tuple &pattern, relation &r) const;
+	void filter(const tuple &pattern);
+	void sample(int k, relation &s) const;
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
 	
 	int size() const { return sz; }
 	int arity() const { return arty; }
 	bool empty() const { return sz == 0; }
-	
-	void serialize(std::ostream &os) const;
-	void unserialize(std::istream &is);
+
+	template<typename C>
+	void dump(C &out) const {
+		std::insert_iterator<C> ins(out, out.end());
+		tuple_map::const_iterator i;
+		tuple t(arty);
+		for (i = tuples.begin(); i != tuples.end(); ++i) {
+			copy(i->first.begin(), i->first.end(), t.begin() + 1);
+			std::set<int>::const_iterator j;
+			for (j = i->second.begin(); j != i->second.end(); ++j) {
+				t[0] = *j;
+				ins = t;
+			}
+		}
+	}
 	
 private:
+	void update_size();
+	
 	typedef std::map<tuple, std::set<int> > tuple_map;
 
 	int sz, arty;

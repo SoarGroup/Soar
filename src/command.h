@@ -3,10 +3,11 @@
 
 #include <string>
 #include "soar_interface.h"
-#include "filter.h"
 #include "timer.h"
 
 class svs_state;
+class scene;
+class filter;
 
 class command {
 public:

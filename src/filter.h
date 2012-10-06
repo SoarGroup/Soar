@@ -10,7 +10,6 @@
 
 #include "mat.h"
 #include "sgnode.h"
-#include "scene.h"
 #include "common.h"
 #include "soar_interface.h"
 

@@ -86,4 +86,7 @@
 #define LASSO_TOL 1e-10
 #define LASSO_MAX_ITERS 50
 
+#define FOIL_GROW_RATIO 0.75
+#define FOIL_MIN_SUCCESS_RATE 0.9
+
 #endif
