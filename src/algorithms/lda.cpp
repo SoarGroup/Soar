@@ -35,20 +35,18 @@ int largest_class(const vector<int> &c) {
 	return largest;
 }
 
-LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &used_rows, const vector<int> &classes)
+LDA::LDA(mat &data, const vector<int> &classes)
 : classes(classes), degenerate(false), degenerate_class(9090909)
 {
-	mat cleaned;
-	pick_rows(data, used_rows, cleaned);
-	clean_data(cleaned, used_cols);
+	clean_data(data, used_cols);
 	
-	if (cleaned.cols() == 0) {
+	if (data.cols() == 0) {
 		LOG(WARN) << "Degenerate case, no useful classification data." << endl;
 		degenerate = true;
 		degenerate_class = largest_class(classes);
 		return;
 	}
-	int d = cleaned.cols();
+	int d = data.cols();
 	vector<rvec> class_means;
 	vector<int> counts, cmem, norm_classes;
 	
@@ -57,7 +55,7 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &use
 		bool found = false;
 		for (int j = 0; j < norm_classes.size(); ++j) {
 			if (norm_classes[j] == classes[i]) {
-				class_means[j] += cleaned.row(i);
+				class_means[j] += data.row(i);
 				++counts[j];
 				cmem.push_back(j);
 				found = true;
@@ -66,7 +64,7 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &use
 		}
 		if (!found) {
 			norm_classes.push_back(classes[i]);
-			class_means.push_back(cleaned.row(i));
+			class_means.push_back(data.row(i));
 			counts.push_back(1);
 			cmem.push_back(norm_classes.size() - 1);
 		}
@@ -81,7 +79,7 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &use
 	*/
 	if (d < C - 1) {
 		W = mat::Identity(d, d);
-		projected = cleaned;
+		projected = data;
 		return;
 	}
 	
@@ -90,12 +88,12 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &use
 	}
 	
 	mat Sw = mat::Zero(d, d);
-	for (int i = 0; i < cleaned.rows(); ++i) {
-		rvec x = cleaned.row(i) - class_means[cmem[i]];
+	for (int i = 0; i < data.rows(); ++i) {
+		rvec x = data.row(i) - class_means[cmem[i]];
 		Sw += x.transpose() * x;
 	}
 	
-	rvec all_mean = cleaned.colwise().mean();
+	rvec all_mean = data.colwise().mean();
 	mat Sb = mat::Zero(d, d);
 	for (int i = 0; i < C; ++i) {
 		rvec x = class_means[i] - all_mean;
@@ -125,10 +123,10 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &use
 		}
 		eigenvals(best) = complex<double>(-1, 0);
 	}
-	projected = cleaned * W;
+	projected = data * W;
 }
 
-int LDA_NN_Classifier::classify(const rvec &x) const {
+int LDA::classify(const rvec &x) const {
 	if (degenerate) {
 		return degenerate_class;
 	}

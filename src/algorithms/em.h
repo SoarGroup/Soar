@@ -13,6 +13,7 @@
 #include "scene.h"
 
 class scene;
+class LDA;
 
 class EM : public serializable {
 public:
@@ -51,7 +52,7 @@ private:
 	
 	class mode_info : public serializable {
 	public:
-		mode_info() : pos(2), neg(2), clauses_dirty(true), model(NULL) {}
+		mode_info() : pos(2), neg(2), clauses_dirty(true), model(NULL), lda(NULL) {}
 		
 		~mode_info() {
 			delete model;
@@ -74,6 +75,7 @@ private:
 		// classifier stuff
 		relation pos, neg;
 		clause_vec mode_clauses;
+		LDA *lda;
 		
 		/*
 		 Each object the model is conditioned on needs to be
@@ -112,6 +114,7 @@ private:
 	bool map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
 	void extend_relations(const relation_table &add, int time);
 	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
+	void make_classifier_matrix(const relation &p, const relation &n, mat &m, std::vector<int> &classes);
 	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
 
 	relation_table rel_tbl;

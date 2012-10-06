@@ -17,6 +17,7 @@
 #include "mat.h"
 #include "serialize.h"
 #include "scene.h"
+#include "lda.h"
 
 using namespace std;
 using namespace Eigen;
@@ -884,21 +885,23 @@ bool EM::predict(const scene_sig &sig, const relation_table &rels, const rvec &x
 			for (j = assign.begin(); j != assign.end(); ++j) {
 				LOG(EMDBG) << j->first << " = " << j->second << endl;
 			}
-			rvec xc;
-			if (!minfo.model->is_const()) {
-				xc.resize(x.size());
-				int xsize = 0;
-				for (int j = 0; j < mapping.size(); ++j) {
-					int n = sig[mapping[j]].props.size();
-					xc.segment(xsize, n) = x.segment(sig[mapping[j]].start, n);
-					xsize += n;
-				}
-				xc.conservativeResize(xsize);
+		} else if (!minfo.lda || minfo.lda->classify(x) == 0) {
+			continue;
+		}
+		rvec xc;
+		if (!minfo.model->is_const()) {
+			xc.resize(x.size());
+			int xsize = 0;
+			for (int j = 0; j < mapping.size(); ++j) {
+				int n = sig[mapping[j]].props.size();
+				xc.segment(xsize, n) = x.segment(sig[mapping[j]].start, n);
+				xsize += n;
 			}
-			if (minfo.model->predict(xc, y)) {
-				mode = i;
-				return true;
-			}
+			xc.conservativeResize(xsize);
+		}
+		if (minfo.model->predict(xc, y)) {
+			mode = i;
+			return true;
 		}
 	}
 	LOG(EMDBG) << "no suitable modes" << endl;
@@ -1139,19 +1142,27 @@ void EM::update_clauses(int m) {
 		return;
 	}
 	
+	minfo.mode_clauses.clear();
+	minfo.obj_clauses.clear();
+	if (minfo.lda) {
+		delete minfo.lda;
+		minfo.lda = NULL;
+	}
+	
 	for (int i = 0; i < minfo.sig.size(); ++i) {
 		if (i != minfo.target) {
 			learn_obj_clause(m, i);
 		}
 	}
 		
-	if (minfo.pos.empty()) {
-		minfo.mode_clauses.clear();
-	} else {
+	if (!minfo.pos.empty()) {
 		relation uncovered;
 		FOIL foil(minfo.pos, minfo.neg, rel_tbl);
 		if (!foil.learn(minfo.mode_clauses, uncovered)) {
-			// add numeric classifier
+			mat lda_data;
+			vector<int> lda_classes;
+			make_classifier_matrix(uncovered, minfo.neg, lda_data, lda_classes);
+			minfo.lda = new LDA(lda_data, lda_classes);
 		}
 	}
 	minfo.clauses_dirty = false;
@@ -1307,6 +1318,41 @@ void EM::mode_info::unserialize(istream &is) {
 	}
 	model = new LinearModel;
 	model->unserialize(is);
+}
+
+void EM::make_classifier_matrix(const relation &p, const relation &n, mat &m, vector<int> &classes) {
+	set<int> pos, neg;
+	p.at_pos(0, pos);
+	n.at_pos(0, neg);
+
+	assert(!pos.empty() && !neg.empty());
+
+	int rows = p.size() + n.size();
+	int sig_index = data[*pos.begin()]->sig_index;
+	int cols = sigs[sig_index].dim();
+
+	/*
+	 If the entries have different signatures, the columns of the input matrix
+	 will not be aligned. I don't know what to do in that case.
+	*/
+	set<int>::const_iterator i;
+	for (i = pos.begin(); i != pos.end(); ++i) {
+		assert(data[*i]->sig_index == sig_index);
+	}
+
+	m.resize(rows, cols);
+	classes.resize(rows);
+	int r = 0;
+	for (i = pos.begin(); i != pos.end(); ++i) {
+		m.row(r) = data[*i]->x;
+		classes[r] = 1;
+		++r;
+	}
+	for (i = neg.begin(); i != neg.end(); ++i) {
+		m.row(r) = data[*i]->x;
+		classes[r] = 0;
+		++r;
+	}
 }
 
 bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) const {

@@ -4,9 +4,12 @@
 #include <vector>
 #include "mat.h"
 
-class LDA_NN_Classifier {
+class LDA {
 public:
-	LDA_NN_Classifier(const_mat_view data, const std::vector<int> &used_rows, const std::vector<int> &classes);
+	/*
+	 The data matrix will be modified! This is to avoid unnecessary copying.
+	*/
+	LDA(mat &data, const std::vector<int> &classes);
 	int classify(const rvec &x) const;
 	
 	const mat &getW() const {
