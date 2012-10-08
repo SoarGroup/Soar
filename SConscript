@@ -17,7 +17,7 @@ def CheckSWIG(env):
 	print 'swig version 1.3.31 or higher is required'
 	return False
 
-Import('env', 'compiler', 'InstallDir')
+Import('env', 'compiler', 'InstallDir', 'g_msvs_variant')
 kernel_env = env.Clone()
 
 if os.name == 'posix':
@@ -32,14 +32,6 @@ kernel_env.Replace(LIBS = libs, LIBPATH=[])
 if sys.platform == 'darwin':
 	install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
 	kernel_env.Append(LINKFLAGS = ['-install_name', install_name])
-	
-shared_macro = []
-static_macro = []
-if compiler == 'g++':
-	static_macro = ['-DSTATIC_LINKED']
-elif compiler == 'msvc':
-	static_macro = ['/D', 'STATIC_LINKED']
-	shared_macro = ['/D', '_USRDLL']
 
 if env['SCU']:
 	scu = 0
@@ -61,11 +53,11 @@ if compiler == 'msvc':
 	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
 
 if GetOption('static'):
-	kernel_env.Append(CPPFLAGS=static_macro)
 	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
 else:
-	kernel_env.Append(CPPFLAGS = shared_macro)
 	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs])[:2]
+	if compiler == 'msvc':
+		kernel_env.Append(CPPFLAGS = ['/D', '_USRDLL'])
 
 lib_install = env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
 
@@ -87,7 +79,7 @@ if 'MSVSProject' in kernel_env['BUILDERS']:
 		target = '#core' + env['MSVSPROJECTSUFFIX'],
 		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs.values()])),
 		buildtarget = lib_install,
-		variant = ['Debug'],
+		variant = g_msvs_variant,
 		auto_build_solution = 0,
 	)
 	

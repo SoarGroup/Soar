@@ -60,9 +60,13 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
                 } else {
                     m_Result << " (not through-local-negations)";
                 }
-
             } else {
                 m_Result << "Learning is disabled.";
+            }
+            if (agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]) {
+              m_Result << " (will backtrace through evaluation rules)";
+            } else {
+              m_Result << " (will not backtrace through evaluation rules)";
             }
         } else {
             AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, agnt->sysparams[LEARNING_ON_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
@@ -96,40 +100,78 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
         set_sysparam(agnt, LEARNING_ON_SYSPARAM, true);
         set_sysparam(agnt, LEARNING_ONLY_SYSPARAM, true);
         set_sysparam(agnt, LEARNING_EXCEPT_SYSPARAM, false);
+        if (m_RawOutput) {
+            m_Result << "\nWill learn only in certain states.";
+        }
     }
 
     if (options.test(LEARN_EXCEPT)) {
         set_sysparam(agnt, LEARNING_ON_SYSPARAM, true);
         set_sysparam(agnt, LEARNING_ONLY_SYSPARAM, false);
         set_sysparam(agnt, LEARNING_EXCEPT_SYSPARAM, true);
+        if (m_RawOutput) {
+            m_Result << "\nWill learn everywhere except certain states.";
+        }
     }
 
     if (options.test(LEARN_ENABLE)) {
         set_sysparam(agnt, LEARNING_ON_SYSPARAM, true);
         set_sysparam(agnt, LEARNING_ONLY_SYSPARAM, false);
         set_sysparam(agnt, LEARNING_EXCEPT_SYSPARAM, false);
+        if (m_RawOutput) {
+            m_Result << "\nLearning on.";
+        }
     }
 
     if (options.test(LEARN_DISABLE)) {
         set_sysparam(agnt, LEARNING_ON_SYSPARAM, false);
         set_sysparam(agnt, LEARNING_ONLY_SYSPARAM, false);
         set_sysparam(agnt, LEARNING_EXCEPT_SYSPARAM, false);
+        if (m_RawOutput) {
+            m_Result << "\nLearning off.";
+        }
     }
 
     if (options.test(LEARN_ALL_LEVELS)) {
         set_sysparam(agnt, LEARNING_ALL_GOALS_SYSPARAM, true);
+        if (m_RawOutput) {
+            m_Result << "\nWill learn for all goals.";
+        }
     }
 
     if (options.test(LEARN_BOTTOM_UP)) {
         set_sysparam(agnt, LEARNING_ALL_GOALS_SYSPARAM, false);
+        if (m_RawOutput) {
+            m_Result << "\nWill learn from the bottom up.";
+        }
     }
 
     if (options.test(LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS)) {
         set_sysparam(agnt, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, true);
+        if (m_RawOutput) {
+            m_Result << "\nWill chunk through local negations.";
+        }
     }
 
     if (options.test(LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS)) {
         set_sysparam(agnt, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, false);
+        if (m_RawOutput) {
+            m_Result << "\nWill not chunk through local negations.";
+        }
+    }
+
+    if (options.test(LEARN_ENABLE_THROUGH_EVALUATION_RULES)) {
+        set_sysparam(agnt, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, true);
+        if (m_RawOutput) {
+            m_Result << "\nWill include evaluation rules when backtracing.";
+        }
+    }
+
+    if (options.test(LEARN_DISABLE_THROUGH_EVALUATION_RULES)) {
+        set_sysparam(agnt, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, false);
+        if (m_RawOutput) {
+            m_Result << "\nWill not include evaluation rules when backtracing.";
+        }
     }
 
     return true;

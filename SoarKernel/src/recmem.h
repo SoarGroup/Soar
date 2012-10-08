@@ -50,8 +50,8 @@ extern preference *find_clone_for_level(preference *p, goal_stack_level level);
 extern void fill_in_new_instantiation_stuff (agent* thisAgent, instantiation *inst,
                                       Bool need_to_do_support_calculations);
 
-/* mvp 5-17-94 */
-extern void build_prohibits_list (agent* thisAgent, instantiation *inst);
+/* MMA 9-12 */
+extern void build_CDPS (agent* thisAgent, instantiation *inst);
 
 extern void deallocate_instantiation (agent* thisAgent, instantiation *inst);
 

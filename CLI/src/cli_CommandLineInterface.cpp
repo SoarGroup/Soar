@@ -222,7 +222,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
         ElementXML* pXMLCommandResult = xml_end_command_mode( m_pAgentSML->GetSoarAgent() );
 
         // The root object is just a <trace> tag.  The substance is in the children
-        // Add childrend of the command buffer to response tags
+        // Add children of the command buffer to response tags
         for ( int i = 0; i < pXMLCommandResult->GetNumberChildren(); ++i )
         {
             ElementXML* pChildXML = new ElementXML();

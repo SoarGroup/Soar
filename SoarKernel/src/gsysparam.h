@@ -191,8 +191,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* JRV: Break on long decision cycle time */
 #define DECISION_CYCLE_MAX_USEC_INTERRUPT        45
 
+/* MMA: Chunk over evaluation rules in subgoals */
+#define CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM	 46
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  45
+#define HIGHEST_SYSPARAM_NUMBER                  46
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

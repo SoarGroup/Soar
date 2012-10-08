@@ -116,7 +116,7 @@
 		
 		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
 		PyObject* wme = SWIG_NewInstanceObj((void *) pOutputWme, SWIGTYPE_p_sml__WMElement,0);
-		PyObject* args = Py_BuildValue("(OsO)", pud->userdata, agent, commandName, wme);
+		PyObject* args = Py_BuildValue("(OOsO)", pud->userdata, agent, commandName, wme);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
 		Py_DECREF(agent);
