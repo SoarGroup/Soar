@@ -158,8 +158,9 @@ if compiler == 'g++':
 		# For OSX, use -install_name (specified in Core/SConscript)
 	
 		if GetOption('static'):
-			cflags.append(CPPFLAGS='-DSTATIC_LINKED')
-	libs += [ 'pthread' ]
+			cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
+			
+	libs += [ 'pthread', 'dl' ]
 
 elif compiler == 'msvc':
 	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
