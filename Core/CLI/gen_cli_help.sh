@@ -12,7 +12,7 @@
 TEXTDIR=helptext
 HTML2TEXT='w3m -O ascii -dump -T text/html -r'
 
-if ! [ -x `which w3m` -a -x `which curl` ]
+if ! [ -x "`which w3m`" -a -x "`which curl`" ]
 then
 	echo please install w3m and curl
 	exit 1
