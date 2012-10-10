@@ -20,11 +20,11 @@ public:
 	EM();
 	~EM();
 	
-	void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
 	bool run(int maxiters);
-	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
+	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
 	// Return the mode with the model that best fits (x, y)
-	int best_mode(const scene_sig &sig, const rvec &x, double y, double &besterror) const;
+	int best_mode(int target, const scene_sig &sig, const rvec &x, double y, double &besterror) const;
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	void get_map_modes(std::vector<int> &modes) const;
 	void serialize(std::ostream &os) const;
@@ -104,7 +104,7 @@ private:
 	bool remove_modes();
 	void mark_mode_stale(int i);
 	bool find_new_mode_inds(const std::set<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
-	double calc_prob(int m, const scene_sig &sig, const rvec &x, double y, int target, std::vector<int> &best_assign, double &best_error) const;
+	double calc_prob(int m, int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	void mode_add_example(int m, int i, bool update);
 	void mode_del_example(int m, int i);
 	void init_mode(int mode, int sig, LinearModel *m, const std::vector<int> &members, const std::vector<int> &obj_map);

@@ -47,11 +47,12 @@ model::model(const std::string &name, const std::string &type)
 bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
 	if (first_arg < args.size()) {
 		if (args[first_arg] == "save") {
+			string path;
 			if (first_arg + 1 >= args.size()) {
-				os << "need a file name" << endl;
-				return false;
+				path = name + ".model";
+			} else {
+				path = args[first_arg + 1];
 			}
-			string path = args[first_arg + 1];
 			ofstream f(path.c_str());
 			if (!f.is_open()) {
 				os << "cannot open file " << path << " for writing" << endl;
@@ -62,11 +63,12 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 			os << "saved to " << path << endl;
 			return true;
 		} else if (args[first_arg] == "load") {
+			string path;
 			if (first_arg + 1 >= args.size()) {
-				os << "need a file name" << endl;
-				return false;
+				path = name + ".model";
+			} else {
+				path = args[first_arg + 1];
 			}
-			string path = args[first_arg + 1];
 			ifstream f(path.c_str());
 			if (!f.is_open()) {
 				os << "cannot open file " << path << " for reading" << endl;
@@ -100,12 +102,13 @@ bool multi_model::predict(const scene_sig &sig, const relation_table &rels, cons
 		vector<int> yinds, yobjs;
 		
 		find_prop_inds(sig, cfg->yprops, yobjs, yinds);
-		scene_sig sig2 = sig;
-		for (int j = 0; j < yobjs.size(); ++j) {
-			sig2[yobjs[j]].target = j;
-		}
-
-		if (!cfg->mdl->predict(sig2, rels, x, yp)) {
+		/*
+		 I'm going to start making the assumption that all
+		 models only predict the properties of a single
+		 object. Clean this part up later.
+		*/
+		assert(yobjs.size() == 1);
+		if (!cfg->mdl->predict(yobjs[0], sig, rels, x, yp)) {
 			return false;
 		}
 		dassign(yp, y, yinds);
@@ -124,13 +127,9 @@ void multi_model::learn(const scene_sig &sig, const relation_table &rels, const 
 		vector<int> yinds, yobjs;
 		
 		find_prop_inds(sig, cfg->yprops, yobjs, yinds);
-		scene_sig sig2 = sig;
-		for (int j = 0; j < yobjs.size(); ++j) {
-			sig2[yobjs[j]].target = j;
-		}
-		
+		assert(yobjs.size() == 1);
 		slice(y, yp, yinds);
-		cfg->mdl->learn(sig2, rels, x, yp);
+		cfg->mdl->learn(yobjs[0], sig, rels, x, yp);
 	}
 }
 

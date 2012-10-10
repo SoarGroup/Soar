@@ -325,7 +325,7 @@ void EM::update_eligibility() {
 /*
  Calculate probability of data point d belonging to mode m
 */
-double EM::calc_prob(int m, const scene_sig &sig, const rvec &x, double y, int target, vector<int> &best_assign, double &best_error) const {
+double EM::calc_prob(int m, int target, const scene_sig &sig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
 	rvec py;
 	double w;
 	if (TEST_ELIGIBILITY) {
@@ -371,14 +371,11 @@ double EM::calc_prob(int m, const scene_sig &sig, const rvec &x, double y, int t
 	
 	// otherwise, check all possible assignments
 	vector<vector<int> > possibles(msig.size());
-	for (int i = 0; i < msig.size(); ++i) {
-		if (i == modes[m]->target) {
-			possibles[i].push_back(target);
-		} else {
-			for (int j = 0; j < sig.size(); ++j) {
-				if (sig[j].type == msig[i].type && j != target) {
-					possibles[i].push_back(j);
-				}
+	possibles[0].push_back(target);
+	for (int i = 1; i < msig.size(); ++i) {
+		for (int j = 0; j < sig.size(); ++j) {
+			if (sig[j].type == msig[i].type && j != target) {
+				possibles[i].push_back(j);
 			}
 		}
 	}
@@ -436,7 +433,7 @@ void EM::update_mode_prob(int i, set<int> &check) {
 		} else {
 			vector<int> &obj_map = dinfo.obj_map;
 			double error;
-			now = calc_prob(i, sigs[dinfo.sig_index], dinfo.x, dinfo.y(0), dinfo.target,
+			now = calc_prob(i, dinfo.target, sigs[dinfo.sig_index], dinfo.x, dinfo.y(0), 
 			                obj_maps[make_pair(i, *j)], error);
 		}
 		if ((m == i && now < prev) ||
@@ -534,8 +531,8 @@ void EM::update_MAP(const set<int> &points) {
 	}
 }
 
-void EM::learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
-	int sig_index = -1, target = -1;
+void EM::learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+	int sig_index = -1;
 	for (int i = 0; i < sigs.size(); ++i) {
 		if (sigs[i] == sig) {
 			sig_index = i;
@@ -548,14 +545,6 @@ void EM::learn(const scene_sig &sig, const relation_table &rels, const rvec &x, 
 		sig_index = sigs.size() - 1;
 	}
 
-	for (int i = 0; i < sig.size(); ++i) {
-		if (sig[i].target == 0) {
-			target = sig[i].id;
-		} else {
-			assert(sig[i].target == -1);
-		}
-	}
-	
 	em_data *dinfo = new em_data;
 	dinfo->x = x;
 	dinfo->y = y;
@@ -848,21 +837,17 @@ bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_tab
 	return true;
 }
 
-bool EM::predict(const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y) {
+bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y) {
 	if (ndata == 0 || nmodes < 0) {
 		mode = -1;
 		return false;
 	}
 	
-	int target = -1;
-	set<int> all_objs;
-	for (int i = 0; i < sig.size(); ++i) {
-		all_objs.insert(i);
-		if (sig[i].target == 0) {
-			target = i;
-		}
+	vector<int> obj_map;
+	mode = classify(target, sig, rels, x, obj_map);
+	if (mode < 0) {
+		LOG(EMDBG) << "classification failed" << endl;
 	}
-	assert(target != -1);
 		
 	for (int i = 0; i < modes.size(); ++i) {
 		mode_info &minfo = *modes[i];
@@ -975,23 +960,14 @@ bool EM::run(int maxiters) {
 	return changed;
 }
 
-int EM::best_mode(const scene_sig &sig, const rvec &x, double y, double &besterror) const {
-	int target = -1;
-	for (int i = 0; i < sig.size(); ++i) {
-		if (sig[i].target == 0) {
-			target = i;
-			break;
-		}
-	}
-	assert(target != -1);
-
+int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, double &besterror) const {
 	int best = -1;
 	double best_prob = 0.0;
 	rvec py;
 	vector<int> assign;
 	double error;
 	for (int i = 0; i < nmodes; ++i) {
-		double p = calc_prob(i, sig, x, y, target, assign, error);
+		double p = calc_prob(i, target, sig, x, y, assign, error);
 		if (best == -1 || p > best_prob) {
 			best = i;
 			best_prob = p;

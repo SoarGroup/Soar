@@ -20,9 +20,9 @@ public:
 	: model(name, "em"), si(si), revisions(0), wm_root(NULL)
 	{}
 
-	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
+	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
 		int mode;
-		return em.predict(sig, rels, x, mode, y);
+		return em.predict(target, sig, rels, x, mode, y);
 	}
 	
 	int get_input_size() const {
@@ -33,9 +33,9 @@ public:
 		return 1;
 	}
 
-	void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+	void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 		assert(y.size() == 1);
-		em.learn(sig, rels, x, y);
+		em.learn(target, sig, rels, x, y);
 		if (em.run(MAXITERS)) {
 			if (wm_root) {
 				si->remove_wme(revisions_wme);
@@ -56,14 +56,14 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether classification was correct.
 	*/
-	bool test(scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y, rvec &prediction) {
+	bool test(int target, scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y, rvec &prediction) {
 		int best, mode;
 		double best_error;
 		vector<int> assign;
-		best = em.best_mode(sig, x, y(0), best_error);
+		best = em.best_mode(target, sig, x, y(0), best_error);
 		test_best_modes.push_back(best);
 		test_best_errors.push_back(best_error);
-		bool success = em.predict(sig, rels, x, mode, prediction);
+		bool success = em.predict(target, sig, rels, x, mode, prediction);
 		test_modes.push_back(mode);
 		return success;
 	}

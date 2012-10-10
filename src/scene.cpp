@@ -104,11 +104,11 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 }
 
 void scene_sig::entry::serialize(ostream &os) const {
-	serializer(os) << id << name << type << start << target << props;
+	serializer(os) << id << name << type << start << props;
 }
 
 void scene_sig::entry::unserialize(istream &is) {
-	unserializer(is) >> id >> name >> type >> start >> target >> props;
+	unserializer(is) >> id >> name >> type >> start >> props;
 }
 
 void scene_sig::serialize(ostream &os) const {
@@ -148,6 +148,18 @@ bool scene_sig::get_dim(const string &obj, const string &prop, int &obj_ind, int
 		}
 	}
 	return false;
+}
+
+bool scene_sig::similar(const scene_sig &sig) const {
+	if (s.size() != sig.s.size()) {
+		return false;
+	}
+	for (int i = 0; i < s.size(); ++i) {
+		if (!s[i].similar(sig.s[i])) {
+			return false;
+		}
+	}
+	return true;
 }
 
 scene::scene(const string &name, drawer *d) 

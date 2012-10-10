@@ -388,7 +388,7 @@ LinearModel::LinearModel(const LinearModel &m)
 	timers.add("fit");
 }
 
-void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const scene_sig &sig, std::vector<int> &obj_map)
+void LinearModel::init_fit(const_mat_view X, const_mat_view Y, int target, const scene_sig &sig, std::vector<int> &obj_map)
 {
 	isconst = true;
 	obj_map.clear();
@@ -407,21 +407,24 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const scene_sig &
 	
 	fit_sub(X, Y);
 	
-	// find relevant objects (with nonzero coefficients)
 	int ndims = 0, ndata = X.rows(), nout = Y.cols();
-	int i = 0, obj = 0;
-	while (i < coefs.rows()) {
-		if (!coefs.row(i).isConstant(0.0)) {
-			obj_map.push_back(obj);
-			ndims += sig[obj].props.size();
-			if (obj == sig.size() - 1) {
+	
+	// target is always first object
+	obj_map.push_back(target);
+	ndims += sig[target].props.size();
+	
+	// find other relevant objects (with nonzero coefficients)
+	for (int i = 0; i < sig.size(); ++i) {
+		if (i == target) {
+			continue;
+		}
+		int start = sig[i].start;
+		int end = start + sig[i].props.size();
+		for (int j = start; j < end; ++j) {
+			if (!coefs.row(j).isConstant(0.0)) {
+				obj_map.push_back(i);
+				ndims += sig[i].props.size();
 				break;
-			}
-			i = sig[++obj].start;
-		} else {
-			++i;
-			if (obj < sig.size() - 1 && i == sig[obj + 1].start) {
-				++obj;
 			}
 		}
 	}
@@ -431,7 +434,7 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const scene_sig &
 	xdata.resize(ndata, ndims);
 
 	orig_sig.clear();
-	i = 0;
+	int i = 0;
 	for (int j = 0; j < obj_map.size(); ++j) {
 		orig_sig.add(sig[obj_map[j]]);
 		int s = sig[obj_map[j]].start;
@@ -549,12 +552,17 @@ void LinearModel::update_error() {
 }
 
 void LinearModel::serialize(ostream &os) const {
-	serializer(os) << alg << error << isconst << xtotals << center << constvals << intercept << xdata << ydata;
+	serializer(os) << alg << error << isconst << xtotals << center
+	               << constvals << intercept << xdata << ydata
+	               << orig_sig;
 }
 
 void LinearModel::unserialize(istream &is) {
 	int a;
-	unserializer(is) >> a >> error >> isconst >> xtotals >> center >> constvals >> intercept >> xdata >> ydata;
+	unserializer(is) >> a >> error >> isconst >> xtotals >> center 
+	                 >> constvals >> intercept >> xdata >> ydata
+	                 >> orig_sig;
+
 	assert(a == OLS || a == RIDGE || a == PCR || a == LASSO || a == FORWARD);
 	alg = static_cast<regression_type>(a);
 	fit();

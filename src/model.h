@@ -23,10 +23,10 @@ public:
 	std::string get_name() const { return name; }
 	std::string get_type() const { return type; }
 	
-	virtual bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) = 0;
+	virtual bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
-	virtual void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {}
+	virtual void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {}
 	virtual void set_wm_root(Symbol *r) {}
 	void serialize(std::ostream &os) const {}
 	void unserialize(std::istream &is) {}
