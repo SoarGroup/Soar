@@ -23,7 +23,6 @@ typedef std::vector<vec3> ptlist;
 typedef Eigen::RowVectorXd rvec;
 typedef Eigen::VectorXd cvec;
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> mat;
-typedef Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> imat;
 
 /*
  Don't try to understand what these mean, just know that you

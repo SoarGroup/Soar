@@ -40,11 +40,7 @@ template <typename K, typename V> void unserialize(std::map<K, V> &m, std::istre
 
 void serialize  (const_mat_view m, std::ostream &os);
 void unserialize(mat &m,           std::istream &is);
-void serialize  (const imat &m,    std::ostream &os);
-void unserialize(imat &m,          std::istream &is);
-void serialize  (const rvec &v,    std::ostream &os);
 void unserialize(rvec &v,          std::istream &is);
-void serialize  (const cvec &v,    std::ostream &os);
 void unserialize(cvec &v,          std::istream &is);
 
 inline void serialize(const serializable &p, std::ostream &os) {
@@ -121,13 +117,25 @@ void unserialize(std::pair<U, V> &p, std::istream &is) {
 
 template <typename T>
 void serialize(const T* v, std::ostream &os) {
-	serialize(*v, os);
+	if (!v) {
+		os << "0" << std::endl;
+	} else {
+		os << "1" << std::endl;
+		serialize(*v, os);
+	}
 }
 
 template <typename T>
 void unserialize(T* &v, std::istream &is) {
-	v = new T;
-	unserialize(*v, is);
+	char c;
+	is >> c;
+	if (c == '0') {
+		v = NULL;
+	} else {
+		assert(c == '1');
+		v = new T;
+		unserialize(*v, is);
+	}
 }
 
 template <typename C>
