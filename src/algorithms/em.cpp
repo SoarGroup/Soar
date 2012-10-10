@@ -456,6 +456,7 @@ void EM::update_mode_prob(int i, set<int> &check) {
 void EM::mode_add_example(int m, int i, bool update) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
+	int target = sigs[dinfo.sig_index][dinfo.target].id;
 	
 	rvec xc;
 	if (!minfo.model->is_const()) {
@@ -475,12 +476,14 @@ void EM::mode_add_example(int m, int i, bool update) {
 	minfo.members.insert(i);
 	minfo.stale = true;
 	minfo.classifier_stale = true;
-	minfo.member_rel.add(i, dinfo.target);
+	minfo.member_rel.add(i, target);
 }
 
 void EM::mode_del_example(int m, int i) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
+	int target = sigs[dinfo.sig_index][dinfo.target].id;
+	
 	int r = dinfo.model_row;
 	minfo.model->del_example(r);
 	minfo.members.erase(i);
@@ -493,7 +496,7 @@ void EM::mode_del_example(int m, int i) {
 	}
 	minfo.stale = true;
 	minfo.classifier_stale = true;
-	minfo.member_rel.del(i, dinfo.target);
+	minfo.member_rel.del(i, target);
 }
 
 /* Recalculate MAP model for each index in points */
@@ -763,7 +766,7 @@ void EM::init_mode(int mode, int sig, LinearModel *m, const vector<int> &members
 	assert(!members.empty());
 
 	mode_info &minfo = *modes[mode];
-	int target = data[members.front()]->target;
+	int target = sigs[sig][data[members.front()]->target].id;
 	if (minfo.model) {
 		delete minfo.model;
 	}
@@ -781,7 +784,7 @@ void EM::init_mode(int mode, int sig, LinearModel *m, const vector<int> &members
 		dinfo.map_mode = mode;
 		dinfo.model_row = i;
 		dinfo.obj_map = obj_map;
-		minfo.member_rel.add(members[i], dinfo.target);
+		minfo.member_rel.add(members[i], target);
 	}
 	mark_mode_stale(mode);
 }
