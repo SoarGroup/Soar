@@ -109,7 +109,7 @@ bool multi_model::predict(const scene_sig &sig, const relation_table &rels, cons
 		*/
 		assert(yobjs.size() == 1);
 		if (!cfg->mdl->predict(yobjs[0], sig, rels, x, yp)) {
-			return false;
+			yp.setConstant(NAN);
 		}
 		dassign(yp, y, yinds);
 	}
@@ -236,83 +236,94 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	}
 	
 	if (list) {
-		os << "num real pred error null norm" << endl;
+		table_printer t;
+		t.add_row() << "num" << "real" << "pred" << "error" << "null" << "norm";
 		for (int j = start; j <= end; ++j) {
-			os << setw(4) << j << " ";
+			t.add_row() << j;
 			if (dim >= reference_vals[j].size() || dim >= predicted_vals[j].size()) {
-				os << "NA" << endl;
+				t << "NA";
 			} else {
-				double error, null_error, norm_error;
-				error = fabs(reference_vals[j](dim) - predicted_vals[j](dim));
-				if (j > 0 && (null_error = fabs(reference_vals[j-1](dim) - reference_vals[j](dim))) > 0) {
-					norm_error = error / null_error;
+				double ref = reference_vals[j](dim), pred = predicted_vals[j](dim);
+				t << ref << pred;
+				if (isnan(pred)) {
+					t << "NA" << "NA" << "NA";
 				} else {
-					null_error = -1;
-					norm_error = -1;
+					double error = fabs(ref - pred);
+					t << error;
+					if (j > 0) {
+						double null_error = fabs(reference_vals[j-1](dim) - ref);
+						t << null_error << error / null_error;
+					} else {
+						t << "NA" << "NA";
+					}
 				}
-				os << reference_vals[j](dim) << " " << predicted_vals[j](dim) << " " 
-				   << error << " ";
-				if (null_error < 0) {
-					os << "NA ";
-				} else {
-					os << null_error << " ";
-				}
-				if (norm_error < 0) {
-					os << "NA";
-				} else {
-					os << norm_error;
-				}
-				os << endl;
 			}
 		}
+		t.print(os);
+		return true;
 	} else if (histo) {
 		vector<double> errors;
 		for (int j = start; j <= end; ++j) {
 			errors.push_back(fabs(reference_vals[j](dim) - predicted_vals[j](dim)));
 		}
 		histogram(errors, 10, os) << endl;
+		return true;
 	} else {
-		double mean, mode, std, min, max;
-		error_stats_by_dim(dim, start, end, mean, mode, std, min, max);
-		os << "mean " << mean << endl
-		   << "std  " << std << endl
-		   << "mode " << mode << endl
-		   << "min  " << min << endl
-		   << "max  " << max << endl;
+		return error_stats(dim, start, end, os);
 	}
-	return true;
+	return false;
 }
 
-void multi_model::error_stats_by_dim(int dim, int start, int end, double &mean, double &mode, double &std, double &min, double &max) const {
+bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
 	assert(dim >= 0 && start >= 0 && end <= reference_vals.size());
-	double total = 0.0;
-	min = INFINITY; 
-	max = 0.0;
-	std = 0.0;
+	double total = 0.0, min = INFINITY, max = 0.0, std = 0.0;
+	int num_nans = 0;
 	vector<double> ds;
 	for (int i = start; i <= end; ++i) {
 		if (dim >= reference_vals[i].size() || dim >= predicted_vals[i].size()) {
 			continue;
 		}
-		double r = reference_vals[i](dim);
-		double p = predicted_vals[i](dim);
-		double d = fabs(r - p);
-		ds.push_back(d);
-		total += d;
-		if (d < min) {
-			min = d;
-		}
-		if (d > max) {
-			max = d;
+		if (isnan(predicted_vals[i](dim))) {
+			++num_nans;
+		} else {
+			double r = reference_vals[i](dim);
+			double p = predicted_vals[i](dim);
+			double d = fabs(r - p);
+			ds.push_back(d);
+			total += d;
+			if (d < min) {
+				min = d;
+			}
+			if (d > max) {
+				max = d;
+			}
 		}
 	}
-	mean = total / ds.size();
+	os << num_nans << " failed" << endl;
+	if (ds.empty()) {
+		os << "no predictions" << endl;
+		return false;
+	}
+	
+	double mean = total / ds.size();
 	for (int i = 0; i < ds.size(); ++i) {
 		std += pow(ds[i] - mean, 2);
 	}
 	std = sqrt(std / ds.size());
 	sort(ds.begin(), ds.end());
-	mode = ds[ds.size() / 2];
+	double mode = ds[ds.size() / 2];
+	double last = ds.back();
+	
+	table_printer t;
+	t.add_row() << "mean" << mean;
+	t.add_row() << "std" << std;
+	t.add_row() << "mode" << mode;
+	t.add_row() << "min" << min;
+	t.add_row() << "max" << max;
+	t.add_row() << "last" << last;
+	t.print(os);
+
+	return true;
 }
 
 void multi_model::report_model_config(model_config* c, ostream &os) const {
