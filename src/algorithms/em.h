@@ -26,7 +26,6 @@ public:
 	// Return the mode with the model that best fits (x, y)
 	int best_mode(int target, const scene_sig &sig, const rvec &x, double y, double &besterror) const;
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
-	void get_map_modes(std::vector<int> &modes) const;
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 	
@@ -50,32 +49,38 @@ private:
 		void unserialize(std::istream &is);
 	};
 	
+	class classifier : public serializable {
+	public:
+		classifier() : const_class(-1), lda(NULL) {}
+		
+		int const_class;
+		clause_vec clauses;
+		std::set<int> uncovered;
+		LDA *lda;
+		
+		void inspect(std::ostream &os) const;
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+
 	class mode_info : public serializable {
 	public:
-		mode_info() : pos(2), neg(2), clauses_dirty(true), model(NULL), lda(NULL) {}
+		mode_info() : member_rel(2), stale(true), classifier_stale(true), model(NULL) {}
 		
-		~mode_info() {
-			delete model;
-		}
+		~mode_info();
 		
 		void serialize(std::ostream &os) const;
 		void unserialize(std::istream &is);
 		
 		bool cli_inspect(int first, const std::vector<std::string> &args, std::ostream &os);
 
-		bool stale;
-		int target; // index in sig for the target object
+		bool stale, classifier_stale;
 		
 		std::set<int> stale_points;
 		std::set<int> members;
+		relation member_rel;
 		scene_sig sig;
-		
 		LinearModel *model;
-		
-		// classifier stuff
-		relation pos, neg;
-		clause_vec mode_clauses;
-		LDA *lda;
 		
 		/*
 		 Each object the model is conditioned on needs to be
@@ -84,7 +89,14 @@ private:
 		*/
 		std::vector<clause_vec> obj_clauses;
 		
-		bool clauses_dirty;
+		/*
+		 Each pair of modes has one classifier associated with it. For
+		 mode i, the classifier for it and mode j is stored in the
+		 j_th element of this vector. Elements 0 - i of this vector
+		 are NULL since those classifiers are already present in a
+		 previous mode's classifier vector.
+		*/
+		std::vector<classifier*> classifiers;
 	};
 	
 	/*
@@ -114,8 +126,14 @@ private:
 	bool map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
 	void extend_relations(const relation_table &add, int time);
 	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
-	void make_classifier_matrix(const relation &p, const relation &n, mat &m, std::vector<int> &classes);
+	void make_classifier_matrix(const relation &p, const relation &n, mat &m, std::vector<int> &classes) const;
 	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
+	bool cli_inspect_classifiers(std::ostream &os) const;
+
+	void update_classifier();
+	void update_pair(int i, int j);
+	int classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &obj_map);
+	int classify_pair(int i, int j, int target, const relation_table &rels, const rvec &x) const;
 
 	relation_table rel_tbl;
 	std::vector<em_data*> data;
@@ -124,6 +142,8 @@ private:
 	std::map<int, std::set<int> > noise;  // sig index -> data index
 	int ndata, nmodes;
 	obj_map_table obj_maps;
+	
+	std::vector<std::vector<classifier*> > classifiers;
 	
 	enum Timers { E_STEP_T, M_STEP_T, NEW_T };
 	timer_set timers;

@@ -5,6 +5,20 @@
 
 using namespace std;
 
+void clause_vars(const clause &c, vector<int> &vars) {
+	for (int i = 0; i < c.size(); ++i) {
+		const tuple &args = c[i].get_args();
+		for (int j = 0; j < args.size(); ++j) {
+			if (args[j] >= 0) {
+				vars.push_back(args[j]);
+			}
+		}
+	}
+	sort(vars.begin(), vars.end());
+	vector<int>::iterator end = unique(vars.begin(), vars.end());
+	vars.resize(end - vars.begin());
+}
+
 class csp_node {
 public:
 	csp_node() {}
@@ -13,38 +27,36 @@ public:
 	: vars(par.vars), constraints(par.constraints), unassigned(par.unassigned)
 	{}
 
-	bool init(const clause &c, const relation_table &rels, const set<int> &objs) {
-		set<int> all_vars;
-		for (int i = 0; i < c.size(); ++i) {
-			const tuple &largs = c[i].get_args();
-			for (int j = 0; j < largs.size(); ++j) {
-				if (largs[j] >= 0) {
-					all_vars.insert(largs[j]);
-				}
-			}
-		}
-		// make sure variables are sequential integers starting from 0
-		assert(*all_vars.begin() == 0 && *max_element(all_vars.begin(), all_vars.end()) == all_vars.size() - 1);
+	bool init(const clause &c, const relation_table &rels, const var_domains &domains) {
+		vector<int> all_vars;
+		map<int, int> var_map;
+		
+		clause_vars(c, all_vars);
 		unassigned = all_vars.size();
 		vars.resize(unassigned);
 		for (int i = 0; i < vars.size(); ++i) {
-			vars[i].domain = objs;
+			int v = all_vars[i];
+			var_map[v] = i;
+			vars[i].label = v;
+			if (map_has(domains, v) && !map_get(domains, v).empty()) {
+				vars[i].infinite_domain = false;
+				vars[i].domain = map_get(domains, v);
+			}
 		}
 
 		constraints.resize(c.size());
 		for (int i = 0; i < c.size(); ++i) {
-			constraint_info &cons = constraints[i];
-			const relation &r = map_get(rels, c[i].get_name());
-			cons.tuples = r;
 			const tuple &args = c[i].get_args();
-	
+			const relation &r = map_get(rels, c[i].get_name());
+			constraint_info &cons = constraints[i];
 			cons.negated = c[i].negated();
+			cons.tuples = r;
 			cons.doms.resize(args.size());
 			cons.vars.resize(args.size());
 			cons.unbound = 0;
 			for (int j = 0; j < args.size(); ++j) {
 				if (args[j] >= 0) {
-					cons.vars[j] = args[j];
+					cons.vars[j] = map_get(var_map, args[j]);
 					r.at_pos(j, cons.doms[j]);
 					++cons.unbound;
 				} else {
@@ -65,9 +77,8 @@ public:
 
 	bool search(map<int, int> &out) {
 		if (unassigned == 0) {
-			out.clear();
 			for (int i = 0; i < vars.size(); ++i) {
-				out[i] = vars[i].value;
+				out[vars[i].label] = vars[i].value;
 			}
 			return true;
 		}
@@ -78,11 +89,14 @@ public:
 			if (vars[i].value >= 0) {
 				continue;
 			}
-			if (mrv < 0 || vars[i].domain.size() < vars[mrv].domain.size()) {
+			if (mrv < 0 || 
+			    (!vars[i].infinite_domain && vars[mrv].infinite_domain) ||
+			    (vars[i].domain.size() < vars[mrv].domain.size()))
+			{
 				mrv = i;
 			}
 		}
-		
+		assert(!vars[mrv].infinite_domain);
 		set<int>::iterator i;
 		for (i = vars[mrv].domain.begin(); i != vars[mrv].domain.end(); ++i) {
 			csp_node child(*this);
@@ -93,16 +107,42 @@ public:
 		return false;
 	}
 
+private:
+	struct constraint_info {
+		bool negated;
+		int unbound;
+		relation tuples;
+		vector<set<int> > doms;
+		vector<int> vars;
+	};
+
+	struct var_info {
+		set<int> domain;
+		bool infinite_domain;  // variable can be any value
+		int label;
+		int value;
+
+		var_info() : label(-1), value(-1), infinite_domain(true) {}
+	};
+
+	vector<var_info>        vars;
+	vector<constraint_info> constraints;
+	int unassigned;
+	
 	/*
 	 For each constraint c and position i that var is in, remove
 	 all tuples in c whose ith argument is not val.
 	*/
 	bool assign(int v, int value) {
 		assert(0 <= v && v < vars.size());
-		if (!in_set(value, vars[v].domain)) {
+		var_info &var = vars[v];
+		if (!var.infinite_domain && !in_set(value, var.domain)) {
 			return false;
 		}
-		vars[v].value = value;
+		var.value = value;
+		var.domain.clear();
+		var.domain.insert(value);
+		var.infinite_domain = false;
 		if (--unassigned == 0) {
 			return true;
 		}
@@ -139,26 +179,6 @@ public:
 		}
 		return true;
 	}
-private:
-	struct constraint_info {
-		bool negated;
-		int unbound;
-		relation tuples;
-		vector<set<int> > doms;
-		vector<int> vars;
-	};
-
-	struct var_info {
-		set<int> domain;
-		int value;
-
-		var_info() : value(-1) {}
-	};
-
-	vector<var_info>        vars;
-	vector<constraint_info> constraints;
-	int unassigned;
-	
 
 	void update_cdoms(int c) {
 		constraint_info &cons = constraints[c];
@@ -176,17 +196,20 @@ private:
 		}
 		var_info &var = vars[cons.vars[j]];
 		if (var.value >= 0) {
-			assert(in_set(var.value, var.domain));
-			var.domain.clear();
-			var.domain.insert(var.value);
 			return true;
 		}
 		if (!cons.negated) {
-			intersect_sets_inplace(var.domain, cons.doms[j]);
+			if (var.infinite_domain) {
+				var.domain = cons.doms[j];
+				var.infinite_domain = false;
+			} else {
+				intersect_sets_inplace(var.domain, cons.doms[j]);
+			}
 		} else if (cons.unbound == 1) {
+			assert(!var.infinite_domain);
 			subtract_sets_inplace(var.domain, cons.doms[j]);
 		}
-		return !var.domain.empty();
+		return var.infinite_domain || !var.domain.empty();
 	}
 };
 
@@ -217,28 +240,32 @@ private:
 	const FOIL &foil;
 };
 
-bool test_clause(const clause &c, const relation_table &rels, const set<int> &objs, map<int, int> &assignments) {
+bool test_clause(const clause &c, const relation_table &rels, var_domains &domains) {
 	csp_node csp;
-	if (!csp.init(c, rels, objs)) {
+	if (!csp.init(c, rels, domains)) {
 		return false;
 	}
-	map<int, int>::iterator i;
-	for (i = assignments.begin(); i != assignments.end(); ++i) {
-		if (!csp.assign(i->first, i->second)) {
-			return false;
-		}
+	map<int, int> assign;
+	if (!csp.search(assign)) {
+		return false;
 	}
-	return csp.search(assignments);
+	map<int, int>::const_iterator i;
+	for (i = assign.begin(); i != assign.end(); ++i) {
+		domains[i->first].clear();
+		domains[i->first].insert(i->second);
+	}
+	return true;
 }
 
-int test_clause_vec(const clause_vec &c, const relation_table &rels, const set<int> &objs, map<int,int> &assignments) {
+int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains &domains) {
 	for (int i = 0; i < c.size(); ++i) {
-		if (test_clause(c[i], rels, objs, assignments)) {
+		var_domains d = domains;
+		if (test_clause(c[i], rels, d)) {
 			LOG(FOILDBG) << "found assignment" << endl;
-			map<int, int>::const_iterator j;
-			for (int j = 0; j < assignments.size(); ++j) {
-				LOG(FOILDBG) << j << " -> " << assignments[j] << endl;
+			for (int j = 0; j < d.size(); ++j) {
+				LOG(FOILDBG) << j << " -> " << *d[j].begin() << endl;
 			}
+			domains = d;
 			return i;
 		}
 	}
@@ -315,7 +342,7 @@ int literal::operator<<(const std::string &s) {
 }
 
 FOIL::FOIL(const relation &p, const relation &n, const relation_table &rels) 
-: pos(p), neg(n), rels(rels), nvars(p.arity())
+: pos(p), neg(n), rels(rels), init_vars(p.arity())
 {
 	assert(p.arity() == n.arity());
 }
@@ -404,7 +431,7 @@ double FOIL::choose_literal(literal &l, int n) {
 }
 
 bool FOIL::add_clause(clause &c) {
-	int n = nvars;
+	int n = init_vars;
 	while (!neg_grow.empty()) {
 		literal l;
 		double gain = choose_literal(l, n);
@@ -466,32 +493,23 @@ bool FOIL::add_clause(clause &c) {
 
 double FOIL::clause_success_rate(const clause &c) const {
 	double correct = 0;
-	set<int> objs;
-	relation_table::const_iterator ri;
-	for (ri = rels.begin(); ri != rels.end(); ++ri) {
-		const relation &r = ri->second;
-		for (int i = 0; i < r.arity(); ++i) {
-			r.at_pos(i, objs);
-		}
-	}
+	var_domains domains;
 	
-	map<int, int> assign;
-	set<int>::const_iterator i;
 	for (int i = 0; i < pos_test.size(); ++i) {
-		assign.clear();
-		for(int j = 0; j < nvars; ++j) {
-			assign[j] = pos_test[i][j];
+		domains.clear();
+		for (int j = 0; j < init_vars; ++j) {
+			domains[j].insert(pos_test[i][j]);
 		}
-		if (test_clause(c, rels, objs, assign)) {
+		if (test_clause(c, rels, domains)) {
 			++correct;
 		}
 	}
 	for (int i = 0; i < neg_test.size(); ++i) {
-		assign.clear();
-		for(int j = 0; j < nvars; ++j) {
-			assign[j] = neg_test[i][j];
+		domains.clear();
+		for (int j = 0; j < init_vars; ++j) {
+			domains[j].insert(neg_test[i][j]);
 		}
-		if (!test_clause(c, rels, objs, assign)) {
+		if (!test_clause(c, rels, domains)) {
 			++correct;
 		}
 	}
@@ -520,7 +538,7 @@ bool FOIL::filter_pos_by_clause(const clause &c) {
 		relation sliced;
 		tuple bound_vars, bound_inds;
 		for (int j = 0; j < args.size(); ++j) {
-			if (args[j] >= 0 && args[j] < nvars) {
+			if (args[j] >= 0 && args[j] < init_vars) {
 				bound_vars.push_back(args[j]);
 				bound_inds.push_back(j);
 			}
@@ -599,8 +617,8 @@ void literal_tree::expand() {
 				delete c;
 				continue;
 			}
-			if (*best == NULL || c->gain > (**best).gain ||
-			    (c->gain == (**best).gain && c->nbound > (**best).nbound))
+			if (true && //(!c->lit.negated() || c->vars_left.empty()) &&
+				(*best == NULL || c->gain > (**best).gain || (c->gain == (**best).gain && c->nbound > (**best).nbound)))
 			{
 				*best = c;
 			}

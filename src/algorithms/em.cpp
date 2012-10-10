@@ -474,9 +474,8 @@ void EM::mode_add_example(int m, int i, bool update) {
 	
 	minfo.members.insert(i);
 	minfo.stale = true;
-	minfo.pos.add(i, dinfo.target);
-	minfo.neg.del(i, dinfo.target);
-	minfo.clauses_dirty = true;
+	minfo.classifier_stale = true;
+	minfo.member_rel.add(i, dinfo.target);
 }
 
 void EM::mode_del_example(int m, int i) {
@@ -493,9 +492,8 @@ void EM::mode_del_example(int m, int i) {
 		}
 	}
 	minfo.stale = true;
-	minfo.pos.del(i, dinfo.target);
-	minfo.neg.add(i, dinfo.target);
-	minfo.clauses_dirty = true;
+	minfo.classifier_stale = true;
+	minfo.member_rel.del(i, dinfo.target);
 }
 
 /* Recalculate MAP model for each index in points */
@@ -558,7 +556,6 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 	noise[sig_index].insert(ndata);
 	for (int i = 0; i < nmodes; ++i) {
 		modes[i]->stale_points.insert(ndata);
-		modes[i]->neg.add(ndata, dinfo->target);
 	}
 	extend_relations(rels, ndata);
 	++ndata;
@@ -688,6 +685,7 @@ bool EM::unify_or_add_model() {
 		int ysize = data[seed_inds[0]]->y.size();
 		LinearModel *m = new LinearModel(REGRESSION_ALG);
 		int seed_sig = data[seed_inds[0]]->sig_index;
+		int seed_target = data[seed_inds[0]]->target;
 		mat X, Y;
 	
 		/*
@@ -705,7 +703,9 @@ bool EM::unify_or_add_model() {
 			bool same_sig = true;
 			set<int>::const_iterator k;
 			for (k = members.begin(); k != members.end(); ++k) {
-				if (data[*k]->sig_index != seed_sig) {
+				if (data[*k]->sig_index != seed_sig || 
+				    data[*k]->target != seed_target)
+				{
 					same_sig = false;
 					break;
 				}
@@ -718,7 +718,7 @@ bool EM::unify_or_add_model() {
 			extend(combined, seed_inds);
 			
 			fill_xy(combined, X, Y);
-			m->init_fit(X, Y, sigs[seed_sig], obj_map);
+			m->init_fit(X, Y, seed_target, sigs[seed_sig], obj_map);
 			double curr_error = minfo.model->get_train_error();
 			double combined_error = m->get_train_error();
 			
@@ -734,13 +734,21 @@ bool EM::unify_or_add_model() {
 		
 		if (!unified) {
 			fill_xy(seed_inds, X, Y);
-			m->init_fit(X, Y, sigs[i->first], obj_map);
+			m->init_fit(X, Y, seed_target, sigs[i->first], obj_map);
 			modes.push_back(new mode_info);
+			++nmodes;
+			init_mode(nmodes - 1, i->first, m, seed_inds, obj_map);
 			for (int j = 0; j < ndata; ++j) {
 				data[j]->mode_prob.push_back(0.0);
 			}
-			++nmodes;
-			init_mode(nmodes - 1, i->first, m, seed_inds, obj_map);
+			for (int j = 0; j < nmodes; ++j) {
+				modes[j]->classifiers.resize(nmodes, NULL);
+				/*
+				 It's sufficient to fill the extra vector elements
+				 with NULL here. The actual classifiers will be
+				 allocated as needed during updates.
+				*/
+			}
 		}
 
 		for (int j = 0; j < seed_inds.size(); ++j) {
@@ -760,35 +768,20 @@ void EM::init_mode(int mode, int sig, LinearModel *m, const vector<int> &members
 		delete minfo.model;
 	}
 	minfo.model = m;
-	minfo.target = -1;
 	minfo.members.clear();
 	minfo.sig.clear();
 	extend(minfo.members, members);
-	if (m->is_const()) {
-		minfo.target = 0;
-		minfo.sig.add(sigs[sig][target]);
-	} else {
-		for (int i = 0; i < obj_map.size(); ++i) {
-			if (obj_map[i] == target) {
-				minfo.target = i;
-			}
-			minfo.sig.add(sigs[sig][obj_map[i]]);
-		}
+	for (int i = 0; i < obj_map.size(); ++i) {
+		minfo.sig.add(sigs[sig][obj_map[i]]);
 	}
 	minfo.obj_clauses.resize(minfo.sig.size());
-	minfo.pos.clear();
-	minfo.neg.clear();
-	// there's probably a more efficient way to initialize neg
-	for (int i = 0; i < ndata; ++i) {
-		minfo.neg.add(i, target);
-	}
+	minfo.member_rel.clear();
 	for (int i = 0; i < members.size(); ++i) {
 		em_data &dinfo = *data[members[i]];
 		dinfo.map_mode = mode;
 		dinfo.model_row = i;
 		dinfo.obj_map = obj_map;
-		minfo.pos.add(members[i], dinfo.target);
-		minfo.neg.del(members[i], dinfo.target);
+		minfo.member_rel.add(members[i], dinfo.target);
 	}
 	mark_mode_stale(mode);
 }
@@ -804,33 +797,35 @@ bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_tab
 	const mode_info &minfo = *modes[mode];
 	vector<bool> used(sig.size(), false);
 	used[target] = true;
+	mapping.resize(minfo.sig.empty() ? 1 : minfo.sig.size(), -1);
 	
-	for (int i = 0; i < minfo.sig.size(); ++i) {
-		int obj = -1;
-		if (i == minfo.target) {
-			// target always maps to target
-			mapping[i] = target;
+	// target always maps to target
+	mapping[0] = target;
+	
+	var_domains domains;  
+	
+	// 0 = time, 1 = target, 2 = object we're searching for
+	domains[0].insert(0);
+	domains[1].insert(target);
+	
+	for (int i = 1; i < minfo.sig.size(); ++i) {
+		set<int> &d = domains[2];
+		d.clear();
+		for (int j = 0; j < used.size(); ++j) {
+			if (!used[j] && sig[j].type == minfo.sig[i].type) {
+				d.insert(j);
+			}
+		}
+		if (d.empty()) {
+			return false;
+		} else if (d.size() == 1 || minfo.obj_clauses[i].empty()) {
+			mapping[i] = *d.begin();
 		} else {
-			set<int> candidates;
-			for (int j = 0; j < used.size(); ++j) {
-				if (!used[j] && sig[j].type == minfo.sig[i].type) {
-					candidates.insert(j);
-				}
-			}
-			if (candidates.empty()) {
+			if (test_clause_vec(minfo.obj_clauses[i], rels, domains) < 0) {
 				return false;
-			} else if (candidates.size() == 1 || minfo.obj_clauses[i].empty()) {
-				mapping[i] = *candidates.begin();
-			} else {
-				map<int, int> assign;
-				assign[0] = 0;
-				assign[1] = target;
-				if (test_clause_vec(minfo.obj_clauses[i], rels, candidates, assign) < 0) {
-					return false;
-				}
-				assert(assign.find(2) != assign.end());
-				mapping[i] = assign[2];
 			}
+			assert(domains[2].size() == 1);
+			mapping[i] = *domains[2].begin();
 		}
 		used[mapping[i]] = true;
 	}
@@ -848,49 +843,22 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	if (mode < 0) {
 		LOG(EMDBG) << "classification failed" << endl;
 	}
-		
-	for (int i = 0; i < modes.size(); ++i) {
-		mode_info &minfo = *modes[i];
-		if (minfo.sig.size() > sig.size()) {
-			continue;
+	
+	const mode_info &minfo = *modes[mode];
+	rvec xc;
+	if (!minfo.model->is_const()) {
+		xc.resize(x.size());
+		int xsize = 0;
+		for (int j = 0; j < obj_map.size(); ++j) {
+			int n = sig[obj_map[j]].props.size();
+			xc.segment(xsize, n) = x.segment(sig[obj_map[j]].start, n);
+			xsize += n;
 		}
-		update_clauses(i);
-		vector<int> mapping(minfo.sig.size(), -1);
-		if (!map_objs(i, target, sig, rels, mapping)) {
-			continue;
-		}
-		
-		map<int, int> assign;
-		assign[0] = 0;
-		int c = test_clause_vec(minfo.mode_clauses, rels, all_objs, assign);
-		if (c >= 0) {
-			LOG(EMDBG) << "mode " << i << " clause " << c << " satisfied" << endl;
-			LOG(EMDBG) << minfo.mode_clauses[c] << endl;
-			map<int, int>::const_iterator j;
-			for (j = assign.begin(); j != assign.end(); ++j) {
-				LOG(EMDBG) << j->first << " = " << j->second << endl;
-			}
-		} else if (!minfo.lda || minfo.lda->classify(x) == 0) {
-			continue;
-		}
-		rvec xc;
-		if (!minfo.model->is_const()) {
-			xc.resize(x.size());
-			int xsize = 0;
-			for (int j = 0; j < mapping.size(); ++j) {
-				int n = sig[mapping[j]].props.size();
-				xc.segment(xsize, n) = x.segment(sig[mapping[j]].start, n);
-				xsize += n;
-			}
-			xc.conservativeResize(xsize);
-		}
-		if (minfo.model->predict(xc, y)) {
-			mode = i;
-			return true;
-		}
+		xc.conservativeResize(xsize);
 	}
-	LOG(EMDBG) << "no suitable modes" << endl;
-	mode = -1;
+	if (minfo.model->predict(xc, y)) {
+		return true;
+	}
 	return false;
 }
 
@@ -927,6 +895,12 @@ bool EM::remove_modes() {
 	if (removed.empty()) {
 		return false;
 	}
+	assert(i == nmodes - removed.size());
+	nmodes = i;
+	modes.resize(nmodes);
+	for (int j = 0; j < nmodes; ++j) {
+		remove_from_vector(removed, modes[j]->classifiers);
+	}
 	for (int j = 0; j < ndata; ++j) {
 		em_data &dinfo = *data[j];
 		if (dinfo.map_mode >= 0) {
@@ -934,9 +908,6 @@ bool EM::remove_modes() {
 		}
 		remove_from_vector(removed, dinfo.mode_prob);
 	}
-	assert(i == nmodes - removed.size());
-	nmodes = i;
-	modes.resize(nmodes);
 	return true;
 }
 
@@ -978,11 +949,7 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 }
 
 bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
-	stringstream ss;
-
-	for (int i = 0; i < modes.size(); ++i) {
-		const_cast<EM*>(this)->update_clauses(i);
-	}
+	const_cast<EM*>(this)->update_classifier();
 
 	if (first_arg >= args.size()) {
 		os << "modes: " << nmodes << endl;
@@ -1069,16 +1036,11 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		return true;
 	} else if (args[first_arg] == "relations") {
 		return cli_inspect_relations(first_arg + 1, args, os);
+	} else if (args[first_arg] == "classifiers") {
+		return cli_inspect_classifiers(os);
 	}
 
 	return false;
-}
-
-void EM::get_map_modes(std::vector<int> &modes) const {
-	modes.reserve(ndata);
-	for (int i = 0; i < ndata; ++i) {
-		modes.push_back(data[i]->map_mode);
-	}
 }
 
 /*
@@ -1110,38 +1072,6 @@ void EM::learn_obj_clause(int m, int i) {
 	if (!foil.learn(modes[m]->obj_clauses[i], uncovered)) {
 		// respond to this situation appropriately
 	}
-}
-
-void EM::update_clauses(int m) {
-	mode_info &minfo = *modes[m];
-	if (!minfo.clauses_dirty) {
-		return;
-	}
-	
-	minfo.mode_clauses.clear();
-	minfo.obj_clauses.clear();
-	if (minfo.lda) {
-		delete minfo.lda;
-		minfo.lda = NULL;
-	}
-	
-	for (int i = 0; i < minfo.sig.size(); ++i) {
-		if (i != minfo.target) {
-			learn_obj_clause(m, i);
-		}
-	}
-		
-	if (!minfo.pos.empty()) {
-		relation uncovered;
-		FOIL foil(minfo.pos, minfo.neg, rel_tbl);
-		if (!foil.learn(minfo.mode_clauses, uncovered)) {
-			mat lda_data;
-			vector<int> lda_classes;
-			make_classifier_matrix(uncovered, minfo.neg, lda_data, lda_classes);
-			minfo.lda = new LDA(lda_data, lda_classes);
-		}
-	}
-	minfo.clauses_dirty = false;
 }
 
 void EM::print_foil6_data(ostream &os, int mode) const {
@@ -1186,18 +1116,10 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 	if (first >= args.size()) {
 		// some kind of default action
 	} else if (args[first] == "clauses") {
-		os << "classifier" << endl;
-		clause_vec::const_iterator i;
-		for (i = mode_clauses.begin(); i != mode_clauses.end(); ++i) {
-			os << *i << endl;
-		}
-		os << endl << "object clauses" << endl;
 		table_printer t;
 		for (int j = 0; j < obj_clauses.size(); ++j) {
 			t.add_row() << j;
-			if (target == j) {
-				t << "target";
-			} else if (obj_clauses[j].empty()) {
+			if (obj_clauses[j].empty()) {
 				t << "empty";
 			} else {
 				for (int k = 0; k < obj_clauses[j].size(); ++k) {
@@ -1212,11 +1134,7 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 		return true;
 	} else if (args[first] == "signature") {
 		for (int i = 0; i < sig.size(); ++i) {
-			os << sig[i].type;
-			if (i == target) {
-				os << "t";
-			}
-			os << " ";
+			os << sig[i].type << " ";
 		}
 		os << endl;
 		return true;
@@ -1278,16 +1196,16 @@ void EM::em_data::unserialize(istream &is) {
 }
 
 void EM::mode_info::serialize(ostream &os) const {
-	serializer(os) << stale << target << stale_points << members << sig
-	               << mode_clauses << obj_clauses << clauses_dirty << pos << neg;
+	serializer(os) << stale << stale_points << members << sig
+	               << classifiers << obj_clauses << classifier_stale << member_rel;
 
 	assert(model);
 	model->serialize(os);
 }
 
 void EM::mode_info::unserialize(istream &is) {
-	unserializer(is) >> stale >> target >> stale_points >> members >> sig
-	                 >> mode_clauses >> obj_clauses >> clauses_dirty >> pos >> neg;
+	unserializer(is) >> stale >> stale_points >> members >> sig
+	                 >> classifiers >> obj_clauses >> classifier_stale >> member_rel;
 	
 	if (model) {
 		delete model;
@@ -1296,7 +1214,22 @@ void EM::mode_info::unserialize(istream &is) {
 	model->unserialize(is);
 }
 
-void EM::make_classifier_matrix(const relation &p, const relation &n, mat &m, vector<int> &classes) {
+EM::mode_info::~mode_info() {
+	delete model;
+	for (int i = 0; i < classifiers.size(); ++i) {
+		delete classifiers[i];
+	}
+}
+
+void EM::classifier::serialize(ostream &os) const {
+	serializer(os) << const_class << clauses << lda;
+}
+
+void EM::classifier::unserialize(istream &is) {
+	unserializer(is) >> const_class >> clauses >> lda;
+}
+
+void EM::make_classifier_matrix(const relation &p, const relation &n, mat &m, vector<int> &classes) const {
 	set<int> pos, neg;
 	p.at_pos(0, pos);
 	n.at_pos(0, neg);
@@ -1361,13 +1294,190 @@ bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) c
 		}
 	}
 
-	if (pattern.size() != r->arity()) {
-		os << "pattern arity doesn't match relation arity" << endl;
+	if (pattern.size() > r->arity()) {
+		os << "pattern larger than relation arity" << endl;
 		return false;
 	}
-	relation matches;
+	relation matches(r->arity());
 	r->match(pattern, matches);
 	os << matches << endl;
 	return true;
 }
 
+void EM::update_classifier() {
+	vector<bool> needs_update(modes.size(), false);
+	for (int i = 0; i < modes.size(); ++i) {
+		if (modes[i]->classifier_stale) {
+			needs_update[i] = true;
+			modes[i]->classifier_stale = false;
+		}
+	}
+	
+	for (int i = 0; i < modes.size(); ++i) {
+		mode_info &minfo = *modes[i];
+
+		if (needs_update[i]) {
+			for (int j = 1; j < minfo.sig.size(); ++j) {
+				learn_obj_clause(i, j);
+			}
+		}
+		
+		for (int j = i + 1; j < modes.size(); ++j) {
+			if (needs_update[i] || needs_update[j]) {
+				update_pair(i, j);
+			}
+		}
+	}
+}
+
+void EM::update_pair(int i, int j) {
+	assert(i < j);
+	if (!modes[i]->classifiers[j]) {
+		modes[i]->classifiers[j] = new classifier;
+	}
+	classifier &c = *(modes[i]->classifiers[j]);
+	const relation &mem_i = modes[i]->member_rel;
+	const relation &mem_j = modes[j]->member_rel;
+	
+	c.clauses.clear();
+	c.uncovered.clear();
+	if (c.lda) {
+		delete c.lda;
+		c.lda = NULL;
+	}
+	
+	if (mem_i.empty()) {
+		c.const_class = 0;
+		return;
+	} else if (mem_j.empty()) {
+		c.const_class = 1;
+		return;
+	}
+	
+	FOIL foil(mem_i, mem_j, rel_tbl);
+	relation uncovered;
+	if (!foil.learn(c.clauses, uncovered)) {
+		uncovered.at_pos(0, c.uncovered);
+		mat lda_data;
+		vector<int> lda_classes;
+		make_classifier_matrix(uncovered, mem_j, lda_data, lda_classes);
+		c.lda = new LDA;
+		c.lda->learn(lda_data, lda_classes);
+	}
+}
+
+int EM::classify_pair(int i, int j, int target, const relation_table &rels, const rvec &x) const {
+	assert(modes[i]->classifiers[j]);
+	const classifier &c = *(modes[i]->classifiers[j]);
+	if (c.const_class >= 0) {
+		return c.const_class;
+	}
+	
+	var_domains domains;
+	domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
+	domains[1].insert(target);
+	int result = test_clause_vec(c.clauses, rels, domains);
+	if (result >= 0) {
+		return 0;
+	} else if (!c.lda) {
+		return 1;
+	} else {
+		return c.lda->classify(x);
+	}
+	return -1;
+}
+
+int EM::classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, vector<int> &obj_map) {
+	LOG(EMDBG) << "classification" << endl;
+	update_classifier();
+	
+	/*
+	 The scene has to contain the objects used by the linear model of
+	 a mode for it to possibly qualify for that mode.
+	*/
+	vector<int> possible;
+	map<int, vector<int> > mappings;
+	for (int i = 0; i < modes.size(); ++i) {
+		mode_info &minfo = *modes[i];
+		if (minfo.sig.size() > sig.size()) {
+			continue;
+		}
+		vector<int> &mapping = mappings[i];
+		if (!map_objs(i, target, sig, rels, mapping)) {
+			continue;
+		}
+		possible.push_back(i);
+	}
+	if (possible.empty()) {
+		LOG(EMDBG) << "no possible modes" << endl;
+		return -1;
+	} else if (possible.size() == 1) {
+		LOG(EMDBG) << "only one possible mode: " << possible[0] << endl;
+		return possible[0];
+	}
+	
+	map<int, int> votes;
+	for (int i = 0; i < possible.size() - 1; ++i) {
+		for (int j = i + 1; j < possible.size(); ++j) {
+			int winner = classify_pair(possible[i], possible[j], target, rels, x);
+			if (winner == 0) {
+				++votes[possible[i]];
+			} else if (winner == 1) {
+				++votes[possible[j]];
+			}
+		}
+	}
+	
+	LOG(EMDBG) << "votes:" << endl;
+	map<int, int>::const_iterator i, best = votes.begin();
+	for (i = votes.begin(); i != votes.end(); ++i) {
+		LOG(EMDBG) << i->first << " = " << i->second << endl;
+		if (i->second > best->second) {
+			best = i;
+		}
+	}
+	LOG(EMDBG) << "best mode = " << best->first << endl;
+	obj_map = mappings[best->first];
+	return best->first;
+}
+
+bool EM::cli_inspect_classifiers(ostream &os) const {
+	for (int i = 0; i < nmodes; ++i) {
+		for (int j = 0; j < nmodes; ++j) {
+			classifier *c = modes[i]->classifiers[j];
+			if (c) {
+				os << "for modes " << i << "/" << j << endl;
+				c->inspect(os);
+			}
+		}
+	}
+	return true;
+}
+
+void EM::classifier::inspect(ostream &os) const {
+	if (clauses.empty()) {
+		os << "no clauses" << endl;
+	} else {
+		for (int k = 0; k < clauses.size(); ++k) {
+			os << clauses[k] << endl;
+		}
+	}
+	os << "uncovered: ";
+	if (uncovered.empty()) {
+		os << "none" << endl;
+	} else {
+		set<int>::const_iterator i;
+		for (i = uncovered.begin(); i != uncovered.end(); ++i) {
+			os << *i << " ";
+		}
+		os << endl;
+	}
+	
+	if (lda) {
+		os << "LDA" << endl;
+		lda->inspect(os);
+	} else {
+		os << "no LDA" << endl;
+	}
+	os << endl;
+}

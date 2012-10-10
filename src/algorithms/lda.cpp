@@ -3,6 +3,7 @@
 #include "lda.h"
 #include "nn.h"
 #include "common.h"
+#include "serialize.h"
 
 using namespace std;
 using namespace Eigen;
@@ -35,9 +36,11 @@ int largest_class(const vector<int> &c) {
 	return largest;
 }
 
-LDA::LDA(mat &data, const vector<int> &classes)
-: classes(classes), degenerate(false), degenerate_class(9090909)
-{
+LDA::LDA() : degenerate(false), degenerate_class(9090909)
+{}
+
+void LDA::learn(mat &data, const vector<int> &cls) {
+	classes = cls;
 	clean_data(data, used_cols);
 	
 	if (data.cols() == 0) {
@@ -144,3 +147,27 @@ int LDA::classify(const rvec &x) const {
 	(projected.rowwise() - p).rowwise().squaredNorm().minCoeff(&best);
 	return classes[best];
 }
+
+void LDA::inspect(ostream &os) const {
+	if (degenerate) {
+		os << "degenerate (" << degenerate_class << ")" << endl;
+		return;
+	}
+	table_printer t;
+	for (int i = 0; i < W.rows(); ++i) {
+		t.add_row() << used_cols[i];
+		for (int j = 0; j < W.cols(); ++j) {
+			t << W(i, j);
+		}
+	}
+	t.print(os);
+}
+
+void LDA::serialize(ostream &os) const {
+	serializer(os) << W << projected << J << classes << used_cols << degenerate << degenerate_class;
+}
+
+void LDA::unserialize(istream &is) {
+	unserializer(is) >> W >> projected >> J >> classes >> used_cols >> degenerate >> degenerate_class;
+}
+

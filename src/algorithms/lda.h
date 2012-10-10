@@ -3,13 +3,16 @@
 
 #include <vector>
 #include "mat.h"
+#include "serializable.h"
 
-class LDA {
+class LDA : public serializable {
 public:
+	LDA();
+	
 	/*
 	 The data matrix will be modified! This is to avoid unnecessary copying.
 	*/
-	LDA(mat &data, const std::vector<int> &classes);
+	void learn(mat &data, const std::vector<int> &classes);
 	int classify(const rvec &x) const;
 	
 	const mat &getW() const {
@@ -19,6 +22,10 @@ public:
 	const rvec &getJ() const {
 		return J;
 	}
+	
+	void inspect(std::ostream &os) const;
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
 	
 private:
 	mat W, projected;

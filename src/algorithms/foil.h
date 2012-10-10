@@ -74,17 +74,11 @@ private:
 	std::vector<tuple> pos_test, neg_test;
 	relation pos, neg, pos_grow, neg_grow;
 	const relation_table &rels;
-	int nvars;
+	int init_vars;
 };
 
-bool test_clause(const clause &c,
-                 const relation_table &rels,
-                 const std::set<int> &objs,
-                 std::map<int,int> &assignments);
-
-int test_clause_vec(const clause_vec &c,
-                    const relation_table &rels,
-                    const std::set<int> &objs,
-                    std::map<int,int> &assignments);
+typedef std::map<int, std::set<int> > var_domains;
+bool test_clause(const clause &c, const relation_table &rels, var_domains &domains);
+int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains &domains);
 
 #endif
