@@ -1257,12 +1257,12 @@ void EM::make_classifier_matrix(const relation &p, const relation &n, mat &m, ve
 	int r = 0;
 	for (i = pos.begin(); i != pos.end(); ++i) {
 		m.row(r) = data[*i]->x;
-		classes[r] = 1;
+		classes[r] = 0;
 		++r;
 	}
 	for (i = neg.begin(); i != neg.end(); ++i) {
 		m.row(r) = data[*i]->x;
-		classes[r] = 0;
+		classes[r] = 1;
 		++r;
 	}
 }
@@ -1360,12 +1360,15 @@ void EM::update_pair(int i, int j) {
 	FOIL foil(mem_i, mem_j, rel_tbl);
 	relation uncovered;
 	if (!foil.learn(c.clauses, uncovered)) {
-		uncovered.at_pos(0, c.uncovered);
-		mat lda_data;
-		vector<int> lda_classes;
-		make_classifier_matrix(uncovered, mem_j, lda_data, lda_classes);
-		c.lda = new LDA;
-		c.lda->learn(lda_data, lda_classes);
+		double uncovered_ratio = uncovered.size() / static_cast<double>(mem_i.size());
+		if (uncovered_ratio > EM_CONTINUOUS_CLASSIFIER_THRESH) {
+			uncovered.at_pos(0, c.uncovered);
+			mat lda_data;
+			vector<int> lda_classes;
+			make_classifier_matrix(uncovered, mem_j, lda_data, lda_classes);
+			c.lda = new LDA;
+			c.lda->learn(lda_data, lda_classes);
+		}
 	}
 }
 
