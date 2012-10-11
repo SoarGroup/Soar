@@ -436,9 +436,10 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, int target, const
 	orig_sig.clear();
 	int i = 0;
 	for (int j = 0; j < obj_map.size(); ++j) {
-		orig_sig.add(sig[obj_map[j]]);
-		int s = sig[obj_map[j]].start;
-		int l = sig[obj_map[j]].props.size();
+		const scene_sig::entry &e = sig[obj_map[j]];
+		orig_sig.add(e);
+		int s = e.start;
+		int l = e.props.size();
 		coefs2.block(i, 0, l, nout) = coefs.block(s, 0, l, nout);
 		xdata.get().block(0, i, ndata, l) = X.block(0, s, ndata, l);
 		i += l;

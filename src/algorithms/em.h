@@ -119,7 +119,7 @@ private:
 	double calc_prob(int m, int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	void mode_add_example(int m, int i, bool update);
 	void mode_del_example(int m, int i);
-	void init_mode(int mode, int sig, LinearModel *m, const std::vector<int> &members, const std::vector<int> &obj_map);
+	void init_mode(int mode, int sig_id, LinearModel *m, const std::vector<int> &members, const std::vector<int> &obj_map);
 	void learn_obj_clause(int m, int i);
 	void update_clauses(int m);
 	void print_foil6_data(std::ostream &os, int mode) const;
@@ -133,7 +133,7 @@ private:
 	void update_classifier();
 	void update_pair(int i, int j);
 	int classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &obj_map);
-	int classify_pair(int i, int j, int target, const relation_table &rels, const rvec &x) const;
+	int classify_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
 
 	relation_table rel_tbl;
 	std::vector<em_data*> data;

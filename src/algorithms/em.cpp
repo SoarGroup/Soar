@@ -392,9 +392,10 @@ double EM::calc_prob(int m, int target, const scene_sig &sig, const rvec &x, dou
 	while (gen.next(assign)) {
 		int s = 0;
 		for (int i = 0; i < assign.size(); ++i) {
-			int l = sig[assign[i]].props.size();
+			const scene_sig::entry &e = sig[assign[i]];
+			int l = e.props.size();
 			assert(msig[i].props.size() == l);
-			xc.segment(s, l) = x.segment(sig[assign[i]].start, l);
+			xc.segment(s, l) = x.segment(e.start, l);
 			s += l;
 		}
 		assert(s == xlen);
@@ -431,7 +432,6 @@ void EM::update_mode_prob(int i, set<int> &check) {
 		if (TEST_ELIGIBILITY && prev < 0.0) {
 			now = -1.0;
 		} else {
-			vector<int> &obj_map = dinfo.obj_map;
 			double error;
 			now = calc_prob(i, dinfo.target, sigs[dinfo.sig_index], dinfo.x, dinfo.y(0), 
 			                obj_maps[make_pair(i, *j)], error);
@@ -456,17 +456,16 @@ void EM::update_mode_prob(int i, set<int> &check) {
 void EM::mode_add_example(int m, int i, bool update) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
-	int target = sigs[dinfo.sig_index][dinfo.target].id;
-	
+	const scene_sig &sig = sigs[dinfo.sig_index];
+
 	rvec xc;
 	if (!minfo.model->is_const()) {
 		xc.resize(dinfo.x.size());
 		int xsize = 0;
-		const scene_sig &sig = sigs[dinfo.sig_index];
 		for (int j = 0; j < dinfo.obj_map.size(); ++j) {
-			int n = sig[dinfo.obj_map[j]].props.size();
-			int s = sig[dinfo.obj_map[j]].start;
-			xc.segment(xsize, n) = dinfo.x.segment(s, n);
+			const scene_sig::entry &e = sig[dinfo.obj_map[j]];
+			int n = e.props.size();
+			xc.segment(xsize, n) = dinfo.x.segment(e.start, n);
 			xsize += n;
 		}
 		xc.conservativeResize(xsize);
@@ -476,13 +475,13 @@ void EM::mode_add_example(int m, int i, bool update) {
 	minfo.members.insert(i);
 	minfo.stale = true;
 	minfo.classifier_stale = true;
-	minfo.member_rel.add(i, target);
+	minfo.member_rel.add(i, sig[dinfo.target].id);
 }
 
 void EM::mode_del_example(int m, int i) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
-	int target = sigs[dinfo.sig_index][dinfo.target].id;
+	const scene_sig &sig = sigs[dinfo.sig_index];
 	
 	int r = dinfo.model_row;
 	minfo.model->del_example(r);
@@ -496,7 +495,7 @@ void EM::mode_del_example(int m, int i) {
 	}
 	minfo.stale = true;
 	minfo.classifier_stale = true;
-	minfo.member_rel.del(i, target);
+	minfo.member_rel.del(i, sig[dinfo.target].id);
 }
 
 /* Recalculate MAP model for each index in points */
@@ -570,7 +569,6 @@ void EM::estep() {
 	set<int> check;
 	update_eligibility();
 	
-	obj_map_table obj_maps;
 	for (int i = 0; i < nmodes; ++i) {
 		update_mode_prob(i, check);
 	}
@@ -762,11 +760,12 @@ bool EM::unify_or_add_model() {
 	return false;
 }
 
-void EM::init_mode(int mode, int sig, LinearModel *m, const vector<int> &members, const vector<int> &obj_map) {
+void EM::init_mode(int mode, int sig_id, LinearModel *m, const vector<int> &members, const vector<int> &obj_map) {
 	assert(!members.empty());
 
+	const scene_sig &sig = sigs[sig_id];
 	mode_info &minfo = *modes[mode];
-	int target = sigs[sig][data[members.front()]->target].id;
+	int target = sig[data[members.front()]->target].id;
 	if (minfo.model) {
 		delete minfo.model;
 	}
@@ -775,7 +774,7 @@ void EM::init_mode(int mode, int sig, LinearModel *m, const vector<int> &members
 	minfo.sig.clear();
 	extend(minfo.members, members);
 	for (int i = 0; i < obj_map.size(); ++i) {
-		minfo.sig.add(sigs[sig][obj_map[i]]);
+		minfo.sig.add(sig[obj_map[i]]);
 	}
 	minfo.obj_clauses.resize(minfo.sig.size());
 	minfo.member_rel.clear();
@@ -809,12 +808,12 @@ bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_tab
 	
 	// 0 = time, 1 = target, 2 = object we're searching for
 	domains[0].insert(0);
-	domains[1].insert(target);
+	domains[1].insert(sig[target].id);
 	
 	for (int i = 1; i < minfo.sig.size(); ++i) {
 		set<int> &d = domains[2];
 		d.clear();
-		for (int j = 0; j < used.size(); ++j) {
+		for (int j = 0; j < sig.size(); ++j) {
 			if (!used[j] && sig[j].type == minfo.sig[i].type) {
 				d.insert(j);
 			}
@@ -822,13 +821,13 @@ bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_tab
 		if (d.empty()) {
 			return false;
 		} else if (d.size() == 1 || minfo.obj_clauses[i].empty()) {
-			mapping[i] = *d.begin();
+			mapping[i] = sig.find_id(*d.begin());
 		} else {
 			if (test_clause_vec(minfo.obj_clauses[i], rels, domains) < 0) {
 				return false;
 			}
 			assert(domains[2].size() == 1);
-			mapping[i] = *domains[2].begin();
+			mapping[i] = sig.find_id(*domains[2].begin());
 		}
 		used[mapping[i]] = true;
 	}
@@ -853,8 +852,9 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 		xc.resize(x.size());
 		int xsize = 0;
 		for (int j = 0; j < obj_map.size(); ++j) {
-			int n = sig[obj_map[j]].props.size();
-			xc.segment(xsize, n) = x.segment(sig[obj_map[j]].start, n);
+			const scene_sig::entry &e = sig[obj_map[j]];
+			int n = e.props.size();
+			xc.segment(xsize, n) = x.segment(e.start, n);
 			xsize += n;
 		}
 		xc.conservativeResize(xsize);
@@ -1058,7 +1058,7 @@ void EM::learn_obj_clause(int m, int i) {
 	set<int>::const_iterator j;
 	for (j = modes[m]->members.begin(); j != modes[m]->members.end(); ++j) {
 		const scene_sig &sig = sigs[data[*j]->sig_index];
-		int o = data[*j]->obj_map[i];
+		int o = sig[data[*j]->obj_map[i]].id;
 		objs[0] = data[*j]->target;
 		objs[1] = o;
 		pos_obj.add(*j, objs);
@@ -1369,7 +1369,7 @@ void EM::update_pair(int i, int j) {
 	}
 }
 
-int EM::classify_pair(int i, int j, int target, const relation_table &rels, const rvec &x) const {
+int EM::classify_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
 	assert(modes[i]->classifiers[j]);
 	const classifier &c = *(modes[i]->classifiers[j]);
 	if (c.const_class >= 0) {
@@ -1378,7 +1378,7 @@ int EM::classify_pair(int i, int j, int target, const relation_table &rels, cons
 	
 	var_domains domains;
 	domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
-	domains[1].insert(target);
+	domains[1].insert(sig[target].id);
 	int result = test_clause_vec(c.clauses, rels, domains);
 	if (result >= 0) {
 		return 0;
@@ -1405,8 +1405,8 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 		if (minfo.sig.size() > sig.size()) {
 			continue;
 		}
-		vector<int> &mapping = mappings[i];
-		if (!map_objs(i, target, sig, rels, mapping)) {
+		if (!map_objs(i, target, sig, rels, mappings[i])) {
+			LOG(EMDBG) << "mapping failed for " << i << endl;
 			continue;
 		}
 		possible.push_back(i);
@@ -1421,12 +1421,19 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 	
 	map<int, int> votes;
 	for (int i = 0; i < possible.size() - 1; ++i) {
+		int a = possible[i];
 		for (int j = i + 1; j < possible.size(); ++j) {
-			int winner = classify_pair(possible[i], possible[j], target, rels, x);
+			int b = possible[j];
+			LOG(EMDBG) << "for " << a << "/" << b << ": ";
+			int winner = classify_pair(a, b, target, sig, rels, x);
 			if (winner == 0) {
-				++votes[possible[i]];
+				LOG(EMDBG) << a << " wins" << endl;
+				++votes[a];
 			} else if (winner == 1) {
-				++votes[possible[j]];
+				LOG(EMDBG) << b << " wins" << endl;
+				++votes[b];
+			} else {
+				LOG(EMDBG) << " tie" << endl;
 			}
 		}
 	}

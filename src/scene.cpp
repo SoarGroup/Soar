@@ -21,7 +21,7 @@ const string root_name = "world";
  Making this a global variable insures that all nodes in all scenes
  will have unique identifiers.
 */
-int node_counter = 0;
+int node_counter = 100;
 
 /*
  Native properties are currently the position, rotation, and scaling
@@ -160,6 +160,15 @@ bool scene_sig::similar(const scene_sig &sig) const {
 		}
 	}
 	return true;
+}
+
+int scene_sig::find_id(int id) const {
+	for (int i = 0; i < s.size(); ++i) {
+		if (s[i].id == id) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 scene::scene(const string &name, drawer *d) 

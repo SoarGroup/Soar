@@ -52,6 +52,7 @@ public:
 	void clear()                                { s.clear(); }
 	bool operator==(const scene_sig &sig) const { return s == sig.s; }
 	bool similar(const scene_sig &sig) const;
+	int find_id(int id) const;
 
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
