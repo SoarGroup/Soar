@@ -136,7 +136,7 @@ private:
 	bool assign(int v, int value) {
 		assert(0 <= v && v < vars.size());
 		var_info &var = vars[v];
-		if (!var.infinite_domain && !in_set(value, var.domain)) {
+		if (!var.infinite_domain && !in_set(var.domain, value)) {
 			return false;
 		}
 		var.value = value;

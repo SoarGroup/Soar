@@ -45,7 +45,7 @@ bool relation::has(const tuple &t) const {
 	if (i == tuples.end()) {
 		return false;
 	}
-	return in_set(t[0], i->second);
+	return in_set(i->second, t[0]);
 }
 	
 void relation::slice(const tuple &inds, relation &out) const {
@@ -358,7 +358,7 @@ void relation::match(const tuple &pat, relation &r) const {
 			set<int> &s = r.tuples[i->first];
 			if (pat[0] < 0) {
 				s = i->second;
-			} else if (in_set(pat[0], i->second)) {
+			} else if (in_set(i->second, pat[0])) {
 				s.insert(pat[0]);
 			}
 		}
@@ -388,7 +388,7 @@ void relation::filter(const tuple &pat) {
 		if (!matched) {
 			s.clear();
 		} else if (pat[0] >= 0) {
-			bool found = in_set(pat[0], s);
+			bool found = in_set(s, pat[0]);
 			s.clear();
 			if (found) {
 				s.insert(pat[0]);

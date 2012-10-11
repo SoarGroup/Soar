@@ -107,7 +107,7 @@ inline bool map_has(const std::map<A, B> &m, const A &key) {
 }
 
 template<typename T>
-bool in_set(const T& x, const std::set<T> &s) {
+bool in_set(const std::set<T> &s, const T &x) {
 	return s.find(x) != s.end();
 }
 
