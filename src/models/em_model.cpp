@@ -56,16 +56,15 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether classification was correct.
 	*/
-	bool test(int target, scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y, rvec &prediction) {
+	void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
 		int best, mode;
 		double best_error;
 		vector<int> assign;
 		best = em.best_mode(target, sig, x, y(0), best_error);
 		test_best_modes.push_back(best);
 		test_best_errors.push_back(best_error);
-		bool success = em.predict(target, sig, rels, x, mode, prediction);
+		em.predict(target, sig, rels, x, mode, y);
 		test_modes.push_back(mode);
-		return success;
 	}
 	
 	bool cli_inspect_sub(int first_arg, const vector<string> &args, ostream &os) {
@@ -78,6 +77,7 @@ public:
 		} else if (args[first_arg] == "error") {
 			assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
 			table_printer t;
+			t.add_row() << "N" << "PRED. MODE" << "BEST MODE" << "BEST ERROR";
 			for (int i = 0; i < test_modes.size(); ++i) {
 				t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
 			}

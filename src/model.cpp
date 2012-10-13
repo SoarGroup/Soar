@@ -9,18 +9,18 @@
 
 using namespace std;
 
-void slice(const rvec &source, rvec &target, const vector<int> &indexes) {
-	target.resize(indexes.size());
-	for (int i = 0; i < indexes.size(); ++i) {
-		target(i) = source(indexes[i]);
-	}
-}
-
-void dassign(const rvec &source, rvec &target, const vector<int> &indexes) {
-	assert(source.size() == indexes.size());
-	for (int i = 0; i < indexes.size(); ++i) {
-		assert(0 <= indexes[i] && indexes[i] < target.size());
-		target[indexes[i]] = source[i];
+void slice(const rvec &src, rvec &tgt, const vector<int> &srcinds, const vector<int> &tgtinds) {
+	if (srcinds.empty() && tgtinds.empty()) {
+		int n = max(src.size(), tgt.size());
+		tgt.head(n) = src.head(n);
+	} else if (srcinds.empty()) {
+		for (int i = 0; i < tgtinds.size(); ++i) {
+			tgt(tgtinds[i]) = src(i);
+		}
+	} else {
+		for (int i = 0; i < srcinds.size(); ++i) {
+			tgt(i) = src(srcinds[i]);
+		}
 	}
 }
 
@@ -43,6 +43,14 @@ bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vecto
 model::model(const std::string &name, const std::string &type) 
 : name(name), type(type)
 {}
+
+/*
+ The default test behavior is just to return the prediction. The EM
+ model will also record mode prediction information.
+*/
+void model::test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
+	predict(target, sig, rels, x, y);
+}
 
 bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
 	if (first_arg < args.size()) {
@@ -93,12 +101,22 @@ multi_model::~multi_model() {
 }
 
 bool multi_model::predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
+	return predict_or_test(false, sig, rels, x, y);
+}
+
+/*
+ When testing, the expectation is that y initially contains the
+ reference values.
+*/
+bool multi_model::predict_or_test(bool test, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
+	rvec yorig = y;
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		assert(cfg->allx); // don't know what to do with the signature when we have to slice
 		
 		rvec yp(cfg->yprops.size());
+		yp.setConstant(NAN);
 		vector<int> yinds, yobjs;
 		
 		find_prop_inds(sig, cfg->yprops, yobjs, yinds);
@@ -108,10 +126,13 @@ bool multi_model::predict(const scene_sig &sig, const relation_table &rels, cons
 		 object. Clean this part up later.
 		*/
 		assert(yobjs.size() == 1);
-		if (!cfg->mdl->predict(yobjs[0], sig, rels, x, yp)) {
-			yp.setConstant(NAN);
+		if (test) {
+			slice(yorig, yp, yinds, vector<int>());
+			cfg->mdl->test(yobjs[0], sig, rels, x, yp);
+		} else {
+			cfg->mdl->predict(yobjs[0], sig, rels, x, yp);
 		}
-		dassign(yp, y, yinds);
+		slice(yp, y, vector<int>(), yinds);
 	}
 	return true;
 }
@@ -128,25 +149,18 @@ void multi_model::learn(const scene_sig &sig, const relation_table &rels, const 
 		
 		find_prop_inds(sig, cfg->yprops, yobjs, yinds);
 		assert(yobjs.size() == 1);
-		slice(y, yp, yinds);
+		slice(y, yp, yinds, vector<int>());
 		cfg->mdl->learn(yobjs[0], sig, rels, x, yp);
 	}
 }
 
-bool multi_model::test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
-	rvec predicted(y.size());
-	predicted.setConstant(0.0);
-	test_x.push_back(x);
-	test_y.push_back(y);
-	test_rels.push_back(rels);
-	reference_vals.push_back(y);
-
-	if (!predict(sig, rels, x, predicted)) {
-		predicted_vals.push_back(rvec());
-		return false;
-	}
-	predicted_vals.push_back(predicted);
-	return true;
+void multi_model::test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+	test_info &t = grow(tests);
+	t.x = x;
+	t.y = y;
+	t.pred = y;
+	predict_or_test(true, sig, rels, x, t.pred);
+	t.error = (t.y - t.pred).array().abs();
 }
 
 string multi_model::assign_model
@@ -192,12 +206,12 @@ void multi_model::unassign_model(const string &name) {
 }
 
 bool multi_model::report_error(int i, const vector<string> &args, ostream &os) const {
-	if (reference_vals.empty()) {
+	if (tests.empty()) {
 		os << "no model error data" << endl;
 		return false;
 	}
 	
-	int dim = -1, start = 0, end = reference_vals.size() - 1;
+	int dim = -1, start = 0, end = tests.size() - 1;
 	bool list = false, histo = false;
 	if (i < args.size() && args[i] == "list") {
 		list = true;
@@ -219,8 +233,8 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 			os << "require integer start time" << endl;
 			return false;
 		}
-		if (start < 0 || start >= reference_vals.size()) {
-			os << "start time must be in [0, " << reference_vals.size() - 1 << "]" << endl;
+		if (start < 0 || start >= tests.size()) {
+			os << "start time must be in [0, " << tests.size() - 1 << "]" << endl;
 			return false;
 		}
 	}
@@ -229,8 +243,8 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 			os << "require integer end time" << endl;
 			return false;
 		}
-		if (end <= start || end >= reference_vals.size()) {
-			os << "end time must be in [start time, " << reference_vals.size() - 1 << "]" << endl;
+		if (end <= start || end >= tests.size()) {
+			os << "end time must be in [start + 1, " << tests.size() - 1 << "]" << endl;
 			return false;
 		}
 	}
@@ -239,20 +253,20 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 		table_printer t;
 		t.add_row() << "num" << "real" << "pred" << "error" << "null" << "norm";
 		for (int j = start; j <= end; ++j) {
+			const test_info &ti = tests[j];
 			t.add_row() << j;
-			if (dim >= reference_vals[j].size() || dim >= predicted_vals[j].size()) {
+			if (dim >= ti.y.size() || dim >= ti.pred.size()) {
 				t << "NA";
 			} else {
-				double ref = reference_vals[j](dim), pred = predicted_vals[j](dim);
-				t << ref << pred;
+				double y = ti.y(dim), pred = ti.pred(dim);
+				t << y << pred;
 				if (isnan(pred)) {
 					t << "NA" << "NA" << "NA";
 				} else {
-					double error = fabs(ref - pred);
-					t << error;
+					t << ti.error(dim);
 					if (j > 0) {
-						double null_error = fabs(reference_vals[j-1](dim) - ref);
-						t << null_error << error / null_error;
+						double null_error = fabs(tests[j-1].y(dim) - y);
+						t << null_error << ti.error(dim) / null_error;
 					} else {
 						t << "NA" << "NA";
 					}
@@ -264,7 +278,7 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	} else if (histo) {
 		vector<double> errors;
 		for (int j = start; j <= end; ++j) {
-			errors.push_back(fabs(reference_vals[j](dim) - predicted_vals[j](dim)));
+			errors.push_back(tests[j].error(dim));
 		}
 		histogram(errors, 10, os) << endl;
 		return true;
@@ -275,20 +289,19 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 }
 
 bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
-	assert(dim >= 0 && start >= 0 && end <= reference_vals.size());
+	assert(dim >= 0 && start >= 0 && end < tests.size());
 	double total = 0.0, min = INFINITY, max = 0.0, std = 0.0;
 	int num_nans = 0;
 	vector<double> ds;
 	for (int i = start; i <= end; ++i) {
-		if (dim >= reference_vals[i].size() || dim >= predicted_vals[i].size()) {
+		const test_info &t = tests[i];
+		if (dim >= t.error.size()) {
 			continue;
 		}
-		if (isnan(predicted_vals[i](dim))) {
+		if (isnan(t.error(dim))) {
 			++num_nans;
 		} else {
-			double r = reference_vals[i](dim);
-			double p = predicted_vals[i](dim);
-			double d = fabs(r - p);
+			double d = t.error(dim);
 			ds.push_back(d);
 			total += d;
 			if (d < min) {

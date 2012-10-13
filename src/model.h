@@ -27,6 +27,7 @@ public:
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
 	virtual void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {}
+	virtual void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	virtual void set_wm_root(Symbol *r) {}
 	void serialize(std::ostream &os) const {}
 	void unserialize(std::istream &is) {}
@@ -58,7 +59,7 @@ public:
 	
 	bool predict(const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	void learn(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
-	bool test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	void test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
 	void unassign_model(const std::string &name);
 	
 	std::string assign_model (
@@ -78,6 +79,14 @@ private:
 		model *mdl;
 	};
 	
+	struct test_info {
+		rvec x;
+		rvec y;
+		rvec pred;
+		rvec error;
+	};
+	
+	bool predict_or_test(bool test, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	void report_model_config(model_config* c, std::ostream &os) const;
 	bool report_error(int i, const std::vector<std::string> &args, std::ostream &os) const;
 	bool error_stats(int dim, int start, int end, std::ostream &os) const;
@@ -85,11 +94,8 @@ private:
 	std::list<model_config*>       active_models;
 	std::map<std::string, model*> *model_db;
 	
-	// measuring prediction errors
-	std::vector<rvec> reference_vals;
-	std::vector<rvec> predicted_vals;
-	std::vector<rvec> test_x, test_y;
-	std::vector<relation_table> test_rels;
+	// record prediction errors
+	std::vector<test_info> tests;
 };
 
 #endif
