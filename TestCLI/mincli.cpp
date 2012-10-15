@@ -197,8 +197,8 @@ string log_handler(smlRhsEventId id, void *userdata, Agent *agent, char const *f
 }
 
 int main(int argc, char *argv[]) {
-	int i, port = 12121;
-	bool newthread = false, parse_error = false, interactive = true;
+	int i, port = 0;
+	bool listen = false, parse_error = false, interactive = true;
 	const char *agentname = "soar";
 	vector<string> sources;
 	vector<string> cmds;
@@ -209,8 +209,8 @@ int main(int argc, char *argv[]) {
 		if (a == "-h") {
 			parse_error = true;
 			break;
-		} else if (a == "-t") {
-			newthread = true;
+		} else if (a == "-l") {
+			listen = true;
 		} else if (a == "-n") {
 			if (i + 1 >= argc) {
 				parse_error = true;
@@ -246,10 +246,10 @@ int main(int argc, char *argv[]) {
 		interactive = false;
 	}
 
-	if (newthread) {
+	if (listen) {
 		kernel = Kernel::CreateKernelInNewThread(port);
 	} else {
-		kernel = Kernel::CreateKernelInCurrentThread(true, port);
+		kernel = Kernel::CreateKernelInCurrentThread(true, 0);
 	}
 
 	kernel->AddRhsFunction("exit", exit_handler, NULL);
