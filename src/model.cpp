@@ -149,6 +149,7 @@ void multi_model::learn(const scene_sig &sig, const relation_table &rels, const 
 		
 		find_prop_inds(sig, cfg->yprops, yobjs, yinds);
 		assert(yobjs.size() == 1);
+		yp.resize(yinds.size());
 		slice(y, yp, yinds, vector<int>());
 		cfg->mdl->learn(yobjs[0], sig, rels, x, yp);
 	}

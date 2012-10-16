@@ -53,7 +53,7 @@ std::ostream &operator<<(std::ostream &os, const clause &c);
 class FOIL {
 public:
 	FOIL(const relation &pos, const relation &neg, const relation_table &rels) ;
-	bool learn(clause_vec &clauses, relation &uncovered);
+	bool learn(clause_vec &clauses, std::vector<relation*> *uncovered);
 	void gain(const literal &l, double &g, double &maxg) const;
 
 	const relation_table &get_relations() const { return rels; }
@@ -61,7 +61,7 @@ public:
 	
 private:
 	double choose_literal(literal &l, int nvars);
-	bool add_clause(clause &c);
+	bool choose_clause(clause &c, relation *neg_left);
 	bool tuple_satisfies_literal(const tuple &t, const literal &l);
 	bool filter_pos_by_clause(const clause &c);
 	double clause_success_rate(const clause &c) const;

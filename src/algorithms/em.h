@@ -51,12 +51,12 @@ private:
 	
 	class classifier : public serializable {
 	public:
-		classifier() : const_class(-1), lda(NULL) {}
+		classifier() : const_class(-1) {}
 		
 		int const_class;
 		clause_vec clauses;
-		std::set<int> uncovered;
-		LDA *lda;
+		std::vector<relation*> residuals;
+		std::vector<LDA*> ldas;
 		
 		void inspect(std::ostream &os) const;
 		void serialize(std::ostream &os) const;

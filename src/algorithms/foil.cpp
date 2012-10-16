@@ -347,7 +347,24 @@ FOIL::FOIL(const relation &p, const relation &n, const relation_table &rels)
 	assert(p.arity() == n.arity());
 }
 
-bool FOIL::learn(clause_vec &clauses, relation &uncovered) {
+/*
+ Learns a list of clauses to classify the positive and negative
+ examples. The residuals vector will be filled as follows:
+ 
+ for i < clauses.size(), residuals[i] contains negative examples
+                         incorrectly covered by out by clauses[i]
+ 
+ for i == clauses.size(), residuals[i] contains positive examples not
+                          covered by any of the clauses
+
+ If all positive examples are covered by the clauses, the residuals
+ vector will be the same length as the clauses vector, and the second
+ case will not exist.
+*/
+bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
+	if (residuals) {
+		clear_and_dealloc(*residuals);
+	}
 	if (neg.empty()) {
 		return true;
 	}
@@ -360,17 +377,30 @@ bool FOIL::learn(clause_vec &clauses, relation &uncovered) {
 		
 		clause c;
 		bool dead = true;
-		add_clause(c);
+		relation *res = NULL;
+		if (residuals) {
+			res = new relation(init_vars);
+			choose_clause(c, res);
+		} else {
+			choose_clause(c, NULL);
+		}
 		if (!c.empty() && clause_success_rate(c) > FOIL_MIN_SUCCESS_RATE) {
 			clauses.push_back(c);
+			if (residuals) {
+				residuals->push_back(res);
+			}
 			dead = !filter_pos_by_clause(c); // can't cover any more positive cases
 		}
 		
 		if (dead) {
-			uncovered = pos;
+			if (residuals) {
+				residuals->push_back(new relation(pos));
+			}
+			assert(!residuals || clauses.size() + 1 == residuals->size());
 			return false;
 		}
 	}
+	assert(!residuals || clauses.size() == residuals->size());
 	return true;
 }
 
@@ -430,20 +460,22 @@ double FOIL::choose_literal(literal &l, int n) {
 	return best_node->get_gain();
 }
 
-bool FOIL::add_clause(clause &c) {
+bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	int n = init_vars;
 	while (!neg_grow.empty()) {
 		literal l;
 		double gain = choose_literal(l, n);
 		if (gain <= 0) {
-			set<int> neg_left;
-			set<int>::const_iterator i;
-			neg_grow.at_pos(0, neg_left);
-			LOG(FOILDBG) << "No more suitable literals. " << endl << "unfiltered negatives: "; 
-			for (i = neg_left.begin(); i != neg_left.end(); ++i) {
-				LOG(FOILDBG) << *i << " ";
+			if (neg_left) {
+				LOG(FOILDBG) << "No more suitable literals." << endl;
+				tuple inds(init_vars);
+				for (int i = 0; i < init_vars; ++i) {
+					inds[i] = i;
+				}
+				neg_grow.slice(inds, *neg_left);
+				LOG(FOILDBG) << "unfiltered negatives: "; 
+				LOG(FOILDBG) << *neg_left << endl;
 			}
-			LOG(FOILDBG) << endl;
 			return false;
 		}
 		

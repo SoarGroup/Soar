@@ -285,6 +285,12 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 	v.resize(j);
 }
 
+void print_first_arg(const relation &r, ostream &os) {
+	set<int> first;
+	r.at_pos(0, first);
+	join(os, first, " ") << endl;
+}
+
 EM::EM()
 : ndata(0), nmodes(0)
 {
@@ -1070,9 +1076,8 @@ void EM::learn_obj_clause(int m, int i) {
 		}
 	}
 	
-	relation uncovered;
 	FOIL foil(pos_obj, neg_obj, rel_tbl);
-	if (!foil.learn(modes[m]->obj_clauses[i], uncovered)) {
+	if (!foil.learn(modes[m]->obj_clauses[i], NULL)) {
 		// respond to this situation appropriately
 	}
 }
@@ -1225,11 +1230,48 @@ EM::mode_info::~mode_info() {
 }
 
 void EM::classifier::serialize(ostream &os) const {
-	serializer(os) << const_class << clauses << lda;
+	serializer(os) << const_class << clauses << residuals << ldas;
 }
 
 void EM::classifier::unserialize(istream &is) {
-	unserializer(is) >> const_class >> clauses >> lda;
+	unserializer(is) >> const_class >> clauses >> residuals >> ldas;
+}
+
+void EM::classifier::inspect(ostream &os) const {
+	if (const_class >= 0) {
+		os << "Constant: " << const_class << endl;
+		return;
+	}
+	
+	if (clauses.empty()) {
+		os << "No clauses" << endl;
+	} else {
+		for (int k = 0; k < clauses.size(); ++k) {
+			os << "Clause: " << clauses[k] << endl;
+			if (residuals[k]->empty()) {
+				os << "No false positives" << endl;
+			} else {
+				os << "False positives:" << endl;
+				print_first_arg(*residuals[k], os);
+				assert(ldas[k]);
+				os << endl << "Numeric classifier:" << endl;
+				ldas[k]->inspect(os);
+				os << endl;
+			}
+		}
+	}
+	os << endl;
+	
+	if (residuals.size() == clauses.size()) {
+		os << "No false negatives" << endl;
+		return;
+	}
+	assert(residuals.size() == ldas.size() && residuals.size() == clauses.size() + 1);
+	os << "False negatives:" << endl;
+	print_first_arg(*residuals.back(), os);
+	os << endl << "Numeric classifier:" << endl;
+	ldas.back()->inspect(os);
+	os << endl;
 }
 
 void EM::make_classifier_matrix(const relation &p, const relation &n, mat &m, vector<int> &classes) const {
@@ -1343,11 +1385,8 @@ void EM::update_pair(int i, int j) {
 	const relation &mem_j = modes[j]->member_rel;
 	
 	c.clauses.clear();
-	c.uncovered.clear();
-	if (c.lda) {
-		delete c.lda;
-		c.lda = NULL;
-	}
+	clear_and_dealloc(c.residuals);
+	clear_and_dealloc(c.ldas);
 	
 	if (mem_i.empty()) {
 		c.const_class = 0;
@@ -1358,16 +1397,31 @@ void EM::update_pair(int i, int j) {
 	}
 	
 	FOIL foil(mem_i, mem_j, rel_tbl);
-	relation uncovered;
-	if (!foil.learn(c.clauses, uncovered)) {
-		double uncovered_ratio = uncovered.size() / static_cast<double>(mem_i.size());
-		if (uncovered_ratio > EM_CONTINUOUS_CLASSIFIER_THRESH) {
-			uncovered.at_pos(0, c.uncovered);
+	foil.learn(c.clauses, &c.residuals);
+	
+	/*
+	 For each clause cl in c.clauses, if cl misclassified any of the
+	 members of j in the training set as a member of i (false positive
+	 for cl), train a numeric classifier to classify it correctly.
+	 
+	 Also train a numeric classifier to catch misclassified members of
+	 i (false negatives for the entire clause vector).
+	*/
+	c.ldas.resize(c.residuals.size(), NULL);
+	for (int k = 0; k < c.residuals.size(); ++k) {
+		const relation &r = *c.residuals[k];
+		if (!r.empty()) {
 			mat lda_data;
 			vector<int> lda_classes;
-			make_classifier_matrix(uncovered, mem_j, lda_data, lda_classes);
-			c.lda = new LDA;
-			c.lda->learn(lda_data, lda_classes);
+			if (k < c.clauses.size()) {
+				// r contains misclassified members of j
+				make_classifier_matrix(mem_i, r, lda_data, lda_classes);
+			} else {
+				// r contains misclassified members of i
+				make_classifier_matrix(r, mem_j, lda_data, lda_classes);
+			}
+			c.ldas[k] = new LDA;
+			c.ldas[k]->learn(lda_data, lda_classes);
 		}
 	}
 }
@@ -1382,13 +1436,17 @@ int EM::classify_pair(int i, int j, int target, const scene_sig &sig, const rela
 	var_domains domains;
 	domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
 	domains[1].insert(sig[target].id);
-	int result = test_clause_vec(c.clauses, rels, domains);
-	if (result >= 0) {
-		return 0;
-	} else if (!c.lda) {
-		return 1;
+	int matched_clause = test_clause_vec(c.clauses, rels, domains);
+	if (matched_clause >= 0) {
+		if (c.ldas[matched_clause]) {
+			return c.ldas[matched_clause]->classify(x);
+		} else {
+			return 0;
+		}
+	} else if (c.ldas.size() > c.clauses.size()) {
+		return c.ldas.back()->classify(x);
 	} else {
-		return c.lda->classify(x);
+		return 1;
 	}
 	return -1;
 }
@@ -1459,7 +1517,7 @@ bool EM::cli_inspect_classifiers(ostream &os) const {
 		for (int j = 0; j < nmodes; ++j) {
 			classifier *c = modes[i]->classifiers[j];
 			if (c) {
-				os << "for modes " << i << "/" << j << endl;
+				os << "=== FOR MODES " << i << "/" << j << " ===" << endl;
 				c->inspect(os);
 			}
 		}
@@ -1467,30 +1525,3 @@ bool EM::cli_inspect_classifiers(ostream &os) const {
 	return true;
 }
 
-void EM::classifier::inspect(ostream &os) const {
-	if (clauses.empty()) {
-		os << "no clauses" << endl;
-	} else {
-		for (int k = 0; k < clauses.size(); ++k) {
-			os << clauses[k] << endl;
-		}
-	}
-	os << "uncovered: ";
-	if (uncovered.empty()) {
-		os << "none" << endl;
-	} else {
-		set<int>::const_iterator i;
-		for (i = uncovered.begin(); i != uncovered.end(); ++i) {
-			os << *i << " ";
-		}
-		os << endl;
-	}
-	
-	if (lda) {
-		os << "LDA" << endl;
-		lda->inspect(os);
-	} else {
-		os << "no LDA" << endl;
-	}
-	os << endl;
-}

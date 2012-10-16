@@ -218,6 +218,15 @@ int argmax(const std::vector<T> &v) {
 	return m;
 }
 
+template <typename C>
+void clear_and_dealloc(C &container) {
+	typename C::iterator i, end = container.end();
+	for (i = container.begin(); i != end; ++i) {
+		delete *i;
+	}
+	container.clear();
+}
+
 std::ostream &histogram(const std::vector<double> &vals, int nbins, std::ostream &os);
 
 inline double gausspdf(double x, double mean, double var) {
