@@ -1293,8 +1293,8 @@ namespace cli
                 {'o', "only",        OPTARG_NONE},
                 {'n', "enable-through-local-negations", OPTARG_NONE},
                 {'N', "disable-through-local-negations", OPTARG_NONE},
-                {'p', "enable-through-evaluation-rules", OPTARG_NONE},
-                {'P', "disable-through-evaluation-rules", OPTARG_NONE},
+                {'p', "add-desirability-prefs", OPTARG_NONE},
+                {'P', "do-not-add-desirability-prefs", OPTARG_NONE},
                 {0, 0, OPTARG_NONE}
             };
 
