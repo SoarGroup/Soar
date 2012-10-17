@@ -856,6 +856,7 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	}
 	
 	const mode_info &minfo = *modes[mode];
+	assert(obj_map.size() == minfo.sig.size());
 	rvec xc;
 	if (!minfo.model->is_const()) {
 		xc.resize(x.size());
@@ -1483,6 +1484,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 		return -1;
 	} else if (possible.size() == 1) {
 		LOG(EMDBG) << "only one possible mode: " << possible[0] << endl;
+		obj_map = mappings[possible[0]];
 		return possible[0];
 	}
 	
