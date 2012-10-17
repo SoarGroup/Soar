@@ -309,6 +309,8 @@ public:
 	table_printer() {}
 	table_printer &add_row();
 	table_printer &skip(int n);
+	void set_precision(int p);
+	void set_scientific();
 	void print(std::ostream &os) const;
 	
 	template<typename T>

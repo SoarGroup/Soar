@@ -297,6 +297,7 @@ EM::EM()
 	timers.add("e_step");
 	timers.add("m_step");
 	timers.add("new");
+	timers.add("updt_clsfr");
 }
 
 EM::~EM() {
@@ -1353,6 +1354,8 @@ bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) c
 }
 
 void EM::update_classifier() {
+	function_timer t(timers.get(UPDATE_CLASSIFIER_T));
+	
 	vector<bool> needs_update(modes.size(), false);
 	for (int i = 0; i < modes.size(); ++i) {
 		if (modes[i]->classifier_stale) {

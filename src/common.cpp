@@ -162,6 +162,14 @@ table_printer &table_printer::add_row() {
 	return *this;
 }
 
+void table_printer::set_precision(int p) {
+	ss.precision(p);
+}
+
+void table_printer::set_scientific() {
+	ss << scientific;
+}
+
 void table_printer::print(ostream &os) const {
 	std::vector<int> widths;
 	for (int i = 0; i < rows.size(); ++i) {
