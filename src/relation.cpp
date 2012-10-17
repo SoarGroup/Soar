@@ -69,6 +69,21 @@ void relation::slice(const tuple &inds, relation &out) const {
 	}
 }
 
+void relation::slice(int n, relation &out) const {
+	if (n <= 0) {
+		return;
+	} else if (n > arty) {
+		n = arty;
+	}
+	tuple_map::const_iterator i;
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		tuple t(i->first);
+		t.resize(n - 1);
+		union_sets_inplace(out.tuples[t], i->second);
+	}
+	out.update_size();
+}
+
 bool relation::operator==(const relation &r) const {
 	return arty == r.arty && sz == r.sz && tuples == r.tuples;
 }
@@ -113,6 +128,42 @@ void relation::intersect(const tuple &inds, const relation &r) {
 }
 
 /*
+ In-place subtraction
+*/
+void relation::subtract(const relation &r) {
+	assert(arty == r.arty);
+	
+	tuple_map::iterator i = tuples.begin();
+	tuple_map::const_iterator j = r.tuples.begin();
+	while (i != tuples.end() && j != r.tuples.end()) {
+		if (i->first < j->first) {
+			++i;
+		} else if (j->first < i->first) {
+			++j;
+		} else {
+			subtract_sets_inplace(i->second, j->second);
+			++i;
+			++j;
+		}
+	}
+	update_size();
+}
+
+void relation::subtract(const relation &r, relation &out) const {
+	assert(arty == r.arty && arty == out.arty);
+	tuple_map::const_iterator i, j;
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		j = r.tuples.find(i->first);
+		if (j != r.tuples.end()) {
+			subtract_sets(i->second, j->second, out.tuples[i->first]);
+		} else {
+			out.tuples[i->first] = i->second;
+		}
+	}
+	out.update_size();
+}
+
+/*
  Remove all tuples in this relation that matches some tuple in r along indexes
  inds.
 */
@@ -142,18 +193,6 @@ void relation::subtract(const tuple &inds, const relation &r) {
 			++i;
 		}
 	}
-}
-
-void relation::difference(const relation &r, relation &out) const {
-	assert(arty == r.arty && arty == out.arty);
-	tuple_map::const_iterator i, j;
-	for (i = tuples.begin(); i != tuples.end(); ++i) {
-		j = r.tuples.find(i->first);
-		if (j != r.tuples.end()) {
-			subtract_sets(i->second, j->second, out.tuples[i->first]);
-		}
-	}
-	out.update_size();
 }
 
 /*

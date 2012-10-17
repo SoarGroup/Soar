@@ -281,7 +281,7 @@ void split_training(double ratio, const relation &all, relation &grow, vector<tu
 	all.sample(ngrow, grow);
 	
 	relation test_rel(all.arity());
-	all.difference(grow, test_rel);
+	all.subtract(grow, test_rel);
 	test_rel.dump(test);
 }
 
@@ -384,12 +384,19 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 		} else {
 			choose_clause(c, NULL);
 		}
-		if (!c.empty() && clause_success_rate(c) > FOIL_MIN_SUCCESS_RATE) {
+		relation covered_pos(init_vars);
+		if (!c.empty() && clause_success_rate(c, covered_pos) > FOIL_MIN_SUCCESS_RATE) {
 			clauses.push_back(c);
 			if (residuals) {
 				residuals->push_back(res);
 			}
-			dead = !filter_pos_by_clause(c); // can't cover any more positive cases
+			if (!covered_pos.empty()) {
+				dead = false;
+				pos_grow.slice(init_vars, covered_pos);
+				int old_size = pos.size();
+				pos.subtract(covered_pos);
+				assert(pos.size() + covered_pos.size() == old_size);
+			}
 		}
 		
 		if (dead) {
@@ -467,12 +474,8 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 		double gain = choose_literal(l, n);
 		if (gain <= 0) {
 			if (neg_left) {
+				neg_grow.slice(init_vars, *neg_left);
 				LOG(FOILDBG) << "No more suitable literals." << endl;
-				tuple inds(init_vars);
-				for (int i = 0; i < init_vars; ++i) {
-					inds[i] = i;
-				}
-				neg_grow.slice(inds, *neg_left);
 				LOG(FOILDBG) << "unfiltered negatives: "; 
 				LOG(FOILDBG) << *neg_left << endl;
 			}
@@ -523,7 +526,7 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	return true;
 }
 
-double FOIL::clause_success_rate(const clause &c) const {
+double FOIL::clause_success_rate(const clause &c, relation &pos_matched) const {
 	double correct = 0;
 	var_domains domains;
 	
@@ -534,6 +537,7 @@ double FOIL::clause_success_rate(const clause &c) const {
 		}
 		if (test_clause(c, rels, domains)) {
 			++correct;
+			pos_matched.add(pos_test[i]);
 		}
 	}
 	for (int i = 0; i < neg_test.size(); ++i) {
@@ -560,29 +564,6 @@ bool FOIL::tuple_satisfies_literal(const tuple &t, const literal &l) {
 		return !inrel;
 	}
 	return inrel;
-}
-
-bool FOIL::filter_pos_by_clause(const clause &c) {
-	int old_size = pos.size();
-	for (int i = 0; i < c.size(); ++i) {
-		const tuple &args = c[i].get_args();
-		const relation &r = get_rel(c[i].get_name());
-		relation sliced;
-		tuple bound_vars, bound_inds;
-		for (int j = 0; j < args.size(); ++j) {
-			if (args[j] >= 0 && args[j] < init_vars) {
-				bound_vars.push_back(args[j]);
-				bound_inds.push_back(j);
-			}
-		}
-		r.slice(bound_inds, sliced);
-		if (!c[i].negated()) {
-			pos.subtract(bound_vars, sliced);
-		} else {
-			pos.intersect(bound_vars, sliced);
-		}
-	}
-	return pos.size() < old_size;
 }
 
 const relation &FOIL::get_rel(const string &name) const {

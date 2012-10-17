@@ -63,8 +63,7 @@ private:
 	double choose_literal(literal &l, int nvars);
 	bool choose_clause(clause &c, relation *neg_left);
 	bool tuple_satisfies_literal(const tuple &t, const literal &l);
-	bool filter_pos_by_clause(const clause &c);
-	double clause_success_rate(const clause &c) const;
+	double clause_success_rate(const clause &c, relation &pos_matched) const;
 
 private:
 	/*

@@ -73,22 +73,26 @@ public:
 	void del(const tuple &t);
 	void del(int i, int n);  // convenience for arity = 2
 	void del(int i, const tuple &t);
-	bool has(const tuple &t) const;
-	void slice(const tuple &inds, relation &out) const;
-	bool operator==(const relation &r) const;
-	relation &operator=(const relation &r);
-	void expand(const relation &r, const tuple &match1, const tuple &match2, const tuple &extend);
-	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
 	void intersect(const tuple &inds, const relation &r);
+	void subtract(const relation &r);
 	void subtract(const tuple &inds, const relation &r);
-	void difference(const relation &r, relation &out) const;
-	void at_pos(int n, std::set<int> &elems) const;
-	void drop_first(std::set<tuple> &out) const;
+	void expand(const relation &r, const tuple &match1, const tuple &match2, const tuple &extend);
+	void filter(const tuple &pattern);
 	void clear();
 	void reset(int new_arity);
+	relation &operator=(const relation &r);
+	
+	bool has(const tuple &t) const;
+	void slice(const tuple &inds, relation &out) const;
+	void slice(int n, relation &out) const;
+	bool operator==(const relation &r) const;
+	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
+	void at_pos(int n, std::set<int> &elems) const;
+	void drop_first(std::set<tuple> &out) const;
 	void match(const tuple &pattern, relation &r) const;
-	void filter(const tuple &pattern);
 	void sample(int k, relation &s) const;
+	void subtract(const relation &r, relation &out) const;
+	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 	
