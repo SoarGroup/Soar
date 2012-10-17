@@ -850,6 +850,8 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	mode = classify(target, sig, rels, x, obj_map);
 	if (mode < 0) {
 		LOG(EMDBG) << "classification failed" << endl;
+		y(0) = NAN;
+		return false;
 	}
 	
 	const mode_info &minfo = *modes[mode];
@@ -868,6 +870,7 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	if (minfo.model->predict(xc, y)) {
 		return true;
 	}
+	y(0) = NAN;
 	return false;
 }
 
