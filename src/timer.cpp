@@ -7,6 +7,10 @@ using namespace std;
 
 const int prec = 2;
 
+double msec(long t) {
+	return t / 1.0e6;
+}
+
 void timer_set::report(ostream &os) const {
 	os << "Times reported in milliseconds" << endl << endl;
 	
@@ -19,18 +23,18 @@ void timer_set::report(ostream &os) const {
 	double ttl_total = 0.0;
 	for (int i = 0; i < timers.size(); ++i) {
 		timer *t = timers[i];
-		p.add_row() << t->name << t->count << t->total;
+		p.add_row() << t->name << t->count << msec(t->total);
 		if (t->count > 0) {
-			double mean = t->total / t->count;
+			double mean = msec(t->total) / t->count;
 			p << mean;
 			if (!t->basic) {
 				double stdev = sqrt(t->m2 / t->count);
-				p << stdev << t->min << t->max << t->last;
+				p << stdev << msec(t->min) << msec(t->max) << msec(t->last);
 			}
 		}
 		
 		ttl_count += t->count;
-		ttl_total += t->total;
+		ttl_total += msec(t->total);
 	}
 	
 	p.add_row().add_row();

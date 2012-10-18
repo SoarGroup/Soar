@@ -3,10 +3,7 @@
 
 #include <vector>
 #include <cmath>
-#ifndef NO_SVS_TIMING
-#include "portability.h"
-#include "misc.h"
-#endif
+#include <ctime>
 
 class timer_set;
 
@@ -22,53 +19,47 @@ public:
 #else
 
 	timer(const std::string &name, bool basic) 
-	: name(name), basic(basic), count(0), total(0), last(0), mn(0), min(INFINITY), max(0), m2(0)
+	: name(name), basic(basic), count(0), total(0), last(0), mn(0), m2(0)
 	{}
 	
 	inline void start() {
-		t.start();
+		clock_gettime(CLOCK_MONOTONIC, &ts1);
 	}
 	
-	inline double stop() {
-		t.stop();
+	inline long stop() {
+		clock_gettime(CLOCK_MONOTONIC, &ts2);
 		
-		double elapsed = t.get_usec() / 1000.0; 
-		last = elapsed;
-		total += elapsed;
+		long start = ts1.tv_sec * 1e9 + ts1.tv_nsec;
+		long end = ts2.tv_sec * 1e9 + ts2.tv_nsec;
+		
+		last = end - start;
+		total += last;
 		count++;
 		
 		if (!basic) {
-			min = std::min(min, elapsed);
-			max = std::max(max, elapsed);
+			min = (count == 1 || last < min) ? last : min;
+			max = (count == 1 || last > max) ? last : max;
 			
 		  	// see http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm
-			double delta = elapsed - mn;
+			double delta = last - mn;
 			mn += delta / count;
-			m2 += delta * (elapsed - mn);
+			m2 += delta * (last - mn);
 		}
 		
-		return elapsed;
+		return last;
 	}
 
 #endif
 	
 private:
-
-#ifndef NO_SVS_TIMING
-
-	soar_wallclock_timer t;
+	timespec ts1, ts2;
 	
-#endif
-
 	std::string name;
 	bool basic;
 	
 	int count;
-	double total;
-	double last;
+	long total, last, min, max;
 	double mn;
-	double min;
-	double max;
 	double m2;
 	
 	friend class timer_set;
@@ -110,7 +101,7 @@ public:
 		timers[i]->start();
 	}
 	
-	double stop(int i) {
+	long stop(int i) {
 		return timers[i]->stop();
 	}
 	

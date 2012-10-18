@@ -1355,7 +1355,6 @@ bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) c
 }
 
 void EM::update_classifier() {
-	function_timer t(timers.get(UPDATE_CLASSIFIER_T));
 	
 	vector<bool> needs_update(modes.size(), false);
 	for (int i = 0; i < modes.size(); ++i) {
@@ -1383,6 +1382,8 @@ void EM::update_classifier() {
 }
 
 void EM::update_pair(int i, int j) {
+	function_timer t(timers.get(UPDATE_CLASSIFIER_T));
+	
 	assert(i < j);
 	if (!modes[i]->classifiers[j]) {
 		modes[i]->classifiers[j] = new classifier;
