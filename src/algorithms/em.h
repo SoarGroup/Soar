@@ -10,9 +10,8 @@
 #include "serializable.h"
 #include "relation.h"
 #include "mat.h"
-#include "scene.h"
+#include "scene_sig.h"
 
-class scene;
 class LDA;
 
 class EM : public serializable {

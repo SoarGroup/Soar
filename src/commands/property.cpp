@@ -3,6 +3,7 @@
 #include "command.h"
 #include "filter.h"
 #include "svs.h"
+#include "scene.h"
 
 using namespace std;
 

@@ -7,7 +7,7 @@
 #include "timer.h"
 #include "serializable.h"
 #include "mat.h"
-#include "scene.h"
+#include "scene_sig.h"
 
 enum regression_type { OLS, RIDGE, PCR, LASSO, FORWARD };
 

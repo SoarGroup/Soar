@@ -11,7 +11,7 @@
 #include "mat.h"
 #include "soar_interface.h"
 #include "relation.h"
-#include "scene.h"
+#include "scene_sig.h"
 
 class model : public serializable {
 public:
