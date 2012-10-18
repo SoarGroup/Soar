@@ -64,9 +64,9 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
                 m_Result << "Learning is disabled.";
             }
             if (agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]) {
-              m_Result << " (will backtrace through evaluation rules)";
+              m_Result << " (will backtrace through desirability preferences)";
             } else {
-              m_Result << " (will not backtrace through evaluation rules)";
+              m_Result << " (will not backtrace through desirability preferences)";
             }
         } else {
             AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, agnt->sysparams[LEARNING_ON_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
