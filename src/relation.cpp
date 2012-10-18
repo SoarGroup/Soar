@@ -6,7 +6,7 @@ using namespace std;
 struct sliced_relation_tuple {
 	tuple match;
 	tuple extend;
-	const std::set<int> *lead;
+	const vec_set *lead;
 }; 
 
 void slice_tuple(const tuple &t1, const tuple &inds, tuple &t2) {
@@ -22,6 +22,97 @@ tuple concat_tuples(const tuple &t1, const tuple &t2) {
 	tuple t3(t1.begin(), t1.end());
 	t3.insert(t3.end(), t2.begin(), t2.end());
 	return t3;
+}
+
+vec_set::vec_set() {
+	curr = new vector<int>;
+	work = new vector<int>;
+}
+
+vec_set::vec_set(const vec_set &v) {
+	curr = new vector<int>(*v.curr);
+	work = new vector<int>;
+}
+
+vec_set::~vec_set() {
+	delete curr;
+	delete work;
+}
+
+bool vec_set::insert(int x) {
+	if (curr->empty() || x > curr->back()) {
+		curr->push_back(x);
+		return true;
+	}
+	vector<int>::iterator i = lower_bound(curr->begin(), curr->end(), x);
+	if (*i != x) {
+		curr->insert(i, x);
+		return true;
+	}
+	return false;
+}
+
+bool vec_set::erase(int x) {
+	vector<int>::iterator i = lower_bound(curr->begin(), curr->end(), x);
+	if (i != curr->end() && *i == x) {
+		curr->erase(i);
+		return true;
+	}
+	return false;
+}
+
+void vec_set::unify(const vec_set &v) {
+	work->clear();
+	work->reserve(curr->size() + v.curr->size());
+	set_union(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*work));
+	swap(curr, work);
+}
+
+void vec_set::unify(const vec_set &v, vec_set &r) const {
+	int old_size = r.curr->size();
+	set_union(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*r.curr));
+	r.fix(old_size);
+}
+
+void vec_set::intersect(const vec_set &v) {
+	work->clear();
+	work->reserve(curr->size());
+	set_intersection(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*work));
+	swap(curr, work);
+}
+
+void vec_set::intersect(const vec_set &v, vec_set &r) const {
+	int old_size = r.curr->size();
+	set_intersection(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*r.curr));
+	r.fix(old_size);
+}
+
+void vec_set::subtract(const vec_set &v) {
+	work->clear();
+	work->reserve(curr->size());
+	set_difference(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*work));
+	swap(curr, work);
+}
+
+void vec_set::difference(const vec_set &v, vec_set &r) const {
+	int old_size = r.curr->size();
+	set_difference(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*r.curr));
+	r.fix(old_size);
+}
+
+void vec_set::fix(int old_size) {
+	inplace_merge(curr->begin(), curr->begin() + old_size, curr->end());
+	vector<int>::iterator end = unique(curr->begin(), curr->end());
+	curr->resize(end - curr->begin());
+}
+
+void vec_set::serialize(ostream &os) const {
+	serializer(os) << *curr;
+}
+
+void vec_set::unserialize(istream &is) {
+	curr->clear();
+	unserializer(is) >> *curr;
 }
 
 relation::relation() : sz(0), arty(0) {}
@@ -45,7 +136,7 @@ bool relation::has(const tuple &t) const {
 	if (i == tuples.end()) {
 		return false;
 	}
-	return in_set(i->second, t[0]);
+	return i->second.contains(t[0]);
 }
 	
 void relation::slice(const tuple &inds, relation &out) const {
@@ -62,11 +153,9 @@ void relation::slice(const tuple &inds, relation &out) const {
 	tuple_map::const_iterator i;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		slice_tuple(i->first, tinds, t);
-		set<int> &s = out.tuples[t];
-		out.sz -= s.size();
-		s.insert(i->second.begin(), i->second.end());
-		out.sz += s.size();
+		out.tuples[t].unify(i->second);
 	}
+	out.update_size();
 }
 
 void relation::slice(int n, relation &out) const {
@@ -79,7 +168,7 @@ void relation::slice(int n, relation &out) const {
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		tuple t(i->first);
 		t.resize(n - 1);
-		union_sets_inplace(out.tuples[t], i->second);
+		out.tuples[t].unify(i->second);
 	}
 	out.update_size();
 }
@@ -111,20 +200,15 @@ void relation::intersect(const tuple &inds, const relation &r) {
 	tuple_map::const_iterator j;
 	while (i != tuples.end()) {
 		slice_tuple(i->first, tinds, s);
-		sz -= i->second.size();
 		j = r.tuples.find(s);
 		if (j == r.tuples.end()) {
 			tuples.erase(i++);
 		} else {
-			intersect_sets_inplace(i->second, j->second);
-			if (i->second.empty()) {
-				tuples.erase(i++);
-			} else {
-				sz += i->second.size();
-				++i;
-			}
+			i->second.intersect(j->second);
+			++i;
 		}
 	}
+	update_size();
 }
 
 /*
@@ -141,7 +225,7 @@ void relation::subtract(const relation &r) {
 		} else if (j->first < i->first) {
 			++j;
 		} else {
-			subtract_sets_inplace(i->second, j->second);
+			i->second.subtract(j->second);
 			++i;
 			++j;
 		}
@@ -155,7 +239,7 @@ void relation::subtract(const relation &r, relation &out) const {
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		j = r.tuples.find(i->first);
 		if (j != r.tuples.end()) {
-			subtract_sets(i->second, j->second, out.tuples[i->first]);
+			i->second.difference(j->second, out.tuples[i->first]);
 		} else {
 			out.tuples[i->first] = i->second;
 		}
@@ -175,24 +259,16 @@ void relation::subtract(const tuple &inds, const relation &r) {
 		tinds.push_back(inds[i] - 1);
 	}
 
-	tuple_map::iterator i = tuples.begin();
+	tuple_map::iterator i;
 	tuple_map::const_iterator j;
-	while (i != tuples.end()) {
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		slice_tuple(i->first, tinds, s);
 		j = r.tuples.find(s);
 		if (j != r.tuples.end()) {
-			sz -= i->second.size();
-			subtract_sets_inplace(i->second, j->second);
-			if (i->second.empty()) {
-				tuples.erase(i++);
-			} else {
-				sz += i->second.size();
-				++i;
-			}
-		} else {
-			++i;
+			i->second.subtract(j->second);
 		}
 	}
+	update_size();
 }
 
 /*
@@ -238,18 +314,13 @@ void relation::expand(const relation  &r,
 		for (int j = 0; j < sliced.size(); ++j) {
 			if (t1 == sliced[j].match) {
 				t2 = concat_tuples(i->first, sliced[j].extend);
-				set<int> &s = tuples[t2];
-				sz -= s.size();
-				intersect_sets(i->second, *sliced[j].lead, s);
-				if (s.empty()) {
-					tuples.erase(t2);
-				}
-				sz += s.size();
+				i->second.intersect(*sliced[j].lead, tuples[t2]);
 			}
 		}
 	}
 	
 	arty += extend.size();
+	update_size();
 }
 
 void relation::count_expansion(const relation  &r,
@@ -280,13 +351,16 @@ void relation::count_expansion(const relation  &r,
 	matched = 0;
 	new_size = 0;
 	
-	set<int> matched_insts;
+	vec_set matched_insts, inter;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		matched_insts.clear();
 		slice_tuple(i->first, m1, t1);
 		for (int j = 0; j < sliced.size(); ++j) {
 			if (t1 == sliced[j].match) {
-				new_size += intersect_sets(i->second, *sliced[j].lead, matched_insts);
+				inter.clear();
+				i->second.intersect(*sliced[j].lead, inter);
+				matched_insts.unify(inter);
+				new_size += inter.size();
 			}
 		}
 		matched += matched_insts.size();
@@ -302,9 +376,7 @@ void relation::add(const tuple &t) {
 
 void relation::add(int i, const tuple &t) {
 	assert(t.size() + 1 == arty);
-	set<int> &s = tuples[t];
-	if (s.find(i) == s.end()) {
-		s.insert(i);
+	if (tuples[t].insert(i)) {
 		++sz;
 	}
 }
@@ -326,9 +398,7 @@ void relation::del(int i, const tuple &t) {
 	assert(t.size() + 1 == arty);
 	tuple_map::iterator j = tuples.find(t);
 	if (j != tuples.end()) {
-		set<int>::iterator k = j->second.find(i);
-		if (k != j->second.end()) {
-			j->second.erase(k);
+		if (j->second.erase(i)) {
 			--sz;
 		}
 	}
@@ -345,7 +415,10 @@ void relation::at_pos(int n, set<int> &elems) const {
 	tuple_map::const_iterator i;
 	if (n == 0) {
 		for (i = tuples.begin(); i != tuples.end(); ++i) {
-			union_sets_inplace(elems, i->second);
+			const vector<int> &v = i->second.vec();
+			for (int j = 0; j < v.size(); ++j) {
+				elems.insert(v[j]);
+			}
 		}
 	} else {
 		for (i = tuples.begin(); i != tuples.end(); ++i) {
@@ -394,10 +467,10 @@ void relation::match(const tuple &pat, relation &r) const {
 			}
 		}
 		if (matched) {
-			set<int> &s = r.tuples[i->first];
+			vec_set &s = r.tuples[i->first];
 			if (pat[0] < 0) {
 				s = i->second;
-			} else if (in_set(i->second, pat[0])) {
+			} else if (i->second.contains(pat[0])) {
 				s.insert(pat[0]);
 			}
 		}
@@ -423,11 +496,11 @@ void relation::filter(const tuple &pat) {
 				break;
 			}
 		}
-		set<int> &s = i->second;
+		vec_set &s = i->second;
 		if (!matched) {
 			s.clear();
 		} else if (pat[0] >= 0) {
-			bool found = in_set(s, pat[0]);
+			bool found = s.contains(pat[0]);
 			s.clear();
 			if (found) {
 				s.insert(pat[0]);
@@ -459,13 +532,13 @@ void relation::sample(int k, relation &s) const {
 	}
 	vector<tuple> reservoir(k);
 	tuple_map::const_iterator i;
-	set<int>::const_iterator j;
 	int n = 0;
 	tuple t(arty);
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		copy(i->first.begin(), i->first.end(), t.begin() + 1);
-		for (j = i->second.begin(); j != i->second.end(); ++j) {
-			t[0] = *j;
+		const vector<int> &v = i->second.vec();
+		for (int j = 0; j < v.size(); ++j) {
+			t[0] = v[j];
 			if (n < k) {
 				reservoir[n] = t;
 			} else {
@@ -477,6 +550,7 @@ void relation::sample(int k, relation &s) const {
 			++n;
 		}
 	}
+	sort(reservoir.begin(), reservoir.end());
 	for (int ii = 0; ii < k; ++ii) {
 		s.add(reservoir[ii]);
 	}
@@ -493,18 +567,10 @@ void relation::unserialize(std::istream &is) {
 ostream &operator<<(ostream &os, const relation &r) {
 	tuple t(r.arty);
 	set<tuple> sorted;
-	relation::tuple_map::const_iterator i;
-	for (i = r.tuples.begin(); i != r.tuples.end(); ++i) {
-		copy(i->first.begin(), i->first.end(), t.begin() + 1);
-		set<int>::const_iterator j;
-		for (j = i->second.begin(); j != i->second.end(); ++j) {
-			t[0] = *j;
-			sorted.insert(t);
-		}
-	}
-	set<tuple>::iterator k;
-	for (k = sorted.begin(); k != sorted.end(); ++k) {
-		join(os, *k, " ") << endl;
+	r.dump(sorted);
+	set<tuple>::iterator i;
+	for (i = sorted.begin(); i != sorted.end(); ++i) {
+		join(os, *i, " ") << endl;
 	}
 	return os;
 }

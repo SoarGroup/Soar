@@ -44,6 +44,42 @@
 #include "common.h"
 #include "serializable.h"
 
+/*
+ Set implementation with a sorted vector
+*/
+class vec_set : public serializable {
+public:
+	vec_set();
+	vec_set(const vec_set &v);
+	~vec_set();
+	
+	bool insert(int x);
+	bool erase(int x);
+	void unify(const vec_set &v);
+	void intersect(const vec_set &v);
+	void subtract(const vec_set &v);
+	
+	void unify(const vec_set &v, vec_set &result) const;
+	void intersect(const vec_set &v, vec_set &result) const;
+	void difference(const vec_set &v, vec_set &result) const;
+	
+	bool contains(int x) const               { return binary_search(curr->begin(), curr->end(), x); }
+	int  size() const                        { return curr->size(); }
+	bool empty() const                       { return curr->empty(); }
+	bool operator==(const vec_set &v) const  { return *curr == *v.curr; }
+	const std::vector<int> &vec() const      { return *curr; }
+	vec_set &operator=(const vec_set &v)     { *curr = *v.curr; return *this; }
+	void clear()                             { curr->clear(); }
+
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+	
+private:
+	void fix(int old_size);
+	
+	std::vector<int> *curr, *work;
+};
+
 class relation : public serializable {
 public:
 	/*
@@ -107,9 +143,9 @@ public:
 		tuple t(arty);
 		for (i = tuples.begin(); i != tuples.end(); ++i) {
 			copy(i->first.begin(), i->first.end(), t.begin() + 1);
-			std::set<int>::const_iterator j;
-			for (j = i->second.begin(); j != i->second.end(); ++j) {
-				t[0] = *j;
+			const std::vector<int> &s = i->second.vec();
+			for (int j = 0; j < s.size(); ++j) {
+				t[0] = s[j];
 				ins = t;
 			}
 		}
@@ -118,7 +154,7 @@ public:
 private:
 	void update_size();
 	
-	typedef std::map<tuple, std::set<int> > tuple_map;
+	typedef std::map<tuple, vec_set > tuple_map;
 
 	int sz, arty;
 	tuple_map tuples;
