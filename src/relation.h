@@ -68,8 +68,10 @@ public:
 	bool empty() const                       { return curr->empty(); }
 	bool operator==(const vec_set &v) const  { return *curr == *v.curr; }
 	const std::vector<int> &vec() const      { return *curr; }
-	vec_set &operator=(const vec_set &v)     { *curr = *v.curr; return *this; }
 	void clear()                             { curr->clear(); }
+
+	vec_set &operator=(const vec_set &v);
+	vec_set &operator=(const std::set<int> &s);
 
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
@@ -123,7 +125,7 @@ public:
 	void slice(int n, relation &out) const;
 	bool operator==(const relation &r) const;
 	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
-	void at_pos(int n, std::set<int> &elems) const;
+	void at_pos(int n, vec_set &elems) const;
 	void drop_first(std::set<tuple> &out) const;
 	void match(const tuple &pattern, relation &r) const;
 	void sample(int k, relation &s) const;

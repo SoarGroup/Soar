@@ -97,10 +97,10 @@ public:
 			}
 		}
 		assert(!vars[mrv].infinite_domain);
-		set<int>::iterator i;
-		for (i = vars[mrv].domain.begin(); i != vars[mrv].domain.end(); ++i) {
+		const vector<int> &v = vars[mrv].domain.vec();
+		for (int i = 0; i < v.size(); ++i) {
 			csp_node child(*this);
-			if (child.assign(mrv, *i) && child.search(out)) {
+			if (child.assign(mrv, v[i]) && child.search(out)) {
 				return true;
 			}
 		}
@@ -112,12 +112,12 @@ private:
 		bool negated;
 		int unbound;
 		relation tuples;
-		vector<set<int> > doms;
+		vector<vec_set> doms;
 		vector<int> vars;
 	};
 
 	struct var_info {
-		set<int> domain;
+		vec_set domain;
 		bool infinite_domain;  // variable can be any value
 		int label;
 		int value;
@@ -136,7 +136,7 @@ private:
 	bool assign(int v, int value) {
 		assert(0 <= v && v < vars.size());
 		var_info &var = vars[v];
-		if (!var.infinite_domain && !in_set(var.domain, value)) {
+		if (!var.infinite_domain && !var.domain.contains(value)) {
 			return false;
 		}
 		var.value = value;
@@ -203,11 +203,11 @@ private:
 				var.domain = cons.doms[j];
 				var.infinite_domain = false;
 			} else {
-				intersect_sets_inplace(var.domain, cons.doms[j]);
+				var.domain.intersect(cons.doms[j]);
 			}
 		} else if (cons.unbound == 1) {
 			assert(!var.infinite_domain);
-			subtract_sets_inplace(var.domain, cons.doms[j]);
+			var.domain.subtract(cons.doms[j]);
 		}
 		return var.infinite_domain || !var.domain.empty();
 	}

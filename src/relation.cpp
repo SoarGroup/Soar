@@ -115,6 +115,17 @@ void vec_set::unserialize(istream &is) {
 	unserializer(is) >> *curr;
 }
 
+vec_set &vec_set::operator=(const vec_set &v) {
+	*curr = *v.curr;
+	return *this;
+}
+
+vec_set &vec_set::operator=(const set<int> &s) {
+	curr->resize(s.size());
+	copy(s.begin(), s.end(), curr->begin());
+	return *this;
+}
+
 relation::relation() : sz(0), arty(0) {}
 relation::relation(int n) : sz(0), arty(n) {}
 relation::relation(const relation &r) : sz(r.sz), arty(r.arty), tuples(r.tuples) {}
@@ -410,15 +421,12 @@ void relation::del(int i, int n) {
 	del(i, t);
 }
 
-void relation::at_pos(int n, set<int> &elems) const {
+void relation::at_pos(int n, vec_set &elems) const {
 	assert(0 <= n && n < arty);
 	tuple_map::const_iterator i;
 	if (n == 0) {
 		for (i = tuples.begin(); i != tuples.end(); ++i) {
-			const vector<int> &v = i->second.vec();
-			for (int j = 0; j < v.size(); ++j) {
-				elems.insert(v[j]);
-			}
+			elems.unify(i->second);
 		}
 	} else {
 		for (i = tuples.begin(); i != tuples.end(); ++i) {
