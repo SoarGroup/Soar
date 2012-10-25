@@ -1324,9 +1324,9 @@ void EM::make_classifier_matrix(const relation &p, const relation &n, mat &m, ve
 	 If the entries have different signatures, the columns of the input matrix
 	 will not be aligned. I don't know what to do in that case.
 	*/
-	set<int>::const_iterator i;
-	for (i = pos.begin(); i != pos.end(); ++i) {
-		assert(data[*i]->sig_index == sig_index);
+	const vector<int> &v = pos.vec();
+	for (int i = 0; i < v.size(); ++i) {
+		assert(data[v[i]]->sig_index == sig_index);
 	}
 
 	m.resize(rows, cols);
