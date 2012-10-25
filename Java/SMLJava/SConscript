@@ -23,4 +23,4 @@ jar = clone.Command(
 )
 
 install = clone.Install('$OUT_DIR/java', jar)
-clone.Alias('java_sml_misc', install)
+clone.Alias('sml_java', install)
