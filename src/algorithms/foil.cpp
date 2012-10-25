@@ -469,7 +469,7 @@ double FOIL::choose_literal(literal &l, int n) {
 
 bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	int n = init_vars;
-	while (!neg_grow.empty()) {
+	while (!neg_grow.empty() && c.size() < FOIL_MAX_CLAUSE_LEN) {
 		literal l;
 		double gain = choose_literal(l, n);
 		if (gain <= 0) {
