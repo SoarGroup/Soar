@@ -38,7 +38,7 @@ public:
 			int v = all_vars[i];
 			var_map[v] = i;
 			vars[i].label = v;
-			if (map_has(domains, v) && !map_get(domains, v).empty()) {
+			if (has(domains, v) && !map_get(domains, v).empty()) {
 				vars[i].infinite_domain = false;
 				vars[i].domain = map_get(domains, v);
 			}

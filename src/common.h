@@ -108,12 +108,17 @@ inline bool map_pop(std::map<A, B> &m, const A &key, B &val) {
 }
 
 template<typename A, typename B>
-inline bool map_has(const std::map<A, B> &m, const A &key) {
+inline bool has(const std::map<A, B> &m, const A &key) {
 	return m.find(key) != m.end();
 }
 
 template<typename T>
-bool in_set(const std::set<T> &s, const T &x) {
+inline bool has(const std::vector<T> &v, const T &e) {
+	return std::find(v.begin(), v.end(), e) != v.end();
+}
+
+template<typename T>
+bool has(const std::set<T> &s, const T &x) {
 	return s.find(x) != s.end();
 }
 

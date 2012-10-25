@@ -851,6 +851,9 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	mode = classify(target, sig, rels, x, obj_map);
 	if (mode < 0) {
 		LOG(EMDBG) << "classification failed" << endl;
+		if (LWR(sig, x, y)) {
+			return true;
+		}
 		y(0) = NAN;
 		return false;
 	}
@@ -962,14 +965,14 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 	return best;
 }
 
-bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
+bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) const {
 	const_cast<EM*>(this)->update_classifier();
 
-	if (first_arg >= args.size()) {
+	if (first >= args.size()) {
 		os << "modes: " << nmodes << endl;
 		os << endl << "subqueries: mode ptable timing noise train foil" << endl;
 		return true;
-	} else if (args[first_arg] == "ptable") {
+	} else if (args[first] == "ptable") {
 		table_printer t;
 		for (int i = 0; i < ndata; ++i) {
 			t.add_row() << i;
@@ -977,84 +980,110 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		}
 		t.print(os);
 		return true;
-	} else if (args[first_arg] == "train") {
-		int start = 0, end = ndata - 1;
-		if (first_arg + 1 < args.size()) {
-			if (!parse_int(args[first_arg + 1], start) || start < 0 || start >= ndata - 1) {
-				os << "invalid data range" << endl;
-				return false;
-			}
+	} else if (args[first] == "train") {
+		return cli_inspect_train(first + 1, args, os);
+	} else if (args[first] == "mode") {
+		if (first + 1 >= args.size()) {
+			os << "Specify a mode number (0 - " << nmodes - 1 << ")" << endl;
+			return false;
 		}
-		if (first_arg + 2 < args.size()) {
-			if (!parse_int(args[first_arg + 2], end) || end < start || end >= ndata - 1) {
-				os << "invalid data range" << endl;
-				return false;
-			}
+		int n;
+		if (!parse_int(args[first+1], n) || n < 0 || n >= nmodes) {
+			os << "invalid mode number" << endl;
+			return false;
 		}
-		table_printer t;
-		t.add_row() << "N" << "CLS" << "|" << "DATA";
-		for (int i = start; i <= end; ++i) {
-			if (i == start || (i > start && data[i]->sig_index != data[i-1]->sig_index)) {
-				const scene_sig &s = sigs[data[i]->sig_index];
-				t.add_row().skip(2) << "|";
-				for (int j = 0; j < s.size(); ++j) {
+		return modes[n]->cli_inspect(first + 2, args, os);
+	} else if (args[first] == "timing") {
+		timers.report(os);
+		return true;
+	} else if (args[first] == "noise") {
+		map<int, set<int> >::const_iterator i;
+		for (i = noise.begin(); i != noise.end(); ++i) {
+			join(os, i->second, " ") << endl;
+		}
+		return true;
+	} else if (args[first] == "foil") {
+		int mode;
+		if (first + 1 >= args.size() || !parse_int(args[first + 1], mode)) {
+			os << "specify a mode" << endl;
+			return false;
+		}
+		print_foil6_data(os, mode);
+		return true;
+	} else if (args[first] == "relations") {
+		return cli_inspect_relations(first + 1, args, os);
+	} else if (args[first] == "classifiers") {
+		return cli_inspect_classifiers(os);
+	}
+
+	return false;
+}
+
+bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) const {
+	int start = 0, end = ndata - 1;
+	vector<string> objs;
+	bool have_start = false;
+	for (int i = first; i < args.size(); ++i) {
+		int x;
+		if (parse_int(args[i], x)) {
+			if (!have_start) {
+				start = x;
+				have_start = true;
+			} else {
+				end = x;
+			}
+		} else {
+			objs.push_back(args[i]);
+		}		
+	}
+	cout << "start = " << start << " end = " << end << endl;
+	cout << "objs" << endl;
+	join(cout, objs, " ");
+
+	if (start < 0 || end < start || end >= ndata) {
+		os << "invalid data range" << endl;
+		return false;
+	}
+
+	vector<int> cols;
+	table_printer t;
+	t.add_row() << "N" << "CLS" << "|" << "DATA";
+	for (int i = start; i <= end; ++i) {
+		if (i == start || (i > start && data[i]->sig_index != data[i-1]->sig_index)) {
+			const scene_sig &s = sigs[data[i]->sig_index];
+			t.add_row().skip(2) << "|";
+			int c = 0;
+			cols.clear();
+			for (int j = 0; j < s.size(); ++j) {
+				if (objs.empty() || has(objs, s[j].name)) {
+					for (int k = 0; k < s[j].props.size(); ++k) {
+						cols.push_back(c++);
+					}
 					t << s[j].name;
 					t.skip(s[j].props.size() - 1);
+				} else {
+					c += s[j].props.size();
 				}
-				t.add_row().skip(2) << "|";
-				for (int j = 0; j < s.size(); ++j) {
+			}
+			t.add_row().skip(2) << "|";
+			for (int j = 0; j < s.size(); ++j) {
+				if (objs.empty() || has(objs, s[j].name)) {
 					const vector<string> &props = s[j].props;
 					for (int k = 0; k < props.size(); ++k) {
 						t << props[k];
 					}
 				}
 			}
-			t.add_row();
-			t << i << data[i]->map_mode << "|";
-			for (int j = 0; j < data[i]->x.size(); ++j) {
-				t << data[i]->x(j);
-			}
-			for (int j = 0; j < data[i]->y.size(); ++j) {
-				t << data[i]->y(j);
-			}
 		}
-		t.print(os);
-		return true;
-	} else if (args[first_arg] == "mode") {
-		if (first_arg + 1 >= args.size()) {
-			os << "Specify a mode number (0 - " << nmodes - 1 << ")" << endl;
-			return false;
+		t.add_row();
+		t << i << data[i]->map_mode << "|";
+		for (int j = 0; j < cols.size(); ++j) {
+			t << data[i]->x(cols[j]);
 		}
-		int n;
-		if (!parse_int(args[first_arg+1], n) || n < 0 || n >= nmodes) {
-			os << "invalid mode number" << endl;
-			return false;
-		}
-		return modes[n]->cli_inspect(first_arg + 2, args, os);
-	} else if (args[first_arg] == "timing") {
-		timers.report(os);
-		return true;
-	} else if (args[first_arg] == "noise") {
-		map<int, set<int> >::const_iterator i;
-		for (i = noise.begin(); i != noise.end(); ++i) {
-			join(os, i->second, " ") << endl;
-		}
-		return true;
-	} else if (args[first_arg] == "foil") {
-		int mode;
-		if (first_arg + 1 >= args.size() || !parse_int(args[first_arg + 1], mode)) {
-			os << "specify a mode" << endl;
-			return false;
-		}
-		print_foil6_data(os, mode);
-		return true;
-	} else if (args[first_arg] == "relations") {
-		return cli_inspect_relations(first_arg + 1, args, os);
-	} else if (args[first_arg] == "classifiers") {
-		return cli_inspect_classifiers(os);
+		t << data[i]->y(0);
 	}
-
-	return false;
+	t.print(os);
+	return true;
 }
 
 /*
