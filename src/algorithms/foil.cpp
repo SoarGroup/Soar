@@ -572,6 +572,46 @@ const relation &FOIL::get_rel(const string &name) const {
 	return i->second;
 }
 
+void FOIL::foil6_rep(ostream &os) const {
+	vec_set all_times, objs;
+	
+	relation_table::const_iterator i;
+	for (i = rels.begin(); i != rels.end(); ++i) {
+		i->second.at_pos(0, all_times);
+		for (int j = 1; j < i->second.arity(); ++j) {
+			i->second.at_pos(j, objs);
+		}
+	}
+	
+	os << "O: ";
+	join(os, objs.vec(), ",") << "." << endl;
+	os << "T: ";
+	join(os, all_times.vec(), ",") << "." << endl << endl;
+	
+	for (i = rels.begin(); i != rels.end(); ++i) {
+		os << "*" << i->first << "(T";
+		for (int j = 1; j < i->second.arity(); ++j) {
+			os << ",O";
+		}
+		os << ") #";
+		for (int j = 1; j < i->second.arity(); ++j) {
+			os << "-";
+		}
+		os << endl;
+		i->second.foil6_rep(os);
+	}
+	
+	os << "positive(T";
+	for (int j = 1; j < pos.arity(); ++j) {
+		os << ",O";
+	}
+	os << ") ";
+	for (int j = 0; j < pos.arity(); ++j) {
+		os << "#";
+	}
+	os << endl;
+	pos.foil6_rep(os);
+}
 
 literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best) 
 : foil(foil), best(best), expanded(false), position(-1), nbound(-1)

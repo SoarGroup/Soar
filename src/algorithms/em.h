@@ -121,7 +121,6 @@ private:
 	void init_mode(int mode, int sig_id, LinearModel *m, const std::vector<int> &members, const std::vector<int> &obj_map);
 	void learn_obj_clause(int m, int i);
 	void update_clauses(int m);
-	void print_foil6_data(std::ostream &os, int mode) const;
 	bool map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
 	void extend_relations(const relation_table &add, int time);
 	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;

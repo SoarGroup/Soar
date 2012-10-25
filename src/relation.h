@@ -133,7 +133,8 @@ public:
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
-	
+	void foil6_rep(std::ostream &os) const;
+		
 	int size() const { return sz; }
 	int arity() const { return arty; }
 	bool empty() const { return sz == 0; }

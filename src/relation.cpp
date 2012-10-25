@@ -590,3 +590,19 @@ ostream &operator<<(ostream &os, const relation_table &t) {
 	}
 	return os;
 }
+
+void relation::foil6_rep(ostream &os) const {
+	tuple_map::const_iterator i;
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		const vector<int> &v = i->second.vec();
+		for (int j = 0; j < v.size(); ++j) {
+			os << j;
+			if (!i->first.empty()) {
+				os << ",";
+				join(os, i->first, ",");
+			}
+			os << endl;
+		}
+	}
+	os << "." << endl;
+}

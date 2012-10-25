@@ -1002,14 +1002,6 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) const {
 			join(os, i->second, " ") << endl;
 		}
 		return true;
-	} else if (args[first] == "foil") {
-		int mode;
-		if (first + 1 >= args.size() || !parse_int(args[first + 1], mode)) {
-			os << "specify a mode" << endl;
-			return false;
-		}
-		print_foil6_data(os, mode);
-		return true;
 	} else if (args[first] == "relations") {
 		return cli_inspect_relations(first + 1, args, os);
 	} else if (args[first] == "classifiers") {
@@ -1114,43 +1106,6 @@ void EM::learn_obj_clause(int m, int i) {
 	if (!foil.learn(modes[m]->obj_clauses[i], NULL)) {
 		// respond to this situation appropriately
 	}
-}
-
-void EM::print_foil6_data(ostream &os, int mode) const {
-	vec_set all_times, objs;
-	
-	relation_table::const_iterator i;
-	for (i = rel_tbl.begin(); i != rel_tbl.end(); ++i) {
-		i->second.at_pos(0, all_times);
-		for (int j = 1; j < i->second.arity(); ++j) {
-			i->second.at_pos(j, objs);
-		}
-	}
-	
-	os << "O: ";
-	join(os, objs.vec(), ",") << "." << endl;
-	os << "T: ";
-	join(os, all_times.vec(), ",") << "." << endl << endl;
-	
-	for (i = rel_tbl.begin(); i != rel_tbl.end(); ++i) {
-		os << "*" << i->first << "(T";
-		for (int j = 1; j < i->second.arity(); ++j) {
-			os << ",O";
-		}
-		os << ") #";
-		for (int j = 1; j < i->second.arity(); ++j) {
-			os << "-";
-		}
-		os << endl << i->second << "." << endl;
-	}
-	
-	os << "positive(T) #" << endl;
-	for (int j = 0; j < data.size(); ++j) {
-		if (data[j]->map_mode == mode) {
-			os << j << endl;
-		}
-	}
-	os << "." << endl << endl;
 }
 
 bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &os) {

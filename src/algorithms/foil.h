@@ -55,6 +55,7 @@ public:
 	FOIL(const relation &pos, const relation &neg, const relation_table &rels) ;
 	bool learn(clause_vec &clauses, std::vector<relation*> *uncovered);
 	void gain(const literal &l, double &g, double &maxg) const;
+	void foil6_rep(std::ostream &os) const;
 
 	const relation_table &get_relations() const { return rels; }
 	const relation &get_rel(const std::string &name) const;
