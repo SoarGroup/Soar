@@ -46,6 +46,7 @@ private:
 			}
 		}
 		assert(false);
+		return false;
 	}
 
 	bool input_removed(const filter_params *params, double &res) {
@@ -59,6 +60,7 @@ private:
 			}
 		}
 		assert(false);
+		return false;
 	}
 
 	vector<pair<double, const filter_params*> > elems;
