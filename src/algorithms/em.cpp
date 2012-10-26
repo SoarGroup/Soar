@@ -1535,3 +1535,70 @@ bool EM::cli_inspect_classifiers(ostream &os) const {
 	return true;
 }
 
+double lwr_kernel(double x) {
+	return pow(x, -3);
+}
+
+/*
+ Locally weighted regression using all training data. This can serve as a
+ reasonable fallback for prediction when the mode can't be determined.
+*/
+bool EM::LWR(const scene_sig &sig, const rvec &x, rvec &y) const {
+	int sind = -1;
+	for (int i = 0; i < sigs.size(); ++i) {
+		if (sigs[i] == sig) {
+			sind = i;
+			break;
+		}
+	}
+	if (sind < 0) {
+		return false;
+	}
+	
+	// very naive nearest neighbor search
+	int nnbrs = 0;
+	vector<double> dists(LWR_K, INFINITY);
+	vector<int> inds(LWR_K, -1);
+	for (int i = 0; i < data.size(); ++i) {
+		// signatures have to match for distance to make sense
+		if (data[i]->sig_index != sind) {
+			continue;
+		}
+		
+		double d = (x - data[i]->x).squaredNorm();
+		for (int j = 0; j < LWR_K; ++j) {
+			if (inds[j] < 0) {
+				inds[j] = i;
+				dists[j] = d;
+				break;
+			} else if (d < dists[j]) {
+				inds.insert(inds.begin() + j, i);
+				dists.insert(dists.begin() + j, d);
+				inds.resize(LWR_K);
+				dists.resize(LWR_K);
+				nnbrs = (nnbrs == LWR_K ? nnbrs : nnbrs + 1);
+				break;
+			}
+		}
+	}
+
+	if (nnbrs < 2) {
+		return false;
+	}
+	
+	int xdim = data[inds[0]]->x.cols();
+	mat X(nnbrs, xdim), Y(nnbrs, 1), coefs(xdim, 1);
+	cvec w(nnbrs);
+	rvec intercept(1);
+	for (int i = 0; i < nnbrs; ++i) {
+		X.row(i) = data[inds[i]]->x;
+		Y.row(i) = data[inds[i]]->y;
+		w(i) = lwr_kernel(dists[i]);
+	}
+	
+	if (!linreg_d(RIDGE, X, Y, w, coefs, intercept)) {
+		return false;
+	}
+	y = x * coefs.col(0) + intercept;
+	return true;
+}

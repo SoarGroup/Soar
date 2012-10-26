@@ -92,4 +92,7 @@
 
 #define EM_CONTINUOUS_CLASSIFIER_THRESH 0.05
 
+// num neighbors to use for fallback LWR prediction
+#define LWR_K 20
+
 #endif

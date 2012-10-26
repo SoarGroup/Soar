@@ -128,6 +128,7 @@ private:
 	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_classifiers(std::ostream &os) const;
+	bool LWR(const scene_sig &sig, const rvec &x, rvec &y) const;
 
 	void update_classifier();
 	void update_pair(int i, int j);
