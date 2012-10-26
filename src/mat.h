@@ -121,54 +121,70 @@ public:
 	void unserialize(std::istream &is);
 	
 	double &operator()(int i, int j) {
-		assert(0 <= i && i < r && 0 <= j && j < c);
+		assert(!released && 0 <= i && i < r && 0 <= j && j < c);
 		return buf(i, j);
 	}
 	
 	double operator()(int i, int j) const {
-		assert(0 <= i && i < r && 0 <= j && j < c);
+		assert(!released && 0 <= i && i < r && 0 <= j && j < c);
 		return buf(i, j);
 	}
 	
 	mat::RowXpr row(int i) {
-		assert(0 <= i && i < r);
+		assert(!released && 0 <= i && i < r);
 		return buf.row(i);
 	}
 	
 	mat::ConstRowXpr row(int i) const {
-		assert(0 <= i && i < r);
+		assert(!released && 0 <= i && i < r);
 		return buf.row(i);
 	}
 	
 	mat::ColXpr col(int j) {
-		assert(0 <= j && j < c);
+		assert(!released && 0 <= j && j < c);
 		return buf.col(j);
 	}
 	
 	mat::ConstColXpr col(int j) const {
-		assert(0 <= j && j < c);
+		assert(!released && 0 <= j && j < c);
 		return buf.col(j);
 	}
 	
-	inline mat_view get() {
+	mat_view get() {
+		assert(!released);
 		return mat_view(buf, r, c);
 	}
 	
-	inline const_mat_view get() const {
+	const_mat_view get() const {
+		assert(!released);
 		return const_mat_view(buf, r, c);
 	}
 	
 	inline int rows() const {
+		assert(!released);
 		return r;
 	}
 	
 	inline int cols() const {
+		assert(!released);
 		return c;
+	}
+	
+	/*
+	 The dyn_mat should no longer be used after the internal matrix is
+	 released. This function is useful for avoiding redundant copying.
+	*/
+	mat &release() {
+		assert(!released);
+		released = true;
+		buf.conservativeResize(r, c);
+		return buf;
 	}
 
 public:
 	mat buf;
 	int r, c;
+	bool released;
 };
 
 std::ostream& output_rvec(std::ostream &os, const rvec &v, const std::string &sep = " ");

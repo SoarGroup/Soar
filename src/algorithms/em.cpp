@@ -131,22 +131,19 @@ void kernel1(const cvec &d, cvec &w) {
 }
 
 void kernel2(const cvec &d, cvec &w, double p) {
+	const double maxw = 1.0e9;
 	w.resize(d.size());
 	for (int i = 0; i < d.size(); ++i) {
 		if (d(i) == 0.0) {
-			w(i) = 10000.0;
+			w(i) = maxw;
 		} else {
-			w(i) = min(10000.0, 1.0 / (pow(d(i), p)));
+			w(i) = min(maxw, pow(d(i), p));
 		}
 	}
 }
 
 void predict(const mat &C, const rvec &intercepts, const rvec &x, rvec &y) {
 	y = (x * C) + intercepts;
-}
-
-void predict_all(const mat &C, const rvec &intercepts, const mat &X, mat &Y) {
-	Y = (X * C).rowwise() + intercepts;
 }
 
 /*
@@ -163,16 +160,29 @@ void predict_all(const mat &C, const rvec &intercepts, const mat &X, mat &Y) {
  5. If the process converged without fitting n data points, repeat
     from 2.
 */
-bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int maxiters, vector<int> &points) {
+bool mini_em(mat &X, mat &Y, int n, double fit_thresh, int maxiters, vector<int> &points) {
 	int ndata = X.rows();
-	cvec residuals(ndata), old_res(ndata);
-	cvec w(ndata);
-	vector<int> nonuniform, init_members;
-	get_nonuniform_cols(X, X.cols(), nonuniform);
-	int rank = nonuniform.size() + 1;
-	mat Xd;
-	pick_cols(X, nonuniform, Xd);
+	cvec residuals(ndata), old_res(ndata), w(ndata);
+	rvec Xm, Ym, intercept;
+	mat Xc, Yc, coefs;
+	vector<int> used_cols, init_members;
+
+	ofstream XYout("mini_em.data");
+	XYout.precision(20);
+	for (int i = 0; i < X.rows(); ++i) {
+		for (int j = 0; j < X.cols(); ++j) {
+			XYout << X(i, j) << " ";
+		}
+		XYout << Y(i, 0) << endl;
+	}
+	XYout.close();
 	
+	clean_lr_data(X, used_cols);
+	int rank = X.cols() + 1;
+	
+	/*
+	 Outer loop ranges over sets of random initial points
+	*/
 	for (int iter1 = 0; iter1 < maxiters; ++iter1) {
 		w.setConstant(0.0);
 		
@@ -181,8 +191,9 @@ bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int m
 			w(init_members[i]) = 1.0;
 		}
 		
-		mat C, PY;
-		rvec intercepts;
+		/*
+		 Inner loop ranges over iterations of EM
+		*/
 		for (int iter2 = 0; iter2 < maxiters; ++iter2) {
 			LOG(EMDBG) << "MINI_EM " << iter1 << " " << iter2 << endl;
 			LOG(EMDBG) << "w = ";
@@ -191,19 +202,23 @@ bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int m
 			}
 			LOG(EMDBG) << endl;
 			
-			if (!linear_regression(OLS, Xd, Y, w, C, intercepts)) {
+			ofstream wout("mini_em.weights");
+			wout << w << endl;
+			wout.close();
+			
+			Xc = X; Yc = Y;
+			if (!linreg_clean(FORWARD, Xc, Yc, w, coefs, intercept)) {
 				break;
 			}
 			
-			LOG(EMDBG) << "c = ";
-			for (int i = 0; i < C.rows(); ++i) {
-				LOG(EMDBG) << C(i, 0) << " ";
+			LOG(EMDBG) << "coefs = ";
+			for (int i = 0; i < coefs.rows(); ++i) {
+				LOG(EMDBG) << coefs(i, 0) << " ";
 			}
 			LOG(EMDBG) << endl;
 			
 			old_res = residuals;
-			predict_all(C, intercepts, Xd, PY);
-			residuals = (Y - PY).rowwise().squaredNorm();
+			residuals = (Y - ((X * coefs).rowwise() + intercept)).col(0).array().abs();
 			points.clear();
 			for (int i = 0; i < residuals.size(); ++i) {
 				if (residuals(i) < fit_thresh) {
@@ -222,7 +237,7 @@ bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int m
 			if (residuals == old_res) {
 				break;
 			}
-			kernel2(residuals, w, 3.0);
+			kernel2(residuals, w, -3.0);
 		}
 	}
 	return false;
@@ -237,9 +252,9 @@ bool block_seed(const_mat_view X, const_mat_view Y, int n, double fit_thresh, in
 		int start = rand() % (X.rows() - MODEL_INIT_N);
 		dyn_mat Xb(X.block(start, 0, MODEL_INIT_N, xcols));
 		dyn_mat Yb(Y.block(start, 0, MODEL_INIT_N, ycols));
-		linear_regression(OLS, Xb.get(), Yb.get(), w, C, intercepts);
+		linreg(OLS, Xb.get(), Yb.get(), w, C, intercepts);
 
-		predict_all(C, intercepts, Xb.get(), PY);
+		PY = (X * C).rowwise() + intercepts;
 		double e = (Yb.get() - PY).rowwise().squaredNorm().sum();
 		if (e > MODEL_ERROR_THRESH) {
 			continue;
@@ -662,8 +677,9 @@ bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int>
 	}
 	
 	vector<int> seed;
-	if (!mini_em(unique_x.get(), unique_y.get(), NOISE_SIZE_THRESH, MODEL_ERROR_THRESH, 10, seed) &&
-		!block_seed(unique_x.get(), unique_y.get(), NOISE_SIZE_THRESH, MODEL_ERROR_THRESH, 10, seed))
+	mat &X = unique_x.release();
+	mat &Y = unique_y.release();
+	if (!mini_em(X, Y, NOISE_SIZE_THRESH, MODEL_ERROR_THRESH, 10, seed))
 	{
 		return false;
 	}

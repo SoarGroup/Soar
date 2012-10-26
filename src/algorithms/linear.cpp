@@ -218,7 +218,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 		projected = X1 * components;
 		for (int j = 0; j < maxcomps; ++j) {
-			linear_regression(OLS, projected.leftCols(j), Y1, w, coefs, inter);
+			linreg(OLS, projected.leftCols(j), Y1, w, coefs, inter);
 			b = components.leftCols(i) * coefs;
 			errors(j) += (X.row(n) * b + inter - Y.row(n)).array().abs().sum();
 		}
@@ -230,7 +230,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 	}
 	projected = X * components;
-	linear_regression(OLS, projected.leftCols(best), Y, cvec(), coefs, inter);
+	linreg(OLS, projected.leftCols(best), Y, cvec(), coefs, inter);
 	beta = components.leftCols(best) * coefs;
 	intercept = inter;
 }
@@ -281,87 +281,129 @@ bool wpcr(const_mat_view X, const_mat_view Y, mat &coefs) {
 }
 
 /*
- Clean up input data to avoid instability, then perform some form of
- regression. Cleaning consists of:
+ Cleaning consists of:
  
  1. collapsing all columns whose elements are identical into a single constant column.
  2. Setting elements whose absolute values are smaller than SAME_THRESH to 0.
  3. Centering X and Y data so that intercepts don't need to be considered.
 */
-bool linear_regression(regression_type t,
-                       const_mat_view X,
-                       const_mat_view Y,
-                       const cvec &w,
-                       mat &coefs,
-                       rvec &intercept) 
-{
-	mat Xc(X.rows(), X.cols()), Yc;
-	int ndims = 0;
-	vector<int> used;
+void clean_lr_data(mat &X, vector<int> &used_cols) {
+	int xdims = X.cols(), ndata = X.rows(), newdims = 0;
 	
-	for (int i = 0; i < X.cols(); ++i) {
+	for (int i = 0; i < xdims; ++i) {
 		if (!is_uniform(X.col(i))) {
-			Xc.col(ndims++) = X.col(i);
-			used.push_back(i);
+			if (newdims < i) {
+				X.col(newdims) = X.col(i);
+				used_cols.push_back(i);
+			}
+			++newdims;
 		}
 	}
-	Xc.conservativeResize(X.rows(), ndims);
-	for (int i = 0; i < Xc.rows(); ++i) {
-		for (int j = 0; j < Xc.cols(); ++j) {
-			if (fabs(Xc(i, j)) < SAME_THRESH) {
-				Xc(i, j) = 0.0;
+	
+	X.conservativeResize(ndata, newdims);
+	for (int i = 0; i < ndata; ++i) {
+		for (int j = 0; j < newdims; ++j) {
+			if (fabs(X(i, j)) < SAME_THRESH) {
+				X(i, j) = 0.0;
 			}
 		}
 	}
+}
+
+void center_lr_data(mat &X, mat &Y, rvec &Xm, rvec &Ym) {
+	Xm = X.colwise().mean();
+	X.rowwise() -= Xm;
+	Ym = Y.colwise().mean();
+	Y.rowwise() -= Ym;
+}
+
+/*
+ Perform linear regression. Assumes that input X and Y are already
+ cleaned.
+ 
+ Note that this function modifies inputs X and Y to avoid redundant
+ copies.
+*/
+bool linreg_clean(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec &inter) {
+	rvec Xm, Ym;
+	bool success;
 	
 	if (w.size() > 0) {
-		for (int i = 0; i < ndims; ++i) {
-			Xc.col(i).array() *= w.array();
+		for (int i = 0; i < X.cols(); ++i) {
+			X.col(i).array() *= w.array();
 		}
-		for (int i = 0; i < Yc.cols(); ++i) {
-			Yc.col(i).array() *= w.array();
+		for (int i = 0; i < Y.cols(); ++i) {
+			Y.col(i).array() *= w.array();
 		}
 	}
 	
-	rvec Xmean = Xc.colwise().mean();
-	Xc.rowwise() -= Xmean;
-	rvec Ymean = Y.colwise().mean();
-	Yc = Y.rowwise() - Ymean;
-	
-	mat coefs1;
-	cvec c;
-	double inter;
-	bool success;
+	center_lr_data(X, Y, Xm, Ym);
 	switch (t) {
 		case OLS:
-			success = solve(Xc, Yc, coefs1);
+			success = solve(X, Y, coefs);
 			break;
 		case RIDGE:
-			success = ridge(Xc, Yc, coefs1);
+			success = ridge(X, Y, coefs);
 			break;
 		case LASSO:
-			success = lasso(Xc, Yc, coefs1);
+			success = lasso(X, Y, coefs);
 			break;
 		case PCR:
-			success = wpcr(Xc, Yc, coefs1);
+			success = wpcr(X, Y, coefs);
 			break;
 		case FORWARD:
-			success = fstep(Xc, Yc, coefs1);
+			success = fstep(X, Y, coefs);
 			break;
 		default:
 			assert(false);
 	}
-	
 	if (!success) {
 		return false;
 	}
-	coefs.resize(X.cols(), Y.cols());
-	coefs.setConstant(0.0);
-	for (int i = 0; i < ndims; ++i) {
-		coefs.row(used[i]) = coefs1.row(i);
-	}
-	intercept = Ymean - (Xmean * coefs1);
+	inter = Ym - (Xm * coefs);
 	return true;
+}
+
+/*
+ Clean up input data to avoid instability, then perform some form of
+ regression.
+ 
+ Note that this function modifies inputs X and Y to avoid redundant
+ copies.
+*/
+bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec &inter) {
+	int ndata = X.rows();
+	int orig_xdim = X.cols();
+	int orig_ydim = Y.cols();
+	mat coefs1;
+	rvec inter1;
+	vector<int> used;
+	
+	clean_lr_data(X, used);
+	if (!linreg_clean(t, X, Y, w, coefs1, inter1)) {
+		return false;
+	}
+	coefs.resize(orig_xdim, orig_ydim);
+	coefs.setConstant(0.0);
+	inter.resize(orig_xdim);
+	inter.setConstant(0.0);
+	for (int i = 0; i < used.size(); ++i) {
+		coefs.row(used[i]) = coefs1.row(i);
+		inter(used[i]) = inter1(i);
+	}
+	return true;
+}
+
+bool linreg (
+	regression_type t,
+	const_mat_view X,
+	const_mat_view Y,
+	const cvec &w,
+	mat &coefs,
+	rvec &intercept ) 
+{
+	mat Xc(X), Yc(Y);
+	return linreg_d(t, Xc, Yc, w, coefs, intercept);
 }
 
 LinearModel::LinearModel()
@@ -618,7 +660,7 @@ bool LinearModel::fit() {
 }
 
 bool LinearModel::fit_sub(const_mat_view X, const_mat_view Y) {
-	return linear_regression(alg, X, Y, cvec(), coefs, intercept);
+	return linreg(alg, X, Y, cvec(), coefs, intercept);
 }
 
 bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {

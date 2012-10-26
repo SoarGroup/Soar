@@ -5,24 +5,28 @@
 #include "serialize.h"
 
 using namespace std;
-dyn_mat::dyn_mat() : buf(0, 0), r(0), c(0) {}
+dyn_mat::dyn_mat() : buf(0, 0), r(0), c(0), released(false) {}
 
 dyn_mat::dyn_mat(int nrows, int ncols) 
-: buf(nrows, ncols), r(nrows), c(ncols) {}
+: buf(nrows, ncols), r(nrows), c(ncols), released(false) {}
 
 dyn_mat::dyn_mat(int nrows, int ncols, int init_row_capacity, int init_col_capacity) 
-: buf(init_row_capacity, init_col_capacity), r(nrows), c(ncols) {}
-
-dyn_mat::dyn_mat(const dyn_mat &other) 
-: buf(other.buf), r(other.r), c(other.c) {}
+: buf(init_row_capacity, init_col_capacity), r(nrows), c(ncols), released(false) {}
 
 dyn_mat::dyn_mat(const_mat_view m)
-: r(m.rows()), c(m.cols())
+: r(m.rows()), c(m.cols()), released(false)
 {
 	buf = m;
 }
 
+dyn_mat::dyn_mat(const dyn_mat &other) 
+: buf(other.buf), r(other.r), c(other.c), released(false) 
+{
+	assert(!other.released);
+}
+
 void dyn_mat::resize(int nrows, int ncols) {
+	assert(!released);
 	r = nrows;
 	c = ncols;
 	if (r > buf.rows() && c > buf.cols()) {
@@ -35,6 +39,7 @@ void dyn_mat::resize(int nrows, int ncols) {
 }
 
 void dyn_mat::append_row() {
+	assert(!released);
 	if (r >= buf.rows()) {
 		buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
 	}
@@ -42,13 +47,13 @@ void dyn_mat::append_row() {
 }
 
 void dyn_mat::append_row(const rvec &row) {
-	assert(row.size() == c);
+	assert(!released && row.size() == c);
 	append_row();
 	buf.block(r - 1, 0, 1, c) = row;
 }
 
 void dyn_mat::insert_row(int i) {
-	assert(0 <= i && i <= r);
+	assert(!released && 0 <= i && i <= r);
 	if (r >= buf.rows()) {
 		buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
 	}
@@ -59,13 +64,13 @@ void dyn_mat::insert_row(int i) {
 }
 
 void dyn_mat::insert_row(int i, const rvec &row) {
-	assert(row.size() == c);
+	assert(!released && row.size() == c);
 	insert_row(i);
 	buf.block(i, 0, 1, c) = row;
 }
 
 void dyn_mat::remove_row(int i) {
-	assert(0 <= i && i < r);
+	assert(!released && 0 <= i && i < r);
 	for (int j = i + 1; j < r; ++j) {
 		buf.block(j - 1, 0, 1, c) = buf.block(j, 0, 1, c);
 	}
@@ -73,6 +78,7 @@ void dyn_mat::remove_row(int i) {
 }
 
 void dyn_mat::append_col() {
+	assert(!released);
 	if (c >= buf.cols()) {
 		buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
 	}
@@ -80,13 +86,13 @@ void dyn_mat::append_col() {
 }
 
 void dyn_mat::append_col(const cvec &col) {
-	assert(col.size() == r);
+	assert(!released && col.size() == r);
 	append_col();
 	buf.block(0, c - 1, r, 1) = col;
 }
 
 void dyn_mat::insert_col(int i) {
-	assert(0 <= i && i <= c);
+	assert(!released && 0 <= i && i <= c);
 	if (c >= buf.cols()) {
 		buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
 	}
@@ -97,13 +103,13 @@ void dyn_mat::insert_col(int i) {
 }
 
 void dyn_mat::insert_col(int i, const cvec &col) {
-	assert(col.size() == r);
+	assert(!released && col.size() == r);
 	insert_col(i);
 	buf.block(0, i, r, 1) = col;
 }
 
 void dyn_mat::remove_col(int i) {
-	assert(0 <= i && i < c);
+	assert(!released && 0 <= i && i < c);
 	for (int j = i + 1; j < c; ++j) {
 		buf.block(0, j - 1, r, 1) = buf.block(0, j, r, 1);
 	}
@@ -111,10 +117,12 @@ void dyn_mat::remove_col(int i) {
 }
 
 void dyn_mat::serialize(ostream &os) const {
+	assert(!released);
 	::serialize(const_mat_view(buf.topLeftCorner(r, c)), os);
 }
 
 void dyn_mat::unserialize(istream &is) {
+	assert(!released);
 	::unserialize(buf, is);
 	r = buf.rows();
 	c = buf.cols();

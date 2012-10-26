@@ -11,7 +11,10 @@
 
 enum regression_type { OLS, RIDGE, PCR, LASSO, FORWARD };
 
-bool linear_regression(regression_type t, const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
+void clean_lr_data(mat &X, std::vector<int> &used_cols);
+bool linreg(regression_type t, const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &inter);
+bool linreg_clean(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec &inter);
+bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec &inter);
 
 class LinearModel : public serializable {
 public:
