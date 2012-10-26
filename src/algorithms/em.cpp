@@ -167,16 +167,6 @@ bool mini_em(mat &X, mat &Y, int n, double fit_thresh, int maxiters, vector<int>
 	mat Xc, Yc, coefs;
 	vector<int> used_cols, init_members;
 
-	ofstream XYout("mini_em.data");
-	XYout.precision(20);
-	for (int i = 0; i < X.rows(); ++i) {
-		for (int j = 0; j < X.cols(); ++j) {
-			XYout << X(i, j) << " ";
-		}
-		XYout << Y(i, 0) << endl;
-	}
-	XYout.close();
-	
 	clean_lr_data(X, used_cols);
 	int rank = X.cols() + 1;
 	
@@ -201,10 +191,6 @@ bool mini_em(mat &X, mat &Y, int n, double fit_thresh, int maxiters, vector<int>
 				LOG(EMDBG) << w(i) << " ";
 			}
 			LOG(EMDBG) << endl;
-			
-			ofstream wout("mini_em.weights");
-			wout << w << endl;
-			wout.close();
 			
 			Xc = X; Yc = Y;
 			if (!linreg_clean(FORWARD, Xc, Yc, w, coefs, intercept)) {
