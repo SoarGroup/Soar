@@ -350,7 +350,7 @@ double EM::calc_prob(int m, int target, const scene_sig &sig, const rvec &x, dou
 	}
 	
 	/*
-	 Each model has a signature that specifies the types and orders of
+	 Each mode has a signature that specifies the types and orders of
 	 objects it expects for inputs. This is recorded in modes[m]->sig.
 	 Call this the model signature.
 	 
@@ -360,7 +360,7 @@ double EM::calc_prob(int m, int target, const scene_sig &sig, const rvec &x, dou
 	 
 	 P(d, m) = MAX[assignment][P(d, m, assignment)] where 'assignment'
 	 is a mapping of objects in the data signature to the objects in
-	 the model signature.
+	 the mode signature.
 	*/
 	
 	/*
@@ -624,62 +624,92 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
 	}
 }
 
-bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int> &mode_inds) const {
-	function_timer t(timers.get_or_add("new_inds"));
+struct mat_row_sort_comparator {
+	const_mat_view X, Y;
+	int xd, yd;
 	
-	// matrices containing only the unique rows of xdata and ydata
-	dyn_mat unique_x(0, data[0]->x.cols()), unique_y(0, 1);
+	mat_row_sort_comparator(const_mat_view X, const_mat_view Y) 
+	: X(X), Y(Y), xd(X.cols()), yd(Y.cols()) {}
 	
-	// Y value -> vector of indexes into total data
-	map<double, vector<int> > const_noise_inds;
-	
-	// index into unique data -> vector of indexes into total data
-	vector<vector<int> > unique_map;
-
-	set<int>::const_iterator ni;
-	for (ni = noise_inds.begin(); ni != noise_inds.end(); ++ni) {
-		int i = *ni;
-		em_data &dinfo = *data[i];
-		vector<int> &const_inds = const_noise_inds[dinfo.y(0)];
-		const_inds.push_back(i);
-		if (const_inds.size() >= NEW_MODE_THRESH) {
-			LOG(EMDBG) << "found constant model in noise_inds" << endl;
-			mode_inds = const_inds;
-			return true;
-		}
-		
-		bool new_unique = true;
-		for (int j = 0; j < unique_map.size(); ++j) {
-			if (dinfo.x == unique_x.row(j) &&
-			    dinfo.y == unique_y.row(j))
-			{
-				unique_map[j].push_back(i);
-				new_unique = false;
-				break;
+	bool operator()(int i, int j) {
+		double d;
+		for (int k = 0; k < yd; ++k) {
+			d = Y(i, k) - Y(j, k);
+			if (d < 0) {
+				return true;
+			} else if (d > 0) {
+				return false;
 			}
 		}
-		if (new_unique) {
-			unique_x.append_row(dinfo.x);
-			unique_y.append_row(dinfo.y);
-			unique_map.push_back(vector<int>());
-			unique_map.back().push_back(i);
+		for (int k = 0; k < xd; ++k) {
+			d = X(i, k) - X(j, k);
+			if (d < 0) {
+				return true;
+			} else if (d > 0) {
+				return false;
+			}
 		}
+		return false;
+	}
+};
+
+/*
+ Upon return, YX(rows[i]) < YX(rows[i+1]), where YX is the matrix obtained by
+ concatenating the rows of Y and X in that order. In other words, Y gets higher
+ precedence in the comparison than X.
+*/
+void get_sorted_rows(const_mat_view X, const_mat_view Y, vector<int> &rows) {
+	rows.resize(X.rows());
+	for (int i = 0; i < rows.size(); ++i) {
+		rows[i] = i;
+	}
+	sort(rows.begin(), rows.end(), mat_row_sort_comparator(X, Y));
+}
+
+/*
+ I used to collapse identical data points here, but that seems to be too
+ expensive. So I'm assuming all unique data points, which can be enforced as
+ data comes in.
+ 
+ This function wastes a lot of computation because the sorted matrices are not
+ cached. Fix this later.
+*/
+bool EM::find_new_mode_inds(const vector<int> &noise_inds, int sig_ind, vector<int> &mode_inds) const {
+	function_timer t(timers.get_or_add("new_inds"));
+	
+	int ndata = noise_inds.size();
+	int xdim = data[noise_inds[0]]->x.size();
+	mat X(ndata, xdim), Y(ndata, 1);
+
+	for (int i = 0; i < ndata; ++i) {
+		X.row(i) = data[noise_inds[i]]->x;
+		Y.row(i) = data[noise_inds[i]]->y;
 	}
 	
-	if (unique_x.rows() < NEW_MODE_THRESH * 1.25) {
-		return false;
+	// try to find a constant model
+	vector<int> sorted_rows;
+	get_sorted_rows(X, Y, sorted_rows);
+	
+	int j = 0;
+	for (int i = 0; i < sorted_rows.size(); ++i) {
+		if (Y(sorted_rows[i], 0) != Y(sorted_rows[j], 0)) {
+			if (i - j >= NEW_MODE_THRESH) {
+				LOG(EMDBG) << "found constant model in noise_inds" << endl;
+				for (int k = j; k < i; ++k) {
+					mode_inds.push_back(noise_inds[sorted_rows[k]]);
+				}
+				return true;
+			}
+			j = i;
+		}
 	}
 	
 	vector<int> seed;
-	mat &X = unique_x.release();
-	mat &Y = unique_y.release();
-	if (!mini_em_seed(X, Y, 10, seed))
-	{
+	if (!mini_em_seed(X, Y, 10, seed)) {
 		return false;
 	}
 	for (int i = 0; i < seed.size(); ++i) {
-		const vector<int> &real_inds = unique_map[seed[i]];
-		copy(real_inds.begin(), real_inds.end(), back_inserter(mode_inds));
+		mode_inds.push_back(noise_inds[seed[i]]);
 	}
 	return true;
 }
@@ -690,12 +720,13 @@ bool EM::unify_or_add_model() {
 	map<int, set<int> >::iterator i;
 	for (i = noise.begin(); i != noise.end(); ++i) {
 		std::set<int> &noise_inds = i->second;
-		if (noise_inds.size() < NEW_MODE_THRESH) {
+		if (noise_inds.size() < NEW_MODE_THRESH * 1.25) {
 			continue;
 		}
-	
+		
+		vector<int> inds(noise_inds.begin(), noise_inds.end());
 		vector<int> seed_inds;
-		if (!find_new_mode_inds(noise_inds, i->first, seed_inds)) {
+		if (!find_new_mode_inds(inds, i->first, seed_inds)) {
 			return false;
 		}
 		

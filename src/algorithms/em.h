@@ -114,7 +114,7 @@ private:
 	void update_MAP(const std::set<int> &pts);
 	bool remove_modes();
 	void mark_mode_stale(int i);
-	bool find_new_mode_inds(const std::set<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
+	bool find_new_mode_inds(const std::vector<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
 	double calc_prob(int m, int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	void mode_add_example(int m, int i, bool update);
 	void mode_del_example(int m, int i);

@@ -14,8 +14,8 @@
 /* Initial lambda value for ridge regression */
 #define RIDGE_LAMBDA 1e-8
 
-/* Maximum acceptable average squared error for a linear model */
-#define MODEL_ERROR_THRESH 1e-8
+/* Maximum acceptable average absolute error for a linear model */
+#define MODEL_ERROR_THRESH 1e-5
 
 /*
  A local model does not need to be refit to data if its training error
