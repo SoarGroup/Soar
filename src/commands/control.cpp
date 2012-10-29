@@ -418,14 +418,12 @@ public:
 	{
 		scn = init.clone();
 		scn->get_properties(initvals);
-		timers.add("evaluate");
 	}
 	
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &tmp, const rvec &initvals)
 	: mdl(m), stepsize(stepsize), obj(obj), initvals(initvals)
 	{
 		scn = tmp.clone();
-		timers.add("evaluate");
 	}
 
 	~traj_eval() {
@@ -437,7 +435,7 @@ public:
 	}
 	
 	bool evaluate(const rvec &traj, rvec &value, rvec &finalstate) {
-		function_timer t(timers.get(EVALUATE_T));
+		function_timer t(timers.get_or_add("evaluate"));
 		
 		const scene_sig &sig = scn->get_signature();
 		
@@ -470,7 +468,6 @@ private:
 	scene            *scn;       // copy of initial scene to be modified after prediction
 	rvec              initvals;  // flattened values of initial scene
 	
-	enum Timers { EVALUATE_T };
 	timer_set timers;
 };
 

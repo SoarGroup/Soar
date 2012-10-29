@@ -15,7 +15,7 @@ public:
 	virtual bool early() = 0;
 	
 	bool update() {
-		function_timer t(timers.get(UPDATE_T));
+		function_timer t(timers.get_or_add("update"));
 		return update_sub();
 	}
 	
@@ -53,7 +53,6 @@ private:
 	int             prev_max_time;
 	bool            first;
 	
-	enum Timers { UPDATE_T };
 	timer_set       timers;
 };
 

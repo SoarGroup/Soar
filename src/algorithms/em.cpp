@@ -305,14 +305,7 @@ void print_first_arg(const relation &r, ostream &os) {
 	join(os, first.vec(), " ") << endl;
 }
 
-EM::EM()
-: ndata(0), nmodes(0)
-{
-	timers.add("e_step");
-	timers.add("m_step");
-	timers.add("new");
-	timers.add("updt_clsfr");
-}
+EM::EM() : ndata(0), nmodes(0) {}
 
 EM::~EM() {
 	for (int i = 0; i < data.size(); ++i) {
@@ -585,7 +578,7 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 }
 
 void EM::estep() {
-	function_timer t(timers.get(E_STEP_T));
+	function_timer t(timers.get_or_add("e-step"));
 	
 	set<int> check;
 	update_eligibility();
@@ -598,7 +591,7 @@ void EM::estep() {
 }
 
 bool EM::mstep() {
-	function_timer t(timers.get(M_STEP_T));
+	function_timer t(timers.get_or_add("m-step"));
 	
 	bool changed = false;
 	for (int i = 0; i < modes.size(); ++i) {
@@ -632,6 +625,8 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
 }
 
 bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int> &mode_inds) const {
+	function_timer t(timers.get_or_add("new_inds"));
+	
 	// matrices containing only the unique rows of xdata and ydata
 	dyn_mat unique_x(0, data[0]->x.cols()), unique_y(0, 1);
 	
@@ -690,7 +685,7 @@ bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int>
 }
 
 bool EM::unify_or_add_model() {
-	function_timer t(timers.get(NEW_T));
+	function_timer t(timers.get_or_add("new"));
 	
 	map<int, set<int> >::iterator i;
 	for (i = noise.begin(); i != noise.end(); ++i) {
@@ -1382,7 +1377,7 @@ void EM::update_classifier() {
 }
 
 void EM::update_pair(int i, int j) {
-	function_timer t(timers.get(UPDATE_CLASSIFIER_T));
+	function_timer t(timers.get_or_add("updt_clsfr"));
 	
 	assert(i < j);
 	if (!modes[i]->classifiers[j]) {

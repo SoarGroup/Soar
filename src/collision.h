@@ -36,7 +36,6 @@ private:
 	bool dirty;
 	collision_table results;
 	
-	enum Timers {ADD_NODE_T, DEL_NODE_T, UPDATE_TRANSFORM_T, UPDATE_POINTS_T, UPDATE_T, COLLISION_T};
 	timer_set timers;
 };
 

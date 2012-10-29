@@ -112,7 +112,6 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
 	assert (si->is_top_state(state));
 	outspec = svsp->get_output_spec();
 	init();
-	timers.add("model");
 }
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
@@ -122,7 +121,6 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 {
 	assert (si->get_parent_state(state) == parent->state);
 	init();
-	timers.add("model");
 }
 
 svs_state::~svs_state() {
@@ -222,7 +220,7 @@ void svs_state::clear_scene() {
 }
 
 void svs_state::update_models() {
-	function_timer t(timers.get(MODEL_T));
+	function_timer t(timers.get_or_add("model"));
 	scene_sig curr_sig, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
@@ -370,9 +368,6 @@ svs::svs(agent *a)
 : learn(false), model_root(NULL)
 {
 	si = new soar_interface(a);
-	timers.add("input", true);
-	timers.add("output", true);
-	timers.add("calc_atoms");
 }
 
 svs::~svs() {
@@ -424,7 +419,7 @@ void svs::proc_input(svs_state *s) {
 }
 
 void svs::output_callback() {
-	function_timer t(timers.get(OUTPUT_T));
+	function_timer t(timers.get_or_add("output"));
 	
 	vector<svs_state*>::iterator i;
 	string sgel;
@@ -451,7 +446,7 @@ void svs::output_callback() {
 }
 
 void svs::input_callback() {
-	function_timer t(timers.get(INPUT_T));
+	function_timer t(timers.get_or_add("input"));
 	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);

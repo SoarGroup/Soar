@@ -44,14 +44,7 @@ void update_transforms(sgnode *n, btCollisionObject *cobj) {
 
 collision_detector::collision_detector()
 : config(NULL), dispatcher(NULL), broadphase(NULL), cworld(NULL), dirty(true)
-{
-	timers.add("add_node");
-	timers.add("del_node");
-	timers.add("update_transform");
-	timers.add("update_points");
-	timers.add("update");
-	timers.add("collision");
-}
+{}
 
 void collision_detector::init() {
 	config = new btDefaultCollisionConfiguration();
@@ -69,7 +62,7 @@ collision_detector::~collision_detector() {
 }
 
 void collision_detector::add_node(sgnode *n) {
-	function_timer t(timers.get(ADD_NODE_T));
+	function_timer t(timers.get_or_add("add-node"));
 	assert(object_map.find(n) == object_map.end());
 	
 	if (!cworld) {
@@ -86,7 +79,7 @@ void collision_detector::add_node(sgnode *n) {
 }
 
 void collision_detector::del_node(sgnode *n) {
-	function_timer t(timers.get(DEL_NODE_T));
+	function_timer t(timers.get_or_add("del-node"));
 	assert(object_map.find(n) != object_map.end());
 	btCollisionObject *cobj = object_map[n];
 	cworld->removeCollisionObject(cobj);
@@ -97,7 +90,7 @@ void collision_detector::del_node(sgnode *n) {
 }
 
 void collision_detector::update_transform(sgnode *n) {
-	function_timer t(timers.get(UPDATE_TRANSFORM_T));
+	function_timer t(timers.get_or_add("update-transform"));
 	
 	assert(object_map.find(n) != object_map.end());
 	btCollisionObject *cobj = object_map[n];
@@ -106,7 +99,7 @@ void collision_detector::update_transform(sgnode *n) {
 }
 
 void collision_detector::update_points(sgnode *n) {
-	function_timer t(timers.get(UPDATE_POINTS_T));
+	function_timer t(timers.get_or_add("update-points"));
 	
 	assert(object_map.find(n) != object_map.end());
 	btCollisionObject *cobj = object_map[n];
@@ -116,16 +109,16 @@ void collision_detector::update_points(sgnode *n) {
 }
 
 const collision_table &collision_detector::get_collisions() {
-	function_timer t(timers.get(UPDATE_T));
+	function_timer t(timers.get_or_add("update"));
 	
 	if (dirty) {
 		results.clear();
 		if (!cworld) {
 			return results;
 		}
-		timers.start(COLLISION_T);
+		timer &ct = timers.get_or_add("collision");
 		cworld->performDiscreteCollisionDetection();
-		timers.stop(COLLISION_T);
+		ct.stop();
 		int num_manifolds = dispatcher->getNumManifolds();
 		for (int i = 0; i < num_manifolds; ++i) {
 			btPersistentManifold *m = dispatcher->getManifoldByIndexInternal(i);

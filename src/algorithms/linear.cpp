@@ -425,27 +425,18 @@ bool linreg (
 
 LinearModel::LinearModel()
 : isconst(true), error(INFINITY), refit(true), alg(FORWARD)
-{
-	timers.add("predict");
-	timers.add("fit");
-}
+{}
 
 LinearModel::LinearModel(regression_type alg) 
 : isconst(true), error(INFINITY), refit(true), alg(alg)
-{
-	timers.add("predict");
-	timers.add("fit");
-}
+{}
 
 LinearModel::LinearModel(const LinearModel &m)
 : constvals(m.constvals), isconst(m.isconst),
   xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true),
   coefs(m.coefs), intercept(m.intercept), alg(m.alg),
   xdata(m.xdata), ydata(m.ydata)
-{
-	timers.add("predict");
-	timers.add("fit");
-}
+{}
 
 void LinearModel::init_fit(const_mat_view X, const_mat_view Y, int target, const scene_sig &sig, std::vector<int> &obj_map)
 {
@@ -645,7 +636,7 @@ bool LinearModel::predict(const rvec &x, rvec &y) {
 }
 
 bool LinearModel::predict(const_mat_view X, mat &Y) {
-	function_timer t(timers.get(PREDICT_T));
+	function_timer t(timers.get_or_add("predict"));
 	
 	if (isconst) {
 		Y.resize(X.rows(), constvals.size());
@@ -664,7 +655,7 @@ bool LinearModel::predict(const_mat_view X, mat &Y) {
 }
 
 bool LinearModel::fit() {
-	function_timer t(timers.get(FIT_T));
+	function_timer t(timers.get_or_add("fit"));
 	
 	if (!isconst) {
 		if (!fit_sub(xdata.get(), ydata.get())) {

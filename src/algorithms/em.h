@@ -145,8 +145,7 @@ private:
 	
 	std::vector<std::vector<classifier*> > classifiers;
 	
-	enum Timers { E_STEP_T, M_STEP_T, NEW_T, UPDATE_CLASSIFIER_T };
-	timer_set timers;
+	mutable timer_set timers;
 };
 
 

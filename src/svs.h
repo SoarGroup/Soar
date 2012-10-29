@@ -117,7 +117,6 @@ private:
 	bool learn_models;
 	bool test_models;
 	
-	enum Timers { MODEL_T };
 	timer_set timers;
 };
 
@@ -164,8 +163,6 @@ private:
 	Symbol                   *model_root;
 	
 	std::map<std::string, model*> models;
-	
-	enum Timers { INPUT_T, OUTPUT_T };
 	
 	timer_set timers;
 };

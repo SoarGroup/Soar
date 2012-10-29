@@ -69,7 +69,6 @@ private:
 	dyn_mat ydata;
 	scene_sig orig_sig;
 	
-	enum Timers {PREDICT_T, FIT_T};
 	timer_set timers;
 };
 

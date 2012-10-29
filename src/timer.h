@@ -22,11 +22,13 @@ public:
 	: name(name), basic(basic), count(0), total(0), last(0), mn(0), m2(0)
 	{}
 	
-	inline void start() {
+	const std::string &get_name() const { return name; }
+	
+	void start() {
 		clock_gettime(CLOCK_MONOTONIC, &ts1);
 	}
 	
-	inline long stop() {
+	long stop() {
 		clock_gettime(CLOCK_MONOTONIC, &ts2);
 		
 		long start = ts1.tv_sec * 1e9 + ts1.tv_nsec;
@@ -89,8 +91,15 @@ public:
 		}
 	}
 	
-	void add(const std::string &name, bool basic = false) {
-		timers.push_back(new timer(name, basic));
+	timer &get_or_add(const char *name, bool basic = false) {
+		for (int i = 0; i < timers.size(); ++i) {
+			if (timers[i]->get_name() == name) {
+				return *timers[i];
+			}
+		}
+		timer *t = new timer(name, basic);
+		timers.push_back(t);
+		return *t;
 	}
 	
 	timer &get(int i) {

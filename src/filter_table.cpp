@@ -62,11 +62,6 @@ filter_table::filter_table() {
 	add(vec3_fill_entry());
 	add(max_fill_entry());
 	add(closest_fill_entry());
-	
-	std::map<std::string, filter_table_entry>::const_iterator i;
-	for (i = t.begin(); i != t.end(); ++i) {
-		timers.add(i->first);
-	}
 }
 
 template <typename T>
@@ -199,8 +194,7 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 	node_inds.erase(node_inds.begin());
 	
 	map<string, filter_table_entry>::const_iterator i;
-	int ii = 0;
-	for(i = t.begin(); i != t.end(); ++i, ++ii) {
+	for(i = t.begin(); i != t.end(); ++i) {
 		const filter_table_entry &e = i->second;
 		if (e.calc != NULL && node_inds.size() >= e.parameters.size()) {
 			relation &r = rt[e.name];
@@ -213,9 +207,10 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 			single_combination_generator<int> gen(node_inds, e.parameters.size(), e.ordered, e.allow_repeat);
 			while (gen.next(inds)) {
 				scn->get_nodes(inds, args);
-				timers.start(ii);
+				timer &t = timers.get_or_add(i->first.c_str());
+				t.start();
 				bool pos = (*e.calc)(scn, args);
-				timers.stop(ii);
+				t.stop();
 				if (pos) {
 					if (e.ordered) {
 						r.add(time, inds);
