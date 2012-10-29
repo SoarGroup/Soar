@@ -9,13 +9,13 @@
  variance of its rotation, because the two measurements have different
  units and scales.
 */
-#define MEASURE_VAR 0.001
+#define MEASURE_VAR 1.0e-8
 
 /* Initial lambda value for ridge regression */
 #define RIDGE_LAMBDA 1e-8
 
 /* Maximum acceptable average squared error for a linear model */
-#define MODEL_ERROR_THRESH 1e-12
+#define MODEL_ERROR_THRESH 1e-8
 
 /*
  A local model does not need to be refit to data if its training error
@@ -49,22 +49,15 @@
 
 /*
  Number of noise instances required before EM tries to create a new
- model out of them
+ mode out of them
 */
-#define NOISE_SIZE_THRESH 10
+#define NEW_MODE_THRESH 200
 
 /*
  Number of times EM tries to create a model from the same set of noise
  instances
 */
 #define SEL_NOISE_MAX_TRIES 10
-
-/*
- Number of noise instances to seed a new linear model with
-*/
-#define MODEL_INIT_N 5
-
-#define MODEL_ADD_THRESH 1e-5
 
 /*
  When trying to unify a new model with an existing one, the training

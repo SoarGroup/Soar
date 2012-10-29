@@ -294,8 +294,8 @@ void clean_lr_data(mat &X, vector<int> &used_cols) {
 		if (!is_uniform(X.col(i))) {
 			if (newdims < i) {
 				X.col(newdims) = X.col(i);
-				used_cols.push_back(i);
 			}
+			used_cols.push_back(i);
 			++newdims;
 		}
 	}
@@ -310,59 +310,52 @@ void clean_lr_data(mat &X, vector<int> &used_cols) {
 	}
 }
 
-void center_lr_data(mat &X, mat &Y, rvec &Xm, rvec &Ym) {
+void center_data(mat &X, rvec &Xm) {
 	Xm = X.colwise().mean();
 	X.rowwise() -= Xm;
-	Ym = Y.colwise().mean();
-	Y.rowwise() -= Ym;
+}
+
+void augment_ones(mat &X) {
+	X.conservativeResize(X.rows(), X.cols() + 1);
+	X.col(X.cols() - 1).setConstant(1.0);
+}
+
+void fix_for_wols(mat &X, mat &Y, const cvec &w) {
+	int ndata = X.rows(), xdim = X.cols(), ydim = Y.cols();
+	X.conservativeResize(ndata, xdim + 1);
+	
+	for (int i = 0; i < xdim; ++i) {
+		X.col(i).array() *= w.array();
+	}
+	X.col(xdim) = w;
+	for (int i = 0; i < ydim; ++i) {
+		Y.col(i).array() *= w.array();
+	}
 }
 
 /*
  Perform linear regression. Assumes that input X and Y are already
- cleaned.
- 
- Note that this function modifies inputs X and Y to avoid redundant
- copies.
+ cleaned and centered.
 */
-bool linreg_clean(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec &inter) {
-	rvec Xm, Ym;
-	bool success;
-	
-	if (w.size() > 0) {
-		for (int i = 0; i < X.cols(); ++i) {
-			X.col(i).array() *= w.array();
-		}
-		for (int i = 0; i < Y.cols(); ++i) {
-			Y.col(i).array() *= w.array();
-		}
-	}
-	
-	center_lr_data(X, Y, Xm, Ym);
+bool linreg_clean(regression_type t, mat &X, mat &Y, mat &coefs) {
 	switch (t) {
 		case OLS:
-			success = solve(X, Y, coefs);
-			break;
+			return solve(X, Y, coefs);
 		case RIDGE:
-			success = ridge(X, Y, coefs);
-			break;
+			return ridge(X, Y, coefs);
 		case LASSO:
-			success = lasso(X, Y, coefs);
-			break;
+			return lasso(X, Y, coefs);
 		case PCR:
-			success = wpcr(X, Y, coefs);
+			return wpcr(X, Y, coefs);
 			break;
 		case FORWARD:
-			success = fstep(X, Y, coefs);
-			break;
+			return fstep(X, Y, coefs);
 		default:
 			assert(false);
 	}
-	if (!success) {
-		return false;
-	}
-	inter = Ym - (Xm * coefs);
-	return true;
+	return false;
 }
+
 
 /*
  Clean up input data to avoid instability, then perform some form of
@@ -373,23 +366,47 @@ bool linreg_clean(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, 
 */
 bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec &inter) {
 	int ndata = X.rows();
-	int orig_xdim = X.cols();
-	int orig_ydim = Y.cols();
+	int xdim = X.cols();
+	int ydim = Y.cols();
 	mat coefs1;
-	rvec inter1;
+	rvec Xm, Ym, inter1;
 	vector<int> used;
 	
 	clean_lr_data(X, used);
-	if (!linreg_clean(t, X, Y, w, coefs1, inter1)) {
+	/*
+	 The two ways to deal with intercepts:
+	 
+	 1. Center data before regression, then calculate intercept afterwards using
+	    means.
+	 2. Append a column of 1's to X. The coefficient for this column will be the
+	    intercept.
+	 
+	 Unfortunately from what I can gather, method 1 doesn't work with weighted
+	 regression, and method 2 doesn't work with ridge regression or PCR.
+	*/
+	if (w.size() > 0) {
+		assert(t != RIDGE && t != PCR);
+		fix_for_wols(X, Y, w);
+	} else {
+		center_data(X, Xm);
+		center_data(Y, Ym);
+	}
+	
+	if (!linreg_clean(t, X, Y, coefs1)) {
 		return false;
 	}
-	coefs.resize(orig_xdim, orig_ydim);
+	
+	if (w.size() > 0) {
+		assert(coefs1.rows() == xdim + 1);
+		inter = coefs1.row(coefs1.rows() - 1);
+	} else {
+		inter = Ym - (Xm * coefs1);
+	}
+	
+	coefs.resize(xdim, ydim);
 	coefs.setConstant(0.0);
-	inter.resize(orig_xdim);
-	inter.setConstant(0.0);
 	for (int i = 0; i < used.size(); ++i) {
 		coefs.row(used[i]) = coefs1.row(i);
-		inter(used[i]) = inter1(i);
 	}
 	return true;
 }

@@ -147,8 +147,11 @@ void predict(const mat &C, const rvec &intercepts, const rvec &x, rvec &y) {
 }
 
 /*
- Try to find a set of at least n points that fits a single linear
- function well. The algorithm is:
+ Use a simple version of EM to discover a mode in noise data. This
+ method works better than block_seed when data from a single mode
+ doesn't come in contiguous blocks.
+ 
+ The algorithm is:
  
  1. If input X has m non-static columns, assume it has rank = m + 1.
  2. Randomly choose 'rank' data points as the seed members for the
@@ -160,15 +163,20 @@ void predict(const mat &C, const rvec &intercepts, const rvec &x, rvec &y) {
  5. If the process converged without fitting n data points, repeat
     from 2.
 */
-bool mini_em(mat &X, mat &Y, int n, double fit_thresh, int maxiters, vector<int> &points) {
-	int ndata = X.rows();
+bool mini_em_seed(mat &X, mat &Y, int maxiters, vector<int> &points) {
+	int ndata = X.rows(), rank;
 	cvec residuals(ndata), old_res(ndata), w(ndata);
-	rvec Xm, Ym, intercept;
+	rvec Xm, Ym;
 	mat Xc, Yc, coefs;
 	vector<int> used_cols, init_members;
 
+	// preprocess the data as much as possible
 	clean_lr_data(X, used_cols);
-	int rank = X.cols() + 1;
+	augment_ones(X);
+	Xc.resize(ndata, X.cols());
+	Yc.resize(ndata, 1);
+	
+	rank = X.cols();
 	
 	/*
 	 Outer loop ranges over sets of random initial points
@@ -192,26 +200,23 @@ bool mini_em(mat &X, mat &Y, int n, double fit_thresh, int maxiters, vector<int>
 			}
 			LOG(EMDBG) << endl;
 			
-			Xc = X; Yc = Y;
-			if (!linreg_clean(FORWARD, Xc, Yc, w, coefs, intercept)) {
+			for (int i = 0; i < X.cols(); ++i) {
+				Xc.col(i) = X.col(i).array() * w.array();
+			}
+			Yc.col(0) = Y.col(0).array() * w.array();
+			if (!linreg_clean(FORWARD, Xc, Yc, coefs)) {
 				break;
 			}
 			
-			LOG(EMDBG) << "coefs = ";
-			for (int i = 0; i < coefs.rows(); ++i) {
-				LOG(EMDBG) << coefs(i, 0) << " ";
-			}
-			LOG(EMDBG) << endl;
-			
 			old_res = residuals;
-			residuals = (Y - ((X * coefs).rowwise() + intercept)).col(0).array().abs();
+			residuals = (Y - (X * coefs)).col(0).array().abs();
 			points.clear();
 			for (int i = 0; i < residuals.size(); ++i) {
-				if (residuals(i) < fit_thresh) {
+				if (residuals(i) < MODEL_ERROR_THRESH) {
 					points.push_back(i);
 				}
 			}
-			if (points.size() >= n) {
+			if (points.size() >= NEW_MODE_THRESH) {
 				LOG(EMDBG) << "residuals" << endl;
 				for (int i = 0; i < residuals.size(); ++i) {
 					LOG(EMDBG) << residuals(i) << " ";
@@ -229,40 +234,48 @@ bool mini_em(mat &X, mat &Y, int n, double fit_thresh, int maxiters, vector<int>
 	return false;
 }
 
-bool block_seed(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int maxiters, vector<int> &points) {
-	int xcols = X.cols(), ycols = Y.cols();
-	mat C, PY;
-	rvec intercepts, py, w(MODEL_INIT_N);
-	w.setConstant(1.0);
-	for (int iter = 0; iter < maxiters; ++iter) {
-		int start = rand() % (X.rows() - MODEL_INIT_N);
-		dyn_mat Xb(X.block(start, 0, MODEL_INIT_N, xcols));
-		dyn_mat Yb(Y.block(start, 0, MODEL_INIT_N, ycols));
-		linreg(OLS, Xb.get(), Yb.get(), w, C, intercepts);
+/*
+ Assume that data from a single mode comes in blocks. Try to discover
+ a mode by randomly fitting a line to a block of data and then finding
+ all data that fit the line.
+*/
+bool block_seed(mat &X, mat &Y, int maxiters, vector<int> &points) {
+	vector<int> used_cols;
+	rvec Xm, Ym, w(X.rows());
+	cvec errors;
+	mat Xc, Yc, coefs;
+	int rank, ndata;
 
-		PY = (X * C).rowwise() + intercepts;
-		double e = (Yb.get() - PY).rowwise().squaredNorm().sum();
-		if (e > MODEL_ERROR_THRESH) {
-			continue;
+	clean_lr_data(X, used_cols);
+	augment_ones(X);
+	Xc.resize(ndata, X.cols());
+	Yc.resize(ndata, 1);
+	
+	rank = X.cols();
+	ndata = X.rows();
+	
+	for (int iter = 0; iter < maxiters; ++iter) {
+		w.setConstant(0.0);
+		int start = rand() % (ndata - rank);
+		for (int i = 0; i < rank; ++i) {
+			w(start + i) = 1.0;
 		}
+		
+		for (int i = 0; i < X.cols(); ++i) {
+			Xc.col(i) = X.col(i).array() * w.array();
+		}
+		Yc.col(0) = Y.col(0).array() * w.array();
+		linreg_clean(FORWARD, Xc, Yc, coefs);
+
+		errors = (Y - (X * coefs)).col(0).array().abs();
 		
 		points.clear();
-		for (int i = start; i < start + MODEL_INIT_N; ++i) {
-			points.push_back(i);
-		}
-		
-		for (int i = 0; i < X.rows(); ++i) {
-			if (i < start || i >= start + MODEL_INIT_N) {
-				predict(C, intercepts, X.row(i), py);
-				if (pow(py(0) - Y(i, 0), 2) < MODEL_ADD_THRESH) {
-					Xb.append_row(X.row(i));
-					Yb.append_row(Y.row(i));
-					points.push_back(i);
-				}
+		for (int i = 0; i < ndata; ++i) {
+			if (errors(i) < MODEL_ERROR_THRESH) {
+				points.push_back(i);
 			}
 		}
-		
-		if (points.size() >= n) {
+		if (points.size() >= NEW_MODE_THRESH) {
 			return true;
 		}
 	}
@@ -634,7 +647,7 @@ bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int>
 		em_data &dinfo = *data[i];
 		vector<int> &const_inds = const_noise_inds[dinfo.y(0)];
 		const_inds.push_back(i);
-		if (const_inds.size() >= NOISE_SIZE_THRESH) {
+		if (const_inds.size() >= NEW_MODE_THRESH) {
 			LOG(EMDBG) << "found constant model in noise_inds" << endl;
 			mode_inds = const_inds;
 			return true;
@@ -658,14 +671,14 @@ bool EM::find_new_mode_inds(const set<int> &noise_inds, int sig_ind, vector<int>
 		}
 	}
 	
-	if (unique_x.rows() < NOISE_SIZE_THRESH) {
+	if (unique_x.rows() < NEW_MODE_THRESH * 1.25) {
 		return false;
 	}
 	
 	vector<int> seed;
 	mat &X = unique_x.release();
 	mat &Y = unique_y.release();
-	if (!mini_em(X, Y, NOISE_SIZE_THRESH, MODEL_ERROR_THRESH, 10, seed))
+	if (!mini_em_seed(X, Y, 10, seed))
 	{
 		return false;
 	}
@@ -682,7 +695,7 @@ bool EM::unify_or_add_model() {
 	map<int, set<int> >::iterator i;
 	for (i = noise.begin(); i != noise.end(); ++i) {
 		std::set<int> &noise_inds = i->second;
-		if (noise_inds.size() < NOISE_SIZE_THRESH) {
+		if (noise_inds.size() < NEW_MODE_THRESH) {
 			continue;
 		}
 	
