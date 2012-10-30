@@ -347,6 +347,28 @@ FOIL::FOIL(const relation &p, const relation &n, const relation_table &rels)
 	assert(p.arity() == n.arity());
 }
 
+void FOIL::prune_clause(clause &c) const {
+	while (true) {
+		int best_lit = -1;
+		double best_rate = clause_success_rate(c, NULL);
+		cout << "original: " << c << " " << best_rate << endl;
+		for (int i = 0; i < c.size(); ++i) {
+			clause pruned = c;
+			pruned.erase(pruned.begin() + i);
+			double r = clause_success_rate(pruned, NULL);
+			if (r > best_rate) {
+				best_lit = i;
+				best_rate = r;
+			}
+		}
+		if (best_lit < 0) {
+			return;
+		}
+		c.erase(c.begin() + best_lit);
+		cout << "pruned:   " << c << " " << best_rate << endl;
+	}
+}
+
 /*
  Learns a list of clauses to classify the positive and negative
  examples. The residuals vector will be filled as follows:
@@ -384,8 +406,10 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 		} else {
 			choose_clause(c, NULL);
 		}
+		
+		prune_clause(c);
 		relation covered_pos(init_vars);
-		if (!c.empty() && clause_success_rate(c, covered_pos) > FOIL_MIN_SUCCESS_RATE) {
+		if (!c.empty() && clause_success_rate(c, &covered_pos) > FOIL_MIN_SUCCESS_RATE) {
 			clauses.push_back(c);
 			if (residuals) {
 				residuals->push_back(res);
@@ -526,7 +550,7 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	return true;
 }
 
-double FOIL::clause_success_rate(const clause &c, relation &pos_matched) const {
+double FOIL::clause_success_rate(const clause &c, relation *pos_matched) const {
 	double correct = 0;
 	var_domains domains;
 	
@@ -537,7 +561,9 @@ double FOIL::clause_success_rate(const clause &c, relation &pos_matched) const {
 		}
 		if (test_clause(c, rels, domains)) {
 			++correct;
-			pos_matched.add(pos_test[i]);
+			if (pos_matched) {
+				pos_matched->add(pos_test[i]);
+			}
 		}
 	}
 	for (int i = 0; i < neg_test.size(); ++i) {
