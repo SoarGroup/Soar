@@ -305,15 +305,16 @@ void print_first_arg(const relation &r, ostream &os) {
 	join(os, first.vec(), " ") << endl;
 }
 
-EM::EM() : ndata(0), nmodes(0) {}
+EM::EM() : ndata(0), nmodes(1) {
+	mode_info *noise = new mode_info();
+	noise->model = NULL;
+	noise->stale = false;
+	modes.push_back(noise);
+}
 
 EM::~EM() {
-	for (int i = 0; i < data.size(); ++i) {
-		delete data[i];
-	}
-	for (int i = 0; i < modes.size(); ++i) {
-		delete modes[i];
-	}
+	clear_and_dealloc(data);
+	clear_and_dealloc(modes);
 }
 
 void EM::update_eligibility() {
@@ -340,6 +341,10 @@ void EM::update_eligibility() {
  Calculate probability of data point d belonging to mode m
 */
 double EM::calc_prob(int m, int target, const scene_sig &sig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
+	if (m == 0) {
+		return PNOISE;
+	}
+	
 	rvec py;
 	double w;
 	if (TEST_ELIGIBILITY) {
@@ -437,6 +442,7 @@ double EM::calc_prob(int m, int target, const scene_sig &sig, const rvec &x, dou
  models may change in the same round.
 */
 void EM::update_mode_prob(int i, set<int> &check) {
+	assert(i > 0);
 	set<int>::iterator j;
 	mode_info &minfo = *modes[i];
 	for (j = minfo.stale_points.begin(); j != minfo.stale_points.end(); ++j) {
@@ -450,10 +456,7 @@ void EM::update_mode_prob(int i, set<int> &check) {
 			now = calc_prob(i, dinfo.target, sigs[dinfo.sig_index], dinfo.x, dinfo.y(0), 
 			                obj_maps[make_pair(i, *j)], error);
 		}
-		if ((m == i && now < prev) ||
-		    (m != i && ((m == -1 && now > PNOISE) ||
-		                (m != -1 && now > dinfo.mode_prob[m]))))
-		{
+		if ((m == i && now < prev) || (m != i && now > dinfo.mode_prob[m])) {
 			check.insert(*j);
 		}
 		dinfo.mode_prob[i] = now;
@@ -472,22 +475,24 @@ void EM::mode_add_example(int m, int i, bool update) {
 	em_data &dinfo = *data[i];
 	const scene_sig &sig = sigs[dinfo.sig_index];
 
-	rvec xc;
-	if (!minfo.model->is_const()) {
-		xc.resize(dinfo.x.size());
-		int xsize = 0;
-		for (int j = 0; j < dinfo.obj_map.size(); ++j) {
-			const scene_sig::entry &e = sig[dinfo.obj_map[j]];
-			int n = e.props.size();
-			xc.segment(xsize, n) = dinfo.x.segment(e.start, n);
-			xsize += n;
+	if (m > 0) {
+		rvec xc;
+		if (!minfo.model->is_const()) {
+			xc.resize(dinfo.x.size());
+			int xsize = 0;
+			for (int j = 0; j < dinfo.obj_map.size(); ++j) {
+				const scene_sig::entry &e = sig[dinfo.obj_map[j]];
+				int n = e.props.size();
+				xc.segment(xsize, n) = dinfo.x.segment(e.start, n);
+				xsize += n;
+			}
+			xc.conservativeResize(xsize);
 		}
-		xc.conservativeResize(xsize);
+		dinfo.model_row = minfo.model->add_example(xc, dinfo.y, update);
+		minfo.stale = true;
 	}
-	dinfo.model_row = minfo.model->add_example(xc, dinfo.y, update);
 	
 	minfo.members.insert(i);
-	minfo.stale = true;
 	minfo.classifier_stale = true;
 	minfo.member_rel.add(i, sig[dinfo.target].id);
 }
@@ -497,17 +502,18 @@ void EM::mode_del_example(int m, int i) {
 	em_data &dinfo = *data[i];
 	const scene_sig &sig = sigs[dinfo.sig_index];
 	
-	int r = dinfo.model_row;
-	minfo.model->del_example(r);
 	minfo.members.erase(i);
-	
-	set<int>::iterator j;
-	for (j = minfo.members.begin(); j != minfo.members.end(); ++j) {
-		if (data[*j]->model_row > r) {
-			data[*j]->model_row--;
+	if (m > 0) {
+		int r = dinfo.model_row;
+		minfo.model->del_example(r);
+		set<int>::iterator j;
+		for (j = minfo.members.begin(); j != minfo.members.end(); ++j) {
+			if (data[*j]->model_row > r) {
+				data[*j]->model_row--;
+			}
 		}
+		minfo.stale = true;
 	}
-	minfo.stale = true;
 	minfo.classifier_stale = true;
 	minfo.member_rel.del(i, sig[dinfo.target].id);
 }
@@ -518,29 +524,15 @@ void EM::update_MAP(const set<int> &points) {
 	for (j = points.begin(); j != points.end(); ++j) {
 		em_data &dinfo = *data[*j];
 		int prev = dinfo.map_mode, now;
-		if (nmodes == 0) {
-			now = -1;
-		} else {
-			now = argmax(dinfo.mode_prob);
-			if (dinfo.mode_prob[now] < PNOISE) {
-				now = -1;
-			}
-		}
+		now = argmax(dinfo.mode_prob);
 		if (now != prev) {
 			dinfo.map_mode = now;
-			if (prev == -1) {
-				noise[dinfo.sig_index].erase(*j);
-			} else {
-				mode_del_example(prev, *j);
-			}
-			if (now == -1) {
-				noise[dinfo.sig_index].insert(*j);
-			} else {
-				obj_map_table::const_iterator i = obj_maps.find(make_pair(now, *j));
-				assert(i != obj_maps.end());
+			mode_del_example(prev, *j);
+			obj_map_table::const_iterator i = obj_maps.find(make_pair(now, *j));
+			if (i != obj_maps.end()) {
 				dinfo.obj_map = i->second;
-				mode_add_example(now, *j, true);
 			}
+			mode_add_example(now, *j, true);
 		}
 	}
 }
@@ -565,12 +557,13 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 	dinfo->target = target;
 	dinfo->sig_index = sig_index;
 	
-	dinfo->map_mode = -1;
+	dinfo->map_mode = 0;
 	dinfo->mode_prob.resize(nmodes);
+	dinfo->mode_prob[0] = PNOISE;
 	data.push_back(dinfo);
 	
-	noise[sig_index].insert(ndata);
-	for (int i = 0; i < nmodes; ++i) {
+	mode_add_example(0, ndata, false);
+	for (int i = 1; i < nmodes; ++i) {
 		modes[i]->stale_points.insert(ndata);
 	}
 	extend_relations(rels, ndata);
@@ -583,7 +576,7 @@ void EM::estep() {
 	set<int> check;
 	update_eligibility();
 	
-	for (int i = 0; i < nmodes; ++i) {
+	for (int i = 1; i < nmodes; ++i) {
 		update_mode_prob(i, check);
 	}
 	
@@ -717,16 +710,26 @@ bool EM::find_new_mode_inds(const vector<int> &noise_inds, int sig_ind, vector<i
 bool EM::unify_or_add_model() {
 	function_timer t(timers.get_or_add("new"));
 	
-	map<int, set<int> >::iterator i;
-	for (i = noise.begin(); i != noise.end(); ++i) {
-		std::set<int> &noise_inds = i->second;
+	/*
+	 This section wastes a lot of computation by not caching the results. It was
+	 added temporarily during the transition from noise = mode -1 to noise = mode
+	 0.
+	*/
+	map<int, vector<int> > sig_to_noise;
+	set<int>::iterator ni;
+	for (ni = modes[0]->members.begin(); ni != modes[0]->members.end(); ++ni) {
+		sig_to_noise[data[*ni]->sig_index].push_back(*ni);
+	}
+	
+	map<int, vector<int> >::iterator i;
+	for (i = sig_to_noise.begin(); i != sig_to_noise.end(); ++i) {
+		std::vector<int> &noise_inds = i->second;
 		if (noise_inds.size() < NEW_MODE_THRESH * 1.25) {
 			continue;
 		}
 		
-		vector<int> inds(noise_inds.begin(), noise_inds.end());
 		vector<int> seed_inds;
-		if (!find_new_mode_inds(inds, i->first, seed_inds)) {
+		if (!find_new_mode_inds(noise_inds, i->first, seed_inds)) {
 			return false;
 		}
 		
@@ -745,7 +748,7 @@ bool EM::unify_or_add_model() {
 		
 		vector<int> obj_map;
 		bool unified = false;
-		for (int j = 0; j < nmodes; ++j) {
+		for (int j = 1; j < nmodes; ++j) {
 			mode_info &minfo = *modes[j];
 			set<int> &members = minfo.members;
 
@@ -801,7 +804,7 @@ bool EM::unify_or_add_model() {
 		}
 
 		for (int j = 0; j < seed_inds.size(); ++j) {
-			noise_inds.erase(seed_inds[j]);
+			mode_del_example(0, seed_inds[j]);
 		}
 		return true;
 	}
@@ -833,13 +836,9 @@ void EM::init_mode(int mode, int sig_id, LinearModel *m, const vector<int> &memb
 		dinfo.obj_map = obj_map;
 		minfo.member_rel.add(members[i], target);
 	}
-	mark_mode_stale(mode);
-}
-
-void EM::mark_mode_stale(int i) {
-	modes[i]->stale = true;
-	for (int j = 0; j < ndata; ++j) {
-		modes[i]->stale_points.insert(j);
+	modes[mode]->stale = true;
+	for (int i = 0; i < ndata; ++i) {
+		modes[mode]->stale_points.insert(i);
 	}
 }
 
@@ -883,15 +882,14 @@ bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_tab
 }
 
 bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y) {
-	if (ndata == 0 || nmodes < 0) {
-		mode = -1;
+	if (ndata == 0) {
+		mode = 0;
 		return false;
 	}
 	
 	vector<int> obj_map;
 	mode = classify(target, sig, rels, x, obj_map);
-	if (mode < 0) {
-		LOG(EMDBG) << "classification failed" << endl;
+	if (mode == 0) {
 		if (LWR(sig, x, y)) {
 			return true;
 		}
@@ -924,7 +922,7 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
  Remove all modes that cover fewer than 2 data points.
 */
 bool EM::remove_modes() {
-	if (nmodes == 0) {
+	if (nmodes == 1) {
 		return false;
 	}
 	
@@ -936,8 +934,8 @@ bool EM::remove_modes() {
 	 of vectors. index_map associates old j's to new i's.
 	*/
 	vector<int> index_map(nmodes), removed;
-	int i = 0;
-	for (int j = 0; j < nmodes; ++j) {
+	int i = 1;  // start with 1, noise mode (0) should never be removed
+	for (int j = 1; j < nmodes; ++j) {
 		if (modes[j]->members.size() > 2) {
 			index_map[j] = i;
 			if (j > i) {
@@ -945,7 +943,7 @@ bool EM::remove_modes() {
 			}
 			i++;
 		} else {
-			index_map[j] = -1;
+			index_map[j] = 0;
 			delete modes[j];
 			removed.push_back(j);
 		}
@@ -1011,7 +1009,7 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) const {
 
 	if (first >= args.size()) {
 		os << "modes: " << nmodes << endl;
-		os << endl << "subqueries: mode ptable timing noise train foil" << endl;
+		os << endl << "subqueries: mode ptable timing train relations classifiers" << endl;
 		return true;
 	} else if (args[first] == "ptable") {
 		table_printer t;
@@ -1036,12 +1034,6 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) const {
 		return modes[n]->cli_inspect(first + 2, args, os);
 	} else if (args[first] == "timing") {
 		timers.report(os);
-		return true;
-	} else if (args[first] == "noise") {
-		map<int, set<int> >::const_iterator i;
-		for (i = noise.begin(); i != noise.end(); ++i) {
-			join(os, i->second, " ") << endl;
-		}
 		return true;
 	} else if (args[first] == "relations") {
 		return cli_inspect_relations(first + 1, args, os);
@@ -1179,7 +1171,12 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 		join(os, members, ' ') << endl;
 		return true;
 	} else if (args[first] == "model") {
-		return model->cli_inspect(first + 1, args, os);
+		if (model) {
+			return model->cli_inspect(first + 1, args, os);
+		} else {
+			os << "no model" << endl;
+			return true;
+		}
 	}
 	return false;
 }
@@ -1214,11 +1211,11 @@ void EM::extend_relations(const relation_table &add, int time) {
 }
 
 void EM::serialize(ostream &os) const {
-	serializer(os) << ndata << nmodes << data << sigs << modes << noise << rel_tbl;
+	serializer(os) << ndata << nmodes << data << sigs << modes << rel_tbl;
 }
 
 void EM::unserialize(istream &is) {
-	unserializer(is) >> ndata >> nmodes >> data >> sigs >> modes >> noise >> rel_tbl;
+	unserializer(is) >> ndata >> nmodes >> data >> sigs >> modes >> rel_tbl;
 	assert(data.size() == ndata && modes.size() == nmodes);
 }
 
@@ -1479,10 +1476,8 @@ int EM::classify_pair(int i, int j, int target, const scene_sig &sig, const rela
 		}
 	} else if (c.ldas.size() > c.clauses.size()) {
 		return c.ldas.back()->classify(x);
-	} else {
-		return 1;
 	}
-	return -1;
+	return 1;
 }
 
 int EM::classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, vector<int> &obj_map) {
@@ -1493,7 +1488,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 	 The scene has to contain the objects used by the linear model of
 	 a mode for it to possibly qualify for that mode.
 	*/
-	vector<int> possible;
+	vector<int> possible(1, 0);
 	map<int, vector<int> > mappings;
 	for (int i = 0; i < modes.size(); ++i) {
 		mode_info &minfo = *modes[i];
@@ -1506,10 +1501,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 		}
 		possible.push_back(i);
 	}
-	if (possible.empty()) {
-		LOG(EMDBG) << "no possible modes" << endl;
-		return -1;
-	} else if (possible.size() == 1) {
+	if (possible.size() == 1) {
 		LOG(EMDBG) << "only one possible mode: " << possible[0] << endl;
 		obj_map = mappings[possible[0]];
 		return possible[0];

@@ -98,11 +98,6 @@ private:
 		std::vector<classifier*> classifiers;
 	};
 	
-	/*
-	 Table to store mappings from placeholders to objects for a
-	 particular linear model and data point, as calculated in
-	 calc_prob.
-	*/
 	typedef std::map<std::pair<int, int>, std::vector<int> > obj_map_table;
 	
 	void estep();
@@ -113,7 +108,6 @@ private:
 	void update_mode_prob(int i, std::set<int> &check);
 	void update_MAP(const std::set<int> &pts);
 	bool remove_modes();
-	void mark_mode_stale(int i);
 	bool find_new_mode_inds(const std::vector<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
 	double calc_prob(int m, int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	void mode_add_example(int m, int i, bool update);
@@ -139,11 +133,14 @@ private:
 	std::vector<em_data*> data;
 	std::vector<scene_sig> sigs;
 	std::vector<mode_info*> modes;
-	std::map<int, std::set<int> > noise;  // sig index -> data index
 	int ndata, nmodes;
-	obj_map_table obj_maps;
 	
-	std::vector<std::vector<classifier*> > classifiers;
+	/*
+	 Table to store mappings from placeholders to objects for a
+	 particular linear model and data point, as calculated in
+	 calc_prob.
+	*/
+	obj_map_table obj_maps;
 	
 	mutable timer_set timers;
 };
