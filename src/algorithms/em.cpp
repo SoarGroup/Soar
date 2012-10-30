@@ -147,6 +147,35 @@ void predict(const mat &C, const rvec &intercepts, const rvec &x, rvec &y) {
 }
 
 /*
+ Upon return, X and Y will contain the training data, Xtest and Ytest the
+ testing data.
+*/
+void split_data(mat &X, mat &Y, mat &Xtrain, mat &Ytrain, mat &Xtest, mat &Ytest) {
+	int ntrain = Xtrain.rows();
+	int ntest = Xtest.rows();
+	assert(ntrain + ntest == X.rows());
+	
+	vector<int> test_rows;
+	sample(ntest, 0, X.rows(), test_rows);
+	sort(test_rows.begin(), test_rows.end());
+	
+	int train_end = 0, test_end = 0, i = 0;
+	for (int j = 0; j < X.rows(); ++j) {
+		if (j == test_rows[i]) {
+			Xtest.row(test_end) = X.row(j);
+			Ytest.row(test_end) = Y.row(j);
+			++test_end;
+			++i;
+		} else {
+			Xtrain.row(train_end) = X.row(j);
+			Ytrain.row(train_end) = Y.row(j);
+			++train_end;
+		}
+	}
+	assert(test_end == ntest && train_end == ntrain);
+}
+
+/*
  Use a simple version of EM to discover a mode in noise data. This
  method works better than block_seed when data from a single mode
  doesn't come in contiguous blocks.
@@ -154,37 +183,40 @@ void predict(const mat &C, const rvec &intercepts, const rvec &x, rvec &y) {
  The algorithm is:
  
  1. If input X has m non-static columns, assume it has rank = m + 1.
- 2. Randomly choose 'rank' data points as the seed members for the
-    linear function. Fit the function to the seed members.
- 3. Compute the residuals of the function for all data points. Compute
-    a weight vector based on the residuals and a kernel.
- 4. Refit the linear function biased based on the weight vector.
-    Repeat until convergence or the function fits at least n data points.
- 5. If the process converged without fitting n data points, repeat
-    from 2.
+ 2. Split data into training and test sets.
+ 2. Randomly choose 'rank' training points as the seed members for the linear
+    function. Fit the function to the seed members.
+ 3. Compute the residuals of the function for training data. Compute a weight
+    vector based on the residuals and a kernel.
+ 4. Refit the linear function biased based on the weight vector. Repeat until
+    convergence or the function fits at least n data points.
+ 5. Compute the error of the linear function on the test data. If the error is
+    not acceptable for at least n data points, repeat from 2.
 */
 bool mini_em_seed(mat &X, mat &Y, int maxiters, vector<int> &points) {
-	int ndata = X.rows(), rank;
-	cvec residuals(ndata), old_res(ndata), w(ndata);
-	rvec Xm, Ym;
-	mat Xc, Yc, coefs;
-	vector<int> used_cols, init_members;
-
 	// preprocess the data as much as possible
+	vector<int> used_cols;
 	clean_lr_data(X, used_cols);
 	augment_ones(X);
-	Xc.resize(ndata, X.cols());
-	Yc.resize(ndata, 1);
+
+	int ntest = X.rows() * .5;
+	int ntrain = X.rows() - ntest;
+	int xcols = X.cols();
 	
-	rank = X.cols();
+	cvec train_error(ntrain), old_error(ntrain), test_error(ntest), w(ntrain);
+	mat Xtrain(ntrain, xcols), Xtest(ntest, xcols);
+	mat Ytrain(ntrain, 1), Ytest(ntest, 1);
+	mat Xc(ntrain, xcols), Yc(ntrain, 1);
+	mat coefs(xcols, 1);
+	vector<int> init_members;
 	
 	/*
 	 Outer loop ranges over sets of random initial points
 	*/
 	for (int iter1 = 0; iter1 < maxiters; ++iter1) {
+		split_data(X, Y, Xtrain, Ytrain, Xtest, Ytest);
+		sample(xcols + 1, 0, ntrain, init_members);
 		w.setConstant(0.0);
-		
-		sample(rank, 0, ndata, init_members);
 		for (int i = 0; i < init_members.size(); ++i) {
 			w(init_members[i]) = 1.0;
 		}
@@ -200,35 +232,34 @@ bool mini_em_seed(mat &X, mat &Y, int maxiters, vector<int> &points) {
 			}
 			LOG(EMDBG) << endl;
 			
-			for (int i = 0; i < X.cols(); ++i) {
-				Xc.col(i) = X.col(i).array() * w.array();
+			for (int i = 0; i < xcols; ++i) {
+				Xc.col(i) = Xtrain.col(i).array() * w.array();
 			}
-			Yc.col(0) = Y.col(0).array() * w.array();
+			Yc.col(0) = Ytrain.col(0).array() * w.array();
 			if (!linreg_clean(FORWARD, Xc, Yc, coefs)) {
 				break;
 			}
 			
-			old_res = residuals;
-			residuals = (Y - (X * coefs)).col(0).array().abs();
-			points.clear();
-			for (int i = 0; i < residuals.size(); ++i) {
-				if (residuals(i) < MODEL_ERROR_THRESH) {
+			old_error = train_error;
+			train_error = (Ytrain - (Xtrain * coefs)).col(0).array().abs();
+			
+			if ((train_error - old_error).norm() / ntrain < SAME_THRESH || 
+			    (train_error.array() < MODEL_ERROR_THRESH).count() >= NEW_MODE_THRESH / 2)
+			{
+				break;
+			}
+			kernel2(train_error, w, -3.0);
+		}
+		
+		test_error = (Ytest - (Xtest * coefs)).col(0).array().abs();
+		if ((test_error.array() < MODEL_ERROR_THRESH).count() >= NEW_MODE_THRESH / 2) {
+			cvec all_error = (Y - (X * coefs)).col(0).array().abs();
+			for (int i = 0; i < all_error.size(); ++i) {
+				if (all_error(i) < MODEL_ERROR_THRESH) {
 					points.push_back(i);
 				}
 			}
-			if (points.size() >= NEW_MODE_THRESH) {
-				LOG(EMDBG) << "residuals" << endl;
-				for (int i = 0; i < residuals.size(); ++i) {
-					LOG(EMDBG) << residuals(i) << " ";
-				}
-				LOG(EMDBG) << endl;
-				return true;
-			}
-			
-			if (residuals == old_res) {
-				break;
-			}
-			kernel2(residuals, w, -3.0);
+			return true;
 		}
 	}
 	return false;

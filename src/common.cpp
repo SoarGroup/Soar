@@ -46,6 +46,9 @@ void strip(string &s, const string &whitespace) {
 	s = s.substr(begin, end - begin);
 }
 
+/*
+ Upper bound on range is non-inclusive.
+*/
 void sample(int k, int low, int high, std::vector<int> &output) {
 	int range = high - low;
 	assert(k <= range);
