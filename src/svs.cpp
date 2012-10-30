@@ -20,21 +20,6 @@ using namespace std;
 
 typedef map<wme*,command*>::iterator cmd_iter;
 
-bool handle_on_off(const vector<string> &args, int first, ostream &os, bool &var) {
-	if (first >= args.size() - 1) {
-		os << (var ? "on" : "off") << endl;
-	} else {
-		if (args[first + 1] == "on") {
-			var = true;
-		} else if (args[first + 1] == "off") {
-			var = false;
-		} else {
-			os << "expecting on/off" << endl;
-			return false;
-		}
-	}
-	return true;
-}
 
 svs_interface *make_svs(agent *a) {
 	return new svs(a);
@@ -355,9 +340,9 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 	} else if (args[first_arg] == "model") {
 		return mmdl->cli_inspect(first_arg + 1, args, os);
 	} else if (args[first_arg] == "learn_models") {
-		return handle_on_off(args, first_arg, os, learn_models);
+		return read_on_off(args, first_arg + 1, os, learn_models);
 	} else if (args[first_arg] == "test_models") {
-		return handle_on_off(args, first_arg, os, test_models);
+		return read_on_off(args, first_arg + 1, os, test_models);
 	}
 	
 	os << "no such query" << endl;
@@ -528,7 +513,7 @@ bool svs::do_command(const vector<string> &args, stringstream &out) {
 			return false;
 		}
 	} else if (args[1] == "learn") {
-		return handle_on_off(args, 1, out, learn);
+		return read_on_off(args, 2, out, learn);
 	} else if (args[1] == "model") {
 		map<string, model*>::const_iterator i;
 		if (args.size() > 2) {

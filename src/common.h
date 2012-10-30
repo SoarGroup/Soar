@@ -24,6 +24,8 @@ void strip(std::string &s, const std::string &whitespace);
 bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
 
+bool read_on_off(const std::vector<std::string> &args, int first, std::ostream &os, bool &var);
+
 void sample(int k, int low, int high, std::vector<int> &output);
 
 template<typename C>

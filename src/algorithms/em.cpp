@@ -336,7 +336,7 @@ void print_first_arg(const relation &r, ostream &os) {
 	join(os, first.vec(), " ") << endl;
 }
 
-EM::EM() : ndata(0), nmodes(1) {
+EM::EM() : ndata(0), nmodes(1), use_em(true) {
 	mode_info *noise = new mode_info();
 	noise->model = NULL;
 	noise->stale = false;
@@ -738,7 +738,7 @@ bool EM::find_new_mode_inds(const vector<int> &noise_inds, int sig_ind, vector<i
 	return true;
 }
 
-bool EM::unify_or_add_model() {
+bool EM::unify_or_add_mode() {
 	function_timer t(timers.get_or_add("new"));
 	
 	/*
@@ -1005,16 +1005,18 @@ bool EM::step() {
 
 bool EM::run(int maxiters) {
 	bool changed = false;
-	for (int i = 0; i < maxiters; ++i) {
-		if (!step()) {
-			if (!remove_modes() && !unify_or_add_model()) {
-				// reached quiescence
-				return changed;
+	if (use_em) {
+		for (int i = 0; i < maxiters; ++i) {
+			if (!step()) {
+				if (!remove_modes() && !unify_or_add_mode()) {
+					// reached quiescence
+					return changed;
+				}
 			}
+			changed = true;
 		}
-		changed = true;
+		LOG(EMDBG) << "Reached max iterations without quiescence" << endl;
 	}
-	LOG(EMDBG) << "Reached max iterations without quiescence" << endl;
 	return changed;
 }
 
@@ -1035,7 +1037,7 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 	return best;
 }
 
-bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) const {
+bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 	const_cast<EM*>(this)->update_classifier();
 
 	if (first >= args.size()) {
@@ -1070,6 +1072,8 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) const {
 		return cli_inspect_relations(first + 1, args, os);
 	} else if (args[first] == "classifiers") {
 		return cli_inspect_classifiers(os);
+	} else if (args[first] == "use_em") {
+		return read_on_off(args, first + 1, os, use_em);
 	}
 
 	return false;

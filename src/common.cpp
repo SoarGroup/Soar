@@ -155,6 +155,22 @@ bool parse_int(const string &s, int &v) {
 	return true;
 }
 
+bool read_on_off(const vector<string> &args, int p, ostream &os, bool &var) {
+	if (p >= args.size()) {
+		os << (var ? "on" : "off") << endl;
+	} else {
+		if (args[p] == "on") {
+			var = true;
+		} else if (args[p] == "off") {
+			var = false;
+		} else {
+			os << "expecting on/off" << endl;
+			return false;
+		}
+	}
+	return true;
+}
+
 table_printer &table_printer::skip(int n) {
 	rows.back().resize(rows.back().size() + n);
 	return *this;

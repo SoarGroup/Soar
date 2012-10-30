@@ -24,7 +24,7 @@ public:
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
 	// Return the mode with the model that best fits (x, y)
 	int best_mode(int target, const scene_sig &sig, const rvec &x, double y, double &besterror) const;
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 	
@@ -102,7 +102,7 @@ private:
 	
 	void estep();
 	bool mstep();
-	bool unify_or_add_model();
+	bool unify_or_add_mode();
 	bool step();
 	void update_eligibility();
 	void update_mode_prob(int i, std::set<int> &check);
@@ -134,6 +134,7 @@ private:
 	std::vector<scene_sig> sigs;
 	std::vector<mode_info*> modes;
 	int ndata, nmodes;
+	bool use_em;
 	
 	/*
 	 Table to store mappings from placeholders to objects for a
