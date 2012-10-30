@@ -397,7 +397,7 @@ bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec
 	}
 	
 	if (w.size() > 0) {
-		assert(coefs1.rows() == xdim + 1);
+		assert(coefs1.rows() == used.size() + 1);
 		inter = coefs1.row(coefs1.rows() - 1);
 	} else {
 		inter = Ym - (Xm * coefs1);

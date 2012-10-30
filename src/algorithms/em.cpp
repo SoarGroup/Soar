@@ -1266,21 +1266,17 @@ void EM::em_data::unserialize(istream &is) {
 
 void EM::mode_info::serialize(ostream &os) const {
 	serializer(os) << stale << stale_points << members << sig
-	               << classifiers << obj_clauses << classifier_stale << member_rel;
-
-	assert(model);
-	model->serialize(os);
+	               << classifiers << obj_clauses << classifier_stale 
+	               << member_rel << model;
 }
 
 void EM::mode_info::unserialize(istream &is) {
-	unserializer(is) >> stale >> stale_points >> members >> sig
-	                 >> classifiers >> obj_clauses >> classifier_stale >> member_rel;
-	
 	if (model) {
 		delete model;
 	}
-	model = new LinearModel;
-	model->unserialize(is);
+	unserializer(is) >> stale >> stale_points >> members >> sig
+	                 >> classifiers >> obj_clauses >> classifier_stale
+	                 >> member_rel >> model;
 }
 
 EM::mode_info::~mode_info() {
@@ -1525,7 +1521,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 	*/
 	vector<int> possible(1, 0);
 	map<int, vector<int> > mappings;
-	for (int i = 0; i < modes.size(); ++i) {
+	for (int i = 1; i < modes.size(); ++i) {
 		mode_info &minfo = *modes[i];
 		if (minfo.sig.size() > sig.size()) {
 			continue;
@@ -1648,7 +1644,7 @@ bool EM::LWR(const scene_sig &sig, const rvec &x, rvec &y) const {
 		w(i) = lwr_kernel(dists[i]);
 	}
 	
-	if (!linreg_d(RIDGE, X, Y, w, coefs, intercept)) {
+	if (!linreg_d(FORWARD, X, Y, w, coefs, intercept)) {
 		return false;
 	}
 	y = x * coefs.col(0) + intercept;
