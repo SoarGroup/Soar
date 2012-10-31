@@ -292,7 +292,7 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
 	assert(dim >= 0 && start >= 0 && end < tests.size());
 	double total = 0.0, min = INFINITY, max = 0.0, std = 0.0;
-	int num_nans = 0;
+	int num_nans = 0, min_i, max_i;
 	vector<double> ds;
 	for (int i = start; i <= end; ++i) {
 		const test_info &t = tests[i];
@@ -307,9 +307,11 @@ bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
 			total += d;
 			if (d < min) {
 				min = d;
+				min_i = i;
 			}
 			if (d > max) {
 				max = d;
+				max_i = i;
 			}
 		}
 	}
@@ -318,7 +320,7 @@ bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
 		os << "no predictions" << endl;
 		return false;
 	}
-	
+	double last = ds.back();
 	double mean = total / ds.size();
 	for (int i = 0; i < ds.size(); ++i) {
 		std += pow(ds[i] - mean, 2);
@@ -326,15 +328,14 @@ bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
 	std = sqrt(std / ds.size());
 	sort(ds.begin(), ds.end());
 	double mode = ds[ds.size() / 2];
-	double last = ds.back();
 	
 	table_printer t;
 	t.add_row() << "mean" << mean;
 	t.add_row() << "std" << std;
 	t.add_row() << "mode" << mode;
-	t.add_row() << "min" << min;
-	t.add_row() << "max" << max;
 	t.add_row() << "last" << last;
+	t.add_row() << "min" << min << min_i;
+	t.add_row() << "max" << max << max_i;
 	t.print(os);
 
 	return true;

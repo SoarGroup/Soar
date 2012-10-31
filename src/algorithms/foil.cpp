@@ -91,7 +91,7 @@ public:
 			}
 			if (mrv < 0 || 
 			    (!vars[i].infinite_domain && vars[mrv].infinite_domain) ||
-			    (vars[i].domain.size() < vars[mrv].domain.size()))
+			    (!vars[i].infinite_domain && vars[i].domain.size() < vars[mrv].domain.size()))
 			{
 				mrv = i;
 			}

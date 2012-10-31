@@ -118,7 +118,7 @@ private:
 	bool map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
 	void extend_relations(const relation_table &add, int time);
 	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
-	void make_classifier_matrix(const relation &p, const relation &n, mat &m, std::vector<int> &classes) const;
+	LDA *learn_numeric_classifier(const relation &p, const relation &n) const;
 	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_classifiers(std::ostream &os) const;

@@ -83,7 +83,7 @@
 #define FOIL_MIN_SUCCESS_RATE 0.9
 #define FOIL_MAX_CLAUSE_LEN 5
 
-#define EM_CONTINUOUS_CLASSIFIER_THRESH 0.05
+#define EM_LDA_TRAIN_RATIO 0.75
 
 // num neighbors to use for fallback LWR prediction
 #define LWR_K 20

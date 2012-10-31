@@ -340,6 +340,7 @@ EM::EM() : ndata(0), nmodes(1), use_em(true) {
 	mode_info *noise = new mode_info();
 	noise->model = NULL;
 	noise->stale = false;
+	noise->classifiers.resize(1, NULL);
 	modes.push_back(noise);
 }
 
@@ -867,10 +868,11 @@ void EM::init_mode(int mode, int sig_id, LinearModel *m, const vector<int> &memb
 		dinfo.obj_map = obj_map;
 		minfo.member_rel.add(members[i], target);
 	}
-	modes[mode]->stale = true;
+	minfo.stale = true;
 	for (int i = 0; i < ndata; ++i) {
-		modes[mode]->stale_points.insert(i);
+		minfo.stale_points.insert(i);
 	}
+	minfo.classifiers.resize(nmodes, NULL);
 }
 
 bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, vector<int> &mapping) const {
@@ -1305,66 +1307,30 @@ void EM::classifier::inspect(ostream &os) const {
 	} else {
 		for (int k = 0; k < clauses.size(); ++k) {
 			os << "Clause: " << clauses[k] << endl;
-			if (residuals[k]->empty()) {
-				os << "No false positives" << endl;
-			} else {
+			if (!residuals[k]->empty()) {
 				os << "False positives:" << endl;
 				print_first_arg(*residuals[k], os);
-				assert(ldas[k]);
-				os << endl << "Numeric classifier:" << endl;
-				ldas[k]->inspect(os);
 				os << endl;
+				if (ldas[k]) {
+					os << "Numeric classifier:" << endl;
+					ldas[k]->inspect(os);
+					os << endl;
+				}
 			}
 		}
 	}
 	os << endl;
 	
-	if (residuals.size() == clauses.size()) {
-		os << "No false negatives" << endl;
-		return;
-	}
-	assert(residuals.size() == ldas.size() && residuals.size() == clauses.size() + 1);
-	os << "False negatives:" << endl;
-	print_first_arg(*residuals.back(), os);
-	os << endl << "Numeric classifier:" << endl;
-	ldas.back()->inspect(os);
-	os << endl;
-}
-
-void EM::make_classifier_matrix(const relation &p, const relation &n, mat &m, vector<int> &classes) const {
-	vec_set pos, neg;
-	p.at_pos(0, pos);
-	n.at_pos(0, neg);
-	const vector<int> &pv = pos.vec();
-	const vector<int> &nv = neg.vec();
-	
-	assert(!pos.empty() && !neg.empty());
-
-	int rows = p.size() + n.size();
-	int sig_index = data[pv[0]]->sig_index;
-	int cols = sigs[sig_index].dim();
-
-	/*
-	 If the entries have different signatures, the columns of the input matrix
-	 will not be aligned. I don't know what to do in that case.
-	*/
-	const vector<int> &v = pos.vec();
-	for (int i = 0; i < v.size(); ++i) {
-		assert(data[v[i]]->sig_index == sig_index);
-	}
-
-	m.resize(rows, cols);
-	classes.resize(rows);
-	int r = 0;
-	for (int i = 0; i < pv.size(); ++i) {
-		m.row(r) = data[pv[i]]->x;
-		classes[r] = 0;
-		++r;
-	}
-	for (int i = 0; i < nv.size(); ++i) {
-		m.row(r) = data[nv[i]]->x;
-		classes[r] = 1;
-		++r;
+	if (residuals.size() > clauses.size()) {
+		assert(residuals.size() == ldas.size() && residuals.size() == clauses.size() + 1);
+		os << "False negatives:" << endl;
+		print_first_arg(*residuals.back(), os);
+		os << endl;
+		if (ldas.back()) {
+			os << "Numeric classifier:" << endl;
+			ldas.back()->inspect(os);
+			os << endl;
+		}
 	}
 }
 
@@ -1435,6 +1401,87 @@ void EM::update_classifier() {
 	}
 }
 
+LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) const {
+	int npos = pos.size(), nneg = neg.size();
+	int ntotal = npos + nneg;
+	int pos_train = EM_LDA_TRAIN_RATIO * npos;
+	if (pos_train == npos) --pos_train;
+	int neg_train = EM_LDA_TRAIN_RATIO * nneg;
+	if (neg_train == nneg) --neg_train;
+	int ntrain = pos_train + neg_train;
+	int ntest = ntotal - ntrain;
+	
+	if (pos_train < 2 || neg_train < 2) {
+		return NULL;
+	}
+	
+	vec_set p0, n0;
+	vector<int> pi, ni;
+	pos.at_pos(0, p0);
+	pi = p0.vec();
+	neg.at_pos(0, n0);
+	ni = n0.vec();
+	
+	random_shuffle(pi.begin(), pi.end());
+	random_shuffle(ni.begin(), ni.end());
+	
+	int ncols = data[pi[0]]->x.size();
+	int sig = data[pi[0]]->sig_index;
+	
+	mat train_data(ntrain, ncols), test_data(ntest, ncols);
+	vector<int> train_classes, test_classes;
+	
+	for (int i = 0; i < pos_train; ++i) {
+		const em_data &d = *data[pi[i]];
+		assert(d.sig_index == sig);
+		
+		train_data.row(i) = d.x;
+		train_classes.push_back(1);
+	}
+	
+	for (int i = 0; i < neg_train; ++i) {
+		const em_data &d = *data[ni[i]];
+		assert(d.sig_index == sig);
+		
+		train_data.row(pos_train + i) = d.x;
+		train_classes.push_back(0);
+	}
+	
+	LDA *lda = new LDA;
+	lda->learn(train_data, train_classes);
+	
+	int correct = 0;
+	for (int i = pos_train; i < pi.size(); ++i) {
+		const em_data &d = *data[pi[i]];
+		assert(d.sig_index == sig);
+		
+		if (lda->classify(d.x) == 1) {
+			++correct;
+		}
+	}
+	for (int i = neg_train; i < ni.size(); ++i) {
+		const em_data &d = *data[pi[i]];
+		assert(d.sig_index == sig);
+		
+		if (lda->classify(d.x) == 0) {
+			++correct;
+		}
+	}
+	
+	double success_ratio = correct / static_cast<double>(ntest);
+	double baseline;
+	if (pi.size() > ni.size()) {
+		baseline = npos / static_cast<double>(ntotal);
+	} else {
+		baseline = nneg / static_cast<double>(ntotal);
+	}
+	if (success_ratio > baseline) {
+		return lda;
+	}
+	delete lda;
+	return NULL;
+}
+
 void EM::update_pair(int i, int j) {
 	function_timer t(timers.get_or_add("updt_clsfr"));
 	
@@ -1473,17 +1520,13 @@ void EM::update_pair(int i, int j) {
 	for (int k = 0; k < c.residuals.size(); ++k) {
 		const relation &r = *c.residuals[k];
 		if (!r.empty()) {
-			mat lda_data;
-			vector<int> lda_classes;
 			if (k < c.clauses.size()) {
 				// r contains misclassified members of j
-				make_classifier_matrix(mem_i, r, lda_data, lda_classes);
+				c.ldas[k] = learn_numeric_classifier(mem_i, r);
 			} else {
 				// r contains misclassified members of i
-				make_classifier_matrix(r, mem_j, lda_data, lda_classes);
+				c.ldas[k] = learn_numeric_classifier(r, mem_j);
 			}
-			c.ldas[k] = new LDA;
-			c.ldas[k]->learn(lda_data, lda_classes);
 		}
 	}
 }
