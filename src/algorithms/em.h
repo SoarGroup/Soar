@@ -11,6 +11,7 @@
 #include "relation.h"
 #include "mat.h"
 #include "scene_sig.h"
+#include "lwr.h"
 
 class LDA;
 
@@ -98,6 +99,17 @@ private:
 		std::vector<classifier*> classifiers;
 	};
 	
+	class sig_info : public serializable {
+	public:
+		sig_info();
+		scene_sig sig;
+		std::vector<int> members;  // indexes of data points with this sig
+		LWR lwr;                   // lwr model trained on all points of this sig
+
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+	
 	typedef std::map<std::pair<int, int>, std::vector<int> > obj_map_table;
 	
 	void estep();
@@ -131,7 +143,7 @@ private:
 
 	relation_table rel_tbl;
 	std::vector<em_data*> data;
-	std::vector<scene_sig> sigs;
+	std::vector<sig_info*> sigs;
 	std::vector<mode_info*> modes;
 	int ndata, nmodes;
 	bool use_em;

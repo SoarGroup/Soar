@@ -3,16 +3,35 @@
 #include "lwr.h"
 #include "nn.h"
 #include "linear.h"
+#include "serialize.h"
 
 using namespace std;
 
-rvec norm_vec(const rvec &v, const rvec &min, const rvec &range) {
-	return ((v.array() - min.array()) / range.array()).matrix();
+void norm_vec(const rvec &v, const rvec &min, const rvec &range, rvec &n) {
+	n = ((v.array() - min.array()) / range.array()).matrix();
 }
 
-LWR::LWR(int nnbrs)
-: nnbrs(nnbrs), xsz(-1), ysz(-1), normalized(false)
+void LWR::data::serialize(ostream &os) const {
+	serializer(os) << x << y << xnorm;
+}
+
+void LWR::data::unserialize(istream &is) {
+	unserializer(is) >> x >> y >> xnorm;
+}
+
+LWR::LWR(int nnbrs, bool alloc)
+: nnbrs(nnbrs), alloc(alloc), xsz(-1), ysz(-1), normalized(false)
 {}
+
+LWR::~LWR() {
+	for (int i = 0; i < examples.size(); ++i) {
+		if (alloc) {
+			delete examples[i]->x;
+			delete examples[i]->y;
+		}
+		delete examples[i];
+	}
+}
 
 void LWR::learn(const rvec &x, const rvec &y) {
 	if (xsz < 0) {
@@ -23,7 +42,17 @@ void LWR::learn(const rvec &x, const rvec &y) {
 		xrange.resize(xsz);
 	}
 	
-	examples.push_back(make_pair(x, y));
+	data *d = new data;
+	if (alloc) {
+		d->x = new rvec(x);
+		d->y = new rvec(y);
+	} else {
+		d->x = &x;
+		d->y = &y;
+	}
+	examples.push_back(d);
+	xnptrs.push_back(&d->xnorm);
+	
 	if (examples.size() == 1) {
 		xmin = x;
 		xmax = x;
@@ -42,13 +71,11 @@ void LWR::learn(const rvec &x, const rvec &y) {
 	
 	if (normalized) {
 		// otherwise just wait for renormalization
-		xnorm.push_back(norm_vec(x, xmin, xrange));
+		norm_vec(x, xmin, xrange, d->xnorm);
 	}
 }
 
 bool LWR::predict(const rvec &x, rvec &y) {
-	mat X, Y;
-
 	int k = examples.size() > nnbrs ? nnbrs : examples.size();
 	if (k == 0) {
 		return false;
@@ -59,17 +86,18 @@ bool LWR::predict(const rvec &x, rvec &y) {
 		normalized = true;
 	}
 	
-	rvec xn = norm_vec(x, xmin, xrange);
+	rvec xn;
+	norm_vec(x, xmin, xrange, xn);
 	
 	vector<int> inds;
 	rvec d(k);
-	brute_nearest_neighbor(xnorm, xn, k, inds, d);
+	brute_nearest_neighbor(xnptrs, xn, k, inds, d);
 	
-	X.resize(k, xsz);
-	Y.resize(k, ysz);
+	mat X(k, xsz);
+	mat Y(k, ysz);
 	for(int i = 0; i < k; ++i) {
-		X.row(i) = examples[inds[i]].first;
-		Y.row(i) = examples[inds[i]].second;
+		X.row(i) = *examples[inds[i]]->x;
+		Y.row(i) = *examples[inds[i]]->y;
 	}
 	
 	rvec w = d.array().pow(-3).sqrt();
@@ -97,52 +125,12 @@ bool LWR::predict(const rvec &x, rvec &y) {
 
 	mat coefs;
 	rvec intercept;
-	linreg_d(RIDGE, X, Y, w, coefs, intercept);
+	linreg_d(FORWARD, X, Y, w, coefs, intercept);
 	y = x * coefs + intercept;
 	return true;
 }
 
-void LWR::load(istream &is) {
-	int nexamples;
-	if (!(is >> xsz >> ysz >> nexamples)) {
-		assert(false);
-	}
-	
-	rvec x(xsz), y(ysz);
-	
-	for (int i = 0; i < nexamples; ++i) {
-		for(int j = 0; j < xsz; ++j) {
-			if (!(is >> x[j])) {
-				assert(false);
-			}
-		}
-		for(int j = 0; j < ysz; ++j) {
-			if (!(is >> y[j])) {
-				assert(false);
-			}
-		}
-		
-		learn(x, y);
-	}
-}
-
-void LWR::save(ostream &os) const {
-	vector<pair<rvec, rvec> >::const_iterator i;
-	os << xsz << " " << ysz << " " << examples.size() << endl;
-	for (i = examples.begin(); i != examples.end(); ++i) {
-		for (int j = 0; j < xsz; ++j) {
-			os << i->first[j] << " ";
-		}
-		for (int j = 0; j < ysz; ++j) {
-			os << i->second[j] << " ";
-		}
-		os << endl;
-	}
-}
-
 void LWR::normalize() {
-	vector<pair<rvec, rvec> >::iterator i;
-	
 	xrange = xmax - xmin;
 	// can't have division by 0
 	for (int i = 0; i < xrange.size(); ++i) {
@@ -150,9 +138,24 @@ void LWR::normalize() {
 			xrange[i] = 1.0;
 		}
 	}
-	xnorm.clear();
-	xnorm.reserve(examples.size());
-	for (i = examples.begin(); i != examples.end(); ++i) {
-		xnorm.push_back(norm_vec(i->first, xmin, xrange));
+
+	for (int i = 0; i < examples.size(); ++i) {
+		norm_vec(*examples[i]->x, xmin, xrange, examples[i]->xnorm);
+	}
+}
+
+void LWR::serialize(ostream &os) const {
+	assert(alloc);  // it doesn't make sense to serialize points we don't own
+	serializer(os) << alloc << nnbrs << xsz << ysz << xmin << xmax
+	               << normalized << examples;
+}
+
+void LWR::unserialize(istream &is) {
+	assert(alloc);
+	unserializer(is) >> alloc >> nnbrs >> xsz >> ysz >> xmin >> xmax 
+	                 >> normalized >> examples;
+	xnptrs.clear();
+	for (int i = 0; i < examples.size(); ++i) {
+		xnptrs.push_back(&examples[i]->xnorm);
 	}
 }

@@ -10,7 +10,7 @@ using namespace Eigen;
 class lwr_model : public model {
 public:
 	lwr_model(int nnbrs, const string &name)
-	: model(name, "lwr"), lwr(nnbrs)
+	: model(name, "lwr"), lwr(nnbrs, true)
 	{}
 	
 	void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
@@ -25,12 +25,12 @@ public:
 		return lwr.size();
 	}
 	
-	void load(istream &is) {
-		lwr.load(is);
+	void unserialize(istream &is) {
+		lwr.unserialize(is);
 	}
 	
-	void save(ostream &os) const {
-		lwr.save(os);
+	void serialize(ostream &os) const {
+		lwr.serialize(os);
 	}
 	
 	int get_input_size() const {

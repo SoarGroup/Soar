@@ -34,10 +34,10 @@ void brute_nearest_neighbor(const_mat_view data, const rvec &q, int k, vector<in
 	di_queue_to_vec(nn, indexes, dists);
 }
 
-void brute_nearest_neighbor(const vector<rvec> &data, const rvec &q, int k, vector<int> &indexes, rvec &dists) {
+void brute_nearest_neighbor(const vector<rvec*> &data, const rvec &q, int k, vector<int> &indexes, rvec &dists) {
 	di_queue nn;
 	for (int i = 0; i < data.size(); ++i) {
-		double d = (q - data[i]).squaredNorm();
+		double d = (q - *data[i]).squaredNorm();
 		if (possibly_better(d, k, nn)) {
 			nn.push(std::make_pair(d, i));
 			if (nn.size() > k) {
@@ -47,7 +47,6 @@ void brute_nearest_neighbor(const vector<rvec> &data, const rvec &q, int k, vect
 	}
 	di_queue_to_vec(nn, indexes, dists);
 }
-
 
 balltree::balltree(int ndim, int leafsize, vector<rvec> *pts, const vector<int> &inds)
 : ndim(ndim), leafsize(leafsize), pts(pts), inds(inds), left(NULL), right(NULL), parent(NULL), pruned(0)

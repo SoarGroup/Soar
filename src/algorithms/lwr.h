@@ -3,10 +3,12 @@
 
 #include <iostream>
 #include "mat.h"
+#include "serializable.h"
 
-class LWR {
+class LWR : public serializable {
 public:
-	LWR(int nnbrs);
+	LWR(int nnbrs, bool alloc);
+	~LWR();
 	
 	void learn(const rvec &x, const rvec &y);
 	bool predict(const rvec &x, rvec &y);
@@ -17,14 +19,27 @@ public:
 	int xsize() const { return xsz; }
 	int ysize() const { return ysz; }
 	
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+	
 private:
 	void normalize();
 	
+	class data : public serializable {
+	public:
+		rvec const *x;
+		rvec const *y;
+		rvec xnorm;
+		
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+	
 	int xsz, ysz, nnbrs;
-	std::vector<std::pair<rvec, rvec> > examples;
-	std::vector<rvec> xnorm;
+	std::vector<data*> examples;
+	std::vector<rvec*> xnptrs;
 	rvec xmin, xmax, xrange;
-	bool normalized;
+	bool normalized, alloc;
 };
 
 #endif

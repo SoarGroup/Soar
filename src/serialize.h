@@ -116,7 +116,7 @@ void unserialize(std::pair<U, V> &p, std::istream &is) {
 }
 
 template <typename T>
-void serialize(const T* v, std::ostream &os) {
+void serialize(T const *v, std::ostream &os) {
 	if (!v) {
 		os << "0" << std::endl;
 	} else {
@@ -126,15 +126,30 @@ void serialize(const T* v, std::ostream &os) {
 }
 
 template <typename T>
-void unserialize(T* &v, std::istream &is) {
+void unserialize(T const *&v, std::istream &is) {
 	char c;
 	is >> c;
 	if (c == '0') {
 		v = NULL;
 	} else {
 		assert(c == '1');
-		v = new T;
-		unserialize(*v, is);
+		T *t = new T;
+		unserialize(*t, is);
+		v = t;
+	}
+}
+
+template <typename T>
+void unserialize(T *&v, std::istream &is) {
+	char c;
+	is >> c;
+	if (c == '0') {
+		v = NULL;
+	} else {
+		assert(c == '1');
+		T *t = new T;
+		unserialize(*t, is);
+		v = t;
 	}
 }
 

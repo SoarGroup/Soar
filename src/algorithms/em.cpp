@@ -18,6 +18,7 @@
 #include "serialize.h"
 #include "scene.h"
 #include "lda.h"
+#include "nn.h"
 
 using namespace std;
 using namespace Eigen;
@@ -485,7 +486,7 @@ void EM::update_mode_prob(int i, set<int> &check) {
 			now = -1.0;
 		} else {
 			double error;
-			now = calc_prob(i, dinfo.target, sigs[dinfo.sig_index], dinfo.x, dinfo.y(0), 
+			now = calc_prob(i, dinfo.target, sigs[dinfo.sig_index]->sig, dinfo.x, dinfo.y(0), 
 			                obj_maps[make_pair(i, *j)], error);
 		}
 		if ((m == i && now < prev) || (m != i && now > dinfo.mode_prob[m])) {
@@ -505,7 +506,7 @@ void EM::update_mode_prob(int i, set<int> &check) {
 void EM::mode_add_example(int m, int i, bool update) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
-	const scene_sig &sig = sigs[dinfo.sig_index];
+	const scene_sig &sig = sigs[dinfo.sig_index]->sig;
 
 	if (m > 0) {
 		rvec xc;
@@ -532,7 +533,7 @@ void EM::mode_add_example(int m, int i, bool update) {
 void EM::mode_del_example(int m, int i) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
-	const scene_sig &sig = sigs[dinfo.sig_index];
+	const scene_sig &sig = sigs[dinfo.sig_index]->sig;
 	
 	minfo.members.erase(i);
 	if (m > 0) {
@@ -572,14 +573,16 @@ void EM::update_MAP(const set<int> &points) {
 void EM::learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	int sig_index = -1;
 	for (int i = 0; i < sigs.size(); ++i) {
-		if (sigs[i] == sig) {
+		if (sigs[i]->sig == sig) {
 			sig_index = i;
 			break;
 		}
 	}
 	
 	if (sig_index < 0) {
-		sigs.push_back(sig);
+		sig_info *si = new sig_info;
+		si->sig = sig;
+		sigs.push_back(si);
 		sig_index = sigs.size() - 1;
 	}
 
@@ -588,6 +591,13 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 	dinfo->y = y;
 	dinfo->target = target;
 	dinfo->sig_index = sig_index;
+	sigs[sig_index]->members.push_back(ndata);
+	
+	/*
+	 Remember that because the LWR object is initialized with alloc = false, it's
+	 just going to store pointers to these rvecs rather than duplicate them.
+	*/
+	sigs[sig_index]->lwr.learn(dinfo->x, dinfo->y);
 	
 	dinfo->map_mode = 0;
 	dinfo->mode_prob.resize(nmodes);
@@ -802,7 +812,7 @@ bool EM::unify_or_add_mode() {
 			extend(combined, seed_inds);
 			
 			fill_xy(combined, X, Y);
-			m->init_fit(X, Y, seed_target, sigs[seed_sig], obj_map);
+			m->init_fit(X, Y, seed_target, sigs[seed_sig]->sig, obj_map);
 			double curr_error = minfo.model->get_train_error();
 			double combined_error = m->get_train_error();
 			
@@ -818,7 +828,7 @@ bool EM::unify_or_add_mode() {
 		
 		if (!unified) {
 			fill_xy(seed_inds, X, Y);
-			m->init_fit(X, Y, seed_target, sigs[i->first], obj_map);
+			m->init_fit(X, Y, seed_target, sigs[i->first]->sig, obj_map);
 			modes.push_back(new mode_info);
 			++nmodes;
 			init_mode(nmodes - 1, i->first, m, seed_inds, obj_map);
@@ -846,7 +856,7 @@ bool EM::unify_or_add_mode() {
 void EM::init_mode(int mode, int sig_id, LinearModel *m, const vector<int> &members, const vector<int> &obj_map) {
 	assert(!members.empty());
 
-	const scene_sig &sig = sigs[sig_id];
+	const scene_sig &sig = sigs[sig_id]->sig;
 	mode_info &minfo = *modes[mode];
 	int target = sig[data[members.front()]->target].id;
 	if (minfo.model) {
@@ -923,8 +933,13 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	vector<int> obj_map;
 	mode = classify(target, sig, rels, x, obj_map);
 	if (mode == 0) {
-		if (LWR(sig, x, y)) {
-			return true;
+		for (int i = 0; i < sigs.size(); ++i) {
+			if (sigs[i]->sig == sig) {
+				if (sigs[i]->lwr.predict(x, y)) {
+					return true;
+				}
+				break;
+			}
 		}
 		y(0) = NAN;
 		return false;
@@ -1112,7 +1127,7 @@ bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) c
 	t.add_row() << "N" << "CLS" << "|" << "DATA";
 	for (int i = start; i <= end; ++i) {
 		if (i == start || (i > start && data[i]->sig_index != data[i-1]->sig_index)) {
-			const scene_sig &s = sigs[data[i]->sig_index];
+			const scene_sig &s = sigs[data[i]->sig_index]->sig;
 			t.add_row().skip(2) << "|";
 			int c = 0;
 			cols.clear();
@@ -1159,7 +1174,7 @@ void EM::learn_obj_clause(int m, int i) {
 	
 	set<int>::const_iterator j;
 	for (j = modes[m]->members.begin(); j != modes[m]->members.end(); ++j) {
-		const scene_sig &sig = sigs[data[*j]->sig_index];
+		const scene_sig &sig = sigs[data[*j]->sig_index]->sig;
 		int o = sig[data[*j]->obj_map[i]].id;
 		objs[0] = data[*j]->target;
 		objs[1] = o;
@@ -1254,6 +1269,14 @@ void EM::serialize(ostream &os) const {
 void EM::unserialize(istream &is) {
 	unserializer(is) >> ndata >> nmodes >> data >> sigs >> modes >> rel_tbl;
 	assert(data.size() == ndata && modes.size() == nmodes);
+	
+	for (int i = 0; i < sigs.size(); ++i) {
+		sig_info &si = *sigs[i];
+		for (int j = 0; j < si.members.size(); ++j) {
+			const em_data &d = *data[si.members[j]];
+			si.lwr.learn(d.x, d.y);
+		}
+	}
 }
 
 void EM::em_data::serialize(ostream &os) const {
@@ -1626,70 +1649,12 @@ bool EM::cli_inspect_classifiers(ostream &os) const {
 	return true;
 }
 
-double lwr_kernel(double x) {
-	return pow(x, -3);
+EM::sig_info::sig_info() : lwr(LWR_K, false) {}
+
+void EM::sig_info::serialize(ostream &os) const {
+	serializer(os) << sig << members;
 }
 
-/*
- Locally weighted regression using all training data. This can serve as a
- reasonable fallback for prediction when the mode can't be determined.
-*/
-bool EM::LWR(const scene_sig &sig, const rvec &x, rvec &y) const {
-	int sind = -1;
-	for (int i = 0; i < sigs.size(); ++i) {
-		if (sigs[i] == sig) {
-			sind = i;
-			break;
-		}
-	}
-	if (sind < 0) {
-		return false;
-	}
-	
-	// very naive nearest neighbor search
-	int nnbrs = 0;
-	vector<double> dists(LWR_K, INFINITY);
-	vector<int> inds(LWR_K, -1);
-	for (int i = 0; i < data.size(); ++i) {
-		// signatures have to match for distance to make sense
-		if (data[i]->sig_index != sind) {
-			continue;
-		}
-		
-		double d = (x - data[i]->x).squaredNorm();
-		for (int j = 0; j < LWR_K; ++j) {
-			if (inds[j] < 0) {
-				inds[j] = i;
-				dists[j] = d;
-				break;
-			} else if (d < dists[j]) {
-				inds.insert(inds.begin() + j, i);
-				dists.insert(dists.begin() + j, d);
-				inds.resize(LWR_K);
-				dists.resize(LWR_K);
-				nnbrs = (nnbrs == LWR_K ? nnbrs : nnbrs + 1);
-				break;
-			}
-		}
-	}
-
-	if (nnbrs < 2) {
-		return false;
-	}
-	
-	int xdim = data[inds[0]]->x.cols();
-	mat X(nnbrs, xdim), Y(nnbrs, 1), coefs(xdim, 1);
-	cvec w(nnbrs);
-	rvec intercept(1);
-	for (int i = 0; i < nnbrs; ++i) {
-		X.row(i) = data[inds[i]]->x;
-		Y.row(i) = data[inds[i]]->y;
-		w(i) = lwr_kernel(dists[i]);
-	}
-	
-	if (!linreg_d(FORWARD, X, Y, w, coefs, intercept)) {
-		return false;
-	}
-	y = x * coefs.col(0) + intercept;
-	return true;
+void EM::sig_info::unserialize(istream &is) {
+	unserializer(is) >> sig >> members;
 }
