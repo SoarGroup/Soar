@@ -337,7 +337,8 @@ void print_first_arg(const relation &r, ostream &os) {
 	join(os, first.vec(), " ") << endl;
 }
 
-EM::EM() : ndata(0), nmodes(1), use_em(true) {
+EM::EM() : ndata(0), nmodes(1), use_em(true), use_foil(true), use_lda(true)
+{
 	mode_info *noise = new mode_info();
 	noise->model = NULL;
 	noise->stale = false;
@@ -1059,7 +1060,7 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 
 	if (first >= args.size()) {
 		os << "modes: " << nmodes << endl;
-		os << endl << "subqueries: mode ptable timing train relations classifiers" << endl;
+		os << endl << "subqueries: mode ptable timing train relations classifiers use_em use_foil use_lda" << endl;
 		return true;
 	} else if (args[first] == "ptable") {
 		table_printer t;
@@ -1091,6 +1092,10 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		return cli_inspect_classifiers(os);
 	} else if (args[first] == "use_em") {
 		return read_on_off(args, first + 1, os, use_em);
+	} else if (args[first] == "use_foil") {
+		return read_on_off(args, first + 1, os, use_foil);
+	} else if (args[first] == "use_lda") {
+		return read_on_off(args, first + 1, os, use_lda);
 	}
 
 	return false;
@@ -1312,16 +1317,16 @@ EM::mode_info::~mode_info() {
 }
 
 void EM::classifier::serialize(ostream &os) const {
-	serializer(os) << const_class << clauses << residuals << ldas;
+	serializer(os) << const_vote << clauses << residuals << ldas;
 }
 
 void EM::classifier::unserialize(istream &is) {
-	unserializer(is) >> const_class >> clauses >> residuals >> ldas;
+	unserializer(is) >> const_vote >> clauses >> residuals >> ldas;
 }
 
 void EM::classifier::inspect(ostream &os) const {
-	if (const_class >= 0) {
-		os << "Constant: " << const_class << endl;
+	if (clauses.empty() && (ldas.empty() || ldas.back() == NULL)) {
+		os << "Constant Vote: " << const_vote << endl;
 		return;
 	}
 	
@@ -1425,6 +1430,10 @@ void EM::update_classifier() {
 }
 
 LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) const {
+	if (!use_lda) {
+		return NULL;
+	}
+	
 	int npos = pos.size(), nneg = neg.size();
 	int ntotal = npos + nneg;
 	int pos_train = EM_LDA_TRAIN_RATIO * npos;
@@ -1483,7 +1492,7 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 		}
 	}
 	for (int i = neg_train; i < ni.size(); ++i) {
-		const em_data &d = *data[pi[i]];
+		const em_data &d = *data[ni[i]];
 		assert(d.sig_index == sig);
 		
 		if (lda->classify(d.x) == 0) {
@@ -1520,16 +1529,22 @@ void EM::update_pair(int i, int j) {
 	clear_and_dealloc(c.residuals);
 	clear_and_dealloc(c.ldas);
 	
-	if (mem_i.empty()) {
-		c.const_class = 0;
-		return;
-	} else if (mem_j.empty()) {
-		c.const_class = 1;
+	c.const_vote = mem_i.size() > mem_j.size() ? 1 : 0;
+	
+	if (mem_i.empty() || mem_j.empty()) {
 		return;
 	}
 	
-	FOIL foil(mem_i, mem_j, rel_tbl);
-	foil.learn(c.clauses, &c.residuals);
+	if (use_foil) {
+		FOIL foil(mem_i, mem_j, rel_tbl);
+		foil.learn(c.clauses, &c.residuals);
+	} else {
+		/*
+		 Don't learn any clauses. Instead create a residual set for all members of i,
+		 to be handled by the numeric classifier.
+		*/
+		c.residuals.push_back(new relation(mem_i));
+	}
 	
 	/*
 	 For each clause cl in c.clauses, if cl misclassified any of the
@@ -1557,10 +1572,7 @@ void EM::update_pair(int i, int j) {
 int EM::classify_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
 	assert(modes[i]->classifiers[j]);
 	const classifier &c = *(modes[i]->classifiers[j]);
-	if (c.const_class >= 0) {
-		return c.const_class;
-	}
-	
+
 	var_domains domains;
 	domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
 	domains[1].insert(sig[target].id);
@@ -1574,7 +1586,7 @@ int EM::classify_pair(int i, int j, int target, const scene_sig &sig, const rela
 	} else if (c.ldas.size() > c.clauses.size()) {
 		return c.ldas.back()->classify(x);
 	}
-	return 1;
+	return c.const_vote;
 }
 
 int EM::classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, vector<int> &obj_map) {

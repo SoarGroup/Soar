@@ -51,9 +51,9 @@ private:
 	
 	class classifier : public serializable {
 	public:
-		classifier() : const_class(-1) {}
+		classifier() : const_vote(0) {}
 		
-		int const_class;
+		int const_vote;
 		clause_vec clauses;
 		std::vector<relation*> residuals;
 		std::vector<LDA*> ldas;
@@ -146,7 +146,7 @@ private:
 	std::vector<sig_info*> sigs;
 	std::vector<mode_info*> modes;
 	int ndata, nmodes;
-	bool use_em;
+	bool use_em, use_foil, use_lda;
 	
 	/*
 	 Table to store mappings from placeholders to objects for a
