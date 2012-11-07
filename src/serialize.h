@@ -126,7 +126,7 @@ void serialize(T const *v, std::ostream &os) {
 }
 
 template <typename T>
-void unserialize(T const *&v, std::istream &is) {
+void unserialize(T *&v, std::istream &is) {
 	char c;
 	is >> c;
 	if (c == '0') {
@@ -140,17 +140,9 @@ void unserialize(T const *&v, std::istream &is) {
 }
 
 template <typename T>
-void unserialize(T *&v, std::istream &is) {
-	char c;
-	is >> c;
-	if (c == '0') {
-		v = NULL;
-	} else {
-		assert(c == '1');
-		T *t = new T;
-		unserialize(*t, is);
-		v = t;
-	}
+void unserialize(T const *&v, std::istream &is) {
+	T *&u = const_cast<T*&>(v);
+	unserialize(u, is);
 }
 
 template <typename C>
