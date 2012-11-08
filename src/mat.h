@@ -212,7 +212,7 @@ void del_uniform_cols(mat_view X, int ncols, std::vector<int> &cols);
 void pick_cols(const_mat_view X, const std::vector<int> &cols, mat &result);
 void pick_rows(const_mat_view X, const std::vector<int> &rows, mat &result);
 void pick_cols(mat_view X, const std::vector<int> &cols);
-void pick_cols(mat_view X, const std::vector<int> &rows);
+void pick_rows(mat_view X, const std::vector<int> &rows);
 
 /*
  Calculate the maximum difference between points in two point clouds in

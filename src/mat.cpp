@@ -245,7 +245,9 @@ void pick_rows(mat_view X, const vector<int> &rows) {
 		}
 	} else {
 		for (int i = 0; i < rows.size(); ++i) {
-			X.row(i) = X.row(rows[i]);
+			if (rows[i] > i) {
+				X.row(i) = X.row(rows[i]);
+			}
 		}
 	}
 }

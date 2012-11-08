@@ -151,30 +151,64 @@ void predict(const mat &C, const rvec &intercepts, const rvec &x, rvec &y) {
  Upon return, X and Y will contain the training data, Xtest and Ytest the
  testing data.
 */
-void split_data(mat &X, mat &Y, mat &Xtrain, mat &Ytrain, mat &Xtest, mat &Ytest) {
-	int ntrain = Xtrain.rows();
-	int ntest = Xtest.rows();
-	assert(ntrain + ntest == X.rows());
-	
-	vector<int> test_rows;
-	sample(ntest, 0, X.rows(), test_rows);
-	sort(test_rows.begin(), test_rows.end());
+void split_data(
+	const_mat_view X,
+	const_mat_view Y,
+	const vector<int> &use,
+	int ntest,
+	mat &Xtrain, mat &Xtest, 
+	mat &Ytrain, mat &Ytest)
+{
+	int ntrain = use.size() - ntest;
+	vector<int> test;
+	sample(ntest, 0, use.size(), test);
+	sort(test.begin(), test.end());
 	
 	int train_end = 0, test_end = 0, i = 0;
-	for (int j = 0; j < X.rows(); ++j) {
-		if (j == test_rows[i]) {
-			Xtest.row(test_end) = X.row(j);
-			Ytest.row(test_end) = Y.row(j);
+	for (int j = 0; j < use.size(); ++j) {
+		if (j == test[i]) {
+			Xtest.row(test_end) = X.row(use[j]);
+			Ytest.row(test_end) = Y.row(use[j]);
 			++test_end;
 			++i;
 		} else {
-			Xtrain.row(train_end) = X.row(j);
-			Ytrain.row(train_end) = Y.row(j);
+			Xtrain.row(train_end) = X.row(use[j]);
+			Ytrain.row(train_end) = Y.row(use[j]);
 			++train_end;
 		}
 	}
 	assert(test_end == ntest && train_end == ntrain);
 }
+
+/*
+ Assume that data from a single mode comes in blocks. Try to discover
+ a mode by randomly fitting a line to a block of data and then finding
+ all data that fit the line.
+*/
+void EM::find_linear_subset_block(const_mat_view X, const_mat_view Y, vector<int> &subset) const {
+	function_timer t(timers.get_or_add("block_subset"));
+	
+	int xcols = X.cols();
+	int rank = xcols + 1;
+	int ndata = X.rows();
+	mat Xb(rank, xcols), Yb(xcols+1, 1), coefs;
+	
+	int start = rand() % (ndata - rank);
+	for (int i = 0; i < rank; ++i) {
+		Xb.row(i) = X.row(start + i);
+		Yb.row(i) = Y.row(start + i);
+	}
+	linreg_clean(FORWARD, Xb, Yb, coefs);
+
+	cvec errors = (Y - (X * coefs)).col(0).array().abs();
+	subset.clear();
+	for (int i = 0; i < ndata; ++i) {
+		if (errors(i) < MODEL_ERROR_THRESH) {
+			subset.push_back(i);
+		}
+	}
+}
+
 
 /*
  Use a simple version of EM to discover a mode in noise data. This
@@ -184,134 +218,134 @@ void split_data(mat &X, mat &Y, mat &Xtrain, mat &Ytrain, mat &Xtest, mat &Ytest
  The algorithm is:
  
  1. If input X has m non-static columns, assume it has rank = m + 1.
- 2. Split data into training and test sets.
  2. Randomly choose 'rank' training points as the seed members for the linear
     function. Fit the function to the seed members.
  3. Compute the residuals of the function for training data. Compute a weight
     vector based on the residuals and a kernel.
  4. Refit the linear function biased based on the weight vector. Repeat until
     convergence or the function fits at least n data points.
- 5. Compute the error of the linear function on the test data. If the error is
-    not acceptable for at least n data points, repeat from 2.
 */
-bool mini_em_seed(mat &X, mat &Y, int maxiters, vector<int> &points) {
+void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &subset) const {
+	function_timer t(timers.get_or_add("em_block"));
+	
+	int ndata = X.rows(), xcols = X.cols();
+	vector<int> init;
+	cvec w(ndata), error(ndata), old_error(ndata);
+	mat Xc(ndata, xcols), Yc(ndata, 1), coefs(xcols, 1);
+	
+	sample(xcols + 1, 0, ndata, init);
+	w.setConstant(0.0);
+	for (int i = 0; i < init.size(); ++i) {
+		w(init[i]) = 1.0;
+	}
+
+	for (int iter = 0; iter < MINI_EM_MAX_ITERS; ++iter) {
+		for (int i = 0; i < xcols; ++i) {
+			Xc.col(i) = X.col(i).array() * w.array();
+		}
+		Yc.col(0) = Y.col(0).array() * w.array();
+		if (!linreg_clean(OLS, Xc, Yc, coefs)) {
+			assert(false);
+		}
+		
+		old_error = error;
+		error = (Y - (X * coefs)).col(0).array().abs();
+		if (iter > 0 && (error - old_error).norm() / ndata < SAME_THRESH) {
+			break;
+		}
+		kernel2(error, w, -3.0);
+	}
+	for (int i = 0; i < ndata; ++i) {
+		if (error(i) < MODEL_ERROR_THRESH) {
+			subset.push_back(i);
+		}
+	}
+}
+
+void erase_inds(vector<int> &v, const vector<int> &inds) {
+	int i = 0, j = 0;
+	for (int k = 0; k < v.size(); ++k) {
+		if (i < inds.size() && k == inds[i]) {
+			++i;
+		} else {
+			if (j < k) {
+				v[j] = v[k];
+			}
+			++j;
+		}
+	}
+	assert(i == inds.size() && j == v.size() - inds.size());
+	v.resize(j);
+}
+
+int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset) const {
+	function_timer t(timers.get_or_add("find_seed"));
+	
+	const double TEST_RATIO = 0.5;
+	int largest = 0;
+	
 	// preprocess the data as much as possible
 	vector<int> used_cols;
 	clean_lr_data(X, used_cols);
 	augment_ones(X);
 
-	int ntest = X.rows() * .5;
-	int ntrain = X.rows() - ntest;
-	int xcols = X.cols();
-	
-	cvec train_error(ntrain), old_error(ntrain), test_error(ntest), w(ntrain);
-	mat Xtrain(ntrain, xcols), Xtest(ntest, xcols);
-	mat Ytrain(ntrain, 1), Ytest(ntest, 1);
-	mat Xc(ntrain, xcols), Yc(ntrain, 1);
+	int ndata = X.rows(), xcols = X.cols();
+	mat Xtrain(ndata, xcols), Xtest(ndata, xcols);
+	mat Ytrain(ndata, 1), Ytest(ndata, 1);
 	mat coefs(xcols, 1);
-	vector<int> init_members;
+
+	vector<int> ungrouped(ndata), work;
+	for (int i = 0; i < ndata; ++i) {
+		ungrouped[i] = i;
+	}
 	
 	/*
 	 Outer loop ranges over sets of random initial points
 	*/
-	for (int iter1 = 0; iter1 < maxiters; ++iter1) {
-		split_data(X, Y, Xtrain, Ytrain, Xtest, Ytest);
-		sample(xcols + 1, 0, ntrain, init_members);
-		w.setConstant(0.0);
-		for (int i = 0; i < init_members.size(); ++i) {
-			w(init_members[i]) = 1.0;
+	for (int iter = 0; iter < LINEAR_SUBSET_MAX_ITERS; ++iter) {
+		vector<int> subset2;
+		find_linear_subset_em(X.topRows(ndata), Y.topRows(ndata), subset2);
+		if (subset2.size() < xcols * 2) {
+			continue;
+		}
+		int ntest = subset2.size() * TEST_RATIO;
+		int ntrain = subset2.size() - ntest;
+		split_data(X, Y, subset2, ntest, Xtrain, Xtest, Ytrain, Ytest);
+		if (!linreg_clean(FORWARD, Xtrain.topRows(ntrain), Ytrain.topRows(ntrain), coefs)) {
+			continue;
+		}
+		cvec test_error = (Ytest.topRows(ntest) - (Xtest.topRows(ntest) * coefs)).col(0).array().abs();
+		if (test_error.norm() / Xtest.rows() > MODEL_ERROR_THRESH) {
+			/*
+			 There isn't a clear linear relationship between the points, so I can't
+			 consider them a single block.
+			*/
+			continue;
+		}
+		
+		if (subset2.size() >= NEW_MODE_THRESH) {
+			for (int i = 0; i < subset2.size(); ++i) {
+				subset.push_back(ungrouped[subset2[i]]);
+			}
+			return subset.size();
+		}
+		
+		if (subset2.size() > largest) {
+			largest = subset2.size();
 		}
 		
 		/*
-		 Inner loop ranges over iterations of EM
+		 Assume this group of points won't fit linearly in any other group, so they
+		 can be excluded from consideration in the next iteration.
 		*/
-		for (int iter2 = 0; iter2 < maxiters; ++iter2) {
-			LOG(EMDBG) << "MINI_EM " << iter1 << " " << iter2 << endl;
-			LOG(EMDBG) << "w = ";
-			for (int i = 0; i < w.size(); ++i) {
-				LOG(EMDBG) << w(i) << " ";
-			}
-			LOG(EMDBG) << endl;
-			
-			for (int i = 0; i < xcols; ++i) {
-				Xc.col(i) = Xtrain.col(i).array() * w.array();
-			}
-			Yc.col(0) = Ytrain.col(0).array() * w.array();
-			if (!linreg_clean(FORWARD, Xc, Yc, coefs)) {
-				break;
-			}
-			
-			old_error = train_error;
-			train_error = (Ytrain - (Xtrain * coefs)).col(0).array().abs();
-			
-			if ((train_error - old_error).norm() / ntrain < SAME_THRESH || 
-			    (train_error.array() < MODEL_ERROR_THRESH).count() >= NEW_MODE_THRESH / 2)
-			{
-				break;
-			}
-			kernel2(train_error, w, -3.0);
-		}
-		
-		test_error = (Ytest - (Xtest * coefs)).col(0).array().abs();
-		if ((test_error.array() < MODEL_ERROR_THRESH).count() >= NEW_MODE_THRESH / 2) {
-			cvec all_error = (Y - (X * coefs)).col(0).array().abs();
-			for (int i = 0; i < all_error.size(); ++i) {
-				if (all_error(i) < MODEL_ERROR_THRESH) {
-					points.push_back(i);
-				}
-			}
-			return true;
+		pick_rows(X, subset2);
+		erase_inds(ungrouped, subset2);
+		ndata = ungrouped.size();
+		if (ndata < NEW_MODE_THRESH) {
+			break;
 		}
 	}
-	return false;
-}
-
-/*
- Assume that data from a single mode comes in blocks. Try to discover
- a mode by randomly fitting a line to a block of data and then finding
- all data that fit the line.
-*/
-bool block_seed(mat &X, mat &Y, int maxiters, vector<int> &points) {
-	vector<int> used_cols;
-	rvec Xm, Ym, w(X.rows());
-	cvec errors;
-	mat Xc, Yc, coefs;
-	int rank, ndata;
-
-	clean_lr_data(X, used_cols);
-	augment_ones(X);
-	Xc.resize(ndata, X.cols());
-	Yc.resize(ndata, 1);
-	
-	rank = X.cols();
-	ndata = X.rows();
-	
-	for (int iter = 0; iter < maxiters; ++iter) {
-		w.setConstant(0.0);
-		int start = rand() % (ndata - rank);
-		for (int i = 0; i < rank; ++i) {
-			w(start + i) = 1.0;
-		}
-		
-		for (int i = 0; i < X.cols(); ++i) {
-			Xc.col(i) = X.col(i).array() * w.array();
-		}
-		Yc.col(0) = Y.col(0).array() * w.array();
-		linreg_clean(FORWARD, Xc, Yc, coefs);
-
-		errors = (Y - (X * coefs)).col(0).array().abs();
-		
-		points.clear();
-		for (int i = 0; i < ndata; ++i) {
-			if (errors(i) < MODEL_ERROR_THRESH) {
-				points.push_back(i);
-			}
-		}
-		if (points.size() >= NEW_MODE_THRESH) {
-			return true;
-		}
-	}
-	return false;
+	return largest;
 }
 
 template <typename T>
@@ -499,7 +533,7 @@ void EM::update_mode_prob(int i, set<int> &check) {
 }
 
 /*
- Add a training example into the model. The information about how the
+ Add a training example into the mode. The information about how the
  example fits into the model should already be calculated in
  EM::calc_prob (hence the assertion minfo.data_map.find(i) !=
  minfo.data_map.end()).
@@ -507,7 +541,8 @@ void EM::update_mode_prob(int i, set<int> &check) {
 void EM::mode_add_example(int m, int i, bool update) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
-	const scene_sig &sig = sigs[dinfo.sig_index]->sig;
+	int sind = dinfo.sig_index;
+	const scene_sig &sig = sigs[sind]->sig;
 
 	if (m > 0) {
 		rvec xc;
@@ -524,6 +559,10 @@ void EM::mode_add_example(int m, int i, bool update) {
 		}
 		dinfo.model_row = minfo.model->add_example(xc, dinfo.y, update);
 		minfo.stale = true;
+	} else {
+		// noise mode
+		minfo.noise_by_sig[sind].insert(i);
+		minfo.sorted_ys.insert(make_pair(dinfo.y(0), i));
 	}
 	
 	minfo.members.insert(i);
@@ -534,7 +573,8 @@ void EM::mode_add_example(int m, int i, bool update) {
 void EM::mode_del_example(int m, int i) {
 	mode_info &minfo = *modes[m];
 	em_data &dinfo = *data[i];
-	const scene_sig &sig = sigs[dinfo.sig_index]->sig;
+	int sind = dinfo.sig_index;
+	const scene_sig &sig = sigs[sind]->sig;
 	
 	minfo.members.erase(i);
 	if (m > 0) {
@@ -547,6 +587,10 @@ void EM::mode_del_example(int m, int i) {
 			}
 		}
 		minfo.stale = true;
+	} else {
+		// noise mode
+		minfo.noise_by_sig[sind].erase(i);
+		minfo.sorted_ys.erase(make_pair(dinfo.y(0), i));
 	}
 	minfo.classifier_stale = true;
 	minfo.member_rel.del(i, sig[dinfo.target].id);
@@ -706,74 +750,79 @@ void get_sorted_rows(const_mat_view X, const_mat_view Y, vector<int> &rows) {
  I used to collapse identical data points here, but that seems to be too
  expensive. So I'm assuming all unique data points, which can be enforced as
  data comes in.
- 
- This function wastes a lot of computation because the sorted matrices are not
- cached. Fix this later.
 */
-bool EM::find_new_mode_inds(const vector<int> &noise_inds, int sig_ind, vector<int> &mode_inds) const {
+bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds) {
 	function_timer t(timers.get_or_add("new_inds"));
 	
+	mode_info &noise_mode = *modes[0];
+	int thresh = noise_mode.check_after[sig_ind];
+	if (thresh == 0) {
+		noise_mode.check_after[sig_ind] = NEW_MODE_THRESH;
+		return false;
+	}
+	const set<int> &n = map_get(noise_mode.noise_by_sig, sig_ind);
+	
+	if (n.size() < thresh) {
+		return false;
+	}
+	
+	// try to find a constant model
+	int largest_const = 0;
+	const set<pair<double, int> > &sorted_ys = noise_mode.sorted_ys;
+	set<pair<double, int> >::const_iterator i;
+	double last = NAN;
+	for (i = sorted_ys.begin(); i != sorted_ys.end(); ++i) {
+		if (i->first == last) {
+			mode_inds.push_back(i->second);
+			if (mode_inds.size() >= NEW_MODE_THRESH) {
+				LOG(EMDBG) << "found constant model in noise_inds" << endl;
+				return true;
+			}
+		} else {
+			largest_const = max(largest_const, static_cast<int>(mode_inds.size()));
+			last = i->first;
+			mode_inds.clear();
+			mode_inds.push_back(i->second);
+		}
+	}
+	largest_const = max(largest_const, static_cast<int>(mode_inds.size()));
+	
+	vector<int> noise_inds(n.begin(), n.end());
 	int ndata = noise_inds.size();
 	int xdim = data[noise_inds[0]]->x.size();
 	mat X(ndata, xdim), Y(ndata, 1);
+	vector<int> subset;
 
 	for (int i = 0; i < ndata; ++i) {
 		X.row(i) = data[noise_inds[i]]->x;
 		Y.row(i) = data[noise_inds[i]]->y;
 	}
 	
-	// try to find a constant model
-	vector<int> sorted_rows;
-	get_sorted_rows(X, Y, sorted_rows);
-	
-	int j = 0;
-	for (int i = 0; i < sorted_rows.size(); ++i) {
-		if (Y(sorted_rows[i], 0) != Y(sorted_rows[j], 0)) {
-			if (i - j >= NEW_MODE_THRESH) {
-				LOG(EMDBG) << "found constant model in noise_inds" << endl;
-				for (int k = j; k < i; ++k) {
-					mode_inds.push_back(noise_inds[sorted_rows[k]]);
-				}
-				return true;
-			}
-			j = i;
+	int largest_linear = find_linear_subset(X, Y, subset);
+	if (largest_linear >= NEW_MODE_THRESH) {
+		mode_inds.clear();
+		for (int i = 0; i < subset.size(); ++i) {
+			mode_inds.push_back(noise_inds[subset[i]]);
 		}
+		noise_mode.check_after[sig_ind] = NEW_MODE_THRESH;
+		return true;
 	}
 	
-	vector<int> seed;
-	if (!mini_em_seed(X, Y, 10, seed)) {
-		return false;
-	}
-	for (int i = 0; i < seed.size(); ++i) {
-		mode_inds.push_back(noise_inds[seed[i]]);
-	}
-	return true;
+	int const_left = NEW_MODE_THRESH - largest_const;
+	int linear_left = NEW_MODE_THRESH - largest_linear;
+	noise_mode.check_after[sig_ind] = n.size() + min(const_left, linear_left);
+	return false;
 }
 
 bool EM::unify_or_add_mode() {
 	function_timer t(timers.get_or_add("new"));
 	
-	/*
-	 This section wastes a lot of computation by not caching the results. It was
-	 added temporarily during the transition from noise = mode -1 to noise = mode
-	 0.
-	*/
-	map<int, vector<int> > sig_to_noise;
-	set<int>::iterator ni;
-	for (ni = modes[0]->members.begin(); ni != modes[0]->members.end(); ++ni) {
-		sig_to_noise[data[*ni]->sig_index].push_back(*ni);
-	}
-	
-	map<int, vector<int> >::iterator i;
-	for (i = sig_to_noise.begin(); i != sig_to_noise.end(); ++i) {
-		std::vector<int> &noise_inds = i->second;
-		if (noise_inds.size() < NEW_MODE_THRESH * 1.25) {
-			continue;
-		}
-		
+	const map<int, set<int> > &noise_by_sig = modes[0]->noise_by_sig;
+	map<int, set<int> >::const_iterator i;
+	for (i = noise_by_sig.begin(); i != noise_by_sig.end(); ++i) {
 		vector<int> seed_inds;
-		if (!find_new_mode_inds(noise_inds, i->first, seed_inds)) {
-			return false;
+		if (!find_new_mode_inds(i->first, seed_inds)) {
+			continue;
 		}
 		
 		int xsize = data[seed_inds[0]]->x.size();

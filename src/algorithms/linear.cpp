@@ -337,7 +337,7 @@ void fix_for_wols(mat &X, mat &Y, const cvec &w) {
  Perform linear regression. Assumes that input X and Y are already
  cleaned and centered.
 */
-bool linreg_clean(regression_type t, mat &X, mat &Y, mat &coefs) {
+bool linreg_clean(regression_type t, const_mat_view X, const_mat_view Y, mat &coefs) {
 	switch (t) {
 		case OLS:
 			return solve(X, Y, coefs);

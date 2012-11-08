@@ -51,7 +51,7 @@
  Number of noise instances required before EM tries to create a new
  mode out of them
 */
-#define NEW_MODE_THRESH 200
+#define NEW_MODE_THRESH 50
 
 /*
  Number of times EM tries to create a model from the same set of noise
@@ -84,6 +84,8 @@
 #define FOIL_MAX_CLAUSE_LEN 5
 
 #define EM_LDA_TRAIN_RATIO 0.75
+#define LINEAR_SUBSET_MAX_ITERS 10
+#define MINI_EM_MAX_ITERS 10
 
 // num neighbors to use for fallback LWR prediction
 #define LWR_K 20

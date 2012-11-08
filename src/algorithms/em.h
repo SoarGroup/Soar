@@ -97,6 +97,23 @@ private:
 		 previous mode's classifier vector.
 		*/
 		std::vector<classifier*> classifiers;
+		
+		// These are only used by the noise mode
+		// noise binned by signature
+		std::map<int, std::set<int> > noise_by_sig;
+		
+		/*
+		 Keeps track of the minimum number of new noise examples (map value) needed
+		 before we have to check for a possible new mode, for each signature (map
+		 key)
+		*/
+		std::map<int, int> check_after;
+		
+		/*
+		 Noise data sorted by their Y values. First element in pair is the Y value,
+		 second is the index.
+		*/
+		std::set<std::pair<double, int> > sorted_ys;
 	};
 	
 	class sig_info : public serializable {
@@ -120,7 +137,7 @@ private:
 	void update_mode_prob(int i, std::set<int> &check);
 	void update_MAP(const std::set<int> &pts);
 	bool remove_modes();
-	bool find_new_mode_inds(const std::vector<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
+	bool find_new_mode_inds(int sig_ind, std::vector<int> &mode_inds);
 	double calc_prob(int m, int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	void mode_add_example(int m, int i, bool update);
 	void mode_del_example(int m, int i);
@@ -140,6 +157,10 @@ private:
 	void update_pair(int i, int j);
 	int classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &obj_map);
 	int classify_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
+
+	int find_linear_subset(mat &X, mat &Y, std::vector<int> &subset) const;
+	void find_linear_subset_em(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
+	void find_linear_subset_block(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
 
 	relation_table rel_tbl;
 	std::vector<em_data*> data;
