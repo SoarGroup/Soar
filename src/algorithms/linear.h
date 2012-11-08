@@ -31,10 +31,6 @@ public:
 		return error;
 	}
 	
-	const rvec& get_center() const {
-		return center;
-	}
-	
 	bool needs_refit() const {
 		return refit;
 	}
@@ -64,7 +60,7 @@ private:
 	double error;
 	bool isconst, refit;
 	mat coefs;
-	rvec xtotals, center, constvals, intercept;
+	rvec intercept;
 	dyn_mat xdata;
 	dyn_mat ydata;
 	scene_sig orig_sig;

@@ -23,7 +23,6 @@
 using namespace std;
 using namespace Eigen;
 
-const bool TEST_ELIGIBILITY = false;
 const regression_type REGRESSION_ALG = FORWARD;
 
 /*
@@ -385,26 +384,6 @@ EM::~EM() {
 	clear_and_dealloc(modes);
 }
 
-void EM::update_eligibility() {
-	if (!TEST_ELIGIBILITY) {
-		return;
-	}
-	for (int i = 0; i < ndata; ++i) {
-		const rvec &x = data[i]->x;
-		for (int j = 0; j < nmodes; ++j) {
-			const rvec &c2 = modes[j]->model->get_center();
-			rvec d = x - c2;
-			for (int k = 0; k < nmodes; ++k) {
-				const rvec &c1 = modes[k]->model->get_center();
-				if (j != k && d.dot(c1 - c2) < 0) {
-					data[i]->mode_prob[k] = -1.0;
-					break;
-				}
-			}
-		}
-	}
-}
-
 /*
  Calculate probability of data point d belonging to mode m
 */
@@ -414,13 +393,7 @@ double EM::calc_prob(int m, int target, const scene_sig &sig, const rvec &x, dou
 	}
 	
 	rvec py;
-	double w;
-	if (TEST_ELIGIBILITY) {
-		assert(false); // have to fix this later, or drop eligibility altogether
-		//w = 1.0 / eligible.col(j).head(nmodes - 1).sum();
-	} else {
-		w = 1.0 / nmodes;
-	}
+	double w = 1.0 / nmodes;
 	
 	/*
 	 Each mode has a signature that specifies the types and orders of
@@ -517,13 +490,10 @@ void EM::update_mode_prob(int i, set<int> &check) {
 		em_data &dinfo = *data[*j];
 		double prev = dinfo.mode_prob[i], now;
 		int m = dinfo.map_mode;
-		if (TEST_ELIGIBILITY && prev < 0.0) {
-			now = -1.0;
-		} else {
-			double error;
-			now = calc_prob(i, dinfo.target, sigs[dinfo.sig_index]->sig, dinfo.x, dinfo.y(0), 
-			                obj_maps[make_pair(i, *j)], error);
-		}
+		double error;
+		now = calc_prob(i, dinfo.target, sigs[dinfo.sig_index]->sig, dinfo.x, dinfo.y(0), 
+		                obj_maps[make_pair(i, *j)], error);
+
 		if ((m == i && now < prev) || (m != i && now > dinfo.mode_prob[m])) {
 			check.insert(*j);
 		}
@@ -661,7 +631,6 @@ void EM::estep() {
 	function_timer t(timers.get_or_add("e-step"));
 	
 	set<int> check;
-	update_eligibility();
 	
 	for (int i = 1; i < nmodes; ++i) {
 		update_mode_prob(i, check);

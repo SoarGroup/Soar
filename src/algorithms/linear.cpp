@@ -432,8 +432,7 @@ LinearModel::LinearModel(regression_type alg)
 {}
 
 LinearModel::LinearModel(const LinearModel &m)
-: constvals(m.constvals), isconst(m.isconst),
-  xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true),
+: isconst(m.isconst), error(INFINITY), refit(true),
   coefs(m.coefs), intercept(m.intercept), alg(m.alg),
   xdata(m.xdata), ydata(m.ydata)
 {}
@@ -449,7 +448,7 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, int target, const
 		}
 	}
 	if (isconst) {
-		constvals = Y.row(0);
+		intercept = Y.row(0);
 		xdata.resize(0, 0);
 		ydata.resize(0, Y.cols());
 		return;
@@ -495,7 +494,6 @@ void LinearModel::init_fit(const_mat_view X, const_mat_view Y, int target, const
 		i += l;
 	}
 	coefs = coefs2;
-	xtotals = xdata.get().colwise().sum();	
 	ydata = Y;
 	update_error();
 }
@@ -506,10 +504,8 @@ int LinearModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
 	xdata.append_row(x);
 	ydata.append_row(y);
 	if (xdata.rows() == 1) {
-		xtotals = x;
-		center = xtotals;
 		isconst = true;
-		constvals = y;
+		intercept = y;
 		error = 0.0;
 		if (update_refit) {
 			refit = false;
@@ -517,9 +513,7 @@ int LinearModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
 		return 0;
 	}
 	
-	xtotals += x;
-	center = xtotals / xdata.rows();
-	if (isconst && y != constvals) {
+	if (isconst && y != intercept) {
 		isconst = false;
 		if (update_refit) {
 			refit = true;
@@ -561,25 +555,21 @@ void LinearModel::del_example(int r) {
 	if (xdata.rows() == 0) {
 		// handling of this case is questionable, make it better later
 		isconst = true;
-		constvals.fill(0.0);
-		center.fill(0.0);
+		intercept.fill(0.0);
 		return;
 	}
-	
-	xtotals -= x;
-	center = xtotals / xdata.rows();
-	
+		
 	if (!isconst) {
 		/* check if remaining data all have same y */
 		isconst = true;
-		constvals = ydata.row(0);
-		for (int j = 0; j < ydata.rows(); ++j) {
-			if (ydata.row(j) != constvals) {
+		for (int j = 1; j < ydata.rows(); ++j) {
+			if (ydata.row(j) != ydata.row(0)) {
 				isconst = false;
 				break;
 			}
 		}
 		if (isconst) {
+			intercept = ydata.row(0);
 			error = 0.0;
 		} else {
 			update_error();
@@ -603,16 +593,14 @@ void LinearModel::update_error() {
 }
 
 void LinearModel::serialize(ostream &os) const {
-	serializer(os) << alg << error << isconst << xtotals << center
-	               << constvals << intercept << xdata << ydata
-	               << orig_sig;
+	serializer(os) << alg << error << isconst << intercept
+	               << xdata << ydata << orig_sig;
 }
 
 void LinearModel::unserialize(istream &is) {
 	int a;
-	unserializer(is) >> a >> error >> isconst >> xtotals >> center 
-	                 >> constvals >> intercept >> xdata >> ydata
-	                 >> orig_sig;
+	unserializer(is) >> a >> error >> isconst >> intercept
+	                 >> xdata >> ydata >> orig_sig;
 
 	assert(a == OLS || a == RIDGE || a == PCR || a == LASSO || a == FORWARD);
 	alg = static_cast<regression_type>(a);
@@ -621,7 +609,7 @@ void LinearModel::unserialize(istream &is) {
 
 bool LinearModel::predict(const rvec &x, rvec &y) {
 	if (isconst) {
-		y = constvals;
+		y = intercept;
 		return true;
 	}
 	if (refit) {
@@ -639,8 +627,8 @@ bool LinearModel::predict(const_mat_view X, mat &Y) {
 	function_timer t(timers.get_or_add("predict"));
 	
 	if (isconst) {
-		Y.resize(X.rows(), constvals.size());
-		Y.rowwise() = constvals;
+		Y.resize(X.rows(), intercept.size());
+		Y.rowwise() = intercept;
 		return true;
 	}
 	if (refit) {
@@ -677,7 +665,7 @@ bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream
 		bool success;
 		if (isconst) {
 			os << "constant: ";
-			output_rvec(os, constvals) << endl;
+			output_rvec(os, intercept) << endl;
 		} else {
 			os << "intercept: " << intercept << endl;
 			os << "coefs:" << endl;
