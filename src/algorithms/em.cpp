@@ -12,13 +12,10 @@
 #include "linear.h"
 #include "em.h"
 #include "common.h"
-#include "filter_table.h"
 #include "params.h"
 #include "mat.h"
 #include "serialize.h"
-#include "scene.h"
 #include "lda.h"
-#include "nn.h"
 
 using namespace std;
 using namespace Eigen;
@@ -322,15 +319,15 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset) const {
 			continue;
 		}
 		
-		if (subset2.size() >= NEW_MODE_THRESH) {
+		if (subset2.size() > largest) {
+			subset.clear();
 			for (int i = 0; i < subset2.size(); ++i) {
 				subset.push_back(ungrouped[subset2[i]]);
 			}
-			return subset.size();
-		}
-		
-		if (subset2.size() > largest) {
 			largest = subset2.size();
+			if (largest >= NEW_MODE_THRESH) {
+				return largest;
+			}
 		}
 		
 		/*
@@ -370,11 +367,9 @@ void print_first_arg(const relation &r, ostream &os) {
 	join(os, first.vec(), " ") << endl;
 }
 
-EM::EM() : ndata(0), nmodes(1), use_em(true), use_foil(true), use_lda(true)
+EM::EM() : ndata(0), nmodes(1), use_em(true), use_foil(true), use_lda(true), check_after(NEW_MODE_THRESH)
 {
-	mode_info *noise = new mode_info();
-	noise->model = NULL;
-	noise->stale = false;
+	mode_info *noise = new mode_info(true, data, sigs);
 	noise->classifiers.resize(1, NULL);
 	modes.push_back(noise);
 }
@@ -384,206 +379,6 @@ EM::~EM() {
 	clear_and_dealloc(modes);
 }
 
-/*
- Calculate probability of data point d belonging to mode m
-*/
-double EM::calc_prob(int m, int target, const scene_sig &sig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
-	if (m == 0) {
-		return PNOISE;
-	}
-	
-	rvec py;
-	double w = 1.0 / nmodes;
-	
-	/*
-	 Each mode has a signature that specifies the types and orders of
-	 objects it expects for inputs. This is recorded in modes[m]->sig.
-	 Call this the model signature.
-	 
-	 Each data point has a signature that specifies which types and
-	 orders of object properties encoded by the property vector. This
-	 is recorded in data[i]->sig_index. Call this the data signature.
-	 
-	 P(d, m) = MAX[assignment][P(d, m, assignment)] where 'assignment'
-	 is a mapping of objects in the data signature to the objects in
-	 the mode signature.
-	*/
-	
-	/*
-	 Create the input table for the combination generator to generate
-	 all possible assignments. possibles[i] should be a list of all
-	 object indices that can be assigned to position i in the model
-	 signature.
-	*/
-	scene_sig &msig = modes[m]->sig;
-	if (msig.empty()) {
-		// should be constant prediction
-		assert(modes[m]->model->is_const());
-		if (!modes[m]->model->predict(rvec(), py)) {
-			assert(false);
-		}
-		best_error = (y - py(0));
-		best_assign.clear();
-		double d = gausspdf(y, py(0), MEASURE_VAR);
-		double p = (1.0 - EPSILON) * w * d;
-		return p;
-	}
-	
-	// otherwise, check all possible assignments
-	vector<vector<int> > possibles(msig.size());
-	possibles[0].push_back(target);
-	for (int i = 1; i < msig.size(); ++i) {
-		for (int j = 0; j < sig.size(); ++j) {
-			if (sig[j].type == msig[i].type && j != target) {
-				possibles[i].push_back(j);
-			}
-		}
-	}
-	multi_combination_generator<int> gen(possibles, false);
-	
-	/*
-	 Iterate through all assignments and find the one that gives
-	 highest probability.
-	*/
-	vector<int> assign;
-	int xlen = msig.dim();
-	rvec xc(xlen);
-	double best_prob = -1.0;
-	while (gen.next(assign)) {
-		int s = 0;
-		for (int i = 0; i < assign.size(); ++i) {
-			const scene_sig::entry &e = sig[assign[i]];
-			int l = e.props.size();
-			assert(msig[i].props.size() == l);
-			xc.segment(s, l) = x.segment(e.start, l);
-			s += l;
-		}
-		assert(s == xlen);
-		
-		if (modes[m]->model->predict(xc, py)) {
-			double d = gausspdf(y, py(0), MEASURE_VAR);
-			double p = (1.0 - EPSILON) * w * d;
-			if (p > best_prob) {
-				best_prob = p;
-				best_assign = assign;
-				best_error = y - py(0);
-			}
-		}
-	}
-	assert(best_prob >= 0.0);
-	return best_prob;
-}
-
-/*
- Update probability estimates for stale points for the i'th model. If
- for point j probability increases and i was not the MAP model or if
- probability decreases and i was the MAP model, then we mark j as a point
- we have to recalculate the MAP model for using the set "check". I
- don't recalculate MAP immediately because the probabilities for other
- models may change in the same round.
-*/
-void EM::update_mode_prob(int i, set<int> &check) {
-	assert(i > 0);
-	set<int>::iterator j;
-	mode_info &minfo = *modes[i];
-	for (j = minfo.stale_points.begin(); j != minfo.stale_points.end(); ++j) {
-		em_data &dinfo = *data[*j];
-		double prev = dinfo.mode_prob[i], now;
-		int m = dinfo.map_mode;
-		double error;
-		now = calc_prob(i, dinfo.target, sigs[dinfo.sig_index]->sig, dinfo.x, dinfo.y(0), 
-		                obj_maps[make_pair(i, *j)], error);
-
-		if ((m == i && now < prev) || (m != i && now > dinfo.mode_prob[m])) {
-			check.insert(*j);
-		}
-		dinfo.mode_prob[i] = now;
-	}
-	minfo.stale_points.clear();
-}
-
-/*
- Add a training example into the mode. The information about how the
- example fits into the model should already be calculated in
- EM::calc_prob (hence the assertion minfo.data_map.find(i) !=
- minfo.data_map.end()).
-*/
-void EM::mode_add_example(int m, int i, bool update) {
-	mode_info &minfo = *modes[m];
-	em_data &dinfo = *data[i];
-	int sind = dinfo.sig_index;
-	const scene_sig &sig = sigs[sind]->sig;
-
-	if (m > 0) {
-		rvec xc;
-		if (!minfo.model->is_const()) {
-			xc.resize(dinfo.x.size());
-			int xsize = 0;
-			for (int j = 0; j < dinfo.obj_map.size(); ++j) {
-				const scene_sig::entry &e = sig[dinfo.obj_map[j]];
-				int n = e.props.size();
-				xc.segment(xsize, n) = dinfo.x.segment(e.start, n);
-				xsize += n;
-			}
-			xc.conservativeResize(xsize);
-		}
-		dinfo.model_row = minfo.model->add_example(xc, dinfo.y, update);
-		minfo.stale = true;
-	} else {
-		// noise mode
-		minfo.noise_by_sig[sind].insert(i);
-		minfo.sorted_ys.insert(make_pair(dinfo.y(0), i));
-	}
-	
-	minfo.members.insert(i);
-	minfo.classifier_stale = true;
-	minfo.member_rel.add(i, sig[dinfo.target].id);
-}
-
-void EM::mode_del_example(int m, int i) {
-	mode_info &minfo = *modes[m];
-	em_data &dinfo = *data[i];
-	int sind = dinfo.sig_index;
-	const scene_sig &sig = sigs[sind]->sig;
-	
-	minfo.members.erase(i);
-	if (m > 0) {
-		int r = dinfo.model_row;
-		minfo.model->del_example(r);
-		set<int>::iterator j;
-		for (j = minfo.members.begin(); j != minfo.members.end(); ++j) {
-			if (data[*j]->model_row > r) {
-				data[*j]->model_row--;
-			}
-		}
-		minfo.stale = true;
-	} else {
-		// noise mode
-		minfo.noise_by_sig[sind].erase(i);
-		minfo.sorted_ys.erase(make_pair(dinfo.y(0), i));
-	}
-	minfo.classifier_stale = true;
-	minfo.member_rel.del(i, sig[dinfo.target].id);
-}
-
-/* Recalculate MAP model for each index in points */
-void EM::update_MAP(const set<int> &points) {
-	set<int>::iterator j;
-	for (j = points.begin(); j != points.end(); ++j) {
-		em_data &dinfo = *data[*j];
-		int prev = dinfo.map_mode, now;
-		now = argmax(dinfo.mode_prob);
-		if (now != prev) {
-			dinfo.map_mode = now;
-			mode_del_example(prev, *j);
-			obj_map_table::const_iterator i = obj_maps.find(make_pair(now, *j));
-			if (i != obj_maps.end()) {
-				dinfo.obj_map = i->second;
-			}
-			mode_add_example(now, *j, true);
-		}
-	}
-}
 
 void EM::learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	int sig_index = -1;
@@ -615,14 +410,14 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 	sigs[sig_index]->lwr.learn(dinfo->x, dinfo->y);
 	
 	dinfo->map_mode = 0;
-	dinfo->mode_prob.resize(nmodes);
+	dinfo->mode_prob.resize(nmodes, 0.0);
 	dinfo->mode_prob[0] = PNOISE;
+	dinfo->prob_stale.resize(nmodes, true);
+	dinfo->prob_stale[0] = false;
 	data.push_back(dinfo);
 	
-	mode_add_example(0, ndata, false);
-	for (int i = 1; i < nmodes; ++i) {
-		modes[i]->stale_points.insert(ndata);
-	}
+	modes[0]->add_example(ndata);
+	noise_by_sig[dinfo->sig_index].insert(ndata);
 	extend_relations(rels, ndata);
 	++ndata;
 }
@@ -630,29 +425,60 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 void EM::estep() {
 	function_timer t(timers.get_or_add("e-step"));
 	
-	set<int> check;
-	
-	for (int i = 1; i < nmodes; ++i) {
-		update_mode_prob(i, check);
+	/*
+	 For data i and mode j, if:
+	 
+	  * P(i, j) increases and j was not the MAP mode, or
+	  * P(i, j) decreases and j was the MAP mode
+	 
+	 then we mark i as a point we have to recalculate the MAP mode for.
+	*/
+	for (int i = 0; i < ndata; ++i) {
+		em_data &d = *data[i];
+		bool stale = false;
+		for (int j = 1; j < nmodes; ++j) {
+			if (!d.prob_stale[j] && !modes[j]->is_new_fit()) {
+				continue;
+			}
+			double prev = d.mode_prob[d.map_mode], now, error;
+			now = modes[j]->calc_prob(d.target, sigs[d.sig_index]->sig, d.x, d.y(0), obj_maps[make_pair(j, i)], error);
+			if ((d.map_mode == j && now < prev) || (d.map_mode != j && now > d.mode_prob[d.map_mode])) {
+				stale = true;
+			}
+			d.mode_prob[j] = now;
+			d.prob_stale[j] = false;
+		}
+		if (stale) {
+			int prev = d.map_mode, now = argmax(d.mode_prob);
+			if (now != prev) {
+				d.map_mode = now;
+				modes[prev]->del_example(i);
+				if (prev == 0) {
+					noise_by_sig[d.sig_index].erase(i);
+				}
+				obj_map_table::const_iterator j = obj_maps.find(make_pair(now, i));
+				if (j != obj_maps.end()) {
+					d.obj_map = j->second;
+				}
+				modes[now]->add_example(i);
+				if (now == 0) {
+					noise_by_sig[d.sig_index].insert(i);
+				}
+			}
+		}
 	}
 	
-	update_MAP(check);
+	for (int i = 1; i < modes.size(); ++i) {
+		modes[i]->reset_new_fit();
+	}
 }
 
 bool EM::mstep() {
 	function_timer t(timers.get_or_add("m-step"));
 	
 	bool changed = false;
-	for (int i = 0; i < modes.size(); ++i) {
-		mode_info &minfo = *modes[i];
-		if (minfo.stale) {
-			LinearModel *m = minfo.model;
-			if (m->needs_refit() && m->fit()) {
-				changed = true;
-				union_sets_inplace(minfo.stale_points, minfo.members);
-			}
-			minfo.stale = false;
-		}
+	for (int i = 1; i < nmodes; ++i) {
+		changed = changed || modes[i]->update_fits();
 	}
 	return changed;
 }
@@ -673,48 +499,6 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
 	}
 }
 
-struct mat_row_sort_comparator {
-	const_mat_view X, Y;
-	int xd, yd;
-	
-	mat_row_sort_comparator(const_mat_view X, const_mat_view Y) 
-	: X(X), Y(Y), xd(X.cols()), yd(Y.cols()) {}
-	
-	bool operator()(int i, int j) {
-		double d;
-		for (int k = 0; k < yd; ++k) {
-			d = Y(i, k) - Y(j, k);
-			if (d < 0) {
-				return true;
-			} else if (d > 0) {
-				return false;
-			}
-		}
-		for (int k = 0; k < xd; ++k) {
-			d = X(i, k) - X(j, k);
-			if (d < 0) {
-				return true;
-			} else if (d > 0) {
-				return false;
-			}
-		}
-		return false;
-	}
-};
-
-/*
- Upon return, YX(rows[i]) < YX(rows[i+1]), where YX is the matrix obtained by
- concatenating the rows of Y and X in that order. In other words, Y gets higher
- precedence in the comparison than X.
-*/
-void get_sorted_rows(const_mat_view X, const_mat_view Y, vector<int> &rows) {
-	rows.resize(X.rows());
-	for (int i = 0; i < rows.size(); ++i) {
-		rows[i] = i;
-	}
-	sort(rows.begin(), rows.end(), mat_row_sort_comparator(X, Y));
-}
-
 /*
  I used to collapse identical data points here, but that seems to be too
  expensive. So I'm assuming all unique data points, which can be enforced as
@@ -723,39 +507,10 @@ void get_sorted_rows(const_mat_view X, const_mat_view Y, vector<int> &rows) {
 bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds) {
 	function_timer t(timers.get_or_add("new_inds"));
 	
-	mode_info &noise_mode = *modes[0];
-	int thresh = noise_mode.check_after[sig_ind];
-	if (thresh == 0) {
-		noise_mode.check_after[sig_ind] = NEW_MODE_THRESH;
+	const set<int> &n = map_get(noise_by_sig, sig_ind);
+	if (n.size() < check_after) {
 		return false;
 	}
-	const set<int> &n = map_get(noise_mode.noise_by_sig, sig_ind);
-	
-	if (n.size() < thresh) {
-		return false;
-	}
-	
-	// try to find a constant model
-	int largest_const = 0;
-	const set<pair<double, int> > &sorted_ys = noise_mode.sorted_ys;
-	set<pair<double, int> >::const_iterator i;
-	double last = NAN;
-	for (i = sorted_ys.begin(); i != sorted_ys.end(); ++i) {
-		if (i->first == last) {
-			mode_inds.push_back(i->second);
-			if (mode_inds.size() >= NEW_MODE_THRESH) {
-				LOG(EMDBG) << "found constant model in noise_inds" << endl;
-				return true;
-			}
-		} else {
-			largest_const = max(largest_const, static_cast<int>(mode_inds.size()));
-			last = i->first;
-			mode_inds.clear();
-			mode_inds.push_back(i->second);
-		}
-	}
-	largest_const = max(largest_const, static_cast<int>(mode_inds.size()));
-	
 	vector<int> noise_inds(n.begin(), n.end());
 	int ndata = noise_inds.size();
 	int xdim = data[noise_inds[0]]->x.size();
@@ -773,142 +528,160 @@ bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds) {
 		for (int i = 0; i < subset.size(); ++i) {
 			mode_inds.push_back(noise_inds[subset[i]]);
 		}
-		noise_mode.check_after[sig_ind] = NEW_MODE_THRESH;
 		return true;
 	}
-	
-	int const_left = NEW_MODE_THRESH - largest_const;
-	int linear_left = NEW_MODE_THRESH - largest_linear;
-	noise_mode.check_after[sig_ind] = n.size() + min(const_left, linear_left);
 	return false;
+}
+
+/*
+ Fit lin_coefs, lin_inter, and sig to the data in data_inds. This is not as
+ efficient as it can be, since I've usually already ran a linear regression on
+ this set of data before calling this function. In the future, just use the
+ results from those previous regressions here.
+*/
+void EM::mode_info::init_fit(const vector<int> &data_inds) {
+	int ndata = data_inds.size();
+	const em_data &d0 = *data[data_inds[0]];
+	const scene_sig &dsig = sigs[d0.sig_index]->sig;
+	int target = d0.target;
+	
+	mat X(ndata, d0.x.size()), Y(ndata, 1);
+
+	for (int i = 0; i < ndata; ++i) {
+		const em_data &d = *data[data_inds[i]];
+		assert(d.sig_index == d0.sig_index);
+		X.row(i) = d.x;
+		Y.row(i) = d.y;
+	}
+	
+	mat coefs;
+	linreg_d(REGRESSION_ALG, X, Y, cvec(), coefs, lin_inter);
+	
+	// find relevant objects (with nonzero coefficients)
+	vector<int> relevant_objs;
+	relevant_objs.push_back(target);
+	for (int i = 0; i < dsig.size(); ++i) {
+		if (i == target) {
+			continue;
+		}
+		int start = dsig[i].start;
+		int end = start + dsig[i].props.size();
+		for (int j = start; j < end; ++j) {
+			if (!coefs.row(j).isConstant(0.0)) {
+				relevant_objs.push_back(i);
+				break;
+			}
+		}
+	}
+	
+	int end = 0;
+	lin_coefs.resize(coefs.rows(), 1);
+	sig.clear();
+	for (int i = 0; i < relevant_objs.size(); ++i) {
+		const scene_sig::entry &e = dsig[relevant_objs[i]];
+		sig.add(e);
+		int start = e.start, n = e.props.size();
+		lin_coefs.block(end, 0, n, 1) = coefs.block(start, 0, n, 1);
+		end += n;
+	}
+	lin_coefs.conservativeResize(end, 1);
+	new_fit = true;
 }
 
 bool EM::unify_or_add_mode() {
 	function_timer t(timers.get_or_add("new"));
-	
-	const map<int, set<int> > &noise_by_sig = modes[0]->noise_by_sig;
-	map<int, set<int> >::const_iterator i;
-	for (i = noise_by_sig.begin(); i != noise_by_sig.end(); ++i) {
-		vector<int> seed_inds;
-		if (!find_new_mode_inds(i->first, seed_inds)) {
-			continue;
-		}
-		
-		int xsize = data[seed_inds[0]]->x.size();
-		int ysize = data[seed_inds[0]]->y.size();
-		LinearModel *m = new LinearModel(REGRESSION_ALG);
-		int seed_sig = data[seed_inds[0]]->sig_index;
-		int seed_target = data[seed_inds[0]]->target;
-		mat X, Y;
-	
-		/*
-		 Try to add noise data to each current model and refit. If the
-		 resulting model is just as accurate as the original, then just
-		 add the noise to that model instead of creating a new one.
-		*/
-		
-		vector<int> obj_map;
-		bool unified = false;
-		for (int j = 1; j < nmodes; ++j) {
-			mode_info &minfo = *modes[j];
-			set<int> &members = minfo.members;
 
-			bool same_sig = true;
-			set<int>::const_iterator k;
-			for (k = members.begin(); k != members.end(); ++k) {
-				if (data[*k]->sig_index != seed_sig || 
-				    data[*k]->target != seed_target)
-				{
-					same_sig = false;
-					break;
-				}
+	assert(check_after >= NEW_MODE_THRESH);
+	if (modes[0]->size() < check_after) {
+		return false;
+	}
+	
+	int largest;
+	vector<int> seed_inds;
+	modes[0]->largest_const_subset(seed_inds);
+	if (seed_inds.size() < NEW_MODE_THRESH) {
+		largest = seed_inds.size();
+		map<int, set<int> >::const_iterator i;
+		for (i = noise_by_sig.begin(); i != noise_by_sig.end(); ++i) {
+			seed_inds.clear();
+			find_new_mode_inds(i->first, seed_inds);
+			if (largest < seed_inds.size()) {
+				largest = seed_inds.size();
 			}
-			if (!same_sig) {
-				continue;
-			}
-			vector<int> combined;
-			extend(combined, members);
-			extend(combined, seed_inds);
-			
-			fill_xy(combined, X, Y);
-			m->init_fit(X, Y, seed_target, sigs[seed_sig]->sig, obj_map);
-			double curr_error = minfo.model->get_train_error();
-			double combined_error = m->get_train_error();
-			
-			if (combined_error < MODEL_ERROR_THRESH ||
-				(curr_error > 0.0 && combined_error < UNIFY_MUL_THRESH * curr_error))
-			{
-				init_mode(j, seed_sig, m, combined, obj_map);
-				LOG(EMDBG) << "UNIFIED " << j << endl;
-				unified = true;
+			if (largest >= NEW_MODE_THRESH) {
 				break;
 			}
 		}
-		
-		if (!unified) {
-			fill_xy(seed_inds, X, Y);
-			m->init_fit(X, Y, seed_target, sigs[i->first]->sig, obj_map);
-			modes.push_back(new mode_info);
-			++nmodes;
-			init_mode(nmodes - 1, i->first, m, seed_inds, obj_map);
-			for (int j = 0; j < ndata; ++j) {
-				data[j]->mode_prob.push_back(0.0);
-			}
-			for (int j = 0; j < nmodes; ++j) {
-				modes[j]->classifiers.resize(nmodes, NULL);
-				/*
-				 It's sufficient to fill the extra vector elements
-				 with NULL here. The actual classifiers will be
-				 allocated as needed during updates.
-				*/
-			}
+	}
+	
+	if (largest < NEW_MODE_THRESH) {
+		check_after += (NEW_MODE_THRESH - largest);
+		return false;
+	}
+	
+	/*
+	 From here I know the noise data is going to either become a new mode or unify
+	 with an existing mode, so reset check_after assuming the current noise is
+	 gone.
+	*/
+	check_after = NEW_MODE_THRESH;
+	
+	int seed_sig = data[seed_inds[0]]->sig_index;
+	int seed_target = data[seed_inds[0]]->target;
+	mat X, Y;
+
+	/*
+	 Try to add noise data to each current model and refit. If the
+	 resulting model is just as accurate as the original, then just
+	 add the noise to that model instead of creating a new one.
+	*/
+	for (int j = 1; j < nmodes; ++j) {
+		mode_info &minfo = *modes[j];
+
+		if (!minfo.uniform_sig(seed_sig, seed_target)) {
+			continue;
 		}
 
-		for (int j = 0; j < seed_inds.size(); ++j) {
-			mode_del_example(0, seed_inds[j]);
+		vector<int> combined, subset;
+		extend(combined, minfo.get_members());
+		extend(combined, seed_inds);
+		fill_xy(combined, X, Y);
+		int unified_size = find_linear_subset(X, Y, subset);
+		if (unified_size >= .9 * combined.size()) {
+			vector<int> u(combined.size());
+			for (int k = 0; k < subset.size(); ++k) {
+				u[k] = combined[subset[k]];
+			}
+			minfo.init_fit(u);
+			return true;
 		}
-		return true;
 	}
-	return false;
-}
+	
+	mode_info *new_mode = new mode_info(false, data, sigs);
+	new_mode->init_fit(seed_inds);
+	modes.push_back(new_mode);
+	++nmodes;
+	for (int j = 0; j < ndata; ++j) {
+		data[j]->mode_prob.push_back(0.0);
+	}
+	for (int j = 0; j < nmodes; ++j) {
+		modes[j]->classifiers.resize(nmodes, NULL);
+		/*
+		 It's sufficient to fill the extra vector elements
+		 with NULL here. The actual classifiers will be
+		 allocated as needed during updates.
+		*/
+	}
 
-void EM::init_mode(int mode, int sig_id, LinearModel *m, const vector<int> &members, const vector<int> &obj_map) {
-	assert(!members.empty());
-
-	const scene_sig &sig = sigs[sig_id]->sig;
-	mode_info &minfo = *modes[mode];
-	int target = sig[data[members.front()]->target].id;
-	if (minfo.model) {
-		delete minfo.model;
-	}
-	minfo.model = m;
-	minfo.members.clear();
-	minfo.sig.clear();
-	extend(minfo.members, members);
-	for (int i = 0; i < obj_map.size(); ++i) {
-		minfo.sig.add(sig[obj_map[i]]);
-	}
-	minfo.obj_clauses.resize(minfo.sig.size());
-	minfo.member_rel.clear();
-	for (int i = 0; i < members.size(); ++i) {
-		em_data &dinfo = *data[members[i]];
-		dinfo.map_mode = mode;
-		dinfo.model_row = i;
-		dinfo.obj_map = obj_map;
-		minfo.member_rel.add(members[i], target);
-	}
-	minfo.stale = true;
-	for (int i = 0; i < ndata; ++i) {
-		minfo.stale_points.insert(i);
-	}
-	minfo.classifiers.resize(nmodes, NULL);
+	return true;
 }
 
 bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, vector<int> &mapping) const {
 	const mode_info &minfo = *modes[mode];
+	const scene_sig &msig = minfo.get_sig();
 	vector<bool> used(sig.size(), false);
 	used[target] = true;
-	mapping.resize(minfo.sig.empty() ? 1 : minfo.sig.size(), -1);
+	mapping.resize(msig.empty() ? 1 : msig.size(), -1);
 	
 	// target always maps to target
 	mapping[0] = target;
@@ -919,11 +692,11 @@ bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_tab
 	domains[0].insert(0);
 	domains[1].insert(sig[target].id);
 	
-	for (int i = 1; i < minfo.sig.size(); ++i) {
+	for (int i = 1; i < msig.size(); ++i) {
 		set<int> &d = domains[2];
 		d.clear();
 		for (int j = 0; j < sig.size(); ++j) {
-			if (!used[j] && sig[j].type == minfo.sig[i].type) {
+			if (!used[j] && sig[j].type == msig[i].type) {
 				d.insert(j);
 			}
 		}
@@ -963,26 +736,8 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 		y(0) = NAN;
 		return false;
 	}
-	
-	const mode_info &minfo = *modes[mode];
-	assert(obj_map.size() == minfo.sig.size());
-	rvec xc;
-	if (!minfo.model->is_const()) {
-		xc.resize(x.size());
-		int xsize = 0;
-		for (int j = 0; j < obj_map.size(); ++j) {
-			const scene_sig::entry &e = sig[obj_map[j]];
-			int n = e.props.size();
-			xc.segment(xsize, n) = x.segment(e.start, n);
-			xsize += n;
-		}
-		xc.conservativeResize(xsize);
-	}
-	if (minfo.model->predict(xc, y)) {
-		return true;
-	}
-	y(0) = NAN;
-	return false;
+	modes[mode]->predict(sig, x, obj_map, y);
+	return true;
 }
 
 /*
@@ -1003,7 +758,7 @@ bool EM::remove_modes() {
 	vector<int> index_map(nmodes), removed;
 	int i = 1;  // start with 1, noise mode (0) should never be removed
 	for (int j = 1; j < nmodes; ++j) {
-		if (modes[j]->members.size() > 2) {
+		if (modes[j]->size() > 2) {
 			index_map[j] = i;
 			if (j > i) {
 				modes[i] = modes[j];
@@ -1034,26 +789,19 @@ bool EM::remove_modes() {
 	return true;
 }
 
-bool EM::step() {
-	estep();
-	return mstep();
-}
-
 bool EM::run(int maxiters) {
-	bool changed = false;
 	if (use_em) {
 		for (int i = 0; i < maxiters; ++i) {
-			if (!step()) {
-				if (!remove_modes() && !unify_or_add_mode()) {
-					// reached quiescence
-					return changed;
-				}
+			estep();
+			bool changed = mstep();
+			if (!changed && !remove_modes() && !unify_or_add_mode()) {
+				// reached quiescence
+				return true;
 			}
-			changed = true;
 		}
 		LOG(EMDBG) << "Reached max iterations without quiescence" << endl;
 	}
-	return changed;
+	return false;
 }
 
 int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, double &besterror) const {
@@ -1063,7 +811,7 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 	vector<int> assign;
 	double error;
 	for (int i = 0; i < nmodes; ++i) {
-		double p = calc_prob(i, target, sig, x, y, assign, error);
+		double p = modes[i]->calc_prob(target, sig, x, y, assign, error);
 		if (best == -1 || p > best_prob) {
 			best = i;
 			best_prob = p;
@@ -1190,29 +938,30 @@ bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) c
  pos_obj and neg_obj can probably be cached and updated as data points
  are assigned to modes.
 */
-void EM::learn_obj_clause(int m, int i) {
-	relation pos_obj(3), neg_obj(3);
-	tuple objs(2);
-	int type = modes[m]->sig[i].type;
-	
-	set<int>::const_iterator j;
-	for (j = modes[m]->members.begin(); j != modes[m]->members.end(); ++j) {
-		const scene_sig &sig = sigs[data[*j]->sig_index]->sig;
-		int o = sig[data[*j]->obj_map[i]].id;
-		objs[0] = data[*j]->target;
-		objs[1] = o;
-		pos_obj.add(*j, objs);
-		for (int k = 0; k < sig.size(); ++k) {
-			if (sig[k].type == type && k != objs[0] && k != o) {
-				objs[1] = k;
-				neg_obj.add(*j, objs);
+void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
+	for (int i = 0; i < sig.size(); ++i) {
+		int type = sig[i].type;
+		relation pos_obj(3), neg_obj(3);
+		tuple objs(2);
+		set<int>::const_iterator j;
+		for (j = members.begin(); j != members.end(); ++j) {
+			const scene_sig &sig = sigs[data[*j]->sig_index]->sig;
+			int o = sig[data[*j]->obj_map[i]].id;
+			objs[0] = data[*j]->target;
+			objs[1] = o;
+			pos_obj.add(*j, objs);
+			for (int k = 0; k < sig.size(); ++k) {
+				if (sig[k].type == type && k != objs[0] && k != o) {
+					objs[1] = k;
+					neg_obj.add(*j, objs);
+				}
 			}
 		}
-	}
-	
-	FOIL foil(pos_obj, neg_obj, rel_tbl);
-	if (!foil.learn(modes[m]->obj_clauses[i], NULL)) {
-		// respond to this situation appropriately
+		
+		FOIL foil(pos_obj, neg_obj, rels);
+		if (!foil.learn(obj_clauses[i], NULL)) {
+			// respond to this situation appropriately
+		}
 	}
 }
 
@@ -1246,12 +995,15 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 		join(os, members, ' ') << endl;
 		return true;
 	} else if (args[first] == "model") {
-		if (model) {
-			return model->cli_inspect(first + 1, args, os);
+		if (noise) {
+			os << "noise" << endl;
 		} else {
-			os << "no model" << endl;
-			return true;
+			os << "coefficients" << endl;
+			os << lin_coefs << endl;
+			os << "intercept" << endl;
+			os << lin_inter;
 		}
+		return true;
 	}
 	return false;
 }
@@ -1286,12 +1038,20 @@ void EM::extend_relations(const relation_table &add, int time) {
 }
 
 void EM::serialize(ostream &os) const {
-	serializer(os) << ndata << nmodes << data << sigs << modes << rel_tbl;
+	serializer(os) << ndata << nmodes << data << sigs << rel_tbl;
+	for (int i = 0; i < nmodes; ++i) {
+		modes[i]->serialize(os);
+	}
 }
 
 void EM::unserialize(istream &is) {
-	unserializer(is) >> ndata >> nmodes >> data >> sigs >> modes >> rel_tbl;
-	assert(data.size() == ndata && modes.size() == nmodes);
+	unserializer(is) >> ndata >> nmodes >> data >> sigs >> rel_tbl;
+	assert(data.size() == ndata);
+	
+	for (int i = 0; i < nmodes; ++i) {
+		EM::mode_info *m = new mode_info(i == 0, data, sigs);
+		m->unserialize(is);
+	}
 	
 	for (int i = 0; i < sigs.size(); ++i) {
 		sig_info &si = *sigs[i];
@@ -1303,36 +1063,244 @@ void EM::unserialize(istream &is) {
 }
 
 void EM::em_data::serialize(ostream &os) const {
-	serializer(os) << target << sig_index << map_mode << model_row
-	               << x << y << mode_prob << obj_map;
+	serializer(os) << target << sig_index << map_mode
+	               << x << y << mode_prob << prob_stale << obj_map;
 }
 
 void EM::em_data::unserialize(istream &is) {
-	unserializer(is) >> target >> sig_index >> map_mode >> model_row
-	                 >> x >> y >> mode_prob >> obj_map;
+	unserializer(is) >> target >> sig_index >> map_mode
+	                 >> x >> y >> mode_prob >> prob_stale >> obj_map;
 }
 
-void EM::mode_info::serialize(ostream &os) const {
-	serializer(os) << stale << stale_points << members << sig
-	               << classifiers << obj_clauses << classifier_stale 
-	               << member_rel << model;
-}
-
-void EM::mode_info::unserialize(istream &is) {
-	if (model) {
-		delete model;
+EM::mode_info::mode_info(bool noise, const vector<em_data*> &data, const vector<sig_info*> &sigs) 
+: noise(noise), data(data), sigs(sigs), member_rel(2), classifier_stale(true), new_fit(true)
+{
+	if (noise) {
+		stale = false;
+	} else {
+		stale = true;
 	}
-	unserializer(is) >> stale >> stale_points >> members >> sig
-	                 >> classifiers >> obj_clauses >> classifier_stale
-	                 >> member_rel >> model;
 }
 
 EM::mode_info::~mode_info() {
-	delete model;
 	for (int i = 0; i < classifiers.size(); ++i) {
 		delete classifiers[i];
 	}
 }
+
+/*
+ The fields noise, data, and sigs are initialized in the constructor, and
+ therefore not (un)serialized.
+*/
+void EM::mode_info::serialize(ostream &os) const {
+	serializer(os) << stale << new_fit << classifier_stale << members << sig
+	               << classifiers << obj_clauses << member_rel << sorted_ys
+	               << lin_coefs << lin_inter;
+}
+
+void EM::mode_info::unserialize(istream &is) {
+	unserializer(is) >> stale >> new_fit >> classifier_stale >> members >> sig
+	                 >> classifiers >> obj_clauses >> member_rel >> sorted_ys
+	                 >> lin_coefs >> lin_inter;
+}
+
+double EM::mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
+	if (noise) {
+		return PNOISE;
+	}
+	
+	rvec py;
+	double w = 1.0;
+	
+	/*
+	 Each mode has a signature that specifies the types and orders of
+	 objects it expects for inputs. This is recorded in modes[m]->sig.
+	 Call this the model signature.
+	 
+	 Each data point has a signature that specifies which types and
+	 orders of object properties encoded by the property vector. This
+	 is recorded in data[i]->sig_index. Call this the data signature.
+	 
+	 P(d, m) = MAX[assignment][P(d, m, assignment)] where 'assignment'
+	 is a mapping of objects in the data signature to the objects in
+	 the mode signature.
+	*/
+	
+	/*
+	 Create the input table for the combination generator to generate
+	 all possible assignments. possibles[i] should be a list of all
+	 object indices that can be assigned to position i in the model
+	 signature.
+	*/
+	if (sig.empty()) {
+		// should be constant prediction
+		assert(lin_coefs.size() == 0);
+		py = lin_inter;
+		best_error = (y - py(0));
+		best_assign.clear();
+		double d = gausspdf(y, py(0), MEASURE_VAR);
+		double p = (1.0 - EPSILON) * w * d;
+		return p;
+	}
+	
+	// otherwise, check all possible assignments
+	vector<vector<int> > possibles(sig.size());
+	possibles[0].push_back(target);
+	for (int i = 1; i < sig.size(); ++i) {
+		for (int j = 0; j < xsig.size(); ++j) {
+			if (xsig[j].type == sig[i].type && j != target) {
+				possibles[i].push_back(j);
+			}
+		}
+	}
+	multi_combination_generator<int> gen(possibles, false);
+	
+	/*
+	 Iterate through all assignments and find the one that gives
+	 highest probability.
+	*/
+	vector<int> assign;
+	int xlen = sig.dim();
+	rvec xc(xlen);
+	double best_prob = -1.0;
+	while (gen.next(assign)) {
+		int s = 0;
+		for (int i = 0; i < assign.size(); ++i) {
+			const scene_sig::entry &e = xsig[assign[i]];
+			int l = e.props.size();
+			assert(sig[i].props.size() == l);
+			xc.segment(s, l) = x.segment(e.start, l);
+			s += l;
+		}
+		assert(s == xlen);
+		
+		py = (xc * lin_coefs) + lin_inter;
+		double d = gausspdf(y, py(0), MEASURE_VAR);
+		double p = (1.0 - EPSILON) * w * d;
+		if (p > best_prob) {
+			best_prob = p;
+			best_assign = assign;
+			best_error = y - py(0);
+		}
+	}
+	assert(best_prob >= 0.0);
+	return best_prob;
+}
+
+bool EM::mode_info::update_fits() {
+	if (!stale) {
+		return false;
+	}
+	int xcols = 0;
+	for (int i = 0; i < sig.size(); ++i) {
+		xcols += sig[i].props.size();
+	}
+	
+	mat X(members.size(), xcols), Y(members.size(), 1);
+	set<int>::const_iterator i;
+	int j = 0;
+	for (i = members.begin(); i != members.end(); ++i) {
+		const em_data &d = *data[*i];
+		assert(d.obj_map.size() == sig.size());
+		const scene_sig &dsig = sigs[d.sig_index]->sig;
+		rvec x(xcols);
+		int s = 0;
+		for (int k = 0; k < d.obj_map.size(); ++k) {
+			const scene_sig::entry &e = dsig[d.obj_map[k]];
+			int n = e.props.size();
+			x.segment(s, n) = d.x.segment(e.start, n);
+			s += n;
+		}
+		assert(s == xcols);
+		X.row(j) = x;
+		Y.row(j++) = d.y;
+	}
+	linreg_d(REGRESSION_ALG, X, Y, cvec(), lin_coefs, lin_inter);
+	stale = false;
+	new_fit = true;
+	return true;
+}
+
+void EM::mode_info::predict(const scene_sig &dsig, const rvec &x, const vector<int> &obj_map, rvec &y) const {
+	if (lin_coefs.size() == 0) {
+		y = lin_inter;
+		return;
+	}
+	
+	assert(obj_map.size() == sig.size());
+	rvec xc(x.size());
+	int xsize = 0;
+	for (int j = 0; j < obj_map.size(); ++j) {
+		const scene_sig::entry &e = dsig[obj_map[j]];
+		int n = e.props.size();
+		xc.segment(xsize, n) = x.segment(e.start, n);
+		xsize += n;
+	}
+	xc.conservativeResize(xsize);
+	y = (xc * lin_coefs) + lin_inter;
+}
+
+void EM::mode_info::add_example(int i) {
+	const em_data &d = *data[i];
+	int sind = d.sig_index;
+	const scene_sig &dsig = sigs[sind]->sig;
+
+	members.insert(i);
+	classifier_stale = true;
+	member_rel.add(i, dsig[d.target].id);
+	if (noise) {
+		sorted_ys.insert(make_pair(d.y(0), i));
+	} else {
+		rvec y;
+		predict(dsig, d.x, d.obj_map, y);
+		if ((y - d.y).norm() > MODEL_ERROR_THRESH) {
+			stale = true;
+		}
+	}
+}
+
+void EM::mode_info::del_example(int i) {
+	em_data &d = *data[i];
+	int sind = d.sig_index;
+	const scene_sig &sig = sigs[sind]->sig;
+
+	classifier_stale = true;
+	member_rel.del(i, sig[d.target].id);
+	members.erase(i);
+	if (noise) {
+		sorted_ys.erase(make_pair(d.y(0), i));
+	}
+}
+
+void EM::mode_info::largest_const_subset(vector<int> &subset) {
+	vector<int> s;
+	set<pair<double, int> >::const_iterator i;
+	double last = NAN;
+	subset.clear();
+	for (i = sorted_ys.begin(); i != sorted_ys.end(); ++i) {
+		if (i->first == last) {
+			subset.push_back(i->second);
+		} else {
+			if (s.size() > subset.size()) {
+				subset = s;
+			}
+			last = i->first;
+			s.clear();
+			s.push_back(i->second);
+		}
+	}
+}
+
+bool EM::mode_info::uniform_sig(int sig, int target) const {
+	set<int>::const_iterator i;
+	for (i = members.begin(); i != members.end(); ++i) {
+		if (data[*i]->sig_index != sig || data[*i]->target != target) {
+			return false;
+		}
+	}
+	return true;
+}
+
 
 void EM::classifier::serialize(ostream &os) const {
 	serializer(os) << const_vote << clauses << residuals << ldas;
@@ -1434,9 +1402,7 @@ void EM::update_classifier() {
 		mode_info &minfo = *modes[i];
 
 		if (needs_update[i]) {
-			for (int j = 1; j < minfo.sig.size(); ++j) {
-				learn_obj_clause(i, j);
-			}
+			minfo.learn_obj_clauses(rel_tbl);
 		}
 		
 		for (int j = i + 1; j < modes.size(); ++j) {
@@ -1547,7 +1513,7 @@ void EM::update_pair(int i, int j) {
 	clear_and_dealloc(c.residuals);
 	clear_and_dealloc(c.ldas);
 	
-	c.const_vote = mem_i.size() > mem_j.size() ? 1 : 0;
+	c.const_vote = mem_i.size() > mem_j.size() ? 0 : 1;
 	
 	if (mem_i.empty() || mem_j.empty()) {
 		return;
@@ -1587,7 +1553,10 @@ void EM::update_pair(int i, int j) {
 	}
 }
 
-int EM::classify_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
+/*
+ Return 0 to vote for i, 1 to vote for j
+*/
+int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
 	assert(modes[i]->classifiers[j]);
 	const classifier &c = *(modes[i]->classifiers[j]);
 
@@ -1619,7 +1588,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 	map<int, vector<int> > mappings;
 	for (int i = 1; i < modes.size(); ++i) {
 		mode_info &minfo = *modes[i];
-		if (minfo.sig.size() > sig.size()) {
+		if (minfo.get_sig().size() > sig.size()) {
 			continue;
 		}
 		if (!map_objs(i, target, sig, rels, mappings[i])) {
@@ -1640,7 +1609,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 		for (int j = i + 1; j < possible.size(); ++j) {
 			int b = possible[j];
 			LOG(EMDBG) << "for " << a << "/" << b << ": ";
-			int winner = classify_pair(a, b, target, sig, rels, x);
+			int winner = vote_pair(a, b, target, sig, rels, x);
 			if (winner == 0) {
 				LOG(EMDBG) << a << " wins" << endl;
 				++votes[a];
