@@ -18,7 +18,7 @@ public:
 	scene(const std::string &name, drawer *d);
 	~scene();
 	
-	scene *clone() const;
+	scene *clone(const std::string &name = "", drawer *d = NULL) const;
 	
 	group_node *get_root() { return root; }
 	sgnode *get_node(const std::string &name);
@@ -38,7 +38,6 @@ public:
 	void get_property_names(std::vector<std::string> &names) const;
 	void get_properties(rvec &vals) const;
 	bool get_property(const std::string &obj, const std::string &prop, float &val) const;
-	bool add_property(const std::string &obj, const std::string &prop, float val);
 	bool set_property(const std::string &obj, const std::string &prop, float val);
 	bool set_properties(const rvec &vals);
 	bool remove_property(const std::string &obj, const std::string &prop);

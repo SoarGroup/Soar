@@ -51,8 +51,8 @@ scene::~scene() {
 	delete root;
 }
 
-scene *scene::clone() const {
-	scene *c = new scene(name, NULL);  // don't display copies
+scene *scene::clone(const string &cname, drawer *d) const {
+	scene *c = new scene(cname, d);
 	string name;
 	std::vector<sgnode*> all_nodes;
 	std::vector<sgnode*>::const_iterator i;
@@ -67,10 +67,14 @@ scene *scene::clone() const {
 	*/
 	c->nodes = nodes;
 	for(i = all_nodes.begin(); i != all_nodes.end(); ++i) {
-		c->nodes[(**i).get_name()].node = *i;
+		string node_name = (**i).get_name();
+		c->nodes[node_name].node = *i;
 		(**i).listen(c);
 		if (!(**i).is_group()) {
 			c->cdetect.add_node(*i);
+		}
+		if (c->draw) {
+			c->draw->add(c->name, *i);
 		}
 	}
 	
@@ -401,24 +405,6 @@ bool scene::get_property(const string &obj, const string &prop, float &val) cons
 	return true;
 }
 
-bool scene::add_property(const string &obj, const string &prop, float val) {
-	node_map::iterator i;
-	property_map::iterator j;
-	char type; int d;
-	if ((i = nodes.find(obj)) == nodes.end()) {
-		return false;
-	}
-	if (is_native_prop(prop, type, d)) {
-		return false;
-	} else {
-		if ((j = i->second.props.find(prop)) != i->second.props.end()) {
-			return false;
-		}
-		i->second.props[prop] = val;
-	}
-	return true;
-}
-
 bool scene::set_property(const string &obj, const string &prop, float val) {
 	node_map::iterator i;
 	property_map::iterator j;
@@ -431,10 +417,7 @@ bool scene::set_property(const string &obj, const string &prop, float val) {
 		trans[d] = val;
 		i->second.node->set_trans(type, trans);
 	} else {
-		if ((j = i->second.props.find(prop)) == i->second.props.end()) {
-			return false;
-		}
-		j->second = val;
+		i->second.props[prop] = val;
 	}
 	return true;
 }
