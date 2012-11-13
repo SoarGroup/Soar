@@ -130,7 +130,11 @@ void svs_state::init() {
 	svs_link = si->get_wme_val(si->make_id_wme(state, cs.svs));
 	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
 	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
-	scn = new scene(name, svsp->get_drawer());
+	if (parent) {
+		scn = parent->scn->clone(name, svsp->get_drawer());
+	} else {
+		scn = new scene(name, svsp->get_drawer());
+	}
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	mmdl = new multi_model(svsp->get_models());
 	learn_models = false;

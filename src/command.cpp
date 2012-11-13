@@ -174,13 +174,25 @@ command* make_command(svs_state *state, wme *w) {
 filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 	wme_list children, params;
 	wme_list::iterator i;
-	Symbol* cval;
-	string strval, pname, ftype, itype;
-	long intval;
-	float floatval;
+	string pname, ftype, itype;
 	filter_input *input;
 	bool fail;
 	filter *f;
+	
+	if (!si->is_identifier(root)) {
+		string strval;
+		long intval;
+		float floatval;
+		
+		if (si->get_val(root, strval)) {
+			return new const_filter<string>(strval);
+		} else if (si->get_val(root, intval)) {
+			return new const_filter<int>(intval);
+		} else if (si->get_val(root, floatval)) {
+			return new const_filter<float>(floatval);
+		}
+		return NULL;
+	}
 	
 	fail = false;
 	si->get_child_wmes(root, children);
@@ -188,7 +200,7 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 		if (!si->get_val(si->get_wme_attr(*i), pname)) {
 			continue;
 		}
-		cval = si->get_wme_val(*i);
+		Symbol *cval = si->get_wme_val(*i);
 		if (pname == "type") {
 			if (!si->get_val(cval, ftype)) {
 				return NULL;
@@ -215,22 +227,13 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 		if (!si->get_val(si->get_wme_attr(*i), pname)) {
 			continue;
 		}
-		cval = si->get_wme_val(*i);
-		if (si->get_val(cval, strval)) {
-			input->add_param(pname, new const_filter<string>(strval));
-		} else if (si->get_val(cval, intval)) {
-			input->add_param(pname, new const_filter<int>(intval));
-		} else if (si->get_val(cval, floatval)) {
-			input->add_param(pname, new const_filter<float>(floatval));
-		} else {
-			filter *cf;
-			// must be identifier
-			if ((cf = parse_filter_spec(si, cval, scn)) == NULL) {
-				fail = true;
-				break;
-			}
-			input->add_param(pname, cf);
+		Symbol *cval = si->get_wme_val(*i);
+		filter *cf = parse_filter_spec(si, cval, scn);
+		if (!cf) {
+			fail = true;
+			break;
 		}
+		input->add_param(pname, cf);
 	}
 	
 	if (!fail) {

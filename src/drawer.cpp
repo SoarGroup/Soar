@@ -38,9 +38,10 @@ drawer::~drawer() {
 }
 
 void drawer::add(const string &scn, const sgnode *n) {
-	if (!sock.connected()) {
+	if (!sock.connected() || !n->get_parent()) {
 		return;
 	}
+	
 	stringstream ss;
 	string shape_str;
 	n->get_shape_sgel(shape_str);
