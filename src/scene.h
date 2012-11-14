@@ -18,7 +18,7 @@ public:
 	scene(const std::string &name, drawer *d);
 	~scene();
 	
-	scene *clone() const;
+	scene *clone(const std::string &name = "", drawer *d = NULL) const;
 	
 	group_node *get_root() { return root; }
 	sgnode *get_node(const std::string &name);
@@ -27,6 +27,7 @@ public:
 	
 	// nodes will be in alphabetical name order
 	void get_all_nodes(std::vector<sgnode*> &nodes);
+	void get_all_nodes(std::vector<const sgnode*> &nodes);
 	int num_nodes() const;
 	int get_dof() const;
 	
@@ -37,7 +38,6 @@ public:
 	void get_property_names(std::vector<std::string> &names) const;
 	void get_properties(rvec &vals) const;
 	bool get_property(const std::string &obj, const std::string &prop, float &val) const;
-	bool add_property(const std::string &obj, const std::string &prop, float val);
 	bool set_property(const std::string &obj, const std::string &prop, float val);
 	bool set_properties(const rvec &vals);
 	bool remove_property(const std::string &obj, const std::string &prop);
@@ -78,12 +78,5 @@ private:
 	
 	collision_detector cdetect;
 };
-
-/* Functions to generate common argument sets */
-void all_nodes(scene *scn, std::vector<std::vector<std::string> > &argset);
-void all_node_pairs_unordered_no_repeat(scene *scn, std::vector<std::vector<std::string> > &argset);
-void all_node_pairs_ordered_no_repeat(scene *scn, std::vector<std::vector<std::string> > &argset);
-void all_node_triples_unordered_no_repeat(scene *scn, std::vector<std::vector<std::string> > &argset);
-void all_node_triples_ordered_no_repeat(scene *scn, std::vector<std::vector<std::string> > &argset);
 
 #endif

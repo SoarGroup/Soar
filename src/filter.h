@@ -20,7 +20,7 @@
 class filter_val {
 public:
 	virtual ~filter_val() {}
-	virtual std::string get_string() = 0;
+	virtual std::string get_string() const = 0;
 	virtual filter_val *clone() const = 0;
 	virtual filter_val &operator=(const filter_val &rhs) = 0;
 	virtual bool operator==(const filter_val &rhs) const = 0;
@@ -32,7 +32,7 @@ public:
 	filter_val_c(const T &v) : v(v) {}
 	virtual ~filter_val_c() {}
 
-	std::string get_string() {
+	std::string get_string() const {
 		std::stringstream ss;
 		ss << v;
 		return ss.str();
@@ -75,7 +75,7 @@ public:
 	filter_val_c(const sgnode *v) : v(v) {}
 	virtual ~filter_val_c() {}
 	
-	std::string get_string() {
+	std::string get_string() const {
 		return v->get_name();
 	}
 	

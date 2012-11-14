@@ -37,54 +37,50 @@ bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	return comp == dir[axis];
 }
 
-/*
-Standalone versions for use with model learning.
-*/
-bool dir(scene *scn, const vector<string> &args, int axis, int comp) {
-	const sgnode *a = scn->get_node(args[0]), *b = scn->get_node(args[1]);
-	
-	assert(a != NULL && b != NULL);
-	
-	return direction(a, b, axis, comp);
+bool north_of(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 1, 1);
 }
 
-bool north_of(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 1, 1);
+bool south_of(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 1, -1);
 }
 
-bool south_of(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 1, -1);
+bool east_of(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 0, 1);
 }
 
-bool east_of(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 0, 1);
+bool west_of(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 0, -1);
 }
 
-bool west_of(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 0, -1);
+bool vertically_aligned(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 0, 0);
 }
 
-bool vertically_aligned(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 0, 0);
+bool horizontally_aligned(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 1, 0);
 }
 
-bool horizontally_aligned(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 1, 0);
+bool planar_aligned(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 2, 0);
 }
 
-bool planar_aligned(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 2, 0);
+bool above(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 2, 1);
 }
 
-bool above(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 2, 1);
+bool below(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return direction(args[0], args[1], 2, -1);
 }
-
-bool below(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 2, -1);
-}
-
-
 
 /*
 Filter version
@@ -162,9 +158,10 @@ filter_table_entry north_of_fill_entry() {
 	e.name = "y-greater-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_north_of;
 	e.calc = &north_of;
-	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
 
@@ -173,9 +170,10 @@ filter_table_entry south_of_fill_entry() {
 	e.name = "y-less-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_south_of;
 	e.calc = &south_of;
-	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
 
@@ -184,9 +182,10 @@ filter_table_entry east_of_fill_entry() {
 	e.name = "x-greater-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_east_of;
 	e.calc = &east_of;
-	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
 
@@ -195,9 +194,10 @@ filter_table_entry west_of_fill_entry() {
 	e.name = "x-less-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_west_of;
 	e.calc = &west_of;
-	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
 
@@ -206,9 +206,10 @@ filter_table_entry horizontally_aligned_fill_entry() {
 	e.name = "y-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = false;
+	e.allow_repeat = false;
 	e.create = &make_horizontally_aligned;
 	e.calc = &horizontally_aligned;
-	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
 
@@ -217,9 +218,10 @@ filter_table_entry vertically_aligned_fill_entry() {
 	e.name = "x-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = false;
+	e.allow_repeat = false;
 	e.create = &make_vertically_aligned;
 	e.calc = &vertically_aligned;
-	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
 
@@ -228,9 +230,10 @@ filter_table_entry planar_aligned_fill_entry() {
 	e.name = "z-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = false;
+	e.allow_repeat = false;
 	e.create = &make_planar_aligned;
 	e.calc = &planar_aligned;
-	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
 
@@ -239,9 +242,10 @@ filter_table_entry above_fill_entry() {
 	e.name = "z-greater-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_above;
 	e.calc = &above;
-	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
 
@@ -250,9 +254,10 @@ filter_table_entry below_fill_entry() {
 	e.name = "z-less-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_below;
 	e.calc = &below;
-	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
 

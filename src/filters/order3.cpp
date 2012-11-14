@@ -89,20 +89,14 @@ filter* make_behind_filter(Symbol *root, soar_interface *si, scene *scn, filter_
 	return new behind_filter(root, si, input);
 }
 
-bool calc_between(scene *scn, const vector<string> &args) {
-	const sgnode *a, *b, *c;
-	a = scn->get_node(args[0]);
-	b = scn->get_node(args[1]);
-	c = scn->get_node(args[2]);
-	return between(a, b, c);
+bool calc_between(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 3);
+	return between(args[0], args[1], args[2]);
 }
 
-bool calc_behind(scene *scn, const vector<string> &args) {
-	const sgnode *a, *b, *c;
-	a = scn->get_node(args[0]);
-	b = scn->get_node(args[1]);
-	c = scn->get_node(args[2]);
-	return behind(a, b, c);
+bool calc_behind(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 3);
+	return behind(args[0], args[1], args[2]);
 }
 	
 filter_table_entry between_fill_entry() {
@@ -111,13 +105,14 @@ filter_table_entry between_fill_entry() {
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.parameters.push_back("c");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_between_filter;
 	if (!get_option("order3").empty()) {
 		e.calc = &calc_between;
 	} else {
 		e.calc = NULL;
 	}
-	e.possible_args = &all_node_triples_ordered_no_repeat;
 	return e;
 }
 
@@ -127,12 +122,13 @@ filter_table_entry behind_fill_entry() {
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.parameters.push_back("c");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_behind_filter;
 	if (!get_option("order3").empty()) {
 		e.calc = &calc_behind;
 	} else {
 		e.calc = NULL;
 	}
-	e.possible_args = &all_node_triples_ordered_no_repeat;
 	return e;
 }

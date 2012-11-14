@@ -9,18 +9,15 @@ using namespace std;
 class property_command : public command {
 public:
 	property_command(svs_state *state, Symbol *root)
-	: command(state, root), root(root), fltr(NULL), res(NULL), added(false)
+	: command(state, root), root(root), val(NULL), res(NULL)
 	{
 		si = state->get_svs()->get_soar_interface();
 		scn = state->get_scene();
 	}
 	
 	~property_command() {
-		if (fltr) {
-			delete fltr;
-		}
-		if (added) {
-			scn->remove_property(obj, prop);
+		if (val) {
+			delete val;
 		}
 	}
 	
@@ -29,19 +26,18 @@ public:
 	}
 	
 	bool update_sub() {
-		float val;
 		if (changed()) {
-			if (fltr) {
-				delete fltr;
+			if (val) {
+				delete val;
 			}
 			if (!parse()) {
 				return false;
 			}
-			res = fltr->get_result();
+			res = val->get_result();
 		}
 		
-		if (fltr) {
-			if (!fltr->update()) {
+		if (val) {
+			if (!val->update()) {
 				set_status("filter error");
 				return false;
 			}
@@ -49,21 +45,15 @@ public:
 				set_status("no results");
 				return false;
 			}
-			if (!get_filter_val(res->get_current(0), val)) {
+			float v;
+			if (!get_filter_val(res->get_current(0), v)) {
 				set_status("result not of type float");
 				return false;
 			}
-			if (!added) {
-				if (!scn->add_property(obj, prop, val)) {
-					set_status("failed to add property");
-					return false;
-				}
-				added = true;
-			} else {
-				if (!scn->set_property(obj, prop, val)) {
-					set_status("failed to set property");
-					return false;
-				}
+
+			if (!scn->set_property(id, prop, v)) {
+				set_status("failed to set property");
+				return false;
 			}
 			set_status("success");
 		}
@@ -73,14 +63,14 @@ public:
 	bool early() { return false; }
 	
 	bool parse() {
-		wme *objwme, *propwme, *filterwme;
+		wme *idwme, *propwme, *valwme;
 		
-		if (!si->find_child_wme(root, "object", objwme)) {
-			set_status("no object specified");
+		if (!si->find_child_wme(root, "id", idwme)) {
+			set_status("no object id specified");
 			return false;
 		}
-		if (!si->get_val(si->get_wme_val(objwme), obj)) {
-			set_status("object name must be a string");
+		if (!si->get_val(si->get_wme_val(idwme), id)) {
+			set_status("object id must be a string");
 			return false;
 		}
 		
@@ -93,12 +83,13 @@ public:
 			return false;
 		}
 		
-		if (!si->find_child_wme(root, "filter", filterwme)) {
-			set_status("no filter specified");
+		if (!si->find_child_wme(root, "value", valwme)) {
+			set_status("no value specified");
 			return false;
 		}
-		fltr = parse_filter_spec(si, si->get_wme_val(filterwme), scn);
-		if (!fltr) {
+		
+		val = parse_filter_spec(si, si->get_wme_val(valwme), scn);
+		if (!val) {
 			set_status("incorrect filter syntax");
 			return false;
 		}
@@ -109,11 +100,10 @@ private:
 	Symbol         *root;
 	scene          *scn;
 	soar_interface *si;
-	filter         *fltr;
+	filter         *val;
 	filter_result  *res;
-	string          obj;
+	string          id;
 	string          prop;
-	bool            added;
 };
 
 command *_make_property_command_(svs_state *state, Symbol *root) {

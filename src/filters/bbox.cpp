@@ -80,7 +80,6 @@ filter_table_entry bbox_fill_entry() {
 	e.parameters.push_back("node");
 	e.create = &make_bbox;
 	e.calc = NULL;
-	e.possible_args = &all_nodes;
 	return e;
 }
 
@@ -89,9 +88,10 @@ filter_table_entry bbox_int_fill_entry() {
 	e.name = "bbox_int";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = false;
+	e.allow_repeat = false;
 	e.create = &make_bbox_int;
 	e.calc = NULL;
-	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
 
@@ -100,8 +100,9 @@ filter_table_entry bbox_contains_fill_entry() {
 	e.name = "bbox_contains";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = false;
+	e.allow_repeat = false;
 	e.create = &make_bbox_contains;
 	e.calc = NULL;
-	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
