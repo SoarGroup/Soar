@@ -347,6 +347,46 @@ FOIL::FOIL(const relation &p, const relation &n, const relation_table &rels)
 	assert(p.arity() == n.arity());
 }
 
+/*
+ A variable is unbound if it only appears in negated literals. These should be
+ set to -1 to indicate they don't need to be bound when testing for
+ satisfaction.
+*/
+void fix_unbound_variables(clause &c) {
+	vector<int> status;
+	for (int i = 0; i < c.size(); ++i) {
+		const literal &l = c[i];
+		const tuple &args = l.get_args();
+		for (int j = 0; j < args.size(); ++j) {
+			int v = args[j];
+			if (v < 0) {
+				continue;
+			}
+			if (v >= status.size()) {
+				status.resize(v + 1, 0);
+			}
+			if (!l.negated()) {
+				status[v] = 1;
+			} else if (status[v] == 0) {
+				status[v] = -1;
+			}
+		}
+	}
+	for (int i = 0; i < status.size(); ++i) {
+		if (status[i] >= 0) {
+			continue;
+		}
+		for (int j = 0; j < c.size(); ++j) {
+			const tuple &args = c[j].get_args();
+			for (int k = 0; k < args.size(); ++k) {
+				if (args[k] == i) {
+					c[j].set_arg(k, -1);
+				}
+			}
+		}
+	}
+}
+
 void FOIL::prune_clause(clause &c) const {
 	while (true) {
 		int best_lit = -1;
@@ -355,6 +395,7 @@ void FOIL::prune_clause(clause &c) const {
 		for (int i = 0; i < c.size(); ++i) {
 			clause pruned = c;
 			pruned.erase(pruned.begin() + i);
+			fix_unbound_variables(pruned);
 			double r = clause_success_rate(pruned, NULL);
 			if (r > best_rate) {
 				best_lit = i;
@@ -365,6 +406,7 @@ void FOIL::prune_clause(clause &c) const {
 			return;
 		}
 		c.erase(c.begin() + best_lit);
+		fix_unbound_variables(c);
 		cout << "pruned:   " << c << " " << best_rate << endl;
 	}
 }
