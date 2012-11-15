@@ -162,7 +162,7 @@ void split_data(
 	
 	int train_end = 0, test_end = 0, i = 0;
 	for (int j = 0; j < use.size(); ++j) {
-		if (j == test[i]) {
+		if (i < test.size() && j == test[i]) {
 			Xtest.row(test_end) = X.row(use[j]);
 			Ytest.row(test_end) = Y.row(use[j]);
 			++test_end;
@@ -599,8 +599,8 @@ bool EM::unify_or_add_mode() {
 	int largest;
 	vector<int> seed_inds;
 	modes[0]->largest_const_subset(seed_inds);
-	if (seed_inds.size() < NEW_MODE_THRESH) {
-		largest = seed_inds.size();
+	largest = seed_inds.size();
+	if (largest < NEW_MODE_THRESH) {
 		map<int, set<int> >::const_iterator i;
 		for (i = noise_by_sig.begin(); i != noise_by_sig.end(); ++i) {
 			seed_inds.clear();

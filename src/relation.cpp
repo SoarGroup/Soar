@@ -596,7 +596,7 @@ void relation::foil6_rep(ostream &os) const {
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		const vector<int> &v = i->second.vec();
 		for (int j = 0; j < v.size(); ++j) {
-			os << j;
+			os << v[j];
 			if (!i->first.empty()) {
 				os << ",";
 				join(os, i->first, ",");
