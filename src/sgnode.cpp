@@ -9,8 +9,8 @@ using namespace std;
 typedef vector<sgnode*>::iterator childiter;
 typedef vector<sgnode*>::const_iterator const_childiter;
 
-sgnode::sgnode(std::string name, bool group)
-: name(name), parent(NULL), group(group), trans_dirty(true), shape_dirty(true),
+sgnode::sgnode(const string &name, const string &type, bool group)
+: name(name), type(type), parent(NULL), group(group), trans_dirty(true), shape_dirty(true),
   pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
 {}
 
@@ -179,7 +179,7 @@ group_node::~group_node() {
 }
 
 sgnode* group_node::clone_sub() const {
-	group_node *c = new group_node(get_name());
+	group_node *c = new group_node(get_name(), get_type());
 	const_childiter i;
 	for(i = children.begin(); i != children.end(); ++i) {
 		c->attach_child((**i).clone());
@@ -250,12 +250,12 @@ void group_node::set_transform_dirty_sub() {
 	}
 }
 
-convex_node::convex_node(const string &name, const ptlist &points)
-: geometry_node(name), points(points), dirty(true)
+convex_node::convex_node(const string &name, const string &type, const ptlist &points)
+: geometry_node(name, type), points(points), dirty(true)
 {}
 
 sgnode *convex_node::clone_sub() const {
-	return new convex_node(get_name(), points);
+	return new convex_node(get_name(), get_type(), points);
 }
 
 void convex_node::update_shape() {
@@ -298,8 +298,8 @@ void convex_node::get_shape_sgel(string &s) const {
 	s = ss.str();
 }
 
-ball_node::ball_node(const string &name, double radius)
-: geometry_node(name), radius(radius)
+ball_node::ball_node(const string &name, const string &type, double radius)
+: geometry_node(name, type), radius(radius)
 {}
 
 void ball_node::get_shape_sgel(string &s) const {
@@ -309,7 +309,7 @@ void ball_node::get_shape_sgel(string &s) const {
 }
 
 sgnode *ball_node::clone_sub() const {
-	return new ball_node(get_name(), radius);
+	return new ball_node(get_name(), get_type(), radius);
 }
 
 /*

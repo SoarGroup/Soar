@@ -22,20 +22,17 @@ public:
 		SHAPE_CHANGED
 	};
 	
-	sgnode(std::string name, bool group);
+	sgnode(const std::string &name, const std::string &type, bool group);
 	virtual ~sgnode();
 	
 	/* copied node doesn't inherit listeners */
 	virtual sgnode* clone() const;
 
-	const std::string &get_name() const {
-		return name;
-	}
+	const std::string &get_name() const { return name; }
+	void set_name(const std::string &n) { name = n; }
 	
-	void set_name(const std::string &n) {
-		name = n;
-	}
-
+	const std::string &get_type() const { return type; }
+	
 	group_node* get_parent() {
 		return parent;
 	}
@@ -78,6 +75,7 @@ private:
 	void send_update(change_type t, int added=-1);
 	
 	std::string name;
+	std::string type;
 	group_node* parent;
 	bool        group;
 	vec3        pos;
@@ -95,7 +93,7 @@ private:
 
 class group_node : public sgnode {
 public:
-	group_node(std::string name) : sgnode(name, true) {}
+	group_node(const std::string &name, const std::string &type) : sgnode(name, type, true) {}
 	~group_node();
 	
 	sgnode* get_child(int i);
@@ -121,14 +119,14 @@ private:
 
 class geometry_node : public sgnode {
 public:
-	geometry_node(const std::string &name) : sgnode(name, false) {}
+	geometry_node(const std::string &name, const std::string &type) : sgnode(name, type, false) {}
 	virtual ~geometry_node() {}
 	void walk(std::vector<sgnode*> &result) { result.push_back(this); }
 };
 
 class convex_node : public geometry_node {
 public:
-	convex_node(const std::string &name, const ptlist &points);
+	convex_node(const std::string &name, const std::string &type, const ptlist &points);
 	
 	const ptlist &get_local_points() const;
 	const ptlist &get_world_points() const;
@@ -148,7 +146,7 @@ private:
 
 class ball_node : public geometry_node {
 public:
-	ball_node(const std::string &name, double radius);
+	ball_node(const std::string &name, const std::string &type, double radius);
 	void get_shape_sgel(std::string &s) const;
 	
 	double get_radius() const {

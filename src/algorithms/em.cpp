@@ -940,7 +940,7 @@ bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) c
 */
 void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 	for (int i = 0; i < sig.size(); ++i) {
-		int type = sig[i].type;
+		string type = sig[i].type;
 		relation pos_obj(3), neg_obj(3);
 		tuple objs(2);
 		set<int>::const_iterator j;

@@ -105,7 +105,7 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 scene::scene(const string &name, drawer *d) 
 : name(name), draw(d)
 {
-	root = new group_node(root_name);
+	root = new group_node(root_name, "world");
 	root_id = node_counter++;
 	nodes[root_id].node = root;
 	root->listen(this);
@@ -272,17 +272,18 @@ int scene::parse_add(vector<string> &f, string &error) {
 	if (f.size() < 2) {
 		return f.size();
 	}
-	if (get_node(f[0])) {
+	string name = f[0], type = f[1];
+	if (get_node(name)) {
 		error = "node already exists";
 		return 0;
 	}
-	par = get_group(f[1]);
+	par = get_group(f[2]);
 	if (!par) {
 		error = "parent node does not exist";
 		return 1;
 	}
 	
-	int p = 2;
+	int p = 3;
 	while (p < f.size()) {
 		if (n != NULL && (f[p] == "v" || f[p] == "b")) {
 			error = "more than one geometry specified";
@@ -293,7 +294,7 @@ int scene::parse_add(vector<string> &f, string &error) {
 			if (!parse_verts(f, ++p, verts, error)) {
 				return p;
 			}
-			n = new convex_node(f[0], verts);
+			n = new convex_node(name, type, verts);
 		} else if (f[p] == "b") {
 			++p;
 			double radius;
@@ -301,7 +302,7 @@ int scene::parse_add(vector<string> &f, string &error) {
 				error = "invalid radius";
 				return p;
 			}
-			n = new ball_node(f[0], radius);
+			n = new ball_node(name, type, radius);
 			++p;
 		} else if (!parse_transforms(f, p, pos, rot, scale, error)) {
 			return p;
@@ -309,7 +310,7 @@ int scene::parse_add(vector<string> &f, string &error) {
 	}
 	
 	if (!n) {
-		n = new group_node(f[0]);
+		n = new group_node(name, type);
 	}
 	n->set_trans(pos, rot, scale);
 	par->attach_child(n);
@@ -603,23 +604,16 @@ bool scene::intersects(const sgnode *a, const sgnode *b) const {
 
 void scene::calc_relations(relation_table &rels) const {
 	get_filter_table().update_relations(this, 0, rels);
-}
-
-void scene::print_relations(ostream &os) const {
-	relation_table rels;
-	relation_table::const_iterator i;
-	get_filter_table().update_relations(this, 0, rels);
-	for (i = rels.begin(); i != rels.end(); ++i) {
-		set<tuple> args;
-		set<tuple>::iterator j;
-		i->second.drop_first(args);
-		for (j = args.begin(); j != args.end(); ++j) {
-			os << i->first << "(";
-			for (int k = 0; k < j->size() - 1; ++k) {
-				os << get_node((*j)[k])->get_name() << ",";
-			}
-			os << get_node(j->back())->get_name() << ")" << endl;
+	
+	std::map<std::string, int>::const_iterator i;
+	for (i = node_ids.begin(); i != node_ids.end(); ++i) {
+		int id = i->second;
+		string type = map_get(nodes, id).node->get_type();
+		if (!has(rels, type)) {
+			rels[type] = relation(2);
 		}
+		relation &type_rel = rels[type];
+		type_rel.add(0, id);
 	}
 }
 
@@ -630,12 +624,8 @@ void scene::update_sig() const {
 		scene_sig::entry e;
 		e.id = i->first;
 		e.name = i->second.node->get_name();
+		e.type = i->second.node->get_type();
 		get_property_names(i->first, e.props);
-		if (i == nodes.begin()) {
-			e.type = 0;
-		} else {
-			e.type = e.props.size(); // have to change this later
-		}
 		sig.add(e);
 	}
 }

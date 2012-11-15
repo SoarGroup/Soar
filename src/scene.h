@@ -52,7 +52,6 @@ public:
 	bool intersects(const sgnode *a, const sgnode *b) const;
 	
 	void calc_relations(relation_table &rels) const;
-	void print_relations(std::ostream &os) const;
 	
 	const scene_sig &get_signature() const;
 	

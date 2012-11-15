@@ -221,7 +221,7 @@ public:
 	}
 	
 	bool compute(const filter_params *params, bool adding, sgnode *&res, bool &changed) {
-		string id;
+		string id, type;
 		vec3 pos, rot, scale, singlept;
 		ptlist *pts = NULL;
 		double radius;
@@ -239,9 +239,14 @@ public:
 			return false;
 		}
 		
+		if (adding && !get_filter_param(NULL, params, "type", type)) {
+			set_status("no type");
+			return false;
+		}
+		
 		if (get_filter_param(NULL, params, "points", pts)) {
 			if (adding) {
-				res = new convex_node(id, *pts);
+				res = new convex_node(id, type, *pts);
 			} else {
 				convex_node *c = dynamic_cast<convex_node*>(res);
 				if (!c) {
@@ -257,7 +262,7 @@ public:
 			ptlist l;
 			l.push_back(singlept);
 			if (adding) {
-				res = new convex_node(id, l);
+				res = new convex_node(id, type, l);
 			} else {
 				convex_node *c = dynamic_cast<convex_node*>(res);
 				if (!c) {
@@ -271,7 +276,7 @@ public:
 			}
 		} else if (get_filter_param(this, params, "radius", radius)) {
 			if (adding) {
-				res = new ball_node(id, radius);
+				res = new ball_node(id, type, radius);
 			} else {
 				ball_node *b = dynamic_cast<ball_node*>(res);
 				if (!b) {
@@ -284,7 +289,7 @@ public:
 				}
 			}
 		} else if (adding) {
-			res = new group_node(id);
+			res = new group_node(id, type);
 		}
 		
 		if (adding) {

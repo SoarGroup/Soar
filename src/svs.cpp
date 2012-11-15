@@ -318,7 +318,9 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		return true;
 	} else if (args[first_arg] == "relations") {
-		scn->print_relations(os);
+		relation_table rels;
+		scn->calc_relations(rels);
+		os << rels;
 		return true;
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);

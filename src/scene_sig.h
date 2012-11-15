@@ -9,7 +9,7 @@ class scene_sig : public serializable {
 public:
 	class entry : public serializable {
 	public:
-		entry() : id(-1), type(-1), start(-1) {}
+		entry() : id(-1), type("obj"), start(-1) {}
 		
 		bool operator==(const entry &e) const {
 			/*
@@ -27,8 +27,8 @@ public:
 		void unserialize(std::istream &is);
 
 		int id;
-		int type;
 		int start;
+		std::string type;
 		std::string name;
 		std::vector<std::string> props;
 		
