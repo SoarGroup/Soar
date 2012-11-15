@@ -387,7 +387,7 @@ void fix_unbound_variables(clause &c) {
 	}
 }
 
-void FOIL::prune_clause(clause &c) const {
+double FOIL::prune_clause(clause &c) const {
 	while (true) {
 		int best_lit = -1;
 		double best_rate = clause_success_rate(c, NULL);
@@ -403,7 +403,7 @@ void FOIL::prune_clause(clause &c) const {
 			}
 		}
 		if (best_lit < 0) {
-			return;
+			return best_rate;
 		}
 		c.erase(c.begin() + best_lit);
 		fix_unbound_variables(c);
@@ -449,20 +449,31 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 			choose_clause(c, NULL);
 		}
 		
-		prune_clause(c);
-		relation covered_pos(init_vars);
-		if (!c.empty() && clause_success_rate(c, &covered_pos) > FOIL_MIN_SUCCESS_RATE) {
+		double success_rate = prune_clause(c);
+		// should test false positive rate here, rather than success rate
+		if (!c.empty() && success_rate > FOIL_MIN_SUCCESS_RATE) {
 			clauses.push_back(c);
 			if (residuals) {
 				residuals->push_back(res);
 			}
-			if (!covered_pos.empty()) {
-				dead = false;
-				pos_grow.slice(init_vars, covered_pos);
-				int old_size = pos.size();
-				pos.subtract(covered_pos);
-				assert(pos.size() + covered_pos.size() == old_size);
+			
+			// this repeats computation, make more efficient
+			vector<tuple> p;
+			pos.dump(p);
+			relation covered_pos(init_vars);
+			for (int i = 0; i < p.size(); ++i) {
+				var_domains d;
+				for (int j = 0; j < p[i].size(); ++j) {
+					d[j].insert(p[i][j]);
+				}
+				if (test_clause(c, rels, d)) {
+					covered_pos.add(p[i]);
+				}
 			}
+			int old_size = pos.size();
+			pos.subtract(covered_pos);
+			assert(pos.size() + covered_pos.size() == old_size);
+			dead = (pos.size() == old_size);
 		}
 		
 		if (dead) {
@@ -501,7 +512,7 @@ void FOIL::gain(const literal &l, double &g, double &maxg) const {
 		// pretty inefficent
 		relation pos_copy(pos_grow), neg_copy(neg_grow);
 		
-		relation sliced;
+		relation sliced(bound_inds.size());
 		r.slice(bound_inds, sliced);
 		pos_copy.subtract(bound_vars, sliced);
 		neg_copy.subtract(bound_vars, sliced);
@@ -565,7 +576,7 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 		const relation *rp;
 		
 		if (bound_inds.size() < r.arity() || !sequential(bound_inds)) {
-			relation *rn = new relation;
+			relation *rn = new relation(bound_inds.size());
 			r.slice(bound_inds, *rn);
 			needs_slice = true;
 			rp = const_cast<relation*>(rn);
@@ -592,33 +603,44 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	return true;
 }
 
-double FOIL::clause_success_rate(const clause &c, relation *pos_matched) const {
-	double correct = 0;
-	var_domains domains;
-	
-	for (int i = 0; i < pos_test.size(); ++i) {
-		domains.clear();
+int FOIL::false_positives(const clause &c) const {
+	int false_pos = 0;
+	var_domains doms;
+	for (int i = 0; i < neg_test.size(); ++i) {
+		doms.clear();
 		for (int j = 0; j < init_vars; ++j) {
-			domains[j].insert(pos_test[i][j]);
+			doms[j].insert(neg_test[i][j]);
 		}
-		if (test_clause(c, rels, domains)) {
-			++correct;
+		if (test_clause(c, rels, doms)) {
+			++false_pos;
+		}
+	}
+	return false_pos;
+}
+
+int FOIL::false_negatives(const clause &c, relation *pos_matched) const {
+	int false_neg = 0;
+	var_domains doms;
+	for (int i = 0; i < pos_test.size(); ++i) {
+		doms.clear();
+		for (int j = 0; j < init_vars; ++j) {
+			doms[j].insert(pos_test[i][j]);
+		}
+		if (!test_clause(c, rels, doms)) {
+			++false_neg;
+		} else {
 			if (pos_matched) {
 				pos_matched->add(pos_test[i]);
 			}
 		}
 	}
-	for (int i = 0; i < neg_test.size(); ++i) {
-		domains.clear();
-		for (int j = 0; j < init_vars; ++j) {
-			domains[j].insert(neg_test[i][j]);
-		}
-		if (!test_clause(c, rels, domains)) {
-			++correct;
-		}
-	}
-	
-	return correct / (pos_test.size() + neg_test.size());
+	return false_neg;
+}
+
+double FOIL::clause_success_rate(const clause &c, relation *pos_matched) const {
+	int correct = neg_test.size() - false_positives(c);
+	correct += pos_test.size() - false_negatives(c, pos_matched);
+	return correct / static_cast<double>(pos_test.size() + neg_test.size());
 }
 
 bool FOIL::tuple_satisfies_literal(const tuple &t, const literal &l) {
@@ -641,18 +663,23 @@ const relation &FOIL::get_rel(const string &name) const {
 }
 
 void FOIL::foil6_rep(ostream &os) const {
-	vec_set all_times, objs;
+	tuple zero(1, 0);
+	relation all_times_rel(1);
+	vec_set all_times, all_objs;
+	
+	pos.slice(zero, all_times_rel);
+	neg.slice(zero, all_times_rel);
+	all_times_rel.at_pos(0, all_times);
 	
 	relation_table::const_iterator i;
 	for (i = rels.begin(); i != rels.end(); ++i) {
-		i->second.at_pos(0, all_times);
 		for (int j = 1; j < i->second.arity(); ++j) {
-			i->second.at_pos(j, objs);
+			i->second.at_pos(j, all_objs);
 		}
 	}
 	
 	os << "O: ";
-	join(os, objs.vec(), ",") << "." << endl;
+	join(os, all_objs.vec(), ",") << "." << endl;
 	os << "T: ";
 	join(os, all_times.vec(), ",") << "." << endl << endl;
 	
@@ -666,7 +693,9 @@ void FOIL::foil6_rep(ostream &os) const {
 			os << "-";
 		}
 		os << endl;
-		i->second.foil6_rep(os);
+		relation r(i->second);
+		r.intersect(zero, all_times_rel);
+		r.foil6_rep(os);
 	}
 	
 	os << "positive(T";

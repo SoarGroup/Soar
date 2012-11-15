@@ -64,8 +64,10 @@ private:
 	double choose_literal(literal &l, int nvars);
 	bool choose_clause(clause &c, relation *neg_left);
 	bool tuple_satisfies_literal(const tuple &t, const literal &l);
+	int false_positives(const clause &c) const;
+	int false_negatives(const clause &c, relation *pos_matched) const;
 	double clause_success_rate(const clause &c, relation *pos_matched) const;
-	void prune_clause(clause &c) const;
+	double prune_clause(clause &c) const;
 
 private:
 	/*

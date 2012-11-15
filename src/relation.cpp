@@ -149,17 +149,14 @@ bool relation::has(const tuple &t) const {
 	}
 	return i->second.contains(t[0]);
 }
-	
+
 void relation::slice(const tuple &inds, relation &out) const {
-	assert(0 < inds.size() && inds.size() <= arty && inds[0] == 0);
-	out.arty = inds.size();
-	out.tuples.clear();
+	assert(0 < inds.size() && inds.size() <= arty && inds[0] == 0 && out.arity() == inds.size());
 	tuple tinds;
 	for (int i = 1; i < inds.size(); ++i) {
 		tinds.push_back(inds[i] - 1);
 	}
 	
-	out.sz = 0;
 	tuple t;
 	tuple_map::const_iterator i;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
