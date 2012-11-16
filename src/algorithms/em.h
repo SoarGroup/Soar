@@ -30,7 +30,7 @@ public:
 	void unserialize(std::istream &is);
 	
 private:
-	class em_data : public serializable {
+	class train_data : public serializable {
 	public:
 		rvec x, y;
 		int target;
@@ -40,12 +40,12 @@ private:
 		std::vector<double> mode_prob; // mode_prob[i] = probability that data point belongs to mode i
 		std::vector<bool> prob_stale;
 		
-		int map_mode;                  // MAP (Maximum A Posteriori) mode, should always be argmax(mode_prob[i])
+		int mode;                      // MAP (Maximum A Posteriori) mode, should always be argmax(mode_prob[i])
 		
 		// the following are always associated with the MAP mode
 		std::vector<int> obj_map;      // object variable in model -> object index in instance
 	
-		em_data() : target(-1), time(-1), sig_index(-1), map_mode(-1) {}
+		train_data() : target(-1), time(-1), sig_index(-1), mode(0) {}
 		void serialize(std::ostream &os) const;
 		void unserialize(std::istream &is);
 	};
@@ -77,7 +77,7 @@ private:
 	
 	class mode_info : public serializable {
 	public:
-		mode_info(bool noise, const std::vector<em_data*> &data, const std::vector<sig_info*> &sigs);
+		mode_info(bool noise, const std::vector<train_data*> &data, const std::vector<sig_info*> &sigs);
 		~mode_info();
 		
 		void serialize(std::ostream &os) const;
@@ -124,7 +124,7 @@ private:
 		
 	private:
 		bool stale, noise, new_fit;
-		const std::vector<em_data*> &data;
+		const std::vector<train_data*> &data;
 		const std::vector<sig_info*> &sigs;
 		
 		mat lin_coefs;
@@ -164,7 +164,7 @@ private:
 	bool cli_inspect_classifiers(std::ostream &os) const;
 
 	relation_table rel_tbl;
-	std::vector<em_data*> data;
+	std::vector<train_data*> data;
 	std::vector<sig_info*> sigs;
 	std::vector<mode_info*> modes;
 	int ndata, nmodes;

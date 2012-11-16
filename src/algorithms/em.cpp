@@ -404,28 +404,28 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 		sig_index = sigs.size() - 1;
 	}
 
-	em_data *dinfo = new em_data;
-	dinfo->x = x;
-	dinfo->y = y;
-	dinfo->target = target;
-	dinfo->sig_index = sig_index;
+	train_data *d = new train_data;
+	d->x = x;
+	d->y = y;
+	d->target = target;
+	d->sig_index = sig_index;
 	sigs[sig_index]->members.push_back(ndata);
 	
 	/*
 	 Remember that because the LWR object is initialized with alloc = false, it's
 	 just going to store pointers to these rvecs rather than duplicate them.
 	*/
-	sigs[sig_index]->lwr.learn(dinfo->x, dinfo->y);
+	sigs[sig_index]->lwr.learn(d->x, d->y);
 	
-	dinfo->map_mode = 0;
-	dinfo->mode_prob.resize(nmodes, 0.0);
-	dinfo->mode_prob[0] = PNOISE;
-	dinfo->prob_stale.resize(nmodes, true);
-	dinfo->prob_stale[0] = false;
-	data.push_back(dinfo);
+	d->mode = 0;
+	d->mode_prob.resize(nmodes, 0.0);
+	d->mode_prob[0] = PNOISE;
+	d->prob_stale.resize(nmodes, true);
+	d->prob_stale[0] = false;
+	data.push_back(d);
 	
 	modes[0]->add_example(ndata);
-	noise_by_sig[dinfo->sig_index].insert(ndata);
+	noise_by_sig[d->sig_index].insert(ndata);
 	extend_relations(rels, ndata);
 	++ndata;
 }
@@ -442,7 +442,7 @@ void EM::estep() {
 	 then we mark i as a point we have to recalculate the MAP mode for.
 	*/
 	for (int i = 0; i < ndata; ++i) {
-		em_data &d = *data[i];
+		train_data &d = *data[i];
 		bool stale = false;
 		vector<vector<int> > obj_maps(nmodes);
 		vector<bool> obj_map_changed(nmodes, false);
@@ -450,20 +450,20 @@ void EM::estep() {
 			if (!d.prob_stale[j] && !modes[j]->is_new_fit()) {
 				continue;
 			}
-			double prev = d.mode_prob[d.map_mode], now, error;
+			double prev = d.mode_prob[d.mode], now, error;
 			now = modes[j]->calc_prob(d.target, sigs[d.sig_index]->sig, d.x, d.y(0), obj_maps[j], error);
 			assert(obj_maps[j].size() == modes[j]->get_sig().size());
 			obj_map_changed[j] = true;
-			if ((d.map_mode == j && now < prev) || (d.map_mode != j && now > d.mode_prob[d.map_mode])) {
+			if ((d.mode == j && now < prev) || (d.mode != j && now > d.mode_prob[d.mode])) {
 				stale = true;
 			}
 			d.mode_prob[j] = now;
 			d.prob_stale[j] = false;
 		}
 		if (stale) {
-			int prev = d.map_mode, now = argmax(d.mode_prob);
+			int prev = d.mode, now = argmax(d.mode_prob);
 			if (now != prev) {
-				d.map_mode = now;
+				d.mode = now;
 				modes[prev]->del_example(i);
 				if (prev == 0) {
 					noise_by_sig[d.sig_index].erase(i);
@@ -474,13 +474,13 @@ void EM::estep() {
 					noise_by_sig[d.sig_index].insert(i);
 				}
 			}
-		} else if (obj_map_changed[d.map_mode]) {
+		} else if (obj_map_changed[d.mode]) {
 			/*
 			 If an existing mode is unified with another and in the process changed its
 			 signature, then the object maps for each of its members must be updated,
 			 even if they didn't change mode.
 			*/
-			d.obj_map = obj_maps[d.map_mode];
+			d.obj_map = obj_maps[d.mode];
 		}
 	}
 	
@@ -557,7 +557,7 @@ void EM::mode_info::init_fit(const vector<int> &data_inds, const mat &coefs, con
 	if (coefs.size() == 0) {
 		lin_coefs.resize(0, 0);
 	} else {
-		const em_data &d0 = *data[data_inds[0]];
+		const train_data &d0 = *data[data_inds[0]];
 		const scene_sig &dsig = sigs[d0.sig_index]->sig;
 		int target = d0.target;
 		
@@ -789,11 +789,11 @@ bool EM::remove_modes() {
 		remove_from_vector(removed, modes[j]->classifiers);
 	}
 	for (int j = 0; j < ndata; ++j) {
-		em_data &dinfo = *data[j];
-		if (dinfo.map_mode >= 0) {
-			dinfo.map_mode = index_map[dinfo.map_mode];
+		train_data &d = *data[j];
+		if (d.mode >= 0) {
+			d.mode = index_map[d.mode];
 		}
-		remove_from_vector(removed, dinfo.mode_prob);
+		remove_from_vector(removed, d.mode_prob);
 	}
 	return true;
 }
@@ -933,7 +933,7 @@ bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) c
 			}
 		}
 		t.add_row();
-		t << i << data[i]->map_mode << "|";
+		t << i << data[i]->mode << "|";
 		for (int j = 0; j < cols.size(); ++j) {
 			t << data[i]->x(cols[j]);
 		}
@@ -1065,23 +1065,23 @@ void EM::unserialize(istream &is) {
 	for (int i = 0; i < sigs.size(); ++i) {
 		sig_info &si = *sigs[i];
 		for (int j = 0; j < si.members.size(); ++j) {
-			const em_data &d = *data[si.members[j]];
+			const train_data &d = *data[si.members[j]];
 			si.lwr.learn(d.x, d.y);
 		}
 	}
 }
 
-void EM::em_data::serialize(ostream &os) const {
-	serializer(os) << target << sig_index << map_mode
+void EM::train_data::serialize(ostream &os) const {
+	serializer(os) << target << sig_index << mode
 	               << x << y << mode_prob << prob_stale << obj_map;
 }
 
-void EM::em_data::unserialize(istream &is) {
-	unserializer(is) >> target >> sig_index >> map_mode
+void EM::train_data::unserialize(istream &is) {
+	unserializer(is) >> target >> sig_index >> mode
 	                 >> x >> y >> mode_prob >> prob_stale >> obj_map;
 }
 
-EM::mode_info::mode_info(bool noise, const vector<em_data*> &data, const vector<sig_info*> &sigs) 
+EM::mode_info::mode_info(bool noise, const vector<train_data*> &data, const vector<sig_info*> &sigs) 
 : noise(noise), data(data), sigs(sigs), member_rel(2), classifier_stale(true), new_fit(true)
 {
 	if (noise) {
@@ -1214,7 +1214,7 @@ bool EM::mode_info::update_fits() {
 	set<int>::const_iterator i;
 	int j = 0;
 	for (i = members.begin(); i != members.end(); ++i) {
-		const em_data &d = *data[*i];
+		const train_data &d = *data[*i];
 		assert(d.obj_map.size() == sig.size());
 		const scene_sig &dsig = sigs[d.sig_index]->sig;
 		rvec x(xcols);
@@ -1255,7 +1255,7 @@ void EM::mode_info::predict(const scene_sig &dsig, const rvec &x, const vector<i
 }
 
 void EM::mode_info::add_example(int i) {
-	const em_data &d = *data[i];
+	const train_data &d = *data[i];
 	int sind = d.sig_index;
 	const scene_sig &dsig = sigs[sind]->sig;
 
@@ -1274,7 +1274,7 @@ void EM::mode_info::add_example(int i) {
 }
 
 void EM::mode_info::del_example(int i) {
-	em_data &d = *data[i];
+	train_data &d = *data[i];
 	int sind = d.sig_index;
 	const scene_sig &sig = sigs[sind]->sig;
 
@@ -1458,31 +1458,31 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 	int ncols = data[pi[0]]->x.size();
 	int sig = data[pi[0]]->sig_index;
 	
-	mat train_data(ntrain, ncols), test_data(ntest, ncols);
+	mat train(ntrain, ncols), test(ntest, ncols);
 	vector<int> train_classes, test_classes;
 	
 	for (int i = 0; i < pos_train; ++i) {
-		const em_data &d = *data[pi[i]];
+		const train_data &d = *data[pi[i]];
 		assert(d.sig_index == sig);
 		
-		train_data.row(i) = d.x;
+		train.row(i) = d.x;
 		train_classes.push_back(1);
 	}
 	
 	for (int i = 0; i < neg_train; ++i) {
-		const em_data &d = *data[ni[i]];
+		const train_data &d = *data[ni[i]];
 		assert(d.sig_index == sig);
 		
-		train_data.row(pos_train + i) = d.x;
+		train.row(pos_train + i) = d.x;
 		train_classes.push_back(0);
 	}
 	
 	LDA *lda = new LDA;
-	lda->learn(train_data, train_classes);
+	lda->learn(train, train_classes);
 	
 	int correct = 0;
 	for (int i = pos_train; i < pi.size(); ++i) {
-		const em_data &d = *data[pi[i]];
+		const train_data &d = *data[pi[i]];
 		assert(d.sig_index == sig);
 		
 		if (lda->classify(d.x) == 1) {
@@ -1490,7 +1490,7 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 		}
 	}
 	for (int i = neg_train; i < ni.size(); ++i) {
-		const em_data &d = *data[ni[i]];
+		const train_data &d = *data[ni[i]];
 		assert(d.sig_index == sig);
 		
 		if (lda->classify(d.x) == 0) {
