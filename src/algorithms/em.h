@@ -30,6 +30,21 @@ public:
 	void unserialize(std::istream &is);
 	
 private:
+
+	/*
+	 Holds information about how a training data point relates to each mode
+	*/
+	class data_mode_info : public serializable {
+	public:
+		double prob;                // probability that data point belongs to mode
+		bool prob_stale;            // does prob need to be update?
+		std::vector<int> obj_map;   // mapping from variable in mode sig -> object index in instance
+
+		data_mode_info() : prob(0), prob_stale(true) {}
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+	
 	class train_data : public serializable {
 	public:
 		rvec x, y;
@@ -37,14 +52,9 @@ private:
 		int time;
 		int sig_index;
 		
-		std::vector<double> mode_prob; // mode_prob[i] = probability that data point belongs to mode i
-		std::vector<bool> prob_stale;
+		int mode;
+		std::vector<data_mode_info> minfo;
 		
-		int mode;                      // MAP (Maximum A Posteriori) mode, should always be argmax(mode_prob[i])
-		
-		// the following are always associated with the MAP mode
-		std::vector<int> obj_map;      // object variable in model -> object index in instance
-	
 		train_data() : target(-1), time(-1), sig_index(-1), mode(0) {}
 		void serialize(std::ostream &os) const;
 		void unserialize(std::istream &is);

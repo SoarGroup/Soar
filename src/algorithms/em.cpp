@@ -418,10 +418,9 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 	sigs[sig_index]->lwr.learn(d->x, d->y);
 	
 	d->mode = 0;
-	d->mode_prob.resize(nmodes, 0.0);
-	d->mode_prob[0] = PNOISE;
-	d->prob_stale.resize(nmodes, true);
-	d->prob_stale[0] = false;
+	d->minfo.resize(nmodes);
+	d->minfo[0].prob = PNOISE;
+	d->minfo[0].prob_stale = false;
 	data.push_back(d);
 	
 	modes[0]->add_example(ndata);
@@ -444,43 +443,38 @@ void EM::estep() {
 	for (int i = 0; i < ndata; ++i) {
 		train_data &d = *data[i];
 		bool stale = false;
-		vector<vector<int> > obj_maps(nmodes);
-		vector<bool> obj_map_changed(nmodes, false);
 		for (int j = 1; j < nmodes; ++j) {
-			if (!d.prob_stale[j] && !modes[j]->is_new_fit()) {
+			data_mode_info &dm = d.minfo[j];
+			if (!dm.prob_stale && !modes[j]->is_new_fit()) {
 				continue;
 			}
-			double prev = d.mode_prob[d.mode], now, error;
-			now = modes[j]->calc_prob(d.target, sigs[d.sig_index]->sig, d.x, d.y(0), obj_maps[j], error);
-			assert(obj_maps[j].size() == modes[j]->get_sig().size());
-			obj_map_changed[j] = true;
-			if ((d.mode == j && now < prev) || (d.mode != j && now > d.mode_prob[d.mode])) {
+			double prev = d.minfo[d.mode].prob, now, error;
+			now = modes[j]->calc_prob(d.target, sigs[d.sig_index]->sig, d.x, d.y(0), dm.obj_map, error);
+			assert(dm.obj_map.size() == modes[j]->get_sig().size());
+			if ((d.mode == j && now < prev) || (d.mode != j && now > dm.prob)) {
 				stale = true;
 			}
-			d.mode_prob[j] = now;
-			d.prob_stale[j] = false;
+			dm.prob = now;
+			dm.prob_stale = false;
 		}
 		if (stale) {
-			int prev = d.mode, now = argmax(d.mode_prob);
-			if (now != prev) {
-				d.mode = now;
+			int prev = d.mode, best = d.mode;
+			for (int j = 0; j < nmodes; ++j) {
+				if (d.minfo[j].prob > d.minfo[prev].prob) {
+					best = j;
+				}
+			}
+			if (best != prev) {
+				d.mode = best;
 				modes[prev]->del_example(i);
 				if (prev == 0) {
 					noise_by_sig[d.sig_index].erase(i);
 				}
-				d.obj_map = obj_maps[now];
-				modes[now]->add_example(i);
-				if (now == 0) {
+				modes[best]->add_example(i);
+				if (best == 0) {
 					noise_by_sig[d.sig_index].insert(i);
 				}
 			}
-		} else if (obj_map_changed[d.mode]) {
-			/*
-			 If an existing mode is unified with another and in the process changed its
-			 signature, then the object maps for each of its members must be updated,
-			 even if they didn't change mode.
-			*/
-			d.obj_map = obj_maps[d.mode];
 		}
 	}
 	
@@ -671,7 +665,7 @@ bool EM::unify_or_add_mode() {
 	modes.push_back(new_mode);
 	++nmodes;
 	for (int j = 0; j < ndata; ++j) {
-		data[j]->mode_prob.push_back(0.0);
+		grow(data[j]->minfo);
 	}
 	for (int j = 0; j < nmodes; ++j) {
 		modes[j]->classifiers.resize(nmodes, NULL);
@@ -793,7 +787,7 @@ bool EM::remove_modes() {
 		if (d.mode >= 0) {
 			d.mode = index_map[d.mode];
 		}
-		remove_from_vector(removed, d.mode_prob);
+		remove_from_vector(removed, d.minfo);
 	}
 	return true;
 }
@@ -841,7 +835,9 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		table_printer t;
 		for (int i = 0; i < ndata; ++i) {
 			t.add_row() << i;
-			t.add(data[i]->mode_prob);
+			for (int j = 0; j < nmodes; ++j) {
+				t << data[i]->minfo[j].prob;
+			}
 		}
 		t.print(os);
 		return true;
@@ -954,9 +950,11 @@ void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 		tuple objs(2);
 		set<int>::const_iterator j;
 		for (j = members.begin(); j != members.end(); ++j) {
-			const scene_sig &dsig = sigs[data[*j]->sig_index]->sig;
-			int o = dsig[data[*j]->obj_map[i]].id;
-			objs[0] = data[*j]->target;
+			train_data &d = *data[*j];
+			const scene_sig &dsig = sigs[d.sig_index]->sig;
+			int o = dsig[d.minfo[d.mode].obj_map[i]].id;
+			
+			objs[0] = d.target;
 			objs[1] = o;
 			pos_obj.add(*j, objs);
 			for (int k = 0; k < dsig.size(); ++k) {
@@ -1072,13 +1070,11 @@ void EM::unserialize(istream &is) {
 }
 
 void EM::train_data::serialize(ostream &os) const {
-	serializer(os) << target << sig_index << mode
-	               << x << y << mode_prob << prob_stale << obj_map;
+	serializer(os) << target << sig_index << x << y << mode << minfo;
 }
 
 void EM::train_data::unserialize(istream &is) {
-	unserializer(is) >> target >> sig_index >> mode
-	                 >> x >> y >> mode_prob >> prob_stale >> obj_map;
+	unserializer(is) >> target >> sig_index >> x >> y >> mode >> minfo;
 }
 
 EM::mode_info::mode_info(bool noise, const vector<train_data*> &data, const vector<sig_info*> &sigs) 
@@ -1215,12 +1211,13 @@ bool EM::mode_info::update_fits() {
 	int j = 0;
 	for (i = members.begin(); i != members.end(); ++i) {
 		const train_data &d = *data[*i];
-		assert(d.obj_map.size() == sig.size());
+		const vector<int> &obj_map = d.minfo[d.mode].obj_map;
+		assert(obj_map.size() == sig.size());
 		const scene_sig &dsig = sigs[d.sig_index]->sig;
 		rvec x(xcols);
 		int s = 0;
-		for (int k = 0; k < d.obj_map.size(); ++k) {
-			const scene_sig::entry &e = dsig[d.obj_map[k]];
+		for (int k = 0; k < obj_map.size(); ++k) {
+			const scene_sig::entry &e = dsig[obj_map[k]];
 			int n = e.props.size();
 			x.segment(s, n) = d.x.segment(e.start, n);
 			s += n;
@@ -1266,7 +1263,7 @@ void EM::mode_info::add_example(int i) {
 		sorted_ys.insert(make_pair(d.y(0), i));
 	} else {
 		rvec y;
-		predict(dsig, d.x, d.obj_map, y);
+		predict(dsig, d.x, d.minfo[d.mode].obj_map, y);
 		if ((y - d.y).norm() > MODEL_ERROR_THRESH) {
 			stale = true;
 		}
@@ -1671,3 +1668,12 @@ void EM::sig_info::serialize(ostream &os) const {
 void EM::sig_info::unserialize(istream &is) {
 	unserializer(is) >> sig >> members;
 }
+
+void EM::data_mode_info::serialize(ostream &os) const {
+	serializer(os) << prob << prob_stale << obj_map;
+}
+
+void EM::data_mode_info::unserialize(istream &is) {
+	unserializer(is) >> prob >> prob_stale >> obj_map;
+}
+
