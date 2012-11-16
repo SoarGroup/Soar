@@ -139,8 +139,6 @@ private:
 		std::set<std::pair<double, int> > sorted_ys;
 	};
 	
-	typedef std::map<std::pair<int, int>, std::vector<int> > obj_map_table;
-	
 	void estep();
 	bool mstep();
 	void extend_relations(const relation_table &add, int time);
@@ -181,13 +179,6 @@ private:
 	// noise binned by signature
 	std::map<int, std::set<int> > noise_by_sig;
 		
-	/*
-	 Table to store mappings from placeholders to objects for a
-	 particular linear model and data point, as calculated in
-	 calc_prob.
-	*/
-	obj_map_table obj_maps;
-	
 	mutable timer_set timers;
 };
 

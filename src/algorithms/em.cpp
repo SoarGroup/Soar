@@ -444,12 +444,16 @@ void EM::estep() {
 	for (int i = 0; i < ndata; ++i) {
 		em_data &d = *data[i];
 		bool stale = false;
+		vector<vector<int> > obj_maps(nmodes);
+		vector<bool> obj_map_changed(nmodes, false);
 		for (int j = 1; j < nmodes; ++j) {
 			if (!d.prob_stale[j] && !modes[j]->is_new_fit()) {
 				continue;
 			}
 			double prev = d.mode_prob[d.map_mode], now, error;
-			now = modes[j]->calc_prob(d.target, sigs[d.sig_index]->sig, d.x, d.y(0), obj_maps[make_pair(j, i)], error);
+			now = modes[j]->calc_prob(d.target, sigs[d.sig_index]->sig, d.x, d.y(0), obj_maps[j], error);
+			assert(obj_maps[j].size() == modes[j]->get_sig().size());
+			obj_map_changed[j] = true;
 			if ((d.map_mode == j && now < prev) || (d.map_mode != j && now > d.mode_prob[d.map_mode])) {
 				stale = true;
 			}
@@ -464,15 +468,19 @@ void EM::estep() {
 				if (prev == 0) {
 					noise_by_sig[d.sig_index].erase(i);
 				}
-				obj_map_table::const_iterator j = obj_maps.find(make_pair(now, i));
-				if (j != obj_maps.end()) {
-					d.obj_map = j->second;
-				}
+				d.obj_map = obj_maps[now];
 				modes[now]->add_example(i);
 				if (now == 0) {
 					noise_by_sig[d.sig_index].insert(i);
 				}
 			}
+		} else if (obj_map_changed[d.map_mode]) {
+			/*
+			 If an existing mode is unified with another and in the process changed its
+			 signature, then the object maps for each of its members must be updated,
+			 even if they didn't change mode.
+			*/
+			d.obj_map = obj_maps[d.map_mode];
 		}
 	}
 	
@@ -545,40 +553,43 @@ bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds, mat &coefs, rve
  Fit lin_coefs, lin_inter, and sig to the data in data_inds.
 */
 void EM::mode_info::init_fit(const vector<int> &data_inds, const mat &coefs, const rvec &inter) {
-	int ndata = data_inds.size();
-	const em_data &d0 = *data[data_inds[0]];
-	const scene_sig &dsig = sigs[d0.sig_index]->sig;
-	int target = d0.target;
-	
-	// find relevant objects (with nonzero coefficients)
-	vector<int> relevant_objs;
-	relevant_objs.push_back(target);
-	for (int i = 0; i < dsig.size(); ++i) {
-		if (i == target) {
-			continue;
-		}
-		int start = dsig[i].start;
-		int end = start + dsig[i].props.size();
-		for (int j = start; j < end; ++j) {
-			if (!coefs.row(j).isConstant(0.0)) {
-				relevant_objs.push_back(i);
-				break;
+	lin_inter = inter;
+	if (coefs.size() == 0) {
+		lin_coefs.resize(0, 0);
+	} else {
+		const em_data &d0 = *data[data_inds[0]];
+		const scene_sig &dsig = sigs[d0.sig_index]->sig;
+		int target = d0.target;
+		
+		// find relevant objects (with nonzero coefficients)
+		vector<int> relevant_objs;
+		relevant_objs.push_back(target);
+		for (int i = 0; i < dsig.size(); ++i) {
+			if (i == target) {
+				continue;
+			}
+			int start = dsig[i].start;
+			int end = start + dsig[i].props.size();
+			for (int j = start; j < end; ++j) {
+				if (!coefs.row(j).isConstant(0.0)) {
+					relevant_objs.push_back(i);
+					break;
+				}
 			}
 		}
+		
+		int end = 0;
+		lin_coefs.resize(coefs.rows(), 1);
+		sig.clear();
+		for (int i = 0; i < relevant_objs.size(); ++i) {
+			const scene_sig::entry &e = dsig[relevant_objs[i]];
+			sig.add(e);
+			int start = e.start, n = e.props.size();
+			lin_coefs.block(end, 0, n, 1) = coefs.block(start, 0, n, 1);
+			end += n;
+		}
+		lin_coefs.conservativeResize(end, 1);
 	}
-	
-	int end = 0;
-	lin_coefs.resize(coefs.rows(), 1);
-	sig.clear();
-	for (int i = 0; i < relevant_objs.size(); ++i) {
-		const scene_sig::entry &e = dsig[relevant_objs[i]];
-		sig.add(e);
-		int start = e.start, n = e.props.size();
-		lin_coefs.block(end, 0, n, 1) = coefs.block(start, 0, n, 1);
-		end += n;
-	}
-	lin_coefs.conservativeResize(end, 1);
-	lin_inter = inter;
 	new_fit = true;
 }
 
@@ -596,6 +607,7 @@ bool EM::unify_or_add_mode() {
 	rvec inter;
 	modes[0]->largest_const_subset(seed_inds);
 	largest = seed_inds.size();
+	inter = data[seed_inds[0]]->y; // constant model
 	if (largest < NEW_MODE_THRESH) {
 		map<int, set<int> >::const_iterator i;
 		for (i = noise_by_sig.begin(); i != noise_by_sig.end(); ++i) {
@@ -942,13 +954,13 @@ void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 		tuple objs(2);
 		set<int>::const_iterator j;
 		for (j = members.begin(); j != members.end(); ++j) {
-			const scene_sig &sig = sigs[data[*j]->sig_index]->sig;
-			int o = sig[data[*j]->obj_map[i]].id;
+			const scene_sig &dsig = sigs[data[*j]->sig_index]->sig;
+			int o = dsig[data[*j]->obj_map[i]].id;
 			objs[0] = data[*j]->target;
 			objs[1] = o;
 			pos_obj.add(*j, objs);
-			for (int k = 0; k < sig.size(); ++k) {
-				if (sig[k].type == type && k != objs[0] && k != o) {
+			for (int k = 0; k < dsig.size(); ++k) {
+				if (dsig[k].type == type && k != objs[0] && k != o) {
 					objs[1] = k;
 					neg_obj.add(*j, objs);
 				}
