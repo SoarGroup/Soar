@@ -92,7 +92,7 @@ private:
 		void get_noise_sigs(std::vector<int> &sigs);
 		double calc_prob(int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 		bool update_fits();
-		void init_fit(const std::vector<int> &data_inds);
+		void init_fit(const std::vector<int> &data_inds, const mat &coefs, const rvec &inter);
 		bool uniform_sig(int sig, int target) const;
 		void learn_obj_clauses(const relation_table &rels);
 
@@ -148,8 +148,8 @@ private:
 
 	bool unify_or_add_mode();
 	bool remove_modes();
-	bool find_new_mode_inds(int sig_ind, std::vector<int> &mode_inds);
-	int find_linear_subset(mat &X, mat &Y, std::vector<int> &subset) const;
+	bool find_new_mode_inds(int sig_ind, std::vector<int> &mode_inds, mat &coefs, rvec &inter);
+	int find_linear_subset(mat &X, mat &Y, std::vector<int> &subset, mat &coefs, rvec &inter) const;
 	void find_linear_subset_em(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
 	void find_linear_subset_block(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
 	

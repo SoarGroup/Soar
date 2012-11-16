@@ -274,10 +274,12 @@ void erase_inds(vector<int> &v, const vector<int> &inds) {
 	v.resize(j);
 }
 
-int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset) const {
+int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec &inter) const {
 	function_timer t(timers.get_or_add("find_seed"));
-	
+
 	const double TEST_RATIO = 0.5;
+	
+	int orig_xcols = X.cols();
 	int largest = 0;
 	
 	// preprocess the data as much as possible
@@ -288,7 +290,7 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset) const {
 	int ndata = X.rows(), xcols = X.cols();
 	mat Xtrain(ndata, xcols), Xtest(ndata, xcols);
 	mat Ytrain(ndata, 1), Ytest(ndata, 1);
-	mat coefs(xcols, 1);
+	mat mincoefs(xcols, 1);
 
 	vector<int> ungrouped(ndata), work;
 	for (int i = 0; i < ndata; ++i) {
@@ -307,10 +309,10 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset) const {
 		int ntest = subset2.size() * TEST_RATIO;
 		int ntrain = subset2.size() - ntest;
 		split_data(X, Y, subset2, ntest, Xtrain, Xtest, Ytrain, Ytest);
-		if (!linreg_clean(FORWARD, Xtrain.topRows(ntrain), Ytrain.topRows(ntrain), coefs)) {
+		if (!linreg_clean(FORWARD, Xtrain.topRows(ntrain), Ytrain.topRows(ntrain), mincoefs)) {
 			continue;
 		}
-		cvec test_error = (Ytest.topRows(ntest) - (Xtest.topRows(ntest) * coefs)).col(0).array().abs();
+		cvec test_error = (Ytest.topRows(ntest) - (Xtest.topRows(ntest) * mincoefs)).col(0).array().abs();
 		if (test_error.norm() / Xtest.rows() > MODEL_ERROR_THRESH) {
 			/*
 			 There isn't a clear linear relationship between the points, so I can't
@@ -326,6 +328,12 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset) const {
 			}
 			largest = subset2.size();
 			if (largest >= NEW_MODE_THRESH) {
+				coefs.resize(orig_xcols, 1);
+				coefs.setConstant(0.0);
+				for (int i = 0; i < used_cols.size(); ++i) {
+					coefs.row(used_cols[i]) = mincoefs.row(i);
+				}
+				inter = mincoefs.row(used_cols.size());
 				return largest;
 			}
 		}
@@ -504,7 +512,7 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
  expensive. So I'm assuming all unique data points, which can be enforced as
  data comes in.
 */
-bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds) {
+bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds, mat &coefs, rvec &inter) {
 	function_timer t(timers.get_or_add("new_inds"));
 	
 	const set<int> &n = map_get(noise_by_sig, sig_ind);
@@ -522,7 +530,7 @@ bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds) {
 		Y.row(i) = data[noise_inds[i]]->y;
 	}
 	
-	int largest_linear = find_linear_subset(X, Y, subset);
+	int largest_linear = find_linear_subset(X, Y, subset, coefs, inter);
 	if (largest_linear >= NEW_MODE_THRESH) {
 		mode_inds.clear();
 		for (int i = 0; i < subset.size(); ++i) {
@@ -534,28 +542,13 @@ bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds) {
 }
 
 /*
- Fit lin_coefs, lin_inter, and sig to the data in data_inds. This is not as
- efficient as it can be, since I've usually already ran a linear regression on
- this set of data before calling this function. In the future, just use the
- results from those previous regressions here.
+ Fit lin_coefs, lin_inter, and sig to the data in data_inds.
 */
-void EM::mode_info::init_fit(const vector<int> &data_inds) {
+void EM::mode_info::init_fit(const vector<int> &data_inds, const mat &coefs, const rvec &inter) {
 	int ndata = data_inds.size();
 	const em_data &d0 = *data[data_inds[0]];
 	const scene_sig &dsig = sigs[d0.sig_index]->sig;
 	int target = d0.target;
-	
-	mat X(ndata, d0.x.size()), Y(ndata, 1);
-
-	for (int i = 0; i < ndata; ++i) {
-		const em_data &d = *data[data_inds[i]];
-		assert(d.sig_index == d0.sig_index);
-		X.row(i) = d.x;
-		Y.row(i) = d.y;
-	}
-	
-	mat coefs;
-	linreg_d(REGRESSION_ALG, X, Y, cvec(), coefs, lin_inter);
 	
 	// find relevant objects (with nonzero coefficients)
 	vector<int> relevant_objs;
@@ -585,6 +578,7 @@ void EM::mode_info::init_fit(const vector<int> &data_inds) {
 		end += n;
 	}
 	lin_coefs.conservativeResize(end, 1);
+	lin_inter = inter;
 	new_fit = true;
 }
 
@@ -598,13 +592,15 @@ bool EM::unify_or_add_mode() {
 	
 	int largest;
 	vector<int> seed_inds;
+	mat coefs;
+	rvec inter;
 	modes[0]->largest_const_subset(seed_inds);
 	largest = seed_inds.size();
 	if (largest < NEW_MODE_THRESH) {
 		map<int, set<int> >::const_iterator i;
 		for (i = noise_by_sig.begin(); i != noise_by_sig.end(); ++i) {
 			seed_inds.clear();
-			find_new_mode_inds(i->first, seed_inds);
+			find_new_mode_inds(i->first, seed_inds, coefs, inter);
 			if (largest < seed_inds.size()) {
 				largest = seed_inds.size();
 			}
@@ -628,13 +624,14 @@ bool EM::unify_or_add_mode() {
 	
 	int seed_sig = data[seed_inds[0]]->sig_index;
 	int seed_target = data[seed_inds[0]]->target;
-	mat X, Y;
 
 	/*
 	 Try to add noise data to each current model and refit. If the
 	 resulting model is just as accurate as the original, then just
 	 add the noise to that model instead of creating a new one.
 	*/
+	mat X, Y, ucoefs;
+	rvec uinter;
 	for (int j = 1; j < nmodes; ++j) {
 		mode_info &minfo = *modes[j];
 
@@ -646,19 +643,19 @@ bool EM::unify_or_add_mode() {
 		extend(combined, minfo.get_members());
 		extend(combined, seed_inds);
 		fill_xy(combined, X, Y);
-		int unified_size = find_linear_subset(X, Y, subset);
+		int unified_size = find_linear_subset(X, Y, subset, ucoefs, uinter);
 		if (unified_size >= .9 * combined.size()) {
 			vector<int> u(combined.size());
 			for (int k = 0; k < subset.size(); ++k) {
 				u[k] = combined[subset[k]];
 			}
-			minfo.init_fit(u);
+			minfo.init_fit(u, ucoefs, uinter);
 			return true;
 		}
 	}
 	
 	mode_info *new_mode = new mode_info(false, data, sigs);
-	new_mode->init_fit(seed_inds);
+	new_mode->init_fit(seed_inds, coefs, inter);
 	modes.push_back(new_mode);
 	++nmodes;
 	for (int j = 0; j < ndata; ++j) {
@@ -1191,6 +1188,11 @@ bool EM::mode_info::update_fits() {
 	if (!stale) {
 		return false;
 	}
+	if (members.empty()) {
+		lin_coefs.setConstant(0);
+		lin_inter.setConstant(0);
+		return false;
+	}
 	int xcols = 0;
 	for (int i = 0; i < sig.size(); ++i) {
 		xcols += sig[i].props.size();
@@ -1279,7 +1281,7 @@ void EM::mode_info::largest_const_subset(vector<int> &subset) {
 	subset.clear();
 	for (i = sorted_ys.begin(); i != sorted_ys.end(); ++i) {
 		if (i->first == last) {
-			subset.push_back(i->second);
+			s.push_back(i->second);
 		} else {
 			if (s.size() > subset.size()) {
 				subset = s;
