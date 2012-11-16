@@ -126,11 +126,21 @@ vec_set &vec_set::operator=(const set<int> &s) {
 	return *this;
 }
 
-relation::relation() : sz(0), arty(0) {}
-relation::relation(int n) : sz(0), arty(n) {}
-relation::relation(const relation &r) : sz(r.sz), arty(r.arty), tuples(r.tuples) {}
+relation::relation()
+: sz(0), arty(0), end_iter(*this, false)
+{}
+
+relation::relation(int n) 
+: sz(0), arty(n), end_iter(*this, false)
+{}
+
+relation::relation(const relation &r)
+: sz(r.sz), arty(r.arty), tuples(r.tuples), end_iter(*this, false)
+{}
 	
-relation::relation(int n, const vector<tuple> &ts) : sz(ts.size()), arty(n) {
+relation::relation(int n, const vector<tuple> &ts)
+: sz(ts.size()), arty(n), end_iter(*this, false)
+{
 	assert(arty > 0);
 	vector<tuple>::const_iterator i;
 	for (i = ts.begin(); i != ts.end(); ++i) {
@@ -528,36 +538,23 @@ void relation::update_size() {
 	}
 }
 
-void relation::sample(int k, relation &s) const {
-	assert(k <= sz && s.arty == arty);
-	
-	if (k == sz) {
-		s = *this;
-		return;
+void relation::random_split(int k, relation *r1, relation *r2) const {
+	vector<bool> choose(sz, false);
+	for (int i = 0; i < k; ++i) {
+		choose[i] = true;
 	}
-	vector<tuple> reservoir(k);
-	tuple_map::const_iterator i;
-	int n = 0;
-	tuple t(arty);
-	for (i = tuples.begin(); i != tuples.end(); ++i) {
-		copy(i->first.begin(), i->first.end(), t.begin() + 1);
-		const vector<int> &v = i->second.vec();
-		for (int j = 0; j < v.size(); ++j) {
-			t[0] = v[j];
-			if (n < k) {
-				reservoir[n] = t;
+	random_shuffle(choose.begin(), choose.end());
+	int i = 0;
+	tuple_map::const_iterator j;
+	for (j = tuples.begin(); j != tuples.end(); ++j) {
+		const vector<int> &v = j->second.vec();
+		for (int k = 0; k < v.size(); ++k) {
+			if (choose[i++]) {
+				if (r1) { r1->add(v[k], j->first); }
 			} else {
-				int r = rand() % (n + 1);
-				if (r < k) {
-					reservoir[r] = t;
-				}
+				if (r2) { r2->add(v[k], j->first); }
 			}
-			++n;
 		}
-	}
-	sort(reservoir.begin(), reservoir.end());
-	for (int ii = 0; ii < k; ++ii) {
-		s.add(reservoir[ii]);
 	}
 }
 

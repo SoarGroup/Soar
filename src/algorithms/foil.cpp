@@ -257,6 +257,26 @@ bool test_clause(const clause &c, const relation_table &rels, var_domains &domai
 	return true;
 }
 
+int test_clause_n(const clause &c, bool pos, const relation &tests, const relation_table &rels, relation *correct) {
+	int ncorrect = 0;
+	var_domains doms;
+	relation::const_iterator i;
+	for (i = tests.begin(); i != tests.end(); ++i) {
+		doms.clear();
+		const tuple &t = *i;
+		for (int j = 0; j < t.size(); ++j) {
+			doms[j].insert(t[j]);
+		}
+		if (test_clause(c, rels, doms) == pos) {
+			++ncorrect;
+			if (correct) {
+				correct->add(t);
+			}
+		}
+	}
+	return ncorrect;
+}
+
 int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains &domains) {
 	for (int i = 0; i < c.size(); ++i) {
 		var_domains d = domains;
@@ -273,16 +293,12 @@ int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains
 	return -1;
 }
 
-void split_training(double ratio, const relation &all, relation &grow, vector<tuple> &test) {
+void split_training(double ratio, const relation &all, relation &grow, relation &test) {
 	assert(0 <= ratio && ratio < 1);
 	grow.reset(all.arity());
-	test.clear();
+	test.reset(all.arity());
 	int ngrow = max(all.size() * ratio, 1.0);
-	all.sample(ngrow, grow);
-	
-	relation test_rel(all.arity());
-	all.subtract(grow, test_rel);
-	test_rel.dump(test);
+	all.random_split(ngrow, &grow, &test);
 }
 
 void literal::serialize(std::ostream &os) const {
@@ -458,16 +474,15 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 			}
 			
 			// this repeats computation, make more efficient
-			vector<tuple> p;
-			pos.dump(p);
 			relation covered_pos(init_vars);
-			for (int i = 0; i < p.size(); ++i) {
+			relation::const_iterator i;
+			for (i = pos.begin(); i != pos.end(); ++i) {
 				var_domains d;
-				for (int j = 0; j < p[i].size(); ++j) {
-					d[j].insert(p[i][j]);
+				for (int j = 0; j < i->size(); ++j) {
+					d[j].insert(i->at(j));
 				}
 				if (test_clause(c, rels, d)) {
-					covered_pos.add(p[i]);
+					covered_pos.add(*i);
 				}
 			}
 			int old_size = pos.size();
@@ -603,43 +618,10 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	return true;
 }
 
-int FOIL::false_positives(const clause &c) const {
-	int false_pos = 0;
-	var_domains doms;
-	for (int i = 0; i < neg_test.size(); ++i) {
-		doms.clear();
-		for (int j = 0; j < init_vars; ++j) {
-			doms[j].insert(neg_test[i][j]);
-		}
-		if (test_clause(c, rels, doms)) {
-			++false_pos;
-		}
-	}
-	return false_pos;
-}
-
-int FOIL::false_negatives(const clause &c, relation *pos_matched) const {
-	int false_neg = 0;
-	var_domains doms;
-	for (int i = 0; i < pos_test.size(); ++i) {
-		doms.clear();
-		for (int j = 0; j < init_vars; ++j) {
-			doms[j].insert(pos_test[i][j]);
-		}
-		if (!test_clause(c, rels, doms)) {
-			++false_neg;
-		} else {
-			if (pos_matched) {
-				pos_matched->add(pos_test[i]);
-			}
-		}
-	}
-	return false_neg;
-}
 
 double FOIL::clause_success_rate(const clause &c, relation *pos_matched) const {
-	int correct = neg_test.size() - false_positives(c);
-	correct += pos_test.size() - false_negatives(c, pos_matched);
+	int correct = test_clause_n(c, true, pos_test, rels, pos_matched);
+	correct += test_clause_n(c, false, neg_test, rels, NULL);
 	return correct / static_cast<double>(pos_test.size() + neg_test.size());
 }
 

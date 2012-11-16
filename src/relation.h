@@ -84,21 +84,71 @@ private:
 
 class relation : public serializable {
 public:
-	/*
-	class const_iterator {
+	typedef std::map<tuple, vec_set > tuple_map;
+
+	class iter {
 	public:
-		const_iterator &operator=(const const_iterator &i);
-		const tuple &operator*() const;
+		iter() : j(0) {}
+		iter(const iter &rhs) : i(rhs.i), end(rhs.end), j(rhs.j), t(rhs.t) {}
+
+		iter &operator++() {
+			if (i != end) {
+				if (++j >= i->second.size()) {
+					j = 0;
+					if (++i != end) {
+						copy(i->first.begin(), i->first.end(), t.begin() + 1);
+						t[0] = i->second.vec()[j];
+					}
+				} else {
+					t[0] = i->second.vec()[j];
+				}
+			}
+			return *this;
+		}
 		
+		iter operator++(int) {
+			iter c(*this);
+			++(*this);
+			return c;
+		}
+		
+		iter &operator=(const iter &rhs)	{
+			i = rhs.i;
+			end = rhs.end;
+			j = rhs.j;
+			t = rhs.t;
+			return *this;
+		}
+		
+		const tuple &operator*() const  { return t; }
+		const tuple *operator->() const { return &t; }
+		bool operator==(const iter &rhs) const { return i == rhs.i && j == rhs.j; }
+		bool operator!=(const iter &rhs) const { return i != rhs.i || j != rhs.j; }
+
 	private:
-		const_iterator(const relation &r);
+		iter(const relation &r, bool begin)
+		: end(r.tuples.end()), j(0), t(r.arity())
+		{
+			if (begin) {
+				i = r.tuples.begin();
+				if (i != end) {
+					copy(i->first.begin(), i->first.end(), t.begin() + 1);
+					t[0] = i->second.vec()[j];
+				}
+			} else {
+				i = end;
+			}
+		}
 		
-		const relation &r;
-		tuple t;
 		tuple_map::const_iterator i;
-		std::set<int>::const_iterator j;
+		tuple_map::const_iterator end;
+		int j;
+		tuple t;
+		
+		friend class relation;
 	};
-	*/
+	
+	typedef iter const_iterator;
 	
 	relation();
 	relation(int n);
@@ -128,7 +178,7 @@ public:
 	void at_pos(int n, vec_set &elems) const;
 	void drop_first(std::set<tuple> &out) const;
 	void match(const tuple &pattern, relation &r) const;
-	void sample(int k, relation &s) const;
+	void random_split(int k, relation *r1, relation *r2) const;
 	void subtract(const relation &r, relation &out) const;
 	
 	void serialize(std::ostream &os) const;
@@ -138,7 +188,10 @@ public:
 	int size() const { return sz; }
 	int arity() const { return arty; }
 	bool empty() const { return sz == 0; }
-
+	
+	const_iterator begin() const { return iter(*this, true); }
+	const const_iterator &end() const   { return end_iter; }
+	
 	template<typename C>
 	void dump(C &out) const {
 		std::insert_iterator<C> ins(out, out.end());
@@ -153,14 +206,14 @@ public:
 			}
 		}
 	}
-	
+
 private:
 	void update_size();
 	
-	typedef std::map<tuple, vec_set > tuple_map;
-
 	int sz, arty;
 	tuple_map tuples;
+	
+	iter end_iter;
 	
 	friend std::ostream &operator<<(std::ostream &os, const relation &r);
 };
