@@ -67,7 +67,7 @@ void sample(int k, int low, int high, std::vector<int> &output) {
 
 ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
 	assert(nbins > 0);
-	float min = vals[0], max = vals[0], binsize, hashes_per;
+	double min = vals[0], max = vals[0], binsize, hashes_per;
 	int i, b, maxcount = 0;
 	vector<int> counts(nbins, 0);
 	for (i = 1; i < vals.size(); ++i) {
@@ -185,8 +185,12 @@ void table_printer::set_precision(int p) {
 	ss.precision(p);
 }
 
-void table_printer::set_scientific() {
-	ss << scientific;
+void table_printer::set_scientific(bool s) {
+	if (s) {
+		ss.setf(ios_base::scientific, ios_base::floatfield);
+	} else {
+		ss.setf(ios_base::fixed, ios_base::floatfield);
+	}
 }
 
 void table_printer::print(ostream &os) const {

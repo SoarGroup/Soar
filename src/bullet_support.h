@@ -40,12 +40,12 @@ btConvexHullShape *ptlist_to_hullshape(const ptlist &pts);
  Calculate distance between closest points on convex hulls. Distance
  will be negative if hulls intersect and represents penetration depth.
 */
-float hull_distance(btConvexHullShape *ahull, btConvexHullShape *bhull);
+double hull_distance(btConvexHullShape *ahull, btConvexHullShape *bhull);
 
 /*
  Convenience method that does hull conversion internally
 */
-float hull_distance(const ptlist &a, const ptlist &b);
+double hull_distance(const ptlist &a, const ptlist &b);
 
 std::ostream &operator<<(std::ostream &os, const btVector3 &v);
 

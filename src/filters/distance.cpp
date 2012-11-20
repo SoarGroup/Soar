@@ -5,14 +5,14 @@
 
 using namespace std;
 
-class distance_filter : public typed_map_filter<float> {
+class distance_filter : public typed_map_filter<double> {
 public:
 	distance_filter(Symbol *root, soar_interface *si, filter_input *input)
-	: typed_map_filter<float>(root, si, input)
+	: typed_map_filter<double>(root, si, input)
 	{}
 
-	bool compute(const filter_params *params, bool adding, float &res, bool &changed) {
-		float newres;
+	bool compute(const filter_params *params, bool adding, double &res, bool &changed) {
+		double newres;
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, params, "a", a) ||

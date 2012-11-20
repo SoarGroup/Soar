@@ -37,13 +37,13 @@ void bullet_debug_drawer::draw3dText(const btVector3 &p, const char *text) {
 }
 
 void bullet_debug_drawer::outputBoxVerts(const btVector3 &min, const btVector3 &max) {
-	float pt[3];
+	double pt[3];
 	for (int i = 0; i < 8; i++) {
 		pt[0] = min.x() + ((max.x() - min.x()) * (i & 1));
 		pt[1] = min.y() + ((max.y() - min.y()) * ((i >> 1) & 1));
 		pt[2] = min.z() + ((max.z() - min.z()) * ((i >> 2) & 1));
 		fifo << " ";
-		copy(pt, pt + 3, ostream_iterator<float>(fifo, " "));
+		copy(pt, pt + 3, ostream_iterator<double>(fifo, " "));
 	}
 }
 
@@ -60,16 +60,16 @@ void bullet_debug_drawer::reset() {
 	counter = 0;
 }
 
-float hull_distance(const ptlist &a, const ptlist &b) {
+double hull_distance(const ptlist &a, const ptlist &b) {
 	btConvexHullShape *ahull = ptlist_to_hullshape(a);
 	btConvexHullShape *bhull = ptlist_to_hullshape(b);
-	float d = hull_distance(ahull, bhull);
+	double d = hull_distance(ahull, bhull);
 	delete ahull;
 	delete bhull;
 	return d;
 }
 
-float hull_distance(btConvexHullShape *ahull, btConvexHullShape *bhull) {
+double hull_distance(btConvexHullShape *ahull, btConvexHullShape *bhull) {
 	btVoronoiSimplexSolver ssolver;
 	btGjkEpaPenetrationDepthSolver pdsolver;
 	btPointCollector out;

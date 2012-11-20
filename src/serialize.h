@@ -12,6 +12,8 @@
 #ifndef SERIALIZE_H
 #define SERIALIZE_H
 
+#define PRECISION 12
+
 #include <iostream>
 #include <vector>
 #include <set>
@@ -75,7 +77,13 @@ inline void unserialize(bool &b, std::istream &is) {
 }
 
 inline void serialize(double v, std::ostream &os) {
+	std::ios_base::fmtflags flags = os.flags();
+	os << std::scientific;
+	int p = os.precision();
+	os.precision(PRECISION);
 	os << v << std::endl;
+	os.precision(p);
+	os.flags(flags);
 }
 
 inline void unserialize(double &v, std::istream &is) {

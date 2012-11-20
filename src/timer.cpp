@@ -16,7 +16,7 @@ void timer_set::report(ostream &os) const {
 	
 	table_printer p;
 	p.set_precision(prec);
-	p.set_scientific();
+	p.set_scientific(true);
 	p.add_row() << "name" << "count" << "total" << "mean" << "stdev" << "min" << "max" << "last";
 	
 	int ttl_count = 0;

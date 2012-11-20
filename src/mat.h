@@ -226,7 +226,7 @@ void pick_rows(mat_view X, const std::vector<int> &rows);
   .<-- d -->.        returns a negative d
  --------------> u
 */
-float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u);
+double dir_separation(const ptlist &a, const ptlist &b, const vec3 &u);
 
 class bbox {
 public:

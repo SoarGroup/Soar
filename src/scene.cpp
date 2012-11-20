@@ -460,7 +460,7 @@ void scene::get_properties(rvec &vals) const {
 	}
 }
 
-bool scene::get_property(const string &name, const string &prop, float &val) const {
+bool scene::get_property(const string &name, const string &prop, double &val) const {
 	property_map::const_iterator j;
 	char type; int d;
 
@@ -476,7 +476,7 @@ bool scene::get_property(const string &name, const string &prop, float &val) con
 	return true;
 }
 
-bool scene::set_property(const string &obj, const string &prop, float val) {
+bool scene::set_property(const string &obj, const string &prop, double val) {
 	char type; int d;
 	node_info *info = get_node_info(name);
 	assert(info);

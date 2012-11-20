@@ -261,18 +261,18 @@ void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
 }
 
 vec3 project(const vec3 &v, const vec3 &u) {
-	float m = u.squaredNorm();
+	double m = u.squaredNorm();
 	if (m == 0.) {
 		return vec3::Zero();
 	}
 	return u * (v.dot(u) / m);
 }
 
-float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
+double dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
 	int counter = 0;
 	ptlist::const_iterator i;
 	vec3 p;
-	float x, min = numeric_limits<float>::max(), max = -numeric_limits<float>::max();
+	double x, min = numeric_limits<double>::max(), max = -numeric_limits<double>::max();
 	for (i = a.begin(); i != a.end(); ++i) {
 		p = project(*i, u);
 		x = p[0] / u[0];

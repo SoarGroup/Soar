@@ -46,7 +46,7 @@ public:
 				set_status("no results");
 				return false;
 			}
-			float v;
+			double v;
 			if (!get_filter_val(res->get_current(0), v)) {
 				set_status("result not of type float");
 				return false;

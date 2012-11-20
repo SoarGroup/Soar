@@ -900,6 +900,8 @@ bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) c
 
 	vector<int> cols;
 	table_printer t;
+	t.set_scientific(true);
+	t.set_precision(10);
 	t.add_row() << "N" << "CLS" << "|" << "DATA";
 	for (int i = start; i <= end; ++i) {
 		if (i == start || (i > start && data[i]->sig_index != data[i-1]->sig_index)) {

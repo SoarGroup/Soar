@@ -62,7 +62,6 @@ public:
 	bool         get_name(Symbol *sym, std::string &n);
 	bool         get_val(Symbol *sym, std::string &v);
 	bool         get_val(Symbol *sym, long &v);
-	bool         get_val(Symbol *sym, float &v);
 	bool         get_val(Symbol *sym, double &v);
 	
 	template<class T>
@@ -156,18 +155,6 @@ inline bool soar_interface::get_val(Symbol *sym, std::string &v) {
 }
 
 inline bool soar_interface::get_val(Symbol *sym, long &v) {
-	if (is_int(sym)) {
-		v = sym->ic.value;
-		return true;
-	}
-	return false;
-}
-
-inline bool soar_interface::get_val(Symbol *sym, float &v) {
-	if (is_float(sym)) {
-		v = sym->fc.value;
-		return true;
-	}
 	if (is_int(sym)) {
 		v = sym->ic.value;
 		return true;

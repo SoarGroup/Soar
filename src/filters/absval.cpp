@@ -5,14 +5,14 @@
 
 using namespace std;
 
-class absval_filter : public typed_map_filter<float> {
+class absval_filter : public typed_map_filter<double> {
 public:
 	absval_filter(Symbol *root, soar_interface *si, filter_input *input) 
-	: typed_map_filter<float>(root, si, input)
+	: typed_map_filter<double>(root, si, input)
 	{}
 
-	bool compute(const filter_params *params, bool adding, float &res, bool &changed) {
-		float newres;
+	bool compute(const filter_params *params, bool adding, double &res, bool &changed) {
+		double newres;
 		if (params->empty()) {
 			return false;
 		}

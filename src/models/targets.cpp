@@ -30,15 +30,15 @@ public:
 		
 		vec3 p0(x[2], x[3], 0);
 		if (cur.intersects(box)) {
-			float bestdist = -1.0;
+			double bestdist = -1.0;
 			vec3 bestpos;
 			for (int i = 0; i < 2; ++i) {
 				vec3 p1(p0);
 				vec3 p2(p0);
 				p1[i] = y[i] - CUBESIZE;
 				p2[i] = y[i] + CUBESIZE;
-				float d1 = (p1 - p2).norm();
-				float d2 = (p2 - p2).norm();
+				double d1 = (p1 - p2).norm();
+				double d2 = (p2 - p2).norm();
 				
 				if (bestdist < 0 || d1 < bestdist) {
 					bestpos = p1;

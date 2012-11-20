@@ -57,7 +57,7 @@ public:
 	objective() : negated(false) {}
 	virtual ~objective() {}
 	
-	float evaluate(scene &scn) const {
+	double evaluate(scene &scn) const {
 		if (negated) {
 			return -1 * eval(scn);
 		}
@@ -68,7 +68,7 @@ public:
 		negated = n;
 	}
 
-	virtual float eval(scene &scn) const = 0;
+	virtual double eval(scene &scn) const = 0;
 	
 private:
 	bool negated;
@@ -80,7 +80,7 @@ public:
 	euclidean_obj(const string &obj1, const string &obj2)
 	: obj1(obj1), obj2(obj2) {}
 	
-	float eval(scene &scn) const {
+	double eval(scene &scn) const {
 		sgnode *n1, *n2;
 		::vec3 c1, c2;
 		
@@ -107,7 +107,7 @@ public:
 		assert(0 <= axis && axis < 3);
 	}
 	
-	float eval(scene &scn) const {
+	double eval(scene &scn) const {
 		sgnode *n1, *n2;
 		::vec3 c1, c2;
 		
@@ -135,7 +135,7 @@ public:
 		assert(0 <= axis && axis < 3);
 	}
 	
-	float eval(scene &scn) const {
+	double eval(scene &scn) const {
 		sgnode *n1, *n2;
 		::vec3 c1, c2;
 		
@@ -147,7 +147,7 @@ public:
 		
 		c1 = n1->get_centroid();
 		c2 = n2->get_centroid();
-		float v = abs(c1[axis] - c2[axis]);
+		double v = abs(c1[axis] - c2[axis]);
 		return v;
 	}
 	
@@ -165,7 +165,7 @@ public:
 	behind_obj(const string &a, const string &b, const string &c)
 	: a(a), b(b), c(c) {}
 	
-	float eval(scene &scn) const {
+	double eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
 		
 		if (!(na = scn.get_node(a)) ||
@@ -183,7 +183,7 @@ public:
 		vec3 u = cb - ca;
 		u.normalize();
 		
-		float d = dir_separation(pa, pc, u);
+		double d = dir_separation(pa, pc, u);
 		if (d < 0.) {
 			return 0.;
 		}
@@ -204,7 +204,7 @@ public:
 	collinear_obj(const string &a, const string &b, const string &c)
 	: a(a), b(b), c(c) {}
 	
-	float eval(scene &scn) const {
+	double eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
 		
 		if (!(na = scn.get_node(a)) ||
@@ -220,7 +220,7 @@ public:
 		nc->get_bounds().get_points(pc);
 		
 		copy(pa.begin(), pa.end(), back_inserter(pc));
-		float d = hull_distance(pb, pc);
+		double d = hull_distance(pb, pc);
 		if (d < 0) {
 			d = 0.;
 		}
@@ -229,7 +229,7 @@ public:
 		vec3 cb = nb->get_centroid();
 		vec3 cc = calc_centroid(pc);
 		
-		float d = cc.line_dist(ca, cb);
+		double d = cc.line_dist(ca, cb);
 		if (d < 0.001) {
 			return 0.;
 		}
@@ -246,7 +246,7 @@ public:
 	align_facing_objective(const string &a, const string &b, const string &c)
 	: a(a), b(b), c(c) {}
 	
-	float eval(scene &scn) const {
+	double eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
 		
 		if (!(na = scn.get_node(a)) ||
@@ -267,7 +267,7 @@ public:
 		 directions. This will be minimized at -1 if the angle
 		 is 0, and maximized at 1 when the angle is 180.
 		*/
-		float negcos = -(facing.dot(desired));
+		double negcos = -(facing.dot(desired));
 		//cout << "NEG COS ANGLE " << negcos << endl;
 		return negcos;
 	}
@@ -615,7 +615,7 @@ bool nelder_mead_constrained(const rvec &min, const rvec &max, traj_eval &ev, rv
 
 class tree_search {
 public:
-	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, const output_spec *outspec, float thresh)
+	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, const output_spec *outspec, double thresh)
 	: outspec(outspec), thresh(thresh)
 	{
 		ci.scn = scn->clone();
@@ -683,7 +683,7 @@ public:
 		num_nodes++;
 		total_depth += newnode->traj.size();
 		avg_depth = total_depth / num_nodes;
-		avg_bf = ((float) num_nodes) / nonleafs.size();
+		avg_bf = ((double) num_nodes) / nonleafs.size();
 		
 		if (lexical_compare(newnode->value, bestnode->value) < 0) {
 			bestnode = newnode;
@@ -827,7 +827,7 @@ private:
 	common_info ci;
 	const output_spec *outspec;
 	int num_nodes;
-	float total_depth, avg_depth, avg_bf, thresh;
+	double total_depth, avg_depth, avg_bf, thresh;
 	node *bestnode;
 };
 
@@ -1295,7 +1295,7 @@ private:
 		bool first = true;
 		for (i = children.begin(); i != children.end(); ++i) {
 			string name;
-			float val;
+			double val;
 			if (!si->get_val(si->get_wme_attr(*i), name)) {
 				continue;
 			}

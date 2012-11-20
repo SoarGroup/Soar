@@ -317,13 +317,28 @@ public:
 	table_printer &add_row();
 	table_printer &skip(int n);
 	void set_precision(int p);
-	void set_scientific();
+	void set_scientific(bool s);
 	void print(std::ostream &os) const;
 	
 	template<typename T>
 	table_printer &operator<<(const T &x) {
 		ss.str("");
 		ss << x;
+		rows.back().push_back(ss.str());
+		return *this;
+	}
+	
+	/*
+	 To save space, print integers when possible
+	*/
+	table_printer &operator<<(double x) {
+		ss.str("");
+		long long integral = x;
+		if (integral == x) {
+			ss << integral;
+		} else {
+			ss << x;
+		}
 		rows.back().push_back(ss.str());
 		return *this;
 	}

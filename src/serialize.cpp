@@ -5,7 +5,19 @@ using namespace std;
 
 void serialize(const_mat_view m, ostream &os) {
 	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
-	os << m << endl << "end_mat" << endl;
+	ios_base::fmtflags flags = os.flags();
+	os << scientific;
+	int p = os.precision();
+	os.precision(PRECISION);
+	for (int i = 0; i < m.rows(); ++i) {
+		for (int j = 0; j < m.cols(); ++j) {
+			os << m(i, j) << " ";
+		}
+		os << endl;
+	}
+	os << "end_mat" << endl;
+	os.precision(p);
+	os.flags(flags);
 }
 
 void unserialize(mat &m, istream &is) {

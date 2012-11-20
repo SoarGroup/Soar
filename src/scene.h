@@ -40,8 +40,8 @@ public:
 	void clear();
 
 	void get_properties(rvec &vals) const;
-	bool get_property(const std::string &obj, const std::string &prop, float &val) const;
-	bool set_property(const std::string &obj, const std::string &prop, float val);
+	bool get_property(const std::string &obj, const std::string &prop, double &val) const;
+	bool set_property(const std::string &obj, const std::string &prop, double val);
 	bool set_properties(const rvec &vals);
 	void remove_property(const std::string &obj, const std::string &prop);
 	
@@ -56,7 +56,7 @@ public:
 	const scene_sig &get_signature() const;
 	
 private:
-	typedef std::map<std::string, float> property_map;
+	typedef std::map<std::string, double> property_map;
 	
 	struct node_info {
 		sgnode *node;

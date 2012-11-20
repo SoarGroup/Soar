@@ -182,14 +182,14 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 	if (!si->is_identifier(root)) {
 		string strval;
 		long intval;
-		float floatval;
+		double floatval;
 		
 		if (si->get_val(root, strval)) {
 			return new const_filter<string>(strval);
 		} else if (si->get_val(root, intval)) {
 			return new const_filter<int>(intval);
 		} else if (si->get_val(root, floatval)) {
-			return new const_filter<float>(floatval);
+			return new const_filter<double>(floatval);
 		}
 		return NULL;
 	}
