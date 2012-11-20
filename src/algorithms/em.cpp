@@ -1057,9 +1057,12 @@ void EM::unserialize(istream &is) {
 	unserializer(is) >> ndata >> nmodes >> data >> sigs >> rel_tbl;
 	assert(data.size() == ndata);
 	
+	delete modes[0];
+	modes.clear();
 	for (int i = 0; i < nmodes; ++i) {
 		EM::mode_info *m = new mode_info(i == 0, data, sigs);
 		m->unserialize(is);
+		modes.push_back(m);
 	}
 	
 	for (int i = 0; i < sigs.size(); ++i) {
