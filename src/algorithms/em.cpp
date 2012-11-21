@@ -240,13 +240,14 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 			Xc.col(i) = X.col(i).array() * w.array();
 		}
 		Yc.col(0) = Y.col(0).array() * w.array();
-		if (!linreg_clean(OLS, Xc, Yc, coefs)) {
+		if (!linreg_clean(FORWARD, Xc, Yc, coefs)) {
 			assert(false);
 		}
 		
 		old_error = error;
 		error = (Y - (X * coefs)).col(0).array().abs();
-		if (iter > 0 && (error - old_error).norm() / ndata < SAME_THRESH) {
+		double diff = (error - old_error).norm() / ndata;
+		if (iter > 0 && diff < SAME_THRESH) {
 			break;
 		}
 		kernel2(error, w, -3.0);
@@ -510,40 +511,6 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
 }
 
 /*
- I used to collapse identical data points here, but that seems to be too
- expensive. So I'm assuming all unique data points, which can be enforced as
- data comes in.
-*/
-bool EM::find_new_mode_inds(int sig_ind, vector<int> &mode_inds, mat &coefs, rvec &inter) {
-	function_timer t(timers.get_or_add("new_inds"));
-	
-	const set<int> &n = map_get(noise_by_sig, sig_ind);
-	if (n.size() < check_after) {
-		return false;
-	}
-	vector<int> noise_inds(n.begin(), n.end());
-	int ndata = noise_inds.size();
-	int xdim = data[noise_inds[0]]->x.size();
-	mat X(ndata, xdim), Y(ndata, 1);
-	vector<int> subset;
-
-	for (int i = 0; i < ndata; ++i) {
-		X.row(i) = data[noise_inds[i]]->x;
-		Y.row(i) = data[noise_inds[i]]->y;
-	}
-	
-	int largest_linear = find_linear_subset(X, Y, subset, coefs, inter);
-	if (largest_linear >= NEW_MODE_THRESH) {
-		mode_inds.clear();
-		for (int i = 0; i < subset.size(); ++i) {
-			mode_inds.push_back(noise_inds[subset[i]]);
-		}
-		return true;
-	}
-	return false;
-}
-
-/*
  Fit lin_coefs, lin_inter, and sig to the data in data_inds.
 */
 void EM::mode_info::init_fit(const vector<int> &data_inds, const mat &coefs, const rvec &inter) {
@@ -595,29 +562,42 @@ bool EM::unify_or_add_mode() {
 		return false;
 	}
 	
-	int largest;
-	vector<int> seed_inds;
+	vector<int> largest;
 	mat coefs;
 	rvec inter;
-	modes[0]->largest_const_subset(seed_inds);
-	largest = seed_inds.size();
-	inter = data[seed_inds[0]]->y; // constant model
-	if (largest < NEW_MODE_THRESH) {
+	modes[0]->largest_const_subset(largest);
+	int potential = largest.size();
+	inter = data[largest[0]]->y; // constant model
+	if (largest.size() < NEW_MODE_THRESH) {
+		mat X, Y;
 		map<int, set<int> >::const_iterator i;
 		for (i = noise_by_sig.begin(); i != noise_by_sig.end(); ++i) {
-			seed_inds.clear();
-			find_new_mode_inds(i->first, seed_inds, coefs, inter);
-			if (largest < seed_inds.size()) {
-				largest = seed_inds.size();
+			if (i->second.size() < check_after) {
+				if (i->second.size() > potential) {
+					potential = i->second.size();
+				}
+				continue;
 			}
-			if (largest >= NEW_MODE_THRESH) {
-				break;
+			vector<int> indvec(i->second.begin(), i->second.end()), subset;
+			fill_xy(indvec, X, Y);
+			find_linear_subset(X, Y, subset, coefs, inter);
+			if (subset.size() > potential) {
+				potential = subset.size();
+			}
+			if (subset.size() > largest.size()) {
+				largest.clear();
+				for (int i = 0; i < subset.size(); ++i) {
+					largest.push_back(indvec[subset[i]]);
+				}
+				if (largest.size() >= NEW_MODE_THRESH) {
+					break;
+				}
 			}
 		}
 	}
 	
-	if (largest < NEW_MODE_THRESH) {
-		check_after += (NEW_MODE_THRESH - largest);
+	if (largest.size() < NEW_MODE_THRESH) {
+		check_after += (NEW_MODE_THRESH - potential);
 		return false;
 	}
 	
@@ -628,8 +608,8 @@ bool EM::unify_or_add_mode() {
 	*/
 	check_after = NEW_MODE_THRESH;
 	
-	int seed_sig = data[seed_inds[0]]->sig_index;
-	int seed_target = data[seed_inds[0]]->target;
+	int seed_sig = data[largest[0]]->sig_index;
+	int seed_target = data[largest[0]]->target;
 
 	/*
 	 Try to add noise data to each current model and refit. If the
@@ -647,7 +627,7 @@ bool EM::unify_or_add_mode() {
 
 		vector<int> combined, subset;
 		extend(combined, minfo.get_members());
-		extend(combined, seed_inds);
+		extend(combined, largest);
 		fill_xy(combined, X, Y);
 		int unified_size = find_linear_subset(X, Y, subset, ucoefs, uinter);
 		if (unified_size >= .9 * combined.size()) {
@@ -661,7 +641,7 @@ bool EM::unify_or_add_mode() {
 	}
 	
 	mode_info *new_mode = new mode_info(false, data, sigs);
-	new_mode->init_fit(seed_inds, coefs, inter);
+	new_mode->init_fit(largest, coefs, inter);
 	modes.push_back(new_mode);
 	++nmodes;
 	for (int j = 0; j < ndata; ++j) {
@@ -679,40 +659,43 @@ bool EM::unify_or_add_mode() {
 	return true;
 }
 
-bool EM::map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, vector<int> &mapping) const {
-	const mode_info &minfo = *modes[mode];
-	const scene_sig &msig = minfo.get_sig();
-	vector<bool> used(sig.size(), false);
+/*
+ Upon return, mapping[i] will contain the position in dsig that holds the
+ object to be mapped to the i'th variable in the model signature. Again, the
+ mapping vector will hold indexes, not ids.
+*/
+bool EM::mode_info::map_objs(int target, const scene_sig &dsig, const relation_table &rels, vector<int> &mapping) const {
+	vector<bool> used(dsig.size(), false);
 	used[target] = true;
-	mapping.resize(msig.empty() ? 1 : msig.size(), -1);
+	mapping.resize(sig.empty() ? 1 : sig.size(), -1);
 	
 	// target always maps to target
 	mapping[0] = target;
 	
-	var_domains domains;  
+	var_domains domains;
 	
 	// 0 = time, 1 = target, 2 = object we're searching for
 	domains[0].insert(0);
-	domains[1].insert(sig[target].id);
+	domains[1].insert(dsig[target].id);
 	
-	for (int i = 1; i < msig.size(); ++i) {
+	for (int i = 1; i < sig.size(); ++i) {
 		set<int> &d = domains[2];
 		d.clear();
-		for (int j = 0; j < sig.size(); ++j) {
-			if (!used[j] && sig[j].type == msig[i].type) {
-				d.insert(j);
+		for (int j = 0; j < dsig.size(); ++j) {
+			if (!used[j] && dsig[j].type == sig[i].type) {
+				d.insert(dsig[j].id);
 			}
 		}
 		if (d.empty()) {
 			return false;
-		} else if (d.size() == 1 || minfo.obj_clauses[i].empty()) {
-			mapping[i] = sig.find_id(*d.begin());
+		} else if (d.size() == 1 || obj_clauses[i].empty()) {
+			mapping[i] = dsig.find_id(*d.begin());
 		} else {
-			if (test_clause_vec(minfo.obj_clauses[i], rels, domains) < 0) {
+			if (test_clause_vec(obj_clauses[i], rels, domains) < 0) {
 				return false;
 			}
-			assert(domains[2].size() == 1);
-			mapping[i] = sig.find_id(*domains[2].begin());
+			assert(d.size() == 1);
+			mapping[i] = dsig.find_id(*d.begin());
 		}
 		used[mapping[i]] = true;
 	}
@@ -889,9 +872,6 @@ bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) c
 			objs.push_back(args[i]);
 		}		
 	}
-	cout << "start = " << start << " end = " << end << endl;
-	cout << "objs" << endl;
-	join(cout, objs, " ");
 
 	if (start < 0 || end < start || end >= ndata) {
 		os << "invalid data range" << endl;
@@ -946,7 +926,8 @@ bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) c
  are assigned to modes.
 */
 void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
-	for (int i = 0; i < sig.size(); ++i) {
+	obj_clauses.resize(sig.size());
+	for (int i = 1; i < sig.size(); ++i) {   // 0 is always target, no need to map
 		string type = sig[i].type;
 		relation pos_obj(3), neg_obj(3);
 		tuple objs(2);
@@ -968,6 +949,7 @@ void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 		}
 		
 		FOIL foil(pos_obj, neg_obj, rels);
+		obj_clauses[i].clear();
 		if (!foil.learn(obj_clauses[i], NULL)) {
 			// respond to this situation appropriately
 		}
@@ -975,8 +957,23 @@ void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 }
 
 bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &os) {
-	if (first >= args.size()) {
-		// some kind of default action
+	if (first >= args.size() || args[first] == "model") {
+		if (noise) {
+			os << "noise" << endl;
+		} else {
+			os << "coefficients" << endl;
+			table_printer t;
+			int ci = 0;
+			for (int i = 0; i < sig.size(); ++i) {
+				for (int j = 0; j < sig[i].props.size(); ++j) {
+					t.add_row() << ci << sig[i].type << sig[i].props[j] << lin_coefs(ci++, 0);
+				}
+			}
+			t.print(os);
+			os << endl << "intercept " << lin_inter << endl;
+		}
+		os << endl << "subqueries: clauses members" << endl;
+		return true;
 	} else if (args[first] == "clauses") {
 		table_printer t;
 		for (int j = 0; j < obj_clauses.size(); ++j) {
@@ -994,24 +991,8 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 		}
 		t.print(os);
 		return true;
-	} else if (args[first] == "signature") {
-		for (int i = 0; i < sig.size(); ++i) {
-			os << sig[i].type << " ";
-		}
-		os << endl;
-		return true;
 	} else if (args[first] == "members") {
 		join(os, members, ' ') << endl;
-		return true;
-	} else if (args[first] == "model") {
-		if (noise) {
-			os << "noise" << endl;
-		} else {
-			os << "coefficients" << endl;
-			os << lin_coefs << endl;
-			os << "intercept" << endl;
-			os << lin_inter;
-		}
 		return true;
 	}
 	return false;
@@ -1522,8 +1503,8 @@ void EM::update_pair(int i, int j) {
 		modes[i]->classifiers[j] = new classifier;
 	}
 	classifier &c = *(modes[i]->classifiers[j]);
-	const relation &mem_i = modes[i]->member_rel;
-	const relation &mem_j = modes[j]->member_rel;
+	const relation &mem_i = modes[i]->get_member_rel();
+	const relation &mem_j = modes[j]->get_member_rel();
 	
 	c.clauses.clear();
 	clear_and_dealloc(c.residuals);
@@ -1574,12 +1555,15 @@ void EM::update_pair(int i, int j) {
 */
 int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
 	assert(modes[i]->classifiers[j]);
+	int matched_clause = -1;
 	const classifier &c = *(modes[i]->classifiers[j]);
 
-	var_domains domains;
-	domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
-	domains[1].insert(sig[target].id);
-	int matched_clause = test_clause_vec(c.clauses, rels, domains);
+	if (c.clauses.size() > 0) {
+		var_domains domains;
+		domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
+		domains[1].insert(sig[target].id);
+		matched_clause = test_clause_vec(c.clauses, rels, domains);
+	}
 	if (matched_clause >= 0) {
 		if (c.ldas[matched_clause]) {
 			return c.ldas[matched_clause]->classify(x);
@@ -1607,7 +1591,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 		if (minfo.get_sig().size() > sig.size()) {
 			continue;
 		}
-		if (!map_objs(i, target, sig, rels, mappings[i])) {
+		if (!minfo.map_objs(target, sig, rels, mappings[i])) {
 			LOG(EMDBG) << "mapping failed for " << i << endl;
 			continue;
 		}

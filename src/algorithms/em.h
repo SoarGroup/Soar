@@ -112,13 +112,9 @@ private:
 		
 		const std::set<int> &get_members() const { return members; }
 		const scene_sig &get_sig() const { return sig; }
-		
-		/*
-		 Each object the model is conditioned on needs to be
-		 identifiable with a set of first-order Horn clauses
-		 learned with FOIL.
-		*/
-		std::vector<clause_vec> obj_clauses;
+		const relation &get_member_rel() const { return member_rel; }
+
+		bool map_objs(int target, const scene_sig &dsig, const relation_table &rels, std::vector<int> &mapping) const;
 		
 		/*
 		 Each pair of modes has one classifier associated with it. For
@@ -130,7 +126,6 @@ private:
 		std::vector<classifier*> classifiers;
 		
 		bool classifier_stale;
-		relation member_rel;
 		
 	private:
 		bool stale, noise, new_fit;
@@ -140,6 +135,7 @@ private:
 		mat lin_coefs;
 		rvec lin_inter;
 		std::set<int> members;
+		relation member_rel;
 		scene_sig sig;
 		
 		/*
@@ -147,6 +143,13 @@ private:
 		 second is the index.
 		*/
 		std::set<std::pair<double, int> > sorted_ys;
+		
+		/*
+		 Each object the model is conditioned on needs to be
+		 identifiable with a set of first-order Horn clauses
+		 learned with FOIL.
+		*/
+		std::vector<clause_vec> obj_clauses;
 	};
 	
 	void estep();
@@ -155,13 +158,11 @@ private:
 	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
 
 	bool unify_or_add_mode();
-	bool remove_modes();
-	bool find_new_mode_inds(int sig_ind, std::vector<int> &mode_inds, mat &coefs, rvec &inter);
 	int find_linear_subset(mat &X, mat &Y, std::vector<int> &subset, mat &coefs, rvec &inter) const;
 	void find_linear_subset_em(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
 	void find_linear_subset_block(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
+	bool remove_modes();
 	
-	bool map_objs(int mode, int target, const scene_sig &sig, const relation_table &rels, std::vector<int> &mapping) const;
 
 	void update_classifier();
 	void update_pair(int i, int j);
