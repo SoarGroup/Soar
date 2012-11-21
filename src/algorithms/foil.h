@@ -64,11 +64,9 @@ private:
 	double choose_literal(literal &l, int nvars);
 	bool choose_clause(clause &c, relation *neg_left);
 	bool tuple_satisfies_literal(const tuple &t, const literal &l);
-	double clause_success_rate(const clause &c, relation *pos_matched) const;
-	double prune_clause(clause &c) const;
 
 private:
-	relation pos, neg, pos_grow, neg_grow, pos_test, neg_test;
+	relation pos, neg, pos_grow, neg_grow;
 	const relation_table &rels;
 	int init_vars;
 };

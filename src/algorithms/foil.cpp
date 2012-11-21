@@ -293,6 +293,76 @@ int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains
 	return -1;
 }
 
+double clause_success_rate(const clause &c, const relation &pos, const relation &neg, const relation_table &rels) {
+	int correct = test_clause_n(c, true, pos, rels, NULL);
+	correct += test_clause_n(c, false, neg, rels, NULL);
+	return correct / static_cast<double>(pos.size() + neg.size());
+}
+
+/*
+ A variable is unbound if it only appears in negated literals. These should be
+ set to -1 to indicate they don't need to be bound when testing for
+ satisfaction.
+*/
+void fix_unbound_variables(clause &c) {
+	vector<int> status;
+	for (int i = 0; i < c.size(); ++i) {
+		const literal &l = c[i];
+		const tuple &args = l.get_args();
+		for (int j = 0; j < args.size(); ++j) {
+			int v = args[j];
+			if (v < 0) {
+				continue;
+			}
+			if (v >= status.size()) {
+				status.resize(v + 1, 0);
+			}
+			if (!l.negated()) {
+				status[v] = 1;
+			} else if (status[v] == 0) {
+				status[v] = -1;
+			}
+		}
+	}
+	for (int i = 0; i < status.size(); ++i) {
+		if (status[i] >= 0) {
+			continue;
+		}
+		for (int j = 0; j < c.size(); ++j) {
+			const tuple &args = c[j].get_args();
+			for (int k = 0; k < args.size(); ++k) {
+				if (args[k] == i) {
+					c[j].set_arg(k, -1);
+				}
+			}
+		}
+	}
+}
+
+double prune_clause(clause &c, const relation &pos, const relation &neg, const relation_table &rels) {
+	while (true) {
+		int best_lit = -1;
+		double best_rate = clause_success_rate(c, pos, neg, rels);
+		cout << "original: " << c << " " << best_rate << endl;
+		for (int i = 0; i < c.size(); ++i) {
+			clause pruned = c;
+			pruned.erase(pruned.begin() + i);
+			fix_unbound_variables(pruned);
+			double r = clause_success_rate(pruned, pos, neg, rels);
+			if (r > best_rate) {
+				best_lit = i;
+				best_rate = r;
+			}
+		}
+		if (best_lit < 0) {
+			return best_rate;
+		}
+		c.erase(c.begin() + best_lit);
+		fix_unbound_variables(c);
+		cout << "pruned:   " << c << " " << best_rate << endl;
+	}
+}
+
 void split_training(double ratio, const relation &all, relation &grow, relation &test) {
 	assert(0 <= ratio && ratio < 1);
 	grow.reset(all.arity());
@@ -364,70 +434,6 @@ FOIL::FOIL(const relation &p, const relation &n, const relation_table &rels)
 }
 
 /*
- A variable is unbound if it only appears in negated literals. These should be
- set to -1 to indicate they don't need to be bound when testing for
- satisfaction.
-*/
-void fix_unbound_variables(clause &c) {
-	vector<int> status;
-	for (int i = 0; i < c.size(); ++i) {
-		const literal &l = c[i];
-		const tuple &args = l.get_args();
-		for (int j = 0; j < args.size(); ++j) {
-			int v = args[j];
-			if (v < 0) {
-				continue;
-			}
-			if (v >= status.size()) {
-				status.resize(v + 1, 0);
-			}
-			if (!l.negated()) {
-				status[v] = 1;
-			} else if (status[v] == 0) {
-				status[v] = -1;
-			}
-		}
-	}
-	for (int i = 0; i < status.size(); ++i) {
-		if (status[i] >= 0) {
-			continue;
-		}
-		for (int j = 0; j < c.size(); ++j) {
-			const tuple &args = c[j].get_args();
-			for (int k = 0; k < args.size(); ++k) {
-				if (args[k] == i) {
-					c[j].set_arg(k, -1);
-				}
-			}
-		}
-	}
-}
-
-double FOIL::prune_clause(clause &c) const {
-	while (true) {
-		int best_lit = -1;
-		double best_rate = clause_success_rate(c, NULL);
-		cout << "original: " << c << " " << best_rate << endl;
-		for (int i = 0; i < c.size(); ++i) {
-			clause pruned = c;
-			pruned.erase(pruned.begin() + i);
-			fix_unbound_variables(pruned);
-			double r = clause_success_rate(pruned, NULL);
-			if (r > best_rate) {
-				best_lit = i;
-				best_rate = r;
-			}
-		}
-		if (best_lit < 0) {
-			return best_rate;
-		}
-		c.erase(c.begin() + best_lit);
-		fix_unbound_variables(c);
-		cout << "pruned:   " << c << " " << best_rate << endl;
-	}
-}
-
-/*
  Learns a list of clauses to classify the positive and negative
  examples. The residuals vector will be filled as follows:
  
@@ -442,6 +448,8 @@ double FOIL::prune_clause(clause &c) const {
  case will not exist.
 */
 bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
+	relation pos_test, neg_test;
+	
 	if (residuals) {
 		clear_and_dealloc(*residuals);
 	}
@@ -465,7 +473,7 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 			choose_clause(c, NULL);
 		}
 		
-		double success_rate = prune_clause(c);
+		double success_rate = prune_clause(c, pos_test, neg_test, rels);
 		// should test false positive rate here, rather than success rate
 		if (!c.empty() && success_rate > FOIL_MIN_SUCCESS_RATE) {
 			clauses.push_back(c);
@@ -616,13 +624,6 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 		c.push_back(l);
 	}
 	return true;
-}
-
-
-double FOIL::clause_success_rate(const clause &c, relation *pos_matched) const {
-	int correct = test_clause_n(c, true, pos_test, rels, pos_matched);
-	correct += test_clause_n(c, false, neg_test, rels, NULL);
-	return correct / static_cast<double>(pos_test.size() + neg_test.size());
 }
 
 bool FOIL::tuple_satisfies_literal(const tuple &t, const literal &l) {
