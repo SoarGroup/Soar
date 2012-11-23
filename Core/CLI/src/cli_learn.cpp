@@ -56,9 +56,9 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
                 if (agnt->sysparams[LEARNING_EXCEPT_SYSPARAM]) m_Result << " (except)";
                 if (agnt->sysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_Result << " (all-levels)";
                 if (agnt->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM]) {
-                    m_Result << " (through-local-negations)";
+                    m_Result << " (local negations)";
                 } else {
-                    m_Result << " (not through-local-negations)";
+                    m_Result << " (no local negations)";
                 }
             } else {
                 m_Result << "Learning is disabled.";
