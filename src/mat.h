@@ -18,6 +18,7 @@
 #include <Eigen/StdVector>
 
 typedef Eigen::Vector3d vec3;
+typedef Eigen::Vector4d vec4;
 typedef std::vector<vec3> ptlist;
 
 typedef Eigen::RowVectorXd rvec;

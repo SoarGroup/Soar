@@ -47,13 +47,8 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 }
 
 bool parse_vec3(vector<string> &f, int &start, vec3 &v, string &error) {
-	if (start + 3 > f.size()) {
-		start = f.size();
-		error = "expecting a number";
-		return false;
-	}
 	for (int i = 0; i < 3; ++start, ++i) {
-		if (!parse_double(f[start], v[i])) {
+		if (start >= f.size() || !parse_double(f[start], v[i])) {
 			error = "expecting a number";
 			return false;
 		}
@@ -70,6 +65,15 @@ bool parse_verts(vector<string> &f, int &start, ptlist &verts, string &error) {
 			return (i == start);  // end of list
 		}
 		verts.push_back(v);
+	}
+	return true;
+}
+
+bool parse_inds(vector<string> &f, int &start, vector<int> &inds, string &error) {
+	int i;
+	while (parse_int(f[start], i)) {
+		inds.push_back(i);
+		++start;
 	}
 	return true;
 }
@@ -264,6 +268,8 @@ void scene::clear() {
 	}
 }
 
+enum node_class { CONVEX, BALL, GROUP };
+
 int scene::parse_add(vector<string> &f, string &error) {
 	sgnode *n = NULL;
 	group_node *par = NULL;
@@ -284,34 +290,48 @@ int scene::parse_add(vector<string> &f, string &error) {
 	}
 	
 	int p = 3;
+	ptlist verts;
+	vector<int> indexes;
+	double radius;
+	node_class c = GROUP;
 	while (p < f.size()) {
-		if (n != NULL && (f[p] == "v" || f[p] == "b")) {
-			error = "more than one geometry specified";
-			return p;
-		}
 		if (f[p] == "v") {
-			ptlist verts;
 			if (!parse_verts(f, ++p, verts, error)) {
 				return p;
 			}
-			n = new convex_node(name, type, verts);
+			c = CONVEX;
+		} else if (f[p] == "i") {
+			if (!parse_inds(f, ++p, indexes, error)) {
+				return p;
+			}
+			c = CONVEX;
 		} else if (f[p] == "b") {
 			++p;
-			double radius;
 			if (p >= f.size() || !parse_double(f[p], radius)) {
 				error = "invalid radius";
 				return p;
 			}
-			n = new ball_node(name, type, radius);
+			c = BALL;
 			++p;
 		} else if (!parse_transforms(f, p, pos, rot, scale, error)) {
 			return p;
 		}
 	}
 	
-	if (!n) {
-		n = new group_node(name, type);
+	switch (c) {
+		case GROUP:
+			n = new group_node(name, type);
+			break;
+		case CONVEX:
+			n = new convex_node(name, type, verts, indexes);
+			break;
+		case BALL:
+			n = new ball_node(name, type, radius);
+			break;
+		default:
+			assert(false);
 	}
+	
 	n->set_trans(pos, rot, scale);
 	par->attach_child(n);
 	return -1;
@@ -576,7 +596,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			break;
 		case sgnode::SHAPE_CHANGED:
 			if (!n->is_group()) {
-				cdetect.update_points(n);
+				cdetect.update_shape(n);
 				if (draw) {
 					draw->change(name, n, drawer::SHAPE);
 				}

@@ -4,26 +4,22 @@
 
 using namespace std;
 
-btConvexHullShape *ptlist_to_hullshape(const ptlist &pts) {
-	btConvexHullShape *s = new btConvexHullShape();
-	for (int i = 0; i < pts.size(); ++i) {
-		s->addPoint(btVector3(pts[i][0], pts[i][1], pts[i][2]));
-	}
-	s->setMargin(0.0001);
-	return s;
-}
+static const int VERTEX_STRIDE = sizeof(vec3);
+static const int TRI_STRIDE = 3 * sizeof(int);
 
-btCollisionShape *get_node_shape(const sgnode *n) {
-	btCollisionShape *shape;
+dGeomID get_node_geom(dSpaceID space, const sgnode *n) {
 	const convex_node *cn = dynamic_cast<const convex_node*>(n);
 	if (cn) {
-		shape = ptlist_to_hullshape(cn->get_local_points());
-		return shape;
+		const ptlist &verts = cn->get_verts();
+		const vector<int> &inds = cn->get_triangles();
+		
+		dTriMeshDataID mesh = dGeomTriMeshDataCreate();	// need to clean this up somehow
+		dGeomTriMeshDataBuildDouble(mesh, &verts[0], VERTEX_STRIDE, verts.size(), &inds[0], inds.size(), TRI_STRIDE);
+		return dCreateTriMesh(space, mesh, NULL, NULL, NULL);
 	}
 	const ball_node *bn = dynamic_cast<const ball_node*>(n);
 	if (bn) {
-		shape = new btSphereShape(bn->get_radius());
-		return shape;
+		return dCreateSphere(space, bn->get_radius());
 	}
 	/*
 	 If this is a group node, should make a compound shape in the
@@ -33,79 +29,72 @@ btCollisionShape *get_node_shape(const sgnode *n) {
 	return NULL;
 }
 
-void update_transforms(sgnode *n, btCollisionObject *cobj) {
-	vec3 rpy = n->get_trans('r');
-	btQuaternion q;
-	q.setEuler(rpy[0], rpy[1], rpy[2]);
-	cobj->getWorldTransform().setOrigin(to_btvec(n->get_trans('p')));
-	cobj->getWorldTransform().setRotation(q);
-	cobj->getCollisionShape()->setLocalScaling(to_btvec(n->get_trans('s')));
+void update_transforms(const sgnode *n, dGeomID geom) {
+	assert(n->get_trans('s') == vec3(1.0, 1.0, 1.0));
+	vec3 p = n->get_trans('p');
+	dGeomSetPosition(geom, p[0], p[1], p[2]);
+	dGeomSetQuaternion(geom, n->get_quaternion().data());
 }
 
 collision_detector::collision_detector()
-: config(NULL), dispatcher(NULL), broadphase(NULL), cworld(NULL), dirty(true)
-{}
-
-void collision_detector::init() {
-	config = new btDefaultCollisionConfiguration();
-	dispatcher = new btCollisionDispatcher(config);
-	broadphase = new btDbvtBroadphase();
-	cworld = new btCollisionWorld(dispatcher, broadphase, config);
+: dirty(true)
+{
+	space = dSimpleSpaceCreate(NULL);
 	dirty = true;
 }
 
 collision_detector::~collision_detector() {
-	delete cworld;
-	delete broadphase;
-	delete dispatcher;
-	delete config;
+	dSpaceDestroy(space);
 }
 
-void collision_detector::add_node(sgnode *n) {
+void collision_detector::add_node(const sgnode *n) {
 	function_timer t(timers.get_or_add("add-node"));
 	assert(object_map.find(n) == object_map.end());
-	
-	if (!cworld) {
-		init();
-	}
-	
-	btCollisionObject *cobj = new btCollisionObject();
-	cobj->setUserPointer(static_cast<void*>(n));
-	cobj->setCollisionShape(get_node_shape(n));
-	update_transforms(n, cobj);
-	cworld->addCollisionObject(cobj);
-	object_map[n] = cobj;
-	dirty = true;
+	update_shape(n);
 }
 
-void collision_detector::del_node(sgnode *n) {
+void collision_detector::del_node(const sgnode *n) {
 	function_timer t(timers.get_or_add("del-node"));
-	assert(object_map.find(n) != object_map.end());
-	btCollisionObject *cobj = object_map[n];
-	cworld->removeCollisionObject(cobj);
-	delete cobj->getCollisionShape();
-	delete cobj;
-	object_map.erase(n);
+	
+	dGeomID geom;
+	if(!map_pop(object_map, n, geom)) {
+		assert(false);
+	}
+	dGeomDestroy(geom);
 	dirty = true;
 }
 
-void collision_detector::update_transform(sgnode *n) {
+void collision_detector::update_transform(const sgnode *n) {
 	function_timer t(timers.get_or_add("update-transform"));
 	
-	assert(object_map.find(n) != object_map.end());
-	btCollisionObject *cobj = object_map[n];
-	update_transforms(n, cobj);
+	dGeomID geom;
+	if (!map_get(object_map, n, geom)) {
+		assert(false);
+	}
+	update_transforms(n, geom);
 	dirty = true;
 }
 
-void collision_detector::update_points(sgnode *n) {
-	function_timer t(timers.get_or_add("update-points"));
-	
-	assert(object_map.find(n) != object_map.end());
-	btCollisionObject *cobj = object_map[n];
-	delete cobj->getCollisionShape();
-	cobj->setCollisionShape(get_node_shape(n));
+void collision_detector::update_shape(const sgnode *n) {
+	dGeomID geom;
+	if (map_get(object_map, n, geom)) {
+		dGeomDestroy(geom);
+	}
+	geom = get_node_geom(space, n);
+	dGeomSetData(geom, const_cast<sgnode*>(n));
+	object_map[n] = geom;
 	dirty = true;
+}
+
+void near_callback(void *data, dGeomID g1, dGeomID g2) {
+	static dContactGeom contacts[1];
+	
+	if (dCollide(g1, g2, 1, contacts, sizeof(dContactGeom)) > 0) {
+		const sgnode *n1 = static_cast<const sgnode*>(dGeomGetData(g1));
+		const sgnode *n2 = static_cast<const sgnode*>(dGeomGetData(g2));
+		collision_table *t = static_cast<collision_table*>(data);
+		(*t).insert(make_pair(n1, n2));
+	}
 }
 
 const collision_table &collision_detector::get_collisions() {
@@ -113,26 +102,19 @@ const collision_table &collision_detector::get_collisions() {
 	
 	if (dirty) {
 		results.clear();
-		if (!cworld) {
-			return results;
-		}
 		timer &ct = timers.get_or_add("collision");
-		cworld->performDiscreteCollisionDetection();
+		dSpaceCollide(space, static_cast<void*>(&results), near_callback);
 		ct.stop();
-		int num_manifolds = dispatcher->getNumManifolds();
-		for (int i = 0; i < num_manifolds; ++i) {
-			btPersistentManifold *m = dispatcher->getManifoldByIndexInternal(i);
-			if (m->getNumContacts() > 0) {
-				btCollisionObject *a = static_cast<btCollisionObject*>(m->getBody0());
-				btCollisionObject *b = static_cast<btCollisionObject*>(m->getBody1());
-				sgnode *na = static_cast<sgnode*>(a->getUserPointer());
-				sgnode *nb = static_cast<sgnode*>(b->getUserPointer());
-				results.insert(make_pair(na, nb));
-			}
-			m->clearManifold();
-		}
 		dirty = false;
 	}
 	return results;
 }
 
+bool intersects(const sgnode *n1, const sgnode *n2) {
+	static dContactGeom contacts[1];
+	dGeomID g1 = get_node_geom(NULL, n1), g2 = get_node_geom(NULL, n2);
+	int num_contacts = dCollide(g1, g2, 1, contacts, sizeof(dContactGeom));
+	dGeomDestroy(g1);
+	dGeomDestroy(g2);
+	return num_contacts > 0;
+}

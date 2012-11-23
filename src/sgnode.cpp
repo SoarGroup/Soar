@@ -69,6 +69,20 @@ vec3 sgnode::get_trans(char type) const {
 	}
 }
 
+vec4 sgnode::get_quaternion() const {
+	double halfyaw = rot(0) / 2, halfpitch = rot(1) / 2, halfroll = rot(2) / 2;  
+	double cosyaw = cos(halfyaw);
+ 	double sinyaw = sin(halfyaw);
+	double cospitch = cos(halfpitch);
+	double sinpitch = sin(halfpitch);
+	double cosroll = cos(halfroll);
+	double sinroll = sin(halfroll);
+	return vec4(cosroll * sinpitch * cosyaw + sinroll * cospitch * sinyaw,
+	            cosroll * cospitch * sinyaw - sinroll * sinpitch * cosyaw,
+	            sinroll * cospitch * cosyaw - cosroll * sinpitch * sinyaw,
+	            cosroll * cospitch * cosyaw + sinroll * sinpitch * sinyaw);
+}
+
 void sgnode::get_trans(vec3 &p, vec3 &r, vec3 &s) const {
 	p = pos;
 	r = rot;
@@ -250,50 +264,42 @@ void group_node::set_transform_dirty_sub() {
 	}
 }
 
-convex_node::convex_node(const string &name, const string &type, const ptlist &points)
-: geometry_node(name, type), points(points), dirty(true)
-{}
+convex_node::convex_node(const string &name, const string &type, const ptlist &v, const vector<int> &tris)
+: geometry_node(name, type), verts(v), triangles(tris), dirty(true)
+{
+	assert(triangles.size() % 3 == 0);
+	for (int i = 0; i < triangles.size(); ++i) {
+		assert(triangles[i] < verts.size());
+	}
+}
 
 sgnode *convex_node::clone_sub() const {
-	return new convex_node(get_name(), get_type(), points);
+	return new convex_node(get_name(), get_type(), verts, triangles);
 }
 
 void convex_node::update_shape() {
-	set_bounds(bbox(get_world_points()));
+	set_bounds(bbox(get_world_verts()));
 }
 
 void convex_node::set_transform_dirty_sub() {
 	dirty = true;
 }
 
-const ptlist &convex_node::get_local_points() const {
-	return points;
-}
-
-void convex_node::set_local_points(const ptlist &pts) {
-	if (points != pts) {
-		points = pts;
-		dirty = true;
-		set_shape_dirty();
-	}
-}
-
-const ptlist &convex_node::get_world_points() const {
+const ptlist &convex_node::get_world_verts() const {
 	if (dirty) {
-		convex_node *nonconst = const_cast<convex_node*>(this);
-		nonconst->world_points.clear();
-		nonconst->world_points.reserve(points.size());
-		transform(points.begin(), points.end(), back_inserter(nonconst->world_points), get_world_trans());
-		nonconst->dirty = false;
+		world_verts.clear();
+		world_verts.resize(verts.size());
+		transform(verts.begin(), verts.end(), world_verts.begin(), get_world_trans());
+		dirty = false;
 	}
-	return world_points;
+	return world_verts;
 }
 
 void convex_node::get_shape_sgel(string &s) const {
 	stringstream ss;
 	ss << "v ";
-	for (int i = 0; i < points.size(); ++i) {
-		ss << points[i](0) << " " << points[i](1) << " " << points[i](2) << " ";
+	for (int i = 0; i < verts.size(); ++i) {
+		ss << verts[i](0) << " " << verts[i](1) << " " << verts[i](2) << " ";
 	}
 	s = ss.str();
 }

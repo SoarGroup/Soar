@@ -187,164 +187,6 @@ public:
 	}
 };
 
-/*
- Generate a new node. Memory management is a little tricky. First note that
- although the filter result list owns the memory of the filter_val objects that
- wrap the generated nodes, it doesn't own the memory of the actual nodes. Those
- are owned by the filter, and it is responsible in most cases for deallocating
- them when they are removed from the scene. There are 3 ways this can happen:
-
- 1. The filter is deleted. Then all generated nodes are deallocated in the
-    filter's destructor.
-
- 2. The filter input associated with the node is deleted. Then the single node
-    associated with the input is deallocated in "result_removed".
-
- 3. The generated node's parent is deleted. In this case all the parent's
-    children are recursively deallocated in the parent's destructor, so the
-    filter should not try to deallocate it again. This case is handled in the
-    node listener callback "node_update", where the deleted node is taken off
-    the list of generated nodes. This case also needs to be handled when the
-    filter tries to update the already deleted node. 
-*/
-class gen_node_filter : public typed_map_filter<sgnode*>, public sgnode_listener {
-public:
-	gen_node_filter(Symbol *root, soar_interface *si, filter_input *input)
-	: typed_map_filter<sgnode*>(root, si, input) {}
-
-	~gen_node_filter() {
-		std::list<sgnode*>::iterator i;
-		for (i = nodes.begin(); i != nodes.end(); ++i) {
-			(**i).unlisten(this);
-			delete *i;
-		}
-	}
-	
-	bool compute(const filter_params *params, bool adding, sgnode *&res, bool &changed) {
-		string id, type;
-		vec3 pos, rot, scale, singlept;
-		ptlist *pts = NULL;
-		double radius;
-		
-		if (!adding) {
-			if (find(nodes.begin(), nodes.end(), res) == nodes.end()) {
-				// See case 3 in the class comment above
-				adding = true;
-				changed = true;
-			}
-		}
-		
-		if (adding && !get_filter_param(NULL, params, "id", id)) {
-			set_status("no id");
-			return false;
-		}
-		
-		if (adding && !get_filter_param(NULL, params, "type", type)) {
-			set_status("no type");
-			return false;
-		}
-		
-		if (get_filter_param(NULL, params, "points", pts)) {
-			if (adding) {
-				res = new convex_node(id, type, *pts);
-			} else {
-				convex_node *c = dynamic_cast<convex_node*>(res);
-				if (!c) {
-					set_status("not a convex node");
-					return false;
-				}
-				if (c->get_local_points() != *pts) {
-					c->set_local_points(*pts);
-					changed = true;
-				}
-			}
-		} else if (get_filter_param(this, params, "points", singlept)) {
-			ptlist l;
-			l.push_back(singlept);
-			if (adding) {
-				res = new convex_node(id, type, l);
-			} else {
-				convex_node *c = dynamic_cast<convex_node*>(res);
-				if (!c) {
-					set_status("not a convex node");
-					return false;
-				}
-				if (c->get_local_points() != l) {
-					c->set_local_points(l);
-					changed = true;
-				}
-			}
-		} else if (get_filter_param(this, params, "radius", radius)) {
-			if (adding) {
-				res = new ball_node(id, type, radius);
-			} else {
-				ball_node *b = dynamic_cast<ball_node*>(res);
-				if (!b) {
-					set_status("not a ball node");
-					return false;
-				}
-				if (b->get_radius() != radius) {
-					b->set_radius(radius);
-					changed = true;
-				}
-			}
-		} else if (adding) {
-			res = new group_node(id, type);
-		}
-		
-		if (adding) {
-			nodes.push_back(res);
-			res->listen(this);
-		}
-		
-		if (!get_filter_param(NULL, params, "pos", pos)) {
-			pos = vec3::Zero();
-		}
-		if (!get_filter_param(NULL, params, "rot", rot)) {
-			rot = vec3::Zero();
-		}
-		if (!get_filter_param(NULL, params, "scale", scale)) {
-			scale = vec3::Constant(1.0);
-		}
-		
-		if (res->get_trans('p') != pos) {
-			res->set_trans('p', pos);
-			changed = true;
-		}
-		if (res->get_trans('r') != rot) {
-			res->set_trans('r', rot);
-			changed = true;
-		}
-		if (res->get_trans('s') != scale) {
-			res->set_trans('s', scale);
-			changed = true;
-		}
-		
-		return true;
-	}
-
-	void result_removed(const sgnode *&res) {
-		remove_node(res);
-		delete res;
-	}
-	
-	void node_update(sgnode *n, sgnode::change_type t, int added) {
-		if (t == sgnode::DELETED) {
-			remove_node(n);
-		}
-	}
-	
-	void remove_node(const sgnode *n) {
-		std::list<sgnode*>::iterator i = find(nodes.begin(), nodes.end(), n);
-		assert(i != nodes.end());
-		(**i).unlisten(this);
-		nodes.erase(i);
-	}
-	
-private:
-	std::list<sgnode*> nodes;
-};
-
 filter *make_node_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new node_filter(root, si, scn, input);
 }
@@ -355,9 +197,6 @@ filter *make_all_nodes_filter(Symbol *root, soar_interface *si, scene *scn, filt
 
 filter *make_node_centroid_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new node_centroid_filter(root, si, input);
-}
-filter* _make_gen_node_filter_(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
-	return new gen_node_filter(root, si, input);
 }
 
 filter_table_entry node_fill_entry() {
@@ -380,12 +219,5 @@ filter_table_entry node_centroid_fill_entry() {
 	e.name = "node_centroid";
 	e.parameters.push_back("node");
 	e.create = &make_node_centroid_filter;
-	return e;
-}
-
-filter_table_entry gen_node_fill_entry() {
-	filter_table_entry e;
-	e.name = "gen_node";
-	e.create = &_make_gen_node_filter_;
 	return e;
 }

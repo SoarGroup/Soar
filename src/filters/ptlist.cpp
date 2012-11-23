@@ -34,11 +34,11 @@ public:
 		}
 		
 		if (local) {
-			changed = (*res != cn->get_local_points());
-			*res = cn->get_local_points();
+			changed = (*res != cn->get_verts());
+			*res = cn->get_verts();
 		} else {
-			changed = (*res != cn->get_world_points());
-			*res = cn->get_world_points();
+			changed = (*res != cn->get_world_verts());
+			*res = cn->get_world_verts();
 		}
 		return true;
 	}

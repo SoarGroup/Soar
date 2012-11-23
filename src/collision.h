@@ -4,35 +4,31 @@
 #include <map>
 #include <set>
 #include <utility>
-#include "bullet_support.h"
+#define dDOUBLE
+#include <ode/ode.h>
 #include "timer.h"
 
 class sgnode;
 
 typedef std::set<std::pair<const sgnode*, const sgnode*> > collision_table;
 
+bool intersects(const sgnode *n1, const sgnode *n2);
+
 class collision_detector {
 public:
 	collision_detector();
 	~collision_detector();
-	void add_node(sgnode *n);
-	void del_node(sgnode *n);
-	void update_transform(sgnode *n);
-	void update_points(sgnode *n);
+	void add_node(const sgnode *n);
+	void del_node(const sgnode *n);
+	void update_transform(const sgnode *n);
+	void update_shape(const sgnode *n);
 	const collision_table &get_collisions();
 	
 	const timer_set &get_timers() const { return timers; }
 	
 private:
-	void init();
-	
-	btCollisionConfiguration *config;
-	btCollisionDispatcher    *dispatcher;
-	btBroadphaseInterface    *broadphase;
-	btCollisionWorld         *cworld;
-	bullet_debug_drawer      *drawer;
-	
-	std::map<sgnode*, btCollisionObject*> object_map;
+	dSpaceID space;
+	std::map<const sgnode*, dGeomID> object_map;
 	bool dirty;
 	collision_table results;
 	

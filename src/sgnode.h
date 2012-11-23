@@ -52,6 +52,7 @@ public:
 	void set_trans(const vec3 &p, const vec3 &r, const vec3 &s);
 	vec3 get_trans(char type) const;
 	void get_trans(vec3 &p, vec3 &r, vec3 &s) const;
+	vec4 get_quaternion() const;
 	
 	void set_shape_dirty();
 	void listen(sgnode_listener *o);
@@ -126,22 +127,23 @@ public:
 
 class convex_node : public geometry_node {
 public:
-	convex_node(const std::string &name, const std::string &type, const ptlist &points);
+	convex_node(const std::string &name, const std::string &type, const ptlist &v, const std::vector<int> &tris);
 	
-	const ptlist &get_local_points() const;
-	const ptlist &get_world_points() const;
-	void set_local_points(const ptlist &pts);
+	const ptlist &get_verts() const { return verts; }
+	const ptlist &get_world_verts() const;
+	const std::vector<int> &get_triangles() const { return triangles; }
+	void set_verts(const ptlist &v);
 	void get_shape_sgel(std::string &s) const;
-	void set_transform_dirty_sub();
 	
 private:
+	void set_transform_dirty_sub();
 	void update_shape();
 	sgnode *clone_sub() const;
 	
-	ptlist points;
-	ptlist world_points;
-	bool   dirty;
-
+	ptlist verts;
+	std::vector<int> triangles;
+	mutable ptlist world_verts;
+	mutable bool dirty;
 };
 
 class ball_node : public geometry_node {

@@ -13,7 +13,7 @@ ostream &write_vec3(ostream &os, const vec3 &v) {
 void write_shape_string(const sgnode *n, ostream &os) {
 	const convex_node *cn = dynamic_cast<const convex_node *>(n);
 	if (cn) {
-		const ptlist &pts = cn->get_local_points();
+		const ptlist &pts = cn->get_verts();
 		os << "v ";
 		for (int i = 0; i < pts.size(); ++i) {
 			write_vec3(os, pts[i]) << " ";

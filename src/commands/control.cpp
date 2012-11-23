@@ -14,7 +14,6 @@
 #include "scene.h"
 #include "model.h"
 #include "common.h"
-#include "bullet_support.h"
 #include "params.h"
 
 using namespace std;
@@ -194,53 +193,6 @@ private:
 	string a, b, c;
 };
 
-/*
- Returns the shortest distance between the centroid of c and the line
- going through the centroids of a and b. Minimized when the centroids
- of all three objects are collinear.
-*/
-class collinear_obj : public objective {
-public:
-	collinear_obj(const string &a, const string &b, const string &c)
-	: a(a), b(b), c(c) {}
-	
-	double eval(scene &scn) const {
-		sgnode *na, *nb, *nc;
-		
-		if (!(na = scn.get_node(a)) ||
-		    !(nb = scn.get_node(b)) ||
-		    !(nc = scn.get_node(c)))
-		{
-			return INFINITY;
-		}
-		
-		ptlist pa, pb, pc;
-		na->get_bounds().get_points(pa);
-		nb->get_bounds().get_points(pb);
-		nc->get_bounds().get_points(pc);
-		
-		copy(pa.begin(), pa.end(), back_inserter(pc));
-		double d = hull_distance(pb, pc);
-		if (d < 0) {
-			d = 0.;
-		}
-		/*
-		vec3 ca = na->get_centroid();
-		vec3 cb = nb->get_centroid();
-		vec3 cc = calc_centroid(pc);
-		
-		double d = cc.line_dist(ca, cb);
-		if (d < 0.001) {
-			return 0.;
-		}
-		*/
-		return d;
-	}
-	
-private:
-	string a, b, c;
-};
-
 class align_facing_objective : public objective {
 public:
 	align_facing_objective(const string &a, const string &b, const string &c)
@@ -368,16 +320,6 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 				break;
 			}
 			obj = new behind_obj(a, b, c);
-		} else if (name == "collinear") {
-			string a, b, c;
-			if (!si->get_const_attr(root, "a", a) ||
-			    !si->get_const_attr(root, "b", b) ||
-			    !si->get_const_attr(root, "c", c))
-			{
-				LOG(CTRLDBG) << "Warning: incorrect parameters on collinear objective, skipping" << endl;
-				break;
-			}
-			obj = new collinear_obj(a, b, c);
 		} else if (name == "align_facing") {
 			string a, b, c;
 			if (!si->get_const_attr(root, "a", a) ||
