@@ -29,16 +29,10 @@ dGeomID get_node_geom(dSpaceID space, const sgnode *n) {
 	return NULL;
 }
 
-void update_transforms(const sgnode *n, dGeomID geom) {
-	assert(n->get_trans('s') == vec3(1.0, 1.0, 1.0));
-	vec3 p = n->get_trans('p');
-	dGeomSetPosition(geom, p[0], p[1], p[2]);
-	dGeomSetQuaternion(geom, n->get_quaternion().data());
-}
-
 collision_detector::collision_detector()
 : dirty(true)
 {
+	dInitODE();
 	space = dSimpleSpaceCreate(NULL);
 	dirty = true;
 }
@@ -51,6 +45,7 @@ void collision_detector::add_node(const sgnode *n) {
 	function_timer t(timers.get_or_add("add-node"));
 	assert(object_map.find(n) == object_map.end());
 	update_shape(n);
+	update_transform(n);
 }
 
 void collision_detector::del_node(const sgnode *n) {
@@ -71,7 +66,18 @@ void collision_detector::update_transform(const sgnode *n) {
 	if (!map_get(object_map, n, geom)) {
 		assert(false);
 	}
-	update_transforms(n, geom);
+	
+	assert(n->get_trans('s') == vec3(1.0, 1.0, 1.0));
+	vec3 p = n->get_trans('p');
+	vec4 q1 = n->get_quaternion();
+	dQuaternion q2;
+	q2[0] = q1(3);
+	q2[1] = q1(0);
+	q2[2] = q1(1);
+	q2[3] = q1(2);
+	
+	dGeomSetPosition(geom, p(0), p(1), p(2));
+	dGeomSetQuaternion(geom, q2);
 	dirty = true;
 }
 
