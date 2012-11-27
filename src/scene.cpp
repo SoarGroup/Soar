@@ -131,10 +131,12 @@ scene *scene::clone(const string &cname, drawer *d) const {
 	c->root = root->clone()->as_group();
 	c->root->walk(all_nodes);
 	
-	for(int i = 0; i < all_nodes.size(); ++i) {
+	for(int i = 1; i < all_nodes.size(); ++i) {  // i = 0 is world, already in copy
 		sgnode *n = all_nodes[i];
 		const node_info *info = get_node_info(n->get_name());
-		node_info &cinfo = c->nodes[node_counter++];
+		int id = node_counter++;
+		c->node_ids[n->get_name()] = id;
+		node_info &cinfo = c->nodes[id];
 		cinfo.node = n;
 		cinfo.props = info->props;
 		n->listen(c);
