@@ -208,19 +208,25 @@ void multi_model::unassign_model(const string &name) {
 
 bool multi_model::report_error(int i, const vector<string> &args, ostream &os) const {
 	if (tests.empty()) {
-		os << "no model error data" << endl;
+		os << "no test error data" << endl;
 		return false;
 	}
 	
 	int dim = -1, start = 0, end = tests.size() - 1;
-	bool list = false, histo = false;
+	
+	enum { STATS, LIST, HISTO, DUMP } mode = STATS;
+	
 	if (i < args.size() && args[i] == "list") {
-		list = true;
+		mode = LIST;
 		++i;
 	} else if (i < args.size() && args[i] == "histogram") {
-		histo = true;
+		mode = HISTO;
+		++i;
+	} else if (i < args.size() && args[i] == "dump") {
+		mode = DUMP;
 		++i;
 	}
+	
 	if (i >= args.size()) {
 		os << "specify a dimension" << endl;
 		return false;
@@ -250,41 +256,52 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 		}
 	}
 	
-	if (list) {
-		table_printer t;
-		t.add_row() << "num" << "real" << "pred" << "error" << "null" << "norm";
-		for (int j = start; j <= end; ++j) {
-			const test_info &ti = tests[j];
-			t.add_row() << j;
-			if (dim >= ti.y.size() || dim >= ti.pred.size()) {
-				t << "NA";
-			} else {
-				double y = ti.y(dim), pred = ti.pred(dim);
-				t << y << pred;
-				if (isnan(pred)) {
-					t << "NA" << "NA" << "NA";
+	switch (mode) {
+	case STATS:
+		return error_stats(dim, start, end, os);
+	case LIST:
+		{
+			table_printer t;
+			t.add_row() << "num" << "real" << "pred" << "error" << "null" << "norm";
+			for (int j = start; j <= end; ++j) {
+				const test_info &ti = tests[j];
+				t.add_row() << j;
+				if (dim >= ti.y.size() || dim >= ti.pred.size()) {
+					t << "NA";
 				} else {
-					t << ti.error(dim);
-					if (j > 0) {
-						double null_error = fabs(tests[j-1].y(dim) - y);
-						t << null_error << ti.error(dim) / null_error;
+					double y = ti.y(dim), pred = ti.pred(dim);
+					t << y << pred;
+					if (isnan(pred)) {
+						t << "NA" << "NA" << "NA";
 					} else {
-						t << "NA" << "NA";
+						t << ti.error(dim);
+						if (j > 0) {
+							double null_error = fabs(tests[j-1].y(dim) - y);
+							t << null_error << ti.error(dim) / null_error;
+						} else {
+							t << "NA" << "NA";
+						}
 					}
 				}
 			}
+			t.print(os);
 		}
-		t.print(os);
 		return true;
-	} else if (histo) {
-		vector<double> errors;
-		for (int j = start; j <= end; ++j) {
-			errors.push_back(tests[j].error(dim));
+	case HISTO:
+		{
+			vector<double> errors;
+			for (int j = start; j <= end; ++j) {
+				errors.push_back(tests[j].error(dim));
+			}
+			histogram(errors, 20, os) << endl;
 		}
-		histogram(errors, 10, os) << endl;
 		return true;
-	} else {
-		return error_stats(dim, start, end, os);
+	case DUMP:
+		for (int i = 0; i < tests.size(); ++i) {
+			output_rvec(os, tests[i].x, " ");
+			os << " " << tests[i].y(dim) << " " << tests[i].pred(dim) << endl;
+		}
+		return true;
 	}
 	return false;
 }

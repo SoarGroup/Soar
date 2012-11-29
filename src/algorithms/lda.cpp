@@ -130,10 +130,20 @@ void LDA::learn(mat &data, const vector<int> &cls) {
 }
 
 int LDA::classify(const rvec &x) const {
-	if (degenerate) {
-		return degenerate_class;
-	}
 	rvec p;
+	int best;
+	
+	if (!project(x, p))
+		return degenerate_class;
+	
+	(projected.rowwise() - p).rowwise().squaredNorm().minCoeff(&best);
+	return classes[best];
+}
+
+bool LDA::project(const rvec &x, rvec &p) const {
+	if (degenerate)
+		return false;
+	
 	if (used_cols.size() < x.size()) {
 		rvec x1(used_cols.size());
 		for (int i = 0; i < used_cols.size(); ++i) {
@@ -143,9 +153,7 @@ int LDA::classify(const rvec &x) const {
 	} else {
 		p = x * W;
 	}
-	int best;
-	(projected.rowwise() - p).rowwise().squaredNorm().minCoeff(&best);
-	return classes[best];
+	return true;
 }
 
 void LDA::inspect(ostream &os) const {

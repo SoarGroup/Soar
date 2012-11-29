@@ -36,7 +36,8 @@ void pca(const_mat_view X, mat &comps) {
 }
 
 bool solve(const_mat_view X, const_mat_view Y, mat &C) {
-	C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
+	C = X.colPivHouseholderQr().solve(Y);
+	//C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
 	return is_normal(C);
 }
 

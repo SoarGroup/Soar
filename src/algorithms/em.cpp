@@ -1286,6 +1286,9 @@ void EM::mode_info::largest_const_subset(vector<int> &subset) {
 			s.push_back(i->second);
 		}
 	}
+	if (s.size() > subset.size()) {
+		subset = s;
+	}
 }
 
 bool EM::mode_info::uniform_sig(int sig, int target) const {
@@ -1410,6 +1413,9 @@ void EM::update_classifier() {
 	}
 }
 
+/*
+ positive = class 0, negative = class 1
+*/
 LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) const {
 	if (!use_lda) {
 		return NULL;
@@ -1449,7 +1455,7 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 		assert(d.sig_index == sig);
 		
 		train.row(i) = d.x;
-		train_classes.push_back(1);
+		train_classes.push_back(0);
 	}
 	
 	for (int i = 0; i < neg_train; ++i) {
@@ -1457,7 +1463,7 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 		assert(d.sig_index == sig);
 		
 		train.row(pos_train + i) = d.x;
-		train_classes.push_back(0);
+		train_classes.push_back(1);
 	}
 	
 	LDA *lda = new LDA;
@@ -1468,7 +1474,7 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 		const train_data &d = *data[pi[i]];
 		assert(d.sig_index == sig);
 		
-		if (lda->classify(d.x) == 1) {
+		if (lda->classify(d.x) == 0) {
 			++correct;
 		}
 	}
@@ -1476,7 +1482,7 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 		const train_data &d = *data[ni[i]];
 		assert(d.sig_index == sig);
 		
-		if (lda->classify(d.x) == 0) {
+		if (lda->classify(d.x) == 1) {
 			++correct;
 		}
 	}
@@ -1555,24 +1561,37 @@ void EM::update_pair(int i, int j) {
 */
 int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
 	assert(modes[i]->classifiers[j]);
-	int matched_clause = -1;
+	int matched_clause = -1, result;
 	const classifier &c = *(modes[i]->classifiers[j]);
 
+	LOG(EMDBG) << "Voting on " << i << " vs " << j << endl;
 	if (c.clauses.size() > 0) {
 		var_domains domains;
 		domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
 		domains[1].insert(sig[target].id);
 		matched_clause = test_clause_vec(c.clauses, rels, domains);
-	}
-	if (matched_clause >= 0) {
-		if (c.ldas[matched_clause]) {
-			return c.ldas[matched_clause]->classify(x);
-		} else {
+		if (matched_clause >= 0) {
+			LOG(EMDBG) << "matched clause:" << endl << c.clauses[matched_clause] << endl;
+			if (c.ldas[matched_clause]) {
+				result = c.ldas[matched_clause]->classify(x);
+				LOG(EMDBG) << "LDA votes for " << (result == 0 ? i : j) << endl;
+				return result;
+			}
+			LOG(EMDBG) << "No LDA, voting for " << i << endl;
 			return 0;
 		}
-	} else if (c.ldas.size() > c.clauses.size()) {
-		return c.ldas.back()->classify(x);
+		
+		if (c.ldas.size() > c.clauses.size() && c.ldas.back() != NULL) {
+			result = c.ldas.back()->classify(x);
+			LOG(EMDBG) << "No matched clauses, LDA votes for " << (result == 0 ? i : j) << endl;
+			return result;
+		}
+		
+		// no false negatives in training, so this must be a negative
+		LOG(EMDBG) << "No matched clauses, no LDA, vote for " << j << endl;
+		return 1;
 	}
+	LOG(EMDBG) << "No classifiers, constant vote for " << (c.const_vote == 0 ? i : j) << endl;
 	return c.const_vote;
 }
 
@@ -1608,16 +1627,13 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 		int a = possible[i];
 		for (int j = i + 1; j < possible.size(); ++j) {
 			int b = possible[j];
-			LOG(EMDBG) << "for " << a << "/" << b << ": ";
 			int winner = vote_pair(a, b, target, sig, rels, x);
 			if (winner == 0) {
-				LOG(EMDBG) << a << " wins" << endl;
 				++votes[a];
 			} else if (winner == 1) {
-				LOG(EMDBG) << b << " wins" << endl;
 				++votes[b];
 			} else {
-				LOG(EMDBG) << " tie" << endl;
+				assert(false);
 			}
 		}
 	}

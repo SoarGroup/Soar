@@ -14,15 +14,7 @@ public:
 	*/
 	void learn(mat &data, const std::vector<int> &classes);
 	int classify(const rvec &x) const;
-	
-	const mat &getW() const {
-		return W;
-	}
-	
-	const rvec &getJ() const {
-		return J;
-	}
-	
+	bool project(const rvec &x, rvec &p) const;
 	void inspect(std::ostream &os) const;
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);

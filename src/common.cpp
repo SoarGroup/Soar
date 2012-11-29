@@ -67,30 +67,23 @@ void sample(int k, int low, int high, std::vector<int> &output) {
 
 ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
 	assert(nbins > 0);
-	double min = vals[0], max = vals[0], binsize, hashes_per;
+	double min, max, binsize, hashes_per;
 	int i, b, maxcount = 0;
 	vector<int> counts(nbins, 0);
-	for (i = 1; i < vals.size(); ++i) {
-		if (vals[i] < min) {
-			min = vals[i];
-		}
-		if (vals[i] > max) {
-			max = vals[i];
-		}
-	}
+	min = *min_element(vals.begin(), vals.end());
+	max = *max_element(vals.begin(), vals.end());
+
 	binsize = (max - min) / (nbins - 1);
 	if (binsize == 0) {
 		LOG(WARN) << "All values identical (" << min << "), not drawing histogram" << endl;
 		return os;
 	}
 	for (i = 0; i < vals.size(); ++i) {
-		b = (int) ((vals[i] - min) / binsize);
+		b = static_cast<int>((vals[i] - min) / binsize);
 		assert(b < counts.size());
 		counts[b]++;
-		if (counts[b] > maxcount) {
-			maxcount = counts[b];
-		}
 	}
+	maxcount = *max_element(counts.begin(), counts.end());
 	hashes_per = 60.0 / maxcount;
 	streamsize p = os.precision();
 	os.precision(3);
