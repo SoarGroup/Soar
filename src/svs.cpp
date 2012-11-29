@@ -318,9 +318,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		return true;
 	} else if (args[first_arg] == "relations") {
-		relation_table rels;
-		scn->calc_relations(rels);
-		os << rels;
+		report_relations(first_arg + 1, args, os);
 		return true;
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);
@@ -353,6 +351,37 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 	
 	os << "no such query" << endl;
 	return false;
+}
+
+void svs_state::report_relations(int first_arg, const vector<string> &args, ostream &os) const {
+	relation_table rels;
+	relation_table::const_iterator i, begin, end;
+	relation::const_iterator j;
+	scn->calc_relations(rels);
+	
+	if (first_arg < args.size()) {
+		begin = end = rels.find(args[first_arg]);
+		++end;
+	} else {
+		begin = rels.begin();
+		end = rels.end();
+	}
+	
+	for (i = begin; i != end; ++i) {
+		const relation &r = i->second;
+		table_printer t;
+		
+		os << i->first << endl;
+		for (j = r.begin(); j != r.end(); ++j) {
+			t.add_row();
+			for (int k = 1; k < j->size(); ++k) {
+				sgnode *n = scn->get_node((*j)[k]);
+				assert(n != NULL);
+				t << n->get_name();
+			}
+		}
+		t.print(os);
+	}
 }
 
 svs::svs(agent *a)
