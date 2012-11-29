@@ -38,7 +38,7 @@ void pca(const_mat_view X, mat &comps) {
 bool solve(const_mat_view X, const_mat_view Y, mat &C) {
 	C = X.colPivHouseholderQr().solve(Y);
 	//C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
-	return is_normal(C);
+	return normal(C);
 }
 
 bool solve(const_mat_view X, const_mat_view y, cvec &coefs) {
@@ -292,7 +292,7 @@ void clean_lr_data(mat &X, vector<int> &used_cols) {
 	int xdims = X.cols(), ndata = X.rows(), newdims = 0;
 	
 	for (int i = 0; i < xdims; ++i) {
-		if (!is_uniform(X.col(i))) {
+		if (!uniform(X.col(i))) {
 			if (newdims < i) {
 				X.col(newdims) = X.col(i);
 			}

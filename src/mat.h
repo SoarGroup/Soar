@@ -192,8 +192,8 @@ std::ostream& output_rvec(std::ostream &os, const rvec &v, const std::string &se
 std::ostream& output_cvec(std::ostream &os, const cvec &v, const std::string &sep = " ");
 std::ostream& output_mat(std::ostream &os, const const_mat_view m);
 
-bool is_normal(const_mat_view m);
-bool is_uniform(const_mat_view X);
+bool normal(const_mat_view m);
+bool uniform(const_mat_view X);
 void randomize_vec(rvec &v, const rvec &min, const rvec &max);
 
 /*

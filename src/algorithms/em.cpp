@@ -225,9 +225,9 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 	function_timer t(timers.get_or_add("em_block"));
 	
 	int ndata = X.rows(), xcols = X.cols();
-	vector<int> init;
+	vector<int> init, nonuniform_cols;
 	cvec w(ndata), error(ndata), old_error(ndata);
-	mat Xc(ndata, xcols), Yc(ndata, 1), coefs(xcols, 1);
+	mat Xc(ndata, xcols), Yc(ndata, 1), coefs(xcols, 1), coefs2;
 	
 	sample(xcols + 1, 0, ndata, init);
 	w.setConstant(0.0);
@@ -236,12 +236,25 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 	}
 
 	for (int iter = 0; iter < MINI_EM_MAX_ITERS; ++iter) {
-		for (int i = 0; i < xcols; ++i) {
-			Xc.col(i) = X.col(i).array() * w.array();
+		int i = 0;
+		nonuniform_cols.clear();
+		for (int j = 0; j < xcols; ++j) {
+			Xc.col(i) = X.col(j).array() * w.array();
+			if (!uniform(Xc.col(i))) {
+				nonuniform_cols.push_back(j);
+				++i;
+			}
 		}
 		Yc.col(0) = Y.col(0).array() * w.array();
-		if (!linreg_clean(FORWARD, Xc, Yc, coefs)) {
+		if (i == 0 || uniform(Yc.col(0)))
+			return;
+			
+		if (!linreg_clean(FORWARD, Xc.leftCols(i), Yc, coefs2)) {
 			assert(false);
+		}
+		coefs.setConstant(0);
+		for (int j = 0; j < nonuniform_cols.size(); ++j) {
+			coefs.row(nonuniform_cols[j]) = coefs2.row(j);
 		}
 		
 		old_error = error;

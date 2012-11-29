@@ -163,7 +163,7 @@ ostream& output_mat(ostream &os, const_mat_view m) {
 	return os;
 }
 
-bool is_normal(const_mat_view m) {
+bool normal(const_mat_view m) {
 	for (int i = 0; i < m.rows(); ++i) {
 		for (int j = 0; j < m.cols(); ++j) {
 			if (isnan(m(i, j)) || isinf(m(i, j))) {
@@ -174,7 +174,7 @@ bool is_normal(const_mat_view m) {
 	return true;
 }
 
-bool is_uniform(const_mat_view m) {
+bool uniform(const_mat_view m) {
 	if (m.rows() == 0 || m.cols() == 0) {
 		return true;
 	}
@@ -183,7 +183,7 @@ bool is_uniform(const_mat_view m) {
 
 void get_nonuniform_cols(const_mat_view X, int ncols, vector<int> &cols) {
 	for (int i = 0; i < ncols; ++i) {
-		if (!is_uniform(X.col(i))) {
+		if (!uniform(X.col(i))) {
 			cols.push_back(i);
 		}
 	}

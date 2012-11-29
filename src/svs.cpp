@@ -358,20 +358,28 @@ void svs_state::report_relations(int first_arg, const vector<string> &args, ostr
 	relation_table::const_iterator i, begin, end;
 	relation::const_iterator j;
 	scn->calc_relations(rels);
+	bool print_names;
 	
 	if (first_arg < args.size()) {
 		begin = end = rels.find(args[first_arg]);
-		++end;
+		if (end == rels.end()) {
+			os << "relation not found" << endl;
+		} else {
+			++end;
+		}
+		print_names = false;
 	} else {
 		begin = rels.begin();
 		end = rels.end();
+		print_names = true;
 	}
 	
 	for (i = begin; i != end; ++i) {
 		const relation &r = i->second;
 		table_printer t;
 		
-		os << i->first << endl;
+		if (print_names)
+			os << i->first << endl;
 		for (j = r.begin(); j != r.end(); ++j) {
 			t.add_row();
 			for (int k = 1; k < j->size(); ++k) {
