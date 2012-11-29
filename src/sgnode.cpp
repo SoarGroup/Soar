@@ -301,6 +301,10 @@ void convex_node::get_shape_sgel(string &s) const {
 	for (int i = 0; i < verts.size(); ++i) {
 		ss << verts[i](0) << " " << verts[i](1) << " " << verts[i](2) << " ";
 	}
+	ss << "i ";
+	for (int i = 0; i < triangles.size(); ++i) {
+		ss << triangles[i] << " ";
+	}
 	s = ss.str();
 }
 

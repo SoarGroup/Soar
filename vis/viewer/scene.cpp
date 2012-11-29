@@ -44,49 +44,6 @@ bool parse_ints(const string &line, vector<int> &n) {
 	return true;
 }
 
-/*
- Execute qhull to calculate the convex hull of pts.
-*/
-int qhull(const vector<Vec3> &pts, vector<vector<int> > &facets) {
-	vector<int> nums;
-	string qhull_out = "/tmp/qhull";
-	string qhull_cmd = "qhull i >" + qhull_out;
-	
-	FILE *p = popen(qhull_cmd.c_str(), "w");
-	if (!p) {
-		perror("qhull");
-		exit(1);
-	}
-	fprintf(p, "3\n%ld\n", pts.size());
-	for (int i = 0; i < pts.size(); ++i) {
-		fprintf(p, "%f %f %f\n", pts[i][0], pts[i][1], pts[i][2]);
-	}
-	int ret = pclose(p);
-	if (ret != 0) {
-		cerr << "qhull returned with non-zero status (" << ret << ")" << endl;
-		exit(1);
-	}
-	
-	ifstream output("/tmp/qhull");
-	string line;
-	if (!getline(output, line) || !parse_ints(line, nums) || nums.size() != 1) {
-		cerr << "unexpected qhull output, check " << qhull_out << endl;
-		exit(1);
-	}
-	int nfacets = nums[0];
-
-	while (getline(output, line)) {
-		nums.clear();
-		if (!parse_ints(line, nums)) {
-			cerr << "unexpected qhull output, check " << qhull_out << endl;
-			exit(1);
-		}
-		facets.push_back(nums);
-	}
-	assert (facets.size() == nfacets);
-	return 0;
-}
-
 Quat to_quaternion(const Vec3 &rpy) {
 	double halfroll = rpy[0] / 2;
 	double halfpitch = rpy[1] / 2;
@@ -117,7 +74,7 @@ node::node(const string &name, const string &parent)
 	scribe->setWireframeColor(Vec4(0.0, 0.0, 0.0, 1.0));
 }
 
-void node::make_polyhedron(const vector<Vec3> &verts) {
+void node::make_polyhedron(const vector<Vec3> &verts, const vector<int> &triangles) {
 	ref_ptr<Geometry> g = new Geometry;
 	ref_ptr<Vec3Array> v = new Vec3Array;
 	copy(verts.begin(), verts.end(), back_inserter(*v));
@@ -130,29 +87,10 @@ void node::make_polyhedron(const vector<Vec3> &verts) {
 	} else if (verts.size() == 3) {
 		g->addPrimitiveSet(new DrawArrays(GL_TRIANGLES, 0, 3));
 	} else {
-		vector<vector<int> > facets;
-		if (qhull(verts, facets) != 0) {
-			cerr << "error executing qhull" << endl;
-			exit(1);
-		}
-		ref_ptr<DrawElementsUInt> triangles = new DrawElementsUInt(GL_TRIANGLES);
-		ref_ptr<DrawElementsUInt> quads = new DrawElementsUInt(GL_QUADS);
-		for (int i = 0; i < facets.size(); ++i) {
-			if (facets[i].size() == 3) {
-				copy(facets[i].begin(), facets[i].end(), back_inserter(*triangles));
-			} else if (facets[i].size() == 4) {
-				copy(facets[i].begin(), facets[i].end(), back_inserter(*quads));
-			} else {
-				assert(false);
-			}
-		}
-		
-		if (!triangles->empty()) {
-			g->addPrimitiveSet(triangles);
-		}
-		if (!quads->empty()) {
-			g->addPrimitiveSet(quads);
-		}
+		ref_ptr<DrawElementsUInt> tri = new DrawElementsUInt(GL_TRIANGLES);
+		assert(triangles.size() % 3 == 0);
+		copy(triangles.begin(), triangles.end(), back_inserter(*tri));
+		g->addPrimitiveSet(tri);
 	}
 	if (leaf->getNumDrawables() == 1) {
 		leaf->setDrawable(0, g);
@@ -340,12 +278,27 @@ bool parse_verts(vector<string> &f, int &p, vector<Vec3> &verts) {
 	return true;
 }
 
+bool parse_indexes(vector<string> &f, int &p, vector<int> &indexes) {
+	char *end;
+	int i;
+	
+	for (; p < f.size(); ++p) {
+		i = strtol(f[p].c_str(), &end, 10);
+		if (*end != '\0') {
+			break;
+		}
+		indexes.push_back(i);
+	}
+	return (indexes.size() % 3 == 0);
+}
+
 bool parse_mods(vector<string> &f, int &p, node *n, string &error) {
 	Vec3 v3;
 	char t;
 	char *end;
-	double radius;
+	double radius = -1;
 	vector<Vec3> verts;
+	vector<int> triangles;
 	
 	while (p < f.size()) {
 		t = f[p++][0];
@@ -377,15 +330,20 @@ bool parse_mods(vector<string> &f, int &p, node *n, string &error) {
 				error = "expecting a radius after b";
 				return false;
 			}
-			n->make_sphere(radius);
 			break;
 		
 		case 'v':
 			if (!parse_verts(f, p, verts)) {
-				error = "expecting N numbers after v, divisible by 3";
+				error = "expecting vertex list after v, divisible by 3";
 				return false;
 			}
-			n->make_polyhedron(verts);
+			break;
+		
+		case 'i':
+			if (!parse_indexes(f, p, triangles)) {
+				error = "expecting triangle index list after i, divisible by 3";
+				return false;
+			}
 			break;
 			
 		default:
@@ -393,6 +351,11 @@ bool parse_mods(vector<string> &f, int &p, node *n, string &error) {
 			error += t;
 			return false;
 		}
+	}
+	if (!verts.empty() && !triangles.empty()) {
+		n->make_polyhedron(verts, triangles);
+	} else if (radius > 0) {
+		n->make_sphere(radius);
 	}
 	return true;
 }

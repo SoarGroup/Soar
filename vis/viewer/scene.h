@@ -21,7 +21,7 @@ public:
 	std::string parent;
 	
 	node(const std::string &name, const std::string &parent);
-	void make_polyhedron(const std::vector<osg::Vec3> &verts);
+	void make_polyhedron(const std::vector<osg::Vec3> &verts, const std::vector<int> &triangles);
 	void make_sphere(double radius);
 	void make_group();
 	
