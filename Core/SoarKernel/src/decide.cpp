@@ -876,6 +876,11 @@ void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, bool unique_value)
   cons *CDPS;
   preference *p;
 
+  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+	  print(thisAgent, "--> Adding preference to CDPS: ");
+	  print_preference(thisAgent, pref);
+  }
+
   for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
     p = static_cast<preference *>(CDPS->first);
     if (p == pref) {
@@ -910,7 +915,10 @@ void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, bool unique_value)
   if (!already_exists) {
     push(thisAgent, pref, s->CDPS);
     preference_add_ref(pref);
+  } else if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+	  print(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
   }
+
 }
 
 /* Perform reinforcement learning update for one valid candidate. */
@@ -1018,7 +1026,7 @@ byte run_preference_semantics(agent* thisAgent,
   if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot) {
 
     print(thisAgent,
-        "\n----------------------------\nRUNNING PREFERENCE SEMANTICS...\n----------------------------\n");
+        "\n-------------------------------\nRUNNING PREFERENCE SEMANTICS...\n-------------------------------\n");
     print(thisAgent, "All Preferences for slot:");
 
     for (int i = 0; i < NUM_PREFERENCE_TYPES; i++) {
@@ -1030,6 +1038,7 @@ byte run_preference_semantics(agent* thisAgent,
         }
       }
     }
+    print(thisAgent, "-------------------------------\n");
   }
 
   /* === Requires === */
@@ -1066,6 +1075,15 @@ byte run_preference_semantics(agent* thisAgent,
     /* --- We have a winner, so update RL --- */
 
     rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
+
+    /* Print a message that we're adding the require preference to the CDPS
+     * even though we really aren't.  Requires aren't actually handled by
+     * the CDPS mechanism since they are already backtraced through. */
+
+    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+  	  print(thisAgent, "--> Adding preference to CDPS: ");
+  	  print_preference(thisAgent, candidates);
+    }
 
     return NONE_IMPASSE_TYPE;
   }
@@ -1105,10 +1123,8 @@ byte run_preference_semantics(agent* thisAgent,
     return NONE_IMPASSE_TYPE;
   }
 
-  /* If there are reject or prohibit preferences,
-   * (1) add all acceptable preferences to CDPS except those with a reject or prohibit
-   *     which is equivalent to the entire candidate list at this point
-   * (2) add all reject and prohibit preferences */
+  /* If there are reject or prohibit preferences, then
+   * add all reject and prohibit preferences to CDPS */
 
   if (do_CDPS) {
     if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE]) {
@@ -1116,9 +1132,6 @@ byte run_preference_semantics(agent* thisAgent,
         add_to_CDPS(thisAgent, s, p);
       for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
         add_to_CDPS(thisAgent, s, p);
-      for (p = candidates; p != NIL; p = p->next_candidate) {
-        add_to_CDPS(thisAgent, s, p);
-      }
     }
   }
 
@@ -1233,27 +1246,9 @@ byte run_preference_semantics(agent* thisAgent,
         else
           candidates = cand->next_candidate;
 
-        /* Remove any acceptable preference for the same operator from the CDPS */
-        if (do_CDPS && s->CDPS) {
-            prev_cons = NIL;
-            for (CDPS=s->CDPS; CDPS!=NIL; CDPS=CDPS->rest) {
-              p = static_cast<preference *>(CDPS->first);
-              if ((p->value == cand->value) && (p->type == ACCEPTABLE_PREFERENCE_TYPE)) {
-                if (!prev_cons) {
-                  s->CDPS = CDPS->rest;
-                } else {
-                  prev_cons->rest = CDPS->rest;
-                }
-                free_cons(thisAgent, CDPS);
-                preference_remove_ref(thisAgent, p);
-              } else {
-                prev_cons = CDPS;
-              }
-            }
-          }
       } else {
         if (do_CDPS) {
-          /* Add better/worse preference to CDPS */
+          /* Add better/worse preferences to CDPS */
           for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
               add_to_CDPS(thisAgent, s, p);
