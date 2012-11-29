@@ -98,6 +98,14 @@ void node::make_polyhedron(const vector<Vec3> &verts, const vector<int> &triangl
 		leaf->addDrawable(g);
 	}
 	trans->setChild(0, scribe);
+	
+	StateSet *ss = leaf->getOrCreateStateSet();
+	PolygonMode *polymode = dynamic_cast<PolygonMode*>(ss->getAttribute(StateAttribute::POLYGONMODE));
+	if (!polymode) {
+		polymode = new PolygonMode;
+		ss->setAttribute(polymode);
+	}
+	polymode->setMode(PolygonMode::BACK, PolygonMode::LINE);
 }
 
 void node::make_sphere(double radius) {
@@ -196,10 +204,10 @@ void node::toggle_fill() {
 		polymode = new PolygonMode;
 		ss->setAttribute(polymode);
 	}
-	if (polymode->getMode(PolygonMode::FRONT_AND_BACK) == PolygonMode::FILL) {
-		polymode->setMode(PolygonMode::FRONT_AND_BACK, PolygonMode::LINE);
+	if (polymode->getMode(PolygonMode::FRONT) == PolygonMode::FILL) {
+		polymode->setMode(PolygonMode::FRONT, PolygonMode::LINE);
 	} else {
-		polymode->setMode(PolygonMode::FRONT_AND_BACK, PolygonMode::FILL);
+		polymode->setMode(PolygonMode::FRONT, PolygonMode::FILL);
 	}
 }
 
