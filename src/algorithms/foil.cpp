@@ -449,7 +449,6 @@ FOIL::FOIL(const relation &p, const relation &n, const relation_table &rels)
 */
 bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 	relation pos_test, neg_test;
-	
 	if (residuals) {
 		clear_and_dealloc(*residuals);
 	}
@@ -645,7 +644,7 @@ const relation &FOIL::get_rel(const string &name) const {
 	return i->second;
 }
 
-void FOIL::foil6_rep(ostream &os) const {
+void FOIL::dump_foil6(ostream &os) const {
 	tuple zero(1, 0);
 	relation all_times_rel(1);
 	vec_set all_times, all_objs;
@@ -678,7 +677,7 @@ void FOIL::foil6_rep(ostream &os) const {
 		os << endl;
 		relation r(i->second);
 		r.intersect(zero, all_times_rel);
-		r.foil6_rep(os);
+		r.dump_foil6(os);
 	}
 	
 	os << "positive(T";
@@ -690,7 +689,9 @@ void FOIL::foil6_rep(ostream &os) const {
 		os << "#";
 	}
 	os << endl;
-	pos.foil6_rep(os);
+	pos.dump_foil6(os, false);
+	os << ";" << endl;
+	neg.dump_foil6(os);
 }
 
 literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best) 

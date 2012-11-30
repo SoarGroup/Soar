@@ -183,7 +183,8 @@ public:
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
-	void foil6_rep(std::ostream &os) const;
+	void dump_foil6(std::ostream &os, bool terminate = true) const;
+	bool load_foil6(std::istream &is);
 		
 	int size() const { return sz; }
 	int arity() const { return arty; }

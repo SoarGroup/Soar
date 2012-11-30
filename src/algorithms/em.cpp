@@ -863,6 +863,22 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		return read_on_off(args, first + 1, os, use_foil);
 	} else if (args[first] == "use_lda") {
 		return read_on_off(args, first + 1, os, use_lda);
+	} else if (args[first] == "dump_foil") {
+		int m1, m2;
+		if (first + 2 >= args.size() || 
+		    !parse_int(args[first+1], m1) || 
+		    !parse_int(args[first+2], m2) ||
+		    m1 < 0 || m1 >= nmodes || m2 < 0 || m2 >= nmodes || m1 == m2) 
+		{
+			os << "Specify 2 modes" << endl;
+			return false;
+		}
+		
+		if (m1 > m2)
+			swap(m1, m2);
+		
+		FOIL foil(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), rel_tbl);
+		foil.dump_foil6(os);
 	}
 
 	return false;

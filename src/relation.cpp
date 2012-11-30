@@ -585,7 +585,7 @@ ostream &operator<<(ostream &os, const relation_table &t) {
 	return os;
 }
 
-void relation::foil6_rep(ostream &os) const {
+void relation::dump_foil6(ostream &os, bool terminate) const {
 	tuple_map::const_iterator i;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		const vector<int> &v = i->second.vec();
@@ -598,5 +598,32 @@ void relation::foil6_rep(ostream &os) const {
 			os << endl;
 		}
 	}
-	os << "." << endl;
+	if (terminate)
+		os << "." << endl;
+}
+
+bool relation::load_foil6(istream &is) {
+	string line;
+	vector<string> fields;
+	tuple t(arty);
+	
+	tuples.clear();
+	while (getline(is, line)) {
+		if (line == "." || line == ";") {
+			update_size();
+			return true;
+		}
+		fields.clear();
+		split(line, ",", fields);
+		if (fields.size() != arty)
+			return false;
+		
+		for (int i = 0; i < arty; ++i) {
+			if (!parse_int(fields[i], t[i])) {
+				return false;
+			}
+		}
+		add(t);
+	}
+	return false;
 }
