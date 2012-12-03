@@ -6,7 +6,7 @@ using namespace std;
 struct sliced_relation_tuple {
 	tuple match;
 	tuple extend;
-	const vec_set *lead;
+	const interval_set *lead;
 }; 
 
 void slice_tuple(const tuple &t1, const tuple &inds, tuple &t2) {
@@ -24,106 +24,360 @@ tuple concat_tuples(const tuple &t1, const tuple &t2) {
 	return t3;
 }
 
-vec_set::vec_set() {
-	curr = new vector<int>;
-	work = new vector<int>;
+typedef vector<interval_set::interval> interval_vec;
+
+void unify_interval_vecs(const interval_vec &v1, const interval_vec &v2, interval_vec &r) {
+	interval_vec::const_iterator p1, p2, e1, e2;
+	interval_set::interval i, j;
+	
+	r.reserve(v1.size() + v2.size());
+	p1 = v1.begin();
+	e1 = v1.end();
+	p2 = v2.begin();
+	e2 = v2.end();
+	
+	while (p1 != e1 || p2 != e2) {
+		if (p1 != e1 && (p2 == e2 || p1->first < p2->first)) {
+			j = *p1++;
+		} else {
+			j = *p2++;
+		}
+		
+		if (i.first > i.last) {
+			// first time
+			i = j;
+		} else if (i.last >= j.first - 1) {
+			i.last = max(i.last, j.last);
+		} else {
+			r.push_back(i);
+			i = j;
+		}
+	}
+	r.push_back(i);
 }
 
-vec_set::vec_set(const vec_set &v) {
-	curr = new vector<int>(*v.curr);
-	work = new vector<int>;
+void intersect_interval_vecs(const interval_vec &v1, const interval_vec &v2, interval_vec &r) {
+	interval_vec::const_iterator p1, p2, e1, e2;
+	interval_set::interval i, j;
+	
+	r.reserve(max(v1.size(), v2.size()));
+	p1 = v1.begin();
+	e1 = v1.end();
+	p2 = v2.begin();
+	e2 = v2.end();
+	
+	while (p1 != e1 || p2 != e2) {
+		if (p1 != e1 && (p2 == e2 || p1->first < p2->first)) {
+			j = *p1++;
+		} else {
+			j = *p2++;
+		}
+		
+		if (i.first > i.last) {
+			// first time
+			i = j;
+		} else if (i.last < j.first) {
+			// drop i
+			i = j;
+		} else if (i.last >= j.first && i.last <= j.last) {
+			i.first = j.first;
+			r.push_back(i);
+			i = j;
+		} else {
+			r.push_back(j);
+		}
+	}
 }
 
-vec_set::~vec_set() {
+void complement_interval_vec(const interval_vec &v, interval_vec &c) {
+	interval_vec::const_iterator p, end;
+	interval_set::interval i;
+	
+	c.clear();
+	c.reserve(v.size());
+	i.first = numeric_limits<int>::min();
+	
+	for (p = v.begin(), end = v.end(); p != end; ++p) {
+		i.last = p->first - 1;
+		c.push_back(i);
+		i.first = p->last + 1;
+	}
+	i.last = numeric_limits<int>::max();
+	c.push_back(i);
+}
+
+void subtract_interval_vecs(const interval_vec &v1, const interval_vec &v2, interval_vec &r) {
+	interval_vec c;
+	complement_interval_vec(v2, c);
+	intersect_interval_vecs(v1, c, r);
+}
+
+void interval_set::interval::serialize(ostream &os) const {
+	serializer(os) << first << last;
+}
+
+void interval_set::interval::unserialize(std::istream &is) {
+	unserializer(is) >> first >> last;
+}
+
+interval_set::interval_set() :sz(0) {
+	curr = new vector<interval>;
+	work = new vector<interval>;
+}
+
+interval_set::interval_set(const interval_set &s) {
+	curr = new vector<interval>(*s.curr);
+	sz = s.sz;
+	work = new vector<interval>;
+}
+
+interval_set::interval_set(const set<int> &s) {
+	curr = new vector<interval>;
+	work = new vector<interval>;
+	*this = s;
+}
+
+interval_set::~interval_set() {
 	delete curr;
 	delete work;
 }
 
-bool vec_set::insert(int x) {
-	if (curr->empty() || x > curr->back()) {
-		curr->push_back(x);
-		return true;
+bool interval_first_compare(const interval_set::interval &i1, const interval_set::interval &i2) {
+	return i1.first < i2.first;
+}
+
+inline vector<interval_set::interval>::iterator upper_bound(vector<interval_set::interval> &v, int x) {
+	interval_set::interval i;
+	i.first = x;
+	return upper_bound(v.begin(), v.end(), i, interval_first_compare);
+}
+
+inline vector<interval_set::interval>::const_iterator upper_bound(const vector<interval_set::interval> &v, int x) {
+	interval_set::interval i;
+	i.first = x;
+	return upper_bound(v.begin(), v.end(), i, interval_first_compare);
+}
+
+void interval_set::update_size() {
+	vector<interval>::const_iterator i, end;
+	sz = 0;
+	for (i = curr->begin(), end = curr->end(); i != end; ++i) {
+		sz += (i->last - i->first) + 1;
 	}
-	vector<int>::iterator i = lower_bound(curr->begin(), curr->end(), x);
-	if (*i != x) {
-		curr->insert(i, x);
+}
+
+bool interval_set::contains(int x) const {
+	vector<interval>::const_iterator p = upper_bound(*curr, x);
+	
+	if (p != curr->begin() && (p - 1)->last >= x)
 		return true;
-	}
+	
 	return false;
 }
 
-bool vec_set::erase(int x) {
-	vector<int>::iterator i = lower_bound(curr->begin(), curr->end(), x);
-	if (i != curr->end() && *i == x) {
-		curr->erase(i);
-		return true;
+bool interval_set::insert(int x) {
+	vector<interval>::iterator p, prev, b, e;
+	
+	b = curr->begin();
+	e = curr->end();
+	if (!curr->empty() && curr->back().first <= x) {
+		// this is the most common case
+		p = e;
+	} else {
+		p = upper_bound(*curr, x);
 	}
-	return false;
+	
+	if (p != b && (p - 1)->last >= x)
+		return false;
+	
+	if (p != b && (prev = p - 1)->last == x - 1) {
+		prev->last++;
+		if (p != e && prev->last == p->first - 1) {
+			prev->last = p->last;
+			curr->erase(p);
+		}
+	} else if (p != e && p->first == x + 1) {
+		p->first--;
+		if (p != b && (prev = p - 1)->last == p->first - 1) {
+			prev->last = p->last;
+			curr->erase(p);
+		}
+	} else {
+		interval i;
+		i.first = x;
+		i.last = x;
+		curr->insert(p, i);
+	}
+	
+	sz++;
+	return true;
 }
 
-void vec_set::unify(const vec_set &v) {
+bool interval_set::erase(int x) {
+	vector<interval>::iterator p, prev;
+	
+	p = upper_bound(*curr, x);
+	if (p == curr->begin() || (p - 1)->last < x)
+		return false;
+	
+	prev = p - 1;
+	if (prev->last == x) {
+		prev->last--;
+		if (prev->first > prev->last)
+			curr->erase(prev);
+	} else if (prev->first == x) {
+		prev->first++;
+		if (prev->first > prev->last)
+			curr->erase(prev);
+	} else {
+		// split prev into 2
+		interval i;
+		i.first = x + 1;
+		i.last = prev->last;
+		prev->last = x - 1;
+		curr->insert(p, i);
+	}
+	
+	sz--;
+	return true;
+}
+
+void interval_set::unify(const interval_set &s) {
+	if (s.empty())
+		return;
+	
+	if (empty()) {
+		*curr = *s.curr;
+		sz = s.sz;
+		return;
+	}
+	
 	work->clear();
-	work->reserve(curr->size() + v.curr->size());
-	set_union(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*work));
+	unify_interval_vecs(*curr, *s.curr, *work);
 	swap(curr, work);
+	update_size();
 }
 
-void vec_set::unify(const vec_set &v, vec_set &r) const {
-	int old_size = r.curr->size();
-	set_union(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*r.curr));
-	r.fix(old_size);
+void interval_set::unify(const interval_set &s, interval_set &r) const {
+	if (empty()) {
+		r = s;
+		return;
+	}
+	if (s.empty()) {
+		r = *this;
+		return;
+	}
+	
+	r.curr->clear();
+	unify_interval_vecs(*work, *s.work, *r.curr);
+	r.update_size();
 }
 
-void vec_set::intersect(const vec_set &v) {
+void interval_set::intersect(const interval_set &s) {
+	if (empty() || s.empty()) {
+		clear();
+		return;
+	}
+	
 	work->clear();
-	work->reserve(curr->size());
-	set_intersection(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*work));
+	intersect_interval_vecs(*curr, *s.curr, *work);
 	swap(curr, work);
+	update_size();
 }
 
-void vec_set::intersect(const vec_set &v, vec_set &r) const {
-	int old_size = r.curr->size();
-	set_intersection(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*r.curr));
-	r.fix(old_size);
+void interval_set::intersect(const interval_set &s, interval_set &r) const {
+	if (empty() || s.empty()) {
+		r.clear();
+		return;
+	}
+	
+	r.curr->clear();
+	intersect_interval_vecs(*curr, *s.curr, *r.curr);
+	r.update_size();
 }
 
-void vec_set::subtract(const vec_set &v) {
+void interval_set::subtract(const interval_set &s) {
+	if (empty())
+		return;
+	
 	work->clear();
-	work->reserve(curr->size());
-	set_difference(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*work));
+	subtract_interval_vecs(*curr, *s.curr, *work);
 	swap(curr, work);
+	update_size();
 }
 
-void vec_set::difference(const vec_set &v, vec_set &r) const {
-	int old_size = r.curr->size();
-	set_difference(curr->begin(), curr->end(), v.curr->begin(), v.curr->end(), back_inserter(*r.curr));
-	r.fix(old_size);
+void interval_set::subtract(const interval_set &s, interval_set &r) const {
+	if (empty()) {
+		r.clear();
+		return;
+	}
+	if (s.empty()) {
+		r = *this;
+		return;
+	}
+	
+	r.curr->clear();
+	subtract_interval_vecs(*curr, *s.curr, *r.curr);
+	r.update_size();
 }
 
-void vec_set::fix(int old_size) {
-	inplace_merge(curr->begin(), curr->begin() + old_size, curr->end());
-	vector<int>::iterator end = unique(curr->begin(), curr->end());
-	curr->resize(end - curr->begin());
+void interval_set::serialize(ostream &os) const {
+	serializer(os) << *curr << sz;
 }
 
-void vec_set::serialize(ostream &os) const {
-	serializer(os) << *curr;
+void interval_set::unserialize(istream &is) {
+	unserializer(is) >> *curr >> sz;
 }
 
-void vec_set::unserialize(istream &is) {
-	curr->clear();
-	unserializer(is) >> *curr;
-}
-
-vec_set &vec_set::operator=(const vec_set &v) {
+interval_set &interval_set::operator=(const interval_set &v) {
 	*curr = *v.curr;
+	sz = v.sz;
 	return *this;
 }
 
-vec_set &vec_set::operator=(const set<int> &s) {
-	curr->resize(s.size());
-	copy(s.begin(), s.end(), curr->begin());
+interval_set &interval_set::operator=(const set<int> &s) {
+	interval in;
+	set<int>::const_iterator i, iend;
+	
+	curr->clear();
+	i = s.begin();
+	in.first = *i;
+	in.last = *i;
+	for (++i, iend = s.end(); i != iend; ++i) {
+		if (*i > in.last + 1) {
+			curr->push_back(in);
+			in.first = *i;
+			in.last = *i;
+		} else {
+			in.last++;
+		}
+	}
+	curr->push_back(in);
+	sz = s.size();
 	return *this;
+}
+
+bool interval_set::check_size() const {
+	vector<interval>::const_iterator i, iend;
+	int s = 0;
+	for (i = curr->begin(), iend = curr->end(); i != iend; ++i) {
+		s += i->last - i->first + 1;
+	}
+	return s == sz;
+}
+
+ostream &operator<<(ostream &os, const interval_set &s) {
+	interval_vec::const_iterator i, end;
+	string sep = "";
+	for (i = s.curr->begin(), end = s.curr->end(); i != end; ++i) {
+		if (i->first == i->last) {
+			os << sep << i->first;
+		} else {
+			os << sep << i->first << "-" << i->last;
+		}
+		sep = ", ";
+	}
+	return os;
 }
 
 relation::relation()
@@ -257,7 +511,7 @@ void relation::subtract(const relation &r, relation &out) const {
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		j = r.tuples.find(i->first);
 		if (j != r.tuples.end()) {
-			i->second.difference(j->second, out.tuples[i->first]);
+			i->second.subtract(j->second, out.tuples[i->first]);
 		} else {
 			out.tuples[i->first] = i->second;
 		}
@@ -369,7 +623,7 @@ void relation::count_expansion(const relation  &r,
 	matched = 0;
 	new_size = 0;
 	
-	vec_set matched_insts, inter;
+	interval_set matched_insts, inter;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		matched_insts.clear();
 		slice_tuple(i->first, m1, t1);
@@ -428,7 +682,7 @@ void relation::del(int i, int n) {
 	del(i, t);
 }
 
-void relation::at_pos(int n, vec_set &elems) const {
+void relation::at_pos(int n, interval_set &elems) const {
 	assert(0 <= n && n < arty);
 	tuple_map::const_iterator i;
 	if (n == 0) {
@@ -482,7 +736,7 @@ void relation::match(const tuple &pat, relation &r) const {
 			}
 		}
 		if (matched) {
-			vec_set &s = r.tuples[i->first];
+			interval_set &s = r.tuples[i->first];
 			if (pat[0] < 0) {
 				s = i->second;
 			} else if (i->second.contains(pat[0])) {
@@ -511,7 +765,7 @@ void relation::filter(const tuple &pat) {
 				break;
 			}
 		}
-		vec_set &s = i->second;
+		interval_set &s = i->second;
 		if (!matched) {
 			s.clear();
 		} else if (pat[0] >= 0) {
@@ -547,12 +801,12 @@ void relation::random_split(int k, relation *r1, relation *r2) const {
 	int i = 0;
 	tuple_map::const_iterator j;
 	for (j = tuples.begin(); j != tuples.end(); ++j) {
-		const vector<int> &v = j->second.vec();
-		for (int k = 0; k < v.size(); ++k) {
+		interval_set::const_iterator j2, j2end;
+		for (j2 = j->second.begin(), j2end = j->second.end(); j2 != j2end; ++j2) {
 			if (choose[i++]) {
-				if (r1) { r1->add(v[k], j->first); }
+				if (r1) { r1->add(*j2, j->first); }
 			} else {
-				if (r2) { r2->add(v[k], j->first); }
+				if (r2) { r2->add(*j2, j->first); }
 			}
 		}
 	}
@@ -564,39 +818,16 @@ void relation::serialize(std::ostream &os) const {
 
 void relation::unserialize(std::istream &is) {
 	unserializer(is) >> arty >> sz >> tuples;
-}
-
-ostream &operator<<(ostream &os, const relation &r) {
-	tuple t(r.arty);
-	set<tuple> sorted;
-	r.dump(sorted);
-	set<tuple>::iterator i;
-	for (i = sorted.begin(); i != sorted.end(); ++i) {
-		join(os, *i, " ") << endl;
-	}
-	return os;
-}
-
-ostream &operator<<(ostream &os, const relation_table &t) {
-	relation_table::const_iterator i;
-	for (i = t.begin(); i != t.end(); ++i) {
-		os << i->first << endl << i->second;
-	}
-	return os;
+	int s = sz;
+	update_size();
+	assert (s == sz);
 }
 
 void relation::dump_foil6(ostream &os, bool terminate) const {
-	tuple_map::const_iterator i;
-	for (i = tuples.begin(); i != tuples.end(); ++i) {
-		const vector<int> &v = i->second.vec();
-		for (int j = 0; j < v.size(); ++j) {
-			os << v[j];
-			if (!i->first.empty()) {
-				os << ",";
-				join(os, i->first, ",");
-			}
-			os << endl;
-		}
+	const_iterator i, e;
+	for (i = begin(), e = end(); i != e; ++i) {
+		join(os, *i, ",");
+		os << endl;
 	}
 	if (terminate)
 		os << "." << endl;
@@ -624,6 +855,42 @@ bool relation::load_foil6(istream &is) {
 			}
 		}
 		add(t);
+		assert(check_size());
 	}
 	return false;
+}
+
+bool relation::check_size() const {
+	tuple_map::const_iterator i, iend;
+	int s = 0;
+	for (i = tuples.begin(), iend = tuples.end(); i != iend; ++i) {
+		if (!i->second.check_size())
+			return false;
+		s += i->second.size();
+	}
+	return sz == s;
+}
+
+void relation::gdb_print() const {
+	relation::tuple_map::const_iterator i, end;
+	for (i = tuples.begin(), end = tuples.end(); i != end; ++i) {
+		join(cout, i->first, " ") << " -> " << i->second << endl;
+	}
+}
+
+ostream &operator<<(ostream &os, const relation &r) {
+	relation::const_iterator i, end;
+	for (i = r.begin(), i = r.end(); i != end; ++i) {
+		join(os, *i, " ");
+		os << endl;
+	}
+	return os;
+}
+
+ostream &operator<<(ostream &os, const relation_table &t) {
+	relation_table::const_iterator i;
+	for (i = t.begin(); i != t.end(); ++i) {
+		os << i->first << endl << i->second;
+	}
+	return os;
 }

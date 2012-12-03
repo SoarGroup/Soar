@@ -97,10 +97,10 @@ public:
 			}
 		}
 		assert(!vars[mrv].infinite_domain);
-		const vector<int> &v = vars[mrv].domain.vec();
-		for (int i = 0; i < v.size(); ++i) {
+		interval_set::const_iterator i, end;
+		for (i = vars[mrv].domain.begin(), end = vars[mrv].domain.end(); i != end; ++i) {
 			csp_node child(*this);
-			if (child.assign(mrv, v[i]) && child.search(out)) {
+			if (child.assign(mrv, *i) && child.search(out)) {
 				return true;
 			}
 		}
@@ -112,12 +112,12 @@ private:
 		bool negated;
 		int unbound;
 		relation tuples;
-		vector<vec_set> doms;
+		vector<interval_set> doms;
 		vector<int> vars;
 	};
 
 	struct var_info {
-		vec_set domain;
+		interval_set domain;
 		bool infinite_domain;  // variable can be any value
 		int label;
 		int value;
@@ -647,7 +647,7 @@ const relation &FOIL::get_rel(const string &name) const {
 void FOIL::dump_foil6(ostream &os) const {
 	tuple zero(1, 0);
 	relation all_times_rel(1);
-	vec_set all_times, all_objs;
+	interval_set all_times, all_objs;
 	
 	pos.slice(zero, all_times_rel);
 	neg.slice(zero, all_times_rel);
@@ -661,9 +661,9 @@ void FOIL::dump_foil6(ostream &os) const {
 	}
 	
 	os << "O: ";
-	join(os, all_objs.vec(), ",") << "." << endl;
+	join(os, all_objs, ",") << "." << endl;
 	os << "T: ";
-	join(os, all_times.vec(), ",") << "." << endl << endl;
+	join(os, all_times, ",") << "." << endl << endl;
 	
 	for (i = rels.begin(); i != rels.end(); ++i) {
 		os << "*" << i->first << "(T";

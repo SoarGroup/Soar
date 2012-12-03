@@ -41,66 +41,146 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <iterator>
 #include "common.h"
 #include "serializable.h"
 
 /*
  Set implementation with a sorted vector
 */
-class vec_set : public serializable {
+class interval_set : public serializable {
 public:
-	vec_set();
-	vec_set(const vec_set &v);
-	~vec_set();
+	class interval : public serializable {
+	public:
+		int first;
+		int last;
+		
+		interval() : first(0), last(-1) {}
+		bool operator==(const interval &i) const { return first == i.first && last == i.last; }
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+	
+	class const_iterator : public std::iterator<std::forward_iterator_tag, int> {
+	public:
+		const_iterator() : j(-1) {}
+		const_iterator(const const_iterator &rhs) : i(rhs.i), j(rhs.j) {}
+
+		const_iterator &operator++() {
+			if (i != end) {
+				if (++j > i->last) {
+					if (++i != end) {
+						j = i->first;
+					} else {
+						j = -1;
+					}
+				}
+			}
+			return *this;
+		}
+		
+		const_iterator operator++(int) {
+			const_iterator c(*this);
+			++(*this);
+			return c;
+		}
+		
+		const_iterator &operator=(const const_iterator &rhs) {
+			i = rhs.i;
+			end = rhs.end;
+			j = rhs.j;
+			return *this;
+		}
+		
+		int operator*() const  { return j; }
+		bool operator==(const const_iterator &rhs) const { return i == rhs.i && j == rhs.j; }
+		bool operator!=(const const_iterator &rhs) const { return i != rhs.i || j != rhs.j; }
+
+	private:
+		const_iterator(const interval_set &s, bool begin)
+		: j(-1), end(s.curr->end())
+		{
+			if (begin) {
+				i = s.curr->begin();
+				if (i != end)
+					j = i->first;
+			} else {
+				i = end;
+				j = -1;
+			}
+		}
+		
+		std::vector<interval>::const_iterator i, end;
+		int j;
+		
+		friend class interval_set;
+	};
+	
+	interval_set();
+	interval_set(const interval_set &v);
+	interval_set(const std::set<int> &s);
+	~interval_set();
 	
 	bool insert(int x);
 	bool erase(int x);
-	void unify(const vec_set &v);
-	void intersect(const vec_set &v);
-	void subtract(const vec_set &v);
+	void unify(const interval_set &v);
+	void intersect(const interval_set &v);
+	void subtract(const interval_set &v);
 	
-	void unify(const vec_set &v, vec_set &result) const;
-	void intersect(const vec_set &v, vec_set &result) const;
-	void difference(const vec_set &v, vec_set &result) const;
+	void unify(const interval_set &v, interval_set &result) const;
+	void intersect(const interval_set &v, interval_set &result) const;
+	void subtract(const interval_set &v, interval_set &result) const;
 	
-	bool contains(int x) const               { return binary_search(curr->begin(), curr->end(), x); }
-	int  size() const                        { return curr->size(); }
+	bool contains(int x) const;
+	
+	int  size() const                        { return sz; }
 	bool empty() const                       { return curr->empty(); }
-	bool operator==(const vec_set &v) const  { return *curr == *v.curr; }
-	const std::vector<int> &vec() const      { return *curr; }
-	void clear()                             { curr->clear(); }
+	bool operator==(const interval_set &v) const  { return *curr == *v.curr; }
+	void clear()                             { curr->clear(); sz = 0; }
 
-	vec_set &operator=(const vec_set &v);
-	vec_set &operator=(const std::set<int> &s);
+	interval_set &operator=(const interval_set &v);
+	interval_set &operator=(const std::set<int> &s);
 
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
+
+	const_iterator begin() const        { return const_iterator(*this, true); }
+	const_iterator end() const   { return const_iterator(*this, false); }
+	
+	int num_intervals() const { return curr->size(); }
+	bool check_size() const;
+	
+	friend std::ostream &operator<<(std::ostream &os, const interval_set &s);
 	
 private:
-	void fix(int old_size);
+	void update_size();
 	
-	std::vector<int> *curr, *work;
+	int sz;
+	std::vector<interval> *curr, *work;
 };
+
+std::ostream &operator<<(std::ostream &os, const interval_set &s);
 
 class relation : public serializable {
 public:
-	typedef std::map<tuple, vec_set > tuple_map;
+	typedef std::map<tuple, interval_set > tuple_map;
 
-	class iter {
+	class iter : public std::iterator<std::forward_iterator_tag, int> {
 	public:
-		iter() : j(0) {}
+		iter() {}
 		iter(const iter &rhs) : i(rhs.i), end(rhs.end), j(rhs.j), t(rhs.t) {}
 
 		iter &operator++() {
 			if (i != end) {
-				if (++j >= i->second.size()) {
-					j = 0;
+				if (++j == jend) {
 					if (++i != end) {
+						j = i->second.begin();
+						jend = i->second.end();
 						copy(i->first.begin(), i->first.end(), t.begin() + 1);
-						t[0] = i->second.vec()[j];
+						t[0] = *j;
 					}
 				} else {
-					t[0] = i->second.vec()[j];
+					t[0] = *j;
 				}
 			}
 			return *this;
@@ -112,28 +192,34 @@ public:
 			return c;
 		}
 		
-		iter &operator=(const iter &rhs)	{
+		iter &operator=(const iter &rhs) {
 			i = rhs.i;
 			end = rhs.end;
 			j = rhs.j;
+			jend = rhs.jend;
 			t = rhs.t;
 			return *this;
 		}
 		
 		const tuple &operator*() const  { return t; }
 		const tuple *operator->() const { return &t; }
-		bool operator==(const iter &rhs) const { return i == rhs.i && j == rhs.j; }
-		bool operator!=(const iter &rhs) const { return i != rhs.i || j != rhs.j; }
+		bool operator==(const iter &rhs) const {
+			if (i == end && rhs.i == end)
+				return true;
+			return i == rhs.i && j == rhs.j;
+		}
+		bool operator!=(const iter &rhs) const { return !((*this) == rhs); }
 
 	private:
 		iter(const relation &r, bool begin)
-		: end(r.tuples.end()), j(0), t(r.arity())
+		: end(r.tuples.end()), t(r.arity())
 		{
 			if (begin) {
 				i = r.tuples.begin();
 				if (i != end) {
 					copy(i->first.begin(), i->first.end(), t.begin() + 1);
-					t[0] = i->second.vec()[j];
+					j = i->second.begin();
+					jend = i->second.end();
 				}
 			} else {
 				i = end;
@@ -142,7 +228,7 @@ public:
 		
 		tuple_map::const_iterator i;
 		tuple_map::const_iterator end;
-		int j;
+		interval_set::const_iterator j, jend;
 		tuple t;
 		
 		friend class relation;
@@ -175,7 +261,7 @@ public:
 	void slice(int n, relation &out) const;
 	bool operator==(const relation &r) const;
 	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
-	void at_pos(int n, vec_set &elems) const;
+	void at_pos(int n, interval_set &elems) const;
 	void drop_first(std::set<tuple> &out) const;
 	void match(const tuple &pattern, relation &r) const;
 	void random_split(int k, relation *r1, relation *r2) const;
@@ -193,22 +279,10 @@ public:
 	const_iterator begin() const { return iter(*this, true); }
 	const const_iterator &end() const   { return end_iter; }
 	
-	template<typename C>
-	void dump(C &out) const {
-		std::insert_iterator<C> ins(out, out.end());
-		tuple_map::const_iterator i;
-		tuple t(arty);
-		for (i = tuples.begin(); i != tuples.end(); ++i) {
-			copy(i->first.begin(), i->first.end(), t.begin() + 1);
-			const std::vector<int> &s = i->second.vec();
-			for (int j = 0; j < s.size(); ++j) {
-				t[0] = s[j];
-				ins = t;
-			}
-		}
-	}
-
+	void gdb_print() const;
+	
 private:
+	bool check_size() const;
 	void update_size();
 	
 	int sz, arty;

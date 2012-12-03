@@ -384,9 +384,9 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 }
 
 void print_first_arg(const relation &r, ostream &os) {
-	vec_set first;
+	interval_set first;
 	r.at_pos(0, first);
-	join(os, first.vec(), " ") << endl;
+	join(os, first, " ") << endl;
 }
 
 EM::EM() : ndata(0), nmodes(1), use_em(true), use_foil(true), use_lda(true), check_after(NEW_MODE_THRESH)
@@ -821,8 +821,6 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 }
 
 bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
-	const_cast<EM*>(this)->update_classifier();
-
 	if (first >= args.size()) {
 		os << "modes: " << nmodes << endl;
 		os << endl << "subqueries: mode ptable timing train relations classifiers use_em use_foil use_lda" << endl;
@@ -1463,12 +1461,12 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 		return NULL;
 	}
 	
-	vec_set p0, n0;
+	interval_set p0, n0;
 	vector<int> pi, ni;
 	pos.at_pos(0, p0);
-	pi = p0.vec();
 	neg.at_pos(0, n0);
-	ni = n0.vec();
+	copy(p0.begin(), p0.end(), back_inserter(pi));
+	copy(n0.begin(), n0.end(), back_inserter(ni));
 	
 	random_shuffle(pi.begin(), pi.end());
 	random_shuffle(ni.begin(), ni.end());
@@ -1681,6 +1679,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 }
 
 bool EM::cli_inspect_classifiers(ostream &os) const {
+	const_cast<EM*>(this)->update_classifier();
 	for (int i = 0; i < nmodes; ++i) {
 		for (int j = 0; j < nmodes; ++j) {
 			classifier *c = modes[i]->classifiers[j];
