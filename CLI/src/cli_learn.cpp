@@ -56,17 +56,17 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
                 if (agnt->sysparams[LEARNING_EXCEPT_SYSPARAM]) m_Result << " (except)";
                 if (agnt->sysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_Result << " (all-levels)";
                 if (agnt->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM]) {
-                    m_Result << " (through-local-negations)";
+                    m_Result << " (local negations)";
                 } else {
-                    m_Result << " (not through-local-negations)";
+                    m_Result << " (no local negations)";
                 }
             } else {
                 m_Result << "Learning is disabled.";
             }
             if (agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]) {
-              m_Result << " (will backtrace through evaluation rules)";
+              m_Result << " (will backtrace through desirability preferences)";
             } else {
-              m_Result << " (will not backtrace through evaluation rules)";
+              m_Result << " (will not backtrace through desirability preferences)";
             }
         } else {
             AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, agnt->sysparams[LEARNING_ON_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);

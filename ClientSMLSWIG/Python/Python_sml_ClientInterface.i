@@ -33,6 +33,17 @@
 	
 	std::list<PythonUserData*> callbackdatas;
 	
+	void show_exception_and_exit(const char *type, int id) {
+		std::cerr << "Uncaught Python exception in " << type << " callback id = " << id << ". Exiting." << std::endl;
+		PyObject *excType, *excValue, *excTraceback;
+		PyErr_Fetch(&excType, &excValue, &excTraceback);
+		PyErr_NormalizeException(&excType, &excValue, &excTraceback);
+		char buf[7];
+		strcpy(buf, "stderr");
+		PyTraceBack_Print(excTraceback, PySys_GetObject(buf));
+		exit(1);
+	}
+	
 	void PythonProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
 	{	
 		PyGILState_STATE gstate;
@@ -46,7 +57,11 @@
 		
 		Py_DECREF(agent);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(!result) {
+			show_exception_and_exit("production event", id);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -64,7 +79,11 @@
 		
 		Py_DECREF(agent);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if (!result) {
+			show_exception_and_exit("run event", id);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -82,7 +101,11 @@
 		
 		Py_DECREF(agent);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(!result) {
+			show_exception_and_exit("print event", id);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -102,7 +125,11 @@
 		Py_DECREF(agent);
 		Py_DECREF(xml);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(!result) {
+			show_exception_and_exit("XML event", id);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -122,7 +149,11 @@
 		Py_DECREF(agent);
 		Py_DECREF(wme);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(!result) {
+			show_exception_and_exit("output event", -1);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -140,7 +171,11 @@
 		
 		Py_DECREF(agent);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(!result) {
+			show_exception_and_exit("output notification event", -1);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -158,7 +193,11 @@
 		
 		Py_DECREF(kernel);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(!result) {
+			show_exception_and_exit("system event", id);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -176,7 +215,11 @@
 		
 		Py_DECREF(kernel);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(!result) {
+			show_exception_and_exit("update event", id);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -194,8 +237,11 @@
 		
 		Py_DECREF(kernel);
 		Py_DECREF(args);
-		if(result==0 || !PyString_Check(result))
+		if(!result) {
+			show_exception_and_exit("string event", id);
+		} else if (!PyString_Check(result)) {
 			return "";
+		}
 		
 		std::string res = PyString_AsString(result);
 		Py_DECREF(result);
@@ -218,7 +264,11 @@
 		
 		Py_DECREF(agent);
 		Py_DECREF(args);
-		if(result!=0) Py_DECREF(result);
+		if(!result) {
+			show_exception_and_exit("agent event", id);
+		} else {
+			Py_DECREF(result);
+		}
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
@@ -237,8 +287,11 @@
 		
 		Py_DECREF(agent);
 		Py_DECREF(args);
-		if(result==0 || !PyString_Check(result))
+		if(!result) {
+			show_exception_and_exit("RHS event", id);
+		} else if (!PyString_Check(result)) {
 			return "";
+		}
 		
 		std::string res = PyString_AsString(result);
 		Py_DECREF(result);
@@ -261,8 +314,11 @@
 		
 		Py_DECREF(agent);
 		Py_DECREF(args);
-		if(result==0 || !PyString_Check(result))
+		if(!result) {
+			show_exception_and_exit("client message event", id);
+		} else if (!PyString_Check(result)) {
 			return "";
+		}
 		
 		std::string res = PyString_AsString(result);
 		Py_DECREF(result);
