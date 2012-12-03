@@ -3545,7 +3545,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 	// otherwse, if the pedge has not been registered with this literal
 	epmem_triple_pedge_map* pedge_cache = &(pedge_caches[is_edge]);
 	epmem_triple_pedge_map::iterator pedge_iter = pedge_cache->find(triple);
-	epmem_pedge* child_pedge = (*pedge_iter).second;
+	epmem_pedge* child_pedge = NULL;
 	if (pedge_iter == pedge_cache->end() || (*pedge_iter).second == NULL) {
 		int has_value = (literal->q1 != EPMEM_NODEID_BAD ? 1 : 0);
 		soar_module::pooled_sqlite_statement* pedge_sql = my_agent->epmem_stmts_graph->pool_find_edge_queries[is_edge][has_value]->request(my_agent->epmem_timers->query_sql_edge);
@@ -3562,7 +3562,6 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 			pedge_sql->bind_int(bind_pos++, after);
 		}
 		if (pedge_sql->execute() == soar_module::row) {
-			epmem_pedge* child_pedge;
 			allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &child_pedge);
 			child_pedge->triple = triple;
 			child_pedge->value_is_id = literal->value_is_id;
@@ -3578,29 +3577,32 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 			pedge_sql->get_pool()->release(pedge_sql);
 			return false;
 		}
-	} else if (!child_pedge->literals.count(literal)) {
-		child_pedge->literals.insert(literal);
-		if (!literal->is_current) {
-			child_pedge->has_noncurrent = true;
-		}
-		// if the literal is an edge with no specified value, add the literal to all potential pedges
-		if (!literal->is_leaf && literal->q1 == EPMEM_NODEID_BAD) {
-			bool created = false;
-			epmem_triple_uedge_map* uedge_cache = &uedge_caches[is_edge];
-			for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->lower_bound(triple); uedge_iter != uedge_cache->end(); uedge_iter++) {
-				epmem_triple child_triple = (*uedge_iter).first;
-				// make sure we're still looking at the right edge(s)
-				if (child_triple.q0 != triple.q0 || child_triple.w != triple.w) {
-					break;
-				}
-				epmem_uedge* child_uedge = (*uedge_iter).second;
-				if (child_triple.q1 != EPMEM_NODEID_BAD && child_uedge->value_is_id) {
-					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						created |= epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, after, pedge_caches, uedge_caches, my_agent);
+	} else {
+		child_pedge = (*pedge_iter).second;
+		if (!child_pedge->literals.count(literal)) {
+			child_pedge->literals.insert(literal);
+			if (!literal->is_current) {
+				child_pedge->has_noncurrent = true;
+			}
+			// if the literal is an edge with no specified value, add the literal to all potential pedges
+			if (!literal->is_leaf && literal->q1 == EPMEM_NODEID_BAD) {
+				bool created = false;
+				epmem_triple_uedge_map* uedge_cache = &uedge_caches[is_edge];
+				for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->lower_bound(triple); uedge_iter != uedge_cache->end(); uedge_iter++) {
+					epmem_triple child_triple = (*uedge_iter).first;
+					// make sure we're still looking at the right edge(s)
+					if (child_triple.q0 != triple.q0 || child_triple.w != triple.w) {
+						break;
+					}
+					epmem_uedge* child_uedge = (*uedge_iter).second;
+					if (child_triple.q1 != EPMEM_NODEID_BAD && child_uedge->value_is_id) {
+						for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+							created |= epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, after, pedge_caches, uedge_caches, my_agent);
+						}
 					}
 				}
+				return created;
 			}
-			return created;
 		}
 	}
 	return true;
@@ -3670,9 +3672,11 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 						}
 					} else {
 						uedge_iter = uedge_cache->find(child_triple);
-						child_uedge = (*uedge_iter).second;
-						if (uedge_iter != uedge_cache->end() && child_uedge->activated && (!literal->is_current || child_uedge->activation_count == 1)) {
-							changed_score |= epmem_satisfy_literal(child_lit, child_triple.q0, child_triple.q1, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
+						if (uedge_iter != uedge_cache->end() && (*uedge_iter).second != NULL) {
+							child_uedge = (*uedge_iter).second;
+							if (child_uedge->activated && (!literal->is_current || child_uedge->activation_count == 1)) {
+								changed_score |= epmem_satisfy_literal(child_lit, child_triple.q0, child_triple.q1, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
+							}
 						}
 					}
 				}
