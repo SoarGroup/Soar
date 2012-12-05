@@ -969,7 +969,7 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
   preference *p, *p2, *cand, *prev_cand;
-  Bool match_found, not_all_indifferent, some_numeric, do_CDPS;
+  Bool match_found, not_all_indifferent, some_numeric, do_CDPS, some_not_worst;
   preference *candidates;
   Symbol *value;
   cons *CDPS, *prev_cons;
@@ -1342,9 +1342,17 @@ byte run_preference_semantics(agent* thisAgent,
     for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next)
       p->value->common.decider_flag = WORST_DECIDER_FLAG;
 
-    /* Reduce candidates list to only those that do not have a worst preference flag.  Note
-     * that this only occurs if there is at least one candidate that doesn't have a worse
-     * preference, otherwise the candidate list is not modified. */
+     /* Because we only want to add worst preferences to the CDPS if they actually have an impact
+     * on the candidate list, we must first see if there's at least one non-worst candidate. */
+
+    if (do_CDPS) {
+      some_not_worst = false;
+      for (cand = candidates; cand != NIL; cand = cand->next_candidate)  {
+        if (cand->value->common.decider_flag != WORST_DECIDER_FLAG) {
+    	  some_not_worst = true;
+        }
+      }
+    }
 
     prev_cand = NIL;
     for (cand = candidates; cand != NIL; cand = cand->next_candidate)  {
@@ -1355,7 +1363,7 @@ byte run_preference_semantics(agent* thisAgent,
           candidates = cand;
         prev_cand = cand;
       } else {
-        if (do_CDPS) {
+        if (do_CDPS && some_not_worst) {
           /* Add this worst preference to CDPS */
           for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
