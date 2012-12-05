@@ -387,6 +387,10 @@ public:
 		return r;
 	}
 	
+	void get_matrix(mat &m) const {
+		m = trans.matrix();
+	}
+	
 private:
 	Eigen::Transform<double, 3, Eigen::Affine> trans;
 };

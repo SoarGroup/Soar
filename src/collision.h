@@ -9,10 +9,12 @@
 #include "timer.h"
 
 class sgnode;
+class geometry_node;
 
 typedef std::set<std::pair<const sgnode*, const sgnode*> > collision_table;
 
 bool intersects(const sgnode *n1, const sgnode *n2);
+double convex_distance(const geometry_node *n1, const geometry_node *n2);
 
 class collision_detector {
 public:

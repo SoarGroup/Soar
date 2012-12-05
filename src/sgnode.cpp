@@ -264,6 +264,27 @@ void group_node::set_transform_dirty_sub() {
 	}
 }
 
+/*
+ Based on the fact that the support s_T(v) of a geometry under transformation
+ T(x) = Bx + c is T(s(Bt(v))), where Bt is the transpose of B.
+ 
+ For more information see
+ 
+ "Bergen, G. (1999) A Fast and Robust GJK Implementation for Collision
+  Detection of Convex Objects."
+*/
+void geometry_node::gjk_support(const vec3 &dir, vec3 &support) const {
+	vec3 tdir;
+	mat B;
+	transform3 t;
+	
+	t = get_world_trans();
+	t.get_matrix(B);
+	tdir = B.block(0, 0, 3, 3).transpose() * dir;
+	gjk_local_support(tdir, support);
+	support = t(support);
+}
+
 convex_node::convex_node(const string &name, const string &type, const ptlist &v, const vector<int> &tris)
 : geometry_node(name, type), verts(v), triangles(tris), dirty(true)
 {
@@ -308,6 +329,23 @@ void convex_node::get_shape_sgel(string &s) const {
 	s = ss.str();
 }
 
+/*
+ This is a naive implementation. Should be able to get complexity to sublinear.
+*/
+void convex_node::gjk_local_support(const vec3 &dir, vec3 &support) const {
+	double dp, best;
+	int best_i = -1;
+	
+	for (int i = 0; i < verts.size(); ++i) {
+		dp = dir.dot(verts[i]);
+		if (best_i == -1 || dp > best) {
+			best = dp;
+			best_i = i;
+		}
+	}
+	support = verts[best_i];
+}
+
 ball_node::ball_node(const string &name, const string &type, double radius)
 : geometry_node(name, type), radius(radius)
 {}
@@ -341,4 +379,8 @@ void ball_node::update_shape() {
 void ball_node::set_radius(double r) {
 	radius = r;
 	set_shape_dirty();
+}
+
+void ball_node::gjk_local_support(const vec3 &dir, vec3 &support) const {
+	support = radius * dir.normalized();
 }

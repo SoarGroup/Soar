@@ -9,4 +9,7 @@ src = []
 for d in ['src', 'src/filters', 'src/commands', 'src/models', 'src/algorithms']:
 	src += Glob(d + '/*.cpp')
 
+# for libccd
+inc += [env.Dir('ccd').srcnode()]
+src += Glob('ccd/*.c')
 Return('src', 'inc')

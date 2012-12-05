@@ -1,6 +1,7 @@
 #include <iostream>
 #include "collision.h"
 #include "sgnode.h"
+#include "ccd/ccd.h"
 
 using namespace std;
 
@@ -123,4 +124,31 @@ bool intersects(const sgnode *n1, const sgnode *n2) {
 	dGeomDestroy(g1);
 	dGeomDestroy(g2);
 	return num_contacts > 0;
+}
+
+void ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {
+	vec3 d, support;
+	const geometry_node *n = static_cast<const geometry_node*>(obj);
+	
+	for (int i = 0; i < 3; ++i) {
+		d(i) = dir->v[i];
+	}
+	n->gjk_support(d, support);
+	for (int i = 0; i < 3; ++i) {
+		v->v[i] = support(i);
+	}
+}
+
+double convex_distance(const geometry_node *n1, const geometry_node *n2) {
+	geometry_node *g1, *g2;
+	ccd_t ccd;
+	double dist;
+	
+	CCD_INIT(&ccd);
+	ccd.support1       = ccd_support;
+	ccd.support2       = ccd_support;
+	ccd.max_iterations = 100;
+	
+	dist = ccdGJKDist(n1, n2, &ccd);
+	return dist > 0.0 ? dist : 0.0;
 }

@@ -122,7 +122,12 @@ class geometry_node : public sgnode {
 public:
 	geometry_node(const std::string &name, const std::string &type) : sgnode(name, type, false) {}
 	virtual ~geometry_node() {}
+	void gjk_support(const vec3 &dir, vec3 &support) const;
+
 	void walk(std::vector<sgnode*> &result) { result.push_back(this); }
+	
+private:
+	virtual void gjk_local_support(const vec3 &dir, vec3 &support) const = 0;
 };
 
 class convex_node : public geometry_node {
@@ -134,6 +139,7 @@ public:
 	const std::vector<int> &get_triangles() const { return triangles; }
 	void set_verts(const ptlist &v);
 	void get_shape_sgel(std::string &s) const;
+	void gjk_local_support(const vec3 &dir, vec3 &support) const;
 	
 private:
 	void set_transform_dirty_sub();
@@ -156,6 +162,7 @@ public:
 	}
 	
 	void set_radius(double r);
+	void gjk_local_support(const vec3 &dir, vec3 &support) const;
 	
 private:
 	void update_shape();
