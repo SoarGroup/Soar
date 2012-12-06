@@ -66,49 +66,16 @@ public:
 		const_iterator() : j(-1) {}
 		const_iterator(const const_iterator &rhs) : i(rhs.i), j(rhs.j) {}
 
-		const_iterator &operator++() {
-			if (i != end) {
-				if (++j > i->last) {
-					if (++i != end) {
-						j = i->first;
-					} else {
-						j = -1;
-					}
-				}
-			}
-			return *this;
-		}
-		
-		const_iterator operator++(int) {
-			const_iterator c(*this);
-			++(*this);
-			return c;
-		}
-		
-		const_iterator &operator=(const const_iterator &rhs) {
-			i = rhs.i;
-			end = rhs.end;
-			j = rhs.j;
-			return *this;
-		}
+		const_iterator &operator++();
+		const_iterator operator++(int);
+		const_iterator &operator=(const const_iterator &rhs);
 		
 		int operator*() const  { return j; }
 		bool operator==(const const_iterator &rhs) const { return i == rhs.i && j == rhs.j; }
 		bool operator!=(const const_iterator &rhs) const { return i != rhs.i || j != rhs.j; }
 
 	private:
-		const_iterator(const interval_set &s, bool begin)
-		: j(-1), end(s.curr->end())
-		{
-			if (begin) {
-				i = s.curr->begin();
-				if (i != end)
-					j = i->first;
-			} else {
-				i = end;
-				j = -1;
-			}
-		}
+		const_iterator(const interval_set &s, bool begin);
 		
 		std::vector<interval>::const_iterator i, end;
 		int j;
@@ -170,37 +137,9 @@ public:
 		iter() {}
 		iter(const iter &rhs) : i(rhs.i), end(rhs.end), j(rhs.j), t(rhs.t) {}
 
-		iter &operator++() {
-			if (i != end) {
-				if (++j == jend) {
-					if (++i != end) {
-						j = i->second.begin();
-						jend = i->second.end();
-						copy(i->first.begin(), i->first.end(), t.begin() + 1);
-						t[0] = *j;
-					}
-				} else {
-					t[0] = *j;
-				}
-			}
-			return *this;
-		}
-		
-		iter operator++(int) {
-			iter c(*this);
-			++(*this);
-			return c;
-		}
-		
-		iter &operator=(const iter &rhs) {
-			i = rhs.i;
-			end = rhs.end;
-			j = rhs.j;
-			jend = rhs.jend;
-			t = rhs.t;
-			return *this;
-		}
-		
+		iter &operator++();
+		iter operator++(int);
+		iter &operator=(const iter &rhs);
 		const tuple &operator*() const  { return t; }
 		const tuple *operator->() const { return &t; }
 		bool operator==(const iter &rhs) const {
@@ -211,20 +150,7 @@ public:
 		bool operator!=(const iter &rhs) const { return !((*this) == rhs); }
 
 	private:
-		iter(const relation &r, bool begin)
-		: end(r.tuples.end()), t(r.arity())
-		{
-			if (begin) {
-				i = r.tuples.begin();
-				if (i != end) {
-					copy(i->first.begin(), i->first.end(), t.begin() + 1);
-					j = i->second.begin();
-					jend = i->second.end();
-				}
-			} else {
-				i = end;
-			}
-		}
+		iter(const relation &r, bool begin);
 		
 		tuple_map::const_iterator i;
 		tuple_map::const_iterator end;

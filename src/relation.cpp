@@ -876,3 +876,88 @@ ostream &operator<<(ostream &os, const relation_table &t) {
 	}
 	return os;
 }
+
+relation::iter &relation::iter::operator++() {
+	if (i != end) {
+		if (++j == jend) {
+			if (++i != end) {
+				j = i->second.begin();
+				jend = i->second.end();
+				copy(i->first.begin(), i->first.end(), t.begin() + 1);
+				t[0] = *j;
+			}
+		} else {
+			t[0] = *j;
+		}
+	}
+	return *this;
+}
+
+relation::iter relation::iter::operator++(int) {
+	iter c(*this);
+	++(*this);
+	return c;
+}
+
+relation::iter &relation::iter::operator=(const relation::iter &rhs) {
+	i = rhs.i;
+	end = rhs.end;
+	j = rhs.j;
+	jend = rhs.jend;
+	t = rhs.t;
+	return *this;
+}
+
+relation::iter::iter(const relation &r, bool begin)
+: end(r.tuples.end()), t(r.arity())
+{
+	if (begin) {
+		i = r.tuples.begin();
+		if (i != end) {
+			copy(i->first.begin(), i->first.end(), t.begin() + 1);
+			j = i->second.begin();
+			jend = i->second.end();
+		}
+	} else {
+		i = end;
+	}
+}
+
+interval_set::const_iterator &interval_set::const_iterator::operator++() {
+	if (i != end) {
+		if (++j > i->last) {
+			if (++i != end) {
+				j = i->first;
+			} else {
+				j = -1;
+			}
+		}
+	}
+	return *this;
+}
+
+interval_set::const_iterator interval_set::const_iterator::operator++(int) {
+	const_iterator c(*this);
+	++(*this);
+	return c;
+}
+
+interval_set::const_iterator &interval_set::const_iterator::operator=(const interval_set::const_iterator &rhs) {
+	i = rhs.i;
+	end = rhs.end;
+	j = rhs.j;
+	return *this;
+}
+
+interval_set::const_iterator::const_iterator(const interval_set &s, bool begin)
+: j(-1), end(s.curr->end())
+{
+	if (begin) {
+		i = s.curr->begin();
+		if (i != end)
+			j = i->first;
+	} else {
+		i = end;
+		j = -1;
+	}
+}
