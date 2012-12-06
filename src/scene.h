@@ -7,7 +7,6 @@
 #include "sgnode.h"
 #include "common.h"
 #include "collision.h"
-#include "relation.h"
 #include "scene_sig.h"
 
 class filter;
@@ -44,15 +43,9 @@ public:
 	bool set_property(const std::string &obj, const std::string &prop, double val);
 	bool set_properties(const rvec &vals);
 	void remove_property(const std::string &obj, const std::string &prop);
-	
 	void parse_sgel(const std::string &s);
-	
 	void node_update(sgnode *n, sgnode::change_type t, int added_child);
-	
 	bool intersects(const sgnode *a, const sgnode *b) const;
-	
-	void calc_relations(relation_table &rels) const;
-	
 	const scene_sig &get_signature() const;
 	
 private:

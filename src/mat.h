@@ -5,16 +5,7 @@
 #include <vector>
 #include "serializable.h"
 
-/*
- By default Eigen will try to align all fixed size vectors to 128-bit
- boundaries to enable SIMD instructions on hardware such as SSE. However,
- this requires that you modify every class that has such vectors as
- members so that they are correctly allocated. This seems like more
- trouble than it's worth at the moment, so I'm disabling it.
-*/
-#define EIGEN_DONT_ALIGN
 #include <Eigen/Dense>
-//#include <Eigen/src/plugins/BlockMethods.h>
 #include <Eigen/StdVector>
 
 typedef Eigen::Vector3d vec3;
@@ -228,6 +219,11 @@ void pick_rows(mat_view X, const std::vector<int> &rows);
  --------------> u
 */
 double dir_separation(const ptlist &a, const ptlist &b, const vec3 &u);
+
+void serialize  (const_mat_view m, std::ostream &os);
+void unserialize(mat &m,           std::istream &is);
+void unserialize(rvec &v,          std::istream &is);
+void unserialize(cvec &v,          std::istream &is);
 
 class bbox {
 public:

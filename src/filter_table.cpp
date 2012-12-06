@@ -221,4 +221,14 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 			}
 		}
 	}
+	
+	// add type relations
+	for (int j = 0; j < node_inds.size(); ++j) {
+		string type = scn->get_node(node_inds[j])->get_type();
+		if (!has(rt, type)) {
+			rt[type] = relation(2);
+		}
+		relation &type_rel = rt[type];
+		type_rel.add(0, node_inds[j]);
+	}
 }

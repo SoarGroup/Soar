@@ -1,3 +1,4 @@
+#include <limits>
 #include "relation.h"
 #include "serialize.h"
 
@@ -404,7 +405,7 @@ relation::relation(int n, const vector<tuple> &ts)
 	}
 }
 	
-bool relation::has(const tuple &t) const {
+bool relation::contains(const tuple &t) const {
 	assert(t.size() == arty);
 	tuple tail(t.begin() + 1, t.end());
 	tuple_map::const_iterator i = tuples.find(tail);
@@ -715,64 +716,45 @@ void relation::reset(int new_arity) {
 }
 
 /*
- Puts any tuple matching pattern pat into r. Any negate element in pat
- is considered a wild card. If pat is shorter than the relation's
- arity, the difference is considered to be wild cards.
-*/
-void relation::match(const tuple &pat, relation &r) const {
-	assert(pat.size() <= arty && arty == r.arty);
-	if (pat.empty()) {
-		r.tuples = tuples;
-		return;
-	}
-	
-	tuple_map::const_iterator i;
-	for (i = tuples.begin(); i != tuples.end(); ++i) {
-		bool matched = true;
-		for (int j = 1; j < pat.size(); ++j) {
-			if (pat[j] >= 0 && pat[j] != i->first[j - 1]) {
-				matched = false;
-				break;
-			}
-		}
-		if (matched) {
-			interval_set &s = r.tuples[i->first];
-			if (pat[0] < 0) {
-				s = i->second;
-			} else if (i->second.contains(pat[0])) {
-				s.insert(pat[0]);
-			}
-		}
-	}
-	r.update_size();
-}
+ Remove any tuples that don't match pattern. pat is a vector of tuples, with
+ tuple i enumerating the possible values for argument i. An empty tuple is
+ considered a wildcard. If pat is shorter than the relation's arity, the
+ difference are considered wildcards.
 
-/*
- Keep only the tuples that match pattern pat.
 */
-void relation::filter(const tuple &pat) {
+void relation::filter(const vector<tuple> &pat, bool negate) {
 	assert(pat.size() <= arty);
 	if (pat.empty()) {
 		return;
 	}
-	
+
 	tuple_map::iterator i;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		bool matched = true;
 		for (int j = 1; j < pat.size(); ++j) {
-			if (pat[j] >= 0 && pat[j] != i->first[j - 1]) {
+			if (!pat[j].empty() && !has(pat[j], i->first[j - 1])) {
 				matched = false;
 				break;
 			}
 		}
 		interval_set &s = i->second;
-		if (!matched) {
-			s.clear();
-		} else if (pat[0] >= 0) {
-			bool found = s.contains(pat[0]);
-			s.clear();
-			if (found) {
-				s.insert(pat[0]);
+		if (!negate) {
+			if (!matched) {
+				s.clear();
+			} else {
+				interval_set p0;
+				for (int j = 0; j < pat[0].size(); ++j)
+					p0.insert(pat[0][j]);
+				s.intersect(p0);
+			}
+		} else if (matched) {
+			if (!pat[0].empty()) {
+				interval_set p0;
+				for (int j = 0; j < pat[0].size(); ++j)
+					p0.insert(pat[0][j]);
+				s.subtract(p0);
+			} else {
+				s.clear();
 			}
 		}
 	}

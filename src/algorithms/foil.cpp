@@ -150,15 +150,15 @@ private:
 		vector<bool> need_update(constraints.size(), false);
 		for (int i = 0; i < constraints.size(); ++i) {
 			constraint_info &cons = constraints[i];
+			vector<tuple> pat(cons.tuples.arity());
 			for (int j = 0; j < cons.vars.size(); ++j) {
 				if (cons.vars[j] == v) {
-					vector<int> pat(cons.tuples.arity(), -1);
-					pat[j] = value;
-					cons.tuples.filter(pat);
+					pat[j].push_back(value);
 					--cons.unbound;
 					need_update[i] = true;
 				}
 			}
+			cons.tuples.filter(pat, false);
 		}
 
 		/*
@@ -631,7 +631,7 @@ bool FOIL::tuple_satisfies_literal(const tuple &t, const literal &l) {
 	for (i = l.get_args().begin(); i != l.get_args().end(); ++i) {
 		ground_lit.push_back(t[*i]);
 	}
-	bool inrel = get_rel(l.get_name()).has(ground_lit);
+	bool inrel = get_rel(l.get_name()).contains(ground_lit);
 	if (l.negated()) {
 		return !inrel;
 	}

@@ -624,21 +624,6 @@ bool scene::intersects(const sgnode *a, const sgnode *b) const {
 	return c.find(make_pair(a, b)) != c.end() || c.find(make_pair(b, a)) != c.end();
 }
 
-void scene::calc_relations(relation_table &rels) const {
-	get_filter_table().update_relations(this, 0, rels);
-	
-	std::map<std::string, int>::const_iterator i;
-	for (i = node_ids.begin(); i != node_ids.end(); ++i) {
-		int id = i->second;
-		string type = map_get(nodes, id).node->get_type();
-		if (!has(rels, type)) {
-			rels[type] = relation(2);
-		}
-		relation &type_rel = rels[type];
-		type_rel.add(0, id);
-	}
-}
-
 void scene::update_sig() const {
 	sig.clear();
 	node_table::const_iterator i;

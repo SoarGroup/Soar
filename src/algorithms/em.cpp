@@ -1391,17 +1391,17 @@ bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) c
 	}
 
 	// process pattern
-	vector<int> pattern;
+	vector<tuple> pattern;
 	for (int j = i + 1; j < args.size(); ++j) {
 		if (args[j] == "*") {
-			pattern.push_back(-1);
+			pattern.push_back(tuple());
 		} else {
 			int obj;
 			if (!parse_int(args[j], obj)) {
 				os << "invalid pattern" << endl;
 				return false;
 			}
-			pattern.push_back(obj);
+			pattern.push_back(tuple(1, obj));
 		}
 	}
 
@@ -1409,8 +1409,8 @@ bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) c
 		os << "pattern larger than relation arity" << endl;
 		return false;
 	}
-	relation matches(r->arity());
-	r->match(pattern, matches);
+	relation matches(*r);
+	matches.filter(pattern, false);
 	os << matches << endl;
 	return true;
 }

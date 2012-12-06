@@ -46,7 +46,7 @@
 #include "serializable.h"
 
 /*
- Set implementation with a sorted vector
+ Set implementation with a sorted vector of intervals
 */
 class interval_set : public serializable {
 public:
@@ -247,25 +247,27 @@ public:
 	void del(const tuple &t);
 	void del(int i, int n);  // convenience for arity = 2
 	void del(int i, const tuple &t);
-	void intersect(const tuple &inds, const relation &r);
-	void subtract(const relation &r);
-	void subtract(const tuple &inds, const relation &r);
-	void expand(const relation &r, const tuple &match1, const tuple &match2, const tuple &extend);
-	void filter(const tuple &pattern);
+
 	void clear();
 	void reset(int new_arity);
 	relation &operator=(const relation &r);
 	
-	bool has(const tuple &t) const;
+	void intersect(const tuple &inds, const relation &r);
+	void subtract(const relation &r);
+	void subtract(const relation &r, relation &out) const;
+	void subtract(const tuple &inds, const relation &r);
+	
+	void expand(const relation &r, const tuple &match1, const tuple &match2, const tuple &extend);
+	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
+	void filter(const std::vector<tuple> &pattern, bool negate);
 	void slice(const tuple &inds, relation &out) const;
 	void slice(int n, relation &out) const;
-	bool operator==(const relation &r) const;
-	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
-	void at_pos(int n, interval_set &elems) const;
 	void drop_first(std::set<tuple> &out) const;
-	void match(const tuple &pattern, relation &r) const;
 	void random_split(int k, relation *r1, relation *r2) const;
-	void subtract(const relation &r, relation &out) const;
+	void at_pos(int n, interval_set &elems) const;
+	
+	bool contains(const tuple &t) const;
+	bool operator==(const relation &r) const;
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);

@@ -19,7 +19,6 @@
 #include <set>
 #include <map>
 #include <cassert>
-#include "mat.h"
 #include "serializable.h"
 
 template <typename U, typename V> void serialize(const std::pair<U, V> &p, std::ostream &os);
@@ -40,10 +39,6 @@ template <typename T> void unserialize(std::set<T> &s, std::istream &is);
 template <typename K, typename V> void serialize(const std::map<K, V> &m, std::ostream &os);
 template <typename K, typename V> void unserialize(std::map<K, V> &m, std::istream &is);
 
-void serialize  (const_mat_view m, std::ostream &os);
-void unserialize(mat &m,           std::istream &is);
-void unserialize(rvec &v,          std::istream &is);
-void unserialize(cvec &v,          std::istream &is);
 
 inline void serialize(const serializable &p, std::ostream &os) {
 	p.serialize(os);
