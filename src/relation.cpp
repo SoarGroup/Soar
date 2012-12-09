@@ -382,19 +382,19 @@ ostream &operator<<(ostream &os, const interval_set &s) {
 }
 
 relation::relation()
-: sz(0), arty(0), end_iter(*this, false)
+: sz(0), arty(0)
 {}
 
 relation::relation(int n) 
-: sz(0), arty(n), end_iter(*this, false)
+: sz(0), arty(n)
 {}
 
 relation::relation(const relation &r)
-: sz(r.sz), arty(r.arty), tuples(r.tuples), end_iter(*this, false)
+: sz(r.sz), arty(r.arty), tuples(r.tuples)
 {}
 	
 relation::relation(int n, const vector<tuple> &ts)
-: sz(ts.size()), arty(n), end_iter(*this, false)
+: sz(ts.size()), arty(n)
 {
 	assert(arty > 0);
 	vector<tuple>::const_iterator i;
@@ -741,7 +741,7 @@ void relation::filter(const vector<tuple> &pat, bool negate) {
 		if (!negate) {
 			if (!matched) {
 				s.clear();
-			} else {
+			} else if (!pat[0].empty()) {
 				interval_set p0;
 				for (int j = 0; j < pat[0].size(); ++j)
 					p0.insert(pat[0][j]);
@@ -828,9 +828,9 @@ bool relation::load_foil6(istream &is) {
 		}
 		fields.clear();
 		split(line, ",", fields);
-		if (fields.size() != arty)
+		if (fields.size() != arty) {
 			return false;
-		
+		}
 		for (int i = 0; i < arty; ++i) {
 			if (!parse_int(fields[i], t[i])) {
 				return false;
@@ -862,7 +862,7 @@ void relation::gdb_print() const {
 
 ostream &operator<<(ostream &os, const relation &r) {
 	relation::const_iterator i, end;
-	for (i = r.begin(), i = r.end(); i != end; ++i) {
+	for (i = r.begin(), end = r.end(); i != end; ++i) {
 		join(os, *i, " ");
 		os << endl;
 	}
@@ -875,6 +875,22 @@ ostream &operator<<(ostream &os, const relation_table &t) {
 		os << i->first << endl << i->second;
 	}
 	return os;
+}
+
+relation::iter::iter(const relation &r, bool begin)
+: end(r.tuples.end()), t(r.arity())
+{
+	if (begin) {
+		i = r.tuples.begin();
+		if (i != end) {
+			copy(i->first.begin(), i->first.end(), t.begin() + 1);
+			j = i->second.begin();
+			jend = i->second.end();
+			t[0] = *j;
+		}
+	} else {
+		i = end;
+	}
 }
 
 relation::iter &relation::iter::operator++() {
@@ -908,30 +924,20 @@ relation::iter &relation::iter::operator=(const relation::iter &rhs) {
 	return *this;
 }
 
-relation::iter::iter(const relation &r, bool begin)
-: end(r.tuples.end()), t(r.arity())
-{
-	if (begin) {
-		i = r.tuples.begin();
-		if (i != end) {
-			copy(i->first.begin(), i->first.end(), t.begin() + 1);
-			j = i->second.begin();
-			jend = i->second.end();
-		}
-	} else {
-		i = end;
-	}
-}
-
 interval_set::const_iterator &interval_set::const_iterator::operator++() {
-	if (i != end) {
-		if (++j > i->last) {
-			if (++i != end) {
-				j = i->first;
+	int iend = s->curr->size();
+	if (i >= 0 && i < iend) {
+		if (++j > (*s->curr)[i].last) {
+			if (++i < iend) {
+				j = (*s->curr)[i].first;
 			} else {
+				i = -1;
 				j = -1;
 			}
 		}
+	} else {
+		i = -1;
+		j = -1;
 	}
 	return *this;
 }
@@ -944,20 +950,16 @@ interval_set::const_iterator interval_set::const_iterator::operator++(int) {
 
 interval_set::const_iterator &interval_set::const_iterator::operator=(const interval_set::const_iterator &rhs) {
 	i = rhs.i;
-	end = rhs.end;
 	j = rhs.j;
+	s = rhs.s;
 	return *this;
 }
 
-interval_set::const_iterator::const_iterator(const interval_set &s, bool begin)
-: j(-1), end(s.curr->end())
+interval_set::const_iterator::const_iterator(const interval_set &is, bool begin)
+: i(-1), j(-1), s(&is)
 {
-	if (begin) {
-		i = s.curr->begin();
-		if (i != end)
-			j = i->first;
-	} else {
-		i = end;
-		j = -1;
+	if (begin && !s->curr->empty()) {
+		i = 0;
+		j = (*s->curr)[0].first;
 	}
 }

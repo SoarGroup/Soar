@@ -63,8 +63,8 @@ public:
 	
 	class const_iterator : public std::iterator<std::forward_iterator_tag, int> {
 	public:
-		const_iterator() : j(-1) {}
-		const_iterator(const const_iterator &rhs) : i(rhs.i), j(rhs.j) {}
+		const_iterator() : i(-1), j(-1), s(NULL) {}
+		const_iterator(const const_iterator &rhs) : i(rhs.i), j(rhs.j), s(rhs.s) {}
 
 		const_iterator &operator++();
 		const_iterator operator++(int);
@@ -77,8 +77,8 @@ public:
 	private:
 		const_iterator(const interval_set &s, bool begin);
 		
-		std::vector<interval>::const_iterator i, end;
-		int j;
+		const interval_set *s;
+		int i, j;
 		
 		friend class interval_set;
 	};
@@ -205,7 +205,7 @@ public:
 	bool empty() const { return sz == 0; }
 	
 	const_iterator begin() const { return iter(*this, true); }
-	const const_iterator &end() const   { return end_iter; }
+	const_iterator end() const { return iter(*this, false); }
 	
 	void gdb_print() const;
 	
@@ -215,8 +215,6 @@ private:
 	
 	int sz, arty;
 	tuple_map tuples;
-	
-	iter end_iter;
 	
 	friend std::ostream &operator<<(std::ostream &os, const relation &r);
 };
