@@ -1,0 +1,54 @@
+def srcp(p):
+	return '../src/' + p
+
+def srca(p):
+	return '../src/algorithms/' + p
+
+inc = [srcp('.'), srca('.'), '../eigen' ]
+
+env = Environment(
+	CPPPATH = inc,
+	#CPPFLAGS = ['-O3', '-Wno-enum-compare', '-include', 'eigen_precomp.h'],
+	CPPFLAGS = ['-g', '-Wno-enum-compare'],
+	LINKFLAGS = ['-g'],
+	LIBS = [ 'rt', 'ode' ],
+)
+
+srcs = [
+	srcp('common.cpp'),
+	srcp('mat.cpp'),
+	srcp('relation.cpp'),
+	srcp('serialize.cpp'),
+	srcp('timer.cpp'),
+	srcp('scene_sig.cpp'),
+	srcp('collision.cpp'),
+	srcp('sgnode.cpp'),
+	srca('foil.cpp'),
+	srca('linear.cpp'),
+	srca('lda.cpp'),
+]
+
+run_lda_src = [
+	srcp('common.cpp'),
+	srca('lda.cpp'),
+	'run_lda.cpp',
+]
+
+test_foil_src = [
+	srcp('common.cpp'),
+	srcp('relation.cpp'),
+	srca('foil.cpp'),
+	'test_foil.cpp'
+]
+
+
+test_intervalset_src = [
+	srcp('common.cpp'),
+	srcp('relation.cpp'),
+	'test_intervalset.cpp'
+]
+
+#env.Program('test_svs2', srcs + ['test_svs2.cpp'])
+#env.Program('run_lda', run_lda_src)
+env.Program('test_foil', test_foil_src)
+env.Program('test_intervalset', test_intervalset_src)
