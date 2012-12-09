@@ -875,7 +875,8 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		if (m1 > m2)
 			swap(m1, m2);
 		
-		FOIL foil(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), rel_tbl);
+		FOIL foil;
+		foil.set_problem(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), rel_tbl);
 		foil.dump_foil6(os);
 	}
 
@@ -975,7 +976,8 @@ void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 			}
 		}
 		
-		FOIL foil(pos_obj, neg_obj, rels);
+		FOIL foil;
+		foil.set_problem(pos_obj, neg_obj, rels);
 		obj_clauses[i].clear();
 		if (!foil.learn(obj_clauses[i], NULL)) {
 			// respond to this situation appropriately

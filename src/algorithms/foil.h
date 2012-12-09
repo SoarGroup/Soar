@@ -52,22 +52,27 @@ std::ostream &operator<<(std::ostream &os, const clause &c);
 
 class FOIL {
 public:
-	FOIL(const relation &pos, const relation &neg, const relation_table &rels) ;
+	FOIL();
+	~FOIL();
+	void set_problem(const relation &pos, const relation &neg, const relation_table &rels);
 	bool learn(clause_vec &clauses, std::vector<relation*> *uncovered);
 	void gain(const literal &l, double &g, double &maxg) const;
 	void dump_foil6(std::ostream &os) const;
+	bool load_foil6(std::istream &is);
 
-	const relation_table &get_relations() const { return rels; }
+	const relation_table &get_relations() const { return *rels; }
+	const relation &get_pos() const { return pos; }
+	const relation &get_neg() const { return neg; }
 	const relation &get_rel(const std::string &name) const;
 	
 private:
 	double choose_literal(literal &l, int nvars);
 	bool choose_clause(clause &c, relation *neg_left);
-	bool tuple_satisfies_literal(const tuple &t, const literal &l);
 
 private:
 	relation pos, neg, pos_grow, neg_grow;
-	const relation_table &rels;
+	relation_table const *rels;
+	bool own_rels;
 	int init_vars;
 };
 

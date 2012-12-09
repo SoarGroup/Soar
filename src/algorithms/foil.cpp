@@ -24,19 +24,20 @@ public:
 	csp_node() {}
 
 	csp_node(const csp_node &par)
-	: vars(par.vars), constraints(par.constraints), unassigned(par.unassigned)
+	: vars(par.vars), constraints(par.constraints), num_unassigned(par.num_unassigned)
 	{}
 
 	bool init(const clause &c, const relation_table &rels, const var_domains &domains) {
 		vector<int> all_vars;
-		map<int, int> var_map;
 		
+		/*
+		 Fill out variable information, and remap variables to a consecutive list 0 .. nvars-1
+		*/
 		clause_vars(c, all_vars);
-		unassigned = all_vars.size();
-		vars.resize(unassigned);
-		for (int i = 0; i < vars.size(); ++i) {
+		num_unassigned = all_vars.size();
+		vars.resize(num_unassigned);
+		for (int i = 0, iend = vars.size(); i < iend; ++i) {
 			int v = all_vars[i];
-			var_map[v] = i;
 			vars[i].label = v;
 			if (has(domains, v) && !map_get(domains, v).empty()) {
 				vars[i].infinite_domain = false;
@@ -44,46 +45,32 @@ public:
 			}
 		}
 
+		/*
+		 Each literal in the clause becomes a constraint.
+		*/
 		constraints.resize(c.size());
-		for (int i = 0; i < c.size(); ++i) {
-			const tuple &args = c[i].get_args();
-			const relation &r = map_get(rels, c[i].get_name());
-			constraint_info &cons = constraints[i];
-			cons.negated = c[i].negated();
-			cons.tuples = r;
-			cons.doms.resize(args.size());
-			cons.vars.resize(args.size());
-			cons.unbound = 0;
-			for (int j = 0; j < args.size(); ++j) {
-				if (args[j] >= 0) {
-					cons.vars[j] = map_get(var_map, args[j]);
-					r.at_pos(j, cons.doms[j]);
-					++cons.unbound;
-				} else {
-					cons.vars[j] = -1;
-				}
-			}
+		for (int i = 0, iend = c.size(); i < iend; ++i) {
+			literal_to_constraint(c[i], rels, constraints[i]);
 		}
-		for (int i = 0; i < constraints.size(); ++i) {
+		for (int i = 0, iend = constraints.size(); i < iend; ++i) {
 			constraint_info &cons = constraints[i];
-			for (int j = 0; j < cons.vars.size(); ++j) {
-				if (cons.vars[j] >= 0 && !update_vardom(i, j)) {
+			for (int j = 0, jend = cons.vars.size(); j < jend; ++j) {
+				if (!update_vardom(i, j))
 					return false;
-				}
 			}
 		}
 		return true;
 	}
 
 	bool search(map<int, int> &out) {
-		if (unassigned == 0) {
+		if (num_unassigned == 0) {
 			for (int i = 0; i < vars.size(); ++i) {
 				out[vars[i].label] = vars[i].value;
 			}
 			return true;
 		}
 		
-		// find MRV
+		// find variable with minimum remaining values
 		int mrv = -1;
 		for (int i = 0; i < vars.size(); ++i) {
 			if (vars[i].value >= 0) {
@@ -110,7 +97,7 @@ public:
 private:
 	struct constraint_info {
 		bool negated;
-		int unbound;
+		int num_unassigned;
 		relation tuples;
 		vector<interval_set> doms;
 		vector<int> vars;
@@ -127,8 +114,35 @@ private:
 
 	vector<var_info>        vars;
 	vector<constraint_info> constraints;
-	int unassigned;
+	int num_unassigned;
 	
+	int get_var_by_label(int label) {
+		int i;
+		for (i = 0; i < vars.size() && vars[i].label != label; ++i)
+			;
+		assert(i < vars.size());
+		return i;
+	}
+	
+	void literal_to_constraint(const literal &l, const relation_table &rels, constraint_info &cons) {
+		const tuple &args = l.get_args();
+		const relation &r = map_get(rels, l.get_name());
+		cons.negated = l.negated();
+		cons.tuples = r;
+		cons.doms.resize(args.size());
+		cons.vars.resize(args.size());
+		cons.num_unassigned = 0;
+		for (int i = 0, iend = args.size(); i < iend; ++i) {
+			if (args[i] >= 0) {
+				cons.vars[i] = get_var_by_label(args[i]);
+				r.at_pos(i, cons.doms[i]);
+				++cons.num_unassigned;
+			} else {
+				cons.vars[i] = -1;
+			}
+		}
+	}
+
 	/*
 	 For each constraint c and position i that var is in, remove
 	 all tuples in c whose ith argument is not val.
@@ -143,7 +157,7 @@ private:
 		var.domain.clear();
 		var.domain.insert(value);
 		var.infinite_domain = false;
-		if (--unassigned == 0) {
+		if (--num_unassigned == 0) {
 			return true;
 		}
 		
@@ -154,7 +168,7 @@ private:
 			for (int j = 0; j < cons.vars.size(); ++j) {
 				if (cons.vars[j] == v) {
 					pat[j].push_back(value);
-					--cons.unbound;
+					--cons.num_unassigned;
 					need_update[i] = true;
 				}
 			}
@@ -189,6 +203,11 @@ private:
 		}
 	}
 
+	/*
+	 Constrain the domain of the j'th variable in constraint i to be consistent
+	 with i. Remember: j is an index into constraints[i].vars, not an index into
+	 the global vars array.
+	*/
 	bool update_vardom(int i, int j) {
 		constraint_info &cons = constraints[i];
 		if(cons.vars[j] < 0) {
@@ -200,12 +219,18 @@ private:
 		}
 		if (!cons.negated) {
 			if (var.infinite_domain) {
+				// intersect with infinite set
 				var.domain = cons.doms[j];
 				var.infinite_domain = false;
 			} else {
 				var.domain.intersect(cons.doms[j]);
 			}
-		} else if (cons.unbound == 1) {
+		} else if (cons.num_unassigned == 1) {
+			/*
+			 a negated literal doesn't impose any real constraints on possible variable
+			 values until it has only one unassigned variable left. Because all other
+			 variables are assigned, we know what the unassigned variable _can't_ be.
+			*/
 			assert(!var.infinite_domain);
 			var.domain.subtract(cons.doms[j]);
 		}
@@ -223,9 +248,10 @@ public:
 	void expand_df();
 	const literal &get_literal() const { return lit; }
 	double get_gain() const { return gain; }
+	int compare(const literal_tree *t) const;
 	
 private:
-	literal_tree(literal_tree &parent, const string &r, bool negate);
+	literal_tree(literal_tree &parent, const string &name, const relation &r, bool negate);
 	literal_tree(literal_tree &parent, int pos, int var);
 	void expand();
 
@@ -340,6 +366,10 @@ void fix_unbound_variables(clause &c) {
 }
 
 double prune_clause(clause &c, const relation &pos, const relation &neg, const relation_table &rels) {
+	if (pos.empty() && neg.empty()) {
+		return 1;
+	}
+	
 	while (true) {
 		int best_lit = -1;
 		double best_rate = clause_success_rate(c, pos, neg, rels);
@@ -427,10 +457,21 @@ int literal::operator<<(const std::string &s) {
 	return c + 1;
 }
 
-FOIL::FOIL(const relation &p, const relation &n, const relation_table &rels) 
-: pos(p), neg(n), rels(rels), init_vars(p.arity())
-{
-	assert(p.arity() == n.arity());
+FOIL::FOIL() : rels(NULL), own_rels(false) {}
+
+FOIL::~FOIL() {
+	if (own_rels)
+		delete rels;
+}
+
+void FOIL::set_problem(const relation &p, const relation &n, const relation_table &rt) {
+	pos = p;
+	neg = n;
+	init_vars = pos.arity();
+	if (own_rels)
+		delete rels;
+	rels = &rt;
+	own_rels = false;
 }
 
 /*
@@ -448,7 +489,7 @@ FOIL::FOIL(const relation &p, const relation &n, const relation_table &rels)
  case will not exist.
 */
 bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
-	relation pos_test, neg_test;
+	relation pos_test, neg_test, pos_left;
 	if (residuals) {
 		clear_and_dealloc(*residuals);
 	}
@@ -458,8 +499,9 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 	clauses.clear();
 	tuple t;
 	t.push_back(0);
-	while (!pos.empty()) {
-		split_training(FOIL_GROW_RATIO, pos, pos_grow, pos_test);
+	pos_left = pos;
+	while (!pos_left.empty()) {
+		split_training(FOIL_GROW_RATIO, pos_left, pos_grow, pos_test);
 		split_training(FOIL_GROW_RATIO, neg, neg_grow, neg_test);
 		
 		clause c;
@@ -472,7 +514,7 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 			choose_clause(c, NULL);
 		}
 		
-		double success_rate = prune_clause(c, pos_test, neg_test, rels);
+		double success_rate = prune_clause(c, pos_test, neg_test, *rels);
 		// should test false positive rate here, rather than success rate
 		if (!c.empty() && success_rate > FOIL_MIN_SUCCESS_RATE) {
 			clauses.push_back(c);
@@ -482,25 +524,25 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 			
 			// this repeats computation, make more efficient
 			relation covered_pos(init_vars);
-			relation::const_iterator i;
-			for (i = pos.begin(); i != pos.end(); ++i) {
+			relation::const_iterator i, iend;
+			for (i = pos_left.begin(), iend = pos_left.end(); i != iend; ++i) {
 				var_domains d;
 				for (int j = 0; j < i->size(); ++j) {
 					d[j].insert(i->at(j));
 				}
-				if (test_clause(c, rels, d)) {
+				if (test_clause(c, *rels, d)) {
 					covered_pos.add(*i);
 				}
 			}
-			int old_size = pos.size();
-			pos.subtract(covered_pos);
-			assert(pos.size() + covered_pos.size() == old_size);
-			dead = (pos.size() == old_size);
+			int old_size = pos_left.size();
+			pos_left.subtract(covered_pos);
+			assert(pos_left.size() + covered_pos.size() == old_size);
+			dead = (pos_left.size() == old_size);
 		}
 		
 		if (dead) {
 			if (residuals) {
-				residuals->push_back(new relation(pos));
+				residuals->push_back(new relation(pos_left));
 			}
 			assert(!residuals || clauses.size() + 1 == residuals->size());
 			return false;
@@ -513,8 +555,8 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 void FOIL::gain(const literal &l, double &g, double &maxg) const {
 	double I1, I2;
 	int new_pos_size, new_neg_size, pos_match, neg_match;
-	map<string, relation>::const_iterator ri = rels.find(l.get_name());
-	assert(ri != rels.end());
+	map<string, relation>::const_iterator ri = rels->find(l.get_name());
+	assert(ri != rels->end());
 	const relation &r = ri->second;
 	
 	const tuple &vars = l.get_args();
@@ -571,7 +613,7 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	while (!neg_grow.empty() && c.size() < FOIL_MAX_CLAUSE_LEN) {
 		literal l;
 		double gain = choose_literal(l, n);
-		if (gain <= 0) {
+		if (gain < 0) {
 			if (neg_left) {
 				neg_grow.slice(init_vars, *neg_left);
 				LOG(FOILDBG) << "No more suitable literals." << endl;
@@ -625,22 +667,9 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	return true;
 }
 
-bool FOIL::tuple_satisfies_literal(const tuple &t, const literal &l) {
-	tuple ground_lit;
-	tuple::const_iterator i;
-	for (i = l.get_args().begin(); i != l.get_args().end(); ++i) {
-		ground_lit.push_back(t[*i]);
-	}
-	bool inrel = get_rel(l.get_name()).contains(ground_lit);
-	if (l.negated()) {
-		return !inrel;
-	}
-	return inrel;
-}
-
 const relation &FOIL::get_rel(const string &name) const {
-	map<string, relation>::const_iterator i = rels.find(name);
-	assert(i != rels.end());
+	map<string, relation>::const_iterator i = rels->find(name);
+	assert(i != rels->end());
 	return i->second;
 }
 
@@ -653,9 +682,9 @@ void FOIL::dump_foil6(ostream &os) const {
 	neg.slice(zero, all_times_rel);
 	all_times_rel.at_pos(0, all_times);
 	
-	relation_table::const_iterator i;
-	for (i = rels.begin(); i != rels.end(); ++i) {
-		for (int j = 1; j < i->second.arity(); ++j) {
+	relation_table::const_iterator i, iend;
+	for (i = rels->begin(), iend = rels->end(); i != iend; ++i) {
+		for (int j = 1, jend = i->second.arity(); j < jend; ++j) {
 			i->second.at_pos(j, all_objs);
 		}
 	}
@@ -665,7 +694,7 @@ void FOIL::dump_foil6(ostream &os) const {
 	os << "T: ";
 	join(os, all_times, ",") << "." << endl << endl;
 	
-	for (i = rels.begin(); i != rels.end(); ++i) {
+	for (i = rels->begin(), iend = rels->end(); i != iend; ++i) {
 		os << "*" << i->first << "(T";
 		for (int j = 1; j < i->second.arity(); ++j) {
 			os << ",O";
@@ -680,7 +709,7 @@ void FOIL::dump_foil6(ostream &os) const {
 		r.dump_foil6(os);
 	}
 	
-	os << "positive(T";
+	os << "target(T";
 	for (int j = 1; j < pos.arity(); ++j) {
 		os << ",O";
 	}
@@ -694,9 +723,73 @@ void FOIL::dump_foil6(ostream &os) const {
 	neg.dump_foil6(os);
 }
 
+bool FOIL::load_foil6(istream &is) {
+	string line;
+	vector<string> fields;
+	bool error = false;
+	relation_table *new_rels = new relation_table;
+	
+	// skip time and object enumeration
+	while (getline(is, line)) {
+		if (line.empty())
+			break;
+	}
+	
+	while (getline(is, line)) {
+		int arity;
+		
+		fields.clear();
+		split(line, "(,) ", fields);
+		assert(fields.size() >= 3);      // at least name, one argument, and argument description
+		arity = fields.back().size();
+		assert(arity > 0);
+		
+		if (fields[0] == "target") {
+			pos.reset(arity);
+			neg.reset(arity);
+			if (!pos.load_foil6(is)) {
+				cerr << "invalid input for positive" << endl;
+				error = true;
+				break;
+			}
+			if (!neg.load_foil6(is)) {
+				cerr << "invalid input for negative" << endl;
+				error = true;
+				break;
+			}
+			assert(pos.arity() == neg.arity());
+			init_vars = pos.arity();
+			break;
+		} else {
+			assert(fields[0][0] == '*');
+			string name = fields[0].substr(1);
+			relation &r = (*new_rels)[name];
+			r.reset(arity);
+			if (!r.load_foil6(is)) {
+				cerr << "invalid input for relation " << fields[0] << endl;
+				error = true;
+				break;
+			}
+		}
+	}
+	
+	if (error) {
+		delete new_rels;
+		return false;
+	}
+	
+	if (own_rels)
+		delete rels;
+	
+	rels = new_rels;
+	own_rels = true;
+	return true;
+}
+
 literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best) 
 : foil(foil), best(best), expanded(false), position(-1), nbound(-1)
 {
+	static int count = 0;
 	for (int i = 0; i < nvars; ++i) {
 		vars_left.push_back(i);
 	}
@@ -704,14 +797,17 @@ literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best)
 	map<string, relation>::const_iterator i;
 	const map<string, relation> &rels = foil.get_relations();
 	for (i = rels.begin(); i != rels.end(); ++i) {
-		children.push_back(new literal_tree(*this, i->first, false));
-		children.push_back(new literal_tree(*this, i->first, true));
+		literal_tree *t1, *t2;
+		t1 = new literal_tree(*this, i->first, i->second, false);
+		t2 = new literal_tree(*this, i->first, i->second, true);
+		children.push_back(t1);
+		children.push_back(t2);
 	}
 	expanded = true;
 }
 
-literal_tree::literal_tree(literal_tree &par, const string &r, bool negate)
-: foil(par.foil), best(par.best), lit(r, tuple(par.foil.get_rel(r).arity(), -1), negate),
+literal_tree::literal_tree(literal_tree &par, const string &name, const relation &r, bool negate)
+: foil(par.foil), best(par.best), lit(name, tuple(r.arity(), -1), negate),
   expanded(false), position(0), vars_left(par.vars_left.begin() + 1, par.vars_left.end()),
   nbound(1)
 {
@@ -737,7 +833,34 @@ literal_tree::~literal_tree() {
 		delete *i;
 	}
 }
+int literal_tree::compare(const literal_tree *t) const {
+	if (gain > t->gain) {
+		return 1;
+	} else if (gain < t->gain) {
+		return -1;
+	}
 	
+	if (nbound > t->nbound) {
+		return 1;
+	} else if (nbound < t->nbound) {
+		return -1;
+	}
+	
+	if (max_gain > t->max_gain) {
+		return 1;
+	} else if (max_gain < t->max_gain) {
+		return -1;
+	}
+	
+	if (!lit.negated() && t->lit.negated()) {
+		return 1;
+	} else if (lit.negated() && !t->lit.negated()) {
+		return -1;
+	}
+	
+	return 0;
+}
+
 void literal_tree::expand() {
 	const tuple &vars = lit.get_args();
 	for (int i = position + 1; i < vars.size(); ++i) {
@@ -752,7 +875,7 @@ void literal_tree::expand() {
 				continue;
 			}
 			if (true && //(!c->lit.negated() || c->vars_left.empty()) &&
-				(*best == NULL || c->gain > (**best).gain || (c->gain == (**best).gain && c->nbound > (**best).nbound)))
+				(*best == NULL || c->compare(*best) > 0))
 			{
 				*best = c;
 			}
