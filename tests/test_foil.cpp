@@ -7,9 +7,8 @@
 
 using namespace std;
 
-enum {
-	MAX_CLAUSES = 10,
-};
+#define MAX_CLAUSES 10
+#define EQUAL_MARGIN 1.0e-3
 
 struct clause_test_spec {
 	const char *clause;
@@ -30,15 +29,27 @@ test_spec tests[] = {
 		{ "~indicator(0,1)", 1.0 },
 		{ NULL, 0.0} }
 	},
+	{ "foil_tests/ramp.test", {
+		{ "intersect(0,1,2)", 0.975 },
+		{ "x-overlap(0,1,2) & ~intersect(0,1,-1)", 0.191 },
+		{ NULL, 0.0} }
+	},
+	{ "foil_tests/ramp_prune.test", {
+		{ "~intersect(0,1,-1)", 0.889 },
+		{ "intersect(0,1,2) & box(0,2)", 0.405 },
+		{ NULL, 0.0} }
+	},
 	{ NULL, { {NULL, 0.0} } }  // sentinel
 };
 
+bool close(double a, double b);
 double time();
 bool run_foil(const char *path, clause_vec &clauses, relation &pos, relation &neg, relation_table &all_rels, double &time);
 void standalone(const char *path);
 void test();
 
 int main(int argc, char *argv[]) {
+	//LOG.turn_on(FOILDBG);
 	if (argc > 1) {
 		standalone(argv[1]);
 		exit(0);
@@ -57,7 +68,7 @@ double time() {
 
 
 bool run_foil(const char *path, clause_vec &clauses, relation &pos, relation &neg, relation_table &all_rels, double &t) {
-	FOIL foil;
+	FOIL foil(true);
 	ifstream input(path);
 	
 	if (!input) {
@@ -114,8 +125,12 @@ void test() {
 			ss << clauses[j];
 			assert(ss.str() == spec.clause);
 			double success = clause_success_rate(clauses[j], pos, neg, all);
-			assert(success == spec.success_rate);
+			assert(close(success, spec.success_rate));
 		}
 		assert(j == clauses.size());
 	}
+}
+
+bool close(double a, double b) {
+	return fabs(a - b) < EQUAL_MARGIN;
 }

@@ -25,6 +25,9 @@ public:
 		return *this;
 	}
 	
+	bool operator==(const literal &l) const { return name == l.name && args == l.args && negate == l.negate; }
+	
+	int new_vars() const;
 	const std::string &get_name() const { return name; }
 	const tuple &get_args() const { return args; }
 	bool negated() const { return negate; }
@@ -52,7 +55,7 @@ std::ostream &operator<<(std::ostream &os, const clause &c);
 
 class FOIL {
 public:
-	FOIL();
+	FOIL(bool use_pruning);
 	~FOIL();
 	void set_problem(const relation &pos, const relation &neg, const relation_table &rels);
 	bool learn(clause_vec &clauses, std::vector<relation*> *uncovered);
@@ -72,7 +75,7 @@ private:
 private:
 	relation pos, neg, pos_grow, neg_grow;
 	relation_table const *rels;
-	bool own_rels;
+	bool own_rels, use_pruning;
 	int init_vars;
 };
 

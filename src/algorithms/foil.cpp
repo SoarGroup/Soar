@@ -249,10 +249,11 @@ public:
 	const literal &get_literal() const { return lit; }
 	double get_gain() const { return gain; }
 	int compare(const literal_tree *t) const;
+	int new_vars() const;
 	
 private:
-	literal_tree(literal_tree &parent, const string &name, const relation &r, bool negate);
-	literal_tree(literal_tree &parent, int pos, int var);
+	literal_tree(literal_tree *parent, const string &name, const relation &r, bool negate);
+	literal_tree(literal_tree *parent, int pos, int var);
 	void expand();
 
 private:
@@ -330,12 +331,12 @@ double clause_success_rate(const clause &c, const relation &pos, const relation 
  set to -1 to indicate they don't need to be bound when testing for
  satisfaction.
 */
-void fix_unbound_variables(clause &c) {
+void fix_unbound_variables(int num_auto_bound, clause &c) {
 	vector<int> status;
 	for (int i = 0; i < c.size(); ++i) {
 		const literal &l = c[i];
 		const tuple &args = l.get_args();
-		for (int j = 0; j < args.size(); ++j) {
+		for (int j = num_auto_bound; j < args.size(); ++j) {
 			int v = args[j];
 			if (v < 0) {
 				continue;
@@ -366,18 +367,21 @@ void fix_unbound_variables(clause &c) {
 }
 
 double prune_clause(clause &c, const relation &pos, const relation &neg, const relation_table &rels) {
+	double best_rate;
+	int best_lit;
+	
 	if (pos.empty() && neg.empty()) {
 		return 1;
 	}
 	
+	best_rate = clause_success_rate(c, pos, neg, rels);
+	cout << "original: " << c << " " << best_rate << endl;
 	while (true) {
-		int best_lit = -1;
-		double best_rate = clause_success_rate(c, pos, neg, rels);
-		cout << "original: " << c << " " << best_rate << endl;
+		best_lit = -1;
 		for (int i = 0; i < c.size(); ++i) {
 			clause pruned = c;
 			pruned.erase(pruned.begin() + i);
-			fix_unbound_variables(pruned);
+			fix_unbound_variables(pos.arity(), pruned);
 			double r = clause_success_rate(pruned, pos, neg, rels);
 			if (r > best_rate) {
 				best_lit = i;
@@ -385,12 +389,13 @@ double prune_clause(clause &c, const relation &pos, const relation &neg, const r
 			}
 		}
 		if (best_lit < 0) {
-			return best_rate;
+			break;
 		}
 		c.erase(c.begin() + best_lit);
-		fix_unbound_variables(c);
-		cout << "pruned:   " << c << " " << best_rate << endl;
+		fix_unbound_variables(pos.arity(), c);
 	}
+	cout << "pruned:   " << c << " " << best_rate << endl;
+	return best_rate;
 }
 
 void split_training(double ratio, const relation &all, relation &grow, relation &test) {
@@ -399,6 +404,15 @@ void split_training(double ratio, const relation &all, relation &grow, relation 
 	test.reset(all.arity());
 	int ngrow = max(all.size() * ratio, 1.0);
 	all.random_split(ngrow, &grow, &test);
+}
+
+int literal::new_vars() const {
+	int n;
+	for (int i = 0, iend = args.size(), n = 0; i < iend; ++i) {
+		if (args[i] < 0)	
+			++n;
+	}
+	return n;
 }
 
 void literal::serialize(std::ostream &os) const {
@@ -457,7 +471,7 @@ int literal::operator<<(const std::string &s) {
 	return c + 1;
 }
 
-FOIL::FOIL() : rels(NULL), own_rels(false) {}
+FOIL::FOIL(bool use_pruning) : rels(NULL), own_rels(false), use_pruning(use_pruning) {}
 
 FOIL::~FOIL() {
 	if (own_rels)
@@ -490,6 +504,8 @@ void FOIL::set_problem(const relation &p, const relation &n, const relation_tabl
 */
 bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 	relation pos_test, neg_test, pos_left;
+	double success_rate;
+	
 	if (residuals) {
 		clear_and_dealloc(*residuals);
 	}
@@ -514,7 +530,12 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 			choose_clause(c, NULL);
 		}
 		
-		double success_rate = prune_clause(c, pos_test, neg_test, *rels);
+		if (use_pruning) {
+			success_rate = prune_clause(c, pos_test, neg_test, *rels);
+		} else {
+			success_rate = clause_success_rate(c, pos_test, neg_test, *rels);
+		}
+		
 		// should test false positive rate here, rather than success rate
 		if (!c.empty() && success_rate > FOIL_MIN_SUCCESS_RATE) {
 			clauses.push_back(c);
@@ -609,18 +630,22 @@ double FOIL::choose_literal(literal &l, int n) {
 }
 
 bool FOIL::choose_clause(clause &c, relation *neg_left) {
+	vector<double> gains;
 	int n = init_vars;
+	bool quiescence = false;
+	
 	while (!neg_grow.empty() && c.size() < FOIL_MAX_CLAUSE_LEN) {
 		literal l;
 		double gain = choose_literal(l, n);
-		if (gain < 0) {
+		if (gain < 0 || (!c.empty() && l == c.back())) {
 			if (neg_left) {
 				neg_grow.slice(init_vars, *neg_left);
 				LOG(FOILDBG) << "No more suitable literals." << endl;
 				LOG(FOILDBG) << "unfiltered negatives: "; 
 				LOG(FOILDBG) << *neg_left << endl;
 			}
-			return false;
+			quiescence = true;
+			break;
 		}
 		
 		LOG(FOILDBG) << endl << "CHOSE " << l << endl << endl;
@@ -663,8 +688,23 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 			delete rp;
 		}
 		c.push_back(l);
+		gains.push_back(gain);
 	}
-	return true;
+	
+	/*
+	 Delete literals at the end of the clause that had 0 gain. These don't
+	 contribute to discrimination but were added in case they introduced new
+	 variables that potentially would have increased gain later. Remove the ones
+	 that didn't pay off.
+	*/
+	for (int i = gains.size() - 1; i >= 0; --i) {
+		if (gains[i] == 0.0) {
+			c.pop_back();
+		} else {
+			break;
+		}
+	}
+	return quiescence;
 }
 
 const relation &FOIL::get_rel(const string &name) const {
@@ -798,29 +838,29 @@ literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best)
 	const map<string, relation> &rels = foil.get_relations();
 	for (i = rels.begin(); i != rels.end(); ++i) {
 		literal_tree *t1, *t2;
-		t1 = new literal_tree(*this, i->first, i->second, false);
-		t2 = new literal_tree(*this, i->first, i->second, true);
+		t1 = new literal_tree(this, i->first, i->second, false);
+		t2 = new literal_tree(this, i->first, i->second, true);
 		children.push_back(t1);
 		children.push_back(t2);
 	}
 	expanded = true;
 }
 
-literal_tree::literal_tree(literal_tree &par, const string &name, const relation &r, bool negate)
-: foil(par.foil), best(par.best), lit(name, tuple(r.arity(), -1), negate),
-  expanded(false), position(0), vars_left(par.vars_left.begin() + 1, par.vars_left.end()),
+literal_tree::literal_tree(literal_tree *par, const string &name, const relation &r, bool negate)
+: foil(par->foil), best(par->best), lit(name, tuple(r.arity(), -1), negate),
+  expanded(false), position(0), vars_left(par->vars_left.begin() + 1, par->vars_left.end()),
   nbound(1)
 {
 	lit.set_arg(0, 0);
 }
 
-literal_tree::literal_tree(literal_tree &par, int pos, int var)
-: foil(par.foil), position(pos), lit(par.lit), best(par.best), expanded(false)
+literal_tree::literal_tree(literal_tree *par, int pos, int var)
+: foil(par->foil), position(pos), lit(par->lit), best(par->best), expanded(false)
 { 
 	lit.set_arg(position, var);
-	nbound = par.nbound + 1;
-	tuple::const_iterator i;
-	for (i = par.vars_left.begin(); i != par.vars_left.end(); ++i) {
+	nbound = par->nbound + 1;
+	tuple::const_iterator i, iend;
+	for (i = par->vars_left.begin(), iend = par->vars_left.end(); i != iend; ++i) {
 		if (*i != var) {
 			vars_left.push_back(*i);
 		}
@@ -839,22 +879,24 @@ int literal_tree::compare(const literal_tree *t) const {
 	} else if (gain < t->gain) {
 		return -1;
 	}
-	
-	if (nbound > t->nbound) {
+
+	if (!lit.negated() && t->lit.negated()) {
 		return 1;
-	} else if (nbound < t->nbound) {
+	} else if (lit.negated() && !t->lit.negated()) {
 		return -1;
+	}
+	
+	if (!lit.negated() && !t->lit.negated()) {
+		if (lit.new_vars() > t->lit.new_vars()) {
+			return 1;
+		} else if (lit.new_vars() < t->lit.new_vars()) {
+			return -1;
+		}
 	}
 	
 	if (max_gain > t->max_gain) {
 		return 1;
 	} else if (max_gain < t->max_gain) {
-		return -1;
-	}
-	
-	if (!lit.negated() && t->lit.negated()) {
-		return 1;
-	} else if (lit.negated() && !t->lit.negated()) {
 		return -1;
 	}
 	
@@ -868,7 +910,7 @@ void literal_tree::expand() {
 			continue;
 		}
 		for (int j = 0; j < vars_left.size(); ++j) {
-			literal_tree *c = new literal_tree(*this, i, vars_left[j]);
+			literal_tree *c = new literal_tree(this, i, vars_left[j]);
 			foil.gain(c->lit, c->gain, c->max_gain);
 			if (*best != NULL && c->max_gain < (**best).gain) {
 				delete c;
@@ -894,3 +936,4 @@ void literal_tree::expand_df() {
 		children[i]->expand_df();
 	}
 }
+
