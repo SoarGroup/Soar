@@ -286,18 +286,18 @@ bool test_clause(const clause &c, const relation_table &rels, var_domains &domai
 
 int test_clause_n(const clause &c, bool pos, const relation &tests, const relation_table &rels, relation *correct) {
 	int ncorrect = 0;
-	var_domains doms;
-	relation::const_iterator i;
-	for (i = tests.begin(); i != tests.end(); ++i) {
-		doms.clear();
-		const tuple &t = *i;
-		for (int j = 0; j < t.size(); ++j) {
-			doms[j].insert(t[j]);
+	relation::const_iterator i, iend;
+	var_domains d;
+	
+	for (i = tests.begin(), iend = tests.end(); i != iend; ++i) {
+		d.clear();
+		for (int j = 0, jend = i->size(); j < jend; ++j) {
+			d[j].insert((*i)[j]);
 		}
-		if (test_clause(c, rels, doms) == pos) {
+		if (test_clause(c, rels, d) == pos) {
 			++ncorrect;
 			if (correct) {
-				correct->add(t);
+				correct->add(*i);
 			}
 		}
 	}
@@ -320,10 +320,13 @@ int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains
 	return -1;
 }
 
-double clause_success_rate(const clause &c, const relation &pos, const relation &neg, const relation_table &rels) {
-	int correct = test_clause_n(c, true, pos, rels, NULL);
-	correct += test_clause_n(c, false, neg, rels, NULL);
-	return correct / static_cast<double>(pos.size() + neg.size());
+void clause_success_rate(const clause &c, const relation &pos, const relation &neg, const relation_table &rels, double &success_rate, double &fp_rate, double &fn_rate) {
+	int pos_correct, neg_correct;
+	pos_correct = test_clause_n(c, true, pos, rels, NULL);
+	fn_rate = (pos.size() - pos_correct) / static_cast<double>(pos.size());
+	neg_correct = test_clause_n(c, false, neg, rels, NULL);
+	fp_rate = (neg.size() - neg_correct) / static_cast<double>(neg.size());
+	success_rate = (pos_correct + neg_correct) / static_cast<double>(pos.size() + neg.size());
 }
 
 /*
@@ -336,9 +339,9 @@ void fix_unbound_variables(int num_auto_bound, clause &c) {
 	for (int i = 0; i < c.size(); ++i) {
 		const literal &l = c[i];
 		const tuple &args = l.get_args();
-		for (int j = num_auto_bound; j < args.size(); ++j) {
+		for (int j = 0; j < args.size(); ++j) {
 			int v = args[j];
-			if (v < 0) {
+			if (v < num_auto_bound) {
 				continue;
 			}
 			if (v >= status.size()) {
@@ -366,26 +369,56 @@ void fix_unbound_variables(int num_auto_bound, clause &c) {
 	}
 }
 
-double prune_clause(clause &c, const relation &pos, const relation &neg, const relation_table &rels) {
-	double best_rate;
+/*
+ Remove literals from the clause that result in a better clause. Several metrics can be used:
+ 
+ - Accuracy (percentage of all positive and negative examples correctly classified)
+ 
+   This metric is problematic if there are many positive examples and few
+   negative examples. Removing literals lowers the false negative rate at the
+   expense of the false positive rate, and in the case of many positive
+   examples, accuracy is unfairly biased toward lowering false negative rate.
+   The result is that in some cases all literals will be pruned.
+
+ - False positive rate
+ 
+   It's impossible to lower the false positive rate by removing literals, since
+   the clause can only become less restrictive. But if a literal can be removed
+   without increasing the false positive rate, it's a good sign that the
+   literal is not useful.
+
+ - False negative rate
+ 
+   Using this metric would result in pruning all literals every time. Not a good idea.
+   
+ So currently it looks like the false positive rate is the way to go.
+*/
+ 
+void prune_clause_accuracy(clause &c, const relation &pos, const relation &neg, const relation_table &rels, double &success_rate, double &fp_rate, double &fn_rate) {
+	double s, fp, fn;
 	int best_lit;
 	
 	if (pos.empty() && neg.empty()) {
-		return 1;
+		success_rate = 1.0;
+		fp_rate = 0.0;
+		fn_rate = 0.0;
+		return;
 	}
 	
-	best_rate = clause_success_rate(c, pos, neg, rels);
-	cout << "original: " << c << " " << best_rate << endl;
+	clause_success_rate(c, pos, neg, rels, success_rate, fp_rate, fn_rate);
+	LOG(FOILDBG) << "original: " << c << " " << success_rate << endl;
 	while (true) {
 		best_lit = -1;
 		for (int i = 0; i < c.size(); ++i) {
 			clause pruned = c;
 			pruned.erase(pruned.begin() + i);
 			fix_unbound_variables(pos.arity(), pruned);
-			double r = clause_success_rate(pruned, pos, neg, rels);
-			if (r > best_rate) {
+			clause_success_rate(pruned, pos, neg, rels, s, fp, fn);
+			if (s > success_rate) {
 				best_lit = i;
-				best_rate = r;
+				success_rate = s;
+				fp_rate = fp;
+				fn_rate = fn;
 			}
 		}
 		if (best_lit < 0) {
@@ -394,8 +427,33 @@ double prune_clause(clause &c, const relation &pos, const relation &neg, const r
 		c.erase(c.begin() + best_lit);
 		fix_unbound_variables(pos.arity(), c);
 	}
-	cout << "pruned:   " << c << " " << best_rate << endl;
-	return best_rate;
+	LOG(FOILDBG) << "pruned:   " << c << " " << success_rate << endl;
+}
+
+void prune_clause_fp(clause &c, const relation &pos, const relation &neg, const relation_table &rels, double &success_rate, double &fp_rate, double &fn_rate) {
+	double s, fp, fn;
+	
+	if (pos.empty() && neg.empty()) {
+		success_rate = 1.0;
+		fp_rate = 0.0;
+		fn_rate = 0.0;
+		return;
+	}
+	
+	clause_success_rate(c, pos, neg, rels, success_rate, fp_rate, fn_rate);
+	LOG(FOILDBG) << "original: " << c << " " << success_rate << endl;
+	for (int i = c.size() - 1; i >= 0; --i) {
+		clause pruned = c;
+		pruned.erase(pruned.begin() + i);
+		fix_unbound_variables(pos.arity(), pruned);
+		clause_success_rate(pruned, pos, neg, rels, s, fp, fn);
+		LOG(FOILDBG) << "removing " << c[i] << " results in " << fp_rate << " -> " << fp << " " << fn_rate << " -> " << fn << endl;
+		if (fp <= fp_rate) {
+			c.erase(c.begin() + i);
+		}
+	}
+	fix_unbound_variables(pos.arity(), c);
+	LOG(FOILDBG) << "pruned:   " << c << " " << success_rate << endl;
 }
 
 void split_training(double ratio, const relation &all, relation &grow, relation &test) {
@@ -504,7 +562,7 @@ void FOIL::set_problem(const relation &p, const relation &n, const relation_tabl
 */
 bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 	relation pos_test, neg_test, pos_left;
-	double success_rate;
+	double success_rate, fp_rate, fn_rate;
 	
 	if (residuals) {
 		clear_and_dealloc(*residuals);
@@ -531,13 +589,12 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 		}
 		
 		if (use_pruning) {
-			success_rate = prune_clause(c, pos_test, neg_test, *rels);
+			prune_clause_fp(c, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
 		} else {
-			success_rate = clause_success_rate(c, pos_test, neg_test, *rels);
+			clause_success_rate(c, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
 		}
 		
-		// should test false positive rate here, rather than success rate
-		if (!c.empty() && success_rate > FOIL_MIN_SUCCESS_RATE) {
+		if (!c.empty() && fp_rate < .3) {
 			clauses.push_back(c);
 			if (residuals) {
 				residuals->push_back(res);

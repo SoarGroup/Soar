@@ -154,7 +154,6 @@ private:
 	
 	void estep();
 	bool mstep();
-	void extend_relations(const relation_table &add, int time);
 	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
 
 	bool unify_or_add_mode();
@@ -174,12 +173,12 @@ private:
 	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_classifiers(std::ostream &os) const;
 
-	relation_table rel_tbl;
+	relation_table rel_tbl, context_rel_tbl;
 	std::vector<train_data*> data;
 	std::vector<sig_info*> sigs;
 	std::vector<mode_info*> modes;
 	int ndata, nmodes;
-	bool use_em, use_foil, use_lda;
+	bool use_em, use_foil, use_foil_close, use_lda, use_pruning;
 
 	/*
 	 Keeps track of the minimum number of new noise examples needed before we have

@@ -1,5 +1,6 @@
 #include "filter_table.h"
 #include "scene.h"
+#include "collision.h"
 
 using namespace std;
 
@@ -229,6 +230,18 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 			rt[type] = relation(2);
 		}
 		relation &type_rel = rt[type];
-		type_rel.add(0, node_inds[j]);
+		type_rel.add(time, node_inds[j]);
+	}
+	
+	// add closest relations. This is kind of a hack for FOIL
+	if (!has(rt, string("closest"))) {
+		rt["closest"] = relation(3);
+	}
+	relation &closest_rel = rt["closest"];
+	tuple t(2);
+	for (int j = 0; j < node_inds.size(); ++j) {
+		t[0] = node_inds[j];
+		t[1] = scn->get_closest(node_inds[j]);
+		closest_rel.add(time, t);
 	}
 }

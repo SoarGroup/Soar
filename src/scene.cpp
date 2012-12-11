@@ -142,6 +142,7 @@ scene *scene::clone(const string &cname, drawer *d) const {
 		n->listen(c);
 		if (!n->is_group()) {
 			c->cdetect.add_node(n);
+			c->update_closest(n);
 		}
 		if (c->draw) {
 			c->draw->add(c->name, n);
@@ -577,6 +578,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			sig_dirty = true;
 			if (!child->is_group()) {
 				cdetect.add_node(child);
+				update_closest(child);
 			}
 			if (draw) {
 				draw->add(name, child);
@@ -599,6 +601,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 		case sgnode::SHAPE_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_shape(n);
+				update_closest(n);
 				if (draw) {
 					draw->change(name, n, drawer::SHAPE);
 				}
@@ -607,6 +610,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 		case sgnode::TRANSFORM_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_transform(n);
+				update_closest(n);
 			}
 			if (draw) {
 				draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
@@ -622,6 +626,48 @@ bool scene::intersects(const sgnode *a, const sgnode *b) const {
 	}
 	const collision_table &c = const_cast<scene*>(this)->cdetect.get_collisions();
 	return c.find(make_pair(a, b)) != c.end() || c.find(make_pair(b, a)) != c.end();
+}
+
+void scene::update_closest(const sgnode *n) {
+	const geometry_node *g1 = dynamic_cast<const geometry_node*>(n);
+	node_table::const_iterator i, j, end;
+	
+	for (i = nodes.begin(), end = nodes.end(); i != end; ++i) {
+		const sgnode *n2 = i->second.node;
+		if (n == n2 || n2->is_group())
+			continue;
+		
+		const geometry_node *g2 = dynamic_cast<const geometry_node*>(n2);
+		double dist = convex_distance(g1, g2);
+		distances[make_pair(n, n2)] = dist;
+		distances[make_pair(n2, n)] = dist;
+	}
+	
+	for (i = nodes.begin(), end = nodes.end(); i != end; ++i) {
+		const sgnode *n1 = i->second.node;
+		if (n1->is_group())
+			continue;
+		
+		close_info &c = closest[n1];
+		c.id = -1;
+		for (j = nodes.begin(); j != end; ++j) {
+			const sgnode *n2 = j->second.node;
+			if (n2->is_group())
+				continue;
+			
+			double dist = distances[make_pair(n1, n2)];
+			if (n1 != n2 && (c.id < 0 || c.dist > dist)) {
+				c.id = j->first;
+				c.dist = dist;
+			}
+		}
+	}
+}
+
+int scene::get_closest(int i) const {
+	const sgnode *n = map_get(nodes, i).node;
+	assert(has(closest, n));
+	return map_get(closest, n).id;
 }
 
 void scene::update_sig() const {

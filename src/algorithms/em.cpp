@@ -177,6 +177,60 @@ void split_data(
 }
 
 /*
+ Add tuples from a single time point into the relation table
+*/
+void extend_relations(relation_table &rels, const relation_table &add, int time) {
+	set<tuple> t;
+	relation_table::const_iterator i;
+	for (i = add.begin(); i != add.end(); ++i) {
+		const string &name = i->first;
+		const relation &r = i->second;
+		relation_table::iterator j = rels.find(name);
+		if (j == rels.end()) {
+			rels[name] = r;
+		} else {
+			relation &r2 = j->second;
+			t.clear();
+			/*
+			 The assumption here is that all the tuples
+			 have the same value in the first position,
+			 since they're all from the same time.
+			*/
+			r.drop_first(t);
+			set<tuple>::const_iterator k;
+			for (k = t.begin(); k != t.end(); ++k) {
+				r2.add(time, *k);
+			}
+		}
+	}
+}
+
+void get_context_rels(int target, const relation_table &rels, relation_table &context_rels) {
+	// find the closest object to the target
+	relation closest_rel = map_get(rels, string("closest"));
+	
+	vector<tuple> target_pat(3);
+	target_pat[1].push_back(target);
+	closest_rel.filter(target_pat, false);
+	assert(closest_rel.size() == 1);
+	int closest = (*closest_rel.begin())[2];
+	
+	// filter out all far objects
+	context_rels = rels;
+	relation_table::iterator i, end;
+	for (i = context_rels.begin(), end = context_rels.end(); i != end; ++i) {
+		relation &r = i->second;
+		vector<tuple> close_pat(r.arity());
+		for (int j = 1; j < r.arity(); ++j) {
+			close_pat[j].push_back(target);
+			close_pat[j].push_back(closest);
+		}
+		r.filter(close_pat, false);
+	}
+}
+
+
+/*
  Assume that data from a single mode comes in blocks. Try to discover
  a mode by randomly fitting a line to a block of data and then finding
  all data that fit the line.
@@ -386,10 +440,12 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 void print_first_arg(const relation &r, ostream &os) {
 	interval_set first;
 	r.at_pos(0, first);
-	join(os, first, " ") << endl;
+	os << first << endl;
 }
 
-EM::EM() : ndata(0), nmodes(1), use_em(true), use_foil(true), use_lda(true), check_after(NEW_MODE_THRESH)
+EM::EM() 
+: ndata(0), nmodes(1), use_em(true), use_foil(true), use_foil_close(true),
+  use_lda(true), use_pruning(true), check_after(NEW_MODE_THRESH)
 {
 	mode_info *noise = new mode_info(true, data, sigs);
 	noise->classifiers.resize(1, NULL);
@@ -439,7 +495,11 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 	
 	modes[0]->add_example(ndata);
 	noise_by_sig[d->sig_index].insert(ndata);
-	extend_relations(rels, ndata);
+	extend_relations(rel_tbl, rels, ndata);
+	
+	relation_table context_rels;
+	get_context_rels(sig[target].id, rels, context_rels);
+	extend_relations(context_rel_tbl, context_rels, ndata);
 	++ndata;
 }
 
@@ -859,9 +919,13 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		return read_on_off(args, first + 1, os, use_em);
 	} else if (args[first] == "use_foil") {
 		return read_on_off(args, first + 1, os, use_foil);
+	} else if (args[first] == "use_foil_close") {
+		return read_on_off(args, first + 1, os, use_foil_close);
 	} else if (args[first] == "use_lda") {
 		return read_on_off(args, first + 1, os, use_lda);
-	} else if (args[first] == "dump_foil") {
+	} else if (args[first] == "use_pruning") {
+		return read_on_off(args, first + 1, os, use_pruning);
+	} else if (args[first] == "dump_foil" || args[first] == "dump_foil_close") {
 		int m1, m2;
 		if (first + 2 >= args.size() || 
 		    !parse_int(args[first+1], m1) || 
@@ -875,8 +939,12 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		if (m1 > m2)
 			swap(m1, m2);
 		
-		FOIL foil;
-		foil.set_problem(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), rel_tbl);
+		FOIL foil(false);
+		if (args[first] == "dump_foil") {
+			foil.set_problem(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), rel_tbl);
+		} else {
+			foil.set_problem(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), context_rel_tbl);
+		}
 		foil.dump_foil6(os);
 	}
 
@@ -976,7 +1044,7 @@ void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 			}
 		}
 		
-		FOIL foil;
+		FOIL foil(true);
 		foil.set_problem(pos_obj, neg_obj, rels);
 		obj_clauses[i].clear();
 		if (!foil.learn(obj_clauses[i], NULL)) {
@@ -1027,44 +1095,15 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 	return false;
 }
 
-/*
- Add tuples from a single time point into the relation table
-*/
-void EM::extend_relations(const relation_table &add, int time) {
-	set<tuple> t;
-	relation_table::const_iterator i;
-	for (i = add.begin(); i != add.end(); ++i) {
-		const string &name = i->first;
-		const relation &r = i->second;
-		relation_table::iterator j = rel_tbl.find(name);
-		if (j == rel_tbl.end()) {
-			rel_tbl[name] = r;
-		} else {
-			relation &r2 = j->second;
-			t.clear();
-			/*
-			 The assumption here is that all the tuples
-			 have the same value in the first position,
-			 since they're all from the same time.
-			*/
-			r.drop_first(t);
-			set<tuple>::const_iterator k;
-			for (k = t.begin(); k != t.end(); ++k) {
-				r2.add(time, *k);
-			}
-		}
-	}
-}
-
 void EM::serialize(ostream &os) const {
-	serializer(os) << ndata << nmodes << data << sigs << rel_tbl;
+	serializer(os) << ndata << nmodes << data << sigs << rel_tbl << context_rel_tbl;
 	for (int i = 0; i < nmodes; ++i) {
 		modes[i]->serialize(os);
 	}
 }
 
 void EM::unserialize(istream &is) {
-	unserializer(is) >> ndata >> nmodes >> data >> sigs >> rel_tbl;
+	unserializer(is) >> ndata >> nmodes >> data >> sigs >> rel_tbl >> context_rel_tbl;
 	assert(data.size() == ndata);
 	
 	delete modes[0];
@@ -1378,11 +1417,19 @@ void EM::classifier::inspect(ostream &os) const {
 }
 
 bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) const {
+	const relation_table *rels;
+	if (i < args.size() && args[i] == "close") {
+		rels = &context_rel_tbl;
+		++i;
+	} else {
+		rels = &rel_tbl;
+	}
+	
 	if (i >= args.size()) {
-		os << rel_tbl << endl;
+		os << *rels << endl;
 		return true;
 	}
-	const relation *r = map_getp(rel_tbl, args[i]);
+	const relation *r = map_getp(*rels, args[i]);
 	if (!r) {
 		os << "no such relation" << endl;
 		return false;
@@ -1464,11 +1511,10 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 	}
 	
 	interval_set p0, n0;
-	vector<int> pi, ni;
 	pos.at_pos(0, p0);
 	neg.at_pos(0, n0);
-	copy(p0.begin(), p0.end(), back_inserter(pi));
-	copy(n0.begin(), n0.end(), back_inserter(ni));
+	vector<int> pi(p0.begin(), p0.end());
+	vector<int> ni(n0.begin(), n0.end());
 	
 	random_shuffle(pi.begin(), pi.end());
 	random_shuffle(ni.begin(), ni.end());
@@ -1552,7 +1598,12 @@ void EM::update_pair(int i, int j) {
 	}
 	
 	if (use_foil) {
-		FOIL foil(mem_i, mem_j, rel_tbl);
+		FOIL foil(use_pruning);
+		if (use_foil_close) {
+			foil.set_problem(mem_i, mem_j, context_rel_tbl);
+		} else {
+			foil.set_problem(mem_i, mem_j, rel_tbl);
+		}
 		foil.learn(c.clauses, &c.residuals);
 	} else {
 		/*
@@ -1595,12 +1646,25 @@ int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation
 
 	LOG(EMDBG) << "Voting on " << i << " vs " << j << endl;
 	if (c.clauses.size() > 0) {
+		
 		var_domains domains;
 		domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
 		domains[1].insert(sig[target].id);
-		matched_clause = test_clause_vec(c.clauses, rels, domains);
+		
+		if (use_foil_close) {
+			relation_table context;
+			get_context_rels(sig[target].id, rels, context);
+			matched_clause = test_clause_vec(c.clauses, context, domains);
+		} else {
+			matched_clause = test_clause_vec(c.clauses, rels, domains);
+		}
 		if (matched_clause >= 0) {
 			LOG(EMDBG) << "matched clause:" << endl << c.clauses[matched_clause] << endl;
+			var_domains::const_iterator vi, viend;
+			for (vi = domains.begin(), viend = domains.end(); vi != viend; ++vi) {
+				assert(vi->second.size() == 1);
+				LOG(EMDBG) << vi->first << " = " << *vi->second.begin() << endl;
+			}
 			if (c.ldas[matched_clause]) {
 				result = c.ldas[matched_clause]->classify(x);
 				LOG(EMDBG) << "LDA votes for " << (result == 0 ? i : j) << endl;

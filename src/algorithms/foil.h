@@ -82,6 +82,6 @@ private:
 typedef std::map<int, std::set<int> > var_domains;
 bool test_clause(const clause &c, const relation_table &rels, var_domains &domains);
 int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains &domains);
-double clause_success_rate(const clause &c, const relation &pos, const relation &neg, const relation_table &rels);
+void clause_success_rate(const clause &c, const relation &pos, const relation &neg, const relation_table &rels, double &success_rate, double &fp_rate, double &fn_rate);
 
 #endif

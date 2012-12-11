@@ -46,6 +46,7 @@ public:
 	void parse_sgel(const std::string &s);
 	void node_update(sgnode *n, sgnode::change_type t, int added_child);
 	bool intersects(const sgnode *a, const sgnode *b) const;
+	int get_closest(int i) const;
 	const scene_sig &get_signature() const;
 	
 private:
@@ -65,7 +66,8 @@ private:
 	const node_info *get_node_info(const std::string &name) const;
 	void update_sig() const;
 	void get_property_names(int i, std::vector<std::string> &names) const;
-	
+	void update_closest(const sgnode *n);
+
 	int parse_add(std::vector<std::string> &f, std::string &error);
 	int parse_del(std::vector<std::string> &f, std::string &error);
 	int parse_change(std::vector<std::string> &f, std::string &error);
@@ -83,6 +85,14 @@ private:
 
 	std::map<std::string, int> node_ids;
 	mutable scene_sig sig;
+	
+	struct close_info {
+		int id;
+		double dist;
+	};
+	
+	std::map<std::pair<const sgnode *, const sgnode *>, double> distances;
+	std::map<const sgnode *, close_info> closest;
 };
 
 #endif
