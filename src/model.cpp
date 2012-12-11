@@ -308,8 +308,8 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 
 bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
 	assert(dim >= 0 && start >= 0 && end < tests.size());
-	double total = 0.0, min = INFINITY, max = 0.0, std = 0.0;
-	int num_nans = 0, min_i, max_i;
+	double total = 0.0, std = 0.0, q1, q2, q3;
+	int num_nans = 0;
 	vector<double> ds;
 	for (int i = start; i <= end; ++i) {
 		const test_info &t = tests[i];
@@ -322,37 +322,28 @@ bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
 			double d = t.error(dim);
 			ds.push_back(d);
 			total += d;
-			if (d < min) {
-				min = d;
-				min_i = i;
-			}
-			if (d > max) {
-				max = d;
-				max_i = i;
-			}
 		}
 	}
-	os << num_nans << " failed" << endl;
+	double last = ds.back();
 	if (ds.empty()) {
 		os << "no predictions" << endl;
 		return false;
 	}
-	double last = ds.back();
 	double mean = total / ds.size();
 	for (int i = 0; i < ds.size(); ++i) {
 		std += pow(ds[i] - mean, 2);
 	}
 	std = sqrt(std / ds.size());
 	sort(ds.begin(), ds.end());
-	double mode = ds[ds.size() / 2];
+	
+	sort(ds.begin(), ds.end());
+	q1 = ds[ds.size() / 4];
+	q2 = ds[ds.size() / 2];
+	q3 = ds[(ds.size() / 4) * 3];
 	
 	table_printer t;
-	t.add_row() << "mean" << mean;
-	t.add_row() << "std" << std;
-	t.add_row() << "mode" << mode;
-	t.add_row() << "last" << last;
-	t.add_row() << "min" << min << min_i;
-	t.add_row() << "max" << max << max_i;
+	t.add_row() << "mean" << "std" << "min" << "q1" << "q2" << "q3" << "max" << "last" << "failed";
+	t.add_row() << mean << std << ds.front() << q1 << q2 << q3 << ds.back() << last << num_nans;
 	t.print(os);
 
 	return true;
