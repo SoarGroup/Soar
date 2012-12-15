@@ -782,21 +782,23 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	}
 	
 	vector<int> obj_map;
-	mode = classify(target, sig, rels, x, obj_map);
-	if (mode == 0) {
-		for (int i = 0; i < sigs.size(); ++i) {
-			if (sigs[i]->sig == sig) {
-				if (sigs[i]->lwr.predict(x, y)) {
-					return true;
-				}
-				break;
-			}
+	if (use_em && use_foil) {
+		mode = classify(target, sig, rels, x, obj_map);
+		if (mode > 0) {
+			modes[mode]->predict(sig, x, obj_map, y);
+			return true;
 		}
-		y(0) = NAN;
-		return false;
 	}
-	modes[mode]->predict(sig, x, obj_map, y);
-	return true;
+	for (int i = 0; i < sigs.size(); ++i) {
+		if (sigs[i]->sig == sig) {
+			if (sigs[i]->lwr.predict(x, y)) {
+				return true;
+			}
+			break;
+		}
+	}
+	y(0) = NAN;
+	return false;
 }
 
 /*

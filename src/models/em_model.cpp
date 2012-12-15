@@ -74,7 +74,7 @@ public:
 			return true;
 		} else if (args[first_arg] == "em") {
 			return em.cli_inspect(first_arg + 1, args, os);
-		} else if (args[first_arg] == "error") {
+		} else if (args[first_arg] == "mode_error_list") {
 			assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
 			table_printer t;
 			t.add_row() << "N" << "PRED. MODE" << "BEST MODE" << "BEST ERROR";
@@ -82,6 +82,16 @@ public:
 				t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
 			}
 			t.print(os);
+		} else if (args[first_arg] == "mode_error") {
+			int nsame = 0, ndiff = 0;
+			for (int i = 0; i < test_modes.size(); ++i) {
+				if (test_modes[i] == test_best_modes[i]) {
+					++nsame;
+				} else {
+					++ndiff;
+				}
+			}
+			os << nsame << " correct, " << ndiff << " incorrect" << endl;
 		}
 		return false;
 	}

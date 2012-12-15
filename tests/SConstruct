@@ -41,14 +41,21 @@ test_foil_src = [
 	'test_foil.cpp'
 ]
 
-
 test_intervalset_src = [
 	srcp('common.cpp'),
 	srcp('relation.cpp'),
 	'test_intervalset.cpp'
 ]
 
+test_csp_src = [
+	srcp('common.cpp'),
+	srcp('relation.cpp'),
+	srca('foil.cpp'),
+	'test_csp.cpp'
+]
+
 #env.Program('test_svs2', srcs + ['test_svs2.cpp'])
 #env.Program('run_lda', run_lda_src)
 env.Program('test_foil', test_foil_src)
 env.Program('test_intervalset', test_intervalset_src)
+env.Program('test_csp', test_csp_src)

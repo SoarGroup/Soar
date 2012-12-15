@@ -125,7 +125,15 @@ bool LWR::predict(const rvec &x, rvec &y) {
 
 	mat coefs;
 	rvec intercept;
+	
+	/*
+	 Using non-regularized methods seems to cause problems, so I'm switching over
+	 to ridge regression. Unfortunately I haven't figured out how to do weighted
+	 ridge regression, so for now I'm just dropping the weights.
+	
 	linreg_d(FORWARD, X, Y, w, coefs, intercept);
+	*/
+	linreg_d(LASSO, X, Y, cvec(), coefs, intercept);
 	y = x * coefs + intercept;
 	return true;
 }
