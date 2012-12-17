@@ -109,17 +109,21 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 }
 
 svs_state::~svs_state() {
-	map<wme*, command*>::iterator i;
-	for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
+	map<wme*, command*>::iterator i, iend;
+	string scn_name;
+	
+	for (i = curr_cmds.begin(), iend = curr_cmds.end(); i != iend; ++i) {
 		delete i->second;
 	}
 	
+	scn_name = scn->get_name();
 	delete scn; // results in root being deleted also
 	delete mmdl;
 	
 	if (model_link) {
 		svsp->set_model_root(NULL);
 	}
+	svsp->get_drawer()->delete_scene(scn_name);
 }
 
 void svs_state::init() {

@@ -89,6 +89,19 @@ void sgnode::get_trans(vec3 &p, vec3 &r, vec3 &s) const {
 	s = scale;
 }
 
+void sgnode::get_world_trans(vec3 &p, vec3 &r, vec3 &s) const {
+	if (parent) {
+		parent->update_transform();
+		p = parent->wtransform(pos);
+		r = parent->wtransform(rot);
+		s = parent->wtransform(scale);
+	} else {
+		p = pos;
+		r = rot;
+		s = scale;
+	}
+}
+
 void sgnode::set_transform_dirty() {
 	trans_dirty = true;
 	if (parent) {
@@ -106,7 +119,7 @@ void sgnode::set_shape_dirty() {
 	send_update(sgnode::SHAPE_CHANGED);
 }
 
-void sgnode::update_transform() {
+void sgnode::update_transform() const {
 	if (!trans_dirty) {
 		return;
 	}
@@ -118,6 +131,7 @@ void sgnode::update_transform() {
 	} else {
 		wtransform = ltransform;
 	}
+	trans_dirty = false;
 }
 
 /* if updates result in observers removing themselves, the iteration may

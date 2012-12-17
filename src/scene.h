@@ -49,6 +49,8 @@ public:
 	int get_closest(int i) const;
 	const scene_sig &get_signature() const;
 	
+	std::string get_name() const { return name; }
+	
 private:
 	typedef std::map<std::string, double> property_map;
 	

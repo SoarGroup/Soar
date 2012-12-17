@@ -52,6 +52,7 @@ public:
 	void set_trans(const vec3 &p, const vec3 &r, const vec3 &s);
 	vec3 get_trans(char type) const;
 	void get_trans(vec3 &p, vec3 &r, vec3 &s) const;
+	void get_world_trans(vec3 &p, vec3 &r, vec3 &s) const;
 	vec4 get_quaternion() const;
 	
 	void set_shape_dirty();
@@ -72,7 +73,7 @@ protected:
 	
 private:
 	void set_transform_dirty();
-	void update_transform();
+	void update_transform() const;
 	void send_update(change_type t, int added=-1);
 	
 	std::string name;
@@ -82,12 +83,13 @@ private:
 	vec3        pos;
 	vec3        rot;
 	vec3        scale;
-	transform3  wtransform;
-	transform3  ltransform;
 	bool        shape_dirty;
-	bool        trans_dirty;
 	bbox        bounds;
 	vec3        centroid;
+
+	mutable transform3 wtransform;
+	mutable transform3 ltransform;
+	mutable bool       trans_dirty;
 	
 	std::list<sgnode_listener*> listeners;
 };
