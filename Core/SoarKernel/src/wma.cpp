@@ -955,7 +955,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 							{
 								for ( w=s->wmes; (w && do_forget); w=w->next )
 								{
-									if ( !w->wma_decay_el || ( w->wma_decay_el->forget_cycle != WMA_FORGOTTEN_CYCLE ) )
+									if ( w->preference->o_supported && ( !w->wma_decay_el || ( w->wma_decay_el->forget_cycle != WMA_FORGOTTEN_CYCLE ) ) )
 									{
 										do_forget = false;
 									}
