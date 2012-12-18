@@ -22,6 +22,7 @@ public:
 	void del(const std::string &scn, const sgnode *n);
 	void change(const std::string &scn, const sgnode *n, int props);
 	void delete_scene(const std::string &scn);
+	void set_color(const std::string &name, double r, double g, double b);
 	
 private:
 	ipcsocket sock;

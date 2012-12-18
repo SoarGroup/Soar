@@ -32,7 +32,7 @@ void drawer::del(const string &scn, const sgnode *n) {
 	}
 	
 	stringstream ss;
-	ss << scn << " !" << n->get_name() << endl;
+	ss << scn << " -" << n->get_name() << endl;
 	sock.send(ss.str());
 }
 
@@ -47,7 +47,7 @@ void drawer::change(const string &scn, const sgnode *n, int props) {
 
 	n->get_world_trans(p, r, s);
 	q = n->get_quaternion();
-	ss << scn << " " << n->get_name() << " ";
+	ss << "+" << scn << " +" << n->get_name() << " ";
 	if (props & SHAPE) {
 		string shape;
 		n->get_shape_sgel(shape);
@@ -69,5 +69,11 @@ void drawer::change(const string &scn, const sgnode *n, int props) {
 }
 
 void drawer::delete_scene(const string &scn) {
-	sock.send(string("!") + scn + "\n");
+	sock.send(string("-") + scn + "\n");
+}
+
+void drawer::set_color(const string &name, double r, double g, double b) {
+	stringstream ss;
+	ss << "* " << name << " " << r << " " << g << " " << b << endl;
+	sock.send(ss.str());
 }

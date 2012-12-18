@@ -25,15 +25,17 @@ static camera cam = {
 };
 
 /* Colors of all objects */
-static GLfloat light_color[] =             { 1.0, 1.0, 1.0, 1.0 };
-static GLfloat bg_color[] =                { 0.2, 0.2, 0.2, 1.0 };
-static GLfloat grid_color[] =              { 0.3, 0.3, 0.3, 0.5 };
-static GLfloat grid_x_color[] =            { 0.7, 0.0, 0.0, 0.5 };
-static GLfloat grid_y_color[] =            { 0.0, 0.7, 0.0, 0.5 };
-static GLfloat geom_color[] =              { 1.0, 1.0, 1.0 };
-static GLfloat geom_label_color[] =        { 1.0, 0.0, 0.0 };
-static GLfloat scene_text_color[] =        { 1.0, 0.0, 0.0 };
-static GLfloat active_scene_text_color[] = { 1.0, 1.0, 0.0 };
+static GLfloat light_color[] =          { 0.2, 0.2, 0.2, 1.0 };
+static real bg_color[] =                { 0.2, 0.2, 0.2, 1.0 };
+static real grid_color[] =              { 0.3, 0.3, 0.3, 0.5 };
+static real grid_x_color[] =            { 0.7, 0.0, 0.0, 0.5 };
+static real grid_y_color[] =            { 0.0, 0.7, 0.0, 0.5 };
+static real scene_text_color[] =        { 1.0, 0.0, 0.0 };
+static real active_scene_text_color[] = { 1.0, 1.0, 0.0 };
+static real geom_default_color[] =      { 0.8, 0.8, 0.8 };
+static real geom_label_color[] =        { 1.0, 0.0, 0.0 };
+static GLfloat geom_specular[] =        { 1.0, 1.0, 1.0, 1.0 };
+static GLfloat geom_shininess[] =       { 100.0 };
 
 SDL_mutex *scene_lock;
 static scene *scene_head = NULL;
@@ -84,24 +86,28 @@ int main(int argc, char* argv[]) {
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 5 );
 	SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 5 );
 	SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 32 );
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
 	if(!(screen = SDL_SetVideoMode(scr_width, scr_height, bpp, flags))) {
 		fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError() );
 		return 1;
 	}
+	SDL_WM_SetCaption("SVS viewer", NULL);
 	
 	reshape(screen->w, screen->h);
 	glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
 	glShadeModel(GL_FLAT);
-	glPolygonMode(GL_FRONT, GL_FILL);
-	glPolygonMode(GL_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_color);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_COLOR_MATERIAL);
 	
+	glMaterialfv(GL_FRONT, GL_SPECULAR, geom_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, geom_shininess);
+		
 	init_grid();
 	init_font();
 	
@@ -238,17 +244,17 @@ void init_grid() {
 void draw_grid() {
 	real g = GRID_LINES * grid_size;
 	
-	glColor4fv(grid_color);
+	glColor4dv(grid_color);
 	glVertexPointer(2, GL_DOUBLE, 0, grid_verts);
 	glDrawArrays(GL_LINES, 0, GRID_VERTS_SIZE / 2);
 	
-	glColor4fv(grid_x_color);
+	glColor4dv(grid_x_color);
 	glBegin(GL_LINES);
 		glVertex3f(0.0, -g, 0.0);
 		glVertex3f(0.0, g, 0.0);
 	glEnd();
 	
-	glColor4fv(grid_y_color);
+	glColor4dv(grid_y_color);
 	glBegin(GL_LINES);
 		glVertex3f(-g, 0.0, 0.0);
 		glVertex3f(g, 0.0, 0.0);
@@ -263,7 +269,7 @@ void draw_screen() {
 	
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60.0, scr_width / (double) scr_height, 1.5, 100.0);
+	gluPerspective(60.0, scr_width / (double) scr_height, 0.1, 100.0);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -312,8 +318,16 @@ void set_vec3(vec3 a, real x, real y, real z) {
 	a[0] = x; a[1] = y; a[2] = z;
 }
 
+void set_vec4(vec3 a, real x, real y, real z, real w) {
+	a[0] = x; a[1] = y; a[2] = z; a[3] = w;
+}
+
 void copy_vec3(vec3 a, vec3 b) {
 	set_vec3(b, a[0], a[1], a[2]);
+}
+
+void copy_vec4(vec4 a, vec4 b) {
+	set_vec4(b, a[0], a[1], a[2], a[3]);
 }
 
 void add_vec3(vec3 a, vec3 b) {
@@ -452,10 +466,11 @@ void init_geom(geometry *g, char *name) {
 		perror("init_geom: ");
 		exit(1);
 	}
-	g->pos[0] = g->pos[1] = g->pos[2] = 0.0;
-	g->axis[0] = g->axis[1] = 0.0; g->axis[2] = 1.0;
+	set_vec3(g->pos, 0.0, 0.0, 0.0);
+	set_vec3(g->scale, 1.0, 1.0, 1.0);
+	set_vec3(g->axis, 0.0, 0.0, 1.0);
 	g->angle = 0.0;
-	g->scale[0] = g->scale[1] = g->scale[2] = 1.0;
+	copy_vec3(geom_default_color, g->color);
 	g->vertices = NULL;
 	g->indexes = NULL;
 	g->ninds = 0;
@@ -483,10 +498,18 @@ void free_geom_shape(geometry *g) {
 	g->radius = 0.0;
 }
 
-void set_geom_vertices(geometry *g, real *vertices, GLuint *indexes, int ninds) {
+void set_geom_vertices(geometry *g, real *vertices, int nverts, GLuint *indexes, int ninds) {
+	int i;
+	
 	free_geom_shape(g);
-	g->vertices = vertices;
-	g->indexes = indexes;
+	g->vertices = (real *) malloc(sizeof(real) * nverts);
+	for (i = 0; i < nverts; ++i) {
+		g->vertices[i] = vertices[i];
+	}
+	g->indexes = (GLuint *) malloc(sizeof(GLuint) * ninds);
+	for (i = 0; i < ninds; ++i) {
+		g->indexes[i] = indexes[i];
+	}
 	g->ninds = ninds;
 	
 	if (g->ninds >= 3) {
@@ -543,7 +566,7 @@ void destroy_geom(geometry *g) {
 void draw_geom(geometry *g) {
 	int i;
 	
-	glColor3fv(geom_color);
+	glColor3dv(g->color);
 	glPushMatrix();
 	glTranslated(g->pos[0], g->pos[1], g->pos[2]);
 	glRotated(g->angle, g->axis[0], g->axis[1], g->axis[2]);
@@ -592,26 +615,32 @@ scene *find_or_add_scene(char *name) {
 	return s;
 }
 
-int delete_scene(char *name) {
+int delete_scenes(char *pattern) {
+	int n;
 	scene *p, *s;
 	
-	for (p = NULL, s = scene_head; s && strcmp(s->name, name) != 0; p = s, s = p->next)
-		;
-	
-	if (!s)
-		return 0;
-	
-	if (p) {
-		p->next = s->next;
-		if (curr_scene == s)
-			curr_scene = p;
-	} else {
-		scene_head = s->next;
-		if (curr_scene == s)
-			curr_scene = scene_head;
+	for (n = 0, p = NULL, s = scene_head; s ; ) {
+		if (match(pattern, s->name)) {
+			if (p) {
+				p->next = s->next;
+				if (curr_scene == s)
+					curr_scene = p;
+				destroy_scene(s);
+				s = p->next;
+			} else {
+				scene_head = s->next;
+				if (curr_scene == s)
+					curr_scene = scene_head;
+				destroy_scene(s);
+				s = scene_head;
+			}
+			++n;
+		} else {
+			p = s;
+			s = s->next;
+		}
 	}
-	destroy_scene(s);
-	return 1;
+	return n;
 }
 
 void init_scene(scene *s, char *name) {
@@ -643,6 +672,17 @@ void draw_scene(scene *s) {
 	}
 }
 
+int match_scenes(char *pattern, scene *scns[], int n) {
+	int m;
+	scene *p;
+	
+	for (m = 0, p = scene_head; p && m < n; p = p->next) {
+		if (match(pattern, p->name))
+			scns[m++] = p;
+	}
+	return m;
+}
+
 geometry *find_or_add_geom(scene *s, char *name) {
 	geometry *g;
 	for (g = s->geoms; g && strcmp(g->name, name) != 0; g = g->next)
@@ -660,29 +700,45 @@ geometry *find_or_add_geom(scene *s, char *name) {
 	return g;
 }
 
-int delete_geom(scene *s, char *name) {
+int match_geoms(scene *s, char *pattern, geometry **geoms, int n) {
+	int m;
+	geometry *p;
+	for (m = 0, p = s->geoms; p && m < n; p = p->next) {
+		if (match(pattern, p->name))
+			geoms[m++] = p;
+	}
+	return m;
+}
+
+int delete_geoms(scene *s, char *pattern) {
+	int n;
 	geometry *p, *g;
 	
-	for (p = NULL, g = s->geoms; g && strcmp(g->name, name) != 0; p = g, g = p->next)
-		;
-	
-	if (!g)
-		return 0;
-	
-	if (p) {
-		p->next = g->next;
-	} else {
-		s->geoms = g->next;
+	for (n = 0, p = NULL, g = s->geoms; g; ) {
+		if (match(pattern, g->name)) {
+			if (p) {
+				p->next = g->next;
+				destroy_geom(g);
+				g = p->next;
+			} else {
+				s->geoms = g->next;
+				destroy_geom(g);
+				g = s->geoms;
+			}
+			++n;
+		} else {
+			p = g;
+			g = g->next;
+		}
 	}
-	destroy_geom(g);
-	return 1;
+	return n;
 }
 
 void draw_geom_labels(scene *s, real *modelview, real *proj, GLint *view) {
 	geometry *g;
 	real wx, wy, wz;
 	
-	glColor3fv(geom_label_color);
+	glColor3dv(geom_label_color);
 	for (g = s->geoms; g; g = g->next) {
 		gluProject(g->pos[0], g->pos[1], g->pos[2], modelview, proj, view, &wx, &wy, &wz);
 		draw_text(g->name, wx, wy);
@@ -709,12 +765,37 @@ int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y) {
 void draw_scene_buttons(GLuint x, GLuint y) {
 	scene *p;
 	
-	glColor3fv(scene_text_color);
+	glColor3dv(scene_text_color);
 	for (p = scene_head; p; p = p->next, y -= FONT_HEIGHT) {
 		if (p == curr_scene)
-			glColor3fv(active_scene_text_color);
+			glColor3dv(active_scene_text_color);
 		
 		draw_text(p->name, x, y);
-		glColor3fv(scene_text_color);
+		glColor3dv(scene_text_color);
 	}
+}
+
+int match(char *pat, char *s) {
+	char *patcopy, *p1, *p2, *sp1, *sp2;
+	
+	if ((patcopy = strdup(pat)) == NULL) {
+		perror("match: ");
+		exit(1);
+	}
+	
+	p1 = patcopy;
+	sp1 = s;
+	while (*p1 != '\0') {
+		p2 = strchr(p1, '*');
+		if (p2 == NULL)
+			return (strcmp(p1, sp1) == 0);
+		*p2 = '\0';
+		sp2 = strstr(sp1, p1);
+		if (sp2 == NULL || (p1 == patcopy && sp2 != sp1))
+			return 0;
+		sp1 = sp2 + strlen(p1);
+		p1 = p2 + 1;
+	}
+	/* will only get here if pat ends with '*' */
+	return 1;
 }
