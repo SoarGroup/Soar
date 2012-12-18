@@ -9,6 +9,27 @@
 
 using namespace std;
 
+model *_make_null_model_    (soar_interface *si, Symbol* root, svs_state *state, const string &name);
+model *_make_velocity_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_lwr_model_     (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_splinter_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_em_model_      (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_targets_model_ (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+
+struct model_constructor_table_entry {
+	const char *type;
+	model* (*func)(soar_interface*, Symbol*, svs_state*, const string&);
+};
+
+static model_constructor_table_entry constructor_table[] = {
+	{ "null",        _make_null_model_},
+	{ "velocity",    _make_velocity_model_},
+	{ "lwr",         _make_lwr_model_},
+	{ "splinter",    _make_splinter_model_},
+	{ "em",          _make_em_model_},
+	{ "targets",     _make_targets_model_},
+};
+
 void slice(const rvec &src, rvec &tgt, const vector<int> &srcinds, const vector<int> &tgtinds) {
 	if (srcinds.empty() && tgtinds.empty()) {
 		int n = max(src.size(), tgt.size());
@@ -38,6 +59,17 @@ bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vecto
 		prop_inds.push_back(pind);
 	}
 	return true;
+}
+
+model *make_model(soar_interface *si, Symbol *root, svs_state *state, const string &name, const string &type) {
+	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
+
+	for (int i = 0; i < table_size; ++i) {
+		if (type == constructor_table[i].type) {
+			return constructor_table[i].func(si, root, state, name);
+		}
+	}
+	return NULL;
 }
 
 model::model(const std::string &name, const std::string &type) 

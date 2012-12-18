@@ -9,9 +9,11 @@
 #include <list>
 #include "common.h"
 #include "mat.h"
-#include "soar_interface.h"
 #include "relation.h"
 #include "scene_sig.h"
+#include "soar_interface.h"
+
+class svs_state;
 
 class model : public serializable {
 public:
@@ -97,5 +99,7 @@ private:
 	// record prediction errors
 	std::vector<test_info> tests;
 };
+
+model *make_model(soar_interface *si, Symbol *root, svs_state *state, const std::string &name, const std::string &type);
 
 #endif

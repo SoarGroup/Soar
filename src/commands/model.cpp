@@ -5,27 +5,6 @@
 
 using namespace std;
 
-model *_make_null_model_    (soar_interface *si, Symbol* root, svs_state *state, const string &name);
-model *_make_velocity_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_lwr_model_     (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_splinter_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_em_model_      (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_targets_model_ (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-
-struct model_constructor_table_entry {
-	const char *type;
-	model* (*func)(soar_interface*, Symbol*, svs_state*, const string&);
-};
-
-static model_constructor_table_entry constructor_table[] = {
-	{ "null",        _make_null_model_},
-	{ "velocity",    _make_velocity_model_},
-	{ "lwr",         _make_lwr_model_},
-	{ "splinter",    _make_splinter_model_},
-	{ "em",          _make_em_model_},
-	{ "targets",     _make_targets_model_},
-};
-
 void read_list(soar_interface *si, Symbol *id, vector<string> &words) {
 	slot *s;
 	wme *w;
@@ -61,7 +40,6 @@ bool split_props(const vector<string> &props, multi_model::prop_vec &out) {
 model *parse_model_struct(soar_interface *si, Symbol *cmd, svs_state *state) {
 	wme *type_wme, *name_wme;
 	string name, type;
-	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
 	
 	if (!si->find_child_wme(cmd, "type", type_wme) ||
 		!si->get_val(si->get_wme_val(type_wme), type))
@@ -75,12 +53,7 @@ model *parse_model_struct(soar_interface *si, Symbol *cmd, svs_state *state) {
 		return NULL;
 	}
 	
-	for (int i = 0; i < table_size; ++i) {
-		if (type == constructor_table[i].type) {
-			return constructor_table[i].func(si, cmd, state, name);
-		}
-	}
-	return NULL;
+	return make_model(si, cmd, state, name, type);
 }
 
 class create_model_command : public command {
