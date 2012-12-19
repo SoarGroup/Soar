@@ -4,40 +4,41 @@
 #include "common.h"
 
 using namespace std;
-const char *viewer_sock = "/tmp/viewer";
 
 ostream &write_vec3(ostream &os, const vec3 &v) {
 	os << v(0) << " " << v(1) << " " << v(2);
 	return os;
 }
 
-drawer::drawer() {
-	sock.connect(viewer_sock);
+drawer::drawer(const string &path) {
+	set_address(path);
 }
 
-drawer::~drawer() {
-	sock.disconnect();
+void drawer::set_address(const string &path) {
+	sock.set_address(path);
+	error = false;
 }
 
 void drawer::add(const string &scn, const sgnode *n) {
-	if (!sock.connected() || !n->get_parent()) {
+	if (error || !n->get_parent()) {
 		return;
 	}
 	change(scn, n, SHAPE | POS | ROT | SCALE);
 }
 
 void drawer::del(const string &scn, const sgnode *n) {
-	if (!sock.connected()) {
+	if (error) {
 		return;
 	}
 	
 	stringstream ss;
 	ss << scn << " -" << n->get_name() << endl;
-	sock.send(ss.str());
+	if (!sock.send(ss.str()))
+		error = true;
 }
 
 void drawer::change(const string &scn, const sgnode *n, int props) {
-	if (!sock.connected()) {
+	if (error) {
 		return;
 	}
 	
@@ -65,15 +66,24 @@ void drawer::change(const string &scn, const sgnode *n, int props) {
 		write_vec3(ss, s);
 	}
 	ss << endl;
-	sock.send(ss.str());
+	if (!sock.send(ss.str()))
+		error = true;
 }
 
 void drawer::delete_scene(const string &scn) {
-	sock.send(string("-") + scn + "\n");
+	if (error)
+		return;
+	
+	if (!sock.send(string("-") + scn + "\n"))
+		error = true;
 }
 
 void drawer::set_color(const string &name, double r, double g, double b) {
 	stringstream ss;
+	
+	if (error)
+		return;
 	ss << "* " << name << " " << r << " " << g << " " << b << endl;
-	sock.send(ss.str());
+	if (!sock.send(ss.str()))
+		error = true;
 }

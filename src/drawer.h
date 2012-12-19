@@ -15,9 +15,9 @@ public:
 		SHAPE = 1 << 5,
 	};
 	
-	drawer();
-	~drawer();
+	drawer(const std::string &addr);
 	
+	void set_address(const std::string &addr);
 	void add(const std::string &scn, const sgnode *n);
 	void del(const std::string &scn, const sgnode *n);
 	void change(const std::string &scn, const sgnode *n, int props);
@@ -25,6 +25,7 @@ public:
 	void set_color(const std::string &name, double r, double g, double b);
 	
 private:
+	bool error;
 	ipcsocket sock;
 };
 

@@ -15,53 +15,32 @@
 
 using namespace std;
 
-ipcsocket::ipcsocket() : conn(false) {}
-
-ipcsocket::~ipcsocket() {
-	if (conn) {
-		disconnect();
-	}
-}
-
-bool ipcsocket::connect(const string &path) {
-	socklen_t len;
-	struct sockaddr_un addr;
-	
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strcpy(addr.sun_path, path.c_str());
-	len = strlen(addr.sun_path) + sizeof(addr.sun_family) + 1;
-	
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+ipcsocket::ipcsocket() {
+	if ((fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1) {
 		perror("ipcsocket::ipcsocket");
 		exit(1);
 	}
-		
-	if (::connect(fd, (struct sockaddr *) &addr, len) == -1) {
-		return false;
-	}
-
-	conn = true;
-	return true;
 }
 
-void ipcsocket::disconnect() {
+ipcsocket::~ipcsocket() {
 	close(fd);
-	conn = false;
 }
 
-bool ipcsocket::send(const string &s) {
+void ipcsocket::set_address(const string &path) {
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strcpy(addr.sun_path, path.c_str());
+}
+
+bool ipcsocket::send(const string &s) const {
 	int n;
 	
-	if (!conn) return false;
 	const char *p = s.c_str();
 	
 	while (*p) {
-		if ((n = ::send(fd, p, strlen(p), 0)) <= 0) {
-			if (errno != EINTR) {
-				disconnect();
+		if ((n = sendto(fd, p, strlen(p), 0, (struct sockaddr*) &addr, sizeof(addr))) <= 0) {
+			if (errno != EINTR)
 				return false;
-			}
 		} else {
 			p += n;
 		}

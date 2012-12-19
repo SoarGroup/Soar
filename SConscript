@@ -1,18 +1,22 @@
-Import('env', 'config')
+import sys
 
-inc = [env.Dir(d).srcnode() for d in 'src src/algorithms eigen ccd'.split()]
+Import('env')
+
+inc = [env.Dir(d).srcnode() for d in 'src src/algorithms src/models eigen ccd'.split()]
 
 # svs viewer
 viewer_src = Glob('viewer/*.c')
 viewer_libs = [ 'SDL', 'GL', 'GLU', 'm' ]
 viewer_env = env.Clone()
-not_found = [ l for l in viewer_libs if not config.CheckLib(l) ]
-if not_found:
-	print 'could not find ' + ', '.join(not_found) + ', not building svs_viewer'
-else:
-	viewer_env.Append(LIBS = viewer_libs, CPATH = 'viewer')
+viewer_env['LIBS'] = []
+config = Configure(viewer_env)
+missing_libs = [ l for l in viewer_libs if not config.CheckLib(l)]
+viewer_env = config.Finish()
+if not missing_libs:
 	viewer_prog = viewer_env.Program('svs_viewer', viewer_src)
 	viewer_install = viewer_env.Alias('svs_viewer', viewer_env.Install('$OUT_DIR', viewer_prog))
+else:
+	print 'Cannot find %s, not building svs_viewer' % ', '.join(missing_libs)
 
 # svs library objects
 svs_env = env.Clone()

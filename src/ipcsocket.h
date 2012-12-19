@@ -2,22 +2,19 @@
 #define IPCSOCKET_H
 
 #include <string>
+#include <sys/un.h>
 
 class ipcsocket {
 public:
 	ipcsocket();
 	~ipcsocket();
 	
-	bool send(const std::string &s);
-	
-	bool connect(const std::string &path);
-	
-	bool connected() const { return conn; }
-	void disconnect();
+	void set_address(const std::string &path);
+	bool send(const std::string &s) const;
 	
 private:
+	struct sockaddr_un addr;
 	int fd;
-	bool conn;
 };
 
 #endif

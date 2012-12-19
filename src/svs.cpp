@@ -20,6 +20,7 @@ using namespace std;
 
 typedef map<wme*,command*>::iterator cmd_iter;
 
+const char *default_viewer_path = "/tmp/viewer";
 
 svs_interface *make_svs(agent *a) {
 	return new svs(a);
@@ -397,7 +398,7 @@ void svs_state::report_relations(int first_arg, const vector<string> &args, ostr
 }
 
 svs::svs(agent *a)
-: learn(false), model_root(NULL)
+: learn(false), model_root(NULL), draw(default_viewer_path)
 {
 	si = new soar_interface(a);
 }
