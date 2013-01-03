@@ -261,7 +261,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
-		
+
 		temp = "page-size: ";
         temp2 = agnt->epmem_params->page_size->get_string();
         temp += temp2;
@@ -324,7 +324,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
-        
+
 		temp = "------------";
         if ( m_RawOutput )
         {
@@ -499,7 +499,20 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             {
                 AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
             }
-			
+
+			output = "Retrievals: ";
+            temp2 = agnt->epmem_stats->ncbr->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+
 			output = "Queries: ";
             temp2 = agnt->epmem_stats->cbr->get_string();
             output += temp2;
