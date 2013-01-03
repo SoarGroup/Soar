@@ -272,6 +272,10 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 	mem_high = new epmem_mem_high_stat( my_agent, "mem-high", 0, new soar_module::predicate<int64_t>() );
 	add( mem_high );
 
+	// non-cue-based-retrievals
+	ncbr = new soar_module::integer_stat( "retrievals", 0, new soar_module::f_predicate<int64_t>() );
+	add( ncbr );
+
 	// cue-based-retrievals
 	cbr = new soar_module::integer_stat( "queries", 0, new soar_module::f_predicate<int64_t>() );
 	add( cbr );
@@ -5368,6 +5372,9 @@ void epmem_respond_to_cmd( agent *my_agent )
 				if ( path == 1 )
 				{
 					epmem_install_memory( my_agent, state, retrieve, meta_wmes, retrieval_wmes );
+
+					// add one to the ncbr stat
+					my_agent->epmem_stats->ncbr->set_value( my_agent->epmem_stats->ncbr->get_value() + 1 );
 				}
 				// previous or next
 				else if ( path == 2 )

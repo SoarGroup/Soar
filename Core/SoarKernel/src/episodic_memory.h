@@ -180,6 +180,7 @@ class epmem_stat_container: public soar_module::stat_container
 		epmem_db_lib_version_stat* db_lib_version;
 		epmem_mem_usage_stat *mem_usage;
 		epmem_mem_high_stat *mem_high;
+		soar_module::integer_stat *ncbr;
 		soar_module::integer_stat *cbr;
 		soar_module::integer_stat *nexts;
 		soar_module::integer_stat *prevs;
