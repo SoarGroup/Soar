@@ -302,8 +302,6 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
 		operator_proposal = FALSE;
 		instantiation *non_variabilized_inst = original_inst ? original_inst : inst;
-		if (!original_inst)
-			std::cout << "Second faux operator code called being calculated without original instantiation!!!" << std::endl;
 
 		for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next) {
 			if ((act->type == MAKE_ACTION)  &&
@@ -311,57 +309,19 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 				if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
 						"operator") == NIL) &&
 						(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-					/* REW: 09.30.96.  Bug fix (next line was
-							operator_proposal == TRUE;) */
-					if (rhs_value_is_symbol(act->attr)) {
-						Symbol* idSym = rhs_value_to_symbol(act->id);
-						idSym = get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), non_variabilized_inst->rete_token, non_variabilized_inst->rete_wme );
-
-						//std::cout << "Second faux operator code called!!!!!!!!!!!!!!!!!!!!!!! " << rhs_value_to_string (thisAgent, act->id, action_attr, 50) << std::endl;
-						std::cout << "Second faux operator code called!!!!!!!!!!!!!!!!!!!!!!! " << idSym->id.name_letter << idSym->id.name_number << std::endl;
-						std::cout << " - Symbol Type: " << static_cast<unsigned int>(idSym->common.symbol_type) << std::endl;
-
-						if (idSym->id.isa_goal) {
-							std::cout << "- operator proposal!" << std::endl;
-							if (thisAgent->soar_verbose_flag == TRUE) {
-								printf("\n      --> operator proposal detected.");
-								xml_generate_verbose(thisAgent, "--> operator proposal detected.");
-							}
+					if (rhs_value_is_symbol(act->attr) &&
+							get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ),
+									                  rhs_value_to_reteloc_field_num( act->id ),
+									                  non_variabilized_inst->rete_token,
+									                  non_variabilized_inst->rete_wme )->id.isa_goal)
+					{
 							operator_proposal = TRUE;
 							o_support = FALSE;
 							break;
-						} else {
-							std::cout << "- fake operator proposal!" << std::endl;
-						}
 					}
 				}
 			}
 		}
-
-//		if ((act->type == MAKE_ACTION)  &&
-//			(rhs_value_is_symbol(act->attr))) {
-//				if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
-//					"operator") == NIL) &&
-//					(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-//						/* REW: 09.30.96.  Bug fix (next line was
-//						operator_proposal == TRUE;) */
-//					  char *stripped;
-//					  stripped=strndup((rhs_value_to_string (thisAgent, act->id, action_attr, 50))+1, strlen(rhs_value_to_string (thisAgent, act->id, action_attr, 50))-2);
-//					  std::cout << "Stripped!!!!  " << stripped << std::endl;
-//					std::cout << "Second faux operator code called!!!!!!!!!!!!!!!!!!!!!!! " << rhs_value_is_reteloc(act->id)
-//							 << " " << stripped << std::endl;
-////						get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )->id.isa_goal
-////					    print_with_symbols (thisAgent, "\nId symbol: %y!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", rhs_value_to_symbol(act->id));
-////					    has_angle_bracket = sym->sc.name[0] == '<' ||
-////					                        sym->sc.name[strlen(sym->sc.name)-1] == '>';
-//
-//					operator_proposal = TRUE;
-//						o_support = FALSE;
-//						break;
-//				}
-//		}
-//	}
-
 
 		if (operator_proposal == FALSE) {
 
