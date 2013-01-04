@@ -5887,11 +5887,10 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 					if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
 						"operator") == NIL) &&
 						(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE) &&
-						(get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), tok, w )->id.isa_goal)) {
-						Symbol *testsym = get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), tok, w );
-						std::cout << "First faux operator code called!!!!!!!!!!!!!!!!!!!!!!!" << rhs_value_is_symbol(act->id) << " " << rhs_value_is_reteloc(act->id) << " " <<
-								symbol_to_string (thisAgent, get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), tok, w ), true, 0, 0) << std::endl;
-
+						(get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ),
+								                   rhs_value_to_reteloc_field_num( act->id ),
+								                   tok, w )->id.isa_goal))
+					{
 						operator_proposal = TRUE;
 						prod_type = !PE_PRODS;
 						break;
