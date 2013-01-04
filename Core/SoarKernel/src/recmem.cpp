@@ -473,7 +473,7 @@ preference *execute_action(agent* thisAgent, action *a,
  ----------------------------------------------------------------------- */
 
 void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
-		Bool need_to_do_support_calculations) {
+		Bool need_to_do_support_calculations, instantiation *original_inst) {
 	condition *cond;
 	preference *p;
 	goal_stack_level level;
@@ -540,10 +540,10 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
 			|| (thisAgent->o_support_calculation_type == 4)) {
 		/* --- do calc's the normal Soar 6 way --- */
 		if (need_to_do_support_calculations)
-			calculate_support_for_instantiation_preferences(thisAgent, inst);
+			calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
 	} else if (thisAgent->o_support_calculation_type == 1) {
 		if (need_to_do_support_calculations)
-			calculate_support_for_instantiation_preferences(thisAgent, inst);
+			calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
 		/* --- do calc's both ways, warn on differences --- */
 		if ((inst->prod->declared_support != DECLARED_O_SUPPORT)
 				&& (inst->prod->declared_support != DECLARED_I_SUPPORT)) {
@@ -814,7 +814,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 
 	/* --- fill in lots of other stuff --- */
 	fill_in_new_instantiation_stuff(thisAgent, inst,
-			need_to_do_support_calculations);
+			need_to_do_support_calculations, NIL);
 
 	/* --- print trace info: printing preferences --- */
 	/* Note: can't move this up, since fill_in_new_instantiation_stuff gives

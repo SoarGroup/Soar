@@ -5696,7 +5696,7 @@ void cn_partner_node_left_addition (agent* thisAgent, rete_node *node,
    and the match goes away).  A match can also disappear then re-appear
    (example case involves an NCC -- create a match fot the NCC by adding
    a WME inside it, then remove another WME for a different condition
-   inside the NCC).  When one of these "stobe" situations occurs,
+   inside the NCC).  When one of these "strobe" situations occurs,
    we don't want to actually fire the production or retract the 
    instantiation -- hence the buffering.
 ************************************************************************ */
@@ -5886,10 +5886,15 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 				(rhs_value_is_symbol(act->attr))) {
 					if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
 						"operator") == NIL) &&
-						(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-							operator_proposal = TRUE;
-							prod_type = !PE_PRODS;
-							break;
+						(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE) &&
+						(get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), tok, w )->id.isa_goal)) {
+						Symbol *testsym = get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), tok, w );
+						std::cout << "First faux operator code called!!!!!!!!!!!!!!!!!!!!!!!" << rhs_value_is_symbol(act->id) << " " << rhs_value_is_reteloc(act->id) << " " <<
+								symbol_to_string (thisAgent, get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), tok, w ), true, 0, 0) << std::endl;
+
+						operator_proposal = TRUE;
+						prod_type = !PE_PRODS;
+						break;
 					}
 			}
 		}
