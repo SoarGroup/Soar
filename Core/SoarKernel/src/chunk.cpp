@@ -1259,7 +1259,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	
 		chunk_inst->in_ms = TRUE;  /* set TRUE for now, we'll find out later... */
 		make_clones_of_results (thisAgent, results, chunk_inst);
-		fill_in_new_instantiation_stuff (thisAgent, chunk_inst, TRUE);
+		fill_in_new_instantiation_stuff (thisAgent, chunk_inst, TRUE, inst);
 	}
 
 	/* RBD 4/6/95 Need to copy cond's and actions for the production here,
