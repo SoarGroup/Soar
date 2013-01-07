@@ -303,25 +303,27 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 		operator_proposal = FALSE;
 		instantiation *non_variabilized_inst = original_inst ? original_inst : inst;
 
-		for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next) {
-			if ((act->type == MAKE_ACTION)  &&
-					(rhs_value_is_symbol(act->attr))) {
-				if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
-						"operator") == NIL) &&
-						(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-					if (rhs_value_is_symbol(act->attr) && non_variabilized_inst->rete_wme &&
-							get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ),
-									                  rhs_value_to_reteloc_field_num( act->id ),
-									                  non_variabilized_inst->rete_token,
-									                  non_variabilized_inst->rete_wme )->id.isa_goal)
-					{
+		if (non_variabilized_inst->rete_wme) {
+			for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next) {
+				if ((act->type == MAKE_ACTION)  &&
+						(rhs_value_is_symbol(act->attr))) {
+					if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
+							"operator") == NIL) &&
+							(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
+						if (rhs_value_is_symbol(act->attr) &&
+								get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ),
+										rhs_value_to_reteloc_field_num( act->id ),
+										non_variabilized_inst->rete_token,
+										non_variabilized_inst->rete_wme )->id.isa_goal)
+						{
 							operator_proposal = TRUE;
 							o_support = FALSE;
 							break;
+						}
 					}
 				}
 			}
-		}
+	}
 
 		if (operator_proposal == FALSE) {
 
