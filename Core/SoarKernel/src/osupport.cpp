@@ -309,7 +309,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 				if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
 						"operator") == NIL) &&
 						(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-					if (rhs_value_is_symbol(act->attr) &&
+					if (rhs_value_is_symbol(act->attr) && non_variabilized_inst->rete_wme &&
 							get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ),
 									                  rhs_value_to_reteloc_field_num( act->id ),
 									                  non_variabilized_inst->rete_token,
