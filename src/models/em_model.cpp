@@ -70,27 +70,24 @@ public:
 	bool cli_inspect_sub(int first_arg, const vector<string> &args, ostream &os) {
 		if (first_arg >= args.size()) {
 			os << "EM model learner" << endl;
-			os << endl << "subqueries: em error" << endl;
+			os << endl << "subqueries: em mode_error" << endl;
 			return true;
 		} else if (args[first_arg] == "em") {
 			return em.cli_inspect(first_arg + 1, args, os);
-		} else if (args[first_arg] == "mode_error_list") {
+		} else if (args[first_arg] == "mode_error") {
 			assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
+			int nsame = 0, ndiff = 0;
 			table_printer t;
 			t.add_row() << "N" << "PRED. MODE" << "BEST MODE" << "BEST ERROR";
-			for (int i = 0; i < test_modes.size(); ++i) {
-				t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
-			}
-			t.print(os);
-		} else if (args[first_arg] == "mode_error") {
-			int nsame = 0, ndiff = 0;
 			for (int i = 0; i < test_modes.size(); ++i) {
 				if (test_modes[i] == test_best_modes[i]) {
 					++nsame;
 				} else {
 					++ndiff;
 				}
+				t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
 			}
+			t.print(os);
 			os << nsame << " correct, " << ndiff << " incorrect" << endl;
 		}
 		return false;

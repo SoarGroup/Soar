@@ -286,7 +286,7 @@ bool svs_state::get_output(rvec &out) const {
 
 bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
 	if (first_arg >= args.size() || args[first_arg] == "help") {
-		os << "available subqueries: atoms prediction out timing command" << endl;
+		os << "available subqueries: relations prediction out timing command" << endl;
 		return false;
 	}
 	if (args[first_arg] == "prediction") {
