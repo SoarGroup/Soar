@@ -77,7 +77,7 @@ void LWR::learn(const rvec &x, const rvec &y) {
 
 bool LWR::predict(const rvec &x, rvec &y) {
 	int k = examples.size() > nnbrs ? nnbrs : examples.size();
-	if (k == 0) {
+	if (k < 2) {
 		return false;
 	}
 	

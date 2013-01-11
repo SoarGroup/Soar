@@ -102,7 +102,7 @@ private:
 		void get_noise_sigs(std::vector<int> &sigs);
 		double calc_prob(int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 		bool update_fits();
-		void init_fit(const std::vector<int> &data_inds, const mat &coefs, const rvec &inter);
+		void set_linear_params(const std::vector<int> &data_inds, const mat &coefs, const rvec &inter);
 		bool uniform_sig(int sig, int target) const;
 		void learn_obj_clauses(const relation_table &rels);
 

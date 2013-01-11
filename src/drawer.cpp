@@ -83,7 +83,7 @@ void drawer::set_color(const string &name, double r, double g, double b) {
 	
 	if (error)
 		return;
-	ss << "* " << name << " " << r << " " << g << " " << b << endl;
+	ss << "* " << name << " c " << r << " " << g << " " << b << endl;
 	if (!sock.send(ss.str()))
 		error = true;
 }

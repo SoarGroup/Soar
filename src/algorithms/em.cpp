@@ -16,11 +16,33 @@
 #include "mat.h"
 #include "serialize.h"
 #include "lda.h"
+#include "drawer.h"
 
 using namespace std;
 using namespace Eigen;
 
 const regression_type REGRESSION_ALG = FORWARD;
+
+void draw_mode_prediction(const std::string &obj, int mode) {
+	static double mode_colors[][3] = {
+		{ 0.0, 0.0, 0.0 },
+		{ 1.0, 0.0, 0.0 },
+		{ 0.0, 1.0, 0.0 },
+		{ 0.0, 0.0, 1.0 },
+		{ 1.0, 1.0, 0.0 },
+		{ 0.0, 1.0, 1.0 },
+		{ 1.0, 0.0, 1.0 }
+	};
+	static int ncolors = sizeof(mode_colors) / sizeof(mode_colors[0]);
+	static drawer d("/tmp/viewer");
+	double *colors;
+	
+	if (mode >= ncolors)
+		mode = ncolors - 1;
+	
+	colors = mode_colors[mode];
+	d.set_color(obj, colors[0], colors[1], colors[2]);
+}
 
 /*
  Generate all possible combinations of sets of items
@@ -313,6 +335,9 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 		
 		old_error = error;
 		error = (Y - (X * coefs)).col(0).array().abs();
+		if (error.maxCoeff() <= MODEL_ERROR_THRESH)
+			break;
+		
 		double diff = (error - old_error).norm() / ndata;
 		if (iter > 0 && diff < SAME_THRESH) {
 			break;
@@ -348,17 +373,15 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 	const double TEST_RATIO = 0.5;
 	
 	int orig_xcols = X.cols();
-	int largest = 0;
+	int largest = 0, nleft = X.rows();
 	
 	// preprocess the data as much as possible
 	vector<int> used_cols;
 	clean_lr_data(X, used_cols);
 	augment_ones(X);
 
-	int ndata = X.rows(), xcols = X.cols();
-	mat Xtrain(ndata, xcols), Xtest(ndata, xcols);
-	mat Ytrain(ndata, 1), Ytest(ndata, 1);
-	mat mincoefs(xcols, 1);
+	mat Xsub(X.rows(), X.cols()), Ysub(Y.rows(), 1);
+	rvec avg_error;
 
 	vector<int> ungrouped(ndata), work;
 	for (int i = 0; i < ndata; ++i) {
@@ -370,18 +393,14 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 	*/
 	for (int iter = 0; iter < LINEAR_SUBSET_MAX_ITERS; ++iter) {
 		vector<int> subset2;
-		find_linear_subset_em(X.topRows(ndata), Y.topRows(ndata), subset2);
-		if (subset2.size() < xcols * 2) {
+		find_linear_subset_em(X.topRows(nleft), Y.topRows(nleft), subset2);
+		if (subset2.size() < 10)  // arbitrary, fix later
 			continue;
-		}
-		int ntest = subset2.size() * TEST_RATIO;
-		int ntrain = subset2.size() - ntest;
-		split_data(X, Y, subset2, ntest, Xtrain, Xtest, Ytrain, Ytest);
-		if (!linreg_clean(FORWARD, Xtrain.topRows(ntrain), Ytrain.topRows(ntrain), mincoefs)) {
-			continue;
-		}
-		cvec test_error = (Ytest.topRows(ntest) - (Xtest.topRows(ntest) * mincoefs)).col(0).array().abs();
-		if (test_error.norm() / Xtest.rows() > MODEL_ERROR_THRESH) {
+		
+		pick_rows(X, subset2, Xsub);
+		pick_rows(Y, subset2, Ysub);
+		nfoldcv(X.topRows(subset2.size()), Y.topRows(subset2.size()), 5, FORWARD, avg_error);
+		if (avg_error(0) > MODEL_ERROR_THRESH) {
 			/*
 			 There isn't a clear linear relationship between the points, so I can't
 			 consider them a single block.
@@ -394,14 +413,14 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 			for (int i = 0; i < subset2.size(); ++i) {
 				subset.push_back(ungrouped[subset2[i]]);
 			}
-			largest = subset2.size();
+			largest = subset.size();
 			if (largest >= NEW_MODE_THRESH) {
-				coefs.resize(orig_xcols, 1);
-				coefs.setConstant(0.0);
+				mat subcoefs;
+				linreg(FORWARD, Xsub.topRows(subset2.size()), Ysub.topRows(subset2.size()), cvec(), subcoefs, inter);
+				coefs.resize(orig_xcols, Y.cols());
 				for (int i = 0; i < used_cols.size(); ++i) {
-					coefs.row(used_cols[i]) = mincoefs.row(i);
+					coefs.row(used_cols[i]) = subcoefs.row(i);
 				}
-				inter = mincoefs.row(used_cols.size());
 				return largest;
 			}
 		}
@@ -412,8 +431,8 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 		*/
 		pick_rows(X, subset2);
 		erase_inds(ungrouped, subset2);
-		ndata = ungrouped.size();
-		if (ndata < NEW_MODE_THRESH) {
+		nleft = ungrouped.size();
+		if (nleft < NEW_MODE_THRESH) {
 			break;
 		}
 	}
@@ -586,7 +605,7 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
 /*
  Fit lin_coefs, lin_inter, and sig to the data in data_inds.
 */
-void EM::mode_info::init_fit(const vector<int> &data_inds, const mat &coefs, const rvec &inter) {
+void EM::mode_info::set_linear_params(const vector<int> &data_inds, const mat &coefs, const rvec &inter) {
 	lin_inter = inter;
 	if (coefs.size() == 0) {
 		lin_coefs.resize(0, 0);
@@ -674,6 +693,9 @@ bool EM::unify_or_add_mode() {
 		return false;
 	}
 	
+	cout << "found linear subset in noise data:" << endl;
+	join(cout, largest, " ") << endl;
+	
 	/*
 	 From here I know the noise data is going to either become a new mode or unify
 	 with an existing mode, so reset check_after assuming the current noise is
@@ -702,19 +724,23 @@ bool EM::unify_or_add_mode() {
 		extend(combined, minfo.get_members());
 		extend(combined, largest);
 		fill_xy(combined, X, Y);
+		LOG(EMDBG) << "Trying to unify with mode " << j << endl;
 		int unified_size = find_linear_subset(X, Y, subset, ucoefs, uinter);
+		
 		if (unified_size >= .9 * combined.size()) {
+			LOG(EMDBG) << "Successfully unified with mode " << j << endl;
 			vector<int> u(combined.size());
 			for (int k = 0; k < subset.size(); ++k) {
 				u[k] = combined[subset[k]];
 			}
-			minfo.init_fit(u, ucoefs, uinter);
+			minfo.set_linear_params(u, ucoefs, uinter);
 			return true;
 		}
+		LOG(EMDBG) << "Failed to unify with mode " << j << endl;
 	}
 	
 	mode_info *new_mode = new mode_info(false, data, sigs);
-	new_mode->init_fit(largest, coefs, inter);
+	new_mode->set_linear_params(largest, coefs, inter);
 	modes.push_back(new_mode);
 	++nmodes;
 	for (int j = 0; j < ndata; ++j) {
@@ -784,6 +810,7 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	vector<int> obj_map;
 	if (use_em && use_foil) {
 		mode = classify(target, sig, rels, x, obj_map);
+		draw_mode_prediction(sig[target].name, mode);
 		if (mode > 0) {
 			modes[mode]->predict(sig, x, obj_map, y);
 			return true;
@@ -1098,14 +1125,14 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 }
 
 void EM::serialize(ostream &os) const {
-	serializer(os) << ndata << nmodes << data << sigs << rel_tbl << context_rel_tbl;
+	serializer(os) << ndata << nmodes << data << sigs << rel_tbl << context_rel_tbl << noise_by_sig;
 	for (int i = 0; i < nmodes; ++i) {
 		modes[i]->serialize(os);
 	}
 }
 
 void EM::unserialize(istream &is) {
-	unserializer(is) >> ndata >> nmodes >> data >> sigs >> rel_tbl >> context_rel_tbl;
+	unserializer(is) >> ndata >> nmodes >> data >> sigs >> rel_tbl >> context_rel_tbl >> noise_by_sig;
 	assert(data.size() == ndata);
 	
 	delete modes[0];
