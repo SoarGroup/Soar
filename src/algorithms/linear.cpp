@@ -723,3 +723,68 @@ bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream
 	os << "unrecognized argument" << endl;
 	return false;
 }
+
+bool nfoldcv(const_mat_view X, const_mat_view Y, int n, regression_type t, rvec &avg_error) {
+	assert(X.rows() >= n);
+	
+	int chunk, extra, total_rows, train_rows, test_rows, i, start, end;
+	int xcols, ycols;
+	mat Xrand, Yrand, Xtrain, Xtest, Ytrain, Ytest, pred, error;
+	mat coefs;
+	rvec intercept;
+	vector<int> r(X.rows());
+	
+	xcols = X.cols();
+	ycols = Y.cols();
+	total_rows = X.rows();
+	chunk = total_rows / n;
+	extra = X.rows() - n * chunk;
+	avg_error.resize(ycols);
+	avg_error.setConstant(0.0);
+	
+	// shuffle X and Y
+	for (int i = 0, iend = r.size(); i < iend; ++i) {
+		r[i] = i;
+	}
+	random_shuffle(r.begin(), r.end());
+	Xrand.resize(total_rows, xcols);
+	Yrand.resize(total_rows, ycols);
+	for (int i = 0, iend = r.size(); i < iend; ++i) {
+		Xrand.row(i) = X.row(r[i]);
+		Yrand.row(i) = Y.row(r[i]);
+	}
+	
+	for (i = 0, start = 0; i < n; ++i) {
+		if (i < extra) {
+			test_rows = chunk + 1;
+		} else {
+			test_rows = chunk;
+		}
+		train_rows = total_rows - test_rows;
+		end = start + test_rows;
+		
+		Xtest = Xrand.block(start, 0, test_rows, xcols);
+		Ytest = Yrand.block(start, 0, test_rows, ycols);
+		
+		Xtrain.resize(train_rows, xcols);
+		Ytrain.resize(train_rows, ycols);
+		
+		Xtrain.block(0, 0, start, xcols) = Xrand.block(0, 0, start, xcols);
+		Xtrain.block(start, 0, train_rows - start, xcols) = Xrand.block(end, 0, train_rows - start, xcols);
+		Ytrain.block(0, 0, start, ycols) = Yrand.block(0, 0, start, ycols);
+		Ytrain.block(start, 0, train_rows - start, ycols) = Yrand.block(end, 0, train_rows - start, ycols);
+		
+		if (!linreg_d(t, Xtrain, Ytrain, cvec(), coefs, intercept))
+			return false;
+		
+		pred = Xtest * coefs;
+		for (int j = 0, jend = pred.rows(); j < jend; ++j) {
+			pred.row(j) += intercept;
+		}
+		error = (Ytest - pred).array().abs().matrix();
+		avg_error += error.colwise().sum();
+		start += test_rows;
+	}
+	avg_error.array() /= total_rows;
+	return true;
+}

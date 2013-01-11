@@ -17,6 +17,8 @@ bool linreg(regression_type t, const_mat_view X, const_mat_view Y, const cvec &w
 bool linreg_clean(regression_type t, const_mat_view X, const_mat_view Y, mat &coefs);
 bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec &inter);
 
+bool nfoldcv(const_mat_view X, const_mat_view Y, int n, regression_type t, rvec &avg_error);
+
 class LinearModel : public serializable {
 public:
 	LinearModel();
