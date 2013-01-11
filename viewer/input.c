@@ -59,7 +59,9 @@ int proc_cmd(char *cmd) {
 	geometry *geoms[MAX_GEOMS], *gp;
 	int scenes_matched, geoms_matched, i;
 	
-	/* printf("cmd: %s\n", cmd); */
+	if (debug)
+		printf("cmd: %s\n", cmd);
+	
 	if (!(scene_pat = strtok(cmd, WHITESPACE)))
 		return 1;
 	

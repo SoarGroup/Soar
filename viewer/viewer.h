@@ -50,6 +50,7 @@ typedef struct Scene {
 } scene;
 
 extern SDL_mutex *scene_lock;
+extern int debug;
 
 int match(char *pattern, char *s);
 

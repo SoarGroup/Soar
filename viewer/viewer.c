@@ -17,6 +17,9 @@
 #define GRID_VERTS_SIZE (4 * 2 * (GRID_LINES * 2))
 #define SCENE_MENU_OFFSET 20
 
+SDL_mutex *scene_lock;
+int debug;
+
 static real grid_verts[GRID_VERTS_SIZE];
 
 static camera cam = {
@@ -37,7 +40,6 @@ static real geom_label_color[] =        { 1.0, 0.0, 0.0 };
 static GLfloat geom_specular[] =        { 1.0, 1.0, 1.0, 1.0 };
 static GLfloat geom_shininess[] =       { 100.0 };
 
-SDL_mutex *scene_lock;
 static scene *scene_head = NULL;
 static scene *curr_scene = NULL;
 static int scr_width = 640;
@@ -59,7 +61,7 @@ void free_geom_shape(geometry *g);
 int main(int argc, char* argv[]) {
 	int flags, bpp;
 	int buttons[4] = {0, 0, 0, 0 };
-	int redraw;
+	int i, redraw;
 	const SDL_VideoInfo* info;
 	SDL_Event evt;
 	SDL_Surface *screen;
@@ -67,6 +69,12 @@ int main(int argc, char* argv[]) {
 	SDLMod mod;
 	
 	atexit(SDL_Quit);
+	
+	for (i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "-d") == 0) {
+			debug = 1;
+		}
+	}
 	
 	if (!init_input(argc, argv))
 		exit(1);
@@ -86,7 +94,9 @@ int main(int argc, char* argv[]) {
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 5 );
 	SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 5 );
 	SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 32 );
+	/* apparently 32 bit depth buffer is not standard, figure out a way to switch
+	   dynamically between 32 and 16 */
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
 	if(!(screen = SDL_SetVideoMode(scr_width, scr_height, bpp, flags))) {
