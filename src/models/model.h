@@ -82,6 +82,7 @@ private:
 	};
 	
 	struct test_info {
+		scene_sig sig;
 		rvec x;
 		rvec y;
 		rvec pred;
@@ -91,7 +92,6 @@ private:
 	bool predict_or_test(bool test, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	void report_model_config(model_config* c, std::ostream &os) const;
 	bool report_error(int i, const std::vector<std::string> &args, std::ostream &os) const;
-	bool error_stats(int dim, int start, int end, std::ostream &os) const;
 	
 	std::list<model_config*>       active_models;
 	std::map<std::string, model*> *model_db;

@@ -61,6 +61,44 @@ bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vecto
 	return true;
 }
 
+bool error_stats(const vector<double> &errors, ostream &os) {
+	double total = 0.0, std = 0.0, q1, q2, q3;
+	int num_nans = 0;
+	vector<double> ds;
+	
+	for (int i = 0, iend = errors.size(); i < iend; ++i) {
+		if (isnan(errors[i])) {
+			++num_nans;
+		} else {
+			ds.push_back(errors[i]);
+			total += errors[i];
+		}
+	}
+	double last = ds.back();
+	if (ds.empty()) {
+		os << "no predictions" << endl;
+		return false;
+	}
+	double mean = total / ds.size();
+	for (int i = 0; i < ds.size(); ++i) {
+		std += pow(ds[i] - mean, 2);
+	}
+	std = sqrt(std / ds.size());
+	sort(ds.begin(), ds.end());
+	
+	sort(ds.begin(), ds.end());
+	q1 = ds[ds.size() / 4];
+	q2 = ds[ds.size() / 2];
+	q3 = ds[(ds.size() / 4) * 3];
+	
+	table_printer t;
+	t.add_row() << "mean" << "std" << "min" << "q1" << "q2" << "q3" << "max" << "last" << "failed";
+	t.add_row() << mean << std << ds.front() << q1 << q2 << q3 << ds.back() << last << num_nans;
+	t.print(os);
+
+	return true;
+}
+
 model *make_model(soar_interface *si, Symbol *root, svs_state *state, const string &name, const string &type) {
 	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
 
@@ -189,6 +227,7 @@ void multi_model::learn(const scene_sig &sig, const relation_table &rels, const 
 
 void multi_model::test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	test_info &t = grow(tests);
+	t.sig = sig;
 	t.x = x;
 	t.y = y;
 	t.pred = y;
@@ -239,14 +278,26 @@ void multi_model::unassign_model(const string &name) {
 }
 
 bool multi_model::report_error(int i, const vector<string> &args, ostream &os) const {
+	int start = 0, end = tests.size() - 1;
+	vector<double> y, preds, errors;
+	vector<string> obj_prop;
+	enum { STATS, LIST, HISTO, DUMP } mode = STATS;
+	
 	if (tests.empty()) {
 		os << "no test error data" << endl;
 		return false;
 	}
 	
-	int dim = -1, start = 0, end = tests.size() - 1;
-	
-	enum { STATS, LIST, HISTO, DUMP } mode = STATS;
+	if (i >= args.size()) {
+		os << "specify object:property" << endl;
+		return false;
+	}
+
+	split(args[i++], ":", obj_prop);
+	if (obj_prop.size() != 2) {
+		os << "invalid object:property" << endl;
+		return false;
+	}
 	
 	if (i < args.size() && args[i] == "list") {
 		mode = LIST;
@@ -259,15 +310,7 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 		++i;
 	}
 	
-	if (i >= args.size()) {
-		os << "specify a dimension" << endl;
-		return false;
-	}
-	if (!parse_int(args[i], dim)) {
-		os << "invalid dimension" << endl;
-		return false;
-	}
-	if (++i < args.size()) {
+	if (i < args.size()) {
 		if (!parse_int(args[i], start)) {
 			os << "require integer start time" << endl;
 			return false;
@@ -276,109 +319,66 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 			os << "start time must be in [0, " << tests.size() - 1 << "]" << endl;
 			return false;
 		}
-	}
-	if (++i < args.size()) {
-		if (!parse_int(args[i], end)) {
-			os << "require integer end time" << endl;
-			return false;
+		if (++i < args.size()) {
+			if (!parse_int(args[i], end)) {
+				os << "require integer end time" << endl;
+				return false;
+			}
+			if (end <= start || end >= tests.size()) {
+				os << "end time must be in [start + 1, " << tests.size() - 1 << "]" << endl;
+				return false;
+			}
 		}
-		if (end <= start || end >= tests.size()) {
-			os << "end time must be in [start + 1, " << tests.size() - 1 << "]" << endl;
-			return false;
+	}
+	
+	for (int i = start; i <= end; ++i) {
+		int obj_index, prop_index;
+		if (tests[i].sig.get_dim(obj_prop[0], obj_prop[1], obj_index, prop_index)) {
+			y.push_back(tests[i].y(prop_index));
+			preds.push_back(tests[i].pred(prop_index));
+			errors.push_back(tests[i].error(prop_index));
+		} else {
+			y.push_back(NAN);
+			preds.push_back(NAN);
+			errors.push_back(NAN);
 		}
 	}
 	
 	switch (mode) {
 	case STATS:
-		return error_stats(dim, start, end, os);
+		return error_stats(errors, os);
 	case LIST:
 		{
 			table_printer t;
 			t.add_row() << "num" << "real" << "pred" << "error" << "null" << "norm";
-			for (int j = start; j <= end; ++j) {
-				const test_info &ti = tests[j];
-				t.add_row() << j;
-				if (dim >= ti.y.size() || dim >= ti.pred.size()) {
-					t << "NA";
+			for (int i = 0, iend = y.size(); i < iend; ++i) {
+				t.add_row() << i << y[i] << preds[i] << errors[i];
+				if (i > 0) {
+					double null_error = fabs(y[i-1] - y[i]);
+					t << null_error << errors[i] / null_error;
 				} else {
-					double y = ti.y(dim), pred = ti.pred(dim);
-					t << y << pred;
-					if (isnan(pred)) {
-						t << "NA" << "NA" << "NA";
-					} else {
-						t << ti.error(dim);
-						if (j > 0) {
-							double null_error = fabs(tests[j-1].y(dim) - y);
-							t << null_error << ti.error(dim) / null_error;
-						} else {
-							t << "NA" << "NA";
-						}
-					}
+					t << "NA" << "NA";
 				}
 			}
 			t.print(os);
 		}
 		return true;
 	case HISTO:
-		{
-			vector<double> errors;
-			for (int j = start; j <= end; ++j) {
-				errors.push_back(tests[j].error(dim));
-			}
-			histogram(errors, 20, os) << endl;
-		}
+		histogram(errors, 20, os);
+		os << endl;
 		return true;
 	case DUMP:
-		for (int i = 0; i < tests.size(); ++i) {
-			output_rvec(os, tests[i].x, " ");
-			os << " " << tests[i].y(dim) << " " << tests[i].pred(dim) << endl;
+		{
+			table_printer t;
+			t.add_row() << "real" << "pred";
+			for (int i = 0, iend = y.size(); i < iend; ++i) {
+				t.add_row() << y[i] << preds[i];
+			}
+			t.print(os);
 		}
 		return true;
 	}
 	return false;
-}
-
-bool multi_model::error_stats(int dim, int start, int end, ostream &os) const {
-	assert(dim >= 0 && start >= 0 && end < tests.size());
-	double total = 0.0, std = 0.0, q1, q2, q3;
-	int num_nans = 0;
-	vector<double> ds;
-	for (int i = start; i <= end; ++i) {
-		const test_info &t = tests[i];
-		if (dim >= t.error.size()) {
-			continue;
-		}
-		if (isnan(t.error(dim))) {
-			++num_nans;
-		} else {
-			double d = t.error(dim);
-			ds.push_back(d);
-			total += d;
-		}
-	}
-	double last = ds.back();
-	if (ds.empty()) {
-		os << "no predictions" << endl;
-		return false;
-	}
-	double mean = total / ds.size();
-	for (int i = 0; i < ds.size(); ++i) {
-		std += pow(ds[i] - mean, 2);
-	}
-	std = sqrt(std / ds.size());
-	sort(ds.begin(), ds.end());
-	
-	sort(ds.begin(), ds.end());
-	q1 = ds[ds.size() / 4];
-	q2 = ds[ds.size() / 2];
-	q3 = ds[(ds.size() / 4) * 3];
-	
-	table_printer t;
-	t.add_row() << "mean" << "std" << "min" << "q1" << "q2" << "q3" << "max" << "last" << "failed";
-	t.add_row() << mean << std << ds.front() << q1 << q2 << q3 << ds.back() << last << num_nans;
-	t.print(os);
-
-	return true;
 }
 
 void multi_model::report_model_config(model_config* c, ostream &os) const {
