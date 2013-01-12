@@ -310,11 +310,12 @@ int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains
 		LOG(FOILDBG) << c[i] << endl;
 		var_domains d = domains;
 		if (test_clause(c[i], rels, d)) {
+			var_domains::iterator j, jend;
 			LOG(FOILDBG) << "found assignment" << endl;
-			for (int j = 0; j < d.size(); ++j) {
-				LOG(FOILDBG) << j << " -> " << *d[j].begin() << endl;
+			for (j = d.begin(), jend = d.end(); j != jend; ++j) {
+				LOG(FOILDBG) << j->first << " -> " << *j->second.begin() << endl;
+				domains[j->first] = j->second;
 			}
-			domains = d;
 			return i;
 		}
 	}
