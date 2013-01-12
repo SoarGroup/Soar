@@ -202,7 +202,9 @@ void pick_cols(const_mat_view X, const vector<int> &cols, mat &result) {
 }
 
 void pick_rows(const_mat_view X, const vector<int> &rows, mat &result) {
-	result.resize(rows.size(), X.cols());
+	if (result.rows() < X.rows() || result.cols() != X.cols()) {
+		result.resize(rows.size(), X.cols());
+	}
 	for(int i = 0; i < rows.size(); ++i) {
 		result.row(i) = X.row(rows[i]);
 	}

@@ -305,6 +305,7 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 	cvec w(ndata), error(ndata), old_error(ndata);
 	mat Xc(ndata, xcols), Yc(ndata, 1), coefs(xcols, 1), coefs2;
 	
+	error.setConstant(INFINITY);
 	sample(xcols + 1, 0, ndata, init);
 	w.setConstant(0.0);
 	for (int i = 0; i < init.size(); ++i) {
@@ -338,7 +339,7 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 		if (error.maxCoeff() <= MODEL_ERROR_THRESH)
 			break;
 		
-		double diff = (error - old_error).norm() / ndata;
+		double diff = (error - old_error).array().abs().maxCoeff();
 		if (iter > 0 && diff < SAME_THRESH) {
 			break;
 		}
@@ -383,8 +384,8 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 	mat Xsub(X.rows(), X.cols()), Ysub(Y.rows(), 1);
 	rvec avg_error;
 
-	vector<int> ungrouped(ndata), work;
-	for (int i = 0; i < ndata; ++i) {
+	vector<int> ungrouped(nleft);
+	for (int i = 0; i < nleft; ++i) {
 		ungrouped[i] = i;
 	}
 	
@@ -399,7 +400,7 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 		
 		pick_rows(X, subset2, Xsub);
 		pick_rows(Y, subset2, Ysub);
-		nfoldcv(X.topRows(subset2.size()), Y.topRows(subset2.size()), 5, FORWARD, avg_error);
+		nfoldcv(Xsub.topRows(subset2.size()), Ysub.topRows(subset2.size()), 5, FORWARD, avg_error);
 		if (avg_error(0) > MODEL_ERROR_THRESH) {
 			/*
 			 There isn't a clear linear relationship between the points, so I can't
@@ -418,6 +419,7 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 				mat subcoefs;
 				linreg(FORWARD, Xsub.topRows(subset2.size()), Ysub.topRows(subset2.size()), cvec(), subcoefs, inter);
 				coefs.resize(orig_xcols, Y.cols());
+				coefs.setConstant(0.0);
 				for (int i = 0; i < used_cols.size(); ++i) {
 					coefs.row(used_cols[i]) = subcoefs.row(i);
 				}
@@ -692,9 +694,6 @@ bool EM::unify_or_add_mode() {
 		check_after += (NEW_MODE_THRESH - potential);
 		return false;
 	}
-	
-	cout << "found linear subset in noise data:" << endl;
-	join(cout, largest, " ") << endl;
 	
 	/*
 	 From here I know the noise data is going to either become a new mode or unify
@@ -1203,7 +1202,7 @@ double EM::mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x
 	/*
 	 Each mode has a signature that specifies the types and orders of
 	 objects it expects for inputs. This is recorded in modes[m]->sig.
-	 Call this the model signature.
+	 Call this the mode signature.
 	 
 	 Each data point has a signature that specifies which types and
 	 orders of object properties encoded by the property vector. This

@@ -305,7 +305,9 @@ int test_clause_n(const clause &c, bool pos, const relation &tests, const relati
 }
 
 int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains &domains) {
+	LOG(FOILDBG) << "test_clause_vec" << endl;
 	for (int i = 0; i < c.size(); ++i) {
+		LOG(FOILDBG) << c[i] << endl;
 		var_domains d = domains;
 		if (test_clause(c[i], rels, d)) {
 			LOG(FOILDBG) << "found assignment" << endl;

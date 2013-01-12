@@ -174,7 +174,7 @@ std::ostream &histogram(const std::vector<double> &vals, int nbins, std::ostream
 
 inline double gausspdf(double x, double mean, double var) {
 	const double SQRT2PI = 2.5066282746310002;
-	return (1. / sqrt(var) * SQRT2PI) * exp(-((x - mean) * (x - mean) / (2 * var)));
+	return (1. / (sqrt(var) * SQRT2PI)) * exp(-((x - mean) * (x - mean) / (2 * var)));
 }
 
 enum log_type {
