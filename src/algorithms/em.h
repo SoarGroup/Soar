@@ -62,14 +62,18 @@ private:
 	
 	class classifier : public serializable {
 	public:
-		classifier() : const_vote(0) {}
+		classifier() : const_vote(0), neg_lda(NULL) {}
 		
 		int const_vote;
 		clause_vec clauses;
-		std::vector<relation*> residuals;
-		std::vector<LDA*> ldas;
+		std::vector<relation> false_positives, true_positives;
+		std::vector<LDA*> pos_ldas;
+		
+		relation false_negatives, true_negatives;
+		LDA *neg_lda;
 		
 		void inspect(std::ostream &os) const;
+		void inspect_detailed(std::ostream &os) const;
 		void serialize(std::ostream &os) const;
 		void unserialize(std::istream &is);
 	};
@@ -170,8 +174,8 @@ private:
 	LDA *learn_numeric_classifier(const relation &p, const relation &n) const;
 	
 	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
-	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
-	bool cli_inspect_classifiers(std::ostream &os) const;
+	bool cli_inspect_relations(int first, const std::vector<std::string> &args, std::ostream &os) const;
+	bool cli_inspect_classifiers(int first, const std::vector<std::string> &args, std::ostream &os) const;
 
 	relation_table rel_tbl, context_rel_tbl;
 	std::vector<train_data*> data;

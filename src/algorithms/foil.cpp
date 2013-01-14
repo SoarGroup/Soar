@@ -532,7 +532,7 @@ int literal::operator<<(const std::string &s) {
 	return c + 1;
 }
 
-FOIL::FOIL(bool use_pruning) : rels(NULL), own_rels(false), use_pruning(use_pruning) {}
+FOIL::FOIL() : rels(NULL), own_rels(false) {}
 
 FOIL::~FOIL() {
 	if (own_rels)
@@ -542,7 +542,7 @@ FOIL::~FOIL() {
 void FOIL::set_problem(const relation &p, const relation &n, const relation_table &rt) {
 	pos = p;
 	neg = n;
-	init_vars = pos.arity();
+	train_dim = pos.arity();
 	if (own_rels)
 		delete rels;
 	rels = &rt;
@@ -563,13 +563,11 @@ void FOIL::set_problem(const relation &p, const relation &n, const relation_tabl
  vector will be the same length as the clauses vector, and the second
  case will not exist.
 */
-bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
+bool FOIL::learn(bool prune, bool record_errors) {
 	relation pos_test, neg_test, pos_left;
 	double success_rate, fp_rate, fn_rate;
+	bool dead;
 	
-	if (residuals) {
-		clear_and_dealloc(*residuals);
-	}
 	if (neg.empty()) {
 		return true;
 	}
@@ -577,21 +575,23 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 	tuple t;
 	t.push_back(0);
 	pos_left = pos;
-	while (!pos_left.empty()) {
+	dead = false;
+	while (!pos_left.empty() && !dead) {
 		split_training(FOIL_GROW_RATIO, pos_left, pos_grow, pos_test);
 		split_training(FOIL_GROW_RATIO, neg, neg_grow, neg_test);
 		
 		clause c;
-		bool dead = true;
-		relation *res = NULL;
-		if (residuals) {
-			res = new relation(init_vars);
-			choose_clause(c, res);
+		relation *false_pos = NULL;
+		dead = true;
+		
+		if (record_errors) {
+			false_pos = new relation(train_dim);
+			choose_clause(c, false_pos);
 		} else {
 			choose_clause(c, NULL);
 		}
 		
-		if (use_pruning) {
+		if (prune) {
 			prune_clause_fp(c, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
 		} else {
 			clause_success_rate(c, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
@@ -599,12 +599,13 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 		
 		if (!c.empty() && fp_rate < .3) {
 			clauses.push_back(c);
-			if (residuals) {
-				residuals->push_back(res);
+			if (record_errors) {
+				false_positives.push_back(*false_pos);
+				delete false_pos;
 			}
 			
 			// this repeats computation, make more efficient
-			relation covered_pos(init_vars);
+			relation covered_pos(train_dim);
 			relation::const_iterator i, iend;
 			for (i = pos_left.begin(), iend = pos_left.end(); i != iend; ++i) {
 				var_domains d;
@@ -618,19 +619,22 @@ bool FOIL::learn(clause_vec &clauses, vector<relation*> *residuals) {
 			int old_size = pos_left.size();
 			pos_left.subtract(covered_pos);
 			assert(pos_left.size() + covered_pos.size() == old_size);
+			if (record_errors) {
+				true_positives.push_back(covered_pos);
+			}
 			dead = (pos_left.size() == old_size);
 		}
-		
-		if (dead) {
-			if (residuals) {
-				residuals->push_back(new relation(pos_left));
-			}
-			assert(!residuals || clauses.size() + 1 == residuals->size());
-			return false;
+	}
+	
+	if (record_errors) {
+		false_negatives = pos_left;
+		true_negatives = neg;
+		for (int i = 0, iend = false_positives.size(); i < iend; ++i) {
+			true_negatives.subtract(false_positives[i]);
 		}
 	}
-	assert(!residuals || clauses.size() == residuals->size());
-	return true;
+	assert(!record_errors || (clauses.size() == false_positives.size() && clauses.size() == true_positives.size()));
+	return !dead;
 }
 
 void FOIL::gain(const literal &l, double &g, double &maxg) const {
@@ -691,7 +695,7 @@ double FOIL::choose_literal(literal &l, int n) {
 
 bool FOIL::choose_clause(clause &c, relation *neg_left) {
 	vector<double> gains;
-	int n = init_vars;
+	int n = train_dim;
 	bool quiescence = false;
 	
 	while (!neg_grow.empty() && c.size() < FOIL_MAX_CLAUSE_LEN) {
@@ -699,7 +703,7 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 		double gain = choose_literal(l, n);
 		if (gain < 0 || (!c.empty() && l == c.back())) {
 			if (neg_left) {
-				neg_grow.slice(init_vars, *neg_left);
+				neg_grow.slice(train_dim, *neg_left);
 				LOG(FOILDBG) << "No more suitable literals." << endl;
 				LOG(FOILDBG) << "unfiltered negatives: "; 
 				LOG(FOILDBG) << *neg_left << endl;
@@ -858,7 +862,7 @@ bool FOIL::load_foil6(istream &is) {
 				break;
 			}
 			assert(pos.arity() == neg.arity());
-			init_vars = pos.arity();
+			train_dim = pos.arity();
 			break;
 		} else {
 			assert(fields[0][0] == '*');

@@ -55,10 +55,10 @@ std::ostream &operator<<(std::ostream &os, const clause &c);
 
 class FOIL {
 public:
-	FOIL(bool use_pruning);
+	FOIL();
 	~FOIL();
 	void set_problem(const relation &pos, const relation &neg, const relation_table &rels);
-	bool learn(clause_vec &clauses, std::vector<relation*> *uncovered);
+	bool learn(bool prune, bool track_training);
 	void gain(const literal &l, double &g, double &maxg) const;
 	void dump_foil6(std::ostream &os) const;
 	bool load_foil6(std::istream &is);
@@ -68,6 +68,12 @@ public:
 	const relation &get_neg() const { return neg; }
 	const relation &get_rel(const std::string &name) const;
 	
+	const clause_vec &get_clauses() const { return clauses; }
+	const relation &get_false_positives(int i) const { return false_positives[i]; }
+	const relation &get_true_positives(int i) const { return true_positives[i]; }
+	const relation &get_false_negatives() const { return false_negatives; }
+	const relation &get_true_negatives() const { return true_negatives; }
+	
 private:
 	double choose_literal(literal &l, int nvars);
 	bool choose_clause(clause &c, relation *neg_left);
@@ -75,8 +81,15 @@ private:
 private:
 	relation pos, neg, pos_grow, neg_grow;
 	relation_table const *rels;
-	bool own_rels, use_pruning;
-	int init_vars;
+	bool own_rels;
+	int train_dim;
+	
+	clause_vec clauses;
+	std::vector<relation> false_positives;
+	std::vector<relation> true_positives;
+	
+	relation false_negatives;
+	relation true_negatives;
 };
 
 typedef std::map<int, std::set<int> > var_domains;
