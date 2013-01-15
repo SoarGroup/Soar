@@ -30,6 +30,7 @@ srcs = [
 
 run_lda_src = [
 	srcp('common.cpp'),
+	srcp('mat.cpp'),
 	srca('lda.cpp'),
 	'run_lda.cpp',
 ]
@@ -55,7 +56,7 @@ test_csp_src = [
 ]
 
 #env.Program('test_svs2', srcs + ['test_svs2.cpp'])
-#env.Program('run_lda', run_lda_src)
+env.Program('run_lda', run_lda_src)
 env.Program('test_foil', test_foil_src)
 env.Program('test_intervalset', test_intervalset_src)
 env.Program('test_csp', test_csp_src)

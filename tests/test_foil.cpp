@@ -74,7 +74,7 @@ double time() {
 
 
 bool run_foil(const char *path, bool prune, clause_vec &clauses, relation &pos, relation &neg, relation_table &all_rels, double &t) {
-	FOIL foil(prune);
+	FOIL foil;
 	ifstream input(path);
 	
 	if (!input) {
@@ -87,8 +87,9 @@ bool run_foil(const char *path, bool prune, clause_vec &clauses, relation &pos, 
 	
 	input.close();
 	double t1 = time();
-	foil.learn(clauses, NULL);
+	foil.learn(prune, false);
 	t = time() - t1;
+	clauses = foil.get_clauses();
 	pos = foil.get_pos();
 	neg = foil.get_neg();
 	all_rels = foil.get_relations();
