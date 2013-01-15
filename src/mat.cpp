@@ -300,19 +300,12 @@ ostream& operator<<(ostream &os, const bbox &b) {
 
 void serialize(const_mat_view m, ostream &os) {
 	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
-	ios_base::fmtflags flags = os.flags();
-	os << scientific;
-	int p = os.precision();
-	os.precision(PRECISION);
 	for (int i = 0; i < m.rows(); ++i) {
 		for (int j = 0; j < m.cols(); ++j) {
-			os << m(i, j) << " ";
+			serialize(m(i, j), os);
 		}
-		os << endl;
 	}
 	os << "end_mat" << endl;
-	os.precision(p);
-	os.flags(flags);
 }
 
 void unserialize(mat &m, istream &is) {
@@ -329,8 +322,7 @@ void unserialize(mat &m, istream &is) {
 	m.resize(nrows, ncols);
 	for (int i = 0; i < nrows; ++i) {
 		for (int j = 0; j < ncols; ++j) {
-			is >> token;
-			if (!parse_double(token, m(i, j))) assert(false);
+			unserialize(m(i, j), is);
 		}
 	}
 	is >> token;

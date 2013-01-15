@@ -12,13 +12,14 @@
 #ifndef SERIALIZE_H
 #define SERIALIZE_H
 
-#define PRECISION 12
-
 #include <iostream>
 #include <vector>
 #include <set>
 #include <map>
 #include <cassert>
+#include <limits>
+#include <cstdio>
+#include <cstdlib>
 #include "serializable.h"
 
 template <typename U, typename V> void serialize(const std::pair<U, V> &p, std::ostream &os);
@@ -71,18 +72,37 @@ inline void unserialize(bool &b, std::istream &is) {
 	b = (c == 't');
 }
 
+/*
+ It's impossible to get an exact decimal representation of floating point
+ numbers, so I use hexadecimal floating point representation instead. This
+ gives up on readability but prevents rounding errors in the
+ serialize/unserialize cycle.
+*/
 inline void serialize(double v, std::ostream &os) {
-	std::ios_base::fmtflags flags = os.flags();
-	os << std::scientific;
-	int p = os.precision();
-	os.precision(PRECISION);
-	os << v << std::endl;
-	os.precision(p);
-	os.flags(flags);
+	enum { BUFSIZE = 40 };
+	static char buf[BUFSIZE];
+	
+	if (std::snprintf(buf, BUFSIZE, "%a", v) == BUFSIZE) {
+		std::cerr << "buffer overflow when serializing a double" << std::endl;
+		assert(false);
+	}
+	os << buf << std::endl;
 }
 
+/*
+ The stream operator >> doesn't recognize hex float format, so use strtod
+ instead.
+*/
 inline void unserialize(double &v, std::istream &is) {
-	if (!(is >> v)) {
+	static std::string buf;
+	char *end;
+	
+	if (!(is >> buf)) {
+		assert(false);
+	}
+	v = std::strtod(buf.c_str(), &end);
+	if (*end != '\0') {
+		std::cerr << "Unrecognized float format (" << buf << ") when unserializing double" << std::endl;
 		assert(false);
 	}
 }
