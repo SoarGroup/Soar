@@ -30,10 +30,7 @@ svs_env.Prepend(
 		# so that they are correctly allocated. This seems like more trouble than
 		# it's worth at the moment, so I'm disabling it.
 		'-DEIGEN_DONT_ALIGN',
-		'-Winvalid-pch',
 		'-Wno-enum-compare',
-		#'-include-pch', 'Core/SVS/src/eigen_precomp.h.pch',
-		#'-include', 'eigen_precomp.h',
 	],
 )
 

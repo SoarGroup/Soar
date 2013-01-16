@@ -726,7 +726,7 @@ bool EM::unify_or_add_mode() {
 		LOG(EMDBG) << "Trying to unify with mode " << j << endl;
 		int unified_size = find_linear_subset(X, Y, subset, ucoefs, uinter);
 		
-		if (unified_size >= .9 * combined.size()) {
+		if (unified_size >= minfo.size() + .9 * largest.size()) {
 			LOG(EMDBG) << "Successfully unified with mode " << j << endl;
 			vector<int> u(combined.size());
 			for (int k = 0; k < subset.size(); ++k) {
@@ -828,7 +828,7 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 }
 
 /*
- Remove all modes that cover fewer than 2 data points.
+ Remove all modes that cover fewer than NEW_MODE_THRESH data points.
 */
 bool EM::remove_modes() {
 	if (nmodes == 1) {
@@ -845,7 +845,7 @@ bool EM::remove_modes() {
 	vector<int> index_map(nmodes), removed;
 	int i = 1;  // start with 1, noise mode (0) should never be removed
 	for (int j = 1; j < nmodes; ++j) {
-		if (modes[j]->size() > 2) {
+		if (modes[j]->size() >= NEW_MODE_THRESH) {
 			index_map[j] = i;
 			if (j > i) {
 				modes[i] = modes[j];
@@ -1555,82 +1555,41 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 	}
 	
 	int npos = pos.size(), nneg = neg.size();
-	int ntotal = npos + nneg;
-	int pos_train = EM_LDA_TRAIN_RATIO * npos;
-	if (pos_train == npos) --pos_train;
-	int neg_train = EM_LDA_TRAIN_RATIO * nneg;
-	if (neg_train == nneg) --neg_train;
-	int ntrain = pos_train + neg_train;
-	int ntest = ntotal - ntrain;
-	
-	if (pos_train < 2 || neg_train < 2) {
+	if (npos < 2 || nneg < 2) {
 		return NULL;
 	}
 	
 	interval_set p0, n0;
+	interval_set::const_iterator i, iend;
 	pos.at_pos(0, p0);
 	neg.at_pos(0, n0);
-	vector<int> pi(p0.begin(), p0.end());
-	vector<int> ni(n0.begin(), n0.end());
 	
-	random_shuffle(pi.begin(), pi.end());
-	random_shuffle(ni.begin(), ni.end());
+	int ncols = data[*p0.begin()]->x.size();
+	int sig = data[*p0.begin()]->sig_index;
+	int j;
 	
-	int ncols = data[pi[0]]->x.size();
-	int sig = data[pi[0]]->sig_index;
+	mat train(npos + nneg, ncols);
+	vector<int> classes;
 	
-	mat train(ntrain, ncols), test(ntest, ncols);
-	vector<int> train_classes, test_classes;
-	
-	for (int i = 0; i < pos_train; ++i) {
-		const train_data &d = *data[pi[i]];
+	for (i = p0.begin(), iend = p0.end(), j = 0; i != iend; ++i, ++j) {
+		const train_data &d = *data[*i];
 		assert(d.sig_index == sig);
 		
-		train.row(i) = d.x;
-		train_classes.push_back(0);
+		train.row(j) = d.x;
+		classes.push_back(0);
 	}
 	
-	for (int i = 0; i < neg_train; ++i) {
-		const train_data &d = *data[ni[i]];
+	for (i = n0.begin(), iend = n0.end(); i != iend; ++i, ++j) {
+		const train_data &d = *data[*i];
 		assert(d.sig_index == sig);
 		
-		train.row(pos_train + i) = d.x;
-		train_classes.push_back(1);
+		train.row(j) = d.x;
+		classes.push_back(1);
 	}
 	
 	LDA *lda = new LDA;
-	lda->learn(train, train_classes);
-	
-	int correct = 0;
-	for (int i = pos_train; i < pi.size(); ++i) {
-		const train_data &d = *data[pi[i]];
-		assert(d.sig_index == sig);
-		
-		if (lda->classify(d.x) == 0) {
-			++correct;
-		}
-	}
-	for (int i = neg_train; i < ni.size(); ++i) {
-		const train_data &d = *data[ni[i]];
-		assert(d.sig_index == sig);
-		
-		if (lda->classify(d.x) == 1) {
-			++correct;
-		}
-	}
-	
-	double success_ratio = correct / static_cast<double>(ntest);
-	double baseline;
-	if (pi.size() > ni.size()) {
-		baseline = npos / static_cast<double>(ntotal);
-	} else {
-		baseline = nneg / static_cast<double>(ntotal);
-	}
-	if (success_ratio > baseline) {
-		return lda;
-	}
-	delete lda;
-	return NULL;
+	lda->learn(train, classes);
+	return lda;
 }
 
 void EM::update_pair(int i, int j) {
@@ -1732,7 +1691,7 @@ int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation
 				assert(vi->second.size() == 1);
 				LOG(EMDBG) << vi->first << " = " << *vi->second.begin() << endl;
 			}
-			if (c.pos_ldas[matched_clause]) {
+			if (use_lda && c.pos_ldas[matched_clause]) {
 				result = c.pos_ldas[matched_clause]->classify(x);
 				LOG(EMDBG) << "LDA votes for " << (result == 0 ? i : j) << endl;
 				return result;
@@ -1741,7 +1700,7 @@ int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation
 			return 0;
 		} else {
 			// no matched clause, FOIL thinks this is a negative
-			if (c.neg_lda != NULL) {
+			if (use_lda && c.neg_lda) {
 				result = 1 - c.neg_lda->classify(x);
 				LOG(EMDBG) << "No matched clauses, LDA votes for " << (result == 0 ? i : j) << endl;
 				return result;

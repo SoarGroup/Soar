@@ -597,7 +597,7 @@ bool FOIL::learn(bool prune, bool record_errors) {
 			clause_success_rate(c, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
 		}
 		
-		if (!c.empty() && fp_rate < .3) {
+		if (!c.empty() && fp_rate < MAX_CLAUSE_FP_RATE) {
 			clauses.push_back(c);
 			if (record_errors) {
 				false_positives.push_back(*false_pos);

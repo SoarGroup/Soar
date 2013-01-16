@@ -12,11 +12,18 @@ bool hasnan(const_mat_view m) {
 	return (m.array() != m.array()).any();
 }
 
+#define BETA 1.0e-10
+
 void clean_data(mat &data, vector<int> &nonuniform_cols) {
 	del_uniform_cols(data, data.cols(), nonuniform_cols);
 	data.conservativeResize(data.rows(), nonuniform_cols.size());
+	/*
+	 I used to add a small random offset to each element to try to fix numerical
+	 stability. Now I add a constant BETA to the Sw matrix instead.
+
 	mat rand_offsets = mat::Random(data.rows(), data.cols()) / 10000;
 	data += rand_offsets;
+	*/
 }
 
 int largest_class(const vector<int> &c) {
@@ -96,6 +103,7 @@ void LDA::learn(mat &data, const vector<int> &cls) {
 		Sw += x.transpose() * x;
 	}
 	
+	Sw.diagonal().array() += BETA;
 	rvec all_mean = data.colwise().mean();
 	mat Sb = mat::Zero(d, d);
 	for (int i = 0; i < C; ++i) {
@@ -103,8 +111,20 @@ void LDA::learn(mat &data, const vector<int> &cls) {
 		Sb += counts[i] * (x.transpose() * x);
 	}
 	
-	mat S = Sw.inverse() * Sb;
+	mat Swi = Sw.inverse();
+	mat S = Swi * Sb;
 	assert(!hasnan(S));
+	
+	/*
+	ofstream tmp("/tmp/swsb.ser"), tmp2("/tmp/swi.ser"), tmp3("/tmp/S.ser");
+	::serialize(Sw, tmp);
+	::serialize(Sb, tmp);
+	tmp.close();
+	::serialize(Swi, tmp2);
+	tmp2.close();
+	::serialize(S, tmp3);
+	tmp3.close();
+	*/
 	
 	EigenSolver<mat> e;
 	e.compute(S);

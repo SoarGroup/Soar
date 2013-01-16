@@ -9,13 +9,13 @@
  variance of its rotation, because the two measurements have different
  units and scales.
 */
-#define MEASURE_VAR 1.0e-8
+#define MEASURE_VAR 1.0e-9
 
 /* Initial lambda value for ridge regression */
 #define RIDGE_LAMBDA 1e-8
 
 /* Maximum acceptable average absolute error for a linear model */
-#define MODEL_ERROR_THRESH 1e-5
+#define MODEL_ERROR_THRESH 1e-4
 
 /*
  A local model does not need to be refit to data if its training error
@@ -51,7 +51,7 @@
  Number of noise instances required before EM tries to create a new
  mode out of them
 */
-#define NEW_MODE_THRESH 50
+#define NEW_MODE_THRESH 40
 
 /*
  Number of times EM tries to create a model from the same set of noise
@@ -90,4 +90,6 @@
 // num neighbors to use for fallback LWR prediction
 #define LWR_K 20
 
+
+#define MAX_CLAUSE_FP_RATE .1
 #endif
