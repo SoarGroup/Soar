@@ -1,6 +1,6 @@
 Index: Core/CLI/CommandLineInterface.cxx
 ===================================================================
---- Core/CLI/CommandLineInterface.cxx	(revision 13646)
+--- Core/CLI/CommandLineInterface.cxx	(revision 13765)
 +++ Core/CLI/CommandLineInterface.cxx	(working copy)
 @@ -72,3 +72,4 @@
  #include "src/cli_watchwmes.cpp"
@@ -9,7 +9,7 @@ Index: Core/CLI/CommandLineInterface.cxx
 +#include "src/cli_svs.cpp"
 Index: Core/CLI/src/cli_Cli.h
 ===================================================================
---- Core/CLI/src/cli_Cli.h	(revision 13646)
+--- Core/CLI/src/cli_Cli.h	(revision 13765)
 +++ Core/CLI/src/cli_Cli.h	(working copy)
 @@ -481,6 +481,8 @@
           * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
@@ -22,7 +22,7 @@ Index: Core/CLI/src/cli_Cli.h
          {
 Index: Core/CLI/src/cli_CommandLineInterface.cpp
 ===================================================================
---- Core/CLI/src/cli_CommandLineInterface.cpp	(revision 13646)
+--- Core/CLI/src/cli_CommandLineInterface.cpp	(revision 13765)
 +++ Core/CLI/src/cli_CommandLineInterface.cpp	(working copy)
 @@ -110,6 +110,7 @@
      m_Parser.AddCommand(new cli::WatchCommand(*this));
@@ -34,7 +34,7 @@ Index: Core/CLI/src/cli_CommandLineInterface.cpp
  EXPORT CommandLineInterface::~CommandLineInterface() 
 Index: Core/CLI/src/cli_CommandLineInterface.h
 ===================================================================
---- Core/CLI/src/cli_CommandLineInterface.h	(revision 13646)
+--- Core/CLI/src/cli_CommandLineInterface.h	(revision 13765)
 +++ Core/CLI/src/cli_CommandLineInterface.h	(working copy)
 @@ -182,6 +182,7 @@
          virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
@@ -46,7 +46,7 @@ Index: Core/CLI/src/cli_CommandLineInterface.h
          bool IsLogOpen();
 Index: Core/CLI/src/cli_Commands.h
 ===================================================================
---- Core/CLI/src/cli_Commands.h	(revision 13646)
+--- Core/CLI/src/cli_Commands.h	(revision 13765)
 +++ Core/CLI/src/cli_Commands.h	(working copy)
 @@ -4356,7 +4356,27 @@
  
@@ -104,7 +104,7 @@ Index: Core/CLI/src/cli_svs.cpp
 +}
 Index: Core/ClientSML/src/sml_ClientAgent.cpp
 ===================================================================
---- Core/ClientSML/src/sml_ClientAgent.cpp	(revision 13646)
+--- Core/ClientSML/src/sml_ClientAgent.cpp	(revision 13765)
 +++ Core/ClientSML/src/sml_ClientAgent.cpp	(working copy)
 @@ -1422,3 +1422,11 @@
  	}
@@ -120,7 +120,7 @@ Index: Core/ClientSML/src/sml_ClientAgent.cpp
 +}
 Index: Core/ClientSML/src/sml_ClientAgent.h
 ===================================================================
---- Core/ClientSML/src/sml_ClientAgent.h	(revision 13646)
+--- Core/ClientSML/src/sml_ClientAgent.h	(revision 13765)
 +++ Core/ClientSML/src/sml_ClientAgent.h	(working copy)
 @@ -790,6 +790,9 @@
  	*************************************************************/
@@ -134,9 +134,9 @@ Index: Core/ClientSML/src/sml_ClientAgent.h
  	*
 Index: Core/ClientSML/src/sml_ClientKernel.cpp
 ===================================================================
---- Core/ClientSML/src/sml_ClientKernel.cpp	(revision 13646)
+--- Core/ClientSML/src/sml_ClientKernel.cpp	(revision 13765)
 +++ Core/ClientSML/src/sml_ClientKernel.cpp	(working copy)
-@@ -2335,3 +2335,18 @@
+@@ -2336,3 +2336,18 @@
  
  	return resultString;
  }
@@ -157,7 +157,7 @@ Index: Core/ClientSML/src/sml_ClientKernel.cpp
 +}
 Index: Core/ClientSML/src/sml_ClientKernel.h
 ===================================================================
---- Core/ClientSML/src/sml_ClientKernel.h	(revision 13646)
+--- Core/ClientSML/src/sml_ClientKernel.h	(revision 13765)
 +++ Core/ClientSML/src/sml_ClientKernel.h	(working copy)
 @@ -947,6 +947,8 @@
  	*************************************************************/
@@ -170,7 +170,7 @@ Index: Core/ClientSML/src/sml_ClientKernel.h
  }//closes namespace
 Index: Core/ConnectionSML/src/sml_Names.cpp
 ===================================================================
---- Core/ConnectionSML/src/sml_Names.cpp	(revision 13646)
+--- Core/ConnectionSML/src/sml_Names.cpp	(revision 13765)
 +++ Core/ConnectionSML/src/sml_Names.cpp	(working copy)
 @@ -450,3 +450,6 @@
  
@@ -181,7 +181,7 @@ Index: Core/ConnectionSML/src/sml_Names.cpp
 +char const* const sml_Names::kCommand_SVSOutput  = "svs_output";
 Index: Core/ConnectionSML/src/sml_Names.h
 ===================================================================
---- Core/ConnectionSML/src/sml_Names.h	(revision 13646)
+--- Core/ConnectionSML/src/sml_Names.h	(revision 13765)
 +++ Core/ConnectionSML/src/sml_Names.h	(working copy)
 @@ -440,6 +440,9 @@
  
@@ -195,7 +195,7 @@ Index: Core/ConnectionSML/src/sml_Names.h
  }
 Index: Core/KernelSML/src/KernelHeaders.h
 ===================================================================
---- Core/KernelSML/src/KernelHeaders.h	(revision 13646)
+--- Core/KernelSML/src/KernelHeaders.h	(revision 13765)
 +++ Core/KernelSML/src/KernelHeaders.h	(working copy)
 @@ -29,3 +29,4 @@
  #include "symtab.h"
@@ -204,7 +204,7 @@ Index: Core/KernelSML/src/KernelHeaders.h
 +#include "svs_interface.h"
 Index: Core/KernelSML/src/sml_KernelSML.h
 ===================================================================
---- Core/KernelSML/src/sml_KernelSML.h	(revision 13646)
+--- Core/KernelSML/src/sml_KernelSML.h	(revision 13765)
 +++ Core/KernelSML/src/sml_KernelSML.h	(working copy)
 @@ -451,6 +451,10 @@
  	// Note: Register and unregister are both sent to this one handler
@@ -219,7 +219,7 @@ Index: Core/KernelSML/src/sml_KernelSML.h
  }
 Index: Core/KernelSML/src/sml_KernelSMLHandlers.cpp
 ===================================================================
---- Core/KernelSML/src/sml_KernelSMLHandlers.cpp	(revision 13646)
+--- Core/KernelSML/src/sml_KernelSMLHandlers.cpp	(revision 13765)
 +++ Core/KernelSML/src/sml_KernelSMLHandlers.cpp	(working copy)
 @@ -34,6 +34,7 @@
  #include <stdlib.h>
@@ -263,50 +263,27 @@ Index: Core/KernelSML/src/sml_KernelSMLHandlers.cpp
 +
 Index: Core/SConscript
 ===================================================================
---- Core/SConscript	(revision 13646)
+--- Core/SConscript	(revision 13766)
 +++ Core/SConscript	(working copy)
-@@ -1,4 +1,4 @@
--import sys, os
-+import sys, os, platform
- import subprocess as sub
- import itertools as itl
- 
-@@ -27,8 +27,20 @@
- elif os.name == 'nt':
- 	libs = ['advapi32']
- 
--kernel_env.Replace(LIBS = libs, LIBPATH=[])
-+if sys.platform.startswith('linux'):
-+	if '64' in platform.machine():
-+		bullet_lib = '#Core/SVS/bullet/lib64'
-+	else:
-+		bullet_lib = '#Core/SVS/bullet/lib32'
- 
-+	kernel_env.Replace(
-+		LIBS = libs, 
-+		LIBPATH = [bullet_lib],
-+		LINKFLAGS = ['-Wl,--whole-archive','-lLinearMath','-lBulletCollision','-Wl,--no-whole-archive'],
-+	)
-+else:
-+	kernel_env.Replace(LIBS = libs + ['BulletCollision', 'LinearMath'])
-+
- if sys.platform == 'darwin':
- 	install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
- 	kernel_env.Append(LINKFLAGS = ['-install_name', install_name])
-@@ -52,6 +64,10 @@
+@@ -49,10 +49,13 @@
  if compiler == 'msvc':
  	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
  
-+svs_src, svs_inc = SConscript('SVS/SConscript')
-+srcs['svs'] = (svs_src, svs_src)
++svs_objs, svs_inc = SConscript('SVS/SConscript')
 +kernel_env.Prepend(CPPPATH = svs_inc)
 +
  if GetOption('static'):
- 	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
+-	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
++	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs] + svs_objs)
  else:
+-	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs])[:2]
++	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs] + svs_objs)[:2]
+ 	if compiler == 'msvc':
+ 		kernel_env.Append(CPPFLAGS = ['/D', '_USRDLL'])
+ 
 Index: Core/SoarKernel/src/agent.cpp
 ===================================================================
---- Core/SoarKernel/src/agent.cpp	(revision 13646)
+--- Core/SoarKernel/src/agent.cpp	(revision 13765)
 +++ Core/SoarKernel/src/agent.cpp	(working copy)
 @@ -52,6 +52,7 @@
  #include "wma.h"
@@ -336,7 +313,7 @@ Index: Core/SoarKernel/src/agent.cpp
    delete delete_agent->stats_db;
 Index: Core/SoarKernel/src/agent.h
 ===================================================================
---- Core/SoarKernel/src/agent.h	(revision 13646)
+--- Core/SoarKernel/src/agent.h	(revision 13765)
 +++ Core/SoarKernel/src/agent.h	(working copy)
 @@ -135,6 +135,7 @@
  typedef char * test;
@@ -356,7 +333,7 @@ Index: Core/SoarKernel/src/agent.h
  
 Index: Core/SoarKernel/src/decide.cpp
 ===================================================================
---- Core/SoarKernel/src/decide.cpp	(revision 13646)
+--- Core/SoarKernel/src/decide.cpp	(revision 13765)
 +++ Core/SoarKernel/src/decide.cpp	(working copy)
 @@ -61,6 +61,7 @@
  
@@ -366,7 +343,7 @@ Index: Core/SoarKernel/src/decide.cpp
  
  #include "assert.h"
  
-@@ -2356,7 +2357,8 @@
+@@ -2359,7 +2360,8 @@
    symbol_remove_ref( thisAgent, goal->id.smem_header );
    free_with_pool( &( thisAgent->smem_info_pool ), goal->id.smem_info );
  
@@ -376,7 +353,7 @@ Index: Core/SoarKernel/src/decide.cpp
    /* REW: BUG
     * Tentative assertions can exist for removed goals.  However, it looks
     * like the removal forces a tentative retraction, which then leads to
-@@ -2485,6 +2487,8 @@
+@@ -2488,6 +2490,8 @@
    soar_invoke_callbacks(thisAgent, 
                         CREATE_NEW_CONTEXT_CALLBACK, 
                         static_cast<soar_call_data>(id) );
@@ -387,7 +364,7 @@ Index: Core/SoarKernel/src/decide.cpp
  /* ------------------------------------------------------------------
 Index: Core/SoarKernel/src/init_soar.cpp
 ===================================================================
---- Core/SoarKernel/src/init_soar.cpp	(revision 13646)
+--- Core/SoarKernel/src/init_soar.cpp	(revision 13765)
 +++ Core/SoarKernel/src/init_soar.cpp	(working copy)
 @@ -42,6 +42,7 @@
  #include "wma.h"
@@ -417,20 +394,20 @@ Index: Core/SoarKernel/src/init_soar.cpp
  	  do_output_cycle(thisAgent);
 Index: SConstruct
 ===================================================================
---- SConstruct	(revision 13646)
+--- SConstruct	(revision 13766)
 +++ SConstruct	(working copy)
-@@ -160,7 +160,7 @@
+@@ -163,7 +163,7 @@
  		if GetOption('static'):
  			cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
  			
--	libs += [ 'pthread', 'dl' ]
-+	libs += [ 'pthread', 'dl', 'rt' ]
+-	libs += [ 'pthread', 'dl', 'm' ]
++	libs += [ 'pthread', 'dl', 'm', 'rt', 'ode' ]
  
  elif compiler == 'msvc':
  	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
 Index: Tests/UnitTests/src/cliparsertest.h
 ===================================================================
---- Tests/UnitTests/src/cliparsertest.h	(revision 13646)
+--- Tests/UnitTests/src/cliparsertest.h	(revision 13765)
 +++ Tests/UnitTests/src/cliparsertest.h	(working copy)
 @@ -84,6 +84,7 @@
      virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) { return false; }

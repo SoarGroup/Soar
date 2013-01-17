@@ -48,4 +48,5 @@ if GetOption('static'):
 else:
 	svs_objs = svs_env.SharedObject(src) + ccd_env.SharedObject(ccd_src)
 
-Return('svs_objs')
+svs_inc = ['SVS/src']
+Return('svs_objs', 'svs_inc')
