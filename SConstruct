@@ -119,8 +119,6 @@ elif sys.platform == 'darwin':
 print "Building intermediates to", env['BUILD_DIR']
 print "Installing targets to", env['OUT_DIR']
 
-config = Configure(env)
-
 if 'g++' in env['CXX']:
 	compiler = 'g++'
 elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('cl')):
@@ -146,10 +144,15 @@ if compiler == 'g++':
 		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
 		if gcc_ver[0] > 3:
 			env.Append(CPPFLAGS='-fvisibility=hidden')
+			config = Configure(env)
 			if config.TryCompile('', '.cpp'):
 				cflags.append('-fvisibility=hidden')
 				cflags.append('-DGCC_HASCLASSVISIBILITY')
 				env['VISHIDDEN'] = True
+			else:
+				env['VISHIDDEN'] = False
+				env['CPPFLAGS'] = []
+			config.Finish()
 		
 		if sys.platform == 'linux2':
 			lnflags.append(env.Literal(r'-Wl,-rpath,$ORIGIN'))
@@ -160,7 +163,7 @@ if compiler == 'g++':
 		if GetOption('static'):
 			cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 			
-	libs += [ 'pthread', 'dl' ]
+	libs += [ 'pthread', 'dl', 'm' ]
 
 elif compiler == 'msvc':
 	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
@@ -174,10 +177,7 @@ elif compiler == 'msvc':
 		
 		if GetOption('static'):
 			cflags.extend(['/D', 'STATIC_LINKED'])
-	
-	libs += ['advapi32']    # for GetUserName
 			
-
 cflags.extend((GetOption('cflags') or '').split())
 lnflags.extend((GetOption('lnflags') or '').split())
 	
