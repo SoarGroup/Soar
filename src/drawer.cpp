@@ -87,3 +87,13 @@ void drawer::set_color(const string &name, double r, double g, double b) {
 	if (!sock.send(ss.str()))
 		error = true;
 }
+
+void drawer::set_pos(const string &name, double x, double y, double z) {
+	stringstream ss;
+	
+	if (error)
+		return;
+	ss << "* " << name << " p " << x << " " << y << " " << z << endl;
+	if (!sock.send(ss.str()))
+		error = true;
+}

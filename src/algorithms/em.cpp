@@ -23,6 +23,9 @@ using namespace Eigen;
 
 const regression_type REGRESSION_ALG = FORWARD;
 
+// this is a huge hack because I'm too lazy to pass the drawer pointer all the way down here.
+static drawer draw("/tmp/viewer");
+
 void draw_mode_prediction(const std::string &obj, int mode) {
 	static double mode_colors[][3] = {
 		{ 0.0, 0.0, 0.0 },
@@ -34,14 +37,13 @@ void draw_mode_prediction(const std::string &obj, int mode) {
 		{ 1.0, 0.0, 1.0 }
 	};
 	static int ncolors = sizeof(mode_colors) / sizeof(mode_colors[0]);
-	static drawer d("/tmp/viewer");
 	double *colors;
 	
 	if (mode >= ncolors)
 		mode = ncolors - 1;
 	
 	colors = mode_colors[mode];
-	d.set_color(obj, colors[0], colors[1], colors[2]);
+	draw.set_color(obj, colors[0], colors[1], colors[2]);
 }
 
 /*
@@ -974,6 +976,24 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 			foil.set_problem(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), context_rel_tbl);
 		}
 		foil.dump_foil6(os);
+		return true;
+	} else if (args[first] == "vistrain") {
+		int i;
+		
+		if (first + 1 >= args.size() || !parse_int(args[first+1], i) || i < 0 || i >= data.size()) {
+			os << "specify training example" << endl;
+			return false;
+		}
+		
+		rvec &x = data[i]->x;
+		const scene_sig &s = sigs[data[i]->sig_index]->sig;
+		
+		for (int j = 0, jend = s.size(); j < jend; ++j) {
+			int start = s[j].start;
+			vec3 p(x(start), x(start + 1), x(start + 2));
+			draw.set_pos(s[j].name, p(0), p(1), p(2));
+		}
+		return true;
 	}
 
 	return false;
