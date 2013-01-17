@@ -20,14 +20,11 @@ def CheckSWIG(env):
 Import('env', 'compiler', 'InstallDir', 'g_msvs_variant')
 kernel_env = env.Clone()
 
-if os.name == 'posix':
-	libs = ['pthread', 'm']
-	if 'freebsd' not in sys.platform:
-		libs.append('dl')
-elif os.name == 'nt':
-	libs = ['advapi32']
-
-kernel_env.Replace(LIBS = libs, LIBPATH=[])
+# Windows DLLs need to get linked to dependencies, whereas Linux and Mac shared objects do not
+if os.name == 'nt':
+	kernel_env['LIBS'] = ['advapi32']
+else:
+	kernel_env['LIBS'] = []
 
 if sys.platform == 'darwin':
 	install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
