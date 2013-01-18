@@ -1012,9 +1012,25 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		const scene_sig &s = sigs[data[i]->sig_index]->sig;
 		
 		for (int j = 0, jend = s.size(); j < jend; ++j) {
+			vec3 p;
+			vector<bool> found(3, false);
 			int start = s[j].start;
-			vec3 p(x(start), x(start + 1), x(start + 2));
-			draw.set_pos(s[j].name, p(0), p(1), p(2));
+			const vector<string> &props = s[j].props;
+			for (int k = 0, kend = props.size(); k < kend; ++k) {
+				if (props[k] == "px") {
+					p(0) = x(start + k);
+					found[0] = true;
+				} else if (props[k] == "py") {
+					p(1) = x(start + k);
+					found[1] = true;
+				} else if (props[k] == "pz") {
+					p(2) = x(start + k);
+					found[2] = true;
+				}
+			}
+			if (found[0] && found[1] && found[2]) {
+				draw.set_pos(s[j].name, p(0), p(1), p(2));
+			}
 		}
 		return true;
 	}
