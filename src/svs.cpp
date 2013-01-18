@@ -20,8 +20,6 @@ using namespace std;
 
 typedef map<wme*,command*>::iterator cmd_iter;
 
-const char *default_viewer_path = "/tmp/viewer";
-
 svs_interface *make_svs(agent *a) {
 	return new svs(a);
 }
@@ -397,8 +395,20 @@ void svs_state::report_relations(int first_arg, const vector<string> &args, ostr
 	}
 }
 
+void svs_state::refresh_view() {
+	vector<const sgnode*> nodes;
+	string name = scn->get_name();
+	drawer *d = svsp->get_drawer();
+	
+	d->delete_scene(name);
+	scn->get_all_nodes(nodes);
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		d->add(name, nodes[i]);
+	}
+}
+
 svs::svs(agent *a)
-: learn(false), model_root(NULL), draw(default_viewer_path)
+: learn(false), model_root(NULL)
 {
 	si = new soar_interface(a);
 }
@@ -573,6 +583,16 @@ bool svs::do_command(const vector<string> &args, stringstream &out) {
 		}
 		for (i = models.begin(); i != models.end(); ++i) {
 			out << i->first << "\t" << i->second->get_type() << endl;
+		}
+		return true;
+	} else if (args[1] == "connect_viewer") {
+		if (args.size() < 3) {
+			out << "specify socket path" << endl;
+			return false;
+		}
+		draw.set_address(args[2]);
+		for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
+			state_stack[i]->refresh_view();
 		}
 		return true;
 	}

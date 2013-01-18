@@ -15,6 +15,7 @@ public:
 		SHAPE = 1 << 5,
 	};
 	
+	drawer();
 	drawer(const std::string &addr);
 	
 	void set_address(const std::string &addr);

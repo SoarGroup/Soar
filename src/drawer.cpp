@@ -10,8 +10,10 @@ ostream &write_vec3(ostream &os, const vec3 &v) {
 	return os;
 }
 
-drawer::drawer(const string &path) {
-	set_address(path);
+drawer::drawer() : error(false) {}
+
+drawer::drawer(const string &path) : error(false) {
+	sock.set_address(path);
 }
 
 void drawer::set_address(const string &path) {
