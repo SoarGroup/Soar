@@ -62,9 +62,10 @@ private:
 	
 	class classifier : public serializable {
 	public:
-		classifier() : const_vote(0), neg_lda(NULL) {}
+		classifier() : const_vote(0), use_const(true), neg_lda(NULL) {}
 		
 		int const_vote;
+		bool use_const;
 		clause_vec clauses;
 		std::vector<relation> false_positives, true_positives;
 		std::vector<LDA*> pos_ldas;

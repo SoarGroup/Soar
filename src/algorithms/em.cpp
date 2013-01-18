@@ -832,7 +832,7 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	}
 	
 	vector<int> obj_map;
-	if (use_em && use_foil) {
+	if (use_em) {
 		mode = classify(target, sig, rels, x, obj_map);
 		draw_mode_prediction(sig[target].name, mode);
 		if (mode > 0) {
@@ -1254,6 +1254,7 @@ void EM::mode_info::unserialize(istream &is) {
 double EM::mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
 	if (noise) {
 		return PNOISE;
+		best_error = INFINITY;
 	}
 	
 	rvec py;
@@ -1459,21 +1460,21 @@ bool EM::mode_info::uniform_sig(int sig, int target) const {
 
 
 void EM::classifier::serialize(ostream &os) const {
-	serializer(os) << const_vote << clauses 
+	serializer(os) << const_vote << use_const << clauses 
 	               << false_positives << true_positives
 	               << false_negatives << true_negatives
 	               << pos_ldas << neg_lda;
 }
 
 void EM::classifier::unserialize(istream &is) {
-	unserializer(is) >> const_vote >> clauses 
+	unserializer(is) >> const_vote >> use_const >> clauses 
 	                 >> false_positives >> true_positives
 	                 >> false_negatives >> true_negatives
 	                 >> pos_ldas >> neg_lda;
 }
 
 void EM::classifier::inspect(ostream &os) const {
-	if (clauses.empty() && neg_lda == NULL) {
+	if (use_const) {
 		os << "Constant Vote: " << const_vote << endl;
 		return;
 	}
@@ -1489,7 +1490,7 @@ void EM::classifier::inspect(ostream &os) const {
 }
 
 void EM::classifier::inspect_detailed(ostream &os) const {
-	if (clauses.empty() && neg_lda == NULL) {
+	if (use_const) {
 		os << "Constant Vote: " << const_vote << endl;
 		return;
 	}
@@ -1672,11 +1673,12 @@ void EM::update_pair(int i, int j) {
 	}
 	
 	c.const_vote = mem_i.size() > mem_j.size() ? 0 : 1;
-	
 	if (mem_i.empty() || mem_j.empty()) {
+		c.use_const = true;
 		return;
 	}
 	
+	c.use_const = false;
 	if (use_foil) {
 		FOIL foil;
 		if (use_foil_close) {
@@ -1695,7 +1697,7 @@ void EM::update_pair(int i, int j) {
 	} else {
 		/*
 		 Don't learn any clauses. Instead consider every member of i a false negative
-		 and every member of j a true negative.
+		 and every member of j a true negative, and let LDA take care of it.
 		*/
 		c.false_negatives = mem_i;
 		c.true_negatives = mem_j;
@@ -1730,8 +1732,13 @@ int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation
 	const classifier &c = *(modes[i]->classifiers[j]);
 
 	LOG(EMDBG) << "Voting on " << i << " vs " << j << endl;
+	
+	if (c.use_const || (!use_foil && !use_lda)) {
+		LOG(EMDBG) << "Constant vote for " << (c.const_vote == 0 ? i : j) << endl;
+		return c.const_vote;
+	}
+	
 	if (c.clauses.size() > 0) {
-		
 		var_domains domains;
 		domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
 		domains[1].insert(sig[target].id);
@@ -1757,21 +1764,17 @@ int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation
 			}
 			LOG(EMDBG) << "No LDA, voting for " << i << endl;
 			return 0;
-		} else {
-			// no matched clause, FOIL thinks this is a negative
-			if (use_lda && c.neg_lda) {
-				result = 1 - c.neg_lda->classify(x);
-				LOG(EMDBG) << "No matched clauses, LDA votes for " << (result == 0 ? i : j) << endl;
-				return result;
-			} else {
-				// no false negatives in training, so this must be a negative
-				LOG(EMDBG) << "No matched clauses, no LDA, vote for " << j << endl;
-				return 1;
-			}
 		}
 	}
-	LOG(EMDBG) << "No classifiers, constant vote for " << (c.const_vote == 0 ? i : j) << endl;
-	return c.const_vote;
+	// no matched clause, FOIL thinks this is a negative
+	if (use_lda && c.neg_lda) {
+		result = 1 - c.neg_lda->classify(x);
+		LOG(EMDBG) << "No matched clauses, LDA votes for " << (result == 0 ? i : j) << endl;
+		return result;
+	}
+	// no false negatives in training, so this must be a negative
+	LOG(EMDBG) << "No matched clauses, no LDA, vote for " << j << endl;
+	return 1;
 }
 
 int EM::classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, vector<int> &obj_map) {
