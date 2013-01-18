@@ -19,7 +19,9 @@ Calculates whether a bounding box is located to the left (-1), overlapping
 (0), or right (1) of another bounding box along the specified axis.
 */
 bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
-	int i, dir[3];
+	assert(0 <= axis && axis < 3);
+	
+	int dir;
 	vec3 amin, amax, bmin, bmax;
 	double asize, bsize, margin;
 
@@ -31,21 +33,17 @@ bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	margin = OVERLAP_MARGIN * ( asize < bsize ? asize : bsize );
 	
 	/*
-	 dir[i] = [-1, 0, 1] if a is [less than, overlapping,
+	 dir = [-1, 0, 1] if a is [less than, overlapping,
 	 greater than] b in that dimension.
 	*/
-	for(i = 0; i < 3; i++) {
-		if (amax[i] <= bmin[i] + margin) {
-			dir[i] = -1;
-		} else if (bmax[i] <= amin[i] + margin) {
-			dir[i] = 1;
-		} else {
-			dir[i] = 0;
-		}
+	if (amax[axis] <= bmin[axis] + margin) {
+		dir = -1;
+	} else if (bmax[axis] <= amin[axis] + margin) {
+		dir = 1;
+	} else {
+		dir = 0;
 	}
-
-	assert(0 <= axis && axis < 3);
-	return comp == dir[axis];
+	return comp == dir;
 }
 
 bool north_of(const scene *scn, const vector<const sgnode*> &args) {

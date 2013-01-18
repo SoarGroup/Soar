@@ -10,7 +10,7 @@ typedef vector<sgnode*>::iterator childiter;
 typedef vector<sgnode*>::const_iterator const_childiter;
 
 sgnode::sgnode(const string &name, const string &type, bool group)
-: name(name), type(type), parent(NULL), group(group), trans_dirty(true), shape_dirty(true),
+: name(name), type(type), parent(NULL), group(group), trans_dirty(true), shape_dirty(true), bounds_dirty(true),
   pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
 {}
 
@@ -104,6 +104,7 @@ void sgnode::get_world_trans(vec3 &p, vec3 &r, vec3 &s) const {
 
 void sgnode::set_transform_dirty() {
 	trans_dirty = true;
+	bounds_dirty = true;
 	if (parent) {
 		parent->set_shape_dirty();
 	}
@@ -113,6 +114,7 @@ void sgnode::set_transform_dirty() {
 
 void sgnode::set_shape_dirty() {
 	shape_dirty = true;
+	bounds_dirty = true;
 	if (parent) {
 		parent->set_shape_dirty();
 	}
@@ -154,8 +156,9 @@ void sgnode::unlisten(sgnode_listener *o) {
 }
 
 const bbox &sgnode::get_bounds() const {
-	if (shape_dirty || trans_dirty) {
+	if (bounds_dirty) {
 		const_cast<sgnode*>(this)->update_shape();
+		bounds_dirty = false;
 	}
 	return bounds;
 }

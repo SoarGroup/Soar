@@ -83,9 +83,12 @@ private:
 	vec3        pos;
 	vec3        rot;
 	vec3        scale;
-	bool        shape_dirty;
-	bbox        bounds;
 	vec3        centroid;
+
+	mutable bool shape_dirty;
+
+	mutable bbox bounds;
+	mutable bool bounds_dirty;
 
 	mutable transform3 wtransform;
 	mutable transform3 ltransform;
