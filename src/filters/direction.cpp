@@ -9,24 +9,35 @@
 using namespace std;
 
 /*
+ Percentage of the smaller of two bodies that they can overlap before being
+ considered overlapping.
+*/
+const double OVERLAP_MARGIN = .05;
+
+/*
 Calculates whether a bounding box is located to the left (-1), overlapping
 (0), or right (1) of another bounding box along the specified axis.
 */
 bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	int i, dir[3];
 	vec3 amin, amax, bmin, bmax;
+	double asize, bsize, margin;
 
 	a->get_bounds().get_vals(amin, amax);
 	b->get_bounds().get_vals(bmin, bmax);
+	
+	asize = amax(axis) - amin(axis);
+	bsize = bmax(axis) - bmin(axis);
+	margin = OVERLAP_MARGIN * ( asize < bsize ? asize : bsize );
 	
 	/*
 	 dir[i] = [-1, 0, 1] if a is [less than, overlapping,
 	 greater than] b in that dimension.
 	*/
 	for(i = 0; i < 3; i++) {
-		if (amax[i] <= bmin[i]) {
+		if (amax[i] <= bmin[i] + margin) {
 			dir[i] = -1;
-		} else if (bmax[i] <= amin[i]) {
+		} else if (bmax[i] <= amin[i] + margin) {
 			dir[i] = 1;
 		} else {
 			dir[i] = 0;
