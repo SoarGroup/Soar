@@ -76,19 +76,19 @@ public:
 			return em.cli_inspect(first_arg + 1, args, os);
 		} else if (args[first_arg] == "mode_error") {
 			assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
-			int nsame = 0, ndiff = 0;
+			int correct = 0, incorrect = 0;
 			table_printer t;
 			t.add_row() << "N" << "PRED. MODE" << "BEST MODE" << "BEST ERROR";
 			for (int i = 0; i < test_modes.size(); ++i) {
-				if (test_modes[i] == test_best_modes[i]) {
-					++nsame;
+				if (test_modes[i] == test_best_modes[i] && test_best_modes[i] != 0) {
+					++correct;
 				} else {
-					++ndiff;
+					++incorrect;
 				}
 				t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
 			}
 			t.print(os);
-			os << nsame << " correct, " << ndiff << " incorrect" << endl;
+			os << correct << " correct, " << incorrect << " incorrect" << endl;
 		}
 		return false;
 	}
