@@ -341,19 +341,21 @@ interval_set &interval_set::operator=(const set<int> &s) {
 	set<int>::const_iterator i, iend;
 	
 	curr->clear();
-	i = s.begin();
-	in.first = *i;
-	in.last = *i;
-	for (++i, iend = s.end(); i != iend; ++i) {
-		if (*i > in.last + 1) {
-			curr->push_back(in);
-			in.first = *i;
-			in.last = *i;
-		} else {
-			in.last++;
+	if (!s.empty()) {
+		i = s.begin();
+		in.first = *i;
+		in.last = *i;
+		for (++i, iend = s.end(); i != iend; ++i) {
+			if (*i > in.last + 1) {
+				curr->push_back(in);
+				in.first = *i;
+				in.last = *i;
+			} else {
+				in.last++;
+			}
 		}
+		curr->push_back(in);
 	}
-	curr->push_back(in);
 	sz = s.size();
 	return *this;
 }
