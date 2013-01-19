@@ -175,6 +175,7 @@ private:
 	LDA *learn_numeric_classifier(const relation &p, const relation &n) const;
 	
 	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
+	bool cli_dump_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_relations(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_classifiers(int first, const std::vector<std::string> &args, std::ostream &os) const;
 
@@ -183,7 +184,7 @@ private:
 	std::vector<sig_info*> sigs;
 	std::vector<mode_info*> modes;
 	int ndata, nmodes;
-	bool use_em, use_foil, use_foil_close, use_lda, use_pruning;
+	bool use_em, use_foil, use_foil_close, use_lda, use_pruning, use_unify, learn_new_modes;
 
 	/*
 	 Keeps track of the minimum number of new noise examples needed before we have

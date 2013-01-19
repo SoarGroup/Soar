@@ -491,7 +491,8 @@ void print_first_arg(const relation &r, ostream &os) {
 
 EM::EM() 
 : ndata(0), nmodes(1), use_em(true), use_foil(true), use_foil_close(true),
-  use_lda(true), use_pruning(true), check_after(NEW_MODE_THRESH)
+  use_lda(true), use_pruning(true), use_unify(true), learn_new_modes(true),
+  check_after(NEW_MODE_THRESH)
 {
 	mode_info *noise = new mode_info(true, data, sigs);
 	noise->classifiers.resize(1, NULL);
@@ -677,7 +678,7 @@ bool EM::unify_or_add_mode() {
 	function_timer t(timers.get_or_add("new"));
 
 	assert(check_after >= NEW_MODE_THRESH);
-	if (modes[0]->size() < check_after) {
+	if (!learn_new_modes || modes[0]->size() < check_after) {
 		return false;
 	}
 	
@@ -730,37 +731,39 @@ bool EM::unify_or_add_mode() {
 	int seed_sig = data[largest[0]]->sig_index;
 	int seed_target = data[largest[0]]->target;
 
-	/*
-	 Try to add noise data to each current model and refit. If the
-	 resulting model is just as accurate as the original, then just
-	 add the noise to that model instead of creating a new one.
-	*/
-	mat X, Y, ucoefs;
-	rvec uinter;
-	for (int j = 1; j < nmodes; ++j) {
-		mode_info &minfo = *modes[j];
-
-		if (!minfo.uniform_sig(seed_sig, seed_target)) {
-			continue;
-		}
-
-		vector<int> combined, subset;
-		extend(combined, minfo.get_members());
-		extend(combined, largest);
-		fill_xy(combined, X, Y);
-		LOG(EMDBG) << "Trying to unify with mode " << j << endl;
-		int unified_size = find_linear_subset(X, Y, subset, ucoefs, uinter);
-		
-		if (unified_size >= minfo.size() + .9 * largest.size()) {
-			LOG(EMDBG) << "Successfully unified with mode " << j << endl;
-			vector<int> u(combined.size());
-			for (int k = 0; k < subset.size(); ++k) {
-				u[k] = combined[subset[k]];
+	if (use_unify) {
+		/*
+		 Try to add noise data to each current model and refit. If the resulting
+		 model is just as accurate as the original, then just add the noise to that
+		 model instead of creating a new one.
+		*/
+		mat X, Y, ucoefs;
+		rvec uinter;
+		for (int j = 1; j < nmodes; ++j) {
+			mode_info &minfo = *modes[j];
+	
+			if (!minfo.uniform_sig(seed_sig, seed_target)) {
+				continue;
 			}
-			minfo.set_linear_params(u, ucoefs, uinter);
-			return true;
+	
+			vector<int> combined, subset;
+			extend(combined, minfo.get_members());
+			extend(combined, largest);
+			fill_xy(combined, X, Y);
+			LOG(EMDBG) << "Trying to unify with mode " << j << endl;
+			int unified_size = find_linear_subset(X, Y, subset, ucoefs, uinter);
+			
+			if (unified_size >= minfo.size() + .9 * largest.size()) {
+				LOG(EMDBG) << "Successfully unified with mode " << j << endl;
+				vector<int> u(combined.size());
+				for (int k = 0; k < subset.size(); ++k) {
+					u[k] = combined[subset[k]];
+				}
+				minfo.set_linear_params(u, ucoefs, uinter);
+				return true;
+			}
+			LOG(EMDBG) << "Failed to unify with mode " << j << endl;
 		}
-		LOG(EMDBG) << "Failed to unify with mode " << j << endl;
 	}
 	
 	mode_info *new_mode = new mode_info(false, data, sigs);
@@ -950,6 +953,8 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		return true;
 	} else if (args[first] == "train") {
 		return cli_inspect_train(first + 1, args, os);
+	} else if (args[first] == "dump_train") {
+		return cli_dump_train(first + 1, args, os);
 	} else if (args[first] == "mode") {
 		if (first + 1 >= args.size()) {
 			os << "Specify a mode number (0 - " << nmodes - 1 << ")" << endl;
@@ -978,6 +983,10 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		return read_on_off(args, first + 1, os, use_lda);
 	} else if (args[first] == "use_pruning") {
 		return read_on_off(args, first + 1, os, use_pruning);
+	} else if (args[first] == "use_unify") {
+		return read_on_off(args, first + 1, os, use_unify);
+	} else if (args[first] == "learn_new_modes") {
+		return read_on_off(args, first + 1, os, learn_new_modes);
 	} else if (args[first] == "dump_foil" || args[first] == "dump_foil_close") {
 		int m1, m2;
 		if (first + 2 >= args.size() || 
@@ -1104,6 +1113,28 @@ bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) c
 	return true;
 }
 
+bool EM::cli_dump_train(int first, const vector<string> &args, ostream &os) const {
+	if (first >= args.size()) {
+		os << "specify path" << endl;
+		return false;
+	}
+	ofstream dump(args[first].c_str());
+	if (!dump) {
+		os << "invalid path" << endl;
+		return false;
+	}
+		
+	int xcols = data[0]->x.cols();
+	int ycols = data[0]->y.cols();
+	mat train(data.size(), xcols + ycols);
+	for (int i = 0, iend = data.size(); i < iend; ++i) {
+		train.block(i, 0, 1, xcols) = data[i]->x;
+		train.block(i, xcols, 1, ycols) = data[i]->y;
+	}
+	::serialize(train, dump);
+	return true;
+}
+
 /*
  pos_obj and neg_obj can probably be cached and updated as data points
  are assigned to modes.
@@ -1177,7 +1208,9 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 		t.print(os);
 		return true;
 	} else if (args[first] == "members") {
-		join(os, members, ' ') << endl;
+		// should probably convert members to an interval set in the future
+		interval_set s(members);
+		os << s << endl;
 		return true;
 	}
 	return false;
