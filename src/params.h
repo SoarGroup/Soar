@@ -9,7 +9,7 @@
  variance of its rotation, because the two measurements have different
  units and scales.
 */
-#define MEASURE_VAR 1.0e-9
+#define MEASURE_VAR 1.0e-10
 
 /* Initial lambda value for ridge regression */
 #define RIDGE_LAMBDA 1e-8
