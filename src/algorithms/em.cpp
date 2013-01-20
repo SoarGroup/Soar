@@ -46,6 +46,10 @@ void draw_mode_prediction(const std::string &obj, int mode) {
 	draw.set_color(obj, colors[0], colors[1], colors[2]);
 }
 
+bool approx_equal(double a, double b) {
+	return fabs(a - b) / min(fabs(a), fabs(b)) < .001;
+}
+
 /*
  Generate all possible combinations of sets of items
 */
@@ -579,9 +583,19 @@ void EM::estep() {
 			dm.prob_stale = false;
 		}
 		if (stale) {
-			int prev = d.mode, best = d.mode;
-			for (int j = 0; j < nmodes; ++j) {
-				if (d.minfo[j].prob > d.minfo[prev].prob) {
+			int prev = d.mode, best = 0;
+			for (int j = 1; j < nmodes; ++j) {
+				/*
+				 These conditions look awkward, but have justification. If I tested the >
+				 condition before the approx_equal condition, the test would succeed even
+				 if the probability of j was only slightly better than the probability of
+				 best.
+				*/
+				if (approx_equal(d.minfo[j].prob, d.minfo[best].prob)) {
+					if (modes[j]->get_num_nonzero_coefs() < modes[best]->get_num_nonzero_coefs()) {
+						best = j;
+					}
+				} else if (d.minfo[j].prob > d.minfo[best].prob) {
 					best = j;
 				}
 			}
@@ -634,6 +648,7 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
  Fit lin_coefs, lin_inter, and sig to the data in data_inds.
 */
 void EM::mode_info::set_linear_params(const vector<int> &data_inds, const mat &coefs, const rvec &inter) {
+	n_nonzero = 0;
 	lin_inter = inter;
 	if (coefs.size() == 0) {
 		lin_coefs.resize(0, 0);
@@ -651,11 +666,15 @@ void EM::mode_info::set_linear_params(const vector<int> &data_inds, const mat &c
 			}
 			int start = dsig[i].start;
 			int end = start + dsig[i].props.size();
+			bool relevant = false;
 			for (int j = start; j < end; ++j) {
 				if (!coefs.row(j).isConstant(0.0)) {
-					relevant_objs.push_back(i);
-					break;
+					++n_nonzero;
+					relevant = true;
 				}
+			}
+			if (relevant) {
+				relevant_objs.push_back(i);
 			}
 		}
 		
@@ -1253,7 +1272,7 @@ void EM::train_data::unserialize(istream &is) {
 }
 
 EM::mode_info::mode_info(bool noise, const vector<train_data*> &data, const vector<sig_info*> &sigs) 
-: noise(noise), data(data), sigs(sigs), member_rel(2), classifier_stale(true), new_fit(true)
+: noise(noise), data(data), sigs(sigs), member_rel(2), classifier_stale(true), new_fit(true), n_nonzero(-1)
 {
 	if (noise) {
 		stale = false;
@@ -1275,13 +1294,13 @@ EM::mode_info::~mode_info() {
 void EM::mode_info::serialize(ostream &os) const {
 	serializer(os) << stale << new_fit << classifier_stale << members << sig
 	               << classifiers << obj_clauses << member_rel << sorted_ys
-	               << lin_coefs << lin_inter;
+	               << lin_coefs << lin_inter << n_nonzero;
 }
 
 void EM::mode_info::unserialize(istream &is) {
 	unserializer(is) >> stale >> new_fit >> classifier_stale >> members >> sig
 	                 >> classifiers >> obj_clauses >> member_rel >> sorted_ys
-	                 >> lin_coefs >> lin_inter;
+	                 >> lin_coefs >> lin_inter >> n_nonzero;
 }
 
 double EM::mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
@@ -1491,6 +1510,13 @@ bool EM::mode_info::uniform_sig(int sig, int target) const {
 	return true;
 }
 
+int EM::mode_info::get_num_nonzero_coefs() const {
+	if (noise) {
+		return numeric_limits<int>::max();
+	}
+	assert(n_nonzero >= 0);
+	return n_nonzero;
+}
 
 void EM::classifier::serialize(ostream &os) const {
 	serializer(os) << const_vote << use_const << clauses 

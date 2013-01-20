@@ -121,6 +121,8 @@ private:
 
 		bool map_objs(int target, const scene_sig &dsig, const relation_table &rels, std::vector<int> &mapping) const;
 		
+		int get_num_nonzero_coefs() const;
+		
 		/*
 		 Each pair of modes has one classifier associated with it. For
 		 mode i, the classifier for it and mode j is stored in the
@@ -139,6 +141,7 @@ private:
 		
 		mat lin_coefs;
 		rvec lin_inter;
+		int n_nonzero;
 		std::set<int> members;
 		relation member_rel;
 		scene_sig sig;
