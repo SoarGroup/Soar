@@ -380,6 +380,7 @@ ostream &operator<<(ostream &os, const interval_set &s) {
 		}
 		sep = ", ";
 	}
+	os << " (" << s.size() << ")";
 	return os;
 }
 
