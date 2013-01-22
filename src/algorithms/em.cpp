@@ -498,7 +498,7 @@ EM::EM()
   use_lda(true), use_pruning(true), use_unify(true), learn_new_modes(true),
   check_after(NEW_MODE_THRESH)
 {
-	mode_info *noise = new mode_info(true, data, sigs);
+	mode_info *noise = new mode_info(true, false, data, sigs);
 	noise->classifiers.resize(1, NULL);
 	modes.push_back(noise);
 }
@@ -647,16 +647,13 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
 /*
  Fit lin_coefs, lin_inter, and sig to the data in data_inds.
 */
-void EM::mode_info::set_linear_params(const vector<int> &data_inds, const mat &coefs, const rvec &inter) {
+void EM::mode_info::set_linear_params(int sig_index, int target, const mat &coefs, const rvec &inter) {
 	n_nonzero = 0;
 	lin_inter = inter;
 	if (coefs.size() == 0) {
 		lin_coefs.resize(0, 0);
 	} else {
-		const train_data &d0 = *data[data_inds[0]];
-		const scene_sig &dsig = sigs[d0.sig_index]->sig;
-		int target = d0.target;
-		
+		const scene_sig &dsig = sigs[sig_index]->sig;
 		// find relevant objects (with nonzero coefficients)
 		vector<int> relevant_objs;
 		relevant_objs.push_back(target);
@@ -691,6 +688,24 @@ void EM::mode_info::set_linear_params(const vector<int> &data_inds, const mat &c
 		lin_coefs.conservativeResize(end, 1);
 	}
 	new_fit = true;
+}
+
+EM::mode_info *EM::add_mode(bool manual) {
+	mode_info *new_mode = new mode_info(false, manual, data, sigs);
+	modes.push_back(new_mode);
+	++nmodes;
+	for (int j = 0; j < ndata; ++j) {
+		grow(data[j]->minfo);
+	}
+	for (int j = 0; j < nmodes; ++j) {
+		modes[j]->classifiers.resize(nmodes, NULL);
+		/*
+		 It's sufficient to fill the extra vector elements
+		 with NULL here. The actual classifiers will be
+		 allocated as needed during updates.
+		*/
+	}
+	return new_mode;
 }
 
 bool EM::unify_or_add_mode() {
@@ -761,7 +776,7 @@ bool EM::unify_or_add_mode() {
 		for (int j = 1; j < nmodes; ++j) {
 			mode_info &minfo = *modes[j];
 	
-			if (!minfo.uniform_sig(seed_sig, seed_target)) {
+			if (minfo.is_manual() || !minfo.uniform_sig(seed_sig, seed_target)) {
 				continue;
 			}
 	
@@ -774,33 +789,17 @@ bool EM::unify_or_add_mode() {
 			
 			if (unified_size >= minfo.size() + .9 * largest.size()) {
 				LOG(EMDBG) << "Successfully unified with mode " << j << endl;
-				vector<int> u(combined.size());
-				for (int k = 0; k < subset.size(); ++k) {
-					u[k] = combined[subset[k]];
-				}
-				minfo.set_linear_params(u, ucoefs, uinter);
+				const train_data &d0 = *data[combined[subset[0]]];
+				minfo.set_linear_params(d0.sig_index, d0.target, ucoefs, uinter);
 				return true;
 			}
 			LOG(EMDBG) << "Failed to unify with mode " << j << endl;
 		}
 	}
 	
-	mode_info *new_mode = new mode_info(false, data, sigs);
-	new_mode->set_linear_params(largest, coefs, inter);
-	modes.push_back(new_mode);
-	++nmodes;
-	for (int j = 0; j < ndata; ++j) {
-		grow(data[j]->minfo);
-	}
-	for (int j = 0; j < nmodes; ++j) {
-		modes[j]->classifiers.resize(nmodes, NULL);
-		/*
-		 It's sufficient to fill the extra vector elements
-		 with NULL here. The actual classifiers will be
-		 allocated as needed during updates.
-		*/
-	}
-
+	mode_info *new_mode = add_mode(false);
+	const train_data &d0 = *data[largest[0]];
+	new_mode->set_linear_params(d0.sig_index, d0.target, coefs, inter);
 	return true;
 }
 
@@ -892,7 +891,7 @@ bool EM::remove_modes() {
 	vector<int> index_map(nmodes), removed;
 	int i = 1;  // start with 1, noise mode (0) should never be removed
 	for (int j = 1; j < nmodes; ++j) {
-		if (modes[j]->size() >= NEW_MODE_THRESH) {
+		if (modes[j]->size() >= NEW_MODE_THRESH || modes[j]->is_manual()) {
 			index_map[j] = i;
 			if (j > i) {
 				modes[i] = modes[j];
@@ -1061,6 +1060,8 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 			}
 		}
 		return true;
+	} else if (args[first] == "add_mode") {
+		return cli_add_mode(first + 1, args, os);
 	}
 
 	return false;
@@ -1151,6 +1152,56 @@ bool EM::cli_dump_train(int first, const vector<string> &args, ostream &os) cons
 		train.block(i, xcols, 1, ycols) = data[i]->y;
 	}
 	::serialize(train, dump);
+	return true;
+}
+
+/*
+ The format will be [coef] [dim] [coef] [dim] ... [intercept]
+*/
+bool EM::cli_add_mode(int first, const vector<string> &args, ostream &os) {
+	if (ndata == 0) {
+		os << "need at least one training example to get the signature from" << endl;
+		return false;
+	}
+	
+	int target = data[ndata-1]->target;
+	int sig_index = data[ndata-1]->sig_index;
+	const scene_sig &sig = sigs[sig_index]->sig;
+	mat coefs(sig.dim(), 1);
+	rvec intercept(1);
+	coefs.setConstant(0.0);
+	intercept.setConstant(0.0);
+	
+	for (int i = first, iend = args.size(); i < iend; i += 2) {
+		double c;
+		if (!parse_double(args[i], c)) {
+			os << "expecting a number, got " << args[i] << endl;
+			return false;
+		}
+		
+		if (i + 1 >= args.size()) {
+			intercept(0) = c;
+			break;
+		}
+		
+		vector<string> parts;
+		split(args[i+1], ":", parts);
+		if (parts.size() != 2) {
+			os << "expecting object:property, got " << args[i+1] << endl;
+			return false;
+		}
+		
+		int obj_ind, prop_ind;
+		if (!sig.get_dim(parts[0], parts[1], obj_ind, prop_ind)) {
+			os << args[i+1] << " not found" << endl;
+			return false;
+		}
+		assert(prop_ind >= 0 && prop_ind < coefs.rows());
+		coefs(prop_ind, 0) = c;
+	}
+	
+	mode_info *new_mode = add_mode(true);
+	new_mode->set_linear_params(sig_index, target, coefs, intercept);
 	return true;
 }
 
@@ -1249,7 +1300,7 @@ void EM::unserialize(istream &is) {
 	delete modes[0];
 	modes.clear();
 	for (int i = 0; i < nmodes; ++i) {
-		EM::mode_info *m = new mode_info(i == 0, data, sigs);
+		EM::mode_info *m = new mode_info(i == 0, false, data, sigs);
 		m->unserialize(is);
 		modes.push_back(m);
 	}
@@ -1271,8 +1322,8 @@ void EM::train_data::unserialize(istream &is) {
 	unserializer(is) >> target >> sig_index >> x >> y >> mode >> minfo;
 }
 
-EM::mode_info::mode_info(bool noise, const vector<train_data*> &data, const vector<sig_info*> &sigs) 
-: noise(noise), data(data), sigs(sigs), member_rel(2), classifier_stale(true), new_fit(true), n_nonzero(-1)
+EM::mode_info::mode_info(bool noise, bool manual, const vector<train_data*> &data, const vector<sig_info*> &sigs) 
+: noise(noise), manual(manual), data(data), sigs(sigs), member_rel(2), classifier_stale(true), new_fit(true), n_nonzero(-1)
 {
 	if (noise) {
 		stale = false;
@@ -1294,13 +1345,13 @@ EM::mode_info::~mode_info() {
 void EM::mode_info::serialize(ostream &os) const {
 	serializer(os) << stale << new_fit << classifier_stale << members << sig
 	               << classifiers << obj_clauses << member_rel << sorted_ys
-	               << lin_coefs << lin_inter << n_nonzero;
+	               << lin_coefs << lin_inter << n_nonzero << manual;
 }
 
 void EM::mode_info::unserialize(istream &is) {
 	unserializer(is) >> stale >> new_fit >> classifier_stale >> members >> sig
 	                 >> classifiers >> obj_clauses >> member_rel >> sorted_ys
-	                 >> lin_coefs >> lin_inter >> n_nonzero;
+	                 >> lin_coefs >> lin_inter >> n_nonzero >> manual;
 }
 
 double EM::mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
@@ -1388,7 +1439,7 @@ double EM::mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x
 }
 
 bool EM::mode_info::update_fits() {
-	if (!stale) {
+	if (!stale || manual) {
 		return false;
 	}
 	if (members.empty()) {

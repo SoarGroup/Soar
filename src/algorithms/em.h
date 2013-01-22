@@ -92,7 +92,7 @@ private:
 	
 	class mode_info : public serializable {
 	public:
-		mode_info(bool noise, const std::vector<train_data*> &data, const std::vector<sig_info*> &sigs);
+		mode_info(bool noise, bool manual, const std::vector<train_data*> &data, const std::vector<sig_info*> &sigs);
 		~mode_info();
 		
 		void serialize(std::ostream &os) const;
@@ -107,12 +107,13 @@ private:
 		void get_noise_sigs(std::vector<int> &sigs);
 		double calc_prob(int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 		bool update_fits();
-		void set_linear_params(const std::vector<int> &data_inds, const mat &coefs, const rvec &inter);
+		void set_linear_params(int sig_index, int target, const mat &coefs, const rvec &inter);
 		bool uniform_sig(int sig, int target) const;
 		void learn_obj_clauses(const relation_table &rels);
 
 		int size() const { return members.size(); }
 		bool is_new_fit() const { return new_fit; }
+		bool is_manual() const { return manual; }
 		void reset_new_fit() { new_fit = false; }
 		
 		const std::set<int> &get_members() const { return members; }
@@ -135,7 +136,7 @@ private:
 		bool classifier_stale;
 		
 	private:
-		bool stale, noise, new_fit;
+		bool stale, noise, new_fit, manual;
 		const std::vector<train_data*> &data;
 		const std::vector<sig_info*> &sigs;
 		
@@ -168,8 +169,8 @@ private:
 	int find_linear_subset(mat &X, mat &Y, std::vector<int> &subset, mat &coefs, rvec &inter) const;
 	void find_linear_subset_em(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
 	void find_linear_subset_block(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
+	mode_info *add_mode(bool manual);
 	bool remove_modes();
-	
 
 	void update_classifier();
 	void update_pair(int i, int j);
@@ -181,6 +182,7 @@ private:
 	bool cli_dump_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_relations(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_classifiers(int first, const std::vector<std::string> &args, std::ostream &os) const;
+	bool cli_add_mode(int first, const std::vector<std::string> &args, std::ostream &os);
 
 	relation_table rel_tbl, context_rel_tbl;
 	std::vector<train_data*> data;
