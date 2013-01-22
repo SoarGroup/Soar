@@ -272,11 +272,15 @@ void get_context_rels(int target, const relation_table &rels, relation_table &co
 	relation_table::iterator j, jend;
 	for (j = context_rels.begin(), jend = context_rels.end(); j != jend; ++j) {
 		relation &r = j->second;
-		vector<tuple> close_pat(r.arity());
-		for (int j = 1; j < r.arity(); ++j) {
-			close_pat[j] = close;
+		if (j->first == "closest") {
+			r.clear();
+		} else {
+			vector<tuple> close_pat(r.arity());
+			for (int j = 1; j < r.arity(); ++j) {
+				close_pat[j] = close;
+			}
+			r.filter(close_pat, false);
 		}
-		r.filter(close_pat, false);
 	}
 }
 
