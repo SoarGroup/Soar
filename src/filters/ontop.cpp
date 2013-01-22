@@ -11,9 +11,12 @@ bool ontop(const sgnode *tn, const sgnode *bn) {
 	
 	const bbox &tb = tn->get_bounds();
 	const bbox &bb = bn->get_bounds();
+	double h1 = tmax[2] - tmin[2], h2 = bmax[2] - bmin[2];
+	double margin = min(h1, h2) * .05;
+	
 	tb.get_vals(tmin, tmax);
 	bb.get_vals(bmin, bmax);
-	return tb.intersects(bb) && tmin[2] == bmax[2];
+	return tb.intersects(bb) && tmin[2] >= bmax[2] - margin;
 }
 
 bool standalone(const scene *scn, const vector<const sgnode*> &args) {
