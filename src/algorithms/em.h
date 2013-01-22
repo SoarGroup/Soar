@@ -13,7 +13,7 @@
 #include "scene_sig.h"
 #include "lwr.h"
 
-class LDA;
+class num_classifier;
 
 class EM : public serializable {
 public:
@@ -62,16 +62,16 @@ private:
 	
 	class classifier : public serializable {
 	public:
-		classifier() : const_vote(0), use_const(true), neg_lda(NULL) {}
+		classifier() : const_vote(0), use_const(true), neg_nc(NULL) {}
 		
 		int const_vote;
 		bool use_const;
 		clause_vec clauses;
 		std::vector<relation> false_positives, true_positives;
-		std::vector<LDA*> pos_ldas;
+		std::vector<num_classifier*> pos_nc;
 		
 		relation false_negatives, true_negatives;
-		LDA *neg_lda;
+		num_classifier *neg_nc;
 		
 		void inspect(std::ostream &os) const;
 		void inspect_detailed(std::ostream &os) const;
@@ -176,7 +176,7 @@ private:
 	void update_pair(int i, int j);
 	int classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &obj_map);
 	int vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
-	LDA *learn_numeric_classifier(const relation &p, const relation &n) const;
+	num_classifier *learn_numeric_classifier(const relation &p, const relation &n) const;
 	
 	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_dump_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
@@ -189,7 +189,7 @@ private:
 	std::vector<sig_info*> sigs;
 	std::vector<mode_info*> modes;
 	int ndata, nmodes;
-	bool use_em, use_foil, use_foil_close, use_lda, use_pruning, use_unify, learn_new_modes;
+	bool use_em, use_foil, use_foil_close, use_nc, use_pruning, use_unify, learn_new_modes;
 
 	/*
 	 Keeps track of the minimum number of new noise examples needed before we have

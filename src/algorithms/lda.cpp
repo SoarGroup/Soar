@@ -199,3 +199,47 @@ void LDA::unserialize(istream &is) {
 	unserializer(is) >> W >> projected >> J >> classes >> used_cols >> degenerate >> degenerate_class;
 }
 
+inline int sign(double x) { return x >= 0 ? 1 : -1; }
+
+sign_classifier::sign_classifier() : dim(-1), sgn(0) {}
+
+void sign_classifier::learn(mat &data, const vector<int> &classes) {
+	cvec cls2(classes.size());
+	for (int i = 0, iend = cls2.size(); i < iend; ++i) {
+		cls2(i) = (classes[i] == 0 ? -1 : 1);
+	}
+	
+	for (int i = 0, iend = data.rows(); i < iend; ++i) {
+		for (int j = 0, jend = data.cols(); j < jend; ++j) {
+			data(i, j) = sign(data(i, j));
+		}
+	}
+	
+	double best;
+	dim = -1;
+	for (int i = 0, iend = data.cols(); i < iend; ++i) {
+		double dp = cls2.dot(data.col(i));
+		if (dim == -1 || fabs(dp) > best) {
+			dim = i;
+			best = fabs(dp);
+			sgn = sign(dp);
+		}
+	}
+}
+
+int sign_classifier::classify(const rvec &x) const {
+	return max(sgn * sign(x(dim)), 0);
+}
+
+void sign_classifier::inspect(std::ostream &os) const {
+	os << "dim: " << dim << " sign: " << sgn << endl;
+}
+
+void sign_classifier::serialize(ostream &os) const {
+	serializer(os) << dim << sgn;
+}
+
+void sign_classifier::unserialize(istream &is) {
+	unserializer(is) >> dim >> sgn;
+}
+

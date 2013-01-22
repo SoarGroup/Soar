@@ -499,7 +499,7 @@ void print_first_arg(const relation &r, ostream &os) {
 
 EM::EM() 
 : ndata(0), nmodes(1), use_em(true), use_foil(true), use_foil_close(true),
-  use_lda(true), use_pruning(true), use_unify(true), learn_new_modes(true),
+  use_nc(true), use_pruning(true), use_unify(true), learn_new_modes(true),
   check_after(NEW_MODE_THRESH)
 {
 	mode_info *noise = new mode_info(true, false, data, sigs);
@@ -961,7 +961,7 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 	if (first >= args.size()) {
 		os << "modes: " << nmodes << endl;
-		os << endl << "subqueries: mode ptable timing train relations classifiers use_em use_foil use_lda" << endl;
+		os << endl << "subqueries: mode ptable timing train relations classifiers use_em use_foil use_nc" << endl;
 		return true;
 	} else if (args[first] == "ptable") {
 		table_printer t;
@@ -1001,8 +1001,8 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		return read_on_off(args, first + 1, os, use_foil);
 	} else if (args[first] == "use_foil_close") {
 		return read_on_off(args, first + 1, os, use_foil_close);
-	} else if (args[first] == "use_lda") {
-		return read_on_off(args, first + 1, os, use_lda);
+	} else if (args[first] == "use_nc") {
+		return read_on_off(args, first + 1, os, use_nc);
 	} else if (args[first] == "use_pruning") {
 		return read_on_off(args, first + 1, os, use_pruning);
 	} else if (args[first] == "use_unify") {
@@ -1577,14 +1577,14 @@ void EM::classifier::serialize(ostream &os) const {
 	serializer(os) << const_vote << use_const << clauses 
 	               << false_positives << true_positives
 	               << false_negatives << true_negatives
-	               << pos_ldas << neg_lda;
+	               << pos_nc << neg_nc;
 }
 
 void EM::classifier::unserialize(istream &is) {
 	unserializer(is) >> const_vote >> use_const >> clauses 
 	                 >> false_positives >> true_positives
 	                 >> false_negatives >> true_negatives
-	                 >> pos_ldas >> neg_lda;
+	                 >> pos_nc >> neg_nc;
 }
 
 void EM::classifier::inspect(ostream &os) const {
@@ -1596,9 +1596,9 @@ void EM::classifier::inspect(ostream &os) const {
 	table_printer t;
 	t.add_row() << "clause" << "Correct" << "Incorrect" << "NumCls?";
 	for (int i = 0, iend = clauses.size(); i < iend; ++i) {
-		t.add_row() << clauses[i] << true_positives[i].size() << false_positives[i].size() << (pos_ldas[i] != NULL);
+		t.add_row() << clauses[i] << true_positives[i].size() << false_positives[i].size() << (pos_nc[i] != NULL);
 	}
-	t.add_row() << "NEGATIVE" << true_negatives.size() << false_negatives.size() << (neg_lda != NULL);
+	t.add_row() << "NEGATIVE" << true_negatives.size() << false_negatives.size() << (neg_nc != NULL);
 	t.print(os);
 	os << endl;
 }
@@ -1623,9 +1623,9 @@ void EM::classifier::inspect_detailed(ostream &os) const {
 			print_first_arg(false_positives[k], os);
 			os << endl << endl;
 			
-			if (pos_ldas[k]) {
+			if (pos_nc[k]) {
 				os << "Numeric classifier:" << endl;
-				pos_ldas[k]->inspect(os);
+				pos_nc[k]->inspect(os);
 				os << endl << endl;
 			}
 		}
@@ -1640,9 +1640,9 @@ void EM::classifier::inspect_detailed(ostream &os) const {
 	print_first_arg(false_negatives, os);
 	os << endl << endl;
 	
-	if (neg_lda) {
+	if (neg_nc) {
 		os << "Negative numeric classifier:" << endl;
-		neg_lda->inspect(os);
+		neg_nc->inspect(os);
 		os << endl;
 	}
 }
@@ -1723,8 +1723,8 @@ void EM::update_classifier() {
 /*
  positive = class 0, negative = class 1
 */
-LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) const {
-	if (!use_lda) {
+num_classifier *EM::learn_numeric_classifier(const relation &pos, const relation &neg) const {
+	if (!use_nc) {
 		return NULL;
 	}
 	
@@ -1761,9 +1761,9 @@ LDA *EM::learn_numeric_classifier(const relation &pos, const relation &neg) cons
 		classes.push_back(1);
 	}
 	
-	LDA *lda = new LDA;
-	lda->learn(train, classes);
-	return lda;
+	num_classifier *nc = new sign_classifier;
+	nc->learn(train, classes);
+	return nc;
 }
 
 void EM::update_pair(int i, int j) {
@@ -1780,10 +1780,10 @@ void EM::update_pair(int i, int j) {
 	c.clauses.clear();
 	c.false_positives.clear();
 	c.true_positives.clear();
-	clear_and_dealloc(c.pos_ldas);
-	if (c.neg_lda) {
-		delete c.neg_lda;
-		c.neg_lda = NULL;
+	clear_and_dealloc(c.pos_nc);
+	if (c.neg_nc) {
+		delete c.neg_nc;
+		c.neg_nc = NULL;
 	}
 	
 	c.const_vote = mem_i.size() > mem_j.size() ? 0 : 1;
@@ -1811,7 +1811,7 @@ void EM::update_pair(int i, int j) {
 	} else {
 		/*
 		 Don't learn any clauses. Instead consider every member of i a false negative
-		 and every member of j a true negative, and let LDA take care of it.
+		 and every member of j a true negative, and let the numeric classifier take care of it.
 		*/
 		c.false_negatives = mem_i;
 		c.true_negatives = mem_j;
@@ -1825,15 +1825,17 @@ void EM::update_pair(int i, int j) {
 	 Also train a numeric classifier to catch misclassified members of
 	 i (false negatives for the entire clause vector).
 	*/
-	c.pos_ldas.resize(c.clauses.size(), NULL);
+	c.pos_nc.resize(c.clauses.size(), NULL);
 	for (int k = 0, kend = c.clauses.size(); k < kend; ++k) {
-		if (!c.false_positives[k].empty()) {
-			c.pos_ldas[k] = learn_numeric_classifier(c.true_positives[k], c.false_positives[k]);
+		double fp = c.false_positives[k].size(), tp = c.true_positives[k].size();
+		if (fp / (fp + tp) > .5) {
+			c.pos_nc[k] = learn_numeric_classifier(c.true_positives[k], c.false_positives[k]);
 		}
 	}
 	
-	if (!c.false_negatives.empty()) {
-		c.neg_lda = learn_numeric_classifier(c.true_negatives, c.false_negatives);
+	double fn = c.false_negatives.size(), tn = c.true_negatives.size();
+	if (fn / (fn + tn) > .5) {
+		c.neg_nc = learn_numeric_classifier(c.true_negatives, c.false_negatives);
 	}
 }
 
@@ -1847,7 +1849,7 @@ int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation
 
 	LOG(EMDBG) << "Voting on " << i << " vs " << j << endl;
 	
-	if (c.use_const || (!use_foil && !use_lda)) {
+	if (c.use_const || (!use_foil && !use_nc)) {
 		LOG(EMDBG) << "Constant vote for " << (c.const_vote == 0 ? i : j) << endl;
 		return c.const_vote;
 	}
@@ -1871,23 +1873,23 @@ int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation
 				assert(vi->second.size() == 1);
 				LOG(EMDBG) << vi->first << " = " << *vi->second.begin() << endl;
 			}
-			if (use_lda && c.pos_ldas[matched_clause]) {
-				result = c.pos_ldas[matched_clause]->classify(x);
-				LOG(EMDBG) << "LDA votes for " << (result == 0 ? i : j) << endl;
+			if (use_nc && c.pos_nc[matched_clause]) {
+				result = c.pos_nc[matched_clause]->classify(x);
+				LOG(EMDBG) << "NC votes for " << (result == 0 ? i : j) << endl;
 				return result;
 			}
-			LOG(EMDBG) << "No LDA, voting for " << i << endl;
+			LOG(EMDBG) << "No NC, voting for " << i << endl;
 			return 0;
 		}
 	}
 	// no matched clause, FOIL thinks this is a negative
-	if (use_lda && c.neg_lda) {
-		result = 1 - c.neg_lda->classify(x);
-		LOG(EMDBG) << "No matched clauses, LDA votes for " << (result == 0 ? i : j) << endl;
+	if (use_nc && c.neg_nc) {
+		result = 1 - c.neg_nc->classify(x);
+		LOG(EMDBG) << "No matched clauses, NC votes for " << (result == 0 ? i : j) << endl;
 		return result;
 	}
 	// no false negatives in training, so this must be a negative
-	LOG(EMDBG) << "No matched clauses, no LDA, vote for " << j << endl;
+	LOG(EMDBG) << "No matched clauses, no NC, vote for " << j << endl;
 	return 1;
 }
 
