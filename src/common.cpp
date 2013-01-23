@@ -22,15 +22,25 @@ const char *log_type_names[NUM_LOG_TYPES] = {
 };
 
 void split(const string &s, const string &delim, vector<string> &fields) {
-	int start, end = 0;
-	while (end < s.size()) {
-		start = s.find_first_not_of(delim, end);
-		if (start == string::npos) {
+	int start = 0, end = 0, sz = s.size();
+	while (end < sz) {
+		if (delim.empty()) {
+			for (start = end + 1; start < sz && isspace(s[start]); ++start)
+				;
+		} else {
+			start = s.find_first_not_of(delim, end);
+		}
+		if (start == string::npos || start == sz) {
 			return;
 		}
-		end = s.find_first_of(delim, start);
-		if (end == string::npos) {
-			end = s.size();
+		if (delim.empty()) {
+			for (end = start + 1; end < sz && !isspace(s[end]); ++end)
+				;
+		} else {
+			end = s.find_first_of(delim, start);
+			if (end == string::npos) {
+				end = sz;
+			}
 		}
 		fields.push_back(s.substr(start, end - start));
 	}

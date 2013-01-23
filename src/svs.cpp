@@ -614,7 +614,7 @@ int svs::parse_output_spec(const string &s) {
 	output_dim_spec sp;
 	char *end;
 	
-	split(s, " \t\n", fields);
+	split(s, "", fields);
 	assert(fields[0] == "o");
 	if ((fields.size() - 1) % 5 != 0) {
 		return fields.size();

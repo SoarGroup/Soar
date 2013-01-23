@@ -1173,7 +1173,7 @@ public:
 			error = "eof";
 			return;
 		}
-		split(line, " \t", fields);
+		split(line, "", fields);
 		if (fields.size() != output.size()) {
 			error = "incorrect number of output fields";
 			return;
