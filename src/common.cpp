@@ -25,7 +25,7 @@ void split(const string &s, const string &delim, vector<string> &fields) {
 	int start = 0, end = 0, sz = s.size();
 	while (end < sz) {
 		if (delim.empty()) {
-			for (start = end + 1; start < sz && isspace(s[start]); ++start)
+			for (start = end; start < sz && isspace(s[start]); ++start)
 				;
 		} else {
 			start = s.find_first_not_of(delim, end);

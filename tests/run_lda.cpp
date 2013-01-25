@@ -13,18 +13,24 @@
 
 using namespace std;
 
+num_classifier *make_classifier();
 void read_data(const char *path, mat &X, vector<int> &classes);
 void run_print(int first, int argc, char *argv[]);
 void run_test_set(int first, int argc, char *argv[]);
 void run_cross_validation(int first, int argc, char *argv[]);
+void run_serialize(int first, int argc, char *argv[]);
 
 bool input_serialized = false;
+char *classifier_type = NULL;
 
 int main(int argc, char *argv[]) {
 	int i = 1;
 	
-	if (argc < 2) {
-		cerr << "specify operation: print, test_set, cv" << endl;
+	if (argc < 3) {
+		cerr << "usage: " << argv[0] << " [options] [type] [operation]" << endl;
+		cerr << "options = -s (read serialized data)" << endl;
+		cerr << "type = lda | sign | dtree" << endl;
+		cerr << "operation = print, test_set, cv, serialize" << endl;
 		exit(1);
 	}
 	
@@ -41,18 +47,34 @@ int main(int argc, char *argv[]) {
 		++i;
 	}
 	
+	classifier_type = argv[i++];
+	
 	if (strcmp(argv[i], "print") == 0) {
 		run_print(++i, argc, argv);
 	} else if (strcmp(argv[i], "test_set") == 0) {
 		run_test_set(++i, argc, argv);
 	} else if (strcmp(argv[i], "cv") == 0) {
 		run_cross_validation(++i, argc, argv);
+	} else if (strcmp(argv[i], "serialize") == 0) {
+		run_serialize(++i, argc, argv);
 	} else {
 		cerr << "no such operation" << endl;
 		return 1;
 	}
 	
 	return 0;
+}
+
+num_classifier *make_classifier() {
+	if (strcmp(classifier_type, "lda") == 0) {
+		return new LDA;
+	} else if (strcmp(classifier_type, "sign") == 0) {
+		return new sign_classifier;
+	} else if (strcmp(classifier_type, "dtree") == 0) {
+		return new dtree_classifier;
+	}
+	cerr << "no such classifier type" << endl;
+	return NULL;
 }
 
 void read_data(const char *path, mat &X, vector<int> &classes) {
@@ -73,7 +95,7 @@ void read_data(const char *path, mat &X, vector<int> &classes) {
 	
 	while(getline(input, line)) {
 		fields.clear();
-		split(line, " ", fields);
+		split(line, "", fields);
 		if (fields.empty()) {
 			continue;
 		}
@@ -81,7 +103,7 @@ void read_data(const char *path, mat &X, vector<int> &classes) {
 		grow(data);
 		for (int i = 0; i < fields.size(); ++i) {
 			if (!parse_double(fields[i], x)) {
-				cerr << "non number " << fields[i] << endl;;
+				cerr << "non number \"" << fields[i] << "\"" << endl;;
 				exit(1);
 			}
 			data.back().push_back(x);
@@ -100,7 +122,7 @@ void read_data(const char *path, mat &X, vector<int> &classes) {
 void run_print(int first, int argc, char *argv[]) {
 	mat data;
 	vector<int> classes;
-	LDA lda;
+	num_classifier *cls = make_classifier();
 	
 	if (first >= argc) {
 		cerr << "specify training file" << endl;
@@ -108,8 +130,9 @@ void run_print(int first, int argc, char *argv[]) {
 	}
 	
 	read_data(argv[first], data, classes);
-	lda.learn(data, classes);
-	lda.inspect(cout);
+	cls->learn(data, classes);
+	cls->inspect(cout);
+	delete cls;
 }
 
 void run_test_set(int first, int argc, char *argv[]) {
@@ -126,34 +149,17 @@ void run_test_set(int first, int argc, char *argv[]) {
 	read_data(argv[first], Xtrain, train_classes);
 	read_data(argv[first+1], Xtest, test_classes);
 	
-	LDA lda;
-	lda.learn(Xtrain, train_classes);
-	
-	rvec p;
-	
-	cout << "Projected Training: " << endl;
-	for (int i = 0; i < Xtrain.rows(); ++i) {
-		if (lda.project(Xtrain.row(i), p)) {
-			output_rvec(cout, p, " ") << " " << train_classes[i] << endl;;
-		} else {
-			cout << "projection failed" << endl;
-		}
-	}
+	num_classifier *cls = make_classifier();
+	cls->learn(Xtrain, train_classes);
 	
 	int correct = 0;
-	cout << endl << endl << "Projected Testing: " << endl;
 	for (int i = 0; i < Xtest.rows(); ++i) {
-		int pred = lda.classify(Xtest.row(i));
-		if (lda.project(Xtest.row(i), p)) {
-			output_rvec(cout, p, " ") << " " << pred << " " << test_classes[i] << endl;
-		} else {
-			cout << "projection failed" << endl;
-		}
+		int pred = cls->classify(Xtest.row(i));
 		if (pred == test_classes[i])
 			++correct;
 	}
-	
-	cout << correct << " out of " << Xtest.rows() << endl;
+	cout << correct << " correct out of " << Xtest.rows() << endl;
+	delete cls;
 }
 
 void run_cross_validation(int first, int argc, char *argv[]) {
@@ -207,17 +213,47 @@ void run_cross_validation(int first, int argc, char *argv[]) {
 			}
 		}
 
-		LDA lda;
-		lda.learn(train, train_classes);
+		num_classifier *cls = make_classifier();
+		cls->learn(train, train_classes);
 		
 		for (int j = 0; j < k; ++j) {
-			int a = lda.classify(data.row(reorder[start + j]));
+			int a = cls->classify(data.row(reorder[start + j]));
 			if (a == classes[reorder[start + j]]) {
 				correct++;
 			}
 		}
+		delete cls;
 		start += k;
 	}
 	
 	cout << correct << " correct out of " << ndata << endl;
+}
+
+void run_serialize(int first, int argc, char *argv[]) {
+	mat data;
+	vector<int> classes;
+	num_classifier *cls = make_classifier();
+	
+	if (first >= argc) {
+		cerr << "specify training file" << endl;
+		exit(1);
+	}
+	
+	if (first + 1 >= argc) {
+		cerr << "specify output file" << endl;
+		exit(1);
+	}
+	
+	read_data(argv[first], data, classes);
+	cls->learn(data, classes);
+	
+	ofstream out(argv[first + 1]);
+	cls->serialize(out);
+	out.close();
+	
+	ifstream input(argv[first+1]);
+	cls->unserialize(input);
+	cls->inspect(cout);
+	
+	delete cls;
 }

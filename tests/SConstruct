@@ -1,17 +1,18 @@
+import os
+
 def srcp(p):
 	return '../src/' + p
 
 def srca(p):
 	return '../src/algorithms/' + p
 
-inc = [srcp('.'), srca('.'), '../eigen' ]
-
 env = Environment(
-	CPPPATH = inc,
-	#CPPFLAGS = ['-O3', '-Wno-enum-compare', '-include', 'eigen_precomp.h'],
+	CPPPATH = os.environ.get('CPATH','').split(':') + [srcp('.'), srca('.'), '../eigen' ],
+	#CPPFLAGS = ['-O3', '-Wno-enum-compare'],
 	CPPFLAGS = ['-g', '-Wno-enum-compare'],
 	LINKFLAGS = ['-g'],
-	LIBS = [ 'rt', 'ode' ],
+	LIBPATH = os.environ.get('LD_LIBRARY_PATH', '').split(':'),
+	LIBS = [ 'rt', 'ode', 'opencv_core', 'opencv_ml' ],
 )
 
 srcs = [

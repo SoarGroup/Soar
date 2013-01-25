@@ -1,5 +1,8 @@
 #include <vector>
 #include <map>
+#include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/ml/ml.hpp>
 #include "lda.h"
 #include "nn.h"
 #include "common.h"
@@ -7,6 +10,61 @@
 
 using namespace std;
 using namespace Eigen;
+
+class nc_cls : public serializable {
+public:
+	virtual ~nc_cls() {}
+	virtual void learn(mat &data, const std::vector<int> &classes) = 0;
+	virtual int classify(const rvec &x) const = 0;
+	virtual void inspect(std::ostream &os) const = 0;
+	virtual void serialize(std::ostream &os) const = 0;
+	virtual void unserialize(std::istream &is) = 0;
+};
+
+class LDA : public nc_cls {
+public:
+	LDA();
+	
+	void learn(mat &data, const std::vector<int> &classes);
+	int classify(const rvec &x) const;
+	bool project(const rvec &x, rvec &p) const;
+	void inspect(std::ostream &os) const;
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+	
+private:
+	mat W, projected;
+	rvec J;
+	std::vector<int> classes, used_cols;
+	bool degenerate;
+	int degenerate_class;
+};
+
+class sign_classifier : public nc_cls {
+public:
+	sign_classifier();
+	void learn(mat &data, const std::vector<int> &classes);
+	int classify(const rvec &x) const;
+	void inspect(std::ostream &os) const;
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+
+private:
+	int dim, sgn;
+};
+
+class dtree_classifier : public nc_cls {
+public:
+	dtree_classifier();
+	void learn(mat &data, const std::vector<int> &classes);
+	int classify(const rvec &x) const;
+	void inspect(std::ostream &os) const;
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+
+private:
+	CvDTree *tree;
+};
 
 bool hasnan(const_mat_view m) {
 	return (m.array() != m.array()).any();
@@ -41,6 +99,94 @@ int largest_class(const vector<int> &c) {
 		}
 	}
 	return largest;
+}
+
+int get_num_classifier_type(const std::string &t) {
+	if (t == "dtree") {
+		return NC_DTREE;
+	} else if (t == "lda") {
+		return NC_LDA;
+	} else if (t == "sign") {
+		return NC_SIGN;
+	}
+	return NC_NONE;
+}
+
+string get_num_classifier_name(int t) {
+	switch (t) {
+	case NC_DTREE:
+		return "dtree";
+	case NC_LDA:
+		return "lda";
+	case NC_SIGN:
+		return "sign";
+	}
+	return "";
+}
+
+num_classifier::num_classifier() : nc_type(NC_NONE), cls(NULL) {}
+
+num_classifier::num_classifier(int t) : cls(NULL) {
+	set_type(t);
+}
+
+num_classifier::~num_classifier() {
+	delete cls;
+}
+
+void num_classifier::set_type(int t) {
+	if (cls) {
+		delete cls;
+	}
+	nc_type = t;
+	switch (nc_type) {
+	case NC_DTREE:
+		cls = new dtree_classifier;
+		break;
+	case NC_LDA:
+		cls = new LDA;
+		break;
+	case NC_SIGN:
+		cls = new sign_classifier;
+		break;
+	default:
+		assert(false);
+	}
+}
+
+void num_classifier::learn(mat &data, const vector<int> &classes) {
+	cls->learn(data, classes);
+}
+
+int num_classifier::classify(const rvec &x) const {
+	return cls->classify(x);
+}
+
+void num_classifier::inspect(ostream &os) const {
+	cls->inspect(os);
+}
+
+void num_classifier::serialize(ostream &os) const {
+	serializer(os) << nc_type;
+	cls->serialize(os);
+}
+
+void num_classifier::unserialize(istream &is) {
+	unserializer(is) >> nc_type;
+	set_type(nc_type);
+	switch (nc_type) {
+	case NC_DTREE:
+		dynamic_cast<dtree_classifier*>(cls)->unserialize(is);
+		break;
+	case NC_LDA:
+		dynamic_cast<LDA*>(cls)->unserialize(is);
+		break;
+	case NC_SIGN:
+		dynamic_cast<sign_classifier*>(cls)->unserialize(is);
+		break;
+	default:
+		assert(false);
+	}
 }
 
 LDA::LDA() : degenerate(false), degenerate_class(9090909)
@@ -243,3 +389,100 @@ void sign_classifier::unserialize(istream &is) {
 	unserializer(is) >> dim >> sgn;
 }
 
+dtree_classifier::dtree_classifier() {
+	tree = new CvDTree();
+}
+
+void dtree_classifier::learn(mat &data, const vector<int> &classes) {
+	static cv::Mat empty;
+	static CvDTreeParams params;
+	params.cv_folds = 10;
+	params.min_sample_count = 10;
+	
+	cv::Mat cvdata(data.rows(), data.cols(), CV_64F, data.data()), cvfloatdata(data.rows(), data.cols(), CV_32F);
+	cv::Mat cvclasses(classes);
+	
+	cvdata.convertTo(cvfloatdata, CV_32F);
+	tree->train(cvfloatdata, CV_ROW_SAMPLE, cvclasses, empty, empty, empty, empty, params);
+}
+
+int dtree_classifier::classify(const rvec &x) const {
+	cv::Mat cvx(1, x.size(), CV_64F, const_cast<double*>(x.data()));
+	cv::Mat cvfloatx(1, x.size(), CV_32F);
+	
+	cvx.convertTo(cvfloatx, CV_32F);
+	return tree->predict(cvfloatx)->value;
+}
+
+void print_tree(const CvDTreeNode *n, ostream &os) {
+	const CvDTreeSplit *s = n->split;
+	for (int i = 0; i < n->depth; ++i) {
+		os << ' ';
+	}
+	os << s->var_idx << " <  " << s->ord.c;
+	if (!n->left->left && !n->left->right) {
+		os << " : " << n->left->value << endl;
+	} else {
+		os << endl;
+		print_tree(n->left, os);
+	}
+	for (int i = 0; i < n->depth; ++i) {
+		os << ' ';
+	}
+	os << s->var_idx << " >= " << s->ord.c;
+	if (!n->right->left && !n->right->right) {
+		os << " : " << n->right->value << endl;
+	} else {
+		os << endl;
+		print_tree(n->right, os);
+	}
+}
+
+void dtree_classifier::inspect(ostream &os) const {
+	if (!tree->get_root()->split) {
+		os << "constant: " << tree->get_root()->value << endl;
+	} else {
+		print_tree(tree->get_root(), os);
+	}
+}
+
+void dtree_classifier::serialize(ostream &os) const {
+	char temp[] = "dtree_serialize_XXXXXX";
+	string line;
+	
+	mktemp(temp);
+	assert(*temp != '\0');
+	tree->save(temp);
+	ifstream input(temp);
+	
+	os << "BEGIN_DTREE_CLASSIFIER" << endl;
+	while (getline(input, line)) {
+		os << line << endl;
+	}
+	os << endl << "END_DTREE_CLASSIFIER" << endl;
+	unlink(temp);
+}
+
+void dtree_classifier::unserialize(std::istream &is) {
+	char temp[] = "dtree_unserialize_XXXXXX";
+	string line;
+	
+	mktemp(temp);
+	assert(*temp != '\0');
+	ofstream out(temp);
+	
+	while (getline(is, line) && line.empty())
+		;
+	assert(line == "BEGIN_DTREE_CLASSIFIER");
+	while (getline(is, line)) {
+		if (line == "END_DTREE_CLASSIFIER") {
+			break;
+		}
+		out << line << endl;
+	}
+	assert(line == "END_DTREE_CLASSIFIER");
+	out.close();
+	
+	tree->load(temp);
+	unlink(temp);
+}

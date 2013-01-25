@@ -500,7 +500,7 @@ void print_first_arg(const relation &r, ostream &os) {
 EM::EM() 
 : ndata(0), nmodes(1), use_em(true), use_foil(true), use_foil_close(true),
   use_nc(true), use_pruning(true), use_unify(true), learn_new_modes(true),
-  check_after(NEW_MODE_THRESH)
+  check_after(NEW_MODE_THRESH), nc_type(NC_DTREE)
 {
 	mode_info *noise = new mode_info(true, false, data, sigs);
 	noise->classifiers.resize(1, NULL);
@@ -1066,6 +1066,19 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		return true;
 	} else if (args[first] == "add_mode") {
 		return cli_add_mode(first + 1, args, os);
+	} else if (args[first] == "nc_type") {
+		if (first + 1 >= args.size()) {
+			os << get_num_classifier_name(nc_type) << endl;
+			return true;
+		}
+		int t = get_num_classifier_type(args[first + 1]);
+		if (t == NC_NONE) {
+			os << "no such numeric classifier";
+			return false;
+		}
+		nc_type = t;
+		os << "future numeric classifiers will be learned using " << args[first+1] << endl;
+		return true;
 	}
 
 	return false;
@@ -1291,14 +1304,14 @@ bool EM::mode_info::cli_inspect(int first, const vector<string> &args, ostream &
 }
 
 void EM::serialize(ostream &os) const {
-	serializer(os) << ndata << nmodes << data << sigs << rel_tbl << context_rel_tbl << noise_by_sig;
+	serializer(os) << ndata << nmodes << data << sigs << rel_tbl << context_rel_tbl << noise_by_sig << nc_type;
 	for (int i = 0; i < nmodes; ++i) {
 		modes[i]->serialize(os);
 	}
 }
 
 void EM::unserialize(istream &is) {
-	unserializer(is) >> ndata >> nmodes >> data >> sigs >> rel_tbl >> context_rel_tbl >> noise_by_sig;
+	unserializer(is) >> ndata >> nmodes >> data >> sigs >> rel_tbl >> context_rel_tbl >> noise_by_sig >> nc_type;
 	assert(data.size() == ndata);
 	
 	delete modes[0];
@@ -1761,7 +1774,7 @@ num_classifier *EM::learn_numeric_classifier(const relation &pos, const relation
 		classes.push_back(1);
 	}
 	
-	num_classifier *nc = new sign_classifier;
+	num_classifier *nc = new num_classifier(nc_type);
 	nc->learn(train, classes);
 	return nc;
 }

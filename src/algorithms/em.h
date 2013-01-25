@@ -12,8 +12,7 @@
 #include "mat.h"
 #include "scene_sig.h"
 #include "lwr.h"
-
-class num_classifier;
+#include "lda.h"
 
 class EM : public serializable {
 public:
@@ -199,7 +198,9 @@ private:
 	
 	// noise binned by signature
 	std::map<int, std::set<int> > noise_by_sig;
-		
+	
+	int nc_type;
+	
 	mutable timer_set timers;
 };
 
