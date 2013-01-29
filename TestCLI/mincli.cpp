@@ -100,6 +100,8 @@ void execcmd(const string &c) {
 	
 	if (c == "exit") {
 		agent->ExecuteCommandLine("halt");
+		kernel->Shutdown();
+		delete kernel;
 		exit(0);
 	}
 	if (isupper(c[1])) {
@@ -153,6 +155,8 @@ void sighandler(int sig) {
 
 string exit_handler(smlRhsEventId id, void *userdata, Agent *agent, char const *fname, char const *args) {
 	int code = atoi(args);
+	kernel->Shutdown();
+	delete kernel;
 	exit(code);
 }
 
