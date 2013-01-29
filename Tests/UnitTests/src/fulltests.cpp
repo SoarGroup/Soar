@@ -76,9 +76,9 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testMatchTimeInterrupt ); // bug 873
 	CPPUNIT_TEST( testNegatedConjunctiveTestReorder );
 	CPPUNIT_TEST( testNegatedConjunctiveTestUnbound ); // bug 517
-	CPPUNIT_TEST( testCommandToFile ); 
-	CPPUNIT_TEST( testConvertIdentifier ); 
-	CPPUNIT_TEST( testOutputLinkRemovalOrdering ); 
+	CPPUNIT_TEST( testCommandToFile );
+	CPPUNIT_TEST( testConvertIdentifier );
+	CPPUNIT_TEST( testOutputLinkRemovalOrdering );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -205,7 +205,7 @@ void FullTests::runTest()
 {
 	// create kernel and agent
 	createSoar();
-	
+
 	// run test
 	(this->*m_pTestBody)();
 
@@ -245,7 +245,7 @@ void FullTests::createSoar()
 
 	bool creationHandlerReceived( false );
 	int agentCreationCallback = m_pKernel->RegisterForAgentEvent( sml::smlEVENT_AFTER_AGENT_CREATED, Handlers::MyCreationHandler, &creationHandlerReceived ) ;
-	
+
 	// Report the number of agents (always 0 unless this is a remote connection to a CLI or some such)
 	CPPUNIT_ASSERT( m_pKernel->GetNumberAgents() == 0 );
 
@@ -297,14 +297,14 @@ void FullTests::destroySoar()
 		// ClientSML thread dies inelegantly here spewing forth error messages
 		// about sockets/pipes not being shut down correctly.
 		std::string shutdownResponse = m_pKernel->SendClientMessage(0, "test-listener", "shutdown") ;
-		CPPUNIT_ASSERT( shutdownResponse == "ok" );	
+		CPPUNIT_ASSERT( shutdownResponse == "ok" );
 
 		CPPUNIT_ASSERT_MESSAGE( "Listener side kernel shutdown failed to fire smlEVENT_BEFORE_SHUTDOWN", shutdownEvent.WaitForEvent(5, 0) );
 
 		// Note, in the remote case, this does not fire smlEVENT_BEFORE_SHUTDOWN
 		// the listener side shutdown does trigger the event when it is deleted, see simplelistener.cpp
 		m_pKernel->Shutdown() ;
-		
+
 	} else {
 		bool shutdownHandlerReceived( false );
 		m_pKernel->RegisterForSystemEvent( sml::smlEVENT_BEFORE_SHUTDOWN, Handlers::MyBoolShutdownHandler, &shutdownHandlerReceived ) ;
@@ -342,8 +342,8 @@ int FullTests::spawnListener()
    si.cb = sizeof(si);
    ZeroMemory( &pi, sizeof(pi) );
 
-   // Start the child process. 
-   BOOL success = CreateProcess( 
+   // Start the child process.
+   BOOL success = CreateProcess(
       "UnitTests.exe",
       "UnitTests.exe --listener", // Command line
       NULL,           // Process handle not inheritable
@@ -351,14 +351,14 @@ int FullTests::spawnListener()
       FALSE,          // Set handle inheritance to FALSE
       0,              // No creation flags
       NULL,           // Use parent's environment block
-      NULL,           // Use parent's starting directory 
+      NULL,           // Use parent's starting directory
       &si,            // Pointer to STARTUPINFO structure
       &pi );          // Pointer to PROCESS_INFORMATION structure
 
 	std::stringstream errorMessage;
 	errorMessage << "CreateProcess error code: " << GetLastError();
 	CPPUNIT_ASSERT_MESSAGE( errorMessage.str().c_str(), success );
-	
+
 	targetPid = pi.dwProcessId;
 
 #else // _WIN32
@@ -389,7 +389,7 @@ void FullTests::cleanUpListener()
 	// Wait until child process exits.
     WaitForSingleObject( pi.hProcess, INFINITE );
 
-    // Close process and thread handles. 
+    // Close process and thread handles.
     CloseHandle( pi.hProcess );
     CloseHandle( pi.hThread );
 #else // _WIN32
@@ -402,7 +402,7 @@ void FullTests::cleanUpListener()
 	else
 	{
 		CPPUNIT_ASSERT_MESSAGE( "listener killed by signal", WIFSIGNALED( status ) );
-		
+
 		// not sure why signal 0 comes up but seems to fix things on Mac OS
 		if ( !WIFSTOPPED( status ) && ( WSTOPSIG(status) != 0 ) )
 		{
@@ -464,7 +464,7 @@ TEST_DEFINITION( testRHSHandler )
 	bool rhsFunctionHandlerReceived( false );
 
 	// Record a RHS function
-	int callback_rhs1 = m_pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived ) ; 
+	int callback_rhs1 = m_pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived ) ;
 	int callback_rhs_dup = m_pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived ) ;
 	//m_pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::DebugPrintEventHandler, 0) ;
 
@@ -491,7 +491,7 @@ TEST_DEFINITION( testRHSHandler )
 	CPPUNIT_ASSERT( m_pKernel->RemoveRhsFunction( callback_rhs1 ) );
 
 	// Re-add it without the bool that is getting popped off the stack
-	CPPUNIT_ASSERT( m_pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, 0 ) ); 
+	CPPUNIT_ASSERT( m_pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, 0 ) );
 
 	CPPUNIT_ASSERT( pSquare->DestroyWME(  ) );
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
@@ -587,17 +587,17 @@ TEST_DEFINITION( testWMEs )
 
 	m_pAgent->InitSoar();
 	CPPUNIT_ASSERT_MESSAGE( "init-soar", m_pAgent->GetLastCommandLineResult() );
-	
+
 	// Test the blink option
 	m_pAgent->SetBlinkIfNoChange( false ) ;
 
 	int64_t timeTag1 = pWME3->GetTimeTag() ;
 	m_pAgent->Update( pWME3, 50.5 ) ;	// Should not change the wme, so timetag should be the same
-	
+
 	int64_t timeTag2 = pWME3->GetTimeTag() ;
 	m_pAgent->SetBlinkIfNoChange( true ) ;	// Back to the default
 	m_pAgent->Update( pWME3, 50.5 ) ;	// Should change the wme, so timetag should be different
-	
+
 	int64_t timeTag3 = pWME3->GetTimeTag() ;
 
 	CPPUNIT_ASSERT_MESSAGE( "Error in handling of SetBlinkIfNoChange flag", timeTag1 == timeTag2 );
@@ -640,7 +640,7 @@ TEST_DEFINITION( testXML )
 	// Test calling CommandLineXML.
 	sml::ClientAnalyzedXML xml2 ;
 	CPPUNIT_ASSERT( m_pKernel->ExecuteCommandLineXML( "print -i --depth 3 s1", m_pAgent->GetAgentName(), &xml2 ) );
-	
+
 	char* xmlString = xml2.GenerateXMLString( true );
 	CPPUNIT_ASSERT( xmlString );
 
@@ -760,7 +760,7 @@ TEST_DEFINITION( testAgent )
 
 	CPPUNIT_ASSERT( m_pAgent->UnregisterForRunEvent(callbackPhase) );
 
-	// By this point the static variable ClientXMLStorage should have been filled in 
+	// By this point the static variable ClientXMLStorage should have been filled in
 	// and it should be valid, even though the event handler for MyXMLEventHandler has completed.
 	CPPUNIT_ASSERT_MESSAGE( "Error receiving XML trace events", clientXMLStorage != NULL );
 
@@ -856,7 +856,7 @@ TEST_DEFINITION( testAgent )
 	// Reset the agent and repeat the process to check whether init-soar works.
 	m_pAgent->InitSoar();
 	CPPUNIT_ASSERT_MESSAGE( "init-soar", m_pAgent->GetLastCommandLineResult() );
-	
+
 	m_pAgent->RunSelfTilOutput() ;
 	CPPUNIT_ASSERT_MESSAGE( "RunSelfTilOutput", m_pAgent->GetLastCommandLineResult() );
 
@@ -894,14 +894,14 @@ TEST_DEFINITION( testAgent )
 	sml::Identifier* pCommand1 = m_pAgent->GetCommand(0) ;
 	sml::Identifier* pCommand2 = m_pAgent->GetCommand(1) ;
 	sml::Identifier* pCommand3 = m_pAgent->GetCommand(2) ;
-	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "move" 
-		|| std::string( pCommand2->GetCommandName() ) == "move"  
+	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "move"
+		|| std::string( pCommand2->GetCommandName() ) == "move"
 		|| std::string( pCommand3->GetCommandName() ) == "move" );
-	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "alternative" 
-		|| std::string( pCommand2->GetCommandName() ) == "alternative"  
+	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "alternative"
+		|| std::string( pCommand2->GetCommandName() ) == "alternative"
 		|| std::string( pCommand3->GetCommandName() ) == "alternative" );
-	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "A" 
-		|| std::string( pCommand2->GetCommandName() ) == "A"  
+	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "A"
+		|| std::string( pCommand2->GetCommandName() ) == "A"
 		|| std::string( pCommand3->GetCommandName() ) == "A" );
 
 	if ( m_Options.test( VERBOSE ) ) std::cout << "Marking command as completed." << std::endl ;
@@ -1064,7 +1064,7 @@ TEST_DEFINITION( testSimpleCopy )
 	sml::StringElement* pNewest = pNewestWME->ConvertToStringElement();
 	CPPUNIT_ASSERT( pNewest );
 	CPPUNIT_ASSERT( std::string( pNewest->GetValue() ) == "ye s" );
-	
+
 	int changes = m_pAgent->GetNumberOutputLinkChanges() ;
 
 	//std::cout << m_pAgent->ExecuteCommandLine("print i3 -d 100 -i --tree");
@@ -1147,7 +1147,7 @@ TEST_DEFINITION( testOSupportCopyDestroy )
 	CPPUNIT_ASSERT( pToy );
 
 	bool badCopyExists( false );
-	m_pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ; 
+	m_pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ;
 
 	m_pAgent->RunSelf(1);
 
@@ -1177,7 +1177,7 @@ TEST_DEFINITION( testOSupportCopyDestroyCircularParent )
 	CPPUNIT_ASSERT( pToy );
 
 	bool badCopyExists( false );
-	m_pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ; 
+	m_pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ;
 
 	m_pAgent->RunSelf(1);
 
@@ -1209,7 +1209,7 @@ TEST_DEFINITION( testOSupportCopyDestroyCircular )
 	CPPUNIT_ASSERT( pToy );
 
 	bool badCopyExists( false );
-	m_pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ; 
+	m_pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ;
 
 	m_pAgent->RunSelf(1);
 
@@ -1274,9 +1274,9 @@ TEST_DEFINITION( testRunningAgentCreation )
 	//std::cout << std::endl;
 	//std::cout << "count: " << data.count;
 	// FIXME: in a perfect world, this is 10 not 12 but since the run isn't forever, the newly created agent runs 10.
-	CPPUNIT_ASSERT( data.count == 12 );	
+	CPPUNIT_ASSERT( data.count == 12 );
 	CPPUNIT_ASSERT( data.pOnTheFly );
-	
+
 	sml::ClientAnalyzedXML response1;
 	m_pAgent->ExecuteCommandLineXML("stats", &response1);
 	sml::ClientAnalyzedXML response2;
@@ -1308,7 +1308,7 @@ void FullTests::testShutdownHandlerShutdown()
 	m_pKernel->RegisterForSystemEvent( sml::smlEVENT_BEFORE_SHUTDOWN, Handlers::MyShutdownTestShutdownHandler, &shutdownEvent ) ;
 
 	std::string shutdownResponse = m_pKernel->SendClientMessage(0, "test-listener", "shutdown") ;
-	CPPUNIT_ASSERT( shutdownResponse == "ok" );	
+	CPPUNIT_ASSERT( shutdownResponse == "ok" );
 
 	CPPUNIT_ASSERT_MESSAGE( "Listener side kernel shutdown failed to fire smlEVENT_BEFORE_SHUTDOWN", shutdownEvent.WaitForEvent(5, 0) );
 
@@ -1605,14 +1605,14 @@ TEST_DEFINITION( testLearn )
 
 TEST_DEFINITION( testPreferenceSemantics )
 {
-	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
+	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ;
 	loadProductions( "test_agents/pref-semantics-test.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
 
 TEST_DEFINITION( testMatchTimeInterrupt )
 {
-	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
+	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ;
 	loadProductions( "test_agents/testMatchTimeInterrupt.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
@@ -1660,7 +1660,7 @@ TEST_DEFINITION( testCommandToFile )
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
 	const char* result = m_pAgent->ExecuteCommandLine( "source testCommandToFile-output.soar" );
 	CPPUNIT_ASSERT(result);
-	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\n");
+	const std::string resultString("Sourcing testCommandToFile-output.soar.\n#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\n");
 	CPPUNIT_ASSERT(result == resultString);
 	remove("testCommandToFile-output.soar");
 }
@@ -1681,7 +1681,7 @@ TEST_DEFINITION( testConvertIdentifier )
 	m_pKernel->RunAllAgents(2);
 
 	sml::WMElement* pBarWme = pOutputLink->FindByAttribute("bar", 0);
-	 
+
 	pConvertedId = m_pAgent->ConvertIdentifier(pFoo->GetValueAsString());
 	CPPUNIT_ASSERT(pConvertedId);
 	std::string convertedId(pConvertedId);
