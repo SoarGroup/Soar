@@ -9,7 +9,10 @@
 #include "sml_Client.h"
 #include "sml_Connection.h"
 
-const char *source_path = "test_agents/TestSoarPerformance.soar";
+#define QUIET_MODE
+#define BRIEF_MODE
+#define DEFAULT_TRIALS 3
+#define DEFAULT_AGENT "test_agents/TestSoarPerformance.soar";
 
 using namespace std;
 using namespace sml;
@@ -57,8 +60,12 @@ public:
 		cout << " ";
 		cout << resetiosflags(ios::left) << setiosflags(ios::right);
 		cout << setw(10) << "Avg";
+#ifndef BRIEF_MODE
 		cout << setw(10) << "Low";
 		cout << setw(10) << "High" << endl;
+#else
+		cout << endl;
+#endif
 		PrintResultsHelper("OS Real", GetAverage(realtimes), GetLow(realtimes), GetHigh(realtimes));
 		PrintResultsHelper("OS Proc", GetAverage(proctimes), GetLow(proctimes), GetHigh(proctimes));
 		PrintResultsHelper("Soar Kernel", GetAverage(kerneltimes), GetLow(kerneltimes), GetHigh(kerneltimes));
@@ -73,10 +80,12 @@ public:
 		cout << resetiosflags(ios::left);
 		cout << setiosflags(ios::right);
 		cout << setw(10) << setiosflags(ios::fixed) << setprecision(3) << avg;
+#ifndef BRIEF_MODE
 		cout << setw(10) << setiosflags(ios::fixed) << setprecision(3) << low;
 		cout << setw(10) << setiosflags(ios::fixed) << setprecision(3) << high;
+#endif
 		cout << endl;
-	}
+		}
 };
 
 void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage) {
@@ -85,20 +94,24 @@ void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, cha
 
 void PrintTest1Description(int numTrials) {
 	cout << endl;
+#ifndef BRIEF_MODE
 	cout << "Test1 creates a kernel, runs the test suite once, and destroys the kernel." << endl;
 	cout << "This is repeated " << numTrials << " times to measure average performance." << endl;
 	cout << "Importantly, since the kernel is destroyed between each run, memory needs to be reallocated each time." << endl;
+#endif
 }
 void Test1(int numTrials, StatsTracker* pSt, const vector<string> &commands) {
 
 	for(int i = 0; i < numTrials; i++) {
+#ifndef BRIEF_MODE
 		cout << endl << "***** Trial " << (i+1) << " of " << numTrials << " Begin *****" << endl;
-
+#endif
 		Kernel* kernel = Kernel::CreateKernelInNewThread();
 		Agent* agent = kernel->CreateAgent("Soar1");
 
+#ifndef QUIET_MODE
 		agent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, NULL);
-
+#endif
 		agent->SetOutputLinkChangeTracking(false);
 
 		for(int j = 0; j < commands.size(); ++j) {
@@ -121,11 +134,11 @@ void Test1(int numTrials, StatsTracker* pSt, const vector<string> &commands) {
 		kernel->Shutdown();
 		delete kernel;
 
-		cout << endl << "***** Trial " << (i+1) << " of " << numTrials << " Complete *****" << endl;
+		cout << "***** Trial " << (i+1) << " of " << numTrials << " Complete *****" << endl;
 	}
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 
 #ifdef _DEBUG
 	// When we have a memory leak, set this variable to
@@ -137,40 +150,55 @@ int main() {
 
 	set_working_directory_to_executable_path();
 
+	const char *agentname ;
+	int numTrials;
+
+	if (argc == 1) {
+		agentname = DEFAULT_AGENT;
+		numTrials =  DEFAULT_TRIALS;
+	} else if (argc == 2) {
+		agentname = argv[1];
+		numTrials =  DEFAULT_TRIALS;
+	} else if (argc == 3) {
+		agentname = argv[1];
+		stringstream(argv[2]) >> numTrials;
+	} else {
+		cout << "usage: " << argv[0] << " [default | <agent name>] [<numtrials>]" << endl;
+		return 1;
+	}
+	if (!strcmp(agentname,"default"))
+		agentname = DEFAULT_AGENT;
+
+	cout << "========================================\n         TestSoarPerformance\n========================================\nUsage: " << argv[0]
+	     << " [default | <agent path>] [<numtrials>]\n" << endl;
+	cout << "Running agent " << agentname << " for " << numTrials << " iterations.\n" << endl;
+
 	{ // create local scope to allow for local memory cleanup before we check at end
 
 		StatsTracker stTest1_learnoff, stTest1_learnon;
 		vector<string> commands;
+
 		string srccmd = "source ";
-		srccmd += source_path;
+		srccmd += DEFAULT_AGENT;
 		commands.push_back(srccmd.c_str());
 		commands.push_back("watch 0");
 	    commands.push_back("srand 233391");
 
-		int numTrials = 5;
 
-		//cout << endl << "The test suite will be run in two phases, using " << numTrials << " trials each time." << endl;
-		//cout << "The first phase will be with learning off. The second will be with learning on." << endl;
-		//cout << "All results will be reported at the very end." << endl;
-		//cout << "Press enter to begin." << endl;
-		//cin.get();
-
-		cout << endl << "***** Running suite with learning off *****" << endl;
+		cout << "***** Running suite with learning off *****" << endl;
 		Test1(numTrials, &stTest1_learnoff, commands);
 		commands.push_back("learn --on");
 	    commands.push_back("srand 233391");
-		cout << endl << "***** Running suite with learning on *****" << endl;
+		cout << "***** Running suite with learning on *****" << endl;
 		Test1(numTrials, &stTest1_learnon, commands);
 
-		//PrintTest1Description(numTrials);
+		PrintTest1Description(numTrials);
 
-		cout << endl << "watch 0 learning off" << endl;
+		cout << "watch 0 learning off" << endl;
 		stTest1_learnoff.PrintResults();
-		cout << endl << "watch 0 learning on" << endl;
+		cout << "watch 0 learning on" << endl;
 		stTest1_learnon.PrintResults();
 
-		//cout << endl << endl << "Press enter to exit.";
-		//cin.get();
 
 	} // end local scope
 
