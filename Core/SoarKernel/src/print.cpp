@@ -37,6 +37,11 @@
 
 #include <stdarg.h>
 
+/* if enabled will forward certain trace/debug output to stderr instead of
+   print callbacks or xml */
+
+// #define DEBUG_USE_STDERR_TRACE 1
+
 using namespace soar_TraceNames;
 
 /* -------------------------------------------------------------------
@@ -1226,9 +1231,6 @@ Bool passes_wme_filtering(agent* thisAgent, wme * w, Bool isAdd) {
   }
   return TRUE; /* no defined filters match -> w passes */
 }
-
-#define DEBUG_USE_STDERR_TRACE 1
-
 
 /*
 =================================================================================
