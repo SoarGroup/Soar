@@ -25,6 +25,7 @@
 #include "kernel.h"
 #include "cli_Cli.h"
 #include "cli_Parser.h"
+#include "soar_module.h"
 
 #include "Export.h"
 
@@ -34,14 +35,14 @@ namespace soarxml
     class XMLTrace;
 }
 
-namespace sml 
+namespace sml
 {
     class KernelSML;
     class Connection ;
     class AgentSML;
 }
 
-namespace cli 
+namespace cli
 {
     // Define the stack for pushd/popd
     typedef std::stack<std::string> StringStack;
@@ -51,7 +52,7 @@ namespace cli
     typedef ElementXMLList::iterator        ElementXMLListIter;
 
     // for nested command calls
-    struct CallData 
+    struct CallData
     {
         CallData(sml::AgentSML* pAgent, bool rawOutput) : pAgent(pAgent), rawOutput(rawOutput) {}
 
@@ -98,7 +99,7 @@ namespace cli
         * @brief Methods to create an XML element by starting a tag, adding attributes and
         *         closing the tag.
         *         These tags are automatically collected into the result of the current command.
-        *    
+        *
         * NOTE: The attribute names must be compile time constants -- i.e. they remain in scope
         *        at all times (so we don't have to copy them).
         *************************************************************/
@@ -203,6 +204,17 @@ namespace cli
         void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
         void PrependArgTagFast(const char* pParam, const char* pType, const std::string& value);
 
+        /*************************************************************
+        * @brief Prints message via either m_RawOutput or AppendArgTagFast
+        *************************************************************/
+        inline void PrintCLIMessage( std::ostringstream* printString, bool add_raw_lf=true);
+        inline void PrintCLIMessage( std::string* printString, bool add_raw_lf=true);
+        inline void PrintCLIMessage(const char* printString, bool add_raw_lf=true);
+        inline void PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf=true);
+        inline void PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf=true);
+        inline void PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf=true);
+        inline void PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf=true);
+
     protected:
 
         void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults);
@@ -218,17 +230,20 @@ namespace cli
         bool CheckForHelp(std::vector<std::string>& argv);
 
         /*************************************************************
-        * @brief Add the contents of the helpFile file to m_Result.  
+        * @brief Add the contents of the helpFile file to m_Result.
         *        Return true if successful, set error and return false if not.
         *************************************************************/
         bool GetHelpString(const std::string& helpFile);
 
-        /*************************************************************      
-        * @brief This is a utility function used by DoLS      
-        *************************************************************/      
-        void PrintFilename(const std::string& name, bool isDirectory);      
+        /*************************************************************
+        * @brief This is a utility function used by DoLS
+        *************************************************************/
+        void PrintFilename(const std::string& name, bool isDirectory);
 
-        void XMLResultToResponse(char const* pCommandName) ; // clears m_XMLResult
+        /*************************************************************
+        * @brief clears m_XMLResult
+        *************************************************************/
+        void XMLResultToResponse(char const* pCommandName) ;
 
         void GetSystemStats(); // for stats
         void GetMemoryStats(); // for stats

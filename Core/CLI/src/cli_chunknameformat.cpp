@@ -78,7 +78,7 @@ bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int6
             if (m_RawOutput) 
             {
                 if (pCount && *pCount < 0) m_Result << "\n";
-                m_Result << "Prefix: " << agnt->chunk_name_prefix;
+                m_Result << "Prefix: " << agnt->chunk_name_prefix << "\n";
             } 
             else 
                 AppendArgTagFast(sml_Names::kParamChunkNamePrefix, sml_Names::kTypeString, agnt->chunk_name_prefix);

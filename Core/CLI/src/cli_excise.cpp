@@ -124,7 +124,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
     }
 
     if (m_RawOutput) {
-        m_Result << "\n" << exciseCount << " production" << (exciseCount == 1 ? " " : "s ") << "excised.";
+        m_Result << exciseCount << " production" << (exciseCount == 1 ? " " : "s ") << "excised.\n";
     } else {
         // Add the count tag to the front
         std::string temp;

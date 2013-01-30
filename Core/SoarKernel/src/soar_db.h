@@ -341,6 +341,12 @@ namespace soar_module
 
 				return return_val;
 			}
+
+			inline void sql_execute(const char *sql);
+			inline bool sql_simple_get_int(const char *sql, int64_t &return_value);
+			inline bool sql_simple_get_float(const char *sql, double &return_value);
+			inline bool sql_simple_get_string(const char *sql, std::string& return_value);
+			inline bool sql_is_new_db(bool& return_value);
 	};
 
 
@@ -609,6 +615,57 @@ namespace soar_module
 				return return_val;
 			}
 	};
+
+	inline bool sqlite_database::sql_simple_get_int(const char *sql, int64_t &return_value)
+	{
+		soar_module::sqlite_statement *temp_q = new soar_module::sqlite_statement( this, sql );
+		temp_q->prepare();
+		bool result = ( temp_q->execute() == soar_module::row );
+		if (result) return_value = temp_q->column_int( 0 );
+		delete temp_q;
+		return result;
+	}
+
+	 inline void sqlite_database::sql_execute(const char *sql)
+	{
+		soar_module::sqlite_statement *temp_q = new soar_module::sqlite_statement( this, sql );
+		temp_q->prepare();
+		temp_q->execute();
+		delete temp_q;
+	}
+
+
+	 inline bool sqlite_database::sql_simple_get_float(const char *sql, double &return_value)
+	{
+		soar_module::sqlite_statement *temp_q = new soar_module::sqlite_statement( this, sql );
+		temp_q->prepare();
+		bool result = ( temp_q->execute() == soar_module::row );
+		if (result) return_value = temp_q->column_double( 0 );
+		delete temp_q;
+		return result;
+	}
+
+	 inline bool sqlite_database::sql_simple_get_string(const char *sql, std::string& return_value)
+	{
+		soar_module::sqlite_statement *temp_q = new soar_module::sqlite_statement( this, sql );
+		temp_q->prepare();
+		bool result = ( temp_q->execute() == soar_module::row );
+		if (result)
+			return_value.assign(temp_q->column_text( 0 ));
+		delete temp_q;
+		return result;
+	}
+	 inline bool sqlite_database::sql_is_new_db(bool& return_value)
+	 {
+		 int64_t numTables, value_retrieved;
+
+		 value_retrieved = sql_simple_get_int("SELECT count(*) FROM sqlite_master WHERE type='table'", numTables);
+		 if (value_retrieved)
+			 return_value = (numTables == 0);
+		 else
+			 return_value = false;
+		 return value_retrieved;
+	 }
 }
 
 #endif

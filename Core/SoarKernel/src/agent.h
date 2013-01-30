@@ -916,8 +916,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_rit_state epmem_rit_state_graph[2];
 
   uint64_t epmem_validation;
-  bool epmem_first_switch;
-
 
   // smem
   smem_param_container *smem_params;
@@ -928,7 +926,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   smem_statement_container *smem_stmts;
 
   uint64_t smem_validation;
-  bool smem_first_switch;
   int64_t smem_max_cycle;
 
   smem_pooled_symbol_set* smem_changed_ids;

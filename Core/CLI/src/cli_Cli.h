@@ -10,7 +10,7 @@ namespace sml
     enum smlPhase;
 }
 
-namespace cli 
+namespace cli
 {
     class Cli
     {
@@ -38,7 +38,7 @@ namespace cli
 
         virtual bool DoAllocate(const std::string& pool, int blocks) = 0;
 
-        enum eCaptureInputMode 
+        enum eCaptureInputMode
         {
             CAPTURE_INPUT_OPEN,
             CAPTURE_INPUT_QUERY,
@@ -52,23 +52,23 @@ namespace cli
 
         /**
          * @brief cd command
-         * @param pDirectory Pointer to the directory to pass in to. Pass null to return 
-         *        to the initial (home) directory. 
+         * @param pDirectory Pointer to the directory to pass in to. Pass null to return
+         *        to the initial (home) directory.
          */
         virtual bool DoCD(const std::string* pDirectory = 0) = 0;
 
         /**
          * @brief chunk-name-format command
-         * @param pLongFormat Pointer to the new format type, true for long format, false 
+         * @param pLongFormat Pointer to the new format type, true for long format, false
          *        for short format, 0 (null) for query or no change
          * @param pCount Pointer to the new counter, non negative integer, 0 (null) for query
-         * @param pPrefix Pointer to the new prefix, must not contain '*' character, 
+         * @param pPrefix Pointer to the new prefix, must not contain '*' character,
          *        null for query
          */
         virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0) = 0;
 
         enum eLogMode
-        { 
+        {
             LOG_QUERY,
             LOG_NEW,
             LOG_NEWAPPEND,
@@ -89,7 +89,7 @@ namespace cli
 
         /**
          * @brief default-wme-depth command
-         * @param pDepth The pointer to the new wme depth, a positive integer.  
+         * @param pDepth The pointer to the new wme depth, a positive integer.
          *        Pass 0 (null) pointer for query.
          */
         virtual bool DoDefaultWMEDepth(const int* pDepth) = 0;
@@ -118,7 +118,7 @@ namespace cli
          * @param productionName Production to edit
          */
         virtual bool DoEditProduction(std::string productionName) = 0;
-        
+
         /**
          * @brief epmem command
          * @param pOp the epmem switch to implement, pass 0 (null) for full parameter configuration
@@ -127,7 +127,7 @@ namespace cli
          */
         virtual bool DoEpMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0, const epmem_time_id memory_id = 0) = 0;
 
-        enum eExciseOptions 
+        enum eExciseOptions
         {
             EXCISE_ALL,
             EXCISE_CHUNKS,
@@ -149,19 +149,19 @@ namespace cli
 
         /**
          * @brief explain-backtraces command
-         * @param pProduction Pointer to involved production. Pass 0 (null) for 
+         * @param pProduction Pointer to involved production. Pass 0 (null) for
          *        query
-         * @param condition A number representing the condition number to explain, 
-         *        0 for production name, -1 for full, 
+         * @param condition A number representing the condition number to explain,
+         *        0 for production name, -1 for full,
          *        this argument ignored if pProduction is 0 (null)
          */
         virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0) = 0;
 
         /**
          * @brief firing-counts command
-         * @param numberToList The number of top-firing productions to list.  
+         * @param numberToList The number of top-firing productions to list.
          *        Use 0 to list those that haven't fired. -1 lists all
-         * @param pProduction The specific production to list, pass 0 (null) to list 
+         * @param pProduction The specific production to list, pass 0 (null) to list
          *        multiple productions
          */
         virtual bool DoFiringCounts(const int numberToList = -1, const std::string* pProduction = 0) = 0;
@@ -207,7 +207,7 @@ namespace cli
          */
         virtual bool DoInternalSymbols() = 0;
 
-        enum eLearnOptions 
+        enum eLearnOptions
         {
             LEARN_ALL_LEVELS,
             LEARN_BOTTOM_UP,
@@ -232,7 +232,7 @@ namespace cli
 
         /**
          * @brief load-library command
-         * @param libraryCommand The name of the library to load 
+         * @param libraryCommand The name of the library to load
          * WITHOUT the .so/.dll/etc plus its arguments.
          */
         virtual bool DoLoadLibrary(const std::string& libraryCommand) = 0;
@@ -242,7 +242,7 @@ namespace cli
          */
         virtual bool DoLS() = 0;
 
-        enum eMatchesMode 
+        enum eMatchesMode
         {
             MATCHES_PRODUCTION,
             MATCHES_ASSERTIONS,
@@ -250,7 +250,7 @@ namespace cli
             MATCHES_ASSERTIONS_RETRACTIONS,
         };
 
-        enum eWMEDetail 
+        enum eWMEDetail
         {
             WME_DETAIL_NONE,
             WME_DETAIL_TIMETAG,
@@ -273,7 +273,7 @@ namespace cli
 
         /**
          * @brief max-dc-time command
-         * @param n The new max dc time value in microseconds, use 
+         * @param n The new max dc time value in microseconds, use
          * 0 to query, negative to disable.
          */
         virtual bool DoMaxDCTime(const int n = 0) = 0;
@@ -301,7 +301,7 @@ namespace cli
          */
         virtual bool DoMaxNilOutputCycles(const int n = 0) = 0;
 
-        enum eMemoriesOptions 
+        enum eMemoriesOptions
         {
             MEMORIES_CHUNKS,
             MEMORIES_DEFAULT,
@@ -316,7 +316,7 @@ namespace cli
          * @brief memories command
          * @param options Options for the memories flag
          * @param n number of productions to print sorted by most memory use, use 0 for all
-         * @param pProduction specific production to print, ignored if any 
+         * @param pProduction specific production to print, ignored if any
          *        options are set, pass 0 (null) if not applicable
          */
         virtual bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0) = 0;
@@ -324,7 +324,7 @@ namespace cli
         /**
          * @brief multi-attributes command
          * @param pAttribute The attribute, pass 0 (null) for query
-         * @param n The count, pass 0 (null) for query if pAttribute is also null, 
+         * @param n The count, pass 0 (null) for query if pAttribute is also null,
          *        otherwise this will default to 10
          */
         virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0) = 0;
@@ -357,7 +357,7 @@ namespace cli
          */
         virtual bool DoPredict() = 0;
 
-        enum ePreferencesDetail 
+        enum ePreferencesDetail
         {
             PREFERENCES_ONLY,
             PREFERENCES_NAMES,
@@ -373,7 +373,7 @@ namespace cli
          */
         virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0) = 0;
 
-        enum ePrintOptions 
+        enum ePrintOptions
         {
             PRINT_ALL,
             PRINT_CHUNKS,
@@ -401,12 +401,12 @@ namespace cli
          * @brief print command
          * @param options The options to the print command
          * @param depth WME depth
-         * @param pArg The identifier/timetag/pattern/production name to print, 
+         * @param pArg The identifier/timetag/pattern/production name to print,
          *        or 0 (null) if not applicable
          */
         virtual bool DoPrint(PrintBitset options, int depth, const std::string* pArg = 0) = 0;
 
-        enum eProductionFindOptions 
+        enum eProductionFindOptions
         {
             PRODUCTION_FIND_INCLUDE_LHS,
             PRODUCTION_FIND_INCLUDE_RHS,
@@ -416,7 +416,7 @@ namespace cli
             PRODUCTION_FIND_NUM_OPTIONS, // must be last
         };
         typedef std::bitset<PRODUCTION_FIND_NUM_OPTIONS> ProductionFindBitset;
-    
+
         /**
          * @brief production-find command
          * @param options The options to the command
@@ -433,7 +433,7 @@ namespace cli
         /**
          * @brief pwatch command
          * @param query Pass true to query, all other args ignored
-         * @param pProduction The production to watch or stop watching, pass 0 (null) 
+         * @param pProduction The production to watch or stop watching, pass 0 (null)
          *        to disable watching of all productions (setting ignored)
          * @param setting True to watch the pProduction, false to stop watching it
          */
@@ -455,7 +455,7 @@ namespace cli
          */
         virtual bool DoRemoveWME(uint64_t timetag) = 0;
 
-        enum eReplayInputMode 
+        enum eReplayInputMode
         {
             REPLAY_INPUT_OPEN,
             REPLAY_INPUT_QUERY,
@@ -473,7 +473,7 @@ namespace cli
          * @param filename the rete-net file
          */
         virtual bool DoReteNet(bool save, std::string filename) = 0;
-        
+
         /**
          * @brief rl command
          * @param pOp the rl switch to implement, pass 0 (null) for full parameter configuration
@@ -482,7 +482,7 @@ namespace cli
          */
         virtual bool DoRL( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 ) = 0;
 
-        enum eRunOptions 
+        enum eRunOptions
         {
             RUN_DECISION,
             RUN_ELABORATION,
@@ -498,7 +498,7 @@ namespace cli
         };
         typedef std::bitset<RUN_NUM_OPTIONS> RunBitset;
 
-        enum eRunInterleaveMode 
+        enum eRunInterleaveMode
         {
             RUN_INTERLEAVE_DEFAULT,
             RUN_INTERLEAVE_ELABORATION,
@@ -511,7 +511,7 @@ namespace cli
          * @brief run command
          * @param options Options for the run command
          * @param count The count, units or applicability depends on options
-         * @param interleave Support for round robin execution across agents 
+         * @param interleave Support for round robin execution across agents
          *         at a finer grain than the run-size parameter.
          */
         virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) = 0;
@@ -521,7 +521,7 @@ namespace cli
          * @param setting The new setting, pass 0 (null) for query
          */
         virtual bool DoSaveBacktraces(bool* pSetting = 0) = 0;
-        
+
         /**
          * @brief select command
          * @param pAgent The pointer to the gSKI agent interface
@@ -550,11 +550,11 @@ namespace cli
          */
         virtual bool DoSoarNews() = 0;
 
-        enum eSourceOptions 
-        {        
+        enum eSourceOptions
+        {
             SOURCE_ALL,
-            SOURCE_DISABLE,        
-            SOURCE_VERBOSE,        
+            SOURCE_DISABLE,
+            SOURCE_VERBOSE,
             SOURCE_NUM_OPTIONS,    // must be last
         };
         typedef std::bitset<SOURCE_NUM_OPTIONS> SourceBitset;
@@ -578,7 +578,7 @@ namespace cli
          */
         virtual bool DoSRand(uint32_t* pSeed = 0) = 0;
 
-        enum eStatsOptions 
+        enum eStatsOptions
         {
             STATS_MEMORY,
             STATS_RETE,
@@ -617,7 +617,7 @@ namespace cli
 
         /**
          * @brief timers command
-         * @param pSetting The timers setting, true to turn on, false to turn off, 
+         * @param pSetting The timers setting, true to turn on, false to turn off,
          *        pass 0 (null) to query
          */
         virtual bool DoTimers(bool* pSetting = 0) = 0;
@@ -626,7 +626,7 @@ namespace cli
 
         /**
          * @brief verbose command
-         * @param pSetting The verbose setting, true to turn on, false to turn off, 
+         * @param pSetting The verbose setting, true to turn on, false to turn off,
          *        pass 0 (null) to query
          */
         virtual bool DoVerbose(bool* pSetting = 0) = 0;
@@ -638,19 +638,19 @@ namespace cli
 
         /**
          * @brief waitsnc command
-         * @param pSetting The waitsnc setting, true to turn on, false to turn off, 
+         * @param pSetting The waitsnc setting, true to turn on, false to turn off,
          *        pass 0 (null) to query
          */
         virtual bool DoWaitSNC(bool* pSetting = 0) = 0;
 
         /**
          * @brief warnings command
-         * @param pSetting The warnings setting, true to turn on, false to turn off, 
+         * @param pSetting The warnings setting, true to turn on, false to turn off,
          *        pass 0 (null) to query
          */
         virtual bool DoWarnings(bool* pSetting = 0) = 0;
 
-        enum eWatchOptions 
+        enum eWatchOptions
         {
             WATCH_DECISIONS,
             WATCH_PHASES,
@@ -678,14 +678,14 @@ namespace cli
         /**
          * @brief watch command
          * @param options Options for the watch command
-         * @param settings Settings for the watch command, if a flag (option) is set, its 
+         * @param settings Settings for the watch command, if a flag (option) is set, its
          *        setting is set using this (true/on or false/off)
          * @param wmeSetting Setting for wme detail, not binary so it has its own arg
          * @param learnSetting Setting for learn level, not binary so it has its own arg
          */
         virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) = 0;
 
-        enum eWatchWMEsMode 
+        enum eWatchWMEsMode
         {
             WATCH_WMES_ADD,
             WATCH_WMES_REMOVE,
@@ -715,6 +715,6 @@ namespace cli
         virtual bool DoWMA( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 ) = 0;
 
     };
-} 
+}
 
 #endif // CLI_CLI_H

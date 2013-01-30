@@ -1,11 +1,11 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ======================================================================
-                              
-								print.h                               
+
+								print.h
 
     Printing with an Optional Log File and with Redirection to a File
 
@@ -22,13 +22,13 @@
    Print() is exactly like printf() in C, except it prints to both
    the screen and log file (if there is one).  Print_with_symbols()
    is sort of like print, but only takes two kinds of escape sequences
-   in the format string: 
+   in the format string:
        %y  -- print a symbol
        %%  -- print a "%" sign
 
    Sometimes we need to know the current output column so we can put
    a line break in the right place.  Get_printer_output_column() returns
-   the current column number (1 means the start of the line). 
+   the current column number (1 means the start of the line).
    Tell_printer_that_output_column_has_been_reset () is called from the
    lexer every time it reads a line from the keyboard--since after the
    user types a line (and hits return) the output column is reset.
@@ -112,7 +112,7 @@ extern void filtered_print_wme_add(agent* thisAgent, wme *w);
    For example, input 'ab"c' with first/last character '"' yields
    '"ab\"c"'.  This is used for printing quoted strings and for printing
    symbols using |vbar| notation.
- 
+
    Symbol_to_string() converts a symbol to a string.  The "rereadable"
    parameter indicates whether a rereadable representation is desired.
    Normally symbols are printed rereadably, but for (write) and Text I/O,
@@ -169,7 +169,7 @@ extern void print_production (agent* thisAgent, production *p, Bool internal);
    Print_preference() prints a given preference.  Print_wme() prints a
    wme (including the timetag).  Print_instantiation_with_wmes() prints
    an instantiation's production name and the wmes it matched, using a
-   given wme_trace_type (e.g., TIMETAG_WME_TRACE). Action is printing, 
+   given wme_trace_type (e.g., TIMETAG_WME_TRACE). Action is printing,
    firing or retracting -- added March 05 KJC.
 ----------------------------------------------------------------------- */
 
@@ -180,12 +180,14 @@ extern void print_preference (agent* thisAgent, preference *pref);
 extern void print_wme (agent* thisAgent, wme *w);
 extern void print_wme_without_timetag (agent* thisAgent, wme *w);
 extern void print_wme_for_tcl (wme *w);
-extern void print_instantiation_with_wmes (agent* thisAgent, 
+extern void print_instantiation_with_wmes (agent* thisAgent,
 										   instantiation *inst,
                                            wme_trace_type wtt,
 										   int action);
 
-extern void print_list_of_conditions(agent* thisAgent, condition *cond); 
+extern void print_list_of_conditions(agent* thisAgent, condition *cond);
+
+extern void print_trace (agent* thisAgent, int64_t sysParamIndex, const char *format, ...);
 
 #ifdef __cplusplus
 //}

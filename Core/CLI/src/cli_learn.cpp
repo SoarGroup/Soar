@@ -48,50 +48,30 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
     // No options means print current settings
     agent* agnt = m_pAgentSML->GetSoarAgent();
     if (options.none() || options.test(LEARN_LIST)) {
-
-        if (m_RawOutput) {
-            if (agnt->sysparams[LEARNING_ON_SYSPARAM]) {
-                m_Result << "Learning is enabled.";
-                if (agnt->sysparams[LEARNING_ONLY_SYSPARAM]) m_Result << " (only)";
-                if (agnt->sysparams[LEARNING_EXCEPT_SYSPARAM]) m_Result << " (except)";
-                if (agnt->sysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_Result << " (all-levels)";
-                if (agnt->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM]) {
-                    m_Result << " (local negations)";
-                } else {
-                    m_Result << " (no local negations)";
-                }
-            } else {
-                m_Result << "Learning is disabled.";
-            }
-            if (agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM]) {
-              m_Result << " (will backtrace through desirability preferences)";
-            } else {
-              m_Result << " (will not backtrace through desirability preferences)";
-            }
-        } else {
+        if (!m_RawOutput) {
             AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, agnt->sysparams[LEARNING_ON_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
             AppendArgTagFast(sml_Names::kParamLearnOnlySetting, sml_Names::kTypeBoolean, agnt->sysparams[LEARNING_ONLY_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
             AppendArgTagFast(sml_Names::kParamLearnExceptSetting, sml_Names::kTypeBoolean, agnt->sysparams[LEARNING_EXCEPT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
             AppendArgTagFast(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, agnt->sysparams[LEARNING_ALL_GOALS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
         }
+        PrintCLIMessage_Header("Learn Settings", 40);
+        PrintCLIMessage_Justify("learning:", (agnt->sysparams[LEARNING_ON_SYSPARAM] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("only:", (agnt->sysparams[LEARNING_ONLY_SYSPARAM] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("except:", (agnt->sysparams[LEARNING_EXCEPT_SYSPARAM] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("all-levels:", (agnt->sysparams[LEARNING_ALL_GOALS_SYSPARAM] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("local-negations:", (agnt->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("desirability-prefs:", (agnt->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] ? "on" : "off"), 40);
 
         if (options.test(LEARN_LIST)) {
             std::stringstream output;
-            if (m_RawOutput) {
-                m_Result << "\nforce-learn states (when learn 'only'):";
+            PrintCLIMessage_Section("Force-Learn States", 40);
                 GetForceLearnStates(agnt, output);
-                if (output.str().size()) m_Result << '\n' << output.str();
-
-                m_Result << "\ndont-learn states (when learn 'except'):";
+                if (output.str().size())
+                	PrintCLIMessage(output.str().c_str());
+                PrintCLIMessage_Section("Dont-Learn States", 40);
                 GetDontLearnStates(agnt, output);
-                if (output.str().size()) m_Result << '\n' << output.str();
-
-            } else {
-                GetForceLearnStates(agnt, output);
-                AppendArgTagFast(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.str());
-                GetDontLearnStates(agnt, output);
-                AppendArgTagFast(sml_Names::kParamLearnDontLearnStates, sml_Names::kTypeString, output.str());
-            }
+                if (output.str().size())
+                	PrintCLIMessage(output.str().c_str());
         }
         return true;
     }
@@ -100,78 +80,58 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
         set_sysparam(agnt, LEARNING_ON_SYSPARAM, true);
         set_sysparam(agnt, LEARNING_ONLY_SYSPARAM, true);
         set_sysparam(agnt, LEARNING_EXCEPT_SYSPARAM, false);
-        if (m_RawOutput) {
-            m_Result << "\nWill learn only in certain states.";
-        }
+        PrintCLIMessage( "Learn| only = on");
     }
 
     if (options.test(LEARN_EXCEPT)) {
         set_sysparam(agnt, LEARNING_ON_SYSPARAM, true);
         set_sysparam(agnt, LEARNING_ONLY_SYSPARAM, false);
         set_sysparam(agnt, LEARNING_EXCEPT_SYSPARAM, true);
-        if (m_RawOutput) {
-            m_Result << "\nWill learn everywhere except certain states.";
-        }
+        PrintCLIMessage( "Learn| except = on");
     }
 
     if (options.test(LEARN_ENABLE)) {
         set_sysparam(agnt, LEARNING_ON_SYSPARAM, true);
         set_sysparam(agnt, LEARNING_ONLY_SYSPARAM, false);
         set_sysparam(agnt, LEARNING_EXCEPT_SYSPARAM, false);
-        if (m_RawOutput) {
-            m_Result << "\nLearning on.";
-        }
+        PrintCLIMessage( "Learn| learning = on");
     }
 
     if (options.test(LEARN_DISABLE)) {
         set_sysparam(agnt, LEARNING_ON_SYSPARAM, false);
         set_sysparam(agnt, LEARNING_ONLY_SYSPARAM, false);
         set_sysparam(agnt, LEARNING_EXCEPT_SYSPARAM, false);
-        if (m_RawOutput) {
-            m_Result << "\nLearning off.";
-        }
+        PrintCLIMessage( "Learn| learning = off");
     }
 
     if (options.test(LEARN_ALL_LEVELS)) {
         set_sysparam(agnt, LEARNING_ALL_GOALS_SYSPARAM, true);
-        if (m_RawOutput) {
-            m_Result << "\nWill learn for all goals.";
-        }
+        PrintCLIMessage( "Learn| all-levels = on");
     }
 
     if (options.test(LEARN_BOTTOM_UP)) {
         set_sysparam(agnt, LEARNING_ALL_GOALS_SYSPARAM, false);
-        if (m_RawOutput) {
-            m_Result << "\nWill learn from the bottom up.";
-        }
+        PrintCLIMessage( "Learn| all-levels = off");
     }
 
     if (options.test(LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS)) {
         set_sysparam(agnt, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, true);
-        if (m_RawOutput) {
-            m_Result << "\nWill chunk through local negations.";
-        }
+        PrintCLIMessage( "Learn| local-negations = on");
     }
 
     if (options.test(LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS)) {
         set_sysparam(agnt, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, false);
-        if (m_RawOutput) {
-            m_Result << "\nWill not chunk through local negations.";
-        }
+        PrintCLIMessage( "Learn| local-negations = off");
     }
 
     if (options.test(LEARN_ENABLE_THROUGH_EVALUATION_RULES)) {
         set_sysparam(agnt, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, true);
-        if (m_RawOutput) {
-            m_Result << "\nWill include evaluation rules when backtracing.";
-        }
+        PrintCLIMessage( "Learn| desirability-prefs = on");
     }
 
     if (options.test(LEARN_DISABLE_THROUGH_EVALUATION_RULES)) {
         set_sysparam(agnt, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, false);
-        if (m_RawOutput) {
-            m_Result << "\nWill not include evaluation rules when backtracing.";
-        }
+        PrintCLIMessage( "Learn| desirability-prefs = off");
     }
 
     return true;

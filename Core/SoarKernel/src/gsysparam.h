@@ -88,7 +88,7 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 --------------------------- */
 
 /* ====== Sysparams for what to trace === */
-
+#define INVALID_SYSPARAM                          0
 #define TRACE_CONTEXT_DECISIONS_SYSPARAM          1
 #define TRACE_PHASES_SYSPARAM                     2
 

@@ -420,6 +420,13 @@ inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
   return refCount ;
 }
 
+inline bool symbol_is_constant( Symbol *sym )
+{
+	return ( ( sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
+		     ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+		     ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
+}
+
 #endif /* USE_MACROS */
 
 /* -----------------------------------------------------------------

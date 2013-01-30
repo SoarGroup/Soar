@@ -400,7 +400,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 #endif
 
   newAgent->epmem_validation = 0;
-  newAgent->epmem_first_switch = true;
 
   // smem initialization
   newAgent->smem_params = new smem_param_container( newAgent );
@@ -410,7 +409,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->smem_db = new soar_module::sqlite_database();
 
   newAgent->smem_validation = 0;
-  newAgent->smem_first_switch = true;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->smem_changed_ids = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );

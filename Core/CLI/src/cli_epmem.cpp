@@ -25,25 +25,34 @@ using namespace sml;
 bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, const std::string* pVal, epmem_time_id memory_id )
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
-    if ( !pOp )
-    {
-        std::string temp;
-        char *temp2;		
+   	std::ostringstream tempString;
 
-        temp = "EpMem learning: ";
-        temp2 = agnt->epmem_params->learning->get_string();
-        temp += temp2;
-        delete temp2;
-        if ( m_RawOutput )
-        {
-            m_Result << "\n" << temp << "\n\n";
-        }
-        else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
-        }
+   	if ( !pOp )
+    {   // Print Epmem Settings
+        PrintCLIMessage_Header("Episodic Memory Settings", 40);
+        PrintCLIMessage_Item("learning:", agnt->epmem_params->learning, 40);
+        PrintCLIMessage_Section("Encoding", 40);
+        PrintCLIMessage_Item("phase:", agnt->epmem_params->phase, 40);
+        PrintCLIMessage_Item("trigger:", agnt->epmem_params->trigger, 40);
+        PrintCLIMessage_Item("force:", agnt->epmem_params->force, 40);
+        PrintCLIMessage_Item("exclusions:", agnt->epmem_params->exclusions, 40);
+        PrintCLIMessage_Section("Storage", 40);
+        PrintCLIMessage_Item("database:", agnt->epmem_params->database, 40);
+        PrintCLIMessage_Item("append-database:", agnt->epmem_params->append_db, 40);
+        PrintCLIMessage_Item("path:", agnt->epmem_params->path, 40);
+        PrintCLIMessage_Item("lazy-commit:", agnt->epmem_params->lazy_commit, 40);
+        PrintCLIMessage_Section("Retrieval", 40);
+        PrintCLIMessage_Item("balance:", agnt->epmem_params->balance, 40);
+        PrintCLIMessage_Item("graph-match:", agnt->epmem_params->graph_match, 40);
+        PrintCLIMessage_Item("graph-match-ordering:", agnt->epmem_params->gm_ordering, 40);
+        PrintCLIMessage_Section("Performance", 40);
+        PrintCLIMessage_Item("page-size:", agnt->epmem_params->page_size, 40);
+        PrintCLIMessage_Item("cache-size:", agnt->epmem_params->cache_size, 40);
+        PrintCLIMessage_Item("optimization:", agnt->epmem_params->opt, 40);
+        PrintCLIMessage_Item("timers:", agnt->epmem_params->timers, 40);
+        PrintCLIMessage_Section("Experimental", 40);
+        PrintCLIMessage_Item("merge:", agnt->epmem_params->merge, 40);
+        PrintCLIMessage("");
 
 		//
 
@@ -354,31 +363,39 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	else if ( pOp == 'b' )
     {
         std::string err;
-		bool result = epmem_backup_db( agnt, pAttr->c_str(), &( err ) );
+
+        bool result = epmem_backup_db( agnt, pAttr->c_str(), &( err ) );
 
         if ( !result )
-        {
-            SetError( err );
+            SetError( "Error while backing up database: " + err );
+        else {
+           	tempString << "EpMem| Database backed up to " << pAttr->c_str();
+           	PrintCLIMessage(&tempString);
         }
 
         return result;
     }
-    else if ( pOp == 'c' )
+    else if ( pOp == 'e' )
     {
-        const char *msg = "EpMem database closed.";
-        const char *tag_type = sml_Names::kTypeString;
+       bool result = agnt->epmem_params->learning->set_string("on");
 
-        epmem_close( agnt );
-        if ( m_RawOutput )
-        {
-            m_Result << msg;
-        }
+        if ( !result )
+            SetError( "This parameter is protected while the episodic memory database is open." );
         else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, tag_type, msg );
-        }
+     	   PrintCLIMessage( "EpMem| learning = on");
 
-        return true;
+        return result;
+    }
+    else if ( pOp == 'd' )
+    {
+       bool result = agnt->epmem_params->learning->set_string("off");
+
+       if ( !result )
+           SetError( "This parameter is protected while the episodic memory database is open." );
+       else
+    	   PrintCLIMessage( "EpMem| learning = off");
+
+        return result;
     }
     else if ( pOp == 'g' )
     {
@@ -386,20 +403,19 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         if ( !my_param )
             return SetError( "Invalid attribute." );
 
-        char *temp2 = my_param->get_string();
-        std::string output( temp2 );
-        delete temp2;		
-
-        if ( m_RawOutput )
-        {
-            m_Result << output;
-        }
-        else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
-        }
-
+        PrintCLIMessage_Item("", my_param, 0);
         return true;
+    }
+    else if ( pOp == 'i' )
+    {
+    	epmem_reinit( agnt );
+    	PrintCLIMessage( "EpMem| Episodic memory system re-initialized.");
+    	if ((agnt->epmem_params->append_db->get_value() == soar_module::on) &&
+    		(agnt->epmem_params->database->get_value() != epmem_param_container::memory))
+    	{
+        	PrintCLIMessage( "EpMem|   Note: There was no effective change to memory contents because append mode is on and path set to file.");
+    	}
+    	return true;
     }
 	else if ( pOp == 'p' )
     {
@@ -410,21 +426,13 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         {
             return SetError( "Invalid episode." );
         }
-
-        if ( m_RawOutput )
-        {
-            m_Result << viz;
-        }
-        else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, viz.c_str() );
-        }
-
+        tempString << "Episode " << memory_id;
+        PrintCLIMessage_Header(tempString.str().c_str(), 40);
+        PrintCLIMessage(&viz);
         return true;
     }
     else if ( pOp == 's' )
     {
-        // check attribute name/potential vals here
         soar_module::param *my_param = agnt->epmem_params->get( pAttr->c_str() );
         if ( !my_param )
             return SetError( "Invalid attribute." );
@@ -434,11 +442,12 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 
         bool result = my_param->set_string( pVal->c_str() );
 
-        // since parameter name and value have been validated,
-        // this can only mean the parameter is protected
         if ( !result )
-            SetError( "ERROR: this parameter is protected while the EpMem database is open." );
-
+            SetError( "This parameter is protected while the episodic memory database is open." );
+        else {
+        	tempString << "EpMem| "<< pAttr->c_str() << " = " << pVal->c_str();
+        	PrintCLIMessage(&tempString);
+        }
         return result;
     }
     else if ( pOp == 'S' )
@@ -637,18 +646,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             if ( !my_stat )
                 return SetError( "Invalid statistic." );
 
-            char *temp2 = my_stat->get_string();
-            std::string output( temp2 );
-            delete temp2;			
-
-            if ( m_RawOutput )
-            {
-                m_Result << output;
-            }
-            else
-            {
-                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
-            }
+            PrintCLIMessage_Item("", my_stat, 0);
         }
 
         return true;
@@ -673,23 +671,12 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
                 void operator() ( soar_module::timer *t )
                 {
                     std::string output( t->get_name() );
-                    output += ": ";
-
-                    char *temp = t->get_string();
-                    output += temp;
-                    delete temp;
-
-                    if ( raw )
-                    {
-                        m_Result << output << "\n";
-                    }
-                    else
-                    {
-                        this_cli->AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
-                    }
+                    output += ":";
+                    this_cli->PrintCLIMessage_Item(output.c_str(), t, 40);
                 }
             } bar( m_RawOutput, this, m_Result );
 
+            PrintCLIMessage_Header("Episodic Memory Timers", 40);
             agnt->epmem_timers->for_each( bar );
         }
         else
@@ -699,18 +686,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             if ( !my_timer )
                 return SetError( "Invalid timer." );
 
-            char *temp2 = my_timer->get_string();
-            std::string output( temp2 );
-            delete temp2;			
-
-            if ( m_RawOutput )
-            {
-                m_Result << output;
-            }
-            else
-            {
-                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
-            }
+            PrintCLIMessage_Item("", my_timer, 0);
         }
 
         return true;
@@ -720,19 +696,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         std::string viz;
 
         epmem_visualize_episode( agnt, memory_id, &( viz ) );
-        if ( viz.empty() )
-        {
-            return SetError( "Invalid episode." );
-        }
 
-        if ( m_RawOutput )
-        {
-            m_Result << viz;
-        }
-        else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, viz.c_str() );
-        }
+        if ( viz.empty() ) return SetError( "Invalid episode." );
+        PrintCLIMessage(&viz);
 
         return true;
     }

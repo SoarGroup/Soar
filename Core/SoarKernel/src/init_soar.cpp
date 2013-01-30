@@ -384,7 +384,6 @@ void reset_max_stats (agent* thisAgent) {
 
 bool reinitialize_soar (agent* thisAgent) {
 
-	/* kjh (CUSP-B4) begin */
 	int64_t cur_TRACE_CONTEXT_DECISIONS_SYSPARAM;
 	int64_t cur_TRACE_PHASES_SYSPARAM;
 	int64_t cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM;
@@ -393,7 +392,6 @@ bool reinitialize_soar (agent* thisAgent) {
 	int64_t cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM;
 	int64_t cur_TRACE_WM_CHANGES_SYSPARAM;
 	int64_t cur_TRACE_GDS_SYSPARAM;
-	/* kjh (CUSP-B4) end */
 
 	thisAgent->did_PE = FALSE;    /* RCHONG:  10.11 */
 
@@ -401,7 +399,6 @@ bool reinitialize_soar (agent* thisAgent) {
 		BEFORE_INIT_SOAR_CALLBACK,
 		0);		 
 
-	/* kjh (CUSP-B4) begin */
 	/* Stash trace state: */
 	cur_TRACE_CONTEXT_DECISIONS_SYSPARAM        = thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM];
 	cur_TRACE_PHASES_SYSPARAM                   = thisAgent->sysparams[TRACE_PHASES_SYSPARAM];
@@ -421,7 +418,10 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      FALSE);
 	set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
 	set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      FALSE);
-	/* kjh (CUSP-B4) end */
+
+	/* Close episodic and semantic memory database and clean up */
+	epmem_close(thisAgent);
+	smem_close(thisAgent);
 
 	bool wma_was_enabled = wma_enabled( thisAgent );
 	thisAgent->wma_params->activation->set_value( soar_module::off );

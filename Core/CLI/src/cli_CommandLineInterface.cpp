@@ -528,3 +528,85 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 bool CommandLineInterface::IsLogOpen() {
 	return m_pLogFile ? true : false;
 }
+
+void CommandLineInterface::PrintCLIMessage(const char* printString, bool add_raw_lf)
+{
+	if ( m_RawOutput ){
+    	m_Result << printString << (add_raw_lf ? "\n" : "");
+    } else {
+    	AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, printString);
+    }
+
+}
+void CommandLineInterface::PrintCLIMessage(std::string* printString, bool add_raw_lf)
+{
+    PrintCLIMessage(printString->c_str(), add_raw_lf);
+}
+
+void CommandLineInterface::PrintCLIMessage(std::ostringstream* printString, bool add_raw_lf)
+{
+    PrintCLIMessage(printString->str().c_str(), add_raw_lf);
+}
+
+void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf)
+{
+    std::ostringstream tempString;
+    int left_width, right_width, middle_width;
+    std::string sep_string("");
+
+    left_width = strlen(prefixString);
+    right_width = strlen(printString);
+    middle_width = column_width - left_width - right_width;
+    if (middle_width < 0)
+    	middle_width = 1;
+    sep_string.insert(0, middle_width, ' ');
+
+    tempString << prefixString << sep_string << printString;
+    PrintCLIMessage(&tempString);
+}
+
+void CommandLineInterface::PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf)
+{
+    std::ostringstream tempString;
+    char *temp = printObject->get_string();
+    PrintCLIMessage_Justify(prefixString, temp, column_width);
+    delete temp;
+
+}
+
+void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf)
+{
+    std::ostringstream tempString;
+    int left_width, right_width, header_width;
+    std::string left_string(""), right_string(""), sep_string("");
+
+    header_width = strlen(headerString) + 2;
+    left_width = (column_width - header_width) / 2;
+    right_width = column_width - left_width - header_width;
+    left_string.insert(0, left_width, ' ');
+    right_string.insert(0, right_width, ' ');
+    sep_string.insert(0, column_width, '=');
+
+    tempString << "" << left_string << ' ' << headerString << ' ' << right_string << "";
+
+    PrintCLIMessage(&sep_string);
+    PrintCLIMessage(&tempString);
+    PrintCLIMessage(&sep_string);
+}
+
+void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf)
+{
+    std::ostringstream tempString;
+    int left_width, right_width, header_width;
+    std::string left_string(""), right_string("");
+
+    header_width = strlen(headerString) + 2;
+    left_width = (column_width - header_width) / 2;
+    right_width = column_width - left_width - header_width;
+
+    left_string.insert(0, left_width, '-');
+    right_string.insert(0, right_width, '-');
+    tempString << left_string << ' ' << headerString << ' ' << right_string;
+
+    PrintCLIMessage(&tempString);
+}

@@ -90,7 +90,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
         ++j, ++i) 
     {
         if (m_RawOutput) {
-            m_Result << "\n"<< std::setw(6) << j->second << ":  " << j->first;
+            m_Result << std::setw(6) << j->second << ":  " << j->first << "\n";
         } else {
             std::string temp;
             AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first);

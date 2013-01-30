@@ -48,7 +48,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
             symbol_to_string(agnt, maList->symbol, TRUE, attributeName, 1024);
 
             if (m_RawOutput) {
-                m_Result << "\n" << maList->value << "\t" << symbol_to_string(agnt, maList->symbol, TRUE, attributeName, 1024);
+                m_Result  << maList->value << "\t" << symbol_to_string(agnt, maList->symbol, TRUE, attributeName, 1024)<< "\n";
 
             } else {
                 buffer << maList->value;

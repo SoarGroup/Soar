@@ -56,6 +56,7 @@ class smem_param_container: public soar_module::param_container
 		soar_module::constant_param<db_choices> *database;
 		smem_path_param *path;
 		soar_module::boolean_param *lazy_commit;
+		soar_module::boolean_param *append_db;
 
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
 
@@ -244,21 +245,21 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *web_const_child;
 		soar_module::sqlite_statement *web_lti_child;
 
-		soar_module::sqlite_statement *ct_attr_check;
-		soar_module::sqlite_statement *ct_const_check;
-		soar_module::sqlite_statement *ct_lti_check;
+		soar_module::sqlite_statement *attribute_frequency_check;
+		soar_module::sqlite_statement *wmes_constant_frequency_check;
+		soar_module::sqlite_statement *wmes_lti_frequency_check;
 
-		soar_module::sqlite_statement *ct_attr_add;
-		soar_module::sqlite_statement *ct_const_add;
-		soar_module::sqlite_statement *ct_lti_add;
+		soar_module::sqlite_statement *attribute_frequency_add;
+		soar_module::sqlite_statement *wmes_constant_frequency_add;
+		soar_module::sqlite_statement *wmes_lti_frequency_add;
 
-		soar_module::sqlite_statement *ct_attr_update;
-		soar_module::sqlite_statement *ct_const_update;
-		soar_module::sqlite_statement *ct_lti_update;
+		soar_module::sqlite_statement *attribute_frequency_update;
+		soar_module::sqlite_statement *wmes_constant_frequency_update;
+		soar_module::sqlite_statement *wmes_lti_frequency_update;
 
-		soar_module::sqlite_statement *ct_attr_get;
-		soar_module::sqlite_statement *ct_const_get;
-		soar_module::sqlite_statement *ct_lti_get;
+		soar_module::sqlite_statement *attribute_frequency_get;
+		soar_module::sqlite_statement *wmes_constant_frequency_get;
+		soar_module::sqlite_statement *wmes_lti_frequency_get;
 
 		soar_module::sqlite_statement *act_set;
 		soar_module::sqlite_statement *act_lti_child_ct_set;
@@ -276,8 +277,13 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *vis_value_lti;
 
 		smem_statement_container( agent *new_agent );
-};
 
+	private:
+
+		void create_tables();
+		void create_indices();
+		void drop_tables(agent *new_agent);
+};
 
 //////////////////////////////////////////////////////////
 // Soar Constants
@@ -292,20 +298,13 @@ enum smem_variable_key
 
 #define SMEM_LTI_UNKNOWN_LEVEL 0
 
-#define SMEM_WEB_NULL 0
-#define SMEM_WEB_NULL_STR "0"
+#define SMEM_AUGMENTATIONS_NULL 0
+#define SMEM_AUGMENTATIONS_NULL_STR "0"
 
 #define SMEM_ACT_HISTORY_ENTRIES 10
 #define SMEM_ACT_LOW -1000000000
 
-// provides a distinct prefix to be used by all
-// tables for two reasons:
-// - distinguish from other modules
-// - distinguish between smem versions
-#define SMEM_SCHEMA "smem7_"
-
-// empty table used to verify proper structure
-#define SMEM_SIGNATURE SMEM_SCHEMA "signature"
+#define SMEM_SCHEMA_VERSION "2.0"
 
 //////////////////////////////////////////////////////////
 // Soar Integration Types
@@ -480,5 +479,8 @@ extern void smem_close( agent *my_agent );
 // perform smem actions
 extern void smem_go( agent *my_agent, bool store_only );
 extern bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err );
+
+inline void smem_switch_to_memory_db(agent *my_agent, std::string& buf);
+void smem_init_db( agent *my_agent );
 
 #endif
