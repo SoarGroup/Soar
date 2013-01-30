@@ -1254,7 +1254,7 @@ extern void print_trace (agent* thisAgent, int64_t sysParamIndex, const char *fo
 	{
 #ifdef DEBUG_USE_STDERR_TRACE
 		fputs(buf, stderr);
-#elif
+#else
 		print( thisAgent, buf );
 #endif
 		xml_generate_warning( thisAgent, buf );
