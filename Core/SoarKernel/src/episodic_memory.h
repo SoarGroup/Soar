@@ -96,10 +96,10 @@ class epmem_path_param;
 class epmem_param_container: public soar_module::param_container
 {
 	public:
-		
+
 		// storage
 		enum db_choices { memory, file };
-		
+
 		// encoding
 		enum phase_choices { phase_output, phase_selection };
 		enum trigger_choices { none, output, dc };
@@ -116,8 +116,8 @@ class epmem_param_container: public soar_module::param_container
 		////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////
 
-		soar_module::boolean_param *learning;	
-		
+		soar_module::boolean_param *learning;
+
 		// encoding
 		soar_module::constant_param<phase_choices> *phase;
 		soar_module::constant_param<trigger_choices> *trigger;
@@ -400,7 +400,7 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 		soar_module::sqlite_statement_pool *pool_dummy;
 
 		//
-		
+
 		epmem_graph_statement_container( agent *new_agent );
 
 	private:
@@ -436,7 +436,7 @@ typedef struct epmem_rit_state_struct
 	epmem_rit_state_param minstep;
 
 	soar_module::timer *timer;
-	soar_module::sqlite_statement *add_query;	
+	soar_module::sqlite_statement *add_query;
 } epmem_rit_state;
 
 //////////////////////////////////////////////////////////
@@ -503,7 +503,7 @@ typedef struct epmem_id_reservation_struct
 // follows cs theory notation of finite automata: q1 = d( q0, w )
 typedef struct epmem_edge_struct
 {
-	
+
 	epmem_node_id parent_n_id;							// id
 	Symbol *attribute;							// attr
 	epmem_node_id child_n_id;							// value

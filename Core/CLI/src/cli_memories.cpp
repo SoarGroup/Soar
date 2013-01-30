@@ -64,35 +64,35 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
                 switch ( i )
                 {
                 case USER_PRODUCTION_TYPE:
-                    if ( !options.test(MEMORIES_USER) ) 
+                    if ( !options.test(MEMORIES_USER) )
                     {
                         continue;
                     }
                     break;
 
                 case DEFAULT_PRODUCTION_TYPE:
-                    if ( !options.test(MEMORIES_DEFAULT) ) 
+                    if ( !options.test(MEMORIES_DEFAULT) )
                     {
                         continue;
                     }
                     break;
 
                 case CHUNK_PRODUCTION_TYPE:
-                    if ( !options.test(MEMORIES_CHUNKS) ) 
+                    if ( !options.test(MEMORIES_CHUNKS) )
                     {
                         continue;
                     }
                     break;
 
                 case JUSTIFICATION_PRODUCTION_TYPE:
-                    if ( !options.test(MEMORIES_JUSTIFICATIONS) ) 
+                    if ( !options.test(MEMORIES_JUSTIFICATIONS) )
                     {
                         continue;
                     }
                     break;
 
                 case TEMPLATE_PRODUCTION_TYPE:
-                    if ( !options.test(MEMORIES_TEMPLATES) ) 
+                    if ( !options.test(MEMORIES_TEMPLATES) )
                     {
                         continue;
                     }
@@ -104,12 +104,12 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
                 }
             }
 
-            for( production* pSoarProduction = agnt->all_productions_of_type[i]; 
-                pSoarProduction != 0; 
+            for( production* pSoarProduction = agnt->all_productions_of_type[i];
+                pSoarProduction != 0;
                 pSoarProduction = pSoarProduction->next )
             {
                 foundProduction = true;
-                
+
                 // save the tokens/name pair
                 std::pair< std::string, uint64_t > memory;
                 memory.first = pSoarProduction->name->sc.name;
@@ -117,7 +117,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
                 memories.push_back(memory);
             }
         }
-    
+
         if (!foundProduction) return SetError("Production not found.");
     }
 
@@ -127,9 +127,9 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 
     // print them
     int i = 0;
-    for (std::vector< std::pair< std::string, uint64_t > >::reverse_iterator j = memories.rbegin(); 
-        j != memories.rend() && (n == 0 || i < n); 
-        ++j, ++i) 
+    for (std::vector< std::pair< std::string, uint64_t > >::reverse_iterator j = memories.rbegin();
+        j != memories.rend() && (n == 0 || i < n);
+        ++j, ++i)
     {
         if (m_RawOutput) {
             m_Result  << std::setw(6) << j->second << ":  " << j->first<< "\n";

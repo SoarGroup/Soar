@@ -153,7 +153,7 @@ namespace soar_module
 						case op_clean:
 							clean();
 							break;
-							
+
 						case op_none:
 							break;
 					}
@@ -191,7 +191,7 @@ namespace soar_module
 			}
 	};
 
-	
+
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
 
@@ -202,7 +202,7 @@ namespace soar_module
 
 		public:
 			statement_container(): statements( new std::list<statement *>() ) {}
-			
+
 			virtual ~statement_container()
 			{
 				for ( std::list<statement *>::iterator p=statements->begin(); p!=statements->end(); p++ )
@@ -297,7 +297,7 @@ namespace soar_module
 			inline int64_t memory_usage() { return static_cast<int64_t>( sqlite3_memory_used() ); }
 			inline int64_t memory_highwater() { return static_cast<int64_t>( sqlite3_memory_highwater( false ) ); }
 			inline const char* lib_version() { return sqlite3_libversion(); }
-			
+
 			inline bool backup( const char* file_name, std::string* err )
 			{
 				sqlite3* backup_db;
@@ -535,7 +535,7 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 
 	class sqlite_statement_pool;
-	
+
 	class pooled_sqlite_statement: public sqlite_statement
 	{
 		protected:
@@ -543,7 +543,7 @@ namespace soar_module
 
 		public:
 			pooled_sqlite_statement( sqlite_statement_pool* new_pool, sqlite_database* new_db, const char* new_sql, timer* new_query_timer = NULL ): sqlite_statement( new_db, new_sql, new_query_timer ), stmt_pool( new_pool ) {}
-			
+
 			inline sqlite_statement_pool* get_pool()
 			{
 				return stmt_pool;

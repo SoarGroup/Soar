@@ -12,11 +12,11 @@ void initdocstrings();
 
 bool CommandLineInterface::DoHelp(const std::vector<std::string> &argv) {
 	std::map<std::string, const char*>::iterator i;
-	
+
 	if (docstrings.size() == 0) {
 		initdocstrings();
 	}
-	
+
 	if (argv.size() == 1) {
 		m_Result << "Available commands:" << std::endl << std::endl;
 		for (i = docstrings.begin(); i != docstrings.end(); ++i) {
@@ -33,7 +33,7 @@ bool CommandLineInterface::DoHelp(const std::vector<std::string> &argv) {
 }
 
 void initdocstrings() {
-	docstrings["add-wme"] = 
+	docstrings["add-wme"] =
 		"Manually add an element to working memory.\n"
 		"\n"
 		"Synopsis \n"
@@ -99,7 +99,7 @@ void initdocstrings() {
 		"\n"
 		"remove-wme\n"
 	;
-	docstrings["alias"] = 
+	docstrings["alias"] =
 		"Define a new alias, or command, using existing commands and arguments.\n"
 		"\n"
 		"Synopsis \n"
@@ -144,7 +144,7 @@ void initdocstrings() {
 		"\n"
 		"unalias\n"
 	;
-	docstrings["allocate"] = 
+	docstrings["allocate"] =
 		"Allocate additional 32 kilobyte blocks of memory for a specified memory pool\n"
 		"without running Soar.\n"
 		"\n"
@@ -175,7 +175,7 @@ void initdocstrings() {
 		"\n"
 		"stats\n"
 	;
-	docstrings["capture-input"] = 
+	docstrings["capture-input"] =
 		"Store the input wmes in a file for reloading later.\n"
 		"\n"
 		"Synopsis \n"
@@ -212,7 +212,7 @@ void initdocstrings() {
 		"\n"
 		"replay-input\n"
 	;
-	docstrings["cd"] = 
+	docstrings["cd"] =
 		"Change directory.\n"
 		"\n"
 		"Synopsis \n"
@@ -243,7 +243,7 @@ void initdocstrings() {
 		"\n"
 		"dirs ls pushd popd source pwd\n"
 	;
-	docstrings["chunk-name-format"] = 
+	docstrings["chunk-name-format"] =
 		"Specify format of the name to use for new chunks.\n"
 		"\n"
 		"Synopsis \n"
@@ -283,7 +283,7 @@ void initdocstrings() {
 		"  * impassetype is one of tie, conflict, cfailure, snochange, opnochange,\n"
 		"  * dcChunknum is the number of the chunk within that specific decision cycle.\n"
 	;
-	docstrings["clog"] = 
+	docstrings["clog"] =
 		"Record all user-interface input and output to a file.\n"
 		"\n"
 		"Synopsis \n"
@@ -335,7 +335,7 @@ void initdocstrings() {
 		"\n"
 		"command-to-file\n"
 	;
-	docstrings["command-to-file"] = 
+	docstrings["command-to-file"] =
 		"Dump the printed output and results of a command to a file.\n"
 		"\n"
 		"Synopsis \n"
@@ -365,7 +365,7 @@ void initdocstrings() {
 		"\n"
 		"clog\n"
 	;
-	docstrings["default-wme-depth"] = 
+	docstrings["default-wme-depth"] =
 		"Set the level of detail used to print WMEs.\n"
 		"\n"
 		"Synopsis \n"
@@ -411,7 +411,7 @@ void initdocstrings() {
 		"\n"
 		"print\n"
 	;
-	docstrings["dirs"] = 
+	docstrings["dirs"] =
 		"List the directory stack.\n"
 		"\n"
 		"Synopsis \n"
@@ -433,7 +433,7 @@ void initdocstrings() {
 		"\n"
 		"cd ls pushd popd source pwd\n"
 	;
-	docstrings["echo"] = 
+	docstrings["echo"] =
 		"Print a string to the current output device.\n"
 		"\n"
 		"Synopsis \n"
@@ -463,7 +463,7 @@ void initdocstrings() {
 		"\n"
 		"clog\n"
 	;
-	docstrings["echo-commands"] = 
+	docstrings["echo-commands"] =
 		"Set whether or not commands are echoed to other connected debuggers.\n"
 		"\n"
 		"Synopsis \n"
@@ -481,7 +481,7 @@ void initdocstrings() {
 		"Otherwise, the output is displayed without the initiating command, and this can\n"
 		"be confusing.\n"
 	;
-	docstrings["edit-production"] = 
+	docstrings["edit-production"] =
 		"Move focus in an editor to this production.\n"
 		"\n"
 		"Synopsis \n"
@@ -510,7 +510,7 @@ void initdocstrings() {
 		"\n"
 		"sp\n"
 	;
-	docstrings["epmem"] = 
+	docstrings["epmem"] =
 		"Control the behavior of episodic memory.\n"
 		"\n"
 		"Synopsis \n"
@@ -775,7 +775,7 @@ void initdocstrings() {
 		"\n"
 		"watch wma\n"
 	;
-	docstrings["excise"] = 
+	docstrings["excise"] =
 		"Delete Soar productions from production memory.\n"
 		"\n"
 		"Synopsis \n"
@@ -822,7 +822,7 @@ void initdocstrings() {
 		"\n"
 		"init-soar\n"
 	;
-	docstrings["explain-backtraces"] = 
+	docstrings["explain-backtraces"] =
 		"Print information about chunk and justification backtraces.\n"
 		"\n"
 		"Synopsis \n"
@@ -922,7 +922,7 @@ void initdocstrings() {
 		"\n"
 		"save-backtraces\n"
 	;
-	docstrings["firing-counts"] = 
+	docstrings["firing-counts"] =
 		"Print the number of times each production has fired.\n"
 		"\n"
 		"Synopsis \n"
@@ -975,7 +975,7 @@ void initdocstrings() {
 		"\n"
 		"init-soar\n"
 	;
-	docstrings["gds-print"] = 
+	docstrings["gds-print"] =
 		"Print the WMEs in the goal dependency set for each goal.\n"
 		"\n"
 		"Synopsis \n"
@@ -1003,7 +1003,7 @@ void initdocstrings() {
 		"gds-print is horribly inefficient and should not generally be used except when\n"
 		"something is going wrong and you need to examine the Goal Dependency Set.\n"
 	;
-	docstrings["gp"] = 
+	docstrings["gp"] =
 		"Generate productions according to a specified pattern.\n"
 		"\n"
 		"Synopsis \n"
@@ -1082,7 +1082,7 @@ void initdocstrings() {
 		"\n"
 		"sp\n"
 	;
-	docstrings["gp-max"] = 
+	docstrings["gp-max"] =
 		"Set the upper-limit to the number of productions generated by the gp command.\n"
 		"\n"
 		"Synopsis \n"
@@ -1111,7 +1111,7 @@ void initdocstrings() {
 		"\n"
 		"sp gp\n"
 	;
-	docstrings["help"] = 
+	docstrings["help"] =
 		"Provide formatted usage information about Soar commands.\n"
 		"\n"
 		"Synopsis \n"
@@ -1129,7 +1129,7 @@ void initdocstrings() {
 		"This command prints formatted help for the given command name. Issue alone to\n"
 		"see what topics have help available.\n"
 	;
-	docstrings["indifferent-selection"] = 
+	docstrings["indifferent-selection"] =
 		"Controls indifferent preference arbitration.\n"
 		"\n"
 		"Synopsis \n"
@@ -1206,7 +1206,7 @@ void initdocstrings() {
 		"\n"
 		"numeric-indifferent-mode rl\n"
 	;
-	docstrings["init-soar"] = 
+	docstrings["init-soar"] =
 		"Empties working memory and resets run-time statistics.\n"
 		"\n"
 		"Synopsis \n"
@@ -1234,7 +1234,7 @@ void initdocstrings() {
 		"\n"
 		"excise\n"
 	;
-	docstrings["internal-symbols"] = 
+	docstrings["internal-symbols"] =
 		"Print information about the Soar symbol table.\n"
 		"\n"
 		"Synopsis \n"
@@ -1273,7 +1273,7 @@ void initdocstrings() {
 		" <so>\n"
 		" <sss>\n"
 	;
-	docstrings["learn"] = 
+	docstrings["learn"] =
 		"Set the parameters for chunking.\n"
 		"\n"
 		"Synopsis \n"
@@ -1377,7 +1377,7 @@ void initdocstrings() {
 		"\n"
 		"watch explain-backtraces save-backtraces\n"
 	;
-	docstrings["load-library"] = 
+	docstrings["load-library"] =
 		"Load a shared library into the local client (for the purpose of, e.g.,\n"
 		"providing custom event handling).\n"
 		"\n"
@@ -1446,7 +1446,7 @@ void initdocstrings() {
 		"\n"
 		"load-library my-logger -filename mylog.log\n"
 	;
-	docstrings["ls"] = 
+	docstrings["ls"] =
 		"List the contents of the current working directory.\n"
 		"\n"
 		"Synopsis \n"
@@ -1465,7 +1465,7 @@ void initdocstrings() {
 		"\n"
 		"cd dirs pushd popd source pwd\n"
 	;
-	docstrings["matches"] = 
+	docstrings["matches"] =
 		"Prints information about partial matches and the match set.\n"
 		"\n"
 		"Synopsis \n"
@@ -1548,7 +1548,7 @@ void initdocstrings() {
 		"\n"
 		"matches -t my*first*production\n"
 	;
-	docstrings["max-chunks"] = 
+	docstrings["max-chunks"] =
 		"Limit the number of chunks created during a decision cycle.\n"
 		"\n"
 		"Synopsis \n"
@@ -1580,7 +1580,7 @@ void initdocstrings() {
 		"build more chunks or whether you've discovered a bug (in your program or in\n"
 		"Soar itself).\n"
 	;
-	docstrings["max-dc-time"] = 
+	docstrings["max-dc-time"] =
 		"Set a wall-clock time limit such that the agent will be interrupted when a\n"
 		"single decision cycle exceeds this limit.\n"
 		"\n"
@@ -1607,7 +1607,7 @@ void initdocstrings() {
 		"max-dc-time -s 0.05\n"
 		"max-dc-time 4000\n"
 	;
-	docstrings["max-elaborations"] = 
+	docstrings["max-elaborations"] =
 		"Limit the maximum number of elaboration cycles in a given phase. Print a\n"
 		"warning message if the limit is reached during a run.\n"
 		"\n"
@@ -1656,7 +1656,7 @@ void initdocstrings() {
 		"\n"
 		"max-elaborations 50\n"
 	;
-	docstrings["max-goal-depth"] = 
+	docstrings["max-goal-depth"] =
 		"Limit the sub-state stack depth.\n"
 		"\n"
 		"Synopsis \n"
@@ -1677,7 +1677,7 @@ void initdocstrings() {
 		"recursive loop, which may come about due to deliberate actions or via an agent\n"
 		"bug, such as dropping inadvertently to state-no-change impasses.\n"
 	;
-	docstrings["max-memory-usage"] = 
+	docstrings["max-memory-usage"] =
 		"Get the number of bytes that when exceeded by an agent, will trigger the memory\n"
 		"usage exceeded event.\n"
 		"\n"
@@ -1700,7 +1700,7 @@ void initdocstrings() {
 		"\n"
 		"Using the command with no arguments displays the current limit.\n"
 	;
-	docstrings["max-nil-output-cycles"] = 
+	docstrings["max-nil-output-cycles"] =
 		"Limit the maximum number of decision cycles that are executed without producing\n"
 		"output when run is invoked with run-til-output args.\n"
 		"\n"
@@ -1741,7 +1741,7 @@ void initdocstrings() {
 		"\n"
 		"run\n"
 	;
-	docstrings["memories"] = 
+	docstrings["memories"] =
 		"Print memory usage for partial matches.\n"
 		"\n"
 		"Synopsis \n"
@@ -1797,7 +1797,7 @@ void initdocstrings() {
 		"\n"
 		"matches\n"
 	;
-	docstrings["multi-attributes"] = 
+	docstrings["multi-attributes"] =
 		"Declare a symbol to be multi-attributed.\n"
 		"\n"
 		"Synopsis \n"
@@ -1833,7 +1833,7 @@ void initdocstrings() {
 		"\n"
 		"multi-attributes thing 4\n"
 	;
-	docstrings["numeric-indifferent-mode"] = 
+	docstrings["numeric-indifferent-mode"] =
 		"Select method for combining numeric preferences.\n"
 		"\n"
 		"Synopsis \n"
@@ -1859,7 +1859,7 @@ void initdocstrings() {
 		"\n"
 		"rl indifferent-selection\n"
 	;
-	docstrings["o-support-mode"] = 
+	docstrings["o-support-mode"] =
 		"Choose experimental variations of o-support.\n"
 		"\n"
 		"Synopsis \n"
@@ -1892,7 +1892,7 @@ void initdocstrings() {
 		"\n"
 		"Running o-support-mode with no arguments prints out the current o-support-mode.\n"
 	;
-	docstrings["popd"] = 
+	docstrings["popd"] =
 		"Pop the current working directory off the stack and change to the next\n"
 		"directory on the stack. Can be relative pathname or fully specified path.\n"
 		"\n"
@@ -1909,14 +1909,14 @@ void initdocstrings() {
 		"\n"
 		"cd dirs ls pushd source pwd\n"
 	;
-	docstrings["port"] = 
+	docstrings["port"] =
 		"Returns the port the kernel instance is listening on.\n"
 		"\n"
 		"Synopsis \n"
 		"\n"
 		"port\n"
 	;
-	docstrings["predict"] = 
+	docstrings["predict"] =
 		"Predict the next selected operator\n"
 		"\n"
 		"Synopsis \n"
@@ -1941,7 +1941,7 @@ void initdocstrings() {
 		"\n"
 		"select\n"
 	;
-	docstrings["preferences"] = 
+	docstrings["preferences"] =
 		"Examine details about the preferences that support the specified identifier and\n"
 		"attribute.\n"
 		"\n"
@@ -2067,7 +2067,7 @@ void initdocstrings() {
 		"Input (IO) wmes for S1 :\n"
 		"(3: S1 ^io I1)\n"
 	;
-	docstrings["print"] = 
+	docstrings["print"] =
 		"Print items in working memory or production memory.\n"
 		"\n"
 		"Synopsis \n"
@@ -2193,7 +2193,7 @@ void initdocstrings() {
 		"\n"
 		"default-wme-depth wma\n"
 	;
-	docstrings["production-find"] = 
+	docstrings["production-find"] =
 		"Find productions by condition or action patterns.\n"
 		"\n"
 		"Synopsis \n"
@@ -2261,7 +2261,7 @@ void initdocstrings() {
 		"\n"
 		"sp\n"
 	;
-	docstrings["pushd"] = 
+	docstrings["pushd"] =
 		"Push a directory onto the directory stack, changing to it.\n"
 		"\n"
 		"Synopsis \n"
@@ -2277,7 +2277,7 @@ void initdocstrings() {
 		"\n"
 		"cd dirs ls popd source pwd\n"
 	;
-	docstrings["pwatch"] = 
+	docstrings["pwatch"] =
 		"Trace firings and retractions of specific productions.\n"
 		"\n"
 		"Synopsis \n"
@@ -2322,7 +2322,7 @@ void initdocstrings() {
 		"\n"
 		"watch\n"
 	;
-	docstrings["pwd"] = 
+	docstrings["pwd"] =
 		"Print the current working directory.\n"
 		"\n"
 		"Synopsis \n"
@@ -2337,7 +2337,7 @@ void initdocstrings() {
 		"\n"
 		"Prints the current working directory of Soar.\n"
 	;
-	docstrings["rand"] = 
+	docstrings["rand"] =
 		"Generate a random number.\n"
 		"\n"
 		"Synopsis \n"
@@ -2359,7 +2359,7 @@ void initdocstrings() {
 		"\n"
 		"rand --integer 10 # returns 0..10, for example: \"4\"\n"
 	;
-	docstrings["remove-wme"] = 
+	docstrings["remove-wme"] =
 		"Manually remove an element from working memory.\n"
 		"\n"
 		"Synopsis \n"
@@ -2400,7 +2400,7 @@ void initdocstrings() {
 		"\n"
 		"add-wme\n"
 	;
-	docstrings["replay-input"] = 
+	docstrings["replay-input"] =
 		"Load input wmes for each decision cycle from a file.\n"
 		"\n"
 		"Synopsis \n"
@@ -2428,7 +2428,7 @@ void initdocstrings() {
 		"\n"
 		"capture-input\n"
 	;
-	docstrings["rete-net"] = 
+	docstrings["rete-net"] =
 		"Save the current Rete net, or restore a previous one.\n"
 		"\n"
 		"Synopsis \n"
@@ -2470,7 +2470,7 @@ void initdocstrings() {
 		"\n"
 		"excise init-soar\n"
 	;
-	docstrings["rl"] = 
+	docstrings["rl"] =
 		"Control how numeric indifferent preference values in RL rules are updated via\n"
 		"reinforcement learning.\n"
 		"\n"
@@ -2601,7 +2601,7 @@ void initdocstrings() {
 		"\n"
 		"excise print watch\n"
 	;
-	docstrings["run"] = 
+	docstrings["run"] =
 		"Begin Soar's execution cycle.\n"
 		"\n"
 		"Synopsis \n"
@@ -2709,7 +2709,7 @@ void initdocstrings() {
 		"If Soar has been stopped due to a halt action, an init-soar command must be\n"
 		"issued before Soar can be restarted with the run command.\n"
 	;
-	docstrings["save-backtraces"] = 
+	docstrings["save-backtraces"] =
 		"Save trace information to explain chunks and justifications.\n"
 		"\n"
 		"Synopsis \n"
@@ -2738,7 +2738,7 @@ void initdocstrings() {
 		"\n"
 		"explain-backtraces\n"
 	;
-	docstrings["select"] = 
+	docstrings["select"] =
 		"Force the next selected operator\n"
 		"\n"
 		"Synopsis \n"
@@ -2779,7 +2779,7 @@ void initdocstrings() {
 		"\n"
 		"predict\n"
 	;
-	docstrings["set-library-location"] = 
+	docstrings["set-library-location"] =
 		"Set the top level directory containing demos/help/etc.\n"
 		"\n"
 		"Synopsis \n"
@@ -2800,7 +2800,7 @@ void initdocstrings() {
 		"\n"
 		"help\n"
 	;
-	docstrings["set-stop-phase"] = 
+	docstrings["set-stop-phase"] =
 		"Controls the phase where agents stop when running by decision.\n"
 		"\n"
 		"Synopsis \n"
@@ -2848,7 +2848,7 @@ void initdocstrings() {
 		"set-stop-phase --after --output    // stop after output phase\n"
 		"set-stop-phase                     // reports the current stop phase\n"
 	;
-	docstrings["smem"] = 
+	docstrings["smem"] =
 		"Control the behavior of semantic memory.\n"
 		"\n"
 		"Synopsis \n"
@@ -3104,7 +3104,7 @@ void initdocstrings() {
 		"\n"
 		"watch\n"
 	;
-	docstrings["soarnews"] = 
+	docstrings["soarnews"] =
 		"Prints information about the current release.\n"
 		"\n"
 		"Synopsis \n"
@@ -3115,7 +3115,7 @@ void initdocstrings() {
 		"\n"
 		"sn soarnews\n"
 	;
-	docstrings["source"] = 
+	docstrings["source"] =
 		"Load and evaluate the contents of a file.\n"
 		"\n"
 		"Synopsis \n"
@@ -3199,7 +3199,7 @@ void initdocstrings() {
 		"\n"
 		"cd dirs ls pushd popd pwd\n"
 	;
-	docstrings["sp"] = 
+	docstrings["sp"] =
 		"Define a Soar production.\n"
 		"\n"
 		"Synopsis \n"
@@ -3296,7 +3296,7 @@ void initdocstrings() {
 		"\n"
 		"excise learn watch\n"
 	;
-	docstrings["srand"] = 
+	docstrings["srand"] =
 		"Seed the random number generator.\n"
 		"\n"
 		"Synopsis \n"
@@ -3317,7 +3317,7 @@ void initdocstrings() {
 		"\n"
 		"srand 0\n"
 	;
-	docstrings["stats"] = 
+	docstrings["stats"] =
 		"Print information on Soar's runtime statistics.\n"
 		"\n"
 		"Synopsis \n"
@@ -3466,7 +3466,7 @@ void initdocstrings() {
 		"\n"
 		"timers init-soar command-to-file\n"
 	;
-	docstrings["stop-soar"] = 
+	docstrings["stop-soar"] =
 		"Pause Soar.\n"
 		"\n"
 		"Synopsis \n"
@@ -3505,7 +3505,7 @@ void initdocstrings() {
 		"pending I/O, then it may not be possible to interrupt a Soar agent from the\n"
 		"command line.\n"
 	;
-	docstrings["time"] = 
+	docstrings["time"] =
 		"Use a default system clock timer to record the wall time required while\n"
 		"executing a command.\n"
 		"\n"
@@ -3518,7 +3518,7 @@ void initdocstrings() {
 		"command   The command to execute.\n"
 		"arguments Optional command arguments.\n"
 	;
-	docstrings["timers"] = 
+	docstrings["timers"] =
 		"Toggle on or off the internal timers used to profile Soar.\n"
 		"\n"
 		"Synopsis \n"
@@ -3544,7 +3544,7 @@ void initdocstrings() {
 		"\n"
 		"stats\n"
 	;
-	docstrings["unalias"] = 
+	docstrings["unalias"] =
 		"Undefine an existing alias\n"
 		"\n"
 		"Synopsis \n"
@@ -3569,7 +3569,7 @@ void initdocstrings() {
 		"\n"
 		"alias\n"
 	;
-	docstrings["verbose"] = 
+	docstrings["verbose"] =
 		"Control detailed information printed as Soar runs.\n"
 		"\n"
 		"Synopsis \n"
@@ -3592,7 +3592,7 @@ void initdocstrings() {
 		"\n"
 		"watch\n"
 	;
-	docstrings["version"] = 
+	docstrings["version"] =
 		"Returns the version number of the Soar kernel.\n"
 		"\n"
 		"Synopsis \n"
@@ -3605,7 +3605,7 @@ void initdocstrings() {
 		"returns the version number and build date which can then be stored by the agent\n"
 		"or the application.\n"
 	;
-	docstrings["waitsnc"] = 
+	docstrings["waitsnc"] =
 		"Generate a wait state rather than a state-no-change impasse.\n"
 		"\n"
 		"Synopsis \n"
@@ -3629,7 +3629,7 @@ void initdocstrings() {
 		"\n"
 		"When issued with no arguments, waitsnc returns its current setting.\n"
 	;
-	docstrings["warnings"] = 
+	docstrings["warnings"] =
 		"Enable or disable the printing of warning messages from the Soar kernel.\n"
 		"\n"
 		"Synopsis \n"
@@ -3659,7 +3659,7 @@ void initdocstrings() {
 		"the state, usually result in the production not being loaded, and a warning\n"
 		"regardless of the warnings setting.\n"
 	;
-	docstrings["watch"] = 
+	docstrings["watch"] =
 		"Control the run-time tracing of Soar.\n"
 		"\n"
 		"Synopsis \n"
@@ -3887,7 +3887,7 @@ void initdocstrings() {
 		"\n"
 		"epmem pwatch print run watch-wmes\n"
 	;
-	docstrings["watch-wmes"] = 
+	docstrings["watch-wmes"] =
 		"Print information about wmes matching a certain pattern as they are added and\n"
 		"removed.\n"
 		"\n"
@@ -3954,7 +3954,7 @@ void initdocstrings() {
 		"\n"
 		"soar> watch-wmes --add-filter -t both * ontop *\n"
 	;
-	docstrings["wma"] = 
+	docstrings["wma"] =
 		"Control the behavior of working memory activation.\n"
 		"\n"
 		"Synopsis \n"

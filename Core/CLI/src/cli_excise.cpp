@@ -51,7 +51,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 
       excise_all_productions_of_type(agnt, DEFAULT_PRODUCTION_TYPE, false);
     }
-    if (options.test(EXCISE_RL)) {                        
+    if (options.test(EXCISE_RL)) {
        for ( production *prod = agnt->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
        {
            if ( prod->rl_rule )
@@ -78,7 +78,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
                excise_production( agnt, prod, static_cast<Bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
            }
        }
-       
+
        rl_initialize_template_tracking( agnt );
     }
     if (options.test(EXCISE_TASK)) {
@@ -102,7 +102,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
     }
 
     // Excise specific production
-    if (pProduction) 
+    if (pProduction)
     {
         Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
 
@@ -110,15 +110,15 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         {
             return SetError("Production not found.");
         }
-        
-        if (!m_RawOutput) 
+
+        if (!m_RawOutput)
         {
             // Save the name for the structured response
             AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, *pProduction );
         }
 
         // Increment the count for the structured response
-        ++exciseCount;    
+        ++exciseCount;
 
         excise_production(agnt, sym->sc.production, false);
     }

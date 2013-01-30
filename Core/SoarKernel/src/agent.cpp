@@ -84,7 +84,7 @@ void init_soar_agent(agent* thisAgent) {
   init_explain(thisAgent);  /* AGR 564 */
   select_init(thisAgent);
   predict_init(thisAgent);
-	
+
   init_memory_pool( thisAgent, &( thisAgent->gds_pool ), sizeof( goal_dependency_set ), "gds" );
 
   init_memory_pool( thisAgent, &( thisAgent->rl_info_pool ), sizeof( rl_data ), "rl_id_data" );
@@ -365,13 +365,13 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   // epmem initialization
   newAgent->epmem_params = new epmem_param_container( newAgent );
-  newAgent->epmem_stats = new epmem_stat_container( newAgent );  
+  newAgent->epmem_stats = new epmem_stat_container( newAgent );
   newAgent->epmem_timers = new epmem_timer_container( newAgent );
 
   newAgent->epmem_db = new soar_module::sqlite_database();
-  newAgent->epmem_stmts_common = NULL;  
+  newAgent->epmem_stmts_common = NULL;
   newAgent->epmem_stmts_graph = NULL;
-  
+
   newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
   newAgent->epmem_node_maxes = new std::vector<bool>();
 
@@ -403,7 +403,7 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   // smem initialization
   newAgent->smem_params = new smem_param_container( newAgent );
-  newAgent->smem_stats = new smem_stat_container( newAgent );  
+  newAgent->smem_stats = new smem_stat_container( newAgent );
   newAgent->smem_timers = new smem_timer_container( newAgent );
 
   newAgent->smem_db = new soar_module::sqlite_database();
@@ -595,7 +595,7 @@ void destroy_soar_agent (agent * delete_agent)
   /* RPM 9/06 end */
 
   // dynamic memory pools (cleared in the last step)
-  for ( std::map< size_t, memory_pool* >::iterator it=delete_agent->dyn_memory_pools->begin(); it!=delete_agent->dyn_memory_pools->end(); it++ ) 
+  for ( std::map< size_t, memory_pool* >::iterator it=delete_agent->dyn_memory_pools->begin(); it!=delete_agent->dyn_memory_pools->end(); it++ )
   {
 	  delete it->second;
   }

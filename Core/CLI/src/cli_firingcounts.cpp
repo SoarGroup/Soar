@@ -35,7 +35,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
     agent* agnt = m_pAgentSML->GetSoarAgent();
 
     // if we have a production, just get that one, otherwise get them all
-    if (pProduction) 
+    if (pProduction)
     {
         Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
 
@@ -48,15 +48,15 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
         firing.first = *pProduction;
         firing.second = sym->sc.production->firing_count;
         firings.push_back(firing);
-    } 
-    else 
+    }
+    else
     {
         bool foundProduction = false;
 
         for(unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
         {
-            for( production* pSoarProduction = agnt->all_productions_of_type[i]; 
-                pSoarProduction != 0; 
+            for( production* pSoarProduction = agnt->all_productions_of_type[i];
+                pSoarProduction != 0;
                 pSoarProduction = pSoarProduction->next )
             {
                 if (!numberToList) {
@@ -75,7 +75,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
                 firings.push_back(firing);
             }
         }
-    
+
         if (!foundProduction) return SetError("Production not found.");
     }
 
@@ -85,9 +85,9 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
 
     // print the list
     int i = 0;
-    for (std::vector< std::pair< std::string, uint64_t > >::reverse_iterator j = firings.rbegin(); 
-        j != firings.rend() && (numberToList <= 0 || i < numberToList); 
-        ++j, ++i) 
+    for (std::vector< std::pair< std::string, uint64_t > >::reverse_iterator j = firings.rbegin();
+        j != firings.rend() && (numberToList <= 0 || i < numberToList);
+        ++j, ++i)
     {
         if (m_RawOutput) {
             m_Result << std::setw(6) << j->second << ":  " << j->first << "\n";

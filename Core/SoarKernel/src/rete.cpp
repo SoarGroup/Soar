@@ -5708,7 +5708,7 @@ void cn_partner_node_left_addition (agent* thisAgent, rete_node *node,
    (example case involves an NCC -- create a match fot the NCC by adding
    a WME inside it, then remove another WME for a different condition
    inside the NCC).  When one of these "strobe" situations occurs,
-   we don't want to actually fire the production or retract the 
+   we don't want to actually fire the production or retract the
    instantiation -- hence the buffering.
 ************************************************************************ */
 

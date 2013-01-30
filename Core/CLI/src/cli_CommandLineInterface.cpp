@@ -27,7 +27,7 @@ using namespace cli;
 using namespace sml;
 using namespace soarxml;
 
-EXPORT CommandLineInterface::CommandLineInterface() 
+EXPORT CommandLineInterface::CommandLineInterface()
 {
     m_pLogFile        = 0;
     m_TrapPrintEvents = false;
@@ -112,9 +112,9 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::WMACommand(*this));
 }
 
-EXPORT CommandLineInterface::~CommandLineInterface() 
+EXPORT CommandLineInterface::~CommandLineInterface()
 {
-    if (m_pLogFile) 
+    if (m_pLogFile)
     {
         (*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
         delete m_pLogFile;
@@ -133,14 +133,14 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
     return strncmp(pCommandLine, "edit-production", strlen("edit_production")) != 0;
 }
 
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse) 
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse)
 {
     if (!m_pKernelSML) return false;
 
     PushCall( CallData(pAgent, rawOutput) );
 
     // Log input
-    if (m_pLogFile) 
+    if (m_pLogFile)
     {
         if (pAgent) (*m_pLogFile) << pAgent->GetName() << "> ";
         (*m_pLogFile) << pCommandLine << std::endl;
@@ -167,9 +167,9 @@ void CommandLineInterface::PushCall( CallData callData )
 {
     m_CallDataStack.push( callData );
 
-    if (callData.pAgent) 
+    if (callData.pAgent)
         m_pAgentSML = callData.pAgent;
-    else 
+    else
         m_pAgentSML = 0;
 
     m_RawOutput = callData.rawOutput;
@@ -182,7 +182,7 @@ void CommandLineInterface::PopCall()
 {
     m_CallDataStack.pop();
     sml::AgentSML* pAgent = 0;
-    
+
     if ( m_CallDataStack.size() )
     {
         const CallData& callData = m_CallDataStack.top();
@@ -209,7 +209,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
         // Trap print callbacks
         m_pAgentSML->DisablePrintCallback();
         m_TrapPrintEvents = true;
-        if (!m_pLogFile) 
+        if (!m_pLogFile)
             // If we're logging, we're already registered for this.
             RegisterWithKernel(smlEVENT_PRINT);
 
@@ -244,7 +244,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
         }
 
         // Re-enable print callbacks
-        if (!m_pLogFile) 
+        if (!m_pLogFile)
         {
             // If we're logging, we want to stay registered for this
             UnregisterWithKernel(smlEVENT_PRINT);
@@ -254,7 +254,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
     }
 }
 
-void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults) 
+void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults)
 {
     assert(pConnection);
     assert(pResponse);
@@ -269,12 +269,12 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
         else
         {
             // If there are tags in the response list, add them
-            if (!m_ResponseTags.empty()) 
+            if (!m_ResponseTags.empty())
             {
                 TagResult* pTag = new TagResult();
 
                 ElementXMLListIter iter = m_ResponseTags.begin();
-                while (iter != m_ResponseTags.end()) 
+                while (iter != m_ResponseTags.end())
                 {
                     pTag->AddChild(*iter);
                     m_ResponseTags.erase(iter);
@@ -282,7 +282,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
                 }
 
                 pResponse->AddChild(pTag);
-            } 
+            }
             else
                 pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
         }
@@ -300,13 +300,13 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
     for ( ElementXMLListIter cleanupIter = m_ResponseTags.begin(); cleanupIter != m_ResponseTags.end(); ++cleanupIter )
         delete *cleanupIter;
 
-    m_ResponseTags.clear();    
+    m_ResponseTags.clear();
 }
 
-bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) 
+bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv)
 {
     // Standard help check if there is more than one argument
-    if (argv.size() > 1) 
+    if (argv.size() > 1)
     {
         // Is one of the two help strings present?
         if (argv[1] == "-h" || argv[1] == "--help")
@@ -315,12 +315,12 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv)
     return false;
 }
 
-EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) 
+EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML)
 {
     m_pKernelSML = pKernelSML;
 }
 
-bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory) 
+bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory)
 {
     // Pull an arbitrary buffer size of 1024 out of a hat and use it
     char buf[1024];
@@ -335,27 +335,27 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory)
     return true;
 }
 
-void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const std::string& value) 
+void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const std::string& value)
 {
     AppendArgTag(pParam, pType, value.c_str());
 }
 
-void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const std::string& value) 
+void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const std::string& value)
 {
     AppendArgTagFast(pParam, pType, value.c_str());
 }
 
-void CommandLineInterface::PrependArgTag(const char* pParam, const char* pType, const std::string& value) 
+void CommandLineInterface::PrependArgTag(const char* pParam, const char* pType, const std::string& value)
 {
     PrependArgTag(pParam, pType, value.c_str());
 }
 
-void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const std::string& value) 
+void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const std::string& value)
 {
     PrependArgTagFast(pParam, pType, value.c_str());
 }
 
-void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const char* pValue) 
+void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const char* pValue)
 {
     TagArg* pTag = new TagArg();
     pTag->SetParam(pParam);
@@ -364,7 +364,7 @@ void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, c
     m_ResponseTags.push_back(pTag);
 }
 
-void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const char* pValue) 
+void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const char* pValue)
 {
     TagArg* pTag = new TagArg();
     pTag->SetParamFast(pParam);
@@ -373,7 +373,7 @@ void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pTyp
     m_ResponseTags.push_back(pTag);
 }
 
-void CommandLineInterface::PrependArgTag(const char* pParam, const char* pType, const char* pValue) 
+void CommandLineInterface::PrependArgTag(const char* pParam, const char* pType, const char* pValue)
 {
     TagArg* pTag = new TagArg();
     pTag->SetParam(pParam);
@@ -382,7 +382,7 @@ void CommandLineInterface::PrependArgTag(const char* pParam, const char* pType, 
     m_ResponseTags.push_front(pTag);
 }
 
-void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const char* pValue) 
+void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const char* pValue)
 {
     TagArg* pTag = new TagArg();
     pTag->SetParamFast(pParam);
@@ -391,7 +391,7 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
     m_ResponseTags.push_front(pTag);
 }
 
-bool CommandLineInterface::SetError(const std::string& error) 
+bool CommandLineInterface::SetError(const std::string& error)
 {
     if (!m_Result.str().empty())
         if (m_Result.str().at(m_Result.str().length() - 1) != '\n')
@@ -401,7 +401,7 @@ bool CommandLineInterface::SetError(const std::string& error)
     return false;
 }
 
-bool CommandLineInterface::AppendError(const std::string& error) 
+bool CommandLineInterface::AppendError(const std::string& error)
 {
     m_Result << error;
     m_LastError.append(error);
@@ -477,34 +477,34 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
                 regmatch_t match;
                 memset(&match, 0, sizeof(regmatch_t));
 
-                while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0) 
+                while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0)
                 {
                     message.insert(match.rm_so, "<");
                     message.insert(match.rm_eo + 1, ">");
                     match.rm_eo += 2;
-                }  
+                }
 
                 regfree(&comp);
 
                 // Simply append to message result
-                if (m_TrapPrintEvents) 
+                if (m_TrapPrintEvents)
                 {
                     CommandLineInterface::m_Result << message;
                     //std::cout << msg;
                     //std::cout.flush();
-                } 
-                else if (m_pLogFile) 
+                }
+                else if (m_pLogFile)
                     (*m_pLogFile) << msg;
-            } 
-            else 
+            }
+            else
             {
-                if (m_TrapPrintEvents) 
+                if (m_TrapPrintEvents)
                 {
                     CommandLineInterface::m_Result << msg;
                     //std::cout << msg;
                     //std::cout.flush();
-                } 
-                else if (m_pLogFile) 
+                }
+                else if (m_pLogFile)
                     (*m_pLogFile) << msg;
             }
         }

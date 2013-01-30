@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* gsysparam.h */
@@ -17,7 +17,7 @@
 
    Most of the parameters are of type "int64_t".  A few parameters are more
    naturally handled as lists; for these, the array value is just a dummy,
-   and callback routines must inspect a global variable to get the real 
+   and callback routines must inspect a global variable to get the real
    value.  Chunk_free_problem_spaces is an example of this.
 
    The array of sysparams[] can be read directly, but should be modified
@@ -78,7 +78,7 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 #define USER_SELECT_BOLTZMANN	1		/* boltzmann algorithm, with respect to temperature */
 #define USER_SELECT_E_GREEDY	2		/* with probability epsilon choose random, otherwise greedy */
 #define USER_SELECT_FIRST  		3		/* just choose the first candidate item */
-#define USER_SELECT_LAST   		4		/* choose the last item   AGR 615 */	
+#define USER_SELECT_LAST   		4		/* choose the last item   AGR 615 */
 #define USER_SELECT_RANDOM 		5		/* pick one at random */
 #define USER_SELECT_SOFTMAX		6		/* pick one at random, probabalistically biased by numeric preferences */
 #define USER_SELECT_INVALID		7		/* should be 1+ last item, used for validity checking */
