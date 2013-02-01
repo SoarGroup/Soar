@@ -4,6 +4,7 @@
 #include <vector>
 #include "mat.h"
 #include "serializable.h"
+#include "timer.h"
 
 class nc_cls;
 
@@ -33,6 +34,8 @@ public:
 private:
 	int nc_type;
 	nc_cls *cls;
+	
+	mutable timer_set timers;
 };
 
 

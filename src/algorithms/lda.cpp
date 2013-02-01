@@ -155,10 +155,14 @@ void num_classifier::set_type(int t) {
 }
 
 void num_classifier::learn(mat &data, const vector<int> &classes) {
+	function_timer t(timers.get_or_add("learn"));
+	
 	cls->learn(data, classes);
 }
 
 int num_classifier::classify(const rvec &x) const {
+	function_timer t(timers.get_or_add("classify"));
+	
 	return cls->classify(x);
 }
 
@@ -396,7 +400,11 @@ dtree_classifier::dtree_classifier() {
 void dtree_classifier::learn(mat &data, const vector<int> &classes) {
 	static cv::Mat empty;
 	static CvDTreeParams params;
-	params.cv_folds = 10;
+	if (data.rows() < 20) {
+		params.cv_folds = 1;
+	} else {
+		params.cv_folds = data.rows() / 10;  // each fold needs at least 10 examples
+	}
 	params.min_sample_count = 10;
 	
 	cv::Mat cvdata(data.rows(), data.cols(), CV_64F, data.data()), cvfloatdata(data.rows(), data.cols(), CV_32F);
