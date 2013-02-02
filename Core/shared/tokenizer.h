@@ -407,7 +407,7 @@ namespace soar
 #endif
             if (callback)
             {
-            	if ((last_arg == "sp") && (argv[0] != "sp")) {
+            	if (((last_arg == "sp") && (argv[0] != "sp")) || ((last_arg == "gp") && (argv[0] != "gp"))) {
             		const char* echo_args[] = {"echo", " "};
             		std::vector<std::string> echo_command(echo_args, echo_args + sizeof(echo_args)/sizeof(echo_args[0]));
             		bool echoresult = callback->handle_command(echo_command);
