@@ -83,7 +83,7 @@ namespace soar
         }
 
         virtual ~tokenizer_current() {}
-        
+
         /**
          * Set the input buffer, point to the first character in the buffer.
          * Resets line and offset counters.
@@ -191,9 +191,9 @@ namespace soar
      * refers to as "words").
      *
      * Here are the rules, copied from the Tcl language summary (man tcl), with
-     * modifications [in square brackets] as they apply to this parser. The only 
+     * modifications [in square brackets] as they apply to this parser. The only
      * deviations appear in rules 5 and 9.
-     * 
+     *
      * [1] A Tcl script is a string containing one or more commands. Semi-colons
      * and newlines are command separators unless quoted as described below.  Close
      * brackets are command terminators during command substitution (see below)
@@ -274,14 +274,14 @@ namespace soar
      * Soar production syntax. For example, the first closing brace in
      * the follow rule looks commented out, but really isn't because
      * the # is treated as a literal by the CLI:
-     * 
+     *
      *   sp {rule
      *      (state <s> ^superstate nil)
      *   -->
      *      (<s> ^foo bar)
      *     #(<s> ^bar baz)}
      *   }
-     * 
+     *
      * Another gotcha is with commands:
      *
      *   indifferent-selection -g # for RL
@@ -290,8 +290,8 @@ namespace soar
      *   1. When escaped with a \
      *   2. Between double quotes ("") that are not embedded in brace quotes
      *   3. Between pipes (||) that are embedded in brace quotes
-     * 
-     * 
+     *
+     *
      * [10] [Talks about details regarding substitution and generally does not
      * apply to this parser.]
      *
@@ -306,10 +306,11 @@ namespace soar
         tokenizer_callback* callback;   ///< The current argv callback (only one).
         int command_start_line;         ///< The line that the first word is on.
         const char* error;              ///< Error message.
+        std::string last_arg;			///< Last valid command processed
 
     public:
         tokenizer()
-            : callback(0), error(0) 
+            : callback(0), error(0)
         {}
         virtual ~tokenizer() {}
 
@@ -406,8 +407,16 @@ namespace soar
 #endif
             if (callback)
             {
+            	if ((last_arg == "sp") && (argv[0] != "sp")) {
+            		const char* echo_args[] = {"echo", " "};
+            		std::vector<std::string> echo_command(echo_args, echo_args + sizeof(echo_args)/sizeof(echo_args[0]));
+            		bool echoresult = callback->handle_command(echo_command);
+            	}
                 if (!callback->handle_command(argv))
                     current.invalidate();
+                else {
+                	last_arg.assign(argv[0]);
+                }
             }
         }
 
@@ -429,7 +438,7 @@ namespace soar
             {
             case ';':
                 break;
-                
+
             case '#':
                 skip_to_end_of_line();
                 break;
@@ -471,7 +480,7 @@ namespace soar
 
                 case ';':
                     return;
-                
+
                 case '#':
                     skip_to_end_of_line();
                     return;
@@ -524,7 +533,7 @@ namespace soar
             {
                 switch (current.get())
                 {
-                case 0: 
+                case 0:
                     error = "unexpected eof";
                     current.invalidate();
                     return;
