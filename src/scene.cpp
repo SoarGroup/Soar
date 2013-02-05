@@ -114,7 +114,6 @@ scene::scene(const string &name, drawer *d)
 	nodes[root_id].node = root;
 	root->listen(this);
 	node_ids[root_name] = root_id;
-	dirty = true;
 	sig_dirty = true;
 }
 
@@ -566,33 +565,48 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	sgnode *child;
 	group_node *g;
 	int i;
+	relation *tr;
 	
+	if (t == sgnode::CHILD_ADDED) {
+		g = n->as_group();
+		child = g->get_child(added_child);
+		child->listen(this);
+		i = node_counter++;
+		node_ids[child->get_name()] = i;
+		nodes[i].node = child;
+		sig_dirty = true;
+		if (!child->is_group()) {
+			cdetect.add_node(child);
+			update_closest(child);
+		}
+		
+		tr = map_getp(type_rels, child->get_type());
+		if (!tr) {
+			tr = &type_rels[child->get_type()];
+			tr->reset(2);
+		}
+		tr->add(0, i);
+		
+		if (draw) {
+			draw->add(name, child);
+		}
+		return;
+	}
+	
+	if (!map_get(node_ids, n->get_name(), i)) {
+		assert(false);
+	}
 	switch (t) {
-		case sgnode::CHILD_ADDED:
-			g = n->as_group();
-			child = g->get_child(added_child);
-			child->listen(this);
-			i = node_counter++;
-			node_ids[child->get_name()] = i;
-			nodes[i].node = child;
-			sig_dirty = true;
-			if (!child->is_group()) {
-				cdetect.add_node(child);
-				update_closest(child);
-			}
-			if (draw) {
-				draw->add(name, child);
-			}
-			break;
 		case sgnode::DELETED:
 			if (!n->is_group()) {
 				cdetect.del_node(n);
 			}
-			if (!map_get(node_ids, n->get_name(), i)) {
-				assert(false);
-			}
 			nodes.erase(i);
 			node_ids.erase(n->get_name());
+			tr = map_getp(type_rels, n->get_type());
+			if (tr) {
+				tr->del(0, i);
+			}
 			sig_dirty = true;
 			if (draw && n->get_name() != "world") {
 				draw->del(name, n);
@@ -606,18 +620,19 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 					draw->change(name, n, drawer::SHAPE);
 				}
 			}
+			nodes[i].rels_dirty = true;
 			break;
 		case sgnode::TRANSFORM_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_transform(n);
 				update_closest(n);
 			}
+			nodes[i].rels_dirty = true;
 			if (draw) {
 				draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			break;
 	}
-	dirty = true;
 }
 
 bool scene::intersects(const sgnode *a, const sgnode *b) const {
@@ -690,3 +705,37 @@ const scene_sig &scene::get_signature() const {
 	return sig;
 }
 
+void scene::get_relations(relation_table &rt) const {
+	tuple closest(2);
+	vector<int> dirty_nodes;
+	node_table::const_iterator i, iend;
+	
+	rt = type_rels;
+	relation &closest_rel = rt["closest"];
+	closest_rel.reset(3);
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+		if (i->first == root_id) {
+			continue;
+		}
+		if (i->second.rels_dirty) {
+			dirty_nodes.push_back(i->first);
+			i->second.rels_dirty = false;
+		}
+		closest[0] = i->first;
+		closest[1] = get_closest(i->first);
+		closest_rel.add(0, closest);
+	}
+	
+	relation_table::iterator j, jend;
+	for (j = cached_rels.begin(), jend = cached_rels.end(); j != jend; ++j) {
+		relation &r = j->second;
+		for (int k = 1, kend = r.arity(); k < kend; ++k) {
+			r.filter(k, dirty_nodes, true);
+		}
+	}
+	get_filter_table().update_relations(this, dirty_nodes, 0, cached_rels);
+	
+	for (j = cached_rels.begin(), jend = cached_rels.end(); j != jend; ++j) {
+		rt[j->first] = j->second;
+	}
+}

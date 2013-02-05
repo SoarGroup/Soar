@@ -67,11 +67,11 @@ int main(int argc, char *argv[]) {
 
 num_classifier *make_classifier() {
 	if (strcmp(classifier_type, "lda") == 0) {
-		return new LDA;
+		return new num_classifier(NC_LDA);
 	} else if (strcmp(classifier_type, "sign") == 0) {
-		return new sign_classifier;
+		return new num_classifier(NC_SIGN);
 	} else if (strcmp(classifier_type, "dtree") == 0) {
-		return new dtree_classifier;
+		return new num_classifier(NC_DTREE);
 	}
 	cerr << "no such classifier type" << endl;
 	return NULL;

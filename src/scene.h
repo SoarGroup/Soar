@@ -8,6 +8,7 @@
 #include "common.h"
 #include "collision.h"
 #include "scene_sig.h"
+#include "relation.h"
 
 class filter;
 class filter_input;
@@ -50,13 +51,17 @@ public:
 	const scene_sig &get_signature() const;
 	
 	std::string get_name() const { return name; }
-	
+	void get_relations(relation_table &rt) const;
+
 private:
 	typedef std::map<std::string, double> property_map;
 	
 	struct node_info {
+		node_info() : node(NULL),  rels_dirty(true) {}
+		
 		sgnode *node;
 		property_map props;
+		mutable bool rels_dirty;
 	};
 	
 	typedef std::map<int, node_info> node_table;
@@ -80,7 +85,6 @@ private:
 	int          root_id;
 	node_table   nodes;
 	drawer      *draw;
-	bool         dirty;
 	bool         sig_dirty;
 	
 	collision_detector cdetect;
@@ -95,6 +99,9 @@ private:
 	
 	std::map<std::pair<const sgnode *, const sgnode *>, double> distances;
 	std::map<const sgnode *, close_info> closest;
+
+	mutable relation_table cached_rels;
+	relation_table type_rels;
 };
 
 #endif

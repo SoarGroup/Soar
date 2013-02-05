@@ -164,15 +164,14 @@ private:
 		vector<bool> need_update(constraints.size(), false);
 		for (int i = 0; i < constraints.size(); ++i) {
 			constraint_info &cons = constraints[i];
-			vector<tuple> pat(cons.tuples.arity());
+			tuple t(1, value);
 			for (int j = 0; j < cons.vars.size(); ++j) {
 				if (cons.vars[j] == v) {
-					pat[j].push_back(value);
+					cons.tuples.filter(j, t, false);
 					--cons.num_unassigned;
 					need_update[i] = true;
 				}
 			}
-			cons.tuples.filter(pat, false);
 		}
 
 		/*
@@ -782,8 +781,8 @@ void FOIL::dump_foil6(ostream &os) const {
 	relation all_times_rel(1);
 	interval_set all_times, all_objs;
 	
-	pos.slice(zero, all_times_rel);
-	neg.slice(zero, all_times_rel);
+	pos.slice(1, all_times_rel);
+	neg.slice(1, all_times_rel);
 	all_times_rel.at_pos(0, all_times);
 	
 	relation_table::const_iterator i, iend;

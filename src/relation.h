@@ -85,7 +85,10 @@ public:
 	
 	interval_set();
 	interval_set(const interval_set &v);
-	interval_set(const std::set<int> &s);
+	
+	template<typename C>
+	interval_set(const C &container);
+	
 	~interval_set();
 	
 	bool insert(int x);
@@ -106,7 +109,9 @@ public:
 	void clear()                             { curr->clear(); sz = 0; }
 
 	interval_set &operator=(const interval_set &v);
-	interval_set &operator=(const std::set<int> &s);
+
+	template<typename C>
+	interval_set &operator=(const C &container);
 
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
@@ -182,18 +187,17 @@ public:
 	void subtract(const relation &r);
 	void subtract(const relation &r, relation &out) const;
 	void subtract(const tuple &inds, const relation &r);
-	
+	void filter(int i, tuple &vals, bool complement);
+
 	void expand(const relation &r, const tuple &match1, const tuple &match2, const tuple &extend);
-	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
-	void filter(const std::vector<tuple> &pattern, bool negate);
 	void slice(const tuple &inds, relation &out) const;
 	void slice(int n, relation &out) const;
-	void drop_first(std::set<tuple> &out) const;
-	void random_split(int k, relation *r1, relation *r2) const;
+
+	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
 	void at_pos(int n, interval_set &elems) const;
-	
 	bool contains(const tuple &t) const;
 	bool operator==(const relation &r) const;
+	void random_split(int k, relation *r1, relation *r2) const;
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
@@ -223,5 +227,37 @@ typedef std::map<std::string, relation> relation_table;
 
 std::ostream &operator<<(std::ostream &os, const relation &r);
 std::ostream &operator<<(std::ostream &os, const relation_table &t);
+
+template<typename C>
+interval_set::interval_set(const C &container) {
+	curr = new std::vector<interval>;
+	work = new std::vector<interval>;
+	*this = container;
+}
+
+template<typename C>
+interval_set &interval_set::operator=(const C &container) {
+	interval in;
+	typename C::const_iterator i, iend;
+	
+	curr->clear();
+	if (!container.empty()) {
+		i = container.begin();
+		in.first = *i;
+		in.last = *i;
+		for (++i, iend = container.end(); i != iend; ++i) {
+			if (*i > in.last + 1) {
+				curr->push_back(in);
+				in.first = *i;
+				in.last = *i;
+			} else {
+				in.last++;
+			}
+		}
+		curr->push_back(in);
+	}
+	sz = container.size();
+	return *this;
+}
 
 #endif

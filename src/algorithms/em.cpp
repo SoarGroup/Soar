@@ -208,27 +208,21 @@ void split_data(
  Add tuples from a single time point into the relation table
 */
 void extend_relations(relation_table &rels, const relation_table &add, int time) {
-	set<tuple> t;
-	relation_table::const_iterator i;
-	for (i = add.begin(); i != add.end(); ++i) {
+	relation_table::const_iterator i, iend;
+	relation::const_iterator j, jend;
+	tuple t;
+	
+	for (i = add.begin(), iend = add.end(); i != iend; ++i) {
 		const string &name = i->first;
 		const relation &r = i->second;
-		relation_table::iterator j = rels.find(name);
-		if (j == rels.end()) {
-			rels[name] = r;
-		} else {
-			relation &r2 = j->second;
-			t.clear();
-			/*
-			 The assumption here is that all the tuples
-			 have the same value in the first position,
-			 since they're all from the same time.
-			*/
-			r.drop_first(t);
-			set<tuple>::const_iterator k;
-			for (k = t.begin(); k != t.end(); ++k) {
-				r2.add(time, *k);
-			}
+		relation &r2 = rels[name];
+		if (r2.arity() == 0) {
+			r2.reset(r.arity());
+		}
+		for (j = r.begin(), jend = r.end(); j != jend; ++j) {
+			t = *j;
+			t[0] = time;
+			r2.add(t);
 		}
 	}
 }
@@ -275,11 +269,9 @@ void get_context_rels(int target, const relation_table &rels, relation_table &co
 		if (j->first == "closest") {
 			r.clear();
 		} else {
-			vector<tuple> close_pat(r.arity());
-			for (int j = 1; j < r.arity(); ++j) {
-				close_pat[j] = close;
+			for (int j = 1, jend = r.arity(); j < jend; ++j) {
+				r.filter(j, close, false);
 			}
-			r.filter(close_pat, false);
 		}
 	}
 }
@@ -514,6 +506,8 @@ EM::~EM() {
 
 
 void EM::learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+	function_timer t(timers.get_or_add("learn"));
+	
 	int sig_index = -1;
 	for (int i = 0; i < sigs.size(); ++i) {
 		if (sigs[i]->sig == sig) {
@@ -1683,27 +1677,20 @@ bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) c
 		return true;
 	}
 
-	// process pattern
-	vector<tuple> pattern;
-	for (int j = i + 1; j < args.size(); ++j) {
-		if (args[j] == "*") {
-			pattern.push_back(tuple());
-		} else {
-			int obj;
-			if (!parse_int(args[j], obj)) {
+	relation matches(*r);
+
+	tuple t(1);
+	int j, k;
+	for (j = i + 1, k = 0; j < args.size() && k < matches.arity(); ++j, ++k) {
+		if (args[j] != "*") {
+			if (!parse_int(args[j], t[0])) {
 				os << "invalid pattern" << endl;
 				return false;
 			}
-			pattern.push_back(tuple(1, obj));
+			matches.filter(k, t, false);
 		}
 	}
 
-	if (pattern.size() > r->arity()) {
-		os << "pattern larger than relation arity" << endl;
-		return false;
-	}
-	relation matches(*r);
-	matches.filter(pattern, false);
 	os << matches << endl;
 	return true;
 }

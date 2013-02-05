@@ -1,6 +1,7 @@
 #include "filter_table.h"
 #include "scene.h"
 #include "collision.h"
+#include "relation.h"
 
 using namespace std;
 
@@ -183,13 +184,9 @@ void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 	}
 }
 
-void filter_table::update_relations(const scene *scn, int time, relation_table &rt) const {
-	vector<int> node_inds;
-	scn->get_all_node_indices(node_inds);
-	node_inds.erase(node_inds.begin());
-	
-	map<string, filter_table_entry>::const_iterator i;
-	for(i = t.begin(); i != t.end(); ++i) {
+void filter_table::update_relations(const scene *scn, const vector<int> &node_inds, int time, relation_table &rt) const {
+	map<string, filter_table_entry>::const_iterator i, iend;
+	for(i = t.begin(), iend = t.end(); i != iend; ++i) {
 		const filter_table_entry &e = i->second;
 		if (e.calc != NULL && node_inds.size() >= e.parameters.size()) {
 			relation &r = rt[e.name];
@@ -221,27 +218,5 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 				inds.clear();
 			}
 		}
-	}
-	
-	// add type relations
-	for (int j = 0; j < node_inds.size(); ++j) {
-		string type = scn->get_node(node_inds[j])->get_type();
-		if (!has(rt, type)) {
-			rt[type] = relation(2);
-		}
-		relation &type_rel = rt[type];
-		type_rel.add(time, node_inds[j]);
-	}
-	
-	// add closest relations. This is kind of a hack for FOIL
-	if (!has(rt, string("closest"))) {
-		rt["closest"] = relation(3);
-	}
-	relation &closest_rel = rt["closest"];
-	tuple t(2);
-	for (int j = 0; j < node_inds.size(); ++j) {
-		t[0] = node_inds[j];
-		t[1] = scn->get_closest(node_inds[j]);
-		closest_rel.add(time, t);
 	}
 }

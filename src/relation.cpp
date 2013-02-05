@@ -132,12 +132,6 @@ interval_set::interval_set(const interval_set &s) {
 	work = new vector<interval>;
 }
 
-interval_set::interval_set(const set<int> &s) {
-	curr = new vector<interval>;
-	work = new vector<interval>;
-	*this = s;
-}
-
 interval_set::~interval_set() {
 	delete curr;
 	delete work;
@@ -336,29 +330,6 @@ interval_set &interval_set::operator=(const interval_set &v) {
 	return *this;
 }
 
-interval_set &interval_set::operator=(const set<int> &s) {
-	interval in;
-	set<int>::const_iterator i, iend;
-	
-	curr->clear();
-	if (!s.empty()) {
-		i = s.begin();
-		in.first = *i;
-		in.last = *i;
-		for (++i, iend = s.end(); i != iend; ++i) {
-			if (*i > in.last + 1) {
-				curr->push_back(in);
-				in.first = *i;
-				in.last = *i;
-			} else {
-				in.last++;
-			}
-		}
-		curr->push_back(in);
-	}
-	sz = s.size();
-	return *this;
-}
 
 bool interval_set::check_size() const {
 	vector<interval>::const_iterator i, iend;
@@ -700,13 +671,6 @@ void relation::at_pos(int n, interval_set &elems) const {
 	}
 }
 
-void relation::drop_first(set<tuple> &out) const {
-	tuple_map::const_iterator i;
-	for (i = tuples.begin(); i != tuples.end(); ++i) {
-		out.insert(i->first);
-	}
-}
-
 void relation::clear() {
 	sz = 0;
 	tuples.clear();
@@ -719,46 +683,29 @@ void relation::reset(int new_arity) {
 }
 
 /*
- Remove any tuples that don't match pattern. pat is a vector of tuples, with
- tuple i enumerating the possible values for argument i. An empty tuple is
- considered a wildcard. If pat is shorter than the relation's arity, the
- difference are considered wildcards.
-
+ Remove tuples with unwanted values. vals specifies the values to keep for
+ argument i. If complement is true, then keep the complement of vals.
 */
-void relation::filter(const vector<tuple> &pat, bool negate) {
-	assert(pat.size() <= arty);
-	if (pat.empty()) {
-		return;
-	}
+void relation::filter(int i, tuple &vals, bool complement) {
+	assert(0 <= i && i < arty);
 
-	tuple_map::iterator i;
-	for (i = tuples.begin(); i != tuples.end(); ++i) {
-		bool matched = true;
-		for (int j = 1; j < pat.size(); ++j) {
-			if (!pat[j].empty() && !has(pat[j], i->first[j - 1])) {
-				matched = false;
-				break;
-			}
-		}
-		interval_set &s = i->second;
-		if (!negate) {
-			if (!matched) {
-				s.clear();
-			} else if (!pat[0].empty()) {
-				interval_set p0;
-				for (int j = 0; j < pat[0].size(); ++j)
-					p0.insert(pat[0][j]);
-				s.intersect(p0);
-			}
-		} else if (matched) {
-			if (!pat[0].empty()) {
-				interval_set p0;
-				for (int j = 0; j < pat[0].size(); ++j)
-					p0.insert(pat[0][j]);
-				s.subtract(p0);
+	tuple_map::iterator j, jend;
+	interval_set s;
+	
+	if (i == 0) {
+		s = vals;
+	}
+	for (j = tuples.begin(), jend = tuples.end(); j != jend; ++j) {
+		if (i == 0) {
+			if (!complement) {
+				j->second.intersect(s);
 			} else {
-				s.clear();
+				j->second.subtract(s);
 			}
+		} else if ((!complement && !has(vals, j->first[i - 1])) ||
+			       ( complement &&  has(vals, j->first[i - 1])))
+		{
+			j->second.clear();
 		}
 	}
 	update_size();

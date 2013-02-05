@@ -226,7 +226,11 @@ void svs_state::update_models() {
 	scn->get_properties(curr_pvals);
 	get_output(out);
 	curr_sig = scn->get_signature();
-	get_filter_table().update_relations(scn, 0, curr_rels);
+	
+	timer &t1 = timers.get_or_add("up_rels");
+	t1.start();
+	scn->get_relations(curr_rels);
+	t1.stop();
 	
 	// add an entry to the signature for the output
 	scene_sig::entry out_entry;
@@ -360,7 +364,7 @@ void svs_state::report_relations(int first_arg, const vector<string> &args, ostr
 	relation_table rels;
 	relation_table::const_iterator i, begin, end;
 	relation::const_iterator j;
-	get_filter_table().update_relations(scn, 0, rels);
+	scn->get_relations(rels);
 	bool print_names;
 	
 	if (first_arg < args.size()) {

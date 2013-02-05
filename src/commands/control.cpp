@@ -42,7 +42,7 @@ bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec>
 		relation_table rels;
 		
 		scncopy->set_properties(finalstate);
-		get_filter_table().update_relations(scncopy, 0, rels);
+		scncopy->get_relations(rels);
 		if (!mdl->predict(sig, rels, x, finalstate)) {
 			delete scncopy;
 			return false;
@@ -387,7 +387,7 @@ public:
 			for (int i = 0; i < traj.size(); i += stepsize) {
 				scn->set_properties(y);
 				relation_table rels;
-				get_filter_table().update_relations(scn, 0, rels);
+				scn->get_relations(rels);
 				x << y, traj.segment(i, stepsize);
 				if (!mdl->predict(sig, rels, x, y)) {
 					return false;
@@ -726,7 +726,7 @@ private:
 				x << state, step;
 				ci->scn->set_properties(state);
 				relation_table rels;
-				get_filter_table().update_relations(ci->scn, 0, rels);
+				ci->scn->get_relations(rels);
 				if (!ci->mdl->predict(sig, rels, x, state)) {
 					return false;
 				}
