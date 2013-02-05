@@ -33,15 +33,16 @@ def execute(cmd):
 		Exit(1)
 	else:
 		return out
-	
+
 def gcc_version(cc):
-	for f in execute(cc.split() + ['--version']).split():
-		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
+	version_info = execute(cc.split() + ['--version'])
+	if 'GCC' in version_info:
+		m = re.search(r'([0-9]+)\.([0-9]+)\.([0-9]+)', version_info)
 		if m:
 			return tuple(int(n) for n in m.groups())
-		if f == 'clang':
-			return [42,42,42]
-	
+	if 'clang' in version_info or 'LLVM' in version_info:
+		return [42,42,42]
+
 	print 'cannot identify compiler version'
 	Exit(1)
 
@@ -57,23 +58,23 @@ def InstallDir(env, tgt, src, globstring="*"):
 	for dir, _, files in os.walk(srcdir):
 		if fnmatch.fnmatch(dir, '*/.*'):
 			continue
-		
+
 		# tgtsub is the target directory plus the relative sub directory
 		relative = dir[len(srcdir)+1:]
 		tgtsub = join(tgtdir, relative)
-		
+
 		for f in fnmatch.filter(files, globstring):
 			if not f.startswith('.'):
 				p = join(dir, f)
 				targets.extend(Install(tgtsub, p))
-	
+
 	return targets
 
 Export('InstallDir')
 
 AddOption('--cc', action='store', type='string', dest='cc', nargs=1, metavar='COMPILER',
 	help='Use argument as the C compiler.')
-	
+
 AddOption('--cxx', action='store', type='string', dest='cxx', nargs=1, metavar='COMPILER',
 	help='Use argument as the C++ compiler.')
 
@@ -85,7 +86,7 @@ AddOption('--no-default-flags', action='store_false', dest='defflags', default=T
 
 AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
-	
+
 AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR',
 	help='Directory to install binaries. Defaults to "out".')
 
@@ -134,12 +135,12 @@ libs = ['Soar']
 if compiler == 'g++':
 	if GetOption('defflags'):
 		cflags.append('-Wreturn-type')
-		
+
 		if GetOption('opt'):
 			cflags.extend(['-O2', '-DNDEBUG'])
 		else:
 			cflags.extend(['-g'])
-		
+
 		gcc_ver = gcc_version(env['CXX'])
 		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
 		if gcc_ver[0] > 3:
@@ -153,34 +154,34 @@ if compiler == 'g++':
 				env['VISHIDDEN'] = False
 				env['CPPFLAGS'] = []
 			config.Finish()
-		
+
 		if sys.platform == 'linux2':
 			lnflags.append(env.Literal(r'-Wl,-rpath,$ORIGIN'))
 		elif 'freebsd' in sys.platform:
 			lnflags.append(env.Literal(r'-Wl,-z,origin,-rpath,$ORIGIN'))
 		# For OSX, use -install_name (specified in Core/SConscript)
-	
+
 		if GetOption('static'):
 			cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
-			
+
 	libs += [ 'pthread', 'dl', 'm' ]
 
 elif compiler == 'msvc':
 	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
-	
+
 	if GetOption('defflags'):
 		if GetOption('opt'):
 			cflags.extend(' /MD /O2 /D NDEBUG'.split())
 		else:
 			cflags.extend(' /MDd /Z7 /DEBUG'.split())
 			lnflags.extend(['/DEBUG'])
-		
+
 		if GetOption('static'):
 			cflags.extend(['/D', 'STATIC_LINKED'])
-			
+
 cflags.extend((GetOption('cflags') or '').split())
 lnflags.extend((GetOption('lnflags') or '').split())
-	
+
 env.Replace(
 	CPPFLAGS = cflags,
 	LINKFLAGS = lnflags,
@@ -224,7 +225,7 @@ g_msvs_variant = 'Debug|Win32'
 if 'MSVSSolution' in env['BUILDERS']:
 	msvs_projs = []
 	Export('msvs_projs')
-	
+
 	cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 	for line in cl.stdout:
 		if re.search('x64', line):
@@ -248,13 +249,13 @@ for d in os.listdir('.'):
 			SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
 
 if 'MSVSSolution' in env['BUILDERS']:
-	
+
 	msvs_solution = env.MSVSSolution(
 		target = 'soar' + env['MSVSSOLUTIONSUFFIX'],
 		projects = msvs_projs,
 		variant = g_msvs_variant,
 	)
-	
+
 	env.Alias('msvs', [msvs_solution] + msvs_projs)
 
 env.Alias('all', default_ans.keys())
@@ -263,7 +264,7 @@ all_aliases = default_ans.keys()
 if COMMAND_LINE_TARGETS == ['list']:
 	print '\n'.join(sorted(all_aliases))
 	Exit()
-	
+
 # Set default targets
 for a in DEF_TARGETS:
 	if a in all_aliases:
