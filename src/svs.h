@@ -90,7 +90,7 @@ private:
 	void init();
 	void collect_cmds(Symbol* id, std::set<wme*>& all_cmds);
 	void set_default_output();
-	void report_relations(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
+	bool report_relations(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 
 	svs            *svsp;
 	int             level;

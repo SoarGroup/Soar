@@ -325,8 +325,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		return true;
 	} else if (args[first_arg] == "relations") {
-		report_relations(first_arg + 1, args, os);
-		return true;
+		return report_relations(first_arg + 1, args, os);
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);
 		return true;
@@ -360,15 +359,14 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 	return false;
 }
 
-void svs_state::report_relations(int first_arg, const vector<string> &args, ostream &os) const {
+bool svs_state::report_relations(int first, const vector<string> &args, ostream &os) const {
 	relation_table rels;
 	relation_table::const_iterator i, begin, end;
-	relation::const_iterator j;
 	scn->get_relations(rels);
 	bool print_names;
 	
-	if (first_arg < args.size()) {
-		begin = end = rels.find(args[first_arg]);
+	if (first < args.size() && args[first] != "*") {
+		begin = end = rels.find(args[first]);
 		if (end == rels.end()) {
 			os << "relation not found" << endl;
 		} else {
@@ -381,22 +379,51 @@ void svs_state::report_relations(int first_arg, const vector<string> &args, ostr
 		print_names = true;
 	}
 	
+	vector<int> ids;
+	int id;
+	for (int j = first + 1; j < args.size(); ++j) {
+		if (args[j] != "*") {
+			if ((id = scn->get_node_id(args[j])) == -1) {
+				os << "object " << args[j] << " not found" << endl;
+				return false;
+			}
+			ids.push_back(id);
+		} else {
+			ids.push_back(-1);
+		}
+	}
+	
 	for (i = begin; i != end; ++i) {
-		const relation &r = i->second;
-		table_printer t;
+		relation r = i->second;
+		tuple t(1);
+		
+		for (int j = 0, jend = min(int(ids.size()), r.arity() - 1); j < jend; ++j) {
+			if (ids[j] != -1) {
+				t[0] = ids[j];
+				r.filter(j + 1, t, false);
+			}
+		}
+		
+		if (r.empty()) {
+			continue;
+		}
 		
 		if (print_names)
 			os << i->first << endl;
+		
+		table_printer p;
+		relation::const_iterator j;
 		for (j = r.begin(); j != r.end(); ++j) {
-			t.add_row();
+			p.add_row();
 			for (int k = 1; k < j->size(); ++k) {
 				sgnode *n = scn->get_node((*j)[k]);
 				assert(n != NULL);
-				t << n->get_name();
+				p << n->get_name();
 			}
 		}
-		t.print(os);
+		p.print(os);
 	}
+	return true;
 }
 
 void svs_state::refresh_view() {

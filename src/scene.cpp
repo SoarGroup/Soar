@@ -209,6 +209,14 @@ const sgnode *scene::get_node(int i) const {
 	return info->node;
 }
 
+int scene::get_node_id(const string &name) const {
+	int i;
+	if (!map_get(node_ids, name, i)) {
+		return -1;
+	}
+	return i;
+}
+
 group_node *scene::get_group(const string &name) {
 	sgnode *n = get_node(name);
 	if (n) {

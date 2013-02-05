@@ -26,6 +26,7 @@ public:
 	sgnode const* get_node(const std::string &name) const;
 	sgnode *get_node(int i);
 	sgnode const* get_node(int i) const;
+	int get_node_id(const std::string &name) const;
 	
 	void get_all_nodes(std::vector<sgnode*> &nodes);
 	void get_all_nodes(std::vector<const sgnode*> &nodes) const;
