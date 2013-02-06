@@ -483,15 +483,9 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 	v.resize(j);
 }
 
-void print_first_arg(const relation &r, ostream &os) {
-	interval_set first;
-	r.at_pos(0, first);
-	os << first;
-}
-
 EM::EM() 
 : ndata(0), nmodes(1), use_em(true), use_foil(true), use_foil_close(true),
-  use_nc(true), use_pruning(true), use_unify(true), learn_new_modes(true),
+  use_pruning(true), use_unify(true), learn_new_modes(true),
   check_after(NEW_MODE_THRESH), nc_type(NC_DTREE)
 {
 	mode_info *noise = new mode_info(true, false, data, sigs);
@@ -523,7 +517,7 @@ void EM::learn(int target, const scene_sig &sig, const relation_table &rels, con
 		sig_index = sigs.size() - 1;
 	}
 
-	train_data *d = new train_data;
+	em_train_data *d = new em_train_data;
 	d->x = x;
 	d->y = y;
 	d->target = target;
@@ -564,10 +558,10 @@ void EM::estep() {
 	 then we mark i as a point we have to recalculate the MAP mode for.
 	*/
 	for (int i = 0; i < ndata; ++i) {
-		train_data &d = *data[i];
+		em_train_data &d = *data[i];
 		bool stale = false;
 		for (int j = 1; j < nmodes; ++j) {
-			data_mode_info &dm = d.minfo[j];
+			em_train_data::data_mode_info &dm = d.minfo[j];
 			if (!dm.prob_stale && !modes[j]->is_new_fit()) {
 				continue;
 			}
@@ -787,7 +781,7 @@ bool EM::unify_or_add_mode() {
 			
 			if (unified_size >= minfo.size() + .9 * largest.size()) {
 				LOG(EMDBG) << "Successfully unified with mode " << j << endl;
-				const train_data &d0 = *data[combined[subset[0]]];
+				const em_train_data &d0 = *data[combined[subset[0]]];
 				minfo.set_linear_params(d0.sig_index, d0.target, ucoefs, uinter);
 				return true;
 			}
@@ -796,7 +790,7 @@ bool EM::unify_or_add_mode() {
 	}
 	
 	mode_info *new_mode = add_mode(false);
-	const train_data &d0 = *data[largest[0]];
+	const em_train_data &d0 = *data[largest[0]];
 	new_mode->set_linear_params(d0.sig_index, d0.target, coefs, inter);
 	return true;
 }
@@ -918,7 +912,7 @@ bool EM::remove_modes() {
 		remove_from_vector(removed, modes[j]->classifiers);
 	}
 	for (int j = 0; j < ndata; ++j) {
-		train_data &d = *data[j];
+		em_train_data &d = *data[j];
 		if (d.mode >= 0) {
 			d.mode = index_map[d.mode];
 		}
@@ -1073,7 +1067,7 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 			return true;
 		}
 		int t = get_num_classifier_type(args[first + 1]);
-		if (t == NC_NONE) {
+		if (t < 0) {
 			os << "no such numeric classifier";
 			return false;
 		}
@@ -1235,7 +1229,7 @@ void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 		tuple objs(2);
 		set<int>::const_iterator j;
 		for (j = members.begin(); j != members.end(); ++j) {
-			train_data &d = *data[*j];
+			em_train_data &d = *data[*j];
 			const scene_sig &dsig = sigs[d.sig_index]->sig;
 			int o = dsig[d.minfo[d.mode].obj_map[i]].id;
 			
@@ -1329,21 +1323,21 @@ void EM::unserialize(istream &is) {
 	for (int i = 0; i < sigs.size(); ++i) {
 		sig_info &si = *sigs[i];
 		for (int j = 0; j < si.members.size(); ++j) {
-			const train_data &d = *data[si.members[j]];
+			const em_train_data &d = *data[si.members[j]];
 			si.lwr.learn(d.x, d.y);
 		}
 	}
 }
 
-void EM::train_data::serialize(ostream &os) const {
+void em_train_data::serialize(ostream &os) const {
 	serializer(os) << target << sig_index << x << y << mode << minfo;
 }
 
-void EM::train_data::unserialize(istream &is) {
+void em_train_data::unserialize(istream &is) {
 	unserializer(is) >> target >> sig_index >> x >> y >> mode >> minfo;
 }
 
-EM::mode_info::mode_info(bool noise, bool manual, const vector<train_data*> &data, const vector<sig_info*> &sigs) 
+EM::mode_info::mode_info(bool noise, bool manual, const vector<em_train_data*> &data, const vector<sig_info*> &sigs) 
 : noise(noise), manual(manual), data(data), sigs(sigs), member_rel(2), classifier_stale(true), new_fit(true), n_nonzero(-1)
 {
 	if (noise) {
@@ -1477,7 +1471,7 @@ bool EM::mode_info::update_fits() {
 	set<int>::const_iterator i;
 	int j = 0;
 	for (i = members.begin(); i != members.end(); ++i) {
-		const train_data &d = *data[*i];
+		const em_train_data &d = *data[*i];
 		const vector<int> &obj_map = d.minfo[d.mode].obj_map;
 		assert(obj_map.size() == sig.size());
 		const scene_sig &dsig = sigs[d.sig_index]->sig;
@@ -1519,7 +1513,7 @@ void EM::mode_info::predict(const scene_sig &dsig, const rvec &x, const vector<i
 }
 
 void EM::mode_info::add_example(int i) {
-	const train_data &d = *data[i];
+	const em_train_data &d = *data[i];
 	int sind = d.sig_index;
 	const scene_sig &dsig = sigs[sind]->sig;
 
@@ -1538,7 +1532,7 @@ void EM::mode_info::add_example(int i) {
 }
 
 void EM::mode_info::del_example(int i) {
-	train_data &d = *data[i];
+	em_train_data &d = *data[i];
 	int sind = d.sig_index;
 	const scene_sig &sig = sigs[sind]->sig;
 
@@ -1588,86 +1582,6 @@ int EM::mode_info::get_num_nonzero_coefs() const {
 	}
 	assert(n_nonzero >= 0);
 	return n_nonzero;
-}
-
-void EM::clause_info::serialize(ostream &os) const {
-	serializer(os) << cl << false_pos << true_pos << nc;
-}
-
-void EM::clause_info::unserialize(istream &is) {
-	unserializer(is) >> cl >> false_pos >> true_pos >> nc;
-}
-
-void EM::classifier::serialize(ostream &os) const {
-	serializer(os) << const_vote << use_const << clauses 
-	               << false_negatives << true_negatives
-	               << neg_nc;
-}
-
-void EM::classifier::unserialize(istream &is) {
-	unserializer(is) >> const_vote >> use_const >> clauses 
-	                 >> false_negatives >> true_negatives
-	                 >> neg_nc;
-}
-
-void EM::classifier::inspect(ostream &os) const {
-	if (use_const) {
-		os << "Constant Vote: " << const_vote << endl;
-		return;
-	}
-	
-	table_printer t;
-	t.add_row() << "clause" << "Correct" << "Incorrect" << "NumCls?";
-	for (int i = 0, iend = clauses.size(); i < iend; ++i) {
-		t.add_row() << clauses[i].cl << clauses[i].true_pos.size() << clauses[i].false_pos.size() << (clauses[i].nc != NULL);
-	}
-	t.add_row() << "NEGATIVE" << true_negatives.size() << false_negatives.size() << (neg_nc != NULL);
-	t.print(os);
-	os << endl;
-}
-
-void EM::classifier::inspect_detailed(ostream &os) const {
-	if (use_const) {
-		os << "Constant Vote: " << const_vote << endl;
-		return;
-	}
-	
-	if (clauses.empty()) {
-		os << "No clauses" << endl;
-	} else {
-		for (int k = 0; k < clauses.size(); ++k) {
-			os << "Clause: " << clauses[k].cl << endl;
-			
-			os << "True positives (" << clauses[k].true_pos.size() << "): ";
-			print_first_arg(clauses[k].true_pos, os);
-			os << endl << endl;
-			
-			os << "False positives (" << clauses[k].false_pos.size() << "): ";
-			print_first_arg(clauses[k].false_pos, os);
-			os << endl << endl;
-			
-			if (clauses[k].nc) {
-				os << "Numeric classifier:" << endl;
-				clauses[k].nc->inspect(os);
-				os << endl << endl;
-			}
-		}
-	}
-	os << "NEGATIVE:" << endl;
-	
-	os << "True negatives (" << true_negatives.size() << "): ";
-	print_first_arg(true_negatives, os);
-	os << endl << endl;
-	
-	os << "False negatives (" << false_negatives.size() << "): ";
-	print_first_arg(false_negatives, os);
-	os << endl << endl;
-	
-	if (neg_nc) {
-		os << "Negative numeric classifier:" << endl;
-		neg_nc->inspect(os);
-		os << endl;
-	}
 }
 
 bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) const {
@@ -1736,123 +1650,20 @@ void EM::update_classifier() {
 	}
 }
 
-/*
- positive = class 0, negative = class 1
-*/
-num_classifier *EM::learn_numeric_classifier(const relation &pos, const relation &neg) const {
-	if (!use_nc) {
-		return NULL;
-	}
-	
-	int npos = pos.size(), nneg = neg.size();
-	if (npos < 2 || nneg < 2) {
-		return NULL;
-	}
-	
-	interval_set p0, n0;
-	interval_set::const_iterator i, iend;
-	pos.at_pos(0, p0);
-	neg.at_pos(0, n0);
-	
-	int ncols = data[*p0.begin()]->x.size();
-	int sig = data[*p0.begin()]->sig_index;
-	int j;
-	
-	mat train(npos + nneg, ncols);
-	vector<int> classes;
-	
-	for (i = p0.begin(), iend = p0.end(), j = 0; i != iend; ++i, ++j) {
-		const train_data &d = *data[*i];
-		assert(d.sig_index == sig);
-		
-		train.row(j) = d.x;
-		classes.push_back(0);
-	}
-	
-	for (i = n0.begin(), iend = n0.end(); i != iend; ++i, ++j) {
-		const train_data &d = *data[*i];
-		assert(d.sig_index == sig);
-		
-		train.row(j) = d.x;
-		classes.push_back(1);
-	}
-	
-	num_classifier *nc = new num_classifier(nc_type);
-	nc->learn(train, classes);
-	return nc;
-}
-
 void EM::update_pair(int i, int j) {
 	function_timer t(timers.get_or_add("updt_clsfr"));
 	
 	assert(i < j);
 	if (!modes[i]->classifiers[j]) {
-		modes[i]->classifiers[j] = new classifier;
+		modes[i]->classifiers[j] = new classifier(use_foil, use_pruning, nc_type);
 	}
 	classifier &c = *(modes[i]->classifiers[j]);
 	const relation &mem_i = modes[i]->get_member_rel();
 	const relation &mem_j = modes[j]->get_member_rel();
-	
-	c.clauses.clear();
-	if (c.neg_nc) {
-		delete c.neg_nc;
-		c.neg_nc = NULL;
-	}
-	
-	c.const_vote = mem_i.size() > mem_j.size() ? 0 : 1;
-	if (mem_i.empty() || mem_j.empty()) {
-		c.use_const = true;
-		return;
-	}
-	
-	c.use_const = false;
-	if (use_foil) {
-		FOIL foil;
-		if (use_foil_close) {
-			foil.set_problem(mem_i, mem_j, context_rel_tbl);
-		} else {
-			foil.set_problem(mem_i, mem_j, rel_tbl);
-		}
-		foil.learn(use_pruning, true);
-		c.clauses.resize(foil.num_clauses());
-		for (int k = 0, kend = foil.num_clauses(); k < kend; ++k) {
-			c.clauses[k].cl = foil.get_clause(k);
-			c.clauses[k].false_pos = foil.get_false_positives(k);
-			c.clauses[k].true_pos = foil.get_true_positives(k);
-		}
-		c.false_negatives = foil.get_false_negatives();
-		c.true_negatives = foil.get_true_negatives();
+	if (use_foil_close) {
+		c.update(mem_i, mem_j, context_rel_tbl, data, sigs);
 	} else {
-		/*
-		 Don't learn any clauses. Instead consider every member of i a false negative
-		 and every member of j a true negative, and let the numeric classifier take care of it.
-		*/
-		c.false_negatives = mem_i;
-		c.true_negatives = mem_j;
-	}
-	
-	/*
-	 For each clause cl in c.clauses, if cl misclassified any of the
-	 members of j in the training set as a member of i (false positive
-	 for cl), train a numeric classifier to classify it correctly.
-	 
-	 Also train a numeric classifier to catch misclassified members of
-	 i (false negatives for the entire clause vector).
-	*/
-	for (int k = 0, kend = c.clauses.size(); k < kend; ++k) {
-		if (c.clauses[k].nc) {
-			delete c.clauses[k].nc;
-			c.clauses[k].nc = NULL;
-		}
-		double fp = c.clauses[k].false_pos.size(), tp = c.clauses[k].true_pos.size();
-		if (fp / (fp + tp) > .5) {
-			c.clauses[k].nc = learn_numeric_classifier(c.clauses[k].true_pos, c.clauses[k].false_pos);
-		}
-	}
-	
-	double fn = c.false_negatives.size(), tn = c.true_negatives.size();
-	if (fn / (fn + tn) > .5) {
-		c.neg_nc = learn_numeric_classifier(c.true_negatives, c.false_negatives);
+		c.update(mem_i, mem_j, rel_tbl, data, sigs);
 	}
 }
 
@@ -1860,67 +1671,18 @@ void EM::update_pair(int i, int j) {
  Return 0 to vote for i, 1 to vote for j
 */
 int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
-	assert(modes[i]->classifiers[j]);
-	int matched_clause = -1, result;
-	const classifier &c = *(modes[i]->classifiers[j]);
-
 	LOG(EMDBG) << "Voting on " << i << " vs " << j << endl;
 	
-	if (c.use_const || (!use_foil && !use_nc)) {
-		LOG(EMDBG) << "Constant vote for " << (c.const_vote == 0 ? i : j) << endl;
-		return c.const_vote;
-	}
-	
-	if (c.clauses.size() > 0) {
-		const relation_table *rt;
-		if (use_foil_close) {
-			relation_table *rt2 = new relation_table;
-			get_context_rels(sig[target].id, rels, *rt2);
-			rt = rt2;
-		} else {
-			rt = &rels;
-		}
+	assert(modes[i]->classifiers[j]);
+	const classifier &c = *(modes[i]->classifiers[j]);
 
-		var_domains domains;
-		domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
-		domains[1].insert(sig[target].id);
-		
-		for (int i = 0, iend = c.clauses.size(); i < iend; ++i) {
-			const clause &cl = c.clauses[i].cl;
-			const num_classifier *nc = c.clauses[i].nc;
-			if (test_clause(cl, *rt, domains)) {
-				LOG(EMDBG) << "matched clause:" << endl << cl << endl;
-				var_domains::const_iterator vi, viend;
-				for (vi = domains.begin(), viend = domains.end(); vi != viend; ++vi) {
-					assert(vi->second.size() == 1);
-					LOG(EMDBG) << vi->first << " = " << *vi->second.begin() << endl;
-				}
-				if (use_nc && nc) {
-					result = nc->classify(x);
-					LOG(EMDBG) << "NC votes for " << (result == 0 ? i : j) << endl;
-					if (result == 0) {
-						return result;
-					}
-				} else {
-					LOG(EMDBG) << "No NC, voting for " << i << endl;
-					return 0;
-				}
-			}
-		}
-		
-		if (use_foil_close) {
-			delete rt;
-		}
+	if (use_foil_close) {
+		relation_table context;
+		get_context_rels(sig[target].id, rels, context);
+		return c.vote(target, sig, context, x);
+	} else {
+		return c.vote(target, sig, rels, x);
 	}
-	// no matched clause, FOIL thinks this is a negative
-	if (use_nc && c.neg_nc) {
-		result = 1 - c.neg_nc->classify(x);
-		LOG(EMDBG) << "No matched clauses, NC votes for " << (result == 0 ? i : j) << endl;
-		return result;
-	}
-	// no false negatives in training, so this must be a negative
-	LOG(EMDBG) << "No matched clauses, no NC, vote for " << j << endl;
-	return 1;
 }
 
 int EM::classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, vector<int> &obj_map) {
@@ -2024,20 +1786,20 @@ bool EM::cli_inspect_classifiers(int first, const vector<string> &args, ostream 
 	return true;
 }
 
-EM::sig_info::sig_info() : lwr(LWR_K, false) {}
+sig_info::sig_info() : lwr(LWR_K, false) {}
 
-void EM::sig_info::serialize(ostream &os) const {
+void sig_info::serialize(ostream &os) const {
 	serializer(os) << sig << members;
 }
 
-void EM::sig_info::unserialize(istream &is) {
+void sig_info::unserialize(istream &is) {
 	unserializer(is) >> sig >> members;
 }
 
-void EM::data_mode_info::serialize(ostream &os) const {
+void em_train_data::data_mode_info::serialize(ostream &os) const {
 	serializer(os) << prob << prob_stale << obj_map;
 }
 
-void EM::data_mode_info::unserialize(istream &is) {
+void em_train_data::data_mode_info::unserialize(istream &is) {
 	unserializer(is) >> prob >> prob_stale >> obj_map;
 }

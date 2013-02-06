@@ -102,14 +102,16 @@ int largest_class(const vector<int> &c) {
 }
 
 int get_num_classifier_type(const std::string &t) {
-	if (t == "dtree") {
+	if (t == "none") {
+		return NC_NONE;
+	} else if (t == "dtree") {
 		return NC_DTREE;
 	} else if (t == "lda") {
 		return NC_LDA;
 	} else if (t == "sign") {
 		return NC_SIGN;
 	}
-	return NC_NONE;
+	return -1;
 }
 
 string get_num_classifier_name(int t) {

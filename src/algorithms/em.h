@@ -13,6 +13,48 @@
 #include "scene_sig.h"
 #include "lwr.h"
 #include "lda.h"
+#include "classifier.h"
+
+
+class em_train_data : public serializable {
+public:
+	/*
+	 Holds information about how a training data point relates to each mode
+	*/
+	class data_mode_info : public serializable {
+	public:
+		double prob;                // probability that data point belongs to mode
+		bool prob_stale;            // does prob need to be update?
+		std::vector<int> obj_map;   // mapping from variable in mode sig -> object index in instance
+	
+		data_mode_info() : prob(0), prob_stale(true) {}
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+
+	rvec x, y;
+	int target;
+	int time;
+	int sig_index;
+	
+	int mode;
+	std::vector<data_mode_info> minfo;
+	
+	em_train_data() : target(-1), time(-1), sig_index(-1), mode(0) {}
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+};
+
+class sig_info : public serializable {
+public:
+	sig_info();
+	scene_sig sig;
+	std::vector<int> members;  // indexes of data points with this sig
+	LWR lwr;                   // lwr model trained on all points of this sig
+
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+};
 
 class EM : public serializable {
 public:
@@ -29,81 +71,9 @@ public:
 	void unserialize(std::istream &is);
 	
 private:
-
-	/*
-	 Holds information about how a training data point relates to each mode
-	*/
-	class data_mode_info : public serializable {
-	public:
-		double prob;                // probability that data point belongs to mode
-		bool prob_stale;            // does prob need to be update?
-		std::vector<int> obj_map;   // mapping from variable in mode sig -> object index in instance
-
-		data_mode_info() : prob(0), prob_stale(true) {}
-		void serialize(std::ostream &os) const;
-		void unserialize(std::istream &is);
-	};
-	
-	class train_data : public serializable {
-	public:
-		rvec x, y;
-		int target;
-		int time;
-		int sig_index;
-		
-		int mode;
-		std::vector<data_mode_info> minfo;
-		
-		train_data() : target(-1), time(-1), sig_index(-1), mode(0) {}
-		void serialize(std::ostream &os) const;
-		void unserialize(std::istream &is);
-	};
-	
-	class clause_info : public serializable {
-	public:
-		clause_info() : nc(NULL) {}
-		~clause_info() { if (nc) { delete nc; } }
-		
-		clause cl;
-		relation false_pos;
-		relation true_pos;
-		num_classifier *nc;
-		
-		void serialize(std::ostream &os) const;
-		void unserialize(std::istream &is);
-	};
-	
-	class classifier : public serializable {
-	public:
-		classifier() : const_vote(0), use_const(true), neg_nc(NULL) {}
-		
-		int const_vote;
-		bool use_const;
-		std::vector<clause_info> clauses;
-		
-		relation false_negatives, true_negatives;
-		num_classifier *neg_nc;
-		
-		void inspect(std::ostream &os) const;
-		void inspect_detailed(std::ostream &os) const;
-		void serialize(std::ostream &os) const;
-		void unserialize(std::istream &is);
-	};
-	
-	class sig_info : public serializable {
-	public:
-		sig_info();
-		scene_sig sig;
-		std::vector<int> members;  // indexes of data points with this sig
-		LWR lwr;                   // lwr model trained on all points of this sig
-
-		void serialize(std::ostream &os) const;
-		void unserialize(std::istream &is);
-	};
-	
 	class mode_info : public serializable {
 	public:
-		mode_info(bool noise, bool manual, const std::vector<train_data*> &data, const std::vector<sig_info*> &sigs);
+		mode_info(bool noise, bool manual, const std::vector<em_train_data*> &data, const std::vector<sig_info*> &sigs);
 		~mode_info();
 		
 		void serialize(std::ostream &os) const;
@@ -148,7 +118,7 @@ private:
 		
 	private:
 		bool stale, noise, new_fit, manual;
-		const std::vector<train_data*> &data;
+		const std::vector<em_train_data*> &data;
 		const std::vector<sig_info*> &sigs;
 		
 		mat lin_coefs;
@@ -187,7 +157,6 @@ private:
 	void update_pair(int i, int j);
 	int classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &obj_map);
 	int vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
-	num_classifier *learn_numeric_classifier(const relation &p, const relation &n) const;
 	
 	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_dump_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
@@ -196,7 +165,7 @@ private:
 	bool cli_add_mode(int first, const std::vector<std::string> &args, std::ostream &os);
 
 	relation_table rel_tbl, context_rel_tbl;
-	std::vector<train_data*> data;
+	std::vector<em_train_data*> data;
 	std::vector<sig_info*> sigs;
 	std::vector<mode_info*> modes;
 	int ndata, nmodes;
