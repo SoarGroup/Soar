@@ -68,7 +68,8 @@ public:
 	const relation &get_neg() const { return neg; }
 	const relation &get_rel(const std::string &name) const;
 	
-	const clause_vec &get_clauses() const { return clauses; }
+	const int num_clauses() const { return clauses.size(); }
+	const clause &get_clause(int i) const { return clauses[i]; }
 	const relation &get_false_positives(int i) const { return false_positives[i]; }
 	const relation &get_true_positives(int i) const { return true_positives[i]; }
 	const relation &get_false_negatives() const { return false_negatives; }
@@ -94,7 +95,6 @@ private:
 
 typedef std::map<int, std::set<int> > var_domains;
 bool test_clause(const clause &c, const relation_table &rels, var_domains &domains);
-int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains &domains);
 void clause_success_rate(const clause &c, const relation &pos, const relation &neg, const relation_table &rels, double &success_rate, double &fp_rate, double &fn_rate);
 
 #endif

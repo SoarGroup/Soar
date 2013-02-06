@@ -303,25 +303,6 @@ int test_clause_n(const clause &c, bool pos, const relation &tests, const relati
 	return ncorrect;
 }
 
-int test_clause_vec(const clause_vec &c, const relation_table &rels, var_domains &domains) {
-	LOG(FOILDBG) << "test_clause_vec" << endl;
-	for (int i = 0; i < c.size(); ++i) {
-		LOG(FOILDBG) << c[i] << endl;
-		var_domains d = domains;
-		if (test_clause(c[i], rels, d)) {
-			var_domains::iterator j, jend;
-			LOG(FOILDBG) << "found assignment" << endl;
-			for (j = d.begin(), jend = d.end(); j != jend; ++j) {
-				LOG(FOILDBG) << j->first << " -> " << *j->second.begin() << endl;
-				domains[j->first] = j->second;
-			}
-			return i;
-		}
-	}
-	LOG(FOILDBG) << "failed finding assignment" << endl;
-	return -1;
-}
-
 void clause_success_rate(const clause &c, const relation &pos, const relation &neg, const relation_table &rels, double &success_rate, double &fp_rate, double &fn_rate) {
 	int pos_correct, neg_correct;
 	pos_correct = test_clause_n(c, true, pos, rels, NULL);

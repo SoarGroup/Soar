@@ -833,11 +833,18 @@ bool EM::mode_info::map_objs(int target, const scene_sig &dsig, const relation_t
 		} else if (d.size() == 1 || obj_clauses[i].empty()) {
 			mapping[i] = dsig.find_id(*d.begin());
 		} else {
-			if (test_clause_vec(obj_clauses[i], rels, domains) < 0) {
+			bool found = false;
+			for (int j = 0, jend = obj_clauses[i].size(); j < jend; ++j) {
+				if (test_clause(obj_clauses[i][j], rels, domains)) {
+					assert(d.size() == 1);
+					mapping[i] = dsig.find_id(*d.begin());
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
 				return false;
 			}
-			assert(d.size() == 1);
-			mapping[i] = dsig.find_id(*d.begin());
 		}
 		used[mapping[i]] = true;
 	}
@@ -1249,7 +1256,10 @@ void EM::mode_info::learn_obj_clauses(const relation_table &rels) {
 			// respond to this situation appropriately
 			assert(false);
 		}
-		obj_clauses[i] = foil.get_clauses();
+		obj_clauses[i].resize(foil.num_clauses());
+		for (int j = 0, jend = foil.num_clauses(); j < jend; ++j) {
+			obj_clauses[i][j] = foil.get_clause(j);
+		}
 	}
 }
 
@@ -1580,18 +1590,24 @@ int EM::mode_info::get_num_nonzero_coefs() const {
 	return n_nonzero;
 }
 
+void EM::clause_info::serialize(ostream &os) const {
+	serializer(os) << cl << false_pos << true_pos << nc;
+}
+
+void EM::clause_info::unserialize(istream &is) {
+	unserializer(is) >> cl >> false_pos >> true_pos >> nc;
+}
+
 void EM::classifier::serialize(ostream &os) const {
 	serializer(os) << const_vote << use_const << clauses 
-	               << false_positives << true_positives
 	               << false_negatives << true_negatives
-	               << pos_nc << neg_nc;
+	               << neg_nc;
 }
 
 void EM::classifier::unserialize(istream &is) {
 	unserializer(is) >> const_vote >> use_const >> clauses 
-	                 >> false_positives >> true_positives
 	                 >> false_negatives >> true_negatives
-	                 >> pos_nc >> neg_nc;
+	                 >> neg_nc;
 }
 
 void EM::classifier::inspect(ostream &os) const {
@@ -1603,7 +1619,7 @@ void EM::classifier::inspect(ostream &os) const {
 	table_printer t;
 	t.add_row() << "clause" << "Correct" << "Incorrect" << "NumCls?";
 	for (int i = 0, iend = clauses.size(); i < iend; ++i) {
-		t.add_row() << clauses[i] << true_positives[i].size() << false_positives[i].size() << (pos_nc[i] != NULL);
+		t.add_row() << clauses[i].cl << clauses[i].true_pos.size() << clauses[i].false_pos.size() << (clauses[i].nc != NULL);
 	}
 	t.add_row() << "NEGATIVE" << true_negatives.size() << false_negatives.size() << (neg_nc != NULL);
 	t.print(os);
@@ -1620,19 +1636,19 @@ void EM::classifier::inspect_detailed(ostream &os) const {
 		os << "No clauses" << endl;
 	} else {
 		for (int k = 0; k < clauses.size(); ++k) {
-			os << "Clause: " << clauses[k] << endl;
+			os << "Clause: " << clauses[k].cl << endl;
 			
-			os << "True positives (" << true_positives[k].size() << "): ";
-			print_first_arg(true_positives[k], os);
+			os << "True positives (" << clauses[k].true_pos.size() << "): ";
+			print_first_arg(clauses[k].true_pos, os);
 			os << endl << endl;
 			
-			os << "False positives (" << false_positives[k].size() << "): ";
-			print_first_arg(false_positives[k], os);
+			os << "False positives (" << clauses[k].false_pos.size() << "): ";
+			print_first_arg(clauses[k].false_pos, os);
 			os << endl << endl;
 			
-			if (pos_nc[k]) {
+			if (clauses[k].nc) {
 				os << "Numeric classifier:" << endl;
-				pos_nc[k]->inspect(os);
+				clauses[k].nc->inspect(os);
 				os << endl << endl;
 			}
 		}
@@ -1778,9 +1794,6 @@ void EM::update_pair(int i, int j) {
 	const relation &mem_j = modes[j]->get_member_rel();
 	
 	c.clauses.clear();
-	c.false_positives.clear();
-	c.true_positives.clear();
-	clear_and_dealloc(c.pos_nc);
 	if (c.neg_nc) {
 		delete c.neg_nc;
 		c.neg_nc = NULL;
@@ -1801,10 +1814,11 @@ void EM::update_pair(int i, int j) {
 			foil.set_problem(mem_i, mem_j, rel_tbl);
 		}
 		foil.learn(use_pruning, true);
-		c.clauses = foil.get_clauses();
-		for (int k = 0, kend = c.clauses.size(); k < kend; ++k) {
-			c.false_positives.push_back(foil.get_false_positives(k));
-			c.true_positives.push_back(foil.get_true_positives(k));
+		c.clauses.resize(foil.num_clauses());
+		for (int k = 0, kend = foil.num_clauses(); k < kend; ++k) {
+			c.clauses[k].cl = foil.get_clause(k);
+			c.clauses[k].false_pos = foil.get_false_positives(k);
+			c.clauses[k].true_pos = foil.get_true_positives(k);
 		}
 		c.false_negatives = foil.get_false_negatives();
 		c.true_negatives = foil.get_true_negatives();
@@ -1825,11 +1839,14 @@ void EM::update_pair(int i, int j) {
 	 Also train a numeric classifier to catch misclassified members of
 	 i (false negatives for the entire clause vector).
 	*/
-	c.pos_nc.resize(c.clauses.size(), NULL);
 	for (int k = 0, kend = c.clauses.size(); k < kend; ++k) {
-		double fp = c.false_positives[k].size(), tp = c.true_positives[k].size();
+		if (c.clauses[k].nc) {
+			delete c.clauses[k].nc;
+			c.clauses[k].nc = NULL;
+		}
+		double fp = c.clauses[k].false_pos.size(), tp = c.clauses[k].true_pos.size();
 		if (fp / (fp + tp) > .5) {
-			c.pos_nc[k] = learn_numeric_classifier(c.true_positives[k], c.false_positives[k]);
+			c.clauses[k].nc = learn_numeric_classifier(c.clauses[k].true_pos, c.clauses[k].false_pos);
 		}
 	}
 	
@@ -1855,31 +1872,44 @@ int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation
 	}
 	
 	if (c.clauses.size() > 0) {
+		const relation_table *rt;
+		if (use_foil_close) {
+			relation_table *rt2 = new relation_table;
+			get_context_rels(sig[target].id, rels, *rt2);
+			rt = rt2;
+		} else {
+			rt = &rels;
+		}
+
 		var_domains domains;
 		domains[0].insert(0);       // rels is only for the current timestep, time should always be 0
 		domains[1].insert(sig[target].id);
 		
-		if (use_foil_close) {
-			relation_table context;
-			get_context_rels(sig[target].id, rels, context);
-			matched_clause = test_clause_vec(c.clauses, context, domains);
-		} else {
-			matched_clause = test_clause_vec(c.clauses, rels, domains);
+		for (int i = 0, iend = c.clauses.size(); i < iend; ++i) {
+			const clause &cl = c.clauses[i].cl;
+			const num_classifier *nc = c.clauses[i].nc;
+			if (test_clause(cl, *rt, domains)) {
+				LOG(EMDBG) << "matched clause:" << endl << cl << endl;
+				var_domains::const_iterator vi, viend;
+				for (vi = domains.begin(), viend = domains.end(); vi != viend; ++vi) {
+					assert(vi->second.size() == 1);
+					LOG(EMDBG) << vi->first << " = " << *vi->second.begin() << endl;
+				}
+				if (use_nc && nc) {
+					result = nc->classify(x);
+					LOG(EMDBG) << "NC votes for " << (result == 0 ? i : j) << endl;
+					if (result == 0) {
+						return result;
+					}
+				} else {
+					LOG(EMDBG) << "No NC, voting for " << i << endl;
+					return 0;
+				}
+			}
 		}
-		if (matched_clause >= 0) {
-			LOG(EMDBG) << "matched clause:" << endl << c.clauses[matched_clause] << endl;
-			var_domains::const_iterator vi, viend;
-			for (vi = domains.begin(), viend = domains.end(); vi != viend; ++vi) {
-				assert(vi->second.size() == 1);
-				LOG(EMDBG) << vi->first << " = " << *vi->second.begin() << endl;
-			}
-			if (use_nc && c.pos_nc[matched_clause]) {
-				result = c.pos_nc[matched_clause]->classify(x);
-				LOG(EMDBG) << "NC votes for " << (result == 0 ? i : j) << endl;
-				return result;
-			}
-			LOG(EMDBG) << "No NC, voting for " << i << endl;
-			return 0;
+		
+		if (use_foil_close) {
+			delete rt;
 		}
 	}
 	// no matched clause, FOIL thinks this is a negative
@@ -2011,4 +2041,3 @@ void EM::data_mode_info::serialize(ostream &os) const {
 void EM::data_mode_info::unserialize(istream &is) {
 	unserializer(is) >> prob >> prob_stale >> obj_map;
 }
-

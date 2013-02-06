@@ -59,15 +59,27 @@ private:
 		void unserialize(std::istream &is);
 	};
 	
+	class clause_info : public serializable {
+	public:
+		clause_info() : nc(NULL) {}
+		~clause_info() { if (nc) { delete nc; } }
+		
+		clause cl;
+		relation false_pos;
+		relation true_pos;
+		num_classifier *nc;
+		
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+	
 	class classifier : public serializable {
 	public:
 		classifier() : const_vote(0), use_const(true), neg_nc(NULL) {}
 		
 		int const_vote;
 		bool use_const;
-		clause_vec clauses;
-		std::vector<relation> false_positives, true_positives;
-		std::vector<num_classifier*> pos_nc;
+		std::vector<clause_info> clauses;
 		
 		relation false_negatives, true_negatives;
 		num_classifier *neg_nc;
