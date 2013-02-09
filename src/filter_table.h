@@ -64,7 +64,7 @@ public:
 	*/
 	void get_all_atoms(scene *scn, std::vector<std::string> &atoms) const;
 	
-	void update_relations(const scene *scn, const std::vector<int> &node_inds, int time, relation_table &rt) const;
+	void update_relations(const scene *scn, const std::vector<int> &dirty, int time, relation_table &rt) const;
 	
 	const timer_set &get_timers() const {
 		return timers;
