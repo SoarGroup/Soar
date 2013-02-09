@@ -56,6 +56,9 @@ private:
 class dtree_classifier : public nc_cls {
 public:
 	dtree_classifier();
+	dtree_classifier(const dtree_classifier &c);
+	dtree_classifier &operator=(const dtree_classifier &c);
+	
 	void learn(mat &data, const std::vector<int> &classes);
 	int classify(const rvec &x) const;
 	void inspect(std::ostream &os) const;
@@ -128,20 +131,36 @@ string get_num_classifier_name(int t) {
 
 num_classifier::num_classifier() : nc_type(NC_NONE), cls(NULL) {}
 
+num_classifier::num_classifier(const num_classifier &c) {
+	*this = c;
+}
+
 num_classifier::num_classifier(int t) : cls(NULL) {
 	set_type(t);
 }
 
 num_classifier::~num_classifier() {
-	delete cls;
+	if (cls) {
+		cout << "del " << this << " cls = " << cls << endl;
+		delete cls;
+	}
+}
+
+num_classifier &num_classifier::operator=(const num_classifier &c) {
+	set_type(c.nc_type);
+	*cls = *c.cls;
+	return *this;
 }
 
 void num_classifier::set_type(int t) {
 	if (cls) {
 		delete cls;
+		cls = NULL;
 	}
 	nc_type = t;
 	switch (nc_type) {
+	case NC_NONE:
+		break;
 	case NC_DTREE:
 		cls = new dtree_classifier;
 		break;
@@ -154,33 +173,46 @@ void num_classifier::set_type(int t) {
 	default:
 		assert(false);
 	}
+	cout << "cre " << this << " cls = " << cls << endl;
 }
 
 void num_classifier::learn(mat &data, const vector<int> &classes) {
 	function_timer t(timers.get_or_add("learn"));
 	
+	assert(cls);
 	cls->learn(data, classes);
 }
 
 int num_classifier::classify(const rvec &x) const {
 	function_timer t(timers.get_or_add("classify"));
 	
+	assert(cls);
 	return cls->classify(x);
 }
 
 void num_classifier::inspect(ostream &os) const {
-	cls->inspect(os);
+	if (!cls) {
+		os << "NULL" << endl;
+	} else {
+		cls->inspect(os);
+	}
 }
 
 void num_classifier::serialize(ostream &os) const {
+	assert((nc_type == NC_NONE && cls == NULL) || (nc_type != NC_NONE && cls != NULL));
 	serializer(os) << nc_type;
-	cls->serialize(os);
+	if (cls) {
+		cls->serialize(os);
+	}
 }
 
 void num_classifier::unserialize(istream &is) {
-	unserializer(is) >> nc_type;
-	set_type(nc_type);
+	int t;
+	unserializer(is) >> t;
+	set_type(t);
 	switch (nc_type) {
+	case NC_NONE:
+		break;
 	case NC_DTREE:
 		dynamic_cast<dtree_classifier*>(cls)->unserialize(is);
 		break;
@@ -397,6 +429,15 @@ void sign_classifier::unserialize(istream &is) {
 
 dtree_classifier::dtree_classifier() {
 	tree = new CvDTree();
+}
+
+dtree_classifier::dtree_classifier(const dtree_classifier &c) {
+	tree = new CvDTree(*c.tree);
+}
+
+dtree_classifier &dtree_classifier::operator=(const dtree_classifier &c) {
+	*tree = *c.tree;
+	return *this;
 }
 
 void dtree_classifier::learn(mat &data, const vector<int> &classes) {

@@ -89,7 +89,9 @@ bool run_foil(const char *path, bool prune, clause_vec &clauses, relation &pos, 
 	double t1 = time();
 	foil.learn(prune, false);
 	t = time() - t1;
-	clauses = foil.get_clauses();
+	for (int i = 0, iend = foil.num_clauses(); i < iend; ++i) {
+		clauses.push_back(foil.get_clause(i));
+	}
 	pos = foil.get_pos();
 	neg = foil.get_neg();
 	all_rels = foil.get_relations();
@@ -140,6 +142,15 @@ void test() {
 
 bool close(double a, double b) {
 	return fabs(a - b) < EQUAL_MARGIN;
+}
+
+int test_clause_vec(const vector<clause> &clauses, const relation_table &rels, var_domains &d) {
+	for (int i = 0, iend = clauses.size(); i < iend; ++i) {
+		if (test_clause(clauses[i], rels, d)) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 void test_clauses(clause_vec &clauses, relation &pos, relation &neg, relation_table &all_rels) {

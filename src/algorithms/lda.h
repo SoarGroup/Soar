@@ -16,8 +16,11 @@ std::string get_num_classifier_name(int t);
 class num_classifier : public serializable {
 public:
 	num_classifier();
+	num_classifier(const num_classifier &c);
 	num_classifier(int t);
 	~num_classifier();
+	
+	num_classifier &operator=(const num_classifier &c);
 	
 	void set_type(int t);
 	

@@ -90,7 +90,9 @@ mode_info::mode_info(bool noise, bool manual, const vector<em_train_data*> &data
 
 mode_info::~mode_info() {
 	for (int i = 0; i < classifiers.size(); ++i) {
-		delete classifiers[i];
+		if (classifiers[i]) {
+			delete classifiers[i];
+		}
 	}
 }
 

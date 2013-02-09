@@ -29,7 +29,6 @@ template <typename T> void serialize(const T* v, std::ostream &os);
 template <typename T> void unserialize(T* &v, std::istream &is);
 
 template <typename C> void serialize_container(const C &container, std::ostream &os);
-template <typename C> void unserialize_container(C &container, std::istream &is);
 
 template <typename T> void serialize(const std::vector<T> &v, std::ostream &os);
 template <typename T> void unserialize(std::vector<T> &v, std::istream &is);
@@ -178,25 +177,6 @@ void serialize_container(const C &container, std::ostream &os) {
 	os << ']' << std::endl;
 }
 
-template <typename C>
-void unserialize_container(C &container, std::istream &is) {
-	char bracket;
-	int n = 0;
-	if (!(is >> n >> bracket) || bracket != '[') {
-		assert(false);
-	}
-	container.clear();
-	std::insert_iterator<C> i(container, container.end());
-	typename C::value_type elem;
-	for (int j = 0; j < n; ++j) {
-		unserialize(elem, is);
-		i = elem;
-	}
-	if (!(is >> bracket) || bracket != ']') {
-		assert(false);
-	}
-}
-
 template <typename T>
 void serialize(const std::vector<T> &v, std::ostream &os) {
 	serialize_container<std::vector<T> >(v, os);
@@ -204,7 +184,18 @@ void serialize(const std::vector<T> &v, std::ostream &os) {
 
 template <typename T>
 void unserialize(std::vector<T> &v, std::istream &is) {
-	unserialize_container<std::vector<T> >(v, is);
+	char bracket;
+	int n = 0;
+	if (!(is >> n >> bracket) || bracket != '[') {
+		assert(false);
+	}
+	v.resize(n);
+	for (int i = 0; i < n; ++i) {
+		unserialize(v[i], is);
+	}
+	if (!(is >> bracket) || bracket != ']') {
+		assert(false);
+	}
 }
 
 template <typename T>
@@ -214,7 +205,29 @@ void serialize(const std::set<T> &s, std::ostream &os) {
 
 template <typename T>
 void unserialize(std::set<T> &s, std::istream &is) {
-	unserialize_container<std::set<T> >(s, is);
+	char bracket;
+	int n = 0;
+	if (!(is >> n >> bracket) || bracket != '[') {
+		assert(false);
+	}
+	s.clear();
+	T elem;
+	for (int i = 0; i < n; ++i) {
+		unserialize(elem, is);
+		s.insert(elem);
+	}
+	if (!(is >> bracket) || bracket != ']') {
+		assert(false);
+	}
+	/*
+	 If elem contains a pointer and doesn't have a custom assignment operator,
+	 then at this point elem may be holding the same pointer as the last element
+	 inserted into the set. That pointer may be deallocated by the destructor when
+	 elem goes out of scope, which would result in an invalid pointer in the set.
+	 This next line fixes the problem by setting the pointer to something else,
+	 hopefully NULL.
+	*/
+	elem = T();
 }
 
 template <typename K, typename V>
@@ -222,11 +235,6 @@ void serialize(const std::map<K, V> &m, std::ostream &os) {
 	serialize_container<std::map<K,V> >(m, os);
 }
 
-/*
- map<K,V>::value_type = pair<const K, V>, so we can't call unserialize(pair<K, V>,
- ...) on it. That means we have to specialize this one differently from
- unserialize_container.
-*/
 template <typename K, typename V>
 void unserialize(std::map<K, V> &m, std::istream &is) {
 	char bracket;
@@ -235,16 +243,18 @@ void unserialize(std::map<K, V> &m, std::istream &is) {
 		assert(false);
 	}
 	m.clear();
+	K key;
 	for (int j = 0; j < n; ++j) {
-		K key;
-		V val;
 		unserialize(key, is);
-		unserialize(val, is);
-		m[key] = val;
+		unserialize(m[key], is);
 	}
 	if (!(is >> bracket) || bracket != ']') {
 		assert(false);
 	}
+	/*
+	 Reset key for the same reason as in the set unserializer.
+	*/
+	key = K();
 }
 
 class serializer {
