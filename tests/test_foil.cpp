@@ -43,15 +43,24 @@ test_spec tests[] = {
 	{ NULL, false, { {NULL, 0.0} } }  // sentinel
 };
 
+typedef vector<clause> clause_vec;
+
+// functions to make literals and clauses from a readable format
+literal PL(const string &s);
+clause PC(const string &s);
+
 bool close(double a, double b);
 double time();
+void clause_from_str(const string &s, clause &c);
 bool run_foil(const char *path, bool prune, clause_vec &clauses, relation &pos, relation &neg, relation_table &all_rels, double &time);
 void standalone(const char *path, bool prune);
-void test();
+bool test();
 void test_clauses(clause_vec &clauses, relation &pos, relation &neg, relation_table &all_rels);
 
+void fix_variables(int num_auto_bound, clause &c); // in foil.cpp
+bool test_fix_variables();
+
 int main(int argc, char *argv[]) {
-	//LOG.turn_on(FOILDBG);
 	if (argc > 1) {
 		if (strcmp(argv[1], "-p") == 0) {
 			standalone(argv[2], false);
@@ -62,6 +71,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	test();
+	test_fix_variables();
 	return 0;
 }
 
@@ -114,15 +124,17 @@ void standalone(const char *path, bool prune) {
 	test_clauses(clauses, pos, neg, all);
 }
 
-void test() {
+bool test() {
 	stringstream ss;
 	clause_vec clauses;
 	relation pos, neg;
 	relation_table all;
 	double t, success, fp, fn;
 	int i, j;
-
+	bool result = true;
+	
 	for (int i = 0; tests[i].path != NULL; ++i) {
+		//if (i == 3) LOG.turn_on(FOILDBG);
 		clauses.clear();
 		if (!run_foil(tests[i].path, tests[i].prune, clauses, pos, neg, all, t))
 			assert(false);
@@ -132,12 +144,20 @@ void test() {
 			assert(j < clauses.size());
 			ss.str("");
 			ss << clauses[j];
-			assert(ss.str() == spec.clause);
-			clause_success_rate(clauses[j], pos, neg, all, success, fp, fn);
-			assert(close(success, spec.success_rate));
+			string learned = ss.str();
+			if (learned == spec.clause) {
+				clause_success_rate(clauses[j], pos, neg, all, success, fp, fn);
+				if (!close(success, spec.success_rate)) {
+					cout << "Expected success rate " << spec.success_rate << ", got " << success << endl;
+					result = false;
+				}
+			} else {
+				cout << "Test " << j << " expected " << spec.clause << ", got " << learned << endl;
+				result = false;
+			}
 		}
-		assert(j == clauses.size());
 	}
+	return result;
 }
 
 bool close(double a, double b) {
@@ -200,3 +220,60 @@ void test_clauses(clause_vec &clauses, relation &pos, relation &neg, relation_ta
 	     << false_negs << " false negs, " << false_pos << " false pos" << endl;
 }
 
+literal PL(const string &s) {
+	bool negate;
+	string name;
+	tuple args;
+	int open, close;
+	vector<string> arg_str;
+	
+	open = s.find_first_of("(");
+	close = s.find_first_of(")");
+	assert(open != string::npos && close != string::npos && open < close);
+	if (s[0] == '~') {
+		negate = true;
+		name = s.substr(1, open - 1);
+	} else {
+		negate = false;
+		name = s.substr(0, open);
+	}
+	
+	split(s.substr(open + 1, close - open - 1), ", ", arg_str);
+	assert(arg_str.size() > 0);
+	args.resize(arg_str.size());
+	for (int i = 0, iend = arg_str.size(); i < iend; ++i) {
+		if (!parse_int(arg_str[i], args[i])) {
+			assert(false);
+		}
+	}
+	return literal(name, args, negate);
+}
+
+clause PC(const string &s) {
+	clause c;
+	vector<string> lit_strs;
+	split(s, " &", lit_strs);
+	for (int i = 0, iend = lit_strs.size(); i < iend; ++i) {
+		c.push_back(PL(lit_strs[i]));
+	}
+	return c;
+}
+
+bool test_fix_variables() {
+	clause c1 = PC( "A(0,1,2) & ~B(0,3)" );
+	clause t1 = PC( "A(0,1,2) & ~B(0,-1)" );
+	fix_variables(3, c1);
+	if (c1 != t1) {
+		cout << "Expected " << t1 << ", got " << c1 << endl;
+		return false;
+	}
+	
+	clause c2 = PC( "A(0,1) & B(0,3)" );
+	clause t2 = PC( "A(0,1) & B(0,2)" );
+	fix_variables(1, c2);
+	if (c2 != t2) {
+		cout << "Expected " << t2 << ", got " << c2 << endl;
+		return false;
+	}
+	return true;
+}

@@ -226,7 +226,7 @@ void multi_model::learn(const scene_sig &sig, const relation_table &rels, const 
 }
 
 void multi_model::test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
-	test_info &t = grow(tests);
+	test_info &t = grow_vec(tests);
 	t.sig = sig;
 	t.x = x;
 	t.y = y;

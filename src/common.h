@@ -47,7 +47,7 @@ void sample(int k, const C &input, C &output) {
 }
 
 template <typename T>
-T &grow(std::vector<T> &v) {
+T &grow_vec(std::vector<T> &v) {
 	v.resize(v.size() + 1);
 	return v.back();
 }

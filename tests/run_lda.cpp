@@ -100,7 +100,7 @@ void read_data(const char *path, mat &X, vector<int> &classes) {
 			continue;
 		}
 		
-		grow(data);
+		grow_vec(data);
 		for (int i = 0; i < fields.size(); ++i) {
 			if (!parse_double(fields[i], x)) {
 				cerr << "non number \"" << fields[i] << "\"" << endl;;

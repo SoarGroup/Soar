@@ -11,6 +11,26 @@ void print_first_arg(const relation &r, ostream &os) {
 	os << first;
 }
 
+void extract_vec(const tuple &t, const rvec &x, const scene_sig &sig, rvec &out) {
+	out.resize(x.size());
+	int end = 0, s, n;
+	for (int i = 1, iend = t.size(); i < iend; ++i) {
+		bool found = false;
+		for (int j = 0, jend = sig.size(); j < jend; ++j) {
+			if (sig[j].id == t[i]) {
+				s = sig[j].start;
+				n = sig[j].props.size();
+				found = true;
+				break;
+			}
+		}
+		assert(found);
+		out.segment(end, n) = x.segment(s, n);
+		end += n;
+	}
+	out.conservativeResize(end);
+}
+
 /*
  positive = class 0, negative = class 1
 */
@@ -21,31 +41,30 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 		return NULL;
 	}
 	
-	interval_set p0, n0;
-	interval_set::const_iterator i, iend;
-	pos.at_pos(0, p0);
-	neg.at_pos(0, n0);
-	
-	int ncols = data[*p0.begin()]->x.size();
-	int sig = data[*p0.begin()]->sig_index;
-	int j;
+	// figure out matrix columns
+	tuple t = *pos.begin();
+	rvec xpart;
+	extract_vec(t, data[t[0]]->x, sigs[t[0]]->sig, xpart);
+	int ncols = xpart.size();
 	
 	mat train(npos + nneg, ncols);
 	vector<int> classes;
 	
-	for (i = p0.begin(), iend = p0.end(), j = 0; i != iend; ++i, ++j) {
-		const em_train_data &d = *data[*i];
-		assert(d.sig_index == sig);
-		
-		train.row(j) = d.x;
+	relation::const_iterator i, iend;
+	int j = 0;
+	for (i = pos.begin(), iend = pos.end(); i != iend; ++i, ++j) {
+		t = *i;
+		extract_vec(t, data[t[0]]->x, sigs[t[0]]->sig, xpart);
+		assert(xpart.size() == ncols);
+		train.row(j) = xpart;
 		classes.push_back(0);
 	}
 	
-	for (i = n0.begin(), iend = n0.end(); i != iend; ++i, ++j) {
-		const em_train_data &d = *data[*i];
-		assert(d.sig_index == sig);
-		
-		train.row(j) = d.x;
+	for (i = neg.begin(), iend = neg.end(); i != iend; ++i, ++j) {
+		t = *i;
+		extract_vec(t, data[t[0]]->x, sigs[t[0]]->sig, xpart);
+		assert(xpart.size() == ncols);
+		train.row(j) = xpart;
 		classes.push_back(1);
 	}
 	
@@ -108,11 +127,12 @@ void classifier::inspect_detailed(ostream &os) const {
 		for (int k = 0; k < clauses.size(); ++k) {
 			os << "Clause: " << clauses[k].cl << endl;
 			
-			os << "True positives (" << clauses[k].true_pos.size() << "): ";
-			print_first_arg(clauses[k].true_pos, os);
+			os << "True positives: ";
+			//print_first_arg(clauses[k].true_pos, os);
+			os << endl << clauses[k].true_pos;
 			os << endl << endl;
 			
-			os << "False positives (" << clauses[k].false_pos.size() << "): ";
+			os << "False positives: ";
 			print_first_arg(clauses[k].false_pos, os);
 			os << endl << endl;
 			
@@ -125,11 +145,11 @@ void classifier::inspect_detailed(ostream &os) const {
 	}
 	os << "NEGATIVE:" << endl;
 	
-	os << "True negatives (" << true_negatives.size() << "): ";
+	os << "True negatives: ";
 	print_first_arg(true_negatives, os);
 	os << endl << endl;
 	
-	os << "False negatives (" << false_negatives.size() << "): ";
+	os << "False negatives: ";
 	print_first_arg(false_negatives, os);
 	os << endl << endl;
 	

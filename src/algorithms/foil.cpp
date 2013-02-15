@@ -283,6 +283,21 @@ bool test_clause(const clause &c, const relation_table &rels, var_domains &domai
 	return true;
 }
 
+bool test_clause(const clause &c, const relation_table &rels, tuple &domains) {
+	var_domains d;
+	for (int i = 0, iend = domains.size(); i < iend; ++i) {
+		d[i].insert(domains[i]);
+	}
+	if (test_clause(c, rels, d)) {
+		for (int i = domains.size(), iend = d.size(); i < iend; ++i) {
+			assert(d[i].size() == 1);
+			domains.push_back(*d[i].begin());
+		}
+		return true;
+	}
+	return false;
+}
+
 int test_clause_n(const clause &c, bool pos, const relation &tests, const relation_table &rels, relation *correct) {
 	int ncorrect = 0;
 	relation::const_iterator i, iend;
@@ -317,8 +332,11 @@ void clause_success_rate(const clause &c, const relation &pos, const relation &n
  set to -1 to indicate they don't need to be bound when testing for
  satisfaction.
 */
-void fix_unbound_variables(int num_auto_bound, clause &c) {
-	vector<int> status;
+void fix_variables(int num_auto_bound, clause &c) {
+	vector<int> remap(num_auto_bound);
+	for (int i = 0; i < num_auto_bound; ++i) {
+		remap[i] = i;
+	}
 	for (int i = 0; i < c.size(); ++i) {
 		const literal &l = c[i];
 		const tuple &args = l.get_args();
@@ -327,26 +345,27 @@ void fix_unbound_variables(int num_auto_bound, clause &c) {
 			if (v < num_auto_bound) {
 				continue;
 			}
-			if (v >= status.size()) {
-				status.resize(v + 1, 0);
+			if (v >= remap.size()) {
+				remap.resize(v + 1, 0);
 			}
 			if (!l.negated()) {
-				status[v] = 1;
-			} else if (status[v] == 0) {
-				status[v] = -1;
+				remap[v] = v;
+			} else if (remap[v] == 0) {
+				remap[v] = -1;
 			}
 		}
 	}
-	for (int i = 0; i < status.size(); ++i) {
-		if (status[i] >= 0) {
-			continue;
+	for (int i = num_auto_bound, j = num_auto_bound; i < remap.size(); ++i) {
+		if (remap[i] > 0) {
+			remap[i] = j++;
 		}
-		for (int j = 0; j < c.size(); ++j) {
-			const tuple &args = c[j].get_args();
-			for (int k = 0; k < args.size(); ++k) {
-				if (args[k] == i) {
-					c[j].set_arg(k, -1);
-				}
+	}
+	for (int i = 0, iend = c.size(); i < iend; ++i) {
+		const tuple &args = c[i].get_args();
+		for (int j = 0, jend = args.size(); j < jend; ++j) {
+			if (args[j] >= 0) {
+				assert(args[j] == 0 || remap[args[j]] != 0);
+				c[i].set_arg(j, remap[args[j]]);
 			}
 		}
 	}
@@ -395,7 +414,7 @@ void prune_clause_accuracy(clause &c, const relation &pos, const relation &neg, 
 		for (int i = 0; i < c.size(); ++i) {
 			clause pruned = c;
 			pruned.erase(pruned.begin() + i);
-			fix_unbound_variables(pos.arity(), pruned);
+			fix_variables(pos.arity(), pruned);
 			clause_success_rate(pruned, pos, neg, rels, s, fp, fn);
 			if (s > success_rate) {
 				best_lit = i;
@@ -408,7 +427,7 @@ void prune_clause_accuracy(clause &c, const relation &pos, const relation &neg, 
 			break;
 		}
 		c.erase(c.begin() + best_lit);
-		fix_unbound_variables(pos.arity(), c);
+		fix_variables(pos.arity(), c);
 	}
 	LOG(FOILDBG) << "pruned:   " << c << " " << success_rate << endl;
 }
@@ -428,14 +447,14 @@ void prune_clause_fp(clause &c, const relation &pos, const relation &neg, const 
 	for (int i = c.size() - 1; i >= 0; --i) {
 		clause pruned = c;
 		pruned.erase(pruned.begin() + i);
-		fix_unbound_variables(pos.arity(), pruned);
+		fix_variables(pos.arity(), pruned);
 		clause_success_rate(pruned, pos, neg, rels, s, fp, fn);
 		LOG(FOILDBG) << "removing " << c[i] << " results in " << fp_rate << " -> " << fp << " " << fn_rate << " -> " << fn << endl;
 		if (fp <= fp_rate) {
 			c.erase(c.begin() + i);
 		}
 	}
-	fix_unbound_variables(pos.arity(), c);
+	fix_variables(pos.arity(), c);
 	LOG(FOILDBG) << "pruned:   " << c << " " << success_rate << endl;
 }
 
@@ -530,18 +549,7 @@ void FOIL::set_problem(const relation &p, const relation &n, const relation_tabl
 }
 
 /*
- Learns a list of clauses to classify the positive and negative
- examples. The residuals vector will be filled as follows:
- 
- for i < clauses.size(), residuals[i] contains negative examples
-                         incorrectly covered by out by clauses[i]
- 
- for i == clauses.size(), residuals[i] contains positive examples not
-                          covered by any of the clauses
-
- If all positive examples are covered by the clauses, the residuals
- vector will be the same length as the clauses vector, and the second
- case will not exist.
+ Returns true if all training examples were correctly classified, false if not
 */
 bool FOIL::learn(bool prune, bool record_errors) {
 	relation pos_test, neg_test, pos_left;
@@ -560,60 +568,67 @@ bool FOIL::learn(bool prune, bool record_errors) {
 		split_training(FOIL_GROW_RATIO, pos_left, pos_grow, pos_test);
 		split_training(FOIL_GROW_RATIO, neg, neg_grow, neg_test);
 		
-		clause c;
+		clause_info &ci = grow_vec(clauses);
 		relation *false_pos = NULL;
 		dead = true;
 		
 		if (record_errors) {
-			false_pos = new relation(train_dim);
-			choose_clause(c, false_pos);
+			choose_clause(ci.cl, &ci.false_positives); // false_positives only contains examples from neg_grow, add from neg_test later
 		} else {
-			choose_clause(c, NULL);
+			choose_clause(ci.cl, NULL);
 		}
 		
 		if (prune) {
-			prune_clause_fp(c, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
+			prune_clause_fp(ci.cl, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
 		} else {
-			clause_success_rate(c, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
+			clause_success_rate(ci.cl, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
 		}
 		
-		if (!c.empty() && fp_rate < MAX_CLAUSE_FP_RATE) {
-			clauses.push_back(c);
-			if (record_errors) {
-				false_positives.push_back(*false_pos);
-				delete false_pos;
-			}
-			
+		if (!ci.cl.empty() && fp_rate < MAX_CLAUSE_FP_RATE) {
 			// this repeats computation, make more efficient
 			relation covered_pos(train_dim);
 			relation::const_iterator i, iend;
 			for (i = pos_left.begin(), iend = pos_left.end(); i != iend; ++i) {
-				var_domains d;
-				for (int j = 0; j < i->size(); ++j) {
-					d[j].insert(i->at(j));
-				}
-				if (test_clause(c, *rels, d)) {
+				tuple t = *i;
+				if (test_clause(ci.cl, *rels, t)) {
 					covered_pos.add(*i);
+					if (record_errors) {
+						if (ci.true_positives.arity() == 0) {
+							ci.true_positives.reset(t.size());
+						}
+						ci.true_positives.add(t);
+					}
+				}
+			}
+			if (record_errors) {
+				for (i = neg_test.begin(), iend = neg_test.end(); i != iend; ++i) {
+					tuple t = *i;
+					if (test_clause(ci.cl, *rels, t)) {
+						if (ci.false_positives.arity() == 0) {
+							ci.false_positives.reset(t.size());
+						}
+						ci.false_positives.add(t);
+					}
 				}
 			}
 			int old_size = pos_left.size();
 			pos_left.subtract(covered_pos);
 			assert(pos_left.size() + covered_pos.size() == old_size);
-			if (record_errors) {
-				true_positives.push_back(covered_pos);
-			}
 			dead = (pos_left.size() == old_size);
+		} else {
+			clauses.pop_back();
 		}
 	}
 	
 	if (record_errors) {
 		false_negatives = pos_left;
 		true_negatives = neg;
-		for (int i = 0, iend = false_positives.size(); i < iend; ++i) {
-			true_negatives.subtract(false_positives[i]);
+		for (int i = 0, iend = clauses.size(); i < iend; ++i) {
+			relation fp(train_dim);
+			clauses[i].false_positives.slice(train_dim, fp);
+			true_negatives.subtract(fp);
 		}
 	}
-	assert(!record_errors || (clauses.size() == false_positives.size() && clauses.size() == true_positives.size()));
 	return !dead;
 }
 

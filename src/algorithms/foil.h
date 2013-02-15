@@ -49,7 +49,6 @@ private:
 std::ostream &operator<<(std::ostream &os, const literal &l);
 
 typedef std::vector<literal> clause;
-typedef std::vector<clause> clause_vec;
 
 std::ostream &operator<<(std::ostream &os, const clause &c);
 
@@ -69,9 +68,9 @@ public:
 	const relation &get_rel(const std::string &name) const;
 	
 	const int num_clauses() const { return clauses.size(); }
-	const clause &get_clause(int i) const { return clauses[i]; }
-	const relation &get_false_positives(int i) const { return false_positives[i]; }
-	const relation &get_true_positives(int i) const { return true_positives[i]; }
+	const clause &get_clause(int i) const { return clauses[i].cl; }
+	const relation &get_false_positives(int i) const { return clauses[i].false_positives; }
+	const relation &get_true_positives(int i) const { return clauses[i].true_positives; }
 	const relation &get_false_negatives() const { return false_negatives; }
 	const relation &get_true_negatives() const { return true_negatives; }
 	
@@ -80,14 +79,18 @@ private:
 	bool choose_clause(clause &c, relation *neg_left);
 
 private:
+	struct clause_info {
+		clause cl;
+		relation true_positives;
+		relation false_positives;
+	};
+	
 	relation pos, neg, pos_grow, neg_grow;
 	relation_table const *rels;
 	bool own_rels;
 	int train_dim;
 	
-	clause_vec clauses;
-	std::vector<relation> false_positives;
-	std::vector<relation> true_positives;
+	std::vector<clause_info> clauses;
 	
 	relation false_negatives;
 	relation true_negatives;

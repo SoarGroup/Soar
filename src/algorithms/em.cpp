@@ -570,7 +570,7 @@ mode_info *EM::add_mode(bool manual) {
 	modes.push_back(new_mode);
 	++nmodes;
 	for (int j = 0; j < ndata; ++j) {
-		grow(data[j]->minfo);
+		grow_vec(data[j]->minfo);
 	}
 	for (int j = 0; j < nmodes; ++j) {
 		modes[j]->classifiers.resize(nmodes, NULL);
