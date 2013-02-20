@@ -59,11 +59,14 @@
 # continued by ending the line with a backslash (\).
 
 # test intersect
-a box1 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
-a box2 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
-a box3 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
-a pt1 world v 0 0 0 p .5 .5 .5
-a line1 world v 0 0 0 10 0 0 p -5 .5 .5
+a box1 box world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 i 0 2 6 0 6 4 0 4 5 0 5 1 4 6 5 7 5 6 0 3 2 0 1 3 2 3 6 7 6 3 1 5 3 7 3 5
+
+a box2 box world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 i 0 2 6 0 6 4 0 4 5 0 5 1 4 6 5 7 5 6 0 3 2 0 1 3 2 3 6 7 6 3 1 5 3 7 3 5
+
+a box3 box world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 i 0 2 6 0 6 4 0 4 5 0 5 1 4 6 5 7 5 6 0 3 2 0 1 3 2 3 6 7 6 3 1 5 3 7 3 5
+
+#a pt1 point world v 0 0 0 p .5 .5 .5
+#a line1 line world v 0 0 0 10 0 0 p -5 .5 .5
 c box2 p .5 .5 .5
 c box3 p 10 10 10
 
@@ -71,11 +74,11 @@ want t * intersect a box1 b box1
 want t * intersect a box1 b box2
 want f * intersect a box1 b box3
 want f * intersect a box2 b box3
-want t * intersect a pt1 b box1
-want t * intersect a pt1 b box2
-want f * intersect a pt1 b box3
-want t * intersect a line1 b box1
-want f * intersect a line1 b box3
+#want t * intersect a pt1 b box1
+#want t * intersect a pt1 b box2
+#want f * intersect a pt1 b box3
+#want t * intersect a line1 b box1
+#want f * intersect a line1 b box3
 
 # test ontop & above
 c box2 p 0 0 1
@@ -93,9 +96,9 @@ want t * above a box3 b box2
 
 # test ball intersections
 c box1 p 0 0 0
-a ball1 world b 1
-a ball2 world b 2 p -1 -1 -1
-a ball3 world b 2 p 2.2 2.2 2.2
+a ball1 ball world b 1
+a ball2 ball world b 2 p -1 -1 -1
+a ball3 ball world b 2 p 2.2 2.2 2.2
 
 want t * intersect a ball1 b box1
 want t * intersect a ball2 b box1
@@ -107,17 +110,17 @@ want t * compare a c:3   b c:3.0 compare c:eq
 
 # test closest
 init
-a b1 world
-a b2 world p 1.5 0 0
-a b3 world p 2 0 0
+a b1 sometype world
+a b2 sometype world p 1.5 0 0
+a b3 sometype world p 2 0 0
 
 want * (a b1 b b2) closest a b1 b (combine n1 b2 n2 b3)
 want * (a b2 b b3) closest a b2 b (combine n1 b1 n2 b3)
 
 # test if filter results respond to node changes
 init
-a b1 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
-a b2 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 p -10 0 0
+a b1 box world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 i 0 2 6 0 6 4 0 4 5 0 5 1 4 6 5 7 5 6 0 3 2 0 1 3 2 3 6 7 6 3 1 5 3 7 3 5
+a b2 box world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 i 0 2 6 0 6 4 0 4 5 0 5 1 4 6 5 7 5 6 0 3 2 0 1 3 2 3 6 7 6 3 1 5 3 7 3 5 p -10 0 0
 
 want t * east-of a b1 b b2
 want 10.0 * distance a b1 b b2

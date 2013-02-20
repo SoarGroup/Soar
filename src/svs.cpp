@@ -380,14 +380,14 @@ bool svs_state::report_relations(int first, const vector<string> &args, ostream 
 	}
 	
 	vector<int> ids;
-	int id;
 	for (int j = first + 1; j < args.size(); ++j) {
 		if (args[j] != "*") {
-			if ((id = scn->get_node_id(args[j])) == -1) {
+			const sgnode *n = scn->get_node(args[j]);
+			if (!n) {
 				os << "object " << args[j] << " not found" << endl;
 				return false;
 			}
-			ids.push_back(id);
+			ids.push_back(n->get_id());
 		} else {
 			ids.push_back(-1);
 		}

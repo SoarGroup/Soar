@@ -28,6 +28,7 @@ public:
 	/* copied node doesn't inherit listeners */
 	virtual sgnode* clone() const;
 
+	int get_id() const { return id; }
 	const std::string &get_name() const { return name; }
 	void set_name(const std::string &n) { name = n; }
 	
@@ -76,6 +77,7 @@ private:
 	void update_transform() const;
 	void send_update(change_type t, int added=-1);
 	
+	int         id;
 	std::string name;
 	std::string type;
 	group_node* parent;

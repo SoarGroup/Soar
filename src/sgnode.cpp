@@ -6,11 +6,18 @@
 
 using namespace std;
 
+/*
+ Making this a global variable insures that all nodes in all scenes
+ will have unique identifiers.
+*/
+int node_counter = 100;
+
 typedef vector<sgnode*>::iterator childiter;
 typedef vector<sgnode*>::const_iterator const_childiter;
 
 sgnode::sgnode(const string &name, const string &type, bool group)
-: name(name), type(type), parent(NULL), group(group), trans_dirty(true), shape_dirty(true), bounds_dirty(true),
+: name(name), type(type), parent(NULL), group(group), id(node_counter++),
+  trans_dirty(true), shape_dirty(true), bounds_dirty(true),
   pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
 {}
 
@@ -164,7 +171,7 @@ const bbox &sgnode::get_bounds() const {
 }
 
 vec3 sgnode::get_centroid() const {
-	if (shape_dirty || trans_dirty) {
+	if (shape_dirty || trans_dirty || bounds_dirty) {
 		const_cast<sgnode*>(this)->update_shape();
 	}
 	return centroid;

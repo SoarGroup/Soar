@@ -185,49 +185,41 @@ void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 }
 
 void filter_table::update_relations(const scene *scn, const vector<int> &dirty, int time, relation_table &rt) const {
-	vector<int> node_inds;
-	int world_ind = scn->get_node_id("world");
-	scn->get_all_node_indices(node_inds);
+	vector<const sgnode *> nodes;
+	scn->get_all_nodes(nodes);
 
-	for (int i = 0, iend = node_inds.size(); i < iend; ++i) {
-		if (node_inds[i] == world_ind) {
-			node_inds.erase(node_inds.begin() + i);
-			break;
-		}
-	}
-		
 	map<string, filter_table_entry>::const_iterator i, iend;
 	for(i = t.begin(), iend = t.end(); i != iend; ++i) {
 		const filter_table_entry &e = i->second;
-		if (e.calc != NULL && node_inds.size() >= e.parameters.size()) {
+		if (e.calc != NULL && nodes.size() >= e.parameters.size()) {
 			relation &r = rt[e.name];
 			if (r.arity() == 0) {
 				// +1 for the time argument
 				r.reset(e.parameters.size() + 1);
 			}
 			vector<const sgnode*> args;
-			tuple inds;
-			single_combination_generator<int> gen(node_inds, e.parameters.size(), e.ordered, e.allow_repeat);
-			while (gen.next(inds)) {
+			vector<int> arg_ids;
+			single_combination_generator<const sgnode*> gen(nodes, e.parameters.size(), e.ordered, e.allow_repeat);
+			while (gen.next(args)) {
 				bool params_dirty = false;
-				for (int j = 0, jend = inds.size(); j < jend; ++j) {
-					if (has(dirty, inds[j])) {
+				arg_ids.resize(args.size());
+				for (int j = 0, jend = args.size(); j < jend; ++j) {
+					arg_ids[j] = args[j]->get_id();
+					if (has(dirty, args[j]->get_id())) {
 						params_dirty = true;
-						break;
 					}
 				}
 				if (params_dirty) {
-					scn->get_nodes(inds, args);
 					timer &t = timers.get_or_add(i->first.c_str());
 					t.start();
 					bool pos = (*e.calc)(scn, args);
 					t.stop();
 					if (pos) {
 						if (e.ordered) {
-							r.add(time, inds);
+							r.add(time, arg_ids);
 						} else {
 							// true for all permutations
-							single_combination_generator<int> gen2(inds, inds.size(), true, e.allow_repeat);
+							single_combination_generator<int> gen2(arg_ids, arg_ids.size(), true, e.allow_repeat);
 							tuple perm;
 							while (gen2.next(perm)) {
 								r.add(time, perm);
@@ -235,7 +227,7 @@ void filter_table::update_relations(const scene *scn, const vector<int> &dirty, 
 						}
 					}
 				}
-				inds.clear();
+				args.clear();
 			}
 		}
 	}

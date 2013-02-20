@@ -17,12 +17,6 @@ using namespace std;
 const string root_name = "world";
 
 /*
- Making this a global variable insures that all nodes in all scenes
- will have unique identifiers.
-*/
-int node_counter = 100;
-
-/*
  Native properties are currently the position, rotation, and scaling
  transforms of a node, named px, py, pz, rx, ry, rz, sx, sy, sz.
 */
@@ -44,6 +38,17 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 	type = name[0];
 	dim = d;
 	return true;
+}
+
+int argmin(const vector<double> &v) {
+	assert(!v.empty());
+	int i = 0;
+	for (int j = 0, jend = v.size(); j < jend; ++j) {
+		if (v[j] < v[i]) {
+			i = j;
+		}
+	}
+	return i;
 }
 
 bool parse_vec3(vector<string> &f, int &start, vec3 &v, string &error) {
@@ -71,7 +76,7 @@ bool parse_verts(vector<string> &f, int &start, ptlist &verts, string &error) {
 
 bool parse_inds(vector<string> &f, int &start, vector<int> &inds, string &error) {
 	int i;
-	while (parse_int(f[start], i)) {
+	while (start < f.size() && parse_int(f[start], i)) {
 		inds.push_back(i);
 		++start;
 	}
@@ -107,14 +112,13 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 }
 
 scene::scene(const string &name, drawer *d) 
-: name(name), draw(d)
+: name(name), draw(d), nodes(1)
 {
 	root = new group_node(root_name, "world");
-	root_id = node_counter++;
-	nodes[root_id].node = root;
+	nodes[0].node = root;
 	root->listen(this);
-	node_ids[root_name] = root_id;
 	sig_dirty = true;
+	closest_dirty = false;
 }
 
 scene::~scene() {
@@ -127,58 +131,51 @@ scene *scene::clone(const string &cname, drawer *d) const {
 	std::vector<sgnode*> all_nodes;
 	std::vector<sgnode*>::const_iterator i;
 	
+	delete c->root;
 	c->root = root->clone()->as_group();
 	c->root->walk(all_nodes);
+	c->nodes.resize(all_nodes.size());
 	
-	for(int i = 1; i < all_nodes.size(); ++i) {  // i = 0 is world, already in copy
+	for(int i = 1, iend = all_nodes.size(); i < iend; ++i) {  // i = 0 is world, already in copy
 		sgnode *n = all_nodes[i];
-		const node_info *info = get_node_info(n->get_name());
-		int id = node_counter++;
-		c->node_ids[n->get_name()] = id;
-		node_info &cinfo = c->nodes[id];
+		node_info &cinfo = c->nodes[i];
+		cinfo = *find_name(n->get_name());
 		cinfo.node = n;
-		cinfo.props = info->props;
 		n->listen(c);
 		if (!n->is_group()) {
 			c->cdetect.add_node(n);
-			c->update_closest(n);
+			c->update_dists(i);
 		}
 		if (c->draw) {
 			c->draw->add(c->name, n);
 		}
 	}
-	
+	c->update_closest();
 	return c;
 }
 
-scene::node_info *scene::get_node_info(int i) {
-	node_info *info = map_getp(nodes, i);
-	return info;
-}
-
-const scene::node_info *scene::get_node_info(int i) const {
-	const node_info *info = map_getp(nodes, i);
-	return info;
-}
-
-scene::node_info *scene::get_node_info(const string &name) {
-	int i;
-	if (!map_get(node_ids, name, i)) {
-		return NULL;
+scene::node_info *scene::find_name(const string &name) {
+	node_table::iterator i, iend;
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+		if (i->node->get_name() == name) {
+			return &(*i);
+		}
 	}
-	return get_node_info(i);
+	return NULL;
 }
 
-const scene::node_info *scene::get_node_info(const string &name) const {
-	int i;
-	if (!map_get(node_ids, name, i)) {
-		return NULL;
+const scene::node_info *scene::find_name(const string &name) const {
+	node_table::const_iterator i, iend;
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+		if (i->node->get_name() == name) {
+			return &(*i);
+		}
 	}
-	return get_node_info(i);
+	return NULL;
 }
 
 sgnode *scene::get_node(const string &name) {
-	node_info *info = get_node_info(name);
+	node_info *info = find_name(name);
 	if (!info) {
 		return NULL;
 	}
@@ -186,35 +183,31 @@ sgnode *scene::get_node(const string &name) {
 }
 
 sgnode const *scene::get_node(const string &name) const {
-	const node_info *info = get_node_info(name);
+	const node_info *info = find_name(name);
 	if (!info) {
 		return NULL;
 	}
 	return info->node;
 }
 
-sgnode *scene::get_node(int i) {
-	node_info *info = get_node_info(i);
-	if (!info) {
-		return NULL;
+sgnode *scene::get_node(int id) {
+	node_table::iterator i, iend;
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+		if (i->node->get_id() == id) {
+			return i->node;
+		}
 	}
-	return info->node;
+	return NULL;
 }
 
-const sgnode *scene::get_node(int i) const {
-	const node_info *info = get_node_info(i);
-	if (!info) {
-		return NULL;
+const sgnode *scene::get_node(int id) const {
+	node_table::const_iterator i, iend;
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+		if (i->node->get_id() == id) {
+			return i->node;
+		}
 	}
-	return info->node;
-}
-
-int scene::get_node_id(const string &name) const {
-	int i;
-	if (!map_get(node_ids, name, i)) {
-		return -1;
-	}
-	return i;
+	return NULL;
 }
 
 group_node *scene::get_group(const string &name) {
@@ -226,33 +219,18 @@ group_node *scene::get_group(const string &name) {
 }
 
 void scene::get_all_nodes(vector<sgnode*> &n) {
-	node_table::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		if (i->first != root_id) {
-			n.push_back(i->second.node);
-		}
+	n.reserve(nodes.size() - 1);
+	node_table::const_iterator i, iend;
+	for (i = nodes.begin() + 1, iend = nodes.end(); i != iend; ++i) {
+		n.push_back(i->node);
 	}
 }
 
 void scene::get_all_nodes(vector<const sgnode*> &n) const {
-	n.reserve(nodes.size());
-	node_table::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		n.push_back(i->second.node);
-	}
-}
-
-void scene::get_all_node_indices(vector<int> &inds) const {
-	node_table::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		inds.push_back(i->first);
-	}
-}
-
-void scene::get_nodes(const vector<int> &inds, vector<const sgnode*> &n) const {
-	n.resize(inds.size(), NULL);
-	for (int i = 0; i < inds.size(); ++i) {
-		n[i] = map_get(nodes, inds[i]).node;
+	n.reserve(nodes.size() - 1);
+	node_table::const_iterator i, iend;
+	for (i = nodes.begin() + 1, iend = nodes.end(); i != iend; ++i) {
+		n.push_back(i->node);
 	}
 }
 
@@ -267,7 +245,7 @@ bool scene::add_node(const string &name, sgnode *n) {
 }
 
 bool scene::del_node(const string &name) {
-	delete get_node_info(name)->node;
+	delete find_name(name)->node;
 	/* rest is handled in node_update */
 	return true;
 }
@@ -384,12 +362,15 @@ int scene::parse_change(vector<string> &f, string &error) {
 }
 
 int scene::parse_property(vector<string> &f, string &error) {
-	int i, p = 0;
+	int p = 0;
+	node_info *ninfo;
+	
 	if (p >= f.size()) {
 		error = "expecting node name";
 		return p;
 	}
-	if (!map_get(node_ids, f[p++], i) || !nodes[i].node) {
+	
+	if (!(ninfo = find_name(f[p++]))) {
 		error = "node does not exist";
 		return p;
 	}
@@ -404,7 +385,7 @@ int scene::parse_property(vector<string> &f, string &error) {
 		error = "expecting a number";
 		return p;
 	}
-	nodes[i].props[prop] = val;
+	ninfo->props[prop] = val;
 	return -1;
 }
 
@@ -457,58 +438,39 @@ void scene::parse_sgel(const string &s) {
 }
 
 void scene::get_property_names(int i, vector<string> &names) const {
-	const node_info *info = get_node_info(i);
-	assert(info);
-	
 	for (int j = 0; j < NUM_NATIVE_PROPS; ++j) {
 		names.push_back(NATIVE_PROPS[j]);
 	}
 	
-	property_map::const_iterator k = info->props.begin();
-	property_map::const_iterator end = info->props.end();
-	for (; k != end; ++k) {
+	const node_info &info = nodes[i];
+	property_map::const_iterator k, kend;
+	for (k = info.props.begin(), kend = info.props.end(); k != kend; ++k) {
 		names.push_back(k->first);
 	}
 }
 
 void scene::get_properties(rvec &vals) const {
-	node_table::const_iterator i;
-	property_map::const_iterator j;
+	node_table::const_iterator i, iend;
+	property_map::const_iterator j, jend;
 	int k = 0;
 	
 	vals.resize(get_dof());
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		const node_info &info = i->second;
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+		const node_info &info = *i;
 		for (const char *t = "prs"; *t != '\0'; ++t) {
 			vec3 trans = info.node->get_trans(*t);
 			vals.segment(k, 3) = trans;
 			k += 3;
 		}
-		for (j = info.props.begin(); j != info.props.end(); ++j) {
+		for (j = info.props.begin(), jend = info.props.end(); j != jend; ++j) {
 			vals[k++] = j->second;
 		}
 	}
 }
 
-bool scene::get_property(const string &name, const string &prop, double &val) const {
-	property_map::const_iterator j;
-	char type; int d;
-
-	const node_info *info = get_node_info(name);
-	if (is_native_prop(prop, type, d)) {
-		val = info->node->get_trans(type)[d];
-	} else {
-		if ((j = info->props.find(prop)) == info->props.end()) {
-			return false;
-		}
-		val = j->second;
-	}
-	return true;
-}
-
 bool scene::set_property(const string &obj, const string &prop, double val) {
 	char type; int d;
-	node_info *info = get_node_info(name);
+	node_info *info = find_name(obj);
 	assert(info);
 	if (is_native_prop(prop, type, d)) {
 		vec3 trans = info->node->get_trans(type);
@@ -521,12 +483,11 @@ bool scene::set_property(const string &obj, const string &prop, double val) {
 }
 
 bool scene::set_properties(const rvec &vals) {
-	node_table::iterator i;
+	node_table::iterator i, iend;;
 	const char *types = "prs";
 	vec3 trans;
 	
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		node_info &info = i->second;
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
 		int k1, k2, l = 0;
 		for (k1 = 0; k1 < 3; ++k1) {
 			for (k2 = 0; k2 < 3; ++k2) {
@@ -535,11 +496,11 @@ bool scene::set_properties(const rvec &vals) {
 					return false;
 				}
 			}
-			info.node->set_trans(types[k1], trans);
+			i->node->set_trans(types[k1], trans);
 		}
 		
-		property_map::iterator j;
-		for (j = info.props.begin(); j != info.props.end(); ++j) {
+		property_map::iterator j, jend;
+		for (j = i->props.begin(), jend = i->props.end(); j != jend; ++j) {
 			j->second = vals[l++];
 			if (l >= vals.size()) {
 				return false;
@@ -550,21 +511,17 @@ bool scene::set_properties(const rvec &vals) {
 }
 
 void scene::remove_property(const std::string &name, const std::string &prop) {
-	node_info *info = get_node_info(name);
+	node_info *info = find_name(name);
 	property_map::iterator j = info->props.find(prop);
 	assert(j != info->props.end());
 	info->props.erase(j);
 }
 
-int scene::num_nodes() const {
-	return nodes.size();
-}
-
 int scene::get_dof() const {
 	int dof = 0;
-	node_table::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		dof += NUM_NATIVE_PROPS + i->second.props.size();
+	node_table::const_iterator i, iend;
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+		dof += NUM_NATIVE_PROPS + i->props.size();
 	}
 	return dof;
 }
@@ -572,20 +529,18 @@ int scene::get_dof() const {
 void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	sgnode *child;
 	group_node *g;
-	int i;
 	relation *tr;
 	
 	if (t == sgnode::CHILD_ADDED) {
 		g = n->as_group();
 		child = g->get_child(added_child);
 		child->listen(this);
-		i = node_counter++;
-		node_ids[child->get_name()] = i;
-		nodes[i].node = child;
+		node_info &ninfo = grow_vec(nodes);
+		ninfo.node = child;
 		sig_dirty = true;
 		if (!child->is_group()) {
 			cdetect.add_node(child);
-			update_closest(child);
+			update_dists(nodes.size() - 1);
 		}
 		
 		tr = map_getp(type_rels, child->get_type());
@@ -593,7 +548,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			tr = &type_rels[child->get_type()];
 			tr->reset(2);
 		}
-		tr->add(0, i);
+		tr->add(0, n->get_id());
 		
 		if (draw) {
 			draw->add(name, child);
@@ -601,29 +556,40 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 		return;
 	}
 	
-	if (!map_get(node_ids, n->get_name(), i)) {
-		assert(false);
-	}
+	int i, iend;
+	for (i = 0, iend = nodes.size(); i < iend && nodes[i].node != n; ++i)
+		;
+	assert(i != iend);
+	
 	switch (t) {
 		case sgnode::DELETED:
-			if (!n->is_group()) {
+			if (!nodes[i].node->is_group()) {
 				cdetect.del_node(n);
 			}
-			nodes.erase(i);
-			node_ids.erase(n->get_name());
+			nodes.erase(nodes.begin() + i);
+			
+			// update distance vectors for other nodes
+			for (int j = 0, jend = nodes.size(); j < jend; ++j) {
+				node_info &info = nodes[j];
+				if (!info.node->is_group()) {
+					assert(info.dists.size() == nodes.size() + 1);
+					info.dists.erase(info.dists.begin() + i);
+				}
+			}
+			closest_dirty = true;
 			tr = map_getp(type_rels, n->get_type());
 			if (tr) {
 				tr->del(0, i);
 			}
 			sig_dirty = true;
-			if (draw && n->get_name() != "world") {
+			if (draw && i != 0) {
 				draw->del(name, n);
 			}
 			break;
 		case sgnode::SHAPE_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_shape(n);
-				update_closest(n);
+				update_dists(i);
 				if (draw) {
 					draw->change(name, n, drawer::SHAPE);
 				}
@@ -633,12 +599,12 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 		case sgnode::TRANSFORM_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_transform(n);
-				update_closest(n);
+				update_dists(i);
+				if (draw) {
+					draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
+				}
 			}
 			nodes[i].rels_dirty = true;
-			if (draw) {
-				draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
-			}
 			break;
 	}
 }
@@ -651,57 +617,53 @@ bool scene::intersects(const sgnode *a, const sgnode *b) const {
 	return c.find(make_pair(a, b)) != c.end() || c.find(make_pair(b, a)) != c.end();
 }
 
-void scene::update_closest(const sgnode *n) {
-	const geometry_node *g1 = dynamic_cast<const geometry_node*>(n);
-	node_table::const_iterator i, j, end;
+void scene::update_dists(int i) {
+	node_info &n1 = nodes[i];
+	const geometry_node *g1 = dynamic_cast<const geometry_node*>(n1.node);
 	
-	for (i = nodes.begin(), end = nodes.end(); i != end; ++i) {
-		const sgnode *n2 = i->second.node;
-		if (n == n2 || n2->is_group())
+	n1.dists.resize(nodes.size(), -1);
+	for (int j = 0, jend = nodes.size(); j < jend; ++j) {
+		if (i == j || nodes[j].node->is_group())
 			continue;
 		
-		const geometry_node *g2 = dynamic_cast<const geometry_node*>(n2);
-		double dist = convex_distance(g1, g2);
-		distances[make_pair(n, n2)] = dist;
-		distances[make_pair(n2, n)] = dist;
+		node_info &n2 = nodes[j];
+		n2.dists.resize(nodes.size(), -1);
+		const geometry_node *g2 = dynamic_cast<const geometry_node*>(n2.node);
+		double d = convex_distance(g1, g2);
+		n1.dists[j] = d;
+		n2.dists[i] = d;
 	}
-	
-	for (i = nodes.begin(), end = nodes.end(); i != end; ++i) {
-		const sgnode *n1 = i->second.node;
-		if (n1->is_group())
-			continue;
-		
-		close_info &c = closest[n1];
-		c.id = -1;
-		for (j = nodes.begin(); j != end; ++j) {
-			const sgnode *n2 = j->second.node;
-			if (n2->is_group())
-				continue;
-			
-			double dist = distances[make_pair(n1, n2)];
-			if (n1 != n2 && (c.id < 0 || c.dist > dist)) {
-				c.id = j->first;
-				c.dist = dist;
-			}
-		}
-	}
+	closest_dirty = true;
 }
 
-int scene::get_closest(int i) const {
-	const sgnode *n = map_get(nodes, i).node;
-	assert(has(closest, n));
-	return map_get(closest, n).id;
+void scene::update_closest() const {
+	if (closest_dirty) {
+		for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+			if (nodes[i].node->is_group()) {
+				continue;
+			}
+			int c = -1;
+			const vector<double> &d = nodes[i].dists;
+			for (int j = 0, jend = d.size(); j < jend; ++j) {
+				if (d[j] >= 0 && (c < 0 || d[j] < d[c])) {
+					c = j;
+				}
+			}
+			nodes[i].closest = c;
+		}
+		closest_dirty = false;
+	}
 }
 
 void scene::update_sig() const {
 	sig.clear();
-	node_table::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
+	node_table::const_iterator i, iend;
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
 		scene_sig::entry e;
-		e.id = i->first;
-		e.name = i->second.node->get_name();
-		e.type = i->second.node->get_type();
-		get_property_names(i->first, e.props);
+		e.id = nodes[i].node->get_id();
+		e.name = nodes[i].node->get_name();
+		e.type = nodes[i].node->get_type();
+		get_property_names(i, e.props);
 		sig.add(e);
 	}
 }
@@ -721,16 +683,14 @@ void scene::get_relations(relation_table &rt) const {
 	rt = type_rels;
 	relation &closest_rel = rt["closest"];
 	closest_rel.reset(3);
-	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
-		if (i->first == root_id) {
-			continue;
+	update_closest();
+	for (i = nodes.begin() + 1, iend = nodes.end(); i != iend; ++i) {
+		if (i->rels_dirty) {
+			dirty_nodes.push_back(i->node->get_id());
+			i->rels_dirty = false;
 		}
-		if (i->second.rels_dirty) {
-			dirty_nodes.push_back(i->first);
-			i->second.rels_dirty = false;
-		}
-		closest[0] = i->first;
-		closest[1] = get_closest(i->first);
+		closest[0] = i->node->get_id();
+		closest[1] = nodes[i->closest].node->get_id();
 		closest_rel.add(0, closest);
 	}
 	
