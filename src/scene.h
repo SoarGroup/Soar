@@ -6,7 +6,6 @@
 #include <cassert>
 #include "sgnode.h"
 #include "common.h"
-#include "collision.h"
 #include "scene_sig.h"
 #include "relation.h"
 
@@ -70,8 +69,6 @@ private:
 	bool         sig_dirty;
 	mutable bool closest_dirty;
 	
-	collision_detector cdetect;
-
 	mutable scene_sig sig;
 	
 	mutable relation_table cached_rels;

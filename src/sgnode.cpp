@@ -208,6 +208,14 @@ sgnode *sgnode::clone() const {
 	return c;
 }
 
+bool sgnode::has_descendent(const sgnode *n) const {
+	for (sgnode *p = n->parent; p; p = p->parent) {
+		if (p == this)
+			return true;
+	}
+	return false;
+}
+
 group_node::~group_node() {
 	childiter i;
 	for (i = children.begin(); i != children.end(); ++i) {
@@ -244,6 +252,20 @@ void group_node::walk(vector<sgnode*> &result) {
 	result.push_back(this);
 	for(i = children.begin(); i != children.end(); ++i) {
 		(**i).walk(result);
+	}
+}
+
+void group_node::walk_geoms(vector<geometry_node*> &g) {
+	childiter i, iend;
+	for(i = children.begin(), iend = children.end(); i != iend; ++i) {
+		(**i).walk_geoms(g);
+	}
+}
+
+void group_node::walk_geoms(vector<const geometry_node*> &g) const {
+	const_childiter i, iend;
+	for(i = children.begin(), iend = children.end(); i != iend; ++i) {
+		(**i).walk_geoms(g);
 	}
 }
 
@@ -307,6 +329,14 @@ void geometry_node::gjk_support(const vec3 &dir, vec3 &support) const {
 	tdir = B.block(0, 0, 3, 3).transpose() * dir;
 	gjk_local_support(tdir, support);
 	support = t(support);
+}
+
+void geometry_node::walk_geoms(std::vector<geometry_node*> &g) {
+	g.push_back(this);
+}
+
+void geometry_node::walk_geoms(std::vector<const geometry_node*> &g) const {
+	g.push_back(this);
 }
 
 convex_node::convex_node(const string &name, const string &type, const ptlist &v, const vector<int> &tris)

@@ -1,6 +1,5 @@
 #include "filter_table.h"
 #include "scene.h"
-#include "collision.h"
 #include "relation.h"
 
 using namespace std;

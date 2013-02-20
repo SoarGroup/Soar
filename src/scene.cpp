@@ -11,6 +11,7 @@
 #include "drawer.h"
 #include "filter.h"
 #include "filter_table.h"
+#include "ccd/ccd.h"
 
 using namespace std;
 
@@ -40,15 +41,52 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 	return true;
 }
 
-int argmin(const vector<double> &v) {
-	assert(!v.empty());
-	int i = 0;
-	for (int j = 0, jend = v.size(); j < jend; ++j) {
-		if (v[j] < v[i]) {
-			i = j;
+void ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {
+	vec3 d, support;
+	const geometry_node *n = static_cast<const geometry_node*>(obj);
+	
+	for (int i = 0; i < 3; ++i) {
+		d(i) = dir->v[i];
+	}
+	n->gjk_support(d, support);
+	for (int i = 0; i < 3; ++i) {
+		v->v[i] = support(i);
+	}
+}
+
+double geom_convex_dist(const geometry_node *n1, const geometry_node *n2) {
+	geometry_node *g1, *g2;
+	ccd_t ccd;
+	double dist;
+	
+	CCD_INIT(&ccd);
+	ccd.support1       = ccd_support;
+	ccd.support2       = ccd_support;
+	ccd.max_iterations = 100;
+	
+	dist = ccdGJKDist(n1, n2, &ccd);
+	return dist > 0.0 ? dist : 0.0;
+}
+
+double convex_dist(const sgnode *n1, const sgnode *n2) {
+	vector<const geometry_node*> g1, g2;
+	
+	if (n1 == n2 || n1->has_descendent(n2) || n2->has_descendent(n1)) {
+		return 0.0;
+	}
+	
+	n1->walk_geoms(g1);
+	n2->walk_geoms(g2);
+	double d, mindist = -1.0;
+	for (int i = 0, iend = g1.size(); i < iend; ++i) {
+		for (int j = 0, jend = g2.size(); j < jend; ++j) {
+			d = geom_convex_dist(g1[i], g2[j]);
+			if (mindist < 0 || d < mindist) {
+				mindist = d;
+			}
 		}
 	}
-	return i;
+	return mindist;
 }
 
 bool parse_vec3(vector<string> &f, int &start, vec3 &v, string &error) {
@@ -136,21 +174,17 @@ scene *scene::clone(const string &cname, drawer *d) const {
 	c->root->walk(all_nodes);
 	c->nodes.resize(all_nodes.size());
 	
+	update_closest();
 	for(int i = 1, iend = all_nodes.size(); i < iend; ++i) {  // i = 0 is world, already in copy
 		sgnode *n = all_nodes[i];
 		node_info &cinfo = c->nodes[i];
 		cinfo = *find_name(n->get_name());
 		cinfo.node = n;
 		n->listen(c);
-		if (!n->is_group()) {
-			c->cdetect.add_node(n);
-			c->update_dists(i);
-		}
 		if (c->draw) {
 			c->draw->add(c->name, n);
 		}
 	}
-	c->update_closest();
 	return c;
 }
 
@@ -538,10 +572,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 		node_info &ninfo = grow_vec(nodes);
 		ninfo.node = child;
 		sig_dirty = true;
-		if (!child->is_group()) {
-			cdetect.add_node(child);
-			update_dists(nodes.size() - 1);
-		}
+		update_dists(nodes.size() - 1);
 		
 		tr = map_getp(type_rels, child->get_type());
 		if (!tr) {
@@ -563,18 +594,13 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	
 	switch (t) {
 		case sgnode::DELETED:
-			if (!nodes[i].node->is_group()) {
-				cdetect.del_node(n);
-			}
 			nodes.erase(nodes.begin() + i);
 			
 			// update distance vectors for other nodes
 			for (int j = 0, jend = nodes.size(); j < jend; ++j) {
 				node_info &info = nodes[j];
-				if (!info.node->is_group()) {
-					assert(info.dists.size() == nodes.size() + 1);
-					info.dists.erase(info.dists.begin() + i);
-				}
+				assert(info.dists.size() == nodes.size() + 1);
+				info.dists.erase(info.dists.begin() + i);
 			}
 			closest_dirty = true;
 			tr = map_getp(type_rels, n->get_type());
@@ -587,22 +613,16 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			}
 			break;
 		case sgnode::SHAPE_CHANGED:
-			if (!n->is_group()) {
-				cdetect.update_shape(n);
-				update_dists(i);
-				if (draw) {
-					draw->change(name, n, drawer::SHAPE);
-				}
+			update_dists(i);
+			if (!n->is_group() && draw) {
+				draw->change(name, n, drawer::SHAPE);
 			}
 			nodes[i].rels_dirty = true;
 			break;
 		case sgnode::TRANSFORM_CHANGED:
-			if (!n->is_group()) {
-				cdetect.update_transform(n);
-				update_dists(i);
-				if (draw) {
-					draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
-				}
+			update_dists(i);
+			if (!n->is_group() && draw) {
+				draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			nodes[i].rels_dirty = true;
 			break;
@@ -610,26 +630,27 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 }
 
 bool scene::intersects(const sgnode *a, const sgnode *b) const {
-	if (a == b) {
-		return true;
-	}
-	const collision_table &c = const_cast<scene*>(this)->cdetect.get_collisions();
-	return c.find(make_pair(a, b)) != c.end() || c.find(make_pair(b, a)) != c.end();
+	int i, j;
+	for (i = 0; i < nodes.size() && nodes[i].node != a; ++i)
+		;
+	for (j = 0; j < nodes.size() && nodes[j].node != b; ++j)
+		;
+	assert(i != nodes.size() && j != nodes.size());
+	return nodes[i].dists[j] == 0.0;
 }
 
 void scene::update_dists(int i) {
 	node_info &n1 = nodes[i];
-	const geometry_node *g1 = dynamic_cast<const geometry_node*>(n1.node);
 	
 	n1.dists.resize(nodes.size(), -1);
+	n1.dists[i] = 0.0;
 	for (int j = 0, jend = nodes.size(); j < jend; ++j) {
-		if (i == j || nodes[j].node->is_group())
+		if (i == j)
 			continue;
 		
 		node_info &n2 = nodes[j];
 		n2.dists.resize(nodes.size(), -1);
-		const geometry_node *g2 = dynamic_cast<const geometry_node*>(n2.node);
-		double d = convex_distance(g1, g2);
+		double d = convex_dist(n1.node, n2.node);
 		n1.dists[j] = d;
 		n2.dists[i] = d;
 	}
@@ -639,9 +660,6 @@ void scene::update_dists(int i) {
 void scene::update_closest() const {
 	if (closest_dirty) {
 		for (int i = 0, iend = nodes.size(); i < iend; ++i) {
-			if (nodes[i].node->is_group()) {
-				continue;
-			}
 			int c = -1;
 			const vector<double> &d = nodes[i].dists;
 			for (int j = 0, jend = d.size(); j < jend; ++j) {

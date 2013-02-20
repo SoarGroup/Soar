@@ -10,6 +10,7 @@
 
 class sgnode_listener;
 class group_node;
+class geometry_node;
 
 class sgnode {
 	friend class group_node;
@@ -61,9 +62,13 @@ public:
 	void unlisten(sgnode_listener *o);
 	const bbox &get_bounds() const;
 	vec3 get_centroid() const;
-
+	bool has_descendent(const sgnode *n) const;
+	
 	virtual void get_shape_sgel(std::string &s) const = 0;
 	virtual void walk(std::vector<sgnode*> &result) = 0;
+
+	virtual void walk_geoms(std::vector<geometry_node*> &g) = 0;
+	virtual void walk_geoms(std::vector<const geometry_node*> &g) const = 0;
 	
 protected:
 	const transform3 &get_world_trans() const;
@@ -116,6 +121,9 @@ public:
 
 	// group nodes have no shape
 	void get_shape_sgel(std::string &s) const {}
+
+	void walk_geoms(std::vector<geometry_node*> &g);
+	void walk_geoms(std::vector<const geometry_node*> &g) const;
 	
 private:
 	void update_shape();
@@ -132,6 +140,9 @@ public:
 	void gjk_support(const vec3 &dir, vec3 &support) const;
 
 	void walk(std::vector<sgnode*> &result) { result.push_back(this); }
+	
+	void walk_geoms(std::vector<geometry_node*> &g);
+	void walk_geoms(std::vector<const geometry_node*> &g) const;
 	
 private:
 	virtual void gjk_local_support(const vec3 &dir, vec3 &support) const = 0;
