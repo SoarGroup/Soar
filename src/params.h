@@ -92,4 +92,8 @@
 
 
 #define MAX_CLAUSE_FP_RATE .1
+
+// px py pz rx ry rz sx sy sz
+#define NUM_NATIVE_PROPS 9
+
 #endif

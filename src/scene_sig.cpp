@@ -1,22 +1,61 @@
+#include <sstream>
 #include "scene_sig.h"
 #include "serialize.h"
+#include "params.h"
 
 using namespace std;
 
 void scene_sig::entry::serialize(ostream &os) const {
-	serializer(os) << id << name << type << start << props;
+	assert(name.find(' ') == string::npos && type.find(' ') == string::npos);
+	os << id << " " << name << " " << type;
+	for (int i = 0, iend = props.size(); i < iend; ++i) {
+		assert(props[i].find(' ') == string::npos);
+		os << " " << props[i];
+	}
+	os << endl;
 }
 
 void scene_sig::entry::unserialize(istream &is) {
-	unserializer(is) >> id >> name >> type >> start >> props;
+	string line, prop;
+	stringstream ss;
+	
+	if (!getline(is, line)) {
+		assert(false);
+	}
+	ss.str(line);
+	ss >> id >> name >> type;
+	
+	props.clear();
+	while (ss >> prop) {
+		props.push_back(prop);
+	}
 }
 
 void scene_sig::serialize(ostream &os) const {
-	::serialize(s, os);
+	for (int i = 0, iend = s.size(); i < iend; ++i) {
+		s[i].serialize(os);
+	}
+	os << endl;  // blank line indicates end
 }
 
 void scene_sig::unserialize(istream &is) {
-	::unserialize(s, is);
+	int start = 0;
+	string line;
+	stringstream ss;
+	entry e;
+	
+	s.clear();
+	while (getline(is, line)) {
+		if (line.empty()) {
+			break;
+		}
+		
+		ss.str(line);
+		e.unserialize(ss);
+		e.start = start;
+		start += e.props.size() + NUM_NATIVE_PROPS;
+		s.push_back(e);
+	}
 }
 
 void scene_sig::add(const scene_sig::entry &e) {

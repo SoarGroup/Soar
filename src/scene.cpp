@@ -11,6 +11,7 @@
 #include "drawer.h"
 #include "filter.h"
 #include "filter_table.h"
+#include "params.h"
 #include "ccd/ccd.h"
 
 using namespace std;
@@ -21,7 +22,6 @@ const string root_name = "world";
  Native properties are currently the position, rotation, and scaling
  transforms of a node, named px, py, pz, rx, ry, rz, sx, sy, sz.
 */
-const int NUM_NATIVE_PROPS = 9;
 const char *NATIVE_PROPS[] = { "px", "py", "pz", "rx", "ry", "rz", "sx", "sy", "sz" };
 
 bool is_native_prop(const string &name, char &type, int &dim) {
