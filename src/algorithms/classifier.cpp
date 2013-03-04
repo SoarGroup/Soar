@@ -34,8 +34,7 @@ void extract_vec(const tuple &t, const rvec &x, const scene_sig &sig, rvec &out)
 /*
  positive = class 0, negative = class 1
 */
-num_classifier *learn_numeric_classifier(int type, const relation &pos, const relation &neg, const std::vector<em_train_data*> &data, const vector<sig_info*> &sigs) {
-	
+num_classifier *learn_numeric_classifier(int type, const relation &pos, const relation &neg, const model_train_data &data) {
 	int npos = pos.size(), nneg = neg.size();
 	if (npos < 2 || nneg < 2) {
 		return NULL;
@@ -44,7 +43,7 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 	// figure out matrix columns
 	tuple t = *pos.begin();
 	rvec xpart;
-	extract_vec(t, data[t[0]]->x, sigs[t[0]]->sig, xpart);
+	extract_vec(t, data.get_inst(t[0]).x, *data.get_inst(t[0]).sig, xpart);
 	int ncols = xpart.size();
 	
 	mat train(npos + nneg, ncols);
@@ -54,7 +53,8 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 	int j = 0;
 	for (i = pos.begin(), iend = pos.end(); i != iend; ++i, ++j) {
 		t = *i;
-		extract_vec(t, data[t[0]]->x, sigs[t[0]]->sig, xpart);
+		const model_train_inst &inst = data.get_inst(t[0]);
+		extract_vec(t, inst.x, *inst.sig, xpart);
 		assert(xpart.size() == ncols);
 		train.row(j) = xpart;
 		classes.push_back(0);
@@ -62,7 +62,8 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 	
 	for (i = neg.begin(), iend = neg.end(); i != iend; ++i, ++j) {
 		t = *i;
-		extract_vec(t, data[t[0]]->x, sigs[t[0]]->sig, xpart);
+		const model_train_inst &inst = data.get_inst(t[0]);
+		extract_vec(t, inst.x, *inst.sig, xpart);
 		assert(xpart.size() == ncols);
 		train.row(j) = xpart;
 		classes.push_back(1);
@@ -210,7 +211,7 @@ int classifier::vote(int target, const scene_sig &sig, const relation_table &rel
 	return 1;
 }
 
-void classifier::update(const relation &mem_i, const relation &mem_j, const relation_table &rels, const vector<em_train_data*> &cont_data, const vector<sig_info*> &sigs) {
+void classifier::update(const relation &mem_i, const relation &mem_j, const relation_table &rels, const model_train_data &data) {
 	function_timer t(timers.get_or_add("update"));
 	
 	clauses.clear();
@@ -263,13 +264,13 @@ void classifier::update(const relation &mem_i, const relation &mem_j, const rela
 			}
 			double fp = clauses[k].false_pos.size(), tp = clauses[k].true_pos.size();
 			if (fp / (fp + tp) > .5) {
-				clauses[k].nc = learn_numeric_classifier(nc_type, clauses[k].true_pos, clauses[k].false_pos, cont_data, sigs);
+				clauses[k].nc = learn_numeric_classifier(nc_type, clauses[k].true_pos, clauses[k].false_pos, data);
 			}
 		}
 		
 		double fn = false_negatives.size(), tn = true_negatives.size();
 		if (fn / (fn + tn) > .5) {
-			neg_nc = learn_numeric_classifier(nc_type, true_negatives, false_negatives, cont_data, sigs);
+			neg_nc = learn_numeric_classifier(nc_type, true_negatives, false_negatives, data);
 		}
 	}
 }

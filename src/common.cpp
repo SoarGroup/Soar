@@ -56,6 +56,17 @@ void strip(string &s, const string &whitespace) {
 	s = s.substr(begin, end - begin);
 }
 
+istream &get_nonblank_line(istream &is, string &line) {
+	while (getline(is, line)) {
+		for (int i = 0, iend = line.size(); i < iend; ++i) {
+			if (!isspace(line[i])) {
+				return is;
+			}
+		}
+	}
+	return is;
+}
+
 /*
  Upper bound on range is non-inclusive.
 */

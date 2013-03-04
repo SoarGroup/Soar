@@ -24,6 +24,8 @@ void strip(std::string &s, const std::string &whitespace);
 bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
 
+std::istream &get_nonblank_line(std::istream &is, std::string &line);
+
 bool read_on_off(const std::vector<std::string> &args, int first, std::ostream &os, bool &var);
 
 void sample(int k, int low, int high, std::vector<int> &output);
@@ -161,13 +163,22 @@ int argmax(const std::vector<T> &v) {
 	return m;
 }
 
-template <typename C>
-void clear_and_dealloc(C &container) {
-	typename C::iterator i, end = container.end();
-	for (i = container.begin(); i != end; ++i) {
+template <typename T>
+void clear_and_dealloc(std::vector<T> &v) {
+	typename std::vector<T>::iterator i, end;
+	for (i = v.begin(), end = v.end(); i != end; ++i) {
 		delete *i;
 	}
-	container.clear();
+	v.clear();
+}
+
+template <typename K, typename V>
+void clear_and_dealloc(std::map<K,V> &m) {
+	typename std::map<K,V>::iterator i, end;
+	for (i = m.begin(), end = m.end(); i != end; ++i) {
+		delete i->second;
+	}
+	m.clear();
 }
 
 std::ostream &histogram(const std::vector<double> &vals, int nbins, std::ostream &os);

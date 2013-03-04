@@ -228,6 +228,9 @@ typedef std::map<std::string, relation> relation_table;
 std::ostream &operator<<(std::ostream &os, const relation &r);
 std::ostream &operator<<(std::ostream &os, const relation_table &t);
 
+// Add tuples from a single time point into the relation table
+void extend_relations(relation_table &rels, const relation_table &add, int time);
+
 template<typename C>
 interval_set::interval_set(const C &container) {
 	curr = new std::vector<interval>;

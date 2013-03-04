@@ -17,132 +17,58 @@
 #include <set>
 #include <map>
 #include <cassert>
-#include <limits>
-#include <cstdio>
-#include <cstdlib>
 #include "serializable.h"
 
-template <typename U, typename V> void serialize(const std::pair<U, V> &p, std::ostream &os);
-template <typename U, typename V> void unserialize(std::pair<U, V> &p, std::istream &is);
+void serialize(const serializable &v, std::ostream &os);
+void unserialize(serializable &v, std::istream &is);
 
-template <typename T> void serialize(const T* v, std::ostream &os);
-template <typename T> void unserialize(T* &v, std::istream &is);
+void serialize(char c, std::ostream &os);
+void unserialize(char &c, std::istream &is);
 
-template <typename C> void serialize_container(const C &container, std::ostream &os);
+void serialize(int v, std::ostream &os);
+void serialize(long v, std::ostream &os);
+void serialize(std::size_t v, std::ostream &os);
+void unserialize(int &v, std::istream &is);
 
-template <typename T> void serialize(const std::vector<T> &v, std::ostream &os);
-template <typename T> void unserialize(std::vector<T> &v, std::istream &is);
+void serialize(bool b, std::ostream &os);
+void unserialize(bool &b, std::istream &is);
 
-template <typename T> void serialize(const std::set<T> &s, std::ostream &os);
-template <typename T> void unserialize(std::set<T> &s, std::istream &is);
+void serialize(double v, std::ostream &os);
+void unserialize(double &v, std::istream &is);
 
-template <typename K, typename V> void serialize(const std::map<K, V> &m, std::ostream &os);
-template <typename K, typename V> void unserialize(std::map<K, V> &m, std::istream &is);
+void serialize(const std::string &s, std::ostream &os);
+void serialize(const char *s, std::ostream &os);
+void unserialize(std::string &s, std::istream &is);
 
-
-inline void serialize(const serializable &p, std::ostream &os) {
-	p.serialize(os);
-}
-
-inline void unserialize(serializable &p, std::istream &is) {
-	p.unserialize(is);
-}
-
-inline void serialize(int i, std::ostream &os) {
-	os << i << std::endl;
-}
-
-inline void unserialize(int &i, std::istream &is) {
-	if (!(is >> i)) {
-		assert(false);
-	}
-}
-
-inline void serialize(bool b, std::ostream &os) {
-	os << (b ? 't' : 'f') << std::endl;
-}
-
-inline void unserialize(bool &b, std::istream &is) {
-	char c;
-	if (!(is >> c)) {
-		assert(false);
-	}
-	assert(c == 't' || c == 'f');
-	b = (c == 't');
-}
-
-/*
- It's impossible to get an exact decimal representation of floating point
- numbers, so I use hexadecimal floating point representation instead. This
- gives up on readability but prevents rounding errors in the
- serialize/unserialize cycle.
-*/
-inline void serialize(double v, std::ostream &os) {
-	enum { BUFSIZE = 40 };
-	static char buf[BUFSIZE];
-	
-	if (std::snprintf(buf, BUFSIZE, "%a", v) == BUFSIZE) {
-		std::cerr << "buffer overflow when serializing a double" << std::endl;
-		assert(false);
-	}
-	os << buf << std::endl;
-}
-
-/*
- The stream operator >> doesn't recognize hex float format, so use strtod
- instead.
-*/
-inline void unserialize(double &v, std::istream &is) {
-	static std::string buf;
-	char *end;
-	
-	if (!(is >> buf)) {
-		assert(false);
-	}
-	v = std::strtod(buf.c_str(), &end);
-	if (*end != '\0') {
-		std::cerr << "Unrecognized float format (" << buf << ") when unserializing double" << std::endl;
-		assert(false);
-	}
-}
-
-inline void serialize(const std::string &s, std::ostream &os) {
-	os << s.size() << std::endl;
-	os << s << std::endl;
-}
-
-inline void unserialize(std::string &s, std::istream &is) {
-	int n;
-	is >> n;
-	s.resize(n);
-	if (is.get() != '\n') {
-		assert(false);
-	}
-	for (int i = 0; i < n; ++i) {
-		if (!is.get(s[i])) {
-			assert(false);
-		}
-	}
-}
 
 template <typename U, typename V>
 void serialize(const std::pair<U, V> &p, std::ostream &os) {
+	os << "( ";
 	serialize(p.first, os);
+	os << " , ";
 	serialize(p.second, os);
+	os << " )";
 }
 
 template <typename U, typename V>
 void unserialize(std::pair<U, V> &p, std::istream &is) {
+	char delim;
+	is >> delim;
+	assert(delim == '(');
 	unserialize(p.first, is);
+	is >> delim;
+	assert(delim == ',');
 	unserialize(p.second, is);
+	is >> delim;
+	assert(delim == ')');
 }
 
 template <typename T>
 void serialize(T const *v, std::ostream &os) {
 	if (!v) {
-		os << "0" << std::endl;
+		os << "0";
 	} else {
-		os << "1" << std::endl;
+		os << "1 ";
 		serialize(*v, os);
 	}
 }
@@ -169,12 +95,13 @@ void unserialize(T const *&v, std::istream &is) {
 
 template <typename C>
 void serialize_container(const C &container, std::ostream &os) {
-	os << container.size() << " [" << std::endl;
+	os << container.size() << " [ ";
 	typename C::const_iterator i;
 	for (i = container.begin(); i != container.end(); ++i) {
 		serialize(*i, os);
+		os << " , ";
 	}
-	os << ']' << std::endl;
+	os << ']';
 }
 
 template <typename T>
@@ -184,16 +111,19 @@ void serialize(const std::vector<T> &v, std::ostream &os) {
 
 template <typename T>
 void unserialize(std::vector<T> &v, std::istream &is) {
-	char bracket;
+	char delim;
 	int n = 0;
-	if (!(is >> n >> bracket) || bracket != '[') {
+	if (!(is >> n >> delim) || delim != '[') {
 		assert(false);
 	}
 	v.resize(n);
 	for (int i = 0; i < n; ++i) {
 		unserialize(v[i], is);
+		if (!(is >> delim) || delim != ',') {
+			assert(false);
+		}
 	}
-	if (!(is >> bracket) || bracket != ']') {
+	if (!(is >> delim) || delim != ']') {
 		assert(false);
 	}
 }
@@ -205,9 +135,9 @@ void serialize(const std::set<T> &s, std::ostream &os) {
 
 template <typename T>
 void unserialize(std::set<T> &s, std::istream &is) {
-	char bracket;
+	char delim;
 	int n = 0;
-	if (!(is >> n >> bracket) || bracket != '[') {
+	if (!(is >> n >> delim) || delim != '[') {
 		assert(false);
 	}
 	s.clear();
@@ -215,8 +145,11 @@ void unserialize(std::set<T> &s, std::istream &is) {
 	for (int i = 0; i < n; ++i) {
 		unserialize(elem, is);
 		s.insert(elem);
+		if (!(is >> delim) || delim != ',') {
+			assert(false);
+		}
 	}
-	if (!(is >> bracket) || bracket != ']') {
+	if (!(is >> delim) || delim != ']') {
 		assert(false);
 	}
 	/*
@@ -237,38 +170,52 @@ void serialize(const std::map<K, V> &m, std::ostream &os) {
 
 template <typename K, typename V>
 void unserialize(std::map<K, V> &m, std::istream &is) {
-	char bracket;
+	char delim;
 	int n = 0;
-	if (!(is >> n >> bracket) || bracket != '[') {
+	if (!(is >> n >> delim) || delim != '[') {
 		assert(false);
 	}
 	m.clear();
-	K key;
+	typename std::pair<K,V> entry;
 	for (int j = 0; j < n; ++j) {
-		unserialize(key, is);
-		unserialize(m[key], is);
+		unserialize(entry, is);
+		m.insert(entry);
+		if (!(is >> delim) || delim != ',') {
+			assert(false);
+		}
 	}
-	if (!(is >> bracket) || bracket != ']') {
+	if (!(is >> delim) || delim != ']') {
 		assert(false);
 	}
 	/*
 	 Reset key for the same reason as in the set unserializer.
 	*/
-	key = K();
+	entry = std::pair<K,V>();
 }
 
 class serializer {
 public:
-	serializer(std::ostream &os) : os(os) {}
+	serializer(std::ostream &os) : delim(true), os(os) {}
 
+	~serializer() { os << std::endl; }
+	
 	template <typename T>
 	serializer &operator<<(const T &obj) {
+		if (!delim) {
+			os.put(' ');
+		}
 		::serialize(obj, os);
+		delim = false;
 		return *this;
 	}
+	
+	serializer &operator<<(char c);
+	
+	operator void*() { return os; }
 
 private:
 	std::ostream &os;
+	bool delim;
 };
 
 class unserializer {
@@ -280,10 +227,13 @@ public:
 		::unserialize(obj, is);
 		return *this;
 	}
+	
+	operator void*() { return is; }
 
 private:
 	std::istream &is;
 };
+
 
 #endif
 

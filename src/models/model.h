@@ -15,33 +15,76 @@
 
 class svs_state;
 
+struct model_train_inst {
+	rvec x, y;
+	int target;
+	int sig_index;
+	const scene_sig *sig;
+	
+	model_train_inst() : target(-1), sig(NULL) {}
+};
+
+class model_train_data : public serializable {
+public:
+	model_train_data();
+	~model_train_data();
+	
+	void add(int target, const scene_sig &sig, const relation_table &r, const rvec &x, const rvec &y);
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
+
+	const model_train_inst &get_inst(int t)  const { return *insts[t]; }
+	const model_train_inst &get_last_inst()  const { return *insts.back(); }
+	const relation_table &get_all_rels()     const { return all_rels; }
+	const relation_table &get_last_rels()    const { return last_rels; }
+	
+	std::vector<const scene_sig*> get_sigs() const {
+		return std::vector<const scene_sig*>(sigs.begin(), sigs.end());
+	}
+	
+	int size() const { return insts.size(); }
+	
+private:
+	std::vector<scene_sig*> sigs;
+	std::vector<model_train_inst*> insts;
+	relation_table last_rels;
+	relation_table all_rels;
+};
+
 class model : public serializable {
 public:
-	model(const std::string &name, const std::string &type);
+	model(const std::string &name, const std::string &type, bool learning);
 	virtual ~model() {}
 	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
 	
 	std::string get_name() const { return name; }
 	std::string get_type() const { return type; }
+	const model_train_data &get_data() const { return train_data; }
+	
+	void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	void serialize(std::ostream &os) const;
+	void unserialize(std::istream &is);
 	
 	virtual bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
-	virtual void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {}
-	virtual void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	virtual void set_wm_root(Symbol *r) {}
-	void serialize(std::ostream &os) const {}
-	void unserialize(std::istream &is) {}
+	virtual void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	
-protected:
+private:
+	std::string name, type;
+	bool learning;
+	model_train_data train_data;
+	
 	virtual bool cli_inspect_sub(int first_arg, const std::vector<std::string> &args, std::ostream &os) {
 		return false;
 	};
 
-private:
-	std::string name, type;
-	std::ofstream predlog;
+	virtual void update() {}
+	virtual void serialize_sub(std::ostream &os) const {}
+	virtual void unserialize_sub(std::istream &is) {}
+	
 };
 
 /*

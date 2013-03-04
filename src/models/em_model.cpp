@@ -17,7 +17,7 @@ const int MAXITERS = 50;
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
-	: model(name, "em"), si(si), revisions(0), wm_root(NULL)
+	: model(name, "em", true), em(get_data()), si(si), revisions(0), wm_root(NULL)
 	{}
 
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
@@ -33,23 +33,15 @@ public:
 		return 1;
 	}
 
-	void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
-		assert(y.size() == 1);
-		em.learn(target, sig, rels, x, y);
+	void update() {
+		assert(get_data().get_last_inst().y.size() == 1);
+		em.update();
 		if (em.run(MAXITERS)) {
 			if (wm_root) {
 				si->remove_wme(revisions_wme);
 				revisions_wme = si->make_wme(wm_root, "revisions", ++revisions);
 			}
 		}
-	}
-	
-	void serialize(ostream &os) const {
-		em.serialize(os);
-	}
-	
-	void unserialize(istream &is) {
-		em.unserialize(is);
 	}
 	
 	/*
@@ -111,6 +103,14 @@ private:
 	
 	vector<int> test_modes, test_best_modes;
 	vector<double> test_best_errors;
+
+	void serialize_sub(ostream &os) const {
+		em.serialize(os);
+	}
+	
+	void unserialize_sub(istream &is) {
+		em.unserialize(is);
+	}
 };
 
 model *_make_em_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {

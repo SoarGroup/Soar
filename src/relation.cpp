@@ -114,11 +114,13 @@ void subtract_interval_vecs(const interval_vec &v1, const interval_vec &v2, inte
 }
 
 void interval_set::interval::serialize(ostream &os) const {
-	serializer(os) << first << last;
+	os << "{ " << first << " - " << last << " }";
 }
 
 void interval_set::interval::unserialize(std::istream &is) {
-	unserializer(is) >> first >> last;
+	char ob, dash, cb;
+	unserializer(is) >> ob >> first >> dash >> last >> cb;
+	assert(ob == '{' && dash == '-' && cb == '}');
 }
 
 interval_set::interval_set() :sz(0) {
@@ -745,12 +747,29 @@ void relation::random_split(int k, relation *r1, relation *r2) const {
 }
 
 void relation::serialize(std::ostream &os) const {
-	serializer(os) << arty << sz << tuples;
+	serializer sr(os);
+	tuple_map::const_iterator i, iend;
+	
+	sr << arty << sz << tuples.size() << '\n';
+	for (i = tuples.begin(), iend = tuples.end(); i != iend; ++i) {
+		sr << i->first << ':' << i->second << '\n';
+	}
 }
 
 void relation::unserialize(std::istream &is) {
-	unserializer(is) >> arty >> sz >> tuples;
-	int s = sz;
+	unserializer unsr(is);
+	int s, ntuples;
+	tuple tail;
+	interval_set head;
+	char delim;
+	
+	unsr >> arty >> s >> ntuples;
+	tuples.clear();
+	for (int i = 0; i < ntuples; ++i) {
+		unsr >> tail >> delim >> head;
+		assert(delim == ':');
+		tuples[tail] = head;
+	}
 	update_size();
 	assert (s == sz);
 }
@@ -911,5 +930,25 @@ interval_set::const_iterator::const_iterator(const interval_set &is, bool begin)
 	if (begin && !s->curr->empty()) {
 		i = 0;
 		j = (*s->curr)[0].first;
+	}
+}
+
+void extend_relations(relation_table &rels, const relation_table &add, int time) {
+	relation_table::const_iterator i, iend;
+	relation::const_iterator j, jend;
+	tuple t;
+	
+	for (i = add.begin(), iend = add.end(); i != iend; ++i) {
+		const string &name = i->first;
+		const relation &r = i->second;
+		relation &r2 = rels[name];
+		if (r2.arity() == 0) {
+			r2.reset(r.arity());
+		}
+		for (j = r.begin(), jend = r.end(); j != jend; ++j) {
+			t = *j;
+			t[0] = time;
+			r2.add(t);
+		}
 	}
 }

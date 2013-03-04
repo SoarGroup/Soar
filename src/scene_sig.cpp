@@ -2,56 +2,52 @@
 #include "scene_sig.h"
 #include "serialize.h"
 #include "params.h"
+#include "common.h"
 
 using namespace std;
 
 void scene_sig::entry::serialize(ostream &os) const {
-	assert(name.find(' ') == string::npos && type.find(' ') == string::npos);
-	os << id << " " << name << " " << type;
+	serializer sr(os);
+	sr << id << name << type << props.size();
 	for (int i = 0, iend = props.size(); i < iend; ++i) {
-		assert(props[i].find(' ') == string::npos);
-		os << " " << props[i];
+		sr << props[i];
 	}
-	os << endl;
 }
 
 void scene_sig::entry::unserialize(istream &is) {
 	string line, prop;
-	stringstream ss;
+	int nprops;
 	
-	if (!getline(is, line)) {
-		assert(false);
-	}
-	ss.str(line);
-	ss >> id >> name >> type;
+	unserializer unsr(is);
+	unsr >> id >> name >> type >> nprops;
 	
 	props.clear();
-	while (ss >> prop) {
+	for (int i = 0; i < nprops; ++i) {
+		unsr >> prop;
 		props.push_back(prop);
 	}
 }
 
 void scene_sig::serialize(ostream &os) const {
+	serializer sr(os);
+	sr << "SCENE_SIG" << s.size();
 	for (int i = 0, iend = s.size(); i < iend; ++i) {
-		s[i].serialize(os);
+		sr << '\n' << s[i];
 	}
-	os << endl;  // blank line indicates end
 }
 
 void scene_sig::unserialize(istream &is) {
-	int start = 0;
-	string line;
-	stringstream ss;
+	int start = 0, nentries;
+	string line, label;
 	entry e;
+	unserializer unsr(is);
 	
 	s.clear();
-	while (getline(is, line)) {
-		if (line.empty()) {
-			break;
-		}
-		
-		ss.str(line);
-		e.unserialize(ss);
+	unsr >> label >> nentries;
+	assert(label == "SCENE_SIG");
+	
+	for (int i = 0; i < nentries; ++i) {
+		unsr >> e;
 		e.start = start;
 		start += e.props.size() + NUM_NATIVE_PROPS;
 		s.push_back(e);

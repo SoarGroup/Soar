@@ -8,21 +8,22 @@
 #include "relation.h"
 #include "scene_sig.h"
 #include "foil.h"
+#include "model.h"
 
 class em_train_data;
 class sig_info;
 class classifier;
 
-class mode_info : public serializable {
+class em_mode : public serializable {
 public:
-	mode_info(bool noise, bool manual, const std::vector<em_train_data*> &data, const std::vector<sig_info*> &sigs);
-	~mode_info();
+	em_mode(bool noise, bool manual, const model_train_data &data);
+	~em_mode();
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 	
 	bool cli_inspect(int first, const std::vector<std::string> &args, std::ostream &os);
-	void add_example(int i);
+	void add_example(int i, const std::vector<int> &obj_map);
 	void del_example(int i);
 	void predict(const scene_sig &s, const rvec &x, const std::vector<int> &obj_map, rvec &y) const;
 	void largest_const_subset(std::vector<int> &subset);
@@ -30,16 +31,16 @@ public:
 	void get_noise_sigs(std::vector<int> &sigs);
 	double calc_prob(int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	bool update_fits();
-	void set_linear_params(int sig_index, int target, const mat &coefs, const rvec &inter);
+	void set_linear_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter);
 	bool uniform_sig(int sig, int target) const;
 	void learn_obj_clauses(const relation_table &rels);
+	void get_members(std::vector<int> &m) const;
 
 	int size() const { return members.size(); }
 	bool is_new_fit() const { return new_fit; }
 	bool is_manual() const { return manual; }
 	void reset_new_fit() { new_fit = false; }
 	
-	const std::set<int> &get_members() const { return members; }
 	const scene_sig &get_sig() const { return sig; }
 	const relation &get_member_rel() const { return member_rel; }
 
@@ -59,16 +60,25 @@ public:
 	bool classifier_stale;
 	
 private:
+	class mem_info : public serializable {
+	public:
+		std::vector<int> obj_map; // mapping from variable in mode sig -> object index in instance
+		
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+	
+	std::map<int, mem_info> members;
+	
 	bool stale, noise, new_fit, manual;
-	const std::vector<em_train_data*> &data;
-	const std::vector<sig_info*> &sigs;
+	const model_train_data &data;
 	
 	mat lin_coefs;
 	rvec lin_inter;
 	int n_nonzero;
-	std::set<int> members;
 	relation member_rel;
 	scene_sig sig;
+	std::vector<std::vector<int> > obj_maps; 
 	
 	/*
 	 Noise data sorted by their Y values. First element in pair is the Y value,

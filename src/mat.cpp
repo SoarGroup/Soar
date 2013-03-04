@@ -299,34 +299,30 @@ ostream& operator<<(ostream &os, const bbox &b) {
 }
 
 void serialize(const_mat_view m, ostream &os) {
-	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
+	serializer sr(os);
+	sr << "MAT" << m.rows() << m.cols() << '\n';
 	for (int i = 0; i < m.rows(); ++i) {
 		for (int j = 0; j < m.cols(); ++j) {
-			serialize(m(i, j), os);
+			sr << m(i, j);
 		}
+		sr << '\n';
 	}
-	os << "end_mat" << endl;
 }
 
 void unserialize(mat &m, istream &is) {
-	string token;
+	string label;
 	int nrows, ncols;
+	unserializer unsr(is);
 	
-	is >> token;
-	assert(token == "begin_mat");
-	is >> token;
-	if (!parse_int(token, nrows)) assert(false);
-	is >> token;
-	if (!parse_int(token, ncols)) assert(false);
+	unsr >> label >> nrows >> ncols;
+	assert(label == "MAT");
 	
 	m.resize(nrows, ncols);
 	for (int i = 0; i < nrows; ++i) {
 		for (int j = 0; j < ncols; ++j) {
-			unserialize(m(i, j), is);
+			unsr >> m(i, j);
 		}
 	}
-	is >> token;
-	assert(token == "end_mat");
 }
 
 void unserialize(rvec &v, istream &is) {

@@ -13,7 +13,7 @@ const int HALFCUBE = CUBESIZE / 2;
 class targets_model : public model {
 public:
 	targets_model(const string &name)
-	: model(name, "targets")
+	: model(name, "targets", false)
 	{}
 	
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {

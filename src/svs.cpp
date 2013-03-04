@@ -236,7 +236,7 @@ void svs_state::update_models() {
 	scene_sig::entry out_entry;
 	out_entry.id = -2;
 	out_entry.name = "output";
-	out_entry.type = -1;
+	out_entry.type = "output";
 	for (int i = 0; i < outspec->size(); ++i) {
 		out_entry.props.push_back(outspec->at(i).name);
 	}

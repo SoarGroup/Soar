@@ -78,8 +78,8 @@ private:
 	bool allow_repeat, finished, empty;
 };
 
-mode_info::mode_info(bool noise, bool manual, const vector<em_train_data*> &data, const vector<sig_info*> &sigs) 
-: noise(noise), manual(manual), data(data), sigs(sigs), member_rel(2), classifier_stale(true), new_fit(true), n_nonzero(-1)
+em_mode::em_mode(bool noise, bool manual, const model_train_data &data) 
+: noise(noise), manual(manual), data(data), member_rel(2), classifier_stale(true), new_fit(true), n_nonzero(-1)
 {
 	if (noise) {
 		stale = false;
@@ -88,7 +88,7 @@ mode_info::mode_info(bool noise, bool manual, const vector<em_train_data*> &data
 	}
 }
 
-mode_info::~mode_info() {
+em_mode::~em_mode() {
 	for (int i = 0; i < classifiers.size(); ++i) {
 		if (classifiers[i]) {
 			delete classifiers[i];
@@ -99,13 +99,12 @@ mode_info::~mode_info() {
 /*
  Fit lin_coefs, lin_inter, and sig to the data in data_inds.
 */
-void mode_info::set_linear_params(int sig_index, int target, const mat &coefs, const rvec &inter) {
+void em_mode::set_linear_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter) {
 	n_nonzero = 0;
 	lin_inter = inter;
 	if (coefs.size() == 0) {
 		lin_coefs.resize(0, 0);
 	} else {
-		const scene_sig &dsig = sigs[sig_index]->sig;
 		// find relevant objects (with nonzero coefficients)
 		vector<int> relevant_objs;
 		relevant_objs.push_back(target);
@@ -147,7 +146,7 @@ void mode_info::set_linear_params(int sig_index, int target, const mat &coefs, c
  object to be mapped to the i'th variable in the model signature. Again, the
  mapping vector will hold indexes, not ids.
 */
-bool mode_info::map_objs(int target, const scene_sig &dsig, const relation_table &rels, vector<int> &mapping) const {
+bool em_mode::map_objs(int target, const scene_sig &dsig, const relation_table &rels, vector<int> &mapping) const {
 	vector<bool> used(dsig.size(), false);
 	used[target] = true;
 	mapping.resize(sig.empty() ? 1 : sig.size(), -1);
@@ -196,25 +195,24 @@ bool mode_info::map_objs(int target, const scene_sig &dsig, const relation_table
  pos_obj and neg_obj can probably be cached and updated as data points
  are assigned to modes.
 */
-void mode_info::learn_obj_clauses(const relation_table &rels) {
+void em_mode::learn_obj_clauses(const relation_table &rels) {
 	obj_clauses.resize(sig.size());
 	for (int i = 1; i < sig.size(); ++i) {   // 0 is always target, no need to map
 		string type = sig[i].type;
 		relation pos_obj(3), neg_obj(3);
 		tuple objs(2);
-		set<int>::const_iterator j;
+		map<int,mem_info>::const_iterator j;
 		for (j = members.begin(); j != members.end(); ++j) {
-			em_train_data &d = *data[*j];
-			const scene_sig &dsig = sigs[d.sig_index]->sig;
-			int o = dsig[d.minfo[d.mode].obj_map[i]].id;
+			const model_train_inst &d = data.get_inst(j->first);
+			int o = (*d.sig)[j->second.obj_map[i]].id;
 			
 			objs[0] = d.target;
 			objs[1] = o;
-			pos_obj.add(*j, objs);
-			for (int k = 0; k < dsig.size(); ++k) {
-				if (dsig[k].type == type && k != objs[0] && k != o) {
+			pos_obj.add(j->first, objs);
+			for (int k = 0, kend = d.sig->size(); k < kend; ++k) {
+				if ((*d.sig)[k].type == type && k != objs[0] && k != o) {
 					objs[1] = k;
-					neg_obj.add(*j, objs);
+					neg_obj.add(j->first, objs);
 				}
 			}
 		}
@@ -232,7 +230,7 @@ void mode_info::learn_obj_clauses(const relation_table &rels) {
 	}
 }
 
-bool mode_info::cli_inspect(int first, const vector<string> &args, ostream &os) {
+bool em_mode::cli_inspect(int first, const vector<string> &args, ostream &os) {
 	if (first >= args.size() || args[first] == "model") {
 		if (noise) {
 			os << "noise" << endl;
@@ -268,8 +266,9 @@ bool mode_info::cli_inspect(int first, const vector<string> &args, ostream &os) 
 		t.print(os);
 		return true;
 	} else if (args[first] == "members") {
-		// should probably convert members to an interval set in the future
-		interval_set s(members);
+		vector<int> mems;
+		get_members(mems);
+		interval_set s(mems);
 		os << s << endl;
 		return true;
 	}
@@ -281,19 +280,19 @@ bool mode_info::cli_inspect(int first, const vector<string> &args, ostream &os) 
  The fields noise, data, and sigs are initialized in the constructor, and
  therefore not (un)serialized.
 */
-void mode_info::serialize(ostream &os) const {
+void em_mode::serialize(ostream &os) const {
 	serializer(os) << stale << new_fit << classifier_stale << members << sig
 	               << classifiers << obj_clauses << member_rel << sorted_ys
 	               << lin_coefs << lin_inter << n_nonzero << manual;
 }
 
-void mode_info::unserialize(istream &is) {
+void em_mode::unserialize(istream &is) {
 	unserializer(is) >> stale >> new_fit >> classifier_stale >> members >> sig
 	                 >> classifiers >> obj_clauses >> member_rel >> sorted_ys
 	                 >> lin_coefs >> lin_inter >> n_nonzero >> manual;
 }
 
-double mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
+double em_mode::calc_prob(int target, const scene_sig &dsig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
 	if (noise) {
 		return PNOISE;
 		best_error = INFINITY;
@@ -304,24 +303,18 @@ double mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, do
 	
 	/*
 	 Each mode has a signature that specifies the types and orders of
-	 objects it expects for inputs. This is recorded in modes[m]->sig.
+	 objects it expects for inputs. This is recorded in this->sig.
 	 Call this the mode signature.
 	 
 	 Each data point has a signature that specifies which types and
 	 orders of object properties encoded by the property vector. This
-	 is recorded in data[i]->sig_index. Call this the data signature.
+	 is recorded in dsig. Call this the data signature.
 	 
 	 P(d, m) = MAX[assignment][P(d, m, assignment)] where 'assignment'
 	 is a mapping of objects in the data signature to the objects in
 	 the mode signature.
 	*/
 	
-	/*
-	 Create the input table for the combination generator to generate
-	 all possible assignments. possibles[i] should be a list of all
-	 object indices that can be assigned to position i in the model
-	 signature.
-	*/
 	if (sig.empty()) {
 		// should be constant prediction
 		assert(lin_coefs.size() == 0);
@@ -333,12 +326,17 @@ double mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, do
 		return p;
 	}
 	
-	// otherwise, check all possible assignments
+	/*
+	 Create the input table for the combination generator to generate
+	 all possible assignments. possibles[i] should be a list of all
+	 object indices that can be assigned to position i in the model
+	 signature.
+	*/
 	vector<vector<int> > possibles(sig.size());
 	possibles[0].push_back(target);
 	for (int i = 1; i < sig.size(); ++i) {
-		for (int j = 0; j < xsig.size(); ++j) {
-			if (xsig[j].type == sig[i].type && j != target) {
+		for (int j = 0; j < dsig.size(); ++j) {
+			if (dsig[j].type == sig[i].type && j != target) {
 				possibles[i].push_back(j);
 			}
 		}
@@ -356,7 +354,7 @@ double mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, do
 	while (gen.next(assign)) {
 		int s = 0;
 		for (int i = 0; i < assign.size(); ++i) {
-			const scene_sig::entry &e = xsig[assign[i]];
+			const scene_sig::entry &e = dsig[assign[i]];
 			int l = e.props.size();
 			assert(sig[i].props.size() == l);
 			xc.segment(s, l) = x.segment(e.start, l);
@@ -377,7 +375,7 @@ double mode_info::calc_prob(int target, const scene_sig &xsig, const rvec &x, do
 	return best_prob;
 }
 
-bool mode_info::update_fits() {
+bool em_mode::update_fits() {
 	if (!stale || manual) {
 		return false;
 	}
@@ -392,17 +390,16 @@ bool mode_info::update_fits() {
 	}
 	
 	mat X(members.size(), xcols), Y(members.size(), 1);
-	set<int>::const_iterator i;
+	map<int,mem_info>::const_iterator i;
 	int j = 0;
 	for (i = members.begin(); i != members.end(); ++i) {
-		const em_train_data &d = *data[*i];
-		const vector<int> &obj_map = d.minfo[d.mode].obj_map;
+		const model_train_inst &d = data.get_inst(i->first);
+		const vector<int> &obj_map = i->second.obj_map;
 		assert(obj_map.size() == sig.size());
-		const scene_sig &dsig = sigs[d.sig_index]->sig;
 		rvec x(xcols);
 		int s = 0;
-		for (int k = 0; k < obj_map.size(); ++k) {
-			const scene_sig::entry &e = dsig[obj_map[k]];
+		for (int k = 0, kend = obj_map.size(); k < kend; ++k) {
+			const scene_sig::entry &e = (*d.sig)[obj_map[k]];
 			int n = e.props.size();
 			x.segment(s, n) = d.x.segment(e.start, n);
 			s += n;
@@ -417,7 +414,7 @@ bool mode_info::update_fits() {
 	return true;
 }
 
-void mode_info::predict(const scene_sig &dsig, const rvec &x, const vector<int> &obj_map, rvec &y) const {
+void em_mode::predict(const scene_sig &dsig, const rvec &x, const vector<int> &obj_map, rvec &y) const {
 	if (lin_coefs.size() == 0) {
 		y = lin_inter;
 		return;
@@ -426,7 +423,7 @@ void mode_info::predict(const scene_sig &dsig, const rvec &x, const vector<int> 
 	assert(obj_map.size() == sig.size());
 	rvec xc(x.size());
 	int xsize = 0;
-	for (int j = 0; j < obj_map.size(); ++j) {
+	for (int j = 0, jend = obj_map.size(); j < jend; ++j) {
 		const scene_sig::entry &e = dsig[obj_map[j]];
 		int n = e.props.size();
 		xc.segment(xsize, n) = x.segment(e.start, n);
@@ -436,39 +433,36 @@ void mode_info::predict(const scene_sig &dsig, const rvec &x, const vector<int> 
 	y = (xc * lin_coefs) + lin_inter;
 }
 
-void mode_info::add_example(int i) {
-	const em_train_data &d = *data[i];
-	int sind = d.sig_index;
-	const scene_sig &dsig = sigs[sind]->sig;
-
-	members.insert(i);
+void em_mode::add_example(int t, const vector<int> &obj_map) {
+	assert(!has(members, t));
+	
+	const model_train_inst &d = data.get_inst(t);
+	members[t].obj_map = obj_map;
 	classifier_stale = true;
-	member_rel.add(i, dsig[d.target].id);
+	member_rel.add(t, (*d.sig)[d.target].id);
 	if (noise) {
-		sorted_ys.insert(make_pair(d.y(0), i));
+		sorted_ys.insert(make_pair(d.y(0), t));
 	} else {
 		rvec y;
-		predict(dsig, d.x, d.minfo[d.mode].obj_map, y);
+		predict(*d.sig, d.x, obj_map, y);
 		if ((y - d.y).norm() > MODEL_ERROR_THRESH) {
 			stale = true;
 		}
 	}
 }
 
-void mode_info::del_example(int i) {
-	em_train_data &d = *data[i];
-	int sind = d.sig_index;
-	const scene_sig &sig = sigs[sind]->sig;
+void em_mode::del_example(int t) {
+	const model_train_inst &d = data.get_inst(t);
 
 	classifier_stale = true;
-	member_rel.del(i, sig[d.target].id);
-	members.erase(i);
+	member_rel.del(t, (*d.sig)[d.target].id);
+	members.erase(t);
 	if (noise) {
-		sorted_ys.erase(make_pair(d.y(0), i));
+		sorted_ys.erase(make_pair(d.y(0), t));
 	}
 }
 
-void mode_info::largest_const_subset(vector<int> &subset) {
+void em_mode::largest_const_subset(vector<int> &subset) {
 	vector<int> s;
 	set<pair<double, int> >::const_iterator i;
 	double last = NAN;
@@ -490,20 +484,37 @@ void mode_info::largest_const_subset(vector<int> &subset) {
 	}
 }
 
-bool mode_info::uniform_sig(int sig, int target) const {
-	set<int>::const_iterator i;
+bool em_mode::uniform_sig(int sig, int target) const {
+	map<int,mem_info>::const_iterator i;
 	for (i = members.begin(); i != members.end(); ++i) {
-		if (data[*i]->sig_index != sig || data[*i]->target != target) {
+		const model_train_inst &d = data.get_inst(i->first);
+		if (d.sig_index != sig || d.target != target) {
 			return false;
 		}
 	}
 	return true;
 }
 
-int mode_info::get_num_nonzero_coefs() const {
+int em_mode::get_num_nonzero_coefs() const {
 	if (noise) {
 		return numeric_limits<int>::max();
 	}
 	assert(n_nonzero >= 0);
 	return n_nonzero;
 }
+
+void em_mode::get_members(vector<int> &mem) const {
+	map<int,mem_info>::const_iterator i;
+	for (i = members.begin(); i != members.end(); ++i) {
+		mem.push_back(i->first);
+	}
+}
+
+void em_mode::mem_info::serialize(std::ostream &os) const {
+	serializer(os) << obj_map;
+}
+
+void em_mode::mem_info::unserialize(std::istream &is) {
+	unserializer(is) >> obj_map;
+}
+

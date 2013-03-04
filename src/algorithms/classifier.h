@@ -7,6 +7,7 @@
 #include "foil.h"
 #include "serializable.h"
 #include "scene_sig.h"
+#include "model.h"
 
 class em_train_data;
 class sig_info;
@@ -32,7 +33,7 @@ public:
 	~classifier();
 
 	int vote(int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
-	void update(const relation &pos, const relation &neg, const relation_table &rels, const std::vector<em_train_data*> &cont_data, const std::vector<sig_info*> &sigs);
+	void update(const relation &pos, const relation &neg, const relation_table &rels, const model_train_data &train_data);
 	
 	void inspect(std::ostream &os) const;
 	void inspect_detailed(std::ostream &os) const;

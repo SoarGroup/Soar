@@ -11,7 +11,7 @@ using namespace std;
 class velocity_model : public model {
 public:
 	velocity_model(const string &name, int dims)
-	: model(name, "vel"), dims(dims) 
+	: model(name, "vel", false), dims(dims) 
 	{}
 	
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {

@@ -501,8 +501,9 @@ void dtree_classifier::serialize(ostream &os) const {
 	char temp[] = "dtree_serialize_XXXXXX";
 	string line;
 	
-	mktemp(temp);
-	assert(*temp != '\0');
+	if (*mktemp(temp) == '\0') {
+		assert(false);
+	}
 	tree->save(temp);
 	ifstream input(temp);
 	
@@ -518,14 +519,16 @@ void dtree_classifier::unserialize(std::istream &is) {
 	char temp[] = "dtree_unserialize_XXXXXX";
 	string line;
 	
-	mktemp(temp);
-	assert(*temp != '\0');
+	if (*mktemp(temp) == '\0') {
+		assert(false);
+	}
 	ofstream out(temp);
 	
-	while (getline(is, line) && line.empty())
-		;
+	if (!get_nonblank_line(is, line)) {
+		assert(false);
+	}
 	assert(line == "BEGIN_DTREE_CLASSIFIER");
-	while (getline(is, line)) {
+	while (get_nonblank_line(is, line)) {
 		if (line == "END_DTREE_CLASSIFIER") {
 			break;
 		}

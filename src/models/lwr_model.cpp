@@ -10,11 +10,12 @@ using namespace Eigen;
 class lwr_model : public model {
 public:
 	lwr_model(int nnbrs, const string &name)
-	: model(name, "lwr"), lwr(nnbrs, true)
+	: model(name, "lwr", true), lwr(nnbrs, true)
 	{}
 	
-	void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
-		lwr.learn(x, y);
+	void update() {
+		const model_train_inst &i = get_data().get_last_inst();
+		lwr.learn(i.x, i.y);
 	}
 	
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {

@@ -5,11 +5,12 @@
 #include <cstdlib>
 #include <iterator>
 #include <limits>
+#include "serialize.h"
 #include "model.h"
 
 using namespace std;
 
-model *_make_null_model_    (soar_interface *si, Symbol* root, svs_state *state, const string &name);
+model *_make_null_model_    (soar_interface *si, Symbol *root, svs_state *state, const string &name);
 model *_make_velocity_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
 model *_make_lwr_model_     (soar_interface *si, Symbol *root, svs_state *state, const string &name);
 model *_make_splinter_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
@@ -110,9 +111,16 @@ model *make_model(soar_interface *si, Symbol *root, svs_state *state, const stri
 	return NULL;
 }
 
-model::model(const std::string &name, const std::string &type) 
-: name(name), type(type)
+model::model(const std::string &name, const std::string &type, bool learning) 
+: name(name), type(type), learning(learning)
 {}
+
+void model::learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+	if (learning) {
+		train_data.add(target, sig, rels, x, y);
+		update();
+	}
+}
 
 /*
  The default test behavior is just to return the prediction. The EM
@@ -159,6 +167,18 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 		}
 	}
 	return cli_inspect_sub(first_arg, args, os);
+}
+
+void model::serialize(ostream &os) const {
+	serializer sr(os);
+	sr << name << type << learning << '\n';
+	sr << train_data << '\n';
+	serialize_sub(os);
+}
+
+void model::unserialize(istream &is) {
+	unserializer(is) >> name >> type >> learning >> train_data;
+	unserialize_sub(is);
 }
 
 multi_model::multi_model(map<string, model*> *model_db) : model_db(model_db) {}
@@ -416,4 +436,97 @@ bool multi_model::cli_inspect(int i, const vector<string> &args, ostream &os) co
 	}
 	os << "no such query" << endl;
 	return false;
+}
+
+model_train_data::model_train_data() { }
+
+model_train_data::~model_train_data() {
+	clear_and_dealloc(sigs);
+	clear_and_dealloc(insts);
+}
+
+void model_train_data::add(int target, const scene_sig &sig, const relation_table &r, const rvec &x, const rvec &y) {
+	model_train_inst *inst = new model_train_inst;
+	for (int i = 0, iend = sigs.size(); i < iend; ++i) {
+		if (*sigs[i] == sig) {
+			inst->sig_index = i;
+			inst->sig = sigs[i];
+			break;
+		}
+	}
+	
+	if (inst->sig == NULL) {
+		scene_sig *newsig = new scene_sig;
+		*newsig = sig;
+		sigs.push_back(newsig);
+		inst->sig_index = sigs.size() - 1;
+		inst->sig = newsig;
+	}
+	
+	inst->x = x;
+	inst->y = y;
+	inst->target = target;
+	insts.push_back(inst);
+	
+	last_rels = r;
+	extend_relations(all_rels, r, insts.size() - 1);
+}
+
+void model_train_data::serialize(ostream &os) const {
+	serializer sr(os);
+	
+	sr << "MODEL_TRAIN_DATA" << sigs.size() << insts.size() << '\n';
+	for (int i = 0, iend = sigs.size(); i < iend; ++i) {
+		sigs[i]->serialize(os);
+	}
+	sr << '\n';
+	
+	for (int i = 0, iend = insts.size(); i < iend; ++i) {
+		const model_train_inst *inst = insts[i];
+		sr << inst->sig_index << inst->target << static_cast<int>(inst->x.size()) << static_cast<int>(inst->y.size());
+		for (int i = 0, iend = inst->x.size(); i < iend; ++i) {
+			sr << inst->x(i);
+		}
+		for (int i = 0, iend = inst->y.size(); i < iend; ++i) {
+			sr << inst->y(i);
+		}
+		sr << '\n';
+	}
+	sr << '\n';
+	
+	sr << last_rels << all_rels;
+}
+
+void model_train_data::unserialize(istream &is) {
+	string line, label;
+	int nsigs, ninsts;
+
+	unserializer unsr(is);
+	
+	unsr >> label >> nsigs >> ninsts;
+	assert(label == "MODEL_TRAIN_DATA");
+	
+	for (int i = 0; i < nsigs; ++i) {
+		scene_sig *s = new scene_sig;
+		s->unserialize(is);
+		sigs.push_back(s);
+	}
+	
+	for (int i = 0; i < ninsts; ++i) {
+		model_train_inst *inst = new model_train_inst;
+		int xsz, ysz;
+		unsr >> inst->sig_index >> inst->target >> xsz >> ysz;
+		inst->sig = sigs[inst->sig_index];
+		inst->x.resize(xsz);
+		inst->y.resize(ysz);
+		for (int i = 0; i < xsz; ++i) {
+			unsr >> inst->x(i);
+		}
+		for (int i = 0; i < ysz; ++i) {
+			unsr >> inst->y(i);
+		}
+		insts.push_back(inst);
+	}
+	
+	unsr >> last_rels >> all_rels;
 }

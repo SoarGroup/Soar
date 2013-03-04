@@ -16,52 +16,46 @@
 #include "classifier.h"
 #include "mode.h"
 
-class em_train_data : public serializable {
+class inst_info : public serializable {
 public:
 	/*
 	 Holds information about how a training data point relates to each mode
 	*/
-	class data_mode_info : public serializable {
+	class mode_info : public serializable {
 	public:
 		double prob;                // probability that data point belongs to mode
 		bool prob_stale;            // does prob need to be update?
-		std::vector<int> obj_map;   // mapping from variable in mode sig -> object index in instance
 	
-		data_mode_info() : prob(0), prob_stale(true) {}
+		mode_info() : prob(0), prob_stale(true) {}
 		void serialize(std::ostream &os) const;
 		void unserialize(std::istream &is);
 	};
 
-	rvec x, y;
-	int target;
-	int time;
-	int sig_index;
-	
 	int mode;
-	std::vector<data_mode_info> minfo;
+	std::vector<mode_info> minfo;
 	
-	em_train_data() : target(-1), time(-1), sig_index(-1), mode(0) {}
+	inst_info() : mode(0) {}
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 };
 
 class sig_info : public serializable {
 public:
-	sig_info();
-	scene_sig sig;
 	std::vector<int> members;  // indexes of data points with this sig
+	std::set<int> noise;       // indexes of noise data with this signature
 	LWR lwr;                   // lwr model trained on all points of this sig
 
+	sig_info();
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 };
 
 class EM : public serializable {
 public:
-	EM();
+	EM(const model_train_data &data);
 	~EM();
 	
-	void learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y);
+	void update();
 	bool run(int maxiters);
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
 	// Return the mode with the model that best fits (x, y)
@@ -79,7 +73,7 @@ private:
 	int find_linear_subset(mat &X, mat &Y, std::vector<int> &subset, mat &coefs, rvec &inter) const;
 	void find_linear_subset_em(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
 	void find_linear_subset_block(const_mat_view X, const_mat_view Y, std::vector<int> &subset) const;
-	mode_info *add_mode(bool manual);
+	em_mode *add_mode(bool manual);
 	bool remove_modes();
 
 	void update_classifier();
@@ -88,16 +82,15 @@ private:
 	int vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
 	
 	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
-	bool cli_dump_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_relations(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_classifiers(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_add_mode(int first, const std::vector<std::string> &args, std::ostream &os);
 
-	relation_table rel_tbl, context_rel_tbl;
-	std::vector<em_train_data*> data;
-	std::vector<sig_info*> sigs;
-	std::vector<mode_info*> modes;
-	int ndata, nmodes;
+	const model_train_data &data;
+	std::vector<inst_info*> insts;
+	std::map<const scene_sig*,sig_info*> sigs;
+	std::vector<em_mode*> modes;
+	relation_table context_rel_tbl;
 	bool use_em, use_foil, use_foil_close, use_nc, use_pruning, use_unify, learn_new_modes;
 
 	/*
@@ -105,10 +98,6 @@ private:
 	 to check for a possible new mode
 	*/
 	int check_after;
-	
-	// noise binned by signature
-	std::map<int, std::set<int> > noise_by_sig;
-	
 	int nc_type;
 	
 	mutable timer_set timers;
