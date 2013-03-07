@@ -49,7 +49,7 @@ void scene_sig::unserialize(istream &is) {
 	for (int i = 0; i < nentries; ++i) {
 		unsr >> e;
 		e.start = start;
-		start += e.props.size() + NUM_NATIVE_PROPS;
+		start += e.props.size();
 		s.push_back(e);
 	}
 }

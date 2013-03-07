@@ -391,7 +391,7 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 
 EM::EM(const model_train_data &data)
 : data(data), use_em(true), use_foil(true), use_foil_close(true),
-  use_pruning(true), use_unify(true), learn_new_modes(true),
+  use_pruning(true), use_unify(true), learn_new_modes(true), use_lwr(true),
   check_after(NEW_MODE_THRESH), nc_type(NC_DTREE)
 {
 	em_mode *noise = new em_mode(true, false, data);
@@ -442,6 +442,7 @@ void EM::update() {
 }
 
 void EM::estep() {
+	static int count = 0;
 	function_timer t(timers.get_or_add("e-step"));
 	
 	/*
@@ -453,26 +454,26 @@ void EM::estep() {
 	 then we mark i as a point we have to recalculate the MAP mode for.
 	*/
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
+		count++;
 		const model_train_inst &d = data.get_inst(i);
-		inst_info &info = *insts[i];
-		vector<vector<int> > obj_maps(modes.size());
+		inst_info &inst = *insts[i];
 		bool stale = false;
 		for (int j = 1, jend = modes.size(); j < jend; ++j) {
-			inst_info::mode_info &dm = info.minfo[j];
-			if (!dm.prob_stale && !modes[j]->is_new_fit()) {
+			inst_info::mode_info &m = inst.minfo[j];
+			if (!m.prob_stale && !modes[j]->is_new_fit()) {
 				continue;
 			}
-			double prev = info.minfo[info.mode].prob, now, error;
-			now = modes[j]->calc_prob(d.target, *d.sig, d.x, d.y(0), obj_maps[j], error);
-			assert(obj_maps[j].size() == modes[j]->get_sig().size());
-			if ((info.mode == j && now < prev) || (info.mode != j && now > dm.prob)) {
+			double prev = inst.minfo[inst.mode].prob, now, error;
+			now = modes[j]->calc_prob(d.target, *d.sig, d.x, d.y(0), m.sig_map, error);
+			assert(m.sig_map.size() == modes[j]->get_sig().size());
+			if ((inst.mode == j && now < prev) || (inst.mode != j && now > m.prob)) {
 				stale = true;
 			}
-			dm.prob = now;
-			dm.prob_stale = false;
+			m.prob = now;
+			m.prob_stale = false;
 		}
 		if (stale) {
-			int prev = info.mode, best = 0;
+			int prev = inst.mode, best = 0;
 			for (int j = 1, jend = modes.size(); j < jend; ++j) {
 				/*
 				 These conditions look awkward, but have justification. If I tested the >
@@ -480,21 +481,22 @@ void EM::estep() {
 				 if the probability of j was only slightly better than the probability of
 				 best.
 				*/
-				if (approx_equal(info.minfo[j].prob, info.minfo[best].prob)) {
+				if (approx_equal(inst.minfo[j].prob, inst.minfo[best].prob)) {
 					if (modes[j]->get_num_nonzero_coefs() < modes[best]->get_num_nonzero_coefs()) {
 						best = j;
 					}
-				} else if (info.minfo[j].prob > info.minfo[best].prob) {
+				} else if (inst.minfo[j].prob > inst.minfo[best].prob) {
 					best = j;
 				}
 			}
 			if (best != prev) {
-				info.mode = best;
+				inst.mode = best;
 				modes[prev]->del_example(i);
 				if (prev == 0) {
 					sigs[d.sig]->noise.erase(i);
 				}
-				modes[best]->add_example(i, obj_maps[best]);
+				assert(modes[best]->get_sig().size() == inst.minfo[best].sig_map.size());
+				modes[best]->add_example(i, inst.minfo[best].sig_map);
 				if (best == 0) {
 					sigs[d.sig]->noise.insert(i);
 				}
@@ -566,8 +568,8 @@ bool EM::unify_or_add_mode() {
 	inter = data.get_inst(largest[0]).y; // constant model
 	if (largest.size() < NEW_MODE_THRESH) {
 		mat X, Y;
-		map<const scene_sig*, sig_info*>::const_iterator i;
-		for (i = sigs.begin(); i != sigs.end(); ++i) {
+		sig_table::const_iterator i, iend;
+		for (i = sigs.begin(), iend = sigs.end(); i != iend; ++i) {
 			const set<int> &ns = i->second->noise;
 			if (ns.size() < check_after) {
 				if (ns.size() > potential) {
@@ -662,8 +664,17 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 			return true;
 		}
 	}
-	if (has(sigs, &sig) && sigs[&sig]->lwr.predict(x, y)) {
-		return true;
+	
+	if (use_lwr) {
+		sig_table::const_iterator i, iend;
+		for (i = sigs.begin(), iend = sigs.end(); i != iend; ++i) {
+			if (*i->first == sig) {
+				if (i->second->lwr.predict(x, y)) {
+					return true;
+				}
+				break;
+			}
+		}
 	}
 	y(0) = NAN;
 	return false;
@@ -1037,11 +1048,11 @@ void inst_info::unserialize(istream &is) {
 }
 
 void inst_info::mode_info::serialize(ostream &os) const {
-	serializer(os) << prob << prob_stale;
+	serializer(os) << prob << prob_stale << sig_map;
 }
 
 void inst_info::mode_info::unserialize(istream &is) {
-	unserializer(is) >> prob >> prob_stale;
+	unserializer(is) >> prob >> prob_stale >> sig_map;
 }
 
 bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) const {

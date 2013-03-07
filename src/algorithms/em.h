@@ -25,6 +25,7 @@ public:
 	public:
 		double prob;                // probability that data point belongs to mode
 		bool prob_stale;            // does prob need to be update?
+		std::vector<int> sig_map;   // map from objects in this instance to variables in mode sig
 	
 		mode_info() : prob(0), prob_stale(true) {}
 		void serialize(std::ostream &os) const;
@@ -86,12 +87,13 @@ private:
 	bool cli_inspect_classifiers(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_add_mode(int first, const std::vector<std::string> &args, std::ostream &os);
 
+	typedef std::map<const scene_sig*,sig_info*> sig_table;
 	const model_train_data &data;
 	std::vector<inst_info*> insts;
-	std::map<const scene_sig*,sig_info*> sigs;
 	std::vector<em_mode*> modes;
+	sig_table sigs;
 	relation_table context_rel_tbl;
-	bool use_em, use_foil, use_foil_close, use_nc, use_pruning, use_unify, learn_new_modes;
+	bool use_em, use_foil, use_foil_close, use_nc, use_pruning, use_unify, use_lwr, learn_new_modes;
 
 	/*
 	 Keeps track of the minimum number of new noise examples needed before we have

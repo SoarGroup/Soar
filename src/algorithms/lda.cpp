@@ -50,7 +50,7 @@ public:
 	void unserialize(std::istream &is);
 
 private:
-	int dim, sgn;
+	int dim, sgn, size;
 };
 
 class dtree_classifier : public nc_cls {
@@ -385,9 +385,14 @@ void LDA::unserialize(istream &is) {
 
 inline int sign(double x) { return x >= 0 ? 1 : -1; }
 
-sign_classifier::sign_classifier() : dim(-1), sgn(0) {}
+sign_classifier::sign_classifier() : dim(-1), sgn(0), size(-1) {}
 
 void sign_classifier::learn(mat &data, const vector<int> &classes) {
+	if (size == -1) {
+		size = data.cols();
+	} else {
+		assert(size == data.cols());
+	}
 	cvec cls2(classes.size());
 	for (int i = 0, iend = cls2.size(); i < iend; ++i) {
 		cls2(i) = (classes[i] == 0 ? -1 : 1);
@@ -412,6 +417,7 @@ void sign_classifier::learn(mat &data, const vector<int> &classes) {
 }
 
 int sign_classifier::classify(const rvec &x) const {
+	assert(size == x.size());
 	return max(sgn * sign(x(dim)), 0);
 }
 
@@ -420,11 +426,11 @@ void sign_classifier::inspect(std::ostream &os) const {
 }
 
 void sign_classifier::serialize(ostream &os) const {
-	serializer(os) << dim << sgn;
+	serializer(os) << dim << sgn << size;
 }
 
 void sign_classifier::unserialize(istream &is) {
-	unserializer(is) >> dim >> sgn;
+	unserializer(is) >> dim >> sgn >> size;
 }
 
 dtree_classifier::dtree_classifier() {
@@ -450,6 +456,7 @@ void dtree_classifier::learn(mat &data, const vector<int> &classes) {
 	}
 	params.min_sample_count = 10;
 	
+	cout << "NC DIM: " << data.cols() << endl;
 	cv::Mat cvdata(data.rows(), data.cols(), CV_64F, data.data()), cvfloatdata(data.rows(), data.cols(), CV_32F);
 	cv::Mat cvclasses(classes);
 	

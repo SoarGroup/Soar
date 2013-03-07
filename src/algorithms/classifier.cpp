@@ -75,7 +75,7 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 }
 
 classifier::classifier()
-: const_vote(0), use_const(true), neg_nc(NULL), use_foil(true), use_pruning(true), nc_type(NC_DTREE)
+: const_vote(0), use_const(true), neg_nc(NULL), use_foil(true), use_pruning(true), nc_type(NC_SIGN)
 {}
 
 classifier::classifier(bool use_foil, bool use_pruning, int nc_type)
