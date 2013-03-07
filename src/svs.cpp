@@ -353,6 +353,45 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		return read_on_off(args, first_arg + 1, os, learn_models);
 	} else if (args[first_arg] == "test_models") {
 		return read_on_off(args, first_arg + 1, os, test_models);
+	} else if (args[first_arg] == "dist") {
+		if (first_arg + 2 >= args.size()) {
+			os << "specify two nodes" << endl;
+			return false;
+		}
+		double d = scn->distance(args[first_arg+1], args[first_arg+2]);
+		if (d < 0) {
+			os << "no such nodes" << endl;
+			return false;
+		}
+		os << d << endl;
+		return true;
+	} else if (args[first_arg] == "getprops") {
+		rvec vals;
+		scn->get_properties(vals);
+		for (int i = 0, iend = vals.size(); i < iend; ++i) {
+			os << vals(i) << " ";
+		}
+		os << endl;
+		return true;
+	} else if (args[first_arg] == "setprops") {
+		rvec vals;
+		scn->get_properties(vals);
+		if (vals.size() != args.size() - first_arg - 1) {
+			os << "vector size mismatch (" << args.size() - first_arg - 1 << ", should be " << vals.size() << ")" << endl;
+			return false;
+		}
+		for (int i = 0, iend = vals.size(); i < iend; ++i) {
+			if (!parse_double(args[first_arg + 1 + i], vals(i))) {
+				os << "invalid double: " << args[i] << endl;
+				return false;
+			}
+			cout << vals(i) << endl;
+		}
+		if (!scn->set_properties(vals)) {
+			os << "something went wrong" << endl;
+			return false;
+		}
+		return true;
 	}
 	
 	os << "no such query" << endl;

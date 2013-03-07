@@ -96,4 +96,6 @@
 // px py pz rx ry rz sx sy sz
 #define NUM_NATIVE_PROPS 9
 
+#define INTERSECT_THRESH 1.0e-15
+
 #endif

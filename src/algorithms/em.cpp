@@ -857,9 +857,10 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 					p(2) = x(start + k);
 					found[2] = true;
 				}
-			}
-			if (found[0] && found[1] && found[2]) {
-				draw.set_pos(s[j].name, p(0), p(1), p(2));
+				if (found[0] && found[1] && found[2]) {
+					draw.set_pos(s[j].name, p(0), p(1), p(2));
+					break;
+				}
 			}
 		}
 		return true;

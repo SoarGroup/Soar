@@ -46,6 +46,7 @@ public:
 	
 	std::string get_name() const { return name; }
 	void get_relations(relation_table &rt) const;
+	double distance(const std::string &n1, const std::string &n2) const;
 
 private:
 	typedef std::map<std::string, double> property_map;

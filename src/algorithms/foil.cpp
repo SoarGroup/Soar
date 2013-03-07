@@ -585,6 +585,15 @@ bool FOIL::learn(bool prune, bool record_errors) {
 		}
 		
 		if (!ci.cl.empty() && fp_rate < MAX_CLAUSE_FP_RATE) {
+			vector<int> vars;
+			clause_vars(ci.cl, vars);
+			if (ci.true_positives.arity() == 0) {
+				ci.true_positives.reset(vars.size());
+			}
+			if (ci.false_positives.arity() == 0) {
+				ci.false_positives.reset(vars.size());
+			}
+			
 			// this repeats computation, make more efficient
 			relation covered_pos(train_dim);
 			relation::const_iterator i, iend;
@@ -593,9 +602,6 @@ bool FOIL::learn(bool prune, bool record_errors) {
 				if (test_clause(ci.cl, *rels, t)) {
 					covered_pos.add(*i);
 					if (record_errors) {
-						if (ci.true_positives.arity() == 0) {
-							ci.true_positives.reset(t.size());
-						}
 						ci.true_positives.add(t);
 					}
 				}
@@ -604,9 +610,6 @@ bool FOIL::learn(bool prune, bool record_errors) {
 				for (i = neg_test.begin(), iend = neg_test.end(); i != iend; ++i) {
 					tuple t = *i;
 					if (test_clause(ci.cl, *rels, t)) {
-						if (ci.false_positives.arity() == 0) {
-							ci.false_positives.reset(t.size());
-						}
 						ci.false_positives.add(t);
 					}
 				}

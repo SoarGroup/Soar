@@ -63,6 +63,7 @@ double geom_convex_dist(const geometry_node *n1, const geometry_node *n2) {
 	ccd.support1       = ccd_support;
 	ccd.support2       = ccd_support;
 	ccd.max_iterations = 100;
+	ccd.dist_tolerance = INTERSECT_THRESH;
 	
 	dist = ccdGJKDist(n1, n2, &ccd);
 	return dist > 0.0 ? dist : 0.0;
@@ -497,7 +498,7 @@ void scene::get_properties(rvec &vals) const {
 			k += 3;
 		}
 		for (j = info.props.begin(), jend = info.props.end(); j != jend; ++j) {
-			vals[k++] = j->second;
+			vals(k++) = j->second;
 		}
 	}
 }
@@ -520,25 +521,26 @@ bool scene::set_properties(const rvec &vals) {
 	node_table::iterator i, iend;;
 	const char *types = "prs";
 	vec3 trans;
+	int l = 0;
 	
 	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
-		int k1, k2, l = 0;
+		int k1, k2;
 		for (k1 = 0; k1 < 3; ++k1) {
 			for (k2 = 0; k2 < 3; ++k2) {
-				trans[k2] = vals[l++];
 				if (l >= vals.size()) {
 					return false;
 				}
+				trans(k2) = vals(l++);
 			}
 			i->node->set_trans(types[k1], trans);
 		}
 		
 		property_map::iterator j, jend;
 		for (j = i->props.begin(), jend = i->props.end(); j != jend; ++j) {
-			j->second = vals[l++];
 			if (l >= vals.size()) {
 				return false;
 			}
+			j->second = vals(l++);
 		}
 	}
 	return true;
@@ -579,7 +581,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			tr = &type_rels[child->get_type()];
 			tr->reset(2);
 		}
-		tr->add(0, n->get_id());
+		tr->add(0, child->get_id());
 		
 		if (draw) {
 			draw->add(name, child);
@@ -636,7 +638,7 @@ bool scene::intersects(const sgnode *a, const sgnode *b) const {
 	for (j = 0; j < nodes.size() && nodes[j].node != b; ++j)
 		;
 	assert(i != nodes.size() && j != nodes.size());
-	return nodes[i].dists[j] == 0.0;
+	return nodes[i].dists[j] < INTERSECT_THRESH;
 }
 
 void scene::update_dists(int i) {
@@ -659,11 +661,11 @@ void scene::update_dists(int i) {
 
 void scene::update_closest() const {
 	if (closest_dirty) {
-		for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		for (int i = 1, iend = nodes.size(); i < iend; ++i) {
 			int c = -1;
 			const vector<double> &d = nodes[i].dists;
-			for (int j = 0, jend = d.size(); j < jend; ++j) {
-				if (d[j] >= 0 && (c < 0 || d[j] < d[c])) {
+			for (int j = 1, jend = d.size(); j < jend; ++j) {
+				if (i != j && d[j] >= 0 && (c < 0 || d[j] < d[c])) {
 					c = j;
 				}
 			}
@@ -724,4 +726,20 @@ void scene::get_relations(relation_table &rt) const {
 	for (j = cached_rels.begin(), jend = cached_rels.end(); j != jend; ++j) {
 		rt[j->first] = j->second;
 	}
+}
+
+double scene::distance(const std::string &n1, const std::string &n2) const {
+	int i1 = -1, i2 = -1;
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		if (nodes[i].node->get_name() == n1) {
+			i1 = i;
+		}
+		if (nodes[i].node->get_name() == n2) {
+			i2 = i;
+		}
+	}
+	if (i1 < 0 || i2 < 0) {
+		return -1;
+	}
+	return nodes[i1].dists[i2];
 }
