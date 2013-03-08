@@ -74,33 +74,33 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 	return nc;
 }
 
-classifier::classifier()
+binary_classifier::binary_classifier()
 : const_vote(0), use_const(true), neg_nc(NULL), use_foil(true), use_pruning(true), nc_type(NC_SIGN)
 {}
 
-classifier::classifier(bool use_foil, bool use_pruning, int nc_type)
+binary_classifier::binary_classifier(bool use_foil, bool use_pruning, int nc_type)
 : const_vote(0), use_const(true), neg_nc(NULL), use_foil(use_foil), use_pruning(use_pruning), nc_type(nc_type)
 {}
 
-classifier::~classifier() {
+binary_classifier::~binary_classifier() {
 	if (neg_nc) {
 		delete neg_nc;
 	}
 }
 
-void classifier::serialize(ostream &os) const {
+void binary_classifier::serialize(ostream &os) const {
 	serializer(os) << const_vote << use_const << clauses 
 	               << false_negatives << true_negatives
 	               << neg_nc;
 }
 
-void classifier::unserialize(istream &is) {
+void binary_classifier::unserialize(istream &is) {
 	unserializer(is) >> const_vote >> use_const >> clauses 
 	                 >> false_negatives >> true_negatives
 	                 >> neg_nc;
 }
 
-void classifier::inspect(ostream &os) const {
+void binary_classifier::inspect(ostream &os) const {
 	if (use_const) {
 		os << "Constant Vote: " << const_vote << endl;
 		return;
@@ -116,7 +116,7 @@ void classifier::inspect(ostream &os) const {
 	os << endl;
 }
 
-void classifier::inspect_detailed(ostream &os) const {
+void binary_classifier::inspect_detailed(ostream &os) const {
 	if (use_const) {
 		os << "Constant Vote: " << const_vote << endl;
 		return;
@@ -164,7 +164,7 @@ void classifier::inspect_detailed(ostream &os) const {
 /*
  Return 0 to vote for i, 1 to vote for j
 */
-int classifier::vote(int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
+int binary_classifier::vote(int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
 	function_timer t(timers.get_or_add("vote"));
 	
 	if (use_const || (!use_foil && nc_type == NC_NONE)) {
@@ -211,7 +211,7 @@ int classifier::vote(int target, const scene_sig &sig, const relation_table &rel
 	return 1;
 }
 
-void classifier::update(const relation &mem_i, const relation &mem_j, const relation_table &rels, const model_train_data &data) {
+void binary_classifier::update(const relation &mem_i, const relation &mem_j, const relation_table &rels, const model_train_data &data) {
 	function_timer t(timers.get_or_add("update"));
 	
 	clauses.clear();
@@ -281,4 +281,229 @@ void clause_info::serialize(ostream &os) const {
 
 void clause_info::unserialize(istream &is) {
 	unserializer(is) >> cl >> false_pos >> true_pos >> nc;
+}
+
+classifier::classifier(const model_train_data &data) 
+: data(data), foil(true), prune(true), context(true), nc_type(NC_LDA)
+{}
+
+classifier::~classifier() {
+	clear_and_dealloc(pairs);
+	clear_and_dealloc(classes);
+}
+
+void classifier::set_options(bool foil, bool prune, bool context, int nc_type) {
+	foil = foil;
+	prune = prune;
+	context = context;
+	nc_type = nc_type;
+	for (int i = 0, iend = classes.size(); i < iend; ++i) {
+		classes[i]->stale = true;
+	}
+}
+
+void classifier::add_class() {
+	int c = classes.size();
+	for (int i = 0, iend = classes.size(); i < iend; ++i) {
+		binary_classifier *b = new binary_classifier(foil, prune, nc_type);
+		pairs.push_back(new pair_info(i, c, b));
+	}
+	classes.push_back(new class_info);
+}
+
+void classifier::del_classes(const vector<int> &c) {
+	vector<int> class_map(classes.size());
+	
+	int n = 0;
+	for (int i = 0, iend = classes.size(); i < iend; ++i) {
+		if (has(c, i)) {
+			assert(classes[i]->mem_rel.empty());
+			delete classes[i];
+			class_map[i] = -1;
+		} else {
+			classes[n] = classes[i];
+			class_map[i] = n++;
+		}
+	}
+	classes.resize(n);
+	
+	std::list<pair_info*>::iterator i, iend;
+	for (i = pairs.begin(), iend = pairs.end(); i != iend; ) {
+		pair_info &p = **i;
+		if (class_map[p.cls_i] == -1 || class_map[p.cls_j] == -1) {
+			delete *i;
+			i = pairs.erase(i);
+		} else {
+			p.cls_i = class_map[p.cls_i];
+			p.cls_j = class_map[p.cls_j];
+			++i;
+		}
+	}
+}
+
+void classifier::add_inst(int cls) {
+	membership.push_back(-1);
+	assert(membership.size() == data.size());
+	update_inst(membership.size() - 1, cls);
+}
+
+void classifier::update_inst(int i, int c) {
+	assert(0 <= i && i <= membership.size() && 0 <= c && c < classes.size());
+	
+	const model_train_inst &inst = data.get_inst(i);
+	int target = (*inst.sig)[inst.target].id;
+	if (membership[i] >= 0) {
+		class_info *oldc = classes[membership[i]];
+		oldc->mem_rel.del(i, target);
+		oldc->stale = true;
+	}
+	
+	class_info *newc = classes[c];
+	newc->mem_rel.add(i, target);
+	newc->stale = true;
+	
+	membership[i] = c;
+}
+
+classifier::pair_info *classifier::find(int i, int j) {
+	assert(i < j);
+	
+	list<pair_info*>::iterator pi, pend;
+	for (pi = pairs.begin(), pend = pairs.end(); pi != pend; ++pi) {
+		if ((**pi).cls_i == i && (**pi).cls_j == j) {
+			return *pi;
+		}
+	}
+	return NULL;
+}
+
+void classifier::update() {
+	list<pair_info*>::iterator i, iend;
+	for (i = pairs.begin(), iend = pairs.end(); i != iend; ++i) {
+		pair_info *p = *i;
+		class_info *ci = classes[p->cls_i], *cj = classes[p->cls_j];
+		if (!ci->stale && !cj->stale) {
+			continue;
+		}
+		
+		binary_classifier &c = *p->clsfr;
+		if (context) {
+			c.update(ci->mem_rel, cj->mem_rel, data.get_context_rels(), data);
+		} else {
+			c.update(ci->mem_rel, cj->mem_rel, data.get_all_rels(), data);
+		}
+	}
+	
+	for (int i = 0, iend = classes.size(); i < iend; ++i) {
+		classes[i]->stale = false;
+	}
+}
+
+void classifier::classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, vector<int> &votes) {
+	update();
+	votes.clear();
+	votes.resize(classes.size(), 0);
+	
+	const relation_table *r;
+	if (context) {
+		relation_table *r1 = new relation_table;
+		get_context_rels(sig[target].id, rels, *r1);
+		r = r1;
+	} else {
+		r = &rels;
+	}
+	
+	list<pair_info*>::const_iterator i, iend;
+	for (i = pairs.begin(), iend = pairs.end(); i != iend; ++i) {
+		const pair_info &p = **i;
+		int winner = p.clsfr->vote(target, sig, *r, x);
+		if (winner == 0) {
+			++votes[p.cls_i];
+		} else if (winner == 1) {
+			++votes[p.cls_j];
+		} else {
+			assert(false);
+		}
+	}
+	
+	if (context) {
+		delete r;
+	}
+}
+
+bool classifier::cli_inspect(int first, const vector<string> &args, ostream &os) {
+	update();
+	
+	if (first >= args.size()) {
+		// print summary of all classifiers
+		for (int i = 0, iend = classes.size(); i < iend; ++i) {
+			for (int j = i + 1, jend = classes.size(); j < jend; ++j) {
+				pair_info *p = find(i, j);
+				assert(p);
+				os << "=== FOR MODES " << i << "/" << j << " ===" << endl;
+				if (p->clsfr) {
+					p->clsfr->inspect(os);
+				} else {
+					// why would this happen?
+					os << "no classifier" << endl;
+				}
+			}
+		}
+		return true;
+	}
+	
+	int i, j;
+	pair_info *p;
+	if (first + 1 >= args.size()) {
+		os << "Specify two modes" << endl;
+		return false;
+	}
+	
+	if (!parse_int(args[first], i) || !parse_int(args[first+1], j) || !(p = find(i, j))) {
+		os << "invalid modes, make sure i < j" << endl;
+		return false;
+	}
+	
+	if (p->clsfr) {
+		p->clsfr->inspect_detailed(os);
+	} else {
+		os << "null" << endl;
+	}
+	return true;
+}
+
+bool classifier::dump_foil(int i, int j, bool context, ostream &os) const {
+	FOIL foil;
+	
+	if (context) {
+		foil.set_problem(classes[i]->mem_rel, classes[j]->mem_rel, data.get_context_rels());
+	} else {
+		foil.set_problem(classes[i]->mem_rel, classes[j]->mem_rel, data.get_all_rels());
+	}
+	foil.dump_foil6(os);
+	return true;
+}
+
+void classifier::serialize(ostream &os) const {
+	serializer(os) << pairs << classes << membership;
+}
+
+void classifier::unserialize(istream &is) {
+	unserializer(is) >> pairs >> classes >> membership;
+}
+
+void classifier::pair_info::serialize(ostream &os) const {
+	serializer(os) << cls_i << cls_j << clsfr;
+}
+
+void classifier::pair_info::unserialize(istream &is) {
+	unserializer(is) >> cls_i >> cls_j >> clsfr;
+}
+
+void classifier::class_info::serialize(ostream &os) const {
+	serializer(os) << mem_rel << stale;
+}
+
+void classifier::class_info::unserialize(istream &is) {
+	unserializer(is) >> mem_rel >> stale;
 }

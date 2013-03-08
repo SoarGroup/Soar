@@ -12,12 +12,10 @@
 
 class em_train_data;
 class sig_info;
-class classifier;
 
 class em_mode : public serializable {
 public:
 	em_mode(bool noise, bool manual, const model_train_data &data);
-	~em_mode();
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
@@ -42,22 +40,10 @@ public:
 	void reset_new_fit() { new_fit = false; }
 	
 	const scene_sig &get_sig() const { return sig; }
-	const relation &get_member_rel() const { return member_rel; }
 
 	bool map_objs(int target, const scene_sig &dsig, const relation_table &rels, std::vector<int> &mapping) const;
 	
 	int get_num_nonzero_coefs() const;
-	
-	/*
-	 Each pair of modes has one classifier associated with it. For
-	 mode i, the classifier for it and mode j is stored in the
-	 j_th element of this vector. Elements 0 - i of this vector
-	 are NULL since those classifiers are already present in a
-	 previous mode's classifier vector.
-	*/
-	std::vector<classifier*> classifiers;
-	
-	bool classifier_stale;
 	
 private:
 	class mem_info : public serializable {
@@ -76,9 +62,7 @@ private:
 	mat lin_coefs;
 	rvec lin_inter;
 	int n_nonzero;
-	relation member_rel;
 	scene_sig sig;
-	std::vector<std::vector<int> > obj_maps; 
 	
 	/*
 	 Noise data sorted by their Y values. First element in pair is the Y value,

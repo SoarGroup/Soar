@@ -163,13 +163,13 @@ int argmax(const std::vector<T> &v) {
 	return m;
 }
 
-template <typename T>
-void clear_and_dealloc(std::vector<T> &v) {
-	typename std::vector<T>::iterator i, end;
-	for (i = v.begin(), end = v.end(); i != end; ++i) {
+template <typename C>
+void clear_and_dealloc(C &container) {
+	typename C::iterator i, end;
+	for (i = container.begin(), end = container.end(); i != end; ++i) {
 		delete *i;
 	}
-	v.clear();
+	container.clear();
 }
 
 template <typename K, typename V>

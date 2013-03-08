@@ -91,7 +91,7 @@ void sgwme::add_child(sgnode *c) {
 
 svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
 : svsp(svsp), parent(NULL), state(state), si(si), level(0),
-  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL), model_link(NULL)
+  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
 	assert (si->is_top_state(state));
 	outspec = svsp->get_output_spec();
@@ -101,7 +101,7 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
 svs_state::svs_state(Symbol *state, svs_state *parent)
 : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
   outspec(parent->outspec), level(parent->level+1), scene_num(-1),
-  scene_num_wme(NULL), scn(NULL), scene_link(NULL), model_link(NULL)
+  scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
 	assert (si->get_parent_state(state) == parent->state);
 	init();
@@ -118,10 +118,7 @@ svs_state::~svs_state() {
 	scn_name = scn->get_name();
 	delete scn; // results in root being deleted also
 	delete mmdl;
-	
-	if (model_link) {
-		svsp->set_model_root(NULL);
-	}
+
 	svsp->get_drawer()->delete_scene(scn_name);
 }
 
@@ -142,11 +139,6 @@ void svs_state::init() {
 	mmdl = new multi_model(svsp->get_models());
 	learn_models = false;
 	test_models = false;
-	
-	if (!parent) {
-		model_link = si->get_wme_val(si->make_id_wme(svs_link, cs.models));
-		svsp->set_model_root(model_link);
-	}
 }
 
 void svs_state::update_scene_num() {
@@ -478,7 +470,7 @@ void svs_state::refresh_view() {
 }
 
 svs::svs(agent *a)
-: learn(false), model_root(NULL)
+: learn(false)
 {
 	si = new soar_interface(a);
 }
@@ -713,21 +705,5 @@ bool svs::add_model(const string &name, model *m) {
 		return false;
 	}
 	models[name] = m;
-	if (model_root) {
-		Symbol *id = si->get_wme_val(si->make_id_wme(model_root, m->get_name()));
-		m->set_wm_root(id);
-	}
 	return true;
-}
-
-void svs::set_model_root(Symbol *root) {
-	model_root = root;
-	if (model_root) {
-		std::map<std::string, model*>::iterator i;
-		for (i = models.begin(); i != models.end(); ++i) {
-			model *m = i->second;
-			Symbol *id = si->get_wme_val(si->make_id_wme(model_root, m->get_name()));
-			m->set_wm_root(id);
-		}
-	}
 }

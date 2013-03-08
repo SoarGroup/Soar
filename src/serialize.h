@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <vector>
+#include <list>
 #include <set>
 #include <map>
 #include <cassert>
@@ -159,6 +160,36 @@ void unserialize(std::set<T> &s, std::istream &is) {
 	 elem goes out of scope, which would result in an invalid pointer in the set.
 	 This next line fixes the problem by setting the pointer to something else,
 	 hopefully NULL.
+	*/
+	elem = T();
+}
+
+template <typename T>
+void serialize(const std::list<T> &l, std::ostream &os) {
+	serialize_container<std::list<T> >(l, os);
+}
+
+template <typename T>
+void unserialize(std::list<T> &l, std::istream &is) {
+	char delim;
+	int n = 0;
+	if (!(is >> n >> delim) || delim != '[') {
+		assert(false);
+	}
+	l.clear();
+	T elem;
+	for (int i = 0; i < n; ++i) {
+		unserialize(elem, is);
+		l.push_back(elem);
+		if (!(is >> delim) || delim != ',') {
+			assert(false);
+		}
+	}
+	if (!(is >> delim) || delim != ']') {
+		assert(false);
+	}
+	/*
+	 Reset key for the same reason as in the set unserializer.
 	*/
 	elem = T();
 }

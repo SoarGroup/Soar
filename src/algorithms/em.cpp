@@ -133,55 +133,25 @@ void split_data(
 	assert(test_end == ntest && train_end == ntrain);
 }
 
-void push_back_unique(tuple &t, int e) {
-	if (find(t.begin(), t.end(), e) == t.end()) {
-		t.push_back(e);
-	}
-}
-
-void get_context_rels(int target, const relation_table &rels, relation_table &context_rels) {
-	tuple close;
-	relation::const_iterator i, iend;
+template <typename T>
+struct indirect_cmp {
+	indirect_cmp(const vector<T> &v) : v(v) {}
 	
-	/*
-	 If the target intersects any objects, those are all considered close. If the
-	 target doesn't intersect any objects, then the closest object is considered
-	 close.
-	*/
-	const relation &intersect_rel = map_get(rels, string("intersect"));
-	for (i = intersect_rel.begin(), iend = intersect_rel.end(); i != iend; ++i) {
-		if ((*i)[1] == target) {
-			push_back_unique(close, (*i)[2]);
-		} else if ((*i)[2] == target) {
-			push_back_unique(close, (*i)[1]);
-		}
+	bool operator()(int a, int b) const {
+		return v[a] < v[b];
 	}
-	if (close.empty()) {
-		const relation &closest_rel = map_get(rels, string("closest"));
-		for (i = closest_rel.begin(), iend = closest_rel.end(); i != iend; ++i) {
-			if ((*i)[1] == target) {
-				close.push_back((*i)[2]);
-				break;
-			}
-		}
-	}
-	close.push_back(target);
 	
-	// filter out all far objects
-	context_rels = rels;
-	relation_table::iterator j, jend;
-	for (j = context_rels.begin(), jend = context_rels.end(); j != jend; ++j) {
-		relation &r = j->second;
-		if (j->first == "closest") {
-			r.clear();
-		} else {
-			for (int j = 1, jend = r.arity(); j < jend; ++j) {
-				r.filter(j, close, false);
-			}
-		}
-	}
-}
+	const vector<T> &v;
+};
 
+template <typename T>
+void get_ordering(const vector<T> &v, vector<int> &order) {
+	order.resize(v.size());
+	for (int i = 0, iend = order.size(); i < iend; ++i) {
+		order[i] = i;
+	}
+	sort(order.begin(), order.end(), indirect_cmp<T>(v));
+}
 
 /*
  Assume that data from a single mode comes in blocks. Try to discover
@@ -392,11 +362,12 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 EM::EM(const model_train_data &data)
 : data(data), use_em(true), use_foil(true), use_foil_close(true),
   use_pruning(true), use_unify(true), learn_new_modes(true), use_lwr(true),
-  check_after(NEW_MODE_THRESH), nc_type(NC_DTREE)
+  check_after(NEW_MODE_THRESH), nc_type(NC_DTREE), clsfr(data)
 {
 	em_mode *noise = new em_mode(true, false, data);
-	noise->classifiers.resize(1, NULL);
 	modes.push_back(noise);
+	clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
+	clsfr.add_class();
 }
 
 EM::~EM() {
@@ -435,10 +406,7 @@ void EM::update() {
 	insts.push_back(inst);
 	
 	modes[0]->add_example(t, vector<int>());
-	
-	relation_table context_rels;
-	get_context_rels((*d.sig)[d.target].id, data.get_last_rels(), context_rels);
-	extend_relations(context_rel_tbl, context_rels, t);
+	clsfr.add_inst(0);
 }
 
 void EM::estep() {
@@ -500,6 +468,7 @@ void EM::estep() {
 				if (best == 0) {
 					sigs[d.sig]->noise.insert(i);
 				}
+				clsfr.update_inst(i, best);
 			}
 		}
 	}
@@ -541,14 +510,7 @@ em_mode *EM::add_mode(bool manual) {
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
 		grow_vec(insts[i]->minfo);
 	}
-	for (int i = 0, iend = modes.size(); i < iend; ++i) {
-		modes[i]->classifiers.resize(iend, NULL);
-		/*
-		 It's sufficient to fill the extra vector elements
-		 with NULL here. The actual classifiers will be
-		 allocated as needed during updates.
-		*/
-	}
+	clsfr.add_class();
 	return new_mode;
 }
 
@@ -715,15 +677,13 @@ bool EM::remove_modes() {
 	}
 	assert(i == modes.size() - removed.size());
 	modes.resize(i);
-	for (int j = 0; j < i; ++j) {
-		remove_from_vector(removed, modes[j]->classifiers);
-	}
 	for (int j = 0, jend = insts.size(); j < jend; ++j) {
 		if (insts[j]->mode >= 0) {
 			insts[j]->mode = index_map[insts[j]->mode];
 		}
 		remove_from_vector(removed, insts[j]->minfo);
 	}
+	clsfr.del_classes(removed);
 	return true;
 }
 
@@ -762,7 +722,7 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 	if (first >= args.size()) {
 		os << "modes: " << modes.size() << endl;
-		os << endl << "subqueries: mode ptable timing train relations classifiers use_em use_foil use_nc" << endl;
+		os << endl << "subqueries: mode ptable timing train relations classifiers use_em use_foil nc_type" << endl;
 		return true;
 	} else if (args[first] == "ptable") {
 		table_printer t;
@@ -790,20 +750,28 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 	} else if (args[first] == "timing") {
 		timers.report(os);
 		return true;
-	} else if (args[first] == "relations") {
-		return cli_inspect_relations(first + 1, args, os);
 	} else if (args[first] == "classifiers") {
-		return cli_inspect_classifiers(first + 1, args, os);
+		return const_cast<EM*>(this)->clsfr.cli_inspect(first + 1, args, os);
 	} else if (args[first] == "use_em") {
 		return read_on_off(args, first + 1, os, use_em);
 	} else if (args[first] == "use_foil") {
-		return read_on_off(args, first + 1, os, use_foil);
+		if (read_on_off(args, first + 1, os, use_foil)) {
+			clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
+			return true;
+		}
+		return false;
 	} else if (args[first] == "use_foil_close") {
-		return read_on_off(args, first + 1, os, use_foil_close);
-	} else if (args[first] == "use_nc") {
-		return read_on_off(args, first + 1, os, use_nc);
+		if (read_on_off(args, first + 1, os, use_foil_close)) {
+			clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
+			return true;
+		}
+		return false;
 	} else if (args[first] == "use_pruning") {
-		return read_on_off(args, first + 1, os, use_pruning);
+		if (read_on_off(args, first + 1, os, use_pruning)) {
+			clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
+			return true;
+		}
+		return false;
 	} else if (args[first] == "use_unify") {
 		return read_on_off(args, first + 1, os, use_unify);
 	} else if (args[first] == "learn_new_modes") {
@@ -818,17 +786,7 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 			os << "Specify 2 modes" << endl;
 			return false;
 		}
-		
-		if (m1 > m2)
-			swap(m1, m2);
-		
-		FOIL foil;
-		if (args[first] == "dump_foil") {
-			foil.set_problem(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), data.get_all_rels());
-		} else {
-			foil.set_problem(modes[m1]->get_member_rel(), modes[m2]->get_member_rel(), context_rel_tbl);
-		}
-		foil.dump_foil6(os);
+		clsfr.dump_foil(m1, m2, args[first] == "dump_foil_close", os);
 		return true;
 	} else if (args[first] == "vistrain") {
 		int i;
@@ -877,6 +835,7 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 			return false;
 		}
 		nc_type = t;
+		clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
 		os << "future numeric classifiers will be learned using " << args[first+1] << endl;
 		return true;
 	}
@@ -1002,7 +961,7 @@ bool EM::cli_add_mode(int first, const vector<string> &args, ostream &os) {
 
 void EM::serialize(ostream &os) const {
 	serializer sr(os);
-	sr << insts << context_rel_tbl << nc_type << modes.size() << '\n';
+	sr << insts << clsfr << nc_type << modes.size() << '\n';
 	vector<const scene_sig*> s = data.get_sigs();
 	for (int i = 0, iend = s.size(); i < iend; ++i) {
 		sr << *map_get(sigs, s[i]) << '\n';
@@ -1017,7 +976,7 @@ void EM::unserialize(istream &is) {
 	int nmodes;
 	
 	clear_and_dealloc(insts);
-	unsr >> insts >> context_rel_tbl >> nc_type >> nmodes;
+	unsr >> insts >> clsfr >> nc_type >> nmodes;
 	assert(insts.size() == data.size());
 	
 	clear_and_dealloc(sigs);
@@ -1056,206 +1015,46 @@ void inst_info::mode_info::unserialize(istream &is) {
 	unserializer(is) >> prob >> prob_stale >> sig_map;
 }
 
-bool EM::cli_inspect_relations(int i, const vector<string> &args, ostream &os) const {
-	const relation_table *rels;
-	if (i < args.size() && args[i] == "close") {
-		rels = &context_rel_tbl;
-		++i;
-	} else {
-		rels = &data.get_all_rels();
-	}
-	
-	if (i >= args.size()) {
-		os << *rels << endl;
-		return true;
-	}
-	const relation *r = map_getp(*rels, args[i]);
-	if (!r) {
-		os << "no such relation" << endl;
-		return false;
-	}
-	if (i + 1 >= args.size()) {
-		os << *r << endl;
-		return true;
-	}
-
-	relation matches(*r);
-
-	tuple t(1);
-	int j, k;
-	for (j = i + 1, k = 0; j < args.size() && k < matches.arity(); ++j, ++k) {
-		if (args[j] != "*") {
-			if (!parse_int(args[j], t[0])) {
-				os << "invalid pattern" << endl;
-				return false;
-			}
-			matches.filter(k, t, false);
-		}
-	}
-
-	os << matches << endl;
-	return true;
-}
-
-void EM::update_classifier() {
-	
-	vector<bool> needs_update(modes.size(), false);
-	for (int i = 0; i < modes.size(); ++i) {
-		if (modes[i]->classifier_stale) {
-			needs_update[i] = true;
-			modes[i]->classifier_stale = false;
-		}
-	}
-	
-	for (int i = 0; i < modes.size(); ++i) {
-		em_mode &m = *modes[i];
-
-		if (needs_update[i]) {
-			m.learn_obj_clauses(data.get_all_rels());
-		}
-		
-		for (int j = i + 1; j < modes.size(); ++j) {
-			if (needs_update[i] || needs_update[j]) {
-				update_pair(i, j);
-			}
-		}
-	}
-}
-
-void EM::update_pair(int i, int j) {
-	function_timer t(timers.get_or_add("updt_clsfr"));
-	
-	assert(i < j);
-	if (!modes[i]->classifiers[j]) {
-		modes[i]->classifiers[j] = new classifier(use_foil, use_pruning, nc_type);
-	}
-	classifier &c = *(modes[i]->classifiers[j]);
-	const relation &mem_i = modes[i]->get_member_rel();
-	const relation &mem_j = modes[j]->get_member_rel();
-	if (use_foil_close) {
-		c.update(mem_i, mem_j, context_rel_tbl, data);
-	} else {
-		c.update(mem_i, mem_j, data.get_all_rels(), data);
-	}
-}
-
-/*
- Return 0 to vote for i, 1 to vote for j
-*/
-int EM::vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
-	LOG(EMDBG) << "Voting on " << i << " vs " << j << endl;
-	
-	assert(modes[i]->classifiers[j]);
-	const classifier &c = *(modes[i]->classifiers[j]);
-
-	if (use_foil_close) {
-		relation_table context;
-		get_context_rels(sig[target].id, rels, context);
-		return c.vote(target, sig, context, x);
-	} else {
-		return c.vote(target, sig, rels, x);
-	}
-}
-
 int EM::classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, vector<int> &obj_map) {
 	LOG(EMDBG) << "classification" << endl;
-	update_classifier();
+
+	vector<int> votes, order;
+	clsfr.classify(target, sig, rels, x, votes);
 	
+	LOG(EMDBG) << "votes:" << endl;
+	for (int i = 0, iend = votes.size(); i < iend; ++i) {
+		LOG(EMDBG) << i << " = " << votes[i] << endl;
+	}
+	
+	get_ordering(votes, order);
+		
 	/*
 	 The scene has to contain the objects used by the linear model of
 	 a mode for it to possibly qualify for that mode.
 	*/
-	vector<int> possible(1, 0);
-	map<int, vector<int> > mappings;
-	for (int i = 1; i < modes.size(); ++i) {
-		em_mode &m = *modes[i];
+	for (int i = order.size() - 1; i >= 0; --i) {
+		if (order[i] == 0) {
+			// don't need mapping for noise mode
+			return 0;
+		}
+		em_mode &m = *modes[order[i]];
 		if (m.get_sig().size() > sig.size()) {
 			continue;
 		}
-		if (!m.map_objs(target, sig, rels, mappings[i])) {
+		obj_map.clear();
+		if (!m.map_objs(target, sig, rels, obj_map)) {
 			LOG(EMDBG) << "mapping failed for " << i << endl;
 			continue;
 		}
-		possible.push_back(i);
-	}
-	if (possible.size() == 1) {
-		LOG(EMDBG) << "only one possible mode: " << possible[0] << endl;
-		obj_map = mappings[possible[0]];
-		return possible[0];
+		
+		// mapping worked, classify as this mode;
+		LOG(EMDBG) << "best mode = " << order[i] << endl;
+		return order[i];
 	}
 	
-	map<int, int> votes;
-	for (int i = 0; i < possible.size() - 1; ++i) {
-		int a = possible[i];
-		for (int j = i + 1; j < possible.size(); ++j) {
-			int b = possible[j];
-			int winner = vote_pair(a, b, target, sig, rels, x);
-			if (winner == 0) {
-				++votes[a];
-			} else if (winner == 1) {
-				++votes[b];
-			} else {
-				assert(false);
-			}
-		}
-	}
-	
-	LOG(EMDBG) << "votes:" << endl;
-	map<int, int>::const_iterator i, best = votes.begin();
-	for (i = votes.begin(); i != votes.end(); ++i) {
-		LOG(EMDBG) << i->first << " = " << i->second << endl;
-		if (i->second > best->second) {
-			best = i;
-		}
-	}
-	LOG(EMDBG) << "best mode = " << best->first << endl;
-	obj_map = mappings[best->first];
-	return best->first;
-}
-
-bool EM::cli_inspect_classifiers(int first, const vector<string> &args, ostream &os) const {
-	const_cast<EM*>(this)->update_classifier();
-	
-	if (first >= args.size()) {
-		// print summary of all classifiers
-		for (int i = 0, iend = modes.size(); i < iend; ++i) {
-			for (int j = 0, jend = modes.size(); j < jend; ++j) {
-				if (j <= i) {
-					continue;
-				}
-				classifier *c = modes[i]->classifiers[j];
-				os << "=== FOR MODES " << i << "/" << j << " ===" << endl;
-				if (c) {
-					c->inspect(os);
-				} else {
-					// why would this happen?
-					os << "no classifier" << endl;
-				}
-			}
-		}
-		return true;
-	}
-	
-	int i, j;
-	if (first + 1 >= args.size()) {
-		os << "Specify two modes" << endl;
-		return false;
-	}
-	
-	if (!parse_int(args[first], i) || !parse_int(args[first+1], j) || 
-	    i >= j || i >= modes.size() || j >= modes.size())
-	{
-		os << "invalid modes, make sure i < j" << endl;
-		return false;
-	}
-	
-	classifier *c = modes[i]->classifiers[j];
-	if (c) {
-		c->inspect_detailed(os);
-	} else {
-		os << "no classifier" << endl;
-	}
-	return true;
+	// should never reach here
+	assert(false);
+	return -1;
 }
 
 sig_info::sig_info() : lwr(LWR_K, false) {}

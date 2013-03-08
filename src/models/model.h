@@ -11,9 +11,9 @@
 #include "mat.h"
 #include "relation.h"
 #include "scene_sig.h"
-#include "soar_interface.h"
 
 class svs_state;
+class soar_interface;
 
 struct model_train_inst {
 	rvec x, y;
@@ -36,19 +36,20 @@ public:
 	const model_train_inst &get_inst(int t)  const { return *insts[t]; }
 	const model_train_inst &get_last_inst()  const { return *insts.back(); }
 	const relation_table &get_all_rels()     const { return all_rels; }
-	const relation_table &get_last_rels()    const { return last_rels; }
+	const relation_table &get_context_rels()    const { return context_rels; }
 	
 	std::vector<const scene_sig*> get_sigs() const {
 		return std::vector<const scene_sig*>(sigs.begin(), sigs.end());
 	}
 	
 	int size() const { return insts.size(); }
+
+	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
 	
 private:
 	std::vector<scene_sig*> sigs;
 	std::vector<model_train_inst*> insts;
-	relation_table last_rels;
-	relation_table all_rels;
+	relation_table all_rels, context_rels;
 };
 
 class model : public serializable {
@@ -69,7 +70,6 @@ public:
 	virtual bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
-	virtual void set_wm_root(Symbol *r) {}
 	virtual void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	
 private:
@@ -84,7 +84,6 @@ private:
 	virtual void update() {}
 	virtual void serialize_sub(std::ostream &os) const {}
 	virtual void unserialize_sub(std::istream &is) {}
-	
 };
 
 /*
@@ -142,7 +141,5 @@ private:
 	// record prediction errors
 	std::vector<test_info> tests;
 };
-
-model *make_model(soar_interface *si, Symbol *root, svs_state *state, const std::string &name, const std::string &type);
 
 #endif

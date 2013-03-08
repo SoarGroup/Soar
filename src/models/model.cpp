@@ -10,26 +10,6 @@
 
 using namespace std;
 
-model *_make_null_model_    (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_velocity_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_lwr_model_     (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_splinter_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_em_model_      (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_targets_model_ (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-
-struct model_constructor_table_entry {
-	const char *type;
-	model* (*func)(soar_interface*, Symbol*, svs_state*, const string&);
-};
-
-static model_constructor_table_entry constructor_table[] = {
-	{ "null",        _make_null_model_},
-	{ "velocity",    _make_velocity_model_},
-	{ "lwr",         _make_lwr_model_},
-	{ "splinter",    _make_splinter_model_},
-	{ "em",          _make_em_model_},
-	{ "targets",     _make_targets_model_},
-};
 
 void slice(const rvec &src, rvec &tgt, const vector<int> &srcinds, const vector<int> &tgtinds) {
 	if (srcinds.empty() && tgtinds.empty()) {
@@ -100,17 +80,6 @@ bool error_stats(const vector<double> &errors, ostream &os) {
 	return true;
 }
 
-model *make_model(soar_interface *si, Symbol *root, svs_state *state, const string &name, const string &type) {
-	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
-
-	for (int i = 0; i < table_size; ++i) {
-		if (type == constructor_table[i].type) {
-			return constructor_table[i].func(si, root, state, name);
-		}
-	}
-	return NULL;
-}
-
 model::model(const std::string &name, const std::string &type, bool learning) 
 : name(name), type(type), learning(learning)
 {}
@@ -164,9 +133,51 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 			f.close();
 			os << "loaded from " << path << endl;
 			return true;
+		} else if (args[first_arg] == "relations") {
+			return train_data.cli_inspect_relations(first_arg + 1, args, os);
 		}
 	}
 	return cli_inspect_sub(first_arg, args, os);
+}
+bool model_train_data::cli_inspect_relations(int i, const vector<string> &args, ostream &os) const {
+	const relation_table *rels;
+	if (i < args.size() && args[i] == "close") {
+		rels = &context_rels;
+		++i;
+	} else {
+		rels = &all_rels;
+	}
+	
+	if (i >= args.size()) {
+		os << *rels << endl;
+		return true;
+	}
+	const relation *r = map_getp(*rels, args[i]);
+	if (!r) {
+		os << "no such relation" << endl;
+		return false;
+	}
+	if (i + 1 >= args.size()) {
+		os << *r << endl;
+		return true;
+	}
+
+	relation matches(*r);
+
+	tuple t(1);
+	int j, k;
+	for (j = i + 1, k = 0; j < args.size() && k < matches.arity(); ++j, ++k) {
+		if (args[j] != "*") {
+			if (!parse_int(args[j], t[0])) {
+				os << "invalid pattern" << endl;
+				return false;
+			}
+			matches.filter(k, t, false);
+		}
+	}
+
+	os << matches << endl;
+	return true;
 }
 
 void model::serialize(ostream &os) const {
@@ -468,8 +479,10 @@ void model_train_data::add(int target, const scene_sig &sig, const relation_tabl
 	inst->target = target;
 	insts.push_back(inst);
 	
-	last_rels = r;
+	relation_table c;
 	extend_relations(all_rels, r, insts.size() - 1);
+	::get_context_rels(sig[target].id, r, c);
+	extend_relations(context_rels, c, insts.size() - 1);
 }
 
 void model_train_data::serialize(ostream &os) const {
@@ -494,7 +507,7 @@ void model_train_data::serialize(ostream &os) const {
 	}
 	sr << '\n';
 	
-	sr << last_rels << all_rels;
+	sr << all_rels << context_rels;
 }
 
 void model_train_data::unserialize(istream &is) {
@@ -528,5 +541,5 @@ void model_train_data::unserialize(istream &is) {
 		insts.push_back(inst);
 	}
 	
-	unsr >> last_rels >> all_rels;
+	unsr >> all_rels >> context_rels;
 }

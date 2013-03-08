@@ -85,14 +85,6 @@ public:
 		return false;
 	}
 	
-	void set_wm_root(Symbol *r) {
-		wm_root = r;
-		if (wm_root) {
-			revisions_wme = si->make_wme(wm_root, "revisions", revisions);
-			tests_id = si->get_wme_val(si->make_id_wme(wm_root, "tests"));
-		}
-	}
-
 private:
 	EM em;
 	

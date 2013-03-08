@@ -231,6 +231,9 @@ std::ostream &operator<<(std::ostream &os, const relation_table &t);
 // Add tuples from a single time point into the relation table
 void extend_relations(relation_table &rels, const relation_table &add, int time);
 
+// extract only tuples involving objects closest to target
+void get_context_rels(int target, const relation_table &rels, relation_table &context_rels);
+
 template<typename C>
 interval_set::interval_set(const C &container) {
 	curr = new std::vector<interval>;

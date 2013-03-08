@@ -83,7 +83,6 @@ private:
 	int vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
 	
 	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
-	bool cli_inspect_relations(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_inspect_classifiers(int first, const std::vector<std::string> &args, std::ostream &os) const;
 	bool cli_add_mode(int first, const std::vector<std::string> &args, std::ostream &os);
 
@@ -92,7 +91,8 @@ private:
 	std::vector<inst_info*> insts;
 	std::vector<em_mode*> modes;
 	sig_table sigs;
-	relation_table context_rel_tbl;
+	classifier clsfr;
+	
 	bool use_em, use_foil, use_foil_close, use_nc, use_pruning, use_unify, use_lwr, learn_new_modes;
 
 	/*

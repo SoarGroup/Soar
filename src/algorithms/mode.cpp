@@ -1,6 +1,5 @@
 #include "mode.h"
 #include "em.h"
-#include "classifier.h"
 #include "serialize.h"
 #include "params.h"
 
@@ -79,20 +78,12 @@ private:
 };
 
 em_mode::em_mode(bool noise, bool manual, const model_train_data &data) 
-: noise(noise), manual(manual), data(data), member_rel(2), classifier_stale(true), new_fit(true), n_nonzero(-1)
+: noise(noise), manual(manual), data(data), new_fit(true), n_nonzero(-1)
 {
 	if (noise) {
 		stale = false;
 	} else {
 		stale = true;
-	}
-}
-
-em_mode::~em_mode() {
-	for (int i = 0; i < classifiers.size(); ++i) {
-		if (classifiers[i]) {
-			delete classifiers[i];
-		}
 	}
 }
 
@@ -281,14 +272,12 @@ bool em_mode::cli_inspect(int first, const vector<string> &args, ostream &os) {
  therefore not (un)serialized.
 */
 void em_mode::serialize(ostream &os) const {
-	serializer(os) << stale << new_fit << classifier_stale << members << sig
-	               << classifiers << obj_clauses << member_rel << sorted_ys
+	serializer(os) << stale << new_fit << members << sig << obj_clauses << sorted_ys
 	               << lin_coefs << lin_inter << n_nonzero << manual;
 }
 
 void em_mode::unserialize(istream &is) {
-	unserializer(is) >> stale >> new_fit >> classifier_stale >> members >> sig
-	                 >> classifiers >> obj_clauses >> member_rel >> sorted_ys
+	unserializer(is) >> stale >> new_fit >> members >> sig >> obj_clauses >> sorted_ys
 	                 >> lin_coefs >> lin_inter >> n_nonzero >> manual;
 }
 
@@ -438,8 +427,6 @@ void em_mode::add_example(int t, const vector<int> &obj_map) {
 	
 	const model_train_inst &d = data.get_inst(t);
 	members[t].obj_map = obj_map;
-	classifier_stale = true;
-	member_rel.add(t, (*d.sig)[d.target].id);
 	if (noise) {
 		sorted_ys.insert(make_pair(d.y(0), t));
 	} else {
@@ -454,8 +441,6 @@ void em_mode::add_example(int t, const vector<int> &obj_map) {
 void em_mode::del_example(int t) {
 	const model_train_inst &d = data.get_inst(t);
 
-	classifier_stale = true;
-	member_rel.del(t, (*d.sig)[d.target].id);
 	members.erase(t);
 	if (noise) {
 		sorted_ys.erase(make_pair(d.y(0), t));

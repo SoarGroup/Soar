@@ -952,3 +952,52 @@ void extend_relations(relation_table &rels, const relation_table &add, int time)
 		}
 	}
 }
+
+void push_back_unique(tuple &t, int e) {
+	if (find(t.begin(), t.end(), e) == t.end()) {
+		t.push_back(e);
+	}
+}
+
+void get_context_rels(int target, const relation_table &rels, relation_table &context_rels) {
+	tuple close;
+	relation::const_iterator i, iend;
+	
+	/*
+	 If the target intersects any objects, those are all considered close. If the
+	 target doesn't intersect any objects, then the closest object is considered
+	 close.
+	*/
+	const relation &intersect_rel = map_get(rels, string("intersect"));
+	for (i = intersect_rel.begin(), iend = intersect_rel.end(); i != iend; ++i) {
+		if ((*i)[1] == target) {
+			push_back_unique(close, (*i)[2]);
+		} else if ((*i)[2] == target) {
+			push_back_unique(close, (*i)[1]);
+		}
+	}
+	if (close.empty()) {
+		const relation &closest_rel = map_get(rels, string("closest"));
+		for (i = closest_rel.begin(), iend = closest_rel.end(); i != iend; ++i) {
+			if ((*i)[1] == target) {
+				close.push_back((*i)[2]);
+				break;
+			}
+		}
+	}
+	close.push_back(target);
+	
+	// filter out all far objects
+	context_rels = rels;
+	relation_table::iterator j, jend;
+	for (j = context_rels.begin(), jend = context_rels.end(); j != jend; ++j) {
+		relation &r = j->second;
+		if (j->first == "closest") {
+			r.clear();
+		} else {
+			for (int j = 1, jend = r.arity(); j < jend; ++j) {
+				r.filter(j, close, false);
+			}
+		}
+	}
+}

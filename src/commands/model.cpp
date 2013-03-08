@@ -5,6 +5,38 @@
 
 using namespace std;
 
+model *_make_null_model_    (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_velocity_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_lwr_model_     (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_splinter_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_em_model_      (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_targets_model_ (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+
+struct model_constructor_table_entry {
+	const char *type;
+	model* (*func)(soar_interface*, Symbol*, svs_state*, const string&);
+};
+
+static model_constructor_table_entry constructor_table[] = {
+	{ "null",        _make_null_model_},
+	{ "velocity",    _make_velocity_model_},
+	{ "lwr",         _make_lwr_model_},
+	{ "splinter",    _make_splinter_model_},
+	{ "em",          _make_em_model_},
+	{ "targets",     _make_targets_model_},
+};
+
+model *make_model(soar_interface *si, Symbol *root, svs_state *state, const string &name, const string &type) {
+	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
+
+	for (int i = 0; i < table_size; ++i) {
+		if (type == constructor_table[i].type) {
+			return constructor_table[i].func(si, root, state, name);
+		}
+	}
+	return NULL;
+}
+
 void read_list(soar_interface *si, Symbol *id, vector<string> &words) {
 	slot *s;
 	wme *w;
