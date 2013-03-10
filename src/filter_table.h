@@ -13,6 +13,7 @@
 #include "timer.h"
 #include "soar_interface.h"
 #include "relation.h"
+#include "cliproxy.h"
 
 class filter;
 class filter_input;
@@ -35,9 +36,9 @@ struct filter_table_entry {
 	}
 };
 
-class filter_table {
+class filter_table : public proxied {
 public:
-	friend const filter_table &get_filter_table();
+	friend filter_table &get_filter_table();
 
 	void get_predicates(std::vector<std::string> &preds) const {
 		std::map<std::string, filter_table_entry>::const_iterator i;
@@ -84,6 +85,6 @@ private:
 };
 
 /* Get the singleton instance */
-const filter_table &get_filter_table();
+filter_table &get_filter_table();
 
 #endif

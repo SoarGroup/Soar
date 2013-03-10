@@ -85,6 +85,10 @@ em_mode::em_mode(bool noise, bool manual, const model_train_data &data)
 	} else {
 		stale = true;
 	}
+	
+	proxy_add("model",   new memfunc_proxy<em_mode>(this, &em_mode::cli_model));
+	proxy_add("clauses", new memfunc_proxy<em_mode>(this, &em_mode::cli_clauses));
+	proxy_add("members", new memfunc_proxy<em_mode>(this, &em_mode::cli_members));
 }
 
 /*
@@ -221,49 +225,46 @@ void em_mode::learn_obj_clauses(const relation_table &rels) {
 	}
 }
 
-bool em_mode::cli_inspect(int first, const vector<string> &args, ostream &os) {
-	if (first >= args.size() || args[first] == "model") {
-		if (noise) {
-			os << "noise" << endl;
-		} else {
-			os << "coefficients" << endl;
-			table_printer t;
-			int ci = 0;
-			for (int i = 0; i < sig.size(); ++i) {
-				for (int j = 0; j < sig[i].props.size(); ++j) {
-					t.add_row() << ci << sig[i].type << sig[i].props[j] << lin_coefs(ci++, 0);
-				}
-			}
-			t.print(os);
-			os << endl << "intercept " << lin_inter << endl;
-		}
-		os << endl << "subqueries: clauses members" << endl;
-		return true;
-	} else if (args[first] == "clauses") {
+void em_mode::cli_model(ostream &os) const {
+	if (noise) {
+		os << "noise" << endl;
+	} else {
+		os << "coefficients" << endl;
 		table_printer t;
-		for (int j = 0; j < obj_clauses.size(); ++j) {
-			t.add_row() << j;
-			if (obj_clauses[j].empty()) {
-				t << "empty";
-			} else {
-				for (int k = 0; k < obj_clauses[j].size(); ++k) {
-					if (k > 0) {
-						t.add_row().skip(1);
-					}
-					t << obj_clauses[j][k];
-				}
+		int ci = 0;
+		for (int i = 0; i < sig.size(); ++i) {
+			for (int j = 0; j < sig[i].props.size(); ++j) {
+				t.add_row() << ci << sig[i].type << sig[i].props[j] << lin_coefs(ci++, 0);
 			}
 		}
 		t.print(os);
-		return true;
-	} else if (args[first] == "members") {
-		vector<int> mems;
-		get_members(mems);
-		interval_set s(mems);
-		os << s << endl;
-		return true;
+		os << endl << "intercept " << lin_inter << endl;
 	}
-	return false;
+}
+
+void em_mode::cli_clauses(ostream &os) const {
+	table_printer t;
+	for (int j = 0; j < obj_clauses.size(); ++j) {
+		t.add_row() << j;
+		if (obj_clauses[j].empty()) {
+			t << "empty";
+		} else {
+			for (int k = 0; k < obj_clauses[j].size(); ++k) {
+				if (k > 0) {
+					t.add_row().skip(1);
+				}
+				t << obj_clauses[j][k];
+			}
+		}
+	}
+	t.print(os);
+}
+
+void em_mode::cli_members(ostream &os) const {
+	vector<int> mems;
+	get_members(mems);
+	interval_set s(mems);
+	os << s << endl;
 }
 
 

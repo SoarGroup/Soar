@@ -364,8 +364,8 @@ EM::EM(const model_train_data &data)
   use_pruning(true), use_unify(true), learn_new_modes(true), use_lwr(true),
   check_after(NEW_MODE_THRESH), nc_type(NC_DTREE), clsfr(data)
 {
-	em_mode *noise = new em_mode(true, false, data);
-	modes.push_back(noise);
+	proxy_add("mode", new cliproxy);
+	add_mode(false); // noise mode
 	clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
 	clsfr.add_class();
 }
@@ -505,7 +505,8 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
 }
 
 em_mode *EM::add_mode(bool manual) {
-	em_mode *new_mode = new em_mode(false, manual, data);
+	em_mode *new_mode = new em_mode(modes.size() == 0, manual, data);
+	get_proxy()->find("mode")->add(tostring(modes.size()), new_mode);
 	modes.push_back(new_mode);
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
 		grow_vec(insts[i]->minfo);
@@ -650,6 +651,8 @@ bool EM::remove_modes() {
 		return false;
 	}
 	
+	cliproxy *mode_proxy = get_proxy()->find("mode");
+	
 	/*
 	 i is the first free model index. If model j should be kept, all
 	 information pertaining to model j will be copied to row/element i
@@ -664,12 +667,14 @@ bool EM::remove_modes() {
 			index_map[j] = i;
 			if (j > i) {
 				modes[i] = modes[j];
+				mode_proxy->rename(tostring(j), tostring(i));
 			}
 			i++;
 		} else {
 			index_map[j] = 0;
 			delete modes[j];
 			removed.push_back(j);
+			mode_proxy->del(tostring(j));
 		}
 	}
 	if (removed.empty()) {
@@ -736,17 +741,6 @@ bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
 		return true;
 	} else if (args[first] == "train") {
 		return cli_inspect_train(first + 1, args, os);
-	} else if (args[first] == "mode") {
-		if (first + 1 >= args.size()) {
-			os << "Specify a mode number (0 - " << modes.size() - 1 << ")" << endl;
-			return false;
-		}
-		int n;
-		if (!parse_int(args[first+1], n) || n < 0 || n >= modes.size()) {
-			os << "invalid mode number" << endl;
-			return false;
-		}
-		return modes[n]->cli_inspect(first + 2, args, os);
 	} else if (args[first] == "timing") {
 		timers.report(os);
 		return true;

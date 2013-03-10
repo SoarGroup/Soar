@@ -11,6 +11,7 @@
 #include "mat.h"
 #include "relation.h"
 #include "scene_sig.h"
+#include "cliproxy.h"
 
 class svs_state;
 class soar_interface;
@@ -24,7 +25,7 @@ struct model_train_inst {
 	model_train_inst() : target(-1), sig(NULL) {}
 };
 
-class model_train_data : public serializable {
+class model_train_data : public serializable, public proxied {
 public:
 	model_train_data();
 	~model_train_data();
@@ -36,7 +37,7 @@ public:
 	const model_train_inst &get_inst(int t)  const { return *insts[t]; }
 	const model_train_inst &get_last_inst()  const { return *insts.back(); }
 	const relation_table &get_all_rels()     const { return all_rels; }
-	const relation_table &get_context_rels()    const { return context_rels; }
+	const relation_table &get_context_rels() const { return context_rels; }
 	
 	std::vector<const scene_sig*> get_sigs() const {
 		return std::vector<const scene_sig*>(sigs.begin(), sigs.end());
@@ -44,7 +45,8 @@ public:
 	
 	int size() const { return insts.size(); }
 
-	bool cli_inspect_relations(int i, const std::vector<std::string> &args, std::ostream &os) const;
+	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
+	void cli_contdata(const std::vector<std::string> &args, std::ostream &os) const;
 	
 private:
 	std::vector<scene_sig*> sigs;
@@ -52,12 +54,10 @@ private:
 	relation_table all_rels, context_rels;
 };
 
-class model : public serializable {
+class model : public serializable, public proxied {
 public:
 	model(const std::string &name, const std::string &type, bool learning);
 	virtual ~model() {}
-	
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
 	
 	std::string get_name() const { return name; }
 	std::string get_type() const { return type; }
@@ -84,6 +84,9 @@ private:
 	virtual void update() {}
 	virtual void serialize_sub(std::ostream &os) const {}
 	virtual void unserialize_sub(std::istream &is) {}
+
+	void cli_save(const std::vector<std::string> &args, std::ostream &os);
+	void cli_load(const std::vector<std::string> &args, std::ostream &os);
 };
 
 /*
@@ -94,7 +97,7 @@ private:
  models back into a single output vector for the entire scene. The mapping
  is specified by the Soar agent at runtime using the assign-model command.
 */
-class multi_model {
+class multi_model : public proxied {
 public:
 	typedef std::vector<std::pair<std::string, std::string> > prop_vec;
 	
@@ -110,10 +113,7 @@ public:
 		const std::string &name, 
 		const prop_vec &inputs, bool all_inputs,
 		const prop_vec &outputs);
-
 	
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
-
 private:
 	struct model_config {
 		std::string name;
@@ -132,9 +132,10 @@ private:
 	};
 	
 	bool predict_or_test(bool test, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
-	void report_model_config(model_config* c, std::ostream &os) const;
-	bool report_error(int i, const std::vector<std::string> &args, std::ostream &os) const;
 	
+	void cli_error(const std::vector<std::string> &args, std::ostream &os) const;
+	void cli_assign(std::ostream &os) const;
+
 	std::list<model_config*>       active_models;
 	std::map<std::string, model*> *model_db;
 	

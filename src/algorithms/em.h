@@ -15,6 +15,7 @@
 #include "lda.h"
 #include "classifier.h"
 #include "mode.h"
+#include "cliproxy.h"
 
 class inst_info : public serializable {
 public:
@@ -51,7 +52,7 @@ public:
 	void unserialize(std::istream &is);
 };
 
-class EM : public serializable {
+class EM : public serializable, public proxied {
 public:
 	EM(const model_train_data &data);
 	~EM();

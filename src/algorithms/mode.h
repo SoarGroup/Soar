@@ -9,18 +9,18 @@
 #include "scene_sig.h"
 #include "foil.h"
 #include "model.h"
+#include "cliproxy.h"
 
 class em_train_data;
 class sig_info;
 
-class em_mode : public serializable {
+class em_mode : public serializable, public proxied {
 public:
 	em_mode(bool noise, bool manual, const model_train_data &data);
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 	
-	bool cli_inspect(int first, const std::vector<std::string> &args, std::ostream &os);
 	void add_example(int i, const std::vector<int> &obj_map);
 	void del_example(int i);
 	void predict(const scene_sig &s, const rvec &x, const std::vector<int> &obj_map, rvec &y) const;
@@ -76,6 +76,10 @@ private:
 	 learned with FOIL.
 	*/
 	std::vector<std::vector<clause> > obj_clauses;
+
+	void cli_model(std::ostream &os) const;
+	void cli_clauses(std::ostream &os) const;
+	void cli_members(std::ostream &os) const;
 };
 
 #endif

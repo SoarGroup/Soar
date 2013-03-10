@@ -169,6 +169,12 @@ bool parse_int(const string &s, int &v) {
 	return true;
 }
 
+string tostring(int x) {
+	static char buf[20];
+	snprintf(buf, 20, "%d", x);
+	return string(buf);
+}
+
 bool read_on_off(const vector<string> &args, int p, ostream &os, bool &var) {
 	if (p >= args.size()) {
 		os << (var ? "on" : "off") << endl;

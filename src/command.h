@@ -1,5 +1,5 @@
-#ifndef CMD_WATCHER_H
-#define CMD_WATCHER_H
+#ifndef COMMAND_H
+#define COMMAND_H
 
 #include <string>
 #include "soar_interface.h"

@@ -96,6 +96,14 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
 	assert (si->is_top_state(state));
 	outspec = svsp->get_output_spec();
 	init();
+	
+	proxy_add("learn_models", new bool_proxy(&learn_models));
+	proxy_add("test_models",  new bool_proxy(&test_models));
+	proxy_add("relations",    new memfunc_proxy<svs_state>(this, &svs_state::cli_relations));
+	proxy_add("properties",   new memfunc_proxy<svs_state>(this, &svs_state::cli_props));
+	proxy_add("distance",     new memfunc_proxy<svs_state>(this, &svs_state::cli_dist));
+	proxy_add("timing",       &timers);
+	proxy_add("mconfig",      mmdl);
 }
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
@@ -278,128 +286,17 @@ bool svs_state::get_output(rvec &out) const {
 	}
 }
 
-bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
-	if (first_arg >= args.size() || args[first_arg] == "help") {
-		os << "available subqueries: relations prediction out timing command" << endl;
-		return false;
-	}
-	if (args[first_arg] == "prediction") {
-		return mmdl->cli_inspect(first_arg + 1, args, os);
-	} else if (args[first_arg] == "props") {
-		const scene_sig &s = scn->get_signature();
-		rvec v;
-		scn->get_properties(v);
-		table_printer t;
-		int c = 0;
-		for (int i = 0; i < s.size(); ++i) {
-			for (int j = 0; j < s[i].props.size(); ++j) {
-				t.add_row() << c;
-				if (j == 0) {
-					t << s[i].name;
-				} else {
-					t.skip(1);
-				}
-				t << s[i].props[j] << v(c);
-				c++;
-			}
-		}
-		t.print(os);
-		return true;
-	} else if (args[first_arg] == "out") {
-		if (next_out.size() == 0) {
-			os << "no output" << endl;
-		} else {
-			table_printer t;
-			for (int i = 0; i < next_out.size(); ++i) {
-				t.add_row() << (*outspec)[i].name << next_out(i);
-			}
-			t.print(os);
-		}
-		return true;
-	} else if (args[first_arg] == "relations") {
-		return report_relations(first_arg + 1, args, os);
-	} else if (args[first_arg] == "timing") {
-		timers.report(os);
-		return true;
-	} else if (args[first_arg] == "command") {
-		if (first_arg == args.size() - 1) {
-			os << "specify a command id" << endl;
-			return false;
-		}
-		map<wme*, command*>::const_iterator i;
-		for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
-			string id;
-			if (!si->get_name(si->get_wme_val(i->first), id)) {
-				assert(false);
-			}
-			if (id == args[first_arg+1]) {
-				i->second->cli_inspect(os);
-				return true;
-			}
-		}
-		os << "no such command" << endl;
-		return false;
-	} else if (args[first_arg] == "model") {
-		return mmdl->cli_inspect(first_arg + 1, args, os);
-	} else if (args[first_arg] == "learn_models") {
-		return read_on_off(args, first_arg + 1, os, learn_models);
-	} else if (args[first_arg] == "test_models") {
-		return read_on_off(args, first_arg + 1, os, test_models);
-	} else if (args[first_arg] == "dist") {
-		if (first_arg + 2 >= args.size()) {
-			os << "specify two nodes" << endl;
-			return false;
-		}
-		double d = scn->distance(args[first_arg+1], args[first_arg+2]);
-		if (d < 0) {
-			os << "no such nodes" << endl;
-			return false;
-		}
-		os << d << endl;
-		return true;
-	} else if (args[first_arg] == "getprops") {
-		rvec vals;
-		scn->get_properties(vals);
-		for (int i = 0, iend = vals.size(); i < iend; ++i) {
-			os << vals(i) << " ";
-		}
-		os << endl;
-		return true;
-	} else if (args[first_arg] == "setprops") {
-		rvec vals;
-		scn->get_properties(vals);
-		if (vals.size() != args.size() - first_arg - 1) {
-			os << "vector size mismatch (" << args.size() - first_arg - 1 << ", should be " << vals.size() << ")" << endl;
-			return false;
-		}
-		for (int i = 0, iend = vals.size(); i < iend; ++i) {
-			if (!parse_double(args[first_arg + 1 + i], vals(i))) {
-				os << "invalid double: " << args[i] << endl;
-				return false;
-			}
-			cout << vals(i) << endl;
-		}
-		if (!scn->set_properties(vals)) {
-			os << "something went wrong" << endl;
-			return false;
-		}
-		return true;
-	}
-	
-	os << "no such query" << endl;
-	return false;
-}
-
-bool svs_state::report_relations(int first, const vector<string> &args, ostream &os) const {
+void svs_state::cli_relations(const vector<string> &args, ostream &os) const {
 	relation_table rels;
 	relation_table::const_iterator i, begin, end;
 	scn->get_relations(rels);
 	bool print_names;
 	
-	if (first < args.size() && args[first] != "*") {
-		begin = end = rels.find(args[first]);
+	if (!args.empty() && args[0] != "*") {
+		begin = end = rels.find(args[0]);
 		if (end == rels.end()) {
 			os << "relation not found" << endl;
+			return;
 		} else {
 			++end;
 		}
@@ -411,12 +308,12 @@ bool svs_state::report_relations(int first, const vector<string> &args, ostream 
 	}
 	
 	vector<int> ids;
-	for (int j = first + 1; j < args.size(); ++j) {
+	for (int j = 1; j < args.size(); ++j) {
 		if (args[j] != "*") {
 			const sgnode *n = scn->get_node(args[j]);
 			if (!n) {
 				os << "object " << args[j] << " not found" << endl;
-				return false;
+				return;
 			}
 			ids.push_back(n->get_id());
 		} else {
@@ -454,7 +351,82 @@ bool svs_state::report_relations(int first, const vector<string> &args, ostream 
 		}
 		p.print(os);
 	}
-	return true;
+}
+
+void svs_state::cli_props(const vector<string> &args, ostream &os) {
+	if (args.empty()) {
+		rvec vals;
+		scn->get_properties(vals);
+		for (int i = 0, iend = vals.size(); i < iend; ++i) {
+			os << vals(i) << " ";
+		}
+		os << endl;
+		return;
+	}
+	
+	// want to set properties
+	rvec vals;
+	scn->get_properties(vals);
+	if (vals.size() != args.size()) {
+		os << "vector size mismatch (should be " << vals.size() << ")" << endl;
+		return;
+	}
+	
+	for (int i = 0, iend = args.size(); i < iend; ++i) {
+		if (!parse_double(args[i], vals(i))) {
+			os << "invalid double: " << args[i] << endl;
+			return;
+		}
+	}
+	if (!scn->set_properties(vals)) {
+		os << "something went wrong" << endl;
+	}
+}
+
+void svs_state::cli_dist(const vector<string> &args, ostream &os) const {
+	if (args.size() != 2) {
+		os << "specify two nodes" << endl;
+		return;
+	}
+	double d = scn->distance(args[0], args[1]);
+	if (d < 0) {
+		os << "no such nodes" << endl;
+	} else {
+		os << d << endl;
+	}
+}
+
+// change this to use proxies later
+void svs_state::cli_cmd(const vector<string> &args, ostream &os) {
+	if (args.empty()) {
+		os << "specify a command id" << endl;
+		return;
+	}
+	map<wme*, command*>::const_iterator i;
+	for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
+		string id;
+		if (!si->get_name(si->get_wme_val(i->first), id)) {
+			assert(false);
+		}
+		if (id == args[0]) {
+			i->second->cli_inspect(os);
+			return;
+		}
+	}
+	os << "no such command" << endl;
+}
+
+// add ability to set it?
+void svs_state::cli_out(const vector<string> &args, ostream &os) {
+	if (next_out.size() == 0) {
+		os << "no output" << endl;
+	} else {
+		table_printer t;
+		for (int i = 0; i < next_out.size(); ++i) {
+			t.add_row() << (*outspec)[i].name << next_out(i);
+		}
+		t.print(os);
+	}
 }
 
 void svs_state::refresh_view() {
@@ -473,6 +445,17 @@ svs::svs(agent *a)
 : learn(false)
 {
 	si = new soar_interface(a);
+	
+	proxy_add("learn",          new bool_proxy(&learn));
+	proxy_add("log",            new memfunc_proxy<svs>(this, &svs::cli_log));
+	proxy_add("connect_viewer", new memfunc_proxy<svs>(this, &svs::cli_connect_viewer));
+	proxy_add("timing",         &timers);
+	proxy_add("filters",        &get_filter_table());
+	
+	model_proxy = new cliproxy;
+	state_proxy = new cliproxy;
+	get_proxy()->add("model", model_proxy);
+	get_proxy()->add("state", state_proxy);
 }
 
 svs::~svs() {
@@ -497,6 +480,7 @@ void svs::state_creation_callback(Symbol *state) {
 		s = new svs_state(state, state_stack.back());
 	}
 	
+	state_proxy->add(tostring(state_stack.size()), s);
 	state_stack.push_back(s);
 }
 
@@ -505,6 +489,7 @@ void svs::state_deletion_callback(Symbol *state) {
 	s = state_stack.back();
 	assert(state == s->get_state());
 	state_stack.pop_back();
+	state_proxy->del(tostring(state_stack.size()));
 	delete s;
 }
 
@@ -578,96 +563,29 @@ string svs::get_output() const {
 	return env_output;
 }
 
-bool svs::do_command(const vector<string> &args, stringstream &out) {
-	if (args.size() < 2) {
-		out << "subqueries are timing filters log model, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
+bool svs::do_cli_command(const vector<string> &args, string &output) {
+	stringstream ss;
+	vector<string> rest(args.begin() + 2, args.end());
+
+	cliproxy *p = get_proxy()->find(args[1]);
+	if (!p) {
+		output = "path not found\n";
 		return false;
 	}
-	if (args[1] == "timing") {
-		timers.report(out);
-		return true;
-	} else if (args[1] == "filters") {
-		get_filter_table().get_timers().report(out);
-		return true;
-	} else if (args[1] == "log") {
-		if (args.size() < 3) {
-			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-				out << log_type_names[i] << (LOG.is_on(static_cast<log_type>(i)) ? " on" : " off") << endl;
-			}
-			return true;
-		}
-		if (args[2] == "on") {
-			if (args.size() < 4) {
-				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-					LOG.turn_on(static_cast<log_type>(i));
-				}
-				return true;
-			} else {
-				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-					if (args[3] == log_type_names[i]) {
-						LOG.turn_on(static_cast<log_type>(i));
-						return true;
-					}
-				}
-				out << "no such log" << endl;
-				return false;
-			}
-		} else if (args[2] == "off") {
-			if (args.size() < 4) {
-				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-					LOG.turn_off(static_cast<log_type>(i));
-				}
-				return true;
-			} else {
-				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-					if (args[3] == log_type_names[i]) {
-						LOG.turn_off(static_cast<log_type>(i));
-						return true;
-					}
-				}
-				out << "no such log" << endl;
-				return false;
-			}
-		} else {
-			out << "expecting on/off" << endl;
-			return false;
-		}
-	} else if (args[1] == "learn") {
-		return read_on_off(args, 2, out, learn);
-	} else if (args[1] == "model") {
-		map<string, model*>::const_iterator i;
-		if (args.size() > 2) {
-			if ((i = models.find(args[2])) == models.end()) {
-				out << "no such model" << endl;
-				return false;
-			}
-			return i->second->cli_inspect(3, args, out);
-		}
-		for (i = models.begin(); i != models.end(); ++i) {
-			out << i->first << "\t" << i->second->get_type() << endl;
-		}
-		return true;
-	} else if (args[1] == "connect_viewer") {
-		if (args.size() < 3) {
-			out << "specify socket path" << endl;
-			return false;
-		}
-		draw.set_address(args[2]);
-		for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
-			state_stack[i]->refresh_view();
-		}
-		return true;
+	p->use(rest, ss);
+	output = ss.str();
+	return true;
+}
+
+void svs::cli_connect_viewer(const vector<string> &args, ostream &os) {
+	if (args.empty()) {
+		os << "specify socket path" << endl;
+		return;
 	}
-	
-	int level;
-	if (!parse_int(args[1], level)) {
-		out << "no such query" << endl;
-		return false;
-	} else if (level < 0 || level >= state_stack.size()) {
-		out << "invalid level" << endl;
-		return false;
+	draw.set_address(args[0]);
+	for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
+		state_stack[i]->refresh_view();
 	}
-	return state_stack[level]->cli_inspect(2, args, out);
 }
 
 int svs::parse_output_spec(const string &s) {
@@ -705,5 +623,46 @@ bool svs::add_model(const string &name, model *m) {
 		return false;
 	}
 	models[name] = m;
+	model_proxy->add(name, m);
 	return true;
+}
+
+void svs::cli_log(const vector<string> &args, ostream &os) {
+	if (args.empty()) {
+		for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+			os << log_type_names[i] << (LOG.is_on(static_cast<log_type>(i)) ? " on" : " off") << endl;
+		}
+		return;
+	}
+	if (args[0] == "on") {
+		if (args.size() < 2) {
+			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+				LOG.turn_on(static_cast<log_type>(i));
+			}
+		} else {
+			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+				if (args[1] == log_type_names[i]) {
+					LOG.turn_on(static_cast<log_type>(i));
+					return;
+				}
+			}
+			os << "no such log" << endl;
+		}
+	} else if (args[0] == "off") {
+		if (args.size() < 2) {
+			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+				LOG.turn_off(static_cast<log_type>(i));
+			}
+		} else {
+			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+				if (args[1] == log_type_names[i]) {
+					LOG.turn_off(static_cast<log_type>(i));
+					return;
+				}
+			}
+			os << "no such log" << endl;
+		}
+	} else {
+		os << "expecting on/off" << endl;
+	}
 }

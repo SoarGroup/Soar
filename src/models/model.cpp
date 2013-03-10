@@ -42,7 +42,7 @@ bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vecto
 	return true;
 }
 
-bool error_stats(const vector<double> &errors, ostream &os) {
+void error_stats(const vector<double> &errors, ostream &os) {
 	double total = 0.0, std = 0.0, q1, q2, q3;
 	int num_nans = 0;
 	vector<double> ds;
@@ -58,7 +58,7 @@ bool error_stats(const vector<double> &errors, ostream &os) {
 	double last = ds.back();
 	if (ds.empty()) {
 		os << "no predictions" << endl;
-		return false;
+		return;
 	}
 	double mean = total / ds.size();
 	for (int i = 0; i < ds.size(); ++i) {
@@ -76,13 +76,15 @@ bool error_stats(const vector<double> &errors, ostream &os) {
 	t.add_row() << "mean" << "std" << "min" << "q1" << "q2" << "q3" << "max" << "last" << "failed";
 	t.add_row() << mean << std << ds.front() << q1 << q2 << q3 << ds.back() << last << num_nans;
 	t.print(os);
-
-	return true;
 }
 
 model::model(const std::string &name, const std::string &type, bool learning) 
 : name(name), type(type), learning(learning)
-{}
+{
+	proxy_add("save", new memfunc_proxy<model>(this, &model::cli_save));
+	proxy_add("load", new memfunc_proxy<model>(this, &model::cli_load));
+	proxy_add("data", &train_data);
+}
 
 void model::learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	if (learning) {
@@ -99,85 +101,38 @@ void model::test(int target, const scene_sig &sig, const relation_table &rels, c
 	predict(target, sig, rels, x, y);
 }
 
-bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
-	if (first_arg < args.size()) {
-		if (args[first_arg] == "save") {
-			string path;
-			if (first_arg + 1 >= args.size()) {
-				path = name + ".model";
-			} else {
-				path = args[first_arg + 1];
-			}
-			ofstream f(path.c_str());
-			if (!f.is_open()) {
-				os << "cannot open file " << path << " for writing" << endl;
-				return false;
-			}
-			serialize(f);
-			f.close();
-			os << "saved to " << path << endl;
-			return true;
-		} else if (args[first_arg] == "load") {
-			string path;
-			if (first_arg + 1 >= args.size()) {
-				path = name + ".model";
-			} else {
-				path = args[first_arg + 1];
-			}
-			ifstream f(path.c_str());
-			if (!f.is_open()) {
-				os << "cannot open file " << path << " for reading" << endl;
-				return false;
-			}
-			unserialize(f);
-			f.close();
-			os << "loaded from " << path << endl;
-			return true;
-		} else if (args[first_arg] == "relations") {
-			return train_data.cli_inspect_relations(first_arg + 1, args, os);
-		}
-	}
-	return cli_inspect_sub(first_arg, args, os);
-}
-bool model_train_data::cli_inspect_relations(int i, const vector<string> &args, ostream &os) const {
-	const relation_table *rels;
-	if (i < args.size() && args[i] == "close") {
-		rels = &context_rels;
-		++i;
+void model::cli_save(const vector<string> &args, ostream &os) {
+	string path;
+	if (args.empty()) {
+		path = name + ".model";
 	} else {
-		rels = &all_rels;
+		path = args[0];
 	}
-	
-	if (i >= args.size()) {
-		os << *rels << endl;
-		return true;
+	ofstream f(path.c_str());
+	if (!f.is_open()) {
+		os << "cannot open file " << path << " for writing" << endl;
+		return;
 	}
-	const relation *r = map_getp(*rels, args[i]);
-	if (!r) {
-		os << "no such relation" << endl;
-		return false;
-	}
-	if (i + 1 >= args.size()) {
-		os << *r << endl;
-		return true;
-	}
+	serialize(f);
+	f.close();
+	os << "saved to " << path << endl;
+}
 
-	relation matches(*r);
-
-	tuple t(1);
-	int j, k;
-	for (j = i + 1, k = 0; j < args.size() && k < matches.arity(); ++j, ++k) {
-		if (args[j] != "*") {
-			if (!parse_int(args[j], t[0])) {
-				os << "invalid pattern" << endl;
-				return false;
-			}
-			matches.filter(k, t, false);
-		}
+void model::cli_load(const vector<string> &args, ostream &os) {
+	string path;
+	if (args.empty()) {
+		path = name + ".model";
+	} else {
+		path = args[0];
 	}
-
-	os << matches << endl;
-	return true;
+	ifstream f(path.c_str());
+	if (!f.is_open()) {
+		os << "cannot open file " << path << " for reading" << endl;
+		return;
+	}
+	unserialize(f);
+	f.close();
+	os << "loaded from " << path << endl;
 }
 
 void model::serialize(ostream &os) const {
@@ -192,7 +147,12 @@ void model::unserialize(istream &is) {
 	unserialize_sub(is);
 }
 
-multi_model::multi_model(map<string, model*> *model_db) : model_db(model_db) {}
+multi_model::multi_model(map<string, model*> *model_db)
+: model_db(model_db)
+{
+	proxy_add("error",  new memfunc_proxy<multi_model>(this, &multi_model::cli_error));
+	proxy_add("assign", new memfunc_proxy<multi_model>(this, &multi_model::cli_assign));
+}
 
 multi_model::~multi_model() {
 	std::list<model_config*>::iterator i;
@@ -308,26 +268,26 @@ void multi_model::unassign_model(const string &name) {
 	}
 }
 
-bool multi_model::report_error(int i, const vector<string> &args, ostream &os) const {
-	int start = 0, end = tests.size() - 1;
+void multi_model::cli_error(const vector<string> &args, ostream &os) const {
+	int i = 0, start = 0, end = tests.size() - 1;
 	vector<double> y, preds, errors;
 	vector<string> obj_prop;
 	enum { STATS, LIST, HISTO, DUMP } mode = STATS;
 	
 	if (tests.empty()) {
 		os << "no test error data" << endl;
-		return false;
+		return;
 	}
 	
 	if (i >= args.size()) {
 		os << "specify object:property" << endl;
-		return false;
+		return;
 	}
 
 	split(args[i++], ":", obj_prop);
 	if (obj_prop.size() != 2) {
 		os << "invalid object:property" << endl;
-		return false;
+		return;
 	}
 	
 	if (i < args.size() && args[i] == "list") {
@@ -344,20 +304,20 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	if (i < args.size()) {
 		if (!parse_int(args[i], start)) {
 			os << "require integer start time" << endl;
-			return false;
+			return;
 		}
 		if (start < 0 || start >= tests.size()) {
 			os << "start time must be in [0, " << tests.size() - 1 << "]" << endl;
-			return false;
+			return;
 		}
 		if (++i < args.size()) {
 			if (!parse_int(args[i], end)) {
 				os << "require integer end time" << endl;
-				return false;
+				return;
 			}
 			if (end <= start || end >= tests.size()) {
 				os << "end time must be in [start + 1, " << tests.size() - 1 << "]" << endl;
-				return false;
+				return;
 			}
 		}
 	}
@@ -377,7 +337,8 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	
 	switch (mode) {
 	case STATS:
-		return error_stats(errors, os);
+		error_stats(errors, os);
+		return;
 	case LIST:
 		{
 			table_printer t;
@@ -393,11 +354,11 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 			}
 			t.print(os);
 		}
-		return true;
+		return;
 	case HISTO:
 		histogram(errors, 20, os);
 		os << endl;
-		return true;
+		return;
 	case DUMP:
 		{
 			table_printer t;
@@ -407,49 +368,37 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 			}
 			t.print(os);
 		}
-		return true;
+		return;
 	}
-	return false;
 }
 
-void multi_model::report_model_config(model_config* c, ostream &os) const {
+void multi_model::cli_assign(ostream &os) const {
 	const char *indent = "  ";
-	os << c->name << endl;
-	if (c->allx) {
-		os << indent << "xdims: all" << endl;
-	} else {
-		os << indent << "xdims: ";
-		for (int i = 0; i < c->xprops.size(); ++i) {
-			os << c->xprops[i].first << ":" << c->xprops[i].second << " ";
+	std::list<model_config*>::const_iterator j;
+	for (j = active_models.begin(); j != active_models.end(); ++j) {
+		const model_config* c = *j;
+		os << c->name << endl;
+		if (c->allx) {
+			os << indent << "xdims: all" << endl;
+		} else {
+			os << indent << "xdims: ";
+			for (int i = 0; i < c->xprops.size(); ++i) {
+				os << c->xprops[i].first << ":" << c->xprops[i].second << " ";
+			}
+			os << endl;
+		}
+		os << indent << "ydims: ";
+		for (int i = 0; i < c->yprops.size(); ++i) {
+			os << c->yprops[i].first << ":" << c->yprops[i].second << " ";
 		}
 		os << endl;
 	}
-	os << indent << "ydims: ";
-	for (int i = 0; i < c->yprops.size(); ++i) {
-		os << c->yprops[i].first << ":" << c->yprops[i].second << " ";
-	}
-	os << endl;
 }
 
-bool multi_model::cli_inspect(int i, const vector<string> &args, ostream &os) const {
-	if (i >= args.size()) {
-		os << "available subqueries are: assignment error" << endl;
-		return false;
-	}
-	if (args[i] == "assignment") {
-		std::list<model_config*>::const_iterator j;
-		for (j = active_models.begin(); j != active_models.end(); ++j) {
-			report_model_config(*j, os);
-		}
-		return true;
-	} else if (args[i] == "error") {
-		return report_error(++i, args, os);
-	}
-	os << "no such query" << endl;
-	return false;
+model_train_data::model_train_data() {
+	proxy_add("rels", new memfunc_proxy<model_train_data>(this, &model_train_data::cli_relations));
+	proxy_add("cont", new memfunc_proxy<model_train_data>(this, &model_train_data::cli_contdata));
 }
-
-model_train_data::model_train_data() { }
 
 model_train_data::~model_train_data() {
 	clear_and_dealloc(sigs);
@@ -542,4 +491,97 @@ void model_train_data::unserialize(istream &is) {
 	}
 	
 	unsr >> all_rels >> context_rels;
+}
+
+void model_train_data::cli_relations(const vector<string> &args, ostream &os) const {
+	const relation_table *rels;
+	int i = 0;
+	if (i < args.size() && args[i] == "close") {
+		rels = &context_rels;
+		++i;
+	} else {
+		rels = &all_rels;
+	}
+	
+	if (i >= args.size()) {
+		os << *rels << endl;
+		return;
+	}
+	const relation *r = map_getp(*rels, args[i]);
+	if (!r) {
+		os << "no such relation" << endl;
+		return;
+	}
+	if (i + 1 >= args.size()) {
+		os << *r << endl;
+		return;
+	}
+
+	relation matches(*r);
+
+	tuple t(1);
+	int j, k;
+	for (j = i + 1, k = 0; j < args.size() && k < matches.arity(); ++j, ++k) {
+		if (args[j] != "*") {
+			if (!parse_int(args[j], t[0])) {
+				os << "invalid pattern" << endl;
+				return;
+			}
+			matches.filter(k, t, false);
+		}
+	}
+
+	os << matches << endl;
+	return;
+}
+
+void model_train_data::cli_contdata(const vector<string> &args, ostream &os) const {
+	vector<string> objs;
+	for (int i = 0, iend = args.size(); i < iend; ++i) {
+		objs.push_back(args[i]);
+	}
+
+	vector<int> cols;
+	table_printer t;
+	t.set_scientific(true);
+	t.set_precision(10);
+	t.add_row();
+	for (int i = 0, iend = insts.size(); i < iend; ++i) {
+		const model_train_inst &d = *insts[i];
+		cout << d.sig << endl;
+		if (i == 0 || d.sig != insts[i-1]->sig) {
+			const scene_sig &s = *d.sig;
+			int c = 0;
+			cols.clear();
+			for (int j = 0, jend = s.size(); j < jend; ++j) {
+				if (objs.empty() || has(objs, s[j].name)) {
+					for (int k = 0; k < s[j].props.size(); ++k) {
+						cols.push_back(c++);
+					}
+					t << s[j].name;
+					t.skip(s[j].props.size() - 1);
+				} else {
+					c += s[j].props.size();
+				}
+			}
+			for (int j = 0, jend = s.size(); j < jend; ++j) {
+				if (objs.empty() || has(objs, s[j].name)) {
+					const vector<string> &props = s[j].props;
+					for (int k = 0; k < props.size(); ++k) {
+						t << props[k];
+					}
+				}
+			}
+		}
+		t.add_row();
+		t << i;
+		for (int j = 0, jend = cols.size(); j < jend; ++j) {
+			t << d.x(cols[j]);
+		}
+		t << ":";
+		for (int j = 0, jend = d.y.size(); j < jend; ++j) {
+			t << d.y(j);
+		}
+	}
+	t.print(os);
 }

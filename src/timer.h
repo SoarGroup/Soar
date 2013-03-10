@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <ctime>
+#include "cliproxy.h"
 
 class timer_set;
 
@@ -81,9 +82,11 @@ private:
 	timer &t;
 };
 
-class timer_set {
+class timer_set : public proxied {
 public:
-	timer_set() {}
+	timer_set() {
+		proxy_add("report", new memfunc_proxy<timer_set>(this, &timer_set::report));
+	}
 	
 	~timer_set() {
 		for (int i = 0; i < timers.size(); ++i) {

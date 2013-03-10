@@ -18,7 +18,10 @@ class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
 	: model(name, "em", true), em(get_data()), si(si), revisions(0), wm_root(NULL)
-	{}
+	{
+		proxy_add("em", &em);
+		proxy_add("mode_error", new memfunc_proxy<EM_model>(this, &EM_model::cli_mode_error));
+	}
 
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
 		int mode;
@@ -59,30 +62,21 @@ public:
 		test_modes.push_back(mode);
 	}
 	
-	bool cli_inspect_sub(int first_arg, const vector<string> &args, ostream &os) {
-		if (first_arg >= args.size()) {
-			os << "EM model learner" << endl;
-			os << endl << "subqueries: em mode_error" << endl;
-			return true;
-		} else if (args[first_arg] == "em") {
-			return em.cli_inspect(first_arg + 1, args, os);
-		} else if (args[first_arg] == "mode_error") {
-			assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
-			int correct = 0, incorrect = 0;
-			table_printer t;
-			t.add_row() << "N" << "PRED. MODE" << "BEST MODE" << "BEST ERROR";
-			for (int i = 0; i < test_modes.size(); ++i) {
-				if (test_modes[i] == test_best_modes[i] && test_best_modes[i] != 0) {
-					++correct;
-				} else {
-					++incorrect;
-				}
-				t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
+	void cli_mode_error(ostream &os) const {
+		assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
+		int correct = 0, incorrect = 0;
+		table_printer t;
+		t.add_row() << "N" << "PRED. MODE" << "BEST MODE" << "BEST ERROR";
+		for (int i = 0; i < test_modes.size(); ++i) {
+			if (test_modes[i] == test_best_modes[i] && test_best_modes[i] != 0) {
+				++correct;
+			} else {
+				++incorrect;
 			}
-			t.print(os);
-			os << correct << " correct, " << incorrect << " incorrect" << endl;
+			t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
 		}
-		return false;
+		t.print(os);
+		os << correct << " correct, " << incorrect << " incorrect" << endl;
 	}
 	
 private:

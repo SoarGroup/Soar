@@ -4,7 +4,7 @@
 
 using namespace std;
 
-const filter_table& get_filter_table() {
+filter_table& get_filter_table() {
 	static filter_table inst;
 	return inst;
 }
@@ -57,6 +57,8 @@ filter_table::filter_table() {
 	add(vec3_fill_entry());
 	add(max_fill_entry());
 	add(closest_fill_entry());
+	
+	proxy_add("timing", &timers);
 }
 
 template <typename T>

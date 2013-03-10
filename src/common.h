@@ -23,6 +23,7 @@ void strip(std::string &s, const std::string &whitespace);
 
 bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
+std::string tostring(int x);
 
 std::istream &get_nonblank_line(std::istream &is, std::string &line);
 

@@ -12,6 +12,7 @@
 #include "timer.h"
 #include "relation.h"
 #include "svs_interface.h"
+#include "cliproxy.h"
 
 class command;
 class scene;
@@ -57,7 +58,7 @@ typedef std::vector<output_dim_spec> output_spec;
 /*
  Each state in the state stack has its own SVS link, scene, models, etc.
 */
-class svs_state {
+class svs_state : public proxied {
 public:
 	svs_state(svs *svsp, Symbol *state, soar_interface *soar);
 	svs_state(Symbol *state, svs_state *parent);
@@ -81,16 +82,18 @@ public:
 	const output_spec *get_output_spec() const { return outspec; }
 	
 	void update_models();
-	
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
-	
 	void refresh_view();
 
 private:
 	void init();
 	void collect_cmds(Symbol* id, std::set<wme*>& all_cmds);
 	void set_default_output();
-	bool report_relations(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
+	
+	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
+	void cli_props(const std::vector<std::string> &args, std::ostream &os);
+	void cli_dist(const std::vector<std::string> &args, std::ostream &os) const;
+	void cli_cmd(const std::vector<std::string> &args, std::ostream &os);
+	void cli_out(const std::vector<std::string> &args, std::ostream &os);
 
 	svs            *svsp;
 	int             level;
@@ -123,7 +126,7 @@ private:
 	timer_set timers;
 };
 
-class svs : public svs_interface {
+class svs : public svs_interface, public proxied {
 public:
 	svs(agent *a);
 	~svs();
@@ -139,22 +142,17 @@ public:
 
 	soar_interface *get_soar_interface() { return si; }
 	
-	bool do_cli_command(const std::vector<std::string> &args, std::string &output) {
-		std::stringstream ss;
-		bool success = do_command(args, ss);
-		output = ss.str();
-		return success;
-	}
+	bool do_cli_command(const std::vector<std::string> &args, std::string &output);
 	
 	drawer *get_drawer() { return &draw; }
 	const output_spec *get_output_spec() { return &outspec; }
-
-	void set_model_root(Symbol *root);
 	
 private:
 	void proc_input(svs_state *s);
 	int  parse_output_spec(const std::string &s);
-	bool do_command(const std::vector<std::string> &args, std::stringstream &out);
+
+	void cli_log(const std::vector<std::string> &args, std::ostream &os);
+	void cli_connect_viewer(const std::vector<std::string> &args, std::ostream &os);
 
 	soar_interface           *si;
 	std::vector<svs_state*>   state_stack;
@@ -166,6 +164,9 @@ private:
 	Symbol                   *model_root;
 	
 	std::map<std::string, model*> models;
+	
+	cliproxy *model_proxy;
+	cliproxy *state_proxy;
 	
 	timer_set timers;
 };
