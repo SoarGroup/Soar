@@ -157,111 +157,110 @@ filter *make_below(Symbol *root, soar_interface *si, scene *scn, filter_input *i
 }
 
 
-filter_table_entry north_of_fill_entry() {
-	filter_table_entry e;
-	e.name = "north-of";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = true;
-	e.allow_repeat = false;
-	e.create = &make_north_of;
-	e.calc = &north_of;
+filter_table_entry *north_of_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "north-of";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = true;
+	e->allow_repeat = false;
+	e->create = &make_north_of;
+	e->calc = &north_of;
 	return e;
 }
 
-filter_table_entry south_of_fill_entry() {
-	filter_table_entry e;
-	e.name = "south-of";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = true;
-	e.allow_repeat = false;
-	e.create = &make_south_of;
-	e.calc = &south_of;
+filter_table_entry *south_of_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "south-of";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = true;
+	e->allow_repeat = false;
+	e->create = &make_south_of;
+	e->calc = &south_of;
 	return e;
 }
 
-filter_table_entry east_of_fill_entry() {
-	filter_table_entry e;
-	e.name = "east-of";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = true;
-	e.allow_repeat = false;
-	e.create = &make_east_of;
-	e.calc = &east_of;
+filter_table_entry *east_of_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "east-of";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = true;
+	e->allow_repeat = false;
+	e->create = &make_east_of;
+	e->calc = &east_of;
 	return e;
 }
 
-filter_table_entry west_of_fill_entry() {
-	filter_table_entry e;
-	e.name = "west-of";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = true;
-	e.allow_repeat = false;
-	e.create = &make_west_of;
-	e.calc = &west_of;
+filter_table_entry *west_of_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "west-of";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = true;
+	e->allow_repeat = false;
+	e->create = &make_west_of;
+	e->calc = &west_of;
 	return e;
 }
 
-filter_table_entry x_overlap_fill_entry() {
-	filter_table_entry e;
-	e.name = "x-overlap";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = false;
-	e.allow_repeat = false;
-	e.create = &make_x_overlap;
-	e.calc = &x_overlap;
+filter_table_entry *x_overlap_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "x-overlap";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = false;
+	e->allow_repeat = false;
+	e->create = &make_x_overlap;
+	e->calc = &x_overlap;
 	return e;
 }
 
-filter_table_entry y_overlap_fill_entry() {
-	filter_table_entry e;
-	e.name = "y-overlap";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = false;
-	e.allow_repeat = false;
-	e.create = &make_y_overlap;
-	e.calc = &y_overlap;
+filter_table_entry *y_overlap_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "y-overlap";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = false;
+	e->allow_repeat = false;
+	e->create = &make_y_overlap;
+	e->calc = &y_overlap;
 	return e;
 }
 
-filter_table_entry z_overlap_fill_entry() {
-	filter_table_entry e;
-	e.name = "z-overlap";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = false;
-	e.allow_repeat = false;
-	e.create = &make_z_overlap;
-	e.calc = &z_overlap;
+filter_table_entry *z_overlap_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "z-overlap";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = false;
+	e->allow_repeat = false;
+	e->create = &make_z_overlap;
+	e->calc = &z_overlap;
 	return e;
 }
 
-filter_table_entry above_fill_entry() {
-	filter_table_entry e;
-	e.name = "above";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = true;
-	e.allow_repeat = false;
-	e.create = &make_above;
-	e.calc = &above;
+filter_table_entry *above_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "above";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = true;
+	e->allow_repeat = false;
+	e->create = &make_above;
+	e->calc = &above;
 	return e;
 }
 
-filter_table_entry below_fill_entry() {
-	filter_table_entry e;
-	e.name = "below";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = true;
-	e.allow_repeat = false;
-	e.create = &make_below;
-	e.calc = &below;
+filter_table_entry *below_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "below";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = true;
+	e->allow_repeat = false;
+	e->create = &make_below;
+	e->calc = &below;
 	return e;
 }
-

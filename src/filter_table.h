@@ -20,7 +20,8 @@ class filter_input;
 class scene;
 class sgnode;
 
-struct filter_table_entry {
+class filter_table_entry : public proxied {
+public:
 	std::string name;
 	std::vector<std::string> parameters;
 	bool ordered, allow_repeat;
@@ -28,34 +29,16 @@ struct filter_table_entry {
 	filter* (*create)(Symbol*, soar_interface*, scene*, filter_input*);
 	bool    (*calc)(const scene*, const std::vector<const sgnode*> &);
 	
-	filter_table_entry() {
-		create = NULL;
-		calc = NULL;
-		ordered = false;
-		allow_repeat = false;
-	}
+	filter_table_entry();
+	void cli_use(std::ostream &os) const;
 };
 
 class filter_table : public proxied {
 public:
 	friend filter_table &get_filter_table();
 
-	void get_predicates(std::vector<std::string> &preds) const {
-		std::map<std::string, filter_table_entry>::const_iterator i;
-		for (i = t.begin(); i != t.end(); ++i) {
-			preds.push_back(i->first);
-		}
-	}
-	
-	bool get_params(const std::string &pred, std::vector<std::string> &p) const {
-		std::map<std::string, filter_table_entry>::const_iterator i = t.find(pred);
-		if (i == t.end()) {
-			return false;
-		}
-		p = i->second.parameters;
-		return true;
-	}
-	
+	void get_predicates(std::vector<std::string> &preds) const;
+	bool get_params(const std::string &pred, std::vector<std::string> &p) const;
 	filter* make_filter(const std::string &pred, Symbol *root, soar_interface *si, scene *scn, filter_input *input) const;
 	
 	/*
@@ -67,19 +50,11 @@ public:
 	
 	void update_relations(const scene *scn, const std::vector<int> &dirty, int time, relation_table &rt) const;
 	
-	const timer_set &get_timers() const {
-		return timers;
-	}
-	
 private:
 	filter_table();
+	void add(filter_table_entry *e);
 	
-	void add(const filter_table_entry &e) {
-		assert(t.find(e.name) == t.end());
-		t[e.name] = e;
-	}
-	
-	std::map<std::string, filter_table_entry> t;
+	std::map<std::string, filter_table_entry*> t;
 	
 	mutable timer_set timers;
 };

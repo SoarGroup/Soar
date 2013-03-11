@@ -43,14 +43,14 @@ bool standalone_intersect(const scene *scn, const vector<const sgnode*> &args) {
 	return scn->intersects(args[0], args[1]);
 }
 
-filter_table_entry intersect_fill_entry() {
-	filter_table_entry e;
-	e.name = "intersect";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = false;
-	e.allow_repeat = false;
-	e.create = &make_intersect_filter;
-	e.calc = &standalone_intersect;
+filter_table_entry *intersect_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "intersect";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = false;
+	e->allow_repeat = false;
+	e->create = &make_intersect_filter;
+	e->calc = &standalone_intersect;
 	return e;
 }

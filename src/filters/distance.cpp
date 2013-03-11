@@ -33,10 +33,10 @@ filter *make_distance_filter(Symbol *root, soar_interface *si, scene *scn, filte
 	return new distance_filter(root, si, input);
 }
 
-filter_table_entry distance_fill_entry() {
-	filter_table_entry e;
-	e.name = "distance";
-	e.create = &make_distance_filter;
+filter_table_entry *distance_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "distance";
+	e->create = &make_distance_filter;
 	return e;
 }
 
@@ -64,9 +64,9 @@ filter *make_closest_filter(Symbol *root, soar_interface *si, scene *scn, filter
 	return new closest_filter(root, si, input);
 }
 
-filter_table_entry closest_fill_entry() {
-	filter_table_entry e;
-	e.name = "closest";
-	e.create = &make_closest_filter;
+filter_table_entry *closest_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "closest";
+	e->create = &make_closest_filter;
 	return e;
 }

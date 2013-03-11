@@ -45,10 +45,10 @@ filter *make_compare_filter(Symbol *root, soar_interface *si, scene *scn, filter
 	return new compare_filter(root, si, input);
 }
 
-filter_table_entry compare_fill_entry() {
-	filter_table_entry e;
-	e.name = "compare";
-	e.parameters.push_back("compare");
-	e.create = &make_compare_filter;
+filter_table_entry *compare_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "compare";
+	e->parameters.push_back("compare");
+	e->create = &make_compare_filter;
 	return e;
 }

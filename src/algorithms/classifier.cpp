@@ -1,7 +1,6 @@
 #include "classifier.h"
 #include "serialize.h"
 #include "common.h"
-#include "em.h"
 
 using namespace std;
 
@@ -285,11 +284,34 @@ void clause_info::unserialize(istream &is) {
 
 classifier::classifier(const model_train_data &data) 
 : data(data), foil(true), prune(true), context(true), nc_type(NC_LDA)
-{}
+{
+	proxy_add("use_foil",    new bool_proxy(&foil));
+	proxy_add("use_pruning", new bool_proxy(&prune));
+	proxy_add("use_context", new bool_proxy(&context));
+	proxy_add("nc_type",     new memfunc_proxy<classifier>(this, &classifier::cli_nc_type));
+	proxy_add("dump_foil6",  new memfunc_proxy<classifier>(this, &classifier::cli_dump_foil6));
+	proxy_add("",            new memfunc_proxy<classifier>(this, &classifier::cli_use));
+}
 
 classifier::~classifier() {
 	clear_and_dealloc(pairs);
 	clear_and_dealloc(classes);
+}
+
+void classifier::cli_nc_type(const vector<string> &args, ostream &os) {
+	static const char *names[] = { "none", "dtree", "lda", "sign" };
+	
+	if (args.empty()) {
+		os << names[nc_type] << endl;
+	} else {
+		for (int i = 0, iend = sizeof(names) / sizeof(names[0]); i < iend; ++i) {
+			if (args[0] == names[i]) {
+				nc_type = i;
+				return;
+			}
+		}
+		os << "invalid numeric classifier type" << endl;
+	}
 }
 
 void classifier::set_options(bool foil, bool prune, bool context, int nc_type) {
@@ -431,10 +453,10 @@ void classifier::classify(int target, const scene_sig &sig, const relation_table
 	}
 }
 
-bool classifier::cli_inspect(int first, const vector<string> &args, ostream &os) {
+void classifier::cli_use(const vector<string> &args, ostream &os) {
 	update();
 	
-	if (first >= args.size()) {
+	if (args.empty()) {
 		// print summary of all classifiers
 		for (int i = 0, iend = classes.size(); i < iend; ++i) {
 			for (int j = i + 1, jend = classes.size(); j < jend; ++j) {
@@ -449,19 +471,19 @@ bool classifier::cli_inspect(int first, const vector<string> &args, ostream &os)
 				}
 			}
 		}
-		return true;
+		return;
 	}
 	
 	int i, j;
 	pair_info *p;
-	if (first + 1 >= args.size()) {
+	if (args.size() != 2) {
 		os << "Specify two modes" << endl;
-		return false;
+		return;
 	}
 	
-	if (!parse_int(args[first], i) || !parse_int(args[first+1], j) || !(p = find(i, j))) {
+	if (!parse_int(args[0], i) || !parse_int(args[1], j) || !(p = find(i, j))) {
 		os << "invalid modes, make sure i < j" << endl;
-		return false;
+		return;
 	}
 	
 	if (p->clsfr) {
@@ -469,19 +491,30 @@ bool classifier::cli_inspect(int first, const vector<string> &args, ostream &os)
 	} else {
 		os << "null" << endl;
 	}
-	return true;
 }
 
-bool classifier::dump_foil(int i, int j, bool context, ostream &os) const {
-	FOIL foil;
+void classifier::cli_dump_foil6(const vector<string> &args, ostream &os) const {
+	int m1, m2;
+	if (args.size() != 2 || 
+	    !parse_int(args[0], m1) || 
+	    !parse_int(args[1], m2) ||
+	    m1 < 0 || m1 >= classes.size() || m2 < 0 || m2 >= classes.size() || m1 == m2) 
+	{
+		os << "Specify 2 modes" << endl;
+		return;
+	}
 	
+	if (m1 > m2) {
+		swap(m1, m2);
+	}
+	
+	FOIL foil;
 	if (context) {
-		foil.set_problem(classes[i]->mem_rel, classes[j]->mem_rel, data.get_context_rels());
+		foil.set_problem(classes[m1]->mem_rel, classes[m2]->mem_rel, data.get_context_rels());
 	} else {
-		foil.set_problem(classes[i]->mem_rel, classes[j]->mem_rel, data.get_all_rels());
+		foil.set_problem(classes[m1]->mem_rel, classes[m2]->mem_rel, data.get_all_rels());
 	}
 	foil.dump_foil6(os);
-	return true;
 }
 
 void classifier::serialize(ostream &os) const {

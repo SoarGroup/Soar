@@ -70,9 +70,9 @@ filter *make_max_filter(Symbol *root, soar_interface *si, scene *scn, filter_inp
 	return new max_filter(root, si, input);
 }
 
-filter_table_entry max_fill_entry() {
-	filter_table_entry e;
-	e.name = "max";
-	e.create = &make_max_filter;
+filter_table_entry *max_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "max";
+	e->create = &make_max_filter;
 	return e;
 }

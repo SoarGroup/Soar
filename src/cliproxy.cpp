@@ -19,9 +19,19 @@ cliproxy::cliproxy() {}
 cliproxy::~cliproxy() {}
 
 void cliproxy::use(const vector<std::string> &args, std::ostream &os) {
-	std::map<std::string, child>::const_iterator i, iend;
-	for (i = children.begin(), iend = children.end(); i != iend; ++i) {
-		os << i->first << endl;
+	child *c = map_getp(children, string(""));
+	if (c) {
+		c->p->use(args, os);
+	}
+	
+	if (!c && !children.empty() || c && children.size() > 1) {
+		os << endl << "children:";
+		std::map<std::string, child>::const_iterator i, iend;
+		for (i = children.begin(), iend = children.end(); i != iend; ++i) {
+			if (!i->first.empty()) {
+				os << " " << i->first;
+			}
+		}
 	}
 }
 

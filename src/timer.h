@@ -85,7 +85,7 @@ private:
 class timer_set : public proxied {
 public:
 	timer_set() {
-		proxy_add("report", new memfunc_proxy<timer_set>(this, &timer_set::report));
+		proxy_add("", new memfunc_proxy<timer_set>(this, &timer_set::report));
 	}
 	
 	~timer_set() {

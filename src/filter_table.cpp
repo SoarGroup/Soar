@@ -9,29 +9,29 @@ filter_table& get_filter_table() {
 	return inst;
 }
 
-filter_table_entry intersect_fill_entry();
-filter_table_entry distance_fill_entry();
-filter_table_entry bbox_fill_entry();
-filter_table_entry bbox_int_fill_entry();
-filter_table_entry bbox_contains_fill_entry();
-filter_table_entry ontop_fill_entry();
-filter_table_entry north_of_fill_entry();
-filter_table_entry south_of_fill_entry();
-filter_table_entry east_of_fill_entry();
-filter_table_entry west_of_fill_entry();
-filter_table_entry x_overlap_fill_entry();
-filter_table_entry y_overlap_fill_entry();
-filter_table_entry z_overlap_fill_entry();
-filter_table_entry above_fill_entry();
-filter_table_entry below_fill_entry();
-filter_table_entry node_fill_entry();
-filter_table_entry all_nodes_fill_entry();
-filter_table_entry node_centroid_fill_entry();
-filter_table_entry compare_fill_entry();
-filter_table_entry absval_fill_entry();
-filter_table_entry vec3_fill_entry();
-filter_table_entry max_fill_entry();
-filter_table_entry closest_fill_entry();
+filter_table_entry *intersect_fill_entry();
+filter_table_entry *distance_fill_entry();
+filter_table_entry *bbox_fill_entry();
+filter_table_entry *bbox_int_fill_entry();
+filter_table_entry *bbox_contains_fill_entry();
+filter_table_entry *ontop_fill_entry();
+filter_table_entry *north_of_fill_entry();
+filter_table_entry *south_of_fill_entry();
+filter_table_entry *east_of_fill_entry();
+filter_table_entry *west_of_fill_entry();
+filter_table_entry *x_overlap_fill_entry();
+filter_table_entry *y_overlap_fill_entry();
+filter_table_entry *z_overlap_fill_entry();
+filter_table_entry *above_fill_entry();
+filter_table_entry *below_fill_entry();
+filter_table_entry *node_fill_entry();
+filter_table_entry *all_nodes_fill_entry();
+filter_table_entry *node_centroid_fill_entry();
+filter_table_entry *compare_fill_entry();
+filter_table_entry *absval_fill_entry();
+filter_table_entry *vec3_fill_entry();
+filter_table_entry *max_fill_entry();
+filter_table_entry *closest_fill_entry();
 
 filter_table::filter_table() {
 	add(intersect_fill_entry());
@@ -58,7 +58,12 @@ filter_table::filter_table() {
 	add(max_fill_entry());
 	add(closest_fill_entry());
 	
-	proxy_add("timing", &timers);
+	proxy_add("timers", &timers);
+	
+	map<string, filter_table_entry*>::iterator i, iend;
+	for (i = t.begin(), iend = t.end(); i != iend; ++i) {
+		proxy_add(i->first, i->second);
+	}
 }
 
 template <typename T>
@@ -145,13 +150,13 @@ private:
 	bool ordered, allow_repeat, finished;
 };
 
-filter* filter_table::make_filter(const std::string &pred, Symbol *root, soar_interface *si, scene *scn, filter_input *input) const
+filter* filter_table::make_filter(const string &pred, Symbol *root, soar_interface *si, scene *scn, filter_input *input) const
 {
-	std::map<std::string, filter_table_entry>::const_iterator i = t.find(pred);
-	if (i == t.end() || i->second.create == NULL) {
+	map<std::string, filter_table_entry*>::const_iterator i = t.find(pred);
+	if (i == t.end() || i->second->create == NULL) {
 		return NULL;
 	}
-	return (*(i->second.create))(root, si, scn, input);
+	return (*(i->second->create))(root, si, scn, input);
 }
 
 void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
@@ -165,15 +170,15 @@ void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 		all_node_names.push_back(all_nodes[i]->get_name());
 	}
 	
-	map<string, filter_table_entry>::const_iterator i;
-	for(i = t.begin(); i != t.end(); ++i) {
-		const filter_table_entry &e = i->second;
-		if (e.calc != NULL) {
+	map<string, filter_table_entry*>::const_iterator i, iend;
+	for(i = t.begin(), iend = t.end(); i != iend; ++i) {
+		const filter_table_entry *e = i->second;
+		if (e->calc != NULL) {
 			vector<string> args;
-			single_combination_generator<string> gen(all_node_names, e.parameters.size(), e.ordered, e.allow_repeat);
+			single_combination_generator<string> gen(all_node_names, e->parameters.size(), e->ordered, e->allow_repeat);
 			while (gen.next(args)) {
 				stringstream ss;
-				ss << e.name << "(";
+				ss << e->name << "(";
 				for (int j = 0; j < args.size() - 1; ++j) {
 					ss << args[j] << ",";
 				}
@@ -185,22 +190,43 @@ void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 	}
 }
 
+void filter_table::get_predicates(vector<string> &preds) const {
+	map<string, filter_table_entry*>::const_iterator i, iend;
+	for (i = t.begin(), iend = t.end(); i != iend; ++i) {
+		preds.push_back(i->first);
+	}
+}
+
+bool filter_table::get_params(const string &pred, vector<string> &p) const {
+	map<string, filter_table_entry*>::const_iterator i = t.find(pred);
+	if (i == t.end()) {
+		return false;
+	}
+	p = i->second->parameters;
+	return true;
+}
+
+void filter_table::add(filter_table_entry *e) {
+	assert(t.find(e->name) == t.end());
+	t[e->name] = e;
+}
+
 void filter_table::update_relations(const scene *scn, const vector<int> &dirty, int time, relation_table &rt) const {
 	vector<const sgnode *> nodes;
 	scn->get_all_nodes(nodes);
 
-	map<string, filter_table_entry>::const_iterator i, iend;
+	map<string, filter_table_entry*>::const_iterator i, iend;
 	for(i = t.begin(), iend = t.end(); i != iend; ++i) {
-		const filter_table_entry &e = i->second;
-		if (e.calc != NULL && nodes.size() >= e.parameters.size()) {
-			relation &r = rt[e.name];
+		const filter_table_entry *e = i->second;
+		if (e->calc != NULL && nodes.size() >= e->parameters.size()) {
+			relation &r = rt[e->name];
 			if (r.arity() == 0) {
 				// +1 for the time argument
-				r.reset(e.parameters.size() + 1);
+				r.reset(e->parameters.size() + 1);
 			}
 			vector<const sgnode*> args;
 			vector<int> arg_ids;
-			single_combination_generator<const sgnode*> gen(nodes, e.parameters.size(), e.ordered, e.allow_repeat);
+			single_combination_generator<const sgnode*> gen(nodes, e->parameters.size(), e->ordered, e->allow_repeat);
 			while (gen.next(args)) {
 				bool params_dirty = false;
 				arg_ids.resize(args.size());
@@ -213,14 +239,14 @@ void filter_table::update_relations(const scene *scn, const vector<int> &dirty, 
 				if (params_dirty) {
 					timer &t = timers.get_or_add(i->first.c_str());
 					t.start();
-					bool pos = (*e.calc)(scn, args);
+					bool pos = (*e->calc)(scn, args);
 					t.stop();
 					if (pos) {
-						if (e.ordered) {
+						if (e->ordered) {
 							r.add(time, arg_ids);
 						} else {
 							// true for all permutations
-							single_combination_generator<int> gen2(arg_ids, arg_ids.size(), true, e.allow_repeat);
+							single_combination_generator<int> gen2(arg_ids, arg_ids.size(), true, e->allow_repeat);
 							tuple perm;
 							while (gen2.next(perm)) {
 								r.add(time, perm);
@@ -232,4 +258,28 @@ void filter_table::update_relations(const scene *scn, const vector<int> &dirty, 
 			}
 		}
 	}
+}
+
+filter_table_entry::filter_table_entry()
+: create(NULL), calc(NULL), ordered(false), allow_repeat(false)
+{
+	proxy_add("", new memfunc_proxy<filter_table_entry>(this, &filter_table_entry::cli_use));
+}
+
+void filter_table_entry::cli_use(ostream &os) const {
+	os << "parameters:";
+	for (int i = 0, iend = parameters.size(); i < iend; ++i) {
+		os << " " << parameters[i];
+	}
+	os << endl;
+	if (ordered) {
+		os << "ordered ";
+	}
+	if (allow_repeat) {
+		os << "repeat ";
+	}
+	if (calc) {
+		os << "basic";
+	}
+	os << endl;
 }

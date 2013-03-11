@@ -360,14 +360,21 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 }
 
 EM::EM(const model_train_data &data)
-: data(data), use_em(true), use_foil(true), use_foil_close(true),
-  use_pruning(true), use_unify(true), learn_new_modes(true), use_lwr(true),
-  check_after(NEW_MODE_THRESH), nc_type(NC_DTREE), clsfr(data)
+: data(data), use_em(true), use_unify(true), learn_new_modes(true), use_lwr(true),
+  check_after(NEW_MODE_THRESH), clsfr(data)
 {
-	proxy_add("mode", new cliproxy);
+	proxy_add("mode",        new cliproxy);
+	proxy_add("classifier",  &clsfr);
+	proxy_add("timers",      &timers);
+	proxy_add("use_em",      new bool_proxy(&use_em));
+	proxy_add("use_lwr",     new bool_proxy(&use_lwr));
+	proxy_add("unify_modes", new bool_proxy(&use_unify));
+	proxy_add("learn_modes", new bool_proxy(&learn_new_modes));
+	
+	proxy_add("ptable",      new memfunc_proxy<EM>(this, &EM::cli_ptable));
+	proxy_add("add_mode",    new memfunc_proxy<EM>(this, &EM::cli_add_mode));
+
 	add_mode(false); // noise mode
-	clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
-	clsfr.add_class();
 }
 
 EM::~EM() {
@@ -724,193 +731,24 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 	return best;
 }
 
-bool EM::cli_inspect(int first, const vector<string> &args, ostream &os) {
-	if (first >= args.size()) {
-		os << "modes: " << modes.size() << endl;
-		os << endl << "subqueries: mode ptable timing train relations classifiers use_em use_foil nc_type" << endl;
-		return true;
-	} else if (args[first] == "ptable") {
-		table_printer t;
-		for (int i = 0, iend = insts.size(); i < iend; ++i) {
-			t.add_row() << i;
-			for (int j = 0, jend = modes.size(); j < jend; ++j) {
-				t << insts[i]->minfo[j].prob;
-			}
-		}
-		t.print(os);
-		return true;
-	} else if (args[first] == "train") {
-		return cli_inspect_train(first + 1, args, os);
-	} else if (args[first] == "timing") {
-		timers.report(os);
-		return true;
-	} else if (args[first] == "classifiers") {
-		return const_cast<EM*>(this)->clsfr.cli_inspect(first + 1, args, os);
-	} else if (args[first] == "use_em") {
-		return read_on_off(args, first + 1, os, use_em);
-	} else if (args[first] == "use_foil") {
-		if (read_on_off(args, first + 1, os, use_foil)) {
-			clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
-			return true;
-		}
-		return false;
-	} else if (args[first] == "use_foil_close") {
-		if (read_on_off(args, first + 1, os, use_foil_close)) {
-			clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
-			return true;
-		}
-		return false;
-	} else if (args[first] == "use_pruning") {
-		if (read_on_off(args, first + 1, os, use_pruning)) {
-			clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
-			return true;
-		}
-		return false;
-	} else if (args[first] == "use_unify") {
-		return read_on_off(args, first + 1, os, use_unify);
-	} else if (args[first] == "learn_new_modes") {
-		return read_on_off(args, first + 1, os, learn_new_modes);
-	} else if (args[first] == "dump_foil" || args[first] == "dump_foil_close") {
-		int m1, m2;
-		if (first + 2 >= args.size() || 
-		    !parse_int(args[first+1], m1) || 
-		    !parse_int(args[first+2], m2) ||
-		    m1 < 0 || m1 >= modes.size() || m2 < 0 || m2 >= modes.size() || m1 == m2) 
-		{
-			os << "Specify 2 modes" << endl;
-			return false;
-		}
-		clsfr.dump_foil(m1, m2, args[first] == "dump_foil_close", os);
-		return true;
-	} else if (args[first] == "vistrain") {
-		int i;
-		
-		if (first + 1 >= args.size() || !parse_int(args[first+1], i) || i < 0 || i >= data.size()) {
-			os << "specify training example" << endl;
-			return false;
-		}
-		
-		const rvec &x = data.get_inst(i).x;
-		const scene_sig &s = *data.get_inst(i).sig;
-		
-		for (int j = 0, jend = s.size(); j < jend; ++j) {
-			vec3 p;
-			vector<bool> found(3, false);
-			int start = s[j].start;
-			const vector<string> &props = s[j].props;
-			for (int k = 0, kend = props.size(); k < kend; ++k) {
-				if (props[k] == "px") {
-					p(0) = x(start + k);
-					found[0] = true;
-				} else if (props[k] == "py") {
-					p(1) = x(start + k);
-					found[1] = true;
-				} else if (props[k] == "pz") {
-					p(2) = x(start + k);
-					found[2] = true;
-				}
-				if (found[0] && found[1] && found[2]) {
-					draw.set_pos(s[j].name, p(0), p(1), p(2));
-					break;
-				}
-			}
-		}
-		return true;
-	} else if (args[first] == "add_mode") {
-		return cli_add_mode(first + 1, args, os);
-	} else if (args[first] == "nc_type") {
-		if (first + 1 >= args.size()) {
-			os << get_num_classifier_name(nc_type) << endl;
-			return true;
-		}
-		int t = get_num_classifier_type(args[first + 1]);
-		if (t < 0) {
-			os << "no such numeric classifier";
-			return false;
-		}
-		nc_type = t;
-		clsfr.set_options(use_foil, use_pruning, use_foil_close, nc_type);
-		os << "future numeric classifiers will be learned using " << args[first+1] << endl;
-		return true;
-	}
-
-	return false;
-}
-
-bool EM::cli_inspect_train(int first, const vector<string> &args, ostream &os) const {
-	int start = 0, end = insts.size() - 1;
-	vector<string> objs;
-	bool have_start = false;
-	for (int i = first; i < args.size(); ++i) {
-		int x;
-		if (parse_int(args[i], x)) {
-			if (!have_start) {
-				start = x;
-				have_start = true;
-			} else {
-				end = x;
-			}
-		} else {
-			objs.push_back(args[i]);
-		}		
-	}
-
-	if (start < 0 || end < start || end >= insts.size()) {
-		os << "invalid data range" << endl;
-		return false;
-	}
-
-	vector<int> cols;
+void EM::cli_ptable(ostream &os) const {
 	table_printer t;
-	t.set_scientific(true);
-	t.set_precision(10);
-	t.add_row() << "N" << "MODE" << "|" << "DATA";
-	for (int i = start; i <= end; ++i) {
-		const model_train_inst &d = data.get_inst(i);
-		if (i == start || (i > start && d.sig != data.get_inst(i-1).sig)) {
-			const scene_sig &s = *d.sig;
-			t.add_row().skip(2) << "|";
-			int c = 0;
-			cols.clear();
-			for (int j = 0; j < s.size(); ++j) {
-				if (objs.empty() || has(objs, s[j].name)) {
-					for (int k = 0; k < s[j].props.size(); ++k) {
-						cols.push_back(c++);
-					}
-					t << s[j].name;
-					t.skip(s[j].props.size() - 1);
-				} else {
-					c += s[j].props.size();
-				}
-			}
-			t.add_row().skip(2) << "|";
-			for (int j = 0; j < s.size(); ++j) {
-				if (objs.empty() || has(objs, s[j].name)) {
-					const vector<string> &props = s[j].props;
-					for (int k = 0; k < props.size(); ++k) {
-						t << props[k];
-					}
-				}
-			}
+	for (int i = 0, iend = insts.size(); i < iend; ++i) {
+		t.add_row() << i << insts[i]->mode;
+		for (int j = 0, jend = modes.size(); j < jend; ++j) {
+			t << insts[i]->minfo[j].prob;
 		}
-		t.add_row();
-		t << i << insts[i]->mode << "|";
-		for (int j = 0; j < cols.size(); ++j) {
-			t << d.x(cols[j]);
-		}
-		t << d.y(0);
 	}
 	t.print(os);
-	return true;
 }
 
 /*
  The format will be [coef] [dim] [coef] [dim] ... [intercept]
 */
-bool EM::cli_add_mode(int first, const vector<string> &args, ostream &os) {
+void EM::cli_add_mode(const vector<string> &args, ostream &os) {
 	if (insts.empty()) {
 		os << "need at least one training example to get the signature from" << endl;
-		return false;
+		return;
 	}
 	
 	const model_train_inst &inst = data.get_last_inst();
@@ -919,11 +757,11 @@ bool EM::cli_add_mode(int first, const vector<string> &args, ostream &os) {
 	coefs.setConstant(0.0);
 	intercept.setConstant(0.0);
 	
-	for (int i = first, iend = args.size(); i < iend; i += 2) {
+	for (int i = 0, iend = args.size(); i < iend; i += 2) {
 		double c;
 		if (!parse_double(args[i], c)) {
 			os << "expecting a number, got " << args[i] << endl;
-			return false;
+			return;
 		}
 		
 		if (i + 1 >= args.size()) {
@@ -935,13 +773,13 @@ bool EM::cli_add_mode(int first, const vector<string> &args, ostream &os) {
 		split(args[i+1], ":", parts);
 		if (parts.size() != 2) {
 			os << "expecting object:property, got " << args[i+1] << endl;
-			return false;
+			return;
 		}
 		
 		int obj_ind, prop_ind;
 		if (!inst.sig->get_dim(parts[0], parts[1], obj_ind, prop_ind)) {
 			os << args[i+1] << " not found" << endl;
-			return false;
+			return;
 		}
 		assert(prop_ind >= 0 && prop_ind < coefs.rows());
 		coefs(prop_ind, 0) = c;
@@ -949,7 +787,6 @@ bool EM::cli_add_mode(int first, const vector<string> &args, ostream &os) {
 	
 	em_mode *new_mode = add_mode(true);
 	new_mode->set_linear_params(*inst.sig, inst.target, coefs, intercept);
-	return true;
 }
 
 

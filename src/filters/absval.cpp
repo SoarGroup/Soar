@@ -31,10 +31,10 @@ filter *make_absval_filter(Symbol *root, soar_interface *si, scene *scn, filter_
 	return new absval_filter(root, si, input);
 }
 
-filter_table_entry absval_fill_entry() {
-	filter_table_entry e;
-	e.name = "absval";
-	e.parameters.push_back("a");
-	e.create = &make_absval_filter;
+filter_table_entry *absval_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "absval";
+	e->parameters.push_back("a");
+	e->create = &make_absval_filter;
 	return e;
 }

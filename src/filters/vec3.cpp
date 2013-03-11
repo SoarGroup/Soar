@@ -27,9 +27,9 @@ filter *_make_vec3_filter_(Symbol *root, soar_interface *si, scene *scn, filter_
 	return new vec3_filter(root, si, input);
 }
 
-filter_table_entry vec3_fill_entry() {
-	filter_table_entry e;
-	e.name = "vec3";
-	e.create = &_make_vec3_filter_;
+filter_table_entry *vec3_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "vec3";
+	e->create = &_make_vec3_filter_;
 	return e;
 }

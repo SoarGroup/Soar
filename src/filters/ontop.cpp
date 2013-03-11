@@ -48,14 +48,14 @@ filter* make_ontop_filter(Symbol *root, soar_interface *si, scene *scn, filter_i
 	return new ontop_filter(root, si, input);
 }
 
-filter_table_entry ontop_fill_entry() {
-	filter_table_entry e;
-	e.name = "on-top";
-	e.parameters.push_back("top");
-	e.parameters.push_back("bottom");
-	e.ordered = true;
-	e.allow_repeat = false;
-	e.create = &make_ontop_filter;
-	e.calc = &standalone;
+filter_table_entry *ontop_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "on-top";
+	e->parameters.push_back("top");
+	e->parameters.push_back("bottom");
+	e->ordered = true;
+	e->allow_repeat = false;
+	e->create = &make_ontop_filter;
+	e->calc = &standalone;
 	return e;
 }

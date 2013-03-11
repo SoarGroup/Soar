@@ -62,7 +62,7 @@ public:
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
 	// Return the mode with the model that best fits (x, y)
 	int best_mode(int target, const scene_sig &sig, const rvec &x, double y, double &besterror) const;
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
+	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 	
@@ -83,9 +83,8 @@ private:
 	int classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &obj_map);
 	int vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
 	
-	bool cli_inspect_train(int first, const std::vector<std::string> &args, std::ostream &os) const;
-	bool cli_inspect_classifiers(int first, const std::vector<std::string> &args, std::ostream &os) const;
-	bool cli_add_mode(int first, const std::vector<std::string> &args, std::ostream &os);
+	void cli_ptable(std::ostream &os) const;
+	void cli_add_mode(const std::vector<std::string> &args, std::ostream &os);
 
 	typedef std::map<const scene_sig*,sig_info*> sig_table;
 	const model_train_data &data;
@@ -94,7 +93,7 @@ private:
 	sig_table sigs;
 	classifier clsfr;
 	
-	bool use_em, use_foil, use_foil_close, use_nc, use_pruning, use_unify, use_lwr, learn_new_modes;
+	bool use_em, use_unify, use_lwr, learn_new_modes;
 
 	/*
 	 Keeps track of the minimum number of new noise examples needed before we have

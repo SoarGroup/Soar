@@ -199,25 +199,25 @@ filter *make_node_centroid_filter(Symbol *root, soar_interface *si, scene *scn, 
 	return new node_centroid_filter(root, si, input);
 }
 
-filter_table_entry node_fill_entry() {
-	filter_table_entry e;
-	e.name = "node";
-	e.parameters.push_back("id");
-	e.create = &make_node_filter;
+filter_table_entry *node_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "node";
+	e->parameters.push_back("id");
+	e->create = &make_node_filter;
 	return e;
 }
 
-filter_table_entry all_nodes_fill_entry() {
-	filter_table_entry e;
-	e.name = "all_nodes";
-	e.create = &make_all_nodes_filter;
+filter_table_entry *all_nodes_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "all_nodes";
+	e->create = &make_all_nodes_filter;
 	return e;
 }
 
-filter_table_entry node_centroid_fill_entry() {
-	filter_table_entry e;
-	e.name = "node_centroid";
-	e.parameters.push_back("node");
-	e.create = &make_node_centroid_filter;
+filter_table_entry *node_centroid_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "node_centroid";
+	e->parameters.push_back("node");
+	e->create = &make_node_centroid_filter;
 	return e;
 }

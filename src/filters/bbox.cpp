@@ -74,35 +74,35 @@ filter* make_bbox_contains(Symbol *root, soar_interface *si, scene *scn, filter_
 	return new bbox_binary_filter(root, si, input, 'c');
 }
 
-filter_table_entry bbox_fill_entry() {
-	filter_table_entry e;
-	e.name = "bbox";
-	e.parameters.push_back("node");
-	e.create = &make_bbox;
-	e.calc = NULL;
+filter_table_entry *bbox_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "bbox";
+	e->parameters.push_back("node");
+	e->create = &make_bbox;
+	e->calc = NULL;
 	return e;
 }
 
-filter_table_entry bbox_int_fill_entry() {
-	filter_table_entry e;
-	e.name = "bbox_int";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = false;
-	e.allow_repeat = false;
-	e.create = &make_bbox_int;
-	e.calc = NULL;
+filter_table_entry *bbox_int_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "bbox_int";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = false;
+	e->allow_repeat = false;
+	e->create = &make_bbox_int;
+	e->calc = NULL;
 	return e;
 }
 
-filter_table_entry bbox_contains_fill_entry() {
-	filter_table_entry e;
-	e.name = "bbox_contains";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
-	e.ordered = false;
-	e.allow_repeat = false;
-	e.create = &make_bbox_contains;
-	e.calc = NULL;
+filter_table_entry *bbox_contains_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "bbox_contains";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = false;
+	e->allow_repeat = false;
+	e->create = &make_bbox_contains;
+	e->calc = NULL;
 	return e;
 }

@@ -86,7 +86,7 @@ em_mode::em_mode(bool noise, bool manual, const model_train_data &data)
 		stale = true;
 	}
 	
-	proxy_add("model",   new memfunc_proxy<em_mode>(this, &em_mode::cli_model));
+	proxy_add("",        new memfunc_proxy<em_mode>(this, &em_mode::cli_model));
 	proxy_add("clauses", new memfunc_proxy<em_mode>(this, &em_mode::cli_clauses));
 	proxy_add("members", new memfunc_proxy<em_mode>(this, &em_mode::cli_members));
 }

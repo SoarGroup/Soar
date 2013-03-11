@@ -102,7 +102,7 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
 	proxy_add("relations",    new memfunc_proxy<svs_state>(this, &svs_state::cli_relations));
 	proxy_add("properties",   new memfunc_proxy<svs_state>(this, &svs_state::cli_props));
 	proxy_add("distance",     new memfunc_proxy<svs_state>(this, &svs_state::cli_dist));
-	proxy_add("timing",       &timers);
+	proxy_add("timers",       &timers);
 	proxy_add("mconfig",      mmdl);
 }
 
@@ -449,7 +449,7 @@ svs::svs(agent *a)
 	proxy_add("learn",          new bool_proxy(&learn));
 	proxy_add("log",            new memfunc_proxy<svs>(this, &svs::cli_log));
 	proxy_add("connect_viewer", new memfunc_proxy<svs>(this, &svs::cli_connect_viewer));
-	proxy_add("timing",         &timers);
+	proxy_add("timers",         &timers);
 	proxy_add("filters",        &get_filter_table());
 	
 	model_proxy = new cliproxy;
@@ -565,12 +565,21 @@ string svs::get_output() const {
 
 bool svs::do_cli_command(const vector<string> &args, string &output) {
 	stringstream ss;
-	vector<string> rest(args.begin() + 2, args.end());
+	vector<string> rest;
 
-	cliproxy *p = get_proxy()->find(args[1]);
+	cliproxy *p;
+	if (args.size() >= 2) {
+		p = get_proxy()->find(args[1]);
+	} else {
+		p = get_proxy()->find(string(""));
+	}
+	
 	if (!p) {
 		output = "path not found\n";
 		return false;
+	}
+	for (int i = 2, iend = args.size(); i < iend; ++i) {
+		rest.push_back(args[i]);
 	}
 	p->use(rest, ss);
 	output = ss.str();

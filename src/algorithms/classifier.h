@@ -8,9 +8,7 @@
 #include "serializable.h"
 #include "scene_sig.h"
 #include "model.h"
-
-class em_train_data;
-class sig_info;
+#include "cliproxy.h"
 
 class clause_info : public serializable {
 public:
@@ -26,7 +24,7 @@ public:
 	void unserialize(std::istream &is);
 };
 
-class binary_classifier : public serializable {
+class binary_classifier : public serializable, public proxied {
 public:
 	binary_classifier();
 	binary_classifier(bool use_foil, bool use_pruning, int nc_type);
@@ -55,7 +53,7 @@ private:
 /*
  Uses one-to-one voting to extend binary classification to multiple classes.
 */
-class classifier : public serializable {
+class classifier : public serializable, public proxied {
 public:
 	classifier(const model_train_data &data);
 	~classifier();
@@ -72,9 +70,6 @@ public:
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 	
-	bool cli_inspect(int first, const std::vector<std::string> &args, std::ostream &os);
-	bool dump_foil(int i, int j, bool context, std::ostream &os) const;
-
 private:
 	class pair_info : public serializable {
 	public:
@@ -109,6 +104,9 @@ private:
 
 	pair_info *find(int i, int j);
 	void update();
+	void cli_use(const std::vector<std::string> &args, std::ostream &os);
+	void cli_nc_type(const std::vector<std::string> &args, std::ostream &os);
+	void cli_dump_foil6(const std::vector<std::string> &args, std::ostream &os) const;
 };
 
 #endif
