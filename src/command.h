@@ -4,12 +4,13 @@
 #include <string>
 #include "soar_interface.h"
 #include "timer.h"
+#include "cliproxy.h"
 
 class svs_state;
 class scene;
 class filter;
 
-class command {
+class command : public cliproxy {
 public:
 	virtual std::string description() = 0;
 	virtual bool early() = 0;
@@ -34,15 +35,12 @@ public:
 	
 	svs_state *get_state() { return state; }
 	
-	void cli_inspect(std::ostream &os) const {
-		timers.report(os);
-	}
-
 protected:
 	virtual bool update_sub() = 0;
 	
 private:
 	void parse_substructure(int &size, int &max_time);
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	
 	svs_state      *state;
 	soar_interface *si;

@@ -20,7 +20,7 @@ class filter_input;
 class scene;
 class sgnode;
 
-class filter_table_entry : public proxied {
+class filter_table_entry : public cliproxy {
 public:
 	std::string name;
 	std::vector<std::string> parameters;
@@ -30,10 +30,10 @@ public:
 	bool    (*calc)(const scene*, const std::vector<const sgnode*> &);
 	
 	filter_table_entry();
-	void cli_use(std::ostream &os) const;
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 };
 
-class filter_table : public proxied {
+class filter_table : public cliproxy {
 public:
 	friend filter_table &get_filter_table();
 
@@ -53,6 +53,7 @@ public:
 private:
 	filter_table();
 	void add(filter_table_entry *e);
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	
 	std::map<std::string, filter_table_entry*> t;
 	

@@ -11,7 +11,7 @@ double msec(long t) {
 	return t / 1.0e6;
 }
 
-void timer_set::report(ostream &os) const {
+void timer_set::proxy_use_sub(const vector<string> &args, ostream &os) {
 	os << "Times reported in milliseconds" << endl << endl;
 	
 	table_printer p;

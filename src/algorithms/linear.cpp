@@ -692,9 +692,6 @@ bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream
 		}
 		os << "subqueries: timing train" << endl;
 		return true;
-	} else if (args[first_arg] == "timing") {
-		timers.report(os);
-		return true;
 	} else if (args[first_arg] == "train") {
 		table_printer t;
 		t.add_row();

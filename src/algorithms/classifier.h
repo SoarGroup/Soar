@@ -24,7 +24,7 @@ public:
 	void unserialize(std::istream &is);
 };
 
-class binary_classifier : public serializable, public proxied {
+class binary_classifier : public serializable, public cliproxy {
 public:
 	binary_classifier();
 	binary_classifier(bool use_foil, bool use_pruning, int nc_type);
@@ -53,7 +53,7 @@ private:
 /*
  Uses one-to-one voting to extend binary classification to multiple classes.
 */
-class classifier : public serializable, public proxied {
+class classifier : public serializable, public cliproxy {
 public:
 	classifier(const model_train_data &data);
 	~classifier();
@@ -104,7 +104,9 @@ private:
 
 	pair_info *find(int i, int j);
 	void update();
-	void cli_use(const std::vector<std::string> &args, std::ostream &os);
+	
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	void cli_nc_type(const std::vector<std::string> &args, std::ostream &os);
 	void cli_dump_foil6(const std::vector<std::string> &args, std::ostream &os) const;
 };

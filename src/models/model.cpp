@@ -80,11 +80,7 @@ void error_stats(const vector<double> &errors, ostream &os) {
 
 model::model(const std::string &name, const std::string &type, bool learning) 
 : name(name), type(type), learning(learning)
-{
-	proxy_add("save", new memfunc_proxy<model>(this, &model::cli_save));
-	proxy_add("load", new memfunc_proxy<model>(this, &model::cli_load));
-	proxy_add("data", &train_data);
-}
+{}
 
 void model::learn(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 	if (learning) {
@@ -99,6 +95,12 @@ void model::learn(int target, const scene_sig &sig, const relation_table &rels, 
 */
 void model::test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
 	predict(target, sig, rels, x, y);
+}
+
+void model::proxy_get_children(map<string, cliproxy*> &c) {
+	c["save"] = new memfunc_proxy<model>(this, &model::cli_save);
+	c["load"] = new memfunc_proxy<model>(this, &model::cli_load);
+	c["data"] = &train_data;
 }
 
 void model::cli_save(const vector<string> &args, ostream &os) {
@@ -150,8 +152,6 @@ void model::unserialize(istream &is) {
 multi_model::multi_model(map<string, model*> *model_db)
 : model_db(model_db)
 {
-	proxy_add("error",  new memfunc_proxy<multi_model>(this, &multi_model::cli_error));
-	proxy_add("assign", new memfunc_proxy<multi_model>(this, &multi_model::cli_assign));
 }
 
 multi_model::~multi_model() {
@@ -266,6 +266,11 @@ void multi_model::unassign_model(const string &name) {
 			return;
 		}
 	}
+}
+
+void multi_model::proxy_get_children(map<string, cliproxy*> &c) {
+	c["error"] =  new memfunc_proxy<multi_model>(this, &multi_model::cli_error);
+	c["assign"] = new memfunc_proxy<multi_model>(this, &multi_model::cli_assign);
 }
 
 void multi_model::cli_error(const vector<string> &args, ostream &os) const {
@@ -395,10 +400,7 @@ void multi_model::cli_assign(ostream &os) const {
 	}
 }
 
-model_train_data::model_train_data() {
-	proxy_add("rels", new memfunc_proxy<model_train_data>(this, &model_train_data::cli_relations));
-	proxy_add("cont", new memfunc_proxy<model_train_data>(this, &model_train_data::cli_contdata));
-}
+model_train_data::model_train_data() {}
 
 model_train_data::~model_train_data() {
 	clear_and_dealloc(sigs);
@@ -491,6 +493,11 @@ void model_train_data::unserialize(istream &is) {
 	}
 	
 	unsr >> all_rels >> context_rels;
+}
+
+void model_train_data::proxy_get_children(map<string, cliproxy*> &c) {
+	c["rels"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_relations);
+	c["cont"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_contdata);
 }
 
 void model_train_data::cli_relations(const vector<string> &args, ostream &os) const {

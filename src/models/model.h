@@ -25,7 +25,7 @@ struct model_train_inst {
 	model_train_inst() : target(-1), sig(NULL) {}
 };
 
-class model_train_data : public serializable, public proxied {
+class model_train_data : public serializable, public cliproxy {
 public:
 	model_train_data();
 	~model_train_data();
@@ -45,6 +45,7 @@ public:
 	
 	int size() const { return insts.size(); }
 
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_contdata(const std::vector<std::string> &args, std::ostream &os) const;
 	
@@ -54,7 +55,7 @@ private:
 	relation_table all_rels, context_rels;
 };
 
-class model : public serializable, public proxied {
+class model : public serializable, public cliproxy {
 public:
 	model(const std::string &name, const std::string &type, bool learning);
 	virtual ~model() {}
@@ -71,16 +72,14 @@ public:
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
 	virtual void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
+
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	
 private:
 	std::string name, type;
 	bool learning;
 	model_train_data train_data;
 	
-	virtual bool cli_inspect_sub(int first_arg, const std::vector<std::string> &args, std::ostream &os) {
-		return false;
-	};
-
 	virtual void update() {}
 	virtual void serialize_sub(std::ostream &os) const {}
 	virtual void unserialize_sub(std::istream &is) {}
@@ -97,7 +96,7 @@ private:
  models back into a single output vector for the entire scene. The mapping
  is specified by the Soar agent at runtime using the assign-model command.
 */
-class multi_model : public proxied {
+class multi_model : public cliproxy {
 public:
 	typedef std::vector<std::pair<std::string, std::string> > prop_vec;
 	
@@ -133,6 +132,7 @@ private:
 	
 	bool predict_or_test(bool test, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_error(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_assign(std::ostream &os) const;
 

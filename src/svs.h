@@ -58,7 +58,7 @@ typedef std::vector<output_dim_spec> output_spec;
 /*
  Each state in the state stack has its own SVS link, scene, models, etc.
 */
-class svs_state : public proxied {
+class svs_state : public cliproxy {
 public:
 	svs_state(svs *svsp, Symbol *state, soar_interface *soar);
 	svs_state(Symbol *state, svs_state *parent);
@@ -89,6 +89,7 @@ private:
 	void collect_cmds(Symbol* id, std::set<wme*>& all_cmds);
 	void set_default_output();
 	
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_props(const std::vector<std::string> &args, std::ostream &os);
 	void cli_dist(const std::vector<std::string> &args, std::ostream &os) const;
@@ -126,7 +127,7 @@ private:
 	timer_set timers;
 };
 
-class svs : public svs_interface, public proxied {
+class svs : public svs_interface, public cliproxy {
 public:
 	svs(agent *a);
 	~svs();
@@ -151,6 +152,7 @@ private:
 	void proc_input(svs_state *s);
 	int  parse_output_spec(const std::string &s);
 
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_log(const std::vector<std::string> &args, std::ostream &os);
 	void cli_connect_viewer(const std::vector<std::string> &args, std::ostream &os);
 
@@ -164,9 +166,6 @@ private:
 	Symbol                   *model_root;
 	
 	std::map<std::string, model*> models;
-	
-	cliproxy *model_proxy;
-	cliproxy *state_proxy;
 	
 	timer_set timers;
 };

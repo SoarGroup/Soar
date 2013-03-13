@@ -285,17 +285,19 @@ void clause_info::unserialize(istream &is) {
 classifier::classifier(const model_train_data &data) 
 : data(data), foil(true), prune(true), context(true), nc_type(NC_LDA)
 {
-	proxy_add("use_foil",    new bool_proxy(&foil));
-	proxy_add("use_pruning", new bool_proxy(&prune));
-	proxy_add("use_context", new bool_proxy(&context));
-	proxy_add("nc_type",     new memfunc_proxy<classifier>(this, &classifier::cli_nc_type));
-	proxy_add("dump_foil6",  new memfunc_proxy<classifier>(this, &classifier::cli_dump_foil6));
-	proxy_add("",            new memfunc_proxy<classifier>(this, &classifier::cli_use));
 }
 
 classifier::~classifier() {
 	clear_and_dealloc(pairs);
 	clear_and_dealloc(classes);
+}
+
+void classifier::proxy_get_children(map<string, cliproxy*> &c) {
+	c["use_foil"]    = new bool_proxy(&foil);
+	c["use_pruning"] = new bool_proxy(&prune);
+	c["use_context"] = new bool_proxy(&context);
+	c["nc_type"]     = new memfunc_proxy<classifier>(this, &classifier::cli_nc_type);
+	c["dump_foil6"]  = new memfunc_proxy<classifier>(this, &classifier::cli_dump_foil6);
 }
 
 void classifier::cli_nc_type(const vector<string> &args, ostream &os) {
@@ -371,6 +373,9 @@ void classifier::add_inst(int cls) {
 
 void classifier::update_inst(int i, int c) {
 	assert(0 <= i && i <= membership.size() && 0 <= c && c < classes.size());
+	if (membership[i] == c) {
+		return;
+	}
 	
 	const model_train_inst &inst = data.get_inst(i);
 	int target = (*inst.sig)[inst.target].id;
@@ -453,7 +458,7 @@ void classifier::classify(int target, const scene_sig &sig, const relation_table
 	}
 }
 
-void classifier::cli_use(const vector<string> &args, ostream &os) {
+void classifier::proxy_use_sub(const vector<string> &args, ostream &os) {
 	update();
 	
 	if (args.empty()) {

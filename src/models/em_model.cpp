@@ -19,8 +19,6 @@ public:
 	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
 	: model(name, "em", true), em(get_data()), si(si), revisions(0), wm_root(NULL)
 	{
-		proxy_add("em", &em);
-		proxy_add("mode_error", new memfunc_proxy<EM_model>(this, &EM_model::cli_mode_error));
 	}
 
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
@@ -60,6 +58,12 @@ public:
 		test_best_errors.push_back(best_error);
 		em.predict(target, sig, rels, x, mode, y);
 		test_modes.push_back(mode);
+	}
+	
+	void proxy_get_children(map<string, cliproxy*> &c) {
+		model::proxy_get_children(c);
+		c["em"] = &em;
+		c["mode_error"] = new memfunc_proxy<EM_model>(this, &EM_model::cli_mode_error);
 	}
 	
 	void cli_mode_error(ostream &os) const {

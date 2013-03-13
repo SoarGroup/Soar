@@ -14,7 +14,7 @@
 class em_train_data;
 class sig_info;
 
-class em_mode : public serializable, public proxied {
+class em_mode : public serializable, public cliproxy {
 public:
 	em_mode(bool noise, bool manual, const model_train_data &data);
 	
@@ -31,7 +31,6 @@ public:
 	bool update_fits();
 	void set_linear_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter);
 	bool uniform_sig(int sig, int target) const;
-	void learn_obj_clauses(const relation_table &rels);
 	void get_members(std::vector<int> &m) const;
 
 	int size() const { return members.size(); }
@@ -75,9 +74,13 @@ private:
 	 identifiable with a set of first-order Horn clauses
 	 learned with FOIL.
 	*/
-	std::vector<std::vector<clause> > obj_clauses;
+	mutable std::vector<std::vector<clause> > obj_clauses;
+	mutable bool obj_clauses_stale;
 
-	void cli_model(std::ostream &os) const;
+	void learn_obj_clauses(const relation_table &rels) const;
+	
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	void cli_clauses(std::ostream &os) const;
 	void cli_members(std::ostream &os) const;
 };

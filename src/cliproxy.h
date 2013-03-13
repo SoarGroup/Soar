@@ -5,39 +5,22 @@
 #include <map>
 #include <ostream>
 
-class proxied;
-
 class cliproxy {
 public:
-	cliproxy();
 	virtual ~cliproxy();
-	virtual void use(const std::vector<std::string> &args, std::ostream &os);
-	
-	void add(const std::string &name, cliproxy *child);
-	void add(const std::string &name, proxied *child);
-	void del(const std::string &name);
-	void rename(const std::string &from, const std::string &to);
-	cliproxy *find(const std::string &path);
+	void proxy_use(const std::string &path, const std::vector<std::string> &args, std::ostream &os);
+	bool temporary() const { return false; }
 	
 private:
-	void add(const std::string &name, cliproxy *child, bool own);
-	cliproxy *findp(int i, const std::vector<std::string> &path);
-	
-	struct child {
-		bool own;
-		cliproxy *p;
-		
-		child() : own(false), p(NULL) {}
-		~child() { if (own) { delete p; } }
-	};
-	
-	std::map<std::string, child> children;
+	virtual void proxy_get_children(std::map<std::string, cliproxy*> &c) {}
+	virtual void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os) {}
 };
 
 class int_proxy : public cliproxy {
 public:
 	int_proxy(int *p);
-	void use(const std::vector<std::string> &args, std::ostream &os);
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
+	bool temporary() const { return true; }
 	
 private:
 	int *p;
@@ -46,7 +29,8 @@ private:
 class bool_proxy : public cliproxy {
 public:
 	bool_proxy(bool *p);
-	void use(const std::vector<std::string> &args, std::ostream &os);
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
+	bool temporary() const { return true; }
 	
 private:
 	bool *p;
@@ -65,7 +49,7 @@ public:
 	memfunc_proxy(const T *p, fargc_ptr f) : p(NULL), pc(p), farg(NULL), fargc(f),    fout(NULL), foutc(NULL) {}
 	memfunc_proxy(const T *p, foutc_ptr f) : p(NULL), pc(p), farg(NULL), fargc(NULL), fout(NULL), foutc(f)    {}
 	
-	void use(const std::vector<std::string> &args, std::ostream &os) {
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os) {
 		if (farg) {
 			(p->*farg)(args, os);
 		} else if (fout) {
@@ -77,6 +61,8 @@ public:
 		}
 	}
 
+	bool temporary() const { return true; }
+
 private:
 	T *p;
 	const T *pc;
@@ -86,14 +72,16 @@ private:
 	foutc_ptr foutc;
 };
 
-class proxied {
+class proxy_group : public cliproxy {
 public:
-	cliproxy *get_proxy() { return &proxy; }
-	void proxy_add(const std::string &name, cliproxy *p)    { proxy.add(name, p); }
-	void proxy_add(const std::string &name, proxied *child) { proxy.add(name, child); }
-	void proxy_del(const std::string &name)                 { proxy.del(name); }
+	proxy_group() {}
+	void add(const std::string &name, cliproxy *p);
+	bool temporary() const { return true; }
+
 private:
-	cliproxy proxy;
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
+	
+	std::map<std::string, cliproxy*> children;
 };
 
 #endif

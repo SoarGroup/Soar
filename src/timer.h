@@ -82,11 +82,9 @@ private:
 	timer &t;
 };
 
-class timer_set : public proxied {
+class timer_set : public cliproxy {
 public:
-	timer_set() {
-		proxy_add("", new memfunc_proxy<timer_set>(this, &timer_set::report));
-	}
+	timer_set() {}
 	
 	~timer_set() {
 		for (int i = 0; i < timers.size(); ++i) {
@@ -117,9 +115,9 @@ public:
 		return timers[i]->stop();
 	}
 	
-	void report(std::ostream &os) const;
-	
 private:
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
+	
 	std::vector<timer*> timers;
 };
 

@@ -96,14 +96,6 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
 	assert (si->is_top_state(state));
 	outspec = svsp->get_output_spec();
 	init();
-	
-	proxy_add("learn_models", new bool_proxy(&learn_models));
-	proxy_add("test_models",  new bool_proxy(&test_models));
-	proxy_add("relations",    new memfunc_proxy<svs_state>(this, &svs_state::cli_relations));
-	proxy_add("properties",   new memfunc_proxy<svs_state>(this, &svs_state::cli_props));
-	proxy_add("distance",     new memfunc_proxy<svs_state>(this, &svs_state::cli_dist));
-	proxy_add("timers",       &timers);
-	proxy_add("mconfig",      mmdl);
 }
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
@@ -286,6 +278,28 @@ bool svs_state::get_output(rvec &out) const {
 	}
 }
 
+void svs_state::proxy_get_children(map<string, cliproxy*> &c) {
+	c["learn_models"] = new bool_proxy(&learn_models);
+	c["test_models"] =  new bool_proxy(&test_models);
+	c["relations"] =    new memfunc_proxy<svs_state>(this, &svs_state::cli_relations);
+	c["properties"] =   new memfunc_proxy<svs_state>(this, &svs_state::cli_props);
+	c["distance"] =     new memfunc_proxy<svs_state>(this, &svs_state::cli_dist);
+	c["timers"] =       &timers;
+	c["mconfig"] =      mmdl;
+
+	proxy_group *cmds = new proxy_group;
+	map<wme*, command*>::const_iterator i;
+	for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
+		string id;
+		if (!si->get_name(si->get_wme_val(i->first), id)) {
+			assert(false);
+		}
+		cmds->add(id, i->second);
+	}
+	
+	c["command"] = cmds;
+}
+
 void svs_state::cli_relations(const vector<string> &args, ostream &os) const {
 	relation_table rels;
 	relation_table::const_iterator i, begin, end;
@@ -356,11 +370,17 @@ void svs_state::cli_relations(const vector<string> &args, ostream &os) const {
 void svs_state::cli_props(const vector<string> &args, ostream &os) {
 	if (args.empty()) {
 		rvec vals;
+		table_printer p;
+		
+		const scene_sig &sig = scn->get_signature();
 		scn->get_properties(vals);
-		for (int i = 0, iend = vals.size(); i < iend; ++i) {
-			os << vals(i) << " ";
+		int i = 0;
+		for (int j = 0, jend = sig.size(); j < jend; ++j) {
+			for (int k = 0, kend = sig[j].props.size(); k < kend; ++k) {
+				p.add_row() << sig[j].name + ':' + sig[j].props[k] << vals(i++);
+			}
 		}
-		os << endl;
+		p.print(os);
 		return;
 	}
 	
@@ -398,22 +418,6 @@ void svs_state::cli_dist(const vector<string> &args, ostream &os) const {
 
 // change this to use proxies later
 void svs_state::cli_cmd(const vector<string> &args, ostream &os) {
-	if (args.empty()) {
-		os << "specify a command id" << endl;
-		return;
-	}
-	map<wme*, command*>::const_iterator i;
-	for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
-		string id;
-		if (!si->get_name(si->get_wme_val(i->first), id)) {
-			assert(false);
-		}
-		if (id == args[0]) {
-			i->second->cli_inspect(os);
-			return;
-		}
-	}
-	os << "no such command" << endl;
 }
 
 // add ability to set it?
@@ -445,17 +449,6 @@ svs::svs(agent *a)
 : learn(false)
 {
 	si = new soar_interface(a);
-	
-	proxy_add("learn",          new bool_proxy(&learn));
-	proxy_add("log",            new memfunc_proxy<svs>(this, &svs::cli_log));
-	proxy_add("connect_viewer", new memfunc_proxy<svs>(this, &svs::cli_connect_viewer));
-	proxy_add("timers",         &timers);
-	proxy_add("filters",        &get_filter_table());
-	
-	model_proxy = new cliproxy;
-	state_proxy = new cliproxy;
-	get_proxy()->add("model", model_proxy);
-	get_proxy()->add("state", state_proxy);
 }
 
 svs::~svs() {
@@ -480,7 +473,6 @@ void svs::state_creation_callback(Symbol *state) {
 		s = new svs_state(state, state_stack.back());
 	}
 	
-	state_proxy->add(tostring(state_stack.size()), s);
 	state_stack.push_back(s);
 }
 
@@ -489,7 +481,6 @@ void svs::state_deletion_callback(Symbol *state) {
 	s = state_stack.back();
 	assert(state == s->get_state());
 	state_stack.pop_back();
-	state_proxy->del(tostring(state_stack.size()));
 	delete s;
 }
 
@@ -563,25 +554,41 @@ string svs::get_output() const {
 	return env_output;
 }
 
+void svs::proxy_get_children(map<string, cliproxy*> &c) {
+	c["learn"] =          new bool_proxy(&learn);
+	c["log"] =            new memfunc_proxy<svs>(this, &svs::cli_log);
+	c["connect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
+	c["timers"] =         &timers;
+	c["filters"] =        &get_filter_table();
+	
+	proxy_group *model_group = new proxy_group;
+	map<string, model*>::iterator i, iend;
+	for (i = models.begin(), iend = models.end(); i != iend; ++i) {
+		model_group->add(i->first, i->second);
+	}
+	c["model"] = model_group;
+
+	proxy_group *state_group = new proxy_group;
+	for (int j = 0, jend = state_stack.size(); j < jend; ++j) {
+		state_group->add(tostring(j), state_stack[j]);
+	}
+	c["state"] = state_group;
+}
+
 bool svs::do_cli_command(const vector<string> &args, string &output) {
 	stringstream ss;
 	vector<string> rest;
 
-	cliproxy *p;
-	if (args.size() >= 2) {
-		p = get_proxy()->find(args[1]);
-	} else {
-		p = get_proxy()->find(string(""));
-	}
-	
-	if (!p) {
-		output = "path not found\n";
+	if (args.size() < 2) {
+		output = "specify path\n";
 		return false;
 	}
+	
 	for (int i = 2, iend = args.size(); i < iend; ++i) {
 		rest.push_back(args[i]);
 	}
-	p->use(rest, ss);
+
+	proxy_use(args[1], rest, ss);
 	output = ss.str();
 	return true;
 }
@@ -632,7 +639,6 @@ bool svs::add_model(const string &name, model *m) {
 		return false;
 	}
 	models[name] = m;
-	model_proxy->add(name, m);
 	return true;
 }
 

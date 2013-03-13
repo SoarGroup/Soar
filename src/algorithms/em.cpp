@@ -363,17 +363,6 @@ EM::EM(const model_train_data &data)
 : data(data), use_em(true), use_unify(true), learn_new_modes(true), use_lwr(true),
   check_after(NEW_MODE_THRESH), clsfr(data)
 {
-	proxy_add("mode",        new cliproxy);
-	proxy_add("classifier",  &clsfr);
-	proxy_add("timers",      &timers);
-	proxy_add("use_em",      new bool_proxy(&use_em));
-	proxy_add("use_lwr",     new bool_proxy(&use_lwr));
-	proxy_add("unify_modes", new bool_proxy(&use_unify));
-	proxy_add("learn_modes", new bool_proxy(&learn_new_modes));
-	
-	proxy_add("ptable",      new memfunc_proxy<EM>(this, &EM::cli_ptable));
-	proxy_add("add_mode",    new memfunc_proxy<EM>(this, &EM::cli_add_mode));
-
 	add_mode(false); // noise mode
 }
 
@@ -513,7 +502,6 @@ void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
 
 em_mode *EM::add_mode(bool manual) {
 	em_mode *new_mode = new em_mode(modes.size() == 0, manual, data);
-	get_proxy()->find("mode")->add(tostring(modes.size()), new_mode);
 	modes.push_back(new_mode);
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
 		grow_vec(insts[i]->minfo);
@@ -658,8 +646,6 @@ bool EM::remove_modes() {
 		return false;
 	}
 	
-	cliproxy *mode_proxy = get_proxy()->find("mode");
-	
 	/*
 	 i is the first free model index. If model j should be kept, all
 	 information pertaining to model j will be copied to row/element i
@@ -674,14 +660,12 @@ bool EM::remove_modes() {
 			index_map[j] = i;
 			if (j > i) {
 				modes[i] = modes[j];
-				mode_proxy->rename(tostring(j), tostring(i));
 			}
 			i++;
 		} else {
 			index_map[j] = 0;
 			delete modes[j];
 			removed.push_back(j);
-			mode_proxy->del(tostring(j));
 		}
 	}
 	if (removed.empty()) {
@@ -692,6 +676,7 @@ bool EM::remove_modes() {
 	for (int j = 0, jend = insts.size(); j < jend; ++j) {
 		if (insts[j]->mode >= 0) {
 			insts[j]->mode = index_map[insts[j]->mode];
+			clsfr.update_inst(j, insts[j]->mode);
 		}
 		remove_from_vector(removed, insts[j]->minfo);
 	}
@@ -729,6 +714,25 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 		}
 	}
 	return best;
+}
+
+void EM::proxy_get_children(map<string, cliproxy*> &c) {
+	proxy_group *mode_group = new proxy_group;
+	
+	for (int i = 0, iend = modes.size(); i < iend; ++i) {
+		mode_group->add(tostring(i), modes[i]);
+	}
+	
+	c["mode"] =        mode_group;
+	c["classifier"] =  &clsfr;
+	c["timers"] =      &timers;
+	c["use_em"] =      new bool_proxy(&use_em);
+	c["use_lwr"] =     new bool_proxy(&use_lwr);
+	c["unify_modes"] = new bool_proxy(&use_unify);
+	c["learn_modes"] = new bool_proxy(&learn_new_modes);
+	
+	c["ptable"] =      new memfunc_proxy<EM>(this, &EM::cli_ptable);
+	c["add_mode"] =    new memfunc_proxy<EM>(this, &EM::cli_add_mode);
 }
 
 void EM::cli_ptable(ostream &os) const {

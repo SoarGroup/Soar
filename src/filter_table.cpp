@@ -57,12 +57,14 @@ filter_table::filter_table() {
 	add(vec3_fill_entry());
 	add(max_fill_entry());
 	add(closest_fill_entry());
-	
-	proxy_add("timers", &timers);
+}
+
+void filter_table::proxy_get_children(map<string, cliproxy*> &c) {
+	c["timers"] = &timers;
 	
 	map<string, filter_table_entry*>::iterator i, iend;
 	for (i = t.begin(), iend = t.end(); i != iend; ++i) {
-		proxy_add(i->first, i->second);
+		c[i->first] = i->second;
 	}
 }
 
@@ -262,11 +264,9 @@ void filter_table::update_relations(const scene *scn, const vector<int> &dirty, 
 
 filter_table_entry::filter_table_entry()
 : create(NULL), calc(NULL), ordered(false), allow_repeat(false)
-{
-	proxy_add("", new memfunc_proxy<filter_table_entry>(this, &filter_table_entry::cli_use));
-}
+{}
 
-void filter_table_entry::cli_use(ostream &os) const {
+void filter_table_entry::proxy_use_sub(const vector<string> &args, ostream &os) {
 	os << "parameters:";
 	for (int i = 0, iend = parameters.size(); i < iend; ++i) {
 		os << " " << parameters[i];

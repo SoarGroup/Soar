@@ -15,93 +15,40 @@ bool partition(const string &s, string &first, string &rest) {
 	return false;
 }
 
-cliproxy::cliproxy() {}
 cliproxy::~cliproxy() {}
 
-void cliproxy::use(const vector<std::string> &args, std::ostream &os) {
-	child *c = map_getp(children, string(""));
-	if (c) {
-		c->p->use(args, os);
-	}
+void cliproxy::proxy_use(const string &path, const vector<std::string> &args, std::ostream &os) {
+	map<string, cliproxy*> c;
+	map<string, cliproxy*>::const_iterator i, iend;
 	
-	if (!c && !children.empty() || c && children.size() > 1) {
-		os << endl << "children:";
-		std::map<std::string, child>::const_iterator i, iend;
-		for (i = children.begin(), iend = children.end(); i != iend; ++i) {
-			if (!i->first.empty()) {
+	proxy_get_children(c);
+	if (path.empty() || path == ".") {
+		proxy_use_sub(args, os);
+		if (!c.empty()) {
+			os << endl << "children:";
+			for (i = c.begin(), iend = c.end(); i != iend; ++i) {
 				os << " " << i->first;
 			}
 		}
-	}
-}
-
-void cliproxy::add(const string &name, cliproxy *child, bool own) {
-	string first, rest;
-	bool last = partition(name, first, rest);
-	cliproxy::child &c = children[first];
-	if (last) {
-		if (c.p && c.own) {
-			delete c.p;
-		}
-		c.p = child;
-		c.own = own;
 	} else {
-		if (!c.p) {
-			c.p = new cliproxy;
-			c.own = true;
+		string child, rest;
+		partition(path, child, rest);
+		if (has(c, child)) {
+			c[child]->proxy_use(rest, args, os);
+		} else {
+			os << "path not found" << endl;
 		}
-		c.p->add(rest, child);
 	}
-}
-
-void cliproxy::add(const string &name, cliproxy *child) {
-	add(name, child, true);
-}
-
-void cliproxy::add(const string &name, proxied *child) {
-	add(name, child->get_proxy(), false);
-}
-
-void cliproxy::del(const string &name) {
-	string first, rest;
-	bool last = partition(name, first, rest);
-	assert(has(children, first));
-	if (last) {
-		children.erase(first);
-	} else {
-		children[first].p->del(rest);
+	for (i = c.begin(), iend = c.end(); i != iend; ++i) {
+		if (i->second->temporary()) {
+			delete i->second;
+		}
 	}
-}
-
-void cliproxy::rename(const string &from, const string &to) {
-	assert(has(children, from));
-	children.erase(to);
-	child &c = children[from];
-	children[to] = c;
-	c.own = false;
-	children.erase(from);
-}
-
-cliproxy* cliproxy::find(const string &path) {
-	vector<string> parts;
-	split(path, ".", parts);
-	return findp(0, parts);
-}
-
-cliproxy* cliproxy::findp(int i, const vector<string> &path) {
-	cliproxy *c;
-	if (i >= path.size()) {
-		return this;
-	}
-	if (!has(children, path[i])) {
-		return NULL;
-	}
-	return children[path[i]].p->findp(i+1, path);
 }
 
 int_proxy::int_proxy(int *p) : p(p) {}
 
-void int_proxy::use(const vector<string> &args, ostream &os) {
+void int_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
 	if (args.empty()) {
 		os << *p << endl;
 		return;
@@ -113,7 +60,7 @@ void int_proxy::use(const vector<string> &args, ostream &os) {
 
 bool_proxy::bool_proxy(bool *p) : p(p) {}
 
-void bool_proxy::use(const vector<string> &args, ostream &os) {
+void bool_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
 	if (args.empty()) {
 		os << (*p ? "true" : "false") << endl;
 		return;
@@ -125,4 +72,12 @@ void bool_proxy::use(const vector<string> &args, ostream &os) {
 	} else {
 		os << "invalid boolean" << endl;
 	}
+}
+
+void proxy_group::add(const std::string &name, cliproxy *p) {
+	children[name] = p;
+}
+
+void proxy_group::proxy_get_children(std::map<std::string, cliproxy*> &c) {
+	c = children;
 }

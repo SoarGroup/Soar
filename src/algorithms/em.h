@@ -52,7 +52,7 @@ public:
 	void unserialize(std::istream &is);
 };
 
-class EM : public serializable, public proxied {
+class EM : public serializable, public cliproxy {
 public:
 	EM(const model_train_data &data);
 	~EM();
@@ -83,6 +83,7 @@ private:
 	int classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &obj_map);
 	int vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
 	
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_ptable(std::ostream &os) const;
 	void cli_add_mode(const std::vector<std::string> &args, std::ostream &os);
 

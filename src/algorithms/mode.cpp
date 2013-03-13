@@ -86,9 +86,6 @@ em_mode::em_mode(bool noise, bool manual, const model_train_data &data)
 		stale = true;
 	}
 	
-	proxy_add("",        new memfunc_proxy<em_mode>(this, &em_mode::cli_model));
-	proxy_add("clauses", new memfunc_proxy<em_mode>(this, &em_mode::cli_clauses));
-	proxy_add("members", new memfunc_proxy<em_mode>(this, &em_mode::cli_members));
 }
 
 /*
@@ -145,12 +142,11 @@ bool em_mode::map_objs(int target, const scene_sig &dsig, const relation_table &
 	vector<bool> used(dsig.size(), false);
 	used[target] = true;
 	mapping.resize(sig.empty() ? 1 : sig.size(), -1);
+	mapping[0] = target;  // target always maps to target
 	
-	// target always maps to target
-	mapping[0] = target;
+	learn_obj_clauses(data.get_all_rels());
 	
 	var_domains domains;
-	
 	// 0 = time, 1 = target, 2 = object we're searching for
 	domains[0].insert(0);
 	domains[1].insert(dsig[target].id);
@@ -190,7 +186,11 @@ bool em_mode::map_objs(int target, const scene_sig &dsig, const relation_table &
  pos_obj and neg_obj can probably be cached and updated as data points
  are assigned to modes.
 */
-void em_mode::learn_obj_clauses(const relation_table &rels) {
+void em_mode::learn_obj_clauses(const relation_table &rels) const {
+	if (!obj_clauses_stale) {
+		return;
+	}
+	
 	obj_clauses.resize(sig.size());
 	for (int i = 1; i < sig.size(); ++i) {   // 0 is always target, no need to map
 		string type = sig[i].type;
@@ -223,9 +223,15 @@ void em_mode::learn_obj_clauses(const relation_table &rels) {
 			obj_clauses[i][j] = foil.get_clause(j);
 		}
 	}
+	obj_clauses_stale = false;
 }
 
-void em_mode::cli_model(ostream &os) const {
+void em_mode::proxy_get_children(map<string, cliproxy*> &c) {
+	c["clauses"] = new memfunc_proxy<em_mode>(this, &em_mode::cli_clauses);
+	c["members"] = new memfunc_proxy<em_mode>(this, &em_mode::cli_members);
+}
+
+void em_mode::proxy_use_sub(const vector<string> &args, ostream &os) {
 	if (noise) {
 		os << "noise" << endl;
 	} else {
@@ -274,12 +280,12 @@ void em_mode::cli_members(ostream &os) const {
 */
 void em_mode::serialize(ostream &os) const {
 	serializer(os) << stale << new_fit << members << sig << obj_clauses << sorted_ys
-	               << lin_coefs << lin_inter << n_nonzero << manual;
+	               << lin_coefs << lin_inter << n_nonzero << manual << obj_clauses_stale;
 }
 
 void em_mode::unserialize(istream &is) {
 	unserializer(is) >> stale >> new_fit >> members >> sig >> obj_clauses >> sorted_ys
-	                 >> lin_coefs >> lin_inter >> n_nonzero >> manual;
+	                 >> lin_coefs >> lin_inter >> n_nonzero >> manual >> obj_clauses_stale;
 }
 
 double em_mode::calc_prob(int target, const scene_sig &dsig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
@@ -437,6 +443,7 @@ void em_mode::add_example(int t, const vector<int> &obj_map) {
 			stale = true;
 		}
 	}
+	obj_clauses_stale = true;
 }
 
 void em_mode::del_example(int t) {
@@ -446,6 +453,7 @@ void em_mode::del_example(int t) {
 	if (noise) {
 		sorted_ys.erase(make_pair(d.y(0), t));
 	}
+	obj_clauses_stale = true;
 }
 
 void em_mode::largest_const_subset(vector<int> &subset) {

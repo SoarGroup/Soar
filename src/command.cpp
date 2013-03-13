@@ -119,6 +119,10 @@ void command::set_status(const string &s) {
 	curr_status = s;
 }
 
+void command::proxy_get_children(map<string, cliproxy*> &c) {
+	c["timers"] = &timers;
+}
+
 command *_make_extract_command_(svs_state *state, Symbol *root);
 command *_make_extract_once_command_(svs_state *state, Symbol *root);
 command *_make_add_node_command_(svs_state *state, Symbol *root);
