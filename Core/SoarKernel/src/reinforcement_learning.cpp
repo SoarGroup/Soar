@@ -133,6 +133,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	// apoptosis-thresh
 	apoptosis_thresh = new rl_apoptosis_thresh_param( "apoptosis-thresh", -2.0, new soar_module::gt_predicate<double>( 0, false ), new rl_apoptosis_predicate<double>( my_agent ) );
 	add( apoptosis_thresh );
+
+  // trace
+  trace = new soar_module::boolean_param( "trace", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+  add( trace );
 };
 
 //

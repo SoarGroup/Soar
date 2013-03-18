@@ -18,8 +18,8 @@ fi
 
 COMPILE_FOR_LSB=1
 
-if [ "$CC" == "" ]; then CC=gcc; fi
-if [ "$CXX" == "" ]; then CXX=g++; fi
+if [ "$CC" == "" ]; then CC=gcc-4.6; fi
+if [ "$CXX" == "" ]; then CXX=g++-4.6; fi
 VERCC=( $($CC --version \
         | grep -o '[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}' \
         | head -n 1 \
@@ -82,7 +82,7 @@ fi
 export LSBCC_LIB_PREFIX
 export LSBCC=$CC
 export LSBCXX=$CXX
-export LSBCC_LSBVERSION=4.0
+export LSBCC_LSBVERSION=4.1
 export LSBCC_LIBS=$LSBCC_LIB_PREFIX$LSBCC_LSBVERSION
 export LSB_SHAREDLIBPATH="$(pwd)/out"
 export CCACHE
@@ -102,12 +102,28 @@ fi
 
 mkdir -p out
 
+JOBS=4
+TARGETS="cli debugger debugger_api headers kernel sml_java tests"
+
 scons \
+  --jobs=$JOBS \
+  --cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
+  --cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
+  --lnflags="$LDFLAGS --lsb-shared-libpath=out -Wl,--hash-style=both" \
+  --build=build_d --out=out_d \
+  $TARGETS
+
+scons \
+  --jobs=$JOBS \
   --cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
   --cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
   --lnflags="$LDFLAGS --lsb-shared-libpath=out -Wl,--hash-style=both" \
   --opt \
-  cli debugger debugger_api headers java_sml_misc kernel sml_java tests "$@"
+  $TARGETS
+RV=$?
+if [ $RV -ne 0 ]; then
+  exit $RV
+fi
 
 $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBVERSION --shared-libpath=out out/cli
 $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBVERSION --shared-libpath=out out/TestCLI
@@ -116,3 +132,9 @@ $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBV
 $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBVERSION --shared-libpath=out out/TestSMLPerformance
 $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBVERSION --shared-libpath=out out/TestSoarPerformance
 $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBVERSION --shared-libpath=out out/UnitTests
+
+cp out/java/sml.jar ../AgentDevelopmentTools/VisualSoar/lib/
+pushd ../AgentDevelopmentTools/VisualSoar
+ant
+cp java/soar-visualsoar-snapshot.jar ../../SoarSuite/out/VisualSoar.jar
+popd

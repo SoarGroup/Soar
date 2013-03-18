@@ -2665,6 +2665,7 @@ namespace cli
             {
                 {'g', "get",    OPTARG_NONE},
                 {'s', "set",    OPTARG_NONE},
+                {'t', "trace",    OPTARG_NONE},
                 {'S', "stats",    OPTARG_NONE},
                 {0, 0, OPTARG_NONE} // null
             };
@@ -2706,8 +2707,9 @@ namespace cli
                     return cli.DoRL( option, &( argv[2] ), &( argv[3] ) );
                 }
 
+            case 't':
             case 'S':
-                // case: stat can do zero or one non-option arguments
+                // case: stat and trace can do zero or one non-option arguments
                 {
                     if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
 

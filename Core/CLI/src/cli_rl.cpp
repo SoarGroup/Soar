@@ -46,6 +46,38 @@ inline void CLI_DoRL_print( CommandLineInterface &cli, const bool &RawOutput, st
         cli.AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, text );
 }
 
+inline void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_trace )
+{
+  os << '(';
+
+  bool tfirst = true;
+  for(std::map<std::vector<std::string>, agent::RL_Trace::Entry>::const_iterator tt = rl_trace.split.begin(), tend = rl_trace.split.end(); tt != tend; ++tt) {
+    if(tfirst)
+      tfirst = false;
+    else
+      os << ';';
+
+    os << '<';
+
+    bool sfirst = true;
+    for(std::vector<std::string>::const_iterator ss = tt->first.begin(), send = tt->first.end(); ss != send; ++ss) {
+      if(sfirst)
+        sfirst = false;
+      else
+        os << ',';
+
+      os << *ss;
+    }
+
+    os << ">," << tt->second.probability << ',';
+
+    if(tt->second.next)
+      CLI_DoRL_print_trace(os, *tt->second.next);
+  }
+
+  os << ')';
+}
+
 bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const std::string* pVal ) 
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
@@ -149,6 +181,26 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
             return SetError( "Failed to set value." );
 
         return true;
+    }
+    else if ( pOp == 't' )
+    {
+      const int level = pAttr ? atoi(pAttr->c_str()) : 1;
+      if(level < 1)
+        return SetError( "Invalid RL goal level." );
+
+      std::ostringstream oss;
+      
+      oss << "RL Trace, Goal Level " << level << ':' << std::endl;
+
+      std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(level);
+      if(tt != agnt->rl_trace.end())
+        CLI_DoRL_print_trace(oss, tt->second);
+
+      oss << std::endl;
+
+      CLI_DoRL_print( *this, m_RawOutput, m_Result, oss.str().c_str(), false );
+
+      return true;
     }
     else if ( pOp == 'S' )
     {

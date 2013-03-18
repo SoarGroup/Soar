@@ -921,11 +921,70 @@ void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, bool unique_value)
 
 }
 
+/** Build our RL trace. -bazald **/
+
+void build_rl_trace(agent* const &thisAgent, preference * const &candidates, preference * const &selected) ///< bazald
+{
+  if(thisAgent->rl_params->trace->get_value() == soar_module::off)
+    return;
+
+  agent::RL_Trace ** next = NIL;
+
+  for(preference * cand = candidates; cand; cand = cand->next_candidate) {
+    if(cand->inst && cand->inst->prod) {
+      const production * const &prod = cand->inst->prod;
+
+      if(cand->rl_contribution) {
+//         std::cerr << "rl-trace: " << cand->inst->prod->name->sc.name << std::endl;
+
+//         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+//           production * const &prod2 = pref->inst->prod;
+//           if(cand->value == pref->value && prod2->rl_rule) {
+//             std::cerr << "rl-trace: +" << prod2->name->sc.name << std::endl;
+//           }
+//         }
+
+        std::vector<std::string> index_str;
+        for(wme *w = thisAgent->all_wmes_in_rete; w; w = w->rete_next) {
+          if(cand->value == w->id) {
+            const std::string str = symbol_to_string(thisAgent, w->value, false, NIL, 0);
+//             std::cerr << "rl-trace: ?" << str << std::endl;
+
+            index_str.push_back(str);
+          }
+        }
+
+        const double probability = exploration_probability_according_to_policy(thisAgent, candidates->slot, candidates, cand);
+//         std::cerr << "rl-trace: =" << probability << std::endl;
+
+        agent::RL_Trace * const rl_trace = static_cast<agent::RL_Trace *>(candidates->slot->id->id.rl_trace);
+        rl_trace->split[index_str].probability = probability;
+        if(cand == selected) {
+          next = &rl_trace->split[index_str].next;
+        }
+      }
+    }
+  }
+
+  if(next) {
+    if(!*next) {
+//       std::cerr << "rl-trace: Expanding" << std::endl;
+      *next = new agent::RL_Trace;
+    }
+//     else {
+//       std::cerr << "rl-trace: Traversing" << std::endl;
+//     }
+
+    candidates->slot->id->id.rl_trace = *next;
+  }
+}
+
 /* Perform reinforcement learning update for one valid candidate. */
 
 void rl_update_for_one_candidate(agent* thisAgent, slot *s, bool consistency, preference *candidates) {
 
   if (!consistency && rl_enabled(thisAgent)) {
+    build_rl_trace(thisAgent, candidates, candidates);
     rl_tabulate_reward_values(thisAgent);
     exploration_compute_value_of_candidate(thisAgent, candidates, s, 0);
     rl_perform_update(thisAgent, candidates->numeric_value,
@@ -1010,6 +1069,7 @@ byte run_preference_semantics(agent* thisAgent,
         *result_candidates = force_result;
 
         if (!predict && rl_enabled(thisAgent)) {
+          build_rl_trace(thisAgent, force_result, force_result);
           rl_tabulate_reward_values(thisAgent);
           exploration_compute_value_of_candidate(thisAgent, force_result, s, 0);
           rl_perform_update(thisAgent, force_result->numeric_value,
@@ -1455,6 +1515,8 @@ byte run_preference_semantics(agent* thisAgent,
   if (!not_all_indifferent) {
     if (!consistency) {
       (*result_candidates) = exploration_choose_according_to_policy(thisAgent, s, candidates);
+      if(rl_enabled(thisAgent))
+        build_rl_trace(thisAgent, candidates, *result_candidates);
       (*result_candidates)->next_candidate = NIL;
 
       if (do_CDPS) {
@@ -1615,6 +1677,13 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
     add_impasse_wme (thisAgent, id, thisAgent->choices_symbol, thisAgent->none_symbol, NIL);
     break;
   }
+
+//   if(thisAgent->rl_trace.find(level) == thisAgent->rl_trace.end())
+//     std::cerr << "rl-trace: Init level " << level << std::endl;
+//   else
+//     std::cerr << "rl-trace: Restore level " << level << std::endl;
+  id->id.rl_trace = &thisAgent->rl_trace[level];
+
   return id;
 }
 

@@ -36,7 +36,7 @@ def execute(cmd):
 
 def gcc_version(cc):
 	version_info = execute(cc.split() + ['--version'])
-	if 'GCC' in version_info:
+	if 'GCC' in version_info or 'g++' in version_info:
 		m = re.search(r'([0-9]+)\.([0-9]+)\.([0-9]+)', version_info)
 		if m:
 			return tuple(int(n) for n in m.groups())

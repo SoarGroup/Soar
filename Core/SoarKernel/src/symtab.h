@@ -280,6 +280,8 @@ typedef struct identifier_struct {
   smem_lti_id smem_lti;
   epmem_time_id smem_time_id;
   uint64_t smem_valid;
+
+  /*Agent::RL_Trace*/ void * rl_trace; ///< A pointer to the current state of the trace for this goal level if isa_goal -bazald
 } identifier;
 
 typedef union symbol_union {

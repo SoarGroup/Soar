@@ -353,6 +353,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.smem_time_id = EPMEM_MEMID_NONE;
   sym->id.smem_valid = NIL;
 
+  sym->id.rl_trace = NIL;
 
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS

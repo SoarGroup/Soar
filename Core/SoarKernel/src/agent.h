@@ -951,7 +951,44 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   // Soar execution will be interrupted when this substate level is removed
   goal_stack_level substate_break_level;
+  
+  /// RL-trace structure -bazald
+  // goal stack level, WMEs attached to the operator, and the probability of selection
+  struct RL_Trace {
+    struct Entry {
+      Entry()
+       : probability(0.0),
+       next(NIL)
+      {
+      }
 
+      ~Entry() {
+        delete next;
+      }
+
+      Entry(const Entry &rhs)
+       : probability(rhs.probability),
+       next(rhs.next)
+      {
+        const_cast<Entry &>(rhs).next = NIL;
+      }
+
+      Entry & operator=(const Entry &rhs) {
+        Entry temp(rhs);
+
+        std::swap(probability, temp.probability);
+        std::swap(next, temp.next);
+
+        return *this;
+      }
+
+      double probability;
+      RL_Trace * next;
+    };
+
+    std::map<std::vector<std::string>, Entry> split;
+  };
+  std::map<goal_stack_level, RL_Trace> rl_trace;
 } agent;
 /*************** end of agent struct *****/
 
