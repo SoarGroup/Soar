@@ -946,18 +946,21 @@ void build_rl_trace(agent* const &thisAgent, preference * const &candidates, pre
 
         std::vector<std::string> index_str;
         index_str.push_back("^name");
-        for(wme *w = thisAgent->all_wmes_in_rete; w; w = w->rete_next) {
-          if(cand->value == w->id) {
-            const std::string attr = symbol_to_string(thisAgent, w->attr, false, NIL, 0);
-            const std::string value = symbol_to_string(thisAgent, w->value, false, NIL, 0);
-//             std::cerr << "rl-trace: ^" << attr << ' ' << value << std::endl;
+//         for(wme *w = thisAgent->all_wmes_in_rete; w; w = w->rete_next) {
+        for(slot *s = cand->value->id.slots; s; s = s->next) {
+          for(wme *w = s->wmes; w; w = w->next) {
+            if(cand->value == w->id) {
+              const std::string attr = symbol_to_string(thisAgent, w->attr, false, NIL, 0);
+              const std::string value = symbol_to_string(thisAgent, w->value, false, NIL, 0);
+//               std::cerr << "rl-trace: ^" << attr << ' ' << value << std::endl;
 
-            if(attr == "name")
-              index_str[0] += ' ' + value;
-            else
-              index_str.push_back('^' + attr + ' ' + value);
+              if(attr == "name")
+                index_str[0] += ' ' + value;
+              else
+                index_str.push_back('^' + attr + ' ' + value);
 
-            std::sort(++index_str.begin(), index_str.end());
+              std::sort(++index_str.begin(), index_str.end());
+            }
           }
         }
 
