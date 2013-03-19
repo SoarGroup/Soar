@@ -184,21 +184,26 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
     }
     else if ( pOp == 't' )
     {
-      const int level = pAttr ? atoi(pAttr->c_str()) : 1;
-      if(level < 1)
-        return SetError( "Invalid RL goal level." );
+      if(pAttr && *pAttr == "clear") {
+        agnt->rl_trace.clear();
+      }
+      else {
+        const int level = pAttr ? atoi(pAttr->c_str()) : 1;
+        if(level < 1)
+          return SetError( "Invalid RL goal level / clear command." );
 
-      std::ostringstream oss;
-      
-      oss << "RL Trace, Goal Level " << level << ':' << std::endl;
+        std::ostringstream oss;
+        
+        oss << "RL Trace, Goal Level " << level << ':' << std::endl;
 
-      std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(level);
-      if(tt != agnt->rl_trace.end())
-        CLI_DoRL_print_trace(oss, tt->second);
+        std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(level);
+        if(tt != agnt->rl_trace.end())
+          CLI_DoRL_print_trace(oss, tt->second);
 
-      oss << std::endl;
+        oss << std::endl;
 
-      CLI_DoRL_print( *this, m_RawOutput, m_Result, oss.str().c_str(), false );
+        CLI_DoRL_print( *this, m_RawOutput, m_Result, oss.str().c_str(), false );
+      }
 
       return true;
     }
