@@ -1,63 +1,77 @@
 import os
 
-def srcp(p):
-	return '../src/' + p
+jp = os.path.join
 
-def srca(p):
-	return '../src/algorithms/' + p
+HOME = os.environ['HOME']
+BUILD = jp(HOME, 'build/svs2')
+OUT = jp(HOME, 'svsout')
+SRC = jp('..', 'src')
+ALG = jp(SRC, 'algorithms')
+MDL = jp(SRC, 'models')
 
 env = Environment(
-	CPPPATH = os.environ.get('CPATH','').split(':') + [srcp('.'), srca('.'), '../eigen' ],
+	CPPPATH = os.environ.get('CPATH','').split(':') + [SRC, ALG, MDL, '../eigen' ],
 	#CPPFLAGS = ['-O3', '-Wno-enum-compare'],
 	CPPFLAGS = ['-g', '-Wno-enum-compare'],
 	LINKFLAGS = ['-g'],
 	LIBPATH = os.environ.get('LD_LIBRARY_PATH', '').split(':'),
-	LIBS = [ 'rt', 'ode', 'opencv_core', 'opencv_ml' ],
+	LIBS = [ 'rt', 'opencv_core', 'opencv_ml' ],
 )
 
-srcs = [
-	srcp('common.cpp'),
-	srcp('mat.cpp'),
-	srcp('relation.cpp'),
-	srcp('serialize.cpp'),
-	srcp('timer.cpp'),
-	srcp('scene_sig.cpp'),
-	srcp('collision.cpp'),
-	srcp('sgnode.cpp'),
-	srca('foil.cpp'),
-	srca('linear.cpp'),
-	srca('lda.cpp'),
+def obj(names):
+	global env
+	
+	o = []
+	for n in names:
+		a = n + '.cpp'
+		b = n + '.o'
+		if os.path.exists(a):
+			o.append(env.StaticObject(source = a, target = jp(BUILD, b)))
+		elif os.path.exists(jp(SRC, a)):
+			o.append(env.StaticObject(source = jp(SRC, a), target = jp(BUILD, b)))
+		elif os.path.exists(jp(ALG, a)):
+			o.append(env.StaticObject(source = jp(ALG, a), target = jp(BUILD, 'alg', b)))
+		elif os.path.exists(jp(MDL, a)):
+			o.append(env.StaticObject(source = jp(MDL, a), target = jp(BUILD, 'alg', b)))
+	
+	return o
+
+def exe(name, objs):
+	p = env.Program(jp(OUT, name), obj(objs))
+	env.Default(p)
+
+common = ['common', 'mat', 'serialize', 'timer', 'cliproxy']
+
+run_lda = common + ['lda', 'run_lda']
+
+test_foil = common + ['relation', 'foil', 'test_foil']
+
+test_intervalset = common + ['relation', 'test_intervalset']
+
+test_csp = common + ['relation', 'foil', 'test_csp']
+
+test_em = common + [
+	'relation',
+	'scene_sig',
+	'drawer',
+	'ipcsocket',
+	'sgnode',
+	'model',
+	
+	'nn',
+	'lwr',
+	'linear',
+	'foil',
+	'lda',
+	'em',
+	'classifier',
+	'mode',
+	
+	'test_em',
 ]
 
-run_lda_src = [
-	srcp('common.cpp'),
-	srcp('mat.cpp'),
-	srca('lda.cpp'),
-	'run_lda.cpp',
-]
-
-test_foil_src = [
-	srcp('common.cpp'),
-	srcp('relation.cpp'),
-	srca('foil.cpp'),
-	'test_foil.cpp'
-]
-
-test_intervalset_src = [
-	srcp('common.cpp'),
-	srcp('relation.cpp'),
-	'test_intervalset.cpp'
-]
-
-test_csp_src = [
-	srcp('common.cpp'),
-	srcp('relation.cpp'),
-	srca('foil.cpp'),
-	'test_csp.cpp'
-]
-
-#env.Program('test_svs2', srcs + ['test_svs2.cpp'])
-env.Program('run_lda', run_lda_src)
-env.Program('test_foil', test_foil_src)
-env.Program('test_intervalset', test_intervalset_src)
-env.Program('test_csp', test_csp_src)
+exe('run_lda', run_lda)
+exe('test_foil', test_foil)
+exe('test_intervalset', test_intervalset)
+exe('test_csp', test_csp)
+exe('test_em', test_em)
