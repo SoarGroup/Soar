@@ -46,36 +46,47 @@ inline void CLI_DoRL_print( CommandLineInterface &cli, const bool &RawOutput, st
         cli.AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, text );
 }
 
-inline void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_trace )
+/// Formatted for dot: http://www.graphviz.org/content/dot-language
+
+inline void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_trace, const std::string &label_up = "init", int * cp = NIL )
 {
-  os << '(';
+  if(label_up == "init")
+    os << "digraph RL_Trace {" << std::endl;
 
-  bool tfirst = true;
+  std::ostringstream label;
+
+  int c = cp ? *cp : 0;
   for(std::map<std::vector<std::string>, agent::RL_Trace::Entry>::const_iterator tt = rl_trace.split.begin(), tend = rl_trace.split.end(); tt != tend; ++tt) {
-    if(tfirst)
-      tfirst = false;
-    else
-      os << ';';
+    label << "node" << c++;
 
-    os << '<';
+    os << "  " << label.str() << " [label=\"";
 
     bool sfirst = true;
     for(std::vector<std::string>::const_iterator ss = tt->first.begin(), send = tt->first.end(); ss != send; ++ss) {
       if(sfirst)
         sfirst = false;
       else
-        os << ',';
+        os << "\\n";
 
       os << *ss;
     }
 
-    os << ">," << tt->second.probability << ',';
+    os << "\"];" << std::endl;
+
+    os << "  " << label_up << " -> " << label.str() << " [label=\"" << tt->second.probability << "\"];" << std::endl;
 
     if(tt->second.next)
-      CLI_DoRL_print_trace(os, *tt->second.next);
+      CLI_DoRL_print_trace(os, *tt->second.next, label.str(), &c);
+
+    label.str("");
+    label.clear();
   }
 
-  os << ')';
+  if(label_up == "init")
+    os << "}" << std::endl;
+
+  if(cp)
+    *cp = c;
 }
 
 bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const std::string* pVal ) 
@@ -194,7 +205,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 
         std::ostringstream oss;
         
-        oss << "RL Trace, Goal Level " << level << ':' << std::endl;
+        oss << "# RL Trace, Goal Level " << level << ':' << std::endl;
 
         std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(level);
         if(tt != agnt->rl_trace.end())
