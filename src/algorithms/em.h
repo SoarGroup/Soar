@@ -57,7 +57,7 @@ public:
 	EM(const model_train_data &data);
 	~EM();
 	
-	void update();
+	void add_data(int t);
 	bool run(int maxiters);
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
 	// Return the mode with the model that best fits (x, y)
@@ -78,10 +78,7 @@ private:
 	em_mode *add_mode(bool manual);
 	bool remove_modes();
 
-	void update_classifier();
-	void update_pair(int i, int j);
 	int classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &obj_map);
-	int vote_pair(int i, int j, int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
 	
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_ptable(std::ostream &os) const;

@@ -365,14 +365,13 @@ void classifier::del_classes(const vector<int> &c) {
 	}
 }
 
-void classifier::add_inst(int cls) {
-	membership.push_back(-1);
-	assert(membership.size() == data.size());
-	update_inst(membership.size() - 1, cls);
-}
-
 void classifier::update_inst(int i, int c) {
 	assert(0 <= i && i <= membership.size() && 0 <= c && c < classes.size());
+	// assume new instances can only arrive in order
+	if (i == membership.size()) {
+		membership.push_back(-1);
+	}
+	
 	if (membership[i] == c) {
 		return;
 	}

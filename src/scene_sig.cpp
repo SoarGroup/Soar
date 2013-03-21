@@ -30,9 +30,9 @@ void scene_sig::entry::unserialize(istream &is) {
 
 void scene_sig::serialize(ostream &os) const {
 	serializer sr(os);
-	sr << "SCENE_SIG" << s.size();
+	sr << "SCENE_SIG" << s.size() << '\n';
 	for (int i = 0, iend = s.size(); i < iend; ++i) {
-		sr << '\n' << s[i];
+		sr << s[i];
 	}
 }
 

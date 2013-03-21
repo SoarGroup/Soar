@@ -63,7 +63,6 @@ public:
 	void add_class();
 	void del_classes(const std::vector<int> &c);
 	
-	void add_inst(int c);
 	void update_inst(int i, int cls);
 	void classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, std::vector<int> &votes);
 

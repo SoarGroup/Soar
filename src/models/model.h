@@ -13,9 +13,6 @@
 #include "scene_sig.h"
 #include "cliproxy.h"
 
-class svs_state;
-class soar_interface;
-
 struct model_train_inst {
 	rvec x, y;
 	int target;
@@ -45,11 +42,13 @@ public:
 	
 	int size() const { return insts.size(); }
 
+private:
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
+	
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_contdata(const std::vector<std::string> &args, std::ostream &os) const;
-	
-private:
+	void cli_save(const std::vector<std::string> &args, std::ostream &os) const;
+
 	std::vector<scene_sig*> sigs;
 	std::vector<model_train_inst*> insts;
 	relation_table all_rels, context_rels;

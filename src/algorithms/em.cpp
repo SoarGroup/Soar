@@ -373,11 +373,10 @@ EM::~EM() {
 }
 
 
-void EM::update() {
+void EM::add_data(int t) {
 	function_timer tm(timers.get_or_add("learn"));
 	
-	int t = data.size() - 1;
-	const model_train_inst &d = data.get_last_inst();
+	const model_train_inst &d = data.get_inst(t);
 	inst_info *inst = new inst_info;
 	sig_info *s = NULL;
 	if (has(sigs, d.sig)) {
@@ -402,7 +401,7 @@ void EM::update() {
 	insts.push_back(inst);
 	
 	modes[0]->add_example(t, vector<int>());
-	clsfr.add_inst(0);
+	clsfr.update_inst(t, 0);
 }
 
 void EM::estep() {

@@ -228,7 +228,7 @@ class serializer {
 public:
 	serializer(std::ostream &os) : delim(true), os(os) {}
 
-	~serializer() { os << std::endl; }
+	~serializer() { os.put('\n'); }
 	
 	template <typename T>
 	serializer &operator<<(const T &obj) {
