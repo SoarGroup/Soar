@@ -59,7 +59,7 @@ public:
 	
 	void add_data(int t);
 	bool run(int maxiters);
-	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y);
+	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, double &y);
 	// Return the mode with the model that best fits (x, y)
 	int best_mode(int target, const scene_sig &sig, const rvec &x, double y, double &besterror) const;
 	

@@ -42,42 +42,6 @@ bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vecto
 	return true;
 }
 
-void error_stats(const vector<double> &errors, ostream &os) {
-	double total = 0.0, std = 0.0, q1, q2, q3;
-	int num_nans = 0;
-	vector<double> ds;
-	
-	for (int i = 0, iend = errors.size(); i < iend; ++i) {
-		if (isnan(errors[i])) {
-			++num_nans;
-		} else {
-			ds.push_back(errors[i]);
-			total += errors[i];
-		}
-	}
-	double last = ds.back();
-	if (ds.empty()) {
-		os << "no predictions" << endl;
-		return;
-	}
-	double mean = total / ds.size();
-	for (int i = 0; i < ds.size(); ++i) {
-		std += pow(ds[i] - mean, 2);
-	}
-	std = sqrt(std / ds.size());
-	sort(ds.begin(), ds.end());
-	
-	sort(ds.begin(), ds.end());
-	q1 = ds[ds.size() / 4];
-	q2 = ds[ds.size() / 2];
-	q3 = ds[(ds.size() / 4) * 3];
-	
-	table_printer t;
-	t.add_row() << "mean" << "std" << "min" << "q1" << "q2" << "q3" << "max" << "last" << "failed";
-	t.add_row() << mean << std << ds.front() << q1 << q2 << q3 << ds.back() << last << num_nans;
-	t.print(os);
-}
-
 model::model(const std::string &name, const std::string &type, bool learning) 
 : name(name), type(type), learning(learning)
 {}
@@ -87,14 +51,6 @@ void model::learn(int target, const scene_sig &sig, const relation_table &rels, 
 		train_data.add(target, sig, rels, x, y);
 		update();
 	}
-}
-
-/*
- The default test behavior is just to return the prediction. The EM
- model will also record mode prediction information.
-*/
-void model::test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
-	predict(target, sig, rels, x, y);
 }
 
 void model::proxy_get_children(map<string, cliproxy*> &c) {
@@ -165,6 +121,11 @@ bool multi_model::predict(const scene_sig &sig, const relation_table &rels, cons
 	return predict_or_test(false, sig, rels, x, y);
 }
 
+void multi_model::test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+	rvec ry = y;
+	predict_or_test(true, sig, rels, x, ry);
+}
+
 /*
  When testing, the expectation is that y initially contains the
  reference values.
@@ -216,16 +177,6 @@ void multi_model::learn(const scene_sig &sig, const relation_table &rels, const 
 	}
 }
 
-void multi_model::test(const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
-	test_info &t = grow_vec(tests);
-	t.sig = sig;
-	t.x = x;
-	t.y = y;
-	t.pred = y;
-	predict_or_test(true, sig, rels, x, t.pred);
-	t.error = (t.y - t.pred).array().abs();
-}
-
 string multi_model::assign_model
 ( const string &name, 
   const prop_vec &inputs, bool all_inputs,
@@ -269,112 +220,7 @@ void multi_model::unassign_model(const string &name) {
 }
 
 void multi_model::proxy_get_children(map<string, cliproxy*> &c) {
-	c["error"] =  new memfunc_proxy<multi_model>(this, &multi_model::cli_error);
-	c["assign"] = new memfunc_proxy<multi_model>(this, &multi_model::cli_assign);
-}
-
-void multi_model::cli_error(const vector<string> &args, ostream &os) const {
-	int i = 0, start = 0, end = tests.size() - 1;
-	vector<double> y, preds, errors;
-	vector<string> obj_prop;
-	enum { STATS, LIST, HISTO, DUMP } mode = STATS;
-	
-	if (tests.empty()) {
-		os << "no test error data" << endl;
-		return;
-	}
-	
-	if (i >= args.size()) {
-		os << "specify object:property" << endl;
-		return;
-	}
-
-	split(args[i++], ":", obj_prop);
-	if (obj_prop.size() != 2) {
-		os << "invalid object:property" << endl;
-		return;
-	}
-	
-	if (i < args.size() && args[i] == "list") {
-		mode = LIST;
-		++i;
-	} else if (i < args.size() && args[i] == "histogram") {
-		mode = HISTO;
-		++i;
-	} else if (i < args.size() && args[i] == "dump") {
-		mode = DUMP;
-		++i;
-	}
-	
-	if (i < args.size()) {
-		if (!parse_int(args[i], start)) {
-			os << "require integer start time" << endl;
-			return;
-		}
-		if (start < 0 || start >= tests.size()) {
-			os << "start time must be in [0, " << tests.size() - 1 << "]" << endl;
-			return;
-		}
-		if (++i < args.size()) {
-			if (!parse_int(args[i], end)) {
-				os << "require integer end time" << endl;
-				return;
-			}
-			if (end <= start || end >= tests.size()) {
-				os << "end time must be in [start + 1, " << tests.size() - 1 << "]" << endl;
-				return;
-			}
-		}
-	}
-	
-	for (int i = start; i <= end; ++i) {
-		int obj_index, prop_index;
-		if (tests[i].sig.get_dim(obj_prop[0], obj_prop[1], obj_index, prop_index)) {
-			y.push_back(tests[i].y(prop_index));
-			preds.push_back(tests[i].pred(prop_index));
-			errors.push_back(tests[i].error(prop_index));
-		} else {
-			y.push_back(NAN);
-			preds.push_back(NAN);
-			errors.push_back(NAN);
-		}
-	}
-	
-	switch (mode) {
-	case STATS:
-		error_stats(errors, os);
-		return;
-	case LIST:
-		{
-			table_printer t;
-			t.add_row() << "num" << "real" << "pred" << "error" << "null" << "norm";
-			for (int i = 0, iend = y.size(); i < iend; ++i) {
-				t.add_row() << i << y[i] << preds[i] << errors[i];
-				if (i > 0) {
-					double null_error = fabs(y[i-1] - y[i]);
-					t << null_error << errors[i] / null_error;
-				} else {
-					t << "NA" << "NA";
-				}
-			}
-			t.print(os);
-		}
-		return;
-	case HISTO:
-		histogram(errors, 20, os);
-		os << endl;
-		return;
-	case DUMP:
-		{
-			table_printer t;
-			t.add_row() << "real" << "pred";
-			for (int i = 0, iend = y.size(); i < iend; ++i) {
-				t.add_row() << y[i] << preds[i];
-			}
-			t.print(os);
-		}
-		return;
-	}
+	c[""] = new memfunc_proxy<multi_model>(this, &multi_model::cli_assign);
 }
 
 void multi_model::cli_assign(ostream &os) const {
@@ -443,7 +289,7 @@ void model_train_data::serialize(ostream &os) const {
 	for (int i = 0, iend = sigs.size(); i < iend; ++i) {
 		sigs[i]->serialize(os);
 	}
-	sr << '\n';
+	sr << '\n' << "CONTINUOUS_DATA_BEGIN" << '\n';
 	
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
 		const model_train_inst *inst = insts[i];
@@ -456,7 +302,7 @@ void model_train_data::serialize(ostream &os) const {
 		}
 		sr << '\n';
 	}
-	sr << '\n';
+	sr << "CONTINUOUS_DATA_END" << '\n';
 	
 	sr << all_rels << context_rels;
 }
@@ -498,6 +344,7 @@ void model_train_data::unserialize(istream &is) {
 void model_train_data::proxy_get_children(map<string, cliproxy*> &c) {
 	c["rels"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_relations);
 	c["cont"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_contdata);
+	c["save"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_save);
 }
 
 void model_train_data::cli_relations(const vector<string> &args, ostream &os) const {
@@ -542,53 +389,48 @@ void model_train_data::cli_relations(const vector<string> &args, ostream &os) co
 	return;
 }
 
+/*
+ Print out the continuous training data for a particular signature (0 by default)
+ Suitable for use with matlab.
+*/
 void model_train_data::cli_contdata(const vector<string> &args, ostream &os) const {
-	vector<string> objs;
-	for (int i = 0, iend = args.size(); i < iend; ++i) {
-		objs.push_back(args[i]);
+	int sig = 0;
+	if (args.size() > 0) {
+		if (!parse_int(args[0], sig)) {
+			os << "specify a valid signature index" << endl;
+			return;
+		}
 	}
 
-	vector<int> cols;
 	table_printer t;
 	t.set_scientific(true);
 	t.set_precision(10);
-	t.add_row();
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
 		const model_train_inst &d = *insts[i];
-		cout << d.sig << endl;
-		if (i == 0 || d.sig != insts[i-1]->sig) {
-			const scene_sig &s = *d.sig;
-			int c = 0;
-			cols.clear();
-			for (int j = 0, jend = s.size(); j < jend; ++j) {
-				if (objs.empty() || has(objs, s[j].name)) {
-					for (int k = 0; k < s[j].props.size(); ++k) {
-						cols.push_back(c++);
-					}
-					t << s[j].name;
-					t.skip(s[j].props.size() - 1);
-				} else {
-					c += s[j].props.size();
-				}
-			}
-			for (int j = 0, jend = s.size(); j < jend; ++j) {
-				if (objs.empty() || has(objs, s[j].name)) {
-					const vector<string> &props = s[j].props;
-					for (int k = 0; k < props.size(); ++k) {
-						t << props[k];
-					}
-				}
-			}
+		if (d.sig_index != sig) {
+			continue;
 		}
 		t.add_row();
-		t << i;
-		for (int j = 0, jend = cols.size(); j < jend; ++j) {
-			t << d.x(cols[j]);
+		for (int j = 0, jend = d.x.size(); j < jend; ++j) {
+			t << d.x(j);
 		}
-		t << ":";
 		for (int j = 0, jend = d.y.size(); j < jend; ++j) {
 			t << d.y(j);
 		}
 	}
 	t.print(os);
+}
+
+void model_train_data::cli_save(const vector<string> &args, ostream &os) const {
+	if (args.empty()) {
+		os << "specify file name" << endl;
+		return;
+	}
+	ofstream f(args[0].c_str());
+	if (!f.is_open()) {
+		os << "cannot open file " << args[0] << " for writing" << endl;
+		return;
+	}
+	serialize(f);
+	f.close();
 }

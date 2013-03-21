@@ -23,7 +23,7 @@ public:
 	
 	void add_example(int i, const std::vector<int> &obj_map);
 	void del_example(int i);
-	void predict(const scene_sig &s, const rvec &x, const std::vector<int> &obj_map, rvec &y) const;
+	void predict(const scene_sig &s, const rvec &x, const std::vector<int> &obj_map, double &y) const;
 	void largest_const_subset(std::vector<int> &subset);
 	const std::set<int> &get_noise(int sigindex) const;
 	void get_noise_sigs(std::vector<int> &sigs);

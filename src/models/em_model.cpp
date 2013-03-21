@@ -23,7 +23,7 @@ public:
 
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
 		int mode;
-		return em.predict(target, sig, rels, x, mode, y);
+		return em.predict(target, sig, rels, x, mode, y(0));
 	}
 	
 	int get_input_size() const {
@@ -36,7 +36,7 @@ public:
 
 	void update() {
 		assert(get_data().get_last_inst().y.size() == 1);
-		em.update();
+		em.add_data(get_data().size() - 1);
 		if (em.run(MAXITERS)) {
 			if (wm_root) {
 				si->remove_wme(revisions_wme);
@@ -49,41 +49,50 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether classification was correct.
 	*/
-	void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) {
-		int best, mode;
-		double best_error;
-		vector<int> assign;
-		best = em.best_mode(target, sig, x, y(0), best_error);
-		test_best_modes.push_back(best);
-		test_best_errors.push_back(best_error);
-		em.predict(target, sig, rels, x, mode, y);
-		test_modes.push_back(mode);
+	void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
+		rvec yp;
+		
+		test_info &ti = grow_vec(test_rec);
+		ti.x = x;
+		ti.y = y(0);
+		em.predict(target, sig, rels, x, ti.mode, ti.pred);
+		ti.best_mode = em.best_mode(target, sig, x, y(0), ti.best_error);
 	}
 	
 	void proxy_get_children(map<string, cliproxy*> &c) {
 		model::proxy_get_children(c);
 		c["em"] = &em;
-		c["mode_error"] = new memfunc_proxy<EM_model>(this, &EM_model::cli_mode_error);
+		c["error"] = new memfunc_proxy<EM_model>(this, &EM_model::cli_test_record);
 	}
 	
-	void cli_mode_error(ostream &os) const {
-		assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
+	void cli_test_record(ostream &os) const {
 		int correct = 0, incorrect = 0;
 		table_printer t;
-		t.add_row() << "N" << "PRED. MODE" << "BEST MODE" << "BEST ERROR";
-		for (int i = 0; i < test_modes.size(); ++i) {
-			if (test_modes[i] == test_best_modes[i] && test_best_modes[i] != 0) {
+		t.add_row() << "N" << "REAL" << "PRED" << "ERROR" << "MODE" << "BESTMODE" << "BESTERROR";
+		for (int i = 0, iend = test_rec.size(); i < iend; ++i) {
+			const test_info &ti = test_rec[i];
+			if (ti.mode == ti.best_mode && ti.best_mode != 0) {
 				++correct;
 			} else {
 				++incorrect;
 			}
-			t.add_row() << i << test_modes[i] << test_best_modes[i] << test_best_errors[i];
+			t.add_row() << i << ti.y << ti.pred << ti.pred - ti.y << ti.mode << ti.best_mode << ti.best_error;
 		}
 		t.print(os);
 		os << correct << " correct, " << incorrect << " incorrect" << endl;
 	}
 	
 private:
+	struct test_info {
+		scene_sig sig;
+		rvec x;
+		double y;
+		double pred;
+		double best_error;
+		int mode;
+		int best_mode;
+	};
+	
 	EM em;
 	
 	soar_interface *si;
@@ -91,8 +100,7 @@ private:
 	wme *revisions_wme;
 	int revisions;
 	
-	vector<int> test_modes, test_best_modes;
-	vector<double> test_best_errors;
+	vector<test_info> test_rec;
 
 	void serialize_sub(ostream &os) const {
 		em.serialize(os);

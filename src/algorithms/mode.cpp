@@ -199,6 +199,7 @@ void em_mode::learn_obj_clauses(const relation_table &rels) const {
 		map<int,mem_info>::const_iterator j;
 		for (j = members.begin(); j != members.end(); ++j) {
 			const model_train_inst &d = data.get_inst(j->first);
+			assert(j->second.obj_map.size() == sig.size());
 			int o = (*d.sig)[j->second.obj_map[i]].id;
 			
 			objs[0] = d.target;
@@ -410,9 +411,9 @@ bool em_mode::update_fits() {
 	return true;
 }
 
-void em_mode::predict(const scene_sig &dsig, const rvec &x, const vector<int> &obj_map, rvec &y) const {
+void em_mode::predict(const scene_sig &dsig, const rvec &x, const vector<int> &obj_map, double &y) const {
 	if (lin_coefs.size() == 0) {
-		y = lin_inter;
+		y = lin_inter(0);
 		return;
 	}
 	
@@ -426,19 +427,19 @@ void em_mode::predict(const scene_sig &dsig, const rvec &x, const vector<int> &o
 		xsize += n;
 	}
 	xc.conservativeResize(xsize);
-	y = (xc * lin_coefs) + lin_inter;
+	y = ((xc * lin_coefs) + lin_inter)(0);
 }
 
 void em_mode::add_example(int t, const vector<int> &obj_map) {
-	assert(!has(members, t));
+	assert(!has(members, t) && obj_map.size() == sig.size());
 	
 	const model_train_inst &d = data.get_inst(t);
 	members[t].obj_map = obj_map;
 	if (noise) {
 		sorted_ys.insert(make_pair(d.y(0), t));
 	} else {
-		rvec y;
-		predict(*d.sig, d.x, obj_map, y);
+		rvec y(1);
+		predict(*d.sig, d.x, obj_map, y(0));
 		if ((y - d.y).norm() > MODEL_ERROR_THRESH) {
 			stale = true;
 		}

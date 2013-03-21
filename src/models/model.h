@@ -70,7 +70,7 @@ public:
 	virtual bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
-	virtual void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
+	virtual void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {};
 
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	
@@ -78,7 +78,7 @@ private:
 	std::string name, type;
 	bool learning;
 	model_train_data train_data;
-	
+
 	virtual void update() {}
 	virtual void serialize_sub(std::ostream &os) const {}
 	virtual void unserialize_sub(std::istream &is) {}
@@ -121,25 +121,13 @@ private:
 		model *mdl;
 	};
 	
-	struct test_info {
-		scene_sig sig;
-		rvec x;
-		rvec y;
-		rvec pred;
-		rvec error;
-	};
-	
 	bool predict_or_test(bool test, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
-	void cli_error(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_assign(std::ostream &os) const;
 
 	std::list<model_config*>       active_models;
 	std::map<std::string, model*> *model_db;
-	
-	// record prediction errors
-	std::vector<test_info> tests;
 };
 
 #endif

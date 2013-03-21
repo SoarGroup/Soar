@@ -606,7 +606,7 @@ bool EM::unify_or_add_mode() {
 }
 
 
-bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, rvec &y) {
+bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, int &mode, double &y) {
 	if (insts.empty()) {
 		mode = 0;
 		return false;
@@ -626,14 +626,16 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 		sig_table::const_iterator i, iend;
 		for (i = sigs.begin(), iend = sigs.end(); i != iend; ++i) {
 			if (*i->first == sig) {
-				if (i->second->lwr.predict(x, y)) {
+				rvec yv(1);
+				if (i->second->lwr.predict(x, yv)) {
+					y = yv(0);
 					return true;
 				}
 				break;
 			}
 		}
 	}
-	y(0) = NAN;
+	y = NAN;
 	return false;
 }
 
