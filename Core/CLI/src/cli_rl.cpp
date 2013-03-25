@@ -73,7 +73,8 @@ inline void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_tr
 
     os << "\"];" << std::endl;
 
-    os << "  " << label_up << " -> " << label.str() << " [label=\"" << tt->second.probability << "\"];" << std::endl;
+    os << "  " << label_up << " -> " << label.str() << " [label=\"" << tt->second.probability
+       << " (" << tt->second.init << ")\"];" << std::endl;
 
     if(tt->second.next)
       CLI_DoRL_print_trace(os, *tt->second.next, label.str(), &c);
@@ -210,8 +211,6 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
         std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(level);
         if(tt != agnt->rl_trace.end())
           CLI_DoRL_print_trace(oss, tt->second);
-
-        oss << std::endl;
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result, oss.str().c_str(), false );
       }

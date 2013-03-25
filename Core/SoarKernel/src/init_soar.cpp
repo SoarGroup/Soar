@@ -383,6 +383,7 @@ void reset_max_stats (agent* thisAgent) {
 }
 
 bool reinitialize_soar (agent* thisAgent) {
+  ++thisAgent->init_count;
 
 	int64_t cur_TRACE_CONTEXT_DECISIONS_SYSPARAM;
 	int64_t cur_TRACE_PHASES_SYSPARAM;

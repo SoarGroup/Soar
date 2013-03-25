@@ -440,6 +440,7 @@ typedef struct agent_struct {
   uint64_t            max_dc_wm_changes_value;  /* # of wmes added + removed in a single dc */
   uint64_t            max_dc_wm_changes_cycle;  /* # cycle of max_dc_wm_changes */
 
+  uint64_t            init_count;             /* # of inits done so far */
   uint64_t            d_cycle_count;          /* # of DC's run so far */
   uint64_t            e_cycle_count;          /* # of EC's run so far */
   /*  in Soar 8, e_cycles_this_d_cycle is reset to zero for every
@@ -982,6 +983,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
         return *this;
       }
 
+      uint64_t init;
       double probability;
       RL_Trace * next;
     };

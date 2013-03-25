@@ -968,6 +968,7 @@ void build_rl_trace(agent* const &thisAgent, preference * const &candidates, pre
 //         std::cerr << "rl-trace: =" << probability << std::endl;
 
         agent::RL_Trace * const rl_trace = static_cast<agent::RL_Trace *>(candidates->slot->id->id.rl_trace);
+        rl_trace->split[index_str].init = thisAgent->init_count;
         rl_trace->split[index_str].probability = probability;
         if(cand == selected) {
           next = &rl_trace->split[index_str].next;
