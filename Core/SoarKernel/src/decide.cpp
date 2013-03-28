@@ -64,6 +64,7 @@
 
 #include "assert.h"
 
+#include <algorithm>
 #include <list>
 
 using namespace soar_TraceNames;
