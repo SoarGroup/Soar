@@ -21,7 +21,9 @@ public:
 	sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node);
 	~sgwme();
 	void node_update(sgnode *n, sgnode::change_type t, int added_child);
-
+    Symbol * get_id(){ return id;}
+	sgnode * get_node(){ return node;}
+	std::map<sgwme*,wme*> *get_childs(){ return &childs;}
 private:
 	void add_child(sgnode *c);
 	
@@ -73,7 +75,8 @@ public:
 	Symbol        *get_state()           { return state;     }
 	svs           *get_svs()             { return svsp;      }
 	multi_model   *get_model()           { return mmdl;      }
-	
+	Symbol *       get_sgnode_id(const sgnode *n, sgwme *r); //JK
+	Symbol *       get_sgnode_id(const sgnode *n); //JK
 	void set_output(const rvec &out);
 	bool get_output(rvec &out) const;
 	const output_spec *get_output_spec() const { return outspec; }

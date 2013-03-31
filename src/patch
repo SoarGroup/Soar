@@ -1,0 +1,46 @@
+diff --git a/src/sgnode.cpp b/src/sgnode.cpp
+index 07bb657..180df23 100644
+--- a/src/sgnode.cpp
++++ b/src/sgnode.cpp
+@@ -126,7 +126,7 @@ void sgnode::unlisten(sgnode_listener *o) {
+ }
+ 
+ const bbox &sgnode::get_bounds() const {
+-	if (shape_dirty) {
++	if (shape_dirty || trans_dirty) {
+ 		const_cast<sgnode*>(this)->update_shape();
+ 	}
+ 	return bounds;
+@@ -225,7 +225,8 @@ bool group_node::attach_child(sgnode *c) {
+ 
+ void group_node::update_shape() {
+ 	if (children.empty()) {
+-		set_bounds(bbox());
++		vec3 c = get_world_trans()(vec3(0.0,0.0,0.0));
++		set_bounds(bbox(c));
+ 		return;
+ 	}
+ 	
+@@ -265,6 +266,10 @@ void convex_node::update_shape() {
+ 	set_bounds(bbox(get_world_points()));
+ }
+ 
++void convex_node::set_transform_dirty_sub() {
++	dirty = true;
++}
++
+ const ptlist &convex_node::get_local_points() const {
+ 	return points;
+ }
+diff --git a/src/sgnode.h b/src/sgnode.h
+index 60f0550..035b0b4 100644
+--- a/src/sgnode.h
++++ b/src/sgnode.h
+@@ -135,6 +135,7 @@ public:
+ 	const ptlist &get_world_points() const;
+ 	void set_local_points(const ptlist &pts);
+ 	void get_shape_sgel(std::string &s) const;
++	void set_transform_dirty_sub();
+ 	
+ private:
+ 	void update_shape();

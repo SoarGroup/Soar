@@ -11,6 +11,7 @@ const filter_table& get_filter_table() {
 filter_table_entry intersect_fill_entry();
 filter_table_entry distance_fill_entry();
 filter_table_entry distance_xyz_fill_entry();
+filter_table_entry smaller_fill_entry();
 filter_table_entry bbox_fill_entry();
 filter_table_entry bbox_int_fill_entry();
 filter_table_entry bbox_contains_fill_entry();
@@ -40,6 +41,7 @@ filter_table::filter_table() {
 	add(intersect_fill_entry());
 	add(distance_fill_entry());
 	add(distance_xyz_fill_entry());
+	add(smaller_fill_entry());
 	add(bbox_fill_entry());
 	add(bbox_int_fill_entry());
 	add(bbox_contains_fill_entry());

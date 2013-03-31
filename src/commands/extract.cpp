@@ -99,7 +99,8 @@ private:
 		int iv;
 		double fv;
 		bool bv;
-		
+		//const sgnode* nv;		
+				
 		if (get_filter_val(v, iv)) {
 			return si->make_sym(iv);
 		}
@@ -109,6 +110,11 @@ private:
 		if (get_filter_val(v, bv)) {
 			return si->make_sym(bv ? "t" : "f");
 		}
+		/*
+		if (get_filter_val(v, nv)) {
+			return state->get_sgnode_id(nv);
+		}
+		*/
 		return si->make_sym(v->get_string());
 	}
 	

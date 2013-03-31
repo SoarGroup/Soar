@@ -37,9 +37,25 @@ bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	return comp == dir[axis];
 }
 
+bool size_comp(const sgnode *a, const sgnode *b) {
+	int i, dir[3];
+	vec3 amin, amax, bmin, bmax;
+
+	a->get_bounds().get_vals(amin, amax);
+	b->get_bounds().get_vals(bmin, bmax);
+	float adiag = (amax-amin).norm();
+	float bdiag = (bmax-bmin).norm();
+	
+	return (adiag*1.1) < bdiag;
+}
+
 bool north_of(scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 1, 1);
+}
+bool smaller(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return size_comp(args[0], args[1]);
 }
 
 bool south_of(scene *scn, const vector<const sgnode*> &args) {
@@ -116,8 +132,37 @@ private:
 	int axis, comp;
 };
 
+
+
+
+
+class size_comp_filter : public typed_map_filter<bool> {
+public:
+	size_comp_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: typed_map_filter<bool>(root, si, input) {}
+	
+	bool compute(const filter_params *p, bool adding, bool &res, bool &changed) {
+		const sgnode *a, *b;
+		
+		if (!get_filter_param(this, p, "a", a)) {
+			return false;
+		}
+		if (!get_filter_param(this, p, "b", b)) {
+			return false;
+		}
+		
+		bool newres = size_comp(a, b);
+		changed = (newres != res);
+		res = newres;
+		return true;
+	}
+};
+
 filter *make_north_of(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 1, 1);
+}
+filter *make_smaller(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new size_comp_filter(root, si, input);
 }
 
 filter *make_south_of(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
@@ -152,6 +197,18 @@ filter *make_below(Symbol *root, soar_interface *si, scene *scn, filter_input *i
 	return new direction_filter(root, si, input, 2, -1);
 }
 
+
+filter_table_entry smaller_fill_entry() {
+	filter_table_entry e;
+	e.name = "smaller";
+	e.parameters.push_back("a");
+	e.parameters.push_back("b");
+	e.ordered = true;
+	e.allow_repeat = false;
+	e.create = &make_smaller;
+	e.calc = &smaller;
+	return e;
+}
 
 filter_table_entry north_of_fill_entry() {
 	filter_table_entry e;
