@@ -303,8 +303,8 @@ void model_train_data::serialize(ostream &os) const {
 		sr << '\n';
 	}
 	sr << "CONTINUOUS_DATA_END" << '\n';
-	
-	sr << all_rels << context_rels;
+	sr << "ALL_RELS_BEGIN" << '\n' << all_rels << '\n' << "ALL_RELS_END" << '\n';
+	sr << "CONTEXT_RELS_BEGIN" << '\n' << context_rels << '\n' << "CONTEXT_RELS_END" << '\n';
 }
 
 void model_train_data::unserialize(istream &is) {
@@ -322,6 +322,8 @@ void model_train_data::unserialize(istream &is) {
 		sigs.push_back(s);
 	}
 	
+	unsr >> label;
+	assert(label == "CONTINUOUS_DATA_BEGIN");
 	for (int i = 0; i < ninsts; ++i) {
 		model_train_inst *inst = new model_train_inst;
 		int xsz, ysz;
@@ -337,8 +339,17 @@ void model_train_data::unserialize(istream &is) {
 		}
 		insts.push_back(inst);
 	}
+	unsr >> label;
+	assert(label == "CONTINUOUS_DATA_END");
 	
-	unsr >> all_rels >> context_rels;
+	unsr >> label;
+	assert(label == "ALL_RELS_BEGIN");
+	unsr >> all_rels >> label;
+	assert(label == "ALL_RELS_END");
+	unsr >> label;
+	assert(label == "CONTEXT_RELS_BEGIN");
+	unsr >> context_rels >> label;
+	assert(label == "CONTEXT_RELS_END");
 }
 
 void model_train_data::proxy_get_children(map<string, cliproxy*> &c) {

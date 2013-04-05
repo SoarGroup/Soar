@@ -6,17 +6,18 @@
 using namespace std;
 
 void clause_vars(const clause &c, vector<int> &vars) {
+	vars.clear();
+	vars.push_back(0);
+	vars.push_back(1);  // these should be used for every clause
 	for (int i = 0; i < c.size(); ++i) {
 		const tuple &args = c[i].get_args();
 		for (int j = 0; j < args.size(); ++j) {
-			if (args[j] >= 0) {
+			if (args[j] >= 0 && !has(vars, args[j])) {
 				vars.push_back(args[j]);
 			}
 		}
 	}
 	sort(vars.begin(), vars.end());
-	vector<int>::iterator end = unique(vars.begin(), vars.end());
-	vars.resize(end - vars.begin());
 }
 
 class csp_node {
@@ -578,6 +579,7 @@ bool FOIL::learn(bool prune, bool record_errors) {
 			choose_clause(ci.cl, NULL);
 		}
 		
+		clause old = ci.cl;
 		if (prune) {
 			prune_clause_fp(ci.cl, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
 		} else {
@@ -588,10 +590,10 @@ bool FOIL::learn(bool prune, bool record_errors) {
 			vector<int> vars;
 			clause_vars(ci.cl, vars);
 			if (ci.true_positives.arity() == 0) {
-				ci.true_positives.reset(vars.size());
+				ci.true_positives.reset(vars.back() + 1);
 			}
 			if (ci.false_positives.arity() == 0) {
-				ci.false_positives.reset(vars.size());
+				ci.false_positives.reset(vars.back() + 1);
 			}
 			
 			// this repeats computation, make more efficient

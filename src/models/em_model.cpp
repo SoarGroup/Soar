@@ -9,6 +9,7 @@
 #include "params.h"
 #include "svs.h"
 #include "scene.h"
+#include "serialize.h"
 
 using namespace std;
 
@@ -55,6 +56,7 @@ public:
 		test_info &ti = grow_vec(test_rec);
 		ti.x = x;
 		ti.y = y(0);
+		extend_relations(test_rels, rels, test_rec.size() - 1);
 		em.predict(target, sig, rels, x, ti.mode, ti.pred);
 		ti.best_mode = em.best_mode(target, sig, x, y(0), ti.best_error);
 	}
@@ -62,10 +64,12 @@ public:
 	void proxy_get_children(map<string, cliproxy*> &c) {
 		model::proxy_get_children(c);
 		c["em"] = &em;
-		c["error"] = new memfunc_proxy<EM_model>(this, &EM_model::cli_test_record);
+		c["error"] = new memfunc_proxy<EM_model>(this, &EM_model::cli_error);
+		c["tests"] = new memfunc_proxy<EM_model>(this, &EM_model::cli_tests);
+		c["test_rels"] = new memfunc_proxy<EM_model>(this, &EM_model::cli_test_rels);
 	}
 	
-	void cli_test_record(ostream &os) const {
+	void cli_error(ostream &os) const {
 		int correct = 0, incorrect = 0;
 		table_printer t;
 		t.add_row() << "N" << "REAL" << "PRED" << "ERROR" << "MODE" << "BESTMODE" << "BESTERROR";
@@ -80,6 +84,20 @@ public:
 		}
 		t.print(os);
 		os << correct << " correct, " << incorrect << " incorrect" << endl;
+	}
+	
+	void cli_tests(ostream &os) const {
+		for (int i = 0, iend = test_rec.size(); i < iend; ++i) {
+			const test_info &ti = test_rec[i];
+			for (int j = 0, jend = ti.x.size(); j < jend; ++j) {
+				os << ti.x(j) << ' ';
+			}
+			os << ti.y << endl;
+		}
+	}
+	
+	void cli_test_rels(ostream &os) const {
+		serializer(os) << test_rels << '\n';
 	}
 	
 private:
@@ -101,6 +119,7 @@ private:
 	int revisions;
 	
 	vector<test_info> test_rec;
+	relation_table test_rels;
 
 	void serialize_sub(ostream &os) const {
 		em.serialize(os);

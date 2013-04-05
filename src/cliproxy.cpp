@@ -29,6 +29,7 @@ void cliproxy::proxy_use(const string &path, const vector<std::string> &args, st
 			for (i = c.begin(), iend = c.end(); i != iend; ++i) {
 				os << " " << i->first;
 			}
+			os << endl;
 		}
 	} else {
 		string child, rest;

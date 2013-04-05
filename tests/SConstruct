@@ -11,11 +11,10 @@ MDL = jp(SRC, 'models')
 
 env = Environment(
 	CPPPATH = os.environ.get('CPATH','').split(':') + [SRC, ALG, MDL, '../eigen' ],
-	#CPPFLAGS = ['-O3', '-Wno-enum-compare'],
-	CPPFLAGS = ['-g', '-Wno-enum-compare'],
+	CPPFLAGS = ['-Og', '-g', '-Wno-enum-compare'],
 	LINKFLAGS = ['-g'],
 	LIBPATH = os.environ.get('LD_LIBRARY_PATH', '').split(':'),
-	LIBS = [ 'rt', 'opencv_core', 'opencv_ml' ],
+#	LIBS = [ 'rt', 'opencv_core', 'opencv_ml' ],
 )
 
 def obj(names):
@@ -40,18 +39,16 @@ def exe(name, objs):
 	p = env.Program(jp(OUT, name), obj(objs))
 	env.Default(p)
 
-common = ['common', 'mat', 'serialize', 'timer', 'cliproxy']
+common = ['common', 'mat', 'serialize', 'timer', 'cliproxy', 'relation' ]
 
-run_lda = common + ['lda', 'run_lda']
-
-test_foil = common + ['relation', 'foil', 'test_foil']
-
-test_intervalset = common + ['relation', 'test_intervalset']
-
-test_csp = common + ['relation', 'foil', 'test_csp']
+run_lda          = common + ['lda', 'run_lda']
+run_foil         = common + ['foil', 'run_foil']
+test_foil        = common + ['foil', 'test_foil']
+test_intervalset = common + ['test_intervalset']
+test_csp         = common + ['foil', 'test_csp']
+combine_rels     = common + ['combine_rels']
 
 test_em = common + [
-	'relation',
 	'scene_sig',
 	'drawer',
 	'ipcsocket',
@@ -70,8 +67,10 @@ test_em = common + [
 	'test_em',
 ]
 
-exe('run_lda', run_lda)
-exe('test_foil', test_foil)
-exe('test_intervalset', test_intervalset)
-exe('test_csp', test_csp)
-exe('test_em', test_em)
+#exe('run_lda', run_lda)
+exe('run_foil', run_foil)
+exe('combine_rels', combine_rels)
+#exe('test_foil', test_foil)
+#exe('test_intervalset', test_intervalset)
+#exe('test_csp', test_csp)
+#exe('test_em', test_em)

@@ -47,7 +47,7 @@ public:
 private:
 	class mem_info : public serializable {
 	public:
-		std::vector<int> obj_map; // mapping from variable in mode sig -> object index in instance
+		std::vector<int> obj_map; // mapping from variables in mode sig -> object index in instance
 		
 		void serialize(std::ostream &os) const;
 		void unserialize(std::istream &is);
