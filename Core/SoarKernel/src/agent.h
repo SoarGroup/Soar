@@ -37,6 +37,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#include "debug.h"
 
 #include <string>
 #include <map>
