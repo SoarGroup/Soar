@@ -37,12 +37,28 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 
 	if (!argv)
 	{
-		PrintCLIMessage_Header("Debug", 40);
+        struct print_function: public soar_module::accumulator< soar_module::param * >
+        {
+        private:
+            cli::CommandLineInterface *this_cli;
+
+            print_function& operator=(const print_function&) { return *this; }
+
+        public:
+            print_function( cli::CommandLineInterface *new_cli): this_cli( new_cli ) {};
+
+            void operator() ( soar_module::param *p )
+            {
+                std::string output( p->get_name() );
+                output += ":";
+                this_cli->PrintCLIMessage_Item(output.c_str(), p, 40);
+            }
+        } print_function_accumulator(this);
+
+
+        PrintCLIMessage_Header("Debug", 40);
         PrintCLIMessage_Section("Settings", 40);
-        PrintCLIMessage_Item("epmem:", agnt->debug_params->epmem_commands, 40);
-        PrintCLIMessage_Item("smem:", agnt->debug_params->smem_commands, 40);
-        PrintCLIMessage_Item("sql:", agnt->debug_params->sql_commands, 40);
-		PrintCLIMessage("");
+        agnt->debug_params->for_each( print_function_accumulator );
 
 		result = true;
 		goto print_syntax;

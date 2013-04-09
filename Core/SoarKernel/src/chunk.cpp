@@ -180,31 +180,52 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 	char prefix[2];
 	Symbol *var;
 
-	if ((*sym)->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;	// only variablize identifiers
-	if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
+	// only variablize identifiers
+	if ((thisAgent->debug_params->use_new_chunking->get_value() == soar_module::off) &&
+		((*sym)->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE))
 	{
-		(*sym)->id.tc_num = thisAgent->variablization_tc;
-		(*sym)->id.variablization = (*sym);
 		return;
 	}
 
-	if ((*sym)->id.tc_num == thisAgent->variablization_tc) {
-		/* --- it's already been variablized, so use the existing variable --- */
-		var = (*sym)->id.variablization;
-		symbol_remove_ref (thisAgent, *sym);
-		*sym = var;
-		symbol_add_ref (var);
-		return;
+	if ((*sym)->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+	{
+		//asm("int $3");
+		print(thisAgent, "\nVariabilizing int constant %d\n",(*sym)->ic.value);
 	}
+	if ((*sym)->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+	{
+		//asm("int $3");
+		print(thisAgent, "\nVariabilizing float constant %f\n", (*sym)->fc.value);
+	}
+	if (((*sym)->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) ||
+		((*sym)->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
+		((*sym)->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
+	{
+			if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
+			{
+				(*sym)->id.tc_num = thisAgent->variablization_tc;
+				(*sym)->id.variablization = (*sym);
+				return;
+			}
 
-	/* --- need to create a new variable --- */
-	(*sym)->id.tc_num = thisAgent->variablization_tc;
-	prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
-	prefix[1] = 0;
-	var = generate_new_variable (thisAgent, prefix);
-	(*sym)->id.variablization = var;
-	symbol_remove_ref (thisAgent, *sym);
-	*sym = var;
+			if ((*sym)->id.tc_num == thisAgent->variablization_tc) {
+				/* --- it's already been variablized, so use the existing variable --- */
+				var = (*sym)->id.variablization;
+				symbol_remove_ref (thisAgent, *sym);
+				*sym = var;
+				symbol_add_ref (var);
+				return;
+			}
+
+			/* --- need to create a new variable --- */
+			(*sym)->id.tc_num = thisAgent->variablization_tc;
+			prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+			prefix[1] = 0;
+			var = generate_new_variable (thisAgent, prefix);
+			(*sym)->id.variablization = var;
+			symbol_remove_ref (thisAgent, *sym);
+			*sym = var;
+		}
 }
 
 void variablize_test (agent* thisAgent, test *t) {

@@ -345,6 +345,7 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
   }
 
   if (test_is_blank_or_equality_test(t)) {
+//	  print(thisAgent, "Equality test.\n" );
     return symbol_to_string (thisAgent, referent_of_equality_test(t), TRUE, dest, dest_size);
   }
 
@@ -354,6 +355,7 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
   }
   ch = dest;
   ct = complex_test_from_test(t);
+  //print(thisAgent, "Complex test!!!!!!!!!!!!!!!!!!!!!!!\n" );
 
   switch (ct->type) {
   case NOT_EQUAL_TEST:
