@@ -483,19 +483,21 @@ bool EM::mstep() {
 	return changed;
 }
 
-void EM::fill_xy(const vector<int> &rows, mat &X, mat &Y) const {
+void EM::fill_xy(const interval_set &rows, mat &X, mat &Y) const {
 	if (rows.empty()) {
 		X.resize(0, 0);
 		Y.resize(0, 0);
 		return;
 	}
 
-	X.resize(rows.size(), data.get_inst(rows[0]).x.size());
+	X.resize(rows.size(), data.get_inst(rows.ith(0)).x.size());
 	Y.resize(rows.size(), 1);
 
-	for (int i = 0; i < rows.size(); ++i) {
-		X.row(i) = data.get_inst(rows[i]).x;
-		Y.row(i) = data.get_inst(rows[i]).y;
+	interval_set::const_iterator i, iend;
+	int j;
+	for (i = rows.begin(), iend = rows.end(), j = 0; i != iend; ++i, ++j) {
+		X.row(j) = data.get_inst(*i).x;
+		Y.row(j) = data.get_inst(*i).y;
 	}
 }
 
@@ -527,15 +529,16 @@ bool EM::unify_or_add_mode() {
 		mat X, Y;
 		sig_table::const_iterator i, iend;
 		for (i = sigs.begin(), iend = sigs.end(); i != iend; ++i) {
-			const set<int> &ns = i->second->noise;
+			const interval_set &ns = i->second->noise;
 			if (ns.size() < check_after) {
 				if (ns.size() > potential) {
 					potential = ns.size();
 				}
 				continue;
 			}
-			vector<int> indvec(ns.begin(), ns.end()), subset;
-			fill_xy(indvec, X, Y);
+			interval_set inds(ns);
+			vector<int> subset;
+			fill_xy(inds, X, Y);
 			find_linear_subset(X, Y, subset, coefs, inter);
 			if (subset.size() > potential) {
 				potential = subset.size();
@@ -543,7 +546,7 @@ bool EM::unify_or_add_mode() {
 			if (subset.size() > largest.size()) {
 				largest.clear();
 				for (int i = 0; i < subset.size(); ++i) {
-					largest.push_back(indvec[subset[i]]);
+					largest.push_back(inds.ith(subset[i]));
 				}
 				if (largest.size() >= NEW_MODE_THRESH) {
 					break;
@@ -582,16 +585,19 @@ bool EM::unify_or_add_mode() {
 				continue;
 			}
 	
-			vector<int> combined, subset;
+			interval_set combined;
+			vector<int> subset;
 			m.get_members(combined);
-			extend(combined, largest);
+			for (int k = 0, kend = largest.size(); k < kend; ++k) {
+				combined.insert(largest[k]);
+			}
 			fill_xy(combined, X, Y);
 			LOG(EMDBG) << "Trying to unify with mode " << j << endl;
 			int unified_size = find_linear_subset(X, Y, subset, ucoefs, uinter);
 			
 			if (unified_size >= m.size() + .9 * largest.size()) {
 				LOG(EMDBG) << "Successfully unified with mode " << j << endl;
-				const model_train_inst &d0 = data.get_inst(combined[subset[0]]);
+				const model_train_inst &d0 = data.get_inst(combined.ith(subset[0]));
 				m.set_linear_params(*d0.sig, d0.target, ucoefs, uinter);
 				return true;
 			}
@@ -677,7 +683,9 @@ bool EM::remove_modes() {
 	for (int j = 0, jend = insts.size(); j < jend; ++j) {
 		if (insts[j]->mode >= 0) {
 			insts[j]->mode = index_map[insts[j]->mode];
-			clsfr.update_inst(j, insts[j]->mode);
+			if (insts[j]->mode == 0) {
+				clsfr.update_inst(j, 0);
+			}
 		}
 		remove_from_vector(removed, insts[j]->minfo);
 	}

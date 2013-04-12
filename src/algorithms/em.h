@@ -69,7 +69,7 @@ public:
 private:
 	void estep();
 	bool mstep();
-	void fill_xy(const std::vector<int> &rows, mat &X, mat &Y) const;
+	void fill_xy(const interval_set &rows, mat &X, mat &Y) const;
 
 	bool unify_or_add_mode();
 	int find_linear_subset(mat &X, mat &Y, std::vector<int> &subset, mat &coefs, rvec &inter) const;

@@ -345,7 +345,9 @@ void classifier::del_classes(const vector<int> &c) {
 			delete classes[i];
 			class_map[i] = -1;
 		} else {
-			classes[n] = classes[i];
+			if (n != i) {
+				classes[n] = classes[i];
+			}
 			class_map[i] = n++;
 		}
 	}

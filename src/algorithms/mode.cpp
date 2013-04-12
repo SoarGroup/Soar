@@ -196,19 +196,25 @@ void em_mode::learn_obj_clauses(const relation_table &rels) const {
 		string type = sig[i].type;
 		relation pos_obj(3), neg_obj(3);
 		tuple objs(2);
-		map<int,mem_info>::const_iterator j;
-		for (j = members.begin(); j != members.end(); ++j) {
-			const model_train_inst &d = data.get_inst(j->first);
-			assert(j->second.obj_map.size() == sig.size());
-			int o = (*d.sig)[j->second.obj_map[i]].id;
-			
-			objs[0] = d.target;
-			objs[1] = o;
-			pos_obj.add(j->first, objs);
-			for (int k = 0, kend = d.sig->size(); k < kend; ++k) {
-				if ((*d.sig)[k].type == type && k != objs[0] && k != o) {
-					objs[1] = k;
-					neg_obj.add(j->first, objs);
+
+		omap_table::const_iterator j, jend;
+		for (j = omaps.begin(), jend = omaps.end(); j != jend; ++j) {
+			const omap &m = j->first;
+			assert(m.size() == sig.size());
+			const interval_set &mem = j->second;
+			interval_set::const_iterator k, kend;
+			for (k = mem.begin(), kend = mem.end(); k != kend; ++k) {
+				const model_train_inst &d = data.get_inst(*k);
+				int o = (*d.sig)[m[i]].id;
+				
+				objs[0] = d.target;
+				objs[1] = o;
+				pos_obj.add(*k, objs);
+				for (int si = 0, siend = d.sig->size(); si < siend; ++si) {
+					if ((*d.sig)[si].type == type && si != objs[0] && si != o) {
+						objs[1] = si;
+						neg_obj.add(*k, objs);
+					}
 				}
 			}
 		}
@@ -268,10 +274,7 @@ void em_mode::cli_clauses(ostream &os) const {
 }
 
 void em_mode::cli_members(ostream &os) const {
-	vector<int> mems;
-	get_members(mems);
-	interval_set s(mems);
-	os << s << endl;
+	os << members << endl;
 }
 
 
@@ -280,12 +283,12 @@ void em_mode::cli_members(ostream &os) const {
  therefore not (un)serialized.
 */
 void em_mode::serialize(ostream &os) const {
-	serializer(os) << stale << new_fit << members << sig << obj_clauses << sorted_ys
+	serializer(os) << stale << new_fit << members << omaps << sig << obj_clauses << sorted_ys
 	               << lin_coefs << lin_inter << n_nonzero << manual << obj_clauses_stale;
 }
 
 void em_mode::unserialize(istream &is) {
-	unserializer(is) >> stale >> new_fit >> members >> sig >> obj_clauses >> sorted_ys
+	unserializer(is) >> stale >> new_fit >> members >> omaps >> sig >> obj_clauses >> sorted_ys
 	                 >> lin_coefs >> lin_inter >> n_nonzero >> manual >> obj_clauses_stale;
 }
 
@@ -387,23 +390,27 @@ bool em_mode::update_fits() {
 	}
 	
 	mat X(members.size(), xcols), Y(members.size(), 1);
-	map<int,mem_info>::const_iterator i;
+	omap_table::const_iterator i, iend;
 	int j = 0;
-	for (i = members.begin(); i != members.end(); ++i) {
-		const model_train_inst &d = data.get_inst(i->first);
-		const vector<int> &obj_map = i->second.obj_map;
-		assert(obj_map.size() == sig.size());
-		rvec x(xcols);
-		int s = 0;
-		for (int k = 0, kend = obj_map.size(); k < kend; ++k) {
-			const scene_sig::entry &e = (*d.sig)[obj_map[k]];
-			int n = e.props.size();
-			x.segment(s, n) = d.x.segment(e.start, n);
-			s += n;
+	for (i = omaps.begin(), iend = omaps.end(); i != iend; ++i) {
+		const omap &m = i->first;
+		assert(m.size() == sig.size());
+		const interval_set &members = i->second;
+		interval_set::const_iterator k, kend;
+		for (k = members.begin(), kend = members.end(); k != kend; ++k) {
+			const model_train_inst &d = data.get_inst(*k);
+			rvec x(xcols);
+			int s = 0;
+			for (int mi = 0, miend = m.size(); mi < miend; ++mi) {
+				const scene_sig::entry &e = (*d.sig)[m[mi]];
+				int n = e.props.size();
+				x.segment(s, n) = d.x.segment(e.start, n);
+				s += n;
+			}
+			assert(s == xcols);
+			X.row(j) = x;
+			Y.row(j++) = d.y;
 		}
-		assert(s == xcols);
-		X.row(j) = x;
-		Y.row(j++) = d.y;
 	}
 	linreg_d(REGRESSION_ALG, X, Y, cvec(), lin_coefs, lin_inter);
 	stale = false;
@@ -411,17 +418,17 @@ bool em_mode::update_fits() {
 	return true;
 }
 
-void em_mode::predict(const scene_sig &dsig, const rvec &x, const vector<int> &obj_map, double &y) const {
+void em_mode::predict(const scene_sig &dsig, const rvec &x, const vector<int> &ex_omap, double &y) const {
 	if (lin_coefs.size() == 0) {
 		y = lin_inter(0);
 		return;
 	}
 	
-	assert(obj_map.size() == sig.size());
+	assert(ex_omap.size() == sig.size());
 	rvec xc(x.size());
 	int xsize = 0;
-	for (int j = 0, jend = obj_map.size(); j < jend; ++j) {
-		const scene_sig::entry &e = dsig[obj_map[j]];
+	for (int j = 0, jend = ex_omap.size(); j < jend; ++j) {
+		const scene_sig::entry &e = dsig[ex_omap[j]];
 		int n = e.props.size();
 		xc.segment(xsize, n) = x.segment(e.start, n);
 		xsize += n;
@@ -430,16 +437,32 @@ void em_mode::predict(const scene_sig &dsig, const rvec &x, const vector<int> &o
 	y = ((xc * lin_coefs) + lin_inter)(0);
 }
 
-void em_mode::add_example(int t, const vector<int> &obj_map) {
-	assert(!has(members, t) && obj_map.size() == sig.size());
+void em_mode::add_example(int t, const vector<int> &ex_omap) {
+	assert(!members.contains(t) && ex_omap.size() == sig.size());
 	
 	const model_train_inst &d = data.get_inst(t);
-	members[t].obj_map = obj_map;
+	members.insert(t);
+	
+	bool found = false;
+	omap_table::iterator i, iend;
+	for (i = omaps.begin(), iend = omaps.end(); i != iend; ++i) {
+		if (i->first == ex_omap) {
+			i->second.insert(t);
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		interval_set s;
+		s.insert(t);
+		omaps.push_back(make_pair(ex_omap, s));
+	}
+
 	if (noise) {
 		sorted_ys.insert(make_pair(d.y(0), t));
 	} else {
 		rvec y(1);
-		predict(*d.sig, d.x, obj_map, y(0));
+		predict(*d.sig, d.x, ex_omap, y(0));
 		if ((y - d.y).norm() > MODEL_ERROR_THRESH) {
 			stale = true;
 		}
@@ -451,6 +474,10 @@ void em_mode::del_example(int t) {
 	const model_train_inst &d = data.get_inst(t);
 
 	members.erase(t);
+	omap_table::iterator i, iend;
+	for (i = omaps.begin(), iend = omaps.end(); i != iend; ++i) {
+		i->second.erase(t);
+	}
 	if (noise) {
 		sorted_ys.erase(make_pair(d.y(0), t));
 	}
@@ -480,9 +507,9 @@ void em_mode::largest_const_subset(vector<int> &subset) {
 }
 
 bool em_mode::uniform_sig(int sig, int target) const {
-	map<int,mem_info>::const_iterator i;
-	for (i = members.begin(); i != members.end(); ++i) {
-		const model_train_inst &d = data.get_inst(i->first);
+	interval_set::const_iterator i, iend;
+	for (i = members.begin(), iend = members.end(); i != iend; ++i) {
+		const model_train_inst &d = data.get_inst(*i);
 		if (d.sig_index != sig || d.target != target) {
 			return false;
 		}
@@ -498,18 +525,7 @@ int em_mode::get_num_nonzero_coefs() const {
 	return n_nonzero;
 }
 
-void em_mode::get_members(vector<int> &mem) const {
-	map<int,mem_info>::const_iterator i;
-	for (i = members.begin(); i != members.end(); ++i) {
-		mem.push_back(i->first);
-	}
-}
-
-void em_mode::mem_info::serialize(std::ostream &os) const {
-	serializer(os) << obj_map;
-}
-
-void em_mode::mem_info::unserialize(std::istream &is) {
-	unserializer(is) >> obj_map;
+void em_mode::get_members(interval_set &mem) const {
+	mem = members;
 }
 

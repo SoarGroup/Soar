@@ -31,7 +31,7 @@ public:
 	bool update_fits();
 	void set_linear_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter);
 	bool uniform_sig(int sig, int target) const;
-	void get_members(std::vector<int> &m) const;
+	void get_members(interval_set &m) const;
 
 	int size() const { return members.size(); }
 	bool is_new_fit() const { return new_fit; }
@@ -45,15 +45,21 @@ public:
 	int get_num_nonzero_coefs() const;
 	
 private:
-	class mem_info : public serializable {
-	public:
-		std::vector<int> obj_map; // mapping from variables in mode sig -> object index in instance
-		
-		void serialize(std::ostream &os) const;
-		void unserialize(std::istream &is);
-	};
-	
-	std::map<int, mem_info> members;
+	interval_set members;
+
+	/*
+	 For each member instance, there is a mapping from objects tested by the
+	 linear function to object indexes in the member's signature, call it the
+	 omap. omap is stored as a vector m such that m[i] = j, where i is an index
+	 into the mode's signature, and j is an index into the instance's signature.
+	 The omap_table associates unique omaps with sets of instances that share that
+	 omap.
+
+	 I'm assuming that the number of unique omaps will be small.
+	*/
+	typedef std::vector<int> omap;
+	typedef std::vector<std::pair<omap, interval_set> > omap_table;
+	omap_table omaps;
 	
 	bool stale, noise, new_fit, manual;
 	const model_train_data &data;

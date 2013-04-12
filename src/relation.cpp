@@ -172,6 +172,20 @@ bool interval_set::contains(int x) const {
 	return false;
 }
 
+int interval_set::ith(int i) const {
+	assert(i >= 0 && i < sz);
+	vector<interval>::const_iterator p, pend;
+	for (p = curr->begin(), pend = curr->end(); p != pend; ++p) {
+		int s = p->last - p->first + 1;
+		if (i < s) {
+			return p->first + i;
+		} else {
+			i -= s;
+		}
+	}
+	assert(false);
+}
+
 bool interval_set::insert(int x) {
 	vector<interval>::iterator p, prev, b, e;
 	

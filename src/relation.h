@@ -102,6 +102,7 @@ public:
 	void subtract(const interval_set &v, interval_set &result) const;
 	
 	bool contains(int x) const;
+	int  ith(int i) const;
 	
 	int  size() const                        { return sz; }
 	bool empty() const                       { return curr->empty(); }

@@ -41,6 +41,11 @@ void serialize(const std::string &s, std::ostream &os);
 void serialize(const char *s, std::ostream &os);
 void unserialize(std::string &s, std::istream &is);
 
+template <typename T>
+void unserialize(std::vector<T> &v, std::istream &is);
+
+template <typename T>
+void serialize(const std::vector<T> &v, std::ostream &os);
 
 template <typename U, typename V>
 void serialize(const std::pair<U, V> &p, std::ostream &os) {
