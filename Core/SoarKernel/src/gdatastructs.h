@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* gdatastructs.h */
@@ -67,11 +67,11 @@ typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 
    The GDS is created only when necessary; that is, when an o-supported WME
    is created in some subgoal and that subgoal has no GDS already.  The
-   instantiations that led to the creation of the o-supported WME are 
-   examined; any supergoal WMEs in these instantiations are added to the 
+   instantiations that led to the creation of the o-supported WME are
+   examined; any supergoal WMEs in these instantiations are added to the
    wmes_in_gds DLL.  The GDS for each goal is examined for every WM change;
    if a WME changes that is on a GDS, the goal that the GDS points to is
-   immediately removed.  
+   immediately removed.
 
    When a goal is removed, the GDS is not immediately removed.  Instead,
    whenever a WME is removed (or when it is added to another GDS), we check
@@ -232,10 +232,10 @@ typedef struct preference_struct {
 
   /* dll of all pref's from the same match goal */
   struct preference_struct *all_of_goal_next, *all_of_goal_prev;
-  
+
   /* dll (without header) of cloned preferences (created when chunking) */
   struct preference_struct *next_clone, *prev_clone;
-    
+
   struct instantiation_struct *inst;
   struct preference_struct *inst_next, *inst_prev;
   struct preference_struct *next_candidate;
@@ -303,7 +303,7 @@ extern Bool remove_preference_from_clones (agent* thisAgent, preference *pref);
 
       impasse_type:  indicates the type of the impasse for this slot.  This
         is one of NONE_IMPASSE_TYPE, CONSTRAINT_FAILURE_IMPASSE_TYPE, etc.
-  
+
       marked_for_possible_removal:  TRUE iff this slot is on the list of
         slots that might be deallocated at the end of the current top-level
         phase.
@@ -344,7 +344,7 @@ typedef struct slot_struct {
 
 /* -------------------------------------------------------------------
                               Tests
-   
+
    Tests in conditions can be blank (null) tests, tests for equality
    with a variable or constant, or more complicated tests (such as
    not-equal tests, conjunctive tests, etc.).  We use some bit twiddling
@@ -352,7 +352,7 @@ typedef struct slot_struct {
    of test.  For blank tests, this is the NIL pointer.  For equality tests,
    it points to the symbol referent of the test.  For other kinds of tests,
    bit 0 of the pointer is set to 1, and the pointer (minus 1) points to
-   a complex_test structure.  (A field in the complex_test structure 
+   a complex_test structure.  (A field in the complex_test structure
    further indicates the type of the test.)
 ------------------------------------------------------------------- */
 
@@ -373,12 +373,12 @@ typedef char * test;
 
 #define referent_of_equality_test(t) ((Symbol *) (t))
 #define complex_test_from_test(t) ((complex_test *) (((char *)(t))-1))
- 
+
 #else
 
-inline Bool test_is_blank_test(test t) 
-{ 
-  return (t == NIL); 
+inline Bool test_is_blank_test(test t)
+{
+  return (t == NIL);
 }
 
 //// This is to silence a warning (warning C4311: 'static_cast' : pointer truncation from 'test' to 'uint64_t')
@@ -387,10 +387,10 @@ inline Bool test_is_blank_test(test t)
 //#pragma warning (disable : 4311)
 //#endif
 
-inline Bool test_is_complex_test(test t) 
-{ 
+inline Bool test_is_complex_test(test t)
+{
   return (char)(
-	  reinterpret_cast<uint64_t>(t) 
+	  reinterpret_cast<uint64_t>(t)
 	  & 1);
 }
 
@@ -500,9 +500,9 @@ enum ComplexTextTypes {
                              Conditions
 
    Conditions are used for two things:  (1) to represent the LHS of newly
-   entered productions (new SP's or chunks); and (2) to represent the 
+   entered productions (new SP's or chunks); and (2) to represent the
    instantiated LHS in production instantiations.
-   
+
    Fields in a condition:
 
       type:  indicates the type of condition:  either POSITIVE_CONDITION,
@@ -572,6 +572,18 @@ typedef struct condition_struct {
   Bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
   Bool test_for_acceptable_preference;   /* for pos, neg cond's only */
   struct condition_struct *next, *prev;
+
+  /* The following flags store whether a condition was originally a variable in
+   * the original production. They are used by chunking to determine whether a
+   * constant in an instantiated condition should be variablized.  If it was
+   * a variable in the original production, it will not be.
+   *
+   * Note: id and attr might not be necessary*/
+
+  Bool id_is_var;
+  Bool attr_is_var;
+  Bool value_is_var;
+
   union condition_main_data_union {
     three_field_tests tests;             /* for pos, neg cond's only */
     ncc_info ncc;                        /* for ncc's only */

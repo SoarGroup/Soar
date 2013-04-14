@@ -190,12 +190,12 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 	if ((*sym)->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 	{
 		//asm("int $3");
-		print(thisAgent, "\nVariabilizing int constant %d\n",(*sym)->ic.value);
+		//print(thisAgent, "\nVariabilizing int constant %d\n",(*sym)->ic.value);
 	}
 	if ((*sym)->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	{
 		//asm("int $3");
-		print(thisAgent, "\nVariabilizing float constant %f\n", (*sym)->fc.value);
+		//print(thisAgent, "\nVariabilizing float constant %f\n", (*sym)->fc.value);
 	}
 	if (((*sym)->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) ||
 		((*sym)->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
@@ -257,19 +257,30 @@ void variablize_test (agent* thisAgent, test *t) {
 }
 
 void variablize_condition_list (agent* thisAgent, condition *cond) {
-  for (; cond!=NIL; cond=cond->next) {
-    switch (cond->type) {
-    case POSITIVE_CONDITION:
-    case NEGATIVE_CONDITION:
-      variablize_test (thisAgent, &(cond->data.tests.id_test));
-      variablize_test (thisAgent, &(cond->data.tests.attr_test));
-      variablize_test (thisAgent, &(cond->data.tests.value_test));
-      break;
-    case CONJUNCTIVE_NEGATION_CONDITION:
-      variablize_condition_list (thisAgent, cond->data.ncc.top);
-      break;
-    }
-  }
+
+	print(thisAgent, "Debug| Variablizing chunk condition list:\n");
+	for (; cond!=NIL; cond=cond->next) {
+		switch (cond->type) {
+		case POSITIVE_CONDITION:
+		case NEGATIVE_CONDITION:
+			variablize_test (thisAgent, &(cond->data.tests.id_test));
+			variablize_test (thisAgent, &(cond->data.tests.attr_test));
+			if (cond->value_is_var)
+			{
+				print(thisAgent, "Debug|-->\nDebug| ...Variablizing: (%s)\n-----------\n",
+						test_to_string (thisAgent, cond->data.tests.value_test, NULL, 0, TRUE));
+				variablize_test (thisAgent, &(cond->data.tests.value_test));
+			} else {
+				print(thisAgent, "Debug|-->\nDebug| ...Not variablizing: (%s)\n-----------\n",
+						test_to_string (thisAgent, cond->data.tests.value_test, NULL, 0, TRUE));
+			}
+			break;
+		case CONJUNCTIVE_NEGATION_CONDITION:
+			variablize_condition_list (thisAgent, cond->data.ncc.top);
+			break;
+		}
+	}
+	print(thisAgent, "Debug| Done variablizing chunk condition list.\n");
 }
 
 action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, bool variablize) {
@@ -364,7 +375,7 @@ void init_chunk_cond_set (chunk_cond_set *set) {
   for (i=0; i<CHUNK_COND_HASH_TABLE_SIZE; i++) set->table[i] = NIL;
 }
 
-chunk_cond *make_chunk_cond_for_condition (agent* thisAgent, condition *cond) {
+chunk_cond *make_chunk_cond_for_negated_condition (agent* thisAgent, condition *cond) {
   chunk_cond *cc;
   uint32_t remainder, hv;
 
@@ -1163,7 +1174,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	{
 		if (get_printer_output_column(thisAgent)!=1)
 			print (thisAgent, "\n");
-		print_with_symbols (thisAgent, "Building %y", prod_name);
+		print_with_symbols (thisAgent, "Building %y\n", prod_name);
 
 		xml_begin_tag(thisAgent, kTagLearning);
 		xml_begin_tag(thisAgent, kTagProduction);

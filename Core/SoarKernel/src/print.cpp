@@ -329,31 +329,41 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
   return NIL; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-
-
-
-char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
+char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size, bool debug_print_test) {
   cons *c;
   complex_test *ct;
   char *ch;
-
-  if (test_is_blank_test(t)) {
-    if (!dest) dest=thisAgent->printed_output_string;
-    strncpy (dest, "[BLANK TEST]", dest_size);  /* this should never get executed */
-	dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
-  }
-
-  if (test_is_blank_or_equality_test(t)) {
-//	  print(thisAgent, "Equality test.\n" );
-    return symbol_to_string (thisAgent, referent_of_equality_test(t), TRUE, dest, dest_size);
-  }
 
   if (!dest) {
  	dest=thisAgent->printed_output_string;
 	dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
   }
   ch = dest;
+
+  if (test_is_blank_test(t)) {
+    strncpy (dest, "[BLANK TEST]", dest_size);  /* this should never get executed */
+	dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
+  }
+
+
+  if (test_is_blank_or_equality_test(t)) {
+	  if (debug_print_test)
+	  {
+		  Symbol *ref_sym = referent_of_equality_test(t);
+		  std::string tempString("eq ");
+		  tempString += symbol_to_typeString (thisAgent, ref_sym) ;
+		  tempString += " ";
+		  tempString += symbol_to_string (thisAgent, ref_sym, FALSE, NULL, 0);
+		  strcpy (dest, tempString.c_str());
+		  return dest;
+	  }
+	  else
+	  {
+		  return symbol_to_string (thisAgent, referent_of_equality_test(t), TRUE, dest, dest_size);
+	  }
+  }
+
   ct = complex_test_from_test(t);
   //print(thisAgent, "Complex test!!!!!!!!!!!!!!!!!!!!!!!\n" );
 

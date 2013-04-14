@@ -335,7 +335,7 @@ void backtrace_through_instantiation (agent* thisAgent,
     else {
       /* --- negative or nc cond's are either grounds or potentials --- */
       add_to_chunk_cond_set (thisAgent, &thisAgent->negated_set, 
-		                     make_chunk_cond_for_condition(thisAgent, c));
+		                     make_chunk_cond_for_negated_condition(thisAgent, c));
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] || 
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
 	push (thisAgent, c, negateds_to_print);

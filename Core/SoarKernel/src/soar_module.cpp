@@ -40,7 +40,7 @@ namespace soar_module
 		stopwatch.set_enabled( ( ( soar_control )?( &( new_agent->sysparams[ TIMERS_ENABLED ] ) ):( NULL ) ) );
 		reset();
 	}
-	
+
 	/////////////////////////////////////////////////////////////
 	// Utility functions
 	/////////////////////////////////////////////////////////////
@@ -64,12 +64,12 @@ namespace soar_module
 		{
 			remove_from_dll( my_slot->wmes, w, next, prev );
 
-			if ( w->gds ) 
+			if ( w->gds )
 			{
 				if ( w->gds->goal != NIL )
-				{	             
+				{
 					gds_invalid_so_remove_goal( my_agent, w );
-					
+
 					/* NOTE: the call to remove_wme_from_wm will take care of checking if GDS should be removed */
 				}
 			}
@@ -123,6 +123,7 @@ namespace soar_module
 			{
 				// construct the condition
 				allocate_with_pool( my_agent, &( my_agent->condition_pool ), &cond );
+				init_condition(cond);
 				cond->type = POSITIVE_CONDITION;
 				cond->prev = prev_cond;
 				cond->next = NULL;
@@ -147,11 +148,11 @@ namespace soar_module
 				#endif
 				{
 					wme_add_ref( (*c_it) );
-				}			
-				
+				}
+
 				cond->bt.level = (*c_it)->id->id.level;
 				cond->bt.trace = (*c_it)->preference;
-				
+
 				if ( cond->bt.trace )
 				{
 					#ifndef DO_TOP_LEVEL_REF_CTS
@@ -160,7 +161,7 @@ namespace soar_module
 					{
 						preference_add_ref( cond->bt.trace );
 					}
-				}				
+				}
 
         cond->bt.CDPS = NULL;
 

@@ -76,7 +76,7 @@ extern void start_log_file (agent* thisAgent, char *filename, Bool append);
 extern void stop_log_file (agent* thisAgent);
 extern void print_string_to_log_file_only (agent* thisAgent, char *string);
 
-extern int get_printer_output_column (agent* thisAgent);
+extern int  get_printer_output_column (agent* thisAgent);
 extern void tell_printer_that_output_column_has_been_reset (agent* thisAgent);
 
 extern void start_redirection_to_file (agent* thisAgent, FILE *already_opened_file);
@@ -128,7 +128,7 @@ extern char *string_to_escaped_string (agent* thisAgent, char *s, char first_and
                                        char *dest);
 extern char const* symbol_to_typeString (agent* thisAgent, Symbol *sym);
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
-extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size);
+extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size, bool debug_print_test=FALSE);
 extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size);
 
 /* -----------------------------------------------------------------------

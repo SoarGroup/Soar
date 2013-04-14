@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -10,7 +10,7 @@
  *  file:  recmem.cpp
  *
  * =======================================================================
- *  
+ *
  *             Recognition Memory (Firer and Chunker) Routines
  *                 (Does not include the Rete net)
  *
@@ -496,9 +496,9 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
 
 	/* KJC 6/00:  maintaining all the top level ref cts does have a big
 	 impact on memory pool usage and also performance (due to malloc).
-	 (See tests done by Scott Wallace Fall 99.)	 Therefore added 
-	 preprocessor macro so that by unsetting macro the top level ref cts are not 
-	 incremented.  It's possible that in some systems, these ref cts may 
+	 (See tests done by Scott Wallace Fall 99.)	 Therefore added
+	 preprocessor macro so that by unsetting macro the top level ref cts are not
+	 incremented.  It's possible that in some systems, these ref cts may
 	 be desireable: they can be added by defining DO_TOP_LEVEL_REF_CTS
 	 */
 
@@ -699,13 +699,34 @@ void create_instantiation(agent* thisAgent, production *prod,
 			&(inst->top_of_instantiated_conditions),
 			&(inst->bottom_of_instantiated_conditions), &(inst->nots), NIL);
 
-	/* --- record the level of each of the wmes that was positively tested --- */
+	/* --- also get non-instantiated conditions to be used when determining
+	 *     whether to variablize constants. --- */
+	condition *top, *bottom, *noninst_cond;
+	action *rhs;
+
+	p_node_to_conditions_and_nots(thisAgent, prod->p_node, NIL, NIL,
+			&top, &bottom, NIL, NIL);
+
+	/* --- record the level of each of the wmes that was positively tested
+	 *     and copy over information from non-instantiated conditions --- */
+
+	noninst_cond = top;
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
 			cond = cond->next) {
+		cond->id_is_var = false;
+		cond->attr_is_var = false;
+		cond->value_is_var = test_is_variable(thisAgent, noninst_cond->data.tests.value_test);
+		if (cond->value_is_var)
+		{
+			print(thisAgent,"Debug| Setting variable value binding for condition\n");
+			print_condition(thisAgent, cond);
+			print(thisAgent,"\n");
+		}
 		if (cond->type == POSITIVE_CONDITION) {
 			cond->bt.level = cond->bt.wme_->id->id.level;
 			cond->bt.trace = cond->bt.wme_->preference;
 		}
+		noninst_cond = noninst_cond->next;
 	}
 
 	/* --- print trace info --- */
@@ -1297,7 +1318,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo) {
 					}
 				} else {
 					// NLD: the preference was o-supported, at
-					// the top state, and was asserting an acceptable 
+					// the top state, and was asserting an acceptable
 					// preference for a WME that was already
 					// o-supported. hence unnecessary.
 

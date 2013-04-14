@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -12,7 +12,7 @@
  * ====================================================================
  *                    Production Utilities for Soar 6
  *
- * This file contains various utility routines for manipulating 
+ * This file contains various utility routines for manipulating
  * productions and parts of productions:  tests, conditions, actions,
  * etc.  Also includes the reorderer and compile-time o-support calculations.
  * parser.cpp loads productions.
@@ -91,7 +91,7 @@ char first_letter_from_symbol (Symbol *sym) {
   default: return '*';
   }
 }
- 
+
 /* -----------------------------------------------------------------
    Find first letter of test, or '*' if nothing appropriate.
    (See comments on first_letter_from_symbol for more explanation.)
@@ -101,7 +101,7 @@ char first_letter_from_test (test t) {
   complex_test *ct;
   cons *c;
   char ch;
-  
+
   if (test_is_blank_test (t)) return '*';
   if (test_is_blank_or_equality_test (t))
     return first_letter_from_symbol (referent_of_equality_test(t));
@@ -126,7 +126,7 @@ char first_letter_from_test (test t) {
    incrementing the reference count on each symbol in the list.
 ---------------------------------------------------------------- */
 
-list *copy_symbol_list_adding_references (agent* thisAgent, 
+list *copy_symbol_list_adding_references (agent* thisAgent,
 										  list *sym_list) {
   cons *c, *first, *prev;
 
@@ -152,10 +152,10 @@ list *copy_symbol_list_adding_references (agent* thisAgent,
    Frees a list of symbols, decrementing their reference counts.
 ---------------------------------------------------------------- */
 
-void deallocate_symbol_list_removing_references (agent* thisAgent, 
+void deallocate_symbol_list_removing_references (agent* thisAgent,
 												 list *sym_list) {
   cons *c;
-  
+
   while (sym_list) {
     c = sym_list;
     sym_list = sym_list->rest;
@@ -163,7 +163,7 @@ void deallocate_symbol_list_removing_references (agent* thisAgent,
     free_cons (thisAgent, c);
   }
 }
-  
+
 /* =================================================================
 
                       Utility Routines for Tests
@@ -188,7 +188,7 @@ list *copy_test_list (agent* thisAgent, cons *c) {
 test copy_test (agent* thisAgent, test t) {
   Symbol *referent;
   complex_test *ct, *new_ct;
-  
+
   if (test_is_blank_test(t))
     return make_blank_test();
 
@@ -196,9 +196,9 @@ test copy_test (agent* thisAgent, test t) {
     referent = referent_of_equality_test(t);
     return make_equality_test(referent);
   }
-  
+
   ct = complex_test_from_test(t);
-  
+
   allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
   new_ct->type = ct->type;
   switch(ct->type) {
@@ -233,11 +233,11 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
   complex_test *ct, *new_ct;
   cons *c;
   test new_t, temp;
-  
+
   if (test_is_blank_or_equality_test(t)) return copy_test (thisAgent, t);
-  
+
   ct = complex_test_from_test(t);
-  
+
   switch(ct->type) {
   case GOAL_ID_TEST:
     *removed_goal = TRUE;
@@ -283,7 +283,7 @@ void deallocate_test (agent* thisAgent, test t) {
   }
 
   ct = complex_test_from_test(t);
-  
+
   switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
@@ -319,14 +319,14 @@ void deallocate_test (agent* thisAgent, test t) {
 inline void quickly_deallocate_test(agent* thisAgent, test t)
 {
 	if (! test_is_blank_test(t))  {
-		if (test_is_blank_or_equality_test(t)) 
+		if (test_is_blank_or_equality_test(t))
 		{
 		  symbol_remove_ref (thisAgent, referent_of_equality_test(t));
 		}
-		else 
+		else
 		{
 		  deallocate_test (thisAgent, t);
-		}   
+		}
 	}
 }
 #endif
@@ -337,7 +337,7 @@ inline void quickly_deallocate_test(agent* thisAgent, test t)
    need not be a conjunctive test.
 ---------------------------------------------------------------- */
 
-void add_new_test_to_test (agent* thisAgent, 
+void add_new_test_to_test (agent* thisAgent,
 						   test *t, test add_me) {
   complex_test *ct = 0;
   cons *c;
@@ -367,7 +367,7 @@ void add_new_test_to_test (agent* thisAgent,
     *t = make_test_from_complex_test (ct);
   }
   /* --- at this point, ct points to the complex test structure for *t --- */
-    
+
   /* --- now add add_me to the conjunct list --- */
   allocate_cons (thisAgent, &c);
   c->first = add_me;
@@ -403,7 +403,7 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test 
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the two tests are identical. 
+   Returns TRUE iff the two tests are identical.
    If neg is true, ignores order of members in conjunctive tests
    and assumes variables are all equal.
 ---------------------------------------------------------------- */
@@ -418,8 +418,8 @@ Bool tests_are_equal (test t1, test t2, bool neg) {
 			return FALSE;
 
 		if (t1 == t2) /* Warning: this relies on the representation of tests */
-			return TRUE; 
-		
+			return TRUE;
+
 		if (!neg)
 			return FALSE;
 
@@ -437,23 +437,23 @@ Bool tests_are_equal (test t1, test t2, bool neg) {
 	ct1 = complex_test_from_test(t1);
 	ct2 = complex_test_from_test(t2);
 
-	if (ct1->type != ct2->type) 
+	if (ct1->type != ct2->type)
 		return FALSE;
 
 	switch(ct1->type) {
-	case GOAL_ID_TEST: 
+	case GOAL_ID_TEST:
 		return TRUE;
 
-	case IMPASSE_ID_TEST: 
+	case IMPASSE_ID_TEST:
 		return TRUE;
 
 	case DISJUNCTION_TEST:
 		for (c1 = ct1->data.disjunction_list, c2 = ct2->data.disjunction_list; (c1!=NIL) && (c2!=NIL); c1 = c1->rest, c2 = c2->rest)
 		{
-			if (c1->first != c2->first) 
+			if (c1->first != c2->first)
 				return FALSE;
 		}
-		if (c1 == c2) 
+		if (c1 == c2)
 			return TRUE;  /* make sure they both hit end-of-list */
 		return FALSE;
 
@@ -470,7 +470,7 @@ Bool tests_are_equal (test t1, test t2, bool neg) {
 				// check against copy
 				for(iter = copy2.begin(); iter != copy2.end(); ++iter)
 				{
-					if (tests_are_equal(static_cast<test>(c1->first), *iter, neg)) 
+					if (tests_are_equal(static_cast<test>(c1->first), *iter, neg))
 						break;
 				}
 
@@ -483,13 +483,13 @@ Bool tests_are_equal (test t1, test t2, bool neg) {
 			}
 
 			// make sure no unmatched remain
-			if (copy2.empty()) 
+			if (copy2.empty())
 				return TRUE;
 		}
 		return FALSE;
 
 	default:  /* relational tests other than equality */
-		if (ct1->data.referent == ct2->data.referent) 
+		if (ct1->data.referent == ct2->data.referent)
 			return TRUE;
 		return FALSE;
 	}
@@ -503,7 +503,7 @@ uint32_t hash_test (agent* thisAgent, test t) {
   complex_test *ct;
   cons *c;
   uint32_t result;
-  
+
   if (test_is_blank_test(t))
     return 0;
 
@@ -689,12 +689,12 @@ Bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
   complex_test *ct;
 
   if (test_is_blank_test(t)) return FALSE;
-  
+
   if (test_is_blank_or_equality_test(t)) {
     if (sym) return (referent_of_equality_test(t) == sym);
     return TRUE;
   }
-  
+
   ct = complex_test_from_test(t);
 
   if (ct->type==CONJUNCTIVE_TEST) {
@@ -702,6 +702,63 @@ Bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
       if (test_includes_equality_test_for_symbol (static_cast<char *>(c->first), sym)) return TRUE;
   }
   return FALSE;
+}
+
+/* ----------------------------------------------------------------
+   Returns TRUE iff the test contains a test for a variable
+   symbol.
+---------------------------------------------------------------- */
+
+Bool test_is_variable(agent* thisAgent, test t)
+{
+	  cons *c;
+	  complex_test *ct;
+	  bool return_value = false;
+
+	  if (test_is_blank_test(t)) {
+		  return false;
+	  }
+
+
+	  if (test_is_blank_or_equality_test(t)) {
+		  return_value = (referent_of_equality_test(t)->common.symbol_type == VARIABLE_SYMBOL_TYPE);
+		  if (return_value)
+		  {
+			  print(thisAgent, "Debug| value test for equality condition is for variable: %s\n", symbol_to_string (thisAgent, referent_of_equality_test(t), FALSE, NIL, NIL));
+		  }
+		  return return_value;
+	  }
+
+	  ct = complex_test_from_test(t);
+
+	  switch (ct->type) {
+	  case NOT_EQUAL_TEST:
+	  case LESS_TEST:
+	  case GREATER_TEST:
+	  case LESS_OR_EQUAL_TEST:
+	  case GREATER_OR_EQUAL_TEST:
+	  case SAME_TYPE_TEST:
+		  return_value = (ct->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
+		  if (return_value)
+		  {
+			  print(thisAgent, "Debug| type %u test on condition value for variable: %s\n", ct->type, symbol_to_string (thisAgent, ct->data.referent, FALSE, NIL, NIL));
+		  }
+
+		  break;
+	  case DISJUNCTION_TEST:
+	    for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
+	    	// Symbol reference: static_cast<symbol_union *>(c->first)
+	    }
+	    break;
+	  case CONJUNCTIVE_TEST:
+	    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
+			  return_value = return_value || test_is_variable (thisAgent, static_cast<char *>(c->first));
+			  print(thisAgent, "Debug| Conjunctive test.  Return value is %u!!!!!\n", return_value);
+			  break;
+	    }
+	    break;
+	  }
+	  return return_value;
 }
 
 /* ----------------------------------------------------------------
@@ -714,7 +771,7 @@ Bool test_includes_goal_or_impasse_id_test (test t,
                                             Bool look_for_impasse) {
   complex_test *ct;
   cons *c;
-  
+
   if (test_is_blank_or_equality_test(t)) return FALSE;
   ct = complex_test_from_test(t);
   if (look_for_goal && (ct->type==GOAL_ID_TEST)) return TRUE;
@@ -769,10 +826,10 @@ test copy_of_equality_test_found_in_test (agent* thisAgent, test t) {
    Deallocates a condition list (including any NCC's and tests in it).
 ---------------------------------------------------------------- */
 
-void deallocate_condition_list (agent* thisAgent, 
+void deallocate_condition_list (agent* thisAgent,
 								condition *cond_list) {
   condition *c;
-  
+
   while (cond_list) {
     c = cond_list;
     cond_list = cond_list->next;
@@ -787,18 +844,33 @@ void deallocate_condition_list (agent* thisAgent,
   }
 }
 
+extern void inline init_condition(condition *cond)
+{
+	  cond->next = cond->prev = NIL;
+	  cond->id_is_var = FALSE;
+	  cond->attr_is_var = FALSE;
+	  cond->value_is_var = FALSE;
+	  cond->bt.trace = NIL;
+	  cond->bt.CDPS = NIL;
+	  cond->data.tests.id_test = NIL;
+	  cond->data.tests.attr_test = NIL;
+	  cond->data.tests.value_test = NIL;
+	  cond->test_for_acceptable_preference = FALSE;
+}
+
 /* ----------------------------------------------------------------
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
 
-condition *copy_condition (agent* thisAgent, 
+condition *copy_condition (agent* thisAgent,
 						   condition *cond) {
   condition *New;
 
   if (!cond) return NIL;
   allocate_with_pool (thisAgent, &thisAgent->condition_pool, &New);
+  init_condition(New);
   New->type = cond->type;
-  
+
   switch (cond->type) {
   case POSITIVE_CONDITION:
     New->bt = cond->bt;
@@ -808,6 +880,9 @@ condition *copy_condition (agent* thisAgent,
     New->data.tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
     New->data.tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
     New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
+    New->value_is_var = cond->value_is_var;
+    New->id_is_var = cond->id_is_var;
+    New->attr_is_var = cond->attr_is_var;
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
     copy_condition_list (thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
@@ -822,7 +897,7 @@ condition *copy_condition (agent* thisAgent,
    top-most and bottom-most conditions in the new copy.
 ---------------------------------------------------------------- */
 
-void copy_condition_list (agent* thisAgent, 
+void copy_condition_list (agent* thisAgent,
 						  condition *top_cond,
                           condition **dest_top,
                           condition **dest_bottom) {
@@ -864,7 +939,7 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
         c2->test_for_acceptable_preference)
       return FALSE;
     return TRUE;
-    
+
   case CONJUNCTIVE_NEGATION_CONDITION:
     for (c1=c1->data.ncc.top, c2=c2->data.ncc.top;
          ((c1!=NIL)&&(c2!=NIL));
@@ -880,7 +955,7 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
    Returns a hash value for the given condition.
 ---------------------------------------------------------------- */
 
-uint32_t hash_condition (agent* thisAgent, 
+uint32_t hash_condition (agent* thisAgent,
 							  condition *cond) {
   uint32_t result;
   condition *c;
@@ -975,14 +1050,14 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
     return rv;
   }
 }
-  
+
 /* ----------------------------------------------------------------
    Deallocates the given action (singly-linked) list.
 ---------------------------------------------------------------- */
 
 void deallocate_action_list (agent* thisAgent, action *actions) {
   action *a;
-  
+
   while (actions) {
     a = actions;
     actions = actions->next;
@@ -1021,7 +1096,7 @@ char first_letter_from_rhs_value (rhs_value rv) {
    Deallocates the given (singly-linked) list of Nots.
 ---------------------------------------------------------------- */
 
-void deallocate_list_of_nots (agent* thisAgent, 
+void deallocate_list_of_nots (agent* thisAgent,
 							  not_struct *nots) {
   not_struct *temp;
 
@@ -1057,7 +1132,7 @@ void deallocate_list_of_nots (agent* thisAgent,
 ===================================================================== */
 
 tc_number get_new_tc_number (agent* thisAgent) {
-  /* This was originally a global variable. For the present I'll move it here, 
+  /* This was originally a global variable. For the present I'll move it here,
      but it probably belongs in kernel_struct. */
 
   thisAgent->current_tc_number++;
@@ -1095,14 +1170,14 @@ tc_number get_new_tc_number (agent* thisAgent) {
   if ((ident)->id.tc_num != (tc)) { \
     (ident)->id.tc_num = (tc); \
     if (id_list) push ((ident),(*(id_list))); } }*/
-inline void mark_identifier_if_unmarked(agent* thisAgent, 
+inline void mark_identifier_if_unmarked(agent* thisAgent,
 										Symbol * ident, tc_number tc, list ** id_list)
 {
-  if ((ident)->id.tc_num != (tc)) 
+  if ((ident)->id.tc_num != (tc))
   {
     (ident)->id.tc_num = (tc);
-    if (id_list) 
-		push (thisAgent, (ident),(*(id_list))); 
+    if (id_list)
+		push (thisAgent, (ident),(*(id_list)));
   }
 }
 
@@ -1110,14 +1185,14 @@ inline void mark_identifier_if_unmarked(agent* thisAgent,
   if ((v)->var.tc_num != (tc)) { \
     (v)->var.tc_num = (tc); \
     if (var_list) push ((v),(*(var_list))); } }*/
-inline void mark_variable_if_unmarked(agent* thisAgent, Symbol * v, 
+inline void mark_variable_if_unmarked(agent* thisAgent, Symbol * v,
 									  tc_number tc, list ** var_list)
 {
-  if ((v)->var.tc_num != (tc)) 
+  if ((v)->var.tc_num != (tc))
   {
     (v)->var.tc_num = (tc);
     if (var_list) push (thisAgent, (v),(*(var_list)));
-  } 
+  }
 }
 
 void unmark_identifiers_and_free_list (agent* thisAgent, list *id_list) {
@@ -1155,12 +1230,12 @@ void unmark_variables_and_free_list (agent* thisAgent, list *var_list) {
    the header of the list of marked variables being constructed.
 ===================================================================== */
 
-void add_bound_variables_in_test (agent* thisAgent, test t, 
+void add_bound_variables_in_test (agent* thisAgent, test t,
 								  tc_number tc, list **var_list) {
   cons *c;
   Symbol *referent;
   complex_test *ct;
-  
+
   if (test_is_blank_test(t)) return;
 
   if (test_is_blank_or_equality_test(t)) {
@@ -1188,7 +1263,7 @@ void add_bound_variables_in_condition (agent* thisAgent, condition *c, tc_number
 void add_bound_variables_in_condition_list (agent* thisAgent, condition *cond_list,
                                             tc_number tc, list **var_list) {
   condition *c;
-  
+
   for (c=cond_list; c!=NIL; c=c->next)
     add_bound_variables_in_condition (thisAgent, c, tc, var_list);
 }
@@ -1202,7 +1277,7 @@ void add_bound_variables_in_condition_list (agent* thisAgent, condition *cond_li
    the header of the list of marked variables being constructed.
 ===================================================================== */
 
-void add_all_variables_in_test (agent* thisAgent, test t, 
+void add_all_variables_in_test (agent* thisAgent, test t,
 								tc_number tc, list **var_list) {
   cons *c;
   Symbol *referent;
@@ -1218,7 +1293,7 @@ void add_all_variables_in_test (agent* thisAgent, test t,
   }
 
   ct = complex_test_from_test(t);
-  
+
   switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
@@ -1242,7 +1317,7 @@ void add_all_variables_in_test (agent* thisAgent, test t,
 void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list,
                                           tc_number tc, list **var_list);
 
-void add_all_variables_in_condition (agent* thisAgent, 
+void add_all_variables_in_condition (agent* thisAgent,
 									 condition *c, tc_number tc,
                                      list **var_list) {
   if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
@@ -1275,7 +1350,7 @@ void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list
    RHS unbound variables.
 ===================================================================== */
 
-void add_all_variables_in_rhs_value (agent* thisAgent, 
+void add_all_variables_in_rhs_value (agent* thisAgent,
 									 rhs_value rv, tc_number tc,
                                      list **var_list) {
   list *fl;
@@ -1295,10 +1370,10 @@ void add_all_variables_in_rhs_value (agent* thisAgent,
   }
 }
 
-void add_all_variables_in_action (agent* thisAgent, action *a, 
+void add_all_variables_in_action (agent* thisAgent, action *a,
 								  tc_number tc, list **var_list){
   Symbol *id;
-  
+
   if (a->type==MAKE_ACTION) {
     /* --- ordinary make actions --- */
     id = rhs_value_to_symbol(a->id);
@@ -1329,14 +1404,14 @@ void add_all_variables_in_action_list (agent* thisAgent, action *actions, tc_num
    These routines do transitive closure calculations for tests,
    conditions, actions, etc.
 
-   Usage: 
+   Usage:
      1. Set my_tc = get_new_tc_number() to start a new TC
      2. (optional) If you want linked lists of symbols in the TC, initialize
         id_list=NIL and var_list=NIL.
         If you're not using id_list and/or var_list, give NIL for "&id_list"
         and/or "&var_list" in the function calls below.
      3. (optional) setup any id's or var's that you want to include in the
-        initial TC, by calling 
+        initial TC, by calling
            add_symbol_to_tc (sym, my_tc, &id_list, &var_list)
         (If not using id_list or var_list, you can just mark
          sym->{id,var}.tc_num = my_tc instead.)
@@ -1364,9 +1439,9 @@ void add_test_to_tc (agent* thisAgent, test t, tc_number tc,
                      list **id_list, list **var_list) {
   cons *c;
   complex_test *ct;
-  
+
   if (test_is_blank_test(t)) return;
-  
+
   if (test_is_blank_or_equality_test(t)) {
     add_symbol_to_tc (thisAgent, referent_of_equality_test(t), tc, id_list, var_list);
     return;
@@ -1432,7 +1507,7 @@ Bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
 
   if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     return test_is_in_tc (cond->data.tests.id_test, tc);
-  
+
   /* --- conjunctive negations:  keep trying to add stuff to the TC --- */
   new_ids = NIL;
   new_vars = NIL;
@@ -1454,7 +1529,7 @@ Bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
   result = TRUE;
   for (c=cond->data.ncc.top; c!=NIL; c=c->next)
     if (! c->already_in_tc) result = FALSE;
-  
+
   /* --- unmark identifiers and variables that we just marked --- */
   unmark_identifiers_and_free_list (thisAgent, new_ids);
   unmark_variables_and_free_list (thisAgent, new_vars);
@@ -1477,7 +1552,7 @@ Bool action_is_in_tc (action *a, tc_number tc) {
    overlap with those already used in a *certain* production--for instance,
    when variablizing a chunk, we don't want to introduce a new variable that
    conincides with the name of a variable already in an NCC in the chunk.
-   
+
    To use these routines, first call reset_variable_generator(), giving
    it lists of conditions and actions whose variables should not be
    used.  Then call generate_new_variable() any number of times; each
@@ -1486,7 +1561,7 @@ Bool action_is_in_tc (action *a, tc_number tc) {
 ********************************************************************* */
 
 
-void reset_variable_generator (agent* thisAgent, 
+void reset_variable_generator (agent* thisAgent,
 							   condition *conds_with_vars_to_avoid,
                                action *actions_with_vars_to_avoid) {
   tc_number tc;
@@ -1534,7 +1609,7 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
     if (New->var.gensym_number != thisAgent->current_variable_gensym_number) break;
     symbol_remove_ref (thisAgent, New);
   }
-  
+
   New->var.current_binding_value = NIL;
   New->var.gensym_number = thisAgent->current_variable_gensym_number;
   return New;
@@ -1559,7 +1634,7 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
     the production_remove_ref() macro.
 ********************************************************************* */
 
-production *make_production (agent* thisAgent, 
+production *make_production (agent* thisAgent,
 							        byte type,
                              Symbol *name,
                              condition **lhs_top,
@@ -1580,12 +1655,12 @@ production *make_production (agent* thisAgent,
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
 
-	if ( !smem_valid_production( *lhs_top, *rhs_top ) ) 
+	if ( !smem_valid_production( *lhs_top, *rhs_top ) )
 	{
 		print( thisAgent, "ungrounded LTI in production\n" );
 		return NIL;
 	}
-    
+
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
     calculate_compile_time_o_support (*lhs_top, *rhs_top);
 #ifdef LIST_COMPILE_TIME_O_SUPPORT_FAILURES
@@ -1611,7 +1686,7 @@ production *make_production (agent* thisAgent,
   }
   name->sc.production = p;
   p->documentation = NIL;
-  p->filename = NIL;	  
+  p->filename = NIL;
   p->firing_count = 0;
   p->reference_count = 1;
   insert_at_head_of_dll (thisAgent->all_productions_of_type[type], p, next, prev);
@@ -1624,7 +1699,7 @@ production *make_production (agent* thisAgent,
   p->rhs_unbound_variables = NIL; /* the Rete fills this in */
   p->instantiations = NIL;
   p->interrupt = FALSE;
-  
+
   // Soar-RL stuff
   p->rl_update_count = 0.0;
   p->rl_delta_bar_delta_beta = -3.0;
@@ -1634,7 +1709,7 @@ production *make_production (agent* thisAgent,
   p->rl_ref_count = 0;
   p->rl_ecr = 0.0;
   p->rl_efr = 0.0;
-  if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  
+  if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )
   {
     p->rl_rule = rl_valid_rule( p );
 	if ( p->rl_rule )
@@ -1644,9 +1719,9 @@ production *make_production (agent* thisAgent,
   }
   p->rl_template_conds = NIL;
   p->rl_template_instantiations = NIL;
-  
+
   rl_update_template_tracking( thisAgent, name->sc.name );
-  
+
   return p;
 }
 
@@ -1663,7 +1738,7 @@ void deallocate_production (agent* thisAgent, production *prod) {
   symbol_remove_ref (thisAgent, prod->name);
   if (prod->documentation) free_memory_block_for_string (thisAgent, prod->documentation);
   /* next line, kjh CUSP(B11) */
-  if (prod->filename) free_memory_block_for_string (thisAgent, prod->filename);	
+  if (prod->filename) free_memory_block_for_string (thisAgent, prod->filename);
 
   if (prod->rl_template_conds) deallocate_condition_list(thisAgent,prod->rl_template_conds);
   if (prod->rl_template_instantiations) delete prod->rl_template_instantiations;
@@ -1680,8 +1755,8 @@ void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sig
     thisAgent->rl_prods->remove_object( prod );
 
   // Remove RL-related pointers to this production
-  if ( prod->rl_rule ) 
-    rl_remove_refs_for_prod( thisAgent, prod ); 
+  if ( prod->rl_rule )
+    rl_remove_refs_for_prod( thisAgent, prod );
 
   thisAgent->num_productions_of_type[prod->type]--;
   if (print_sharp_sign) print (thisAgent, "#");
@@ -1696,7 +1771,7 @@ void excise_all_productions_of_type(agent* thisAgent,
 
   // Iterating through the productions of the appropriate type and excising them
   while (thisAgent->all_productions_of_type[type]) {
-    excise_production (thisAgent, 
+    excise_production (thisAgent,
                        thisAgent->all_productions_of_type[type],
                        print_sharp_sign&&thisAgent->sysparams[TRACE_LOADING_SYSPARAM]);
   }
@@ -1707,8 +1782,8 @@ void excise_all_productions(agent* thisAgent,
 
   // Excise all the productions of the four different types
   for (int i=0; i < NUM_PRODUCTION_TYPES; i++) {
-    excise_all_productions_of_type(thisAgent, 
-                                   static_cast<byte>(i), 
+    excise_all_productions_of_type(thisAgent,
+                                   static_cast<byte>(i),
                                    print_sharp_sign&&thisAgent->sysparams[TRACE_LOADING_SYSPARAM]);
   }
 }
