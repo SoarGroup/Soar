@@ -48,6 +48,28 @@ bool size_comp(const sgnode *a, const sgnode *b) {
 	
 	return (adiag*1.1) < bdiag;
 }
+bool linear_comp(const sgnode *a, const sgnode *b, const sgnode *c) {
+
+	ptlist pa, pb, pc;
+	a->get_bounds().get_points(pa);
+	b->get_bounds().get_points(pb);
+	c->get_bounds().get_points(pc);
+	
+	copy(pa.begin(), pa.end(), back_inserter(pc));
+	float d = hull_distance(pb, pc);
+	std::cout << d << std::endl;
+	if (d < 0) {
+		d = 0.;
+		//d = -d;
+	}
+	//vec3 ca = a->get_centroid();
+	//vec3 cb = b->get_centroid();
+	//vec3 cc = c->get_centroid();;
+	
+	//float d = cc.line_dist(ca, cb);
+	
+	return (d < 0.001);
+}
 
 bool north_of(scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
@@ -56,6 +78,10 @@ bool north_of(scene *scn, const vector<const sgnode*> &args) {
 bool smaller(scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return size_comp(args[0], args[1]);
+}
+bool linear(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 3);
+	return linear_comp(args[0], args[1], args[2]);
 }
 
 bool south_of(scene *scn, const vector<const sgnode*> &args) {
@@ -157,12 +183,39 @@ public:
 		return true;
 	}
 };
+class linear_comp_filter : public typed_map_filter<bool> {
+public:
+	linear_comp_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: typed_map_filter<bool>(root, si, input) {}
+	
+	bool compute(const filter_params *p, bool adding, bool &res, bool &changed) {
+		const sgnode *a, *b, *c;
+		
+		if (!get_filter_param(this, p, "a", a)) {
+			return false;
+		}
+		if (!get_filter_param(this, p, "b", b)) {
+			return false;
+		}
+		if (!get_filter_param(this, p, "c", c)) {
+			return false;
+		}
+		
+		bool newres = linear_comp(a, b, c);
+		changed = (newres != res);
+		res = newres;
+		return true;
+	}
+};
 
 filter *make_north_of(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 1, 1);
 }
 filter *make_smaller(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new size_comp_filter(root, si, input);
+}
+filter *make_linear(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new linear_comp_filter(root, si, input);
 }
 
 filter *make_south_of(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
@@ -200,13 +253,25 @@ filter *make_below(Symbol *root, soar_interface *si, scene *scn, filter_input *i
 
 filter_table_entry smaller_fill_entry() {
 	filter_table_entry e;
-	e.name = "smaller";
+	e.name = "smaller-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.ordered = true;
 	e.allow_repeat = false;
 	e.create = &make_smaller;
 	e.calc = &smaller;
+	return e;
+}
+filter_table_entry linear_fill_entry() {
+	filter_table_entry e;
+	e.name = "linear-with";
+	e.parameters.push_back("a");
+	e.parameters.push_back("b");
+	e.parameters.push_back("c");
+	e.ordered = true;
+	e.allow_repeat = false;
+	e.create = &make_linear;
+	e.calc = &linear;
 	return e;
 }
 
