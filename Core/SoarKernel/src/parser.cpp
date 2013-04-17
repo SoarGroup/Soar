@@ -478,8 +478,12 @@ test parse_test (agent* thisAgent) {
   if (test_is_complex_test(t)) {
     ct = complex_test_from_test(t);
     if (ct->type==CONJUNCTIVE_TEST)
+    {
       ct->data.conjunct_list =
         destructively_reverse_list (ct->data.conjunct_list);
+      ct->conjunct_list_is_vars =
+        destructively_reverse_list (ct->conjunct_list_is_vars);
+    }
   }
 
   return t;

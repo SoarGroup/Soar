@@ -450,8 +450,9 @@ inline complex_test * complex_test_from_test(test t)
 
 typedef struct complex_test_struct {
   byte type;                  /* see definitions below */
+  ::list *conjunct_list_is_vars; /* whether original simple test member in conjuct list is a var */
   union test_info_union {
-    Symbol *referent;         /* for relational tests */
+    Symbol *referent;         	/* for relational tests */
     ::list *disjunction_list;   /* for disjunction tests */
     ::list *conjunct_list;      /* for conjunctive tests */
   } data;
@@ -580,9 +581,8 @@ typedef struct condition_struct {
    *
    * Note: id and attr might not be necessary*/
 
-  Bool id_is_var;
-  Bool attr_is_var;
-  Bool value_is_var;
+  Bool attr_is_simple_var;
+  Bool value_is_simple_var;
 
   union condition_main_data_union {
     three_field_tests tests;             /* for pos, neg cond's only */

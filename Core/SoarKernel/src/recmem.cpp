@@ -713,15 +713,19 @@ void create_instantiation(agent* thisAgent, production *prod,
 	noninst_cond = top;
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
 			cond = cond->next) {
-		cond->id_is_var = false;
-		cond->attr_is_var = false;
-		cond->value_is_var = test_is_variable(thisAgent, noninst_cond->data.tests.value_test);
-		if (cond->value_is_var)
-		{
-			print(thisAgent,"Debug| Setting variable value binding for condition\n");
-			print_condition(thisAgent, cond);
-			print(thisAgent,"\n");
-		}
+
+		// Need to figure out how to pass these variables properly.  Eclipse is barfing on them.
+		//condition_store_var_locations(thisAgent, &(cond->attr_is_simple_var), cond->attr_complex_is_vars, noninst_cond->data.tests.value_test);
+
+		store_condition_var_locations(thisAgent, cond, noninst_cond->data.tests.value_test);
+
+		// debug remove later
+//		if (cond->value_is_simple_var)
+//		{
+//			print(thisAgent,"Debug| Setting variable value binding for condition\n");
+//			print_condition(thisAgent, cond);
+//			print(thisAgent,"\n");
+//		}
 		if (cond->type == POSITIVE_CONDITION) {
 			cond->bt.level = cond->bt.wme_->id->id.level;
 			cond->bt.trace = cond->bt.wme_->preference;

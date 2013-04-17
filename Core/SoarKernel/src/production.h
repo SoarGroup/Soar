@@ -226,6 +226,10 @@ extern test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
    variable to follow it.  Returns '*' if none found. --- */
 extern char first_letter_from_test (test t);
 
+/* --- Returns whether a test has a variable as a referent.  Assumes test
+ * is not conjunctive. ---*/
+bool test_is_variable(agent* thisAgent, test t);
+
 /* ------------------------ */
 /* Utilities for conditions */
 /* ------------------------ */

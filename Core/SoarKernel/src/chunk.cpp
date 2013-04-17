@@ -248,12 +248,62 @@ void variablize_test (agent* thisAgent, test *t) {
     return;
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+    {
+    	// iterate through other list too
+    	// check if const and var
       variablize_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
+    }
     return;
   default:  /* relational tests other than equality */
     variablize_symbol (thisAgent, &(ct->data.referent));
     return;
   }
+}
+
+void variablize_test_if_necessary (agent* thisAgent, bool value_is_simple_var, test *t, bool assume_varializable=false) {
+	cons *c, *c2;
+	complex_test *ct;
+	bool variablizable=false;
+
+	if (test_is_blank_test(*t)) return;
+	if (test_is_blank_or_equality_test(*t)) {
+		print(thisAgent, "Debug| ");
+		print_test (thisAgent, *t);
+		variablizable = assume_varializable || symbol_is_varializable_constant(referent_of_equality_test(*t));
+		if (variablizable && value_is_simple_var)
+			variablize_symbol (thisAgent, (Symbol **) t);
+		return;
+	}
+
+	ct = complex_test_from_test(*t);
+	print(thisAgent, "Debug|-->Variablizing complex test...\n");
+	print(thisAgent, "Debug| ");
+	print_test (thisAgent, *t);
+
+	switch (ct->type) {
+		case GOAL_ID_TEST:
+		case IMPASSE_ID_TEST:
+		case DISJUNCTION_TEST:
+			return;
+		case CONJUNCTIVE_TEST:
+			c2 = reinterpret_cast<cons *>(&(ct->conjunct_list_is_vars->first));
+			for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+			{
+				variablize_test_if_necessary (thisAgent, (c2->first != false), reinterpret_cast<test *>(&(c->first)), assume_varializable);
+				c2 = c2->rest;
+			}
+			return;
+		case NOT_EQUAL_TEST:
+		case LESS_TEST:
+		case GREATER_TEST:
+		case LESS_OR_EQUAL_TEST:
+		case GREATER_OR_EQUAL_TEST:
+		case SAME_TYPE_TEST:
+			variablizable = assume_varializable || symbol_is_varializable_constant(ct->data.referent);
+			if (variablizable && value_is_simple_var)
+				variablize_symbol (thisAgent, &(ct->data.referent));
+			return;
+	}
 }
 
 void variablize_condition_list (agent* thisAgent, condition *cond) {
@@ -263,17 +313,9 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
 		switch (cond->type) {
 		case POSITIVE_CONDITION:
 		case NEGATIVE_CONDITION:
-			variablize_test (thisAgent, &(cond->data.tests.id_test));
-			variablize_test (thisAgent, &(cond->data.tests.attr_test));
-			if (cond->value_is_var)
-			{
-				print(thisAgent, "Debug|-->\nDebug| ...Variablizing: (%s)\n-----------\n",
-						test_to_string (thisAgent, cond->data.tests.value_test, NULL, 0, TRUE));
-				variablize_test (thisAgent, &(cond->data.tests.value_test));
-			} else {
-				print(thisAgent, "Debug|-->\nDebug| ...Not variablizing: (%s)\n-----------\n",
-						test_to_string (thisAgent, cond->data.tests.value_test, NULL, 0, TRUE));
-			}
+			variablize_test_if_necessary (thisAgent, true, &(cond->data.tests.id_test), true);
+			variablize_test_if_necessary (thisAgent, true, &(cond->data.tests.attr_test), true);
+			variablize_test_if_necessary(thisAgent, cond->value_is_simple_var, &(cond->data.tests.value_test));
 			break;
 		case CONJUNCTIVE_NEGATION_CONDITION:
 			variablize_condition_list (thisAgent, cond->data.ncc.top);
