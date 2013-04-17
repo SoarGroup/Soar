@@ -48,27 +48,19 @@ bool size_comp(const sgnode *a, const sgnode *b) {
 	
 	return (adiag*1.1) < bdiag;
 }
+
 bool linear_comp(const sgnode *a, const sgnode *b, const sgnode *c) {
 
-	ptlist pa, pb, pc;
-	a->get_bounds().get_points(pa);
-	b->get_bounds().get_points(pb);
-	c->get_bounds().get_points(pc);
-	
-	copy(pa.begin(), pa.end(), back_inserter(pc));
-	float d = hull_distance(pb, pc);
-	std::cout << d << std::endl;
-	if (d < 0) {
-		d = 0.;
-		//d = -d;
-	}
-	//vec3 ca = a->get_centroid();
-	//vec3 cb = b->get_centroid();
-	//vec3 cc = c->get_centroid();;
-	
-	//float d = cc.line_dist(ca, cb);
-	
-	return (d < 0.001);
+/*	for now ignore z
+1/2[x1(y2-y3) + x2(y3-y1) + x3(y1-y2)
+*/
+	vec3 ca = a->get_centroid();
+	vec3 cb = b->get_centroid();
+	vec3 cc = c->get_centroid();
+	float tri_area = 0.5*(ca[0]*(cb[1]-cc[1]) + cb[0]*(cc[1]-ca[1]) + cc[0]*(ca[1]-cb[1]));
+	//std::cout << tri_area << std::endl;
+		
+	return (tri_area == 0);
 }
 
 bool north_of(scene *scn, const vector<const sgnode*> &args) {
