@@ -3658,10 +3658,10 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
       *rv = reteloc_to_rhs_value (var_loc.field_num, var_loc.levels_up-1);
     } else {
       /* --- No, replace it with rhs_unboundvar --- */
-      if (sym->var.tc_num != rhs_unbound_vars_tc) {
+      if (sym->common.tc_num != rhs_unbound_vars_tc) {
         symbol_add_ref (sym);
         push(thisAgent, sym, rhs_unbound_vars_for_new_prod);
-        sym->var.tc_num = rhs_unbound_vars_tc;
+        sym->common.tc_num = rhs_unbound_vars_tc;
         index = num_rhs_unbound_vars_for_new_prod++;
         sym->var.current_binding_value = reinterpret_cast<Symbol *>(index);
       } else {

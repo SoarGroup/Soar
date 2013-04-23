@@ -635,13 +635,13 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 	{
 		if ( tc != NIL )
 		{
-			if ( tc == id->id.tc_num )
+			if ( tc == id->common.tc_num )
 			{
 				return return_val;
 			}
 			else
 			{
-				id->id.tc_num = tc;
+				id->common.tc_num = tc;
 			}
 		}
 

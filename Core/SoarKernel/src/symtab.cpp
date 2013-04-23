@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -10,7 +10,7 @@
  *  file:  symtab.cpp
  *
  * =======================================================================
- *  
+ *
  *                 Symbol Table Routines for Soar 6
  *
  * Soar 6 uses five kinds of symbols:  symbolic constants, integer
@@ -48,7 +48,7 @@
    Compress() takes a 32-bit hash value and compresses it down to a few
    bits, xor-ing pieces of the 32-bit value to avoid throwing away bits
    that might be important for the hash function to be effective.
-   
+
    Hash_string() produces a hash value for a string of characters.
 
    Hash_xxx_raw_info() are the hash functions for the five kinds of
@@ -78,13 +78,13 @@ uint32_t hash_string (const char *s) {   /* AGR 600 */
   h = 0;
   while (*s != 0) {
     h = ((h << 8) | (h >> 24)) ^ (*s);
-    s++; 
+    s++;
   }
   return h;
 }
 
 /* -----------------------------------------
-   Hashing symbols using their basic info 
+   Hashing symbols using their basic info
 ----------------------------------------- */
 
 uint32_t hash_variable_raw_info (const char *name, short num_bits) {
@@ -150,7 +150,7 @@ uint32_t hash_float_constant (void *item, short num_bits) {
 ------------------------------------------------------------------- */
 
 //#define get_next_symbol_hash_id() (thisAgent->current_symbol_hash_id += 137)
-inline uint32_t get_next_symbol_hash_id(agent* thisAgent) 
+inline uint32_t get_next_symbol_hash_id(agent* thisAgent)
 {
   return (thisAgent->current_symbol_hash_id += 137);
 }
@@ -268,7 +268,7 @@ Symbol *make_variable (agent* thisAgent, const char *name) {
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->var.name = make_memory_block_for_string (thisAgent, name);
     sym->var.gensym_number = 0;
-    sym->var.tc_num = 0;
+    sym->common.tc_num = 0;
     sym->var.rete_binding_locations = NIL;
     add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS
@@ -293,7 +293,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->common.reference_count = 1;
   sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
   sym->id.name_letter = name_letter;
-  
+
   // NLD: modified for long-term identifiers
   if ( name_number == NIL )
   {
@@ -325,17 +325,17 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
 /* REW: end   09.15.96 */
 /* REW: begin 08.20.97 */
   sym->id.saved_firing_type = NO_SAVED_PRODS;
-  sym->id.ms_o_assertions = NIL; 
-  sym->id.ms_i_assertions = NIL; 
-  sym->id.ms_retractions = NIL;  
+  sym->id.ms_o_assertions = NIL;
+  sym->id.ms_i_assertions = NIL;
+  sym->id.ms_retractions = NIL;
 /* REW: end   08.20.97 */
   sym->id.lower_goal = NIL;
   sym->id.operator_slot = NIL;
   sym->id.preferences_from_goal = NIL;
-  sym->id.tc_num = 0;
+  sym->common.tc_num = 0;
   sym->id.associated_output_links = NIL;
   sym->id.input_wmes = NIL;
-	
+
   sym->id.rl_info = NIL;
   sym->id.reward_header = NIL;
 
@@ -375,10 +375,11 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     sym->common.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
-	sym->common.epmem_hash = 0;
-	sym->common.epmem_valid = 0;
-	sym->common.smem_hash = 0;
-	sym->common.smem_valid = 0;
+    sym->common.tc_num = 0;
+    sym->common.epmem_hash = 0;
+    sym->common.epmem_valid = 0;
+    sym->common.smem_hash = 0;
+    sym->common.smem_valid = 0;
     sym->sc.name = make_memory_block_for_string (thisAgent, name);
     sym->sc.production = NIL;
     add_to_hash_table (thisAgent, thisAgent->sym_constant_hash_table, sym);
@@ -402,10 +403,11 @@ Symbol *make_int_constant (agent* thisAgent, int64_t value) {
     sym->common.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
-	sym->common.epmem_hash = 0;
-	sym->common.epmem_valid = 0;
-	sym->common.smem_hash = 0;
-	sym->common.smem_valid = 0;
+    sym->common.tc_num = 0;
+    sym->common.epmem_hash = 0;
+    sym->common.epmem_valid = 0;
+    sym->common.smem_hash = 0;
+    sym->common.smem_valid = 0;
     sym->ic.value = value;
     add_to_hash_table (thisAgent, thisAgent->int_constant_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS
@@ -428,10 +430,11 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     sym->common.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
-	sym->common.epmem_hash = 0;
-	sym->common.epmem_valid = 0;
-	sym->common.smem_hash = 0;
-	sym->common.smem_valid = 0;
+    sym->common.tc_num = 0;
+    sym->common.epmem_hash = 0;
+    sym->common.epmem_valid = 0;
+    sym->common.smem_hash = 0;
+    sym->common.smem_valid = 0;
     sym->fc.value = value;
     add_to_hash_table (thisAgent, thisAgent->float_constant_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS
@@ -451,7 +454,7 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
 
 void deallocate_symbol (agent* thisAgent, Symbol *sym) {
 
-#ifdef DEBUG_SYMBOLS  
+#ifdef DEBUG_SYMBOLS
   print_with_symbols (thisAgent, "\nDeallocating Symbol %y", sym);
 #endif
 
@@ -522,17 +525,17 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata) {
 
 			if ( sym->id.smem_lti != NIL )
 			{
-				SNPRINTF( msg, 256, 
-					"\t@%c%llu --> %llu\n", 
-					sym->id.name_letter, 
-					static_cast<long long unsigned>(sym->id.name_number), 
+				SNPRINTF( msg, 256,
+					"\t@%c%llu --> %llu\n",
+					sym->id.name_letter,
+					static_cast<long long unsigned>(sym->id.name_number),
 					static_cast<long long unsigned>(sym->common.reference_count));
 			}
 			else
 			{
-				SNPRINTF( msg, 256, 
-					"\t%c%llu --> %llu\n", 
-					sym->id.name_letter, 
+				SNPRINTF( msg, 256,
+					"\t%c%llu --> %llu\n",
+					sym->id.name_letter,
 					static_cast<long long unsigned>(sym->id.name_number),
 					static_cast<long long unsigned>(sym->common.reference_count));
 			}
@@ -580,7 +583,7 @@ bool reset_id_counters (agent* thisAgent) {
 			return false;
 		}
 
-		// Getting here means that there are still identifiers but that 
+		// Getting here means that there are still identifiers but that
 		// they are all long-term and (hopefully) exist only in production memory.
 	}
 	for (i=0; i<26; i++) thisAgent->id_counter[i]=1;
@@ -597,8 +600,7 @@ Bool reset_tc_num (agent* /*thisAgent*/, void *item, void*) {
   Symbol *sym;
 
   sym = static_cast<symbol_union *>(item);
-  if (sym->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) sym->id.tc_num = 0;
-  else if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) sym->var.tc_num = 0;
+  sym->common.tc_num = 0;
   return FALSE;
 }
 
@@ -640,7 +642,7 @@ void print_internal_symbols (agent* thisAgent) {
 
 Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_t* counter) {
 #define GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE 2000 /* that ought to be long enough! */
-  char name[GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE];  
+  char name[GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE];
   Symbol *New;
 
   while (TRUE) {
@@ -653,7 +655,7 @@ Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_
 }
 
 /* --------------------------------------------------------------------
-   
+
                          Predefined Symbols
 
 -------------------------------------------------------------------- */
@@ -672,7 +674,7 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->constraint_failure_symbol = make_sym_constant (thisAgent, "constraint-failure");
   thisAgent->no_change_symbol = make_sym_constant (thisAgent, "no-change");
   thisAgent->multiple_symbol = make_sym_constant (thisAgent, "multiple");
-  
+
   // SBW 5/07
   thisAgent->item_count_symbol = make_sym_constant (thisAgent, "item-count");
 
@@ -682,7 +684,7 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->conflict_symbol = make_sym_constant (thisAgent, "conflict");
   thisAgent->tie_symbol = make_sym_constant (thisAgent, "tie");
   thisAgent->item_symbol = make_sym_constant (thisAgent, "item");
-  thisAgent->non_numeric_symbol = make_sym_constant (thisAgent, "non-numeric"); 
+  thisAgent->non_numeric_symbol = make_sym_constant (thisAgent, "non-numeric");
   thisAgent->quiescence_symbol = make_sym_constant (thisAgent, "quiescence");
   thisAgent->t_symbol = make_sym_constant (thisAgent, "t");
   thisAgent->nil_symbol = make_sym_constant (thisAgent, "nil");
@@ -846,7 +848,7 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match_mapping_cue ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_success ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_failure ) );
-  release_helper( thisAgent, &( thisAgent->epmem_sym_bad_cmd ) ); 
+  release_helper( thisAgent, &( thisAgent->epmem_sym_bad_cmd ) );
 
   release_helper( thisAgent, &( thisAgent->epmem_sym_retrieve ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_next ) );

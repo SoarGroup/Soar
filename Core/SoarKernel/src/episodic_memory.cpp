@@ -1266,9 +1266,9 @@ epmem_wme_list *epmem_get_augs_of_id( Symbol * id, tc_number tc )
 
 	// augs only exist for identifiers
 	if ( ( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-			( id->id.tc_num != tc ) )
+			( id->common.tc_num != tc ) )
 	{
-		id->id.tc_num = tc;
+		id->common.tc_num = tc;
 
 		// impasse wmes
 		for ( w=id->id.impasse_wmes; w!=NIL; w=w->next )
@@ -2892,7 +2892,7 @@ inline void _epmem_store_level( agent* my_agent,
 			}
 
 			// if the value has not been iterated over, continue to augmentations
-			if ( (*w_p)->value->id.tc_num != tc )
+			if ( (*w_p)->value->common.tc_num != tc )
 			{
 				parent_syms.push( (*w_p)->value );
 				parent_ids.push( (*w_p)->value->id.epmem_id );

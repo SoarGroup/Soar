@@ -147,8 +147,12 @@ extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, si
 
    Print_production() prints a given production, optionally using internal
    format.
+
+   print_test() print a verbose representation of a test for use during
+   debugging.  test_to_string() can be used to print tests more generally.
 ----------------------------------------------------------------------- */
 
+extern inline const char *test_type_to_string(byte test_type);
 extern void print_test (agent* thisAgent, test t);
 extern void print_condition_list (agent* thisAgent, condition *conds, int indent, Bool internal);
 extern void print_action_list (agent* thisAgent, action *actions, int indent, Bool internal);

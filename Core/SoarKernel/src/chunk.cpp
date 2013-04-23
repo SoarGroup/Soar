@@ -72,7 +72,7 @@ using namespace soar_TraceNames;
 #define add_results_if_needed(thisAgent, sym) \
   { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
       if ( ((sym)->id.level >= thisAgent->results_match_goal_level) && \
-           ((sym)->id.tc_num != thisAgent->results_tc_number) ) \
+           ((sym)->common.tc_num != thisAgent->results_tc_number) ) \
         add_results_for_id(thisAgent, sym); }
 
 #else
@@ -80,7 +80,7 @@ inline void add_results_if_needed(agent* thisAgent, Symbol * sym)
 {
   if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
       if ( ((sym)->id.level >= thisAgent->results_match_goal_level) &&
-           ((sym)->id.tc_num != thisAgent->results_tc_number) )
+           ((sym)->common.tc_num != thisAgent->results_tc_number) )
         add_results_for_id(thisAgent, sym);
 }
 #endif /* USE_MACROS */
@@ -125,7 +125,7 @@ void add_results_for_id (agent* thisAgent, Symbol *id) {
   preference *pref;
   wme *w;
 
-  id->id.tc_num = thisAgent->results_tc_number;
+  id->common.tc_num = thisAgent->results_tc_number;
 
   /* --- scan through all preferences and wmes for all slots for this id --- */
   for (w=id->id.input_wmes; w!=NIL; w=w->next)
@@ -152,7 +152,7 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
   thisAgent->extra_result_prefs_from_instantiation = inst->preferences_generated;
   for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
     if ( (pref->id->id.level < thisAgent->results_match_goal_level) &&
-         (pref->id->id.tc_num != thisAgent->results_tc_number) ) {
+         (pref->id->common.tc_num != thisAgent->results_tc_number) ) {
       add_pref_to_results(thisAgent, pref);
     }
   return thisAgent->results;
@@ -166,7 +166,7 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
    and destructively modifying it, replacing tests of identifiers with
    tests of tests of variables.  The identifier-to-variable mapping is
    built as we go along:  identifiers that have already been assigned
-   a variablization are marked with id.tc_num==variablization_tc, and
+   a variablization are marked with common.tc_num==variablization_tc, and
    id.variablization points to the corresponding variable.
 
    Variablizing of results can't be done destructively because we need
@@ -180,149 +180,138 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 	char prefix[2];
 	Symbol *var;
 
-	// only variablize identifiers
-	if ((thisAgent->debug_params->use_new_chunking->get_value() == soar_module::off) &&
-		((*sym)->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE))
+	// May no longer need this.  At least don't need it for calls from variablize_test
+	if (symbol_is_identifier(*sym) || symbol_is_variablizable_constant(*sym))
 	{
-		return;
-	}
+	  // Will need to revisit this part when doing lti's as constant
+	  // remember that id.smem_lti might not be valid for this sym any more
 
-	if ((*sym)->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-	{
-		//asm("int $3");
-		//print(thisAgent, "\nVariabilizing int constant %d\n",(*sym)->ic.value);
-	}
-	if ((*sym)->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
-	{
-		//asm("int $3");
-		//print(thisAgent, "\nVariabilizing float constant %f\n", (*sym)->fc.value);
-	}
-	if (((*sym)->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) ||
-		((*sym)->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
-		((*sym)->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
-	{
-			if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
-			{
-				(*sym)->id.tc_num = thisAgent->variablization_tc;
-				(*sym)->id.variablization = (*sym);
-				return;
-			}
-
-			if ((*sym)->id.tc_num == thisAgent->variablization_tc) {
+	  //			if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
+//			{
+//				(*sym)->common.tc_num = thisAgent->variablization_tc;
+//				(*sym)->id.variablization = (*sym);
+//				return;
+//			}
+//
+			if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
 				/* --- it's already been variablized, so use the existing variable --- */
-				var = (*sym)->id.variablization;
+				var = (*sym)->common.variablization;
 				symbol_remove_ref (thisAgent, *sym);
 				*sym = var;
 				symbol_add_ref (var);
 				return;
 			}
 
-			/* --- need to create a new variable --- */
-			(*sym)->id.tc_num = thisAgent->variablization_tc;
-			prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+			/* --- need to create a new variable.  If constant is being variablized
+			 *     just used 'c' instead of first letter of id name --- */
+			(*sym)->common.tc_num = thisAgent->variablization_tc;
+			if((*sym)->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+			  prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+			else
+			  prefix[0] = 'c';
 			prefix[1] = 0;
 			var = generate_new_variable (thisAgent, prefix);
-			(*sym)->id.variablization = var;
+			(*sym)->common.variablization = var;
 			symbol_remove_ref (thisAgent, *sym);
 			*sym = var;
 		}
 }
 
-void variablize_test (agent* thisAgent, test *t) {
-  cons *c;
-  complex_test *ct;
+void variablize_test (agent* thisAgent, test *instantiated_test, test *original_test) {
+  cons *c, *c2;
+  complex_test *ct, *ct_original;
+  byte original_test_type, test_type, effective_test_type;
+  Symbol *original_referent, *instantiated_referent;
+  bool variablizable;
 
-  if (test_is_blank_test(*t)) return;
-  if (test_is_blank_or_equality_test(*t)) {
-    variablize_symbol (thisAgent, (Symbol **) t);
-    /* Warning: this relies on the representation of tests */
+
+  print(thisAgent, "Debug| Variablizing: ");
+  print_test (thisAgent, *instantiated_test);
+  print(thisAgent, "Debug| Original: ");
+  print_test (thisAgent, *original_test);
+
+  if (!get_test_type_referent(*instantiated_test, &test_type, &instantiated_referent))
+  {
+    print(thisAgent, "Debug| Non-variablizable type.  Returning.\nDebug| ---------------------------------------\n");
     return;
   }
+  get_test_type_referent(*original_test, &original_test_type, &original_referent);
+  switch (original_test_type) {
+    case CONJUNCTIVE_TEST:
+      print(thisAgent, "Debug| Iterating through conjunction list.\n");
+      ct = complex_test_from_test(*instantiated_test);
+      ct_original = complex_test_from_test(*original_test);
+      c2 = ct_original->data.conjunct_list;
+      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+      {
+        variablize_test (thisAgent,
+            reinterpret_cast<test *>(&(c->first)),
+            reinterpret_cast<test *>(&(c2->first)));
+        c2 = c2->rest;
+      }
+      ct->type = original_test_type;
+      print(thisAgent, "Debug| Done iterating through conjunction list.\nDebug| ---------------------------------------\n");
+      break;
+    case EQUALITY_TEST:
+      if (symbol_is_variablizable(original_referent,instantiated_referent))
+      {
+        print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
+        variablize_symbol (thisAgent, (Symbol **) instantiated_test);
+      }
+      break;
+    case NOT_EQUAL_TEST:
+    case LESS_TEST:
+    case GREATER_TEST:
+    case LESS_OR_EQUAL_TEST:
+    case GREATER_OR_EQUAL_TEST:
+    case SAME_TYPE_TEST:
+      if (symbol_is_variablizable(original_referent,instantiated_referent))
+      {
+        print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
+        if (test_type == EQUALITY_TEST)
+        {
+          print(thisAgent, "Debug| Switching complex type from %s back to %s\n", test_type_to_string(test_type), test_type_to_string(original_test_type));
 
-  ct = complex_test_from_test(*t);
-
-  switch (ct->type) {
-  case GOAL_ID_TEST:
-  case IMPASSE_ID_TEST:
-  case DISJUNCTION_TEST:
-    return;
-  case CONJUNCTIVE_TEST:
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-    {
-    	// iterate through other list too
-    	// check if const and var
-      variablize_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
-    }
-    return;
-  default:  /* relational tests other than equality */
-    variablize_symbol (thisAgent, &(ct->data.referent));
-    return;
+          allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
+          ct->type = original_test_type;
+          ct->data.referent = instantiated_referent;
+          // I don't think we need to add this b/c the equality test incremented the refcount
+          // and we're discarding that test (instantiated_test).
+          //symbol_add_ref (ct->data.referent);
+          *instantiated_test = make_test_from_complex_test(ct);
+        }
+        else
+        {
+          ct = complex_test_from_test(*instantiated_test);
+        }
+        variablize_symbol (thisAgent, &(ct->data.referent));
+      }
+      break;
   }
+  print(thisAgent, "Debug| Resulting in ");
+  print_test(thisAgent, *instantiated_test);
+  print(thisAgent, "Debug| ---------------------------------------\n");
 }
 
-void variablize_test_if_necessary (agent* thisAgent, bool value_is_simple_var, test *t, bool assume_varializable=false) {
-	cons *c, *c2;
-	complex_test *ct;
-	bool variablizable=false;
-
-	if (test_is_blank_test(*t)) return;
-	if (test_is_blank_or_equality_test(*t)) {
-		print(thisAgent, "Debug| ");
-		print_test (thisAgent, *t);
-		variablizable = assume_varializable || symbol_is_varializable_constant(referent_of_equality_test(*t));
-		if (variablizable && value_is_simple_var)
-			variablize_symbol (thisAgent, (Symbol **) t);
-		return;
-	}
-
-	ct = complex_test_from_test(*t);
-	print(thisAgent, "Debug|-->Variablizing complex test...\n");
-	print(thisAgent, "Debug| ");
-	print_test (thisAgent, *t);
-
-	switch (ct->type) {
-		case GOAL_ID_TEST:
-		case IMPASSE_ID_TEST:
-		case DISJUNCTION_TEST:
-			return;
-		case CONJUNCTIVE_TEST:
-			c2 = reinterpret_cast<cons *>(&(ct->conjunct_list_is_vars->first));
-			for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-			{
-				variablize_test_if_necessary (thisAgent, (c2->first != false), reinterpret_cast<test *>(&(c->first)), assume_varializable);
-				c2 = c2->rest;
-			}
-			return;
-		case NOT_EQUAL_TEST:
-		case LESS_TEST:
-		case GREATER_TEST:
-		case LESS_OR_EQUAL_TEST:
-		case GREATER_OR_EQUAL_TEST:
-		case SAME_TYPE_TEST:
-			variablizable = assume_varializable || symbol_is_varializable_constant(ct->data.referent);
-			if (variablizable && value_is_simple_var)
-				variablize_symbol (thisAgent, &(ct->data.referent));
-			return;
-	}
-}
 
 void variablize_condition_list (agent* thisAgent, condition *cond) {
 
-	print(thisAgent, "Debug| Variablizing chunk condition list:\n");
-	for (; cond!=NIL; cond=cond->next) {
+	print(thisAgent, "Debug| Variablizing chunk condition list:\nDebug| ==========================================\n");
+	for (; cond!=NIL; cond=cond->next)
+	{
 		switch (cond->type) {
 		case POSITIVE_CONDITION:
 		case NEGATIVE_CONDITION:
-			variablize_test_if_necessary (thisAgent, true, &(cond->data.tests.id_test), true);
-			variablize_test_if_necessary (thisAgent, true, &(cond->data.tests.attr_test), true);
-			variablize_test_if_necessary(thisAgent, cond->value_is_simple_var, &(cond->data.tests.value_test));
+			variablize_test(thisAgent, &(cond->data.tests.id_test), &(cond->original_tests.id_test));
+			variablize_test(thisAgent, &(cond->data.tests.attr_test), &(cond->original_tests.attr_test));
+			variablize_test(thisAgent, &(cond->data.tests.value_test), &(cond->original_tests.value_test));
 			break;
 		case CONJUNCTIVE_NEGATION_CONDITION:
 			variablize_condition_list (thisAgent, cond->data.ncc.top);
 			break;
 		}
 	}
-	print(thisAgent, "Debug| Done variablizing chunk condition list.\n");
+	print(thisAgent, "Debug| ==========================================\nDebug| Done variablizing chunk condition list.\n");
 }
 
 action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, bool variablize) {
@@ -614,8 +603,8 @@ not_struct *get_nots_for_instantiated_conditions (agent* thisAgent,
     free_cons (thisAgent, c);
     for (n1=inst->nots; n1 != NIL; n1=n1->next) {
       /* --- Are both id's marked? If no, goto next loop iteration --- */
-      if (n1->s1->id.tc_num != tc_of_grounds) continue;
-      if (n1->s2->id.tc_num != tc_of_grounds) continue;
+      if (n1->s1->common.tc_num != tc_of_grounds) continue;
+      if (n1->s2->common.tc_num != tc_of_grounds) continue;
       /* --- If the pair already in collected_nots, goto next iteration --- */
       for (n2=collected_nots; n2!=NIL; n2=n2->next) {
         if ((n2->s1 == n1->s1) && (n2->s2 == n1->s2)) break;
@@ -658,8 +647,8 @@ void variablize_nots_and_insert_into_conditions (agent* thisAgent,
   Bool added_it;
 
   for (n=nots; n!=NIL; n=n->next) {
-    var1 = n->s1->id.variablization;
-    var2 = n->s2->id.variablization;
+    var1 = n->s1->common.variablization;
+    var2 = n->s2->common.variablization;
     /* --- find where var1 is bound, and add "<> var2" to that test --- */
     allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
     t = make_test_from_complex_test (ct);
@@ -724,12 +713,12 @@ void add_goal_or_impasse_tests (agent* thisAgent, chunk_cond *all_ccs) {
     if (cc->instantiated_cond->type!=POSITIVE_CONDITION) continue;
     id = referent_of_equality_test (cc->instantiated_cond->data.tests.id_test);
     if ( (id->id.isa_goal || id->id.isa_impasse) &&
-         (id->id.tc_num != tc) ) {
+         (id->common.tc_num != tc) ) {
       allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
       ct->type = static_cast<byte>((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST);
       t = make_test_from_complex_test(ct);
       add_new_test_to_test (thisAgent, &(cc->variablized_cond->data.tests.id_test), t);
-      id->id.tc_num = tc;
+      id->common.tc_num = tc;
     }
   }
 }
@@ -1225,6 +1214,11 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		xml_end_tag(thisAgent, kTagLearning);
 	}
 	/* AGR 617/634 end */
+
+	// Debug| Remove later MMA
+	print_production(thisAgent, inst->prod, true);
+//	print_instantiation_with_wmes(thisAgent, inst, FULL_WME_TRACE, -1);
+	print(thisAgent,"\n");
 
 	/* --- if there aren't any grounds, exit --- */
 	if (! top_cc)

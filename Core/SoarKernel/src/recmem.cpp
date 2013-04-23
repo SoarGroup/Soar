@@ -708,7 +708,8 @@ void create_instantiation(agent* thisAgent, production *prod,
 			&top, &bottom, NIL, NIL);
 
 	/* --- record the level of each of the wmes that was positively tested
-	 *     and copy over information from non-instantiated conditions --- */
+	 *     and copy over original production information from non-instantiated
+	 *     conditions, which will be used to chunk constants and complex conditions --- */
 
 	noninst_cond = top;
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
@@ -717,7 +718,14 @@ void create_instantiation(agent* thisAgent, production *prod,
 		// Need to figure out how to pass these variables properly.  Eclipse is barfing on them.
 		//condition_store_var_locations(thisAgent, &(cond->attr_is_simple_var), cond->attr_complex_is_vars, noninst_cond->data.tests.value_test);
 
-		store_condition_var_locations(thisAgent, cond, noninst_cond->data.tests.value_test);
+    cond->original_tests.id_test = copy_test (thisAgent, noninst_cond->data.tests.id_test);
+	  cond->original_tests.attr_test = copy_test (thisAgent, noninst_cond->data.tests.attr_test);
+	  cond->original_tests.value_test = copy_test (thisAgent, noninst_cond->data.tests.value_test);
+
+	  print(thisAgent, "Storing original value test...\n");
+    print_test(thisAgent, cond->data.tests.value_test);
+	  print_test(thisAgent, cond->original_tests.value_test);
+	  //store_condition_var_locations(thisAgent, cond, noninst_cond->data.tests.value_test);
 
 		// debug remove later
 //		if (cond->value_is_simple_var)

@@ -481,8 +481,6 @@ test parse_test (agent* thisAgent) {
     {
       ct->data.conjunct_list =
         destructively_reverse_list (ct->data.conjunct_list);
-      ct->conjunct_list_is_vars =
-        destructively_reverse_list (ct->conjunct_list_is_vars);
     }
   }
 

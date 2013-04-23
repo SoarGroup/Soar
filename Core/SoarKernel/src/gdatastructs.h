@@ -450,7 +450,6 @@ inline complex_test * complex_test_from_test(test t)
 
 typedef struct complex_test_struct {
   byte type;                  /* see definitions below */
-  ::list *conjunct_list_is_vars; /* whether original simple test member in conjuct list is a var */
   union test_info_union {
     Symbol *referent;         	/* for relational tests */
     ::list *disjunction_list;   /* for disjunction tests */
@@ -460,30 +459,27 @@ typedef struct complex_test_struct {
 
 /* types of the complex_test's */
 /* WARNING -- none of these can be 254 or 255 -- see rete.cpp */
-//#define NOT_EQUAL_TEST 1         /* various relational tests */
-//#define LESS_TEST 2
-//#define GREATER_TEST 3
-//#define LESS_OR_EQUAL_TEST 4
-//#define GREATER_OR_EQUAL_TEST 5
-//#define SAME_TYPE_TEST 6
-//#define DISJUNCTION_TEST 7       /* item must be one of a list of constants */
-//#define CONJUNCTIVE_TEST 8       /* item must pass each of a list of tests */
-//#define GOAL_ID_TEST 9           /* item must be a goal identifier */
-//#define IMPASSE_ID_TEST 10       /* item must be an impasse identifier */
 enum ComplexTextTypes {
-         NOT_EQUAL_TEST = 1,         /* various relational tests */
+         NOT_EQUAL_TEST = 1,          /* various relational tests */
          LESS_TEST = 2,
          GREATER_TEST = 3,
          LESS_OR_EQUAL_TEST = 4,
          GREATER_OR_EQUAL_TEST = 5,
          SAME_TYPE_TEST = 6,
-         DISJUNCTION_TEST = 7,       /* item must be one of a list of constants */
-         CONJUNCTIVE_TEST = 8,       /* item must pass each of a list of tests */
-         GOAL_ID_TEST = 9,           /* item must be a goal identifier */
-         IMPASSE_ID_TEST = 10       /* item must be an impasse identifier */
+         DISJUNCTION_TEST = 7,        /* item must be one of a list of constants */
+         CONJUNCTIVE_TEST = 8,        /* item must pass each of a list of tests */
+         GOAL_ID_TEST = 9,            /* item must be a goal identifier */
+         IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
+
+         /* The following two types are NOT COMPLEX TEST types, so not valid
+          * in a complex_test struct.  Added to make comparing test types more clear */
+         EQUALITY_TEST = 11,
+         BLANK_TEST = 12
 };
 
-#define NUM_TEST_TYPES 10
+#define NUM_TEST_TYPES 10           /* Note: count does not include equality or
+                                             blank tests, so this is really number
+                                             of complex test types */
 
 //
 // Symbol types.
@@ -523,7 +519,7 @@ enum ComplexTextTypes {
         this is TRUE iff the condition tests for acceptable preference wmes.
 
       data.ncc.top, data.ncc.bottom:  for NCC's, these point to the top and
-        bottom of the subconditions likned list.
+        bottom of the subconditions linked list.
 
       bt:  for top-level positive conditions in production instantiations,
         this structure gives information for that will be used in backtracing.
@@ -571,23 +567,19 @@ typedef struct ncc_info_struct {
 typedef struct condition_struct {
   byte type;
   Bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
-  Bool test_for_acceptable_preference;   /* for pos, neg cond's only */
+  Bool test_for_acceptable_preference;   /* for positive, negative cond's only */
   struct condition_struct *next, *prev;
 
-  /* The following flags store whether a condition was originally a variable in
-   * the original production. They are used by chunking to determine whether a
-   * constant in an instantiated condition should be variablized.  If it was
-   * a variable in the original production, it will not be.
-   *
-   * Note: id and attr might not be necessary*/
-
-  Bool attr_is_simple_var;
-  Bool value_is_simple_var;
-
   union condition_main_data_union {
-    three_field_tests tests;             /* for pos, neg cond's only */
+    three_field_tests tests;             /* for positive, negative cond's only */
     ncc_info ncc;                        /* for ncc's only */
   } data;
+
+  /* We store the original tests. They are used by chunking to determine whether a
+   * constant in an instantiated condition should be variablized.  If it was
+   * a variable in the original production, it will not be. */
+  three_field_tests original_tests;
+
   bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
   reorder_info reorder;  /* used only during reordering */
 } condition;

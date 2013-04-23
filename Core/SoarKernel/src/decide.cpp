@@ -550,7 +550,7 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
 /* ----------------------------------------------
    Mark an id and its transitive closure as having
    an unknown level.  Ids are marked by setting
-   id.tc_num to mark_tc_number.  The starting id's
+   common.tc_num to mark_tc_number.  The starting id's
    goal stack level is recorded in
    level_at_which_marking_started by the caller.
    The marked ids are added to ids_with_unknown_level.
@@ -581,14 +581,14 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
 	ids_to_walk.pop_back();
 
     /* --- if id is already marked, do nothing --- */
-    if (id->id.tc_num==thisAgent->mark_tc_number) continue;
+    if (id->common.tc_num==thisAgent->mark_tc_number) continue;
 
     /* --- don't mark anything higher up as disconnected--in order to be higher
        up, it must have a link to it up there --- */
     if (id->id.level < thisAgent->level_at_which_marking_started) continue;
 
     /* --- mark id, so we won't do it again later --- */
-    id->id.tc_num = thisAgent->mark_tc_number;
+    id->common.tc_num = thisAgent->mark_tc_number;
 
     /* --- update range of goal stack levels we'll need to walk --- */
     if (id->id.level < thisAgent->highest_level_anything_could_fall_from)
@@ -664,7 +664,7 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
 
 inline bool level_update_needed(agent* thisAgent, Symbol *sym)
 {
-  return ( ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( sym->id.tc_num != thisAgent->walk_tc_number ) );
+  return ( ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( sym->common.tc_num != thisAgent->walk_tc_number ) );
 }
 
 void walk_and_update_levels (agent* thisAgent, Symbol *root) {
@@ -687,7 +687,7 @@ void walk_and_update_levels (agent* thisAgent, Symbol *root) {
 	ids_to_walk.pop_back();
 
 	/* --- mark id so we don't walk it twice --- */
-    id->id.tc_num = thisAgent->walk_tc_number;
+    id->common.tc_num = thisAgent->walk_tc_number;
 
     /* --- if we already know its level, and it's higher up, then exit --- */
     if ((! id->id.unknown_level) && (id->id.level < thisAgent->walk_level)) continue;

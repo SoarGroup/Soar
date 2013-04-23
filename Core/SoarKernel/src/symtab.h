@@ -175,6 +175,10 @@ typedef struct symbol_common_data_struct {
 
   smem_hash_id smem_hash;
   uint64_t smem_valid;
+
+  tc_number tc_num;           /* used for transitive closures, marking, etc. */
+  union symbol_union *variablization;  /* used by the chunker */
+
 } symbol_common_data;
 
 /* WARNING:  In the following structures (the five kinds of symbols),
@@ -199,7 +203,6 @@ typedef struct float_constant_struct {
 typedef struct variable_struct {
   symbol_common_data common_symbol_info;
   char *name;
-  tc_number tc_num;
   union symbol_union *current_binding_value;
   uint64_t gensym_number;
   ::list *rete_binding_locations;
@@ -228,8 +231,6 @@ typedef struct identifier_struct {
   dl_cons *unknown_level;
 
   struct slot_struct *slots;  /* dll of slots for this identifier */
-  tc_number tc_num;           /* used for transitive closures, marking, etc. */
-  union symbol_union *variablization;  /* used by the chunker */
 
   /* --- fields used only on goals and impasse identifiers --- */
   struct wme_struct *impasse_wmes;
@@ -422,10 +423,28 @@ inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
   return refCount ;
 }
 
-inline bool symbol_is_varializable_constant( Symbol *sym )
+inline bool symbol_is_variable(Symbol *sym)
 {
-	return ( ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-		     ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
+  return (sym->common.symbol_type == VARIABLE_SYMBOL_TYPE);
+}
+
+inline bool symbol_is_identifier(Symbol *sym)
+{
+  return (sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE);
+}
+
+inline bool symbol_is_variablizable_constant(Symbol *sym)
+{
+  return ((sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+          (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ));
+}
+
+inline bool symbol_is_variablizable(Symbol *original_sym, Symbol *instantiated_sym)
+{
+  return (symbol_is_identifier(instantiated_sym) ||
+         (symbol_is_variablizable_constant(instantiated_sym) &&
+          symbol_is_variable(original_sym))
+         );
 }
 
 inline bool symbol_is_constant( Symbol *sym )

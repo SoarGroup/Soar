@@ -223,7 +223,6 @@ test copy_test (agent* thisAgent, test t) {
     break;
   case CONJUNCTIVE_TEST:
     new_ct->data.conjunct_list = copy_test_list (thisAgent, ct->data.conjunct_list);
-    new_ct->conjunct_list_is_vars = copy_cons_list (thisAgent, ct->conjunct_list_is_vars);
     break;
   default:  /* relational tests other than equality */
     new_ct->data.referent = ct->data.referent;
@@ -274,8 +273,6 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
       {
         new_ct->data.conjunct_list =
           destructively_reverse_list (new_ct->data.conjunct_list);
-        new_ct->conjunct_list_is_vars =
-          destructively_reverse_list (new_ct->conjunct_list_is_vars);
       }
     }
     return new_t;
@@ -313,12 +310,6 @@ void deallocate_test (agent* thisAgent, test t) {
     while (c) {
       next_c = c->rest;
       deallocate_test (thisAgent, static_cast<char *>(c->first));
-      free_cons (thisAgent, c);
-      c = next_c;
-    }
-    c = ct->conjunct_list_is_vars;
-    while (c) {
-      next_c = c->rest;
       free_cons (thisAgent, c);
       c = next_c;
     }
@@ -387,10 +378,6 @@ void add_new_test_to_test (agent* thisAgent,
     ct->data.conjunct_list = c;
     c->first = *t;
     c->rest = NIL;
-    allocate_cons (thisAgent, &c);
-    ct->conjunct_list_is_vars = c;
-    c->first = reinterpret_cast<void *>(test_is_variable(thisAgent, *t));
-    c->rest = NIL;
     *t = make_test_from_complex_test (ct);
   }
   /* --- at this point, ct points to the complex test structure for *t --- */
@@ -400,10 +387,6 @@ void add_new_test_to_test (agent* thisAgent,
   c->first = add_me;
   c->rest = ct->data.conjunct_list;
   ct->data.conjunct_list = c;
-  allocate_cons (thisAgent, &c);
-  c->first = reinterpret_cast<void *>(test_is_variable(thisAgent, add_me));
-  c->rest = ct->conjunct_list_is_vars;
-  ct->conjunct_list_is_vars = c;
 }
 
 /* ----------------------------------------------------------------
@@ -710,25 +693,49 @@ Changed  < to > 10/5/92*/
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the test contains an equality test for any
-   symbol.
+   Extracts test type and any referent
+   of test  Convoluted because of
+   bit manipulation used by test representation.
+   Returns true iff test has a referent or is a
+   conjunctive test.
 ---------------------------------------------------------------- */
 
-Bool test_includes_equality_test_for_some_symbol (test t) {
-  cons *c;
+inline bool get_test_type_referent(test t, byte *test_type, Symbol **sym)
+{
   complex_test *ct;
 
-  if (!test_is_blank_test(t) && test_is_blank_or_equality_test(t) && referent_of_equality_test(t)) {
-    return (referent_of_equality_test(t) != NIL);
+  if (test_is_blank_test(t)){
+    *sym = NIL;
+    *test_type = BLANK_TEST;
+    return false;
   }
-
+  if (test_is_blank_or_equality_test(t))
+  {
+    *sym = referent_of_equality_test(t);
+    *test_type = EQUALITY_TEST;
+    return true;
+  }
   ct = complex_test_from_test(t);
-
-  if (ct->type==CONJUNCTIVE_TEST) {
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_includes_equality_test_for_some_symbol (static_cast<char *>(c->first))) return TRUE;
+  switch (ct->type) {
+    case GOAL_ID_TEST:
+    case IMPASSE_ID_TEST:
+    case DISJUNCTION_TEST:
+      *sym = NIL;
+      return false;
+      break;
+    case CONJUNCTIVE_TEST:
+      break;
+    case NOT_EQUAL_TEST:
+    case LESS_TEST:
+    case GREATER_TEST:
+    case LESS_OR_EQUAL_TEST:
+    case GREATER_OR_EQUAL_TEST:
+    case SAME_TYPE_TEST:
+      *sym = ct->data.referent;
+      break;
   }
-  return FALSE;
+  *test_type = ct->type;
+  return true;
 }
 
 /* ----------------------------------------------------------------
@@ -775,10 +782,6 @@ bool test_is_variable(agent* thisAgent, test t)
 
 	  if (test_is_blank_or_equality_test(t)) {
 		  return_value = (referent_of_equality_test(t)->common.symbol_type == VARIABLE_SYMBOL_TYPE);
-//		  if (return_value)
-//		  {
-//			  print(thisAgent, "Debug| value test for equality condition is for variable: %s\n", symbol_to_string (thisAgent, referent_of_equality_test(t), FALSE, NIL, NIL));
-//		  }
 		  return return_value;
 	  }
 
@@ -801,50 +804,50 @@ bool test_is_variable(agent* thisAgent, test t)
 	  return return_value;
 }
 
-void store_condition_var_locations(agent* thisAgent, condition *cond, test t)
-{
-	cons *c;
-	complex_test *ct, *ct2;
-	char *this_test;
-
-	cond->attr_is_simple_var = false;
-	cond->value_is_simple_var = false;
-
-	  if (test_is_blank_test(t))
-	  {
-		  return;
-	  }
-
-	  print(thisAgent, "Debug|-->Storing original production info for test...\n");
-	  print(thisAgent, "Debug| ");
-	  print_test (thisAgent, t);
-
-	  if (test_is_blank_or_equality_test(t)) {
-		  cond->value_is_simple_var = (referent_of_equality_test(t)->common.symbol_type == VARIABLE_SYMBOL_TYPE);
-//		  if (cond->value_is_simple_var)
-//		  {
-//			  print(thisAgent, "Debug| value test for equality condition is for variable: %s\n", symbol_to_string (thisAgent, referent_of_equality_test(t), FALSE, NIL, NIL));
-//		  }
-		  return;
-	  }
-
-	  ct = complex_test_from_test(t);
-
-	  switch (ct->type) {
-		  case NOT_EQUAL_TEST:
-		  case LESS_TEST:
-		  case GREATER_TEST:
-		  case LESS_OR_EQUAL_TEST:
-		  case GREATER_OR_EQUAL_TEST:
-		  case SAME_TYPE_TEST:
-			  cond->value_is_simple_var = (ct->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
-			  print(thisAgent, "Debug| type %u test on condition value for variable!!!!!!!!!!: %s\n", ct->type, symbol_to_string (thisAgent, ct->data.referent, FALSE, NIL, NIL));
-			  // I don't think we should ever get here.  It seems like all complex tests should be under conjunctions because of default binding.  Assert to test.
-			  assert(FALSE);
-			  return;
-			  break;
-	  }
-}
+//void store_condition_var_locations(agent* thisAgent, condition *cond, test t)
+//{
+//	cons *c;
+//	complex_test *ct, *ct2;
+//	char *this_test;
+//
+//	cond->attr_is_simple_var = false;
+//	cond->value_is_simple_var = false;
+//
+//	  if (test_is_blank_test(t))
+//	  {
+//		  return;
+//	  }
+//
+//	  print(thisAgent, "Debug|-->Storing original production info for test...\n");
+//	  print(thisAgent, "Debug| ");
+//	  print_test (thisAgent, t);
+//
+//	  if (test_is_blank_or_equality_test(t)) {
+//		  cond->value_is_simple_var = (referent_of_equality_test(t)->common.symbol_type == VARIABLE_SYMBOL_TYPE);
+////		  if (cond->value_is_simple_var)
+////		  {
+////			  print(thisAgent, "Debug| value test for equality condition is for variable: %s\n", symbol_to_string (thisAgent, referent_of_equality_test(t), FALSE, NIL, NIL));
+////		  }
+//		  return;
+//	  }
+//
+//	  ct = complex_test_from_test(t);
+//
+//	  switch (ct->type) {
+//		  case NOT_EQUAL_TEST:
+//		  case LESS_TEST:
+//		  case GREATER_TEST:
+//		  case LESS_OR_EQUAL_TEST:
+//		  case GREATER_OR_EQUAL_TEST:
+//		  case SAME_TYPE_TEST:
+//			  cond->value_is_simple_var = (ct->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
+//			  print(thisAgent, "Debug| type %u test on condition value for variable!!!!!!!!!!: %s\n", ct->type, symbol_to_string (thisAgent, ct->data.referent, FALSE, NIL, NIL));
+//			  // I don't think we should ever get here.  It seems like all complex tests should be under conjunctions because of default binding.  Assert to test.
+//			  assert(FALSE);
+//			  return;
+//			  break;
+//	  }
+//}
 
 /* ----------------------------------------------------------------
    Looks for goal or impasse tests (as directed by the two flag
@@ -924,6 +927,9 @@ void deallocate_condition_list (agent* thisAgent,
       quickly_deallocate_test (thisAgent, c->data.tests.id_test);
       quickly_deallocate_test (thisAgent, c->data.tests.attr_test);
       quickly_deallocate_test (thisAgent, c->data.tests.value_test);
+      quickly_deallocate_test (thisAgent, c->original_tests.id_test);
+      quickly_deallocate_test (thisAgent, c->original_tests.attr_test);
+      quickly_deallocate_test (thisAgent, c->original_tests.value_test);
     }
     free_with_pool (&thisAgent->condition_pool, c);
   }
@@ -932,13 +938,14 @@ void deallocate_condition_list (agent* thisAgent,
 extern void inline init_condition(condition *cond)
 {
 	  cond->next = cond->prev = NIL;
-	  cond->attr_is_simple_var = FALSE;
-	  cond->value_is_simple_var = FALSE;
 	  cond->bt.trace = NIL;
 	  cond->bt.CDPS = NIL;
 	  cond->data.tests.id_test = NIL;
 	  cond->data.tests.attr_test = NIL;
 	  cond->data.tests.value_test = NIL;
+	  cond->original_tests.id_test = NIL;
+    cond->original_tests.attr_test = NIL;
+    cond->original_tests.value_test = NIL;
 	  cond->test_for_acceptable_preference = FALSE;
 }
 
@@ -963,9 +970,10 @@ condition *copy_condition (agent* thisAgent,
     New->data.tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
     New->data.tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
     New->data.tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
+    New->original_tests.id_test = copy_test (thisAgent, cond->original_tests.id_test);
+    New->original_tests.attr_test = copy_test (thisAgent, cond->original_tests.attr_test);
+    New->original_tests.value_test = copy_test (thisAgent, cond->original_tests.value_test);
     New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
-    New->value_is_simple_var = cond->value_is_simple_var;
-    New->attr_is_simple_var = cond->attr_is_simple_var;
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
     copy_condition_list (thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
@@ -1205,7 +1213,7 @@ void deallocate_list_of_nots (agent* thisAgent,
    Get_new_tc_number() is called from lots of places.  Any time we need
    to mark a set of identifiers and/or variables, we get a new tc_number
    by calling this routine, then proceed to mark various ids or vars
-   by setting the sym->id.tc_num or sym->var.tc_num fields.
+   by setting the sym->common.tc_num.
 
    A global tc number counter is maintained and incremented by this
    routine in order to generate a different tc_number each time.  If
@@ -1250,30 +1258,30 @@ tc_number get_new_tc_number (agent* thisAgent) {
 ===================================================================== */
 
 /*#define mark_identifier_if_unmarked(ident,tc,id_list) { \
-  if ((ident)->id.tc_num != (tc)) { \
-    (ident)->id.tc_num = (tc); \
+  if ((ident)->common.tc_num != (tc)) { \
+    (ident)->common.tc_num = (tc); \
     if (id_list) push ((ident),(*(id_list))); } }*/
 inline void mark_identifier_if_unmarked(agent* thisAgent,
 										Symbol * ident, tc_number tc, list ** id_list)
 {
-  if ((ident)->id.tc_num != (tc))
+  if ((ident)->common.tc_num != (tc))
   {
-    (ident)->id.tc_num = (tc);
+    (ident)->common.tc_num = (tc);
     if (id_list)
 		push (thisAgent, (ident),(*(id_list)));
   }
 }
 
 /*#define mark_variable_if_unmarked(v,tc,var_list) { \
-  if ((v)->var.tc_num != (tc)) { \
-    (v)->var.tc_num = (tc); \
+  if ((v)->common.tc_num != (tc)) { \
+    (v)->common.tc_num = (tc); \
     if (var_list) push ((v),(*(var_list))); } }*/
 inline void mark_variable_if_unmarked(agent* thisAgent, Symbol * v,
 									  tc_number tc, list ** var_list)
 {
-  if ((v)->var.tc_num != (tc))
+  if ((v)->common.tc_num != (tc))
   {
-    (v)->var.tc_num = (tc);
+    (v)->common.tc_num = (tc);
     if (var_list) push (thisAgent, (v),(*(var_list)));
   }
 }
@@ -1286,7 +1294,7 @@ void unmark_identifiers_and_free_list (agent* thisAgent, list *id_list) {
     sym = static_cast<symbol_union *>(id_list->first);
     next = id_list->rest;
     free_cons (thisAgent, id_list);
-    sym->id.tc_num = 0;
+    sym->common.tc_num = 0;
     id_list = next;
   }
 }
@@ -1299,7 +1307,7 @@ void unmark_variables_and_free_list (agent* thisAgent, list *var_list) {
     sym = static_cast<symbol_union *>(var_list->first);
     next = var_list->rest;
     free_cons (thisAgent, var_list);
-    sym->var.tc_num = 0;
+    sym->common.tc_num = 0;
     var_list = next;
   }
 }
@@ -1557,11 +1565,7 @@ void add_action_to_tc (agent* thisAgent, action *a, tc_number tc,
 }
 
 Bool symbol_is_in_tc (Symbol *sym, tc_number tc) {
-  if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-    return (sym->var.tc_num == tc);
-  if (sym->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-    return (sym->id.tc_num == tc);
-  return FALSE;
+    return (sym->common.tc_num == tc);
 }
 
 Bool test_is_in_tc (test t, tc_number tc) {

@@ -324,77 +324,84 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
       strncpy(msg, "Internal Soar Error:  symbol_to_string called on bad symbol\n", BUFFER_MSG_SIZE);
       msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
       abort_with_fatal_error(thisAgent, msg);
+      break;
     }
   }
   return NIL; /* unreachable, but without it, gcc -Wall warns here */
 }
 
+inline const char *test_type_to_string(byte test_type)
+{
+  switch (test_type) {
+    case NOT_EQUAL_TEST:
+      return "NOT_EQUAL_TEST";
+      break;
+    case LESS_TEST:
+      return "LESS_TEST";
+      break;
+    case GREATER_TEST:
+      return "GREATER_TEST";
+      break;
+    case LESS_OR_EQUAL_TEST:
+      return "LESS_OR_EQUAL_TEST";
+      break;
+    case GREATER_OR_EQUAL_TEST:
+      return "GREATER_OR_EQUAL_TEST";
+      break;
+    case SAME_TYPE_TEST:
+      return "SAME_TYPE_TEST";
+      break;
+    case DISJUNCTION_TEST:
+      return "DISJUNCTION_TEST";
+      break;
+    case CONJUNCTIVE_TEST:
+      return "CONJUNCTIVE_TEST";
+      break;
+    case GOAL_ID_TEST:
+      return "GOAL_ID_TEST";
+      break;
+    case IMPASSE_ID_TEST:
+      return "IMPASSE_ID_TEST";
+      break;
+    case EQUALITY_TEST:
+      return "EQUALITY_TEST";
+      break;
+    case BLANK_TEST:
+      return "BLANK_TEST";
+      break;
+  }
+  return "INVALID TEST TYPE";
+}
+
 void print_test (agent* thisAgent, test t) {
 	cons *c;
 	complex_test *ct;
-	char *ch;
-
-	if (test_is_blank_test(t)) {
-		print(thisAgent, "Test type: BLANK_TEST\n");
-		return;
-	}
+  byte test_type;
+  Symbol *referent;
+  bool has_referent;
 
 
-	if (test_is_blank_or_equality_test(t)) {
-			Symbol *ref_sym = referent_of_equality_test(t);
-			print(thisAgent, "Test type: EQUALITY.  Referent: %s %s\n",
-					symbol_to_typeString (thisAgent, ref_sym), symbol_to_string (thisAgent, ref_sym, FALSE, NULL, 0));
-			return;
-	}
-
-	ct = complex_test_from_test(t);
-
-	switch (ct->type) {
-		case NOT_EQUAL_TEST:
-				print(thisAgent, "Test type: NOT_EQUAL_TEST.  Referent: %s %s\n",
-						symbol_to_typeString (thisAgent, ct->data.referent), symbol_to_string (thisAgent, ct->data.referent, FALSE, NULL, 0));
-			break;
-		case LESS_TEST:
-				print(thisAgent, "Test type: LESS_TEST.  Referent: %s %s\n",
-						symbol_to_typeString (thisAgent, ct->data.referent), symbol_to_string (thisAgent, ct->data.referent, FALSE, NULL, 0));
-			break;
-		case GREATER_TEST:
-				print(thisAgent, "Test type: GREATER_TEST.  Referent: %s %s\n",
-						symbol_to_typeString (thisAgent, ct->data.referent), symbol_to_string (thisAgent, ct->data.referent, FALSE, NULL, 0));
-			break;
-		case LESS_OR_EQUAL_TEST:
-				print(thisAgent, "Test type: LESS_OR_EQUAL_TEST.  Referent: %s %s\n",
-						symbol_to_typeString (thisAgent, ct->data.referent), symbol_to_string (thisAgent, ct->data.referent, FALSE, NULL, 0));
-			break;
-		case GREATER_OR_EQUAL_TEST:
-				print(thisAgent, "Test type: GREATER_OR_EQUAL_TEST.  Referent: %s %s\n",
-						symbol_to_typeString (thisAgent, ct->data.referent), symbol_to_string (thisAgent, ct->data.referent, FALSE, NULL, 0));
-			break;
-		case SAME_TYPE_TEST:
-				print(thisAgent, "Test type: SAME_TYPE_TEST.  Referent: %s %s\n",
-						symbol_to_typeString (thisAgent, ct->data.referent), symbol_to_string (thisAgent, ct->data.referent, FALSE, NULL, 0));
-			break;
-		case DISJUNCTION_TEST:
-				print(thisAgent, "Test type: DISJUNCTION_TEST: ");
-				for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
-					print(thisAgent, "%s ", symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), FALSE, NULL, 0));
-				}
-				print(thisAgent, "\n");
-				break;
-		case CONJUNCTIVE_TEST:
-				print(thisAgent, "Test type: CONJUNCTIVE_TEST\n------------------\n");
-			for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
-				print_test (thisAgent, static_cast<char *>(c->first));
-			}
-				print(thisAgent, "------------------\n");
-			break;
-		case GOAL_ID_TEST:
-				print(thisAgent, "Test type: GOAL_ID_TEST\n");
-			break;
-		case IMPASSE_ID_TEST:
-				print(thisAgent, "Test type: IMPASSE_ID_TEST\n");
-			break;
-	}
+  has_referent = get_test_type_referent(t, &test_type, &referent);
+  switch (test_type) {
+    case BLANK_TEST:
+      print(thisAgent, "%s\n", test_type_to_string(test_type));
+      break;
+    case CONJUNCTIVE_TEST:
+      ct = complex_test_from_test(t);
+      print(thisAgent, "%s\n------------------\n", test_type_to_string(test_type));
+      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
+        print_test (thisAgent, static_cast<char *>(c->first));
+      }
+      print(thisAgent, "------------------\n");
+    break;
+      break;
+    default:
+      print(thisAgent, "%s: %s (%s)\n",
+          test_type_to_string(test_type),
+          symbol_to_string (thisAgent, referent, FALSE, NULL, 0),
+          symbol_to_typeString (thisAgent, referent));
+      break;
+  }
 }
 
 char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
@@ -700,11 +707,17 @@ void print_condition_list (agent* thisAgent, condition *conds,
             strncpy (ch, "^", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
             while (*ch) ch++;
             test_to_string (thisAgent, c->data.tests.attr_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+//            print(thisAgent, "\nDebug| Attribute test:\n");
+//            print_test(thisAgent, c->data.tests.attr_test);
+//            print_test(thisAgent, c->original_tests.attr_test);
             while (*ch) ch++;
             if (! test_is_blank_test(c->data.tests.value_test))
             {
                *(ch++) = ' ';
                test_to_string (thisAgent, c->data.tests.value_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+//               print(thisAgent, "\nDebug| Value test:\n");
+//               print_test(thisAgent, c->data.tests.value_test);
+//               print_test(thisAgent, c->original_tests.value_test);
                while (*ch) ch++;
                if (c->test_for_acceptable_preference)
                {
