@@ -218,7 +218,7 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 }
 
 void variablize_test (agent* thisAgent, test *instantiated_test, test *original_test) {
-  cons *c, *c2;
+  cons *c, *c_orig;
   complex_test *ct, *ct_original;
   byte original_test_type, test_type, effective_test_type;
   Symbol *original_referent, *instantiated_referent;
@@ -238,18 +238,33 @@ void variablize_test (agent* thisAgent, test *instantiated_test, test *original_
   get_test_type_referent(*original_test, &original_test_type, &original_referent);
   switch (original_test_type) {
     case CONJUNCTIVE_TEST:
+      if (test_type != EQUALITY_TEST)
+      {
+        print(thisAgent, "Debug| SHOULD NOT BE HERE!!!\n");
+        assert(false);
+      }
       print(thisAgent, "Debug| Iterating through conjunction list.\n");
-      ct = complex_test_from_test(*instantiated_test);
+
+      ct = complex_test_from_test(copy_test(thisAgent, *original_test));
+
+//      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
+//      ct->type = CONJUNCTIVE_TEST;
+      // I don't think we need to add this b/c the equality test incremented the refcount
+      // and we're discarding that test (instantiated_test).
+      //symbol_add_ref (ct->data.referent);
+
       ct_original = complex_test_from_test(*original_test);
-      c2 = ct_original->data.conjunct_list;
+      c_orig = ct_original->data.conjunct_list;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
+        // Will need to sub some values with original instantiated symbol
         variablize_test (thisAgent,
             reinterpret_cast<test *>(&(c->first)),
-            reinterpret_cast<test *>(&(c2->first)));
-        c2 = c2->rest;
+            reinterpret_cast<test *>(&(c_orig->first)));
+        c_orig = c_orig->rest;
       }
-      ct->type = original_test_type;
+
+      *instantiated_test = make_test_from_complex_test(ct);
       print(thisAgent, "Debug| Done iterating through conjunction list.\nDebug| ---------------------------------------\n");
       break;
     case EQUALITY_TEST:
@@ -283,6 +298,8 @@ void variablize_test (agent* thisAgent, test *instantiated_test, test *original_
         else
         {
           ct = complex_test_from_test(*instantiated_test);
+          print(thisAgent, "Debug| SHOULD WE BE HERE???\n");
+          assert(false);
         }
         variablize_symbol (thisAgent, &(ct->data.referent));
       }
