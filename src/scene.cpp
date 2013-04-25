@@ -177,32 +177,43 @@ bool parse_verts(vector<string> &f, int &start, ptlist &verts) {
 	return true;
 }
 
-bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 &scale) {	
-	vec3 t;
-	char type;
-	
+bool parse_mods(vector<string> &f, int &start, string &mods, vector<ptlist> &vals) {
+	ptlist v;
+	char m;
 	while (start < f.size()) {
-		if (f[start] != "p" && f[start] != "r" && f[start] != "s") {
+		if (f[start].size() != 1) {
 			return true;
 		}
-		type = f[start][0];
-		start++;
-		if (!parse_vec3(f, start, 3, t)) {
-			return false;
-		}
-		switch (type) {
+		m = f[start][0];
+		v.clear();
+		switch (m) {
 			case 'p':
-				pos = t;
-				break;
 			case 'r':
-				rot = t;
-				break;
 			case 's':
-				scale = t;
+				v.push_back(vec3());
+				if (!parse_vec3(f, ++start, 3, v[0])) {
+					return false;
+				}
+				break;
+			case 'v':
+				if (!parse_verts(f, ++start, v)) {
+					return false;
+				}
+				break;
+			case 'b':
+				++start;
+				v.push_back(vec3());
+				if (start >= f.size() || !parse_double(f[start], v[0](0))) {
+					return false;
+				}
+				++start;
 				break;
 			default:
-				assert(false);
+				// end of modifiers
+				return true;
 		}
+		mods += m;
+		vals.push_back(v);
 	}
 	return true;
 }
@@ -211,12 +222,15 @@ int scene::parse_add(vector<string> &f) {
 	int p;
 	sgnode *n;
 	group_node *par;
-	vec3 pos = vec3::Zero(), rot = vec3::Zero(), scale = vec3::Constant(1.0);
+	string name, mods;
+	vector<ptlist> vals;
 
 	if (f.size() < 2) {
 		return f.size();
 	}
-	if (get_node(f[0])) {
+	
+	name = f[0];
+	if (get_node(name)) {
 		return 0;  // already exists
 	}
 	par = get_group(f[1]);
@@ -224,33 +238,43 @@ int scene::parse_add(vector<string> &f) {
 		return 1;
 	}
 	
-	if (f.size() >= 3 && f[2] == "v") {
-		p = 3;
-		ptlist verts;
-		if (!parse_verts(f, p, verts)) {
-			return p;
-		}
-		n = new convex_node(f[0], verts);
-	} else if (f.size() >= 3 && f[2] == "b") {
-		if (f.size() < 4) {
-			return 4;
-		}
-		double radius;
-		if (!parse_double(f[3], radius)) {
-			return 4;
-		}
-		n = new ball_node(f[0], radius);
-		p = 4;
-	} else {
-		n = new group_node(f[0]);
-		p = 2;
-	}
-	
-	if (!parse_transforms(f, p, pos, rot, scale)) {
+	p = 2;
+	if (!parse_mods(f, p, mods, vals)) {
 		return p;
 	}
+	assert(mods.size() == vals.size());
 	
-	n->set_trans(pos, rot, scale);
+	/*
+	 Go through once to figure out what type of node this should be
+	*/
+	n = NULL;
+	for (int i = 0, iend = mods.size(); i < iend; ++i) {
+		switch (mods[i]) {
+			case 'v':
+				n = new convex_node(name, vals[i]);
+				break;
+			case 'b':
+				n = new ball_node(name, vals[i][0](0));
+				break;
+		}
+	}
+	if (!n) {
+		n = new group_node(name);
+	}
+	
+	/*
+	 Go through again to apply transforms
+	*/
+	for (int i = 0, iend = mods.size(); i < iend; ++i) {
+		switch (mods[i]) {
+			case 'p':
+			case 'r':
+			case 's':
+				n->set_trans(mods[i], vals[i][0]);
+				break;
+		}
+	}
+	
 	par->attach_child(n);
 	return -1;
 }
@@ -268,7 +292,10 @@ int scene::parse_del(vector<string> &f) {
 int scene::parse_change(vector<string> &f) {
 	int p;
 	sgnode *n;
-	vec3 pos, rot, scale;
+	convex_node *cn;
+	ball_node *bn;
+	string mods;
+	vector<ptlist> vals;
 
 	if (f.size() < 1) {
 		return f.size();
@@ -276,12 +303,35 @@ int scene::parse_change(vector<string> &f) {
 	if (!(n = get_node(f[0]))) {
 		return 0;
 	}
-	n->get_trans(pos, rot, scale);
+	
 	p = 1;
-	if (!parse_transforms(f, p, pos, rot, scale)) {
+	if (!parse_mods(f, p, mods, vals)) {
 		return p;
 	}
-	n->set_trans(pos, rot, scale);
+	
+	for (int i = 0, iend = mods.size(); i < iend; ++i) {
+		switch (mods[i]) {
+			case 'p':
+			case 'r':
+			case 's':
+				n->set_trans(mods[i], vals[i][0]);
+				break;
+			case 'v':
+				cn = dynamic_cast<convex_node*>(n);
+				if (!cn) {
+					return 0; // maybe not as informative as it could be
+				}
+				cn->set_local_points(vals[i]);
+				break;
+			case 'b':
+				bn = dynamic_cast<ball_node*>(n);
+				if (!bn) {
+					return 0;
+				}
+				bn->set_radius(vals[i][0](0));
+				break;
+		}
+	}
 	return -1;
 }
 
@@ -571,4 +621,19 @@ bool scene::intersects(const sgnode *a, const sgnode *b) {
 	}
 	const collision_table &c = cdetect.get_collisions();
 	return c.find(make_pair(a, b)) != c.end() || c.find(make_pair(b, a)) != c.end();
+}
+
+void scene::print_object_verts(std::ostream &os) const {
+	node_map::const_iterator i, iend;
+	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+		const convex_node *cn = dynamic_cast<convex_node*>(i->second.node);
+		if (!cn) {
+			continue;
+		}
+		os << i->first << endl;
+		ptlist verts = cn->get_world_points();
+		for (int j = 0, jend = verts.size(); j < jend; ++j) {
+			os << '\t' << verts[j] << endl;
+		}
+	}
 }
