@@ -4081,6 +4081,51 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------------
+                     Var Bound in Reconstructed Conds
+
+   We're reconstructing the conditions for a production in top-down
+   fashion.  Suppose we come to a Rete test checking for equality with
+   the "value" field 3 levels up.  In that case, for the current condition,
+   we want to include an equality test for whatever variable got bound
+   in the value field 3 levels up.  This function scans up the list
+   of conditions reconstructed so far, and finds the appropriate variable.
+---------------------------------------------------------------------- */
+
+Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
+                                          condition *cond, /* current cond */
+                                          byte where_field_num,
+                                          rete_node_level where_levels_up) {
+  test t;
+  complex_test *ct;
+  cons *c;
+
+  while (where_levels_up) { where_levels_up--; cond = cond->prev; }
+
+  if (where_field_num==0) t = cond->original_tests.id_test;
+  else if (where_field_num==1) t = cond->original_tests.attr_test;
+  else t = cond->original_tests.value_test;
+
+  if (test_is_blank_test(t)) goto abort_var_bound_in_reconstructed_conds;
+  if (test_is_blank_or_equality_test(t)) return referent_of_equality_test(t);
+
+  ct = complex_test_from_test(t);
+  if (ct->type==CONJUNCTIVE_TEST) {
+    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+      if ( (! test_is_blank_test (static_cast<test>(c->first))) &&
+           (test_is_blank_or_equality_test (static_cast<test>(c->first))) )
+        return referent_of_equality_test (static_cast<test>(c->first));
+  }
+
+  abort_var_bound_in_reconstructed_conds:
+  { char msg[BUFFER_MSG_SIZE];
+  strncpy (msg, "Internal error in var_bound_in_reconstructed_conds\n", BUFFER_MSG_SIZE);
+  msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+  abort_with_fatal_error(thisAgent, msg);
+  }
+  return 0; /* unreachable, but without it, gcc -Wall warns here */
+}
+
+/* ----------------------------------------------------------------------
                       Add Rete Test List to Tests
 
    Given the additional Rete tests (besides the hashed equality test) at
@@ -4180,6 +4225,105 @@ void add_rete_test_list_to_tests (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------------
+                      Add Rete Test List to Tests
+
+   Given the additional Rete tests (besides the hashed equality test) at
+   a certain node, we need to convert them into the equivalent tests in
+   the conditions being reconstructed.  This procedure does this -- it
+   destructively modifies the given currently-being-reconstructed-cond
+   by adding any necessary extra tests to its three field tests.
+---------------------------------------------------------------------- */
+
+void add_rete_test_list_to_original_tests (agent* thisAgent,
+                                  condition *cond, /* current cond */
+                                  rete_test *rt) {
+  Symbol *referent;
+  test New;
+  complex_test *new_ct;
+  byte test_type;
+
+  for ( ; rt!=NIL; rt=rt->next) {
+
+    if (rt->type==ID_IS_GOAL_RETE_TEST) {
+      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+      New = make_test_from_complex_test(new_ct);
+      new_ct->type = GOAL_ID_TEST;
+    } else if (rt->type==ID_IS_IMPASSE_RETE_TEST) {
+      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+      New = make_test_from_complex_test(new_ct);
+      new_ct->type = IMPASSE_ID_TEST;
+    } else if (rt->type==DISJUNCTION_RETE_TEST) {
+      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+      New = make_test_from_complex_test(new_ct);
+      new_ct->type = DISJUNCTION_TEST;
+      new_ct->data.disjunction_list =
+        copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+    } else if (test_is_constant_relational_test(rt->type)) {
+      test_type =
+        relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
+      referent = rt->data.constant_referent;
+      symbol_add_ref (referent);
+      if (test_type==EQUAL_TEST_TYPE) {
+        New = make_equality_test_without_adding_reference (referent);
+      } else {
+        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+        New = make_test_from_complex_test(new_ct);
+        new_ct->type = test_type;
+        new_ct->data.referent = referent;
+      }
+    } else if (test_is_variable_relational_test(rt->type)) {
+      test_type =
+        relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
+      if (! rt->data.variable_referent.levels_up) {
+        /* --- before calling var_bound_in_reconstructed_conds, make sure
+           there's an equality test in the referent location (add one if
+           there isn't one already there), otherwise there'd be no variable
+           there to test against --- */
+        if (rt->data.variable_referent.field_num==0) {
+          if (! test_includes_equality_test_for_symbol
+                  (cond->original_tests.id_test, NIL))
+            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.id_test), 's');
+        } else if (rt->data.variable_referent.field_num==1) {
+          if (! test_includes_equality_test_for_symbol
+                  (cond->original_tests.attr_test, NIL))
+            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.attr_test), 'a');
+        } else {
+          if (! test_includes_equality_test_for_symbol
+                  (cond->original_tests.value_test, NIL))
+            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.value_test),
+                       first_letter_from_test(cond->original_tests.attr_test));
+        }
+      }
+      referent = var_bound_in_reconstructed_original_conds (thisAgent, cond,
+                          rt->data.variable_referent.field_num,
+                          rt->data.variable_referent.levels_up);
+      symbol_add_ref (referent);
+      if (test_type==EQUAL_TEST_TYPE) {
+        New = make_equality_test_without_adding_reference (referent);
+      } else {
+        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+        New = make_test_from_complex_test(new_ct);
+        new_ct->type = test_type;
+        new_ct->data.referent = referent;
+      }
+    } else {
+      char msg[BUFFER_MSG_SIZE];
+      strncpy (msg, "Error: bad test_type in add_rete_test_to_test\n", BUFFER_MSG_SIZE);
+     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+     abort_with_fatal_error(thisAgent, msg);
+      New = NIL; /* unreachable, but without it gcc -Wall warns here */
+    }
+
+    if (rt->right_field_num==0)
+      add_new_test_to_test (thisAgent, &(cond->original_tests.id_test), New);
+    else if (rt->right_field_num==2)
+      add_new_test_to_test (thisAgent, &(cond->original_tests.value_test), New);
+    else
+      add_new_test_to_test (thisAgent, &(cond->original_tests.attr_test), New);
+  }
+}
+
+/* ----------------------------------------------------------------------
                                Collect Nots
 
    When we build the instantiated conditions for a production being
@@ -4244,6 +4388,140 @@ void collect_nots (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------------
+                        Collect Chunk Test Info
+
+   When we build the instantiated conditions for a production being
+   fired, we record a copy of original conditions with some extra info.
+   (This information is used during chunking.)  This procedure looks for
+   all such test in the given Rete test list (from the "other tests"
+   at a Rete node), and adds records of them to the original_tests
+   structures in the condition.  "Right_wme" is the wme that matched
+   the current condition; "cond" is the currently-being-reconstructed
+   condition.
+---------------------------------------------------------------------- */
+
+void collect_chunk_test_info (agent* thisAgent,
+                   rete_test *rt,
+                   wme *right_wme,
+                   condition *cond) {
+  not_struct *new_not;
+  Symbol *right_sym;
+  Symbol *var_referent;
+
+  Symbol *referent;
+  test new_test;
+  complex_test *new_ct;
+  byte test_type;
+return;
+  for ( ; rt!=NIL; rt=rt->next) {
+
+//    right_sym = field_from_wme (right_wme, rt->right_field_num);
+//    var_referent = var_bound_in_reconstructed_conds (thisAgent, cond,
+//        rt->data.variable_referent.field_num,
+//        rt->data.variable_referent.levels_up);
+
+//    cond->original_tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
+//    cond->original_tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
+//    cond->original_tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
+
+    switch (rt->type) {
+      case ID_IS_GOAL_RETE_TEST:
+      case ID_IS_IMPASSE_RETE_TEST:
+        // this is probably not needed.  Should already be there.
+        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+        new_test = make_test_from_complex_test(new_ct);
+        new_ct->type = rt->type;
+        break;
+      case DISJUNCTION_RETE_TEST:
+        // this is probably not needed.  Should already be there.
+        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+        new_test = make_test_from_complex_test(new_ct);
+        new_ct->type = DISJUNCTION_TEST;
+        new_ct->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+        break;
+      default:
+        if (test_is_constant_relational_test(rt->type))
+        {
+          test_type = relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
+          referent = rt->data.constant_referent;
+          symbol_add_ref (referent);
+          if (test_type==EQUAL_TEST_TYPE)
+          {
+            new_test = make_equality_test_without_adding_reference (referent);
+          }
+          else
+          {
+            allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+            new_test = make_test_from_complex_test(new_ct);
+            new_ct->type = test_type;
+            new_ct->data.referent = referent;
+          }
+        }
+        else if (test_is_variable_relational_test(rt->type))
+        {
+          test_type = relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
+          if (! rt->data.variable_referent.levels_up)
+          {
+            /* --- before calling var_bound_in_reconstructed_conds, make sure
+                   there's an equality test in the referent location (add one if
+                   there isn't one already there), otherwise there'd be no variable
+                   there to test against --- */
+            switch (rt->data.variable_referent.field_num) {
+              case 0:
+                if (! test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
+                {
+                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
+                }
+                break;
+              case 1:
+                if (! test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
+                {
+                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
+                }
+                break;
+              default:
+                if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
+                {
+                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test),
+                      first_letter_from_test(cond->data.tests.attr_test));
+                }
+                break;
+            }
+            referent = var_bound_in_reconstructed_conds (thisAgent, cond,
+                rt->data.variable_referent.field_num,
+                rt->data.variable_referent.levels_up);
+            symbol_add_ref (referent);
+            if (test_type==EQUAL_TEST_TYPE)
+            {
+              new_test = make_equality_test_without_adding_reference (referent);
+            }
+            else
+            {
+              allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+              new_test = make_test_from_complex_test(new_ct);
+              new_ct->type = test_type;
+              new_ct->data.referent = referent;
+            }
+          }
+        }
+        else
+        {
+          print(thisAgent, "Error: bad test_type in add_rete_test_to_test\n");
+          assert(false);
+          new_test = NIL; /* unreachable, but without it gcc -Wall warns here */
+        }
+        break;
+    }
+    if (rt->right_field_num==0)
+      add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), new_test);
+    else if (rt->right_field_num==2)
+      add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), new_test);
+    else
+      add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), new_test);
+  }
+}
+
+/* ----------------------------------------------------------------------
                           Add Varnames to Test
 
    This routine adds (an equality test for) each variable in "vn" to
@@ -4289,6 +4567,28 @@ void add_hash_info_to_id_test (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------------
+                      Add Hash Info to Original ID Test
+
+   This routine adds an equality test to the id field test in a given
+   condition, destructively modifying that id test.  The equality test
+   is the one appropriate for the given hash location (field_num/levels_up).
+
+   TODO: Consolidate with above function
+---------------------------------------------------------------------- */
+
+void add_hash_info_to_id_original_test (agent* thisAgent,
+                               condition *cond,
+                               byte field_num,
+                               rete_node_level levels_up) {
+  Symbol *temp;
+  test New;
+
+  temp = var_bound_in_reconstructed_conds (thisAgent, cond, field_num, levels_up);
+  New = make_equality_test (temp);
+  add_new_test_to_test (thisAgent, &(cond->original_tests.id_test), New);
+}
+
+/* ----------------------------------------------------------------------
                           Rete Node To Conditions
 
    This is the main routine for reconstructing the LHS source code, and
@@ -4316,7 +4616,9 @@ void rete_node_to_conditions (agent* thisAgent,
                               condition *conds_for_cutoff_and_up,
                               condition **dest_top_cond,
                               condition **dest_bottom_cond,
-                              not_struct * & nots_found_in_production) {
+                              not_struct * & nots_found_in_production,
+                              bool compile_chunk_test_info,
+                              bool compile_nots) {
   condition *cond;
   alpha_mem *am;
 
@@ -4334,7 +4636,9 @@ void rete_node_to_conditions (agent* thisAgent,
                              tok ? tok->w : NIL,
                              conds_for_cutoff_and_up,
                              dest_top_cond, &(cond->prev),
-                             nots_found_in_production);
+                             nots_found_in_production,
+                             compile_chunk_test_info,
+                             compile_nots);
     cond->prev->next = cond;
   }
   cond->next = NIL;
@@ -4350,7 +4654,9 @@ void rete_node_to_conditions (agent* thisAgent,
                              cond->prev,
                              &(cond->data.ncc.top),
                              &(cond->data.ncc.bottom),
-                             nots_found_in_production);
+                             nots_found_in_production,
+                             compile_chunk_test_info,
+                             compile_nots);
     cond->data.ncc.top->prev = NIL;
   } else {
     if (bnode_is_positive(node->node_type))
@@ -4365,9 +4671,80 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->data.tests.value_test = make_equality_test (w->value);
       cond->test_for_acceptable_preference = w->acceptable;
       cond->bt.wme_ = w;
-      if (node->b.posneg.other_tests) /* don't bother if there are no tests*/
+
+      /* --- DEBUG| For a possible performance improvement, we might be
+             able to skip collecting nots if tok is nil.  They're only
+             used for chunking and are ignored by p_node_to_conditions_and_nots
+             when tok is nil.
+
+             Must make sure when parent is nil, there can be no NOTS to collect
+             on that call. (b/c this function is recursively called with parent's
+             token, which will eventually be nil.
+
+             Might also want to check other functions calling this
+             also to make sure they don't use the NOT list.
+
+             NOTE:  We're doing it with these two flags now.  Will still want to double-check
+                    above items --- */
+
+      if (compile_nots && node->b.posneg.other_tests)
+      {
         collect_nots (thisAgent, node->b.posneg.other_tests, w, cond,
                               nots_found_in_production);
+      }
+      if (compile_chunk_test_info && node->b.posneg.other_tests)
+      {
+        // Removed for now. Could potentially be used for incremental building of original test info
+        // - Quick try resulted in crash in var_bound_in_reconstructed_original_conds which got a blank
+        //   test submitted to it by add_rete_test_list_to_original_tests
+
+//        am = node->b.posneg.alpha_mem_;
+//        cond->original_tests.id_test = make_blank_or_equality_test (am->id);
+//        cond->original_tests.attr_test = make_blank_or_equality_test (am->attr);
+//        cond->original_tests.value_test = make_blank_or_equality_test (am->value);
+//
+//        if (nvn) {
+//          add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
+//              &(cond->original_tests.id_test));
+//          add_varnames_to_test (thisAgent, nvn->data.fields.attr_varnames,
+//              &(cond->original_tests.attr_test));
+//          add_varnames_to_test (thisAgent, nvn->data.fields.value_varnames,
+//              &(cond->original_tests.value_test));
+//        }
+//
+//        /* --- on hashed nodes, add equality test for the hash function --- */
+//        if ((node->node_type==MP_BNODE) || (node->node_type==NEGATIVE_BNODE)) {
+//          add_hash_info_to_id_original_test (thisAgent, cond,
+//              node->left_hash_loc_field_num,
+//              node->left_hash_loc_levels_up);
+//        } else if (node->node_type==POSITIVE_BNODE) {
+//          add_hash_info_to_id_original_test (thisAgent, cond,
+//              node->parent->left_hash_loc_field_num,
+//              node->parent->left_hash_loc_levels_up);
+//        }
+//
+//        /* --- if there are other tests, add them too --- */
+//        if (node->b.posneg.other_tests)
+//          add_rete_test_list_to_original_tests (thisAgent, cond, node->b.posneg.other_tests);
+//
+//        /* --- if we threw away the variable names, make sure there's some
+//           equality test in each of the three fields --- */
+//        if (! nvn) {
+//          if (! test_includes_equality_test_for_symbol
+//              (cond->original_tests.id_test, NIL))
+//            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.id_test), 's');
+//          if (! test_includes_equality_test_for_symbol
+//              (cond->original_tests.attr_test, NIL))
+//            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.attr_test), 'a');
+//          if (! test_includes_equality_test_for_symbol
+//              (cond->original_tests.value_test, NIL))
+//            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.value_test),
+//                first_letter_from_test (cond->original_tests.attr_test));
+//        }
+        if (node->b.posneg.other_tests) {
+          collect_chunk_test_info (thisAgent, node->b.posneg.other_tests, w, cond);
+        }
+      }
     } else {
       am = node->b.posneg.alpha_mem_;
       cond->data.tests.id_test = make_blank_or_equality_test (am->id);
@@ -4377,22 +4754,22 @@ void rete_node_to_conditions (agent* thisAgent,
 
       if (nvn) {
         add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
-                              &(cond->data.tests.id_test));
+            &(cond->data.tests.id_test));
         add_varnames_to_test (thisAgent, nvn->data.fields.attr_varnames,
-                              &(cond->data.tests.attr_test));
+            &(cond->data.tests.attr_test));
         add_varnames_to_test (thisAgent, nvn->data.fields.value_varnames,
-                              &(cond->data.tests.value_test));
+            &(cond->data.tests.value_test));
       }
 
       /* --- on hashed nodes, add equality test for the hash function --- */
       if ((node->node_type==MP_BNODE) || (node->node_type==NEGATIVE_BNODE)) {
         add_hash_info_to_id_test (thisAgent, cond,
-                                  node->left_hash_loc_field_num,
-                                  node->left_hash_loc_levels_up);
+            node->left_hash_loc_field_num,
+            node->left_hash_loc_levels_up);
       } else if (node->node_type==POSITIVE_BNODE) {
         add_hash_info_to_id_test (thisAgent, cond,
-                                  node->parent->left_hash_loc_field_num,
-                                  node->parent->left_hash_loc_levels_up);
+            node->parent->left_hash_loc_field_num,
+            node->parent->left_hash_loc_levels_up);
       }
 
       /* --- if there are other tests, add them too --- */
@@ -4403,15 +4780,15 @@ void rete_node_to_conditions (agent* thisAgent,
          equality test in each of the three fields --- */
       if (! nvn) {
         if (! test_includes_equality_test_for_symbol
-                (cond->data.tests.id_test, NIL))
+            (cond->data.tests.id_test, NIL))
           add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
         if (! test_includes_equality_test_for_symbol
-                (cond->data.tests.attr_test, NIL))
+            (cond->data.tests.attr_test, NIL))
           add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
         if (! test_includes_equality_test_for_symbol
-                (cond->data.tests.value_test, NIL))
+            (cond->data.tests.value_test, NIL))
           add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test),
-                    first_letter_from_test (cond->data.tests.attr_test));
+              first_letter_from_test (cond->data.tests.attr_test));
       }
     }
   }
@@ -4552,7 +4929,9 @@ void p_node_to_conditions_and_nots (agent* thisAgent,
                                     condition **dest_top_cond,
                                     condition **dest_bottom_cond,
                                     not_struct **dest_nots,
-                                    action **dest_rhs) {
+                                    action **dest_rhs,
+                                    bool compile_chunk_test_info,
+                                    bool compile_nots) {
   cons *c;
   Symbol **cell;
   int64_t index;
@@ -4568,8 +4947,12 @@ void p_node_to_conditions_and_nots (agent* thisAgent,
                            p_node->b.p.parents_nvn,
                            thisAgent->dummy_top_node,
                            tok, w, NIL,
-                           dest_top_cond, dest_bottom_cond,
-                                                   nots_found_in_production);
+                           dest_top_cond,
+                           dest_bottom_cond,
+                           nots_found_in_production,
+                           compile_chunk_test_info,
+                           compile_nots);
+
   if (tok) *dest_nots = nots_found_in_production;
   nots_found_in_production = NIL; /* just for safety */
   if (dest_rhs)
@@ -8049,7 +8432,7 @@ void print_partial_match_information (agent* thisAgent, rete_node *p_node,
   token *tokens, *t;
 
   p_node_to_conditions_and_nots (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
-                                 NIL, NIL);
+                                 NIL, NIL, false, true);
   n = ppmi_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);
   print (thisAgent, "\n%d complete matches.\n", n);
@@ -9020,7 +9403,7 @@ void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_tra
 
   xml_begin_tag(thisAgent, kTagProduction) ;
   p_node_to_conditions_and_nots (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
-                                 NIL, NIL);
+                                 NIL, NIL, false, true);
   n = xml_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);
   xml_att_val(thisAgent, kMatches, n) ;

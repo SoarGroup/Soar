@@ -697,15 +697,15 @@ void create_instantiation(agent* thisAgent, production *prod,
 	/* --- build the instantiated conditions, and bind LHS variables --- */
 	p_node_to_conditions_and_nots(thisAgent, prod->p_node, tok, w,
 			&(inst->top_of_instantiated_conditions),
-			&(inst->bottom_of_instantiated_conditions), &(inst->nots), NIL);
+			&(inst->bottom_of_instantiated_conditions), &(inst->nots), NIL, true, false);
 
-	/* --- also get non-instantiated conditions to be used when determining
-	 *     whether to variablize constants. --- */
+//	/* --- also get non-instantiated conditions to be used when determining
+//	 *     whether to variablize constants. --- */
 	condition *top, *bottom, *noninst_cond;
 	action *rhs;
 
 	p_node_to_conditions_and_nots(thisAgent, prod->p_node, NIL, NIL,
-			&top, &bottom, NIL, NIL);
+			&top, &bottom, NIL, NIL, false, true);
 
 	/* --- record the level of each of the wmes that was positively tested
 	 *     and copy over original production information from non-instantiated
@@ -715,25 +715,10 @@ void create_instantiation(agent* thisAgent, production *prod,
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
 			cond = cond->next) {
 
-		// Need to figure out how to pass these variables properly.  Eclipse is barfing on them.
-		//condition_store_var_locations(thisAgent, &(cond->attr_is_simple_var), cond->attr_complex_is_vars, noninst_cond->data.tests.value_test);
-
     cond->original_tests.id_test = copy_test (thisAgent, noninst_cond->data.tests.id_test);
 	  cond->original_tests.attr_test = copy_test (thisAgent, noninst_cond->data.tests.attr_test);
 	  cond->original_tests.value_test = copy_test (thisAgent, noninst_cond->data.tests.value_test);
 
-	  print(thisAgent, "Storing original value test...\n");
-    print_test(thisAgent, cond->data.tests.value_test);
-	  print_test(thisAgent, cond->original_tests.value_test);
-	  //store_condition_var_locations(thisAgent, cond, noninst_cond->data.tests.value_test);
-
-		// debug remove later
-//		if (cond->value_is_simple_var)
-//		{
-//			print(thisAgent,"Debug| Setting variable value binding for condition\n");
-//			print_condition(thisAgent, cond);
-//			print(thisAgent,"\n");
-//		}
 		if (cond->type == POSITIVE_CONDITION) {
 			cond->bt.level = cond->bt.wme_->id->id.level;
 			cond->bt.trace = cond->bt.wme_->preference;

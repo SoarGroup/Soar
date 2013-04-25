@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
@@ -40,7 +40,7 @@
    and returns the symbol at that location.  The firer uses this for
    resolving references in RHS actions to variables bound on the LHS.
 
-   Count_rete_tokens_for_production() returns a count of the number of 
+   Count_rete_tokens_for_production() returns a count of the number of
    tokens currently in use for the given production.
 
    Print_partial_match_information(), print_match_set(), and
@@ -77,7 +77,7 @@ typedef struct agent_struct agent;
 typedef union symbol_union Symbol;
 
 typedef struct token_struct {
-  /* --- Note: "parent" is NIL on negative node negrm (local join result) 
+  /* --- Note: "parent" is NIL on negative node negrm (local join result)
      tokens, non-NIL on all other tokens including CN and CN_P stuff.
      I put "parent" at offset 0 in the structure, so that upward scans
      are fast (saves doing an extra integer addition in the inner loop) --- */
@@ -125,14 +125,16 @@ extern void excise_production_from_rete (agent* thisAgent, production *p);
 extern void add_wme_to_rete (agent* thisAgent, wme *w);
 extern void remove_wme_from_rete (agent* thisAgent, wme *w);
 
-extern void p_node_to_conditions_and_nots (agent* thisAgent, 
+extern void p_node_to_conditions_and_nots (agent* thisAgent,
                                            struct rete_node_struct *p_node,
                                            struct token_struct *tok,
                                            wme *w,
                                            condition **dest_top_cond,
                                            condition **dest_bottom_cond,
                                            not_struct **dest_nots,
-                                           action **dest_rhs);
+                                           action **dest_rhs,
+                                           bool compile_chunk_test_info,
+                                           bool compile_nots);
 extern Symbol *get_symbol_from_rete_loc (unsigned short levels_up,
                                          byte field_num,
                                          struct token_struct *tok, wme *w);
@@ -145,8 +147,8 @@ extern void xml_partial_match_information (agent* thisAgent, rete_node *p_node, 
 extern void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
 extern void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
 extern void get_all_node_count_stats (agent* thisAgent);
-extern int get_node_count_statistic (agent* thisAgent, char * node_type_name, 
-				     char * column_name, 
+extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
+				     char * column_name,
 				     uint64_t * result);
 
 extern Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64);

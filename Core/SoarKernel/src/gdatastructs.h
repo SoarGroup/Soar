@@ -579,6 +579,7 @@ typedef struct condition_struct {
    * constant in an instantiated condition should be variablized.  If it was
    * a variable in the original production, it will not be. */
   three_field_tests original_tests;
+  three_field_tests chunk_tests;
 
   bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
   reorder_info reorder;  /* used only during reordering */
