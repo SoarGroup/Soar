@@ -364,6 +364,9 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		return handle_on_off(args, first_arg, os, learn_models);
 	} else if (args[first_arg] == "test_models") {
 		return handle_on_off(args, first_arg, os, test_models);
+	} else if (args[first_arg] == "verts") {
+		scn->print_object_verts(os);
+		return true;
 	}
 	
 	os << "no such query" << endl;
