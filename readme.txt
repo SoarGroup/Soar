@@ -7,16 +7,11 @@ Usage
 =====
 SVS is meant to be used as a component of Soar. In order to compile
 Soar with SVS, first clone this repo into the directory
-SoarSuite/Core/SVS. Next, you need to patch some kernel code to put an
-svs instance in the agent. If you're on Windows, you may need to
-obtain the "patch" program. You can get it at
-
-http://gnuwin32.sourceforge.net/packages/patch.htm
-
-After you have patch, run this command from the SoarSuite top
-directory:
-
-patch -p0 < Core/SVS/patch
+SoarSuite/Core/SVS. Next, you need to patch some kernel code by running
+'patch_soar.sh' from the SVS directory. This script will try to find a patch
+that applies correctly to your version of Soar. If it fails, then you'll have
+to manually inspect the patches in the directory 'soar_patches' to find the
+closest one, apply it, then fix any failed hunks.
 
 If you're not in Linux, see below about compiling Bullet Physics,
 which is a dependency of SVS. After that, you should be able to
