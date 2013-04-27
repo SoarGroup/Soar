@@ -1233,9 +1233,9 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	/* AGR 617/634 end */
 
 	// Debug| Remove later MMA
-	print_production(thisAgent, inst->prod, true);
+//	print_production(thisAgent, inst->prod, true);
 //	print_instantiation_with_wmes(thisAgent, inst, FULL_WME_TRACE, -1);
-	print(thisAgent,"\n");
+//	print(thisAgent,"\n");
 
 	/* --- if there aren't any grounds, exit --- */
 	if (! top_cc)

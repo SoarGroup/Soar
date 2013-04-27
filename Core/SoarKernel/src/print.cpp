@@ -373,7 +373,7 @@ inline const char *test_type_to_string(byte test_type)
   return "INVALID TEST TYPE";
 }
 
-void print_test (agent* thisAgent, test t) {
+void print_test (agent* thisAgent, test t, const char *indent_string) {
 	cons *c;
 	complex_test *ct;
   byte test_type;
@@ -384,22 +384,31 @@ void print_test (agent* thisAgent, test t) {
   has_referent = get_test_type_referent(t, &test_type, &referent);
   switch (test_type) {
     case BLANK_TEST:
+    case GOAL_ID_TEST:
+    case IMPASSE_ID_TEST:
       print(thisAgent, "%s\n", test_type_to_string(test_type));
       break;
     case CONJUNCTIVE_TEST:
       ct = complex_test_from_test(t);
-      print(thisAgent, "%s\n------------------\n", test_type_to_string(test_type));
-      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
-        print_test (thisAgent, static_cast<char *>(c->first));
+      print(thisAgent, "%s\n", test_type_to_string(test_type));
+      if (strlen(indent_string) == 0)
+      {
+        print(thisAgent, "------------------\n");
       }
-      print(thisAgent, "------------------\n");
-    break;
+      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
+        print(thisAgent, "%s", indent_string);
+        print_test (thisAgent, static_cast<char *>(c->first), indent_string);
+      }
+      if (strlen(indent_string) == 0)
+      {
+        print(thisAgent, "------------------\n");
+      }
       break;
     default:
       print(thisAgent, "%s: %s (%s)\n",
           test_type_to_string(test_type),
-          symbol_to_string (thisAgent, referent, FALSE, NULL, 0),
-          symbol_to_typeString (thisAgent, referent));
+          (referent ? symbol_to_string (thisAgent, referent, FALSE, NULL, 0) : "NULL (PROBLEM!)"),
+          (referent ?symbol_to_typeString (thisAgent, referent) : "NULL (PROBLEM!)"));
       break;
   }
 }

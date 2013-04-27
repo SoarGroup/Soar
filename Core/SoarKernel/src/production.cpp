@@ -721,6 +721,7 @@ inline bool get_test_type_referent(test t, byte *test_type, Symbol **sym)
     case IMPASSE_ID_TEST:
     case DISJUNCTION_TEST:
       *sym = NIL;
+      *test_type = ct->type;
       return false;
       break;
     case CONJUNCTIVE_TEST:
