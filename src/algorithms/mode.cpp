@@ -88,10 +88,13 @@ em_mode::em_mode(bool noise, bool manual, const model_train_data &data)
 	
 }
 
-/*
- Fit lin_coefs, lin_inter, and sig to the data in data_inds.
-*/
-void em_mode::set_linear_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter) {
+void em_mode::get_params(scene_sig &sig, rvec &coefs, double &intercept) const {
+	sig = this->sig;
+	coefs = lin_coefs.col(0);
+	intercept = lin_inter(0);
+}
+
+void em_mode::set_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter) {
 	n_nonzero = 0;
 	lin_inter = inter;
 	if (coefs.size() == 0) {

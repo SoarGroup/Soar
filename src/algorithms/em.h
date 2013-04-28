@@ -55,6 +55,7 @@ public:
 class EM : public serializable, public cliproxy {
 public:
 	EM(const model_train_data &data);
+	EM(const model_train_data &data, bool use_em, bool use_unify, bool use_lwr, bool learn_new_modes);
 	~EM();
 	
 	void add_data(int t);
@@ -65,6 +66,10 @@ public:
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
+	
+	// for test_em.cpp
+	void print_ptable() const;
+	void print_modes() const;
 	
 private:
 	void estep();

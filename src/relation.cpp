@@ -982,17 +982,19 @@ void get_context_rels(int target, const relation_table &rels, relation_table &co
 	 target doesn't intersect any objects, then the closest object is considered
 	 close.
 	*/
-	const relation &intersect_rel = map_get(rels, string("intersect"));
-	for (i = intersect_rel.begin(), iend = intersect_rel.end(); i != iend; ++i) {
-		if ((*i)[1] == target) {
-			push_back_unique(close, (*i)[2]);
-		} else if ((*i)[2] == target) {
-			push_back_unique(close, (*i)[1]);
+	const relation *intersect_rel = map_getp(rels, string("intersect"));
+	if (intersect_rel) {
+		for (i = intersect_rel->begin(), iend = intersect_rel->end(); i != iend; ++i) {
+			if ((*i)[1] == target) {
+				push_back_unique(close, (*i)[2]);
+			} else if ((*i)[2] == target) {
+				push_back_unique(close, (*i)[1]);
+			}
 		}
 	}
-	if (close.empty()) {
-		const relation &closest_rel = map_get(rels, string("closest"));
-		for (i = closest_rel.begin(), iend = closest_rel.end(); i != iend; ++i) {
+	const relation *closest_rel = map_getp(rels, string("closest"));
+	if (close.empty() && closest_rel) {
+		for (i = closest_rel->begin(), iend = closest_rel->end(); i != iend; ++i) {
 			if ((*i)[1] == target) {
 				close.push_back((*i)[2]);
 				break;

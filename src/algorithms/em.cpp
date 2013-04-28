@@ -18,6 +18,9 @@
 #include "lda.h"
 #include "drawer.h"
 
+//#define DBGCOUNT(n) { static int count = 0; fprintf(stderr, "%s %d\n", n, count++); }
+#define DBGCOUNT(n)
+
 using namespace std;
 using namespace Eigen;
 
@@ -207,13 +210,14 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 	mat Xc(ndata, xcols), Yc(ndata, 1), coefs(xcols, 1), coefs2;
 	
 	error.setConstant(INFINITY);
-	sample(xcols + 1, 0, ndata, init);
+	sample(min(xcols + 1, ndata), 0, ndata, init);
 	w.setConstant(0.0);
 	for (int i = 0; i < init.size(); ++i) {
 		w(init[i]) = 1.0;
 	}
 
 	for (int iter = 0; iter < MINI_EM_MAX_ITERS; ++iter) {
+		DBGCOUNT("EMLSB")
 		int i = 0;
 		nonuniform_cols.clear();
 		for (int j = 0; j < xcols; ++j) {
@@ -269,7 +273,84 @@ void erase_inds(vector<int> &v, const vector<int> &inds) {
 	v.resize(j);
 }
 
+int ransac_iters(int ninliers, int mss_size, int ndata, double alarm_rate, int max_iters) {
+	double q = pow(ninliers / static_cast<double>(ndata), mss_size);
+	double lq = log(1 - q);
+	if (lq == 0) {
+		return max_iters;
+	}
+	int i1 = static_cast<int>(floor(log(alarm_rate) / lq) + 1);
+	return min(i1, max_iters);
+}
+
+void ransac(const mat &X, const mat &Y, double noise_var, double alarm_rate, int max_iters, int size_thresh, const vector<int> &blocks,
+            vector<int> &subset, mat &coefs, rvec &intercept)
+{
+	vector<int> mss, fit_set;
+	mat Xmss, Ymss, Yp, C;
+	cvec dummy, error;
+	rvec inter;
+	
+	double max_error = noise_var * 5;
+	int ndata = X.rows();
+	int mss_size = 5;
+	int iters = ransac_iters(mss_size, mss_size, ndata, alarm_rate, max_iters);
+	
+	double mss_per_block = mss_size / static_cast<double>(blocks.size());
+	mss.reserve(mss_size);
+	fit_set.reserve(ndata);
+	subset.clear();
+	
+	for (int i = 0; i < iters; ++i) {
+		mss.clear();
+		int low = 0;
+		for (int j = 0, jend = blocks.size(); j < jend; ++j) {
+			// this is convoluted, but allows for even distribution when mss_size
+			// doesn't divide into the number of blocks evenly
+			int s = (mss_per_block * (j + 1)) - mss.size();
+			sample(s, low, low + blocks[j], mss);
+			low += blocks[j];
+		}
+		assert(mss.size() == mss_size);
+		
+		pick_rows(X, mss, Xmss);
+		pick_rows(Y, mss, Ymss);
+		static int dbgcount = 0;
+		cout << "RANSAC " << dbgcount++ << endl;
+		if (!linreg_d(FORWARD, Xmss, Ymss, dummy, noise_var, C, inter)) {
+			assert(false);
+		}
+		Yp = (X * C).rowwise() + inter;
+		error = (Y - Yp).cwiseAbs().rowwise().sum();
+		
+		fit_set.clear();
+		for (int j = 0; j < ndata; ++j) {
+			if (error(j) <= max_error) {
+				fit_set.push_back(j);
+			}
+		}
+		if (fit_set.size() > subset.size()) {
+			subset = fit_set;
+			coefs = C;
+			intercept = inter;
+			if (subset.size() >= size_thresh) {
+				return;
+			}
+			iters = ransac_iters(subset.size(), mss_size, ndata, alarm_rate, max_iters);
+		}
+	}
+}
+
+void ransac1(const mat &X, const mat &Y, vector<int> &subset, mat &coefs, rvec &intercept)
+{
+	vector<int> blocks;
+	blocks.push_back(X.rows());
+	ransac(X, Y, 1e-8, 0.05, 2000, NEW_MODE_THRESH, blocks, subset, coefs, intercept);
+}
+
 int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec &inter) const {
+	DBGCOUNT("FLSUB")
+	
 	function_timer t(timers.get_or_add("find_seed"));
 
 	const double TEST_RATIO = 0.5;
@@ -294,6 +375,7 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 	 Outer loop ranges over sets of random initial points
 	*/
 	for (int iter = 0; iter < LINEAR_SUBSET_MAX_ITERS; ++iter) {
+		DBGCOUNT("LSUBI")
 		vector<int> subset2;
 		find_linear_subset_em(X.topRows(nleft), Y.topRows(nleft), subset2);
 		if (subset2.size() < 10)  // arbitrary, fix later
@@ -366,6 +448,13 @@ EM::EM(const model_train_data &data)
 	add_mode(false); // noise mode
 }
 
+EM::EM(const model_train_data &data, bool use_em, bool use_unify, bool use_lwr, bool learn_new_modes)
+: data(data), use_em(use_em), use_unify(use_unify), use_lwr(use_lwr), learn_new_modes(learn_new_modes),
+  check_after(NEW_MODE_THRESH), clsfr(data)
+{
+	add_mode(false); // noise mode
+}
+
 EM::~EM() {
 	clear_and_dealloc(insts);
 	clear_and_dealloc(modes);
@@ -405,8 +494,7 @@ void EM::add_data(int t) {
 }
 
 void EM::estep() {
-	static int count = 0;
-	function_timer t(timers.get_or_add("e-step"));
+	DBGCOUNT("ESTEP")
 	
 	/*
 	 For data i and mode j, if:
@@ -417,7 +505,6 @@ void EM::estep() {
 	 then we mark i as a point we have to recalculate the MAP mode for.
 	*/
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
-		count++;
 		const model_train_inst &d = data.get_inst(i);
 		inst_info &inst = *insts[i];
 		bool stale = false;
@@ -474,6 +561,7 @@ void EM::estep() {
 }
 
 bool EM::mstep() {
+	DBGCOUNT("MSTEP")
 	function_timer t(timers.get_or_add("m-step"));
 	
 	bool changed = false;
@@ -512,6 +600,7 @@ em_mode *EM::add_mode(bool manual) {
 }
 
 bool EM::unify_or_add_mode() {
+	DBGCOUNT("UNIFY")
 	function_timer t(timers.get_or_add("new"));
 
 	assert(check_after >= NEW_MODE_THRESH);
@@ -539,7 +628,7 @@ bool EM::unify_or_add_mode() {
 			interval_set inds(ns);
 			vector<int> subset;
 			fill_xy(inds, X, Y);
-			find_linear_subset(X, Y, subset, coefs, inter);
+			ransac1(X, Y, subset, coefs, inter);
 			if (subset.size() > potential) {
 				potential = subset.size();
 			}
@@ -593,12 +682,13 @@ bool EM::unify_or_add_mode() {
 			}
 			fill_xy(combined, X, Y);
 			LOG(EMDBG) << "Trying to unify with mode " << j << endl;
-			int unified_size = find_linear_subset(X, Y, subset, ucoefs, uinter);
+			ransac1(X, Y, subset, ucoefs, uinter);
+			int unified_size = subset.size();
 			
 			if (unified_size >= m.size() + .9 * largest.size()) {
 				LOG(EMDBG) << "Successfully unified with mode " << j << endl;
 				const model_train_inst &d0 = data.get_inst(combined.ith(subset[0]));
-				m.set_linear_params(*d0.sig, d0.target, ucoefs, uinter);
+				m.set_params(*d0.sig, d0.target, ucoefs, uinter);
 				return true;
 			}
 			LOG(EMDBG) << "Failed to unify with mode " << j << endl;
@@ -607,7 +697,7 @@ bool EM::unify_or_add_mode() {
 	
 	em_mode *new_mode = add_mode(false);
 	const model_train_inst &d0 = data.get_inst(largest[0]);
-	new_mode->set_linear_params(*d0.sig, d0.target, coefs, inter);
+	new_mode->set_params(*d0.sig, d0.target, coefs, inter);
 	return true;
 }
 
@@ -799,7 +889,7 @@ void EM::cli_add_mode(const vector<string> &args, ostream &os) {
 	}
 	
 	em_mode *new_mode = add_mode(true);
-	new_mode->set_linear_params(*inst.sig, inst.target, coefs, intercept);
+	new_mode->set_params(*inst.sig, inst.target, coefs, intercept);
 }
 
 
@@ -840,6 +930,41 @@ void EM::unserialize(istream &is) {
 		em_mode *m = new em_mode(i == 0, false, data);
 		m->unserialize(is);
 		modes.push_back(m);
+	}
+}
+
+void EM::print_ptable() const {
+	table_printer t;
+	for (int i = 0, iend = insts.size(); i < iend; ++i) {
+		inst_info *inst = insts[i];
+		t.add_row() << i << inst->mode;
+		for (int j = 0, jend = inst->minfo.size(); j < jend; ++j) {
+			t << inst->minfo[j].prob;
+		}
+	}
+	t.print(cout);
+}
+
+void EM::print_modes() const {
+	for (int i = 1, iend = modes.size(); i < iend; ++i) {
+		scene_sig sig;
+		rvec coefs;
+		double intercept;
+		table_printer t;
+		
+		modes[i]->get_params(sig, coefs, intercept);
+		for (int j = 0, jend = sig.size(), xi = 0; j < jend; ++j) {
+			t.add_row() << sig[j].name;
+			for (int k = 0, kend = sig[j].props.size(); k < kend; ++k, ++xi) {
+				if (coefs(xi) != 0.0) {
+					t.add_row() << sig[j].props[k] << coefs(xi);
+				}
+			}
+		}
+		t.add_row() << "intercept " << intercept;
+		
+		cout << "MODE " << i << endl;
+		t.print(cout);
 	}
 }
 

@@ -11,10 +11,11 @@ MDL = jp(SRC, 'models')
 
 env = Environment(
 	CPPPATH = os.environ.get('CPATH','').split(':') + [SRC, ALG, MDL, '../eigen' ],
-	CPPFLAGS = ['-Og', '-g', '-Wno-enum-compare'],
+	#CPPFLAGS = ['-Og', '-g', '-Wno-enum-compare'],
+	CPPFLAGS = ['-g', '-Wno-enum-compare'],
 	LINKFLAGS = ['-g'],
 	LIBPATH = os.environ.get('LD_LIBRARY_PATH', '').split(':'),
-#	LIBS = [ 'rt', 'opencv_core', 'opencv_ml' ],
+	LIBS = [ 'opencv_core', 'opencv_ml' ],
 )
 
 def obj(names):
@@ -73,4 +74,4 @@ exe('combine_rels', combine_rels)
 #exe('test_foil', test_foil)
 #exe('test_intervalset', test_intervalset)
 #exe('test_csp', test_csp)
-#exe('test_em', test_em)
+exe('test_em', test_em)

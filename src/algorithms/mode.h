@@ -29,7 +29,9 @@ public:
 	void get_noise_sigs(std::vector<int> &sigs);
 	double calc_prob(int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
 	bool update_fits();
-	void set_linear_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter);
+	
+	void get_params(scene_sig &sig, rvec &coefs, double &intercepts) const;
+	void set_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter);
 	bool uniform_sig(int sig, int target) const;
 	void get_members(interval_set &m) const;
 
