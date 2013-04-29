@@ -175,12 +175,13 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
    and returns an action list.
 ===================================================================== */
 
-/* sym is both an input and output parameter */
 void variablize_symbol (agent* thisAgent, Symbol **sym) {
 	char prefix[2];
 	Symbol *var;
 
-	// May no longer need this.  At least don't need it for calls from variablize_test
+	/* We don't need the following check for calls from variablize_test, but may need it for calls
+	 * from rhs and other places. Must check all places this is called from. */
+
 	if (symbol_is_identifier(*sym) || symbol_is_variablizable_constant(*sym))
 	{
 	  // Will need to revisit this part when doing lti's as constant
@@ -217,35 +218,38 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 		}
 }
 
-void variablize_test (agent* thisAgent, test *instantiated_test, test *original_test) {
+void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
   cons *c, *c_orig;
   complex_test *ct, *ct_original;
-  byte original_test_type, test_type, effective_test_type;
+  byte original_test_type, test_type;
   Symbol *original_referent, *instantiated_referent;
-  bool variablizable;
-
 
   print(thisAgent, "Debug| Variablizing: ");
-  print_test (thisAgent, *instantiated_test);
+  print_test (thisAgent, *chunk_test);
   print(thisAgent, "Debug| Original: ");
   print_test (thisAgent, *original_test);
 
-  if (!get_test_type_referent(*instantiated_test, &test_type, &instantiated_referent))
+  if (!get_test_type_referent(*chunk_test, &test_type, &instantiated_referent))
   {
     print(thisAgent, "Debug| Non-variablizable type.  Returning.\nDebug| ---------------------------------------\n");
     return;
   }
   get_test_type_referent(*original_test, &original_test_type, &original_referent);
+
+  /* ORIGINAL can differ from CHUNK tests if there are goal, impasse or disjunction tests in ORIGINAL test,
+   * but get_test_type_referent will return false for those test types, so it won't get here.  */
+
   switch (original_test_type) {
     case CONJUNCTIVE_TEST:
-      if (test_type != EQUALITY_TEST)
+      if (test_type == EQUALITY_TEST)
       {
-        print(thisAgent, "Debug| SHOULD NOT BE HERE!!!\n");
-        assert(false);
+        print(thisAgent, "Debug| Ignoring original conjunctive test (probably b/c of goal/impasse/disjunction)!!!\n");
+        //assert(false);
       }
       print(thisAgent, "Debug| Iterating through conjunction list.\n");
 
-      ct = complex_test_from_test(copy_test(thisAgent, *original_test));
+      ct = complex_test_from_test(*chunk_test);
+      ct_original = complex_test_from_test(*original_test);
 
 //      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
 //      ct->type = CONJUNCTIVE_TEST;
@@ -253,25 +257,25 @@ void variablize_test (agent* thisAgent, test *instantiated_test, test *original_
       // and we're discarding that test (instantiated_test).
       //symbol_add_ref (ct->data.referent);
 
-      ct_original = complex_test_from_test(*original_test);
+      /* --- Loop through both conjunction lists simultaneously calling variablize_test
+       *     on each element. --- */
+
       c_orig = ct_original->data.conjunct_list;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
-        // Will need to sub some values with original instantiated symbol
         variablize_test (thisAgent,
             reinterpret_cast<test *>(&(c->first)),
             reinterpret_cast<test *>(&(c_orig->first)));
         c_orig = c_orig->rest;
       }
 
-      *instantiated_test = make_test_from_complex_test(ct);
       print(thisAgent, "Debug| Done iterating through conjunction list.\nDebug| ---------------------------------------\n");
       break;
     case EQUALITY_TEST:
-      if (symbol_is_variablizable(original_referent,instantiated_referent))
+      if (symbol_is_variablizable(instantiated_referent, original_referent))
       {
         print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
-        variablize_symbol (thisAgent, (Symbol **) instantiated_test);
+        variablize_symbol (thisAgent, (Symbol **) chunk_test);
       }
       break;
     case NOT_EQUAL_TEST:
@@ -280,12 +284,15 @@ void variablize_test (agent* thisAgent, test *instantiated_test, test *original_
     case LESS_OR_EQUAL_TEST:
     case GREATER_OR_EQUAL_TEST:
     case SAME_TYPE_TEST:
-      if (symbol_is_variablizable(original_referent,instantiated_referent))
+      if (symbol_is_variablizable(instantiated_referent, original_referent))
       {
         print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
+        // Chunk test should be guaranteed to be the right final types, so this should no longer be necessary
         if (test_type == EQUALITY_TEST)
         {
           print(thisAgent, "Debug| Switching complex type from %s back to %s\n", test_type_to_string(test_type), test_type_to_string(original_test_type));
+          print(thisAgent, "Debug| SHOULD WE BE HERE???\n");
+          assert(false);
 
           allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
           ct->type = original_test_type;
@@ -293,23 +300,24 @@ void variablize_test (agent* thisAgent, test *instantiated_test, test *original_
           // I don't think we need to add this b/c the equality test incremented the refcount
           // and we're discarding that test (instantiated_test).
           //symbol_add_ref (ct->data.referent);
-          *instantiated_test = make_test_from_complex_test(ct);
+          *chunk_test = make_test_from_complex_test(ct);
         }
         else
         {
-          ct = complex_test_from_test(*instantiated_test);
-          print(thisAgent, "Debug| SHOULD WE BE HERE???\n");
-          assert(false);
+          ct = complex_test_from_test(*chunk_test);
         }
         variablize_symbol (thisAgent, &(ct->data.referent));
       }
       break;
   }
   print(thisAgent, "Debug| Resulting in ");
-  print_test(thisAgent, *instantiated_test);
+  print_test(thisAgent, *chunk_test);
   print(thisAgent, "Debug| ---------------------------------------\n");
 }
 
+/* This gets passed in a copy of the chunk instantiation's condition lists, which
+ * will get thrown away
+ */
 
 void variablize_condition_list (agent* thisAgent, condition *cond) {
 

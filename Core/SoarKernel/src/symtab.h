@@ -439,12 +439,20 @@ inline bool symbol_is_variablizable_constant(Symbol *sym)
           (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ));
 }
 
-inline bool symbol_is_variablizable(Symbol *original_sym, Symbol *instantiated_sym)
+inline bool symbol_is_variablizable(Symbol *sym, Symbol *original_sym)
 {
-  return (symbol_is_identifier(instantiated_sym) ||
-         (symbol_is_variablizable_constant(instantiated_sym) &&
-          symbol_is_variable(original_sym))
-         );
+  /* --- LTI's are treated as constants for chunking, so check identifiers accordingly --- */
+  if (symbol_is_identifier(sym))
+  {
+    if ((sym->id.smem_lti == NIL) || symbol_is_variable(original_sym))
+    {
+      return true;
+    }
+    return false;
+  }
+
+  return (symbol_is_variablizable_constant(sym) &&
+          symbol_is_variable(original_sym));
 }
 
 inline bool symbol_is_constant( Symbol *sym )

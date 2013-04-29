@@ -341,7 +341,7 @@ byte reverse_direction_of_relational_test (agent* thisAgent, byte type) {
 }
 
 saved_test *restore_saved_tests_to_test (agent* thisAgent,
-										 test *t,
+										                     test *t,
                                          Bool is_id_field,
                                          tc_number bound_vars_tc_number,
                                          saved_test *tests_to_restore, bool neg) {
