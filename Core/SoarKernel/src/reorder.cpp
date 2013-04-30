@@ -417,14 +417,11 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
     if (cond->type!=POSITIVE_CONDITION) continue;
 #endif
     bool neg = cond->type == NEGATIVE_CONDITION;
-    tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.id_test), TRUE, tc, tests_to_restore, neg);
+    tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.id_test), TRUE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.id_test, tc, &new_vars);
-    tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.attr_test), FALSE, tc, tests_to_restore, neg);
+    tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.attr_test), FALSE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.attr_test, tc, &new_vars);
-    tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.value_test), FALSE, tc, tests_to_restore, neg);
+    tests_to_restore = restore_saved_tests_to_test (thisAgent, (&cond->data.tests.value_test), FALSE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.value_test, tc, &new_vars);
   }
   if (tests_to_restore) {

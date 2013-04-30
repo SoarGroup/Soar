@@ -1332,10 +1332,12 @@ void unmark_variables_and_free_list (agent* thisAgent, list *var_list) {
 
    Finding the variables bound in tests, conditions, and condition lists
 
-   These routines collect the variables that are bound in tests, etc.  Their
-   "var_list" arguments should either be NIL or else should point to
-   the header of the list of marked variables being constructed.
+   These routines collect the variables that are bound in equality tests.
+   Their "var_list" arguments should either be NIL or else should point
+   to the header of the list of marked variables being constructed.
+
 ===================================================================== */
+
 
 void add_bound_variables_in_test (agent* thisAgent, test t,
 								  tc_number tc, list **var_list) {
@@ -1758,11 +1760,11 @@ production *make_production (agent* thisAgent,
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
 
-	if ( !smem_valid_production( *lhs_top, *rhs_top ) )
-	{
-		print( thisAgent, "ungrounded LTI in production\n" );
-		return NIL;
-	}
+    if ( !smem_valid_production( *lhs_top, *rhs_top ) )
+    {
+      print( thisAgent, "ungrounded LTI in production\n" );
+      return NIL;
+    }
 
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
     calculate_compile_time_o_support (*lhs_top, *rhs_top);

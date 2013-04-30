@@ -4269,105 +4269,6 @@ void add_rete_test_list_to_tests (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------------
-                      Add Rete Test List to Tests
-
-   Given the additional Rete tests (besides the hashed equality test) at
-   a certain node, we need to convert them into the equivalent tests in
-   the conditions being reconstructed.  This procedure does this -- it
-   destructively modifies the given currently-being-reconstructed-cond
-   by adding any necessary extra tests to its three field tests.
----------------------------------------------------------------------- */
-
-void add_rete_test_list_to_original_tests (agent* thisAgent,
-                                  condition *cond, /* current cond */
-                                  rete_test *rt) {
-  Symbol *referent;
-  test New;
-  complex_test *new_ct;
-  byte test_type;
-
-  for ( ; rt!=NIL; rt=rt->next) {
-
-    if (rt->type==ID_IS_GOAL_RETE_TEST) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-      New = make_test_from_complex_test(new_ct);
-      new_ct->type = GOAL_ID_TEST;
-    } else if (rt->type==ID_IS_IMPASSE_RETE_TEST) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-      New = make_test_from_complex_test(new_ct);
-      new_ct->type = IMPASSE_ID_TEST;
-    } else if (rt->type==DISJUNCTION_RETE_TEST) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-      New = make_test_from_complex_test(new_ct);
-      new_ct->type = DISJUNCTION_TEST;
-      new_ct->data.disjunction_list =
-        copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
-    } else if (test_is_constant_relational_test(rt->type)) {
-      test_type =
-        relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
-      referent = rt->data.constant_referent;
-      symbol_add_ref (referent);
-      if (test_type==EQUAL_TEST_TYPE) {
-        New = make_equality_test_without_adding_reference (referent);
-      } else {
-        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        New = make_test_from_complex_test(new_ct);
-        new_ct->type = test_type;
-        new_ct->data.referent = referent;
-      }
-    } else if (test_is_variable_relational_test(rt->type)) {
-      test_type =
-        relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
-      if (! rt->data.variable_referent.levels_up) {
-        /* --- before calling var_bound_in_reconstructed_conds, make sure
-           there's an equality test in the referent location (add one if
-           there isn't one already there), otherwise there'd be no variable
-           there to test against --- */
-        if (rt->data.variable_referent.field_num==0) {
-          if (! test_includes_equality_test_for_symbol
-                  (cond->original_tests.id_test, NIL))
-            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.id_test), 's');
-        } else if (rt->data.variable_referent.field_num==1) {
-          if (! test_includes_equality_test_for_symbol
-                  (cond->original_tests.attr_test, NIL))
-            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.attr_test), 'a');
-        } else {
-          if (! test_includes_equality_test_for_symbol
-                  (cond->original_tests.value_test, NIL))
-            add_gensymmed_equality_test (thisAgent, &(cond->original_tests.value_test),
-                       first_letter_from_test(cond->original_tests.attr_test));
-        }
-      }
-      referent = var_bound_in_reconstructed_original_conds (thisAgent, cond,
-                          rt->data.variable_referent.field_num,
-                          rt->data.variable_referent.levels_up);
-      symbol_add_ref (referent);
-      if (test_type==EQUAL_TEST_TYPE) {
-        New = make_equality_test_without_adding_reference (referent);
-      } else {
-        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        New = make_test_from_complex_test(new_ct);
-        new_ct->type = test_type;
-        new_ct->data.referent = referent;
-      }
-    } else {
-      char msg[BUFFER_MSG_SIZE];
-      strncpy (msg, "Error: bad test_type in add_rete_test_to_test\n", BUFFER_MSG_SIZE);
-     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-     abort_with_fatal_error(thisAgent, msg);
-      New = NIL; /* unreachable, but without it gcc -Wall warns here */
-    }
-
-    if (rt->right_field_num==0)
-      add_new_test_to_test (thisAgent, &(cond->original_tests.id_test), New);
-    else if (rt->right_field_num==2)
-      add_new_test_to_test (thisAgent, &(cond->original_tests.value_test), New);
-    else
-      add_new_test_to_test (thisAgent, &(cond->original_tests.attr_test), New);
-  }
-}
-
-/* ----------------------------------------------------------------------
                                Collect Nots
 
    When we build the instantiated conditions for a production being
@@ -4432,160 +4333,22 @@ void collect_nots (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------------
-                        Collect Chunk Test Info
+                     Add Constraints to Chunk Condition
 
-   When we build the instantiated conditions for a production being
-   fired, we compile a a version of the tests with extra information
-   about the constraints that let to the wme's that matched.
-   (This information is used during chunking.)  This procedure looks for
-   all such test in the given Rete test list (from the "other tests"
-   at a Rete node), and adds records of them to the test
-   structures in the condition.  "Right_wme" is the wme that matched
-   the current condition; "cond" is the currently-being-reconstructed
-   condition.
+   This function gets passed the instantiated conditions for a production
+   being fired that will be turned into a chunk.  It adds all the original
+   tests and in the given Rete test list (from the "other tests"
+   at a Rete node), and adds them to the equality test in the instantiation.
+   These tests will then also be variablized later.
+
+   "Right_wme" is the wme that matched the current condition
+   "cond" is the currently-being-reconstructed condition.
+
+   - MMA 2013
+
 ---------------------------------------------------------------------- */
 
-void collect_chunk_test_info2 (agent* thisAgent,
-                   rete_test *rt,
-                   wme *right_wme,
-                   condition *cond) {
-
-  Symbol *right_sym;
-  Symbol *var_referent;
-
-  Symbol *referent;
-  test new_test;
-  complex_test *new_ct;
-  byte test_type;
-
-  cond->chunk_tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
-  cond->chunk_tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
-  cond->chunk_tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
-
-  for ( ; rt!=NIL; rt=rt->next) {
-
-    /* Can probably skip entire loop if (a) one of three first test types or (b)
-     * rt->right_field_num==0 (id field). Not needed for anything related to
-     * chunking. Should probably also removed chunk_tests.id_test entirely.
-     * Remove later after making sure not needed and we handle nil values. */
-
-    switch (rt->type) {
-      case ID_IS_GOAL_RETE_TEST:
-        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        new_test = make_test_from_complex_test(new_ct);
-        new_ct->type = GOAL_ID_TEST;
-        break;
-      case ID_IS_IMPASSE_RETE_TEST:
-        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        new_test = make_test_from_complex_test(new_ct);
-        new_ct->type = IMPASSE_ID_TEST;
-        break;
-      case DISJUNCTION_RETE_TEST:
-        // this is probably not needed.  Should already be there.
-        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        new_test = make_test_from_complex_test(new_ct);
-        new_ct->type = DISJUNCTION_TEST;
-        new_ct->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
-        break;
-      default:
-        if (test_is_constant_relational_test(rt->type))
-        {
-          // Add something that says it was not a var.  Test/verify/compare with original production
-          // not sure where to put for equality tests, especially in conjunctions.
-          test_type = relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
-          referent = rt->data.constant_referent;
-          symbol_add_ref (referent);
-          if (test_type==EQUAL_TEST_TYPE)
-          {
-            new_test = make_equality_test_without_adding_reference (referent);
-          }
-          else
-          {
-            allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            new_test = make_test_from_complex_test(new_ct);
-            new_ct->type = test_type;
-            new_ct->data.referent = referent;
-          }
-        }
-        else if (test_is_variable_relational_test(rt->type))
-        {
-          test_type = relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
-          if (! rt->data.variable_referent.levels_up)
-          {
-            /* --- before calling var_bound_in_reconstructed_conds, make sure
-                   there's an equality test in the referent location (add one if
-                   there isn't one already there), otherwise there'd be no variable
-                   there to test against --- */
-            switch (rt->data.variable_referent.field_num) {
-              case 0:
-                if (! test_includes_equality_test_for_symbol(cond->chunk_tests.id_test, NIL))
-                {
-                  add_gensymmed_equality_test (thisAgent, &(cond->chunk_tests.id_test), 's');
-                }
-                break;
-              case 1:
-                if (! test_includes_equality_test_for_symbol(cond->chunk_tests.attr_test, NIL))
-                {
-                  add_gensymmed_equality_test (thisAgent, &(cond->chunk_tests.attr_test), 'a');
-                }
-                break;
-              default:
-                if (!test_includes_equality_test_for_symbol(cond->chunk_tests.value_test, NIL))
-                {
-                  add_gensymmed_equality_test (thisAgent, &(cond->chunk_tests.value_test),
-                      first_letter_from_test(cond->chunk_tests.attr_test));
-                }
-                break;
-            }
-          }
-            // May want to check whether we need to use instantiated conds (currently using
-            // chunk conds
-//            referent = var_bound_in_reconstructed_chunk_conds (thisAgent, cond,
-//                rt->data.variable_referent.field_num,
-//                rt->data.variable_referent.levels_up);
-            referent = var_bound_in_reconstructed_conds (thisAgent, cond,
-                rt->data.variable_referent.field_num,
-                rt->data.variable_referent.levels_up);
-            symbol_add_ref (referent);
-            // Add something that says it was a var.  Test/verify/compare with original production
-            // not sure where to put for equality tests, especially in conjunctions.
-
-            // Will also need to substitute the other extracted values depending on test type
-            // To test:
-            right_sym = field_from_wme (right_wme, rt->right_field_num);
-            var_referent = var_bound_in_reconstructed_conds (thisAgent, cond, rt->data.variable_referent.field_num, rt->data.variable_referent.levels_up);
-
-            if (test_type==EQUAL_TEST_TYPE)
-            {
-              new_test = make_equality_test_without_adding_reference (referent);
-            }
-            else
-            {
-              allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-              new_test = make_test_from_complex_test(new_ct);
-              new_ct->type = test_type;
-              new_ct->data.referent = referent;
-            }
-          }
-        else
-        {
-          print(thisAgent, "Debug| Bad test_type in collect_chunk_test_info\n");
-          assert(false);
-          new_test = NIL; /* unreachable, but without it gcc -Wall warns here */
-        }
-        break;
-    }
-    if (rt->right_field_num==0)
-      add_new_test_to_test (thisAgent, &(cond->chunk_tests.id_test), new_test);
-    else if (rt->right_field_num==2)
-      add_new_test_to_test (thisAgent, &(cond->chunk_tests.value_test), new_test);
-    else
-      add_new_test_to_test (thisAgent, &(cond->chunk_tests.attr_test), new_test);
-
-  }
-}
-
-void collect_chunk_test_info (agent* thisAgent,
+void add_constraints_to_chunk_condition (agent* thisAgent,
     rete_test *rt,
     wme *right_wme,
     condition *cond) {
@@ -4595,9 +4358,6 @@ void collect_chunk_test_info (agent* thisAgent,
   complex_test *new_ct;
   byte test_type;
 
-//  cond->chunk_tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
-//  cond->chunk_tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
-//  cond->chunk_tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
 
   for ( ; rt!=NIL; rt=rt->next) {
 
@@ -4615,12 +4375,12 @@ void collect_chunk_test_info (agent* thisAgent,
         //        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
         //        new_test = make_test_from_complex_test(new_ct);
         //        new_ct->type = IMPASSE_ID_TEST;
-        //        break;
+        break;
       case DISJUNCTION_RETE_TEST:
-        //        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        //        new_test = make_test_from_complex_test(new_ct);
-        //        new_ct->type = DISJUNCTION_TEST;
-        //        new_ct->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+        new_test = make_test_from_complex_test(new_ct);
+        new_ct->type = DISJUNCTION_TEST;
+        new_ct->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
         break;
       default:
         if (test_is_constant_relational_test(rt->type))
@@ -4676,6 +4436,7 @@ void collect_chunk_test_info (agent* thisAgent,
               rt->data.variable_referent.field_num,
               rt->data.variable_referent.levels_up);
           symbol_add_ref (referent);
+          //right_sym = field_from_wme (right_wme, rt->right_field_num);
 
           if (test_type==EQUAL_TEST_TYPE)
           {
@@ -4696,11 +4457,20 @@ void collect_chunk_test_info (agent* thisAgent,
           new_test = NIL; /* unreachable, but without it gcc -Wall warns here */
         }
         if (rt->right_field_num==0)
+        {
           add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), new_test);
+          cond->chunk_tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
+        }
         else if (rt->right_field_num==2)
+        {
           add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), new_test);
+          cond->chunk_tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
+        }
         else
+        {
           add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), new_test);
+          cond->chunk_tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
+        }
         break;
     }
   }
@@ -4749,28 +4519,6 @@ void add_hash_info_to_id_test (agent* thisAgent,
   temp = var_bound_in_reconstructed_conds (thisAgent, cond, field_num, levels_up);
   New = make_equality_test (temp);
   add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
-}
-
-/* ----------------------------------------------------------------------
-                      Add Hash Info to Original ID Test
-
-   This routine adds an equality test to the id field test in a given
-   condition, destructively modifying that id test.  The equality test
-   is the one appropriate for the given hash location (field_num/levels_up).
-
-   TODO: Consolidate with above function
----------------------------------------------------------------------- */
-
-void add_hash_info_to_id_original_test (agent* thisAgent,
-                               condition *cond,
-                               byte field_num,
-                               rete_node_level levels_up) {
-  Symbol *temp;
-  test New;
-
-  temp = var_bound_in_reconstructed_conds (thisAgent, cond, field_num, levels_up);
-  New = make_equality_test (temp);
-  add_new_test_to_test (thisAgent, &(cond->original_tests.id_test), New);
 }
 
 /* ----------------------------------------------------------------------
@@ -4884,7 +4632,7 @@ void rete_node_to_conditions (agent* thisAgent,
         //   test submitted to it by add_rete_test_list_to_original_tests
 
         if (node->b.posneg.other_tests) {
-          collect_chunk_test_info (thisAgent, node->b.posneg.other_tests, w, cond);
+          add_constraints_to_chunk_condition (thisAgent, node->b.posneg.other_tests, w, cond);
         }
       }
     } else {

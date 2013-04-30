@@ -248,18 +248,12 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
       }
       print(thisAgent, "Debug| Iterating through conjunction list.\n");
 
-      ct = complex_test_from_test(*chunk_test);
-      ct_original = complex_test_from_test(*original_test);
 
-//      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-//      ct->type = CONJUNCTIVE_TEST;
-      // I don't think we need to add this b/c the equality test incremented the refcount
-      // and we're discarding that test (instantiated_test).
-      //symbol_add_ref (ct->data.referent);
-
-      /* --- Loop through both conjunction lists simultaneously calling variablize_test
+      /* --- Loop through both conjunction lists simultaneously, calling variablize_test
        *     on each element. --- */
 
+      ct = complex_test_from_test(*chunk_test);
+      ct_original = complex_test_from_test(*original_test);
       c_orig = ct_original->data.conjunct_list;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
@@ -287,6 +281,7 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
       if (symbol_is_variablizable(instantiated_referent, original_referent))
       {
         print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
+
         // Chunk test should be guaranteed to be the right final types, so this should no longer be necessary
         if (test_type == EQUALITY_TEST)
         {

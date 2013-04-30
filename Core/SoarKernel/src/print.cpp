@@ -388,6 +388,15 @@ void print_test (agent* thisAgent, test t, const char *indent_string) {
     case IMPASSE_ID_TEST:
       print(thisAgent, "%s\n", test_type_to_string(test_type));
       break;
+    case DISJUNCTION_TEST:
+      print(thisAgent, "%s: << ", test_type_to_string(test_type));
+      ct = complex_test_from_test(t);
+      for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
+        print(thisAgent, "%s ",
+            symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), FALSE, NULL, 0));
+      }
+      print (thisAgent, ">>\n");
+      break;
     case CONJUNCTIVE_TEST:
       ct = complex_test_from_test(t);
       print(thisAgent, "%s\n", test_type_to_string(test_type));
@@ -408,7 +417,7 @@ void print_test (agent* thisAgent, test t, const char *indent_string) {
       print(thisAgent, "%s: %s (%s)\n",
           test_type_to_string(test_type),
           (referent ? symbol_to_string (thisAgent, referent, FALSE, NULL, 0) : "NULL (PROBLEM!)"),
-          (referent ?symbol_to_typeString (thisAgent, referent) : "NULL (PROBLEM!)"));
+          (referent ? symbol_to_typeString (thisAgent, referent) : "NULL (PROBLEM!)"));
       break;
   }
 }
