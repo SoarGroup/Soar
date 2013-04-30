@@ -11,7 +11,6 @@
 #include "relation.h"
 #include "mat.h"
 #include "scene_sig.h"
-#include "lwr.h"
 #include "lda.h"
 #include "classifier.h"
 #include "mode.h"
@@ -45,7 +44,6 @@ class sig_info : public serializable {
 public:
 	std::vector<int> members;  // indexes of data points with this sig
 	std::set<int> noise;       // indexes of noise data with this signature
-	LWR lwr;                   // lwr model trained on all points of this sig
 
 	sig_info();
 	void serialize(std::ostream &os) const;
@@ -55,7 +53,7 @@ public:
 class EM : public serializable, public cliproxy {
 public:
 	EM(const model_train_data &data);
-	EM(const model_train_data &data, bool use_em, bool use_unify, bool use_lwr, bool learn_new_modes);
+	EM(const model_train_data &data, bool use_em, bool use_unify, bool learn_new_modes);
 	~EM();
 	
 	void add_data(int t);
@@ -96,7 +94,7 @@ private:
 	sig_table sigs;
 	classifier clsfr;
 	
-	bool use_em, use_unify, use_lwr, learn_new_modes;
+	bool use_em, use_unify, learn_new_modes;
 
 	/*
 	 Keeps track of the minimum number of new noise examples needed before we have
@@ -105,6 +103,7 @@ private:
 	int check_after;
 	int nc_type;
 	
+	double noise_var;
 	mutable timer_set timers;
 };
 

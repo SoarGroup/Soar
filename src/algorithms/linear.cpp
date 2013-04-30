@@ -131,14 +131,14 @@ bool lasso(const_mat_view X, const_mat_view Y, mat &coefs) {
 
  This is a naive version of R's step function.
 */
-bool fstep(const_mat_view X, const_mat_view Y, mat &coefs) {
+bool fstep(const_mat_view X, const_mat_view Y, double var, mat &coefs) {
 	assert(Y.cols() == 1);
 	int ncols = X.cols(), p = 0;
 	vector<int> predictors;
 	vector<bool> used(ncols, false);
 	mat Xcurr(X.rows(), ncols);
 	cvec curr_c;
-	double curr_Cp = MallowCp(Xcurr.leftCols(p), Y, cvec(), 0, MEASURE_VAR);
+	double curr_Cp = MallowCp(Xcurr.leftCols(p), Y, cvec(), 0, var);
 
 	while (p < ncols) {
 		double best_Cp = 0;
@@ -150,9 +150,9 @@ bool fstep(const_mat_view X, const_mat_view Y, mat &coefs) {
 
 			cvec c;
 			if (!solve(Xcurr.leftCols(p + 1), Y, c)) {
-				return false;
+				continue;
 			}
-			double Cp = MallowCp(Xcurr.leftCols(p + 1), Y, c, 0, MEASURE_VAR);
+			double Cp = MallowCp(Xcurr.leftCols(p + 1), Y, c, 0, var);
 			if (best_pred < 0 || Cp < best_Cp || 
 			    (Cp == best_Cp && c.squaredNorm() < best_c.squaredNorm()))
 			{
@@ -187,7 +187,7 @@ bool fstep(const_mat_view X, const_mat_view Y, mat &coefs) {
  Use Leave-one-out cross validation to determine number of components
  to use. This seems to choose numbers that are too low.
 */
-void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta, rvec &intercept) {
+void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, double var, mat &beta, rvec &intercept) {
 	int ndata = X.rows(), maxcomps = X.cols();
 	
 	mat X1(ndata - 1, X.cols()), Y1(ndata - 1, Y.cols());
@@ -219,7 +219,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 		projected = X1 * components;
 		for (int j = 0; j < maxcomps; ++j) {
-			linreg(OLS, projected.leftCols(j), Y1, w, coefs, inter);
+			linreg(OLS, projected.leftCols(j), Y1, w, var, coefs, inter);
 			b = components.leftCols(i) * coefs;
 			errors(j) += (X.row(n) * b + inter - Y.row(n)).array().abs().sum();
 		}
@@ -231,7 +231,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 	}
 	projected = X * components;
-	linreg(OLS, projected.leftCols(best), Y, cvec(), coefs, inter);
+	linreg(OLS, projected.leftCols(best), Y, cvec(), var, coefs, inter);
 	beta = components.leftCols(best) * coefs;
 	intercept = inter;
 }
@@ -322,14 +322,14 @@ void augment_ones(mat &X) {
 }
 
 void fix_for_wols(mat &X, mat &Y, const cvec &w) {
-	int ndata = X.rows(), xdim = X.cols(), ydim = Y.cols();
-	X.conservativeResize(ndata, xdim + 1);
+	assert(w.size() == X.rows());
+	X.conservativeResize(X.rows(), X.cols() + 1);
+	X.col(X.cols() - 1).setConstant(1.0);
 	
-	for (int i = 0; i < xdim; ++i) {
+	for (int i = 0, iend = X.cols(); i < iend; ++i) {
 		X.col(i).array() *= w.array();
 	}
-	X.col(xdim) = w;
-	for (int i = 0; i < ydim; ++i) {
+	for (int i = 0, iend = Y.cols(); i < iend; ++i) {
 		Y.col(i).array() *= w.array();
 	}
 }
@@ -338,7 +338,7 @@ void fix_for_wols(mat &X, mat &Y, const cvec &w) {
  Perform linear regression. Assumes that input X and Y are already
  cleaned and centered.
 */
-bool linreg_clean(regression_type t, const_mat_view X, const_mat_view Y, mat &coefs) {
+bool linreg_clean(regression_type t, const_mat_view X, const_mat_view Y, double var, mat &coefs) {
 	switch (t) {
 		case OLS:
 			return solve(X, Y, coefs);
@@ -350,7 +350,7 @@ bool linreg_clean(regression_type t, const_mat_view X, const_mat_view Y, mat &co
 			return wpcr(X, Y, coefs);
 			break;
 		case FORWARD:
-			return fstep(X, Y, coefs);
+			return fstep(X, Y, var, coefs);
 		default:
 			assert(false);
 	}
@@ -365,7 +365,7 @@ bool linreg_clean(regression_type t, const_mat_view X, const_mat_view Y, mat &co
  Note that this function modifies inputs X and Y to avoid redundant
  copies.
 */
-bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec &inter) {
+bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, double var, mat &coefs, rvec &inter) {
 	int ndata = X.rows();
 	int xdim = X.cols();
 	int ydim = Y.cols();
@@ -385,7 +385,9 @@ bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec
 	 Unfortunately from what I can gather, method 1 doesn't work with weighted
 	 regression, and method 2 doesn't work with ridge regression or PCR.
 	*/
-	if (w.size() > 0) {
+	
+	bool augment = (w.size() > 0);
+	if (augment) {
 		assert(t != RIDGE && t != PCR);
 		fix_for_wols(X, Y, w);
 	} else {
@@ -393,11 +395,11 @@ bool linreg_d(regression_type t, mat &X, mat &Y, const cvec &w, mat &coefs, rvec
 		center_data(Y, Ym);
 	}
 	
-	if (!linreg_clean(t, X, Y, coefs1)) {
+	if (!linreg_clean(t, X, Y, var, coefs1)) {
 		return false;
 	}
 	
-	if (w.size() > 0) {
+	if (augment) {
 		assert(coefs1.rows() == used.size() + 1);
 		inter = coefs1.row(coefs1.rows() - 1);
 	} else {
@@ -417,311 +419,15 @@ bool linreg (
 	const_mat_view X,
 	const_mat_view Y,
 	const cvec &w,
+	double var,
 	mat &coefs,
 	rvec &intercept ) 
 {
 	mat Xc(X), Yc(Y);
-	return linreg_d(t, Xc, Yc, w, coefs, intercept);
+	return linreg_d(t, Xc, Yc, w, var, coefs, intercept);
 }
 
-LinearModel::LinearModel()
-: isconst(true), error(INFINITY), refit(true), alg(FORWARD)
-{}
-
-LinearModel::LinearModel(regression_type alg) 
-: isconst(true), error(INFINITY), refit(true), alg(alg)
-{}
-
-LinearModel::LinearModel(const LinearModel &m)
-: isconst(m.isconst), error(INFINITY), refit(true),
-  coefs(m.coefs), intercept(m.intercept), alg(m.alg),
-  xdata(m.xdata), ydata(m.ydata)
-{}
-
-void LinearModel::init_fit(const_mat_view X, const_mat_view Y, int target, const scene_sig &sig, std::vector<int> &obj_map)
-{
-	isconst = true;
-	obj_map.clear();
-	for (int i = 1; i < Y.rows(); ++i) {
-		if (Y.row(i) != Y.row(0)) {
-			isconst = false;
-			break;
-		}
-	}
-	if (isconst) {
-		intercept = Y.row(0);
-		xdata.resize(0, 0);
-		ydata.resize(0, Y.cols());
-		return;
-	}
-	
-	fit_sub(X, Y);
-	
-	int ndims = 0, ndata = X.rows(), nout = Y.cols();
-	
-	// target is always first object
-	obj_map.push_back(target);
-	ndims += sig[target].props.size();
-	
-	// find other relevant objects (with nonzero coefficients)
-	for (int i = 0; i < sig.size(); ++i) {
-		if (i == target) {
-			continue;
-		}
-		int start = sig[i].start;
-		int end = start + sig[i].props.size();
-		for (int j = start; j < end; ++j) {
-			if (!coefs.row(j).isConstant(0.0)) {
-				obj_map.push_back(i);
-				ndims += sig[i].props.size();
-				break;
-			}
-		}
-	}
-	
-	// discard information about irrelevant objects
-	mat coefs2(ndims, nout);
-	xdata.resize(ndata, ndims);
-
-	orig_sig.clear();
-	int i = 0;
-	for (int j = 0; j < obj_map.size(); ++j) {
-		const scene_sig::entry &e = sig[obj_map[j]];
-		orig_sig.add(e);
-		int s = e.start;
-		int l = e.props.size();
-		coefs2.block(i, 0, l, nout) = coefs.block(s, 0, l, nout);
-		xdata.get().block(0, i, ndata, l) = X.block(0, s, ndata, l);
-		i += l;
-	}
-	coefs = coefs2;
-	ydata = Y;
-	update_error();
-}
-
-int LinearModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
-	assert(xdata.cols() == x.size() && ydata.cols() == y.size());
-	
-	xdata.append_row(x);
-	ydata.append_row(y);
-	if (xdata.rows() == 1) {
-		isconst = true;
-		intercept = y;
-		error = 0.0;
-		if (update_refit) {
-			refit = false;
-		}
-		return 0;
-	}
-	
-	if (isconst && y != intercept) {
-		isconst = false;
-		if (update_refit) {
-			refit = true;
-		}
-	}
-	
-	if (!isconst && update_refit) {
-		if (coefs.size() == 0) {
-			refit = true;
-			error = INFINITY;
-		} else {
-			rvec py = x * coefs + intercept;
-			double e = pow(py(0) - y(0), 2);
-			if (!refit) {
-				/*
-				 Only refit the model if the average error increases
-				 significantly after adding the data point.
-				*/
-				double olderror = error / (xdata.rows() - 1);
-				double newerror = (error + e) / xdata.rows();
-				//if (newerror > MODEL_ERROR_THRESH || newerror > REFIT_MUL_THRESH * olderror)
-				if (newerror > MODEL_ERROR_THRESH)
-				{
-					refit = true;
-					cout << "Needs refit, old = " << olderror << " new = " << newerror << endl;
-				}
-			}
-			error += e;
-		}
-	}
-	return xdata.rows() - 1;
-}
-
-void LinearModel::del_example(int r) {
-	rvec x = xdata.row(r);
-	xdata.remove_row(r);
-	ydata.remove_row(r);
-	
-	if (xdata.rows() == 0) {
-		// handling of this case is questionable, make it better later
-		isconst = true;
-		intercept.fill(0.0);
-		return;
-	}
-		
-	if (!isconst) {
-		/* check if remaining data all have same y */
-		isconst = true;
-		for (int j = 1; j < ydata.rows(); ++j) {
-			if (ydata.row(j) != ydata.row(0)) {
-				isconst = false;
-				break;
-			}
-		}
-		if (isconst) {
-			intercept = ydata.row(0);
-			error = 0.0;
-		} else {
-			update_error();
-		}
-	}
-}
-
-void LinearModel::update_error() {
-	if (xdata.rows() == 0) {
-		error = INFINITY;
-	} else if (isconst) {
-		error = 0.0;
-	} else {
-		if (coefs.size() == 0) {
-			error = INFINITY;
-		} else {
-			mat PY = (xdata.get() * coefs).rowwise() + intercept;
-			error = (ydata.get() - PY).squaredNorm();
-		}
-	}
-}
-
-void LinearModel::serialize(ostream &os) const {
-	serializer(os) << alg << error << isconst << intercept
-	               << xdata << ydata << orig_sig;
-}
-
-void LinearModel::unserialize(istream &is) {
-	int a;
-	unserializer(is) >> a >> error >> isconst >> intercept
-	                 >> xdata >> ydata >> orig_sig;
-
-	assert(a == OLS || a == RIDGE || a == PCR || a == LASSO || a == FORWARD);
-	alg = static_cast<regression_type>(a);
-	fit();
-}
-
-bool LinearModel::predict(const rvec &x, rvec &y) {
-	if (isconst) {
-		y = intercept;
-		return true;
-	}
-	if (refit) {
-		fit();
-	}
-	if (coefs.size() == 0) {
-		return false;
-	}
-	assert(coefs.rows() == x.size());
-	y = x * coefs + intercept;
-	return true;
-}
-
-bool LinearModel::predict(const_mat_view X, mat &Y) {
-	function_timer t(timers.get_or_add("predict"));
-	
-	if (isconst) {
-		Y.resize(X.rows(), intercept.size());
-		Y.rowwise() = intercept;
-		return true;
-	}
-	if (refit) {
-		fit();
-	}
-	if (coefs.size() == 0) {
-		return false;
-	}
-	assert(coefs.rows() == X.cols());
-	Y = (X * coefs).rowwise() + intercept;
-	return true;
-}
-
-bool LinearModel::fit() {
-	function_timer t(timers.get_or_add("fit"));
-	
-	if (!isconst) {
-		if (!fit_sub(xdata.get(), ydata.get())) {
-			return false;
-		}
-	}
-	update_error();
-	refit = false;
-	return true;
-}
-
-bool LinearModel::fit_sub(const_mat_view X, const_mat_view Y) {
-	return linreg(alg, X, Y, cvec(), coefs, intercept);
-}
-
-bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
-	if (first_arg >= args.size()) {
-		os << "error:    " << error << endl;
-		bool success;
-		if (isconst) {
-			os << "constant: ";
-			output_rvec(os, intercept) << endl;
-		} else {
-			os << "intercept: " << intercept << endl;
-			os << "coefs:" << endl;
-			table_printer t;
-			int k = 0;
-			for (int i = 0; i < orig_sig.size(); ++i) {
-				for (int j = 0; j < orig_sig[i].props.size(); ++j) {
-					t.add_row() << k;
-					if (j == 0) {
-						t << orig_sig[i].name;
-					} else {
-						t.skip(1);
-					}
-					t << orig_sig[i].props[j];
-					for (int l = 0; l < coefs.cols(); ++l) {
-						t << coefs(k, l);
-					}
-					++k;
-				}
-			}
-			t.print(os);
-			return true;
-		}
-		os << "subqueries: timing train" << endl;
-		return true;
-	} else if (args[first_arg] == "train") {
-		table_printer t;
-		t.add_row();
-		for (int i = 0; i < orig_sig.size(); ++i) {
-			t << orig_sig[i].name;
-			t.skip(orig_sig[i].props.size() - 1);
-		}
-		t.add_row();
-		for (int i = 0; i < orig_sig.size(); ++i) {
-			for (int j = 0; j < orig_sig[i].props.size(); ++j) {
-				t << orig_sig[i].props[j];
-			}
-		}
-		for (int i = 0; i < xdata.rows(); ++i) {
-			t.add_row();
-			for (int j = 0; j < xdata.cols(); ++j) {
-				t << xdata(i, j);
-			}
-			for (int j = 0; j < ydata.cols(); ++j) {
-				t << ydata(i, j);
-			}
-		}
-		t.print(os);
-		return true;
-	}
-	os << "unrecognized argument" << endl;
-	return false;
-}
-
-bool nfoldcv(const_mat_view X, const_mat_view Y, int n, regression_type t, rvec &avg_error) {
+bool nfoldcv(const_mat_view X, const_mat_view Y, double var, int n, regression_type t, rvec &avg_error) {
 	assert(X.rows() >= n);
 	
 	int chunk, extra, total_rows, train_rows, test_rows, i, start, end;
@@ -771,7 +477,7 @@ bool nfoldcv(const_mat_view X, const_mat_view Y, int n, regression_type t, rvec 
 		Ytrain.block(0, 0, start, ycols) = Yrand.block(0, 0, start, ycols);
 		Ytrain.block(start, 0, train_rows - start, ycols) = Yrand.block(end, 0, train_rows - start, ycols);
 		
-		if (!linreg_d(t, Xtrain, Ytrain, cvec(), coefs, intercept))
+		if (!linreg_d(t, Xtrain, Ytrain, cvec(), var, coefs, intercept))
 			return false;
 		
 		pred = Xtest * coefs;

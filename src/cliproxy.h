@@ -26,6 +26,16 @@ private:
 	int *p;
 };
 
+class float_proxy : public cliproxy {
+public:
+	float_proxy(double *p);
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
+	bool temporary() const { return true; }
+	
+private:
+	double *p;
+};
+
 class bool_proxy : public cliproxy {
 public:
 	bool_proxy(bool *p);

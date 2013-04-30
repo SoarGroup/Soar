@@ -28,7 +28,7 @@ public:
 	const std::set<int> &get_noise(int sigindex) const;
 	void get_noise_sigs(std::vector<int> &sigs);
 	double calc_prob(int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
-	bool update_fits();
+	bool update_fits(double noise_var);
 	
 	void get_params(scene_sig &sig, rvec &coefs, double &intercepts) const;
 	void set_params(const scene_sig &dsig, int target, const mat &coefs, const rvec &inter);

@@ -7,7 +7,7 @@
 
 class LWR : public serializable {
 public:
-	LWR(int nnbrs, bool alloc);
+	LWR(int nnbrs, double noise_var, bool alloc);
 	~LWR();
 	
 	void learn(const rvec &x, const rvec &y);
@@ -40,6 +40,7 @@ private:
 	std::vector<rvec*> xnptrs;
 	rvec xmin, xmax, xrange;
 	bool normalized, alloc;
+	double noise_var;
 };
 
 #endif

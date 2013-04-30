@@ -59,6 +59,18 @@ void int_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
 	}
 }
 
+float_proxy::float_proxy(double *p) : p(p) {}
+
+void float_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
+	if (args.empty()) {
+		os << *p << endl;
+		return;
+	}
+	if (!parse_double(args[0], *p)) {
+		os << "invalid float" << endl;
+	}
+}
+
 bool_proxy::bool_proxy(bool *p) : p(p) {}
 
 void bool_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {

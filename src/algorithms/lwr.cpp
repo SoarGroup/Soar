@@ -19,8 +19,8 @@ void LWR::data::unserialize(istream &is) {
 	unserializer(is) >> x >> y >> xnorm;
 }
 
-LWR::LWR(int nnbrs, bool alloc)
-: nnbrs(nnbrs), alloc(alloc), xsz(-1), ysz(-1), normalized(false)
+LWR::LWR(int nnbrs, double noise_var, bool alloc)
+: nnbrs(nnbrs), alloc(alloc), xsz(-1), ysz(-1), normalized(false), noise_var(noise_var)
 {}
 
 LWR::~LWR() {
@@ -131,9 +131,9 @@ bool LWR::predict(const rvec &x, rvec &y) {
 	 to ridge regression. Unfortunately I haven't figured out how to do weighted
 	 ridge regression, so for now I'm just dropping the weights.
 	
-	linreg_d(FORWARD, X, Y, w, coefs, intercept);
+	linreg_d(FORWARD, X, Y, w, noise_var, coefs, intercept);
 	*/
-	linreg_d(LASSO, X, Y, cvec(), coefs, intercept);
+	linreg_d(LASSO, X, Y, cvec(), noise_var, coefs, intercept);
 	y = x * coefs + intercept;
 	return true;
 }

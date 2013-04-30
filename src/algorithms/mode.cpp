@@ -378,7 +378,7 @@ double em_mode::calc_prob(int target, const scene_sig &dsig, const rvec &x, doub
 	return best_prob;
 }
 
-bool em_mode::update_fits() {
+bool em_mode::update_fits(double noise_var) {
 	if (!stale || manual) {
 		return false;
 	}
@@ -415,7 +415,7 @@ bool em_mode::update_fits() {
 			Y.row(j++) = d.y;
 		}
 	}
-	linreg_d(REGRESSION_ALG, X, Y, cvec(), lin_coefs, lin_inter);
+	linreg_d(REGRESSION_ALG, X, Y, cvec(), noise_var, lin_coefs, lin_inter);
 	stale = false;
 	new_fit = true;
 	return true;

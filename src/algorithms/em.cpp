@@ -174,7 +174,7 @@ void EM::find_linear_subset_block(const_mat_view X, const_mat_view Y, vector<int
 		Xb.row(i) = X.row(start + i);
 		Yb.row(i) = Y.row(start + i);
 	}
-	linreg_clean(FORWARD, Xb, Yb, coefs);
+	linreg_clean(FORWARD, Xb, Yb, noise_var, coefs);
 
 	cvec errors = (Y - (X * coefs)).col(0).array().abs();
 	subset.clear();
@@ -231,7 +231,7 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 		if (i == 0 || uniform(Yc.col(0)))
 			return;
 			
-		if (!linreg_clean(FORWARD, Xc.leftCols(i), Yc, coefs2)) {
+		if (!linreg_clean(LASSO, Xc.leftCols(i), Yc, noise_var, coefs2)) {
 			assert(false);
 		}
 		coefs.setConstant(0);
@@ -383,7 +383,7 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 		
 		pick_rows(X, subset2, Xsub);
 		pick_rows(Y, subset2, Ysub);
-		nfoldcv(Xsub.topRows(subset2.size()), Ysub.topRows(subset2.size()), 5, FORWARD, avg_error);
+		nfoldcv(Xsub.topRows(subset2.size()), Ysub.topRows(subset2.size()), noise_var, 5, FORWARD, avg_error);
 		if (avg_error(0) > MODEL_ERROR_THRESH) {
 			/*
 			 There isn't a clear linear relationship between the points, so I can't
@@ -400,7 +400,7 @@ int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec
 			largest = subset.size();
 			if (largest >= NEW_MODE_THRESH) {
 				mat subcoefs;
-				linreg(FORWARD, Xsub.topRows(subset2.size()), Ysub.topRows(subset2.size()), cvec(), subcoefs, inter);
+				linreg(FORWARD, Xsub.topRows(subset2.size()), Ysub.topRows(subset2.size()), cvec(), noise_var, subcoefs, inter);
 				coefs.resize(orig_xcols, Y.cols());
 				coefs.setConstant(0.0);
 				for (int i = 0; i < used_cols.size(); ++i) {
@@ -442,14 +442,15 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 }
 
 EM::EM(const model_train_data &data)
-: data(data), use_em(true), use_unify(true), learn_new_modes(true), use_lwr(true),
+: data(data), use_em(true), use_unify(true), learn_new_modes(true),
   check_after(NEW_MODE_THRESH), clsfr(data)
 {
 	add_mode(false); // noise mode
+	noise_var = 1e-8;
 }
 
-EM::EM(const model_train_data &data, bool use_em, bool use_unify, bool use_lwr, bool learn_new_modes)
-: data(data), use_em(use_em), use_unify(use_unify), use_lwr(use_lwr), learn_new_modes(learn_new_modes),
+EM::EM(const model_train_data &data, bool use_em, bool use_unify, bool learn_new_modes)
+: data(data), use_em(use_em), use_unify(use_unify), learn_new_modes(learn_new_modes),
   check_after(NEW_MODE_THRESH), clsfr(data)
 {
 	add_mode(false); // noise mode
@@ -476,12 +477,6 @@ void EM::add_data(int t) {
 	}
 	s->members.push_back(t);
 	s->noise.insert(t);
-	
-	/*
-	 Remember that because the LWR object is initialized with alloc = false, it's
-	 just going to store pointers to these rvecs rather than duplicate them.
-	*/
-	s->lwr.learn(d.x, d.y);
 	
 	inst->mode = 0;
 	inst->minfo.resize(modes.size());
@@ -566,7 +561,7 @@ bool EM::mstep() {
 	
 	bool changed = false;
 	for (int i = 1, iend = modes.size(); i < iend; ++i) {
-		changed = changed || modes[i]->update_fits();
+		changed = changed || modes[i]->update_fits(noise_var);
 	}
 	return changed;
 }
@@ -711,26 +706,12 @@ bool EM::predict(int target, const scene_sig &sig, const relation_table &rels, c
 	vector<int> obj_map;
 	if (use_em) {
 		mode = classify(target, sig, rels, x, obj_map);
-		draw_mode_prediction(sig[target].name, mode);
 		if (mode > 0) {
 			modes[mode]->predict(sig, x, obj_map, y);
 			return true;
 		}
 	}
 	
-	if (use_lwr) {
-		sig_table::const_iterator i, iend;
-		for (i = sigs.begin(), iend = sigs.end(); i != iend; ++i) {
-			if (*i->first == sig) {
-				rvec yv(1);
-				if (i->second->lwr.predict(x, yv)) {
-					y = yv(0);
-					return true;
-				}
-				break;
-			}
-		}
-	}
 	y = NAN;
 	return false;
 }
@@ -826,9 +807,9 @@ void EM::proxy_get_children(map<string, cliproxy*> &c) {
 	c["classifier"] =  &clsfr;
 	c["timers"] =      &timers;
 	c["use_em"] =      new bool_proxy(&use_em);
-	c["use_lwr"] =     new bool_proxy(&use_lwr);
 	c["unify_modes"] = new bool_proxy(&use_unify);
 	c["learn_modes"] = new bool_proxy(&learn_new_modes);
+	c["noise_var"] =   new float_proxy(&noise_var);
 	
 	c["ptable"] =      new memfunc_proxy<EM>(this, &EM::cli_ptable);
 	c["add_mode"] =    new memfunc_proxy<EM>(this, &EM::cli_add_mode);
@@ -918,10 +899,6 @@ void EM::unserialize(istream &is) {
 	for (int i = 0, iend = s.size(); i < iend; ++i) {
 		sig_info *si = new sig_info;
 		unsr >> *si;
-		for (int j = 0, jend = si->members.size(); j < jend; ++j) {
-			const model_train_inst &d = data.get_inst(si->members[j]);
-			si->lwr.learn(d.x, d.y);
-		}
 		sigs[s[i]] = si;
 	}
 	
@@ -1026,7 +1003,7 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 	return -1;
 }
 
-sig_info::sig_info() : lwr(LWR_K, false) {}
+sig_info::sig_info() {}
 
 void sig_info::serialize(ostream &os) const {
 	serializer(os) << members << noise;
