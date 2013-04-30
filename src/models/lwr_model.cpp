@@ -9,8 +9,8 @@ using namespace Eigen;
 
 class lwr_model : public model {
 public:
-	lwr_model(int nnbrs, const string &name)
-	: model(name, "lwr", true), lwr(nnbrs, true)
+	lwr_model(int nnbrs, double noise_var, const string &name)
+	: model(name, "lwr", true), lwr(nnbrs, noise_var, true)
 	{}
 	
 	void update() {
@@ -48,13 +48,18 @@ private:
 
 model *_make_lwr_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {
 	Symbol *attr;
-	wme *nnbrs_wme = NULL;
+	wme *nnbrs_wme = NULL, *var_wme = NULL;
 	long nnbrs = 50;
+	double noise_var = 1e-8;
 	string attrstr;
 	
 	si->find_child_wme(root, "num-neighbors", nnbrs_wme);
 	if (nnbrs_wme && !si->get_val(si->get_wme_val(nnbrs_wme), nnbrs)) {
-		LOG(WARN) << "WARNING: attribute num-neighbors does not have integer value, using default 50 neighbors" << endl;
+		LOG(WARN) << "WARNING: attribute num-neighbors does not have integer value, using default" << endl;
 	}
-	return new lwr_model(nnbrs, name);
+	si->find_child_wme(root, "noise-var", var_wme);
+	if (var_wme && !si->get_val(si->get_wme_val(var_wme), noise_var)) {
+		LOG(WARN) << "WARNING: attribute noise-var does not have double value, using default" << endl;
+	}
+	return new lwr_model(nnbrs, noise_var, name);
 }

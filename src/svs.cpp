@@ -119,7 +119,7 @@ svs_state::~svs_state() {
 	delete scn; // results in root being deleted also
 	delete mmdl;
 
-	svsp->get_drawer()->delete_scene(scn_name);
+	get_drawer()->delete_scene(scn_name);
 }
 
 void svs_state::init() {
@@ -131,9 +131,9 @@ void svs_state::init() {
 	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
 	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
 	if (parent) {
-		scn = parent->scn->clone(name, svsp->get_drawer());
+		scn = parent->scn->clone(name, true);
 	} else {
-		scn = new scene(name, svsp->get_drawer());
+		scn = new scene(name, true);
 	}
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	mmdl = new multi_model(svsp->get_models());
@@ -436,7 +436,7 @@ void svs_state::cli_out(const vector<string> &args, ostream &os) {
 void svs_state::refresh_view() {
 	vector<const sgnode*> nodes;
 	string name = scn->get_name();
-	drawer *d = svsp->get_drawer();
+	drawer *d = get_drawer();
 	
 	d->delete_scene(name);
 	scn->get_all_nodes(nodes);
@@ -539,6 +539,10 @@ void svs::input_callback() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
+	static int frame = 0;
+	stringstream ss;
+	ss << "save screen" << setfill('0') << setw(4) << frame++ << ".ppm";
+	get_drawer()->send(ss.str());
 }
 
 /*
@@ -598,7 +602,7 @@ void svs::cli_connect_viewer(const vector<string> &args, ostream &os) {
 		os << "specify socket path" << endl;
 		return;
 	}
-	draw.set_address(args[0]);
+	get_drawer()->set_address(args[0]);
 	for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
 		state_stack[i]->refresh_view();
 	}

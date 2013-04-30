@@ -47,16 +47,22 @@ static int scr_height = 480;
 static int show_grid = 1;
 static int show_labels = 1;
 static real grid_size = 1.0;
+static int wireframe = 0;
+static int ortho = 0;
+static char *savepath;
 
 void calc_normals(geometry *g);
 void init_grid(void);
 void draw_grid(void);
-void draw_screen(void);
 void reshape (int w, int h);
+void draw_curr_scene(void);
+void draw_screen(void);
 void draw_geom_labels(scene *s, real *modelview, real *proj, GLint *view);
 void draw_scene_buttons(GLuint x, GLuint y);
 int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y);
 void free_geom_shape(geometry *g);
+
+void screenshot(char *path);
 
 int main(int argc, char* argv[]) {
 	int flags, bpp;
@@ -108,16 +114,13 @@ int main(int argc, char* argv[]) {
 	reshape(screen->w, screen->h);
 	glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
 	glShadeModel(GL_FLAT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	
+	glEnable(GL_DEPTH_TEST);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_color);
 	glEnable(GL_LIGHT0);
-	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_COLOR_MATERIAL);
-	
 	glMaterialfv(GL_FRONT, GL_SPECULAR, geom_specular);
 	glMaterialfv(GL_FRONT, GL_SHININESS, geom_shininess);
-		
+	
 	init_grid();
 	init_font();
 	
@@ -172,6 +175,13 @@ int main(int argc, char* argv[]) {
 							grid_size *= 10.0;
 							init_grid();
 							redraw = 1;
+							break;
+						case SDLK_w:
+							wireframe = !wireframe;
+							redraw = 1;
+							break;
+						case SDLK_s:
+							save_on_redraw("screen.ppm");
 							break;
 					}
 					break;
@@ -279,7 +289,12 @@ void draw_screen() {
 	
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60.0, scr_width / (double) scr_height, 0.1, 100.0);
+	if (ortho) {
+		//gluOrtho( ? ? ? ? )
+		gluPerspective(60.0, scr_width / (double) scr_height, 0.1, 100.0);
+	} else {
+		gluPerspective(60.0, scr_width / (double) scr_height, 0.1, 100.0);
+	}
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -295,9 +310,14 @@ void draw_screen() {
 		draw_grid();
 	
 	if (curr_scene) {
-		glEnable(GL_LIGHTING);
+		if (!wireframe) {
+			glEnable(GL_LIGHTING);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		} else {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
 		SDL_mutexP(scene_lock);
-		draw_scene(curr_scene);
+		draw_curr_scene();
 		SDL_mutexV(scene_lock);
 		glDisable(GL_LIGHTING);
 	}
@@ -315,7 +335,13 @@ void draw_screen() {
 	}
 	
 	glFinish();
-	SDL_GL_SwapBuffers();
+	if (savepath) {
+		screenshot(savepath);
+		free(savepath);
+		savepath = NULL;
+	} else {
+		SDL_GL_SwapBuffers();
+	}
 }
 
 void reshape (int w, int h) {
@@ -487,6 +513,9 @@ void init_geom(geometry *g, char *name) {
 	g->quadric = NULL;
 	g->radius = -1.0;
 	g->next = NULL;
+	g->overlay = 0;
+	g->draw_label = 1;
+	g->line_width = 1.0;
 }
 
 void free_geom_shape(geometry *g) {
@@ -577,6 +606,7 @@ void draw_geom(geometry *g) {
 	int i;
 	
 	glColor3dv(g->color);
+	glLineWidth(g->line_width);
 	glPushMatrix();
 	glTranslated(g->pos[0], g->pos[1], g->pos[2]);
 	glRotated(g->angle, g->axis[0], g->axis[1], g->axis[2]);
@@ -603,6 +633,7 @@ void draw_geom(geometry *g) {
 		}
 	}
 	glPopMatrix();
+	glLineWidth(1.0);
 }
 
 scene *find_or_add_scene(char *name) {
@@ -675,10 +706,21 @@ void destroy_scene(scene *s) {
 	free(s);
 }
 
-void draw_scene(scene *s) {
+void draw_curr_scene() {
 	geometry *p;
-	for (p = s->geoms; p; p = p->next) {
-		draw_geom(p);
+	for (p = curr_scene->geoms; p; p = p->next) {
+		if (!p->overlay) {
+			draw_geom(p);
+		}
+	}
+	
+	glDisable(GL_LIGHTING);
+	/* draw overlay layer */
+	glClear(GL_DEPTH_BUFFER_BIT);
+	for (p = curr_scene->geoms; p; p = p->next) {
+		if (p->overlay) {
+			draw_geom(p);
+		}
 	}
 }
 
@@ -750,8 +792,10 @@ void draw_geom_labels(scene *s, real *modelview, real *proj, GLint *view) {
 	
 	glColor3dv(geom_label_color);
 	for (g = s->geoms; g; g = g->next) {
-		gluProject(g->pos[0], g->pos[1], g->pos[2], modelview, proj, view, &wx, &wy, &wz);
-		draw_text(g->name, wx, wy);
+		if (g->draw_label) {
+			gluProject(g->pos[0], g->pos[1], g->pos[2], modelview, proj, view, &wx, &wy, &wz);
+			draw_text(g->name, wx, wy);
+		}
 	}
 }
 
@@ -808,4 +852,42 @@ int match(char *pat, char *s) {
 	}
 	/* will only get here if pat ends with '*' */
 	return 1;
+}
+
+void screenshot(char *path) {
+	FILE *out;
+	unsigned char *pixels;
+	int i, j, k;
+	
+	pixels = calloc(3 * scr_width * scr_height, sizeof(unsigned char));
+	if (!pixels) {
+		error("out of memory\n");
+	}
+	out = fopen(path, "w");
+	if (!out) {
+		perror("screenshot");
+		return;
+	}
+	fprintf(out, "P6\n%d %d\n255\n", scr_width, scr_height);
+	
+	glReadBuffer(GL_BACK);
+	glReadPixels(0, 0, scr_width, scr_height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	
+	for (i = scr_height - 1; i >= 0; --i) {
+		for (j = 0; j < scr_width; ++j) {
+			k = (i * scr_width + j) * 3;
+			fwrite(&pixels[k], sizeof(unsigned char), 3, out);
+		}
+	}
+	fclose(out);
+	free(pixels);
+	fprintf(stderr, "screen shot saved to %s\n", path);
+}
+
+void save_on_redraw(char *path) {
+	savepath = strdup(path);
+	if (!savepath) {
+		perror("save_on_redraw");
+		exit(1);
+	}
 }

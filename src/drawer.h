@@ -15,14 +15,12 @@ public:
 		SHAPE = 1 << 5,
 	};
 	
-	drawer();
-	drawer(const std::string &addr);
-	
 	void set_address(const std::string &addr);
 	void add(const std::string &scn, const sgnode *n);
 	void del(const std::string &scn, const sgnode *n);
 	void change(const std::string &scn, const sgnode *n, int props);
 	void delete_scene(const std::string &scn);
+	void send(const std::string &s);
 	
 	// these are all hacks
 	void set_color(const std::string &name, double r, double g, double b);
@@ -31,6 +29,11 @@ public:
 private:
 	bool error;
 	ipcsocket sock;
+	
+	drawer();
+	friend drawer *get_drawer();
 };
+
+drawer *get_drawer();
 
 #endif

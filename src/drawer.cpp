@@ -10,11 +10,12 @@ ostream &write_vec3(ostream &os, const vec3 &v) {
 	return os;
 }
 
-drawer::drawer() : error(false) {}
-
-drawer::drawer(const string &path) : error(false) {
-	sock.set_address(path);
+drawer *get_drawer() {
+	static drawer d;
+	return &d;
 }
+
+drawer::drawer() : error(false) {}
 
 void drawer::set_address(const string &path) {
 	sock.set_address(path);
@@ -35,8 +36,7 @@ void drawer::del(const string &scn, const sgnode *n) {
 	
 	stringstream ss;
 	ss << scn << " -" << n->get_name() << endl;
-	if (!sock.send(ss.str()))
-		error = true;
+	send(ss.str());
 }
 
 void drawer::change(const string &scn, const sgnode *n, int props) {
@@ -68,16 +68,14 @@ void drawer::change(const string &scn, const sgnode *n, int props) {
 		write_vec3(ss, s);
 	}
 	ss << endl;
-	if (!sock.send(ss.str()))
-		error = true;
+	send(ss.str());
 }
 
 void drawer::delete_scene(const string &scn) {
 	if (error)
 		return;
 	
-	if (!sock.send(string("-") + scn + "\n"))
-		error = true;
+	send(string("-") + scn + "\n");
 }
 
 void drawer::set_color(const string &name, double r, double g, double b) {
@@ -86,8 +84,7 @@ void drawer::set_color(const string &name, double r, double g, double b) {
 	if (error)
 		return;
 	ss << "* " << name << " c " << r << " " << g << " " << b << endl;
-	if (!sock.send(ss.str()))
-		error = true;
+	send(ss.str());
 }
 
 void drawer::set_pos(const string &name, double x, double y, double z) {
@@ -96,6 +93,14 @@ void drawer::set_pos(const string &name, double x, double y, double z) {
 	if (error)
 		return;
 	ss << "* " << name << " p " << x << " " << y << " " << z << endl;
-	if (!sock.send(ss.str()))
+	send(ss.str());
+}
+
+void drawer::send(const string &s) {
+	if (!sock.send(s)) {
 		error = true;
+	}
+	if (s[s.size() - 1] != '\n') {
+		sock.send("\n");
+	}
 }

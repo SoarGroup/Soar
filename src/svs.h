@@ -145,7 +145,6 @@ public:
 	
 	bool do_cli_command(const std::vector<std::string> &args, std::string &output);
 	
-	drawer *get_drawer() { return &draw; }
 	const output_spec *get_output_spec() { return &outspec; }
 	
 private:
@@ -160,7 +159,6 @@ private:
 	std::vector<svs_state*>   state_stack;
 	std::vector<std::string>  env_inputs;
 	std::string               env_output;
-	drawer                    draw;
 	output_spec               outspec;
 	bool                      learn;
 	Symbol                   *model_root;

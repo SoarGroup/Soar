@@ -40,6 +40,11 @@ typedef struct Geometry {
 	GLUquadricObj *quadric;
 	real radius;
 	struct Geometry *next;
+	
+	
+	int overlay;         /* geometry will be drawn in the "overlay" layer */
+	int draw_label;
+	double line_width;
 } geometry;
 
 typedef struct Scene {
@@ -86,7 +91,7 @@ int delete_scenes(char *pattern);
 int match_scenes(char *pattern, scene **scns, int n);
 void init_scene(scene *s, char *name);
 void destroy_scene(scene *s);
-void draw_scene(scene *s);
+void save_on_redraw(char *path);
 
 geometry *find_or_add_geom(scene *s, char *name);
 int delete_geoms(scene *s, char *pattern);

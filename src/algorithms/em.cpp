@@ -24,29 +24,6 @@
 using namespace std;
 using namespace Eigen;
 
-// this is a huge hack because I'm too lazy to pass the drawer pointer all the way down here.
-static drawer draw("/tmp/viewer");
-
-void draw_mode_prediction(const std::string &obj, int mode) {
-	static double mode_colors[][3] = {
-		{ 0.0, 0.0, 0.0 },
-		{ 1.0, 0.0, 0.0 },
-		{ 0.0, 1.0, 0.0 },
-		{ 0.0, 0.0, 1.0 },
-		{ 1.0, 1.0, 0.0 },
-		{ 0.0, 1.0, 1.0 },
-		{ 1.0, 0.0, 1.0 }
-	};
-	static int ncolors = sizeof(mode_colors) / sizeof(mode_colors[0]);
-	double *colors;
-	
-	if (mode >= ncolors)
-		mode = ncolors - 1;
-	
-	colors = mode_colors[mode];
-	draw.set_color(obj, colors[0], colors[1], colors[2]);
-}
-
 bool approx_equal(double a, double b) {
 	return fabs(a - b) / min(fabs(a), fabs(b)) < .001;
 }

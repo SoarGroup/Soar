@@ -11,14 +11,13 @@
 
 class filter;
 class filter_input;
-class drawer;
 
 class scene : public sgnode_listener {
 public:
-	scene(const std::string &name, drawer *d);
+	scene(const std::string &name, bool draw);
 	~scene();
 	
-	scene *clone(const std::string &name = "", drawer *d = NULL) const;
+	scene *clone(const std::string &name, bool draw) const;
 	
 	group_node   *get_root() { return root; }
 	sgnode       *get_node(const std::string &name);
@@ -66,7 +65,7 @@ private:
 	std::string  name;
 	group_node  *root;
 	node_table   nodes;
-	drawer      *draw;
+	bool         draw;
 	bool         sig_dirty;
 	mutable bool closest_dirty;
 	

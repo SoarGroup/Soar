@@ -150,8 +150,8 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 	return true;
 }
 
-scene::scene(const string &name, drawer *d) 
-: name(name), draw(d), nodes(1)
+scene::scene(const string &name, bool draw) 
+: name(name), draw(draw), nodes(1)
 {
 	root = new group_node(root_name, "world");
 	nodes[0].node = root;
@@ -164,8 +164,8 @@ scene::~scene() {
 	delete root;
 }
 
-scene *scene::clone(const string &cname, drawer *d) const {
-	scene *c = new scene(cname, d);
+scene *scene::clone(const string &cname, bool draw) const {
+	scene *c = new scene(cname, draw);
 	string name;
 	std::vector<sgnode*> all_nodes;
 	std::vector<sgnode*>::const_iterator i;
@@ -176,14 +176,15 @@ scene *scene::clone(const string &cname, drawer *d) const {
 	c->nodes.resize(all_nodes.size());
 	
 	update_closest();
+	drawer *d = get_drawer();
 	for(int i = 1, iend = all_nodes.size(); i < iend; ++i) {  // i = 0 is world, already in copy
 		sgnode *n = all_nodes[i];
 		node_info &cinfo = c->nodes[i];
 		cinfo = *find_name(n->get_name());
 		cinfo.node = n;
 		n->listen(c);
-		if (c->draw) {
-			c->draw->add(c->name, n);
+		if (draw) {
+			d->add(c->name, n);
 		}
 	}
 	return c;
@@ -562,10 +563,23 @@ int scene::get_dof() const {
 	return dof;
 }
 
+void velocity_hack(const sgnode *n) {
+	if (n->get_name() != "b1") {
+		return;
+	}
+	vec3 pos = n->get_trans('p');
+	stringstream ss;
+	ss << "* +vx p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
+	ss << "* +vz p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
+	ss << "* +vh p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
+	get_drawer()->send(ss.str());
+}
+
 void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	sgnode *child;
 	group_node *g;
 	relation *tr;
+	drawer *d = get_drawer();
 	
 	if (t == sgnode::CHILD_ADDED) {
 		g = n->as_group();
@@ -584,7 +598,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 		tr->add(0, child->get_id());
 		
 		if (draw) {
-			draw->add(name, child);
+			d->add(name, child);
 		}
 		return;
 	}
@@ -611,22 +625,23 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			}
 			sig_dirty = true;
 			if (draw && i != 0) {
-				draw->del(name, n);
+				d->del(name, n);
 			}
 			break;
 		case sgnode::SHAPE_CHANGED:
 			update_dists(i);
 			if (!n->is_group() && draw) {
-				draw->change(name, n, drawer::SHAPE);
+				d->change(name, n, drawer::SHAPE);
 			}
 			nodes[i].rels_dirty = true;
 			break;
 		case sgnode::TRANSFORM_CHANGED:
 			update_dists(i);
 			if (!n->is_group() && draw) {
-				draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
+				d->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			nodes[i].rels_dirty = true;
+			velocity_hack(n);
 			break;
 	}
 }

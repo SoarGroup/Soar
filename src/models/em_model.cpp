@@ -14,16 +14,71 @@ using namespace std;
 
 const int MAXITERS = 50;
 
+void velocity_hack(int mode, double pred, double real, const string &name) {
+	static double mode_colors[][3] = {
+		{ 0.0, 0.0, 0.0 },
+		{ 1.0, 0.0, 1.0 },
+		{ 0.0, 1.0, 1.0 },
+		{ 1.0, 1.0, 0.0 },
+		{ 1.0, 0.5, 0.0 },
+		{ 0.5, 0.0, 0.5 },
+	};
+	static int ncolors = sizeof(mode_colors) / sizeof(mode_colors[0]);
+	const double stretch = 20.0;
+	
+	static double vx = NAN, vz = NAN, vxerror, vzerror;
+	static int xmode = 0, zmode = 0;
+
+	assert(mode < ncolors);
+	if (name == "b1:vx") {
+		vx = pred * stretch;
+		vxerror = abs(real - pred);
+		xmode = mode;
+	} else if (name == "b1:vz") {
+		vz = pred * stretch;
+		vzerror = abs(real - pred);
+		zmode = mode;
+	} else {
+		return;
+	}
+	
+	double *cx = isnan(vx) ? mode_colors[0] : mode_colors[xmode];
+	double *cz = isnan(vz) ? mode_colors[0] : mode_colors[zmode];
+	
+	stringstream ss;
+	
+	ss << "* +vx v 0 0 0 " << (isnan(vx) ? 1000.0 : vx) << " 0 0";
+	ss << " i 0 1 c " << cx[0] << " " << cx[1] << " " << cx[2] << " o 1 l 0 w 2\n";
+	ss << "* +vz v 0 0 0 0 0 " << (isnan(vz) ? 1000.0 : vz);
+	ss << " i 0 1 c " << cz[0] << " " << cz[1] << " " << cz[2] << " o 1 l 0 w 2\n";
+	
+	if (!isnan(vx) && !isnan(vz)) {
+		double error = vxerror + vzerror;
+		double ch[] = { 0.0, 0.0, 0.0 };
+		double maxerror = 1e-3;
+		if (error > maxerror) {
+			ch[0] = 1.0;
+		} else {
+			ch[0] = error / maxerror;
+			ch[1] = 1 - (error / maxerror);
+		}
+		ss << "* +vh v 0 0 0 " << vx << " 0 " << vz << " i 0 1";
+		ss << " c " << ch[0] << " " << ch[1] << " " << ch[2];
+		ss << " o 1 l 0 w 2\n";
+	}
+	get_drawer()->send(ss.str());
+}
+
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
 	: model(name, "em", true), em(get_data()), si(si)
-	{
-	}
+	{}
 
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
 		int mode;
-		return em.predict(target, sig, rels, x, mode, y(0));
+		bool success = em.predict(target, sig, rels, x, mode, y(0));
+		return success;
 	}
 	
 	int get_input_size() const {
@@ -46,13 +101,15 @@ public:
 	*/
 	void test(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, const rvec &y) {
 		rvec yp;
+		bool success;
 		
 		test_info &ti = grow_vec(test_rec);
 		ti.x = x;
 		ti.y = y(0);
 		extend_relations(test_rels, rels, test_rec.size() - 1);
-		em.predict(target, sig, rels, x, ti.mode, ti.pred);
+		success = em.predict(target, sig, rels, x, ti.mode, ti.pred);
 		ti.best_mode = em.best_mode(target, sig, x, y(0), ti.best_error);
+		velocity_hack(ti.mode, ti.pred, y(0), get_name());
 	}
 	
 	void proxy_get_children(map<string, cliproxy*> &c) {
@@ -93,6 +150,7 @@ public:
 	void cli_test_rels(ostream &os) const {
 		serializer(os) << test_rels << '\n';
 	}
+	
 	
 private:
 	struct test_info {

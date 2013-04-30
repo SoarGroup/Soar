@@ -27,7 +27,7 @@ const double SCOEF = 0.5;
 const int MAXITERS = 50;
 
 bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, scene *scn, rvec &finalstate) {
-	scene *scncopy = scn->clone();
+	scene *scncopy = scn->clone("", false);
 	const scene_sig &sig = scncopy->get_signature();
 	finalstate = initstate;
 	if (traj.size() == 0) {
@@ -359,14 +359,14 @@ public:
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &init)
 	: mdl(m), stepsize(stepsize), obj(obj)
 	{
-		scn = init.clone();
+		scn = init.clone("", false);
 		scn->get_properties(initvals);
 	}
 	
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &tmp, const rvec &initvals)
 	: mdl(m), stepsize(stepsize), obj(obj), initvals(initvals)
 	{
-		scn = tmp.clone();
+		scn = tmp.clone("", false);
 	}
 
 	~traj_eval() {
@@ -561,7 +561,7 @@ public:
 	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, const output_spec *outspec, double thresh)
 	: outspec(outspec), thresh(thresh)
 	{
-		ci.scn = scn->clone();
+		ci.scn = scn->clone("", false);
 		ci.obj = obj;
 		ci.mdl = mdl;
 		ci.outspec = outspec;

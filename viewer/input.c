@@ -3,7 +3,7 @@
 #include <SDL/SDL_mutex.h>
 #include "viewer.h"
 
-#define MAX_FIELDS 1024
+#define MAX_FIELDS 1000
 #define MAX_SCENES 1000
 #define MAX_GEOMS 1000
 #define WHITESPACE " \t\n"
@@ -15,7 +15,7 @@ void gen_request_event();
 
 int proc_input(void *unused) {
 	char cmd[MAX_COMMAND];
-	char *endp, *startp, *startp2;
+	char *endp, *startp, *startp2, *cp;
 	int left, n;
 	
 	startp = endp = cmd;
@@ -32,6 +32,11 @@ int proc_input(void *unused) {
 			if (*endp == '\n') {
 				/* for now assume newline denotes end of complete command */
 				*endp = '\0';
+				/* strip comment */
+				cp = strchr(startp, '#');
+				if (cp) {
+					*cp = '\0';
+				}
 				SDL_mutexP(scene_lock);
 				gen_request_event();
 				proc_cmd(startp);
@@ -54,7 +59,7 @@ int proc_input(void *unused) {
 }
 
 int proc_cmd(char *cmd) {
-	char *scene_pat, *geom_pat;
+	char *tok, *scene_pat, *geom_pat;
 	scene *scenes[MAX_SCENES], *sp;
 	geometry *geoms[MAX_GEOMS], *gp;
 	int scenes_matched, geoms_matched, i;
@@ -62,8 +67,26 @@ int proc_cmd(char *cmd) {
 	if (debug)
 		printf("cmd: %s\n", cmd);
 	
-	if (!(scene_pat = strtok(cmd, WHITESPACE)))
+	if (!(tok = strtok(cmd, WHITESPACE)))
 		return 1;
+	
+	if (strcmp(tok, "save") == 0) {
+		tok = strtok(NULL, WHITESPACE);
+		if (!tok) {
+			fprintf(stderr, "specify save path\n");
+			return 0;
+		}
+		save_on_redraw(tok);
+		return 1;
+	} else if (strcmp(tok, "draw") == 0) {
+		scene_pat = strtok(NULL, WHITESPACE);
+	} else {
+		scene_pat = tok;
+	}
+	
+	if (!scene_pat) {
+		return 1;
+	}
 	
 	if (*scene_pat == '-') {
 		delete_scenes(scene_pat + 1);
@@ -95,7 +118,7 @@ int proc_geom_cmd(geometry *gs[], int ngeoms) {
 	char *token;
 	real pos[3], rot[4], scale[3], color[3];
 	real numbers[MAX_FIELDS];
-	real *verts, radius;
+	real *verts, radius, overlay, draw_label, line_width;
 	GLuint *inds;
 	int i, nverts, ninds, pos_set, rot_set, scale_set, color_set;
 	
@@ -105,8 +128,12 @@ int proc_geom_cmd(geometry *gs[], int ngeoms) {
 	color_set = 0;
 	verts = NULL;
 	inds = NULL;
-	token = strtok(NULL, WHITESPACE);
 	radius = -1.0;
+	overlay = -1.0;
+	draw_label = -1.0;
+	line_width = -1.0;
+	
+	token = strtok(NULL, WHITESPACE);
 	while (token) {
 		if (*token == '#')
 			break;
@@ -117,35 +144,35 @@ int proc_geom_cmd(geometry *gs[], int ngeoms) {
 		}
 		
 		switch (*token) {
-			case 'p':
+			case 'p':  /* position */
 				if (parse_nums(pos, 3, &token) != 3) {
 					fprintf(stderr, "invalid position\n");
 					goto Error;
 				}
 				pos_set = 1;
 				break;
-			case 'r':
+			case 'r':  /* rotation */
 				if (parse_nums(rot, 4, &token) != 4) {
 					fprintf(stderr, "invalid rotation\n");
 					goto Error;
 				}
 				rot_set = 1;
 				break;
-			case 's':
+			case 's':  /* scale */
 				if (parse_nums(scale, 3, &token) != 3) {
 					fprintf(stderr, "invalid scale\n");
 					goto Error;
 				}
 				scale_set = 1;
 				break;
-			case 'c':
+			case 'c':  /* color */
 				if (parse_nums(color, 3, &token) != 3) {
 					fprintf(stderr, "invalid color\n");
 					goto Error;
 				}
 				color_set = 1;
 				break;
-			case 'v':
+			case 'v':  /* vertices */
 				if (verts) {
 					fprintf(stderr, "you can only specify one set of vertices\n");
 					goto Error;
@@ -161,7 +188,7 @@ int proc_geom_cmd(geometry *gs[], int ngeoms) {
 				}
 				memcpy(verts, numbers, sizeof(real) * nverts);
 				break;
-			case 'i':
+			case 'i':  /* vertex indexes */
 				if (inds) {
 					fprintf(stderr, "you can only specify one set of indexes\n");
 					goto Error;
@@ -179,9 +206,27 @@ int proc_geom_cmd(geometry *gs[], int ngeoms) {
 					inds[i] = numbers[i];
 				}
 				break;
-			case 'b':
+			case 'b':  /* ball */
 				if (parse_nums(&radius, 1, &token) < 1 || radius < 0.0) {
 					fprintf(stderr, "invalid radius\n");
+					goto Error;
+				}
+				break;
+			case 'o':  /* overlay */
+				if (parse_nums(&overlay, 1, &token) < 1 || overlay < 0.0) {
+					fprintf(stderr, "expecting 0/1\n");
+					goto Error;
+				}
+				break;
+			case 'l':  /* draw labels */
+				if (parse_nums(&draw_label, 1, &token) < 1 || draw_label < 0.0) {
+					fprintf(stderr, "expecting 0/1\n");
+					goto Error;
+				}
+				break;
+			case 'w':  /* line width */
+				if (parse_nums(&line_width, 1, &token) < 1 || line_width < 0.0) {
+					fprintf(stderr, "invalid line width\n");
 					goto Error;
 				}
 				break;
@@ -218,6 +263,16 @@ int proc_geom_cmd(geometry *gs[], int ngeoms) {
 			set_geom_radius(gs[i], radius);
 		} else if (verts && inds) {
 			set_geom_vertices(gs[i], verts, nverts, inds, ninds);
+		}
+		
+		if (overlay >= 0.0) {
+			gs[i]->overlay = (overlay > 0.0);
+		}
+		if (draw_label >= 0.0) {
+			gs[i]->draw_label = (draw_label > 0.0);
+		}
+		if (line_width >= 0.0) {
+			gs[i]->line_width = line_width;
 		}
 	}
 	return 1;
