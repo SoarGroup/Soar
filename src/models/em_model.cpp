@@ -4,7 +4,6 @@
 #include <fstream>
 #include "model.h"
 #include "em.h"
-#include "soar_interface.h"
 #include "filter_table.h"
 #include "params.h"
 #include "svs.h"
@@ -18,7 +17,7 @@ const int MAXITERS = 50;
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
-	: model(name, "em", true), em(get_data()), si(si), revisions(0), wm_root(NULL)
+	: model(name, "em", true), em(get_data()), si(si)
 	{
 	}
 
@@ -38,12 +37,7 @@ public:
 	void update() {
 		assert(get_data().get_last_inst().y.size() == 1);
 		em.add_data(get_data().size() - 1);
-		if (em.run(MAXITERS)) {
-			if (wm_root) {
-				si->remove_wme(revisions_wme);
-				revisions_wme = si->make_wme(wm_root, "revisions", ++revisions);
-			}
-		}
+		em.run(MAXITERS);
 	}
 	
 	/*
@@ -114,9 +108,6 @@ private:
 	EM em;
 	
 	soar_interface *si;
-	Symbol *wm_root, *tests_id;
-	wme *revisions_wme;
-	int revisions;
 	
 	vector<test_info> test_rec;
 	relation_table test_rels;
