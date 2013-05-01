@@ -71,16 +71,16 @@ istream &get_nonblank_line(istream &is, string &line) {
  Upper bound on range is non-inclusive.
 */
 void sample(int k, int low, int high, std::vector<int> &output) {
-	int range = high - low;
+	int range = high - low, start = output.size();
 	assert(k <= range);
-	output.resize(k);
+	output.resize(start + k);
 	for (int i = 0; i < range; ++i) {
 		if (i < k) {
-			output[i] = low + i;
+			output[start + i] = low + i;
 		} else {
 			int r = rand() % (i + 1);
 			if (r < k) {
-				output[r] = low + i;
+				output[start + r] = low + i;
 			}
 		}
 	}
