@@ -68,6 +68,7 @@ public:
 	// for test_em.cpp
 	void print_ptable() const;
 	void print_modes() const;
+	void set_noise_var(double v) { noise_var = v; }
 	
 private:
 	void estep();
