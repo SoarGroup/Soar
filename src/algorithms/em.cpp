@@ -250,17 +250,17 @@ void erase_inds(vector<int> &v, const vector<int> &inds) {
 	v.resize(j);
 }
 
-int ransac_iters(int ninliers, int mss_size, int ndata, double alarm_rate, int max_iters) {
+int ransac_iters(int ninliers, int mss_size, int ndata) {
 	double q = pow(ninliers / static_cast<double>(ndata), mss_size);
 	double lq = log(1 - q);
 	if (lq == 0) {
-		return max_iters;
+		return RANSAC_MAX_ITERS;
 	}
-	int i1 = static_cast<int>(floor(log(alarm_rate) / lq) + 1);
-	return min(i1, max_iters);
+	int i1 = static_cast<int>(floor(log(RANSAC_ALARM_RATE) / lq) + 1);
+	return min(i1, RANSAC_MAX_ITERS);
 }
 
-void ransac(const mat &X, const mat &Y, double noise_var, double alarm_rate, int max_iters, int size_thresh, const vector<int> &blocks,
+void ransac(const mat &X, const mat &Y, double noise_var, int size_thresh, int split,
             vector<int> &subset, mat &coefs, rvec &intercept)
 {
 	vector<int> mss, fit_set;
@@ -270,24 +270,44 @@ void ransac(const mat &X, const mat &Y, double noise_var, double alarm_rate, int
 	
 	double max_error = noise_var * 5;
 	int ndata = X.rows();
-	int mss_size = 5;
-	int iters = ransac_iters(mss_size, mss_size, ndata, alarm_rate, max_iters);
+	int mss_size = 6;
+	int iters;
 	
-	double mss_per_block = mss_size / static_cast<double>(blocks.size());
+	
+	if (ndata <= mss_size) {
+		split = 0;
+		iters = 1;
+	} else {
+		iters = ransac_iters(mss_size, mss_size, ndata);
+	}
+	
 	mss.reserve(mss_size);
 	fit_set.reserve(ndata);
 	subset.clear();
 	
 	for (int i = 0; i < iters; ++i) {
 		mss.clear();
-		int low = 0;
-		for (int j = 0, jend = blocks.size(); j < jend; ++j) {
-			// this is convoluted, but allows for even distribution when mss_size
-			// doesn't divide into the number of blocks evenly
-			int s = (mss_per_block * (j + 1)) - mss.size();
-			sample(s, low, low + blocks[j], mss);
-			low += blocks[j];
+		if (split == 0) {
+			sample(mss_size, 0, ndata, mss);
+		} else {
+			// try to sample from the two sides of the split as evenly as possible
+			int n1 = split, n2 = ndata - split;
+			if (n1 < mss_size / 2.0) {
+				for (int j = 0; j < n1; ++j) {
+					mss.push_back(j);
+				}
+				sample(mss_size - n1, split, ndata, mss);
+			} else if (n2 < mss_size / 2.0) {
+				for (int j = split; j < ndata; ++j) {
+					mss.push_back(j);
+				}
+				sample(mss_size - n2, 0, split, mss);
+			} else {
+				sample(floor(mss_size / 2.0), 0, split, mss);
+				sample(ceil(mss_size / 2.0), split, ndata, mss);
+			}
 		}
+		
 		assert(mss.size() == mss_size);
 		
 		pick_rows(X, mss, Xmss);
@@ -313,16 +333,9 @@ void ransac(const mat &X, const mat &Y, double noise_var, double alarm_rate, int
 			if (subset.size() >= size_thresh) {
 				return;
 			}
-			iters = ransac_iters(subset.size(), mss_size, ndata, alarm_rate, max_iters);
+			iters = ransac_iters(subset.size(), mss_size, ndata);
 		}
 	}
-}
-
-void ransac1(const mat &X, const mat &Y, vector<int> &subset, mat &coefs, rvec &intercept)
-{
-	vector<int> blocks;
-	blocks.push_back(X.rows());
-	ransac(X, Y, 1e-8, 0.05, 2000, NEW_MODE_THRESH, blocks, subset, coefs, intercept);
 }
 
 int EM::find_linear_subset(mat &X, mat &Y, vector<int> &subset, mat &coefs, rvec &inter) const {
@@ -486,7 +499,7 @@ void EM::estep() {
 				continue;
 			}
 			double prev = inst.minfo[inst.mode].prob, now, error;
-			now = modes[j]->calc_prob(d.target, *d.sig, d.x, d.y(0), m.sig_map, error);
+			now = modes[j]->calc_prob(d.target, *d.sig, d.x, d.y(0), noise_var, m.sig_map, error);
 			assert(m.sig_map.size() == modes[j]->get_sig().size());
 			if ((inst.mode == j && now < prev) || (inst.mode != j && now > m.prob)) {
 				stale = true;
@@ -600,7 +613,7 @@ bool EM::unify_or_add_mode() {
 			interval_set inds(ns);
 			vector<int> subset;
 			fill_xy(inds, X, Y);
-			ransac1(X, Y, subset, coefs, inter);
+			ransac(X, Y, noise_var, NEW_MODE_THRESH, 0, subset, coefs, inter);
 			if (subset.size() > potential) {
 				potential = subset.size();
 			}
@@ -654,7 +667,7 @@ bool EM::unify_or_add_mode() {
 			}
 			fill_xy(combined, X, Y);
 			LOG(EMDBG) << "Trying to unify with mode " << j << endl;
-			ransac1(X, Y, subset, ucoefs, uinter);
+			ransac(X, Y, noise_var, 0.9 * combined.size(), m.size(), subset, ucoefs, uinter);
 			int unified_size = subset.size();
 			
 			if (unified_size >= m.size() + .9 * largest.size()) {
@@ -763,7 +776,7 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 	vector<int> assign;
 	double error;
 	for (int i = 0, iend = modes.size(); i < iend; ++i) {
-		double p = modes[i]->calc_prob(target, sig, x, y, assign, error);
+		double p = modes[i]->calc_prob(target, sig, x, y, noise_var, assign, error);
 		if (best == -1 || p > best_prob) {
 			best = i;
 			best_prob = p;

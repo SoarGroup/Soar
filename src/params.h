@@ -1,16 +1,6 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
-/*
- Measurement variance for all continuous quantities reported by the
- environment. In the future, there may need to be a different variance
- associated with each measurement. For example, the variance on the
- position of an object is probably going to be different from the
- variance of its rotation, because the two measurements have different
- units and scales.
-*/
-#define MEASURE_VAR 1.0e-10
-
 /* Initial lambda value for ridge regression */
 #define RIDGE_LAMBDA 1e-8
 
@@ -87,15 +77,14 @@
 #define LINEAR_SUBSET_MAX_ITERS 10
 #define MINI_EM_MAX_ITERS 10
 
-// num neighbors to use for fallback LWR prediction
-#define LWR_K 20
-
-
 #define MAX_CLAUSE_FP_RATE .1
 
 // px py pz rx ry rz sx sy sz
 #define NUM_NATIVE_PROPS 9
 
 #define INTERSECT_THRESH 1.0e-15
+
+#define RANSAC_MAX_ITERS 2000
+#define RANSAC_ALARM_RATE  0.05
 
 #endif

@@ -295,7 +295,7 @@ void em_mode::unserialize(istream &is) {
 	                 >> lin_coefs >> lin_inter >> n_nonzero >> manual >> obj_clauses_stale;
 }
 
-double em_mode::calc_prob(int target, const scene_sig &dsig, const rvec &x, double y, vector<int> &best_assign, double &best_error) const {
+double em_mode::calc_prob(int target, const scene_sig &dsig, const rvec &x, double y, double noise_var, vector<int> &best_assign, double &best_error) const {
 	if (noise) {
 		return PNOISE;
 		best_error = INFINITY;
@@ -324,7 +324,7 @@ double em_mode::calc_prob(int target, const scene_sig &dsig, const rvec &x, doub
 		py = lin_inter;
 		best_error = (y - py(0));
 		best_assign.clear();
-		double d = gausspdf(y, py(0), MEASURE_VAR);
+		double d = gausspdf(y, py(0), noise_var);
 		double p = (1.0 - EPSILON) * w * d;
 		return p;
 	}
@@ -366,7 +366,7 @@ double em_mode::calc_prob(int target, const scene_sig &dsig, const rvec &x, doub
 		assert(s == xlen);
 		
 		py = (xc * lin_coefs) + lin_inter;
-		double d = gausspdf(y, py(0), MEASURE_VAR);
+		double d = gausspdf(y, py(0), noise_var);
 		double p = (1.0 - EPSILON) * w * d;
 		if (p > best_prob) {
 			best_prob = p;

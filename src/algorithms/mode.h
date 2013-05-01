@@ -27,7 +27,7 @@ public:
 	void largest_const_subset(std::vector<int> &subset);
 	const std::set<int> &get_noise(int sigindex) const;
 	void get_noise_sigs(std::vector<int> &sigs);
-	double calc_prob(int target, const scene_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
+	double calc_prob(int target, const scene_sig &sig, const rvec &x, double y, double noise_var, std::vector<int> &best_assign, double &best_error) const;
 	bool update_fits(double noise_var);
 	
 	void get_params(scene_sig &sig, rvec &coefs, double &intercepts) const;
