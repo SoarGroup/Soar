@@ -113,6 +113,21 @@ void abort_with_fatal_error (agent* thisAgent, const char *msg) {
 		//	(soar_call_data) FALSE);
 }
 
+void abort_with_fatal_error_noprint (const char *msg) {
+  FILE *f;
+  const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
+
+  fprintf (stderr,"%s",msg);
+  fprintf (stderr,"%s",warning);
+
+  f = fopen("soarerror", "w");
+  fprintf (f,"%s",msg);
+  fprintf (f,"%s",warning);
+  fclose(f);
+
+  assert(false);
+}
+
 /* ===================================================================
 
                         Signal Handling

@@ -1816,9 +1816,9 @@ preference *make_fake_preference_for_goal_item (agent* thisAgent,
   inst->top_of_instantiated_conditions = cond;
   inst->bottom_of_instantiated_conditions = cond;
   inst->nots = NIL;
-  cond->data.tests.id_test = make_equality_test (ap_wme->id);
-  cond->data.tests.attr_test = make_equality_test (ap_wme->attr);
-  cond->data.tests.value_test = make_equality_test (ap_wme->value);
+  cond->data.tests.id_test = make_test (thisAgent, ap_wme->id, EQUALITY_TEST);
+  cond->data.tests.attr_test = make_test (thisAgent, ap_wme->attr, EQUALITY_TEST);
+  cond->data.tests.value_test = make_test (thisAgent, ap_wme->value, EQUALITY_TEST);
   cond->test_for_acceptable_preference = TRUE;
   cond->bt.wme_ = ap_wme;
   #ifdef DO_TOP_LEVEL_REF_CTS

@@ -356,97 +356,29 @@ typedef struct slot_struct {
    further indicates the type of the test.)
 ------------------------------------------------------------------- */
 
-typedef char * test;
-
-#ifdef USE_MACROS
-
-#define test_is_blank_test(t) ((t)==NIL)
-#define test_is_complex_test(t) (((uint64_t)(t)) & 1)
-#define test_is_blank_or_equality_test(t) (! test_is_complex_test(t))
-
-#define make_blank_test() ((test)NIL)
-#define make_equality_test(sym) ((sym)->common.reference_count++, (test)(sym)) // what's this???
-#define make_equality_test_without_adding_reference(sym) ((test)(sym))
-#define make_blank_or_equality_test(sym_or_nil) \
-  ((sym_or_nil) ? make_equality_test(sym_or_nil) : make_blank_test() )
-#define make_test_from_complex_test(ct) ((test) (((char *)(ct))+1))
-
-#define referent_of_equality_test(t) ((Symbol *) (t))
-#define complex_test_from_test(t) ((complex_test *) (((char *)(t))-1))
-
-#else
-
-inline Bool test_is_blank_test(test t)
-{
-  return (t == NIL);
-}
-
-//// This is to silence a warning (warning C4311: 'static_cast' : pointer truncation from 'test' to 'uint64_t')
-//// that only appears when the project settings are set to warn on possible 64-bit portability issues.
-//#ifdef _MSC_VER
-//#pragma warning (disable : 4311)
-//#endif
-
-inline Bool test_is_complex_test(test t)
-{
-  return (char)(
-	  reinterpret_cast<uint64_t>(t)
-	  & 1);
-}
-
-#ifdef _MSC_VER
-#pragma warning (default : 4311)
-#endif
-
-inline Bool test_is_blank_or_equality_test(test t)
-{
-  return (!test_is_complex_test(t));
-}
-
-inline test make_blank_test()
-{
-  return static_cast<test>(NIL);
-}
-
-inline test make_equality_test(Symbol * sym) // is this equivalent to the macro above??
-{
-  (sym)->common.reference_count++;
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-  char buf[64];
-  OutputDebugString(symbol_to_string(0, (sym), FALSE, buf, 64));
-  OutputDebugString(":+ ");
-  OutputDebugString(_itoa((sym)->common.reference_count, buf, 10));
-  OutputDebugString("\n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
-  return reinterpret_cast<test>(sym);
-}
-
-inline test make_equality_test_without_adding_reference(Symbol * sym)
-{
-  return reinterpret_cast<test>(sym);
-}
-
-inline test make_blank_or_equality_test(Symbol * sym_or_nil)
-{
-  return ((sym_or_nil) ? (make_equality_test(sym_or_nil)) : make_blank_test());
-}
-
-inline char * make_test_from_complex_test(complex_test * ct)
-{
-  return reinterpret_cast<test>(ct) + 1;
-}
-
-inline Symbol * referent_of_equality_test(test t)
-{
-  return reinterpret_cast<Symbol *>(t);
-}
-
-inline complex_test * complex_test_from_test(test t)
-{
-  return reinterpret_cast<complex_test *>(t - 1);
-}
-
-#endif /* USE_MACROS */
+// Debug| remove this MMA
+//typedef char * test;
+//
+//#ifdef USE_MACROS
+//
+//#define test_is_blank_test(t) ((t)==NIL)
+//#define test_is_complex_test(t) (((uint64_t)(t)) & 1)
+//#define test_is_blank_or_equality_test(t) (! test_is_complex_test(t))
+//
+//#define make_blank_test() ((test)NIL)
+//#define make_equality_test(sym) ((sym)->common.reference_count++, (test)(sym)) // what's this???
+//#define make_equality_test_without_adding_reference(sym) ((test)(sym))
+//#define make_blank_or_equality_test(sym_or_nil) \
+//  ((sym_or_nil) ? make_equality_test(sym_or_nil) : make_blank_test() )
+//#define make_test_from_complex_test(ct) ((test) (((char *)(ct))+1))
+//
+//#define referent_of_equality_test(t) ((Symbol *) (t))
+//#define complex_test_from_test(t) ((complex_test *) (((char *)(t))-1))
+//
+//#else
+//
+//
+//#endif /* USE_MACROS */
 
 typedef struct complex_test_struct {
   byte type;                  /* see definitions below */
@@ -457,8 +389,19 @@ typedef struct complex_test_struct {
   } data;
 } complex_test;
 
+typedef struct constraint_struct {
+  byte type;                  /* see definitions below */
+  union test_info_union {
+    Symbol *referent;           /* for relational tests */
+    ::list *disjunction_list;   /* for disjunction tests */
+    ::list *conjunct_list;      /* for conjunctive tests */
+  } data;
+} constraint_info;
+
+typedef constraint_info * constraint;
+
 /* types of the complex_test's */
-/* WARNING -- none of these can be 254 or 255 -- see rete.cpp */
+/* WARNING -- can't be 255 -- see rete.cpp */
 enum ComplexTextTypes {
          NOT_EQUAL_TEST = 1,          /* various relational tests */
          LESS_TEST = 2,
@@ -470,16 +413,30 @@ enum ComplexTextTypes {
          CONJUNCTIVE_TEST = 8,        /* item must pass each of a list of tests */
          GOAL_ID_TEST = 9,            /* item must be a goal identifier */
          IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
-
-         /* The following two types are NOT COMPLEX TEST types, so not valid
-          * in a complex_test struct.  Added to make comparing test types more clear */
          EQUALITY_TEST = 11,
          BLANK_TEST = 12
 };
 
-#define NUM_TEST_TYPES 10           /* Note: count does not include equality or
-                                             blank tests, so this is really number
-                                             of complex test types */
+#define NUM_TEST_TYPES 11           /* Note: count does not include blank tests*/
+
+inline Bool test_is_blank(constraint t)
+{
+  return (t == NIL);
+}
+
+#ifdef _MSC_VER
+#pragma warning (default : 4311)
+#endif
+
+inline Bool test_is_equality(constraint t)
+{
+  return (t->type == EQUALITY_TEST);
+}
+
+inline constraint make_blank_test()
+{
+  return static_cast<constraint>(NIL);
+}
 
 //
 // Symbol types.
@@ -552,9 +509,9 @@ typedef struct reorder_info_struct {
 
 /* --- info on positive and negative conditions only --- */
 typedef struct three_field_tests_struct {
-  test id_test;
-  test attr_test;
-  test value_test;
+  constraint id_test;
+  constraint attr_test;
+  constraint value_test;
 } three_field_tests;
 
 /* --- info on negated conjunctive conditions only --- */

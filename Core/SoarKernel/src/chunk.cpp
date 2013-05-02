@@ -218,9 +218,9 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 		}
 }
 
-void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
+void variablize_test (agent* thisAgent, constraint *chunk_test, constraint *original_test) {
   cons *c, *c_orig;
-  complex_test *ct, *ct_original;
+  constraint ct, ct_original;
   byte original_test_type, test_type;
   Symbol *original_referent, *instantiated_referent;
 
@@ -229,12 +229,8 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
   print(thisAgent, "Debug| Original: ");
   print_test (thisAgent, *original_test);
 
-  if (!get_test_type_referent(*chunk_test, &test_type, &instantiated_referent))
-  {
-    print(thisAgent, "Debug| Non-variablizable type.  Returning.\nDebug| ---------------------------------------\n");
+  if (test_is_blank(*chunk_test) || test_is_blank(*original_test))
     return;
-  }
-  get_test_type_referent(*original_test, &original_test_type, &original_referent);
 
   /* ORIGINAL can differ from CHUNK tests if there are goal, impasse or disjunction tests in ORIGINAL test,
    * but get_test_type_referent will return false for those test types, so it won't get here.  */
@@ -252,14 +248,14 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
       /* --- Loop through both conjunction lists simultaneously, calling variablize_test
        *     on each element. --- */
 
-      ct = complex_test_from_test(*chunk_test);
-      ct_original = complex_test_from_test(*original_test);
+      ct = *chunk_test;
+      ct_original = *original_test;
       c_orig = ct_original->data.conjunct_list;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
         variablize_test (thisAgent,
-            reinterpret_cast<test *>(&(c->first)),
-            reinterpret_cast<test *>(&(c_orig->first)));
+            reinterpret_cast<constraint *>(&(c->first)),
+            reinterpret_cast<constraint *>(&(c_orig->first)));
         c_orig = c_orig->rest;
       }
 
@@ -282,25 +278,7 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
       {
         print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
 
-        // Chunk test should be guaranteed to be the right final types, so this should no longer be necessary
-        if (test_type == EQUALITY_TEST)
-        {
-          print(thisAgent, "Debug| Switching complex type from %s back to %s\n", test_type_to_string(test_type), test_type_to_string(original_test_type));
-          print(thisAgent, "Debug| SHOULD WE BE HERE???\n");
-          assert(false);
-
-          allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-          ct->type = original_test_type;
-          ct->data.referent = instantiated_referent;
-          // I don't think we need to add this b/c the equality test incremented the refcount
-          // and we're discarding that test (instantiated_test).
-          //symbol_add_ref (ct->data.referent);
-          *chunk_test = make_test_from_complex_test(ct);
-        }
-        else
-        {
-          ct = complex_test_from_test(*chunk_test);
-        }
+        ct = *chunk_test;
         variablize_symbol (thisAgent, &(ct->data.referent));
       }
       break;
@@ -657,12 +635,11 @@ not_struct *get_nots_for_instantiated_conditions (agent* thisAgent,
 -------------------------------------------------------------------- */
 
 void variablize_nots_and_insert_into_conditions (agent* thisAgent,
-												 not_struct *nots,
-                                                 condition *conds) {
+    not_struct *nots,
+    condition *conds) {
   not_struct *n;
   Symbol *var1, *var2;
-  test t;
-  complex_test *ct;
+  constraint t;
   condition *c;
   Bool added_it;
 
@@ -670,28 +647,24 @@ void variablize_nots_and_insert_into_conditions (agent* thisAgent,
     var1 = n->s1->common.variablization;
     var2 = n->s2->common.variablization;
     /* --- find where var1 is bound, and add "<> var2" to that test --- */
-    allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-    t = make_test_from_complex_test (ct);
-    ct->type = NOT_EQUAL_TEST;
-    ct->data.referent = var2;
-    symbol_add_ref (var2);
+    t = make_test(thisAgent, var2, NOT_EQUAL_TEST);
     added_it = FALSE;
     for (c=conds; c!=NIL; c=c->next) {
       if (c->type != POSITIVE_CONDITION) continue;
       if (test_includes_equality_test_for_symbol (c->data.tests.id_test,
-                                                  var1)) {
+          var1)) {
         add_new_test_to_test (thisAgent, &(c->data.tests.id_test), t);
         added_it = TRUE;
         break;
       }
       if (test_includes_equality_test_for_symbol (c->data.tests.attr_test,
-                                                  var1)) {
+          var1)) {
         add_new_test_to_test (thisAgent, &(c->data.tests.attr_test), t);
         added_it = TRUE;
         break;
       }
       if (test_includes_equality_test_for_symbol (c->data.tests.value_test,
-                                                  var1)) {
+          var1)) {
         add_new_test_to_test (thisAgent, &(c->data.tests.value_test), t);
         added_it = TRUE;
         break;
@@ -700,7 +673,7 @@ void variablize_nots_and_insert_into_conditions (agent* thisAgent,
     if (!added_it) {
       char msg[BUFFER_MSG_SIZE];
       strncpy (msg,"chunk.c: Internal error: couldn't add Not test to chunk\n", BUFFER_MSG_SIZE);
-	  msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
 
       abort_with_fatal_error(thisAgent, msg);
     }
@@ -725,18 +698,16 @@ void add_goal_or_impasse_tests (agent* thisAgent, chunk_cond *all_ccs) {
   tc_number tc;   /* mark each id as we add a test for it, so we don't add
                      a test for the same id in two different places */
   Symbol *id;
-  test t;
-  complex_test *ct;
+  constraint t;
 
   tc = get_new_tc_number(thisAgent);
   for (cc=all_ccs; cc!=NIL; cc=cc->next) {
     if (cc->instantiated_cond->type!=POSITIVE_CONDITION) continue;
-    id = referent_of_equality_test (cc->instantiated_cond->data.tests.id_test);
+    id = cc->instantiated_cond->data.tests.id_test->data.referent;
     if ( (id->id.isa_goal || id->id.isa_impasse) &&
-         (id->common.tc_num != tc) ) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-      ct->type = static_cast<byte>((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST);
-      t = make_test_from_complex_test(ct);
+         (id->common.tc_num != tc) )
+    {
+      t = make_test(thisAgent, NULL, ((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
       add_new_test_to_test (thisAgent, &(cc->variablized_cond->data.tests.id_test), t);
       id->common.tc_num = tc;
     }

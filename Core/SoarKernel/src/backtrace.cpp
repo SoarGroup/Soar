@@ -252,11 +252,11 @@ void backtrace_through_instantiation (agent* thisAgent,
     Symbol *id, *value;
 
     if (c->type!=POSITIVE_CONDITION) continue;
-    id = referent_of_equality_test (c->data.tests.id_test);
+    id = c->data.tests.id_test->data.referent;
 
     if (id->common.tc_num == tc) {
       /* --- id is already in the TC, so add in the value --- */
-      value = referent_of_equality_test (c->data.tests.value_test);
+      value = c->data.tests.value_test->data.referent;
       if (value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
         /* --- if we already saw it before, we're going to have to go back
            and make another pass to get the complete TC --- */
@@ -266,7 +266,7 @@ void backtrace_through_instantiation (agent* thisAgent,
     } else if ((id->id.isa_goal) && (c->bt.level <= grounds_level)) {
       /* --- id is a higher goal id that was tested: so add id to the TC --- */
       id->common.tc_num = tc;
-      value = referent_of_equality_test (c->data.tests.value_test);
+      value = c->data.tests.value_test->data.referent;
       if (value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
         /* --- if we already saw it before, we're going to have to go back
            and make another pass to get the complete TC --- */
@@ -290,9 +290,9 @@ void backtrace_through_instantiation (agent* thisAgent,
     for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next) {
       if (c->type!=POSITIVE_CONDITION)
         continue;
-      if (referent_of_equality_test(c->data.tests.id_test)->common.tc_num != tc)
+      if (c->data.tests.id_test->data.referent->common.tc_num != tc)
         continue;
-      value = referent_of_equality_test(c->data.tests.value_test);
+      value = c->data.tests.value_test->data.referent;
       if (value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
         if (value->common.tc_num != tc) {
           value->common.tc_num = tc;
@@ -313,7 +313,7 @@ void backtrace_through_instantiation (agent* thisAgent,
     if (c->type==POSITIVE_CONDITION) {
 
       /* --- positive cond's are grounds, potentials, or locals --- */
-      if (referent_of_equality_test(c->data.tests.id_test)->common.tc_num == tc) {
+      if (c->data.tests.id_test->data.referent->common.tc_num == tc) {
         add_to_grounds (thisAgent, c);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -479,10 +479,10 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *relia
 	}
     /* --- for augmentations of the local goal id, either handle the
        "^quiescence t" test or discard it --- */
-    if (referent_of_equality_test(cond->data.tests.id_test)->id.isa_goal) {
-      if ((referent_of_equality_test(cond->data.tests.attr_test) ==
+    if (cond->data.tests.id_test->data.referent->id.isa_goal) {
+      if ((cond->data.tests.attr_test->data.referent ==
            thisAgent->quiescence_symbol) &&
-          (referent_of_equality_test(cond->data.tests.value_test) ==
+          (cond->data.tests.value_test->data.referent ==
            thisAgent->t_symbol) &&
           (! cond->test_for_acceptable_preference)) {
         *reliable = false;

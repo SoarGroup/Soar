@@ -134,7 +134,8 @@ typedef signed short goal_stack_level;
 
 typedef struct alpha_mem_struct alpha_mem;
 typedef struct token_struct token;
-typedef char * test;
+// Debug| remove this MMA
+typedef char * test_old;
 
 class stats_statement_container;
 
@@ -184,7 +185,7 @@ typedef struct agent_struct {
   //
   // These was taked from print.
   Symbol *action_id_to_match;
-  test id_test_to_match;
+  constraint id_test_to_match;
 
   //
   // This was taken from production.h
@@ -649,7 +650,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* ----------------------- Misc. top-level stuff -------------------------- */
 
   memory_pool         action_pool;
-  memory_pool         complex_test_pool;
+  memory_pool         constraint_pool;
   memory_pool         condition_pool;
   memory_pool         not_pool;
   memory_pool         production_pool;

@@ -89,7 +89,6 @@
 #include <stdlib.h>
 
 #include "rete.h"
-#include "kernel.h"
 #include "mem.h"
 #include "wmem.h"
 #include "gdatastructs.h"
@@ -232,15 +231,7 @@ inline Bool test_is_variable_relational_test(byte x)
   return (((x) & 0xF0)==VARIABLE_RELATIONAL_RETE_TEST);
 }
 
-/* --- for the last two (i.e., the relational tests), we add in one of
-       the following, to specifiy the kind of relation --- */
-#define RELATIONAL_EQUAL_RETE_TEST            0x00
-#define RELATIONAL_NOT_EQUAL_RETE_TEST        0x01
-#define RELATIONAL_LESS_RETE_TEST             0x02
-#define RELATIONAL_GREATER_RETE_TEST          0x03
-#define RELATIONAL_LESS_OR_EQUAL_RETE_TEST    0x04
-#define RELATIONAL_GREATER_OR_EQUAL_RETE_TEST 0x05
-#define RELATIONAL_SAME_TYPE_RETE_TEST        0x06
+
 //#define kind_of_relational_test(x) ((x) & 0x0F)
 //#define test_is_not_equal_test(x) (((x)==0x01) || ((x)==0x11))
 
@@ -2577,18 +2568,17 @@ Bool find_var_location (Symbol *var, rete_node_level current_depth,
 ------------------------------------------------------------------- */
 
 void bind_variables_in_test (agent* thisAgent,
-                             test t,
+                             constraint t,
                              rete_node_level depth,
                              byte field_num,
                              Bool dense,
                              list **varlist) {
   Symbol *referent;
-  complex_test *ct;
   cons *c;
 
-  if (test_is_blank_test(t)) return;
-  if (test_is_blank_or_equality_test(t)) {
-    referent = referent_of_equality_test(t);
+  if (test_is_blank(t)) return;
+  if (test_is_equality(t)) {
+    referent = t->data.referent;
     if (referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
     if (!dense && var_is_bound (referent)) return;
     push_var_binding (thisAgent, referent, depth, field_num);
@@ -2596,10 +2586,9 @@ void bind_variables_in_test (agent* thisAgent,
     return;
   }
 
-  ct = complex_test_from_test(t);
-  if (ct->type==CONJUNCTIVE_TEST)
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      bind_variables_in_test (thisAgent, static_cast<char *>(c->first),
+  if (t->type==CONJUNCTIVE_TEST)
+    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      bind_variables_in_test (thisAgent, static_cast<constraint>(c->first),
                               depth, field_num, dense, varlist);
 }
 
@@ -2769,26 +2758,23 @@ void deallocate_node_varnames (agent* thisAgent,
    a pointer to the bottom structure in the chain.
 ------------------------------------------------------------------- */
 
-varnames *add_unbound_varnames_in_test (agent* thisAgent, test t,
+varnames *add_unbound_varnames_in_test (agent* thisAgent, constraint t,
                                         varnames *starting_vn) {
   cons *c;
   Symbol *referent;
-  complex_test *ct;
 
-  if (test_is_blank_test(t)) return starting_vn;
-  if (test_is_blank_or_equality_test(t)) {
-    referent = referent_of_equality_test(t);
+  if (test_is_blank(t)) return starting_vn;
+  if (test_is_equality(t)) {
+    referent = t->data.referent;
     if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
       if (! var_is_bound (referent))
         starting_vn = add_var_to_varnames (thisAgent, referent, starting_vn);
     return starting_vn;
   }
 
-  ct = complex_test_from_test(t);
-
-  if (ct->type==CONJUNCTIVE_TEST) {
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      starting_vn = add_unbound_varnames_in_test (thisAgent, static_cast<char *>(c->first),
+  if (t->type==CONJUNCTIVE_TEST) {
+    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      starting_vn = add_unbound_varnames_in_test (thisAgent, static_cast<constraint>(c->first),
                                                   starting_vn);
   }
   return starting_vn;
@@ -2865,24 +2851,6 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
   return parent_nvn;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* **********************************************************************
 
    SECTION 8:  Building the Rete Net:  Condition-To-Node Converstion
@@ -2892,95 +2860,6 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
 ********************************************************************** */
 
 
-/* ---------------------------------------------------------------------
-
-       Test Type <---> Relational (Rete) Test Type Conversion Tables
-
-   These tables convert from xxx_TEST's (defined in soarkernel.h for various
-   kinds of complex_test's) to xxx_RETE_TEST's (defined in rete.cpp for
-   the different kinds of Rete tests), and vice-versa.  We might just
-   use the same set of constants for both purposes, but we want to be
-   able to do bit-twiddling on the RETE_TEST types.
-
-   (This stuff probably doesn't belong under "Building the Rete Net",
-   but I wasn't sure where else to put it.)
---------------------------------------------------------------------- */
-
-//
-// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
-//
-byte test_type_to_relational_test_type[256] =
-{
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
-};
-
-//
-// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
-//
-byte relational_test_type_to_test_type[256] =
-{
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
-};
-
-/* Warning: the two items below must not be the same as any xxx_TEST's defined
-   in soarkernel.h for the types of complex_test's */
-#define EQUAL_TEST_TYPE 254
-#define ERROR_TEST_TYPE 255
-
-void init_test_type_conversion_tables (void)
-{
-  /* This is to avoid multiple initializations. (This may not yet thread-safe.) */
-  static bool bInit = FALSE;
-  if (bInit)
-          return;
-  bInit = TRUE;
-
-  /* we don't need ...[equal test] */
-  test_type_to_relational_test_type[NOT_EQUAL_TEST] =   RELATIONAL_NOT_EQUAL_RETE_TEST;
-  test_type_to_relational_test_type[LESS_TEST] =    RELATIONAL_LESS_RETE_TEST;
-  test_type_to_relational_test_type[GREATER_TEST] =    RELATIONAL_GREATER_RETE_TEST;
-  test_type_to_relational_test_type[LESS_OR_EQUAL_TEST] =    RELATIONAL_LESS_OR_EQUAL_RETE_TEST;
-  test_type_to_relational_test_type[GREATER_OR_EQUAL_TEST] =    RELATIONAL_GREATER_OR_EQUAL_RETE_TEST;
-  test_type_to_relational_test_type[SAME_TYPE_TEST] =    RELATIONAL_SAME_TYPE_RETE_TEST;
-
-  relational_test_type_to_test_type[RELATIONAL_EQUAL_RETE_TEST] =    EQUAL_TEST_TYPE;
-  relational_test_type_to_test_type[RELATIONAL_NOT_EQUAL_RETE_TEST] =    NOT_EQUAL_TEST;
-  relational_test_type_to_test_type[RELATIONAL_LESS_RETE_TEST] =    LESS_TEST;
-  relational_test_type_to_test_type[RELATIONAL_GREATER_RETE_TEST] =    GREATER_TEST;
-  relational_test_type_to_test_type[RELATIONAL_LESS_OR_EQUAL_RETE_TEST] =    LESS_OR_EQUAL_TEST;
-  relational_test_type_to_test_type[RELATIONAL_GREATER_OR_EQUAL_RETE_TEST] =    GREATER_OR_EQUAL_TEST;
-  relational_test_type_to_test_type[RELATIONAL_SAME_TYPE_RETE_TEST] =    SAME_TYPE_TEST;
-}
 
 /* ------------------------------------------------------------------------
                          Add Rete Tests for Test
@@ -3003,146 +2882,142 @@ void init_test_type_conversion_tables (void)
    parent and higher conditions, and sparsely for the current condition.
 ------------------------------------------------------------------------ */
 
-void add_rete_tests_for_test (agent* thisAgent, test t,
-                              rete_node_level current_depth,
-                              byte field_num,
-                              rete_test **rt,
-                              Symbol **alpha_constant) {
+void add_rete_tests_for_test (agent* thisAgent, constraint t,
+    rete_node_level current_depth,
+    byte field_num,
+    rete_test **rt,
+    Symbol **alpha_constant) {
   var_location where;
   where.var_location_struct::field_num = 0;
   where.var_location_struct::levels_up = 0;
   cons *c;
   rete_test *new_rt;
-  complex_test *ct;
   Symbol *referent;
 
-  if (test_is_blank_test(t)) return;
+  if (test_is_blank(t)) return;
 
-  if (test_is_blank_or_equality_test(t)) {
-    referent = referent_of_equality_test(t);
+  switch (t->type) {
+    case EQUALITY_TEST:
+      referent = t->data.referent;
 
-    /* --- if constant test and alpha=NIL, install alpha test --- */
-    if ((referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) &&
-        (*alpha_constant==NIL)) {
-      *alpha_constant = referent;
-      return;
-    }
+      /* --- if constant test and alpha=NIL, install alpha test --- */
+      if ((referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) &&
+          (*alpha_constant==NIL)) {
+        *alpha_constant = referent;
+        return;
+      }
 
-    /* --- if constant, make = constant test --- */
-    if (referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) {
+      /* --- if constant, make = constant test --- */
+      if (referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) {
+        allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
+        new_rt->right_field_num = field_num;
+        new_rt->type = CONSTANT_RELATIONAL_RETE_TEST+RELATIONAL_EQUAL_RETE_TEST;
+        new_rt->data.constant_referent = referent;
+        symbol_add_ref (referent);
+        new_rt->next = *rt;
+        *rt = new_rt;
+        return;
+      }
+
+      /* --- variable: if binding is for current field, do nothing --- */
+      if (! find_var_location (referent, current_depth, &where)) {
+        char msg[BUFFER_MSG_SIZE];
+        print_with_symbols (thisAgent, "Error: Rete build found test of unbound var: %y\n",
+            referent);
+        SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
+            symbol_to_string(thisAgent, referent,TRUE, NIL, 0));
+        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+        abort_with_fatal_error(thisAgent, msg);
+      }
+      if ((where.levels_up==0) && (where.field_num==field_num)) return;
+
+      /* --- else make variable equality test --- */
       allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
       new_rt->right_field_num = field_num;
-      new_rt->type = CONSTANT_RELATIONAL_RETE_TEST+RELATIONAL_EQUAL_RETE_TEST;
-      new_rt->data.constant_referent = referent;
-      symbol_add_ref (referent);
+      new_rt->type = VARIABLE_RELATIONAL_RETE_TEST+RELATIONAL_EQUAL_RETE_TEST;
+      new_rt->data.variable_referent = where;
       new_rt->next = *rt;
       *rt = new_rt;
       return;
-    }
-
-    /* --- variable: if binding is for current field, do nothing --- */
-    if (! find_var_location (referent, current_depth, &where)) {
-      char msg[BUFFER_MSG_SIZE];
-      print_with_symbols (thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                          referent);
-      SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                          symbol_to_string(thisAgent, referent,TRUE, NIL, 0));
-     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-     abort_with_fatal_error(thisAgent, msg);
-    }
-    if ((where.levels_up==0) && (where.field_num==field_num)) return;
-
-    /* --- else make variable equality test --- */
-    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
-    new_rt->right_field_num = field_num;
-    new_rt->type = VARIABLE_RELATIONAL_RETE_TEST+RELATIONAL_EQUAL_RETE_TEST;
-    new_rt->data.variable_referent = where;
-    new_rt->next = *rt;
-    *rt = new_rt;
-    return;
-  }
-
-  ct = complex_test_from_test(t);
-
-  switch (ct->type) {
-
-  case NOT_EQUAL_TEST:
-  case LESS_TEST:
-  case GREATER_TEST:
-  case LESS_OR_EQUAL_TEST:
-  case GREATER_OR_EQUAL_TEST:
-  case SAME_TYPE_TEST:
-    /* --- if constant, make constant test --- */
-    if (ct->data.referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) {
+      break;
+    case NOT_EQUAL_TEST:
+    case LESS_TEST:
+    case GREATER_TEST:
+    case LESS_OR_EQUAL_TEST:
+    case GREATER_OR_EQUAL_TEST:
+    case SAME_TYPE_TEST:
+      /* --- if constant, make constant test --- */
+      if (t->data.referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) {
+        allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
+        new_rt->right_field_num = field_num;
+        new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
+            test_type_to_relational_test_type(t->type);
+        new_rt->data.constant_referent = t->data.referent;
+        symbol_add_ref (t->data.referent);
+        new_rt->next = *rt;
+        *rt = new_rt;
+        return;
+      }
+      /* --- else make variable test --- */
+      if (! find_var_location (t->data.referent, current_depth, &where)) {
+        char msg[BUFFER_MSG_SIZE];
+        print_with_symbols (thisAgent, "Error: Rete build found test of unbound var: %y\n",
+            t->data.referent);
+        SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
+            symbol_to_string(thisAgent, t->data.referent,TRUE, NIL, 0));
+        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+        abort_with_fatal_error(thisAgent, msg);
+      }
       allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
       new_rt->right_field_num = field_num;
-      new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
-                     test_type_to_relational_test_type[ct->type];
-      new_rt->data.constant_referent = ct->data.referent;
-      symbol_add_ref (ct->data.referent);
+      new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
+          test_type_to_relational_test_type(t->type);
+      new_rt->data.variable_referent = where;
       new_rt->next = *rt;
       *rt = new_rt;
       return;
-    }
-    /* --- else make variable test --- */
-    if (! find_var_location (ct->data.referent, current_depth, &where)) {
-      char msg[BUFFER_MSG_SIZE];
-      print_with_symbols (thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                          ct->data.referent);
-      SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                          symbol_to_string(thisAgent, ct->data.referent,TRUE, NIL, 0));
+
+    case DISJUNCTION_TEST:
+      allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
+      new_rt->right_field_num = field_num;
+      new_rt->type = DISJUNCTION_RETE_TEST;
+      new_rt->data.disjunction_list =
+          copy_symbol_list_adding_references (thisAgent, t->data.disjunction_list);
+      new_rt->next = *rt;
+      *rt = new_rt;
+      return;
+
+    case CONJUNCTIVE_TEST:
+      for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
+        add_rete_tests_for_test (thisAgent, static_cast<constraint>(c->first),
+            current_depth, field_num, rt, alpha_constant);
+      }
+      return;
+
+    case GOAL_ID_TEST:
+      allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
+      new_rt->type = ID_IS_GOAL_RETE_TEST;
+      new_rt->right_field_num = 0;
+      new_rt->next = *rt;
+      *rt = new_rt;
+      return;
+
+    case IMPASSE_ID_TEST:
+      allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
+      new_rt->type = ID_IS_IMPASSE_RETE_TEST;
+      new_rt->right_field_num = 0;
+      new_rt->next = *rt;
+      *rt = new_rt;
+      return;
+
+    default:
+      { char msg[BUFFER_MSG_SIZE];
+      SNPRINTF (msg, BUFFER_MSG_SIZE,"Error: found bad test type %d while building rete\n",
+          t->type);
       msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
       abort_with_fatal_error(thisAgent, msg);
-    }
-    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
-    new_rt->right_field_num = field_num;
-    new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
-                   test_type_to_relational_test_type[ct->type];
-    new_rt->data.variable_referent = where;
-    new_rt->next = *rt;
-    *rt = new_rt;
-    return;
-
-  case DISJUNCTION_TEST:
-    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
-    new_rt->right_field_num = field_num;
-    new_rt->type = DISJUNCTION_RETE_TEST;
-    new_rt->data.disjunction_list =
-      copy_symbol_list_adding_references (thisAgent, ct->data.disjunction_list);
-    new_rt->next = *rt;
-    *rt = new_rt;
-    return;
-
-  case CONJUNCTIVE_TEST:
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
-      add_rete_tests_for_test (thisAgent, static_cast<char *>(c->first),
-                               current_depth, field_num, rt, alpha_constant);
-    }
-    return;
-
-  case GOAL_ID_TEST:
-    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
-    new_rt->type = ID_IS_GOAL_RETE_TEST;
-    new_rt->right_field_num = 0;
-    new_rt->next = *rt;
-    *rt = new_rt;
-    return;
-
-  case IMPASSE_ID_TEST:
-    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
-    new_rt->type = ID_IS_IMPASSE_RETE_TEST;
-    new_rt->right_field_num = 0;
-    new_rt->next = *rt;
-    *rt = new_rt;
-    return;
-
-  default:
-    { char msg[BUFFER_MSG_SIZE];
-    SNPRINTF (msg, BUFFER_MSG_SIZE,"Error: found bad test type %d while building rete\n",
-           ct->type);
-    msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error(thisAgent, msg);
-    }
+      break;
+      }
   } /* end of switch statement */
 } /* end of function add_rete_tests_for_test() */
 
@@ -4022,15 +3897,15 @@ void excise_production_from_rete (agent* thisAgent, production *p)
    for equality with a new gensym variable.
 ---------------------------------------------------------------------- */
 
-void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter) {
+void add_gensymmed_equality_test (agent* thisAgent, constraint *t, char first_letter) {
   Symbol *New;
-  test eq_test;
+  constraint eq_test;
   char prefix[2];
 
   prefix[0] = first_letter;
   prefix[1] = 0;
   New = generate_new_variable (thisAgent, prefix);
-  eq_test = make_equality_test (New);
+  eq_test = make_test (thisAgent, New, EQUALITY_TEST);
   symbol_remove_ref (thisAgent, New);
   add_new_test_to_test (thisAgent, t, eq_test);
 }
@@ -4050,8 +3925,7 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
                                           condition *cond, /* current cond */
                                           byte where_field_num,
                                           rete_node_level where_levels_up) {
-  test t;
-  complex_test *ct;
+  constraint t;
   cons *c;
 
   while (where_levels_up) { where_levels_up--; cond = cond->prev; }
@@ -4060,15 +3934,14 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
   else if (where_field_num==1) t = cond->data.tests.attr_test;
   else t = cond->data.tests.value_test;
 
-  if (test_is_blank_test(t)) goto abort_var_bound_in_reconstructed_conds;
-  if (test_is_blank_or_equality_test(t)) return referent_of_equality_test(t);
+  if (test_is_blank(t)) goto abort_var_bound_in_reconstructed_conds;
+  if (test_is_equality(t)) return t->data.referent;
 
-  ct = complex_test_from_test(t);
-  if (ct->type==CONJUNCTIVE_TEST) {
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank_test (static_cast<test>(c->first))) &&
-           (test_is_blank_or_equality_test (static_cast<test>(c->first))) )
-        return referent_of_equality_test (static_cast<test>(c->first));
+  if (t->type==CONJUNCTIVE_TEST) {
+    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      if ( (! test_is_blank (static_cast<constraint>(c->first))) &&
+           (test_is_equality (static_cast<constraint>(c->first))) )
+        return static_cast<constraint>(c->first)->data.referent;
   }
 
   abort_var_bound_in_reconstructed_conds:
@@ -4095,8 +3968,7 @@ Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
                                           condition *cond, /* current cond */
                                           byte where_field_num,
                                           rete_node_level where_levels_up) {
-  test t;
-  complex_test *ct;
+  constraint t;
   cons *c;
 
   while (where_levels_up) { where_levels_up--; cond = cond->prev; }
@@ -4105,15 +3977,14 @@ Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
   else if (where_field_num==1) t = cond->original_tests.attr_test;
   else t = cond->original_tests.value_test;
 
-  if (test_is_blank_test(t)) goto abort_var_bound_in_reconstructed_conds;
-  if (test_is_blank_or_equality_test(t)) return referent_of_equality_test(t);
+  if (test_is_blank(t)) goto abort_var_bound_in_reconstructed_conds;
+  if (test_is_equality(t)) return t->data.referent;
 
-  ct = complex_test_from_test(t);
-  if (ct->type==CONJUNCTIVE_TEST) {
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank_test (static_cast<test>(c->first))) &&
-           (test_is_blank_or_equality_test (static_cast<test>(c->first))) )
-        return referent_of_equality_test (static_cast<test>(c->first));
+  if (t->type==CONJUNCTIVE_TEST) {
+    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      if ( (! test_is_blank (static_cast<constraint>(c->first))) &&
+           (test_is_equality (static_cast<constraint>(c->first))) )
+        return static_cast<constraint>(c->first)->data.referent;
   }
 
   abort_var_bound_in_reconstructed_conds:
@@ -4140,8 +4011,7 @@ Symbol *var_bound_in_reconstructed_chunk_conds (agent* thisAgent,
                                           condition *cond, /* current cond */
                                           byte where_field_num,
                                           rete_node_level where_levels_up) {
-  test t;
-  complex_test *ct;
+  constraint t;
   cons *c;
 
   while (where_levels_up) { where_levels_up--; cond = cond->prev; }
@@ -4150,15 +4020,14 @@ Symbol *var_bound_in_reconstructed_chunk_conds (agent* thisAgent,
   else if (where_field_num==1) t = cond->chunk_tests.attr_test;
   else t = cond->chunk_tests.value_test;
 
-  if (test_is_blank_test(t)) goto abort_var_bound_in_reconstructed_conds;
-  if (test_is_blank_or_equality_test(t)) return referent_of_equality_test(t);
+  if (test_is_blank(t)) goto abort_var_bound_in_reconstructed_conds;
+  if (test_is_equality(t)) return t->data.referent;
 
-  ct = complex_test_from_test(t);
-  if (ct->type==CONJUNCTIVE_TEST) {
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank_test (static_cast<test>(c->first))) &&
-           (test_is_blank_or_equality_test (static_cast<test>(c->first))) )
-        return referent_of_equality_test (static_cast<test>(c->first));
+  if (t->type==CONJUNCTIVE_TEST) {
+    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      if ( (! test_is_blank (static_cast<constraint>(c->first))) &&
+           (test_is_equality (static_cast<constraint>(c->first))) )
+        return static_cast<constraint>(c->first)->data.referent;
   }
 
   abort_var_bound_in_reconstructed_conds:
@@ -4183,79 +4052,49 @@ void add_rete_test_list_to_tests (agent* thisAgent,
                                   condition *cond, /* current cond */
                                   rete_test *rt) {
   Symbol *referent;
-  test New;
-  complex_test *new_ct;
-  byte test_type;
+  constraint New;
+  ComplexTextTypes test_type;
 
   for ( ; rt!=NIL; rt=rt->next) {
 
     if (rt->type==ID_IS_GOAL_RETE_TEST) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-      New = make_test_from_complex_test(new_ct);
-      new_ct->type = GOAL_ID_TEST;
+      New = make_test(thisAgent, NIL, GOAL_ID_TEST);
     } else if (rt->type==ID_IS_IMPASSE_RETE_TEST) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-      New = make_test_from_complex_test(new_ct);
-      new_ct->type = IMPASSE_ID_TEST;
+      New = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
     } else if (rt->type==DISJUNCTION_RETE_TEST) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-      New = make_test_from_complex_test(new_ct);
-      new_ct->type = DISJUNCTION_TEST;
-      new_ct->data.disjunction_list =
-        copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+      New = make_test(thisAgent, NIL, DISJUNCTION_TEST);
+      New->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
     } else if (test_is_constant_relational_test(rt->type)) {
-      test_type =
-        relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
+      test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
       referent = rt->data.constant_referent;
-      symbol_add_ref (referent);
-      if (test_type==EQUAL_TEST_TYPE) {
-        New = make_equality_test_without_adding_reference (referent);
-      } else {
-        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        New = make_test_from_complex_test(new_ct);
-        new_ct->type = test_type;
-        new_ct->data.referent = referent;
-      }
+      New = make_test (thisAgent, referent, test_type);
     } else if (test_is_variable_relational_test(rt->type)) {
-      test_type =
-        relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
+      test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
       if (! rt->data.variable_referent.levels_up) {
         /* --- before calling var_bound_in_reconstructed_conds, make sure
            there's an equality test in the referent location (add one if
            there isn't one already there), otherwise there'd be no variable
            there to test against --- */
         if (rt->data.variable_referent.field_num==0) {
-          if (! test_includes_equality_test_for_symbol
-                  (cond->data.tests.id_test, NIL))
+          if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
             add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
         } else if (rt->data.variable_referent.field_num==1) {
-          if (! test_includes_equality_test_for_symbol
-                  (cond->data.tests.attr_test, NIL))
+          if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
             add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
         } else {
-          if (! test_includes_equality_test_for_symbol
-                  (cond->data.tests.value_test, NIL))
-            add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test),
-                       first_letter_from_test(cond->data.tests.attr_test));
+          if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
+            add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
         }
       }
       referent = var_bound_in_reconstructed_conds (thisAgent, cond,
-                          rt->data.variable_referent.field_num,
-                          rt->data.variable_referent.levels_up);
-      symbol_add_ref (referent);
-      if (test_type==EQUAL_TEST_TYPE) {
-        New = make_equality_test_without_adding_reference (referent);
-      } else {
-        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        New = make_test_from_complex_test(new_ct);
-        new_ct->type = test_type;
-        new_ct->data.referent = referent;
-      }
+          rt->data.variable_referent.field_num,
+          rt->data.variable_referent.levels_up);
+      New = make_test (thisAgent, referent, test_type);
     } else {
       char msg[BUFFER_MSG_SIZE];
       strncpy (msg, "Error: bad test_type in add_rete_test_to_test\n", BUFFER_MSG_SIZE);
-     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-     abort_with_fatal_error(thisAgent, msg);
+      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+      abort_with_fatal_error(thisAgent, msg);
       New = NIL; /* unreachable, but without it gcc -Wall warns here */
     }
 
@@ -4349,15 +4188,13 @@ void collect_nots (agent* thisAgent,
 ---------------------------------------------------------------------- */
 
 void add_constraints_to_chunk_condition (agent* thisAgent,
-    rete_test *rt,
-    wme *right_wme,
-    condition *cond) {
-
+                                         rete_test *rt,
+                                         wme *right_wme,
+                                         condition *cond)
+{
   Symbol *referent;
-  test new_test;
-  complex_test *new_ct;
-  byte test_type;
-
+  constraint new_test;
+  ComplexTextTypes test_type;
 
   for ( ; rt!=NIL; rt=rt->next) {
 
@@ -4367,42 +4204,22 @@ void add_constraints_to_chunk_condition (agent* thisAgent,
      * Remove later after making sure not needed and we handle nil values. */
     switch (rt->type) {
       case ID_IS_GOAL_RETE_TEST:
-        //        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        //        new_test = make_test_from_complex_test(new_ct);
-        //        new_ct->type = GOAL_ID_TEST;
-        //        break;
       case ID_IS_IMPASSE_RETE_TEST:
-        //        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        //        new_test = make_test_from_complex_test(new_ct);
-        //        new_ct->type = IMPASSE_ID_TEST;
         break;
       case DISJUNCTION_RETE_TEST:
-        allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-        new_test = make_test_from_complex_test(new_ct);
-        new_ct->type = DISJUNCTION_TEST;
-        new_ct->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+        new_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
+        new_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
         break;
       default:
         if (test_is_constant_relational_test(rt->type))
         {
-          test_type = relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
+          test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
           referent = rt->data.constant_referent;
-          symbol_add_ref (referent);
-          if (test_type==EQUAL_TEST_TYPE)
-          {
-            new_test = make_equality_test_without_adding_reference (referent);
-          }
-          else
-          {
-            allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            new_test = make_test_from_complex_test(new_ct);
-            new_ct->type = test_type;
-            new_ct->data.referent = referent;
-          }
+          new_test = make_test(thisAgent, referent, test_type);
         }
         else if (test_is_variable_relational_test(rt->type))
         {
-          test_type = relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
+          test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
           if (! rt->data.variable_referent.levels_up)
           {
             /* --- before calling var_bound_in_reconstructed_conds, make sure
@@ -4435,20 +4252,9 @@ void add_constraints_to_chunk_condition (agent* thisAgent,
           referent = var_bound_in_reconstructed_conds (thisAgent, cond,
               rt->data.variable_referent.field_num,
               rt->data.variable_referent.levels_up);
-          symbol_add_ref (referent);
           //right_sym = field_from_wme (right_wme, rt->right_field_num);
 
-          if (test_type==EQUAL_TEST_TYPE)
-          {
-            new_test = make_equality_test_without_adding_reference (referent);
-          }
-          else
-          {
-            allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            new_test = make_test_from_complex_test(new_ct);
-            new_ct->type = test_type;
-            new_ct->data.referent = referent;
-          }
+          new_test = make_test(thisAgent, referent, test_type);
         }
         else
         {
@@ -4485,17 +4291,17 @@ void add_constraints_to_chunk_condition (agent* thisAgent,
    when we reconstruct its conditions.
 ---------------------------------------------------------------------- */
 
-void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t) {
-  test New;
+void add_varnames_to_test (agent* thisAgent, varnames *vn, constraint *t) {
+  constraint New;
   cons *c;
 
   if (vn == NIL) return;
   if (varnames_is_one_var(vn)) {
-    New = make_equality_test (varnames_to_one_var(vn));
+    New = make_test (thisAgent, varnames_to_one_var(vn), EQUALITY_TEST);
     add_new_test_to_test (thisAgent, t, New);
   } else {
     for (c=varnames_to_var_list(vn); c!=NIL; c=c->rest) {
-      New = make_equality_test (static_cast<Symbol *>(c->first));
+      New =  make_test (thisAgent, static_cast<Symbol *>(c->first), EQUALITY_TEST);
       add_new_test_to_test (thisAgent, t, New);
     }
   }
@@ -4514,10 +4320,10 @@ void add_hash_info_to_id_test (agent* thisAgent,
                                byte field_num,
                                rete_node_level levels_up) {
   Symbol *temp;
-  test New;
+  constraint New;
 
   temp = var_bound_in_reconstructed_conds (thisAgent, cond, field_num, levels_up);
-  New = make_equality_test (temp);
+  New = make_test (thisAgent, temp, EQUALITY_TEST);
   add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
 }
 
@@ -4599,9 +4405,10 @@ void rete_node_to_conditions (agent* thisAgent,
 
     if (w && (cond->type==POSITIVE_CONDITION)) {
       /* --- make simple tests and collect nots --- */
-      cond->data.tests.id_test = make_equality_test (w->id);
-      cond->data.tests.attr_test = make_equality_test (w->attr);
-      cond->data.tests.value_test = make_equality_test (w->value);
+
+      cond->data.tests.id_test = make_test (thisAgent, w->id, EQUALITY_TEST);
+      cond->data.tests.attr_test = make_test (thisAgent, w->attr, EQUALITY_TEST);
+      cond->data.tests.value_test = make_test (thisAgent, w->value, EQUALITY_TEST);
       cond->test_for_acceptable_preference = w->acceptable;
       cond->bt.wme_ = w;
 
@@ -4637,9 +4444,9 @@ void rete_node_to_conditions (agent* thisAgent,
       }
     } else {
       am = node->b.posneg.alpha_mem_;
-      cond->data.tests.id_test = make_blank_or_equality_test (am->id);
-      cond->data.tests.attr_test = make_blank_or_equality_test (am->attr);
-      cond->data.tests.value_test = make_blank_or_equality_test (am->value);
+      cond->data.tests.id_test = make_test(thisAgent, am->id, EQUALITY_TEST);
+      cond->data.tests.attr_test = make_test(thisAgent, am->attr, EQUALITY_TEST);
+      cond->data.tests.value_test = make_test(thisAgent, am->value, EQUALITY_TEST);
       cond->test_for_acceptable_preference = am->acceptable;
 
       if (nvn) {
@@ -8578,14 +8385,14 @@ Bool xml_pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
 #if 0
 // Not currently using
 // xml_test is based on test_to_string.
-void xml_test (agent* thisAgent, char const* pTag, test t) {
+void xml_test (agent* thisAgent, char const* pTag, constraint t) {
 	char *dest = 0 ;
 	size_t dest_size = 0 ;
 	cons *c;
   complex_test *ct;
   char *ch;
 
-  if (test_is_blank_test(t)) {
+  if (test_is_blank(t)) {
     //if (!dest) dest=thisAgent->printed_output_string;
     xml_att_val(thisAgent, pTag, "[BLANK TEST]") ;	// Using tag as attribute name
     //strncpy (dest, "[BLANK TEST]", dest_size);  /* this should never get executed */
@@ -8594,10 +8401,10 @@ void xml_test (agent* thisAgent, char const* pTag, test t) {
 	return ;
   }
 
-  if (test_is_blank_or_equality_test(t)) {
-    xml_att_val(thisAgent, pTag, referent_of_equality_test(t)) ;	// Using tag as attribute name
+  if (test_is_equality(t)) {
+    xml_att_val(thisAgent, pTag, t->data.referent) ;	// Using tag as attribute name
 	return ;
-    //return symbol_to_string (thisAgent, referent_of_equality_test(t), TRUE, dest, dest_size);
+    //return symbol_to_string (thisAgent, t->data.referent, TRUE, dest, dest_size);
   }
 
   if (!dest) {
@@ -8696,7 +8503,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
    dl_cons *dc;
    condition *c;
    Bool removed_goal_test, removed_impasse_test;
-   test id_test;
+   constraint id_test;
 
    if (!conds) return;
 
@@ -8823,7 +8630,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
 
 			// Reset the ch pointer
 			ch = temp ;
-            if (! test_is_blank_test(c->data.tests.value_test))
+            if (! test_is_blank(c->data.tests.value_test))
             {
                *(ch++) = ' ';
                test_to_string (thisAgent, c->data.tests.value_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
@@ -9408,8 +9215,6 @@ void init_rete (agent* thisAgent) {
     return;
 
   bInit = TRUE;
-
-  init_test_type_conversion_tables ();
 
   init_bnode_type_names(thisAgent);
 

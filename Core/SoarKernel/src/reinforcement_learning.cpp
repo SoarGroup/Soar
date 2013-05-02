@@ -463,14 +463,14 @@ inline void rl_get_symbol_constant( Symbol* p_sym, Symbol* i_sym, rl_symbol_map*
 	}
 }
 
-void rl_get_test_constant( test* p_test, test* i_test, rl_symbol_map* constants )
+void rl_get_test_constant( constraint* p_test, constraint* i_test, rl_symbol_map* constants )
 {
-	if ( test_is_blank_test( *p_test ) )
+	if ( test_is_blank( *p_test ) )
 	{
 		return;
 	}
 
-	if ( test_is_blank_or_equality_test( *p_test ) )
+	if ( test_is_equality( *p_test ) )
 	{
 		rl_get_symbol_constant( *(reinterpret_cast<Symbol**>( p_test )), *(reinterpret_cast<Symbol**>( i_test )), constants );
 
@@ -697,8 +697,7 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
 {
 	// mark each id as we add a test for it, so we don't add a test for the same id in two different places
 	Symbol *id;
-	test t;
-	complex_test *ct;
+	constraint t;
 	tc_number tc = get_new_tc_number( my_agent );
 
 	for ( condition *cond = all_conds; cond != NIL; cond = cond->next )
@@ -706,13 +705,11 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
 		if ( cond->type != POSITIVE_CONDITION )
 			continue;
 
-		id = referent_of_equality_test( cond->data.tests.id_test );
+		id = cond->data.tests.id_test->data.referent;
 
 		if ( ( id->id.isa_goal || id->id.isa_impasse ) && ( id->id.tc_num != tc ) )
 		{
-			allocate_with_pool( my_agent, &my_agent->complex_test_pool, &ct );
-			ct->type = static_cast<byte>( ( id->id.isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) );
-			t = make_test_from_complex_test( ct );
+		  t = make_test(my_agent, NIL,( ( id->id.isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) ));
 			add_new_test_to_test( my_agent, &( cond->data.tests.id_test ), t );
 			id->id.tc_num = tc;
 		}

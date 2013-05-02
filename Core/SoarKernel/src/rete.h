@@ -55,6 +55,7 @@
 #define RETE_H
 
 #include <stdio.h>	// Needed for FILE token below
+#include "kernel.h"
 
 #ifdef __cplusplus
 //extern "C"
@@ -153,6 +154,91 @@ extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
 
 extern Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64);
 extern Bool load_rete_net (agent* thisAgent, FILE *source_file);
+
+/* ---------------------------------------------------------------------
+
+       Test Type <---> Relational (Rete) Test Type Conversion
+
+   These functions convert from xxx_TEST's (defined in soarkernel.h for various
+   kinds of complex_test's) to xxx_RETE_TEST's (defined in rete.cpp for
+   the different kinds of Rete tests), and vice-versa.  We might just
+   use the same set of constants for both purposes, but we want to be
+   able to do bit-twiddling on the RETE_TEST types.
+
+--------------------------------------------------------------------- */
+
+//
+// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
+//
+/* --- for the last two (i.e., the relational tests), we add in one of
+       the following, to specifiy the kind of relation --- */
+#define RELATIONAL_EQUAL_RETE_TEST            0x00
+#define RELATIONAL_NOT_EQUAL_RETE_TEST        0x01
+#define RELATIONAL_LESS_RETE_TEST             0x02
+#define RELATIONAL_GREATER_RETE_TEST          0x03
+#define RELATIONAL_LESS_OR_EQUAL_RETE_TEST    0x04
+#define RELATIONAL_GREATER_OR_EQUAL_RETE_TEST 0x05
+#define RELATIONAL_SAME_TYPE_RETE_TEST        0x06
+
+inline ComplexTextTypes relational_test_type_to_test_type(byte test_type)
+{
+  /* we don't need ...[equal test] */
+  switch (test_type) {
+    case RELATIONAL_EQUAL_RETE_TEST:
+      return EQUALITY_TEST;
+      break;
+    case RELATIONAL_NOT_EQUAL_RETE_TEST:
+      return NOT_EQUAL_TEST;
+      break;
+    case RELATIONAL_LESS_RETE_TEST:
+      return LESS_TEST;
+      break;
+    case RELATIONAL_GREATER_RETE_TEST:
+      return GREATER_TEST;
+      break;
+    case RELATIONAL_LESS_OR_EQUAL_RETE_TEST:
+      return LESS_OR_EQUAL_TEST;
+      break;
+    case RELATIONAL_GREATER_OR_EQUAL_RETE_TEST:
+      return GREATER_OR_EQUAL_TEST;
+      break;
+    case RELATIONAL_SAME_TYPE_RETE_TEST:
+      return SAME_TYPE_TEST;
+      break;
+    default:
+      break;
+  }
+  char msg[BUFFER_MSG_SIZE];
+  abort_with_fatal_error_noprint("Bad test_type in add_rete_test_to_test!!!\n");
+  return EQUALITY_TEST;
+}
+inline byte test_type_to_relational_test_type(byte test_type)
+{
+  /* we don't need ...[equal test] */
+  switch (test_type) {
+    case NOT_EQUAL_TEST:
+      return RELATIONAL_NOT_EQUAL_RETE_TEST;
+      break;
+    case LESS_TEST:
+      return RELATIONAL_LESS_RETE_TEST;
+      break;
+    case GREATER_TEST:
+      return RELATIONAL_GREATER_RETE_TEST;
+      break;
+    case LESS_OR_EQUAL_TEST:
+      return RELATIONAL_LESS_OR_EQUAL_RETE_TEST;
+      break;
+    case GREATER_OR_EQUAL_TEST:
+      return RELATIONAL_GREATER_OR_EQUAL_RETE_TEST;
+      break;
+    case SAME_TYPE_TEST:
+      return RELATIONAL_SAME_TYPE_RETE_TEST;
+      break;
+    default:
+      break;
+  }
+  return 255;
+}
 
 #ifdef __cplusplus
 //}

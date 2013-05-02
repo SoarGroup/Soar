@@ -436,7 +436,8 @@ inline bool symbol_is_identifier(Symbol *sym)
 inline bool symbol_is_variablizable_constant(Symbol *sym)
 {
   return ((sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-          (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ));
+          (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) ||
+          (sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ));
 }
 
 inline bool symbol_is_variablizable(Symbol *sym, Symbol *original_sym)

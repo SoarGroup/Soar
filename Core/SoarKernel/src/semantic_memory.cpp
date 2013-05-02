@@ -1254,29 +1254,26 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 //////////////////////////////////////////////////////////
 
 // copied primarily from add_bound_variables_in_test
-void _smem_lti_from_test( test t, std::set<Symbol *> *valid_ltis )
+void _smem_lti_from_test( constraint t, std::set<Symbol *> *valid_ltis )
 {
-	if ( test_is_blank_test(t) ) return;
+	if ( test_is_blank(t) ) return;
 
-	if ( test_is_blank_or_equality_test(t) )
+	if ( test_is_equality(t) )
 	{
-		Symbol *referent = referent_of_equality_test(t);
-		if ( ( referent->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( referent->id.smem_lti != NIL ) )
+		if ( ( t->data.referent->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( t->data.referent->id.smem_lti != NIL ) )
 		{
-			valid_ltis->insert( referent );
+			valid_ltis->insert( t->data.referent );
 		}
 
 		return;
 	}
 
 	{
-		complex_test *ct = complex_test_from_test(t);
-
-		if ( ct->type==CONJUNCTIVE_TEST )
+		if ( t->type==CONJUNCTIVE_TEST )
 		{
-			for ( cons *c=ct->data.conjunct_list; c!=NIL; c=c->rest )
+			for ( cons *c=t->data.conjunct_list; c!=NIL; c=c->rest )
 			{
-				_smem_lti_from_test( static_cast<test>( c->first ), valid_ltis );
+				_smem_lti_from_test( static_cast<constraint>( c->first ), valid_ltis );
 			}
 		}
 	}

@@ -137,9 +137,9 @@ namespace soar_module
 					inst->bottom_of_instantiated_conditions = cond;
 					inst->nots = NULL;
 				}
-				cond->data.tests.id_test = make_equality_test( (*c_it)->id );
-				cond->data.tests.attr_test = make_equality_test( (*c_it)->attr );
-				cond->data.tests.value_test = make_equality_test( (*c_it)->value );
+				cond->data.tests.id_test = make_test(my_agent, (*c_it)->id, EQUALITY_TEST );
+				cond->data.tests.attr_test = make_test(my_agent, (*c_it)->attr, EQUALITY_TEST );
+				cond->data.tests.value_test = make_test(my_agent, (*c_it)->value, EQUALITY_TEST );
 				cond->test_for_acceptable_preference = (*c_it)->acceptable;
 				cond->bt.wme_ = (*c_it);
 

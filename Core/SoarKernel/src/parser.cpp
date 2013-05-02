@@ -89,9 +89,9 @@ Symbol *make_placeholder_var(agent* thisAgent, char first_letter) {
    placeholder variable.
 ----------------------------------------------------------------- */
 
-test make_placeholder_test (agent* thisAgent, char first_letter) {
+constraint make_placeholder_test (agent* thisAgent, char first_letter) {
   Symbol *new_var = make_placeholder_var(thisAgent, first_letter);
-  return make_equality_test_without_adding_reference (new_var);
+  return make_test_without_refcount (thisAgent, new_var, EQUALITY_TEST);
 }
 
 /* -----------------------------------------------------------------
@@ -136,18 +136,13 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
   if (!just_created) symbol_add_ref (var);
 }
 
-void substitute_for_placeholders_in_test (agent* thisAgent, test *t) {
+void substitute_for_placeholders_in_test (agent* thisAgent, constraint *t) {
   cons *c;
-  complex_test *ct;
+  constraint ct;
 
-  if (test_is_blank_test(*t)) return;
-  if (test_is_blank_or_equality_test(*t)) {
-    substitute_for_placeholders_in_symbol (thisAgent, (Symbol **) t);
-    /* Warning: this relies on the representation of tests */
-    return;
-  }
+  if (test_is_blank(*t)) return;
 
-  ct = complex_test_from_test(*t);
+  ct = *t;
 
   switch (ct->type) {
   case GOAL_ID_TEST:
@@ -156,7 +151,7 @@ void substitute_for_placeholders_in_test (agent* thisAgent, test *t) {
     return;
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      substitute_for_placeholders_in_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
+      substitute_for_placeholders_in_test (thisAgent, reinterpret_cast<constraint *>(&(c->first)));
     return;
   default:  /* relational tests other than equality */
     substitute_for_placeholders_in_symbol (thisAgent, &(ct->data.referent));
@@ -287,6 +282,7 @@ Symbol *make_symbol_for_current_lexeme (agent* thisAgent, bool allow_lti) {
     SNPRINTF(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_current_lexeme\n, thisAgent->lexeme.string=%s\n", thisAgent->lexeme.string);
     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
     abort_with_fatal_error(thisAgent, msg);
+    break;
     }
   }
   return NIL; /* unreachable, but without it, gcc -Wall warns here */
@@ -312,20 +308,17 @@ Symbol *make_symbol_for_current_lexeme (agent* thisAgent, bool allow_lti) {
    <variable> ::= variable | lti
 ----------------------------------------------------------------- */
 
-test parse_relational_test (agent* thisAgent) {
-  byte test_type;
-  Bool use_equality_test;
-  test t;
+constraint parse_relational_test (agent* thisAgent) {
+  ComplexTextTypes test_type;
+  constraint t;
   Symbol *referent;
-  complex_test *ct;
 
-  use_equality_test = FALSE;
   test_type = NOT_EQUAL_TEST; /* unnecessary, but gcc -Wall warns without it */
 
   /* --- read optional relation symbol --- */
   switch(thisAgent->lexeme.type) {
   case EQUAL_LEXEME:
-    use_equality_test = TRUE;
+    test_type = EQUALITY_TEST;
     get_lexeme(thisAgent);
     break;
 
@@ -360,7 +353,6 @@ test parse_relational_test (agent* thisAgent) {
     break;
 
   default:
-    use_equality_test = TRUE;
     break;
   }
 
@@ -376,16 +368,8 @@ test parse_relational_test (agent* thisAgent) {
   case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
     referent = make_symbol_for_current_lexeme(thisAgent, id_lti);
     get_lexeme(thisAgent);
-    if (use_equality_test) {
-      t = make_equality_test_without_adding_reference (referent);
-    } else {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
-      ct->type = test_type;
-      ct->data.referent = referent;
-      t = make_test_from_complex_test(ct);
-    }
-    return t;
-
+      t = make_test_without_refcount (thisAgent, referent, test_type);
+      return t;
   default:
     print (thisAgent, "Expected variable or constant for test\n");
     print_location_of_most_recent_lexeme(thisAgent);
@@ -400,9 +384,8 @@ test parse_relational_test (agent* thisAgent) {
    <constant> ::= sym_constant | int_constant | float_constant
 ----------------------------------------------------------------- */
 
-test parse_disjunction_test (agent* thisAgent) {
-  complex_test *ct;
-  test t;
+constraint parse_disjunction_test (agent* thisAgent) {
+  constraint t;
 
   if (thisAgent->lexeme.type!=LESS_LESS_LEXEME) {
     print (thisAgent, "Expected << to begin disjunction test\n");
@@ -411,17 +394,14 @@ test parse_disjunction_test (agent* thisAgent) {
   }
   get_lexeme(thisAgent);
 
-  allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
-  ct->type = DISJUNCTION_TEST;
-  ct->data.disjunction_list = NIL;
-  t = make_test_from_complex_test (ct);
+  t = make_test(thisAgent, NIL, DISJUNCTION_TEST);
 
   while (thisAgent->lexeme.type!=GREATER_GREATER_LEXEME) {
     switch (thisAgent->lexeme.type) {
     case SYM_CONSTANT_LEXEME:
     case INT_CONSTANT_LEXEME:
     case FLOAT_CONSTANT_LEXEME:
-      push (thisAgent, make_symbol_for_current_lexeme(thisAgent, false), ct->data.disjunction_list);
+      push (thisAgent, make_symbol_for_current_lexeme(thisAgent, false), t->data.disjunction_list);
       get_lexeme(thisAgent);
       break;
     default:
@@ -432,8 +412,8 @@ test parse_disjunction_test (agent* thisAgent) {
     }
   }
   get_lexeme(thisAgent);  /* consume the >> */
-  ct->data.disjunction_list =
-    destructively_reverse_list (ct->data.disjunction_list);
+  t->data.disjunction_list =
+    destructively_reverse_list (t->data.disjunction_list);
   return t;
 }
 
@@ -443,7 +423,7 @@ test parse_disjunction_test (agent* thisAgent) {
    <simple_test> ::= <disjunction_test> | <relational_test>
 ----------------------------------------------------------------- */
 
-test parse_simple_test (agent* thisAgent) {
+constraint parse_simple_test (agent* thisAgent) {
   if (thisAgent->lexeme.type==LESS_LESS_LEXEME)
     return parse_disjunction_test(thisAgent);
   return parse_relational_test(thisAgent);
@@ -456,15 +436,15 @@ test parse_simple_test (agent* thisAgent) {
     <conjunctive_test> ::= { <simple_test>+ }
 ----------------------------------------------------------------- */
 
-test parse_test (agent* thisAgent) {
-  complex_test *ct;
-  test t, temp;
+constraint parse_test (agent* thisAgent) {
+  constraint t, temp;
 
   if (thisAgent->lexeme.type!=L_BRACE_LEXEME)
     return parse_simple_test(thisAgent);
+
   /* --- parse and return conjunctive test --- */
-  get_lexeme(thisAgent);
   t = make_blank_test();
+  get_lexeme(thisAgent);
   do {
     temp = parse_simple_test(thisAgent);
     if (!temp) {
@@ -475,13 +455,10 @@ test parse_test (agent* thisAgent) {
   } while (thisAgent->lexeme.type!=R_BRACE_LEXEME);
   get_lexeme(thisAgent); /* consume the "}" */
 
-  if (test_is_complex_test(t)) {
-    ct = complex_test_from_test(t);
-    if (ct->type==CONJUNCTIVE_TEST)
-    {
-      ct->data.conjunct_list =
-        destructively_reverse_list (ct->data.conjunct_list);
-    }
+  if (t->type==CONJUNCTIVE_TEST)
+  {
+    t->data.conjunct_list =
+        destructively_reverse_list (t->data.conjunct_list);
   }
 
   return t;
@@ -509,9 +486,9 @@ test parse_test (agent* thisAgent) {
    to add non-equality portions of the test only once, if possible.
 ----------------------------------------------------------------- */
 
-void fill_in_id_tests (agent* thisAgent, condition *conds, test t) {
+void fill_in_id_tests (agent* thisAgent, condition *conds, constraint t) {
   condition *positive_c, *c;
-  test equality_test_from_t;
+  constraint equality_test_from_t;
 
   /* --- see if there's at least one positive condition --- */
   for (positive_c=conds; positive_c!=NIL; positive_c=positive_c->next)
@@ -545,9 +522,9 @@ void fill_in_id_tests (agent* thisAgent, condition *conds, test t) {
   }
 }
 
-void fill_in_attr_tests (agent* thisAgent, condition *conds, test t) {
+void fill_in_attr_tests (agent* thisAgent, condition *conds, constraint t) {
   condition *positive_c, *c;
-  test equality_test_from_t;
+  constraint equality_test_from_t;
 
   /* --- see if there's at least one positive condition --- */
   for (positive_c=conds; positive_c!=NIL; positive_c=positive_c->next)
@@ -630,11 +607,11 @@ condition *negate_condition_list (agent* thisAgent, condition *conds) {
 
 condition *parse_conds_for_one_id (agent* thisAgent,
 								   char first_letter_if_no_id_given,
-                                   test *dest_id_test);
+                                   constraint *dest_id_test);
 
 condition *parse_value_test_star (agent* thisAgent, char first_letter) {
   condition *c, *last_c, *first_c, *new_conds;
-  test value_test;
+  constraint value_test;
   Bool acceptable;
 
   if ((thisAgent->lexeme.type==MINUS_LEXEME) ||
@@ -701,7 +678,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
 ----------------------------------------------------------------- */
 
 condition *parse_attr_value_tests (agent* thisAgent) {
-  test id_test_to_use, attr_test;
+  constraint id_test_to_use, attr_test;
   Bool negate_it;
   condition *first_c, *last_c, *c, *new_conds;
 
@@ -792,9 +769,8 @@ condition *parse_attr_value_tests (agent* thisAgent) {
    any error occurs).
 ----------------------------------------------------------------- */
 
-test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_id_given) {
-	test id_test, id_goal_impasse_test, check_for_symconstant;
-	complex_test *ct;
+constraint parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_id_given) {
+	constraint id_test, id_goal_impasse_test, check_for_symconstant;
 	Symbol *sym;
 
 	if (thisAgent->lexeme.type!=L_PAREN_LEXEME) {
@@ -807,15 +783,11 @@ test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_i
 	/* --- look for goal/impasse indicator --- */
 	if (thisAgent->lexeme.type==SYM_CONSTANT_LEXEME) {
 		if (!strcmp(thisAgent->lexeme.string,"state")) {
-			allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
-			ct->type = GOAL_ID_TEST;
-			id_goal_impasse_test = make_test_from_complex_test(ct);
+			id_goal_impasse_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
 			get_lexeme(thisAgent);
 			first_letter_if_no_id_given = 's';
 		} else if (!strcmp(thisAgent->lexeme.string,"impasse")) {
-			allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
-			ct->type = IMPASSE_ID_TEST;
-			id_goal_impasse_test = make_test_from_complex_test(ct);
+      id_goal_impasse_test = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
 			get_lexeme(thisAgent);
 			first_letter_if_no_id_given = 'i';
 		} else {
@@ -839,7 +811,7 @@ test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_i
 					(thisAgent, &id_test, make_placeholder_test (thisAgent, first_letter_if_no_id_given));
 			} else {
 				check_for_symconstant = copy_of_equality_test_found_in_test(thisAgent, id_test);
-				sym = referent_of_equality_test(check_for_symconstant);
+				sym = check_for_symconstant->data.referent;
 				deallocate_test (thisAgent, check_for_symconstant); /* RBD added 3/28/95 */
 
 				// Symbol type can only be IDENTIFIER_SYMBOL_TYPE if it is a long term identifier (lti),
@@ -936,9 +908,9 @@ condition *parse_tail_of_conds_for_one_id (agent* thisAgent) {
 ----------------------------------------------------------------- */
 
 condition *parse_conds_for_one_id (agent* thisAgent, char first_letter_if_no_id_given,
-                                   test *dest_id_test) {
+                                   constraint *dest_id_test) {
   condition *conds;
-  test id_test, equality_test_from_id_test;
+  constraint id_test, equality_test_from_id_test;
 
   /* --- parse the head --- */
   id_test = parse_head_of_conds_for_one_id (thisAgent, first_letter_if_no_id_given);

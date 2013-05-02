@@ -163,9 +163,8 @@ bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list 
 #define dealloc_and_return(agnt,x,y) { deallocate_test(agnt, x) ; return (y) ; }
 
 /* DJP 4/3/96 -- changed t2 to test2 in declaration */
-bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bindings) {
+bool tests_are_equal_with_bindings (agent* agnt, constraint t1, constraint test2, list **bindings) {
     cons *c1, *c2;
-    complex_test *ct1, *ct2;
     Bool goal_test,impasse_test;
 
     /* DJP 4/3/96 -- The problem here is that sometimes test2 was being copied      */
@@ -174,11 +173,11 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
     /*               decided to just create a copy always and then always           */
     /*               deallocate it before returning.  Added a macro to do that.     */
 
-    test t2;
+    constraint t2;
 
     /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
-    if (test_is_blank_test(t1))
-        return(test_is_blank_test(test2) == 0);
+    if (test_is_blank(t1))
+        return(test_is_blank(test2) == 0);
 
     /* If the pattern doesn't include "(state", but the test from the
     * production does, strip it out of the production's.
@@ -195,17 +194,15 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
         t2 = copy_test(agnt,test2) ; /* DJP 4/3/96 -- Always make t2 into a copy */
     }
 
-    if (test_is_blank_or_equality_test(t1))
+    if (test_is_equality(t1))
     {
-        if (!(test_is_blank_or_equality_test(t2) && !(test_is_blank_test(t2))))
+        if (!(test_is_equality(t2) && !(test_is_blank(t2))))
         {
             dealloc_and_return(agnt, t2,FALSE);
         }
         else
         {
-            if (symbols_are_equal_with_bindings(agnt, referent_of_equality_test(t1),
-                referent_of_equality_test(t2),
-                bindings))
+            if (symbols_are_equal_with_bindings(agnt, t1->data.referent, t2->data.referent, bindings))
             {
                 dealloc_and_return(agnt, t2,TRUE);
             }
@@ -216,15 +213,12 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
         }
     }
 
-    ct1 = complex_test_from_test(t1);
-    ct2 = complex_test_from_test(t2);
-
-    if (ct1->type != ct2->type)
+    if (t1->type != t2->type)
     {
         dealloc_and_return(agnt, t2,FALSE);
     }
 
-    switch(ct1->type)
+    switch(t1->type)
     {
     case GOAL_ID_TEST:
         dealloc_and_return(agnt, t2,TRUE);
@@ -234,8 +228,9 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
         break;
 
     case DISJUNCTION_TEST:
-        for (c1 = ct1->data.disjunction_list, c2=ct2->data.disjunction_list;
-            ((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
+        for (c1 = t1->data.disjunction_list, c2=t2->data.disjunction_list;
+           ((c1!=NIL)&&(c2!=NIL));
+             c1=c1->rest, c2=c2->rest)
         {
             if (c1->first != c2->first)
             {
@@ -252,10 +247,10 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
         }
 
     case CONJUNCTIVE_TEST:
-        for (c1=ct1->data.conjunct_list, c2=ct2->data.conjunct_list;
+        for (c1=t1->data.conjunct_list, c2=t2->data.conjunct_list;
             ((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
         {
-            if (! tests_are_equal_with_bindings(agnt, static_cast<test>(c1->first), static_cast<test>(c2->first), bindings))
+            if (!tests_are_equal_with_bindings(agnt, static_cast<constraint>(c1->first), static_cast<constraint>(c2->first), bindings))
                 dealloc_and_return(agnt, t2,FALSE)
         }
         if (c1==c2)
@@ -268,7 +263,7 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
         }
 
     default:  /* relational tests other than equality */
-        if (symbols_are_equal_with_bindings(agnt, ct1->data.referent,ct2->data.referent,bindings))
+        if (symbols_are_equal_with_bindings(agnt, t1->data.referent,t2->data.referent,bindings))
         {
             dealloc_and_return(agnt, t2,TRUE);
         }

@@ -373,40 +373,32 @@ inline const char *test_type_to_string(byte test_type)
   return "INVALID TEST TYPE";
 }
 
-void print_test (agent* thisAgent, test t, const char *indent_string) {
+void print_test (agent* thisAgent, constraint t, const char *indent_string) {
 	cons *c;
-	complex_test *ct;
-  byte test_type;
-  Symbol *referent;
-  bool has_referent;
 
-
-  has_referent = get_test_type_referent(t, &test_type, &referent);
-  switch (test_type) {
+  switch (t->type) {
     case BLANK_TEST:
     case GOAL_ID_TEST:
     case IMPASSE_ID_TEST:
-      print(thisAgent, "%s\n", test_type_to_string(test_type));
+      print(thisAgent, "%s\n", test_type_to_string(t->type));
       break;
     case DISJUNCTION_TEST:
-      print(thisAgent, "%s: << ", test_type_to_string(test_type));
-      ct = complex_test_from_test(t);
-      for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
+      print(thisAgent, "%s: << ", test_type_to_string(t->type));
+      for (c=t->data.disjunction_list; c!=NIL; c=c->rest) {
         print(thisAgent, "%s ",
             symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), FALSE, NULL, 0));
       }
       print (thisAgent, ">>\n");
       break;
     case CONJUNCTIVE_TEST:
-      ct = complex_test_from_test(t);
-      print(thisAgent, "%s\n", test_type_to_string(test_type));
+      print(thisAgent, "%s\n", test_type_to_string(t->type));
       if (strlen(indent_string) == 0)
       {
         print(thisAgent, "------------------\n");
       }
-      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
+      for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
         print(thisAgent, "%s", indent_string);
-        print_test (thisAgent, static_cast<char *>(c->first), indent_string);
+        print_test (thisAgent, static_cast<constraint>(c->first), indent_string);
       }
       if (strlen(indent_string) == 0)
       {
@@ -415,16 +407,15 @@ void print_test (agent* thisAgent, test t, const char *indent_string) {
       break;
     default:
       print(thisAgent, "%s: %s (%s)\n",
-          test_type_to_string(test_type),
-          (referent ? symbol_to_string (thisAgent, referent, FALSE, NULL, 0) : "NULL (PROBLEM!)"),
-          (referent ? symbol_to_typeString (thisAgent, referent) : "NULL (PROBLEM!)"));
+          test_type_to_string(t->type),
+          (t->data.referent ? symbol_to_string (thisAgent, t->data.referent, FALSE, NULL, 0) : "NULL (PROBLEM!)"),
+          (t->data.referent ? symbol_to_typeString (thisAgent, t->data.referent) : "NULL (PROBLEM!)"));
       break;
   }
 }
 
-char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
+char *test_to_string (agent* thisAgent, constraint t, char *dest, size_t dest_size) {
 	cons *c;
-	complex_test *ct;
 	char *ch;
 
 	if (!dest) {
@@ -433,62 +424,60 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
 	}
 	ch = dest;
 
-	if (test_is_blank_test(t)) {
+	if (test_is_blank(t)) {
 		strncpy (dest, "[BLANK TEST]", dest_size);  /* this should never get executed */
 		dest[dest_size - 1] = 0; /* ensure null termination */
 		return dest;
 	}
 
 
-	if (test_is_blank_or_equality_test(t)) {
-		return symbol_to_string (thisAgent, referent_of_equality_test(t), TRUE, dest, dest_size);
+	if (test_is_equality(t)) {
+		return symbol_to_string (thisAgent, t->data.referent, TRUE, dest, dest_size);
 	}
 
-	ct = complex_test_from_test(t);
-
-	switch (ct->type) {
+	switch (t->type) {
 		case NOT_EQUAL_TEST:
 			strncpy (ch, "<> ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch)
 				ch++;
-			symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+			symbol_to_string (thisAgent, t->data.referent, TRUE, ch, dest_size - (ch - dest));
 			break;
 		case LESS_TEST:
 			strncpy (ch, "< ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
-			symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+			symbol_to_string (thisAgent, t->data.referent, TRUE, ch, dest_size - (ch - dest));
 			break;
 		case GREATER_TEST:
 			strncpy (ch, "> ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
-			symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+			symbol_to_string (thisAgent, t->data.referent, TRUE, ch, dest_size - (ch - dest));
 			break;
 		case LESS_OR_EQUAL_TEST:
 			strncpy (ch, "<= ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
-			symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+			symbol_to_string (thisAgent, t->data.referent, TRUE, ch, dest_size - (ch - dest));
 			break;
 		case GREATER_OR_EQUAL_TEST:
 			strncpy (ch, ">= ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
-			symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+			symbol_to_string (thisAgent, t->data.referent, TRUE, ch, dest_size - (ch - dest));
 			break;
 		case SAME_TYPE_TEST:
 			strncpy (ch, "<=> ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
-			symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+			symbol_to_string (thisAgent, t->data.referent, TRUE, ch, dest_size - (ch - dest));
 			break;
 		case DISJUNCTION_TEST:
 			strncpy (ch, "<< ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
-			for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
+			for (c=t->data.disjunction_list; c!=NIL; c=c->rest) {
 				symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), TRUE, ch, dest_size - (ch - dest));
 				while (*ch) ch++;
 				*(ch++) = ' ';
@@ -500,8 +489,8 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
 			strncpy (ch, "{ ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
-			for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
-				test_to_string (thisAgent, static_cast<char *>(c->first), ch, dest_size - (ch - dest));
+			for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
+				test_to_string (thisAgent, static_cast<constraint>(c->first), ch, dest_size - (ch - dest));
 				while (*ch) ch++;
 				*(ch++) = ' ';
 			}
@@ -607,7 +596,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
    dl_cons *dc;
    condition *c;
    Bool removed_goal_test, removed_impasse_test;
-   test id_test;
+   constraint id_test;
 
    if (!conds) return;
 
@@ -729,7 +718,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
 //            print_test(thisAgent, c->data.tests.attr_test);
 //            print_test(thisAgent, c->original_tests.attr_test);
             while (*ch) ch++;
-            if (! test_is_blank_test(c->data.tests.value_test))
+            if (! test_is_blank(c->data.tests.value_test))
             {
                *(ch++) = ' ';
                test_to_string (thisAgent, c->data.tests.value_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
