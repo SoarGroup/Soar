@@ -356,9 +356,10 @@ typedef struct slot_struct {
    further indicates the type of the test.)
 ------------------------------------------------------------------- */
 
-// Debug| remove this MMA
-//typedef char * test;
-//
+/* -- If these macros are ever used, they must be updated to use the new
+ *    test structures, which gets rid of the bit fiddling and makes all
+ *    tests use what was previously the complex_test struct -- */
+
 //#ifdef USE_MACROS
 //
 //#define test_is_blank_test(t) ((t)==NIL)
@@ -380,29 +381,9 @@ typedef struct slot_struct {
 //
 //#endif /* USE_MACROS */
 
-typedef struct complex_test_struct {
-  byte type;                  /* see definitions below */
-  union test_info_union {
-    Symbol *referent;         	/* for relational tests */
-    ::list *disjunction_list;   /* for disjunction tests */
-    ::list *conjunct_list;      /* for conjunctive tests */
-  } data;
-} complex_test;
-
-typedef struct constraint_struct {
-  byte type;                  /* see definitions below */
-  union test_info_union {
-    Symbol *referent;           /* for relational tests */
-    ::list *disjunction_list;   /* for disjunction tests */
-    ::list *conjunct_list;      /* for conjunctive tests */
-  } data;
-} constraint_info;
-
-typedef constraint_info * constraint;
-
 /* types of the complex_test's */
 /* WARNING -- can't be 255 -- see rete.cpp */
-enum ComplexTextTypes {
+enum TestType {
          NOT_EQUAL_TEST = 1,          /* various relational tests */
          LESS_TEST = 2,
          GREATER_TEST = 3,
@@ -419,7 +400,19 @@ enum ComplexTextTypes {
 
 #define NUM_TEST_TYPES 11           /* Note: count does not include blank tests*/
 
-inline Bool test_is_blank(constraint t)
+typedef struct test_struct {
+  TestType type;                  /* see definitions below */
+  union test_info_union {
+    Symbol *referent;           /* for relational tests */
+    ::list *disjunction_list;   /* for disjunction tests */
+    ::list *conjunct_list;      /* for conjunctive tests */
+  } data;
+} test_info;
+
+typedef test_info * test;
+
+
+inline Bool test_is_blank(test t)
 {
   return (t == NIL);
 }
@@ -428,14 +421,9 @@ inline Bool test_is_blank(constraint t)
 #pragma warning (default : 4311)
 #endif
 
-inline Bool test_is_equality(constraint t)
+inline test make_blank_test()
 {
-  return (t->type == EQUALITY_TEST);
-}
-
-inline constraint make_blank_test()
-{
-  return static_cast<constraint>(NIL);
+  return static_cast<test>(NIL);
 }
 
 //
@@ -509,9 +497,9 @@ typedef struct reorder_info_struct {
 
 /* --- info on positive and negative conditions only --- */
 typedef struct three_field_tests_struct {
-  constraint id_test;
-  constraint attr_test;
-  constraint value_test;
+  test id_test;
+  test attr_test;
+  test value_test;
 } three_field_tests;
 
 /* --- info on negated conjunctive conditions only --- */

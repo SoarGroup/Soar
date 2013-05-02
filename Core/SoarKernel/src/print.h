@@ -129,7 +129,7 @@ extern char *string_to_escaped_string (agent* thisAgent, char *s, char first_and
                                        char *dest);
 extern char const* symbol_to_typeString (agent* thisAgent, Symbol *sym);
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
-extern char *test_to_string (agent* thisAgent, constraint t, char *dest, size_t dest_size);
+extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size);
 extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size);
 
 /* -----------------------------------------------------------------------
@@ -154,7 +154,7 @@ extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, si
 ----------------------------------------------------------------------- */
 
 extern inline const char *test_type_to_string(byte test_type);
-extern void print_test (agent* thisAgent, constraint t, const char *indent_string = "");
+extern void print_test (agent* thisAgent, test t, const char *indent_string = "");
 extern void print_condition_list (agent* thisAgent, condition *conds, int indent, Bool internal);
 extern void print_action_list (agent* thisAgent, action *actions, int indent, Bool internal);
 extern void print_production (agent* thisAgent, production *p, Bool internal);

@@ -185,7 +185,7 @@ typedef struct agent_struct {
   //
   // These was taked from print.
   Symbol *action_id_to_match;
-  constraint id_test_to_match;
+  test id_test_to_match;
 
   //
   // This was taken from production.h

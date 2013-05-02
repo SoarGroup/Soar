@@ -373,7 +373,7 @@ inline const char *test_type_to_string(byte test_type)
   return "INVALID TEST TYPE";
 }
 
-void print_test (agent* thisAgent, constraint t, const char *indent_string) {
+void print_test (agent* thisAgent, test t, const char *indent_string) {
 	cons *c;
 
   switch (t->type) {
@@ -398,7 +398,7 @@ void print_test (agent* thisAgent, constraint t, const char *indent_string) {
       }
       for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
         print(thisAgent, "%s", indent_string);
-        print_test (thisAgent, static_cast<constraint>(c->first), indent_string);
+        print_test (thisAgent, static_cast<test>(c->first), indent_string);
       }
       if (strlen(indent_string) == 0)
       {
@@ -414,7 +414,7 @@ void print_test (agent* thisAgent, constraint t, const char *indent_string) {
   }
 }
 
-char *test_to_string (agent* thisAgent, constraint t, char *dest, size_t dest_size) {
+char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
 	cons *c;
 	char *ch;
 
@@ -431,11 +431,12 @@ char *test_to_string (agent* thisAgent, constraint t, char *dest, size_t dest_si
 	}
 
 
-	if (test_is_equality(t)) {
-		return symbol_to_string (thisAgent, t->data.referent, TRUE, dest, dest_size);
-	}
-
 	switch (t->type) {
+	  case BLANK_TEST:
+	    break;
+    case EQUALITY_TEST:
+      return symbol_to_string (thisAgent, t->data.referent, TRUE, dest, dest_size);
+      break;
 		case NOT_EQUAL_TEST:
 			strncpy (ch, "<> ", dest_size - (ch - dest));
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
@@ -490,7 +491,7 @@ char *test_to_string (agent* thisAgent, constraint t, char *dest, size_t dest_si
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
 			for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
-				test_to_string (thisAgent, static_cast<constraint>(c->first), ch, dest_size - (ch - dest));
+				test_to_string (thisAgent, static_cast<test>(c->first), ch, dest_size - (ch - dest));
 				while (*ch) ch++;
 				*(ch++) = ' ';
 			}
@@ -596,7 +597,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
    dl_cons *dc;
    condition *c;
    Bool removed_goal_test, removed_impasse_test;
-   constraint id_test;
+   test id_test;
 
    if (!conds) return;
 

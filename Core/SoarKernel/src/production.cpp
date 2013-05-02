@@ -51,7 +51,7 @@
 /* #define LIST_COMPILE_TIME_O_SUPPORT_FAILURES */
 
 void init_production_utilities (agent* thisAgent) {
-  init_memory_pool (thisAgent, &thisAgent->constraint_pool, sizeof(constraint_info), "complex test");
+  init_memory_pool (thisAgent, &thisAgent->constraint_pool, sizeof(test_info), "complex test");
   init_memory_pool (thisAgent, &thisAgent->condition_pool, sizeof(condition), "condition");
   init_memory_pool (thisAgent, &thisAgent->production_pool, sizeof(production), "production");
   init_memory_pool (thisAgent, &thisAgent->action_pool, sizeof(action), "action");
@@ -97,25 +97,24 @@ char first_letter_from_symbol (Symbol *sym) {
    (See comments on first_letter_from_symbol for more explanation.)
 ----------------------------------------------------------------- */
 
-char first_letter_from_test (constraint t) {
+char first_letter_from_test (test t) {
   cons *c;
   char ch;
 
   if (test_is_blank (t)) return '*';
-  if (test_is_equality (t))
-    return first_letter_from_symbol (t->data.referent);
 
   switch(t->type) {
-  case GOAL_ID_TEST: return 's';
-  case IMPASSE_ID_TEST: return 'i';
-  case CONJUNCTIVE_TEST:
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
-      ch = first_letter_from_test (static_cast<constraint>(c->first));
-      if (ch != '*') return ch;
-    }
-    return '*';
-  default:  /* disjunction tests, and relational tests other than equality */
-    return '*';
+    case EQUALITY_TEST: return first_letter_from_symbol (t->data.referent);
+    case GOAL_ID_TEST: return 's';
+    case IMPASSE_ID_TEST: return 'i';
+    case CONJUNCTIVE_TEST:
+      for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
+        ch = first_letter_from_test (static_cast<test>(c->first));
+        if (ch != '*') return ch;
+      }
+      return '*';
+    default:  /* disjunction tests, and relational tests other than equality */
+      return '*';
   }
 }
 
@@ -174,7 +173,7 @@ list *copy_test_list (agent* thisAgent, cons *c) {
 
   if (!c) return NIL;
   allocate_cons (thisAgent, &new_c);
-  new_c->first = copy_test (thisAgent, static_cast<constraint>(c->first));
+  new_c->first = copy_test (thisAgent, static_cast<test>(c->first));
   new_c->rest = copy_test_list (thisAgent, c->rest);
   return new_c;
 }
@@ -191,16 +190,16 @@ list *copy_cons_list (agent* thisAgent, cons *c) {
   return new_c;
 }
 
-inline bool is_test_type_with_no_referent(ComplexTextTypes test_type)
+inline bool is_test_type_with_no_referent(TestType test_type)
 {
   return ((test_type == GOAL_ID_TEST) ||
           (test_type == IMPASSE_ID_TEST) ||
           (test_type == DISJUNCTION_TEST) ||
           (test_type == CONJUNCTIVE_TEST));
 }
-inline constraint make_test_without_refcount(agent* thisAgent, Symbol * sym, ComplexTextTypes test_type)
+inline test make_test_without_refcount(agent* thisAgent, Symbol * sym, TestType test_type)
 {
-  constraint new_ct;
+  test new_ct;
 
   if (!sym && (!is_test_type_with_no_referent(test_type)))
     return make_blank_test();
@@ -212,9 +211,9 @@ inline constraint make_test_without_refcount(agent* thisAgent, Symbol * sym, Com
   return new_ct;
 }
 
-inline constraint make_test(agent* thisAgent, Symbol * sym, ComplexTextTypes test_type) // is this equivalent to the macro above??
+inline test make_test(agent* thisAgent, Symbol * sym, TestType test_type) // is this equivalent to the macro above??
 {
-  constraint new_ct;
+  test new_ct;
 
   if (!sym && (!is_test_type_with_no_referent(test_type)))
     return make_blank_test();
@@ -241,30 +240,30 @@ inline constraint make_test(agent* thisAgent, Symbol * sym, ComplexTextTypes tes
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-constraint copy_test (agent* thisAgent, constraint t) {
+test copy_test (agent* thisAgent, test t) {
   Symbol *referent;
-  constraint new_ct;
+  test new_ct;
 
   if (test_is_blank(t))
     return make_blank_test();
 
-  allocate_with_pool (thisAgent, &thisAgent->constraint_pool, &new_ct);
-  new_ct->type = t->type;
   switch(t->type) {
-  case GOAL_ID_TEST:
-  case IMPASSE_ID_TEST:
-    break;
-  case DISJUNCTION_TEST:
-    new_ct->data.disjunction_list =
-      copy_symbol_list_adding_references (thisAgent, t->data.disjunction_list);
-    break;
-  case CONJUNCTIVE_TEST:
-    new_ct->data.conjunct_list = copy_test_list (thisAgent, t->data.conjunct_list);
-    break;
-  default:  /* relational tests other than equality */
-    new_ct->data.referent = t->data.referent;
-    symbol_add_ref (t->data.referent);
-    break;
+    case GOAL_ID_TEST:
+    case IMPASSE_ID_TEST:
+      new_ct = make_test(thisAgent, NIL, t->type);
+      break;
+    case DISJUNCTION_TEST:
+      new_ct = make_test(thisAgent, NIL, t->type);
+      new_ct->data.disjunction_list =
+          copy_symbol_list_adding_references (thisAgent, t->data.disjunction_list);
+      break;
+    case CONJUNCTIVE_TEST:
+      new_ct = make_test(thisAgent, NIL, t->type);
+      new_ct->data.conjunct_list = copy_test_list (thisAgent, t->data.conjunct_list);
+      break;
+    default:  /* relational tests other than equality */
+      new_ct = make_test(thisAgent, t->data.referent, t->type);
+      break;
   }
   return new_ct;
 }
@@ -276,40 +275,41 @@ constraint copy_test (agent* thisAgent, constraint t) {
    or impasse test.
 ---------------------------------------------------------------- */
 
-constraint copy_test_removing_goal_impasse_tests (agent* thisAgent, constraint t,
-                                            Bool *removed_goal,
-                                            Bool *removed_impasse) {
+test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
+    Bool *removed_goal,
+    Bool *removed_impasse) {
   cons *c;
-  constraint new_t, temp;
-
-  if (test_is_equality(t)) return copy_test (thisAgent, t);
+  test new_t, temp;
 
   switch(t->type) {
-  case GOAL_ID_TEST:
-    *removed_goal = TRUE;
-    return make_blank_test();
-  case IMPASSE_ID_TEST:
-    *removed_impasse = TRUE;
-    return make_blank_test();
+    case EQUALITY_TEST:
+      return copy_test (thisAgent, t);
+      break;
+    case GOAL_ID_TEST:
+      *removed_goal = TRUE;
+      return make_blank_test();
+    case IMPASSE_ID_TEST:
+      *removed_impasse = TRUE;
+      return make_blank_test();
 
-  case CONJUNCTIVE_TEST:
-    new_t = make_blank_test();
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
-      temp = copy_test_removing_goal_impasse_tests (thisAgent, static_cast<constraint>(c->first),
-                                                    removed_goal,
-                                                    removed_impasse);
-      if (! test_is_blank(temp))
-        add_new_test_to_test (thisAgent, &new_t, temp);
-    }
+    case CONJUNCTIVE_TEST:
+      new_t = make_blank_test();
+      for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
+        temp = copy_test_removing_goal_impasse_tests (thisAgent, static_cast<test>(c->first),
+            removed_goal,
+            removed_impasse);
+        if (! test_is_blank(temp))
+          add_new_test_to_test (thisAgent, &new_t, temp);
+      }
       if (new_t->type==CONJUNCTIVE_TEST)
       {
         new_t->data.conjunct_list =
-          destructively_reverse_list (new_t->data.conjunct_list);
+            destructively_reverse_list (new_t->data.conjunct_list);
       }
-    return new_t;
+      return new_t;
 
-  default:  /* relational tests other than equality */
-    return copy_test (thisAgent, t);
+    default:  /* relational tests other than equality */
+      return copy_test (thisAgent, t);
   }
 }
 
@@ -317,7 +317,7 @@ constraint copy_test_removing_goal_impasse_tests (agent* thisAgent, constraint t
    Deallocates a test.
 ---------------------------------------------------------------- */
 
-void deallocate_test (agent* thisAgent, constraint t) {
+void deallocate_test (agent* thisAgent, test t) {
   cons *c, *next_c;
 
   if (test_is_blank(t)) return;
@@ -333,7 +333,7 @@ void deallocate_test (agent* thisAgent, constraint t) {
     c = t->data.conjunct_list;
     while (c) {
       next_c = c->rest;
-      deallocate_test (thisAgent, static_cast<constraint>(c->first));
+      deallocate_test (thisAgent, static_cast<test>(c->first));
       free_cons (thisAgent, c);
       c = next_c;
     }
@@ -364,8 +364,8 @@ void deallocate_test (agent* thisAgent, constraint t) {
 ---------------------------------------------------------------- */
 
 void add_new_test_to_test (agent* thisAgent,
-						   constraint *t, constraint add_me) {
-  constraint ct = 0;
+						   test *t, test add_me) {
+  test ct = 0;
   cons *c;
 
   if (test_is_blank(add_me)) return;
@@ -376,8 +376,7 @@ void add_new_test_to_test (agent* thisAgent,
   }
   ct = *t;
   if (ct->type!=CONJUNCTIVE_TEST) {
-    allocate_with_pool (thisAgent, &thisAgent->constraint_pool, &ct);
-    ct->type = CONJUNCTIVE_TEST;
+    ct = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
     allocate_cons (thisAgent, &c);
     ct->data.conjunct_list = c;
     c->first = *t;
@@ -397,8 +396,8 @@ void add_new_test_to_test (agent* thisAgent,
    test is already included in the first one.
 ---------------------------------------------------------------- */
 
-void add_new_test_to_test_if_not_already_there (agent* thisAgent, constraint *t, constraint add_me, bool neg) {
-  constraint ct;
+void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg) {
+  test ct;
   cons *c;
 
   if (tests_are_equal (*t, add_me, neg)) {
@@ -409,7 +408,7 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent, constraint *t,
     ct = *t;
     if (ct->type == CONJUNCTIVE_TEST)
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-        if (tests_are_equal (static_cast<constraint>(c->first), add_me, neg)) {
+        if (tests_are_equal (static_cast<test>(c->first), add_me, neg)) {
           deallocate_test (thisAgent, add_me);
           return;
         }
@@ -423,94 +422,94 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent, constraint *t,
    and assumes variables are all equal.
 ---------------------------------------------------------------- */
 
-Bool tests_are_equal (constraint t1, constraint t2, bool neg) {
-	cons *c1, *c2;
+Bool tests_are_equal (test t1, test t2, bool neg) {
+  cons *c1, *c2;
 
-	if (test_is_equality(t1))
-	{
-		if (!test_is_equality(t2))
-			return FALSE;
+    if (t1->type==EQUALITY_TEST)
+    {
+      if (t2->type!=EQUALITY_TEST)
+        return FALSE;
 
-		if (t1 == t2) /* Warning: this relies on the representation of tests */
-			return TRUE;
+      if (t1->data.referent == t2->data.referent) /* Warning: this relies on the representation of tests */
+        return TRUE;
 
-		if (!neg)
-			return FALSE;
+      if (!neg)
+        return FALSE;
 
-		// ignore variables in negation tests
-		Symbol* s1 = t1->data.referent;
-		Symbol* s2 = t2->data.referent;
+      // ignore variables in negation tests
+      Symbol* s1 = t1->data.referent;
+      Symbol* s2 = t2->data.referent;
 
-		if ((s1->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE) && (s2->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE))
-		{
-			return TRUE;
-		}
-		return FALSE;
-	}
+      if ((s1->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE) && (s2->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE))
+      {
+        return TRUE;
+      }
+      return FALSE;
+    }
 
-	if (t1->type != t2->type)
-		return FALSE;
+    if (t1->type != t2->type)
+      return FALSE;
 
-	switch(t1->type) {
-	case GOAL_ID_TEST:
-		return TRUE;
+    switch(t1->type) {
+      case GOAL_ID_TEST:
+        return TRUE;
 
-	case IMPASSE_ID_TEST:
-		return TRUE;
+      case IMPASSE_ID_TEST:
+        return TRUE;
 
-	case DISJUNCTION_TEST:
-		for (c1 = t1->data.disjunction_list, c2 = t2->data.disjunction_list; (c1!=NIL) && (c2!=NIL); c1 = c1->rest, c2 = c2->rest)
-		{
-			if (c1->first != c2->first)
-				return FALSE;
-		}
-		if (c1 == c2)
-			return TRUE;  /* make sure they both hit end-of-list */
-		return FALSE;
+      case DISJUNCTION_TEST:
+        for (c1 = t1->data.disjunction_list, c2 = t2->data.disjunction_list; (c1!=NIL) && (c2!=NIL); c1 = c1->rest, c2 = c2->rest)
+        {
+          if (c1->first != c2->first)
+            return FALSE;
+        }
+        if (c1 == c2)
+          return TRUE;  /* make sure they both hit end-of-list */
+        return FALSE;
 
-	case CONJUNCTIVE_TEST:
-		// bug 510 fix: ignore order of test members in conjunctions
-		{
-			std::list<constraint> copy2;
-			for (c2 = t2->data.conjunct_list; c2 != NIL; c2 = c2->rest)
-				copy2.push_back(static_cast<constraint>(c2->first));
+      case CONJUNCTIVE_TEST:
+        // bug 510 fix: ignore order of test members in conjunctions
+      {
+        std::list<test> copy2;
+        for (c2 = t2->data.conjunct_list; c2 != NIL; c2 = c2->rest)
+          copy2.push_back(static_cast<test>(c2->first));
 
-			std::list<constraint>::iterator iter;
-			for (c1 = t1->data.conjunct_list; c1 != NIL; c1 = c1->rest)
-			{
-				// check against copy
-				for(iter = copy2.begin(); iter != copy2.end(); ++iter)
-				{
-					if (tests_are_equal(static_cast<constraint>(c1->first), *iter, neg))
-						break;
-				}
+        std::list<test>::iterator iter;
+        for (c1 = t1->data.conjunct_list; c1 != NIL; c1 = c1->rest)
+        {
+          // check against copy
+          for(iter = copy2.begin(); iter != copy2.end(); ++iter)
+          {
+            if (tests_are_equal(static_cast<test>(c1->first), *iter, neg))
+              break;
+          }
 
-				// iter will be end if no match
-				if (iter == copy2.end())
-					return FALSE;
+          // iter will be end if no match
+          if (iter == copy2.end())
+            return FALSE;
 
-				// there was a match, remove it from unmatched
-				copy2.erase(iter);
-			}
+          // there was a match, remove it from unmatched
+          copy2.erase(iter);
+        }
 
-			// make sure no unmatched remain
-			if (copy2.empty())
-				return TRUE;
-		}
-		return FALSE;
+        // make sure no unmatched remain
+        if (copy2.empty())
+          return TRUE;
+      }
+      return FALSE;
 
-	default:  /* relational tests other than equality */
-		if (t1->data.referent == t2->data.referent)
-			return TRUE;
-		return FALSE;
-	}
-}
+      default:  /* relational tests other than equality */
+        if (t1->data.referent == t2->data.referent)
+          return TRUE;
+        return FALSE;
+    }
+  }
 
 /* ----------------------------------------------------------------
    Returns a hash value for the given test.
 ---------------------------------------------------------------- */
 
-uint32_t hash_test (agent* thisAgent, constraint t) {
+uint32_t hash_test (agent* thisAgent, test t) {
   cons *c;
   uint32_t result;
 
@@ -560,15 +559,14 @@ uint32_t hash_test (agent* thisAgent, constraint t) {
 
 #define NON_EQUAL_TEST_RETURN_VAL 0  /* some unusual number */
 
-uint32_t canonical_test(constraint t)
+uint32_t canonical_test(test t)
 {
   Symbol *sym;
 
   if (test_is_blank(t))
     return NON_EQUAL_TEST_RETURN_VAL;
 
-  if (test_is_equality(t))
-    {
+  if (t->type == EQUALITY_TEST) {
       sym = t->data.referent;
       if (sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ||
         sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
@@ -691,111 +689,57 @@ Changed  < to > 10/5/92*/
    equality test.
 ---------------------------------------------------------------- */
 
-Bool test_includes_equality_test_for_symbol (constraint t, Symbol *sym) {
+Bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
   cons *c;
 
   if (test_is_blank(t)) return FALSE;
 
-  if (test_is_equality(t)) {
+  if (t->type == EQUALITY_TEST) {
     if (sym) return (t->data.referent == sym);
     return TRUE;
-  }
-
-  if (t->type==CONJUNCTIVE_TEST) {
+  } else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_includes_equality_test_for_symbol (static_cast<constraint>(c->first), sym)) return TRUE;
+      if (test_includes_equality_test_for_symbol (static_cast<test>(c->first), sym)) return TRUE;
   }
   return FALSE;
 }
 
 /* ----------------------------------------------------------------
    Returns TRUE iff the test contains a test for a variable
-   symbol.  Assumes test is not a conjunctive one.
+   symbol.  Assumes test is not a conjunctive one and does not
+   try to search them.
 ---------------------------------------------------------------- */
-bool test_is_variable(agent* thisAgent, constraint t)
+bool test_is_variable(agent* thisAgent, test t)
 {
   cons *c;
   char *this_test;
   bool return_value = false;
 
   if (test_is_blank(t)) return FALSE;
+  if ((t->type == DISJUNCTION_TEST) ||
+      (t->type == CONJUNCTIVE_TEST) ||
+      (t->type == GOAL_ID_TEST) ||
+      (t->type == IMPASSE_ID_TEST)) return FALSE;
 
-  switch (t->type) {
-    case EQUALITY_TEST:
-    case NOT_EQUAL_TEST:
-    case LESS_TEST:
-    case GREATER_TEST:
-    case LESS_OR_EQUAL_TEST:
-    case GREATER_OR_EQUAL_TEST:
-    case SAME_TYPE_TEST:
-      return (t->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
-      break;
-    default:
-      return false;
-  }
+  return (t->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
 }
-
-//void store_condition_var_locations(agent* thisAgent, condition *cond, test t)
-//{
-//	cons *c;
-//	complex_test *ct, *ct2;
-//	char *this_test;
-//
-//	cond->attr_is_simple_var = false;
-//	cond->value_is_simple_var = false;
-//
-//	  if (test_is_blank_test(t))
-//	  {
-//		  return;
-//	  }
-//
-//	  print(thisAgent, "Debug|-->Storing original production info for test...\n");
-//	  print(thisAgent, "Debug| ");
-//	  print_test (thisAgent, t);
-//
-//	  if (test_is_blank_or_equality_test(t)) {
-//		  cond->value_is_simple_var = (t->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
-////		  if (cond->value_is_simple_var)
-////		  {
-////			  print(thisAgent, "Debug| value test for equality condition is for variable: %s\n", symbol_to_string (thisAgent, t->data.referent, FALSE, NIL, NIL));
-////		  }
-//		  return;
-//	  }
-//
-//	  ct = complex_test_from_test(t);
-//
-//	  switch (ct->type) {
-//		  case NOT_EQUAL_TEST:
-//		  case LESS_TEST:
-//		  case GREATER_TEST:
-//		  case LESS_OR_EQUAL_TEST:
-//		  case GREATER_OR_EQUAL_TEST:
-//		  case SAME_TYPE_TEST:
-//			  cond->value_is_simple_var = (ct->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
-//			  print(thisAgent, "Debug| type %u test on condition value for variable!!!!!!!!!!: %s\n", ct->type, symbol_to_string (thisAgent, ct->data.referent, FALSE, NIL, NIL));
-//			  // I don't think we should ever get here.  It seems like all complex tests should be under conjunctions because of default binding.  Assert to test.
-//			  assert(FALSE);
-//			  return;
-//			  break;
-//	  }
-//}
 
 /* ----------------------------------------------------------------
    Looks for goal or impasse tests (as directed by the two flag
    parameters) in the given test, and returns TRUE if one is found.
 ---------------------------------------------------------------- */
 
-Bool test_includes_goal_or_impasse_id_test (constraint t,
+Bool test_includes_goal_or_impasse_id_test (test t,
                                             Bool look_for_goal,
                                             Bool look_for_impasse) {
   cons *c;
 
-  if (test_is_equality(t)) return FALSE;
+  if (t->type == EQUALITY_TEST) return FALSE;
   if (look_for_goal && (t->type==GOAL_ID_TEST)) return TRUE;
   if (look_for_impasse && (t->type==IMPASSE_ID_TEST)) return TRUE;
   if (t->type == CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_includes_goal_or_impasse_id_test (static_cast<constraint>(c->first),
+      if (test_includes_goal_or_impasse_id_test (static_cast<test>(c->first),
                                                  look_for_goal,
                                                  look_for_impasse))
         return TRUE;
@@ -810,7 +754,7 @@ Bool test_includes_goal_or_impasse_id_test (constraint t,
    the given test.
 ---------------------------------------------------------------- */
 
-constraint copy_of_equality_test_found_in_test (agent* thisAgent, constraint t) {
+test copy_of_equality_test_found_in_test (agent* thisAgent, test t) {
   cons *c;
   char msg[BUFFER_MSG_SIZE];
 
@@ -819,12 +763,12 @@ constraint copy_of_equality_test_found_in_test (agent* thisAgent, constraint t) 
     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
     abort_with_fatal_error(thisAgent, msg);
   }
-  if (test_is_equality(t)) return copy_test (thisAgent, t);
+  if (t->type == EQUALITY_TEST) return copy_test (thisAgent, t);
   if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (!test_is_blank (static_cast<constraint>(c->first))) &&
-           (test_is_equality (static_cast<constraint>(c->first))) )
-        return copy_test (thisAgent, static_cast<constraint>(c->first));
+      if ( (!test_is_blank (static_cast<test>(c->first))) &&
+           (static_cast<test>(c->first)->type == EQUALITY_TEST) )
+        return copy_test (thisAgent, static_cast<test>(c->first));
   }
   strncpy (msg, "Internal error: can't find equality constraint in constraint\n",BUFFER_MSG_SIZE);
   abort_with_fatal_error(thisAgent, msg);
@@ -1265,23 +1209,21 @@ void unmark_variables_and_free_list (agent* thisAgent, list *var_list) {
 ===================================================================== */
 
 
-void add_bound_variables_in_test (agent* thisAgent, constraint t,
+void add_bound_variables_in_test (agent* thisAgent, test t,
 								  tc_number tc, list **var_list) {
   cons *c;
   Symbol *referent;
 
   if (test_is_blank(t)) return;
 
-  if (test_is_equality(t)) {
+  if (t->type == EQUALITY_TEST) {
     referent = t->data.referent;
     if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
       mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
     return;
-  }
-
-  if (t->type==CONJUNCTIVE_TEST) {
+  } else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      add_bound_variables_in_test (thisAgent, static_cast<constraint>(c->first), tc, var_list);
+      add_bound_variables_in_test (thisAgent, static_cast<test>(c->first), tc, var_list);
   }
 }
 
@@ -1310,19 +1252,12 @@ void add_bound_variables_in_condition_list (agent* thisAgent, condition *cond_li
    the header of the list of marked variables being constructed.
 ===================================================================== */
 
-void add_all_variables_in_test (agent* thisAgent, constraint t,
+void add_all_variables_in_test (agent* thisAgent, test t,
 								tc_number tc, list **var_list) {
   cons *c;
   Symbol *referent;
 
   if (test_is_blank(t)) return;
-
-  if (test_is_equality(t)) {
-    referent = t->data.referent;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
-    return;
-  }
 
   switch (t->type) {
   case GOAL_ID_TEST:
@@ -1331,11 +1266,10 @@ void add_all_variables_in_test (agent* thisAgent, constraint t,
     break;
   case CONJUNCTIVE_TEST:
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      add_all_variables_in_test (thisAgent, static_cast<constraint>(c->first), tc, var_list);
+      add_all_variables_in_test (thisAgent, static_cast<test>(c->first), tc, var_list);
     break;
 
   default:
-    /* --- relational tests other than equality --- */
     referent = t->data.referent;
     if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
       mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
@@ -1464,20 +1398,18 @@ void add_symbol_to_tc (agent* thisAgent, Symbol *sym, tc_number tc,
   }
 }
 
-void add_test_to_tc (agent* thisAgent, constraint t, tc_number tc,
+void add_test_to_tc (agent* thisAgent, test t, tc_number tc,
                      list **id_list, list **var_list) {
   cons *c;
 
   if (test_is_blank(t)) return;
 
-  if (test_is_equality(t)) {
+  if (t->type == EQUALITY_TEST) {
     add_symbol_to_tc (thisAgent, t->data.referent, tc, id_list, var_list);
     return;
-  }
-
-  if (t->type == CONJUNCTIVE_TEST) {
+  } else if (t->type == CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      add_test_to_tc (thisAgent, static_cast<constraint>(c->first), tc, id_list, var_list);
+      add_test_to_tc (thisAgent, static_cast<test>(c->first), tc, id_list, var_list);
   }
 }
 
@@ -1504,17 +1436,15 @@ Bool symbol_is_in_tc (Symbol *sym, tc_number tc) {
     return (sym->common.tc_num == tc);
 }
 
-Bool test_is_in_tc (constraint t, tc_number tc) {
+Bool test_is_in_tc (test t, tc_number tc) {
   cons *c;
 
   if (test_is_blank(t)) return FALSE;
-  if (test_is_equality(t)) {
+  if (t->type==EQUALITY_TEST) {
     return symbol_is_in_tc (t->data.referent, tc);
-  }
-
-  if (t->type==CONJUNCTIVE_TEST) {
+  } else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_is_in_tc (static_cast<constraint>(c->first), tc)) return TRUE;
+      if (test_is_in_tc (static_cast<test>(c->first), tc)) return TRUE;
     return FALSE;
   }
   return FALSE;

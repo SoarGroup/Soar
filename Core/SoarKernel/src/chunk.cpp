@@ -218,9 +218,9 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 		}
 }
 
-void variablize_test (agent* thisAgent, constraint *chunk_test, constraint *original_test) {
+void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
   cons *c, *c_orig;
-  constraint ct, ct_original;
+  test ct, ct_original;
   byte original_test_type, test_type;
   Symbol *original_referent, *instantiated_referent;
 
@@ -254,8 +254,8 @@ void variablize_test (agent* thisAgent, constraint *chunk_test, constraint *orig
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
         variablize_test (thisAgent,
-            reinterpret_cast<constraint *>(&(c->first)),
-            reinterpret_cast<constraint *>(&(c_orig->first)));
+            reinterpret_cast<test *>(&(c->first)),
+            reinterpret_cast<test *>(&(c_orig->first)));
         c_orig = c_orig->rest;
       }
 
@@ -639,7 +639,7 @@ void variablize_nots_and_insert_into_conditions (agent* thisAgent,
     condition *conds) {
   not_struct *n;
   Symbol *var1, *var2;
-  constraint t;
+  test t;
   condition *c;
   Bool added_it;
 
@@ -698,7 +698,7 @@ void add_goal_or_impasse_tests (agent* thisAgent, chunk_cond *all_ccs) {
   tc_number tc;   /* mark each id as we add a test for it, so we don't add
                      a test for the same id in two different places */
   Symbol *id;
-  constraint t;
+  test t;
 
   tc = get_new_tc_number(thisAgent);
   for (cc=all_ccs; cc!=NIL; cc=cc->next) {

@@ -89,7 +89,7 @@ Symbol *make_placeholder_var(agent* thisAgent, char first_letter) {
    placeholder variable.
 ----------------------------------------------------------------- */
 
-constraint make_placeholder_test (agent* thisAgent, char first_letter) {
+test make_placeholder_test (agent* thisAgent, char first_letter) {
   Symbol *new_var = make_placeholder_var(thisAgent, first_letter);
   return make_test_without_refcount (thisAgent, new_var, EQUALITY_TEST);
 }
@@ -136,9 +136,9 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
   if (!just_created) symbol_add_ref (var);
 }
 
-void substitute_for_placeholders_in_test (agent* thisAgent, constraint *t) {
+void substitute_for_placeholders_in_test (agent* thisAgent, test *t) {
   cons *c;
-  constraint ct;
+  test ct;
 
   if (test_is_blank(*t)) return;
 
@@ -151,7 +151,7 @@ void substitute_for_placeholders_in_test (agent* thisAgent, constraint *t) {
     return;
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      substitute_for_placeholders_in_test (thisAgent, reinterpret_cast<constraint *>(&(c->first)));
+      substitute_for_placeholders_in_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
     return;
   default:  /* relational tests other than equality */
     substitute_for_placeholders_in_symbol (thisAgent, &(ct->data.referent));
@@ -308,9 +308,9 @@ Symbol *make_symbol_for_current_lexeme (agent* thisAgent, bool allow_lti) {
    <variable> ::= variable | lti
 ----------------------------------------------------------------- */
 
-constraint parse_relational_test (agent* thisAgent) {
-  ComplexTextTypes test_type;
-  constraint t;
+test parse_relational_test (agent* thisAgent) {
+  TestType test_type;
+  test t;
   Symbol *referent;
 
   test_type = NOT_EQUAL_TEST; /* unnecessary, but gcc -Wall warns without it */
@@ -384,8 +384,8 @@ constraint parse_relational_test (agent* thisAgent) {
    <constant> ::= sym_constant | int_constant | float_constant
 ----------------------------------------------------------------- */
 
-constraint parse_disjunction_test (agent* thisAgent) {
-  constraint t;
+test parse_disjunction_test (agent* thisAgent) {
+  test t;
 
   if (thisAgent->lexeme.type!=LESS_LESS_LEXEME) {
     print (thisAgent, "Expected << to begin disjunction test\n");
@@ -423,7 +423,7 @@ constraint parse_disjunction_test (agent* thisAgent) {
    <simple_test> ::= <disjunction_test> | <relational_test>
 ----------------------------------------------------------------- */
 
-constraint parse_simple_test (agent* thisAgent) {
+test parse_simple_test (agent* thisAgent) {
   if (thisAgent->lexeme.type==LESS_LESS_LEXEME)
     return parse_disjunction_test(thisAgent);
   return parse_relational_test(thisAgent);
@@ -436,8 +436,8 @@ constraint parse_simple_test (agent* thisAgent) {
     <conjunctive_test> ::= { <simple_test>+ }
 ----------------------------------------------------------------- */
 
-constraint parse_test (agent* thisAgent) {
-  constraint t, temp;
+test parse_test (agent* thisAgent) {
+  test t, temp;
 
   if (thisAgent->lexeme.type!=L_BRACE_LEXEME)
     return parse_simple_test(thisAgent);
@@ -486,9 +486,9 @@ constraint parse_test (agent* thisAgent) {
    to add non-equality portions of the test only once, if possible.
 ----------------------------------------------------------------- */
 
-void fill_in_id_tests (agent* thisAgent, condition *conds, constraint t) {
+void fill_in_id_tests (agent* thisAgent, condition *conds, test t) {
   condition *positive_c, *c;
-  constraint equality_test_from_t;
+  test equality_test_from_t;
 
   /* --- see if there's at least one positive condition --- */
   for (positive_c=conds; positive_c!=NIL; positive_c=positive_c->next)
@@ -522,9 +522,9 @@ void fill_in_id_tests (agent* thisAgent, condition *conds, constraint t) {
   }
 }
 
-void fill_in_attr_tests (agent* thisAgent, condition *conds, constraint t) {
+void fill_in_attr_tests (agent* thisAgent, condition *conds, test t) {
   condition *positive_c, *c;
-  constraint equality_test_from_t;
+  test equality_test_from_t;
 
   /* --- see if there's at least one positive condition --- */
   for (positive_c=conds; positive_c!=NIL; positive_c=positive_c->next)
@@ -607,11 +607,11 @@ condition *negate_condition_list (agent* thisAgent, condition *conds) {
 
 condition *parse_conds_for_one_id (agent* thisAgent,
 								   char first_letter_if_no_id_given,
-                                   constraint *dest_id_test);
+                                   test *dest_id_test);
 
 condition *parse_value_test_star (agent* thisAgent, char first_letter) {
   condition *c, *last_c, *first_c, *new_conds;
-  constraint value_test;
+  test value_test;
   Bool acceptable;
 
   if ((thisAgent->lexeme.type==MINUS_LEXEME) ||
@@ -678,7 +678,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
 ----------------------------------------------------------------- */
 
 condition *parse_attr_value_tests (agent* thisAgent) {
-  constraint id_test_to_use, attr_test;
+  test id_test_to_use, attr_test;
   Bool negate_it;
   condition *first_c, *last_c, *c, *new_conds;
 
@@ -769,8 +769,8 @@ condition *parse_attr_value_tests (agent* thisAgent) {
    any error occurs).
 ----------------------------------------------------------------- */
 
-constraint parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_id_given) {
-	constraint id_test, id_goal_impasse_test, check_for_symconstant;
+test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_id_given) {
+	test id_test, id_goal_impasse_test, check_for_symconstant;
 	Symbol *sym;
 
 	if (thisAgent->lexeme.type!=L_PAREN_LEXEME) {
@@ -908,9 +908,9 @@ condition *parse_tail_of_conds_for_one_id (agent* thisAgent) {
 ----------------------------------------------------------------- */
 
 condition *parse_conds_for_one_id (agent* thisAgent, char first_letter_if_no_id_given,
-                                   constraint *dest_id_test) {
+                                   test *dest_id_test) {
   condition *conds;
-  constraint id_test, equality_test_from_id_test;
+  test id_test, equality_test_from_id_test;
 
   /* --- parse the head --- */
   id_test = parse_head_of_conds_for_one_id (thisAgent, first_letter_if_no_id_given);

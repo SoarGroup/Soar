@@ -163,7 +163,7 @@ bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list 
 #define dealloc_and_return(agnt,x,y) { deallocate_test(agnt, x) ; return (y) ; }
 
 /* DJP 4/3/96 -- changed t2 to test2 in declaration */
-bool tests_are_equal_with_bindings (agent* agnt, constraint t1, constraint test2, list **bindings) {
+bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bindings) {
     cons *c1, *c2;
     Bool goal_test,impasse_test;
 
@@ -173,7 +173,7 @@ bool tests_are_equal_with_bindings (agent* agnt, constraint t1, constraint test2
     /*               decided to just create a copy always and then always           */
     /*               deallocate it before returning.  Added a macro to do that.     */
 
-    constraint t2;
+    test t2;
 
     /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
     if (test_is_blank(t1))
@@ -193,10 +193,9 @@ bool tests_are_equal_with_bindings (agent* agnt, constraint t1, constraint test2
     {
         t2 = copy_test(agnt,test2) ; /* DJP 4/3/96 -- Always make t2 into a copy */
     }
-
-    if (test_is_equality(t1))
-    {
-        if (!(test_is_equality(t2) && !(test_is_blank(t2))))
+      if (t1->type==EQUALITY_TEST)
+      {
+        if (!((t2->type==EQUALITY_TEST) && !(test_is_blank(t2))))
         {
             dealloc_and_return(agnt, t2,FALSE);
         }
@@ -250,7 +249,7 @@ bool tests_are_equal_with_bindings (agent* agnt, constraint t1, constraint test2
         for (c1=t1->data.conjunct_list, c2=t2->data.conjunct_list;
             ((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
         {
-            if (!tests_are_equal_with_bindings(agnt, static_cast<constraint>(c1->first), static_cast<constraint>(c2->first), bindings))
+            if (!tests_are_equal_with_bindings(agnt, static_cast<test>(c1->first), static_cast<test>(c2->first), bindings))
                 dealloc_and_return(agnt, t2,FALSE)
         }
         if (c1==c2)

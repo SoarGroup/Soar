@@ -137,22 +137,21 @@ void begin_os_tc (agent* thisAgent, preference *rhs_prefs_or_nil) {
    the id is not allowed to be "sym_excluded_from_value".
 ----------------------------------------------------------------------- */
 
-Bool test_has_id_in_os_tc (agent* thisAgent, constraint t, Symbol *excluded_sym) {
+Bool test_has_id_in_os_tc (agent* thisAgent, test t, Symbol *excluded_sym) {
   cons *c;
   Symbol *referent;
 
   if (test_is_blank(t)) return FALSE;
-  if (test_is_equality(t)) {
+  if (t->type == EQUALITY_TEST) {
     referent = t->data.referent;
     if (referent->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
       if (referent->id.tc_num==thisAgent->o_support_tc)
         if (referent!=excluded_sym)
           return TRUE;
     return FALSE;
-  }
-  if (t->type==CONJUNCTIVE_TEST) {
+  } else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_has_id_in_os_tc (thisAgent, static_cast<constraint>(c->first), excluded_sym)) return TRUE;
+      if (test_has_id_in_os_tc (thisAgent, static_cast<test>(c->first), excluded_sym)) return TRUE;
     return FALSE;
   }
   return FALSE;
@@ -574,7 +573,7 @@ void dougs_calculate_support_for_instantiation_preferences (agent* thisAgent, in
 
 enum yes_no_maybe { YES, NO, MAYBE } ;
 
-yes_no_maybe test_is_for_symbol (constraint t, Symbol *sym) {
+yes_no_maybe test_is_for_symbol (test t, Symbol *sym) {
   cons *c;
   yes_no_maybe temp;
   Bool maybe_found;
@@ -582,30 +581,28 @@ yes_no_maybe test_is_for_symbol (constraint t, Symbol *sym) {
 
   if (test_is_blank(t)) return MAYBE;
 
-  if (test_is_equality(t)) {
-    referent = t->data.referent;
-    if (referent==sym) return YES;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
-    if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
-    return NO;
-  }
-
   switch (t->type) {
-  case DISJUNCTION_TEST:
-    if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
-    if (member_of_list (sym, t->data.disjunction_list)) return MAYBE;
-    return NO;
-  case CONJUNCTIVE_TEST:
-    maybe_found = FALSE;
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
-      temp = test_is_for_symbol (static_cast<constraint>(c->first), sym);
-      if (temp==YES) return YES;
-      if (temp==MAYBE) maybe_found = TRUE;
-    }
-    if (maybe_found) return MAYBE;
-    return NO;
-  default:  /* goal/impasse tests, relational tests other than equality */
-    return MAYBE;
+    case EQUALITY_TEST:
+      referent = t->data.referent;
+      if (referent==sym) return YES;
+      if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
+      if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
+      return NO;
+    case DISJUNCTION_TEST:
+      if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
+      if (member_of_list (sym, t->data.disjunction_list)) return MAYBE;
+      return NO;
+    case CONJUNCTIVE_TEST:
+      maybe_found = FALSE;
+      for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
+        temp = test_is_for_symbol (static_cast<test>(c->first), sym);
+        if (temp==YES) return YES;
+        if (temp==MAYBE) maybe_found = TRUE;
+      }
+      if (maybe_found) return MAYBE;
+      return NO;
+    default:  /* goal/impasse tests, relational tests other than equality */
+      return MAYBE;
   }
 }
 

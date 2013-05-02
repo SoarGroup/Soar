@@ -2568,7 +2568,7 @@ Bool find_var_location (Symbol *var, rete_node_level current_depth,
 ------------------------------------------------------------------- */
 
 void bind_variables_in_test (agent* thisAgent,
-                             constraint t,
+                             test t,
                              rete_node_level depth,
                              byte field_num,
                              Bool dense,
@@ -2577,18 +2577,16 @@ void bind_variables_in_test (agent* thisAgent,
   cons *c;
 
   if (test_is_blank(t)) return;
-  if (test_is_equality(t)) {
+  if (t->type == EQUALITY_TEST) {
     referent = t->data.referent;
     if (referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
     if (!dense && var_is_bound (referent)) return;
     push_var_binding (thisAgent, referent, depth, field_num);
     push(thisAgent, referent, *varlist);
     return;
-  }
-
-  if (t->type==CONJUNCTIVE_TEST)
+  } else if (t->type==CONJUNCTIVE_TEST)
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      bind_variables_in_test (thisAgent, static_cast<constraint>(c->first),
+      bind_variables_in_test (thisAgent, static_cast<test>(c->first),
                               depth, field_num, dense, varlist);
 }
 
@@ -2758,23 +2756,21 @@ void deallocate_node_varnames (agent* thisAgent,
    a pointer to the bottom structure in the chain.
 ------------------------------------------------------------------- */
 
-varnames *add_unbound_varnames_in_test (agent* thisAgent, constraint t,
+varnames *add_unbound_varnames_in_test (agent* thisAgent, test t,
                                         varnames *starting_vn) {
   cons *c;
   Symbol *referent;
 
   if (test_is_blank(t)) return starting_vn;
-  if (test_is_equality(t)) {
+  if (t->type == EQUALITY_TEST) {
     referent = t->data.referent;
     if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
       if (! var_is_bound (referent))
         starting_vn = add_var_to_varnames (thisAgent, referent, starting_vn);
     return starting_vn;
-  }
-
-  if (t->type==CONJUNCTIVE_TEST) {
+  } else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      starting_vn = add_unbound_varnames_in_test (thisAgent, static_cast<constraint>(c->first),
+      starting_vn = add_unbound_varnames_in_test (thisAgent, static_cast<test>(c->first),
                                                   starting_vn);
   }
   return starting_vn;
@@ -2882,7 +2878,7 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
    parent and higher conditions, and sparsely for the current condition.
 ------------------------------------------------------------------------ */
 
-void add_rete_tests_for_test (agent* thisAgent, constraint t,
+void add_rete_tests_for_test (agent* thisAgent, test t,
     rete_node_level current_depth,
     byte field_num,
     rete_test **rt,
@@ -2989,7 +2985,7 @@ void add_rete_tests_for_test (agent* thisAgent, constraint t,
 
     case CONJUNCTIVE_TEST:
       for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
-        add_rete_tests_for_test (thisAgent, static_cast<constraint>(c->first),
+        add_rete_tests_for_test (thisAgent, static_cast<test>(c->first),
             current_depth, field_num, rt, alpha_constant);
       }
       return;
@@ -3897,9 +3893,9 @@ void excise_production_from_rete (agent* thisAgent, production *p)
    for equality with a new gensym variable.
 ---------------------------------------------------------------------- */
 
-void add_gensymmed_equality_test (agent* thisAgent, constraint *t, char first_letter) {
+void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter) {
   Symbol *New;
-  constraint eq_test;
+  test eq_test;
   char prefix[2];
 
   prefix[0] = first_letter;
@@ -3925,7 +3921,7 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
                                           condition *cond, /* current cond */
                                           byte where_field_num,
                                           rete_node_level where_levels_up) {
-  constraint t;
+  test t;
   cons *c;
 
   while (where_levels_up) { where_levels_up--; cond = cond->prev; }
@@ -3935,13 +3931,13 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
   else t = cond->data.tests.value_test;
 
   if (test_is_blank(t)) goto abort_var_bound_in_reconstructed_conds;
-  if (test_is_equality(t)) return t->data.referent;
-
-  if (t->type==CONJUNCTIVE_TEST) {
+  if (t->type==EQUALITY_TEST)
+    return t->data.referent;
+  else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank (static_cast<constraint>(c->first))) &&
-           (test_is_equality (static_cast<constraint>(c->first))) )
-        return static_cast<constraint>(c->first)->data.referent;
+      if ( (! test_is_blank (static_cast<test>(c->first))) &&
+           (static_cast<test>(c->first)->type == EQUALITY_TEST) )
+        return static_cast<test>(c->first)->data.referent;
   }
 
   abort_var_bound_in_reconstructed_conds:
@@ -3968,7 +3964,7 @@ Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
                                           condition *cond, /* current cond */
                                           byte where_field_num,
                                           rete_node_level where_levels_up) {
-  constraint t;
+  test t;
   cons *c;
 
   while (where_levels_up) { where_levels_up--; cond = cond->prev; }
@@ -3978,13 +3974,13 @@ Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
   else t = cond->original_tests.value_test;
 
   if (test_is_blank(t)) goto abort_var_bound_in_reconstructed_conds;
-  if (test_is_equality(t)) return t->data.referent;
-
-  if (t->type==CONJUNCTIVE_TEST) {
+  if (t->type==EQUALITY_TEST)
+    return t->data.referent;
+  else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank (static_cast<constraint>(c->first))) &&
-           (test_is_equality (static_cast<constraint>(c->first))) )
-        return static_cast<constraint>(c->first)->data.referent;
+      if ( (! test_is_blank (static_cast<test>(c->first))) &&
+           (static_cast<test>(c->first)->type == EQUALITY_TEST) )
+        return static_cast<test>(c->first)->data.referent;
   }
 
   abort_var_bound_in_reconstructed_conds:
@@ -3996,48 +3992,7 @@ Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
   return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-/* ----------------------------------------------------------------------
-                     Var Bound in Reconstructed Conds
 
-   We're reconstructing the conditions for a production in top-down
-   fashion.  Suppose we come to a Rete test checking for equality with
-   the "value" field 3 levels up.  In that case, for the current condition,
-   we want to include an equality test for whatever variable got bound
-   in the value field 3 levels up.  This function scans up the list
-   of conditions reconstructed so far, and finds the appropriate variable.
----------------------------------------------------------------------- */
-
-Symbol *var_bound_in_reconstructed_chunk_conds (agent* thisAgent,
-                                          condition *cond, /* current cond */
-                                          byte where_field_num,
-                                          rete_node_level where_levels_up) {
-  constraint t;
-  cons *c;
-
-  while (where_levels_up) { where_levels_up--; cond = cond->prev; }
-
-  if (where_field_num==0) t = cond->chunk_tests.id_test;
-  else if (where_field_num==1) t = cond->chunk_tests.attr_test;
-  else t = cond->chunk_tests.value_test;
-
-  if (test_is_blank(t)) goto abort_var_bound_in_reconstructed_conds;
-  if (test_is_equality(t)) return t->data.referent;
-
-  if (t->type==CONJUNCTIVE_TEST) {
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank (static_cast<constraint>(c->first))) &&
-           (test_is_equality (static_cast<constraint>(c->first))) )
-        return static_cast<constraint>(c->first)->data.referent;
-  }
-
-  abort_var_bound_in_reconstructed_conds:
-  { char msg[BUFFER_MSG_SIZE];
-  strncpy (msg, "Internal error in var_bound_in_reconstructed_conds\n", BUFFER_MSG_SIZE);
-  msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-  abort_with_fatal_error(thisAgent, msg);
-  }
-  return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
 /* ----------------------------------------------------------------------
                       Add Rete Test List to Tests
 
@@ -4052,8 +4007,8 @@ void add_rete_test_list_to_tests (agent* thisAgent,
                                   condition *cond, /* current cond */
                                   rete_test *rt) {
   Symbol *referent;
-  constraint New;
-  ComplexTextTypes test_type;
+  test New;
+  TestType test_type;
 
   for ( ; rt!=NIL; rt=rt->next) {
 
@@ -4193,8 +4148,8 @@ void add_constraints_to_chunk_condition (agent* thisAgent,
                                          condition *cond)
 {
   Symbol *referent;
-  constraint new_test;
-  ComplexTextTypes test_type;
+  test new_test;
+  TestType test_type;
 
   for ( ; rt!=NIL; rt=rt->next) {
 
@@ -4291,8 +4246,8 @@ void add_constraints_to_chunk_condition (agent* thisAgent,
    when we reconstruct its conditions.
 ---------------------------------------------------------------------- */
 
-void add_varnames_to_test (agent* thisAgent, varnames *vn, constraint *t) {
-  constraint New;
+void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t) {
+  test New;
   cons *c;
 
   if (vn == NIL) return;
@@ -4320,7 +4275,7 @@ void add_hash_info_to_id_test (agent* thisAgent,
                                byte field_num,
                                rete_node_level levels_up) {
   Symbol *temp;
-  constraint New;
+  test New;
 
   temp = var_bound_in_reconstructed_conds (thisAgent, cond, field_num, levels_up);
   New = make_test (thisAgent, temp, EQUALITY_TEST);
@@ -8385,7 +8340,7 @@ Bool xml_pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
 #if 0
 // Not currently using
 // xml_test is based on test_to_string.
-void xml_test (agent* thisAgent, char const* pTag, constraint t) {
+void xml_test (agent* thisAgent, char const* pTag, test t) {
 	char *dest = 0 ;
 	size_t dest_size = 0 ;
 	cons *c;
@@ -8503,7 +8458,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
    dl_cons *dc;
    condition *c;
    Bool removed_goal_test, removed_impasse_test;
-   constraint id_test;
+   test id_test;
 
    if (!conds) return;
 

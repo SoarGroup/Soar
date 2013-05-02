@@ -180,7 +180,7 @@ extern Bool load_rete_net (agent* thisAgent, FILE *source_file);
 #define RELATIONAL_GREATER_OR_EQUAL_RETE_TEST 0x05
 #define RELATIONAL_SAME_TYPE_RETE_TEST        0x06
 
-inline ComplexTextTypes relational_test_type_to_test_type(byte test_type)
+inline TestType relational_test_type_to_test_type(byte test_type)
 {
   /* we don't need ...[equal test] */
   switch (test_type) {
