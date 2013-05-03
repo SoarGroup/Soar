@@ -66,5 +66,112 @@ agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
 
 
 
+void print_current_lexeme (agent* thisAgent)
+{
+  std::string lex_type_string;
+
+  switch (thisAgent->lexeme.type) {
+    case EOF_LEXEME:
+      lex_type_string = "EOF_LEXEME";
+      break;
+    case IDENTIFIER_LEXEME:
+      lex_type_string = "IDENTIFIER_LEXEME";
+      break;
+    case VARIABLE_LEXEME:
+      lex_type_string = "VARIABLE_LEXEME";
+      break;
+    case SYM_CONSTANT_LEXEME:
+      lex_type_string = "SYM_CONSTANT_LEXEME";
+      break;
+    case INT_CONSTANT_LEXEME:
+      lex_type_string = "INT_CONSTANT_LEXEME";
+      break;
+    case FLOAT_CONSTANT_LEXEME:
+      lex_type_string = "FLOAT_CONSTANT_LEXEME";
+      break;
+    case L_PAREN_LEXEME:
+      lex_type_string = "L_PAREN_LEXEME";
+      break;
+    case R_PAREN_LEXEME:
+      lex_type_string = "R_PAREN_LEXEME";
+      break;
+    case L_BRACE_LEXEME:
+      lex_type_string = "L_BRACE_LEXEME";
+      break;
+    case R_BRACE_LEXEME:
+      lex_type_string = "R_BRACE_LEXEME";
+      break;
+    case PLUS_LEXEME:
+      lex_type_string = "PLUS_LEXEME";
+      break;
+    case MINUS_LEXEME:
+      lex_type_string = "MINUS_LEXEME";
+      break;
+    case RIGHT_ARROW_LEXEME:
+      lex_type_string = "RIGHT_ARROW_LEXEME";
+      break;
+    case GREATER_LEXEME:
+      lex_type_string = "GREATER_LEXEME";
+      break;
+    case LESS_LEXEME:
+      lex_type_string = "LESS_LEXEME";
+      break;
+    case EQUAL_LEXEME:
+      lex_type_string = "EQUAL_LEXEME";
+      break;
+    case LESS_EQUAL_LEXEME:
+      lex_type_string = "LESS_EQUAL_LEXEME";
+      break;
+    case GREATER_EQUAL_LEXEME:
+      lex_type_string = "GREATER_EQUAL_LEXEME";
+      break;
+    case NOT_EQUAL_LEXEME:
+      lex_type_string = "NOT_EQUAL_LEXEME";
+      break;
+    case LESS_EQUAL_GREATER_LEXEME:
+      lex_type_string = "LESS_EQUAL_GREATER_LEXEME";
+      break;
+    case LESS_LESS_LEXEME:
+      lex_type_string = "LESS_LESS_LEXEME";
+      break;
+    case GREATER_GREATER_LEXEME:
+      lex_type_string = "GREATER_GREATER_LEXEME";
+      break;
+    case AMPERSAND_LEXEME:
+      lex_type_string = "AMPERSAND_LEXEME";
+      break;
+    case AT_LEXEME:
+      lex_type_string = "AT_LEXEME";
+      break;
+    case TILDE_LEXEME:
+      lex_type_string = "TILDE_LEXEME";
+      break;
+    case UP_ARROW_LEXEME:
+      lex_type_string = "UP_ARROW_LEXEME";
+      break;
+    case EXCLAMATION_POINT_LEXEME:
+      lex_type_string = "EXCLAMATION_POINT_LEXEME";
+      break;
+    case COMMA_LEXEME:
+      lex_type_string = "COMMA_LEXEME";
+      break;
+    case PERIOD_LEXEME:
+      lex_type_string = "PERIOD_LEXEME";
+      break;
+    case QUOTED_STRING_LEXEME:
+      lex_type_string = "QUOTED_STRING_LEXEME";
+      break;
+    case DOLLAR_STRING_LEXEME:
+      lex_type_string = "DOLLAR_STRING_LEXEME";
+      break;
+    case NULL_LEXEME:
+      lex_type_string = "NULL_LEXEME";
+      break;
+    default:
+      break;
+  }
+  print(thisAgent, "%s: \"%s\"\n", lex_type_string.c_str(), thisAgent->lexeme.string);
+}
+
 #endif
 

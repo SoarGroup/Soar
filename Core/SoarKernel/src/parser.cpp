@@ -368,7 +368,7 @@ test parse_relational_test (agent* thisAgent) {
   case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
     referent = make_symbol_for_current_lexeme(thisAgent, id_lti);
     get_lexeme(thisAgent);
-      t = make_test_without_refcount (thisAgent, referent, test_type);
+      t = make_test_without_refcount (thisAgent, referent, EQUALITY_TEST);
       return t;
   default:
     print (thisAgent, "Expected variable or constant for test\n");

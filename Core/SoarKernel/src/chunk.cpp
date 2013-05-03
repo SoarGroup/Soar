@@ -1137,7 +1137,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		tc_number tc_for_grounds;
 		tc_for_grounds = get_new_tc_number(thisAgent);
 		build_chunk_conds_for_grounds_and_add_negateds (thisAgent, &top_cc, &bottom_cc, tc_for_grounds, &reliable);
-		nots = get_nots_for_instantiated_conditions (thisAgent, thisAgent->instantiations_with_nots, tc_for_grounds);
+		//nots = get_nots_for_instantiated_conditions (thisAgent, thisAgent->instantiations_with_nots, tc_for_grounds);
 	}
 
 	variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
@@ -1244,7 +1244,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		reset_variable_generator (thisAgent, lhs_top, NIL);
 		thisAgent->variablization_tc = get_new_tc_number(thisAgent);
 		variablize_condition_list (thisAgent, lhs_top);
-		variablize_nots_and_insert_into_conditions (thisAgent, nots, lhs_top);
+		//variablize_nots_and_insert_into_conditions (thisAgent, nots, lhs_top);
 	}
 	rhs = copy_and_variablize_result_list (thisAgent, results, variablize);
 

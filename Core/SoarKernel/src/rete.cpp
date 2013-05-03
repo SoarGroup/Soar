@@ -4382,11 +4382,11 @@ void rete_node_to_conditions (agent* thisAgent,
              NOTE:  We're doing it with these two flags now.  Will still want to double-check
                     above items --- */
 
-      if (compile_nots && node->b.posneg.other_tests)
-      {
-        collect_nots (thisAgent, node->b.posneg.other_tests, w, cond,
-                              nots_found_in_production);
-      }
+//      if (compile_nots && node->b.posneg.other_tests)
+//      {
+//        collect_nots (thisAgent, node->b.posneg.other_tests, w, cond,
+//                              nots_found_in_production);
+//      }
       if (compile_chunk_test_info && node->b.posneg.other_tests)
       {
         // Could incrementally build original test info here instead of two calls
