@@ -6,12 +6,17 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_mutex.h>
 
-#define PAN_FACTOR 1.0e-1
-#define ZOOM_FACTOR 1.0e-1
-#define GRID_LINES 10
+#define PAN_FACTOR  1.0e-1
+#define GRID_LINES  10
 #define MAX_COMMAND 4096
 #define FONT_WIDTH  6
 #define FONT_HEIGHT 12
+#define PI          3.141592654
+#define FOVY_MIN    5
+#define FOVY_MAX    175
+#define FOVY_DEF    60
+#define NEAR_CLIP   0.1
+#define FAR_CLIP    100.0
 
 typedef GLdouble real;
 typedef real vec3[3];
@@ -21,6 +26,9 @@ typedef real quaternion[4];
 typedef struct Camera {
 	quaternion q;
 	vec3 pos;
+	real rot_mat[16];
+	real fovy;
+	real orthoy;
 } camera;
 
 typedef struct Geometry {
@@ -76,7 +84,8 @@ void set_quat(quaternion q, real x, real y, real z, real w);
 
 void pan_camera(camera *c, real x, real y);
 void rotate_camera(camera *c, int x, int y, int dx, int dy);
-void zoom_camera(camera *c, real z);
+void zoom_camera(camera *c, real f);
+void pull_camera(camera *c, real z);
 void reset_camera(camera *c, SDLKey k);
 void apply_camera(camera *c);
 

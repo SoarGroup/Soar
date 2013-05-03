@@ -22,10 +22,7 @@ int debug;
 
 static real grid_verts[GRID_VERTS_SIZE];
 
-static camera cam = {
-	{ 0.0, 0.0, 0.0, 1.0 },
-	{ 0.0, 0.0, -10.0 }
-};
+static camera cam;
 
 /* Colors of all objects */
 static GLfloat light_color[] =          { 0.2, 0.2, 0.2, 1.0 };
@@ -135,6 +132,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	
+	reset_camera(&cam, SDLK_1);
 	redraw = 1;
 	while(1) {
 		SDL_WaitEvent(&evt);
@@ -182,7 +180,11 @@ int main(int argc, char* argv[]) {
 							break;
 						case SDLK_s:
 							save_on_redraw("screen.ppm");
+							redraw = 1;
 							break;
+						case SDLK_o:
+							ortho = 1 - ortho;
+							redraw = 1;
 					}
 					break;
 				case SDL_MOUSEBUTTONDOWN:
@@ -195,10 +197,10 @@ int main(int argc, char* argv[]) {
 					if (evt.button.button <= 3) {
 						buttons[evt.button.button] = 1;
 					} else if (evt.button.button == 4) {
-						zoom_camera(&cam, 20);
+						zoom_camera(&cam, 10);
 						redraw = 1;
 					} else if (evt.button.button == 5) {
-						zoom_camera(&cam, -20);
+						zoom_camera(&cam, -10);
 						redraw = 1;
 					}
 					break;
@@ -212,8 +214,10 @@ int main(int argc, char* argv[]) {
 						pan_camera(&cam, evt.motion.xrel, evt.motion.yrel);
 						redraw = 1;
 					} else if (buttons[3] && (mod & KMOD_LCTRL || mod & KMOD_RCTRL)) {
-						zoom_camera(&cam, evt.motion.yrel);
-						redraw = 1;
+						if (ortho) {
+							pull_camera(&cam, evt.motion.yrel);
+							redraw = 1;
+						}
 					} else if (buttons[3]) {
 						rotate_camera(&cam, evt.motion.x, evt.motion.y, evt.motion.xrel, evt.motion.yrel);
 						redraw = 1;
@@ -284,16 +288,17 @@ void draw_grid() {
 void draw_screen() {
 	GLint view[4];
 	real modelview[16], proj[16];
+	real aspect;
 	
+	aspect = scr_width / (double) scr_height;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
 	if (ortho) {
-		//gluOrtho( ? ? ? ? )
-		gluPerspective(60.0, scr_width / (double) scr_height, 0.1, 100.0);
+		glOrtho(-cam.orthoy * aspect, cam.orthoy * aspect, -cam.orthoy, cam.orthoy, NEAR_CLIP, FAR_CLIP );
 	} else {
-		gluPerspective(60.0, scr_width / (double) scr_height, 0.1, 100.0);
+		gluPerspective(cam.fovy, aspect, NEAR_CLIP, FAR_CLIP);
 	}
 	
 	glMatrixMode(GL_MODELVIEW);
@@ -466,14 +471,28 @@ void rotate_camera(camera *c, int x, int y, int dx, int dy) {
 	trackball(q1, 0.8, p1x, p1y, p2x, p2y);
 	q2[0] = c->q[0]; q2[1] = c->q[1]; q2[2] = c->q[2]; q2[3] = c->q[3];
 	add_quats(q1, q2, c->q);
+	quat_to_mat(c->q, c->rot_mat);
 }
 
-void zoom_camera(camera *c, real dz) {
-	c->pos[2] += ZOOM_FACTOR * dz;
+void pull_camera(camera *c, real dz) {
+	c->pos[2] += PAN_FACTOR * dz;
+}
+
+void zoom_camera(camera *c, real df) {
+	c->fovy += df;
+	if (c->fovy < FOVY_MIN) {
+		c->fovy = FOVY_MIN;
+	} else if (c->fovy > FOVY_MAX) {
+		c->fovy = FOVY_MAX;
+	}
+	c->orthoy = tan(c->fovy * PI / 360.0) * abs(c->pos[2]);
+	printf("%g %g\n", c->fovy, c->orthoy);
 }
 
 void reset_camera(camera *c, SDLKey k) {
 	set_vec3(c->pos, 0.0, 0.0, -10.0);
+	c->fovy = FOVY_DEF;
+	zoom_camera(c, 0);
 	switch (k) {
 		case SDLK_1:
 			set_quat(c->q, 0.0, 0.0, 0.0, 1.0);
@@ -485,15 +504,13 @@ void reset_camera(camera *c, SDLKey k) {
 			set_quat(c->q, 0.7071067811865476, 0.0, 0.0, 0.7071067811865476);
 			break;
 	}
+	quat_to_mat(c->q, c->rot_mat);
 }
 
 void apply_camera(camera *c) {
-	real rot_mat[16];
-	quat_to_mat(c->q, rot_mat);
-	
 	glMatrixMode(GL_MODELVIEW);
 	glTranslated(c->pos[0], c->pos[1], c->pos[2]);
-	glMultMatrixd(rot_mat);
+	glMultMatrixd(c->rot_mat);
 }
 
 void init_geom(geometry *g, char *name) {
