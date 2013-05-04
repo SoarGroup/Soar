@@ -25,8 +25,6 @@
 //{
 #endif
    typedef char Bool;
-   // Debug| remove this MMA
-   // typedef char * test;
    typedef struct condition_struct condition;
    typedef struct action_struct action;
    typedef struct agent_struct agent;

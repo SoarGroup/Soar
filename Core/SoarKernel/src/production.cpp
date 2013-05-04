@@ -193,10 +193,12 @@ list *copy_cons_list (agent* thisAgent, cons *c) {
 inline bool is_test_type_with_no_referent(TestType test_type)
 {
   return ((test_type == GOAL_ID_TEST) ||
+          (test_type == CONJUNCTIVE_TEST) ||
           (test_type == IMPASSE_ID_TEST) ||
           (test_type == DISJUNCTION_TEST) ||
-          (test_type == CONJUNCTIVE_TEST));
+          (test_type == BLANK_TEST));
 }
+
 inline test make_test_without_refcount(agent* thisAgent, Symbol * sym, TestType test_type)
 {
   test new_ct;

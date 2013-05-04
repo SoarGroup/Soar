@@ -351,8 +351,15 @@ test parse_relational_test (agent* thisAgent) {
     test_type = SAME_TYPE_TEST;
     get_lexeme(thisAgent);
     break;
-
+  case SYM_CONSTANT_LEXEME:
+  case INT_CONSTANT_LEXEME:
+  case FLOAT_CONSTANT_LEXEME:
+  case VARIABLE_LEXEME:
+    test_type = EQUALITY_TEST;
+    break;
   default:
+    print (thisAgent, "Debug| Unexpected type in parse_relational_test!!!\n");
+    assert(false);
     break;
   }
 
@@ -361,19 +368,19 @@ test parse_relational_test (agent* thisAgent) {
 
   /* --- read variable or constant --- */
   switch (thisAgent->lexeme.type) {
-  case SYM_CONSTANT_LEXEME:
-  case INT_CONSTANT_LEXEME:
-  case FLOAT_CONSTANT_LEXEME:
-  case VARIABLE_LEXEME:
-  case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
-    referent = make_symbol_for_current_lexeme(thisAgent, id_lti);
-    get_lexeme(thisAgent);
-      t = make_test_without_refcount (thisAgent, referent, EQUALITY_TEST);
+    case SYM_CONSTANT_LEXEME:
+    case INT_CONSTANT_LEXEME:
+    case FLOAT_CONSTANT_LEXEME:
+    case VARIABLE_LEXEME:
+    case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
+      referent = make_symbol_for_current_lexeme(thisAgent, id_lti);
+      get_lexeme(thisAgent);
+      t = make_test_without_refcount (thisAgent, referent, test_type);
       return t;
-  default:
-    print (thisAgent, "Expected variable or constant for test\n");
-    print_location_of_most_recent_lexeme(thisAgent);
-    return NIL;
+    default:
+      print (thisAgent, "Expected variable or constant for test\n");
+      print_location_of_most_recent_lexeme(thisAgent);
+      return NIL;
   }
 }
 

@@ -134,8 +134,6 @@ typedef signed short goal_stack_level;
 
 typedef struct alpha_mem_struct alpha_mem;
 typedef struct token_struct token;
-// Debug| remove this MMA
-typedef char * test_old;
 
 class stats_statement_container;
 

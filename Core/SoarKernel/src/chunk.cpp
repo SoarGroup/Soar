@@ -221,7 +221,7 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
   cons *c, *c_orig;
   test ct, ct_original;
-  byte original_test_type, test_type;
+  TestType original_test_type, test_type;
   Symbol *original_referent, *instantiated_referent;
 
   print(thisAgent, "Debug| Variablizing: ");
@@ -230,10 +230,16 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
   print_test (thisAgent, *original_test);
 
   if (test_is_blank(*chunk_test) || test_is_blank(*original_test))
+  {
+    print(thisAgent, "Debug| Ignoring test because it(%d) or original($d) is blank!!!!\n", chunk_test, original_test);
     return;
-
+  }
   /* ORIGINAL can differ from CHUNK tests if there are goal, impasse or disjunction tests in ORIGINAL test,
    * but get_test_type_referent will return false for those test types, so it won't get here.  */
+  test_type = (*chunk_test)->type;
+  original_test_type = (*original_test)->type;
+  instantiated_referent = (*chunk_test)->data.referent;
+  original_referent = (*original_test)->data.referent;
 
   switch (original_test_type) {
     case CONJUNCTIVE_TEST:
@@ -262,12 +268,6 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
       print(thisAgent, "Debug| Done iterating through conjunction list.\nDebug| ---------------------------------------\n");
       break;
     case EQUALITY_TEST:
-      if (symbol_is_variablizable(instantiated_referent, original_referent))
-      {
-        print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
-        variablize_symbol (thisAgent, (Symbol **) chunk_test);
-      }
-      break;
     case NOT_EQUAL_TEST:
     case LESS_TEST:
     case GREATER_TEST:
@@ -281,6 +281,10 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
         ct = *chunk_test;
         variablize_symbol (thisAgent, &(ct->data.referent));
       }
+      break;
+    default:
+      print(thisAgent, "Debug| Invalid test type in variablize_test!!!\n");
+      assert(false);
       break;
   }
   print(thisAgent, "Debug| Resulting in ");
@@ -634,51 +638,51 @@ not_struct *get_nots_for_instantiated_conditions (agent* thisAgent,
    the given Not list is unchanged.
 -------------------------------------------------------------------- */
 
-void variablize_nots_and_insert_into_conditions (agent* thisAgent,
-    not_struct *nots,
-    condition *conds) {
-  not_struct *n;
-  Symbol *var1, *var2;
-  test t;
-  condition *c;
-  Bool added_it;
-
-  for (n=nots; n!=NIL; n=n->next) {
-    var1 = n->s1->common.variablization;
-    var2 = n->s2->common.variablization;
-    /* --- find where var1 is bound, and add "<> var2" to that test --- */
-    t = make_test(thisAgent, var2, NOT_EQUAL_TEST);
-    added_it = FALSE;
-    for (c=conds; c!=NIL; c=c->next) {
-      if (c->type != POSITIVE_CONDITION) continue;
-      if (test_includes_equality_test_for_symbol (c->data.tests.id_test,
-          var1)) {
-        add_new_test_to_test (thisAgent, &(c->data.tests.id_test), t);
-        added_it = TRUE;
-        break;
-      }
-      if (test_includes_equality_test_for_symbol (c->data.tests.attr_test,
-          var1)) {
-        add_new_test_to_test (thisAgent, &(c->data.tests.attr_test), t);
-        added_it = TRUE;
-        break;
-      }
-      if (test_includes_equality_test_for_symbol (c->data.tests.value_test,
-          var1)) {
-        add_new_test_to_test (thisAgent, &(c->data.tests.value_test), t);
-        added_it = TRUE;
-        break;
-      }
-    }
-    if (!added_it) {
-      char msg[BUFFER_MSG_SIZE];
-      strncpy (msg,"chunk.c: Internal error: couldn't add Not test to chunk\n", BUFFER_MSG_SIZE);
-      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-
-      abort_with_fatal_error(thisAgent, msg);
-    }
-  } /* end of for n=nots */
-}
+//void variablize_nots_and_insert_into_conditions (agent* thisAgent,
+//    not_struct *nots,
+//    condition *conds) {
+//  not_struct *n;
+//  Symbol *var1, *var2;
+//  test t;
+//  condition *c;
+//  Bool added_it;
+//
+//  for (n=nots; n!=NIL; n=n->next) {
+//    var1 = n->s1->common.variablization;
+//    var2 = n->s2->common.variablization;
+//    /* --- find where var1 is bound, and add "<> var2" to that test --- */
+//    t = make_test(thisAgent, var2, NOT_EQUAL_TEST);
+//    added_it = FALSE;
+//    for (c=conds; c!=NIL; c=c->next) {
+//      if (c->type != POSITIVE_CONDITION) continue;
+//      if (test_includes_equality_test_for_symbol (c->data.tests.id_test,
+//          var1)) {
+//        add_new_test_to_test (thisAgent, &(c->data.tests.id_test), t);
+//        added_it = TRUE;
+//        break;
+//      }
+//      if (test_includes_equality_test_for_symbol (c->data.tests.attr_test,
+//          var1)) {
+//        add_new_test_to_test (thisAgent, &(c->data.tests.attr_test), t);
+//        added_it = TRUE;
+//        break;
+//      }
+//      if (test_includes_equality_test_for_symbol (c->data.tests.value_test,
+//          var1)) {
+//        add_new_test_to_test (thisAgent, &(c->data.tests.value_test), t);
+//        added_it = TRUE;
+//        break;
+//      }
+//    }
+//    if (!added_it) {
+//      char msg[BUFFER_MSG_SIZE];
+//      strncpy (msg,"chunk.c: Internal error: couldn't add Not test to chunk\n", BUFFER_MSG_SIZE);
+//      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+//
+//      abort_with_fatal_error(thisAgent, msg);
+//    }
+//  } /* end of for n=nots */
+//}
 
 /* --------------------------------------------------------------------
                      Add Goal or Impasse Tests
