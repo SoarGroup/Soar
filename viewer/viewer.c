@@ -22,7 +22,7 @@ int debug;
 
 static real grid_verts[GRID_VERTS_SIZE];
 static camera cam;
-static layer_opts layers[NLAYERS];
+static layer layers[NLAYERS];
 
 /* Colors of all objects */
 static GLfloat light_color[] =          { 0.2, 0.2, 0.2, 1.0 };
@@ -52,6 +52,7 @@ void init_grid(void);
 void draw_grid(void);
 void draw_screen(void);
 void draw_layer(scene *s, int layer_num);
+void draw_labels(void);
 void draw_scene_buttons(GLuint x, GLuint y);
 int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y);
 void free_geom_shape(geometry *g);
@@ -304,6 +305,7 @@ void draw_screen() {
 		}
 		SDL_mutexV(scene_lock);
 	}
+	draw_labels();
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -713,10 +715,9 @@ void setup3d() {
 }
 
 void draw_layer(scene *s, int layer_num) {
-	real wx, wy, wz;
 	GLint view[4];
 	real modelview[16], proj[16];
-	layer_opts *l;
+	layer *l;
 	geometry *g;
 	int empty;
 	
@@ -766,11 +767,28 @@ void draw_layer(scene *s, int layer_num) {
 	}
 	glDisableClientState(GL_VERTEX_ARRAY);
 		
-	if (l->show_labels) {
-		glGetDoublev(GL_PROJECTION_MATRIX, proj);
-		glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-		glGetIntegerv(GL_VIEWPORT, view);
+	glGetDoublev(GL_PROJECTION_MATRIX, l->last_projection);
+	glGetDoublev(GL_MODELVIEW_MATRIX, l->last_modelview);
+	glGetIntegerv(GL_VIEWPORT, l->last_view);
+}
+
+void draw_labels() {
+	int i;
+	layer *l;
+	geometry *g;
+	real wx, wy, wz;
+	
+	if (!curr_scene) {
+		return;
+	}
+	
+	for (i = 0; i < NLAYERS; ++i) {
+		l = &layers[i];
+		if (!l->show_labels) {
+			continue;
+		}
 		
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluOrtho2D(0.0, (GLfloat) scr_width, 0.0, (GLfloat) scr_height);
@@ -779,9 +797,9 @@ void draw_layer(scene *s, int layer_num) {
 		glColor3dv(geom_label_color);
 		glDisable(GL_LIGHTING);
 		
-		for (g = s->geoms; g; g = g->next) {
-			if (g->layer == layer_num) {
-				gluProject(g->pos[0], g->pos[1], g->pos[2], modelview, proj, view, &wx, &wy, &wz);
+		for (g = curr_scene->geoms; g; g = g->next) {
+			if (g->layer == i) {
+				gluProject(g->pos[0], g->pos[1], g->pos[2], l->last_modelview, l->last_projection, l->last_view, &wx, &wy, &wz);
 				draw_text(g->name, wx, wy);
 			}
 		}

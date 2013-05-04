@@ -55,13 +55,20 @@ typedef struct Geometry {
 	double line_width;
 } geometry;
 
-typedef struct Layer_opts {
+typedef struct Layer {
+	/* drawing options */
 	int lighting;
 	int flat;
 	int clear_depth;
 	int show_labels;
 	int wireframe;
-} layer_opts;
+	
+	/*
+	 storage for various matrices between object drawing and label drawing
+	*/
+	GLint last_view[4];
+	real last_modelview[16], last_projection[16];
+} layer;
 
 typedef struct Scene {
 	char *name;
