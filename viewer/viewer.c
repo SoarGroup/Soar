@@ -21,8 +21,8 @@ SDL_mutex *scene_lock;
 int debug;
 
 static real grid_verts[GRID_VERTS_SIZE];
-
 static camera cam;
+static layer_opts layers[NLAYERS];
 
 /* Colors of all objects */
 static GLfloat light_color[] =          { 0.2, 0.2, 0.2, 1.0 };
@@ -44,20 +44,19 @@ static int scr_height = 480;
 static int show_grid = 1;
 static int show_labels = 1;
 static real grid_size = 1.0;
-static int wireframe = 0;
-static int ortho = 0;
 static char *savepath;
 
+void reshape (int w, int h);
 void calc_normals(geometry *g);
 void init_grid(void);
 void draw_grid(void);
-void reshape (int w, int h);
-void draw_curr_scene(void);
 void draw_screen(void);
-void draw_geom_labels(scene *s, real *modelview, real *proj, GLint *view);
+void draw_layer(scene *s, int layer_num);
 void draw_scene_buttons(GLuint x, GLuint y);
 int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y);
 void free_geom_shape(geometry *g);
+void setup3d();
+void init_layers();
 
 void screenshot(char *path);
 
@@ -120,6 +119,7 @@ int main(int argc, char* argv[]) {
 	
 	init_grid();
 	init_font();
+	init_layers();
 	
 	if (0) { /* for debugging single threaded */
 		proc_input(NULL);
@@ -133,6 +133,7 @@ int main(int argc, char* argv[]) {
 	}
 	
 	reset_camera(&cam, SDLK_1);
+	cam.ortho = 0;
 	redraw = 1;
 	while(1) {
 		SDL_WaitEvent(&evt);
@@ -175,7 +176,7 @@ int main(int argc, char* argv[]) {
 							redraw = 1;
 							break;
 						case SDLK_w:
-							wireframe = !wireframe;
+							layers[0].wireframe = 1 - layers[0].wireframe;
 							redraw = 1;
 							break;
 						case SDLK_s:
@@ -183,7 +184,7 @@ int main(int argc, char* argv[]) {
 							redraw = 1;
 							break;
 						case SDLK_o:
-							ortho = 1 - ortho;
+							cam.ortho = 1 - cam.ortho;
 							redraw = 1;
 					}
 					break;
@@ -214,7 +215,7 @@ int main(int argc, char* argv[]) {
 						pan_camera(&cam, evt.motion.xrel, evt.motion.yrel);
 						redraw = 1;
 					} else if (buttons[3] && (mod & KMOD_LCTRL || mod & KMOD_RCTRL)) {
-						if (ortho) {
+						if (!cam.ortho) {
 							pull_camera(&cam, evt.motion.yrel);
 							redraw = 1;
 						}
@@ -268,6 +269,9 @@ void init_grid() {
 void draw_grid() {
 	real g = GRID_LINES * grid_size;
 	
+	setup3d();
+	glDisable(GL_LIGHTING);
+	glEnableClientState(GL_VERTEX_ARRAY);
 	glColor4dv(grid_color);
 	glVertexPointer(2, GL_DOUBLE, 0, grid_verts);
 	glDrawArrays(GL_LINES, 0, GRID_VERTS_SIZE / 2);
@@ -283,61 +287,30 @@ void draw_grid() {
 		glVertex3f(-g, 0.0, 0.0);
 		glVertex3f(g, 0.0, 0.0);
 	glEnd();
+	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 void draw_screen() {
-	GLint view[4];
-	real modelview[16], proj[16];
-	real aspect;
+	int i;
 	
-	aspect = scr_width / (double) scr_height;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	glMatrixMode (GL_PROJECTION);
-	glLoadIdentity();
-	if (ortho) {
-		glOrtho(-cam.orthoy * aspect, cam.orthoy * aspect, -cam.orthoy, cam.orthoy, NEAR_CLIP, FAR_CLIP );
-	} else {
-		gluPerspective(cam.fovy, aspect, NEAR_CLIP, FAR_CLIP);
-	}
-	
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	apply_camera(&cam);
-	
-	glGetDoublev(GL_PROJECTION_MATRIX, proj);
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-	glGetIntegerv(GL_VIEWPORT, view);
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	
 	if (show_grid)
 		draw_grid();
 	
 	if (curr_scene) {
-		if (!wireframe) {
-			glEnable(GL_LIGHTING);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		} else {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
 		SDL_mutexP(scene_lock);
-		draw_curr_scene();
+		for (i = 0; i < NLAYERS; ++i) {
+			draw_layer(curr_scene, i);
+		}
 		SDL_mutexV(scene_lock);
-		glDisable(GL_LIGHTING);
 	}
-	glDisableClientState(GL_VERTEX_ARRAY);
 	
-	/* draw all text */
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(0.0, (GLfloat) scr_width, 0.0, (GLfloat) scr_height);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	draw_scene_buttons(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET);
-	if (curr_scene && show_labels) {
-		draw_geom_labels(curr_scene, modelview, proj, view);
-	}
 	
 	glFinish();
 	if (savepath) {
@@ -486,7 +459,6 @@ void zoom_camera(camera *c, real df) {
 		c->fovy = FOVY_MAX;
 	}
 	c->orthoy = tan(c->fovy * PI / 360.0) * abs(c->pos[2]);
-	printf("%g %g\n", c->fovy, c->orthoy);
 }
 
 void reset_camera(camera *c, SDLKey k) {
@@ -530,8 +502,6 @@ void init_geom(geometry *g, char *name) {
 	g->quadric = NULL;
 	g->radius = -1.0;
 	g->next = NULL;
-	g->overlay = 0;
-	g->draw_label = 1;
 	g->line_width = 1.0;
 }
 
@@ -613,12 +583,6 @@ void calc_normals(geometry *g) {
 	}
 }
 
-void destroy_geom(geometry *g) {
-	free_geom_shape(g);
-	free(g->name);
-	free(g);
-}
-	
 void draw_geom(geometry *g) {
 	int i;
 	
@@ -702,6 +666,8 @@ int delete_scenes(char *pattern) {
 }
 
 void init_scene(scene *s, char *name) {
+	int i;
+	
 	s->name = strdup(name);
 	if (!s->name) {
 		perror("init_scene: ");
@@ -711,6 +677,12 @@ void init_scene(scene *s, char *name) {
 	s->next = NULL;
 }
 
+void destroy_geom(geometry *g) {
+	free_geom_shape(g);
+	free(g->name);
+	free(g);
+}
+	
 void destroy_scene(scene *s) {
 	geometry *p, *pn;
 	
@@ -723,20 +695,95 @@ void destroy_scene(scene *s) {
 	free(s);
 }
 
-void draw_curr_scene() {
-	geometry *p;
-	for (p = curr_scene->geoms; p; p = p->next) {
-		if (!p->overlay) {
-			draw_geom(p);
+void setup3d() {
+	real aspect;
+	
+	glMatrixMode (GL_PROJECTION);
+	glLoadIdentity();
+	aspect = scr_width / (double) scr_height;
+	if (cam.ortho) {
+		glOrtho(-cam.orthoy * aspect, cam.orthoy * aspect, -cam.orthoy, cam.orthoy, NEAR_CLIP, FAR_CLIP );
+	} else {
+		gluPerspective(cam.fovy, aspect, NEAR_CLIP, FAR_CLIP);
+	}
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	apply_camera(&cam);
+}
+
+void draw_layer(scene *s, int layer_num) {
+	real wx, wy, wz;
+	GLint view[4];
+	real modelview[16], proj[16];
+	layer_opts *l;
+	geometry *g;
+	int empty;
+	
+	if (layer_num > 0) {
+		for (empty = 1, g = s->geoms; g; g = g->next) {
+			if (g->layer == layer_num) {
+				empty = 0;
+				break;
+			}
+		}
+		if (empty) {
+			return;
 		}
 	}
 	
-	glDisable(GL_LIGHTING);
-	/* draw overlay layer */
-	glClear(GL_DEPTH_BUFFER_BIT);
-	for (p = curr_scene->geoms; p; p = p->next) {
-		if (p->overlay) {
-			draw_geom(p);
+	l = &layers[layer_num];
+	if (l->lighting) {
+		glEnable(GL_LIGHTING);
+	} else {
+		glDisable(GL_LIGHTING);
+	}
+	if (l->clear_depth) {
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+	
+	if (l->flat) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluOrtho2D(0.0, (GLfloat) scr_width, 0.0, (GLfloat) scr_height);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+	} else {
+		setup3d();
+	}
+	
+	if (!l->wireframe) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	} else {
+		glDisable(GL_LIGHTING);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	glEnableClientState(GL_VERTEX_ARRAY);
+	for (g = s->geoms; g; g = g->next) {
+		if (g->layer == layer_num) {
+			draw_geom(g);
+		}
+	}
+	glDisableClientState(GL_VERTEX_ARRAY);
+		
+	if (l->show_labels) {
+		glGetDoublev(GL_PROJECTION_MATRIX, proj);
+		glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+		glGetIntegerv(GL_VIEWPORT, view);
+		
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluOrtho2D(0.0, (GLfloat) scr_width, 0.0, (GLfloat) scr_height);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glColor3dv(geom_label_color);
+		glDisable(GL_LIGHTING);
+		
+		for (g = s->geoms; g; g = g->next) {
+			if (g->layer == layer_num) {
+				gluProject(g->pos[0], g->pos[1], g->pos[2], modelview, proj, view, &wx, &wy, &wz);
+				draw_text(g->name, wx, wy);
+			}
 		}
 	}
 }
@@ -753,28 +800,32 @@ int match_scenes(char *pattern, scene *scns[], int n) {
 }
 
 geometry *find_or_add_geom(scene *s, char *name) {
+	int i;
 	geometry *g;
-	for (g = s->geoms; g && strcmp(g->name, name) != 0; g = g->next)
-		;
 	
-	if (!g) {
-		if (!(g = (geometry *) malloc(sizeof(geometry)))) {
-			perror("find_or_add_geom: ");
-			exit(1);
+	for (g = s->geoms; g; g = g->next) {
+		if (strcmp(g->name, name) == 0) {
+			return g;
 		}
-		init_geom(g, name);
-		g->next = s->geoms;
-		s->geoms = g;
 	}
+	
+	if (!(g = (geometry *) malloc(sizeof(geometry)))) {
+		perror("find_or_add_geom: ");
+		exit(1);
+	}
+	init_geom(g, name);
+	g->next = s->geoms;
+	s->geoms = g;
 	return g;
 }
 
 int match_geoms(scene *s, char *pattern, geometry **geoms, int n) {
 	int m;
-	geometry *p;
-	for (m = 0, p = s->geoms; p && m < n; p = p->next) {
-		if (match(pattern, p->name))
-			geoms[m++] = p;
+	geometry *g;
+	
+	for (m = 0, g = s->geoms; g && m < n; g = g->next) {
+		if (match(pattern, g->name))
+			geoms[m++] = g;
 	}
 	return m;
 }
@@ -803,19 +854,6 @@ int delete_geoms(scene *s, char *pattern) {
 	return n;
 }
 
-void draw_geom_labels(scene *s, real *modelview, real *proj, GLint *view) {
-	geometry *g;
-	real wx, wy, wz;
-	
-	glColor3dv(geom_label_color);
-	for (g = s->geoms; g; g = g->next) {
-		if (g->draw_label) {
-			gluProject(g->pos[0], g->pos[1], g->pos[2], modelview, proj, view, &wx, &wy, &wz);
-			draw_text(g->name, wx, wy);
-		}
-	}
-}
-
 int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y) {
 	scene *p;
 	GLuint yb, w;
@@ -836,6 +874,7 @@ int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y) {
 void draw_scene_buttons(GLuint x, GLuint y) {
 	scene *p;
 	
+	glDisable(GL_LIGHTING);
 	glColor3dv(scene_text_color);
 	for (p = scene_head; p; p = p->next, y -= FONT_HEIGHT) {
 		if (p == curr_scene)
@@ -907,4 +946,39 @@ void save_on_redraw(char *path) {
 		perror("save_on_redraw");
 		exit(1);
 	}
+}
+
+void init_layers() {
+	int i;
+	for (i = 0; i < NLAYERS; ++i) {
+		layers[i].lighting = 0;
+		layers[i].flat = 0;
+		layers[i].clear_depth = 1;
+		layers[i].show_labels = 0;
+		layers[i].wireframe = 0;
+	}
+	layers[0].lighting = 1;
+	layers[0].show_labels = 1;
+}
+
+int set_layer(int layer_num, char option, int value) {
+	assert(0 <= layer_num && layer_num < NLAYERS);
+	switch (option) {
+		case 'l':
+			layers[layer_num].lighting = value;
+			return 1;
+		case 'f':
+			layers[layer_num].flat = value;
+			return 1;
+		case 'd':
+			layers[layer_num].clear_depth = value;
+			return 1;
+		case 'b':
+			layers[layer_num].show_labels = value;
+			return 1;
+		case 'w':
+			layers[layer_num].wireframe = value;
+			return 1;
+	}
+	return 0;  /* no such option */
 }

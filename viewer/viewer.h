@@ -17,6 +17,7 @@
 #define FOVY_DEF    60
 #define NEAR_CLIP   0.1
 #define FAR_CLIP    100.0
+#define NLAYERS     10
 
 typedef GLdouble real;
 typedef real vec3[3];
@@ -28,6 +29,7 @@ typedef struct Camera {
 	vec3 pos;
 	real rot_mat[16];
 	real fovy;
+	int ortho;
 	real orthoy;
 } camera;
 
@@ -49,16 +51,21 @@ typedef struct Geometry {
 	real radius;
 	struct Geometry *next;
 	
-	
-	int overlay;         /* geometry will be drawn in the "overlay" layer */
-	int draw_label;
+	int layer;
 	double line_width;
 } geometry;
+
+typedef struct Layer_opts {
+	int lighting;
+	int flat;
+	int clear_depth;
+	int show_labels;
+	int wireframe;
+} layer_opts;
 
 typedef struct Scene {
 	char *name;
 	geometry *geoms;
-	
 	struct Scene *next;
 } scene;
 
@@ -106,10 +113,11 @@ geometry *find_or_add_geom(scene *s, char *name);
 int delete_geoms(scene *s, char *pattern);
 int match_geoms(scene *s, char *pattern, geometry **geoms, int n);
 
+int set_layer(int layer_num, char option, int value);
+
 int proc_input(void *unused);
 int init_input(int argc, char *argv[]);
 int get_input(char *buf, int n);
-
 
 void init_font(void);
 void draw_text(char *s, int x, int y);
