@@ -48,9 +48,9 @@ void velocity_hack(int mode, double pred, double real, const string &name) {
 	stringstream ss;
 	
 	ss << "* +vx v 0 0 0 " << (isnan(vx) ? 1000.0 : vx) << " 0 0";
-	ss << " i 0 1 c " << cx[0] << " " << cx[1] << " " << cx[2] << " o 1 l 0 w 2\n";
+	ss << " i 0 1 c " << cx[0] << " " << cx[1] << " " << cx[2] << " l 1 w 2\n";
 	ss << "* +vz v 0 0 0 0 0 " << (isnan(vz) ? 1000.0 : vz);
-	ss << " i 0 1 c " << cz[0] << " " << cz[1] << " " << cz[2] << " o 1 l 0 w 2\n";
+	ss << " i 0 1 c " << cz[0] << " " << cz[1] << " " << cz[2] << " l 1 w 2\n";
 	
 	if (!isnan(vx) && !isnan(vz)) {
 		double error = vxerror + vzerror;
@@ -64,7 +64,7 @@ void velocity_hack(int mode, double pred, double real, const string &name) {
 		}
 		ss << "* +vh v 0 0 0 " << vx << " 0 " << vz << " i 0 1";
 		ss << " c " << ch[0] << " " << ch[1] << " " << ch[2];
-		ss << " o 1 l 0 w 2\n";
+		ss << " l 1 w 2\n";
 	}
 	get_drawer()->send(ss.str());
 }

@@ -268,7 +268,6 @@ void ransac(const mat &X, const mat &Y, double noise_var, int size_thresh, int s
 	cvec dummy, error;
 	rvec inter;
 	
-	double max_error = noise_var * 5;
 	int ndata = X.rows();
 	int mss_size = 6;
 	int iters;
@@ -322,7 +321,7 @@ void ransac(const mat &X, const mat &Y, double noise_var, int size_thresh, int s
 		
 		fit_set.clear();
 		for (int j = 0; j < ndata; ++j) {
-			if (error(j) <= max_error) {
+			if (error(j) <= MODEL_ERROR_THRESH) {
 				fit_set.push_back(j);
 			}
 		}
