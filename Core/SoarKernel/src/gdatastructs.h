@@ -395,10 +395,24 @@ enum TestType {
          GOAL_ID_TEST = 9,            /* item must be a goal identifier */
          IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
          EQUALITY_TEST = 11,
-         BLANK_TEST = 12
+         BLANK_TEST = 12,
+         INVALID_TEST = 13
 };
 
 #define NUM_TEST_TYPES 11           /* Note: count does not include blank tests*/
+
+/* --- The test struct now stores information about all test types, including
+ *     equality tests.  Note that the actual "test" type is a *pointer* to a test
+ *     struct. A test is considered blank when it is nil.
+ *
+ *     Note: As of Soar 9.4, Soar no longer uses the test representation that
+ *     distinguishes between "simple tests" (blank/equality) and "complex tests"
+ *     (conjunctions, disjunctions, <, >, <=, >=, <>, <=>).  That representation
+ *     used a char * with the last bit determining whether the test pointed to a
+ *     Symbol (equality) or a complex test struct (like current test_struct).  This
+ *     was used to save space.  To simplify the representation and allow us to store
+ *     info needed to for our new more generalized chunking logic, all tests are
+ *     just now "tests". --- */
 
 typedef struct test_struct {
   TestType type;                  /* see definitions below */
@@ -407,6 +421,14 @@ typedef struct test_struct {
     ::list *disjunction_list;   /* for disjunction tests */
     ::list *conjunct_list;      /* for conjunctive tests */
   } data;
+  /* --- The following two variables store the original test type and
+   *     a pointer to the referent symbol that were defined when the
+   *     test was read in by the parser.  Those values are stored by
+   *     the rete when reconstructing a production.  It is used by the
+   *     chunker to determine when to variablize constant symbols.
+   *     - MMA 2013 ---*/
+  TestType original_type;                  /* see definitions below */
+  Symbol *original_referent;
 } test_info;
 
 typedef test_info * test;

@@ -370,12 +370,16 @@ inline const char *test_type_to_string(byte test_type)
       return "BLANK_TEST";
       break;
   }
-  return "INVALID TEST TYPE";
+  return "UNDEFINED TEST TYPE";
 }
 
 void print_test (agent* thisAgent, test t, const char *indent_string) {
 	cons *c;
-
+	if (!t)
+	{
+    print(thisAgent, "BLANK_TEST (nil)\n");
+    return;
+	}
   switch (t->type) {
     case BLANK_TEST:
     case GOAL_ID_TEST:
@@ -406,10 +410,14 @@ void print_test (agent* thisAgent, test t, const char *indent_string) {
       }
       break;
     default:
-      print(thisAgent, "%s: %s (%s)\n",
+      print(thisAgent, "%s: %s (%s) | %s: %s (%s)\n",
           test_type_to_string(t->type),
           (t->data.referent ? symbol_to_string (thisAgent, t->data.referent, FALSE, NULL, 0) : "NULL (PROBLEM!)"),
-          (t->data.referent ? symbol_to_typeString (thisAgent, t->data.referent) : "NULL (PROBLEM!)"));
+          (t->data.referent ? symbol_to_typeString (thisAgent, t->data.referent) : "NULL (PROBLEM!)"),
+          test_type_to_string(t->original_type),
+          (t->original_referent ? symbol_to_string (thisAgent, t->original_referent, FALSE, NULL, 0) : "NULL"),
+          (t->original_referent ? symbol_to_typeString (thisAgent, t->original_referent) : "NULL")
+          );
       break;
   }
 }
@@ -433,6 +441,7 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
 
 	switch (t->type) {
 	  case BLANK_TEST:
+	  case INVALID_TEST:
 	    break;
     case EQUALITY_TEST:
       return symbol_to_string (thisAgent, t->data.referent, TRUE, dest, dest_size);

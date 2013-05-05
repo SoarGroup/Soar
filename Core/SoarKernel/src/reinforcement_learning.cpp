@@ -602,7 +602,8 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 			reset_variable_generator( my_agent, cond_top, NIL );
 			my_agent->variablization_tc = get_new_tc_number( my_agent );
 			variablize_condition_list( my_agent, cond_top );
-			variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
+			//Debug| Disabled.  New system should handle.  Test.
+			//variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
 
 			// get the preference value
 			id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );

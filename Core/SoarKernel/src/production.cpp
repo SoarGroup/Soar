@@ -51,7 +51,7 @@
 /* #define LIST_COMPILE_TIME_O_SUPPORT_FAILURES */
 
 void init_production_utilities (agent* thisAgent) {
-  init_memory_pool (thisAgent, &thisAgent->constraint_pool, sizeof(test_info), "complex test");
+  init_memory_pool (thisAgent, &thisAgent->test_pool, sizeof(test_info), "complex test");
   init_memory_pool (thisAgent, &thisAgent->condition_pool, sizeof(condition), "condition");
   init_memory_pool (thisAgent, &thisAgent->production_pool, sizeof(production), "production");
   init_memory_pool (thisAgent, &thisAgent->action_pool, sizeof(action), "action");
@@ -206,9 +206,11 @@ inline test make_test_without_refcount(agent* thisAgent, Symbol * sym, TestType 
   if (!sym && (!is_test_type_with_no_referent(test_type)))
     return make_blank_test();
 
-  allocate_with_pool (thisAgent, &thisAgent->constraint_pool, &new_ct);
+  allocate_with_pool (thisAgent, &thisAgent->test_pool, &new_ct);
   new_ct->type = test_type;
   new_ct->data.referent = sym;
+  new_ct->original_type = INVALID_TEST;
+  new_ct->original_referent = NULL;
 
   return new_ct;
 }
@@ -266,6 +268,11 @@ test copy_test (agent* thisAgent, test t) {
     default:  /* relational tests other than equality */
       new_ct = make_test(thisAgent, t->data.referent, t->type);
       break;
+  }
+  new_ct->original_type = t->original_type;
+  if (t->original_referent) {
+    new_ct->original_referent = t->original_referent;
+    new_ct->original_referent->common.reference_count++;
   }
   return new_ct;
 }
@@ -342,9 +349,11 @@ void deallocate_test (agent* thisAgent, test t) {
     break;
   default: /* relational tests other than equality */
     symbol_remove_ref (thisAgent, t->data.referent);
+    if (t->original_referent)
+      symbol_remove_ref (thisAgent, t->original_referent);
     break;
   }
-  free_with_pool (&thisAgent->constraint_pool, t);
+  free_with_pool (&thisAgent->test_pool, t);
 }
 
 /* --- Macro for doing this (usually) without procedure call overhead. --- */

@@ -240,7 +240,7 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
   original_test_type = (*original_test)->type;
   instantiated_referent = (*chunk_test)->data.referent;
   original_referent = (*original_test)->data.referent;
-
+  print(thisAgent, "Debug|...Comparing original test types: %s to %s\n", test_type_to_string(original_test_type), test_type_to_string((*original_test)->original_type));
   switch (original_test_type) {
     case CONJUNCTIVE_TEST:
       if (test_type == EQUALITY_TEST)
@@ -274,6 +274,14 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
     case LESS_OR_EQUAL_TEST:
     case GREATER_OR_EQUAL_TEST:
     case SAME_TYPE_TEST:
+      if ((*original_test)->original_referent) {
+      print(thisAgent, "Debug|...Comparing originals: %s (%s) and %s (%s)\n",
+                        symbol_to_string(thisAgent, original_referent, FALSE, NIL, NIL), test_type_to_string(original_test_type),
+                        symbol_to_string(thisAgent, (*original_test)->original_referent, FALSE, NIL, NIL), test_type_to_string((*original_test)->original_type));
+      } else {
+        print(thisAgent, "Debug|...Comparing originals: %s (%s) and NULL (%s)\n",
+                          symbol_to_string(thisAgent, original_referent, FALSE, NIL, NIL), test_type_to_string(original_test_type), test_type_to_string((*original_test)->original_type));
+      }
       if (symbol_is_variablizable(instantiated_referent, original_referent))
       {
         print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));

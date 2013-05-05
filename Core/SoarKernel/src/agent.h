@@ -648,7 +648,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* ----------------------- Misc. top-level stuff -------------------------- */
 
   memory_pool         action_pool;
-  memory_pool         constraint_pool;
+  memory_pool         test_pool;
   memory_pool         condition_pool;
   memory_pool         not_pool;
   memory_pool         production_pool;

@@ -4142,14 +4142,35 @@ void collect_nots (agent* thisAgent,
 
 ---------------------------------------------------------------------- */
 
-void add_constraints_to_chunk_condition (agent* thisAgent,
-                                         rete_test *rt,
-                                         wme *right_wme,
-                                         condition *cond)
+void build_chunk_tests ( agent      *thisAgent,
+                         rete_node  *node,
+                         wme        *right_wme,
+                         condition  *cond)
 {
   Symbol *referent;
   test new_test;
   TestType test_type;
+  rete_test *rt = node->b.posneg.other_tests;
+
+  /* --- store original referent information --- */
+
+  if (node->b.posneg.alpha_mem_->id) {
+    cond->data.tests.id_test->original_referent = node->b.posneg.alpha_mem_->id;
+    cond->data.tests.id_test->original_referent->common.reference_count++;
+    cond->data.tests.id_test->original_type = EQUALITY_TEST;
+  }
+  if (node->b.posneg.alpha_mem_->attr) {
+    cond->data.tests.attr_test->original_referent = node->b.posneg.alpha_mem_->attr;
+    cond->data.tests.attr_test->original_referent->common.reference_count++;
+    cond->data.tests.attr_test->original_type = EQUALITY_TEST;
+  }
+  if (node->b.posneg.alpha_mem_->value) {
+    cond->data.tests.value_test->original_referent = node->b.posneg.alpha_mem_->value;
+    cond->data.tests.value_test->original_referent->common.reference_count++;
+    cond->data.tests.value_test->original_type = EQUALITY_TEST;
+  }
+
+  // Debug| May want to add varnames/hash info here and the rest of stuff from pnode to conditions?!?!
 
   for ( ; rt!=NIL; rt=rt->next) {
 
@@ -4171,6 +4192,9 @@ void add_constraints_to_chunk_condition (agent* thisAgent,
           test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
           referent = rt->data.constant_referent;
           new_test = make_test(thisAgent, referent, test_type);
+          new_test->original_type = test_type;
+          new_test->original_referent = referent;
+          referent->common.reference_count++;
         }
         else if (test_is_variable_relational_test(rt->type))
         {
@@ -4210,6 +4234,9 @@ void add_constraints_to_chunk_condition (agent* thisAgent,
           //right_sym = field_from_wme (right_wme, rt->right_field_num);
 
           new_test = make_test(thisAgent, referent, test_type);
+          new_test->original_type = test_type;
+          new_test->original_referent = referent;
+          referent->common.reference_count++;
         }
         else
         {
@@ -4282,6 +4309,67 @@ void add_hash_info_to_id_test (agent* thisAgent,
   add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
 }
 
+void reconstruct_original_condition(agent* thisAgent,
+    rete_node *node,
+    node_varnames *nvn,
+    rete_node *cutoff,
+    token *tok,
+    wme *w,
+    condition *conds_for_cutoff_and_up,
+    condition **dest_top_cond,
+    condition **dest_bottom_cond,
+    not_struct * & nots_found_in_production,
+    bool produce_chunk_tests,
+    bool compile_nots)
+{
+  condition *cond;
+  alpha_mem *am;
+  am = node->b.posneg.alpha_mem_;
+  cond->data.tests.id_test = make_test(thisAgent, am->id, EQUALITY_TEST);
+  cond->data.tests.attr_test = make_test(thisAgent, am->attr, EQUALITY_TEST);
+  cond->data.tests.value_test = make_test(thisAgent, am->value, EQUALITY_TEST);
+  cond->test_for_acceptable_preference = am->acceptable;
+
+  if (nvn) {
+    add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
+        &(cond->data.tests.id_test));
+    add_varnames_to_test (thisAgent, nvn->data.fields.attr_varnames,
+        &(cond->data.tests.attr_test));
+    add_varnames_to_test (thisAgent, nvn->data.fields.value_varnames,
+        &(cond->data.tests.value_test));
+  }
+
+  /* --- on hashed nodes, add equality test for the hash function --- */
+  if ((node->node_type==MP_BNODE) || (node->node_type==NEGATIVE_BNODE)) {
+    add_hash_info_to_id_test (thisAgent, cond,
+        node->left_hash_loc_field_num,
+        node->left_hash_loc_levels_up);
+  } else if (node->node_type==POSITIVE_BNODE) {
+    add_hash_info_to_id_test (thisAgent, cond,
+        node->parent->left_hash_loc_field_num,
+        node->parent->left_hash_loc_levels_up);
+  }
+
+  /* --- if there are other tests, add them too --- */
+  if (node->b.posneg.other_tests)
+    add_rete_test_list_to_tests (thisAgent, cond, node->b.posneg.other_tests);
+
+  /* --- if we threw away the variable names, make sure there's some
+         equality test in each of the three fields --- */
+  if (! nvn) {
+    if (! test_includes_equality_test_for_symbol
+        (cond->data.tests.id_test, NIL))
+      add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
+    if (! test_includes_equality_test_for_symbol
+        (cond->data.tests.attr_test, NIL))
+      add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
+    if (! test_includes_equality_test_for_symbol
+        (cond->data.tests.value_test, NIL))
+      add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test),
+          first_letter_from_test (cond->data.tests.attr_test));
+  }
+}
+
 /* ----------------------------------------------------------------------
                           Rete Node To Conditions
 
@@ -4297,6 +4385,13 @@ void add_hash_info_to_id_test (agent* thisAgent,
    for the "cutoff" node and higher.  "Dest_top_cond" and "dest_bottom_cond"
    get filled in with the highest and lowest conditions built by this
    procedure.
+
+   condition_format is true if we want the function to return all tests
+   at the node (for chunk creation) and false if we just want the equality
+   tests.
+
+   Debug| May need to expand to a third type for rl rules?
+
 ---------------------------------------------------------------------- */
 
 /* NOTE: clean this procedure up somehow? */
@@ -4311,7 +4406,7 @@ void rete_node_to_conditions (agent* thisAgent,
                               condition **dest_top_cond,
                               condition **dest_bottom_cond,
                               not_struct * & nots_found_in_production,
-                              bool compile_chunk_test_info,
+                              bool produce_chunk_tests,
                               bool compile_nots) {
   condition *cond;
   alpha_mem *am;
@@ -4331,7 +4426,7 @@ void rete_node_to_conditions (agent* thisAgent,
                              conds_for_cutoff_and_up,
                              dest_top_cond, &(cond->prev),
                              nots_found_in_production,
-                             compile_chunk_test_info,
+                             produce_chunk_tests,
                              compile_nots);
     cond->prev->next = cond;
   }
@@ -4349,7 +4444,7 @@ void rete_node_to_conditions (agent* thisAgent,
                              &(cond->data.ncc.top),
                              &(cond->data.ncc.bottom),
                              nots_found_in_production,
-                             compile_chunk_test_info,
+                             produce_chunk_tests,
                              compile_nots);
     cond->data.ncc.top->prev = NIL;
   } else {
@@ -4364,9 +4459,19 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->data.tests.id_test = make_test (thisAgent, w->id, EQUALITY_TEST);
       cond->data.tests.attr_test = make_test (thisAgent, w->attr, EQUALITY_TEST);
       cond->data.tests.value_test = make_test (thisAgent, w->value, EQUALITY_TEST);
+      cond->data.tests.attr_test = make_test (thisAgent, w->attr, EQUALITY_TEST);
+      cond->data.tests.value_test = make_test (thisAgent, w->value, EQUALITY_TEST);
+
       cond->test_for_acceptable_preference = w->acceptable;
       cond->bt.wme_ = w;
 
+      if (produce_chunk_tests)
+      {
+        /* --- store original test referent.  Used by chunking to determine
+         *     whether to variablize a constant symbol or LTI --- */
+
+          build_chunk_tests (thisAgent, node, w, cond);
+      }
       /* --- DEBUG| For a possible performance improvement, we might be
              able to skip collecting nots if tok is nil.  They're only
              used for chunking and are ignored by p_node_to_conditions_and_nots
@@ -4387,16 +4492,6 @@ void rete_node_to_conditions (agent* thisAgent,
 //        collect_nots (thisAgent, node->b.posneg.other_tests, w, cond,
 //                              nots_found_in_production);
 //      }
-      if (compile_chunk_test_info && node->b.posneg.other_tests)
-      {
-        // Could incrementally build original test info here instead of two calls
-        // - Quick try resulted in crash in var_bound_in_reconstructed_original_conds which got a blank
-        //   test submitted to it by add_rete_test_list_to_original_tests
-
-        if (node->b.posneg.other_tests) {
-          add_constraints_to_chunk_condition (thisAgent, node->b.posneg.other_tests, w, cond);
-        }
-      }
     } else {
       am = node->b.posneg.alpha_mem_;
       cond->data.tests.id_test = make_test(thisAgent, am->id, EQUALITY_TEST);
