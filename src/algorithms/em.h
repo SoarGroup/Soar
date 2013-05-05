@@ -70,6 +70,8 @@ public:
 	void print_modes() const;
 	void set_noise_var(double v) { noise_var = v; }
 	
+	int num_modes() const { return modes.size(); }
+	
 private:
 	void estep();
 	bool mstep();

@@ -569,9 +569,9 @@ void velocity_hack(const sgnode *n) {
 	}
 	vec3 pos = n->get_trans('p');
 	stringstream ss;
-	ss << "* +vx p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
-	ss << "* +vz p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
-	ss << "* +vh p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
+	ss << "* vx_pred_line p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
+	ss << "* vz_pred_line p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
+	ss << "* pred_line    p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
 	get_drawer()->send(ss.str());
 }
 

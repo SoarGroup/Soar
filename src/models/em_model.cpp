@@ -14,7 +14,20 @@ using namespace std;
 
 const int MAXITERS = 50;
 
-void velocity_hack(int mode, double pred, double real, const string &name) {
+void error_color(double error, double color[]) {
+	double maxerror = 1e-3;
+	color[0] = color[1] = color[2] = 0.0;
+	if (isnan(error)) {
+		return;
+	} else if (error > maxerror) {
+		color[0] = 1.0;
+	} else {
+		color[0] = error / maxerror;
+		color[1] = 1 - (error / maxerror);
+	}
+}
+
+void draw_predictions(int mode, int nmodes, double pred, double real, const string &name) {
 	static double mode_colors[][3] = {
 		{ 0.0, 0.0, 0.0 },
 		{ 1.0, 0.0, 1.0 },
@@ -24,49 +37,87 @@ void velocity_hack(int mode, double pred, double real, const string &name) {
 		{ 0.5, 0.0, 0.5 },
 	};
 	static int ncolors = sizeof(mode_colors) / sizeof(mode_colors[0]);
+
 	const double stretch = 20.0;
+	const int mode_text_x = 20;
+	const int xmode_text_y = 120;
+	const int zmode_text_y = 100;
+	const int font_width = 10;
 	
 	static double vx = NAN, vz = NAN, vxerror, vzerror;
-	static int xmode = 0, zmode = 0;
-
-	assert(mode < ncolors);
-	if (name == "b1:vx") {
-		vx = pred * stretch;
-		vxerror = abs(real - pred);
-		xmode = mode;
-	} else if (name == "b1:vz") {
-		vz = pred * stretch;
-		vzerror = abs(real - pred);
-		zmode = mode;
-	} else {
-		return;
-	}
-	
-	double *cx = isnan(vx) ? mode_colors[0] : mode_colors[xmode];
-	double *cz = isnan(vz) ? mode_colors[0] : mode_colors[zmode];
+	static int xmode = 0, zmode = 0, xnmodes = 0, znmodes = 0;
+	static bool init = true;
+	static drawer *d = get_drawer();
 	
 	stringstream ss;
 	
-	ss << "* +vx v 0 0 0 " << (isnan(vx) ? 1000.0 : vx) << " 0 0";
-	ss << " i 0 1 c " << cx[0] << " " << cx[1] << " " << cx[2] << " l 1 w 2\n";
-	ss << "* +vz v 0 0 0 0 0 " << (isnan(vz) ? 1000.0 : vz);
-	ss << " i 0 1 c " << cz[0] << " " << cz[1] << " " << cz[2] << " l 1 w 2\n";
+	if (init) {
+		ss << "layer 1 l 0 n 0\n"
+		   << "layer 2 l 0 n 0 f 1\n"
+		   << "* +b1:vx_mode_header t b1:vx l 2 c 1 1 1 p " << mode_text_x << " " << xmode_text_y << " 0\n"
+		   << "* +b1:vz_mode_header t b1:vz l 2 c 1 1 1 p " << mode_text_x << " " << zmode_text_y << " 0\n"
+		   << "* +vx_pred_line l 1 w 2\n"
+		   << "* +vz_pred_line l 1 w 2\n"
+		   << "* +pred_line    l 1 w 2\n";
+		
+		init = false;
+	}
+
+	int old_nmodes, old_mode, y;
+	if (name == "b1:vx") {
+		old_nmodes = xnmodes;
+		old_mode = xmode;
+		xnmodes = nmodes;
+		xmode = mode;
+		y = xmode_text_y;
+		vx = pred * stretch;
+		vxerror = abs(real - pred);
+	} else if (name == "b1:vz") {
+		old_nmodes = znmodes;
+		old_mode = zmode;
+		znmodes = nmodes;
+		zmode = mode;
+		y = zmode_text_y;
+		vz = pred * stretch;
+		vzerror = abs(real - pred);
+	}
+	
+	/* draw mode text */
+	if (old_nmodes < nmodes) {
+		for (int i = old_nmodes; i < nmodes; ++i) {
+			int x = mode_text_x + 5 * font_width + i * font_width;
+			ss << "* +" << name << "_mode_" << i
+			   << " t " << i
+			   << " c 1 1 1 p " << x << " " << y << " 0 l 2\n";
+		}
+	} else if (old_nmodes > nmodes) {
+		for (int i = nmodes; i < old_nmodes; ++i) {
+			ss << "* -" << name << "_mode_" << i << "\n";
+		}
+	}
+	
+	/* set color for selected mode */
+	ss << "* " << name << "_mode_" << old_mode << " c 1 1 1\n";
+	ss << "* " << name << "_mode_" << mode << " c 1 0 0\n";
+	
+	double cx[3], cz[3], cp[3];
+	
+	error_color(vxerror, cx);
+	error_color(vzerror, cz);
+	error_color(vxerror + vzerror / 2, cp);
+	
+	ss << "* vx_pred_line v 0 0 0 " << (isnan(vx) ? 1000.0 : vx) << " 0 0"
+	   << " i 0 1 c " << cx[0] << " " << cx[1] << " " << cx[2] << "\n";
+	ss << "* vz_pred_line v 0 0 0 0 0 " << (isnan(vz) ? 1000.0 : vz)
+	   << " i 0 1 c " << cz[0] << " " << cz[1] << " " << cz[2] << "\n";
 	
 	if (!isnan(vx) && !isnan(vz)) {
-		double error = vxerror + vzerror;
-		double ch[] = { 0.0, 0.0, 0.0 };
-		double maxerror = 1e-3;
-		if (error > maxerror) {
-			ch[0] = 1.0;
-		} else {
-			ch[0] = error / maxerror;
-			ch[1] = 1 - (error / maxerror);
-		}
-		ss << "* +vh v 0 0 0 " << vx << " 0 " << vz << " i 0 1";
-		ss << " c " << ch[0] << " " << ch[1] << " " << ch[2];
-		ss << " l 1 w 2\n";
+		ss << "* pred_line v 0 0 0 " << vx << " 0 " << vz << " i 0 1";
+		ss << " c " << cp[0] << " " << cp[1] << " " << cp[2] << "\n";
+	} else {
+		ss << "* pred_line v 0 0 0 0 0 0 i 0 1\n";
 	}
-	get_drawer()->send(ss.str());
+	d->send(ss.str());
 }
 
 class EM_model : public model {
@@ -109,7 +160,7 @@ public:
 		extend_relations(test_rels, rels, test_rec.size() - 1);
 		success = em.predict(target, sig, rels, x, ti.mode, ti.pred);
 		ti.best_mode = em.best_mode(target, sig, x, y(0), ti.best_error);
-		velocity_hack(ti.mode, ti.pred, y(0), get_name());
+		draw_predictions(ti.mode, em.num_modes(), ti.pred, y(0), get_name());
 	}
 	
 	void proxy_get_children(map<string, cliproxy*> &c) {
