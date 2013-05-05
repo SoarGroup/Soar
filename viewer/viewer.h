@@ -35,6 +35,8 @@ typedef struct Camera {
 
 typedef struct Geometry {
 	char *name;
+	int layer;
+	double line_width;
 	
 	vec3 pos;
 	vec3 axis;
@@ -42,17 +44,20 @@ typedef struct Geometry {
 	vec3 scale;
 	vec3 color;
 	
+	/* for polyhedrons */
 	real *vertices;
 	GLuint *indexes;
 	int ninds;
 	real *normals;
 	
+	/* for spheres */
 	GLUquadricObj *quadric;
 	real radius;
-	struct Geometry *next;
 	
-	int layer;
-	double line_width;
+	/* for text */
+	char *text;
+	
+	struct Geometry *next;
 } geometry;
 
 typedef struct Layer {
@@ -60,7 +65,7 @@ typedef struct Layer {
 	int lighting;
 	int flat;
 	int clear_depth;
-	int show_labels;
+	int draw_names;
 	int wireframe;
 	
 	/*
@@ -106,6 +111,7 @@ void apply_camera(camera *c);
 void init_geom(geometry *g, char *name);
 void set_geom_vertices(geometry *g, real *vertices, int nverts, GLuint *indexes, int ninds);
 void set_geom_radius(geometry *g, real radius);
+void set_geom_text(geometry *g, char *text);
 void destroy_geom(geometry *g);
 void draw_geom(geometry *g);
 

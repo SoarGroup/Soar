@@ -141,6 +141,7 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 	GLuint inds[MAX_FIELDS];
 	real radius, line_width, layer;
 	int i, f, nverts, ninds, pos_set, rot_set, scale_set, color_set;
+	char *text;
 	
 	pos_set = 0;
 	rot_set = 0;
@@ -148,9 +149,10 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 	color_set = 0;
 	radius = -1.0;
 	line_width = -1.0;
-	layer = 0.0;
+	layer = -1.0;
 	nverts = -1;
 	ninds = -1;
+	text = NULL;
 	
 	f = 0;
 	while (fields[f]) {
@@ -226,6 +228,10 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 				}
 				f += 2;
 				break;
+			case 't':  /* text */
+				text = fields[f+1];
+				f += 2;
+				break;
 			case 'l':  /* layer */
 				if (parse_nums(&fields[f+1], 1, &layer) < 1 || layer < 0.0) {
 					fprintf(stderr, "expecting layer number (0 - %d)\n", NLAYERS);
@@ -266,10 +272,13 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 			copy_vec3(color, gs[i]->color);
 		if (rot_set)
 			quat_to_axis_angle(rot, gs[i]->axis, &gs[i]->angle);
+		
 		if (radius >= 0.0) {
 			set_geom_radius(gs[i], radius);
 		} else if (nverts != -1 && ninds != -1) {
 			set_geom_vertices(gs[i], verts, nverts, inds, ninds);
+		} else if (text != NULL) {
+			set_geom_text(gs[i], text);
 		}
 		
 		if (layer >= 0.0) {
@@ -320,7 +329,7 @@ int proc_layer_cmd(char *fields[]) {
 			fprintf(stderr, "expecting 0/1\n");
 			return 0;
 		}
-		val = (num == 0.0) ? 0 : 1;
+		val = ((num == 0.0) ? 0 : 1);
 		if (!set_layer(layer_num, fields[i][0], val)) {
 			fprintf(stderr, "no such layer option: %s\n", fields[i]);
 			return 0;

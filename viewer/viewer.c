@@ -42,7 +42,6 @@ static scene *curr_scene = NULL;
 static int scr_width = 640;
 static int scr_height = 480;
 static int show_grid = 1;
-static int show_labels = 1;
 static real grid_size = 1.0;
 static char *savepath;
 
@@ -162,8 +161,8 @@ int main(int argc, char* argv[]) {
 							show_grid = !show_grid;
 							redraw = 1;
 							break;
-						case SDLK_l:
-							show_labels = !show_labels;
+						case SDLK_n:
+							layers[0].draw_names = !layers[0].draw_names;
 							redraw = 1;
 							break;
 						case SDLK_MINUS:
@@ -177,7 +176,7 @@ int main(int argc, char* argv[]) {
 							redraw = 1;
 							break;
 						case SDLK_w:
-							layers[0].wireframe = 1 - layers[0].wireframe;
+							layers[0].wireframe = !layers[0].wireframe;
 							redraw = 1;
 							break;
 						case SDLK_s:
@@ -493,18 +492,25 @@ void init_geom(geometry *g, char *name) {
 		perror("init_geom: ");
 		exit(1);
 	}
+	g->layer = 0;
+	g->line_width = 1.0;
+	
 	set_vec3(g->pos, 0.0, 0.0, 0.0);
 	set_vec3(g->scale, 1.0, 1.0, 1.0);
 	set_vec3(g->axis, 0.0, 0.0, 1.0);
 	g->angle = 0.0;
 	copy_vec3(geom_default_color, g->color);
+	
 	g->vertices = NULL;
 	g->indexes = NULL;
 	g->ninds = 0;
+	
 	g->quadric = NULL;
 	g->radius = -1.0;
+	
+	g->text = NULL;
+	
 	g->next = NULL;
-	g->line_width = 1.0;
 }
 
 void free_geom_shape(geometry *g) {
@@ -524,6 +530,10 @@ void free_geom_shape(geometry *g) {
 		g->quadric = NULL;
 	}
 	g->radius = 0.0;
+	if (g->text) {
+		free(g->text);
+		g->text = NULL;
+	}
 }
 
 void set_geom_vertices(geometry *g, real *vertices, int nverts, GLuint *indexes, int ninds) {
@@ -566,6 +576,14 @@ void set_geom_radius(geometry *g, real radius) {
 	gluQuadricNormals(g->quadric, GLU_SMOOTH);
 }
 
+void set_geom_text(geometry *g, char *text) {
+	free_geom_shape(g);
+	if (!(g->text = strdup(text))) {
+		fprintf(stderr, "Not enough memory for text\n");
+		exit(1);
+	}
+}
+
 void calc_normals(geometry *g) {
 	int i, j;
 	vec3 e1, e2;
@@ -595,9 +613,7 @@ void draw_geom(geometry *g) {
 	glRotated(g->angle, g->axis[0], g->axis[1], g->axis[2]);
 	glScaled(g->scale[0], g->scale[1], g->scale[2]);
 	
-	if (g->ninds == -1) {
-		gluSphere(g->quadric, g->radius, 10, 10);
-	} else {
+	if (g->ninds >= 0) {
 		glVertexPointer(3, GL_DOUBLE, 0, g->vertices);
 		if (g->ninds == 1) {
 			glBegin(GL_POINTS);
@@ -614,6 +630,12 @@ void draw_geom(geometry *g) {
 				glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, &g->indexes[i]);
 			}
 		}
+	} else if (g->quadric) {
+		gluSphere(g->quadric, g->radius, 10, 10);
+	} else if (g->text) {
+		draw_text(g->text, 0, 0);
+	} else {
+		fprintf(stderr, "geometry %s has no shape\n", g->name);
 	}
 	glPopMatrix();
 	glLineWidth(1.0);
@@ -784,10 +806,9 @@ void draw_labels() {
 	
 	for (i = 0; i < NLAYERS; ++i) {
 		l = &layers[i];
-		if (!l->show_labels) {
+		if (!l->draw_names) {
 			continue;
 		}
-		
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -972,11 +993,11 @@ void init_layers() {
 		layers[i].lighting = 0;
 		layers[i].flat = 0;
 		layers[i].clear_depth = 1;
-		layers[i].show_labels = 0;
+		layers[i].draw_names = 0;
 		layers[i].wireframe = 0;
 	}
 	layers[0].lighting = 1;
-	layers[0].show_labels = 1;
+	layers[0].draw_names = 1;
 }
 
 int set_layer(int layer_num, char option, int value) {
@@ -991,8 +1012,8 @@ int set_layer(int layer_num, char option, int value) {
 		case 'd':
 			layers[layer_num].clear_depth = value;
 			return 1;
-		case 'b':
-			layers[layer_num].show_labels = value;
+		case 'n':
+			layers[layer_num].draw_names = value;
 			return 1;
 		case 'w':
 			layers[layer_num].wireframe = value;
