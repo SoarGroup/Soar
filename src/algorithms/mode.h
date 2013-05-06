@@ -46,6 +46,9 @@ public:
 	
 	int get_num_nonzero_coefs() const;
 	
+	/* return a string representation of the linear function */
+	void get_function_string(std::string &s) const;
+	
 private:
 	interval_set members;
 

@@ -24,7 +24,7 @@
 using namespace std;
 using namespace Eigen;
 
-bool approx_equal(double a, double b) {
+static bool approx_equal(double a, double b) {
 	return fabs(a - b) / min(fabs(a), fabs(b)) < .001;
 }
 
@@ -932,6 +932,10 @@ void EM::print_modes() const {
 		cout << "MODE " << i << endl;
 		t.print(cout);
 	}
+}
+
+void EM::get_mode_function_string(int m, string &s) const {
+	modes[m]->get_function_string(s);
 }
 
 void inst_info::serialize(ostream &os) const {

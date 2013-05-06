@@ -532,3 +532,52 @@ void em_mode::get_members(interval_set &mem) const {
 	mem = members;
 }
 
+static bool approx_equal(double a, double b) {
+	return (fabs(a - b) <= SAME_THRESH);
+}
+
+void em_mode::get_function_string(string &s) const {
+	if (noise) {
+		s = "noise";
+		return;
+	}
+	
+	stringstream ss;
+	int k = 0;
+	bool first = true;
+	for (int i = 0, iend = sig.size(); i < iend; ++i) {
+		for (int j = 0, jend = sig[i].props.size(); j < jend; ++j, ++k) {
+			double c = lin_coefs(k, 0);
+			if (c == 0.0) {
+				continue;
+			} else if (first) {
+				if (approx_equal(c, -1.0)) {
+					ss << "-";
+				} else if (!approx_equal(c, 1.0)) {
+					ss << c << " * ";
+				}
+				first = false;
+			} else if (c < 0.0) {
+				ss << " - ";
+				if (!approx_equal(c, -1.0)) {
+					ss << fabs(c) << " * ";
+				}
+			} else {
+				ss << " + ";
+				if (!approx_equal(c, 1.0)) {
+					ss << c << " * ";
+				}
+			}
+			ss << sig[i].name << ":" << sig[i].props[j];
+		}
+	}
+	
+	if (first) {
+		ss << lin_inter(0);
+	} else if (lin_inter(0) > 0.0) {
+		ss << " + " << lin_inter(0);
+	} else if (lin_inter(0) < 0.0) {
+		ss << " - " << fabs(lin_inter(0));
+	}
+	s = ss.str();
+}

@@ -14,17 +14,52 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]);
 int parse_nums(char *fields[], int n, real *v);
 void gen_request_event();
 int split(char *s, char *fields[]);
+void fix_literal_quotes(char *s);
 int proc_layer_cmd(char *fields[]);
 
+/*
+ split using whitespace and double quotes. \" is a literal quote in quoted
+ fields
+*/
 int split(char *s, char *fields[]) {
-	int i;
+	char *p;
+	int n, quoted, done;
 	
 	memset(fields, 0, MAX_FIELDS * sizeof(char*));
-	i = 0;
-	while(fields[i++] = strtok(s, WHITESPACE)) {
-		s = NULL;
+	for (n = 0, quoted = 0, done = 0, p = s; !done && n < MAX_FIELDS; ++p) {
+		if (*p == '\0') done = 1;
+		
+		if (!fields[n] && *p != '\0' && !isspace(*p)) {
+			if (*p == '"') {
+				fields[n] = p + 1;
+				quoted = 1;
+			} else {
+				fields[n] = p;
+				quoted = 0;
+			}
+		} else if (fields[n] && !quoted && (isspace(*p) || *p == '\0')) {
+			*p = '\0';
+			++n;
+		} else if (fields[n] && quoted && ((*p == '"' && *(p-1) != '\\') || *p == '\0')) {
+			*p = '\0';
+			fix_literal_quotes(fields[n]);
+			++n;
+		}
 	}
-	return i - 1;
+	return n;
+}
+
+void fix_literal_quotes(char *s) {
+	char *t;
+	for (t = s; *s != '\0'; ++s, ++t) {
+		if (*s == '\\' && *(s+1) == '"') {
+			++s;
+		}
+		if (t != s) {
+			*t = *s;
+		}
+	}
+	*t = '\0';
 }
 
 int proc_input(void *unused) {

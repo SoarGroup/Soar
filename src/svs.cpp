@@ -540,11 +540,10 @@ void svs::input_callback() {
 		(**i).update_cmd_results(false);
 	}
 	static int frame = 0;
-	/*
+
 	stringstream ss;
 	ss << "save screen" << setfill('0') << setw(4) << frame++ << ".ppm";
 	get_drawer()->send(ss.str());
-	*/
 }
 
 /*

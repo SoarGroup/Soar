@@ -27,7 +27,7 @@ void error_color(double error, double color[]) {
 	}
 }
 
-void draw_predictions(int mode, int nmodes, double pred, double real, const string &name) {
+void draw_predictions(int mode, int nmodes, double pred, double real, const string &name, EM *em) {
 	static double mode_colors[][3] = {
 		{ 0.0, 0.0, 0.0 },
 		{ 1.0, 0.0, 1.0 },
@@ -39,10 +39,10 @@ void draw_predictions(int mode, int nmodes, double pred, double real, const stri
 	static int ncolors = sizeof(mode_colors) / sizeof(mode_colors[0]);
 
 	const double stretch = 20.0;
-	const int mode_text_x = 20;
-	const int xmode_text_y = 120;
-	const int zmode_text_y = 100;
-	const int font_width = 10;
+	const int mode_text_x = 50;
+	const int xmode_text_y = 460;
+	const int zmode_text_y = 410;
+	const int font_size = 12;
 	
 	static double vx = NAN, vz = NAN, vxerror, vzerror;
 	static int xmode = 0, zmode = 0, xnmodes = 0, znmodes = 0;
@@ -83,22 +83,22 @@ void draw_predictions(int mode, int nmodes, double pred, double real, const stri
 	}
 	
 	/* draw mode text */
-	if (old_nmodes < nmodes) {
-		for (int i = old_nmodes; i < nmodes; ++i) {
-			int x = mode_text_x + 5 * font_width + i * font_width;
-			ss << "* +" << name << "_mode_" << i
-			   << " t " << i
-			   << " c 1 1 1 p " << x << " " << y << " 0 l 2\n";
-		}
-	} else if (old_nmodes > nmodes) {
-		for (int i = nmodes; i < old_nmodes; ++i) {
-			ss << "* -" << name << "_mode_" << i << "\n";
-		}
+	for (int i = 0; i < nmodes; ++i) {
+		string t;
+		em->get_mode_function_string(i, t);
+		y -= font_size;
+		ss << "* +" << name << "_mode_" << i
+		   << " t \"" << t << "\""
+		   << " c 1 1 1 p " << mode_text_x + font_size * 4 << " " << y << " 0 l 2\n";
+	}
+	
+	for (int i = nmodes; i < old_nmodes; ++i) {
+		ss << "* -" << name << "_mode_" << i << "\n";
 	}
 	
 	/* set color for selected mode */
 	ss << "* " << name << "_mode_" << old_mode << " c 1 1 1\n";
-	ss << "* " << name << "_mode_" << mode << " c 1 0 0\n";
+	ss << "* " << name << "_mode_" << mode << " c 1 1 0\n";
 	
 	double cx[3], cz[3], cp[3];
 	
@@ -160,7 +160,7 @@ public:
 		extend_relations(test_rels, rels, test_rec.size() - 1);
 		success = em.predict(target, sig, rels, x, ti.mode, ti.pred);
 		ti.best_mode = em.best_mode(target, sig, x, y(0), ti.best_error);
-		draw_predictions(ti.mode, em.num_modes(), ti.pred, y(0), get_name());
+		draw_predictions(ti.mode, em.num_modes(), ti.pred, y(0), get_name(), &em);
 	}
 	
 	void proxy_get_children(map<string, cliproxy*> &c) {

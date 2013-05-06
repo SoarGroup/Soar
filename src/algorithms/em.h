@@ -72,6 +72,8 @@ public:
 	
 	int num_modes() const { return modes.size(); }
 	
+	void get_mode_function_string(int m, std::string &s) const;
+	
 private:
 	void estep();
 	bool mstep();
