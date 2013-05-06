@@ -209,8 +209,7 @@ inline test make_test_without_refcount(agent* thisAgent, Symbol * sym, TestType 
   allocate_with_pool (thisAgent, &thisAgent->test_pool, &new_ct);
   new_ct->type = test_type;
   new_ct->data.referent = sym;
-  new_ct->original_type = INVALID_TEST;
-  new_ct->original_referent = NULL;
+  new_ct->original_test = NULL;
 
   return new_ct;
 }
@@ -269,10 +268,8 @@ test copy_test (agent* thisAgent, test t) {
       new_ct = make_test(thisAgent, t->data.referent, t->type);
       break;
   }
-  new_ct->original_type = t->original_type;
-  if (t->original_referent) {
-    new_ct->original_referent = t->original_referent;
-    new_ct->original_referent->common.reference_count++;
+  if (t->original_test) {
+    new_ct->original_test = copy_test(thisAgent, t->original_test);
   }
   return new_ct;
 }
@@ -315,6 +312,9 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
         new_t->data.conjunct_list =
             destructively_reverse_list (new_t->data.conjunct_list);
       }
+      if (t->original_test) {
+        new_t->original_test = copy_test(thisAgent, t->original_test);
+      }
       return new_t;
 
     default:  /* relational tests other than equality */
@@ -349,24 +349,12 @@ void deallocate_test (agent* thisAgent, test t) {
     break;
   default: /* relational tests other than equality */
     symbol_remove_ref (thisAgent, t->data.referent);
-    if (t->original_referent)
-      symbol_remove_ref (thisAgent, t->original_referent);
     break;
   }
+  if (t->original_test)
+    deallocate_test (thisAgent, t->original_test);
   free_with_pool (&thisAgent->test_pool, t);
 }
-
-/* --- Macro for doing this (usually) without procedure call overhead. --- */
-#ifdef USE_MACROS
-#define quickly_deallocate_test(thisAgent, t) { \
-  if (! test_is_blank_test(t)) { \
-    if (test_is_blank_or_equality_test(t)) { \
-      symbol_remove_ref (thisAgent, t->data.referent); \
-    } else { \
-      deallocate_test (thisAgent, t); } } }
-#else
-
-#endif
 
 /* ----------------------------------------------------------------
    Destructively modifies the first test (t) by adding the second
@@ -375,9 +363,9 @@ void deallocate_test (agent* thisAgent, test t) {
 ---------------------------------------------------------------- */
 
 void add_new_test_to_test (agent* thisAgent,
-						   test *t, test add_me) {
-  test ct = 0;
-  cons *c;
+               test *t, test add_me, test add_me_original) {
+  test ct = 0, ct_orig = 0;
+  cons *c, *c_orig;
 
   if (test_is_blank(add_me)) return;
 
@@ -392,15 +380,76 @@ void add_new_test_to_test (agent* thisAgent,
     ct->data.conjunct_list = c;
     c->first = *t;
     c->rest = NIL;
+
+    if (add_me_original)
+    {
+      ct_orig = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
+      allocate_cons (thisAgent, &c_orig);
+      ct_orig->data.conjunct_list = c_orig;
+      c_orig->first = (*t)->original_test;
+      c_orig->rest = NIL;
+      ct->original_test = ct_orig;
+    }
     *t = ct;
   }
 
+  if (add_me->type==CONJUNCTIVE_TEST) {
+  assert(false);
+  }
   /* --- now add add_me to the conjunct list --- */
   allocate_cons (thisAgent, &c);
   c->first = add_me;
   c->rest = ct->data.conjunct_list;
   ct->data.conjunct_list = c;
+
+  if (add_me_original)
+  {
+    ct_orig = ct->original_test;
+    allocate_cons (thisAgent, &c_orig);
+    c_orig->first = add_me_original;
+    c_orig->rest = ct_orig->data.conjunct_list;
+    ct_orig->data.conjunct_list = c_orig;
+
+    add_me->original_test = add_me_original;
+  }
 }
+
+/* ----------------------------------------------------------------
+   Destructively modifies the first test (t) by adding the second
+   one (add_me) to it (usually as a new conjunct).  The first test
+   need not be a conjunctive test.
+---------------------------------------------------------------- */
+
+//void add_new_test_to_test (agent* thisAgent,
+//						   test *t, test add_me) {
+//  test ct = 0;
+//  cons *c;
+//
+//  if (test_is_blank(add_me)) return;
+//
+//  if (test_is_blank(*t)) {
+//    *t = add_me;
+//    return;
+//  }
+//  ct = *t;
+//  if (ct->type!=CONJUNCTIVE_TEST) {
+//    ct = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
+//    allocate_cons (thisAgent, &c);
+//    ct->data.conjunct_list = c;
+//    c->first = *t;
+//    c->rest = NIL;
+//    *t = ct;
+//  }
+//
+//  if (add_me->type==CONJUNCTIVE_TEST) {
+//  assert(false);
+//  }
+//  /* --- now add add_me to the conjunct list --- */
+//  allocate_cons (thisAgent, &c);
+//  c->first = add_me;
+//  c->rest = ct->data.conjunct_list;
+//  ct->data.conjunct_list = c;
+//}
 
 /* ----------------------------------------------------------------
    Same as add_new_test_to_test(), only has no effect if the second

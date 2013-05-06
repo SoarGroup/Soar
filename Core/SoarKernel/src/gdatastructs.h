@@ -414,6 +414,9 @@ enum TestType {
  *     info needed to for our new more generalized chunking logic, all tests are
  *     just now "tests". --- */
 
+typedef struct test_struct test_info;
+typedef test_info * test;
+
 typedef struct test_struct {
   TestType type;                  /* see definitions below */
   union test_info_union {
@@ -427,8 +430,7 @@ typedef struct test_struct {
    *     the rete when reconstructing a production.  It is used by the
    *     chunker to determine when to variablize constant symbols.
    *     - MMA 2013 ---*/
-  TestType original_type;                  /* see definitions below */
-  Symbol *original_referent;
+  test original_test;
 } test_info;
 
 typedef test_info * test;

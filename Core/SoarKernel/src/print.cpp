@@ -410,14 +410,16 @@ void print_test (agent* thisAgent, test t, const char *indent_string) {
       }
       break;
     default:
-      print(thisAgent, "%s: %s (%s) | %s: %s (%s)\n",
+      print(thisAgent, "%s: %s (%s)",
           test_type_to_string(t->type),
           (t->data.referent ? symbol_to_string (thisAgent, t->data.referent, FALSE, NULL, 0) : "NULL (PROBLEM!)"),
-          (t->data.referent ? symbol_to_typeString (thisAgent, t->data.referent) : "NULL (PROBLEM!)"),
-          test_type_to_string(t->original_type),
-          (t->original_referent ? symbol_to_string (thisAgent, t->original_referent, FALSE, NULL, 0) : "NULL"),
-          (t->original_referent ? symbol_to_typeString (thisAgent, t->original_referent) : "NULL")
-          );
+          (t->data.referent ? symbol_to_typeString (thisAgent, t->data.referent) : "NULL (PROBLEM!)"));
+          if (t->original_test)
+          {
+            print(thisAgent, " | ");
+            print_test (thisAgent,t->original_test, indent_string);
+          }
+          print(thisAgent, "\n");
       break;
   }
 }
