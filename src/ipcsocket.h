@@ -9,11 +9,11 @@ public:
 	ipcsocket();
 	~ipcsocket();
 	
-	void set_address(const std::string &path);
-	bool send(const std::string &s) const;
+	bool connect(const std::string &path);
+	void disconnect();
+	bool send(const std::string &s);
 	
 private:
-	struct sockaddr_un addr;
 	int fd;
 };
 

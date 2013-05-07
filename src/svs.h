@@ -154,6 +154,7 @@ private:
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_log(const std::vector<std::string> &args, std::ostream &os);
 	void cli_connect_viewer(const std::vector<std::string> &args, std::ostream &os);
+	void cli_disconnect_viewer(const std::vector<std::string> &args, std::ostream &os);
 
 	soar_interface           *si;
 	std::vector<svs_state*>   state_stack;

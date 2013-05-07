@@ -15,7 +15,8 @@ public:
 		SHAPE = 1 << 5,
 	};
 	
-	void set_address(const std::string &addr);
+	void connect(const std::string &addr);
+	void disconnect();
 	void add(const std::string &scn, const sgnode *n);
 	void del(const std::string &scn, const sgnode *n);
 	void change(const std::string &scn, const sgnode *n, int props);
@@ -27,7 +28,7 @@ public:
 	void set_pos(const std::string &name, double x, double y, double z);
 	
 private:
-	bool error;
+	bool connected;
 	ipcsocket sock;
 	
 	drawer();

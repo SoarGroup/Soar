@@ -15,22 +15,28 @@ drawer *get_drawer() {
 	return &d;
 }
 
-drawer::drawer() : error(false) {}
+drawer::drawer() : connected(false) {}
 
-void drawer::set_address(const string &path) {
-	sock.set_address(path);
-	error = false;
+void drawer::connect(const string &path) {
+	connected = sock.connect(path);
+}
+
+void drawer::disconnect() {
+	if (connected) {
+		sock.disconnect();
+	}
+	connected = false;
 }
 
 void drawer::add(const string &scn, const sgnode *n) {
-	if (error || !n->get_parent()) {
+	if (!connected || !n->get_parent()) {
 		return;
 	}
 	change(scn, n, SHAPE | POS | ROT | SCALE);
 }
 
 void drawer::del(const string &scn, const sgnode *n) {
-	if (error) {
+	if (!connected) {
 		return;
 	}
 	
@@ -40,7 +46,7 @@ void drawer::del(const string &scn, const sgnode *n) {
 }
 
 void drawer::change(const string &scn, const sgnode *n, int props) {
-	if (error) {
+	if (!connected) {
 		return;
 	}
 	
@@ -72,35 +78,39 @@ void drawer::change(const string &scn, const sgnode *n, int props) {
 }
 
 void drawer::delete_scene(const string &scn) {
-	if (error)
+	if (!connected)
 		return;
 	
 	send(string("-") + scn + "\n");
 }
 
 void drawer::set_color(const string &name, double r, double g, double b) {
-	stringstream ss;
-	
-	if (error)
+	if (!connected) {
 		return;
+	}
+	
+	stringstream ss;
 	ss << "* " << name << " c " << r << " " << g << " " << b << endl;
 	send(ss.str());
 }
 
 void drawer::set_pos(const string &name, double x, double y, double z) {
-	stringstream ss;
-	
-	if (error)
+	if (!connected) {
 		return;
+	}
+		
+	stringstream ss;
 	ss << "* " << name << " p " << x << " " << y << " " << z << endl;
 	send(ss.str());
 }
 
 void drawer::send(const string &s) {
-	if (!sock.send(s)) {
-		error = true;
+	if (!connected) {
+		return;
 	}
-	if (s[s.size() - 1] != '\n') {
-		sock.send("\n");
+	if (s[s.size()-1] != '\n') {
+		connected = sock.send(s + '\n');
+	} else {
+		connected = sock.send(s);
 	}
 }

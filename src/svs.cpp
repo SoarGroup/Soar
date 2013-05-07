@@ -541,9 +541,11 @@ void svs::input_callback() {
 	}
 	static int frame = 0;
 
+	/*
 	stringstream ss;
 	ss << "save screen" << setfill('0') << setw(4) << frame++ << ".ppm";
 	get_drawer()->send(ss.str());
+	*/
 }
 
 /*
@@ -560,9 +562,10 @@ string svs::get_output() const {
 }
 
 void svs::proxy_get_children(map<string, cliproxy*> &c) {
-	c["learn"] =          new bool_proxy(&learn);
-	c["log"] =            new memfunc_proxy<svs>(this, &svs::cli_log);
-	c["connect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
+	c["learn"] =             new bool_proxy(&learn);
+	c["log"] =               new memfunc_proxy<svs>(this, &svs::cli_log);
+	c["connect_viewer"] =    new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
+	c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);
 	c["timers"] =         &timers;
 	c["filters"] =        &get_filter_table();
 	
@@ -603,10 +606,14 @@ void svs::cli_connect_viewer(const vector<string> &args, ostream &os) {
 		os << "specify socket path" << endl;
 		return;
 	}
-	get_drawer()->set_address(args[0]);
+	get_drawer()->connect(args[0]);
 	for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
 		state_stack[i]->refresh_view();
 	}
+}
+
+void svs::cli_disconnect_viewer(const vector<string> &args, ostream &os) {
+	get_drawer()->disconnect();
 }
 
 int svs::parse_output_spec(const string &s) {
