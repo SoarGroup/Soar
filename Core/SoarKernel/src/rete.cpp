@@ -4127,70 +4127,6 @@ void add_hash_info_to_original_id_test (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------------
-                               Collect Nots
-
-   When we build the instantiated conditions for a production being
-   fired, we also record all the "<>" tests between pairs of identifiers.
-   (This information is used during chunking.)  This procedure looks for
-   any such <> tests in the given Rete test list (from the "other tests"
-   at a Rete node), and adds records of them to the global variable
-   nots_found_in_production.  "Right_wme" is the wme that matched
-   the current condition; "cond" is the currently-being-reconstructed
-   condition.
----------------------------------------------------------------------- */
-
-//not_struct *nots_found_in_production; /* collected <> tests */
-
-void collect_nots (agent* thisAgent,
-                   rete_test *rt,
-                   wme *right_wme,
-                   condition *cond,
-                   not_struct * & nots_found_in_production) {
-  not_struct *new_not;
-  Symbol *right_sym;
-  Symbol *referent;
-
-  for ( ; rt!=NIL; rt=rt->next) {
-
-    if (! test_is_not_equal_test(rt->type)) continue;
-
-    right_sym = field_from_wme (right_wme, rt->right_field_num);
-
-    if (right_sym->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) continue;
-
-    if (rt->type == CONSTANT_RELATIONAL_RETE_TEST +
-                    RELATIONAL_NOT_EQUAL_RETE_TEST) {
-      referent = rt->data.constant_referent;
-      if (referent->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) continue;
-      allocate_with_pool (thisAgent, &thisAgent->not_pool, &new_not);
-      new_not->next = nots_found_in_production;
-      nots_found_in_production = new_not;
-      new_not->s1 = right_sym;
-      symbol_add_ref (right_sym);
-      new_not->s2 = referent;
-      symbol_add_ref (referent);
-      continue;
-    }
-
-    if (rt->type == VARIABLE_RELATIONAL_RETE_TEST +
-                    RELATIONAL_NOT_EQUAL_RETE_TEST) {
-      referent = var_bound_in_reconstructed_conds (thisAgent, cond,
-                              rt->data.variable_referent.field_num,
-                              rt->data.variable_referent.levels_up);
-      if (referent->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) continue;
-      allocate_with_pool (thisAgent, &thisAgent->not_pool, &new_not);
-      new_not->next = nots_found_in_production;
-      nots_found_in_production = new_not;
-      new_not->s1 = right_sym;
-      symbol_add_ref (right_sym);
-      new_not->s2 = referent;
-      symbol_add_ref (referent);
-      continue;
-    }
-  }
-}
-
-/* ----------------------------------------------------------------------
                      Add Constraints to Chunk Condition
 
    This function gets passed the instantiated conditions for a production
@@ -4206,7 +4142,7 @@ void collect_nots (agent* thisAgent,
 
 ---------------------------------------------------------------------- */
 
-void build_chunk_tests ( agent      *thisAgent,
+void add_complex_tests_to_chunk_conditions ( agent      *thisAgent,
                          rete_node  *node,
                          wme        *right_wme,
                          condition  *cond,
@@ -4347,29 +4283,15 @@ void build_chunk_tests ( agent      *thisAgent,
         }
         if (rt->right_field_num==0)
         {
-//          add_new_test_to_test (thisAgent, &(cond->data.tests.id_test->original_test), original_test);
           add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), chunk_test, original_test);
-          cond->chunk_tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
         }
         else if (rt->right_field_num==2)
         {
-          if ((original_referent->ic.value == 8) || (original_referent->ic.value == 9))
-          {
-            print(thisAgent, "Stopping!.\n");
-          }
-          if ((referent->ic.value == 8) || (referent->ic.value == 9))
-          {
-            print(thisAgent, "Stopping!.\n");
-          }
           add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), chunk_test, original_test);
-//          add_new_test_to_test (thisAgent, &(cond->data.tests.value_test->original_test), original_test);
-          cond->chunk_tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
         }
         else
         {
-//          add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test->original_test), original_test);
           add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), chunk_test, original_test);
-          cond->chunk_tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
         }
         break;
     }
@@ -4426,9 +4348,7 @@ void rete_node_to_conditions (agent* thisAgent,
                               condition *conds_for_cutoff_and_up,
                               condition **dest_top_cond,
                               condition **dest_bottom_cond,
-                              not_struct * & nots_found_in_production,
-                              bool produce_chunk_tests,
-                              bool compile_nots) {
+                              bool produce_chunk_tests) {
   condition *cond;
   alpha_mem *am;
 
@@ -4446,9 +4366,7 @@ void rete_node_to_conditions (agent* thisAgent,
                              tok ? tok->w : NIL,
                              conds_for_cutoff_and_up,
                              dest_top_cond, &(cond->prev),
-                             nots_found_in_production,
-                             produce_chunk_tests,
-                             compile_nots);
+                             produce_chunk_tests);
     cond->prev->next = cond;
   }
   cond->next = NIL;
@@ -4464,9 +4382,7 @@ void rete_node_to_conditions (agent* thisAgent,
                              cond->prev,
                              &(cond->data.ncc.top),
                              &(cond->data.ncc.bottom),
-                             nots_found_in_production,
-                             produce_chunk_tests,
-                             compile_nots);
+                             produce_chunk_tests);
     cond->data.ncc.top->prev = NIL;
   } else {
     if (bnode_is_positive(node->node_type))
@@ -4486,31 +4402,8 @@ void rete_node_to_conditions (agent* thisAgent,
 
       if (produce_chunk_tests)
       {
-        /* --- store original tests.  Used by chunking to determine
-         *     whether to variablize a constant symbol or LTI --- */
-
-          build_chunk_tests (thisAgent, node, w, cond, nvn);
+          add_complex_tests_to_chunk_conditions (thisAgent, node, w, cond, nvn);
       }
-      /* --- DEBUG| For a possible performance improvement, we might be
-             able to skip collecting nots if tok is nil.  They're only
-             used for chunking and are ignored by p_node_to_conditions_and_nots
-             when tok is nil.
-
-             Must make sure when parent is nil, there can be no NOTS to collect
-             on that call. (b/c this function is recursively called with parent's
-             token, which will eventually be nil.
-
-             Might also want to check other functions calling this
-             also to make sure they don't use the NOT list.
-
-             NOTE:  We're doing it with these two flags now.  Will still want to double-check
-                    above items --- */
-
-//      if (compile_nots && node->b.posneg.other_tests)
-//      {
-//        collect_nots (thisAgent, node->b.posneg.other_tests, w, cond,
-//                              nots_found_in_production);
-//      }
     } else {
       am = node->b.posneg.alpha_mem_;
       cond->data.tests.id_test = make_test(thisAgent, am->id, EQUALITY_TEST);
@@ -4688,16 +4581,14 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
    resolving references in RHS actions to variables bound on the LHS.
 ----------------------------------------------------------------------- */
 
-void p_node_to_conditions_and_nots (agent* thisAgent,
+void p_node_to_conditions (agent* thisAgent,
                                     rete_node *p_node,
                                     token *tok,
                                     wme *w,
                                     condition **dest_top_cond,
                                     condition **dest_bottom_cond,
-                                    not_struct **dest_nots,
                                     action **dest_rhs,
-                                    bool compile_chunk_test_info,
-                                    bool compile_nots) {
+                                    bool compile_chunk_test_info) {
   cons *c;
   Symbol **cell;
   int64_t index;
@@ -4705,7 +4596,6 @@ void p_node_to_conditions_and_nots (agent* thisAgent,
 
   prod = p_node->b.p.prod;
 
-  not_struct *nots_found_in_production = NIL;
   if (tok==NIL) w=NIL;  /* just for safety */
   reset_variable_generator (thisAgent, NIL, NIL); /* we'll be gensymming new vars */
   rete_node_to_conditions (thisAgent,
@@ -4715,12 +4605,8 @@ void p_node_to_conditions_and_nots (agent* thisAgent,
                            tok, w, NIL,
                            dest_top_cond,
                            dest_bottom_cond,
-                           nots_found_in_production,
-                           compile_chunk_test_info,
-                           compile_nots);
+                           compile_chunk_test_info);
 
-  if (tok) *dest_nots = nots_found_in_production;
-  nots_found_in_production = NIL; /* just for safety */
   if (dest_rhs)
   {
      thisAgent->highest_rhs_unboundvar_index = -1;
@@ -8196,9 +8082,9 @@ void print_partial_match_information (agent* thisAgent, rete_node *p_node,
   condition *top_cond, *bottom_cond;
   int64_t n;
   token *tokens, *t;
-
-  p_node_to_conditions_and_nots (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
-                                 NIL, NIL, false, true);
+  /* Debug| See if this works with last param true (add complex conditions) */
+  p_node_to_conditions (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+                                 NIL, true);
   n = ppmi_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);
   print (thisAgent, "\n%d complete matches.\n", n);
@@ -9168,8 +9054,9 @@ void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_tra
   token *tokens, *t;
 
   xml_begin_tag(thisAgent, kTagProduction) ;
-  p_node_to_conditions_and_nots (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
-                                 NIL, NIL, false, true);
+  /* Debug| See if this works with last param false (add complex conditions) */
+  p_node_to_conditions (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+                                 NIL, true);
   n = xml_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);
   xml_att_val(thisAgent, kMatches, n) ;

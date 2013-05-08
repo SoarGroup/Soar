@@ -55,7 +55,6 @@ void init_production_utilities (agent* thisAgent) {
   init_memory_pool (thisAgent, &thisAgent->condition_pool, sizeof(condition), "condition");
   init_memory_pool (thisAgent, &thisAgent->production_pool, sizeof(production), "production");
   init_memory_pool (thisAgent, &thisAgent->action_pool, sizeof(action), "action");
-  init_memory_pool (thisAgent, &thisAgent->not_pool, sizeof(not_struct), "not");
   init_reorderer(thisAgent);
 }
 
@@ -858,12 +857,6 @@ void deallocate_condition_list (agent* thisAgent,
       deallocate_test (thisAgent, c->data.tests.id_test);
       deallocate_test (thisAgent, c->data.tests.attr_test);
       deallocate_test (thisAgent, c->data.tests.value_test);
-      deallocate_test (thisAgent, c->original_tests.id_test);
-      deallocate_test (thisAgent, c->original_tests.attr_test);
-      deallocate_test (thisAgent, c->original_tests.value_test);
-      deallocate_test (thisAgent, c->chunk_tests.id_test);
-      deallocate_test (thisAgent, c->chunk_tests.attr_test);
-      deallocate_test (thisAgent, c->chunk_tests.value_test);
     }
     free_with_pool (&thisAgent->condition_pool, c);
   }
@@ -877,12 +870,6 @@ extern void inline init_condition(condition *cond)
 	  cond->data.tests.id_test = NIL;
 	  cond->data.tests.attr_test = NIL;
 	  cond->data.tests.value_test = NIL;
-	  cond->original_tests.id_test = NIL;
-    cond->original_tests.attr_test = NIL;
-    cond->original_tests.value_test = NIL;
-    cond->chunk_tests.id_test = NIL;
-    cond->chunk_tests.attr_test = NIL;
-    cond->chunk_tests.value_test = NIL;
 	  cond->test_for_acceptable_preference = FALSE;
 }
 
@@ -907,18 +894,6 @@ condition *copy_condition (agent* thisAgent,
     New->data.tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
     New->data.tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
     New->data.tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
-    if (cond->original_tests.id_test)
-      New->original_tests.id_test = copy_test (thisAgent, cond->original_tests.id_test);
-    if (cond->original_tests.attr_test)
-      New->original_tests.attr_test = copy_test (thisAgent, cond->original_tests.attr_test);
-    if (cond->original_tests.value_test)
-      New->original_tests.value_test = copy_test (thisAgent, cond->original_tests.value_test);
-    if (cond->chunk_tests.id_test)
-      New->chunk_tests.id_test = copy_test (thisAgent, cond->chunk_tests.id_test);
-    if (cond->chunk_tests.attr_test)
-      New->chunk_tests.attr_test = copy_test (thisAgent, cond->chunk_tests.attr_test);
-    if (cond->chunk_tests.value_test)
-      New->chunk_tests.value_test = copy_test (thisAgent, cond->chunk_tests.value_test);
     New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
@@ -1029,6 +1004,7 @@ uint32_t hash_condition (agent* thisAgent,
     abort_with_fatal_error(thisAgent, msg);
     }
     result = 0; /* unreachable, but gcc -Wall warns without it */
+    break;
   }
   return result;
 }
@@ -1121,29 +1097,6 @@ char first_letter_from_rhs_value (rhs_value rv) {
   if (rhs_value_is_symbol(rv))
     return first_letter_from_symbol (rhs_value_to_symbol(rv));
   return '*'; /* function calls, reteloc's, unbound variables */
-}
-
-/* =================================================================
-
-                    Utility Routines for Nots
-
-================================================================= */
-
-/* ----------------------------------------------------------------
-   Deallocates the given (singly-linked) list of Nots.
----------------------------------------------------------------- */
-
-void deallocate_list_of_nots (agent* thisAgent,
-							  not_struct *nots) {
-  not_struct *temp;
-
-  while (nots) {
-    temp = nots;
-    nots = nots->next;
-    symbol_remove_ref (thisAgent, temp->s1);
-    symbol_remove_ref (thisAgent, temp->s2);
-    free_with_pool (&thisAgent->not_pool, temp);
-  }
 }
 
 /* *********************************************************************
@@ -1626,6 +1579,59 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
   return New;
 }
 
+void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
+{
+  cons *c;
+  Symbol *temp_sym;
+
+  if (test_is_blank(t)) return;
+
+  switch (t->type) {
+  case GOAL_ID_TEST:
+  case IMPASSE_ID_TEST:
+  case DISJUNCTION_TEST:
+  case EQUALITY_TEST:
+    break;
+  case CONJUNCTIVE_TEST:
+    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      reverse_unbound_referents_in_test (thisAgent, static_cast<test>(c->first), tc);
+    break;
+
+  default:
+    if ((t->data.referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (t->data.referent->common.tc_num != tc))
+      {
+      print(thisAgent, "Reversing variable %s to constant %s.\n",
+             symbol_to_string(thisAgent, t->data.referent, FALSE, NULL, 0),
+             symbol_to_string(thisAgent, t->data.referent->common.unvariablized_symbol, FALSE, NULL, 0));
+      temp_sym = t->data.referent;
+      t->data.referent = temp_sym->common.unvariablized_symbol;
+      // do we need to set tc_num of t->data.referent to tc too?
+      // Debug| double-check refcount
+      temp_sym->common.unvariablized_symbol = NIL;
+      temp_sym->common.tc_num = 0;
+      symbol_remove_ref (thisAgent, temp_sym);
+      }
+    break;
+  }
+}
+
+void reverse_unbound_referents (agent* thisAgent, condition *lhs_top, tc_number tc)
+{
+  condition *c;
+
+  for (c=lhs_top; c!=NIL; c=c->next)
+  {
+    if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
+      reverse_unbound_referents (thisAgent, c->data.ncc.top, tc);
+    } else {
+      reverse_unbound_referents_in_test (thisAgent, c->data.tests.id_test, tc);
+      reverse_unbound_referents_in_test (thisAgent, c->data.tests.attr_test, tc);
+      reverse_unbound_referents_in_test (thisAgent, c->data.tests.value_test, tc);
+    }
+  }
+}
+
+
 /* *********************************************************************
 
                          Production Management
@@ -1663,6 +1669,7 @@ production *make_production (agent* thisAgent,
     reset_variable_generator (thisAgent, *lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list (thisAgent, *lhs_top, tc, NIL);
+    reverse_unbound_referents (thisAgent, *lhs_top, tc);
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
 

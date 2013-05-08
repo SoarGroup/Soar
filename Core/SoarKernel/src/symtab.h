@@ -177,7 +177,8 @@ typedef struct symbol_common_data_struct {
   uint64_t smem_valid;
 
   tc_number tc_num;           /* used for transitive closures, marking, etc. */
-  union symbol_union *variablization;  /* used by the chunker */
+  union symbol_union *variablized_symbol;  /* used by the chunker */
+  union symbol_union *unvariablized_symbol;  /* used by the chunker */
 
 } symbol_common_data;
 
@@ -433,6 +434,16 @@ inline bool symbol_is_identifier(Symbol *sym)
   return (sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE);
 }
 
+inline bool symbol_is_lti(Symbol *sym)
+{
+  return (symbol_is_identifier(sym) && (sym->id.smem_lti != NIL));
+}
+
+inline bool symbol_is_non_lti_identifier(Symbol *sym)
+{
+  return (symbol_is_identifier(sym) && (sym->id.smem_lti == NIL));
+}
+
 inline bool symbol_is_variablizable_constant(Symbol *sym)
 {
   return ((sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
@@ -442,14 +453,14 @@ inline bool symbol_is_variablizable_constant(Symbol *sym)
 
 inline bool symbol_is_variablizable(Symbol *sym, Symbol *original_sym)
 {
-  /* --- LTI's are treated as constants for chunking, so check identifiers accordingly --- */
   if (symbol_is_identifier(sym))
   {
-    if ((sym->id.smem_lti == NIL) || symbol_is_variable(original_sym))
+    /* --- Only variablize LTI's if it came from a variable in original production --- */
+    if ((sym->id.smem_lti != NIL) && !symbol_is_variable(original_sym))
     {
-      return true;
+      return false;
     }
-    return false;
+    return true;
   }
 
   return (symbol_is_variablizable_constant(sym) &&

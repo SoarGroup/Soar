@@ -342,9 +342,6 @@ void backtrace_through_instantiation (agent* thisAgent,
     }
   } /* end of for loop */
 
-  /* --- add new nots to the not set --- */
-  if (inst->nots) push (thisAgent, inst, thisAgent->instantiations_with_nots);
-
   /* Now record the sets of conditions.  Note that these are not necessarily */
   /* the final resting place for these wmes.  In particular potentials may   */
   /* move over to become grounds, but since all we really need for explain is*/
@@ -356,8 +353,6 @@ void backtrace_through_instantiation (agent* thisAgent,
 
   /* --- if tracing BT, print the resulting conditions, etc. --- */
   if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-    not_struct *not1;
-
     /* mvp 5-17-94 */
     print_spaces (thisAgent, indent);
     print_string (thisAgent, "  -->Grounds:\n");
@@ -388,13 +383,7 @@ void backtrace_through_instantiation (agent* thisAgent,
     /* mvp done */
 
     xml_begin_tag(thisAgent, kTagNots);
-    for (not1=inst->nots; not1!=NIL; not1=not1->next) {
-      print_with_symbols (thisAgent, "    %y <> %y\n", not1->s1, not1->s2);
-	  xml_begin_tag(thisAgent, kTagNot);
-      xml_att_val(thisAgent, kBacktraceSymbol1, not1->s1);
-      xml_att_val(thisAgent, kBacktraceSymbol2, not1->s2);
 	  xml_end_tag(thisAgent, kTagNot);
-    }
     xml_end_tag(thisAgent, kTagNots);
     xml_end_tag(thisAgent, kTagBacktrace);
   }

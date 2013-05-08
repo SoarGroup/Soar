@@ -126,16 +126,14 @@ extern void excise_production_from_rete (agent* thisAgent, production *p);
 extern void add_wme_to_rete (agent* thisAgent, wme *w);
 extern void remove_wme_from_rete (agent* thisAgent, wme *w);
 
-extern void p_node_to_conditions_and_nots (agent* thisAgent,
+extern void p_node_to_conditions (agent* thisAgent,
                                            struct rete_node_struct *p_node,
                                            struct token_struct *tok,
                                            wme *w,
                                            condition **dest_top_cond,
                                            condition **dest_bottom_cond,
-                                           not_struct **dest_nots,
                                            action **dest_rhs,
-                                           bool compile_chunk_test_info,
-                                           bool compile_nots);
+                                           bool compile_chunk_test_info);
 extern Symbol *get_symbol_from_rete_loc (unsigned short levels_up,
                                          byte field_num,
                                          struct token_struct *tok, wme *w);

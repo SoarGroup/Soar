@@ -695,35 +695,16 @@ void create_instantiation(agent* thisAgent, production *prod,
 	thisAgent->production_firing_count++;
 
 	/* --- build the instantiated conditions, and bind LHS variables --- */
-	p_node_to_conditions_and_nots(thisAgent, prod->p_node, tok, w,
+	p_node_to_conditions(thisAgent, prod->p_node, tok, w,
 			&(inst->top_of_instantiated_conditions),
-			&(inst->bottom_of_instantiated_conditions), &(inst->nots), NIL, true, false);
+			&(inst->bottom_of_instantiated_conditions), NIL, true);
 
-//	/* --- also get non-instantiated conditions to be used when determining
-//	 *     whether to variablize constants. --- */
-	condition *top, *bottom, *noninst_cond;
-	action *rhs;
-
-	p_node_to_conditions_and_nots(thisAgent, prod->p_node, NIL, NIL,
-			&top, &bottom, NIL, NIL, false, true);
-
-	/* --- record the level of each of the wmes that was positively tested
-	 *     and copy over original production information from non-instantiated
-	 *     conditions, which will be used to chunk constants and complex conditions --- */
-
-	noninst_cond = top;
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
 			cond = cond->next) {
-
-    cond->original_tests.id_test = copy_test (thisAgent, noninst_cond->data.tests.id_test);
-	  cond->original_tests.attr_test = copy_test (thisAgent, noninst_cond->data.tests.attr_test);
-	  cond->original_tests.value_test = copy_test (thisAgent, noninst_cond->data.tests.value_test);
-
 		if (cond->type == POSITIVE_CONDITION) {
 			cond->bt.level = cond->bt.wme_->id->id.level;
 			cond->bt.trace = cond->bt.wme_->preference;
 		}
-		noninst_cond = noninst_cond->next;
 	}
 
 	/* --- print trace info --- */
@@ -1098,7 +1079,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 
 		deallocate_condition_list(thisAgent,
 				temp->top_of_instantiated_conditions);
-		deallocate_list_of_nots(thisAgent, temp->nots);
 		if (temp->prod) {
 			production_remove_ref(thisAgent, temp->prod);
 		}

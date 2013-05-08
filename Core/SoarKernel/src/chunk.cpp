@@ -196,8 +196,9 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 //
 			if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
 				/* --- it's already been variablized, so use the existing variable --- */
-				var = (*sym)->common.variablization;
-				symbol_remove_ref (thisAgent, *sym);
+				var = (*sym)->common.variablized_symbol;
+				var->common.unvariablized_symbol = *sym;
+				//symbol_remove_ref (thisAgent, *sym);
 				*sym = var;
 				symbol_add_ref (var);
 				return;
@@ -212,17 +213,20 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 			  prefix[0] = 'c';
 			prefix[1] = 0;
 			var = generate_new_variable (thisAgent, prefix);
-			(*sym)->common.variablization = var;
-			symbol_remove_ref (thisAgent, *sym);
+			(*sym)->common.variablized_symbol = var;
+      var->common.unvariablized_symbol = *sym;
+      //symbol_remove_ref (thisAgent, *sym);
 			*sym = var;
 		}
 }
 
-void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
+void variablize_test (agent* thisAgent, test *chunk_test) {
   cons *c, *c_orig;
-  test ct, ct_original;
+  test ct, ct_original, *original_test;
   TestType original_test_type, test_type;
   Symbol *original_referent, *instantiated_referent;
+
+  original_test = &((*chunk_test)->original_test);
 
   print(thisAgent, "Debug| Variablizing: ");
   print_test (thisAgent, *chunk_test);
@@ -234,8 +238,10 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
     print(thisAgent, "Debug| Ignoring test because it(%d) or original($d) is blank!!!!\n", chunk_test, original_test);
     return;
   }
+
   /* ORIGINAL can differ from CHUNK tests if there are goal, impasse or disjunction tests in ORIGINAL test,
-   * but get_test_type_referent will return false for those test types, so it won't get here.  */
+   * Still true??? */
+
   test_type = (*chunk_test)->type;
   original_test_type = (*original_test)->type;
   instantiated_referent = (*chunk_test)->data.referent;
@@ -250,19 +256,11 @@ void variablize_test (agent* thisAgent, test *chunk_test, test *original_test) {
       print(thisAgent, "Debug|...Comparing original test types: %s to %s\n", test_type_to_string(original_test_type), test_type_to_string((*chunk_test)->original_test->type));
       print(thisAgent, "Debug| Iterating through conjunction list.\n");
 
-
-      /* --- Loop through both conjunction lists simultaneously, calling variablize_test
-       *     on each element. --- */
-
       ct = *chunk_test;
-      ct_original = *original_test;
-      c_orig = ct_original->data.conjunct_list;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
         variablize_test (thisAgent,
-            reinterpret_cast<test *>(&(c->first)),
-            reinterpret_cast<test *>(&(c_orig->first)));
-        c_orig = c_orig->rest;
+            reinterpret_cast<test *>(&(c->first)));
       }
 
       print(thisAgent, "Debug| Done iterating through conjunction list.\nDebug| ---------------------------------------\n");
@@ -307,9 +305,9 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
 		switch (cond->type) {
 		case POSITIVE_CONDITION:
 		case NEGATIVE_CONDITION:
-			variablize_test(thisAgent, &(cond->data.tests.id_test), &(cond->original_tests.id_test));
-			variablize_test(thisAgent, &(cond->data.tests.attr_test), &(cond->original_tests.attr_test));
-			variablize_test(thisAgent, &(cond->data.tests.value_test), &(cond->original_tests.value_test));
+			variablize_test(thisAgent, &(cond->data.tests.id_test));
+			variablize_test(thisAgent, &(cond->data.tests.attr_test));
+			variablize_test(thisAgent, &(cond->data.tests.value_test));
 			break;
 		case CONJUNCTIVE_NEGATION_CONDITION:
 			variablize_condition_list (thisAgent, cond->data.ncc.top);
@@ -337,9 +335,14 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
   symbol_add_ref (val);
 
   if (variablize) {
-    variablize_symbol (thisAgent, &id);
-    variablize_symbol (thisAgent, &attr);
-    variablize_symbol (thisAgent, &val);
+    if (id->common.variablized_symbol)
+      variablize_symbol (thisAgent, &id);
+    if ((attr->common.variablized_symbol) ||
+        (symbol_is_non_lti_identifier(attr)))
+      variablize_symbol (thisAgent, &attr);
+    if ((val->common.variablized_symbol) ||
+        (symbol_is_non_lti_identifier(val)))
+      variablize_symbol (thisAgent, &val);
   }
 
   a->id = symbol_to_rhs_value (id);
@@ -582,110 +585,6 @@ void build_chunk_conds_for_grounds_and_add_negateds (agent* thisAgent,
   *dest_top = first_cc;
   *dest_bottom = prev_cc;
 }
-
-/* --------------------------------------------------------------------
-                  Get Nots For Instantiated Conditions
-
-   This routine looks through all the Nots in the instantiations in
-   instantiations_with_nots, and returns copies of the ones involving
-   pairs of identifiers in the grounds.  Before this routine is called,
-   the ids in the grounds must be marked with "tc_of_grounds."
--------------------------------------------------------------------- */
-
-not_struct *get_nots_for_instantiated_conditions (agent* thisAgent,
-										   list *instantiations_with_nots,
-                                           tc_number tc_of_grounds) {
-  cons *c;
-  instantiation *inst;
-  not_struct *n1, *n2, *new_not, *collected_nots;
-
-  /* --- collect nots for which both id's are marked --- */
-  collected_nots = NIL;
-  while (instantiations_with_nots) {
-    c = instantiations_with_nots;
-    instantiations_with_nots = c->rest;
-    inst = static_cast<instantiation_struct *>(c->first);
-    free_cons (thisAgent, c);
-    for (n1=inst->nots; n1 != NIL; n1=n1->next) {
-      /* --- Are both id's marked? If no, goto next loop iteration --- */
-      if (n1->s1->common.tc_num != tc_of_grounds) continue;
-      if (n1->s2->common.tc_num != tc_of_grounds) continue;
-      /* --- If the pair already in collected_nots, goto next iteration --- */
-      for (n2=collected_nots; n2!=NIL; n2=n2->next) {
-        if ((n2->s1 == n1->s1) && (n2->s2 == n1->s2)) break;
-        if ((n2->s1 == n1->s2) && (n2->s2 == n1->s1)) break;
-      }
-      if (n2) continue;
-      /* --- Add the pair to collected_nots --- */
-      allocate_with_pool (thisAgent, &thisAgent->not_pool, &new_not);
-      new_not->next = collected_nots;
-      collected_nots = new_not;
-      new_not->s1 = n1->s1;
-      symbol_add_ref (new_not->s1);
-      new_not->s2 = n1->s2;
-      symbol_add_ref (new_not->s2);
-    } /* end of for n1 */
-  } /* end of while instantiations_with_nots */
-
-  return collected_nots;
-}
-
-/* --------------------------------------------------------------------
-              Variablize Nots And Insert Into Conditions
-
-   This routine goes through the given list of Nots and, for each one,
-   inserts a variablized copy of it into the given condition list at
-   the earliest possible location.  (The given condition list should
-   be the previously-variablized condition list that will become the
-   chunk's LHS.)  The given condition list is destructively modified;
-   the given Not list is unchanged.
--------------------------------------------------------------------- */
-
-//void variablize_nots_and_insert_into_conditions (agent* thisAgent,
-//    not_struct *nots,
-//    condition *conds) {
-//  not_struct *n;
-//  Symbol *var1, *var2;
-//  test t;
-//  condition *c;
-//  Bool added_it;
-//
-//  for (n=nots; n!=NIL; n=n->next) {
-//    var1 = n->s1->common.variablization;
-//    var2 = n->s2->common.variablization;
-//    /* --- find where var1 is bound, and add "<> var2" to that test --- */
-//    t = make_test(thisAgent, var2, NOT_EQUAL_TEST);
-//    added_it = FALSE;
-//    for (c=conds; c!=NIL; c=c->next) {
-//      if (c->type != POSITIVE_CONDITION) continue;
-//      if (test_includes_equality_test_for_symbol (c->data.tests.id_test,
-//          var1)) {
-//        add_new_test_to_test (thisAgent, &(c->data.tests.id_test), t);
-//        added_it = TRUE;
-//        break;
-//      }
-//      if (test_includes_equality_test_for_symbol (c->data.tests.attr_test,
-//          var1)) {
-//        add_new_test_to_test (thisAgent, &(c->data.tests.attr_test), t);
-//        added_it = TRUE;
-//        break;
-//      }
-//      if (test_includes_equality_test_for_symbol (c->data.tests.value_test,
-//          var1)) {
-//        add_new_test_to_test (thisAgent, &(c->data.tests.value_test), t);
-//        added_it = TRUE;
-//        break;
-//      }
-//    }
-//    if (!added_it) {
-//      char msg[BUFFER_MSG_SIZE];
-//      strncpy (msg,"chunk.c: Internal error: couldn't add Not test to chunk\n", BUFFER_MSG_SIZE);
-//      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-//
-//      abort_with_fatal_error(thisAgent, msg);
-//    }
-//  } /* end of for n=nots */
-//}
 
 /* --------------------------------------------------------------------
                      Add Goal or Impasse Tests
@@ -1032,7 +931,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	Bool print_name, print_prod;
 	byte rete_addition_result;
 	condition *lhs_top, *lhs_bottom;
-	not_struct *nots;
 	chunk_cond *top_cc, *bottom_cc;
 	bool reliable = true;
 	bool variablize;
@@ -1149,29 +1047,29 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 
 	variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
 
-	/* --- check for LTI validity --- */
-	if ( variablize )
-	{
-		if ( top_cc )
-		{
-			// need a temporary copy of the actions
-			thisAgent->variablization_tc = get_new_tc_number(thisAgent);
-			rhs = copy_and_variablize_result_list (thisAgent, results, true);
-
-			if ( !smem_valid_production( top_cc->variablized_cond, rhs ) )
-			{
-				variablize = false;
-				if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
-				{
-					print( thisAgent, "\nWarning: LTI validation failed, creating justification instead." );
-					xml_generate_warning( thisAgent, "LTI validation failed, creating justification instead." );
-				}
-			}
-
-			// remove temporary copy
-			deallocate_action_list (thisAgent, rhs);
-		}
-	}
+//	/* --- check for LTI validity --- */
+//	if ( variablize )
+//	{
+//		if ( top_cc )
+//		{
+//			// need a temporary copy of the actions
+//			thisAgent->variablization_tc = get_new_tc_number(thisAgent);
+//			rhs = copy_and_variablize_result_list (thisAgent, results, true);
+//
+//			if ( !smem_valid_production( top_cc->variablized_cond, rhs ) )
+//			{
+//				variablize = false;
+//				if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+//				{
+//					print( thisAgent, "\nWarning: LTI validation failed, creating justification instead." );
+//					xml_generate_warning( thisAgent, "LTI validation failed, creating justification instead." );
+//				}
+//			}
+//
+//			// remove temporary copy
+//			deallocate_action_list (thisAgent, rhs);
+//		}
+//	}
 
 	/* --- get symbol for name of new chunk or justification --- */
 	if (variablize)
@@ -1251,7 +1149,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		reset_variable_generator (thisAgent, lhs_top, NIL);
 		thisAgent->variablization_tc = get_new_tc_number(thisAgent);
 		variablize_condition_list (thisAgent, lhs_top);
-		//variablize_nots_and_insert_into_conditions (thisAgent, nots, lhs_top);
 	}
 	rhs = copy_and_variablize_result_list (thisAgent, results, variablize);
 
@@ -1306,7 +1203,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		chunk_inst->prod = prod;
 		chunk_inst->top_of_instantiated_conditions = inst_lhs_top;
 		chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
-		chunk_inst->nots = nots;
 
 		chunk_inst->GDS_evaluated_already = FALSE;  /* REW:  09.15.96 */
 

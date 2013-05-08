@@ -957,8 +957,8 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
   /*
   --- print the LHS and RHS ---
   */
-  p_node_to_conditions_and_nots (thisAgent, p->p_node, NIL, NIL,
-								 &top, &bottom, NIL,&rhs, false, true);
+  p_node_to_conditions(thisAgent, p->p_node, NIL, NIL,
+								 &top, &bottom,&rhs, true);
   print_string (thisAgent, "   ");
 
   xml_begin_tag(thisAgent, kTagConditions);

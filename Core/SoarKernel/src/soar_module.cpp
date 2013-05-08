@@ -135,7 +135,6 @@ namespace soar_module
 				{
 					inst->top_of_instantiated_conditions = cond;
 					inst->bottom_of_instantiated_conditions = cond;
-					inst->nots = NULL;
 				}
 				cond->data.tests.id_test = make_test(my_agent, (*c_it)->id, EQUALITY_TEST );
 				cond->data.tests.attr_test = make_test(my_agent, (*c_it)->attr, EQUALITY_TEST );

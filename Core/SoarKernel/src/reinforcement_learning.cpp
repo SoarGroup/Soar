@@ -35,7 +35,6 @@
 
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
 extern void variablize_symbol (agent* thisAgent, Symbol **sym);
-extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_struct *nots, condition *conds);
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
 /////////////////////////////////////////////////////
@@ -548,11 +547,10 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 	// initialize production conditions
 	if ( my_template_instance->prod->rl_template_conds == NIL )
 	{
-		not_struct* nots;
 		condition* c_top;
 		condition* c_bottom;
 
-		p_node_to_conditions_and_nots( my_agent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), &( nots ), NIL, false, true );
+		p_node_to_conditions( my_agent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), NIL, true );
 
 		my_template_instance->prod->rl_template_conds = c_top;
 	}
