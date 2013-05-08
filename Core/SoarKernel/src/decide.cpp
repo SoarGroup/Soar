@@ -65,7 +65,6 @@
 #include "assert.h"
 
 #include <algorithm>
-#include <cmath>
 #include <list>
 
 using namespace soar_TraceNames;
@@ -965,9 +964,10 @@ void build_rl_trace(agent* const &thisAgent, preference * const &candidates, pre
         }
       }
 
+      const double zero = 0.0;
       const double probability = cand->rl_contribution
         ? exploration_probability_according_to_policy(thisAgent, candidates->slot, candidates, cand)
-        : NAN;
+        : zero/zero;
 
 //       std::cerr << "rl-trace: =" << probability << std::endl;
 
