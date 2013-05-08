@@ -73,8 +73,14 @@ inline void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_tr
 
     os << "\"];" << std::endl;
 
-    os << "  " << label_up << " -> " << label.str() << " [label=\"" << tt->second.probability
-       << " (" << tt->second.init << ")\"];" << std::endl;
+    os << "  " << label_up << " -> " << label.str() << " [label=\"";
+
+    if(tt->second.probability == tt->second.probability)
+      os << tt->second.probability;
+    else //< NaN
+      os << '-';
+
+    os << " (" << tt->second.init << ")\"];" << std::endl;
 
     if(tt->second.next)
       CLI_DoRL_print_trace(os, *tt->second.next, label.str(), &c);

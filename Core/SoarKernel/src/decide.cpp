@@ -65,6 +65,7 @@
 #include "assert.h"
 
 #include <algorithm>
+#include <cmath>
 #include <list>
 
 using namespace soar_TraceNames;
@@ -935,46 +936,46 @@ void build_rl_trace(agent* const &thisAgent, preference * const &candidates, pre
     if(cand->inst && cand->inst->prod) {
       const production * const &prod = cand->inst->prod;
 
-      if(cand->rl_contribution) {
-//         std::cerr << "rl-trace: " << cand->inst->prod->name->sc.name << std::endl;
+//       std::cerr << "rl-trace: " << cand->inst->prod->name->sc.name << std::endl;
 
-//         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
-//           production * const &prod2 = pref->inst->prod;
-//           if(cand->value == pref->value && prod2->rl_rule) {
-//             std::cerr << "rl-trace: +" << prod2->name->sc.name << std::endl;
-//           }
+//       for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+//         production * const &prod2 = pref->inst->prod;
+//         if(cand->value == pref->value && prod2->rl_rule) {
+//           std::cerr << "rl-trace: +" << prod2->name->sc.name << std::endl;
 //         }
+//       }
 
-        std::vector<std::string> index_str;
-        index_str.push_back("^name");
-//         for(wme *w = thisAgent->all_wmes_in_rete; w; w = w->rete_next) {
-        for(slot *s = cand->value->id.slots; s; s = s->next) {
-          for(wme *w = s->wmes; w; w = w->next) {
-            if(cand->value == w->id) {
-              const std::string attr = symbol_to_string(thisAgent, w->attr, false, NIL, 0);
-              const std::string value = symbol_to_string(thisAgent, w->value, false, NIL, 0);
-//               std::cerr << "rl-trace: ^" << attr << ' ' << value << std::endl;
+      std::vector<std::string> index_str;
+      index_str.push_back("^name");
+//       for(wme *w = thisAgent->all_wmes_in_rete; w; w = w->rete_next) {
+      for(slot *s = cand->value->id.slots; s; s = s->next) {
+        for(wme *w = s->wmes; w; w = w->next) {
+          if(cand->value == w->id) {
+            const std::string attr = symbol_to_string(thisAgent, w->attr, false, NIL, 0);
+            const std::string value = symbol_to_string(thisAgent, w->value, false, NIL, 0);
+//             std::cerr << "rl-trace: ^" << attr << ' ' << value << std::endl;
 
-              if(attr == "name")
-                index_str[0] += ' ' + value;
-              else
-                index_str.push_back('^' + attr + ' ' + value);
+            if(attr == "name")
+              index_str[0] += ' ' + value;
+            else
+              index_str.push_back('^' + attr + ' ' + value);
 
-              std::sort(++index_str.begin(), index_str.end());
-            }
+            std::sort(++index_str.begin(), index_str.end());
           }
         }
-
-        const double probability = exploration_probability_according_to_policy(thisAgent, candidates->slot, candidates, cand);
-//         std::cerr << "rl-trace: =" << probability << std::endl;
-
-        agent::RL_Trace * const rl_trace = static_cast<agent::RL_Trace *>(candidates->slot->id->id.rl_trace);
-        rl_trace->split[index_str].init = thisAgent->init_count;
-        rl_trace->split[index_str].probability = probability;
-        if(cand == selected) {
-          next = &rl_trace->split[index_str].next;
-        }
       }
+
+      const double probability = cand->rl_contribution
+        ? exploration_probability_according_to_policy(thisAgent, candidates->slot, candidates, cand)
+        : NAN;
+
+//       std::cerr << "rl-trace: =" << probability << std::endl;
+
+      agent::RL_Trace * const rl_trace = static_cast<agent::RL_Trace *>(candidates->slot->id->id.rl_trace);
+      rl_trace->split[index_str].init = thisAgent->init_count;
+      rl_trace->split[index_str].probability = probability;
+      if(cand == selected)
+        next = &rl_trace->split[index_str].next;
     }
   }
 
@@ -1527,7 +1528,7 @@ byte run_preference_semantics(agent* thisAgent,
   if (!not_all_indifferent) {
     if (!consistency) {
       (*result_candidates) = exploration_choose_according_to_policy(thisAgent, s, candidates);
-      if(rl_enabled(thisAgent))
+      if(!predict && rl_enabled(thisAgent))
         build_rl_trace(thisAgent, candidates, *result_candidates);
       (*result_candidates)->next_candidate = NIL;
 
