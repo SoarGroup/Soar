@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <list>
 #include <vector>
+#include <iterator>
 #include <algorithm>
 #include "sgnode.h"
 

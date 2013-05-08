@@ -186,7 +186,7 @@ void EM::find_linear_subset_em(const_mat_view X, const_mat_view Y, vector<int> &
 	cvec w(ndata), error(ndata), old_error(ndata);
 	mat Xc(ndata, xcols), Yc(ndata, 1), coefs(xcols, 1), coefs2;
 	
-	error.setConstant(INFINITY);
+	error.setConstant(INF);
 	sample(min(xcols + 1, ndata), 0, ndata, init);
 	w.setConstant(0.0);
 	for (int i = 0; i < init.size(); ++i) {

@@ -2,7 +2,7 @@
 #define IPCSOCKET_H
 
 #include <string>
-#include <sys/un.h>
+#include "platform_specific.h"
 
 class ipcsocket {
 public:
@@ -14,7 +14,7 @@ public:
 	bool send(const std::string &s);
 	
 private:
-	int fd;
+	SOCK sock;
 };
 
 #endif

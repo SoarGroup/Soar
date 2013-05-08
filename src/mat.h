@@ -228,23 +228,23 @@ void unserialize(cvec &v,          std::istream &is);
 class bbox {
 public:
 	bbox() {
-		min.setZero();
-		max.setZero();
+		min_pt.setZero();
+		max_pt.setZero();
 	}
 	
 	/* bounding box around single point */
 	bbox(const vec3 &v) {
-		min = v;
-		max = v;
+		min_pt = v;
+		max_pt = v;
 	}
 	
 	bbox(const ptlist &pts) {
 		if (pts.size() == 0) {
-			min.setZero();
-			max.setZero();
+			min_pt.setZero();
+			max_pt.setZero();
 		} else {
-			min = pts[0];
-			max = pts[0];
+			min_pt = pts[0];
+			max_pt = pts[0];
 		
 			for(int i = 1; i < pts.size(); ++i) {
 				include(pts[i]);
@@ -252,12 +252,14 @@ public:
 		}
 	}
 	
-	bbox(const vec3 &min, const vec3 &max) : min(min), max(max) {}
+	bbox(const vec3 &min_pt, const vec3 &max_pt)
+	: min_pt(min_pt), max_pt(max_pt)
+	{}
 	
 	void include(const vec3 &v) {
 		for(int d = 0; d < 3; ++d) {
-			if (v[d] < min[d]) { min[d] = v[d]; }
-			if (v[d] > max[d]) { max[d] = v[d]; }
+			if (v[d] < min_pt[d]) { min_pt[d] = v[d]; }
+			if (v[d] > max_pt[d]) { max_pt[d] = v[d]; }
 		}
 	}
 	
@@ -269,14 +271,14 @@ public:
 	}
 	
 	void include(const bbox &b) {
-		include(b.min);
-		include(b.max);
+		include(b.min_pt);
+		include(b.max_pt);
 	}
 	
 	bool intersects(const bbox &b) const {
 		int d;
 		for (d = 0; d < 3; ++d) {
-			if (max[d] < b.min[d] || min[d] > b.max[d]) {
+			if (max_pt[d] < b.min_pt[d] || min_pt[d] > b.max_pt[d]) {
 				return false;
 			}
 		}
@@ -286,57 +288,57 @@ public:
 	bool contains(const bbox &b) const {
 		int d;
 		for (d = 0; d < 3; ++d) {
-			if (max[d] < b.max[d] || min[d] > b.min[d]) {
+			if (max_pt[d] < b.max_pt[d] || min_pt[d] > b.min_pt[d]) {
 				return false;
 			}
 		}
 		return true;
 	}
 	
-	void get_vals(vec3 &minv, vec3 &maxv) const
+	void get_vals(vec3 &min_out, vec3 &max_out) const
 	{
-		minv = min; maxv = max;
+		min_out = min_pt; max_out = max_pt;
 	}
 	
 	bool operator==(const bbox &b) const {
-		return min == b.min && max == b.max;
+		return min_pt == b.min_pt && max_pt == b.max_pt;
 	}
 	
 	bool operator!=(const bbox &b) const {
-		return min != b.min || max != b.max;
+		return min_pt != b.min_pt || max_pt != b.max_pt;
 	}
 	
 	bbox &operator=(const bbox &b) {
-		min = b.min;
-		max = b.max;
+		min_pt = b.min_pt;
+		max_pt = b.max_pt;
 		return *this;
 	}
 	
 	void reset() {
-		min.setZero();
-		max.setZero();
+		min_pt.setZero();
+		max_pt.setZero();
 	}
 	
 	vec3 get_centroid() const {
-		return (max + min) / 2.0;
+		return (max_pt + min_pt) / 2.0;
 	}
 	
 	void get_points(ptlist &p) const {
-		p.push_back(vec3(min[0], min[1], min[2]));
-		p.push_back(vec3(min[0], min[1], max[2]));
-		p.push_back(vec3(min[0], max[1], min[2]));
-		p.push_back(vec3(min[0], max[1], max[2]));
-		p.push_back(vec3(max[0], min[1], min[2]));
-		p.push_back(vec3(max[0], min[1], max[2]));
-		p.push_back(vec3(max[0], max[1], min[2]));
-		p.push_back(vec3(max[0], max[1], max[2]));
+		p.push_back(vec3(min_pt[0], min_pt[1], min_pt[2]));
+		p.push_back(vec3(min_pt[0], min_pt[1], max_pt[2]));
+		p.push_back(vec3(min_pt[0], max_pt[1], min_pt[2]));
+		p.push_back(vec3(min_pt[0], max_pt[1], max_pt[2]));
+		p.push_back(vec3(max_pt[0], min_pt[1], min_pt[2]));
+		p.push_back(vec3(max_pt[0], min_pt[1], max_pt[2]));
+		p.push_back(vec3(max_pt[0], max_pt[1], min_pt[2]));
+		p.push_back(vec3(max_pt[0], max_pt[1], max_pt[2]));
 	}
 	
 	friend std::ostream& operator<<(std::ostream &os, const bbox &b);
 	
 private:
-	vec3 min;
-	vec3 max;
+	vec3 min_pt;
+	vec3 max_pt;
 };
 
 std::ostream& operator<<(std::ostream &os, const bbox &b);

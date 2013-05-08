@@ -13,10 +13,16 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <limits>
 
 typedef std::vector<int> tuple;
 
-std::string get_option(const std::string &key);
+
+#ifdef NAN
+#undef NAN
+#endif
+extern const double NAN;
+extern const double INF;
 
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
 void strip(std::string &s, const std::string &whitespace);
@@ -24,6 +30,8 @@ void strip(std::string &s, const std::string &whitespace);
 bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
 std::string tostring(int x);
+bool is_nan(double x);
+bool is_inf(double x);
 
 std::istream &get_nonblank_line(std::istream &is, std::string &line);
 
@@ -190,8 +198,6 @@ inline double gausspdf(double x, double mean, double var) {
 }
 
 enum log_type {
-	WARN,
-	ERROR,
 	CTRLDBG,
 	EMDBG,
 	SGEL,
@@ -281,9 +287,8 @@ public:
 	*/
 	table_printer &operator<<(double x) {
 		ss.str("");
-		long long integral = x;
-		if (integral == x) {
-			ss << integral;
+		if (floor(x) == x) {
+			ss << static_cast<long long>(x);
 		} else {
 			ss << x;
 		}

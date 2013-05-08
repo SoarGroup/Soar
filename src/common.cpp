@@ -5,7 +5,6 @@
 #include <limits>
 #include <cstdlib>
 #include <cassert>
-#include <unistd.h>
 #include "common.h"
 
 using namespace std;
@@ -13,13 +12,14 @@ using namespace std;
 logger LOG(std::cout);
 
 const char *log_type_names[NUM_LOG_TYPES] = {
-	"WARN",
-	"ERROR",
 	"CTRLDBG",
 	"EMDBG",
 	"SGEL",
 	"FOILDBG"
 };
+
+const double NAN = std::numeric_limits<double>::quiet_NaN();
+const double INF = std::numeric_limits<double>::infinity();
 
 void split(const string &s, const string &delim, vector<string> &fields) {
 	int start = 0, end = 0, sz = s.size();
@@ -96,7 +96,6 @@ ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
 
 	binsize = (max - min) / (nbins - 1);
 	if (binsize == 0) {
-		LOG(WARN) << "All values identical (" << min << "), not drawing histogram" << endl;
 		return os;
 	}
 	for (i = 0; i < vals.size(); ++i) {
@@ -117,30 +116,6 @@ ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
 	os.precision(p);
 	os.flags(f);
 	return os;
-}
-
-string get_option(const string &key) {
-	static map<string, string> options;
-	static bool first = true;
-	
-	if (first) {
-		char *s;
-		if ((s = getenv("SVS_OPTS")) != NULL) {
-			string optstr(s);
-			vector<string> fields;
-			split(optstr, ",", fields);
-			for (int i = 0; i < fields.size(); ++i) {
-				size_t p = fields[i].find_first_of(':');
-				if (p == string::npos) {
-					options[fields[i]] = "-";
-				} else {
-					options[fields[i].substr(0, p)] = fields[i].substr(p+1);
-				}
-			}
-		}
-		first = false;
-	}
-	return options[key];
 }
 
 bool parse_double(const string &s, double &v) {
@@ -170,9 +145,17 @@ bool parse_int(const string &s, int &v) {
 }
 
 string tostring(int x) {
-	static char buf[20];
-	snprintf(buf, 20, "%d", x);
-	return string(buf);
+	stringstream ss;
+	ss << x;
+	return ss.str();
+}
+
+bool is_nan(double x) {
+	return (x == numeric_limits<double>::quiet_NaN() || x == numeric_limits<double>::signaling_NaN());
+}
+
+bool is_inf(double x) {
+	return x == numeric_limits<double>::infinity();
 }
 
 bool read_on_off(const vector<string> &args, int p, ostream &os, bool &var) {

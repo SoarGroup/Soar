@@ -1,8 +1,8 @@
 #include <vector>
 #include <map>
-#include <unistd.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/ml/ml.hpp>
+//#include <unistd.h>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/ml/ml.hpp>
 #include "lda.h"
 #include "nn.h"
 #include "common.h"
@@ -53,21 +53,21 @@ private:
 	int dim, sgn, size;
 };
 
-class dtree_classifier : public nc_cls {
-public:
-	dtree_classifier();
-	dtree_classifier(const dtree_classifier &c);
-	dtree_classifier &operator=(const dtree_classifier &c);
-	
-	void learn(mat &data, const std::vector<int> &classes);
-	int classify(const rvec &x) const;
-	void inspect(std::ostream &os) const;
-	void serialize(std::ostream &os) const;
-	void unserialize(std::istream &is);
-
-private:
-	CvDTree *tree;
-};
+//class dtree_classifier : public nc_cls {
+//public:
+//	dtree_classifier();
+//	dtree_classifier(const dtree_classifier &c);
+//	dtree_classifier &operator=(const dtree_classifier &c);
+//	
+//	void learn(mat &data, const std::vector<int> &classes);
+//	int classify(const rvec &x) const;
+//	void inspect(std::ostream &os) const;
+//	void serialize(std::ostream &os) const;
+//	void unserialize(std::istream &is);
+//
+//private:
+//	CvDTree *tree;
+//};
 
 bool hasnan(const_mat_view m) {
 	return (m.array() != m.array()).any();
@@ -161,9 +161,9 @@ void num_classifier::set_type(int t) {
 	switch (nc_type) {
 	case NC_NONE:
 		break;
-	case NC_DTREE:
-		cls = new dtree_classifier;
-		break;
+//	case NC_DTREE:
+//		cls = new dtree_classifier;
+//		break;
 	case NC_LDA:
 		cls = new LDA;
 		break;
@@ -213,9 +213,9 @@ void num_classifier::unserialize(istream &is) {
 	switch (nc_type) {
 	case NC_NONE:
 		break;
-	case NC_DTREE:
-		dynamic_cast<dtree_classifier*>(cls)->unserialize(is);
-		break;
+//	case NC_DTREE:
+//		dynamic_cast<dtree_classifier*>(cls)->unserialize(is);
+//		break;
 	case NC_LDA:
 		dynamic_cast<LDA*>(cls)->unserialize(is);
 		break;
@@ -235,7 +235,7 @@ void LDA::learn(mat &data, const vector<int> &cls) {
 	clean_data(data, used_cols);
 	
 	if (data.cols() == 0) {
-		LOG(WARN) << "Degenerate case, no useful classification data." << endl;
+		cerr << "Degenerate case, no useful classification data." << endl;
 		degenerate = true;
 		degenerate_class = largest_class(classes);
 		return;
@@ -433,117 +433,117 @@ void sign_classifier::unserialize(istream &is) {
 	unserializer(is) >> dim >> sgn >> size;
 }
 
-dtree_classifier::dtree_classifier() {
-	tree = new CvDTree();
-}
-
-dtree_classifier::dtree_classifier(const dtree_classifier &c) {
-	tree = new CvDTree(*c.tree);
-}
-
-dtree_classifier &dtree_classifier::operator=(const dtree_classifier &c) {
-	*tree = *c.tree;
-	return *this;
-}
-
-void dtree_classifier::learn(mat &data, const vector<int> &classes) {
-	static cv::Mat empty;
-	static CvDTreeParams params;
-	if (data.rows() < 20) {
-		params.cv_folds = 1;
-	} else {
-		params.cv_folds = data.rows() / 10;  // each fold needs at least 10 examples
-	}
-	params.min_sample_count = 10;
-	
-	cout << "NC DIM: " << data.cols() << endl;
-	cv::Mat cvdata(data.rows(), data.cols(), CV_64F, data.data()), cvfloatdata(data.rows(), data.cols(), CV_32F);
-	cv::Mat cvclasses(classes);
-	
-	cvdata.convertTo(cvfloatdata, CV_32F);
-	tree->train(cvfloatdata, CV_ROW_SAMPLE, cvclasses, empty, empty, empty, empty, params);
-}
-
-int dtree_classifier::classify(const rvec &x) const {
-	cv::Mat cvx(1, x.size(), CV_64F, const_cast<double*>(x.data()));
-	cv::Mat cvfloatx(1, x.size(), CV_32F);
-	
-	cvx.convertTo(cvfloatx, CV_32F);
-	return tree->predict(cvfloatx)->value;
-}
-
-void print_tree(const CvDTreeNode *n, ostream &os) {
-	const CvDTreeSplit *s = n->split;
-	for (int i = 0; i < n->depth; ++i) {
-		os << ' ';
-	}
-	os << s->var_idx << " <  " << s->ord.c;
-	if (!n->left->left && !n->left->right) {
-		os << " : " << n->left->value << endl;
-	} else {
-		os << endl;
-		print_tree(n->left, os);
-	}
-	for (int i = 0; i < n->depth; ++i) {
-		os << ' ';
-	}
-	os << s->var_idx << " >= " << s->ord.c;
-	if (!n->right->left && !n->right->right) {
-		os << " : " << n->right->value << endl;
-	} else {
-		os << endl;
-		print_tree(n->right, os);
-	}
-}
-
-void dtree_classifier::inspect(ostream &os) const {
-	if (!tree->get_root()->split) {
-		os << "constant: " << tree->get_root()->value << endl;
-	} else {
-		print_tree(tree->get_root(), os);
-	}
-}
-
-void dtree_classifier::serialize(ostream &os) const {
-	char temp[] = "dtree_serialize_XXXXXX";
-	string line;
-	
-	if (*mktemp(temp) == '\0') {
-		assert(false);
-	}
-	tree->save(temp);
-	ifstream input(temp);
-	
-	os << "BEGIN_DTREE_CLASSIFIER" << endl;
-	while (getline(input, line)) {
-		os << line << endl;
-	}
-	os << endl << "END_DTREE_CLASSIFIER" << endl;
-	unlink(temp);
-}
-
-void dtree_classifier::unserialize(std::istream &is) {
-	char temp[] = "dtree_unserialize_XXXXXX";
-	string line;
-	
-	if (*mktemp(temp) == '\0') {
-		assert(false);
-	}
-	ofstream out(temp);
-	
-	if (!get_nonblank_line(is, line)) {
-		assert(false);
-	}
-	assert(line == "BEGIN_DTREE_CLASSIFIER");
-	while (get_nonblank_line(is, line)) {
-		if (line == "END_DTREE_CLASSIFIER") {
-			break;
-		}
-		out << line << endl;
-	}
-	assert(line == "END_DTREE_CLASSIFIER");
-	out.close();
-	
-	tree->load(temp);
-	unlink(temp);
-}
+//dtree_classifier::dtree_classifier() {
+//	tree = new CvDTree();
+//}
+//
+//dtree_classifier::dtree_classifier(const dtree_classifier &c) {
+//	tree = new CvDTree(*c.tree);
+//}
+//
+//dtree_classifier &dtree_classifier::operator=(const dtree_classifier &c) {
+//	*tree = *c.tree;
+//	return *this;
+//}
+//
+//void dtree_classifier::learn(mat &data, const vector<int> &classes) {
+//	static cv::Mat empty;
+//	static CvDTreeParams params;
+//	if (data.rows() < 20) {
+//		params.cv_folds = 1;
+//	} else {
+//		params.cv_folds = data.rows() / 10;  // each fold needs at least 10 examples
+//	}
+//	params.min_sample_count = 10;
+//	
+//	cout << "NC DIM: " << data.cols() << endl;
+//	cv::Mat cvdata(data.rows(), data.cols(), CV_64F, data.data()), cvfloatdata(data.rows(), data.cols(), CV_32F);
+//	cv::Mat cvclasses(classes);
+//	
+//	cvdata.convertTo(cvfloatdata, CV_32F);
+//	tree->train(cvfloatdata, CV_ROW_SAMPLE, cvclasses, empty, empty, empty, empty, params);
+//}
+//
+//int dtree_classifier::classify(const rvec &x) const {
+//	cv::Mat cvx(1, x.size(), CV_64F, const_cast<double*>(x.data()));
+//	cv::Mat cvfloatx(1, x.size(), CV_32F);
+//	
+//	cvx.convertTo(cvfloatx, CV_32F);
+//	return tree->predict(cvfloatx)->value;
+//}
+//
+//void print_tree(const CvDTreeNode *n, ostream &os) {
+//	const CvDTreeSplit *s = n->split;
+//	for (int i = 0; i < n->depth; ++i) {
+//		os << ' ';
+//	}
+//	os << s->var_idx << " <  " << s->ord.c;
+//	if (!n->left->left && !n->left->right) {
+//		os << " : " << n->left->value << endl;
+//	} else {
+//		os << endl;
+//		print_tree(n->left, os);
+//	}
+//	for (int i = 0; i < n->depth; ++i) {
+//		os << ' ';
+//	}
+//	os << s->var_idx << " >= " << s->ord.c;
+//	if (!n->right->left && !n->right->right) {
+//		os << " : " << n->right->value << endl;
+//	} else {
+//		os << endl;
+//		print_tree(n->right, os);
+//	}
+//}
+//
+//void dtree_classifier::inspect(ostream &os) const {
+//	if (!tree->get_root()->split) {
+//		os << "constant: " << tree->get_root()->value << endl;
+//	} else {
+//		print_tree(tree->get_root(), os);
+//	}
+//}
+//
+//void dtree_classifier::serialize(ostream &os) const {
+//	char temp[] = "dtree_serialize_XXXXXX";
+//	string line;
+//	
+//	if (*mktemp(temp) == '\0') {
+//		assert(false);
+//	}
+//	tree->save(temp);
+//	ifstream input(temp);
+//	
+//	os << "BEGIN_DTREE_CLASSIFIER" << endl;
+//	while (getline(input, line)) {
+//		os << line << endl;
+//	}
+//	os << endl << "END_DTREE_CLASSIFIER" << endl;
+//	unlink(temp);
+//}
+//
+//void dtree_classifier::unserialize(std::istream &is) {
+//	char temp[] = "dtree_unserialize_XXXXXX";
+//	string line;
+//	
+//	if (*mktemp(temp) == '\0') {
+//		assert(false);
+//	}
+//	ofstream out(temp);
+//	
+//	if (!get_nonblank_line(is, line)) {
+//		assert(false);
+//	}
+//	assert(line == "BEGIN_DTREE_CLASSIFIER");
+//	while (get_nonblank_line(is, line)) {
+//		if (line == "END_DTREE_CLASSIFIER") {
+//			break;
+//		}
+//		out << line << endl;
+//	}
+//	assert(line == "END_DTREE_CLASSIFIER");
+//	out.close();
+//	
+//	tree->load(temp);
+//	unlink(temp);
+//}

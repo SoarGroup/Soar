@@ -292,7 +292,7 @@ void scene::clear() {
 	}
 }
 
-enum node_class { CONVEX, BALL, GROUP };
+enum node_class { CONVEX_NODE, BALL_NODE, GROUP_NODE };
 
 int scene::parse_add(vector<string> &f, string &error) {
 	sgnode *n = NULL;
@@ -317,25 +317,25 @@ int scene::parse_add(vector<string> &f, string &error) {
 	ptlist verts;
 	vector<int> indexes;
 	double radius;
-	node_class c = GROUP;
+	node_class c = GROUP_NODE;
 	while (p < f.size()) {
 		if (f[p] == "v") {
 			if (!parse_verts(f, ++p, verts, error)) {
 				return p;
 			}
-			c = CONVEX;
+			c = CONVEX_NODE;
 		} else if (f[p] == "i") {
 			if (!parse_inds(f, ++p, indexes, error)) {
 				return p;
 			}
-			c = CONVEX;
+			c = CONVEX_NODE;
 		} else if (f[p] == "b") {
 			++p;
 			if (p >= f.size() || !parse_double(f[p], radius)) {
 				error = "invalid radius";
 				return p;
 			}
-			c = BALL;
+			c = BALL_NODE;
 			++p;
 		} else if (!parse_transforms(f, p, pos, rot, scale, error)) {
 			return p;
@@ -343,13 +343,13 @@ int scene::parse_add(vector<string> &f, string &error) {
 	}
 	
 	switch (c) {
-		case GROUP:
+		case GROUP_NODE:
 			n = new group_node(name, type);
 			break;
-		case CONVEX:
+		case CONVEX_NODE:
 			n = new convex_node(name, type, verts, indexes);
 			break;
-		case BALL:
+		case BALL_NODE:
 			n = new ball_node(name, type, radius);
 			break;
 		default:

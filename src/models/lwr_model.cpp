@@ -55,11 +55,11 @@ model *_make_lwr_model_(soar_interface *si, Symbol *root, svs_state *state, cons
 	
 	si->find_child_wme(root, "num-neighbors", nnbrs_wme);
 	if (nnbrs_wme && !si->get_val(si->get_wme_val(nnbrs_wme), nnbrs)) {
-		LOG(WARN) << "WARNING: attribute num-neighbors does not have integer value, using default" << endl;
+		cerr << "WARNING: attribute num-neighbors does not have integer value, using default" << endl;
 	}
 	si->find_child_wme(root, "noise-var", var_wme);
 	if (var_wme && !si->get_val(si->get_wme_val(var_wme), noise_var)) {
-		LOG(WARN) << "WARNING: attribute noise-var does not have double value, using default" << endl;
+		cerr << "WARNING: attribute noise-var does not have double value, using default" << endl;
 	}
 	return new lwr_model(nnbrs, noise_var, name);
 }

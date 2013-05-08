@@ -1,8 +1,3 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/file.h>
-#include <unistd.h>
-
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -25,6 +20,7 @@ const double ECOEF = 2.0;
 const double CCOEF = 0.5;
 const double SCOEF = 0.5;
 const int MAXITERS = 50;
+
 
 bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, scene *scn, rvec &finalstate) {
 	scene *scncopy = scn->clone("", false);
@@ -87,7 +83,7 @@ public:
 		if (!(n1 = scn.get_node(obj1)) ||
 		    !(n2 = scn.get_node(obj2)))
 		{
-			return INFINITY;
+			return INF;
 		}
 		
 		c1 = n1->get_centroid();
@@ -114,7 +110,7 @@ public:
 		if (!(n1 = scn.get_node(obj1)) ||
 		    !(n2 = scn.get_node(obj2)))
 		{
-			return INFINITY;
+			return INF;
 		}
 		
 		c1 = n1->get_centroid();
@@ -142,7 +138,7 @@ public:
 		if (!(n1 = scn.get_node(obj1)) ||
 		    !(n2 = scn.get_node(obj2)))
 		{
-			return INFINITY;
+			return INF;
 		}
 		
 		c1 = n1->get_centroid();
@@ -172,7 +168,7 @@ public:
 		    !(nb = scn.get_node(b)) ||
 		    !(nc = scn.get_node(c)))
 		{
-			return INFINITY;
+			return INF;
 		}
 		
 		ptlist pa, pc;
@@ -206,7 +202,7 @@ public:
 		    !(nb = scn.get_node(b)) ||
 		    !(nc = scn.get_node(c)))
 		{
-			return INFINITY;
+			return INF;
 		}
 		
 		transform3 rot('r', na->get_trans('r'));
@@ -1110,181 +1106,4 @@ private:
 
 command *_make_random_control_command_(svs_state *state, Symbol *root) {
 	return new random_control_command(state, root);
-}
-
-class manual_control_command : public command {
-public:
-	
-	manual_control_command(svs_state *state, Symbol *root) 
-	: command(state, root), state(state), outspec(state->get_output_spec()), root(root), mode('r')
-	{
-		si = state->get_svs()->get_soar_interface();
-		output.resize(outspec->size());
-	}
-	
-	~manual_control_command() {
-		if (log_file.is_open()) {
-			log_file.close();
-		}
-	}
-	
-	string description() {
-		return string("manual control");
-	}
-	
-	/*
-	 This method interprets the control file as a fixed-size binary
-	 array of doubles.
-	*/
-	void read_array(string &error) {
-		output.setConstant(0);
-		FILE *f = fopen(remote_path.c_str(), "r");
-		if (!f) {
-			error = "failed to open file";
-			fclose(f);
-			return;
-		}
-		int fd = fileno(f);
-		flock(fd, LOCK_EX);
-		double x;
-		int i = 0;
-		while (fread(&x, sizeof(x), 1, f) > 0 && i < output.size()) {
-			output(i++) = x;
-		}
-		flock(fd, LOCK_UN);
-		fclose(f);
-		if (i != output.size()) {
-			error = "incorrect number of output fields";
-		}
-	}
-	
-	/*
-	 This method interprets the control file as a stream of text,
-	 where each line has a number of fields representing the values
-	 of the outputs.
-	*/
-	void read_stream(string &error) {
-		string line;
-		vector<string> fields;
-		if (!stream_file.is_open()) {
-			stream_file.open(remote_path.c_str(), ios::in);
-		}
-		if (!getline(stream_file, line)) {
-			error = "eof";
-			return;
-		}
-		split(line, "", fields);
-		if (fields.size() != output.size()) {
-			error = "incorrect number of output fields";
-			return;
-		}
-		for (int i = 0; i < fields.size(); ++i) {
-			if (!parse_double(fields[i], output(i))) {
-				error = "non-numeric field encountered";
-				return;
-			}
-		}
-	}
-	
-	void write_log() {
-		if (!log_file.is_open()) {
-			log_file.open(log_path.c_str(), ios::out);
-		}
-		for (int i = 0; i < output.size(); ++i) {
-			log_file << output(i) << " ";
-		}
-		log_file << endl;
-	}
-	
-	bool update_sub() {
-		if (changed()) {
-			configure();
-		}
-		
-		string error;
-		switch (mode) {
-			case 'a':
-				read_array(error);
-				break;
-			case 's':
-				read_stream(error);
-				break;
-			case 'c':
-				break;
-		}
-		if (!error.empty()) {
-			set_status(error);
-			return false;
-		}
-		state->set_output(output);
-		set_status("success");
-		if (log_output) {
-			write_log();
-		}
-		return true;
-	}
-	
-	bool early() { return true; }
-	
-private:
-
-	void configure() {
-		wme_list children;
-		wme_list::iterator i;
-		si->get_child_wmes(root, children);
-		
-		mode = 's';
-		log_output = false;
-		bool first = true;
-		for (i = children.begin(); i != children.end(); ++i) {
-			string name;
-			double val;
-			if (!si->get_val(si->get_wme_attr(*i), name)) {
-				continue;
-			}
-			if (name == "log") {
-				log_output = true;
-				if (!si->get_val(si->get_wme_val(*i), log_path)) {
-					assert(false);
-				}
-			} else if (name == "array") {
-				mode = 'a';
-				if (!si->get_val(si->get_wme_val(*i), remote_path)) {
-					assert(false);
-				}
-			} else if (name == "stream") {
-				mode = 's';
-				if (!si->get_val(si->get_wme_val(*i), remote_path)) {
-					assert(false);
-				}
-			} else if (si->get_val(si->get_wme_val(*i), val)) {
-				for (int j = 0; j < outspec->size(); ++j) {
-					mode = 'c';
-					if ((*outspec)[j].name == name) {
-						if (first) {
-							output.setZero();
-							first = false;
-						}
-						output(j) = val;
-						break;
-					}
-				}
-			}
-		}
-	}
-	
-	char mode;
-	bool log_output;
-	string log_path, remote_path;
-	fstream log_file, stream_file;
-	
-	rvec output;
-	const output_spec *outspec;
-	svs_state *state;
-	Symbol *root;
-	soar_interface *si;
-};
-
-command *_make_manual_control_command_(svs_state *state, Symbol *root) {
-	return new manual_control_command(state, root);
 }

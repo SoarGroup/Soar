@@ -166,7 +166,7 @@ ostream& output_mat(ostream &os, const_mat_view m) {
 bool normal(const_mat_view m) {
 	for (int i = 0; i < m.rows(); ++i) {
 		for (int j = 0; j < m.cols(); ++j) {
-			if (isnan(m(i, j)) || isinf(m(i, j))) {
+			if (is_nan(m(i, j)) || is_inf(m(i, j))) {
 				return false;
 			}
 		}
@@ -271,36 +271,35 @@ vec3 project(const vec3 &v, const vec3 &u) {
 }
 
 double dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
-	int counter = 0;
-	ptlist::const_iterator i;
 	vec3 p;
-	double x, min = numeric_limits<double>::max(), max = -numeric_limits<double>::max();
-	for (i = a.begin(); i != a.end(); ++i) {
-		p = project(*i, u);
-		x = p[0] / u[0];
-		if (x < min) {
-			min = x;
+	double x, minx, maxx;
+	for (int i = 0, iend = a.size(); i < iend; ++i) {
+		p = project(a[i], u);
+		x = p(0) / u(0);
+		if (i == 0 || x < minx) {
+			minx = x;
 		}
 	}
-	for (i = b.begin(); i != b.end(); ++i) {
-		p = project(*i, u);
-		x = p[0] / u[0];
-		if (x > max) {
-			max = x;
+	for (int i = 0, iend = b.size(); i < iend; ++i) {
+		p = project(b[i], u);
+		x = p(0) / u(0);
+		if (i == 0 || x > maxx) {
+			maxx = x;
 		}
 	}
 	
-	return max - min;
+	return maxx - minx;
 }
 
 ostream& operator<<(ostream &os, const bbox &b) {
-	os << b.min[0] << " " << b.min[1] << " " << b.min[2] << " " << b.max[0] << " " << b.max[1] << " " << b.max[2];
+	os << b.min_pt[0] << " " << b.min_pt[1] << " " << b.min_pt[2] << " "
+	   << b.max_pt[0] << " " << b.max_pt[1] << " " << b.max_pt[2];
 	return os;
 }
 
 void serialize(const_mat_view m, ostream &os) {
 	serializer sr(os);
-	sr << "MAT" << m.rows() << m.cols() << '\n';
+	sr << string("MAT") << static_cast<int>(m.rows()) << static_cast<int>(m.cols()) << '\n';
 	for (int i = 0; i < m.rows(); ++i) {
 		for (int j = 0; j < m.cols(); ++j) {
 			sr << m(i, j);

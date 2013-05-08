@@ -68,10 +68,9 @@ void unserialize(int &v, istream &is) {
  serialize/unserialize cycle.
 */
 void serialize(double v, ostream &os) {
-	//enum { BUFSIZE = 40 };
-	static char buf[40];
+	static char buf[100];
 	
-	if (snprintf(buf, 40, "%a", v) == 40) {
+	if (sprintf(buf, "%a", v) == 40) {
 		cerr << "buffer overflow when serializing a double" << endl;
 		assert(false);
 	}

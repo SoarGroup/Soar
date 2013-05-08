@@ -111,7 +111,7 @@ bool LWR::predict(const rvec &x, rvec &y) {
 	rvec closeavg = rvec::Zero(ysz);
 	int nclose = 0;
 	for (int i = 0; i < w.size(); ++i) {
-		if (w(i) == INFINITY) {
+		if (w(i) == INF) {
 			closeavg += Y.row(i);
 			++nclose;
 		}

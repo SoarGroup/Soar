@@ -8,6 +8,7 @@
 #include "params.h"
 #include "serialize.h"
 #include "mat.h"
+#include "platform_specific.h"  // for nextafter
 
 using namespace std;
 using namespace Eigen;
@@ -64,7 +65,7 @@ bool ridge(const_mat_view X, const_mat_view Y, mat &coefs) {
 	double lambda = RIDGE_LAMBDA;
 	if (lambda > 0) {
 		for (int i = 0; i < A.cols(); ++i) {
-			double inc = nextafter(A(i, i), INFINITY) - A(i, i);
+			double inc = nextafter(A(i, i), INF) - A(i, i);
 			if (inc > lambda) {
 				lambda = inc;
 			}

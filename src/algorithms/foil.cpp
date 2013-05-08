@@ -2,6 +2,7 @@
 #include "foil.h"
 #include "serialize.h"
 #include "params.h"
+#include "platform_specific.h" // for log2
 
 using namespace std;
 
@@ -468,8 +469,8 @@ void split_training(double ratio, const relation &all, relation &grow, relation 
 }
 
 int literal::new_vars() const {
-	int n;
-	for (int i = 0, iend = args.size(), n = 0; i < iend; ++i) {
+	int n = 0;
+	for (int i = 0, iend = args.size(); i < iend; ++i) {
 		if (args[i] < 0)	
 			++n;
 	}

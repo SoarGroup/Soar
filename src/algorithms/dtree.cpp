@@ -2,12 +2,14 @@
 #include <sstream>
 #include <algorithm>
 #include <limits>
+#include <iterator>
 #include <cmath>
 #include <cassert>
 #include <cstdio>
 #include "dtree.h"
 #include "common.h"
 #include "mat.h"
+#include "platform_specific.h" // for log2
 
 using namespace std;
 
@@ -257,12 +259,7 @@ public:
 	}
 	
 	void fill_chi2thresh() {
-		double pv;
-		string pval = get_option("chi2_pvalue");
-		
-		if (pval.empty() || !parse_double(pval, pv)) {
-			pv = 0.1;
-		}
+		double pv = 0.1;
 		
 		chi2 c;
 		for (int i = 1; i <= 10; ++i) {

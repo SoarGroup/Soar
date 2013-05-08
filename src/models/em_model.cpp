@@ -17,7 +17,7 @@ const int MAXITERS = 50;
 void error_color(double error, double color[]) {
 	double maxerror = 1e-3;
 	color[0] = color[1] = color[2] = 0.0;
-	if (isnan(error)) {
+	if (is_nan(error)) {
 		return;
 	} else if (error > maxerror) {
 		color[0] = 1.0;
@@ -106,12 +106,15 @@ void draw_predictions(int mode, int nmodes, double pred, double real, const stri
 	error_color(vzerror, cz);
 	error_color(vxerror + vzerror / 2, cp);
 	
-	ss << "* vx_pred_line v 0 0 0 " << (isnan(vx) ? 1000.0 : vx) << " 0 0"
+	bool vx_valid = !is_nan(vx);
+	bool vz_valid = !is_nan(vz);
+	
+	ss << "* vx_pred_line v 0 0 0 " << (vx_valid ? vx : 1000.0) << " 0 0"
 	   << " i 0 1 c " << cx[0] << " " << cx[1] << " " << cx[2] << "\n";
-	ss << "* vz_pred_line v 0 0 0 0 0 " << (isnan(vz) ? 1000.0 : vz)
+	ss << "* vz_pred_line v 0 0 0 0 0 " << (vz_valid ? vz : 1000.0)
 	   << " i 0 1 c " << cz[0] << " " << cz[1] << " " << cz[2] << "\n";
 	
-	if (!isnan(vx) && !isnan(vz)) {
+	if (vx_valid && vz_valid) {
 		ss << "* pred_line v 0 0 0 " << vx << " 0 " << vz << " i 0 1";
 		ss << " c " << cp[0] << " " << cp[1] << " " << cp[2] << "\n";
 	} else {

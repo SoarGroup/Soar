@@ -298,7 +298,7 @@ void em_mode::unserialize(istream &is) {
 double em_mode::calc_prob(int target, const scene_sig &dsig, const rvec &x, double y, double noise_var, vector<int> &best_assign, double &best_error) const {
 	if (noise) {
 		return PNOISE;
-		best_error = INFINITY;
+		best_error = INF;
 	}
 	
 	rvec py;

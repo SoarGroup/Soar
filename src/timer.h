@@ -5,6 +5,7 @@
 #include <cmath>
 #include <ctime>
 #include "cliproxy.h"
+#include "platform_specific.h"
 
 class timer_set;
 
@@ -26,16 +27,13 @@ public:
 	const std::string &get_name() const { return name; }
 	
 	void start() {
-		clock_gettime(CLOCK_MONOTONIC, &ts1);
+		start_time_ns = get_time_nanosecs();
 	}
 	
 	long stop() {
-		clock_gettime(CLOCK_MONOTONIC, &ts2);
+		long end = get_time_nanosecs();
 		
-		long start = ts1.tv_sec * 1e9 + ts1.tv_nsec;
-		long end = ts2.tv_sec * 1e9 + ts2.tv_nsec;
-		
-		last = end - start;
+		last = end - start_time_ns;
 		total += last;
 		count++;
 		
@@ -55,7 +53,7 @@ public:
 #endif
 	
 private:
-	timespec ts1, ts2;
+	long start_time_ns;
 	
 	std::string name;
 	bool basic;
