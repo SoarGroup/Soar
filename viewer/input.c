@@ -8,14 +8,15 @@
 #define MAX_GEOMS 1000
 #define WHITESPACE " \t\n"
 
-
 int proc_cmd(char *fields[]);
 int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]);
 int parse_nums(char *fields[], int n, real *v);
-void gen_request_event();
+void request_redraw();
 int split(char *s, char *fields[]);
 void fix_literal_quotes(char *s);
 int proc_layer_cmd(char *fields[]);
+
+int wait_for_redraw = 0;
 
 /*
  split using whitespace and double quotes. \" is a literal quote in quoted
@@ -93,10 +94,11 @@ int proc_input(void *unused) {
 				split(startp, fields);
 				
 				SDL_mutexP(scene_lock);
-				gen_request_event();
 				proc_cmd(fields);
 				SDL_mutexV(scene_lock);
 				startp = endp + 1;
+				
+				request_redraw();
 			}
 		}
 		
@@ -127,6 +129,7 @@ int proc_cmd(char *fields[]) {
 			return 0;
 		}
 		save_on_redraw(fields[1]);
+		wait_for_redraw = 1;
 		return 1;
 	} else if (strcmp(fields[0], "layer") == 0) {
 		return proc_layer_cmd(fields + 1);
@@ -340,10 +343,16 @@ int parse_nums(char *fields[], int n, real *v) {
 	return i;
 }
 
-void gen_request_event() {
+/* wait until the command is processed by main thread */
+void request_redraw() {
 	SDL_Event e;
 	e.type = SDL_USEREVENT;
+	e.user.code = wait_for_redraw;
 	SDL_PushEvent(&e);
+	if (wait_for_redraw) {
+		semaphore_P(&redraw_semaphore);
+		wait_for_redraw = 0;
+	}
 }
 
 int proc_layer_cmd(char *fields[]) {

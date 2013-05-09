@@ -168,3 +168,7 @@ void socket_error(char *msg) {
 	fprintf(stderr, "%s: %d\n", msg, WSAGetLastError());
 	exit(1);
 }
+
+void delay() {
+	Sleep(1);
+}

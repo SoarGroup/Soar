@@ -446,7 +446,7 @@ void svs_state::refresh_view() {
 }
 
 svs::svs(agent *a)
-: learn(false)
+: learn(false), record_movie(false)
 {
 	si = new soar_interface(a);
 }
@@ -539,13 +539,13 @@ void svs::input_callback() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
-	static int frame = 0;
 
-	/*
-	stringstream ss;
-	ss << "save screen" << setfill('0') << setw(4) << frame++ << ".ppm";
-	get_drawer()->send(ss.str());
-	*/
+	if (record_movie) {
+		static int frame = 0;
+		stringstream ss;
+		ss << "save screen" << setfill('0') << setw(4) << frame++ << ".ppm";
+		get_drawer()->send(ss.str());
+	}
 }
 
 /*
@@ -563,6 +563,7 @@ string svs::get_output() const {
 
 void svs::proxy_get_children(map<string, cliproxy*> &c) {
 	c["learn"] =             new bool_proxy(&learn);
+	c["record_movie"] =      new bool_proxy(&record_movie);
 	c["log"] =               new memfunc_proxy<svs>(this, &svs::cli_log);
 	c["connect_viewer"] =    new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
 	c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);

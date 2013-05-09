@@ -16,6 +16,7 @@
 #define SCENE_MENU_OFFSET 20
 
 SDL_mutex *scene_lock;
+semaphore redraw_semaphore;
 int debug;
 
 static real grid_verts[GRID_VERTS_SIZE];
@@ -41,7 +42,7 @@ static int scr_width = 640;
 static int scr_height = 480;
 static int show_grid = 1;
 static real grid_size = 1.0;
-static char *savepath;
+static char savepath[1000];
 
 void reshape (int w, int h);
 void calc_normals(geometry *g);
@@ -60,7 +61,7 @@ void screenshot(char *path);
 int main(int argc, char *argv[]) {
 	int flags, bpp;
 	int buttons[4] = {0, 0, 0, 0 };
-	int i, redraw;
+	int i, redraw, signal_redraw;
 	const SDL_VideoInfo* info;
 	SDL_Event evt;
 	SDL_Surface *screen;
@@ -122,6 +123,7 @@ int main(int argc, char *argv[]) {
 		proc_input(NULL);
 	} else {
 		scene_lock = SDL_CreateMutex();
+		init_semaphore(&redraw_semaphore);
 		input_thread = SDL_CreateThread(proc_input, NULL);
 		if (input_thread == NULL) {
 			fprintf(stderr, "Unable to create input thread: %s\n", SDL_GetError());
@@ -132,6 +134,7 @@ int main(int argc, char *argv[]) {
 	reset_camera(&cam, SDLK_1);
 	cam.ortho = 0;
 	redraw = 1;
+	signal_redraw = 0;
 	while(1) {
 		SDL_WaitEvent(&evt);
 		do {
@@ -222,6 +225,8 @@ int main(int argc, char *argv[]) {
 					}
 					break;
 				case SDL_USEREVENT:
+					/* redraw request from input thread */
+					signal_redraw = evt.user.code;
 					redraw = 1;
 					break;
 			}
@@ -230,6 +235,10 @@ int main(int argc, char *argv[]) {
 		if (redraw) {
 			draw_screen();
 			redraw = 0;
+			if (signal_redraw) {
+				semaphore_V(&redraw_semaphore);
+				signal_redraw = 0;
+			}
 		}
 	}
 
@@ -299,9 +308,9 @@ void draw_screen() {
 		for (i = 0; i < NLAYERS; ++i) {
 			draw_layer(curr_scene, i);
 		}
+		draw_labels();
 		SDL_mutexV(scene_lock);
 	}
-	draw_labels();
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -311,13 +320,11 @@ void draw_screen() {
 	draw_scene_buttons(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET);
 	
 	glFinish();
-	if (savepath) {
+	if (savepath[0] != '\0') {
 		screenshot(savepath);
-		free(savepath);
-		savepath = NULL;
-	} else {
-		SDL_GL_SwapBuffers();
+		savepath[0] = '\0';
 	}
+	SDL_GL_SwapBuffers();
 }
 
 void reshape (int w, int h) {
@@ -978,11 +985,7 @@ void screenshot(char *path) {
 }
 
 void save_on_redraw(char *path) {
-	savepath = strdup(path);
-	if (!savepath) {
-		perror("save_on_redraw");
-		exit(1);
-	}
+	strncpy(savepath, path, sizeof(savepath));
 }
 
 void init_layers() {
@@ -1018,4 +1021,26 @@ int set_layer(int layer_num, char option, int value) {
 			return 1;
 	}
 	return 0;  /* no such option */
+}
+
+void init_semaphore(semaphore *s) {
+	s->count = 0;
+	s->mutex = SDL_CreateMutex();
+}
+
+void semaphore_P(semaphore *s) {
+	SDL_mutexP(s->mutex);
+	while (s->count == 0) {
+		SDL_mutexV(s->mutex);
+		delay();
+		SDL_mutexP(s->mutex);
+	}
+	s->count = 0;
+	SDL_mutexV(s->mutex);
+}
+
+void semaphore_V(semaphore *s) {
+	SDL_mutexP(s->mutex);
+	s->count = 1;
+	SDL_mutexV(s->mutex);
 }

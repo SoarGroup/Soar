@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "viewer.h"
 
@@ -177,4 +178,9 @@ int init_file(char *path) {
 	if ((file = fopen(path, "r")) == NULL)
 		return 0;
 	return 1;
+}
+
+void delay() {
+	static struct timespec interval = { .tv_sec = 0, .tv_nsec = 1000 };
+	nanosleep(&interval, NULL);
 }

@@ -162,6 +162,7 @@ private:
 	std::string               env_output;
 	output_spec               outspec;
 	bool                      learn;
+	bool                      record_movie;
 	Symbol                   *model_root;
 	
 	std::map<std::string, model*> models;

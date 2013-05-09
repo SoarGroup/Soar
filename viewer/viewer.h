@@ -86,7 +86,13 @@ typedef struct Scene {
 	struct Scene *next;
 } scene;
 
+typedef struct Semaphore {
+	SDL_mutex *mutex;
+	int count;
+} semaphore;
+
 extern SDL_mutex *scene_lock;
+extern semaphore redraw_semaphore;
 extern int debug;
 
 int match(char *pattern, char *s);
@@ -139,5 +145,10 @@ int get_input(char *buf, int n);
 
 void init_font(void);
 void draw_text(char *s, int x, int y);
+
+void init_semaphore(semaphore *s);
+void semaphore_P(semaphore *s);
+void semaphore_V(semaphore *s);
+void delay();
 
 #endif
