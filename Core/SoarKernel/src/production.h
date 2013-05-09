@@ -382,7 +382,9 @@ extern production *make_production (agent* thisAgent,
                                     condition **lhs_top,
                                     condition **lhs_bottom,
                                     action **rhs_top,
-                                    Bool reorder_nccs);
+                                    Bool reorder_nccs,
+                                    preference *results = NULL,
+                                    bool variablize = false);
 extern void deallocate_production (agent* thisAgent, production *prod);
 extern void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sign);
 extern void excise_all_productions_of_type(agent* thisAgent,

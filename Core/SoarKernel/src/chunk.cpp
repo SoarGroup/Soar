@@ -158,6 +158,36 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
   return thisAgent->results;
 }
 
+action *copy_action_list (agent* thisAgent, action *actions) {
+  action *old, *New, *prev, *first;
+  char first_letter;
+
+  prev = NIL;
+  first = NIL;  /* unneeded, but without it gcc -Wall warns here */
+  old = actions;
+  while (old) {
+    allocate_with_pool (thisAgent, &thisAgent->action_pool, &New);
+    if (prev) prev->next = New; else first = New;
+    prev = New;
+    New->type = old->type;
+    New->preference_type = old->preference_type;
+    New->support = old->support;
+    if (old->type==FUNCALL_ACTION) {
+      New->value = copy_rhs_value (thisAgent, old->value);
+    } else {
+      New->id = copy_rhs_value (thisAgent, old->id);
+      New->attr = copy_rhs_value (thisAgent, old->attr);
+      first_letter = first_letter_from_rhs_value (New->attr);
+      New->value = copy_rhs_value (thisAgent, old->value);
+      if (preference_is_binary(old->preference_type))
+        New->referent = copy_rhs_value (thisAgent, old->referent);
+    }
+    old = old->next;
+  }
+  if (prev) prev->next = NIL; else first = NIL;
+  return first;
+}
+
 /* =====================================================================
 
                   Variablizing Conditions and Results
@@ -354,7 +384,9 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
   if (preference_is_binary(pref->type)) {
     symbol_add_ref (ref);
     if (variablize) {
-      variablize_symbol (thisAgent, &ref);
+      if ((val->common.variablized_symbol) ||
+          (symbol_is_non_lti_identifier(val)))
+        variablize_symbol (thisAgent, &ref);
     }
     a->referent = symbol_to_rhs_value (ref);
   }
@@ -1150,11 +1182,16 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		thisAgent->variablization_tc = get_new_tc_number(thisAgent);
 		variablize_condition_list (thisAgent, lhs_top);
 	}
+	/* --- If we're building a chunk, copy and variablize the results later in
+	 *     make_production().  This is necessary because we need to first check
+	 *     if there are any unbound referent variables in relational tests, in which
+	 *     case we restore them back to their original bound symbols. --- */
+
 	rhs = copy_and_variablize_result_list (thisAgent, results, variablize);
 
 	add_goal_or_impasse_tests (thisAgent, top_cc);
 
-	prod = make_production (thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs, FALSE);
+	prod = make_production (thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs, FALSE, results, variablize);
 
 	if (!prod)
 	{
@@ -1222,7 +1259,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		condition *new_bottom = 0;
 		copy_condition_list (thisAgent, lhs_top, &new_top, &new_bottom);
 		temp_explain_chunk.conds = new_top;
-		temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
+		//temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
+    temp_explain_chunk.actions = copy_action_list (thisAgent, rhs);
 	}
 
 	rete_addition_result = add_production_to_rete (thisAgent, prod, lhs_top, chunk_inst, print_name);

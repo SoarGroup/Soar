@@ -1605,32 +1605,66 @@ void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
              symbol_to_string(thisAgent, t->data.referent->common.unvariablized_symbol, FALSE, NULL, 0));
       temp_sym = t->data.referent;
       t->data.referent = temp_sym->common.unvariablized_symbol;
-      // do we need to set tc_num of t->data.referent to tc too?
+
       // Debug| double-check refcount
-      temp_sym->common.unvariablized_symbol = NIL;
-      temp_sym->common.tc_num = 0;
       symbol_remove_ref (thisAgent, temp_sym);
       }
     break;
   }
 }
 
-void reverse_unbound_referents (agent* thisAgent, condition *lhs_top, tc_number tc)
+/* --- Converts variablized referents in back to originally bound
+ *     constants, if the variable is unbound ---*/
+
+void reverse_unbound_referents_in_action (agent* thisAgent, rhs_value *r_val, tc_number tc)
+{
+  Symbol *sym, *temp_sym;
+
+  sym = rhs_value_to_symbol(*r_val);
+
+  if ((sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (sym->common.tc_num != tc))
+  {
+    print(thisAgent, "Reversing rhs %s to constant %s.\n",
+        symbol_to_string(thisAgent, sym, FALSE, NULL, 0),
+        symbol_to_string(thisAgent, sym->common.unvariablized_symbol, FALSE, NULL, 0));
+
+    temp_sym = sym;
+    sym = temp_sym->common.unvariablized_symbol;
+    *r_val = symbol_to_rhs_value(sym);
+    // Debug| double-check refcount
+    symbol_remove_ref (thisAgent, temp_sym);
+  }
+}
+
+void reverse_unbound_lhs_referents (agent* thisAgent, condition *lhs_top, tc_number tc)
 {
   condition *c;
 
   for (c=lhs_top; c!=NIL; c=c->next)
   {
     if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
-      reverse_unbound_referents (thisAgent, c->data.ncc.top, tc);
+      reverse_unbound_lhs_referents(thisAgent, c->data.ncc.top, tc);
     } else {
-      reverse_unbound_referents_in_test (thisAgent, c->data.tests.id_test, tc);
-      reverse_unbound_referents_in_test (thisAgent, c->data.tests.attr_test, tc);
-      reverse_unbound_referents_in_test (thisAgent, c->data.tests.value_test, tc);
+      reverse_unbound_referents_in_test(thisAgent, c->data.tests.attr_test, tc);
+      reverse_unbound_referents_in_test(thisAgent, c->data.tests.value_test, tc);
     }
   }
 }
 
+void reverse_unbound_rhs_referents (agent* thisAgent, action *rhs_top, tc_number tc)
+{
+  action *a;
+
+  for (a = rhs_top; a!=NIL; a=a->next)
+  {
+    // Debug| Might need to handle rhs function calls too
+    if (a->type == MAKE_ACTION)
+    {
+      reverse_unbound_referents_in_action (thisAgent, &(a->attr), tc);
+      reverse_unbound_referents_in_action (thisAgent, &(a->value), tc);
+    }
+  }
+}
 
 /* *********************************************************************
 
@@ -1657,7 +1691,9 @@ production *make_production (agent* thisAgent,
                              condition **lhs_top,
                              condition **lhs_bottom,
                              action **rhs_top,
-                             Bool reorder_nccs) {
+                             Bool reorder_nccs,
+                             preference *results,
+                             bool variablize) {
   production *p;
   tc_number tc;
   action *a;
@@ -1669,7 +1705,10 @@ production *make_production (agent* thisAgent,
     reset_variable_generator (thisAgent, *lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list (thisAgent, *lhs_top, tc, NIL);
-    reverse_unbound_referents (thisAgent, *lhs_top, tc);
+    if (type == CHUNK_PRODUCTION_TYPE) {
+      reverse_unbound_lhs_referents (thisAgent, *lhs_top, tc);
+      reverse_unbound_rhs_referents (thisAgent, *rhs_top, tc);
+    }
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
 
