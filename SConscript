@@ -2,12 +2,25 @@ import sys
 
 Import('env', 'compiler')
 
-
 # svs viewer
-viewer_src = Glob('viewer/*.c')
-viewer_libs = [ 'SDL', 'GL', 'GLU', 'm' ]
+viewer_src = [ 'viewer/%s.c' % f for f in ('input', 'text', 'trackball', 'viewer') ]
 viewer_env = env.Clone()
 viewer_env['LIBS'] = []
+
+if compiler == 'msvc':
+	viewer_libs = [ 'SDL', 'SDLmain', 'opengl32', 'glu32' ]
+	viewer_env.Append(
+		CPPFLAGS  = [ '/D', 'WIN32', '/MD'],
+		CPPPATH   = [ 'SDL/include' ],
+		LIBPATH   = [ 'SDL/lib/x64' ],
+		LIBS      = [ 'Ws2_32', 'Mswsock', 'AdvApi32' ],
+		LINKFLAGS = [ '/SUBSYSTEM:CONSOLE' ]
+	)
+	viewer_src.append('viewer/windows.c')
+else:
+	viewer_libs = [ 'SDL', 'GL', 'GLU', 'm' ]
+	viewer_src.append('viewer/linux.c')
+
 config = Configure(viewer_env)
 missing_libs = [ l for l in viewer_libs if not config.CheckLib(l)]
 viewer_env = config.Finish()

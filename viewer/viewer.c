@@ -1,13 +1,11 @@
+#include "viewer.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
-#include <SDL/SDL.h>
 #include <SDL/SDL_thread.h>
-#include <SDL/SDL_mutex.h>
-#include <GL/glu.h>
 
-#include "viewer.h"
 #include "trackball.h"
 
 /*
@@ -57,10 +55,9 @@ int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y);
 void free_geom_shape(geometry *g);
 void setup3d();
 void init_layers();
-
 void screenshot(char *path);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 	int flags, bpp;
 	int buttons[4] = {0, 0, 0, 0 };
 	int i, redraw;
@@ -956,7 +953,8 @@ void screenshot(char *path) {
 	
 	pixels = calloc(3 * scr_width * scr_height, sizeof(unsigned char));
 	if (!pixels) {
-		error("out of memory\n");
+		fprintf(stderr, "out of memory\n");
+		exit(1);
 	}
 	out = fopen(path, "w");
 	if (!out) {

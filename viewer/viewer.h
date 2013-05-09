@@ -1,6 +1,11 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
+/* windows.h must be included before gl.h, glu.h */
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL/SDL.h>

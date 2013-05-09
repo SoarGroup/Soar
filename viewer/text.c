@@ -1,7 +1,5 @@
-#include <string.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 #include "viewer.h"
+#include <string.h>
 
 #define FONT_FIRST  ' '
 
