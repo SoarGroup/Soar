@@ -1258,6 +1258,62 @@ void add_bound_variables_in_condition_list (agent* thisAgent, condition *cond_li
 
 /* =====================================================================
 
+   Finding the variables bound in tests, conditions, and condition lists
+
+   These routines collect the variables that are bound in equality tests.
+   Their "var_list" arguments should either be NIL or else should point
+   to the header of the list of marked variables being constructed.
+
+===================================================================== */
+
+void add_bound_variables_in_rhs_value (agent* thisAgent,
+                   rhs_value rv, tc_number tc,
+                                     list **var_list) {
+  list *fl;
+  cons *c;
+  Symbol *sym;
+
+  if (rhs_value_is_symbol(rv)) {
+    /* --- ordinary values (i.e., symbols) --- */
+    sym = rhs_value_to_symbol(rv);
+    if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+      mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
+  } else {
+    /* --- function calls --- */
+    fl = rhs_value_to_funcall_list(rv);
+    for (c=fl->rest; c!=NIL; c=c->rest)
+      add_bound_variables_in_rhs_value (thisAgent, static_cast<char *>(c->first), tc, var_list);
+  }
+}
+
+void add_bound_variables_in_action (agent* thisAgent, action *a,
+                  tc_number tc, list **var_list){
+  Symbol *id;
+
+  if (a->type==MAKE_ACTION) {
+    /* --- ordinary make actions --- */
+    id = rhs_value_to_symbol(a->id);
+    add_bound_variables_in_rhs_value (thisAgent, a->id, tc, var_list);
+    add_bound_variables_in_rhs_value (thisAgent, a->attr, tc, var_list);
+    add_bound_variables_in_rhs_value (thisAgent, a->value, tc, var_list);
+    if (preference_is_binary(a->preference_type))
+      add_bound_variables_in_rhs_value (thisAgent, a->referent, tc, var_list);
+  } else {
+    /* --- function call actions --- */
+    add_bound_variables_in_rhs_value (thisAgent, a->value, tc, var_list);
+  }
+}
+
+void add_bound_variables_in_action_list (agent* thisAgent, action *actions, tc_number tc,
+                                       list **var_list) {
+  action *a;
+
+  for (a=actions; a!=NIL; a=a->next)
+    add_bound_variables_in_action (thisAgent, a, tc, var_list);
+}
+
+/* =====================================================================
+
    Finding all variables from tests, conditions, and condition lists
 
    These routines collect all the variables in tests, etc.  Their
@@ -1620,9 +1676,12 @@ void reverse_unbound_referents_in_action (agent* thisAgent, rhs_value *r_val, tc
 {
   Symbol *sym, *temp_sym;
 
+  // Try rhs_value_is_unboundvar(rv) to see if we should ignore reversal
+
   sym = rhs_value_to_symbol(*r_val);
 
-  if ((sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (sym->common.tc_num != tc))
+  if ((sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (sym->common.tc_num != tc) &&
+      (sym->common.unvariablized_symbol->common.symbol_type != IDENTIFIER_SYMBOL_TYPE))
   {
     print(thisAgent, "Reversing rhs %s to constant %s.\n",
         symbol_to_string(thisAgent, sym, FALSE, NULL, 0),
@@ -1707,6 +1766,7 @@ production *make_production (agent* thisAgent,
     add_bound_variables_in_condition_list (thisAgent, *lhs_top, tc, NIL);
     if (type == CHUNK_PRODUCTION_TYPE) {
       reverse_unbound_lhs_referents (thisAgent, *lhs_top, tc);
+      //add_bound_variables_in_action_list (thisAgent, *rhs_top, tc, NIL);
       reverse_unbound_rhs_referents (thisAgent, *rhs_top, tc);
     }
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
