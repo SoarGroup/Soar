@@ -4468,7 +4468,8 @@ void rete_node_to_conditions (agent* thisAgent,
 rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
                                                   rhs_value rv,
                                                   condition *cond,
-                                                  char first_letter) {
+                                                  char first_letter,
+                                                  bool original_vars) {
   cons *c, *new_c, *prev_new_c;
   list *fl, *new_fl;
   Symbol *sym;
@@ -4476,9 +4477,18 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
   char prefix[2];
 
   if (rhs_value_is_reteloc(rv)) {
-    sym = var_bound_in_reconstructed_conds (thisAgent, cond,
+    if (original_vars)
+    {
+      sym = var_bound_in_reconstructed_original_conds (thisAgent, cond,
+                                   rhs_value_to_reteloc_field_num(rv),
+                                   rhs_value_to_reteloc_levels_up(rv));
+    }
+    else
+    {
+      sym = var_bound_in_reconstructed_conds (thisAgent, cond,
                                  rhs_value_to_reteloc_field_num(rv),
                                  rhs_value_to_reteloc_levels_up(rv));
+    }
     symbol_add_ref (sym);
     return symbol_to_rhs_value (sym);
   }
@@ -4516,7 +4526,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       allocate_cons (thisAgent, &new_c);
       new_c->first = copy_rhs_value_and_substitute_varnames (thisAgent,
                                                              static_cast<char *>(c->first),
-                                                             cond, first_letter);
+                                                             cond, first_letter, original_vars);
       prev_new_c->rest = new_c;
       prev_new_c = new_c;
     }
@@ -4530,7 +4540,8 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
 
 action *copy_action_list_and_substitute_varnames (agent* thisAgent,
                                                   action *actions,
-                                                  condition *cond) {
+                                                  condition *cond,
+                                                  bool original_vars = false) {
   action *old, *New, *prev, *first;
   char first_letter;
 
@@ -4547,16 +4558,16 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
     if (old->type==FUNCALL_ACTION) {
       New->value = copy_rhs_value_and_substitute_varnames (thisAgent,
                                                            old->value, cond,
-                                                           'v');
+                                                           'v', original_vars);
     } else {
-      New->id = copy_rhs_value_and_substitute_varnames (thisAgent, old->id, cond, 's');
-      New->attr = copy_rhs_value_and_substitute_varnames (thisAgent, old->attr, cond,'a');
+      New->id = copy_rhs_value_and_substitute_varnames (thisAgent, old->id, cond, 's', original_vars);
+      New->attr = copy_rhs_value_and_substitute_varnames (thisAgent, old->attr, cond,'a', original_vars);
       first_letter = first_letter_from_rhs_value (New->attr);
       New->value = copy_rhs_value_and_substitute_varnames (thisAgent, old->value, cond,
-                          first_letter);
+                          first_letter, original_vars);
       if (preference_is_binary(old->preference_type))
         New->referent = copy_rhs_value_and_substitute_varnames (thisAgent, old->referent,
-                                              cond, first_letter);
+                                              cond, first_letter, original_vars);
     }
     old = old->next;
   }
@@ -4626,6 +4637,32 @@ void p_node_to_conditions (agent* thisAgent,
      cell = thisAgent->rhs_variable_bindings;
      while (index++ <= thisAgent->highest_rhs_unboundvar_index) *(cell++) = NIL;
   }
+}
+
+void p_node_to_rhs (agent* thisAgent, rete_node *p_node, condition **dest_bottom_cond, action **dest_rhs)
+{
+  cons *c;
+  Symbol **cell;
+  int64_t index;
+  production *prod;
+
+  prod = p_node->b.p.prod;
+
+  reset_variable_generator (thisAgent, NIL, NIL); /* we'll be gensymming new vars */
+  thisAgent->highest_rhs_unboundvar_index = -1;
+  if (prod->rhs_unbound_variables)
+  {
+    cell = thisAgent->rhs_variable_bindings;
+    for (c=prod->rhs_unbound_variables; c!=NIL; c=c->rest)
+    {
+      *(cell++) = static_cast<symbol_union *>(c->first);
+      thisAgent->highest_rhs_unboundvar_index++;
+    }
+  }
+  *dest_rhs = copy_action_list_and_substitute_varnames(thisAgent, prod->action_list, *dest_bottom_cond, true);
+  index = 0;
+  cell = thisAgent->rhs_variable_bindings;
+  while (index++ <= thisAgent->highest_rhs_unboundvar_index) *(cell++) = NIL;
 }
 
 Symbol *get_symbol_from_rete_loc (unsigned short levels_up,

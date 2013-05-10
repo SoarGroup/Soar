@@ -1772,6 +1772,7 @@ production *make_production (agent* thisAgent,
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
 
+    // Debug| Do we need this any more?
     if ( !smem_valid_production( *lhs_top, *rhs_top ) )
     {
       print( thisAgent, "ungrounded LTI in production\n" );

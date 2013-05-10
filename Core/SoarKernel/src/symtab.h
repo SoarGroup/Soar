@@ -179,6 +179,10 @@ typedef struct symbol_common_data_struct {
   tc_number tc_num;           /* used for transitive closures, marking, etc. */
   union symbol_union *variablized_symbol;  /* used by the chunker */
   union symbol_union *unvariablized_symbol;  /* used by the chunker */
+  /* -- The following variable is used to by chunking to determine if two identical
+   *    constant symbols being variablized came from the same source and should
+   *    produce the same variable in a symbol */
+  union symbol_union *original_var_symbol;
 
 } symbol_common_data;
 
@@ -282,11 +286,6 @@ typedef struct identifier_struct {
   smem_lti_id smem_lti;
   epmem_time_id smem_time_id;
   uint64_t smem_valid;
-
-  /* -- The following variable is used to by chunking to determine if two identical
-   *    constant symbols being variablized came from the same source and should
-   *    produce the same variable in a symbol */
-  union symbol_union *original_var_symbol;
 
   /*Agent::RL_Trace*/ void * rl_trace; ///< A pointer to the current state of the trace for this goal level if isa_goal -bazald
 } identifier;

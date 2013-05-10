@@ -205,49 +205,102 @@ action *copy_action_list (agent* thisAgent, action *actions) {
    and returns an action list.
 ===================================================================== */
 
-void variablize_symbol (agent* thisAgent, Symbol **sym) {
-	char prefix[2];
-	Symbol *var;
-
-	/* We don't need the following check for calls from variablize_test, but may need it for calls
-	 * from rhs and other places. Must check all places this is called from. */
-
-	if (symbol_is_identifier(*sym) || symbol_is_variablizable_constant(*sym))
-	{
-	  // Will need to revisit this part when doing lti's as constant
-	  // remember that id.smem_lti might not be valid for this sym any more
-
-	  //			if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
-//			{
-//				(*sym)->common.tc_num = thisAgent->variablization_tc;
-//				(*sym)->id.variablization = (*sym);
+//void variablize_symbol (agent* thisAgent, Symbol **sym) {
+//	char prefix[2];
+//	Symbol *var;
+//
+//	/* We don't need the following check for calls from variablize_test, but may need it for calls
+//	 * from rhs and other places. Must check all places this is called from. */
+//
+//	if (symbol_is_identifier(*sym) || symbol_is_variablizable_constant(*sym))
+//	{
+//	  // Will need to revisit this part when doing lti's as constant
+//	  // remember that id.smem_lti might not be valid for this sym any more
+//
+//	  //			if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
+////			{
+////				(*sym)->common.tc_num = thisAgent->variablization_tc;
+////				(*sym)->id.variablization = (*sym);
+////				return;
+////			}
+////
+//			if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
+//				/* --- it's already been variablized, so use the existing variable --- */
+//				var = (*sym)->common.variablized_symbol;
+//				var->common.unvariablized_symbol = *sym;
+//				//symbol_remove_ref (thisAgent, *sym);
+//				*sym = var;
+//				symbol_add_ref (var);
 //				return;
 //			}
 //
-			if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
-				/* --- it's already been variablized, so use the existing variable --- */
-				var = (*sym)->common.variablized_symbol;
-				var->common.unvariablized_symbol = *sym;
-				//symbol_remove_ref (thisAgent, *sym);
-				*sym = var;
-				symbol_add_ref (var);
-				return;
-			}
+//			/* --- need to create a new variable.  If constant is being variablized
+//			 *     just used 'c' instead of first letter of id name --- */
+//			(*sym)->common.tc_num = thisAgent->variablization_tc;
+//			if((*sym)->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+//			  prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+//			else
+//			  prefix[0] = 'c';
+//			prefix[1] = 0;
+//			var = generate_new_variable (thisAgent, prefix);
+//			(*sym)->common.variablized_symbol = var;
+//      var->common.unvariablized_symbol = *sym;
+//      //symbol_remove_ref (thisAgent, *sym);
+//			*sym = var;
+//		}
+//}
 
-			/* --- need to create a new variable.  If constant is being variablized
-			 *     just used 'c' instead of first letter of id name --- */
-			(*sym)->common.tc_num = thisAgent->variablization_tc;
-			if((*sym)->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
-			  prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
-			else
-			  prefix[0] = 'c';
-			prefix[1] = 0;
-			var = generate_new_variable (thisAgent, prefix);
-			(*sym)->common.variablized_symbol = var;
+void variablize_symbol (agent* thisAgent, Symbol **sym) {
+  char prefix[2];
+  Symbol *var, *var_ref_symbol;
+
+  /* We don't need the following check for calls from variablize_test, but may need it for calls
+   * from rhs and other places. Must check all places this is called from. */
+
+  if (symbol_is_identifier(*sym) || symbol_is_variablizable_constant(*sym))
+  {
+    // Will need to revisit this part when doing lti's as constant
+    // remember that id.smem_lti might not be valid for this sym any more
+
+    //      if ((*sym)->id.smem_lti != NIL)                 // don't variablize lti (long term identifiers)
+    //      {
+    //        (*sym)->common.tc_num = thisAgent->variablization_tc;
+    //        (*sym)->id.variablization = (*sym);
+    //        return;
+    //      }
+    //
+
+    if (symbol_is_identifier(*sym) || ((*sym)->common.original_var_symbol == NIL))
+      var_ref_symbol = (*sym);
+    else
+      var_ref_symbol = (*sym)->common.original_var_symbol;
+
+    if (var_ref_symbol->common.tc_num == thisAgent->variablization_tc) {
+      /* --- it's already been variablized, so use the existing variable --- */
+      var = var_ref_symbol->common.variablized_symbol;
       var->common.unvariablized_symbol = *sym;
       //symbol_remove_ref (thisAgent, *sym);
-			*sym = var;
-		}
+      *sym = var;
+      symbol_add_ref (var);
+      return;
+    }
+
+    /* --- need to create a new variable.  If constant is being variablized
+     *     just used 'c' instead of first letter of id name --- */
+    var_ref_symbol->common.tc_num = thisAgent->variablization_tc;
+    (*sym)->common.tc_num = thisAgent->variablization_tc;
+    if(symbol_is_identifier(*sym))
+      prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+    else
+      prefix[0] = 'c';
+    prefix[1] = 0;
+    var = generate_new_variable (thisAgent, prefix);
+    (*sym)->common.variablized_symbol = var;
+    var_ref_symbol->common.variablized_symbol = var;
+    var->common.unvariablized_symbol = *sym;
+    //symbol_remove_ref (thisAgent, *sym);
+    *sym = var;
+  }
 }
 
 void variablize_test (agent* thisAgent, test *chunk_test) {
@@ -306,11 +359,8 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
       if (symbol_is_variablizable(instantiated_referent, original_referent))
       {
         print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
-        if (instantiated_referent->ic.value == 8)
-        {
-          print(thisAgent, "Stopping!.\n");
-        }
         variablize_symbol (thisAgent, &(ct->data.referent));
+        ct->data.referent->common.original_var_symbol = original_referent;
       }
       break;
     default:

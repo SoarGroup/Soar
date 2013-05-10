@@ -648,7 +648,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	instantiation *inst;
 	condition *cond;
 	preference *pref;
-	action *a;
+	action *a, *rhs_vars;
 	cons *c;
 	Bool need_to_do_support_calculations;
 	Bool trace_it;
@@ -698,6 +698,8 @@ void create_instantiation(agent* thisAgent, production *prod,
 	p_node_to_conditions(thisAgent, prod->p_node, tok, w,
 			&(inst->top_of_instantiated_conditions),
 			&(inst->bottom_of_instantiated_conditions), NIL, true);
+
+	p_node_to_rhs(thisAgent, prod->p_node, &(inst->bottom_of_instantiated_conditions), &(rhs_vars));
 
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
 			cond = cond->next) {

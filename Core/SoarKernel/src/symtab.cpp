@@ -266,9 +266,12 @@ Symbol *make_variable (agent* thisAgent, const char *name) {
     sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+    sym->common.tc_num = 0;
+    sym->common.variablized_symbol = NIL;
+    sym->common.unvariablized_symbol = NIL;
+    sym->common.original_var_symbol = NIL;
     sym->var.name = make_memory_block_for_string (thisAgent, name);
     sym->var.gensym_number = 0;
-    sym->common.tc_num = 0;
     sym->var.rete_binding_locations = NIL;
     add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS
@@ -292,6 +295,10 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->common.symbol_type = IDENTIFIER_SYMBOL_TYPE;
   sym->common.reference_count = 1;
   sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+  sym->common.tc_num = 0;
+  sym->common.variablized_symbol = NIL;
+  sym->common.unvariablized_symbol = NIL;
+  sym->common.original_var_symbol = NIL;
   sym->id.name_letter = name_letter;
 
   // NLD: modified for long-term identifiers
@@ -332,7 +339,6 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.lower_goal = NIL;
   sym->id.operator_slot = NIL;
   sym->id.preferences_from_goal = NIL;
-  sym->common.tc_num = 0;
   sym->id.associated_output_links = NIL;
   sym->id.input_wmes = NIL;
 
@@ -376,6 +382,9 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->common.tc_num = 0;
+    sym->common.variablized_symbol = NIL;
+    sym->common.unvariablized_symbol = NIL;
+    sym->common.original_var_symbol = NIL;
     sym->common.epmem_hash = 0;
     sym->common.epmem_valid = 0;
     sym->common.smem_hash = 0;
@@ -404,6 +413,9 @@ Symbol *make_int_constant (agent* thisAgent, int64_t value) {
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->common.tc_num = 0;
+    sym->common.variablized_symbol = NIL;
+    sym->common.unvariablized_symbol = NIL;
+    sym->common.original_var_symbol = NIL;
     sym->common.epmem_hash = 0;
     sym->common.epmem_valid = 0;
     sym->common.smem_hash = 0;
@@ -431,6 +443,9 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->common.tc_num = 0;
+    sym->common.variablized_symbol = NIL;
+    sym->common.unvariablized_symbol = NIL;
+    sym->common.original_var_symbol = NIL;
     sym->common.epmem_hash = 0;
     sym->common.epmem_valid = 0;
     sym->common.smem_hash = 0;
@@ -457,6 +472,12 @@ void deallocate_symbol (agent* thisAgent, Symbol *sym) {
 #ifdef DEBUG_SYMBOLS
   print_with_symbols (thisAgent, "\nDeallocating Symbol %y", sym);
 #endif
+
+  /* Debug| Shouldn't we be decreasing refcount on symbol pointers for variablization pointers?
+   *        Will add now disabled, test later.*/
+//  symbol_remove_ref (thisAgent, sym->common.variablized_symbol);
+//  symbol_remove_ref (thisAgent, sym->common.unvariablized_symbol);
+//  symbol_remove_ref (thisAgent, sym->common.original_var_symbol);
 
   switch (sym->common.symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
