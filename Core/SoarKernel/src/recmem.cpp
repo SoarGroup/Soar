@@ -381,9 +381,11 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 }
 
 preference *execute_action(agent* thisAgent, action *a,
-		struct token_struct *tok, wme *w) {
+		struct token_struct *tok, wme *w, rhs_value original_attr, rhs_value original_value) {
 	Symbol *id, *attr, *value, *referent;
 	char first_letter;
+
+  // Debug| May need to handle rhs functions here too
 
 	if (a->type == FUNCALL_ACTION) {
 		value = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
@@ -409,6 +411,8 @@ preference *execute_action(agent* thisAgent, action *a,
 	attr = instantiate_rhs_value(thisAgent, a->attr, id->id.level, 'a', tok, w);
 	if (!attr)
 		goto abort_execute_action;
+  if (rhs_value_is_symbol(original_attr))
+    attr->common.original_var_symbol = rhs_value_to_symbol(original_attr);
 
 	first_letter = first_letter_from_symbol(attr);
 
@@ -417,7 +421,11 @@ preference *execute_action(agent* thisAgent, action *a,
 	if (!value)
 		goto abort_execute_action;
 
-	if (preference_is_binary(a->preference_type)) {
+  if (rhs_value_is_symbol(original_value))
+    value = rhs_value_to_symbol(original_value);
+
+  // Debug| I don't think we need to store original vars for referents bc they should always be operator IDs
+  if (preference_is_binary(a->preference_type)) {
 		referent = instantiate_rhs_value(thisAgent, a->referent, id->id.level,
 				first_letter, tok, w);
 		if (!referent)
@@ -648,7 +656,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	instantiation *inst;
 	condition *cond;
 	preference *pref;
-	action *a, *rhs_vars;
+	action *a, *a2, *rhs_vars;
 	cons *c;
 	Bool need_to_do_support_calculations;
 	Bool trace_it;
@@ -742,10 +750,12 @@ void create_instantiation(agent* thisAgent, production *prod,
 	/* --- execute the RHS actions, collect the results --- */
 	inst->preferences_generated = NIL;
 	need_to_do_support_calculations = FALSE;
-	for (a = prod->action_list; a != NIL; a = a->next) {
-
+	for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next) {
+	  //Debug| Remove this
+	  if ((a && !a2) || (!a && a2))
+	    assert(false);
 		if (prod->type != TEMPLATE_PRODUCTION_TYPE) {
-			pref = execute_action(thisAgent, a, tok, w);
+			pref = execute_action(thisAgent, a, tok, w, a2->attr, a2->value);
 		} else {
 			pref = NIL;
 			/*Symbol *result = */rl_build_template_instantiation(thisAgent,
@@ -806,6 +816,8 @@ void create_instantiation(agent* thisAgent, production *prod,
 			}
 		}
 	}
+
+	deallocate_action_list (thisAgent, rhs_vars);
 
 	/* --- reset rhs_variable_bindings array to all zeros --- */
 	index = 0;
