@@ -2814,6 +2814,8 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
   condition *cond;
   list *vars;
 
+  // MEC: Need to find somewhere to initialize unique var table
+
   vars = NIL;
 
   for (cond=cond_list; cond!=NIL; cond=cond->next) {
@@ -2843,6 +2845,8 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
 
   /* --- Pop the variable bindings for these conditions --- */
   pop_bindings_and_deallocate_list_of_variables (thisAgent, vars);
+
+  // MEC: Update unique var name table with this productions new vars
 
   return parent_nvn;
 }
@@ -4010,6 +4014,7 @@ void add_rete_test_list_to_tests (agent* thisAgent,
   test New;
   TestType test_type;
 
+  // Initialize table
   for ( ; rt!=NIL; rt=rt->next) {
 
     if (rt->type==ID_IS_GOAL_RETE_TEST) {
@@ -4061,6 +4066,7 @@ void add_rete_test_list_to_tests (agent* thisAgent,
       add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), New);
   }
 }
+
 /* ----------------------------------------------------------------------
                           Add Varnames to Test
 

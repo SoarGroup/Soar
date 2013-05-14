@@ -259,6 +259,7 @@ typedef struct agent_struct {
   int                 current_char; /* holds current input character */
   struct lexeme_info  lexeme;       /* holds current lexeme */
   Bool                print_prompt_flag;
+  Symbol            * current_production_name;
 
   /* ---------------- Predefined Symbols -------------------------
      Certain symbols are used so frequently that we create them at

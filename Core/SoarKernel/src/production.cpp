@@ -368,6 +368,10 @@ void add_new_test_to_test (agent* thisAgent,
 
   if (test_is_blank(add_me)) return;
 
+  // Check if original variable name is unique.  If not, change it before adding.
+  // Must be able to get name of instantiation (not production bc the productions
+  // could come from two different firings)
+
   if (test_is_blank(*t)) {
     *t = add_me;
     return;
@@ -391,7 +395,7 @@ void add_new_test_to_test (agent* thisAgent,
     }
     *t = ct;
   }
-
+  // Debug| remove
   if (add_me->type==CONJUNCTIVE_TEST) {
   assert(false);
   }
@@ -1607,7 +1611,7 @@ void reset_variable_generator (agent* thisAgent,
   free_list (thisAgent, var_list);
 }
 
-Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
+Symbol *generate_new_variable (agent* thisAgent, const char *prefix, bool force_unique) {
 #define GENERATE_NEW_VARIABLE_BUFFER_SIZE 200 /* that ought to be long enough! */
   char name[GENERATE_NEW_VARIABLE_BUFFER_SIZE];
   Symbol *New;
@@ -1625,7 +1629,7 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
              static_cast<long unsigned int>(thisAgent->gensymed_variable_count[first_letter-'a']++));
 	name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
 
-    New = make_variable (thisAgent, name);
+    New = make_variable (thisAgent, name, force_unique);
     if (New->var.gensym_number != thisAgent->current_variable_gensym_number) break;
     symbol_remove_ref (thisAgent, New);
   }

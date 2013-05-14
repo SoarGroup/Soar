@@ -176,6 +176,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   strcpy(newAgent->chunk_name_prefix,"chunk");	/* ajc (5/14/02) */
   newAgent->context_slots_with_changed_acceptable_preferences = NIL;
   newAgent->current_file                       = NIL;
+  newAgent->current_production_name            = NIL;
   newAgent->current_phase                      = INPUT_PHASE;
   newAgent->applyPhase                         = FALSE;
   newAgent->current_symbol_hash_id             = 0;

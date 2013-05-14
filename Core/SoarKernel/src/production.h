@@ -345,7 +345,7 @@ extern Bool action_is_in_tc (action *a, tc_number tc);
 extern void reset_variable_generator (agent* thisAgent, 
 									  condition *conds_with_vars_to_avoid,
                                       action *actions_with_vars_to_avoid);
-extern Symbol *generate_new_variable (agent* thisAgent, const char *prefix);
+extern Symbol *generate_new_variable (agent* thisAgent, const char *prefix, bool force_unique=false);
 
 /* -------------------------------------------------------------------
                          Production Management

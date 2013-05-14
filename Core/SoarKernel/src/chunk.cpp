@@ -273,10 +273,15 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
     if (symbol_is_identifier(*sym) || ((*sym)->common.original_var_symbol == NIL))
       var_ref_symbol = (*sym);
     else
+    {
+      print(thisAgent, "Debug| Using variable stored in original symbol %s instead of main symbol %s!\n",
+          symbol_to_string(thisAgent, *sym, FALSE, NIL, NIL),
+          symbol_to_string(thisAgent, (*sym)->common.original_var_symbol, FALSE, NIL, NIL));
       var_ref_symbol = (*sym)->common.original_var_symbol;
-
+    }
     if (var_ref_symbol->common.tc_num == thisAgent->variablization_tc) {
       /* --- it's already been variablized, so use the existing variable --- */
+      print(thisAgent, "Debug| Found existing variablization %s.\n", symbol_to_string(thisAgent, var_ref_symbol->common.variablized_symbol, FALSE, NIL, NIL));
       var = var_ref_symbol->common.variablized_symbol;
       var->common.unvariablized_symbol = *sym;
       //symbol_remove_ref (thisAgent, *sym);
@@ -294,10 +299,11 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
     else
       prefix[0] = 'c';
     prefix[1] = 0;
-    var = generate_new_variable (thisAgent, prefix);
+    var = generate_new_variable (thisAgent, prefix, true);
     (*sym)->common.variablized_symbol = var;
     var_ref_symbol->common.variablized_symbol = var;
     var->common.unvariablized_symbol = *sym;
+    print(thisAgent, "Debug| Created new variablization %s.\n", symbol_to_string(thisAgent, var_ref_symbol->common.variablized_symbol, FALSE, NIL, NIL));
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
   }
@@ -1178,6 +1184,9 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
 	}
 
+  print(thisAgent, "\nDebug| Chunker setting current production name to %s.\n", prod_name->sc.name);
+  thisAgent->current_production_name = prod_name;
+
 	/* AGR 617/634 begin */
 	if (print_name)
 	{
@@ -1207,7 +1216,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 			xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
 		}
 
-		symbol_remove_ref(thisAgent, prod_name);
 		goto chunking_done;
 	}
 
@@ -1221,7 +1229,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		}
 		thisAgent->max_chunks_reached = TRUE;
 
-		symbol_remove_ref(thisAgent, prod_name);
 		goto chunking_done;
 	}
 
@@ -1268,7 +1275,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		}
 
 		deallocate_action_list (thisAgent, rhs);
-		symbol_remove_ref(thisAgent, prod_name);
 
 		// We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
 		thisAgent->stop_soar = TRUE;
@@ -1382,16 +1388,13 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	if (!thisAgent->max_chunks_reached)
 		chunk_instantiation (thisAgent, chunk_inst, dont_variablize, custom_inst_list);
 
-#ifndef NO_TIMING_STUFF
-#ifdef DETAILED_TIMING_STATS
-	local_timer.stop();
-	thisAgent->timers_chunking_cpu_time[thisAgent->current_phase].update(local_timer);
-#endif
-#endif
-
-	  return;
+	goto chunking_done;
+	return;
 
 chunking_done: {}
+print(thisAgent, "\nDebug| Chunker unsetting current production name from %s.\n", prod_name->sc.name);
+thisAgent->current_production_name = NIL;
+symbol_remove_ref(thisAgent, prod_name);
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
 	local_timer.stop();

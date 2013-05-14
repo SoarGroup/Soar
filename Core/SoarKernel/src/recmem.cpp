@@ -422,7 +422,7 @@ preference *execute_action(agent* thisAgent, action *a,
 		goto abort_execute_action;
 
   if (rhs_value_is_symbol(original_value))
-    value = rhs_value_to_symbol(original_value);
+    value->common.original_var_symbol = rhs_value_to_symbol(original_value);
 
   // Debug| I don't think we need to store original vars for referents bc they should always be operator IDs
   if (preference_is_binary(a->preference_type)) {
