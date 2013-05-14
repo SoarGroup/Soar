@@ -9,8 +9,13 @@ SRC = jp('..', 'src')
 ALG = jp(SRC, 'algorithms')
 MDL = jp(SRC, 'models')
 
+if os.name == 'posix':
+	PLATFORM = jp(SRC, 'posix')
+else:
+	PLATFORM = jp(SRC, 'windows')
+
 env = Environment(
-	CPPPATH = os.environ.get('CPATH','').split(':') + [SRC, ALG, MDL, '../eigen' ],
+	CPPPATH = os.environ.get('CPATH','').split(':') + [SRC, ALG, MDL, PLATFORM, '../eigen' ],
 	#CPPFLAGS = ['-Og', '-g', '-Wno-enum-compare'],
 	CPPFLAGS = ['-g', '-Wno-enum-compare'],
 	LINKFLAGS = ['-g'],
@@ -32,7 +37,9 @@ def obj(names):
 		elif os.path.exists(jp(ALG, a)):
 			o.append(env.StaticObject(source = jp(ALG, a), target = jp(BUILD, 'alg', b)))
 		elif os.path.exists(jp(MDL, a)):
-			o.append(env.StaticObject(source = jp(MDL, a), target = jp(BUILD, 'alg', b)))
+			o.append(env.StaticObject(source = jp(MDL, a), target = jp(BUILD, 'mdl', b)))
+		elif os.path.exists(jp(PLATFORM, a)):
+			o.append(env.StaticObject(source = jp(PLATFORM, a), target = jp(BUILD, 'platform', b)))
 	
 	return o
 
@@ -40,7 +47,7 @@ def exe(name, objs):
 	p = env.Program(jp(OUT, name), obj(objs))
 	env.Default(p)
 
-common = ['common', 'mat', 'serialize', 'timer', 'cliproxy', 'relation' ]
+common = ['common', 'mat', 'serialize', 'timer', 'cliproxy', 'relation', 'platform_specific' ]
 
 run_lda          = common + ['lda', 'run_lda']
 run_foil         = common + ['foil', 'run_foil']

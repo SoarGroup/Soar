@@ -18,8 +18,8 @@
 #include "lda.h"
 #include "drawer.h"
 
-//#define DBGCOUNT(n) { static int count = 0; fprintf(stderr, "%s %d\n", n, count++); }
-#define DBGCOUNT(n)
+#define DBGCOUNT(n) { static int count = 0; fprintf(stderr, "%s %d\n", n, count++); }
+//#define DBGCOUNT(n)
 
 using namespace std;
 using namespace Eigen;
@@ -312,7 +312,7 @@ void ransac(const mat &X, const mat &Y, double noise_var, int size_thresh, int s
 		pick_rows(X, mss, Xmss);
 		pick_rows(Y, mss, Ymss);
 		static int dbgcount = 0;
-		cout << "RANSAC " << dbgcount++ << endl;
+		DBGCOUNT("RANSAC")
 		if (!linreg_d(FORWARD, Xmss, Ymss, dummy, noise_var, C, inter)) {
 			assert(false);
 		}

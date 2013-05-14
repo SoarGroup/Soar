@@ -84,7 +84,7 @@
 
 #define INTERSECT_THRESH 1.0e-15
 
-#define RANSAC_MAX_ITERS 2000
+#define RANSAC_MAX_ITERS 100
 #define RANSAC_ALARM_RATE  0.05
 
 #endif
