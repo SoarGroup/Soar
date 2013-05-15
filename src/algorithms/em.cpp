@@ -785,6 +785,10 @@ int EM::best_mode(int target, const scene_sig &sig, const rvec &x, double y, dou
 	return best;
 }
 
+void EM::proxy_use_sub(const vector<string> &args, ostream &os) {
+	print_modes(os);
+}
+
 void EM::proxy_get_children(map<string, cliproxy*> &c) {
 	proxy_group *mode_group = new proxy_group;
 	
@@ -911,27 +915,14 @@ void EM::print_ptable() const {
 	t.print(cout);
 }
 
-void EM::print_modes() const {
+void EM::print_modes(ostream &os) const {
+	table_printer t;
 	for (int i = 1, iend = modes.size(); i < iend; ++i) {
-		scene_sig sig;
-		rvec coefs;
-		double intercept;
-		table_printer t;
-		
-		modes[i]->get_params(sig, coefs, intercept);
-		for (int j = 0, jend = sig.size(), xi = 0; j < jend; ++j) {
-			t.add_row() << sig[j].name;
-			for (int k = 0, kend = sig[j].props.size(); k < kend; ++k, ++xi) {
-				if (coefs(xi) != 0.0) {
-					t.add_row() << sig[j].props[k] << coefs(xi);
-				}
-			}
-		}
-		t.add_row() << "intercept " << intercept;
-		
-		cout << "MODE " << i << endl;
-		t.print(cout);
+		string func;
+		modes[i]->get_function_string(func);
+		t.add_row() << i << func;
 	}
+	t.print(os);
 }
 
 void EM::get_mode_function_string(int m, string &s) const {

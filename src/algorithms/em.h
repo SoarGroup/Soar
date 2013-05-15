@@ -67,13 +67,14 @@ public:
 	
 	// for test_em.cpp
 	void print_ptable() const;
-	void print_modes() const;
+	void print_modes(std::ostream &os) const;
 	void set_noise_var(double v) { noise_var = v; }
 	
 	int num_modes() const { return modes.size(); }
 	
 	void get_mode_function_string(int m, std::string &s) const;
-	
+
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 private:
 	void estep();
 	bool mstep();

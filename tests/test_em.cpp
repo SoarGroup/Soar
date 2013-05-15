@@ -61,26 +61,42 @@ void read_tabular(ifstream &is, model_train_data &data) {
 	}
 }
 
+void error(const string &msg) {
+	cerr << msg << endl;
+	exit(1);
+}
+
 int main(int argc, char *argv[]) {
 	int i = 1;
 	bool serialized_input = false;
 	model_train_data data;
 	double noise_var = 1e-8;
+	string load_path, save_path;
 	
 	while (i < argc && argv[i][0] == '-') {
 		switch (argv[i][1]) {
-		case 's':
+		case 'i':
 			serialized_input = true;
 			break;
 		case 'n':
 			if (++i >= argc || !parse_double(argv[i], noise_var)) {
-				cerr << "invalid noise" << endl;
-				exit(1);
+				error("invalid noise");
 			}
 			break;
+		case 'l':
+			if (++i >= argc) {
+				error("specify load path");
+			}
+			load_path = argv[++i];
+			break;
+		case 's':
+			if (++i >= argc) {
+				error("specify save path");
+			}
+			save_path = argv[++i];
+			break;
 		default:
-			cerr << "unknown option " << argv[i] << endl;
-			exit(1);
+			error(string("unknown option ") + argv[i]);
 		}
 		++i;
 	}
@@ -92,8 +108,7 @@ int main(int argc, char *argv[]) {
 	
 	ifstream input(argv[i]);
 	if (!input) {
-		cerr << "can't open " << argv[i] << endl;
-		exit(1);
+		error(string("can't open ") + argv[i]);
 	}
 	
 	if (serialized_input) {
@@ -102,19 +117,33 @@ int main(int argc, char *argv[]) {
 		read_tabular(input, data);
 	}
 	
-	EM em(data, true, true, true); // use_em, use_unify, learn_new_modes
+	EM em(data);
+	if (!load_path.empty()) {
+		ifstream load_file(load_path.c_str());
+		if (!load_file) {
+			error(string("couldn't read ") + load_path);
+		}
+		em.unserialize(load_file);
+	}
+	
 	em.set_noise_var(noise_var);
 	for (int i = 0, iend = data.size(); i < iend; ++i) {
-		if (i % 100 == 0) {
-			cerr << "--> DATA " << i << endl;
-		}
 		em.add_data(i);
-		if (!em.run(1000)) {
+		if (!em.run(50)) {
 			cerr << "max iterations reached" << endl;
 		}
 	}
 	
 	em.print_ptable();
-	em.print_modes();
+	em.print_modes(cout);
+	
+	if (!save_path.empty()) {
+		ofstream save_file(save_path.c_str());
+		if (!save_file) {
+			error(string("couldn't write ") + save_path);
+		}
+		em.serialize(save_file);
+	}
+	
 	return 0;
 }
