@@ -18,8 +18,8 @@
 #include "lda.h"
 #include "drawer.h"
 
-#define DBGCOUNT(n) { static int count = 0; fprintf(stderr, "%s %d\n", n, count++); }
-//#define DBGCOUNT(n)
+//#define DBGCOUNT(n) { static int count = 0; fprintf(stderr, "%s %d\n", n, count++); }
+#define DBGCOUNT(n)
 
 using namespace std;
 using namespace Eigen;
@@ -256,8 +256,12 @@ int ransac_iters(int ninliers, int mss_size, int ndata) {
 	if (lq == 0) {
 		return RANSAC_MAX_ITERS;
 	}
-	int i1 = static_cast<int>(floor(log(RANSAC_ALARM_RATE) / lq) + 1);
-	return min(i1, RANSAC_MAX_ITERS);
+	double i1 = RANSAC_LOG_ALARM_RATE / lq + 1.0;  // don't cast here to avoid overflow
+	assert(i1 >= 0.0);
+	if (i1 > RANSAC_MAX_ITERS) {
+		return RANSAC_MAX_ITERS;
+	}
+	return static_cast<int>(floor(i1));
 }
 
 void ransac(const mat &X, const mat &Y, double noise_var, int size_thresh, int split,
@@ -946,8 +950,6 @@ void inst_info::mode_info::unserialize(istream &is) {
 }
 
 int EM::classify(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, vector<int> &obj_map) {
-	LOG(EMDBG) << "classification" << endl;
-
 	vector<int> votes, order;
 	clsfr.classify(target, sig, rels, x, votes);
 	
