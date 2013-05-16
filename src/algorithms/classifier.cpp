@@ -74,11 +74,7 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 }
 
 binary_classifier::binary_classifier()
-: const_vote(0), use_const(true), neg_nc(NULL), use_foil(true), use_pruning(true), nc_type(NC_SIGN)
-{}
-
-binary_classifier::binary_classifier(bool use_foil, bool use_pruning, int nc_type)
-: const_vote(0), use_const(true), neg_nc(NULL), use_foil(use_foil), use_pruning(use_pruning), nc_type(nc_type)
+: const_vote(0), neg_nc(NULL)
 {}
 
 binary_classifier::~binary_classifier() {
@@ -88,19 +84,19 @@ binary_classifier::~binary_classifier() {
 }
 
 void binary_classifier::serialize(ostream &os) const {
-	serializer(os) << const_vote << use_const << clauses 
+	serializer(os) << const_vote << clauses 
 	               << false_negatives << true_negatives
 	               << neg_nc;
 }
 
 void binary_classifier::unserialize(istream &is) {
-	unserializer(is) >> const_vote >> use_const >> clauses 
+	unserializer(is) >> const_vote >> clauses 
 	                 >> false_negatives >> true_negatives
 	                 >> neg_nc;
 }
 
 void binary_classifier::inspect(ostream &os) const {
-	if (use_const) {
+	if (clauses.empty() && !neg_nc) {
 		os << "Constant Vote: " << const_vote << endl;
 		return;
 	}
@@ -116,7 +112,7 @@ void binary_classifier::inspect(ostream &os) const {
 }
 
 void binary_classifier::inspect_detailed(ostream &os) const {
-	if (use_const) {
+	if (clauses.empty() && !neg_nc) {
 		os << "Constant Vote: " << const_vote << endl;
 		return;
 	}
@@ -166,7 +162,7 @@ void binary_classifier::inspect_detailed(ostream &os) const {
 int binary_classifier::vote(int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const {
 	function_timer t(timers.get_or_add("vote"));
 	
-	if (use_const || (!use_foil && nc_type == NC_NONE)) {
+	if (clauses.empty() && !neg_nc) {
 		LOG(EMDBG) << "Constant vote for " << const_vote << endl;
 		return const_vote;
 	}
@@ -186,7 +182,7 @@ int binary_classifier::vote(int target, const scene_sig &sig, const relation_tab
 					assert(vi->second.size() == 1);
 					LOG(EMDBG) << vi->first << " = " << *vi->second.begin() << endl;
 				}
-				if (nc_type != NC_NONE && nc) {
+				if (nc) {
 					int result = nc->classify(x);
 					LOG(EMDBG) << "NC votes for " << result << endl;
 					if (result == 0) {
@@ -200,7 +196,7 @@ int binary_classifier::vote(int target, const scene_sig &sig, const relation_tab
 		}
 	}
 	// no matched clause, FOIL thinks this is a negative
-	if (nc_type != NC_NONE && neg_nc) {
+	if (neg_nc) {
 		int result = 1 - neg_nc->classify(x);
 		LOG(EMDBG) << "No matched clauses, NC votes for " << result << endl;
 		return result;
@@ -210,7 +206,7 @@ int binary_classifier::vote(int target, const scene_sig &sig, const relation_tab
 	return 1;
 }
 
-void binary_classifier::update(const relation &mem_i, const relation &mem_j, const relation_table &rels, const model_train_data &data) {
+void binary_classifier::update(const relation &mem_i, const relation &mem_j, const relation_table &rels, const model_train_data &data, bool use_foil, bool prune, int nc_type) {
 	function_timer t(timers.get_or_add("update"));
 	
 	clauses.clear();
@@ -221,15 +217,13 @@ void binary_classifier::update(const relation &mem_i, const relation &mem_j, con
 	
 	const_vote = mem_i.size() > mem_j.size() ? 0 : 1;
 	if (mem_i.empty() || mem_j.empty()) {
-		use_const = true;
 		return;
 	}
 	
-	use_const = false;
 	if (use_foil) {
 		FOIL foil;
 		foil.set_problem(mem_i, mem_j, rels);
-		foil.learn(use_pruning, true);
+		foil.learn(prune, true);
 		clauses.resize(foil.num_clauses());
 		for (int k = 0, kend = foil.num_clauses(); k < kend; ++k) {
 			clauses[k].cl = foil.get_clause(k);
@@ -285,6 +279,10 @@ void clause_info::unserialize(istream &is) {
 classifier::classifier(const model_train_data &data) 
 : data(data), foil(true), prune(true), context(true), nc_type(NC_LDA)
 {
+	old_foil = foil;
+	old_prune = prune;
+	old_context = context;
+	old_nc_type = nc_type;
 }
 
 classifier::~classifier() {
@@ -329,7 +327,7 @@ void classifier::set_options(bool foil, bool prune, bool context, int nc_type) {
 void classifier::add_class() {
 	int c = classes.size();
 	for (int i = 0, iend = classes.size(); i < iend; ++i) {
-		binary_classifier *b = new binary_classifier(foil, prune, nc_type);
+		binary_classifier *b = new binary_classifier();
 		pairs.push_back(new pair_info(i, c, b));
 	}
 	classes.push_back(new class_info);
@@ -407,21 +405,32 @@ classifier::pair_info *classifier::find(int i, int j) {
 
 void classifier::update() {
 	list<pair_info*>::iterator i, iend;
+	bool options_changed = false;
+	
+	if (foil != old_foil || prune != old_prune || context != old_context || nc_type != old_nc_type) {
+		options_changed = true;
+		old_foil = foil; old_prune = prune; old_context = context; old_nc_type = nc_type;
+	}
+	
 	for (i = pairs.begin(), iend = pairs.end(); i != iend; ++i) {
 		pair_info *p = *i;
 		class_info *ci = classes[p->cls_i], *cj = classes[p->cls_j];
-		if (!ci->stale && !cj->stale) {
+		if (!options_changed && !ci->stale && !cj->stale) {
 			continue;
 		}
 		
 		binary_classifier &c = *p->clsfr;
 		if (context) {
-			c.update(ci->mem_rel, cj->mem_rel, data.get_context_rels(), data);
+			c.update(ci->mem_rel, cj->mem_rel, data.get_context_rels(), data, foil, prune, nc_type);
 		} else {
-			c.update(ci->mem_rel, cj->mem_rel, data.get_all_rels(), data);
+			c.update(ci->mem_rel, cj->mem_rel, data.get_all_rels(), data, foil, prune, nc_type);
 		}
 	}
 	
+	/*
+	 have to wait until all pairs have been examined before setting stale to false
+	 for each class
+	*/
 	for (int i = 0, iend = classes.size(); i < iend; ++i) {
 		classes[i]->stale = false;
 	}

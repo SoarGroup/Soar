@@ -27,11 +27,10 @@ public:
 class binary_classifier : public serializable, public cliproxy {
 public:
 	binary_classifier();
-	binary_classifier(bool use_foil, bool use_pruning, int nc_type);
 	~binary_classifier();
 
 	int vote(int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
-	void update(const relation &pos, const relation &neg, const relation_table &rels, const model_train_data &train_data);
+	void update(const relation &pos, const relation &neg, const relation_table &rels, const model_train_data &train_data, bool use_foil, bool prune, int nc_type);
 	
 	void inspect(std::ostream &os) const;
 	void inspect_detailed(std::ostream &os) const;
@@ -40,8 +39,6 @@ public:
 
 private:
 	int const_vote;
-	int nc_type;
-	bool use_const, use_foil, use_pruning;
 	std::vector<clause_info> clauses;
 	
 	relation false_negatives, true_negatives;
@@ -100,6 +97,11 @@ private:
 	
 	bool foil, prune, context;
 	int nc_type;
+	
+	// Option values since last classifier update.
+	// If they're different from the current values, force an update.
+	bool old_foil, old_prune, old_context;
+	int old_nc_type;
 
 	pair_info *find(int i, int j);
 	void update();
