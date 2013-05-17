@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* utilities.cpp */
@@ -18,17 +18,17 @@
 #include <time.h>
 
 bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
-	Symbol * * result_id) 
+	Symbol * * result_id)
 {
 	Symbol *id;
 	Symbol *g, *attr, *value;
 
 	get_lexeme_from_string(agnt, the_lexeme);
 
-	if (agnt->lexeme.type == IDENTIFIER_LEXEME) 
+	if (agnt->lexeme.type == IDENTIFIER_LEXEME)
 	{
 		id = find_identifier(agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number);
-		if (!id) 
+		if (!id)
 		{
 			return false;
 		}
@@ -39,7 +39,7 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 		}
 	}
 
-	if (agnt->lexeme.type==VARIABLE_LEXEME) 
+	if (agnt->lexeme.type==VARIABLE_LEXEME)
 	{
 		get_context_var_info (agnt, &g, &attr, &value);
 
@@ -48,7 +48,7 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 			return false;
 		}
 
-		if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) 
+		if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
 		{
 			return false;
 		}
@@ -85,7 +85,7 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 		else
 		{
 			agnt->lexeme.string[i] = *c;
-		} 
+		}
 	}
 
 	agnt->lexeme.string[i] = '\0'; /* Null terminate lexeme string */
@@ -96,7 +96,7 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 	{
 		agnt->lexeme.type = SYM_CONSTANT_LEXEME;
 	}
-	else 
+	else
 	{
 		determine_type_of_constituent_string(agnt);
 	}
@@ -104,7 +104,7 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 
 void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	Symbol **dest_attr_of_slot,
-	Symbol **dest_current_value) 
+	Symbol **dest_current_value)
 {
 	Symbol *v, *g;
 	int levels_up;
@@ -162,7 +162,7 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	}
 }
 
-Symbol *read_identifier_or_context_variable (agent* agnt) 
+Symbol *read_identifier_or_context_variable (agent* agnt)
 {
 	Symbol *id;
 	Symbol *g, *attr, *value;
@@ -177,7 +177,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 		}
 		return id;
 	}
-	if (agnt->lexeme.type==VARIABLE_LEXEME) 
+	if (agnt->lexeme.type==VARIABLE_LEXEME)
 	{
 		get_context_var_info (agnt, &g, &attr, &value);
 		if (!attr) {
@@ -201,7 +201,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 	print (agnt, "Expected identifier (or context variable)\n");
 	print_location_of_most_recent_lexeme(agnt);
 	return NIL;
-}		
+}
 
 #ifdef REAL_TIME_BEHAVIOR
 * RMJ */
@@ -215,7 +215,7 @@ void init_real_time (agent* thisAgent) {
 }
 void test_for_input_delay (agent* thisAgent) {
   /* RMJ; For real-time behavior, don't start any new decision phase
-   * until the specified "artificial" time step has passed 
+   * until the specified "artificial" time step has passed
    */
    start_timer (thisAgent, current_real_time);
    if (timercmp(current_real_time, thisAgent->real_time_tracker, <)) {
@@ -227,8 +227,8 @@ void test_for_input_delay (agent* thisAgent) {
       }
       break;
    }
-   /* Artificial time delay has passed.  
-    * Reset new delay and start the decision phase with input 
+   /* Artificial time delay has passed.
+    * Reset new delay and start the decision phase with input
 	*/
    thisAgent->real_time_tracker->tv_sec = current_real_time->tv_sec;
    thisAgent->real_time_tracker->tv_usec =
@@ -334,7 +334,7 @@ double get_number_from_symbol( Symbol *sym )
 		return sym->fc.value;
 	else if ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
 		return static_cast<double>(sym->ic.value);
-	
+
 	return 0.0;
 }
 
@@ -367,7 +367,7 @@ void stats_init_db( agent *my_agent )
 }
 
 
-void stats_db_store(agent* my_agent, const uint64_t& dc_time, const uint64_t& dc_wm_changes, const uint64_t& dc_firing_counts) 
+void stats_db_store(agent* my_agent, const uint64_t& dc_time, const uint64_t& dc_wm_changes, const uint64_t& dc_firing_counts)
 {
 	if ( my_agent->stats_db->get_status() == soar_module::disconnected )
 	{
@@ -458,4 +458,100 @@ uint64_t get_derived_kernel_time_usec(agent* thisAgent) {
     return 0;
 #endif
 }
+
+uint32_t hash_unique_string (void *item, short num_bits) {
+  unique_string *var;
+  var = static_cast<unique_string *>(item);
+  return compress (hash_string(var->name->c_str()),num_bits);
+}
+
+void string_hash_table::make_varsym_unique(Symbol **original_varsym)
+{
+  uint32_t hash_value;
+  unique_string *this_string, *new_string;
+
+  assert(thisAgent->newly_created_instantiations != NIL);
+  print(thisAgent, "Debug| make_varsym_unique called with original sym %s for instantiation %s.\n",
+      (*original_varsym)->var.name, thisAgent->newly_created_instantiations->prod->name->sc.name );
+
+  hash_value = hash_variable_raw_info ((*original_varsym)->var.name,ht->log2size);
+  this_string = reinterpret_cast<unique_string *>(*(ht->buckets + hash_value));
+  for ( ; this_string != NIL; this_string = this_string->next_in_hash_table)
+  {
+    if (!strcmp(this_string->name->c_str(),(*original_varsym)->var.name))
+    { /* -- Found var name string -- */
+      if (this_string->current_instantiation == thisAgent->newly_created_instantiations)
+      {
+        /* -- We've already created and cached a unique version of this variable name
+         *    for this instantiation -- */
+        print(thisAgent, "Debug| make_varsym_unique found existing unique sym %s (%s) for this instantiation.\n", this_string->current_unique_var_symbol->var.name, (*original_varsym)->var.name);
+        *original_varsym = this_string->current_unique_var_symbol;
+        symbol_add_ref(this_string->current_unique_var_symbol);
+        return;
+      }
+      else
+      {
+        /* -- We've need to create and cache a new unique version of this string
+         *    for this instantiation -- */
+        std::string suffix, new_name = (*original_varsym)->var.name;
+        this_string->next_unique_suffix_number++;
+        new_string->current_instantiation = thisAgent->newly_created_instantiations;
+        to_string(this_string->next_unique_suffix_number, suffix);
+        new_name.erase(new_name.end()-1);
+        new_name += "+" + suffix + ">";
+        print(thisAgent, "Debug| make_varsym_unique creating new unique version of %s: %s\n", (*original_varsym)->var.name, new_name.c_str());
+        this_string->current_unique_var_symbol = make_variable(thisAgent, new_name.c_str(), false);
+        symbol_remove_ref(thisAgent, *original_varsym);
+        *original_varsym = this_string->current_unique_var_symbol;
+        return;
+      }
+    }
+  }
+
+  /* -- var name was not found in the hash table, so add to hash table and leave original_varsym untouched -- */
+
+  allocate_with_pool (thisAgent, &mp, &new_string);
+  new_string->current_instantiation = thisAgent->newly_created_instantiations;
+  new_string->current_unique_var_symbol = (*original_varsym);
+  new_string->name = new std::string((*original_varsym)->var.name);
+  new_string->next_in_hash_table = NIL;
+  new_string->next_unique_suffix_number = 1;
+  add_to_hash_table (thisAgent, ht, new_string);
+
+  print(thisAgent, "Debug| make_varsym_unique generated a var for the first time: %s\n", (*original_varsym)->var.name);
+}
+
+void string_hash_table::clear_table()
+{
+  free_memory(thisAgent, ht->buckets, HASH_TABLE_MEM_USAGE);
+  free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
+}
+
+void string_hash_table::create_table()
+{
+  ht = make_hash_table (thisAgent, 0, hash_unique_string);
+  init_memory_pool (thisAgent, &mp, sizeof(unique_string), "unique_string");
+}
+
+void string_hash_table::reinit_table()
+{
+  if (ht)
+    clear_table();
+  create_table();
+}
+
+string_hash_table::string_hash_table(agent *myAgent)
+{
+  thisAgent = myAgent;
+  create_table();
+}
+
+string_hash_table::~string_hash_table()
+{
+  clear_table();
+}
+
+
+
+
 

@@ -37,6 +37,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#include "utilities.h"
 #include "debug.h"
 
 #include <string>
@@ -260,6 +261,8 @@ typedef struct agent_struct {
   struct lexeme_info  lexeme;       /* holds current lexeme */
   Bool                print_prompt_flag;
   Symbol            * current_production_name;
+
+  string_hash_table * varname_table;
 
   /* ---------------- Predefined Symbols -------------------------
      Certain symbols are used so frequently that we create them at

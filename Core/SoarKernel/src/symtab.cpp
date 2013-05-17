@@ -257,7 +257,7 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
 
 Symbol *make_variable (agent* thisAgent, const char *name, bool force_unique_outside_production) {
   Symbol *sym;
-
+  force_unique_outside_production = false;
   if (force_unique_outside_production)
     print(thisAgent, "Debug| make_variable called with %s %i.\n", name, (int) force_unique_outside_production);
 

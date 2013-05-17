@@ -252,7 +252,7 @@ action *copy_action_list (agent* thisAgent, action *actions) {
 
 void variablize_symbol (agent* thisAgent, Symbol **sym) {
   char prefix[2];
-  Symbol *var, *var_ref_symbol;
+  Symbol *var;
 
   /* We don't need the following check for calls from variablize_test, but may need it for calls
    * from rhs and other places. Must check all places this is called from. */
@@ -270,19 +270,10 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
     //      }
     //
 
-    if (symbol_is_identifier(*sym) || ((*sym)->common.original_var_symbol == NIL))
-      var_ref_symbol = (*sym);
-    else
-    {
-      print(thisAgent, "Debug| Using variable stored in original symbol %s instead of main symbol %s!\n",
-          symbol_to_string(thisAgent, *sym, FALSE, NIL, NIL),
-          symbol_to_string(thisAgent, (*sym)->common.original_var_symbol, FALSE, NIL, NIL));
-      var_ref_symbol = (*sym)->common.original_var_symbol;
-    }
-    if (var_ref_symbol->common.tc_num == thisAgent->variablization_tc) {
+    if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
       /* --- it's already been variablized, so use the existing variable --- */
-      print(thisAgent, "Debug| Found existing variablization %s.\n", symbol_to_string(thisAgent, var_ref_symbol->common.variablized_symbol, FALSE, NIL, NIL));
-      var = var_ref_symbol->common.variablized_symbol;
+      print(thisAgent, "Debug| Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+      var = (*sym)->common.variablized_symbol;
       var->common.unvariablized_symbol = *sym;
       //symbol_remove_ref (thisAgent, *sym);
       *sym = var;
@@ -292,18 +283,17 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 
     /* --- need to create a new variable.  If constant is being variablized
      *     just used 'c' instead of first letter of id name --- */
-    var_ref_symbol->common.tc_num = thisAgent->variablization_tc;
     (*sym)->common.tc_num = thisAgent->variablization_tc;
     if(symbol_is_identifier(*sym))
       prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
     else
       prefix[0] = 'c';
     prefix[1] = 0;
-    var = generate_new_variable (thisAgent, prefix, true);
+    var = generate_new_variable (thisAgent, prefix, false);
     (*sym)->common.variablized_symbol = var;
-    var_ref_symbol->common.variablized_symbol = var;
     var->common.unvariablized_symbol = *sym;
-    print(thisAgent, "Debug| Created new variablization %s.\n", symbol_to_string(thisAgent, var_ref_symbol->common.variablized_symbol, FALSE, NIL, NIL));
+    print(thisAgent, "Debug| Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+    //Do not need to decrease refcount any more b/c we're caching it
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
   }
@@ -319,8 +309,6 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
 
   print(thisAgent, "Debug| Variablizing: ");
   print_test (thisAgent, *chunk_test);
-  print(thisAgent, "Debug| Original: ");
-  print_test (thisAgent, *original_test);
 
   if (test_is_blank(*chunk_test) || test_is_blank(*original_test))
   {
@@ -1130,7 +1118,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		tc_number tc_for_grounds;
 		tc_for_grounds = get_new_tc_number(thisAgent);
 		build_chunk_conds_for_grounds_and_add_negateds (thisAgent, &top_cc, &bottom_cc, tc_for_grounds, &reliable);
-		//nots = get_nots_for_instantiated_conditions (thisAgent, thisAgent->instantiations_with_nots, tc_for_grounds);
 	}
 
 	variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
@@ -1162,16 +1149,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	/* --- get symbol for name of new chunk or justification --- */
 	if (variablize)
 	{
-		/* kjh (B14) begin */
 		thisAgent->chunks_this_d_cycle++;
 		prod_name = generate_chunk_name_sym_constant(thisAgent, inst);
-		/* kjh (B14) end */
-
-		/*   old way of generating chunk names ...
-		prod_name = generate_new_sym_constant ("chunk-",&thisAgent->chunk_count);
-		thisAgent->chunks_this_d_cycle)++;
-		*/
-
 		prod_type = CHUNK_PRODUCTION_TYPE;
 		print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
 		print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
@@ -1187,7 +1166,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
   print(thisAgent, "\nDebug| Chunker setting current production name to %s.\n", prod_name->sc.name);
   thisAgent->current_production_name = prod_name;
 
-	/* AGR 617/634 begin */
 	if (print_name)
 	{
 		if (get_printer_output_column(thisAgent)!=1)
@@ -1200,7 +1178,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		xml_end_tag(thisAgent, kTagProduction);
 		xml_end_tag(thisAgent, kTagLearning);
 	}
-	/* AGR 617/634 end */
 
 	// Debug| Remove later MMA
 //	print_production(thisAgent, inst->prod, true);
@@ -1219,7 +1196,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		goto chunking_done;
 	}
 
-	/* MVP 6-8-94 */
 	if (thisAgent->chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) )
 	{
 		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])

@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* utilities.h */
@@ -16,14 +16,14 @@
 /*
 *	This procedure parses a string to determine if it is a
 *      lexeme for an identifier or context variable.
-* 
-*      Many interface routines take identifiers as arguments.  
-*      These ids can be given as normal ids, or as special variables 
-*      such as <s> for the current state, etc.  This routine reads 
-*      (without consuming it) an identifier or context variable, 
-*      and returns a pointer (Symbol *) to the id.  (In the case of 
-*      context variables, the instantiated variable is returned.  If 
-*      any error occurs (e.g., no such id, no instantiation of the 
+*
+*      Many interface routines take identifiers as arguments.
+*      These ids can be given as normal ids, or as special variables
+*      such as <s> for the current state, etc.  This routine reads
+*      (without consuming it) an identifier or context variable,
+*      and returns a pointer (Symbol *) to the id.  (In the case of
+*      context variables, the instantiated variable is returned.  If
+*      any error occurs (e.g., no such id, no instantiation of the
 *      variable), an error message is printed and NIL is returned.
 *
 * Results:
@@ -101,11 +101,47 @@ extern void stats_close( agent *my_agent );
 // Useful for converting enumerations to string
 #define stringify( name ) # name
 
-/* derived_kernel_time := Total of the time spent in the phases of the decision cycle, 
-excluding Input Function, Output function, and pre-defined callbacks. 
-This computed time should be roughly equal to total_kernel_time, 
+/* derived_kernel_time := Total of the time spent in the phases of the decision cycle,
+excluding Input Function, Output function, and pre-defined callbacks.
+This computed time should be roughly equal to total_kernel_time,
 as determined above. */
 uint64_t get_derived_kernel_time_usec(agent* thisAgent);
 
+typedef struct unique_string_struct {
+
+    /* --- string value that should not repeat across instantiations --- */
+    std::string *name;
+
+    /* --- pointer to next string that matches hash --- */
+    struct unique_string_struct *next_in_hash_table;
+
+    /* --- Cache the current unique version of the requested string
+     *     current_unique_string for current_instantiation. --- */
+    Symbol *current_unique_var_symbol;
+    instantiation *current_instantiation;
+
+    /* --- Counter to be used as a suffix for the next unique version
+     *     of a requested var name --- */
+    int64_t next_unique_suffix_number;
+
+} unique_string;
+
+class string_hash_table
+{
+  public:
+    void make_varsym_unique(Symbol **original_varsym);
+    void reinit_table();
+
+    string_hash_table(agent *thisAgent);
+    ~string_hash_table();
+
+  private:
+    void clear_table();
+    void create_table();
+
+    struct hash_table_struct *ht;
+    memory_pool mp;
+    agent* thisAgent;
+};
 
 #endif //UTILITIES_H

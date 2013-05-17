@@ -423,6 +423,11 @@ inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
 {
   (x)->common.reference_count--;
   uint64_t refCount = (x)->common.reference_count ;
+  if (((x)->common.symbol_type == VARIABLE_SYMBOL_TYPE) &&
+      (!(strcmp((x)->var.name, "<s1>"))))
+  {
+   // asm("int $3");
+  }
 #ifdef DEBUG_SYMBOL_REFCOUNTS
   char buf[64];
   OutputDebugString(symbol_to_string(thisAgent, x, FALSE, buf, 64));

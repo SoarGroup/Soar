@@ -4133,13 +4133,12 @@ void add_hash_info_to_original_id_test (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------------
-                     Add Constraints to Chunk Condition
+                 add_additional_tests_to_test_in_conditions
 
    This function gets passed the instantiated conditions for a production
-   being fired that will be turned into a chunk.  It adds all the original
-   tests in the given Rete test list (from the "other tests" at a Rete
-   node), and adds them to the equality test in the instantiation.
-   These tests will then also be variablized later.
+   being fired.  It adds all the original tests in the given Rete test list
+   (from the "other tests" at a Rete node), and adds them to the equality
+   test in the instantiation. These tests will then also be variablized later.
 
    "Right_wme" is the wme that matched the current condition
    "cond" is the currently-being-reconstructed condition.
@@ -4148,7 +4147,7 @@ void add_hash_info_to_original_id_test (agent* thisAgent,
 
 ---------------------------------------------------------------------- */
 
-void add_complex_tests_to_chunk_conditions ( agent      *thisAgent,
+void add_additional_tests_to_test_in_conditions ( agent      *thisAgent,
                          rete_node  *node,
                          wme        *right_wme,
                          condition  *cond,
@@ -4220,6 +4219,8 @@ void add_complex_tests_to_chunk_conditions ( agent      *thisAgent,
           referent = rt->data.constant_referent;
           chunk_test = make_test(thisAgent, referent, test_type);
           original_test = make_test (thisAgent, referent, test_type);
+          // Debug| Can't I just do this?
+          // original_test = chunk_test;
         }
         else if (test_is_variable_relational_test(rt->type))
         {
@@ -4277,6 +4278,10 @@ void add_complex_tests_to_chunk_conditions ( agent      *thisAgent,
               rt->data.variable_referent.levels_up);
 
           chunk_test = make_test(thisAgent, referent, test_type);
+          if (original_referent->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+          {
+            thisAgent->varname_table->make_varsym_unique(&original_referent);
+          }
           original_test = make_test (thisAgent, original_referent, test_type);
         }
         else
@@ -4397,7 +4402,7 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->type = NEGATIVE_CONDITION;
 
     if (w && (cond->type==POSITIVE_CONDITION)) {
-      /* --- make simple tests and collect nots --- */
+      /* --- make equality test for bound symbols.  then add additional tests  --- */
 
       cond->data.tests.id_test = make_test (thisAgent, w->id, EQUALITY_TEST);
       cond->data.tests.attr_test = make_test (thisAgent, w->attr, EQUALITY_TEST);
@@ -4408,7 +4413,7 @@ void rete_node_to_conditions (agent* thisAgent,
 
       if (produce_chunk_tests)
       {
-          add_complex_tests_to_chunk_conditions (thisAgent, node, w, cond, nvn);
+          add_additional_tests_to_test_in_conditions (thisAgent, node, w, cond, nvn);
       }
     } else {
       am = node->b.posneg.alpha_mem_;
