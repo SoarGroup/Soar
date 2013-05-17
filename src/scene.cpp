@@ -113,11 +113,23 @@ bool parse_verts(vector<string> &f, int &start, ptlist &verts, string &error) {
 	return true;
 }
 
-bool parse_inds(vector<string> &f, int &start, vector<int> &inds, string &error) {
-	int i;
-	while (start < f.size() && parse_int(f[start], i)) {
-		inds.push_back(i);
-		++start;
+bool parse_inds(vector<string> &f, int &start, ptlist &inds, string &error) {
+	int x;
+	vec3 v;
+	while (start < f.size()) {
+		if (start + 2 >= f.size()) {
+			error = "triangle indexes must be in groups of three";
+			return false;
+		}
+		for (int i = 0; i < 3; ++i) {
+			if (!parse_int(f[start], x)) {
+				error = "expecting integer";
+				return false;
+			}
+			v(i) = x;
+			++start;
+		}
+		inds.push_back(v);
 	}
 	return true;
 }
@@ -294,15 +306,68 @@ void scene::clear() {
 
 enum node_class { CONVEX_NODE, BALL_NODE, GROUP_NODE };
 
+bool parse_mods(vector<string> &f, int &start, string &mods, vector<ptlist> &vals, string &error) {
+	ptlist v;
+	char m;
+	while (start < f.size()) {
+		if (f[start].size() != 1) {
+			return true;
+		}
+		m = f[start][0];
+		v.clear();
+		switch (m) {
+			case 'p':
+			case 'r':
+			case 's':
+				v.push_back(vec3());
+				if (!parse_vec3(f, ++start, v[0], error)) {
+					return false;
+				}
+				break;
+			case 'v':
+				if (!parse_verts(f, ++start, v, error)) {
+					return false;
+				}
+				break;
+			case 'i':
+				if (!parse_inds(f, ++start, v, error)) {
+					return false;
+				}
+				break;
+			case 'b':
+				++start;
+				v.push_back(vec3());
+				if (start >= f.size() || !parse_double(f[start], v[0](0))) {
+					error = "expecting radius";
+					return false;
+				}
+				++start;
+				break;
+			default:
+				// end of modifiers
+				return true;
+		}
+		mods += m;
+		vals.push_back(v);
+	}
+	return true;
+}
+
 int scene::parse_add(vector<string> &f, string &error) {
+	int p;
 	sgnode *n = NULL;
 	group_node *par = NULL;
-	vec3 pos = vec3::Zero(), rot = vec3::Zero(), scale = vec3::Constant(1.0);
+	string name, type, mods;
+	vector<ptlist> vals;
+	ptlist vertices;
+	vector<int> indexes;
+	double radius;
+	bool is_convex, is_ball;
 
 	if (f.size() < 2) {
 		return f.size();
 	}
-	string name = f[0], type = f[1];
+	name = f[0], type = f[1];
 	if (get_node(name)) {
 		error = "node already exists";
 		return 0;
@@ -313,50 +378,70 @@ int scene::parse_add(vector<string> &f, string &error) {
 		return 1;
 	}
 	
-	int p = 3;
-	ptlist verts;
-	vector<int> indexes;
-	double radius;
-	node_class c = GROUP_NODE;
-	while (p < f.size()) {
-		if (f[p] == "v") {
-			if (!parse_verts(f, ++p, verts, error)) {
-				return p;
-			}
-			c = CONVEX_NODE;
-		} else if (f[p] == "i") {
-			if (!parse_inds(f, ++p, indexes, error)) {
-				return p;
-			}
-			c = CONVEX_NODE;
-		} else if (f[p] == "b") {
-			++p;
-			if (p >= f.size() || !parse_double(f[p], radius)) {
-				error = "invalid radius";
-				return p;
-			}
-			c = BALL_NODE;
-			++p;
-		} else if (!parse_transforms(f, p, pos, rot, scale, error)) {
-			return p;
+	p = 3;
+	if (!parse_mods(f, p, mods, vals, error)) {
+		return p;
+	}
+	assert(mods.size() == vals.size());
+	
+	/*
+	 Go through once to figure out what type of node this should be
+	*/
+	is_convex = false;
+	is_ball = false;
+	for (int i = 0, iend = mods.size(); i < iend; ++i) {
+		switch (mods[i]) {
+			case 'v':
+				vertices = vals[i];
+				is_convex = true;
+				break;
+			case 'i':
+				for (int j = 0, jend = vals[i].size(); j < jend; ++j) {
+					indexes.push_back(floor(vals[i][j](0)));
+					indexes.push_back(floor(vals[i][j](1)));
+					indexes.push_back(floor(vals[i][j](2)));
+				}
+				is_convex = true;
+				break;
+			case 'b':
+				radius = vals[i][0](0);
+				is_ball = true;
+				break;
+		}
+	}
+	if (is_convex && is_ball) {
+		error = "conflicting node type";
+		return 0; // don't know how to find a more accurate position
+	} else if (is_convex) {
+		if (vertices.size() == 3 && indexes.empty()) {
+			indexes.push_back(0);
+			indexes.push_back(1);
+			indexes.push_back(2);
+		}
+		if (indexes.empty()) {
+			error = "you must specify triangle indexes for convex nodes";
+			return 0;
+		}
+		n = new convex_node(name, type, vertices, indexes);
+	} else if (is_ball) {
+		n = new ball_node(name, type, radius);
+	} else {
+		n = new group_node(name, type);
+	}
+	
+	/*
+	 Go through again to apply transforms
+	*/
+	for (int i = 0, iend = mods.size(); i < iend; ++i) {
+		switch (mods[i]) {
+			case 'p':
+			case 'r':
+			case 's':
+				n->set_trans(mods[i], vals[i][0]);
+				break;
 		}
 	}
 	
-	switch (c) {
-		case GROUP_NODE:
-			n = new group_node(name, type);
-			break;
-		case CONVEX_NODE:
-			n = new convex_node(name, type, verts, indexes);
-			break;
-		case BALL_NODE:
-			n = new ball_node(name, type, radius);
-			break;
-		default:
-			assert(false);
-	}
-	
-	n->set_trans(pos, rot, scale);
 	par->attach_child(n);
 	return -1;
 }
@@ -376,7 +461,10 @@ int scene::parse_del(vector<string> &f, string &error) {
 int scene::parse_change(vector<string> &f, string &error) {
 	int p;
 	sgnode *n;
-	vec3 pos, rot, scale;
+	convex_node *cn;
+	ball_node *bn;
+	string mods;
+	vector<ptlist> vals;
 
 	if (f.size() < 1) {
 		error = "expecting node name";
@@ -386,14 +474,35 @@ int scene::parse_change(vector<string> &f, string &error) {
 		error = "node does not exist";
 		return 0;
 	}
-	n->get_trans(pos, rot, scale);
+	
 	p = 1;
-	while (p < f.size()) {
-		if (!parse_transforms(f, p, pos, rot, scale, error)) {
-			return p;
+	if (!parse_mods(f, p, mods, vals, error)) {
+		return p;
+	}
+	
+	for (int i = 0, iend = mods.size(); i < iend; ++i) {
+		switch (mods[i]) {
+			case 'p':
+			case 'r':
+			case 's':
+				n->set_trans(mods[i], vals[i][0]);
+				break;
+			case 'v':
+				cn = dynamic_cast<convex_node*>(n);
+				if (!cn) {
+					return 0; // maybe not as informative as it could be
+				}
+				cn->set_verts(vals[i]);
+				break;
+			case 'b':
+				bn = dynamic_cast<ball_node*>(n);
+				if (!bn) {
+					return 0;
+				}
+				bn->set_radius(vals[i][0](0));
+				break;
 		}
 	}
-	n->set_trans(pos, rot, scale);
 	return -1;
 }
 

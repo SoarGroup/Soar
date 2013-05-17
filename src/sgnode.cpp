@@ -361,6 +361,11 @@ void convex_node::set_transform_dirty_sub() {
 	dirty = true;
 }
 
+void convex_node::set_verts(const ptlist &v) {
+	verts = v;
+	dirty = true;
+}
+
 const ptlist &convex_node::get_world_verts() const {
 	if (dirty) {
 		world_verts.clear();
