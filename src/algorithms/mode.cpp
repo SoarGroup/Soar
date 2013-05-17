@@ -132,6 +132,12 @@ void em_mode::set_params(const scene_sig &dsig, int target, const mat &coefs, co
 			end += n;
 		}
 		lin_coefs.conservativeResize(end, 1);
+		
+		/*
+		 The assumption here is that all existing members share the same signature
+		*/
+		assert(omaps.size() == 1);
+		omaps[0].first = relevant_objs;
 	}
 	new_fit = true;
 }
