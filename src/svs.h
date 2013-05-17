@@ -93,7 +93,7 @@ private:
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_props(const std::vector<std::string> &args, std::ostream &os);
 	void cli_dist(const std::vector<std::string> &args, std::ostream &os) const;
-	void cli_cmd(const std::vector<std::string> &args, std::ostream &os);
+	void cli_sgel(const std::vector<std::string> &args, std::ostream &os);
 	void cli_out(const std::vector<std::string> &args, std::ostream &os);
 
 	svs            *svsp;

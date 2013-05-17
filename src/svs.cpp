@@ -284,6 +284,7 @@ void svs_state::proxy_get_children(map<string, cliproxy*> &c) {
 	c["relations"] =    new memfunc_proxy<svs_state>(this, &svs_state::cli_relations);
 	c["properties"] =   new memfunc_proxy<svs_state>(this, &svs_state::cli_props);
 	c["distance"] =     new memfunc_proxy<svs_state>(this, &svs_state::cli_dist);
+	c["sgel"] =         new memfunc_proxy<svs_state>(this, &svs_state::cli_sgel);
 	c["timers"] =       &timers;
 	c["mconfig"] =      mmdl;
 
@@ -368,39 +369,19 @@ void svs_state::cli_relations(const vector<string> &args, ostream &os) const {
 }
 
 void svs_state::cli_props(const vector<string> &args, ostream &os) {
-	if (args.empty()) {
-		rvec vals;
-		table_printer p;
-		
-		const scene_sig &sig = scn->get_signature();
-		scn->get_properties(vals);
-		int i = 0;
-		for (int j = 0, jend = sig.size(); j < jend; ++j) {
-			for (int k = 0, kend = sig[j].props.size(); k < kend; ++k) {
-				p.add_row() << sig[j].name + ':' + sig[j].props[k] << vals(i++);
-			}
-		}
-		p.print(os);
-		return;
-	}
-	
-	// want to set properties
 	rvec vals;
-	scn->get_properties(vals);
-	if (vals.size() != args.size()) {
-		os << "vector size mismatch (should be " << vals.size() << ")" << endl;
-		return;
-	}
+	table_printer p;
 	
-	for (int i = 0, iend = args.size(); i < iend; ++i) {
-		if (!parse_double(args[i], vals(i))) {
-			os << "invalid double: " << args[i] << endl;
-			return;
+	const scene_sig &sig = scn->get_signature();
+	scn->get_properties(vals);
+	int i = 0;
+	for (int j = 0, jend = sig.size(); j < jend; ++j) {
+		for (int k = 0, kend = sig[j].props.size(); k < kend; ++k) {
+			p.add_row() << sig[j].name + ':' + sig[j].props[k] << vals(i++);
 		}
 	}
-	if (!scn->set_properties(vals)) {
-		os << "something went wrong" << endl;
-	}
+	p.print(os);
+	return;
 }
 
 void svs_state::cli_dist(const vector<string> &args, ostream &os) const {
@@ -416,8 +397,12 @@ void svs_state::cli_dist(const vector<string> &args, ostream &os) const {
 	}
 }
 
-// change this to use proxies later
-void svs_state::cli_cmd(const vector<string> &args, ostream &os) {
+void svs_state::cli_sgel(const vector<string> &args, ostream &os) {
+	stringstream ss;
+	for (int i = 0, iend = args.size(); i < iend; ++i) {
+		ss << args[i] << " ";
+	}
+	scn->parse_sgel(ss.str());
 }
 
 // add ability to set it?

@@ -425,7 +425,7 @@ int scene::parse_property(vector<string> &f, string &error) {
 	return -1;
 }
 
-void scene::parse_sgel(const string &s) {
+bool scene::parse_sgel(const string &s) {
 	vector<string> lines, fields;
 	vector<string>::iterator i;
 	char cmd;
@@ -441,7 +441,7 @@ void scene::parse_sgel(const string &s) {
 			continue;
 		if (fields[0].size() != 1) {
 			cerr << "expecting a|d|c|p|t at beginning of line '" << *i << "'" << endl;
-			exit(1);
+			return false;
 		}
 		
 		cmd = fields[0][0];
@@ -463,14 +463,15 @@ void scene::parse_sgel(const string &s) {
 				break;
 			default:
 				cerr << "expecting a|d|c|p|t at beginning of line '" << *i << "'" << endl;
-				exit(1);
+				return false;
 		}
 		
 		if (errfield >= 0) {
 			cerr << "error in field " << errfield + 1 << " of line '" << *i << "': " << error << endl;
-			exit(1);
+			return false;
 		}
 	}
+	return true;
 }
 
 void scene::get_property_names(int i, vector<string> &names) const {
