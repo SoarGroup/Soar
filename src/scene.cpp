@@ -173,6 +173,7 @@ scene::scene(const string &name, bool draw)
 }
 
 scene::~scene() {
+	root->unlisten(this);
 	delete root;
 }
 
@@ -265,18 +266,16 @@ group_node *scene::get_group(const string &name) {
 }
 
 void scene::get_all_nodes(vector<sgnode*> &n) {
-	n.reserve(nodes.size() - 1);
-	node_table::const_iterator i, iend;
-	for (i = nodes.begin() + 1, iend = nodes.end(); i != iend; ++i) {
-		n.push_back(i->node);
+	n.resize(nodes.size());
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		n[i] = nodes[i].node;
 	}
 }
 
 void scene::get_all_nodes(vector<const sgnode*> &n) const {
-	n.reserve(nodes.size() - 1);
-	node_table::const_iterator i, iend;
-	for (i = nodes.begin() + 1, iend = nodes.end(); i != iend; ++i) {
-		n.push_back(i->node);
+	n.resize(nodes.size());
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		n[i] = nodes[i].node;
 	}
 }
 
@@ -714,14 +713,17 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	int i, iend;
 	for (i = 0, iend = nodes.size(); i < iend && nodes[i].node != n; ++i)
 		;
-	assert(i != iend);
+	assert(i != nodes.size());
+	if (i == 0) {
+		return;
+	}
 	
 	switch (t) {
 		case sgnode::DELETED:
 			nodes.erase(nodes.begin() + i);
 			
 			// update distance vectors for other nodes
-			for (int j = 0, jend = nodes.size(); j < jend; ++j) {
+			for (int j = 1, jend = nodes.size(); j < jend; ++j) {
 				node_info &info = nodes[j];
 				assert(info.dists.size() == nodes.size() + 1);
 				info.dists.erase(info.dists.begin() + i);
@@ -765,11 +767,15 @@ bool scene::intersects(const sgnode *a, const sgnode *b) const {
 }
 
 void scene::update_dists(int i) {
+	if (i == 0)
+		return;
+	
 	node_info &n1 = nodes[i];
 	
 	n1.dists.resize(nodes.size(), -1);
+	n1.dists[0] = 0.0;
 	n1.dists[i] = 0.0;
-	for (int j = 0, jend = nodes.size(); j < jend; ++j) {
+	for (int j = 1, jend = nodes.size(); j < jend; ++j) {
 		if (i == j)
 			continue;
 		

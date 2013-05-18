@@ -425,7 +425,7 @@ void svs_state::refresh_view() {
 	
 	d->delete_scene(name);
 	scn->get_all_nodes(nodes);
-	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
 		d->add(name, nodes[i]);
 	}
 }

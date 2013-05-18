@@ -57,6 +57,21 @@ public:
 		return true;
 	}
 	
+	void node_update(sgnode *n, sgnode::change_type t, int added) {
+		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
+			node_info &info = map_get(nodes, n);
+			std::list<const filter_params*>::const_iterator i;
+			for (i = info.params.begin(); i != info.params.end(); ++i) {
+				mark_stale(*i);
+			}
+			info.changed = true;
+			if (t == sgnode::DELETED) {
+				nodes.erase(n);
+			}
+		}
+	}
+
+private:
 	void add_entry(sgnode *n, const filter_params *params) {
 		map<sgnode*, node_info>::iterator i = nodes.find(n);
 		if (i == nodes.end()) {
@@ -78,21 +93,6 @@ public:
 		}
 	}
 	
-	void node_update(sgnode *n, sgnode::change_type t, int added) {
-		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
-			node_info &info = map_get(nodes, n);
-			std::list<const filter_params*>::const_iterator i;
-			for (i = info.params.begin(); i != info.params.end(); ++i) {
-				mark_stale(*i);
-			}
-			info.changed = true;
-			if (t == sgnode::DELETED) {
-				nodes.erase(n);
-			}
-		}
-	}
-
-private:
 	struct node_info {
 		std::list<const filter_params*> params;
 		bool changed;
@@ -117,17 +117,16 @@ public:
 	
 	bool update_outputs() {
 		vector<sgnode*> nodes;
-		vector<sgnode*>::iterator i;
 		
 		if (!first) {
 			return true;
 		}
 		
 		scn->get_all_nodes(nodes);
-		nodes.erase(nodes.begin()); // don't use world node
+		nodes[0]->listen(this);
 		
-		for (i = nodes.begin(); i != nodes.end(); ++i) {
-			add_node(*i);
+		for (int i=1, iend=nodes.size(); i < iend; ++i) { // don't add world node
+			add_node(nodes[i]);
 		}
 		first = false;
 		return true;
@@ -142,12 +141,20 @@ public:
 				add_node(g->get_child(added_child));
 				break;
 			case sgnode::DELETED:
-				remove_result(map_get(results, n));
-				results.erase(n);
+				if (map_get(outputs, n, r)) {
+					remove_output(r);
+					outputs.erase(n);
+				} else {
+					assert(n->get_name() == "world");
+				}
 				break;
 			case sgnode::TRANSFORM_CHANGED:
 			case sgnode::SHAPE_CHANGED:
-				change_result(map_get(results, n));
+				if (map_get(outputs, n, r)) {
+					change_output(r);
+				} else {
+					assert(n->get_name() == "world");
+				}
 				break;
 		}
 	}
