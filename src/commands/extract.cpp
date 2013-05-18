@@ -6,7 +6,7 @@
 
 using namespace std;
 
-class extract_command : public command, public filter_input_listener {
+class extract_command : public command, public filter_input::listener {
 public:
 	extract_command(svs_state *state, Symbol *root, bool once)
 	: command(state, root), root(root), state(state), fltr(NULL), res_root(NULL), first(true), once(once)

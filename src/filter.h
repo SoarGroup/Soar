@@ -354,14 +354,15 @@ typedef std::vector<std::pair<std::string, filter_val*> > filter_params;
  I'm assuming that this class owns the memory of the filters that are
  added to it.
 */
-class filter_input : public change_tracking_list<filter_params> {
+class filter_input {
 public:
 	struct param_info {
 		std::string name;
 		filter *in_fltr;
 	};
 	
-	typedef std::vector<param_info> input_table;
+	typedef std::vector<param_info>        input_table;
+	typedef ctlist_listener<filter_params> listener;
 	
 	virtual ~filter_input();
 	
@@ -369,12 +370,34 @@ public:
 	void add_param(std::string name, filter *f);
 
 	virtual void combine(const input_table &inputs) = 0;
+	
+	void add(filter_params *p)          { result.add(p);    }
+	void remove(const filter_params *p) { result.remove(p); }
+	void change(const filter_params *p) { result.change(p); }
+	void listen(listener *l)            { result.listen(l); }
+	void unlisten(listener *l)          { result.unlisten(l); }
+	
+	int  first_added() const            { return result.first_added(); }
+	int  num_current() const            { return result.num_current(); }
+	int  num_changed() const            { return result.num_changed(); }
+	int  num_removed() const            { return result.num_removed(); }
 
+	const filter_params *get_current(int i) const  { return result.get_current(i); }
+	const filter_params *get_changed(int i) const  { return result.get_changed(i); }
+	const filter_params *get_removed(int i) const  { return result.get_removed(i); }
+	
+	void clear();
+	void reset();
+	void clear_changes();
+	
 private:
+	virtual void reset_sub() {}
+	virtual void clear_sub() {}
+	
 	input_table input_info;
+	change_tracking_list<filter_params> result;
 };
 
-typedef ctlist_listener<filter_params> filter_input_listener;
 
 class null_filter_input : public filter_input {
 public:
@@ -391,6 +414,9 @@ public:
 	void combine(const input_table &inputs);
 
 private:
+	void reset_sub();
+	void clear_sub();
+	
 	std::map<filter_val*, filter_params*> val2params;
 };
 
@@ -404,6 +430,8 @@ public:
 private:
 	void gen_new_combinations(const input_table &inputs);
 	void erase_param_set(filter_params *s);
+	void reset_sub();
+	void clear_sub();
 	
 	typedef std::list<filter_params*> param_set_list;
 	typedef std::map<filter_val*, param_set_list > val2param_map;
@@ -436,11 +464,11 @@ public:
 	void change_output(filter_val *v);
 	bool update();
 	
-	filter_output *get_output()                       { return &output; }
-	const filter_input *get_input() const             { return input; }
-	void listen_for_input(filter_input_listener *l)   { input->listen(l); }
-	void unlisten_for_input(filter_input_listener *l) { input->unlisten(l); }
-	void mark_stale(const filter_params *s)           { input->change(s); }
+	filter_output *get_output()                        { return &output;     }
+	const filter_input *get_input() const              { return input;       }
+	void listen_for_input(filter_input::listener *l)   { input->listen(l);   }
+	void unlisten_for_input(filter_input::listener *l) { input->unlisten(l); }
+	void mark_stale(const filter_params *s)            { input->change(s);   }
 
 private:
 	virtual bool update_outputs() = 0;

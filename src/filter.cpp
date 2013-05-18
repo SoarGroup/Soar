@@ -15,6 +15,7 @@ filter_input::~filter_input() {
 bool filter_input::update() {
 	for (int i = 0, iend = input_info.size(); i < iend; ++i) {
 		if (!input_info[i].in_fltr->update()) {
+			clear();
 			return false;
 		}
 	}
@@ -33,6 +34,23 @@ void filter_input::add_param(string name, filter *in_fltr) {
 	i.name = name;
 	i.in_fltr = in_fltr;
 	input_info.push_back(i);
+}
+
+void filter_input::clear() {
+	result.clear();
+	clear_sub();
+	for (int i = 0, iend = input_info.size(); i < iend; ++i) {
+		input_info[i].in_fltr->get_output()->reset();
+	}
+}
+
+void filter_input::reset() {
+	result.reset();
+	reset_sub();
+}
+
+void filter_input::clear_changes() {
+	result.clear_changes();
 }
 
 void concat_filter_input::combine(const input_table &inputs) {
@@ -59,6 +77,14 @@ void concat_filter_input::combine(const input_table &inputs) {
 	}
 }
 
+void concat_filter_input::reset_sub() {
+	val2params.clear();
+}
+
+void concat_filter_input::clear_sub() {
+	val2params.clear();
+}
+
 void product_filter_input::combine(const input_table &inputs) {
 	for (int i = 0, iend = inputs.size(); i < iend; ++i) {
 		val2param_map::iterator k;
@@ -66,7 +92,8 @@ void product_filter_input::combine(const input_table &inputs) {
 		filter_output *o = inputs[i].in_fltr->get_output();
 		
 		for (int j = 0, jend = o->num_removed(); j < jend; ++j) {
-			k = val2params.find(o->get_removed(j));
+			filter_val *r = o->get_removed(j);
+			k = val2params.find(r);
 			assert(k != val2params.end());
 			param_set_list temp = k->second;
 			for (l = temp.begin(); l != temp.end(); ++l) {
@@ -83,6 +110,14 @@ void product_filter_input::combine(const input_table &inputs) {
 		}
 	}
 	gen_new_combinations(inputs);
+}
+
+void product_filter_input::reset_sub() {
+	val2params.clear();
+}
+
+void product_filter_input::clear_sub() {
+	val2params.clear();
 }
 
 /*
@@ -147,10 +182,6 @@ void product_filter_input::erase_param_set(filter_params *s) {
 	}
 }
 
-map_filter::map_filter(Symbol *root, soar_interface *si, filter_input *input)
-: filter(root, si, input)
-{}
-
 filter::filter(Symbol *root, soar_interface *si, filter_input *in) 
 : root(root), si(si), status_wme(NULL), input(in)
 {
@@ -203,19 +234,24 @@ bool filter::update() {
 	if (!input->update()) {
 		set_status("Errors in input");
 		output.clear();
-		input->reset();
+		output2params.clear();
 		return false;
 	}
 	
 	if (!update_outputs()) {
 		output.clear();
 		input->reset();
+		output2params.clear();
 		return false;
 	}
 	set_status("success");
 	input->clear_changes();
 	return true;
 }
+
+map_filter::map_filter(Symbol *root, soar_interface *si, filter_input *input)
+: filter(root, si, input)
+{}
 
 bool map_filter::update_outputs() {
 	const filter_input* input = get_input();
