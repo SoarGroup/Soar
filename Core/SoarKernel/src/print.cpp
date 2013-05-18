@@ -419,7 +419,10 @@ void print_test (agent* thisAgent, test t, const char *indent_string) {
             print(thisAgent, " | ");
             print_test (thisAgent,t->original_test, indent_string);
           }
-          print(thisAgent, "\n");
+          else
+          {
+            print(thisAgent, " ->|\n");
+          }
       break;
   }
 }

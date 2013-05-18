@@ -75,7 +75,7 @@ Symbol *make_placeholder_var(agent* thisAgent, char first_letter) {
   SNPRINTF (buf, sizeof(buf)-1, "<#%c*%lu>", first_letter, static_cast<long unsigned int>(thisAgent->placeholder_counter[i]++));
   buf[sizeof(buf)-1] = '\0';
 
-  v = make_variable(thisAgent, buf, true);
+  v = make_variable(thisAgent, buf);
   /* --- indicate that there is no corresponding "real" variable yet --- */
   v->var.current_binding_value = NIL;
 
@@ -126,7 +126,7 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
     prefix[0] = *((*sym)->var.name + 2);
     prefix[1] = '*';
     prefix[2] = 0;
-    (*sym)->var.current_binding_value = generate_new_variable (thisAgent, prefix, true);
+    (*sym)->var.current_binding_value = generate_new_variable (thisAgent, prefix);
     just_created = TRUE;
   }
 
@@ -252,7 +252,7 @@ const char *help_on_lhs_grammar[] = {
 Symbol *make_symbol_for_current_lexeme (agent* thisAgent, bool allow_lti) {
   switch (thisAgent->lexeme.type) {
   case SYM_CONSTANT_LEXEME:  return make_sym_constant (thisAgent, thisAgent->lexeme.string);
-  case VARIABLE_LEXEME:  return make_variable (thisAgent, thisAgent->lexeme.string, true);
+  case VARIABLE_LEXEME:  return make_variable (thisAgent, thisAgent->lexeme.string);
   case INT_CONSTANT_LEXEME:  return make_int_constant (thisAgent, thisAgent->lexeme.int_val);
   case FLOAT_CONSTANT_LEXEME:  return make_float_constant (thisAgent, thisAgent->lexeme.float_val);
 
@@ -1727,7 +1727,7 @@ action *parse_rhs_action (agent* thisAgent) {
 	  }
 	}
 	else {
-		var = make_variable (thisAgent, thisAgent->lexeme.string, true);
+		var = make_variable (thisAgent, thisAgent->lexeme.string);
 	}
 
 	get_lexeme(thisAgent);
@@ -1867,9 +1867,6 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     excise_production (thisAgent, name->sc.production, (TRUE && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
   }
 
-  print(thisAgent, "\nDebug| Parser setting current production name to %s.\n", name->sc.name);
-  thisAgent->current_production_name = name;
-
   /* --- read optional documentation string --- */
   if (thisAgent->lexeme.type==QUOTED_STRING_LEXEME) {
     documentation = make_memory_block_for_string (thisAgent, thisAgent->lexeme.string);
@@ -1918,7 +1915,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   } /* end of while (TRUE) */
 
   /* --- read the LHS --- */
-  print(thisAgent, "Debug| Parsing LHS\n");
+  print_trace(thisAgent, TRACE_PARSER, "Debug| Parsing LHS\n");
   lhs = parse_lhs(thisAgent);
   if (! lhs) {
     print_with_symbols (thisAgent, "(Ignoring production %y)\n\n", name);
@@ -1944,7 +1941,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   get_lexeme(thisAgent);
 
   /* --- read the RHS --- */
-  print(thisAgent, "Debug| Parsing RHS\n");
+  print_trace(thisAgent, TRACE_PARSER, "Debug| Parsing RHS\n");
   rhs_okay = parse_rhs (thisAgent, &rhs);
   if (!rhs_okay) {
     print_with_symbols (thisAgent, "(Ignoring production %y)\n\n", name);
@@ -1980,7 +1977,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   /* --- everything parsed okay, so make the production structure --- */
   lhs_top = lhs;
   for (lhs_bottom=lhs; lhs_bottom->next!=NIL; lhs_bottom=lhs_bottom->next);
-  print(thisAgent, "Debug| Parse OK.  Making production.\n");
+  print_trace(thisAgent, TRACE_PARSER, "Debug| Parse OK.  Making production.\n");
   p = make_production (thisAgent, prod_type, name, &lhs_top, &lhs_bottom, &rhs, TRUE);
 
   if (!p) {
@@ -2019,9 +2016,6 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   {
 	  rl_rule_meta( thisAgent, p );
   }
-
-  print(thisAgent, "Debug| Unsetting current production name from %s.\n", thisAgent->current_production_name->sc.name);
-  thisAgent->current_production_name = NIL;
 
   return p;
 }

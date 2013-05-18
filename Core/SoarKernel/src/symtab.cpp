@@ -255,69 +255,107 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
   return NIL;
 }
 
-Symbol *make_variable (agent* thisAgent, const char *name, bool force_unique_outside_production) {
+//Symbol *make_variable (agent* thisAgent, const char *name, bool force_unique_outside_production) {
+//  Symbol *sym;
+//  force_unique_outside_production = false;
+//  if (force_unique_outside_production)
+//    print(thisAgent, "Debug| make_variable called with %s %i.\n", name, (int) force_unique_outside_production);
+//
+//  sym = find_variable(thisAgent, name);
+//  if (sym) {
+//    if (force_unique_outside_production)
+//    {
+//      std::string suffix, new_name = name;
+//      if (!(sym->var.orig_production_name))
+//      {
+//        if (force_unique_outside_production)
+//        print(thisAgent, "Debug| make_variable (unique) found sym with no matching production.  Adding ref count to existing symbol %s.\n", sym->var.name);
+//        symbol_add_ref(sym);
+//        sym->var.orig_production_name = thisAgent->current_production_name;
+//        symbol_add_ref(sym->var.orig_production_name);
+//        sym->var.current_unique_symbol = sym;
+//        symbol_add_ref(sym->var.current_unique_symbol);
+//        return sym;
+//      }
+//      else if (sym->var.orig_production_name != thisAgent->current_production_name)
+//      {
+//        sym->var.next_unique_suffix_number++;
+//        to_string(sym->var.next_unique_suffix_number, suffix);
+//        new_name.erase(new_name.end()-1);
+//        new_name += "+" + suffix + ">";
+//        if (force_unique_outside_production)
+//        print(thisAgent, "Debug| make_variable (unique) found existing sym %s.  New production. Creating unique sibling %s.\n", sym->var.name, new_name.c_str());
+//
+//        symbol_remove_ref(thisAgent, sym->var.orig_production_name);
+//        sym->var.orig_production_name = thisAgent->current_production_name;
+//        symbol_add_ref(sym->var.orig_production_name);
+//
+//        symbol_remove_ref(thisAgent, sym->var.current_unique_symbol);
+//        sym->var.current_unique_symbol = make_variable(thisAgent, new_name.c_str(), force_unique_outside_production);
+//        symbol_add_ref(sym->var.current_unique_symbol);
+//
+//        return sym->var.current_unique_symbol;
+//      }
+//      else
+//      {
+//        if (force_unique_outside_production)
+//        print(thisAgent, "Debug| make_variable (unique) found existing unique sibling for sym %s: %s.\n", sym->var.name, sym->var.current_unique_symbol->var.name);
+//        symbol_add_ref(sym->var.current_unique_symbol);
+//        return sym->var.current_unique_symbol;
+//      }
+//    }
+//    else
+//    {
+//      if (force_unique_outside_production)
+//      print(thisAgent, "Debug| make_variable found sym.  Adding ref count to existing symbol %s.\n", sym->var.name);
+//      symbol_add_ref(sym);
+//      return sym;
+//    }
+//  }
+//
+//  if (force_unique_outside_production)
+//  print(thisAgent, "Debug| make_variable found nothing.  Creating new sym with name %s.\n", name);
+//  allocate_with_pool (thisAgent, &thisAgent->variable_pool, &sym);
+//  sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
+//  sym->common.reference_count = 2;
+//  sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+//  sym->common.tc_num = 0;
+//  sym->common.variablized_symbol = NIL;
+//  sym->common.unvariablized_symbol = NIL;
+//  sym->common.original_var_symbol = NIL;
+//  sym->var.name = make_memory_block_for_string (thisAgent, name);
+//  sym->var.gensym_number = 0;
+//  sym->var.rete_binding_locations = NIL;
+//  sym->var.orig_production_name = thisAgent->current_production_name;
+//  sym->var.current_unique_symbol = sym;
+//  sym->var.next_unique_suffix_number = 1;
+//  add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
+//#ifdef DEBUG_SYMBOL_REFCOUNTS
+//  char buf[64];
+//  OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
+//  OutputDebugString(":+ \n");
+//#endif // DEBUG_SYMBOL_REFCOUNTS
+//
+//  return sym;
+//}
+
+Symbol *make_variable (agent* thisAgent, const char *name) {
   Symbol *sym;
-  force_unique_outside_production = false;
-  if (force_unique_outside_production)
-    print(thisAgent, "Debug| make_variable called with %s %i.\n", name, (int) force_unique_outside_production);
+
+//  print(thisAgent, "Debug| make_variable called with %s.\n", name);
 
   sym = find_variable(thisAgent, name);
   if (sym) {
-    if (force_unique_outside_production)
-    {
-      std::string suffix, new_name = name;
-      if (!(sym->var.orig_production_name))
-      {
-        if (force_unique_outside_production)
-        print(thisAgent, "Debug| make_variable (unique) found sym with no matching production.  Adding ref count to existing symbol %s.\n", sym->var.name);
-        symbol_add_ref(sym);
-        sym->var.orig_production_name = thisAgent->current_production_name;
-        symbol_add_ref(sym->var.orig_production_name);
-        sym->var.current_unique_symbol = sym;
-        symbol_add_ref(sym->var.current_unique_symbol);
-        return sym;
-      }
-      else if (sym->var.orig_production_name != thisAgent->current_production_name)
-      {
-        sym->var.next_unique_suffix_number++;
-        to_string(sym->var.next_unique_suffix_number, suffix);
-        new_name.erase(new_name.end()-1);
-        new_name += "+" + suffix + ">";
-        if (force_unique_outside_production)
-        print(thisAgent, "Debug| make_variable (unique) found existing sym %s.  New production. Creating unique sibling %s.\n", sym->var.name, new_name.c_str());
 
-        symbol_remove_ref(thisAgent, sym->var.orig_production_name);
-        sym->var.orig_production_name = thisAgent->current_production_name;
-        symbol_add_ref(sym->var.orig_production_name);
-
-        symbol_remove_ref(thisAgent, sym->var.current_unique_symbol);
-        sym->var.current_unique_symbol = make_variable(thisAgent, new_name.c_str(), force_unique_outside_production);
-        symbol_add_ref(sym->var.current_unique_symbol);
-
-        return sym->var.current_unique_symbol;
-      }
-      else
-      {
-        if (force_unique_outside_production)
-        print(thisAgent, "Debug| make_variable (unique) found existing unique sibling for sym %s: %s.\n", sym->var.name, sym->var.current_unique_symbol->var.name);
-        symbol_add_ref(sym->var.current_unique_symbol);
-        return sym->var.current_unique_symbol;
-      }
-    }
-    else
-    {
-      if (force_unique_outside_production)
-      print(thisAgent, "Debug| make_variable found sym.  Adding ref count to existing symbol %s.\n", sym->var.name);
+//      print(thisAgent, "Debug| make_variable found sym %s.  Adding ref count.\n", sym->var.name);
       symbol_add_ref(sym);
       return sym;
     }
-  }
 
-  if (force_unique_outside_production)
-  print(thisAgent, "Debug| make_variable found nothing.  Creating new sym with name %s.\n", name);
+//  print(thisAgent, "Debug| make_variable creating new sym %s.\n", name);
   allocate_with_pool (thisAgent, &thisAgent->variable_pool, &sym);
   sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
-  sym->common.reference_count = 2;
+  sym->common.reference_count = 1;
   sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
   sym->common.tc_num = 0;
   sym->common.variablized_symbol = NIL;
@@ -326,9 +364,6 @@ Symbol *make_variable (agent* thisAgent, const char *name, bool force_unique_out
   sym->var.name = make_memory_block_for_string (thisAgent, name);
   sym->var.gensym_number = 0;
   sym->var.rete_binding_locations = NIL;
-  sym->var.orig_production_name = thisAgent->current_production_name;
-  sym->var.current_unique_symbol = sym;
-  sym->var.next_unique_suffix_number = 1;
   add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS
   char buf[64];

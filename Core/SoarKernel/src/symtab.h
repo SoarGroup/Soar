@@ -211,14 +211,6 @@ typedef struct variable_struct {
   union symbol_union *current_binding_value;
   uint64_t gensym_number;
   ::list *rete_binding_locations;
-  /* -- orig_production_name is used by the parser to make sure that variable
-   *    names are unique across productions, a property needed by the chunker
-   *    next_unique_suffix_number is used to quickly generate a new name for
-   *    conflicting variable name. --- */
-  union symbol_union *orig_production_name;
-  union symbol_union *current_unique_symbol;
-  int64_t next_unique_suffix_number;
-
 } variable;
 
 /* Note: I arranged the fields below to try to minimize space */
@@ -375,7 +367,7 @@ extern Symbol *find_sym_constant (agent* thisAgent, const char *name);  /* AGR 6
 extern Symbol *find_int_constant (agent* thisAgent, int64_t value);
 extern Symbol *find_float_constant (agent* thisAgent, double value);
 
-extern Symbol *make_variable (agent* thisAgent, const char *name, bool force_unique_outside_production = false);
+extern Symbol *make_variable (agent* thisAgent, const char *name);
 extern Symbol *make_sym_constant (agent* thisAgent, char const *name);
 extern Symbol *make_int_constant (agent* thisAgent, int64_t value);
 extern Symbol *make_float_constant (agent* thisAgent, double value);

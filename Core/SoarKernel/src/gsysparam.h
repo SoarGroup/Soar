@@ -194,8 +194,10 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* MMA: Chunk over evaluation rules in subgoals */
 #define CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM	 46
 
+#define TRACE_PARSER 47
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  46
+#define HIGHEST_SYSPARAM_NUMBER                  47
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

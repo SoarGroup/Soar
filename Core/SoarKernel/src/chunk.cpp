@@ -289,7 +289,7 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
     else
       prefix[0] = 'c';
     prefix[1] = 0;
-    var = generate_new_variable (thisAgent, prefix, false);
+    var = generate_new_variable (thisAgent, prefix);
     (*sym)->common.variablized_symbol = var;
     var->common.unvariablized_symbol = *sym;
     print(thisAgent, "Debug| Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
@@ -1163,9 +1163,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
 	}
 
-  print(thisAgent, "\nDebug| Chunker setting current production name to %s.\n", prod_name->sc.name);
-  thisAgent->current_production_name = prod_name;
-
 	if (print_name)
 	{
 		if (get_printer_output_column(thisAgent)!=1)
@@ -1368,9 +1365,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	return;
 
 chunking_done: {}
-print(thisAgent, "\nDebug| Chunker unsetting current production name from %s.\n", prod_name->sc.name);
-thisAgent->current_production_name = NIL;
-symbol_remove_ref(thisAgent, prod_name);
+
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
 	local_timer.stop();
