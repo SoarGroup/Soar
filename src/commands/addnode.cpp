@@ -77,24 +77,23 @@ public:
 
 private:
 	bool proc_changes() {
-		filter_result *res;
-		
 		if (!node_filter->update()) {
 			set_status("error");
 			return false;
 		}
-		res = node_filter->get_result();
-		for (int i = res->first_added(); i < res->num_current(); ++i) {
-			if (!add_node(res->get_current(i))) {
+		
+		filter_output *out = node_filter->get_output();
+		for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i) {
+			if (!add_node(out->get_current(i))) {
 				return false;
 			}
 		}
-		for (int i = 0; i < res->num_removed(); ++i) {
-			if (!del_node(res->get_removed(i))) {
+		for (int i = 0, iend = out->num_removed(); i < iend; ++i) {
+			if (!del_node(out->get_removed(i))) {
 				return false;
 			}
 		}
-		res->clear_changes();
+		out->clear_changes();
 		return true;
 	}
 	
@@ -102,7 +101,7 @@ private:
 		sgnode *n;
 		stringstream ss;
 		if (!get_filter_val(v, n)) {
-			set_status("filter result must be a node");
+			set_status("filter output must be a node");
 			return false;
 		}
 		if (!scn->add_node(parent->get_name(), n)) {
@@ -117,7 +116,7 @@ private:
 		sgnode *n;
 		stringstream ss;
 		if (!get_filter_val(v, n)) {
-			set_status("filter result must be a node");
+			set_status("filter output must be a node");
 			return false;
 		}
 		if (!scn->del_node(n->get_name())) {

@@ -10,7 +10,7 @@ using namespace std;
 class property_command : public command {
 public:
 	property_command(svs_state *state, Symbol *root)
-	: command(state, root), root(root), val(NULL), res(NULL)
+	: command(state, root), root(root), val(NULL)
 	{
 		si = state->get_svs()->get_soar_interface();
 		scn = state->get_scene();
@@ -34,7 +34,6 @@ public:
 			if (!parse()) {
 				return false;
 			}
-			res = val->get_result();
 		}
 		
 		if (val) {
@@ -42,13 +41,14 @@ public:
 				set_status("filter error");
 				return false;
 			}
-			if (res->num_current() == 0) {
-				set_status("no results");
+			filter_output *out = val->get_output();
+			if (out->num_current() == 0) {
+				set_status("no outputs");
 				return false;
 			}
 			double v;
-			if (!get_filter_val(res->get_current(0), v)) {
-				set_status("result not of type float");
+			if (!get_filter_val(out->get_current(0), v)) {
+				set_status("output not of type float");
 				return false;
 			}
 
@@ -102,7 +102,6 @@ private:
 	scene          *scn;
 	soar_interface *si;
 	filter         *val;
-	filter_result  *res;
 	string          id;
 	string          prop;
 };

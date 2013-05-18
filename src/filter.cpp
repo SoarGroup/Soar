@@ -7,39 +7,37 @@
 using namespace std;
 
 void concat_filter_input::combine(const input_table &inputs) {
-	input_table::const_iterator i;
-	for (i = inputs.begin(); i != inputs.end(); ++i) {
+	for (int i = 0, iend = inputs.size(); i < iend; ++i) {
 		filter_params *p;
-		filter_result *r = i->res;
+		filter_output *o = inputs[i].in_fltr->get_output();
 
-		for (int j = r->first_added(); j < r->num_current(); ++j) {
+		for (int j = o->first_added(), jend = o->num_current(); j < jend; ++j) {
 			p = new filter_params();
-			p->push_back(make_pair(i->name, r->get_current(j)));
-			val2params[r->get_current(j)] = p;
+			p->push_back(make_pair(inputs[i].name, o->get_current(j)));
+			val2params[o->get_current(j)] = p;
 			add(p);
 		}
-		for (int j = 0; j < r->num_removed(); ++j) {
-			if (!map_pop(val2params, r->get_removed(j), p)) {
+		for (int j = 0, jend = o->num_removed(); j < jend; ++j) {
+			if (!map_pop(val2params, o->get_removed(j), p)) {
 				assert(false);
 			}
 			remove(p);
 		}
-		for (int j = 0; j < r->num_changed(); ++j) {
-			p = val2params[r->get_changed(j)];
+		for (int j = 0, jend = o->num_changed(); j < jend; ++j) {
+			p = val2params[o->get_changed(j)];
 			change(p);
 		}
 	}
 }
 
 void product_filter_input::combine(const input_table &inputs) {
-	input_table::const_iterator i;
-	for (i = inputs.begin(); i != inputs.end(); ++i) {
+	for (int i = 0, iend = inputs.size(); i < iend; ++i) {
 		val2param_map::iterator k;
 		param_set_list::iterator l;
-		filter_result *r = i->res;
+		filter_output *o = inputs[i].in_fltr->get_output();
 		
-		for (int j = 0; j < r->num_removed(); ++j) {
-			k = val2params.find(r->get_removed(j));
+		for (int j = 0, jend = o->num_removed(); j < jend; ++j) {
+			k = val2params.find(o->get_removed(j));
 			assert(k != val2params.end());
 			param_set_list temp = k->second;
 			for (l = temp.begin(); l != temp.end(); ++l) {
@@ -47,8 +45,8 @@ void product_filter_input::combine(const input_table &inputs) {
 				erase_param_set(*l);
 			}
 		}
-		for (int j = 0; j < r->num_changed(); ++j) {
-			k = val2params.find(r->get_changed(j));
+		for (int j = 0, jend = o->num_changed(); j < jend; ++j) {
+			k = val2params.find(o->get_changed(j));
 			assert(k != val2params.end());
 			for (l = k->second.begin(); l != k->second.end(); ++l) {
 				change(*l);
@@ -59,27 +57,28 @@ void product_filter_input::combine(const input_table &inputs) {
 }
 
 /*
- Generate all combinations of results that involve at least one new
- result.  Do this by iterating over the result lists.  For the i^th
- result list, take the cartesian product of the old results from lists
- 0..(i-1), the new results of list i, and both old and new results from
+ Generate all combinations of inputs that involve at least one new
+ input.  Do this by iterating over the input lists.  For the i^th
+ input list, take the cartesian product of the old inputs from lists
+ 0..(i-1), the new inputs of list i, and both old and new inputs from
  lists (i+1)..n.  This will avoid generating duplicates.  I'm assuming
- that new results are at the end of each result list.
+ that new inputs are at the end of each list.
 */
 void product_filter_input::gen_new_combinations(const input_table &inputs) {
-	for (int i = 0; i < inputs.size(); ++i) {
+	for (int i = 0, iend = inputs.size(); i < iend; ++i) {
 		vector<int> begin, end;
 		bool empty = false;
-		for (int j = 0; j < inputs.size(); ++j) {
+		for (int j = 0, jend = inputs.size(); j < jend; ++j) {
+			filter_output *o = inputs[j].in_fltr->get_output();
 			if (j < i) {
 				begin.push_back(0);
-				end.push_back(inputs[j].res->first_added()); // same as end of old results
+				end.push_back(o->first_added()); // same as end of old inputs
 			} else if (j == i) {
-				begin.push_back(inputs[j].res->first_added());
-				end.push_back(inputs[j].res->num_current());
+				begin.push_back(o->first_added());
+				end.push_back(o->num_current());
 			} else {
 				begin.push_back(0);
-				end.push_back(inputs[j].res->num_current());
+				end.push_back(o->num_current());
 			}
 			if (begin.back() == end.back()) {
 				empty = true;
@@ -93,18 +92,18 @@ void product_filter_input::gen_new_combinations(const input_table &inputs) {
 		while (true) {
 			filter_params *p = new filter_params();
 			p->reserve(inputs.size());
-			for (int j = 0; j < inputs.size(); ++j) {
-				filter_val *v = inputs[j].res->get_current(curr[j]);
+			for (int j = 0, jend = inputs.size(); j < jend; ++j) {
+				filter_val *v = inputs[j].in_fltr->get_output()->get_current(curr[j]);
 				p->push_back(make_pair(inputs[j].name, v));
 				val2params[v].push_back(p);
 			}
 			add(p);
 			
-			int i = 0;
-			for (; i < curr.size() && ++curr[i] == end[i]; ++i) {
-				curr[i] = begin[i];
+			int j, jend;
+			for (j = 0, jend = curr.size(); j < jend && ++curr[j] == end[j]; ++j) {
+				curr[j] = begin[j];
 			}
-			if (i == curr.size()) {
+			if (j == curr.size()) {
 				return;
 			}
 		}
@@ -120,33 +119,30 @@ void product_filter_input::erase_param_set(filter_params *s) {
 }
 
 filter_input::~filter_input() {
-	input_table::iterator i;
-	for (i = input_info.begin(); i != input_info.end(); ++i) {
-		delete i->f;
+	for (int i = 0, iend = input_info.size(); i < iend; ++i) {
+		delete input_info[i].in_fltr;
 	}
 }
 
 bool filter_input::update() {
-	input_table::iterator i;
-	for (i = input_info.begin(); i != input_info.end(); ++i) {
-		if (!i->f->update()) {
+	for (int i = 0, iend = input_info.size(); i < iend; ++i) {
+		if (!input_info[i].in_fltr->update()) {
 			return false;
 		}
 	}
 
 	combine(input_info);
 
-	for (i = input_info.begin(); i != input_info.end(); ++i) {
-		i->res->clear_changes();
+	for (int i = 0, iend = input_info.size(); i < iend; ++i) {
+		input_info[i].in_fltr->get_output()->clear_changes();
 	}
 	
 	return true;
 }
 
-void filter_input::add_param(string name, filter *f) {
+void filter_input::add_param(string name, filter *in_fltr) {
 	param_info i;
 	i.name = name;
-	i.f = f;
-	i.res = f->get_result();
+	i.in_fltr = in_fltr;
 	input_info.push_back(i);
 }

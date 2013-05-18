@@ -9,7 +9,7 @@ using namespace std;
 class extract_command : public command, public filter_input_listener {
 public:
 	extract_command(svs_state *state, Symbol *root, bool once)
-	: command(state, root), root(root), state(state), fltr(NULL), res(NULL), res_root(NULL), first(true), once(once)
+	: command(state, root), root(root), state(state), fltr(NULL), res_root(NULL), first(true), once(once)
 	{
 		si = state->get_svs()->get_soar_interface();
 	}
@@ -40,7 +40,6 @@ public:
 				set_status("incorrect filter syntax");
 				return false;
 			}
-			res = fltr->get_result();
 			fltr->listen_for_input(this);
 			first = true;
 		}
@@ -51,7 +50,7 @@ public:
 				return false;
 			}
 			update_results();
-			res->clear_changes();
+			fltr->get_output()->clear_changes();
 			first = false;
 		}
 		return true;
@@ -61,34 +60,36 @@ public:
 	
 	void reset_results() {
 		clear_results();
-		for (int i = 0; i < res->num_current(); ++i) {
-			handle_result(res->get_current(i));
+		filter_output *out = fltr->get_output();
+		for (int i = 0, iend = out->num_current(); i < iend; ++i) {
+			handle_output(out->get_current(i));
 		}
-		res->clear_changes();
+		out->clear_changes();
 	}
 	
 	void update_results() {
 		wme *w;
+		filter_output *out = fltr->get_output();
 		
-		for (int i = res->first_added(); i < res->num_current(); ++i) {
-			handle_result(res->get_current(i));
+		for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i) {
+			handle_output(out->get_current(i));
 		}
-		for (int i = 0; i < res->num_removed(); ++i) {
-			filter_val *fv = res->get_removed(i);
+		for (int i = 0, iend = out->num_removed(); i < iend; ++i) {
+			filter_val *fv = out->get_removed(i);
 			record r;
 			if (!map_pop(records, fv, r)) {
 				assert(false);
 			}
 			si->remove_wme(r.rec_wme);
 		}
-		for (int i = 0; i < res->num_changed(); ++i) {
-			handle_result(res->get_changed(i));
+		for (int i = 0, iend = out->num_changed(); i < iend; ++i) {
+			handle_output(out->get_changed(i));
 		}
 	}
 	
 	void clear_results() {
-		record_map::iterator i;
-		for (i = records.begin(); i != records.end(); ++i) {
+		record_map::iterator i, iend;
+		for (i = records.begin(), iend = records.end(); i != iend; ++i) {
 			si->remove_wme(i->second.rec_wme);
 		}
 		records.clear();
@@ -148,26 +149,26 @@ private:
 		}
 	}
 	
-	void make_record(filter_val *result) {
+	void make_record(filter_val *output) {
 		record r;
 		r.rec_wme = si->make_id_wme(res_root, "record");
 		r.rec_id = si->get_wme_val(r.rec_wme);
-		r.val_wme = make_value_wme(result, r.rec_id);
+		r.val_wme = make_value_wme(output, r.rec_id);
 		r.params_wme = si->make_id_wme(r.rec_id, "params");
-		fltr->get_result_params(result, r.params);
+		fltr->get_output_params(output, r.params);
 		if (r.params) {
 			update_param_struct(r.params, si->get_wme_val(r.params_wme));
 		}
-		records[result] = r;
+		records[output] = r;
 	}
 	
-	void handle_result(filter_val *result) {
+	void handle_output(filter_val *output) {
 		record *r;
-		if ((r = map_getp(records, result))) {
+		if ((r = map_getp(records, output))) {
 			si->remove_wme(r->val_wme);
-			r->val_wme = make_value_wme(result, r->rec_id);
+			r->val_wme = make_value_wme(output, r->rec_id);
 		} else {
-			make_record(result);
+			make_record(output);
 		}
 	}
 	
@@ -190,7 +191,6 @@ private:
 	svs_state      *state;
 	soar_interface *si;
 	filter         *fltr;
-	filter_result  *res;
 	bool            first, once;
 	
 	struct record {

@@ -110,12 +110,12 @@ public:
 	
 	~all_nodes_filter() {
 		map<sgnode*, filter_val*>::iterator i;
-		for (i = results.begin(); i != results.end(); ++i) {
+		for (i = outputs.begin(); i != outputs.end(); ++i) {
 			i->first->unlisten(this);
 		}
 	}
 	
-	bool update_results() {
+	bool update_outputs() {
 		vector<sgnode*> nodes;
 		vector<sgnode*>::iterator i;
 		
@@ -156,15 +156,15 @@ private:
 	filter_val *add_node(sgnode *n) {
 		n->listen(this);
 		filter_val *r = new filter_val_c<const sgnode*>(n);
-		results[n] = r;
-		add_result(r, NULL);
+		outputs[n] = r;
+		add_output(r, NULL);
 		return r;
 	}
 	
 	scene *scn;
 	bool first;
 	
-	map<sgnode*, filter_val*> results;
+	map<sgnode*, filter_val*> outputs;
 };
 
 class node_centroid_filter : public typed_map_filter<vec3> {

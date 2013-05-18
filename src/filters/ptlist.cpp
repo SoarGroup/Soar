@@ -43,9 +43,9 @@ public:
 		return true;
 	}
 	
-	void result_removed(ptlist *&res) {
-		lists.remove(res);
-		delete res;
+	void output_removed(ptlist *&o) {
+		lists.remove(o);
+		delete o;
 	}
 	
 private:
@@ -96,9 +96,9 @@ public:
 		return true;
 	}
 	
-	void result_removed(ptlist *&res) {
-		lists.remove(res);
-		delete res;
+	void output_removed(ptlist *&o) {
+		lists.remove(o);
+		delete o;
 	}
 	
 private:
