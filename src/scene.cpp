@@ -177,23 +177,21 @@ scene::~scene() {
 }
 
 scene *scene::clone(const string &cname, bool draw) const {
-	scene *c = new scene(cname, draw);
+	scene *c;
 	string name;
-	std::vector<sgnode*> all_nodes;
-	std::vector<sgnode*>::const_iterator i;
-	
-	delete c->root;
-	c->root = root->clone()->as_group();
-	c->root->walk(all_nodes);
-	c->nodes.resize(all_nodes.size());
-	
+	std::vector<sgnode*> node_clones;
+
 	update_closest();
+	c = new scene(cname, draw);
+	delete c->root;
+	c->nodes = nodes;
+	c->root = root->clone()->as_group(); // root->clone copies entire scene graph
+	c->root->walk(node_clones);
+	
 	drawer *d = get_drawer();
-	for(int i = 1, iend = all_nodes.size(); i < iend; ++i) {  // i = 0 is world, already in copy
-		sgnode *n = all_nodes[i];
-		node_info &cinfo = c->nodes[i];
-		cinfo = *find_name(n->get_name());
-		cinfo.node = n;
+	for(int i = 0, iend = node_clones.size(); i < iend; ++i) {
+		sgnode *n = node_clones[i];
+		c->find_name(n->get_name())->node = n;
 		n->listen(c);
 		if (draw) {
 			d->add(c->name, n);
