@@ -150,11 +150,10 @@ private:
 
 class convex_node : public geometry_node {
 public:
-	convex_node(const std::string &name, const std::string &type, const ptlist &v, const std::vector<int> &tris);
+	convex_node(const std::string &name, const std::string &type, const ptlist &v);
 	
 	const ptlist &get_verts() const { return verts; }
 	const ptlist &get_world_verts() const;
-	const std::vector<int> &get_triangles() const { return triangles; }
 	void set_verts(const ptlist &v);
 	void get_shape_sgel(std::string &s) const;
 	void gjk_local_support(const vec3 &dir, vec3 &support) const;
@@ -165,7 +164,6 @@ private:
 	sgnode *clone_sub() const;
 	
 	ptlist verts;
-	std::vector<int> triangles;
 	mutable ptlist world_verts;
 	mutable bool dirty;
 };

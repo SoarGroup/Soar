@@ -340,17 +340,12 @@ void geometry_node::walk_geoms(std::vector<const geometry_node*> &g) const {
 	g.push_back(this);
 }
 
-convex_node::convex_node(const string &name, const string &type, const ptlist &v, const vector<int> &tris)
-: geometry_node(name, type), verts(v), triangles(tris), dirty(true)
-{
-	assert(triangles.size() % 3 == 0);
-	for (int i = 0; i < triangles.size(); ++i) {
-		assert(triangles[i] < verts.size());
-	}
-}
+convex_node::convex_node(const string &name, const string &type, const ptlist &v)
+: geometry_node(name, type), verts(v), dirty(true)
+{}
 
 sgnode *convex_node::clone_sub() const {
-	return new convex_node(get_name(), get_type(), verts, triangles);
+	return new convex_node(get_name(), get_type(), verts);
 }
 
 void convex_node::update_shape() {
@@ -381,10 +376,6 @@ void convex_node::get_shape_sgel(string &s) const {
 	ss << "v ";
 	for (int i = 0; i < verts.size(); ++i) {
 		ss << verts[i](0) << " " << verts[i](1) << " " << verts[i](2) << " ";
-	}
-	ss << "i ";
-	for (int i = 0; i < triangles.size(); ++i) {
-		ss << triangles[i] << " ";
 	}
 	s = ss.str();
 }

@@ -113,27 +113,6 @@ bool parse_verts(vector<string> &f, int &start, ptlist &verts, string &error) {
 	return true;
 }
 
-bool parse_inds(vector<string> &f, int &start, ptlist &inds, string &error) {
-	int x;
-	vec3 v;
-	while (start < f.size()) {
-		if (start + 2 >= f.size()) {
-			error = "triangle indexes must be in groups of three";
-			return false;
-		}
-		for (int i = 0; i < 3; ++i) {
-			if (!parse_int(f[start], x)) {
-				error = "expecting integer";
-				return false;
-			}
-			v(i) = x;
-			++start;
-		}
-		inds.push_back(v);
-	}
-	return true;
-}
-
 bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 &scale, string &error) {	
 	vec3 t;
 	char type;
@@ -326,11 +305,6 @@ bool parse_mods(vector<string> &f, int &start, string &mods, vector<ptlist> &val
 					return false;
 				}
 				break;
-			case 'i':
-				if (!parse_inds(f, ++start, v, error)) {
-					return false;
-				}
-				break;
 			case 'b':
 				++start;
 				v.push_back(vec3());
@@ -357,7 +331,6 @@ int scene::parse_add(vector<string> &f, string &error) {
 	string name, type, mods;
 	vector<ptlist> vals;
 	ptlist vertices;
-	vector<int> indexes;
 	double radius;
 	bool is_convex, is_ball;
 
@@ -392,14 +365,6 @@ int scene::parse_add(vector<string> &f, string &error) {
 				vertices = vals[i];
 				is_convex = true;
 				break;
-			case 'i':
-				for (int j = 0, jend = vals[i].size(); j < jend; ++j) {
-					indexes.push_back(floor(vals[i][j](0)));
-					indexes.push_back(floor(vals[i][j](1)));
-					indexes.push_back(floor(vals[i][j](2)));
-				}
-				is_convex = true;
-				break;
 			case 'b':
 				radius = vals[i][0](0);
 				is_ball = true;
@@ -410,16 +375,7 @@ int scene::parse_add(vector<string> &f, string &error) {
 		error = "conflicting node type";
 		return 0; // don't know how to find a more accurate position
 	} else if (is_convex) {
-		if (vertices.size() == 3 && indexes.empty()) {
-			indexes.push_back(0);
-			indexes.push_back(1);
-			indexes.push_back(2);
-		}
-		if (indexes.empty()) {
-			error = "you must specify triangle indexes for convex nodes";
-			return 0;
-		}
-		n = new convex_node(name, type, vertices, indexes);
+		n = new convex_node(name, type, vertices);
 	} else if (is_ball) {
 		n = new ball_node(name, type, radius);
 	} else {
