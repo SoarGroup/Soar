@@ -42,7 +42,7 @@ then
 
   GOLD_LD=$(echo $(whereis -b gold-ld) | sed 's/.* //')
   if [ -x "$GOLD_LD/ld" ]; then
-    MAX_MINOR=6
+    MAX_MINOR=8
     echo "ld.gold found: $GOLD_LD"
   else
     MAX_MINOR=4

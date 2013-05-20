@@ -722,6 +722,47 @@ Symbol *count_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
   return NIL;
 }
 
+/* --------------------------------------------------------------------
+                              init-rl-trace
+
+Reset the RL trace to the head.
+-------------------------------------------------------------------- */
+
+Symbol *init_rl_trace (agent* thisAgent, list *args, void* /*user_data*/) {
+  if (!args) {
+    goal_stack_level level = 1;
+    for(Symbol *goal = thisAgent->top_goal; goal; goal = goal->id.lower_goal, ++level)
+      goal->id.rl_trace = &thisAgent->rl_trace[level - 1];
+    return NIL;
+  }
+
+  Symbol * const goal_level = static_cast<Symbol *>(args->first);
+  if (goal_level->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) {
+    print_with_symbols (thisAgent, "Error: non-int (%y) passed to init-rl-trace function.\n", goal_level);
+    return NIL;
+  }
+  else if (args->rest) {
+    print (thisAgent, "Error: 'init-rl-trace' takes at most 1 argument.\n");
+    return NIL;
+  }
+
+  goal_stack_level level = 1;
+  for(Symbol *goal = thisAgent->top_goal; goal; goal = goal->id.lower_goal, ++level) {
+    if(goal_level->ic.value == level) {
+      goal->id.rl_trace = &thisAgent->rl_trace[level - 1];
+      break;
+    }
+  }
+
+  if (goal_level->ic.value != level) {
+    print_with_symbols (thisAgent, "Error: invalid goal level (%y) passed to init-rl-trace function.\n", goal_level);
+    return NIL;
+  }
+
+  return NIL;
+
+}
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Functions
@@ -783,6 +824,10 @@ void init_built_in_rhs_functions (agent* thisAgent) {
 					count_rhs_function_code,
 					-1,FALSE,TRUE,0);
 
+  add_rhs_function (thisAgent, make_sym_constant (thisAgent, "init-rl-trace"),
+        init_rl_trace,
+                    -1, FALSE, TRUE, 0);
+
   init_built_in_rhs_math_functions(thisAgent);
 }
 
@@ -803,6 +848,7 @@ void remove_built_in_rhs_functions (agent* thisAgent) {
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "force-learn"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "deep-copy"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "count"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "init-rl-trace"));
 
   remove_built_in_rhs_math_functions(thisAgent);
 }
