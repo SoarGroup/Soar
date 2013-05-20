@@ -732,7 +732,10 @@ Symbol *init_rl_trace (agent* thisAgent, list *args, void* /*user_data*/) {
   if (!args) {
     goal_stack_level level = 1;
     for(Symbol *goal = thisAgent->top_goal; goal; goal = goal->id.lower_goal, ++level)
-      goal->id.rl_trace = &thisAgent->rl_trace[level - 1];
+      goal->id.rl_trace = &thisAgent->rl_trace[level];
+
+    ++thisAgent->rl_init_count;
+
     return NIL;
   }
 
@@ -749,7 +752,7 @@ Symbol *init_rl_trace (agent* thisAgent, list *args, void* /*user_data*/) {
   goal_stack_level level = 1;
   for(Symbol *goal = thisAgent->top_goal; goal; goal = goal->id.lower_goal, ++level) {
     if(goal_level->ic.value == level) {
-      goal->id.rl_trace = &thisAgent->rl_trace[level - 1];
+      goal->id.rl_trace = &thisAgent->rl_trace[level];
       break;
     }
   }
@@ -758,6 +761,8 @@ Symbol *init_rl_trace (agent* thisAgent, list *args, void* /*user_data*/) {
     print_with_symbols (thisAgent, "Error: invalid goal level (%y) passed to init-rl-trace function.\n", goal_level);
     return NIL;
   }
+
+  ++thisAgent->rl_init_count;
 
   return NIL;
 

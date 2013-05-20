@@ -188,6 +188,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->go_number                          = 1;
   newAgent->go_type                            = GO_DECISION;
   newAgent->init_count                         = 0;
+  newAgent->rl_init_count                      = 0;
   newAgent->grounds_tc                         = 0;
   newAgent->highest_goal_whose_context_changed = NIL;
   newAgent->ids_with_unknown_level             = NIL;

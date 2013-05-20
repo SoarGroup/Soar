@@ -441,6 +441,7 @@ typedef struct agent_struct {
   uint64_t            max_dc_wm_changes_cycle;  /* # cycle of max_dc_wm_changes */
 
   uint64_t            init_count;             /* # of inits done so far */
+  uint64_t            rl_init_count;             /* # of inits done so far */
   uint64_t            d_cycle_count;          /* # of DC's run so far */
   uint64_t            e_cycle_count;          /* # of EC's run so far */
   /*  in Soar 8, e_cycles_this_d_cycle is reset to zero for every

@@ -18,8 +18,8 @@ fi
 
 COMPILE_FOR_LSB=1
 
-if [ "$CC" == "" ]; then CC=gcc-4.6; fi
-if [ "$CXX" == "" ]; then CXX=g++-4.6; fi
+if [ "$CC" == "" ]; then CC=gcc; fi
+if [ "$CXX" == "" ]; then CXX=g++; fi
 VERCC=( $($CC --version \
         | grep -o '[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}' \
         | head -n 1 \
@@ -84,7 +84,6 @@ export LSBCC=$CC
 export LSBCXX=$CXX
 export LSBCC_LSBVERSION=4.1
 export LSBCC_LIBS=$LSBCC_LIB_PREFIX$LSBCC_LSBVERSION
-export LSB_SHAREDLIBPATH="$(pwd)/out"
 export CCACHE
 export CCACHE_BASEDIR=$HOME
 export CCACHE_CC=$LSB_HOME/bin/lsbcc
@@ -100,10 +99,12 @@ fi
 
 
 
-mkdir -p out
+mkdir -p out_d out
 
 JOBS=4
 TARGETS="cli debugger debugger_api headers kernel sml_java tests"
+
+export LSB_SHAREDLIBPATH="$(pwd)/out_d"
 
 scons \
   --jobs=$JOBS \
@@ -116,6 +117,8 @@ RV=$?
 if [ $RV -ne 0 ]; then
   exit $RV
 fi
+
+export LSB_SHAREDLIBPATH="$(pwd)/out"
 
 scons \
   --jobs=$JOBS \
