@@ -109,9 +109,13 @@ scons \
   --jobs=$JOBS \
   --cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
   --cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
-  --lnflags="$LDFLAGS --lsb-shared-libpath=out -Wl,--hash-style=both" \
+  --lnflags="$LDFLAGS --lsb-shared-libpath=out_d -Wl,--hash-style=both" \
   --build=build_d --out=out_d \
   $TARGETS
+RV=$?
+if [ $RV -ne 0 ]; then
+  exit $RV
+fi
 
 scons \
   --jobs=$JOBS \

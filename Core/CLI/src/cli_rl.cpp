@@ -48,52 +48,56 @@ inline void CLI_DoRL_print( CommandLineInterface &cli, const bool &RawOutput, st
 
 /// Formatted for dot: http://www.graphviz.org/content/dot-language
 
-inline void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_trace, const std::string &label_up = "init", int * cp = NIL )
+static void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_trace )
 {
-  if(label_up == "init")
-    os << "digraph RL_Trace {" << std::endl;
+  os << "digraph RL_Trace {" << std::endl;
 
   std::ostringstream label;
+  std::queue<std::pair<const agent::RL_Trace *, std::string> > trace_queue;
+  trace_queue.push(std::make_pair(&rl_trace, "init"));
+  size_t c = 0;
 
-  int c = cp ? *cp : 0;
-  for(std::map<std::vector<std::string>, agent::RL_Trace::Entry>::const_iterator tt = rl_trace.split.begin(), tend = rl_trace.split.end(); tt != tend; ++tt) {
-    label << "node" << c++;
+  do {
+    const agent::RL_Trace * const current_trace = trace_queue.front().first;
+    const std::string prev_label = trace_queue.front().second;
 
-    os << "  " << label.str() << " [label=\"";
+    trace_queue.pop();
 
-    bool sfirst = true;
-    for(std::vector<std::string>::const_iterator ss = tt->first.begin(), send = tt->first.end(); ss != send; ++ss) {
-      if(sfirst)
-        sfirst = false;
-      else
-        os << "\\n";
+    for(std::map<std::vector<std::string>, agent::RL_Trace::Entry>::const_iterator tt = current_trace->split.begin(), tend = current_trace->split.end(); tt != tend; ++tt) {
+      label << "node" << c++;
 
-      os << *ss;
+      os << "  " << label.str() << " [label=\"";
+
+      bool sfirst = true;
+      for(std::vector<std::string>::const_iterator ss = tt->first.begin(), send = tt->first.end(); ss != send; ++ss) {
+        if(sfirst)
+          sfirst = false;
+        else
+          os << "\\n";
+
+        os << *ss;
+      }
+
+      os << "\"];" << std::endl;
+
+      os << "  " << prev_label << " -> " << label.str() << " [label=\"";
+
+      if(tt->second.probability == tt->second.probability)
+        os << tt->second.probability;
+      else //< NaN
+        os << '-';
+
+      os << " (" << tt->second.init << ")\"];" << std::endl;
+
+      if(tt->second.next)
+        trace_queue.push(std::make_pair(tt->second.next, label.str()));
+
+      label.str("");
+      label.clear();
     }
+  } while(!trace_queue.empty());
 
-    os << "\"];" << std::endl;
-
-    os << "  " << label_up << " -> " << label.str() << " [label=\"";
-
-    if(tt->second.probability == tt->second.probability)
-      os << tt->second.probability;
-    else //< NaN
-      os << '-';
-
-    os << " (" << tt->second.init << ")\"];" << std::endl;
-
-    if(tt->second.next)
-      CLI_DoRL_print_trace(os, *tt->second.next, label.str(), &c);
-
-    label.str("");
-    label.clear();
-  }
-
-  if(label_up == "init")
-    os << "}" << std::endl;
-
-  if(cp)
-    *cp = c;
+  os << "}" << std::endl;
 }
 
 bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const std::string* pVal ) 
