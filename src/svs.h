@@ -7,7 +7,6 @@
 #include "soar_interface.h"
 #include "sgnode.h"
 #include "common.h"
-#include "drawer.h"
 #include "model.h"
 #include "timer.h"
 #include "relation.h"
@@ -17,6 +16,7 @@
 class command;
 class scene;
 class multi_model;
+class drawer;
 
 /* working memory scene graph object - mediates between wmes and scene graph nodes */
 class sgwme : public sgnode_listener {

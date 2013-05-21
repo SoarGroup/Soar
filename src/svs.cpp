@@ -15,6 +15,7 @@
 #include "common.h"
 #include "model.h"
 #include "filter_table.h"
+#include "drawer.h"
 
 using namespace std;
 

@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include "drawer.h"
 #include "common.h"
+#include "sgnode.h"
+#include "platform_specific.h"
 
 using namespace std;
 
@@ -10,15 +12,55 @@ ostream &write_vec3(ostream &os, const vec3 &v) {
 	return os;
 }
 
-drawer::drawer() : connected(false) {}
+class ipcsocket {
+public:
+	ipcsocket() : sock(INVALID_SOCK) {}
+	
+	~ipcsocket() {
+		if (sock != INVALID_SOCK) {
+			close_tcp_socket(sock);
+		}
+	}
+	
+	bool connect(const std::string &path) {
+		if (sock != INVALID_SOCK) {
+			close_tcp_socket(sock);
+		}
+		sock = get_tcp_socket(path);
+		return (sock != INVALID_SOCK);
+	}
+	
+	void disconnect() {
+		close_tcp_socket(sock);
+		sock = INVALID_SOCK;
+	}
+	
+	bool send(const std::string &s) {
+		if (sock == INVALID_SOCK) {
+			return false;
+		}
+		return tcp_send(sock, s);
+	}
+	
+private:
+	SOCK sock;
+};
+
+drawer::drawer() : connected(false) {
+	sock = new ipcsocket();
+}
+
+drawer::~drawer() {
+	delete sock;
+}
 
 void drawer::connect(const string &path) {
-	connected = sock.connect(path);
+	connected = sock->connect(path);
 }
 
 void drawer::disconnect() {
 	if (connected) {
-		sock.disconnect();
+		sock->disconnect();
 	}
 	connected = false;
 }
@@ -79,33 +121,13 @@ void drawer::delete_scene(const string &scn) {
 	send(string("-") + scn + "\n");
 }
 
-void drawer::set_color(const string &name, double r, double g, double b) {
-	if (!connected) {
-		return;
-	}
-	
-	stringstream ss;
-	ss << "* " << name << " c " << r << " " << g << " " << b << endl;
-	send(ss.str());
-}
-
-void drawer::set_pos(const string &name, double x, double y, double z) {
-	if (!connected) {
-		return;
-	}
-		
-	stringstream ss;
-	ss << "* " << name << " p " << x << " " << y << " " << z << endl;
-	send(ss.str());
-}
-
 void drawer::send(const string &s) {
 	if (!connected) {
 		return;
 	}
 	if (s[s.size()-1] != '\n') {
-		connected = sock.send(s + '\n');
+		connected = sock->send(s + '\n');
 	} else {
-		connected = sock.send(s);
+		connected = sock->send(s);
 	}
 }

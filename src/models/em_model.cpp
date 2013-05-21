@@ -9,6 +9,7 @@
 #include "svs.h"
 #include "scene.h"
 #include "serialize.h"
+#include "drawer.h"
 
 using namespace std;
 
