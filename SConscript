@@ -3,7 +3,7 @@ import sys
 Import('env', 'compiler')
 
 # svs viewer
-viewer_src = [ 'viewer/%s.c' % f for f in ('input', 'text', 'trackball', 'viewer') ]
+viewer_src = [ 'viewer/%s.c' % f for f in ('input', 'text', 'trackball', 'viewer', 'util') ]
 viewer_env = env.Clone()
 viewer_env['LIBS'] = []
 

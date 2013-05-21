@@ -172,3 +172,27 @@ void socket_error(char *msg) {
 void delay() {
 	Sleep(1);
 }
+
+int run_shell(const char *cmd) {
+	return system(cmd);
+}
+
+char *get_temp(const char *prefix) {
+	static char tempdir[MAX_PATH] = {'\0'};
+	char *path;
+	
+	if (strlen(tempdir) == 0) {
+		if (GetTempPath(MAX_PATH, tempdir) == 0) {
+			fprintf(stderr, "can't get temporary directory\n");
+			exit(1);
+		}
+	}
+	
+	path = (char *) malloc(MAX_PATH);
+	GetTempFileName(tempdir, prefix, 0, path);
+	return path;
+}
+
+void delete_file(const char *path) {
+	DeleteFile(path);
+}

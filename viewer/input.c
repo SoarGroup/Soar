@@ -5,63 +5,16 @@
 
 #define MAX_FIELDS 1000
 #define MAX_SCENES 1000
-#define MAX_GEOMS 1000
+#define MAX_GEOMS  1000
 #define WHITESPACE " \t\n"
 
 int proc_cmd(char *fields[]);
 int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]);
 int parse_nums(char *fields[], int n, real *v);
 void request_redraw();
-int split(char *s, char *fields[]);
-void fix_literal_quotes(char *s);
 int proc_layer_cmd(char *fields[]);
 
 int wait_for_redraw = 0;
-
-/*
- split using whitespace and double quotes. \" is a literal quote in quoted
- fields
-*/
-int split(char *s, char *fields[]) {
-	char *p;
-	int n, quoted, done;
-	
-	memset(fields, 0, MAX_FIELDS * sizeof(char*));
-	for (n = 0, quoted = 0, done = 0, p = s; !done && n < MAX_FIELDS; ++p) {
-		if (*p == '\0') done = 1;
-		
-		if (!fields[n] && *p != '\0' && !isspace(*p)) {
-			if (*p == '"') {
-				fields[n] = p + 1;
-				quoted = 1;
-			} else {
-				fields[n] = p;
-				quoted = 0;
-			}
-		} else if (fields[n] && !quoted && (isspace(*p) || *p == '\0')) {
-			*p = '\0';
-			++n;
-		} else if (fields[n] && quoted && ((*p == '"' && *(p-1) != '\\') || *p == '\0')) {
-			*p = '\0';
-			fix_literal_quotes(fields[n]);
-			++n;
-		}
-	}
-	return n;
-}
-
-void fix_literal_quotes(char *s) {
-	char *t;
-	for (t = s; *s != '\0'; ++s, ++t) {
-		if (*s == '\\' && *(s+1) == '"') {
-			++s;
-		}
-		if (t != s) {
-			*t = *s;
-		}
-	}
-	*t = '\0';
-}
 
 int proc_input(void *unused) {
 	char cmd[MAX_COMMAND];
@@ -91,7 +44,7 @@ int proc_input(void *unused) {
 				}
 				if (debug)
 					printf("cmd: %s\n", startp);
-				split(startp, fields);
+				split(startp, fields, MAX_FIELDS);
 				
 				SDL_mutexP(scene_lock);
 				proc_cmd(fields);
@@ -175,10 +128,9 @@ int proc_cmd(char *fields[]) {
 }
 
 int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
-	real pos[3], rot[4], scale[3], color[3], verts[MAX_FIELDS], finds[MAX_FIELDS];
-	GLuint inds[MAX_FIELDS];
+	real pos[3], rot[4], scale[3], color[3], verts[MAX_FIELDS];
 	real radius, line_width, layer;
-	int i, f, nverts, ninds, pos_set, rot_set, scale_set, color_set;
+	int i, f, nverts, pos_set, rot_set, scale_set, color_set;
 	char *text;
 	
 	pos_set = 0;
@@ -189,7 +141,6 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 	line_width = -1.0;
 	layer = -1.0;
 	nverts = -1;
-	ninds = -1;
 	text = NULL;
 	
 	f = 0;
@@ -244,21 +195,6 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 				}
 				f += nverts + 1;
 				break;
-			case 'i':  /* vertex indexes */
-				if (ninds != -1) {
-					fprintf(stderr, "you can only specify one set of indexes\n");
-					return 0;
-				}
-				ninds = parse_nums(&fields[f+1], -1, finds);
-				if (ninds >= 3 && ninds % 3 != 0) {
-					fprintf(stderr, "indexes must be in sets of 3\n");
-					return 0;
-				}
-				for (i = 0; i < ninds; ++i) {
-					inds[i] = finds[i];
-				}
-				f += ninds + 1;
-				break;
 			case 'b':  /* ball */
 				if (parse_nums(&fields[f+1], 1, &radius) < 1 || radius < 0.0) {
 					fprintf(stderr, "invalid radius\n");
@@ -289,32 +225,16 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 		}
 	}
 	
-	if ((nverts >= 0 && ninds == -1) || (nverts == -1 && ninds >= 0)) {
-		fprintf(stderr, "you have to specify vertices and indexes together\n");
-		return 0;
-	} else if (ninds >= 0) {
-		for (i = 0; i < ninds; ++i) {
-			if (inds[i] < 0 || inds[i] >= nverts / 3) {
-				fprintf(stderr, "index out of bounds: %d\n", inds[i]);
-				return 0;
-			}
-		}
-	}
-	
 	for (i = 0; i < ngeoms; ++i) {
-		if (pos_set)
-			copy_vec3(pos, gs[i]->pos);
-		if (scale_set)
-			copy_vec3(scale, gs[i]->scale);
-		if (color_set)
-			copy_vec3(color, gs[i]->color);
-		if (rot_set)
-			quat_to_axis_angle(rot, gs[i]->axis, &gs[i]->angle);
+		if (pos_set)   copy_vec3(pos, gs[i]->pos);
+		if (scale_set) copy_vec3(scale, gs[i]->scale);
+		if (color_set) copy_vec3(color, gs[i]->color);
+		if (rot_set)   quat_to_axis_angle(rot, gs[i]->axis, &gs[i]->angle);
 		
 		if (radius >= 0.0) {
 			set_geom_radius(gs[i], radius);
-		} else if (nverts != -1 && ninds != -1) {
-			set_geom_vertices(gs[i], verts, nverts, inds, ninds);
+		} else if (nverts != -1) {
+			set_geom_vertices(gs[i], verts, nverts);
 		} else if (text != NULL) {
 			set_geom_text(gs[i], text);
 		}

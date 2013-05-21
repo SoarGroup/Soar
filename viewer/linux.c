@@ -77,12 +77,6 @@ int read_file(char *buf, int n) {
 	return strlen(buf);
 }
 
-int parse_int(char *s, int *v) {
-	char *end;
-	*v = strtol(s, &end, 10);
-	return *s != '\0' && *end == '\0';
-}
-
 int init_socket(char *path_or_port) {
 	int family, port, yes;
 	struct sockaddr_in in_name;
@@ -183,4 +177,25 @@ int init_file(char *path) {
 void delay() {
 	static struct timespec interval = { .tv_sec = 0, .tv_nsec = 1000 };
 	nanosleep(&interval, NULL);
+}
+
+int run_shell(const char *cmd) {
+	return system(cmd);
+}
+
+char *get_temp(const char *prefix) {
+	char *path;
+	int fd;
+	path = (char *) malloc(FILENAME_MAX);
+	snprintf(path, FILENAME_MAX, "/tmp/%sXXXXXX", prefix);
+	if ((fd = mkstemp(path)) == -1) {
+		perror("get_temp");
+		exit(1);
+	}
+	close(fd);
+	return path;
+}
+
+void delete_file(const char *path) {
+	remove(path);
 }

@@ -95,23 +95,7 @@ extern SDL_mutex *scene_lock;
 extern semaphore redraw_semaphore;
 extern int debug;
 
-int match(char *pattern, char *s);
-
-void set_vec3(vec3 a, real x, real y, real z);
-void set_vec4(vec3 a, real x, real y, real z, real w);
-void copy_vec3(vec3 a, vec3 b);
-void copy_vec4(vec4 a, vec4 b);
-void scale_vec3(vec3 a, real b);
-void add_vec3(vec3 a, vec3 b);
-void subtract_vec3(vec3 a, vec3 b);
-void normalize(vec3 a);
-void cross_prod(vec3 a, vec3 b, vec3 c);
-void norm_cross_prod(vec3 a, vec3 b, vec3 c);
-void quat_to_axis_angle(quaternion q, vec3 axis, real *angle);
-void quat_to_mat(quaternion q, real m[16]);
-void rotate_vec3(quaternion q, vec3 v);
-void set_quat(quaternion q, real x, real y, real z, real w);
-
+/* viewer.c */
 void pan_camera(camera *c, real x, real y);
 void rotate_camera(camera *c, int x, int y, int dx, int dy);
 void zoom_camera(camera *c, real f);
@@ -120,7 +104,7 @@ void reset_camera(camera *c, SDLKey k);
 void apply_camera(camera *c);
 
 void init_geom(geometry *g, char *name);
-void set_geom_vertices(geometry *g, real *vertices, int nverts, GLuint *indexes, int ninds);
+void set_geom_vertices(geometry *g, real *vertices, int nverts);
 void set_geom_radius(geometry *g, real radius);
 void set_geom_text(geometry *g, char *text);
 void destroy_geom(geometry *g);
@@ -139,16 +123,44 @@ int match_geoms(scene *s, char *pattern, geometry **geoms, int n);
 
 int set_layer(int layer_num, char option, int value);
 
+/* input.c */
 int proc_input(void *unused);
-int init_input(int argc, char *argv[]);
-int get_input(char *buf, int n);
 
+/* text.c */
 void init_font(void);
 void draw_text(char *s, int x, int y);
+
+/* util.c */
+int match(char *pattern, char *s);
+int split(char *s, char *fields[], int maxfields);
+
+void set_vec3(vec3 a, real x, real y, real z);
+void set_vec4(vec3 a, real x, real y, real z, real w);
+void copy_vec3(vec3 a, vec3 b);
+void copy_vec4(vec4 a, vec4 b);
+void scale_vec3(vec3 a, real b);
+void add_vec3(vec3 a, vec3 b);
+void subtract_vec3(vec3 a, vec3 b);
+void normalize(vec3 a);
+void cross_prod(vec3 a, vec3 b, vec3 c);
+void norm_cross_prod(vec3 a, vec3 b, vec3 c);
+void quat_to_axis_angle(quaternion q, vec3 axis, real *angle);
+void quat_to_mat(quaternion q, real m[16]);
+void rotate_vec3(quaternion q, vec3 v);
+void set_quat(quaternion q, real x, real y, real z, real w);
 
 void init_semaphore(semaphore *s);
 void semaphore_P(semaphore *s);
 void semaphore_V(semaphore *s);
+
+int qhull(real verts[], int nverts, int indexes[], int max_indexes);
+
+/* platform specific */
 void delay();
+int init_input(int argc, char *argv[]);
+int get_input(char *buf, int n);
+int run_shell(const char *cmd);
+char *get_temp(const char *prefix);
+void delete_file(const char *path);
 
 #endif

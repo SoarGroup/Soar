@@ -14,6 +14,7 @@
 */
 #define GRID_VERTS_SIZE (4 * 2 * (GRID_LINES * 2))
 #define SCENE_MENU_OFFSET 20
+#define MAX_INDS 3000
 
 SDL_mutex *scene_lock;
 semaphore redraw_semaphore;
@@ -333,102 +334,6 @@ void reshape (int w, int h) {
 	glViewport (0, 0, (GLsizei) w, (GLsizei) h);
 }
 
-void set_vec3(vec3 a, real x, real y, real z) {
-	a[0] = x; a[1] = y; a[2] = z;
-}
-
-void set_vec4(vec3 a, real x, real y, real z, real w) {
-	a[0] = x; a[1] = y; a[2] = z; a[3] = w;
-}
-
-void copy_vec3(vec3 a, vec3 b) {
-	set_vec3(b, a[0], a[1], a[2]);
-}
-
-void copy_vec4(vec4 a, vec4 b) {
-	set_vec4(b, a[0], a[1], a[2], a[3]);
-}
-
-void add_vec3(vec3 a, vec3 b) {
-	a[0] += b[0]; a[1] += b[1]; a[2] += b[2];
-}
-
-void subtract_vec3(vec3 a, vec3 b) {
-	a[0] -= b[0]; a[1] -= b[1]; a[2] -= b[2];
-}
-
-void scale_vec3(vec3 a, real b) {
-	a[0] *= b; a[1] *= b; a[2] *= b;
-}
-
-void cross_prod(vec3 a, vec3 b, vec3 c) {
-	c[0] = a[1] * b[2] - a[2] * b[1];
-	c[1] = a[2] * b[0] - a[0] * b[2];
-	c[2] = a[0] * b[1] - a[1] * b[0];
-}
-
-void normalize(vec3 a) {
-	real d = sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
-	if (d == 0.0) {
-		fprintf(stderr, "division by zero\n");
-		exit(1);
-	}
-	a[0] /= d; a[1] /= d; a[2] /= d;
-}
-
-void norm_cross_prod(vec3 a, vec3 b, vec3 c) {
-	cross_prod(a, b, c);
-	if (c[0] != 0.0 || c[1] != 0.0 || c[2] != 0.0)
-		normalize(c);
-}
-
-void set_quat(quaternion q, real x, real y, real z, real w) {
-	q[0] = x; q[1] = y; q[2] = z; q[3] = w;
-}
-
-void quat_to_axis_angle(quaternion q, vec3 axis, real *angle) {
-	real s = sqrt(1 - q[3] * q[3]);
-	*angle = 2.0 * acos(q[3]);
-	
-	set_vec3(axis, q[0], q[1], q[2]);
-	if (s > 0.00001) {
-		axis[0] /= s;
-		axis[1] /= s;
-		axis[2] /= s;
-	}
-}
-
-void quat_to_mat(quaternion q, real m[16]) {
-	m[0] = 1.0 - 2.0 * (q[1] * q[1] + q[2] * q[2]);
-	m[1] = 2.0 * (q[0] * q[1] - q[2] * q[3]);
-	m[2] = 2.0 * (q[2] * q[0] + q[1] * q[3]);
-	m[3] = 0.0;
-
-	m[4] = 2.0 * (q[0] * q[1] + q[2] * q[3]);
-	m[5]= 1.0 - 2.0 * (q[2] * q[2] + q[0] * q[0]);
-	m[6] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
-	m[7] = 0.0;
-
-	m[8] = 2.0 * (q[2] * q[0] - q[1] * q[3]);
-	m[9] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
-	m[10] = 1.0 - 2.0 * (q[1] * q[1] + q[0] * q[0]);
-	m[11] = 0.0;
-
-	m[12] = 0.0;
-	m[13] = 0.0;
-	m[14] = 0.0;
-	m[15] = 1.0;
-}
-
-void rotate_vec3(quaternion q, vec3 v) {
-	real m[16];
-	
-	quat_to_mat(q, m);
-	v[0] = m[0] * v[0] + m[4] * v[1] + m[8] * v[2];
-	v[1] = m[1] * v[0] + m[5] * v[1] + m[9] * v[2];
-	v[2] = m[2] * v[0] + m[6] * v[1] + m[10] * v[2];
-}
-
 void pan_camera(camera *c, real dx, real dy) {
 	c->pos[0] += PAN_FACTOR * dx;
 	c->pos[1] -= PAN_FACTOR * dy;
@@ -540,13 +445,21 @@ void free_geom_shape(geometry *g) {
 	}
 }
 
-void set_geom_vertices(geometry *g, real *vertices, int nverts, GLuint *indexes, int ninds) {
-	int i;
+void set_geom_vertices(geometry *g, real *vertices, int nverts) {
+	int i, ninds, indexes[MAX_INDS];
 	
 	free_geom_shape(g);
 	g->vertices = (real *) malloc(sizeof(real) * nverts);
 	for (i = 0; i < nverts; ++i) {
 		g->vertices[i] = vertices[i];
+	}
+	if (nverts < 3) {
+		ninds = nverts / 3;
+		for (i = 0; i < ninds; ++i) {
+			indexes[i] = i;
+		}
+	} else {
+		ninds = qhull(vertices, nverts, indexes, MAX_INDS);
 	}
 	g->indexes = (GLuint *) malloc(sizeof(GLuint) * ninds);
 	for (i = 0; i < ninds; ++i) {
@@ -928,31 +841,6 @@ void draw_scene_buttons(GLuint x, GLuint y) {
 	}
 }
 
-int match(char *pat, char *s) {
-	char *patcopy, *p1, *p2, *sp1, *sp2;
-	
-	if ((patcopy = strdup(pat)) == NULL) {
-		perror("match: ");
-		exit(1);
-	}
-	
-	p1 = patcopy;
-	sp1 = s;
-	while (*p1 != '\0') {
-		p2 = strchr(p1, '*');
-		if (p2 == NULL)
-			return (strcmp(p1, sp1) == 0);
-		*p2 = '\0';
-		sp2 = strstr(sp1, p1);
-		if (sp2 == NULL || (p1 == patcopy && sp2 != sp1))
-			return 0;
-		sp1 = sp2 + strlen(p1);
-		p1 = p2 + 1;
-	}
-	/* will only get here if pat ends with '*' */
-	return 1;
-}
-
 void screenshot(char *path) {
 	FILE *out;
 	unsigned char *pixels;
@@ -1023,24 +911,3 @@ int set_layer(int layer_num, char option, int value) {
 	return 0;  /* no such option */
 }
 
-void init_semaphore(semaphore *s) {
-	s->count = 0;
-	s->mutex = SDL_CreateMutex();
-}
-
-void semaphore_P(semaphore *s) {
-	SDL_mutexP(s->mutex);
-	while (s->count == 0) {
-		SDL_mutexV(s->mutex);
-		delay();
-		SDL_mutexP(s->mutex);
-	}
-	s->count = 0;
-	SDL_mutexV(s->mutex);
-}
-
-void semaphore_V(semaphore *s) {
-	SDL_mutexP(s->mutex);
-	s->count = 1;
-	SDL_mutexV(s->mutex);
-}
