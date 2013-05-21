@@ -109,11 +109,12 @@ uint64_t get_derived_kernel_time_usec(agent* thisAgent);
 
 typedef struct unique_string_struct {
 
-    /* --- string value that should not repeat across instantiations --- */
-    std::string *name;
-
     /* --- pointer to next string that matches hash --- */
     struct unique_string_struct *next_in_hash_table;
+
+    /* --- string value that should not repeat across instantiations --- */
+    char *name;
+
 
     /* --- Cache the current unique version of the requested string
      *     current_unique_string for current_instantiation. --- */

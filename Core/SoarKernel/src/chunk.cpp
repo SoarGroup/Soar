@@ -205,50 +205,6 @@ action *copy_action_list (agent* thisAgent, action *actions) {
    and returns an action list.
 ===================================================================== */
 
-//void variablize_symbol (agent* thisAgent, Symbol **sym) {
-//	char prefix[2];
-//	Symbol *var;
-//
-//	/* We don't need the following check for calls from variablize_test, but may need it for calls
-//	 * from rhs and other places. Must check all places this is called from. */
-//
-//	if (symbol_is_identifier(*sym) || symbol_is_variablizable_constant(*sym))
-//	{
-//	  // Will need to revisit this part when doing lti's as constant
-//	  // remember that id.smem_lti might not be valid for this sym any more
-//
-//	  //			if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
-////			{
-////				(*sym)->common.tc_num = thisAgent->variablization_tc;
-////				(*sym)->id.variablization = (*sym);
-////				return;
-////			}
-////
-//			if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
-//				/* --- it's already been variablized, so use the existing variable --- */
-//				var = (*sym)->common.variablized_symbol;
-//				var->common.unvariablized_symbol = *sym;
-//				//symbol_remove_ref (thisAgent, *sym);
-//				*sym = var;
-//				symbol_add_ref (var);
-//				return;
-//			}
-//
-//			/* --- need to create a new variable.  If constant is being variablized
-//			 *     just used 'c' instead of first letter of id name --- */
-//			(*sym)->common.tc_num = thisAgent->variablization_tc;
-//			if((*sym)->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
-//			  prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
-//			else
-//			  prefix[0] = 'c';
-//			prefix[1] = 0;
-//			var = generate_new_variable (thisAgent, prefix);
-//			(*sym)->common.variablized_symbol = var;
-//      var->common.unvariablized_symbol = *sym;
-//      //symbol_remove_ref (thisAgent, *sym);
-//			*sym = var;
-//		}
-//}
 
 void variablize_symbol (agent* thisAgent, Symbol **sym) {
   char prefix[2];
@@ -391,6 +347,109 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
 	print(thisAgent, "Debug| ==========================================\nDebug| Done variablizing chunk condition list.\n");
 }
 
+/* ======================================================================================================
+ *
+ *                                          variablize_rhs_symbol
+ *
+ *      The logic for variablizing the rhs is slightly different than the lhs since we need to
+ *      match constants on the rhs with the conditions they match up with on the lhs. We can't
+ *      just look up the variablization info from the symbol, like we do on the lhs.  So, we match
+ *      them up using the original variable names, which are cached for both rhs actions and lhs
+ *      tests by the rete when creating the instantiation.
+ *
+ *      We need to do this for 2 reasons.
+ *
+ *        (1) If an instantiation has two different conditions that each have an item that binds to
+ *            the same constant but, in their original productions,bind to different variables, we
+ *            will need a way to differentiate between the two to determine whether to variablize
+ *            this rhs action. But, since variablization info is stored in a symbol, we can't store
+ *            more than one mapping to a condition or variable without doing something convoluted.
+ *
+ *        (2) Second, the condition grounding a rhs action may have not made it into the conditions
+ *            of the chunk if it was produced without testing anything in the superstate.  (This is
+ *            further complicated by the fact that another variable might have been bound
+ *            coincidentally to the same constant, so variablization info will be stored in the
+ *            constant's symbol.)
+ *
+ *      So, we use the original variable names that we've stored in the both the symbol and the rhs
+ *      action to  match up with the specific binding on the lhs that it originated from.  To deal
+ *      with both the fact that a production can fire multiple times and have multiple versions of
+ *      the same conditions appear in a chunk and the fact that different productions may use the
+ *      same variable names, make_instantiation renames the original variable names when it creates
+ *      each instantiation to make them unique between instantiations.  So, we are guaranteed to
+ *      match up each element of the rhs action to the correct lhs binding.
+ *
+ *      The function does the following:
+ *
+ *      Check if original var names of rhs action matches with the original var name of what's in
+ *      the symbol that is bound there.  (not necessary since we look up in hash table directly in
+ *      the next step, but comes cheap since it's already cached there for lhs variablization
+ *      and will work in most cases)
+ *
+ *        (Yes) Variablize using variablization_sym.  (or leave as constant if no variablization sym)
+ *
+ *        (No)  Look up the the last variablization symbol associated with that original
+ *              variable name in the unique var name hash table.
+ *
+ *              (Found)     Use the variablization info cached within it.
+ *
+ *              (Not found) Keep as a constant.
+ *
+  ====================================================================================================== */
+
+void variablize_rhs_symbol (agent* thisAgent, Symbol **sym) {
+  char prefix[2];
+  Symbol *var;
+  bool should_variablize = false, has_original_var = false;
+
+  has_original_var = ((*sym)->common.variablized_symbol != NIL);
+  should_variablize = symbol_is_non_lti_identifier((*sym));
+
+  // Will need to revisit this part when doing lti's as constant
+  // remember that id.smem_lti might not be valid for this sym any more
+
+  //      if ((*sym)->id.smem_lti != NIL)                 // don't variablize lti (long term identifiers)
+  //      {
+  //        (*sym)->common.tc_num = thisAgent->variablization_tc;
+  //        (*sym)->id.variablization = (*sym);
+  //        return;
+  //      }
+  //
+
+  if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
+    /* --- it's already been variablized, so use the existing variable --- */
+    print(thisAgent, "Debug| variablize_rhs_symbol found existing variablization %s.\n",
+          symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+    if (!should_variablize && has_original_var)
+    {
+
+    }
+    var = (*sym)->common.variablized_symbol;
+    var->common.unvariablized_symbol = *sym;
+    //symbol_remove_ref (thisAgent, *sym);
+    *sym = var;
+    symbol_add_ref (var);
+    return;
+  }
+
+  /* --- need to create a new variable.  If constant is being variablized
+   *     just used 'c' instead of first letter of id name --- */
+  (*sym)->common.tc_num = thisAgent->variablization_tc;
+  if(symbol_is_identifier(*sym))
+    prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+  else
+    prefix[0] = 'c';
+  prefix[1] = 0;
+  var = generate_new_variable (thisAgent, prefix);
+  (*sym)->common.variablized_symbol = var;
+  var->common.unvariablized_symbol = *sym;
+  print(thisAgent, "Debug| Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+  //Do not need to decrease refcount any more b/c we're caching it
+  //symbol_remove_ref (thisAgent, *sym);
+  *sym = var;
+}
+
+
 action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, bool variablize) {
   action *a;
   Symbol *id, *attr, *val, *ref;
@@ -410,13 +469,13 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
 
   if (variablize) {
     if (id->common.variablized_symbol)
-      variablize_symbol (thisAgent, &id);
+      variablize_rhs_symbol (thisAgent, &id);
     if ((attr->common.variablized_symbol) ||
         (symbol_is_non_lti_identifier(attr)))
-      variablize_symbol (thisAgent, &attr);
+      variablize_rhs_symbol (thisAgent, &attr);
     if ((val->common.variablized_symbol) ||
         (symbol_is_non_lti_identifier(val)))
-      variablize_symbol (thisAgent, &val);
+      variablize_rhs_symbol (thisAgent, &val);
   }
 
   a->id = symbol_to_rhs_value (id);
@@ -430,7 +489,7 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
     if (variablize) {
       if ((val->common.variablized_symbol) ||
           (symbol_is_non_lti_identifier(val)))
-        variablize_symbol (thisAgent, &ref);
+        variablize_rhs_symbol (thisAgent, &ref);
     }
     a->referent = symbol_to_rhs_value (ref);
   }
@@ -1186,7 +1245,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	{
 		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
 		{
-			print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
+			print_string (thisAgent, "Warning: chunk has no grounds, ignoring it.\n");
 			xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
 		}
 
@@ -1197,7 +1256,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	{
 		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
 		{
-			print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
+			print (thisAgent, "Warning: reached max-chunks! Halting system.\n");
 			xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
 		}
 		thisAgent->max_chunks_reached = TRUE;
@@ -1230,8 +1289,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		print (thisAgent, "\n  -->\n   ");
 		print_action_list (thisAgent, rhs, 3, FALSE);
 		print (thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-		print (thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n");
-		print (thisAgent, "\n");
+		print (thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n\n");
 		print (thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
 		print (thisAgent, "through the local state.\n");
 

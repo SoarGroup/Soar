@@ -462,7 +462,7 @@ uint64_t get_derived_kernel_time_usec(agent* thisAgent) {
 uint32_t hash_unique_string (void *item, short num_bits) {
   unique_string *var;
   var = static_cast<unique_string *>(item);
-  return compress (hash_string(var->name->c_str()),num_bits);
+  return compress (hash_string(var->name),num_bits);
 }
 
 /* -- make_varsym_unique is used when recreating conditions by the rete code.
@@ -476,29 +476,29 @@ uint32_t hash_unique_string (void *item, short num_bits) {
 void string_hash_table::make_varsym_unique(Symbol **original_varsym)
 {
   uint32_t hash_value;
-  unique_string *u_string, *new_u_string;
+  unique_string *found_u_string, *new_u_string;
 
   assert(thisAgent->newly_created_instantiations != NIL);
-  print(thisAgent, "Debug| make_varsym_unique called with original sym %s for instantiation %s.\n",
+  print(thisAgent, "Debug| make_varsym_unique called with original sym %s for instantiation %s!!!!!!!!!!!!!!!!!!!\n",
       (*original_varsym)->var.name, thisAgent->newly_created_instantiations->prod->name->sc.name );
 
   hash_value = hash_variable_raw_info ((*original_varsym)->var.name,ht->log2size);
-  u_string = reinterpret_cast<unique_string *>(*(ht->buckets + hash_value));
-  for ( ; u_string != NIL; u_string = u_string->next_in_hash_table)
+  found_u_string = reinterpret_cast<unique_string *>(*(ht->buckets + hash_value));
+  for ( ; found_u_string != NIL; found_u_string = found_u_string->next_in_hash_table)
   {
-    if (!strcmp(u_string->name->c_str(),(*original_varsym)->var.name))
+    if (!strcmp(found_u_string->name,(*original_varsym)->var.name))
     {
       /* -- Found unique string record that matches original var name -- */
 
-      if (u_string->current_instantiation == thisAgent->newly_created_instantiations)
+      if (found_u_string->current_instantiation == thisAgent->newly_created_instantiations)
       {
 
         /* -- We've already created and cached a unique version of this variable name
          *    for this instantiation -- */
 
-        print(thisAgent, "Debug| make_varsym_unique found existing unique sym %s (%s) for this instantiation.\n", u_str->current_unique_var_symbol->var.name, (*original_varsym)->var.name);
-        *original_varsym = u_string->current_unique_var_symbol;
-        symbol_add_ref(u_string->current_unique_var_symbol);
+        print(thisAgent, "Debug| make_varsym_unique found existing unique sym %s (%s) for this instantiation.\n", found_u_string->current_unique_var_symbol->var.name, (*original_varsym)->var.name);
+        *original_varsym = found_u_string->current_unique_var_symbol;
+        symbol_add_ref(found_u_string->current_unique_var_symbol);
         return;
       }
       else
@@ -506,28 +506,29 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
         /* -- We've need to create and cache a new unique version of this string
          *    for this instantiation -- */
 
-        std::string suffix;
+        std::string suffix, new_name = (*original_varsym)->var.name;
+
+        /* -- Create a unique name by appending a numbered suffix to original var name -- */
+
+        found_u_string->next_unique_suffix_number++;
+        to_string(found_u_string->next_unique_suffix_number, suffix);
+        new_name.erase(new_name.end()-1);
+        new_name += "+" + suffix + ">";
 
         /* -- Create a new unique string entry in the hash table == */
 
         allocate_with_pool (thisAgent, &mp, &new_u_string);
         new_u_string->current_instantiation = thisAgent->newly_created_instantiations;
-
-        /* -- Create a unique name by appending a numbered suffix to original var name -- */
-
-        new_u_string->name = new std::string((*original_varsym)->var.name);
-        u_string->next_unique_suffix_number++;
-        to_string(u_string->next_unique_suffix_number, suffix);
-        new_name.assign((*original_varsym)->var.name);
-        new_name.erase(new_name.end()-1);
-        new_name += "+" + suffix + ">";
+        new_u_string->name = make_memory_block_for_string (thisAgent, new_name.c_str());
+        new_u_string->next_unique_suffix_number = 1;
+        new_u_string->current_unique_var_symbol = make_variable(thisAgent, new_name.c_str());
+        found_u_string->current_unique_var_symbol = new_u_string->current_unique_var_symbol;
+        found_u_string->current_instantiation = thisAgent->newly_created_instantiations;
 
         print(thisAgent, "Debug| make_varsym_unique creating new unique version of %s: %s\n", (*original_varsym)->var.name, new_name.c_str());
 
-        u_string->current_unique_var_symbol = make_variable(thisAgent, new_name.c_str());
-
         symbol_remove_ref(thisAgent, *original_varsym);
-        *original_varsym = this_string->current_unique_var_symbol;
+        *original_varsym = new_u_string->current_unique_var_symbol;
         return;
       }
     }
@@ -538,8 +539,7 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
   allocate_with_pool (thisAgent, &mp, &new_u_string);
   new_u_string->current_instantiation = thisAgent->newly_created_instantiations;
   new_u_string->current_unique_var_symbol = (*original_varsym);
-  new_u_string->name = new std::string((*original_varsym)->var.name);
-  new_u_string->next_in_hash_table = NIL;
+  new_u_string->name = make_memory_block_for_string (thisAgent, (*original_varsym)->var.name);
   new_u_string->next_unique_suffix_number = 1;
   add_to_hash_table (thisAgent, ht, new_u_string);
 
@@ -548,6 +548,9 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
 
 void string_hash_table::clear_table()
 {
+  // Debug| need to go through and decrease refcounts on all symbols in unique strings
+  //        might need to free strings too?
+
   free_memory(thisAgent, ht->buckets, HASH_TABLE_MEM_USAGE);
   free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
 }
