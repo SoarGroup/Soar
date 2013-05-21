@@ -4539,7 +4539,6 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
                                                   rhs_value rv,
                                                   condition *cond,
                                                   char first_letter,
-                                                  action *rhs_action,
                                                   bool should_add_original_vars)
 {
   cons *c, *new_c, *prev_new_c;
@@ -4598,7 +4597,9 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       allocate_cons (thisAgent, &new_c);
       new_c->first = copy_rhs_value_and_substitute_varnames (thisAgent,
                                                              static_cast<char *>(c->first),
-                                                             cond, first_letter, should_add_original_vars);
+                                                             cond,
+                                                             first_letter,
+                                                             should_add_original_vars);
       prev_new_c->rest = new_c;
       prev_new_c = new_c;
     }
