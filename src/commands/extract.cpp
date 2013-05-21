@@ -96,21 +96,39 @@ public:
 	}
 	
 private:
-	Symbol *make_filter_val_sym(filter_val *v) {
+	wme *make_filter_val_wme(Symbol *id, const string &attr, filter_val *v) {
 		int iv;
 		double fv;
 		bool bv;
+		Symbol *single_val = NULL;
 		
 		if (get_filter_val(v, iv)) {
-			return si->make_sym(iv);
+			single_val = si->make_sym(iv);
+		} else if (get_filter_val(v, fv)) {
+			single_val = si->make_sym(fv);
+		} else if (get_filter_val(v, bv)) {
+			single_val = si->make_sym(bv ? "t" : "f");
 		}
-		if (get_filter_val(v, fv)) {
-			return si->make_sym(fv);
+		
+		if (single_val != NULL) {
+			return si->make_wme(id, attr, single_val);
 		}
-		if (get_filter_val(v, bv)) {
-			return si->make_sym(bv ? "t" : "f");
+
+		map<string, string> rep;
+		string def;
+		v->get_rep(rep);
+		if (map_get(rep, string(""), def)) {
+			single_val = si->make_sym(def);
+			return si->make_wme(id, attr, single_val);
 		}
-		return si->make_sym(v->get_string());
+		
+		wme *w = si->make_id_wme(id, attr);
+		Symbol *subid = si->get_wme_val(w);
+		map<string, string>::const_iterator i, iend;
+		for (i = rep.begin(), iend = rep.end(); i != iend; ++i) {
+			si->make_wme(subid, i->first, i->second);
+		}
+		return w;
 	}
 	
 	bool sym_reps_filter_val(Symbol *s, const filter_val *fv) {
@@ -118,6 +136,7 @@ private:
 		double ffv, sfv;
 		bool fbv;
 		string str;
+		
 		if (get_filter_val(fv, fiv)) {
 			return (si->get_val(s, siv) && siv == fiv);
 		}
@@ -127,11 +146,27 @@ private:
 		if (get_filter_val(fv, fbv)) {
 			return (si->get_val(s, str) && ((fbv && str == "t") || (!fbv && str == "f")));
 		}
-		return (si->get_val(s, str) && str == fv->get_string());
+		
+		map<string, string> rep;
+		string def;
+		
+		fv->get_rep(rep);
+		if (map_get(rep, string(""), def)) {
+			si->get_val(s, str);
+			return str == def;
+		}
+		
+		/*
+		 The filter_val has a struct representation. For now, always treat the symbol
+		 as being different. In the future, maybe compare the substructure of an id
+		 and the map representation to see if they have the same attribute-value
+		 pairs.
+		*/
+		return false;
 	}
 	
 	wme *make_value_wme(filter_val *v, Symbol *root) {
-		return si->make_wme(root, "value", make_filter_val_sym(v));
+		return make_filter_val_wme(root, "value", v);
 	}
 	
 	void update_param_struct(const filter_params *p, Symbol *pid) {
@@ -144,7 +179,7 @@ private:
 				if (pwme) {
 					si->remove_wme(pwme);
 				}
-				si->make_wme(pid, j->first, make_filter_val_sym(j->second));
+				make_filter_val_wme(pid, j->first, j->second);
 			}
 		}
 	}

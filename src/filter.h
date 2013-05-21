@@ -19,7 +19,7 @@
 class filter_val {
 public:
 	virtual ~filter_val() {}
-	virtual std::string get_string() const = 0;
+	virtual void get_rep(std::map<std::string,std::string> &rep) const = 0;
 	virtual filter_val *clone() const = 0;
 	virtual filter_val &operator=(const filter_val &rhs) = 0;
 	virtual bool operator==(const filter_val &rhs) const = 0;
@@ -31,10 +31,11 @@ public:
 	filter_val_c(const T &v) : v(v) {}
 	virtual ~filter_val_c() {}
 
-	std::string get_string() const {
+	void get_rep(std::map<std::string,std::string> &rep) const {
 		std::stringstream ss;
 		ss << v;
-		return ss.str();
+		rep.clear();
+		rep[""] = ss.str();
 	}
 	
 	filter_val *clone() const {
@@ -74,8 +75,9 @@ public:
 	filter_val_c(const sgnode *v) : v(v) {}
 	virtual ~filter_val_c() {}
 	
-	std::string get_string() const {
-		return v->get_name();
+	void get_rep(std::map<std::string,std::string> &rep) const {
+		rep.clear();
+		rep[""] = v->get_name();
 	}
 	
 	filter_val *clone() const {
