@@ -3250,7 +3250,7 @@ inline void _epmem_install_id_wme( agent* my_agent, Symbol* parent, Symbol* attr
 	{
 		if ( !existing_identifier )
 		{
-			id_p = ids->insert( std::make_pair< epmem_node_id, std::pair< Symbol*, bool > >( child_n_id, std::make_pair< Symbol*, bool >( make_new_identifier( my_agent, ( ( attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level ), true ) ) ).first;
+			id_p = ids->insert( std::make_pair( child_n_id, std::make_pair( make_new_identifier( my_agent, ( ( attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level ), true ) ) ).first;
 			if ( id_record )
 			{
 				epmem_id_mapping::iterator rec_p = id_record->find( child_n_id );
@@ -3290,7 +3290,7 @@ inline void _epmem_install_id_wme( agent* my_agent, Symbol* parent, Symbol* attr
 			epmem_buffer_add_wme( retrieval_wmes, parent, attr, value );
 			symbol_remove_ref( my_agent, value );
 
-			ids->insert( std::make_pair< epmem_node_id, std::pair< Symbol*, bool > >( child_n_id, std::make_pair< Symbol*, bool >( value, !( ( value->id.impasse_wmes ) || ( value->id.input_wmes ) || ( value->id.slots ) ) ) ) );
+			ids->insert( std::make_pair( child_n_id, std::make_pair( value, !( ( value->id.impasse_wmes ) || ( value->id.input_wmes ) || ( value->id.slots ) ) ) ) );
 		}
 	}
 }
@@ -3387,7 +3387,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		soar_module::sqlite_statement *my_q;
 
 		// initialize the lookup table
-		ids[ EPMEM_NODEID_ROOT ] = std::make_pair< Symbol*, bool >( retrieved_header, true );
+		ids[ EPMEM_NODEID_ROOT ] = std::make_pair( retrieved_header, true );
 
 		// first identifiers (i.e. reconstruct)
 		my_q = my_agent->epmem_stmts_graph->get_wmes_with_identifier_values;
@@ -5095,7 +5095,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 
 			// 0 is magic
 			temp.assign( "ID_0" );
-			stis.insert( std::make_pair< epmem_node_id, std::string >( 0, temp ) );
+			stis.insert( std::make_pair( epmem_node_id(0), temp ) );
 
 			// prep rit
 			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ] ) );
@@ -5128,7 +5128,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 					sti_p = stis.find( child_n_id );
 					if ( sti_p == stis.end() )
 					{
-						stis.insert( std::make_pair< epmem_node_id, std::string >( child_n_id, temp3 ) );
+						stis.insert( std::make_pair( child_n_id, temp3 ) );
 					}
 				}
 				else
@@ -5144,7 +5144,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 						to_string( val_num, temp2 );
 						temp4.append( temp2 );
 
-						ltis.insert( std::make_pair< epmem_node_id, std::pair< std::string, std::string > >( child_n_id, std::make_pair< std::string, std::string >( temp3, temp4 ) ) );
+						ltis.insert( std::make_pair( child_n_id, std::make_pair( temp3, temp4 ) ) );
 					}
 				}
 

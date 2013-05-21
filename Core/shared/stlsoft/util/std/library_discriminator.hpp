@@ -4,11 +4,15 @@
  * Purpose:     Discriminates between standard library implementations
  *
  * Created:     2nd January 2000
- * Updated:     21st June 2010
+ * Updated:     13th December 2012
+ *
+ * Thanks:      To Gabor Fischer, for reporting problems with VC++ 9/10
+ *              compatibility, and persisting in (re-)reporting it even when
+ *              I was being a thickie and unable to reproduce it.              
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2000-2010, Matthew Wilson and Synesis Software
+ * Copyright (c) 2000-2012, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,9 +55,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_MAJOR       4
-# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_MINOR       6
-# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_REVISION    3
-# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_EDIT        103
+# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_MINOR       8
+# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_REVISION    1
+# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_EDIT        107
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -76,6 +80,10 @@ STLSOFT_COMPILER_IS_WATCOM:
 #endif /* !STLSOFT_INCL_STLSOFT_H_STLSOFT */
 #if !defined(STLSOFT_COMPILER_IS_WATCOM)
 # include <iterator>    // required for detecting header include guards
+#endif /* compiler */
+#if defined(STLSOFT_COMPILER_IS_MSVC) && \
+    _MSC_VER >= 1500
+# include <functional>
 #endif /* compiler */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -171,9 +179,9 @@ namespace stlsoft
 #if defined(_STLPORT_VERSION) && \
       defined(_STLP_INTERNAL_ITERATOR_H)
  /* STLport */
-# ifdef _STLSOFT_COMPILE_VERBOSE
+# ifdef STLSOFT_COMPILE_VERBOSE
 #  pragma message("Standard library is STLport")
-# endif /* _STLSOFT_COMPILE_VERBOSE */
+# endif /* STLSOFT_COMPILE_VERBOSE */
 # define STLSOFT_CF_STD_LIBRARY_IS_STLPORT
 # define STLSOFT_CF_STD_LIBRARY_NAME_STRING             "STLport"
 #elif defined(_ITERATOR_) && \
@@ -183,15 +191,15 @@ namespace stlsoft
 # define STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE
 # if defined(STLSOFT_COMPILER_IS_INTEL) || \
      defined(STLSOFT_COMPILER_IS_MSVC)
-#  ifdef _STLSOFT_COMPILE_VERBOSE
+#  ifdef STLSOFT_COMPILE_VERBOSE
 #   pragma message("Standard library is Dinkumware (VC++)")
-#  endif /* _STLSOFT_COMPILE_VERBOSE */
+#  endif /* STLSOFT_COMPILE_VERBOSE */
 #  define STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE_VC
 #  define STLSOFT_CF_STD_LIBRARY_NAME_STRING            "Dinkumware (VC++)"
 # elif defined(STLSOFT_COMPILER_IS_BORLAND)
-#  ifdef _STLSOFT_COMPILE_VERBOSE
+#  ifdef STLSOFT_COMPILE_VERBOSE
 #   pragma message("Standard library is Dinkumware (Borland)")
-#  endif /* _STLSOFT_COMPILE_VERBOSE */
+#  endif /* STLSOFT_COMPILE_VERBOSE */
 #  define STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE_BORLAND
 #  define STLSOFT_CF_STD_LIBRARY_NAME_STRING            "Dinkumware (Borland)"
 # else /* ? compiler */
@@ -201,31 +209,31 @@ namespace stlsoft
       defined(_MSLCONFIG) && \
       defined(__MSL_CPP__)
  /* MSL */
-# ifdef _STLSOFT_COMPILE_VERBOSE
+# ifdef STLSOFT_COMPILE_VERBOSE
 #  pragma message("Standard library is MSL")
-# endif /* _STLSOFT_COMPILE_VERBOSE */
+# endif /* STLSOFT_COMPILE_VERBOSE */
 # define STLSOFT_CF_STD_LIBRARY_IS_MSL
 # define STLSOFT_CF_STD_LIBRARY_NAME_STRING             "MSL"
 #elif defined(__SGI_STL_INTERNAL_ITERATOR_H)
-# ifdef _STLSOFT_COMPILE_VERBOSE
+# ifdef STLSOFT_COMPILE_VERBOSE
 #  pragma message("Standard library is HP/SGI")
-# endif /* _STLSOFT_COMPILE_VERBOSE */
+# endif /* STLSOFT_COMPILE_VERBOSE */
 # define STLSOFT_CF_STD_LIBRARY_IS_HP_SGI
 # define STLSOFT_CF_STD_LIBRARY_NAME_STRING             "HP/SGI"
 #elif defined(__GLIBCPP_INTERNAL_ITERATOR_H) || \
       defined(_GLIBCXX_ITERATOR)
  /* HP/SGI/GnuFSF */
-# ifdef _STLSOFT_COMPILE_VERBOSE
+# ifdef STLSOFT_COMPILE_VERBOSE
 #  pragma message("Standard library is HP/SGI/GnuFSF")
-# endif /* _STLSOFT_COMPILE_VERBOSE */
+# endif /* STLSOFT_COMPILE_VERBOSE */
 # define STLSOFT_CF_STD_LIBRARY_IS_HP_SGI_GNU
 # define STLSOFT_CF_STD_LIBRARY_NAME_STRING             "HP/SGI/GnuFSF"
 #elif defined(__RW_ITERATOR_H) && \
       defined(__STD_RW_ITERATOR__)
  /* HP/RW */
-# ifdef _STLSOFT_COMPILE_VERBOSE
+# ifdef STLSOFT_COMPILE_VERBOSE
 #  pragma message("Standard library is HP/RW")
-# endif /* _STLSOFT_COMPILE_VERBOSE */
+# endif /* STLSOFT_COMPILE_VERBOSE */
 # define STLSOFT_CF_STD_LIBRARY_IS_HP_RW
 # define STLSOFT_CF_STD_LIBRARY_NAME_STRING             "HP/SGI/RW"
 #elif defined(STLSOFT_COMPILER_IS_SUNPRO) && \
@@ -245,14 +253,15 @@ namespace stlsoft
 # error Standard library implementation not recognised
 #endif /* various "unique" macros */
 
-/* Detecting presence of Dinkumware is easy. Now comes the fun when we need
- * to differentiate between versions of the library, because there is no
- * version information contained in any of the headers, which is helpful.
+/* Detecting presence of Dinkumware is easy (as shown above). The fun is in
+ * differentiating between versions of the library, because there is no
+ * version information contained in any of the headers, until version 7
+ * of the compiler.
  *
  * _STCONS               in      5, 6, 7.0, 7.1, 8,  9,    10
  * _TEMPLATE_MEMBER      in            7.0
  * _TEMPLATE             in            7.0
- * _MESG                 in            7.0, 7.1, 8,  9
+ * _MESG                 in            7.0, 7.1, 8,  9,    10
  * _HAS_EXCEPTIONS       in            7.0, 7.1, 8,  9,    10
  * _EMPTY_ARGUMENT       in                      8,  9,    10
  * _THROWS               in                          9,    10
@@ -280,6 +289,7 @@ namespace stlsoft
 #define STLSOFT_CF_DINKUMWARE_VC_VERSION_8_0            (0x0800)
 #define STLSOFT_CF_DINKUMWARE_VC_VERSION_9_0            (0x0900)
 #define STLSOFT_CF_DINKUMWARE_VC_VERSION_10_0           (0x0a00)
+#define STLSOFT_CF_DINKUMWARE_VC_VERSION_11_0           (0x0b00)
 
 #ifdef STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE_VC
 # if defined(STLSOFT_COMPILER_IS_INTEL) && \
@@ -291,161 +301,125 @@ namespace stlsoft
 #  error When the Dinkumware-VC library is used, STLSoft requires that Visual C++ or a compatible compiler (e.g. DMC++, Comeau, CodeWarrior, Intel) is used
 # endif /* compiler */
 
-# if \
-    defined(_STCONS) && \
-    !defined(_TEMPLATE_MEMBER) && \
-    !defined(_TEMPLATE) && \
-    !defined(_MESG) && \
-    defined(_HAS_EXCEPTIONS) && \
-    defined(_EMPTY_ARGUMENT) && \
-    defined(_THROWS) && \
-    defined(_IS_YES)
-#  if _CPPLIB_VER < 520
-  /* Version 9 */
-  /*
-   * This is a bit of a hack. We've seen that some VC++ 9 versions - 
-   * apparently SP1, though I've been unable to replicate - have _IS_YES
-   * defined, so will instead go on _CPPLIB_VER. Even that's somewhat of a
-   * guess though. As far as I've been able to determine, the versions out
-   * in the wild for 9 are 503 and 505 and for 10 is 520. This may not be
-   * exhaustive, and further changes may be required.
-   */
-#   ifdef _STLSOFT_COMPILE_VERBOSE
-#    pragma message("  Dinkumware version 9")
-#   endif /* _STLSOFT_COMPILE_VERBOSE */
+# if defined(_CPPLIB_VER)
+#  if _CPPLIB_VER < 300
+#   error Dinkumware C++ Library version unrecognised
+
+#  elif _CPPLIB_VER <= 310
+  /* Version 7.0 */
+#   ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 7.0")
+#   endif /* STLSOFT_COMPILE_VERBOSE */
+#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_7_0
+
+#  elif _CPPLIB_VER <= 313
+  /* Version 7.1 */
+#   ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 7.1")
+#   endif /* STLSOFT_COMPILE_VERBOSE */
+#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_7_1
+
+#  elif _CPPLIB_VER <= 405
+  /* Version 8.0 */
+#   ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 8.0")
+#   endif /* STLSOFT_COMPILE_VERBOSE */
+#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_8_0
+
+#  elif _CPPLIB_VER <= 505
+  /* Version 9.0 */
+#   ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 9.0")
+#   endif /* STLSOFT_COMPILE_VERBOSE */
 #   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_9_0
-#  else /* ? _CPPLIB_VER */
-  /* Version 10 */
-#   ifdef _STLSOFT_COMPILE_VERBOSE
-#    pragma message("  Dinkumware version 10")
-#   endif /* _STLSOFT_COMPILE_VERBOSE */
+
+#  elif _CPPLIB_VER <= 520
+  /* Version 10.0 */
+#   ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 10.0")
+#   endif /* STLSOFT_COMPILE_VERBOSE */
 #   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_10_0
+
+#  elif _CPPLIB_VER <= 540
+  /* Version 11.0 */
+#   ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 11.0")
+#   endif /* STLSOFT_COMPILE_VERBOSE */
+#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_11_0
+
+#  else
+#   error Dinkumware C++ Library version unrecognised: are you using a version of VC++ later than 10.0?
+
 #  endif /* _CPPLIB_VER */
 
-# elif \
-    defined(_STCONS) && \
-    !defined(_TEMPLATE_MEMBER) && \
-    !defined(_TEMPLATE) && \
-    defined(_MESG) && \
-    defined(_HAS_EXCEPTIONS) && \
-    defined(_EMPTY_ARGUMENT) && \
-    defined(_THROWS) && \
-    !defined(_IS_YES)
-  /* Version 9 */
-#  ifdef _STLSOFT_COMPILE_VERBOSE
-#   pragma message("  Dinkumware version 9")
-#  endif /* _STLSOFT_COMPILE_VERBOSE */
-#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_9_0
+# else /* ? _CPPLIB_VER */
+  /* Versions 4.2, 5.0 and 6.0 ? */
 
-# elif \
-    defined(_STCONS) && \
-    !defined(_TEMPLATE_MEMBER) && \
-    !defined(_TEMPLATE) && \
-    defined(_MESG) && \
-    defined(_HAS_EXCEPTIONS) && \
-    defined(_EMPTY_ARGUMENT) && \
-    !defined(_THROWS) && \
-    !defined(_IS_YES)
-  /* Version 8 */
-#  ifdef _STLSOFT_COMPILE_VERBOSE
-#   pragma message("  Dinkumware version 8")
-#  endif /* _STLSOFT_COMPILE_VERBOSE */
-#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_8_0
-
-# elif \
-    defined(_STCONS) && \
-    !defined(_TEMPLATE_MEMBER) && \
-    !defined(_TEMPLATE) && \
-    defined(_MESG) && \
-    defined(_HAS_EXCEPTIONS) && \
-    !defined(_EMPTY_ARGUMENT) && \
-    !defined(_THROWS) && \
-    !defined(_IS_YES)
-  /* Version 7.1 */
-#  ifdef _STLSOFT_COMPILE_VERBOSE
-#   pragma message("  Dinkumware version 7.1")
-#  endif /* _STLSOFT_COMPILE_VERBOSE */
-#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_7_1
-
-# elif \
-    defined(_STCONS) && \
-    defined(_TEMPLATE_MEMBER) && \
-    defined(_TEMPLATE) && \
-    defined(_MESG) && \
-    defined(_HAS_EXCEPTIONS) && \
-    !defined(_EMPTY_ARGUMENT) && \
-    !defined(_THROWS) && \
-    !defined(_IS_YES)
-  /* Version 7.0 */
-#  ifdef _STLSOFT_COMPILE_VERBOSE
-#   pragma message("  Dinkumware version 7.0")
-#  endif /* _STLSOFT_COMPILE_VERBOSE */
-#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_7_0
-
-# elif \
-    !defined(_STCONS) && \
-    !defined(_TEMPLATE_MEMBER) && \
-    !defined(_TEMPLATE) && \
-    !defined(_MESG) && \
-    !defined(_HAS_EXCEPTIONS) && \
-    !defined(_EMPTY_ARGUMENT) && \
-    !defined(_THROWS) && \
-    !defined(_IS_YES)
+#  if \
+     !defined(_STCONS) && \
+     !defined(_TEMPLATE_MEMBER) && \
+     !defined(_TEMPLATE) && \
+     !defined(_MESG) && \
+     !defined(_HAS_EXCEPTIONS) && \
+     !defined(_EMPTY_ARGUMENT) && \
+     !defined(_THROWS) && \
+     !defined(_IS_YES)
   /* Version 4.2 */
-#  ifdef _STLSOFT_COMPILE_VERBOSE
-#   pragma message("  Dinkumware version 4.2")
-#  endif /* _STLSOFT_COMPILE_VERBOSE */
-#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_4_2
+#   ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 4.2")
+#   endif /* STLSOFT_COMPILE_VERBOSE */
+#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_4_2
 
-# elif\
-    defined(_STCONS) && \
-    !defined(_TEMPLATE_MEMBER) && \
-    !defined(_TEMPLATE) && \
-    !defined(_MESG) && \
-    !defined(_HAS_EXCEPTIONS) && \
-    !defined(_EMPTY_ARGUMENT) && \
-    !defined(_THROWS) && \
-    !defined(_IS_YES)
+#  elif\
+     defined(_STCONS) && \
+     !defined(_TEMPLATE_MEMBER) && \
+     !defined(_TEMPLATE) && \
+     !defined(_MESG) && \
+     !defined(_HAS_EXCEPTIONS) && \
+     !defined(_EMPTY_ARGUMENT) && \
+     !defined(_THROWS) && \
+     !defined(_IS_YES)
   /* Versions 5 or 6
    *
    * Need to skip out of the STLSoft namespace, then #include <xtree>, skip back in and then
    * test for
    */
 
-#  if _MSC_VER < 1100 || \
-      _MSC_VER > 1200
-#   error Dinkumware library version discrimination failed
-#  endif /* 1100 <= _MSC_VER < = 1200 */
+#   if _MSC_VER < 1100 || \
+       _MSC_VER > 1200
+#    error Dinkumware library version discrimination failed
+#   endif /* 1100 <= _MSC_VER < = 1200 */
 
-#  ifndef _STLSOFT_NO_NAMESPACE
+#   ifndef _STLSOFT_NO_NAMESPACE
 } // namespace stlsoft
-#  endif /* _STLSOFT_NO_NAMESPACE */
-#  include <xtree>
-#  if defined(_XTREE_)
+#   endif /* _STLSOFT_NO_NAMESPACE */
+#   include <xtree>
+#   if defined(_XTREE_)
   /* Version 6 */
-  #  ifdef _STLSOFT_COMPILE_VERBOSE
-#   pragma message("  Dinkumware version 6")
-  #  endif /* _STLSOFT_COMPILE_VERBOSE */
-#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION     STLSOFT_CF_DINKUMWARE_VC_VERSION_6_0
-#  elif defined(_TREE_)
+#    ifdef STLSOFT_COMPILE_VERBOSE
+#     pragma message("  Dinkumware version 6")
+#    endif /* STLSOFT_COMPILE_VERBOSE */
+#    define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION     STLSOFT_CF_DINKUMWARE_VC_VERSION_6_0
+#   elif defined(_TREE_)
   /* Version 5 */
-  #  ifdef _STLSOFT_COMPILE_VERBOSE
-#   pragma message("  Dinkumware version 5")
-  #  endif /* _STLSOFT_COMPILE_VERBOSE */
-#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION     STLSOFT_CF_DINKUMWARE_VC_VERSION_5_0
-#  else
-#   error Does not appear to be either the VC5 or VC6 Dinkumware library
-#  endif /* _XTREE_ */
-#  ifndef _STLSOFT_NO_NAMESPACE
+#    ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 5")
+#    endif /* STLSOFT_COMPILE_VERBOSE */
+#    define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION     STLSOFT_CF_DINKUMWARE_VC_VERSION_5_0
+#   else
+#    error Does not appear to be either the VC5 or VC6 Dinkumware library
+#   endif /* _XTREE_ */
+#   ifndef _STLSOFT_NO_NAMESPACE
 namespace stlsoft
 {
-#  endif /* _STLSOFT_NO_NAMESPACE */
-# else
-#  ifdef _STLSOFT_COMPILE_VERBOSE
-#   pragma message("  Dinkumware version unknown")
-#  endif /* _STLSOFT_COMPILE_VERBOSE */
-#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_UNKNOWN
-# endif /* VC++ version */
+#   endif /* _STLSOFT_NO_NAMESPACE */
+#  else
+#   ifdef STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version unknown")
+#   endif /* STLSOFT_COMPILE_VERBOSE */
+#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_UNKNOWN
+#  endif /* VC++ version */
+# endif /* _CPPLIB_VER */
 #endif /* STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE_VC */
 
 /* /////////////////////////////////////////////////////////////////////////

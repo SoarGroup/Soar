@@ -5,3 +5,5 @@
 [<[STLSOFT-AUTO:NO-DOCFILELABEL]>]
 [<[STLSOFT-AUTO:NO-UNITTEST]>]
 */
+
+/* ///////////////////////////// end of file //////////////////////////// */

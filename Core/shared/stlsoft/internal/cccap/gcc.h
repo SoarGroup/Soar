@@ -4,13 +4,13 @@
  * Purpose:     Compiler feature discrimination for GNU C/C++.
  *
  * Created:     7th February 2003
- * Updated:     14th February 2010
+ * Updated:     14th March 2012
  *
  * Thanks:      To Sergey Nikulov, for PowerPC (BSD) compatibility fixes
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2003-2010, Matthew Wilson and Synesis Software
+ * Copyright (c) 2003-2012, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,9 +58,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_H_STLSOFT_CCCAP_GCC_MAJOR      3
-# define STLSOFT_VER_H_STLSOFT_CCCAP_GCC_MINOR      19
-# define STLSOFT_VER_H_STLSOFT_CCCAP_GCC_REVISION   2
-# define STLSOFT_VER_H_STLSOFT_CCCAP_GCC_EDIT       83
+# define STLSOFT_VER_H_STLSOFT_CCCAP_GCC_MINOR      21
+# define STLSOFT_VER_H_STLSOFT_CCCAP_GCC_REVISION   1
+# define STLSOFT_VER_H_STLSOFT_CCCAP_GCC_EDIT       86
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -92,6 +92,23 @@
 [<[STLSOFT-AUTO:NO-DOCFILELABEL]>]
 [<[STLSOFT-AUTO:NO-UNITTEST]>]
 */
+
+/* /////////////////////////////////////////////////////////////////////////
+ * Custom macros
+ */
+
+#ifdef __GNUC_PATCHLEVEL__
+# define STLSOFT_INTERNAL_GCC_PATCHLEVEL_   __GNUC_PATCHLEVEL__
+#else /* ? __GNUC_PATCHLEVEL__ */
+# define STLSOFT_INTERNAL_GCC_PATCHLEVEL_   (0)
+#endif /* __GNUC_PATCHLEVEL__ */
+
+#define STLSOFT_GCC_VER                                             \
+                                            ((__GNUC__ * 10000)     \
+                                            +                       \
+                                            (__GNUC_MINOR__ * 100)  \
+                                            +                       \
+                                            (STLSOFT_INTERNAL_GCC_PATCHLEVEL_ * 1))
 
 /* /////////////////////////////////////////////////////////////////////////
  * Preprocessor features
@@ -243,9 +260,11 @@
  */
 
 #ifdef __cplusplus
-# define STLSOFT_CF_EXCEPTION_SUPPORT
-# define STLSOFT_CF_EXCEPTION_SIGNATURE_SUPPORT
-# define STLSOFT_CF_THROW_BAD_ALLOC
+# ifdef __EXCEPTIONS
+#  define STLSOFT_CF_EXCEPTION_SUPPORT
+#  define STLSOFT_CF_EXCEPTION_SIGNATURE_SUPPORT
+#  define STLSOFT_CF_THROW_BAD_ALLOC
+# endif /* __EXCEPTIONS */
 #endif /* __cplusplus */
 
 #ifdef __cplusplus
@@ -534,7 +553,7 @@
  */
 
 #if defined(_STLSOFT_CUSTOM_ASSERT)
- /* You have defined the pre-processor symbol _STLSOFT_CUSTOM_ASSERT,
+ /* You have defined the preprocessor symbol _STLSOFT_CUSTOM_ASSERT,
   * which stipulates that you will be providing your own assert. This
   * requires that you have defined _STLSOFT_CUSTOM_ASSERT() as a macro
   * taking 1 parameter (the condition to assert).

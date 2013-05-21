@@ -1683,7 +1683,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 
 					if ( remove_old_children )
 					{
-						const_new.insert( std::make_pair< smem_hash_id, smem_hash_id >( attr_hash, value_hash ) );
+						const_new.insert( std::make_pair( attr_hash, value_hash ) );
 					}
 					else
 					{
@@ -1693,7 +1693,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 						my_agent->smem_stmts->web_const_child->bind_int( 3, value_hash );
 						if ( my_agent->smem_stmts->web_const_child->execute( soar_module::op_reinit ) != soar_module::row )
 						{
-							const_new.insert( std::make_pair< smem_hash_id, smem_hash_id >( attr_hash, value_hash ) );
+							const_new.insert( std::make_pair( attr_hash, value_hash ) );
 						}
 					}
 
@@ -1728,7 +1728,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 
 					if ( remove_old_children )
 					{
-						lti_new.insert( std::make_pair< smem_hash_id, smem_lti_id >( attr_hash, value_lti ) );
+						lti_new.insert( std::make_pair( attr_hash, value_lti ) );
 					}
 					else
 					{
@@ -1738,7 +1738,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 						my_agent->smem_stmts->web_lti_child->bind_int( 3, value_lti );
 						if ( my_agent->smem_stmts->web_lti_child->execute( soar_module::op_reinit ) != soar_module::row )
 						{
-							lti_new.insert( std::make_pair< smem_hash_id, smem_lti_id >( attr_hash, value_lti ) );
+							lti_new.insert( std::make_pair( attr_hash, value_lti ) );
 						}
 					}
 
@@ -4181,7 +4181,7 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 		}
 
 		bfs.push( new_lti );
-		close_list.insert( std::make_pair< smem_lti_id, smem_vis_lti* >( lti_id, new_lti ) );
+		close_list.insert( std::make_pair( lti_id, new_lti ) );
 
 		new_lti = NULL;
 	}
@@ -4256,7 +4256,7 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 					cl_p = close_list.find( new_lti->lti_id );
 					if ( cl_p == close_list.end() )
 					{
-						close_list.insert( std::make_pair< smem_lti_id, smem_vis_lti* >( new_lti->lti_id, new_lti ) );
+						close_list.insert( std::make_pair( new_lti->lti_id, new_lti ) );
 
 						if ( ( depth == 0 ) || ( new_lti->level < depth ) )
 						{
@@ -4554,7 +4554,7 @@ void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, st
 	smem_attach( my_agent );
 
 	// initialize queue/set
-	to_visit.push( std::make_pair< smem_lti_id, unsigned int >( lti_id, 1 ) );
+	to_visit.push( std::make_pair( lti_id, 1u ) );
 	visited.insert( lti_id );
 
 	while ( !to_visit.empty() )
@@ -4590,7 +4590,7 @@ void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, st
 					visited_ins_result = visited.insert( (*next_it) );
 					if ( visited_ins_result.second )
 					{
-						to_visit.push( std::make_pair< smem_lti_id, unsigned int >( (*next_it), c.second+1 ) );
+						to_visit.push( std::make_pair( (*next_it), c.second+1u ) );
 					}
 				}
 			}

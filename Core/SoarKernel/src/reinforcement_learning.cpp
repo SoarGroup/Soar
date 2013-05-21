@@ -459,7 +459,7 @@ inline void rl_get_symbol_constant( Symbol* p_sym, Symbol* i_sym, rl_symbol_map*
 {
 	if ( ( p_sym->common.symbol_type == VARIABLE_SYMBOL_TYPE ) && ( ( i_sym->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( i_sym->id.smem_lti != NIL ) ) )
 	{
-		constants->insert( std::make_pair< Symbol*, Symbol* >( p_sym, i_sym ) );
+		constants->insert( std::make_pair( p_sym, i_sym ) );
 	}
 }
 

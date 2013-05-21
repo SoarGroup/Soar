@@ -4,7 +4,7 @@
  * Purpose:     Compiler feature discrimination for SunPro C / SunPro C++.
  *
  * Created:     24th April 2008
- * Updated:     21st July 2009
+ * Updated:     3rd February 2012
  *
  * Thanks to:   Jonathan Wakely and Lars Ivar Igesund for help with
  *              getting STLSoft (and Pantheios) compatible with Solaris.
@@ -13,7 +13,7 @@
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2008-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2008-2012, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@
 # define STLSOFT_VER_H_STLSOFT_CCCAP_SUNPRO_MAJOR      1
 # define STLSOFT_VER_H_STLSOFT_CCCAP_SUNPRO_MINOR      0
 # define STLSOFT_VER_H_STLSOFT_CCCAP_SUNPRO_REVISION   3
-# define STLSOFT_VER_H_STLSOFT_CCCAP_SUNPRO_EDIT       7
+# define STLSOFT_VER_H_STLSOFT_CCCAP_SUNPRO_EDIT       8
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -378,7 +378,7 @@
  */
 
 #if defined(_STLSOFT_CUSTOM_ASSERT)
- /* You have defined the pre-processor symbol _STLSOFT_CUSTOM_ASSERT,
+ /* You have defined the preprocessor symbol _STLSOFT_CUSTOM_ASSERT,
   * which stipulates that you will be providing your own assert. This
   * requires that you have defined _STLSOFT_CUSTOM_ASSERT() as a macro
   * taking 1 parameter (the condition to assert).
