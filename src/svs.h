@@ -141,11 +141,11 @@ public:
 	bool add_model(const std::string &name, model *m);
 	std::map<std::string, model*> *get_models() { return &models; }
 
-	soar_interface *get_soar_interface() { return si; }
-	
-	bool do_cli_command(const std::vector<std::string> &args, std::string &output);
-	
 	const output_spec *get_output_spec() { return &outspec; }
+	soar_interface *get_soar_interface() { return si; }
+	drawer *get_drawer() const           { return draw; }
+
+	bool do_cli_command(const std::vector<std::string> &args, std::string &output);
 	
 private:
 	void proc_input(svs_state *s);
@@ -155,15 +155,16 @@ private:
 	void cli_log(const std::vector<std::string> &args, std::ostream &os);
 	void cli_connect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_disconnect_viewer(const std::vector<std::string> &args, std::ostream &os);
+	void cli_use_models(const std::vector<std::string> &args, std::ostream &os);
 
 	soar_interface           *si;
 	std::vector<svs_state*>   state_stack;
 	std::vector<std::string>  env_inputs;
 	std::string               env_output;
 	output_spec               outspec;
-	bool                      learn;
+	mutable drawer           *draw;
+	bool                      use_models;
 	bool                      record_movie;
-	Symbol                   *model_root;
 	
 	std::map<std::string, model*> models;
 	

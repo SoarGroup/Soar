@@ -27,7 +27,7 @@ void error_color(double error, double color[]) {
 	}
 }
 
-void draw_predictions(int mode, int nmodes, double pred, double real, const string &name, EM *em) {
+void draw_predictions(drawer *d, int mode, int nmodes, double pred, double real, const string &name, EM *em) {
 	static double mode_colors[][3] = {
 		{ 0.0, 0.0, 0.0 },
 		{ 1.0, 0.0, 1.0 },
@@ -47,7 +47,6 @@ void draw_predictions(int mode, int nmodes, double pred, double real, const stri
 	static double vx = NAN, vz = NAN, vxerror, vzerror;
 	static int xmode = 0, zmode = 0, xnmodes = 0, znmodes = 0;
 	static bool init = true;
-	static drawer *d = get_drawer();
 	
 	stringstream ss;
 	
@@ -126,8 +125,10 @@ void draw_predictions(int mode, int nmodes, double pred, double real, const stri
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
-	: model(name, "em", true), em(get_data()), si(si)
-	{}
+	: model(name, "em", true), em(get_data())
+	{
+		draw = state->get_svs()->get_drawer();
+	}
 
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
 		int mode;
@@ -163,7 +164,7 @@ public:
 		extend_relations(test_rels, rels, test_rec.size() - 1);
 		success = em.predict(target, sig, rels, x, ti.mode, ti.pred);
 		ti.best_mode = em.best_mode(target, sig, x, y(0), ti.best_error);
-		draw_predictions(ti.mode, em.num_modes(), ti.pred, y(0), get_name(), &em);
+		draw_predictions(draw, ti.mode, em.num_modes(), ti.pred, y(0), get_name(), &em);
 	}
 	
 	void proxy_get_children(map<string, cliproxy*> &c) {
@@ -218,8 +219,7 @@ private:
 	};
 	
 	EM em;
-	
-	soar_interface *si;
+	drawer *draw;
 	
 	vector<test_info> test_rec;
 	relation_table test_rels;

@@ -10,11 +10,6 @@ ostream &write_vec3(ostream &os, const vec3 &v) {
 	return os;
 }
 
-drawer *get_drawer() {
-	static drawer d;
-	return &d;
-}
-
 drawer::drawer() : connected(false) {}
 
 void drawer::connect(const string &path) {

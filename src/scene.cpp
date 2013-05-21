@@ -12,7 +12,7 @@
 #include "filter.h"
 #include "filter_table.h"
 #include "params.h"
-#include "ccd/ccd.h"
+#include "svs.h"
 
 using namespace std;
 
@@ -39,55 +39,6 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 	type = name[0];
 	dim = d;
 	return true;
-}
-
-void ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {
-	vec3 d, support;
-	const geometry_node *n = static_cast<const geometry_node*>(obj);
-	
-	for (int i = 0; i < 3; ++i) {
-		d(i) = dir->v[i];
-	}
-	n->gjk_support(d, support);
-	for (int i = 0; i < 3; ++i) {
-		v->v[i] = support(i);
-	}
-}
-
-double geom_convex_dist(const geometry_node *n1, const geometry_node *n2) {
-	geometry_node *g1, *g2;
-	ccd_t ccd;
-	double dist;
-	
-	CCD_INIT(&ccd);
-	ccd.support1       = ccd_support;
-	ccd.support2       = ccd_support;
-	ccd.max_iterations = 100;
-	ccd.dist_tolerance = INTERSECT_THRESH;
-	
-	dist = ccdGJKDist(n1, n2, &ccd);
-	return dist > 0.0 ? dist : 0.0;
-}
-
-double convex_dist(const sgnode *n1, const sgnode *n2) {
-	vector<const geometry_node*> g1, g2;
-	
-	if (n1 == n2 || n1->has_descendent(n2) || n2->has_descendent(n1)) {
-		return 0.0;
-	}
-	
-	n1->walk_geoms(g1);
-	n2->walk_geoms(g2);
-	double d, mindist = -1.0;
-	for (int i = 0, iend = g1.size(); i < iend; ++i) {
-		for (int j = 0, jend = g2.size(); j < jend; ++j) {
-			d = geom_convex_dist(g1[i], g2[j]);
-			if (mindist < 0 || d < mindist) {
-				mindist = d;
-			}
-		}
-	}
-	return mindist;
 }
 
 bool parse_vec3(vector<string> &f, int &start, vec3 &v, string &error) {
@@ -141,8 +92,8 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 	return true;
 }
 
-scene::scene(const string &name, bool draw) 
-: name(name), draw(draw), nodes(1)
+scene::scene(const string &name, svs *owner, bool draw) 
+: name(name), owner(owner), draw(draw), nodes(1), track_dists(false)
 {
 	root = new group_node(root_name, "world");
 	nodes[0].node = root;
@@ -162,13 +113,13 @@ scene *scene::clone(const string &cname, bool draw) const {
 	std::vector<sgnode*> node_clones;
 
 	update_closest();
-	c = new scene(cname, draw);
+	c = new scene(cname, owner, draw);
 	delete c->root;
 	c->nodes = nodes;
 	c->root = root->clone()->as_group(); // root->clone copies entire scene graph
 	c->root->walk(node_clones);
 	
-	drawer *d = get_drawer();
+	drawer *d = owner->get_drawer();
 	for(int i = 0, iend = node_clones.size(); i < iend; ++i) {
 		sgnode *n = node_clones[i];
 		c->find_name(n->get_name())->node = n;
@@ -626,7 +577,7 @@ int scene::get_dof() const {
 	return dof;
 }
 
-void velocity_hack(const sgnode *n) {
+void velocity_hack(const sgnode *n, drawer *d) {
 	if (n->get_name() != "b1") {
 		return;
 	}
@@ -635,14 +586,14 @@ void velocity_hack(const sgnode *n) {
 	ss << "* vx_pred_line p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
 	ss << "* vz_pred_line p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
 	ss << "* pred_line    p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
-	get_drawer()->send(ss.str());
+	d->send(ss.str());
 }
 
 void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	sgnode *child;
 	group_node *g;
 	relation *tr;
-	drawer *d = get_drawer();
+	drawer *d = owner->get_drawer();
 	
 	if (t == sgnode::CHILD_ADDED) {
 		g = n->as_group();
@@ -678,13 +629,15 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 		case sgnode::DELETED:
 			nodes.erase(nodes.begin() + i);
 			
-			// update distance vectors for other nodes
-			for (int j = 1, jend = nodes.size(); j < jend; ++j) {
-				node_info &info = nodes[j];
-				assert(info.dists.size() == nodes.size() + 1);
-				info.dists.erase(info.dists.begin() + i);
+			if (track_dists) {
+				// update distance vectors for other nodes
+				for (int j = 1, jend = nodes.size(); j < jend; ++j) {
+					node_info &info = nodes[j];
+					assert(info.dists.size() == nodes.size() + 1);
+					info.dists.erase(info.dists.begin() + i);
+				}
+				closest_dirty = true;
 			}
-			closest_dirty = true;
 			tr = map_getp(type_rels, n->get_type());
 			if (tr) {
 				tr->del(0, i);
@@ -707,27 +660,31 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 				d->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			nodes[i].rels_dirty = true;
-			velocity_hack(n);
+			velocity_hack(n, owner->get_drawer());
 			break;
 	}
 }
 
-bool scene::intersects(const sgnode *a, const sgnode *b) const {
+double scene::convex_distance(const sgnode *a, const sgnode *b) const {
+	assert(track_dists);
 	int i, j;
 	for (i = 0; i < nodes.size() && nodes[i].node != a; ++i)
 		;
 	for (j = 0; j < nodes.size() && nodes[j].node != b; ++j)
 		;
 	assert(i != nodes.size() && j != nodes.size());
-	return nodes[i].dists[j] < INTERSECT_THRESH;
+	return nodes[i].dists[j];
+}
+
+bool scene::intersects(const sgnode *a, const sgnode *b) const {
+	return this->convex_distance(a, b) < INTERSECT_THRESH;
 }
 
 void scene::update_dists(int i) {
-	if (i == 0)
+	if (i == 0 || !track_dists)
 		return;
 	
 	node_info &n1 = nodes[i];
-	
 	n1.dists.resize(nodes.size(), -1);
 	n1.dists[0] = 0.0;
 	n1.dists[i] = 0.0;
@@ -737,7 +694,7 @@ void scene::update_dists(int i) {
 		
 		node_info &n2 = nodes[j];
 		n2.dists.resize(nodes.size(), -1);
-		double d = convex_dist(n1.node, n2.node);
+		double d = convex_distance(n1.node, n2.node);
 		n1.dists[j] = d;
 		n2.dists[i] = d;
 	}
@@ -745,19 +702,41 @@ void scene::update_dists(int i) {
 }
 
 void scene::update_closest() const {
-	if (closest_dirty) {
-		for (int i = 1, iend = nodes.size(); i < iend; ++i) {
-			int c = -1;
-			const vector<double> &d = nodes[i].dists;
-			for (int j = 1, jend = d.size(); j < jend; ++j) {
-				if (i != j && d[j] >= 0 && (c < 0 || d[j] < d[c])) {
-					c = j;
-				}
+	if (!closest_dirty || !track_dists)
+		return;
+	
+	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
+		int c = -1;
+		const vector<double> &d = nodes[i].dists;
+		for (int j = 1, jend = d.size(); j < jend; ++j) {
+			if (i != j && d[j] >= 0 && (c < 0 || d[j] < d[c])) {
+				c = j;
 			}
-			nodes[i].closest = c;
 		}
-		closest_dirty = false;
+		nodes[i].closest = c;
 	}
+	closest_dirty = false;
+}
+
+void scene::update_all_dists() {
+	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
+		nodes[i].dists.resize(nodes.size(), -1);
+	}
+	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
+		for (int j = i + 1, jend = nodes.size(); j < jend; ++j) {
+			double d = convex_distance(nodes[i].node, nodes[j].node);
+			nodes[i].dists[j] = nodes[j].dists[i] = d;
+		}
+	}
+	closest_dirty = true;
+	update_closest();
+}
+
+void scene::set_track_distances(bool v) {
+	if (!track_dists && v) {
+		update_all_dists();
+	}
+	track_dists = v;
 }
 
 void scene::update_sig() const {

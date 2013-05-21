@@ -119,7 +119,7 @@ svs_state::~svs_state() {
 	delete scn; // results in root being deleted also
 	delete mmdl;
 
-	get_drawer()->delete_scene(scn_name);
+	svsp->get_drawer()->delete_scene(scn_name);
 }
 
 void svs_state::init() {
@@ -133,7 +133,7 @@ void svs_state::init() {
 	if (parent) {
 		scn = parent->scn->clone(name, true);
 	} else {
-		scn = new scene(name, true);
+		scn = new scene(name, svsp, true);
 	}
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	mmdl = new multi_model(svsp->get_models());
@@ -279,7 +279,7 @@ bool svs_state::get_output(rvec &out) const {
 }
 
 void svs_state::proxy_get_children(map<string, cliproxy*> &c) {
-	c["learn_models"] = new bool_proxy(&learn_models);
+	c["learn_models"] =   new bool_proxy(&learn_models);
 	c["test_models"] =  new bool_proxy(&test_models);
 	c["relations"] =    new memfunc_proxy<svs_state>(this, &svs_state::cli_relations);
 	c["properties"] =   new memfunc_proxy<svs_state>(this, &svs_state::cli_props);
@@ -421,7 +421,7 @@ void svs_state::cli_out(const vector<string> &args, ostream &os) {
 void svs_state::refresh_view() {
 	vector<const sgnode*> nodes;
 	string name = scn->get_name();
-	drawer *d = get_drawer();
+	drawer *d = svsp->get_drawer();
 	
 	d->delete_scene(name);
 	scn->get_all_nodes(nodes);
@@ -431,9 +431,10 @@ void svs_state::refresh_view() {
 }
 
 svs::svs(agent *a)
-: learn(false), record_movie(false)
+: use_models(false), record_movie(false)
 {
 	si = new soar_interface(a);
+	draw = new drawer();
 }
 
 svs::~svs() {
@@ -446,6 +447,7 @@ svs::~svs() {
 	for (j = models.begin(); j != models.end(); ++j) {
 		delete j->second;
 	}
+	delete draw;
 }
 
 void svs::state_creation_callback(Symbol *state) {
@@ -516,7 +518,7 @@ void svs::input_callback() {
 	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
-	if (learn) {
+	if (use_models) {
 		topstate->update_models();
 	}
 	
@@ -529,7 +531,7 @@ void svs::input_callback() {
 		static int frame = 0;
 		stringstream ss;
 		ss << "save screen" << setfill('0') << setw(4) << frame++ << ".ppm";
-		get_drawer()->send(ss.str());
+		draw->send(ss.str());
 	}
 }
 
@@ -547,11 +549,11 @@ string svs::get_output() const {
 }
 
 void svs::proxy_get_children(map<string, cliproxy*> &c) {
-	c["learn"] =             new bool_proxy(&learn);
 	c["record_movie"] =      new bool_proxy(&record_movie);
 	c["log"] =               new memfunc_proxy<svs>(this, &svs::cli_log);
 	c["connect_viewer"] =    new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
 	c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);
+	c["use_models"] =        new memfunc_proxy<svs>(this, &svs::cli_use_models);
 	c["timers"] =         &timers;
 	c["filters"] =        &get_filter_table();
 	
@@ -592,14 +594,14 @@ void svs::cli_connect_viewer(const vector<string> &args, ostream &os) {
 		os << "specify socket path" << endl;
 		return;
 	}
-	get_drawer()->connect(args[0]);
+	draw->connect(args[0]);
 	for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
 		state_stack[i]->refresh_view();
 	}
 }
 
 void svs::cli_disconnect_viewer(const vector<string> &args, ostream &os) {
-	get_drawer()->disconnect();
+	draw->disconnect();
 }
 
 int svs::parse_output_spec(const string &s) {
@@ -678,4 +680,10 @@ void svs::cli_log(const vector<string> &args, ostream &os) {
 	} else {
 		os << "expecting on/off" << endl;
 	}
+}
+
+void svs::cli_use_models(const vector<string> &args, ostream &os) {
+	bool_proxy p(&use_models);
+	p.proxy_use_sub(args, os);
+	state_stack[0]->get_scene()->set_track_distances(use_models);
 }

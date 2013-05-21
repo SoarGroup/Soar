@@ -4,6 +4,8 @@
 #include <iterator>
 #include <algorithm>
 #include "sgnode.h"
+#include "ccd/ccd.h"
+#include "params.h"
 
 using namespace std;
 
@@ -434,4 +436,98 @@ void ball_node::set_radius(double r) {
 
 void ball_node::gjk_local_support(const vec3 &dir, vec3 &support) const {
 	support = radius * dir.normalized();
+}
+
+void point_ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {
+	const vec3 *point = static_cast<const vec3*>(obj);
+	for (int i = 0; i < 3; ++i) {
+		v->v[i] = (*point)(i);
+	}
+}
+
+void geom_ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {
+	vec3 d, support;
+	const geometry_node *n = static_cast<const geometry_node*>(obj);
+	
+	for (int i = 0; i < 3; ++i) {
+		d(i) = dir->v[i];
+	}
+	n->gjk_support(d, support);
+	for (int i = 0; i < 3; ++i) {
+		v->v[i] = support(i);
+	}
+}
+
+double geom_convex_dist(const geometry_node *n1, const geometry_node *n2) {
+	ccd_t ccd;
+	double dist;
+	
+	CCD_INIT(&ccd);
+	ccd.support1       = geom_ccd_support;
+	ccd.support2       = geom_ccd_support;
+	ccd.max_iterations = 100;
+	ccd.dist_tolerance = INTERSECT_THRESH;
+	
+	dist = ccdGJKDist(n1, n2, &ccd);
+	return dist > 0.0 ? dist : 0.0;
+}
+
+double point_geom_convex_dist(const vec3 &p, const geometry_node *g) {
+	ccd_t ccd;
+	double dist;
+	
+	CCD_INIT(&ccd);
+	ccd.support1       = point_ccd_support;
+	ccd.support2       = geom_ccd_support;
+	ccd.max_iterations = 100;
+	ccd.dist_tolerance = INTERSECT_THRESH;
+	
+	dist = ccdGJKDist(&p, g, &ccd);
+	return dist > 0.0 ? dist : 0.0;
+}
+
+double convex_distance(const sgnode *n1, const sgnode *n2) {
+	vector<const geometry_node*> g1, g2;
+	vector<double> dists;
+	vec3 c;
+	
+	if (n1 == n2 || n1->has_descendent(n2) || n2->has_descendent(n1)) {
+		return 0.0;
+	}
+	
+	n1->walk_geoms(g1);
+	n2->walk_geoms(g2);
+	
+	if (g1.empty() && g2.empty()) {
+		return (n1->get_centroid() - n2->get_centroid()).norm();
+	}
+	
+	if (g1.empty()) {
+		dists.reserve(g2.size());
+		c = n1->get_centroid();
+		for (int i = 0, iend = g2.size(); i < iend; ++i) {
+			dists.push_back(point_geom_convex_dist(c, g2[i]));
+		}
+	} else if (g2.empty()) {
+		dists.reserve(g1.size());
+		c = n2->get_centroid();
+		for (int i = 0, iend = g1.size(); i < iend; ++i) {
+			dists.push_back(point_geom_convex_dist(c, g1[i]));
+		}
+	} else {
+		dists.reserve(g1.size() * g2.size());
+		for (int i = 0, iend = g1.size(); i < iend; ++i) {
+			for (int j = 0, jend = g2.size(); j < jend; ++j) {
+				dists.push_back(geom_convex_dist(g1[i], g2[j]));
+			}
+		}
+	}
+	return *min_element(dists.begin(), dists.end());
+}
+
+bool intersects(const sgnode *n1, const sgnode *n2) {
+	if (n1->get_bounds().intersects(n2->get_bounds())) {
+		return convex_distance(n1, n2) < INTERSECT_THRESH;
+	}
+	return false;
 }

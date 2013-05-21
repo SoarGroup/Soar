@@ -14,7 +14,8 @@ public:
 		COLOR = 1 << 4, 
 		SHAPE = 1 << 5,
 	};
-	
+
+	drawer();
 	void connect(const std::string &addr);
 	void disconnect();
 	void add(const std::string &scn, const sgnode *n);
@@ -30,11 +31,6 @@ public:
 private:
 	bool connected;
 	ipcsocket sock;
-	
-	drawer();
-	friend drawer *get_drawer();
 };
-
-drawer *get_drawer();
 
 #endif
