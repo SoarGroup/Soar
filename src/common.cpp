@@ -9,15 +9,6 @@
 
 using namespace std;
 
-logger LOG(std::cout);
-
-const char *log_type_names[NUM_LOG_TYPES] = {
-	"CTRLDBG",
-	"EMDBG",
-	"SGEL",
-	"FOILDBG"
-};
-
 const double NAN = std::numeric_limits<double>::quiet_NaN();
 const double INF = std::numeric_limits<double>::infinity();
 

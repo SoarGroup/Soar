@@ -1,6 +1,7 @@
 #include "classifier.h"
 #include "serialize.h"
 #include "common.h"
+#include "logger.h"
 
 using namespace std;
 
@@ -74,7 +75,11 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 }
 
 binary_classifier::binary_classifier()
-: const_vote(0), neg_nc(NULL)
+: const_vote(0), neg_nc(NULL), loggers(NULL)
+{}
+
+binary_classifier::binary_classifier(logger_set *loggers)
+: const_vote(0), neg_nc(NULL), loggers(loggers)
 {}
 
 binary_classifier::~binary_classifier() {
@@ -163,7 +168,7 @@ int binary_classifier::vote(int target, const scene_sig &sig, const relation_tab
 	function_timer t(timers.get_or_add("vote"));
 	
 	if (clauses.empty() && !neg_nc) {
-		LOG(EMDBG) << "Constant vote for " << const_vote << endl;
+		loggers->get(LOG_EM) << "Constant vote for " << const_vote << endl;
 		return const_vote;
 	}
 	
@@ -176,20 +181,20 @@ int binary_classifier::vote(int target, const scene_sig &sig, const relation_tab
 			const clause &cl = clauses[i].cl;
 			const num_classifier *nc = clauses[i].nc;
 			if (test_clause(cl, rels, domains)) {
-				LOG(EMDBG) << "matched clause:" << endl << cl << endl;
+				loggers->get(LOG_EM) << "matched clause:" << endl << cl << endl;
 				var_domains::const_iterator vi, viend;
 				for (vi = domains.begin(), viend = domains.end(); vi != viend; ++vi) {
 					assert(vi->second.size() == 1);
-					LOG(EMDBG) << vi->first << " = " << *vi->second.begin() << endl;
+					loggers->get(LOG_EM) << vi->first << " = " << *vi->second.begin() << endl;
 				}
 				if (nc) {
 					int result = nc->classify(x);
-					LOG(EMDBG) << "NC votes for " << result << endl;
+					loggers->get(LOG_EM) << "NC votes for " << result << endl;
 					if (result == 0) {
 						return result;
 					}
 				} else {
-					LOG(EMDBG) << "No NC, voting for 0" << endl;
+					loggers->get(LOG_EM) << "No NC, voting for 0" << endl;
 					return 0;
 				}
 			}
@@ -198,11 +203,11 @@ int binary_classifier::vote(int target, const scene_sig &sig, const relation_tab
 	// no matched clause, FOIL thinks this is a negative
 	if (neg_nc) {
 		int result = 1 - neg_nc->classify(x);
-		LOG(EMDBG) << "No matched clauses, NC votes for " << result << endl;
+		loggers->get(LOG_EM) << "No matched clauses, NC votes for " << result << endl;
 		return result;
 	}
 	// no false negatives in training, so this must be a negative
-	LOG(EMDBG) << "No matched clauses, no NC, vote for 1" << endl;
+	loggers->get(LOG_EM) << "No matched clauses, no NC, vote for 1" << endl;
 	return 1;
 }
 
@@ -221,7 +226,7 @@ void binary_classifier::update(const relation &mem_i, const relation &mem_j, con
 	}
 	
 	if (use_foil) {
-		FOIL foil;
+		FOIL foil(loggers);
 		foil.set_problem(mem_i, mem_j, rels);
 		foil.learn(prune, true);
 		clauses.resize(foil.num_clauses());
@@ -276,8 +281,8 @@ void clause_info::unserialize(istream &is) {
 	unserializer(is) >> cl >> false_pos >> true_pos >> nc;
 }
 
-classifier::classifier(const model_train_data &data) 
-: data(data), foil(true), prune(true), context(true), nc_type(NC_LDA)
+classifier::classifier(const model_train_data &data, logger_set *loggers) 
+: data(data), foil(true), prune(true), context(true), nc_type(NC_LDA), loggers(loggers)
 {
 	old_foil = foil;
 	old_prune = prune;
@@ -327,7 +332,7 @@ void classifier::set_options(bool foil, bool prune, bool context, int nc_type) {
 void classifier::add_class() {
 	int c = classes.size();
 	for (int i = 0, iend = classes.size(); i < iend; ++i) {
-		binary_classifier *b = new binary_classifier();
+		binary_classifier *b = new binary_classifier(loggers);
 		pairs.push_back(new pair_info(i, c, b));
 	}
 	classes.push_back(new class_info);
@@ -523,7 +528,7 @@ void classifier::cli_dump_foil6(const vector<string> &args, ostream &os) const {
 		swap(m1, m2);
 	}
 	
-	FOIL foil;
+	FOIL foil(loggers);
 	if (context) {
 		foil.set_problem(classes[m1]->mem_rel, classes[m2]->mem_rel, data.get_context_rels());
 	} else {
@@ -538,6 +543,13 @@ void classifier::serialize(ostream &os) const {
 
 void classifier::unserialize(istream &is) {
 	unserializer(is) >> pairs >> classes >> membership;
+
+	list<pair_info*>::iterator i, iend;
+	for (i = pairs.begin(), iend = pairs.end(); i != iend; ++i) {
+		if ((**i).clsfr) {
+			(**i).clsfr->set_loggers(loggers);
+		}
+	}
 }
 
 void classifier::pair_info::serialize(ostream &os) const {

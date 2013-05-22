@@ -79,6 +79,8 @@ public:
 	Symbol      *get_parent_state(Symbol *sym);
 	common_syms &get_common_syms() { return cs; }
 	
+	void         print(const std::string &msg);
+	
 private:
 	agent* agnt;
 	common_syms cs;

@@ -212,8 +212,6 @@ public:
 	const_iterator begin() const { return iter(*this, true); }
 	const_iterator end() const { return iter(*this, false); }
 	
-	void gdb_print() const;
-	
 private:
 	bool check_size() const;
 	void update_size();

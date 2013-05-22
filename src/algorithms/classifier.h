@@ -10,6 +10,8 @@
 #include "model.h"
 #include "cliproxy.h"
 
+class logger_set;
+
 class clause_info : public serializable {
 public:
 	clause_info() : nc(NULL) {}
@@ -27,6 +29,7 @@ public:
 class binary_classifier : public serializable, public cliproxy {
 public:
 	binary_classifier();
+	binary_classifier(logger_set *loggers);
 	~binary_classifier();
 
 	int vote(int target, const scene_sig &sig, const relation_table &rels, const rvec &x) const;
@@ -37,6 +40,7 @@ public:
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
 
+	void set_loggers(logger_set *loggers) { this->loggers = loggers; }
 private:
 	int const_vote;
 	std::vector<clause_info> clauses;
@@ -45,6 +49,7 @@ private:
 	num_classifier *neg_nc;
 
 	mutable timer_set timers;
+	logger_set *loggers;
 };
 
 /*
@@ -52,7 +57,7 @@ private:
 */
 class classifier : public serializable, public cliproxy {
 public:
-	classifier(const model_train_data &data);
+	classifier(const model_train_data &data, logger_set *loggers);
 	~classifier();
 	
 	void set_options(bool foil, bool prune, bool context, int nc_type);
@@ -102,6 +107,8 @@ private:
 	// If they're different from the current values, force an update.
 	bool old_foil, old_prune, old_context;
 	int old_nc_type;
+	
+	logger_set *loggers;
 
 	pair_info *find(int i, int j);
 	void update();

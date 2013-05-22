@@ -10,6 +10,7 @@
 #include "relation.h"
 
 class svs;
+class logger_set;
 
 class scene : public sgnode_listener {
 public:
@@ -70,6 +71,7 @@ private:
 	std::string  name;
 	group_node  *root;
 	svs         *owner;
+	logger_set  *loggers;
 	node_table   nodes;
 	bool         draw;
 	bool         sig_dirty;

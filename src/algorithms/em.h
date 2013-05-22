@@ -16,6 +16,8 @@
 #include "mode.h"
 #include "cliproxy.h"
 
+class logger_set;
+
 class inst_info : public serializable {
 public:
 	/*
@@ -52,8 +54,8 @@ public:
 
 class EM : public serializable, public cliproxy {
 public:
-	EM(const model_train_data &data);
-	EM(const model_train_data &data, bool use_em, bool use_unify, bool learn_new_modes);
+	EM(const model_train_data &data, logger_set *loggers);
+	EM(const model_train_data &data, logger_set *loggers, bool use_em, bool use_unify, bool learn_new_modes);
 	~EM();
 	
 	void add_data(int t);
@@ -66,7 +68,7 @@ public:
 	void unserialize(std::istream &is);
 	
 	// for test_em.cpp
-	void print_ptable() const;
+	void print_ptable(std::ostream &os) const;
 	void print_modes(std::ostream &os) const;
 	void set_noise_var(double v) { noise_var = v; }
 	
@@ -111,6 +113,7 @@ private:
 	
 	double noise_var;
 	mutable timer_set timers;
+	logger_set *loggers;
 };
 
 

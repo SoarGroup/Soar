@@ -17,6 +17,7 @@
 #include "serialize.h"
 #include "lda.h"
 #include "drawer.h"
+#include "logger.h"
 
 //#define DBGCOUNT(n) { static int count = 0; fprintf(stderr, "%s %d\n", n, count++); }
 #define DBGCOUNT(n)
@@ -26,22 +27,6 @@ using namespace Eigen;
 
 static bool approx_equal(double a, double b) {
 	return fabs(a - b) / min(fabs(a), fabs(b)) < .001;
-}
-
-
-void read_til_semi(istream &is, vector<double> &buf) {
-	string s;
-	while (true) {
-		double x;
-		is >> s;
-		if (s == ";") {
-			return;
-		}
-		if (!parse_double(s, x)) {
-			assert(false);
-		}
-		buf.push_back(x);
-	}
 }
 
 /* Box-Muller method */
@@ -434,17 +419,19 @@ void remove_from_vector(const vector<int> &inds, vector <T> &v) {
 	v.resize(j);
 }
 
-EM::EM(const model_train_data &data)
-: data(data), use_em(true), use_unify(true), learn_new_modes(true),
-  check_after(NEW_MODE_THRESH), clsfr(data)
+EM::EM(const model_train_data &data, logger_set *loggers)
+: data(data), loggers(loggers), use_em(true), use_unify(true),
+  learn_new_modes(true), check_after(NEW_MODE_THRESH), clsfr(data, loggers)
 {
 	add_mode(false); // noise mode
 	noise_var = 1e-8;
 }
 
-EM::EM(const model_train_data &data, bool use_em, bool use_unify, bool learn_new_modes)
-: data(data), use_em(use_em), use_unify(use_unify), learn_new_modes(learn_new_modes),
-  check_after(NEW_MODE_THRESH), clsfr(data)
+EM::EM(const model_train_data &data, logger_set *loggers,
+       bool use_em, bool use_unify, bool learn_new_modes)
+: data(data), loggers(loggers), use_em(use_em), use_unify(use_unify),
+  learn_new_modes(learn_new_modes), check_after(NEW_MODE_THRESH),
+  clsfr(data, loggers)
 {
 	add_mode(false); // noise mode
 }
@@ -578,7 +565,7 @@ void EM::fill_xy(const interval_set &rows, mat &X, mat &Y) const {
 }
 
 em_mode *EM::add_mode(bool manual) {
-	em_mode *new_mode = new em_mode(modes.size() == 0, manual, data);
+	em_mode *new_mode = new em_mode(modes.size() == 0, manual, data, loggers);
 	modes.push_back(new_mode);
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
 		grow_vec(insts[i]->minfo);
@@ -669,17 +656,17 @@ bool EM::unify_or_add_mode() {
 				combined.insert(largest[k]);
 			}
 			fill_xy(combined, X, Y);
-			LOG(EMDBG) << "Trying to unify with mode " << j << endl;
+			loggers->get(LOG_EM) << "Trying to unify with mode " << j << endl;
 			ransac(X, Y, noise_var, 0.9 * combined.size(), m.size(), subset, ucoefs, uinter);
 			int unified_size = subset.size();
 			
 			if (unified_size >= m.size() + .9 * largest.size()) {
-				LOG(EMDBG) << "Successfully unified with mode " << j << endl;
+				loggers->get(LOG_EM) << "Successfully unified with mode " << j << endl;
 				const model_train_inst &d0 = data.get_inst(combined.ith(subset[0]));
 				m.set_params(*d0.sig, d0.target, ucoefs, uinter);
 				return true;
 			}
-			LOG(EMDBG) << "Failed to unify with mode " << j << endl;
+			loggers->get(LOG_EM) << "Failed to unify with mode " << j << endl;
 		}
 	}
 	
@@ -767,7 +754,7 @@ bool EM::run(int maxiters) {
 				return true;
 			}
 		}
-		LOG(EMDBG) << "Reached max iterations without quiescence" << endl;
+		loggers->get(LOG_EM) << "Reached max iterations without quiescence" << endl;
 	}
 	return false;
 }
@@ -901,13 +888,13 @@ void EM::unserialize(istream &is) {
 	
 	clear_and_dealloc(modes);
 	for (int i = 0, iend = nmodes; i < iend; ++i) {
-		em_mode *m = new em_mode(i == 0, false, data);
+		em_mode *m = new em_mode(i == 0, false, data, loggers);
 		m->unserialize(is);
 		modes.push_back(m);
 	}
 }
 
-void EM::print_ptable() const {
+void EM::print_ptable(ostream &os) const {
 	table_printer t;
 	for (int i = 0, iend = insts.size(); i < iend; ++i) {
 		inst_info *inst = insts[i];
@@ -916,7 +903,7 @@ void EM::print_ptable() const {
 			t << inst->minfo[j].prob;
 		}
 	}
-	t.print(cout);
+	t.print(os);
 }
 
 void EM::print_modes(ostream &os) const {
@@ -953,9 +940,9 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 	vector<int> votes, order;
 	clsfr.classify(target, sig, rels, x, votes);
 	
-	LOG(EMDBG) << "votes:" << endl;
+	loggers->get(LOG_EM) << "votes:" << endl;
 	for (int i = 0, iend = votes.size(); i < iend; ++i) {
-		LOG(EMDBG) << i << " = " << votes[i] << endl;
+		loggers->get(LOG_EM) << i << " = " << votes[i] << endl;
 	}
 	
 	get_ordering(votes, order);
@@ -975,12 +962,12 @@ int EM::classify(int target, const scene_sig &sig, const relation_table &rels, c
 		}
 		obj_map.clear();
 		if (!m.map_objs(target, sig, rels, obj_map)) {
-			LOG(EMDBG) << "mapping failed for " << i << endl;
+			loggers->get(LOG_EM) << "mapping failed for " << i << endl;
 			continue;
 		}
 		
 		// mapping worked, classify as this mode;
-		LOG(EMDBG) << "best mode = " << order[i] << endl;
+		loggers->get(LOG_EM) << "best mode = " << order[i] << endl;
 		return order[i];
 	}
 	

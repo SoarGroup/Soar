@@ -6,6 +6,8 @@
 #include "serializable.h"
 #include "relation.h"
 
+class logger_set;
+
 class literal : public serializable {
 public:
 	literal() : negate(false) {}
@@ -54,7 +56,7 @@ std::ostream &operator<<(std::ostream &os, const clause &c);
 
 class FOIL {
 public:
-	FOIL();
+	FOIL(logger_set *loggers);
 	~FOIL();
 	void set_problem(const relation &pos, const relation &neg, const relation_table &rels);
 	bool learn(bool prune, bool track_training);
@@ -94,6 +96,8 @@ private:
 	
 	relation false_negatives;
 	relation true_negatives;
+	
+	logger_set *loggers;
 };
 
 typedef std::map<int, std::set<int> > var_domains;

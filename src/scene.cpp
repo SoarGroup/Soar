@@ -13,6 +13,7 @@
 #include "filter_table.h"
 #include "params.h"
 #include "svs.h"
+#include "logger.h"
 
 using namespace std;
 
@@ -100,6 +101,7 @@ scene::scene(const string &name, svs *owner, bool draw)
 	root->listen(this);
 	sig_dirty = true;
 	closest_dirty = false;
+	loggers = owner->get_loggers();
 }
 
 scene::~scene() {
@@ -445,7 +447,7 @@ bool scene::parse_sgel(const string &s) {
 	int errfield;
 	string error;
 	
-	LOG(SGEL) << "received sgel" << endl << "---------" << endl << s << endl << "---------" << endl;
+	loggers->get(LOG_SGEL) << s << endl;
 	split(s, "\n", lines);
 	for (i = lines.begin(); i != lines.end(); ++i) {
 		split(*i, "", fields);
@@ -453,7 +455,7 @@ bool scene::parse_sgel(const string &s) {
 		if (fields.size() == 0)
 			continue;
 		if (fields[0].size() != 1) {
-			cerr << "expecting a|d|c|p|t at beginning of line '" << *i << "'" << endl;
+			loggers->get(LOG_ERR) << "expecting a|d|c|p at start of line '" << *i << "'" << endl;
 			return false;
 		}
 		
@@ -475,12 +477,14 @@ bool scene::parse_sgel(const string &s) {
 				errfield = parse_property(fields, error);
 				break;
 			default:
-				cerr << "expecting a|d|c|p|t at beginning of line '" << *i << "'" << endl;
+				loggers->get(LOG_ERR) << "expecting a|d|c|p at start of line '"
+				                       << *i << "'" << endl;
 				return false;
 		}
 		
 		if (errfield >= 0) {
-			cerr << "error in field " << errfield + 1 << " of line '" << *i << "': " << error << endl;
+			loggers->get(LOG_ERR) << "error in field " << errfield + 1 << " of line '"
+			                       << *i << "': " << error << endl;
 			return false;
 		}
 	}

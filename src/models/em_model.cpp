@@ -126,7 +126,7 @@ void draw_predictions(drawer *d, int mode, int nmodes, double pred, double real,
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
-	: model(name, "em", true), em(get_data())
+	: model(name, "em", true), em(get_data(), state->get_svs()->get_loggers())
 	{
 		draw = state->get_svs()->get_drawer();
 	}

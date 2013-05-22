@@ -77,8 +77,8 @@ private:
 	bool allow_repeat, finished, empty;
 };
 
-em_mode::em_mode(bool noise, bool manual, const model_train_data &data) 
-: noise(noise), manual(manual), data(data), new_fit(true), n_nonzero(-1)
+em_mode::em_mode(bool noise, bool manual, const model_train_data &data, logger_set *loggers) 
+: noise(noise), manual(manual), data(data), new_fit(true), n_nonzero(-1), loggers(loggers)
 {
 	if (noise) {
 		stale = false;
@@ -228,7 +228,7 @@ void em_mode::learn_obj_clauses(const relation_table &rels) const {
 			}
 		}
 		
-		FOIL foil;
+		FOIL foil(loggers);
 		foil.set_problem(pos_obj, neg_obj, rels);
 		if (!foil.learn(true, false)) {
 			// respond to this situation appropriately

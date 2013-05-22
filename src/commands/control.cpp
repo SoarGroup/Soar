@@ -217,7 +217,6 @@ public:
 		 is 0, and maximized at 1 when the angle is 180.
 		*/
 		double negcos = -(facing.dot(desired));
-		//cout << "NEG COS ANGLE " << negcos << endl;
 		return negcos;
 	}
 	
@@ -281,7 +280,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			if (!si->get_const_attr(root, "a", a) ||
 			    !si->get_const_attr(root, "b", b))
 			{
-				LOG(CTRLDBG) << "Warning: incorrect parameters on euclidean objective, skipping" << endl;
+				si->print("Warning: incorrect parameters on euclidean objective, skipping\n");
 				break;
 			}
 			obj = new euclidean_obj(a, b);
@@ -292,7 +291,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "axis", axis))
 			{
-				LOG(CTRLDBG) << "Warning: incorrect parameters on axis_diff objective, skipping" << endl;
+				si->print("Warning: incorrect parameters on axis_diff objective, skipping\n");
 				break;
 			}
 			obj = new axis_diff_obj(a, b, axis);
@@ -303,7 +302,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "axis", axis))
 			{
-				LOG(CTRLDBG) << "Warning: incorrect parameters on abs_axis_diff objective, skipping" << endl;
+				si->print("Warning: incorrect parameters on abs_axis_diff objective, skipping\n");
 				break;
 			}
 			obj = new abs_axis_diff_obj(a, b, axis);
@@ -313,7 +312,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "c", c))
 			{
-				LOG(CTRLDBG) << "Warning: incorrect parameters on behind objective, skipping" << endl;
+				si->print("Warning: incorrect parameters on behind objective, skipping\n");
 				break;
 			}
 			obj = new behind_obj(a, b, c);
@@ -323,12 +322,12 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "c", c))
 			{
-				LOG(CTRLDBG) << "Warning: incorrect parameters on align_facing objective, skipping" << endl;
+				si->print("Warning: incorrect parameters on align_facing objective, skipping\n");
 				break;
 			}
 			obj = new align_facing_objective(a, b, c);
 		} else {
-			LOG(CTRLDBG) << "skipping unknown objective " << name << endl;
+			si->print("skipping unknown objective\n");
 		}
 		
 		if (sign == "negative") {
@@ -641,9 +640,9 @@ public:
 		besttraj = bestnode->traj;
 		beststate = bestnode->state;
 		bestval = bestnode->value;
-		LOG(CTRLDBG) << "BEST TRAJ LENGTH " << bestnode->traj.size() << endl;
-		LOG(CTRLDBG) << "AVG DEPTH " << avg_depth << endl;
-		LOG(CTRLDBG) << "AVG BF " << avg_bf << endl;
+		cout << "BEST TRAJ LENGTH " << bestnode->traj.size() << endl;
+		cout << "AVG DEPTH " << avg_depth << endl;
+		cout << "AVG BF " << avg_bf << endl;
 		
 		/*
 		rvec lengths(leafs.size());
@@ -689,7 +688,6 @@ private:
 		 comes first.
 		*/
 		int seek(int maxsteps) {
-			cout << "SEEK" << endl;
 			rvec step(ci->outspec->size()), newval, newstate;
 			int steps;
 			traj_eval eval(ci->outspec->size(), ci->mdl, ci->obj, *ci->scn);
@@ -711,7 +709,6 @@ private:
 		int random_step(int maxsteps) {
 			const scene_sig &sig = ci->scn->get_signature();
 			
-			cout << "RANDOM" << endl;
 			rvec step(ci->outspec->size()), newval;
 			randomize_vec(step, ci->min, ci->max);
 			int numsteps = rand() % maxsteps + 1;
@@ -791,7 +788,6 @@ public:
 	int seek(scene *scn, rvec &bestout) {
 		rvec currval;
 		obj->evaluate(*scn, currval);
-		cout << "CURR VAL " << currval << endl;
 		
 		if (cached_traj.size() > 0) {
 			// verify that cached trajectory is still valid, given current model
@@ -828,7 +824,6 @@ public:
 				}
 			}
 			
-			cout << "BEST VAL " << bestval << endl;
 			if (lexical_compare(currval, bestval) <= 0) {
 				cached_traj.clear();
 			} else {
@@ -841,7 +836,6 @@ public:
 			return 1;
 		}
 		bestout = cached_traj.front();
-		cout << "BEST OUT " << bestout << endl;
 		cached_traj.pop_front();
 		return 2;
 	}

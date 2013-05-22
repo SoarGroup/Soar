@@ -17,6 +17,7 @@ class command;
 class scene;
 class multi_model;
 class drawer;
+class logger_set;
 
 /* working memory scene graph object - mediates between wmes and scene graph nodes */
 class sgwme : public sgnode_listener {
@@ -28,8 +29,8 @@ public:
 private:
 	void add_child(sgnode *c);
 	
-	sgwme*          parent;
-	sgnode*         node;
+	sgwme          *parent;
+	sgnode         *node;
 	Symbol         *id;
 	wme            *name_wme;
 	soar_interface *soarint;
@@ -125,6 +126,8 @@ private:
 	bool test_models;
 	
 	timer_set timers;
+	
+	logger_set *loggers;
 };
 
 class svs : public svs_interface, public cliproxy {
@@ -144,6 +147,7 @@ public:
 	const output_spec *get_output_spec() { return &outspec; }
 	soar_interface *get_soar_interface() { return si; }
 	drawer *get_drawer() const           { return draw; }
+	logger_set *get_loggers()            { return loggers; }
 
 	bool do_cli_command(const std::vector<std::string> &args, std::string &output);
 	
@@ -152,7 +156,6 @@ private:
 	int  parse_output_spec(const std::string &s);
 
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
-	void cli_log(const std::vector<std::string> &args, std::ostream &os);
 	void cli_connect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_disconnect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_use_models(const std::vector<std::string> &args, std::ostream &os);
@@ -169,6 +172,7 @@ private:
 	std::map<std::string, model*> models;
 	
 	timer_set timers;
+	logger_set *loggers;
 };
 
 #endif

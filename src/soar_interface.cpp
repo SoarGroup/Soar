@@ -6,6 +6,7 @@
 #include "soar_module.h"
 #include "symtab.h"
 #include "wmem.h"
+#include "print.h"
 #include "soar_interface.h"
 
 using namespace std;
@@ -124,3 +125,6 @@ wme *soar_interface::make_wme(Symbol *id, const std::string &attr, Symbol *val) 
 	return w;
 }
 
+void soar_interface::print(const string &msg) {
+	print_string(agnt, msg.c_str());
+}

@@ -141,7 +141,6 @@ num_classifier::num_classifier(int t) : cls(NULL) {
 
 num_classifier::~num_classifier() {
 	if (cls) {
-		cout << "del " << this << " cls = " << cls << endl;
 		delete cls;
 	}
 }
@@ -173,7 +172,6 @@ void num_classifier::set_type(int t) {
 	default:
 		assert(false);
 	}
-	cout << "cre " << this << " cls = " << cls << endl;
 }
 
 void num_classifier::learn(mat &data, const vector<int> &classes) {

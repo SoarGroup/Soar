@@ -2,6 +2,7 @@
 #include "foil.h"
 #include "serialize.h"
 #include "params.h"
+#include "logger.h"
 #include "platform_specific.h" // for log2
 
 using namespace std;
@@ -398,7 +399,7 @@ void fix_variables(int num_auto_bound, clause &c) {
  So currently it looks like the false positive rate is the way to go.
 */
  
-void prune_clause_accuracy(clause &c, const relation &pos, const relation &neg, const relation_table &rels, double &success_rate, double &fp_rate, double &fn_rate) {
+void prune_clause_accuracy(clause &c, const relation &pos, const relation &neg, const relation_table &rels, logger_set *loggers, double &success_rate, double &fp_rate, double &fn_rate) {
 	double s, fp, fn;
 	int best_lit;
 	
@@ -410,7 +411,7 @@ void prune_clause_accuracy(clause &c, const relation &pos, const relation &neg, 
 	}
 	
 	clause_success_rate(c, pos, neg, rels, success_rate, fp_rate, fn_rate);
-	LOG(FOILDBG) << "original: " << c << " " << success_rate << endl;
+	loggers->get(LOG_FOIL) << "original: " << c << " " << success_rate << endl;
 	while (true) {
 		best_lit = -1;
 		for (int i = 0; i < c.size(); ++i) {
@@ -431,10 +432,10 @@ void prune_clause_accuracy(clause &c, const relation &pos, const relation &neg, 
 		c.erase(c.begin() + best_lit);
 		fix_variables(pos.arity(), c);
 	}
-	LOG(FOILDBG) << "pruned:   " << c << " " << success_rate << endl;
+	loggers->get(LOG_FOIL) << "pruned:   " << c << " " << success_rate << endl;
 }
 
-void prune_clause_fp(clause &c, const relation &pos, const relation &neg, const relation_table &rels, double &success_rate, double &fp_rate, double &fn_rate) {
+void prune_clause_fp(clause &c, const relation &pos, const relation &neg, const relation_table &rels, logger_set *loggers, double &success_rate, double &fp_rate, double &fn_rate) {
 	double s, fp, fn;
 	
 	if (pos.empty() && neg.empty()) {
@@ -445,19 +446,20 @@ void prune_clause_fp(clause &c, const relation &pos, const relation &neg, const 
 	}
 	
 	clause_success_rate(c, pos, neg, rels, success_rate, fp_rate, fn_rate);
-	LOG(FOILDBG) << "original: " << c << " " << success_rate << endl;
+	loggers->get(LOG_FOIL) << "original: " << c << " " << success_rate << endl;
 	for (int i = c.size() - 1; i >= 0; --i) {
 		clause pruned = c;
 		pruned.erase(pruned.begin() + i);
 		fix_variables(pos.arity(), pruned);
 		clause_success_rate(pruned, pos, neg, rels, s, fp, fn);
-		LOG(FOILDBG) << "removing " << c[i] << " results in " << fp_rate << " -> " << fp << " " << fn_rate << " -> " << fn << endl;
+		loggers->get(LOG_FOIL) << "removing " << c[i] << " results in " << fp_rate << " -> " << fp
+		                      << " " << fn_rate << " -> " << fn << endl;
 		if (fp <= fp_rate) {
 			c.erase(c.begin() + i);
 		}
 	}
 	fix_variables(pos.arity(), c);
-	LOG(FOILDBG) << "pruned:   " << c << " " << success_rate << endl;
+	loggers->get(LOG_FOIL) << "pruned:   " << c << " " << success_rate << endl;
 }
 
 void split_training(double ratio, const relation &all, relation &grow, relation &test) {
@@ -533,7 +535,9 @@ int literal::operator<<(const std::string &s) {
 	return c + 1;
 }
 
-FOIL::FOIL() : rels(NULL), own_rels(false) {}
+FOIL::FOIL(logger_set *loggers) 
+: rels(NULL), own_rels(false), loggers(loggers)
+{}
 
 FOIL::~FOIL() {
 	if (own_rels)
@@ -582,7 +586,7 @@ bool FOIL::learn(bool prune, bool record_errors) {
 		
 		clause old = ci.cl;
 		if (prune) {
-			prune_clause_fp(ci.cl, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
+			prune_clause_fp(ci.cl, pos_test, neg_test, *rels, loggers, success_rate, fp_rate, fn_rate);
 		} else {
 			clause_success_rate(ci.cl, pos_test, neg_test, *rels, success_rate, fp_rate, fn_rate);
 		}
@@ -682,7 +686,7 @@ void FOIL::gain(const literal &l, double &g, double &maxg) const {
 		g = pos_match * (I1 - I2);
 		maxg = pos_match * I1;
 	}
-	LOG(FOILDBG) << l << " gain " << g << " max " << maxg << endl;
+	loggers->get(LOG_FOIL) << l << " gain " << g << " max " << maxg << endl;
 }
 
 double FOIL::choose_literal(literal &l, int n) {
@@ -705,15 +709,15 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 		if (gain < 0 || (!c.empty() && l == c.back())) {
 			if (neg_left) {
 				neg_grow.slice(train_dim, *neg_left);
-				LOG(FOILDBG) << "No more suitable literals." << endl;
-				LOG(FOILDBG) << "unfiltered negatives: "; 
-				LOG(FOILDBG) << *neg_left << endl;
+				loggers->get(LOG_FOIL) << "No more suitable literals." << endl
+				                      << "unfiltered negatives: "
+				                      << *neg_left << endl;
 			}
 			quiescence = true;
 			break;
 		}
 		
-		LOG(FOILDBG) << endl << "CHOSE " << l << endl << endl;
+		loggers->get(LOG_FOIL) << endl << "CHOSE " << l << endl << endl;
 		const relation &r = get_rel(l.get_name());
 		const tuple &vars = l.get_args();
 		tuple bound_vars, bound_inds, new_inds;
@@ -853,12 +857,12 @@ bool FOIL::load_foil6(istream &is) {
 			pos.reset(arity);
 			neg.reset(arity);
 			if (!pos.load_foil6(is)) {
-				cerr << "invalid input for positive" << endl;
+				loggers->get(LOG_FOIL) << "invalid input for positive" << endl;
 				error = true;
 				break;
 			}
 			if (!neg.load_foil6(is)) {
-				cerr << "invalid input for negative" << endl;
+				loggers->get(LOG_FOIL) << "invalid input for negative" << endl;
 				error = true;
 				break;
 			}
@@ -871,7 +875,7 @@ bool FOIL::load_foil6(istream &is) {
 			relation &r = (*new_rels)[name];
 			r.reset(arity);
 			if (!r.load_foil6(is)) {
-				cerr << "invalid input for relation " << fields[0] << endl;
+				loggers->get(LOG_FOIL) << "invalid input for relation " << fields[0] << endl;
 				error = true;
 				break;
 			}

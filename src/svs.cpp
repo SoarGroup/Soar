@@ -16,6 +16,7 @@
 #include "model.h"
 #include "filter_table.h"
 #include "drawer.h"
+#include "logger.h"
 
 using namespace std;
 
@@ -96,6 +97,7 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
 {
 	assert (si->is_top_state(state));
 	outspec = svsp->get_output_spec();
+	loggers = svsp->get_loggers();
 	init();
 }
 
@@ -105,6 +107,7 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
   scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
 	assert (si->get_parent_state(state) == parent->state);
+	loggers = svsp->get_loggers();
 	init();
 }
 
@@ -195,7 +198,7 @@ void svs_state::process_cmds() {
 		} else {
 			string attr;
 			si->get_val(si->get_wme_attr(*i), attr);
-			cerr << "could not create command " << attr << endl;
+			loggers->get(LOG_ERR) << "could not create command " << attr << endl;
 		}
 	}
 }
@@ -436,6 +439,7 @@ svs::svs(agent *a)
 {
 	si = new soar_interface(a);
 	draw = new drawer();
+	loggers = new logger_set(si);
 }
 
 svs::~svs() {
@@ -550,13 +554,13 @@ string svs::get_output() const {
 }
 
 void svs::proxy_get_children(map<string, cliproxy*> &c) {
-	c["record_movie"] =      new bool_proxy(&record_movie);
-	c["log"] =               new memfunc_proxy<svs>(this, &svs::cli_log);
-	c["connect_viewer"] =    new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
+	c["record_movie"]      = new bool_proxy(&record_movie);
+	c["connect_viewer"]    = new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
 	c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);
-	c["use_models"] =        new memfunc_proxy<svs>(this, &svs::cli_use_models);
-	c["timers"] =         &timers;
-	c["filters"] =        &get_filter_table();
+	c["use_models"]        = new memfunc_proxy<svs>(this, &svs::cli_use_models);
+	c["timers"]            = &timers;
+	c["loggers"]           = loggers;
+	c["filters"]           = &get_filter_table();
 	
 	proxy_group *model_group = new proxy_group;
 	map<string, model*>::iterator i, iend;
@@ -641,46 +645,6 @@ bool svs::add_model(const string &name, model *m) {
 	}
 	models[name] = m;
 	return true;
-}
-
-void svs::cli_log(const vector<string> &args, ostream &os) {
-	if (args.empty()) {
-		for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-			os << log_type_names[i] << (LOG.is_on(static_cast<log_type>(i)) ? " on" : " off") << endl;
-		}
-		return;
-	}
-	if (args[0] == "on") {
-		if (args.size() < 2) {
-			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-				LOG.turn_on(static_cast<log_type>(i));
-			}
-		} else {
-			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-				if (args[1] == log_type_names[i]) {
-					LOG.turn_on(static_cast<log_type>(i));
-					return;
-				}
-			}
-			os << "no such log" << endl;
-		}
-	} else if (args[0] == "off") {
-		if (args.size() < 2) {
-			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-				LOG.turn_off(static_cast<log_type>(i));
-			}
-		} else {
-			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-				if (args[1] == log_type_names[i]) {
-					LOG.turn_off(static_cast<log_type>(i));
-					return;
-				}
-			}
-			os << "no such log" << endl;
-		}
-	} else {
-		os << "expecting on/off" << endl;
-	}
 }
 
 void svs::cli_use_models(const vector<string> &args, ostream &os) {

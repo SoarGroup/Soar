@@ -836,13 +836,6 @@ bool relation::check_size() const {
 	return sz == s;
 }
 
-void relation::gdb_print() const {
-	relation::tuple_map::const_iterator i, end;
-	for (i = tuples.begin(), end = tuples.end(); i != end; ++i) {
-		join(cout, i->first, " ") << " -> " << i->second << endl;
-	}
-}
-
 ostream &operator<<(ostream &os, const relation &r) {
 	relation::const_iterator i, end;
 	for (i = r.begin(), end = r.end(); i != end; ++i) {

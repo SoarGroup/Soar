@@ -13,10 +13,11 @@
 
 class em_train_data;
 class sig_info;
+class logger_set;
 
 class em_mode : public serializable, public cliproxy {
 public:
-	em_mode(bool noise, bool manual, const model_train_data &data);
+	em_mode(bool noise, bool manual, const model_train_data &data, logger_set *loggers);
 	
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
@@ -87,6 +88,8 @@ private:
 	*/
 	mutable std::vector<std::vector<clause> > obj_clauses;
 	mutable bool obj_clauses_stale;
+	
+	logger_set *loggers;
 
 	void learn_obj_clauses(const relation_table &rels) const;
 	
