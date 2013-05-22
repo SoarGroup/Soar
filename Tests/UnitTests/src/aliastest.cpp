@@ -1,6 +1,6 @@
 #include <portability.h>
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "unittest.h"
 
 #include "cli_Aliases.h"
 #include "cli_Parser.h"

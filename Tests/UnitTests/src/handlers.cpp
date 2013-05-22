@@ -2,7 +2,7 @@
 
 #include "handlers.h"
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "unittest.h"
 
 #include <vector>
 #include <sstream>

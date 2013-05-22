@@ -25,7 +25,7 @@ There are many more options and details. See online resources:
 
 #include <portability.h>
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "unittest.h"
 
 class SanityTest : public CPPUNIT_NS::TestCase
 {
