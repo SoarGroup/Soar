@@ -8,11 +8,12 @@
 #include "common.h"
 #include "scene_sig.h"
 #include "relation.h"
+#include "cliproxy.h"
 
 class svs;
 class logger_set;
 
-class scene : public sgnode_listener {
+class scene : public sgnode_listener, public cliproxy {
 public:
 	scene(const std::string &name, svs *owner, bool draw);
 	~scene();
@@ -49,8 +50,8 @@ public:
 	bool tracking_distances() const { return track_dists; }
 	void set_track_distances(bool v);
 	
-	double distance(const std::string &n1, const std::string &n2) const;
-
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
+	
 private:
 	typedef std::map<std::string, double> property_map;
 	
@@ -98,6 +99,10 @@ private:
 	void update_closest() const;
 	void update_dists(int i);
 	void update_all_dists();
+	
+	void cli_props(const std::vector<std::string> &args, std::ostream &os);
+	void cli_dist(const std::vector<std::string> &args, std::ostream &os) const;
+	void cli_sgel(const std::vector<std::string> &args, std::ostream &os);
 };
 
 #endif

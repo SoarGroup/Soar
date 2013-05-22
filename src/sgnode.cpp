@@ -219,6 +219,30 @@ bool sgnode::has_descendent(const sgnode *n) const {
 	return false;
 }
 
+void sgnode::proxy_use_sub(const vector<string> &args, ostream &os) {
+	table_printer t, t1;
+	t.add_row() << "id:"     << id;
+	t.add_row() << "name:"   << name;
+	t.add_row() << "type:"   << type;
+	t.add_row() << "parent:" << (parent ? parent->get_name() : "none");
+	t.print(os);
+	os << endl;
+	
+	t1.add_row() << "pos:";
+	for (int i = 0; i < 3; ++i) {
+		t1 << pos(i);
+	}
+	t1.add_row() << "rot:";
+	for (int i = 0; i < 3; ++i) {
+		t1 << rot(i);
+	}
+	t1.add_row() << "scale:";
+	for (int i = 0; i < 3; ++i) {
+		t1 << scale(i);
+	}
+	t1.print(os);
+}
+
 group_node::~group_node() {
 	childiter i;
 	for (i = children.begin(); i != children.end(); ++i) {
@@ -313,6 +337,12 @@ void group_node::set_transform_dirty_sub() {
 	}
 }
 
+void group_node::proxy_get_children(map<string, cliproxy*> &c) {
+	for (int i = 0, iend = children.size(); i < iend; ++i) {
+		c[children[i]->get_name()] = children[i];
+	}
+}
+
 /*
  Based on the fact that the support s_T(v) of a geometry under transformation
  T(x) = Bx + c is T(s(Bt(v))), where Bt is the transpose of B.
@@ -399,6 +429,18 @@ void convex_node::gjk_local_support(const vec3 &dir, vec3 &support) const {
 	support = verts[best_i];
 }
 
+void convex_node::proxy_use_sub(const vector<string> &args, ostream &os) {
+	sgnode::proxy_use_sub(args, os);
+	
+	table_printer t;
+	for (int i = 0, iend = verts.size(); i < iend; ++i) {
+		t.add_row() << verts[i](0) << verts[i](1) << verts[i](2);
+	}
+	
+	os << endl << "vertices" << endl;
+	t.print(os);
+}
+
 ball_node::ball_node(const string &name, const string &type, double radius)
 : geometry_node(name, type), radius(radius)
 {}
@@ -436,6 +478,12 @@ void ball_node::set_radius(double r) {
 
 void ball_node::gjk_local_support(const vec3 &dir, vec3 &support) const {
 	support = radius * dir.normalized();
+}
+
+void ball_node::proxy_use_sub(const vector<string> &args, ostream &os) {
+	sgnode::proxy_use_sub(args, os);
+	
+	os << endl << "radius: " << radius << endl;
 }
 
 void point_ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {

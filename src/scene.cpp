@@ -728,7 +728,7 @@ void scene::update_all_dists() {
 	}
 	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
 		for (int j = i + 1, jend = nodes.size(); j < jend; ++j) {
-			double d = convex_distance(nodes[i].node, nodes[j].node);
+			double d = ::convex_distance(nodes[i].node, nodes[j].node);
 			nodes[i].dists[j] = nodes[j].dists[i] = d;
 		}
 	}
@@ -796,18 +796,60 @@ void scene::get_relations(relation_table &rt) const {
 	}
 }
 
-double scene::distance(const std::string &n1, const std::string &n2) const {
-	int i1 = -1, i2 = -1;
+void scene::proxy_get_children(map<string, cliproxy*> &c) {
+	c["world"]      = root;
+	c["properties"] = new memfunc_proxy<scene>(this, &scene::cli_props);
+	c["distance"]   = new memfunc_proxy<scene>(this, &scene::cli_dist);
+	c["sgel"]       = new memfunc_proxy<scene>(this, &scene::cli_sgel);
+}
+
+void scene::cli_props(const vector<string> &args, ostream &os) {
+	rvec vals;
+	table_printer t;
+	
+	get_properties(vals);
+	int i = 0;
+	for (int j = 0, jend = sig.size(); j < jend; ++j) {
+		for (int k = 0, kend = sig[j].props.size(); k < kend; ++k) {
+			t.add_row() << sig[j].name + ':' + sig[j].props[k] << vals(i++);
+		}
+	}
+	t.print(os);
+}
+
+void scene::cli_dist(const vector<string> &args, ostream &os) const {
+	if (args.size() != 2) {
+		os << "specify two nodes" << endl;
+		return;
+	}
+	
+	int i0 = -1, i1 = -1;
 	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
-		if (nodes[i].node->get_name() == n1) {
+		if (nodes[i].node->get_name() == args[0]) {
+			i0 = i;
+		} else if (nodes[i].node->get_name() == args[1]) {
 			i1 = i;
 		}
-		if (nodes[i].node->get_name() == n2) {
-			i2 = i;
-		}
 	}
-	if (i1 < 0 || i2 < 0) {
-		return -1;
+	if (i0 < 0) {
+		os << "node " << args[0] << " does not exist" << endl;
+		return;
 	}
-	return nodes[i1].dists[i2];
+	if (i1 < 0) {
+		os << "node " << args[1] << " does not exist" << endl;
+		return;
+	}
+	if (track_dists) {
+		os << nodes[i0].dists[i1] << endl;
+	} else {
+		os << convex_distance(nodes[i0].node, nodes[i1].node) << endl;
+	}
+}
+
+void scene::cli_sgel(const vector<string> &args, ostream &os) {
+	stringstream ss;
+	for (int i = 0, iend = args.size(); i < iend; ++i) {
+		ss << args[i] << " ";
+	}
+	parse_sgel(ss.str());
 }

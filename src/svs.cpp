@@ -283,14 +283,12 @@ bool svs_state::get_output(rvec &out) const {
 }
 
 void svs_state::proxy_get_children(map<string, cliproxy*> &c) {
-	c["learn_models"] =   new bool_proxy(&learn_models);
-	c["test_models"] =  new bool_proxy(&test_models);
-	c["relations"] =    new memfunc_proxy<svs_state>(this, &svs_state::cli_relations);
-	c["properties"] =   new memfunc_proxy<svs_state>(this, &svs_state::cli_props);
-	c["distance"] =     new memfunc_proxy<svs_state>(this, &svs_state::cli_dist);
-	c["sgel"] =         new memfunc_proxy<svs_state>(this, &svs_state::cli_sgel);
-	c["timers"] =       &timers;
-	c["mconfig"] =      mmdl;
+	c["learn_models"] = new bool_proxy(&learn_models);
+	c["test_models"]  = new bool_proxy(&test_models);
+	c["relations"]    = new memfunc_proxy<svs_state>(this, &svs_state::cli_relations);
+	c["timers"]       = &timers;
+	c["mconfig"]      = mmdl;
+	c["scene"]        = scn;
 
 	proxy_group *cmds = new proxy_group;
 	map<wme*, command*>::const_iterator i;
@@ -370,43 +368,6 @@ void svs_state::cli_relations(const vector<string> &args, ostream &os) const {
 		}
 		p.print(os);
 	}
-}
-
-void svs_state::cli_props(const vector<string> &args, ostream &os) {
-	rvec vals;
-	table_printer p;
-	
-	const scene_sig &sig = scn->get_signature();
-	scn->get_properties(vals);
-	int i = 0;
-	for (int j = 0, jend = sig.size(); j < jend; ++j) {
-		for (int k = 0, kend = sig[j].props.size(); k < kend; ++k) {
-			p.add_row() << sig[j].name + ':' + sig[j].props[k] << vals(i++);
-		}
-	}
-	p.print(os);
-	return;
-}
-
-void svs_state::cli_dist(const vector<string> &args, ostream &os) const {
-	if (args.size() != 2) {
-		os << "specify two nodes" << endl;
-		return;
-	}
-	double d = scn->distance(args[0], args[1]);
-	if (d < 0) {
-		os << "no such nodes" << endl;
-	} else {
-		os << d << endl;
-	}
-}
-
-void svs_state::cli_sgel(const vector<string> &args, ostream &os) {
-	stringstream ss;
-	for (int i = 0, iend = args.size(); i < iend; ++i) {
-		ss << args[i] << " ";
-	}
-	scn->parse_sgel(ss.str());
 }
 
 // add ability to set it?

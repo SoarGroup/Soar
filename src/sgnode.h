@@ -5,14 +5,16 @@
 
 #include <vector>
 #include <list>
+#include <string>
 #include "common.h"
 #include "mat.h"
+#include "cliproxy.h"
 
 class sgnode_listener;
 class group_node;
 class geometry_node;
 
-class sgnode {
+class sgnode : public cliproxy {
 	friend class group_node;
 	
 public:
@@ -63,6 +65,8 @@ public:
 	const bbox &get_bounds() const;
 	vec3 get_centroid() const;
 	bool has_descendent(const sgnode *n) const;
+	
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	
 	virtual void get_shape_sgel(std::string &s) const = 0;
 	virtual void walk(std::vector<sgnode*> &result) = 0;
@@ -125,6 +129,8 @@ public:
 	void walk_geoms(std::vector<geometry_node*> &g);
 	void walk_geoms(std::vector<const geometry_node*> &g) const;
 	
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
+
 private:
 	void update_shape();
 	void set_transform_dirty_sub();
@@ -157,6 +163,8 @@ public:
 	void set_verts(const ptlist &v);
 	void get_shape_sgel(std::string &s) const;
 	void gjk_local_support(const vec3 &dir, vec3 &support) const;
+
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	
 private:
 	void set_transform_dirty_sub();
@@ -179,6 +187,8 @@ public:
 	
 	void set_radius(double r);
 	void gjk_local_support(const vec3 &dir, vec3 &support) const;
+	
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	
 private:
 	void update_shape();
