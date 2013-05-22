@@ -12,6 +12,8 @@ public:
 	bool temporary() const { return false; }
 	
 private:
+	void list_children(int level, std::ostream &os);
+	
 	virtual void proxy_get_children(std::map<std::string, cliproxy*> &c) {}
 	virtual void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os) {}
 };

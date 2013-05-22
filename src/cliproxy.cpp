@@ -18,29 +18,47 @@ bool partition(const string &s, string &first, string &rest) {
 cliproxy::~cliproxy() {}
 
 void cliproxy::proxy_use(const string &path, const vector<std::string> &args, std::ostream &os) {
-	map<string, cliproxy*> c;
-	map<string, cliproxy*>::const_iterator i, iend;
 	
-	proxy_get_children(c);
 	if (path.empty() || path == ".") {
-		proxy_use_sub(args, os);
-		if (!c.empty()) {
-			os << endl << "children:";
-			for (i = c.begin(), iend = c.end(); i != iend; ++i) {
-				os << " " << i->first;
-			}
-			os << endl;
+		if (args.size() > 0 && args[0] == "help") {
+			// print help text
+		} else if (args.size() > 0 && args[0] == "dir") {
+			list_children(0, os);
+		} else {
+			proxy_use_sub(args, os);
 		}
 	} else {
 		string child, rest;
+		map<string, cliproxy*> c;
+		
 		partition(path, child, rest);
+		proxy_get_children(c);
 		if (has(c, child)) {
 			c[child]->proxy_use(rest, args, os);
 		} else {
 			os << "path not found" << endl;
 		}
+		
+		map<string, cliproxy*>::const_iterator i, iend;
+		for (i = c.begin(), iend = c.end(); i != iend; ++i) {
+			if (i->second->temporary()) {
+				delete i->second;
+			}
+		}
 	}
+}
+
+void cliproxy::list_children(int level, std::ostream &os) {
+	map<string, cliproxy*> c;
+	map<string, cliproxy*>::const_iterator i, iend;
+	
+	proxy_get_children(c);
 	for (i = c.begin(), iend = c.end(); i != iend; ++i) {
+		for (int j = 0; j < level; ++j) {
+			os << "  ";
+		}
+		os << i->first << endl;
+		i->second->list_children(level + 1, os);
 		if (i->second->temporary()) {
 			delete i->second;
 		}

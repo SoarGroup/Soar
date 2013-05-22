@@ -122,11 +122,9 @@ private:
 	};
 	
 	bool predict_or_test(bool test, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
-	
-	void proxy_get_children(std::map<std::string, cliproxy*> &c);
-	void cli_assign(std::ostream &os) const;
+	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 
-	std::list<model_config*>       active_models;
+	std::list<model_config*> active_models;
 	std::map<std::string, model*> *model_db;
 };
 

@@ -219,11 +219,7 @@ void multi_model::unassign_model(const string &name) {
 	}
 }
 
-void multi_model::proxy_get_children(map<string, cliproxy*> &c) {
-	c[""] = new memfunc_proxy<multi_model>(this, &multi_model::cli_assign);
-}
-
-void multi_model::cli_assign(ostream &os) const {
+void multi_model::proxy_use_sub(const vector<string> &args, ostream &os) {
 	const char *indent = "  ";
 	std::list<model_config*>::const_iterator j;
 	for (j = active_models.begin(); j != active_models.end(); ++j) {
