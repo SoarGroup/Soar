@@ -186,6 +186,9 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
     }
     else if ( pOp == 'g' )
     {
+        if(pVal)
+          return SetError( "Unneccessary argument to rl -g" );
+
         soar_module::param *my_param = agnt->rl_params->get( pAttr->c_str() );
         if ( !my_param )
             return SetError( "Invalid attribute." );
@@ -212,18 +215,60 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
     else if ( pOp == 't' )
     {
       if(pAttr && *pAttr == "clear") {
-        agnt->rl_trace.clear();
+        if(pVal) {
+          const int goal_level = atoi(pVal->c_str());
+          if(goal_level < 1)
+            return SetError( "Invalid RL goal level for rl -t clear." );
+
+          agnt->rl_trace.erase(goal_level);
+        }
+        else {
+          agnt->rl_trace.clear();
+        }
+      }
+      else if(pAttr && *pAttr == "init") {
+        goal_stack_level level = 1;
+
+        if(pVal) {
+          const int goal_level = atoi(pVal->c_str());
+          if(goal_level < 1)
+            return SetError( "Invalid RL goal level for rl -t init." );
+
+          for(Symbol *goal = agnt->top_goal; goal; goal = goal->id.lower_goal, ++level) {
+            if(level == goal_level) {
+              goal->id.rl_trace = &agnt->rl_trace[level];
+              break;
+            }
+          }
+        }
+        else {
+          for(Symbol *goal = agnt->top_goal; goal; goal = goal->id.lower_goal, ++level)
+            goal->id.rl_trace = &agnt->rl_trace[level];
+        }
+
+        ++agnt->rl_init_count;
       }
       else {
-        const int level = pAttr ? atoi(pAttr->c_str()) : 1;
-        if(level < 1)
-          return SetError( "Invalid RL goal level / clear command." );
+        int goal_level = 1;
+        if(pAttr) {
+          if(*pAttr == "print") {
+            if(pVal)
+              goal_level = atoi(pVal->c_str());
+          }
+          else if(pVal)
+            return SetError( "Invalid arguments to rl -t." );
+          else
+            goal_level = atoi(pAttr->c_str());
+
+          if(goal_level < 1)
+            return SetError( "Invalid RL goal level for rl -t." );
+        }
 
         std::ostringstream oss;
         
-        oss << "# RL Trace, Goal Level " << level << ':' << std::endl;
+        oss << "# RL Trace, Goal Level " << goal_level << ':' << std::endl;
 
-        std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(level);
+        std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(goal_level);
         if(tt != agnt->rl_trace.end())
           CLI_DoRL_print_trace(oss, tt->second);
 
@@ -234,6 +279,9 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
     }
     else if ( pOp == 'S' )
     {
+        if(pVal)
+          return SetError( "Unneccessary argument to rl -S" );
+
         if ( !pAttr )
         {
             CLI_DoRL_print( *this, m_RawOutput, m_Result,

@@ -2708,6 +2708,18 @@ namespace cli
                 }
 
             case 't':
+                // case: trace can do 0-2 non-option arguments
+                {
+                    if (!opt.CheckNumNonOptArgs(0, 2)) return cli.SetError( opt.GetError().c_str());
+
+                    if ( opt.GetNonOptionArguments() == 0 )
+                        return cli.DoRL( option );
+                    else if ( opt.GetNonOptionArguments() == 1 )
+                        return cli.DoRL( option, &( argv[2] ) );
+
+                    return cli.DoRL( option, &( argv[2] ), &( argv[3] ) );
+                }
+
             case 'S':
                 // case: stat and trace can do zero or one non-option arguments
                 {

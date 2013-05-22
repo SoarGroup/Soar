@@ -757,11 +757,6 @@ Symbol *init_rl_trace (agent* thisAgent, list *args, void* /*user_data*/) {
     }
   }
 
-  if (goal_level->ic.value != level) {
-    print_with_symbols (thisAgent, "Error: invalid goal level (%y) passed to init-rl-trace function.\n", goal_level);
-    return NIL;
-  }
-
   ++thisAgent->rl_init_count;
 
   return NIL;
