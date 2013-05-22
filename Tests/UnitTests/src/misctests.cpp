@@ -1,6 +1,6 @@
 #include <portability.h>
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "unittest.h"
 
 #include "handlers.h"
 #include "kernel.h"

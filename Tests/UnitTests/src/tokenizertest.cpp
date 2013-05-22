@@ -1,6 +1,6 @@
 #include <portability.h>
 
-#include <cppunit/extensions/HelperMacros.h>
+#include "unittest.h"
 
 #include "tokenizer.h"
 #include <stdarg.h>

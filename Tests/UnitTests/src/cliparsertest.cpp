@@ -1,7 +1,7 @@
 #include <portability.h>
 
 #include "cliparsertest.h"
-#include <cppunit/extensions/HelperMacros.h>
+#include "unittest.h"
 
 class CliParserTest : public CPPUNIT_NS::TestCase
 {
