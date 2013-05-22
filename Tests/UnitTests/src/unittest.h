@@ -1,11 +1,8 @@
 #ifndef UNITTEST_H
 #define UNITTEST_H
 
-#include <algorithm>
-#include <functional>
 #include <iostream>
 #include <list>
-#include <memory>
 #include <stdexcept>
 #include <string>
 #include <sstream>
@@ -21,6 +18,12 @@ public:
   }
 };
 
+class CPPUnit_Function {
+public:
+  virtual ~CPPUnit_Function() {}
+  virtual void operator()() = 0;
+};
+
 #define CPPUNIT_ASSERT(x) if(!(x)) { \
   std::ostringstream oss; \
   oss << "CPPUnit Assertion Failure " << " in file " << __FILE__ << ':' << __LINE__ << " : " <<  CPPUNIT_STR(x); \
@@ -34,12 +37,20 @@ public:
 }
 
 #define CPPUNIT_TEST_SUITE(x) typedef x test_t; \
+  class Member_Function : public CPPUnit_Function { \
+  public: \
+    Member_Function(test_t * const &this_, void (test_t::*fun_)()) : m_this(this_), m_fun(fun_) {} \
+    void operator()() {(m_this->*m_fun)();} \
+  private: \
+    test_t * m_this; \
+    void (test_t::*m_fun)(); \
+  }; \
   friend class Register_##x; \
   std::string get_class_name() const {return CPPUNIT_STR(x);} \
-  std::list<std::pair<std::string, std::function<void ()>>> get_tests() { \
-    std::list<std::pair<std::string, std::function<void ()>>> tests;
+  std::list<std::pair<std::string, CPPUnit_Function *> > get_tests() { \
+    std::list<std::pair<std::string, CPPUnit_Function *> > tests;
 #define CPPUNIT_TEST(x) \
-    tests.push_back(std::make_pair(CPPUNIT_STR(x), std::bind(&test_t::x, this)));
+    tests.push_back(std::make_pair(CPPUNIT_STR(x), new Member_Function(this, &test_t::x)));
 #define CPPUNIT_TEST_SUITE_END() \
     return tests; \
   }
@@ -68,9 +79,9 @@ public:
       m_listeners.push_back(listener);
     }
 
-    void tell(const bool &result_) {
-      const bool &result = result_;
-      std::for_each(m_listeners.begin(), m_listeners.end(), [&result](TestListener * const listener) {listener->tell(result);});
+    void tell(const bool &result) {
+      for(std::list<TestListener *>::iterator lt = m_listeners.begin(), lend = m_listeners.end(); lt != lend; ++lt)
+        (*lt)->tell(result);
     }
 
   private:
@@ -79,20 +90,19 @@ public:
 
   class TestCase {
     virtual std::string get_class_name() const = 0;
-    virtual std::list<std::pair<std::string, std::function<void ()>>> get_tests() = 0;
+    virtual std::list<std::pair<std::string, CPPUnit_Function *> > get_tests() = 0;
     virtual void setUp() {}
     virtual void tearDown() {}
 
   public:
-    virtual void run(TestResult &result_) {
-      TestResult &result = result_;
-      auto tests = get_tests();
-      std::for_each(tests.begin(), tests.end(), [this, &result](const std::pair<std::string, std::function<void ()>> &sf) {
-        std::cout << this->get_class_name() << "::" << sf.first;
+    virtual void run(TestResult &result) {
+      std::list<std::pair<std::string, CPPUnit_Function *> > tests = get_tests();
+      for(std::list<std::pair<std::string, CPPUnit_Function *> >::iterator tt = tests.begin(), tend = tests.end(); tt != tend; ++tt) {
+        std::cout << this->get_class_name() << "::" << tt->first;
         std::cout.flush();
         this->setUp();
         try {
-          sf.second();
+          (*tt->second)();
           result.tell(true);
         }
         catch(CPPUnit_Assert_Failure &caf) {
@@ -100,7 +110,8 @@ public:
           std::cerr << caf.what() << std::endl;
         }
         this->tearDown();
-      });
+        delete tt->second;
+      }
     }
   };
 
@@ -137,9 +148,9 @@ public:
       tests.push_back(test);
     }
 
-    void run(TestResult &result_) {
-      TestResult &result = result_;
-      std::for_each(tests.begin(), tests.end(), [&result](TestCase * const &test) {test->run(result);});
+    void run(TestResult &result) {
+      for(std::list<TestCase *>::iterator tt = tests.begin(), tend = tests.end(); tt != tend; ++tt)
+        (*tt)->run(result);
     }
 
   private:
@@ -181,7 +192,7 @@ public:
       ~TestCases() {}
 
       std::string get_class_name() const {return "";}
-      std::list<std::pair<std::string, std::function<void ()>>> get_tests() {return std::list<std::pair<std::string, std::function<void ()>>>();}
+      std::list<std::pair<std::string, CPPUnit_Function *> > get_tests() {return std::list<std::pair<std::string, CPPUnit_Function *> >();}
 
     public:
       static TestCases & get_TestCases() {
@@ -191,7 +202,8 @@ public:
 
       void run(TestResult &result_) {
         TestResult &result = result_;
-        std::for_each(tests.begin(), tests.end(), [&result](TestCase * const &test) {test->run(result);});
+        for(std::list<TestCase *>::iterator tt = tests.begin(), tend = tests.end(); tt != tend; ++tt)
+          (*tt)->run(result);
       }
 
       std::list<TestCase *> tests;

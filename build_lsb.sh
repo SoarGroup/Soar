@@ -38,7 +38,7 @@ fi
 
 if [ $COMPILE_FOR_LSB -ne 0 ] && [ ${VERCC[0]} -gt 4 -o ${VERCXX[0]} -gt 4 -o ${VERCC[1]} -gt 4 -o ${VERCXX[1]} -gt 4 ]
 then
-  echo "gcc/g++ 4.5 and 4.6 require ld.gold for LSB compilation."
+  echo "gcc/g++ 4.5 through 4.8 require ld.gold for LSB compilation."
 
   GOLD_LD=$(echo $(whereis -b gold-ld) | sed 's/.* //')
   if [ -x "$GOLD_LD/ld" ]; then
