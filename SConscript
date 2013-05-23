@@ -51,8 +51,12 @@ if compiler == 'g++':
 		'-DEIGEN_DONT_ALIGN',
 		'-Wno-enum-compare',
 	]
-	srcdirs.append('src/posix')
-	incdirs.append('src/posix')
+	if sys.platform == "darwin":
+		srcdirs.append('src/osx')
+		incdirs.append('src/osx')
+	else:
+		srcdirs.append('src/posix')
+		incdirs.append('src/posix')
 elif compiler == 'msvc':
 	flags = [
 		'/D', 'EIGEN_DONT_ALIGN',

@@ -10,11 +10,11 @@ struct log_type_info {
 };
 
 log_type_info logger_info[NUM_LOG_TYPES] = {
-	[LOG_ERR]  = { "ERROR", true  },
-	[LOG_CTRL] = { "CTRL",  false },
-	[LOG_EM]   = { "EM",    false },
-	[LOG_SGEL] = { "SGEL",  false },
-	[LOG_FOIL] = { "FOIL",  false },
+	{ "ERROR", true  },
+	{ "CTRL",  false },
+	{ "EM",    false },
+	{ "SGEL",  false },
+	{ "FOIL",  false },
 };
 
 logger::logger()
