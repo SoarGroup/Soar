@@ -25,7 +25,6 @@
 #include "lexer.h"
 #include "instantiations.h"
 #include "rhs.h"
-//#include "rhs_functions.h"
 #include "decide.h"
 
 #include <list>

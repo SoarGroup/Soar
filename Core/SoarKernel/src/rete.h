@@ -57,13 +57,6 @@
 #include <stdio.h>	// Needed for FILE token below
 #include "kernel.h"
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-struct not_struct;
-
 typedef char Bool;
 typedef unsigned char byte;
 typedef byte wme_trace_type;
@@ -237,9 +230,5 @@ inline byte test_type_to_relational_test_type(byte test_type)
   }
   return 255;
 }
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

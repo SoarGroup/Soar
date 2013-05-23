@@ -28,7 +28,6 @@
 #include "agent.h"
 #include "gdatastructs.h"
 #include "rhs.h"
-//#include "rhs_functions.h"
 #include "instantiations.h"
 #include "reorder.h"
 #include "symtab.h"

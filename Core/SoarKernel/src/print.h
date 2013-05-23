@@ -45,11 +45,6 @@
 
 #include <stdio.h>	// Needed for FILE token below
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 typedef char Bool;
 typedef struct test_struct test_info;
 typedef test_info * test;
@@ -194,9 +189,5 @@ extern void print_instantiation_with_wmes (agent* thisAgent,
 extern void print_list_of_conditions(agent* thisAgent, condition *cond);
 
 extern void print_trace (agent* thisAgent, int64_t sysParamIndex, const char *format, ...);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

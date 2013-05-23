@@ -631,18 +631,11 @@ void init_firer(agent* thisAgent) {
 
 /* --- Macro returning TRUE iff we're supposed to trace firings for the
  given instantiation, which should have the "prod" field filled in. --- */
-#ifdef USE_MACROS
-#define trace_firings_of_inst(thisAgent, inst) \
-  ((inst)->prod && \
-   (thisAgent->sysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM+(inst)->prod->type] || \
-    ((inst)->prod->trace_firings)))
-#else
 inline Bool trace_firings_of_inst(agent* thisAgent, instantiation * inst) {
 	return ((inst)->prod
 			&& (thisAgent->sysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM
 					+ (inst)->prod->type] || ((inst)->prod->trace_firings)));
 }
-#endif
 
 /* -----------------------------------------------------------------------
  Create Instantiation

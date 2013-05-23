@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ======================================================================
@@ -17,25 +17,25 @@
   The lexer maintains a stack of files being read, in order to handle nested
   loads.  Start_lex_from_file() and stop_lex_from_file() push and pop the
   stack.  Immediately after start_lex_from_file(), the current lexeme (global
-  variable) is undefined.  Immediately after stop_lex_from_file(), the 
+  variable) is undefined.  Immediately after stop_lex_from_file(), the
   current lexeme is automatically restored to whatever it was just before
   the corresponding start_lex_from_file() call.
-  
+
   Determine_possible_symbol_types_for_string() is a utility routine which
   figures out what kind(s) of symbol a given string could represent.
-  
+
   Print_location_of_most_recent_lexeme() is used to print an indication
   of where a parser error occurred.  It tries to print out the current
   source line with a pointer to where the error was detected.
-  
+
   Current_lexer_parentheses_level() returns the current level of parentheses
   nesting (0 means no open paren's have been encountered).
   Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
   closing paren is found (0 means eat until back at the top level).
-  
+
   Fake_rparen_at_next_end_of_line() tells the lexer to insert a fake
   R_PAREN_LEXEME token the next time it reaches the end of a line.
-  
+
   Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
   be read.  If FALSE, things that look like identifiers will be returned
   as SYM_CONSTANT_LEXEME's instead.
@@ -45,11 +45,6 @@
 #define LEXER_H
 
 #include <stdio.h>	// Needed for FILE token below
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
 
 typedef char Bool;
 typedef struct agent_struct agent;
@@ -90,7 +85,7 @@ enum lexer_token_type {
   PERIOD_LEXEME,                     /* "." */
   QUOTED_STRING_LEXEME,              /* string in double quotes */
   DOLLAR_STRING_LEXEME,              /* string for shell escape */
-  NULL_LEXEME };                     /* Initial value */          
+  NULL_LEXEME };                     /* Initial value */
 
 #define LENGTH_OF_LONGEST_SPECIAL_LEXEME 3  /* length of "-->" and "<=>"--
                                                if a longer one is added, be
@@ -116,7 +111,7 @@ extern void determine_possible_symbol_types_for_string (char *s,
                                                         Bool *rereadable);
 
 extern void init_lexer (agent* thisAgent);
-extern void start_lex_from_file (agent* thisAgent, const char *filename, 
+extern void start_lex_from_file (agent* thisAgent, const char *filename,
 								 FILE *already_opened_file);
 extern void stop_lex_from_file (agent* thisAgent);
 
@@ -124,7 +119,7 @@ extern void get_lexeme (agent* thisAgent);
 extern void print_location_of_most_recent_lexeme (agent* thisAgent);
 
 extern int current_lexer_parentheses_level (agent* thisAgent);
-extern void skip_ahead_to_balanced_parentheses (agent* thisAgent, 
+extern void skip_ahead_to_balanced_parentheses (agent* thisAgent,
 												int parentheses_level);
 extern void fake_rparen_at_next_end_of_line (agent* thisAgent);
 extern void set_lexer_allow_ids (agent* thisAgent, Bool allow_identifiers);
@@ -153,9 +148,5 @@ typedef struct lexer_source_file_struct {
   struct lexeme_info saved_lexeme;   /* save/restore it during nested loads */
   int saved_current_char;           /* save/restore this too */
 } lexer_source_file;
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif // LEXER_H

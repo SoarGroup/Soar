@@ -368,18 +368,6 @@ extern void reset_variable_gensym_numbers (agent* thisAgent);
 extern void print_internal_symbols (agent* thisAgent);
 extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_t *counter);
 
-#ifdef USE_MACROS
-
-/* --- macros used for changing the reference count --- */
-#define symbol_add_ref(x) {(x)->common.reference_count++;}
-#define symbol_remove_ref(thisAgent, x) { \
-  (x)->common.reference_count--; \
-  if ((x)->common.reference_count == 0) \
-  deallocate_symbol(thisAgent, x); \
-  }
-
-#else
-
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
 extern void print (agent* thisAgent, const char *format, ... );
 
@@ -461,8 +449,6 @@ inline bool symbol_is_constant( Symbol *sym )
 		     ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
 }
 
-#endif /* USE_MACROS */
-
 /* -----------------------------------------------------------------
                        Predefined Symbols
 
@@ -480,9 +466,5 @@ inline bool symbol_is_constant( Symbol *sym )
 
 extern void create_predefined_symbols (agent* thisAgent);
 extern void release_predefined_symbols (agent* thisAgent);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

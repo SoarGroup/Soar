@@ -46,7 +46,7 @@
 #include "gsysparam.h"
 #include "agent.h"
 #include "production.h"
-#include "rhsfun_math.h"
+#include "rhs_functions_math.h"
 #include "io_soar.h"
 #include "recmem.h"
 #include "wmem.h"

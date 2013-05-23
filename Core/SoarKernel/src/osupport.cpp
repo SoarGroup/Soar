@@ -34,7 +34,6 @@
 #include "production.h"
 #include "instantiations.h"
 #include "rhs.h"
-//#include "rhs_functions.h"
 #include "print.h"
 #include "reorder.h"
 #include "rete.h"

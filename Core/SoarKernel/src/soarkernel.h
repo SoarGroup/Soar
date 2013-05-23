@@ -33,7 +33,6 @@ struct node_varnames_struct;
 #include "symtab.h"
 #include "gdatastructs.h"
 #include "rhs.h"
-//#include "rhs_functions.h"
 #include "instantiations.h"
 #include "production.h"
 #include "gsysparam.h"

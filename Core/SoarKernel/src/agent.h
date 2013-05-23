@@ -53,11 +53,6 @@ typedef struct rhs_function_struct rhs_function;
 // select types
 typedef struct select_info_struct select_info;
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 /* RBD Need more comments here, or should this stuff be here at all? */
 
 #define UPDATE_LINKS_NORMALLY 0

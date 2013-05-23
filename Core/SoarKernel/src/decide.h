@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
@@ -20,17 +20,12 @@
 
    Whenever some acceptable or require preference for a context slot
    changes, we call mark_context_slot_as_acceptable_preference_changed().
-   
+
    see decide.cpp for more information in the comments.
 ======================================================================= */
 
 #ifndef DECIDE_H
 #define DECIDE_H
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
 
 typedef char Bool;
 typedef unsigned char byte;
@@ -50,7 +45,6 @@ void remove_existing_attribute_impasse_for_slot (agent* thisAgent, slot *s);
 void post_link_addition (agent* thisAgent, Symbol *from, Symbol *to);
 void post_link_removal (agent* thisAgent, Symbol *from, Symbol *to);
 
-/* REW: begin 09.15.96   additions for Soar8 architecture */
 void elaborate_gds (agent* thisAgent);
 void gds_invalid_so_remove_goal (agent* thisAgent, wme *w);
 void free_parent_list(agent* thisAgent);
@@ -58,16 +52,13 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation *inst);
 void create_gds_for_goal( agent* thisAgent, Symbol *goal );
 extern void remove_operator_if_necessary(agent* thisAgent, slot *s, wme *w);
 
-extern int GDS_PrintCmd (/****ClientData****/ int clientData, 
+extern int GDS_PrintCmd (/****ClientData****/ int clientData,
                          /****Tcl_Interp****/ void * interp,
                          int argc, char *argv[]);
-/* REW: end   09.15.96 */
 
-/* MMA 8-2012 */
 void add_to_CDPS (agent* thisAgent, slot *s, preference *pref, bool unique_value = true);
 void rl_update_for_one_candidate(agent* thisAgent, slot *s, bool consistency, preference *candidates);
 extern byte run_preference_semantics(agent* thisAgent, slot *s, preference **result_candidates, bool consistency = false, bool predict = false);
-/* MMA end */
 
 /* ---------------------------------------------------------------------
                       Top-Level Decider Routines
@@ -98,19 +89,10 @@ extern void create_top_goal (agent* thisAgent);
 extern void clear_goal_stack (agent* thisAgent);
 extern void print_lowest_slot_in_context_stack (agent* thisAgent);
 
-/* These prototypes moved here from consistency.cpp -ajc (5/3/02) */
 extern void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal);
 extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
 extern Symbol *attribute_of_existing_impasse (agent* thisAgent, Symbol *goal);
-
-/* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
 extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
-
-// SBW 5/07 added prototype
 unsigned int count_candidates(preference * candidates);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

@@ -27,11 +27,6 @@
 #ifndef GSYSPARAM_H
 #define GSYSPARAM_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 typedef char Bool;
 typedef unsigned char byte;
 typedef struct agent_struct agent;
@@ -208,9 +203,5 @@ extern void init_sysparams (agent* thisAgent);
 extern void set_sysparam (agent* thisAgent, int param_number, int64_t new_value);
 
 #define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

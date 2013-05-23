@@ -1,10 +1,10 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
-                                wmem.h 
+                                wmem.h
 
                 Working Memory Management and Utility Routines
 
@@ -35,11 +35,6 @@
 
 #ifndef WMEM_H
 #define WMEM_H
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
 
 typedef char Bool;
 typedef uint64_t tc_number;
@@ -118,9 +113,9 @@ extern Symbol *find_name_of_object (agent* thisAgent, Symbol *id);
 	 then the values for these pointers will all be NIL. If a WME is
 	 dependent for more than one goal, then it will point to the GDS
 	 of the highest goal.
-	
 
-      
+
+
 
    Reference counts on wmes:
       +1 if the wme is currently in WM
@@ -151,42 +146,26 @@ typedef struct wme_struct {
   struct gds_struct *gds;
   struct wme_struct *gds_next, *gds_prev; /* used for dll of wmes in gds */
   /* REW: end   09.15.96 */
-  
-  
+
+
   epmem_node_id epmem_id;
   uint64_t epmem_valid;
 
   wma_decay_element* wma_decay_el;
   tc_number wma_tc_value;
-  
+
 } wme;
 
-#ifdef USE_MACROS
-
-#define wme_add_ref(w) { (w)->reference_count++; }
-#define wme_remove_ref(thisAgent, w) { \
-  if ((w)->reference_count != 0) (w)->reference_count--;   \
-  if ((w)->reference_count == 0) deallocate_wme(thisAgent, w); }
-
-#else
-
-inline void wme_add_ref(wme * w) { 
-   (w)->reference_count++; 
+inline void wme_add_ref(wme * w) {
+   (w)->reference_count++;
 }
 inline void wme_remove_ref(agent* thisAgent, wme * w)
 {
-  /* There are occaisionally wme's with zero reference counts 
-     created in the system. Make sure this function handles them 
+  /* There are occaisionally wme's with zero reference counts
+     created in the system. Make sure this function handles them
      correctly. */
   if ((w)->reference_count != 0) (w)->reference_count--;
   if ((w)->reference_count == 0) deallocate_wme(thisAgent, w);
 }
-
-#endif /* USE_MACROS */
-
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

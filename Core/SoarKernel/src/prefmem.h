@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ---------------------------------------------------------------------
@@ -13,7 +13,7 @@
 
    Preference_add_ref() and preference_remove_ref() are macros for
    incrementing and decrementing the reference count on a preference.
-   
+
    Possibly_deallocate_preference_and_clones() checks whether a given
    preference and all its clones have reference_count 0, and deallocates
    them all if they do; it returns TRUE if they were actually deallocated,
@@ -33,16 +33,11 @@
    matching values from TM, and deallocates the o-reject preferences when
    done.
 --------------------------------------------------------------------- */
-  
+
 #ifndef PREFMEM_H
 #define PREFMEM_H
 
 #include "gdatastructs.h"
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
 
 typedef char Bool;
 typedef unsigned char byte;
@@ -61,16 +56,6 @@ extern preference *make_preference (agent* thisAgent, byte type, Symbol *id, Sym
 
 extern Bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref);
 
-#ifdef USE_MACROS
-
-#define preference_add_ref(p) { (p)->reference_count++; }
-#define preference_remove_ref(thisAgent, p) { \
-  (p)->reference_count--; \
-  if ((p)->reference_count == 0) \
-    possibly_deallocate_preference_and_clones(thisAgent, p); }
-
-#else
-
 inline void preference_add_ref(preference * p)
 {
   (p)->reference_count++;
@@ -83,17 +68,10 @@ inline void preference_remove_ref(agent* thisAgent, preference * p)
     possibly_deallocate_preference_and_clones(thisAgent, p);
 }
 
-#endif /* USE_MACROS */
-
 extern void deallocate_preference (agent* thisAgent, preference *pref);
 
 extern bool add_preference_to_tm (agent* thisAgent, preference *pref);
 extern void remove_preference_from_tm (agent* thisAgent, preference *pref);
-extern void process_o_rejects_and_deallocate_them (agent* thisAgent, 
+extern void process_o_rejects_and_deallocate_them (agent* thisAgent,
 												   preference *o_rejects, pref_buffer_list& bufdeallo);
-
-#ifdef __cplusplus
-//}
-#endif
-
 #endif

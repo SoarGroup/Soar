@@ -26,7 +26,6 @@
 #include "trace.h"
 #include "wmem.h"
 #include "rhs.h"
-//#include "rhs_functions.h"
 #include "utilities.h"
 
 using namespace cli;

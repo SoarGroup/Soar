@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ======================================================================
@@ -23,7 +23,7 @@
    FOR_OPERATORS_TF.  The "name_restriction" argument should be either
    a pointer to a symbol, if the trace format is  restricted to apply
    to objects with that name, or NIL if the format can apply to any object.
-   
+
    Print_all_trace_formats() prints out either all existing stack trace
    or object trace formats.
 
@@ -38,11 +38,6 @@
 
 #ifndef TRACE_H
 #define TRACE_H
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
 
 /* trace format type restrictions */
 #define FOR_ANYTHING_TF 0          /* format applies to any object */
@@ -59,18 +54,14 @@ extern Bool add_trace_format (agent* thisAgent, Bool stack_trace, int type_restr
 extern Bool remove_trace_format (agent* thisAgent, Bool stack_trace, int type_restriction,
                                  Symbol *name_restriction);
 extern void print_all_trace_formats (agent* thisAgent, Bool stack_trace);
-//#ifdef USE_TCL
+
 extern void print_all_trace_formats_tcl (Bool stack_trace);
-//#endif /* USE_TCL */
+
 extern void print_object_trace (agent* thisAgent, Symbol *object);
 extern void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slot_type,
                                Bool allow_cycle_counts);
 
 extern char * help_on_trace_format_escapes[];
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif
 

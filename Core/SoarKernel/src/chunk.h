@@ -10,11 +10,6 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 typedef char Bool;
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
@@ -62,10 +57,6 @@ extern void add_results_for_id (agent* thisAgent, Symbol *id);
 
 extern void variablize_symbol (agent* thisAgent, Symbol **sym);
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif
 

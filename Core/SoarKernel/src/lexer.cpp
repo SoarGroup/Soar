@@ -779,7 +779,6 @@ void get_lexeme (agent* thisAgent) {
       continue;
     }
 
-//#ifdef USE_TCL
     if (thisAgent->current_char==';') {
       /* --- skip the semi-colon, forces newline in TCL --- */
       get_next_char(thisAgent);  /* consume it */
@@ -797,43 +796,6 @@ void get_lexeme (agent* thisAgent) {
       if (thisAgent->current_char!=EOF) get_next_char(thisAgent);
       continue;
     }
-//#else
-//    if (thisAgent->current_char==';') {
-//      /* --- read from semicolon to end-of-line --- */
-//      while ((thisAgent->current_char!='\n') &&
-//             (thisAgent->current_char!=EOF))
-//        get_next_char(thisAgent);
-//      if (thisAgent->current_file->fake_rparen_at_eol) {
-//        do_fake_rparen(thisAgent);
-//        return;
-//      }
-//      if (thisAgent->current_char!=EOF) get_next_char(thisAgent);
-//      continue;
-//    }
-//    if (thisAgent->current_char=='#') {
-//      /* --- comments surrounded by "#|" and "|#" delimiters --- */
-//      record_position_of_start_of_lexeme(); /* in case of later error mesg. */
-//      get_next_char(thisAgent);
-//      if (thisAgent->current_char!='|') {
-//        print ("Error: '#' not followed by '|'\n");
-//        print_location_of_most_recent_lexeme(thisAgent);
-//        continue;
-//      }
-//      get_next_char(thisAgent);  /* consume the vbar */
-//      while (TRUE) {
-//        if (thisAgent->current_char==EOF) {
-//          print ("Error: '#|' without terminating '|#'\n");
-//          print_location_of_most_recent_lexeme(thisAgent);
-//          break;
-//        }
-//        if (thisAgent->current_char!='|') { get_next_char(thisAgent); continue; }
-//        get_next_char(thisAgent);
-//        if (thisAgent->current_char=='#') break;
-//      }
-//      get_next_char(thisAgent);  /* consume the closing '#' */
-//      continue; /* continue outer while(TRUE), reading more whitespace */
-//    }
-//#endif  /* USE_TCL */
     break; /* if no whitespace or comments found, break out of the loop */
   }
   /* --- no more whitespace, so go get the actual lexeme --- */

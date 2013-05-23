@@ -19,14 +19,13 @@
 
 #include <stdlib.h>
 
-#include "rhsfun_math.h"
+#include "rhs_functions_math.h"
 #include "symtab.h"
 #include "kernel.h"
 #include "mem.h"
 #include "print.h"
 #include "lexer.h"
 #include "rhs.h"
-//#include "rhs_functions.h"
 #include "soar_rand.h"
 
 #include <math.h>

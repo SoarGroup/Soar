@@ -20,11 +20,6 @@
 
 #include <set>
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 typedef char Bool;
 typedef unsigned char byte;
 typedef uint64_t tc_number;
@@ -184,13 +179,6 @@ typedef struct gds_struct {
 #define NUMERIC_INDIFFERENT_PREFERENCE_TYPE 13
 #define NUM_PREFERENCE_TYPES 14
 
-#ifdef USE_MACROS
-
-#define preference_is_unary(p) ((p)<9)
-#define preference_is_binary(p) ((p)>8)
-
-#else
-
 inline Bool preference_is_unary(byte p)
 {
   return (p < 9);
@@ -200,17 +188,8 @@ inline Bool preference_is_binary(byte p)
 {
   return (p > 8);
 }
-#endif /* USE_MACROS */
 
-#ifdef __cplusplus
-//extern "C" {
-#endif
-
-   extern const char * preference_name[NUM_PREFERENCE_TYPES];
-
-#ifdef __cplusplus
-//}
-#endif
+extern const char * preference_name[NUM_PREFERENCE_TYPES];
 
 typedef struct preference_struct {
   byte type;         /* acceptable, better, etc. */
@@ -356,33 +335,8 @@ typedef struct slot_struct {
    further indicates the type of the test.)
 ------------------------------------------------------------------- */
 
-/* -- If these macros are ever used, they must be updated to use the new
- *    test structures, which gets rid of the bit fiddling and makes all
- *    tests use what was previously the complex_test struct -- */
+/* --- Types of tests (can't be 255 -- see rete.cpp) --- */
 
-//#ifdef USE_MACROS
-//
-//#define test_is_blank_test(t) ((t)==NIL)
-//#define test_is_complex_test(t) (((uint64_t)(t)) & 1)
-//#define test_is_blank_or_equality_test(t) (! test_is_complex_test(t))
-//
-//#define make_blank_test() ((test)NIL)
-//#define make_equality_test(sym) ((sym)->common.reference_count++, (test)(sym)) // what's this???
-//#define make_equality_test_without_adding_reference(sym) ((test)(sym))
-//#define make_blank_or_equality_test(sym_or_nil) \
-//  ((sym_or_nil) ? make_equality_test(sym_or_nil) : make_blank_test() )
-//#define make_test_from_complex_test(ct) ((test) (((char *)(ct))+1))
-//
-//#define referent_of_equality_test(t) ((Symbol *) (t))
-//#define complex_test_from_test(t) ((complex_test *) (((char *)(t))-1))
-//
-//#else
-//
-//
-//#endif /* USE_MACROS */
-
-/* types of the complex_test's */
-/* WARNING -- can't be 255 -- see rete.cpp */
 enum TestType {
          NOT_EQUAL_TEST = 1,          /* various relational tests */
          LESS_TEST = 2,
@@ -421,12 +375,10 @@ typedef struct test_struct {
     ::list *disjunction_list;   /* for disjunction tests */
     ::list *conjunct_list;      /* for conjunctive tests */
   } data;
-  /* --- The following two variables store the original test type and
-   *     a pointer to the referent symbol that were defined when the
-   *     test was read in by the parser.  Those values are stored by
-   *     the rete when reconstructing a production.  It is used by the
-   *     chunker to determine when to variablize constant symbols.
-   *     - MMA 2013 ---*/
+  /* --- The following pointer stores the original test that was defined when
+   *     the test was read in by the parser.  The values are filled in by the
+   *     rete when reconstructing a production.  It is used by the chunker to
+   *     determine when to variablize constant symbols. - MMA 2013 ---*/
   test_struct *original_test;
 } test_info;
 
@@ -541,18 +493,8 @@ typedef struct condition_struct {
     ncc_info ncc;                        /* for ncc's only */
   } data;
 
-//  /* We store the original tests. They are used by chunking to determine whether a
-//   * constant in an instantiated condition should be variablized.  If it was
-//   * a variable in the original production, it will not be. */
-//  three_field_tests original_tests;
-//  three_field_tests chunk_tests;
-
   bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
   reorder_info reorder;  /* used only during reordering */
 } condition;
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

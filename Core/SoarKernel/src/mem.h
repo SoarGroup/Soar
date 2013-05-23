@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ======================================================================
@@ -26,7 +26,7 @@
      a memory block just large enough to hold the string, and copies the
      string into the block.   Free_memory_block_for_string() frees the
      block.
-     
+
      "Growable strings" provide a convenient way of building up a string
      piece by piece without having to pre-allocate the right amount of
      memory.  To initialize one, say "gs = make_blank_growable_string()"
@@ -37,12 +37,12 @@
      implemented by allocating a block of memory large enough to hold
      (1) the memory block's size, (2) the current string length, and (3)
      the current text of the string.  Add_to_growable_string() may result
-     in a new (larger) memory block being allocated and the text of the 
+     in a new (larger) memory block being allocated and the text of the
      string being copied.  Three macros provide access to a growable string's
      parts:  memsize_of_growable_string(), length_of_growable_string(),
      and (most importantly) text_of_growable_string(), which is of type
      (char *).
-     
+
    Memory pools:
 
      To allocate and free memory items efficiently at run time, we use
@@ -108,18 +108,18 @@
      in this, we provide masks_for_n_low_order_bits[] that select out the
      low-order bits of a value:  (x & masks_for_n_low_order_bits[23]) picks
      out the 23 low-order bits of x.
-     
+
      Items are added/removed from a hash table via add_to_hash_table() and
      remove_from_hash_table().  These calls resize the hash table if
      necessary.
-     
+
      The contents of a hash table (or one bucket in the table) can be
      retrieved via do_for_all_items_in_hash_table() and
      do_for_all_items_in_hash_bucket().  Each uses a callback function,
      invoking it with each successive item.  The callback function should
      normally return FALSE.  If the callback function ever returns TRUE,
      iteration over the hash table items stops and the do_for_xxx()
-     routine returns immediately.  
+     routine returns immediately.
 ====================================================================== */
 
 #ifndef MEM_H
@@ -136,11 +136,6 @@
 #include <stdlib.h> // malloc
 #endif // !_WIN32
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 extern void init_memory_utilities (agent* thisAgent);
 
 /* ----------------------- */
@@ -148,31 +143,13 @@ extern void init_memory_utilities (agent* thisAgent);
 /* ----------------------- */
 
 #ifdef DEBUG_MEMORY
-
-#ifdef USE_MACROS
-#define fill_with_garbage(block,size) memset((void *)(block), 0xBB, (size))
-#else // !USE_MACROS
-#ifdef __cplusplus
-//}
-#endif // __cplusplus
-
-template <typename T>
-inline void fill_with_garbage(T * block, size_t size)
-{
-  memset(static_cast<void *>(block), 0xBB, (size));
-}
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif // __cplusplus
-
-#endif // !USE_MACROS
-
+  template <typename T>
+  inline void fill_with_garbage(T * block, size_t size)
+  {
+    memset(static_cast<void *>(block), 0xBB, (size));
+  }
 #else
-
-#define fill_with_garbage(block,size) { }
-
+  #define fill_with_garbage(block,size) { }
 #endif
 
 #define MISCELLANEOUS_MEM_USAGE  0
@@ -198,15 +175,6 @@ extern void free_memory_block_for_string (agent* thisAgent, char *p);
 typedef char Bool;
 typedef void * growable_string;
 
-#ifdef USE_MACROS
-
-#define savestring(x) (char *) strcpy ((char *)(malloc (strlen (x) + 1)), (x))
-#define memsize_of_growable_string(gs) (*((int *)(gs)))
-#define length_of_growable_string(gs) (*(((int *)(gs))+1))
-#define text_of_growable_string(gs) (((char *)(gs)) + 2*sizeof(int *))
-
-#else
-
 // voigtjr 11/2005: platform specific code (strlen/malloc/etc) should be in .cpp files!
 // except it can't be (?) because of the inline restriction
 inline char * savestring(char * x)
@@ -228,8 +196,6 @@ inline char * text_of_growable_string(growable_string gs)
 {
   return (((char *)(gs)) + 2*sizeof(int *));
 }
-
-#endif /* USE_MACROS */
 
 extern growable_string make_blank_growable_string (agent* thisAgent);
 extern void add_to_growable_string (agent* thisAgent, growable_string *gs, const char *string_to_add);
@@ -258,17 +224,6 @@ extern void free_memory_pool (agent*, memory_pool *p); /* RPM 6/09, with help fr
 
 #ifdef MEMORY_POOL_STATS
 
-#ifdef USE_MACROS
-
-#define increment_used_count(p) {(p)->used_count++;}
-#define decrement_used_count(p) {(p)->used_count--;}
-
-#else
-
-#ifdef __cplusplus
-//}
-#endif
-
 template <typename P>
 inline void increment_used_count(P p)
 {
@@ -281,22 +236,12 @@ inline void decrement_used_count(P p)
   (p)->used_count--;
 }
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-#endif /* USE_MACROS */
-
 #else
 
 #define increment_used_count(p) { }
 #define decrement_used_count(p) { }
 
 #endif /* MEMORY_POOL_STATS */
-
-#ifdef __cplusplus
-//}
 
 #define MEM_POOLS_ENABLED 1
 
@@ -340,29 +285,24 @@ inline void free_with_pool(memory_pool* p, T * item)
   fill_with_garbage ((item), (p)->item_size);
   *(void * *)(item) = (p)->free_list;
   (p)->free_list = (void *)(item);
-  decrement_used_count(p); 
+  decrement_used_count(p);
 
 #else // !MEM_POOLS_ENABLED
    // this is for debugging -- it disables the memory pool usage and just deallocates
    //  the memory every time.  If you want to use it, be sure to make the corresponding
    //  change to allocate_with_pool above
    free(item);
-   
+
    // simply prevents compiler warnings when memory pools disabled
    p=p;
 #endif // !MEM_POOLS_ENABLED
 }
 
-//extern "C"
-//{
-
-#endif
-
 /* ---------------------------------------------------------------------
-     Macros for Inserting and Removing Stuff from Doubly-Linked Lists 
+     Macros for Inserting and Removing Stuff from Doubly-Linked Lists
 
    Note: fast_remove_from_dll() is the same as remove_from_dll() except
-   slightly faster.  I (RBD) only realized this after writing all the 
+   slightly faster.  I (RBD) only realized this after writing all the
    original code.  With fast_remove_from_dll(), you have to tell it
    the type (i.e., structure name) of the item being spliced out of
    the list.  At some point we might want to go through all the code
@@ -370,7 +310,7 @@ inline void free_with_pool(memory_pool* p, T * item)
    the effort right now.
 -------------------------------------------------------------------- */
 
-/* This macro cannot be easily converted to an inline function. 
+/* This macro cannot be easily converted to an inline function.
    Some additional changes are required.
 */
 #define insert_at_head_of_dll(header,item,next_field_name,prev_field_name) { \
@@ -379,8 +319,8 @@ inline void free_with_pool(memory_pool* p, T * item)
   if (header) ((header)->prev_field_name) = (item) ; \
   (header) = (item) ; }
 /*template <typename T>
-inline void insert_at_head_of_dll(T header, T item, T next_field_name, 
-                                  T prev_field_name) 
+inline void insert_at_head_of_dll(T header, T item, T next_field_name,
+                                  T prev_field_name)
 {
   ((item)->next_field_name) = (header);
   ((item)->prev_field_name) = NIL;
@@ -388,7 +328,7 @@ inline void insert_at_head_of_dll(T header, T item, T next_field_name,
   (header) = (item);
 }*/
 
-/* This macro cannot be easily converted to an inline function. 
+/* This macro cannot be easily converted to an inline function.
    Some additional changes are required.
 */
 #define remove_from_dll(header,item,next_field_name,prev_field_name) { \
@@ -400,9 +340,9 @@ inline void insert_at_head_of_dll(T header, T item, T next_field_name,
     (header) = ((item)->next_field_name); \
   } }
 /*template <typename T>
-inline void remove_from_dll(T header, T item, T next_field_name, 
+inline void remove_from_dll(T header, T item, T next_field_name,
                             T prev_field_name)
-{  
+{
   if ((item)->next_field_name)
     ((item)->next_field_name->prev_field_name) = ((item)->prev_field_name);
   if ((item)->prev_field_name) {
@@ -412,7 +352,7 @@ inline void remove_from_dll(T header, T item, T next_field_name,
   }
 }*/
 
-/* This macro cannot be easily converted to an inline function. 
+/* This macro cannot be easily converted to an inline function.
    Some additional changes are required.
 */
 #define fast_remove_from_dll(header,item,typename,next_field_name,prev_field_name) { \
@@ -449,18 +389,18 @@ extern Bool member_of_list (void *item, ::list *the_list);
 extern ::list *add_if_not_member (agent* thisAgent, void *item, ::list *old_list);
 extern void free_list (agent* thisAgent, ::list *the_list);
 
-/* Added a void* parameter to cons_test_fn, because remove_pwatch_test_fn(), 
+/* Added a void* parameter to cons_test_fn, because remove_pwatch_test_fn(),
    one of the callback functions, requires a third parameter that points to a
    production. In the future, other callback functions of type cons_test_fn may
    need parameters of different types, so a void pointer is best. -AJC (8/7/02) */
-/* Added thisAgent to cons_test_fn type, because we are eliminating the 
+/* Added thisAgent to cons_test_fn type, because we are eliminating the
    global soar_agent. -AJC (8/7/02) */
 //typedef Bool (*cons_test_fn)(cons *c);
 typedef Bool (*cons_test_fn)(agent* thisAgent, cons *c, void* data);
 
 typedef Bool (*dl_cons_test_fn)(dl_cons *dc, agent* thisAgent);
 
-/* Added a void* parameter to extract_list_elements, because remove_pwatch_test_fn(), 
+/* Added a void* parameter to extract_list_elements, because remove_pwatch_test_fn(),
    one of the callback functions, requires a third parameter that points to a
    production. In the future, other callback functions of type cons_test_fn may
    need parameters of different types, so a void pointer is best. -AJC (8/7/02) */
@@ -492,7 +432,7 @@ typedef struct hash_table_struct {
   short minimum_log2size;   /* table never shrinks below this size */
   bucket_array *buckets;
   hash_function h;          /* call this to hash or rehash an item */
-} hash_table;  
+} hash_table;
 
 extern struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2size,
                                                   hash_function h);
@@ -508,10 +448,6 @@ extern void do_for_all_items_in_hash_table (agent* thisAgent, struct hash_table_
 extern void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
                                              hash_table_callback_fn f,
                                              uint32_t hash_value);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif
 

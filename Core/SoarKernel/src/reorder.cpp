@@ -22,7 +22,6 @@
 #include "reorder.h"
 #include "kernel.h"
 #include "rhs.h"
-//#include "rhs_functions.h"
 #include "gdatastructs.h"
 #include "production.h"
 #include "mem.h"
