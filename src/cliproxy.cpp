@@ -21,7 +21,7 @@ void cliproxy::proxy_use(const string &path, const vector<std::string> &args, st
 	
 	if (path.empty() || path == ".") {
 		if (args.size() > 0 && args[0] == "help") {
-			// print help text
+			print_help(os);
 		} else if (args.size() > 0 && args[0] == "dir") {
 			list_children(0, os);
 		} else {
@@ -65,7 +65,40 @@ void cliproxy::list_children(int level, std::ostream &os) {
 	}
 }
 
-int_proxy::int_proxy(int *p) : p(p) {}
+cliproxy &cliproxy::set_help(const std::string &t) {
+	help_text = t;
+	return *this;
+}
+
+cliproxy &cliproxy::add_arg(const string &arg, const string &help) {
+	args_help.push_back(arg);
+	args_help.push_back(help);
+	return *this;
+}
+
+void cliproxy::print_help(ostream &os) const {
+	if (!help_text.empty()) {
+		os << help_text << endl;
+	}
+	if (!args_help.empty()) {
+		table_printer t;
+		
+		os << endl << "ARGUMENTS" << endl;
+		t.set_column_alignment(0, -1);
+		t.set_column_alignment(2, -1);
+		for (int i = 0, iend = args_help.size(); i < iend; i += 2) {
+			t.add_row() << args_help[i] << '-' << args_help[i+1];
+		}
+		t.print(os);
+	}
+}
+
+int_proxy::int_proxy(int *p, const string &description)
+: p(p) 
+{
+	set_help(description);
+	add_arg("[VALUE]", "New value. Must be an integer.");
+}
 
 void int_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
 	if (args.empty()) {
@@ -77,7 +110,12 @@ void int_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
 	}
 }
 
-float_proxy::float_proxy(double *p) : p(p) {}
+float_proxy::float_proxy(double *p, const string &description)
+: p(p)
+{
+	set_help(description);
+	add_arg("[VALUE]", "New value. Must be a float.");
+}
 
 void float_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
 	if (args.empty()) {
@@ -89,7 +127,12 @@ void float_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
 	}
 }
 
-bool_proxy::bool_proxy(bool *p) : p(p) {}
+bool_proxy::bool_proxy(bool *p, const string &description)
+: p(p)
+{
+	set_help(description);
+	add_arg("[VALUE]", "New value. Must be (0|1|true|false|on|off)");
+}
 
 void bool_proxy::proxy_use_sub(const vector<string> &args, ostream &os) {
 	if (args.empty()) {

@@ -19,7 +19,7 @@ enum log_type {
 
 class soar_interface;
 
-class logger : public cliproxy {
+class logger : public bool_proxy {
 public:
 	logger();
 	

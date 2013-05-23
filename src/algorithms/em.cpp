@@ -790,10 +790,10 @@ void EM::proxy_get_children(map<string, cliproxy*> &c) {
 	c["mode"] =        mode_group;
 	c["classifier"] =  &clsfr;
 	c["timers"] =      &timers;
-	c["use_em"] =      new bool_proxy(&use_em);
-	c["unify_modes"] = new bool_proxy(&use_unify);
-	c["learn_modes"] = new bool_proxy(&learn_new_modes);
-	c["noise_var"] =   new float_proxy(&noise_var);
+	c["use_em"] =      new bool_proxy(&use_em, "Use EM.");
+	c["unify_modes"] = new bool_proxy(&use_unify, "Try to unify new modes with old ones.");
+	c["learn_modes"] = new bool_proxy(&learn_new_modes, "Learn new modes.");
+	c["noise_var"] =   new float_proxy(&noise_var, "Expected variance of environment noise.");
 	
 	c["ptable"] =      new memfunc_proxy<EM>(this, &EM::cli_ptable);
 	c["add_mode"] =    new memfunc_proxy<EM>(this, &EM::cli_add_mode);

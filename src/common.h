@@ -199,11 +199,13 @@ inline double gausspdf(double x, double mean, double var) {
 
 class table_printer {
 public:
-	table_printer() {}
+	table_printer();
 	table_printer &add_row();
 	table_printer &skip(int n);
 	void set_precision(int p);
 	void set_scientific(bool s);
+	void set_column_alignment(int col, int align);
+	void set_spacer_width(int w);
 	void print(std::ostream &os) const;
 	
 	template<typename T>
@@ -259,6 +261,8 @@ public:
 private:
 	std::stringstream ss;
 	std::vector<std::vector<std::string> > rows;
+	std::map<int, int> alignments;
+	int spacer_width;
 };
 
 #endif

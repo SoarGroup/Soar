@@ -265,7 +265,9 @@ void filter_table::update_relations(const scene *scn, const vector<int> &dirty, 
 
 filter_table_entry::filter_table_entry()
 : create(NULL), calc(NULL), ordered(false), allow_repeat(false)
-{}
+{
+	set_help("Reports information about this filter type.");
+}
 
 void filter_table_entry::proxy_use_sub(const vector<string> &args, ostream &os) {
 	os << "parameters:";

@@ -296,9 +296,9 @@ classifier::~classifier() {
 }
 
 void classifier::proxy_get_children(map<string, cliproxy*> &c) {
-	c["use_foil"]    = new bool_proxy(&foil);
-	c["use_pruning"] = new bool_proxy(&prune);
-	c["use_context"] = new bool_proxy(&context);
+	c["use_foil"]    = new bool_proxy(&foil, "Use FOIL for classification.");
+	c["use_pruning"] = new bool_proxy(&prune, "Prune FOIL clauses.");
+	c["use_context"] = new bool_proxy(&context, "Consider only closest objects in classification.");
 	c["nc_type"]     = new memfunc_proxy<classifier>(this, &classifier::cli_nc_type);
 	c["dump_foil6"]  = new memfunc_proxy<classifier>(this, &classifier::cli_dump_foil6);
 }

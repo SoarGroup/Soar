@@ -91,7 +91,6 @@ private:
 	void set_default_output();
 	
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
-	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_out(const std::vector<std::string> &args, std::ostream &os);
 
 	svs            *svsp;

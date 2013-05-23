@@ -10,17 +10,23 @@ public:
 	virtual ~cliproxy();
 	void proxy_use(const std::string &path, const std::vector<std::string> &args, std::ostream &os);
 	bool temporary() const { return false; }
+	cliproxy &set_help(const std::string &t);
+	cliproxy &add_arg(const std::string &arg, const std::string &help);
 	
 private:
 	void list_children(int level, std::ostream &os);
+	void print_help(std::ostream &os) const;
 	
 	virtual void proxy_get_children(std::map<std::string, cliproxy*> &c) {}
 	virtual void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os) {}
+	
+	std::string help_text;
+	std::vector<std::string> args_help;
 };
 
 class int_proxy : public cliproxy {
 public:
-	int_proxy(int *p);
+	int_proxy(int *p, const std::string &description);
 	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	bool temporary() const { return true; }
 	
@@ -30,7 +36,7 @@ private:
 
 class float_proxy : public cliproxy {
 public:
-	float_proxy(double *p);
+	float_proxy(double *p, const std::string &description);
 	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	bool temporary() const { return true; }
 	
@@ -40,7 +46,7 @@ private:
 
 class bool_proxy : public cliproxy {
 public:
-	bool_proxy(bool *p);
+	bool_proxy(bool *p, const std::string &description);
 	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	bool temporary() const { return true; }
 	

@@ -100,9 +100,10 @@ private:
 	void update_dists(int i);
 	void update_all_dists();
 	
-	void cli_props(const std::vector<std::string> &args, std::ostream &os);
+	void cli_props(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_dist(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_sgel(const std::vector<std::string> &args, std::ostream &os);
+	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 };
 
 #endif

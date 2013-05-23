@@ -797,13 +797,31 @@ void scene::get_relations(relation_table &rt) const {
 }
 
 void scene::proxy_get_children(map<string, cliproxy*> &c) {
-	c["world"]      = root;
+	c["world"] = root;
+	
 	c["properties"] = new memfunc_proxy<scene>(this, &scene::cli_props);
-	c["distance"]   = new memfunc_proxy<scene>(this, &scene::cli_dist);
-	c["sgel"]       = new memfunc_proxy<scene>(this, &scene::cli_sgel);
+	c["properties"]->set_help("Get scene properties.");
+	
+	c["distance"] = new memfunc_proxy<scene>(this, &scene::cli_dist);
+	c["distance"]->set_help("Compute distance between nodes.")
+	               .add_arg("N1", "First node name.")
+	               .add_arg("N2", "Second node name.")
+	               ;
+	
+	c["sgel"] = new memfunc_proxy<scene>(this, &scene::cli_sgel);
+	c["sgel"]->set_help("Modify scene graph with SGEL.")
+	           .add_arg("SGEL", "SGEL string (spaces are okay).")
+	           ;
+
+	c["relations"] = new memfunc_proxy<scene>(this, &scene::cli_relations);
+	c["relations"]->set_help("Prints all true relations if called without arguments, "
+	                         "otherwise print only matching relations.")
+	                .add_arg("[RELATION]", "Relation name pattern. Can be * for any.")
+	                .add_arg("[PARAMS]",   "Argument patterns. Can be * for any.")
+	                ;
 }
 
-void scene::cli_props(const vector<string> &args, ostream &os) {
+void scene::cli_props(const vector<string> &args, ostream &os) const {
 	rvec vals;
 	table_printer t;
 	
@@ -852,4 +870,71 @@ void scene::cli_sgel(const vector<string> &args, ostream &os) {
 		ss << args[i] << " ";
 	}
 	parse_sgel(ss.str());
+}
+
+void scene::cli_relations(const vector<string> &args, ostream &os) const {
+	relation_table rels;
+	relation_table::const_iterator i, begin, end;
+	get_relations(rels);
+	bool print_names;
+	
+	if (!args.empty() && args[0] != "*") {
+		begin = end = rels.find(args[0]);
+		if (end == rels.end()) {
+			os << "relation not found" << endl;
+			return;
+		} else {
+			++end;
+		}
+		print_names = false;
+	} else {
+		begin = rels.begin();
+		end = rels.end();
+		print_names = true;
+	}
+	
+	vector<int> ids;
+	for (int j = 1; j < args.size(); ++j) {
+		if (args[j] != "*") {
+			const sgnode *n = get_node(args[j]);
+			if (!n) {
+				os << "object " << args[j] << " not found" << endl;
+				return;
+			}
+			ids.push_back(n->get_id());
+		} else {
+			ids.push_back(-1);
+		}
+	}
+	
+	for (i = begin; i != end; ++i) {
+		relation r = i->second;
+		tuple t(1);
+		
+		for (int j = 0, jend = min(int(ids.size()), r.arity() - 1); j < jend; ++j) {
+			if (ids[j] != -1) {
+				t[0] = ids[j];
+				r.filter(j + 1, t, false);
+			}
+		}
+		
+		if (r.empty()) {
+			continue;
+		}
+		
+		if (print_names)
+			os << i->first << endl;
+		
+		table_printer p;
+		relation::const_iterator j;
+		for (j = r.begin(); j != r.end(); ++j) {
+			p.add_row();
+			for (int k = 1; k < j->size(); ++k) {
+				const sgnode *n = get_node((*j)[k]);
+				assert(n != NULL);
+				p << n->get_name();
+			}
+		}
+		p.print(os);
+	}
 }

@@ -22,7 +22,9 @@ sgnode::sgnode(const string &name, const string &type, bool group)
 : name(name), type(type), parent(NULL), group(group), id(node_counter++),
   trans_dirty(true), shape_dirty(true), bounds_dirty(true),
   pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
-{}
+{
+	set_help("Reports information about this node.");
+}
 
 
 sgnode::~sgnode() {

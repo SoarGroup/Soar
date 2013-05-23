@@ -82,7 +82,9 @@ private:
 
 class timer_set : public cliproxy {
 public:
-	timer_set() {}
+	timer_set() {
+		set_help("Reports timing information.");
+	}
 	
 	~timer_set() {
 		for (int i = 0; i < timers.size(); ++i) {

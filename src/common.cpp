@@ -165,6 +165,10 @@ bool read_on_off(const vector<string> &args, int p, ostream &os, bool &var) {
 	return true;
 }
 
+table_printer::table_printer()
+: spacer_width(1)
+{}
+
 table_printer &table_printer::skip(int n) {
 	rows.back().resize(rows.back().size() + n);
 	return *this;
@@ -187,6 +191,14 @@ void table_printer::set_scientific(bool s) {
 	}
 }
 
+void table_printer::set_column_alignment(int col, int align) {
+	alignments[col] = align;
+}
+
+void table_printer::set_spacer_width(int w) {
+	spacer_width = w;
+}
+
 void table_printer::print(ostream &os) const {
 	std::vector<int> widths;
 	for (int i = 0; i < rows.size(); ++i) {
@@ -204,7 +216,23 @@ void table_printer::print(ostream &os) const {
 	for (int i = 0; i < rows.size(); ++i) {
 		const vector<string> &row = rows[i];
 		for (int j = 0; j < row.size(); ++j) {
-			os << setw(widths[j]) << row[j] << " ";
+			int a = -1, pad;
+			
+			map_get(alignments, j, a);
+			switch (a) {
+				case -1:
+					os << left << setw(widths[j]) << row[j];
+					break;
+				case 0:
+					pad = (widths[j] - row[j].size()) / 2;
+					os << setw(pad) << " ";
+					os << left << setw(widths[j] - pad) << row[j];
+					break;
+				case 1:
+					os << right << setw(widths[j]) << row[j];
+					break;
+			}
+			os << setw(spacer_width) << " ";
 		}
 		os << endl;
 	}

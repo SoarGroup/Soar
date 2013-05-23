@@ -283,12 +283,13 @@ bool svs_state::get_output(rvec &out) const {
 }
 
 void svs_state::proxy_get_children(map<string, cliproxy*> &c) {
-	c["learn_models"] = new bool_proxy(&learn_models);
-	c["test_models"]  = new bool_proxy(&test_models);
-	c["relations"]    = new memfunc_proxy<svs_state>(this, &svs_state::cli_relations);
+	c["learn_models"] = new bool_proxy(&learn_models, "Learn models in this state.");
+	c["test_models"]  = new bool_proxy(&test_models, "Test models in this state.");
 	c["timers"]       = &timers;
 	c["mconfig"]      = mmdl;
 	c["scene"]        = scn;
+	c["output"]       = new memfunc_proxy<svs_state>(this, &svs_state::cli_out);
+	c["output"]->set_help("Print current output.");
 
 	proxy_group *cmds = new proxy_group;
 	map<wme*, command*>::const_iterator i;
@@ -301,73 +302,6 @@ void svs_state::proxy_get_children(map<string, cliproxy*> &c) {
 	}
 	
 	c["command"] = cmds;
-}
-
-void svs_state::cli_relations(const vector<string> &args, ostream &os) const {
-	relation_table rels;
-	relation_table::const_iterator i, begin, end;
-	scn->get_relations(rels);
-	bool print_names;
-	
-	if (!args.empty() && args[0] != "*") {
-		begin = end = rels.find(args[0]);
-		if (end == rels.end()) {
-			os << "relation not found" << endl;
-			return;
-		} else {
-			++end;
-		}
-		print_names = false;
-	} else {
-		begin = rels.begin();
-		end = rels.end();
-		print_names = true;
-	}
-	
-	vector<int> ids;
-	for (int j = 1; j < args.size(); ++j) {
-		if (args[j] != "*") {
-			const sgnode *n = scn->get_node(args[j]);
-			if (!n) {
-				os << "object " << args[j] << " not found" << endl;
-				return;
-			}
-			ids.push_back(n->get_id());
-		} else {
-			ids.push_back(-1);
-		}
-	}
-	
-	for (i = begin; i != end; ++i) {
-		relation r = i->second;
-		tuple t(1);
-		
-		for (int j = 0, jend = min(int(ids.size()), r.arity() - 1); j < jend; ++j) {
-			if (ids[j] != -1) {
-				t[0] = ids[j];
-				r.filter(j + 1, t, false);
-			}
-		}
-		
-		if (r.empty()) {
-			continue;
-		}
-		
-		if (print_names)
-			os << i->first << endl;
-		
-		table_printer p;
-		relation::const_iterator j;
-		for (j = r.begin(); j != r.end(); ++j) {
-			p.add_row();
-			for (int k = 1; k < j->size(); ++k) {
-				sgnode *n = scn->get_node((*j)[k]);
-				assert(n != NULL);
-				p << n->get_name();
-			}
-		}
-		p.print(os);
-	}
 }
 
 // add ability to set it?
@@ -515,10 +449,19 @@ string svs::get_output() const {
 }
 
 void svs::proxy_get_children(map<string, cliproxy*> &c) {
-	c["record_movie"]      = new bool_proxy(&record_movie);
+	c["record_movie"]      = new bool_proxy(&record_movie, "Automatically take screenshots in viewer after every decision cycle.");
 	c["connect_viewer"]    = new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
+	c["connect_viewer"]->set_help("Connect to a running viewer.")
+	                     .add_arg("PORT", "TCP port (or file socket path in Linux) to connect to.")
+	                     ;
+
 	c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);
+	c["disconnect_viewer"]->set_help("Disconnect from viewer.");
+	
 	c["use_models"]        = new memfunc_proxy<svs>(this, &svs::cli_use_models);
+	c["use_models"]->set_help("Use model learning system.")
+	                 .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
+
 	c["timers"]            = &timers;
 	c["loggers"]           = loggers;
 	c["filters"]           = &get_filter_table();
@@ -609,7 +552,7 @@ bool svs::add_model(const string &name, model *m) {
 }
 
 void svs::cli_use_models(const vector<string> &args, ostream &os) {
-	bool_proxy p(&use_models);
-	p.proxy_use_sub(args, os);
+	bool_proxy p(&use_models, "Use model learning system.");
+	p.proxy_use("", args, os);
 	state_stack[0]->get_scene()->set_track_distances(use_models);
 }

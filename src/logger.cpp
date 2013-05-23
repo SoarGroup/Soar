@@ -17,7 +17,8 @@ log_type_info logger_info[NUM_LOG_TYPES] = {
 	[LOG_FOIL] = { "FOIL",  false },
 };
 
-logger::logger() : si(NULL), active(false)
+logger::logger()
+: bool_proxy(&active, "Print messages from this log."), si(NULL), active(false)
 {}
 
 void logger::init(soar_interface *si, const string &prefix, bool active) {
@@ -42,7 +43,7 @@ logger& logger::operator<<(ostream& (*f)(ostream&)) {
 }
 
 void logger::proxy_use_sub(const vector<string> &args, ostream &os) {
-	bool_proxy p(&active);
+	bool_proxy p(&active, "");
 	p.proxy_use_sub(args, os);
 }
 
