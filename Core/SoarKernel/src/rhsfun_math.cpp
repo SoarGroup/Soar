@@ -25,7 +25,8 @@
 #include "mem.h"
 #include "print.h"
 #include "lexer.h"
-#include "rhsfun.h"
+#include "rhs.h"
+//#include "rhs_functions.h"
 #include "soar_rand.h"
 
 #include <math.h>

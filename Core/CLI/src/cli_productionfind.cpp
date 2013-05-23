@@ -22,7 +22,7 @@
 #include "mem.h"
 #include "parser.h"
 #include "rete.h"
-#include "rhsfun.h"
+#include "rhs.h"
 
 using namespace cli;
 using namespace sml;

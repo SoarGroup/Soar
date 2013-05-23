@@ -130,11 +130,6 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 #define VARIABLE_SYMBOL_TYPE 0
 #define IDENTIFIER_SYMBOL_TYPE 1
 #define SYM_CONSTANT_SYMBOL_TYPE 2
@@ -297,14 +292,6 @@ typedef union symbol_union {
   int_constant ic;
   float_constant fc;
 } Symbol;
-
-/* WARNING: this #define's "common".  Don't use "common" anywhere in the
-   code unless you intend this meaning of it.  This is so we can
-   conveniently access fields used in all kinds of symbols, like this:
-   "sym.common.reference_count" rather than "sym.var.common.reference_count"
-   or "sym.id.common.reference_count", etc. */
-
-#define common var.common_symbol_info
 
 /* -----------------------------------------------------------------
                        Symbol Table Routines

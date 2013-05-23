@@ -37,7 +37,7 @@
 
 #include <stdlib.h>
 
-#include "rhsfun.h"
+#include "rhs_functions.h"
 #include "kernel.h"
 #include "print.h"
 #include "mem.h"
@@ -697,7 +697,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* /*user_d
                               processedSymbols);
 
 
-   return retval;;
+   return retval;
 }
 
 /* --------------------------------------------------------------------
@@ -805,47 +805,4 @@ void remove_built_in_rhs_functions (agent* thisAgent) {
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "count"));
 
   remove_built_in_rhs_math_functions(thisAgent);
-}
-/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
-   do the reference count update */
-// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-
-inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym)
-{
-  rhs_symbol new_rhs_symbol;
-
-  if (!sym )
-  {
-    print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
-    return reinterpret_cast<rhs_value>(NIL);
-  }
-  allocate_with_pool (thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
-  new_rhs_symbol->referent = sym;
-  new_rhs_symbol->original_variable = original_sym;
-  print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount creating rhs_symbol %s (%s).\n",
-         symbol_to_string(thisAgent, new_rhs_symbol->referent, FALSE, NULL, 0),
-         (new_rhs_symbol->original_variable ? symbol_to_string(thisAgent, new_rhs_symbol->original_variable, FALSE, NULL, 0) : "no orig"));
-
-  /* -- Must always increase original_sym refcount if it exists because this function
-   *    is only called when the newly generate rhs value is created with a brand new
-   *    sym that already had its refcount incremented -- */
-
-  if (original_sym)
-  {
-    symbol_add_ref(thisAgent, original_sym);
-    print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount adding refcount to %s.\n",
-           symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0));
-  }
-  return rhs_symbol_to_rhs_value(new_rhs_symbol);
-}
-
-inline rhs_value make_rhs_value_symbol(agent* thisAgent, Symbol * sym, Symbol * original_sym)
-{
-  if (sym)
-  {
-    symbol_add_ref(thisAgent, sym);
-    print(thisAgent, "Debug | make_rhs_value_symbol adding refcount to %s.\n",
-           symbol_to_string(thisAgent, sym, FALSE, NULL, 0));
-  }
-  return make_rhs_value_symbol_no_refcount(thisAgent, sym, original_sym);
 }

@@ -9,13 +9,11 @@
  *
  *  file:  production.cpp
  *
- * ====================================================================
- *                    Production Utilities for Soar 6
- *
+ * =======================================================================
+ *                    Production Utilities
  * This file contains various utility routines for manipulating
- * productions and parts of productions:  tests, conditions, actions,
- * etc.  Also includes the reorderer and compile-time o-support calculations.
- * parser.cpp loads productions.
+ * productions and parts of productions. Also includes the reorderer and
+ * compile-time o-support calculations. parser.cpp loads productions.
  * Init_production_utilities() should be called before anything else here.
  * =======================================================================
  */
@@ -23,12 +21,14 @@
 #include <stdlib.h>
 
 #include "production.h"
+#include "rhs.h"
 #include "mem.h"
 #include "kernel.h"
 #include "print.h"
 #include "agent.h"
 #include "gdatastructs.h"
-#include "rhsfun.h"
+#include "rhs.h"
+//#include "rhs_functions.h"
 #include "instantiations.h"
 #include "reorder.h"
 #include "symtab.h"
@@ -1003,123 +1003,6 @@ uint32_t hash_condition (agent* thisAgent,
     break;
   }
   return result;
-}
-
-/* =================================================================
-
-              Utility Routines for Actions and RHS Values
-
-================================================================= */
-
-/* ----------------------------------------------------------------
-   Deallocates the given rhs_value.
----------------------------------------------------------------- */
-
-void deallocate_rhs_value (agent* thisAgent, rhs_value rv) {
-  cons *c;
-  list *fl;
-
-  if (rhs_value_is_reteloc(rv)) return;
-  if (rhs_value_is_unboundvar(rv)) return;
-  if (rhs_value_is_funcall(rv)) {
-    fl = rhs_value_to_funcall_list(rv);
-    for (c=fl->rest; c!=NIL; c=c->rest)
-      deallocate_rhs_value (thisAgent, static_cast<char *>(c->first));
-    free_list (thisAgent, fl);
-  } else {
-    rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-    if (r->referent)
-    {
-      print(thisAgent, "Debug | deallocate_rhs_value decreasing refcount of %s from %ld to %ld.\n",
-             symbol_to_string(thisAgent, r->referent, FALSE, NULL, 0),
-             r->referent->common.reference_count, (r->referent->common.reference_count)-1);
-      symbol_remove_ref (thisAgent, r->referent);
-    }
-    if (r->original_variable)
-    {
-      print(thisAgent, "Debug | deallocate_rhs_value decreasing refcount of original %s from %ld to %ld.\n",
-             symbol_to_string(thisAgent, r->original_variable, FALSE, NULL, 0),
-             r->original_variable->common.reference_count, (r->original_variable->common.reference_count)-1);
-      symbol_remove_ref (thisAgent, r->original_variable);
-    }
-      free_with_pool (&thisAgent->rhs_symbol_pool, r);
-  }
-}
-
-/* ----------------------------------------------------------------
-   Returns a new copy of the given rhs_value.
----------------------------------------------------------------- */
-
-rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
-  cons *c, *new_c, *prev_new_c;
-  list *fl, *new_fl;
-
-  if (rhs_value_is_reteloc(rv)) return rv;
-  if (rhs_value_is_unboundvar(rv)) return rv;
-  if (rhs_value_is_funcall(rv)) {
-    fl = rhs_value_to_funcall_list(rv);
-    allocate_cons (thisAgent, &new_fl);
-    new_fl->first = fl->first;
-    prev_new_c = new_fl;
-    for (c=fl->rest; c!=NIL; c=c->rest) {
-      allocate_cons (thisAgent, &new_c);
-      new_c->first = copy_rhs_value (thisAgent, static_cast<char *>(c->first));
-      prev_new_c->rest = new_c;
-      prev_new_c = new_c;
-    }
-    prev_new_c->rest = NIL;
-    return funcall_list_to_rhs_value (new_fl);
-  } else {
-    rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-    symbol_add_ref(thisAgent, r->referent);
-    print(thisAgent, "Debug | copy_rhs_value increasing refcount of %s from %ld.\n",
-           symbol_to_string(thisAgent, r->referent, FALSE, NULL, 0),
-           r->referent->common.reference_count);
-    if (r->original_variable)
-    {
-      symbol_add_ref(thisAgent, r->original_variable);
-      print(thisAgent, "Debug | copy_rhs_value increasing refcount of original %s from %ld.\n",
-             symbol_to_string(thisAgent, r->original_variable, FALSE, NULL, 0),
-             r->original_variable->common.reference_count);
-    }
-    return rhs_symbol_to_rhs_value(r);
-  }
-}
-
-/* ----------------------------------------------------------------
-   Deallocates the given action (singly-linked) list.
----------------------------------------------------------------- */
-
-void deallocate_action_list (agent* thisAgent, action *actions) {
-  action *a;
-
-  print(thisAgent, "Debug | deallocating action list...\n");
-  while (actions) {
-    a = actions;
-    actions = actions->next;
-    if (a->type==FUNCALL_ACTION) {
-      deallocate_rhs_value (thisAgent, a->value);
-    } else {
-      /* --- make actions --- */
-      deallocate_rhs_value (thisAgent, a->id);
-      deallocate_rhs_value (thisAgent, a->attr);
-      deallocate_rhs_value (thisAgent, a->value);
-      if (preference_is_binary(a->preference_type))
-        deallocate_rhs_value (thisAgent, a->referent);
-    }
-    free_with_pool (&thisAgent->action_pool,a);
-  }
-}
-
-/* -----------------------------------------------------------------
-   Find first letter of rhs_value, or '*' if nothing appropriate.
-   (See comments on first_letter_from_symbol for more explanation.)
------------------------------------------------------------------ */
-
-char first_letter_from_rhs_value (rhs_value rv) {
-  if (rhs_value_is_symbol(rv))
-    return first_letter_from_symbol (rhs_value_to_symbol(rv));
-  return '*'; /* function calls, reteloc's, unbound variables */
 }
 
 /* *********************************************************************
