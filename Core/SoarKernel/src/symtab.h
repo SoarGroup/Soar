@@ -393,21 +393,18 @@ extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, 
 
 #else
 
-#ifdef DEBUG_SYMBOL_REFCOUNTS
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
-#endif
+extern void print (agent* thisAgent, const char *format, ... );
 
-inline uint64_t symbol_add_ref(Symbol * x)
+inline uint64_t symbol_add_ref(agent* thisAgent, Symbol * x)
 {
   (x)->common.reference_count++;
   uint64_t refCount = (x)->common.reference_count ;
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-  char buf[64];
-  OutputDebugString(symbol_to_string(0, x, FALSE, buf, 64));
-  OutputDebugString(":+ ");
-  OutputDebugString(_itoa(refCount, buf, 10));
-  OutputDebugString("\n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
+
+#ifdef DEBUG_TRACE_REFCOUNT_ADDS
+  print(thisAgent, "Refcnt| Increasing refcount for symbol %s from %ld to %ld!\n", symbol_to_string(thisAgent, x, FALSE, NULL, NIL), (refCount-1), refCount);
+#endif
+
   return refCount ;
 }
 
@@ -415,21 +412,15 @@ inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
 {
   (x)->common.reference_count--;
   uint64_t refCount = (x)->common.reference_count ;
-  if (((x)->common.symbol_type == VARIABLE_SYMBOL_TYPE) &&
-      (!(strcmp((x)->var.name, "<s1>"))))
-  {
-   // asm("int $3");
-  }
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-  char buf[64];
-  OutputDebugString(symbol_to_string(thisAgent, x, FALSE, buf, 64));
-  OutputDebugString(":- ");
-  OutputDebugString(_itoa(refCount, buf, 10));
-  OutputDebugString("\n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
-  if ((x)->common.reference_count == 0)
-    deallocate_symbol(thisAgent, x);
 
+#ifdef DEBUG_TRACE_REFCOUNT_REMOVES
+  print(thisAgent, "Refcnt| Decreasing refcount for symbol %s from %ld to %ld!\n", symbol_to_string(thisAgent, x, FALSE, NULL, NIL), (refCount+1), refCount);
+#endif
+
+  if ((x)->common.reference_count == 0)
+  {
+    deallocate_symbol(thisAgent, x);
+  }
   return refCount ;
 }
 

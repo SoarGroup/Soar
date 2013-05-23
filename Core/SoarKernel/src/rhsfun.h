@@ -28,6 +28,8 @@
    to setup all the built-in functions.
 ==================================================================== */
 
+#ifndef RHSFUN_H
+#define RHSFUN_H
 
 /* -------------------------------------------------------------------
                       Right-Hand-Side Values
@@ -38,7 +40,8 @@
    bits of a pointer to differentiate between these types of values.
 
    If the low-order bits are:   the rhs_value is:
-                       00       a pointer to a symbol
+                       00       a pointer to a rhs symbol (struct with
+                                symbol and original variable symbol)
                        01       a pointer to a list (for a function call)
                        10       a Rete location
                        11       the index of an RHS unbound variable
@@ -52,14 +55,12 @@
    while two representing the same funcall will not be equal (==).
 ------------------------------------------------------------------- */
 
-#ifndef RHSFUN_H
-#define RHSFUN_H
+typedef struct rhs_struct {
+  Symbol *referent;
+  Symbol *original_variable;
+} rhs_info;
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
+typedef rhs_info * rhs_symbol;
 typedef char * rhs_value;
 typedef unsigned char byte;
 typedef unsigned short rete_node_level;
@@ -67,111 +68,87 @@ typedef struct cons_struct cons;
 typedef cons list;
 typedef union symbol_union Symbol;
 
-
-#ifdef USE_MACROS
-
-#define rhs_value_is_symbol(rv) ((((uint64_t)(rv)) & 3)==0)
-#define rhs_value_is_funcall(rv) ((((uint64_t)(rv)) & 3)==1)
-#define rhs_value_is_reteloc(rv) ((((uint64_t)(rv)) & 3)==2)
-#define rhs_value_is_unboundvar(rv) ((((uint64_t)(rv)) & 3)==3)
-
-/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
-   do the reference count update */
-#define symbol_to_rhs_value(sym) ((rhs_value) (sym))
-#define funcall_list_to_rhs_value(fl) ((rhs_value) (((char *)(fl))+1))
-#define reteloc_to_rhs_value(field_num,levels_up) \
-  ((rhs_value) ( (levels_up)<<4) + ((field_num)<<2) + 2 )
-#define unboundvar_to_rhs_value(n) ((rhs_value) (((n)<<2) + 3))
-
-#define rhs_value_to_symbol(rv) ((Symbol *)(rv))
-#define rhs_value_to_funcall_list(rv) ((list *) (((char *)(rv))-1))
-#define rhs_value_to_reteloc_field_num(rv) ((((uint64_t)(rv))>>2) & 3)
-#define rhs_value_to_reteloc_levels_up(rv) ((((uint64_t)(rv))>>4)& 0xFFFF)
-#define rhs_value_to_unboundvar(rv) (((uint64_t)(rv))>>2)
-
-#else
-
-//#define rhs_value_is_symbol(rv) ((((uintptr_t)(rv)) & 3)==0)
 inline bool rhs_value_is_symbol(rhs_value rv)
 {
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 0;
 }
 
-//#define rhs_value_is_funcall(rv) ((((uintptr_t)(rv)) & 3)==1)
 inline bool rhs_value_is_funcall(rhs_value rv)
 {
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 1;
 }
 
-//#define rhs_value_is_reteloc(rv) ((((uintptr_t)(rv)) & 3)==2)
 inline bool rhs_value_is_reteloc(rhs_value rv)
 {
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 2;
 }
 
-//#define rhs_value_is_unboundvar(rv) ((((uintptr_t)(rv)) & 3)==3)
 inline bool rhs_value_is_unboundvar(rhs_value rv)
 {
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 3;
 }
 
-/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
-   do the reference count update */
-//#define symbol_to_rhs_value(sym) ((rhs_value) (sym))
-inline rhs_value symbol_to_rhs_value(Symbol * sym)
+inline rhs_value rhs_symbol_to_rhs_value(rhs_symbol rs)
 {
-  return reinterpret_cast<rhs_value>(sym);
+  return reinterpret_cast<rhs_value>(rs);
 }
 
-//#define funcall_list_to_rhs_value(fl) ((rhs_value) (((char *)(fl))+1))
 inline rhs_value funcall_list_to_rhs_value(::list * fl)
 {
   return reinterpret_cast<rhs_value>(reinterpret_cast<char *>(fl) + 1);
 }
 
-//#define reteloc_to_rhs_value(field_num,levels_up) ((rhs_value) ( (levels_up)<<4) + ((field_num)<<2) + 2 )
 inline rhs_value reteloc_to_rhs_value(byte field_num, rete_node_level levels_up)
 {
   return reinterpret_cast<rhs_value>(levels_up << 4) + (field_num << 2) + 2;
 }
 
-//#define unboundvar_to_rhs_value(n) ((rhs_value) (((n)<<2) + 3))
 inline rhs_value unboundvar_to_rhs_value(uint64_t n)
 {
   return reinterpret_cast<rhs_value>((n << 2) + 3);
 }
 
-//#define rhs_value_to_symbol(rv) ((Symbol *)(rv))
-inline Symbol * rhs_value_to_symbol(rhs_value rv)
+inline rhs_symbol rhs_value_to_rhs_symbol(rhs_value rv)
 {
-  return reinterpret_cast<Symbol *>(rv);
+  return reinterpret_cast<rhs_symbol>(rv);
 }
 
-//#define rhs_value_to_funcall_list(rv) ((list *) (((char *)(rv))-1))
+inline Symbol * rhs_value_to_symbol(rhs_value rv)
+{
+  return reinterpret_cast<rhs_symbol>(rv)->referent;
+}
+
+inline Symbol * rhs_value_to_original_symbol(rhs_value rv)
+{
+  return reinterpret_cast<rhs_symbol>(rv)->original_variable;
+}
+
 inline ::list * rhs_value_to_funcall_list(rhs_value rv)
 {
   return reinterpret_cast< ::list * >(reinterpret_cast<char *>(rv) - 1);
 }
 
-//#define rhs_value_to_reteloc_field_num(rv) ((((uintptr_t)(rv))>>2) & 3)
 inline uint8_t rhs_value_to_reteloc_field_num(rhs_value rv)
 {
   return static_cast<uint8_t>((reinterpret_cast<uintptr_t>(rv) >> 2) & 3);
 }
 
-//#define rhs_value_to_reteloc_levels_up(rv) ((((uintptr_t)(rv))>>4)& 0xFFFF)
 inline uint16_t rhs_value_to_reteloc_levels_up(rhs_value rv)
 {
   return static_cast<uint16_t>((reinterpret_cast<uintptr_t>(rv) >> 4) & 0xFFFF);
 }
 
-//#define rhs_value_to_unboundvar(rv) (((uintptr_t)(rv))>>2)
 inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
 {
   return static_cast<uint64_t>((reinterpret_cast<uintptr_t>(rv) >> 2));
 }
+/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
+   do the reference count update */
+// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
 
-#endif /* USE_MACROS */
+inline extern rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
+
+inline extern rhs_value make_rhs_value_symbol(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
 
 /* -------------------------------------------------------------------
                              RHS Actions

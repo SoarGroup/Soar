@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -12,8 +12,8 @@
  * =======================================================================
  *  Support routines for doing math in the RHS of productions.
  *  Need more comments here.  Nothing in soarkernel.h either.
- *  
- *  
+ *
+ *
  * =======================================================================
  */
 
@@ -86,7 +86,7 @@ Symbol *times_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
   double f = 0;
   Symbol *arg;
   cons *c;
-  
+
   for (c=args; c!=NIL; c=c->rest) {
     arg = static_cast<symbol_union *>(c->first);
     if ((arg->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
@@ -134,7 +134,7 @@ Symbol *minus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
     print (thisAgent, "Error: '-' function called with no arguments\n");
     return NIL;
   }
-  
+
   for (c=args; c!=NIL; c=c->rest) {
     arg = static_cast<symbol_union *>(c->first);
     if ((arg->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
@@ -168,7 +168,7 @@ Symbol *minus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
       else { float_found = TRUE; f = i - arg->fc.value; }
     }
   }
- 
+
   if (float_found) return make_float_constant (thisAgent, f);
   return make_int_constant (thisAgent, i);
 }
@@ -191,7 +191,7 @@ Symbol *fp_divide_rhs_function_code (agent* thisAgent, list *args, void* /*user_
     print (thisAgent, "Error: '/' function called with no arguments\n");
     return NIL;
   }
-  
+
   for (c=args; c!=NIL; c=c->rest) {
     arg = static_cast<symbol_union *>(c->first);
     if ((arg->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
@@ -240,7 +240,7 @@ Symbol *div_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
 
   arg1 = static_cast<symbol_union *>(args->first);
   arg2 = static_cast<symbol_union *>(args->rest->first);
-  
+
   if (arg1->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-integer (%y) passed to div function\n",
                         arg1);
@@ -256,7 +256,7 @@ Symbol *div_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
     print (thisAgent, "Error: attempt to divide ('div') by zero.\n");
     return NIL;
   }
-  
+
   return make_int_constant (thisAgent, arg1->ic.value / arg2->ic.value);
  /* Warning: ANSI doesn't say precisely what happens if one or both of the
     two args is negative. */
@@ -274,7 +274,7 @@ Symbol *mod_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
 
   arg1 = static_cast<symbol_union *>(args->first);
   arg2 = static_cast<symbol_union *>(args->rest->first);
-  
+
   if (arg1->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-integer (%y) passed to mod function\n",
                         arg1);
@@ -290,7 +290,7 @@ Symbol *mod_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
     print (thisAgent, "Error: attempt to divide ('mod') by zero.\n");
     return NIL;
   }
-  
+
   return make_int_constant (thisAgent, arg1->ic.value % arg2->ic.value);
  /* Warning:  ANSI guarantees this does the right thing if both args are
     positive.  If one or both is negative, it only guarantees that
@@ -506,7 +506,7 @@ Symbol *int_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
     }
     return make_int_constant (thisAgent, int_val);
   } else if (sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
-    symbol_add_ref(sym) ;
+    symbol_add_ref(thisAgent, sym) ;
     return sym;
   } else if (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
     double int_part;
@@ -562,7 +562,7 @@ Symbol *float_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
     }
     return make_float_constant (thisAgent, float_val);
   } else if (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
-    symbol_add_ref(sym) ;
+    symbol_add_ref(thisAgent, sym) ;
     return sym;
   } else if (sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
     return make_float_constant(thisAgent, static_cast<double>(sym->ic.value) );
@@ -997,7 +997,7 @@ Symbol *compute_range_rhs_function_code(agent* thisAgent, list *args, void* /*us
 Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
 	double n = 0;
-	if (args) 
+	if (args)
 	{
 	    cons* c = args;
 	    Symbol* arg = static_cast<Symbol*>(c->first);
@@ -1018,7 +1018,7 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
 
 	if (n > 0) {
 		return make_float_constant(thisAgent, SoarRand(n));
-	} 
+	}
 	return make_float_constant(thisAgent, SoarRand());
 }
 
@@ -1032,7 +1032,7 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
 Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
 	int64_t n = 0;
-	if (args) 
+	if (args)
 	{
 	    cons* c = args;
 	    Symbol* arg = static_cast<Symbol*>(c->first);
@@ -1053,7 +1053,7 @@ Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_da
 
 	if (n > 0) {
 		return make_int_constant(thisAgent, static_cast<int64_t>(SoarRandInt(static_cast<uint32_t>(n))));
-	} 
+	}
 	return make_int_constant(thisAgent, SoarRandInt());
 }
 
@@ -1301,7 +1301,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 			ret = _dice_zero_tolerance( _dice_prob_atleast( dice, sides, count ) );
 		}
 	}
-	
+
 	return make_float_constant(thisAgent, ret);
 }
 
@@ -1365,16 +1365,16 @@ void init_built_in_rhs_math_functions (agent* thisAgent)
 
 	/* voigtjr 6/12/2007: added these built in functions on laird's request
 	these are straight out of the <8.6 kernel */
-	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "round-off-heading"), 
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "round-off-heading"),
 		round_off_heading_air_rhs_function_code, 2, TRUE, FALSE, 0);
 
-	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "round-off"), 
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "round-off"),
 		round_off_air_rhs_function_code, 2, TRUE, FALSE, 0);
 
-	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "compute-heading"), 
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "compute-heading"),
 		compute_heading_rhs_function_code, 4, TRUE, FALSE, 0);
 
-	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "compute-range"), 
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "compute-range"),
 		compute_range_rhs_function_code, 4, TRUE, FALSE, 0);
 
 	// NLD: 11/11 (ditto voigtjr's motivation above)
@@ -1382,10 +1382,10 @@ void init_built_in_rhs_math_functions (agent* thisAgent)
 		dice_prob_rhs_function_code, 4, TRUE, FALSE, 0);
 
 	// Bug 800: implement rhs rand functions
-	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "rand-int"), 
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "rand-int"),
 		rand_int_rhs_function_code, -1, TRUE, FALSE, 0);
 
-	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "rand-float"), 
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "rand-float"),
 		rand_float_rhs_function_code, -1, TRUE, FALSE, 0);
 
 }

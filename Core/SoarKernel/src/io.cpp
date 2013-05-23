@@ -170,7 +170,7 @@ Symbol *get_io_identifier (agent* thisAgent, char first_letter, uint64_t number)
   // on an existing object.  So I'm going to make this method function the same way for identifiers.
   if (id)
   {
-	symbol_add_ref(id);
+	symbol_add_ref(thisAgent, id);
   }
   else
   {
@@ -575,7 +575,7 @@ void add_id_to_output_link_tc (agent* thisAgent, Symbol *id) {
 
   /* --- add id to output_link's list --- */
   push (thisAgent, id, thisAgent->output_link_for_tc->ids_in_tc);
-  symbol_add_ref (id);  /* make sure the id doesn't get deallocated before we
+  symbol_add_ref(thisAgent, id);  /* make sure the id doesn't get deallocated before we
                            have a chance to free the cons cell we just added */
 
   /* --- add output_link to id's list --- */

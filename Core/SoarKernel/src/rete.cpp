@@ -1481,11 +1481,11 @@ alpha_mem *find_or_make_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
   am->last_beta_node = NIL;
   am->reference_count = 1;
   am->id = id;
-  if (id) symbol_add_ref (id);
+  if (id) symbol_add_ref(thisAgent, id);
   am->attr = attr;
-  if (attr) symbol_add_ref (attr);
+  if (attr) symbol_add_ref(thisAgent, attr);
   am->value = value;
-  if (value) symbol_add_ref (value);
+  if (value) symbol_add_ref(thisAgent, value);
   am->acceptable = acceptable;
   am->am_id = get_next_alpha_mem_id(thisAgent);
   ht = table_for_tests (thisAgent, id, attr, value, acceptable);
@@ -1613,7 +1613,7 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
 	  std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert( w->id );
 	  if ( insert_result.second )
 	  {
-	    symbol_add_ref( w->id );
+	    symbol_add_ref(thisAgent, w->id );
 	  }
   }
 }
@@ -1769,7 +1769,7 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 	std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert( w->id );
 	if ( insert_result.second )
 	{
-	  symbol_add_ref( w->id );
+	  symbol_add_ref(thisAgent, w->id );
 	}
   }
 
@@ -2690,7 +2690,7 @@ varnames *add_var_to_varnames (agent* thisAgent, Symbol *var,
                                varnames *old_varnames) {
   cons *c1, *c2;
 
-  symbol_add_ref (var);
+  symbol_add_ref(thisAgent, var);
   if (old_varnames == NIL)
     return one_var_to_varnames(var);
   if (varnames_is_one_var(old_varnames)) {
@@ -2814,8 +2814,6 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
   condition *cond;
   list *vars;
 
-  // MEC: Need to find somewhere to initialize unique var table
-
   vars = NIL;
 
   for (cond=cond_list; cond!=NIL; cond=cond->next) {
@@ -2845,8 +2843,6 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
 
   /* --- Pop the variable bindings for these conditions --- */
   pop_bindings_and_deallocate_list_of_variables (thisAgent, vars);
-
-  // MEC: Update unique var name table with this productions new vars
 
   return parent_nvn;
 }
@@ -2913,7 +2909,7 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
         new_rt->right_field_num = field_num;
         new_rt->type = CONSTANT_RELATIONAL_RETE_TEST+RELATIONAL_EQUAL_RETE_TEST;
         new_rt->data.constant_referent = referent;
-        symbol_add_ref (referent);
+        symbol_add_ref(thisAgent, referent);
         new_rt->next = *rt;
         *rt = new_rt;
         return;
@@ -2953,7 +2949,7 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
         new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
             test_type_to_relational_test_type(t->type);
         new_rt->data.constant_referent = t->data.referent;
-        symbol_add_ref (t->data.referent);
+        symbol_add_ref(thisAgent, t->data.referent);
         new_rt->next = *rt;
         *rt = new_rt;
         return;
@@ -3534,7 +3530,7 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
     } else {
       /* --- No, replace it with rhs_unboundvar --- */
       if (sym->common.tc_num != rhs_unbound_vars_tc) {
-        symbol_add_ref (sym);
+        symbol_add_ref(thisAgent, sym);
         push(thisAgent, sym, rhs_unbound_vars_for_new_prod);
         sym->common.tc_num = rhs_unbound_vars_tc;
         index = num_rhs_unbound_vars_for_new_prod++;
@@ -3920,10 +3916,10 @@ void add_gensymmed_unique_equality_test (agent* thisAgent, test *t, char first_l
 
   New = generate_new_variable (thisAgent, prefix);
   thisAgent->varname_table->make_varsym_unique(&New);
-  print(thisAgent, "Debug| add_gensymmed_unique_equality_test just created unique symbol %s\n", New->var.name);
+  print(thisAgent, "Debug | add_gensymmed_unique_equality_test just created unique symbol %s\n", New->var.name);
 
   eq_test = make_test (thisAgent, New, EQUALITY_TEST);
-  // Debug| Do we really need this for original_tests since we clean them up?  Must make refcount cleanup more consistent
+  // Debug | Do we really need this for original_tests since we clean them up?  Must make refcount cleanup more consistent
   //symbol_remove_ref (thisAgent, New);
   add_new_test_to_test (thisAgent, t, eq_test);
 }
@@ -4095,7 +4091,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
     if (force_unique)
     {
       thisAgent->varname_table->make_varsym_unique(&temp);
-      print(thisAgent, "Debug| add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
+      print(thisAgent, "Debug | add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
     }
     New = make_test (thisAgent, temp, EQUALITY_TEST);
     add_new_test_to_test (thisAgent, t, New);
@@ -4104,7 +4100,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
       temp = static_cast<Symbol *>(c->first);
       if (force_unique)
       {
-        print(thisAgent, "Debug| add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
+        print(thisAgent, "Debug | add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
         thisAgent->varname_table->make_varsym_unique(&temp);
       }
       New =  make_test (thisAgent, temp, EQUALITY_TEST);
@@ -4150,7 +4146,7 @@ void add_hash_info_to_original_id_test (agent* thisAgent,
 
   temp = var_bound_in_reconstructed_original_conds (thisAgent, cond, field_num, levels_up);
   thisAgent->varname_table->make_varsym_unique(&temp);
-  print(thisAgent, "Debug| add_hash_info_to_original_id_test just created unique symbol %s.\n",
+  print(thisAgent, "Debug | add_hash_info_to_original_id_test just created unique symbol %s.\n",
         temp->var.name);
   New = make_test (thisAgent, temp, EQUALITY_TEST);
   add_new_test_to_test (thisAgent, &(cond->data.tests.id_test->original_test), New);
@@ -4182,7 +4178,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
   TestType test_type;
   rete_test *rt = node->b.posneg.other_tests;
 
-  print(thisAgent, "\nDebug| add_additional_tests_and_originals called for %s.\n", thisAgent->newly_created_instantiations->prod->name->sc.name);
+  print(thisAgent, "\nDebug | add_additional_tests_and_originals called for %s.\n", thisAgent->newly_created_instantiations->prod->name->sc.name);
   /* --- store original referent information --- */
 
   alpha_mem *am;
@@ -4191,7 +4187,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
   if (am->id && am->id->common.symbol_type == VARIABLE_SYMBOL_TYPE)
   {
     original_referent = am->id;
-    print(thisAgent, "Debug| AATtTiC uniquifying am->id from %s\n",
+    print(thisAgent, "Debug | AATtTiC uniquifying am->id from %s\n",
           original_referent->var.name);
     thisAgent->varname_table->make_varsym_unique(&original_referent);
   } else {
@@ -4202,7 +4198,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
   if (am->attr && am->attr->common.symbol_type == VARIABLE_SYMBOL_TYPE)
   {
     original_referent = am->attr;
-    print(thisAgent, "Debug| AATtTiC uniquifying am->attr from %s\n",
+    print(thisAgent, "Debug | AATtTiC uniquifying am->attr from %s\n",
           original_referent->var.name);
     thisAgent->varname_table->make_varsym_unique(&original_referent);
   } else {
@@ -4213,7 +4209,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
   if (am->value && am->value->common.symbol_type == VARIABLE_SYMBOL_TYPE)
     {
       original_referent = am->value;
-      print(thisAgent, "Debug| AATtTiC uniquifying am->value from %s\n",
+      print(thisAgent, "Debug | AATtTiC uniquifying am->value from %s\n",
           original_referent->var.name);
       thisAgent->varname_table->make_varsym_unique(&original_referent);
     } else {
@@ -4222,7 +4218,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
   cond->data.tests.value_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
   //cond->test_for_acceptable_preference = am->acceptable;
 
-  // Debug| Do we need to uniqueify here too?
+  // Debug | Do we need to uniqueify here too?
   if (nvn) {
     add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
         &(cond->data.tests.id_test->original_test));
@@ -4275,7 +4271,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
           referent = rt->data.constant_referent;
           chunk_test = make_test(thisAgent, referent, test_type);
           original_test = make_test (thisAgent, referent, test_type);
-          // Debug| Can't I just do this?
+          // Debug | Can't I just do this?
           // original_test = chunk_test;
         }
         else if (test_is_variable_relational_test(rt->type))
@@ -4327,7 +4323,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
           referent = var_bound_in_reconstructed_conds (thisAgent, cond,
               rt->data.variable_referent.field_num,
               rt->data.variable_referent.levels_up);
-          // Debug| Just to test...
+          // Debug | Just to test...
           right_sym = field_from_wme (right_wme, rt->right_field_num);
           original_referent = var_bound_in_reconstructed_original_conds (thisAgent, cond,
               rt->data.variable_referent.field_num,
@@ -4336,7 +4332,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
           chunk_test = make_test(thisAgent, referent, test_type);
           if (original_referent->common.symbol_type == VARIABLE_SYMBOL_TYPE)
           {
-            print(thisAgent, "Debug| AATtTiC uniquifying referent %s\n",
+            print(thisAgent, "Debug | AATtTiC uniquifying referent %s\n",
                   original_referent->var.name);
             thisAgent->varname_table->make_varsym_unique(&original_referent);
           }
@@ -4344,7 +4340,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
         }
         else
         {
-          print(thisAgent, "Debug| Bad test_type in collect_chunk_test_info.\n");
+          print(thisAgent, "Debug | Bad test_type in collect_chunk_test_info.\n");
           assert(false);
           /* unreachable, but without it gcc -Wall warns here */
           chunk_test = NIL;
@@ -4379,7 +4375,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
       add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.value_test->original_test),
           first_letter_from_test (cond->data.tests.attr_test->original_test));
   }
-  print(thisAgent, "Debug| add_additional_tests_and_originals finished for %s.\n\n", thisAgent->newly_created_instantiations->prod->name->sc.name);
+  print(thisAgent, "Debug | add_additional_tests_and_originals finished for %s.\n\n", thisAgent->newly_created_instantiations->prod->name->sc.name);
 
 }
 
@@ -4403,7 +4399,7 @@ void add_additional_tests_and_originals ( agent      *thisAgent,
    at the node (for chunk creation) and false if we just want the equality
    tests.
 
-   Debug| May need to expand to a third type for rl rules?
+   Debug | May need to expand to a third type for rl rules?
 
 ---------------------------------------------------------------------- */
 
@@ -4543,7 +4539,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
 {
   cons *c, *new_c, *prev_new_c;
   list *fl, *new_fl;
-  Symbol *sym, *original_sym;
+  Symbol *sym, *original_sym=NULL;
   int64_t index;
   char prefix[2];
 
@@ -4553,15 +4549,18 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       original_sym = var_bound_in_reconstructed_original_conds (thisAgent, cond,
                                    rhs_value_to_reteloc_field_num(rv),
                                    rhs_value_to_reteloc_levels_up(rv));
+      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+      symbol_add_ref(thisAgent, original_sym);
+      print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of original %s from %ld.\n",
+             symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0),
+             original_sym->common.reference_count);
     }
-    else
-    {
-      sym = var_bound_in_reconstructed_conds (thisAgent, cond,
-                                 rhs_value_to_reteloc_field_num(rv),
-                                 rhs_value_to_reteloc_levels_up(rv));
-    }
-    symbol_add_ref (sym);
-    return symbol_to_rhs_value (sym);
+    sym = var_bound_in_reconstructed_conds (thisAgent, cond,
+        rhs_value_to_reteloc_field_num(rv),
+        rhs_value_to_reteloc_levels_up(rv));
+    // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+    // symbol_add_ref(thisAgent, sym);
+    return make_rhs_value_symbol(thisAgent, sym, original_sym);
   }
 
   if (rhs_value_is_unboundvar(rv))
@@ -4583,9 +4582,10 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
     else
     {
       sym = *(thisAgent->rhs_variable_bindings+index);
-      symbol_add_ref (sym);
+      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+      //symbol_add_ref(thisAgent, sym);
     }
-    return symbol_to_rhs_value (sym);
+    return make_rhs_value_symbol(thisAgent, sym);
   }
 
   if (rhs_value_is_funcall(rv)) {
@@ -4606,7 +4606,18 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
     prev_new_c->rest = NIL;
     return funcall_list_to_rhs_value (new_fl);
   } else {
-    symbol_add_ref (rhs_value_to_symbol(rv));
+    rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
+    symbol_add_ref(thisAgent, rs->referent);
+    print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of %s to %ld.\n",
+           symbol_to_string(thisAgent, rs->referent, FALSE, NULL, 0),
+           rs->referent->common.reference_count);
+    if (rs->original_variable)
+    {
+      symbol_add_ref(thisAgent, rs->original_variable);
+      print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of %s to %ld.\n",
+             symbol_to_string(thisAgent, rs->original_variable, FALSE, NULL, 0),
+             rs->original_variable->common.reference_count);
+    }
     return rv;
   }
 }
@@ -7029,14 +7040,14 @@ varnames *reteload_varnames (agent* thisAgent, FILE* f) {
   if (i==0) return NIL;
   if (i==1) {
     sym = reteload_symbol_from_index (thisAgent,f);
-    symbol_add_ref (sym);
+    symbol_add_ref(thisAgent, sym);
     return one_var_to_varnames (sym);
   } else {
     count = reteload_eight_bytes (f);
     c = NIL;
     while (count--) {
       sym = reteload_symbol_from_index (thisAgent,f);
-      symbol_add_ref (sym);
+      symbol_add_ref(thisAgent, sym);
       push(thisAgent, sym, c);
     }
     c = destructively_reverse_list (c);
@@ -7138,8 +7149,9 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
   switch (type) {
   case 0:
     sym = reteload_symbol_from_index(thisAgent,f);
-    symbol_add_ref (sym);
-    rv = symbol_to_rhs_value (sym);
+    // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+    //symbol_add_ref(thisAgent, sym);
+    rv = make_rhs_value_symbol(thisAgent, sym);
     break;
   case 1:
     funcall_list = NIL;
@@ -7156,7 +7168,7 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
 	 * The parallel in rete-net loading is the symbol table that is loaded in via reteload_all_symbols (+1 ref) and then freed
 	 * in reteload_free_symbol_table (-1 ref).
 	 */
-	// symbol_add_ref (sym);
+	// symbol_add_ref(thisAgent, sym);
 
 	rf = lookup_rhs_function (thisAgent, sym);
     if (!rf) {
@@ -7320,7 +7332,7 @@ rete_test *reteload_rete_test (agent* thisAgent, FILE* f) {
 
   if (test_is_constant_relational_test(rt->type)) {
     rt->data.constant_referent = reteload_symbol_from_index(thisAgent,f);
-    symbol_add_ref (rt->data.constant_referent);
+    symbol_add_ref(thisAgent, rt->data.constant_referent);
   } else if (test_is_variable_relational_test(rt->type)) {
     rt->data.variable_referent.field_num = reteload_one_byte(f);
     rt->data.variable_referent.levels_up = static_cast<rete_node_level>(reteload_two_bytes(f));
@@ -7329,7 +7341,7 @@ rete_test *reteload_rete_test (agent* thisAgent, FILE* f) {
     temp = NIL;
     while (count--) {
       sym = reteload_symbol_from_index(thisAgent,f);
-      symbol_add_ref (sym);
+      symbol_add_ref(thisAgent, sym);
       push(thisAgent, sym, temp);
     }
     rt->data.disjunction_list = destructively_reverse_list (temp);
@@ -7602,7 +7614,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     prod->interrupt_break = false;
 
     sym = reteload_symbol_from_index (thisAgent,f);
-    symbol_add_ref (sym);
+    symbol_add_ref(thisAgent, sym);
     prod->name = sym;
     sym->sc.production = prod;
     if (reteload_one_byte(f)) {
@@ -7620,7 +7632,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     ubv_list = NIL;
     while (count--) {
       sym = reteload_symbol_from_index(thisAgent,f);
-      symbol_add_ref (sym);
+      symbol_add_ref(thisAgent, sym);
       push(thisAgent, sym, ubv_list);
     }
     prod->rhs_unbound_variables = destructively_reverse_list (ubv_list);
@@ -8165,7 +8177,7 @@ void print_partial_match_information (agent* thisAgent, rete_node *p_node,
   condition *top_cond, *bottom_cond;
   int64_t n;
   token *tokens, *t;
-  /* Debug| See if this works with last param true (add complex conditions) */
+  /* Debug | See if this works with last param true (add complex conditions) */
   p_node_to_conditions (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
                                  NIL, false);
   n = ppmi_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
@@ -9137,7 +9149,7 @@ void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_tra
   token *tokens, *t;
 
   xml_begin_tag(thisAgent, kTagProduction) ;
-  /* Debug| See if this works with last param false (add complex conditions) */
+  /* Debug | See if this works with last param false (add complex conditions) */
   p_node_to_conditions (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
                                  NIL, false);
   n = xml_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,

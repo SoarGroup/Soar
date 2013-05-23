@@ -380,7 +380,7 @@ void read_pattern_and_get_matching_productions (agent* agnt,
                 (but don't necc. need to save them -- maybe can just print them as we go). */
 
                 match = TRUE;
-                /* Debug| See if this works with last param true (add complex conditions) */
+                /* Debug | See if this works with last param true (add complex conditions) */
                 p_node_to_conditions(agnt, prod->p_node, NIL, NIL, &top, &bottom,
                     NIL, false);
 
@@ -459,7 +459,7 @@ void read_rhs_pattern_and_get_matching_productions (agent* agnt,
                 free_binding_list(agnt, bindings);
                 bindings = NIL;
 
-                /* Debug| See if this works with last param true (add complex conditions) */
+                /* Debug | See if this works with last param true (add complex conditions) */
                 p_node_to_conditions(agnt, prod->p_node, NIL, NIL, &top_cond,
                     &bottom_cond, &rhs, false);
                 deallocate_condition_list (agnt, top_cond);

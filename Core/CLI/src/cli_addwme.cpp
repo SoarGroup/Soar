@@ -18,22 +18,22 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
 
     // Get ID
     Symbol* pId = 0;
-    if ( !read_id_or_context_var_from_string( agnt, id.c_str(), &pId ) ) 
+    if ( !read_id_or_context_var_from_string( agnt, id.c_str(), &pId ) )
         return SetError("Invalid identifier");
 
     // skip optional '^', if present
-    if ( attribute[0] == '^' ) 
+    if ( attribute[0] == '^' )
         attribute = attribute.substr( 1 );
 
     // get attribute or '*'
     Symbol* pAttr = 0;
-    if ( attribute == "*" ) 
+    if ( attribute == "*" )
         pAttr = make_new_identifier( agnt, 'I', pId->id.level );
-    else 
+    else
     {
         get_lexeme_from_string( agnt, attribute.c_str() );
 
-        switch (agnt->lexeme.type) 
+        switch (agnt->lexeme.type)
         {
         case SYM_CONSTANT_LEXEME:
             pAttr = make_sym_constant( agnt, agnt->lexeme.string );
@@ -47,9 +47,9 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
         case IDENTIFIER_LEXEME:
         case VARIABLE_LEXEME:
             pAttr = read_identifier_or_context_variable( agnt );
-            if ( !pAttr ) 
+            if ( !pAttr )
                 return SetError( "Invalid attribute." );
-            symbol_add_ref( pAttr );
+            symbol_add_ref(agnt, pAttr );
             break;
         default:
             return SetError( "Unknown attribute type." );
@@ -58,12 +58,12 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
 
     // get value or '*'
     Symbol* pValue = 0;
-    if ( value == "*" ) 
+    if ( value == "*" )
         pValue = make_new_identifier( agnt, 'I', pId->id.level );
-    else 
+    else
     {
         get_lexeme_from_string( agnt, value.c_str() );
-        switch ( agnt->lexeme.type ) 
+        switch ( agnt->lexeme.type )
         {
         case SYM_CONSTANT_LEXEME:
             pValue = make_sym_constant( agnt, agnt->lexeme.string );
@@ -77,12 +77,12 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
         case IDENTIFIER_LEXEME:
         case VARIABLE_LEXEME:
             pValue = read_identifier_or_context_variable( agnt );
-            if (!pValue) 
+            if (!pValue)
             {
                 symbol_remove_ref( agnt, pAttr );
                 return SetError( "Invalid value." );
             }
-            symbol_add_ref(pValue);
+            symbol_add_ref(agnt, pValue);
             break;
         default:
             symbol_remove_ref( agnt, pAttr );
@@ -91,7 +91,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     }
 
     // now create and add the wme
-    wme* pWme = make_wme( agnt, pId, pAttr, pValue, acceptable );			
+    wme* pWme = make_wme( agnt, pId, pAttr, pValue, acceptable );
 
     symbol_remove_ref( agnt, pWme->attr );
     symbol_remove_ref( agnt, pWme->value );
@@ -108,11 +108,11 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     do_buffered_wm_and_ownership_changes( agnt );
 #endif // NO_TOP_LEVEL_REFS
 
-    if (m_RawOutput) 
+    if (m_RawOutput)
     {
         m_Result << "Timetag: " << pWme->timetag;
-    } 
-    else 
+    }
+    else
     {
         std::stringstream timetagString;
         timetagString << pWme->timetag;

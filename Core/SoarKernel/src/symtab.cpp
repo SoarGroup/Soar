@@ -26,9 +26,6 @@
  * =======================================================================
  */
 
-/* Uncomment the following line to get symbol debugging printouts */
-//#define DEBUG_SYMBOLS
-
 #include <stdlib.h>
 
 #include "symtab.h"
@@ -259,7 +256,7 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
 //  Symbol *sym;
 //  force_unique_outside_production = false;
 //  if (force_unique_outside_production)
-//    print(thisAgent, "Debug| make_variable called with %s %i.\n", name, (int) force_unique_outside_production);
+//    print(thisAgent, "Debug | make_variable called with %s %i.\n", name, (int) force_unique_outside_production);
 //
 //  sym = find_variable(thisAgent, name);
 //  if (sym) {
@@ -269,12 +266,12 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
 //      if (!(sym->var.orig_production_name))
 //      {
 //        if (force_unique_outside_production)
-//        print(thisAgent, "Debug| make_variable (unique) found sym with no matching production.  Adding ref count to existing symbol %s.\n", sym->var.name);
-//        symbol_add_ref(sym);
+//        print(thisAgent, "Debug | make_variable (unique) found sym with no matching production.  Adding ref count to existing symbol %s.\n", sym->var.name);
+//        symbol_add_ref(thisAgent, sym);
 //        sym->var.orig_production_name = thisAgent->current_production_name;
-//        symbol_add_ref(sym->var.orig_production_name);
+//        symbol_add_ref(thisAgent, sym->var.orig_production_name);
 //        sym->var.current_unique_symbol = sym;
-//        symbol_add_ref(sym->var.current_unique_symbol);
+//        symbol_add_ref(thisAgent, sym->var.current_unique_symbol);
 //        return sym;
 //      }
 //      else if (sym->var.orig_production_name != thisAgent->current_production_name)
@@ -284,37 +281,37 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
 //        new_name.erase(new_name.end()-1);
 //        new_name += "+" + suffix + ">";
 //        if (force_unique_outside_production)
-//        print(thisAgent, "Debug| make_variable (unique) found existing sym %s.  New production. Creating unique sibling %s.\n", sym->var.name, new_name.c_str());
+//        print(thisAgent, "Debug | make_variable (unique) found existing sym %s.  New production. Creating unique sibling %s.\n", sym->var.name, new_name.c_str());
 //
 //        symbol_remove_ref(thisAgent, sym->var.orig_production_name);
 //        sym->var.orig_production_name = thisAgent->current_production_name;
-//        symbol_add_ref(sym->var.orig_production_name);
+//        symbol_add_ref(thisAgent, sym->var.orig_production_name);
 //
 //        symbol_remove_ref(thisAgent, sym->var.current_unique_symbol);
 //        sym->var.current_unique_symbol = make_variable(thisAgent, new_name.c_str(), force_unique_outside_production);
-//        symbol_add_ref(sym->var.current_unique_symbol);
+//        symbol_add_ref(thisAgent, sym->var.current_unique_symbol);
 //
 //        return sym->var.current_unique_symbol;
 //      }
 //      else
 //      {
 //        if (force_unique_outside_production)
-//        print(thisAgent, "Debug| make_variable (unique) found existing unique sibling for sym %s: %s.\n", sym->var.name, sym->var.current_unique_symbol->var.name);
-//        symbol_add_ref(sym->var.current_unique_symbol);
+//        print(thisAgent, "Debug | make_variable (unique) found existing unique sibling for sym %s: %s.\n", sym->var.name, sym->var.current_unique_symbol->var.name);
+//        symbol_add_ref(thisAgent, sym->var.current_unique_symbol);
 //        return sym->var.current_unique_symbol;
 //      }
 //    }
 //    else
 //    {
 //      if (force_unique_outside_production)
-//      print(thisAgent, "Debug| make_variable found sym.  Adding ref count to existing symbol %s.\n", sym->var.name);
-//      symbol_add_ref(sym);
+//      print(thisAgent, "Debug | make_variable found sym.  Adding ref count to existing symbol %s.\n", sym->var.name);
+//      symbol_add_ref(thisAgent, sym);
 //      return sym;
 //    }
 //  }
 //
 //  if (force_unique_outside_production)
-//  print(thisAgent, "Debug| make_variable found nothing.  Creating new sym with name %s.\n", name);
+//  print(thisAgent, "Debug | make_variable found nothing.  Creating new sym with name %s.\n", name);
 //  allocate_with_pool (thisAgent, &thisAgent->variable_pool, &sym);
 //  sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
 //  sym->common.reference_count = 2;
@@ -330,11 +327,7 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
 //  sym->var.current_unique_symbol = sym;
 //  sym->var.next_unique_suffix_number = 1;
 //  add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
-//#ifdef DEBUG_SYMBOL_REFCOUNTS
-//  char buf[64];
-//  OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
-//  OutputDebugString(":+ \n");
-//#endif // DEBUG_SYMBOL_REFCOUNTS
+
 //
 //  return sym;
 //}
@@ -342,20 +335,20 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
 Symbol *make_variable (agent* thisAgent, const char *name) {
   Symbol *sym;
 
-//  print(thisAgent, "Debug| make_variable called with %s.\n", name);
+//  print(thisAgent, "Debug | make_variable called with %s.\n", name);
 
   sym = find_variable(thisAgent, name);
   if (sym) {
 
-//      print(thisAgent, "Debug| make_variable found sym %s.  Adding ref count.\n", sym->var.name);
-      symbol_add_ref(sym);
+//      print(thisAgent, "Debug | make_variable found sym %s.  Adding ref count.\n", sym->var.name);
+      symbol_add_ref(thisAgent, sym);
       return sym;
     }
 
-//  print(thisAgent, "Debug| make_variable creating new sym %s.\n", name);
+//  print(thisAgent, "Debug | make_variable creating new sym %s.\n", name);
   allocate_with_pool (thisAgent, &thisAgent->variable_pool, &sym);
   sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
-  sym->common.reference_count = 1;
+  sym->common.reference_count = 0;
   sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
   sym->common.tc_num = 0;
   sym->common.variablized_symbol = NIL;
@@ -364,12 +357,8 @@ Symbol *make_variable (agent* thisAgent, const char *name) {
   sym->var.name = make_memory_block_for_string (thisAgent, name);
   sym->var.gensym_number = 0;
   sym->var.rete_binding_locations = NIL;
+  symbol_add_ref(thisAgent, sym);
   add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-  char buf[64];
-  OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
-  OutputDebugString(":+ \n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
 
   return sym;
 }
@@ -384,7 +373,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   }
   allocate_with_pool (thisAgent, &thisAgent->identifier_pool, &sym);
   sym->common.symbol_type = IDENTIFIER_SYMBOL_TYPE;
-  sym->common.reference_count = 1;
+  sym->common.reference_count = 0;
   sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
   sym->common.tc_num = 0;
   sym->common.variablized_symbol = NIL;
@@ -392,7 +381,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->common.original_var_symbol = NIL;
   sym->id.name_letter = name_letter;
 
-  // NLD: modified for long-term identifiers
+  // For long-term identifiers
   if ( name_number == NIL )
   {
 	name_number = thisAgent->id_counter[name_letter-'A']++;
@@ -418,15 +407,11 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.could_be_a_link_from_below = FALSE;
   sym->id.impasse_wmes = NIL;
   sym->id.higher_goal = NIL;
-/* REW: begin 09.15.96 */
   sym->id.gds = NIL;
-/* REW: end   09.15.96 */
-/* REW: begin 08.20.97 */
   sym->id.saved_firing_type = NO_SAVED_PRODS;
   sym->id.ms_o_assertions = NIL;
   sym->id.ms_i_assertions = NIL;
   sym->id.ms_retractions = NIL;
-/* REW: end   08.20.97 */
   sym->id.lower_goal = NIL;
   sym->id.operator_slot = NIL;
   sym->id.preferences_from_goal = NIL;
@@ -452,12 +437,8 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
 
   sym->id.rl_trace = NIL;
 
+  symbol_add_ref(thisAgent, sym);
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-  char buf[64];
-  OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
-  OutputDebugString(":+ \n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
   return sym;
 }
 
@@ -466,11 +447,11 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
 
   sym = find_sym_constant(thisAgent, name);
   if (sym) {
-    symbol_add_ref(sym);
+    symbol_add_ref(thisAgent, sym);
   } else {
     allocate_with_pool (thisAgent, &thisAgent->sym_constant_pool, &sym);
     sym->common.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
-    sym->common.reference_count = 1;
+    sym->common.reference_count = 0;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->common.tc_num = 0;
     sym->common.variablized_symbol = NIL;
@@ -482,12 +463,8 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     sym->common.smem_valid = 0;
     sym->sc.name = make_memory_block_for_string (thisAgent, name);
     sym->sc.production = NIL;
+    symbol_add_ref(thisAgent, sym);
     add_to_hash_table (thisAgent, thisAgent->sym_constant_hash_table, sym);
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-    char buf[64];
-    OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
-    OutputDebugString(":+ \n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
   }
   return sym;
 }
@@ -497,11 +474,11 @@ Symbol *make_int_constant (agent* thisAgent, int64_t value) {
 
   sym = find_int_constant(thisAgent, value);
   if (sym) {
-    symbol_add_ref(sym);
+    symbol_add_ref(thisAgent, sym);
   } else {
     allocate_with_pool (thisAgent, &thisAgent->int_constant_pool, &sym);
     sym->common.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
-    sym->common.reference_count = 1;
+    sym->common.reference_count = 0;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->common.tc_num = 0;
     sym->common.variablized_symbol = NIL;
@@ -512,12 +489,8 @@ Symbol *make_int_constant (agent* thisAgent, int64_t value) {
     sym->common.smem_hash = 0;
     sym->common.smem_valid = 0;
     sym->ic.value = value;
+    symbol_add_ref(thisAgent, sym);
     add_to_hash_table (thisAgent, thisAgent->int_constant_hash_table, sym);
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-    char buf[64];
-    OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
-    OutputDebugString(":+ \n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
   }
   return sym;
 }
@@ -527,11 +500,11 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
 
   sym = find_float_constant(thisAgent, value);
   if (sym) {
-    symbol_add_ref(sym);
+    symbol_add_ref(thisAgent, sym);
   } else {
     allocate_with_pool (thisAgent, &thisAgent->float_constant_pool, &sym);
     sym->common.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
-    sym->common.reference_count = 1;
+    sym->common.reference_count = 0;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->common.tc_num = 0;
     sym->common.variablized_symbol = NIL;
@@ -542,12 +515,8 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     sym->common.smem_hash = 0;
     sym->common.smem_valid = 0;
     sym->fc.value = value;
+    symbol_add_ref(thisAgent, sym);
     add_to_hash_table (thisAgent, thisAgent->float_constant_hash_table, sym);
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-    char buf[64];
-    OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
-    OutputDebugString(":+ \n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
   }
   return sym;
 }
@@ -560,11 +529,11 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
 
 void deallocate_symbol (agent* thisAgent, Symbol *sym) {
 
-#ifdef DEBUG_SYMBOLS
-  print_with_symbols (thisAgent, "\nDeallocating Symbol %y", sym);
+#ifdef DEBUG_TRACE_REFCOUNT_REMOVES
+  print_with_symbols (thisAgent, "\nRefcnt| Deallocating symbol %y\n", sym);
 #endif
 
-  /* Debug| Shouldn't we be decreasing refcount on symbol pointers for variablization pointers?
+  /* Debug | Shouldn't we be decreasing refcount on symbol pointers for variablization pointers?
    *        Will add now disabled, test later.*/
 //  symbol_remove_ref (thisAgent, sym->common.variablized_symbol);
 //  symbol_remove_ref (thisAgent, sym->common.unvariablized_symbol);

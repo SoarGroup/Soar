@@ -762,13 +762,13 @@ inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_mod
 	_smem_process_buffered_wme_list( my_agent, state, cue_wmes, retrieval_wmes, false );
 }
 
-inline void smem_buffer_add_wme( soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value )
+inline void smem_buffer_add_wme( agent* my_agent, soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value )
 {
 	my_list.push_back( new soar_module::symbol_triple( id, attr, value ) );
 
-	symbol_add_ref( id );
-	symbol_add_ref( attr );
-	symbol_add_ref( value );
+	symbol_add_ref(my_agent, id );
+	symbol_add_ref(my_agent, attr );
+	symbol_add_ref(my_agent, value );
 }
 
 //////////////////////////////////////////////////////////
@@ -1495,7 +1495,7 @@ Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_letter, 
 	}
 	else
 	{
-		symbol_add_ref( return_val );
+		symbol_add_ref(my_agent, return_val );
 
 		if ( ( return_val->id.level == SMEM_LTI_UNKNOWN_LEVEL ) && ( level != SMEM_LTI_UNKNOWN_LEVEL ) )
 		{
@@ -2051,7 +2051,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 	}
 
 	// point retrieved to lti
-	smem_buffer_add_wme( meta_wmes, result_header, my_agent->smem_sym_retrieved, lti );
+	smem_buffer_add_wme( my_agent,meta_wmes, result_header, my_agent->smem_sym_retrieved, lti );
 	if ( lti_created_here )
 	{
 		// if the identifier was created above we need to
@@ -2090,7 +2090,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 			}
 
 			// add wme
-			smem_buffer_add_wme( retrieval_wmes, lti, attr_sym, value_sym );
+			smem_buffer_add_wme( my_agent,retrieval_wmes, lti, attr_sym, value_sym );
 
 			// deal with ref counts - attribute/values are always created in this function
 			// (thus an extra ref count is set before adding a wme)
@@ -2713,10 +2713,10 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 		if ( king_id != NIL )
 		{
 			// success!
-			smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, query );
+			smem_buffer_add_wme( my_agent,meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, query );
 			if ( negquery )
 			{
-				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, negquery );
+				smem_buffer_add_wme( my_agent,meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, negquery );
 			}
 
 			////////////////////////////////////////////////////////////////////////////
@@ -2727,10 +2727,10 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 		}
 		else
 		{
-			smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, query );
+			smem_buffer_add_wme( my_agent,meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, query );
 			if ( negquery )
 			{
-				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, negquery );
+				smem_buffer_add_wme( my_agent,meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, negquery );
 			}
 
 			////////////////////////////////////////////////////////////////////////////
@@ -3902,12 +3902,12 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					if ( retrieve->id.smem_lti == NIL )
 					{
 						// retrieve is not pointing to an lti!
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, retrieve );
+						smem_buffer_add_wme( my_agent,meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, retrieve );
 					}
 					else
 					{
 						// status: success
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
+						smem_buffer_add_wme( my_agent,meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
 
 						// install memory directly onto the retrieve identifier
 						smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true, meta_wmes, retrieval_wmes );
@@ -3951,7 +3951,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						smem_soar_store( my_agent, (*sym_p), ( ( mirroring_on )?( store_recursive ):( store_level ) ) );
 
 						// status: success
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
+						smem_buffer_add_wme( my_agent,meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
 
 						// add one to the store stat
 						my_agent->smem_stats->stores->set_value( my_agent->smem_stats->stores->get_value() + 1 );
@@ -3970,7 +3970,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 			else
 			{
-				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
+				smem_buffer_add_wme( my_agent,meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
 			}
 
 			if ( !meta_wmes.empty() || !retrieval_wmes.empty() )

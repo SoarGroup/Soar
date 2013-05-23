@@ -133,7 +133,7 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
   var = (*sym)->var.current_binding_value;
   symbol_remove_ref (thisAgent, *sym);
   *sym = var;
-  if (!just_created) symbol_add_ref (var);
+  if (!just_created) symbol_add_ref(thisAgent, var);
 }
 
 void substitute_for_placeholders_in_test (agent* thisAgent, test *t) {
@@ -358,7 +358,7 @@ test parse_relational_test (agent* thisAgent) {
     test_type = EQUALITY_TEST;
     break;
   default:
-    print (thisAgent, "Debug| Unexpected type in parse_relational_test!!!\n");
+    print (thisAgent, "Debug | Unexpected type in parse_relational_test!!!\n");
     assert(false);
     break;
   }
@@ -1213,7 +1213,9 @@ rhs_value parse_rhs_value (agent* thisAgent) {
 		(thisAgent->lexeme.type==VARIABLE_LEXEME) ||
 		(thisAgent->lexeme.type==IDENTIFIER_LEXEME)) {
 			// IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
-			rv = symbol_to_rhs_value (make_symbol_for_current_lexeme (thisAgent, id_lti));
+	    Symbol *new_sym = make_symbol_for_current_lexeme (thisAgent, id_lti);
+	    // make_symbol_for_current_lexeme already increments refcount
+			rv = make_rhs_value_symbol_no_refcount(thisAgent, new_sym);
 			get_lexeme(thisAgent);
 			return rv;
 	}
@@ -1413,8 +1415,9 @@ action *parse_preferences (agent* thisAgent, Symbol *id,
     prev_a = a;
     a->type = MAKE_ACTION;
     a->preference_type = preference_type;
-    a->id = symbol_to_rhs_value(id);
-    symbol_add_ref (id);
+    a->id = make_rhs_value_symbol(thisAgent, id);
+    // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+    // symbol_add_ref(thisAgent, id);
     a->attr = copy_rhs_value (thisAgent, attr);
     a->value = copy_rhs_value (thisAgent, value);
     if (preference_is_binary(preference_type)) a->referent = referent;
@@ -1424,12 +1427,14 @@ action *parse_preferences (agent* thisAgent, Symbol *id,
     preference_type = parse_preference_specifier_without_referent (thisAgent);
 
     /* --- exit loop when done reading preferences --- */
+
+    /* If the routine gave us a + pref without seeing a + sign, then it's
+       just giving us the default acceptable preference, it didn't see any
+       more preferences specified. */
     if ((preference_type==ACCEPTABLE_PREFERENCE_TYPE) && (! saw_plus_sign))
-      /* If the routine gave us a + pref without seeing a + sign, then it's
-         just giving us the default acceptable preference, it didn't see any
-         more preferences specified. */
       return prev_a;
   }
+  return NIL; // Unreachable.  Eliminates compiler warning.
 }
 
 /* -----------------------------------------------------------------
@@ -1526,8 +1531,9 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
       prev_a = a;
       a->type = MAKE_ACTION;
       a->preference_type = preference_type;
-      a->id = symbol_to_rhs_value(id);
-      symbol_add_ref (id);
+      a->id = make_rhs_value_symbol(thisAgent, id);
+      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+      //symbol_add_ref(thisAgent, id);
       a->attr = copy_rhs_value (thisAgent, attr);
       a->value = copy_rhs_value (thisAgent, value);
     }
@@ -1551,8 +1557,9 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
 		  prev_a = a;
 		  a->type = MAKE_ACTION;
 		  a->preference_type = ACCEPTABLE_PREFERENCE_TYPE;
-		  a->id = symbol_to_rhs_value(id);
-		  symbol_add_ref (id);
+		  a->id = make_rhs_value_symbol(thisAgent, id);
+		  // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+		  //symbol_add_ref(thisAgent, id);
 		  a->attr = copy_rhs_value (thisAgent, attr);
 		  a->value = copy_rhs_value (thisAgent, value);
       }
@@ -1615,11 +1622,11 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
     if(strcmp(szAttribute,"operator") != 0)
     {
       new_actions = parse_preferences_soar8_non_operator (thisAgent, id, attr,
-														  symbol_to_rhs_value(new_var));
+														  make_rhs_value_symbol(thisAgent, new_var));
     }
     else
     {
-      new_actions = parse_preferences (thisAgent, id, attr, symbol_to_rhs_value(new_var));
+      new_actions = parse_preferences (thisAgent, id, attr, make_rhs_value_symbol(thisAgent, new_var));
     }
 
     for (last=new_actions; last->next!=NIL; last=last->next)
@@ -1628,10 +1635,7 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
     last->next = all_actions;
     all_actions = new_actions;
 
-	/* NLD Added. Once we create an action for the
-	   intermediate dot notation attribute/value pair,
-	   remove references for each.  Prevents memory
-	   leaks for rules containing dot notation. */
+	/* Remove references for dummy var used to represent dot notation links */
 	deallocate_rhs_value (thisAgent, attr);
 	symbol_remove_ref(thisAgent, new_var);
 
@@ -1915,7 +1919,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   } /* end of while (TRUE) */
 
   /* --- read the LHS --- */
-  print_trace(thisAgent, TRACE_PARSER, "Debug| Parsing LHS\n");
+  print_trace(thisAgent, TRACE_PARSER, "Debug | Parsing LHS\n");
   lhs = parse_lhs(thisAgent);
   if (! lhs) {
     print_with_symbols (thisAgent, "(Ignoring production %y)\n\n", name);
@@ -1941,7 +1945,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   get_lexeme(thisAgent);
 
   /* --- read the RHS --- */
-  print_trace(thisAgent, TRACE_PARSER, "Debug| Parsing RHS\n");
+  print_trace(thisAgent, TRACE_PARSER, "Debug | Parsing RHS\n");
   rhs_okay = parse_rhs (thisAgent, &rhs);
   if (!rhs_okay) {
     print_with_symbols (thisAgent, "(Ignoring production %y)\n\n", name);
@@ -1977,7 +1981,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   /* --- everything parsed okay, so make the production structure --- */
   lhs_top = lhs;
   for (lhs_bottom=lhs; lhs_bottom->next!=NIL; lhs_bottom=lhs_bottom->next);
-  print_trace(thisAgent, TRACE_PARSER, "Debug| Parse OK.  Making production.\n");
+  print_trace(thisAgent, TRACE_PARSER, "Debug | Parse OK.  Making production.\n");
   p = make_production (thisAgent, prod_type, name, &lhs_top, &lhs_bottom, &rhs, TRUE);
 
   if (!p) {

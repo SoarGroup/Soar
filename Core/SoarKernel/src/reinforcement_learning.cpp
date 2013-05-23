@@ -600,7 +600,7 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 			reset_variable_generator( my_agent, cond_top, NIL );
 			my_agent->variablization_tc = get_new_tc_number( my_agent );
 			variablize_condition_list( my_agent, cond_top );
-			//Debug| Disabled.  New system should handle.  Test.
+			//Debug | Disabled.  New system should handle.  Test.
 			//variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
 
 			// get the preference value
@@ -667,27 +667,32 @@ action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym
 
     // id
 	temp = id_sym;
-	symbol_add_ref( temp );
+	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+	// Debug | Might need to also add symbol as original var if that's what it is at this point
+	symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
-	rhs->id = symbol_to_rhs_value( temp );
+	rhs->id = make_rhs_value_symbol(my_agent, temp );
 
     // attribute
     temp = attr_sym;
-	symbol_add_ref( temp );
+    // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+	symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
-	rhs->attr = symbol_to_rhs_value( temp );
+	rhs->attr = make_rhs_value_symbol(my_agent, temp );
 
 	// value
 	temp = val_sym;
-	symbol_add_ref( temp );
+	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+	symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
-	rhs->value = symbol_to_rhs_value( temp );
+	rhs->value = make_rhs_value_symbol(my_agent, temp );
 
 	// referent
 	temp = ref_sym;
-	symbol_add_ref( temp );
+	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+	symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
-	rhs->referent = symbol_to_rhs_value( temp );
+	rhs->referent = make_rhs_value_symbol(my_agent, temp );
 
     return rhs;
 }
@@ -1015,7 +1020,10 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 
                     // Change value of rule
                     symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
-                    prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
+
+                    // No refcount needed here because make_float_constant will increase
+                    prod->action_list->referent = make_rhs_value_symbol_no_refcount(my_agent, make_float_constant( my_agent, new_combined ) );
+
                     prod->rl_update_count += 1;
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;

@@ -289,7 +289,7 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 				result->id.promotion_level = new_id_level;
 			}
 
-		symbol_add_ref(result);
+		symbol_add_ref(thisAgent, result);
 		return result;
 	}
 
@@ -312,7 +312,7 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 			*(thisAgent->rhs_variable_bindings + index) = sym;
 			return sym;
 		} else {
-			symbol_add_ref(sym);
+			symbol_add_ref(thisAgent, sym);
 			return sym;
 		}
 	}
@@ -320,7 +320,7 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 	if (rhs_value_is_reteloc(rv)) {
 		result = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(rv),
 				rhs_value_to_reteloc_field_num(rv), tok, w);
-		symbol_add_ref(result);
+		symbol_add_ref(thisAgent, result);
 		return result;
 	}
 
@@ -385,7 +385,7 @@ preference *execute_action(agent* thisAgent, action *a,
 	Symbol *id, *attr, *value, *referent;
 	char first_letter;
 
-  // Debug| May need to handle rhs functions here too
+  // Debug | May need to handle rhs functions here too
 
 	if (a->type == FUNCALL_ACTION) {
 		value = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
@@ -424,7 +424,7 @@ preference *execute_action(agent* thisAgent, action *a,
   if (rhs_value_is_symbol(original_value))
     value->common.original_var_symbol = rhs_value_to_symbol(original_value);
 
-  // Debug| I don't think we need to store original vars for referents bc they should always be operator IDs
+  // Debug | I don't think we need to store original vars for referents bc they should always be operator IDs
   if (preference_is_binary(a->preference_type)) {
 		referent = instantiate_rhs_value(thisAgent, a->referent, id->id.level,
 				first_letter, tok, w);
@@ -749,7 +749,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	inst->preferences_generated = NIL;
 	need_to_do_support_calculations = FALSE;
 	for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next) {
-	  //Debug| Remove this
+	  //Debug | Remove this
 	  if ((a && !a2) || (!a && a2))
 	    assert(false);
 		if (prod->type != TEMPLATE_PRODUCTION_TYPE) {

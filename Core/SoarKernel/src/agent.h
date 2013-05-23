@@ -656,6 +656,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   memory_pool         condition_pool;
   memory_pool         not_pool;
   memory_pool         production_pool;
+  memory_pool         rhs_symbol_pool;
 
   /* ----------------------- Reorderer stuff -------------------------- */
 
@@ -1012,26 +1013,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
 void init_soar_agent(agent* thisAgent);
 
-#ifdef USE_MACROS
-
-#define allocate_cons(thisAgent, dest_cons_pointer) \
-  allocate_with_pool (thisAgent, &thisAgent->cons_cell_pool, (dest_cons_pointer))
-
-#define free_cons(thisAgent, c) free_with_pool (&thisAgent->cons_cell_pool, (c))
-
-#define push(thisAgent, item, list_header) { \
-  cons *push_cons_xy298; \
-  allocate_cons (thisAgent, &push_cons_xy298); \
-  push_cons_xy298->first = (item); \
-  push_cons_xy298->rest = (list_header); \
-  (list_header) = push_cons_xy298; }
-
-#else
-
-#ifdef __cplusplus
-//}
-#endif
-
 template <typename T>
 inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer)
 {
@@ -1054,38 +1035,16 @@ inline void push(agent* thisAgent, P item, T * & list_header)
   (list_header) = push_cons_xy298;
 }
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-#endif /* USE_MACROS */
-
-//extern char * soar_version_string;
-
-//extern agent * soar_agent;
-
 extern agent * create_soar_agent (char * name);
 extern void    destroy_soar_agent (agent* soar_agent);
 
-//void initialize_soar_agent(Kernel *thisKernel, agent* thisAgent);
-//
 /* Ideally, this should be in "lexer.h", but to avoid circular dependencies
    among header files, I am forced to put it here. */
-#ifdef USE_MACROS
-#define reading_from_top_level(soar_agent) (!soar_agent->current_file->parent_file)
-#else
 
 inline Bool reading_from_top_level(agent* soarAgent)
 {
    return (!soarAgent->current_file->parent_file);
 }
-
-#endif /* USE_MACROS */
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif
 

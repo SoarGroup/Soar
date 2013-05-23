@@ -51,10 +51,11 @@
 /* #define LIST_COMPILE_TIME_O_SUPPORT_FAILURES */
 
 void init_production_utilities (agent* thisAgent) {
-  init_memory_pool (thisAgent, &thisAgent->test_pool, sizeof(test_info), "complex test");
+  init_memory_pool (thisAgent, &thisAgent->test_pool, sizeof(test_info), "test");
   init_memory_pool (thisAgent, &thisAgent->condition_pool, sizeof(condition), "condition");
   init_memory_pool (thisAgent, &thisAgent->production_pool, sizeof(production), "production");
   init_memory_pool (thisAgent, &thisAgent->action_pool, sizeof(action), "action");
+  init_memory_pool (thisAgent, &thisAgent->rhs_symbol_pool, sizeof(rhs_info), "rhs symbol");
   init_reorderer(thisAgent);
 }
 
@@ -129,14 +130,14 @@ list *copy_symbol_list_adding_references (agent* thisAgent,
   if (! sym_list) return NIL;
   allocate_cons (thisAgent, &first);
   first->first = sym_list->first;
-  symbol_add_ref (static_cast<Symbol *>(first->first));
+  symbol_add_ref(thisAgent, static_cast<Symbol *>(first->first));
   sym_list = sym_list->rest;
   prev = first;
   while (sym_list) {
     allocate_cons (thisAgent, &c);
     prev->rest = c;
     c->first = sym_list->first;
-    symbol_add_ref (static_cast<Symbol *>(c->first));
+    symbol_add_ref(thisAgent, static_cast<Symbol *>(c->first));
     sym_list = sym_list->rest;
     prev = c;
   }
@@ -223,16 +224,7 @@ inline test make_test(agent* thisAgent, Symbol * sym, TestType test_type) // is 
   new_ct = make_test_without_refcount(thisAgent, sym, test_type);
   if (sym)
   {
-    (sym)->common.reference_count++;
-
-  #ifdef DEBUG_SYMBOL_REFCOUNTS
-    char buf[64];
-    OutputDebugString(symbol_to_string(0, (sym), FALSE, buf, 64));
-    OutputDebugString(":+ ");
-    OutputDebugString(_itoa((sym)->common.reference_count, buf, 10));
-    OutputDebugString("\n");
-  #endif // DEBUG_SYMBOL_REFCOUNTS
-
+    symbol_add_ref(thisAgent, sym);
   }
 
   return new_ct;
@@ -395,7 +387,7 @@ void add_new_test_to_test (agent* thisAgent,
     }
     *t = ct;
   }
-  // Debug| remove
+  // Debug | remove
   if (add_me->type==CONJUNCTIVE_TEST) {
   assert(false);
   }
@@ -1035,7 +1027,22 @@ void deallocate_rhs_value (agent* thisAgent, rhs_value rv) {
       deallocate_rhs_value (thisAgent, static_cast<char *>(c->first));
     free_list (thisAgent, fl);
   } else {
-    symbol_remove_ref (thisAgent, rhs_value_to_symbol(rv));
+    rhs_symbol r = rhs_value_to_rhs_symbol(rv);
+    if (r->referent)
+    {
+      print(thisAgent, "Debug | deallocate_rhs_value decreasing refcount of %s from %ld to %ld.\n",
+             symbol_to_string(thisAgent, r->referent, FALSE, NULL, 0),
+             r->referent->common.reference_count, (r->referent->common.reference_count)-1);
+      symbol_remove_ref (thisAgent, r->referent);
+    }
+    if (r->original_variable)
+    {
+      print(thisAgent, "Debug | deallocate_rhs_value decreasing refcount of original %s from %ld to %ld.\n",
+             symbol_to_string(thisAgent, r->original_variable, FALSE, NULL, 0),
+             r->original_variable->common.reference_count, (r->original_variable->common.reference_count)-1);
+      symbol_remove_ref (thisAgent, r->original_variable);
+    }
+      free_with_pool (&thisAgent->rhs_symbol_pool, r);
   }
 }
 
@@ -1063,8 +1070,19 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
     prev_new_c->rest = NIL;
     return funcall_list_to_rhs_value (new_fl);
   } else {
-    symbol_add_ref (rhs_value_to_symbol(rv));
-    return rv;
+    rhs_symbol r = rhs_value_to_rhs_symbol(rv);
+    symbol_add_ref(thisAgent, r->referent);
+    print(thisAgent, "Debug | copy_rhs_value increasing refcount of %s from %ld.\n",
+           symbol_to_string(thisAgent, r->referent, FALSE, NULL, 0),
+           r->referent->common.reference_count);
+    if (r->original_variable)
+    {
+      symbol_add_ref(thisAgent, r->original_variable);
+      print(thisAgent, "Debug | copy_rhs_value increasing refcount of original %s from %ld.\n",
+             symbol_to_string(thisAgent, r->original_variable, FALSE, NULL, 0),
+             r->original_variable->common.reference_count);
+    }
+    return rhs_symbol_to_rhs_value(r);
   }
 }
 
@@ -1075,6 +1093,7 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
 void deallocate_action_list (agent* thisAgent, action *actions) {
   action *a;
 
+  print(thisAgent, "Debug | deallocating action list...\n");
   while (actions) {
     a = actions;
     actions = actions->next;
@@ -1586,7 +1605,7 @@ Bool action_is_in_tc (action *a, tc_number tc) {
 
 
 void reset_variable_generator (agent* thisAgent,
-							   condition *conds_with_vars_to_avoid,
+							                 condition *conds_with_vars_to_avoid,
                                action *actions_with_vars_to_avoid) {
   tc_number tc;
   list *var_list;
@@ -1666,7 +1685,10 @@ void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
       temp_sym = t->data.referent;
       t->data.referent = temp_sym->common.unvariablized_symbol;
 
-      // Debug| double-check refcount
+      // Debug | double-check refcount
+      print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
+             symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
+             temp_sym->common.reference_count);
       symbol_remove_ref (thisAgent, temp_sym);
       }
     break;
@@ -1678,23 +1700,28 @@ void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
 
 void reverse_unbound_referents_in_action (agent* thisAgent, rhs_value *r_val, tc_number tc)
 {
-  Symbol *sym, *temp_sym;
+  Symbol *temp_sym;
 
   // Try rhs_value_is_unboundvar(rv) to see if we should ignore reversal
 
-  sym = rhs_value_to_symbol(*r_val);
+  rhs_symbol this_rhs_symbol = rhs_value_to_rhs_symbol(*r_val);
 
-  if ((sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (sym->common.tc_num != tc) &&
-      (sym->common.unvariablized_symbol->common.symbol_type != IDENTIFIER_SYMBOL_TYPE))
+  if ((this_rhs_symbol->referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (this_rhs_symbol->referent->common.tc_num != tc) &&
+      (this_rhs_symbol->referent->common.unvariablized_symbol->common.symbol_type != IDENTIFIER_SYMBOL_TYPE))
   {
     print(thisAgent, "Reversing rhs %s to constant %s.\n",
-        symbol_to_string(thisAgent, sym, FALSE, NULL, 0),
-        symbol_to_string(thisAgent, sym->common.unvariablized_symbol, FALSE, NULL, 0));
+        symbol_to_string(thisAgent, this_rhs_symbol->referent, FALSE, NULL, 0),
+        symbol_to_string(thisAgent, this_rhs_symbol->referent->common.unvariablized_symbol, FALSE, NULL, 0));
 
-    temp_sym = sym;
-    sym = temp_sym->common.unvariablized_symbol;
-    *r_val = symbol_to_rhs_value(sym);
-    // Debug| double-check refcount
+    temp_sym = this_rhs_symbol->referent;
+    this_rhs_symbol->referent = temp_sym->common.unvariablized_symbol;
+
+    // Debug | Don't think this is necessary unless r_val is NIL in which case the above code would not work
+    (*r_val) = rhs_symbol_to_rhs_value(this_rhs_symbol);
+    // Debug | Double-check refcount
+    print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
+           symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
+           temp_sym->common.reference_count);
     symbol_remove_ref (thisAgent, temp_sym);
   }
 }
@@ -1720,7 +1747,7 @@ void reverse_unbound_rhs_referents (agent* thisAgent, action *rhs_top, tc_number
 
   for (a = rhs_top; a!=NIL; a=a->next)
   {
-    // Debug| Might need to handle rhs function calls too
+    // Debug | Might need to handle rhs function calls too
     if (a->type == MAKE_ACTION)
     {
       reverse_unbound_referents_in_action (thisAgent, &(a->attr), tc);
@@ -1776,7 +1803,7 @@ production *make_production (agent* thisAgent,
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
 
-    // Debug| Do we need this any more?
+    // Debug | Do we need this any more?
     if ( !smem_valid_production( *lhs_top, *rhs_top ) )
     {
       print( thisAgent, "ungrounded LTI in production\n" );

@@ -103,9 +103,9 @@ namespace soar_module
 			{
 				pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL );
 				pref->o_supported = true;
-				symbol_add_ref( pref->id );
-				symbol_add_ref( pref->attr );
-				symbol_add_ref( pref->value );
+				symbol_add_ref(my_agent, pref->id );
+				symbol_add_ref(my_agent, pref->attr );
+				symbol_add_ref(my_agent, pref->value );
 
 				pref->inst = inst;
 				pref->inst_next = pref->inst_prev = NULL;

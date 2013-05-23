@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -60,7 +60,7 @@
 
 using namespace soar_TraceNames;
 
-void add_rhs_function (agent* thisAgent, 
+void add_rhs_function (agent* thisAgent,
                        Symbol *name,
                        rhs_function_routine f,
                        int num_args_expected,
@@ -69,7 +69,7 @@ void add_rhs_function (agent* thisAgent,
                        void* user_data) {
   rhs_function *rf;
 
-  if ((!can_be_rhs_value) && (!can_be_stand_alone_action)) 
+  if ((!can_be_rhs_value) && (!can_be_stand_alone_action))
   {
     print (thisAgent, "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
     return;
@@ -77,19 +77,19 @@ void add_rhs_function (agent* thisAgent,
 
   for (rf=thisAgent->rhs_functions; rf!=NIL; rf=rf->next)
   {
-     if (rf->name==name) 
+     if (rf->name==name)
      {
         print_with_symbols (thisAgent, "Internal error: attempt to add_rhs_function that already exists: %y\n", name);
         return;
      }
   }
-  
+
   rf = static_cast<rhs_function_struct *>(allocate_memory (thisAgent, sizeof(rhs_function), MISCELLANEOUS_MEM_USAGE));
 
   /* Insertion into the list */
   rf->next = thisAgent->rhs_functions;
   thisAgent->rhs_functions = rf;
-  
+
   /* Rest of the stuff */
   rf->name = name;
   rf->f = f;
@@ -99,13 +99,13 @@ void add_rhs_function (agent* thisAgent,
   rf->user_data = user_data;
 }
 
-rhs_function *lookup_rhs_function (agent* thisAgent, Symbol *name) 
+rhs_function *lookup_rhs_function (agent* thisAgent, Symbol *name)
 {
   rhs_function *rf;
 
   for (rf=thisAgent->rhs_functions; rf!=NIL; rf=rf->next)
   {
-     if (rf->name==name) 
+     if (rf->name==name)
         return rf;
   }
   return NIL;
@@ -120,7 +120,7 @@ void remove_rhs_function(agent* thisAgent, Symbol *name) {  /* code from Koss 8/
        rf != NIL;
        prev = rf, rf = rf->next)
   {
-    if (rf->name == name) 
+    if (rf->name == name)
        break;
   }
 
@@ -131,7 +131,7 @@ void remove_rhs_function(agent* thisAgent, Symbol *name) {  /* code from Koss 8/
   }
 
   /* Else, remove it */
-  else 
+  else
   {
 
     /* Head of list special */
@@ -177,7 +177,7 @@ Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
   xml_object( thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs) );
 
   free_growable_string(thisAgent, gs);
-  
+
   return NIL;
 }
 
@@ -228,7 +228,7 @@ Symbol *make_constant_symbol_rhs_function_code (agent* thisAgent, list *args, vo
 			buf << string;
 		}
 	}
-	if ((!args) && (!find_sym_constant (thisAgent, buf.str().c_str()))) 
+	if ((!args) && (!find_sym_constant (thisAgent, buf.str().c_str())))
 		return make_sym_constant (thisAgent, buf.str().c_str());
 	return generate_new_sym_constant (thisAgent, buf.str().c_str(), &thisAgent->mcs_counter);
 }
@@ -294,7 +294,7 @@ Symbol *accept_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*use
     sym = get_next_io_symbol_from_text_input_line (thisAgent, &s);
     if (sym) break;
   }
-  symbol_add_ref (sym);
+  symbol_add_ref(thisAgent, sym);
   release_io_symbol (thisAgent, sym); /* because it was obtained using get_io_... */
   return sym;
 }
@@ -304,8 +304,8 @@ Symbol *accept_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*use
   Capitalize a Symbol
 ------------------------------------------------------------------------ */
 
-Symbol * 
-capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) 
+Symbol *
+capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/)
 {
   char * symbol_to_capitalize;
   Symbol * sym;
@@ -341,7 +341,7 @@ They are invoked in the following manner, and I use them
 to produce nice traces.
 
    (ifeq <a> <b> abc def)
-and 
+and
    (strlen <a>)
 
 ifeq -- checks if the first argument is "eq" to the second argument
@@ -416,37 +416,37 @@ Symbol *ifeq_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
 
   if (arg1 == arg2)
     {
-      symbol_add_ref(static_cast<Symbol *>(c->first));
+      symbol_add_ref(thisAgent, static_cast<Symbol *>(c->first));
       return static_cast<symbol_union *>(c->first);
     }
   else if (c->rest)
     {
-      symbol_add_ref(static_cast<Symbol *>(c->rest->first));
+      symbol_add_ref(thisAgent, static_cast<Symbol *>(c->rest->first));
       return static_cast<symbol_union *>(c->rest->first);
     }
   else return NIL;
 }
 
-Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data*/ ) 
+Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data*/ )
 {
 	char *symbol_to_trim;
 	Symbol *sym;
-	
-	if ( !args ) 
+
+	if ( !args )
 	{
 		print( thisAgent, "Error: 'trim' function called with no arguments.\n" );
 		return NIL;
 	}
 
 	sym = (Symbol *) args->first;
-  
-	if ( sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE ) 
+
+	if ( sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
 	{
 		print_with_symbols( thisAgent, "Error: non-symbol (%y) passed to 'trim' function.\n", sym );
 		return NIL;
 	}
 
-	if ( args->rest ) 
+	if ( args->rest )
 	{
 		print( thisAgent, "Error: 'trim' takes exactly 1 argument.\n" );
 		return NIL;
@@ -454,16 +454,16 @@ Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data
 
 	symbol_to_trim = symbol_to_string( thisAgent, sym, FALSE, NIL, 0 );
 	symbol_to_trim = savestring( symbol_to_trim );
-	
-	std::string str( symbol_to_trim );  
-	size_t start_pos = str.find_first_not_of( " \t\n" );  
-	size_t end_pos = str.find_last_not_of( " \t\n" );    
-	
+
+	std::string str( symbol_to_trim );
+	size_t start_pos = str.find_first_not_of( " \t\n" );
+	size_t end_pos = str.find_last_not_of( " \t\n" );
+
 	if ( ( std::string::npos == start_pos ) || ( std::string::npos == end_pos ) )
 		str = "";
 	else
 		str = str.substr( start_pos, end_pos - start_pos + 1 );
-		
+
 	return make_sym_constant( thisAgent, str.c_str() );
 }
 
@@ -503,7 +503,7 @@ Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user
   } else if (! state->id.isa_goal) {
       print_with_symbols(thisAgent, "Error: identifier passed to dont-learn is not a state: %y.\n",state);
   }
-  
+
   if (args->rest) {
     print (thisAgent, "Error: 'dont-learn' takes exactly 1 argument.\n");
     return NIL;
@@ -512,7 +512,7 @@ Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user
   if (! member_of_list (state, thisAgent->chunk_free_problem_spaces)) {
     push(thisAgent, state, thisAgent->chunk_free_problem_spaces);
     /* print_with_symbols("State  %y  added to chunk_free_list.\n",state); */
-  } 
+  }
   return NIL;
 
 }
@@ -540,7 +540,7 @@ Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* /*use
       print_with_symbols(thisAgent, "Error: identifier passed to force-learn is not a state: %y.\n",state);
   }
 
-  
+
   if (args->rest) {
     print (thisAgent, "Error: 'force-learn' takes exactly 1 argument.\n");
     return NIL;
@@ -549,7 +549,7 @@ Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* /*use
   if (! member_of_list (state, thisAgent->chunky_problem_spaces)) {
     push(thisAgent, state, thisAgent->chunky_problem_spaces);
     /* print_with_symbols("State  %y  added to chunky_list.\n",state); */
-  } 
+  }
   return NIL;
 
 }
@@ -566,14 +566,14 @@ void recursive_wme_copy(agent* thisAgent,
                         Symbol* parent_id,
                         wme* curwme,
                         std::map<Symbol*,Symbol*>& processedSymbols) {
-   
+
    bool made_new_attr_symbol = false;
    bool made_new_value_symbol = false;
 
    Symbol* new_id = parent_id;
    Symbol* new_attr = curwme->attr;
    Symbol* new_value = curwme->value;
-   
+
    /* Handling the case where the attribute is an id symbol */
    if ( curwme->attr->common.symbol_type == 1 ) {
       /* Have I already made a new identifier for this identifier */
@@ -623,13 +623,13 @@ void recursive_wme_copy(agent* thisAgent,
    /* TODO: We need a serious reference counting audit of the kernel But I think
       this mirrors what happens in the instantiate rhs value and execute action
       functions. */
-   symbol_add_ref(new_id);
-   if ( !made_new_attr_symbol ) symbol_add_ref(new_attr);
-   if ( !made_new_value_symbol) symbol_add_ref(new_value);
+   symbol_add_ref(thisAgent, new_id);
+   if ( !made_new_attr_symbol ) symbol_add_ref(thisAgent, new_attr);
+   if ( !made_new_value_symbol) symbol_add_ref(thisAgent, new_value);
 
    glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
    glbDeepCopyWMEs->next = oldGlobalWme;
-                        
+
 }
 
 void recursive_deep_copy_helper(agent* thisAgent,
@@ -647,26 +647,26 @@ void recursive_deep_copy_helper(agent* thisAgent,
    for (slot* curslot = id_to_process->id.slots;
         curslot != 0;
         curslot = curslot->next) {
-      
+
       /* Iterating over the wmes in this slot */
       for (wme* curwme = curslot->wmes;
            curwme != 0;
            curwme = curwme->next) {
-         
+
          recursive_wme_copy(thisAgent,
                             parent_id,
                             curwme,
                             processedSymbols);
-         
+
       }
-      
+
    }
-   
+
    /* Iterating over input wmes */
    for (wme* curwme = id_to_process->id.input_wmes;
         curwme != 0;
         curwme = curwme->next) {
-      
+
       recursive_wme_copy(thisAgent,
                          parent_id,
                          curwme,
@@ -695,7 +695,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* /*user_d
                               baseid,
                               retval,
                               processedSymbols);
-                              
+
 
    return retval;;
 }
@@ -703,7 +703,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* /*user_d
 /* --------------------------------------------------------------------
                                 Count
 
-   Takes arbitrary arguments and adds one to the associated 
+   Takes arbitrary arguments and adds one to the associated
    dynamic counters.
 -------------------------------------------------------------------- */
 
@@ -718,7 +718,7 @@ Symbol *count_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
     string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
 	(*thisAgent->dyn_counters)[ string ]++;
   }
-  
+
   return NIL;
 }
 
@@ -805,4 +805,47 @@ void remove_built_in_rhs_functions (agent* thisAgent) {
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "count"));
 
   remove_built_in_rhs_math_functions(thisAgent);
+}
+/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
+   do the reference count update */
+// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+
+inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym)
+{
+  rhs_symbol new_rhs_symbol;
+
+  if (!sym )
+  {
+    print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
+    return reinterpret_cast<rhs_value>(NIL);
+  }
+  allocate_with_pool (thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
+  new_rhs_symbol->referent = sym;
+  new_rhs_symbol->original_variable = original_sym;
+  print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount creating rhs_symbol %s (%s).\n",
+         symbol_to_string(thisAgent, new_rhs_symbol->referent, FALSE, NULL, 0),
+         (new_rhs_symbol->original_variable ? symbol_to_string(thisAgent, new_rhs_symbol->original_variable, FALSE, NULL, 0) : "no orig"));
+
+  /* -- Must always increase original_sym refcount if it exists because this function
+   *    is only called when the newly generate rhs value is created with a brand new
+   *    sym that already had its refcount incremented -- */
+
+  if (original_sym)
+  {
+    symbol_add_ref(thisAgent, original_sym);
+    print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount adding refcount to %s.\n",
+           symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0));
+  }
+  return rhs_symbol_to_rhs_value(new_rhs_symbol);
+}
+
+inline rhs_value make_rhs_value_symbol(agent* thisAgent, Symbol * sym, Symbol * original_sym)
+{
+  if (sym)
+  {
+    symbol_add_ref(thisAgent, sym);
+    print(thisAgent, "Debug | make_rhs_value_symbol adding refcount to %s.\n",
+           symbol_to_string(thisAgent, sym, FALSE, NULL, 0));
+  }
+  return make_rhs_value_symbol_no_refcount(thisAgent, sym, original_sym);
 }

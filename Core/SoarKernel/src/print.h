@@ -51,8 +51,8 @@
 #endif
 
 typedef char Bool;
-// Debug| remove this MMA
-//typedef char * test;
+typedef struct test_struct test_info;
+typedef test_info * test;
 typedef char * rhs_value;
 typedef unsigned char byte;
 typedef byte wme_trace_type;

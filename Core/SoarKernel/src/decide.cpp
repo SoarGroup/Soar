@@ -333,7 +333,7 @@ void post_link_addition (agent* thisAgent, Symbol *from, Symbol *to)
 
    /* --- otherwise buffer it for later --- */
    to->id.promotion_level = from->id.promotion_level;
-   symbol_add_ref (to);
+   symbol_add_ref(thisAgent, to);
    push (thisAgent, to, thisAgent->promoted_ids);
 }
 
@@ -467,7 +467,7 @@ void post_link_removal (agent* thisAgent, Symbol *from, Symbol *to)
       remove_from_dll (thisAgent->ids_with_unknown_level, dc, next, prev);
       insert_at_head_of_dll (thisAgent->disconnected_ids, dc, next, prev);
     } else {
-      symbol_add_ref (to);
+      symbol_add_ref(thisAgent, to);
       allocate_with_pool (thisAgent, &thisAgent->dl_cons_pool, &dc);
       dc->item = to;
       to->id.unknown_level = dc;
@@ -481,7 +481,7 @@ void post_link_removal (agent* thisAgent, Symbol *from, Symbol *to)
   if (from && (from->id.level != to->id.level)) return;
 
   if (! to->id.unknown_level) {
-    symbol_add_ref (to);
+    symbol_add_ref(thisAgent, to);
     allocate_with_pool (thisAgent, &thisAgent->dl_cons_pool, &dc);
     dc->item = to;
     to->id.unknown_level = dc;
@@ -604,7 +604,7 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
       dc->item = id;
       id->id.unknown_level = dc;
       insert_at_head_of_dll (thisAgent->ids_with_unknown_level, dc, next, prev);
-      symbol_add_ref (id);
+      symbol_add_ref(thisAgent, id);
     }
 
     /* -- scan through all preferences and wmes for all slots for this id -- */
@@ -1788,9 +1788,9 @@ preference *make_fake_preference_for_goal_item (agent* thisAgent,
   /* kjc:  here's where we changed REQUIRE to ACCEPTABLE */
   pref = make_preference (thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                           cand->value, NIL);
-  symbol_add_ref (pref->id);
-  symbol_add_ref (pref->attr);
-  symbol_add_ref (pref->value);
+  symbol_add_ref(thisAgent, pref->id);
+  symbol_add_ref(thisAgent, pref->attr);
+  symbol_add_ref(thisAgent, pref->value);
   insert_at_head_of_dll (goal->id.preferences_from_goal, pref,
                          all_of_goal_next, all_of_goal_prev);
   pref->on_goal_list = TRUE;

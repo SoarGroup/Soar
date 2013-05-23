@@ -228,12 +228,12 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 
     if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
       /* --- it's already been variablized, so use the existing variable --- */
-      print(thisAgent, "Debug| Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+      print(thisAgent, "Debug | Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
       var = (*sym)->common.variablized_symbol;
       var->common.unvariablized_symbol = *sym;
       //symbol_remove_ref (thisAgent, *sym);
       *sym = var;
-      symbol_add_ref (var);
+      symbol_add_ref(thisAgent, var);
       return;
     }
 
@@ -248,7 +248,7 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
     var = generate_new_variable (thisAgent, prefix);
     (*sym)->common.variablized_symbol = var;
     var->common.unvariablized_symbol = *sym;
-    print(thisAgent, "Debug| Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+    print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
     //Do not need to decrease refcount any more b/c we're caching it
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
@@ -263,12 +263,12 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
 
   original_test = &((*chunk_test)->original_test);
 
-  print(thisAgent, "Debug| Variablizing: ");
+  print(thisAgent, "Debug | Variablizing: ");
   print_test (thisAgent, *chunk_test);
 
   if (test_is_blank(*chunk_test) || test_is_blank(*original_test))
   {
-    print(thisAgent, "Debug| Ignoring test because it(%d) or original($d) is blank!!!!\n", chunk_test, original_test);
+    print(thisAgent, "Debug | Ignoring test because it(%d) or original($d) is blank!!!!\n", chunk_test, original_test);
     return;
   }
 
@@ -283,11 +283,11 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
     case CONJUNCTIVE_TEST:
       if (test_type == EQUALITY_TEST)
       {
-        print(thisAgent, "Debug| Ignoring original conjunctive test (probably b/c of goal/impasse/disjunction)!!!\n");
+        print(thisAgent, "Debug | Ignoring original conjunctive test (probably b/c of goal/impasse/disjunction)!!!\n");
         //assert(false);
       }
       print(thisAgent, "Debug|...Comparing original test types: %s to %s\n", test_type_to_string(original_test_type), test_type_to_string((*chunk_test)->original_test->type));
-      print(thisAgent, "Debug| Iterating through conjunction list.\n");
+      print(thisAgent, "Debug | Iterating through conjunction list.\n");
 
       ct = *chunk_test;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
@@ -296,7 +296,7 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
             reinterpret_cast<test *>(&(c->first)));
       }
 
-      print(thisAgent, "Debug| Done iterating through conjunction list.\nDebug| ---------------------------------------\n");
+      print(thisAgent, "Debug | Done iterating through conjunction list.\nDebug | ---------------------------------------\n");
       break;
     case EQUALITY_TEST:
     case NOT_EQUAL_TEST:
@@ -308,19 +308,19 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
       ct = *chunk_test;
       if (symbol_is_variablizable(instantiated_referent, original_referent))
       {
-        print(thisAgent, "Debug| Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
+        print(thisAgent, "Debug | Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
         variablize_symbol (thisAgent, &(ct->data.referent));
         ct->data.referent->common.original_var_symbol = original_referent;
       }
       break;
     default:
-      print(thisAgent, "Debug| Invalid test type in variablize_test!!!\n");
+      print(thisAgent, "Debug | Invalid test type in variablize_test!!!\n");
       assert(false);
       break;
   }
-  print(thisAgent, "Debug| Resulting in ");
+  print(thisAgent, "Debug | Resulting in ");
   print_test(thisAgent, *chunk_test);
-  print(thisAgent, "Debug| ---------------------------------------\n");
+  print(thisAgent, "Debug | ---------------------------------------\n");
 }
 
 /* This gets passed in a copy of the chunk instantiation's condition lists, which
@@ -329,7 +329,7 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
 
 void variablize_condition_list (agent* thisAgent, condition *cond) {
 
-	print(thisAgent, "Debug| Variablizing chunk condition list:\nDebug| ==========================================\n");
+	print(thisAgent, "Debug | Variablizing chunk condition list:\nDebug | ==========================================\n");
 	for (; cond!=NIL; cond=cond->next)
 	{
 		switch (cond->type) {
@@ -344,7 +344,7 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
 			break;
 		}
 	}
-	print(thisAgent, "Debug| ==========================================\nDebug| Done variablizing chunk condition list.\n");
+	print(thisAgent, "Debug | ==========================================\nDebug | Done variablizing chunk condition list.\n");
 }
 
 /* ======================================================================================================
@@ -418,7 +418,7 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym) {
 
   if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
     /* --- it's already been variablized, so use the existing variable --- */
-    print(thisAgent, "Debug| variablize_rhs_symbol found existing variablization %s.\n",
+    print(thisAgent, "Debug | variablize_rhs_symbol found existing variablization %s.\n",
           symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
     if (!should_variablize && has_original_var)
     {
@@ -428,7 +428,7 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym) {
     var->common.unvariablized_symbol = *sym;
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
-    symbol_add_ref (var);
+    symbol_add_ref(thisAgent, var);
     return;
   }
 
@@ -443,29 +443,30 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym) {
   var = generate_new_variable (thisAgent, prefix);
   (*sym)->common.variablized_symbol = var;
   var->common.unvariablized_symbol = *sym;
-  print(thisAgent, "Debug| Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+  print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
   //Do not need to decrease refcount any more b/c we're caching it
   //symbol_remove_ref (thisAgent, *sym);
   *sym = var;
 }
 
 
-action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, bool variablize) {
+action *copy_and_variablize_result_list (agent* thisAgent, preference *result, bool variablize) {
   action *a;
   Symbol *id, *attr, *val, *ref;
 
-  if (!pref) return NIL;
+  if (!result) return NIL;
   allocate_with_pool (thisAgent, &thisAgent->action_pool, &a);
   a->type = MAKE_ACTION;
 
-  id = pref->id;
-  attr = pref->attr;
-  val = pref->value;
-  ref = pref->referent;
+  id = result->id;
+  attr = result->attr;
+  val = result->value;
+  ref = result->referent;
 
-  symbol_add_ref (id);
-  symbol_add_ref (attr);
-  symbol_add_ref (val);
+  // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+  symbol_add_ref(thisAgent, id);
+  symbol_add_ref(thisAgent, attr);
+  symbol_add_ref(thisAgent, val);
 
   if (variablize) {
     if (id->common.variablized_symbol)
@@ -478,23 +479,23 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
       variablize_rhs_symbol (thisAgent, &val);
   }
 
-  a->id = symbol_to_rhs_value (id);
-  a->attr = symbol_to_rhs_value (attr);
-  a->value = symbol_to_rhs_value (val);
+  a->id = make_rhs_value_symbol(thisAgent, id);
+  a->attr = make_rhs_value_symbol(thisAgent, attr);
+  a->value = make_rhs_value_symbol(thisAgent, val);
 
-  a->preference_type = pref->type;
+  a->preference_type = result->type;
 
-  if (preference_is_binary(pref->type)) {
-    symbol_add_ref (ref);
+  if (preference_is_binary(result->type)) {
+    symbol_add_ref(thisAgent, ref);
     if (variablize) {
       if ((val->common.variablized_symbol) ||
           (symbol_is_non_lti_identifier(val)))
         variablize_rhs_symbol (thisAgent, &ref);
     }
-    a->referent = symbol_to_rhs_value (ref);
+    a->referent = make_rhs_value_symbol(thisAgent, ref);
   }
 
-  a->next = copy_and_variablize_result_list (thisAgent, pref->next_result, variablize);
+  a->next = copy_and_variablize_result_list (thisAgent, result->next_result, variablize);
   return a;
 }
 
@@ -839,11 +840,11 @@ void make_clones_of_results (agent* thisAgent, preference *results,
     /* --- copy the preference --- */
     p = make_preference (thisAgent, result_p->type, result_p->id, result_p->attr,
                          result_p->value, result_p->referent);
-    symbol_add_ref (p->id);
-    symbol_add_ref (p->attr);
-    symbol_add_ref (p->value);
+    symbol_add_ref(thisAgent, p->id);
+    symbol_add_ref(thisAgent, p->attr);
+    symbol_add_ref(thisAgent, p->value);
     if (preference_is_binary(p->type))
-      symbol_add_ref (p->referent);
+      symbol_add_ref(thisAgent, p->referent);
     /* --- put it onto the list for chunk_inst --- */
     p->inst = chunk_inst;
     insert_at_head_of_dll (chunk_inst->preferences_generated, p,
@@ -1235,7 +1236,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		xml_end_tag(thisAgent, kTagLearning);
 	}
 
-	// Debug| Remove later MMA
+	// Debug | Remove later MMA
 //	print_production(thisAgent, inst->prod, true);
 //	print_instantiation_with_wmes(thisAgent, inst, FULL_WME_TRACE, -1);
 //	print(thisAgent,"\n");
