@@ -1,14 +1,7 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-/* windows.h must be included before gl.h, glu.h */
-#ifdef WIN32
-#include <windows.h>
-#endif
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <SDL/SDL.h>
+#include <GL/glfw.h>
 #include <SDL/SDL_mutex.h>
 
 #define PAN_FACTOR  1.0e-1
@@ -87,11 +80,11 @@ typedef struct Scene {
 } scene;
 
 typedef struct Semaphore {
-	SDL_mutex *mutex;
+	GLFWmutex mutex;
 	int count;
 } semaphore;
 
-extern SDL_mutex *scene_lock;
+extern GLFWmutex scene_lock;
 extern semaphore redraw_semaphore;
 extern int debug;
 
@@ -100,7 +93,7 @@ void pan_camera(camera *c, real x, real y);
 void rotate_camera(camera *c, int x, int y, int dx, int dy);
 void zoom_camera(camera *c, real f);
 void pull_camera(camera *c, real z);
-void reset_camera(camera *c, SDLKey k);
+void reset_camera(camera *c, int key);
 void apply_camera(camera *c);
 
 void init_geom(geometry *g, char *name);
@@ -115,7 +108,7 @@ int delete_scenes(char *pattern);
 int match_scenes(char *pattern, scene **scns, int n);
 void init_scene(scene *s, char *name);
 void destroy_scene(scene *s);
-void save_on_redraw(char *path);
+void request_screenshot(char *path, int i);  /* 0 = from keyboard, 1 = from input */
 
 geometry *find_or_add_geom(scene *s, char *name);
 int delete_geoms(scene *s, char *pattern);
@@ -124,7 +117,7 @@ int match_geoms(scene *s, char *pattern, geometry **geoms, int n);
 int set_layer(int layer_num, char option, int value);
 
 /* input.c */
-int proc_input(void *unused);
+void GLFWCALL proc_input(void *unused);
 
 /* text.c */
 void init_font(void);
@@ -156,7 +149,6 @@ void semaphore_V(semaphore *s);
 int qhull(real verts[], int nverts, int indexes[], int max_indexes);
 
 /* platform specific */
-void delay();
 int init_input(int argc, char *argv[]);
 int get_input(char *buf, int n);
 int run_shell(const char *cmd);

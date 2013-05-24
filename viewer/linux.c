@@ -174,11 +174,6 @@ int init_file(char *path) {
 	return 1;
 }
 
-void delay() {
-	static struct timespec interval = { .tv_sec = 0, .tv_nsec = 1000 };
-	nanosleep(&interval, NULL);
-}
-
 int run_shell(const char *cmd) {
 	return system(cmd);
 }

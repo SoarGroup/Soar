@@ -169,10 +169,6 @@ void socket_error(char *msg) {
 	exit(1);
 }
 
-void delay() {
-	Sleep(1);
-}
-
 int run_shell(const char *cmd) {
 	return system(cmd);
 }

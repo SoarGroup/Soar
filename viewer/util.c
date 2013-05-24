@@ -184,24 +184,25 @@ void rotate_vec3(quaternion q, vec3 v) {
 
 void init_semaphore(semaphore *s) {
 	s->count = 0;
-	s->mutex = SDL_CreateMutex();
+	if (!(s->mutex = glfwCreateMutex()))
+		error("Failed to create semaphore mutex.\n");
 }
 
 void semaphore_P(semaphore *s) {
-	SDL_mutexP(s->mutex);
+	glfwLockMutex(s->mutex);
 	while (s->count == 0) {
-		SDL_mutexV(s->mutex);
-		delay();
-		SDL_mutexP(s->mutex);
+		glfwUnlockMutex(s->mutex);
+		glfwSleep(0.0001);
+		glfwLockMutex(s->mutex);
 	}
 	s->count = 0;
-	SDL_mutexV(s->mutex);
+	glfwUnlockMutex(s->mutex);
 }
 
 void semaphore_V(semaphore *s) {
-	SDL_mutexP(s->mutex);
+	glfwLockMutex(s->mutex);
 	s->count = 1;
-	SDL_mutexV(s->mutex);
+	glfwUnlockMutex(s->mutex);
 }
 
 int qhull(real verts[], int nverts, int indexes[], int max_indexes) {

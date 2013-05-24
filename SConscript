@@ -8,7 +8,7 @@ viewer_env = env.Clone()
 viewer_env['LIBS'] = []
 
 if compiler == 'msvc':
-	viewer_libs = [ 'SDL', 'SDLmain', 'opengl32', 'glu32' ]
+	viewer_libs = [ 'opengl32', 'glu32' ]
 	viewer_env.Append(
 		CPPFLAGS  = [ '/D', 'WIN32', '/MD'],
 		CPPPATH   = [ 'SDL/include' ],
@@ -18,7 +18,7 @@ if compiler == 'msvc':
 	)
 	viewer_src.append('viewer/windows.c')
 else:
-	viewer_libs = [ 'SDL', 'GL', 'GLU', 'm' ]
+	viewer_libs = [ 'glfw', 'GL', 'GLU', 'm' ]
 	viewer_src.append('viewer/linux.c')
 
 config = Configure(viewer_env)

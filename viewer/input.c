@@ -1,6 +1,4 @@
 #include <stdlib.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_mutex.h>
 #include "viewer.h"
 
 #define MAX_FIELDS 1000
@@ -11,12 +9,11 @@
 int proc_cmd(char *fields[]);
 int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]);
 int parse_nums(char *fields[], int n, real *v);
-void request_redraw();
 int proc_layer_cmd(char *fields[]);
 
 int wait_for_redraw = 0;
 
-int proc_input(void *unused) {
+void GLFWCALL proc_input(void *unused) {
 	char cmd[MAX_COMMAND];
 	char *fields[MAX_FIELDS];
 	char *endp, *startp, *startp2, *cp;
@@ -46,12 +43,15 @@ int proc_input(void *unused) {
 					printf("cmd: %s\n", startp);
 				split(startp, fields, MAX_FIELDS);
 				
-				SDL_mutexP(scene_lock);
+				glfwLockMutex(scene_lock);
 				proc_cmd(fields);
-				SDL_mutexV(scene_lock);
+				glfwUnlockMutex(scene_lock);
 				startp = endp + 1;
 				
-				request_redraw();
+				if (wait_for_redraw) {
+					semaphore_P(&redraw_semaphore);
+					wait_for_redraw = 0;
+				}
 			}
 		}
 		
@@ -65,7 +65,6 @@ int proc_input(void *unused) {
 		left = MAX_COMMAND - (endp - startp);
 	}
 	fprintf(stderr, "input thread has exited\n");
-	return 0;
 }
 
 int proc_cmd(char *fields[]) {
@@ -81,7 +80,7 @@ int proc_cmd(char *fields[]) {
 			fprintf(stderr, "specify save path\n");
 			return 0;
 		}
-		save_on_redraw(fields[1]);
+		request_screenshot(fields[1], 1);
 		wait_for_redraw = 1;
 		return 1;
 	} else if (strcmp(fields[0], "layer") == 0) {
@@ -261,18 +260,6 @@ int parse_nums(char *fields[], int n, real *v) {
 		}
 	}
 	return i;
-}
-
-/* wait until the command is processed by main thread */
-void request_redraw() {
-	SDL_Event e;
-	e.type = SDL_USEREVENT;
-	e.user.code = wait_for_redraw;
-	SDL_PushEvent(&e);
-	if (wait_for_redraw) {
-		semaphore_P(&redraw_semaphore);
-		wait_for_redraw = 0;
-	}
 }
 
 int proc_layer_cmd(char *fields[]) {
