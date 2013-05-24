@@ -211,7 +211,6 @@ void GLFWCALL mouse_position_callback(int x, int y) {
 	static int ox = -1, oy = -1;
 	int shift, ctrl, dx, dy;
 	
-	printf("%d %d %d %d\n", ox, oy, x, y);
 	dx = x - ox;
 	dy = y - oy;
 	ox = x;
@@ -226,7 +225,6 @@ void GLFWCALL mouse_position_callback(int x, int y) {
 	ctrl = (glfwGetKey(GLFW_KEY_LCTRL) == GLFW_PRESS) ||
 	       (glfwGetKey(GLFW_KEY_RCTRL) == GLFW_PRESS);
 
-	printf("%d %d\n", dx, dy);
 	if (shift) {
 		pan_camera(&cam, dx, dy);
 		redraw = 1;
