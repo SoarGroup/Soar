@@ -21,7 +21,16 @@ if compiler == 'msvc':
 else:
 	viewer_src.append('viewer/platform_specific/posix.c')
 	if sys.platform == 'darwin':
-		pass
+		opengl_libs = []
+		frameworks = [ 'Cocoa', 'OpenGL', 'IOKit' ]  # osx uses opengl as a framework instead of libraries
+		viewer_env.Append(
+			CPPFLAGS  = [ '-fno-common' ],
+			CPPPATH   = [ 'glfw/lib/cocoa/' ],
+		)
+		for f in frameworks:
+			viewer_env.Append(LINKFLAGS = [ '-framework', f ])
+		
+		viewer_src.extend(Glob('glfw/lib/cocoa/*.c') + Glob('glfw/lib/cocoa/*.m'))
 	else:
 		opengl_libs = [ 'GL', 'GLU' ]
 		viewer_env.Append(

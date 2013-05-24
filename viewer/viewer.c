@@ -16,7 +16,6 @@
 #define SCENE_MENU_OFFSET 20
 #define MAX_INDS 3000
 #define DEPTH_BITS 16
-#define COLOR_BITS 16
 
 GLFWmutex scene_lock;
 semaphore redraw_semaphore;
@@ -92,7 +91,7 @@ int main(int argc, char *argv[]) {
 	if (!init_input(argc, argv))
 		exit(1);
 	
-	if (glfwOpenWindow(scr_width, scr_height, COLOR_BITS, COLOR_BITS, COLOR_BITS, COLOR_BITS, DEPTH_BITS, 0, GLFW_WINDOW) == GL_FALSE)
+	if (glfwOpenWindow(scr_width, scr_height, 0, 0, 0, 0, DEPTH_BITS, 0, GLFW_WINDOW) == GL_FALSE)
 	{
 		error("Failed to open glfw window");
 	}
