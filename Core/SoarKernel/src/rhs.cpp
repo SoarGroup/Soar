@@ -99,7 +99,7 @@ void deallocate_rhs_value (agent* thisAgent, rhs_value rv) {
              r->original_variable->common.reference_count, (r->original_variable->common.reference_count)-1);
       symbol_remove_ref (thisAgent, r->original_variable);
     }
-      free_with_pool (&thisAgent->rhs_symbol_pool, r);
+    free_with_pool (&thisAgent->rhs_symbol_pool, r);
   }
 }
 
@@ -128,18 +128,7 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
     return funcall_list_to_rhs_value (new_fl);
   } else {
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-    symbol_add_ref(thisAgent, r->referent);
-    print(thisAgent, "Debug | copy_rhs_value increasing refcount of %s from %ld.\n",
-           symbol_to_string(thisAgent, r->referent, FALSE, NULL, 0),
-           r->referent->common.reference_count);
-    if (r->original_variable)
-    {
-      symbol_add_ref(thisAgent, r->original_variable);
-      print(thisAgent, "Debug | copy_rhs_value increasing refcount of original %s from %ld.\n",
-             symbol_to_string(thisAgent, r->original_variable, FALSE, NULL, 0),
-             r->original_variable->common.reference_count);
-    }
-    return rhs_symbol_to_rhs_value(r);
+    return make_rhs_value_symbol(thisAgent, r->referent, r->original_variable);
   }
 }
 

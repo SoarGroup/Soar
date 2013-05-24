@@ -176,21 +176,29 @@ void substitute_for_placeholders_in_condition_list (agent* thisAgent,
     }
   }
 }
-/* begin KJC 10/19/98 */
+
 void substitute_for_placeholders_in_action_list (agent* thisAgent, action *a) {
   for ( ; a!=NIL; a=a->next) {
     if (a->type == MAKE_ACTION) {
-      if (rhs_value_is_symbol(a->id)) {
-	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)&(a->id));
+      rhs_symbol r;
+      if (rhs_value_is_symbol(a->id))
+      {
+        r = rhs_value_to_rhs_symbol(a->id);
+        substitute_for_placeholders_in_symbol(thisAgent, &(r->referent));
       }
       if (rhs_value_is_symbol(a->attr))
-	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)&(a->attr));
+      {
+        r = rhs_value_to_rhs_symbol(a->attr);
+        substitute_for_placeholders_in_symbol(thisAgent, &(r->referent));
+      }
       if (rhs_value_is_symbol(a->value))
-	substitute_for_placeholders_in_symbol(thisAgent, (Symbol **)&(a->value));
+      {
+        r = rhs_value_to_rhs_symbol(a->value);
+        substitute_for_placeholders_in_symbol(thisAgent, &(r->referent));
+      }
     }
   }
 }
-/* end KJC 10/19/98 */
 
 /* =================================================================
 
