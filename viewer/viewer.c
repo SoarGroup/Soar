@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <assert.h>
-#include <SDL/SDL_thread.h>
-
+#include "viewer.h"
 #include "trackball.h"
 
 /*
@@ -15,8 +15,10 @@
 #define GRID_VERTS_SIZE (4 * 2 * (GRID_LINES * 2))
 #define SCENE_MENU_OFFSET 20
 #define MAX_INDS 3000
+#define DEPTH_BITS 16
 
-SDL_mutex *scene_lock;
+GLFWmutex scene_lock;
+GLFWmutex redraw_lock;
 semaphore redraw_semaphore;
 int debug;
 
@@ -43,9 +45,15 @@ static int scr_width = 640;
 static int scr_height = 480;
 static int show_grid = 1;
 static real grid_size = 1.0;
-static char savepath[1000];
+static int redraw = 0;
 
-void reshape (int w, int h);
+/*
+ 0 = screenshots requested by keyboard
+ 1 = screenshots requested by input
+*/
+static char screenshot_path[2][1000] = { { '\0' }, { '\0' } };
+
+void reshape ();
 void calc_normals(geometry *g);
 void init_grid(void);
 void draw_grid(void);
@@ -59,17 +67,21 @@ void setup3d();
 void init_layers();
 void screenshot(char *path);
 
+void GLFWCALL keyboard_callback(int key, int state);
+void GLFWCALL mouse_button_callback(int button, int state);
+void GLFWCALL mouse_wheel_callback(int pos);
+void GLFWCALL mouse_position_callback(int x, int y);
+void GLFWCALL win_resize_callback(int w, int h);
+void GLFWCALL win_refresh_callback(void);
+
 int main(int argc, char *argv[]) {
-	int flags, bpp;
-	int buttons[4] = {0, 0, 0, 0 };
-	int i, redraw, signal_redraw;
-	const SDL_VideoInfo* info;
-	SDL_Event evt;
-	SDL_Surface *screen;
-	SDL_Thread *input_thread;
-	SDLMod mod;
+	int i, signal_redraw;
+	GLFWthread input_thread;
 	
-	atexit(SDL_Quit);
+	if (glfwInit() == GL_FALSE) {
+		error("Failed to init glfw");
+	}
+	atexit(glfwTerminate);
 	
 	for (i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-d") == 0) {
@@ -80,33 +92,20 @@ int main(int argc, char *argv[]) {
 	if (!init_input(argc, argv))
 		exit(1);
 	
-	flags = SDL_OPENGL | SDL_RESIZABLE;
-	if( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
-		fprintf(stderr, "Video initialization failed: %s\n", SDL_GetError());
-		return 1;
+	if (glfwOpenWindow(scr_width, scr_height, 0, 0, 0, 0, DEPTH_BITS, 0, GLFW_WINDOW) == GL_FALSE)
+	{
+		error("Failed to open glfw window");
 	}
-
-	if(!(info = SDL_GetVideoInfo())) {
-		fprintf(stderr, "Video query failed: %s\n", SDL_GetError());
-		return 1;
-	}
-	bpp = info->vfmt->BitsPerPixel;
+	glfwSetWindowTitle("SVS viewer");
+	glfwSetMouseWheel(0);
 	
-	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 5 );
-	SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 5 );
-	SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
-	/* apparently 32 bit depth buffer is not standard, figure out a way to switch
-	   dynamically between 32 and 16 */
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-
-	if(!(screen = SDL_SetVideoMode(scr_width, scr_height, bpp, flags))) {
-		fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError() );
-		return 1;
-	}
-	SDL_WM_SetCaption("SVS viewer", NULL);
+	glfwSetWindowSizeCallback(win_resize_callback);
+	glfwSetWindowRefreshCallback(win_refresh_callback);
+	glfwSetKeyCallback(keyboard_callback);
+	glfwSetMouseButtonCallback(mouse_button_callback);
+	glfwSetMouseWheelCallback(mouse_wheel_callback);
+	glfwSetMousePosCallback(mouse_position_callback);
 	
-	reshape(screen->w, screen->h);
 	glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
 	glShadeModel(GL_FLAT);
 	glEnable(GL_DEPTH_TEST);
@@ -123,127 +122,127 @@ int main(int argc, char *argv[]) {
 	if (0) { /* for debugging single threaded */
 		proc_input(NULL);
 	} else {
-		scene_lock = SDL_CreateMutex();
+		if (!(scene_lock = glfwCreateMutex()))
+			error("Failed to create scene lock mutex.");
+		if (!(redraw_lock = glfwCreateMutex()))
+			error("Failed to create redraw lock mutex.");
 		init_semaphore(&redraw_semaphore);
-		input_thread = SDL_CreateThread(proc_input, NULL);
-		if (input_thread == NULL) {
-			fprintf(stderr, "Unable to create input thread: %s\n", SDL_GetError());
-			exit(1);
+		input_thread = glfwCreateThread(proc_input, NULL);
+		if (input_thread < 0) {
+			error("Unable to create input thread");
 		}
 	}
 	
-	reset_camera(&cam, SDLK_1);
+	reset_camera(&cam, '1');
 	cam.ortho = 0;
-	redraw = 1;
+	set_redraw();
 	signal_redraw = 0;
-	while(1) {
-		SDL_WaitEvent(&evt);
-		do {
-			switch (evt.type) {
-				case SDL_QUIT:
-					return 0;
-				case SDL_VIDEORESIZE:
-					SDL_SetVideoMode(evt.resize.w, evt.resize.h, bpp, flags);
-					reshape(evt.resize.w, evt.resize.h);
-					redraw = 1;
-					break;
-				case SDL_VIDEOEXPOSE:
-					redraw = 1;
-					break;
-				case SDL_KEYDOWN:
-					switch (evt.key.keysym.sym) {
-						case SDLK_1:
-						case SDLK_2:
-						case SDLK_3:
-							reset_camera(&cam, evt.key.keysym.sym);
-							redraw = 1;
-							break;
-						case SDLK_g:
-							show_grid = !show_grid;
-							redraw = 1;
-							break;
-						case SDLK_n:
-							layers[0].draw_names = !layers[0].draw_names;
-							redraw = 1;
-							break;
-						case SDLK_MINUS:
-							grid_size /= 10.0;
-							init_grid();
-							redraw = 1;
-							break;
-						case SDLK_EQUALS:
-							grid_size *= 10.0;
-							init_grid();
-							redraw = 1;
-							break;
-						case SDLK_w:
-							layers[0].wireframe = !layers[0].wireframe;
-							redraw = 1;
-							break;
-						case SDLK_s:
-							save_on_redraw("screen.ppm");
-							redraw = 1;
-							break;
-						case SDLK_o:
-							cam.ortho = 1 - cam.ortho;
-							redraw = 1;
-					}
-					break;
-				case SDL_MOUSEBUTTONDOWN:
-					if (evt.button.button == 1) {
-						if (scene_button_hit_test(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET, 
-						                          evt.motion.x, scr_height - evt.motion.y))
-							redraw = 1;
-					}
-					
-					if (evt.button.button <= 3) {
-						buttons[evt.button.button] = 1;
-					} else if (evt.button.button == 4) {
-						zoom_camera(&cam, 10);
-						redraw = 1;
-					} else if (evt.button.button == 5) {
-						zoom_camera(&cam, -10);
-						redraw = 1;
-					}
-					break;
-				case SDL_MOUSEBUTTONUP:
-					if (evt.button.button <= 3)
-						buttons[evt.button.button] = 0;
-					break;
-				case SDL_MOUSEMOTION:
-					mod = SDL_GetModState();
-					if (buttons[3] && (mod & KMOD_LSHIFT || mod & KMOD_RSHIFT)) {
-						pan_camera(&cam, evt.motion.xrel, evt.motion.yrel);
-						redraw = 1;
-					} else if (buttons[3] && (mod & KMOD_LCTRL || mod & KMOD_RCTRL)) {
-						if (!cam.ortho) {
-							pull_camera(&cam, evt.motion.yrel);
-							redraw = 1;
-						}
-					} else if (buttons[3]) {
-						rotate_camera(&cam, evt.motion.x, evt.motion.y, evt.motion.xrel, evt.motion.yrel);
-						redraw = 1;
-					}
-					break;
-				case SDL_USEREVENT:
-					/* redraw request from input thread */
-					signal_redraw = evt.user.code;
-					redraw = 1;
-					break;
-			}
-		} while (SDL_PollEvent(&evt));
-		
+	while(glfwGetWindowParam(GLFW_OPENED)) {
+		//glfwWaitEvents();
+		glfwPollEvents();
 		if (redraw) {
 			draw_screen();
 			redraw = 0;
-			if (signal_redraw) {
-				semaphore_V(&redraw_semaphore);
-				signal_redraw = 0;
-			}
+		} else {
+			glfwSleep(0.01);
 		}
 	}
 
 	return 0;
+}
+
+void GLFWCALL keyboard_callback(int key, int state) {
+	if (state == GLFW_RELEASE)
+		return;
+	
+	switch (key) {
+		case '1':
+		case '2':
+		case '3':
+			reset_camera(&cam, key);
+			break;
+		case 'G':
+			show_grid = !show_grid;
+			break;
+		case 'N':
+			layers[0].draw_names = !layers[0].draw_names;
+			break;
+		case '-':
+			grid_size /= 10.0;
+			init_grid();
+			break;
+		case '=':
+			grid_size *= 10.0;
+			init_grid();
+			break;
+		case 'W':
+			layers[0].wireframe = !layers[0].wireframe;
+			break;
+		case 'S':
+			request_screenshot("screen.ppm", 0);
+			break;
+		case 'O':
+			cam.ortho = 1 - cam.ortho;
+			break;
+		default:
+			return; /* return without setting redraw */
+	}
+	set_redraw();
+}
+
+void GLFWCALL mouse_button_callback(int button, int state) {
+	int x, y;
+	
+	if (button == GLFW_MOUSE_BUTTON_LEFT && state == GLFW_PRESS) {
+		glfwGetMousePos(&x, &y);
+		if (scene_button_hit_test(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET, x, scr_height - y)) {
+			set_redraw();
+		}
+	} else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+		if (state == GLFW_PRESS) {
+			glfwDisable(GLFW_MOUSE_CURSOR);
+		} else {
+			glfwEnable(GLFW_MOUSE_CURSOR);
+		}
+	}
+}
+
+void GLFWCALL mouse_wheel_callback(int pos) {
+	if (pos < 0) {
+		zoom_camera(&cam, -10);
+	} else if (pos > 0) {
+		zoom_camera(&cam, 10);
+	}
+	glfwSetMouseWheel(0);
+}
+
+void GLFWCALL mouse_position_callback(int x, int y) {
+	static int ox = -1, oy = -1;
+	int shift, ctrl, dx, dy;
+	
+	dx = x - ox;
+	dy = y - oy;
+	ox = x;
+	oy = y;
+	
+	if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+		return;
+	
+	shift = (glfwGetKey(GLFW_KEY_LSHIFT) == GLFW_PRESS) ||
+	        (glfwGetKey(GLFW_KEY_RSHIFT) == GLFW_PRESS);
+
+	ctrl = (glfwGetKey(GLFW_KEY_LCTRL) == GLFW_PRESS) ||
+	       (glfwGetKey(GLFW_KEY_RCTRL) == GLFW_PRESS);
+
+	if (shift) {
+		pan_camera(&cam, dx, dy);
+	} else if (ctrl) {
+		if (!cam.ortho) {
+			pull_camera(&cam, dy);
+		}
+	} else {
+		rotate_camera(&cam, x, y, dx, dy);
+	}
 }
 
 void init_grid() {
@@ -304,13 +303,12 @@ void draw_screen() {
 	if (show_grid)
 		draw_grid();
 	
+	glfwLockMutex(scene_lock);
 	if (curr_scene) {
-		SDL_mutexP(scene_lock);
 		for (i = 0; i < NLAYERS; ++i) {
 			draw_layer(curr_scene, i);
 		}
 		draw_labels();
-		SDL_mutexV(scene_lock);
 	}
 	
 	glMatrixMode(GL_PROJECTION);
@@ -321,22 +319,33 @@ void draw_screen() {
 	draw_scene_buttons(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET);
 	
 	glFinish();
-	if (savepath[0] != '\0') {
-		screenshot(savepath);
-		savepath[0] = '\0';
+	for (i = 0; i < 2; ++i) {
+		if (screenshot_path[i][0] != '\0') {
+			screenshot(screenshot_path[i]);
+			screenshot_path[i][0] = '\0';
+			if (i == 1)
+				semaphore_V(&redraw_semaphore);
+		}
 	}
-	SDL_GL_SwapBuffers();
+	glfwUnlockMutex(scene_lock);
+	glfwSwapBuffers();
 }
 
-void reshape (int w, int h) {
+void GLFWCALL win_resize_callback(int w, int h) {
 	scr_width = w;
 	scr_height = h;
-	glViewport (0, 0, (GLsizei) w, (GLsizei) h);
+	glViewport (0, 0, (GLsizei) scr_width, (GLsizei) scr_height);
+	set_redraw();
+}
+
+void GLFWCALL win_refresh_callback(void) {
+	set_redraw();
 }
 
 void pan_camera(camera *c, real dx, real dy) {
 	c->pos[0] += PAN_FACTOR * dx;
 	c->pos[1] -= PAN_FACTOR * dy;
+	set_redraw();
 }
 
 void rotate_camera(camera *c, int x, int y, int dx, int dy) {
@@ -355,10 +364,12 @@ void rotate_camera(camera *c, int x, int y, int dx, int dy) {
 	q2[0] = c->q[0]; q2[1] = c->q[1]; q2[2] = c->q[2]; q2[3] = c->q[3];
 	add_quats(q1, q2, c->q);
 	quat_to_mat(c->q, c->rot_mat);
+	set_redraw();
 }
 
 void pull_camera(camera *c, real dz) {
 	c->pos[2] += PAN_FACTOR * dz;
+	set_redraw();
 }
 
 void zoom_camera(camera *c, real df) {
@@ -368,21 +379,22 @@ void zoom_camera(camera *c, real df) {
 	} else if (c->fovy > FOVY_MAX) {
 		c->fovy = FOVY_MAX;
 	}
-	c->orthoy = tan(c->fovy * PI / 360.0) * abs(c->pos[2]);
+	c->orthoy = (int) (tan(c->fovy * PI / 360.0) * abs(c->pos[2]));
+	set_redraw();
 }
 
-void reset_camera(camera *c, SDLKey k) {
+void reset_camera(camera *c, int key) {
 	set_vec3(c->pos, 0.0, 0.0, -10.0);
 	c->fovy = FOVY_DEF;
 	zoom_camera(c, 0);
-	switch (k) {
-		case SDLK_1:
+	switch (key) {
+		case '1':
 			set_quat(c->q, 0.0, 0.0, 0.0, 1.0);
 			break;
-		case SDLK_2:
+		case '2':
 			set_quat(c->q, 0.5, 0.5, 0.5, 0.5);
 			break;
-		case SDLK_3:
+		case '3':
 			set_quat(c->q, 0.7071067811865476, 0.0, 0.0, 0.7071067811865476);
 			break;
 	}
@@ -487,8 +499,7 @@ void set_geom_radius(geometry *g, real radius) {
 	g->radius = radius;
 	g->quadric = gluNewQuadric();
 	if (!g->quadric) {
-		fprintf(stderr, "Not enough memory for quadric\n");
-		exit(1);
+		error("Not enough memory for quadric");
 	}
 	gluQuadricNormals(g->quadric, GLU_SMOOTH);
 }
@@ -496,8 +507,7 @@ void set_geom_radius(geometry *g, real radius) {
 void set_geom_text(geometry *g, char *text) {
 	free_geom_shape(g);
 	if (!(g->text = strdup(text))) {
-		fprintf(stderr, "Not enough memory for text\n");
-		exit(1);
+		error("Not enough memory for text");
 	}
 }
 
@@ -738,7 +748,7 @@ void draw_labels() {
 		for (g = curr_scene->geoms; g; g = g->next) {
 			if (g->layer == i) {
 				gluProject(g->pos[0], g->pos[1], g->pos[2], l->last_modelview, l->last_projection, l->last_view, &wx, &wy, &wz);
-				draw_text(g->name, wx, wy);
+				draw_text(g->name, (int) wx, (int) wy);
 			}
 		}
 	}
@@ -848,8 +858,7 @@ void screenshot(char *path) {
 	
 	pixels = calloc(3 * scr_width * scr_height, sizeof(unsigned char));
 	if (!pixels) {
-		fprintf(stderr, "out of memory\n");
-		exit(1);
+		error("out of memory");
 	}
 	out = fopen(path, "w");
 	if (!out) {
@@ -872,8 +881,8 @@ void screenshot(char *path) {
 	fprintf(stderr, "screen shot saved to %s\n", path);
 }
 
-void save_on_redraw(char *path) {
-	strncpy(savepath, path, sizeof(savepath));
+void request_screenshot(char *path, int i) {
+	strncpy(screenshot_path[i], path, sizeof(screenshot_path[i]));
 }
 
 void init_layers() {
@@ -911,3 +920,18 @@ int set_layer(int layer_num, char option, int value) {
 	return 0;  /* no such option */
 }
 
+int get_redraw() {
+	glfwLockMutex(&redraw_lock);
+	if (redraw) {
+		redraw = 0;
+		return 1;
+	}
+	return 0;
+	glfwUnlockMutex(&redraw_lock);
+}
+
+void set_redraw() {
+	glfwLockMutex(&redraw_lock);
+	redraw = 1;
+	glfwUnlockMutex(&redraw_lock);
+}

@@ -1,18 +1,28 @@
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
-int init_socket(char *port);
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <unistd.h>
+#include <time.h>
+
+#include "viewer.h"
+
+int init_socket(char *path);
 int init_file(char *path);
 
+int read_stdin(char *buf, int n);
 int read_socket(char *buf, int n);
 int read_file(char *buf, int n);
-void socket_error(char *msg);
 
-enum Input_type { FILE_INPUT, SOCKET_INPUT };
+int parse_int(char *s, int *v);
+
+enum Input_type { REGULAR_FILE, SOCKET };
 
 static enum Input_type input_type;
 static FILE *file = NULL;
@@ -30,27 +40,27 @@ int init_input(int argc, char *argv[]) {
 				fprintf(stderr, "specify a socket path or port\n");
 				return 0;
 			}
-			input_type = SOCKET_INPUT;
+			input_type = SOCKET;
 			return init_socket(argv[i + 1]);
 		} else if (strcmp(argv[i], "-f") == 0) {
 			if (i + 1 >= argc) {
 				fprintf(stderr, "specify file path\n");
 				return 0;
 			}
-			input_type = FILE_INPUT;
+			input_type = REGULAR_FILE;
 			return init_file(argv[i + 1]);
 		}
 	}
 	file = stdin;
-	input_type = FILE_INPUT;
+	input_type = REGULAR_FILE;
 	return 1;
 }
 
 int get_input(char *buf, int n) {
 	switch (input_type) {
-		case FILE_INPUT:
+		case REGULAR_FILE:
 			return read_file(buf, n);
-		case SOCKET_INPUT:
+		case SOCKET:
 			return read_socket(buf, n);
 	}
 	return 0;
@@ -68,41 +78,41 @@ int read_file(char *buf, int n) {
 	return strlen(buf);
 }
 
-void winsock_cleanup(void) {
-	WSACleanup();
-}
-
-int init_socket(char *port) {
-	struct addrinfo hints, *name = NULL;
-	WSADATA wsaData;
+int init_socket(char *path_or_port) {
+	int family, port, yes;
+	struct sockaddr_in in_name;
+	struct sockaddr_un un_name;
+	struct sockaddr *name;
+	socklen_t name_size;
 	
-	if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
-		fprintf(stderr, "Winsock initialization failed\n");
-		exit(1);
+	if (parse_int(path_or_port, &port)) {
+		memset(&in_name, 0, sizeof(in_name));
+		family = in_name.sin_family = AF_INET;
+		in_name.sin_port = htons(port);
+		in_name.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+		name = (struct sockaddr*) &in_name;
+		name_size = sizeof(in_name);
+	} else {
+		memset(&un_name, 0, sizeof(un_name));
+		family = un_name.sun_family = AF_UNIX;
+		strncpy(un_name.sun_path, path_or_port, sizeof(un_name.sun_path));
+		name = (struct sockaddr*) &un_name;
+		name_size = sizeof(un_name);
 	}
-	atexit(winsock_cleanup);
-
-	if ((listen_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
-		fprintf(stderr, "socket() failed\n");
-		exit(1);
-	}
-	
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	if (getaddrinfo("localhost", port, &hints, &name) != 0) {
-		fprintf(stderr, "getaddrinfo failed\n");
-		exit(1);
-	}
-	
-	if (bind(listen_fd, name->ai_addr, (int)name->ai_addrlen) == SOCKET_ERROR) {
-		fprintf(stderr, "bind failed\n");
+	if ((listen_fd = socket(family, SOCK_STREAM, 0)) == -1) {
+		perror("init_socket");
 		exit(1);
 	}
 	
-	if (listen(listen_fd, 10) == SOCKET_ERROR) {
-		fprintf(stderr, "listen failed\n");
+	/* gets rid of "address in use" errors */
+	yes = 1;
+	setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+	if (bind(listen_fd, name, name_size) == -1) {
+		perror("init_socket");
+		exit(1);
+	}
+	if (listen(listen_fd, 10) == -1) {
+		perror("init_socket");
 		exit(1);
     }
     
@@ -115,14 +125,14 @@ int init_socket(char *port) {
 int read_socket(char *buf, int n) {
 	fd_set select_fds;
 	int n_active, active_fd, new_fd, nrecv;
-	struct sockaddr client_addr;
-    int addr_len;
+	struct sockaddr_storage client_addr;
+    socklen_t addr_len;
     
 	for (;;) {
 		select_fds = all_fds;
 		n_active = select(max_fd + 1, &select_fds, NULL, NULL, NULL);
-		if (n_active == SOCKET_ERROR) {
-			fprintf(stderr, "select failed\n");
+		if (n_active == -1) {
+			perror("read_socket");
 			exit(1);
 		} else if (n_active == 0) {
 			continue;
@@ -132,9 +142,9 @@ int read_socket(char *buf, int n) {
 				continue;
 			}
 			if (active_fd == listen_fd) {
-				addr_len = sizeof(client_addr);
-				if ((new_fd = accept(listen_fd, &client_addr, (socklen_t*) &addr_len)) == INVALID_SOCKET) {
-					socket_error("accept failed");
+				if ((new_fd = accept(listen_fd, (struct sockaddr*) &client_addr, (socklen_t*) &addr_len)) == -1) {
+					perror("read_socket");
+					exit(1);
 				}
 				fprintf(stderr, "client connect\n");
 				FD_SET(new_fd, &all_fds);
@@ -142,8 +152,9 @@ int read_socket(char *buf, int n) {
 					max_fd = new_fd;
 				}
 			} else {
-				if ((nrecv = recv(active_fd, buf, n, 0)) == SOCKET_ERROR) {
-					fprintf(stderr, "recv failed\n");
+				if ((nrecv = recv(active_fd, buf, n, 0)) == -1) {
+					fprintf(stderr, "here\n");
+					perror("read_socket");
 					exit(1);
 				}
 				if (nrecv == 0) {
@@ -164,35 +175,23 @@ int init_file(char *path) {
 	return 1;
 }
 
-void socket_error(char *msg) {
-	fprintf(stderr, "%s: %d\n", msg, WSAGetLastError());
-	exit(1);
-}
-
-void delay() {
-	Sleep(1);
-}
-
 int run_shell(const char *cmd) {
 	return system(cmd);
 }
 
 char *get_temp(const char *prefix) {
-	static char tempdir[MAX_PATH] = {'\0'};
 	char *path;
-	
-	if (strlen(tempdir) == 0) {
-		if (GetTempPath(MAX_PATH, tempdir) == 0) {
-			fprintf(stderr, "can't get temporary directory\n");
-			exit(1);
-		}
+	int fd;
+	path = (char *) malloc(FILENAME_MAX);
+	snprintf(path, FILENAME_MAX, "/tmp/%sXXXXXX", prefix);
+	if ((fd = mkstemp(path)) == -1) {
+		perror("get_temp");
+		exit(1);
 	}
-	
-	path = (char *) malloc(MAX_PATH);
-	GetTempFileName(tempdir, prefix, 0, path);
+	close(fd);
 	return path;
 }
 
 void delete_file(const char *path) {
-	DeleteFile(path);
+	remove(path);
 }

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 #include "viewer.h"
 
 static char *qhull_in_path = NULL;
@@ -123,8 +124,7 @@ void cross_prod(vec3 a, vec3 b, vec3 c) {
 void normalize(vec3 a) {
 	real d = sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 	if (d == 0.0) {
-		fprintf(stderr, "division by zero\n");
-		exit(1);
+		error("division by zero when normalizing vec3");
 	}
 	a[0] /= d; a[1] /= d; a[2] /= d;
 }
@@ -184,24 +184,25 @@ void rotate_vec3(quaternion q, vec3 v) {
 
 void init_semaphore(semaphore *s) {
 	s->count = 0;
-	s->mutex = SDL_CreateMutex();
+	if (!(s->mutex = glfwCreateMutex()))
+		error("Failed to create semaphore mutex.\n");
 }
 
 void semaphore_P(semaphore *s) {
-	SDL_mutexP(s->mutex);
+	glfwLockMutex(s->mutex);
 	while (s->count == 0) {
-		SDL_mutexV(s->mutex);
-		delay();
-		SDL_mutexP(s->mutex);
+		glfwUnlockMutex(s->mutex);
+		glfwSleep(0.0001);
+		glfwLockMutex(s->mutex);
 	}
 	s->count = 0;
-	SDL_mutexV(s->mutex);
+	glfwUnlockMutex(s->mutex);
 }
 
 void semaphore_V(semaphore *s) {
-	SDL_mutexP(s->mutex);
+	glfwLockMutex(s->mutex);
 	s->count = 1;
-	SDL_mutexV(s->mutex);
+	glfwUnlockMutex(s->mutex);
 }
 
 int qhull(real verts[], int nverts, int indexes[], int max_indexes) {
@@ -216,8 +217,7 @@ int qhull(real verts[], int nverts, int indexes[], int max_indexes) {
 		qhull_out_path = get_temp("qhull_out_");
 		fprintf(stderr, "qhull_in = %s, qhull_out = %s\n", qhull_in_path, qhull_out_path);
 		if (sprintf(qhull_cmd, "qconvex i Qt <%s >%s", qhull_in_path, qhull_out_path) < 0) {
-			fprintf(stderr, "error constructing qhull command\n");
-			exit(1);
+			error("error constructing qhull command");
 		}
 		atexit(cleanup_qhull);
 	}
@@ -228,7 +228,7 @@ int qhull(real verts[], int nverts, int indexes[], int max_indexes) {
 		exit(1);
 	}
 	
-	fprintf(input, "3\n%ld\n", nverts / 3);
+	fprintf(input, "3\n%d\n", nverts / 3);
 	for (i = 0; i < nverts; i += 3) {
 		fprintf(input, "%f %f %f\n", verts[i], verts[i+1], verts[i+2]);
 	}
@@ -249,26 +249,22 @@ int qhull(real verts[], int nverts, int indexes[], int max_indexes) {
 	    split(readbuf, fields, 2) != 1 ||
 	    !parse_int(fields[0], &ntriangles))
 	{
-		fprintf(stderr, "unexpected qhull output\n");
-		exit(1);
+		error("unexpected qhull output");
 	}
 	
 	if (ntriangles * 3 > max_indexes) {
-		fprintf(stderr, "too many triangles in convex hull\n");
-		exit(1);
+		error("too many triangles in convex hull");
 	}
 	
 	for (i = 0, k = 0; i < ntriangles; ++i) {
 		if (!fgets(readbuf, sizeof(readbuf), output) || 
 		    split(readbuf, fields, 4) != 3)
 		{
-			fprintf(stderr, "unexpected qhull output\n");
-			exit(1);
+			error("unexpected qhull output");
 		}
 		for (j = 2; j >= 0; --j) {   /* qhull outputs clockwise triangles */
 			if (!parse_int(fields[j], &indexes[k++])) {
-				fprintf(stderr, "unexpected qhull output\n");
-				exit(1);
+				error("unexpected qhull output");
 			}
 		}
 	}
@@ -282,4 +278,9 @@ void cleanup_qhull() {
 	delete_file(qhull_out_path);
 	free(qhull_in_path);
 	free(qhull_out_path);
+}
+
+void error(const char *msg) {
+	fprintf(stderr, "%s\n", msg);
+	exit(1);
 }

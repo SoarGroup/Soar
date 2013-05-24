@@ -3,26 +3,45 @@ import sys
 Import('env', 'compiler')
 
 # svs viewer
-viewer_src = [ 'viewer/%s.c' % f for f in ('input', 'text', 'trackball', 'viewer', 'util') ]
 viewer_env = env.Clone()
 viewer_env['LIBS'] = []
+viewer_env['CPPPATH'] = [ 'viewer', 'glfw/lib' ]
+viewer_env.Append(CPPPATH = 'glfw/include')
+viewer_src = Glob('viewer/*.c') + Glob('glfw/lib/*.c')
 
 if compiler == 'msvc':
-	viewer_libs = [ 'SDL', 'SDLmain', 'opengl32', 'glu32' ]
+	opengl_libs = [ 'opengl32', 'glu32' ]
 	viewer_env.Append(
-		CPPFLAGS  = [ '/D', 'WIN32', '/MD'],
-		CPPPATH   = [ 'SDL/include' ],
-		LIBPATH   = [ 'SDL/lib/x64' ],
-		LIBS      = [ 'Ws2_32', 'Mswsock', 'AdvApi32' ],
+		CPPPATH   = [ 'glfw/lib/win32' ],
+		LIBS      = [ 'Ws2_32', 'Mswsock', 'AdvApi32', 'user32' ] + opengl_libs,
 		LINKFLAGS = [ '/SUBSYSTEM:CONSOLE' ]
 	)
-	viewer_src.append('viewer/windows.c')
+	viewer_src.append('viewer/platform_specific/windows.c')
+	viewer_src.extend(Glob('glfw/lib/win32/*.c'))
 else:
-	viewer_libs = [ 'SDL', 'GL', 'GLU', 'm' ]
-	viewer_src.append('viewer/linux.c')
+	viewer_src.append('viewer/platform_specific/posix.c')
+	if sys.platform == 'darwin':
+		opengl_libs = []
+		frameworks = [ 'Cocoa', 'OpenGL', 'IOKit' ]  # osx uses opengl as a framework instead of libraries
+		viewer_env.Append(
+			CPPFLAGS  = [ '-fno-common' ],
+			CPPPATH   = [ 'glfw/lib/cocoa/' ],
+		)
+		for f in frameworks:
+			viewer_env.Append(LINKFLAGS = [ '-framework', f ])
+		
+		viewer_src.extend(Glob('glfw/lib/cocoa/*.c') + Glob('glfw/lib/cocoa/*.m'))
+	else:
+		opengl_libs = [ 'GL', 'GLU' ]
+		viewer_env.Append(
+			CPPFLAGS  = [ '-D_GLFW_HAS_PTHREAD', '-D_GLFW_HAS_SYSCONF', '-D_GLFW_HAS_SCHED_YIELD', '-pthread' ],
+			CPPPATH   = [ 'glfw/lib/x11' ],
+			LIBS      = [ 'm', 'pthread', 'X11' ] + opengl_libs,
+		)
+		viewer_src.extend(Glob('glfw/lib/x11/*.c'))
 
 config = Configure(viewer_env)
-missing_libs = [ l for l in viewer_libs if not config.CheckLib(l)]
+missing_libs = [ l for l in opengl_libs if not config.CheckLib(l)]
 viewer_env = config.Finish()
 if not missing_libs:
 	viewer_prog = viewer_env.Program('svs_viewer', viewer_src)
