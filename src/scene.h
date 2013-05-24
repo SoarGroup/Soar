@@ -52,8 +52,6 @@ public:
 	
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	
-	void print_object_verts(std::ostream &os) const;
-	
 private:
 	typedef std::map<std::string, double> property_map;
 	

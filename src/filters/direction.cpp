@@ -100,17 +100,17 @@ bool west_of(const scene *scn, const vector<const sgnode*> &args) {
 	return direction(args[0], args[1], 0, -1);
 }
 
-bool x_overlap(const scene *scn, const vector<const sgnode*> &args) {
+bool x_aligned(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 0, 0);
 }
 
-bool y_overlap(const scene *scn, const vector<const sgnode*> &args) {
+bool y_aligned(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 1, 0);
 }
 
-bool z_overlap(const scene *scn, const vector<const sgnode*> &args) {
+bool z_aligned(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 2, 0);
 }
@@ -231,15 +231,15 @@ filter *make_west_of(Symbol *root, soar_interface *si, scene *scn, filter_input 
 	return new direction_filter(root, si, input, 0, -1);
 }
 
-filter *make_x_overlap(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_x_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 0, 0);
 }
 
-filter *make_y_overlap(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_y_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 1, 0);
 }
 
-filter *make_z_overlap(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_z_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 2, 0);
 }
 
@@ -264,7 +264,7 @@ filter_table_entry *smaller_fill_entry() {
 	return e;
 }
 
-filter_table_entry linear_fill_entry() {
+filter_table_entry *linear_fill_entry() {
 	filter_table_entry *e = new filter_table_entry;
 	e->name = "linear-with";
 	e->parameters.push_back("a");
@@ -325,75 +325,39 @@ filter_table_entry *west_of_fill_entry() {
 	return e;
 }
 
-filter_table_entry *x_overlap_fill_entry() {
-	filter_table_entry *e = new filter_table_entry;
-	e->name = "x-overlap";
-	e->parameters.push_back("a");
-	e->parameters.push_back("b");
-	e->ordered = false;
-	e->allow_repeat = false;
-	e->create = &make_x_overlap;
-	e->calc = &x_overlap;
-	return e;
-}
-
-filter_table_entry *y_overlap_fill_entry() {
-	filter_table_entry *e = new filter_table_entry;
-	e->name = "y-overlap";
-	e->parameters.push_back("a");
-	e->parameters.push_back("b");
-	e->ordered = false;
-	e->allow_repeat = false;
-	e->create = &make_y_overlap;
-	e->calc = &y_overlap;
-	return e;
-}
-
-filter_table_entry *z_overlap_fill_entry() {
-	filter_table_entry *e = new filter_table_entry;
-	e->name = "z-overlap";
-	e->parameters.push_back("a");
-	e->parameters.push_back("b");
-	e->ordered = false;
-	e->allow_repeat = false;
-	e->create = &make_z_overlap;
-	e->calc = &z_overlap;
-	return e;
-}
-
-filter_table_entry *planar_aligned_fill_entry() {
-	filter_table_entry *e = new filter_table_entry;
-	e->name = "z-aligned";
-	e->parameters.push_back("a");
-	e->parameters.push_back("b");
-	e->ordered = false;
-	e->allow_repeat = false;
-	e->create = &make_planar_aligned;
-	e->calc = &planar_aligned;
-	return e;
-}
-
-filter_table_entry *horizontally_aligned_fill_entry() {
-	filter_table_entry *e = new filter_table_entry;
-	e->name = "y-aligned";
-	e->parameters.push_back("a");
-	e->parameters.push_back("b");
-	e->ordered = false;
-	e->allow_repeat = false;
-	e->create = &make_horizontally_aligned;
-	e->calc = &horizontally_aligned;
-	return e;
-}
-
-filter_table_entry *vertically_aligned_fill_entry() {
+filter_table_entry *x_aligned_fill_entry() {
 	filter_table_entry *e = new filter_table_entry;
 	e->name = "x-aligned";
 	e->parameters.push_back("a");
 	e->parameters.push_back("b");
 	e->ordered = false;
 	e->allow_repeat = false;
-	e->create = &make_vertically_aligned;
-	e->calc = &vertically_aligned;
+	e->create = &make_x_aligned;
+	e->calc = &x_aligned;
+	return e;
+}
+
+filter_table_entry *y_aligned_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "y-aligned";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = false;
+	e->allow_repeat = false;
+	e->create = &make_y_aligned;
+	e->calc = &y_aligned;
+	return e;
+}
+
+filter_table_entry *z_aligned_fill_entry() {
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "z-aligned";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->ordered = false;
+	e->allow_repeat = false;
+	e->create = &make_z_aligned;
+	e->calc = &z_aligned;
 	return e;
 }
 

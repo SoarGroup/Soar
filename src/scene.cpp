@@ -938,18 +938,3 @@ void scene::cli_relations(const vector<string> &args, ostream &os) const {
 		p.print(os);
 	}
 }
-
-void scene::print_object_verts(std::ostream &os) const {
-	node_map::const_iterator i, iend;
-	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
-		const convex_node *cn = dynamic_cast<convex_node*>(i->second.node);
-		if (!cn) {
-			continue;
-		}
-		os << i->first << endl;
-		ptlist verts = cn->get_world_points();
-		for (int j = 0, jend = verts.size(); j < jend; ++j) {
-			os << '\t' << verts[j] << endl;
-		}
-	}
-}

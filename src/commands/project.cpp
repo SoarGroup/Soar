@@ -1,8 +1,10 @@
 #include <iostream>
+#include <list>
 #include "command.h"
 #include "filter.h"
 #include "svs.h"
-#include <list>
+#include "scene.h"
+#include "filter_table.h"
 
 using namespace std;
 
@@ -169,7 +171,7 @@ public:
 	Symbol* cval;
 	string strval, pname, itype;
 	long intval;
-	float floatval;
+	double floatval;
 	filter_input *input;
 	bool fail;
 	filter *f;
