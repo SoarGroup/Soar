@@ -26,6 +26,7 @@ svs_interface *make_svs(agent *a) {
 	return new svs(a);
 }
 
+
 sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node) 
 : soarint(si), id(ident), parent(parent), node(node)
 {
@@ -327,6 +328,31 @@ void svs_state::refresh_view() {
 	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
 		d->add(name, nodes[i]);
 	}
+}
+//JK
+Symbol * svs_state::get_sgnode_id(const sgnode *n) 
+{
+	return get_sgnode_id(n, root);
+}
+Symbol * svs_state::get_sgnode_id(const sgnode *n, sgwme *r) 
+{
+	if (r == NULL)
+		return NULL;
+	if ((r->get_node()->get_name().compare(n->get_name())) == 0)
+		return r->get_id();
+
+	std::map<sgwme*,wme*>::iterator i;
+	//std::map<std::string, model*>::iterator i;
+	std::map<sgwme*,wme*> *childs = r->get_childs();
+	for (i = childs->begin(); i != childs->end(); ++i) {
+		//model *m = i->second;
+		//Symbol *id = si->get_wme_val(si->make_id_wme(model_root, m->get_name()));
+		Symbol* result = get_sgnode_id(n, i->first);
+		if (result != NULL)
+			return result;
+		//m->set_wm_root(id);
+	}
+	return NULL;
 }
 
 svs::svs(agent *a)

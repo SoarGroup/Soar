@@ -465,6 +465,17 @@ public:
 	void remove_output(filter_val *v);
 	void change_output(filter_val *v);
 	bool update();
+
+//TODO slightly less ugly hack
+	virtual int getAxis()
+	{
+	    return -3;
+	}
+	
+	virtual int getComp()
+	{
+	    return -3;
+	}
 	
 	filter_output *get_output()                        { return &output;     }
 	const filter_input *get_input() const              { return input;       }

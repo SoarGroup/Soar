@@ -124,6 +124,7 @@ void command::proxy_get_children(map<string, cliproxy*> &c) {
 }
 
 command *_make_extract_command_(svs_state *state, Symbol *root);
+command *_make_project_command_(svs_state *state, Symbol *root);
 command *_make_extract_once_command_(svs_state *state, Symbol *root);
 command *_make_add_node_command_(svs_state *state, Symbol *root);
 command *_make_create_model_command_(svs_state *state, Symbol *root);
@@ -147,6 +148,8 @@ command* make_command(svs_state *state, wme *w) {
 	id = si->get_wme_val(w);
 	if (name == "extract") {
 		return _make_extract_command_(state, id);
+	} else if (name == "project") {
+		return _make_project_command_(state, id);
 	} else if (name == "extract_once") {
 		return _make_extract_once_command_(state, id);
 	} else if (name == "add_node") {
