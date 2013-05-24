@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <assert.h>
 #include "viewer.h"
 #include "trackball.h"
@@ -68,16 +69,17 @@ void screenshot(char *path);
 
 void GLFWCALL keyboard_callback(int key, int state);
 void GLFWCALL mouse_button_callback(int button, int state);
+void GLFWCALL mouse_wheel_callback(int pos);
 void GLFWCALL mouse_position_callback(int x, int y);
 void GLFWCALL win_resize_callback(int w, int h);
-void GLFWCALL win_refresh_callback();
+void GLFWCALL win_refresh_callback(void);
 
 int main(int argc, char *argv[]) {
 	int i, signal_redraw;
 	GLFWthread input_thread;
 	
 	if (glfwInit() == GL_FALSE) {
-		error("Failed to init glfw\n");
+		error("Failed to init glfw");
 	}
 	atexit(glfwTerminate);
 	
@@ -92,13 +94,16 @@ int main(int argc, char *argv[]) {
 	
 	if (glfwOpenWindow(scr_width, scr_height, COLOR_BITS, COLOR_BITS, COLOR_BITS, COLOR_BITS, DEPTH_BITS, 0, GLFW_WINDOW) == GL_FALSE)
 	{
-		error("Failed to open glfw window\n");
+		error("Failed to open glfw window");
 	}
+	glfwSetWindowTitle("SVS viewer");
+	glfwSetMouseWheel(0);
 	
 	glfwSetWindowSizeCallback(win_resize_callback);
 	glfwSetWindowRefreshCallback(win_refresh_callback);
 	glfwSetKeyCallback(keyboard_callback);
 	glfwSetMouseButtonCallback(mouse_button_callback);
+	glfwSetMouseWheelCallback(mouse_wheel_callback);
 	glfwSetMousePosCallback(mouse_position_callback);
 	
 	glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
@@ -118,11 +123,11 @@ int main(int argc, char *argv[]) {
 		proc_input(NULL);
 	} else {
 		if (!(scene_lock = glfwCreateMutex()))
-			error("Failed to create scene lock mutex.\n");
+			error("Failed to create scene lock mutex.");
 		init_semaphore(&redraw_semaphore);
 		input_thread = glfwCreateThread(proc_input, NULL);
 		if (input_thread < 0) {
-			error("Unable to create input thread\n");
+			error("Unable to create input thread");
 		}
 	}
 	
@@ -152,11 +157,11 @@ void GLFWCALL keyboard_callback(int key, int state) {
 			reset_camera(&cam, key);
 			redraw = 1;
 			break;
-		case 'g':
+		case 'G':
 			show_grid = !show_grid;
 			redraw = 1;
 			break;
-		case 'n':
+		case 'N':
 			layers[0].draw_names = !layers[0].draw_names;
 			redraw = 1;
 			break;
@@ -170,15 +175,15 @@ void GLFWCALL keyboard_callback(int key, int state) {
 			init_grid();
 			redraw = 1;
 			break;
-		case 'w':
+		case 'W':
 			layers[0].wireframe = !layers[0].wireframe;
 			redraw = 1;
 			break;
-		case 's':
+		case 'S':
 			request_screenshot("screen.ppm", 0);
 			redraw = 1;
 			break;
-		case 'o':
+		case 'O':
 			cam.ortho = 1 - cam.ortho;
 			redraw = 1;
 	}
@@ -190,21 +195,21 @@ void GLFWCALL mouse_button_callback(int button, int state) {
 	if (state == GLFW_RELEASE)
 		return;
 	
-	switch (button) {
-		case GLFW_MOUSE_BUTTON_LEFT:
-			glfwGetMousePos(&x, &y);
-			if (scene_button_hit_test(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET, x, scr_height - y))
-				redraw = 1;
-			break;
-		case GLFW_MOUSE_BUTTON_4:
-			zoom_camera(&cam, 10);
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		glfwGetMousePos(&x, &y);
+		if (scene_button_hit_test(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET, x, scr_height - y))
 			redraw = 1;
-			break;
-		case GLFW_MOUSE_BUTTON_5:
-			zoom_camera(&cam, -10);
-			redraw = 1;
-			break;
 	}
+}
+
+void GLFWCALL mouse_wheel_callback(int pos) {
+	if (pos < 0) {
+		zoom_camera(&cam, -10);
+	} else if (pos > 0) {
+		zoom_camera(&cam, 10);
+	}
+	redraw = 1;
+	glfwSetMouseWheel(0);
 }
 
 void GLFWCALL mouse_position_callback(int x, int y) {
@@ -332,7 +337,7 @@ void GLFWCALL win_resize_callback(int w, int h) {
 	redraw = 1;
 }
 
-void GLFWCALL win_refresh_callback() {
+void GLFWCALL win_refresh_callback(void) {
 	redraw = 1;
 }
 
@@ -370,7 +375,7 @@ void zoom_camera(camera *c, real df) {
 	} else if (c->fovy > FOVY_MAX) {
 		c->fovy = FOVY_MAX;
 	}
-	c->orthoy = tan(c->fovy * PI / 360.0) * abs(c->pos[2]);
+	c->orthoy = (int) (tan(c->fovy * PI / 360.0) * abs(c->pos[2]));
 }
 
 void reset_camera(camera *c, int key) {
@@ -489,8 +494,7 @@ void set_geom_radius(geometry *g, real radius) {
 	g->radius = radius;
 	g->quadric = gluNewQuadric();
 	if (!g->quadric) {
-		fprintf(stderr, "Not enough memory for quadric\n");
-		exit(1);
+		error("Not enough memory for quadric");
 	}
 	gluQuadricNormals(g->quadric, GLU_SMOOTH);
 }
@@ -498,8 +502,7 @@ void set_geom_radius(geometry *g, real radius) {
 void set_geom_text(geometry *g, char *text) {
 	free_geom_shape(g);
 	if (!(g->text = strdup(text))) {
-		fprintf(stderr, "Not enough memory for text\n");
-		exit(1);
+		error("Not enough memory for text");
 	}
 }
 
@@ -740,7 +743,7 @@ void draw_labels() {
 		for (g = curr_scene->geoms; g; g = g->next) {
 			if (g->layer == i) {
 				gluProject(g->pos[0], g->pos[1], g->pos[2], l->last_modelview, l->last_projection, l->last_view, &wx, &wy, &wz);
-				draw_text(g->name, wx, wy);
+				draw_text(g->name, (int) wx, (int) wy);
 			}
 		}
 	}
@@ -850,8 +853,7 @@ void screenshot(char *path) {
 	
 	pixels = calloc(3 * scr_width * scr_height, sizeof(unsigned char));
 	if (!pixels) {
-		fprintf(stderr, "out of memory\n");
-		exit(1);
+		error("out of memory");
 	}
 	out = fopen(path, "w");
 	if (!out) {

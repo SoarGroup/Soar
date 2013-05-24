@@ -12,9 +12,8 @@ viewer_src = Glob('viewer/*.c') + Glob('glfw/lib/*.c')
 if compiler == 'msvc':
 	opengl_libs = [ 'opengl32', 'glu32' ]
 	viewer_env.Append(
-		CPPFLAGS  = [ '/D', 'WIN32', '/MD'],
 		CPPPATH   = [ 'glfw/lib/win32' ],
-		LIBS      = [ 'Ws2_32', 'Mswsock', 'AdvApi32' ] + opengl_libs,
+		LIBS      = [ 'Ws2_32', 'Mswsock', 'AdvApi32', 'user32' ] + opengl_libs,
 		LINKFLAGS = [ '/SUBSYSTEM:CONSOLE' ]
 	)
 	viewer_src.append('viewer/platform_specific/windows.c')

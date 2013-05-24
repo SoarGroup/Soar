@@ -1,8 +1,9 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <GL/glfw.h>
-#include <SDL/SDL_mutex.h>
 
 #define PAN_FACTOR  1.0e-1
 #define GRID_LINES  10
@@ -124,6 +125,7 @@ void init_font(void);
 void draw_text(char *s, int x, int y);
 
 /* util.c */
+void error(const char *msg);
 int match(char *pattern, char *s);
 int split(char *s, char *fields[], int maxfields);
 

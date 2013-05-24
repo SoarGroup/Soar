@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "viewer.h"
 
 #define MAX_FIELDS 1000

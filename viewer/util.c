@@ -284,3 +284,8 @@ void cleanup_qhull() {
 	free(qhull_in_path);
 	free(qhull_out_path);
 }
+
+void error(const char *msg) {
+	fprintf(stderr, "%s\n", msg);
+	exit(1);
+}
