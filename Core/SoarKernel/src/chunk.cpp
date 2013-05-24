@@ -491,6 +491,104 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *result, b
   return a;
 }
 
+void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
+{
+  cons *c;
+  Symbol *temp_sym;
+
+  if (test_is_blank(t)) return;
+
+  switch (t->type) {
+  case GOAL_ID_TEST:
+  case IMPASSE_ID_TEST:
+  case DISJUNCTION_TEST:
+  case EQUALITY_TEST:
+    break;
+  case CONJUNCTIVE_TEST:
+    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      reverse_unbound_referents_in_test (thisAgent, static_cast<test>(c->first), tc);
+    break;
+
+  default:
+    if ((t->data.referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (t->data.referent->common.tc_num != tc))
+      {
+      print(thisAgent, "Reversing variable %s to constant %s.\n",
+             symbol_to_string(thisAgent, t->data.referent, FALSE, NULL, 0),
+             symbol_to_string(thisAgent, t->data.referent->common.unvariablized_symbol, FALSE, NULL, 0));
+      temp_sym = t->data.referent;
+      t->data.referent = temp_sym->common.unvariablized_symbol;
+
+      // Debug | double-check refcount
+      print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
+             symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
+             temp_sym->common.reference_count);
+      symbol_remove_ref (thisAgent, temp_sym);
+      }
+    break;
+  }
+}
+
+/* --- Converts variablized referents in back to originally bound
+ *     constants, if the variable is unbound ---*/
+
+void reverse_unbound_referents_in_action (agent* thisAgent, rhs_value *r_val, tc_number tc)
+{
+  Symbol *temp_sym;
+
+  // Try rhs_value_is_unboundvar(rv) to see if we should ignore reversal
+
+  rhs_symbol this_rhs_symbol = rhs_value_to_rhs_symbol(*r_val);
+
+  if ((this_rhs_symbol->referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (this_rhs_symbol->referent->common.tc_num != tc) &&
+      (this_rhs_symbol->referent->common.unvariablized_symbol->common.symbol_type != IDENTIFIER_SYMBOL_TYPE))
+  {
+    print(thisAgent, "Reversing rhs %s to constant %s.\n",
+        symbol_to_string(thisAgent, this_rhs_symbol->referent, FALSE, NULL, 0),
+        symbol_to_string(thisAgent, this_rhs_symbol->referent->common.unvariablized_symbol, FALSE, NULL, 0));
+
+    temp_sym = this_rhs_symbol->referent;
+    this_rhs_symbol->referent = temp_sym->common.unvariablized_symbol;
+
+    // Debug | Don't think this is necessary unless r_val is NIL in which case the above code would not work
+    (*r_val) = rhs_symbol_to_rhs_value(this_rhs_symbol);
+    // Debug | Double-check refcount
+    print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
+           symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
+           temp_sym->common.reference_count);
+    symbol_remove_ref (thisAgent, temp_sym);
+  }
+}
+
+void reverse_unbound_lhs_referents (agent* thisAgent, condition *lhs_top, tc_number tc)
+{
+  condition *c;
+
+  for (c=lhs_top; c!=NIL; c=c->next)
+  {
+    if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
+      reverse_unbound_lhs_referents(thisAgent, c->data.ncc.top, tc);
+    } else {
+      reverse_unbound_referents_in_test(thisAgent, c->data.tests.attr_test, tc);
+      reverse_unbound_referents_in_test(thisAgent, c->data.tests.value_test, tc);
+    }
+  }
+}
+
+void reverse_unbound_rhs_referents (agent* thisAgent, action *rhs_top, tc_number tc)
+{
+  action *a;
+
+  for (a = rhs_top; a!=NIL; a=a->next)
+  {
+    // Debug | Might need to handle rhs function calls too
+    if (a->type == MAKE_ACTION)
+    {
+      reverse_unbound_referents_in_action (thisAgent, &(a->attr), tc);
+      reverse_unbound_referents_in_action (thisAgent, &(a->value), tc);
+    }
+  }
+}
+
 /* ====================================================================
 
      Chunk Conditions, and Chunk Conditions Set Manipulation Routines

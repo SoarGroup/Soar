@@ -371,6 +371,8 @@ extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, 
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
 extern void print (agent* thisAgent, const char *format, ... );
 
+bool symbols_are_equal_with_bindings (agent* agnt, Symbol *s1, Symbol *s2, list **bindings);
+
 inline uint64_t symbol_add_ref(agent* thisAgent, Symbol * x)
 {
   (x)->common.reference_count++;

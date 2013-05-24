@@ -252,86 +252,6 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
   return NIL;
 }
 
-//Symbol *make_variable (agent* thisAgent, const char *name, bool force_unique_outside_production) {
-//  Symbol *sym;
-//  force_unique_outside_production = false;
-//  if (force_unique_outside_production)
-//    print(thisAgent, "Debug | make_variable called with %s %i.\n", name, (int) force_unique_outside_production);
-//
-//  sym = find_variable(thisAgent, name);
-//  if (sym) {
-//    if (force_unique_outside_production)
-//    {
-//      std::string suffix, new_name = name;
-//      if (!(sym->var.orig_production_name))
-//      {
-//        if (force_unique_outside_production)
-//        print(thisAgent, "Debug | make_variable (unique) found sym with no matching production.  Adding ref count to existing symbol %s.\n", sym->var.name);
-//        symbol_add_ref(thisAgent, sym);
-//        sym->var.orig_production_name = thisAgent->current_production_name;
-//        symbol_add_ref(thisAgent, sym->var.orig_production_name);
-//        sym->var.current_unique_symbol = sym;
-//        symbol_add_ref(thisAgent, sym->var.current_unique_symbol);
-//        return sym;
-//      }
-//      else if (sym->var.orig_production_name != thisAgent->current_production_name)
-//      {
-//        sym->var.next_unique_suffix_number++;
-//        to_string(sym->var.next_unique_suffix_number, suffix);
-//        new_name.erase(new_name.end()-1);
-//        new_name += "+" + suffix + ">";
-//        if (force_unique_outside_production)
-//        print(thisAgent, "Debug | make_variable (unique) found existing sym %s.  New production. Creating unique sibling %s.\n", sym->var.name, new_name.c_str());
-//
-//        symbol_remove_ref(thisAgent, sym->var.orig_production_name);
-//        sym->var.orig_production_name = thisAgent->current_production_name;
-//        symbol_add_ref(thisAgent, sym->var.orig_production_name);
-//
-//        symbol_remove_ref(thisAgent, sym->var.current_unique_symbol);
-//        sym->var.current_unique_symbol = make_variable(thisAgent, new_name.c_str(), force_unique_outside_production);
-//        symbol_add_ref(thisAgent, sym->var.current_unique_symbol);
-//
-//        return sym->var.current_unique_symbol;
-//      }
-//      else
-//      {
-//        if (force_unique_outside_production)
-//        print(thisAgent, "Debug | make_variable (unique) found existing unique sibling for sym %s: %s.\n", sym->var.name, sym->var.current_unique_symbol->var.name);
-//        symbol_add_ref(thisAgent, sym->var.current_unique_symbol);
-//        return sym->var.current_unique_symbol;
-//      }
-//    }
-//    else
-//    {
-//      if (force_unique_outside_production)
-//      print(thisAgent, "Debug | make_variable found sym.  Adding ref count to existing symbol %s.\n", sym->var.name);
-//      symbol_add_ref(thisAgent, sym);
-//      return sym;
-//    }
-//  }
-//
-//  if (force_unique_outside_production)
-//  print(thisAgent, "Debug | make_variable found nothing.  Creating new sym with name %s.\n", name);
-//  allocate_with_pool (thisAgent, &thisAgent->variable_pool, &sym);
-//  sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
-//  sym->common.reference_count = 2;
-//  sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
-//  sym->common.tc_num = 0;
-//  sym->common.variablized_symbol = NIL;
-//  sym->common.unvariablized_symbol = NIL;
-//  sym->common.original_var_symbol = NIL;
-//  sym->var.name = make_memory_block_for_string (thisAgent, name);
-//  sym->var.gensym_number = 0;
-//  sym->var.rete_binding_locations = NIL;
-//  sym->var.orig_production_name = thisAgent->current_production_name;
-//  sym->var.current_unique_symbol = sym;
-//  sym->var.next_unique_suffix_number = 1;
-//  add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
-
-//
-//  return sym;
-//}
-
 Symbol *make_variable (agent* thisAgent, const char *name) {
   Symbol *sym;
 
@@ -735,6 +655,71 @@ Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_
   return New;
 }
 
+/* -----------------------------------------------------------------
+                       First Letter From Symbol
+
+   When creating dummy variables or identifiers, we try to give them
+   names that start with a "reasonable" letter.  For example, ^foo <dummy>
+   becomes ^foo <f*37>, where the variable starts with "f" because
+   the attribute test starts with "f" also.  This routine looks at
+   a symbol and tries to figure out a reasonable choice of starting
+   letter for a variable or identifier to follow it.  If it can't
+   find a reasonable choice, it returns '*'.
+----------------------------------------------------------------- */
+
+char first_letter_from_symbol (Symbol *sym) {
+  switch (sym->common.symbol_type) {
+  case VARIABLE_SYMBOL_TYPE: return *(sym->var.name + 1);
+  case IDENTIFIER_SYMBOL_TYPE: return sym->id.name_letter;
+  case SYM_CONSTANT_SYMBOL_TYPE: return *(sym->sc.name);
+  default: return '*';
+  }
+}
+
+
+/* ----------------------------------------------------------------
+   Takes a list of symbols and returns a copy of the same list,
+   incrementing the reference count on each symbol in the list.
+---------------------------------------------------------------- */
+
+list *copy_symbol_list_adding_references (agent* thisAgent,
+                      list *sym_list) {
+  cons *c, *first, *prev;
+
+  if (! sym_list) return NIL;
+  allocate_cons (thisAgent, &first);
+  first->first = sym_list->first;
+  symbol_add_ref(thisAgent, static_cast<Symbol *>(first->first));
+  sym_list = sym_list->rest;
+  prev = first;
+  while (sym_list) {
+    allocate_cons (thisAgent, &c);
+    prev->rest = c;
+    c->first = sym_list->first;
+    symbol_add_ref(thisAgent, static_cast<Symbol *>(c->first));
+    sym_list = sym_list->rest;
+    prev = c;
+  }
+  prev->rest = NIL;
+  return first;
+}
+
+/* ----------------------------------------------------------------
+   Frees a list of symbols, decrementing their reference counts.
+---------------------------------------------------------------- */
+
+void deallocate_symbol_list_removing_references (agent* thisAgent,
+                         list *sym_list) {
+  cons *c;
+
+  while (sym_list) {
+    c = sym_list;
+    sym_list = sym_list->rest;
+    symbol_remove_ref (thisAgent, static_cast<Symbol *>(c->first));
+    free_cons (thisAgent, c);
+  }
+}
+
 /* --------------------------------------------------------------------
 
                          Predefined Symbols
@@ -964,4 +949,49 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_greater_or_equal ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_max ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_min ) );
+}
+
+Symbol *get_binding (Symbol *f, list *bindings)
+{
+    cons *c;
+
+    for (c=bindings;c!=NIL;c=c->rest)
+    {
+        if (static_cast<Binding *>(c->first)->from == f)
+            return static_cast<Binding *>(c->first)->to;
+    }
+    return NIL;
+}
+
+bool symbols_are_equal_with_bindings (agent* agnt, Symbol *s1, Symbol *s2, list **bindings)
+{
+    Binding *b;
+    Symbol *bvar;
+
+    if ((s1 == s2) && (s1->common.symbol_type != VARIABLE_SYMBOL_TYPE))
+        return TRUE;
+
+    /* "*" matches everything. */
+    if ((s1->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+        (!strcmp(s1->sc.name,"*"))) return TRUE;
+    if ((s2->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+        (!strcmp(s2->sc.name,"*"))) return TRUE;
+
+
+    if ((s1->common.symbol_type != VARIABLE_SYMBOL_TYPE) ||
+        (s2->common.symbol_type != VARIABLE_SYMBOL_TYPE))
+        return FALSE;
+    /* Both are variables */
+    bvar = get_binding(s1,*bindings);
+    if (bvar == NIL) {
+        b = static_cast<Binding *>(allocate_memory(agnt, sizeof(Binding),MISCELLANEOUS_MEM_USAGE));
+        b->from = s1;
+        b->to = s2;
+        push(agnt, b,*bindings);
+        return TRUE;
+    }
+    else if (bvar == s2) {
+        return TRUE;
+    }
+    else return FALSE;
 }

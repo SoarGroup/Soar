@@ -16,6 +16,7 @@
 
 #include "symtab.h" /* needed for definition of symbol_union */
 #include "kernel.h" /* needed for definition of NIL */
+#include "test.h"
 #include "soar_module.h" /* needed for definition of memory pool allocator */
 
 #include <set>
@@ -320,84 +321,6 @@ typedef struct slot_struct {
   wma_sym_reference_map* wma_val_references;
 
 } slot;
-
-/* -------------------------------------------------------------------
-                              Tests
-
-   Tests in conditions can be blank (null) tests, tests for equality
-   with a variable or constant, or more complicated tests (such as
-   not-equal tests, conjunctive tests, etc.).  We use some bit twiddling
-   here to minimize space.  We use just a pointer to represent any kind
-   of test.  For blank tests, this is the NIL pointer.  For equality tests,
-   it points to the symbol referent of the test.  For other kinds of tests,
-   bit 0 of the pointer is set to 1, and the pointer (minus 1) points to
-   a complex_test structure.  (A field in the complex_test structure
-   further indicates the type of the test.)
-------------------------------------------------------------------- */
-
-/* --- Types of tests (can't be 255 -- see rete.cpp) --- */
-
-enum TestType {
-         NOT_EQUAL_TEST = 1,          /* various relational tests */
-         LESS_TEST = 2,
-         GREATER_TEST = 3,
-         LESS_OR_EQUAL_TEST = 4,
-         GREATER_OR_EQUAL_TEST = 5,
-         SAME_TYPE_TEST = 6,
-         DISJUNCTION_TEST = 7,        /* item must be one of a list of constants */
-         CONJUNCTIVE_TEST = 8,        /* item must pass each of a list of tests */
-         GOAL_ID_TEST = 9,            /* item must be a goal identifier */
-         IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
-         EQUALITY_TEST = 11,
-         BLANK_TEST = 12,
-         INVALID_TEST = 13
-};
-
-#define NUM_TEST_TYPES 11           /* Note: count does not include blank tests*/
-
-/* --- The test struct now stores information about all test types, including
- *     equality tests.  Note that the actual "test" type is a *pointer* to a test
- *     struct. A test is considered blank when it is nil.
- *
- *     Note: As of Soar 9.4, Soar no longer uses the test representation that
- *     distinguishes between "simple tests" (blank/equality) and "complex tests"
- *     (conjunctions, disjunctions, <, >, <=, >=, <>, <=>).  That representation
- *     used a char * with the last bit determining whether the test pointed to a
- *     Symbol (equality) or a complex test struct (like current test_struct).  This
- *     was used to save space.  To simplify the representation and allow us to store
- *     info needed to for our new more generalized chunking logic, all tests are
- *     just now "tests". --- */
-
-typedef struct test_struct {
-  TestType type;                  /* see definitions below */
-  union test_info_union {
-    Symbol *referent;           /* for relational tests */
-    ::list *disjunction_list;   /* for disjunction tests */
-    ::list *conjunct_list;      /* for conjunctive tests */
-  } data;
-  /* --- The following pointer stores the original test that was defined when
-   *     the test was read in by the parser.  The values are filled in by the
-   *     rete when reconstructing a production.  It is used by the chunker to
-   *     determine when to variablize constant symbols. - MMA 2013 ---*/
-  test_struct *original_test;
-} test_info;
-
-typedef test_info * test;
-
-
-inline Bool test_is_blank(test t)
-{
-  return (t == NIL);
-}
-
-#ifdef _MSC_VER
-#pragma warning (default : 4311)
-#endif
-
-inline test make_blank_test()
-{
-  return static_cast<test>(NIL);
-}
 
 //
 // Symbol types.

@@ -64,771 +64,6 @@ void init_production_utilities (agent* thisAgent) {
 
 ******************************************************************** */
 
-/* ====================================================================
-
-              Utilities for Symbols and Lists of Symbols
-
-==================================================================== */
-
-/* -----------------------------------------------------------------
-                       First Letter From Symbol
-
-   When creating dummy variables or identifiers, we try to give them
-   names that start with a "reasonable" letter.  For example, ^foo <dummy>
-   becomes ^foo <f*37>, where the variable starts with "f" because
-   the attribute test starts with "f" also.  This routine looks at
-   a symbol and tries to figure out a reasonable choice of starting
-   letter for a variable or identifier to follow it.  If it can't
-   find a reasonable choice, it returns '*'.
------------------------------------------------------------------ */
-
-char first_letter_from_symbol (Symbol *sym) {
-  switch (sym->common.symbol_type) {
-  case VARIABLE_SYMBOL_TYPE: return *(sym->var.name + 1);
-  case IDENTIFIER_SYMBOL_TYPE: return sym->id.name_letter;
-  case SYM_CONSTANT_SYMBOL_TYPE: return *(sym->sc.name);
-  default: return '*';
-  }
-}
-
-/* -----------------------------------------------------------------
-   Find first letter of test, or '*' if nothing appropriate.
-   (See comments on first_letter_from_symbol for more explanation.)
------------------------------------------------------------------ */
-
-char first_letter_from_test (test t) {
-  cons *c;
-  char ch;
-
-  if (test_is_blank (t)) return '*';
-
-  switch(t->type) {
-    case EQUALITY_TEST: return first_letter_from_symbol (t->data.referent);
-    case GOAL_ID_TEST: return 's';
-    case IMPASSE_ID_TEST: return 'i';
-    case CONJUNCTIVE_TEST:
-      for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
-        ch = first_letter_from_test (static_cast<test>(c->first));
-        if (ch != '*') return ch;
-      }
-      return '*';
-    default:  /* disjunction tests, and relational tests other than equality */
-      return '*';
-  }
-}
-
-/* ----------------------------------------------------------------
-   Takes a list of symbols and returns a copy of the same list,
-   incrementing the reference count on each symbol in the list.
----------------------------------------------------------------- */
-
-list *copy_symbol_list_adding_references (agent* thisAgent,
-										  list *sym_list) {
-  cons *c, *first, *prev;
-
-  if (! sym_list) return NIL;
-  allocate_cons (thisAgent, &first);
-  first->first = sym_list->first;
-  symbol_add_ref(thisAgent, static_cast<Symbol *>(first->first));
-  sym_list = sym_list->rest;
-  prev = first;
-  while (sym_list) {
-    allocate_cons (thisAgent, &c);
-    prev->rest = c;
-    c->first = sym_list->first;
-    symbol_add_ref(thisAgent, static_cast<Symbol *>(c->first));
-    sym_list = sym_list->rest;
-    prev = c;
-  }
-  prev->rest = NIL;
-  return first;
-}
-
-/* ----------------------------------------------------------------
-   Frees a list of symbols, decrementing their reference counts.
----------------------------------------------------------------- */
-
-void deallocate_symbol_list_removing_references (agent* thisAgent,
-												 list *sym_list) {
-  cons *c;
-
-  while (sym_list) {
-    c = sym_list;
-    sym_list = sym_list->rest;
-    symbol_remove_ref (thisAgent, static_cast<Symbol *>(c->first));
-    free_cons (thisAgent, c);
-  }
-}
-
-/* =================================================================
-
-                      Utility Routines for Tests
-
-================================================================= */
-
-/* --- This just copies a consed list of tests. --- */
-list *copy_test_list (agent* thisAgent, cons *c) {
-  cons *new_c;
-
-  if (!c) return NIL;
-  allocate_cons (thisAgent, &new_c);
-  new_c->first = copy_test (thisAgent, static_cast<test>(c->first));
-  new_c->rest = copy_test_list (thisAgent, c->rest);
-  return new_c;
-}
-
-/* --- This just copies a consed list of tests that
- *     doesn't require allocation of memory --- */
-list *copy_cons_list (agent* thisAgent, cons *c) {
-  cons *new_c;
-
-  if (!c) return NIL;
-  allocate_cons (thisAgent, &new_c);
-  new_c->first = c->first;
-  new_c->rest = copy_cons_list (thisAgent, c->rest);
-  return new_c;
-}
-
-inline bool is_test_type_with_no_referent(TestType test_type)
-{
-  return ((test_type == GOAL_ID_TEST) ||
-          (test_type == CONJUNCTIVE_TEST) ||
-          (test_type == IMPASSE_ID_TEST) ||
-          (test_type == DISJUNCTION_TEST) ||
-          (test_type == BLANK_TEST));
-}
-
-inline test make_test_without_refcount(agent* thisAgent, Symbol * sym, TestType test_type)
-{
-  test new_ct;
-
-  if (!sym && (!is_test_type_with_no_referent(test_type)))
-    return make_blank_test();
-
-  allocate_with_pool (thisAgent, &thisAgent->test_pool, &new_ct);
-  new_ct->type = test_type;
-  new_ct->data.referent = sym;
-  new_ct->original_test = NULL;
-
-  return new_ct;
-}
-
-inline test make_test(agent* thisAgent, Symbol * sym, TestType test_type) // is this equivalent to the macro above??
-{
-  test new_ct;
-
-  if (!sym && (!is_test_type_with_no_referent(test_type)))
-    return make_blank_test();
-
-  new_ct = make_test_without_refcount(thisAgent, sym, test_type);
-  if (sym)
-  {
-    symbol_add_ref(thisAgent, sym);
-  }
-
-  return new_ct;
-}
-
-/* ----------------------------------------------------------------
-   Takes a test and returns a new copy of it.
----------------------------------------------------------------- */
-
-test copy_test (agent* thisAgent, test t) {
-  Symbol *referent;
-  test new_ct;
-
-  if (test_is_blank(t))
-    return make_blank_test();
-
-  switch(t->type) {
-    case GOAL_ID_TEST:
-    case IMPASSE_ID_TEST:
-      new_ct = make_test(thisAgent, NIL, t->type);
-      break;
-    case DISJUNCTION_TEST:
-      new_ct = make_test(thisAgent, NIL, t->type);
-      new_ct->data.disjunction_list =
-          copy_symbol_list_adding_references (thisAgent, t->data.disjunction_list);
-      break;
-    case CONJUNCTIVE_TEST:
-      new_ct = make_test(thisAgent, NIL, t->type);
-      new_ct->data.conjunct_list = copy_test_list (thisAgent, t->data.conjunct_list);
-      break;
-    default:  /* relational tests other than equality */
-      new_ct = make_test(thisAgent, t->data.referent, t->type);
-      break;
-  }
-  if (t->original_test) {
-    new_ct->original_test = copy_test(thisAgent, t->original_test);
-  }
-  return new_ct;
-}
-
-/* ----------------------------------------------------------------
-   Same as copy_test(), only it doesn't include goal or impasse tests
-   in the new copy.  The caller should initialize the two flags to FALSE
-   before calling this routine; it sets them to TRUE if it finds a goal
-   or impasse test.
----------------------------------------------------------------- */
-
-test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
-    Bool *removed_goal,
-    Bool *removed_impasse) {
-  cons *c;
-  test new_t, temp;
-
-  switch(t->type) {
-    case EQUALITY_TEST:
-      return copy_test (thisAgent, t);
-      break;
-    case GOAL_ID_TEST:
-      *removed_goal = TRUE;
-      return make_blank_test();
-    case IMPASSE_ID_TEST:
-      *removed_impasse = TRUE;
-      return make_blank_test();
-
-    case CONJUNCTIVE_TEST:
-      new_t = make_blank_test();
-      for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
-        temp = copy_test_removing_goal_impasse_tests (thisAgent, static_cast<test>(c->first),
-            removed_goal,
-            removed_impasse);
-        if (! test_is_blank(temp))
-          add_new_test_to_test (thisAgent, &new_t, temp);
-      }
-      if (new_t->type==CONJUNCTIVE_TEST)
-      {
-        new_t->data.conjunct_list =
-            destructively_reverse_list (new_t->data.conjunct_list);
-      }
-      if (t->original_test) {
-        new_t->original_test = copy_test(thisAgent, t->original_test);
-      }
-      return new_t;
-
-    default:  /* relational tests other than equality */
-      return copy_test (thisAgent, t);
-  }
-}
-
-/* ----------------------------------------------------------------
-   Deallocates a test.
----------------------------------------------------------------- */
-
-void deallocate_test (agent* thisAgent, test t) {
-  cons *c, *next_c;
-
-  if (test_is_blank(t)) return;
-
-  switch (t->type) {
-  case GOAL_ID_TEST:
-  case IMPASSE_ID_TEST:
-    break;
-  case DISJUNCTION_TEST:
-    deallocate_symbol_list_removing_references (thisAgent, t->data.disjunction_list);
-    break;
-  case CONJUNCTIVE_TEST:
-    c = t->data.conjunct_list;
-    while (c) {
-      next_c = c->rest;
-      deallocate_test (thisAgent, static_cast<test>(c->first));
-      free_cons (thisAgent, c);
-      c = next_c;
-    }
-    break;
-  default: /* relational tests other than equality */
-    symbol_remove_ref (thisAgent, t->data.referent);
-    break;
-  }
-  if (t->original_test)
-    deallocate_test (thisAgent, t->original_test);
-  free_with_pool (&thisAgent->test_pool, t);
-}
-
-/* ----------------------------------------------------------------
-   Destructively modifies the first test (t) by adding the second
-   one (add_me) to it (usually as a new conjunct).  The first test
-   need not be a conjunctive test.
----------------------------------------------------------------- */
-
-void add_new_test_to_test (agent* thisAgent,
-               test *t, test add_me, test add_me_original) {
-  test ct = 0, ct_orig = 0;
-  cons *c, *c_orig;
-
-  if (test_is_blank(add_me)) return;
-
-  // Check if original variable name is unique.  If not, change it before adding.
-  // Must be able to get name of instantiation (not production bc the productions
-  // could come from two different firings)
-
-  if (test_is_blank(*t)) {
-    *t = add_me;
-    return;
-  }
-  ct = *t;
-  if (ct->type!=CONJUNCTIVE_TEST) {
-    ct = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
-    allocate_cons (thisAgent, &c);
-    ct->data.conjunct_list = c;
-    c->first = *t;
-    c->rest = NIL;
-
-    if (add_me_original)
-    {
-      ct_orig = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
-      allocate_cons (thisAgent, &c_orig);
-      ct_orig->data.conjunct_list = c_orig;
-      c_orig->first = (*t)->original_test;
-      c_orig->rest = NIL;
-      ct->original_test = ct_orig;
-    }
-    *t = ct;
-  }
-  // Debug | remove
-  if (add_me->type==CONJUNCTIVE_TEST) {
-  assert(false);
-  }
-  /* --- now add add_me to the conjunct list --- */
-  allocate_cons (thisAgent, &c);
-  c->first = add_me;
-  c->rest = ct->data.conjunct_list;
-  ct->data.conjunct_list = c;
-
-  if (add_me_original)
-  {
-    ct_orig = ct->original_test;
-    allocate_cons (thisAgent, &c_orig);
-    c_orig->first = add_me_original;
-    c_orig->rest = ct_orig->data.conjunct_list;
-    ct_orig->data.conjunct_list = c_orig;
-
-    add_me->original_test = add_me_original;
-  }
-}
-
-/* ----------------------------------------------------------------
-   Destructively modifies the first test (t) by adding the second
-   one (add_me) to it (usually as a new conjunct).  The first test
-   need not be a conjunctive test.
----------------------------------------------------------------- */
-
-//void add_new_test_to_test (agent* thisAgent,
-//						   test *t, test add_me) {
-//  test ct = 0;
-//  cons *c;
-//
-//  if (test_is_blank(add_me)) return;
-//
-//  if (test_is_blank(*t)) {
-//    *t = add_me;
-//    return;
-//  }
-//  ct = *t;
-//  if (ct->type!=CONJUNCTIVE_TEST) {
-//    ct = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
-//    allocate_cons (thisAgent, &c);
-//    ct->data.conjunct_list = c;
-//    c->first = *t;
-//    c->rest = NIL;
-//    *t = ct;
-//  }
-//
-//  if (add_me->type==CONJUNCTIVE_TEST) {
-//  assert(false);
-//  }
-//  /* --- now add add_me to the conjunct list --- */
-//  allocate_cons (thisAgent, &c);
-//  c->first = add_me;
-//  c->rest = ct->data.conjunct_list;
-//  ct->data.conjunct_list = c;
-//}
-
-/* ----------------------------------------------------------------
-   Same as add_new_test_to_test(), only has no effect if the second
-   test is already included in the first one.
----------------------------------------------------------------- */
-
-void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg) {
-  test ct;
-  cons *c;
-
-  if (tests_are_equal (*t, add_me, neg)) {
-    deallocate_test (thisAgent, add_me);
-    return;
-  }
-
-    ct = *t;
-    if (ct->type == CONJUNCTIVE_TEST)
-      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-        if (tests_are_equal (static_cast<test>(c->first), add_me, neg)) {
-          deallocate_test (thisAgent, add_me);
-          return;
-        }
-
-  add_new_test_to_test (thisAgent, t, add_me);
-}
-
-/* ----------------------------------------------------------------
-   Returns TRUE iff the two tests are identical.
-   If neg is true, ignores order of members in conjunctive tests
-   and assumes variables are all equal.
----------------------------------------------------------------- */
-
-Bool tests_are_equal (test t1, test t2, bool neg) {
-  cons *c1, *c2;
-
-    if (t1->type==EQUALITY_TEST)
-    {
-      if (t2->type!=EQUALITY_TEST)
-        return FALSE;
-
-      if (t1->data.referent == t2->data.referent) /* Warning: this relies on the representation of tests */
-        return TRUE;
-
-      if (!neg)
-        return FALSE;
-
-      // ignore variables in negation tests
-      Symbol* s1 = t1->data.referent;
-      Symbol* s2 = t2->data.referent;
-
-      if ((s1->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE) && (s2->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE))
-      {
-        return TRUE;
-      }
-      return FALSE;
-    }
-
-    if (t1->type != t2->type)
-      return FALSE;
-
-    switch(t1->type) {
-      case GOAL_ID_TEST:
-        return TRUE;
-
-      case IMPASSE_ID_TEST:
-        return TRUE;
-
-      case DISJUNCTION_TEST:
-        for (c1 = t1->data.disjunction_list, c2 = t2->data.disjunction_list; (c1!=NIL) && (c2!=NIL); c1 = c1->rest, c2 = c2->rest)
-        {
-          if (c1->first != c2->first)
-            return FALSE;
-        }
-        if (c1 == c2)
-          return TRUE;  /* make sure they both hit end-of-list */
-        return FALSE;
-
-      case CONJUNCTIVE_TEST:
-        // bug 510 fix: ignore order of test members in conjunctions
-      {
-        std::list<test> copy2;
-        for (c2 = t2->data.conjunct_list; c2 != NIL; c2 = c2->rest)
-          copy2.push_back(static_cast<test>(c2->first));
-
-        std::list<test>::iterator iter;
-        for (c1 = t1->data.conjunct_list; c1 != NIL; c1 = c1->rest)
-        {
-          // check against copy
-          for(iter = copy2.begin(); iter != copy2.end(); ++iter)
-          {
-            if (tests_are_equal(static_cast<test>(c1->first), *iter, neg))
-              break;
-          }
-
-          // iter will be end if no match
-          if (iter == copy2.end())
-            return FALSE;
-
-          // there was a match, remove it from unmatched
-          copy2.erase(iter);
-        }
-
-        // make sure no unmatched remain
-        if (copy2.empty())
-          return TRUE;
-      }
-      return FALSE;
-
-      default:  /* relational tests other than equality */
-        if (t1->data.referent == t2->data.referent)
-          return TRUE;
-        return FALSE;
-    }
-  }
-
-/* ----------------------------------------------------------------
-   Returns a hash value for the given test.
----------------------------------------------------------------- */
-
-uint32_t hash_test (agent* thisAgent, test t) {
-  cons *c;
-  uint32_t result;
-
-  if (test_is_blank(t))
-    return 0;
-
-  switch (t->type) {
-    case EQUALITY_TEST: return t->data.referent->common.hash_id;
-    case GOAL_ID_TEST: return 34894895;  /* just use some unusual number */
-    case IMPASSE_ID_TEST: return 2089521;
-    case DISJUNCTION_TEST:
-      result = 7245;
-      for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-        result = result + static_cast<Symbol *>(c->first)->common.hash_id;
-      return result;
-    case CONJUNCTIVE_TEST:
-      result = 100276;
-      // bug 510: conjunctive tests' order needs to be ignored
-      //for (c=ct->data.disjunction_list; c!=NIL; c=c->rest)
-      //  result = result + hash_test (thisAgent, static_cast<constraint>(c->first));
-      return result;
-    case NOT_EQUAL_TEST:
-    case LESS_TEST:
-    case GREATER_TEST:
-    case LESS_OR_EQUAL_TEST:
-    case GREATER_OR_EQUAL_TEST:
-    case SAME_TYPE_TEST:
-      return (t->type << 24) + t->data.referent->common.hash_id;
-    default:
-    { char msg[BUFFER_MSG_SIZE];
-    strncpy (msg, "production.c: Error: bad test type in hash_test\n", BUFFER_MSG_SIZE);
-    msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error(thisAgent, msg);
-    break;
-    }
-  }
-  return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
-
-/****************************/
-  /* ----------------------------------------------------------------
-   This returns a boolean that indicates that one condition is
-   greater than another in some ordering of the conditions. The ordering
-   is dependent upon the hash-value of each of the tests in the
-   condition.
-------------------------------------------------------------------*/
-
-#define NON_EQUAL_TEST_RETURN_VAL 0  /* some unusual number */
-
-uint32_t canonical_test(test t)
-{
-  Symbol *sym;
-
-  if (test_is_blank(t))
-    return NON_EQUAL_TEST_RETURN_VAL;
-
-  if (t->type == EQUALITY_TEST) {
-      sym = t->data.referent;
-      if (sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ||
-        sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
-        sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
-      {
-        return sym->common.hash_id;
-      }
-      else
-      return NON_EQUAL_TEST_RETURN_VAL;
-    }
-  return NON_EQUAL_TEST_RETURN_VAL;
-}
-
-#define CANONICAL_TEST_ORDER canonical_test
-
-/*
-#define CANONICAL_TEST_ORDER hash_test
-*/
-
-Bool canonical_cond_greater(condition *c1, condition *c2)
-/*
-
- Original:  676,362 total rete nodes (1 dummy + 560045 positive + 4
-            unhashed positive + 2374 negative + 113938 p_nodes)
-
-The following notation describes the order of tests and the relation
-of the hash_test that was used. IAV< means test the (I)d field first
-then the (A)ttribute field, then the (V)alue field. and use less than
-as the ordering constraint. The actual ordering constraint should not
-make any difference.
-
- IAV<:  737,605 total rete nodes (1 dummy + 617394 positive + 3
-            unhashed positive + 6269 negative + 113938 p_nodes)
-
-Realized that the identifier will always be a variable and thus
-shouldn't be part of the ordering.
-
-Changed to put all negative tests in front of cost 1 tests list.
-   That is always break ties of cost 1 with a negative test if
-   it exists.
-
-Changed so that canonical_test_order returns a negative -1 when
-comparing anything but constants. Also fixed a bug.
-
-Consistency checks:
-
- Original:  676,362 total rete nodes (1 dummy + 560045 positive + 4
-            unhashed positive + 2374 negative + 113938 p_nodes)
-    Still holds with 1 optimization in and always returning False
-
- Remove 1:  720,126 total rete nodes (1 dummy + 605760 positive + 4
-            unhashed positive +  423 negative + 113938 p_nodes)
-    Always returning False causes the first item in the tie list to
-       be picked.
-
- Surprise:  637,482 total rete nodes (1 dummy + 523251 positive + 3
-            unhashed positive +  289 negative + 113938 p_nodes)
-    Without 1 optimization and always returning True. Causes the
-      last item in 1-tie list to be picked.
-
- In the following tests ht means hash test provided the canonical
- value. ct means that the routine constant test provided the canonical
- value. ct provides a value for non constant equality tests. I tried
- both 0 and a big number (B)  with no difference noted.
-
-  ht_AV<:   714,427 total rete nodes (1 dummy + 600197 positive + 2
-            unhashed positive +  289 negative + 113938 p_nodes)
-
-  ht_AV>:   709,637 total rete nodes (1 dummy + 595305 positive + 3
-            unhashed positive +  390 negative + 113938 p_nodes)
-
-  ct0_AV>:  709,960 total rete nodes (1 dummy + 595628 positive + 3
-            unhashed positive +  390 negative + 113938 p_nodes)
-
-  ct0_AV<:  714,162 total rete nodes (1 dummy + 599932 positive + 2
-            unhashed positive +  289 negative + 113938 p_nodes)
-
-  ctB_AV>:  709,960 total rete nodes (1 dummy + 595628 positive + 3
-            unhashed positive +  390 negative + 113938 p_nodes)
-
-  ctB_AV<:  714,162 total rete nodes (1 dummy + 599932 positive + 2
-            unhashed positive +  289 negative + 113938 p_nodes)
-
-  ctB_VA>:  691,193 total rete nodes (1 dummy + 576861 positive + 3
-            unhashed positive +  390 negative + 113938 p_nodes)
-
-  ctB_VA<:  704,539 total rete nodes (1 dummy + 590309 positive + 2
-            unhashed positive +  289 negative + 113938 p_nodes)
-
-  ct0_VA<:  744,604 total rete nodes (1 dummy + 630374 positive + 2
-            unhashed positive +  289 negative + 113938 p_nodes)
-
-  ct0_VA>:  672,367 total rete nodes (1 dummy + 558035 positive + 3
-            unhashed positive +  390 negative + 113938 p_nodes)
-
-   ht_VA>:  727,742 total rete nodes (1 dummy + 613517 positive + 3
-            unhashed positive +  283 negative + 113938 p_nodes)
-
-   ht_VA<:  582,559 total rete nodes (1 dummy + 468328 positive + 3
-            unhashed positive +  289 negative + 113938 p_nodes)
-
-Changed  < to > 10/5/92*/
-{
-  uint32_t test_order_1,test_order_2;
-
-  if ((test_order_1 = CANONICAL_TEST_ORDER(c1->data.tests.attr_test)) <
-      (test_order_2 = CANONICAL_TEST_ORDER(c2->data.tests.attr_test))) {
-    return TRUE;
-  } else if (test_order_1 == test_order_2 &&
-           CANONICAL_TEST_ORDER(c1->data.tests.value_test) <
-           CANONICAL_TEST_ORDER(c2->data.tests.value_test)) {
-    return TRUE;
-  }
-  return FALSE;
-}
-
-/* ----------------------------------------------------------------
-   Returns TRUE iff the test contains an equality test for the given
-   symbol.  If sym==NIL, returns TRUE iff the test contains any
-   equality test.
----------------------------------------------------------------- */
-
-Bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
-  cons *c;
-
-  if (test_is_blank(t)) return FALSE;
-
-  if (t->type == EQUALITY_TEST) {
-    if (sym) return (t->data.referent == sym);
-    return TRUE;
-  } else if (t->type==CONJUNCTIVE_TEST) {
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_includes_equality_test_for_symbol (static_cast<test>(c->first), sym)) return TRUE;
-  }
-  return FALSE;
-}
-
-/* ----------------------------------------------------------------
-   Returns TRUE iff the test contains a test for a variable
-   symbol.  Assumes test is not a conjunctive one and does not
-   try to search them.
----------------------------------------------------------------- */
-bool test_is_variable(agent* thisAgent, test t)
-{
-  cons *c;
-  char *this_test;
-  bool return_value = false;
-
-  if (test_is_blank(t)) return FALSE;
-  if ((t->type == DISJUNCTION_TEST) ||
-      (t->type == CONJUNCTIVE_TEST) ||
-      (t->type == GOAL_ID_TEST) ||
-      (t->type == IMPASSE_ID_TEST)) return FALSE;
-
-  return (t->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
-}
-
-/* ----------------------------------------------------------------
-   Looks for goal or impasse tests (as directed by the two flag
-   parameters) in the given test, and returns TRUE if one is found.
----------------------------------------------------------------- */
-
-Bool test_includes_goal_or_impasse_id_test (test t,
-                                            Bool look_for_goal,
-                                            Bool look_for_impasse) {
-  cons *c;
-
-  if (t->type == EQUALITY_TEST) return FALSE;
-  if (look_for_goal && (t->type==GOAL_ID_TEST)) return TRUE;
-  if (look_for_impasse && (t->type==IMPASSE_ID_TEST)) return TRUE;
-  if (t->type == CONJUNCTIVE_TEST) {
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_includes_goal_or_impasse_id_test (static_cast<test>(c->first),
-                                                 look_for_goal,
-                                                 look_for_impasse))
-        return TRUE;
-    return FALSE;
-  }
-  return FALSE;
-}
-
-/* ----------------------------------------------------------------
-   Looks through a test, and returns a new copy of the first equality
-   test it finds.  Signals an error if there is no equality test in
-   the given test.
----------------------------------------------------------------- */
-
-test copy_of_equality_test_found_in_test (agent* thisAgent, test t) {
-  cons *c;
-  char msg[BUFFER_MSG_SIZE];
-
-  if (test_is_blank(t)) {
-    strncpy (msg, "Internal error: can't find equality constraint in constraint\n", BUFFER_MSG_SIZE);
-    msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error(thisAgent, msg);
-  }
-  if (t->type == EQUALITY_TEST) return copy_test (thisAgent, t);
-  if (t->type==CONJUNCTIVE_TEST) {
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (!test_is_blank (static_cast<test>(c->first))) &&
-           (static_cast<test>(c->first)->type == EQUALITY_TEST) )
-        return copy_test (thisAgent, static_cast<test>(c->first));
-  }
-  strncpy (msg, "Internal error: can't find equality constraint in constraint\n",BUFFER_MSG_SIZE);
-  abort_with_fatal_error(thisAgent, msg);
-  return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
-
 /* =================================================================
 
                   Utility Routines for Conditions
@@ -956,6 +191,37 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
     return FALSE;
   }
   return FALSE; /* unreachable, but without it, gcc -Wall warns here */
+}
+
+Bool conditions_are_equal_with_bindings (agent* agnt, condition *c1, condition *c2, list **bindings) {
+    if (c1->type != c2->type) return FALSE;
+    switch (c1->type)
+    {
+    case POSITIVE_CONDITION:
+    case NEGATIVE_CONDITION:
+        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.id_test,
+            c2->data.tests.id_test,bindings))
+            return FALSE;
+        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.attr_test,
+            c2->data.tests.attr_test,bindings))
+
+            return FALSE;
+        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.value_test,
+            c2->data.tests.value_test,bindings))
+            return FALSE;
+        if (c1->test_for_acceptable_preference != c2->test_for_acceptable_preference)
+            return FALSE;
+        return TRUE;
+
+    case CONJUNCTIVE_NEGATION_CONDITION:
+        for (c1=c1->data.ncc.top, c2=c2->data.ncc.top;
+            ((c1!=NIL)&&(c2!=NIL));
+            c1=c1->next, c2=c2->next)
+            if (! conditions_are_equal_with_bindings (agnt, c1,c2,bindings)) return FALSE;
+        if (c1==c2) return TRUE;  /* make sure they both hit end-of-list */
+        return FALSE;
+    }
+    return FALSE; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 /* ----------------------------------------------------------------
@@ -1126,25 +392,6 @@ void unmark_variables_and_free_list (agent* thisAgent, list *var_list) {
 
 ===================================================================== */
 
-
-void add_bound_variables_in_test (agent* thisAgent, test t,
-								  tc_number tc, list **var_list) {
-  cons *c;
-  Symbol *referent;
-
-  if (test_is_blank(t)) return;
-
-  if (t->type == EQUALITY_TEST) {
-    referent = t->data.referent;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
-    return;
-  } else if (t->type==CONJUNCTIVE_TEST) {
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      add_bound_variables_in_test (thisAgent, static_cast<test>(c->first), tc, var_list);
-  }
-}
-
 void add_bound_variables_in_condition (agent* thisAgent, condition *c, tc_number tc,
                                        list **var_list) {
   if (c->type!=POSITIVE_CONDITION) return;
@@ -1161,101 +408,11 @@ void add_bound_variables_in_condition_list (agent* thisAgent, condition *cond_li
     add_bound_variables_in_condition (thisAgent, c, tc, var_list);
 }
 
-/* =====================================================================
-
-   Finding the variables bound in tests, conditions, and condition lists
-
-   These routines collect the variables that are bound in equality tests.
-   Their "var_list" arguments should either be NIL or else should point
-   to the header of the list of marked variables being constructed.
-
-===================================================================== */
-
-void add_bound_variables_in_rhs_value (agent* thisAgent,
-                   rhs_value rv, tc_number tc,
-                                     list **var_list) {
-  list *fl;
-  cons *c;
-  Symbol *sym;
-
-  if (rhs_value_is_symbol(rv)) {
-    /* --- ordinary values (i.e., symbols) --- */
-    sym = rhs_value_to_symbol(rv);
-    if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
-  } else {
-    /* --- function calls --- */
-    fl = rhs_value_to_funcall_list(rv);
-    for (c=fl->rest; c!=NIL; c=c->rest)
-      add_bound_variables_in_rhs_value (thisAgent, static_cast<char *>(c->first), tc, var_list);
-  }
-}
-
-void add_bound_variables_in_action (agent* thisAgent, action *a,
-                  tc_number tc, list **var_list){
-  Symbol *id;
-
-  if (a->type==MAKE_ACTION) {
-    /* --- ordinary make actions --- */
-    id = rhs_value_to_symbol(a->id);
-    add_bound_variables_in_rhs_value (thisAgent, a->id, tc, var_list);
-    add_bound_variables_in_rhs_value (thisAgent, a->attr, tc, var_list);
-    add_bound_variables_in_rhs_value (thisAgent, a->value, tc, var_list);
-    if (preference_is_binary(a->preference_type))
-      add_bound_variables_in_rhs_value (thisAgent, a->referent, tc, var_list);
-  } else {
-    /* --- function call actions --- */
-    add_bound_variables_in_rhs_value (thisAgent, a->value, tc, var_list);
-  }
-}
-
-void add_bound_variables_in_action_list (agent* thisAgent, action *actions, tc_number tc,
-                                       list **var_list) {
-  action *a;
-
-  for (a=actions; a!=NIL; a=a->next)
-    add_bound_variables_in_action (thisAgent, a, tc, var_list);
-}
-
-/* =====================================================================
-
-   Finding all variables from tests, conditions, and condition lists
-
-   These routines collect all the variables in tests, etc.  Their
-   "var_list" arguments should either be NIL or else should point to
-   the header of the list of marked variables being constructed.
-===================================================================== */
-
-void add_all_variables_in_test (agent* thisAgent, test t,
-								tc_number tc, list **var_list) {
-  cons *c;
-  Symbol *referent;
-
-  if (test_is_blank(t)) return;
-
-  switch (t->type) {
-  case GOAL_ID_TEST:
-  case IMPASSE_ID_TEST:
-  case DISJUNCTION_TEST:
-    break;
-  case CONJUNCTIVE_TEST:
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      add_all_variables_in_test (thisAgent, static_cast<test>(c->first), tc, var_list);
-    break;
-
-  default:
-    referent = t->data.referent;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
-    break;
-  }
-}
-
 void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list,
                                           tc_number tc, list **var_list);
 
 void add_all_variables_in_condition (agent* thisAgent,
-									 condition *c, tc_number tc,
+                   condition *c, tc_number tc,
                                      list **var_list) {
   if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
     add_all_variables_in_condition_list (thisAgent, c->data.ncc.top, tc, var_list);
@@ -1272,66 +429,6 @@ void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list
 
   for (c=cond_list; c!=NIL; c=c->next)
     add_all_variables_in_condition (thisAgent, c, tc, var_list);
-}
-
-/* =====================================================================
-
-   Finding all variables from rhs_value's, actions, and action lists
-
-   These routines collect all the variables in rhs_value's, etc.  Their
-   "var_list" arguments should either be NIL or else should point to
-   the header of the list of marked variables being constructed.
-
-   Warning: These are part of the reorderer and handle only productions
-   in non-reteloc, etc. format.  They don't handle reteloc's or
-   RHS unbound variables.
-===================================================================== */
-
-void add_all_variables_in_rhs_value (agent* thisAgent,
-									 rhs_value rv, tc_number tc,
-                                     list **var_list) {
-  list *fl;
-  cons *c;
-  Symbol *sym;
-
-  if (rhs_value_is_symbol(rv)) {
-    /* --- ordinary values (i.e., symbols) --- */
-    sym = rhs_value_to_symbol(rv);
-    if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
-  } else {
-    /* --- function calls --- */
-    fl = rhs_value_to_funcall_list(rv);
-    for (c=fl->rest; c!=NIL; c=c->rest)
-      add_all_variables_in_rhs_value (thisAgent, static_cast<char *>(c->first), tc, var_list);
-  }
-}
-
-void add_all_variables_in_action (agent* thisAgent, action *a,
-								  tc_number tc, list **var_list){
-  Symbol *id;
-
-  if (a->type==MAKE_ACTION) {
-    /* --- ordinary make actions --- */
-    id = rhs_value_to_symbol(a->id);
-    if (id->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, id, tc, var_list);
-    add_all_variables_in_rhs_value (thisAgent, a->attr, tc, var_list);
-    add_all_variables_in_rhs_value (thisAgent, a->value, tc, var_list);
-    if (preference_is_binary(a->preference_type))
-      add_all_variables_in_rhs_value (thisAgent, a->referent, tc, var_list);
-  } else {
-    /* --- function call actions --- */
-    add_all_variables_in_rhs_value (thisAgent, a->value, tc, var_list);
-  }
-}
-
-void add_all_variables_in_action_list (agent* thisAgent, action *actions, tc_number tc,
-                                       list **var_list) {
-  action *a;
-
-  for (a=actions; a!=NIL; a=a->next)
-    add_all_variables_in_action (thisAgent, a, tc, var_list);
 }
 
 /* ====================================================================
@@ -1371,6 +468,7 @@ void add_symbol_to_tc (agent* thisAgent, Symbol *sym, tc_number tc,
     mark_identifier_if_unmarked (thisAgent, sym, tc, id_list);
   }
 }
+
 
 void add_test_to_tc (agent* thisAgent, test t, tc_number tc,
                      list **id_list, list **var_list) {
@@ -1538,104 +636,6 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
   New->var.current_binding_value = NIL;
   New->var.gensym_number = thisAgent->current_variable_gensym_number;
   return New;
-}
-
-void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
-{
-  cons *c;
-  Symbol *temp_sym;
-
-  if (test_is_blank(t)) return;
-
-  switch (t->type) {
-  case GOAL_ID_TEST:
-  case IMPASSE_ID_TEST:
-  case DISJUNCTION_TEST:
-  case EQUALITY_TEST:
-    break;
-  case CONJUNCTIVE_TEST:
-    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      reverse_unbound_referents_in_test (thisAgent, static_cast<test>(c->first), tc);
-    break;
-
-  default:
-    if ((t->data.referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (t->data.referent->common.tc_num != tc))
-      {
-      print(thisAgent, "Reversing variable %s to constant %s.\n",
-             symbol_to_string(thisAgent, t->data.referent, FALSE, NULL, 0),
-             symbol_to_string(thisAgent, t->data.referent->common.unvariablized_symbol, FALSE, NULL, 0));
-      temp_sym = t->data.referent;
-      t->data.referent = temp_sym->common.unvariablized_symbol;
-
-      // Debug | double-check refcount
-      print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
-             symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
-             temp_sym->common.reference_count);
-      symbol_remove_ref (thisAgent, temp_sym);
-      }
-    break;
-  }
-}
-
-/* --- Converts variablized referents in back to originally bound
- *     constants, if the variable is unbound ---*/
-
-void reverse_unbound_referents_in_action (agent* thisAgent, rhs_value *r_val, tc_number tc)
-{
-  Symbol *temp_sym;
-
-  // Try rhs_value_is_unboundvar(rv) to see if we should ignore reversal
-
-  rhs_symbol this_rhs_symbol = rhs_value_to_rhs_symbol(*r_val);
-
-  if ((this_rhs_symbol->referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (this_rhs_symbol->referent->common.tc_num != tc) &&
-      (this_rhs_symbol->referent->common.unvariablized_symbol->common.symbol_type != IDENTIFIER_SYMBOL_TYPE))
-  {
-    print(thisAgent, "Reversing rhs %s to constant %s.\n",
-        symbol_to_string(thisAgent, this_rhs_symbol->referent, FALSE, NULL, 0),
-        symbol_to_string(thisAgent, this_rhs_symbol->referent->common.unvariablized_symbol, FALSE, NULL, 0));
-
-    temp_sym = this_rhs_symbol->referent;
-    this_rhs_symbol->referent = temp_sym->common.unvariablized_symbol;
-
-    // Debug | Don't think this is necessary unless r_val is NIL in which case the above code would not work
-    (*r_val) = rhs_symbol_to_rhs_value(this_rhs_symbol);
-    // Debug | Double-check refcount
-    print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
-           symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
-           temp_sym->common.reference_count);
-    symbol_remove_ref (thisAgent, temp_sym);
-  }
-}
-
-void reverse_unbound_lhs_referents (agent* thisAgent, condition *lhs_top, tc_number tc)
-{
-  condition *c;
-
-  for (c=lhs_top; c!=NIL; c=c->next)
-  {
-    if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
-      reverse_unbound_lhs_referents(thisAgent, c->data.ncc.top, tc);
-    } else {
-      reverse_unbound_referents_in_test(thisAgent, c->data.tests.attr_test, tc);
-      reverse_unbound_referents_in_test(thisAgent, c->data.tests.value_test, tc);
-    }
-  }
-}
-
-void reverse_unbound_rhs_referents (agent* thisAgent, action *rhs_top, tc_number tc)
-{
-  action *a;
-
-  for (a = rhs_top; a!=NIL; a=a->next)
-  {
-    // Debug | Might need to handle rhs function calls too
-    if (a->type == MAKE_ACTION)
-    {
-      reverse_unbound_referents_in_action (thisAgent, &(a->attr), tc);
-      reverse_unbound_referents_in_action (thisAgent, &(a->value), tc);
-    }
-  }
 }
 
 /* *********************************************************************
@@ -1818,3 +818,139 @@ void excise_all_productions(agent* thisAgent,
                                    print_sharp_sign&&thisAgent->sysparams[TRACE_LOADING_SYSPARAM]);
   }
 }
+
+/****************************/
+  /* ----------------------------------------------------------------
+   This returns a boolean that indicates that one condition is
+   greater than another in some ordering of the conditions. The ordering
+   is dependent upon the hash-value of each of the tests in the
+   condition.
+------------------------------------------------------------------*/
+
+#define NON_EQUAL_TEST_RETURN_VAL 0  /* some unusual number */
+
+uint32_t canonical_test(test t)
+{
+  Symbol *sym;
+
+  if (test_is_blank(t))
+    return NON_EQUAL_TEST_RETURN_VAL;
+
+  if (t->type == EQUALITY_TEST) {
+      sym = t->data.referent;
+      if (sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ||
+        sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
+        sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+      {
+        return sym->common.hash_id;
+      }
+      else
+      return NON_EQUAL_TEST_RETURN_VAL;
+    }
+  return NON_EQUAL_TEST_RETURN_VAL;
+}
+
+#define CANONICAL_TEST_ORDER canonical_test
+
+/*
+#define CANONICAL_TEST_ORDER hash_test
+*/
+
+Bool canonical_cond_greater(condition *c1, condition *c2)
+/*
+
+ Original:  676,362 total rete nodes (1 dummy + 560045 positive + 4
+            unhashed positive + 2374 negative + 113938 p_nodes)
+
+The following notation describes the order of tests and the relation
+of the hash_test that was used. IAV< means test the (I)d field first
+then the (A)ttribute field, then the (V)alue field. and use less than
+as the ordering constraint. The actual ordering constraint should not
+make any difference.
+
+ IAV<:  737,605 total rete nodes (1 dummy + 617394 positive + 3
+            unhashed positive + 6269 negative + 113938 p_nodes)
+
+Realized that the identifier will always be a variable and thus
+shouldn't be part of the ordering.
+
+Changed to put all negative tests in front of cost 1 tests list.
+   That is always break ties of cost 1 with a negative test if
+   it exists.
+
+Changed so that canonical_test_order returns a negative -1 when
+comparing anything but constants. Also fixed a bug.
+
+Consistency checks:
+
+ Original:  676,362 total rete nodes (1 dummy + 560045 positive + 4
+            unhashed positive + 2374 negative + 113938 p_nodes)
+    Still holds with 1 optimization in and always returning False
+
+ Remove 1:  720,126 total rete nodes (1 dummy + 605760 positive + 4
+            unhashed positive +  423 negative + 113938 p_nodes)
+    Always returning False causes the first item in the tie list to
+       be picked.
+
+ Surprise:  637,482 total rete nodes (1 dummy + 523251 positive + 3
+            unhashed positive +  289 negative + 113938 p_nodes)
+    Without 1 optimization and always returning True. Causes the
+      last item in 1-tie list to be picked.
+
+ In the following tests ht means hash test provided the canonical
+ value. ct means that the routine constant test provided the canonical
+ value. ct provides a value for non constant equality tests. I tried
+ both 0 and a big number (B)  with no difference noted.
+
+  ht_AV<:   714,427 total rete nodes (1 dummy + 600197 positive + 2
+            unhashed positive +  289 negative + 113938 p_nodes)
+
+  ht_AV>:   709,637 total rete nodes (1 dummy + 595305 positive + 3
+            unhashed positive +  390 negative + 113938 p_nodes)
+
+  ct0_AV>:  709,960 total rete nodes (1 dummy + 595628 positive + 3
+            unhashed positive +  390 negative + 113938 p_nodes)
+
+  ct0_AV<:  714,162 total rete nodes (1 dummy + 599932 positive + 2
+            unhashed positive +  289 negative + 113938 p_nodes)
+
+  ctB_AV>:  709,960 total rete nodes (1 dummy + 595628 positive + 3
+            unhashed positive +  390 negative + 113938 p_nodes)
+
+  ctB_AV<:  714,162 total rete nodes (1 dummy + 599932 positive + 2
+            unhashed positive +  289 negative + 113938 p_nodes)
+
+  ctB_VA>:  691,193 total rete nodes (1 dummy + 576861 positive + 3
+            unhashed positive +  390 negative + 113938 p_nodes)
+
+  ctB_VA<:  704,539 total rete nodes (1 dummy + 590309 positive + 2
+            unhashed positive +  289 negative + 113938 p_nodes)
+
+  ct0_VA<:  744,604 total rete nodes (1 dummy + 630374 positive + 2
+            unhashed positive +  289 negative + 113938 p_nodes)
+
+  ct0_VA>:  672,367 total rete nodes (1 dummy + 558035 positive + 3
+            unhashed positive +  390 negative + 113938 p_nodes)
+
+   ht_VA>:  727,742 total rete nodes (1 dummy + 613517 positive + 3
+            unhashed positive +  283 negative + 113938 p_nodes)
+
+   ht_VA<:  582,559 total rete nodes (1 dummy + 468328 positive + 3
+            unhashed positive +  289 negative + 113938 p_nodes)
+
+Changed  < to > 10/5/92*/
+{
+  uint32_t test_order_1,test_order_2;
+
+  if ((test_order_1 = CANONICAL_TEST_ORDER(c1->data.tests.attr_test)) <
+      (test_order_2 = CANONICAL_TEST_ORDER(c2->data.tests.attr_test))) {
+    return TRUE;
+  } else if (test_order_1 == test_order_2 &&
+           CANONICAL_TEST_ORDER(c1->data.tests.value_test) <
+           CANONICAL_TEST_ORDER(c2->data.tests.value_test)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+
