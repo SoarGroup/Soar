@@ -50,6 +50,7 @@ void GLFWCALL proc_input(void *unused) {
 				glfwUnlockMutex(scene_lock);
 				startp = endp + 1;
 				
+				set_redraw();
 				if (wait_for_redraw) {
 					semaphore_P(&redraw_semaphore);
 					wait_for_redraw = 0;

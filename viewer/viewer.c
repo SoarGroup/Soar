@@ -18,6 +18,7 @@
 #define DEPTH_BITS 16
 
 GLFWmutex scene_lock;
+GLFWmutex redraw_lock;
 semaphore redraw_semaphore;
 int debug;
 
@@ -44,7 +45,7 @@ static int scr_width = 640;
 static int scr_height = 480;
 static int show_grid = 1;
 static real grid_size = 1.0;
-static int redraw;
+static int redraw = 0;
 
 /*
  0 = screenshots requested by keyboard
@@ -123,6 +124,8 @@ int main(int argc, char *argv[]) {
 	} else {
 		if (!(scene_lock = glfwCreateMutex()))
 			error("Failed to create scene lock mutex.");
+		if (!(redraw_lock = glfwCreateMutex()))
+			error("Failed to create redraw lock mutex.");
 		init_semaphore(&redraw_semaphore);
 		input_thread = glfwCreateThread(proc_input, NULL);
 		if (input_thread < 0) {
@@ -132,13 +135,16 @@ int main(int argc, char *argv[]) {
 	
 	reset_camera(&cam, '1');
 	cam.ortho = 0;
-	redraw = 1;
+	set_redraw();
 	signal_redraw = 0;
 	while(glfwGetWindowParam(GLFW_OPENED)) {
-		glfwWaitEvents();
+		//glfwWaitEvents();
+		glfwPollEvents();
 		if (redraw) {
 			draw_screen();
 			redraw = 0;
+		} else {
+			glfwSleep(0.01);
 		}
 	}
 
@@ -154,50 +160,50 @@ void GLFWCALL keyboard_callback(int key, int state) {
 		case '2':
 		case '3':
 			reset_camera(&cam, key);
-			redraw = 1;
 			break;
 		case 'G':
 			show_grid = !show_grid;
-			redraw = 1;
 			break;
 		case 'N':
 			layers[0].draw_names = !layers[0].draw_names;
-			redraw = 1;
 			break;
 		case '-':
 			grid_size /= 10.0;
 			init_grid();
-			redraw = 1;
 			break;
 		case '=':
 			grid_size *= 10.0;
 			init_grid();
-			redraw = 1;
 			break;
 		case 'W':
 			layers[0].wireframe = !layers[0].wireframe;
-			redraw = 1;
 			break;
 		case 'S':
 			request_screenshot("screen.ppm", 0);
-			redraw = 1;
 			break;
 		case 'O':
 			cam.ortho = 1 - cam.ortho;
-			redraw = 1;
+			break;
+		default:
+			return; /* return without setting redraw */
 	}
+	set_redraw();
 }
 
 void GLFWCALL mouse_button_callback(int button, int state) {
 	int x, y;
 	
-	if (state == GLFW_RELEASE)
-		return;
-	
-	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT && state == GLFW_PRESS) {
 		glfwGetMousePos(&x, &y);
-		if (scene_button_hit_test(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET, x, scr_height - y))
-			redraw = 1;
+		if (scene_button_hit_test(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET, x, scr_height - y)) {
+			set_redraw();
+		}
+	} else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+		if (state == GLFW_PRESS) {
+			glfwDisable(GLFW_MOUSE_CURSOR);
+		} else {
+			glfwEnable(GLFW_MOUSE_CURSOR);
+		}
 	}
 }
 
@@ -207,7 +213,6 @@ void GLFWCALL mouse_wheel_callback(int pos) {
 	} else if (pos > 0) {
 		zoom_camera(&cam, 10);
 	}
-	redraw = 1;
 	glfwSetMouseWheel(0);
 }
 
@@ -231,15 +236,12 @@ void GLFWCALL mouse_position_callback(int x, int y) {
 
 	if (shift) {
 		pan_camera(&cam, dx, dy);
-		redraw = 1;
 	} else if (ctrl) {
 		if (!cam.ortho) {
 			pull_camera(&cam, dy);
-			redraw = 1;
 		}
 	} else {
 		rotate_camera(&cam, x, y, dx, dy);
-		redraw = 1;
 	}
 }
 
@@ -333,16 +335,17 @@ void GLFWCALL win_resize_callback(int w, int h) {
 	scr_width = w;
 	scr_height = h;
 	glViewport (0, 0, (GLsizei) scr_width, (GLsizei) scr_height);
-	redraw = 1;
+	set_redraw();
 }
 
 void GLFWCALL win_refresh_callback(void) {
-	redraw = 1;
+	set_redraw();
 }
 
 void pan_camera(camera *c, real dx, real dy) {
 	c->pos[0] += PAN_FACTOR * dx;
 	c->pos[1] -= PAN_FACTOR * dy;
+	set_redraw();
 }
 
 void rotate_camera(camera *c, int x, int y, int dx, int dy) {
@@ -361,10 +364,12 @@ void rotate_camera(camera *c, int x, int y, int dx, int dy) {
 	q2[0] = c->q[0]; q2[1] = c->q[1]; q2[2] = c->q[2]; q2[3] = c->q[3];
 	add_quats(q1, q2, c->q);
 	quat_to_mat(c->q, c->rot_mat);
+	set_redraw();
 }
 
 void pull_camera(camera *c, real dz) {
 	c->pos[2] += PAN_FACTOR * dz;
+	set_redraw();
 }
 
 void zoom_camera(camera *c, real df) {
@@ -375,6 +380,7 @@ void zoom_camera(camera *c, real df) {
 		c->fovy = FOVY_MAX;
 	}
 	c->orthoy = (int) (tan(c->fovy * PI / 360.0) * abs(c->pos[2]));
+	set_redraw();
 }
 
 void reset_camera(camera *c, int key) {
@@ -914,3 +920,18 @@ int set_layer(int layer_num, char option, int value) {
 	return 0;  /* no such option */
 }
 
+int get_redraw() {
+	glfwLockMutex(&redraw_lock);
+	if (redraw) {
+		redraw = 0;
+		return 1;
+	}
+	return 0;
+	glfwUnlockMutex(&redraw_lock);
+}
+
+void set_redraw() {
+	glfwLockMutex(&redraw_lock);
+	redraw = 1;
+	glfwUnlockMutex(&redraw_lock);
+}

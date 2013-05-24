@@ -34,7 +34,7 @@ else:
 	else:
 		opengl_libs = [ 'GL', 'GLU' ]
 		viewer_env.Append(
-			CPPFLAGS  = [ '-D_GLFW_HAS_PTHREAD', '-D_GLFW_HAS_SYSCONF', '-pthread' ],
+			CPPFLAGS  = [ '-D_GLFW_HAS_PTHREAD', '-D_GLFW_HAS_SYSCONF', '-D_GLFW_HAS_SCHED_YIELD', '-pthread' ],
 			CPPPATH   = [ 'glfw/lib/x11' ],
 			LIBS      = [ 'm', 'pthread', 'X11' ] + opengl_libs,
 		)

@@ -117,6 +117,9 @@ int match_geoms(scene *s, char *pattern, geometry **geoms, int n);
 
 int set_layer(int layer_num, char option, int value);
 
+int get_redraw();
+void set_redraw();
+
 /* input.c */
 void GLFWCALL proc_input(void *unused);
 
