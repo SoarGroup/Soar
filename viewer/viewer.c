@@ -46,6 +46,8 @@ static int scr_height = 480;
 static int show_grid = 1;
 static real grid_size = 1.0;
 static int redraw = 0;
+static int mousex = 0;
+static int mousey = 0;
 
 /*
  0 = screenshots requested by keyboard
@@ -197,9 +199,11 @@ void GLFWCALL mouse_button_callback(int button, int state) {
 		}
 	} else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
 		if (state == GLFW_PRESS) {
+			glfwGetMousePos(&mousex, &mousey);
 			glfwDisable(GLFW_MOUSE_CURSOR);
 		} else {
 			glfwEnable(GLFW_MOUSE_CURSOR);
+			glfwSetMousePos(mousex, mousey);
 		}
 	}
 }

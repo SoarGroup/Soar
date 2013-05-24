@@ -82,6 +82,7 @@ typedef struct Scene {
 
 typedef struct Semaphore {
 	GLFWmutex mutex;
+	GLFWcond cond;
 	int count;
 } semaphore;
 

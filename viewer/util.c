@@ -186,13 +186,14 @@ void init_semaphore(semaphore *s) {
 	s->count = 0;
 	if (!(s->mutex = glfwCreateMutex()))
 		error("Failed to create semaphore mutex.\n");
+	if (!(s->cond = glfwCreateCond()))
+		error("Failed to create semaphore condition variable.\n");
 }
 
 void semaphore_P(semaphore *s) {
 	glfwLockMutex(s->mutex);
 	while (s->count == 0) {
-		glfwUnlockMutex(s->mutex);
-		glfwSleep(0.0001);
+		glfwWaitCond(s->cond, s->mutex, GLFW_INFINITY); // implicitly unlocks mutex
 		glfwLockMutex(s->mutex);
 	}
 	s->count = 0;
@@ -203,6 +204,7 @@ void semaphore_V(semaphore *s) {
 	glfwLockMutex(s->mutex);
 	s->count = 1;
 	glfwUnlockMutex(s->mutex);
+	glfwSignalCond(s->cond);
 }
 
 int qhull(real verts[], int nverts, int indexes[], int max_indexes) {
