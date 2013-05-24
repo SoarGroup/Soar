@@ -82,6 +82,12 @@ int main(int argc, char *argv[]) {
 		error("Failed to init glfw");
 	}
 	atexit(glfwTerminate);
+
+	if (!(scene_lock = glfwCreateMutex()))
+		error("Failed to create scene lock mutex.");
+	if (!(redraw_lock = glfwCreateMutex()))
+		error("Failed to create redraw lock mutex.");
+	init_semaphore(&redraw_semaphore);
 	
 	for (i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-d") == 0) {
@@ -119,18 +125,9 @@ int main(int argc, char *argv[]) {
 	init_font();
 	init_layers();
 	
-	if (0) { /* for debugging single threaded */
-		proc_input(NULL);
-	} else {
-		if (!(scene_lock = glfwCreateMutex()))
-			error("Failed to create scene lock mutex.");
-		if (!(redraw_lock = glfwCreateMutex()))
-			error("Failed to create redraw lock mutex.");
-		init_semaphore(&redraw_semaphore);
-		input_thread = glfwCreateThread(proc_input, NULL);
-		if (input_thread < 0) {
-			error("Unable to create input thread");
-		}
+	input_thread = glfwCreateThread(proc_input, NULL);
+	if (input_thread < 0) {
+		error("Unable to create input thread");
 	}
 	
 	reset_camera(&cam, '1');
@@ -921,17 +918,17 @@ int set_layer(int layer_num, char option, int value) {
 }
 
 int get_redraw() {
-	glfwLockMutex(&redraw_lock);
+	glfwLockMutex(redraw_lock);
 	if (redraw) {
 		redraw = 0;
 		return 1;
 	}
 	return 0;
-	glfwUnlockMutex(&redraw_lock);
+	glfwUnlockMutex(redraw_lock);
 }
 
 void set_redraw() {
-	glfwLockMutex(&redraw_lock);
+	glfwLockMutex(redraw_lock);
 	redraw = 1;
-	glfwUnlockMutex(&redraw_lock);
+	glfwUnlockMutex(redraw_lock);
 }
