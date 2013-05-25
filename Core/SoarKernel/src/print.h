@@ -126,6 +126,7 @@ extern char const* symbol_to_typeString (agent* thisAgent, Symbol *sym);
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
 extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size);
 extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size);
+extern char preference_to_string (agent* thisAgent, byte type);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production
@@ -150,6 +151,7 @@ extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, si
 
 extern inline const char *test_type_to_string(byte test_type);
 extern void print_test (agent* thisAgent, test t, const char *indent_string = "");
+void print_test_brief (agent* thisAgent, test t);
 extern void print_condition_list (agent* thisAgent, condition *conds, int indent, Bool internal);
 extern void print_action_list (agent* thisAgent, action *actions, int indent, Bool internal);
 extern void print_production (agent* thisAgent, production *p, Bool internal);
@@ -176,18 +178,17 @@ extern void print_production (agent* thisAgent, production *p, Bool internal);
 
 extern void print_condition (agent* thisAgent, condition *cond);
 extern void print_action (agent* thisAgent, action *a);
-extern char preference_type_indicator (agent* thisAgent, byte type);
 extern void print_preference (agent* thisAgent, preference *pref);
 extern void print_wme (agent* thisAgent, wme *w);
 extern void print_wme_without_timetag (agent* thisAgent, wme *w);
 extern void print_wme_for_tcl (wme *w);
 extern void print_instantiation_with_wmes (agent* thisAgent,
-										   instantiation *inst,
+										                       instantiation *inst,
                                            wme_trace_type wtt,
-										   int action);
-
+                                           int action);
 extern void print_list_of_conditions(agent* thisAgent, condition *cond);
 
+extern void print_symbol_with_original(agent *thisAgent, Symbol *sym);
 extern void print_trace (agent* thisAgent, int64_t sysParamIndex, const char *format, ...);
 
 #endif

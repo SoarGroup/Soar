@@ -47,9 +47,9 @@ typedef struct agent_struct agent;
 
 extern void init_chunker (agent* thisAgent);
 extern void chunk_instantiation (agent* thisAgent,
-								 instantiation *inst,
+								                 instantiation *inst,
                                  bool variablize,
-								 instantiation **custom_inst_list);
+                                 instantiation **custom_inst_list);
 extern chunk_cond *make_chunk_cond_for_negated_condition (agent* thisAgent, condition *cond);
 extern Bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc);
 

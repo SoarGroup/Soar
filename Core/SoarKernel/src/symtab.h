@@ -151,19 +151,49 @@ typedef uint64_t epmem_time_id;
 typedef uint64_t smem_lti_id;
 typedef uint64_t smem_hash_id;
 
-/* WARNING:  In the following structure, next_in_hash_table MUST be the
-   first field.  This field is used by the resizable hash table routines. */
+/* -------------------------
+ * symbol_common_data_struct
+ * -------------------------
+ *
+ * This contains the common data found in all four symbol types
+ *
+ * next_in_hash_table: next item in hash bucket
+ *
+ * hash_id: Used for hashing in the rete
+ *
+ * retesave_symindex: Used for rete fastsave/fastload
+ *
+ * tc_num: used for transitive closure/marking
+ *
+ * variablized_symbol: Stores the symbol that a matched symbol variablizes
+ *    to. It is used to quickly look up whether a previously seen symbol
+ *    has been variablized, and, if so, which symbol to substitute for it.
+ *
+ * unvariablized_symbol: Caches the original constant symbol that
+ *     matched an instantiation firing.  It is used by the chunker
+ *     in case it needs to reverse a variablization on a constant.
+ *
+ * original_var_symbol: Used to by chunking to determine if two identical
+ *    constant symbols being variablized came from the same source and should
+ *    produce the same variable in a symbol
+ *
+ * WARNING: next_in_hash_table MUST be the first field.  This field is used
+ *          by the resizable hash table routines.
+ *
+ * WARNING: In each of the five kinds of symbols structs common_symbol_info
+ *          MUST be the first field.
+ * -- */
 
 typedef struct symbol_common_data_struct {
-  union symbol_union *next_in_hash_table;  /* next item in hash bucket */
+  union symbol_union *next_in_hash_table;
   uint64_t reference_count;
-  byte symbol_type;                /* one of the above xxx_SYMBOL_TYPE's */
-  byte decider_flag;               /* used only by the decider */
+  byte symbol_type;
+  byte decider_flag;
   union a_union {
-    struct wme_struct *decider_wme;  /* used only by the decider */
-    uint64_t retesave_symindex; /* used for rete fastsave/fastload */
+    struct wme_struct *decider_wme;
+    uint64_t retesave_symindex;
   } a;
-  uint32_t hash_id;           /* used for hashing in the rete */
+  uint32_t hash_id;
 
   epmem_hash_id epmem_hash;
   uint64_t epmem_valid;
@@ -171,18 +201,12 @@ typedef struct symbol_common_data_struct {
   smem_hash_id smem_hash;
   uint64_t smem_valid;
 
-  tc_number tc_num;           /* used for transitive closures, marking, etc. */
-  union symbol_union *variablized_symbol;  /* used by the chunker */
-  union symbol_union *unvariablized_symbol;  /* used by the chunker */
-  /* -- The following variable is used to by chunking to determine if two identical
-   *    constant symbols being variablized came from the same source and should
-   *    produce the same variable in a symbol */
+  tc_number tc_num;
+  union symbol_union *variablized_symbol;
+  union symbol_union *unvariablized_symbol;
   union symbol_union *original_var_symbol;
 
 } symbol_common_data;
-
-/* WARNING:  In the following structures (the five kinds of symbols),
-   common_symbol_info MUST be the first field. */
 
 typedef struct sym_constant_struct {
   symbol_common_data common_symbol_info;
@@ -371,7 +395,9 @@ extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, 
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
 extern void print (agent* thisAgent, const char *format, ... );
 
-bool symbols_are_equal_with_bindings (agent* agnt, Symbol *s1, Symbol *s2, list **bindings);
+char first_letter_from_symbol (Symbol *sym);
+::list *copy_symbol_list_adding_references (agent* thisAgent, ::list *sym_list);
+void deallocate_symbol_list_removing_references (agent* thisAgent, ::list *sym_list);
 
 inline uint64_t symbol_add_ref(agent* thisAgent, Symbol * x)
 {

@@ -16,7 +16,7 @@
 
 #include "symtab.h" /* needed for definition of symbol_union */
 #include "kernel.h" /* needed for definition of NIL */
-#include "test.h"
+//#include "test.h"
 #include "soar_module.h" /* needed for definition of memory pool allocator */
 
 #include <set>
@@ -333,6 +333,51 @@ typedef struct slot_struct {
 #define NUM_SYMBOL_TYPES 5
 #define NUM_PRODUCTION_TYPES 5
 
+/* -------------------------------------------------------------------
+                              Tests
+
+   Tests in conditions can be blank tests (null), tests for equality
+   with a symbol, relational tests with a referent symbol, disjunctive
+   tests between a list of constant symbols or a conjunction
+   of multiple tests of any arbitrary type (except another conjunctive
+   test).
+
+   Note: This test structure and file was introduced in Soar 9.4 to
+         support chunking of other symbol types and adding all test
+         types to chunks.  The previous system differed significantly.
+         - MMA 2013
+------------------------------------------------------------------- */
+
+/* --- Test struct stores information about all test types, including
+ *     equality tests.  If nil, the test is considered blank.
+ *
+ *     The original_test pointer stores the test that was defined when the
+ *     production was read in by the parser.  The values are filled in by the
+ *     rete when reconstructing a production.  It is used by the chunker to
+ *     determine when to variablize constant symbols. - MMA 2013
+ *
+ *     ---*/
+
+typedef struct test_struct {
+  TestType type;                  /* see definitions below */
+  union test_info_union {
+    Symbol *referent;           /* for relational tests */
+    ::list *disjunction_list;   /* for disjunction tests */
+    ::list *conjunct_list;      /* for conjunctive tests */
+  } data;
+  test_struct *original_test;
+} test_info;
+
+/* --- Note that the test typedef is a *pointer* to a test struct. A test is
+ *     considered blank when that pointer is nil. --- */
+typedef test_info * test;
+
+/* --- info on positive and negative conditions only --- */
+typedef struct three_field_tests_struct {
+  test id_test;
+  test attr_test;
+  test value_test;
+} three_field_tests;
 
 /* -------------------------------------------------------------------
                              Conditions
@@ -379,7 +424,6 @@ typedef struct bt_info_struct {
   goal_stack_level level;   /* level (at firing time) of the id of the wme */
   preference *trace;        /* preference for BT, or NIL */
 
-  /* mvp 5-17-94 */
   ::list *CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
 
@@ -390,13 +434,6 @@ typedef struct reorder_info_struct {
   ::list *vars_requiring_bindings;         /* used only during reordering */
   struct condition_struct *next_min_cost;  /* used only during reordering */
 } reorder_info;
-
-/* --- info on positive and negative conditions only --- */
-typedef struct three_field_tests_struct {
-  test id_test;
-  test attr_test;
-  test value_test;
-} three_field_tests;
 
 /* --- info on negated conjunctive conditions only --- */
 typedef struct ncc_info_struct {

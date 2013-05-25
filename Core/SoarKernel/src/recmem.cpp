@@ -29,7 +29,6 @@
 #include <stdlib.h>
 
 #include "gdatastructs.h"
-#include "instantiations.h"
 #include "kernel.h"
 #include "mem.h"
 #include "symtab.h"
@@ -675,7 +674,6 @@ void create_instantiation(agent* thisAgent, production *prod,
 	inst->reliable = true;
 	inst->in_ms = TRUE;
 
-	/* REW: begin   09.15.96 */
 	/*  We want to initialize the GDS_evaluated_already flag
 	 *  when a new instantiation is created.
 	 */
@@ -690,7 +688,6 @@ void create_instantiation(agent* thisAgent, production *prod,
 				symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
 		xml_generate_verbose(thisAgent, buf);
 	}
-	/* REW: end   09.15.96 */
 
 	thisAgent->production_being_fired = inst->prod;
 	prod->firing_count++;
@@ -841,7 +838,9 @@ void create_instantiation(agent* thisAgent, production *prod,
 	chunk_instantiation(thisAgent, inst, false,
 			&(thisAgent->newly_created_instantiations));
 
-	/* MVP 6-8-94 */
+	print(thisAgent, "\nCreate_instantiation created: \n");
+	print_instantiation(inst);
+
 	if (!thisAgent->system_halted) {
 		/* --- invoke callback function --- */
 		soar_invoke_callbacks(thisAgent, FIRING_CALLBACK,

@@ -114,33 +114,6 @@
 
 #include <sstream>
 
-/* ----------- basic functionality switches ----------- */
-
-/* Set to FALSE to preserve variable names in chunks (takes extra space) */
-#define discard_chunk_varnames TRUE
-
-/* ----------- debugging switches ----------- */
-
-/* Uncomment the following line to get pnode printouts */
-/* #define DEBUG_RETE_PNODES  */
-
-/* REW: begin 08.20.97 */
-/* For information on the Waterfall processing in rete.cpp */
-/* #define DEBUG_WATERFALL */
-/* REW: end   08.20.97 */
-
-/* ----------- statistics switches ----------- */
-
-/* Uncomment the following line to get statistics on token counts with and
-   without sharing */
-/* #define TOKEN_SHARING_STATS */
-
-/* Uncomment the following line to gather statistics on null activations */
-/* #define NULL_ACTIVATION_STATS */
-
-/* Uncomment the following line to gather statistics on beta node sharing */
-/* #define SHARING_FACTORS */
-
 /* ----------- handle inter-switch dependencies ----------- */
 
 /* --- TOKEN_SHARING_STATS requires SHARING_FACTORS --- */
@@ -157,13 +130,7 @@
 #endif
 #endif
 
-
-
 using namespace soar_TraceNames;
-
-
-
-
 
 /* **********************************************************************
 
@@ -2632,7 +2599,7 @@ void pop_bindings_and_deallocate_list_of_variables (agent* thisAgent, list *vars
    original source code for a production when we want to print it.  For
    chunks, we don't save any of this information -- we just re-gensym
    the variable names on each printing (unless discard_chunk_varnames
-   is set to FALSE).
+   is not #defined).
 
    For each production, a chain of node_varnames structures is built,
    paralleling the structure of the rete net (i.e., the portion of the rete
@@ -2654,38 +2621,6 @@ void pop_bindings_and_deallocate_list_of_variables (agent* thisAgent, list *vars
    to symbols, etc.  Deallocate_node_varnames() deallocates a whole
    chain of node_varnames structures, scanning up the net, etc.
 ********************************************************************** */
-
-typedef char varnames;
-
-/*
-#define one_var_to_varnames(x) ((varnames *) (x))
-#define var_list_to_varnames(x) ((varnames *) (((char *)(x)) + 1))
-#define varnames_is_one_var(x) (! (varnames_is_var_list(x)))
-#define varnames_is_var_list(x) (((uint64_t)(x)) & 1)
-#define varnames_to_one_var(x) ((Symbol *) (x))
-#define varnames_to_var_list(x) ((list *) (((char *)(x)) - 1))
-*/
-
-inline varnames * one_var_to_varnames(Symbol * x) { return reinterpret_cast<varnames *>(x); }
-inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varnames *>(reinterpret_cast<char *>(x) + 1); }
-inline uint64_t varnames_is_var_list(varnames * x) { return reinterpret_cast<uint64_t>(x) & 1; }
-inline Bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
-inline Symbol * varnames_to_one_var(varnames * x) { return reinterpret_cast<Symbol *>(x); }
-inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(static_cast<char *>(x) - 1); }
-
-typedef struct three_field_varnames_struct {
-  varnames *id_varnames;
-  varnames *attr_varnames;
-  varnames *value_varnames;
-} three_field_varnames;
-
-typedef struct node_varnames_struct {
-  struct node_varnames_struct *parent;
-  union varname_data_union {
-    three_field_varnames fields;
-    struct node_varnames_struct *bottom_of_subconditions;
-  } data;
-} node_varnames;
 
 varnames *add_var_to_varnames (agent* thisAgent, Symbol *var,
                                varnames *old_varnames) {
@@ -2742,6 +2677,46 @@ void deallocate_node_varnames (agent* thisAgent,
     temp = nvn;
     nvn = nvn->parent;
     free_with_pool (&thisAgent->node_varnames_pool, temp);
+  }
+}
+
+/* ----------------------------------------------------------------------
+                          Add Varnames to Test
+
+   This routine adds (an equality test for) each variable in "vn" to
+   the given test "t", destructively modifying t.  This is used for
+   restoring the original variables to test in a hand-coded production
+   when we reconstruct its conditions.
+---------------------------------------------------------------------- */
+
+void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_unique) {
+  test New;
+  cons *c;
+  Symbol *temp;
+
+  if (vn == NIL) return;
+  if (varnames_is_one_var(vn)) {
+    temp = varnames_to_one_var(vn);
+    if (force_unique)
+    {
+      print(thisAgent, "Debug | add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
+      thisAgent->varname_table->make_varsym_unique(&temp);
+      print(thisAgent, "Debug | add_varnames_to_test created equality test for %s.\n", temp->var.name);
+    }
+    New = make_test (thisAgent, temp, EQUALITY_TEST);
+    add_new_test_to_test (thisAgent, t, New);
+  } else {
+    for (c=varnames_to_var_list(vn); c!=NIL; c=c->rest) {
+      temp = static_cast<Symbol *>(c->first);
+      if (force_unique)
+      {
+        print(thisAgent, "Debug | add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
+        thisAgent->varname_table->make_varsym_unique(&temp);
+        print(thisAgent, "Debug | add_varnames_to_test created equality test for %s.\n", temp->var.name);
+      }
+      New =  make_test (thisAgent, temp, EQUALITY_TEST);
+      add_new_test_to_test (thisAgent, t, New);
+    }
   }
 }
 
@@ -3774,7 +3749,7 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	}
 
 	/* --- if not a chunk, store variable name information --- */
-	if ((p->type==CHUNK_PRODUCTION_TYPE) && discard_chunk_varnames) {
+	if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
 		p->p_node->b.p.parents_nvn = NIL;
 		p->rhs_unbound_variables = NIL;
 		deallocate_symbol_list_removing_references (thisAgent, rhs_unbound_vars_for_new_prod);
@@ -3888,45 +3863,6 @@ void excise_production_from_rete (agent* thisAgent, production *p)
 ********************************************************************** */
 
 /* ----------------------------------------------------------------------
-                      Add Gensymmed Equality Test
-
-   This routine destructively modifies a given test, adding to it a test
-   for equality with a new gensym variable.
----------------------------------------------------------------------- */
-
-void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter) {
-  Symbol *New;
-  test eq_test;
-  char prefix[2];
-
-  prefix[0] = first_letter;
-  prefix[1] = 0;
-  New = generate_new_variable (thisAgent, prefix);
-  eq_test = make_test (thisAgent, New, EQUALITY_TEST);
-  symbol_remove_ref (thisAgent, New);
-  add_new_test_to_test (thisAgent, t, eq_test);
-}
-
-void add_gensymmed_unique_equality_test (agent* thisAgent, test *t, char first_letter) {
-  Symbol *New;
-  test eq_test;
-  char prefix[2];
-
-  prefix[0] = first_letter;
-  prefix[1] = 0;
-
-  New = generate_new_variable (thisAgent, prefix);
-  thisAgent->varname_table->make_varsym_unique(&New);
-  print(thisAgent, "Debug | add_gensymmed_unique_equality_test just created unique symbol %s\n", New->var.name);
-
-  eq_test = make_test (thisAgent, New, EQUALITY_TEST);
-  // Debug | Do we really need this for original_tests since we clean them up?  Must make refcount cleanup more consistent
-  //symbol_remove_ref (thisAgent, New);
-  add_new_test_to_test (thisAgent, t, eq_test);
-}
-
-
-/* ----------------------------------------------------------------------
                      Var Bound in Reconstructed Conds
 
    We're reconstructing the conditions for a production in top-down
@@ -4002,383 +3938,6 @@ Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
 }
 
 
-/* ----------------------------------------------------------------------
-                      Add Rete Test List to Tests
-
-   Given the additional Rete tests (besides the hashed equality test) at
-   a certain node, we need to convert them into the equivalent tests in
-   the conditions being reconstructed.  This procedure does this -- it
-   destructively modifies the given currently-being-reconstructed-cond
-   by adding any necessary extra tests to its three field tests.
----------------------------------------------------------------------- */
-
-void add_rete_test_list_to_tests (agent* thisAgent,
-                                  condition *cond, /* current cond */
-                                  rete_test *rt) {
-  Symbol *referent;
-  test New;
-  TestType test_type;
-
-  // Initialize table
-  for ( ; rt!=NIL; rt=rt->next) {
-
-    if (rt->type==ID_IS_GOAL_RETE_TEST) {
-      New = make_test(thisAgent, NIL, GOAL_ID_TEST);
-    } else if (rt->type==ID_IS_IMPASSE_RETE_TEST) {
-      New = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
-    } else if (rt->type==DISJUNCTION_RETE_TEST) {
-      New = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-      New->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
-    } else if (test_is_constant_relational_test(rt->type)) {
-      test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-      referent = rt->data.constant_referent;
-      New = make_test (thisAgent, referent, test_type);
-    } else if (test_is_variable_relational_test(rt->type)) {
-      test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-      if (! rt->data.variable_referent.levels_up) {
-        /* --- before calling var_bound_in_reconstructed_conds, make sure
-           there's an equality test in the referent location (add one if
-           there isn't one already there), otherwise there'd be no variable
-           there to test against --- */
-        if (rt->data.variable_referent.field_num==0) {
-          if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
-            add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
-        } else if (rt->data.variable_referent.field_num==1) {
-          if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
-            add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
-        } else {
-          if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
-            add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
-        }
-      }
-      referent = var_bound_in_reconstructed_conds (thisAgent, cond,
-          rt->data.variable_referent.field_num,
-          rt->data.variable_referent.levels_up);
-      New = make_test (thisAgent, referent, test_type);
-    } else {
-      char msg[BUFFER_MSG_SIZE];
-      strncpy (msg, "Error: bad test_type in add_rete_test_to_test\n", BUFFER_MSG_SIZE);
-      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-      abort_with_fatal_error(thisAgent, msg);
-      New = NIL; /* unreachable, but without it gcc -Wall warns here */
-    }
-
-    if (rt->right_field_num==0)
-      add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
-    else if (rt->right_field_num==2)
-      add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), New);
-    else
-      add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), New);
-  }
-}
-
-/* ----------------------------------------------------------------------
-                          Add Varnames to Test
-
-   This routine adds (an equality test for) each variable in "vn" to
-   the given test "t", destructively modifying t.  This is used for
-   restoring the original variables to test in a hand-coded production
-   when we reconstruct its conditions.
----------------------------------------------------------------------- */
-
-void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_unique = false) {
-  test New;
-  cons *c;
-  Symbol *temp;
-
-  if (vn == NIL) return;
-  if (varnames_is_one_var(vn)) {
-    temp = varnames_to_one_var(vn);
-    if (force_unique)
-    {
-      thisAgent->varname_table->make_varsym_unique(&temp);
-      print(thisAgent, "Debug | add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
-    }
-    New = make_test (thisAgent, temp, EQUALITY_TEST);
-    add_new_test_to_test (thisAgent, t, New);
-  } else {
-    for (c=varnames_to_var_list(vn); c!=NIL; c=c->rest) {
-      temp = static_cast<Symbol *>(c->first);
-      if (force_unique)
-      {
-        print(thisAgent, "Debug | add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
-        thisAgent->varname_table->make_varsym_unique(&temp);
-      }
-      New =  make_test (thisAgent, temp, EQUALITY_TEST);
-      add_new_test_to_test (thisAgent, t, New);
-    }
-  }
-}
-
-/* ----------------------------------------------------------------------
-                      Add Hash Info to ID Test
-
-   This routine adds an equality test to the id field test in a given
-   condition, destructively modifying that id test.  The equality test
-   is the one appropriate for the given hash location (field_num/levels_up).
----------------------------------------------------------------------- */
-
-void add_hash_info_to_id_test (agent* thisAgent,
-                               condition *cond,
-                               byte field_num,
-                               rete_node_level levels_up) {
-  Symbol *temp;
-  test New;
-
-  temp = var_bound_in_reconstructed_conds (thisAgent, cond, field_num, levels_up);
-  New = make_test (thisAgent, temp, EQUALITY_TEST);
-  add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
-}
-
-/* ----------------------------------------------------------------------
-                      Add Hash Info to ID Test
-
-   This routine adds an equality test to the id field test in a given
-   condition, destructively modifying that id test.  The equality test
-   is the one appropriate for the given hash location (field_num/levels_up).
----------------------------------------------------------------------- */
-
-void add_hash_info_to_original_id_test (agent* thisAgent,
-                               condition *cond,
-                               byte field_num,
-                               rete_node_level levels_up) {
-  Symbol *temp;
-  test New;
-
-  temp = var_bound_in_reconstructed_original_conds (thisAgent, cond, field_num, levels_up);
-  thisAgent->varname_table->make_varsym_unique(&temp);
-  print(thisAgent, "Debug | add_hash_info_to_original_id_test just created unique symbol %s.\n",
-        temp->var.name);
-  New = make_test (thisAgent, temp, EQUALITY_TEST);
-  add_new_test_to_test (thisAgent, &(cond->data.tests.id_test->original_test), New);
-}
-
-/* ----------------------------------------------------------------------
-                 add_additional_tests_and_originals
-
-   This function gets passed the instantiated conditions for a production
-   being fired.  It adds all the original tests in the given Rete test list
-   (from the "other tests" at a Rete node), and adds them to the equality
-   test in the instantiation. These tests will then also be variablized later.
-
-   "Right_wme" is the wme that matched the current condition
-   "cond" is the currently-being-reconstructed condition.
-
-   - MMA 2013
-
----------------------------------------------------------------------- */
-
-void add_additional_tests_and_originals ( agent      *thisAgent,
-                         rete_node  *node,
-                         wme        *right_wme,
-                         condition  *cond,
-                         node_varnames *nvn)
-{
-  Symbol *referent, *original_referent, *right_sym;
-  test chunk_test, original_test;
-  TestType test_type;
-  rete_test *rt = node->b.posneg.other_tests;
-
-  print(thisAgent, "\nDebug | add_additional_tests_and_originals called for %s.\n", thisAgent->newly_created_instantiations->prod->name->sc.name);
-  /* --- store original referent information --- */
-
-  alpha_mem *am;
-  am = node->b.posneg.alpha_mem_;
-
-  if (am->id && am->id->common.symbol_type == VARIABLE_SYMBOL_TYPE)
-  {
-    original_referent = am->id;
-    print(thisAgent, "Debug | AATtTiC uniquifying am->id from %s\n",
-          original_referent->var.name);
-    thisAgent->varname_table->make_varsym_unique(&original_referent);
-  } else {
-    original_referent = am->id;
-  }
-  cond->data.tests.id_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
-
-  if (am->attr && am->attr->common.symbol_type == VARIABLE_SYMBOL_TYPE)
-  {
-    original_referent = am->attr;
-    print(thisAgent, "Debug | AATtTiC uniquifying am->attr from %s\n",
-          original_referent->var.name);
-    thisAgent->varname_table->make_varsym_unique(&original_referent);
-  } else {
-    original_referent = am->attr;
-  }
-  cond->data.tests.attr_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
-
-  if (am->value && am->value->common.symbol_type == VARIABLE_SYMBOL_TYPE)
-    {
-      original_referent = am->value;
-      print(thisAgent, "Debug | AATtTiC uniquifying am->value from %s\n",
-          original_referent->var.name);
-      thisAgent->varname_table->make_varsym_unique(&original_referent);
-    } else {
-      original_referent = am->value;
-    }
-  cond->data.tests.value_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
-  //cond->test_for_acceptable_preference = am->acceptable;
-
-  // Debug | Do we need to uniqueify here too?
-  if (nvn) {
-    add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
-        &(cond->data.tests.id_test->original_test));
-    add_varnames_to_test (thisAgent, nvn->data.fields.attr_varnames,
-        &(cond->data.tests.attr_test->original_test));
-    add_varnames_to_test (thisAgent, nvn->data.fields.value_varnames,
-        &(cond->data.tests.value_test->original_test));
-  }
-
-  /* --- on hashed nodes, add equality test for the hash function --- */
-  if ((node->node_type==MP_BNODE) || (node->node_type==NEGATIVE_BNODE)) {
-    add_hash_info_to_original_id_test (thisAgent, cond,
-        node->left_hash_loc_field_num,
-        node->left_hash_loc_levels_up);
-  } else if (node->node_type==POSITIVE_BNODE) {
-    add_hash_info_to_original_id_test (thisAgent, cond,
-        node->parent->left_hash_loc_field_num,
-        node->parent->left_hash_loc_levels_up);
-  }
-
-  for ( ; rt!=NIL; rt=rt->next) {
-
-    /* Can probably skip entire loop if (a) one of three first test types or (b)
-     * rt->right_field_num==0 (id field). Not needed for anything related to
-     * chunking. Should probably also removed chunk_tests.id_test entirely.
-     * Remove later after making sure not needed and we handle nil values. */
-    switch (rt->type) {
-      case ID_IS_GOAL_RETE_TEST:
-        // Do not create goal test in chunk test?
-        chunk_test = NIL;
-        original_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
-        break;
-      case ID_IS_IMPASSE_RETE_TEST:
-        // Do not create impasse test in chunk test?
-        chunk_test = NIL;
-        original_test = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
-        break;
-      case DISJUNCTION_RETE_TEST:
-        chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-        chunk_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
-
-        // Probably don't need to copy this disjunction list
-        original_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
-
-        break;
-      default:
-        if (test_is_constant_relational_test(rt->type))
-        {
-          test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-          referent = rt->data.constant_referent;
-          chunk_test = make_test(thisAgent, referent, test_type);
-          original_test = make_test (thisAgent, referent, test_type);
-          // Debug | Can't I just do this?
-          // original_test = chunk_test;
-        }
-        else if (test_is_variable_relational_test(rt->type))
-        {
-          test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-          if (!rt->data.variable_referent.levels_up)
-          {
-            /* --- before calling var_bound_in_reconstructed_conds, make sure
-                   there's an equality test in the referent location (add one if
-                   there isn't one already there), otherwise there'd be no variable
-                   there to test against --- */
-            switch (rt->data.variable_referent.field_num) {
-              case 0:
-                if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
-                {
-                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
-                }
-                if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test->original_test, NIL))
-                {
-                  add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.id_test->original_test), 's');
-                }
-                break;
-              case 1:
-                if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
-                {
-                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
-                }
-                break;
-                if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test->original_test, NIL))
-                 {
-                  add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
-                 }
-                 break;
-               default:
-                if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
-                {
-                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test),
-                      first_letter_from_test(cond->data.tests.attr_test));
-                }
-                if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test->original_test, NIL))
-                  {
-                  add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.value_test->original_test),
-                        first_letter_from_test(cond->data.tests.attr_test->original_test));
-                  }
-                  break;
-            }
-          }
-
-          referent = var_bound_in_reconstructed_conds (thisAgent, cond,
-              rt->data.variable_referent.field_num,
-              rt->data.variable_referent.levels_up);
-          // Debug | Just to test...
-          right_sym = field_from_wme (right_wme, rt->right_field_num);
-          original_referent = var_bound_in_reconstructed_original_conds (thisAgent, cond,
-              rt->data.variable_referent.field_num,
-              rt->data.variable_referent.levels_up);
-
-          chunk_test = make_test(thisAgent, referent, test_type);
-          if (original_referent->common.symbol_type == VARIABLE_SYMBOL_TYPE)
-          {
-            print(thisAgent, "Debug | AATtTiC uniquifying referent %s\n",
-                  original_referent->var.name);
-            thisAgent->varname_table->make_varsym_unique(&original_referent);
-          }
-          original_test = make_test (thisAgent, original_referent, test_type);
-        }
-        else
-        {
-          print(thisAgent, "Debug | Bad test_type in collect_chunk_test_info.\n");
-          assert(false);
-          /* unreachable, but without it gcc -Wall warns here */
-          chunk_test = NIL;
-          original_test = NIL;
-        }
-        if (rt->right_field_num==0)
-        {
-          add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), chunk_test, original_test);
-        }
-        else if (rt->right_field_num==2)
-        {
-          add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), chunk_test, original_test);
-        }
-        else
-        {
-          add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), chunk_test, original_test);
-        }
-        break;
-    }
-  }
-  /* --- if we threw away the variable names in the original tests, make sure
-   *     there's some equality test in each of the three fields --- */
-  if (! nvn) {
-    if (! test_includes_equality_test_for_symbol
-        (cond->data.tests.id_test->original_test, NIL))
-      add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.id_test->original_test), 's');
-    if (! test_includes_equality_test_for_symbol
-        (cond->data.tests.attr_test->original_test, NIL))
-      add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
-    if (! test_includes_equality_test_for_symbol
-        (cond->data.tests.value_test->original_test, NIL))
-      add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.value_test->original_test),
-          first_letter_from_test (cond->data.tests.attr_test->original_test));
-  }
-  print(thisAgent, "Debug | add_additional_tests_and_originals finished for %s.\n\n", thisAgent->newly_created_instantiations->prod->name->sc.name);
-
-}
 
 /* ----------------------------------------------------------------------
                           Rete Node To Conditions
@@ -4415,7 +3974,7 @@ void rete_node_to_conditions (agent* thisAgent,
                               condition *conds_for_cutoff_and_up,
                               condition **dest_top_cond,
                               condition **dest_bottom_cond,
-                              bool produce_chunk_tests) {
+                              bool should_add_tests_and_original_vars) {
   condition *cond;
   alpha_mem *am;
 
@@ -4433,7 +3992,7 @@ void rete_node_to_conditions (agent* thisAgent,
                              tok ? tok->w : NIL,
                              conds_for_cutoff_and_up,
                              dest_top_cond, &(cond->prev),
-                             produce_chunk_tests);
+                             should_add_tests_and_original_vars);
     cond->prev->next = cond;
   }
   cond->next = NIL;
@@ -4449,7 +4008,7 @@ void rete_node_to_conditions (agent* thisAgent,
                              cond->prev,
                              &(cond->data.ncc.top),
                              &(cond->data.ncc.bottom),
-                             produce_chunk_tests);
+                             should_add_tests_and_original_vars);
     cond->data.ncc.top->prev = NIL;
   } else {
     if (bnode_is_positive(node->node_type))
@@ -4467,7 +4026,7 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->test_for_acceptable_preference = w->acceptable;
       cond->bt.wme_ = w;
 
-      if (produce_chunk_tests)
+      if (should_add_tests_and_original_vars)
       {
           add_additional_tests_and_originals (thisAgent, node, w, cond, nvn);
       }
@@ -4477,7 +4036,7 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->data.tests.attr_test = make_test(thisAgent, am->attr, EQUALITY_TEST);
       cond->data.tests.value_test = make_test(thisAgent, am->value, EQUALITY_TEST);
       cond->test_for_acceptable_preference = am->acceptable;
-
+      /* -- Debug| make sure varnames added here are unique -- */
       if (nvn) {
         add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
             &(cond->data.tests.id_test));
@@ -4487,6 +4046,7 @@ void rete_node_to_conditions (agent* thisAgent,
             &(cond->data.tests.value_test));
       }
 
+      /* -- Debug| make sure varnames added here are unique -- */
       /* --- on hashed nodes, add equality test for the hash function --- */
       if ((node->node_type==MP_BNODE) || (node->node_type==NEGATIVE_BNODE)) {
         add_hash_info_to_id_test (thisAgent, cond,
@@ -4518,146 +4078,6 @@ void rete_node_to_conditions (agent* thisAgent,
       }
     }
   }
-}
-
-/* -------------------------------------------------------------------
-             Reconstructing the RHS Actions of a Production
-
-   When we print a production (but not when we fire one), we have to
-   reconstruct the RHS actions.  This is because many of the variables
-   in the RHS have been replaced by references to Rete locations (i.e.,
-   rather than specifying <v>, we specify "value field 3 levels up"
-   or "the 7th RHS unbound variable".  The routines below copy rhs_value's
-   and actions, and substitute variable names for such references.
-   For RHS unbound variables, we gensym new variable names.
-------------------------------------------------------------------- */
-
-rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
-                                                  rhs_value rv,
-                                                  condition *cond,
-                                                  char first_letter,
-                                                  bool should_add_original_vars)
-{
-  cons *c, *new_c, *prev_new_c;
-  list *fl, *new_fl;
-  Symbol *sym, *original_sym=NULL;
-  int64_t index;
-  char prefix[2];
-
-  if (rhs_value_is_reteloc(rv)) {
-    if (should_add_original_vars)
-    {
-      original_sym = var_bound_in_reconstructed_original_conds (thisAgent, cond,
-                                   rhs_value_to_reteloc_field_num(rv),
-                                   rhs_value_to_reteloc_levels_up(rv));
-      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-      symbol_add_ref(thisAgent, original_sym);
-      print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of original %s from %ld.\n",
-             symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0),
-             original_sym->common.reference_count);
-    }
-    sym = var_bound_in_reconstructed_conds (thisAgent, cond,
-        rhs_value_to_reteloc_field_num(rv),
-        rhs_value_to_reteloc_levels_up(rv));
-    // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-    // symbol_add_ref(thisAgent, sym);
-    return make_rhs_value_symbol(thisAgent, sym, original_sym);
-  }
-
-  if (rhs_value_is_unboundvar(rv))
-  {
-    index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
-    if (! *(thisAgent->rhs_variable_bindings+index))
-    {
-      prefix[0] = first_letter;
-      prefix[1] = 0;
-
-      sym = generate_new_variable (thisAgent, prefix);
-      *(thisAgent->rhs_variable_bindings+index) = sym;
-
-      if (thisAgent->highest_rhs_unboundvar_index < index)
-      {
-        thisAgent->highest_rhs_unboundvar_index = index;
-      }
-    }
-    else
-    {
-      sym = *(thisAgent->rhs_variable_bindings+index);
-      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-      //symbol_add_ref(thisAgent, sym);
-    }
-    return make_rhs_value_symbol(thisAgent, sym);
-  }
-
-  if (rhs_value_is_funcall(rv)) {
-    fl = rhs_value_to_funcall_list(rv);
-    allocate_cons (thisAgent, &new_fl);
-    new_fl->first = fl->first;
-    prev_new_c = new_fl;
-    for (c=fl->rest; c!=NIL; c=c->rest) {
-      allocate_cons (thisAgent, &new_c);
-      new_c->first = copy_rhs_value_and_substitute_varnames (thisAgent,
-                                                             static_cast<char *>(c->first),
-                                                             cond,
-                                                             first_letter,
-                                                             should_add_original_vars);
-      prev_new_c->rest = new_c;
-      prev_new_c = new_c;
-    }
-    prev_new_c->rest = NIL;
-    return funcall_list_to_rhs_value (new_fl);
-  } else {
-    rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-    symbol_add_ref(thisAgent, rs->referent);
-    print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of %s to %ld.\n",
-           symbol_to_string(thisAgent, rs->referent, FALSE, NULL, 0),
-           rs->referent->common.reference_count);
-    if (rs->original_variable)
-    {
-      symbol_add_ref(thisAgent, rs->original_variable);
-      print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of %s to %ld.\n",
-             symbol_to_string(thisAgent, rs->original_variable, FALSE, NULL, 0),
-             rs->original_variable->common.reference_count);
-    }
-    return rv;
-  }
-}
-
-action *copy_action_list_and_substitute_varnames (agent* thisAgent,
-                                                  action *actions,
-                                                  condition *cond,
-                                                  bool should_add_original_vars = false) {
-  action *old, *New, *prev, *first;
-  char first_letter;
-
-  prev = NIL;
-  first = NIL;  /* unneeded, but without it gcc -Wall warns here */
-  old = actions;
-  while (old) {
-    allocate_with_pool (thisAgent, &thisAgent->action_pool, &New);
-    if (prev) prev->next = New; else first = New;
-    prev = New;
-    New->type = old->type;
-    New->preference_type = old->preference_type;
-    New->support = old->support;
-    if (old->type==FUNCALL_ACTION) {
-      New->value = copy_rhs_value_and_substitute_varnames (thisAgent,
-                                                           old->value, cond,
-                                                           'v', should_add_original_vars);
-    } else {
-      New->id = copy_rhs_value_and_substitute_varnames (thisAgent, old->id, cond, 's', should_add_original_vars);
-      New->attr = copy_rhs_value_and_substitute_varnames (thisAgent, old->attr, cond,'a', should_add_original_vars);
-      first_letter = first_letter_from_rhs_value (New->attr);
-      New->value = copy_rhs_value_and_substitute_varnames (thisAgent, old->value, cond,
-                          first_letter, should_add_original_vars);
-      if (preference_is_binary(old->preference_type))
-        New->referent = copy_rhs_value_and_substitute_varnames (thisAgent, old->referent,
-                                              cond, first_letter, should_add_original_vars);
-    }
-    old = old->next;
-  }
-  if (prev) prev->next = NIL; else first = NIL;
-  return first;
 }
 
 /* -----------------------------------------------------------------------

@@ -89,9 +89,23 @@ typedef struct binding_structure {
     Symbol *from, *to;
 } Binding;
 
+/* -- Functions to create RHS -- */
 inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
 inline rhs_value make_rhs_value_symbol(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
+
+/* -- Copy functions -- */
 rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv);
+rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
+                                                  rhs_value rv,
+                                                  condition *cond,
+                                                  char first_letter,
+                                                  bool should_add_original_vars);
+action *copy_action_list_and_substitute_varnames (agent* thisAgent,
+                                                  action *actions,
+                                                  condition *cond,
+                                                  bool should_add_original_vars = false);
+
+/* -- Deallocation functions -- */
 void deallocate_rhs_value (agent* thisAgent, rhs_value rv);
 void deallocate_action_list (agent* thisAgent, action *actions);
 
@@ -100,13 +114,13 @@ void add_all_variables_in_action_list (agent* thisAgent, action *actions, tc_num
 
 char first_letter_from_rhs_value (rhs_value rv);
 
-bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list **bindings);
-
+/* -- Functions to check the 4 types that a rhs value can take -- */
 inline bool rhs_value_is_symbol(rhs_value rv) { return (reinterpret_cast<uintptr_t>(rv) & 3) == 0;}
 inline bool rhs_value_is_funcall(rhs_value rv) { return (reinterpret_cast<uintptr_t>(rv) & 3) == 1;}
 inline bool rhs_value_is_reteloc(rhs_value rv){ return (reinterpret_cast<uintptr_t>(rv) & 3) == 2;}
 inline bool rhs_value_is_unboundvar(rhs_value rv){ return (reinterpret_cast<uintptr_t>(rv) & 3) == 3;}
 
+/* -- Conversion functions -- */
 inline rhs_symbol rhs_value_to_rhs_symbol(rhs_value rv){ return reinterpret_cast<rhs_symbol>(rv);}
 inline Symbol * rhs_value_to_symbol(rhs_value rv){ return reinterpret_cast<rhs_symbol>(rv)->referent;}
 inline Symbol * rhs_value_to_original_symbol(rhs_value rv){ return reinterpret_cast<rhs_symbol>(rv)->original_variable;}
@@ -114,7 +128,6 @@ inline ::list * rhs_value_to_funcall_list(rhs_value rv){ return reinterpret_cast
 inline uint8_t rhs_value_to_reteloc_field_num(rhs_value rv){ return static_cast<uint8_t>((reinterpret_cast<uintptr_t>(rv) >> 2) & 3);}
 inline uint16_t rhs_value_to_reteloc_levels_up(rhs_value rv){ return static_cast<uint16_t>((reinterpret_cast<uintptr_t>(rv) >> 4) & 0xFFFF);}
 inline uint64_t rhs_value_to_unboundvar(rhs_value rv){ return static_cast<uint64_t>((reinterpret_cast<uintptr_t>(rv) >> 2));}
-
 inline rhs_value rhs_symbol_to_rhs_value(rhs_symbol rs){ return reinterpret_cast<rhs_value>(rs);}
 inline rhs_value unboundvar_to_rhs_value(uint64_t n){ return reinterpret_cast<rhs_value>((n << 2) + 3);}
 inline rhs_value funcall_list_to_rhs_value(::list * fl){ return reinterpret_cast<rhs_value>(reinterpret_cast<char *>(fl) + 1);}

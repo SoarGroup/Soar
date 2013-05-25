@@ -31,9 +31,11 @@
 #include "wmem.h"
 #include "gdatastructs.h"
 #include "kernel.h"
+#include "debug.h"
 #include "agent.h"
 #include "instantiations.h"
 #include "production.h"
+#include "test.h"
 #include "rhs.h"
 #include "rhs.h"
 #include "print.h"
@@ -1221,7 +1223,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	thisAgent->grounds = NIL;
 	thisAgent->positive_potentials = NIL;
 	thisAgent->locals = NIL;
-	thisAgent->instantiations_with_nots = NIL;
 
 	/* Start a new structure for this potential chunk */
 
@@ -1509,6 +1510,9 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	/* MVP 6-8-94 */
 	if (!thisAgent->max_chunks_reached)
 		chunk_instantiation (thisAgent, chunk_inst, dont_variablize, custom_inst_list);
+
+  print(thisAgent, "\nChunk_instantiation created: \n");
+  print_instantiation(inst);
 
 	goto chunking_done;
 	return;

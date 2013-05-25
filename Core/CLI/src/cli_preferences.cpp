@@ -113,7 +113,7 @@ void print_preference_and_source (agent* agnt, preference *pref,
         print_with_symbols (agnt, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
     }     
     if (pref->attr == agnt->operator_symbol) {
-        print (agnt, " %c", preference_type_indicator (agnt, pref->type));
+        print (agnt, " %c", preference_to_string (agnt, pref->type));
     }
     if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
     if (selection_probability) {

@@ -154,7 +154,9 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
 void deallocate_action_list (agent* thisAgent, action *actions) {
   action *a;
 
+#ifdef DEBUG_TRACE_RHS_REFCOUNTS
   print(thisAgent, "Debug | deallocating action list...\n");
+#endif
   while (actions) {
     a = actions;
     actions = actions->next;
@@ -299,75 +301,134 @@ void add_bound_variables_in_action_list (agent* thisAgent, action *actions, tc_n
     add_bound_variables_in_action (thisAgent, a, tc, var_list);
 }
 
-bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list **bindings)
+/* -------------------------------------------------------------------
+             Reconstructing the RHS Actions of a Production
+
+   When we print a production (but not when we fire one), we have to
+   reconstruct the RHS actions.  This is because many of the variables
+   in the RHS have been replaced by references to Rete locations (i.e.,
+   rather than specifying <v>, we specify "value field 3 levels up"
+   or "the 7th RHS unbound variable".  The routines below copy rhs_value's
+   and actions, and substitute variable names for such references.
+   For RHS unbound variables, we gensym new variable names.
+------------------------------------------------------------------- */
+
+rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
+                                                  rhs_value rv,
+                                                  condition *cond,
+                                                  char first_letter,
+                                                  bool should_add_original_vars)
 {
-    //         if (a1->type == FUNCALL_ACTION)
-    //         {
-    //            if ((a2->type == FUNCALL_ACTION))
-    //            {
-    //               if (funcalls_match(rhs_value_to_funcall_list(a1->value),
-    //                  rhs_value_to_funcall_list(a2->value)))
-    //               {
-    //                     return TRUE;
-    //               }
-    //               else return FALSE;
-    //            }
-    //            else return FALSE;
-    //         }
-    if (a2->type == FUNCALL_ACTION) return FALSE;
+  cons *c, *new_c, *prev_new_c;
+  list *fl, *new_fl;
+  Symbol *sym, *original_sym=NULL;
+  int64_t index;
+  char prefix[2];
 
-    /* Both are make_actions. */
-
-    if (a1->preference_type != a2->preference_type) return FALSE;
-
-    if (!symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->id),
-        rhs_value_to_symbol(a2->id),
-        bindings)) return FALSE;
-
-    if ((rhs_value_is_symbol(a1->attr)) && (rhs_value_is_symbol(a2->attr)))
+  if (rhs_value_is_reteloc(rv)) {
+    if (should_add_original_vars)
     {
-        if (!symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->attr),
-            rhs_value_to_symbol(a2->attr), bindings))
-        {
-            return FALSE;
-        }
+      original_sym = var_bound_in_reconstructed_original_conds (thisAgent, cond,
+                                   rhs_value_to_reteloc_field_num(rv),
+                                   rhs_value_to_reteloc_levels_up(rv));
+      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+      // symbol_add_ref(thisAgent, original_sym);
+      //#ifdef DEBUG_TRACE_RHS_REFCOUNTS
+      //      print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of original %s from %ld.\n",
+      //             symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0),
+      //             original_sym->common.reference_count);
+      //#endif
+    }
+    sym = var_bound_in_reconstructed_conds (thisAgent, cond,
+        rhs_value_to_reteloc_field_num(rv),
+        rhs_value_to_reteloc_levels_up(rv));
+    // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+    // symbol_add_ref(thisAgent, sym);
+    return make_rhs_value_symbol(thisAgent, sym, original_sym);
+  }
+
+  if (rhs_value_is_unboundvar(rv))
+  {
+    index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
+    if (! *(thisAgent->rhs_variable_bindings+index))
+    {
+      prefix[0] = first_letter;
+      prefix[1] = 0;
+
+      sym = generate_new_variable (thisAgent, prefix);
+      *(thisAgent->rhs_variable_bindings+index) = sym;
+
+      if (thisAgent->highest_rhs_unboundvar_index < index)
+      {
+        thisAgent->highest_rhs_unboundvar_index = index;
+      }
+    }
+    else
+    {
+      sym = *(thisAgent->rhs_variable_bindings+index);
+      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+      //symbol_add_ref(thisAgent, sym);
+    }
+    return make_rhs_value_symbol(thisAgent, sym);
+  }
+
+  if (rhs_value_is_funcall(rv)) {
+    fl = rhs_value_to_funcall_list(rv);
+    allocate_cons (thisAgent, &new_fl);
+    new_fl->first = fl->first;
+    prev_new_c = new_fl;
+    for (c=fl->rest; c!=NIL; c=c->rest) {
+      allocate_cons (thisAgent, &new_c);
+      new_c->first = copy_rhs_value_and_substitute_varnames (thisAgent,
+                                                             static_cast<char *>(c->first),
+                                                             cond,
+                                                             first_letter,
+                                                             should_add_original_vars);
+      prev_new_c->rest = new_c;
+      prev_new_c = new_c;
+    }
+    prev_new_c->rest = NIL;
+    return funcall_list_to_rhs_value (new_fl);
+  } else {
+    rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
+    return make_rhs_value_symbol(thisAgent, rs->referent, rs->original_variable);
+  }
+}
+
+action *copy_action_list_and_substitute_varnames (agent* thisAgent,
+                                                  action *actions,
+                                                  condition *cond,
+                                                  bool should_add_original_vars) {
+  action *old, *New, *prev, *first;
+  char first_letter;
+
+  prev = NIL;
+  first = NIL;  /* unneeded, but without it gcc -Wall warns here */
+  old = actions;
+  while (old) {
+    allocate_with_pool (thisAgent, &thisAgent->action_pool, &New);
+    if (prev) prev->next = New; else first = New;
+    prev = New;
+    New->type = old->type;
+    New->preference_type = old->preference_type;
+    New->support = old->support;
+    if (old->type==FUNCALL_ACTION) {
+      New->value = copy_rhs_value_and_substitute_varnames (thisAgent,
+                                                           old->value, cond,
+                                                           'v', should_add_original_vars);
     } else {
-        //            if ((rhs_value_is_funcall(a1->attr)) && (rhs_value_is_funcall(a2->attr)))
-        //            {
-        //               if (!funcalls_match(rhs_value_to_funcall_list(a1->attr),
-        //                  rhs_value_to_funcall_list(a2->attr)))
-        //               {
-        //                  return FALSE;
-        //               }
-        //            }
+      New->id = copy_rhs_value_and_substitute_varnames (thisAgent, old->id, cond, 's', should_add_original_vars);
+      New->attr = copy_rhs_value_and_substitute_varnames (thisAgent, old->attr, cond,'a', should_add_original_vars);
+      first_letter = first_letter_from_rhs_value (New->attr);
+      New->value = copy_rhs_value_and_substitute_varnames (thisAgent, old->value, cond,
+                          first_letter, should_add_original_vars);
+      if (preference_is_binary(old->preference_type))
+        New->referent = copy_rhs_value_and_substitute_varnames (thisAgent, old->referent,
+                                              cond, first_letter, should_add_original_vars);
     }
-
-    /* Values are different. They are rhs_value's. */
-
-    if ((rhs_value_is_symbol(a1->value)) && (rhs_value_is_symbol(a2->value)))
-    {
-        if (symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->value),
-            rhs_value_to_symbol(a2->value), bindings))
-        {
-            return TRUE;
-        }
-        else
-        {
-            return FALSE;
-        }
-    }
-    if ((rhs_value_is_funcall(a1->value)) && (rhs_value_is_funcall(a2->value)))
-    {
-        //            if (funcalls_match(rhs_value_to_funcall_list(a1->value),
-        //               rhs_value_to_funcall_list(a2->value)))
-        //            {
-        //               return TRUE;
-        //            }
-        //            else
-        {
-            return FALSE;
-        }
-    }
-    return FALSE;
+    old = old->next;
+  }
+  if (prev) prev->next = NIL; else first = NIL;
+  return first;
 }
 

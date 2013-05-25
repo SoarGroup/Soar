@@ -62,6 +62,269 @@ void reset_old_binding_point(agent* agnt, list **bindings, list **current_bindin
     bindings = current_binding_point;
 }
 
+Symbol *get_binding (Symbol *f, list *bindings)
+{
+    cons *c;
+
+    for (c=bindings;c!=NIL;c=c->rest)
+    {
+        if (static_cast<Binding *>(c->first)->from == f)
+            return static_cast<Binding *>(c->first)->to;
+    }
+    return NIL;
+}
+
+bool symbols_are_equal_with_bindings (agent* thisAgent, Symbol *s1, Symbol *s2, list **bindings)
+{
+    Binding *b;
+    Symbol *bvar;
+
+    if ((s1 == s2) && (s1->common.symbol_type != VARIABLE_SYMBOL_TYPE))
+        return TRUE;
+
+    /* "*" matches everything. */
+    if ((s1->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+        (!strcmp(s1->sc.name,"*"))) return TRUE;
+    if ((s2->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+        (!strcmp(s2->sc.name,"*"))) return TRUE;
+
+
+    if ((s1->common.symbol_type != VARIABLE_SYMBOL_TYPE) ||
+        (s2->common.symbol_type != VARIABLE_SYMBOL_TYPE))
+        return FALSE;
+    /* Both are variables */
+    bvar = get_binding(s1,*bindings);
+    if (bvar == NIL) {
+        b = static_cast<Binding *>(allocate_memory(thisAgent, sizeof(Binding),MISCELLANEOUS_MEM_USAGE));
+        b->from = s1;
+        b->to = s2;
+        /* Debug| This compiles, but eclipse is showing an error.  Changing *binding to binding
+                 fixes error but no longer compiles. */
+        push(thisAgent, b, *bindings);
+        return TRUE;
+    }
+    else if (bvar == s2) {
+        return TRUE;
+    }
+    else return FALSE;
+}
+
+bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list **bindings)
+{
+    //         if (a1->type == FUNCALL_ACTION)
+    //         {
+    //            if ((a2->type == FUNCALL_ACTION))
+    //            {
+    //               if (funcalls_match(rhs_value_to_funcall_list(a1->value),
+    //                  rhs_value_to_funcall_list(a2->value)))
+    //               {
+    //                     return TRUE;
+    //               }
+    //               else return FALSE;
+    //            }
+    //            else return FALSE;
+    //         }
+    if (a2->type == FUNCALL_ACTION) return FALSE;
+
+    /* Both are make_actions. */
+
+    if (a1->preference_type != a2->preference_type) return FALSE;
+
+    if (!symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->id),
+        rhs_value_to_symbol(a2->id),
+        bindings)) return FALSE;
+
+    if ((rhs_value_is_symbol(a1->attr)) && (rhs_value_is_symbol(a2->attr)))
+    {
+        if (!symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->attr),
+            rhs_value_to_symbol(a2->attr), bindings))
+        {
+            return FALSE;
+        }
+    } else {
+        //            if ((rhs_value_is_funcall(a1->attr)) && (rhs_value_is_funcall(a2->attr)))
+        //            {
+        //               if (!funcalls_match(rhs_value_to_funcall_list(a1->attr),
+        //                  rhs_value_to_funcall_list(a2->attr)))
+        //               {
+        //                  return FALSE;
+        //               }
+        //            }
+    }
+
+    /* Values are different. They are rhs_value's. */
+
+    if ((rhs_value_is_symbol(a1->value)) && (rhs_value_is_symbol(a2->value)))
+    {
+        if (symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->value),
+            rhs_value_to_symbol(a2->value), bindings))
+        {
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
+    }
+    if ((rhs_value_is_funcall(a1->value)) && (rhs_value_is_funcall(a2->value)))
+    {
+        //            if (funcalls_match(rhs_value_to_funcall_list(a1->value),
+        //               rhs_value_to_funcall_list(a2->value)))
+        //            {
+        //               return TRUE;
+        //            }
+        //            else
+        {
+            return FALSE;
+        }
+    }
+    return FALSE;
+}
+
+#define dealloc_and_return(agnt,x,y) { deallocate_test(agnt, x) ; return (y) ; }
+
+Bool tests_are_equal_with_bindings (agent* thisAgent, test t1, test test2, list **bindings) {
+    cons *c1, *c2;
+    Bool goal_test,impasse_test;
+
+    /* DJP 4/3/96 -- The problem here is that sometimes test2 was being copied      */
+    /*               and sometimes it wasn't.  If it was copied, the copy was never */
+    /*               deallocated.  There's a few choices about how to fix this.  I  */
+    /*               decided to just create a copy always and then always           */
+    /*               deallocate it before returning.  Added a macro to do that.     */
+
+    test t2;
+
+    /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
+    if (test_is_blank(t1))
+        return(test_is_blank(test2) == 0);
+
+    /* If the pattern doesn't include "(state", but the test from the
+    * production does, strip it out of the production's.
+    */
+    if ((!test_includes_goal_or_impasse_id_test(t1,TRUE,FALSE)) &&
+        test_includes_goal_or_impasse_id_test(test2,TRUE,FALSE))
+    {
+        goal_test = FALSE;
+        impasse_test = FALSE;
+        t2 = copy_test_removing_goal_impasse_tests(thisAgent, test2, &goal_test, &impasse_test);
+    }
+    else
+    {
+        t2 = copy_test(thisAgent,test2) ; /* DJP 4/3/96 -- Always make t2 into a copy */
+    }
+      if (t1->type==EQUALITY_TEST)
+      {
+        if (!((t2->type==EQUALITY_TEST) && !(test_is_blank(t2))))
+        {
+            dealloc_and_return(thisAgent, t2,FALSE);
+        }
+        else
+        {
+            if (symbols_are_equal_with_bindings(thisAgent, t1->data.referent, t2->data.referent, bindings))
+            {
+                dealloc_and_return(thisAgent, t2,TRUE);
+            }
+            else
+            {
+                dealloc_and_return(thisAgent, t2,FALSE);
+            }
+        }
+    }
+
+    if (t1->type != t2->type)
+    {
+        dealloc_and_return(thisAgent, t2,FALSE);
+    }
+
+    switch(t1->type)
+    {
+    case GOAL_ID_TEST:
+        dealloc_and_return(thisAgent, t2,TRUE);
+        break;
+    case IMPASSE_ID_TEST:
+        dealloc_and_return(thisAgent, t2,TRUE);
+        break;
+    case DISJUNCTION_TEST:
+        for (c1 = t1->data.disjunction_list, c2=t2->data.disjunction_list;
+           ((c1!=NIL)&&(c2!=NIL));
+             c1=c1->rest, c2=c2->rest)
+        {
+            if (c1->first != c2->first)
+            {
+                dealloc_and_return(thisAgent, t2,FALSE)
+            }
+        }
+        if (c1==c2)
+        {
+            dealloc_and_return(thisAgent, t2,TRUE);  /* make sure they both hit end-of-list */
+        }
+        else
+        {
+            dealloc_and_return(thisAgent, t2,FALSE);
+        }
+        break;
+    case CONJUNCTIVE_TEST:
+        for (c1=t1->data.conjunct_list, c2=t2->data.conjunct_list;
+            ((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
+        {
+            if (!tests_are_equal_with_bindings(thisAgent, static_cast<test>(c1->first), static_cast<test>(c2->first), bindings))
+                dealloc_and_return(thisAgent, t2,FALSE)
+        }
+        if (c1==c2)
+        {
+            dealloc_and_return(thisAgent, t2,TRUE);  /* make sure they both hit end-of-list */
+        }
+        else
+        {
+            dealloc_and_return(thisAgent, t2,FALSE);
+        }
+        break;
+    default:  /* relational tests other than equality */
+        if (symbols_are_equal_with_bindings(thisAgent, t1->data.referent,t2->data.referent,bindings))
+        {
+            dealloc_and_return(thisAgent, t2,TRUE);
+        }
+        else
+        {
+            dealloc_and_return(thisAgent, t2,FALSE);
+        }
+        break;
+    }
+    return false;
+}
+
+Bool conditions_are_equal_with_bindings (agent* agnt, condition *c1, condition *c2, list **bindings) {
+    if (c1->type != c2->type) return FALSE;
+    switch (c1->type)
+    {
+    case POSITIVE_CONDITION:
+    case NEGATIVE_CONDITION:
+        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.id_test,
+            c2->data.tests.id_test,bindings))
+            return FALSE;
+        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.attr_test,
+            c2->data.tests.attr_test,bindings))
+
+            return FALSE;
+        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.value_test,
+            c2->data.tests.value_test,bindings))
+            return FALSE;
+        if (c1->test_for_acceptable_preference != c2->test_for_acceptable_preference)
+            return FALSE;
+        return TRUE;
+
+    case CONJUNCTIVE_NEGATION_CONDITION:
+        for (c1=c1->data.ncc.top, c2=c2->data.ncc.top;
+            ((c1!=NIL)&&(c2!=NIL));
+            c1=c1->next, c2=c2->next)
+            if (! conditions_are_equal_with_bindings (agnt, c1,c2,bindings)) return FALSE;
+        if (c1==c2) return TRUE;  /* make sure they both hit end-of-list */
+        return FALSE;
+    }
+    return FALSE; /* unreachable, but without it, gcc -Wall warns here */
+}
+
 void read_pattern_and_get_matching_productions (agent* agnt,
     list **current_pf_list,
     bool show_bindings,

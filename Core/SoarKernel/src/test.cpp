@@ -26,6 +26,7 @@
 
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
+
 list *copy_test_list (agent* thisAgent, cons *c) {
   cons *new_c;
 
@@ -370,118 +371,6 @@ Bool tests_are_equal (test t1, test t2, bool neg) {
     }
   }
 
-#define dealloc_and_return(agnt,x,y) { deallocate_test(agnt, x) ; return (y) ; }
-
-Bool tests_are_equal_with_bindings (agent* thisAgent, test t1, test test2, list **bindings) {
-    cons *c1, *c2;
-    Bool goal_test,impasse_test;
-
-    /* DJP 4/3/96 -- The problem here is that sometimes test2 was being copied      */
-    /*               and sometimes it wasn't.  If it was copied, the copy was never */
-    /*               deallocated.  There's a few choices about how to fix this.  I  */
-    /*               decided to just create a copy always and then always           */
-    /*               deallocate it before returning.  Added a macro to do that.     */
-
-    test t2;
-
-    /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
-    if (test_is_blank(t1))
-        return(test_is_blank(test2) == 0);
-
-    /* If the pattern doesn't include "(state", but the test from the
-    * production does, strip it out of the production's.
-    */
-    if ((!test_includes_goal_or_impasse_id_test(t1,TRUE,FALSE)) &&
-        test_includes_goal_or_impasse_id_test(test2,TRUE,FALSE))
-    {
-        goal_test = FALSE;
-        impasse_test = FALSE;
-        t2 = copy_test_removing_goal_impasse_tests(thisAgent, test2, &goal_test, &impasse_test);
-    }
-    else
-    {
-        t2 = copy_test(thisAgent,test2) ; /* DJP 4/3/96 -- Always make t2 into a copy */
-    }
-      if (t1->type==EQUALITY_TEST)
-      {
-        if (!((t2->type==EQUALITY_TEST) && !(test_is_blank(t2))))
-        {
-            dealloc_and_return(thisAgent, t2,FALSE);
-        }
-        else
-        {
-            if (symbols_are_equal_with_bindings(thisAgent, t1->data.referent, t2->data.referent, bindings))
-            {
-                dealloc_and_return(thisAgent, t2,TRUE);
-            }
-            else
-            {
-                dealloc_and_return(thisAgent, t2,FALSE);
-            }
-        }
-    }
-
-    if (t1->type != t2->type)
-    {
-        dealloc_and_return(thisAgent, t2,FALSE);
-    }
-
-    switch(t1->type)
-    {
-    case GOAL_ID_TEST:
-        dealloc_and_return(thisAgent, t2,TRUE);
-        break;
-    case IMPASSE_ID_TEST:
-        dealloc_and_return(thisAgent, t2,TRUE);
-        break;
-    case DISJUNCTION_TEST:
-        for (c1 = t1->data.disjunction_list, c2=t2->data.disjunction_list;
-           ((c1!=NIL)&&(c2!=NIL));
-             c1=c1->rest, c2=c2->rest)
-        {
-            if (c1->first != c2->first)
-            {
-                dealloc_and_return(thisAgent, t2,FALSE)
-            }
-        }
-        if (c1==c2)
-        {
-            dealloc_and_return(thisAgent, t2,TRUE);  /* make sure they both hit end-of-list */
-        }
-        else
-        {
-            dealloc_and_return(thisAgent, t2,FALSE);
-        }
-        break;
-    case CONJUNCTIVE_TEST:
-        for (c1=t1->data.conjunct_list, c2=t2->data.conjunct_list;
-            ((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
-        {
-            if (!tests_are_equal_with_bindings(thisAgent, static_cast<test>(c1->first), static_cast<test>(c2->first), bindings))
-                dealloc_and_return(thisAgent, t2,FALSE)
-        }
-        if (c1==c2)
-        {
-            dealloc_and_return(thisAgent, t2,TRUE);  /* make sure they both hit end-of-list */
-        }
-        else
-        {
-            dealloc_and_return(thisAgent, t2,FALSE);
-        }
-        break;
-    default:  /* relational tests other than equality */
-        if (symbols_are_equal_with_bindings(thisAgent, t1->data.referent,t2->data.referent,bindings))
-        {
-            dealloc_and_return(thisAgent, t2,TRUE);
-        }
-        else
-        {
-            dealloc_and_return(thisAgent, t2,FALSE);
-        }
-        break;
-    }
-    return false;
-}
 /* ----------------------------------------------------------------
    Returns a hash value for the given test.
 ---------------------------------------------------------------- */
@@ -696,3 +585,460 @@ char first_letter_from_test (test t) {
   }
 }
 
+/* ----------------------------------------------------------------------
+                      Add Gensymmed Equality Test
+
+   This routine destructively modifies a given test, adding to it a test
+   for equality with a new gensym variable.
+---------------------------------------------------------------------- */
+
+void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter) {
+  Symbol *New;
+  test eq_test;
+  char prefix[2];
+
+  prefix[0] = first_letter;
+  prefix[1] = 0;
+  New = generate_new_variable (thisAgent, prefix);
+  eq_test = make_test (thisAgent, New, EQUALITY_TEST);
+  symbol_remove_ref (thisAgent, New);
+  add_new_test_to_test (thisAgent, t, eq_test);
+}
+
+void add_gensymmed_unique_equality_test (agent* thisAgent, test *t, char first_letter) {
+  Symbol *New;
+  test eq_test;
+  char prefix[2];
+
+  prefix[0] = first_letter;
+  prefix[1] = 0;
+
+  New = generate_new_variable (thisAgent, prefix);
+  thisAgent->varname_table->make_varsym_unique(&New);
+  print(thisAgent, "Debug | add_gensymmed_unique_equality_test just created unique symbol %s\n", New->var.name);
+
+  eq_test = make_test (thisAgent, New, EQUALITY_TEST);
+  // Debug | Do we really need this for original_tests since we clean them up?  Must make refcount cleanup more consistent
+  //symbol_remove_ref (thisAgent, New);
+  add_new_test_to_test (thisAgent, t, eq_test);
+}
+
+/* ----------------------------------------------------------------------
+                      Add Rete Test List to Tests
+
+   Given the additional Rete tests (besides the hashed equality test) at
+   a certain node, we need to convert them into the equivalent tests in
+   the conditions being reconstructed.  This procedure does this -- it
+   destructively modifies the given currently-being-reconstructed-cond
+   by adding any necessary extra tests to its three field tests.
+---------------------------------------------------------------------- */
+
+void add_rete_test_list_to_tests (agent* thisAgent,
+                                  condition *cond, /* current cond */
+                                  rete_test *rt) {
+  Symbol *referent;
+  test New;
+  TestType test_type;
+
+  // Initialize table
+  for ( ; rt!=NIL; rt=rt->next) {
+
+    if (rt->type==ID_IS_GOAL_RETE_TEST) {
+      New = make_test(thisAgent, NIL, GOAL_ID_TEST);
+    } else if (rt->type==ID_IS_IMPASSE_RETE_TEST) {
+      New = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
+    } else if (rt->type==DISJUNCTION_RETE_TEST) {
+      New = make_test(thisAgent, NIL, DISJUNCTION_TEST);
+      New->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+    } else if (test_is_constant_relational_test(rt->type)) {
+      test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+      referent = rt->data.constant_referent;
+      New = make_test (thisAgent, referent, test_type);
+    } else if (test_is_variable_relational_test(rt->type)) {
+      test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+      if (! rt->data.variable_referent.levels_up) {
+        /* --- before calling var_bound_in_reconstructed_conds, make sure
+           there's an equality test in the referent location (add one if
+           there isn't one already there), otherwise there'd be no variable
+           there to test against --- */
+        if (rt->data.variable_referent.field_num==0) {
+          if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
+            add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
+        } else if (rt->data.variable_referent.field_num==1) {
+          if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
+            add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
+        } else {
+          if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
+            add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
+        }
+      }
+      referent = var_bound_in_reconstructed_conds (thisAgent, cond,
+          rt->data.variable_referent.field_num,
+          rt->data.variable_referent.levels_up);
+      New = make_test (thisAgent, referent, test_type);
+    } else {
+      char msg[BUFFER_MSG_SIZE];
+      strncpy (msg, "Error: bad test_type in add_rete_test_to_test\n", BUFFER_MSG_SIZE);
+      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+      abort_with_fatal_error(thisAgent, msg);
+      New = NIL; /* unreachable, but without it gcc -Wall warns here */
+    }
+
+    if (rt->right_field_num==0)
+      add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
+    else if (rt->right_field_num==2)
+      add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), New);
+    else
+      add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), New);
+  }
+}
+
+
+/* ----------------------------------------------------------------------
+                      Add Hash Info to ID Test
+
+   This routine adds an equality test to the id field test in a given
+   condition, destructively modifying that id test.  The equality test
+   is the one appropriate for the given hash location (field_num/levels_up).
+---------------------------------------------------------------------- */
+
+void add_hash_info_to_id_test (agent* thisAgent,
+                               condition *cond,
+                               byte field_num,
+                               rete_node_level levels_up) {
+  Symbol *temp;
+  test New;
+
+  temp = var_bound_in_reconstructed_conds (thisAgent, cond, field_num, levels_up);
+  New = make_test (thisAgent, temp, EQUALITY_TEST);
+  add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
+}
+
+/* ----------------------------------------------------------------------
+                      Add Hash Info to ID Test
+
+   This routine adds an equality test to the id field test in a given
+   condition, destructively modifying that id test.  The equality test
+   is the one appropriate for the given hash location (field_num/levels_up).
+---------------------------------------------------------------------- */
+
+void add_hash_info_to_original_id_test (agent* thisAgent,
+                               condition *cond,
+                               byte field_num,
+                               rete_node_level levels_up) {
+  Symbol *temp;
+  test New;
+
+  temp = var_bound_in_reconstructed_original_conds (thisAgent, cond, field_num, levels_up);
+  thisAgent->varname_table->make_varsym_unique(&temp);
+  print(thisAgent, "Debug | add_hash_info_to_original_id_test just created unique symbol %s.\n",
+        temp->var.name);
+  New = make_test (thisAgent, temp, EQUALITY_TEST);
+  add_new_test_to_test (thisAgent, &(cond->data.tests.id_test->original_test), New);
+}
+
+/* ----------------------------------------------------------------------
+                 add_additional_tests_and_originals
+
+   This function gets passed the instantiated conditions for a production
+   being fired.  It adds all the original tests in the given Rete test list
+   (from the "other tests" at a Rete node), and adds them to the equality
+   test in the instantiation. These tests will then also be variablized later.
+
+   "Right_wme" is the wme that matched the current condition
+   "cond" is the currently-being-reconstructed condition.
+
+   - MMA 2013
+
+---------------------------------------------------------------------- */
+
+void add_additional_tests_and_originals (agent *thisAgent,
+                                         rete_node *node,
+                                         wme *right_wme,
+                                         condition *cond,
+                                         node_varnames *nvn)
+{
+  Symbol *referent, *original_referent, *right_sym;
+  test chunk_test, original_test;
+  TestType test_type;
+  rete_test *rt = node->b.posneg.other_tests;
+
+  /* --- store original referent information --- */
+
+  alpha_mem *am;
+  am = node->b.posneg.alpha_mem_;
+
+  print(thisAgent, "\nDebug | add_additional_tests_and_originals called for %s.\n(%s ^%s %s)\n",
+      thisAgent->newly_created_instantiations->prod->name->sc.name,
+      (am->id ? symbol_to_string(thisAgent, am->id, NULL, NULL, 0) : "<blank>"),
+      (am->attr ? symbol_to_string(thisAgent, am->attr, NULL, NULL, 0) : "<blank>"),
+      (am->value ? symbol_to_string(thisAgent, am->value, NULL, NULL, 0) : "<blank>")
+      );
+
+  if (am->id && am->id->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+  {
+    original_referent = am->id;
+    print(thisAgent, "Debug | AATtTiC making am->id (%s) unique.\n",
+          original_referent->var.name);
+    thisAgent->varname_table->make_varsym_unique(&original_referent);
+  } else {
+    original_referent = am->id;
+    if (am->id)
+      print(thisAgent, "Debug | AATtTiC not making am->id (%s) unique.\n",
+          symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
+  }
+  cond->data.tests.id_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
+
+  if (am->attr && am->attr->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+  {
+    original_referent = am->attr;
+    print(thisAgent, "Debug | AATtTiC making am->attr (%s) unique.\n",
+          original_referent->var.name);
+    thisAgent->varname_table->make_varsym_unique(&original_referent);
+  } else {
+    original_referent = am->attr;
+    if (am->attr)
+      print(thisAgent, "Debug | AATtTiC not making am->attr (%s) unique.\n",
+          symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
+  }
+  cond->data.tests.attr_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
+
+  if (am->value && am->value->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+    {
+      original_referent = am->value;
+      print(thisAgent, "Debug | AATtTiC making am->value (%s) unique.\n",
+          original_referent->var.name);
+      thisAgent->varname_table->make_varsym_unique(&original_referent);
+    } else {
+      original_referent = am->value;
+      if (am->value)
+        print(thisAgent, "Debug | AATtTiC not making am->value (%s) unique.\n",
+            symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
+    }
+  cond->data.tests.value_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
+
+  // Debug | Do we need to uniqueify here too?
+  if (nvn) {
+    print(thisAgent, "Debug | AATtTiC adding unique var names to original tests...\n");
+    add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
+        &(cond->data.tests.id_test->original_test), true);
+    add_varnames_to_test (thisAgent, nvn->data.fields.attr_varnames,
+        &(cond->data.tests.attr_test->original_test), true);
+    add_varnames_to_test (thisAgent, nvn->data.fields.value_varnames,
+        &(cond->data.tests.value_test->original_test), true);
+    print(thisAgent, "Debug | AATtTiC added unique var names to original tests resulting in:\n");
+    print_test(thisAgent, cond->data.tests.id_test->original_test);
+    print_test(thisAgent, cond->data.tests.attr_test->original_test);
+    print_test(thisAgent, cond->data.tests.value_test->original_test);
+  }
+
+  /* --- on hashed nodes, add equality test for the hash function --- */
+  if ((node->node_type==MP_BNODE) || (node->node_type==NEGATIVE_BNODE)) {
+    print(thisAgent, "Debug | AATtTiC adding unique hash info to original id test...\n");
+    add_hash_info_to_original_id_test (thisAgent, cond,
+        node->left_hash_loc_field_num,
+        node->left_hash_loc_levels_up);
+    print(thisAgent, "Debug | AATtTiC added unique hash info to original id test resulting in:\n");
+    print_test(thisAgent, cond->data.tests.id_test->original_test);
+  } else if (node->node_type==POSITIVE_BNODE) {
+    print(thisAgent, "Debug | AATtTiC adding unique hash info to original id test...\n");
+    add_hash_info_to_original_id_test (thisAgent, cond,
+        node->parent->left_hash_loc_field_num,
+        node->parent->left_hash_loc_levels_up);
+    print(thisAgent, "Debug | AATtTiC added unique hash info to original id test resulting in:\n");
+    print_test(thisAgent, cond->data.tests.id_test->original_test);
+  }
+
+  for ( ; rt!=NIL; rt=rt->next) {
+
+    /* Can probably skip entire loop if (a) one of three first test types or (b)
+     * rt->right_field_num==0 (id field). Not needed for anything related to
+     * chunking. Should probably also removed chunk_tests.id_test entirely.
+     * Remove later after making sure not needed and we handle nil values. */
+
+    /* If we want to remove adding goal and impasse tests later, we can  do
+     * it here.  If those tests are also needed on instantiations (probably)
+     * we'll need to make another similar function that does what this
+     * function does but only to add goal and impasse tests (should be simple) */
+
+    switch (rt->type) {
+      case ID_IS_GOAL_RETE_TEST:
+        // Do not create goal test in chunk test?
+        chunk_test = NIL;
+        original_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
+        break;
+      case ID_IS_IMPASSE_RETE_TEST:
+        // Do not create impasse test in chunk test?
+        chunk_test = NIL;
+        original_test = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
+        break;
+      case DISJUNCTION_RETE_TEST:
+        chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
+        chunk_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+
+        // Probably don't need to copy this disjunction list
+        original_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+
+        break;
+      default:
+        if (test_is_constant_relational_test(rt->type))
+        {
+          test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+          referent = rt->data.constant_referent;
+          chunk_test = make_test(thisAgent, referent, test_type);
+          original_test = make_test (thisAgent, referent, test_type);
+          // Debug | Can't I just do this?
+          // original_test = chunk_test;
+        }
+        else if (test_is_variable_relational_test(rt->type))
+        {
+          test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+          if (!rt->data.variable_referent.levels_up)
+          {
+            /* --- before calling var_bound_in_reconstructed_conds, make sure
+                   there's an equality test in the referent location (add one if
+                   there isn't one already there), otherwise there'd be no variable
+                   there to test against --- */
+            switch (rt->data.variable_referent.field_num) {
+              case 0:
+                if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
+                {
+                  print(thisAgent, "Debug | AATtTiC adding gensymmed but non-unique id test...\n");
+                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
+                  print(thisAgent, "Debug | AATtTiC added gensymmed but non-unique id test resulting in:\n");
+                  print_test(thisAgent, cond->data.tests.id_test);
+                }
+                if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test->original_test, NIL))
+                {
+                  print(thisAgent, "Debug | AATtTiC adding gensymmed but non-unique original id test...\n");
+                  add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.id_test->original_test), 's');
+                  print(thisAgent, "Debug | AATtTiC added gensymmed but non-unique original id test resulting in:\n");
+                  print_test(thisAgent, cond->data.tests.id_test->original_test);
+                }
+                break;
+              case 1:
+                if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
+                {
+                  print(thisAgent, "Debug | AATtTiC adding gensymmed but non-unique attr test...\n");
+                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
+                  print(thisAgent, "Debug | AATtTiC added gensymmed but non-unique attr test resulting in:\n");
+                  print_test(thisAgent, cond->data.tests.attr_test);
+                }
+                break;
+                if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test->original_test, NIL))
+                 {
+                  print(thisAgent, "Debug | AATtTiC adding gensymmed but non-unique original attr test...\n");
+                  add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
+                  print(thisAgent, "Debug | AATtTiC added gensymmed but non-unique original attr test resulting in:\n");
+                  print_test(thisAgent, cond->data.tests.attr_test->original_test);
+                 }
+                 break;
+               default:
+                if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
+                {
+                  print(thisAgent, "Debug | AATtTiC adding gensymmed but non-unique value test...\n");
+                  add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test),
+                      first_letter_from_test(cond->data.tests.attr_test));
+                  print(thisAgent, "Debug | AATtTiC added gensymmed but non-unique value test resulting in:\n");
+                  print_test(thisAgent, cond->data.tests.value_test);
+                }
+                if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test->original_test, NIL))
+                  {
+                  print(thisAgent, "Debug | AATtTiC adding gensymmed but non-unique original value test...\n");
+                  add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.value_test->original_test),
+                        first_letter_from_test(cond->data.tests.attr_test->original_test));
+                  print(thisAgent, "Debug | AATtTiC added gensymmed but non-unique original value test resulting in:\n");
+                  print_test(thisAgent, cond->data.tests.value_test->original_test);
+                  }
+                  break;
+            }
+          }
+
+          referent = var_bound_in_reconstructed_conds (thisAgent, cond,
+              rt->data.variable_referent.field_num,
+              rt->data.variable_referent.levels_up);
+          // Debug | Just to test...
+          right_sym = field_from_wme (right_wme, rt->right_field_num);
+          print(thisAgent, "Debug | AATtTiC right_sym is %s.\n",
+              symbol_to_string(thisAgent, right_sym, NULL, NULL, 0));
+          original_referent = var_bound_in_reconstructed_original_conds (thisAgent, cond,
+              rt->data.variable_referent.field_num,
+              rt->data.variable_referent.levels_up);
+
+          chunk_test = make_test(thisAgent, referent, test_type);
+          if (original_referent->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+          {
+            print(thisAgent, "Debug | AATtTiC creating unique original relational referent for %s...\n",
+                symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
+            thisAgent->varname_table->make_varsym_unique(&original_referent);
+            original_test = make_test (thisAgent, original_referent, test_type);
+            print(thisAgent, "Debug | AATtTiC created unique original relational referent %s.\n",
+                symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
+          }
+          else
+          {
+
+            original_test = make_test (thisAgent, original_referent, test_type);
+          }
+        }
+        else
+        {
+          print(thisAgent, "Debug | Bad test_type in collect_chunk_test_info.\n");
+          assert(false);
+          /* unreachable, but without it gcc -Wall warns here */
+          chunk_test = NIL;
+          original_test = NIL;
+        }
+        if (rt->right_field_num==0)
+        {
+          add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), chunk_test, original_test);
+          print(thisAgent, "Debug | AATtTiC adding relational test to id resulting in:\n");
+          print_test(thisAgent, original_test);
+        }
+        else if (rt->right_field_num==2)
+        {
+          add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), chunk_test, original_test);
+          print(thisAgent, "Debug | AATtTiC adding relational test to value resulting in:\n");
+          print_test(thisAgent, original_test);
+        }
+        else
+        {
+          add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), chunk_test, original_test);
+          print(thisAgent, "Debug | AATtTiC adding relational test to attr resulting in:\n");
+          print_test(thisAgent, original_test);
+        }
+        break;
+    }
+  }
+  /* --- if we threw away the variable names in the original tests, make sure
+   *     there's some equality test in each of the three fields --- */
+  if (! nvn) {
+    if (! test_includes_equality_test_for_symbol
+        (cond->data.tests.id_test->original_test, NIL))
+    {
+      print(thisAgent, "Debug | AATtTiC adding gensymmed unique original id test bc no equality test...\n");
+      add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.id_test->original_test), 's');
+      print(thisAgent, "Debug | AATtTiC added gensymmed unique original id test resulting in:\n");
+      print_test(thisAgent, cond->data.tests.id_test->original_test);
+    }
+    if (! test_includes_equality_test_for_symbol
+        (cond->data.tests.attr_test->original_test, NIL))
+    {
+      print(thisAgent, "Debug | AATtTiC adding gensymmed unique original attr test bc no equality test...\n");
+      add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
+      print(thisAgent, "Debug | AATtTiC added gensymmed unique original attr test resulting in:\n");
+      print_test(thisAgent, cond->data.tests.attr_test->original_test);
+    }
+    if (! test_includes_equality_test_for_symbol
+        (cond->data.tests.value_test->original_test, NIL))
+    {
+      print(thisAgent, "Debug | AATtTiC adding gensymmed unique original value test bc no equality test...\n");
+      add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.value_test->original_test),
+          first_letter_from_test (cond->data.tests.attr_test->original_test));
+      print(thisAgent, "Debug | AATtTiC added gensymmed unique original value test resulting in:\n");
+      print_test(thisAgent, cond->data.tests.value_test->original_test);
+    }
+  }
+  print(thisAgent, "Debug | add_additional_tests_and_originals finished for %s.\n\n", thisAgent->newly_created_instantiations->prod->name->sc.name);
+
+}

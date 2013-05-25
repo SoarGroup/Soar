@@ -374,6 +374,59 @@ inline const char *test_type_to_string(byte test_type)
   return "UNDEFINED TEST TYPE";
 }
 
+inline const char *test_type_to_string_brief(byte test_type)
+{
+  switch (test_type) {
+    case NOT_EQUAL_TEST:
+      return "!=";
+      break;
+    case LESS_TEST:
+      return "<";
+      break;
+    case GREATER_TEST:
+      return ">";
+      break;
+    case LESS_OR_EQUAL_TEST:
+      return "<=";
+      break;
+    case GREATER_OR_EQUAL_TEST:
+      return ">=";
+      break;
+    case SAME_TYPE_TEST:
+      return "<=>";
+      break;
+    case DISJUNCTION_TEST:
+      return "<<>>";
+      break;
+    case CONJUNCTIVE_TEST:
+      return "{ }";
+      break;
+    case GOAL_ID_TEST:
+      return "IS_G_ID";
+      break;
+    case IMPASSE_ID_TEST:
+      return "IS_IMPASSE";
+      break;
+    case EQUALITY_TEST:
+      return "";
+      break;
+    case BLANK_TEST:
+      return "(blank)";
+      break;
+  }
+  return "UNDEFINED TEST TYPE";
+}
+
+void print_symbol_with_original(agent *thisAgent, Symbol *sym)
+{
+  print(thisAgent, "%s",
+      (sym ? symbol_to_string (thisAgent, sym, FALSE, NULL, 0) : "NULL (PROBLEM!)"));
+      if (sym && sym->common.original_var_symbol)
+      {
+        print(thisAgent, "(%s)", symbol_to_string (thisAgent, sym->common.original_var_symbol, FALSE, NULL, 0));
+      }
+}
+
 void print_test (agent* thisAgent, test t, const char *indent_string) {
 	cons *c;
 	if (!t)
@@ -423,6 +476,41 @@ void print_test (agent* thisAgent, test t, const char *indent_string) {
           else
           {
             print(thisAgent, " ->|\n");
+          }
+      break;
+  }
+}
+
+void print_test_brief (agent* thisAgent, test t) {
+  cons *c;
+  if (!t)
+  {
+    print(thisAgent, "(nil)");
+    return;
+  }
+  switch (t->type) {
+    case BLANK_TEST:
+    case GOAL_ID_TEST:
+    case IMPASSE_ID_TEST:
+    case DISJUNCTION_TEST:
+      print(thisAgent, "%s", test_type_to_string_brief(t->type));
+      break;
+    case CONJUNCTIVE_TEST:
+      print(thisAgent, "{");
+      for (c=t->data.conjunct_list; c!=NIL; c=c->rest) {
+        print_test_brief (thisAgent, static_cast<test>(c->first));
+      }
+      print(thisAgent, "}");
+      break;
+    default:
+      print(thisAgent, "%s%s",
+          test_type_to_string_brief(t->type),
+          (t->data.referent ? symbol_to_string (thisAgent, t->data.referent, FALSE, NULL, 0) : "NULL (PROBLEM!)"));
+          if (t->original_test)
+          {
+            print(thisAgent, " (");
+            print_test_brief (thisAgent,t->original_test);
+            print(thisAgent, ")");
           }
       break;
   }
@@ -865,7 +953,7 @@ void print_action_list (agent* thisAgent, action *actions,
         rhs_value_to_string (thisAgent, a->value, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
 		while (*ch) ch++;
         *(ch++) = ' ';
-        *(ch++) = preference_type_indicator (thisAgent, a->preference_type);
+        *(ch++) = preference_to_string (thisAgent, a->preference_type);
         if (preference_is_binary (a->preference_type)) {
           *(ch++) = ' ';
           rhs_value_to_string (thisAgent, a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
@@ -1021,7 +1109,7 @@ void print_action (agent* thisAgent, action *a) {
   a->next = old_next;
 }
 
-char preference_type_indicator (agent* thisAgent, byte type) {
+char preference_to_string (agent* thisAgent, byte type) {
   switch (type) {
   case ACCEPTABLE_PREFERENCE_TYPE: return '+';
   case REQUIRE_PREFERENCE_TYPE: return '!';
@@ -1046,7 +1134,7 @@ char preference_type_indicator (agent* thisAgent, byte type) {
 }
 
 void print_preference (agent* thisAgent, preference *pref) {
-  char pref_type = preference_type_indicator (thisAgent, pref->type);
+  char pref_type = preference_to_string (thisAgent, pref->type);
 
   print_with_symbols (thisAgent, "(%y ^%y %y ", pref->id, pref->attr, pref->value);
   print (thisAgent, "%c", pref_type);

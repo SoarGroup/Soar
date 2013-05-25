@@ -193,37 +193,6 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
   return FALSE; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-Bool conditions_are_equal_with_bindings (agent* agnt, condition *c1, condition *c2, list **bindings) {
-    if (c1->type != c2->type) return FALSE;
-    switch (c1->type)
-    {
-    case POSITIVE_CONDITION:
-    case NEGATIVE_CONDITION:
-        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.id_test,
-            c2->data.tests.id_test,bindings))
-            return FALSE;
-        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.attr_test,
-            c2->data.tests.attr_test,bindings))
-
-            return FALSE;
-        if (! tests_are_equal_with_bindings (agnt, c1->data.tests.value_test,
-            c2->data.tests.value_test,bindings))
-            return FALSE;
-        if (c1->test_for_acceptable_preference != c2->test_for_acceptable_preference)
-            return FALSE;
-        return TRUE;
-
-    case CONJUNCTIVE_NEGATION_CONDITION:
-        for (c1=c1->data.ncc.top, c2=c2->data.ncc.top;
-            ((c1!=NIL)&&(c2!=NIL));
-            c1=c1->next, c2=c2->next)
-            if (! conditions_are_equal_with_bindings (agnt, c1,c2,bindings)) return FALSE;
-        if (c1==c2) return TRUE;  /* make sure they both hit end-of-list */
-        return FALSE;
-    }
-    return FALSE; /* unreachable, but without it, gcc -Wall warns here */
-}
-
 /* ----------------------------------------------------------------
    Returns a hash value for the given condition.
 ---------------------------------------------------------------- */

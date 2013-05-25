@@ -70,6 +70,29 @@ typedef struct rete_node_struct rete_node;
 typedef struct agent_struct agent;
 typedef union symbol_union Symbol;
 
+typedef char varnames;
+
+inline varnames * one_var_to_varnames(Symbol * x) { return reinterpret_cast<varnames *>(x); }
+inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varnames *>(reinterpret_cast<char *>(x) + 1); }
+inline uint64_t varnames_is_var_list(varnames * x) { return reinterpret_cast<uint64_t>(x) & 1; }
+inline Bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
+inline Symbol * varnames_to_one_var(varnames * x) { return reinterpret_cast<Symbol *>(x); }
+inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(static_cast<char *>(x) - 1); }
+
+typedef struct three_field_varnames_struct {
+  varnames *id_varnames;
+  varnames *attr_varnames;
+  varnames *value_varnames;
+} three_field_varnames;
+
+typedef struct node_varnames_struct {
+  struct node_varnames_struct *parent;
+  union varname_data_union {
+    three_field_varnames fields;
+    struct node_varnames_struct *bottom_of_subconditions;
+  } data;
+} node_varnames;
+
 typedef struct token_struct {
   /* --- Note: "parent" is NIL on negative node negrm (local join result)
      tokens, non-NIL on all other tokens including CN and CN_P stuff.

@@ -173,5 +173,57 @@ void print_current_lexeme (agent* thisAgent)
   print(thisAgent, "%s: \"%s\"\n", lex_type_string.c_str(), thisAgent->lexeme.string);
 }
 
+void print_instantiation (instantiation *inst)
+{
+  condition *cond;
+  preference *pref;
+  char pref_type;
+
+  if (inst->prod) {
+    print_with_symbols  (debug_agent, "sp { %y\n", inst->prod->name);
+  } else {
+    print (debug_agent, "sp { [dummy production]\n");
+  }
+
+  for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next)
+    if (cond->type==POSITIVE_CONDITION) {
+//      if (cond->bt.level > TOP_GOAL_LEVEL) {
+//        print (debug_agent, " ");
+//        print_wme (debug_agent, cond->bt.wme_);
+        print(debug_agent, "(");
+        print_test_brief(debug_agent, cond->data.tests.id_test);
+        print(debug_agent, " ^");
+        print_test_brief(debug_agent, cond->data.tests.attr_test);
+        print(debug_agent, " ");
+        print_test_brief(debug_agent, cond->data.tests.value_test);
+        print(debug_agent, ")\n");
+//      } else {
+//        // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
+//        print (debug_agent, "timetag %lu", cond->bt.wme_->timetag);
+//      }
+      break;
+    }
+  print (debug_agent, "--->\n");
+  for (pref=inst->preferences_generated; pref!=NIL; pref=pref->next)
+  {
+    pref_type = preference_to_string (debug_agent, pref->type);
+    print(debug_agent, "(");
+    print_symbol_with_original(debug_agent, pref->id);
+    print(debug_agent, " ^");
+    print_symbol_with_original(debug_agent, pref->attr);
+    print(debug_agent, " ");
+    print_symbol_with_original(debug_agent, pref->value);
+
+    print (debug_agent, " %c", pref_type);
+    if (preference_is_binary(pref->type)) {
+      print (debug_agent, " ");
+      print_symbol_with_original(debug_agent, pref->referent);
+    }
+    if (pref->o_supported) print_string (debug_agent, " :O ");
+    print_string (debug_agent, ")\n");
+  }
+  print_string (debug_agent, "}\n");
+}
+
 #endif
 

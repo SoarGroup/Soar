@@ -630,7 +630,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   uint64_t            justification_count;
   ::list            * grounds;
   tc_number           grounds_tc;
-  ::list            * instantiations_with_nots;
   ::list            * locals;
   tc_number           locals_tc;
   ::list            * positive_potentials;
