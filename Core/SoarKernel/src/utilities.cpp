@@ -479,8 +479,10 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
   unique_string *found_u_string, *new_u_string;
 
   assert(thisAgent->newly_created_instantiations != NIL);
+#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
   print(thisAgent, "Debug | make_varsym_unique called with original sym %s for instantiation %s!!!!!!!!!!!!!!!!!!!\n",
       (*original_varsym)->var.name, thisAgent->newly_created_instantiations->prod->name->sc.name );
+#endif
 
   hash_value = hash_variable_raw_info ((*original_varsym)->var.name,ht->log2size);
   found_u_string = reinterpret_cast<unique_string *>(*(ht->buckets + hash_value));
@@ -495,8 +497,9 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
 
         /* -- We've already created and cached a unique version of this variable name
          *    for this instantiation -- */
-
+#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
         print(thisAgent, "Debug | make_varsym_unique found existing unique sym %s (%s) for this instantiation.\n", found_u_string->current_unique_var_symbol->var.name, (*original_varsym)->var.name);
+#endif
         *original_varsym = found_u_string->current_unique_var_symbol;
         symbol_add_ref(thisAgent, found_u_string->current_unique_var_symbol);
         return;
@@ -525,7 +528,9 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
         found_u_string->current_unique_var_symbol = new_u_string->current_unique_var_symbol;
         found_u_string->current_instantiation = thisAgent->newly_created_instantiations;
 
+#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
         print(thisAgent, "Debug | make_varsym_unique creating new unique version of %s: %s\n", (*original_varsym)->var.name, new_name.c_str());
+#endif
 
         symbol_remove_ref(thisAgent, *original_varsym);
         *original_varsym = new_u_string->current_unique_var_symbol;
@@ -543,7 +548,9 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
   new_u_string->next_unique_suffix_number = 1;
   add_to_hash_table (thisAgent, ht, new_u_string);
 
+#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
   print(thisAgent, "Debug | make_varsym_unique generated a var for the first time: %s\n", (*original_varsym)->var.name);
+#endif
 }
 
 void string_hash_table::clear_table()

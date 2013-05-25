@@ -23,7 +23,6 @@
 #include "sml_KernelCallback.h"
 #include "sml_Events.h"
 #include "kernel.h"
-#include "test.h"
 #include "cli_Cli.h"
 #include "cli_Parser.h"
 #include "soar_module.h"

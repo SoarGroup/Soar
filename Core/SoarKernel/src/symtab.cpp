@@ -255,17 +255,21 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
 Symbol *make_variable (agent* thisAgent, const char *name) {
   Symbol *sym;
 
-//  print(thisAgent, "Debug | make_variable called with %s.\n", name);
-
+#ifdef DEBUG_TRACE_VAR_CREATION
+  print(thisAgent, "Debug | make_variable called with %s.\n", name);
+#endif
   sym = find_variable(thisAgent, name);
   if (sym) {
-
-//      print(thisAgent, "Debug | make_variable found sym %s.  Adding ref count.\n", sym->var.name);
+#ifdef DEBUG_TRACE_VAR_CREATION
+      print(thisAgent, "Debug | make_variable found sym %s.  Adding ref count.\n", sym->var.name);
+#endif
       symbol_add_ref(thisAgent, sym);
       return sym;
     }
+#ifdef DEBUG_TRACE_VAR_CREATION
+  print(thisAgent, "Debug | make_variable creating new sym %s.\n", name);
+#endif
 
-//  print(thisAgent, "Debug | make_variable creating new sym %s.\n", name);
   allocate_with_pool (thisAgent, &thisAgent->variable_pool, &sym);
   sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
   sym->common.reference_count = 0;

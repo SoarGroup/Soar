@@ -7,7 +7,9 @@
 #define TEST_H_
 
 
-#include "gdatastructs.h"
+//#include "gdatastructs.h"
+
+typedef test_info * test;
 
 /* --- Descriptions of these functions can be found in the test.cpp --- */
 char first_letter_from_test (test t);
