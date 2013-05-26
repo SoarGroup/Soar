@@ -634,10 +634,10 @@ typedef struct tracing_rule_struct {
 } tracing_rule;
 
 /*#define hash_name_restriction(name,num_bits) \
-  ((name)->common.hash_id & masks_for_n_low_order_bits[(num_bits)])*/
+  ((name)->common.data.data.hash_id & masks_for_n_low_order_bits[(num_bits)])*/
 inline uint32_t hash_name_restriction(Symbol * name, short num_bits)
 {
-  return name->common.hash_id & masks_for_n_low_order_bits[num_bits];
+  return name->common.data.hash_id & masks_for_n_low_order_bits[num_bits];
 }
 
 /* --- hash function for resizable hash table routines --- */
@@ -947,7 +947,7 @@ void add_values_of_attribute_path (agent* thisAgent,
 
   /* --- not at end of path yet --- */
   /* --- can't follow any more path segments off of a non-identifier --- */
-  if (object->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) return;
+  if (object->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) return;
 
   /* --- call this routine recursively on any wme matching the first segment
      of the attribute path --- */
@@ -1025,7 +1025,7 @@ void add_trace_for_attribute_path (agent* thisAgent,
   values = make_blank_growable_string(thisAgent);
 
   if (! path) {
-    if (object->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;
+    if (object->common.data.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;
     for (s=object->id.slots; s!=NIL; s=s->next)
       for (w=s->wmes; w!=NIL; w=w->next)
         add_trace_for_wme (thisAgent, &values, w, print_attributes, recursive);
@@ -1274,15 +1274,15 @@ growable_string object_to_trace_string (agent* thisAgent, Symbol *object) {
   /* --- If it's not an identifier, just print it as an atom.  Also, if it's
      already being printed, print it as an atom to avoid getting into an
      infinite loop. --- */
-  if ((object->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) ||
-      (object->common.tc_num == thisAgent->tf_printing_tc)) {
+  if ((object->common.data.symbol_type!=IDENTIFIER_SYMBOL_TYPE) ||
+      (object->common.data.tc_num == thisAgent->tf_printing_tc)) {
     gs = make_blank_growable_string (thisAgent);
     add_to_growable_string (thisAgent, &gs, symbol_to_string (thisAgent, object, TRUE, NIL, 0));
     return gs;
   }
 
   /* --- mark it as being printed --- */
-  object->common.tc_num = thisAgent->tf_printing_tc;
+  object->common.data.tc_num = thisAgent->tf_printing_tc;
 
   /* --- determine the type and name of the object --- */
   if (object->id.isa_goal) type_of_object=FOR_STATES_TF;
@@ -1307,7 +1307,7 @@ growable_string object_to_trace_string (agent* thisAgent, Symbol *object) {
     add_to_growable_string (thisAgent, &gs, symbol_to_string (thisAgent, object, TRUE, NIL, 0));
   }
 
-  object->common.tc_num = 0;  /* unmark it now that we're done */
+  object->common.data.tc_num = 0;  /* unmark it now that we're done */
   return gs;
 }
 

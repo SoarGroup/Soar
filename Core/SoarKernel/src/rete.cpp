@@ -1325,16 +1325,16 @@ inline Bool wme_matches_alpha_mem(wme * w, alpha_mem * am)
 
 /* --- Returns hash value for the given id/attr/value symbols --- */
 /*#define alpha_hash_value(i,a,v,num_bits) \
- ( ( ((i) ? ((Symbol *)(i))->common.hash_id : 0) ^ \
-     ((a) ? ((Symbol *)(a))->common.hash_id : 0) ^ \
-     ((v) ? ((Symbol *)(v))->common.hash_id : 0) ) & \
+ ( ( ((i) ? ((Symbol *)(i))->common.data.data.hash_id : 0) ^ \
+     ((a) ? ((Symbol *)(a))->common.data.data.hash_id : 0) ^ \
+     ((v) ? ((Symbol *)(v))->common.data.data.hash_id : 0) ) & \
    masks_for_n_low_order_bits[(num_bits)] )*/
 inline uint32_t alpha_hash_value(Symbol * i, Symbol * a, Symbol * v, short num_bits)
 {
   return
-	  ( ( (i ? i->common.hash_id : 0) ^
-          (a ? a->common.hash_id : 0) ^
-          (v ? v->common.hash_id : 0) ) &
+	  ( ( (i ? i->common.data.hash_id : 0) ^
+          (a ? a->common.data.hash_id : 0) ^
+          (v ? v->common.data.hash_id : 0) ) &
         masks_for_n_low_order_bits[(num_bits)] );
 }
 
@@ -1378,7 +1378,7 @@ void add_wme_to_alpha_mem (agent* thisAgent, wme *w, alpha_mem *am) {
   rm->am = am;
 
   /* --- add it to dll's for the hash bucket, alpha mem, and wme --- */
-  hv = am->am_id ^ w->id->common.hash_id;
+  hv = am->am_id ^ w->id->common.data.hash_id;
   header = reinterpret_cast<right_mem **>(thisAgent->right_ht) + (hv & RIGHT_HT_MASK);
   insert_at_head_of_dll (*header, rm, next_in_bucket, prev_in_bucket);
   insert_at_head_of_dll (am->right_mems, rm, next_in_am, prev_in_am);
@@ -1397,7 +1397,7 @@ void remove_wme_from_alpha_mem (agent* thisAgent, right_mem *rm) {
   am = rm->am;
 
   /* --- remove it from dll's for the hash bucket, alpha mem, and wme --- */
-  hv = am->am_id ^ w->id->common.hash_id;
+  hv = am->am_id ^ w->id->common.data.hash_id;
   header = reinterpret_cast<right_mem **>(thisAgent->right_ht) + (hv & RIGHT_HT_MASK);
   remove_from_dll (*header, rm, next_in_bucket, prev_in_bucket);
   remove_from_dll (am->right_mems, rm, next_in_am, prev_in_am);
@@ -1524,9 +1524,9 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
   w->tokens = NIL;
 
   /* --- add w to the appropriate alpha_mem in each of 8 possible tables --- */
-  hi = w->id->common.hash_id;
-  ha = w->attr->common.hash_id;
-  hv = w->value->common.hash_id;
+  hi = w->id->common.data.hash_id;
+  ha = w->attr->common.data.hash_id;
+  hv = w->value->common.data.hash_id;
 
   if (w->acceptable) {
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[8],  xor_op( 0, 0, 0), w);
@@ -1554,7 +1554,7 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
 	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
 	{
       // if identifier-valued and short-term, known value
-      if ( ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+      if ( ( w->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 	       ( w->value->id.epmem_id != EPMEM_NODEID_BAD ) &&
 		   ( w->value->id.epmem_valid == thisAgent->epmem_validation ) &&
 		   ( !w->value->id.smem_lti ) )
@@ -1590,7 +1590,7 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 {
 	bool was_encoded = false;
 
-	if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	if ( w->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 	{
 		bool lti = ( w->value->id.smem_lti != NIL );
 
@@ -1680,7 +1680,7 @@ inline void _epmem_process_ids( agent* my_agent )
 		id = my_agent->epmem_id_removes->front();
 		my_agent->epmem_id_removes->pop_front();
 
-		assert( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE );
+		assert( id->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE );
 
 		if ( ( id->id.epmem_id != EPMEM_NODEID_BAD ) && ( id->id.epmem_valid == my_agent->epmem_validation ) )
 		{
@@ -2547,7 +2547,7 @@ void bind_variables_in_test (agent* thisAgent,
   if (test_is_blank(t)) return;
   if (t->type == EQUALITY_TEST) {
     referent = t->data.referent;
-    if (referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
+    if (referent->common.data.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
     if (!dense && var_is_bound (referent)) return;
     push_var_binding (thisAgent, referent, depth, field_num);
     push(thisAgent, referent, *varlist);
@@ -2748,7 +2748,7 @@ varnames *add_unbound_varnames_in_test (agent* thisAgent, test t,
   if (test_is_blank(t)) return starting_vn;
   if (t->type == EQUALITY_TEST) {
     referent = t->data.referent;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+    if (referent->common.data.symbol_type==VARIABLE_SYMBOL_TYPE)
       if (! var_is_bound (referent))
         starting_vn = add_var_to_varnames (thisAgent, referent, starting_vn);
     return starting_vn;
@@ -2881,14 +2881,14 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
       referent = t->data.referent;
 
       /* --- if constant test and alpha=NIL, install alpha test --- */
-      if ((referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) &&
+      if ((referent->common.data.symbol_type!=VARIABLE_SYMBOL_TYPE) &&
           (*alpha_constant==NIL)) {
         *alpha_constant = referent;
         return;
       }
 
       /* --- if constant, make = constant test --- */
-      if (referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) {
+      if (referent->common.data.symbol_type!=VARIABLE_SYMBOL_TYPE) {
         allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
         new_rt->right_field_num = field_num;
         new_rt->type = CONSTANT_RELATIONAL_RETE_TEST+RELATIONAL_EQUAL_RETE_TEST;
@@ -2927,7 +2927,7 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
     case GREATER_OR_EQUAL_TEST:
     case SAME_TYPE_TEST:
       /* --- if constant, make constant test --- */
-      if (t->data.referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) {
+      if (t->data.referent->common.data.symbol_type!=VARIABLE_SYMBOL_TYPE) {
         allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
         new_rt->right_field_num = field_num;
         new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
@@ -3449,8 +3449,8 @@ Bool same_rhs (action *rhs1, action *rhs2, bool rl_chunk_stop) {
 		    Symbol* a1r = rhs_value_to_symbol(a1->referent);
 			Symbol* a2r = rhs_value_to_symbol(a2->referent);
 
-			if (((a1r->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) || (a1r->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE)) &&
-				((a2r->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) || (a2r->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE)))
+			if (((a1r->common.data.symbol_type==INT_CONSTANT_SYMBOL_TYPE) || (a1r->common.data.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE)) &&
+				((a2r->common.data.symbol_type==INT_CONSTANT_SYMBOL_TYPE) || (a2r->common.data.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE)))
 			{
 				if (((a1==rhs1) && (!a1->next)) && ((a2==rhs2) && (!a2->next)))
 			  {
@@ -3505,7 +3505,7 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
 
   if (rhs_value_is_symbol(*rv)) {
     sym = rhs_value_to_symbol (*rv);
-    if (sym->common.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
+    if (sym->common.data.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
     /* --- Found a variable.  Is is bound on the LHS? --- */
     if (find_var_location (sym, static_cast<rete_node_level>(bottom_depth+1), &var_loc)) {
       /* --- Yes, replace it with reteloc --- */
@@ -3513,10 +3513,10 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
       *rv = reteloc_to_rhs_value (var_loc.field_num, var_loc.levels_up-1);
     } else {
       /* --- No, replace it with rhs_unboundvar --- */
-      if (sym->common.tc_num != rhs_unbound_vars_tc) {
+      if (sym->common.data.tc_num != rhs_unbound_vars_tc) {
         symbol_add_ref(thisAgent, sym);
         push(thisAgent, sym, rhs_unbound_vars_for_new_prod);
-        sym->common.tc_num = rhs_unbound_vars_tc;
+        sym->common.data.tc_num = rhs_unbound_vars_tc;
         index = num_rhs_unbound_vars_for_new_prod++;
         sym->var.current_binding_value = reinterpret_cast<Symbol *>(index);
       } else {
@@ -4213,17 +4213,17 @@ inline Bool match_left_and_right(agent* thisAgent, rete_test * _rete_test,
 */
 /*
 #define numeric_comparison_between_symbols(s1,s2,comparator_op) ( \
-  ( ((s1)->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
+  ( ((s1)->common.data.data.symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
+    ((s2)->common.data.data.symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
     (((s1)->ic.value) comparator_op ((s2)->ic.value)) : \
-  ( ((s1)->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
+  ( ((s1)->common.data.data.symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
+    ((s2)->common.data.data.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
     (((s1)->ic.value) comparator_op ((s2)->fc.value)) : \
-  ( ((s1)->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
+  ( ((s1)->common.data.data.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
+    ((s2)->common.data.data.symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
     (((s1)->fc.value) comparator_op ((s2)->ic.value)) : \
-  ( ((s1)->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
+  ( ((s1)->common.data.data.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
+    ((s2)->common.data.data.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
     (((s1)->fc.value) comparator_op ((s2)->fc.value)) : \
   FALSE )
 */
@@ -4237,9 +4237,9 @@ inline Bool match_left_and_right(agent* thisAgent, rete_test * _rete_test,
  * respectively
  */
 inline int64_t compare_symbols(Symbol* s1, Symbol* s2) {
-  switch (s1->common.symbol_type) {
+  switch (s1->common.data.symbol_type) {
     case INT_CONSTANT_SYMBOL_TYPE:
-      switch (s2->common.symbol_type) {
+      switch (s2->common.data.symbol_type) {
         case INT_CONSTANT_SYMBOL_TYPE:
           return s1->ic.value - s2->ic.value;
         case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -4248,7 +4248,7 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2) {
           return -1;
       }
     case FLOAT_CONSTANT_SYMBOL_TYPE:
-      switch (s2->common.symbol_type) {
+      switch (s2->common.data.symbol_type) {
         case INT_CONSTANT_SYMBOL_TYPE:
           return numcmp(s1->fc.value, s2->ic.value);
         case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -4257,7 +4257,7 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2) {
           return -1;
       }
     case SYM_CONSTANT_SYMBOL_TYPE:
-      switch (s2->common.symbol_type) {
+      switch (s2->common.data.symbol_type) {
         case INT_CONSTANT_SYMBOL_TYPE:
         case FLOAT_CONSTANT_SYMBOL_TYPE:
           return 1;
@@ -4267,7 +4267,7 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2) {
           return -1;
       }
     case IDENTIFIER_SYMBOL_TYPE:
-      switch (s2->common.symbol_type) {
+      switch (s2->common.data.symbol_type) {
         case INT_CONSTANT_SYMBOL_TYPE:
         case FLOAT_CONSTANT_SYMBOL_TYPE:
         case SYM_CONSTANT_SYMBOL_TYPE:
@@ -4368,7 +4368,7 @@ Bool constant_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, 
 
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return static_cast<Bool>(s1->common.symbol_type == s2->common.symbol_type);
+  return static_cast<Bool>(s1->common.data.symbol_type == s2->common.data.symbol_type);
 }
 
 Bool variable_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left, wme *w) {
@@ -4504,7 +4504,7 @@ Bool variable_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, 
     w = left->w;
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
-  return (s1->common.symbol_type == s2->common.symbol_type);
+  return (s1->common.data.symbol_type == s2->common.data.symbol_type);
 }
 
 
@@ -4558,7 +4558,7 @@ void beta_memory_node_left_addition (agent* thisAgent, rete_node *node,
     }
   }
 
-  hv = node->node_id ^ referent->common.hash_id;
+  hv = node->node_id ^ referent->common.data.hash_id;
 
   /* --- build new left token, add it to the hash table --- */
   token_added(node);
@@ -4627,7 +4627,7 @@ void positive_node_left_addition (agent* thisAgent,
   }
 
   /* --- look through right memory for matches --- */
-  right_hv = am->am_id ^ hash_referent->common.hash_id;
+  right_hv = am->am_id ^ hash_referent->common.data.hash_id;
   for (rm=right_ht_bucket(thisAgent, right_hv); rm!=NIL; rm=rm->next_in_bucket) {
     if (rm->am != am) continue;
     /* --- does rm->w match New? --- */
@@ -4709,7 +4709,7 @@ void mp_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
     }
   }
 
-  hv = node->node_id ^ referent->common.hash_id;
+  hv = node->node_id ^ referent->common.data.hash_id;
 
   /* --- build new left token, add it to the hash table --- */
   token_added(node);
@@ -4735,7 +4735,7 @@ void mp_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
   }
 
   /* --- look through right memory for matches --- */
-  right_hv = am->am_id ^ referent->common.hash_id;
+  right_hv = am->am_id ^ referent->common.data.hash_id;
   for (rm=right_ht_bucket(thisAgent, right_hv); rm!=NIL; rm=rm->next_in_bucket) {
     if (rm->am != am) continue;
     /* --- does rm->w match new? --- */
@@ -4826,7 +4826,7 @@ void positive_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
   }
 
   referent = w->id;
-  hv = node->parent->node_id ^ referent->common.hash_id;
+  hv = node->parent->node_id ^ referent->common.data.hash_id;
 
   for (tok=left_ht_bucket(thisAgent, hv); tok!=NIL; tok=tok->a.ht.next_in_bucket) {
     if (tok->node != node->parent) continue;
@@ -4905,7 +4905,7 @@ void mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
   }
 
   referent = w->id;
-  hv = node->node_id ^ referent->common.hash_id;
+  hv = node->node_id ^ referent->common.data.hash_id;
 
   for (tok=left_ht_bucket(thisAgent, hv); tok!=NIL; tok=tok->a.ht.next_in_bucket) {
     if (tok->node != node) continue;
@@ -4998,7 +4998,7 @@ void negative_node_left_addition (agent* thisAgent, rete_node *node,
     }
   }
 
-  hv = node->node_id ^ referent->common.hash_id;
+  hv = node->node_id ^ referent->common.data.hash_id;
 
   /* --- build new token, add it to the hash table --- */
   token_added(node);
@@ -5010,7 +5010,7 @@ void negative_node_left_addition (agent* thisAgent, rete_node *node,
 
   /* --- look through right memory for matches --- */
   am = node->b.posneg.alpha_mem_;
-  right_hv = am->am_id ^ referent->common.hash_id;
+  right_hv = am->am_id ^ referent->common.data.hash_id;
   for (rm=right_ht_bucket(thisAgent, right_hv); rm!=NIL; rm=rm->next_in_bucket) {
     if (rm->am != am) continue;
     /* --- does rm->w match new? --- */
@@ -5109,7 +5109,7 @@ void negative_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
   right_node_activation(node,TRUE);
 
   referent = w->id;
-  hv = node->node_id ^ referent->common.hash_id;
+  hv = node->node_id ^ referent->common.data.hash_id;
 
   for (tok=left_ht_bucket(thisAgent, hv); tok!=NIL; tok=tok->a.ht.next_in_bucket) {
     if (tok->node != node) continue;
@@ -5932,7 +5932,7 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
     if ((node_type==MP_BNODE)||(node_type==UNHASHED_MP_BNODE)) {
       remove_token_from_left_ht (thisAgent, tok, node->node_id ^
                                  (tok->a.ht.referent ?
-                                  tok->a.ht.referent->common.hash_id : 0));
+                                  tok->a.ht.referent->common.data.hash_id : 0));
       if (! mp_bnode_is_left_unlinked(node)) {
         if (! node->a.np.tokens) unlink_from_right_mem (node);
       }
@@ -5946,7 +5946,7 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
                (node_type==UNHASHED_NEGATIVE_BNODE)) {
       remove_token_from_left_ht (thisAgent, tok, node->node_id ^
                                  (tok->a.ht.referent ?
-                                  tok->a.ht.referent->common.hash_id : 0));
+                                  tok->a.ht.referent->common.data.hash_id : 0));
       if (! node->a.np.tokens) unlink_from_right_mem (node);
       for (t=tok->negrm_tokens; t!=NIL; t=next_t) {
         next_t = t->a.neg.next_negrm;
@@ -5958,7 +5958,7 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
     } else if ((node_type==MEMORY_BNODE)||(node_type==UNHASHED_MEMORY_BNODE)) {
       remove_token_from_left_ht (thisAgent, tok, node->node_id ^
                                  (tok->a.ht.referent ?
-                                  tok->a.ht.referent->common.hash_id : 0));
+                                  tok->a.ht.referent->common.data.hash_id : 0));
 #ifdef DO_ACTIVATION_STATS_ON_REMOVALS
       /* --- if doing statistics stuff, then activate each attached node --- */
       for (child=node->b.mem.first_linked_child; child!=NIL; child=next) {
@@ -6221,7 +6221,7 @@ void reteload_string (FILE* f) {
    We write out symbol names once at the beginning of the file, and
    thereafter refer to symbols using 32-bit index numbers instead of their
    full names.  Retesave_symbol_and_assign_index() writes out one symbol
-   and assigns it an index (stored in sym->common.a.retesave_symindex).
+   and assigns it an index (stored in sym->common.data.a.retesave_symindex).
    Index numbers are assigned sequentially -- the first symbol in the file
    has index number 1, the second has number 2, etc.  Retesave_symbol_table()
    saves the whole symbol table, using the following format:
@@ -6249,7 +6249,7 @@ Bool retesave_symbol_and_assign_index (agent* thisAgent, void *item, void* userd
 
   sym = static_cast<symbol_union *>(item);
   thisAgent->current_retesave_symindex++;
-  sym->common.a.retesave_symindex = thisAgent->current_retesave_symindex;
+  sym->common.data.a.retesave_symindex = thisAgent->current_retesave_symindex;
   retesave_string (symbol_to_string (thisAgent, sym, FALSE, NIL, 0), f);
   return FALSE;
 }
@@ -6367,9 +6367,9 @@ Bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, void* us
   am = static_cast<alpha_mem_struct *>(item);
   thisAgent->current_retesave_amindex++;
   am->retesave_amindex = thisAgent->current_retesave_amindex;
-  retesave_eight_bytes (am->id ? am->id->common.a.retesave_symindex : 0,f);
-  retesave_eight_bytes (am->attr ? am->attr->common.a.retesave_symindex : 0,f);
-  retesave_eight_bytes (am->value ? am->value->common.a.retesave_symindex : 0,f);
+  retesave_eight_bytes (am->id ? am->id->common.data.a.retesave_symindex : 0,f);
+  retesave_eight_bytes (am->attr ? am->attr->common.data.a.retesave_symindex : 0,f);
+  retesave_eight_bytes (am->value ? am->value->common.data.a.retesave_symindex : 0,f);
   retesave_one_byte (static_cast<byte>(am->acceptable ? 1 : 0),f);
   return FALSE;
 }
@@ -6450,13 +6450,13 @@ void retesave_varnames (varnames *names, FILE* f) {
   } else if (varnames_is_one_var(names)) {
     retesave_one_byte (1,f);
     sym = varnames_to_one_var (names);
-    retesave_eight_bytes (sym->common.a.retesave_symindex,f);
+    retesave_eight_bytes (sym->common.data.a.retesave_symindex,f);
   } else {
     retesave_one_byte (2,f);
     for (i=0, c=varnames_to_var_list(names); c!=NIL; i++, c=c->rest);
     retesave_eight_bytes (i,f);
     for (c=varnames_to_var_list(names); c!=NIL; c=c->rest)
-      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.data.a.retesave_symindex,f);
   }
 }
 
@@ -6544,12 +6544,12 @@ void retesave_rhs_value (rhs_value rv, FILE* f) {
   if (rhs_value_is_symbol(rv)) {
     retesave_one_byte (0,f);
     sym = rhs_value_to_symbol (rv);
-    retesave_eight_bytes (sym->common.a.retesave_symindex,f);
+    retesave_eight_bytes (sym->common.data.a.retesave_symindex,f);
   } else if (rhs_value_is_funcall(rv)) {
     retesave_one_byte (1,f);
     c = rhs_value_to_funcall_list (rv);
     sym = static_cast<rhs_function *>(c->first)->name;
-    retesave_eight_bytes (sym->common.a.retesave_symindex,f);
+    retesave_eight_bytes (sym->common.data.a.retesave_symindex,f);
     c=c->rest;
     for (i=0; c!=NIL; i++, c=c->rest);
     retesave_eight_bytes (i,f);
@@ -6737,7 +6737,7 @@ void retesave_rete_test (rete_test *rt, FILE* f) {
   retesave_one_byte (rt->type,f);
   retesave_one_byte (rt->right_field_num,f);
   if (test_is_constant_relational_test(rt->type)) {
-    retesave_eight_bytes(rt->data.constant_referent->common.a.retesave_symindex, f);
+    retesave_eight_bytes(rt->data.constant_referent->common.data.a.retesave_symindex, f);
   } else if (test_is_variable_relational_test(rt->type)) {
     retesave_one_byte (rt->data.variable_referent.field_num,f);
     retesave_two_bytes (rt->data.variable_referent.levels_up,f);
@@ -6745,7 +6745,7 @@ void retesave_rete_test (rete_test *rt, FILE* f) {
     for (i=0, c=rt->data.disjunction_list; c!=NIL; i++, c=c->rest);
     retesave_two_bytes (static_cast<uint16_t>(i),f);
     for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
-      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.data.a.retesave_symindex,f);
   }
 }
 
@@ -6923,7 +6923,7 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
 
   case P_BNODE:
     prod = node->b.p.prod;
-    retesave_eight_bytes (prod->name->common.a.retesave_symindex,f);
+    retesave_eight_bytes (prod->name->common.data.a.retesave_symindex,f);
     if (prod->documentation) {
       retesave_one_byte (1,f);
       retesave_string (prod->documentation,f);
@@ -6936,7 +6936,7 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
     for (i=0, c=prod->rhs_unbound_variables; c!=NIL; i++, c=c->rest);
     retesave_eight_bytes (i,f);
     for (c=prod->rhs_unbound_variables; c!=NIL; c=c->rest)
-      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.data.a.retesave_symindex,f);
     if (node->b.p.parents_nvn) {
       retesave_one_byte (1,f);
       retesave_node_varnames (node->b.p.parents_nvn, node->parent, f);

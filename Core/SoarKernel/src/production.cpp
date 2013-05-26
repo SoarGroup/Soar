@@ -252,7 +252,7 @@ uint32_t hash_condition (agent* thisAgent,
    Get_new_tc_number() is called from lots of places.  Any time we need
    to mark a set of identifiers and/or variables, we get a new tc_number
    by calling this routine, then proceed to mark various ids or vars
-   by setting the sym->common.tc_num.
+   by setting the sym->common.data.tc_num.
 
    A global tc number counter is maintained and incremented by this
    routine in order to generate a different tc_number each time.  If
@@ -297,30 +297,30 @@ tc_number get_new_tc_number (agent* thisAgent) {
 ===================================================================== */
 
 /*#define mark_identifier_if_unmarked(ident,tc,id_list) { \
-  if ((ident)->common.tc_num != (tc)) { \
-    (ident)->common.tc_num = (tc); \
+  if ((ident)->common.data.data.tc_num != (tc)) { \
+    (ident)->common.data.data.tc_num = (tc); \
     if (id_list) push ((ident),(*(id_list))); } }*/
 inline void mark_identifier_if_unmarked(agent* thisAgent,
 										Symbol * ident, tc_number tc, list ** id_list)
 {
-  if ((ident)->common.tc_num != (tc))
+  if ((ident)->common.data.tc_num != (tc))
   {
-    (ident)->common.tc_num = (tc);
+    (ident)->common.data.tc_num = (tc);
     if (id_list)
 		push (thisAgent, (ident),(*(id_list)));
   }
 }
 
 /*#define mark_variable_if_unmarked(v,tc,var_list) { \
-  if ((v)->common.tc_num != (tc)) { \
-    (v)->common.tc_num = (tc); \
+  if ((v)->common.data.data.tc_num != (tc)) { \
+    (v)->common.data.data.tc_num = (tc); \
     if (var_list) push ((v),(*(var_list))); } }*/
 inline void mark_variable_if_unmarked(agent* thisAgent, Symbol * v,
 									  tc_number tc, list ** var_list)
 {
-  if ((v)->common.tc_num != (tc))
+  if ((v)->common.data.tc_num != (tc))
   {
-    (v)->common.tc_num = (tc);
+    (v)->common.data.tc_num = (tc);
     if (var_list) push (thisAgent, (v),(*(var_list)));
   }
 }
@@ -333,7 +333,7 @@ void unmark_identifiers_and_free_list (agent* thisAgent, list *id_list) {
     sym = static_cast<symbol_union *>(id_list->first);
     next = id_list->rest;
     free_cons (thisAgent, id_list);
-    sym->common.tc_num = 0;
+    sym->common.data.tc_num = 0;
     id_list = next;
   }
 }
@@ -346,7 +346,7 @@ void unmark_variables_and_free_list (agent* thisAgent, list *var_list) {
     sym = static_cast<symbol_union *>(var_list->first);
     next = var_list->rest;
     free_cons (thisAgent, var_list);
-    sym->common.tc_num = 0;
+    sym->common.data.tc_num = 0;
     var_list = next;
   }
 }
@@ -431,9 +431,9 @@ void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list
 
 void add_symbol_to_tc (agent* thisAgent, Symbol *sym, tc_number tc,
                        list **id_list, list **var_list) {
-  if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) {
+  if (sym->common.data.symbol_type==VARIABLE_SYMBOL_TYPE) {
     mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
-  } else if (sym->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
+  } else if (sym->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
     mark_identifier_if_unmarked (thisAgent, sym, tc, id_list);
   }
 }
@@ -474,7 +474,7 @@ void add_action_to_tc (agent* thisAgent, action *a, tc_number tc,
 }
 
 Bool symbol_is_in_tc (Symbol *sym, tc_number tc) {
-    return (sym->common.tc_num == tc);
+    return (sym->common.data.tc_num == tc);
 }
 
 Bool test_is_in_tc (test t, tc_number tc) {
@@ -807,11 +807,11 @@ uint32_t canonical_test(test t)
 
   if (t->type == EQUALITY_TEST) {
       sym = t->data.referent;
-      if (sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ||
-        sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
-        sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+      if (sym->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ||
+        sym->common.data.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
+        sym->common.data.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
       {
-        return sym->common.hash_id;
+        return sym->common.data.hash_id;
       }
       else
       return NON_EQUAL_TEST_RETURN_VAL;

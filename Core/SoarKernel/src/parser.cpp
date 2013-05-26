@@ -117,7 +117,7 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
   Bool just_created;
 
   /* --- if not a variable, do nothing --- */
-  if ((*sym)->common.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
+  if ((*sym)->common.data.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
   /* --- if not a placeholder variable, do nothing --- */
   if (*((*sym)->var.name + 1) != '#') return;
 
@@ -832,7 +832,7 @@ test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_i
 
 				// Symbol type can only be IDENTIFIER_SYMBOL_TYPE if it is a long term identifier (lti),
 				// Otherwise, it isn't possible to have an IDENTIFIER_SYMBOL_TYPE here.
-				if((sym->common.symbol_type != VARIABLE_SYMBOL_TYPE) && (sym->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)) {
+				if((sym->common.data.symbol_type != VARIABLE_SYMBOL_TYPE) && (sym->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE)) {
 					print_with_symbols(thisAgent, "Warning: Constant %y in id field test.\n", sym);
 					print(thisAgent, "         This will never match.\n");
 

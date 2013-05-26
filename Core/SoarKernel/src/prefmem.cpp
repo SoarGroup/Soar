@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -107,7 +107,7 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
 
 void deallocate_preference (agent* thisAgent, preference *pref) {
 
-#ifdef DEBUG_PREFS  
+#ifdef DEBUG_PREFS
   print (thisAgent, "\nDeallocating preference at 0x%8x: ",reinterpret_cast<uintptr_t>(pref));
   print_preference (thisAgent, pref);
   if (pref->reference_count != 0) {   /* --- sanity check --- */
@@ -122,7 +122,7 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
   if (pref->on_goal_list)
     remove_from_dll (pref->inst->match_goal->id.preferences_from_goal,
                      pref, all_of_goal_next, all_of_goal_prev);
-  
+
   /* --- remove it from the list of pref's from that instantiation --- */
   remove_from_dll (pref->inst->preferences_generated, pref,
                    inst_next, inst_prev);
@@ -139,10 +139,10 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
   {
 	wma_remove_pref_o_set( thisAgent, pref );
   }
-  
+
   /* --- free the memory --- */
   free_with_pool (&thisAgent->preference_pool, pref);
-}  
+}
 
 /* ----------------------------------------------------------------------
    Possibly_deallocate_preference_and_clones() checks whether a given
@@ -153,7 +153,7 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
 
 Bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref) {
   preference *clone, *next;
-  
+
   if (pref->reference_count) return FALSE;
   for (clone=pref->next_clone; clone!=NIL; clone=clone->next_clone)
     if (clone->reference_count) return FALSE;
@@ -188,7 +188,7 @@ Bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pr
 
 Bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
   preference *any_clone;
-  
+
   any_clone = NIL;
   if (pref->next_clone) {
     any_clone = pref->next_clone;
@@ -213,13 +213,13 @@ Bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
    hence temporary memory).
 ------------------------------------------------------------------------ */
 
-bool add_preference_to_tm (agent* thisAgent, preference *pref) 
+bool add_preference_to_tm (agent* thisAgent, preference *pref)
 {
 #ifdef DEBUG_PREFS
    print (thisAgent, "\nAdd preference at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
    print_preference (thisAgent, pref);
 #endif
-   
+
    slot *s = make_slot( thisAgent, pref->id, pref->attr );
    preference *p2;
 
@@ -241,46 +241,46 @@ bool add_preference_to_tm (agent* thisAgent, preference *pref)
 		   return false;
 	   }
    }
-   
+
    pref->slot = s;
-   
+
    insert_at_head_of_dll (s->all_preferences, pref,
                           all_of_slot_next, all_of_slot_prev);
-   
+
    /* --- add preference to the list (in the right place, according to match
           goal level of the instantiations) for the slot --- */
-   
-   if (!s->preferences[pref->type]) 
+
+   if (!s->preferences[pref->type])
    {
       /* --- this is the only pref. of its type, just put it at the head --- */
       insert_at_head_of_dll (s->preferences[pref->type], pref, next, prev);
-   } 
-   else if (s->preferences[pref->type]->inst->match_goal_level >= pref->inst->match_goal_level) 
+   }
+   else if (s->preferences[pref->type]->inst->match_goal_level >= pref->inst->match_goal_level)
    {
       /* --- it belongs at the head of the list, so put it there --- */
       insert_at_head_of_dll (s->preferences[pref->type], pref, next, prev);
-   } 
-   else 
+   }
+   else
    {
       /* --- scan through the pref. list, find the one to insert after --- */
       for (p2 = s->preferences[pref->type]; p2->next != NIL; p2 = p2->next)
-      {  
+      {
          if (p2->next->inst->match_goal_level >= pref->inst->match_goal_level)
             break;
       }
-      
+
       /* --- insert pref after p2 --- */
       pref->next = p2->next;
       pref->prev = p2;
       p2->next = pref;
-      if (pref->next) 
+      if (pref->next)
          pref->next->prev = pref;
    }
-   
-   /* --- other miscellaneous stuff --- */    
+
+   /* --- other miscellaneous stuff --- */
    pref->in_tm = TRUE;
    preference_add_ref (pref);
-   
+
    // if it's the case that the slot is unchanged, but has
    // some references laying around, clear them
    // this doesn't cause immediate memory deallocate/allocate
@@ -330,19 +330,19 @@ bool add_preference_to_tm (agent* thisAgent, preference *pref)
          (*s->wma_val_references)[ pref->value ]++;
       }
    }
-   
+
    /* --- update identifier levels --- */
-   if (pref->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+   if (pref->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
    {
       post_link_addition (thisAgent, pref->id, pref->value);
    }
-   
+
    if (preference_is_binary(pref->type))
    {
-      if (pref->referent->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+      if (pref->referent->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
          post_link_addition (thisAgent, pref->id, pref->referent);
    }
-   
+
    /* --- if acceptable/require pref for context slot, we may need to add a
    wme later --- */
    if ((s->isa_context_slot) &&
@@ -361,7 +361,7 @@ bool add_preference_to_tm (agent* thisAgent, preference *pref)
 
 void remove_preference_from_tm (agent* thisAgent, preference *pref) {
   slot *s;
-  
+
   s = pref->slot;
 
 #ifdef DEBUG_PREFS
@@ -374,11 +374,11 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
                    all_of_slot_next, all_of_slot_prev);
   remove_from_dll (s->preferences[pref->type], pref, next, prev);
 
-  /* --- other miscellaneous stuff --- */    
+  /* --- other miscellaneous stuff --- */
   pref->in_tm = FALSE;
   pref->slot = NIL;      /* BUG shouldn't we use pref->slot in place of pref->in_tm? */
   mark_slot_as_changed (thisAgent, s);
-    
+
   /* --- if acceptable/require pref for context slot, we may need to remove
      a wme later --- */
   if ((s->isa_context_slot) &&
@@ -387,10 +387,10 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
     mark_context_slot_as_acceptable_preference_changed (thisAgent, s);
 
   /* --- update identifier levels --- */
-  if (pref->value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
+  if (pref->value->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
     post_link_removal (thisAgent, pref->id, pref->value);
   if (preference_is_binary(pref->type))
-    if (pref->referent->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
+    if (pref->referent->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
       post_link_removal (thisAgent, pref->id, pref->referent);
 
   /* --- deallocate it and clones if possible --- */
@@ -407,7 +407,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
    done.
 ------------------------------------------------------------------------ */
 
-void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_rejects, pref_buffer_list& bufdeallo) 
+void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_rejects, pref_buffer_list& bufdeallo)
 {
   preference *pref, *next_pref, *p, *next_p;
   slot *s;

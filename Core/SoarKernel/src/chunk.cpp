@@ -73,9 +73,9 @@ using namespace soar_TraceNames;
 
 inline void add_results_if_needed(agent* thisAgent, Symbol * sym)
 {
-  if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
+  if ((sym)->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
       if ( ((sym)->id.level >= thisAgent->results_match_goal_level) &&
-           ((sym)->common.tc_num != thisAgent->results_tc_number) )
+           ((sym)->common.data.tc_num != thisAgent->results_tc_number) )
         add_results_for_id(thisAgent, sym);
 }
 
@@ -119,7 +119,7 @@ void add_results_for_id (agent* thisAgent, Symbol *id) {
   preference *pref;
   wme *w;
 
-  id->common.tc_num = thisAgent->results_tc_number;
+  id->common.data.tc_num = thisAgent->results_tc_number;
 
   /* --- scan through all preferences and wmes for all slots for this id --- */
   for (w=id->id.input_wmes; w!=NIL; w=w->next)
@@ -146,7 +146,7 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
   thisAgent->extra_result_prefs_from_instantiation = inst->preferences_generated;
   for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
     if ( (pref->id->id.level < thisAgent->results_match_goal_level) &&
-         (pref->id->common.tc_num != thisAgent->results_tc_number) ) {
+         (pref->id->common.data.tc_num != thisAgent->results_tc_number) ) {
       add_pref_to_results(thisAgent, pref);
     }
   return thisAgent->results;
@@ -214,17 +214,17 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 
     //      if ((*sym)->id.smem_lti != NIL)                 // don't variablize lti (long term identifiers)
     //      {
-    //        (*sym)->common.tc_num = thisAgent->variablization_tc;
+    //        (*sym)->common.data.tc_num = thisAgent->variablization_tc;
     //        (*sym)->id.variablization = (*sym);
     //        return;
     //      }
     //
 
-    if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
+    if ((*sym)->common.data.tc_num == thisAgent->variablization_tc) {
       /* --- it's already been variablized, so use the existing variable --- */
-      print(thisAgent, "Debug | Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
-      var = (*sym)->common.variablized_symbol;
-      var->common.unvariablized_symbol = *sym;
+      print(thisAgent, "Debug | Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+      var = (*sym)->common.data.variablized_symbol;
+      var->common.data.unvariablized_symbol = *sym;
       //symbol_remove_ref (thisAgent, *sym);
       *sym = var;
       symbol_add_ref(thisAgent, var);
@@ -233,16 +233,16 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 
     /* --- need to create a new variable.  If constant is being variablized
      *     just used 'c' instead of first letter of id name --- */
-    (*sym)->common.tc_num = thisAgent->variablization_tc;
+    (*sym)->common.data.tc_num = thisAgent->variablization_tc;
     if(symbol_is_identifier(*sym))
       prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
     else
       prefix[0] = 'c';
     prefix[1] = 0;
     var = generate_new_variable (thisAgent, prefix);
-    (*sym)->common.variablized_symbol = var;
-    var->common.unvariablized_symbol = *sym;
-    print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+    (*sym)->common.data.variablized_symbol = var;
+    var->common.data.unvariablized_symbol = *sym;
+    print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
     //Do not need to decrease refcount any more b/c we're caching it
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
@@ -304,7 +304,7 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
       {
         print(thisAgent, "Debug | Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
         variablize_symbol (thisAgent, &(ct->data.referent));
-        ct->data.referent->common.original_var_symbol = original_referent;
+        ct->data.referent->common.data.original_var_symbol = original_referent;
       }
       break;
     default:
@@ -396,7 +396,7 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym) {
   Symbol *var;
   bool should_variablize = false, has_original_var = false;
 
-  has_original_var = ((*sym)->common.variablized_symbol != NIL);
+  has_original_var = ((*sym)->common.data.variablized_symbol != NIL);
   should_variablize = symbol_is_non_lti_identifier((*sym));
 
   // Will need to revisit this part when doing lti's as constant
@@ -404,22 +404,22 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym) {
 
   //      if ((*sym)->id.smem_lti != NIL)                 // don't variablize lti (long term identifiers)
   //      {
-  //        (*sym)->common.tc_num = thisAgent->variablization_tc;
+  //        (*sym)->common.data.tc_num = thisAgent->variablization_tc;
   //        (*sym)->id.variablization = (*sym);
   //        return;
   //      }
   //
 
-  if ((*sym)->common.tc_num == thisAgent->variablization_tc) {
+  if ((*sym)->common.data.tc_num == thisAgent->variablization_tc) {
     /* --- it's already been variablized, so use the existing variable --- */
     print(thisAgent, "Debug | variablize_rhs_symbol found existing variablization %s.\n",
-          symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+          symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
     if (!should_variablize && has_original_var)
     {
 
     }
-    var = (*sym)->common.variablized_symbol;
-    var->common.unvariablized_symbol = *sym;
+    var = (*sym)->common.data.variablized_symbol;
+    var->common.data.unvariablized_symbol = *sym;
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
     symbol_add_ref(thisAgent, var);
@@ -428,16 +428,16 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym) {
 
   /* --- need to create a new variable.  If constant is being variablized
    *     just used 'c' instead of first letter of id name --- */
-  (*sym)->common.tc_num = thisAgent->variablization_tc;
+  (*sym)->common.data.tc_num = thisAgent->variablization_tc;
   if(symbol_is_identifier(*sym))
     prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
   else
     prefix[0] = 'c';
   prefix[1] = 0;
   var = generate_new_variable (thisAgent, prefix);
-  (*sym)->common.variablized_symbol = var;
-  var->common.unvariablized_symbol = *sym;
-  print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.variablized_symbol, FALSE, NIL, NIL));
+  (*sym)->common.data.variablized_symbol = var;
+  var->common.data.unvariablized_symbol = *sym;
+  print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
   //Do not need to decrease refcount any more b/c we're caching it
   //symbol_remove_ref (thisAgent, *sym);
   *sym = var;
@@ -463,12 +463,12 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *result, b
   symbol_add_ref(thisAgent, val);
 
   if (variablize) {
-    if (id->common.variablized_symbol)
+    if (id->common.data.variablized_symbol)
       variablize_rhs_symbol (thisAgent, &id);
-    if ((attr->common.variablized_symbol) ||
+    if ((attr->common.data.variablized_symbol) ||
         (symbol_is_non_lti_identifier(attr)))
       variablize_rhs_symbol (thisAgent, &attr);
-    if ((val->common.variablized_symbol) ||
+    if ((val->common.data.variablized_symbol) ||
         (symbol_is_non_lti_identifier(val)))
       variablize_rhs_symbol (thisAgent, &val);
   }
@@ -482,7 +482,7 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *result, b
   if (preference_is_binary(result->type)) {
     symbol_add_ref(thisAgent, ref);
     if (variablize) {
-      if ((val->common.variablized_symbol) ||
+      if ((val->common.data.variablized_symbol) ||
           (symbol_is_non_lti_identifier(val)))
         variablize_rhs_symbol (thisAgent, &ref);
     }
@@ -512,18 +512,18 @@ void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
     break;
 
   default:
-    if ((t->data.referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (t->data.referent->common.tc_num != tc))
+    if ((t->data.referent->common.data.symbol_type==VARIABLE_SYMBOL_TYPE) && (t->data.referent->common.data.tc_num != tc))
       {
       print(thisAgent, "Reversing variable %s to constant %s.\n",
              symbol_to_string(thisAgent, t->data.referent, FALSE, NULL, 0),
-             symbol_to_string(thisAgent, t->data.referent->common.unvariablized_symbol, FALSE, NULL, 0));
+             symbol_to_string(thisAgent, t->data.referent->common.data.unvariablized_symbol, FALSE, NULL, 0));
       temp_sym = t->data.referent;
-      t->data.referent = temp_sym->common.unvariablized_symbol;
+      t->data.referent = temp_sym->common.data.unvariablized_symbol;
 
       // Debug | double-check refcount
       print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
              symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
-             temp_sym->common.reference_count);
+             temp_sym->common.data.reference_count);
       symbol_remove_ref (thisAgent, temp_sym);
       }
     break;
@@ -541,22 +541,22 @@ void reverse_unbound_referents_in_action (agent* thisAgent, rhs_value *r_val, tc
 
   rhs_symbol this_rhs_symbol = rhs_value_to_rhs_symbol(*r_val);
 
-  if ((this_rhs_symbol->referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) && (this_rhs_symbol->referent->common.tc_num != tc) &&
-      (this_rhs_symbol->referent->common.unvariablized_symbol->common.symbol_type != IDENTIFIER_SYMBOL_TYPE))
+  if ((this_rhs_symbol->referent->common.data.symbol_type==VARIABLE_SYMBOL_TYPE) && (this_rhs_symbol->referent->common.data.tc_num != tc) &&
+      (this_rhs_symbol->referent->common.data.unvariablized_symbol->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE))
   {
     print(thisAgent, "Reversing rhs %s to constant %s.\n",
         symbol_to_string(thisAgent, this_rhs_symbol->referent, FALSE, NULL, 0),
-        symbol_to_string(thisAgent, this_rhs_symbol->referent->common.unvariablized_symbol, FALSE, NULL, 0));
+        symbol_to_string(thisAgent, this_rhs_symbol->referent->common.data.unvariablized_symbol, FALSE, NULL, 0));
 
     temp_sym = this_rhs_symbol->referent;
-    this_rhs_symbol->referent = temp_sym->common.unvariablized_symbol;
+    this_rhs_symbol->referent = temp_sym->common.data.unvariablized_symbol;
 
     // Debug | Don't think this is necessary unless r_val is NIL in which case the above code would not work
     (*r_val) = rhs_symbol_to_rhs_value(this_rhs_symbol);
     // Debug | Double-check refcount
     print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
            symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
-           temp_sym->common.reference_count);
+           temp_sym->common.data.reference_count);
     symbol_remove_ref (thisAgent, temp_sym);
   }
 }
@@ -839,11 +839,11 @@ void add_goal_or_impasse_tests (agent* thisAgent, chunk_cond *all_ccs) {
     if (cc->instantiated_cond->type!=POSITIVE_CONDITION) continue;
     id = cc->instantiated_cond->data.tests.id_test->data.referent;
     if ( (id->id.isa_goal || id->id.isa_impasse) &&
-         (id->common.tc_num != tc) )
+         (id->common.data.tc_num != tc) )
     {
       t = make_test(thisAgent, NULL, ((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
       add_new_test_to_test (thisAgent, &(cc->variablized_cond->data.tests.id_test), t);
-      id->common.tc_num = tc;
+      id->common.data.tc_num = tc;
     }
   }
 }

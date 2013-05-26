@@ -215,7 +215,7 @@ char *string_to_escaped_string (agent* thisAgent, char *s,
 
 char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
 {
-  switch(sym->common.symbol_type) {
+  switch(sym->common.data.symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
 	  return kTypeVariable ;
   case IDENTIFIER_SYMBOL_TYPE:
@@ -237,7 +237,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
   Bool is_rereadable;
   Bool has_angle_bracket;
 
-  switch(sym->common.symbol_type) {
+  switch(sym->common.data.symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
     if (!dest) return sym->var.name;
     strncpy (dest, sym->var.name, dest_size);
@@ -421,9 +421,9 @@ void print_symbol_with_original(agent *thisAgent, Symbol *sym)
 {
   print(thisAgent, "%s",
       (sym ? symbol_to_string (thisAgent, sym, FALSE, NULL, 0) : "NULL (PROBLEM!)"));
-      if (sym && sym->common.original_var_symbol)
+      if (sym && sym->common.data.original_var_symbol)
       {
-        print(thisAgent, "(%s)", symbol_to_string (thisAgent, sym->common.original_var_symbol, FALSE, NULL, 0));
+        print(thisAgent, "(%s)", symbol_to_string (thisAgent, sym->common.data.original_var_symbol, FALSE, NULL, 0));
       }
 }
 
@@ -1385,7 +1385,7 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
 ===========================
 */
 Bool wme_filter_component_match(Symbol * filterComponent, Symbol * wmeComponent) {
-  if ((filterComponent->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+  if ((filterComponent->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
       (!strcmp(filterComponent->sc.name,"*")))
     return TRUE;
 

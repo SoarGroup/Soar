@@ -48,7 +48,7 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 			return false;
 		}
 
-		if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+		if (value->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE)
 		{
 			return false;
 		}
@@ -190,7 +190,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 			print_location_of_most_recent_lexeme(agnt);
 			return NIL;
 		}
-		if (value->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
+		if (value->common.data.symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
 			print (agnt, "The current %s ", agnt->lexeme.string);
 			print_with_symbols (agnt, "(%y) is not an identifier.\n", value);
 			print_location_of_most_recent_lexeme(agnt);
@@ -330,9 +330,9 @@ bool is_whole_number(const char * str)
  **************************************************************************/
 double get_number_from_symbol( Symbol *sym )
 {
-	if ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+	if ( sym->common.data.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
 		return sym->fc.value;
-	else if ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+	else if ( sym->common.data.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
 		return static_cast<double>(sym->ic.value);
 
 	return 0.0;

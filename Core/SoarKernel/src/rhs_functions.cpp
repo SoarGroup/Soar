@@ -316,7 +316,7 @@ capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_
   }
 
   sym = static_cast<Symbol *>(args->first);
-  if (sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE) {
+  if (sym->common.data.symbol_type != SYM_CONSTANT_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
     return NIL;
   }
@@ -440,7 +440,7 @@ Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data
 
 	sym = (Symbol *) args->first;
 
-	if ( sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
+	if ( sym->common.data.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
 	{
 		print_with_symbols( thisAgent, "Error: non-symbol (%y) passed to 'trim' function.\n", sym );
 		return NIL;
@@ -497,7 +497,7 @@ Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user
   }
 
   state = static_cast<Symbol *>(args->first);
-  if (state->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+  if (state->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-identifier (%y) passed to dont-learn function.\n", state);
     return NIL;
   } else if (! state->id.isa_goal) {
@@ -533,7 +533,7 @@ Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* /*use
   }
 
   state = static_cast<Symbol *>(args->first);
-  if (state->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+  if (state->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-identifier (%y) passed to force-learn function.\n", state);
     return NIL;
   } else if (! state->id.isa_goal) {
@@ -575,7 +575,7 @@ void recursive_wme_copy(agent* thisAgent,
    Symbol* new_value = curwme->value;
 
    /* Handling the case where the attribute is an id symbol */
-   if ( curwme->attr->common.symbol_type == 1 ) {
+   if ( curwme->attr->common.data.symbol_type == 1 ) {
       /* Have I already made a new identifier for this identifier */
       std::map<Symbol*,Symbol*>::iterator it = processedSymbols.find(curwme->attr);
       if ( it != processedSymbols.end() ) {
@@ -596,7 +596,7 @@ void recursive_wme_copy(agent* thisAgent,
    }
 
    /* Handling the case where the value is an id symbol */
-   if ( curwme->value->common.symbol_type == 1 ) {
+   if ( curwme->value->common.data.symbol_type == 1 ) {
       /* Have I already made a new identifier for this identifier */
       std::map<Symbol*,Symbol*>::iterator it = processedSymbols.find(curwme->value);
       if ( it != processedSymbols.end() ) {
@@ -682,7 +682,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* /*user_d
 
    /* Getting the argument symbol */
    Symbol* baseid = static_cast<Symbol *>(args->first);
-   if ( baseid->common.symbol_type != 1 ) {
+   if ( baseid->common.data.symbol_type != 1 ) {
       return make_sym_constant(thisAgent,"*symbol not id*");
    }
 

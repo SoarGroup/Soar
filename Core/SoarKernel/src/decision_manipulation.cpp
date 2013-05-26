@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -38,10 +38,10 @@ void select_next_operator( agent *my_agent, const char *operator_id )
 {
 	select_init( my_agent );
 	std::string& op = my_agent->select->select_operator;
-	
+
 	my_agent->select->select_enabled = true;
 	op.assign(operator_id);
-	
+
 	assert( !op.empty() );
 
 	// lazy users may use a lower-case letter
@@ -74,7 +74,7 @@ preference *select_force( agent *my_agent, preference *candidates, bool reinit )
 		// go through the list till we find a match or done
 		while ( cand && !return_val )
 		{
-			if ( cand->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+			if ( cand->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 			{
 				// clear comparison string
 				temp = "";
@@ -90,7 +90,7 @@ preference *select_force( agent *my_agent, preference *candidates, bool reinit )
 				if ( !my_agent->select->select_operator.compare( temp ) )
 					return_val = cand;
 			}
-			
+
 			cand = cand->next;
 		}
 

@@ -15,14 +15,6 @@
  * =======================================================================
  */
 
-/* ======================================================================
-         Working memory routines for Soar 6
-   ====================================================================== */
-
-/* Debugging stuff:  #define DEBUG_WMES to get slot printouts */
-
-//#define DEBUG_WMES
-
 #include <stdlib.h>
 
 #include "wmem.h"
@@ -37,7 +29,6 @@
 #include "tempmem.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
-
 #include "wma.h"
 #include "episodic_memory.h"
 
@@ -130,12 +121,12 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
 
 void add_wme_to_wm (agent* thisAgent, wme *w)
 {
-	assert( ( ( w->id->id.common_symbol_info.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->id->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
-		( ( w->attr->id.common_symbol_info.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->attr->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
-		( ( w->value->id.common_symbol_info.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->value->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) );
+	assert( ( ( w->id->id.data.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->id->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
+		( ( w->attr->id.data.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->attr->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
+		( ( w->value->id.data.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->value->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) );
 
 	push (thisAgent, w, thisAgent->wmes_to_add);
-	if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+	if (w->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
 	{
 		post_link_addition (thisAgent, w->id, w->value);
 		if (w->attr == thisAgent->operator_symbol)
@@ -149,7 +140,7 @@ void remove_wme_from_wm (agent* thisAgent, wme *w)
 {
    push (thisAgent, w, thisAgent->wmes_to_remove);
 
-   if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+   if (w->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
    {
       post_link_removal (thisAgent, w->id, w->value);
       if (w->attr==thisAgent->operator_symbol)
@@ -317,7 +308,7 @@ void deallocate_wme (agent* thisAgent, wme *w) {
 Symbol *find_name_of_object (agent* thisAgent, Symbol *object) {
   slot *s;
 
-  if (object->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) return NIL;
+  if (object->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) return NIL;
   s = find_slot (object, thisAgent->name_symbol);
   if (! s) return NIL;
   if (! s->wmes) return NIL;

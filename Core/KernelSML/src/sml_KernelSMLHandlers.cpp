@@ -670,7 +670,7 @@ static bool AddWmeChildrenToXML( AgentSML* pAgentSML, wme* pRoot, soarxml::Eleme
 		pTagResult->AddChild(pTagWme) ;
 
 		// If this is an identifier then add all of its children too
-		if ( w->value->sc.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+		if ( w->value->sc.data.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 		{	
 			if ( std::find( traversedList.begin(), traversedList.end(), w ) == traversedList.end() )
 			{

@@ -631,17 +631,17 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 	smem_wme_list *return_val = new smem_wme_list;
 
 	// augs only exist for identifiers
-	if ( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	if ( id->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 	{
 		if ( tc != NIL )
 		{
-			if ( tc == id->common.tc_num )
+			if ( tc == id->common.data.tc_num )
 			{
 				return return_val;
 			}
 			else
 			{
-				id->common.tc_num = tc;
+				id->common.data.tc_num = tc;
 			}
 		}
 
@@ -939,12 +939,12 @@ smem_hash_id smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail 
 
 	if ( symbol_is_constant( sym ) )
 	{
-		if ( ( !sym->common.smem_hash ) || ( sym->common.smem_valid != my_agent->smem_validation ) )
+		if ( ( !sym->common.data.smem_hash ) || ( sym->common.data.smem_valid != my_agent->smem_validation ) )
 		{
-			sym->common.smem_hash = NIL;
-			sym->common.smem_valid = my_agent->smem_validation;
+			sym->common.data.smem_hash = NIL;
+			sym->common.data.smem_valid = my_agent->smem_validation;
 
-			switch ( sym->common.symbol_type )
+			switch ( sym->common.data.symbol_type )
 			{
 				case SYM_CONSTANT_SYMBOL_TYPE:
 					return_val = smem_temporal_hash_str( my_agent, sym->sc.name, add_on_fail );
@@ -960,11 +960,11 @@ smem_hash_id smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail 
 			}
 
 			// cache results for later re-use
-			sym->common.smem_hash = return_val;
-			sym->common.smem_valid = my_agent->smem_validation;
+			sym->common.data.smem_hash = return_val;
+			sym->common.data.smem_valid = my_agent->smem_validation;
 		}
 
-		return_val = sym->common.smem_hash;
+		return_val = sym->common.data.smem_hash;
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -1260,7 +1260,7 @@ void _smem_lti_from_test( test t, std::set<Symbol *> *valid_ltis )
 
   if (t->type == EQUALITY_TEST)
 	{
-		if ( ( t->data.referent->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( t->data.referent->id.smem_lti != NIL ) )
+		if ( ( t->data.referent->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( t->data.referent->id.smem_lti != NIL ) )
 		{
 			valid_ltis->insert( t->data.referent );
 		}
@@ -1285,7 +1285,7 @@ void _smem_lti_from_rhs_value( rhs_value rv, std::set<Symbol *> *valid_ltis )
 	if ( rhs_value_is_symbol( rv ) )
 	{
 		Symbol *sym = rhs_value_to_symbol( rv );
-		if ( ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( sym->id.smem_lti != NIL ) )
+		if ( ( sym->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( sym->id.smem_lti != NIL ) )
 		{
 			valid_ltis->insert( sym );
 		}
@@ -1349,7 +1349,7 @@ bool smem_valid_production( condition *lhs_top, action *rhs_top )
 						id = rhs_value_to_symbol( a->id );
 
 						// non-identifiers are ok
-						if ( id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+						if ( id->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 						{
 							good_action = true;
 						}
@@ -1460,7 +1460,7 @@ inline smem_lti_id smem_lti_add_id( agent *my_agent, char name_letter, uint64_t 
 // makes a non-long-term identifier into a long-term identifier
 inline smem_lti_id smem_lti_soar_add( agent *my_agent, Symbol *id )
 {
-	if ( ( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+	if ( ( id->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 		 ( id->id.smem_lti == NIL ) )
 	{
 		// try to find existing lti
@@ -3273,7 +3273,7 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 					{
 						// create a new chunk
 						temp_chunk = new smem_chunk;
-						temp_chunk->lti_letter = ( ( chunk_attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( static_cast<char>( static_cast<int>( chunk_attr->sc.name[0] ) ) ):( 'X' ) );
+						temp_chunk->lti_letter = ( ( chunk_attr->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( static_cast<char>( static_cast<int>( chunk_attr->sc.name[0] ) ) ):( 'X' ) );
 						temp_chunk->lti_number = ( intermediate_counter++ );
 						temp_chunk->lti_id = NIL;
 						temp_chunk->slots = new smem_slot_map;
@@ -3719,7 +3719,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 								state->id.smem_info->last_cmd_time[ time_slot ] = (*w_p)->timetag;
 							}
 
-							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+							if ( ( (*w_p)->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 								 ( parent_level == 0 ) &&
 								 ( ( (*w_p)->attr == my_agent->smem_sym_query ) || ( (*w_p)->attr == my_agent->smem_sym_store ) ) )
 							{
@@ -3785,7 +3785,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					// collect information about known commands
 					if ( (*w_p)->attr == my_agent->smem_sym_retrieve )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( path == blank_slate ) )
 						{
 							retrieve = (*w_p)->value;
@@ -3798,7 +3798,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_query )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
 							 ( query == NIL ) )
 
@@ -3813,7 +3813,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_negquery )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
 							 ( negquery == NIL ) )
 
@@ -3828,7 +3828,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_prohibit )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
 							 ( (*w_p)->value->id.smem_lti != NIL ) )
 						{
@@ -3856,7 +3856,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_store )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == blank_slate ) || ( path == cmd_store ) ) )
 						{
 							store.push_back( (*w_p)->value );

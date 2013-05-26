@@ -180,8 +180,8 @@ typedef uint64_t smem_hash_id;
  * WARNING: next_in_hash_table MUST be the first field.  This field is used
  *          by the resizable hash table routines.
  *
- * WARNING: In each of the five kinds of symbols structs common_symbol_info
- *          MUST be the first field.
+ * WARNING: In each of the five kinds of symbols structs data MUST be the
+ *          first field.
  * -- */
 
 typedef struct symbol_common_data_struct {
@@ -209,23 +209,23 @@ typedef struct symbol_common_data_struct {
 } symbol_common_data;
 
 typedef struct sym_constant_struct {
-  symbol_common_data common_symbol_info;
+  symbol_common_data data;
   char *name;
   struct production_struct *production;  /* NIL if no prod. has this name */
 } sym_constant;
 
 typedef struct int_constant_struct {
-  symbol_common_data common_symbol_info;
+  symbol_common_data data;
   int64_t value;
 } int_constant;
 
 typedef struct float_constant_struct {
-  symbol_common_data common_symbol_info;
+  symbol_common_data data;
   double value;
 } float_constant;
 
 typedef struct variable_struct {
-  symbol_common_data common_symbol_info;
+  symbol_common_data data;
   char *name;
   union symbol_union *current_binding_value;
   uint64_t gensym_number;
@@ -234,7 +234,7 @@ typedef struct variable_struct {
 
 /* Note: I arranged the fields below to try to minimize space */
 typedef struct identifier_struct {
-  symbol_common_data common_symbol_info;
+  symbol_common_data data;
   uint64_t name_number;
   char name_letter;
 

@@ -281,7 +281,7 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 		 but this is natural Soar behavior and outside our perview.
 
 		 */
-		if ((result->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+		if ((result->id.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
 				&& (result->id.smem_lti != NIL)&&
 				( result->id.level == SMEM_LTI_UNKNOWN_LEVEL ) &&
 				( new_id_level > 0 ) ){
@@ -306,7 +306,7 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 			sym = make_new_identifier(thisAgent, new_id_letter, new_id_level);
 			*(thisAgent->rhs_variable_bindings + index) = sym;
 			return sym;
-		} else if (sym->common.symbol_type == VARIABLE_SYMBOL_TYPE) {
+		} else if (sym->common.data.symbol_type == VARIABLE_SYMBOL_TYPE) {
 			new_id_letter = *(sym->var.name + 1);
 			sym = make_new_identifier(thisAgent, new_id_letter, new_id_level);
 			*(thisAgent->rhs_variable_bindings + index) = sym;
@@ -401,7 +401,7 @@ preference *execute_action(agent* thisAgent, action *a,
 	id = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
 	if (!id)
 		goto abort_execute_action;
-	if (id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+	if (id->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
 		print_with_symbols(thisAgent,
 				"Error: RHS makes a preference for %y (not an identifier)\n",
 				id);
@@ -412,7 +412,7 @@ preference *execute_action(agent* thisAgent, action *a,
 	if (!attr)
 		goto abort_execute_action;
   if (rhs_value_is_symbol(original_attr))
-    attr->common.original_var_symbol = rhs_value_to_symbol(original_attr);
+    attr->common.data.original_var_symbol = rhs_value_to_symbol(original_attr);
 
 	first_letter = first_letter_from_symbol(attr);
 
@@ -421,7 +421,7 @@ preference *execute_action(agent* thisAgent, action *a,
 		goto abort_execute_action;
 
   if (rhs_value_is_symbol(original_value))
-    value->common.original_var_symbol = rhs_value_to_symbol(original_value);
+    value->common.data.original_var_symbol = rhs_value_to_symbol(original_value);
 
   // Debug | I don't think we need to store original vars for referents bc they should always be operator IDs
   if (preference_is_binary(a->preference_type)) {
@@ -763,9 +763,9 @@ void create_instantiation(agent* thisAgent, production *prod,
 			 * jzxu April 22, 2009
 			 */
 			if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
-					&& ((pref->referent->var.common_symbol_info.symbol_type
+					&& ((pref->referent->var.data.symbol_type
 							== FLOAT_CONSTANT_SYMBOL_TYPE)
-							|| (pref->referent->var.common_symbol_info.symbol_type
+							|| (pref->referent->var.data.symbol_type
 									== INT_CONSTANT_SYMBOL_TYPE))) {
 				pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 			}

@@ -306,7 +306,7 @@ Bool tests_are_equal (test t1, test t2, bool neg) {
       Symbol* s1 = t1->data.referent;
       Symbol* s2 = t2->data.referent;
 
-      if ((s1->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE) && (s2->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE))
+      if ((s1->var.data.symbol_type == VARIABLE_SYMBOL_TYPE) && (s2->var.data.symbol_type == VARIABLE_SYMBOL_TYPE))
       {
         return TRUE;
       }
@@ -383,13 +383,13 @@ uint32_t hash_test (agent* thisAgent, test t) {
     return 0;
 
   switch (t->type) {
-    case EQUALITY_TEST: return t->data.referent->common.hash_id;
+    case EQUALITY_TEST: return t->data.referent->common.data.hash_id;
     case GOAL_ID_TEST: return 34894895;  /* just use some unusual number */
     case IMPASSE_ID_TEST: return 2089521;
     case DISJUNCTION_TEST:
       result = 7245;
       for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-        result = result + static_cast<Symbol *>(c->first)->common.hash_id;
+        result = result + static_cast<Symbol *>(c->first)->common.data.hash_id;
       return result;
     case CONJUNCTIVE_TEST:
       result = 100276;
@@ -403,7 +403,7 @@ uint32_t hash_test (agent* thisAgent, test t) {
     case LESS_OR_EQUAL_TEST:
     case GREATER_OR_EQUAL_TEST:
     case SAME_TYPE_TEST:
-      return (t->type << 24) + t->data.referent->common.hash_id;
+      return (t->type << 24) + t->data.referent->common.data.hash_id;
     default:
     { char msg[BUFFER_MSG_SIZE];
     strncpy (msg, "production.c: Error: bad test type in hash_test\n", BUFFER_MSG_SIZE);
@@ -453,7 +453,7 @@ Bool test_is_variable(agent* thisAgent, test t)
       (t->type == GOAL_ID_TEST) ||
       (t->type == IMPASSE_ID_TEST)) return FALSE;
 
-  return (t->data.referent->common.symbol_type == VARIABLE_SYMBOL_TYPE);
+  return (t->data.referent->common.data.symbol_type == VARIABLE_SYMBOL_TYPE);
 }
 
 /* ----------------------------------------------------------------
@@ -535,7 +535,7 @@ void add_all_variables_in_test (agent* thisAgent, test t,
 
   default:
     referent = t->data.referent;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+    if (referent->common.data.symbol_type==VARIABLE_SYMBOL_TYPE)
       mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
     break;
   }
@@ -550,7 +550,7 @@ void add_bound_variables_in_test (agent* thisAgent, test t,
 
   if (t->type == EQUALITY_TEST) {
     referent = t->data.referent;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+    if (referent->common.data.symbol_type==VARIABLE_SYMBOL_TYPE)
       mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
     return;
   } else if (t->type==CONJUNCTIVE_TEST) {
@@ -775,7 +775,7 @@ void add_additional_tests_and_originals (agent *thisAgent,
       );
 #endif
 
-  if (am->id && am->id->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+  if (am->id && am->id->common.data.symbol_type == VARIABLE_SYMBOL_TYPE)
   {
     original_referent = am->id;
 #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
@@ -793,7 +793,7 @@ void add_additional_tests_and_originals (agent *thisAgent,
   }
   cond->data.tests.id_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
 
-  if (am->attr && am->attr->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+  if (am->attr && am->attr->common.data.symbol_type == VARIABLE_SYMBOL_TYPE)
   {
     original_referent = am->attr;
 #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
@@ -811,7 +811,7 @@ void add_additional_tests_and_originals (agent *thisAgent,
   }
   cond->data.tests.attr_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
 
-  if (am->value && am->value->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+  if (am->value && am->value->common.data.symbol_type == VARIABLE_SYMBOL_TYPE)
     {
       original_referent = am->value;
 #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
@@ -1010,7 +1010,7 @@ void add_additional_tests_and_originals (agent *thisAgent,
               rt->data.variable_referent.levels_up);
 
           chunk_test = make_test(thisAgent, referent, test_type);
-          if (original_referent->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+          if (original_referent->common.data.symbol_type == VARIABLE_SYMBOL_TYPE)
           {
 #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
             print(thisAgent, "LHS UV| AATtTiC creating unique original relational referent for %s...\n",
