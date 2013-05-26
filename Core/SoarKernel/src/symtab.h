@@ -12,7 +12,7 @@
 
    "symbol" is typedef-ed as a union of the five kinds of symbol
    structures.  Some fields common to all symbols are accessed via
-   sym->common.field_name; fields particular to a certain kind of
+   sym->common.data.field_name; fields particular to a certain kind of
    symbol are accessed via sym->var.field_name_on_variables, etc.
    (See the definitions below.)  Note that "common" is #defined below.
 
@@ -309,12 +309,17 @@ typedef struct identifier_struct {
   /*Agent::RL_Trace*/ void * rl_trace; ///< A pointer to the current state of the trace for this goal level if isa_goal -bazald
 } identifier;
 
+typedef struct common_dummy_struct {
+  symbol_common_data data;
+} common_dummy;
+
 typedef union symbol_union {
   variable var;
   identifier id;
   sym_constant sc;
   int_constant ic;
   float_constant fc;
+  common_dummy common;
 } Symbol;
 
 /* -----------------------------------------------------------------
@@ -401,8 +406,8 @@ void deallocate_symbol_list_removing_references (agent* thisAgent, ::list *sym_l
 
 inline uint64_t symbol_add_ref(agent* thisAgent, Symbol * x)
 {
-  (x)->common.reference_count++;
-  uint64_t refCount = (x)->common.reference_count ;
+  (x)->common.data.reference_count++;
+  uint64_t refCount = (x)->common.data.reference_count ;
 
 #ifdef DEBUG_TRACE_REFCOUNT_ADDS
   print(thisAgent, "Refcnt| Increasing refcount for symbol %s from %ld to %ld!\n", symbol_to_string(thisAgent, x, FALSE, NULL, NIL), (refCount-1), refCount);
@@ -413,14 +418,14 @@ inline uint64_t symbol_add_ref(agent* thisAgent, Symbol * x)
 
 inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
 {
-  (x)->common.reference_count--;
-  uint64_t refCount = (x)->common.reference_count ;
+  (x)->common.data.reference_count--;
+  uint64_t refCount = (x)->common.data.reference_count ;
 
 #ifdef DEBUG_TRACE_REFCOUNT_REMOVES
   print(thisAgent, "Refcnt| Decreasing refcount for symbol %s from %ld to %ld!\n", symbol_to_string(thisAgent, x, FALSE, NULL, NIL), (refCount+1), refCount);
 #endif
 
-  if ((x)->common.reference_count == 0)
+  if ((x)->common.data.reference_count == 0)
   {
     deallocate_symbol(thisAgent, x);
   }
@@ -429,12 +434,12 @@ inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
 
 inline bool symbol_is_variable(Symbol *sym)
 {
-  return (sym->common.symbol_type == VARIABLE_SYMBOL_TYPE);
+  return (sym->common.data.symbol_type == VARIABLE_SYMBOL_TYPE);
 }
 
 inline bool symbol_is_identifier(Symbol *sym)
 {
-  return (sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE);
+  return (sym->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE);
 }
 
 inline bool symbol_is_lti(Symbol *sym)
@@ -449,9 +454,9 @@ inline bool symbol_is_non_lti_identifier(Symbol *sym)
 
 inline bool symbol_is_variablizable_constant(Symbol *sym)
 {
-  return ((sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-          (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) ||
-          (sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ));
+  return ((sym->common.data.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+          (sym->common.data.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) ||
+          (sym->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ));
 }
 
 inline bool symbol_is_variablizable(Symbol *sym, Symbol *original_sym)
@@ -472,9 +477,9 @@ inline bool symbol_is_variablizable(Symbol *sym, Symbol *original_sym)
 
 inline bool symbol_is_constant( Symbol *sym )
 {
-	return ( ( sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
-		     ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-		     ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
+	return ( ( sym->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
+		     ( sym->common.data.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+		     ( sym->common.data.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
 }
 
 /* -----------------------------------------------------------------

@@ -190,9 +190,9 @@ void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bo
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    if (id->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE)
         return;
-    if (id->common.tc_num==tc)
+    if (id->common.data.tc_num==tc)
         return;  // this has already been printed, so return RPM 4/07 bug 988
     if (id->id.depth > depth)
         return;  // this can be reached via an equal or shorter path, so return without printing RPM 4/07 bug 988
@@ -202,7 +202,7 @@ void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bo
     depth = id->id.depth; // set the depth to the depth via the shallowest path, RPM 4/07 bug 988
     int indent = (maxdepth-depth)*2; // set the indent based on how deep we are, RPM 4/07 bug 988
 
-    id->common.tc_num = tc;  // mark id as printed
+    id->common.data.tc_num = tc;  // mark id as printed
 
     /* --- first, count all direct augmentations of this id --- */
     num_attr = 0;
@@ -322,13 +322,13 @@ void mark_depths_augs_of_id (agent* thisAgent, Symbol *id, int depth, tc_number 
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    if (id->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE)
         return;
-    if (id->common.tc_num==tc && id->id.depth >= depth)
+    if (id->common.data.tc_num==tc && id->id.depth >= depth)
         return;  // this has already been printed at an equal-or-lower depth, RPM 4/07 bug 988
 
     id->id.depth = depth; // set the depth of this id
-    id->common.tc_num = tc;
+    id->common.data.tc_num = tc;
 
     /* --- if depth<=1, we're done --- */
     if (depth<=1)
