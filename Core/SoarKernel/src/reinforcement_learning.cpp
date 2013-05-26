@@ -550,7 +550,7 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 		condition* c_top;
 		condition* c_bottom;
 
-		p_node_to_conditions( my_agent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), NIL, false );
+		p_node_to_conditions_and_rhs( my_agent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), NIL, false );
 
 		my_template_instance->prod->rl_template_conds = c_top;
 	}

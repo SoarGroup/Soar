@@ -2699,9 +2699,13 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
     temp = varnames_to_one_var(vn);
     if (force_unique)
     {
-      print(thisAgent, "Debug | add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
+#ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
+      print(thisAgent, "UNQVAR| add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
+#endif
       thisAgent->varname_table->make_varsym_unique(&temp);
-      print(thisAgent, "Debug | add_varnames_to_test created equality test for %s.\n", temp->var.name);
+#ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
+      print(thisAgent, "UNQVAR| add_varnames_to_test created equality test for %s.\n", temp->var.name);
+#endif
     }
     New = make_test (thisAgent, temp, EQUALITY_TEST);
     add_new_test_to_test (thisAgent, t, New);
@@ -2710,10 +2714,14 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
       temp = static_cast<Symbol *>(c->first);
       if (force_unique)
       {
-        print(thisAgent, "Debug | add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
+#ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
+        print(thisAgent, "UNQVAR| add_varnames_to_test creating unique symbol for %s.\n", temp->var.name);
+#endif
         thisAgent->varname_table->make_varsym_unique(&temp);
-        print(thisAgent, "Debug | add_varnames_to_test created equality test for %s.\n", temp->var.name);
-      }
+#ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
+        print(thisAgent, "UNQVAR| add_varnames_to_test created equality test for %s.\n", temp->var.name);
+#endif
+        }
       New =  make_test (thisAgent, temp, EQUALITY_TEST);
       add_new_test_to_test (thisAgent, t, New);
     }
@@ -4097,7 +4105,7 @@ void rete_node_to_conditions (agent* thisAgent,
    resolving references in RHS actions to variables bound on the LHS.
 ----------------------------------------------------------------------- */
 
-void p_node_to_conditions (agent* thisAgent,
+void p_node_to_conditions_and_rhs (agent* thisAgent,
                                     rete_node *p_node,
                                     token *tok,
                                     wme *w,
@@ -7599,7 +7607,7 @@ void print_partial_match_information (agent* thisAgent, rete_node *p_node,
   int64_t n;
   token *tokens, *t;
   /* Debug | See if this works with last param true (add complex conditions) */
-  p_node_to_conditions (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+  p_node_to_conditions_and_rhs (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
                                  NIL, false);
   n = ppmi_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);
@@ -8571,7 +8579,7 @@ void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_tra
 
   xml_begin_tag(thisAgent, kTagProduction) ;
   /* Debug | See if this works with last param false (add complex conditions) */
-  p_node_to_conditions (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+  p_node_to_conditions_and_rhs (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
                                  NIL, false);
   n = xml_aux (thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);

@@ -416,8 +416,7 @@ preference *execute_action(agent* thisAgent, action *a,
 
 	first_letter = first_letter_from_symbol(attr);
 
-	value = instantiate_rhs_value(thisAgent, a->value, id->id.level,
-			first_letter, tok, w);
+	value = instantiate_rhs_value(thisAgent, a->value, id->id.level, first_letter, tok, w);
 	if (!value)
 		goto abort_execute_action;
 
@@ -426,8 +425,7 @@ preference *execute_action(agent* thisAgent, action *a,
 
   // Debug | I don't think we need to store original vars for referents bc they should always be operator IDs
   if (preference_is_binary(a->preference_type)) {
-		referent = instantiate_rhs_value(thisAgent, a->referent, id->id.level,
-				first_letter, tok, w);
+		referent = instantiate_rhs_value(thisAgent, a->referent, id->id.level, first_letter, tok, w);
 		if (!referent)
 			goto abort_execute_action;
 	}
@@ -441,8 +439,7 @@ preference *execute_action(agent* thisAgent, action *a,
 		goto abort_execute_action;
 	}
 
-	return make_preference(thisAgent, a->preference_type, id, attr, value,
-			referent);
+	return make_preference(thisAgent, a->preference_type, id, attr, value, referent);
 
 	abort_execute_action: /* control comes here when some error occurred */
 	if (id)
@@ -694,7 +691,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	thisAgent->production_firing_count++;
 
 	/* --- build the instantiated conditions, and bind LHS variables --- */
-	p_node_to_conditions(thisAgent, prod->p_node, tok, w,
+	p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
 			&(inst->top_of_instantiated_conditions),
 			&(inst->bottom_of_instantiated_conditions), &(rhs_vars), true);
 
@@ -806,9 +803,15 @@ void create_instantiation(agent* thisAgent, production *prod,
 		}
 	}
 
-	deallocate_action_list (thisAgent, rhs_vars);
+  print(thisAgent, "\nCreate_instantiation before deallocate: \n");
+  print_instantiation(inst);
 
-	/* --- reset rhs_variable_bindings array to all zeros --- */
+  deallocate_action_list (thisAgent, rhs_vars);
+
+  print(thisAgent, "\nCreate_instantiation before deallocate: \n");
+  print_instantiation(inst);
+
+  /* --- reset rhs_variable_bindings array to all zeros --- */
 	index = 0;
 	cell = thisAgent->rhs_variable_bindings;
 	while (index++ <= thisAgent->firer_highest_rhs_unboundvar_index)

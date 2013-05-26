@@ -142,6 +142,11 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
     return funcall_list_to_rhs_value (new_fl);
   } else {
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "RHS UV| copy_rhs_value copying rhs_symbol %s(%s).\n",
+          symbol_to_string(thisAgent, r->referent),
+         (r->original_variable ? symbol_to_string(thisAgent, r->original_variable) : "NIL"));
+#endif
     return make_rhs_value_symbol(thisAgent, r->referent, r->original_variable);
   }
 }
@@ -326,6 +331,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
   char prefix[2];
 
   if (rhs_value_is_reteloc(rv)) {
+    /* -- rv is a symbol pointed to by a rete location -- */
     if (should_add_original_vars)
     {
       original_sym = var_bound_in_reconstructed_original_conds (thisAgent, cond,
@@ -344,11 +350,17 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
         rhs_value_to_reteloc_levels_up(rv));
     // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
     // symbol_add_ref(thisAgent, sym);
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "RHS UV| copy_rhs_value_and_substitute_varnames creating, from reteloc, rhs_symbol %s(%s).\n",
+          symbol_to_string(thisAgent, sym),
+         (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
+#endif
     return make_rhs_value_symbol(thisAgent, sym, original_sym);
   }
 
   if (rhs_value_is_unboundvar(rv))
   {
+    /* -- rv is a an unbound variable -- */
     index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
     if (! *(thisAgent->rhs_variable_bindings+index))
     {
@@ -369,10 +381,16 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
       //symbol_add_ref(thisAgent, sym);
     }
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "RHS UV| copy_rhs_value_and_substitute_varnames created unbound var rhs_symbol %s(%s).\n",
+          symbol_to_string(thisAgent, sym),
+         (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
+#endif
     return make_rhs_value_symbol(thisAgent, sym);
   }
 
   if (rhs_value_is_funcall(rv)) {
+    /* -- rv is a rhs function -- */
     fl = rhs_value_to_funcall_list(rv);
     allocate_cons (thisAgent, &new_fl);
     new_fl->first = fl->first;
@@ -390,7 +408,13 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
     prev_new_c->rest = NIL;
     return funcall_list_to_rhs_value (new_fl);
   } else {
+    /* -- rv is a rhs_symbol -- */
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "RHS UV| copy_rhs_value_and_substitute_varnames copying rhs_symbol %s(%s).\n",
+          symbol_to_string(thisAgent, rs->referent),
+         (rs->original_variable ? symbol_to_string(thisAgent, rs->original_variable) : "NIL"));
+#endif
     return make_rhs_value_symbol(thisAgent, rs->referent, rs->original_variable);
   }
 }
@@ -402,8 +426,11 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
   action *old, *New, *prev, *first;
   char first_letter;
 
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "RHS UV| copy_action_list_and_substitute_varnames beginning.\n");
+#endif
   prev = NIL;
-  first = NIL;  /* unneeded, but without it gcc -Wall warns here */
+  first = NIL;
   old = actions;
   while (old) {
     allocate_with_pool (thisAgent, &thisAgent->action_pool, &New);
@@ -429,6 +456,9 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
     old = old->next;
   }
   if (prev) prev->next = NIL; else first = NIL;
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "RHS UV| copy_action_list_and_substitute_varnames ending.\n");
+#endif
   return first;
 }
 

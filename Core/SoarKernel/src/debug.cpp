@@ -186,6 +186,7 @@ void print_instantiation (instantiation *inst)
   }
 
   for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next)
+  {
     if (cond->type==POSITIVE_CONDITION) {
 //      if (cond->bt.level > TOP_GOAL_LEVEL) {
 //        print (debug_agent, " ");
@@ -201,8 +202,8 @@ void print_instantiation (instantiation *inst)
 //        // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
 //        print (debug_agent, "timetag %lu", cond->bt.wme_->timetag);
 //      }
-      break;
     }
+  }
   print (debug_agent, "--->\n");
   for (pref=inst->preferences_generated; pref!=NIL; pref=pref->next)
   {

@@ -142,7 +142,7 @@ extern void excise_production_from_rete (agent* thisAgent, production *p);
 extern void add_wme_to_rete (agent* thisAgent, wme *w);
 extern void remove_wme_from_rete (agent* thisAgent, wme *w);
 
-extern void p_node_to_conditions (agent* thisAgent,
+extern void p_node_to_conditions_and_rhs (agent* thisAgent,
                                            struct rete_node_struct *p_node,
                                            struct token_struct *tok,
                                            wme *w,

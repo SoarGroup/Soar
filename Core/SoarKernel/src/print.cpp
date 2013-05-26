@@ -1049,7 +1049,7 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
   /*
   --- print the LHS and RHS ---
   */
-  p_node_to_conditions(thisAgent, p->p_node, NIL, NIL,
+  p_node_to_conditions_and_rhs(thisAgent, p->p_node, NIL, NIL,
 								 &top, &bottom,&rhs, false);
   print_string (thisAgent, "   ");
 
