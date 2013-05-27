@@ -390,7 +390,7 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym, Symbol *original_var
         symbol_to_string(thisAgent, *sym), symbol_to_string(thisAgent, original_var));
 #endif
 
-  if (((*sym)->common.data.tc_num == thisAgent->variablization_tc))
+  if ((*sym)->common.data.tc_num == thisAgent->variablization_tc)
   {
     /* --- it's been variablized on the lhs --- */
     print(thisAgent, "Debug | ... found existing variablization %s.\n",
