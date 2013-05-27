@@ -52,7 +52,10 @@ typedef std::list< preference* > pref_buffer_list;
 #endif
 
 extern preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *attr,
-                                    Symbol *value, Symbol *referent);
+                                    Symbol *value, Symbol *referent, Symbol *original_id_var=NULL,
+                                    Symbol *original_attr_var=NULL, Symbol *original_value_var=NULL,
+                                    Symbol *original_id_var_sub=NULL,
+                                    Symbol *original_attr_var_sub=NULL, Symbol *original_value_var_sub=NULL);
 
 extern Bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref);
 

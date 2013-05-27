@@ -661,36 +661,35 @@ action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym
     action *rhs;
     Symbol *temp;
 
-    allocate_with_pool( my_agent, &my_agent->action_pool, &rhs );
-    rhs->next = NIL;
+    rhs = make_action(my_agent);
     rhs->type = MAKE_ACTION;
 
     // id
 	temp = id_sym;
 	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
 	// Debug | Might need to also add symbol as original var if that's what it is at this point
-	symbol_add_ref(my_agent, temp );
+	// symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
 	rhs->id = make_rhs_value_symbol(my_agent, temp );
 
     // attribute
     temp = attr_sym;
     // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-	symbol_add_ref(my_agent, temp );
+	// symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
 	rhs->attr = make_rhs_value_symbol(my_agent, temp );
 
 	// value
 	temp = val_sym;
 	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-	symbol_add_ref(my_agent, temp );
+	// symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
 	rhs->value = make_rhs_value_symbol(my_agent, temp );
 
 	// referent
 	temp = ref_sym;
 	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-	symbol_add_ref(my_agent, temp );
+	// symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
 	rhs->referent = make_rhs_value_symbol(my_agent, temp );
 

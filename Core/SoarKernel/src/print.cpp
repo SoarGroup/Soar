@@ -39,11 +39,6 @@
 
 #include <stdarg.h>
 
-/* if enabled will forward certain trace/debug output to stderr instead of
-   print callbacks or xml */
-
-// #define DEBUG_USE_STDERR_TRACE 1
-
 using namespace soar_TraceNames;
 
 /* -------------------------------------------------------------------
@@ -71,16 +66,12 @@ void tell_printer_that_output_column_has_been_reset (agent* thisAgent) {
   thisAgent->printer_output_column = 1;
 }
 
-
 /* -----------------------------------------------------------------------
                              Print_string
 
    This routine prints the given string, and updates printer_output_column.
    (This routine is called from the other print(), etc. routines.)
 ----------------------------------------------------------------------- */
-
-
-
 void print_string (agent* thisAgent, const char *s) {
 	const char *ch;
 

@@ -433,8 +433,11 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
   first = NIL;
   old = actions;
   while (old) {
-    allocate_with_pool (thisAgent, &thisAgent->action_pool, &New);
-    if (prev) prev->next = New; else first = New;
+    New = make_action(thisAgent);
+    if (prev)
+      prev->next = New;
+    else
+      first = New;
     prev = New;
     New->type = old->type;
     New->preference_type = old->preference_type;
@@ -462,3 +465,14 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
   return first;
 }
 
+action *make_action(agent *thisAgent)
+{
+  action *new_action;
+  allocate_with_pool (thisAgent, &thisAgent->action_pool,  &new_action);
+  new_action->next = NIL;
+  new_action->id = NIL;
+  new_action->attr = NIL;
+  new_action->value = NIL;
+  new_action->referent = NIL;
+  return new_action;
+}

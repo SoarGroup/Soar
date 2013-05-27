@@ -1419,7 +1419,7 @@ action *parse_preferences (agent* thisAgent, Symbol *id,
     }
 
     /* --- create the appropriate action --- */
-    allocate_with_pool (thisAgent, &thisAgent->action_pool,  &a);
+    a = make_action(thisAgent);
     a->next = prev_a;
     prev_a = a;
     a->type = MAKE_ACTION;
@@ -1535,7 +1535,7 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
 
     if (preference_type == REJECT_PREFERENCE_TYPE) {
       /* --- create the appropriate action --- */
-      allocate_with_pool (thisAgent, &thisAgent->action_pool,  &a);
+      a = make_action(thisAgent);
       a->next = prev_a;
       prev_a = a;
       a->type = MAKE_ACTION;
@@ -1560,17 +1560,16 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
       /* for soar8, if this wasn't a REJECT preference, then
 			create acceptable preference makes.  */
       if (prev_a == NIL) {
-
-		  allocate_with_pool (thisAgent, &thisAgent->action_pool,  &a);
-		  a->next = prev_a;
-		  prev_a = a;
-		  a->type = MAKE_ACTION;
-		  a->preference_type = ACCEPTABLE_PREFERENCE_TYPE;
-		  a->id = make_rhs_value_symbol(thisAgent, id);
-		  // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-		  //symbol_add_ref(thisAgent, id);
-		  a->attr = copy_rhs_value (thisAgent, attr);
-		  a->value = copy_rhs_value (thisAgent, value);
+        a = make_action(thisAgent);
+        a->next = prev_a;
+        prev_a = a;
+        a->type = MAKE_ACTION;
+        a->preference_type = ACCEPTABLE_PREFERENCE_TYPE;
+        a->id = make_rhs_value_symbol(thisAgent, id);
+        // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+        //symbol_add_ref(thisAgent, id);
+        a->attr = copy_rhs_value (thisAgent, attr);
+        a->value = copy_rhs_value (thisAgent, value);
       }
       return prev_a;
     }
@@ -1719,9 +1718,8 @@ action *parse_rhs_action (agent* thisAgent) {
 		/* --- the action is a function call --- */
 		funcall_value = parse_function_call_after_lparen (thisAgent, TRUE);
 		if (!funcall_value) return NIL;
-		allocate_with_pool (thisAgent, &thisAgent->action_pool,  &all_actions);
+		all_actions = make_action(thisAgent);
 		all_actions->type = FUNCALL_ACTION;
-		all_actions->next = NIL;
 		all_actions->value = funcall_value;
 		return all_actions;
 	}

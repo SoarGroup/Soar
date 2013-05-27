@@ -309,6 +309,26 @@ typedef struct identifier_struct {
   /*Agent::RL_Trace*/ void * rl_trace; ///< A pointer to the current state of the trace for this goal level if isa_goal -bazald
 } identifier;
 
+  /* --- The "common" macro was eliminated in Soar 9,4. This makes it easier
+   *     for debugging. The following "common_dummy" struct was added to
+   *     allow similar access to the common data without specifying the type
+   *
+   *     Note: you could always specify any type of struct in the union (id,
+   *     var, fc, etc.) and the common_symbol_info or .data will always point
+   *     to the right common data, because the common data struct is always
+   *     the first field in each structure in the union.
+   *
+   *     In terms of using the new common data convention, instead of
+   *     referencing common data like this:
+   *
+   *      sym->common.symbol_type       OR  sym->id.common_symbol_info.symbol_type
+   *
+   *     in Soar 9.4+, you'd do this:
+   *
+   *      sym->common.data.symbol_type  OR  sym->id.data.symbol_type
+   *
+   *     respectively. MMA 2013 --- */
+
 typedef struct common_dummy_struct {
   symbol_common_data data;
 } common_dummy;

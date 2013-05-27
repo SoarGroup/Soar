@@ -160,7 +160,7 @@ action *copy_action_list (agent* thisAgent, action *actions) {
   first = NIL;  /* unneeded, but without it gcc -Wall warns here */
   old = actions;
   while (old) {
-    allocate_with_pool (thisAgent, &thisAgent->action_pool, &New);
+    New = make_action(thisAgent);
     if (prev) prev->next = New; else first = New;
     prev = New;
     New->type = old->type;
@@ -449,7 +449,7 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *result, b
   Symbol *id, *attr, *val, *ref;
 
   if (!result) return NIL;
-  allocate_with_pool (thisAgent, &thisAgent->action_pool, &a);
+  a = make_action(thisAgent);
   a->type = MAKE_ACTION;
 
   id = result->id;

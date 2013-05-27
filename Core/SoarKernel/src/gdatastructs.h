@@ -201,6 +201,13 @@ typedef struct preference_struct {
   Symbol *attr;
   Symbol *value;
   Symbol *referent;
+  /* -- The action that created this preference is cached here for
+   *    use by the chunker.  It allows it to access the unique original
+   *    variable names associated with the  attr and values in a rhs
+   *    item which cannot be stored in a symbol. -- */
+
+  Symbol *original_id_var, *original_attr_var, *original_value_var;
+  Symbol *original_id_var_sub, *original_attr_var_sub, *original_value_var_sub;
   struct slot_struct *slot;
 
   /* dll of pref's of same type in same slot */

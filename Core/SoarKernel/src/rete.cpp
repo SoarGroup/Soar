@@ -6671,12 +6671,11 @@ void retesave_rhs_action (action *a, FILE* f) {
 action *reteload_rhs_action (agent* thisAgent, FILE* f) {
   action *a;
 
-  allocate_with_pool (thisAgent, &thisAgent->action_pool, &a);
+  a = make_action(thisAgent);
   a->type = reteload_one_byte(f);
   a->preference_type = reteload_one_byte(f);
   a->support = reteload_one_byte(f);
   if (a->type==FUNCALL_ACTION) {
-    a->id = NIL; a->attr = NIL; a->referent = NIL;
     a->value = reteload_rhs_value(thisAgent,f);
   } else { /* MAKE_ACTION's */
     a->id = reteload_rhs_value(thisAgent,f);

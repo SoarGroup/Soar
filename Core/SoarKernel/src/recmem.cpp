@@ -380,12 +380,13 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 	return result;
 }
 
-preference *execute_action(agent* thisAgent, action *a,
-		struct token_struct *tok, wme *w, rhs_value original_attr, rhs_value original_value) {
-	Symbol *id, *attr, *value, *referent;
+preference *execute_action(agent* thisAgent, action *a, struct token_struct *tok, wme *w,
+                           rhs_value original_id, rhs_value original_attr, rhs_value original_value,
+                           condition *cond)
+{
+  Symbol *id, *attr, *value, *referent;
 	char first_letter;
-
-  // Debug | May need to handle rhs functions here too
+	rhs_value orig_id_sub, orig_attr_sub, orig_value_sub;
 
 	if (a->type == FUNCALL_ACTION) {
 		value = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
@@ -397,7 +398,6 @@ preference *execute_action(agent* thisAgent, action *a,
 	attr = NIL;
 	value = NIL;
 	referent = NIL;
-
 	id = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
 	if (!id)
 		goto abort_execute_action;
@@ -407,21 +407,44 @@ preference *execute_action(agent* thisAgent, action *a,
 				id);
 		goto abort_execute_action;
 	}
+  if (original_id)
+  {
+    orig_id_sub = copy_rhs_value_and_substitute_varnames (thisAgent, original_id, cond, 's', true);
 
-	attr = instantiate_rhs_value(thisAgent, a->attr, id->id.level, 'a', tok, w);
+    /* -- Debug| I don't think we need to store all of these any more.  Just need
+     *           to store in preference.  Keep for the moment. -- */
+//    if (rhs_value_is_symbol(original_id))
+//    {
+//      id->common.data.original_var_symbol = rhs_value_to_symbol(original_attr);
+//    }
+  }
+  attr = instantiate_rhs_value(thisAgent, a->attr, id->id.level, 'a', tok, w);
 	if (!attr)
 		goto abort_execute_action;
-  if (rhs_value_is_symbol(original_attr))
-    attr->common.data.original_var_symbol = rhs_value_to_symbol(original_attr);
+  if (original_attr)
+  {
+    orig_attr_sub = copy_rhs_value_and_substitute_varnames (thisAgent, original_attr, cond, 's', true);
+    /* -- Debug| I don't think we need to store all of these any more.  Just need
+     *           to store in preference.  Keep for the moment. -- */
+//    if (rhs_value_is_symbol(original_attr))
+//    {
+//      attr->common.data.original_var_symbol = rhs_value_to_symbol(original_attr);
+//    }
+  }
 
-	first_letter = first_letter_from_symbol(attr);
-
+  first_letter = first_letter_from_symbol(attr);
 	value = instantiate_rhs_value(thisAgent, a->value, id->id.level, first_letter, tok, w);
 	if (!value)
 		goto abort_execute_action;
+  if (original_value)
+  {
+    orig_value_sub = copy_rhs_value_and_substitute_varnames (thisAgent, original_value, cond, 's', true);
 
-  if (rhs_value_is_symbol(original_value))
-    value->common.data.original_var_symbol = rhs_value_to_symbol(original_value);
+    /* -- Debug| I don't think we need to store all of these any more.  Just need
+     *           to store in preference.  Keep for the moment. -- */
+//    if (rhs_value_is_symbol(original_value))
+//      value->common.data.original_var_symbol = rhs_value_to_symbol(original_value);
+  }
 
   // Debug | I don't think we need to store original vars for referents bc they should always be operator IDs
   if (preference_is_binary(a->preference_type)) {
@@ -438,8 +461,14 @@ preference *execute_action(agent* thisAgent, action *a,
 				id, attr);
 		goto abort_execute_action;
 	}
-
-	return make_preference(thisAgent, a->preference_type, id, attr, value, referent);
+// could also try rhs_value_to_original_symbol
+	return make_preference(thisAgent, a->preference_type, id, attr, value, referent,
+	                      (original_id ? rhs_value_to_original_symbol(original_id) : NULL),
+	                      (original_attr ? rhs_value_to_original_symbol(original_attr) : NULL),
+	                      (original_value ? rhs_value_to_original_symbol(original_value) : NULL),
+                        (orig_id_sub ? rhs_value_to_symbol(orig_id_sub) : NULL),
+                        (orig_attr_sub ? rhs_value_to_symbol(orig_attr_sub) : NULL),
+                        (orig_value_sub ? rhs_value_to_symbol(orig_value_sub) : NULL));
 
 	abort_execute_action: /* control comes here when some error occurred */
 	if (id)
@@ -737,11 +766,11 @@ void create_instantiation(agent* thisAgent, production *prod,
 	inst->preferences_generated = NIL;
 	need_to_do_support_calculations = FALSE;
 	for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next) {
-	  //Debug | Remove this
+	  // Debug| Remove this assert.  Can rhs_vars differ from action_list?
 	  if ((a && !a2) || (!a && a2))
 	    assert(false);
 		if (prod->type != TEMPLATE_PRODUCTION_TYPE) {
-			pref = execute_action(thisAgent, a, tok, w, a2->attr, a2->value);
+			pref = execute_action(thisAgent, a, tok, w, a2->id, a2->attr, a2->value, inst->top_of_instantiated_conditions);
 		} else {
 			pref = NIL;
 			/*Symbol *result = */rl_build_template_instantiation(thisAgent,

@@ -90,6 +90,7 @@ typedef struct binding_structure {
 } Binding;
 
 /* -- Functions to create RHS -- */
+inline action *make_action(agent *thisAgent);
 inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
 inline rhs_value make_rhs_value_symbol(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
 
