@@ -89,10 +89,10 @@ want f * on-top top box1 bottom box2
 want t * on-top top box3 bottom box2
 want f * on-top top box2 bottom box2
 want f * on-top top box3 bottom box1
-want t * above a box2 b box1
-want f * above a box1 b box2
-want t * above a box3 b box1
-want t * above a box3 b box2
+want t * z-greater-than a box2 b box1
+want f * z-greater-than a box1 b box2
+want t * z-greater-than a box3 b box1
+want t * z-greater-than a box3 b box2
 
 # test ball intersections
 c box1 p 0 0 0
@@ -122,12 +122,12 @@ init
 a b1 box world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
 a b2 box world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1 p -10 0 0
 
-want t * east-of a b1 b b2
+want t * x-greater-than a b1 b b2
 want 9.0 * distance a b1 b b2
 want 10.0 * centroid_distance a b1 b b2
 
 c b2 p 20 0 0
 
-want f * east-of a b1 b b2
+want f * x-greater-than a b1 b b2
 want 19.0 * distance a b1 b b2
 want 20.0 * centroid_distance a b1 b b2

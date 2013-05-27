@@ -65,9 +65,9 @@ filter *make_distance_xyz_filter(Symbol *root, soar_interface *si, scene *scn, f
     return new distance_xyz_filter(root, si, input);
 }
 
-filter_table_entry distance_xyz_fill_entry() {
-    filter_table_entry e;
-    e.name = "distance_xyz";
-    e.create = &make_distance_xyz_filter;
+filter_table_entry *distance_xyz_fill_entry() {
+    filter_table_entry *e = new filter_table_entry;
+    e->name = "distance_xyz";
+    e->create = &make_distance_xyz_filter;
     return e;
 }
