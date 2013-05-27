@@ -209,17 +209,6 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 
   if (symbol_is_identifier(*sym) || symbol_is_variablizable_constant(*sym))
   {
-    // Will need to revisit this part when doing lti's as constant
-    // remember that id.smem_lti might not be valid for this sym any more
-
-    //      if ((*sym)->id.smem_lti != NIL)                 // don't variablize lti (long term identifiers)
-    //      {
-    //        (*sym)->common.data.tc_num = thisAgent->variablization_tc;
-    //        (*sym)->id.variablization = (*sym);
-    //        return;
-    //      }
-    //
-
     if ((*sym)->common.data.tc_num == thisAgent->variablization_tc) {
       /* --- it's already been variablized, so use the existing variable --- */
       print(thisAgent, "Debug | Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
@@ -348,8 +337,8 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
  *      The logic for variablizing the rhs is slightly different than the lhs since we need to
  *      match constants on the rhs with the conditions they match up with on the lhs. We can't
  *      just look up the variablization info from the symbol, like we do on the lhs.  So, we match
- *      them up using the original variable names, which are cached for both rhs actions and lhs
- *      tests by the rete when creating the instantiation.
+ *      them up using the original variable names, which are cached by the rete for both rhs actions
+ *      and lhs tests when creating the instantiation.
  *
  *      We need to do this for 2 reasons.
  *
@@ -378,9 +367,8 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
  *      Check if original var names of rhs action matches with the original var name of what's in
  *      the symbol that is bound there.  (not necessary since we look up in hash table directly in
  *      the next step, but comes cheap since it's already cached there for lhs variablization
- *      and will work in most cases)
- *
- *        (Yes) Variablize using variablization_sym.  (or leave as constant if no variablization sym)
+ *      and will work in most cases)  If it matches, variablize using stored variablization sym.
+ *      If it doesn't match, search unique string table for the original variable name stringleave rhs item as constant if no variablization sym)
  *
  *        (No)  Look up the the last variablization symbol associated with that original
  *              variable name in the unique var name hash table.
@@ -389,58 +377,108 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
  *
  *              (Not found) Keep as a constant.
  *
+ *      Note: the original var is in the sym's variablized symbol's original_var pointer
+ *
   ====================================================================================================== */
 
-void variablize_rhs_symbol (agent* thisAgent, Symbol **sym) {
+void variablize_rhs_symbol (agent* thisAgent, Symbol **sym, Symbol *original_var) {
   char prefix[2];
   Symbol *var;
-  bool should_variablize = false, has_original_var = false;
 
-  has_original_var = ((*sym)->common.data.variablized_symbol != NIL);
-  should_variablize = symbol_is_non_lti_identifier((*sym));
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| variablize_rhs_symbol called for %s %s...\n",
+        symbol_to_string(thisAgent, *sym), symbol_to_string(thisAgent, original_var));
+#endif
 
-  // Will need to revisit this part when doing lti's as constant
-  // remember that id.smem_lti might not be valid for this sym any more
-
-  //      if ((*sym)->id.smem_lti != NIL)                 // don't variablize lti (long term identifiers)
-  //      {
-  //        (*sym)->common.data.tc_num = thisAgent->variablization_tc;
-  //        (*sym)->id.variablization = (*sym);
-  //        return;
-  //      }
-  //
-
-  if ((*sym)->common.data.tc_num == thisAgent->variablization_tc) {
-    /* --- it's already been variablized, so use the existing variable --- */
-    print(thisAgent, "Debug | variablize_rhs_symbol found existing variablization %s.\n",
+  if (((*sym)->common.data.tc_num == thisAgent->variablization_tc))
+  {
+    /* --- it's been variablized on the lhs --- */
+    print(thisAgent, "Debug | ... found existing variablization %s.\n",
           symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
-    if (!should_variablize && has_original_var)
+    if (symbol_is_non_lti_identifier((*sym)))
     {
-
+      var = (*sym)->common.data.variablized_symbol;
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| ...variablizing identifier.!\n");
+#endif
     }
-    var = (*sym)->common.data.variablized_symbol;
+    else if ((*sym)->common.data.variablized_symbol->common.data.original_var_symbol != NIL)
+    {
+      if ((*sym)->common.data.variablized_symbol->common.data.original_var_symbol == original_var)
+      {
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| ...rhs original var matches symbol original var.  Variablizing!\n");
+#endif
+        var = (*sym)->common.data.variablized_symbol;
+      }
+      else
+      {
+        Symbol *found_varsym;
+
+        /* Search to see if the variablized info is in the string cache table. We need
+         * to do this in case there were two different variables that matched to the
+         * same constant*/
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| ...searching for varname %s in unique varname table...\n",
+        (*sym)->common.data.variablized_symbol->common.data.original_var_symbol->var.name);
+#endif
+        found_varsym = thisAgent->varname_table->find_varsym((*sym)->common.data.variablized_symbol->common.data.original_var_symbol->var.name);
+        if (found_varsym)
+        {
+          var = found_varsym;
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| ...match found.  Variablizing with %s!\n", found_varsym->var.name);
+#endif
+        }
+        else
+        {
+          /* -- There was no variablization info, so no instance of this constant
+           *    was variablized on the lhs because the condition that grounded the chunk
+           *    did not make it into the grounds of the chunk.  So keep this rhs item a
+           *    constant. -- */
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| ...found constant with no grounding variable.  Not variablizing!\n");
+#endif
+          return;
+        }
+      }
+    }
+    else  // (*sym)->common.data.variablized_symbol->common.data.original_var_symbol == NIL
+    {
+       /* Debug| This probably can't occur if tc_num was correct. -- */
+      assert(false);
+      return;
+    }
     var->common.data.unvariablized_symbol = *sym;
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
     symbol_add_ref(thisAgent, var);
     return;
   }
-
-  /* --- need to create a new variable.  If constant is being variablized
-   *     just used 'c' instead of first letter of id name --- */
-  (*sym)->common.data.tc_num = thisAgent->variablization_tc;
-  if(symbol_is_identifier(*sym))
+  /* --- At this point, we know sym is either an unbound rhs var or rhs constant. Since
+   *     We only need to variablize an unbound rhs var, which will have a dummy
+   *     identifier, we can just limit ourselves to only variablizing identifiers. -- */
+  if(symbol_is_non_lti_identifier(*sym))
+  {
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| ...variablizing non-lti identifier!\n");
+#endif
+    (*sym)->common.data.tc_num = thisAgent->variablization_tc;
     prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
-  else
-    prefix[0] = 'c';
-  prefix[1] = 0;
-  var = generate_new_variable (thisAgent, prefix);
-  (*sym)->common.data.variablized_symbol = var;
-  var->common.data.unvariablized_symbol = *sym;
-  print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
-  //Do not need to decrease refcount any more b/c we're caching it
-  //symbol_remove_ref (thisAgent, *sym);
-  *sym = var;
+    prefix[1] = 0;
+    var = generate_new_variable (thisAgent, prefix);
+    (*sym)->common.data.variablized_symbol = var;
+    var->common.data.unvariablized_symbol = *sym;
+    print(thisAgent, "Debug | Created new variablization for unbound rhs %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+    //Do not need to decrease refcount any more b/c we're caching it
+    //symbol_remove_ref (thisAgent, *sym);
+    *sym = var;
+    return;
+  }
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| ...is a new constant.  Not variablizing!\nRHSVAR| variablize_rhs_symbol done.\n");
+#endif
+
 }
 
 
@@ -464,13 +502,13 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *result, b
 
   if (variablize) {
     if (id->common.data.variablized_symbol)
-      variablize_rhs_symbol (thisAgent, &id);
+      variablize_rhs_symbol (thisAgent, &id, result->original_id_var);
     if ((attr->common.data.variablized_symbol) ||
         (symbol_is_non_lti_identifier(attr)))
-      variablize_rhs_symbol (thisAgent, &attr);
+      variablize_rhs_symbol (thisAgent, &attr, result->original_attr_var);
     if ((val->common.data.variablized_symbol) ||
         (symbol_is_non_lti_identifier(val)))
-      variablize_rhs_symbol (thisAgent, &val);
+      variablize_rhs_symbol (thisAgent, &val, result->original_value_var);
   }
 
   a->id = make_rhs_value_symbol(thisAgent, id);
@@ -484,7 +522,7 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *result, b
     if (variablize) {
       if ((val->common.data.variablized_symbol) ||
           (symbol_is_non_lti_identifier(val)))
-        variablize_rhs_symbol (thisAgent, &ref);
+        variablize_rhs_symbol (thisAgent, &ref, NIL);
     }
     a->referent = make_rhs_value_symbol(thisAgent, ref);
   }

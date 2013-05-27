@@ -386,7 +386,6 @@ preference *execute_action(agent* thisAgent, action *a, struct token_struct *tok
 {
   Symbol *id, *attr, *value, *referent;
 	char first_letter;
-	rhs_value orig_id_sub, orig_attr_sub, orig_value_sub;
 
 	if (a->type == FUNCALL_ACTION) {
 		value = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
@@ -407,46 +406,17 @@ preference *execute_action(agent* thisAgent, action *a, struct token_struct *tok
 				id);
 		goto abort_execute_action;
 	}
-  if (original_id)
-  {
-    orig_id_sub = copy_rhs_value_and_substitute_varnames (thisAgent, original_id, cond, 's', true);
 
-    /* -- Debug| I don't think we need to store all of these any more.  Just need
-     *           to store in preference.  Keep for the moment. -- */
-//    if (rhs_value_is_symbol(original_id))
-//    {
-//      id->common.data.original_var_symbol = rhs_value_to_symbol(original_attr);
-//    }
-  }
   attr = instantiate_rhs_value(thisAgent, a->attr, id->id.level, 'a', tok, w);
 	if (!attr)
 		goto abort_execute_action;
-  if (original_attr)
-  {
-    orig_attr_sub = copy_rhs_value_and_substitute_varnames (thisAgent, original_attr, cond, 's', true);
-    /* -- Debug| I don't think we need to store all of these any more.  Just need
-     *           to store in preference.  Keep for the moment. -- */
-//    if (rhs_value_is_symbol(original_attr))
-//    {
-//      attr->common.data.original_var_symbol = rhs_value_to_symbol(original_attr);
-//    }
-  }
 
   first_letter = first_letter_from_symbol(attr);
 	value = instantiate_rhs_value(thisAgent, a->value, id->id.level, first_letter, tok, w);
 	if (!value)
 		goto abort_execute_action;
-  if (original_value)
-  {
-    orig_value_sub = copy_rhs_value_and_substitute_varnames (thisAgent, original_value, cond, 's', true);
 
-    /* -- Debug| I don't think we need to store all of these any more.  Just need
-     *           to store in preference.  Keep for the moment. -- */
-//    if (rhs_value_is_symbol(original_value))
-//      value->common.data.original_var_symbol = rhs_value_to_symbol(original_value);
-  }
-
-  // Debug | I don't think we need to store original vars for referents bc they should always be operator IDs
+  /* -- We don't need to store original vars for referents bc they should always be operator IDs -- */
   if (preference_is_binary(a->preference_type)) {
 		referent = instantiate_rhs_value(thisAgent, a->referent, id->id.level, first_letter, tok, w);
 		if (!referent)
@@ -461,14 +431,11 @@ preference *execute_action(agent* thisAgent, action *a, struct token_struct *tok
 				id, attr);
 		goto abort_execute_action;
 	}
-// could also try rhs_value_to_original_symbol
+
 	return make_preference(thisAgent, a->preference_type, id, attr, value, referent,
 	                      (original_id ? rhs_value_to_original_symbol(original_id) : NULL),
 	                      (original_attr ? rhs_value_to_original_symbol(original_attr) : NULL),
-	                      (original_value ? rhs_value_to_original_symbol(original_value) : NULL),
-                        (orig_id_sub ? rhs_value_to_symbol(orig_id_sub) : NULL),
-                        (orig_attr_sub ? rhs_value_to_symbol(orig_attr_sub) : NULL),
-                        (orig_value_sub ? rhs_value_to_symbol(orig_value_sub) : NULL));
+	                      (original_value ? rhs_value_to_original_symbol(original_value) : NULL));
 
 	abort_execute_action: /* control comes here when some error occurred */
 	if (id)

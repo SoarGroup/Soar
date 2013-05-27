@@ -552,6 +552,40 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
   print(thisAgent, "UNQVAR| make_varsym_unique generated a var for the first time: %s\n", (*original_varsym)->var.name);
 #endif
 }
+Symbol *string_hash_table::find_varsym(const char *sym_name)
+{
+  uint32_t hash_value;
+  unique_string *found_u_string, *new_u_string;
+
+  assert(thisAgent->newly_created_instantiations != NIL);
+#ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| find_varsym called to find sym %s for instantiation %s!\n",
+      sym_name, thisAgent->newly_created_instantiations->prod->name->sc.name );
+#endif
+
+  hash_value = hash_variable_raw_info (sym_name, ht->log2size);
+  found_u_string = reinterpret_cast<unique_string *>(*(ht->buckets + hash_value));
+  for ( ; found_u_string != NIL; found_u_string = found_u_string->next_in_hash_table)
+  {
+    if (!strcmp(found_u_string->name, sym_name))
+    {
+      /* -- Found unique string record that matches original var name -- */
+      if (found_u_string->current_instantiation == thisAgent->newly_created_instantiations)
+      {
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| find_varsym found entry that matched %s for instantiation.  Returning %s!\n",
+      sym_name, found_u_string->current_unique_var_symbol->var.name );
+#endif
+        return found_u_string->current_unique_var_symbol;
+      }
+    }
+  }
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+  print(thisAgent, "RHSVAR| find_varsym did not find any entry that matched %s for instantiation %s.  Returning false!\n",
+      sym_name, found_u_string->current_unique_var_symbol->var.name );
+#endif
+  return NIL;
+}
 
 void string_hash_table::clear_table()
 {

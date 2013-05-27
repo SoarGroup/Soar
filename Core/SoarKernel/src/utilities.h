@@ -132,6 +132,7 @@ class string_hash_table
   public:
     void make_varsym_unique(Symbol **original_varsym);
     void reinit_table();
+    Symbol *find_varsym(const char *sym_name);
 
     string_hash_table(agent *thisAgent);
     ~string_hash_table();

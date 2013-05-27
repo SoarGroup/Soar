@@ -66,12 +66,14 @@ const char * preference_name[] =
    with the given id/attribute/value/referent.  (Referent is only used
    for binary preferences.)  The preference is not yet added to preference
    memory, however.
+
+   The last three items are used by the chunker and have default nil
+   values, so they can be left out.
 ---------------------------------------------------------------------- */
 
 preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *attr,
                              Symbol *value, Symbol *referent, Symbol *original_id_var,
-                             Symbol *original_attr_var, Symbol *original_value_var, Symbol *original_id_var_sub,
-                             Symbol *original_attr_var_sub, Symbol *original_value_var_sub) {
+                             Symbol *original_attr_var, Symbol *original_value_var) {
   preference *p;
 
   allocate_with_pool (thisAgent, &thisAgent->preference_pool, &p);
@@ -94,9 +96,6 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
   p->original_id_var = original_id_var;
   p->original_attr_var = original_attr_var;
   p->original_value_var = original_value_var;
-  p->original_id_var_sub = original_id_var_sub;
-  p->original_attr_var_sub = original_attr_var_sub;
-  p->original_value_var_sub = original_value_var_sub;
 
 #ifdef DEBUG_PREFS
   print (thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
