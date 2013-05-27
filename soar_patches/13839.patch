@@ -392,6 +392,19 @@ Index: Core/SoarKernel/src/init_soar.cpp
  
  	  /** KJC June 05:  moved output function timers into do_output_cycle ***/
  
+Index: SConstruct
+===================================================================
+--- SConstruct	(revision 13839)
++++ SConstruct	(working copy)
+@@ -164,7 +164,7 @@
+ 		if GetOption('static'):
+ 			cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
+ 
+-	libs += [ 'pthread', 'dl', 'm' ]
++	libs += [ 'pthread', 'dl', 'm', 'rt']
+ 
+ elif compiler == 'msvc':
+ 	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
 Index: Tests/UnitTests/src/cliparsertest.h
 ===================================================================
 --- Tests/UnitTests/src/cliparsertest.h	(revision 13839)
