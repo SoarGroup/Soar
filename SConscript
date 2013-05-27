@@ -1,6 +1,6 @@
 import sys
 
-Import('env', 'compiler')
+Import('env', 'compiler', 'lsb_build')
 
 # svs viewer
 viewer_env = env.Clone()
@@ -36,7 +36,7 @@ else:
 		viewer_env.Append(
 			CPPFLAGS  = [ '-D_GLFW_HAS_PTHREAD', '-D_GLFW_HAS_SYSCONF', '-D_GLFW_HAS_SCHED_YIELD', '-pthread' ],
 			CPPPATH   = [ 'glfw/lib/x11' ],
-			LIBS      = [ 'm', 'pthread', 'X11' ] + opengl_libs,
+			LIBS      = [ 'm', 'pthread', 'rt', 'X11' ] + opengl_libs,
 		)
 		viewer_src.extend(Glob('glfw/lib/x11/*.c'))
 
@@ -76,6 +76,9 @@ if compiler == 'g++':
 	else:
 		srcdirs.append('src/posix')
 		incdirs.append('src/posix')
+		if lsb_build:
+			flags.append('-DEIGEN_ALLOCA=aligned_malloc')
+
 elif compiler == 'msvc':
 	flags = [
 		'/D', 'EIGEN_DONT_ALIGN',
