@@ -84,6 +84,7 @@ export LSBCC=$CC
 export LSBCXX=$CXX
 export LSBCC_LSBVERSION=4.1
 export LSBCC_LIBS=$LSBCC_LIB_PREFIX$LSBCC_LSBVERSION
+export LSBCC_SHAREDLIBS=python2.7
 export CCACHE
 export CCACHE_BASEDIR=$HOME
 export CCACHE_CC=$LSB_HOME/bin/lsbcc
@@ -102,7 +103,7 @@ fi
 mkdir -p out_d out
 
 JOBS=4
-TARGETS="cli debugger debugger_api headers kernel sml_java tests"
+TARGETS=all
 
 export LSB_SHAREDLIBPATH="$(pwd)/out_d"
 
@@ -110,7 +111,7 @@ scons \
   --jobs=$JOBS \
   --cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
   --cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
-  --lnflags="$LDFLAGS --lsb-shared-libpath=out_d -Wl,--hash-style=both" \
+  --lnflags="$LDFLAGS --lsb-shared-libs=$LSBCC_SHAREDLIBS --lsb-shared-libpath=out_d -Wl,--hash-style=both" \
   --build=build_d --out=out_d \
   $TARGETS
 RV=$?
@@ -124,7 +125,7 @@ scons \
   --jobs=$JOBS \
   --cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
   --cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
-  --lnflags="$LDFLAGS --lsb-shared-libpath=out -Wl,--hash-style=both" \
+  --lnflags="$LDFLAGS --lsb-shared-libs=$LSBCC_SHAREDLIBS --lsb-shared-libpath=out -Wl,--hash-style=both" \
   --opt \
   $TARGETS
 RV=$?
@@ -140,8 +141,9 @@ $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBV
 $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBVERSION --shared-libpath=out out/TestSoarPerformance
 $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=$LSBCC_LSBVERSION --shared-libpath=out out/UnitTests
 
+SOARSUITE=$(pwd)
 cp out/java/sml.jar ../AgentDevelopmentTools/VisualSoar/lib/
 pushd ../AgentDevelopmentTools/VisualSoar
 ant
-cp java/soar-visualsoar-snapshot.jar ../../SoarSuite/out/VisualSoar.jar
+cp java/soar-visualsoar-snapshot.jar $SOARSUITE/out/VisualSoar.jar
 popd
