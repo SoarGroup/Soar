@@ -66,10 +66,12 @@ bool linear_comp(const sgnode *a, const sgnode *b, const sgnode *c) {
 	vec3 ca = a->get_centroid();
 	vec3 cb = b->get_centroid();
 	vec3 cc = c->get_centroid();
-	float tri_area = 0.5*(ca[0]*(cb[1]-cc[1]) + cb[0]*(cc[1]-ca[1]) + cc[0]*(ca[1]-cb[1]));
-	//std::cout << tri_area << std::endl;
+	float tri_area = 0.5*(ca[0]*(cb[1]-cc[1]) + cb[0]*(cc[1]-ca[1]) + 
+						  cc[0]*(ca[1]-cb[1]));
+	if (tri_area < 0)
+		tri_area = -tri_area;
 		
-	return (tri_area == 0);
+	return (tri_area < 0.000001);
 }
 
 bool north_of(const scene *scn, const vector<const sgnode*> &args) {
