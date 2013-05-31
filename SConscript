@@ -1,6 +1,6 @@
 import sys
 
-Import('env', 'compiler')
+Import('env', 'compiler', 'lsb_build')
 
 # svs viewer
 viewer_env = env.Clone()
@@ -34,9 +34,14 @@ else:
 	else:
 		opengl_libs = [ 'GL', 'GLU' ]
 		viewer_env.Append(
-			CPPFLAGS  = [ '-D_GLFW_HAS_PTHREAD', '-D_GLFW_HAS_SYSCONF', '-D_GLFW_HAS_SCHED_YIELD', '-pthread' ],
+			CPPFLAGS  = [ '-D_GLFW_HAS_PTHREAD',
+			              '-D_GLFW_HAS_SYSCONF',
+			              '-D_GLFW_HAS_SCHED_YIELD',
+			              '-D_GLFW_HAS_GLXGETPROCADDRESS',
+			              '-pthread'
+			            ],
 			CPPPATH   = [ 'glfw/lib/x11' ],
-			LIBS      = [ 'm', 'pthread', 'X11' ] + opengl_libs,
+			LIBS      = [ 'm', 'pthread', 'X11', 'rt' ] + opengl_libs,
 		)
 		viewer_src.extend(Glob('glfw/lib/x11/*.c'))
 
@@ -70,6 +75,9 @@ if compiler == 'g++':
 		'-DEIGEN_DONT_ALIGN',
 		'-Wno-enum-compare',
 	]
+	if lsb_build:
+		flags.append('-DEIGEN_ALLOCA=aligned_malloc')   # alloca isn't in LSB
+	
 	if sys.platform == "darwin":
 		srcdirs.append('src/osx')
 		incdirs.append('src/osx')
