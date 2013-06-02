@@ -21,33 +21,45 @@ if compiler == 'msvc':
 else:
 	viewer_src.append('viewer/platform_specific/posix.c')
 	if sys.platform == 'darwin':
-		opengl_libs = []
-		frameworks = [ 'Cocoa', 'OpenGL', 'IOKit' ]  # osx uses opengl as a framework instead of libraries
+		viewer_src.extend(Glob('glfw/lib/cocoa/*.c') + Glob('glfw/lib/cocoa/*.m'))
+		opengl_libs = []  # osx uses opengl as a framework instead of libraries
 		viewer_env.Append(
 			CPPFLAGS  = [ '-fno-common' ],
 			CPPPATH   = [ 'glfw/lib/cocoa/' ],
 		)
-		for f in frameworks:
+		for f in [ 'Cocoa', 'OpenGL', 'IOKit' ]:
 			viewer_env.Append(LINKFLAGS = [ '-framework', f ])
-		
-		viewer_src.extend(Glob('glfw/lib/cocoa/*.c') + Glob('glfw/lib/cocoa/*.m'))
 	else:
+		viewer_src.extend(Glob('glfw/lib/x11/*.c'))
 		opengl_libs = [ 'GL', 'GLU' ]
 		viewer_env.Append(
-			CPPFLAGS  = [ '-D_GLFW_HAS_PTHREAD',
-			              '-D_GLFW_HAS_SYSCONF',
-			              '-D_GLFW_HAS_SCHED_YIELD',
-			              '-D_GLFW_HAS_GLXGETPROCADDRESS',
-			              '-pthread'
-			            ],
-			CPPPATH   = [ 'glfw/lib/x11' ],
-			LIBS      = [ 'm', 'pthread', 'X11', 'rt' ] + opengl_libs,
+			CPPFLAGS = [
+				'-pthread',
+				'-D_GLFW_HAS_PTHREAD',
+				'-D_GLFW_HAS_SYSCONF',
+				'-D_GLFW_HAS_SCHED_YIELD',
+			],
+			CPPPATH = [ 'glfw/lib/x11' ],
+			LIBS    = [ 'm', 'pthread', 'X11', 'rt' ] + opengl_libs,
 		)
-		viewer_src.extend(Glob('glfw/lib/x11/*.c'))
 
-config = Configure(viewer_env)
-missing_libs = [ l for l in opengl_libs if not config.CheckLib(l)]
-viewer_env = config.Finish()
+conf = Configure(viewer_env)
+missing_libs = [ l for l in opengl_libs if not conf.CheckLib(l) ]
+
+PROCADDRESS_FUNCS = [
+	('glXGetProcAddressARB', 'GLXGETPROCADDRESSARB'),
+	('glXGetProcAddress',    'GLXGETPROCADDRESS'),
+	('glXGetProcAddressEXT', 'GLXGETPROCADDRESSEXT'),
+]
+macro = '_GLFW_HAS_DLOPEN'  # fallback
+for f, m in PROCADDRESS_FUNCS:
+	if conf.CheckLibWithHeader('GL', 'GL/gl.h', 'C', '%s("");' % f):
+		macro = m
+		break;
+viewer_env.Append(CPPFLAGS='-D_GLFW_HAS_' + macro)
+
+conf.Finish()
+
 if not missing_libs:
 	viewer_prog = viewer_env.Program('svs_viewer', viewer_src)
 	viewer_install = viewer_env.Alias('svs_viewer', viewer_env.Install('$OUT_DIR', viewer_prog))
