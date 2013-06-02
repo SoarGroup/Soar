@@ -52,6 +52,7 @@ public:
 	
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	
+	void refresh_view();
 private:
 	typedef std::map<std::string, double> property_map;
 	
@@ -104,6 +105,7 @@ private:
 	void cli_dist(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_sgel(const std::vector<std::string> &args, std::ostream &os);
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
+	void cli_draw(const std::vector<std::string> &args, std::ostream &os);
 };
 
 #endif

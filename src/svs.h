@@ -86,7 +86,6 @@ public:
 	const output_spec *get_output_spec() const { return outspec; }
 	
 	void update_models();
-	void refresh_view();
 
 private:
 	void init();

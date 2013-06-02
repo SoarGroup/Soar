@@ -136,7 +136,7 @@ void svs_state::init() {
 	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
 	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
 	if (parent) {
-		scn = parent->scn->clone(name, true);
+		scn = parent->scn->clone(name, false);
 	} else {
 		scn = new scene(name, svsp, true);
 	}
@@ -318,17 +318,6 @@ void svs_state::cli_out(const vector<string> &args, ostream &os) {
 	}
 }
 
-void svs_state::refresh_view() {
-	vector<const sgnode*> nodes;
-	string name = scn->get_name();
-	drawer *d = svsp->get_drawer();
-	
-	d->delete_scene(name);
-	scn->get_all_nodes(nodes);
-	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
-		d->add(name, nodes[i]);
-	}
-}
 //JK
 Symbol * svs_state::get_sgnode_id(const sgnode *n) 
 {
@@ -531,7 +520,7 @@ void svs::cli_connect_viewer(const vector<string> &args, ostream &os) {
 	}
 	draw->connect(args[0]);
 	for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
-		state_stack[i]->refresh_view();
+		state_stack[i]->get_scene()->refresh_view();
 	}
 }
 

@@ -819,6 +819,10 @@ void scene::proxy_get_children(map<string, cliproxy*> &c) {
 	                .add_arg("[RELATION]", "Relation name pattern. Can be * for any.")
 	                .add_arg("[PARAMS]",   "Argument patterns. Can be * for any.")
 	                ;
+
+	c["draw"] = new memfunc_proxy<scene>(this, &scene::cli_draw);
+	c["draw"]->set_help("Draw this scene in the viewer.")
+	           .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
 }
 
 void scene::cli_props(const vector<string> &args, ostream &os) const {
@@ -936,5 +940,28 @@ void scene::cli_relations(const vector<string> &args, ostream &os) const {
 			}
 		}
 		p.print(os);
+	}
+}
+
+void scene::cli_draw(const vector<string> &args, ostream &os) {
+	bool_proxy p(&draw, "");
+	bool old_draw = draw;
+	
+	p.proxy_use("", args, os);
+	if (!old_draw && draw) {
+		refresh_view();
+	} else if (old_draw && !draw) {
+		owner->get_drawer()->delete_scene(name);
+	}
+}
+
+void scene::refresh_view() {
+	vector<const sgnode*> nodes;
+	drawer *d = owner->get_drawer();
+	
+	d->delete_scene(name);
+	get_all_nodes(nodes);
+	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
+		d->add(name, nodes[i]);
 	}
 }
