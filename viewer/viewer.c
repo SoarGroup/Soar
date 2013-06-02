@@ -488,11 +488,6 @@ void set_geom_vertices(geometry *g, real *vertices, int nverts) {
 void set_geom_radius(geometry *g, real radius) {
 	free_geom_shape(g);
 	g->radius = radius;
-	g->quadric = gluNewQuadric();
-	if (!g->quadric) {
-		error("Not enough memory for quadric");
-	}
-	gluQuadricNormals(g->quadric, GLU_SMOOTH);
 }
 
 void set_geom_text(geometry *g, char *text) {
@@ -548,7 +543,14 @@ void draw_geom(geometry *g) {
 				glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, &g->indexes[i]);
 			}
 		}
-	} else if (g->quadric) {
+	} else if (g->radius >= 0.0) {
+		if (!g->quadric) {
+			g->quadric = gluNewQuadric();
+			if (!g->quadric) {
+				error("Not enough memory for quadric");
+			}
+			gluQuadricNormals(g->quadric, GLU_SMOOTH);
+		}
 		gluSphere(g->quadric, g->radius, 10, 10);
 	} else if (g->text) {
 		draw_text(g->text, 0, 0);

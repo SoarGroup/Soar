@@ -1,4 +1,4 @@
-import sys
+import sys, platform
 
 Import('env', 'compiler', 'lsb_build')
 
@@ -46,17 +46,20 @@ else:
 conf = Configure(viewer_env)
 missing_libs = [ l for l in opengl_libs if not conf.CheckLib(l) ]
 
-PROCADDRESS_FUNCS = [
-	('glXGetProcAddressARB', 'GLXGETPROCADDRESSARB'),
-	('glXGetProcAddress',    'GLXGETPROCADDRESS'),
-	('glXGetProcAddressEXT', 'GLXGETPROCADDRESSEXT'),
-]
-macro = '_GLFW_HAS_DLOPEN'  # fallback
-for f, m in PROCADDRESS_FUNCS:
-	if conf.CheckLibWithHeader('GL', 'GL/gl.h', 'C', '%s("");' % f):
-		macro = m
-		break;
-viewer_env.Append(CPPFLAGS='-D_GLFW_HAS_' + macro)
+if platform.system().startswith('Linux'):
+	PROCADDRESS_FUNCS = [
+		('glXGetProcAddressARB', 'GLXGETPROCADDRESSARB'),
+		('glXGetProcAddress',    'GLXGETPROCADDRESS'),
+		('glXGetProcAddressEXT', 'GLXGETPROCADDRESSEXT'),
+	]
+	macro = '_GLFW_HAS_DLOPEN'  # fallback
+	for f, m in PROCADDRESS_FUNCS:
+		if conf.CheckLibWithHeader('GL', 'GL/gl.h', 'C', '%s("");' % f):
+			macro = m
+			break;
+	viewer_env.Append(CPPFLAGS='-D_GLFW_HAS_' + macro)
+elif platform.system() == 'Darwin':
+	viewer_env.Append(CPPFLAGS='-D_GLFW_HAS_GLXGETPROCADDRESS')
 
 conf.Finish()
 
