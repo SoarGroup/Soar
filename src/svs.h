@@ -79,8 +79,6 @@ public:
 	Symbol        *get_state()           { return state;     }
 	svs           *get_svs()             { return svsp;      }
 	multi_model   *get_model()           { return mmdl;      }
-	Symbol *       get_sgnode_id(const sgnode *n, sgwme *r); //JK
-	Symbol *       get_sgnode_id(const sgnode *n); //JK
 	void set_output(const rvec &out);
 	bool get_output(rvec &out) const;
 	const output_spec *get_output_spec() const { return outspec; }

@@ -54,8 +54,9 @@ drawer::~drawer() {
 	delete sock;
 }
 
-void drawer::connect(const string &path) {
+bool drawer::connect(const string &path) {
 	connected = sock->connect(path);
+	return connected;
 }
 
 void drawer::disconnect() {

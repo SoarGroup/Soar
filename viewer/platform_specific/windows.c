@@ -143,14 +143,11 @@ int read_socket(char *buf, int n) {
 				}
 			} else {
 				if ((nrecv = recv(active_fd, buf, n, 0)) == SOCKET_ERROR) {
-					fprintf(stderr, "recv failed\n");
-					exit(1);
-				}
-				if (nrecv == 0) {
+					fprintf(stderr, "recv failed: %d\n", WSAGetLastError());
 					/* disconnect */
-					fprintf(stderr, "client disconnected\n");
-					close(active_fd);
+					closesocket(active_fd);
 					FD_CLR(active_fd, &all_fds);
+					return 0;
 				}
 				return nrecv;
 			}

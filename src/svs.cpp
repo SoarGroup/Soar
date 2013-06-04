@@ -318,32 +318,6 @@ void svs_state::cli_out(const vector<string> &args, ostream &os) {
 	}
 }
 
-//JK
-Symbol * svs_state::get_sgnode_id(const sgnode *n) 
-{
-	return get_sgnode_id(n, root);
-}
-Symbol * svs_state::get_sgnode_id(const sgnode *n, sgwme *r) 
-{
-	if (r == NULL)
-		return NULL;
-	if ((r->get_node()->get_name().compare(n->get_name())) == 0)
-		return r->get_id();
-
-	std::map<sgwme*,wme*>::iterator i;
-	//std::map<std::string, model*>::iterator i;
-	std::map<sgwme*,wme*> *childs = r->get_childs();
-	for (i = childs->begin(); i != childs->end(); ++i) {
-		//model *m = i->second;
-		//Symbol *id = si->get_wme_val(si->make_id_wme(model_root, m->get_name()));
-		Symbol* result = get_sgnode_id(n, i->first);
-		if (result != NULL)
-			return result;
-		//m->set_wm_root(id);
-	}
-	return NULL;
-}
-
 svs::svs(agent *a)
 : use_models(false), record_movie(false)
 {
@@ -518,9 +492,13 @@ void svs::cli_connect_viewer(const vector<string> &args, ostream &os) {
 		os << "specify socket path" << endl;
 		return;
 	}
-	draw->connect(args[0]);
-	for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
-		state_stack[i]->get_scene()->refresh_view();
+	if (draw->connect(args[0])) {
+		os << "connection successful" << endl;
+		for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
+			state_stack[i]->get_scene()->refresh_view();
+		}
+	} else {
+		os << "connection failed" << endl;
 	}
 }
 
