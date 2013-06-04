@@ -81,37 +81,10 @@ vec3 sgnode::get_trans(char type) const {
 	}
 }
 
-vec4 sgnode::get_quaternion() const {
-	double halfyaw = rot(0) / 2, halfpitch = rot(1) / 2, halfroll = rot(2) / 2;  
-	double cosyaw = cos(halfyaw);
- 	double sinyaw = sin(halfyaw);
-	double cospitch = cos(halfpitch);
-	double sinpitch = sin(halfpitch);
-	double cosroll = cos(halfroll);
-	double sinroll = sin(halfroll);
-	return vec4(cosroll * sinpitch * cosyaw + sinroll * cospitch * sinyaw,
-	            cosroll * cospitch * sinyaw - sinroll * sinpitch * cosyaw,
-	            sinroll * cospitch * cosyaw - cosroll * sinpitch * sinyaw,
-	            cosroll * cospitch * cosyaw + sinroll * sinpitch * sinyaw);
-}
-
 void sgnode::get_trans(vec3 &p, vec3 &r, vec3 &s) const {
 	p = pos;
 	r = rot;
 	s = scale;
-}
-
-void sgnode::get_world_trans(vec3 &p, vec3 &r, vec3 &s) const {
-	if (parent) {
-		parent->update_transform();
-		p = parent->wtransform(pos);
-		r = parent->wtransform(rot);
-		s = parent->wtransform(scale);
-	} else {
-		p = pos;
-		r = rot;
-		s = scale;
-	}
 }
 
 void sgnode::set_transform_dirty() {
@@ -222,27 +195,49 @@ bool sgnode::has_descendent(const sgnode *n) const {
 }
 
 void sgnode::proxy_use_sub(const vector<string> &args, ostream &os) {
-	table_printer t, t1;
+	vec3 lp, ls, wp, ws;
+	vec4 lr, wr;
+	table_printer t, t1, t2;
+	
 	t.add_row() << "id:"     << id;
 	t.add_row() << "name:"   << name;
 	t.add_row() << "type:"   << type;
 	t.add_row() << "parent:" << (parent ? parent->get_name() : "none");
 	t.print(os);
-	os << endl;
 	
+	os << endl << "Local transform:" << endl;
+	update_transform();
+	ltransform.to_prs(lp, lr, ls);
 	t1.add_row() << "pos:";
 	for (int i = 0; i < 3; ++i) {
-		t1 << pos(i);
+		t1 << lp(i);
 	}
 	t1.add_row() << "rot:";
-	for (int i = 0; i < 3; ++i) {
-		t1 << rot(i);
+	for (int i = 0; i < 4; ++i) {
+		t1 << lr(i);
 	}
 	t1.add_row() << "scale:";
 	for (int i = 0; i < 3; ++i) {
-		t1 << scale(i);
+		t1 << ls(i);
 	}
 	t1.print(os);
+
+	wtransform.to_prs(wp, wr, ws);
+	os << endl << "World transform:" << endl;
+	t2.add_row() << "pos:";
+	for (int i = 0; i < 3; ++i) {
+		t2 << wp(i);
+	}
+	t2.add_row() << "rot:";
+	for (int i = 0; i < 4; ++i) {
+		t2 << wr(i);
+	}
+	t2.add_row() << "scale:";
+	for (int i = 0; i < 3; ++i) {
+		t2 << ws(i);
+	}
+	t2.print(os);
+
 }
 
 group_node::~group_node() {

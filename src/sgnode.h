@@ -56,8 +56,7 @@ public:
 	void set_trans(const vec3 &p, const vec3 &r, const vec3 &s);
 	vec3 get_trans(char type) const;
 	void get_trans(vec3 &p, vec3 &r, vec3 &s) const;
-	void get_world_trans(vec3 &p, vec3 &r, vec3 &s) const;
-	vec4 get_quaternion() const;
+	const transform3 &get_world_trans() const;
 	
 	void set_shape_dirty();
 	void listen(sgnode_listener *o);
@@ -75,7 +74,6 @@ public:
 	virtual void walk_geoms(std::vector<const geometry_node*> &g) const = 0;
 	
 protected:
-	const transform3 &get_world_trans() const;
 	void set_bounds(const bbox &b);
 	virtual void update_shape() = 0;
 	virtual sgnode *clone_sub() const = 0;

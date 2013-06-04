@@ -87,12 +87,11 @@ void drawer::change(const string &scn, const sgnode *n, int props) {
 		return;
 	}
 	
-	vec3 p, r, s;
+	vec3 p, s;
 	vec4 q;
 	stringstream ss;
 
-	n->get_world_trans(p, r, s);
-	q = n->get_quaternion();
+	n->get_world_trans().to_prs(p, q, s);
 	ss << "+" << scn << " +" << n->get_name() << " ";
 	if (props & SHAPE) {
 		string shape;
