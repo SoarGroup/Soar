@@ -660,7 +660,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			break;
 		case sgnode::TRANSFORM_CHANGED:
 			update_dists(i);
-			if (!n->is_group() && draw) {
+			if (draw) {
 				d->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			nodes[i].rels_dirty = true;
