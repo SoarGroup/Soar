@@ -222,9 +222,13 @@ bool scene::add_node(const string &name, sgnode *n) {
 }
 
 bool scene::del_node(const string &name) {
-	delete find_name(name)->node;
-	/* rest is handled in node_update */
-	return true;
+	node_info *ni = find_name(name);
+	if (ni) {
+		delete ni->node;
+		/* rest is handled in node_update */
+		return true;
+	}
+	return false;
 }
 
 void scene::clear() {
