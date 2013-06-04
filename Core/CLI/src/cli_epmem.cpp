@@ -150,7 +150,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     {
         if ( !pAttr )
         {   // Print SMem Settings
-            PrintCLIMessage_Header("Semantic Memory Statistics", 40);
+            PrintCLIMessage_Header("Episodic Memory Statistics", 40);
             PrintCLIMessage_Item("Time:", agnt->epmem_stats->time, 40);
             PrintCLIMessage_Item("SQLite Version:", agnt->epmem_stats->db_lib_version, 40);
             PrintCLIMessage_Item("Memory Usage:", agnt->epmem_stats->mem_usage, 40);
