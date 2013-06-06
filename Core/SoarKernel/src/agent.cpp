@@ -71,7 +71,7 @@ void init_soar_agent(agent* thisAgent) {
   /* JC ADDED: initialize the rhs function linked list */
   thisAgent->rhs_functions = NIL;
 
-   /* --- initialize everything --- */
+  /* --- initialize everything --- */
   init_symbol_tables(thisAgent);
   create_predefined_symbols(thisAgent);
   init_production_utilities(thisAgent);
@@ -121,20 +121,20 @@ void init_soar_agent(agent* thisAgent) {
 
   /* --- add default object trace formats --- */
   add_trace_format (thisAgent, FALSE, FOR_ANYTHING_TF, NIL,
-                    "%id %ifdef[(%v[name])]");
+      "%id %ifdef[(%v[name])]");
   add_trace_format (thisAgent, FALSE, FOR_STATES_TF, NIL,
-                    "%id %ifdef[(%v[attribute] %v[impasse])]");
+      "%id %ifdef[(%v[attribute] %v[impasse])]");
   { Symbol *evaluate_object_sym;
-    evaluate_object_sym = make_sym_constant (thisAgent, "evaluate-object");
-    add_trace_format (thisAgent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym,
-                      "%id (evaluate-object %o[object])");
-    symbol_remove_ref (thisAgent, evaluate_object_sym);
+  evaluate_object_sym = make_sym_constant (thisAgent, "evaluate-object");
+  add_trace_format (thisAgent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym,
+      "%id (evaluate-object %o[object])");
+  symbol_remove_ref (thisAgent, evaluate_object_sym);
   }
   /* --- add default stack trace formats --- */
   add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL,
-                    "%right[6,%dc]: %rsd[   ]==>S: %cs");
+      "%right[6,%dc]: %rsd[   ]==>S: %cs");
   add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
-                    "%right[6,%dc]: %rsd[   ]   O: %co");
+      "%right[6,%dc]: %rsd[   ]   O: %co");
 
   reset_statistics (thisAgent);
 
@@ -157,10 +157,10 @@ agent * create_soar_agent (char * agent_name) {                                 
   /* mvp 5-17-94 */
   newAgent->variables_set                      = NIL;
 
-//#ifdef _WINDOWS
-//  newAgent->current_line[0]                    = 0;
-//  newAgent->current_line_index                 = 0;
-//#endif /* _WINDOWS */
+  //#ifdef _WINDOWS
+  //  newAgent->current_line[0]                    = 0;
+  //  newAgent->current_line_index                 = 0;
+  //#endif /* _WINDOWS */
 
   newAgent->all_wmes_in_rete                   = NIL;
   newAgent->alpha_mem_id_counter               = 0;
@@ -257,9 +257,9 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   /* Initializing rete stuff */
   for (int i=0; i < 256; i++) {
-     newAgent->actual[i]=0;
-     newAgent->if_no_merging[i]=0;
-     newAgent->if_no_sharing[i]=0;
+    newAgent->actual[i]=0;
+    newAgent->if_no_merging[i]=0;
+    newAgent->if_no_sharing[i]=0;
   }
 
   /* Initializing lexeme */
@@ -388,7 +388,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   // debug module settings
   newAgent->debug_params = new debug_param_container( newAgent );
 
-  #ifdef USE_MEM_POOL_ALLOCATORS
+#ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->epmem_node_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
   newAgent->epmem_edge_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
 
@@ -437,7 +437,7 @@ agent * create_soar_agent (char * agent_name) {                                 
 ===============================
 
 ===============================
-*/
+ */
 void destroy_soar_agent (agent * delete_agent)
 {
   //print(delete_agent, "\nDestroying agent %s.\n", delete_agent->name);  /* AGR 532 */
@@ -448,7 +448,7 @@ void destroy_soar_agent (agent * delete_agent)
 
   // cleanup exploration
   for ( int i=0; i<EXPLORATION_PARAMS; i++ )
-	  delete delete_agent->exploration_params[ i ];
+    delete delete_agent->exploration_params[ i ];
 
   // cleanup Soar-RL
   delete_agent->rl_params->apoptosis->set_value( rl_param_container::apoptosis_none );
@@ -527,13 +527,13 @@ void destroy_soar_agent (agent * delete_agent)
   /* Freeing the agent's multi attributes structure */
   multi_attribute* lastmattr = 0;
   for ( multi_attribute* curmattr = delete_agent->multi_attributes;
-        curmattr != 0;
-        curmattr = curmattr->next ) {
+      curmattr != 0;
+      curmattr = curmattr->next ) {
 
-     symbol_remove_ref(delete_agent, curmattr->symbol);
+    symbol_remove_ref(delete_agent, curmattr->symbol);
 
-     free_memory(delete_agent, lastmattr, MISCELLANEOUS_MEM_USAGE);
-     lastmattr = curmattr;
+    free_memory(delete_agent, lastmattr, MISCELLANEOUS_MEM_USAGE);
+    lastmattr = curmattr;
   }
   free_memory(delete_agent, lastmattr, MISCELLANEOUS_MEM_USAGE);
 
@@ -549,7 +549,7 @@ void destroy_soar_agent (agent * delete_agent)
 
   /* Cleaning up the various callbacks
      TODO: Not clear why callbacks need to take the agent pointer essentially twice.
-  */
+   */
   soar_remove_all_monitorable_callbacks(delete_agent);
 
   /* RPM 9/06 begin */
@@ -572,13 +572,13 @@ void destroy_soar_agent (agent * delete_agent)
 
   /* Releasing hashtables allocated in init_tracing */
   for (int i=0; i<3; i++) {
-	free_hash_table(delete_agent, delete_agent->object_tr_ht[i]);
-	free_hash_table(delete_agent, delete_agent->stack_tr_ht[i]);
+    free_hash_table(delete_agent, delete_agent->object_tr_ht[i]);
+    free_hash_table(delete_agent, delete_agent->stack_tr_ht[i]);
   }
 
   /* Releasing memory allocated in init_rete */
   for (int i=0; i<16; i++) {
-	  free_hash_table(delete_agent, delete_agent->alpha_hash_tables[i]);
+    free_hash_table(delete_agent, delete_agent->alpha_hash_tables[i]);
   }
 
   /* Releasing other hashtables */
@@ -592,9 +592,9 @@ void destroy_soar_agent (agent * delete_agent)
   memory_pool* cur_pool = delete_agent->memory_pools_in_use;
   memory_pool* next_pool;
   while(cur_pool != NIL) {
-	  next_pool = cur_pool->next;
-	  free_memory_pool(delete_agent, cur_pool);
-	  cur_pool = next_pool;
+    next_pool = cur_pool->next;
+    free_memory_pool(delete_agent, cur_pool);
+    cur_pool = next_pool;
   }
 
   /* RPM 9/06 end */
@@ -602,7 +602,7 @@ void destroy_soar_agent (agent * delete_agent)
   // dynamic memory pools (cleared in the last step)
   for ( std::map< size_t, memory_pool* >::iterator it=delete_agent->dyn_memory_pools->begin(); it!=delete_agent->dyn_memory_pools->end(); it++ )
   {
-	  delete it->second;
+    delete it->second;
   }
   delete delete_agent->dyn_memory_pools;
 

@@ -799,14 +799,6 @@ void create_instantiation(agent* thisAgent, production *prod,
 		}
 	}
 
-  print(thisAgent, "\nCreate_instantiation before deallocate: \n");
-  print_instantiation(inst);
-
-  deallocate_action_list (thisAgent, rhs_vars);
-
-  print(thisAgent, "\nCreate_instantiation before deallocate: \n");
-  print_instantiation(inst);
-
   /* --- reset rhs_variable_bindings array to all zeros --- */
 	index = 0;
 	cell = thisAgent->rhs_variable_bindings;
@@ -837,9 +829,20 @@ void create_instantiation(agent* thisAgent, production *prod,
 	chunk_instantiation(thisAgent, inst, false,
 			&(thisAgent->newly_created_instantiations));
 
+	/* -- clear the original var references that we cached in the preference in
+	 *    execute_action but did not increase their refcount -- */
+	for (pref = inst->preferences_generated; pref != NIL;
+      pref = pref->inst_next) {
+    pref->original_id_var = NIL;
+    pref->original_attr_var = NIL;
+    pref->original_value_var = NIL;
+  }
+
+	deallocate_action_list (thisAgent, rhs_vars);
+#ifdef DEBUG_TRACE_PRINT_INSTANTIATIONS
 	print(thisAgent, "\nCreate_instantiation created: \n");
 	print_instantiation(inst);
-
+#endif
 	if (!thisAgent->system_halted) {
 		/* --- invoke callback function --- */
 		soar_invoke_callbacks(thisAgent, FIRING_CALLBACK,

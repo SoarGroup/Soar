@@ -901,7 +901,7 @@ void add_additional_tests_and_originals (agent *thisAgent,
         chunk_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
 
         // Probably don't need to copy this disjunction list
-        original_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+        //original_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
 
         break;
       default:

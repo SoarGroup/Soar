@@ -211,7 +211,9 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
   {
     if ((*sym)->common.data.tc_num == thisAgent->variablization_tc) {
       /* --- it's already been variablized, so use the existing variable --- */
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
       print(thisAgent, "Debug | Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+#endif
       var = (*sym)->common.data.variablized_symbol;
       var->common.data.unvariablized_symbol = *sym;
       //symbol_remove_ref (thisAgent, *sym);
@@ -231,7 +233,9 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
     var = generate_new_variable (thisAgent, prefix);
     (*sym)->common.data.variablized_symbol = var;
     var->common.data.unvariablized_symbol = *sym;
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
     print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+#endif
     //Do not need to decrease refcount any more b/c we're caching it
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
@@ -246,12 +250,15 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
 
   original_test = &((*chunk_test)->original_test);
 
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
   print(thisAgent, "Debug | Variablizing: ");
   print_test (thisAgent, *chunk_test);
-
+#endif
   if (test_is_blank(*chunk_test) || test_is_blank(*original_test))
   {
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
     print(thisAgent, "Debug | Ignoring test because it(%d) or original($d) is blank!!!!\n", chunk_test, original_test);
+#endif
     return;
   }
 
@@ -266,12 +273,15 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
     case CONJUNCTIVE_TEST:
       if (test_type == EQUALITY_TEST)
       {
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
         print(thisAgent, "Debug | Ignoring original conjunctive test (probably b/c of goal/impasse/disjunction)!!!\n");
+#endif
         //assert(false);
       }
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
       print(thisAgent, "Debug|...Comparing original test types: %s to %s\n", test_type_to_string(original_test_type), test_type_to_string((*chunk_test)->original_test->type));
       print(thisAgent, "Debug | Iterating through conjunction list.\n");
-
+#endif
       ct = *chunk_test;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
@@ -279,7 +289,9 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
             reinterpret_cast<test *>(&(c->first)));
       }
 
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
       print(thisAgent, "Debug | Done iterating through conjunction list.\nDebug | ---------------------------------------\n");
+#endif
       break;
     case EQUALITY_TEST:
     case NOT_EQUAL_TEST:
@@ -291,19 +303,25 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
       ct = *chunk_test;
       if (symbol_is_variablizable(instantiated_referent, original_referent))
       {
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
         print(thisAgent, "Debug | Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
+#endif
         variablize_symbol (thisAgent, &(ct->data.referent));
         ct->data.referent->common.data.original_var_symbol = original_referent;
       }
       break;
     default:
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
       print(thisAgent, "Debug | Invalid test type in variablize_test!!!\n");
+#endif
       assert(false);
       break;
   }
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
   print(thisAgent, "Debug | Resulting in ");
   print_test(thisAgent, *chunk_test);
   print(thisAgent, "Debug | ---------------------------------------\n");
+#endif
 }
 
 /* This gets passed in a copy of the chunk instantiation's condition lists, which
@@ -312,7 +330,9 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
 
 void variablize_condition_list (agent* thisAgent, condition *cond) {
 
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
 	print(thisAgent, "Debug | Variablizing chunk condition list:\nDebug | ==========================================\n");
+#endif
 	for (; cond!=NIL; cond=cond->next)
 	{
 		switch (cond->type) {
@@ -327,7 +347,9 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
 			break;
 		}
 	}
-	print(thisAgent, "Debug | ==========================================\nDebug | Done variablizing chunk condition list.\n");
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+print(thisAgent, "Debug | ==========================================\nDebug | Done variablizing chunk condition list.\n");
+#endif
 }
 
 /* ======================================================================================================
@@ -393,8 +415,10 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym, Symbol *original_var
   if ((*sym)->common.data.tc_num == thisAgent->variablization_tc)
   {
     /* --- it's been variablized on the lhs --- */
+#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
     print(thisAgent, "Debug | ... found existing variablization %s.\n",
           symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+#endif
     if (symbol_is_non_lti_identifier((*sym)))
     {
       var = (*sym)->common.data.variablized_symbol;
@@ -552,16 +576,20 @@ void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
   default:
     if ((t->data.referent->common.data.symbol_type==VARIABLE_SYMBOL_TYPE) && (t->data.referent->common.data.tc_num != tc))
       {
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
       print(thisAgent, "Reversing variable %s to constant %s.\n",
              symbol_to_string(thisAgent, t->data.referent, FALSE, NULL, 0),
              symbol_to_string(thisAgent, t->data.referent->common.data.unvariablized_symbol, FALSE, NULL, 0));
+#endif
       temp_sym = t->data.referent;
       t->data.referent = temp_sym->common.data.unvariablized_symbol;
 
       // Debug | double-check refcount
+#ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
       print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
              symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
              temp_sym->common.data.reference_count);
+#endif
       symbol_remove_ref (thisAgent, temp_sym);
       }
     break;
