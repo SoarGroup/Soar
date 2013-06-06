@@ -339,7 +339,6 @@ typedef struct agent_struct {
   Symbol			* epmem_sym_before;
   Symbol			* epmem_sym_after;
   Symbol			* epmem_sym_prohibit;
-  Symbol			* epmem_sym_current;
   Symbol			* epmem_sym_yes;
   Symbol			* epmem_sym_no;
 

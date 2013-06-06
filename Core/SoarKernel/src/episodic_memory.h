@@ -607,7 +607,6 @@ struct epmem_literal_struct {
 	int is_neg_q;
 	int value_is_id;
 	bool is_leaf;
-	bool is_current;
 	epmem_node_id attribute_s_id;
 	epmem_node_id child_n_id;
 	double weight;
@@ -620,7 +619,6 @@ struct epmem_literal_struct {
 struct epmem_pedge_struct {
 	epmem_triple triple;
 	int value_is_id;
-	bool has_noncurrent;
 	epmem_literal_set literals;
 	soar_module::pooled_sqlite_statement* sql;
 	epmem_time_id time;
@@ -629,7 +627,6 @@ struct epmem_pedge_struct {
 struct epmem_uedge_struct {
 	epmem_triple triple;
 	int value_is_id;
-	bool has_noncurrent;
 	int activation_count;
 	epmem_pedge_set pedges;
 	int intervals;

@@ -3847,7 +3847,7 @@ bool epmem_gm_mcv_comparator(const epmem_literal* a, const epmem_literal* b) {
 	return (a->matches.size() < b->matches.size());
 }
 
-epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_num_incoming, epmem_literal_deque& gm_ordering, epmem_symbol_set& currents, int query_type, std::set<Symbol*>& visiting, soar_module::wme_set& cue_wmes, agent* my_agent) {
+epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_num_incoming, epmem_literal_deque& gm_ordering, int query_type, std::set<Symbol*>& visiting, soar_module::wme_set& cue_wmes, agent* my_agent) {
 	// if the value is being visited, this is part of a loop; return NULL
 	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
 	if (visiting.count(cue_wme->value)) {
@@ -3905,7 +3905,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
-				epmem_literal* child = epmem_build_dnf(*wme_iter, literal_cache, leaf_literals, symbol_num_incoming, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
+				epmem_literal* child = epmem_build_dnf(*wme_iter, literal_cache, leaf_literals, symbol_num_incoming, gm_ordering, query_type, visiting, cue_wmes, my_agent);
 				if (child) {
 					child->parents.insert(literal);
 					literal->children.insert(child);
@@ -3940,7 +3940,6 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
 
 	literal->id_sym = cue_wme->id;
 	literal->value_sym = cue_wme->value;
-	literal->is_current = (currents.count(value) > 0);
 	literal->attribute_s_id = epmem_temporal_hash(my_agent, cue_wme->attr);
 	literal->is_neg_q = query_type;
 	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, cue_wme, true));
@@ -3988,7 +3987,6 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 			allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &child_pedge);
 			child_pedge->triple = triple;
 			child_pedge->value_is_id = literal->value_is_id;
-			child_pedge->has_noncurrent = !literal->is_current;
 			child_pedge->sql = pedge_sql;
 			new(&(child_pedge->literals)) epmem_literal_set();
 			child_pedge->literals.insert(literal);
@@ -4004,9 +4002,6 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 		child_pedge = (*pedge_iter).second;
 		if (!child_pedge->literals.count(literal)) {
 			child_pedge->literals.insert(literal);
-			if (!literal->is_current) {
-				child_pedge->has_noncurrent = true;
-			}
 			// if the literal is an edge with no specified value, add the literal to all potential pedges
 			if (!literal->is_leaf && literal->child_n_id == EPMEM_NODEID_BAD) {
 				bool created = false;
@@ -4088,7 +4083,7 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 							if (child_triple.parent_n_id != child || child_triple.attribute_s_id != child_lit->attribute_s_id) {
 								break;
 							}
-							if (child_uedge->activated && (!literal->is_current || child_uedge->activation_count == 1)) {
+							if (child_uedge->activated && child_uedge->activation_count == 1) {
 								changed_score |= epmem_satisfy_literal(child_lit, child_triple.parent_n_id, child_triple.child_n_id, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
 							}
 							uedge_iter++;
@@ -4097,7 +4092,7 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 						uedge_iter = uedge_cache->find(child_triple);
 						if (uedge_iter != uedge_cache->end() && (*uedge_iter).second != NULL) {
 							child_uedge = (*uedge_iter).second;
-							if (child_uedge->activated && (!literal->is_current || child_uedge->activation_count == 1)) {
+							if (child_uedge->activated && child_uedge->activation_count == 1) {
 								changed_score |= epmem_satisfy_literal(child_lit, child_triple.parent_n_id, child_triple.child_n_id, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
 							}
 						}
@@ -4285,7 +4280,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 	return false;
 }
 
-void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_symbol_set& currents, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, int level=3) {
+void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, int level=3) {
 	// a query must contain a positive cue
 	if (pos_query == NULL) {
 		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd);
@@ -4363,7 +4358,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			root_literal->is_neg_q = EPMEM_NODE_POS;
 			root_literal->value_is_id = EPMEM_RIT_STATE_EDGE;
 			root_literal->is_leaf = false;
-			root_literal->is_current = false;
 			root_literal->attribute_s_id = EPMEM_NODEID_BAD;
 			root_literal->child_n_id = EPMEM_NODEID_ROOT;
 			root_literal->weight = 0.0;
@@ -4397,7 +4391,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				epmem_wme_list* children = epmem_get_augs_of_id(query_root, get_new_tc_number(my_agent));
 				// for each first level WME, build up a DNF
 				for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
-					epmem_literal* child = epmem_build_dnf(*wme_iter, literal_cache, leaf_literals, symbol_num_incoming, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
+					epmem_literal* child = epmem_build_dnf(*wme_iter, literal_cache, leaf_literals, symbol_num_incoming, gm_ordering, query_type, visiting, cue_wmes, my_agent);
 					if (child) {
 						// force all first level literals to have the same id symbol
 						child->id_sym = pos_query;
@@ -4441,7 +4435,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &root_pedge);
 			root_pedge->triple = triple;
 			root_pedge->value_is_id = EPMEM_RIT_STATE_EDGE;
-			root_pedge->has_noncurrent = false;
 			new(&(root_pedge->literals)) epmem_literal_set();
 			root_pedge->literals.insert(root_literal);
 			root_pedge->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
@@ -4456,7 +4449,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &root_uedge);
 			root_uedge->triple = triple;
 			root_uedge->value_is_id = EPMEM_RIT_STATE_EDGE;
-			root_uedge->has_noncurrent = false;
 			root_uedge->activation_count = 0;
 			new(&(root_uedge->pedges)) epmem_pedge_set();
 			root_uedge->intervals = 1;
@@ -4525,7 +4517,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &uedge);
 					uedge->triple = triple;
 					uedge->value_is_id = pedge->value_is_id;
-					uedge->has_noncurrent = pedge->has_noncurrent;
 					uedge->activation_count = 0;
 					new(&(uedge->pedges)) epmem_pedge_set();
 					uedge->intervals = 0;
@@ -4627,7 +4618,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					if (uedge->activated) {
 						for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
 							epmem_literal* literal = (*lit_iter);
-							if (!literal->is_current || uedge->activation_count == 1) {
+							if (uedge->activation_count == 1) {
 								changed_score |= epmem_satisfy_literal(literal, triple.parent_n_id, triple.child_n_id, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
 							}
 						}
@@ -4669,7 +4660,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							epmem_pedge* pedge = *pedge_iter;
 							for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
 								epmem_literal* literal = *lit_iter;
-								if (!literal->is_current || uedge->activation_count == 1) {
+								if (uedge->activation_count == 1) {
 									changed_score |= epmem_satisfy_literal(literal, triple.parent_n_id, triple.child_n_id, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
 								}
 							}
@@ -4685,7 +4676,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					}
 					// put the interval query back into the queue if there's more and some literal cares
 					// otherwise, reinitialize the query and put it in a pool
-					if (interval->uedge->has_noncurrent && interval->sql && interval->sql->execute() == soar_module::row) {
+					if (interval->sql && interval->sql->execute() == soar_module::row) {
 						interval->time = interval->sql->column_int(0);
 						interval_pq.push(interval);
 					} else if (interval->sql) {
@@ -5358,7 +5349,7 @@ bool epmem_consider_new_episode( agent *my_agent )
 	return new_memory;
 }
 
-void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, bool& good_cue, int& path, epmem_time_id& retrieve, Symbol*& next, Symbol*& previous, Symbol*& query, Symbol*& neg_query, epmem_time_list& prohibit, epmem_time_id& before, epmem_time_id& after, epmem_symbol_set& currents, soar_module::wme_set& cue_wmes )
+void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, bool& good_cue, int& path, epmem_time_id& retrieve, Symbol*& next, Symbol*& previous, Symbol*& query, Symbol*& neg_query, epmem_time_list& prohibit, epmem_time_id& before, epmem_time_id& after, soar_module::wme_set& cue_wmes )
 {
 	cue_wmes.clear();
 
@@ -5495,19 +5486,6 @@ void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, 
 					good_cue = false;
 				}
 			}
-			else if ( (*w_p)->attr == my_agent->epmem_sym_current )
-			{
-				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-						( ( path == 0 ) || ( path == 3 ) ) )
-				{
-					currents.insert( (*w_p)->value );
-					path = 3;
-				}
-				else
-				{
-					good_cue = false;
-				}
-			}
 			else
 			{
 				good_cue = false;
@@ -5566,11 +5544,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 	Symbol *neg_query;
 	epmem_time_list prohibit;
 	epmem_time_id before, after;
-#ifdef USE_MEM_POOL_ALLOCATORS
-	epmem_symbol_set currents = epmem_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
-#else
-	epmem_symbol_set currents = epmem_symbol_set();
-#endif
 	bool good_cue;
 	int path;
 
@@ -5654,7 +5627,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 		// and there is something on the cue
 		if ( new_cue && wme_count )
 		{
-			_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, currents, cue_wmes );
+			_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes );
 
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->epmem_timers->api->stop();
@@ -5704,7 +5677,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 				// query
 				else if ( path == 3 )
 				{
-					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, currents, cue_wmes, meta_wmes, retrieval_wmes );
+					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes );
 
 					// add one to the cbr stat
 					my_agent->epmem_stats->cbr->set_value( my_agent->epmem_stats->cbr->get_value() + 1 );
