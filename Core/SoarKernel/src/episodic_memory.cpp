@@ -990,10 +990,10 @@ void epmem_graph_statement_container::create_graph_indices() {
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS epmem_wmes_identifier_range_id_start ON epmem_wmes_identifier_range (wi_id,start_episode_id DESC)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS epmem_wmes_identifier_range_id_end_start ON epmem_wmes_identifier_range (wi_id,end_episode_id DESC,start_episode_id)" );
 
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS epmem_wmes_constant_parent_attribute_s_id_value ON epmem_wmes_constant (parent_n_id,attribute_s_id,value_s_id)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS epmem_wmes_constant_parent_attribute_value ON epmem_wmes_constant (parent_n_id,attribute_s_id,value_s_id)" );
 
-	add_structure( "CREATE INDEX IF NOT EXISTS epmem_wmes_identifier_parent_n_id_w_last_episode_id ON epmem_wmes_identifier (parent_n_id,attribute_s_id,last_episode_id)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS epmem_wmes_identifier_parent_n_id_w_child_n_id ON epmem_wmes_identifier (parent_n_id,attribute_s_id,child_n_id)" );
+	add_structure( "CREATE INDEX IF NOT EXISTS epmem_wmes_identifier_parent_attribute_last ON epmem_wmes_identifier (parent_n_id,attribute_s_id,last_episode_id)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS epmem_wmes_identifier_parent_attribute_child ON epmem_wmes_identifier (parent_n_id,attribute_s_id,child_n_id)" );
 
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS epmem_lti_letter_num ON epmem_lti (soar_letter,soar_number)" );
 
