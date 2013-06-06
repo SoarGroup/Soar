@@ -8,5 +8,4 @@ Version: 9.3.1
 Built-By: jzxu
 Copyright: (c) The Regents of the University of Michigan, 2010
 Main-Class: edu.umich.soar.debugger.Application
-Class-Path: . soar-smljava.jar swt.jar jcommon-1.0.10.jar jfreechart-1.0.6.jar jfreechart-1.0.6-swt.jar swtgraphics2d.jar commons-logging-1.1.1.jar log4j-1.2.15.jar sml.jar soar-debugger-api.jar
 
