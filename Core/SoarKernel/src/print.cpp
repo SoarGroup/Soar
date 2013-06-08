@@ -89,7 +89,11 @@ void print_string (agent* thisAgent, const char *s) {
 			thisAgent->printer_output_column++;
 	}
 
-	soar_invoke_callbacks(thisAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(s)));
+#ifdef DEBUG_USE_STDERR_TRACE
+		fputs(s, stderr);
+#else
+		soar_invoke_callbacks(thisAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(s)));
+#endif
 }
 
 /* ---------------------------------------------------------------
@@ -1238,7 +1242,7 @@ Bool passes_wme_filtering(agent* thisAgent, wme * w, Bool isAdd) {
                                 print_trace
 
   Prints a message, but only if either the index passed into function
-  points to anb enabled sysparam.  Accepts format strings. Use INVALID_SYSPARAM
+  points to an enabled sysparam.  Accepts format strings. Use INVALID_SYSPARAM
   (or 0) as the index to force print.
 
 =================================================================================
@@ -1252,11 +1256,7 @@ extern void print_trace (agent* thisAgent, int64_t sysParamIndex, const char *fo
   va_end (args);
 	if ( (sysParamIndex == INVALID_SYSPARAM) || thisAgent->sysparams[ sysParamIndex ] )
 	{
-#ifdef DEBUG_USE_STDERR_TRACE
-		fputs(buf, stderr);
-#else
 		print( thisAgent, buf );
-#endif
 		xml_generate_warning( thisAgent, buf );
 	}
 }
