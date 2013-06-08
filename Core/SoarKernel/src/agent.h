@@ -38,6 +38,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#include "debug.h"
 
 #include <string>
 #include <map>
@@ -888,6 +889,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   tc_number wma_tc_counter;
   wma_d_cycle wma_d_cycle_count;
 
+  // debug parameters
+  debug_param_container *debug_params;
+
   // epmem
   epmem_param_container *epmem_params;
   epmem_stat_container *epmem_stats;
@@ -952,7 +956,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   // Soar execution will be interrupted when this substate level is removed
   goal_stack_level substate_break_level;
-  
+
   /// RL-trace structure -bazald
   // goal stack level, WMEs attached to the operator, and the probability of selection
   struct RL_Trace {

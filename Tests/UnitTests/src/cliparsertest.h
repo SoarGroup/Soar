@@ -18,6 +18,7 @@ public:
     virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0) { return false; }
     virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false) { return false; }
     virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv) { return false; }
+    virtual bool DoDebug(std::vector< std::string >* argv = 0) { return false; }
     virtual bool DoDefaultWMEDepth(const int* pDepth) { return false; }
     virtual bool DoDirs() { return false; }
     virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline) { return false; }
@@ -65,7 +66,7 @@ public:
     virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) { return false; }
     virtual bool DoSaveBacktraces(bool* pSetting = 0) { return false; }
     virtual bool DoSelect(const std::string* pOp = 0) { return false; }
-    virtual bool DoSetLibraryLocation(std::string* pLocation = 0) { return false; } 
+    virtual bool DoSetLibraryLocation(std::string* pLocation = 0) { return false; }
     virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase) { return false; }
     virtual bool DoSMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0) { return false; }
     virtual bool DoSoarNews() { return false; }
@@ -97,8 +98,8 @@ public:
         this->newLine = newLine;
     }
 
-    virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline) 
-    { 
+    virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline)
+    {
         return (argv.size() == numArgs) && (echoNewline == newLine);
     }
 private:
@@ -116,8 +117,8 @@ public:
         this->n = n;
     }
 
-    virtual bool DoMaxDCTime(const int n) 
-    { 
+    virtual bool DoMaxDCTime(const int n)
+    {
         return this->n == n;
     }
 private:

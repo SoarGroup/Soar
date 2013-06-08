@@ -88,6 +88,12 @@ namespace cli
         virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv) = 0;
 
         /**
+         * @brief debug command
+         *
+         */
+        virtual bool DoDebug(std::vector< std::string >* argv = 0) = 0;
+
+        /**
          * @brief default-wme-depth command
          * @param pDepth The pointer to the new wme depth, a positive integer.
          *        Pass 0 (null) pointer for query.

@@ -45,6 +45,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::ChunkNameFormatCommand(*this));
     m_Parser.AddCommand(new cli::CLogCommand(*this));
     m_Parser.AddCommand(new cli::CommandToFileCommand(*this));
+    m_Parser.AddCommand(new cli::DebugCommand(*this));
     m_Parser.AddCommand(new cli::DefaultWMEDepthCommand(*this));
     m_Parser.AddCommand(new cli::DirsCommand(*this));
     m_Parser.AddCommand(new cli::EchoCommand(*this));

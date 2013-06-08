@@ -469,6 +469,33 @@ namespace cli
         CommandToFileCommand& operator=(const CommandToFileCommand&);
     };
 
+    class DebugCommand : public cli::ParserCommand
+    {
+    public:
+    	DebugCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+        virtual ~DebugCommand() {}
+        virtual const char* GetString() const { return "debug"; }
+        virtual const char* GetSyntax() const
+        {
+            return "Syntax: debug [command] [arguments]";
+        }
+
+        virtual bool Parse(std::vector< std::string >&argv)
+        {
+            if (argv.size() == 1)
+                return cli.DoDebug(); // list all
+
+            argv.erase(argv.begin());
+
+            return cli.DoDebug(&argv);
+
+        }
+    private:
+        cli::Cli& cli;
+        DebugCommand& operator=(const DebugCommand&);
+    };
+
+
     class DefaultWMEDepthCommand : public cli::ParserCommand
     {
     public:

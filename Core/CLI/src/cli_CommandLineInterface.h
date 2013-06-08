@@ -118,6 +118,7 @@ namespace cli
         virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
         virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
         virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
+        virtual bool DoDebug(std::vector< std::string >* argv = 0);
         virtual bool DoDefaultWMEDepth(const int* pDepth);
         virtual bool DoDirs();
         virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline);
@@ -217,6 +218,7 @@ namespace cli
 
     protected:
 
+        void Run_DC(agent* agnt, int run_count);
         void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults);
 
         void SetTrapPrintCallbacks(bool setting);
