@@ -3420,10 +3420,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				// parent_n_id, attribute_s_id, child_n_id, epmem_lti.soar_letter, epmem_lti.soar_number
 				parent_n_id = my_q->column_int( 0 );
 				child_n_id = my_q->column_int( 2 );
-				attr = epmem_reverse_hash( my_agent, my_q->column_int( 1 ), SYM_CONSTANT_SYMBOL_TYPE);
-
-				// I don't think we even need the symbol type.  Attributes are always strings
-				// I'm not sure why Nate was checking that here before.
+				attr = epmem_reverse_hash( my_agent, my_q->column_int( 1 ));
 
 				// short vs. long-term
 				val_is_short_term = ( my_q->column_type( 3 ) == soar_module::null_t );
@@ -3549,7 +3546,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				if ( dont_abide_by_ids_second || parent.second )
 				{
 					// make a symbol to represent the attribute
-					attr = epmem_reverse_hash( my_agent, my_q->column_int( 2 ), SYM_CONSTANT_SYMBOL_TYPE);
+					attr = epmem_reverse_hash( my_agent, my_q->column_int( 2 ));
 
 					// make a symbol to represent the value
 					value = epmem_reverse_hash( my_agent, my_q->column_int( 3 ));
@@ -4948,7 +4945,7 @@ void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string*
 				parent_n_id = my_q->column_int( 0 );
 				child_n_id = my_q->column_int( 2 );
 
-				epmem_reverse_hash_print( my_agent, my_q->column_int( 1 ), temp_s, SYM_CONSTANT_SYMBOL_TYPE);
+				epmem_reverse_hash_print( my_agent, my_q->column_int( 1 ), temp_s);
 
 				val_is_short_term = ( my_q->column_type( 3 ) == soar_module::null_t );
 				if ( val_is_short_term )
@@ -4988,7 +4985,7 @@ void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string*
 			{
 				parent_n_id = my_q->column_int( 1 );
 //				fprintf(stderr, "PRINTING %d %d %d\n", (unsigned int) parent_n_id, (unsigned int) my_q->column_int( 2 ), (unsigned int) my_q->column_int( 3 ));
-				epmem_reverse_hash_print( my_agent, my_q->column_int( 2 ), temp_s, SYM_CONSTANT_SYMBOL_TYPE);
+				epmem_reverse_hash_print( my_agent, my_q->column_int( 2 ), temp_s);
 //				fprintf(stderr, "  - Attribute is %s\n", temp_s.data());
 				epmem_reverse_hash_print( my_agent, my_q->column_int( 3 ), temp_s2);
 //				fprintf(stderr, "  - Value is %s\n", temp_s2.data());
@@ -5145,7 +5142,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 
 				// " [ label="attribute_s_id" ];\n"
 				temp.append( " [ label=\"" );
-				epmem_reverse_hash_print( my_agent, my_q->column_int( 1 ), temp2, SYM_CONSTANT_SYMBOL_TYPE);
+				epmem_reverse_hash_print( my_agent, my_q->column_int( 1 ), temp2);
 				temp.append( temp2 );
 				temp.append( "\" ];\n" );
 
@@ -5227,7 +5224,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 				to_string( wc_id, temp2 );
 				temp.append( temp2 );
 				temp.append( " [ label=\"" );
-				epmem_reverse_hash_print( my_agent, my_q->column_int( 2 ), temp2, SYM_CONSTANT_SYMBOL_TYPE);
+				epmem_reverse_hash_print( my_agent, my_q->column_int( 2 ), temp2);
 				temp.append( temp2 );
 				temp.append( "\" ];\n" );
 				edges.push_back( temp );

@@ -18,14 +18,16 @@
 
 #include "agent.h"
 #include "misc.h"
-#include "debug.h"
 
 using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 {
-	agent* agnt = m_pAgentSML->GetSoarAgent();
+#ifdef SOAR_DEBUG_UTLITIES
+#include "debug.h"
+
+  agent* agnt = m_pAgentSML->GetSoarAgent();
 	bool result = false;
 	int	numArgs = 0;
 	std::ostringstream tempString;
@@ -162,8 +164,11 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	PrintCLIMessage("\nSyntax: Debug [init|dberr]");
 	PrintCLIMessage("        Debug [print] [epmem|smem] [table-name]");
 	PrintCLIMessage("        Debug [set|get] [epmem|smem|sql] [on|off]");
-
 	return result;
+#else
+  PrintCLIMessage("\nDebug| This version of Soar does not have the debug command compiled in.");
+  return false;
+#endif
 }
 
 /**

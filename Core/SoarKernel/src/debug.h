@@ -19,14 +19,19 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
-// Comment out the following line for release versions or if you don't want
-#define SOAR_DEBUG_UTLITIES
+/* --  Comment out the following line for release versions or if you don't
+ *     need these utilities. -- */
+// #define SOAR_DEBUG_UTLITIES
+
 #ifdef SOAR_DEBUG_UTLITIES
 
 #include <portability.h>
 #include "soar_module.h"
 
 #define DEBUG_USE_STDERR_TRACE
+//#define DEBUG_EPMEM_SQL
+//#define DEBUG_EPMEM_WME_ADD
+
 
 extern void debug_print(const char *format, ...);
 extern void debug_print_db_err();
@@ -35,7 +40,7 @@ extern void debug_print_epmem_table(const char *table_name);
 extern void debug_print_smem_table(const char *table_name);
 
 /**
- * @brief Contains the parameters for the memory consolidation code
+ * @brief Contains the parameters for the debug command
  */
 class debug_param_container: public soar_module::param_container
 {
@@ -56,6 +61,13 @@ class debug_param_container: public soar_module::param_container
         }
 };
 
+#else
+class debug_param_container: public soar_module::param_container{
+    public:
+        debug_param_container( agent *new_agent ): soar_module::param_container( new_agent ) {}
+};
 #endif
+
+
 #endif
 
