@@ -498,6 +498,8 @@ namespace cli
          * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
          */
         virtual bool DoRL( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 ) = 0;
+        
+        virtual bool DoSVS(const std::vector<std::string> &args) = 0;
 
         enum eRunOptions
         {

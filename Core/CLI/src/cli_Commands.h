@@ -4542,6 +4542,26 @@ namespace cli
 
         WMACommand& operator=(const WMACommand&);
     };
+    
+    class SVSCommand : public cli::ParserCommand
+    {
+    public:
+        SVSCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+        virtual ~SVSCommand() {}
+        virtual const char* GetString() const { return "svs"; }
+        virtual const char* GetSyntax() const 
+        {
+            return "Syntax: svs <elements to inspect>";
+        }
+
+        virtual bool Parse(std::vector< std::string > &argv)
+        {
+            return cli.DoSVS(argv);
+        }
+
+    private:
+        cli::Cli& cli;
+    };
 
 }
 

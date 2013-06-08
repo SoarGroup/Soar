@@ -2372,3 +2372,18 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 
 	return resultString;
 }
+
+void Kernel::SendSVSInput(const char* agentName, const std::string &txt) {
+	AnalyzeXML response;
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SVSInput, agentName, sml_Names::kParamLine, txt.c_str() );
+}
+
+std::string Kernel::GetSVSOutput(const char* agentName) {
+	AnalyzeXML response;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SVSOutput, agentName, sml_Names::kParamLine, NULL))
+	{
+		return response.GetResultString();
+	} else {
+		return "";
+	}
+}

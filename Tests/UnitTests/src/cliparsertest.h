@@ -87,6 +87,7 @@ public:
     virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) { return false; }
     virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0) { return false; }
     virtual bool DoWMA( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 ) { return false; }
+    virtual bool DoSVS( const std::vector<std::string> &args) { return false; }
 };
 
 class CliEcho : public CliAdapter

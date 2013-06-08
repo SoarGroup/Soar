@@ -790,6 +790,9 @@ public:
 	*************************************************************/
 	bool ExecuteCommandLineXML(char const* pCommandLine, ClientAnalyzedXML* pResponse) ;
 
+	void        SendSVSInput(const std::string &txt);
+	std::string GetSVSOutput();
+	
 	/*************************************************************
 	* @brief Get last command line result
 	*

@@ -29,3 +29,4 @@
 #include "symtab.h"
 #include "io_soar.h"
 #include "wmem.h"
+#include "svs_interface.h"

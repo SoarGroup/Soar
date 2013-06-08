@@ -167,7 +167,7 @@ Temporary Items
 /.settings/
 /build*/
 /config.log
-/.gitignore
+/.gitignore*
 /.cproject
 /.project
 /.pydevproject
@@ -176,6 +176,7 @@ Temporary Items
 out/
 build/
 user-env*.*
+build_*.*
 /Release/Shuffler*
 **/*.pyc
 *.pyc

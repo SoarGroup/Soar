@@ -113,6 +113,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::WatchCommand(*this));
     m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
     m_Parser.AddCommand(new cli::WMACommand(*this));
+    m_Parser.AddCommand(new cli::SVSCommand(*this));
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface()

@@ -440,6 +440,9 @@ public:
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;
+	
+	static char const* const kCommand_SVSInput ;
+	static char const* const kCommand_SVSOutput ;
 } ;
 
 }

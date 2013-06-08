@@ -75,3 +75,4 @@
 #include "src/cli_watchwmes.cpp"
 #include "src/cli_wma.cpp"
 #include "src/cli_CommandLineInterface.cpp"
+#include "src/cli_svs.cpp"

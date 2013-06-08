@@ -54,6 +54,7 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "soar_instance.h"
+#include "svs_interface.h"
 
 /* ================================================================== */
 
@@ -136,6 +137,8 @@ void init_soar_agent(agent* thisAgent) {
                     "%right[6,%dc]: %rsd[   ]   O: %co");
 
   reset_statistics (thisAgent);
+
+  thisAgent->svs = make_svs(thisAgent);
 
   /* RDF: For gSKI */
   init_agent_memory(thisAgent);
@@ -503,6 +506,8 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->smem_timers;
 
   delete delete_agent->smem_db;
+
+  delete delete_agent->svs;
 
   // cleanup statistics db
   stats_close( delete_agent );

@@ -42,6 +42,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#include "svs_interface.h"
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
@@ -603,6 +604,8 @@ void do_one_top_level_phase (agent* thisAgent)
 		  BEFORE_INPUT_PHASE_CALLBACK,
 		  reinterpret_cast<soar_call_data>(INPUT_PHASE));
 
+	  thisAgent->svs->input_callback();
+
       do_input_cycle(thisAgent);
 
 	  thisAgent->run_phase_count++ ;
@@ -927,6 +930,8 @@ void do_one_top_level_phase (agent* thisAgent)
  	  soar_invoke_callbacks(thisAgent,
 			 BEFORE_OUTPUT_PHASE_CALLBACK,
 			 reinterpret_cast<soar_call_data>(OUTPUT_PHASE) );
+ 	  
+ 	  thisAgent->svs->output_callback();
 
 	  /** KJC June 05:  moved output function timers into do_output_cycle ***/
 

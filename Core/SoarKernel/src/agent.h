@@ -136,6 +136,7 @@ typedef struct token_struct token;
 typedef char * test;
 
 class stats_statement_container;
+class svs_interface;
 
 typedef struct agent_struct {
   /* After v8.6.1, all conditional compilations were removed
@@ -1003,6 +1004,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
     std::map<std::vector<std::string>, Entry> split;
   };
   std::map<goal_stack_level, RL_Trace> rl_trace;
+  svs_interface *svs;
 } agent;
 /*************** end of agent struct *****/
 

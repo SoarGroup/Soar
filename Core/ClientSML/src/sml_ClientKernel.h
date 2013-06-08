@@ -950,6 +950,8 @@ protected:
 	*************************************************************/
 	static Kernel* CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn) ;
 
+	void        SendSVSInput(const char* agentName, const std::string &txt);
+	std::string GetSVSOutput(const char* agentName);
 };
 
 }//closes namespace

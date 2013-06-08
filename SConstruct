@@ -15,7 +15,7 @@ import SCons.Script
 
 join = os.path.join
 
-SOAR_VERSION = "9.3.3"
+SOAR_VERSION = "9.4.0"
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
 DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()

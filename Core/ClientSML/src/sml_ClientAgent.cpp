@@ -1422,3 +1422,11 @@ char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
 	}
 	return pClientIdentifier;
 }
+
+void Agent::SendSVSInput(const std::string &txt) {
+	GetKernel()->SendSVSInput(GetAgentName(), txt);
+}
+
+std::string Agent::GetSVSOutput() {
+	return GetKernel()->GetSVSOutput(GetAgentName());
+}
