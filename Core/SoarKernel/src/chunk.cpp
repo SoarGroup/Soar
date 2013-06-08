@@ -1578,7 +1578,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		chunk_instantiation (thisAgent, chunk_inst, dont_variablize, custom_inst_list);
 
   print(thisAgent, "\nChunk_instantiation created: \n");
-  print_instantiation(inst);
+  debug_print_instantiation(inst);
 
 	goto chunking_done;
 	return;

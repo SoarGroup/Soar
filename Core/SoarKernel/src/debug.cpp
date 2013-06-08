@@ -173,7 +173,7 @@ void print_current_lexeme (agent* thisAgent)
   print(thisAgent, "%s: \"%s\"\n", lex_type_string.c_str(), thisAgent->lexeme.string);
 }
 
-void print_instantiation (instantiation *inst)
+void debug_print_instantiation (instantiation *inst)
 {
   condition *cond;
   preference *pref;
