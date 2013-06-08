@@ -59,6 +59,36 @@ extern void debug_print_db_err()
 	}
 }
 
+extern void debug_print_epmem_table(const char *table_name)
+{
+	if (debug_agent)
+	{
+		if (!db_err_epmem_db)
+		{
+			print_trace (debug_agent,0, "Debug| Cannot access epmem database because wmg not yet initialized.\n");
+		}
+		else
+		{
+			db_err_epmem_db->print_table(table_name);
+		}
+	}
+}
+
+extern void debug_print_smem_table(const char *table_name)
+{
+	if (debug_agent)
+	{
+		if (!db_err_smem_db)
+		{
+			print_trace (debug_agent,0, "Debug| Cannot access smem database because wmg not yet initialized.\n");
+		}
+		else
+		{
+			db_err_smem_db->print_table(table_name);
+		}
+	}
+}
+
 extern void debug_init_db( agent *my_agent)
 {
 	if (!debug_agent)

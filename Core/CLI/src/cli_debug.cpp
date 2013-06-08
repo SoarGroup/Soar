@@ -101,11 +101,31 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 				return true;
 			}
 		}
+		else if (sub_command[0] == 'p')
+		{
+			std::string database_name = argv->at(1);
+			std::string table_name = argv->at(2);
+			if (database_name[0] == 'e')
+			{
+				debug_print_epmem_table(table_name.c_str());
+			}
+			else if (database_name[0] == 's')
+			{
+				debug_print_smem_table(table_name.c_str());
+			}
+			else
+			{
+				tempString.str("");
+				tempString << "Debug| Invalid database parameter: " << sub_command << ".";
+				SetError( tempString.str().c_str() );
+				goto print_syntax;
+			}
+		}
 		else
 		{
 			tempString.str("");
 			tempString << "Debug| Invalid command: " << sub_command << ".";
-        	SetError( tempString.str().c_str() );
+			SetError( tempString.str().c_str() );
 			goto print_syntax;
 		}
 

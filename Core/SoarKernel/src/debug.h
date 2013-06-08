@@ -28,6 +28,9 @@
 
 extern void debug_print_db_err();
 extern void debug_init_db( agent *my_agent);
+extern void debug_print_epmem_table(const char *table_name);
+extern void debug_print_smem_table(const char *table_name);
+
 /**
  * @brief Contains the parameters for the memory consolidation code
  */
