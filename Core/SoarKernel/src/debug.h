@@ -26,6 +26,9 @@
 #include <portability.h>
 #include "soar_module.h"
 
+#define DEBUG_USE_STDERR_TRACE
+
+extern void debug_print(const char *format, ...);
 extern void debug_print_db_err();
 extern void debug_init_db( agent *my_agent);
 extern void debug_print_epmem_table(const char *table_name);

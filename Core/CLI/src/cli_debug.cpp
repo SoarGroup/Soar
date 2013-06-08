@@ -160,6 +160,7 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	print_syntax:
 
 	PrintCLIMessage("\nSyntax: Debug [init|dberr]");
+	PrintCLIMessage("        Debug [print] [epmem|smem] [table-name]");
 	PrintCLIMessage("        Debug [set|get] [epmem|smem|sql] [on|off]");
 
 	return result;
