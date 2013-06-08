@@ -383,7 +383,10 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_id_replacement = new epmem_return_id_pool();
   newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
 
-#ifdef USE_MEM_POOL_ALLOCATORS
+  // experimental memory consolidation parameters
+  newAgent->debug_params = new debug_param_container( newAgent );
+
+  #ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->epmem_node_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
   newAgent->epmem_edge_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
 

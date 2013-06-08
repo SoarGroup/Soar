@@ -35,7 +35,9 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	{
 		PrintCLIMessage_Header("Debug", 40);
         PrintCLIMessage_Section("Settings", 40);
-        PrintCLIMessage_Item("filter:", agnt->debug_params->debug_setting_1, 40);
+        PrintCLIMessage_Item("epmem:", agnt->debug_params->epmem_commands, 40);
+        PrintCLIMessage_Item("smem:", agnt->debug_params->smem_commands, 40);
+        PrintCLIMessage_Item("sql:", agnt->debug_params->sql_commands, 40);
 		PrintCLIMessage("");
 
 		result = true;
@@ -53,12 +55,13 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	        soar_module::param *my_param = agnt->debug_params->get( parameter_name.c_str() );
 	        if ( !my_param ) {
 				tempString.str("");
-	            tempString << "MemCon| Invalid parameter: " << parameter_name;
+	            tempString << "Debug| Invalid parameter: " << parameter_name;
 	        	SetError( tempString.str().c_str() );
 				goto print_syntax;
 	        }
 			tempString.str("");
-        	tempString << "MemCon| "<< parameter_name << " = " << my_param->get_string();
+        	tempString << "Debug| "<< parameter_name << " = " << my_param->get_string();
+			PrintCLIMessage(&tempString);
 	        return true;
 		}
 	}
@@ -72,14 +75,14 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 			soar_module::param *my_param = agnt->debug_params->get( parameter_name.c_str() );
 			if ( !my_param ) {
 				tempString.str("");
-				tempString << "MemCon| Invalid parameter: " << parameter_name;
+				tempString << "Debug| Invalid parameter: " << parameter_name;
 				SetError( tempString.str().c_str() );
 				goto print_syntax;
 			}
 			if ( !my_param->validate_string( parameter_value.c_str() ) )
 			{
 				tempString.str("");
-				tempString << "MemCon| Invalid value: " << parameter_value;
+				tempString << "Debug| Invalid value: " << parameter_value;
 				SetError( tempString.str().c_str() );
 				goto print_syntax;
 			}
@@ -88,12 +91,12 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 
 			if ( !result )
 			{
-				SetError( "MemCon| Could not set parameter!" );
+				SetError( "Debug| Could not set parameter!" );
 				goto print_syntax;
 			}
 			else
 			{
-				tempString << "Memcon| "<< parameter_name.c_str() << " = " << parameter_value.c_str();
+				tempString << "Debug| "<< parameter_name.c_str() << " = " << parameter_value.c_str();
 				PrintCLIMessage(&tempString);
 				return true;
 			}
@@ -101,7 +104,7 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 		else
 		{
 			tempString.str("");
-			tempString << "MemCon| Invalid command: " << sub_command << ".";
+			tempString << "Debug| Invalid command: " << sub_command << ".";
         	SetError( tempString.str().c_str() );
 			goto print_syntax;
 		}
@@ -110,15 +113,19 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	}
 	else if (numArgs == 0)
 	{
-		if (sub_command[0] == 'd')
+		if (sub_command[0] == 'i')
 		{
-			PrintCLIMessage("MemCon| Initializing debug variable for database.");
+			PrintCLIMessage("Debug| Initializing debug variables.");
 			debug_init_db(agnt);
+		}
+		else if (sub_command[0] == 'd')
+		{
+			debug_print_db_err();
 		}
 		else
 		{
 			tempString.str("");
-			tempString << "MemCon| Invalid command: " << sub_command << ".";
+			tempString << "Debug| Invalid command: " << sub_command << ".";
 			SetError( tempString.str().c_str() );
 			goto print_syntax;
 		}
@@ -127,14 +134,13 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	}
 
 	tempString.str("");
-	tempString << "MemCon| Invalid number of parameters (" << numArgs << ") to command " << sub_command << ".";
+	tempString << "Debug| Invalid number of parameters (" << numArgs << ") to command " << sub_command << ".";
 	SetError( tempString.str().c_str() );
 
 	print_syntax:
 
-	PrintCLIMessage("\nSyntax: consolidate analyze [start] [end]");
-	PrintCLIMessage("        consolidate [init|debug|print]");
-	PrintCLIMessage("        consolidate [set|get] [filter|threshold|start|end|output]");
+	PrintCLIMessage("\nSyntax: Debug [init|dberr]");
+	PrintCLIMessage("        Debug [set|get] [epmem|smem|sql] [on|off]");
 
 	return result;
 }

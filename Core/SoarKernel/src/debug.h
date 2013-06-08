@@ -26,6 +26,8 @@
 #include <portability.h>
 #include "soar_module.h"
 
+extern void debug_print_db_err();
+extern void debug_init_db( agent *my_agent);
 /**
  * @brief Contains the parameters for the memory consolidation code
  */
@@ -34,16 +36,19 @@ class debug_param_container: public soar_module::param_container
     public:
 
         // storage
-        soar_module::boolean_param *debug_setting_1;
+        soar_module::boolean_param *epmem_commands, *smem_commands, *sql_commands;
 
         debug_param_container( agent *new_agent ): soar_module::param_container( new_agent )
         {
-            debug_setting_1           = new soar_module::boolean_param("setting1", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
-            add(debug_setting_1);
+            epmem_commands = new soar_module::boolean_param("epmem", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+            smem_commands = new soar_module::boolean_param("smem", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+            sql_commands = new soar_module::boolean_param("sql", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+            add(epmem_commands);
+            add(smem_commands);
+            add(sql_commands);
+            debug_init_db(new_agent);
         }
 };
-
-extern void debug_init_db( agent *my_agent);
 
 #endif
 #endif

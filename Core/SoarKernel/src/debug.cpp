@@ -17,47 +17,68 @@
 ------------------------------------------------------------------ */
 
 #include "debug.h"
+
+#ifdef SOAR_DEBUG_UTLITIES
 #include "soar_db.h"
 #include "gsysparam.h"
 #include "sqlite3.h"
 
 soar_module::sqlite_database	*db_err_epmem_db=NULL,
 								*db_err_smem_db=NULL;
+agent *debug_agent=NULL;
 
 extern void debug_print_db_err()
 {
-	if (!db_err_epmem_db)
+	if (debug_agent)
 	{
-		fprintf(stderr, "MemCon| Cannot access epmem database because wmg not yet initialized.\n");
-	}
-	else
-	{
-		fprintf(stderr, "MemCon| SQL Error #%d: %s\n", sqlite3_errcode( db_err_epmem_db->get_db() ),
-													   sqlite3_errmsg( db_err_epmem_db->get_db() ));
-	}
-	if (!db_err_smem_db)
-	{
-		fprintf(stderr, "MemCon| Cannot access smem database because wmg not yet initialized.\n");
-	}
-	else
-	{
-		fprintf(stderr, "MemCon| SQL Error #%d: %s\n", sqlite3_errcode( db_err_smem_db->get_db() ),
-													   sqlite3_errmsg( db_err_smem_db->get_db() ));
+		print_trace (debug_agent,0, "Debug| Printing database status/errors...\n");
+		if (debug_agent->debug_params->epmem_commands->get_value() == soar_module::on)
+		{
+			if (!db_err_epmem_db)
+			{
+				print_trace (debug_agent,0, "Debug| Cannot access epmem database because wmg not yet initialized.\n");
+			}
+			else
+			{
+				print_trace (debug_agent,0, "Debug| EpMem DB: %d - %s\n", sqlite3_errcode( db_err_epmem_db->get_db() ),
+						sqlite3_errmsg( db_err_epmem_db->get_db() ));
+			}
+		}
+		if (debug_agent->debug_params->smem_commands->get_value() == soar_module::on)
+		{
+			if (!db_err_smem_db)
+			{
+				print_trace (debug_agent,0, "Debug| Cannot access smem database because wmg not yet initialized.\n");
+			}
+			else
+			{
+				print_trace (debug_agent,0, "Debug| SMem DB: %d - %s\n", sqlite3_errcode( db_err_smem_db->get_db() ),
+						sqlite3_errmsg( db_err_smem_db->get_db() ));
+			}
+		}
 	}
 }
 
 extern void debug_init_db( agent *my_agent)
 {
-	if ( my_agent->epmem_db->get_status() == soar_module::disconnected )
+	if (!debug_agent)
 	{
-		epmem_init_db( my_agent );
+		debug_agent = my_agent;
 	}
-
-	if ( my_agent->smem_db->get_status() == soar_module::disconnected )
+	else
 	{
-		smem_init_db( my_agent );
-	}
+		if ((my_agent->debug_params->epmem_commands->get_value() == soar_module::on) && ( my_agent->epmem_db->get_status() == soar_module::disconnected ))
+		{
+			epmem_init_db( my_agent );
+			db_err_epmem_db = my_agent->epmem_db;
+		}
 
-	db_err_epmem_db = my_agent->epmem_db;
-	db_err_smem_db = my_agent->smem_db;
+		if ((my_agent->debug_params->smem_commands->get_value() == soar_module::on) && ( my_agent->smem_db->get_status() == soar_module::disconnected ))
+		{
+			smem_init_db( my_agent );
+			db_err_smem_db = my_agent->smem_db;
+		}
+	}
 }
+
+#endif
