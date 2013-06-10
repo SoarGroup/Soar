@@ -19,6 +19,8 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
+#include "soar_module.h"
+
 /* --  Comment out the following line for release versions or if you don't
  *     need these utilities. -- */
 // #define SOAR_DEBUG_UTLITIES
@@ -26,7 +28,6 @@
 #ifdef SOAR_DEBUG_UTLITIES
 
 #include <portability.h>
-#include "soar_module.h"
 
 #define DEBUG_USE_STDERR_TRACE
 //#define DEBUG_EPMEM_SQL

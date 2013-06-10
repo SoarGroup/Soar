@@ -208,13 +208,13 @@ namespace cli
         /*************************************************************
         * @brief Prints message via either m_RawOutput or AppendArgTagFast
         *************************************************************/
-        inline void PrintCLIMessage( std::ostringstream* printString, bool add_raw_lf=true);
-        inline void PrintCLIMessage( std::string* printString, bool add_raw_lf=true);
-        inline void PrintCLIMessage(const char* printString, bool add_raw_lf=true);
-        inline void PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf=true);
-        inline void PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf=true);
-        inline void PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf=true);
-        inline void PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf=true);
+        void PrintCLIMessage( std::ostringstream* printString, bool add_raw_lf=true);
+        void PrintCLIMessage( std::string* printString, bool add_raw_lf=true);
+        void PrintCLIMessage(const char* printString, bool add_raw_lf=true);
+        void PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf=true);
+        void PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf=true);
+        void PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf=true);
+        void PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf=true);
 
     protected:
 
