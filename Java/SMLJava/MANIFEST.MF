@@ -3,4 +3,5 @@ Title: soar-smljava
 Vendor: University of Michigan
 Copyright: (c) The Regents of the University of Michigan, 2012
 Main-Class: edu.umich.soar.TestJavaSML
+Class-Path: . sml.jar
 
