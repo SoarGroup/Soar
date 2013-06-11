@@ -19,7 +19,7 @@ const double RCOEF = 1.0;
 const double ECOEF = 2.0;
 const double CCOEF = 0.5;
 const double SCOEF = 0.5;
-const int MAXITERS = 50;
+const int NELDER_MEAD_MAXITERS = 50;
 
 
 bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, scene *scn, rvec &finalstate) {
@@ -468,7 +468,7 @@ bool nelder_mead_constrained(const rvec &min, const rvec &max, traj_eval &ev, rv
 		simplex.push_back(rtmp);
 	}
 	
-	for(int iters = 0; iters < MAXITERS; ++iters) {
+	for(int iters = 0; iters < NELDER_MEAD_MAXITERS; ++iters) {
 		argmin(eval, wi, ni, bi);
 		worst = simplex[wi];
 		best = simplex[bi];

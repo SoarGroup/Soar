@@ -79,6 +79,7 @@ svs_env['LIBS'] = []
 
 srcdirs = ['src', 'src/filters', 'src/commands', 'src/models', 'src/algorithms']
 incdirs = [env.Dir(d).srcnode() for d in 'src src/algorithms src/models eigen ccd'.split()]
+scu_src = ['SVS.cxx']
 
 if compiler == 'g++':
 	flags = [
@@ -96,9 +97,12 @@ if compiler == 'g++':
 	if sys.platform == "darwin":
 		srcdirs.append('src/osx')
 		incdirs.append('src/osx')
+		scu_src.append('src/osx/platform_specific.cpp')
 	else:
 		srcdirs.append('src/posix')
 		incdirs.append('src/posix')
+		scu_src.append('src/posix/platform_specific.cpp')
+
 elif compiler == 'msvc':
 	flags = [
 		'/D', 'EIGEN_DONT_ALIGN',
@@ -107,10 +111,14 @@ elif compiler == 'msvc':
 	]
 	srcdirs.append('src/windows')
 	incdirs.append('src/windows')
+	scu_src.append('src/windows/platform_specific.cpp')
 
 src = []
-for d in srcdirs:
-	src += Glob(d + '/*.cpp')
+if env['SCU']:
+	src = scu_src
+else:
+	for d in srcdirs:
+		src += Glob(d + '/*.cpp')
 
 svs_env.Prepend(
 	CPPPATH = incdirs,

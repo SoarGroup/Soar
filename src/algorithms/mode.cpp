@@ -538,10 +538,6 @@ void em_mode::get_members(interval_set &mem) const {
 	mem = members;
 }
 
-static bool approx_equal(double a, double b) {
-	return (fabs(a - b) <= SAME_THRESH);
-}
-
 void em_mode::get_function_string(string &s) const {
 	if (noise) {
 		s = "noise";
@@ -557,20 +553,20 @@ void em_mode::get_function_string(string &s) const {
 			if (c == 0.0) {
 				continue;
 			} else if (first) {
-				if (approx_equal(c, -1.0)) {
+				if (approx_equal(c, -1.0, SAME_THRESH)) {
 					ss << "-";
-				} else if (!approx_equal(c, 1.0)) {
+				} else if (!approx_equal(c, 1.0, SAME_THRESH)) {
 					ss << c << " * ";
 				}
 				first = false;
 			} else if (c < 0.0) {
 				ss << " - ";
-				if (!approx_equal(c, -1.0)) {
+				if (!approx_equal(c, -1.0, SAME_THRESH)) {
 					ss << fabs(c) << " * ";
 				}
 			} else {
 				ss << " + ";
-				if (!approx_equal(c, 1.0)) {
+				if (!approx_equal(c, 1.0, SAME_THRESH)) {
 					ss << c << " * ";
 				}
 			}

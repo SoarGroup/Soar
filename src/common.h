@@ -32,10 +32,9 @@ bool parse_int   (const std::string &s, int &v);
 std::string tostring(int x);
 bool is_nan(double x);
 bool is_inf(double x);
+bool approx_equal(double a, double b, double thresh);
 
 std::istream &get_nonblank_line(std::istream &is, std::string &line);
-
-bool read_on_off(const std::vector<std::string> &args, int first, std::ostream &os, bool &var);
 
 void sample(int k, int low, int high, std::vector<int> &output);
 

@@ -399,7 +399,7 @@ void classifier::update_inst(int i, int c) {
 classifier::pair_info *classifier::find(int i, int j) {
 	assert(i < j);
 	
-	list<pair_info*>::iterator pi, pend;
+	std::list<pair_info*>::iterator pi, pend;
 	for (pi = pairs.begin(), pend = pairs.end(); pi != pend; ++pi) {
 		if ((**pi).cls_i == i && (**pi).cls_j == j) {
 			return *pi;
@@ -409,7 +409,7 @@ classifier::pair_info *classifier::find(int i, int j) {
 }
 
 void classifier::update() {
-	list<pair_info*>::iterator i, iend;
+	std::list<pair_info*>::iterator i, iend;
 	bool options_changed = false;
 	
 	if (foil != old_foil || prune != old_prune || context != old_context || nc_type != old_nc_type) {
@@ -455,7 +455,7 @@ void classifier::classify(int target, const scene_sig &sig, const relation_table
 		r = &rels;
 	}
 	
-	list<pair_info*>::const_iterator i, iend;
+	std::list<pair_info*>::const_iterator i, iend;
 	for (i = pairs.begin(), iend = pairs.end(); i != iend; ++i) {
 		const pair_info &p = **i;
 		int winner = p.clsfr->vote(target, sig, *r, x);
@@ -544,7 +544,7 @@ void classifier::serialize(ostream &os) const {
 void classifier::unserialize(istream &is) {
 	unserializer(is) >> pairs >> classes >> membership;
 
-	list<pair_info*>::iterator i, iend;
+	std::list<pair_info*>::iterator i, iend;
 	for (i = pairs.begin(), iend = pairs.end(); i != iend; ++i) {
 		if ((**i).clsfr) {
 			(**i).clsfr->set_loggers(loggers);
