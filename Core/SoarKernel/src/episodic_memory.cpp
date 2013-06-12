@@ -3931,8 +3931,11 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
 		}
 	}
 
-	if (!query_type) {
+	if (query_type == EPMEM_NODE_POS) {
 		gm_ordering.push_front(literal);
+		my_agent->epmem_stats->qry_pos->set_value(my_agent->epmem_stats->qry_pos->get_value() + 1);
+	} else {
+		my_agent->epmem_stats->qry_neg->set_value(my_agent->epmem_stats->qry_neg->get_value() + 1);
 	}
 
 	literal->id_sym = cue_wme->id;
@@ -4349,6 +4352,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	if (level > 1) {
 		// build the DNF graph while checking for leaf WMEs
 		{
+			my_agent->epmem_stats->qry_pos->set_value(0);
+			my_agent->epmem_stats->qry_neg->set_value(0);
 			my_agent->epmem_timers->query_dnf->start();
 			root_literal->id_sym = NULL;
 			root_literal->value_sym = pos_query;
@@ -4399,6 +4404,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				delete children;
 			}
 			my_agent->epmem_timers->query_dnf->stop();
+			my_agent->epmem_stats->qry_lits->set_value( my_agent->epmem_stats->qry_pos->get_value() + my_agent->epmem_stats->qry_neg->get_value() );
 		}
 
 		// calculate the highest possible score and cardinality score
@@ -4774,6 +4780,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, neg_query);
 			}
 		} else {
+			my_agent->epmem_stats->qry_ret->set_value( best_episode );
+			my_agent->epmem_stats->qry_card->set_value( best_cardinality );
 			my_agent->epmem_timers->query_result->start();
 			Symbol* temp_sym;
 			epmem_id_mapping node_map_map;
