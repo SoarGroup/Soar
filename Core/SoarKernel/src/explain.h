@@ -21,7 +21,7 @@ typedef struct backtrace_struct backtrace_str;
 typedef struct cons_struct cons;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 /*
    For each chunk (or justification) take a copy of its conds and actions,

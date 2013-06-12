@@ -27,7 +27,7 @@
 
 typedef struct agent_struct agent;
 typedef struct wme_struct wme;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 void xml_create( agent* pAgent );
 void xml_reset( agent* pAgent );

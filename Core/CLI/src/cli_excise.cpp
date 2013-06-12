@@ -106,7 +106,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
     {
         Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
 
-        if (!sym || !(sym->sc.production))
+        if (!sym || !(sym->data.sc.production))
         {
             return SetError("Production not found.");
         }
@@ -120,7 +120,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         // Increment the count for the structured response
         ++exciseCount;
 
-        excise_production(agnt, sym->sc.production, false);
+        excise_production(agnt, sym->data.sc.production, false);
     }
 
     if (m_RawOutput) {

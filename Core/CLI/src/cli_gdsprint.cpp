@@ -54,13 +54,13 @@ bool CommandLineInterface::DoGDSPrint() {
         }
     }
     print(agnt, "************************************************************\n");
-    for (goal=agnt->top_goal; goal!=NIL; goal=goal->id.lower_goal)
+    for (goal=agnt->top_goal; goal!=NIL; goal=goal->data.id.lower_goal)
     {
         print_with_symbols (agnt, "  For Goal  %y  ", goal);
-        if (goal->id.gds){
+        if (goal->data.id.gds){
             /* Loop over all the WMEs in the GDS */
             print (agnt, "\n");
-            for (w=goal->id.gds->wmes_in_gds; w!=NIL; w=w->gds_next)
+            for (w=goal->data.id.gds->wmes_in_gds; w!=NIL; w=w->gds_next)
             {
                 print (agnt, "                (%lu: ", w->timetag);
                 print_with_symbols (agnt, "%y ^%y %y", w->id, w->attr, w->value);

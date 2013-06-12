@@ -19,8 +19,8 @@
  *
  *   "symbol" is typedef-ed as a union of the five kinds of symbol
  *  structures.  Some fields common to all symbols are accessed via
- *  sym->common.data.field_name; fields particular to a certain kind of
- *  symbol are accessed via sym->var.field_name_on_variables, etc.
+ *  sym->field_name; fields particular to a certain kind of
+ *  symbol are accessed via sym->data.var.field_name_on_variables, etc.
  *  See soarkernel.h for the Symbol structure definitions.
  *
  * =======================================================================
@@ -111,34 +111,35 @@ uint32_t hash_float_constant_raw_info (double value, short num_bits) {
 --------------------------------------------------- */
 
 uint32_t hash_variable (void *item, short num_bits) {
-  variable *var;
-  var = static_cast<variable_struct *>(item);
-  return compress (hash_string(var->name),num_bits);
+  symbol_struct *var;
+  var = static_cast<symbol_struct *>(item);
+  return compress (hash_string(var->data.var.name),num_bits);
 }
 
 uint32_t hash_identifier (void *item, short num_bits) {
-  identifier *id;
-  id = static_cast<identifier_struct *>(item);
-  return compress (static_cast<uint32_t>(id->name_number) ^ (static_cast<uint32_t>(id->name_letter) << 24), num_bits); // FIXME: cast from 64 to 32 bits
+  symbol_struct *id;
+  id = static_cast<symbol_struct *>(item);
+  return compress (static_cast<uint32_t>(id->data.id.name_number) ^ (static_cast<uint32_t>(id->data.id.name_letter) << 24), num_bits); // FIXME: cast from 64 to 32 bits
 }
 
 uint32_t hash_sym_constant (void *item, short num_bits) {
-  sym_constant *sc;
-  sc = static_cast<sym_constant_struct *>(item);
-  return compress (hash_string(sc->name),num_bits);
+  symbol_struct *sc;
+  sc = static_cast<symbol_struct *>(item);
+  return compress (hash_string(sc->data.sc.name),num_bits);
 }
 
 uint32_t hash_int_constant (void *item, short num_bits) {
-  int_constant *ic;
-  ic = static_cast<int_constant_struct *>(item);
-  return compress (static_cast<uint32_t>(ic->value),num_bits);
+  symbol_struct *ic;
+  ic = static_cast<symbol_struct *>(item);
+  return compress (static_cast<uint32_t>(ic->data.ic.value),num_bits);
 }
 
 uint32_t hash_float_constant (void *item, short num_bits) {
-  float_constant *fc;
-  fc = static_cast<float_constant_struct *>(item);
-  return compress (static_cast<uint32_t>(fc->value),num_bits);
+  symbol_struct *fc;
+  fc = static_cast<symbol_struct *>(item);
+  return compress (static_cast<uint32_t>(fc->data.fc.value),num_bits);
 }
+
 
 /* -------------------------------------------------------------------
 
@@ -159,12 +160,11 @@ void init_symbol_tables (agent* thisAgent) {
   thisAgent->int_constant_hash_table = make_hash_table (thisAgent, 0, hash_int_constant);
   thisAgent->float_constant_hash_table = make_hash_table (thisAgent, 0, hash_float_constant);
 
-  init_memory_pool (thisAgent, &thisAgent->variable_pool, sizeof(variable), "variable");
-  init_memory_pool (thisAgent, &thisAgent->identifier_pool, sizeof(identifier), "identifier");
-  init_memory_pool (thisAgent, &thisAgent->sym_constant_pool, sizeof(sym_constant), "sym constant");
-  init_memory_pool (thisAgent, &thisAgent->int_constant_pool, sizeof(int_constant), "int constant");
-  init_memory_pool (thisAgent, &thisAgent->float_constant_pool, sizeof(float_constant),
-                    "float constant");
+  init_memory_pool (thisAgent, &thisAgent->variable_pool, sizeof(symbol_struct), "variable");
+  init_memory_pool (thisAgent, &thisAgent->identifier_pool, sizeof(symbol_struct), "identifier");
+  init_memory_pool (thisAgent, &thisAgent->sym_constant_pool, sizeof(symbol_struct), "sym constant");
+  init_memory_pool (thisAgent, &thisAgent->int_constant_pool, sizeof(symbol_struct), "int constant");
+  init_memory_pool (thisAgent, &thisAgent->float_constant_pool, sizeof(symbol_struct), "float constant");
 
   reset_id_counters( thisAgent );
 }
@@ -193,8 +193,8 @@ Symbol *find_variable (agent* thisAgent, const char *name) {
 
   hash_value = hash_variable_raw_info (name,thisAgent->variable_hash_table->log2size);
   sym = reinterpret_cast<Symbol *>(*(thisAgent->variable_hash_table->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.data.next_in_hash_table) {
-    if (!strcmp(sym->var.name,name)) return sym;
+  for ( ; sym!=NIL; sym = sym->next_in_hash_table) {
+    if (!strcmp(sym->data.var.name,name)) return sym;
   }
   return NIL;
 }
@@ -206,9 +206,9 @@ Symbol *find_identifier (agent* thisAgent, char name_letter, uint64_t name_numbe
   hash_value = hash_identifier_raw_info (name_letter,name_number,
                                          thisAgent->identifier_hash_table->log2size);
   sym = reinterpret_cast<Symbol *>(*(thisAgent->identifier_hash_table->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.data.next_in_hash_table) {
-    if ((name_letter==sym->id.name_letter) &&
-        (name_number==sym->id.name_number)) return sym;
+  for ( ; sym!=NIL; sym = sym->next_in_hash_table) {
+    if ((name_letter==sym->data.id.name_letter) &&
+        (name_number==sym->data.id.name_number)) return sym;
   }
   return NIL;
 }
@@ -220,8 +220,8 @@ Symbol *find_sym_constant (agent* thisAgent, const char *name) {
   hash_value = hash_sym_constant_raw_info (name,
                                            thisAgent->sym_constant_hash_table->log2size);
   sym = reinterpret_cast<Symbol *>(*(thisAgent->sym_constant_hash_table->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.data.next_in_hash_table) {
-    if (!strcmp(sym->sc.name,name)) return sym;
+  for ( ; sym!=NIL; sym = sym->next_in_hash_table) {
+    if (!strcmp(sym->data.sc.name,name)) return sym;
   }
   return NIL;
 }
@@ -233,8 +233,8 @@ Symbol *find_int_constant (agent* thisAgent, int64_t value) {
   hash_value = hash_int_constant_raw_info (value,
                                            thisAgent->int_constant_hash_table->log2size);
   sym = reinterpret_cast<Symbol *>(*(thisAgent->int_constant_hash_table->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.data.next_in_hash_table) {
-    if (value==sym->ic.value) return sym;
+  for ( ; sym!=NIL; sym = sym->next_in_hash_table) {
+    if (value==sym->data.ic.value) return sym;
   }
   return NIL;
 }
@@ -246,8 +246,8 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
   hash_value = hash_float_constant_raw_info (value,
                                         thisAgent->float_constant_hash_table->log2size);
   sym = reinterpret_cast<Symbol *>(*(thisAgent->float_constant_hash_table->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.data.next_in_hash_table) {
-    if (value==sym->fc.value) return sym;
+  for ( ; sym!=NIL; sym = sym->next_in_hash_table) {
+    if (value==sym->data.fc.value) return sym;
   }
   return NIL;
 }
@@ -261,7 +261,7 @@ Symbol *make_variable (agent* thisAgent, const char *name) {
   sym = find_variable(thisAgent, name);
   if (sym) {
 #ifdef DEBUG_TRACE_VAR_CREATION
-      print(thisAgent, "Debug | make_variable found sym %s.  Adding ref count.\n", sym->var.name);
+      print(thisAgent, "Debug | make_variable found sym %s.  Adding ref count.\n", sym->data.var.name);
 #endif
       symbol_add_ref(thisAgent, sym);
       return sym;
@@ -271,16 +271,16 @@ Symbol *make_variable (agent* thisAgent, const char *name) {
 #endif
 
   allocate_with_pool (thisAgent, &thisAgent->variable_pool, &sym);
-  sym->common.data.symbol_type = VARIABLE_SYMBOL_TYPE;
-  sym->common.data.reference_count = 0;
-  sym->common.data.hash_id = get_next_symbol_hash_id(thisAgent);
-  sym->common.data.tc_num = 0;
-  sym->common.data.variablized_symbol = NIL;
-  sym->common.data.unvariablized_symbol = NIL;
-  sym->common.data.original_var_symbol = NIL;
-  sym->var.name = make_memory_block_for_string (thisAgent, name);
-  sym->var.gensym_number = 0;
-  sym->var.rete_binding_locations = NIL;
+  sym->symbol_type = VARIABLE_SYMBOL_TYPE;
+  sym->reference_count = 0;
+  sym->hash_id = get_next_symbol_hash_id(thisAgent);
+  sym->tc_num = 0;
+  sym->variablized_symbol = NIL;
+  sym->unvariablized_symbol = NIL;
+  sym->original_var_symbol = NIL;
+  sym->data.var.name = make_memory_block_for_string (thisAgent, name);
+  sym->data.var.gensym_number = 0;
+  sym->data.var.rete_binding_locations = NIL;
   symbol_add_ref(thisAgent, sym);
   add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
 
@@ -296,14 +296,14 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
     name_letter = 'I';
   }
   allocate_with_pool (thisAgent, &thisAgent->identifier_pool, &sym);
-  sym->common.data.symbol_type = IDENTIFIER_SYMBOL_TYPE;
-  sym->common.data.reference_count = 0;
-  sym->common.data.hash_id = get_next_symbol_hash_id(thisAgent);
-  sym->common.data.tc_num = 0;
-  sym->common.data.variablized_symbol = NIL;
-  sym->common.data.unvariablized_symbol = NIL;
-  sym->common.data.original_var_symbol = NIL;
-  sym->id.name_letter = name_letter;
+  sym->symbol_type = IDENTIFIER_SYMBOL_TYPE;
+  sym->reference_count = 0;
+  sym->hash_id = get_next_symbol_hash_id(thisAgent);
+  sym->tc_num = 0;
+  sym->variablized_symbol = NIL;
+  sym->unvariablized_symbol = NIL;
+  sym->original_var_symbol = NIL;
+  sym->data.id.name_letter = name_letter;
 
   // For long-term identifiers
   if ( name_number == NIL )
@@ -318,48 +318,48 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
 	  (*current_number) = ( name_number + 1 );
 	}
   }
-  sym->id.name_number = name_number;
+  sym->data.id.name_number = name_number;
 
-  sym->id.level = level;
-  sym->id.promotion_level = level;
-  sym->id.slots = NIL;
-  sym->id.isa_goal = FALSE;
-  sym->id.isa_impasse = FALSE;
-  sym->id.isa_operator = 0;
-  sym->id.link_count = 0;
-  sym->id.unknown_level = NIL;
-  sym->id.could_be_a_link_from_below = FALSE;
-  sym->id.impasse_wmes = NIL;
-  sym->id.higher_goal = NIL;
-  sym->id.gds = NIL;
-  sym->id.saved_firing_type = NO_SAVED_PRODS;
-  sym->id.ms_o_assertions = NIL;
-  sym->id.ms_i_assertions = NIL;
-  sym->id.ms_retractions = NIL;
-  sym->id.lower_goal = NIL;
-  sym->id.operator_slot = NIL;
-  sym->id.preferences_from_goal = NIL;
-  sym->id.associated_output_links = NIL;
-  sym->id.input_wmes = NIL;
+  sym->data.id.level = level;
+  sym->data.id.promotion_level = level;
+  sym->data.id.slots = NIL;
+  sym->data.id.isa_goal = FALSE;
+  sym->data.id.isa_impasse = FALSE;
+  sym->data.id.isa_operator = 0;
+  sym->data.id.link_count = 0;
+  sym->data.id.unknown_level = NIL;
+  sym->data.id.could_be_a_link_from_below = FALSE;
+  sym->data.id.impasse_wmes = NIL;
+  sym->data.id.higher_goal = NIL;
+  sym->data.id.gds = NIL;
+  sym->data.id.saved_firing_type = NO_SAVED_PRODS;
+  sym->data.id.ms_o_assertions = NIL;
+  sym->data.id.ms_i_assertions = NIL;
+  sym->data.id.ms_retractions = NIL;
+  sym->data.id.lower_goal = NIL;
+  sym->data.id.operator_slot = NIL;
+  sym->data.id.preferences_from_goal = NIL;
+  sym->data.id.associated_output_links = NIL;
+  sym->data.id.input_wmes = NIL;
 
-  sym->id.rl_info = NIL;
-  sym->id.reward_header = NIL;
+  sym->data.id.rl_info = NIL;
+  sym->data.id.reward_header = NIL;
 
-  sym->id.epmem_header = NIL;
-  sym->id.epmem_cmd_header = NIL;
-  sym->id.epmem_result_header = NIL;
-  sym->id.epmem_id = EPMEM_NODEID_BAD;
-  sym->id.epmem_valid = NIL;
-  sym->id.epmem_time_wme = NIL;
+  sym->data.id.epmem_header = NIL;
+  sym->data.id.epmem_cmd_header = NIL;
+  sym->data.id.epmem_result_header = NIL;
+  sym->data.id.epmem_id = EPMEM_NODEID_BAD;
+  sym->data.id.epmem_valid = NIL;
+  sym->data.id.epmem_time_wme = NIL;
 
-  sym->id.smem_header = NIL;
-  sym->id.smem_cmd_header = NIL;
-  sym->id.smem_result_header = NIL;
-  sym->id.smem_lti = NIL;
-  sym->id.smem_time_id = EPMEM_MEMID_NONE;
-  sym->id.smem_valid = NIL;
+  sym->data.id.smem_header = NIL;
+  sym->data.id.smem_cmd_header = NIL;
+  sym->data.id.smem_result_header = NIL;
+  sym->data.id.smem_lti = NIL;
+  sym->data.id.smem_time_id = EPMEM_MEMID_NONE;
+  sym->data.id.smem_valid = NIL;
 
-  sym->id.rl_trace = NIL;
+  sym->data.id.rl_trace = NIL;
 
   symbol_add_ref(thisAgent, sym);
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
@@ -374,19 +374,19 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     symbol_add_ref(thisAgent, sym);
   } else {
     allocate_with_pool (thisAgent, &thisAgent->sym_constant_pool, &sym);
-    sym->common.data.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
-    sym->common.data.reference_count = 0;
-    sym->common.data.hash_id = get_next_symbol_hash_id(thisAgent);
-    sym->common.data.tc_num = 0;
-    sym->common.data.variablized_symbol = NIL;
-    sym->common.data.unvariablized_symbol = NIL;
-    sym->common.data.original_var_symbol = NIL;
-    sym->common.data.epmem_hash = 0;
-    sym->common.data.epmem_valid = 0;
-    sym->common.data.smem_hash = 0;
-    sym->common.data.smem_valid = 0;
-    sym->sc.name = make_memory_block_for_string (thisAgent, name);
-    sym->sc.production = NIL;
+    sym->symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
+    sym->reference_count = 0;
+    sym->hash_id = get_next_symbol_hash_id(thisAgent);
+    sym->tc_num = 0;
+    sym->variablized_symbol = NIL;
+    sym->unvariablized_symbol = NIL;
+    sym->original_var_symbol = NIL;
+    sym->epmem_hash = 0;
+    sym->epmem_valid = 0;
+    sym->smem_hash = 0;
+    sym->smem_valid = 0;
+    sym->data.sc.name = make_memory_block_for_string (thisAgent, name);
+    sym->data.sc.production = NIL;
     symbol_add_ref(thisAgent, sym);
     add_to_hash_table (thisAgent, thisAgent->sym_constant_hash_table, sym);
   }
@@ -401,18 +401,18 @@ Symbol *make_int_constant (agent* thisAgent, int64_t value) {
     symbol_add_ref(thisAgent, sym);
   } else {
     allocate_with_pool (thisAgent, &thisAgent->int_constant_pool, &sym);
-    sym->common.data.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
-    sym->common.data.reference_count = 0;
-    sym->common.data.hash_id = get_next_symbol_hash_id(thisAgent);
-    sym->common.data.tc_num = 0;
-    sym->common.data.variablized_symbol = NIL;
-    sym->common.data.unvariablized_symbol = NIL;
-    sym->common.data.original_var_symbol = NIL;
-    sym->common.data.epmem_hash = 0;
-    sym->common.data.epmem_valid = 0;
-    sym->common.data.smem_hash = 0;
-    sym->common.data.smem_valid = 0;
-    sym->ic.value = value;
+    sym->symbol_type = INT_CONSTANT_SYMBOL_TYPE;
+    sym->reference_count = 0;
+    sym->hash_id = get_next_symbol_hash_id(thisAgent);
+    sym->tc_num = 0;
+    sym->variablized_symbol = NIL;
+    sym->unvariablized_symbol = NIL;
+    sym->original_var_symbol = NIL;
+    sym->epmem_hash = 0;
+    sym->epmem_valid = 0;
+    sym->smem_hash = 0;
+    sym->smem_valid = 0;
+    sym->data.ic.value = value;
     symbol_add_ref(thisAgent, sym);
     add_to_hash_table (thisAgent, thisAgent->int_constant_hash_table, sym);
   }
@@ -427,18 +427,18 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     symbol_add_ref(thisAgent, sym);
   } else {
     allocate_with_pool (thisAgent, &thisAgent->float_constant_pool, &sym);
-    sym->common.data.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
-    sym->common.data.reference_count = 0;
-    sym->common.data.hash_id = get_next_symbol_hash_id(thisAgent);
-    sym->common.data.tc_num = 0;
-    sym->common.data.variablized_symbol = NIL;
-    sym->common.data.unvariablized_symbol = NIL;
-    sym->common.data.original_var_symbol = NIL;
-    sym->common.data.epmem_hash = 0;
-    sym->common.data.epmem_valid = 0;
-    sym->common.data.smem_hash = 0;
-    sym->common.data.smem_valid = 0;
-    sym->fc.value = value;
+    sym->symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
+    sym->reference_count = 0;
+    sym->hash_id = get_next_symbol_hash_id(thisAgent);
+    sym->tc_num = 0;
+    sym->variablized_symbol = NIL;
+    sym->unvariablized_symbol = NIL;
+    sym->original_var_symbol = NIL;
+    sym->epmem_hash = 0;
+    sym->epmem_valid = 0;
+    sym->smem_hash = 0;
+    sym->smem_valid = 0;
+    sym->data.fc.value = value;
     symbol_add_ref(thisAgent, sym);
     add_to_hash_table (thisAgent, thisAgent->float_constant_hash_table, sym);
   }
@@ -459,14 +459,14 @@ void deallocate_symbol (agent* thisAgent, Symbol *sym) {
 
   /* Debug | Shouldn't we be decreasing refcount on symbol pointers for variablization pointers?
    *        Will add now disabled, test later.*/
-//  symbol_remove_ref (thisAgent, sym->common.data.variablized_symbol);
-//  symbol_remove_ref (thisAgent, sym->common.data.unvariablized_symbol);
-//  symbol_remove_ref (thisAgent, sym->common.data.original_var_symbol);
+//  symbol_remove_ref (thisAgent, sym->variablized_symbol);
+//  symbol_remove_ref (thisAgent, sym->unvariablized_symbol);
+//  symbol_remove_ref (thisAgent, sym->original_var_symbol);
 
-  switch (sym->common.data.symbol_type) {
+  switch (sym->symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
     remove_from_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
-    free_memory_block_for_string (thisAgent, sym->var.name);
+    free_memory_block_for_string (thisAgent, sym->data.var.name);
     free_with_pool (&thisAgent->variable_pool, sym);
     break;
   case IDENTIFIER_SYMBOL_TYPE:
@@ -475,7 +475,7 @@ void deallocate_symbol (agent* thisAgent, Symbol *sym) {
     break;
   case SYM_CONSTANT_SYMBOL_TYPE:
     remove_from_hash_table (thisAgent, thisAgent->sym_constant_hash_table, sym);
-    free_memory_block_for_string (thisAgent, sym->sc.name);
+    free_memory_block_for_string (thisAgent, sym->data.sc.name);
     free_with_pool (&thisAgent->sym_constant_pool, sym);
     break;
   case INT_CONSTANT_SYMBOL_TYPE:
@@ -522,27 +522,27 @@ void deallocate_symbol (agent* thisAgent, Symbol *sym) {
 Bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata) {
 	Symbol* sym;
 	char msg[256];
-	sym = static_cast<symbol_union *>(item);
+	sym = static_cast<symbol_struct *>(item);
 	FILE* f = reinterpret_cast<FILE*>(userdata);
 
-	if ( sym->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
-		if ( sym->common.data.reference_count > 0 ) {
+	if ( sym->symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
+		if ( sym->reference_count > 0 ) {
 
-			if ( sym->id.smem_lti != NIL )
+			if ( sym->data.id.smem_lti != NIL )
 			{
 				SNPRINTF( msg, 256,
 					"\t@%c%llu --> %llu\n",
-					sym->id.name_letter,
-					static_cast<long long unsigned>(sym->id.name_number),
-					static_cast<long long unsigned>(sym->common.data.reference_count));
+					sym->data.id.name_letter,
+					static_cast<long long unsigned>(sym->data.id.name_number),
+					static_cast<long long unsigned>(sym->reference_count));
 			}
 			else
 			{
 				SNPRINTF( msg, 256,
 					"\t%c%llu --> %llu\n",
-					sym->id.name_letter,
-					static_cast<long long unsigned>(sym->id.name_number),
-					static_cast<long long unsigned>(sym->common.data.reference_count));
+					sym->data.id.name_letter,
+					static_cast<long long unsigned>(sym->data.id.name_number),
+					static_cast<long long unsigned>(sym->reference_count));
 			}
 
 			msg[255] = 0; /* ensure null termination */
@@ -604,8 +604,8 @@ bool reset_id_counters (agent* thisAgent) {
 Bool reset_tc_num (agent* /*thisAgent*/, void *item, void*) {
   Symbol *sym;
 
-  sym = static_cast<symbol_union *>(item);
-  sym->common.data.tc_num = 0;
+  sym = static_cast<symbol_struct *>(item);
+  sym->tc_num = 0;
   return FALSE;
 }
 
@@ -617,8 +617,8 @@ void reset_id_and_variable_tc_numbers (agent* thisAgent) {
 Bool reset_gensym_number (agent* /*thisAgent*/, void *item, void*) {
   Symbol *sym;
 
-  sym = static_cast<symbol_union *>(item);
-  sym->var.gensym_number = 0;
+  sym = static_cast<symbol_struct *>(item);
+  sym->data.var.gensym_number = 0;
   return FALSE;
 }
 
@@ -627,7 +627,7 @@ void reset_variable_gensym_numbers (agent* thisAgent) {
 }
 
 Bool print_sym (agent* thisAgent, void *item, void*) {
-  print_string (thisAgent, symbol_to_string (thisAgent, static_cast<symbol_union *>(item), TRUE, NIL, 0));
+  print_string (thisAgent, symbol_to_string (thisAgent, static_cast<symbol_struct *>(item), TRUE, NIL, 0));
   print_string (thisAgent, "\n");
   return FALSE;
 }
@@ -672,10 +672,10 @@ Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_
 ----------------------------------------------------------------- */
 
 char first_letter_from_symbol (Symbol *sym) {
-  switch (sym->common.data.symbol_type) {
-  case VARIABLE_SYMBOL_TYPE: return *(sym->var.name + 1);
-  case IDENTIFIER_SYMBOL_TYPE: return sym->id.name_letter;
-  case SYM_CONSTANT_SYMBOL_TYPE: return *(sym->sc.name);
+  switch (sym->symbol_type) {
+  case VARIABLE_SYMBOL_TYPE: return *(sym->data.var.name + 1);
+  case IDENTIFIER_SYMBOL_TYPE: return sym->data.id.name_letter;
+  case SYM_CONSTANT_SYMBOL_TYPE: return *(sym->data.sc.name);
   default: return '*';
   }
 }

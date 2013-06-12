@@ -103,7 +103,7 @@ struct rete_node_struct;
 #endif
 
 /* necessary for function prototypes below */
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 /* Uncomment the following line to debug memory usage */
 /* #define DEBUG_MEMORY */

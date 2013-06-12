@@ -100,7 +100,7 @@ void deallocate_rhs_value (agent* thisAgent, rhs_value rv) {
 #ifdef DEBUG_TRACE_RHS_REFCOUNTS
       print(thisAgent, "Debug | deallocate_rhs_value decreasing refcount of %s from %ld to %ld.\n",
              symbol_to_string(thisAgent, r->referent, FALSE, NULL, 0),
-             r->referent->common.data.reference_count, (r->referent->common.data.reference_count)-1);
+             r->referent->reference_count, (r->referent->reference_count)-1);
 #endif
       symbol_remove_ref (thisAgent, r->referent);
     }
@@ -109,7 +109,7 @@ void deallocate_rhs_value (agent* thisAgent, rhs_value rv) {
 #ifdef DEBUG_TRACE_RHS_REFCOUNTS
       print(thisAgent, "Debug | deallocate_rhs_value decreasing refcount of original %s from %ld to %ld.\n",
              symbol_to_string(thisAgent, r->original_variable, FALSE, NULL, 0),
-             r->original_variable->common.data.reference_count, (r->original_variable->common.data.reference_count)-1);
+             r->original_variable->reference_count, (r->original_variable->reference_count)-1);
 #endif
       symbol_remove_ref (thisAgent, r->original_variable);
     }
@@ -213,7 +213,7 @@ void add_all_variables_in_rhs_value (agent* thisAgent,
   if (rhs_value_is_symbol(rv)) {
     /* --- ordinary values (i.e., symbols) --- */
     sym = rhs_value_to_symbol(rv);
-    if (sym->common.data.symbol_type==VARIABLE_SYMBOL_TYPE)
+    if (sym->symbol_type==VARIABLE_SYMBOL_TYPE)
       mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
   } else {
     /* --- function calls --- */
@@ -230,7 +230,7 @@ void add_all_variables_in_action (agent* thisAgent, action *a,
   if (a->type==MAKE_ACTION) {
     /* --- ordinary make actions --- */
     id = rhs_value_to_symbol(a->id);
-    if (id->common.data.symbol_type==VARIABLE_SYMBOL_TYPE)
+    if (id->symbol_type==VARIABLE_SYMBOL_TYPE)
       mark_variable_if_unmarked (thisAgent, id, tc, var_list);
     add_all_variables_in_rhs_value (thisAgent, a->attr, tc, var_list);
     add_all_variables_in_rhs_value (thisAgent, a->value, tc, var_list);
@@ -270,7 +270,7 @@ void add_bound_variables_in_rhs_value (agent* thisAgent,
   if (rhs_value_is_symbol(rv)) {
     /* --- ordinary values (i.e., symbols) --- */
     sym = rhs_value_to_symbol(rv);
-    if (sym->common.data.symbol_type==VARIABLE_SYMBOL_TYPE)
+    if (sym->symbol_type==VARIABLE_SYMBOL_TYPE)
       mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
   } else {
     /* --- function calls --- */
@@ -342,7 +342,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       //#ifdef DEBUG_TRACE_RHS_REFCOUNTS
       //      print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of original %s from %ld.\n",
       //             symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0),
-      //             original_sym->common.data.reference_count);
+      //             original_sym->reference_count);
       //#endif
     }
     sym = var_bound_in_reconstructed_conds (thisAgent, cond,

@@ -14,7 +14,7 @@
 #ifndef GDATASTRUCTS_H
 #define GDATASTRUCTS_H
 
-#include "symtab.h" /* needed for definition of symbol_union */
+#include "symtab.h" /* needed for definition of symbol_struct */
 #include "kernel.h" /* needed for definition of NIL */
 #include "soar_module.h" /* needed for definition of memory pool allocator */
 
@@ -28,7 +28,7 @@ typedef struct complex_test_struct complex_test;
 typedef struct cons_struct cons;
 typedef struct dl_cons_struct dl_cons;
 typedef struct wme_struct wme;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef cons list;
 
 #ifdef USE_MEM_POOL_ALLOCATORS

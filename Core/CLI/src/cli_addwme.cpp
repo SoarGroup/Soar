@@ -28,7 +28,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     // get attribute or '*'
     Symbol* pAttr = 0;
     if ( attribute == "*" )
-        pAttr = make_new_identifier( agnt, 'I', pId->id.level );
+        pAttr = make_new_identifier( agnt, 'I', pId->data.id.level );
     else
     {
         get_lexeme_from_string( agnt, attribute.c_str() );
@@ -59,7 +59,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     // get value or '*'
     Symbol* pValue = 0;
     if ( value == "*" )
-        pValue = make_new_identifier( agnt, 'I', pId->id.level );
+        pValue = make_new_identifier( agnt, 'I', pId->data.id.level );
     else
     {
         get_lexeme_from_string( agnt, value.c_str() );
@@ -95,7 +95,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
 
     symbol_remove_ref( agnt, pWme->attr );
     symbol_remove_ref( agnt, pWme->value );
-    insert_at_head_of_dll( pWme->id->id.input_wmes, pWme, next, prev );
+    insert_at_head_of_dll( pWme->id->data.id.input_wmes, pWme, next, prev );
 
     if ( wma_enabled( agnt ) )
     {

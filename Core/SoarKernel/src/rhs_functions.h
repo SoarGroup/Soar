@@ -38,7 +38,7 @@
 //typedef unsigned char byte;
 //typedef struct cons_struct cons;
 //typedef cons list;
-//typedef union symbol_union Symbol;
+//typedef struct symbol_struct Symbol;
 
 typedef Symbol * ((*rhs_function_routine)(agent* thisAgent, ::list *args, void* user_data));
 

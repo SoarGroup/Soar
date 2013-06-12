@@ -204,7 +204,7 @@ void backtrace_through_instantiation (agent* thisAgent,
     temp_explain_backtrace.negated    = NIL;
 
 	if (inst->prod) {
-      strncpy(temp_explain_backtrace.prod_name,inst->prod->name->sc.name, BUFFER_PROD_NAME_SIZE);
+      strncpy(temp_explain_backtrace.prod_name,inst->prod->name->data.sc.name, BUFFER_PROD_NAME_SIZE);
 	} else {
       strncpy(temp_explain_backtrace.prod_name,"Dummy production", BUFFER_PROD_NAME_SIZE);
 	}
@@ -228,29 +228,29 @@ void backtrace_through_instantiation (agent* thisAgent,
     if (c->type!=POSITIVE_CONDITION) continue;
     id = c->data.tests.id_test->data.referent;
 
-    if (id->common.data.tc_num == tc) {
+    if (id->tc_num == tc) {
       /* --- id is already in the TC, so add in the value --- */
       value = c->data.tests.value_test->data.referent;
-      if (value->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
+      if (value->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
         /* --- if we already saw it before, we're going to have to go back
            and make another pass to get the complete TC --- */
-        if (value->common.data.tc_num == tc2) need_another_pass = TRUE;
-        value->common.data.tc_num = tc;
+        if (value->tc_num == tc2) need_another_pass = TRUE;
+        value->tc_num = tc;
       }
-    } else if ((id->id.isa_goal) && (c->bt.level <= grounds_level)) {
+    } else if ((id->data.id.isa_goal) && (c->bt.level <= grounds_level)) {
       /* --- id is a higher goal id that was tested: so add id to the TC --- */
-      id->common.data.tc_num = tc;
+      id->tc_num = tc;
       value = c->data.tests.value_test->data.referent;
-      if (value->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
+      if (value->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
         /* --- if we already saw it before, we're going to have to go back
            and make another pass to get the complete TC --- */
-        if (value->common.data.tc_num == tc2) need_another_pass = TRUE;
-        value->common.data.tc_num = tc;
+        if (value->tc_num == tc2) need_another_pass = TRUE;
+        value->tc_num = tc;
       }
     } else {
       /* --- as far as we know so far, id shouldn't be in the tc: so mark it
          with number "tc2" to indicate that it's been seen already --- */
-      id->common.data.tc_num = tc2;
+      id->tc_num = tc2;
     }
   }
 
@@ -264,12 +264,12 @@ void backtrace_through_instantiation (agent* thisAgent,
     for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next) {
       if (c->type!=POSITIVE_CONDITION)
         continue;
-      if (c->data.tests.id_test->data.referent->common.data.tc_num != tc)
+      if (c->data.tests.id_test->data.referent->tc_num != tc)
         continue;
       value = c->data.tests.value_test->data.referent;
-      if (value->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-        if (value->common.data.tc_num != tc) {
-          value->common.data.tc_num = tc;
+      if (value->symbol_type==IDENTIFIER_SYMBOL_TYPE)
+        if (value->tc_num != tc) {
+          value->tc_num = tc;
           need_another_pass = TRUE;
         }
     } /* end of for loop */
@@ -287,7 +287,7 @@ void backtrace_through_instantiation (agent* thisAgent,
     if (c->type==POSITIVE_CONDITION) {
 
       /* --- positive cond's are grounds, potentials, or locals --- */
-      if (c->data.tests.id_test->data.referent->common.data.tc_num == tc) {
+      if (c->data.tests.id_test->data.referent->tc_num == tc) {
         add_to_grounds (thisAgent, c);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -442,7 +442,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *relia
 	}
     /* --- for augmentations of the local goal id, either handle the
        "^quiescence t" test or discard it --- */
-    if (cond->data.tests.id_test->data.referent->id.isa_goal) {
+    if (cond->data.tests.id_test->data.referent->data.id.isa_goal) {
       if ((cond->data.tests.attr_test->data.referent ==
            thisAgent->quiescence_symbol) &&
           (cond->data.tests.value_test->data.referent ==

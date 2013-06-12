@@ -40,7 +40,7 @@ typedef char Bool;
 typedef uint64_t tc_number;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 typedef struct wma_decay_element_struct wma_decay_element;
 

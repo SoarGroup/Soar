@@ -73,9 +73,9 @@ using namespace soar_TraceNames;
 
 inline void add_results_if_needed(agent* thisAgent, Symbol * sym)
 {
-  if ((sym)->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-      if ( ((sym)->id.level >= thisAgent->results_match_goal_level) &&
-           ((sym)->common.data.tc_num != thisAgent->results_tc_number) )
+  if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE)
+      if ( ((sym)->data.id.level >= thisAgent->results_match_goal_level) &&
+           ((sym)->tc_num != thisAgent->results_tc_number) )
         add_results_for_id(thisAgent, sym);
 }
 
@@ -119,12 +119,12 @@ void add_results_for_id (agent* thisAgent, Symbol *id) {
   preference *pref;
   wme *w;
 
-  id->common.data.tc_num = thisAgent->results_tc_number;
+  id->tc_num = thisAgent->results_tc_number;
 
   /* --- scan through all preferences and wmes for all slots for this id --- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
+  for (w=id->data.id.input_wmes; w!=NIL; w=w->next)
     add_results_if_needed (thisAgent, w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next) {
+  for (s=id->data.id.slots; s!=NIL; s=s->next) {
     for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next)
       add_pref_to_results(thisAgent, pref);
     for (w=s->wmes; w!=NIL; w=w->next)
@@ -145,8 +145,8 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
   thisAgent->results_tc_number = get_new_tc_number(thisAgent);
   thisAgent->extra_result_prefs_from_instantiation = inst->preferences_generated;
   for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
-    if ( (pref->id->id.level < thisAgent->results_match_goal_level) &&
-         (pref->id->common.data.tc_num != thisAgent->results_tc_number) ) {
+    if ( (pref->id->data.id.level < thisAgent->results_match_goal_level) &&
+         (pref->id->tc_num != thisAgent->results_tc_number) ) {
       add_pref_to_results(thisAgent, pref);
     }
   return thisAgent->results;
@@ -209,13 +209,13 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 
   if (symbol_is_identifier(*sym) || symbol_is_variablizable_constant(*sym))
   {
-    if ((*sym)->common.data.tc_num == thisAgent->variablization_tc) {
+    if ((*sym)->tc_num == thisAgent->variablization_tc) {
       /* --- it's already been variablized, so use the existing variable --- */
 #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
-      print(thisAgent, "Debug | Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+      print(thisAgent, "Debug | Found existing variablization %s.\n", symbol_to_string(thisAgent, (*sym)->variablized_symbol, FALSE, NIL, NIL));
 #endif
-      var = (*sym)->common.data.variablized_symbol;
-      var->common.data.unvariablized_symbol = *sym;
+      var = (*sym)->variablized_symbol;
+      var->unvariablized_symbol = *sym;
       //symbol_remove_ref (thisAgent, *sym);
       *sym = var;
       symbol_add_ref(thisAgent, var);
@@ -224,17 +224,17 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 
     /* --- need to create a new variable.  If constant is being variablized
      *     just used 'c' instead of first letter of id name --- */
-    (*sym)->common.data.tc_num = thisAgent->variablization_tc;
+    (*sym)->tc_num = thisAgent->variablization_tc;
     if(symbol_is_identifier(*sym))
-      prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+      prefix[0] = static_cast<char>(tolower((*sym)->data.id.name_letter));
     else
       prefix[0] = 'c';
     prefix[1] = 0;
     var = generate_new_variable (thisAgent, prefix);
-    (*sym)->common.data.variablized_symbol = var;
-    var->common.data.unvariablized_symbol = *sym;
+    (*sym)->variablized_symbol = var;
+    var->unvariablized_symbol = *sym;
 #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
-    print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+    print(thisAgent, "Debug | Created new variablization %s.\n", symbol_to_string(thisAgent, (*sym)->variablized_symbol, FALSE, NIL, NIL));
 #endif
     //Do not need to decrease refcount any more b/c we're caching it
     //symbol_remove_ref (thisAgent, *sym);
@@ -307,7 +307,7 @@ void variablize_test (agent* thisAgent, test *chunk_test) {
         print(thisAgent, "Debug | Variablizing test type %s with referent %s\n", test_type_to_string(test_type), symbol_to_string(thisAgent, instantiated_referent, FALSE, NIL, NIL));
 #endif
         variablize_symbol (thisAgent, &(ct->data.referent));
-        ct->data.referent->common.data.original_var_symbol = original_referent;
+        ct->data.referent->original_var_symbol = original_referent;
       }
       break;
     default:
@@ -412,28 +412,28 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym, Symbol *original_var
         symbol_to_string(thisAgent, *sym), symbol_to_string(thisAgent, original_var));
 #endif
 
-  if ((*sym)->common.data.tc_num == thisAgent->variablization_tc)
+  if ((*sym)->tc_num == thisAgent->variablization_tc)
   {
     /* --- it's been variablized on the lhs --- */
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
     print(thisAgent, "Debug | ... found existing variablization %s.\n",
-          symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+          symbol_to_string(thisAgent, (*sym)->variablized_symbol, FALSE, NIL, NIL));
 #endif
     if (symbol_is_non_lti_identifier((*sym)))
     {
-      var = (*sym)->common.data.variablized_symbol;
+      var = (*sym)->variablized_symbol;
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
   print(thisAgent, "RHSVAR| ...variablizing identifier.!\n");
 #endif
     }
-    else if ((*sym)->common.data.variablized_symbol->common.data.original_var_symbol != NIL)
+    else if ((*sym)->variablized_symbol->original_var_symbol != NIL)
     {
-      if ((*sym)->common.data.variablized_symbol->common.data.original_var_symbol == original_var)
+      if ((*sym)->variablized_symbol->original_var_symbol == original_var)
       {
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
   print(thisAgent, "RHSVAR| ...rhs original var matches symbol original var.  Variablizing!\n");
 #endif
-        var = (*sym)->common.data.variablized_symbol;
+        var = (*sym)->variablized_symbol;
       }
       else
       {
@@ -444,14 +444,14 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym, Symbol *original_var
          * same constant*/
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
   print(thisAgent, "RHSVAR| ...searching for varname %s in unique varname table...\n",
-        (*sym)->common.data.variablized_symbol->common.data.original_var_symbol->var.name);
+        (*sym)->variablized_symbol->original_var_symbol->data.var.name);
 #endif
-        found_varsym = thisAgent->varname_table->find_varsym((*sym)->common.data.variablized_symbol->common.data.original_var_symbol->var.name);
+        found_varsym = thisAgent->varname_table->find_varsym((*sym)->variablized_symbol->original_var_symbol->data.var.name);
         if (found_varsym)
         {
           var = found_varsym;
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-  print(thisAgent, "RHSVAR| ...match found.  Variablizing with %s!\n", found_varsym->var.name);
+  print(thisAgent, "RHSVAR| ...match found.  Variablizing with %s!\n", found_varsym->data.var.name);
 #endif
         }
         else
@@ -467,13 +467,13 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym, Symbol *original_var
         }
       }
     }
-    else  // (*sym)->common.data.variablized_symbol->common.data.original_var_symbol == NIL
+    else  // (*sym)->variablized_symbol->original_var_symbol == NIL
     {
        /* Debug| This probably can't occur if tc_num was correct. -- */
       assert(false);
       return;
     }
-    var->common.data.unvariablized_symbol = *sym;
+    var->unvariablized_symbol = *sym;
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
     symbol_add_ref(thisAgent, var);
@@ -487,13 +487,13 @@ void variablize_rhs_symbol (agent* thisAgent, Symbol **sym, Symbol *original_var
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
   print(thisAgent, "RHSVAR| ...variablizing non-lti identifier!\n");
 #endif
-    (*sym)->common.data.tc_num = thisAgent->variablization_tc;
-    prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+    (*sym)->tc_num = thisAgent->variablization_tc;
+    prefix[0] = static_cast<char>(tolower((*sym)->data.id.name_letter));
     prefix[1] = 0;
     var = generate_new_variable (thisAgent, prefix);
-    (*sym)->common.data.variablized_symbol = var;
-    var->common.data.unvariablized_symbol = *sym;
-    print(thisAgent, "Debug | Created new variablization for unbound rhs %s.\n", symbol_to_string(thisAgent, (*sym)->common.data.variablized_symbol, FALSE, NIL, NIL));
+    (*sym)->variablized_symbol = var;
+    var->unvariablized_symbol = *sym;
+    print(thisAgent, "Debug | Created new variablization for unbound rhs %s.\n", symbol_to_string(thisAgent, (*sym)->variablized_symbol, FALSE, NIL, NIL));
     //Do not need to decrease refcount any more b/c we're caching it
     //symbol_remove_ref (thisAgent, *sym);
     *sym = var;
@@ -525,12 +525,12 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *result, b
   symbol_add_ref(thisAgent, val);
 
   if (variablize) {
-    if (id->common.data.variablized_symbol)
+    if (id->variablized_symbol)
       variablize_rhs_symbol (thisAgent, &id, result->original_id_var);
-    if ((attr->common.data.variablized_symbol) ||
+    if ((attr->variablized_symbol) ||
         (symbol_is_non_lti_identifier(attr)))
       variablize_rhs_symbol (thisAgent, &attr, result->original_attr_var);
-    if ((val->common.data.variablized_symbol) ||
+    if ((val->variablized_symbol) ||
         (symbol_is_non_lti_identifier(val)))
       variablize_rhs_symbol (thisAgent, &val, result->original_value_var);
   }
@@ -544,7 +544,7 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *result, b
   if (preference_is_binary(result->type)) {
     symbol_add_ref(thisAgent, ref);
     if (variablize) {
-      if ((val->common.data.variablized_symbol) ||
+      if ((val->variablized_symbol) ||
           (symbol_is_non_lti_identifier(val)))
         variablize_rhs_symbol (thisAgent, &ref, NIL);
     }
@@ -574,21 +574,21 @@ void reverse_unbound_referents_in_test (agent* thisAgent, test t, tc_number tc)
     break;
 
   default:
-    if ((t->data.referent->common.data.symbol_type==VARIABLE_SYMBOL_TYPE) && (t->data.referent->common.data.tc_num != tc))
+    if ((t->data.referent->symbol_type==VARIABLE_SYMBOL_TYPE) && (t->data.referent->tc_num != tc))
       {
 #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
       print(thisAgent, "Reversing variable %s to constant %s.\n",
              symbol_to_string(thisAgent, t->data.referent, FALSE, NULL, 0),
-             symbol_to_string(thisAgent, t->data.referent->common.data.unvariablized_symbol, FALSE, NULL, 0));
+             symbol_to_string(thisAgent, t->data.referent->unvariablized_symbol, FALSE, NULL, 0));
 #endif
       temp_sym = t->data.referent;
-      t->data.referent = temp_sym->common.data.unvariablized_symbol;
+      t->data.referent = temp_sym->unvariablized_symbol;
 
       // Debug | double-check refcount
 #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
       print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
              symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
-             temp_sym->common.data.reference_count);
+             temp_sym->reference_count);
 #endif
       symbol_remove_ref (thisAgent, temp_sym);
       }
@@ -607,22 +607,22 @@ void reverse_unbound_referents_in_action (agent* thisAgent, rhs_value *r_val, tc
 
   rhs_symbol this_rhs_symbol = rhs_value_to_rhs_symbol(*r_val);
 
-  if ((this_rhs_symbol->referent->common.data.symbol_type==VARIABLE_SYMBOL_TYPE) && (this_rhs_symbol->referent->common.data.tc_num != tc) &&
-      (this_rhs_symbol->referent->common.data.unvariablized_symbol->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE))
+  if ((this_rhs_symbol->referent->symbol_type==VARIABLE_SYMBOL_TYPE) && (this_rhs_symbol->referent->tc_num != tc) &&
+      (this_rhs_symbol->referent->unvariablized_symbol->symbol_type != IDENTIFIER_SYMBOL_TYPE))
   {
     print(thisAgent, "Reversing rhs %s to constant %s.\n",
         symbol_to_string(thisAgent, this_rhs_symbol->referent, FALSE, NULL, 0),
-        symbol_to_string(thisAgent, this_rhs_symbol->referent->common.data.unvariablized_symbol, FALSE, NULL, 0));
+        symbol_to_string(thisAgent, this_rhs_symbol->referent->unvariablized_symbol, FALSE, NULL, 0));
 
     temp_sym = this_rhs_symbol->referent;
-    this_rhs_symbol->referent = temp_sym->common.data.unvariablized_symbol;
+    this_rhs_symbol->referent = temp_sym->unvariablized_symbol;
 
     // Debug | Don't think this is necessary unless r_val is NIL in which case the above code would not work
     (*r_val) = rhs_symbol_to_rhs_value(this_rhs_symbol);
     // Debug | Double-check refcount
     print(thisAgent, "Debug | reverse_unbound_referents_in_action decreasing refcount of %s from %ld.\n",
            symbol_to_string(thisAgent, temp_sym, FALSE, NULL, 0),
-           temp_sym->common.data.reference_count);
+           temp_sym->reference_count);
     symbol_remove_ref (thisAgent, temp_sym);
   }
 }
@@ -904,12 +904,12 @@ void add_goal_or_impasse_tests (agent* thisAgent, chunk_cond *all_ccs) {
   for (cc=all_ccs; cc!=NIL; cc=cc->next) {
     if (cc->instantiated_cond->type!=POSITIVE_CONDITION) continue;
     id = cc->instantiated_cond->data.tests.id_test->data.referent;
-    if ( (id->id.isa_goal || id->id.isa_impasse) &&
-         (id->common.data.tc_num != tc) )
+    if ( (id->data.id.isa_goal || id->data.id.isa_impasse) &&
+         (id->tc_num != tc) )
     {
-      t = make_test(thisAgent, NULL, ((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
+      t = make_test(thisAgent, NULL, ((id->data.id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
       add_new_test_to_test (thisAgent, &(cc->variablized_cond->data.tests.id_test), t);
-      id->common.data.tc_num = tc;
+      id->tc_num = tc;
     }
   }
 }
@@ -1019,8 +1019,8 @@ void make_clones_of_results (agent* thisAgent, preference *results,
 Symbol *find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level) {
  Symbol *g;
 
- for (g = thisAgent->top_goal; g != NIL; g = g->id.lower_goal)
-   if (g->id.level == level)
+ for (g = thisAgent->top_goal; g != NIL; g = g->data.id.lower_goal)
+   if (g->data.id.level == level)
      return(g);
  return(NIL);
 }
@@ -1028,7 +1028,7 @@ Symbol *find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level) 
 Symbol *find_impasse_wme_value(Symbol *id, Symbol *attr) {
   wme *w;
 
-  for (w = id->id.impasse_wmes; w != NIL; w = w->next)
+  for (w = id->data.id.impasse_wmes; w != NIL; w = w->next)
     if (w->attr == attr) return w->value;
   return NIL;
 }
@@ -1048,10 +1048,10 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
     return(generate_new_sym_constant (thisAgent, thisAgent->chunk_name_prefix,
                                       &thisAgent->chunk_count));
 
-  lowest_result_level = thisAgent->top_goal->id.level;
+  lowest_result_level = thisAgent->top_goal->data.id.level;
   for (p=inst->preferences_generated; p!=NIL; p=p->inst_next)
-    if (p->id->id.level > lowest_result_level)
-      lowest_result_level = p->id->id.level;
+    if (p->id->data.id.level > lowest_result_level)
+      lowest_result_level = p->id->data.id.level;
 
   goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
 
@@ -1078,12 +1078,12 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
         {
           Symbol *sym;
 
-          if ((sym = find_impasse_wme_value(goal->id.lower_goal,thisAgent->attribute_symbol)) == NIL) {
+          if ((sym = find_impasse_wme_value(goal->data.id.lower_goal,thisAgent->attribute_symbol)) == NIL) {
             #ifdef DEBUG_CHUNK_NAMES
 		    // TODO: generate warning XML: I think we need to get a string for "do_print_for_identifier" and append it
 		    // but this seems low priority since it's not even included in a normal build
             print ("Warning: Failed to find ^attribute impasse wme.\n");
-            do_print_for_identifier(goal->id.lower_goal, 1, 0, 0);
+            do_print_for_identifier(goal->data.id.lower_goal, 1, 0, 0);
             #endif
             strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
           } else if (sym == thisAgent->operator_symbol) {
@@ -1194,7 +1194,7 @@ bool should_variablize(agent *thisAgent, instantiation *inst) {
 	   learned in a lower goal
 	 */
 	if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
-	    !inst->match_goal->id.allow_bottom_up_chunks)
+	    !inst->match_goal->data.id.allow_bottom_up_chunks)
 	{
 		return false;
 	}
@@ -1246,7 +1246,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	/* --- if no preference is above the match goal level, exit --- */
 	for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
 	{
-		if (pref->id->id.level < inst->match_goal_level)
+		if (pref->id->data.id.level < inst->match_goal_level)
 			break;
 	}
 	if (! pref)
@@ -1264,8 +1264,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	/* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
 	{
 		Symbol *g;
-		for (g=inst->match_goal->id.higher_goal; g && g->id.allow_bottom_up_chunks; g=g->id.higher_goal)
-			g->id.allow_bottom_up_chunks = FALSE;
+		for (g=inst->match_goal->data.id.higher_goal; g && g->data.id.allow_bottom_up_chunks; g=g->data.id.higher_goal)
+			g->data.id.allow_bottom_up_chunks = FALSE;
 	}
 
 	grounds_level = inst->match_goal_level - 1;
@@ -1519,7 +1519,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 			&& ((prod_type != JUSTIFICATION_PRODUCTION_TYPE)
 			|| (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH) ))
 		{
-			strncpy(temp_explain_chunk.name,prod_name->sc.name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
+			strncpy(temp_explain_chunk.name,prod_name->data.sc.name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
 			temp_explain_chunk.name[EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE - 1] = 0;
 			explain_add_temp_to_chunk_list (thisAgent, &temp_explain_chunk);
 		}

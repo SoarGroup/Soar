@@ -35,7 +35,7 @@ typedef struct wme_struct wme;
 typedef struct agent_struct agent;
 typedef struct callback_struct soar_callback;
 typedef cons list;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 typedef void * soar_callback_data;
 typedef void * soar_call_data;

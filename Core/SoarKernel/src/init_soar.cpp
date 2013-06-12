@@ -1195,7 +1195,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  // To model episodic task, after halt, perform RL update with next-state value 0
 	  if ( rl_enabled( thisAgent ) )
 	  {
-		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->id.higher_goal)
+		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->data.id.higher_goal)
 		  {
 			  rl_tabulate_reward_value_for_goal( thisAgent, g );
 			  rl_perform_update( thisAgent, 0, true, g );
@@ -1348,7 +1348,7 @@ void run_for_n_decision_cycles (agent* thisAgent, int64_t n) {
 }
 
 Symbol *attr_of_slot_just_decided (agent* thisAgent) {
-  if (thisAgent->bottom_goal->id.operator_slot->wmes)
+  if (thisAgent->bottom_goal->data.id.operator_slot->wmes)
     return thisAgent->operator_symbol;
   return thisAgent->state_symbol;
 }
@@ -1399,8 +1399,8 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
     was_decision_phase = (thisAgent->current_phase==DECISION_PHASE);
     do_one_top_level_phase(thisAgent);
     if (was_decision_phase) {
-      if (thisAgent->bottom_goal->id.level < level) break;
-      if (thisAgent->bottom_goal->id.level==level) {
+      if (thisAgent->bottom_goal->data.id.level < level) break;
+      if (thisAgent->bottom_goal->data.id.level==level) {
         if (attr_of_slot_just_decided(thisAgent)==attr_of_slot) count++;
       }
     }

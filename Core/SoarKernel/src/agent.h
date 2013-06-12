@@ -60,7 +60,7 @@ typedef struct select_info_struct select_info;
 #define JUST_UPDATE_COUNT 2
 
 typedef char Bool;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef struct hash_table_struct hash_table;
 typedef struct wme_struct wme;
 typedef struct memory_pool_struct memory_pool;

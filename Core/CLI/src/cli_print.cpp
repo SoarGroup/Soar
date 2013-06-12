@@ -37,7 +37,7 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
     const int maxStates = 500;
     int stateCount = 0 ;
 
-    for (Symbol* g = thisAgent->top_goal; g != NIL; g = g->id.lower_goal)
+    for (Symbol* g = thisAgent->top_goal; g != NIL; g = g->data.id.lower_goal)
     {
         stateCount++ ;
 
@@ -49,9 +49,9 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
             print_stack_trace (thisAgent, g, g, FOR_STATES_TF, false);
             print (thisAgent, "\n");
         }
-        if (print_operators && g->id.operator_slot->wmes)
+        if (print_operators && g->data.id.operator_slot->wmes)
         {
-            print_stack_trace (thisAgent, g->id.operator_slot->wmes->value, g, FOR_OPERATORS_TF, false);
+            print_stack_trace (thisAgent, g->data.id.operator_slot->wmes->value, g, FOR_OPERATORS_TF, false);
             print (thisAgent, "\n");
         }
     }
@@ -190,27 +190,27 @@ void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bo
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (id->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    if (id->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         return;
-    if (id->common.data.tc_num==tc)
+    if (id->tc_num==tc)
         return;  // this has already been printed, so return RPM 4/07 bug 988
-    if (id->id.depth > depth)
+    if (id->data.id.depth > depth)
         return;  // this can be reached via an equal or shorter path, so return without printing RPM 4/07 bug 988
 
     // if we're here, then we haven't printed this id yet, so print it
 
-    depth = id->id.depth; // set the depth to the depth via the shallowest path, RPM 4/07 bug 988
+    depth = id->data.id.depth; // set the depth to the depth via the shallowest path, RPM 4/07 bug 988
     int indent = (maxdepth-depth)*2; // set the indent based on how deep we are, RPM 4/07 bug 988
 
-    id->common.data.tc_num = tc;  // mark id as printed
+    id->tc_num = tc;  // mark id as printed
 
     /* --- first, count all direct augmentations of this id --- */
     num_attr = 0;
-    for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
+    for (w=id->data.id.impasse_wmes; w!=NIL; w=w->next)
         num_attr++;
-    for (w=id->id.input_wmes; w!=NIL; w=w->next)
+    for (w=id->data.id.input_wmes; w!=NIL; w=w->next)
         num_attr++;
-    for (s=id->id.slots; s!=NIL; s=s->next)
+    for (s=id->data.id.slots; s!=NIL; s=s->next)
     {
         for (w=s->wmes; w!=NIL; w=w->next)
             num_attr++;
@@ -221,11 +221,11 @@ void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bo
     /* --- next, construct the array of wme pointers and sort them --- */
     list = (wme**)allocate_memory(thisAgent, num_attr*sizeof(wme *), MISCELLANEOUS_MEM_USAGE);
     attr = 0;
-    for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
+    for (w=id->data.id.impasse_wmes; w!=NIL; w=w->next)
         list[attr++] = w;
-    for (w=id->id.input_wmes; w!=NIL; w=w->next)
+    for (w=id->data.id.input_wmes; w!=NIL; w=w->next)
         list[attr++] = w;
-    for (s=id->id.slots; s!=NIL; s=s->next)
+    for (s=id->data.id.slots; s!=NIL; s=s->next)
     {
         for (w=s->wmes; w!=NIL; w=w->next)
             list[attr++] = w;
@@ -322,30 +322,30 @@ void mark_depths_augs_of_id (agent* thisAgent, Symbol *id, int depth, tc_number 
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (id->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    if (id->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         return;
-    if (id->common.data.tc_num==tc && id->id.depth >= depth)
+    if (id->tc_num==tc && id->data.id.depth >= depth)
         return;  // this has already been printed at an equal-or-lower depth, RPM 4/07 bug 988
 
-    id->id.depth = depth; // set the depth of this id
-    id->common.data.tc_num = tc;
+    id->data.id.depth = depth; // set the depth of this id
+    id->tc_num = tc;
 
     /* --- if depth<=1, we're done --- */
     if (depth<=1)
         return;
 
     /* --- call this routine recursively --- */
-    for (w=id->id.input_wmes; w!=NIL; w=w->next)
+    for (w=id->data.id.input_wmes; w!=NIL; w=w->next)
     {
         mark_depths_augs_of_id (thisAgent, w->attr, depth-1, tc);
         mark_depths_augs_of_id (thisAgent, w->value, depth-1, tc);
     }
-    for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
+    for (w=id->data.id.impasse_wmes; w!=NIL; w=w->next)
     {
         mark_depths_augs_of_id (thisAgent, w->attr, depth-1, tc);
         mark_depths_augs_of_id (thisAgent, w->value, depth-1, tc);
     }
-    for (s=id->id.slots; s!=NIL; s=s->next)
+    for (s=id->data.id.slots; s!=NIL; s=s->next)
     {
         for (w=s->wmes; w!=NIL; w=w->next)
         {
@@ -377,8 +377,8 @@ void do_print_for_production_name (agent* thisAgent, const char *prod_name, bool
     Symbol *sym;
 
     sym = find_sym_constant (thisAgent, thisAgent->lexeme.string);
-    if (sym && sym->sc.production)
-        do_print_for_production(thisAgent, sym->sc.production, intern, print_filename, full_prod);
+    if (sym && sym->data.sc.production)
+        do_print_for_production(thisAgent, sym->data.sc.production, intern, print_filename, full_prod);
     else
         print (thisAgent, "No production named %s\n", prod_name);
 }

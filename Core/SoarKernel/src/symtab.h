@@ -12,8 +12,8 @@
 
    "symbol" is typedef-ed as a union of the five kinds of symbol
    structures.  Some fields common to all symbols are accessed via
-   sym->common.data.field_name; fields particular to a certain kind of
-   symbol are accessed via sym->var.field_name_on_variables, etc.
+   sym->field_name; fields particular to a certain kind of
+   symbol are accessed via sym->data.var.field_name_on_variables, etc.
    (See the definitions below.)  Note that "common" is #defined below.
 
    Some (but not all) of the fields common to all symbols are:
@@ -184,162 +184,112 @@ typedef uint64_t smem_hash_id;
  *          first field.
  * -- */
 
-typedef struct symbol_common_data_struct {
-  union symbol_union *next_in_hash_table;
-  uint64_t reference_count;
-  byte symbol_type;
-  byte decider_flag;
-  union a_union {
-    struct wme_struct *decider_wme;
-    uint64_t retesave_symindex;
-  } a;
-  uint32_t hash_id;
+typedef struct symbol_struct {
+    struct symbol_struct *next_in_hash_table; /* next item in hash bucket */
+    uint64_t reference_count;
+    byte symbol_type;                         /* one of the above xxx_SYMBOL_TYPE's */
+    byte decider_flag;                        /* used only by the decider */
+    struct wme_struct *decider_wme;           /* used only by the decider */
+    uint64_t retesave_symindex;               /* used for rete fastsave/fastload */
+    uint32_t hash_id;                         /* used for hashing in the rete */
+    tc_number tc_num;
 
-  epmem_hash_id epmem_hash;
-  uint64_t epmem_valid;
+    epmem_hash_id epmem_hash;
+    uint64_t epmem_valid;
 
-  smem_hash_id smem_hash;
-  uint64_t smem_valid;
+    smem_hash_id smem_hash;
+    uint64_t smem_valid;
 
-  tc_number tc_num;
-  union symbol_union *variablized_symbol;
-  union symbol_union *unvariablized_symbol;
-  union symbol_union *original_var_symbol;
+    struct symbol_struct *variablized_symbol;
+    struct symbol_struct *unvariablized_symbol;
+    struct symbol_struct *original_var_symbol;
 
-} symbol_common_data;
+    union {
+        struct {
+            uint64_t name_number;
+            char name_letter;
 
-typedef struct sym_constant_struct {
-  symbol_common_data data;
-  char *name;
-  struct production_struct *production;  /* NIL if no prod. has this name */
-} sym_constant;
+            Bool isa_goal;        /* TRUE iff this is a goal identifier */
+            Bool isa_impasse;     /* TRUE iff this is an attr. impasse identifier */
 
-typedef struct int_constant_struct {
-  symbol_common_data data;
-  int64_t value;
-} int_constant;
+            Bool did_PE;   /* RCHONG: 10.11 */
 
-typedef struct float_constant_struct {
-  symbol_common_data data;
-  double value;
-} float_constant;
+            unsigned short isa_operator;
 
-typedef struct variable_struct {
-  symbol_common_data data;
-  char *name;
-  union symbol_union *current_binding_value;
-  uint64_t gensym_number;
-  ::list *rete_binding_locations;
-} variable;
+            Bool allow_bottom_up_chunks;
 
-/* Note: I arranged the fields below to try to minimize space */
-typedef struct identifier_struct {
-  symbol_common_data data;
-  uint64_t name_number;
-  char name_letter;
+            /* --- ownership, promotion, demotion, & garbage collection stuff --- */
+            Bool could_be_a_link_from_below;
+            goal_stack_level level;
+            goal_stack_level promotion_level;
+            uint64_t link_count;
+            dl_cons *unknown_level;
 
-  Bool isa_goal;        /* TRUE iff this is a goal identifier */
-  Bool isa_impasse;     /* TRUE iff this is an attr. impasse identifier */
+            struct slot_struct *slots;  /* dll of slots for this identifier */
 
-  Bool did_PE;   /* RCHONG: 10.11 */
+            /* --- fields used only on goals and impasse identifiers --- */
+            struct wme_struct *impasse_wmes;
 
-  unsigned short isa_operator;
+            /* --- fields used only on goals --- */
+            struct symbol_struct *higher_goal, *lower_goal;
+            struct slot_struct *operator_slot;
+            struct preference_struct *preferences_from_goal;
 
-  Bool allow_bottom_up_chunks;
+            struct symbol_struct *reward_header;		// pointer to reward_link
+            struct rl_data_struct *rl_info;			// various Soar-RL information
 
-  /* --- ownership, promotion, demotion, & garbage collection stuff --- */
-  Bool could_be_a_link_from_below;
-  goal_stack_level level;
-  goal_stack_level promotion_level;
-  uint64_t link_count;
-  dl_cons *unknown_level;
-
-  struct slot_struct *slots;  /* dll of slots for this identifier */
-
-  /* --- fields used only on goals and impasse identifiers --- */
-  struct wme_struct *impasse_wmes;
-
-  /* --- fields used only on goals --- */
-  union symbol_union *higher_goal, *lower_goal;
-  struct slot_struct *operator_slot;
-  struct preference_struct *preferences_from_goal;
-
-  union symbol_union *reward_header;		// pointer to reward_link
-  struct rl_data_struct *rl_info;			// various Soar-RL information
-
-  union symbol_union *epmem_header;
-  union symbol_union *epmem_cmd_header;
-  union symbol_union *epmem_result_header;
-  struct wme_struct* epmem_time_wme;
-  struct epmem_data_struct *epmem_info;		// various EpMem information
+            struct symbol_struct *epmem_header;
+            struct symbol_struct *epmem_cmd_header;
+            struct symbol_struct *epmem_result_header;
+            struct wme_struct* epmem_time_wme;
+            struct epmem_data_struct *epmem_info;		// various EpMem information
 
 
-  union symbol_union *smem_header;
-  union symbol_union *smem_cmd_header;
-  union symbol_union *smem_result_header;
-  struct smem_data_struct *smem_info;		// various SMem information
+            struct symbol_struct *smem_header;
+            struct symbol_struct *smem_cmd_header;
+            struct symbol_struct *smem_result_header;
+            struct smem_data_struct *smem_info;		// various SMem information
 
 
-  /* REW: begin 09.15.96 */
-  struct gds_struct *gds;    /* Pointer to a goal's dependency set */
-  /* REW: begin 09.15.96 */
+            /* REW: begin 09.15.96 */
+            struct gds_struct *gds;    /* Pointer to a goal's dependency set */
+            /* REW: begin 09.15.96 */
 
-  /* REW: begin 08.20.97 */
-  int saved_firing_type;     /* FIRING_TYPE that must be restored if Waterfall
+            /* REW: begin 08.20.97 */
+            int saved_firing_type;     /* FIRING_TYPE that must be restored if Waterfall
 				processing returns to this level.
 				See consistency.cpp */
-  struct ms_change_struct *ms_o_assertions; /* dll of o assertions at this level */
-  struct ms_change_struct *ms_i_assertions; /* dll of i assertions at this level */
-  struct ms_change_struct *ms_retractions;  /* dll of retractions at this level */
-  /* REW: end   08.2097 */
+            struct ms_change_struct *ms_o_assertions; /* dll of o assertions at this level */
+            struct ms_change_struct *ms_i_assertions; /* dll of i assertions at this level */
+            struct ms_change_struct *ms_retractions;  /* dll of retractions at this level */
+            /* REW: end   08.2097 */
 
-  /* --- fields used for Soar I/O stuff --- */
-  ::list *associated_output_links;
-  struct wme_struct *input_wmes;
+            /* --- fields used for Soar I/O stuff --- */
+            ::list *associated_output_links;
+            struct wme_struct *input_wmes;
 
-  int depth; /* used to track depth of print (bug 988) RPM 4/07 */
+            int depth; /* used to track depth of print (bug 988) RPM 4/07 */
 
-  epmem_node_id epmem_id;
-  uint64_t epmem_valid;
+            epmem_node_id epmem_id;
+            uint64_t epmem_valid;
 
-  smem_lti_id smem_lti;
-  epmem_time_id smem_time_id;
-  uint64_t smem_valid;
+            smem_lti_id smem_lti;
+            epmem_time_id smem_time_id;
+            uint64_t smem_valid;
 
-  /*Agent::RL_Trace*/ void * rl_trace; ///< A pointer to the current state of the trace for this goal level if isa_goal -bazald
-} identifier;
-
-  /* --- The "common" macro was eliminated in Soar 9,4. This makes it easier
-   *     for debugging. The following "common_dummy" struct was added to
-   *     allow similar access to the common data without specifying the type
-   *
-   *     Note: you could always specify any type of struct in the union (id,
-   *     var, fc, etc.) and the common_symbol_info or .data will always point
-   *     to the right common data, because the common data struct is always
-   *     the first field in each structure in the union.
-   *
-   *     In terms of using the new common data convention, instead of
-   *     referencing common data like this:
-   *
-   *      sym->common.symbol_type       OR  sym->id.common_symbol_info.symbol_type
-   *
-   *     in Soar 9.4+, you'd do this:
-   *
-   *      sym->common.data.symbol_type  OR  sym->id.data.symbol_type
-   *
-   *     respectively. MMA 2013 --- */
-
-typedef struct common_dummy_struct {
-  symbol_common_data data;
-} common_dummy;
-
-typedef union symbol_union {
-  variable var;
-  identifier id;
-  sym_constant sc;
-  int_constant ic;
-  float_constant fc;
-  common_dummy common;
+            /*Agent::RL_Trace*/ void * rl_trace; ///< A pointer to the current state of the trace for this goal level if isa_goal -bazald
+        }                                               id;
+        struct { int64_t value; }                         ic;
+        struct { double value; }                          fc;
+        struct { char *name;
+          struct production_struct *production; }         sc;
+        struct { char *name;
+          tc_number tc_num;
+          struct symbol_struct *current_binding_value;
+          uint64_t gensym_number;
+          ::list *rete_binding_locations;
+        }                                                 var;
+    }  data;
 } Symbol;
 
 /* -----------------------------------------------------------------
@@ -426,8 +376,8 @@ void deallocate_symbol_list_removing_references (agent* thisAgent, ::list *sym_l
 
 inline uint64_t symbol_add_ref(agent* thisAgent, Symbol * x)
 {
-  (x)->common.data.reference_count++;
-  uint64_t refCount = (x)->common.data.reference_count ;
+  (x)->reference_count++;
+  uint64_t refCount = (x)->reference_count ;
 
 #ifdef DEBUG_TRACE_REFCOUNT_ADDS
   print(thisAgent, "Refcnt| Increasing refcount for symbol %s from %ld to %ld!\n", symbol_to_string(thisAgent, x, FALSE, NULL, NIL), (refCount-1), refCount);
@@ -438,14 +388,14 @@ inline uint64_t symbol_add_ref(agent* thisAgent, Symbol * x)
 
 inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
 {
-  (x)->common.data.reference_count--;
-  uint64_t refCount = (x)->common.data.reference_count ;
+  (x)->reference_count--;
+  uint64_t refCount = (x)->reference_count ;
 
 #ifdef DEBUG_TRACE_REFCOUNT_REMOVES
   print(thisAgent, "Refcnt| Decreasing refcount for symbol %s from %ld to %ld!\n", symbol_to_string(thisAgent, x, FALSE, NULL, NIL), (refCount+1), refCount);
 #endif
 
-  if ((x)->common.data.reference_count == 0)
+  if ((x)->reference_count == 0)
   {
     deallocate_symbol(thisAgent, x);
   }
@@ -454,29 +404,29 @@ inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
 
 inline bool symbol_is_variable(Symbol *sym)
 {
-  return (sym->common.data.symbol_type == VARIABLE_SYMBOL_TYPE);
+  return (sym->symbol_type == VARIABLE_SYMBOL_TYPE);
 }
 
 inline bool symbol_is_identifier(Symbol *sym)
 {
-  return (sym->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE);
+  return (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE);
 }
 
 inline bool symbol_is_lti(Symbol *sym)
 {
-  return (symbol_is_identifier(sym) && (sym->id.smem_lti != NIL));
+  return (symbol_is_identifier(sym) && (sym->data.id.smem_lti != NIL));
 }
 
 inline bool symbol_is_non_lti_identifier(Symbol *sym)
 {
-  return (symbol_is_identifier(sym) && (sym->id.smem_lti == NIL));
+  return (symbol_is_identifier(sym) && (sym->data.id.smem_lti == NIL));
 }
 
 inline bool symbol_is_variablizable_constant(Symbol *sym)
 {
-  return ((sym->common.data.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-          (sym->common.data.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) ||
-          (sym->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ));
+  return ((sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+          (sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) ||
+          (sym->symbol_type == SYM_CONSTANT_SYMBOL_TYPE ));
 }
 
 inline bool symbol_is_variablizable(Symbol *sym, Symbol *original_sym)
@@ -484,7 +434,7 @@ inline bool symbol_is_variablizable(Symbol *sym, Symbol *original_sym)
   if (symbol_is_identifier(sym))
   {
     /* --- Only variablize LTI's if it came from a variable in original production --- */
-    if ((sym->id.smem_lti != NIL) && !symbol_is_variable(original_sym))
+    if ((sym->data.id.smem_lti != NIL) && !symbol_is_variable(original_sym))
     {
       return false;
     }
@@ -497,9 +447,9 @@ inline bool symbol_is_variablizable(Symbol *sym, Symbol *original_sym)
 
 inline bool symbol_is_constant( Symbol *sym )
 {
-	return ( ( sym->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
-		     ( sym->common.data.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-		     ( sym->common.data.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
+	return ( ( sym->symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
+		     ( sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+		     ( sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
 }
 
 /* -----------------------------------------------------------------

@@ -206,7 +206,7 @@ char *string_to_escaped_string (agent* thisAgent, char *s,
 
 char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
 {
-  switch(sym->common.data.symbol_type) {
+  switch(sym->symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
 	  return kTypeVariable ;
   case IDENTIFIER_SYMBOL_TYPE:
@@ -228,10 +228,10 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
   Bool is_rereadable;
   Bool has_angle_bracket;
 
-  switch(sym->common.data.symbol_type) {
+  switch(sym->symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
-    if (!dest) return sym->var.name;
-    strncpy (dest, sym->var.name, dest_size);
+    if (!dest) return sym->data.var.name;
+    strncpy (dest, sym->data.var.name, dest_size);
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 
@@ -240,13 +240,13 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-	if (sym->id.smem_lti == NIL) {
+	if (sym->data.id.smem_lti == NIL) {
 		// NOT an lti (long term identifier), print like we always have
-	    SNPRINTF (dest, dest_size, "%c%llu", sym->id.name_letter, static_cast<long long unsigned>(sym->id.name_number));
+	    SNPRINTF (dest, dest_size, "%c%llu", sym->data.id.name_letter, static_cast<long long unsigned>(sym->data.id.name_number));
 	}
 	else {
 		// IS an lti (long term identifier), prepend an @ symbol
-	    SNPRINTF (dest, dest_size, "@%c%llu", sym->id.name_letter, static_cast<long long unsigned>(sym->id.name_number));
+	    SNPRINTF (dest, dest_size, "@%c%llu", sym->data.id.name_letter, static_cast<long long unsigned>(sym->data.id.name_number));
 	}
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
@@ -256,7 +256,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->ic.value));
+    SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->data.ic.value));
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 
@@ -265,7 +265,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    SNPRINTF (dest, dest_size, "%#.16g", sym->fc.value);
+    SNPRINTF (dest, dest_size, "%#.16g", sym->data.fc.value);
 	dest[dest_size - 1] = 0; /* ensure null termination */
     { /* --- strip off trailing zeros --- */
       char *start_of_exponent;
@@ -283,12 +283,12 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 
   case SYM_CONSTANT_SYMBOL_TYPE:
     if (!rereadable) {
-      if (!dest) return sym->sc.name;
-      strncpy (dest, sym->sc.name, dest_size);
+      if (!dest) return sym->data.sc.name;
+      strncpy (dest, sym->data.sc.name, dest_size);
       return dest;
     }
-    determine_possible_symbol_types_for_string (sym->sc.name,
-                                                strlen (sym->sc.name),
+    determine_possible_symbol_types_for_string (sym->data.sc.name,
+                                                strlen (sym->data.sc.name),
                                                 &possible_id,
                                                 &possible_var,
                                                 &possible_sc,
@@ -296,18 +296,18 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
                                                 &possible_fc,
                                                 &is_rereadable);
 
-    has_angle_bracket = sym->sc.name[0] == '<' ||
-                        sym->sc.name[strlen(sym->sc.name)-1] == '>';
+    has_angle_bracket = sym->data.sc.name[0] == '<' ||
+                        sym->data.sc.name[strlen(sym->data.sc.name)-1] == '>';
 
     if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
         (!is_rereadable) ||
         has_angle_bracket) {
       /* BUGBUG if in context where id's could occur, should check
          possible_id flag here also */
-      return string_to_escaped_string (thisAgent, sym->sc.name, '|', dest);
+      return string_to_escaped_string (thisAgent, sym->data.sc.name, '|', dest);
     }
-    if (!dest) return sym->sc.name;
-    strncpy (dest, sym->sc.name, dest_size);
+    if (!dest) return sym->data.sc.name;
+    strncpy (dest, sym->data.sc.name, dest_size);
     return dest;
 
   default:
@@ -412,9 +412,9 @@ void print_symbol_with_original(agent *thisAgent, Symbol *sym)
 {
   print(thisAgent, "%s",
       (sym ? symbol_to_string (thisAgent, sym, FALSE, NULL, 0) : "NULL (PROBLEM!)"));
-      if (sym && sym->common.data.original_var_symbol)
+      if (sym && sym->original_var_symbol)
       {
-        print(thisAgent, "(%s)", symbol_to_string (thisAgent, sym->common.data.original_var_symbol, FALSE, NULL, 0));
+        print(thisAgent, "(%s)", symbol_to_string (thisAgent, sym->original_var_symbol, FALSE, NULL, 0));
       }
 }
 
@@ -435,7 +435,7 @@ void print_test (agent* thisAgent, test t, const char *indent_string) {
       print(thisAgent, "%s: << ", test_type_to_string(t->type));
       for (c=t->data.disjunction_list; c!=NIL; c=c->rest) {
         print(thisAgent, "%s ",
-            symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), FALSE, NULL, 0));
+            symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), FALSE, NULL, 0));
       }
       print (thisAgent, ">>\n");
       break;
@@ -573,7 +573,7 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
 			ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 			while (*ch) ch++;
 			for (c=t->data.disjunction_list; c!=NIL; c=c->rest) {
-				symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), TRUE, ch, dest_size - (ch - dest));
+				symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), TRUE, ch, dest_size - (ch - dest));
 				while (*ch) ch++;
 				*(ch++) = ' ';
 			}
@@ -634,10 +634,10 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
   ch[dest_size - 1] = 0;
   while (*ch) ch++;
 
-  if (!strcmp(rf->name->sc.name,"+")) {
+  if (!strcmp(rf->name->data.sc.name,"+")) {
 	strncpy (ch, "+", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0;
-  } else if (!strcmp(rf->name->sc.name,"-")) {
+  } else if (!strcmp(rf->name->data.sc.name,"-")) {
     strncpy (ch, "-", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0;
   } else {
@@ -1376,8 +1376,8 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
 ===========================
 */
 Bool wme_filter_component_match(Symbol * filterComponent, Symbol * wmeComponent) {
-  if ((filterComponent->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
-      (!strcmp(filterComponent->sc.name,"*")))
+  if ((filterComponent->symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+      (!strcmp(filterComponent->data.sc.name,"*")))
     return TRUE;
 
   return(filterComponent == wmeComponent);

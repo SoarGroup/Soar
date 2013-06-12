@@ -121,17 +121,17 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
 
 void add_wme_to_wm (agent* thisAgent, wme *w)
 {
-	assert( ( ( w->id->id.data.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->id->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
-		( ( w->attr->id.data.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->attr->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
-		( ( w->value->id.data.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->value->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) );
+	assert( ( ( w->id->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->id->data.id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
+		( ( w->attr->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->attr->data.id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
+		( ( w->value->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->value->data.id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) );
 
 	push (thisAgent, w, thisAgent->wmes_to_add);
-	if (w->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+	if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
 	{
 		post_link_addition (thisAgent, w->id, w->value);
 		if (w->attr == thisAgent->operator_symbol)
 		{
-			w->value->id.isa_operator++;
+			w->value->data.id.isa_operator++;
 		}
 	}
 }
@@ -140,13 +140,13 @@ void remove_wme_from_wm (agent* thisAgent, wme *w)
 {
    push (thisAgent, w, thisAgent->wmes_to_remove);
 
-   if (w->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+   if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
    {
       post_link_removal (thisAgent, w->id, w->value);
       if (w->attr==thisAgent->operator_symbol)
       {
          /* Do this afterward so that gSKI can know that this is an operator */
-         w->value->id.isa_operator--;
+         w->value->data.id.isa_operator--;
       }
    }
 
@@ -161,7 +161,7 @@ void remove_wme_from_wm (agent* thisAgent, wme *w)
 
       if (!w->gds->wmes_in_gds)
 	  {
-		 if (w->gds->goal) w->gds->goal->id.gds = NIL;
+		 if (w->gds->goal) w->gds->goal->data.id.gds = NIL;
 		 free_with_pool( &( thisAgent->gds_pool ), w->gds );
          /* printf("REMOVING GDS FROM MEMORY. \n"); */
       }
@@ -308,7 +308,7 @@ void deallocate_wme (agent* thisAgent, wme *w) {
 Symbol *find_name_of_object (agent* thisAgent, Symbol *object) {
   slot *s;
 
-  if (object->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) return NIL;
+  if (object->symbol_type != IDENTIFIER_SYMBOL_TYPE) return NIL;
   s = find_slot (object, thisAgent->name_symbol);
   if (! s) return NIL;
   if (! s->wmes) return NIL;

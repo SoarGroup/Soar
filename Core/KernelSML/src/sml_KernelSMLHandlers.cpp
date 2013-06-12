@@ -498,7 +498,7 @@ bool KernelSML::HandleIsProductionLoaded(AgentSML* pAgentSML, char const* pComma
 	Symbol* sym = find_sym_constant( pAgentSML->GetSoarAgent(), pName );
 
 	bool found = true;
-	if (!sym || !(sym->sc.production))
+	if (!sym || !(sym->data.sc.production))
 	{
 		found = false;
 	}
@@ -656,7 +656,7 @@ static bool AddWmeChildrenToXML( AgentSML* pAgentSML, wme* pRoot, soarxml::Eleme
 	if (!pRoot || !pTagResult)
 		return false ;
 
-    for (wme* w = pRoot->value->id.input_wmes; w != NIL; w = w->next)
+    for (wme* w = pRoot->value->data.id.input_wmes; w != NIL; w = w->next)
 	{
 		TagWme* pTagWme = OutputListener::CreateTagWme( pAgentSML, w ) ;
 
@@ -670,7 +670,7 @@ static bool AddWmeChildrenToXML( AgentSML* pAgentSML, wme* pRoot, soarxml::Eleme
 		pTagResult->AddChild(pTagWme) ;
 
 		// If this is an identifier then add all of its children too
-		if ( w->value->sc.data.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+		if ( w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE )
 		{	
 			if ( std::find( traversedList.begin(), traversedList.end(), w ) == traversedList.end() )
 			{
@@ -693,7 +693,7 @@ bool KernelSML::HandleGetAllInput(AgentSML* pAgentSML, char const* /*pCommandNam
 
 	// Find the input link wme I1 ^input-link I2
 	wme* pInputLinkWme = 0;
-    for (wme* w = pSoarAgent->io_header->id.input_wmes; w != NIL; w = w->next)
+    for (wme* w = pSoarAgent->io_header->data.id.input_wmes; w != NIL; w = w->next)
 	{
 		if ( w->attr == pSoarAgent->input_link_symbol )
 		{

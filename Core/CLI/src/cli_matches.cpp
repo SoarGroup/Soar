@@ -48,7 +48,7 @@ bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail d
         if (!pProduction) return SetError("Production required.");
 
         Symbol* sym = find_sym_constant(agnt, pProduction->c_str());
-        rete_node* prod = (sym && sym->sc.production) ? sym->sc.production->p_node : 0;
+        rete_node* prod = (sym && sym->data.sc.production) ? sym->data.sc.production->p_node : 0;
 
         if (!prod) 
             return SetError("Production not found: " + *pProduction);

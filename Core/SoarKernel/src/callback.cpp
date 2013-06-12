@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -11,8 +11,8 @@
  *
  * =======================================================================
  *
- * Description: This file contains the callback facility processing.  
- * 
+ * Description: This file contains the callback facility processing.
+ *
  * Exported functions:
  *   soar_add_callback
  *   soar_invoke_callbacks
@@ -37,7 +37,7 @@
 #include "print.h"
 #include "utilities.h"
 
-const char * soar_callback_names[] = 
+const char * soar_callback_names[] =
 {
   stringify(NO_CALLBACK),
   stringify(AFTER_INIT_AGENT_CALLBACK),
@@ -112,9 +112,9 @@ int callback_count(agent* the_agent, SOAR_CALLBACK_TYPE callback_type)
 }
 
 #include <iostream>
-void soar_add_callback (agent* thisAgent, 
-						SOAR_CALLBACK_TYPE callback_type, 
-						soar_callback_fn fn, 
+void soar_add_callback (agent* thisAgent,
+						SOAR_CALLBACK_TYPE callback_type,
+						soar_callback_fn fn,
 						soar_callback_event_id eventid,
 						soar_callback_data data,
 						soar_callback_free_fn free_fn,
@@ -144,10 +144,10 @@ void soar_add_callback (agent* thisAgent,
 
 //void soar_print_detailed_callback_stats()
 //{
-//	for (std::map<SOAR_CALLBACK_TYPE, soar_timer_accumulator>::iterator iter = callback_timers.begin(); 
+//	for (std::map<SOAR_CALLBACK_TYPE, soar_timer_accumulator>::iterator iter = callback_timers.begin();
 //		iter != callback_timers.end(); ++iter)
 //	{
-//		std::cout << soar_callback_enum_to_name(iter->first, false) << ": " 
+//		std::cout << soar_callback_enum_to_name(iter->first, false) << ": "
 //			<< iter->second.get_sec() << std::endl;
 //	}
 //}
@@ -157,7 +157,7 @@ void soar_callback_data_free_string (soar_callback_data data)
   free(data);
 }
 
-const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i, 
+const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i,
 				   Bool monitorable_only)
 {
   int limit;
@@ -166,7 +166,7 @@ const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i,
     {
       limit = NUMBER_OF_MONITORABLE_CALLBACKS;
     }
-  else 
+  else
     {
       limit = NUMBER_OF_CALLBACKS;
     }
@@ -188,7 +188,7 @@ SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char * name,
     {
       limit = NUMBER_OF_MONITORABLE_CALLBACKS;
     }
-  else 
+  else
     {
       limit = NUMBER_OF_CALLBACKS;
     }
@@ -252,9 +252,9 @@ void soar_destroy_callback(soar_callback * cb)
 }
 
 // voigtjr: removed inline in an attempt to quell linker error
-//inline void soar_invoke_callbacks (agent* thisAgent, 
-void soar_invoke_callbacks (agent* thisAgent, 
-			    SOAR_CALLBACK_TYPE callback_type, 
+//inline void soar_invoke_callbacks (agent* thisAgent,
+void soar_invoke_callbacks (agent* thisAgent,
+			    SOAR_CALLBACK_TYPE callback_type,
 			    soar_call_data call_data)
 {
   cons * c;  /* we need this if we loop over multiple callback functions */
@@ -264,12 +264,12 @@ void soar_invoke_callbacks (agent* thisAgent,
 
 /* REW: begin 28.07.96 */
   /* We want to stop the Soar kernel timers whenever a callback is initiated and
-     keep track of how much time the callbacks take cumulatively. This 
-     switch doesn't include every pre-defined callback -- however, it should 
+     keep track of how much time the callbacks take cumulatively. This
+     switch doesn't include every pre-defined callback -- however, it should
      provide a good "ballpark" estimate because it is focused on all those
      that occur doing do_one_top_level_phase in init_soar.c.
 
-     Note that this case will only be compiled if NO_TIMING_STUFF is   not 
+     Note that this case will only be compiled if NO_TIMING_STUFF is   not
      defined.  So, if you are worried about the performance costs of this case,
      you can always get rid of it by not including the timing code. */
 
@@ -277,7 +277,7 @@ void soar_invoke_callbacks (agent* thisAgent,
   switch (callback_type) {
     /* This case is necssary to make sure we are in one of the decision cycle
        monitors when the routine is invoked.  If so, then we want to turn off
-       the current timers and turn on the appropriate monitor timers.  The 
+       the current timers and turn on the appropriate monitor timers.  The
        'appropriate' timer is determined by the current phase.  */
 
   case BEFORE_DECISION_CYCLE_CALLBACK:
@@ -311,7 +311,7 @@ void soar_invoke_callbacks (agent* thisAgent,
 		thisAgent->timers_phase.start();
         break;
   case INPUT_PHASE_CALLBACK:
-       /* Stop the kernel and phase timers for the input function. 
+       /* Stop the kernel and phase timers for the input function.
 	    *   the output function is done in do_output_phase */
 	   thisAgent->timers_phase.stop();
        thisAgent->timers_kernel.stop();
@@ -319,7 +319,7 @@ void soar_invoke_callbacks (agent* thisAgent,
 	   thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
 	   thisAgent->timers_kernel.start();
        break;
- 
+
   default: break;
   }
 #endif
@@ -374,7 +374,7 @@ void soar_invoke_callbacks (agent* thisAgent,
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;
- 
+
   default: break;
   }
 #endif
@@ -383,8 +383,8 @@ void soar_invoke_callbacks (agent* thisAgent,
 
 }
 
-void soar_invoke_first_callback (agent* thisAgent, 
-				 SOAR_CALLBACK_TYPE callback_type, 
+void soar_invoke_first_callback (agent* thisAgent,
+				 SOAR_CALLBACK_TYPE callback_type,
 				 soar_call_data call_data)
 {
   list * head;
@@ -428,7 +428,7 @@ void soar_invoke_first_callback (agent* thisAgent,
 	   thisAgent->timers_phase.start();
        break;
   case INPUT_PHASE_CALLBACK:
-       /* Stop the kernel and phase timers for the input function. 
+       /* Stop the kernel and phase timers for the input function.
 	    *   the output function is done in do_output_phase */
 	   thisAgent->timers_phase.stop();
 	   thisAgent->timers_kernel.stop();
@@ -441,12 +441,12 @@ void soar_invoke_first_callback (agent* thisAgent,
 #endif
 
 /* REW: end 28.07.96 */
- 
+
       soar_callback * cb;
 
       cb = static_cast< soar_callback* >(head->first);
 	  cb->function(thisAgent, cb->eventid, cb->data, call_data);
-    
+
 
 /* REW: begin 28.07.96 */
 
@@ -501,7 +501,7 @@ void soar_list_all_callbacks (agent* thisAgent,
     {
       limit = NUMBER_OF_MONITORABLE_CALLBACKS;
     }
-  else 
+  else
     {
       limit = NUMBER_OF_CALLBACKS;
     }
@@ -514,31 +514,31 @@ void soar_list_all_callbacks (agent* thisAgent,
     }
 }
 
-void soar_list_all_callbacks_for_event (agent* thisAgent, 
+void soar_list_all_callbacks_for_event (agent* thisAgent,
 					SOAR_CALLBACK_TYPE ct)
 {
   cons * c;
 
-  for (c = thisAgent->soar_callbacks[ct]; 
-       c != NIL; 
+  for (c = thisAgent->soar_callbacks[ct];
+       c != NIL;
        c = c->rest)
     {
       soar_callback * cb;
-      
+
       cb = static_cast< soar_callback* >(c->first);
 
 	  print(thisAgent, "%s ", cb->id.c_str());
     }
 }
 
-void soar_pop_callback (agent* thisAgent, 
+void soar_pop_callback (agent* thisAgent,
 		SOAR_CALLBACK_TYPE callback_type)
 {
   list * head;
   soar_callback * cb;
 
   head = thisAgent->soar_callbacks[callback_type];
-  
+
   if (head == NULL)
     {
       print_string(thisAgent, "Attempt to remove non-existant callback.\n");
@@ -559,8 +559,8 @@ void soar_pop_callback (agent* thisAgent,
   free_cons(thisAgent, head);
 }
 
-void soar_push_callback (agent* thisAgent, 
-			SOAR_CALLBACK_TYPE callback_type, 
+void soar_push_callback (agent* thisAgent,
+			SOAR_CALLBACK_TYPE callback_type,
 			soar_callback_fn fn,
 			soar_callback_event_id eventid,
 			soar_callback_data data,
@@ -574,7 +574,7 @@ void soar_push_callback (agent* thisAgent,
   cb->eventid		= eventid ;
   cb->free_function = free_fn;
   //cb->id initialized to empty string
-  
+
   push(thisAgent, cb, thisAgent->soar_callbacks[callback_type]);
 }
 
@@ -588,7 +588,7 @@ void soar_remove_all_monitorable_callbacks (agent* thisAgent)
     }
 }
 
-void soar_remove_all_callbacks_for_event (agent* thisAgent, 
+void soar_remove_all_callbacks_for_event (agent* thisAgent,
 					  SOAR_CALLBACK_TYPE ct)
 {
   cons * c;
@@ -599,9 +599,9 @@ void soar_remove_all_callbacks_for_event (agent* thisAgent,
   for (c = next; c != NIL; c = next)
     {
       soar_callback * cb;
-      
+
       cb = static_cast< soar_callback* >(c->first);
-	  
+
       next = next->rest;
       soar_destroy_callback(cb);
       free_cons(thisAgent, c);
@@ -610,8 +610,8 @@ void soar_remove_all_callbacks_for_event (agent* thisAgent,
   thisAgent->soar_callbacks[ct] = NIL;
 }
 
-void soar_remove_callback (agent* thisAgent, 
-			   SOAR_CALLBACK_TYPE callback_type, 
+void soar_remove_callback (agent* thisAgent,
+			   SOAR_CALLBACK_TYPE callback_type,
 			   soar_callback_id id)
 {
   cons * c;
@@ -662,9 +662,9 @@ void soar_test_all_monitorable_callbacks(agent* thisAgent)
 
   for(i = 1; i < NUMBER_OF_MONITORABLE_CALLBACKS; i++)
     {
-      soar_add_callback(thisAgent, static_cast<SOAR_CALLBACK_TYPE>(i), 
+      soar_add_callback(thisAgent, static_cast<SOAR_CALLBACK_TYPE>(i),
 			reinterpret_cast<soar_callback_fn>(soar_callback_test_callback), i,
-			static_cast<void*>(const_cast<char*>(soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), TRUE))), 
+			static_cast<void*>(const_cast<char*>(soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), TRUE))),
 			NULL, test_callback_name);
     }
 }

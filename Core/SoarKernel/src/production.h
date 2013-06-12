@@ -87,7 +87,7 @@ typedef struct condition_struct condition;
 typedef struct cons_struct cons;
 typedef struct agent_struct agent;
 typedef cons list;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 #include <map>
 #include <set>

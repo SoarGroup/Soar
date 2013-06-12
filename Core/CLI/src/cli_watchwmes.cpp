@@ -44,20 +44,20 @@ int RemoveWme(agent* thisAgent, wme* pWme)
 
     // remove w from whatever list of wmes it's on
     wme* pWme2;
-    for (pWme2 = pId->id.input_wmes; pWme2 != NIL; pWme2 = pWme2->next)
+    for (pWme2 = pId->data.id.input_wmes; pWme2 != NIL; pWme2 = pWme2->next)
         if (pWme == pWme2)
             break;
 
-    if (pWme2) remove_from_dll(pId->id.input_wmes, pWme, next, prev);
+    if (pWme2) remove_from_dll(pId->data.id.input_wmes, pWme, next, prev);
 
-    for (pWme2 = pId->id.impasse_wmes; pWme2 != NIL; pWme2 = pWme2->next)
+    for (pWme2 = pId->data.id.impasse_wmes; pWme2 != NIL; pWme2 = pWme2->next)
         if (pWme == pWme2)
             break;
 
-    if (pWme2) remove_from_dll(pId->id.impasse_wmes, pWme, next, prev);
+    if (pWme2) remove_from_dll(pId->data.id.impasse_wmes, pWme, next, prev);
 
     slot* s;
-    for (s = pId->id.slots; s != NIL; s = s->next) {
+    for (s = pId->data.id.slots; s != NIL; s = s->next) {
 
         for (pWme2 = s->wmes; pWme2 != NIL; pWme2 = pWme2->next)
             if (pWme == pWme2)

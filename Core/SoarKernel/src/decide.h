@@ -29,7 +29,7 @@
 
 typedef char Bool;
 typedef unsigned char byte;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef struct wme_struct wme;
 typedef struct slot_struct slot;
 typedef struct instantiation_struct instantiation;

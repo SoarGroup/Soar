@@ -13,7 +13,7 @@
 typedef char Bool;
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 struct not_struct;
 
 /* RBD Need more comments here */

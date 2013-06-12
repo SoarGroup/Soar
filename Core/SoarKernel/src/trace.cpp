@@ -539,7 +539,7 @@ void print_trace_format_list (agent* thisAgent, trace_format *tf) {
       else print_string (thisAgent, "%ao[");
       if (tf->data.attribute_path) {
         for (c=tf->data.attribute_path; c!=NIL; c=c->rest) {
-          print_string (thisAgent, static_cast<Symbol *>(c->first)->sc.name);
+          print_string (thisAgent, static_cast<Symbol *>(c->first)->data.sc.name);
           if (c->rest) print_string (thisAgent, ".");
         }
       } else {
@@ -634,10 +634,10 @@ typedef struct tracing_rule_struct {
 } tracing_rule;
 
 /*#define hash_name_restriction(name,num_bits) \
-  ((name)->common.data.data.hash_id & masks_for_n_low_order_bits[(num_bits)])*/
+  ((name)->data.hash_id & masks_for_n_low_order_bits[(num_bits)])*/
 inline uint32_t hash_name_restriction(Symbol * name, short num_bits)
 {
-  return name->common.data.hash_id & masks_for_n_low_order_bits[num_bits];
+  return name->hash_id & masks_for_n_low_order_bits[num_bits];
 }
 
 /* --- hash function for resizable hash table routines --- */
@@ -947,19 +947,19 @@ void add_values_of_attribute_path (agent* thisAgent,
 
   /* --- not at end of path yet --- */
   /* --- can't follow any more path segments off of a non-identifier --- */
-  if (object->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) return;
+  if (object->symbol_type != IDENTIFIER_SYMBOL_TYPE) return;
 
   /* --- call this routine recursively on any wme matching the first segment
      of the attribute path --- */
-  for (w=object->id.impasse_wmes; w!=NIL; w=w->next)
+  for (w=object->data.id.impasse_wmes; w!=NIL; w=w->next)
     if (w->attr == path->first)
       add_values_of_attribute_path (thisAgent, w->value, path->rest, result, recursive,
                                     count);
-  for (w=object->id.input_wmes; w!=NIL; w=w->next)
+  for (w=object->data.id.input_wmes; w!=NIL; w=w->next)
     if (w->attr == path->first)
       add_values_of_attribute_path (thisAgent, w->value, path->rest, result, recursive,
                                     count);
-  s = find_slot (object, static_cast<symbol_union *>(path->first));
+  s = find_slot (object, static_cast<symbol_struct *>(path->first));
   if (s) {
     for (w=s->wmes; w!=NIL; w=w->next)
       add_values_of_attribute_path (thisAgent, w->value, path->rest, result, recursive,
@@ -1025,13 +1025,13 @@ void add_trace_for_attribute_path (agent* thisAgent,
   values = make_blank_growable_string(thisAgent);
 
   if (! path) {
-    if (object->common.data.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;
-    for (s=object->id.slots; s!=NIL; s=s->next)
+    if (object->symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;
+    for (s=object->data.id.slots; s!=NIL; s=s->next)
       for (w=s->wmes; w!=NIL; w=w->next)
         add_trace_for_wme (thisAgent, &values, w, print_attributes, recursive);
-    for (w=object->id.impasse_wmes; w!=NIL; w=w->next)
+    for (w=object->data.id.impasse_wmes; w!=NIL; w=w->next)
       add_trace_for_wme (thisAgent, &values, w, print_attributes, recursive);
-    for (w=object->id.input_wmes; w!=NIL; w=w->next)
+    for (w=object->data.id.input_wmes; w!=NIL; w=w->next)
       add_trace_for_wme (thisAgent, &values, w, print_attributes, recursive);
     if (length_of_growable_string(values)>0)
       add_to_growable_string (thisAgent, result, text_of_growable_string(values)+1);
@@ -1050,7 +1050,7 @@ void add_trace_for_attribute_path (agent* thisAgent,
   if (print_attributes) {
     add_to_growable_string (thisAgent, result, "^");
     for (c=path; c!=NIL; c=c->rest) {
-      ch = symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), TRUE, NULL, 0);
+      ch = symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), TRUE, NULL, 0);
       add_to_growable_string (thisAgent, result, ch);
       if (c->rest) add_to_growable_string (thisAgent, result, ".");
     }
@@ -1185,7 +1185,7 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
 
     case SUBGOAL_DEPTH_TFT:
       if (tparams.current_s) {
-        SNPRINTF (buf,GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%u", tparams.current_s->id.level - 1);
+        SNPRINTF (buf,GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%u", tparams.current_s->data.id.level - 1);
 		buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
         add_to_growable_string (thisAgent, &result, buf);
       } else {
@@ -1196,7 +1196,7 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
     case REPEAT_SUBGOAL_DEPTH_TFT:
       if (tparams.current_s) {
         temp_gs = trace_format_list_to_string (thisAgent, tf->data.subformat, object);
-        for (i = tparams.current_s->id.level - 1; i>0; i--)
+        for (i = tparams.current_s->data.id.level - 1; i>0; i--)
           add_to_growable_string (thisAgent, &result, text_of_growable_string(temp_gs));
         free_growable_string (thisAgent, temp_gs);
       } else {
@@ -1274,19 +1274,19 @@ growable_string object_to_trace_string (agent* thisAgent, Symbol *object) {
   /* --- If it's not an identifier, just print it as an atom.  Also, if it's
      already being printed, print it as an atom to avoid getting into an
      infinite loop. --- */
-  if ((object->common.data.symbol_type!=IDENTIFIER_SYMBOL_TYPE) ||
-      (object->common.data.tc_num == thisAgent->tf_printing_tc)) {
+  if ((object->symbol_type!=IDENTIFIER_SYMBOL_TYPE) ||
+      (object->tc_num == thisAgent->tf_printing_tc)) {
     gs = make_blank_growable_string (thisAgent);
     add_to_growable_string (thisAgent, &gs, symbol_to_string (thisAgent, object, TRUE, NIL, 0));
     return gs;
   }
 
   /* --- mark it as being printed --- */
-  object->common.data.tc_num = thisAgent->tf_printing_tc;
+  object->tc_num = thisAgent->tf_printing_tc;
 
   /* --- determine the type and name of the object --- */
-  if (object->id.isa_goal) type_of_object=FOR_STATES_TF;
-  else if (object->id.isa_operator) type_of_object=FOR_OPERATORS_TF;
+  if (object->data.id.isa_goal) type_of_object=FOR_STATES_TF;
+  else if (object->data.id.isa_operator) type_of_object=FOR_OPERATORS_TF;
   else type_of_object=FOR_ANYTHING_TF;
 
   name = find_name_of_object (thisAgent, object);
@@ -1307,7 +1307,7 @@ growable_string object_to_trace_string (agent* thisAgent, Symbol *object) {
     add_to_growable_string (thisAgent, &gs, symbol_to_string (thisAgent, object, TRUE, NIL, 0));
   }
 
-  object->common.data.tc_num = 0;  /* unmark it now that we're done */
+  object->tc_num = 0;  /* unmark it now that we're done */
   return gs;
 }
 
@@ -1335,8 +1335,8 @@ growable_string selection_to_trace_string (agent* thisAgent,
   tparams.current_s = tparams.current_o = NIL;
   if (current_state) {
     tparams.current_s = current_state;
-    if (current_state->id.operator_slot->wmes) {
-      tparams.current_o = current_state->id.operator_slot->wmes->value;
+    if (current_state->data.id.operator_slot->wmes) {
+      tparams.current_o = current_state->data.id.operator_slot->wmes->value;
     }
   }
   tparams.allow_cycle_counts = allow_cycle_counts;
@@ -1375,23 +1375,23 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 		case FOR_STATES_TF:
 			//create XML trace for state object
 			xml_begin_tag( thisAgent, kTagState );
-			xml_att_val( thisAgent, kState_StackLevel, state->id.level - 1 );
+			xml_att_val( thisAgent, kState_StackLevel, state->data.id.level - 1 );
 			xml_att_val( thisAgent, kState_DecisionCycleCt, thisAgent->d_cycle_count );
 			xml_att_val( thisAgent, kState_ID, object );
 
 			// find impasse object and add it to XML
 			wme* w;
-			for (w=object->id.impasse_wmes; w!=NIL; w=w->next) {
+			for (w=object->data.id.impasse_wmes; w!=NIL; w=w->next) {
 				if(w->attr == thisAgent->attribute_symbol) {
-					xml_att_val( thisAgent, kState_ImpasseObject, w->value->sc.name );
+					xml_att_val( thisAgent, kState_ImpasseObject, w->value->data.sc.name );
 					break;
 				}
 			}
 
 			// find impasse type and add it to XML
-			for (w=object->id.impasse_wmes; w!=NIL; w=w->next) {
+			for (w=object->data.id.impasse_wmes; w!=NIL; w=w->next) {
 				if(w->attr == thisAgent->impasse_symbol) {
-					xml_att_val( thisAgent, kState_ImpasseType, w->value->sc.name );
+					xml_att_val( thisAgent, kState_ImpasseType, w->value->data.sc.name );
 					break;
 				}
 			}
@@ -1402,12 +1402,12 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 		case FOR_OPERATORS_TF:
 			//create XML trace for operator object
 			xml_begin_tag( thisAgent, kTagOperator );
-			xml_att_val( thisAgent, kState_StackLevel, object->id.level - 1 );
+			xml_att_val( thisAgent, kState_StackLevel, object->data.id.level - 1 );
 			xml_att_val( thisAgent, kOperator_DecisionCycleCt, thisAgent->d_cycle_count );
 
-			if (state->id.operator_slot->wmes)
+			if (state->data.id.operator_slot->wmes)
 			{
-				current_o = state->id.operator_slot->wmes->value;
+				current_o = state->data.id.operator_slot->wmes->value;
 			}
 			if(current_o) {
 				xml_att_val( thisAgent, kOperator_ID, current_o );

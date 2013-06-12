@@ -46,7 +46,7 @@
 
 typedef char Bool;
 typedef struct agent_struct agent;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 extern void init_tracing (agent* thisAgent);
 extern Bool add_trace_format (agent* thisAgent, Bool stack_trace, int type_restriction,

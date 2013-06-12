@@ -79,18 +79,18 @@ bool symbols_are_equal_with_bindings (agent* thisAgent, Symbol *s1, Symbol *s2, 
     Binding *b;
     Symbol *bvar;
 
-    if ((s1 == s2) && (s1->common.data.symbol_type != VARIABLE_SYMBOL_TYPE))
+    if ((s1 == s2) && (s1->symbol_type != VARIABLE_SYMBOL_TYPE))
         return TRUE;
 
     /* "*" matches everything. */
-    if ((s1->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
-        (!strcmp(s1->sc.name,"*"))) return TRUE;
-    if ((s2->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
-        (!strcmp(s2->sc.name,"*"))) return TRUE;
+    if ((s1->symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+        (!strcmp(s1->data.sc.name,"*"))) return TRUE;
+    if ((s2->symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+        (!strcmp(s2->data.sc.name,"*"))) return TRUE;
 
 
-    if ((s1->common.data.symbol_type != VARIABLE_SYMBOL_TYPE) ||
-        (s2->common.data.symbol_type != VARIABLE_SYMBOL_TYPE))
+    if ((s1->symbol_type != VARIABLE_SYMBOL_TYPE) ||
+        (s2->symbol_type != VARIABLE_SYMBOL_TYPE))
         return FALSE;
     /* Both are variables */
     bvar = get_binding(s1,*bindings);

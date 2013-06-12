@@ -35,7 +35,7 @@ TagWme* OutputListener::CreateTagIOWme( AgentSML* pAgent, io_wme* wme )
 	TagWme* pTag = new TagWme() ;
 
 	// Look up the type of value this is
-	char const* pValueType = AgentSML::GetValueType( wme->value->sc.data.symbol_type ) ;
+	char const* pValueType = AgentSML::GetValueType( wme->value->symbol_type ) ;
 
 	// For additions we send everything
 	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
@@ -64,7 +64,7 @@ TagWme* OutputListener::CreateTagWme( AgentSML* pAgent, wme* wme )
 	TagWme* pTag = new TagWme() ;
 
 	// Look up the type of value this is
-	char const* pValueType = AgentSML::GetValueType( wme->value->sc.data.symbol_type ) ;
+	char const* pValueType = AgentSML::GetValueType( wme->value->symbol_type ) ;
 
 	// For additions we send everything
 	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;

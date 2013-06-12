@@ -127,7 +127,7 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
 
   /* --- remove it from the list of pref's for its match goal --- */
   if (pref->on_goal_list)
-    remove_from_dll (pref->inst->match_goal->id.preferences_from_goal,
+    remove_from_dll (pref->inst->match_goal->data.id.preferences_from_goal,
                      pref, all_of_goal_next, all_of_goal_prev);
 
   /* --- remove it from the list of pref's from that instantiation --- */
@@ -339,14 +339,14 @@ bool add_preference_to_tm (agent* thisAgent, preference *pref)
    }
 
    /* --- update identifier levels --- */
-   if (pref->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+   if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
    {
       post_link_addition (thisAgent, pref->id, pref->value);
    }
 
    if (preference_is_binary(pref->type))
    {
-      if (pref->referent->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+      if (pref->referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
          post_link_addition (thisAgent, pref->id, pref->referent);
    }
 
@@ -394,10 +394,10 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
     mark_context_slot_as_acceptable_preference_changed (thisAgent, s);
 
   /* --- update identifier levels --- */
-  if (pref->value->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
+  if (pref->value->symbol_type==IDENTIFIER_SYMBOL_TYPE)
     post_link_removal (thisAgent, pref->id, pref->value);
   if (preference_is_binary(pref->type))
-    if (pref->referent->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
+    if (pref->referent->symbol_type==IDENTIFIER_SYMBOL_TYPE)
       post_link_removal (thisAgent, pref->id, pref->referent);
 
   /* --- deallocate it and clones if possible --- */

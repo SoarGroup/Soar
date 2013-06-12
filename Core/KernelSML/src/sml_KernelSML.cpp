@@ -673,25 +673,25 @@ soarxml::ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, soar
 }
 
 void KernelSML::Symbol2String(Symbol* pSymbol, 	bool refCounts, std::ostringstream& buffer) {
-	if (pSymbol->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
-		buffer << pSymbol->id.name_letter ;
-		buffer << pSymbol->id.name_number ;
+	if (pSymbol->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
+		buffer << pSymbol->data.id.name_letter ;
+		buffer << pSymbol->data.id.name_number ;
 	}
-	else if (pSymbol->common.data.symbol_type==VARIABLE_SYMBOL_TYPE) {
-		buffer << pSymbol->var.name ;
+	else if (pSymbol->symbol_type==VARIABLE_SYMBOL_TYPE) {
+		buffer << pSymbol->data.var.name ;
 	}
-	else if (pSymbol->common.data.symbol_type==SYM_CONSTANT_SYMBOL_TYPE) {
-		buffer << pSymbol->sc.name ;
+	else if (pSymbol->symbol_type==SYM_CONSTANT_SYMBOL_TYPE) {
+		buffer << pSymbol->data.sc.name ;
 	}
-	else if (pSymbol->common.data.symbol_type==INT_CONSTANT_SYMBOL_TYPE) {
-		buffer << pSymbol->ic.value ;
+	else if (pSymbol->symbol_type==INT_CONSTANT_SYMBOL_TYPE) {
+		buffer << pSymbol->data.ic.value ;
 	}
-	else if (pSymbol->common.data.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) {
-		buffer << pSymbol->fc.value ;
+	else if (pSymbol->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) {
+		buffer << pSymbol->data.fc.value ;
 	}
 
 	if (refCounts)
-		buffer << "[" << pSymbol->common.data.reference_count << "]" ;
+		buffer << "[" << pSymbol->reference_count << "]" ;
 }
 
 std::string KernelSML::Wme2String(wme* pWME, bool refCounts) {

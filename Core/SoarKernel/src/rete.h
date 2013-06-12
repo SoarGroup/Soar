@@ -68,7 +68,7 @@ typedef struct action_struct action;
 typedef struct wme_struct wme;
 typedef struct rete_node_struct rete_node;
 typedef struct agent_struct agent;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 typedef char varnames;
 

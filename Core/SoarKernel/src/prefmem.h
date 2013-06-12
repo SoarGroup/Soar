@@ -43,7 +43,7 @@ typedef char Bool;
 typedef unsigned char byte;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;

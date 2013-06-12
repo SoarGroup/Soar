@@ -47,25 +47,25 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
         Symbol* pId = pWme->id;
 
         // remove w from whatever list of wmes it's on
-        for ( wme* pWme2 = pId->id.input_wmes; pWme2 != 0; pWme2 = pWme2->next)
+        for ( wme* pWme2 = pId->data.id.input_wmes; pWme2 != 0; pWme2 = pWme2->next)
         {
             if ( pWme == pWme2 )
             {
-                remove_from_dll( pId->id.input_wmes, pWme, next, prev );
+                remove_from_dll( pId->data.id.input_wmes, pWme, next, prev );
                 break;
             }
         }
 
-        for ( wme* pWme2 = pId->id.impasse_wmes; pWme2 != 0; pWme2 = pWme2->next )
+        for ( wme* pWme2 = pId->data.id.impasse_wmes; pWme2 != 0; pWme2 = pWme2->next )
         {
             if ( pWme == pWme2 )
             {
-                remove_from_dll( pId->id.impasse_wmes, pWme, next, prev );
+                remove_from_dll( pId->data.id.impasse_wmes, pWme, next, prev );
                 break;
             }
         }
 
-        for ( slot* s = pId->id.slots; s != 0; s = s->next ) 
+        for ( slot* s = pId->data.id.slots; s != 0; s = s->next ) 
         {
 
             for ( wme* pWme2 = s->wmes; pWme2 != 0; pWme2 = pWme2->next )

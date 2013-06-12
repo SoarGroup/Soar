@@ -48,7 +48,7 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 			return false;
 		}
 
-		if (value->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+		if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
 		{
 			return false;
 		}
@@ -130,10 +130,10 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 		levels_up = 2;
 		*dest_attr_of_slot = agnt->operator_symbol;
 	} else if (v==agnt->ts_context_variable) {
-		levels_up = agnt->top_goal ? agnt->bottom_goal->id.level-agnt->top_goal->id.level : 0;
+		levels_up = agnt->top_goal ? agnt->bottom_goal->data.id.level-agnt->top_goal->data.id.level : 0;
 		*dest_attr_of_slot = agnt->state_symbol;
 	} else if (v==agnt->to_context_variable) {
-		levels_up = agnt->top_goal ? agnt->bottom_goal->id.level-agnt->top_goal->id.level : 0;
+		levels_up = agnt->top_goal ? agnt->bottom_goal->data.id.level-agnt->top_goal->data.id.level : 0;
 		*dest_attr_of_slot = agnt->operator_symbol;
 	} else {
 		*dest_goal = NIL;
@@ -144,7 +144,7 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 
 	g = agnt->bottom_goal;
 	while (g && levels_up) {
-		g = g->id.higher_goal;
+		g = g->data.id.higher_goal;
 		levels_up--;
 	}
 	*dest_goal = g;
@@ -157,7 +157,7 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	if (*dest_attr_of_slot==agnt->state_symbol) {
 		*dest_current_value = g;
 	} else {
-		w = g->id.operator_slot->wmes;
+		w = g->data.id.operator_slot->wmes;
 		*dest_current_value = w ? w->value : NIL;
 	}
 }
@@ -190,7 +190,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 			print_location_of_most_recent_lexeme(agnt);
 			return NIL;
 		}
-		if (value->common.data.symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
+		if (value->symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
 			print (agnt, "The current %s ", agnt->lexeme.string);
 			print_with_symbols (agnt, "(%y) is not an identifier.\n", value);
 			print_location_of_most_recent_lexeme(agnt);
@@ -330,10 +330,10 @@ bool is_whole_number(const char * str)
  **************************************************************************/
 double get_number_from_symbol( Symbol *sym )
 {
-	if ( sym->common.data.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
-		return sym->fc.value;
-	else if ( sym->common.data.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		return static_cast<double>(sym->ic.value);
+	if ( sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+		return sym->data.fc.value;
+	else if ( sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+		return static_cast<double>(sym->data.ic.value);
 
 	return 0.0;
 }
@@ -481,14 +481,14 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
   assert(thisAgent->newly_created_instantiations != NIL);
 #ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
   print(thisAgent, "UNQVAR| make_varsym_unique called with original sym %s for instantiation %s!\n",
-      (*original_varsym)->var.name, thisAgent->newly_created_instantiations->prod->name->sc.name );
+      (*original_varsym)->data.var.name, thisAgent->newly_created_instantiations->prod->name->data.sc.name );
 #endif
 
-  hash_value = hash_variable_raw_info ((*original_varsym)->var.name,ht->log2size);
+  hash_value = hash_variable_raw_info ((*original_varsym)->data.var.name,ht->log2size);
   found_u_string = reinterpret_cast<unique_string *>(*(ht->buckets + hash_value));
   for ( ; found_u_string != NIL; found_u_string = found_u_string->next_in_hash_table)
   {
-    if (!strcmp(found_u_string->name,(*original_varsym)->var.name))
+    if (!strcmp(found_u_string->name,(*original_varsym)->data.var.name))
     {
       /* -- Found unique string record that matches original var name -- */
 
@@ -498,7 +498,7 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
         /* -- We've already created and cached a unique version of this variable name
          *    for this instantiation -- */
 #ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
-  print(thisAgent, "UNQVAR| make_varsym_unique found existing unique sym %s (%s) for this instantiation.\n", found_u_string->current_unique_var_symbol->var.name, (*original_varsym)->var.name);
+  print(thisAgent, "UNQVAR| make_varsym_unique found existing unique sym %s (%s) for this instantiation.\n", found_u_string->current_unique_var_symbol->data.var.name, (*original_varsym)->data.var.name);
 #endif
         *original_varsym = found_u_string->current_unique_var_symbol;
         symbol_add_ref(thisAgent, found_u_string->current_unique_var_symbol);
@@ -509,7 +509,7 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
         /* -- We've need to create and cache a new unique version of this string
          *    for this instantiation -- */
 
-        std::string suffix, new_name = (*original_varsym)->var.name;
+        std::string suffix, new_name = (*original_varsym)->data.var.name;
 
         /* -- Create a unique name by appending a numbered suffix to original var name -- */
 
@@ -529,7 +529,7 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
         found_u_string->current_instantiation = thisAgent->newly_created_instantiations;
 
 #ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
-  print(thisAgent, "UNQVAR| make_varsym_unique creating new unique version of %s: %s\n", (*original_varsym)->var.name, new_name.c_str());
+  print(thisAgent, "UNQVAR| make_varsym_unique creating new unique version of %s: %s\n", (*original_varsym)->data.var.name, new_name.c_str());
 #endif
 
         symbol_remove_ref(thisAgent, *original_varsym);
@@ -544,12 +544,12 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
   allocate_with_pool (thisAgent, &mp, &new_u_string);
   new_u_string->current_instantiation = thisAgent->newly_created_instantiations;
   new_u_string->current_unique_var_symbol = (*original_varsym);
-  new_u_string->name = make_memory_block_for_string (thisAgent, (*original_varsym)->var.name);
+  new_u_string->name = make_memory_block_for_string (thisAgent, (*original_varsym)->data.var.name);
   new_u_string->next_unique_suffix_number = 1;
   add_to_hash_table (thisAgent, ht, new_u_string);
 
 #ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
-  print(thisAgent, "UNQVAR| make_varsym_unique generated a var for the first time: %s\n", (*original_varsym)->var.name);
+  print(thisAgent, "UNQVAR| make_varsym_unique generated a var for the first time: %s\n", (*original_varsym)->data.var.name);
 #endif
 }
 Symbol *string_hash_table::find_varsym(const char *sym_name)
@@ -560,7 +560,7 @@ Symbol *string_hash_table::find_varsym(const char *sym_name)
   assert(thisAgent->newly_created_instantiations != NIL);
 #ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
   print(thisAgent, "RHSVAR| find_varsym called to find sym %s for instantiation %s!\n",
-      sym_name, thisAgent->newly_created_instantiations->prod->name->sc.name );
+      sym_name, thisAgent->newly_created_instantiations->prod->name->data.sc.name );
 #endif
 
   hash_value = hash_variable_raw_info (sym_name, ht->log2size);
@@ -574,7 +574,7 @@ Symbol *string_hash_table::find_varsym(const char *sym_name)
       {
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
   print(thisAgent, "RHSVAR| find_varsym found entry that matched %s for instantiation.  Returning %s!\n",
-      sym_name, found_u_string->current_unique_var_symbol->var.name );
+      sym_name, found_u_string->current_unique_var_symbol->data.var.name );
 #endif
         return found_u_string->current_unique_var_symbol;
       }
@@ -582,7 +582,7 @@ Symbol *string_hash_table::find_varsym(const char *sym_name)
   }
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
   print(thisAgent, "RHSVAR| find_varsym did not find any entry that matched %s for instantiation %s.  Returning false!\n",
-      sym_name, found_u_string->current_unique_var_symbol->var.name );
+      sym_name, found_u_string->current_unique_var_symbol->data.var.name );
 #endif
   return NIL;
 }

@@ -12,7 +12,7 @@
 
 typedef char Bool;
 typedef signed short goal_stack_level;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;
 
 extern void set_sysparam (agent* thisAgent, int param_number, int64_t new_value);

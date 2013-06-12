@@ -81,9 +81,9 @@ if (s->acceptable_preference_changed) printf("Acceptable pref changed\n");
 print_with_symbols("WME ID:    [%y]\n", w->id);
 print_with_symbols("WME Attr:  [%y]\n", w->attr);
 print_with_symbols("WME Value: [%y]\n", w->value);
-if (w->value->id.isa_operator) printf("This is an operator\n");
+if (w->value->data.id.isa_operator) printf("This is an operator\n");
 
-print_with_symbols("s->id->id.operator_slot->id: [%y]\n", s->id->id.operator_slot->id); */
+print_with_symbols("s->id->data.id.operator_slot->id: [%y]\n", s->id->data.id.operator_slot->id); */
 
 if (s->wmes) { /* If there is something in the context slot */
  if (s->wmes->value == w->value) { /* The WME in the context slot is WME whose pref changed */
@@ -92,12 +92,12 @@ if (s->wmes) { /* If there is something in the context slot */
  print_wme(thisAgent, w); 
    }
    remove_wmes_for_context_slot (thisAgent, s);
-   if (s->id->id.lower_goal) 
+   if (s->id->data.id.lower_goal) 
    {
      if ( thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
-       print_with_symbols(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id.lower_goal);
+       print_with_symbols(thisAgent, "Removing state %y because of an operator removal.\n", s->id->data.id.lower_goal);
 
-     remove_existing_context_and_descendents(thisAgent, s->id->id.lower_goal);
+     remove_existing_context_and_descendents(thisAgent, s->id->data.id.lower_goal);
    }
  }
 }
@@ -137,9 +137,9 @@ Bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
 #endif
 
   /* Determine the current operator/impasse in the slot*/
-  if (goal->id.operator_slot->wmes) {
+  if (goal->data.id.operator_slot->wmes) {
     /* There is an operator in the slot */
-    current_operator = goal->id.operator_slot->wmes;
+    current_operator = goal->data.id.operator_slot->wmes;
     operator_in_slot = TRUE;
   } else {
     /* There is not an operator in the slot */
@@ -147,7 +147,7 @@ Bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
     operator_in_slot = FALSE;
   }
   
-  if (goal->id.lower_goal){
+  if (goal->data.id.lower_goal){
     /* the goal is impassed */
     goal_is_impassed = TRUE;
     current_impasse_type      = type_of_existing_impasse(thisAgent, goal);
@@ -247,8 +247,8 @@ Bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
            In this case, return FALSE so that the impasse can be removed. */
 
     } else { /* There is no operator in the slot */
-      if (goal->id.lower_goal) { /* But there is an impasse */
-	if (goal->id.lower_goal->id.isa_impasse) printf("This goal is an impasse\n");
+      if (goal->data.id.lower_goal) { /* But there is an impasse */
+	if (goal->data.id.lower_goal->data.id.isa_impasse) printf("This goal is an impasse\n");
 	printf("      No Impasse Needed but Impasse exists: remove impasse now\n");
         printf("\n\n   *************This should never be executed*******************\n\n");
         return FALSE;
@@ -314,7 +314,7 @@ void remove_current_decision(agent* thisAgent, slot *s) {
   remove_wmes_for_context_slot (thisAgent, s);
   
   /* If there are any subgoals, remove those */
-  if (s->id->id.lower_goal) remove_existing_context_and_descendents(thisAgent, s->id->id.lower_goal);
+  if (s->id->data.id.lower_goal) remove_existing_context_and_descendents(thisAgent, s->id->data.id.lower_goal);
 
   do_buffered_wm_and_ownership_changes(thisAgent);
 
@@ -341,14 +341,14 @@ Bool check_context_slot_decisions (agent* thisAgent, goal_stack_level level) {
 /* REW: begin 05.05.97 */
   /* Check only those goals where preferences have changes that are at or above the level 
      of the consistency check */
-  for (goal=thisAgent->highest_goal_whose_context_changed; goal && goal->id.level <= level; goal=goal->id.lower_goal) {
+  for (goal=thisAgent->highest_goal_whose_context_changed; goal && goal->data.id.level <= level; goal=goal->data.id.lower_goal) {
 /* REW: end   05.05.97 */
 #ifdef DEBUG_CONSISTENCY_CHECK 
       print_with_symbols(thisAgent, "    Looking at goal [%y] to see if its preferences have changed\n", goal);
 #endif
-      s = goal->id.operator_slot;
+      s = goal->data.id.operator_slot;
 
-      if ((goal->id.lower_goal) ||
+      if ((goal->data.id.lower_goal) ||
 	  (s->wmes)) { /* If we are not at the bottom goal or if there is an operator in the
 			  bottom goal's operator slot */
 #ifdef DEBUG_CONSISTENCY_CHECK 
@@ -387,10 +387,10 @@ Bool i_activity_at_goal(Symbol *goal) {
 
   /* print_with_symbols("\nLooking for I-activity at goal: %y\n", goal); */
 
-   if (goal->id.ms_i_assertions)
+   if (goal->data.id.ms_i_assertions)
        return TRUE;
 
-   if (goal->id.ms_retractions)
+   if (goal->data.id.ms_retractions)
        return TRUE;
 
 
@@ -435,17 +435,17 @@ Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, Bool 
 
    Symbol *goal;
 
-   for (goal=start_goal; goal; goal=goal->id.lower_goal) {
+   for (goal=start_goal; goal; goal=goal->data.id.lower_goal) {
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE      
      /* Debugging only */
      print(thisAgent, "In highest_active_goal_propose:\n");
-     if (goal->id.ms_i_assertions) print_assertion(goal->id.ms_i_assertions);
-     if (goal->id.ms_retractions)  print_retraction(goal->id.ms_retractions); 
+     if (goal->data.id.ms_i_assertions) print_assertion(goal->data.id.ms_i_assertions);
+     if (goal->data.id.ms_retractions)  print_retraction(goal->data.id.ms_retractions); 
 #endif
 
      /* If there are any active productions at this goal, return the goal */
-     if ((goal->id.ms_i_assertions) || (goal->id.ms_retractions)) return goal;
+     if ((goal->data.id.ms_i_assertions) || (goal->data.id.ms_retractions)) return goal;
    }
 
    /* This routine should only be called when !quiescence.  However, there is
@@ -475,19 +475,19 @@ Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, Bool no
 
    Symbol *goal;
 
-   for (goal=start_goal; goal; goal=goal->id.lower_goal) {
+   for (goal=start_goal; goal; goal=goal->data.id.lower_goal) {
 
 #if 0 //DEBUG_DETERMINE_LEVEL_PHASE      
      /* Debugging only */
      print(thisAgent, "In highest_active_goal_apply :\n");
-     if (goal->id.ms_i_assertions) print_assertion(goal->id.ms_i_assertions);
-     if (goal->id.ms_o_assertions) print_assertion(goal->id.ms_o_assertions);
-     if (goal->id.ms_retractions)  print_retraction(goal->id.ms_retractions); 
+     if (goal->data.id.ms_i_assertions) print_assertion(goal->data.id.ms_i_assertions);
+     if (goal->data.id.ms_o_assertions) print_assertion(goal->data.id.ms_o_assertions);
+     if (goal->data.id.ms_retractions)  print_retraction(goal->data.id.ms_retractions); 
 #endif
 
      /* If there are any active productions at this goal, return the goal */
-     if ((goal->id.ms_i_assertions) || (goal->id.ms_o_assertions)
-	 || (goal->id.ms_retractions)) return goal;
+     if ((goal->data.id.ms_i_assertions) || (goal->data.id.ms_o_assertions)
+	 || (goal->data.id.ms_retractions)) return goal;
    }
 
    /* This routine should only be called when !quiescence.  However, there is
@@ -544,7 +544,7 @@ Bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol *goal) {
 #endif
    
 #ifdef DEBUG_CONSISTENCY_CHECK 
-   print(thisAgent, "\nStart: CONSISTENCY CHECK at level %d\n", goal->id.level);
+   print(thisAgent, "\nStart: CONSISTENCY CHECK at level %d\n", goal->data.id.level);
    
    /* Just a bunch of debug stuff for now */
    if (thisAgent->highest_goal_whose_context_changed){
@@ -555,7 +555,7 @@ Bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol *goal) {
    }
 #endif
    
-   test = check_context_slot_decisions(thisAgent, goal->id.level);
+   test = check_context_slot_decisions(thisAgent, goal->data.id.level);
    
 #ifdef DEBUG_CONSISTENCY_CHECK 
    printf("\nEnd:   CONSISTENCY CHECK\n");
@@ -590,8 +590,8 @@ void initialize_consistency_calculations_for_new_decision(agent* thisAgent) {
   thisAgent->active_goal = NIL;
   
   /* Clear any interruption flags on the goals....*/
-  for(goal=thisAgent->top_goal; goal; goal=goal->id.lower_goal) 
-    goal->id.saved_firing_type = NO_SAVED_PRODS;
+  for(goal=thisAgent->top_goal; goal; goal=goal->data.id.lower_goal) 
+    goal->data.id.saved_firing_type = NO_SAVED_PRODS;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -667,7 +667,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
    /* Determine the new highest level of activity */
    thisAgent->active_goal = highest_active_goal_apply(thisAgent, thisAgent->top_goal, FALSE);
    if (thisAgent->active_goal)
-      thisAgent->active_level = thisAgent->active_goal->id.level;
+      thisAgent->active_level = thisAgent->active_goal->data.id.level;
    else 
       thisAgent->active_level = 0; /* Necessary for get_next_retraction */
    
@@ -733,19 +733,19 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
       goal = thisAgent->active_goal;
       
       #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-      if (goal->id.saved_firing_type == IE_PRODS)
+      if (goal->data.id.saved_firing_type == IE_PRODS)
          print(thisAgent, "\nSaved production type: IE _PRODS");
-      if (goal->id.saved_firing_type == PE_PRODS)
+      if (goal->data.id.saved_firing_type == PE_PRODS)
          print(thisAgent, "\nSaved production type: PE _PRODS");
-      if (goal->id.saved_firing_type == NO_SAVED_PRODS)
+      if (goal->data.id.saved_firing_type == NO_SAVED_PRODS)
          print(thisAgent, "\nSaved production type: NONE");
       #endif
       
-      if (goal->id.saved_firing_type != NO_SAVED_PRODS) {
+      if (goal->data.id.saved_firing_type != NO_SAVED_PRODS) {
          #ifdef DEBUG_DETERMINE_LEVEL_PHASE
          print(thisAgent, "\nRestoring production type from previous processing at this level"); 
          #endif
-         thisAgent->FIRING_TYPE = goal->id.saved_firing_type;     
+         thisAgent->FIRING_TYPE = goal->data.id.saved_firing_type;     
 		 // KJC 04.05 commented the next line after reworking the phases in init_soar.cpp
          // thisAgent->current_phase = DETERMINE_LEVEL_PHASE;
 		 // Reluctant to make this a recursive call, but somehow we need to go thru
@@ -785,14 +785,14 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
       #endif
       
       goal = thisAgent->previous_active_goal;
-      goal->id.saved_firing_type = thisAgent->FIRING_TYPE;
+      goal->data.id.saved_firing_type = thisAgent->FIRING_TYPE;
       
       #ifdef DEBUG_DETERMINE_LEVEL_PHASE       
-      if (goal->id.saved_firing_type == IE_PRODS)
+      if (goal->data.id.saved_firing_type == IE_PRODS)
          print(thisAgent, "\n Saving current firing type as IE_PRODS");
-      else if (goal->id.saved_firing_type == PE_PRODS)
+      else if (goal->data.id.saved_firing_type == PE_PRODS)
          print(thisAgent, "\n Saving current firing type as PE_PRODS");
-      else if (goal->id.saved_firing_type == NO_SAVED_PRODS)
+      else if (goal->data.id.saved_firing_type == NO_SAVED_PRODS)
          print(thisAgent, "\n Saving current firing type as NO_SAVED_PRODS");
       else
          print(thisAgent, "\n Unknown SAVED firing type???????");
@@ -902,7 +902,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
    /* Determine the new highest level of activity */
    thisAgent->active_goal = highest_active_goal_propose(thisAgent, thisAgent->top_goal, FALSE);
    if (thisAgent->active_goal)
-      thisAgent->active_level = thisAgent->active_goal->id.level;
+      thisAgent->active_level = thisAgent->active_goal->data.id.level;
    else 
       thisAgent->active_level = 0; /* Necessary for get_next_retraction */
    
@@ -972,14 +972,14 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
       #endif
       
       goal = thisAgent->previous_active_goal;
-      goal->id.saved_firing_type = thisAgent->FIRING_TYPE;
+      goal->data.id.saved_firing_type = thisAgent->FIRING_TYPE;
       
       #ifdef DEBUG_DETERMINE_LEVEL_PHASE       
-      if (goal->id.saved_firing_type == IE_PRODS)
+      if (goal->data.id.saved_firing_type == IE_PRODS)
          print(thisAgent, "\n Saving current firing type as IE_PRODS");
-      else if (goal->id.saved_firing_type == PE_PRODS)
+      else if (goal->data.id.saved_firing_type == PE_PRODS)
          print(thisAgent, "\n Saving current firing type as PE_PRODS");
-      else if (goal->id.saved_firing_type == NO_SAVED_PRODS)
+      else if (goal->data.id.saved_firing_type == NO_SAVED_PRODS)
          print(thisAgent, "\n Saving current firing type as NO_SAVED_PRODS");
       else
          print(thisAgent, "\n Unknown SAVED firing type???????");

@@ -252,7 +252,7 @@ uint32_t hash_condition (agent* thisAgent,
    Get_new_tc_number() is called from lots of places.  Any time we need
    to mark a set of identifiers and/or variables, we get a new tc_number
    by calling this routine, then proceed to mark various ids or vars
-   by setting the sym->common.data.tc_num.
+   by setting the sym->tc_num.
 
    A global tc number counter is maintained and incremented by this
    routine in order to generate a different tc_number each time.  If
@@ -297,30 +297,30 @@ tc_number get_new_tc_number (agent* thisAgent) {
 ===================================================================== */
 
 /*#define mark_identifier_if_unmarked(ident,tc,id_list) { \
-  if ((ident)->common.data.data.tc_num != (tc)) { \
-    (ident)->common.data.data.tc_num = (tc); \
+  if ((ident)->data.tc_num != (tc)) { \
+    (ident)->data.tc_num = (tc); \
     if (id_list) push ((ident),(*(id_list))); } }*/
 inline void mark_identifier_if_unmarked(agent* thisAgent,
 										Symbol * ident, tc_number tc, list ** id_list)
 {
-  if ((ident)->common.data.tc_num != (tc))
+  if ((ident)->tc_num != (tc))
   {
-    (ident)->common.data.tc_num = (tc);
+    (ident)->tc_num = (tc);
     if (id_list)
 		push (thisAgent, (ident),(*(id_list)));
   }
 }
 
 /*#define mark_variable_if_unmarked(v,tc,var_list) { \
-  if ((v)->common.data.data.tc_num != (tc)) { \
-    (v)->common.data.data.tc_num = (tc); \
+  if ((v)->data.tc_num != (tc)) { \
+    (v)->data.tc_num = (tc); \
     if (var_list) push ((v),(*(var_list))); } }*/
 inline void mark_variable_if_unmarked(agent* thisAgent, Symbol * v,
 									  tc_number tc, list ** var_list)
 {
-  if ((v)->common.data.tc_num != (tc))
+  if ((v)->tc_num != (tc))
   {
-    (v)->common.data.tc_num = (tc);
+    (v)->tc_num = (tc);
     if (var_list) push (thisAgent, (v),(*(var_list)));
   }
 }
@@ -330,10 +330,10 @@ void unmark_identifiers_and_free_list (agent* thisAgent, list *id_list) {
   Symbol *sym;
 
   while (id_list) {
-    sym = static_cast<symbol_union *>(id_list->first);
+    sym = static_cast<symbol_struct *>(id_list->first);
     next = id_list->rest;
     free_cons (thisAgent, id_list);
-    sym->common.data.tc_num = 0;
+    sym->tc_num = 0;
     id_list = next;
   }
 }
@@ -343,10 +343,10 @@ void unmark_variables_and_free_list (agent* thisAgent, list *var_list) {
   Symbol *sym;
 
   while (var_list) {
-    sym = static_cast<symbol_union *>(var_list->first);
+    sym = static_cast<symbol_struct *>(var_list->first);
     next = var_list->rest;
     free_cons (thisAgent, var_list);
-    sym->common.data.tc_num = 0;
+    sym->tc_num = 0;
     var_list = next;
   }
 }
@@ -431,9 +431,9 @@ void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list
 
 void add_symbol_to_tc (agent* thisAgent, Symbol *sym, tc_number tc,
                        list **id_list, list **var_list) {
-  if (sym->common.data.symbol_type==VARIABLE_SYMBOL_TYPE) {
+  if (sym->symbol_type==VARIABLE_SYMBOL_TYPE) {
     mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
-  } else if (sym->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
+  } else if (sym->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
     mark_identifier_if_unmarked (thisAgent, sym, tc, id_list);
   }
 }
@@ -474,7 +474,7 @@ void add_action_to_tc (agent* thisAgent, action *a, tc_number tc,
 }
 
 Bool symbol_is_in_tc (Symbol *sym, tc_number tc) {
-    return (sym->common.data.tc_num == tc);
+    return (sym->tc_num == tc);
 }
 
 Bool test_is_in_tc (test t, tc_number tc) {
@@ -575,7 +575,7 @@ void reset_variable_generator (agent* thisAgent,
   add_all_variables_in_condition_list (thisAgent, conds_with_vars_to_avoid,tc, &var_list);
   add_all_variables_in_action_list (thisAgent, actions_with_vars_to_avoid, tc, &var_list);
   for (c=var_list; c!=NIL; c=c->rest)
-    static_cast<Symbol *>(c->first)->var.gensym_number = thisAgent->current_variable_gensym_number;
+    static_cast<Symbol *>(c->first)->data.var.gensym_number = thisAgent->current_variable_gensym_number;
   free_list (thisAgent, var_list);
 }
 
@@ -598,12 +598,12 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
 	name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
 
     New = make_variable (thisAgent, name);
-    if (New->var.gensym_number != thisAgent->current_variable_gensym_number) break;
+    if (New->data.var.gensym_number != thisAgent->current_variable_gensym_number) break;
     symbol_remove_ref (thisAgent, New);
   }
 
-  New->var.current_binding_value = NIL;
-  New->var.gensym_number = thisAgent->current_variable_gensym_number;
+  New->data.var.current_binding_value = NIL;
+  New->data.var.gensym_number = thisAgent->current_variable_gensym_number;
   return New;
 }
 
@@ -640,7 +640,7 @@ production *make_production (agent* thisAgent,
   action *a;
 
 
-  thisAgent->name_of_production_being_reordered = name->sc.name;
+  thisAgent->name_of_production_being_reordered = name->data.sc.name;
 
   if (type!=JUSTIFICATION_PRODUCTION_TYPE) {
     reset_variable_generator (thisAgent, *lhs_top, *rhs_top);
@@ -679,12 +679,12 @@ production *make_production (agent* thisAgent,
 
   allocate_with_pool (thisAgent, &thisAgent->production_pool, &p);
   p->name = name;
-  if (name->sc.production) {
+  if (name->data.sc.production) {
     print (thisAgent, "Internal error: make_production called with name %s\n",
            thisAgent->name_of_production_being_reordered);
     print (thisAgent, "for which a production already exists\n");
   }
-  name->sc.production = p;
+  name->data.sc.production = p;
   p->documentation = NIL;
   p->filename = NIL;
   p->firing_count = 0;
@@ -720,7 +720,7 @@ production *make_production (agent* thisAgent,
   p->rl_template_conds = NIL;
   p->rl_template_instantiations = NIL;
 
-  rl_update_template_tracking( thisAgent, name->sc.name );
+  rl_update_template_tracking( thisAgent, name->data.sc.name );
 
   return p;
 }
@@ -761,7 +761,7 @@ void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sig
   thisAgent->num_productions_of_type[prod->type]--;
   if (print_sharp_sign) print (thisAgent, "#");
   if (prod->p_node) excise_production_from_rete (thisAgent, prod);
-  prod->name->sc.production = NIL;
+  prod->name->data.sc.production = NIL;
   production_remove_ref (thisAgent, prod);
 }
 
@@ -807,11 +807,11 @@ uint32_t canonical_test(test t)
 
   if (t->type == EQUALITY_TEST) {
       sym = t->data.referent;
-      if (sym->common.data.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ||
-        sym->common.data.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
-        sym->common.data.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+      if (sym->symbol_type == SYM_CONSTANT_SYMBOL_TYPE ||
+        sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
+        sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
       {
-        return sym->common.data.hash_id;
+        return sym->hash_id;
       }
       else
       return NON_EQUAL_TEST_RETURN_VAL;

@@ -208,7 +208,7 @@ void find_match_goal(instantiation *inst) {
 			cond = cond->next)
 		if (cond->type == POSITIVE_CONDITION) {
 			id = cond->bt.wme_->id;
-			if (id->id.isa_goal)
+			if (id->data.id.isa_goal)
 				if (cond->bt.level > lowest_level_so_far) {
 					lowest_goal_so_far = id;
 					lowest_level_so_far = cond->bt.level;
@@ -281,12 +281,12 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 		 but this is natural Soar behavior and outside our perview.
 
 		 */
-		if ((result->id.data.symbol_type == IDENTIFIER_SYMBOL_TYPE)
-				&& (result->id.smem_lti != NIL)&&
-				( result->id.level == SMEM_LTI_UNKNOWN_LEVEL ) &&
+		if ((result->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+				&& (result->data.id.smem_lti != NIL)&&
+				( result->data.id.level == SMEM_LTI_UNKNOWN_LEVEL ) &&
 				( new_id_level > 0 ) ){
-				result->id.level = new_id_level;
-				result->id.promotion_level = new_id_level;
+				result->data.id.level = new_id_level;
+				result->data.id.promotion_level = new_id_level;
 			}
 
 		symbol_add_ref(thisAgent, result);
@@ -306,8 +306,8 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 			sym = make_new_identifier(thisAgent, new_id_letter, new_id_level);
 			*(thisAgent->rhs_variable_bindings + index) = sym;
 			return sym;
-		} else if (sym->common.data.symbol_type == VARIABLE_SYMBOL_TYPE) {
-			new_id_letter = *(sym->var.name + 1);
+		} else if (sym->symbol_type == VARIABLE_SYMBOL_TYPE) {
+			new_id_letter = *(sym->data.var.name + 1);
 			sym = make_new_identifier(thisAgent, new_id_letter, new_id_level);
 			*(thisAgent->rhs_variable_bindings + index) = sym;
 			return sym;
@@ -400,32 +400,32 @@ preference *execute_action(agent* thisAgent, action *a, struct token_struct *tok
 	id = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
 	if (!id)
 		goto abort_execute_action;
-	if (id->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+	if (id->symbol_type != IDENTIFIER_SYMBOL_TYPE) {
 		print_with_symbols(thisAgent,
 				"Error: RHS makes a preference for %y (not an identifier)\n",
 				id);
 		goto abort_execute_action;
 	}
 
-  attr = instantiate_rhs_value(thisAgent, a->attr, id->id.level, 'a', tok, w);
+  attr = instantiate_rhs_value(thisAgent, a->attr, id->data.id.level, 'a', tok, w);
 	if (!attr)
 		goto abort_execute_action;
 
   first_letter = first_letter_from_symbol(attr);
-	value = instantiate_rhs_value(thisAgent, a->value, id->id.level, first_letter, tok, w);
+	value = instantiate_rhs_value(thisAgent, a->value, id->data.id.level, first_letter, tok, w);
 	if (!value)
 		goto abort_execute_action;
 
   /* -- We don't need to store original vars for referents bc they should always be operator IDs -- */
   if (preference_is_binary(a->preference_type)) {
-		referent = instantiate_rhs_value(thisAgent, a->referent, id->id.level, first_letter, tok, w);
+		referent = instantiate_rhs_value(thisAgent, a->referent, id->data.id.level, first_letter, tok, w);
 		if (!referent)
 			goto abort_execute_action;
 	}
 
 	if (((a->preference_type != ACCEPTABLE_PREFERENCE_TYPE)
 			&& (a->preference_type != REJECT_PREFERENCE_TYPE))
-			&& (!(id->id.isa_goal && (attr == thisAgent->operator_symbol)))) {
+			&& (!(id->data.id.isa_goal && (attr == thisAgent->operator_symbol)))) {
 		print_with_symbols(thisAgent,
 				"\nError: attribute preference other than +/- for %y ^%y -- ignoring it.",
 				id, attr);
@@ -529,7 +529,7 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
 
 	if (inst->match_goal) {
 		for (p = inst->preferences_generated; p != NIL; p = p->inst_next) {
-			insert_at_head_of_dll(inst->match_goal->id.preferences_from_goal, p,
+			insert_at_head_of_dll(inst->match_goal->data.id.preferences_from_goal, p,
 					all_of_goal_next, all_of_goal_prev);
 			p->on_goal_list = TRUE;
 		}
@@ -694,7 +694,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
 			cond = cond->next) {
 		if (cond->type == POSITIVE_CONDITION) {
-			cond->bt.level = cond->bt.wme_->id->id.level;
+			cond->bt.level = cond->bt.wme_->id->data.id.level;
 			cond->bt.trace = cond->bt.wme_->preference;
 		}
 	}
@@ -716,7 +716,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	index = 0;
 	cell = thisAgent->rhs_variable_bindings;
 	for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest) {
-		*(cell++) = static_cast<symbol_union *>(c->first);
+		*(cell++) = static_cast<symbol_struct *>(c->first);
 		index++;
 	}
 	thisAgent->firer_highest_rhs_unboundvar_index = index - 1;
@@ -759,9 +759,9 @@ void create_instantiation(agent* thisAgent, production *prod,
 			 * jzxu April 22, 2009
 			 */
 			if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
-					&& ((pref->referent->var.data.symbol_type
+					&& ((pref->referent->symbol_type
 							== FLOAT_CONSTANT_SYMBOL_TYPE)
-							|| (pref->referent->var.data.symbol_type
+							|| (pref->referent->symbol_type
 									== INT_CONSTANT_SYMBOL_TYPE))) {
 				pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 			}
@@ -892,13 +892,13 @@ Bool shouldCreateInstantiation(agent* thisAgent, production *prod,
 		assert(sym != NIL);
 
 		// check level for legal change
-		if (sym->id.level <= thisAgent->change_level) {
+		if (sym->data.id.level <= thisAgent->change_level) {
 			if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
 				print_with_symbols(thisAgent,
 						"*** Waterfall: aborting firing because (%y * *)", sym);
 				print(thisAgent,
 						" level %d is on or higher (lower int) than change level %d\n",
-						sym->id.level, thisAgent->change_level);
+						sym->data.id.level, thisAgent->change_level);
 			}
 			return FALSE;
 		}
@@ -1033,7 +1033,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 							/* --- remove it from the list of bt.trace's for its match goal --- */
 							if (cond->bt.trace->on_goal_list) {
 								remove_from_dll(
-										cond->bt.trace->inst->match_goal->id.preferences_from_goal,
+										cond->bt.trace->inst->match_goal->data.id.preferences_from_goal,
 										cond->bt.trace, all_of_goal_next,
 										all_of_goal_prev);
 							}
@@ -1465,7 +1465,7 @@ void do_preference_phase(agent* thisAgent) {
 			break;
 		}
 
-		if (thisAgent->active_goal->id.lower_goal == NIL) {
+		if (thisAgent->active_goal->data.id.lower_goal == NIL) {
 			if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
 				print(thisAgent, " inner elaboration loop at bottom goal.\n");
 			}
@@ -1474,15 +1474,15 @@ void do_preference_phase(agent* thisAgent) {
 
 		if (thisAgent->current_phase == APPLY_PHASE) {
 			thisAgent->active_goal = highest_active_goal_apply(thisAgent,
-					thisAgent->active_goal->id.lower_goal, TRUE);
+					thisAgent->active_goal->data.id.lower_goal, TRUE);
 		} else {
 			assert(thisAgent->current_phase == PROPOSE_PHASE);
 			thisAgent->active_goal = highest_active_goal_propose(thisAgent,
-					thisAgent->active_goal->id.lower_goal, TRUE);
+					thisAgent->active_goal->data.id.lower_goal, TRUE);
 		}
 
 		if (thisAgent->active_goal != NIL) {
-			thisAgent->active_level = thisAgent->active_goal->id.level;
+			thisAgent->active_level = thisAgent->active_goal->data.id.level;
 		} else {
 			if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
 				print(thisAgent,

@@ -166,7 +166,7 @@ Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
   growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
 
   for ( ; args!=NIL; args=args->rest) {
-    arg = static_cast<symbol_union *>(args->first);
+    arg = static_cast<symbol_struct *>(args->first);
     /* --- Note use of FALSE here--print the symbol itself, not a rereadable
        version of it --- */
     string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
@@ -224,7 +224,7 @@ Symbol *make_constant_symbol_rhs_function_code (agent* thisAgent, list *args, vo
 		buf << "constant";
 	} else {
 		for (c=args; c!=NIL; c=c->rest) {
-			string = symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), FALSE, NIL, 0);
+			string = symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), FALSE, NIL, 0);
 			buf << string;
 		}
 	}
@@ -316,7 +316,7 @@ capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_
   }
 
   sym = static_cast<Symbol *>(args->first);
-  if (sym->common.data.symbol_type != SYM_CONSTANT_SYMBOL_TYPE) {
+  if (sym->symbol_type != SYM_CONSTANT_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
     return NIL;
   }
@@ -409,20 +409,20 @@ Symbol *ifeq_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
   }
 
   /* --- two or more arguments --- */
-  arg1 = static_cast<symbol_union *>(args->first);
+  arg1 = static_cast<symbol_struct *>(args->first);
   c=args->rest;
-  arg2 = static_cast<symbol_union *>(c->first);
+  arg2 = static_cast<symbol_struct *>(c->first);
   c=c->rest;
 
   if (arg1 == arg2)
     {
       symbol_add_ref(thisAgent, static_cast<Symbol *>(c->first));
-      return static_cast<symbol_union *>(c->first);
+      return static_cast<symbol_struct *>(c->first);
     }
   else if (c->rest)
     {
       symbol_add_ref(thisAgent, static_cast<Symbol *>(c->rest->first));
-      return static_cast<symbol_union *>(c->rest->first);
+      return static_cast<symbol_struct *>(c->rest->first);
     }
   else return NIL;
 }
@@ -440,7 +440,7 @@ Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data
 
 	sym = (Symbol *) args->first;
 
-	if ( sym->common.data.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
+	if ( sym->symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
 	{
 		print_with_symbols( thisAgent, "Error: non-symbol (%y) passed to 'trim' function.\n", sym );
 		return NIL;
@@ -471,7 +471,7 @@ Symbol *strlen_rhs_function_code (agent* thisAgent, list *args, void* /*user_dat
   Symbol *arg;
   char *string;
 
-  arg = static_cast<symbol_union *>(args->first);
+  arg = static_cast<symbol_struct *>(args->first);
 
   /* --- Note use of FALSE here--print the symbol itself, not a rereadable
      version of it --- */
@@ -497,10 +497,10 @@ Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user
   }
 
   state = static_cast<Symbol *>(args->first);
-  if (state->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+  if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-identifier (%y) passed to dont-learn function.\n", state);
     return NIL;
-  } else if (! state->id.isa_goal) {
+  } else if (! state->data.id.isa_goal) {
       print_with_symbols(thisAgent, "Error: identifier passed to dont-learn is not a state: %y.\n",state);
   }
 
@@ -533,10 +533,10 @@ Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* /*use
   }
 
   state = static_cast<Symbol *>(args->first);
-  if (state->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+  if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-identifier (%y) passed to force-learn function.\n", state);
     return NIL;
-  } else if (! state->id.isa_goal) {
+  } else if (! state->data.id.isa_goal) {
       print_with_symbols(thisAgent, "Error: identifier passed to force-learn is not a state: %y.\n",state);
   }
 
@@ -575,7 +575,7 @@ void recursive_wme_copy(agent* thisAgent,
    Symbol* new_value = curwme->value;
 
    /* Handling the case where the attribute is an id symbol */
-   if ( curwme->attr->common.data.symbol_type == 1 ) {
+   if ( curwme->attr->symbol_type == 1 ) {
       /* Have I already made a new identifier for this identifier */
       std::map<Symbol*,Symbol*>::iterator it = processedSymbols.find(curwme->attr);
       if ( it != processedSymbols.end() ) {
@@ -584,7 +584,7 @@ void recursive_wme_copy(agent* thisAgent,
       } else {
          /* Make a new id symbol */
          new_attr = make_new_identifier(thisAgent,
-                                        curwme->attr->id.name_letter,
+                                        curwme->attr->data.id.name_letter,
                                         1);
          made_new_attr_symbol = true;
       }
@@ -596,7 +596,7 @@ void recursive_wme_copy(agent* thisAgent,
    }
 
    /* Handling the case where the value is an id symbol */
-   if ( curwme->value->common.data.symbol_type == 1 ) {
+   if ( curwme->value->symbol_type == 1 ) {
       /* Have I already made a new identifier for this identifier */
       std::map<Symbol*,Symbol*>::iterator it = processedSymbols.find(curwme->value);
       if ( it != processedSymbols.end() ) {
@@ -605,7 +605,7 @@ void recursive_wme_copy(agent* thisAgent,
       } else {
          /* Make a new id symbol */
          new_value = make_new_identifier(thisAgent,
-                                         curwme->value->id.name_letter,
+                                         curwme->value->data.id.name_letter,
                                          1);
          made_new_value_symbol = true;
       }
@@ -644,7 +644,7 @@ void recursive_deep_copy_helper(agent* thisAgent,
    processedSymbols.insert(std::pair<Symbol*,Symbol*>(id_to_process,parent_id));
 
    /* Iterating over the normal slot wmes */
-   for (slot* curslot = id_to_process->id.slots;
+   for (slot* curslot = id_to_process->data.id.slots;
         curslot != 0;
         curslot = curslot->next) {
 
@@ -663,7 +663,7 @@ void recursive_deep_copy_helper(agent* thisAgent,
    }
 
    /* Iterating over input wmes */
-   for (wme* curwme = id_to_process->id.input_wmes;
+   for (wme* curwme = id_to_process->data.id.input_wmes;
         curwme != 0;
         curwme = curwme->next) {
 
@@ -682,7 +682,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* /*user_d
 
    /* Getting the argument symbol */
    Symbol* baseid = static_cast<Symbol *>(args->first);
-   if ( baseid->common.data.symbol_type != 1 ) {
+   if ( baseid->symbol_type != 1 ) {
       return make_sym_constant(thisAgent,"*symbol not id*");
    }
 
@@ -712,7 +712,7 @@ Symbol *count_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
   char *string;
 
   for ( ; args!=NIL; args=args->rest) {
-    arg = static_cast<symbol_union *>(args->first);
+    arg = static_cast<symbol_struct *>(args->first);
     /* --- Note use of FALSE here--print the symbol itself, not a rereadable
        version of it --- */
     string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);

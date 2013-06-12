@@ -207,7 +207,7 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
 
   /* --- go ahead and add the wme --- */
   w = make_wme (thisAgent, id, attr, value, FALSE);
-  insert_at_head_of_dll (id->id.input_wmes, w, next, prev);
+  insert_at_head_of_dll (id->data.id.input_wmes, w, next, prev);
 
   if ( wma_enabled( thisAgent ) )
   {
@@ -216,7 +216,7 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
 
   add_wme_to_wm (thisAgent, w);
 
-  //PrintDebugFormat("Added wme with timetag %d to id %c%d ",w->timetag,id->id.name_letter,id->id.name_number) ;
+  //PrintDebugFormat("Added wme with timetag %d to id %c%d ",w->timetag,id->data.id.name_letter,id->data.id.name_number) ;
 
   return w;
 }
@@ -224,20 +224,20 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
 wme* find_input_wme_by_timetag_from_id (agent* thisAgent, Symbol* idSym, uint64_t timetag, tc_number tc) {
    wme *pWME,*w;
 
-  //PrintDebugFormat("Scanning id %c%d", idSym->id.name_letter, idSym->id.name_number) ;
+  //PrintDebugFormat("Scanning id %c%d", idSym->data.id.name_letter, idSym->data.id.name_number) ;
 
   // Mark this id as having been visited (the key here is that tc numbers always increase so tc_num must be < tc until it's marked)
-  idSym->common.data.tc_num = tc ;
+  idSym->tc_num = tc ;
 
    // This is inefficient.  Using a hash table could save a lot here.
-	for (pWME = idSym->id.input_wmes; pWME != NIL; pWME = pWME->next)
+	for (pWME = idSym->data.id.input_wmes; pWME != NIL; pWME = pWME->next)
 	{
 		//PrintDebugFormat("Timetag %ld", pWME->timetag) ;
 		if (pWME->timetag == timetag)
 			return pWME ;
 
 		// NOTE: The test for the tc_num keeps us from getting stuck in loops within graphs
-		if (pWME->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE && pWME->value->common.data.tc_num != tc)
+		if (pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && pWME->value->tc_num != tc)
 		{
 			w = find_input_wme_by_timetag_from_id(thisAgent, pWME->value, timetag, tc) ;
 			if (w)
@@ -256,7 +256,7 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
 		print (thisAgent, "Error: an input routine called remove_input_wme on a NULL wme.\n");
 		return FALSE;
 	}
-	for (temp=w->id->id.input_wmes; temp!=NIL; temp=temp->next)
+	for (temp=w->id->data.id.input_wmes; temp!=NIL; temp=temp->next)
 		if (temp==w) break;
 	if (!temp) {
 		print (thisAgent, "Error: an input routine called remove_input_wme on a wme that\n");
@@ -267,7 +267,7 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
 	above test, rather than scanning the linked list.  We could have one
 	global hash table for all the input wmes in the system. */
 	/* --- go ahead and remove the wme --- */
-	remove_from_dll (w->id->id.input_wmes, w, next, prev);
+	remove_from_dll (w->id->data.id.input_wmes, w, next, prev);
 	/* REW: begin 09.15.96 */
 	if (w->gds) {
 		if (w->gds->goal != NIL) {
@@ -455,10 +455,10 @@ void update_for_top_state_wme_addition (agent* thisAgent, wme *w) {
   /* KJC & RPM 10/06 commenting out SW's change.
      See near end of init_agent_memory for details  */
     //thisAgent->output_link_tc_num = get_new_tc_number(thisAgent);
-    //ol->link_wme->value->common.data.tc_num = thisAgent->output_link_tc_num;
+    //ol->link_wme->value->tc_num = thisAgent->output_link_tc_num;
     //thisAgent->output_link_for_tc = ol;
     ///* --- add output_link to id's list --- */
-    //push(thisAgent, thisAgent->output_link_for_tc, ol->link_wme->value->id.associated_output_links);
+    //push(thisAgent, thisAgent->output_link_for_tc, ol->link_wme->value->data.id.associated_output_links);
 }
 
 void update_for_top_state_wme_removal (wme *w) {
@@ -470,9 +470,9 @@ void update_for_io_wme_change (wme *w) {
   cons *c;
   output_link *ol;
 
-  for (c=w->id->id.associated_output_links; c!=NIL; c=c->rest) {
+  for (c=w->id->data.id.associated_output_links; c!=NIL; c=c->rest) {
     ol = static_cast<output_link_struct *>(c->first);
-    if (w->value->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
+    if (w->value->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
       /* --- mark ol "modified" --- */
       if ((ol->status==UNCHANGED_OL_STATUS) ||
           (ol->status==MODIFIED_BUT_SAME_TC_OL_STATUS))
@@ -499,7 +499,7 @@ void inform_output_module_of_wm_changes (agent* thisAgent,
 		thisAgent->output_link_changed = TRUE; /* KJC 11/23/98 */
         thisAgent->d_cycle_last_output = thisAgent->d_cycle_count;   /* KJC 11/17/05 */
 	}
-    if (w->id->id.associated_output_links) {
+    if (w->id->data.id.associated_output_links) {
 		update_for_io_wme_change (w);
  		thisAgent->output_link_changed = TRUE; /* KJC 11/23/98 */
         thisAgent->d_cycle_last_output = thisAgent->d_cycle_count;   /* KJC 11/17/05 */
@@ -520,7 +520,7 @@ void inform_output_module_of_wm_changes (agent* thisAgent,
   for (c=wmes_being_removed; c!=NIL; c=c->rest) {
     w = static_cast<wme_struct *>(c->first);
     if (w->id==thisAgent->io_header) update_for_top_state_wme_removal (w);
-    if (w->id->id.associated_output_links) update_for_io_wme_change (w);
+    if (w->id->data.id.associated_output_links) update_for_io_wme_change (w);
   }
 }
 
@@ -543,12 +543,12 @@ void remove_output_link_tc_info (agent* thisAgent, output_link *ol) {
   while (ol->ids_in_tc) {  /* for each id in the old TC... */
     c = ol->ids_in_tc;
     ol->ids_in_tc = c->rest;
-    id = static_cast<symbol_union *>(c->first);
+    id = static_cast<symbol_struct *>(c->first);
     free_cons (thisAgent, c);
 
     /* --- remove "ol" from the list of associated_output_links(id) --- */
     prev_c = NIL;
-    for (c=id->id.associated_output_links; c!=NIL; prev_c=c, c=c->rest)
+    for (c=id->data.id.associated_output_links; c!=NIL; prev_c=c, c=c->rest)
       if (c->first == ol) break;
     if (!c) {
       char msg[BUFFER_MSG_SIZE];
@@ -557,7 +557,7 @@ void remove_output_link_tc_info (agent* thisAgent, output_link *ol) {
       abort_with_fatal_error(thisAgent, msg);
     }
     if (prev_c) prev_c->rest = c->rest;
-      else id->id.associated_output_links = c->rest;
+      else id->data.id.associated_output_links = c->rest;
     free_cons (thisAgent, c);
     symbol_remove_ref (thisAgent, id);
   }
@@ -569,8 +569,8 @@ void add_id_to_output_link_tc (agent* thisAgent, Symbol *id) {
   wme *w;
 
   /* --- if id is already in the TC, exit --- */
-  if (id->common.data.tc_num == thisAgent->output_link_tc_num) return;
-  id->common.data.tc_num = thisAgent->output_link_tc_num;
+  if (id->tc_num == thisAgent->output_link_tc_num) return;
+  id->tc_num = thisAgent->output_link_tc_num;
 
 
   /* --- add id to output_link's list --- */
@@ -579,16 +579,16 @@ void add_id_to_output_link_tc (agent* thisAgent, Symbol *id) {
                            have a chance to free the cons cell we just added */
 
   /* --- add output_link to id's list --- */
-  push (thisAgent, thisAgent->output_link_for_tc, id->id.associated_output_links);
+  push (thisAgent, thisAgent->output_link_for_tc, id->data.id.associated_output_links);
 
   /* --- do TC through working memory --- */
   /* --- scan through all wmes for all slots for this id --- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
-    if (w->value->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
+  for (w=id->data.id.input_wmes; w!=NIL; w=w->next)
+    if (w->value->symbol_type==IDENTIFIER_SYMBOL_TYPE)
       add_id_to_output_link_tc (thisAgent, w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next)
+  for (s=id->data.id.slots; s!=NIL; s=s->next)
     for (w=s->wmes; w!=NIL; w=w->next)
-      if (w->value->common.data.symbol_type==IDENTIFIER_SYMBOL_TYPE)
+      if (w->value->symbol_type==IDENTIFIER_SYMBOL_TYPE)
         add_id_to_output_link_tc (thisAgent, w->value);
   /* don't need to check impasse_wmes, because we couldn't have a pointer
      to a goal or impasse identifier */
@@ -596,7 +596,7 @@ void add_id_to_output_link_tc (agent* thisAgent, Symbol *id) {
 
 void calculate_output_link_tc_info (agent* thisAgent, output_link *ol) {
   /* --- if link doesn't have any substructure, there's no TC --- */
-  if (ol->link_wme->value->common.data.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;
+  if (ol->link_wme->value->symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;
 
   /* --- do TC starting with the link wme's value --- */
   thisAgent->output_link_for_tc = ol;
@@ -635,10 +635,10 @@ io_wme *get_io_wmes_for_output_link (agent* thisAgent, output_link *ol) {
   thisAgent->collected_io_wmes = NIL;
   add_wme_to_collected_io_wmes (thisAgent, ol->link_wme);
   for (c=ol->ids_in_tc; c!=NIL; c=c->rest) {
-    id = static_cast<symbol_union *>(c->first);
-    for (w=id->id.input_wmes; w!=NIL; w=w->next)
+    id = static_cast<symbol_struct *>(c->first);
+    for (w=id->data.id.input_wmes; w!=NIL; w=w->next)
       add_wme_to_collected_io_wmes (thisAgent, w);
-    for (s=id->id.slots; s!=NIL; s=s->next)
+    for (s=id->data.id.slots; s!=NIL; s=s->next)
       for (w=s->wmes; w!=NIL; w=w->next)
         add_wme_to_collected_io_wmes (thisAgent, w);
   }

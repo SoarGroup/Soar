@@ -527,7 +527,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
    {
 	   // if the agent halted because it is in an infinite loop of no-change impasses
 	   // interrupt the agents and allow the user to try to recover.
-	   if (m_agent->bottom_goal->id.level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
+	   if (m_agent->bottom_goal->data.id.level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
 	   {// the agent halted because it seems to be in an infinite loop, so throw interrupt
 		   m_pKernelSML->InterruptAllAgents(sml_STOP_AFTER_PHASE) ;
 		   m_agent->system_halted = FALSE; // hack! otherwise won't run again.
@@ -1020,8 +1020,8 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
 	// If pValueSymbol is a new id, then RecordIDMapping will create a map between the client and kernel id names.
 	// Otherwise, RecordIDMapping will add a ref count to client id name.
 	std::ostringstream buffer;
-	buffer << pValueSymbol->id.name_letter ;
-	buffer << pValueSymbol->id.name_number ;
+	buffer << pValueSymbol->data.id.name_letter ;
+	buffer << pValueSymbol->data.id.name_number ;
 	this->RecordIDMapping(pValue, buffer.str().c_str()) ;
 	//if (kDebugInput)
 	//{
@@ -1141,7 +1141,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
 
 	CHECK_RET_FALSE(pWME) ;  //BADBAD: above check means this will never be triggered; one of the checks should go, but not sure which (can this function be legitimately called with a timetag for a wme that's already been removed?)
 
-	if ( pWME->value->common.data.symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
+	if ( pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
 		this->RemoveID( symbol_to_string( GetSoarAgent(), pWME->value, true, 0, 0 ) ) ;
 	}
 

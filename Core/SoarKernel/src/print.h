@@ -58,7 +58,7 @@ typedef struct production_struct production;
 typedef struct preference_struct preference;
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 typedef struct wme_filter_struct {
     Symbol *id;

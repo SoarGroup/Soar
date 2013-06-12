@@ -88,7 +88,7 @@ namespace soar_module
 		inst->rete_token = NULL;
 		inst->rete_wme = NULL;
 		inst->match_goal = state;
-		inst->match_goal_level = state->id.level;
+		inst->match_goal_level = state->data.id.level;
 		inst->reliable = true;
 		inst->backtrace_number = 0;
 		inst->in_ms = FALSE;
@@ -149,7 +149,7 @@ namespace soar_module
 					wme_add_ref( (*c_it) );
 				}
 
-				cond->bt.level = (*c_it)->id->id.level;
+				cond->bt.level = (*c_it)->id->data.id.level;
 				cond->bt.trace = (*c_it)->preference;
 
 				if ( cond->bt.trace )

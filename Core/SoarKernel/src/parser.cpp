@@ -78,7 +78,7 @@ Symbol *make_placeholder_var(agent* thisAgent, char first_letter) {
 
   v = make_variable(thisAgent, buf);
   /* --- indicate that there is no corresponding "real" variable yet --- */
-  v->var.current_binding_value = NIL;
+  v->data.var.current_binding_value = NIL;
 
   return v;
 }
@@ -102,7 +102,7 @@ test make_placeholder_test (agent* thisAgent, char first_letter) {
    variables for all the placeholders.  This is done by walking all the
    LHS conditions and destructively modifying any tests involving
    placeholders.  The placeholder-->real mapping is maintained on each
-   placeholder symbol: placeholder->var.current_binding_value is the
+   placeholder symbol: placeholder->data.var.current_binding_value is the
    corresponding "real" variable, or NIL if no such "real" variable has
    been created yet.
 
@@ -117,21 +117,21 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
   Bool just_created;
 
   /* --- if not a variable, do nothing --- */
-  if ((*sym)->common.data.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
+  if ((*sym)->symbol_type!=VARIABLE_SYMBOL_TYPE) return;
   /* --- if not a placeholder variable, do nothing --- */
-  if (*((*sym)->var.name + 1) != '#') return;
+  if (*((*sym)->data.var.name + 1) != '#') return;
 
   just_created = FALSE;
 
-  if (! (*sym)->var.current_binding_value) {
-    prefix[0] = *((*sym)->var.name + 2);
+  if (! (*sym)->data.var.current_binding_value) {
+    prefix[0] = *((*sym)->data.var.name + 2);
     prefix[1] = '*';
     prefix[2] = 0;
-    (*sym)->var.current_binding_value = generate_new_variable (thisAgent, prefix);
+    (*sym)->data.var.current_binding_value = generate_new_variable (thisAgent, prefix);
     just_created = TRUE;
   }
 
-  var = (*sym)->var.current_binding_value;
+  var = (*sym)->data.var.current_binding_value;
   symbol_remove_ref (thisAgent, *sym);
   *sym = var;
   if (!just_created) symbol_add_ref(thisAgent, var);
@@ -832,7 +832,7 @@ test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_i
 
 				// Symbol type can only be IDENTIFIER_SYMBOL_TYPE if it is a long term identifier (lti),
 				// Otherwise, it isn't possible to have an IDENTIFIER_SYMBOL_TYPE here.
-				if((sym->common.data.symbol_type != VARIABLE_SYMBOL_TYPE) && (sym->common.data.symbol_type != IDENTIFIER_SYMBOL_TYPE)) {
+				if((sym->symbol_type != VARIABLE_SYMBOL_TYPE) && (sym->symbol_type != IDENTIFIER_SYMBOL_TYPE)) {
 					print_with_symbols(thisAgent, "Warning: Constant %y in id field test.\n", sym);
 					print(thisAgent, "         This will never match.\n");
 
@@ -1184,7 +1184,7 @@ rhs_value parse_function_call_after_lparen (agent* thisAgent,
   /* --- check number of arguments --- */
   if ((rf->num_args_expected != -1) && (rf->num_args_expected != num_args)) {
     print (thisAgent, "Wrong number of arguments to function %s (expected %d)\n",
-           rf->name->sc.name, rf->num_args_expected);
+           rf->name->data.sc.name, rf->num_args_expected);
     print_location_of_most_recent_lexeme(thisAgent);
     deallocate_rhs_value (thisAgent, funcall_list_to_rhs_value(fl));
     return NIL;
@@ -1874,8 +1874,8 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   get_lexeme(thisAgent);
 
   /* --- if there's already a prod with this name, excise it --- */
-  if (name->sc.production) {
-    excise_production (thisAgent, name->sc.production, (TRUE && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
+  if (name->data.sc.production) {
+    excise_production (thisAgent, name->data.sc.production, (TRUE && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
   }
 
   /* --- read optional documentation string --- */
