@@ -841,7 +841,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	deallocate_action_list (thisAgent, rhs_vars);
 #ifdef DEBUG_TRACE_PRINT_INSTANTIATIONS
 	print(thisAgent, "\nCreate_instantiation created: \n");
-	print_instantiation(inst);
+	debug_print_instantiation(inst);
 #endif
 	if (!thisAgent->system_halted) {
 		/* --- invoke callback function --- */

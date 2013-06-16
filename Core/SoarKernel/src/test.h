@@ -29,7 +29,16 @@ void deallocate_test (agent* thisAgent, test t);
 test copy_test (agent* thisAgent, test t);
 test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, Bool *removed_goal, Bool *removed_impasse);
 
+#ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
+void add_new_test_to_test_func (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
+#define add_new_test_to_test(thisAgent, t, add_me, add_me_original) \
+        do { \
+                printf("Debug | add_new_test_to_test called from %s\n", __func__); \
+                add_new_test_to_test_func(thisAgent, t, add_me, add_me_original); \
+        } while (0)
+#else
 void add_new_test_to_test (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
+#endif
 void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
 
 /* --- Some functions related to tests that used to be in rete.cpp

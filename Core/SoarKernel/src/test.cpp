@@ -39,10 +39,10 @@ list *copy_test_list (agent* thisAgent, cons *c) {
 
 inline bool is_test_type_with_no_referent(TestType test_type)
 {
-  return ((test_type == GOAL_ID_TEST) ||
+  return ((test_type == DISJUNCTION_TEST) ||
           (test_type == CONJUNCTIVE_TEST) ||
+          (test_type == GOAL_ID_TEST) ||
           (test_type == IMPASSE_ID_TEST) ||
-          (test_type == DISJUNCTION_TEST) ||
           (test_type == BLANK_TEST));
 }
 
@@ -52,6 +52,8 @@ inline test make_test_without_refcount(agent* thisAgent, Symbol * sym, TestType 
 
   if (!sym && (!is_test_type_with_no_referent(test_type)))
     return make_blank_test();
+//    if (test_type == BLANK_TEST)
+//      return make_blank_test();
 
   allocate_with_pool (thisAgent, &thisAgent->test_pool, &new_ct);
   new_ct->type = test_type;
@@ -67,6 +69,16 @@ inline test make_test(agent* thisAgent, Symbol * sym, TestType test_type) // is 
 
   if (!sym && (!is_test_type_with_no_referent(test_type)))
     return make_blank_test();
+//  if (test_type == BLANK_TEST)
+//    return make_blank_test();
+//
+//  if (sym && is_test_type_with_no_referent(test_type))
+//  {
+//    print(thisAgent, "Debug | make_test called with a symbol for a type that shouldn't have one!: %s %s\n",
+//        symbol_to_string (thisAgent, sym, FALSE, NULL, 0), test_type_to_string(test_type));
+//    assert(false);
+//    return make_blank_test();
+//  }
 
   new_ct = make_test_without_refcount(thisAgent, sym, test_type);
   if (sym)
@@ -143,7 +155,7 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
             removed_goal,
             removed_impasse);
         if (! test_is_blank(temp))
-          add_new_test_to_test (thisAgent, &new_t, temp);
+          add_new_test_to_test (thisAgent, &new_t, temp, NIL);
       }
       if (new_t->type==CONJUNCTIVE_TEST)
       {
@@ -200,19 +212,45 @@ void deallocate_test (agent* thisAgent, test t) {
    need not be a conjunctive test.
 ---------------------------------------------------------------- */
 
-void add_new_test_to_test (agent* thisAgent,
+#ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
+void add_new_test_to_test_func (agent* thisAgent,
                test *t, test add_me, test add_me_original) {
+#else
+  void add_new_test_to_test (agent* thisAgent,
+                 test *t, test add_me, test add_me_original) {
+#endif
+
   test ct = 0, ct_orig = 0;
   cons *c, *c_orig;
 
-  if (test_is_blank(add_me)) return;
+  #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
+  void *bra = __builtin_return_address (1);
+  print(thisAgent, "Debug | add_new_test_to_test() called from with :\n        Destination test:\n");
+  print_test(thisAgent, *t, "           ", "+ ");
+  print(thisAgent, "        Add test:\n");
+  print_test(thisAgent, add_me, "           ", "+ ");
+  print(thisAgent, "        Original test:\n");
+  print_test(thisAgent, add_me_original, "           ", "+ ");
+  #endif
 
+  if (test_is_blank(add_me)) {
+    #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
+        print(thisAgent, "Debug | ...resulting in...\n");
+        print_test(thisAgent, *t, "           ", "+ ");
+    #endif
+    return;
+  }
+  // Debug | I think this comment is obsolete...uniquifying done somewhere else
   // Check if original variable name is unique.  If not, change it before adding.
   // Must be able to get name of instantiation (not production bc the productions
   // could come from two different firings)
 
   if (test_is_blank(*t)) {
     *t = add_me;
+    #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
+    print(thisAgent, "Debug | ...resulting in...\n");
+    print_test(thisAgent, *t, "           ", "+ ");
+    #endif
     return;
   }
   ct = *t;
@@ -254,8 +292,11 @@ void add_new_test_to_test (agent* thisAgent,
 
     add_me->original_test = add_me_original;
   }
+  #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
+  print(thisAgent, "Debug | ...resulting in...\n");
+  print_test(thisAgent, *t, "           ", "+ ");
+  #endif
 }
-
 
 /* ----------------------------------------------------------------
    Same as add_new_test_to_test(), only has no effect if the second
@@ -279,7 +320,7 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test 
           return;
         }
 
-  add_new_test_to_test (thisAgent, t, add_me);
+  add_new_test_to_test (thisAgent, t, add_me, NIL);
 }
 
 /* ----------------------------------------------------------------
@@ -306,7 +347,7 @@ Bool tests_are_equal (test t1, test t2, bool neg) {
       Symbol* s1 = t1->data.referent;
       Symbol* s2 = t2->data.referent;
 
-      if ((s1->symbol_type == VARIABLE_SYMBOL_TYPE) && (s2->symbol_type == VARIABLE_SYMBOL_TYPE))
+      if ((s1->is_variable()) && (s2->is_variable()))
       {
         return TRUE;
       }
@@ -453,7 +494,7 @@ Bool test_is_variable(agent* thisAgent, test t)
       (t->type == GOAL_ID_TEST) ||
       (t->type == IMPASSE_ID_TEST)) return FALSE;
 
-  return (t->data.referent->symbol_type == VARIABLE_SYMBOL_TYPE);
+  return (t->data.referent->is_variable());
 }
 
 /* ----------------------------------------------------------------
@@ -602,7 +643,7 @@ void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter) 
   New = generate_new_variable (thisAgent, prefix);
   eq_test = make_test (thisAgent, New, EQUALITY_TEST);
   symbol_remove_ref (thisAgent, New);
-  add_new_test_to_test (thisAgent, t, eq_test);
+  add_new_test_to_test (thisAgent, t, eq_test, NIL);
 }
 
 void add_gensymmed_unique_equality_test (agent* thisAgent, test *t, char first_letter) {
@@ -620,7 +661,7 @@ void add_gensymmed_unique_equality_test (agent* thisAgent, test *t, char first_l
   eq_test = make_test (thisAgent, New, EQUALITY_TEST);
   // Debug | Do we really need this for original_tests since we clean them up?  Must make refcount cleanup more consistent
   //symbol_remove_ref (thisAgent, New);
-  add_new_test_to_test (thisAgent, t, eq_test);
+  add_new_test_to_test (thisAgent, t, eq_test, NIL);
 }
 
 /* ----------------------------------------------------------------------
@@ -685,11 +726,11 @@ void add_rete_test_list_to_tests (agent* thisAgent,
     }
 
     if (rt->right_field_num==0)
-      add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
+      add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New, NIL);
     else if (rt->right_field_num==2)
-      add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), New);
+      add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), New, NIL);
     else
-      add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), New);
+      add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), New, NIL);
   }
 }
 
@@ -711,7 +752,7 @@ void add_hash_info_to_id_test (agent* thisAgent,
 
   temp = var_bound_in_reconstructed_conds (thisAgent, cond, field_num, levels_up);
   New = make_test (thisAgent, temp, EQUALITY_TEST);
-  add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
+  add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New, NIL);
 }
 
 /* ----------------------------------------------------------------------
@@ -732,7 +773,7 @@ void add_hash_info_to_original_id_test (agent* thisAgent,
   temp = var_bound_in_reconstructed_original_conds (thisAgent, cond, field_num, levels_up);
   thisAgent->varname_table->make_varsym_unique(&temp);
   New = make_test (thisAgent, temp, EQUALITY_TEST);
-  add_new_test_to_test (thisAgent, &(cond->data.tests.id_test->original_test), New);
+  add_new_test_to_test (thisAgent, &(cond->data.tests.id_test->original_test), New, NIL);
 }
 
 /* ----------------------------------------------------------------------
@@ -766,113 +807,115 @@ void add_additional_tests_and_originals (agent *thisAgent,
   alpha_mem *am;
   am = node->b.posneg.alpha_mem_;
 
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-  print(thisAgent, "\nLHS UV| add_additional_tests_and_originals called for %s.\n(%s ^%s %s)\n",
-      thisAgent->newly_created_instantiations->prod->name->data.sc.name,
+  #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+  print(thisAgent, "\nDebug | add_additional_tests_and_originals called for %s.\n(%s ^%s %s)\n",
+      thisAgent->newly_created_instantiations->prod->name->sc->name,
       (am->id ? symbol_to_string(thisAgent, am->id, NULL, NULL, 0) : "<blank>"),
       (am->attr ? symbol_to_string(thisAgent, am->attr, NULL, NULL, 0) : "<blank>"),
       (am->value ? symbol_to_string(thisAgent, am->value, NULL, NULL, 0) : "<blank>")
       );
-#endif
+  #endif
 
-  if (am->id && am->id->symbol_type == VARIABLE_SYMBOL_TYPE)
+  if (am->id && am->id->is_variable())
   {
     original_referent = am->id;
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "LHS UV| AATtTiC making am->id (%s) unique.\n",
-          original_referent->data.var.name);
-#endif
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "LHS UV| making am->id (%s) unique.\n",
+          original_referent->var->name);
+    #endif
     thisAgent->varname_table->make_varsym_unique(&original_referent);
   } else {
     original_referent = am->id;
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
     if (am->id)
-      print(thisAgent, "LHS UV| AATtTiC not making am->id (%s) unique.\n",
+      print(thisAgent, "LHS UV| not making am->id (%s) unique.\n",
           symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
-#endif
+    #endif
   }
   cond->data.tests.id_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
 
-  if (am->attr && am->attr->symbol_type == VARIABLE_SYMBOL_TYPE)
+  if (am->attr && am->attr->is_variable())
   {
     original_referent = am->attr;
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "LHS UV| AATtTiC making am->attr (%s) unique.\n",
-          original_referent->data.var.name);
-#endif
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "LHS UV| making am->attr (%s) unique.\n",
+          original_referent->var->name);
+    #endif
     thisAgent->varname_table->make_varsym_unique(&original_referent);
   } else {
     original_referent = am->attr;
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
     if (am->attr)
-      print(thisAgent, "LHS UV| AATtTiC not making am->attr (%s) unique.\n",
+      print(thisAgent, "LHS UV| not making am->attr (%s) unique.\n",
           symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
-#endif
+    #endif
   }
   cond->data.tests.attr_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
 
-  if (am->value && am->value->symbol_type == VARIABLE_SYMBOL_TYPE)
+  if (am->value && am->value->is_variable())
     {
       original_referent = am->value;
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-      print(thisAgent, "LHS UV| AATtTiC making am->value (%s) unique.\n",
-          original_referent->data.var.name);
-#endif
+      #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+      print(thisAgent, "LHS UV| making am->value (%s) unique.\n",
+          original_referent->var->name);
+      #endif
       thisAgent->varname_table->make_varsym_unique(&original_referent);
     } else {
       original_referent = am->value;
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+#     ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
       if (am->value)
-        print(thisAgent, "LHS UV| AATtTiC not making am->value (%s) unique.\n",
+        print(thisAgent, "LHS UV| not making am->value (%s) unique.\n",
             symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
-#endif
+      #endif
     }
   cond->data.tests.value_test->original_test = make_test(thisAgent, original_referent, EQUALITY_TEST);
 
   // Debug | Do we need to uniqueify here too?
   if (nvn) {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "LHS UV| AATtTiC adding unique var names to original tests...\n");
-#endif
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "LHS UV| adding unique var names to original tests...\n");
+    #endif
     add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
         &(cond->data.tests.id_test->original_test), true);
     add_varnames_to_test (thisAgent, nvn->data.fields.attr_varnames,
         &(cond->data.tests.attr_test->original_test), true);
     add_varnames_to_test (thisAgent, nvn->data.fields.value_varnames,
         &(cond->data.tests.value_test->original_test), true);
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "LHS UV| AATtTiC added unique var names to original tests resulting in:\n");
+    #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+    print(thisAgent, "Debug | added var names to original tests resulting in:\n");
     print_test(thisAgent, cond->data.tests.id_test);
     print_test(thisAgent, cond->data.tests.attr_test);
     print_test(thisAgent, cond->data.tests.value_test);
-#endif
+    #endif
   }
 
   /* --- on hashed nodes, add equality test for the hash function --- */
   if ((node->node_type==MP_BNODE) || (node->node_type==NEGATIVE_BNODE)) {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "LHS UV| AATtTiC adding unique hash info to original id test...\n");
-#endif
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "LHS UV| adding unique hash info to original id test...\n");
+    #endif
     add_hash_info_to_original_id_test (thisAgent, cond,
         node->left_hash_loc_field_num,
         node->left_hash_loc_levels_up);
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "LHS UV| AATtTiC added unique hash info to original id test resulting in:\n");
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "LHS UV| added unique hash info to original id test resulting in:\n");
     print_test(thisAgent, cond->data.tests.id_test);
-#endif
+    #endif
   } else if (node->node_type==POSITIVE_BNODE) {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "LHS UV| AATtTiC adding unique hash info to original id test...\n");
-#endif
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "LHS UV| adding unique hash info to original id test...\n");
+    #endif
     add_hash_info_to_original_id_test (thisAgent, cond,
         node->parent->left_hash_loc_field_num,
         node->parent->left_hash_loc_levels_up);
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "LHS UV| AATtTiC added unique hash info to original id test resulting in:\n");
+    #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+    print(thisAgent, "LHS UV| added unique hash info to original id test resulting in:\n");
     print_test(thisAgent, cond->data.tests.id_test);
-#endif
+    #endif
   }
-
+  #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+  print(thisAgent, "Debug | Processing additional tests...\n");
+  #endif
   for ( ; rt!=NIL; rt=rt->next) {
 
     /* Can probably skip entire loop if (a) one of three first test types or (b)
@@ -888,17 +931,54 @@ void add_additional_tests_and_originals (agent *thisAgent,
     switch (rt->type) {
       case ID_IS_GOAL_RETE_TEST:
         // Do not create goal test in chunk test?
+        #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+        print(thisAgent, "Debug | Creating goal test.\n");
+        #endif
         chunk_test = NIL;
         original_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
         break;
       case ID_IS_IMPASSE_RETE_TEST:
+        #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+        print(thisAgent, "Debug | Creating impasse test.\n");
+        #endif
         // Do not create impasse test in chunk test?
         chunk_test = NIL;
         original_test = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
         break;
       case DISJUNCTION_RETE_TEST:
+        #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+        print(thisAgent, "Debug | Creating disjunction test.\n");
+        #endif
         chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
+        original_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
         chunk_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+        /* Debug | Probably don't need this... */
+        original_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+
+        if (rt->right_field_num==0)
+        {
+          add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), chunk_test, original_test);
+          #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+          print(thisAgent, "Debug | adding relational test to id resulting in:\n");
+          print_test(thisAgent, cond->data.tests.id_test);
+          #endif
+        }
+        else if (rt->right_field_num==1)
+        {
+          add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), chunk_test, original_test);
+          #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+          print(thisAgent, "Debug | adding relational test to attr resulting in:\n");
+          print_test(thisAgent, cond->data.tests.attr_test);
+          #endif
+        }
+        else
+        {
+          add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), chunk_test, original_test);
+          #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+          print(thisAgent, "Debug | adding relational test to value resulting in:\n");
+          print_test(thisAgent, cond->data.tests.value_test);
+          #endif
+        }
 
         // Probably don't need to copy this disjunction list
         //original_test->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
@@ -907,6 +987,9 @@ void add_additional_tests_and_originals (agent *thisAgent,
       default:
         if (test_is_constant_relational_test(rt->type))
         {
+        #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+        print(thisAgent, "Debug | Creating constant relational test.\n");
+        #endif
           test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
           referent = rt->data.constant_referent;
           chunk_test = make_test(thisAgent, referent, test_type);
@@ -919,6 +1002,9 @@ void add_additional_tests_and_originals (agent *thisAgent,
           test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
           if (!rt->data.variable_referent.levels_up)
           {
+            #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+            print(thisAgent, "Debug | Creating variable relational test.\n");
+            #endif
             /* --- before calling var_bound_in_reconstructed_conds, make sure
                    there's an equality test in the referent location (add one if
                    there isn't one already there), otherwise there'd be no variable
@@ -927,76 +1013,76 @@ void add_additional_tests_and_originals (agent *thisAgent,
               case 0:
                 if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
                 {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC adding gensymmed but non-unique id test...\n");
-#endif
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| adding gensymmed but non-unique id test...\n");
+                  #endif
                   add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC added gensymmed but non-unique id test resulting in:\n");
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| added gensymmed but non-unique id test resulting in:\n");
                   print_test(thisAgent, cond->data.tests.id_test);
-#endif
+                  #endif
                 }
                 if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test->original_test, NIL))
                 {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC adding gensymmed but non-unique original id test...\n");
-#endif
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| adding gensymmed but non-unique original id test...\n");
+                  #endif
                   add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.id_test->original_test), 's');
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC added gensymmed but non-unique original id test resulting in:\n");
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| added gensymmed but non-unique original id test resulting in:\n");
                   print_test(thisAgent, cond->data.tests.id_test);
-#endif
+                  #endif
                 }
                 break;
               case 1:
                 if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
                 {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC adding gensymmed but non-unique attr test...\n");
-#endif
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| adding gensymmed but non-unique attr test...\n");
+                  #endif
                   add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC added gensymmed but non-unique attr test resulting in:\n");
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| added gensymmed but non-unique attr test resulting in:\n");
                   print_test(thisAgent, cond->data.tests.attr_test);
-#endif
+                  #endif
                 }
                 break;
                 if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test->original_test, NIL))
                  {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC adding gensymmed but non-unique original attr test...\n");
-#endif
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| adding gensymmed but non-unique original attr test...\n");
+                  #endif
                   add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC added gensymmed but non-unique original attr test resulting in:\n");
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| added gensymmed but non-unique original attr test resulting in:\n");
                   print_test(thisAgent, cond->data.tests.attr_test);
-#endif
+                  #endif
                  }
                  break;
                default:
                 if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
                 {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC adding gensymmed but non-unique value test...\n");
-#endif
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| adding gensymmed but non-unique value test...\n");
+                  #endif
                   add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test),
                       first_letter_from_test(cond->data.tests.attr_test));
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC added gensymmed but non-unique value test resulting in:\n");
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| added gensymmed but non-unique value test resulting in:\n");
                   print_test(thisAgent, cond->data.tests.value_test);
-#endif
+                  #endif
                 }
                 if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test->original_test, NIL))
                   {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC adding gensymmed but non-unique original value test...\n");
-#endif
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| adding gensymmed but non-unique original value test...\n");
+                  #endif
                   add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.value_test->original_test),
                         first_letter_from_test(cond->data.tests.attr_test->original_test));
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-                  print(thisAgent, "LHS UV| AATtTiC added gensymmed but non-unique original value test resulting in:\n");
+                  #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+                  print(thisAgent, "LHS UV| added gensymmed but non-unique original value test resulting in:\n");
                   print_test(thisAgent, cond->data.tests.value_test);
-#endif
+                  #endif
                   }
                   break;
             }
@@ -1010,22 +1096,25 @@ void add_additional_tests_and_originals (agent *thisAgent,
               rt->data.variable_referent.levels_up);
 
           chunk_test = make_test(thisAgent, referent, test_type);
-          if (original_referent->symbol_type == VARIABLE_SYMBOL_TYPE)
+          if (original_referent->is_variable())
           {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-            print(thisAgent, "LHS UV| AATtTiC creating unique original relational referent for %s...\n",
+            #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+            print(thisAgent, "LHS UV| creating unique original relational referent for %s...\n",
                 symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
-#endif
+            #endif
             thisAgent->varname_table->make_varsym_unique(&original_referent);
             original_test = make_test (thisAgent, original_referent, test_type);
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-            print(thisAgent, "LHS UV| AATtTiC created unique original relational referent %s.\n",
+            #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+            print(thisAgent, "Debug | created relational test with referent %s.\n",
                 symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
-#endif
+            #endif
           }
           else
           {
-
+            #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+            print(thisAgent, "Debug | created relational test with referent %s.\n",
+                             symbol_to_string(thisAgent, original_referent, NULL, NULL, 0));
+            #endif
             original_test = make_test (thisAgent, original_referent, test_type);
           }
         }
@@ -1040,26 +1129,26 @@ void add_additional_tests_and_originals (agent *thisAgent,
         if (rt->right_field_num==0)
         {
           add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), chunk_test, original_test);
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-          print(thisAgent, "LHS UV| AATtTiC adding relational test to id resulting in:\n");
-          print_test(thisAgent, original_test);
-#endif
+          #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+          print(thisAgent, "Debug | adding relational test to id resulting in:\n");
+          print_test(thisAgent, cond->data.tests.id_test);
+          #endif
         }
         else if (rt->right_field_num==1)
         {
           add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), chunk_test, original_test);
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-          print(thisAgent, "LHS UV| AATtTiC adding relational test to attr resulting in:\n");
-          print_test(thisAgent, original_test);
-#endif
+          #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+          print(thisAgent, "Debug | adding relational test to attr resulting in:\n");
+          print_test(thisAgent, cond->data.tests.attr_test);
+          #endif
         }
         else
         {
           add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), chunk_test, original_test);
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-          print(thisAgent, "LHS UV| AATtTiC adding relational test to value resulting in:\n");
-          print_test(thisAgent, original_test);
-#endif
+          #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+          print(thisAgent, "Debug | adding relational test to value resulting in:\n");
+          print_test(thisAgent, cond->data.tests.value_test);
+          #endif
         }
         break;
     }
@@ -1070,42 +1159,46 @@ void add_additional_tests_and_originals (agent *thisAgent,
     if (! test_includes_equality_test_for_symbol
         (cond->data.tests.id_test->original_test, NIL))
     {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-      print(thisAgent, "LHS UV| AATtTiC adding gensymmed unique original id test bc no equality test...\n");
-#endif
+      #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+      print(thisAgent, "LHS UV| adding gensymmed unique original id test bc no equality test...\n");
+      #endif
       add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.id_test->original_test), 's');
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-      print(thisAgent, "LHS UV| AATtTiC added gensymmed unique original id test resulting in:\n");
+      #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+      print(thisAgent, "LHS UV| added gensymmed unique original id test resulting in:\n");
       print_test(thisAgent, cond->data.tests.id_test);
-#endif
+      #endif
     }
     if (! test_includes_equality_test_for_symbol
         (cond->data.tests.attr_test->original_test, NIL))
     {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-      print(thisAgent, "LHS UV| AATtTiC adding gensymmed unique original attr test bc no equality test...\n");
-#endif
+      #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+      print(thisAgent, "LHS UV| adding gensymmed unique original attr test bc no equality test...\n");
+      #endif
       add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-      print(thisAgent, "LHS UV| AATtTiC added gensymmed unique original attr test resulting in:\n");
+      #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+      print(thisAgent, "LHS UV| added gensymmed unique original attr test resulting in:\n");
       print_test(thisAgent, cond->data.tests.attr_test);
-#endif
+      #endif
     }
     if (! test_includes_equality_test_for_symbol
         (cond->data.tests.value_test->original_test, NIL))
     {
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-      print(thisAgent, "LHS UV| AATtTiC adding gensymmed unique original value test bc no equality test...\n");
-#endif
+      #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+      print(thisAgent, "LHS UV| adding gensymmed unique original value test bc no equality test...\n");
+      #endif
       add_gensymmed_unique_equality_test (thisAgent, &(cond->data.tests.value_test->original_test),
           first_letter_from_test (cond->data.tests.attr_test->original_test));
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-      print(thisAgent, "LHS UV| AATtTiC added gensymmed unique original value test resulting in:\n");
+      #ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
+      print(thisAgent, "LHS UV| added gensymmed unique original value test resulting in:\n");
       print_test(thisAgent, cond->data.tests.value_test);
-#endif
+      #endif
     }
   }
-#ifdef DEBUG_TRACE_LHS_UNIQUE_VARIABLIZATION
-  print(thisAgent, "LHS UV| add_additional_tests_and_originals finished for %s.\n\n", thisAgent->newly_created_instantiations->prod->name->data.sc.name);
-#endif
+  #ifdef DEBUG_TRACE_CHUNK_VARIABLIZATION
+  print(thisAgent, "Debug | add_additional_tests_and_originals finished for %s.  Final test: \n", thisAgent->newly_created_instantiations->prod->name->sc->name);
+  print_test(thisAgent, cond->data.tests.id_test);
+  print_test(thisAgent, cond->data.tests.attr_test);
+  print_test(thisAgent, cond->data.tests.value_test);
+  print(thisAgent, "\n");
+  #endif
 }

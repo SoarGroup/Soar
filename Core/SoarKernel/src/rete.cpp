@@ -2708,7 +2708,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
 #endif
     }
     New = make_test (thisAgent, temp, EQUALITY_TEST);
-    add_new_test_to_test (thisAgent, t, New);
+    add_new_test_to_test (thisAgent, t, New, NIL);
   } else {
     for (c=varnames_to_var_list(vn); c!=NIL; c=c->rest) {
       temp = static_cast<Symbol *>(c->first);
@@ -2723,7 +2723,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
 #endif
         }
       New =  make_test (thisAgent, temp, EQUALITY_TEST);
-      add_new_test_to_test (thisAgent, t, New);
+      add_new_test_to_test (thisAgent, t, New, NIL);
     }
   }
 }
