@@ -3963,9 +3963,9 @@ Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
    get filled in with the highest and lowest conditions built by this
    procedure.
 
-   condition_format is true if we want the function to return all tests
-   at the node (for chunk creation) and false if we just want the equality
-   tests.
+   should_add_tests_and_original_vars is true if we want the function to
+   return all tests at the node (for chunk creation) and false if we just
+   want the bound equality tests.
 
    Debug | May need to expand to a third type for rl rules?
 

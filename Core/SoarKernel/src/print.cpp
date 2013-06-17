@@ -411,7 +411,7 @@ inline const char *test_type_to_string_brief(byte test_type)
 void print_symbol_with_original(agent *thisAgent, Symbol *sym)
 {
   print(thisAgent, "%s",
-      (sym ? symbol_to_string (thisAgent, sym, FALSE, NULL, 0) : "NULL (PROBLEM!)"));
+      (sym ? symbol_to_string (thisAgent, sym, FALSE, NULL, 0) : "NULL!!!"));
       if (sym && sym->original_var_symbol)
       {
         print(thisAgent, "(%s)", symbol_to_string (thisAgent, sym->original_var_symbol, FALSE, NULL, 0));

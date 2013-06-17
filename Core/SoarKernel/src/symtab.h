@@ -203,6 +203,7 @@ typedef struct symbol_struct {
     struct symbol_struct *variablized_symbol;
     struct symbol_struct *unvariablized_symbol;
     struct symbol_struct *original_var_symbol;
+    uint32_t original_var_id;
 
     union {
         struct {

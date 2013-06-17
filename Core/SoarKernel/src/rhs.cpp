@@ -35,19 +35,19 @@ inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sy
 
   if (!sym )
   {
-#ifdef DEBUG_TRACE_RHS_REFCOUNTS
-    print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
-#endif
+    #ifdef DEBUG_TRACE_RHS_REFCOUNTS
+        print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
+    #endif
     return reinterpret_cast<rhs_value>(NIL);
   }
   allocate_with_pool (thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
   new_rhs_symbol->referent = sym;
   new_rhs_symbol->original_variable = original_sym;
-#ifdef DEBUG_TRACE_RHS_REFCOUNTS
-  print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount creating rhs_symbol %s (%s).\n",
-         symbol_to_string(thisAgent, new_rhs_symbol->referent, FALSE, NULL, 0),
-         (new_rhs_symbol->original_variable ? symbol_to_string(thisAgent, new_rhs_symbol->original_variable, FALSE, NULL, 0) : "no orig"));
-#endif
+  #ifdef DEBUG_TRACE_RHS_REFCOUNTS
+    print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount creating rhs_symbol %s (%s).\n",
+           symbol_to_string(thisAgent, new_rhs_symbol->referent, FALSE, NULL, 0),
+           (new_rhs_symbol->original_variable ? symbol_to_string(thisAgent, new_rhs_symbol->original_variable, FALSE, NULL, 0) : "no orig"));
+  #endif
   /* -- Must always increase original_sym refcount if it exists because this function
    *    is only called when the newly generate rhs value is created with a brand new
    *    sym that already had its refcount incremented -- */
@@ -55,10 +55,10 @@ inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sy
   if (original_sym)
   {
     symbol_add_ref(thisAgent, original_sym);
-#ifdef DEBUG_TRACE_RHS_REFCOUNTS
-    print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount adding refcount to %s.\n",
-           symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0));
-#endif
+    #ifdef DEBUG_TRACE_RHS_REFCOUNTS
+        print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount adding refcount to %s.\n",
+               symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0));
+    #endif
   }
   return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
@@ -70,10 +70,10 @@ inline rhs_value make_rhs_value_symbol(agent* thisAgent, Symbol * sym, Symbol * 
   if (sym)
   {
     symbol_add_ref(thisAgent, sym);
-#ifdef DEBUG_TRACE_RHS_REFCOUNTS
-    print(thisAgent, "Debug | make_rhs_value_symbol adding refcount to %s.\n",
-           symbol_to_string(thisAgent, sym, FALSE, NULL, 0));
-#endif
+    #ifdef DEBUG_TRACE_RHS_REFCOUNTS
+        print(thisAgent, "Debug | make_rhs_value_symbol adding refcount to %s.\n",
+               symbol_to_string(thisAgent, sym, FALSE, NULL, 0));
+    #endif
     }
   return make_rhs_value_symbol_no_refcount(thisAgent, sym, original_sym);
 }
@@ -337,24 +337,15 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       original_sym = var_bound_in_reconstructed_original_conds (thisAgent, cond,
                                    rhs_value_to_reteloc_field_num(rv),
                                    rhs_value_to_reteloc_levels_up(rv));
-      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-      // symbol_add_ref(thisAgent, original_sym);
-      //#ifdef DEBUG_TRACE_RHS_REFCOUNTS
-      //      print(thisAgent, "Debug | copy_rhs_value_and_substitute_varnames increasing refcount of original %s from %ld.\n",
-      //             symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0),
-      //             original_sym->reference_count);
-      //#endif
     }
     sym = var_bound_in_reconstructed_conds (thisAgent, cond,
         rhs_value_to_reteloc_field_num(rv),
         rhs_value_to_reteloc_levels_up(rv));
-    // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-    // symbol_add_ref(thisAgent, sym);
-#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "RHS UV| copy_rhs_value_and_substitute_varnames creating, from reteloc, rhs_symbol %s(%s).\n",
-          symbol_to_string(thisAgent, sym),
-         (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
-#endif
+    #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+        print(thisAgent, "RHS UV| copy_rhs_value_and_substitute_varnames creating, from reteloc, rhs_symbol %s(%s).\n",
+              symbol_to_string(thisAgent, sym),
+             (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
+    #endif
     return make_rhs_value_symbol(thisAgent, sym, original_sym);
   }
 
@@ -374,18 +365,19 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       {
         thisAgent->highest_rhs_unboundvar_index = index;
       }
+      /* -- generate will already increment the refcount, so we don't
+       *    need to here -- */
+      return make_rhs_value_symbol_no_refcount(thisAgent, sym);
     }
     else
     {
       sym = *(thisAgent->rhs_variable_bindings+index);
-      // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-      //symbol_add_ref(thisAgent, sym);
     }
-#ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-    print(thisAgent, "RHS UV| copy_rhs_value_and_substitute_varnames created unbound var rhs_symbol %s(%s).\n",
-          symbol_to_string(thisAgent, sym),
-         (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
-#endif
+    #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
+        print(thisAgent, "RHS UV| copy_rhs_value_and_substitute_varnames created unbound var rhs_symbol %s(%s).\n",
+              symbol_to_string(thisAgent, sym),
+             (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
+    #endif
     return make_rhs_value_symbol(thisAgent, sym);
   }
 
