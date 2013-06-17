@@ -39,6 +39,20 @@ sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node)
 			add_child(g->get_child(i));
 		}
 	}
+
+	// Create wmes for all string properties
+	const string_properties_map& str_props = node->get_string_properties();
+	for(string_properties_map::const_iterator i = str_props.begin(); i != str_props.end(); i++){
+		const std::string& propertyName = i->first;
+		properties[propertyName] = soarint->make_wme(id, propertyName, i->second);
+	}
+
+	// Create wmes for all numeric properties
+	const numeric_properties_map& num_props = node->get_numeric_properties();
+	for(numeric_properties_map::const_iterator i = num_props.begin(); i != num_props.end(); i++){
+		const std::string& propertyName = i->first;
+		properties[propertyName] = soarint->make_wme(id, propertyName, i->second);
+	}
 }
 
 sgwme::~sgwme() {
@@ -48,6 +62,11 @@ sgwme::~sgwme() {
 		node->unlisten(this);
 	}
 	soarint->remove_wme(name_wme);
+
+	for(std::map<std::string, wme*>::iterator i = properties.begin(); i != properties.end(); i++){
+		soarint->remove_wme(i->second);
+	}
+
 	for (i = childs.begin(); i != childs.end(); ++i) {
 		i->first->parent = NULL;
 		soarint->remove_wme(i->second);
@@ -60,16 +79,25 @@ sgwme::~sgwme() {
 	}
 }
 
-void sgwme::node_update(sgnode *n, sgnode::change_type t, int added_child) {
+void sgwme::node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
+	int added_child = 0;
 	group_node *g;
 	switch (t) {
 		case sgnode::CHILD_ADDED:
-			g = node->as_group();
-			add_child(g->get_child(added_child));
+			if(parse_int(update_info, added_child)){
+				g = node->as_group();
+				add_child(g->get_child(added_child));
+			}
 			break;
 		case sgnode::DELETED:
 			node = NULL;
 			delete this;
+			break;
+		case sgnode::PROPERTY_CHANGED:
+			update_property(update_info);
+			break;
+		case sgnode::PROPERTY_DELETED:
+			delete_property(update_info);
 			break;
 		default:
 			break;
@@ -91,6 +119,43 @@ void sgwme::add_child(sgnode *c) {
 	child = new sgwme(soarint, soarint->get_wme_val(cid_wme), this, c);
 	childs[child] = cid_wme;
 }
+
+
+void sgwme::update_property(const std::string& propertyName){
+	wme* propWme;
+	const string_properties_map& str_props = node->get_string_properties();
+	const numeric_properties_map& num_props = node->get_numeric_properties();
+
+	string_properties_map::const_iterator str_it = str_props.find(propertyName);
+	numeric_properties_map::const_iterator num_it = num_props.find(propertyName);
+
+	if(str_it != str_props.end()){
+		// Make a wme with a string value
+		propWme = soarint->make_wme(id, propertyName, str_it->second);
+	} else if(num_it != num_props.end()){
+		// Make a wme with a numeric value
+		propWme = soarint->make_wme(id, propertyName, num_it->second);
+	} else {
+		// Something went wrong, the property is not on the node
+		return;
+	}
+
+	std::map<std::string, wme*>::iterator i = properties.find(propertyName);
+	if(i != properties.end()){
+		soarint->remove_wme(i->second);
+	}
+	properties[propertyName] = propWme;
+}
+
+void sgwme::delete_property(const std::string& propertyName){
+	std::map<std::string, wme*>::iterator i = properties.find(propertyName);
+	if(i != properties.end()){
+		wme* propWme = i->second;
+		soarint->remove_wme(propWme);
+		properties.erase(i);
+	}
+}
+
 
 svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
 : svsp(svsp), parent(NULL), state(state), si(si), level(0),

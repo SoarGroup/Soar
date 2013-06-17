@@ -14,6 +14,9 @@ class sgnode_listener;
 class group_node;
 class geometry_node;
 
+typedef std::map<std::string, std::string> string_properties_map;
+typedef std::map<std::string, double> numeric_properties_map;
+
 class sgnode : public cliproxy {
 	friend class group_node;
 	
@@ -22,7 +25,9 @@ public:
 		CHILD_ADDED,
 		DELETED,        // sent from destructor
 		TRANSFORM_CHANGED,
-		SHAPE_CHANGED
+		SHAPE_CHANGED,
+		PROPERTY_CHANGED,
+		PROPERTY_DELETED
 	};
 	
 	sgnode(const std::string &name, const std::string &type, bool group);
@@ -72,7 +77,13 @@ public:
 
 	virtual void walk_geoms(std::vector<geometry_node*> &g) = 0;
 	virtual void walk_geoms(std::vector<const geometry_node*> &g) const = 0;
-	
+
+	// AM: accessors/mutators for node properties
+	string_properties_map get_string_properties() const { return string_props;	}
+	numeric_properties_map get_numeric_properties() const{	return numeric_props;	}
+	void set_property(const std::string& propertyName, const std::string& value);
+	void delete_property(const std::string& propertyName);
+
 protected:
 	void set_bounds(const bbox &b);
 	virtual void update_shape() = 0;
@@ -82,7 +93,11 @@ protected:
 private:
 	void set_transform_dirty();
 	void update_transform() const;
-	void send_update(change_type t, int added=-1);
+	void send_update(change_type t, const std::string& update_info);
+	void send_update(change_type t){
+		std::string s = "";
+		send_update(t, s);
+	}
 	
 	int         id;
 	std::string name;
@@ -104,6 +119,10 @@ private:
 	mutable bool       trans_dirty;
 	
 	std::list<sgnode_listener*> listeners;
+
+	// AM: Maps that hold both numeric and string properties
+	string_properties_map string_props;
+	numeric_properties_map numeric_props;
 };
 
 class group_node : public sgnode {
@@ -197,7 +216,7 @@ private:
 
 class sgnode_listener {
 public:
-	virtual void node_update(sgnode *n, sgnode::change_type t, int added_child) = 0;
+	virtual void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) = 0;
 };
 
 double convex_distance(const sgnode *n1, const sgnode *n2);

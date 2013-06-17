@@ -123,12 +123,12 @@ void sgnode::update_transform() const {
 
 /* if updates result in observers removing themselves, the iteration may
  * screw up, so make a copy of the std::list first */
-void sgnode::send_update(sgnode::change_type t, int added) {
+void sgnode::send_update(sgnode::change_type t, const std::string& update_info) {
 	std::list<sgnode_listener*>::iterator i;
 	std::list<sgnode_listener*> c;
 	std::copy(listeners.begin(), listeners.end(), back_inserter(c));
 	for (i = c.begin(); i != c.end(); ++i) {
-		(**i).node_update(this, t, added);
+		(**i).node_update(this, t, update_info);
 	}
 }
 
@@ -183,6 +183,8 @@ const group_node *sgnode::as_group() const {
 sgnode *sgnode::clone() const {
 	sgnode *c = clone_sub();
 	c->set_trans(pos, rot, scale);
+	c->string_props = string_props;
+	c->numeric_props = numeric_props;
 	return c;
 }
 
@@ -298,7 +300,8 @@ bool group_node::attach_child(sgnode *c) {
 	c->parent = this;
 	c->set_transform_dirty();
 	set_shape_dirty();
-	send_update(sgnode::CHILD_ADDED, children.size() - 1);
+	std::string added_num = tostring(children.size() - 1);
+	send_update(sgnode::CHILD_ADDED, added_num);
 	
 	return true;
 }
@@ -575,4 +578,29 @@ bool intersects(const sgnode *n1, const sgnode *n2) {
 		return convex_distance(n1, n2) < INTERSECT_THRESH;
 	}
 	return false;
+}
+
+void sgnode::set_property(const std::string& propertyName, const std::string& value){
+	double numericValue;
+	if(parse_double(value, numericValue)){
+		string_props.erase(propertyName);
+		numeric_props[propertyName] = numericValue;
+	} else {
+		numeric_props.erase(propertyName);
+		string_props[propertyName] = value;
+	}
+	send_update(sgnode::PROPERTY_CHANGED, propertyName);
+}
+
+void sgnode::delete_property(const std::string& propertyName){
+	bool changed = false;
+	if(numeric_props.erase(propertyName) > 0){
+		changed = true;
+	}
+	if(string_props.erase(propertyName) > 0){
+		changed = true;
+	}
+	if(changed){
+		send_update(sgnode::PROPERTY_DELETED, propertyName);
+	}
 }

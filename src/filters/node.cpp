@@ -57,7 +57,7 @@ public:
 		return true;
 	}
 	
-	void node_update(sgnode *n, sgnode::change_type t, int added) {
+	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
 			node_info &info = map_get(nodes, n);
 			std::list<const filter_params*>::const_iterator i;
@@ -132,13 +132,16 @@ public:
 		return true;
 	}
 	
-	void node_update(sgnode *n, sgnode::change_type t, int added_child) {
+	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
 		filter_val *r;
 		group_node *g;
+		int added_child = 0;
 		switch (t) {
 			case sgnode::CHILD_ADDED:
-				g = n->as_group();
-				add_node(g->get_child(added_child));
+				if(parse_int(update_info, added_child)){
+					g = n->as_group();
+					add_node(g->get_child(added_child));
+				}
 				break;
 			case sgnode::DELETED:
 				if (map_get(outputs, n, r)) {

@@ -416,31 +416,71 @@ int scene::parse_change(vector<string> &f, string &error) {
 	return -1;
 }
 
+// parse_property(vector<string> &f, string &error)
+//   parses a property command (command 'p')
+//	 f is a list of the parameters given
+//   Changed the format of the command to be
+//     p <name> <subcommand> <property> <value?>
+//		<name> - name of the node
+//      <subcommand> - either 'a' for add, 'c' for change, or 'd' for delete
+//		<property> - the name of the property
+// 		<value?> - the value of the property, needed for the add or change subcommands only
 int scene::parse_property(vector<string> &f, string &error) {
 	int p = 0;
-	node_info *ninfo;
 	
+	// Parameter 1: Node Name
 	if (p >= f.size()) {
-		error = "expecting node name";
+		error = "Property Command P1: Expecting node name";
 		return p;
 	}
+	string name = f[p++];
 	
-	if (!(ninfo = find_name(f[p++]))) {
-		error = "node does not exist";
+	node_info *ninfo = find_name(name);
+	if (!ninfo) {
+		error = "Property Command P1: Node " + name + " does not exist";
+		return (p-1);
+	}
+
+	// Parameter 2: Subcommand (a = add, d = delete, c = change)
+	if (p >= f.size() || f[p].length() == 0){
+		error = "Property Command P2: Expecting subcommand";
 		return p;
 	}
-	if (p >= f.size()) {
-		error = "expecting property name";
+	char subcommand = tolower(f[p++][0]);
+
+	// Parameter 3: Property Name
+	if (p >= f.size()){
+		error = "Property Command P3: Expecting property name";
 		return p;
 	}
-	string prop = f[p++];
-	
-	double val;
-	if (!parse_double(f[p], val)) {
-		error = "expecting a number";
-		return p;
+	string propName = f[p++];
+
+	// Parameter 4 (For add/change): property value
+	string value;
+	if(subcommand == 'a' || subcommand == 'c'){
+		if(p >= f.size()){
+			error = "Property Command P4: Expecting value for " + propName;
+			return p;
+		}
+		value = f[p++];
 	}
-	ninfo->props[prop] = val;
+
+	switch(subcommand){
+	case 'a':
+		// Add property
+	case 'c':
+		// Change property
+		ninfo->node->set_property(propName, value);
+		break;
+	case 'd':
+		// Delete property
+		ninfo->node->delete_property(propName);
+		break;
+	default:
+		error = "Property Command P3: Unrecognized subcommand (Expecting a, c, d)";
+		return 2;
+	}
+
 	return -1;
 }
 
@@ -501,6 +541,7 @@ void scene::get_property_names(int i, vector<string> &names) const {
 	}
 	
 	const node_info &info = nodes[i];
+
 	property_map::const_iterator k, kend;
 	for (k = info.props.begin(), kend = info.props.end(); k != kend; ++k) {
 		names.push_back(k->first);
@@ -597,13 +638,17 @@ void velocity_hack(const sgnode *n, drawer *d) {
 	d->send(ss.str());
 }
 
-void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
+void scene::node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
 	sgnode *child;
 	group_node *g;
 	relation *tr;
 	drawer *d = owner->get_drawer();
 	
 	if (t == sgnode::CHILD_ADDED) {
+		int added_child = 0;
+		if(!parse_int(update_info, added_child)){
+			return;
+		}
 		g = n->as_group();
 		child = g->get_child(added_child);
 		child->listen(this);

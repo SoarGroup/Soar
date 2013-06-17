@@ -24,12 +24,14 @@ class sgwme : public sgnode_listener {
 public:
 	sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node);
 	~sgwme();
-	void node_update(sgnode *n, sgnode::change_type t, int added_child);
+	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info);
     Symbol * get_id(){ return id;}
 	sgnode * get_node(){ return node;}
 	std::map<sgwme*,wme*> *get_childs(){ return &childs;}
 private:
 	void add_child(sgnode *c);
+	void update_property(const std::string& propertyName);
+	void delete_property(const std::string& propertyName);
 	
 	sgwme          *parent;
 	sgnode         *node;
@@ -38,6 +40,9 @@ private:
 	soar_interface *soarint;
 
 	std::map<sgwme*,wme*> childs;
+
+	// AM: Puts the properties of the node onto the WM graph
+	std::map<std::string, wme*> properties;
 
 };
 

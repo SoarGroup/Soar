@@ -69,7 +69,7 @@ public:
 	
 	bool early() { return false; }
 	
-	void node_update(sgnode *n, sgnode::change_type t, int added_child) {
+	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
 		if (t == sgnode::DELETED) {
 			parent = NULL;
 		}

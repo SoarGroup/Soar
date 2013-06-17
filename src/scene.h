@@ -40,7 +40,7 @@ public:
 	bool set_properties(const rvec &vals);
 	void remove_property(const std::string &obj, const std::string &prop);
 	bool parse_sgel(const std::string &s);
-	void node_update(sgnode *n, sgnode::change_type t, int added_child);
+	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info);
 	double convex_distance(const sgnode *a, const sgnode *b) const;
 	bool intersects(const sgnode *a, const sgnode *b) const;
 	const scene_sig &get_signature() const;
@@ -60,7 +60,9 @@ private:
 		node_info() : node(NULL), rels_dirty(true), closest(-1) {}
 		
 		sgnode *node;
+
 		property_map props;
+
 		
 		// these fields are used by the model learning system
 		std::vector<double> dists;
