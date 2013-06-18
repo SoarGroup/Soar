@@ -35,7 +35,7 @@ inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sy
 
   if (!sym )
   {
-    #ifdef DEBUG_TRACE_RHS_REFCOUNTS
+    #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
         print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
     #endif
     return reinterpret_cast<rhs_value>(NIL);
@@ -43,11 +43,6 @@ inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sy
   allocate_with_pool (thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
   new_rhs_symbol->referent = sym;
   new_rhs_symbol->original_variable = original_sym;
-  #ifdef DEBUG_TRACE_RHS_REFCOUNTS
-    print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount creating rhs_symbol %s (%s).\n",
-           symbol_to_string(thisAgent, new_rhs_symbol->referent, FALSE, NULL, 0),
-           (new_rhs_symbol->original_variable ? symbol_to_string(thisAgent, new_rhs_symbol->original_variable, FALSE, NULL, 0) : "no orig"));
-  #endif
   /* -- Must always increase original_sym refcount if it exists because this function
    *    is only called when the newly generate rhs value is created with a brand new
    *    sym that already had its refcount incremented -- */
@@ -55,10 +50,6 @@ inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sy
   if (original_sym)
   {
     symbol_add_ref(thisAgent, original_sym);
-    #ifdef DEBUG_TRACE_RHS_REFCOUNTS
-        print(thisAgent, "Debug | make_rhs_value_symbol_no_refcount adding refcount to %s.\n",
-               symbol_to_string(thisAgent, original_sym, FALSE, NULL, 0));
-    #endif
   }
   return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
@@ -70,10 +61,6 @@ inline rhs_value make_rhs_value_symbol(agent* thisAgent, Symbol * sym, Symbol * 
   if (sym)
   {
     symbol_add_ref(thisAgent, sym);
-    #ifdef DEBUG_TRACE_RHS_REFCOUNTS
-        print(thisAgent, "Debug | make_rhs_value_symbol adding refcount to %s.\n",
-               symbol_to_string(thisAgent, sym, FALSE, NULL, 0));
-    #endif
     }
   return make_rhs_value_symbol_no_refcount(thisAgent, sym, original_sym);
 }
@@ -97,20 +84,10 @@ void deallocate_rhs_value (agent* thisAgent, rhs_value rv) {
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
     if (r->referent)
     {
-#ifdef DEBUG_TRACE_RHS_REFCOUNTS
-      print(thisAgent, "Debug | deallocate_rhs_value decreasing refcount of %s from %ld to %ld.\n",
-             symbol_to_string(thisAgent, r->referent, FALSE, NULL, 0),
-             r->referent->reference_count, (r->referent->reference_count)-1);
-#endif
       symbol_remove_ref (thisAgent, r->referent);
     }
     if (r->original_variable)
     {
-#ifdef DEBUG_TRACE_RHS_REFCOUNTS
-      print(thisAgent, "Debug | deallocate_rhs_value decreasing refcount of original %s from %ld to %ld.\n",
-             symbol_to_string(thisAgent, r->original_variable, FALSE, NULL, 0),
-             r->original_variable->reference_count, (r->original_variable->reference_count)-1);
-#endif
       symbol_remove_ref (thisAgent, r->original_variable);
     }
     free_with_pool (&thisAgent->rhs_symbol_pool, r);
@@ -159,8 +136,8 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
 void deallocate_action_list (agent* thisAgent, action *actions) {
   action *a;
 
-#ifdef DEBUG_TRACE_RHS_REFCOUNTS
-  print(thisAgent, "Debug | deallocating action list...\n");
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+  print(thisAgent, "Debug | Deallocating action list...\n");
 #endif
   while (actions) {
     a = actions;

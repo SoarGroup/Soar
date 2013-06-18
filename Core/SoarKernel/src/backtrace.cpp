@@ -84,7 +84,6 @@ inline void add_to_grounds(agent* thisAgent, condition * cond)
     (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
     push (thisAgent, (cond), thisAgent->grounds); }
 }
-
 inline void add_to_potentials(agent* thisAgent, condition * cond)
 {
   if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc) {
