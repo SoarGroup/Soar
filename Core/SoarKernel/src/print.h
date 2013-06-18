@@ -124,7 +124,7 @@ extern void filtered_print_wme_add(agent* thisAgent, wme *w);
 extern char *string_to_escaped_string (agent* thisAgent, char *s, char first_and_last_char,
                                        char *dest);
 extern char const* symbol_to_typeString (agent* thisAgent, Symbol *sym);
-extern char *symbol_to_string (agent* thisAgent, Symbol *sym, bool rereadable=FALSE, char *dest=NIL, size_t dest_size=0);
+extern char *symbol_to_string (agent* thisAgent, Symbol *sym, bool rereadable=false, char *dest=NIL, size_t dest_size=0);
 extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size);
 extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size);
 extern char preference_to_string (agent* thisAgent, byte type);
@@ -136,7 +136,7 @@ extern char preference_to_string (agent* thisAgent, byte type);
    parameter tells how many spaces to indent each line other than the
    first--the first line is not indented (the caller must handle this).
    The last line is printed without a trailing linefeed.  The "internal"
-   parameter, if TRUE, indicates that the condition list should be printed
+   parameter, if true, indicates that the condition list should be printed
    in internal format--one condition per line, without grouping all the
    conditions for the same id into one line.
 

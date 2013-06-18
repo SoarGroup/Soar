@@ -1324,7 +1324,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 		const_cast< LPSTR >( commandLine.str().c_str() ),	// Command line
 		0,								// Process handle not inheritable
 		0,								// Thread handle not inheritable
-		FALSE,							// Set handle inheritance to FALSE
+		false,							// Set handle inheritance to false
 		0,								// No creation flags
 		0,								// Use parent's environment block
 		0,								// Use parent's starting directory 

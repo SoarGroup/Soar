@@ -70,9 +70,9 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
 
                 /* First print out the production in "normal" form */
                 print(thisAgent, "(sp %s\n  ", chunk->name);
-                print_condition_list(thisAgent, chunk->conds, 2, FALSE);
+                print_condition_list(thisAgent, chunk->conds, 2, false);
                 print(thisAgent, "\n-->\n   ");
-                print_action_list(thisAgent, chunk->actions, 3, FALSE);
+                print_action_list(thisAgent, chunk->actions, 3, false);
                 print(thisAgent, ")\n\n");
 
                 /* Then list each condition and the associated "ground" WME */

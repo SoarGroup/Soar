@@ -91,8 +91,8 @@ namespace soar_module
 		inst->match_goal_level = state->data.id.level;
 		inst->reliable = true;
 		inst->backtrace_number = 0;
-		inst->in_ms = FALSE;
-		inst->GDS_evaluated_already = FALSE;
+		inst->in_ms = false;
+		inst->GDS_evaluated_already = false;
 
 		// create preferences
 		inst->preferences_generated = NULL;

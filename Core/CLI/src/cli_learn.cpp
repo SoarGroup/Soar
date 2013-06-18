@@ -29,7 +29,7 @@ void GetForceLearnStates(agent* agnt, std::stringstream& res) {
     char buff[1024];
 
     for (c = agnt->chunky_problem_spaces; c != NIL; c = c->rest) {
-        symbol_to_string(agnt, static_cast<Symbol *>(c->first), TRUE, buff, 1024);
+        symbol_to_string(agnt, static_cast<Symbol *>(c->first), true, buff, 1024);
         res << buff;
     }
 }
@@ -39,7 +39,7 @@ void GetDontLearnStates(agent* agnt, std::stringstream& res) {
     char buff[1024];
 
     for (c = agnt->chunk_free_problem_spaces; c != NIL; c = c->rest) {
-        symbol_to_string(agnt, static_cast<Symbol *>(c->first), TRUE, buff, 1024);
+        symbol_to_string(agnt, static_cast<Symbol *>(c->first), true, buff, 1024);
         res << buff;
     }
 }

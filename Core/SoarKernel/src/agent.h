@@ -406,12 +406,12 @@ typedef struct agent_struct {
   /* --- current top level phase --- */
   enum top_level_phase current_phase;
 
-  /* --- to interrupt at the end of the current phase, set stop_soar to TRUE
+  /* --- to interrupt at the end of the current phase, set stop_soar to true
      and reason_for_stopping to some appropriate string --- */
   bool                stop_soar;
   const char          * reason_for_stopping;
 
-  /* --- the RHS action (halt) sets this TRUE --- */
+  /* --- the RHS action (halt) sets this true --- */
   bool                system_halted;
 
   /* --- stuff for max-chunks (which is a sysparam) --- */

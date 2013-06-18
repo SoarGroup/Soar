@@ -77,7 +77,7 @@ extern void init_agent_memory (agent* thisAgent);
                             Running Soar
 
    Each of the following routines runs Soar for a certain duration,
-   or until stop_soar gets set to TRUE.
+   or until stop_soar gets set to true.
      - Run_forever() runs Soar forever.
      - Run_for_n_phases() runs Soar for a given number (n) of top-level
        phases.  (If n==-1, it runs forever.)

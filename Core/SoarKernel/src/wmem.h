@@ -65,7 +65,7 @@ extern Symbol *find_name_of_object (agent* thisAgent, Symbol *id);
 
       id, attr, value:  points to symbols for the wme fields
 
-      acceptable:  TRUE iff this is an acceptable pref. wme
+      acceptable:  true iff this is an acceptable pref. wme
 
       timetag:  timetag of the wme
 

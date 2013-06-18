@@ -87,7 +87,7 @@
      list.  Extract_list_elements() and extract_dl_list_elements() do this.
      They use a callback function that indicates which elements to extract:
      the callback function is called on each element of the list, and should
-     return TRUE for the elements to be extracted.  The two extraction
+     return true for the elements to be extracted.  The two extraction
      functions return a list (or dl_list) of the extracted elements.
 
    Hash table routines:
@@ -117,7 +117,7 @@
      retrieved via do_for_all_items_in_hash_table() and
      do_for_all_items_in_hash_bucket().  Each uses a callback function,
      invoking it with each successive item.  The callback function should
-     normally return FALSE.  If the callback function ever returns TRUE,
+     normally return false.  If the callback function ever returns true,
      iteration over the hash table items stops and the do_for_xxx()
      routine returns immediately.
 ====================================================================== */

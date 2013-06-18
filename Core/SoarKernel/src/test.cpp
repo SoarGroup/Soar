@@ -75,7 +75,7 @@ inline test make_test(agent* thisAgent, Symbol * sym, TestType test_type) // is 
 //  if (sym && is_test_type_with_no_referent(test_type))
 //  {
 //    print(thisAgent, "Debug | make_test called with a symbol for a type that shouldn't have one!: %s %s\n",
-//        symbol_to_string (thisAgent, sym, FALSE, NULL, 0), test_type_to_string(test_type));
+//        symbol_to_string (thisAgent, sym, false, NULL, 0), test_type_to_string(test_type));
 //    assert(false);
 //    return make_blank_test();
 //  }
@@ -126,8 +126,8 @@ test copy_test (agent* thisAgent, test t) {
 
 /* ----------------------------------------------------------------
    Same as copy_test(), only it doesn't include goal or impasse tests
-   in the new copy.  The caller should initialize the two flags to FALSE
-   before calling this routine; it sets them to TRUE if it finds a goal
+   in the new copy.  The caller should initialize the two flags to false
+   before calling this routine; it sets them to true if it finds a goal
    or impasse test.
 ---------------------------------------------------------------- */
 
@@ -142,10 +142,10 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
       return copy_test (thisAgent, t);
       break;
     case GOAL_ID_TEST:
-      *removed_goal = TRUE;
+      *removed_goal = true;
       return make_blank_test();
     case IMPASSE_ID_TEST:
-      *removed_impasse = TRUE;
+      *removed_impasse = true;
       return make_blank_test();
 
     case CONJUNCTIVE_TEST:
@@ -324,7 +324,7 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test 
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the two tests are identical.
+   Returns true iff the two tests are identical.
    If neg is true, ignores order of members in conjunctive tests
    and assumes variables are all equal.
 ---------------------------------------------------------------- */
@@ -335,13 +335,13 @@ bool tests_are_equal (test t1, test t2, bool neg) {
     if (t1->type==EQUALITY_TEST)
     {
       if (t2->type!=EQUALITY_TEST)
-        return FALSE;
+        return false;
 
       if (t1->data.referent == t2->data.referent) /* Warning: this relies on the representation of tests */
-        return TRUE;
+        return true;
 
       if (!neg)
-        return FALSE;
+        return false;
 
       // ignore variables in negation tests
       Symbol* s1 = t1->data.referent;
@@ -349,30 +349,30 @@ bool tests_are_equal (test t1, test t2, bool neg) {
 
       if ((s1->is_variable()) && (s2->is_variable()))
       {
-        return TRUE;
+        return true;
       }
-      return FALSE;
+      return false;
     }
 
     if (t1->type != t2->type)
-      return FALSE;
+      return false;
 
     switch(t1->type) {
       case GOAL_ID_TEST:
-        return TRUE;
+        return true;
 
       case IMPASSE_ID_TEST:
-        return TRUE;
+        return true;
 
       case DISJUNCTION_TEST:
         for (c1 = t1->data.disjunction_list, c2 = t2->data.disjunction_list; (c1!=NIL) && (c2!=NIL); c1 = c1->rest, c2 = c2->rest)
         {
           if (c1->first != c2->first)
-            return FALSE;
+            return false;
         }
         if (c1 == c2)
-          return TRUE;  /* make sure they both hit end-of-list */
-        return FALSE;
+          return true;  /* make sure they both hit end-of-list */
+        return false;
 
       case CONJUNCTIVE_TEST:
         // bug 510 fix: ignore order of test members in conjunctions
@@ -393,7 +393,7 @@ bool tests_are_equal (test t1, test t2, bool neg) {
 
           // iter will be end if no match
           if (iter == copy2.end())
-            return FALSE;
+            return false;
 
           // there was a match, remove it from unmatched
           copy2.erase(iter);
@@ -401,14 +401,14 @@ bool tests_are_equal (test t1, test t2, bool neg) {
 
         // make sure no unmatched remain
         if (copy2.empty())
-          return TRUE;
+          return true;
       }
-      return FALSE;
+      return false;
 
       default:  /* relational tests other than equality */
         if (t1->data.referent == t2->data.referent)
-          return TRUE;
-        return FALSE;
+          return true;
+        return false;
     }
   }
 
@@ -457,28 +457,28 @@ uint32_t hash_test (agent* thisAgent, test t) {
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the test contains an equality test for the given
-   symbol.  If sym==NIL, returns TRUE iff the test contains any
+   Returns true iff the test contains an equality test for the given
+   symbol.  If sym==NIL, returns true iff the test contains any
    equality test.
 ---------------------------------------------------------------- */
 
 bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
   cons *c;
 
-  if (test_is_blank(t)) return FALSE;
+  if (test_is_blank(t)) return false;
 
   if (t->type == EQUALITY_TEST) {
     if (sym) return (t->data.referent == sym);
-    return TRUE;
+    return true;
   } else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_includes_equality_test_for_symbol (static_cast<test>(c->first), sym)) return TRUE;
+      if (test_includes_equality_test_for_symbol (static_cast<test>(c->first), sym)) return true;
   }
-  return FALSE;
+  return false;
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the test contains a test for a variable
+   Returns true iff the test contains a test for a variable
    symbol.  Assumes test is not a conjunctive one and does not
    try to search them.
 ---------------------------------------------------------------- */
@@ -488,18 +488,18 @@ bool test_is_variable(agent* thisAgent, test t)
   char *this_test;
   bool return_value = false;
 
-  if (test_is_blank(t)) return FALSE;
+  if (test_is_blank(t)) return false;
   if ((t->type == DISJUNCTION_TEST) ||
       (t->type == CONJUNCTIVE_TEST) ||
       (t->type == GOAL_ID_TEST) ||
-      (t->type == IMPASSE_ID_TEST)) return FALSE;
+      (t->type == IMPASSE_ID_TEST)) return false;
 
   return (t->data.referent->is_variable());
 }
 
 /* ----------------------------------------------------------------
    Looks for goal or impasse tests (as directed by the two flag
-   parameters) in the given test, and returns TRUE if one is found.
+   parameters) in the given test, and returns true if one is found.
 ---------------------------------------------------------------- */
 
 bool test_includes_goal_or_impasse_id_test (test t,
@@ -507,18 +507,18 @@ bool test_includes_goal_or_impasse_id_test (test t,
                                             bool look_for_impasse) {
   cons *c;
 
-  if (t->type == EQUALITY_TEST) return FALSE;
-  if (look_for_goal && (t->type==GOAL_ID_TEST)) return TRUE;
-  if (look_for_impasse && (t->type==IMPASSE_ID_TEST)) return TRUE;
+  if (t->type == EQUALITY_TEST) return false;
+  if (look_for_goal && (t->type==GOAL_ID_TEST)) return true;
+  if (look_for_impasse && (t->type==IMPASSE_ID_TEST)) return true;
   if (t->type == CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
       if (test_includes_goal_or_impasse_id_test (static_cast<test>(c->first),
                                                  look_for_goal,
                                                  look_for_impasse))
-        return TRUE;
-    return FALSE;
+        return true;
+    return false;
   }
-  return FALSE;
+  return false;
 }
 
 /* ----------------------------------------------------------------

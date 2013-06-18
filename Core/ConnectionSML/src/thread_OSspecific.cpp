@@ -53,7 +53,7 @@ public:
 //   HANDLE mutex;
 //
 //public:
-//	WindowsMutex()			{ mutex = CreateMutex(NULL, FALSE, NULL); }
+//	WindowsMutex()			{ mutex = CreateMutex(NULL, false, NULL); }
 //	virtual ~WindowsMutex() { CloseHandle(mutex); }
 //	void Lock()				{ WaitForSingleObject(mutex, INFINITE); }
 //	void Unlock()			{ ReleaseMutex(mutex) ; }
@@ -71,7 +71,7 @@ protected:
 	HANDLE m_Event ;
 
 public:
-	WindowsEvent()					{ m_Event = CreateEvent(NULL, FALSE, FALSE, NULL); }
+	WindowsEvent()					{ m_Event = CreateEvent(NULL, false, false, NULL); }
 	virtual ~WindowsEvent()			{ CloseHandle(m_Event) ; }
 	void WaitForEventForever()		{ WaitForSingleObject(m_Event, INFINITE); }
 	//The timeout is seconds + milliseconds, where milliseconds < 1000

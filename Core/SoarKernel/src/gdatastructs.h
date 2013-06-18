@@ -91,11 +91,11 @@ typedef struct gds_struct {
       type:  indicates the type of the preference.  This is one of the
              types defined below:  ACCEPTABLE_PREFERENCE_TYPE, etc.
 
-      o_supported:  TRUE iff the preference has o-support
+      o_supported:  true iff the preference has o-support
 
-      in_tm:  TRUE iff the preference is currently in temporary memory
+      in_tm:  true iff the preference is currently in temporary memory
 
-      on_goal_list:  TRUE iff the preference is on the list of preferences
+      on_goal_list:  true iff the preference is on the list of preferences
                      supported by its match goal (see all_of_goal_next below)
 
       reference_count:  (see below)
@@ -287,12 +287,12 @@ extern bool remove_preference_from_clones (agent* thisAgent, preference *pref);
       impasse_id:  points to the identifier of the attribute impasse object
         for this slot.  (NIL if the slot isn't impassed.)
 
-      isa_context_slot:  TRUE iff this is a context slot
+      isa_context_slot:  true iff this is a context slot
 
       impasse_type:  indicates the type of the impasse for this slot.  This
         is one of NONE_IMPASSE_TYPE, CONSTRAINT_FAILURE_IMPASSE_TYPE, etc.
 
-      marked_for_possible_removal:  TRUE iff this slot is on the list of
+      marked_for_possible_removal:  true iff this slot is on the list of
         slots that might be deallocated at the end of the current top-level
         phase.
 
@@ -410,7 +410,7 @@ typedef struct three_field_tests_struct {
         field tests for the condition.
 
       test_for_acceptable_preference:  for positive and negative conditions,
-        this is TRUE iff the condition tests for acceptable preference wmes.
+        this is true iff the condition tests for acceptable preference wmes.
 
       data.ncc.top, data.ncc.bottom:  for NCC's, these point to the top and
         bottom of the subconditions linked list.

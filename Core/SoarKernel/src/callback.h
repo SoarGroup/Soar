@@ -127,7 +127,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 
     This function is called only once, just before the system exits back
     to the shell.  The "call_data" parameter is of type "bool" which is
-    TRUE if the system is exiting normally, and FALSE if the exit is
+    true if the system is exiting normally, and false if the exit is
     happening because some fatal error situation was detected.  Typically,
     this routine should do any final cleanup (closing files, etc.)
     necessary.
