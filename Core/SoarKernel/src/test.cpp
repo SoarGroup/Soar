@@ -114,7 +114,7 @@ test copy_test (agent* thisAgent, test t) {
       new_ct = make_test(thisAgent, NIL, t->type);
       new_ct->data.conjunct_list = copy_test_list (thisAgent, t->data.conjunct_list);
       break;
-    default:  /* relational tests other than equality */
+    default:
       new_ct = make_test(thisAgent, t->data.referent, t->type);
       break;
   }

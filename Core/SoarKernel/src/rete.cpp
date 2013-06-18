@@ -6331,7 +6331,7 @@ void reteload_free_symbol_table (agent* thisAgent) {
   uint64_t i;
 
   for (i=0; i<thisAgent->reteload_num_syms; i++)
-    symbol_remove_ref (thisAgent, *(thisAgent->reteload_symbol_table+i));
+    symbol_remove_ref (thisAgent, (*(thisAgent->reteload_symbol_table+i)));
   free_memory (thisAgent, thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
 }
 
