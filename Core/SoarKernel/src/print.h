@@ -46,7 +46,7 @@
 #include <stdio.h>	// Needed for FILE token below
 #include "gdatastructs.h"
 
-typedef char Bool;
+
 typedef struct test_struct test_info;
 typedef test_info * test;
 typedef char * rhs_value;
@@ -69,7 +69,7 @@ typedef struct wme_filter_struct {
     bool removes;
 } wme_filter;
 
-extern void start_log_file (agent* thisAgent, char *filename, Bool append);
+extern void start_log_file (agent* thisAgent, char *filename, bool append);
 extern void stop_log_file (agent* thisAgent);
 extern void print_string_to_log_file_only (agent* thisAgent, char *string);
 
@@ -124,7 +124,7 @@ extern void filtered_print_wme_add(agent* thisAgent, wme *w);
 extern char *string_to_escaped_string (agent* thisAgent, char *s, char first_and_last_char,
                                        char *dest);
 extern char const* symbol_to_typeString (agent* thisAgent, Symbol *sym);
-extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable=FALSE, char *dest=NIL, size_t dest_size=0);
+extern char *symbol_to_string (agent* thisAgent, Symbol *sym, bool rereadable=FALSE, char *dest=NIL, size_t dest_size=0);
 extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size);
 extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size);
 extern char preference_to_string (agent* thisAgent, byte type);
@@ -153,9 +153,9 @@ extern char preference_to_string (agent* thisAgent, byte type);
 extern inline const char *test_type_to_string(byte test_type);
 extern void print_test (agent* thisAgent, test t, const char *indent_string = "        ", const char *conj_indent_string = "+ ");
 void print_test_brief (agent* thisAgent, test t, bool trailing_space=true);
-extern void print_condition_list (agent* thisAgent, condition *conds, int indent, Bool internal);
-extern void print_action_list (agent* thisAgent, action *actions, int indent, Bool internal);
-extern void print_production (agent* thisAgent, production *p, Bool internal);
+extern void print_condition_list (agent* thisAgent, condition *conds, int indent, bool internal);
+extern void print_action_list (agent* thisAgent, action *actions, int indent, bool internal);
+extern void print_production (agent* thisAgent, production *p, bool internal);
 
 /* -----------------------------------------------------------------------
                        Other Printing Utilities

@@ -248,7 +248,7 @@ wme* find_input_wme_by_timetag_from_id (agent* thisAgent, Symbol* idSym, uint64_
 	return NIL ;
 }
 
-Bool remove_input_wme (agent* thisAgent, wme *w) {
+bool remove_input_wme (agent* thisAgent, wme *w) {
 	wme *temp;
 
 	/* --- a little bit of error checking --- */
@@ -823,14 +823,14 @@ Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr) {
    returned.
 -------------------------------------------------------------------- */
 
-Bool tio_constituent_char[256];
-Bool tio_whitespace[256];
+bool tio_constituent_char[256];
+bool tio_whitespace[256];
 
 Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input_string) {
   int int_val;
   double float_val;
-  Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-  Bool rereadable;
+  bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+  bool rereadable;
 
   determine_possible_symbol_types_for_string (input_string,
                                               strlen(input_string),

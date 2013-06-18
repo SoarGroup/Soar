@@ -470,7 +470,7 @@ extern void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int de
 typedef struct condition_struct condition;
 typedef struct action_struct action;
 
-extern Bool smem_count_ltis( agent *my_agent, void *item, void *userdata );
+extern bool smem_count_ltis( agent *my_agent, void *item, void *userdata );
 extern bool smem_valid_production( condition *lhs_top, action *rhs_top );
 
 extern smem_lti_id smem_lti_get_id( agent *my_agent, char name_letter, uint64_t name_number );

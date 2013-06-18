@@ -13,11 +13,11 @@ typedef test_info * test;
 
 /* --- Descriptions of these functions can be found in the test.cpp --- */
 char first_letter_from_test (test t);
-inline Bool test_is_blank(test t){return (t == 0);}
-inline Bool test_is_variable(agent* thisAgent, test t);
-Bool tests_are_equal (test t1, test t2, bool neg);
-Bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
-Bool test_includes_goal_or_impasse_id_test (test t, Bool look_for_goal, Bool look_for_impasse);
+inline bool test_is_blank(test t){return (t == 0);}
+inline bool test_is_variable(agent* thisAgent, test t);
+bool tests_are_equal (test t1, test t2, bool neg);
+bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
+bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
 
 inline test make_blank_test() {return static_cast<test>(0);}
@@ -27,7 +27,7 @@ inline uint32_t hash_test (agent* thisAgent, test t);
 void deallocate_test (agent* thisAgent, test t);
 
 test copy_test (agent* thisAgent, test t);
-test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, Bool *removed_goal, Bool *removed_impasse);
+test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *removed_goal, bool *removed_impasse);
 
 #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
 void add_new_test_to_test_func (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);

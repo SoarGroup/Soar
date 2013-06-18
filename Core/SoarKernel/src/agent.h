@@ -59,7 +59,7 @@ typedef struct select_info_struct select_info;
 #define UPDATE_DISCONNECTED_IDS_LIST 1
 #define JUST_UPDATE_COUNT 2
 
-typedef char Bool;
+
 typedef struct symbol_struct Symbol;
 typedef struct hash_table_struct hash_table;
 typedef struct wme_struct wme;
@@ -254,7 +254,7 @@ typedef struct agent_struct {
   lexer_source_file * current_file; /* file we're currently reading */
   int                 current_char; /* holds current input character */
   struct lexeme_info  lexeme;       /* holds current lexeme */
-  Bool                print_prompt_flag;
+  bool                print_prompt_flag;
   Symbol            * current_production_name;
 
   string_hash_table * varname_table;
@@ -401,22 +401,22 @@ typedef struct agent_struct {
   /* --- stuff for "input-period" command --- */
   /* --- in Soar8, input runs once at beginning of D cycle, no matter what */
   int                 input_period;      /* AGR REW1 */
-  Bool                input_cycle_flag;  /* AGR REW1 */
+  bool                input_cycle_flag;  /* AGR REW1 */
 
   /* --- current top level phase --- */
   enum top_level_phase current_phase;
 
   /* --- to interrupt at the end of the current phase, set stop_soar to TRUE
      and reason_for_stopping to some appropriate string --- */
-  Bool                stop_soar;
+  bool                stop_soar;
   const char          * reason_for_stopping;
 
   /* --- the RHS action (halt) sets this TRUE --- */
-  Bool                system_halted;
+  bool                system_halted;
 
   /* --- stuff for max-chunks (which is a sysparam) --- */
   uint64_t       chunks_this_d_cycle; /* # chunks built this DC */
-  Bool		     max_chunks_reached;
+  bool		     max_chunks_reached;
 
   /* --- list of productions whose firings are being traced --- */
   ::list            * productions_being_traced;
@@ -613,13 +613,13 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
    /* Keep track of real time steps for constant real-time per decision */
    /* used only if #def'd REAL_TIME_BEHAVIOR */
    struct timeval	*real_time_tracker;
-   Bool			     real_time_idling;
+   bool			     real_time_idling;
 
    /* RMJ */
    /* Keep track of duration of attentional lapses */
    /* Used only if #def'd ATTENTION_LAPSE in */
    struct timeval	*attention_lapse_tracker;
-   Bool			     attention_lapsing;
+   bool			     attention_lapsing;
 
 
   /* ----------------------- Chunker stuff -------------------------- */
@@ -640,7 +640,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   tc_number           results_tc_number;
   tc_number           variablization_tc;
   preference        * extra_result_prefs_from_instantiation;
-  Bool                quiescence_t_flag;
+  bool                quiescence_t_flag;
   char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
 
   /* ----------------------- Misc. top-level stuff -------------------------- */
@@ -673,7 +673,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   explain_chunk_str * explain_chunk_list;         /* AGR 564 */
   char                explain_chunk_name[256];    /* AGR 564 */
   /* made explain_flag EXPLAIN_SYSPARAM instead, KJC 7/96 */
-  /* Bool                explain_flag; */
+  /* bool                explain_flag; */
 
   /* ----------------------- Firer stuff -------------------------- */
 
@@ -735,7 +735,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   struct trace_format_struct *(object_tf_for_anything[3]);
   struct hash_table_struct *(object_tr_ht[3]);
-  Bool                printing_stack_traces;
+  bool                printing_stack_traces;
   struct trace_format_struct *(stack_tf_for_anything[3]);
   struct hash_table_struct *(stack_tr_ht[3]);
   tc_number           tf_printing_tc;
@@ -761,7 +761,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   memory_pool         output_link_pool;
   tc_number           output_link_tc_num;
 
-  Bool                output_link_changed;
+  bool                output_link_changed;
 
   Symbol            * io_header;
   wme               * io_header_link;
@@ -801,15 +801,15 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   const char        * alternate_input_string;
   const char        * alternate_input_suffix;
-  Bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
+  bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
   expansion_node    * lex_alias;         /* AGR 568 */
-  Bool                load_errors_quit;  /* AGR 527c */
+  bool                load_errors_quit;  /* AGR 527c */
   dir_stack_struct  * top_dir_stack;   /* AGR 568 */
 
 
   /* RCHONG: begin 10.11 */
-  Bool       did_PE;
-  Bool       soar_verbose_flag;
+  bool       did_PE;
+  bool       soar_verbose_flag;
   int        FIRING_TYPE;
   Symbol     *PE_level;
 
@@ -850,11 +850,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   goal_stack_level next_change_level;
 
   /* delineate btwn Pref/WM(propose) and Pref/WM(apply) KJC 10.05.98 */
-  Bool       applyPhase;
+  bool       applyPhase;
 
   /* REW: begin 10.24.97 */
-  Bool       waitsnc;
-  Bool       waitsnc_detect;
+  bool       waitsnc;
+  bool       waitsnc_detect;
   /* REW: end   10.24.97 */
 
   /* JC ADDED: Need to store RHS functions here so that agent's don't step on each other */
@@ -1035,7 +1035,7 @@ extern void    destroy_soar_agent (agent* soar_agent);
 /* Ideally, this should be in "lexer.h", but to avoid circular dependencies
    among header files, I am forced to put it here. */
 
-inline Bool reading_from_top_level(agent* soarAgent)
+inline bool reading_from_top_level(agent* soarAgent)
 {
    return (!soarAgent->current_file->parent_file);
 }

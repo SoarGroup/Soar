@@ -157,7 +157,7 @@ void backtrace_through_instantiation (agent* thisAgent,
   tc_number tc2;  /* use this to mark other ids we see */
   condition *c;
   list *grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
-  Bool need_another_pass;
+  bool need_another_pass;
   backtrace_str temp_explain_backtrace;
 
   if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
@@ -487,7 +487,7 @@ void trace_grounded_potentials (agent* thisAgent) {
   tc_number tc;
   cons *c, *next_c, *prev_c;
   condition *pot;
-  Bool need_another_pass;
+  bool need_another_pass;
 
   if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
     print_string (thisAgent, "\n\n*** Tracing Grounded Potentials ***\n");
@@ -543,7 +543,7 @@ void trace_grounded_potentials (agent* thisAgent) {
    if anything was BT'd; FALSE if nothing changed.
 --------------------------------------------------------------- */
 
-Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *reliable) {
+bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *reliable) {
 
   /* mvp 5-17-94 */
   cons *c, *next_c, *prev_c, *CDPS;

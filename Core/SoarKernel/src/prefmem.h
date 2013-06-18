@@ -39,7 +39,7 @@
 
 #include "gdatastructs.h"
 
-typedef char Bool;
+
 typedef unsigned char byte;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
@@ -55,7 +55,7 @@ extern preference *make_preference (agent* thisAgent, byte type, Symbol *id, Sym
                                     Symbol *value, Symbol *referent, Symbol *original_id_var=NULL,
                                     Symbol *original_attr_var=NULL, Symbol *original_value_var=NULL);
 
-extern Bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref);
+extern bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref);
 
 inline void preference_add_ref(preference * p)
 {

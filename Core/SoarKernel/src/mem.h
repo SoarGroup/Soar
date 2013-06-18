@@ -172,7 +172,7 @@ extern void print_memory_statistics (agent* thisAgent);
 extern char *make_memory_block_for_string (agent* thisAgent, char const*s);
 extern void free_memory_block_for_string (agent* thisAgent, char *p);
 
-typedef char Bool;
+
 typedef void * growable_string;
 
 // voigtjr 11/2005: platform specific code (strlen/malloc/etc) should be in .cpp files!
@@ -385,7 +385,7 @@ typedef struct dl_cons_struct {
 typedef dl_cons dl_list;
 
 extern ::list *destructively_reverse_list (::list *c);
-extern Bool member_of_list (void *item, ::list *the_list);
+extern bool member_of_list (void *item, ::list *the_list);
 extern ::list *add_if_not_member (agent* thisAgent, void *item, ::list *old_list);
 extern void free_list (agent* thisAgent, ::list *the_list);
 
@@ -395,10 +395,10 @@ extern void free_list (agent* thisAgent, ::list *the_list);
    need parameters of different types, so a void pointer is best. -AJC (8/7/02) */
 /* Added thisAgent to cons_test_fn type, because we are eliminating the
    global soar_agent. -AJC (8/7/02) */
-//typedef Bool (*cons_test_fn)(cons *c);
-typedef Bool (*cons_test_fn)(agent* thisAgent, cons *c, void* data);
+//typedef bool (*cons_test_fn)(cons *c);
+typedef bool (*cons_test_fn)(agent* thisAgent, cons *c, void* data);
 
-typedef Bool (*dl_cons_test_fn)(dl_cons *dc, agent* thisAgent);
+typedef bool (*dl_cons_test_fn)(dl_cons *dc, agent* thisAgent);
 
 /* Added a void* parameter to extract_list_elements, because remove_pwatch_test_fn(),
    one of the callback functions, requires a third parameter that points to a
@@ -408,7 +408,7 @@ extern ::list *extract_list_elements (agent* thisAgent, ::list **header, cons_te
 
 extern dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f);
 
-extern Bool cons_equality_fn (agent*, cons *c, void *data);
+extern bool cons_equality_fn (agent*, cons *c, void *data);
 
 /* ----------------------------- */
 /* Resizable hash table routines */
@@ -440,8 +440,8 @@ extern void free_hash_table(agent* thisAgent, struct hash_table_struct *ht); /* 
 extern void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht, void *item);
 extern void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht, void *item);
 
-typedef Bool (*hash_table_callback_fn)(void *item);
-typedef Bool (*hash_table_callback_fn2)(agent* thisAgent, void *item, void* f);
+typedef bool (*hash_table_callback_fn)(void *item);
+typedef bool (*hash_table_callback_fn2)(agent* thisAgent, void *item, void* f);
 
 extern void do_for_all_items_in_hash_table (agent* thisAgent, struct hash_table_struct *ht,
                                             hash_table_callback_fn2 f, void* userdata);

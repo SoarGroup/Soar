@@ -10,7 +10,7 @@
 #ifndef INIT_SOAR_H
 #define INIT_SOAR_H
 
-typedef char Bool;
+
 typedef signed short goal_stack_level;
 typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;

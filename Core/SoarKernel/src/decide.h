@@ -27,7 +27,7 @@
 #ifndef DECIDE_H
 #define DECIDE_H
 
-typedef char Bool;
+
 typedef unsigned char byte;
 typedef struct symbol_struct Symbol;
 typedef struct wme_struct wme;

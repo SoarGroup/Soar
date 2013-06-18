@@ -351,7 +351,7 @@ cons *destructively_reverse_list (cons *c) {
   return prev;
 }
 
-Bool member_of_list (void *item, list *the_list) {
+bool member_of_list (void *item, list *the_list) {
   while (the_list) {
     if (the_list->first == item) return TRUE;
     the_list = the_list->rest;
@@ -450,7 +450,7 @@ dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_t
   return first_extracted_element;
 }
 
-Bool cons_equality_fn (agent*, cons *c, void *data) 
+bool cons_equality_fn (agent*, cons *c, void *data) 
 {
   return (c->first == data);
 }

@@ -20,7 +20,7 @@
 
 #include <set>
 
-typedef char Bool;
+
 typedef unsigned char byte;
 typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
@@ -179,12 +179,12 @@ typedef struct gds_struct {
 #define NUMERIC_INDIFFERENT_PREFERENCE_TYPE 13
 #define NUM_PREFERENCE_TYPES 14
 
-inline Bool preference_is_unary(byte p)
+inline bool preference_is_unary(byte p)
 {
   return (p < 9);
 }
 
-inline Bool preference_is_binary(byte p)
+inline bool preference_is_binary(byte p)
 {
   return (p > 8);
 }
@@ -193,9 +193,9 @@ extern const char * preference_name[NUM_PREFERENCE_TYPES];
 
 typedef struct preference_struct {
   byte type;         /* acceptable, better, etc. */
-  Bool o_supported;  /* is the preference o-supported? */
-  Bool in_tm;        /* is this currently in TM? */
-  Bool on_goal_list; /* is this pref on the list for its match goal */
+  bool o_supported;  /* is the preference o-supported? */
+  bool in_tm;        /* is this currently in TM? */
+  bool on_goal_list; /* is this pref on the list for its match goal */
   uint64_t reference_count;
   Symbol *id;
   Symbol *attr;
@@ -238,7 +238,7 @@ typedef struct preference_struct {
 } preference;
 
 /* Decl'd in prefmem.cpp and needed in decide.cpp */
-extern Bool remove_preference_from_clones (agent* thisAgent, preference *pref);
+extern bool remove_preference_from_clones (agent* thisAgent, preference *pref);
 
 /* ------------------------------------------------------------------------
 
@@ -316,9 +316,9 @@ typedef struct slot_struct {
   preference *preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
   ::list *CDPS;						          /* list of prefs in the CDPS to backtrace through */
   Symbol *impasse_id;               /* NIL if slot is not impassed */
-  Bool isa_context_slot;
+  bool isa_context_slot;
   byte impasse_type;
-  Bool marked_for_possible_removal;
+  bool marked_for_possible_removal;
   dl_cons *changed;   /* for non-context slots: points to the corresponding
                          dl_cons in changed_slots;  for context slots: just
                          zero/nonzero flag indicating slot changed */
@@ -452,8 +452,8 @@ typedef struct ncc_info_struct {
 /* --- finally, the structure of a condition --- */
 typedef struct condition_struct {
   byte type;
-  Bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
-  Bool test_for_acceptable_preference;   /* for positive, negative cond's only */
+  bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
+  bool test_for_acceptable_preference;   /* for positive, negative cond's only */
   struct condition_struct *next, *prev;
 
   union condition_main_data_union {

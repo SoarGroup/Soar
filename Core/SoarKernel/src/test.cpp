@@ -132,8 +132,8 @@ test copy_test (agent* thisAgent, test t) {
 ---------------------------------------------------------------- */
 
 test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
-    Bool *removed_goal,
-    Bool *removed_impasse) {
+    bool *removed_goal,
+    bool *removed_impasse) {
   cons *c;
   test new_t, temp;
 
@@ -329,7 +329,7 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test 
    and assumes variables are all equal.
 ---------------------------------------------------------------- */
 
-Bool tests_are_equal (test t1, test t2, bool neg) {
+bool tests_are_equal (test t1, test t2, bool neg) {
   cons *c1, *c2;
 
     if (t1->type==EQUALITY_TEST)
@@ -462,7 +462,7 @@ uint32_t hash_test (agent* thisAgent, test t) {
    equality test.
 ---------------------------------------------------------------- */
 
-Bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
+bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
   cons *c;
 
   if (test_is_blank(t)) return FALSE;
@@ -482,7 +482,7 @@ Bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
    symbol.  Assumes test is not a conjunctive one and does not
    try to search them.
 ---------------------------------------------------------------- */
-Bool test_is_variable(agent* thisAgent, test t)
+bool test_is_variable(agent* thisAgent, test t)
 {
   cons *c;
   char *this_test;
@@ -502,9 +502,9 @@ Bool test_is_variable(agent* thisAgent, test t)
    parameters) in the given test, and returns TRUE if one is found.
 ---------------------------------------------------------------- */
 
-Bool test_includes_goal_or_impasse_id_test (test t,
-                                            Bool look_for_goal,
-                                            Bool look_for_impasse) {
+bool test_includes_goal_or_impasse_id_test (test t,
+                                            bool look_for_goal,
+                                            bool look_for_impasse) {
   cons *c;
 
   if (t->type == EQUALITY_TEST) return FALSE;

@@ -229,7 +229,7 @@ list *parse_attribute_path_in_brackets (agent* thisAgent) {
   return path;
 }
 
-trace_format *parse_pattern_in_brackets (agent* thisAgent, Bool read_opening_bracket) {
+trace_format *parse_pattern_in_brackets (agent* thisAgent, bool read_opening_bracket) {
   trace_format *first, *prev, *New;
 
   /* --- look for opening bracket --- */
@@ -663,7 +663,7 @@ void init_tracing (agent* thisAgent) {
 }
 
 trace_format *lookup_trace_format (agent* thisAgent,
-								   Bool stack_trace,
+								   bool stack_trace,
                                    int type_restriction,
                                    Symbol *name_restriction) {
   uint32_t hash_value;
@@ -688,8 +688,8 @@ trace_format *lookup_trace_format (agent* thisAgent,
     return thisAgent->object_tf_for_anything[type_restriction];
 }
 
-Bool remove_trace_format (agent* thisAgent,
-						  Bool stack_trace,
+bool remove_trace_format (agent* thisAgent,
+						  bool stack_trace,
                           int type_restriction,
                           Symbol *name_restriction) {
   uint32_t hash_value;
@@ -724,8 +724,8 @@ Bool remove_trace_format (agent* thisAgent,
   return TRUE;
 }
 
-Bool add_trace_format (agent* thisAgent,
-					   Bool stack_trace,
+bool add_trace_format (agent* thisAgent,
+					   bool stack_trace,
                        int type_restriction,
                        Symbol *name_restriction,
                        const char *format_string) {
@@ -789,7 +789,7 @@ void print_tracing_rule_tcl (agent* thisAgent, int type_restriction, Symbol *nam
   print (thisAgent, "}\n");
 }
 
-Bool print_trace_callback_fn (agent* thisAgent, void *item, void*) {
+bool print_trace_callback_fn (agent* thisAgent, void *item, void*) {
   tracing_rule *tr;
 
   tr = static_cast<tracing_rule_struct *>(item);
@@ -797,7 +797,7 @@ Bool print_trace_callback_fn (agent* thisAgent, void *item, void*) {
   return FALSE;
 }
 
-Bool print_trace_callback_fn_tcl (agent* thisAgent, void *item, void*) {
+bool print_trace_callback_fn_tcl (agent* thisAgent, void *item, void*) {
   tracing_rule *tr;
 
   tr = static_cast<tracing_rule_struct *>(item);
@@ -806,7 +806,7 @@ Bool print_trace_callback_fn_tcl (agent* thisAgent, void *item, void*) {
   return FALSE;
 }
 
-void print_all_trace_formats (agent* thisAgent, Bool stack_trace, FILE* f) {
+void print_all_trace_formats (agent* thisAgent, bool stack_trace, FILE* f) {
   int i;
 
   thisAgent->printing_stack_traces = stack_trace;
@@ -825,7 +825,7 @@ void print_all_trace_formats (agent* thisAgent, Bool stack_trace, FILE* f) {
   }
 }
 
-void print_all_trace_formats_tcl (agent* thisAgent, Bool stack_trace, FILE* f) {
+void print_all_trace_formats_tcl (agent* thisAgent, bool stack_trace, FILE* f) {
   int i;
 
   thisAgent->printing_stack_traces = stack_trace;
@@ -902,13 +902,13 @@ inline void set_tagged_trace_formats(agent* thisAgent){
 growable_string object_to_trace_string (agent* thisAgent, Symbol *object);
 
 
-Bool found_undefined;   /* set to TRUE whenever an escape sequence result is
+bool found_undefined;   /* set to TRUE whenever an escape sequence result is
                            undefined--for use with %ifdef */
 
 struct tracing_parameters {
   Symbol *current_s;          /* current state, etc. -- for use in %cs, etc. */
   Symbol *current_o;
-  Bool allow_cycle_counts;    /* TRUE means allow %dc and %ec */
+  bool allow_cycle_counts;    /* TRUE means allow %dc and %ec */
 } tparams;
 
 /* ----------------------------------------------------------------
@@ -924,7 +924,7 @@ void add_values_of_attribute_path (agent* thisAgent,
 								   Symbol *object,
                                    list *path,
                                    growable_string *result,
-                                   Bool recursive,
+                                   bool recursive,
                                    int *count) {
   slot *s;
   wme *w;
@@ -977,8 +977,8 @@ void add_values_of_attribute_path (agent* thisAgent,
 void add_trace_for_wme (agent* thisAgent,
 						growable_string *result,
                         wme *w,
-                        Bool print_attribute,
-                        Bool recursive) {
+                        bool print_attribute,
+                        bool recursive) {
   char *ch;
   growable_string gs;
 
@@ -1013,8 +1013,8 @@ void add_trace_for_attribute_path (agent* thisAgent,
 								   Symbol *object,
                                    list *path,
                                    growable_string *result,
-                                   Bool print_attributes,
-                                   Bool recursive) {
+                                   bool print_attributes,
+                                   bool recursive) {
   growable_string values;
   cons *c;
   char *ch;
@@ -1156,7 +1156,7 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
       break;
 
     case IF_ALL_DEFINED_TFT:
-      { Bool saved_found_undefined;
+      { bool saved_found_undefined;
         saved_found_undefined = found_undefined;
         found_undefined = FALSE;
         temp_gs = trace_format_list_to_string (thisAgent, tf->data.subformat, object);
@@ -1239,7 +1239,7 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
                                structures */
 
 trace_format *find_appropriate_trace_format (agent* thisAgent,
-											 Bool stack_trace,
+											 bool stack_trace,
                                              int type,
                                              Symbol *name) {
   trace_format *tf;
@@ -1315,7 +1315,7 @@ growable_string selection_to_trace_string (agent* thisAgent,
 										   Symbol *object,
                                            Symbol *current_state,
                                            int selection_type,
-                                           Bool allow_cycle_counts) {
+                                           bool allow_cycle_counts) {
   trace_format *tf;
   Symbol *name;
   growable_string gs;
@@ -1367,7 +1367,7 @@ void print_object_trace (agent* thisAgent, Symbol *object) {
   free_growable_string (thisAgent, gs);
 }
 
-void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int slot_type, Bool /*allow_cycle_counts*/) {
+void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int slot_type, bool /*allow_cycle_counts*/) {
 
 	Symbol* current_o = 0;
 
@@ -1441,7 +1441,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 
 
 void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slot_type,
-                        Bool allow_cycle_counts) {
+                        bool allow_cycle_counts) {
   growable_string gs;
 
   thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);

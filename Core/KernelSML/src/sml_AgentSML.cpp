@@ -1146,7 +1146,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
 	}
 
 	RemoveWmeFromWmeMap( pWME );
-	Bool ok = remove_input_wme(m_agent, pWME) ;
+	bool ok = remove_input_wme(m_agent, pWME) ;
 
 	CHECK_RET_FALSE(ok) ;
 

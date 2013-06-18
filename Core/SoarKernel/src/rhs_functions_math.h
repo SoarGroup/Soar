@@ -16,7 +16,7 @@
 #ifndef RHSFUN_MATH_H
 #define RHSFUN_MATH_H
 
-typedef char Bool;
+
 typedef struct agent_struct agent;
 
 extern void init_built_in_rhs_math_functions (agent* thisAgent);

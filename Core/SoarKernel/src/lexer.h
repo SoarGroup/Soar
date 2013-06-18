@@ -46,7 +46,7 @@
 
 #include <stdio.h>	// Needed for FILE token below
 
-typedef char Bool;
+
 typedef struct agent_struct agent;
 
 #define MAX_LEXER_LINE_LENGTH 1000
@@ -103,12 +103,12 @@ struct lexeme_info {
 
 extern void determine_possible_symbol_types_for_string (char *s,
                                                         size_t length_of_s,
-                                                        Bool *possible_id,
-                                                        Bool *possible_var,
-                                                        Bool *possible_sc,
-                                                        Bool *possible_ic,
-                                                        Bool *possible_fc,
-                                                        Bool *rereadable);
+                                                        bool *possible_id,
+                                                        bool *possible_var,
+                                                        bool *possible_sc,
+                                                        bool *possible_ic,
+                                                        bool *possible_fc,
+                                                        bool *rereadable);
 
 extern void init_lexer (agent* thisAgent);
 extern void start_lex_from_file (agent* thisAgent, const char *filename,
@@ -122,10 +122,10 @@ extern int current_lexer_parentheses_level (agent* thisAgent);
 extern void skip_ahead_to_balanced_parentheses (agent* thisAgent,
 												int parentheses_level);
 extern void fake_rparen_at_next_end_of_line (agent* thisAgent);
-extern void set_lexer_allow_ids (agent* thisAgent, Bool allow_identifiers);
-extern Bool get_lexer_allow_ids (agent* thisAgent);
+extern void set_lexer_allow_ids (agent* thisAgent, bool allow_identifiers);
+extern bool get_lexer_allow_ids (agent* thisAgent);
 
-extern Bool determine_type_of_constituent_string (agent* thisAgent);
+extern bool determine_type_of_constituent_string (agent* thisAgent);
 
 /* (RBD) the rest of this stuff shouldn't be in the module interface... */
 
@@ -137,8 +137,8 @@ typedef struct lexer_source_file_struct {
   struct lexer_source_file_struct *parent_file;
   char *filename;
   FILE *file;
-  Bool fake_rparen_at_eol;
-  Bool allow_ids;
+  bool fake_rparen_at_eol;
+  bool allow_ids;
   int parentheses_level;    /* 0 means top level, no left paren's seen */
   int current_column;       /* column number of next char to read (0-based) */
   uint64_t current_line;   /* line number of line in buffer (1-based) */

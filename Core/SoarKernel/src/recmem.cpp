@@ -250,7 +250,7 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 	cons *c, *prev_c, *arg_cons;
 	rhs_function *rf;
 	Symbol *result;
-	Bool nil_arg_found;
+	bool nil_arg_found;
 
 	if (rhs_value_is_symbol(rv)) {
 
@@ -474,7 +474,7 @@ preference *execute_action(agent* thisAgent, action *a, struct token_struct *tok
  ----------------------------------------------------------------------- */
 
 void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
-		Bool need_to_do_support_calculations, instantiation *original_inst) {
+		bool need_to_do_support_calculations, instantiation *original_inst) {
 	condition *cond;
 	preference *p;
 	goal_stack_level level;
@@ -553,7 +553,7 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
 			 calculations, then compare and restore saved flags. --- */
 			list *saved_flags;
 			preference *pref;
-			Bool difference_found;
+			bool difference_found;
 			saved_flags = NIL;
 			for (pref = inst->preferences_generated; pref != NIL;
 					pref = pref->inst_next)
@@ -565,7 +565,7 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
 			for (pref = inst->preferences_generated; pref != NIL;
 					pref = pref->inst_next) {
 				cons *c;
-				Bool b;
+				bool b;
 				c = saved_flags;
 				saved_flags = c->rest;
 				b = (c->first ? TRUE : FALSE);
@@ -623,7 +623,7 @@ void init_firer(agent* thisAgent) {
 
 /* --- Macro returning TRUE iff we're supposed to trace firings for the
  given instantiation, which should have the "prod" field filled in. --- */
-inline Bool trace_firings_of_inst(agent* thisAgent, instantiation * inst) {
+inline bool trace_firings_of_inst(agent* thisAgent, instantiation * inst) {
 	return ((inst)->prod
 			&& (thisAgent->sysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM
 					+ (inst)->prod->type] || ((inst)->prod->trace_firings)));
@@ -644,8 +644,8 @@ void create_instantiation(agent* thisAgent, production *prod,
 	preference *pref;
 	action *a, *a2, *rhs_vars;
 	cons *c;
-	Bool need_to_do_support_calculations;
-	Bool trace_it;
+	bool need_to_do_support_calculations;
+	bool trace_it;
 	int64_t index;
 	Symbol **cell;
 
@@ -856,7 +856,7 @@ void create_instantiation(agent* thisAgent, production *prod,
  * Returns true if the function create_instantiation should run for this production.
  * Used to delay firing of matches in the inner preference loop.
  */
-Bool shouldCreateInstantiation(agent* thisAgent, production *prod,
+bool shouldCreateInstantiation(agent* thisAgent, production *prod,
 		struct token_struct *tok, wme *w) {
 	if (thisAgent->active_level == thisAgent->highest_active_level) {
 		return TRUE;
@@ -1101,8 +1101,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 
 void retract_instantiation(agent* thisAgent, instantiation *inst) {
 	preference *pref, *next;
-	Bool retracted_a_preference;
-	Bool trace_it;
+	bool retracted_a_preference;
+	bool trace_it;
 
 	/* --- invoke callback function --- */
 	soar_invoke_callbacks(thisAgent, RETRACTION_CALLBACK,
@@ -1412,11 +1412,11 @@ void do_preference_phase(agent* thisAgent) {
 
 		thisAgent->newly_created_instantiations = NIL;
 
-		Bool assertionsExist = FALSE;
+		bool assertionsExist = FALSE;
 		production *prod = 0;
 		struct token_struct *tok = 0;
 		wme *w = 0;
-		Bool once = TRUE;
+		bool once = TRUE;
 		while (postpone_assertion(thisAgent, &prod, &tok, &w)) {
 			assertionsExist = TRUE;
 

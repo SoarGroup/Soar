@@ -27,7 +27,7 @@
 #ifndef GSYSPARAM_H
 #define GSYSPARAM_H
 
-typedef char Bool;
+
 typedef unsigned char byte;
 typedef struct agent_struct agent;
 

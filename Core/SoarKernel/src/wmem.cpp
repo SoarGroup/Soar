@@ -73,7 +73,7 @@ void reset_wme_timetags (agent* thisAgent) {
   thisAgent->current_wme_timetag = 1;
 }
 
-wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool acceptable)
+wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable)
 {
   wme *w;
 

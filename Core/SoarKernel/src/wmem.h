@@ -36,7 +36,7 @@
 #ifndef WMEM_H
 #define WMEM_H
 
-typedef char Bool;
+
 typedef uint64_t tc_number;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
@@ -49,7 +49,7 @@ typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 
 extern void reset_wme_timetags (agent* thisAgent);
-extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,Bool acceptable);
+extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,bool acceptable);
 extern void add_wme_to_wm (agent* thisAgent, wme *w);
 extern void remove_wme_from_wm (agent* thisAgent, wme *w);
 extern void remove_wme_list_from_wm (agent* thisAgent, wme *w, bool updateWmeMap = false);
@@ -129,7 +129,7 @@ typedef struct wme_struct {
   Symbol *id;
   Symbol *attr;
   Symbol *value;
-  Bool acceptable;
+  bool acceptable;
   uint64_t timetag;
   uint64_t reference_count;
   struct wme_struct *rete_next, *rete_prev; /* used for dll of wmes in rete */

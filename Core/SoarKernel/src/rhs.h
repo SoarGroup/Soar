@@ -77,7 +77,7 @@ typedef struct action_struct {
   byte type;
   byte preference_type;
   byte support;
-  Bool already_in_tc;  /* used only by compile-time o-support calcs */
+  bool already_in_tc;  /* used only by compile-time o-support calcs */
   rhs_value id;
   rhs_value attr;
   rhs_value value;   /* for FUNCALL_ACTION's, this holds the funcall */

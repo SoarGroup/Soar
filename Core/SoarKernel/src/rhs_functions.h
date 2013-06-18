@@ -32,7 +32,7 @@
 #define RHSFUN_H
 
 // Debug| Don't think these are needed any longer.  Other includes now provide. Remove.
-//typedef char Bool;
+//
 //typedef unsigned char byte;
 //typedef struct agent_struct agent;
 //typedef unsigned char byte;
@@ -47,8 +47,8 @@ typedef struct rhs_function_struct {
   Symbol *name;
   rhs_function_routine f;
   int num_args_expected;     /* -1 means it can take any number of args */
-  Bool can_be_rhs_value;
-  Bool can_be_stand_alone_action;
+  bool can_be_rhs_value;
+  bool can_be_stand_alone_action;
   void* user_data;           /* Pointer to anything the user may want to pass into the function */
 } rhs_function;
 
@@ -56,8 +56,8 @@ extern void add_rhs_function (agent* thisAgent,
                               Symbol *name,
                               rhs_function_routine f,
                               int num_args_expected,
-                              Bool can_be_rhs_value,
-                              Bool can_be_stand_alone_action,
+                              bool can_be_rhs_value,
+                              bool can_be_stand_alone_action,
                               void* user_data);
 extern void remove_rhs_function (agent* thisAgent, Symbol *name);
 extern rhs_function *lookup_rhs_function(agent* thisAgent, Symbol *name);

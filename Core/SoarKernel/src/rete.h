@@ -57,7 +57,7 @@
 #include <stdio.h>	// Needed for FILE token below
 #include "kernel.h"
 
-typedef char Bool;
+
 typedef unsigned char byte;
 typedef byte wme_trace_type;
 typedef byte ms_trace_type;
@@ -75,7 +75,7 @@ typedef char varnames;
 inline varnames * one_var_to_varnames(Symbol * x) { return reinterpret_cast<varnames *>(x); }
 inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varnames *>(reinterpret_cast<char *>(x) + 1); }
 inline uint64_t varnames_is_var_list(varnames * x) { return reinterpret_cast<uint64_t>(x) & 1; }
-inline Bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
+inline bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
 inline Symbol * varnames_to_one_var(varnames * x) { return reinterpret_cast<Symbol *>(x); }
 inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(static_cast<char *>(x) - 1); }
 
@@ -120,14 +120,14 @@ typedef struct token_struct {
 
 extern void init_rete (agent* thisAgent);
 
-extern Bool any_assertions_or_retractions_ready (agent* thisAgent);
-extern Bool postpone_assertion (agent* thisAgent, production **prod, struct token_struct **tok, wme **w);
+extern bool any_assertions_or_retractions_ready (agent* thisAgent);
+extern bool postpone_assertion (agent* thisAgent, production **prod, struct token_struct **tok, wme **w);
 extern void consume_last_postponed_assertion(agent* thisAgent);
 extern void restore_postponed_assertions (agent* thisAgent);
-extern Bool get_next_retraction (agent* thisAgent, struct instantiation_struct **inst);
+extern bool get_next_retraction (agent* thisAgent, struct instantiation_struct **inst);
 /* REW: begin 08.20.97 */
 /* Special routine for retractions in removed goals.  See note in rete.cpp */
-extern Bool get_next_nil_goal_retraction (agent* thisAgent, struct instantiation_struct **inst);
+extern bool get_next_nil_goal_retraction (agent* thisAgent, struct instantiation_struct **inst);
 /* REW: end   08.20.97 */
 
 #define NO_REFRACTED_INST 0              /* no refracted inst. was given */
@@ -136,7 +136,7 @@ extern Bool get_next_nil_goal_retraction (agent* thisAgent, struct instantiation
 #define DUPLICATE_PRODUCTION 3           /* the prod. was a duplicate */
 extern byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top,
                                     instantiation *refracted_inst,
-                                    Bool warn_on_duplicates, Bool ignore_rhs = false);
+                                    bool warn_on_duplicates, bool ignore_rhs = false);
 extern void excise_production_from_rete (agent* thisAgent, production *p);
 
 extern void add_wme_to_rete (agent* thisAgent, wme *w);
@@ -166,8 +166,8 @@ extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
 				     char * column_name,
 				     uint64_t * result);
 
-extern Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64);
-extern Bool load_rete_net (agent* thisAgent, FILE *source_file);
+extern bool save_rete_net (agent* thisAgent, FILE *dest_file, bool use_rete_net_64);
+extern bool load_rete_net (agent* thisAgent, FILE *source_file);
 
 /* ---------------------------------------------------------------------
 

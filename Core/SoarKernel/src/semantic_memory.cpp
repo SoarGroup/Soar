@@ -1399,7 +1399,7 @@ bool smem_valid_production( condition *lhs_top, action *rhs_top )
 }
 
 // instance of hash_table_callback_fn2
-Bool smem_count_ltis( agent * /*my_agent*/, void *item, void *userdata )
+bool smem_count_ltis( agent * /*my_agent*/, void *item, void *userdata )
 {
 	Symbol *id = static_cast<symbol_union *>(item);
 

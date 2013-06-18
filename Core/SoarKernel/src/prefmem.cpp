@@ -158,7 +158,7 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
    deallocated, FALSE otherwise.
 ---------------------------------------------------------------------- */
 
-Bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref) {
+bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref) {
   preference *clone, *next;
 
   if (pref->reference_count) return FALSE;
@@ -193,7 +193,7 @@ Bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pr
    deallocates it and returns TRUE.  Otherwise it returns FALSE.
 ---------------------------------------------------------------------- */
 
-Bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
+bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
   preference *any_clone;
 
   any_clone = NIL;

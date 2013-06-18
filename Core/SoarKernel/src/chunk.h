@@ -10,7 +10,7 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-typedef char Bool;
+
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef struct symbol_struct Symbol;
@@ -51,7 +51,7 @@ extern void chunk_instantiation (agent* thisAgent,
                                  bool variablize,
                                  instantiation **custom_inst_list);
 extern chunk_cond *make_chunk_cond_for_negated_condition (agent* thisAgent, condition *cond);
-extern Bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc);
+extern bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc);
 
 extern void add_results_for_id (agent* thisAgent, Symbol *id);
 

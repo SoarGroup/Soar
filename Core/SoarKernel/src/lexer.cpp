@@ -76,9 +76,9 @@
 //
 // These three should be safe for re-entrancy.  --JNW--
 //
-Bool constituent_char[256];   /* is the character a symbol constituent? */
-Bool whitespace[256];         /* is the character whitespace? */
-Bool number_starters[256];    /* could the character initiate a number? */
+bool constituent_char[256];   /* is the character a symbol constituent? */
+bool whitespace[256];         /* is the character whitespace? */
+bool number_starters[256];    /* could the character initiate a number? */
 
 /* ======================================================================
                        Start/Stop Lex from File
@@ -304,9 +304,9 @@ void read_rest_of_floating_point_number (agent* thisAgent) {
 #endif
 }
 
-Bool determine_type_of_constituent_string (agent* thisAgent) {
-	Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-	Bool rereadable;
+bool determine_type_of_constituent_string (agent* thisAgent) {
+	bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+	bool rereadable;
 
 	determine_possible_symbol_types_for_string (thisAgent->lexeme.string,
 		thisAgent->lexeme.length,
@@ -558,7 +558,7 @@ void lex_plus (agent* thisAgent) {
   /* Lexeme might be +, number, or symbol */
   /* Note: this routine relies on various things being constituent chars */
   int i;
-  Bool could_be_floating_point;
+  bool could_be_floating_point;
 
   read_constituent_string(thisAgent);
   /* --- if we stopped at '.', it might be a floating-point number, so be
@@ -577,7 +577,7 @@ void lex_minus (agent* thisAgent) {
   /* Lexeme might be -, -->, number, or symbol */
   /* Note: this routine relies on various things being constituent chars */
   int i;
-  Bool could_be_floating_point;
+  bool could_be_floating_point;
 
   read_constituent_string(thisAgent);
   /* --- if we stopped at '.', it might be a floating-point number, so be
@@ -598,7 +598,7 @@ void lex_minus (agent* thisAgent) {
 
 void lex_digit (agent* thisAgent) {
   int i;
-  Bool could_be_floating_point;
+  bool could_be_floating_point;
 
   read_constituent_string(thisAgent);
   /* --- if we stopped at '.', it might be a floating-point number, so be
@@ -1071,11 +1071,11 @@ void fake_rparen_at_next_end_of_line (agent* thisAgent) {
   will be returned as SYM_CONSTANT_LEXEME's instead.
 ====================================================================== */
 
-void set_lexer_allow_ids (agent* thisAgent, Bool allow_identifiers) {
+void set_lexer_allow_ids (agent* thisAgent, bool allow_identifiers) {
   thisAgent->current_file->allow_ids = allow_identifiers;
 }
 
-Bool get_lexer_allow_ids(agent* thisAgent) {
+bool get_lexer_allow_ids(agent* thisAgent) {
 	return thisAgent->current_file->allow_ids;
 }
 
@@ -1093,14 +1093,14 @@ Bool get_lexer_allow_ids(agent* thisAgent) {
 
 void determine_possible_symbol_types_for_string (char *s,
 												 size_t length_of_s,
-												 Bool *possible_id,
-												 Bool *possible_var,
-												 Bool *possible_sc,
-												 Bool *possible_ic,
-												 Bool *possible_fc,
-												 Bool *rereadable) {
+												 bool *possible_id,
+												 bool *possible_var,
+												 bool *possible_sc,
+												 bool *possible_ic,
+												 bool *possible_fc,
+												 bool *rereadable) {
 	char *ch;
-	Bool all_alphanum;
+	bool all_alphanum;
 
 	*possible_id = FALSE;
 	*possible_var = FALSE;

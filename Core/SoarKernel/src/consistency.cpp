@@ -119,12 +119,12 @@ thisAgent->timers_gds_cpu_time[thisAgent->current_phase].update(thisAgent->timer
    remain consistent with the current preferences, even if the proposal
    for some operator is still acceptable */
 
-Bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal, slot *s) {
+bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal, slot *s) {
   byte current_impasse_type, new_impasse_type;
   Symbol *current_impasse_attribute;
   wme *current_operator;
   preference *candidates, *cand;
-  Bool operator_in_slot, goal_is_impassed;
+  bool operator_in_slot, goal_is_impassed;
   
 #ifdef DEBUG_CONSISTENCY_CHECK 
   if (s->isa_context_slot) {
@@ -329,7 +329,7 @@ void remove_current_decision(agent* thisAgent, slot *s) {
 ------------------------------------------------------------------ */
 
 
-Bool check_context_slot_decisions (agent* thisAgent, goal_stack_level level) {
+bool check_context_slot_decisions (agent* thisAgent, goal_stack_level level) {
   Symbol *goal;
   slot *s;
 
@@ -383,7 +383,7 @@ Bool check_context_slot_decisions (agent* thisAgent, goal_stack_level level) {
 
 /* REW: begin 08.20.97 */
 
-Bool i_activity_at_goal(Symbol *goal) {
+bool i_activity_at_goal(Symbol *goal) {
 
   /* print_with_symbols("\nLooking for I-activity at goal: %y\n", goal); */
 
@@ -405,7 +405,7 @@ Bool i_activity_at_goal(Symbol *goal) {
      current GOAL.  Else it returns FALSE.  */
 
 
-Bool minor_quiescence_at_goal(agent* thisAgent, Symbol *goal) {
+bool minor_quiescence_at_goal(agent* thisAgent, Symbol *goal) {
       
   if ((thisAgent->FIRING_TYPE == IE_PRODS) && 
       (!i_activity_at_goal(goal))) 
@@ -431,7 +431,7 @@ Bool minor_quiescence_at_goal(agent* thisAgent, Symbol *goal) {
  * highest state, this allows us to be flexible.
  */
 
-Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, Bool noneOk) {
+Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool noneOk) {
 
    Symbol *goal;
 
@@ -471,7 +471,7 @@ Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, Bool 
    return NIL; 
 }
 
-Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, Bool noneOk) {
+Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool noneOk) {
 
    Symbol *goal;
 
@@ -534,8 +534,8 @@ int active_production_type_at_goal(Symbol *goal) {
 
 /* ---------------------------------------------------------------------- */
 
-Bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol *goal) {
-   Bool test;
+bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol *goal) {
+   bool test;
    
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS

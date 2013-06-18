@@ -64,8 +64,8 @@ void add_rhs_function (agent* thisAgent,
                        Symbol *name,
                        rhs_function_routine f,
                        int num_args_expected,
-                       Bool can_be_rhs_value,
-                       Bool can_be_stand_alone_action,
+                       bool can_be_rhs_value,
+                       bool can_be_stand_alone_action,
                        void* user_data) {
   rhs_function *rf;
 

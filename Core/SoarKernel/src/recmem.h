@@ -29,7 +29,7 @@
    from the rhs function to this prefference adding code)*/
 extern wme* glbDeepCopyWMEs;
 
-typedef char Bool;
+
 typedef signed short goal_stack_level;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
@@ -42,7 +42,7 @@ extern void do_preference_phase (agent* thisAgent);
 
 extern preference *find_clone_for_level(preference *p, goal_stack_level level);
 extern void fill_in_new_instantiation_stuff (agent* thisAgent, instantiation *inst,
-                                      Bool need_to_do_support_calculations, instantiation *original_inst);
+                                      bool need_to_do_support_calculations, instantiation *original_inst);
 
 extern void build_CDPS (agent* thisAgent, instantiation *inst);
 

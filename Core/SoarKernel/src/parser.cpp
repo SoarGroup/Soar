@@ -114,7 +114,7 @@ test make_placeholder_test (agent* thisAgent, char first_letter) {
 void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
   char prefix[3];
   Symbol *var;
-  Bool just_created;
+  bool just_created;
 
   /* --- if not a variable, do nothing --- */
   if ((*sym)->symbol_type!=VARIABLE_SYMBOL_TYPE) return;
@@ -628,7 +628,7 @@ condition *parse_conds_for_one_id (agent* thisAgent,
 condition *parse_value_test_star (agent* thisAgent, char first_letter) {
   condition *c, *last_c, *first_c, *new_conds;
   test value_test;
-  Bool acceptable;
+  bool acceptable;
 
   if ((thisAgent->lexeme.type==MINUS_LEXEME) ||
       (thisAgent->lexeme.type==UP_ARROW_LEXEME) ||
@@ -695,7 +695,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
 
 condition *parse_attr_value_tests (agent* thisAgent) {
   test id_test_to_use, attr_test;
-  Bool negate_it;
+  bool negate_it;
   condition *first_c, *last_c, *c, *new_conds;
 
   /* --- read optional minus sign --- */
@@ -964,7 +964,7 @@ condition *parse_cond_plus (agent* thisAgent);
 
 condition *parse_cond (agent* thisAgent) {
   condition *c;
-  Bool negate_it;
+  bool negate_it;
 
   /* --- look for leading "-" sign --- */
   negate_it = FALSE;
@@ -1122,7 +1122,7 @@ const char *help_on_rhs_grammar[] = {
 rhs_value parse_rhs_value (agent* thisAgent);
 
 rhs_value parse_function_call_after_lparen (agent* thisAgent,
-											           Bool is_stand_alone_action) {
+											           bool is_stand_alone_action) {
   rhs_function *rf;
   Symbol *fun_name;
   list *fl;
@@ -1242,7 +1242,7 @@ rhs_value parse_rhs_value (agent* thisAgent) {
 
 ----------------------------------------------------------------- */
 
-Bool is_preference_lexeme( enum lexer_token_type test_lexeme )
+bool is_preference_lexeme( enum lexer_token_type test_lexeme )
 {
   switch (test_lexeme) {
 
@@ -1389,7 +1389,7 @@ action *parse_preferences (agent* thisAgent, Symbol *id,
   action *prev_a;
   rhs_value referent;
   byte preference_type;
-  Bool saw_plus_sign;
+  bool saw_plus_sign;
 
   /* --- Note: this routine is set up so if there's not preference type
      indicator at all, we return a single acceptable preference make --- */
@@ -1472,7 +1472,7 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
   action *prev_a;
   rhs_value referent;
   byte preference_type;
-  Bool saw_plus_sign;
+  bool saw_plus_sign;
 
   /* JC ADDED: for printint */
   char szPrintAttr[256];
@@ -1764,7 +1764,7 @@ bool parse_lti(agent* thisAgent) {
 	switch(thisAgent->lexeme.type) {
 	case AT_LEXEME:
 		{
-			Bool saved = get_lexer_allow_ids(thisAgent);
+			bool saved = get_lexer_allow_ids(thisAgent);
 			set_lexer_allow_ids(thisAgent, true);
 			get_lexeme(thisAgent);
 			set_lexer_allow_ids(thisAgent, saved);
@@ -1786,7 +1786,7 @@ bool parse_lti(agent* thisAgent) {
    <rhs> ::= <rhs_action>*
 ----------------------------------------------------------------- */
 
-Bool parse_rhs (agent* thisAgent, action **dest_rhs) {
+bool parse_rhs (agent* thisAgent, action **dest_rhs) {
   action *all_actions, *new_actions, *last;
 
   all_actions = NIL;
@@ -1859,8 +1859,8 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   // voigtjr: added to parameter list so that CLI can ignore the error
   // of a duplicate production with a different name
   //byte rete_addition_result;
-  Bool rhs_okay;
-  Bool interrupt_on_match;
+  bool rhs_okay;
+  bool interrupt_on_match;
 
   reset_placeholder_variable_generator (thisAgent);
 

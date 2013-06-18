@@ -158,7 +158,7 @@ void soar_callback_data_free_string (soar_callback_data data)
 }
 
 const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i,
-				   Bool monitorable_only)
+				   bool monitorable_only)
 {
   int limit;
 
@@ -179,7 +179,7 @@ const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i,
 }
 
 SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char * name,
-					       Bool monitorable_only)
+					       bool monitorable_only)
 {
   int limit;
   int i;  // i was originally of type SOAR_CALLBACK_TYPE, changed for c++ compatibility (5/1/02)
@@ -204,7 +204,7 @@ SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char * name,
   return NO_CALLBACK;
 }
 
-Bool soar_exists_callback(agent* the_agent,
+bool soar_exists_callback(agent* the_agent,
 			  SOAR_CALLBACK_TYPE callback_type)
 {
   list * cb_cons;
@@ -492,7 +492,7 @@ void soar_invoke_first_callback (agent* thisAgent,
 }
 
 void soar_list_all_callbacks (agent* thisAgent,
-			      Bool monitorable_only)
+			      bool monitorable_only)
 {
   int limit;
   int ct; // ct was originally of type SOAR_CALLBACK_TYPE, changed for c++ compatibility (5/1/02)

@@ -126,7 +126,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
   Unused: SYSTEM_TERMINATION_CALLBACK
 
     This function is called only once, just before the system exits back
-    to the shell.  The "call_data" parameter is of type "Bool" which is
+    to the shell.  The "call_data" parameter is of type "bool" which is
     TRUE if the system is exiting normally, and FALSE if the exit is
     happening because some fatal error situation was detected.  Typically,
     this routine should do any final cleanup (closing files, etc.)
@@ -322,7 +322,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 #define CALLBACK_H
 
 //typedef list * soar_callback_array[NUMBER_OF_CALLBACKS];
-typedef char Bool;
+
 typedef const char * soar_callback_id;
 typedef void * soar_callback_data;
 typedef void * soar_call_data;
@@ -358,10 +358,10 @@ extern void soar_add_callback (agent* thisAgent,
 			       soar_callback_free_fn,
 			       soar_callback_id);
 extern void soar_callback_data_free_string (soar_callback_data);
-extern const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE, Bool);
-extern SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char *, Bool);
+extern const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE, bool);
+extern SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char *, bool);
 extern void soar_destroy_callback(soar_callback *);
-extern Bool soar_exists_callback (agent*, SOAR_CALLBACK_TYPE);
+extern bool soar_exists_callback (agent*, SOAR_CALLBACK_TYPE);
 extern soar_callback * soar_exists_callback_id (agent* the_agent,
   					      SOAR_CALLBACK_TYPE callback_type,
 						soar_callback_id id);
@@ -373,7 +373,7 @@ extern void soar_invoke_first_callback (agent* thisAgent,
 					SOAR_CALLBACK_TYPE,
 					soar_call_data);
 extern void soar_list_all_callbacks (agent*,
-				     Bool);
+				     bool);
 extern void soar_list_all_callbacks_for_event (agent* thisAgent,
 					       SOAR_CALLBACK_TYPE);
 extern void soar_pop_callback (agent* the_agent,

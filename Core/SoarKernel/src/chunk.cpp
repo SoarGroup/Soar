@@ -726,7 +726,7 @@ chunk_cond *make_chunk_cond_for_negated_condition (agent* thisAgent, condition *
   return cc;
 }
 
-Bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc) {
+bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc) {
   chunk_cond *old;
 
   for (old=set->table[new_cc->compressed_hash_value]; old!=NIL;
@@ -1222,7 +1222,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	instantiation *chunk_inst;
 	Symbol *prod_name;
 	byte prod_type;
-	Bool print_name, print_prod;
+	bool print_name, print_prod;
 	byte rete_addition_result;
 	condition *lhs_top, *lhs_bottom;
 	chunk_cond *top_cc, *bottom_cc;

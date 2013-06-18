@@ -69,7 +69,7 @@
    goes to 0.
 ------------------------------------------------------------------- */
 
-typedef char Bool;
+
 
 typedef struct instantiation_struct {
   struct production_struct *prod; /* used full name of struct because
@@ -83,9 +83,9 @@ typedef struct instantiation_struct {
   Symbol *match_goal;                   /* symbol, or NIL if none */
   goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
   bool reliable;
-  Bool in_ms;  /* TRUE iff this inst. is still in the match set */
+  bool in_ms;  /* TRUE iff this inst. is still in the match set */
   tc_number backtrace_number;
-  Bool GDS_evaluated_already;
+  bool GDS_evaluated_already;
 } instantiation;
 
 /* A dll of instantiations that will be used to determine the gds through

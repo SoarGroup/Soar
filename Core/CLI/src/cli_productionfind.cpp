@@ -183,9 +183,9 @@ bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list 
 
 #define dealloc_and_return(agnt,x,y) { deallocate_test(agnt, x) ; return (y) ; }
 
-Bool tests_are_equal_with_bindings (agent* thisAgent, test t1, test test2, list **bindings) {
+bool tests_are_equal_with_bindings (agent* thisAgent, test t1, test test2, list **bindings) {
     cons *c1, *c2;
-    Bool goal_test,impasse_test;
+    bool goal_test,impasse_test;
 
     /* DJP 4/3/96 -- The problem here is that sometimes test2 was being copied      */
     /*               and sometimes it wasn't.  If it was copied, the copy was never */
@@ -294,7 +294,7 @@ Bool tests_are_equal_with_bindings (agent* thisAgent, test t1, test test2, list 
     return false;
 }
 
-Bool conditions_are_equal_with_bindings (agent* agnt, condition *c1, condition *c2, list **bindings) {
+bool conditions_are_equal_with_bindings (agent* agnt, condition *c1, condition *c2, list **bindings) {
     if (c1->type != c2->type) return FALSE;
     switch (c1->type)
     {

@@ -40,7 +40,7 @@
 -------------------------------------------------------------------- */
 
 Symbol *plus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
-  Bool float_found;
+  bool float_found;
   int64_t i;
   double f = 0;
   Symbol *arg;
@@ -81,7 +81,7 @@ Symbol *plus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
 -------------------------------------------------------------------- */
 
 Symbol *times_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
-  Bool float_found;
+  bool float_found;
   int64_t i;
   double f = 0;
   Symbol *arg;
@@ -128,7 +128,7 @@ Symbol *minus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
   double f = 0;  /* For gcc -Wall */
   int64_t i = 0;   /* For gcc -Wall */
   cons *c;
-  Bool float_found;
+  bool float_found;
 
   if (!args) {
     print (thisAgent, "Error: '-' function called with no arguments\n");

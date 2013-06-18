@@ -265,7 +265,7 @@ void add_pwatch (agent* thisAgent, production *prod)
   push (thisAgent, prod, thisAgent->productions_being_traced);
 }
 
-Bool remove_pwatch_test_fn (agent* /*thisAgent*/, cons *c,
+bool remove_pwatch_test_fn (agent* /*thisAgent*/, cons *c,
 							       void *prod_to_remove_pwatch_of)
 {
   return (c->first == static_cast<production *>(prod_to_remove_pwatch_of));
@@ -1047,7 +1047,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  }
           if (thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] > 0) {
               if (dc_time_usec >= static_cast<uint64_t>(thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT])) {
-                  thisAgent->stop_soar++;
+                  thisAgent->stop_soar = true;
                   thisAgent->reason_for_stopping = "decision cycle time greater than interrupt threshold";
               }
           }
@@ -1286,7 +1286,7 @@ void run_for_n_elaboration_cycles (agent* thisAgent, int64_t n) {
 }
 
 void run_for_n_modifications_of_output (agent* thisAgent, int64_t n) {
-  Bool was_output_phase;
+  bool was_output_phase;
   int64_t count = 0;
 
   if (n == -1) { run_forever(thisAgent); return; }
@@ -1355,7 +1355,7 @@ Symbol *attr_of_slot_just_decided (agent* thisAgent) {
 
 void run_for_n_selections_of_slot (agent* thisAgent, int64_t n, Symbol *attr_of_slot) {
   int64_t count;
-  Bool was_decision_phase;
+  bool was_decision_phase;
 
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
@@ -1384,7 +1384,7 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
                                             Symbol *attr_of_slot,
                                             goal_stack_level level) {
   int64_t count;
-  Bool was_decision_phase;
+  bool was_decision_phase;
 
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
@@ -1428,7 +1428,7 @@ extern char *getenv();
 
 // KJC Nov 05:  moved here from old interface.cpp, so could remove interface.* files
 void load_file (agent* thisAgent, char *file_name, FILE *already_open_file) {
-Bool old_print_prompt_flag;
+bool old_print_prompt_flag;
 
   old_print_prompt_flag = thisAgent->print_prompt_flag;
   thisAgent->print_prompt_flag = FALSE;

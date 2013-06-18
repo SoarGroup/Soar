@@ -28,7 +28,7 @@
 
 #include "callback.h"
 
-typedef char Bool;
+
 typedef unsigned char byte;
 typedef struct cons_struct cons;
 typedef struct wme_struct wme;
@@ -121,7 +121,7 @@ extern Symbol *get_io_float_constant (agent* thisAgent, double value);
 extern uint64_t release_io_symbol (agent* thisAgent, Symbol *sym);
 
 extern wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value);
-extern Bool remove_input_wme (agent* thisAgent, wme *w);
+extern bool remove_input_wme (agent* thisAgent, wme *w);
 
 /* =======================================================================
                             Output Functions
@@ -160,7 +160,7 @@ extern Bool remove_input_wme (agent* thisAgent, wme *w);
    wme is found, the function returns a NULL pointer.
 ======================================================================= */
 
-typedef char Bool;
+
 
 typedef struct io_wme_struct {
   struct io_wme_struct *next;  /* points to next io_wme in the chain */

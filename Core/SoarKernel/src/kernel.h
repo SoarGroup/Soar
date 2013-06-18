@@ -221,7 +221,7 @@ typedef signed short goal_stack_level;
    comments below).
 -------------------------------------------------------------------- */
 
-typedef char Bool;
+
 typedef uint64_t tc_number;
 typedef unsigned char byte;
 typedef struct agent_struct agent;

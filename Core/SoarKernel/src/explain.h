@@ -13,7 +13,7 @@
 #ifndef EXPLAIN_H
 #define EXPLAIN_H
 
-typedef char Bool;
+
 typedef signed short goal_stack_level;
 typedef struct condition_struct condition;
 typedef struct action_struct action;
@@ -92,7 +92,7 @@ typedef struct ms_change_struct {
  /* we really only needs these for interface.c, so maybe just
  * explicitly include them there and get rid of this file... kjc */
 
-extern Bool explain_interface_routine (void);
+extern bool explain_interface_routine (void);
 extern char *help_on_explain[];
 
 #endif
