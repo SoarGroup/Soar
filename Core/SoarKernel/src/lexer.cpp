@@ -118,7 +118,7 @@ void stop_lex_from_file (agent* thisAgent) {
   lexer_source_file *lsf;
 
   if (reading_from_top_level(thisAgent)) {
-    thisAgent->OutputManager->print( "Internal error: tried to stop_lex_from_file at top level\n");
+    print(thisAgent,  "Internal error: tried to stop_lex_from_file at top level\n");
     return;
   }
   lsf = thisAgent->current_file;
@@ -212,7 +212,7 @@ void get_next_char (agent* thisAgent) {
 				assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
 				return;
 			} else {
-				thisAgent->OutputManager->print( "I/O error while reading file %s; ignoring the rest of it.\n",
+				print(thisAgent,  "I/O error while reading file %s; ignoring the rest of it.\n",
 					thisAgent->current_file->filename);
 			}
 		}
@@ -327,7 +327,7 @@ bool determine_type_of_constituent_string (agent* thisAgent) {
 		thisAgent->lexeme.type = INT_CONSTANT_LEXEME;
 		thisAgent->lexeme.int_val = strtol (thisAgent->lexeme.string,NULL,10);
 		if (errno) {
-			thisAgent->OutputManager->print( "Error: bad integer (probably too large)\n");
+			print(thisAgent,  "Error: bad integer (probably too large)\n");
 			print_location_of_most_recent_lexeme(thisAgent);
 			thisAgent->lexeme.int_val = 0;
 		}
@@ -339,7 +339,7 @@ bool determine_type_of_constituent_string (agent* thisAgent) {
 		thisAgent->lexeme.type = FLOAT_CONSTANT_LEXEME;
 		thisAgent->lexeme.float_val = strtod (thisAgent->lexeme.string,NULL);
 		if (errno) {
-			thisAgent->OutputManager->print( "Error: bad floating point number\n");
+			print(thisAgent,  "Error: bad floating point number\n");
 			print_location_of_most_recent_lexeme(thisAgent);
 			thisAgent->lexeme.float_val = 0.0;
 		}
@@ -357,7 +357,7 @@ bool determine_type_of_constituent_string (agent* thisAgent) {
 		errno = 0;
 		thisAgent->lexeme.type = IDENTIFIER_LEXEME;
         if (!from_c_string(thisAgent->lexeme.id_number, &(thisAgent->lexeme.string[lti_index]))) {
-			thisAgent->OutputManager->print( "Error: bad number for identifier (probably too large)\n");
+			print(thisAgent,  "Error: bad number for identifier (probably too large)\n");
 			print_location_of_most_recent_lexeme(thisAgent);
 			thisAgent->lexeme.id_number = 0;
             errno = 1;
@@ -371,7 +371,7 @@ bool determine_type_of_constituent_string (agent* thisAgent) {
 			if ( (thisAgent->lexeme.string[0] == '<') ||
 				 (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') )
 			{
-				thisAgent->OutputManager->print( "Warning: Suspicious string constant \"%s\"\n", thisAgent->lexeme.string);
+				print(thisAgent,  "Warning: Suspicious string constant \"%s\"\n", thisAgent->lexeme.string);
 				print_location_of_most_recent_lexeme(thisAgent);
 				xml_generate_warning(thisAgent, "Warning: Suspicious string constant");
 			}
@@ -616,9 +616,9 @@ void lex_unknown (agent* thisAgent) {
   if(reading_from_top_level(thisAgent) && thisAgent->current_char == 0) {
   }
   else {
-    thisAgent->OutputManager->print( "Error:  Unknown character encountered by lexer, code=%d\n",
+    print(thisAgent,  "Error:  Unknown character encountered by lexer, code=%d\n",
            thisAgent->current_char);
-    thisAgent->OutputManager->print( "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
+    print(thisAgent,  "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
            thisAgent->current_file->current_line,
            thisAgent->current_file->current_column);
     if (! reading_from_top_level(thisAgent)) {
@@ -642,7 +642,7 @@ void lex_vbar (agent* thisAgent) {
   do {
     if ((thisAgent->current_char==EOF)||
         (thisAgent->lexeme.length==MAX_LEXEME_LENGTH)) {
-      thisAgent->OutputManager->print( "Error:  opening '|' without closing '|'\n");
+      print(thisAgent,  "Error:  opening '|' without closing '|'\n");
       print_location_of_most_recent_lexeme(thisAgent);
       /* BUGBUG if reading from top level, don't want to signal EOF */
       thisAgent->lexeme.type = EOF_LEXEME;
@@ -671,7 +671,7 @@ void lex_quote (agent* thisAgent) {
   get_next_char(thisAgent);
   do {
     if ((thisAgent->current_char==EOF)||(thisAgent->lexeme.length==MAX_LEXEME_LENGTH)) {
-      thisAgent->OutputManager->print( "Error:  opening '\"' without closing '\"'\n");
+      print(thisAgent,  "Error:  opening '\"' without closing '\"'\n");
       print_location_of_most_recent_lexeme(thisAgent);
       /* BUGBUG if reading from top level, don't want to signal EOF */
       thisAgent->lexeme.type = EOF_LEXEME;
@@ -807,7 +807,7 @@ void get_lexeme (agent* thisAgent) {
     lex_eof(thisAgent);
 
 #ifdef DEBUG_TRACE_PARSER
-  thisAgent->OutputManager->print( "Parser| get_lexeme read ");
+  print(thisAgent,  "Parser| get_lexeme read ");
   print_current_lexeme(thisAgent);
 #endif
 
@@ -995,17 +995,17 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
       thisAgent->current_file->current_line) {
     /* --- error occurred on current line, so print out the line --- */
     if (! reading_from_top_level(thisAgent)) {
-      thisAgent->OutputManager->print( "File %s, line %lu:\n", thisAgent->current_file->filename,
+      print(thisAgent,  "File %s, line %lu:\n", thisAgent->current_file->filename,
              thisAgent->current_file->current_line);
       /*       respond_to_load_errors ();     AGR 527a */
     }
     if (thisAgent->current_file->buffer[strlen(thisAgent->current_file->buffer)-1]=='\n')
-      thisAgent->OutputManager->print( thisAgent->current_file->buffer);
+      print(thisAgent,  thisAgent->current_file->buffer);
     else
-      thisAgent->OutputManager->print( "%s\n",thisAgent->current_file->buffer);
+      print(thisAgent,  "%s\n",thisAgent->current_file->buffer);
     for (i=0; i<thisAgent->current_file->column_of_start_of_last_lexeme; i++)
-      thisAgent->OutputManager->print( "-");
-    thisAgent->OutputManager->print( "^\n");
+      print(thisAgent,  "-");
+    print(thisAgent,  "^\n");
 
     if (! reading_from_top_level(thisAgent)) {
       //respond_to_load_errors (thisAgent); /* AGR 527a */
@@ -1020,7 +1020,7 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
 
   } else {
     /* --- error occurred on a previous line, so just give the position --- */
-    thisAgent->OutputManager->print( "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
+    print(thisAgent,  "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
            thisAgent->current_file->line_of_start_of_last_lexeme,
            thisAgent->current_file->column_of_start_of_last_lexeme + 1);
     if (! reading_from_top_level(thisAgent)) {

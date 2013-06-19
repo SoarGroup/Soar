@@ -1439,9 +1439,10 @@ bool AgentSML::CaptureInputWME(const CapturedAction& ca)
 
 void AgentSML::ReplayInputWMEs()
 {
+  /* -- Debug | These prints seem to be the only ones in the sml files.  Should they be using another mechanism? */
 	if (m_CapturedActions.empty())
 	{
-	  m_agent->OutputManager->print("\n\nWarning: end of replay has been reached.\n");
+	  print(m_agent, "\n\nWarning: end of replay has been reached.\n");
 		return;
 	}
 
@@ -1465,7 +1466,7 @@ void AgentSML::ReplayInputWMEs()
 
 			if (!AddInputWME(ca.Add()->id.c_str(), ca.Add()->attr.c_str(), ca.Add()->value.c_str(), ca.Add()->type, timetagString))
 			{
-			  m_agent->OutputManager->print("\n\nWarning: replay add-wme failed.\n");
+			  print(m_agent, "\n\nWarning: replay add-wme failed.\n");
 			}
 		}
 		else
@@ -1473,7 +1474,7 @@ void AgentSML::ReplayInputWMEs()
 			// remove-wme
 			if (!RemoveInputWME(ca.clientTimeTag))
 			{
-			  m_agent->OutputManager->print("\n\nWarning: replay remove-wme failed.\n");
+			  print(m_agent, "\n\nWarning: replay remove-wme failed.\n");
 			}
 		}
 	}

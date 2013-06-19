@@ -703,8 +703,8 @@ void create_instantiation(agent* thisAgent, production *prod,
 	trace_it = trace_firings_of_inst(thisAgent, inst);
 	if (trace_it) {
 		if (get_printer_output_column(thisAgent) != 1)
-			thisAgent->OutputManager->print( "\n"); /* AGR 617/634 */
-		thisAgent->OutputManager->print( "Firing ");
+			print(thisAgent,  "\n"); /* AGR 617/634 */
+		print(thisAgent,  "Firing ");
 		print_instantiation_with_wmes(thisAgent, inst,
 				static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
 				0);
@@ -725,7 +725,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	/* --- Before executing the RHS actions, tell the user that the -- */
 	/* --- phase has changed to output by printing the arrow --- */
 	if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
-		thisAgent->OutputManager->print( " -->\n");
+		print(thisAgent,  " -->\n");
 		xml_object(thisAgent, kTagActionSideMarker);
 	}
 
@@ -815,7 +815,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
 		for (pref = inst->preferences_generated; pref != NIL;
 				pref = pref->inst_next) {
-			thisAgent->OutputManager->print( " ");
+			print(thisAgent,  " ");
 			print_preference(thisAgent, pref);
 		}
 	}
@@ -840,7 +840,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 
 	deallocate_action_list (thisAgent, rhs_vars);
 #ifdef DEBUG_TRACE_PRINT_INSTANTIATIONS
-	thisAgent->OutputManager->print( "\nCreate_instantiation created: \n");
+	print(thisAgent,  "\nCreate_instantiation created: \n");
 	debug_print_instantiation(inst);
 #endif
 	if (!thisAgent->system_halted) {
@@ -896,7 +896,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production *prod,
 			if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
 				print_with_symbols(thisAgent,
 						"*** Waterfall: aborting firing because (%y * *)", sym);
-				thisAgent->OutputManager->print(
+				print(thisAgent, 
 						" level %d is on or higher (lower int) than change level %d\n",
 						sym->data.id.level, thisAgent->change_level);
 			}
@@ -1122,18 +1122,18 @@ void retract_instantiation(agent* thisAgent, instantiation *inst) {
 			if (trace_it) {
 				if (!retracted_a_preference) {
 					if (get_printer_output_column(thisAgent) != 1)
-						thisAgent->OutputManager->print( "\n"); /* AGR 617/634 */
-					thisAgent->OutputManager->print( "Retracting ");
+						print(thisAgent,  "\n"); /* AGR 617/634 */
+					print(thisAgent,  "Retracting ");
 					print_instantiation_with_wmes(thisAgent, inst,
 							static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
 							1);
 					if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
-						thisAgent->OutputManager->print( " -->\n");
+						print(thisAgent,  " -->\n");
 						xml_object(thisAgent, kTagActionSideMarker);
 					}
 				}
 				if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
-					thisAgent->OutputManager->print( " ");
+					print(thisAgent,  " ");
 					print_preference(thisAgent, pref);
 				}
 			}
@@ -1357,13 +1357,13 @@ void do_preference_phase(agent* thisAgent) {
 					kSubphaseName_FiringProductions);
 			switch (thisAgent->FIRING_TYPE) {
 			case PE_PRODS:
-				thisAgent->OutputManager->print(
+				print(thisAgent, 
 						"\t--- Firing Productions (PE) For State At Depth %d ---\n",
 						thisAgent->active_level); // SBW 8/4/2008: added active_level
 				xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
 				break;
 			case IE_PRODS:
-				thisAgent->OutputManager->print(
+				print(thisAgent, 
 						"\t--- Firing Productions (IE) For State At Depth %d ---\n",
 						thisAgent->active_level); // SBW 8/4/2008: added active_level
 				xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
@@ -1402,12 +1402,12 @@ void do_preference_phase(agent* thisAgent) {
 		thisAgent->change_level = thisAgent->next_change_level;
 
 		if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
-			thisAgent->OutputManager->print( "\n--- Inner Elaboration Phase, active level %d",
+			print(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
 					thisAgent->active_level);
 			if (thisAgent->active_goal) {
 				print_with_symbols(thisAgent, " (%y)", thisAgent->active_goal);
 			}
-			thisAgent->OutputManager->print( " ---\n");
+			print(thisAgent,  " ---\n");
 		}
 
 		thisAgent->newly_created_instantiations = NIL;
@@ -1459,7 +1459,7 @@ void do_preference_phase(agent* thisAgent) {
 
 		if (thisAgent->active_goal == NIL) {
 			if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
-				thisAgent->OutputManager->print(
+				print(thisAgent, 
 						" inner elaboration loop doesn't have active goal.\n");
 			}
 			break;
@@ -1467,7 +1467,7 @@ void do_preference_phase(agent* thisAgent) {
 
 		if (thisAgent->active_goal->data.id.lower_goal == NIL) {
 			if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
-				thisAgent->OutputManager->print( " inner elaboration loop at bottom goal.\n");
+				print(thisAgent,  " inner elaboration loop at bottom goal.\n");
 			}
 			break;
 		}
@@ -1485,7 +1485,7 @@ void do_preference_phase(agent* thisAgent) {
 			thisAgent->active_level = thisAgent->active_goal->data.id.level;
 		} else {
 			if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
-				thisAgent->OutputManager->print(
+				print(thisAgent, 
 						" inner elaboration loop finished but not at quiescence.\n");
 			}
 			break;

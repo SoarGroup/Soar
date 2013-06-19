@@ -100,16 +100,16 @@ void print_memory_statistics (agent* thisAgent) {
   total = 0;
   for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
   
-  thisAgent->OutputManager->print( "%8lu bytes total memory allocated\n", total);
-  thisAgent->OutputManager->print( "%8lu bytes statistics overhead\n",
+  print(thisAgent,  "%8lu bytes total memory allocated\n", total);
+  print(thisAgent,  "%8lu bytes statistics overhead\n",
          thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE]);
-  thisAgent->OutputManager->print( "%8lu bytes for strings\n",
+  print(thisAgent,  "%8lu bytes for strings\n",
          thisAgent->memory_for_usage[STRING_MEM_USAGE]);
-  thisAgent->OutputManager->print( "%8lu bytes for hash tables\n",
+  print(thisAgent,  "%8lu bytes for hash tables\n",
          thisAgent->memory_for_usage[HASH_TABLE_MEM_USAGE]);
-  thisAgent->OutputManager->print( "%8lu bytes for various memory pools\n",
+  print(thisAgent,  "%8lu bytes for various memory pools\n",
          thisAgent->memory_for_usage[POOL_MEM_USAGE]);
-  thisAgent->OutputManager->print( "%8lu bytes for miscellaneous other things\n",
+  print(thisAgent,  "%8lu bytes for miscellaneous other things\n",
          thisAgent->memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
 }
   
