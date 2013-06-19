@@ -1441,7 +1441,7 @@ void AgentSML::ReplayInputWMEs()
 {
 	if (m_CapturedActions.empty())
 	{
-		print(m_agent, "\n\nWarning: end of replay has been reached.\n");
+	  m_agent->OutputManager->print("\n\nWarning: end of replay has been reached.\n");
 		return;
 	}
 
@@ -1465,7 +1465,7 @@ void AgentSML::ReplayInputWMEs()
 
 			if (!AddInputWME(ca.Add()->id.c_str(), ca.Add()->attr.c_str(), ca.Add()->value.c_str(), ca.Add()->type, timetagString))
 			{
-				print(m_agent, "\n\nWarning: replay add-wme failed.\n");
+			  m_agent->OutputManager->print("\n\nWarning: replay add-wme failed.\n");
 			}
 		}
 		else
@@ -1473,7 +1473,7 @@ void AgentSML::ReplayInputWMEs()
 			// remove-wme
 			if (!RemoveInputWME(ca.clientTimeTag))
 			{
-				print(m_agent, "\n\nWarning: replay remove-wme failed.\n");
+			  m_agent->OutputManager->print("\n\nWarning: replay remove-wme failed.\n");
 			}
 		}
 	}

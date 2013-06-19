@@ -34,11 +34,11 @@ void ExplainListChunks(agent* thisAgent)
     chunk = thisAgent->explain_chunk_list;
 
     if (!chunk) {
-        print(thisAgent, "No chunks/justifications built yet!\n");
+        thisAgent->OutputManager->print( "No chunks/justifications built yet!\n");
     } else {
-        print(thisAgent, "List of all explained chunks/justifications:\n");
+        thisAgent->OutputManager->print( "List of all explained chunks/justifications:\n");
         while (chunk != NULL) {
-            print(thisAgent, "Have explanation for %s\n", chunk->name);
+            thisAgent->OutputManager->print( "Have explanation for %s\n", chunk->name);
             chunk = chunk->next_chunk;
         }
     }
@@ -69,11 +69,11 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
                 if (!chunk) return false;
 
                 /* First print out the production in "normal" form */
-                print(thisAgent, "(sp %s\n  ", chunk->name);
+                thisAgent->OutputManager->print( "(sp %s\n  ", chunk->name);
                 print_condition_list(thisAgent, chunk->conds, 2, false);
-                print(thisAgent, "\n-->\n   ");
+                thisAgent->OutputManager->print( "\n-->\n   ");
                 print_action_list(thisAgent, chunk->actions, 3, false);
-                print(thisAgent, ")\n\n");
+                thisAgent->OutputManager->print( ")\n\n");
 
                 /* Then list each condition and the associated "ground" WME */
                 int i = 0;
@@ -81,15 +81,15 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
 
                 for (condition* cond = chunk->conds; cond != NIL; cond = cond->next) {
                     i++;
-                    print(thisAgent, " %2d : ", i);
+                    thisAgent->OutputManager->print( " %2d : ", i);
                     print_condition(thisAgent, cond);
 
                     while (get_printer_output_column(thisAgent) < COLUMNS_PER_LINE - 40)
-                        print(thisAgent, " ");
+                        thisAgent->OutputManager->print( " ");
 
-                    print(thisAgent, " Ground :");
+                    thisAgent->OutputManager->print( " Ground :");
                     print_condition(thisAgent, ground);
-                    print(thisAgent, "\n");
+                    thisAgent->OutputManager->print( "\n");
                     ground = ground->next;
                 }
             }

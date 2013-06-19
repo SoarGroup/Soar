@@ -79,7 +79,7 @@ int64_t lapse_duration;
 
 //void exit_soar (agent* thisAgent) {
 ////#ifdef _WINDOWS
-////  print(thisAgent, "Cannot exit from Soar via the command line.\n");
+////  thisAgent->OutputManager->print( "Cannot exit from Soar via the command line.\n");
 ////#else
 //  just_before_exit_soar(thisAgent);
 //  exit (0);
@@ -90,8 +90,8 @@ void abort_with_fatal_error (agent* thisAgent, const char *msg) {
   FILE *f;
   const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
 
-  print (thisAgent, "%s", msg);
-  print (thisAgent, "%s", warning);
+  thisAgent->OutputManager->print( "%s", msg);
+  thisAgent->OutputManager->print( "%s", warning);
 
   fprintf (stderr,"%s",msg);
   fprintf (stderr,"%s",warning);
@@ -188,7 +188,7 @@ void abort_with_fatal_error_noprint (const char *msg) {
 
 void set_sysparam (agent* thisAgent, int param_number, int64_t new_value) {
 	if ((param_number < 0) || (param_number > HIGHEST_SYSPARAM_NUMBER)) {
-		print (thisAgent, "Internal error: tried to set bad sysparam #: %d\n", param_number);
+		thisAgent->OutputManager->print( "Internal error: tried to set bad sysparam #: %d\n", param_number);
 		return;
 	}
 	thisAgent->sysparams[param_number] = new_value;
@@ -546,7 +546,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	if (thisAgent->system_halted)
 	{
-		print (thisAgent,
+		thisAgent->OutputManager->print(
 			"\nSystem halted.  Use (init-soar) before running Soar again.");
 		xml_generate_error(thisAgent, "System halted.  Use (init-soar) before running Soar again.");
 		thisAgent->stop_soar = true;
@@ -1141,7 +1141,7 @@ void do_one_top_level_phase (agent* thisAgent)
 			 reinterpret_cast<soar_call_data>(DECISION_PHASE) );
 
 	  if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) {
-		  print_string (thisAgent, "\n");
+		  thisAgent->OutputManager->print( "\n");
 		  print_lowest_slot_in_context_stack (thisAgent);
 	  }
 
@@ -1205,7 +1205,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
   if (thisAgent->stop_soar) {
         if (thisAgent->reason_for_stopping) {
-            print(thisAgent, "\n%s\n", thisAgent->reason_for_stopping);
+            thisAgent->OutputManager->print( "\n%s\n", thisAgent->reason_for_stopping);
         }
   }
 }
@@ -1464,7 +1464,7 @@ void init_agent_memory(agent* thisAgent)
   create_top_goal(thisAgent);
   if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
     {
-      print_string (thisAgent, "\n");
+      thisAgent->OutputManager->print( "\n");
       print_lowest_slot_in_context_stack (thisAgent);
     }
   thisAgent->current_phase = INPUT_PHASE;

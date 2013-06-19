@@ -79,10 +79,27 @@ extern void tell_printer_that_output_column_has_been_reset (agent* thisAgent);
 extern void start_redirection_to_file (agent* thisAgent, FILE *already_opened_file);
 extern void stop_redirection_to_file (agent* thisAgent);
 
-extern void print_string (agent* thisAgent, const char *s);
+//extern void print (agent* thisAgent, const char *s);
 extern void print_phase  (agent* thisAgent, const char *s, bool end_phase);
 
-extern void print (agent* thisAgent, const char *format, ... );
+//inline void print (agent* thisAgent, const char *format, ... ) {
+//  va_list args;
+//  va_start (args, format);
+//  thisAgent->OutputManager->print(format, args);
+//  va_end (args);
+//}
+
+//inline void printd (agent* thisAgent, const char *format, ... ) {
+//  return;
+//  va_list args;
+//  va_start (args, format);
+//  thisAgent->OutputManager->print(format, args);
+//  va_end (args);
+//}
+//#define print thisAgent->OutputManager->print
+
+//extern void print (agent* thisAgent, const char *format, ... );
+//extern void printd (agent* thisAgent, const char *format, ... );
 extern void print_with_symbols (agent* thisAgent, const char *format, ...);
 extern void snprintf_with_symbols (agent* thisAgent, char* dest, size_t count, const char *format, ...);
 extern void print_spaces (agent* thisAgent, int n);

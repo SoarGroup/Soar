@@ -64,9 +64,9 @@ using namespace soar_TraceNames;
 
 void reset_wme_timetags (agent* thisAgent) {
   if (thisAgent->num_existing_wmes != 0) {
-    print (thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\n");
-    print (thisAgent, "there are still some wmes allocated. (Probably a memory leak.)\n");
-    print (thisAgent, "(Leaving timetag numbers alone.)\n");
+    thisAgent->OutputManager->print( "Internal warning:  wanted to reset wme timetag generator, but\n");
+    thisAgent->OutputManager->print( "there are still some wmes allocated. (Probably a memory leak.)\n");
+    thisAgent->OutputManager->print( "(Leaving timetag numbers alone.)\n");
 	xml_generate_warning(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
     return;
   }
@@ -243,7 +243,7 @@ void do_buffered_wm_changes (agent* thisAgent)
            next_c = cr->rest;
            if (w == cr->first) {
 			  const char * const kWarningMessage = "WARNING: WME added and removed in same phase : ";
-              print (thisAgent, const_cast< char* >( kWarningMessage) );
+              thisAgent->OutputManager->print( const_cast< char* >( kWarningMessage) );
 			  xml_begin_tag( thisAgent, kTagWarning );
 			  xml_att_val( thisAgent, kTypeString, kWarningMessage );
               print_wme(thisAgent, w);

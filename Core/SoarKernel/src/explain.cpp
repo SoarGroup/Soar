@@ -269,9 +269,9 @@ explain_chunk_str *find_chunk(agent* thisAgent, explain_chunk_str *chunk, char *
     chunk = chunk->next_chunk;
   }
 
-  print(thisAgent, "Could not find the chunk.  Maybe explain was not on when it was created.");
+  thisAgent->OutputManager->print( "Could not find the chunk.  Maybe explain was not on when it was created.");
   /* BUGBUG: this doesn't belong here!  changed for bug 608 */
-  print (thisAgent, "\nTo turn on explain: save-backtraces --enable before the chunk is created.\n");
+  thisAgent->OutputManager->print( "\nTo turn on explain: save-backtraces --enable before the chunk is created.\n");
 
   return (NULL);
 }
@@ -293,7 +293,7 @@ condition *find_ground(agent* thisAgent, explain_chunk_str *chunk, int number) {
      ground = cond; 
   }
   if (number > 0) {
-    print(thisAgent, "Could not find this condition.\n");
+    thisAgent->OutputManager->print( "Could not find this condition.\n");
     return (NIL);
   }
   return (ground);
@@ -307,27 +307,27 @@ void explain_trace_chunk(agent* thisAgent, explain_chunk_str *chunk) {
 
 backtrace_str *prod;
 
-  print(thisAgent, "Chunk : %s\n",chunk->name);
+  thisAgent->OutputManager->print( "Chunk : %s\n",chunk->name);
   prod = chunk->backtrace;
   while (prod != NULL) {
-    print(thisAgent, "Backtrace production : %s\n",prod->prod_name);
-    print(thisAgent, "Result : %d\n",prod->result);
+    thisAgent->OutputManager->print( "Backtrace production : %s\n",prod->prod_name);
+    thisAgent->OutputManager->print( "Result : %d\n",prod->result);
     if (prod->trace_cond != NULL) {
-      print(thisAgent, "Trace condition : ");
+      thisAgent->OutputManager->print( "Trace condition : ");
       print_condition(thisAgent, prod->trace_cond);
     }
     else
-      print(thisAgent, "The result preference is not stored, sorry.\n");
-    print_string (thisAgent, "\nGrounds:\n");
+      thisAgent->OutputManager->print( "The result preference is not stored, sorry.\n");
+    thisAgent->OutputManager->print( "\nGrounds:\n");
     print_list_of_conditions (thisAgent, prod->grounds);
-    print_string (thisAgent, "\nPotentials:\n");
+    thisAgent->OutputManager->print( "\nPotentials:\n");
     print_list_of_conditions (thisAgent, prod->potentials);
-    print_string (thisAgent, "\nLocals:\n");
+    thisAgent->OutputManager->print( "\nLocals:\n");
     print_list_of_conditions (thisAgent, prod->locals);
-    print_string (thisAgent, "\nNegateds:\n");
+    thisAgent->OutputManager->print( "\nNegateds:\n");
     print_list_of_conditions (thisAgent, prod->negated);
     prod = prod -> next_backtrace;
-    print(thisAgent, "\n\n");
+    thisAgent->OutputManager->print( "\n\n");
   }
 }
 
@@ -391,17 +391,17 @@ backtrace_str *prod;
   }
 
   if (match == NULL) {
-    print(thisAgent, "EXPLAIN: Error, couldn't find the ground condition\n");
+    thisAgent->OutputManager->print( "EXPLAIN: Error, couldn't find the ground condition\n");
     return;
   }
 
-  print(thisAgent, "Explanation of why condition ");
+  thisAgent->OutputManager->print( "Explanation of why condition ");
   print_condition(thisAgent, ground);
-  print(thisAgent, " was included in %s\n\n",chunk_name);
+  thisAgent->OutputManager->print( " was included in %s\n\n",chunk_name);
 
-  print(thisAgent, "Production %s matched\n   ",prod->prod_name);
+  thisAgent->OutputManager->print( "Production %s matched\n   ",prod->prod_name);
   print_condition(thisAgent, match);
-  print(thisAgent, " which caused\n");
+  thisAgent->OutputManager->print( " which caused\n");
 
   /* Trace back the series of productions to find which one                   
   caused the matched condition to be created.                              
@@ -427,25 +427,25 @@ backtrace_str *prod;
     }
 
     if (match == NULL) {
-      print(thisAgent, "EXPLAIN : Unable to find which production matched condition ");
+      thisAgent->OutputManager->print( "EXPLAIN : Unable to find which production matched condition ");
       print_condition(thisAgent, target);
-      print(thisAgent, "\nTo help understand what happened here and help debug this\n");
-      print(thisAgent, "here is all of the backtracing information stored for this chunk.\n");
-      print(thisAgent, "\n");
+      thisAgent->OutputManager->print( "\nTo help understand what happened here and help debug this\n");
+      thisAgent->OutputManager->print( "here is all of the backtracing information stored for this chunk.\n");
+      thisAgent->OutputManager->print( "\n");
        explain_trace_named_chunk(thisAgent, chunk_name);
     }
     else {
-      print(thisAgent, "production %s to match\n   ",prod->prod_name);
+      thisAgent->OutputManager->print( "production %s to match\n   ",prod->prod_name);
       print_condition(thisAgent, match);
-      print(thisAgent, " which caused\n");
+      thisAgent->OutputManager->print( " which caused\n");
       target = prod->trace_cond;
     }
   }
 
   if (prod->result == true)
-    print(thisAgent, "A result to be generated.\n");
+    thisAgent->OutputManager->print( "A result to be generated.\n");
   if (count >= 50)
-    print(thisAgent, "EXPLAIN: Exceeded 50 productions traced through, so terminating now.\n");
+    thisAgent->OutputManager->print( "EXPLAIN: Exceeded 50 productions traced through, so terminating now.\n");
 }
 
 /***************************************************************************
@@ -487,11 +487,11 @@ int i;
 
   /* First print out the production in "normal" form */
 
-  print (thisAgent, "(sp %s\n  ", chunk->name);
+  thisAgent->OutputManager->print( "(sp %s\n  ", chunk->name);
   print_condition_list (thisAgent, chunk->conds, 2, false);
-  print (thisAgent, "\n-->\n   ");
+  thisAgent->OutputManager->print( "\n-->\n   ");
   print_action_list (thisAgent, chunk->actions, 3, false);
-  print(thisAgent, ")\n\n");
+  thisAgent->OutputManager->print( ")\n\n");
 
   /* Then list each condition and the associated "ground" WME */
 
@@ -499,14 +499,14 @@ int i;
   ground = chunk->all_grounds;
 
   for (cond = chunk->conds; cond != NIL; cond = cond->next) {
-    i++; print(thisAgent, " %2d : ",i);
+    i++; thisAgent->OutputManager->print( " %2d : ",i);
     print_condition(thisAgent, cond);
     while (get_printer_output_column(thisAgent) < COLUMNS_PER_LINE-40)
-      print(thisAgent, " ");
+      thisAgent->OutputManager->print( " ");
 	
-    print(thisAgent, " Ground :");
+    thisAgent->OutputManager->print( " Ground :");
     print_condition(thisAgent, ground);
-    print(thisAgent, "\n");
+    thisAgent->OutputManager->print( "\n");
     ground=ground->next;
   }
 }
@@ -524,11 +524,11 @@ explain_chunk_str *chunk;
 /* AGR 564  In previous statement, current_agent(...) was added.  2-May-94 */
 
   if (!chunk)
-    print (thisAgent, "No chunks/justifications built yet!\n");
+    thisAgent->OutputManager->print( "No chunks/justifications built yet!\n");
   else {
-    print(thisAgent, "List of all explained chunks/justifications:\n");
+    thisAgent->OutputManager->print( "List of all explained chunks/justifications:\n");
     while (chunk != NULL) {
-      print(thisAgent, "Have explanation for %s\n",chunk->name);
+      thisAgent->OutputManager->print( "Have explanation for %s\n",chunk->name);
       chunk = chunk->next_chunk;
     }
   }

@@ -100,16 +100,16 @@ void print_memory_statistics (agent* thisAgent) {
   total = 0;
   for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
   
-  print (thisAgent, "%8lu bytes total memory allocated\n", total);
-  print(thisAgent, "%8lu bytes statistics overhead\n",
+  thisAgent->OutputManager->print( "%8lu bytes total memory allocated\n", total);
+  thisAgent->OutputManager->print( "%8lu bytes statistics overhead\n",
          thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE]);
-  print(thisAgent, "%8lu bytes for strings\n",
+  thisAgent->OutputManager->print( "%8lu bytes for strings\n",
          thisAgent->memory_for_usage[STRING_MEM_USAGE]);
-  print(thisAgent, "%8lu bytes for hash tables\n",
+  thisAgent->OutputManager->print( "%8lu bytes for hash tables\n",
          thisAgent->memory_for_usage[HASH_TABLE_MEM_USAGE]);
-  print(thisAgent, "%8lu bytes for various memory pools\n",
+  thisAgent->OutputManager->print( "%8lu bytes for various memory pools\n",
          thisAgent->memory_for_usage[POOL_MEM_USAGE]);
-  print(thisAgent, "%8lu bytes for miscellaneous other things\n",
+  thisAgent->OutputManager->print( "%8lu bytes for miscellaneous other things\n",
          thisAgent->memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
 }
   
@@ -246,8 +246,8 @@ void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
 	soar_invoke_callbacks(thisAgent, thisAgent, 
 	MAX_MEMORY_USAGE_CALLBACK,
 	(soar_call_data) NULL);
-	print (thisAgent, "%8lu bytes total memory allocated\n", total);
-	print (thisAgent, "exceeds total allowed for Soar: %8lu bytes \n", 
+	thisAgent->OutputManager->print( "%8lu bytes total memory allocated\n", total);
+	thisAgent->OutputManager->print( "exceeds total allowed for Soar: %8lu bytes \n", 
 	thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
 	}
 

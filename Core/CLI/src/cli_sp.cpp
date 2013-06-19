@@ -71,7 +71,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
             m_Result << '*';
         }
     }
-//    print(thisAgent, "Debug | Cleaning up parser syms!!!!\n");
+//    thisAgent->OutputManager->print( "Debug | Cleaning up parser syms!!!!\n");
 //    deallocate_symbol_list_removing_references(thisAgent, thisAgent->parser_syms);
 //    thisAgent->parser_syms = NIL;
     return true;

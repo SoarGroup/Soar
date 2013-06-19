@@ -71,7 +71,7 @@ void add_rhs_function (agent* thisAgent,
 
   if ((!can_be_rhs_value) && (!can_be_stand_alone_action))
   {
-    print (thisAgent, "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
+    thisAgent->OutputManager->print( "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
     return;
   }
 
@@ -171,7 +171,7 @@ Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
        version of it --- */
     string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
     add_to_growable_string(thisAgent, &gs, string); // for XML generation
-    print_string (thisAgent, string);
+    thisAgent->OutputManager->print( string);
   }
 
   xml_object( thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs) );
@@ -311,7 +311,7 @@ capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_
   Symbol * sym;
 
   if (!args) {
-    print (thisAgent, "Error: 'capitalize-symbol' function called with no arguments.\n");
+    thisAgent->OutputManager->print( "Error: 'capitalize-symbol' function called with no arguments.\n");
     return NIL;
   }
 
@@ -322,7 +322,7 @@ capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_
   }
 
   if (args->rest) {
-    print (thisAgent, "Error: 'capitalize-symbol' takes exactly 1 argument.\n");
+    thisAgent->OutputManager->print( "Error: 'capitalize-symbol' takes exactly 1 argument.\n");
     return NIL;
   }
 
@@ -404,7 +404,7 @@ Symbol *ifeq_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
   cons *c;
 
   if (!args) {
-    print (thisAgent, "Error: 'ifeq' function called with no arguments\n");
+    thisAgent->OutputManager->print( "Error: 'ifeq' function called with no arguments\n");
     return NIL;
   }
 
@@ -434,7 +434,7 @@ Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data
 
 	if ( !args )
 	{
-		print( thisAgent, "Error: 'trim' function called with no arguments.\n" );
+		thisAgent->OutputManager->print( "Error: 'trim' function called with no arguments.\n" );
 		return NIL;
 	}
 
@@ -448,7 +448,7 @@ Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data
 
 	if ( args->rest )
 	{
-		print( thisAgent, "Error: 'trim' takes exactly 1 argument.\n" );
+		thisAgent->OutputManager->print( "Error: 'trim' takes exactly 1 argument.\n" );
 		return NIL;
 	}
 
@@ -492,7 +492,7 @@ Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user
   Symbol *state;
 
   if (!args) {
-    print (thisAgent, "Error: 'dont-learn' function called with no arg.\n");
+    thisAgent->OutputManager->print( "Error: 'dont-learn' function called with no arg.\n");
     return NIL;
   }
 
@@ -505,7 +505,7 @@ Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user
   }
 
   if (args->rest) {
-    print (thisAgent, "Error: 'dont-learn' takes exactly 1 argument.\n");
+    thisAgent->OutputManager->print( "Error: 'dont-learn' takes exactly 1 argument.\n");
     return NIL;
   }
 
@@ -528,7 +528,7 @@ Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* /*use
   Symbol *state;
 
   if (!args) {
-    print (thisAgent, "Error: 'force-learn' function called with no arg.\n");
+    thisAgent->OutputManager->print( "Error: 'force-learn' function called with no arg.\n");
     return NIL;
   }
 
@@ -542,7 +542,7 @@ Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* /*use
 
 
   if (args->rest) {
-    print (thisAgent, "Error: 'force-learn' takes exactly 1 argument.\n");
+    thisAgent->OutputManager->print( "Error: 'force-learn' takes exactly 1 argument.\n");
     return NIL;
   }
 
