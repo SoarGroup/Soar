@@ -38,6 +38,7 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "utilities.h"
+#include "output_manager.h"
 #include "debug.h"
 
 #include <string>
@@ -134,16 +135,12 @@ typedef struct token_struct token;
 class stats_statement_container;
 
 typedef struct agent_struct {
-  /* After v8.6.1, all conditional compilations were removed
-   * from struct definitions, including the agent struct below
-   */
 
-  /* ----------------------- Rete stuff -------------------------- */
-  /*
-   * These are used for statistics in rete.cpp.  They were originally
-   * global variables, but in the deglobalization effort, they were moved
-   * to the (this) agent structure.
-   */
+  /* -- These objects are modules that encapsulate certain aspects of the kernel -- */
+  Output_Manager                *OutputManager;
+  soar_module::sqlite_database  *debug_db;
+
+  /* -- Rete stuff: These are used for statistics in rete.cpp -- */
   uint64_t actual[256], if_no_merging[256], if_no_sharing[256];
 
   uint64_t current_retesave_amindex;
@@ -726,7 +723,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   int                 link_update_mode;
 
   /* ------------------ Printing utilities stuff --------------------- */
-
   char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
   int                 printer_output_column;
   int                 saved_printer_output_column;

@@ -31,6 +31,7 @@ static void trace( void* /*arg*/, const char* query )
 {	fprintf(stderr, "Query: %s\n", query );}
 #endif
 
+
 // separates this functionality
 // just for Soar modules
 namespace soar_module

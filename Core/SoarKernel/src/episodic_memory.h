@@ -84,17 +84,11 @@ class epmem_param_container: public soar_module::param_container
 {
 	public:
 
-		// storage
-		enum db_choices { memory, file };
-
 		// encoding
 		enum phase_choices { phase_output, phase_selection };
 		enum trigger_choices { none, output, dc };
 		enum force_choices { remember, ignore, force_off };
 
-		// performance
-		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
-		enum opt_choices { opt_safety, opt_speed };
 
 		// experimental
 		enum gm_ordering_choices { gm_order_undefined, gm_order_dfs, gm_order_mcv };
@@ -112,7 +106,7 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::sym_set_param *exclusions;
 
 		// storage
-		soar_module::constant_param<db_choices> *database;
+		soar_module::constant_param<soar_module::db_choices> *database;
 		epmem_path_param *path;
 		soar_module::boolean_param *lazy_commit;
 		soar_module::boolean_param *append_db;
@@ -122,9 +116,9 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::decimal_param *balance;
 
 		// performance
-		soar_module::constant_param<page_choices> *page_size;
+		soar_module::constant_param<soar_module::page_choices> *page_size;
 		soar_module::integer_param *cache_size;
-		soar_module::constant_param<opt_choices> *opt;
+		soar_module::constant_param<soar_module::opt_choices> *opt;
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
 
 		// experimental
