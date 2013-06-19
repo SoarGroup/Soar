@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -10,7 +10,7 @@
  *  file:  xml.cpp
  *
  * =======================================================================
- *  
+ *
  * Contains methods for generating XML objects in response to kernel commands.
  *
  * The commands are modelled after the existing kernel functions which are tied to generating
@@ -36,7 +36,7 @@
 #include "print.h"
 #include "wmem.h"
 
-#include "assert.h" 
+#include "assert.h"
 
 using namespace soar_TraceNames;
 namespace stn = soar_TraceNames;
@@ -51,10 +51,10 @@ void xml_create( agent* pAgent )
 
 	soarxml::XMLTrace* pTrace = new soarxml::XMLTrace();
 	soarxml::XMLTrace* pCommands = new soarxml::XMLTrace();
-	
+
 	pAgent->xml_trace = static_cast< xml_handle >( pTrace );
 	pAgent->xml_commands = static_cast< xml_handle >( pCommands );
-	
+
 	pAgent->xml_destination = pAgent->xml_trace;
 }
 
@@ -238,9 +238,9 @@ void xml_object( agent* pAgent, wme* pWME, bool printTimetag ) {
 	xml_att_val( pAgent, kWME_Id, pWME->id );
 	xml_att_val( pAgent, kWME_Attribute, pWME->attr );
 	xml_att_val( pAgent, kWME_Value, pWME->value );
-	xml_att_val( pAgent, kWME_ValueType, symbol_to_typeString( pAgent, pWME->value ) );
+	xml_att_val( pAgent, kWME_ValueType, pWME->value->type_string());
 
-	if ( pWME->acceptable ) 
+	if ( pWME->acceptable )
 	{
 		xml_att_val( pAgent, kWMEPreference, "+" );
 	}

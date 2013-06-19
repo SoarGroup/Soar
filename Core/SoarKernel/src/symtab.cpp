@@ -36,6 +36,7 @@
 #include "init_soar.h"
 #include "print.h"
 #include "xml.h"
+#include "soar_TraceNames.h"
 
 #include <ctype.h>
 
@@ -953,4 +954,113 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_greater_or_equal ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_max ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_min ) );
+}
+
+inline char const* Symbol::type_string()
+{
+  switch(symbol_type) {
+  case VARIABLE_SYMBOL_TYPE:
+    return soar_TraceNames::kTypeVariable ;
+  case IDENTIFIER_SYMBOL_TYPE:
+    return soar_TraceNames::kTypeID ;
+  case INT_CONSTANT_SYMBOL_TYPE:
+    return soar_TraceNames::kTypeInt ;
+  case FLOAT_CONSTANT_SYMBOL_TYPE:
+    return soar_TraceNames::kTypeDouble ;
+  case STR_CONSTANT_SYMBOL_TYPE:
+    return soar_TraceNames::kTypeString ;
+  default:
+    return 0 ;
+  }
+}
+
+const char *Symbol::to_string (agent *thisAgent, bool rereadable) {
+
+  bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+  bool is_rereadable;
+  bool has_angle_bracket;
+
+  char *dest=thisAgent->printed_output_string;;
+  size_t dest_size= MAX_LEXEME_LENGTH*2+10; /* from agent.h */;
+
+  switch(symbol_type) {
+    case VARIABLE_SYMBOL_TYPE:
+      return var->name;
+
+    case IDENTIFIER_SYMBOL_TYPE:
+      if (!is_lti())
+        SNPRINTF (dest, dest_size, "@%c%llu", id->name_letter, static_cast<long long unsigned>(id->name_number));
+      else
+        SNPRINTF (dest, dest_size, "%c%llu", id->name_letter, static_cast<long long unsigned>(id->name_number));
+      dest[dest_size - 1] = 0; /* ensure null termination */
+      return dest;
+
+    case INT_CONSTANT_SYMBOL_TYPE:
+      SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(ic->value));
+      dest[dest_size - 1] = 0; /* ensure null termination */
+      return dest;
+
+    case FLOAT_CONSTANT_SYMBOL_TYPE:
+      SNPRINTF (dest, dest_size, "%#.16g", fc->value);
+      dest[dest_size - 1] = 0; /* ensure null termination */
+      /* -- Debug | Is this still necessary? -- */
+      { /* --- strip off trailing zeros --- */
+        char *start_of_exponent;
+        char *end_of_mantissa;
+        start_of_exponent = dest;
+        while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
+          start_of_exponent++;
+        end_of_mantissa = start_of_exponent - 1;
+        while (*end_of_mantissa == '0') end_of_mantissa--;
+        end_of_mantissa++;
+        while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
+        *end_of_mantissa = 0;
+      }
+      return dest;
+
+    case STR_CONSTANT_SYMBOL_TYPE:
+      if (!rereadable) {
+        return sc->name;
+      }
+      determine_possible_symbol_types_for_string (sc->name, strlen (sc->name),
+          &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
+
+      has_angle_bracket = sc->name[0] == '<' || sc->name[strlen(sc->name)-1] == '>';
+
+      if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
+          (!is_rereadable) || has_angle_bracket) {
+        /* BUGBUG if in context where id's could occur, should check possible_id flag here also */
+        return string_to_escaped_string (thisAgent, sc->name, '|', dest);
+      }
+      return sc->name;
+      strncpy (dest, sc->name, dest_size);
+      return dest;
+
+    default:
+    {
+      char msg[BUFFER_MSG_SIZE];
+      strncpy(msg, "Internal Soar Error:  symbol->to_string() called on bad symbol!\n", BUFFER_MSG_SIZE);
+      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+      abort_with_fatal_error(thisAgent, msg);
+      break;
+    }
+  }
+  return NIL; /* unreachable, but without it, gcc -Wall warns here */
+}
+
+/* UITODO| Make this method of Symbol */
+const char *Symbol::to_string_with_original(agent *thisAgent)
+{
+  char *dest=thisAgent->printed_output_string;;
+  size_t dest_size= MAX_LEXEME_LENGTH*2+10; /* from agent.h */;
+
+  if (original_var_symbol)
+  {
+    SNPRINTF (dest, dest_size, "%s(%s)", to_string(thisAgent), original_var_symbol->to_string(thisAgent));
+  } else {
+    SNPRINTF (dest, dest_size, "%s", to_string(thisAgent));
+  }
+  dest[dest_size - 1] = 0; /* ensure null termination */
+  return dest;
+
 }
