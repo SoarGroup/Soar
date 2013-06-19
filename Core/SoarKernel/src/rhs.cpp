@@ -36,7 +36,7 @@ inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sy
   if (!sym )
   {
     #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-        thisAgent->OutputManager->print( "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
+        print(thisAgent,  "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
     #endif
     return reinterpret_cast<rhs_value>(NIL);
   }
@@ -120,7 +120,7 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
   } else {
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-    thisAgent->OutputManager->print( "RHS UV| copy_rhs_value copying rhs_symbol %s(%s).\n",
+    print(thisAgent,  "RHS UV| copy_rhs_value copying rhs_symbol %s(%s).\n",
           symbol_to_string(thisAgent, r->referent),
          (r->original_variable ? symbol_to_string(thisAgent, r->original_variable) : "NIL"));
 #endif
@@ -137,7 +137,7 @@ void deallocate_action_list (agent* thisAgent, action *actions) {
   action *a;
 
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-  thisAgent->OutputManager->print( "Debug | Deallocating action list...\n");
+  print(thisAgent,  "Debug | Deallocating action list...\n");
 #endif
   while (actions) {
     a = actions;
@@ -319,7 +319,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
         rhs_value_to_reteloc_field_num(rv),
         rhs_value_to_reteloc_levels_up(rv));
     #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-        thisAgent->OutputManager->print( "RHS UV| copy_rhs_value_and_substitute_varnames creating, from reteloc, rhs_symbol %s(%s).\n",
+        print(thisAgent,  "RHS UV| copy_rhs_value_and_substitute_varnames creating, from reteloc, rhs_symbol %s(%s).\n",
               symbol_to_string(thisAgent, sym),
              (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
     #endif
@@ -351,7 +351,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       sym = *(thisAgent->rhs_variable_bindings+index);
     }
     #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-        thisAgent->OutputManager->print( "RHS UV| copy_rhs_value_and_substitute_varnames created unbound var rhs_symbol %s(%s).\n",
+        print(thisAgent,  "RHS UV| copy_rhs_value_and_substitute_varnames created unbound var rhs_symbol %s(%s).\n",
               symbol_to_string(thisAgent, sym),
              (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
     #endif
@@ -380,7 +380,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
     /* -- rv is a rhs_symbol -- */
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-    thisAgent->OutputManager->print( "RHS UV| copy_rhs_value_and_substitute_varnames copying rhs_symbol %s(%s).\n",
+    print(thisAgent,  "RHS UV| copy_rhs_value_and_substitute_varnames copying rhs_symbol %s(%s).\n",
           symbol_to_string(thisAgent, rs->referent),
          (rs->original_variable ? symbol_to_string(thisAgent, rs->original_variable) : "NIL"));
 #endif
@@ -396,7 +396,7 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
   char first_letter;
 
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-    thisAgent->OutputManager->print( "RHS UV| copy_action_list_and_substitute_varnames beginning.\n");
+    print(thisAgent,  "RHS UV| copy_action_list_and_substitute_varnames beginning.\n");
 #endif
   prev = NIL;
   first = NIL;
@@ -429,7 +429,7 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
   }
   if (prev) prev->next = NIL; else first = NIL;
 #ifdef DEBUG_TRACE_RHS_UNIQUE_VARIABLIZATION
-    thisAgent->OutputManager->print( "RHS UV| copy_action_list_and_substitute_varnames ending.\n");
+    print(thisAgent,  "RHS UV| copy_action_list_and_substitute_varnames ending.\n");
 #endif
   return first;
 }
