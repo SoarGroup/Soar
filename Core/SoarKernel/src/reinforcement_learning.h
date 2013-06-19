@@ -115,7 +115,7 @@ class rl_param_container: public soar_module::param_container
 class rl_learning_param: public soar_module::boolean_param
 {
 	protected:
-		agent *my_agent;
+		agent *thisAgent;
 
 	public:
 		rl_learning_param( const char *new_name, boolean new_value, soar_module::predicate<boolean> *new_prot_pred, agent *new_agent );
@@ -125,7 +125,7 @@ class rl_learning_param: public soar_module::boolean_param
 class rl_apoptosis_param: public soar_module::constant_param< rl_param_container::apoptosis_choices >
 {
 	protected:
-		agent* my_agent;
+		agent* thisAgent;
 
 	public:
 		rl_apoptosis_param( const char *new_name, rl_param_container::apoptosis_choices new_value, soar_module::predicate<rl_param_container::apoptosis_choices> *new_prot_pred, agent *new_agent );
@@ -203,7 +203,7 @@ typedef soar_module::bla_object_memory< production, 10, 50 > rl_production_memor
 //////////////////////////////////////////////////////////
 
 // remove Soar-RL references to productions
-extern void rl_remove_refs_for_prod( agent *my_agent, production *prod );
+extern void rl_remove_refs_for_prod( agent *thisAgent, production *prod );
 extern void rl_clear_refs( Symbol* goal );
 
 //////////////////////////////////////////////////////////
@@ -211,7 +211,7 @@ extern void rl_clear_refs( Symbol* goal );
 //////////////////////////////////////////////////////////
 
 // shortcut for determining if Soar-RL is enabled
-extern bool rl_enabled( agent *my_agent );
+extern bool rl_enabled( agent *thisAgent );
 
 //////////////////////////////////////////////////////////
 // Production Validation
@@ -224,7 +224,7 @@ extern bool rl_valid_template( production *prod );
 extern bool rl_valid_rule( production *prod );
 
 // sets rl meta-data from a production documentation string
-extern void rl_rule_meta( agent* my_agent, production* prod );
+extern void rl_rule_meta( agent* thisAgent, production* prod );
 
 // template instantiation
 extern int rl_get_template_id( const char *prod_name );
@@ -234,51 +234,51 @@ extern int rl_get_template_id( const char *prod_name );
 //////////////////////////////////////////////////////////
 
 // initializes agent's tracking of template-originated rl-rules
-extern void rl_initialize_template_tracking( agent *my_agent );
+extern void rl_initialize_template_tracking( agent *thisAgent );
 
 // updates the agent's tracking of template-originated rl-rules
-extern void rl_update_template_tracking( agent *my_agent, const char *rule_name );
+extern void rl_update_template_tracking( agent *thisAgent, const char *rule_name );
 
 // get the next id for a template (increments internal counter)
-extern int rl_next_template_id( agent *my_agent );
+extern int rl_next_template_id( agent *thisAgent );
 
 // reverts internal counter
-extern void rl_revert_template_id( agent *my_agent );
+extern void rl_revert_template_id( agent *thisAgent );
 
 //////////////////////////////////////////////////////////
 // Template Behavior
 //////////////////////////////////////////////////////////
 
 // builds a new Soar-RL rule from a template instantiation
-extern Symbol *rl_build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w );
+extern Symbol *rl_build_template_instantiation( agent *thisAgent, instantiation *my_template_instance, struct token_struct *tok, wme *w );
 
 // creates an incredibly simple action
 extern action *rl_make_simple_action( agent *my_gent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym );
 
 // adds a test to a condition list for goals or impasses contained within the condition list
-extern void rl_add_goal_or_impasse_tests_to_conds(agent *my_agent, condition *all_conds);
+extern void rl_add_goal_or_impasse_tests_to_conds(agent *thisAgent, condition *all_conds);
 
 //////////////////////////////////////////////////////////
 // Reward
 //////////////////////////////////////////////////////////
 
 // tabulation of a single goal's reward
-extern void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal );
+extern void rl_tabulate_reward_value_for_goal( agent *thisAgent, Symbol *goal );
 
 // tabulation of all agent goal reward
-extern void rl_tabulate_reward_values( agent *my_agent );
+extern void rl_tabulate_reward_values( agent *thisAgent );
 
 //////////////////////////////////////////////////////////
 // Updates
 //////////////////////////////////////////////////////////
 
 // Store and update data that will be needed later to perform a Bellman update for the current operator
-extern void rl_store_data( agent *my_agent, Symbol *goal, preference *cand );
+extern void rl_store_data( agent *thisAgent, Symbol *goal, preference *cand );
 
 // update the value of Soar-RL rules
-extern void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal, bool update_efr = true );
+extern void rl_perform_update( agent *thisAgent, double op_value, bool op_rl, Symbol *goal, bool update_efr = true );
 
 // clears eligibility traces in accordance with watkins
-extern void rl_watkins_clear( agent *my_agent, Symbol *goal );
+extern void rl_watkins_clear( agent *thisAgent, Symbol *goal );
 
 #endif

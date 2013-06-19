@@ -663,12 +663,12 @@ namespace soar_module
 			const char* my_sql;
 
 		public:
-			sqlite_statement_pool( agent* my_agent, sqlite_database* new_db, const char* new_sql ): my_db( new_db ), my_sql( new_sql )
+			sqlite_statement_pool( agent* thisAgent, sqlite_database* new_db, const char* new_sql ): my_db( new_db ), my_sql( new_sql )
 			{
 				#ifdef USE_MEM_POOL_ALLOCATORS
-				statements = new sqlite_statement_pool_pool( my_agent );
+				statements = new sqlite_statement_pool_pool( thisAgent );
 				#else
-				my_agent;
+				thisAgent;
 				statements = new sqlite_statement_pool_pool();
 				#endif
 			}

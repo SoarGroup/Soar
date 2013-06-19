@@ -89,7 +89,7 @@ class wma_activation_param: public soar_module::boolean_param
 		virtual void set_value( boolean new_value );
 
 	private:
-		agent *my_agent;
+		agent *thisAgent;
 };
 
 class wma_decay_param: public soar_module::decimal_param
@@ -130,7 +130,7 @@ class wma_timer_container: public soar_module::timer_container
 		soar_module::timer* history;
 		soar_module::timer* forgetting;
 
-		wma_timer_container( agent *my_agent );
+		wma_timer_container( agent *thisAgent );
 };
 
 class wma_timer_level_predicate: public soar_module::agent_predicate< soar_module::timer::timer_level >
@@ -224,7 +224,7 @@ enum wma_go_action { wma_histories, wma_forgetting };
 //////////////////////////////////////////////////////////
 
 // shortcut for determining if WMA is enabled
-extern bool wma_enabled( agent* my_agent );
+extern bool wma_enabled( agent* thisAgent );
 
 
 //////////////////////////////////////////////////////////
@@ -232,14 +232,14 @@ extern bool wma_enabled( agent* my_agent );
 //////////////////////////////////////////////////////////
 
 // generic call to activate a wme
-extern void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references = 1, wma_pooled_wme_set* o_set = NULL, bool o_only = false );
+extern void wma_activate_wme( agent* thisAgent, wme* w, wma_reference num_references = 1, wma_pooled_wme_set* o_set = NULL, bool o_only = false );
 
 // Removes a decay element from an existing WME so that
 // it is no longer activated.
-extern void wma_remove_decay_element( agent* my_agent, wme* w );
+extern void wma_remove_decay_element( agent* thisAgent, wme* w );
 
 // Removes an o-support set from an existing preference
-extern void wma_remove_pref_o_set( agent* my_agent, preference* pref );
+extern void wma_remove_pref_o_set( agent* thisAgent, preference* pref );
 
 //////////////////////////////////////////////////////////
 // Updating Activation
@@ -249,20 +249,20 @@ extern void wma_remove_pref_o_set( agent* my_agent, preference* pref );
  * Given a preference, this routine increments the
  * reference count of all its WMEs (as necessary).
  */
-extern void wma_activate_wmes_in_pref( agent* my_agent, preference* pref );
+extern void wma_activate_wmes_in_pref( agent* thisAgent, preference* pref );
 
 /**
  * Increments the reference count of all
  * WMEs that have been referenced this
  * cycle.
  */
-extern void wma_activate_wmes_tested_in_prods( agent* my_agent );
+extern void wma_activate_wmes_tested_in_prods( agent* thisAgent );
 
 /**
  * This routine performs WME activation
  * and forgetting at the end of each cycle.
  */
-extern void wma_go( agent* my_agent, wma_go_action go_action );
+extern void wma_go( agent* thisAgent, wma_go_action go_action );
 
 
 //////////////////////////////////////////////////////////
@@ -272,11 +272,11 @@ extern void wma_go( agent* my_agent, wma_go_action go_action );
 /**
  * Retrieve wme activation exact/approximate
  */
-extern double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result );
+extern double wma_get_wme_activation( agent* thisAgent, wme* w, bool log_result );
 
 /**
  * Debugging: get list of wme references
  */
-extern void wma_get_wme_history( agent* my_agent, wme* w, std::string& buffer );
+extern void wma_get_wme_history( agent* thisAgent, wme* w, std::string& buffer );
 
 #endif

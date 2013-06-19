@@ -86,7 +86,7 @@ class smem_param_container: public soar_module::param_container
 class smem_path_param: public soar_module::string_param
 {
 	protected:
-		agent *my_agent;
+		agent *thisAgent;
 
 	public:
 		smem_path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent );
@@ -126,7 +126,7 @@ class smem_stat_container: public soar_module::stat_container
 		soar_module::integer_stat *chunks;
 		soar_module::integer_stat *slots;
 
-		smem_stat_container( agent *my_agent );
+		smem_stat_container( agent *thisAgent );
 };
 
 //
@@ -134,7 +134,7 @@ class smem_stat_container: public soar_module::stat_container
 class smem_db_lib_version_stat: public soar_module::primitive_stat< const char* >
 {
 	protected:
-		agent* my_agent;
+		agent* thisAgent;
 
 	public:
 		smem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred );
@@ -146,7 +146,7 @@ class smem_db_lib_version_stat: public soar_module::primitive_stat< const char* 
 class smem_mem_usage_stat: public soar_module::integer_stat
 {
 	protected:
-		agent *my_agent;
+		agent *thisAgent;
 
 	public:
 		smem_mem_usage_stat( agent *new_agent, const char *new_name, int64_t new_value, soar_module::predicate<int64_t> *new_prot_pred );
@@ -158,7 +158,7 @@ class smem_mem_usage_stat: public soar_module::integer_stat
 class smem_mem_high_stat: public soar_module::integer_stat
 {
 	protected:
-		agent *my_agent;
+		agent *thisAgent;
 
 	public:
 		smem_mem_high_stat( agent *new_agent, const char *new_name, int64_t new_value, soar_module::predicate<int64_t> *new_prot_pred );
@@ -182,7 +182,7 @@ class smem_timer_container: public soar_module::timer_container
 		soar_module::timer *hash;
 		soar_module::timer *act;
 
-		smem_timer_container( agent *my_agent );
+		smem_timer_container( agent *thisAgent );
 };
 
 class smem_timer_level_predicate: public soar_module::agent_predicate<soar_module::timer::timer_level>
@@ -457,34 +457,34 @@ enum smem_query_levels { qry_search, qry_full };
 // Soar Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
-extern bool smem_enabled( agent *my_agent );
-extern void smem_attach( agent *my_agent );
+extern bool smem_enabled( agent *thisAgent );
+extern void smem_attach( agent *thisAgent );
 
-extern bool smem_parse_chunks( agent *my_agent, const char *chunks, std::string **err_msg );
+extern bool smem_parse_chunks( agent *thisAgent, const char *chunks, std::string **err_msg );
 
-extern void smem_visualize_store( agent *my_agent, std::string *return_val );
-extern void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
-extern void smem_print_store( agent *my_agent, std::string *return_val );
-extern void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
+extern void smem_visualize_store( agent *thisAgent, std::string *return_val );
+extern void smem_visualize_lti( agent *thisAgent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
+extern void smem_print_store( agent *thisAgent, std::string *return_val );
+extern void smem_print_lti( agent *thisAgent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;
 
-extern bool smem_count_ltis( agent *my_agent, void *item, void *userdata );
+extern bool smem_count_ltis( agent *thisAgent, void *item, void *userdata );
 extern bool smem_valid_production( condition *lhs_top, action *rhs_top );
 
-extern smem_lti_id smem_lti_get_id( agent *my_agent, char name_letter, uint64_t name_number );
-extern Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level );
+extern smem_lti_id smem_lti_get_id( agent *thisAgent, char name_letter, uint64_t name_number );
+extern Symbol *smem_lti_soar_make( agent *thisAgent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level );
 
-extern void smem_reset( agent *my_agent, Symbol *state );
-extern void smem_reset_id_counters( agent *my_agent );
-extern void smem_close( agent *my_agent );
+extern void smem_reset( agent *thisAgent, Symbol *state );
+extern void smem_reset_id_counters( agent *thisAgent );
+extern void smem_close( agent *thisAgent );
 
 // perform smem actions
-extern void smem_go( agent *my_agent, bool store_only );
-extern bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err );
+extern void smem_go( agent *thisAgent, bool store_only );
+extern bool smem_backup_db( agent* thisAgent, const char* file_name, std::string *err );
 
-inline void smem_switch_to_memory_db(agent *my_agent, std::string& buf);
-void smem_init_db( agent *my_agent );
+inline void smem_switch_to_memory_db(agent *thisAgent, std::string& buf);
+void smem_init_db( agent *thisAgent );
 
 #endif

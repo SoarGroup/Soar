@@ -24,10 +24,10 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoTimers(bool* pSetting) {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (pSetting) {
         // set, don't print
-        set_sysparam(agnt, TIMERS_ENABLED, *pSetting);
+        set_sysparam(thisAgent, TIMERS_ENABLED, *pSetting);
 
     } else {
         // print current setting
@@ -40,7 +40,7 @@ bool CommandLineInterface::DoTimers(bool* pSetting) {
 #else // USE_PERFORMANCE_FOR_BOTH
             m_Result << "Timers are ";
 #endif // USE_PERFORMANCE_FOR_BOTH
-            m_Result << (agnt->sysparams[TIMERS_ENABLED] ? "enabled" : "disabled");
+            m_Result << (thisAgent->sysparams[TIMERS_ENABLED] ? "enabled" : "disabled");
 #ifdef DETAILED_TIMING_STATS
             m_Result << ", detailed stats are on";
 #endif // DETAILED_TIMING_STATS
@@ -49,7 +49,7 @@ bool CommandLineInterface::DoTimers(bool* pSetting) {
         } else {
             // adds <arg name="timers">true</arg> (or false) if the timers are
             // enabled (or disabled)
-            AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean, agnt->sysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean, thisAgent->sysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
         }
     }
     return true;

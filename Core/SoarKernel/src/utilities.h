@@ -34,10 +34,10 @@
 *
 ===============================
 */
-extern bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme, Symbol * * result_id);
-extern void get_lexeme_from_string (agent* agnt, const char * the_lexeme);
-extern void get_context_var_info ( agent* agnt, Symbol **dest_goal, Symbol **dest_attr_of_slot, Symbol **dest_current_value);
-extern Symbol *read_identifier_or_context_variable (agent* agnt);
+extern bool read_id_or_context_var_from_string (agent* thisAgent, const char * the_lexeme, Symbol * * result_id);
+extern void get_lexeme_from_string (agent* thisAgent, const char * the_lexeme);
+extern void get_context_var_info ( agent* thisAgent, Symbol **dest_goal, Symbol **dest_attr_of_slot, Symbol **dest_current_value);
+extern Symbol *read_identifier_or_context_variable (agent* thisAgent);
 
 #ifdef REAL_TIME_BEHAVIOR
 /* RMJ */
@@ -96,7 +96,7 @@ class stats_statement_container: public soar_module::sqlite_statement_container
 // Store statistics in to database
 extern void stats_db_store(agent* thisAgent, const uint64_t& dc_time, const uint64_t& dc_wm_changes, const uint64_t& dc_firing_counts);
 
-extern void stats_close( agent *my_agent );
+extern void stats_close( agent *thisAgent );
 
 // Useful for converting enumerations to string
 #define stringify( name ) # name

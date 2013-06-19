@@ -39,20 +39,20 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
     // voigtjr: note: this TODO from gSKI:
     // TODO: This should not be needed, FIX!
     // contents of gSKI ProductionManager::soarAlternateInput function:
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     Symbol *sym;
     cons *c, *next_c;
 
-    soarAlternateInput( agnt, productionString.c_str(), const_cast<char*>(") "), true );
-    set_lexer_allow_ids( agnt, false );
-    get_lexeme( agnt );
+    soarAlternateInput( thisAgent, productionString.c_str(), const_cast<char*>(") "), true );
+    set_lexer_allow_ids( thisAgent, false );
+    get_lexeme( thisAgent );
 
     production* p;
     unsigned char rete_addition_result = 0;
-    p = parse_production( agnt, &rete_addition_result );
+    p = parse_production( thisAgent, &rete_addition_result );
 
-    set_lexer_allow_ids( agnt, true );
-    soarAlternateInput( agnt, 0, 0, true );
+    set_lexer_allow_ids( thisAgent, true );
+    soarAlternateInput( thisAgent, 0, 0, true );
 
     if (!p) {
         // There was an error, but duplicate production is just a warning
@@ -63,7 +63,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
         m_NumProductionsIgnored += 1;
     } else {
         if (!m_SourceFileStack.empty())
-            p->filename = make_memory_block_for_string(agnt, m_SourceFileStack.top().c_str());
+            p->filename = make_memory_block_for_string(thisAgent, m_SourceFileStack.top().c_str());
 
         // production was sourced
         m_NumProductionsSourced += 1;
@@ -71,9 +71,9 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
             m_Result << '*';
         }
     }
-//    print(agnt, "Debug | Cleaning up parser syms!!!!\n");
-//    deallocate_symbol_list_removing_references(agnt, agnt->parser_syms);
-//    agnt->parser_syms = NIL;
+//    print(thisAgent, "Debug | Cleaning up parser syms!!!!\n");
+//    deallocate_symbol_list_removing_references(thisAgent, thisAgent->parser_syms);
+//    thisAgent->parser_syms = NIL;
     return true;
 }
 

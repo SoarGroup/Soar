@@ -23,10 +23,10 @@ using namespace sml;
 
 bool CommandLineInterface::DoSelect( const std::string* pOp ) 
 {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if ( !pOp )
     {
-        const char *my_selection = select_get_operator( agnt );
+        const char *my_selection = select_get_operator( thisAgent );
         
         if ( my_selection != NULL )
         {
@@ -44,7 +44,7 @@ bool CommandLineInterface::DoSelect( const std::string* pOp )
         }
     }
     else
-        select_next_operator( agnt, pOp->c_str() );
+        select_next_operator( thisAgent, pOp->c_str() );
     
     return true;
 }

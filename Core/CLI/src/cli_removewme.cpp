@@ -32,9 +32,9 @@ using namespace sml;
 
 bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
     wme *pWme = 0;
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
-    for ( pWme = agnt->all_wmes_in_rete; pWme != 0; pWme = pWme->rete_next )
+    for ( pWme = thisAgent->all_wmes_in_rete; pWme != 0; pWme = pWme->rete_next )
     {
         if ( pWme->timetag == timetag )
         {
@@ -92,7 +92,7 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
         {
             if ( pWme->gds->goal != 0 ) 
             {
-                gds_invalid_so_remove_goal( agnt, pWme );
+                gds_invalid_so_remove_goal( thisAgent, pWme );
                 /* NOTE: the call to remove_wme_from_wm will take care of checking if
                 GDS should be removed */
             }
@@ -100,10 +100,10 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
         /* REW: end   09.15.96 */
 
         // now remove w from working memory
-        remove_wme_from_wm( agnt, pWme );
+        remove_wme_from_wm( thisAgent, pWme );
 
 #ifndef NO_TOP_LEVEL_REFS
-        do_buffered_wm_and_ownership_changes( agnt );
+        do_buffered_wm_and_ownership_changes( thisAgent );
 #endif // NO_TOP_LEVEL_REFS
     }
 
