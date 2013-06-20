@@ -35,9 +35,7 @@ inline rhs_value make_rhs_value_symbol_no_refcount(agent* thisAgent, Symbol * sy
 
   if (!sym )
   {
-    #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-        print(thisAgent,  "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
-    #endif
+    print(thisAgent,  "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
     return reinterpret_cast<rhs_value>(NIL);
   }
   allocate_with_pool (thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
@@ -137,7 +135,8 @@ void deallocate_action_list (agent* thisAgent, action *actions) {
   action *a;
 
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-  print(thisAgent,  "Debug | Deallocating action list...\n");
+  debug_store_refcount_msg("meta", __func__, __FILE__, __LINE__, false);
+  //print(thisAgent,  "Debug | Deallocating action list...\n");
 #endif
   while (actions) {
     a = actions;
