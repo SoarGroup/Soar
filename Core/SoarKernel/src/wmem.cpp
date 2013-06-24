@@ -72,11 +72,8 @@ void reset_wme_timetags (agent* thisAgent) {
   }
   thisAgent->current_wme_timetag = 1;
 }
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY2
-wme *make_wme_func (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable)
-#else
-  wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable)
-#endif
+
+wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable)
 {
   wme *w;
 
