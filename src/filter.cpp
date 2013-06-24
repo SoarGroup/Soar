@@ -303,6 +303,72 @@ bool map_filter::update_one(const filter_params *params) {
 	return true;
 }
 
+
+
+bool select_filter::update_outputs() {
+	const filter_input* input = get_input();
+	std::vector<const filter_params*>::iterator j;
+	bool error = false;
+
+	// Check all added
+	for (int i = input->first_added(); i < input->num_current(); ++i) {
+		const filter_params* params = input->get_current(i);
+		bool changed = false;
+		filter_val* out = NULL;
+		if(!compute(params, out, changed)){
+			return false;
+		}
+		if(out != NULL){
+			add_output(out, params);
+			io_map[params] = out;
+		}
+	}
+	// Check all removed
+	for (int i = 0; i < input->num_removed(); ++i) {
+		const filter_params* params = input->get_removed(i);
+		io_map_t::iterator out_it = io_map.find(params);
+		if(out_it != io_map.end()){
+			filter_val* out = out_it->second;
+			remove_output(out);
+			output_removed(out);
+			io_map.erase(out_it);
+		}
+	}
+	for (int i = 0; i < input->num_changed(); ++i) {
+		if (!update_one(input->get_changed(i))) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool select_filter::update_one(const filter_params *params) {
+	io_map_t::iterator out_it = io_map.find(params);
+	bool is_present = (out_it != io_map.end());
+	bool changed = false;
+	filter_val* out = NULL;
+	if(is_present){
+		out = out_it->second;
+	}
+	if(!compute(params, out, changed)){
+		return false;
+	}
+	if(out == NULL && is_present){
+		// Have to remove the output
+		remove_output(out_it->second);
+		output_removed(out_it->second);
+		io_map.erase(out_it);
+	} else if(out != NULL && is_present && changed){
+		// Update the output 
+		change_output(out);
+	} else if(out != NULL && !is_present){
+		// Need to add
+		add_output(out, params);
+		io_map[params] = out;
+	}
+	return true;
+}
+
 bool rank_filter::update_outputs() {
 	const filter_input *input = get_input();
 	double r;

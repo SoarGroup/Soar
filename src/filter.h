@@ -578,7 +578,7 @@ private:
 		}
 		return true;
 	}
-	
+
 	void output_removed(const filter_val *out) {
 		T val;
 		bool success = get_filter_val(out, val);
@@ -586,6 +586,33 @@ private:
 		output_removed(val);
 	}
 };
+
+
+class select_filter : public filter{
+public:
+	select_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: filter(root, si, input)
+	{}
+
+	virtual ~select_filter(){}
+
+	virtual bool compute(const filter_params *params, filter_val*& out, bool& changed) = 0;
+
+	bool update_outputs();
+
+	virtual void output_removed(filter_val* out) { }
+
+private:
+	bool update_one(const filter_params *params);
+
+	typedef std::map<const filter_params*, filter_val*> io_map_t;
+	io_map_t io_map;
+
+	void reset() {
+		io_map.clear();
+	}
+};
+
 
 /*
  This type of filter processes all inputs and produces a single
