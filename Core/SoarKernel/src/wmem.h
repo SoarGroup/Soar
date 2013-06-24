@@ -49,7 +49,16 @@ typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 
 extern void reset_wme_timetags (agent* thisAgent);
+
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY2
+extern wme *make_wme_func (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,bool acceptable);
+#define make_wme(thisAgent, id, attr, value, acceptable) \
+        ({debug_store_refcount_msg("", __func__, __FILE__, __LINE__, true); \
+        make_wme_func(thisAgent, id, attr, value, acceptable);})
+#else
 extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,bool acceptable);
+#endif
+
 extern void add_wme_to_wm (agent* thisAgent, wme *w);
 extern void remove_wme_from_wm (agent* thisAgent, wme *w);
 extern void remove_wme_list_from_wm (agent* thisAgent, wme *w, bool updateWmeMap = false);

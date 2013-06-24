@@ -134,7 +134,7 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
 void deallocate_action_list (agent* thisAgent, action *actions) {
   action *a;
 
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY2
   debug_store_refcount_msg("meta", __func__, __FILE__, __LINE__, false);
   //print(thisAgent,  "Debug | Deallocating action list...\n");
 #endif
