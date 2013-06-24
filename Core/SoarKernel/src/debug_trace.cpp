@@ -371,12 +371,7 @@ namespace tracey
 
         std::thread::id locked_by;
 
-$linux(
-        std::recursive_mutex self;
-)
-$lelse(
         std::mutex self;
-)
 
         std::thread::id nobody() const { // return empty/invalid thread
             return std::thread::id();
@@ -393,30 +388,6 @@ $lelse(
     };
 
     std::string demangle( const std::string &name ) {
-    $linux({
-#if 0   // c++filt way
-        FILE *fp = popen( (std::string("echo -n \"") + name + std::string("\" | c++filt" )).c_str(), "r" );
-        if (!fp) { return name; }
-        char demangled[1024];
-        char *line_p = fgets(demangled, sizeof(demangled), fp);
-        pclose(fp);
-        return demangled;
-#else   // addr2line way. wip & quick proof-of-concept. clean up required.
-        tracey::string binary = name.substr( 0, name.find_first_of('(') );
-        tracey::string address = name.substr( name.find_last_of('[') + 1 );
-        address.pop_back();
-        tracey::string cmd( "addr2line -e \1 \2", binary, address );
-        FILE *fp = popen( cmd.c_str(), "r" );
-        if (!fp) { return name; }
-        char demangled[1024];
-        char *line_p = fgets(demangled, sizeof(demangled), fp);
-        pclose(fp);
-        tracey::string dmg(demangled);
-        dmg.pop_back(); //remove \n
-        return dmg[0] == '?' ? name : dmg;
-#endif
-    })
-    $apple({
         // format: number  filename  address  funcname + offset
         // find beginning and end of function name
         const char *b = name.data();
@@ -438,26 +409,13 @@ $lelse(
         *e = ' ';   // restore original
         if (sz>alloc_size) alloc_size = sz; // update alloc_size if __cxa_demangle called realloc
 //        return status ? name : std::string(name.data(), b - name.data()) + std::string(demangled) + std::string(e);
-        if (status)
+        if (!status)
         {
           /* Remove what is between parentheses.  Don't need parameters. */
           return std::string(demangled) + std::string(e);
         } else {
           return name;
         }
-    })
-    $windows({
-        char demangled[1024];
-        return (UnDecorateSymbolName(name.c_str(), demangled, sizeof( demangled ), UNDNAME_COMPLETE)) ? demangled : name;
-    })
-    $gnuc({
-        char demangled[1024];
-        size_t sz = sizeof(demangled);
-        int status;
-        abi::__cxa_demangle(name.c_str(), demangled, &sz, &status);
-        return !status ? demangled : name;
-    })
-        return name;
     }
 
     class callstack
@@ -479,128 +437,8 @@ $lelse(
 
     namespace
     {
-        size_t capture_stack_trace(int frames_to_skip, int max_frames, void **out_frames)
-        {
-        $windows({
-            if (max_frames > 32)
-                    max_frames = 32;
-
-            unsigned short capturedFrames = 0;
-
-            // RtlCaptureStackBackTrace is only available on Windows XP or newer versions of Windows
-            typedef WORD(NTAPI FuncRtlCaptureStackBackTrace)(DWORD, DWORD, PVOID *, PDWORD);
-
-            static struct raii
-            {
-                raii() : module(0), ptrRtlCaptureStackBackTrace(0)
-                {
-                    module = LoadLibraryA("kernel32.dll");
-                    if( module )
-                        ptrRtlCaptureStackBackTrace = (FuncRtlCaptureStackBackTrace *)GetProcAddress(module, "RtlCaptureStackBackTrace");
-                    else
-                        assert( !"<tracey/tracey.cpp> says: error! cant load kernel32.dll" );
-                }
-                ~raii() { if(module) FreeLibrary(module); }
-
-                HMODULE module;
-                FuncRtlCaptureStackBackTrace *ptrRtlCaptureStackBackTrace;
-            } module;
-
-            if( module.ptrRtlCaptureStackBackTrace )
-                capturedFrames = module.ptrRtlCaptureStackBackTrace(frames_to_skip+1, max_frames, out_frames, (DWORD *) 0);
-
-            return capturedFrames;
-        })
-        $gnuc({
-            // Ensure the output is cleared
-            memset(out_frames, 0, (sizeof(void *)) * max_frames);
-
-            return (backtrace(out_frames, max_frames));
-        })
-            return 0;
-        }
-
-        tracey::strings resolve_stack_trace(void **frames, unsigned num_frames)
-        {
-        $windows({
-            // this mutex is used to prevent race conditions.
-            // however, it is constructed with heap based plus placement-new just to meet next features:
-            // a) ready to use before program begins.
-            // our memtracer uses callstack() and mutex is ready to use before the very first new() is made.
-            // b) ready to use after program ends.
-            // our memtracer uses callstack() when making the final report after the whole program has finished.
-            // c) allocations free: memory is taken from heap, and constructed thru placement new
-            // we will avoid recursive deadlocks that would happen in a new()->memtracer->callstack->new()[...] scenario.
-            // d) leaks free: zero global allocations are made.
-            // we don't polute memmanager/memtracer reports with false positives.
-
-            // no leak and no memory traced :P
-            // memtraced recursion safe; we don't track placement-news
-            static std::mutex *mutex = 0;
-            if( !mutex )
-            {
-                static char placement[ sizeof(std::mutex) ];
-                mutex = (std::mutex *)placement;
-                new (mutex) std::mutex();
-            }
-
-            tracey::strings backtrace_text;
-            mutex->lock();
-
-            HANDLE process = GetCurrentProcess();
-            if( SymInitialize( process, NULL, TRUE) ) {
-
-                enum { MAXSYMBOLNAME = 128 - sizeof(IMAGEHLP_SYMBOL64) };
-                char symbol64_buf     [sizeof(IMAGEHLP_SYMBOL64) + MAXSYMBOLNAME];
-                char symbol64_bufblank[sizeof(IMAGEHLP_SYMBOL64) + MAXSYMBOLNAME] = {0};
-                IMAGEHLP_SYMBOL64 *symbol64       = reinterpret_cast<IMAGEHLP_SYMBOL64*>(symbol64_buf);
-                IMAGEHLP_SYMBOL64 *symbol64_blank = reinterpret_cast<IMAGEHLP_SYMBOL64*>(symbol64_bufblank);
-                symbol64_blank->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
-                symbol64_blank->MaxNameLength = MAXSYMBOLNAME - 1;
-
-                IMAGEHLP_LINE64 line64, line64_blank = {0};
-                line64_blank.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
-
-                for( unsigned i = 0; i < num_frames; i++ )
-                {
-                    *symbol64 = *symbol64_blank;
-                    DWORD64 displacement64 = 0;
-                    if( !SymGetSymFromAddr64(process, (DWORD64) frames[i], &displacement64, symbol64) ) {
-                        backtrace_text.push_back("????");
-                    } else {
-                        line64 = line64_blank;
-                        DWORD displacement = 0;
-                        if( !SymGetLineFromAddr64(process, (DWORD64) frames[i], &displacement, &line64) ) {
-                            backtrace_text.push_back(symbol64->Name);
-                        } else {
-                            backtrace_text.push_back(tracey::string("\1 (\2, line \3)", symbol64->Name, line64.FileName, line64.LineNumber));
-                        }
-                    }
-                }
-
-                SymCleanup(process);
-            }
-
-            mutex->unlock();
-            return backtrace_text;
-        })
-        $gnuc({
-
-            tracey::strings backtrace_text;
-            char **strings = backtrace_symbols(frames, num_frames);
-
-            // Decode the strings
-            if( strings ) {
-                for( unsigned i = 0; i < num_frames; i++ ) {
-                    backtrace_text.push_back( demangle(strings[i]) );
-                }
-                free( strings );
-            }
-
-            return backtrace_text;
-        })
-            return tracey::strings();
-        }
+        size_t capture_stack_trace(int frames_to_skip, int max_frames, void **out_frames) { return 0;}
+        tracey::strings resolve_stack_trace(void **frames, unsigned num_frames) { return tracey::strings(); }
     }
 
     callstack::callstack() // save
@@ -774,10 +612,6 @@ return ptr;
 
                     void _report() const
                     {
-                        $windows(
-                            AllocConsole();
-                        )
-
                         // this should happen at the very end of a program (even *after* static memory unallocation)
                         // @todo: avoid using any global object like std::cout/cerr (because some implementations like "cl /MT" will crash)
 
@@ -846,12 +680,7 @@ return ptr;
                             /* @todo: move this to an user-defined callback { */
 
                             tracey::string  line( "\1) Leak \2 bytes [\3] backtrace \4/\5 (\6%)\r\n", ibegin, my_leak->size, my_address, ibegin, iend, percent = current );
-                            $windows(
-                            tracey::strings lines = tracey::string( my_callstack->str("\2\n", 2) ).tokenize("\n");
-                            )
-                            $welse(
                             tracey::strings lines = tracey::string( my_callstack->str("\2\n", 4) ).tokenize("\n");
-                            )
 
                             for( size_t i = 0; i < lines.size(); ++i )
                                 line += tracey::string( "\t\1\r\n", lines[i] );
