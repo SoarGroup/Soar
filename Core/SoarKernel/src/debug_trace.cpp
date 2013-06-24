@@ -412,6 +412,12 @@ namespace tracey
         if (!status)
         {
           /* Remove what is between parentheses.  Don't need parameters. */
+          size_t paren_start, paren_end;
+          std::string returnString, demangledString(demangled);
+          paren_start = demangledString.find_first_of('(');
+          paren_end = demangledString.find_first_of(')');
+          returnString = demangledString.erase(paren_start, paren_end) + std::string(e);
+          return returnString;
           return std::string(demangled) + std::string(e);
         } else {
           return name;
