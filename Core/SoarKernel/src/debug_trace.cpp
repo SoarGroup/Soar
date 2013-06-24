@@ -400,15 +400,12 @@ namespace tracey
         if (!e || e<=b || *--e != ' ') return name; // abort if bad format
         static size_t alloc_size = 1024;
         char *demangled = static_cast<char *>(malloc(alloc_size));
-//        static std::unique_ptr<char, void (*)(void*)> demangled((char*) std::malloc(alloc_size), &std::free);
         size_t sz = alloc_size;
         int status;
         *e = '\0';  // terminate string for __cxa_demangle
-//        abi::__cxa_demangle(b, demangled.get(), &sz, &status);
         abi::__cxa_demangle(b, demangled, &sz, &status);
         *e = ' ';   // restore original
         if (sz>alloc_size) alloc_size = sz; // update alloc_size if __cxa_demangle called realloc
-//        return status ? name : std::string(name.data(), b - name.data()) + std::string(demangled) + std::string(e);
         if (!status)
         {
           /* Remove what is between parentheses.  Don't need parameters. */
@@ -417,8 +414,8 @@ namespace tracey
           paren_start = demangledString.find_first_of('(');
           paren_end = demangledString.find_first_of(')');
           returnString = demangledString.erase(paren_start, paren_end) + std::string(e);
+          free(demangled);
           return returnString;
-          return std::string(demangled) + std::string(e);
         } else {
           return name;
         }
