@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -13,7 +13,7 @@
  * Calculate_support_for_instantiation_preferences() does run-time o-support
  * calculations -- it fills in pref->o_supported in each pref. on the
  * instantiation.  Calculate_compile_time_o_support() does the compile-time
- * version:  it takes the LHS and RHS, and fills in the a->support field in 
+ * version:  it takes the LHS and RHS, and fills in the a->support field in
  * each RHS action with either UNKNOWN_SUPPORT, O_SUPPORT, or I_SUPPORT.
  * =======================================================================
  */
@@ -89,7 +89,7 @@ void add_to_os_tc (agent* thisAgent, Symbol *id, Bool isa_state) {
   /* --- if id is already in the TC, exit; else mark it as in the TC --- */
   if (id->id.tc_num==thisAgent->o_support_tc) return;
   id->id.tc_num = thisAgent->o_support_tc;
-  
+
   /* --- scan through all preferences and wmes for all slots for this id --- */
   for (w=id->id.input_wmes; w!=NIL; w=w->next)
     add_to_os_tc_if_needed (thisAgent, w->value);
@@ -200,14 +200,14 @@ Bool id_or_value_of_condition_list_is_in_os_tc (agent* thisAgent, condition *con
 
    This routine checks to see if the identifier is one of the context
    objects i.e. it is the state somewhere in the context stack.
-   This is used to ensure that O-support is not given to context objects 
+   This is used to ensure that O-support is not given to context objects
    in super-states.
 
 ----------------------------------------------------------------------- */
 Bool is_state_id(agent* thisAgent, Symbol *sym,Symbol *match_state)
 {
   Symbol *c;
-  
+
   for(c = thisAgent->top_goal; c != match_state; c = c->id.lower_goal) {
     if (sym == c)
       return TRUE;
@@ -261,7 +261,7 @@ Bool is_state_id(agent* thisAgent, Symbol *sym,Symbol *match_state)
 ----------------------------------------------------------------------- */
 
 /* RBD 8/91/94 changed calls to add_to_os_tc() in this routine to use
-   add_to_os_tc_if_id() instead -- in case people use constant-symbols 
+   add_to_os_tc_if_id() instead -- in case people use constant-symbols
    (instead of objects) for states or operators */
 
 void calculate_support_for_instantiation_preferences (agent* thisAgent, instantiation *inst, instantiation *original_inst) {
@@ -310,7 +310,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 					if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
 							"operator") == NIL) &&
 							(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-						if (rhs_value_is_symbol(act->attr) &&
+						if (rhs_value_is_reteloc(act->id) &&
 								get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ),
 										rhs_value_to_reteloc_field_num( act->id ),
 										non_variabilized_inst->rete_token,
@@ -377,7 +377,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 								(w->id == lowest_goal_wme->id)) {
 									if (thisAgent->o_support_calculation_type == 3 || thisAgent->o_support_calculation_type == 4) {
 
-										/* iff RHS has only operator elaborations 
+										/* iff RHS has only operator elaborations
 										then it's IE_PROD, otherwise PE_PROD, so
 										look for non-op-elabs in the actions  KJC 1/00 */
 										for (act = inst->prod->action_list;
@@ -386,8 +386,8 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 													if ((rhs_value_is_symbol(act->id)) &&
 														(rhs_value_to_symbol(act->id) == w->value)) {
 															op_elab = TRUE;
-													} else if ( thisAgent->o_support_calculation_type == 4 
-														&& (rhs_value_is_reteloc(act->id)) 
+													} else if ( thisAgent->o_support_calculation_type == 4
+														&& (rhs_value_is_reteloc(act->id))
 														&& w->value == get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )) {
 															op_elab = TRUE;
 													} else {
@@ -396,7 +396,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 													}
 												}
 										}
-									} else {					
+									} else {
 										o_support = TRUE;
 										break;
 									}
@@ -413,8 +413,8 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
 
 	/* KJC 01/00: Warn if operator elabs mixed w/ applications */
-	if ( (thisAgent->o_support_calculation_type == 3 
-		|| thisAgent->o_support_calculation_type == 4 ) 
+	if ( (thisAgent->o_support_calculation_type == 3
+		|| thisAgent->o_support_calculation_type == 4 )
 		&& (o_support == TRUE)) {
 
 			if (op_elab == TRUE ) {
@@ -447,7 +447,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
 	/*
 	assign every preference the correct support
-	*/  
+	*/
 
 	for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
 		pref->o_supported = o_support;
@@ -467,7 +467,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
    For a particular preference p=(id ^attr ...) on the RHS of an
    instantiation [LHS,RHS]:
 
-   RULE #1 (Context pref's): If id is the match state and attr="operator", 
+   RULE #1 (Context pref's): If id is the match state and attr="operator",
    then p does NOT get o-support.  This rule overrides all other rules.
 
    RULE #2 (O-A support):  If LHS includes (match-state ^operator ...),
@@ -479,17 +479,17 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
    RULE #4 (O-C support): If RHS creates (match-state ^operator ... +/!),
    and p is in TC(RHS-operators, RHS), then p gets o-support.
 
-   Here "TC" means transitive closure; the starting points for the TC are 
-   all operators the RHS creates an acceptable/require preference for (i.e., 
-   if the RHS includes (match-state ^operator such-and-such +/!), then 
+   Here "TC" means transitive closure; the starting points for the TC are
+   all operators the RHS creates an acceptable/require preference for (i.e.,
+   if the RHS includes (match-state ^operator such-and-such +/!), then
    "such-and-such" is one of the starting points for the TC).  The TC
    is computed only through the preferences created by the RHS, not
    through any other existing preferences or WMEs.
 
    If none of rules 1-4 apply, then p does NOT get o-support.
 
-   Note that rules 1 through 3 can be handled in linear time (linear in 
-   the size of the LHS and RHS); rule 4 can be handled in time quadratic 
+   Note that rules 1 through 3 can be handled in linear time (linear in
+   the size of the LHS and RHS); rule 4 can be handled in time quadratic
    in the size of the RHS (and typical behavior will probably be linear).
 ----------------------------------------------------------------------- */
 
@@ -514,8 +514,8 @@ void dougs_calculate_support_for_instantiation_preferences (agent* thisAgent, in
       break;
     }
   }
-  
-  /* --- Initialize all pref's according to rules 2 and 3 --- */  
+
+  /* --- Initialize all pref's according to rules 2 and 3 --- */
   for (pref=rhs; pref!=NIL; pref=pref->inst_next)
     pref->o_supported = rule_2_or_3;
 
@@ -597,7 +597,7 @@ yes_no_maybe test_is_for_symbol (test t, Symbol *sym) {
   }
 
   ct = complex_test_from_test(t);
-  
+
   switch (ct->type) {
   case DISJUNCTION_TEST:
     if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
@@ -624,7 +624,7 @@ yes_no_maybe test_is_for_symbol (test t, Symbol *sym) {
    are certain to be bound to goals.
 
    Note:  this uses the TC routines and clobbers any existing TC.
-                         
+
    BUGBUG should follow ^object links up the goal stack if possible
 ------------------------------------------------------------------ */
 
@@ -665,11 +665,11 @@ Symbol *find_compile_time_match_goal (agent* thisAgent, condition *lhs, list *kn
   cons *c, *prev_c, *next_c;
   Symbol *result;
   condition *cond;
-  
+
   /* --- find root variables --- */
   tc = get_new_tc_number(thisAgent);
   roots = collect_root_variables (thisAgent, lhs, tc, FALSE);
-  
+
   /* --- intersect roots with known_goals, producing root_goals --- */
   root_goals = NIL;
   num_root_goals = 0;
@@ -703,7 +703,7 @@ Symbol *find_compile_time_match_goal (agent* thisAgent, condition *lhs, list *kn
       }
     } /* end of for (cond) loop */
   }
-  
+
   /* --- if there's only one root goal, that's it! --- */
   if (num_root_goals==1)
     result = static_cast<symbol_union *>(root_goals->first);
@@ -712,7 +712,7 @@ Symbol *find_compile_time_match_goal (agent* thisAgent, condition *lhs, list *kn
 
   /* --- clean up and return result --- */
   free_list (thisAgent, root_goals);
-  return result;      
+  return result;
 }
 
 /* ------------------------------------------------------------------
@@ -728,7 +728,7 @@ Symbol *find_compile_time_match_goal (agent* thisAgent, condition *lhs, list *kn
    Note:  this uses the TC routines and clobbers any existing TC.
 ------------------------------------------------------------------ */
 
-Symbol *find_thing_off_goal (agent* thisAgent, condition *lhs, 
+Symbol *find_thing_off_goal (agent* thisAgent, condition *lhs,
 							 Symbol *goal, Symbol *attr) {
   condition *c;
   list *vars;
@@ -785,7 +785,7 @@ Bool condition_list_has_id_test_for_sym (condition *conds, Symbol *sym) {
 
 ------------------------------------------------------------------ */
 
-Bool match_state_tests_non_operator_slot (agent* thisAgent, condition *conds, 
+Bool match_state_tests_non_operator_slot (agent* thisAgent, condition *conds,
 										  Symbol *match_state) {
   yes_no_maybe ynm;
 
@@ -800,7 +800,7 @@ Bool match_state_tests_non_operator_slot (agent* thisAgent, condition *conds,
       }
       break;
     case CONJUNCTIVE_NEGATION_CONDITION:
-      if (match_state_tests_non_operator_slot (thisAgent, conds->data.ncc.top, 
+      if (match_state_tests_non_operator_slot (thisAgent, conds->data.ncc.top,
 											   match_state))
         return TRUE;
       break;
@@ -818,16 +818,16 @@ Bool match_state_tests_non_operator_slot (agent* thisAgent, condition *conds,
    in the LHS or actions in the RHS.
 ------------------------------------------------------------------ */
 
-void add_tc_through_lhs_and_rhs (agent* thisAgent, condition *lhs, action *rhs, 
+void add_tc_through_lhs_and_rhs (agent* thisAgent, condition *lhs, action *rhs,
 								 tc_number tc, list **id_list, list **var_list) {
   condition *c;
   action *a;
   Bool anything_changed;
-  
+
   for (c=lhs; c!=NIL; c=c->next) c->already_in_tc = FALSE;
   for (a=rhs; a!=NIL; a=a->next) a->already_in_tc = FALSE;
 
-  /* --- keep trying to add new stuff to the tc --- */  
+  /* --- keep trying to add new stuff to the tc --- */
   while (TRUE) {
     anything_changed = FALSE;
     for (c=lhs; c!=NIL; c=c->next)
@@ -961,7 +961,7 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs, action 
 			return;
 		}
 	}
-  
+
 	/* --- calculate LHS support predicates --- */
 	lhs_oa_support = MAYBE;
 	if (match_operator) {
@@ -977,13 +977,13 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs, action 
 	lhs_om_support = MAYBE;
 
 	/* SBH 7/1/94 #2 */
-	/* For NNPSCM, must test that there is a test of a non-operator slot off 
+	/* For NNPSCM, must test that there is a test of a non-operator slot off
 	of the match_state. */
-	if (match_state_tests_non_operator_slot(thisAgent, lhs,match_state)) 
+	if (match_state_tests_non_operator_slot(thisAgent, lhs,match_state))
 	{
 		/* end SBH 7/1/94 #2 */
 
-		lhs_oc_support = YES; 
+		lhs_oc_support = YES;
 		for (cond=lhs; cond!=NIL; cond=cond->next) {
 			if (cond->type != POSITIVE_CONDITION) continue;
 			if (test_is_for_symbol (cond->data.tests.id_test, match_state) != YES) continue;
@@ -993,7 +993,7 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs, action 
 			lhs_om_support = YES;
 			break;
 		}
-	}     
+	}
 
 	if (lhs_oa_support == YES) {    /* --- look for RHS o-a support --- */
 		/* --- do TC(match_state) --- */
