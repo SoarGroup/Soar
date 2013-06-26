@@ -268,10 +268,6 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 	preference *pref;
 	wme *w;
 	condition *c;
-
-
-	/* RCHONG: begin 10.11 */
-
 	action    *act;
 	Bool      o_support,op_elab;
 	Bool      operator_proposal;
@@ -279,9 +275,6 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 	int       pass;
 	wme       *lowest_goal_wme;
 
-	/* RCHONG: end 10.11 */
-
-	/* REW: begin 09.15.96 */
 	if (thisAgent->soar_verbose_flag == TRUE) {
 		printf("\n      in calculate_support_for_instantiation_preferences:");
 		xml_generate_verbose(thisAgent, "in calculate_support_for_instantiation_preferences:");
@@ -295,35 +288,39 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 		o_support = FALSE;
 	else if (inst->prod->declared_support == UNDECLARED_SUPPORT) {
 
-		/*
+	  /*
 		check if the instantiation is proposing an operator.  if it
 		is, then this instantiation is i-supported.
-		*/
+	   */
 
-		operator_proposal = FALSE;
-		instantiation *non_variabilized_inst = original_inst ? original_inst : inst;
+	  operator_proposal = FALSE;
+	  instantiation *non_variabilized_inst = original_inst ? original_inst : inst;
 
-		if (non_variabilized_inst->rete_wme) {
-			for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next) {
-				if ((act->type == MAKE_ACTION)  &&
-						(rhs_value_is_symbol(act->attr))) {
-					if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
-							"operator") == NIL) &&
-							(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-						if (rhs_value_is_reteloc(act->id) &&
-								get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ),
-										rhs_value_to_reteloc_field_num( act->id ),
-										non_variabilized_inst->rete_token,
-										non_variabilized_inst->rete_wme )->id.isa_goal)
-						{
-							operator_proposal = TRUE;
-							o_support = FALSE;
-							break;
-						}
-					}
-				}
-			}
-	}
+	  if (non_variabilized_inst->rete_wme) {
+	    for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next) {
+	      if ((act->type == MAKE_ACTION)  &&
+	          (rhs_value_is_symbol(act->attr)) &&
+	          (strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50), "operator") == NIL) &&
+	          (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
+	        if (rhs_value_is_reteloc(act->id) && get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up( act->id ),
+	            rhs_value_to_reteloc_field_num( act->id ),
+	            non_variabilized_inst->rete_token,
+	            non_variabilized_inst->rete_wme )->id.isa_goal)
+	        {
+	          operator_proposal = TRUE;
+	          o_support = FALSE;
+	          break;
+	        } else if (rhs_value_is_symbol(act->id)) {
+	          /* -- Not sure rhs id can even be a symbol at this point.  Temporary test here.  Assert will
+	           *    be ignored in optimized build, so behavior should be same as before in release version. -- */
+	          print(thisAgent, "Debug | Unexpected symbol in calculate_support_for_instantiation_preferences(). Please report"
+	              " to Soar group.\n");
+	          assert(false);
+	        }
+	      }
+	    }
+	  }
+
 
 		if (operator_proposal == FALSE) {
 
@@ -409,7 +406,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 				}
 			}
 		}
-	}
+}
 
 
 	/* KJC 01/00: Warn if operator elabs mixed w/ applications */
