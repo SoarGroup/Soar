@@ -311,10 +311,10 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 	          o_support = FALSE;
 	          break;
 	        } else if (rhs_value_is_symbol(act->id)) {
-	          /* -- Not sure rhs id can even be a symbol at this point.  Temporary test here.  Assert will
-	           *    be ignored in optimized build, so behavior should be same as before in release version. -- */
+	          /* -- Not sure rhs id can even be a symbol at this point.  Temporary test here.  If this case does exist,
+	           *    assert will be ignored in optimized build, so behavior should not be affected by this case. -- */
 	          print(thisAgent, "Debug | Unexpected symbol in calculate_support_for_instantiation_preferences(). Please report"
-	              " to Soar group.\n");
+	              " to Soar Umich group.\n");
 	          assert(false);
 	        }
 	      }
