@@ -1218,8 +1218,8 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 		//
 
-		// notice that the start and end queries in epmem_find_lti_queries are _asymetric_
-		// in that the the starts have ?<e.start and the ends have ?<=e.start
+		// notice that the start and end queries in epmem_find_lti_queries are _asymmetric_
+		// in that the starts have ?<e.start and the ends have ?<=e.start
 		// this small difference means that the start of the very first interval
 		// (ie. the one where the start is at or before the promotion time) will be ignored
 		// then we can simply add a single epmem_interval to the queue, and it will
@@ -3729,7 +3729,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define QUERY_DEBUG 0
+#define QUERY_DEBUG 2
 
 void epmem_print_retrieval_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[]) {
 	//std::map<epmem_node_id, std::string> tsh;
@@ -4618,12 +4618,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				} else {
 					epmem_uedge* uedge = (*uedge_iter).second;
 					uedge->pedges.insert(pedge);
-					if (uedge->activated) {
+					if (uedge->activated && uedge->activation_count == 1) {
 						for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
 							epmem_literal* literal = (*lit_iter);
-							if (uedge->activation_count == 1) {
-								changed_score |= epmem_satisfy_literal(literal, triple.parent_n_id, triple.child_n_id, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
-							}
+							changed_score |= epmem_satisfy_literal(literal, triple.parent_n_id, triple.child_n_id, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
 						}
 					}
 				}
@@ -4659,18 +4657,18 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					if (interval->is_end_point) {
 						uedge->activated = true;
 						uedge->activation_count++;
-						for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
-							epmem_pedge* pedge = *pedge_iter;
-							for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-								epmem_literal* literal = *lit_iter;
-								if (uedge->activation_count == 1) {
+						if (uedge->activation_count == 1) {
+							for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
+								epmem_pedge* pedge = *pedge_iter;
+								for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
+									epmem_literal* literal = *lit_iter;
 									changed_score |= epmem_satisfy_literal(literal, triple.parent_n_id, triple.child_n_id, current_score, current_cardinality, symbol_node_count, uedge_caches, symbol_num_incoming);
 								}
 							}
 						}
 					} else {
 						uedge->activated = false;
-            uedge->activation_count--;
+						uedge->activation_count--;
 						for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
 							epmem_pedge* pedge = *pedge_iter;
 							for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
