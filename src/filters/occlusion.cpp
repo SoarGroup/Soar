@@ -35,6 +35,7 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 	if(!eye){
 		return 0;
 	}
+
 	vec3 eyePos = eye->get_centroid();
 	std::cout << "EYE: " << eyePos[0] << ", " << eyePos[1] << ", " << eyePos[2] << std::endl;
 
@@ -49,11 +50,12 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 	for(c_geom_node_list::const_iterator i = geom_nodes.begin(); i != geom_nodes.end(); i++){
 		const convex_node* c_node = dynamic_cast<const convex_node*>(*i);
 		if(c_node){
-			std::string name = "_temp_line_" + tostring(view_lines.size());
+			std::string name = "_centroid_line_";
 			view_lines.push_back(create_view_line(name, eyePos, c_node->get_centroid()));
 
 			const ptlist& verts = c_node->get_world_verts();
 			for(ptlist::const_iterator i = verts.begin(); i != verts.end(); i++){
+				//std::cout << "Point: " << (*i)[0] << ", " << (*i)[1] << ", " << (*i)[2] << endl;
 				std::string name = "_temp_line_" + tostring(view_lines.size());
 				view_lines.push_back(create_view_line(name, eyePos, *i));
 			}
@@ -65,6 +67,7 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 	scn->get_all_nodes(all_nodes);
 
 	int num_occluded = 0;
+	bool centroid_occluded = false;
 
 	for(c_sgnode_list::const_iterator i = all_nodes.begin(); i != all_nodes.end(); i++){
 		const sgnode* n = *i;
@@ -82,6 +85,9 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 			if(dist <= 0){
 				view_line.second = true;
 				num_occluded++;
+				if(view_line.first->get_name() == std::string("_centroid_line_")){
+					centroid_occluded = true;
+				}
 			}
 		}
 	}
@@ -90,9 +96,12 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 		// No memory leaks here!
 		delete i->first;
 	}
-
-	// Count the number of view lines occluded and return the fraction
-	return ((float)num_occluded)/view_lines.size();
+	if(centroid_occluded){
+		return 1;
+	} else {
+		// Count the number of view lines occluded and return the fraction
+		return ((float)num_occluded)/view_lines.size();
+	}
 }
 
 
