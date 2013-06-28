@@ -273,46 +273,17 @@ typedef unixstl::processtimes_counter processtimes_counter;
 #endif // USE_PERFORMANCE_FOR_BOTH
 #endif // WIN32
 
-// soar_timer is the basic timer interface, shared by both types of timers.
-//
 // To use the timer, call start, then stop. get_usec() will return the 
 // amount of time in the previous start-stop period. 
 //
 // Calling start -> stop -> start -> get_usec is legal to minimize the
 // amount of time the timer is not running. 
+template <class C>
 class soar_timer
 {
 public:
-	// Starts the timer, does not affect get_usec
-	virtual void start() = 0;
-
-	// Stops the timer, recording the period for get_usec
-	virtual void stop() = 0;
-
-	// Simply calls start and stop to make sure the timer is not running.
-	// Calling stop before start is illegal on some platforms. This behavior
-	// is not well documented by STLSoft.
-	virtual void reset() = 0;
-
-	// Returns the period clocked by the last start -> stop cycle, in 
-	// microseconds. This does not imply that the timer has microsecond-
-	// capable resolution.
-	virtual uint64_t get_usec() = 0;
-
-protected:
-	soar_timer() {}
-	virtual ~soar_timer() {}
-};
-
-// soar_timer_impl is a template class implementing the common soar_timer
-// interface for platform-specific timers.
-template <class C>
-class soar_timer_impl
-	: public soar_timer
-{
-public:
-	soar_timer_impl() { enabled_ptr=NULL; }
-	~soar_timer_impl() {}
+	soar_timer() { enabled_ptr=NULL; }
+	~soar_timer() {}
 
 	void set_enabled( int64_t* new_enabled ) { enabled_ptr=new_enabled; }
 
@@ -325,14 +296,14 @@ private:
 	C timer;
 	int64_t* enabled_ptr;
 
-	soar_timer_impl(const soar_timer_impl&);
-	soar_timer_impl& operator=(const soar_timer_impl&);
+	soar_timer(const soar_timer&);
+	soar_timer& operator=(const soar_timer&);
 };
 
 // Define types and call them with more useful names such as wallclock or
 // process timers.
-typedef soar_timer_impl<performance_counter> soar_wallclock_timer;
-typedef soar_timer_impl<processtimes_counter> soar_process_timer;
+typedef soar_timer<performance_counter> soar_wallclock_timer;
+typedef soar_timer<processtimes_counter> soar_process_timer;
 
 // Utility class to be used with soar_timer instances, keeps track of multiple
 // intervals and has some simple time conversions.
@@ -349,7 +320,8 @@ public:
 	void reset() { total = 0; }
 
 	// Add the timer's last interval to the accumulated time.
-	void update(soar_timer& timer) { total += timer.get_usec(); }
+	template <typename T>
+	void update(T& timer) { total += timer.get_usec(); }
 
 	// Return seconds as a double.
 	double get_sec() { return total / 1000000.0; }
