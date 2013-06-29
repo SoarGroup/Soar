@@ -3770,10 +3770,6 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	/* --- invoke callback functions --- */
 	soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));
 
-	//#ifdef _WINDOWS
-	//        add_production_to_stat_lists(new_prod);
-	//#endif
-
 	return production_addition_result;
 }
 
@@ -3790,10 +3786,6 @@ void excise_production_from_rete (agent* thisAgent, production *p)
   ms_change *msc;
 
   soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(p));
-
-//#ifdef _WINDOWS
-//        remove_production_from_stat_lists(prod_to_be_excised);
-//#endif
 
   p_node = p->p_node;
   p->p_node = NIL;      /* mark production as not being in the rete anymore */
