@@ -47,11 +47,6 @@
 // These handles should not be used directly, see xml.h
 typedef void* xml_handle;
 
-/* JC ADDED: Included so we can put the RHS functions in here */
-typedef struct rhs_function_struct rhs_function;
-
-// select types
-typedef struct select_info_struct select_info;
 
 /* RBD Need more comments here, or should this stuff be here at all? */
 
@@ -73,6 +68,8 @@ typedef struct backtrace_struct backtrace_str;
 typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
+typedef struct rhs_function_struct rhs_function;
+typedef struct select_info_struct select_info;
 
 class debug_param_container;
 
@@ -253,7 +250,7 @@ typedef struct agent_struct {
   bool                print_prompt_flag;
   Symbol            * current_production_name;
 
-  string_hash_table * varname_table;
+  Original_Variable_Manager * varname_table;
 
   /* ---------------- Predefined Symbols -------------------------
      Certain symbols are used so frequently that we create them at

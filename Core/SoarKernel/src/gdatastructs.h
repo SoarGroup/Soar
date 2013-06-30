@@ -209,6 +209,7 @@ typedef struct preference_struct {
    *    lhs one, since the instantiated value is not
    *    sufficient. -- */
   Symbol *original_id_var, *original_attr_var, *original_value_var;
+  int64_t original_id_id, original_attr_id, original_value_id;
 
   struct slot_struct *slot;
 

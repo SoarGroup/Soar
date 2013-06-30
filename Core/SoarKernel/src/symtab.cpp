@@ -1078,8 +1078,8 @@ const char *Symbol::to_string_with_original(agent *thisAgent)
 }
 
 uint32_t hash_unique_string (void *item, short num_bits) {
-  unique_string *var;
-  var = static_cast<unique_string *>(item);
+  original_varname *var;
+  var = static_cast<original_varname *>(item);
   return compress (hash_string(var->name),num_bits);
 }
 
@@ -1091,10 +1091,10 @@ uint32_t hash_unique_string (void *item, short num_bits) {
  *    next_unique_suffix_number is used to quickly generate a new name for
  *    conflicting variable name. --- */
 
-void string_hash_table::make_varsym_unique(Symbol **original_varsym)
+void Original_Variable_Manager::make_name_unique(Symbol **original_varsym)
 {
   uint32_t hash_value;
-  unique_string *found_u_string, *new_u_string;
+  original_varname *found_u_string, *new_u_string;
 
   assert(thisAgent->newly_created_instantiations != NIL);
   #ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
@@ -1103,7 +1103,7 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
   #endif
 
   hash_value = hash_variable_raw_info ((*original_varsym)->var->name,ht->log2size);
-  found_u_string = reinterpret_cast<unique_string *>(*(ht->buckets + hash_value));
+  found_u_string = reinterpret_cast<original_varname *>(*(ht->buckets + hash_value));
   for ( ; found_u_string != NIL; found_u_string = found_u_string->next_in_hash_table)
   {
     if (!strcmp(found_u_string->name,(*original_varsym)->var->name))
@@ -1176,10 +1176,10 @@ void string_hash_table::make_varsym_unique(Symbol **original_varsym)
     print(thisAgent,  "UNQVAR| make_varsym_unique generated a var for the first time: %s\n", (*original_varsym)->var->name);
   #endif
 }
-Symbol *string_hash_table::find_varsym(const char *sym_name)
+Symbol *Original_Variable_Manager::find_original_variable(const char *sym_name)
 {
   uint32_t hash_value;
-  unique_string *found_u_string, *new_u_string;
+  original_varname *found_u_string, *new_u_string;
 
   assert(thisAgent->newly_created_instantiations != NIL);
   #ifdef DEBUG_TRACE_UNIQUE_VARIABLIZATION
@@ -1188,7 +1188,7 @@ Symbol *string_hash_table::find_varsym(const char *sym_name)
   #endif
 
   hash_value = hash_variable_raw_info (sym_name, ht->log2size);
-  found_u_string = reinterpret_cast<unique_string *>(*(ht->buckets + hash_value));
+  found_u_string = reinterpret_cast<original_varname *>(*(ht->buckets + hash_value));
   for ( ; found_u_string != NIL; found_u_string = found_u_string->next_in_hash_table)
   {
     if (!strcmp(found_u_string->name, sym_name))
@@ -1211,7 +1211,7 @@ Symbol *string_hash_table::find_varsym(const char *sym_name)
   return NIL;
 }
 
-void string_hash_table::clear_table()
+void Original_Variable_Manager::clear_table()
 {
   // Debug | need to go through and decrease refcounts on all symbols in unique strings
   //        might need to free strings too?
@@ -1220,26 +1220,26 @@ void string_hash_table::clear_table()
   free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
 }
 
-void string_hash_table::create_table()
+void Original_Variable_Manager::create_table()
 {
   ht = make_hash_table (thisAgent, 0, hash_unique_string);
-  init_memory_pool (thisAgent, &mp, sizeof(unique_string), "unique_string");
+  init_memory_pool (thisAgent, &mp, sizeof(original_varname), "unique_string");
 }
 
-void string_hash_table::reinit_table()
+void Original_Variable_Manager::reinit_table()
 {
   if (ht)
     clear_table();
   create_table();
 }
 
-string_hash_table::string_hash_table(agent *myAgent)
+Original_Variable_Manager::Original_Variable_Manager(agent *myAgent)
 {
   thisAgent = myAgent;
   create_table();
 }
 
-string_hash_table::~string_hash_table()
+Original_Variable_Manager::~Original_Variable_Manager()
 {
   clear_table();
 }
