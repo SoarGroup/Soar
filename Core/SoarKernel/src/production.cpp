@@ -33,7 +33,6 @@
 #include "symtab.h"
 #include "init_soar.h"
 #include "rete.h"
-#include "utilities.h"
 #include "reinforcement_learning.h"
 
 #include <ctype.h>

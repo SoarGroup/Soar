@@ -613,3 +613,192 @@ void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int
 
     PrintCLIMessage(&tempString);
 }
+
+void get_context_var_info ( agent* thisAgent, Symbol **dest_goal,
+  Symbol **dest_attr_of_slot,
+  Symbol **dest_current_value)
+{
+  Symbol *g;
+  varSymbol *v;
+  int levels_up;
+  wme *w;
+
+  v = varSym(find_variable (thisAgent, thisAgent->lexeme.string));
+  if (v==thisAgent->s_context_variable) {
+    levels_up = 0;
+    *dest_attr_of_slot = thisAgent->state_symbol;
+  } else if (v==thisAgent->o_context_variable) {
+    levels_up = 0;
+    *dest_attr_of_slot = thisAgent->operator_symbol;
+  } else if (v==thisAgent->ss_context_variable) {
+    levels_up = 1;
+    *dest_attr_of_slot = thisAgent->state_symbol;
+  } else if (v==thisAgent->so_context_variable) {
+    levels_up = 1;
+    *dest_attr_of_slot = thisAgent->operator_symbol;
+  } else if (v==thisAgent->sss_context_variable) {
+    levels_up = 2;
+    *dest_attr_of_slot = thisAgent->state_symbol;
+  } else if (v==thisAgent->sso_context_variable) {
+    levels_up = 2;
+    *dest_attr_of_slot = thisAgent->operator_symbol;
+  } else if (v==thisAgent->ts_context_variable) {
+    levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level - thisAgent->top_goal->id->level : 0;
+    *dest_attr_of_slot = thisAgent->state_symbol;
+  } else if (v==thisAgent->to_context_variable) {
+    levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level - thisAgent->top_goal->id->level : 0;
+    *dest_attr_of_slot = thisAgent->operator_symbol;
+  } else {
+    *dest_goal = NIL;
+    *dest_attr_of_slot = NIL;
+    *dest_current_value = NIL;
+    return;
+  }
+
+  g = thisAgent->bottom_goal;
+  while (g && levels_up) {
+    g = g->id->higher_goal;
+    levels_up--;
+  }
+  *dest_goal = g;
+
+  if (!g) {
+    *dest_current_value = NIL;
+    return;
+  }
+
+  if (*dest_attr_of_slot==thisAgent->state_symbol) {
+    *dest_current_value = g;
+  } else {
+    w = g->id->operator_slot->wmes;
+    *dest_current_value = w ? w->value : NIL;
+  }
+}
+
+bool read_id_or_context_var_from_string (agent* thisAgent, const char * the_lexeme,
+  Symbol * * result_id)
+{
+  Symbol *id;
+  Symbol *g, *attr, *value;
+
+  get_lexeme_from_string(thisAgent, the_lexeme);
+
+  if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+  {
+    id = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+    if (!id)
+    {
+      return false;
+    }
+    else
+    {
+      *result_id = id;
+      return true;
+    }
+  }
+
+  if (thisAgent->lexeme.type==VARIABLE_LEXEME)
+  {
+    get_context_var_info (thisAgent, &g, &attr, &value);
+
+    if ((!attr) || (!value))
+    {
+      return false;
+    }
+
+    if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    {
+      return false;
+    }
+
+    *result_id = value;
+    return true;
+  }
+
+  return false;
+}
+
+void get_lexeme_from_string (agent* thisAgent, const char * the_lexeme)
+{
+  int i;
+  const char * c;
+  bool STR_CONSTANT_start_found = false;
+  bool STR_CONSTANT_end_found = false;
+
+  for (c = the_lexeme, i = 0; *c; c++, i++)
+  {
+    if (*c == '|')
+    {
+      if (!STR_CONSTANT_start_found)
+      {
+        i--;
+        STR_CONSTANT_start_found = true;
+      }
+      else
+      {
+        i--;
+        STR_CONSTANT_end_found = true;
+      }
+    }
+    else
+    {
+      thisAgent->lexeme.string[i] = *c;
+    }
+  }
+
+  thisAgent->lexeme.string[i] = '\0'; /* Null terminate lexeme string */
+
+  thisAgent->lexeme.length = i;
+
+  if (STR_CONSTANT_end_found)
+  {
+    thisAgent->lexeme.type = STR_CONSTANT_LEXEME;
+  }
+  else
+  {
+    determine_type_of_constituent_string(thisAgent);
+  }
+}
+
+
+
+Symbol *read_identifier_or_context_variable (agent* thisAgent)
+{
+  Symbol *id;
+  Symbol *g, *attr, *value;
+
+  if (thisAgent->lexeme.type==IDENTIFIER_LEXEME) {
+    id = find_identifier (thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+    if (!id) {
+      print(thisAgent,  "There is no identifier %c%lu.\n", thisAgent->lexeme.id_letter,
+        thisAgent->lexeme.id_number);
+      print_location_of_most_recent_lexeme(thisAgent);
+      return NIL;
+    }
+    return id;
+  }
+  if (thisAgent->lexeme.type==VARIABLE_LEXEME)
+  {
+    get_context_var_info (thisAgent, &g, &attr, &value);
+    if (!attr) {
+      print(thisAgent,  "Expected identifier (or context variable)\n");
+      print_location_of_most_recent_lexeme(thisAgent);
+      return NIL;
+    }
+    if (!value) {
+      print(thisAgent,  "There is no current %s.\n", thisAgent->lexeme.string);
+      print_location_of_most_recent_lexeme(thisAgent);
+      return NIL;
+    }
+    if (value->symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
+      print(thisAgent,  "The current %s ", thisAgent->lexeme.string);
+      print_with_symbols (thisAgent, "(%y) is not an identifier.\n", value);
+      print_location_of_most_recent_lexeme(thisAgent);
+      return NIL;
+    }
+    return value;
+  }
+  print(thisAgent,  "Expected identifier (or context variable)\n");
+  print_location_of_most_recent_lexeme(thisAgent);
+  return NIL;
+}

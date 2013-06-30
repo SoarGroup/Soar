@@ -35,7 +35,6 @@
 #include "agent.h"
 #include "init_soar.h"
 #include "print.h"
-#include "utilities.h"
 
 const char * soar_callback_names[] =
 {

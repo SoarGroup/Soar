@@ -2,7 +2,6 @@
 
 #include "cli_CommandLineInterface.h"
 #include "agent.h"
-#include "utilities.h"
 #include "wmem.h"
 #include "symtab.h"
 #include "decide.h"

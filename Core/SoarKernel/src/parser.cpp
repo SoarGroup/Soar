@@ -134,7 +134,9 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
   var = (*sym)->data.var.current_binding_value;
   symbol_remove_ref (thisAgent, *sym);
   *sym = var;
-  if (!just_created) symbol_add_ref(thisAgent, var);
+
+  if (!just_created)
+    symbol_add_ref(thisAgent, var);
 }
 
 void substitute_for_placeholders_in_test (agent* thisAgent, test *t) {
@@ -745,6 +747,8 @@ condition *parse_attr_value_tests (agent* thisAgent) {
     attr_test = parse_test (thisAgent);
     if (!attr_test) {
       deallocate_condition_list (thisAgent, first_c);
+      /* -- MToDo | I think we need to deallocate id_test in several places in this function.  It's
+       *            also copied around. */
       return NIL;
     }
 /* AGR 544 begin */

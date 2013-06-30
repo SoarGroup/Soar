@@ -33,7 +33,7 @@
 #include "rete.h"
 #include "gdatastructs.h"
 #include "xml.h"
-#include "utilities.h"
+#include "stats.h"
 
 #include <assert.h>
 #include <time.h>
@@ -546,7 +546,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	if (thisAgent->system_halted)
 	{
-		print(thisAgent, 
+		print(thisAgent,
 			"\nSystem halted.  Use (init-soar) before running Soar again.");
 		xml_generate_error(thisAgent, "System halted.  Use (init-soar) before running Soar again.");
 		thisAgent->stop_soar = true;

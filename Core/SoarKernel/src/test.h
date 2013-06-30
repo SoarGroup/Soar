@@ -21,7 +21,6 @@ bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool loo
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
 
 inline test make_blank_test() {return static_cast<test>(0);}
-inline test make_test_without_refcount(agent* thisAgent, Symbol * sym, TestType test_type);
 inline test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
 inline uint32_t hash_test (agent* thisAgent, test t);
 void deallocate_test (agent* thisAgent, test t);

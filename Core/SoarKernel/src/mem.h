@@ -125,7 +125,6 @@
 #ifndef MEM_H
 #define MEM_H
 
-#include "chunk.h"
 #include "kernel.h"
 
 #include <stdio.h>	// Needed for FILE token below

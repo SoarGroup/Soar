@@ -191,4 +191,7 @@ extern void print_list_of_conditions(agent* thisAgent, condition *cond);
 
 extern void print_trace (agent* thisAgent, int64_t sysParamIndex, const char *format, ...);
 
+// Useful for converting enumerations to string
+#define stringify( name ) # name
+
 #endif

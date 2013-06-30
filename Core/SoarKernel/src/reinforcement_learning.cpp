@@ -30,7 +30,6 @@
 #include "tempmem.h"
 #include "print.h"
 #include "xml.h"
-#include "utilities.h"
 #include "recmem.h"
 
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
@@ -390,6 +389,30 @@ void rl_rule_meta( agent* my_agent, production* prod )
 	}
 }
 
+
+// formerly in misc.cpp:
+/***************************************************************************
+ * Function     : is_natural_number
+ **************************************************************************/
+bool is_whole_number(const std::string &str)
+{
+  return is_whole_number(str.c_str());
+}
+
+bool is_whole_number(const char * str)
+{
+  if(!str || !*str)
+    return false;
+
+  do {
+    if(isdigit(*str))
+      ++str;
+    else
+      return false;
+  } while(*str);
+
+  return true;
+}
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
