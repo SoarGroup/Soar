@@ -113,7 +113,6 @@ static inline long atomic_dec( volatile long *v )
 #define HAVE_ATOMICS 1
 
 #endif // GCC<4.2.0
-
 static inline int set_working_directory_to_executable_path()
 {
       char application_path[FILENAME_MAX];
@@ -144,6 +143,35 @@ static inline int set_working_directory_to_executable_path()
 
       return rv;
 }
+
+#if (defined(__APPLE__) && defined(__MACH__))
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+
+inline uint64_t get_raw_time() {
+	return mach_absolute_time();
+}
+
+inline double get_raw_time_per_usec() {
+	mach_timebase_info_data_t ti;
+	mach_timebase_info(&ti);
+	return (1e3 * ti.denom) / ti.numer;
+}
+
+#else
+#include <ctime>
+
+inline uint64_t get_raw_time() {
+	timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return ts.tv_sec * 1e9 + ts.tv_nsec;
+}
+
+inline double get_raw_time_per_usec() {
+	return 1000; // 1000 nanosecs per microsec
+}
+
+#endif
 
 #endif // PORTABILITY_POSIX_H
 

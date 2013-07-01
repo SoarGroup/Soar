@@ -125,4 +125,26 @@ static inline int set_working_directory_to_executable_path()
       return 0;
 }
 
+inline uint64_t get_raw_time() {
+	LARGE_INTEGER t;
+	FILETIME f;
+	if (!QueryPerformanceCounter(&t)) {
+		GetSystemTimeAsFileTime(&f);
+		t.QuadPart = f.dwHighDateTime;
+		t.QuadPart <<= 32;
+		t.QuadPart |= f.dwLowDateTime;
+	}
+	return static_cast<uint64_t>(t.QuadPart);
+}
+
+inline double get_raw_time_per_usec() {
+	LARGE_INTEGER freq;
+	if (QueryPerformanceFrequency(&freq)) {
+		return freq.QuadPart / 1e6;  // freq.QuadPart is in counts per sec, convert to per usec
+	} else {
+		return 10.0;
+	}
+}
+
 #endif // PORTABILITY_WINDOWS_H
+

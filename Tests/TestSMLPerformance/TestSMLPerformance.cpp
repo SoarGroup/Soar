@@ -87,7 +87,7 @@ class Environment {
 	int numAgents;
 	int numWmes;
 
-	soar_process_timer m_Timer ;
+	soar_timer m_Timer ;
 
 public:
 	soar_timer_accumulator m_InputTime ;

@@ -561,9 +561,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* REW: begin 28.07.96 */
 #ifndef NO_TIMING_STUFF
-  soar_process_timer timers_cpu;	// start_total_tv
-  soar_process_timer timers_kernel;	// start_kernel_tv
-  soar_process_timer timers_phase;	// start_phase_tv
+  soar_timer timers_cpu;	// start_total_tv
+  soar_timer timers_kernel;	// start_kernel_tv
+  soar_timer timers_phase;	// start_phase_tv
 
   soar_timer_accumulator timers_total_cpu_time;							// total_cpu_time
   soar_timer_accumulator timers_total_kernel_time;						// total_kernel_time

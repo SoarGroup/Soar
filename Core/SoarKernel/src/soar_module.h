@@ -835,7 +835,7 @@ namespace soar_module
 		protected:
 			agent *my_agent;
 			
-			soar_process_timer stopwatch;
+			soar_timer stopwatch;
 			soar_timer_accumulator accumulator;
 
 			timer_level level;

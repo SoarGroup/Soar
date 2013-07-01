@@ -35,24 +35,24 @@ if env['SCU']:
 else:
 	scu = 1
 
-srcs = {
-#   Component          SCU source                         Non-SCU source
-	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
-	'sqlite'        : ('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']),
-	'KernelSML'     : ('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),
-	'ClientSML'     : ('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),
-	'ConnectionSML' : ('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')),
-	'ElementXML'    : ('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),
-	'CLI'           : ('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),
-}
+srcs = [
+    # SCU source                        Non-SCU source
+	('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),    # Kernel
+	('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']), # sqlite
+	('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),     # KernelSML
+	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     # ClientSML
+	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), # ConnectionSML
+	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    # ElementXML
+	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           # CLI
+]
 
 if compiler == 'msvc':
-	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
+	srcs.append(('pcre/pcre.cxx', Glob('pcre/*.c')))
 
 if GetOption('static'):
-	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
+	soarlib = kernel_env.Library('Soar', [s[scu] for s in srcs])
 else:
-	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs])[:2]
+	soarlib = kernel_env.SharedLibrary('Soar', [s[scu] for s in srcs])[:2]
 	if compiler == 'msvc':
 		kernel_env.Append(CPPFLAGS = ['/D', '_USRDLL'])
 
@@ -74,7 +74,7 @@ else:
 if 'MSVSProject' in kernel_env['BUILDERS']:
 	vcproj = kernel_env.MSVSProject(
 		target = '#core' + env['MSVSPROJECTSUFFIX'],
-		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs.values()])),
+		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs])),
 		buildtarget = lib_install,
 		variant = g_msvs_variant,
 		auto_build_solution = 0,

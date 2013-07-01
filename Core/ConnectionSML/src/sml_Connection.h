@@ -185,7 +185,7 @@ protected:
 	int64_t		m_InitialTimeTagCounter ;
 
 	// High resolution timer -- useful for profiling
-	soar_process_timer		m_Timer ;
+	soar_timer		m_Timer ;
 	soar_timer_accumulator	m_IncomingTime ;
 	soar_timer_accumulator	m_OutgoingTime ;
 

@@ -221,89 +221,55 @@ struct Dangerous_Pointer_Cast {
 	}
 };
 
-//////////////////////////////////////////////////////////
-// STLSoft Timers
-//////////////////////////////////////////////////////////
-
-// Usage:
-//
-// Instantiate soar_wallclock_timer or soar_process_timer objects to measure
-// "wall" (real) time or process (cpu) time. Call reset if you are unsure of 
-// the timer's state and want to make sure it is stopped. Call start and then
-// stop to deliniate a timed period, and then call get_usec to get the value 
-// of that period's length, in microseconds. It is OK to call get_usec after
-// calling start again. Resolution varies by platform, and may be in the
-// millisecond range on some.
-//
-// Use soar_timer_accumulator to rack up multiple timer periods. Instead of
-// calling get_usec on the timer, simply pass the timer to a 
-// soar_timer_accumulator instance with it's update call. Use reset to clear
-// the accumulated time.
-
-// Platform-specific inclusions and typedefs
-//
-// The STLSoft timers used in the kernel have platform-specific namespaces
-// even though they share very similar interfaces. The typedefs here
-// simplify the classes below by removing those namespaces. 
-//
-// We are using two different types of timers from STLSoft, 
-// performance_counter and processtimes_counter. The performance timer is 
-// a high-performance wall-clock timer. The processtimes_counter is a cpu-
-// time timer. Keep in mind that as of 11/2010 the resolution of process-time
-// counters on windows is 16 milliseconds.
-//
-//#define USE_PERFORMANCE_FOR_BOTH 1
-#ifdef WIN32
-#include <winstl/performance/performance_counter.hpp>
-typedef winstl::performance_counter performance_counter;
-#ifdef USE_PERFORMANCE_FOR_BOTH
-typedef winstl::performance_counter processtimes_counter;
-#else // USE_PERFORMANCE_FOR_BOTH
-#include <winstl/performance/processtimes_counter.hpp>
-typedef winstl::processtimes_counter processtimes_counter;
-#endif // USE_PERFORMANCE_FOR_BOTH
-#else // WIN32
-#include <unixstl/performance/performance_counter.hpp>
-typedef unixstl::performance_counter performance_counter;
-#ifdef USE_PERFORMANCE_FOR_BOTH
-typedef unixstl::performance_counter processtimes_counter;
-#else // USE_PERFORMANCE_FOR_BOTH
-#include <unixstl/performance/processtimes_counter.hpp>
-typedef unixstl::processtimes_counter processtimes_counter;
-#endif // USE_PERFORMANCE_FOR_BOTH
-#endif // WIN32
-
 // To use the timer, call start, then stop. get_usec() will return the 
 // amount of time in the previous start-stop period. 
 //
 // Calling start -> stop -> start -> get_usec is legal to minimize the
 // amount of time the timer is not running. 
-template <class C>
-class soar_timer
-{
+class soar_timer {
 public:
-	soar_timer() { enabled_ptr=NULL; }
-	~soar_timer() {}
+	soar_timer()
+	: enabled_ptr(NULL), t1(0), elapsed(0) 
+	{
+		raw_per_usec = get_raw_time_per_usec();
+	}
 
-	void set_enabled( int64_t* new_enabled ) { enabled_ptr=new_enabled; }
+	void set_enabled(int64_t* new_enabled) {
+		enabled_ptr=new_enabled;
+	}
 
-	void start() { if ( (!enabled_ptr) || (*enabled_ptr) ) { timer.start(); } }
-	void stop() { if ( (!enabled_ptr) || (*enabled_ptr) ) { timer.stop(); } }
-	void reset() { if ( (!enabled_ptr) || (*enabled_ptr) ) { start(); stop(); } }
-	uint64_t get_usec() { return static_cast<uint64_t>( ( ( (!enabled_ptr) || (*enabled_ptr) )?( timer.get_microseconds() ):( 0 ) ) ); }
+	void start() {
+		if ( (!enabled_ptr) || (*enabled_ptr) ) {
+			t1 = get_raw_time();
+		}
+	}
+	
+	void stop() {
+		if ( (!enabled_ptr) || (*enabled_ptr) ) {
+			uint64_t t2 = get_raw_time();
+			elapsed = t2 - t1;
+		}
+	}
+	
+	void reset() {
+		t1 = elapsed = 0;
+	}
+	
+	uint64_t get_usec() {
+		if ( (!enabled_ptr) || (*enabled_ptr) ) {
+			return static_cast<uint64_t>(elapsed / raw_per_usec);
+		}
+		return 0;
+	}
 
 private:
-	C timer;
+	uint64_t t1, elapsed;
+	double raw_per_usec;
 	int64_t* enabled_ptr;
 
 	soar_timer(const soar_timer&);
 	soar_timer& operator=(const soar_timer&);
 };
-
-// Define types and call them with more useful names such as wallclock or
-// process timers.
-typedef soar_timer<performance_counter> soar_wallclock_timer;
-typedef soar_timer<processtimes_counter> soar_process_timer;
 
 // Utility class to be used with soar_timer instances, keeps track of multiple
 // intervals and has some simple time conversions.
@@ -313,15 +279,13 @@ private:
 	uint64_t total;
 
 public:
-	soar_timer_accumulator() 
-		: total(0) {}
+	soar_timer_accumulator() : total(0) {}
 
 	// Reset the accumulated time to zero.
 	void reset() { total = 0; }
 
 	// Add the timer's last interval to the accumulated time.
-	template <typename T>
-	void update(T& timer) { total += timer.get_usec(); }
+	void update(soar_timer &timer) { total += timer.get_usec(); }
 
 	// Return seconds as a double.
 	double get_sec() { return total / 1000000.0; }
@@ -334,3 +298,4 @@ public:
 };
 
 #endif /*MISC_H_*/
+

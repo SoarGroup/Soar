@@ -22,28 +22,23 @@ using namespace sml;
 
 bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 
-    soar_wallclock_timer real;
-    soar_process_timer proc;
+    soar_timer timer;
 
-    proc.start();
-    real.start();
+    timer.start();
 
     // Execute command
     bool ret = m_Parser.handle_command(argv);
 
-    real.stop();
-    proc.stop();
+    timer.stop();
 
-    double realElapsed = real.get_usec() / 1000000.0;
-    double procElapsed = proc.get_usec() / 1000000.0;
+    double elapsed = timer.get_usec() / 1000000.0;
 
     // Print elapsed time and return
     if (m_RawOutput) {
-        m_Result << "\n(" << procElapsed << "s) proc" << "\n(" << realElapsed << "s) real";
+        m_Result << "\n(" << elapsed << "s) real";
     } else {
         std::string temp;
-        AppendArgTagFast(sml_Names::kParamRealSeconds, sml_Names::kTypeDouble, to_string(realElapsed, temp));
-        AppendArgTagFast(sml_Names::kParamProcSeconds, sml_Names::kTypeDouble, to_string(procElapsed, temp));
+        AppendArgTagFast(sml_Names::kParamRealSeconds, sml_Names::kTypeDouble, to_string(elapsed, temp));
     }
     return ret;
 }
