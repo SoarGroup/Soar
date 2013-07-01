@@ -648,7 +648,7 @@ production *make_production (agent* thisAgent,
     if (type == CHUNK_PRODUCTION_TYPE) {
       reverse_unbound_lhs_referents (thisAgent, *lhs_top, tc);
       //add_bound_variables_in_action_list (thisAgent, *rhs_top, tc, NIL);
-      reverse_unbound_rhs_referents (thisAgent, *rhs_top, tc);
+      reverse_rhs_action_list (thisAgent, *rhs_top, tc);
     }
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
