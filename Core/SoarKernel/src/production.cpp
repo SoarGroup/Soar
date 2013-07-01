@@ -806,7 +806,7 @@ uint32_t canonical_test(test t)
 
   if (t->type == EQUALITY_TEST) {
       sym = t->data.referent;
-      if (sym->symbol_type == SYM_CONSTANT_SYMBOL_TYPE ||
+      if (sym->symbol_type == STR_CONSTANT_SYMBOL_TYPE ||
         sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
         sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
       {

@@ -833,9 +833,9 @@ void create_instantiation(agent* thisAgent, production *prod,
 	 *    execute_action but did not increase their refcount -- */
 	for (pref = inst->preferences_generated; pref != NIL;
       pref = pref->inst_next) {
-    pref->original_id_var = NIL;
-    pref->original_attr_var = NIL;
-    pref->original_value_var = NIL;
+    pref->original_variables.id = NIL;
+    pref->original_variables.attr = NIL;
+    pref->original_variables.value = NIL;
   }
 
 	deallocate_action_list (thisAgent, rhs_vars);
