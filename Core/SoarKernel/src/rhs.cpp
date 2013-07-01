@@ -117,7 +117,7 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
     return funcall_list_to_rhs_value (new_fl);
   } else {
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-    dprint(DT_UNIQUE_VARIABLIZATION, "copy_rhs_value copying rhs_symbol %s(%s).\n",
+    dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value copying rhs_symbol %s(%s).\n",
           symbol_to_string(thisAgent, r->referent),
          (r->original_rhs_variable ? symbol_to_string(thisAgent, r->original_rhs_variable) : "NIL"));
     return make_rhs_value(thisAgent, r->referent, r->original_rhs_variable);
@@ -311,7 +311,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
     sym = var_bound_in_reconstructed_conds (thisAgent, cond,
         rhs_value_to_reteloc_field_num(rv),
         rhs_value_to_reteloc_levels_up(rv));
-    dprint(DT_UNIQUE_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames creating, from reteloc, rhs_symbol %s(%s).\n",
+    dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames creating, from reteloc, rhs_symbol %s(%s).\n",
               symbol_to_string(thisAgent, sym),
              (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
     return make_rhs_value(thisAgent, sym, original_sym);
@@ -341,7 +341,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
     {
       sym = *(thisAgent->rhs_variable_bindings+index);
     }
-    dprint(DT_UNIQUE_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames created unbound var rhs_symbol %s(%s).\n",
+    dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames created unbound var rhs_symbol %s(%s).\n",
               symbol_to_string(thisAgent, sym),
              (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
     return make_rhs_value(thisAgent, sym);
@@ -368,7 +368,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
   } else {
     /* -- rv is a rhs_symbol -- */
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-    dprint(DT_UNIQUE_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames copying rhs_symbol %s(%s).\n",
+    dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames copying rhs_symbol %s(%s).\n",
           symbol_to_string(thisAgent, rs->referent),
          (rs->original_rhs_variable ? symbol_to_string(thisAgent, rs->original_rhs_variable) : "NIL"));
     return make_rhs_value(thisAgent, rs->referent, rs->original_rhs_variable);
@@ -382,7 +382,7 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
   action *old, *New, *prev, *first;
   char first_letter;
 
-  dprint(DT_UNIQUE_VARIABLIZATION, "copy_action_list_and_substitute_varnames beginning.\n");
+  dprint(DT_RHS_VARIABLIZATION, "copy_action_list_and_substitute_varnames beginning.\n");
   prev = NIL;
   first = NIL;
   old = actions;
@@ -413,7 +413,7 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
     old = old->next;
   }
   if (prev) prev->next = NIL; else first = NIL;
-  dprint(DT_UNIQUE_VARIABLIZATION, "copy_action_list_and_substitute_varnames ending.\n");
+  dprint(DT_RHS_VARIABLIZATION, "copy_action_list_and_substitute_varnames ending.\n");
   return first;
 }
 
