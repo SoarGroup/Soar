@@ -18,20 +18,6 @@
  * =======================================================================
  */
 
-
-/* Debugging stuff:  #define DEBUG_LINKS to get links, gc printouts */
-/*                   #define DEBUG_SLOTS to get slot printouts */
-/* #define DEBUG_LINKS */
-/* #define DEBUG_SLOTS */
-
-/* REW: begin 09.15.96 */
-/* For low-level, detailed information on the processing of the GDS */
-/* #define DEBUG_GDS */
-/* For high-level information on the instantiations that created an
- * o-supported element and lead to the elaboration of the GDS */
-/* #define DEBUG_GDS_HIGH */
-/* REW: end   09.15.96 */
-
 #include "decide.h"
 #include "gdatastructs.h"
 #include "instantiations.h"
