@@ -593,14 +593,14 @@ void sgnode::set_property(const std::string& propertyName, const std::string& va
 }
 
 void sgnode::delete_property(const std::string& propertyName){
-	bool changed = false;
+	bool deleted = false;
 	if(numeric_props.erase(propertyName) > 0){
-		changed = true;
+		deleted = true;
 	}
 	if(string_props.erase(propertyName) > 0){
-		changed = true;
+		deleted = true;
 	}
-	if(changed){
+	if(deleted){
 		send_update(sgnode::PROPERTY_DELETED, propertyName);
 	}
 }

@@ -30,6 +30,9 @@ public:
 	std::map<sgwme*,wme*> *get_childs(){ return &childs;}
 private:
 	void add_child(sgnode *c);
+
+	// These will create/maintain wmes on the child svs object
+	// For properties added to the node
 	void update_property(const std::string& propertyName);
 	void delete_property(const std::string& propertyName);
 	

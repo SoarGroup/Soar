@@ -140,6 +140,7 @@ void sgwme::update_property(const std::string& propertyName){
 		return;
 	}
 
+	// Remove the old wme and add the new one
 	std::map<std::string, wme*>::iterator i = properties.find(propertyName);
 	if(i != properties.end()){
 		soarint->remove_wme(i->second);

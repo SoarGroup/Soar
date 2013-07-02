@@ -588,6 +588,16 @@ private:
 };
 
 
+/* select_filter
+   This filter is very similar to a map filter
+   It takes a list of inputs, and for each input it does a computation and possibly
+     creates an output if some conditions are met.
+     Thus the number of outputs is at most the number of inputs
+   For example, an intersection filter based on the select_filter would return a list of 
+	nodes that intersect the target instead of producing T/F values for every node
+   This is useful for feeding in a subset of the all_nodes filter into another filter
+   A filter based on the select_filter is the has_property filter
+*/
 class select_filter : public filter{
 public:
 	select_filter(Symbol *root, soar_interface *si, filter_input *input)
@@ -596,10 +606,16 @@ public:
 
 	virtual ~select_filter(){}
 
+	// This is the main function to implement in the derived class
+        // out is the output value to create, leave it NULL to avoid adding it to the output
+        // changed should be true if the value changed
+  	// The function returns true if successful, false if an error occurred
+	// To see a sample implementation, see the has_property filter
 	virtual bool compute(const filter_params *params, filter_val*& out, bool& changed) = 0;
 
 	bool update_outputs();
 
+	// Override this if you need to take care of memory when an output is removed
 	virtual void output_removed(filter_val* out) { }
 
 private:

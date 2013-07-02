@@ -319,6 +319,7 @@ bool select_filter::update_outputs() {
 			return false;
 		}
 		if(out != NULL){
+			// An output was provided, add it
 			add_output(out, params);
 			io_map[params] = out;
 		}
@@ -328,12 +329,14 @@ bool select_filter::update_outputs() {
 		const filter_params* params = input->get_removed(i);
 		io_map_t::iterator out_it = io_map.find(params);
 		if(out_it != io_map.end()){
+			// Only delete if an output value was actually created
 			filter_val* out = out_it->second;
 			remove_output(out);
 			output_removed(out);
 			io_map.erase(out_it);
 		}
 	}
+	// Check all changed
 	for (int i = 0; i < input->num_changed(); ++i) {
 		if (!update_one(input->get_changed(i))) {
 			return false;

@@ -1,3 +1,14 @@
+/******************************************************************************************
+*  File: has_property.cpp
+*  Author: Aaron Mininger
+*  Date: 7/3/13
+*  Purpose: has_property is a select_filter which selects a node
+*      if it has the given property and value. 
+*    The property can be numeric or a string
+*    You can use this to select a subset of nodes that have a certain property
+*      and then feed those into another filter. This allows you to do 
+*      things like select the closest red object (for objects that had a ^color red property) 
+********************************************************************************************/
 #include <iostream>
 #include <assert.h>
 #include <string>
@@ -8,7 +19,9 @@
 #include "filter_table.h"
 
 using namespace std;
-
+// has_property
+// Returns true if the given node has the given property and value associated with it
+// property_value can be either a number or a string
 bool has_property(const sgnode* node, const string& property_name, const string& property_value){
 	bool hasProperty = false;
 	double numericValue;

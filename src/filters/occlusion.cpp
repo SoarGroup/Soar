@@ -1,3 +1,16 @@
+/***************************************************************
+*  File: occlusion.cpp
+*  Author: Aaron Mininger
+*  Date: 7/2/13
+*  Purpose: The occlusion filter estimates how much a given 
+*     sgnode is occluded from the eye's point of view and returns
+*     a number indicating a rough percentage of occlusion.
+*     Occlusion is based on the fraction of vertices of the node
+*       That are blocked by another node from the eye perspective
+*     This requires an object in the scene with the name 'eye'
+*     Note: This filter does not work well with targets that are spheres
+*        It will pretty much just determine whether the center is occluded
+****************************************************************/
 #include <iostream>
 #include <assert.h>
 #include <string>
@@ -14,6 +27,8 @@ typedef std::vector<const geometry_node*> c_geom_node_list;
 typedef std::pair<convex_node*, bool> view_line;
 typedef std::vector<view_line> view_line_list;
 
+// Creates a view_line consisting of a convex node with the given name
+//   which represents a line segment between the two given points 
 view_line create_view_line(const string& name, const vec3& p1, const vec3& p2){
 	vec3 dPosOver2 = (p2 - p1)/2;	// Vector from eye to vertex
 	vec3 center = p1 + dPosOver2;	// Point halfway between eye and vertex
@@ -28,6 +43,9 @@ view_line create_view_line(const string& name, const vec3& p1, const vec3& p2){
 	return view_line(line, false);
 }
 
+// Estimates the percentage of the given sgnode that is occluded from the eye's perspective
+// It does this by shooting view_lines from the eye to each verted in the node and returning
+//   the fraction that are occluded by other nodes
 double calc_occlusion(const scene* scn, const sgnode* a){
 	// Get the eye position from the world
 	const sgnode* eye = scn->get_node("eye");
@@ -37,22 +55,24 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 	}
 
 	vec3 eyePos = eye->get_centroid();
-	std::cout << "EYE: " << eyePos[0] << ", " << eyePos[1] << ", " << eyePos[2] << std::endl;
+//	std::cout << "EYE: " << eyePos[0] << ", " << eyePos[1] << ", " << eyePos[2] << std::endl;
 
 	// Build up a list of view lines that go from the eye point to each vertex in the target object
 	// view_line.first is a convex_node that actually represents the line
 	// view_line.second is a bool which is T if that view line is occluded by another object
 	view_line_list view_lines;
 
+	// Create a view_line for the centroid	
+	std::string name = "_centroid_line_";
+	view_lines.push_back(create_view_line(name, eyePos, a->get_centroid()));
+
 	c_geom_node_list geom_nodes;
 	a->walk_geoms(geom_nodes);
 
+	// Go through each vertex in the node and create a view_line to that vertex
 	for(c_geom_node_list::const_iterator i = geom_nodes.begin(); i != geom_nodes.end(); i++){
 		const convex_node* c_node = dynamic_cast<const convex_node*>(*i);
 		if(c_node){
-			std::string name = "_centroid_line_";
-			view_lines.push_back(create_view_line(name, eyePos, c_node->get_centroid()));
-
 			const ptlist& verts = c_node->get_world_verts();
 			for(ptlist::const_iterator i = verts.begin(); i != verts.end(); i++){
 				//std::cout << "Point: " << (*i)[0] << ", " << (*i)[1] << ", " << (*i)[2] << endl;
@@ -67,7 +87,6 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 	scn->get_all_nodes(all_nodes);
 
 	int num_occluded = 0;
-	bool centroid_occluded = false;
 
 	for(c_sgnode_list::const_iterator i = all_nodes.begin(); i != all_nodes.end(); i++){
 		const sgnode* n = *i;
@@ -85,9 +104,6 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 			if(dist <= 0){
 				view_line.second = true;
 				num_occluded++;
-				if(view_line.first->get_name() == std::string("_centroid_line_")){
-					centroid_occluded = true;
-				}
 			}
 		}
 	}
@@ -96,12 +112,8 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 		// No memory leaks here!
 		delete i->first;
 	}
-	if(centroid_occluded){
-		return 1;
-	} else {
-		// Count the number of view lines occluded and return the fraction
-		return ((float)num_occluded)/view_lines.size();
-	}
+	// Count the number of view lines occluded and return the fraction
+	return ((float)num_occluded)/view_lines.size();
 }
 
 
