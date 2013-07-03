@@ -5,21 +5,12 @@
 #include <cmath>
 #include <ctime>
 #include "cliproxy.h"
-#include "platform_specific.h"
+#include "portability.h"
 
 class timer_set;
 
 class timer {
 public:
-
-#ifdef NO_SVS_TIMING
-
-	timer(const std::string &name, bool basic) {}
-	inline void start() {}
-	inline double stop() { return 0.0; }
-
-#else
-
 	timer(const std::string &name, bool basic) 
 	: name(name), basic(basic), count(0), total(0), last(0), mn(0), m2(0)
 	{}
@@ -27,13 +18,13 @@ public:
 	const std::string &get_name() const { return name; }
 	
 	void start() {
-		start_time_ns = get_time_nanosecs();
+		t1 = get_raw_time();
 	}
 	
-	long stop() {
-		long end = get_time_nanosecs();
+	uint64_t stop() {
+		uint64_t t2 = get_raw_time();
 		
-		last = end - start_time_ns;
+		last = t2 - t1;
 		total += last;
 		count++;
 		
@@ -50,16 +41,14 @@ public:
 		return last;
 	}
 
-#endif
-	
 private:
-	long start_time_ns;
+	uint64_t t1;
 	
 	std::string name;
 	bool basic;
 	
 	int count;
-	long total, last, min, max;
+	uint64_t total, last, min, max;
 	double mn;
 	double m2;
 	
@@ -84,6 +73,7 @@ class timer_set : public cliproxy {
 public:
 	timer_set() {
 		set_help("Reports timing information.");
+		per_msec = get_raw_time_per_usec() * 1000;
 	}
 	
 	~timer_set() {
@@ -116,8 +106,13 @@ public:
 	}
 	
 private:
+	double msec(uint64_t t) {
+		return t / per_msec;
+	}
+	
 	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
 	
+	double per_msec;
 	std::vector<timer*> timers;
 };
 

@@ -19,10 +19,6 @@ SOCK get_tcp_socket(const std::string &port_or_path);
 bool tcp_send(SOCK sock, const std::string &s);
 void close_tcp_socket(SOCK sock);
 
-// timing 
-
-long get_time_nanosecs();
-
 /* some functions from C99 that's not in MSVC */
 inline double log2(double x) {
 	return log(x) / NATURAL_LOG_2;

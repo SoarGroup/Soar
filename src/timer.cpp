@@ -7,8 +7,8 @@ using namespace std;
 
 const int prec = 2;
 
-double msec(long t) {
-	return t / 1.0e6;
+double msec(unsigned long t) {
+	return t / 1.0e3;
 }
 
 void timer_set::proxy_use_sub(const vector<string> &args, ostream &os) {

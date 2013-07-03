@@ -10,17 +10,7 @@
 #include "timer.h"
 #include "common.h"
 
-#include <mach/mach.h>
-#include <mach/clock.h>
-#include <mach/clock_types.h>
-
 using namespace std;
-
-long get_time_nanosecs() {
-	mach_timespec_t ts;
-	clock_get_time(SYSTEM_CLOCK, &ts);
-	return ts.tv_sec * 1e9 + ts.tv_nsec;
-}
 
 int get_tcp_socket(const string &port_or_path) {
 	int family, fd, port, name_size;
