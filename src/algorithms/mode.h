@@ -56,16 +56,22 @@ private:
 	/*
 	 For each member instance, there is a mapping from objects tested by the
 	 linear function to object indexes in the member's signature, call it the
-	 omap. omap is stored as a vector m such that m[i] = j, where i is an index
+	 object map. An object map is stored as a vector m such that m[i] = j, where i is an index
 	 into the mode's signature, and j is an index into the instance's signature.
 	 The omap_table associates unique omaps with sets of instances that share that
 	 omap.
 
 	 I'm assuming that the number of unique omaps will be small.
 	*/
-	typedef std::vector<int> omap;
-	typedef std::vector<std::pair<omap, interval_set> > omap_table;
-	omap_table omaps;
+	class obj_map_entry : public serializable {
+	public:
+		std::vector<int> obj_map;
+		interval_set     members;  // members with this object map
+		
+		void serialize(std::ostream &os) const;
+		void unserialize(std::istream &is);
+	};
+	std::vector<obj_map_entry> obj_maps;
 	
 	bool stale, noise, new_fit, manual;
 	const model_train_data &data;
