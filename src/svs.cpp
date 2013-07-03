@@ -97,6 +97,7 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
   scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
 	assert (si->is_top_state(state));
+	si->get_name(state, name);
 	outspec = svsp->get_output_spec();
 	loggers = svsp->get_loggers();
 	init();
@@ -462,11 +463,9 @@ void svs::proxy_get_children(map<string, cliproxy*> &c) {
 	}
 	c["model"] = model_group;
 
-	proxy_group *state_group = new proxy_group;
 	for (int j = 0, jend = state_stack.size(); j < jend; ++j) {
-		state_group->add(tostring(j), state_stack[j]);
+		c[state_stack[j]->get_name()] = state_stack[j];
 	}
-	c["state"] = state_group;
 }
 
 bool svs::do_cli_command(const vector<string> &args, string &output) {

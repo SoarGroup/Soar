@@ -73,6 +73,7 @@ public:
 	void           update_scene_num();
 	void           clear_scene();
 	
+	std::string    get_name() const      { return name;      }
 	int            get_level() const     { return level;     }
 	int            get_scene_num() const { return scene_num; }
 	scene         *get_scene() const     { return scn;       }
@@ -93,6 +94,7 @@ private:
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_out(const std::vector<std::string> &args, std::ostream &os);
 
+	std::string     name;
 	svs            *svsp;
 	int             level;
 	svs_state      *parent;
