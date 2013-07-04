@@ -21,11 +21,7 @@ public:
 			return false;
 		}
 		
-		if (scn->tracking_distances()) {
-			newres = scn->convex_distance(a, b);
-		} else {
-			newres = convex_distance(a, b);
-		}
+		newres = scn->get_convex_distance(a, b);
 		if ((changed = (newres != res))) {
 			res = newres;
 		}
@@ -96,11 +92,7 @@ public:
 			return false;
 		}
 		
-		if (scn->tracking_distances()) {
-			rank = -scn->convex_distance(a, b);
-		} else {
-			rank = -convex_distance(a, b);
-		}
+		rank = -scn->get_convex_distance(a, b);
 		return true;
 	}
 private:

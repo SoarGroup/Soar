@@ -41,7 +41,7 @@ public:
 	void remove_property(const std::string &obj, const std::string &prop);
 	bool parse_sgel(const std::string &s);
 	void node_update(sgnode *n, sgnode::change_type t, int added_child);
-	double convex_distance(const sgnode *a, const sgnode *b) const;
+	double get_convex_distance(const sgnode *a, const sgnode *b) const;
 	bool intersects(const sgnode *a, const sgnode *b) const;
 	const scene_sig &get_signature() const;
 	

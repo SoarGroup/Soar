@@ -668,8 +668,11 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	}
 }
 
-double scene::convex_distance(const sgnode *a, const sgnode *b) const {
-	assert(track_dists);
+double scene::get_convex_distance(const sgnode *a, const sgnode *b) const {
+	if (!track_dists) {
+		return convex_distance(a, b);
+	}
+	
 	int i, j;
 	for (i = 0; i < nodes.size() && nodes[i].node != a; ++i)
 		;
@@ -680,7 +683,7 @@ double scene::convex_distance(const sgnode *a, const sgnode *b) const {
 }
 
 bool scene::intersects(const sgnode *a, const sgnode *b) const {
-	return this->convex_distance(a, b) < INTERSECT_THRESH;
+	return this->get_convex_distance(a, b) < INTERSECT_THRESH;
 }
 
 void scene::update_dists(int i) {
@@ -727,7 +730,7 @@ void scene::update_all_dists() {
 	}
 	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
 		for (int j = i + 1, jend = nodes.size(); j < jend; ++j) {
-			double d = ::convex_distance(nodes[i].node, nodes[j].node);
+			double d = convex_distance(nodes[i].node, nodes[j].node);
 			nodes[i].dists[j] = nodes[j].dists[i] = d;
 		}
 	}
@@ -860,11 +863,7 @@ void scene::cli_dist(const vector<string> &args, ostream &os) const {
 		os << "node " << args[1] << " does not exist" << endl;
 		return;
 	}
-	if (track_dists) {
-		os << nodes[i0].dists[i1] << endl;
-	} else {
-		os << convex_distance(nodes[i0].node, nodes[i1].node) << endl;
-	}
+	os << get_convex_distance(nodes[i0].node, nodes[i1].node) << endl;
 }
 
 void scene::cli_sgel(const vector<string> &args, ostream &os) {
