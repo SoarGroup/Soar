@@ -31,7 +31,6 @@ public:
 		std::string type;
 		std::string name;
 		std::vector<std::string> props;
-		
 	};
 
 	scene_sig() {}
@@ -47,6 +46,7 @@ public:
 
 	void serialize(std::ostream &os) const;
 	void unserialize(std::istream &is);
+	void print(std::ostream &os) const;
 	int dim() const;
 	void add(const entry &e);
 	bool get_dim(const std::string &obj, const std::string &prop, int &obj_ind, int &prop_ind) const;

@@ -466,6 +466,12 @@ void svs::proxy_get_children(map<string, cliproxy*> &c) {
 	c["use_models"]->set_help("Use model learning system.")
 	                 .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
 
+	c["add_model"]         = new memfunc_proxy<svs>(this, &svs::cli_add_model);
+	c["add_model"]->set_help("Add a model.")
+	                 .add_arg("NAME", "Name of the model.")
+	                 .add_arg("TYPE", "Type of the model.")
+	                 .add_arg("[PATH]", "Path of file to load model from.");
+	
 	c["timers"]            = &timers;
 	c["loggers"]           = loggers;
 	c["filters"]           = &get_filter_table();
@@ -561,4 +567,27 @@ void svs::cli_use_models(const vector<string> &args, ostream &os) {
 	bool_proxy p(&use_models, "Use model learning system.");
 	p.proxy_use("", args, os);
 	state_stack[0]->get_scene()->set_track_distances(use_models);
+}
+
+void svs::cli_add_model(const vector<string> &args, ostream &os) {
+	if (args.size() < 2) {
+		os << "Specify name and type." << endl;
+		return;
+	}
+	model *m = make_model(this, args[0], args[1]);
+	if (!m) {
+		os << "Cannot create model. Probably no such type." << endl;
+		return;
+	}
+	if (args.size() >= 3) {
+		ifstream input(args[2].c_str());
+		if (!input) {
+			os << "File could not be read. Model not loaded." << endl;
+			delete m;
+			return;
+		}
+		m->unserialize(input);
+		input.close();
+	}
+	add_model(args[0], m);
 }

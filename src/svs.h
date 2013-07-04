@@ -157,6 +157,7 @@ private:
 	void cli_connect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_disconnect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_use_models(const std::vector<std::string> &args, std::ostream &os);
+	void cli_add_model(const std::vector<std::string> &args, std::ostream &os);
 
 	soar_interface           *si;
 	std::vector<svs_state*>   state_stack;

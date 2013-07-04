@@ -13,6 +13,8 @@
 #include "scene_sig.h"
 #include "cliproxy.h"
 
+class svs;
+
 struct model_train_inst {
 	rvec x, y;
 	int target;
@@ -47,6 +49,7 @@ private:
 	
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_contdata(const std::vector<std::string> &args, std::ostream &os) const;
+	void cli_sigs(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_save(const std::vector<std::string> &args, std::ostream &os) const;
 
 	std::vector<scene_sig*> sigs;
@@ -97,7 +100,10 @@ private:
 */
 class multi_model : public cliproxy {
 public:
-	typedef std::vector<std::pair<std::string, std::string> > prop_vec;
+	struct obj_prop {
+		std::string object;
+		std::string property;
+	};
 	
 	multi_model(std::map<std::string, model*> *model_db);
 	~multi_model();
@@ -109,20 +115,23 @@ public:
 	
 	std::string assign_model (
 		const std::string &name, 
-		const prop_vec &inputs, bool all_inputs,
-		const prop_vec &outputs);
+		const std::vector<std::string> &inputs,
+		bool all_inputs,
+		const std::vector<std::string> &outputs);
 	
 private:
 	struct model_config {
 		std::string name;
-		prop_vec xprops;
-		prop_vec yprops;
+		std::vector<obj_prop> xprops;
+		std::vector<obj_prop> yprops;
 		bool allx;
 		model *mdl;
 	};
 	
 	bool predict_or_test(bool test, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y);
 	void proxy_use_sub(const std::vector<std::string> &args, std::ostream &os);
+	void proxy_get_children(std::map<std::string, cliproxy*> &c);
+	void cli_assign(const std::vector<std::string> &args, std::ostream &os);
 
 	std::list<model_config*> active_models;
 	std::map<std::string, model*> *model_db;
