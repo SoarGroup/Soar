@@ -296,7 +296,7 @@ int scene::parse_add(vector<string> &f, string &error) {
 	}
 	par = get_group(f[2]);
 	if (!par) {
-		error = "parent node does not exist";
+		error = "parent node does not exist, or is not group node";
 		return 1;
 	}
 	
