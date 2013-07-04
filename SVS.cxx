@@ -5,13 +5,10 @@
 #include "src/commands/project.cpp"
 #include "src/commands/property.cpp"
 
+#include "src/models/model.cpp"
 #include "src/models/em_model.cpp"
 #include "src/models/lwr_model.cpp"
-#include "src/models/model.cpp"
 #include "src/models/null.cpp"
-#include "src/models/splinter.cpp"
-#include "src/models/targets.cpp"
-#include "src/models/velocity.cpp"
 
 #include "src/filters/absval.cpp"
 #include "src/filters/bbox.cpp"

@@ -5,38 +5,6 @@
 
 using namespace std;
 
-model *_make_null_model_    (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_velocity_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_lwr_model_     (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_splinter_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_em_model_      (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-model *_make_targets_model_ (soar_interface *si, Symbol *root, svs_state *state, const string &name);
-
-struct model_constructor_table_entry {
-	const char *type;
-	model* (*func)(soar_interface*, Symbol*, svs_state*, const string&);
-};
-
-static model_constructor_table_entry constructor_table[] = {
-	{ "null",        _make_null_model_},
-	{ "velocity",    _make_velocity_model_},
-	{ "lwr",         _make_lwr_model_},
-	{ "splinter",    _make_splinter_model_},
-	{ "em",          _make_em_model_},
-	{ "targets",     _make_targets_model_},
-};
-
-model *make_model(soar_interface *si, Symbol *root, svs_state *state, const string &name, const string &type) {
-	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
-
-	for (int i = 0; i < table_size; ++i) {
-		if (type == constructor_table[i].type) {
-			return constructor_table[i].func(si, root, state, name);
-		}
-	}
-	return NULL;
-}
-
 void read_list(soar_interface *si, Symbol *id, vector<string> &words) {
 	slot *s;
 	wme *w;
@@ -55,21 +23,7 @@ void read_list(soar_interface *si, Symbol *id, vector<string> &words) {
 	}
 }
 
-bool split_props(const vector<string> &props, multi_model::prop_vec &out) {
-	vector<string> fields;
-	out.resize(props.size());
-	for (int i = 0; i < props.size(); ++i) {
-		split(props[i], ":", fields);
-		if (fields.size() != 2) {
-			return false;
-		}
-		out[i].first = fields[0];
-		out[i].second = fields[1];
-	}
-	return true;
-}
-
-model *parse_model_struct(soar_interface *si, Symbol *cmd, svs_state *state) {
+model *parse_model_struct(soar_interface *si, Symbol *cmd, svs *owner) {
 	wme *type_wme, *name_wme;
 	string name, type;
 	
@@ -85,7 +39,7 @@ model *parse_model_struct(soar_interface *si, Symbol *cmd, svs_state *state) {
 		return NULL;
 	}
 	
-	return make_model(si, cmd, state, name, type);
+	return make_model(owner, name, type);
 }
 
 class create_model_command : public command {
@@ -107,7 +61,7 @@ public:
 			return !broken;
 		}
 		
-		model *m = parse_model_struct(si, root, get_state());
+		model *m = parse_model_struct(si, root, get_state()->get_svs());
 		if (!m) {
 			set_status("invalid syntax");
 			broken = true;
@@ -159,7 +113,6 @@ public:
 		int i;
 		wme *w;
 		vector<string> inputs, outputs;
-		multi_model::prop_vec split_inputs, split_outputs;
 		bool all_inputs = false;
 		
 		if (!changed() && !broken) {
@@ -180,15 +133,13 @@ public:
 				all_inputs = true;
 			} else {
 				read_list(si, si->get_wme_val(w), inputs);
-				split_props(inputs, split_inputs);
 			}
 		}
 		if (si->find_child_wme(root, "outputs", w)) {
 			read_list(si, si->get_wme_val(w), outputs);
-			split_props(outputs, split_outputs);
 		}
 		
-		string error = mmdl->assign_model(name, split_inputs, all_inputs, split_outputs);
+		string error = mmdl->assign_model(name, inputs, all_inputs, outputs);
 		if (error != "") {
 			set_status(error);
 			broken = true;

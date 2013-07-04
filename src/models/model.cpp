@@ -7,9 +7,35 @@
 #include <limits>
 #include "serialize.h"
 #include "model.h"
+#include "svs.h"
 
 using namespace std;
 
+model *_make_null_model_(svs *owner, const string &name);
+model *_make_lwr_model_ (svs *owner, const string &name);
+model *_make_em_model_  (svs *owner, const string &name);
+
+struct model_constructor_table_entry {
+	const char *type;
+	model* (*func)(svs*, const string&);
+};
+
+static model_constructor_table_entry constructor_table[] = {
+	{ "null",        _make_null_model_},
+	{ "lwr",         _make_lwr_model_},
+	{ "em",          _make_em_model_},
+};
+
+model *make_model(svs *owner, const string &name, const string &type) {
+	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
+
+	for (int i = 0; i < table_size; ++i) {
+		if (type == constructor_table[i].type) {
+			return constructor_table[i].func(owner, name);
+		}
+	}
+	return NULL;
+}
 
 void slice(const rvec &src, rvec &tgt, const vector<int> &srcinds, const vector<int> &tgtinds) {
 	if (srcinds.empty() && tgtinds.empty()) {

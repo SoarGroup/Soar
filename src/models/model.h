@@ -128,4 +128,6 @@ private:
 	std::map<std::string, model*> *model_db;
 };
 
+model *make_model(svs *owner, const std::string &name, const std::string &type);
+
 #endif

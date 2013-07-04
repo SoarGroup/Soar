@@ -125,10 +125,10 @@ void draw_predictions(drawer *d, int mode, int nmodes, double pred, double real,
 
 class EM_model : public model {
 public:
-	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
-	: model(name, "em", true), em(get_data(), state->get_svs()->get_loggers())
+	EM_model(svs *owner, const string &name)
+	: model(name, "em", true), em(get_data(), owner->get_loggers())
 	{
-		draw = state->get_svs()->get_drawer();
+		draw = owner->get_drawer();
 	}
 
 	bool predict(int target, const scene_sig &sig, const relation_table &rels, const rvec &x, rvec &y)  {
@@ -234,6 +234,6 @@ private:
 	}
 };
 
-model *_make_em_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {
-	return new EM_model(si, root, state, name);
+model *_make_em_model_(svs *owner, const string &name) {
+	return new EM_model(owner, name);
 }
