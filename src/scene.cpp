@@ -227,7 +227,7 @@ bool scene::del_node(const string &name) {
 }
 
 void scene::clear() {
-	for (int i = 0; i < root->num_children(); ++i) {
+	for (int i = root->num_children() - 1; i >= 0; --i) {
 		delete root->get_child(i);
 	}
 }
@@ -825,6 +825,9 @@ void scene::proxy_get_children(map<string, cliproxy*> &c) {
 	c["draw"] = new memfunc_proxy<scene>(this, &scene::cli_draw);
 	c["draw"]->set_help("Draw this scene in the viewer.")
 	           .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
+
+	c["clear"] = new memfunc_proxy<scene>(this, &scene::cli_clear);
+	c["clear"]->set_help("Delete all objects in scene except world");
 }
 
 void scene::cli_props(const vector<string> &args, ostream &os) const {
@@ -951,6 +954,10 @@ void scene::cli_draw(const vector<string> &args, ostream &os) {
 	} else if (old_draw && !draw) {
 		owner->get_drawer()->delete_scene(name);
 	}
+}
+
+void scene::cli_clear(const vector<string> &args, ostream &os) {
+	clear();
 }
 
 void scene::refresh_draw() {

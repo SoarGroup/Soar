@@ -109,6 +109,7 @@ private:
 	void cli_sgel(const std::vector<std::string> &args, std::ostream &os);
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_draw(const std::vector<std::string> &args, std::ostream &os);
+	void cli_clear(const std::vector<std::string> &args, std::ostream &os);
 };
 
 #endif
