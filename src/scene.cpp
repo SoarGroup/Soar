@@ -93,8 +93,8 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 	return true;
 }
 
-scene::scene(const string &name, svs *owner, bool draw) 
-: name(name), owner(owner), draw(draw), nodes(1), track_dists(false)
+scene::scene(const string &name, svs *owner) 
+: name(name), owner(owner), draw(false), nodes(1), track_dists(false)
 {
 	root = new group_node(root_name, "world");
 	nodes[0].node = root;
@@ -109,26 +109,21 @@ scene::~scene() {
 	delete root;
 }
 
-scene *scene::clone(const string &cname, bool draw) const {
+scene *scene::clone(const string &cname) const {
 	scene *c;
 	string name;
 	std::vector<sgnode*> node_clones;
 
 	update_closest();
-	c = new scene(cname, owner, draw);
+	c = new scene(cname, owner);
 	delete c->root;
 	c->nodes = nodes;
 	c->root = root->clone()->as_group(); // root->clone copies entire scene graph
 	c->root->walk(node_clones);
-	
-	drawer *d = owner->get_drawer();
 	for(int i = 0, iend = node_clones.size(); i < iend; ++i) {
 		sgnode *n = node_clones[i];
 		c->find_name(n->get_name())->node = n;
 		n->listen(c);
-		if (draw) {
-			d->add(c->name, n);
-		}
 	}
 	return c;
 }
@@ -953,19 +948,18 @@ void scene::cli_draw(const vector<string> &args, ostream &os) {
 	
 	p.proxy_use("", args, os);
 	if (!old_draw && draw) {
-		refresh_view();
+		refresh_draw();
 	} else if (old_draw && !draw) {
 		owner->get_drawer()->delete_scene(name);
 	}
 }
 
-void scene::refresh_view() {
-	vector<const sgnode*> nodes;
-	drawer *d = owner->get_drawer();
+void scene::refresh_draw() {
+	if (!draw) return;
 	
+	drawer *d = owner->get_drawer();
 	d->delete_scene(name);
-	get_all_nodes(nodes);
 	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
-		d->add(name, nodes[i]);
+		d->add(name, nodes[i].node);
 	}
 }

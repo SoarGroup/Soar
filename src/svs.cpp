@@ -92,9 +92,9 @@ void sgwme::add_child(sgnode *c) {
 	childs[child] = cid_wme;
 }
 
-svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
+svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, scene *scn)
 : svsp(svsp), parent(NULL), state(state), si(si), level(0),
-  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL)
+  scene_num(-1), scene_num_wme(NULL), scn(scn), scene_link(NULL)
 {
 	assert (si->is_top_state(state));
 	si->get_name(state, name);
@@ -136,11 +136,16 @@ void svs_state::init() {
 	svs_link = si->get_wme_val(si->make_id_wme(state, cs.svs));
 	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
 	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
-	if (parent) {
-		scn = parent->scn->clone(name, false);
-	} else {
-		scn = new scene(name, svsp, true);
+	if (!scn) {
+		if (parent) {
+			scn = parent->scn->clone(name);
+		} else {
+			// top state
+			scn = new scene(name, svsp);
+			scn->set_draw(true);
+		}
 	}
+	scn->refresh_draw();
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	mmdl = new multi_model(svsp->get_models());
 	learn_models = false;
@@ -320,7 +325,7 @@ void svs_state::cli_out(const vector<string> &args, ostream &os) {
 }
 
 svs::svs(agent *a)
-: use_models(false), record_movie(false)
+: use_models(false), record_movie(false), scn_cache(NULL)
 {
 	si = new soar_interface(a);
 	draw = new drawer();
@@ -328,10 +333,13 @@ svs::svs(agent *a)
 }
 
 svs::~svs() {
-	vector<svs_state*>::iterator i;
-	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
-		delete *i;
+	for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
+		delete state_stack[i];
 	}
+	if (scn_cache) {
+		delete scn_cache;
+	}
+	
 	delete si;
 	map<string, model*>::iterator j;
 	for (j = models.begin(); j != models.end(); ++j) {
@@ -345,7 +353,8 @@ void svs::state_creation_callback(Symbol *state) {
 	svs_state *s;
 	
 	if (state_stack.empty()) {
-		s = new svs_state(this, state, si);
+		s = new svs_state(this, state, si, scn_cache);
+		scn_cache = NULL;
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
@@ -357,6 +366,11 @@ void svs::state_deletion_callback(Symbol *state) {
 	svs_state *s;
 	s = state_stack.back();
 	assert(state == s->get_state());
+	if (state_stack.size() == 1) {
+		// removing top state, save scene for reinit
+		scn_cache = s->get_scene()->clone(s->get_name());
+		scn_cache->set_draw(true);
+	}
 	state_stack.pop_back();
 	delete s;
 }
@@ -494,7 +508,7 @@ void svs::cli_connect_viewer(const vector<string> &args, ostream &os) {
 	if (draw->connect(args[0])) {
 		os << "connection successful" << endl;
 		for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
-			state_stack[i]->get_scene()->refresh_view();
+			state_stack[i]->get_scene()->refresh_draw();
 		}
 	} else {
 		os << "connection failed" << endl;

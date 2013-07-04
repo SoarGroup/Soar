@@ -15,10 +15,10 @@ class logger_set;
 
 class scene : public sgnode_listener, public cliproxy {
 public:
-	scene(const std::string &name, svs *owner, bool draw);
+	scene(const std::string &name, svs *owner);
 	~scene();
 	
-	scene *clone(const std::string &name, bool draw) const;
+	scene *clone(const std::string &name) const;
 	
 	group_node   *get_root() { return root; }
 	sgnode       *get_node(const std::string &name);
@@ -52,7 +52,9 @@ public:
 	
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	
-	void refresh_view();
+	void refresh_draw();
+	void set_draw(bool d) { draw = d; }
+
 private:
 	typedef std::map<std::string, double> property_map;
 	

@@ -63,7 +63,7 @@ typedef std::vector<output_dim_spec> output_spec;
 */
 class svs_state : public cliproxy {
 public:
-	svs_state(svs *svsp, Symbol *state, soar_interface *soar);
+	svs_state(svs *svsp, Symbol *state, soar_interface *soar, scene *scn);
 	svs_state(Symbol *state, svs_state *parent);
 
 	~svs_state();
@@ -166,6 +166,7 @@ private:
 	mutable drawer           *draw;
 	bool                      use_models;
 	bool                      record_movie;
+	scene                    *scn_cache;      // temporarily holds top-state scene during init
 	
 	std::map<std::string, model*> models;
 	
