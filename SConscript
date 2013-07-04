@@ -77,8 +77,8 @@ test_install = env.Alias('test_svs', env.Install('$OUT_DIR', test_prog))
 svs_env = env.Clone()
 svs_env['LIBS'] = []
 
-srcdirs = ['src', 'src/filters', 'src/commands', 'src/models', 'src/algorithms']
-incdirs = [env.Dir(d).srcnode() for d in 'src src/algorithms src/models eigen ccd'.split()]
+srcdirs = ['src', 'src/filters', 'src/commands', 'src/models']
+incdirs = [env.Dir(d).srcnode() for d in 'src src/models eigen ccd'.split()]
 scu_src = ['SVS.cxx']
 
 if compiler == 'g++':
