@@ -17,6 +17,7 @@
 #include "filter_table.h"
 #include "drawer.h"
 #include "logger.h"
+#include "model.h"
 
 using namespace std;
 
@@ -50,6 +51,7 @@ sgwme::~sgwme() {
 	soarint->remove_wme(name_wme);
 	for (i = childs.begin(); i != childs.end(); ++i) {
 		i->first->parent = NULL;
+		delete i->first;
 		soarint->remove_wme(i->second);
 	}
 	if (parent) {
@@ -115,17 +117,17 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 
 svs_state::~svs_state() {
 	map<wme*, command*>::iterator i, iend;
-	string scn_name;
 	
 	for (i = curr_cmds.begin(), iend = curr_cmds.end(); i != iend; ++i) {
 		delete i->second;
 	}
 	
-	scn_name = scn->get_name();
-	delete scn; // results in root being deleted also
 	delete mmdl;
-
-	svsp->get_drawer()->delete_scene(scn_name);
+	
+	if (scn) {
+		svsp->get_drawer()->delete_scene(scn->get_name());
+		delete scn; // results in root being deleted also
+	}
 }
 
 void svs_state::init() {
@@ -324,6 +326,11 @@ void svs_state::cli_out(const vector<string> &args, ostream &os) {
 	}
 }
 
+void svs_state::disown_scene() {
+	delete root;
+	scn = NULL;
+}
+
 svs::svs(agent *a)
 : use_models(false), record_movie(false), scn_cache(NULL)
 {
@@ -353,6 +360,9 @@ void svs::state_creation_callback(Symbol *state) {
 	svs_state *s;
 	
 	if (state_stack.empty()) {
+		if (scn_cache) {
+			scn_cache->verify_listeners();
+		}
 		s = new svs_state(this, state, si, scn_cache);
 		scn_cache = NULL;
 	} else {
@@ -368,11 +378,11 @@ void svs::state_deletion_callback(Symbol *state) {
 	assert(state == s->get_state());
 	if (state_stack.size() == 1) {
 		// removing top state, save scene for reinit
-		scn_cache = s->get_scene()->clone(s->get_name());
-		scn_cache->set_draw(true);
+		scn_cache = s->get_scene();
+		s->disown_scene();
 	}
-	state_stack.pop_back();
 	delete s;
+	state_stack.pop_back();
 }
 
 void svs::proc_input(svs_state *s) {

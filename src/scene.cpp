@@ -962,3 +962,11 @@ void scene::refresh_draw() {
 		d->add(name, nodes[i].node);
 	}
 }
+
+void scene::verify_listeners() const {
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		std::list<sgnode_listener*> l;
+		nodes[i].node->get_listeners(l);
+		assert(l.size() == 1 && l.front() == this);
+	}
+}

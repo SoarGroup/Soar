@@ -85,6 +85,12 @@ public:
 	const output_spec *get_output_spec() const { return outspec; }
 	
 	void update_models();
+	
+	/*
+	 Should only be called by svs::state_deletion_callback to save top-state scene
+	 during init.
+	*/
+	void disown_scene();
 
 private:
 	void init();

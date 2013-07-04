@@ -55,6 +55,7 @@ public:
 	void refresh_draw();
 	void set_draw(bool d) { draw = d; }
 
+	void verify_listeners() const;
 private:
 	typedef std::map<std::string, double> property_map;
 	

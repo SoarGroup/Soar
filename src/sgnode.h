@@ -61,6 +61,8 @@ public:
 	void set_shape_dirty();
 	void listen(sgnode_listener *o);
 	void unlisten(sgnode_listener *o);
+	void get_listeners(std::list<sgnode_listener*> &l) const { l = listeners; }
+	
 	const bbox &get_bounds() const;
 	vec3 get_centroid() const;
 	bool has_descendent(const sgnode *n) const;
