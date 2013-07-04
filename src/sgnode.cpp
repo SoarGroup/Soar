@@ -366,7 +366,7 @@ void geometry_node::walk_geoms(std::vector<const geometry_node*> &g) const {
 }
 
 convex_node::convex_node(const string &name, const string &type, const ptlist &v)
-: geometry_node(name, type), verts(v), dirty(true)
+: geometry_node(name, type), verts(v), world_verts_dirty(true)
 {}
 
 sgnode *convex_node::clone_sub() const {
@@ -378,20 +378,21 @@ void convex_node::update_shape() {
 }
 
 void convex_node::set_transform_dirty_sub() {
-	dirty = true;
+	world_verts_dirty = true;
 }
 
 void convex_node::set_verts(const ptlist &v) {
 	verts = v;
-	dirty = true;
+	world_verts_dirty = true;
+	set_shape_dirty();
 }
 
 const ptlist &convex_node::get_world_verts() const {
-	if (dirty) {
+	if (world_verts_dirty) {
 		world_verts.clear();
 		world_verts.resize(verts.size());
 		transform(verts.begin(), verts.end(), world_verts.begin(), get_world_trans());
-		dirty = false;
+		world_verts_dirty = false;
 	}
 	return world_verts;
 }
