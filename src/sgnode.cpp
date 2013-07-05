@@ -169,15 +169,11 @@ const transform3 &sgnode::get_world_trans() const {
 }
 
 group_node *sgnode::as_group() {
-	group_node *g = dynamic_cast<group_node*>(this);
-	assert(g);
-	return g;
+	return dynamic_cast<group_node*>(this);
 }
 
 const group_node *sgnode::as_group() const {
-	const group_node *g = dynamic_cast<const group_node*>(this);
-	assert(g);
-	return g;
+	return dynamic_cast<const group_node*>(this);
 }
 
 sgnode *sgnode::clone() const {

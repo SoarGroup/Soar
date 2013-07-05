@@ -93,8 +93,8 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 	return true;
 }
 
-scene::scene(const string &name, svs *owner, bool draw) 
-: name(name), owner(owner), draw(draw), nodes(1), track_dists(false)
+scene::scene(const string &name, svs *owner) 
+: name(name), owner(owner), draw(false), nodes(1), track_dists(false)
 {
 	root = new group_node(root_name, "world");
 	nodes[0].node = root;
@@ -109,26 +109,21 @@ scene::~scene() {
 	delete root;
 }
 
-scene *scene::clone(const string &cname, bool draw) const {
+scene *scene::clone(const string &cname) const {
 	scene *c;
 	string name;
 	std::vector<sgnode*> node_clones;
 
 	update_closest();
-	c = new scene(cname, owner, draw);
+	c = new scene(cname, owner);
 	delete c->root;
 	c->nodes = nodes;
 	c->root = root->clone()->as_group(); // root->clone copies entire scene graph
 	c->root->walk(node_clones);
-	
-	drawer *d = owner->get_drawer();
 	for(int i = 0, iend = node_clones.size(); i < iend; ++i) {
 		sgnode *n = node_clones[i];
 		c->find_name(n->get_name())->node = n;
 		n->listen(c);
-		if (draw) {
-			d->add(c->name, n);
-		}
 	}
 	return c;
 }
@@ -232,7 +227,7 @@ bool scene::del_node(const string &name) {
 }
 
 void scene::clear() {
-	for (int i = 0; i < root->num_children(); ++i) {
+	for (int i = root->num_children() - 1; i >= 0; --i) {
 		delete root->get_child(i);
 	}
 }
@@ -301,7 +296,7 @@ int scene::parse_add(vector<string> &f, string &error) {
 	}
 	par = get_group(f[2]);
 	if (!par) {
-		error = "parent node does not exist";
+		error = "parent node does not exist, or is not group node";
 		return 1;
 	}
 	
@@ -718,8 +713,11 @@ void scene::node_update(sgnode *n, sgnode::change_type t, const std::string& upd
 	}
 }
 
-double scene::convex_distance(const sgnode *a, const sgnode *b) const {
-	assert(track_dists);
+double scene::get_convex_distance(const sgnode *a, const sgnode *b) const {
+	if (!track_dists) {
+		return convex_distance(a, b);
+	}
+	
 	int i, j;
 	for (i = 0; i < nodes.size() && nodes[i].node != a; ++i)
 		;
@@ -730,7 +728,7 @@ double scene::convex_distance(const sgnode *a, const sgnode *b) const {
 }
 
 bool scene::intersects(const sgnode *a, const sgnode *b) const {
-	return this->convex_distance(a, b) < INTERSECT_THRESH;
+	return this->get_convex_distance(a, b) < INTERSECT_THRESH;
 }
 
 void scene::update_dists(int i) {
@@ -777,7 +775,7 @@ void scene::update_all_dists() {
 	}
 	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
 		for (int j = i + 1, jend = nodes.size(); j < jend; ++j) {
-			double d = ::convex_distance(nodes[i].node, nodes[j].node);
+			double d = convex_distance(nodes[i].node, nodes[j].node);
 			nodes[i].dists[j] = nodes[j].dists[i] = d;
 		}
 	}
@@ -872,6 +870,9 @@ void scene::proxy_get_children(map<string, cliproxy*> &c) {
 	c["draw"] = new memfunc_proxy<scene>(this, &scene::cli_draw);
 	c["draw"]->set_help("Draw this scene in the viewer.")
 	           .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
+
+	c["clear"] = new memfunc_proxy<scene>(this, &scene::cli_clear);
+	c["clear"]->set_help("Delete all objects in scene except world");
 }
 
 void scene::cli_props(const vector<string> &args, ostream &os) const {
@@ -910,11 +911,7 @@ void scene::cli_dist(const vector<string> &args, ostream &os) const {
 		os << "node " << args[1] << " does not exist" << endl;
 		return;
 	}
-	if (track_dists) {
-		os << nodes[i0].dists[i1] << endl;
-	} else {
-		os << convex_distance(nodes[i0].node, nodes[i1].node) << endl;
-	}
+	os << get_convex_distance(nodes[i0].node, nodes[i1].node) << endl;
 }
 
 void scene::cli_sgel(const vector<string> &args, ostream &os) {
@@ -998,19 +995,30 @@ void scene::cli_draw(const vector<string> &args, ostream &os) {
 	
 	p.proxy_use("", args, os);
 	if (!old_draw && draw) {
-		refresh_view();
+		refresh_draw();
 	} else if (old_draw && !draw) {
 		owner->get_drawer()->delete_scene(name);
 	}
 }
 
-void scene::refresh_view() {
-	vector<const sgnode*> nodes;
-	drawer *d = owner->get_drawer();
+void scene::cli_clear(const vector<string> &args, ostream &os) {
+	clear();
+}
+
+void scene::refresh_draw() {
+	if (!draw) return;
 	
+	drawer *d = owner->get_drawer();
 	d->delete_scene(name);
-	get_all_nodes(nodes);
 	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
-		d->add(name, nodes[i]);
+		d->add(name, nodes[i].node);
+	}
+}
+
+void scene::verify_listeners() const {
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		std::list<sgnode_listener*> l;
+		nodes[i].node->get_listeners(l);
+		assert(l.size() == 1 && l.front() == this);
 	}
 }

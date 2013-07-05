@@ -71,7 +71,7 @@ typedef std::vector<output_dim_spec> output_spec;
 */
 class svs_state : public cliproxy {
 public:
-	svs_state(svs *svsp, Symbol *state, soar_interface *soar);
+	svs_state(svs *svsp, Symbol *state, soar_interface *soar, scene *scn);
 	svs_state(Symbol *state, svs_state *parent);
 
 	~svs_state();
@@ -81,6 +81,7 @@ public:
 	void           update_scene_num();
 	void           clear_scene();
 	
+	std::string    get_name() const      { return name;      }
 	int            get_level() const     { return level;     }
 	int            get_scene_num() const { return scene_num; }
 	scene         *get_scene() const     { return scn;       }
@@ -92,6 +93,12 @@ public:
 	const output_spec *get_output_spec() const { return outspec; }
 	
 	void update_models();
+	
+	/*
+	 Should only be called by svs::state_deletion_callback to save top-state scene
+	 during init.
+	*/
+	void disown_scene();
 
 private:
 	void init();
@@ -101,6 +108,7 @@ private:
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_out(const std::vector<std::string> &args, std::ostream &os);
 
+	std::string     name;
 	svs            *svsp;
 	int             level;
 	svs_state      *parent;
@@ -163,6 +171,7 @@ private:
 	void cli_connect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_disconnect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_use_models(const std::vector<std::string> &args, std::ostream &os);
+	void cli_add_model(const std::vector<std::string> &args, std::ostream &os);
 
 	soar_interface           *si;
 	std::vector<svs_state*>   state_stack;
@@ -172,6 +181,7 @@ private:
 	mutable drawer           *draw;
 	bool                      use_models;
 	bool                      record_movie;
+	scene                    *scn_cache;      // temporarily holds top-state scene during init
 	
 	std::map<std::string, model*> models;
 	

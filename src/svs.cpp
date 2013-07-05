@@ -17,6 +17,7 @@
 #include "filter_table.h"
 #include "drawer.h"
 #include "logger.h"
+#include "model.h"
 
 using namespace std;
 
@@ -69,6 +70,7 @@ sgwme::~sgwme() {
 
 	for (i = childs.begin(); i != childs.end(); ++i) {
 		i->first->parent = NULL;
+		delete i->first;
 		soarint->remove_wme(i->second);
 	}
 	if (parent) {
@@ -120,6 +122,7 @@ void sgwme::add_child(sgnode *c) {
 	childs[child] = cid_wme;
 }
 
+<<<<<<< HEAD
 
 void sgwme::update_property(const std::string& propertyName){
 	wme* propWme;
@@ -158,11 +161,12 @@ void sgwme::delete_property(const std::string& propertyName){
 }
 
 
-svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
+svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, scene *scn)
 : svsp(svsp), parent(NULL), state(state), si(si), level(0),
-  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL)
+  scene_num(-1), scene_num_wme(NULL), scn(scn), scene_link(NULL)
 {
 	assert (si->is_top_state(state));
+	si->get_name(state, name);
 	outspec = svsp->get_output_spec();
 	loggers = svsp->get_loggers();
 	init();
@@ -180,17 +184,17 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 
 svs_state::~svs_state() {
 	map<wme*, command*>::iterator i, iend;
-	string scn_name;
 	
 	for (i = curr_cmds.begin(), iend = curr_cmds.end(); i != iend; ++i) {
 		delete i->second;
 	}
 	
-	scn_name = scn->get_name();
-	delete scn; // results in root being deleted also
 	delete mmdl;
-
-	svsp->get_drawer()->delete_scene(scn_name);
+	
+	if (scn) {
+		svsp->get_drawer()->delete_scene(scn->get_name());
+		delete scn; // results in root being deleted also
+	}
 }
 
 void svs_state::init() {
@@ -201,11 +205,16 @@ void svs_state::init() {
 	svs_link = si->get_wme_val(si->make_id_wme(state, cs.svs));
 	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
 	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
-	if (parent) {
-		scn = parent->scn->clone(name, false);
-	} else {
-		scn = new scene(name, svsp, true);
+	if (!scn) {
+		if (parent) {
+			scn = parent->scn->clone(name);
+		} else {
+			// top state
+			scn = new scene(name, svsp);
+			scn->set_draw(true);
+		}
 	}
+	scn->refresh_draw();
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	mmdl = new multi_model(svsp->get_models());
 	learn_models = false;
@@ -384,8 +393,13 @@ void svs_state::cli_out(const vector<string> &args, ostream &os) {
 	}
 }
 
+void svs_state::disown_scene() {
+	delete root;
+	scn = NULL;
+}
+
 svs::svs(agent *a)
-: use_models(false), record_movie(false)
+: use_models(false), record_movie(false), scn_cache(NULL)
 {
 	si = new soar_interface(a);
 	draw = new drawer();
@@ -393,10 +407,13 @@ svs::svs(agent *a)
 }
 
 svs::~svs() {
-	vector<svs_state*>::iterator i;
-	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
-		delete *i;
+	for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
+		delete state_stack[i];
 	}
+	if (scn_cache) {
+		delete scn_cache;
+	}
+	
 	delete si;
 	map<string, model*>::iterator j;
 	for (j = models.begin(); j != models.end(); ++j) {
@@ -410,7 +427,11 @@ void svs::state_creation_callback(Symbol *state) {
 	svs_state *s;
 	
 	if (state_stack.empty()) {
-		s = new svs_state(this, state, si);
+		if (scn_cache) {
+			scn_cache->verify_listeners();
+		}
+		s = new svs_state(this, state, si, scn_cache);
+		scn_cache = NULL;
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
@@ -422,8 +443,13 @@ void svs::state_deletion_callback(Symbol *state) {
 	svs_state *s;
 	s = state_stack.back();
 	assert(state == s->get_state());
-	state_stack.pop_back();
+	if (state_stack.size() == 1) {
+		// removing top state, save scene for reinit
+		scn_cache = s->get_scene();
+		s->disown_scene();
+	}
 	delete s;
+	state_stack.pop_back();
 }
 
 void svs::proc_input(svs_state *s) {
@@ -517,6 +543,12 @@ void svs::proxy_get_children(map<string, cliproxy*> &c) {
 	c["use_models"]->set_help("Use model learning system.")
 	                 .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
 
+	c["add_model"]         = new memfunc_proxy<svs>(this, &svs::cli_add_model);
+	c["add_model"]->set_help("Add a model.")
+	                 .add_arg("NAME", "Name of the model.")
+	                 .add_arg("TYPE", "Type of the model.")
+	                 .add_arg("[PATH]", "Path of file to load model from.");
+	
 	c["timers"]            = &timers;
 	c["loggers"]           = loggers;
 	c["filters"]           = &get_filter_table();
@@ -528,11 +560,9 @@ void svs::proxy_get_children(map<string, cliproxy*> &c) {
 	}
 	c["model"] = model_group;
 
-	proxy_group *state_group = new proxy_group;
 	for (int j = 0, jend = state_stack.size(); j < jend; ++j) {
-		state_group->add(tostring(j), state_stack[j]);
+		c[state_stack[j]->get_name()] = state_stack[j];
 	}
-	c["state"] = state_group;
 }
 
 bool svs::do_cli_command(const vector<string> &args, string &output) {
@@ -561,7 +591,7 @@ void svs::cli_connect_viewer(const vector<string> &args, ostream &os) {
 	if (draw->connect(args[0])) {
 		os << "connection successful" << endl;
 		for (int i = 0, iend = state_stack.size(); i < iend; ++i) {
-			state_stack[i]->get_scene()->refresh_view();
+			state_stack[i]->get_scene()->refresh_draw();
 		}
 	} else {
 		os << "connection failed" << endl;
@@ -614,4 +644,27 @@ void svs::cli_use_models(const vector<string> &args, ostream &os) {
 	bool_proxy p(&use_models, "Use model learning system.");
 	p.proxy_use("", args, os);
 	state_stack[0]->get_scene()->set_track_distances(use_models);
+}
+
+void svs::cli_add_model(const vector<string> &args, ostream &os) {
+	if (args.size() < 2) {
+		os << "Specify name and type." << endl;
+		return;
+	}
+	model *m = make_model(this, args[0], args[1]);
+	if (!m) {
+		os << "Cannot create model. Probably no such type." << endl;
+		return;
+	}
+	if (args.size() >= 3) {
+		ifstream input(args[2].c_str());
+		if (!input) {
+			os << "File could not be read. Model not loaded." << endl;
+			delete m;
+			return;
+		}
+		m->unserialize(input);
+		input.close();
+	}
+	add_model(args[0], m);
 }

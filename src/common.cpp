@@ -149,20 +149,8 @@ bool is_inf(double x) {
 	return x == numeric_limits<double>::infinity();
 }
 
-bool read_on_off(const vector<string> &args, int p, ostream &os, bool &var) {
-	if (p >= args.size()) {
-		os << (var ? "on" : "off") << endl;
-	} else {
-		if (args[p] == "on") {
-			var = true;
-		} else if (args[p] == "off") {
-			var = false;
-		} else {
-			os << "expecting on/off" << endl;
-			return false;
-		}
-	}
-	return true;
+bool approx_equal(double a, double b, double thresh) {
+	return (fabs(a - b) <= thresh);
 }
 
 table_printer::table_printer()

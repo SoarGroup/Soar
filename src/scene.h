@@ -15,10 +15,10 @@ class logger_set;
 
 class scene : public sgnode_listener, public cliproxy {
 public:
-	scene(const std::string &name, svs *owner, bool draw);
+	scene(const std::string &name, svs *owner);
 	~scene();
 	
-	scene *clone(const std::string &name, bool draw) const;
+	scene *clone(const std::string &name) const;
 	
 	group_node   *get_root() { return root; }
 	sgnode       *get_node(const std::string &name);
@@ -40,8 +40,10 @@ public:
 	bool set_properties(const rvec &vals);
 	void remove_property(const std::string &obj, const std::string &prop);
 	bool parse_sgel(const std::string &s);
+	
 	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info);
-	double convex_distance(const sgnode *a, const sgnode *b) const;
+	double get_convex_distance(const sgnode *a, const sgnode *b) const;
+
 	bool intersects(const sgnode *a, const sgnode *b) const;
 	const scene_sig &get_signature() const;
 	
@@ -52,7 +54,10 @@ public:
 	
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	
-	void refresh_view();
+	void refresh_draw();
+	void set_draw(bool d) { draw = d; }
+
+	void verify_listeners() const;
 private:
 	typedef std::map<std::string, double> property_map;
 	
@@ -108,6 +113,7 @@ private:
 	void cli_sgel(const std::vector<std::string> &args, std::ostream &os);
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_draw(const std::vector<std::string> &args, std::ostream &os);
+	void cli_clear(const std::vector<std::string> &args, std::ostream &os);
 };
 
 #endif

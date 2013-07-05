@@ -54,6 +54,18 @@ void scene_sig::unserialize(istream &is) {
 	}
 }
 
+void scene_sig::print(ostream &os) const {
+	table_printer t;
+	for (int i = 0, iend = s.size(); i < iend; ++i) {
+		const entry &e = s[i];
+		t.add_row() << e.id << e.name << e.type << e.start;
+		for (int j = 0, jend = e.props.size(); j < jend; ++j) {
+			t << e.props[j];
+		}
+	}
+	t.print(os);
+}
+
 void scene_sig::add(const scene_sig::entry &e) {
 	int curr_dim = dim();
 	s.push_back(e);

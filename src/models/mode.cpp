@@ -133,11 +133,14 @@ void em_mode::set_params(const scene_sig &dsig, int target, const mat &coefs, co
 		}
 		lin_coefs.conservativeResize(end, 1);
 		
-		/*
-		 The assumption here is that all existing members share the same signature
-		*/
-		assert(omaps.size() == 1);
-		omaps[0].first = relevant_objs;
+		if (obj_maps.size() == 0) {
+			obj_map_entry e;
+			e.obj_map = relevant_objs;
+			obj_maps.push_back(e);
+		} else {
+			assert(obj_maps.size() == 1);        // all existing members must have the same signature
+			obj_maps[0].obj_map = relevant_objs;
+		}
 	}
 	new_fit = true;
 }
@@ -206,11 +209,10 @@ void em_mode::learn_obj_clauses(const relation_table &rels) const {
 		relation pos_obj(3), neg_obj(3);
 		tuple objs(2);
 
-		omap_table::const_iterator j, jend;
-		for (j = omaps.begin(), jend = omaps.end(); j != jend; ++j) {
-			const omap &m = j->first;
+		for (int j = 0, jend = obj_maps.size(); j < jend; ++j) {
+			const vector<int> &m = obj_maps[j].obj_map;
+			const interval_set &mem = obj_maps[j].members;
 			assert(m.size() == sig.size());
-			const interval_set &mem = j->second;
 			interval_set::const_iterator k, kend;
 			for (k = mem.begin(), kend = mem.end(); k != kend; ++k) {
 				const model_train_inst &d = data.get_inst(*k);
@@ -292,12 +294,12 @@ void em_mode::cli_members(ostream &os) const {
  therefore not (un)serialized.
 */
 void em_mode::serialize(ostream &os) const {
-	serializer(os) << stale << new_fit << members << omaps << sig << obj_clauses << sorted_ys
+	serializer(os) << stale << new_fit << members << obj_maps << sig << obj_clauses << sorted_ys
 	               << lin_coefs << lin_inter << n_nonzero << manual << obj_clauses_stale;
 }
 
 void em_mode::unserialize(istream &is) {
-	unserializer(is) >> stale >> new_fit >> members >> omaps >> sig >> obj_clauses >> sorted_ys
+	unserializer(is) >> stale >> new_fit >> members >> obj_maps >> sig >> obj_clauses >> sorted_ys
 	                 >> lin_coefs >> lin_inter >> n_nonzero >> manual >> obj_clauses_stale;
 }
 
@@ -399,12 +401,11 @@ bool em_mode::update_fits(double noise_var) {
 	}
 	
 	mat X(members.size(), xcols), Y(members.size(), 1);
-	omap_table::const_iterator i, iend;
 	int j = 0;
-	for (i = omaps.begin(), iend = omaps.end(); i != iend; ++i) {
-		const omap &m = i->first;
+	for (int i = 0, iend = obj_maps.size(); i < iend; ++i) {
+		const vector<int> &m = obj_maps[i].obj_map;
+		const interval_set &members = obj_maps[i].members;
 		assert(m.size() == sig.size());
-		const interval_set &members = i->second;
 		interval_set::const_iterator k, kend;
 		for (k = members.begin(), kend = members.end(); k != kend; ++k) {
 			const model_train_inst &d = data.get_inst(*k);
@@ -446,32 +447,32 @@ void em_mode::predict(const scene_sig &dsig, const rvec &x, const vector<int> &e
 	y = ((xc * lin_coefs) + lin_inter)(0);
 }
 
-void em_mode::add_example(int t, const vector<int> &ex_omap) {
-	assert(!members.contains(t) && ex_omap.size() == sig.size());
+void em_mode::add_example(int t, const vector<int> &ex_obj_map) {
+	assert(!members.contains(t) && ex_obj_map.size() == sig.size());
 	
 	const model_train_inst &d = data.get_inst(t);
 	members.insert(t);
 	
 	bool found = false;
-	omap_table::iterator i, iend;
-	for (i = omaps.begin(), iend = omaps.end(); i != iend; ++i) {
-		if (i->first == ex_omap) {
-			i->second.insert(t);
+	for (int i = 0, iend = obj_maps.size(); i < iend; ++i) {
+		if (obj_maps[i].obj_map == ex_obj_map) {
+			obj_maps[i].members.insert(t);
 			found = true;
 			break;
 		}
 	}
 	if (!found) {
-		interval_set s;
-		s.insert(t);
-		omaps.push_back(make_pair(ex_omap, s));
+		obj_map_entry e;
+		e.obj_map = ex_obj_map;
+		e.members.insert(t);
+		obj_maps.push_back(e);
 	}
 
 	if (noise) {
 		sorted_ys.insert(make_pair(d.y(0), t));
 	} else {
 		rvec y(1);
-		predict(*d.sig, d.x, ex_omap, y(0));
+		predict(*d.sig, d.x, ex_obj_map, y(0));
 		if ((y - d.y).norm() > MODEL_ERROR_THRESH) {
 			stale = true;
 		}
@@ -483,9 +484,8 @@ void em_mode::del_example(int t) {
 	const model_train_inst &d = data.get_inst(t);
 
 	members.erase(t);
-	omap_table::iterator i, iend;
-	for (i = omaps.begin(), iend = omaps.end(); i != iend; ++i) {
-		i->second.erase(t);
+	for (int i = 0, iend = obj_maps.size(); i < iend; ++i) {
+		obj_maps[i].members.erase(t);
 	}
 	if (noise) {
 		sorted_ys.erase(make_pair(d.y(0), t));
@@ -538,10 +538,6 @@ void em_mode::get_members(interval_set &mem) const {
 	mem = members;
 }
 
-static bool approx_equal(double a, double b) {
-	return (fabs(a - b) <= SAME_THRESH);
-}
-
 void em_mode::get_function_string(string &s) const {
 	if (noise) {
 		s = "noise";
@@ -557,20 +553,20 @@ void em_mode::get_function_string(string &s) const {
 			if (c == 0.0) {
 				continue;
 			} else if (first) {
-				if (approx_equal(c, -1.0)) {
+				if (approx_equal(c, -1.0, SAME_THRESH)) {
 					ss << "-";
-				} else if (!approx_equal(c, 1.0)) {
+				} else if (!approx_equal(c, 1.0, SAME_THRESH)) {
 					ss << c << " * ";
 				}
 				first = false;
 			} else if (c < 0.0) {
 				ss << " - ";
-				if (!approx_equal(c, -1.0)) {
+				if (!approx_equal(c, -1.0, SAME_THRESH)) {
 					ss << fabs(c) << " * ";
 				}
 			} else {
 				ss << " + ";
-				if (!approx_equal(c, 1.0)) {
+				if (!approx_equal(c, 1.0, SAME_THRESH)) {
 					ss << c << " * ";
 				}
 			}
@@ -587,3 +583,12 @@ void em_mode::get_function_string(string &s) const {
 	}
 	s = ss.str();
 }
+
+void em_mode::obj_map_entry::serialize(std::ostream &os) const {
+	serializer(os) << obj_map << members;
+}
+
+void em_mode::obj_map_entry::unserialize(std::istream &is) {
+	unserializer(is) >> obj_map >> members;
+}
+
