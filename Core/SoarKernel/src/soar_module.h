@@ -931,8 +931,6 @@ namespace soar_module
 	// Memory Pool Allocators
 	///////////////////////////////////////////////////////////////////////////
 
-#define USE_MEM_POOL_ALLOCATORS 1
-
 #ifdef USE_MEM_POOL_ALLOCATORS
 
 	memory_pool* get_memory_pool( agent* my_agent, size_t size );

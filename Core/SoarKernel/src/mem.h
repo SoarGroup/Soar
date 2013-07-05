@@ -242,8 +242,6 @@ inline void decrement_used_count(P p)
 
 #endif /* MEMORY_POOL_STATS */
 
-#define MEM_POOLS_ENABLED 1
-
 template <typename T>
 inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_pointer)
 {
@@ -271,8 +269,8 @@ inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_p
    *dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
 
    // simply prevents compiler warnings when memory pools disabled
-   thisAgent=thisAgent;
-   p=p;
+//   thisAgent=thisAgent;
+//   p=p;
 
 #endif // !MEM_POOLS_ENABLED
 }
@@ -293,7 +291,7 @@ inline void free_with_pool(memory_pool* p, T * item)
    free(item);
 
    // simply prevents compiler warnings when memory pools disabled
-   p=p;
+//   p=p;
 #endif // !MEM_POOLS_ENABLED
 }
 

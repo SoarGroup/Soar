@@ -23,7 +23,7 @@ test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
 inline test make_blank_test() {return static_cast<test>(0);}
 inline test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
 inline uint32_t hash_test (agent* thisAgent, test t);
-void deallocate_test (agent* thisAgent, test t);
+void deallocate_test (agent* thisAgent, test t, long indent=0);
 
 test copy_test (agent* thisAgent, test t);
 test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *removed_goal, bool *removed_impasse);

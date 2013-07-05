@@ -456,6 +456,7 @@ bool reinitialize_soar (agent* thisAgent) {
 	thisAgent->epmem_stats->reset();
 	thisAgent->smem_stats->reset();
 	thisAgent->dyn_counters->clear();
+	thisAgent->varname_table->clear_symbol_map();
 
 	thisAgent->active_level = 0; /* Signal that everything should be retracted */
 	thisAgent->FIRING_TYPE = IE_PRODS;

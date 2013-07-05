@@ -125,8 +125,8 @@ extern void filtered_print_wme_add(agent* thisAgent, wme *w);
 extern char *string_to_escaped_string (agent* thisAgent, char *s, char first_and_last_char,
                                        char *dest);
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, bool rereadable=false, char *dest=NIL, size_t dest_size=0);
-extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size);
-extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size);
+extern char *test_to_string (agent* thisAgent, test t, char *dest=NIL, size_t dest_size=0);
+extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest=NIL, size_t dest_size=0);
 extern char preference_to_string (agent* thisAgent, byte type);
 
 /* -----------------------------------------------------------------------

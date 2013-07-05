@@ -389,15 +389,9 @@ void rl_rule_meta( agent* my_agent, production* prod )
 	}
 }
 
-
-// formerly in misc.cpp:
 /***************************************************************************
  * Function     : is_natural_number
  **************************************************************************/
-bool is_whole_number(const std::string &str)
-{
-  return is_whole_number(str.c_str());
-}
 
 bool is_whole_number(const char * str)
 {
@@ -441,7 +435,7 @@ int rl_get_template_id( const char *prod_name )
 
 	// make sure id is a valid natural number
 	std::string id_str = temp.substr( last_star + 1 );
-	if ( !is_whole_number( id_str ) )
+	if ( !is_whole_number( id_str.c_str() ) )
 		return -1;
 
 	// convert id
