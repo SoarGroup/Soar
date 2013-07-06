@@ -530,59 +530,35 @@ bool scene::parse_sgel(const string &s) {
 	return true;
 }
 
-void scene::get_property_names(int i, vector<string> &names) const {
-	for (int j = 0; j < NUM_NATIVE_PROPS; ++j) {
-		names.push_back(NATIVE_PROPS[j]);
-	}
-	
-	const node_info &info = nodes[i];
-
-	property_map::const_iterator k, kend;
-	for (k = info.props.begin(), kend = info.props.end(); k != kend; ++k) {
-		names.push_back(k->first);
-	}
-}
-
 void scene::get_properties(rvec &vals) const {
 	node_table::const_iterator i, iend;
 	property_map::const_iterator j, jend;
 	int k = 0;
 	
 	vals.resize(get_dof());
-	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
-		const node_info &info = *i;
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		const node_info &info = nodes[i];
 		for (const char *t = "prs"; *t != '\0'; ++t) {
 			vec3 trans = info.node->get_trans(*t);
 			vals.segment(k, 3) = trans;
 			k += 3;
 		}
-		for (j = info.props.begin(), jend = info.props.end(); j != jend; ++j) {
+		
+		const numeric_properties_map &pm = info.node->get_numeric_properties();
+		numeric_properties_map::const_iterator j, jend;
+		for (j = pm.begin(), jend = pm.end(); j != jend; ++j) {
 			vals(k++) = j->second;
 		}
 	}
 }
 
-bool scene::set_property(const string &obj, const string &prop, double val) {
-	char type; int d;
-	node_info *info = find_name(obj);
-	assert(info);
-	if (is_native_prop(prop, type, d)) {
-		vec3 trans = info->node->get_trans(type);
-		trans[d] = val;
-		info->node->set_trans(type, trans);
-	} else {
-		info->props[prop] = val;
-	}
-	return true;
-}
-
 bool scene::set_properties(const rvec &vals) {
-	node_table::iterator i, iend;;
 	const char *types = "prs";
 	vec3 trans;
 	int l = 0;
 	
-	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		sgnode *n = nodes[i].node;
 		int k1, k2;
 		for (k1 = 0; k1 < 3; ++k1) {
 			for (k2 = 0; k2 < 3; ++k2) {
@@ -591,32 +567,25 @@ bool scene::set_properties(const rvec &vals) {
 				}
 				trans(k2) = vals(l++);
 			}
-			i->node->set_trans(types[k1], trans);
+			n->set_trans(types[k1], trans);
 		}
 		
-		property_map::iterator j, jend;
-		for (j = i->props.begin(), jend = i->props.end(); j != jend; ++j) {
+		const numeric_properties_map &pm = n->get_numeric_properties();
+		numeric_properties_map::const_iterator j, jend;
+		for (j = pm.begin(), jend = pm.end(); j != jend; ++j) {
 			if (l >= vals.size()) {
 				return false;
 			}
-			j->second = vals(l++);
+			n->set_property(j->first, vals(l++));
 		}
 	}
 	return true;
 }
 
-void scene::remove_property(const std::string &name, const std::string &prop) {
-	node_info *info = find_name(name);
-	property_map::iterator j = info->props.find(prop);
-	assert(j != info->props.end());
-	info->props.erase(j);
-}
-
 int scene::get_dof() const {
 	int dof = 0;
-	node_table::const_iterator i, iend;
-	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
-		dof += NUM_NATIVE_PROPS + i->props.size();
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		dof += NUM_NATIVE_PROPS + nodes[i].node->get_numeric_properties().size();
 	}
 	return dof;
 }
@@ -710,6 +679,10 @@ void scene::node_update(sgnode *n, sgnode::change_type t, const std::string& upd
 			nodes[i].rels_dirty = true;
 			velocity_hack(n, owner->get_drawer());
 			break;
+		case sgnode::PROPERTY_CHANGED:
+			sig_dirty = true;
+			nodes[i].rels_dirty = true;
+			break;
 	}
 }
 
@@ -791,14 +764,24 @@ void scene::set_track_distances(bool v) {
 }
 
 void scene::update_sig() const {
+	vector<string> common_props;
+	for (int j = 0; j < NUM_NATIVE_PROPS; ++j) {
+		common_props.push_back(NATIVE_PROPS[j]);
+	}
 	sig.clear();
-	node_table::const_iterator i, iend;
 	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
 		scene_sig::entry e;
+		numeric_properties_map::const_iterator j, jend;
+		const numeric_properties_map &pm = nodes[i].node->get_numeric_properties();
+		
 		e.id = nodes[i].node->get_id();
 		e.name = nodes[i].node->get_name();
 		e.type = nodes[i].node->get_type();
-		get_property_names(i, e.props);
+		
+		e.props = common_props;
+		for (j = pm.begin(), jend = pm.end(); j != jend; ++j) {
+			e.props.push_back(j->first);
+		}
 		sig.add(e);
 	}
 }
