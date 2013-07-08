@@ -78,7 +78,7 @@ test copy_test (agent* thisAgent, test t);
 test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *removed_goal, bool *removed_impasse);
 
 /* -- Since test don't use refcounts, this function is an attempt to look for leaks due from not
- *    deallocating an existing test when creating a new one. */
+ *    deallocating an existing test when creating a new one. Havent actually used it.*/
 
 inline test test_info::assign(agent* thisAgent, test_struct *new_test) {
   if (this != NULL) {
