@@ -9,24 +9,84 @@
 
 //#include "gdatastructs.h"
 
+/* -------------------------------------------------------------------
+                              Tests
+
+   Tests in conditions can be blank tests (null), tests for equality
+   with a symbol, relational tests with a referent symbol, disjunctive
+   tests between a list of constant symbols or a conjunction
+   of multiple tests of any arbitrary type (except another conjunctive
+   test).
+
+   Note: This test structure and file was introduced in Soar 9.4 to
+         support chunking of other symbol types and adding all test
+         types to chunks.  The previous system differed significantly.
+         - MMA 2013
+------------------------------------------------------------------- */
+
+/* --- Test struct stores information about all test types, including
+ *     equality tests.  If nil, the test is considered blank.
+ *
+ *     The original_test pointer stores the test that was defined when the
+ *     production was read in by the parser.  The values are filled in by the
+ *     rete when reconstructing a production.  It is used by the chunker to
+ *     determine when to variablize constant symbols. - MMA 2013
+ *
+ *     ---*/
+
+typedef struct test_struct {
+  TestType type;                  /* see definitions below */
+  union test_info_union {
+    Symbol *referent;         /* for relational tests */
+    ::list *disjunction_list;   /* for disjunction tests */
+    ::list *conjunct_list;      /* for conjunctive tests */
+  } data;
+  test_struct *original_test;
+
+  test assign(agent* thisAgent, test_struct *new_test);
+} test_info;
+
+/* --- Note that the test typedef is a *pointer* to a test struct. A test is
+ *     considered blank when that pointer is nil. --- */
 typedef test_info * test;
 
+/* -- Some forward declarations from rete that are needed --- */
+typedef struct node_varnames_struct node_varnames;
+typedef struct condition_struct condition;
+typedef struct wme_struct wme;
+typedef struct rete_node_struct rete_node;
+typedef struct rete_test_struct rete_test;
+typedef char varnames;
+typedef unsigned short rete_node_level;
+
 /* --- Descriptions of these functions can be found in the test.cpp --- */
-char first_letter_from_test (test t);
 inline bool test_is_blank(test t){return (t == 0);}
 inline bool test_is_variable(agent* thisAgent, test t);
+inline test make_blank_test() {return static_cast<test>(0);}
+
+char first_letter_from_test (test t);
 bool tests_are_equal (test t1, test t2, bool neg);
 bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
 
-inline test make_blank_test() {return static_cast<test>(0);}
-inline test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
-inline uint32_t hash_test (agent* thisAgent, test t);
+test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
+uint32_t hash_test (agent* thisAgent, test t);
 void deallocate_test (agent* thisAgent, test t, long indent=0);
 
 test copy_test (agent* thisAgent, test t);
 test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *removed_goal, bool *removed_impasse);
+
+/* -- Since test don't use refcounts, this function is an attempt to look for leaks due from not
+ *    deallocating an existing test when creating a new one. */
+
+inline test test_info::assign(agent* thisAgent, test_struct *new_test) {
+  if (this != NULL) {
+    dprint(DT_DEBUG, "Note a test already exists in this variable!!!  Deallocating test.\n");
+    deallocate_test(thisAgent, this, 0);
+  }
+  return new_test;
+}
 
 #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
 void add_new_test_to_test_func (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
@@ -40,16 +100,7 @@ void add_new_test_to_test (agent* thisAgent, test *t, test add_me, test add_me_o
 #endif
 void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
 
-/* --- Some functions related to tests that used to be in rete.cpp
- *     and the forward declarations they need. --- */
-
-typedef struct node_varnames_struct node_varnames;
-typedef struct condition_struct condition;
-typedef struct wme_struct wme;
-typedef struct rete_node_struct rete_node;
-typedef struct rete_test_struct rete_test;
-typedef char varnames;
-typedef unsigned short rete_node_level;
+/* --- Some functions related to tests that used to be in rete.cpp */
 
 void add_additional_tests_and_originals (agent *thisAgent, rete_node *node, wme *right_wme, condition *cond, node_varnames *nvn);
 void add_hash_info_to_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);

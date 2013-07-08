@@ -34,6 +34,7 @@
 #include "recmem.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "test.h"
 
 using namespace soar_TraceNames;
 

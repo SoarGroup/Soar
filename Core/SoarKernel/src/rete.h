@@ -173,8 +173,8 @@ extern bool load_rete_net (agent* thisAgent, FILE *source_file);
 
        Test Type <---> Relational (Rete) Test Type Conversion
 
-   These functions convert from xxx_TEST's (defined in soarkernel.h for various
-   kinds of complex_test's) to xxx_RETE_TEST's (defined in rete.cpp for
+   These functions convert from xxx_TEST's (defined in test.h for various
+   kinds of tests) to xxx_RETE_TEST's (defined in rete.cpp for
    the different kinds of Rete tests), and vice-versa.  We might just
    use the same set of constants for both purposes, but we want to be
    able to do bit-twiddling on the RETE_TEST types.

@@ -479,6 +479,7 @@ inline void rl_get_symbol_constant( Symbol* p_sym, Symbol* i_sym, rl_symbol_map*
 	}
 }
 
+/* MToDo | The part that Nate commented out might need to be fixed.  He may have just punted on it. */
 void rl_get_test_constant( test* p_test, test* i_test, rl_symbol_map* constants )
 {
 	if ( test_is_blank( *p_test ) )
