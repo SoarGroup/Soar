@@ -813,20 +813,25 @@ const scene_sig &scene::get_signature() const {
 void scene::get_relations(relation_table &rt) const {
 	tuple closest(2);
 	vector<int> dirty_nodes;
-	node_table::const_iterator i, iend;
 	
 	rt = type_rels;
 	relation &closest_rel = rt["closest"];
 	closest_rel.reset(3);
 	update_closest();
-	for (i = nodes.begin() + 1, iend = nodes.end(); i != iend; ++i) {
-		if (i->rels_dirty) {
-			dirty_nodes.push_back(i->node->get_id());
-			i->rels_dirty = false;
+	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
+		const node_info &ni = nodes[i];
+		if (ni.rels_dirty) {
+			dirty_nodes.push_back(ni.node->get_id());
+			ni.rels_dirty = false;
 		}
-		closest[0] = i->node->get_id();
-		closest[1] = nodes[i->closest].node->get_id();
-		closest_rel.add(0, closest);
+		if (ni.closest != -1) {
+			closest[0] = ni.node->get_id();
+			closest[1] = nodes[ni.closest].node->get_id();
+			closest_rel.add(0, closest);
+		} else {
+			// if there's only one real object, then it won't be closest to anything
+			assert(nodes.size() == 2);
+		}
 	}
 	
 	relation_table::iterator j, jend;

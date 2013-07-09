@@ -192,7 +192,7 @@ private:
 	
 	ptlist verts;
 	mutable ptlist world_verts;
-	mutable bool dirty;
+	mutable bool world_verts_dirty;
 };
 
 class ball_node : public geometry_node {
