@@ -122,7 +122,6 @@ void sgwme::add_child(sgnode *c) {
 	childs[child] = cid_wme;
 }
 
-<<<<<<< HEAD
 
 void sgwme::update_property(const std::string& propertyName){
 	wme* propWme;

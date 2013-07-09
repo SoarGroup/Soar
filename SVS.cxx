@@ -31,6 +31,8 @@
 #include "src/filters/ptlist.cpp"
 #include "src/filters/stats.cpp"
 #include "src/filters/vec3.cpp"
+#include "src/filters/occlusion.cpp"
+#include "src/filters/has_property.cpp"
 
 #include "src/cliproxy.cpp"
 #include "src/command.cpp"
