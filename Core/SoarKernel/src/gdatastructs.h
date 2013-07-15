@@ -334,8 +334,6 @@ typedef struct slot_struct {
 
 } slot;
 
-#define NUM_PRODUCTION_TYPES 5
-
 /* -------------------------------------------------------------------
                               Tests
 

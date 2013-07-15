@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -62,7 +62,7 @@ void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
 		abort_with_fatal_error(thisAgent, msg);
 	}
 
-	fill_with_garbage (p, size);
+	fill_with_zeroes (p, size);
 
 	*(reinterpret_cast<size_t *>(p)) = size;
 	p += sizeof(size_t);
@@ -80,9 +80,9 @@ void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_cod
 
 void free_memory (agent* thisAgent, void *mem, int usage_code) {
   size_t size;
-  
+
   if ( mem == 0 ) return;
-  
+
   mem = static_cast<char *>(mem) - sizeof(size_t);
   size = *(static_cast<size_t *>(mem));
   fill_with_garbage (mem, size);
@@ -99,7 +99,7 @@ void print_memory_statistics (agent* thisAgent) {
 
   total = 0;
   for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
-  
+
   print(thisAgent,  "%8lu bytes total memory allocated\n", total);
   print(thisAgent,  "%8lu bytes statistics overhead\n",
          thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE]);
@@ -112,7 +112,7 @@ void print_memory_statistics (agent* thisAgent) {
   print(thisAgent,  "%8lu bytes for miscellaneous other things\n",
          thisAgent->memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
 }
-  
+
 /* ====================================================================
 
                           String Utilities
@@ -132,7 +132,7 @@ void print_memory_statistics (agent* thisAgent) {
    implemented by allocating a block of memory large enough to hold
    (1) the memory block's size, (2) the current string length, and (3)
    the current text of the string.  Add_to_growable_string() may result
-   in a new (larger) memory block being allocated and the text of the 
+   in a new (larger) memory block being allocated and the text of the
    string being copied.  Three macros provide access to a growable string's
    parts:  memsize_of_growable_string(), length_of_growable_string(),
    and (most importantly) text_of_growable_string(), which is of type
@@ -167,7 +167,7 @@ growable_string make_blank_growable_string (agent* thisAgent) {
   return gs;
 }
 
-void add_to_growable_string (agent* thisAgent, growable_string *gs, 
+void add_to_growable_string (agent* thisAgent, growable_string *gs,
 							 const char *string_to_add) {
   size_t current_length, length_to_add, new_length, new_memsize;
   growable_string New;
@@ -217,7 +217,7 @@ void free_growable_string (agent* thisAgent, growable_string gs) {
 
 #define DEFAULT_INTERLEAVE_FACTOR 1
 /* should be 1 for maximum speed, but to avoid a gradual slowdown due
-   to a gradually decreasing CPU cache hit ratio, make this a larger 
+   to a gradually decreasing CPU cache hit ratio, make this a larger
    number, must be prime */
 #define DEFAULT_BLOCK_SIZE 0x7FF0   /* about 32K bytes per block */
 
@@ -235,19 +235,19 @@ void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
 
 	/* somewhere in here, need to check if total mem usage exceeds limit set by user
 	we only check when increasing pools, because the other memories are small by comparison,
-	we shouldn't check for every block added to any pool, since that is unduly expensive 
+	we shouldn't check for every block added to any pool, since that is unduly expensive
 	can we keep a block counter on the agent and check it modulo some function of the limit?
 	*/
 	/*
 	uint64_t total = 0;
 	for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
 
-	if (total > thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]) {      
-	soar_invoke_callbacks(thisAgent, thisAgent, 
+	if (total > thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]) {
+	soar_invoke_callbacks(thisAgent, thisAgent,
 	MAX_MEMORY_USAGE_CALLBACK,
 	(soar_call_data) NULL);
 	thisAgent->OutputManager->print( "%8lu bytes total memory allocated\n", total);
-	thisAgent->OutputManager->print( "exceeds total allowed for Soar: %8lu bytes \n", 
+	thisAgent->OutputManager->print( "exceeds total allowed for Soar: %8lu bytes \n",
 	thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
 	}
 
@@ -290,7 +290,7 @@ void init_memory_pool (agent* thisAgent, memory_pool *p, size_t item_size, const
 	p->item_size = item_size;
 	p->items_per_block = DEFAULT_BLOCK_SIZE / item_size;
 	p->num_blocks = 0;
-	p->first_block = NIL;  
+	p->first_block = NIL;
 	p->free_list = NIL;
 #ifdef MEMORY_POOL_STATS
 	p->used_count = 0;
@@ -321,14 +321,14 @@ void init_memory_pool (agent* thisAgent, memory_pool *p, size_t item_size, const
    In addition to the regular conses, we also have a pool of "dl_cons"es--
    these are like conses, only doubly-linked.  A "dl_list" is a just a
    dl_cons (or NIL).
-   
+
    Some (consed) list utility functions:  destructively_reverse_list()
    does just what it says, and returns a pointer to the new head of the
    list (formerly the tail).  Member_of_list() tests membership, using
    "==" as the equality predicates.  Add_if_not_member() is like Lisp's
    "pushnew"; it returns the new list (possibly unchanged) list.
    Free_list() frees all the cons cells in the list.
-   
+
    Sometimes we need to surgically extract particular elements from a
    list.  Extract_list_elements() and extract_dl_list_elements() do this.
    They use a callback function that indicates which elements to extract:
@@ -380,27 +380,27 @@ void free_list (agent* thisAgent, list *the_list) {
   }
 }
 
-list *extract_list_elements (agent* thisAgent, list **header, cons_test_fn f, void* data) 
+list *extract_list_elements (agent* thisAgent, list **header, cons_test_fn f, void* data)
 {
   cons *first_extracted_element, *tail_of_extracted_elements;
   cons *c, *prev_c, *next_c;
 
   first_extracted_element = NIL;
   tail_of_extracted_elements = NIL;
-  
+
   prev_c = NIL;
-  for (c=(*header); c!=NIL; c=next_c) 
+  for (c=(*header); c!=NIL; c=next_c)
   {
     next_c = c->rest;
-    if (!f(thisAgent, c, data)) 
-    { 
-       prev_c = c; 
-       continue; 
+    if (!f(thisAgent, c, data))
+    {
+       prev_c = c;
+       continue;
     }
-    
-    if (prev_c) 
-       prev_c->rest = next_c; 
-    else 
+
+    if (prev_c)
+       prev_c->rest = next_c;
+    else
        *header = next_c;
     if (first_extracted_element)
       tail_of_extracted_elements->rest = c;
@@ -410,13 +410,13 @@ list *extract_list_elements (agent* thisAgent, list **header, cons_test_fn f, vo
     tail_of_extracted_elements = c;
   }
 
-  if (first_extracted_element) 
+  if (first_extracted_element)
      tail_of_extracted_elements->rest = NIL;
-  
+
   return first_extracted_element;
 }
 
-dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f) 
+dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f)
 {
   dl_cons *first_extracted_element, *tail_of_extracted_elements;
   dl_cons *dc, *next_dc;
@@ -424,33 +424,33 @@ dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_t
   first_extracted_element = NIL;
   tail_of_extracted_elements = NIL;
 
-  for (dc=(*header); dc!=NIL; dc=next_dc) 
+  for (dc=(*header); dc!=NIL; dc=next_dc)
   {
     next_dc = dc->next;
 
-    if (!f(dc,thisAgent)) 
+    if (!f(dc,thisAgent))
        continue;
-    
+
     remove_from_dll ((*header), dc, next, prev);
-    
+
     if (first_extracted_element)
       tail_of_extracted_elements->next = dc;
     else
       first_extracted_element = dc;
-    
+
     dc->prev = tail_of_extracted_elements;
     tail_of_extracted_elements = dc;
   }
 
 /************************************************************************/
 
-  if (first_extracted_element) 
+  if (first_extracted_element)
      tail_of_extracted_elements->next = NIL;
-  
+
   return first_extracted_element;
 }
 
-bool cons_equality_fn (agent*, cons *c, void *data) 
+bool cons_equality_fn (agent*, cons *c, void *data)
 {
   return (c->first == data);
 }
@@ -486,7 +486,7 @@ bool cons_equality_fn (agent*, cons *c, void *data)
    invoking it with each successive item.  The callback function should
    normally return false.  If the callback function ever returns true,
    iteration over the hash table items stops and the do_for_xxx()
-   routine returns immediately.  
+   routine returns immediately.
 ==================================================================== */
 
 uint32_t masks_for_n_low_order_bits[33] = { 0x00000000,
@@ -541,7 +541,7 @@ void resize_hash_table (agent* thisAgent, hash_table *ht, short new_log2size) {
   free_memory (thisAgent, ht->buckets, HASH_TABLE_MEM_USAGE);
   ht->buckets = new_buckets;
   ht->size = new_size;
-  ht->log2size = new_log2size; 
+  ht->log2size = new_log2size;
 }
 
 /* RPM 6/09 */
@@ -550,7 +550,7 @@ void free_hash_table(agent* thisAgent, struct hash_table_struct *ht) {
 	free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
 }
 
-void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht, 
+void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht,
 							 void *item) {
   uint32_t hash_value;
   item_in_hash_table *this_one, *prev;
@@ -578,7 +578,7 @@ void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht,
     resize_hash_table (thisAgent, ht, ht->log2size-1);
 }
 
-void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht, 
+void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht,
 						void *item) {
   uint32_t hash_value;
   item_in_hash_table *this_one;
@@ -592,10 +592,10 @@ void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht,
   *(ht->buckets+hash_value) = this_one;
 }
 
-void do_for_all_items_in_hash_table (agent* thisAgent, 
+void do_for_all_items_in_hash_table (agent* thisAgent,
                                      struct hash_table_struct *ht,
                                      hash_table_callback_fn2 f,
-                                     void* userdata) 
+                                     void* userdata)
 {
   uint32_t hash_value;
   item_in_hash_table *item;
@@ -628,7 +628,7 @@ void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
 
 void init_memory_utilities (agent* thisAgent) {
   int i;
-  
+
   init_memory_pool (thisAgent, &thisAgent->cons_cell_pool, sizeof(cons), "cons cell");
   init_memory_pool (thisAgent, &thisAgent->dl_cons_pool, sizeof(dl_cons), "dl cons");
   for (i=0; i<NUM_MEM_USAGE_CODES; i++) thisAgent->memory_for_usage[i] = 0;

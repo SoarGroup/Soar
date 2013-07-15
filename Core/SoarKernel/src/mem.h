@@ -147,8 +147,14 @@ extern void init_memory_utilities (agent* thisAgent);
   {
     memset(static_cast<void *>(block), 0xBB, (size));
   }
+  template <typename T>
+  inline void fill_with_zeroes(T * block, size_t size)
+  {
+      memset(static_cast<void *>(block), 0, (size));
+  }
 #else
   #define fill_with_garbage(block,size) { }
+  #define fill_with_zeroes(block,size) { }
 #endif
 
 #define MISCELLANEOUS_MEM_USAGE  0
@@ -259,7 +265,7 @@ inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_p
   // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
   (p)->free_list =  *(void * *)(*(dest_item_pointer));
 
-  fill_with_garbage (*(dest_item_pointer), (p)->item_size);
+  fill_with_zeroes (*(dest_item_pointer), (p)->item_size);
   increment_used_count(p);
 
 #else // !MEM_POOLS_ENABLED
