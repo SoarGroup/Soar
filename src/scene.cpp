@@ -794,7 +794,7 @@ const scene_sig &scene::get_signature() const {
 }
 
 void scene::get_relations(relation_table &rt) const {
-	tuple closest(2);
+	int_tuple closest(2);
 	vector<int> dirty_nodes;
 	
 	rt = type_rels;
@@ -947,7 +947,7 @@ void scene::cli_relations(const vector<string> &args, ostream &os) const {
 	
 	for (i = begin; i != end; ++i) {
 		relation r = i->second;
-		tuple t(1);
+		int_tuple t(1);
 		
 		for (int j = 0, jend = min(int(ids.size()), r.arity() - 1); j < jend; ++j) {
 			if (ids[j] != -1) {

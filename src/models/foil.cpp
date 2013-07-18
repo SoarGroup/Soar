@@ -12,7 +12,7 @@ void clause_vars(const clause &c, vector<int> &vars) {
 	vars.push_back(0);
 	vars.push_back(1);  // these should be used for every clause
 	for (int i = 0; i < c.size(); ++i) {
-		const tuple &args = c[i].get_args();
+		const int_tuple &args = c[i].get_args();
 		for (int j = 0; j < args.size(); ++j) {
 			if (args[j] >= 0 && !has(vars, args[j])) {
 				vars.push_back(args[j]);
@@ -128,7 +128,7 @@ private:
 	}
 	
 	void literal_to_constraint(const literal &l, const relation_table &rels, constraint_info &cons) {
-		const tuple &args = l.get_args();
+		const int_tuple &args = l.get_args();
 		const relation &r = map_get(rels, l.get_name());
 		cons.negated = l.negated();
 		cons.tuples = r;
@@ -167,7 +167,7 @@ private:
 		vector<bool> need_update(constraints.size(), false);
 		for (int i = 0; i < constraints.size(); ++i) {
 			constraint_info &cons = constraints[i];
-			tuple t(1, value);
+			int_tuple t(1, value);
 			for (int j = 0; j < cons.vars.size(); ++j) {
 				if (cons.vars[j] == v) {
 					cons.tuples.filter(j, t, false);
@@ -262,7 +262,7 @@ private:
 	int position, nbound;
 	literal lit;
 	std::vector<literal_tree*> children;
-	tuple vars_left;
+	int_tuple vars_left;
 	double gain, max_gain;
 	bool expanded;
 	literal_tree **best;
@@ -286,7 +286,7 @@ bool test_clause(const clause &c, const relation_table &rels, var_domains &domai
 	return true;
 }
 
-bool test_clause(const clause &c, const relation_table &rels, tuple &domains) {
+bool test_clause(const clause &c, const relation_table &rels, int_tuple &domains) {
 	var_domains d;
 	for (int i = 0, iend = domains.size(); i < iend; ++i) {
 		d[i].insert(domains[i]);
@@ -342,7 +342,7 @@ void fix_variables(int num_auto_bound, clause &c) {
 	}
 	for (int i = 0; i < c.size(); ++i) {
 		const literal &l = c[i];
-		const tuple &args = l.get_args();
+		const int_tuple &args = l.get_args();
 		for (int j = 0; j < args.size(); ++j) {
 			int v = args[j];
 			if (v < num_auto_bound) {
@@ -364,7 +364,7 @@ void fix_variables(int num_auto_bound, clause &c) {
 		}
 	}
 	for (int i = 0, iend = c.size(); i < iend; ++i) {
-		const tuple &args = c[i].get_args();
+		const int_tuple &args = c[i].get_args();
 		for (int j = 0, jend = args.size(); j < jend; ++j) {
 			if (args[j] >= 0) {
 				assert(args[j] == 0 || remap[args[j]] != 0);
@@ -566,7 +566,7 @@ bool FOIL::learn(bool prune, bool record_errors) {
 		return true;
 	}
 	clauses.clear();
-	tuple t;
+	int_tuple t;
 	t.push_back(0);
 	pos_left = pos;
 	dead = false;
@@ -605,7 +605,7 @@ bool FOIL::learn(bool prune, bool record_errors) {
 			relation covered_pos(train_dim);
 			relation::const_iterator i, iend;
 			for (i = pos_left.begin(), iend = pos_left.end(); i != iend; ++i) {
-				tuple t = *i;
+				int_tuple t = *i;
 				if (test_clause(ci.cl, *rels, t)) {
 					covered_pos.add(*i);
 					if (record_errors) {
@@ -615,7 +615,7 @@ bool FOIL::learn(bool prune, bool record_errors) {
 			}
 			if (record_errors) {
 				for (i = neg_test.begin(), iend = neg_test.end(); i != iend; ++i) {
-					tuple t = *i;
+					int_tuple t = *i;
 					if (test_clause(ci.cl, *rels, t)) {
 						ci.false_positives.add(t);
 					}
@@ -649,8 +649,8 @@ void FOIL::gain(const literal &l, double &g, double &maxg) const {
 	assert(ri != rels->end());
 	const relation &r = ri->second;
 	
-	const tuple &vars = l.get_args();
-	tuple bound_vars, bound_inds, new_inds;
+	const int_tuple &vars = l.get_args();
+	int_tuple bound_vars, bound_inds, new_inds;
 	for (int i = 0; i < vars.size(); ++i) {
 		if (vars[i] >= 0) {
 			bound_vars.push_back(vars[i]);
@@ -719,8 +719,8 @@ bool FOIL::choose_clause(clause &c, relation *neg_left) {
 		
 		loggers->get(LOG_FOIL) << endl << "CHOSE " << l << endl << endl;
 		const relation &r = get_rel(l.get_name());
-		const tuple &vars = l.get_args();
-		tuple bound_vars, bound_inds, new_inds;
+		const int_tuple &vars = l.get_args();
+		int_tuple bound_vars, bound_inds, new_inds;
 		for (int i = 0; i < vars.size(); ++i) {
 			if (vars[i] >= 0) {
 				bound_vars.push_back(vars[i]);
@@ -783,7 +783,7 @@ const relation &FOIL::get_rel(const string &name) const {
 }
 
 void FOIL::dump_foil6(ostream &os) const {
-	tuple zero(1, 0);
+	int_tuple zero(1, 0);
 	relation all_times_rel(1);
 	interval_set all_times, all_objs;
 	
@@ -916,7 +916,7 @@ literal_tree::literal_tree(const FOIL &foil, int nvars, literal_tree **best)
 }
 
 literal_tree::literal_tree(literal_tree *par, const string &name, const relation &r, bool negate)
-: foil(par->foil), best(par->best), lit(name, tuple(r.arity(), -1), negate),
+: foil(par->foil), best(par->best), lit(name, int_tuple(r.arity(), -1), negate),
   expanded(false), position(0), vars_left(par->vars_left.begin() + 1, par->vars_left.end()),
   nbound(1)
 {
@@ -928,7 +928,7 @@ literal_tree::literal_tree(literal_tree *par, int pos, int var)
 { 
 	lit.set_arg(position, var);
 	nbound = par->nbound + 1;
-	tuple::const_iterator i, iend;
+	int_tuple::const_iterator i, iend;
 	for (i = par->vars_left.begin(), iend = par->vars_left.end(); i != iend; ++i) {
 		if (*i != var) {
 			vars_left.push_back(*i);
@@ -973,7 +973,7 @@ int literal_tree::compare(const literal_tree *t) const {
 }
 
 void literal_tree::expand() {
-	const tuple &vars = lit.get_args();
+	const int_tuple &vars = lit.get_args();
 	for (int i = position + 1; i < vars.size(); ++i) {
 		if (vars[i] >= 0) {
 			continue;

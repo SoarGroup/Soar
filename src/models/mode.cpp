@@ -207,7 +207,7 @@ void em_mode::learn_obj_clauses(const relation_table &rels) const {
 	for (int i = 1; i < sig.size(); ++i) {   // 0 is always target, no need to map
 		string type = sig[i].type;
 		relation pos_obj(3), neg_obj(3);
-		tuple objs(2);
+		int_tuple objs(2);
 
 		for (int j = 0, jend = obj_maps.size(); j < jend; ++j) {
 			const vector<int> &m = obj_maps[j].obj_map;

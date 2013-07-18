@@ -11,7 +11,7 @@ void print_first_arg(const relation &r, ostream &os) {
 	os << first;
 }
 
-void extract_vec(const tuple &t, const rvec &x, const scene_sig &sig, rvec &out) {
+void extract_vec(const int_tuple &t, const rvec &x, const scene_sig &sig, rvec &out) {
 	out.resize(x.size());
 	int end = 0, s, n;
 	for (int i = 1, iend = t.size(); i < iend; ++i) {
@@ -41,7 +41,7 @@ num_classifier *learn_numeric_classifier(int type, const relation &pos, const re
 	}
 	
 	// figure out matrix columns
-	tuple t = *pos.begin();
+	int_tuple t = *pos.begin();
 	rvec xpart;
 	extract_vec(t, data.get_inst(t[0]).x, *data.get_inst(t[0]).sig, xpart);
 	int ncols = xpart.size();

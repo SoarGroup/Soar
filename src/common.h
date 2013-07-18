@@ -15,7 +15,7 @@
 #include <cassert>
 #include <limits>
 
-typedef std::vector<int> tuple;
+typedef std::vector<int> int_tuple;
 
 
 #ifdef NAN
