@@ -26,6 +26,8 @@
 #ifndef RHS_H_
 #define RHS_H_
 
+#include "kernel.h"
+
 typedef struct rhs_struct {
   Symbol *referent;
   Symbol *original_rhs_variable;
@@ -72,6 +74,22 @@ typedef unsigned short rete_node_level;
 #define O_SUPPORT 1
 #define I_SUPPORT 2
 
+/* -- Forward declarations -- */
+typedef struct condition_struct condition;
+typedef struct cons_struct cons;
+typedef cons list;
+Symbol *var_bound_in_reconstructed_conds (
+          agent* thisAgent,
+          condition *cond,
+          byte where_field_num,
+          rete_node_level where_levels_up);
+Symbol *var_bound_in_reconstructed_original_conds (
+          agent* thisAgent,
+          condition *cond,
+          byte where_field_num,
+          rete_node_level where_levels_up);
+
+/* -- RHS Action struct == */
 typedef struct action_struct {
   struct action_struct *next;
   byte type;

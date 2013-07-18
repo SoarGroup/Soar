@@ -28,6 +28,7 @@
 #include "wmem.h"
 #include "agent.h"
 #include "soar_TraceNames.h"
+#include "test.h"
 #include "wma.h"
 
 wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);

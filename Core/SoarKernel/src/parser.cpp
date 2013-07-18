@@ -37,6 +37,7 @@
 #include "xml.h"
 #include "reinforcement_learning.h"
 #include "semantic_memory.h"
+#include "test.h"
 
 #include <ctype.h>
 

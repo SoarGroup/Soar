@@ -69,8 +69,10 @@ typedef struct wme_struct wme;
 typedef struct rete_node_struct rete_node;
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
-
+typedef struct cons_struct cons;
 typedef char varnames;
+typedef cons list;
+extern void abort_with_fatal_error_noprint (const char *msg);
 
 inline varnames * one_var_to_varnames(Symbol * x) { return reinterpret_cast<varnames *>(x); }
 inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varnames *>(reinterpret_cast<char *>(x) + 1); }
@@ -78,6 +80,218 @@ inline uint64_t varnames_is_var_list(varnames * x) { return reinterpret_cast<uin
 inline bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
 inline Symbol * varnames_to_one_var(varnames * x) { return reinterpret_cast<Symbol *>(x); }
 inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(static_cast<char *>(x) - 1); }
+
+/* --- tells where to find a variable --- */
+typedef unsigned short rete_node_level;
+Symbol *var_bound_in_reconstructed_conds (
+          agent* thisAgent,
+          condition *cond,
+          byte where_field_num,
+          rete_node_level where_levels_up);
+Symbol *var_bound_in_reconstructed_original_conds (
+          agent* thisAgent,
+          condition *cond,
+          byte where_field_num,
+          rete_node_level where_levels_up);
+
+/* ----------------------------------------------------------------------
+
+       Structures and Declarations:  Alpha Portion of the Rete Net
+
+---------------------------------------------------------------------- */
+
+/* --- types and structure of beta nodes --- */
+/*   key:  bit 0 --> hashed                  */
+/*         bit 1 --> memory                  */
+/*         bit 2 --> positive join           */
+/*         bit 3 --> negative join           */
+/*         bit 4 --> split from beta memory  */
+/*         bit 6 --> various special types   */
+
+/* Warning: If you change any of these or add ones, be sure to update the
+   bit-twiddling macros just below */
+#define UNHASHED_MEMORY_BNODE   0x02
+#define MEMORY_BNODE            0x03
+#define UNHASHED_MP_BNODE       0x06
+#define MP_BNODE                0x07
+#define UNHASHED_POSITIVE_BNODE 0x14
+#define POSITIVE_BNODE          0x15
+#define UNHASHED_NEGATIVE_BNODE 0x08
+#define NEGATIVE_BNODE          0x09
+#define DUMMY_TOP_BNODE         0x40
+#define DUMMY_MATCHES_BNODE     0x41
+#define CN_BNODE                0x42
+#define CN_PARTNER_BNODE        0x43
+#define P_BNODE                 0x44
+
+/* --- dll of all wmes currently in the rete:  this is needed to
+       initialize newly created alpha memories --- */
+/* wme *all_wmes_in_rete; (moved to glob_vars.h) */
+
+/* --- structure of each alpha memory --- */
+typedef struct alpha_mem_struct {
+  struct alpha_mem_struct *next_in_hash_table;  /* next mem in hash bucket */
+  struct right_mem_struct *right_mems;  /* dll of right_mem structures */
+  struct rete_node_struct *beta_nodes;  /* list of attached beta nodes */
+  struct rete_node_struct *last_beta_node; /* tail of above dll */
+  Symbol *id;                  /* constants tested by this alpha mem */
+  Symbol *attr;                /* (NIL if this alpha mem ignores that field) */
+  Symbol *value;
+  bool acceptable;             /* does it test for acceptable pref? */
+  uint32_t am_id;            /* id for hashing */
+  uint64_t reference_count;  /* number of beta nodes using this mem */
+  uint64_t retesave_amindex;
+} alpha_mem;
+
+/* --- the entry for one WME in one alpha memory --- */
+typedef struct right_mem_struct {
+  wme *w;                      /* the wme */
+  alpha_mem *am;               /* the alpha memory */
+  struct right_mem_struct *next_in_bucket, *prev_in_bucket; /*hash bucket dll*/
+  struct right_mem_struct *next_in_am, *prev_in_am;       /*rm's in this amem*/
+  struct right_mem_struct *next_from_wme, *prev_from_wme; /*tree-based remove*/
+} right_mem;
+
+/* Note: right_mem's are stored in hash table thisAgent->right_ht */
+
+typedef struct var_location_struct {
+  rete_node_level levels_up; /* 0=current node's alphamem, 1=parent's, etc. */
+  byte field_num;            /* 0=id, 1=attr, 2=value */
+} var_location;
+
+
+/* --- gives data for a test that must be applied at a node --- */
+typedef struct rete_test_struct {
+  byte right_field_num;          /* field (0, 1, or 2) from wme */
+  byte type;                     /* test type (ID_IS_GOAL_RETE_TEST, etc.) */
+  union rete_test_data_union {
+    var_location variable_referent;   /* for relational tests to a variable */
+    Symbol *constant_referent;        /* for relational tests to a constant */
+    list *disjunction_list;           /* list of symbols in disjunction test */
+  } data;
+  struct rete_test_struct *next; /* next in list of tests at the node */
+} rete_test;
+
+/* --- data for positive nodes only --- */
+typedef struct pos_node_data_struct {
+  /* --- dll of left-linked pos nodes from the parent beta memory --- */
+  struct rete_node_struct *next_from_beta_mem, *prev_from_beta_mem;
+} pos_node_data;
+
+/* --- data for both positive and negative nodes --- */
+typedef struct posneg_node_data_struct {
+  rete_test *other_tests; /* tests other than the hashed test */
+  alpha_mem *alpha_mem_;  /* the alpha memory this node uses */
+  struct rete_node_struct *next_from_alpha_mem; /* dll of nodes using that */
+  struct rete_node_struct *prev_from_alpha_mem; /*   ... alpha memory */
+  struct rete_node_struct *nearest_ancestor_with_same_am;
+} posneg_node_data;
+
+/* --- data for beta memory nodes only --- */
+typedef struct beta_memory_node_data_struct {
+  /* --- first pos node child that is left-linked --- */
+  struct rete_node_struct *first_linked_child;
+} beta_memory_node_data;
+
+/* --- data for cn and cn_partner nodes only --- */
+typedef struct cn_node_data_struct {
+  struct rete_node_struct *partner;    /* cn, cn_partner point to each other */
+} cn_node_data;
+
+/* --- data for production nodes only --- */
+typedef struct p_node_data_struct {
+  struct production_struct *prod;                  /* the production */
+  struct node_varnames_struct *parents_nvn;        /* records variable names */
+  struct ms_change_struct *tentative_assertions;   /* pending MS changes */
+  struct ms_change_struct *tentative_retractions;
+} p_node_data;
+
+#define O_LIST 0     /* moved here from soarkernel.h.  only used in rete.cpp */
+#define I_LIST 1     /*   values for prod->OPERAND_which_assert_list */
+
+/* --- data for all except positive nodes --- */
+typedef struct non_pos_node_data_struct {
+  struct token_struct *tokens;           /* dll of tokens at this node */
+  unsigned is_left_unlinked:1;           /* used on mp nodes only */
+} non_pos_node_data;
+
+/* --- structure of a rete beta node --- */
+typedef struct rete_node_struct {
+  byte node_type;                  /* tells what kind of node this is */
+
+  /* -- used only on hashed nodes -- */
+  /* field_num: 0=id, 1=attr, 2=value */
+  byte left_hash_loc_field_num;
+  /* left_hash_loc_levels_up: 0=current node's alphamem, 1=parent's, etc. */
+  rete_node_level left_hash_loc_levels_up;
+  /* node_id: used for hash function */
+  uint32_t node_id;
+
+#ifdef SHARING_FACTORS
+  uint64_t sharing_factor;
+#endif
+
+  struct rete_node_struct *parent;       /* points to parent node */
+  struct rete_node_struct *first_child;  /* used for dll of all children, */
+  struct rete_node_struct *next_sibling; /*   regardless of unlinking status */
+  union rete_node_a_union {
+    pos_node_data pos;                   /* for pos. nodes */
+    non_pos_node_data np;                /* for all other nodes */
+  } a;
+  union rete_node_b_union {
+    posneg_node_data posneg;            /* for pos, neg, mp nodes */
+    beta_memory_node_data mem;          /* for beta memory nodes */
+    cn_node_data cn;                    /* for cn, cn_partner nodes */
+    p_node_data p;                      /* for p nodes */
+  } b;
+} rete_node;
+
+//
+// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
+//
+/* --- for the last two (i.e., the relational tests), we add in one of
+       the following, to specifiy the kind of relation --- */
+#define RELATIONAL_EQUAL_RETE_TEST            0x00
+#define RELATIONAL_NOT_EQUAL_RETE_TEST        0x01
+#define RELATIONAL_LESS_RETE_TEST             0x02
+#define RELATIONAL_GREATER_RETE_TEST          0x03
+#define RELATIONAL_LESS_OR_EQUAL_RETE_TEST    0x04
+#define RELATIONAL_GREATER_OR_EQUAL_RETE_TEST 0x05
+#define RELATIONAL_SAME_TYPE_RETE_TEST        0x06
+
+/* --- types of tests found at beta nodes --- */
+#define CONSTANT_RELATIONAL_RETE_TEST 0x00
+#define VARIABLE_RELATIONAL_RETE_TEST 0x10
+#define DISJUNCTION_RETE_TEST         0x20
+#define ID_IS_GOAL_RETE_TEST          0x30
+#define ID_IS_IMPASSE_RETE_TEST       0x31
+//#define test_is_constant_relational_test(x) (((x) & 0xF0)==0x00)
+//#define test_is_variable_relational_test(x) (((x) & 0xF0)==0x10)
+
+inline bool test_is_constant_relational_test(byte x)
+{
+  return (((x) & 0xF0)==CONSTANT_RELATIONAL_RETE_TEST);
+}
+
+inline bool test_is_variable_relational_test(byte x)
+{
+  return (((x) & 0xF0)==VARIABLE_RELATIONAL_RETE_TEST);
+}
+
+
+//#define kind_of_relational_test(x) ((x) & 0x0F)
+//#define test_is_not_equal_test(x) (((x)==0x01) || ((x)==0x11))
+
+inline byte kind_of_relational_test(byte x)
+{
+  return ((x) & 0x0F);
+}
+
+inline bool test_is_not_equal_test(byte x)
+{
+  return (((x)==(CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST))
+      || ((x)==(VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST)));
+}
 
 typedef struct three_field_varnames_struct {
   varnames *id_varnames;
@@ -180,19 +394,6 @@ extern bool load_rete_net (agent* thisAgent, FILE *source_file);
    able to do bit-twiddling on the RETE_TEST types.
 
 --------------------------------------------------------------------- */
-
-//
-// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
-//
-/* --- for the last two (i.e., the relational tests), we add in one of
-       the following, to specifiy the kind of relation --- */
-#define RELATIONAL_EQUAL_RETE_TEST            0x00
-#define RELATIONAL_NOT_EQUAL_RETE_TEST        0x01
-#define RELATIONAL_LESS_RETE_TEST             0x02
-#define RELATIONAL_GREATER_RETE_TEST          0x03
-#define RELATIONAL_LESS_OR_EQUAL_RETE_TEST    0x04
-#define RELATIONAL_GREATER_OR_EQUAL_RETE_TEST 0x05
-#define RELATIONAL_SAME_TYPE_RETE_TEST        0x06
 
 inline TestType relational_test_type_to_test_type(byte test_type)
 {

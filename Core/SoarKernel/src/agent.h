@@ -997,7 +997,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 } agent;
 /*************** end of agent struct *****/
 
-void init_soar_agent(agent* thisAgent);
+/* -- MToDo | This stuff should probably be somewhere else -- */
 
 template <typename T>
 inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer)
@@ -1021,8 +1021,9 @@ inline void push(agent* thisAgent, P item, T * & list_header)
   (list_header) = push_cons_xy298;
 }
 
-extern agent * create_soar_agent (char * name);
-extern void    destroy_soar_agent (agent* soar_agent);
+extern void     init_soar_agent(agent* thisAgent);
+extern agent *  create_soar_agent (char * name);
+extern void     destroy_soar_agent (agent* soar_agent);
 
 /* Ideally, this should be in "lexer.h", but to avoid circular dependencies
    among header files, I am forced to put it here. */

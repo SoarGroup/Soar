@@ -46,9 +46,6 @@
 #include <stdio.h>	// Needed for FILE token below
 #include "gdatastructs.h"
 
-/* --- size of output buffer for a single call to one of these routines --- */
-#define PRINT_BUFSIZE 5000   /* This better be large enough!! */
-
 typedef struct test_struct test_info;
 typedef test_info * test;
 typedef char * rhs_value;

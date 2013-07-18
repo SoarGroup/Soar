@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -34,11 +34,12 @@
 #include "production.h"
 #include "gdatastructs.h"
 #include "print.h"
+#include "rhs.h"
 
-/* Define the "local" globals if that makes sense.   
-   (Only accessed in this file) 
-   The backtrace_list is built up until a call is made to create a new    
-   entry in the chunk_list.  At that time the current backtrace list is   
+/* Define the "local" globals if that makes sense.
+   (Only accessed in this file)
+   The backtrace_list is built up until a call is made to create a new
+   entry in the chunk_list.  At that time the current backtrace list is
    included in that structure and a new backtrace list begun.           */
 
 /* static explain_chunk_str *explain_chunk_list;
@@ -48,7 +49,7 @@
 
 /* AGR 564  This bug report came complete with fixes from Frank Koss.
    So, I just implemented the fixes.  The files with changes in them
-   for this bug are explain.c, explain.h, 
+   for this bug are explain.c, explain.h,
    init_soar.c, interface.c, and soarkernel.h.  AGR 564 2-May-94  */
 
 /***************************************************************************
@@ -189,7 +190,7 @@ backtrace_str *back;
 **************************************************************************/
 
 void explain_add_temp_to_chunk_list(agent* thisAgent, explain_chunk_str *temp) {
-   
+
 explain_chunk_str *chunk;
 
   chunk = static_cast<explain_chunk_str *>(malloc(sizeof (explain_chunk_str)));
@@ -215,7 +216,7 @@ explain_chunk_str *chunk;
  * Function     : free_explain_chunk
  **************************************************************************/
 
-/* Note - the calling procedure must ensure that the list which "chunk" is   
+/* Note - the calling procedure must ensure that the list which "chunk" is
           a part of is correctly updated to allow for its removal.         */
 
 void free_explain_chunk(agent* thisAgent, explain_chunk_str *chunk) {
@@ -236,7 +237,7 @@ void free_explain_chunk(agent* thisAgent, explain_chunk_str *chunk) {
  **************************************************************************/
 
 void reset_explain (agent* thisAgent) {
-   
+
   explain_chunk_str *top, *chunk;
 
   top = thisAgent->explain_chunk_list;
@@ -264,7 +265,7 @@ void reset_explain (agent* thisAgent) {
 explain_chunk_str *find_chunk(agent* thisAgent, explain_chunk_str *chunk, char *name) {
 
   while (chunk != NULL) {
-    if (strcmp(chunk->name,name) == 0) 
+    if (strcmp(chunk->name,name) == 0)
        return(chunk);
     chunk = chunk->next_chunk;
   }
@@ -289,8 +290,8 @@ condition *find_ground(agent* thisAgent, explain_chunk_str *chunk, int number) {
   ground = NIL;  /* unnecessary, but gcc -Wall warns without it */
   for (cond = chunk->all_grounds; cond != NIL; cond = cond->next) {
     number--;
-    if (number == 0) 
-     ground = cond; 
+    if (number == 0)
+     ground = cond;
   }
   if (number > 0) {
     print(thisAgent,  "Could not find this condition.\n");
@@ -352,7 +353,7 @@ explain_chunk_str *chunk;
  **************************************************************************/
 
 condition *explain_find_cond(condition *target, condition *cond_list) {
-   
+
 condition *cond, *match;
 
   match = NULL;
@@ -370,17 +371,17 @@ condition *cond, *match;
  **************************************************************************/
 
 void explain_trace(agent* thisAgent, char *chunk_name, backtrace_str *prod_list, condition *ground) {
-   
+
 int count;
 condition *match, *target;
 backtrace_str *prod;
 
-  /* Find which prod. inst. tested the ground originally to get   
-  it included in the chunk.                                    
-  Need to check potentials too, in case they got included      
+  /* Find which prod. inst. tested the ground originally to get
+  it included in the chunk.
+  Need to check potentials too, in case they got included
   later on.                                                  */
 
-  prod = prod_list; 
+  prod = prod_list;
   match = NULL;
   while (prod != NULL && match == NULL)
   {
@@ -403,19 +404,19 @@ backtrace_str *prod;
   print_condition(thisAgent, match);
   print(thisAgent,  " which caused\n");
 
-  /* Trace back the series of productions to find which one                   
-  caused the matched condition to be created.                              
-  Build in a safety limit of tracing 50 productions before cancelling.     
-  This is in case there is a loop in the search procedure somehow or       
-  a really long sequence of production firings.  Either way you probably   
+  /* Trace back the series of productions to find which one
+  caused the matched condition to be created.
+  Build in a safety limit of tracing 50 productions before cancelling.
+  This is in case there is a loop in the search procedure somehow or
+  a really long sequence of production firings.  Either way you probably
   don't want to see more than 50 lines of junk....                       */
 
-  target = prod->trace_cond; 
+  target = prod->trace_cond;
   count = 0;
 
   while (prod->result == false && count < 50 && match != NULL) {
-    prod = prod_list; 
-    match = NULL; 
+    prod = prod_list;
+    match = NULL;
     count++;
     while (prod != NULL && match == NULL) {
        match = explain_find_cond(target,prod->locals);
@@ -475,7 +476,7 @@ condition *ground;
  **************************************************************************/
 
 void explain_cond_list(agent* thisAgent, char *chunk_name) {
-   
+
 explain_chunk_str *chunk;
 condition *cond, *ground;
 int i;
@@ -495,7 +496,7 @@ int i;
 
   /* Then list each condition and the associated "ground" WME */
 
-  i = 0; 
+  i = 0;
   ground = chunk->all_grounds;
 
   for (cond = chunk->conds; cond != NIL; cond = cond->next) {
@@ -503,7 +504,7 @@ int i;
     print_condition(thisAgent, cond);
     while (get_printer_output_column(thisAgent) < COLUMNS_PER_LINE-40)
       print(thisAgent,  " ");
-	
+
     print(thisAgent,  " Ground :");
     print_condition(thisAgent, ground);
     print(thisAgent,  "\n");
@@ -547,7 +548,7 @@ explain_chunk_str *chunk;
 
   while (chunk != NULL) {
     explain_trace_chunk(thisAgent, chunk);
-    chunk = chunk->next_chunk; 
+    chunk = chunk->next_chunk;
   }
 }
 

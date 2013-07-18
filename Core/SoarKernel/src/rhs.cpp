@@ -18,6 +18,9 @@
 #include "production.h"
 #include "kernel.h"
 #include "gdatastructs.h"
+#include "agent.h"
+#include "print.h"
+#include "production.h"
 
 /* =================================================================
 
@@ -184,7 +187,7 @@ void add_all_variables_in_rhs_value (agent* thisAgent,
     /* --- ordinary values (i.e., symbols) --- */
     sym = rhs_value_to_symbol(rv);
     if (sym->symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
+      sym->mark_if_unmarked(thisAgent, tc, var_list);
   } else {
     /* --- function calls --- */
     fl = rhs_value_to_funcall_list(rv);
@@ -201,7 +204,7 @@ void add_all_variables_in_action (agent* thisAgent, action *a,
     /* --- ordinary make actions --- */
     id = rhs_value_to_symbol(a->id);
     if (id->symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, id, tc, var_list);
+      id->mark_if_unmarked(thisAgent, tc, var_list);
     add_all_variables_in_rhs_value (thisAgent, a->attr, tc, var_list);
     add_all_variables_in_rhs_value (thisAgent, a->value, tc, var_list);
     if (preference_is_binary(a->preference_type))
@@ -241,7 +244,7 @@ void add_bound_variables_in_rhs_value (agent* thisAgent,
     /* --- ordinary values (i.e., symbols) --- */
     sym = rhs_value_to_symbol(rv);
     if (sym->symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
+      sym->mark_if_unmarked(thisAgent, tc, var_list);
   } else {
     /* --- function calls --- */
     fl = rhs_value_to_funcall_list(rv);

@@ -808,7 +808,7 @@ void get_lexeme (agent* thisAgent) {
 
 #ifdef DEBUG_TRACE_PARSER
   print(thisAgent,  "Parser| get_lexeme read ");
-  print_current_lexeme(thisAgent);
+  debug_print_current_lexeme(thisAgent);
 #endif
 
 }

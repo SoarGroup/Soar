@@ -38,7 +38,7 @@
 #include "reorder.h"
 #include "rete.h"
 #include "xml.h"
-
+#include "test.h"
 /* -----------------------------------------------------------------------
                   O-Support Transitive Closure Routines
 

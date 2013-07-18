@@ -36,7 +36,7 @@
 #include "init_soar.h"
 #include "print.h"
 #include "xml.h"
-#include "soar_TraceNames.h"
+#include "instantiations.h"
 
 #include <ctype.h>
 
@@ -966,24 +966,6 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_greater_or_equal ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_max ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_math_query_min ) );
-}
-
-inline char const* Symbol::type_string()
-{
-  switch(symbol_type) {
-  case VARIABLE_SYMBOL_TYPE:
-    return soar_TraceNames::kTypeVariable ;
-  case IDENTIFIER_SYMBOL_TYPE:
-    return soar_TraceNames::kTypeID ;
-  case INT_CONSTANT_SYMBOL_TYPE:
-    return soar_TraceNames::kTypeInt ;
-  case FLOAT_CONSTANT_SYMBOL_TYPE:
-    return soar_TraceNames::kTypeDouble ;
-  case STR_CONSTANT_SYMBOL_TYPE:
-    return soar_TraceNames::kTypeString ;
-  default:
-    return 0 ;
-  }
 }
 
 const char *Symbol::to_string (agent *thisAgent, bool rereadable) {

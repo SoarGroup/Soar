@@ -8,6 +8,7 @@
 
 
 //#include "gdatastructs.h"
+#include "kernel.h"
 
 /* -------------------------------------------------------------------
                               Tests
@@ -23,6 +24,18 @@
          types to chunks.  The previous system differed significantly.
          - MMA 2013
 ------------------------------------------------------------------- */
+
+/* -- Forward declarations --- */
+typedef struct node_varnames_struct node_varnames;
+typedef struct condition_struct condition;
+typedef struct wme_struct wme;
+typedef struct rete_node_struct rete_node;
+typedef struct rete_test_struct rete_test;
+typedef char varnames;
+typedef unsigned short rete_node_level;
+typedef struct cons_struct cons;
+typedef cons list;
+template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer);
 
 /* --- Test struct stores information about all test types, including
  *     equality tests.  If nil, the test is considered blank.
@@ -43,21 +56,12 @@ typedef struct test_struct {
   } data;
   test_struct *original_test;
 
-  test assign(agent* thisAgent, test_struct *new_test);
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is
  *     considered blank when that pointer is nil. --- */
 typedef test_info * test;
 
-/* -- Some forward declarations from rete that are needed --- */
-typedef struct node_varnames_struct node_varnames;
-typedef struct condition_struct condition;
-typedef struct wme_struct wme;
-typedef struct rete_node_struct rete_node;
-typedef struct rete_test_struct rete_test;
-typedef char varnames;
-typedef unsigned short rete_node_level;
 
 /* --- Descriptions of these functions can be found in the test.cpp --- */
 inline bool test_is_blank(test t){return (t == 0);}
@@ -77,16 +81,6 @@ void deallocate_test (agent* thisAgent, test t, long indent=0);
 test copy_test (agent* thisAgent, test t);
 test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *removed_goal, bool *removed_impasse);
 
-/* -- Since test don't use refcounts, this function is an attempt to look for leaks due from not
- *    deallocating an existing test when creating a new one. Havent actually used it.*/
-
-inline test test_info::assign(agent* thisAgent, test_struct *new_test) {
-  if (this != NULL) {
-    dprint(DT_DEBUG, "Note a test already exists in this variable!!!  Deallocating test.\n");
-    deallocate_test(thisAgent, this, 0);
-  }
-  return new_test;
-}
 
 #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
 void add_new_test_to_test_func (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
@@ -111,7 +105,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
 void add_all_variables_in_test (agent* thisAgent, test t, tc_number tc, list **var_list);
 void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc, ::list **var_list);
 
-extern const char *test_type_to_string(byte test_type);
+//extern const char *test_type_to_string(byte test_type);
 extern void print_test (agent* thisAgent, test t, const char *indent_string = "        ", const char *conj_indent_string = "+ ");
 extern void print_test_brief (agent* thisAgent, test t, bool trailing_space=true);
 

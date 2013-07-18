@@ -10,10 +10,12 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
+#include "kernel.h"
 
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef struct symbol_struct Symbol;
+typedef struct action_struct action;
 struct not_struct;
 
 /* RBD Need more comments here */
@@ -57,6 +59,9 @@ extern void add_results_for_id (agent* thisAgent, Symbol *id);
 
 extern void variablize_symbol (agent* thisAgent, Symbol **sym);
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
+extern void reverse_unbound_lhs_referents (agent* thisAgent, condition *lhs_top, tc_number tc);
+extern void reverse_unbound_lhs_referents (agent* thisAgent, condition *lhs_top, tc_number tc);
+extern void reverse_rhs_action_list (agent* thisAgent, action *rhs_top, tc_number tc);
 
 #endif
 

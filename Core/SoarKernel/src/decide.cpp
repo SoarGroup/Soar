@@ -44,6 +44,7 @@
 #include "decision_manipulation.h"
 #include "wma.h"
 #include "misc.h"
+#include "test.h"
 
 #include "episodic_memory.h"
 #include "semantic_memory.h"

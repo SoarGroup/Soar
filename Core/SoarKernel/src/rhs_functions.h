@@ -31,14 +31,12 @@
 #ifndef RHSFUN_H
 #define RHSFUN_H
 
-// Debug| Don't think these are needed any longer.  Other includes now provide. Remove.
-//
-//typedef unsigned char byte;
-//typedef struct agent_struct agent;
-//typedef unsigned char byte;
-//typedef struct cons_struct cons;
-//typedef cons list;
-//typedef struct symbol_struct Symbol;
+typedef unsigned char byte;
+typedef struct agent_struct agent;
+typedef unsigned char byte;
+typedef struct cons_struct cons;
+typedef cons list;
+typedef struct symbol_struct Symbol;
 
 typedef Symbol * ((*rhs_function_routine)(agent* thisAgent, ::list *args, void* user_data));
 
