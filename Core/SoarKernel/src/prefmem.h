@@ -37,9 +37,6 @@
 #ifndef PREFMEM_H
 #define PREFMEM_H
 
-#include "gdatastructs.h"
-
-
 typedef unsigned char byte;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;

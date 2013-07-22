@@ -44,12 +44,11 @@
 #define PRINT_H
 
 #include <stdio.h>	// Needed for FILE token below
-#include "gdatastructs.h"
+#include "kernel.h"
 
 typedef struct test_struct test_info;
 typedef test_info * test;
 typedef char * rhs_value;
-typedef unsigned char byte;
 typedef byte wme_trace_type;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
@@ -59,6 +58,8 @@ typedef struct preference_struct preference;
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef struct symbol_struct Symbol;
+
+extern void dprint (TraceMode mode, const char *format, ... );
 
 typedef struct wme_filter_struct {
     Symbol *id;

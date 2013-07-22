@@ -57,8 +57,6 @@
 #include <stdio.h>	// Needed for FILE token below
 #include "kernel.h"
 
-
-typedef unsigned char byte;
 typedef byte wme_trace_type;
 typedef byte ms_trace_type;
 typedef struct instantiation_struct instantiation;

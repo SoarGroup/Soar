@@ -20,25 +20,18 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#ifndef GSYSPARAMS_H
-#include"gsysparam.h"
-#endif
-
+#include "gsysparam.h"
 #include "kernel.h"
 #include "init_soar.h"
+#include "soar_module.h"
 #include "mem.h"
 #include "lexer.h"
 #include "callback.h"
-#include <map>
-
-#include "soar_module.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-#include "output_manager.h"
-#include "debug.h"
 
 #include <string>
 #include <map>
@@ -70,6 +63,8 @@ typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
 typedef struct rhs_function_struct rhs_function;
 typedef struct select_info_struct select_info;
+class debug_param_container;
+class Output_Manager;
 
 class debug_param_container;
 

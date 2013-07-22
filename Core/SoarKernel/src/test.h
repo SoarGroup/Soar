@@ -1,17 +1,6 @@
 #include <portability.h>
 /* -------------------------------------------------------------------
                               test.h
-                          Utilities for tests
-------------------------------------------------------------------- */
-#ifndef TEST_H_
-#define TEST_H_
-
-
-//#include "gdatastructs.h"
-#include "kernel.h"
-
-/* -------------------------------------------------------------------
-                              Tests
 
    Tests in conditions can be blank tests (null), tests for equality
    with a symbol, relational tests with a referent symbol, disjunctive
@@ -25,6 +14,11 @@
          - MMA 2013
 ------------------------------------------------------------------- */
 
+#ifndef TEST_H_
+#define TEST_H_
+
+#include "kernel.h"
+
 /* -- Forward declarations --- */
 typedef struct node_varnames_struct node_varnames;
 typedef struct condition_struct condition;
@@ -35,6 +29,8 @@ typedef char varnames;
 typedef unsigned short rete_node_level;
 typedef struct cons_struct cons;
 typedef cons list;
+typedef struct agent_struct agent;
+typedef struct symbol_struct Symbol;
 template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer);
 
 /* --- Test struct stores information about all test types, including

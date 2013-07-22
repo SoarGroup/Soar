@@ -33,7 +33,6 @@
 
 typedef unsigned char byte;
 typedef struct agent_struct agent;
-typedef unsigned char byte;
 typedef struct cons_struct cons;
 typedef cons list;
 typedef struct symbol_struct Symbol;

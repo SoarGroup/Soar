@@ -28,7 +28,6 @@
 
 #include "callback.h"
 
-
 typedef unsigned char byte;
 typedef struct cons_struct cons;
 typedef struct wme_struct wme;

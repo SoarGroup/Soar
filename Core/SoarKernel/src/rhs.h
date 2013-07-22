@@ -28,6 +28,13 @@
 
 #include "kernel.h"
 
+/* -- Forward declarations -- */
+typedef struct condition_struct condition;
+typedef struct cons_struct cons;
+typedef cons list;
+typedef struct agent_struct agent;
+typedef struct symbol_struct Symbol;
+
 typedef struct rhs_struct {
   Symbol *referent;
   Symbol *original_rhs_variable;
@@ -74,10 +81,6 @@ typedef unsigned short rete_node_level;
 #define O_SUPPORT 1
 #define I_SUPPORT 2
 
-/* -- Forward declarations -- */
-typedef struct condition_struct condition;
-typedef struct cons_struct cons;
-typedef cons list;
 Symbol *var_bound_in_reconstructed_conds (
           agent* thisAgent,
           condition *cond,

@@ -11,13 +11,13 @@
 #ifndef REORDER_H
 #define REORDER_H
 
-
 typedef uint64_t tc_number;
 typedef struct cons_struct cons;
 typedef struct agent_struct agent;
 typedef struct action_struct action;
 typedef struct condition_struct condition;
 typedef cons list;
+typedef struct symbol_struct Symbol;
 
 extern bool reorder_action_list (agent* thisAgent, action **action_list, tc_number lhs_tc);
 extern bool reorder_lhs (agent* thisAgent, condition **lhs_top,

@@ -135,6 +135,8 @@
 #include <stdlib.h> // malloc
 #endif // !_WIN32
 
+typedef struct agent_struct agent;
+
 extern void init_memory_utilities (agent* thisAgent);
 
 /* ----------------------- */
