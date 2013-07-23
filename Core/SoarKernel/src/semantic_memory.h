@@ -56,7 +56,7 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
-		smem_path_param *path;
+		soar_module::path_param *path;
 		soar_module::boolean_param *lazy_commit;
 		soar_module::boolean_param *append_db;
 
@@ -81,16 +81,6 @@ class smem_param_container: public soar_module::param_container
 		soar_module::boolean_param* mirroring;
 
 		smem_param_container( agent *new_agent );
-};
-
-class smem_path_param: public soar_module::string_param
-{
-	protected:
-		agent *thisAgent;
-
-	public:
-		smem_path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent );
-		virtual void set_value( const char *new_value );
 };
 
 template <typename T>

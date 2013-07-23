@@ -107,7 +107,7 @@ class epmem_param_container: public soar_module::param_container
 
 		// storage
 		soar_module::constant_param<soar_module::db_choices> *database;
-		epmem_path_param *path;
+		soar_module::path_param *path;
 		soar_module::boolean_param *lazy_commit;
 		soar_module::boolean_param *append_db;
 
@@ -126,16 +126,6 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::constant_param<merge_choices>* merge;
 
 		epmem_param_container( agent *new_agent );
-};
-
-class epmem_path_param: public soar_module::string_param
-{
-	protected:
-		agent *thisAgent;
-
-	public:
-		epmem_path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent );
-		virtual void set_value( const char *new_value );
 };
 
 template <typename T>
