@@ -82,7 +82,7 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *remo
 void add_new_test_to_test_func (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
 #define add_new_test_to_test(thisAgent, t, add_me, add_me_original) \
         do { \
-                printf("Debug | add_new_test_to_test called from %s\n", __func__); \
+                dprint(DT_DEBUG, "add_new_test_to_test called from %s\n", __func__); \
                 add_new_test_to_test_func(thisAgent, t, add_me, add_me_original); \
         } while (0)
 #else
@@ -101,7 +101,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
 void add_all_variables_in_test (agent* thisAgent, test t, tc_number tc, list **var_list);
 void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc, ::list **var_list);
 
-//extern const char *test_type_to_string(byte test_type);
+extern const char *test_type_to_string(byte test_type);
 extern void print_test (agent* thisAgent, test t, const char *indent_string = "        ", const char *conj_indent_string = "+ ");
 extern void print_test_brief (agent* thisAgent, test t, bool trailing_space=true);
 

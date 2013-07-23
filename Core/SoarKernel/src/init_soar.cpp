@@ -65,26 +65,12 @@ int64_t lapse_duration;
 
                             Exiting Soar
 
-   Exit_soar() and abort_with_fatal_error(msg) both terminate Soar, closing
-   the log file before exiting.  Abort_with_fatal_error(msg) also prints
+   Abort_with_fatal_error(msg) terminates Soar, closing
+   the log file before exiting.  It also prints
    an error message and tries to write a file before exiting.
 =================================================================== */
 
-// JRV: these functions are no longer used with SML
-//void just_before_exit_soar (agent* thisAgent) {
-//  soar_invoke_callbacks(thisAgent,
-//			SYSTEM_TERMINATION_CALLBACK,
-//			(soar_call_data) true);
-//}
-
-//void exit_soar (agent* thisAgent) {
-////#ifdef _WINDOWS
-////  thisAgent->OutputManager->print( "Cannot exit from Soar via the command line.\n");
-////#else
-//  just_before_exit_soar(thisAgent);
-//  exit (0);
-////#endif
-//}
+/* -- MToDo| May also want to close debug and other databases here -- */
 
 void abort_with_fatal_error (agent* thisAgent, const char *msg) {
   FILE *f;
@@ -106,14 +92,11 @@ void abort_with_fatal_error (agent* thisAgent, const char *msg) {
 
   assert(false);
 
-  // Since we're no longer terminating, should we be invoking this event?
-  // Note that this is a soar callback, not a gSKI callback, so it isn't being used for now anyway
-  //soar_invoke_callbacks(thisAgent,
-		//	SYSTEM_TERMINATION_CALLBACK,
-		//	(soar_call_data) false);
 }
 
-void abort_with_fatal_error_noprint (const char *msg) {
+/* -- A version for use when the current agent variable is not available == */
+
+void abort_with_fatal_error_noagent (const char *msg) {
   FILE *f;
   const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
 

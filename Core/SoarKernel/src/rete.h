@@ -70,7 +70,7 @@ typedef struct symbol_struct Symbol;
 typedef struct cons_struct cons;
 typedef char varnames;
 typedef cons list;
-extern void abort_with_fatal_error_noprint (const char *msg);
+extern void abort_with_fatal_error_noagent (const char *msg);
 
 inline varnames * one_var_to_varnames(Symbol * x) { return reinterpret_cast<varnames *>(x); }
 inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varnames *>(reinterpret_cast<char *>(x) + 1); }
@@ -422,7 +422,7 @@ inline TestType relational_test_type_to_test_type(byte test_type)
       break;
   }
   char msg[BUFFER_MSG_SIZE];
-  abort_with_fatal_error_noprint("Bad test_type in add_rete_test_to_test!!!\n");
+  abort_with_fatal_error_noagent("Bad test_type in add_rete_test_to_test!!!\n");
   return EQUALITY_TEST;
 }
 inline byte test_type_to_relational_test_type(byte test_type)

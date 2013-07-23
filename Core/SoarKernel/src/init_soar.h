@@ -23,14 +23,11 @@ extern void setup_signal_handling (void);
                             Exiting Soar
 
    Exit_soar() and abort_with_fatal_error() both terminate Soar, closing
-   the log file before exiting.  Abort_with_fatal_error() also prints
-   an error message before exiting.  Just_before_exit_soar() calls the
-   Soar cleanup functions but does not actually exit.  This is useful
-   for interfaces that do their own exiting.
+   the log file before exiting.
 --------------------------------------------------------------------- */
 
 extern void abort_with_fatal_error (agent* thisAgent, const char *);
-extern void abort_with_fatal_error_noprint (const char *msg);
+extern void abort_with_fatal_error_noagent (const char *msg);
 
 /* ---------------------------------------------------------------------
                      Adding and Removing Pwatchs

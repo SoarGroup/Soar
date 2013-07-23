@@ -4040,7 +4040,7 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->data.tests.attr_test = make_test(thisAgent, am->attr, EQUALITY_TEST);
       cond->data.tests.value_test = make_test(thisAgent, am->value, EQUALITY_TEST);
       cond->test_for_acceptable_preference = am->acceptable;
-      /* -- Debug| make sure varnames added here are unique -- */
+      /* -- Debug| do we need varnames added here to be unique? -- */
       if (nvn) {
         add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
             &(cond->data.tests.id_test));
@@ -4050,7 +4050,7 @@ void rete_node_to_conditions (agent* thisAgent,
             &(cond->data.tests.value_test));
       }
 
-      /* -- Debug| make sure varnames added here are unique -- */
+      /* -- Debug| do we need varnames added here to be unique? -- */
       /* --- on hashed nodes, add equality test for the hash function --- */
       if ((node->node_type==MP_BNODE) || (node->node_type==NEGATIVE_BNODE)) {
         add_hash_info_to_id_test (thisAgent, cond,
