@@ -33,8 +33,10 @@ private:
 
 	// These will create/maintain wmes on the child svs object
 	// For properties added to the node
-	void update_property(const std::string& propertyName);
 	void delete_property(const std::string& propertyName);
+	void update_property(const std::string& propertyName);
+	template <class WmeType>
+	void set_property(const std::string& propertyName, const WmeType& value);
 	
 	sgwme          *parent;
 	sgnode         *node;
