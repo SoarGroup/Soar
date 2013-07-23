@@ -619,11 +619,11 @@ void get_context_var_info ( agent* thisAgent, Symbol **dest_goal,
   Symbol **dest_current_value)
 {
   Symbol *g;
-  varSymbol *v;
+  Symbol *v;
   int levels_up;
   wme *w;
 
-  v = varSym(find_variable (thisAgent, thisAgent->lexeme.string));
+  v = find_variable (thisAgent, thisAgent->lexeme.string);
   if (v==thisAgent->s_context_variable) {
     levels_up = 0;
     *dest_attr_of_slot = thisAgent->state_symbol;
