@@ -65,6 +65,7 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct select_info_struct select_info;
 class debug_param_container;
 class Output_Manager;
+class Original_Variable_Manager;
 
 class debug_param_container;
 

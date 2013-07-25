@@ -6,6 +6,13 @@
 #include <map>
 
 #ifndef NDEBUG
+
+//class null_delete
+//{
+//    void operator()(void * const){}
+//};
+//typedef tracked_ptr <Symbol, null_delete> Symbol_ptr;
+
 class pointer_tracker_impl {
   pointer_tracker_impl(const pointer_tracker_impl &);
   pointer_tracker_impl & operator=(const pointer_tracker_impl &);
