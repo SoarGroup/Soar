@@ -46,6 +46,20 @@ def gcc_version(cc):
 	print 'cannot identify compiler version'
 	Exit(1)
 
+def vc_version():
+	p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
+	line = p.stdout.readline()
+	#for line in iter(p.stdout.readline, b''):
+	#	print line,
+	p.communicate() 
+	m = re.search(r'Version ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', line)
+	if m:
+		t = tuple(int(n) for n in m.groups())
+		return str(t[0]) + '.' + str(t[1])
+
+	print 'cannot identify compiler version'
+	Exit(1)
+
 def Mac_m64_Capable():
 	return execute('sysctl -n hw.optional.x86_64'.split()).strip() == '1'
 
@@ -99,7 +113,12 @@ AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable 
 
 AddOption('--verbose', action='store_true', dest='verbose', default = False, help='Output full compiler commands')
 
+msvc_version = "11.0"
+if sys.platform == 'win32':
+	msvc_version = vc_version()
+
 env = Environment(
+	MSVC_VERSION = msvc_version,
 	ENV = os.environ.copy(),
 	SCU = GetOption('scu'),
 	BUILD_DIR = GetOption('build-dir'),
