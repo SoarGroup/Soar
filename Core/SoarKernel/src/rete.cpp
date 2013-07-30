@@ -2651,11 +2651,9 @@ void deallocate_varnames (agent* thisAgent, varnames *vn) {
   if (vn == NIL) return;
   if (varnames_is_one_var(vn)) {
     sym = varnames_to_one_var(vn);
-    dprint(DT_DEBUG, "  Deallocating varname %s.\n", sym->to_string(thisAgent));
     symbol_remove_ref (thisAgent, sym);
   } else {
     symlist = varnames_to_var_list(vn);
-    dprint(DT_DEBUG, "  Deallocating varname symbol list...\n");
     deallocate_symbol_list_removing_references (thisAgent, symlist);
   }
 }
@@ -2670,11 +2668,8 @@ void deallocate_node_varnames (agent* thisAgent,
       deallocate_node_varnames (thisAgent, node->b.cn.partner->parent, node->parent,
                                 nvn->data.bottom_of_subconditions);
     } else {
-      dprint(DT_DEBUG, "  Deallocating varnames for id...\n");
       deallocate_varnames (thisAgent, nvn->data.fields.id_varnames);
-      dprint(DT_DEBUG, "  Deallocating varnames for attr...\n");
       deallocate_varnames (thisAgent, nvn->data.fields.attr_varnames);
-      dprint(DT_DEBUG, "  Deallocating varnames for value...\n");
       deallocate_varnames (thisAgent, nvn->data.fields.value_varnames);
     }
     node = real_parent_node (node);

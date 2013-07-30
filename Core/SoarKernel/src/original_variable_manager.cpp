@@ -8,6 +8,7 @@
 #include "original_variable_manager.h"
 #include "agent.h"
 #include "instantiations.h"
+#include "assert.h"
 
 extern uint32_t hash_string (const char *s);
 uint32_t hash_variable_raw_info (const char *name, short num_bits);
@@ -32,52 +33,89 @@ Original_Variable_Manager::~Original_Variable_Manager()
   delete id_symbol_map;
 }
 
-bool remove_cached_var_refcounts (agent* thisAgent, void *item, void*) {
+bool free_original_var (agent* thisAgent, void *item, void*) {
 
   original_varname *varname = static_cast<original_varname *>(item);
   if (varname->current_unique_var_symbol)
   {
-    dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager decreasing refcount on symbol %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
+    dprint(DT_ORIGINAL_VAR_MANAGER, "...decreasing refcount on symbol %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
     symbol_remove_ref(thisAgent, varname->current_unique_var_symbol);
     varname->current_unique_var_symbol = NULL;
   }
   varname->current_instantiation = NULL;
-  dprint(DT_UNIQUE_VARIABLIZATION, "Freeing memory for string %s\n", varname->name);
+  dprint(DT_ORIGINAL_VAR_MANAGER, "...freeing memory for string %s\n", varname->name);
   free_memory_block_for_string(thisAgent, varname->name);
   return false;
 }
 
+bool print_original_var (agent* thisAgent, void *item, void*) {
+
+  original_varname *varname = static_cast<original_varname *>(item);
+
+  dprint(DT_DEBUG, "%s, CurrUnqVarSym: %s(%lld) CurrInst: %d\n",
+        varname->name,
+        (varname->current_unique_var_symbol ? varname->current_unique_var_symbol->to_string(thisAgent) : "None"),
+        (varname->current_unique_var_symbol ? varname->current_unique_var_symbol->reference_count : 0),
+        (varname->current_instantiation ? varname->current_instantiation : NULL));
+  return false;
+}
+
+void Original_Variable_Manager::print_table()
+{
+  dprint(DT_DEBUG, "------------------------------------\n");
+  dprint(DT_DEBUG, "Original_Variable_Manager Hash Table\n");
+  dprint(DT_DEBUG, "------------------------------------\n");
+  do_for_all_items_in_hash_table( thisAgent, ht, print_original_var, 0);
+  dprint(DT_DEBUG, "------------------------------------\n");
+  dprint(DT_DEBUG, "Original_Variable_Manager Symbol Map\n");
+  dprint(DT_DEBUG, "------------------------------------\n");
+  for (std::map< Symbol *, Symbol * >::iterator it=(*id_symbol_map).begin(); it!=(*id_symbol_map).end(); ++it)
+  {
+    dprint(DT_ORIGINAL_VAR_MANAGER, "Processing %s %s\n", it->first->to_string(thisAgent), it->second->to_string(thisAgent));
+    clear_symbol(it->first);
+  }
+}
+
 void Original_Variable_Manager::clear_table()
 {
-  dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager clearing table...\n");
-  do_for_all_items_in_hash_table( thisAgent, ht, remove_cached_var_refcounts, 0);
+  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager clearing hash table of original_vars...\n");
+  do_for_all_items_in_hash_table( thisAgent, ht, free_original_var, 0);
 
   free_memory(thisAgent, ht->buckets, HASH_TABLE_MEM_USAGE);
   free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
+}
+
+void Original_Variable_Manager::clear_symbol(Symbol *var)
+{
+  uint32_t hash_value;
+  original_varname *varname;
+
+  hash_value = hash_variable_raw_info (var->var->name,ht->log2size);
+  varname = reinterpret_cast<original_varname *>(*(ht->buckets + hash_value));
+  for ( ; varname != NIL; varname = varname->next_in_hash_table)
+  {
+    if (!strcmp(varname->name,var->var->name))
+    {
+      if (varname->current_unique_var_symbol)
+      {
+        dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager decreasing refcount on symbol %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
+        symbol_remove_ref(thisAgent, varname->current_unique_var_symbol);
+        varname->current_unique_var_symbol = NULL;
+      }
+      varname->current_instantiation = NULL;
+    }
+  }
 }
 
 void Original_Variable_Manager::clear_symbol_map() {
   uint32_t hash_value;
   original_varname *varname;
 
-  dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager clearing symbol map...\n");
+  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager clearing symbol map...\n");
   for (std::map< Symbol *, Symbol * >::iterator it=(*id_symbol_map).begin(); it!=(*id_symbol_map).end(); ++it)
   {
-    hash_value = hash_variable_raw_info (it->first->var->name,ht->log2size);
-    varname = reinterpret_cast<original_varname *>(*(ht->buckets + hash_value));
-    for ( ; varname != NIL; varname = varname->next_in_hash_table)
-    {
-      if (!strcmp(varname->name,(it->first)->var->name))
-      {
-        if (varname->current_unique_var_symbol)
-        {
-          dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager decreasing refcount on symbol %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
-          symbol_remove_ref(thisAgent, varname->current_unique_var_symbol);
-          varname->current_unique_var_symbol = NULL;
-        }
-        varname->current_instantiation = NULL;
-      }
-    }
+    dprint(DT_ORIGINAL_VAR_MANAGER, "Processing %s %s\n", it->first->to_string(thisAgent), it->second->to_string(thisAgent));
+    clear_symbol(it->first);
   }
   id_symbol_map->clear();
 }
@@ -98,12 +136,10 @@ void Original_Variable_Manager::reinit_table()
 }
 
 /* -- make_name_unique is used when recreating conditions by the rete code.
- *    It makes sures that original variable names (the one that are in the original
- *    production) are unique across instantiations, a property needed by the chunker
- *    to match rhs bindings to lhs bindings.
- *
- *    next_unique_suffix_number is used to quickly generate a new name for
- *    conflicting variable name. --- */
+ *    It makes sure that original variable names (the one that are in the original
+ *    production) are unique across instantiations but consistent within a particular
+ *    instantiation, a property needed by the chunker to match rhs bindings to lhs bindings.
+ *    --- */
 
 void Original_Variable_Manager::make_name_unique(Symbol **sym)
 {
@@ -111,7 +147,7 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
   original_varname *varname, *new_varname;
 
   assert(thisAgent->newly_created_instantiations != NIL);
-  dprint(DT_UNIQUE_VARIABLIZATION, "make_varsym_unique called with original sym %s for instantiation %s!\n",
+  dprint(DT_ORIGINAL_VAR_MANAGER, "Uniqueifying %s for instantiation %s...\n",
                                            (*sym)->var->name,
                                            thisAgent->newly_created_instantiations->prod->name->sc->name );
 
@@ -126,52 +162,45 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
       if (varname->current_instantiation == thisAgent->newly_created_instantiations)
       {
 
-        /* -- We've already created and cached a unique version of this variable name
-         *    for this instantiation -- */
-        dprint(DT_UNIQUE_VARIABLIZATION, "make_varsym_unique found existing unique sym %s (%s) for this instantiation.\n",
+        /* -- We've already created and cached a unique version of this variable name for this
+         *    instantiation. Note that we do not need to increase refcount, since caller will
+         *    increase the refcount again when it uses the symbol in a test. -- */
+
+        dprint(DT_ORIGINAL_VAR_MANAGER, "...found existing unique sym %s (%s) for this instantiation.\n",
                                           varname->current_unique_var_symbol->var->name, (*sym)->var->name);
         *sym = varname->current_unique_var_symbol;
-        /* -- MToDoRefCnt | May not need to add this refcount.  Caller will increase the refcount again when it uses the symbol in a test. -- */
-        //symbol_add_ref(thisAgent, varname->current_unique_var_symbol);
+
         return;
       }
       else
       {
-        /* -- We've need to create and cache a new unique version of this string
+        /* -- We need to create and cache a new unique version of this string
          *    for this instantiation -- */
 
         std::string suffix, new_name = (*sym)->var->name;
 
         /* -- Create a unique name by appending a numbered suffix to original var name -- */
 
-        varname->next_unique_suffix_number++;
         to_string(varname->next_unique_suffix_number, suffix);
         new_name.erase(new_name.end()-1);
         new_name += "+" + suffix + ">";
 
-        /* -- Create a new unique string entry in the hash table == */
+        /* -- Update the original_varname struct with a new variable and the current instantiation == */
 
-        /* -- Debug | Why do we need to create a new u_string here?  Can't we just
-         *            create the var and put it in the old u-string?  Try it. */
-
-        allocate_with_pool (thisAgent, &mp, &new_varname);
-        new_varname->current_instantiation = thisAgent->newly_created_instantiations;
-        new_varname->name = make_memory_block_for_string (thisAgent, new_name.c_str());
-        new_varname->next_unique_suffix_number = 1;
-        new_varname->current_unique_var_symbol = make_variable(thisAgent, new_name.c_str());
+        varname->next_unique_suffix_number++;
+        varname->current_instantiation = thisAgent->newly_created_instantiations;
         if (varname->current_unique_var_symbol)
           symbol_remove_ref(thisAgent, varname->current_unique_var_symbol);
-        varname->current_unique_var_symbol = new_varname->current_unique_var_symbol;
-        varname->current_instantiation = thisAgent->newly_created_instantiations;
+        varname->current_unique_var_symbol = make_variable(thisAgent, new_name.c_str());
 
-        dprint(DT_UNIQUE_VARIABLIZATION, "make_varsym_unique creating new unique version of %s: %s\n",
+        dprint(DT_ORIGINAL_VAR_MANAGER, "...creating new unique version of %s: %s\n",
                                           (*sym)->var->name, new_name.c_str());
 
-        *sym = new_varname->current_unique_var_symbol;
+        *sym = varname->current_unique_var_symbol;
 
-        /* -- MToDoRefCnt | May not need to add this refcount.  Make variable will already increase which takes care of the
-         *                  reference for our cached copy.  Caller will increase the refcount again when it uses the symbol in a test. -- */
-        //symbol_add_ref(thisAgent, (*sym));
+        /* -- Since caller will increase the refcount again when it uses the symbol in a test, we
+         *    don't need the refcount that was added by make_variable above, so we set it to 0 here -- */
+        symbol_remove_ref_no_deallocate(thisAgent, (*sym));
         return;
       }
     }
@@ -185,9 +214,10 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
   new_varname->name = make_memory_block_for_string (thisAgent, (*sym)->var->name);
   new_varname->next_unique_suffix_number = 1;
   add_to_hash_table (thisAgent, ht, new_varname);
-  /* -- Increase refcount for our cached copy -- */
+  /* -- Increase refcount for our cached copy of the original variable (which new unique ones may be mapped
+   *    from in the future. -- */
   symbol_add_ref(thisAgent, (*sym));
 
-  dprint(DT_UNIQUE_VARIABLIZATION, "make_varsym_unique generated a var for the first time: %s\n",
+  dprint(DT_ORIGINAL_VAR_MANAGER, "...first use, so using original variable %s\n",
                                     (*sym)->var->name);
 }
