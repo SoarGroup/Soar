@@ -136,7 +136,7 @@ std::ostream &operator<<(std::ostream &os, const interval_set &s);
 
 class relation : public serializable {
 public:
-	typedef std::map<tuple, interval_set > tuple_map;
+	typedef std::map<int_tuple, interval_set > tuple_map;
 
 	class iter : public std::iterator<std::forward_iterator_tag, int> {
 	public:
@@ -146,8 +146,8 @@ public:
 		iter &operator++();
 		iter operator++(int);
 		iter &operator=(const iter &rhs);
-		const tuple &operator*() const  { return t; }
-		const tuple *operator->() const { return &t; }
+		const int_tuple &operator*() const  { return t; }
+		const int_tuple *operator->() const { return &t; }
 		bool operator==(const iter &rhs) const {
 			if (i == end && rhs.i == end)
 				return true;
@@ -161,7 +161,7 @@ public:
 		tuple_map::const_iterator i;
 		tuple_map::const_iterator end;
 		interval_set::const_iterator j, jend;
-		tuple t;
+		int_tuple t;
 		
 		friend class relation;
 	};
@@ -171,32 +171,32 @@ public:
 	relation();
 	relation(int n);
 	relation(const relation &r);
-	relation(int n, const std::vector<tuple> &t);
+	relation(int n, const std::vector<int_tuple> &t);
 	
-	void add(const tuple &t);
+	void add(const int_tuple &t);
 	void add(int i, int n);  // convenience for arity = 2
-	void add(int i, const tuple &t);
-	void del(const tuple &t);
+	void add(int i, const int_tuple &t);
+	void del(const int_tuple &t);
 	void del(int i, int n);  // convenience for arity = 2
-	void del(int i, const tuple &t);
+	void del(int i, const int_tuple &t);
 
 	void clear();
 	void reset(int new_arity);
 	relation &operator=(const relation &r);
 	
-	void intersect(const tuple &inds, const relation &r);
+	void intersect(const int_tuple &inds, const relation &r);
 	void subtract(const relation &r);
 	void subtract(const relation &r, relation &out) const;
-	void subtract(const tuple &inds, const relation &r);
-	void filter(int i, tuple &vals, bool complement);
+	void subtract(const int_tuple &inds, const relation &r);
+	void filter(int i, int_tuple &vals, bool complement);
 
-	void expand(const relation &r, const tuple &match1, const tuple &match2, const tuple &extend);
-	void slice(const tuple &inds, relation &out) const;
+	void expand(const relation &r, const int_tuple &match1, const int_tuple &match2, const int_tuple &extend);
+	void slice(const int_tuple &inds, relation &out) const;
 	void slice(int n, relation &out) const;
 
-	void count_expansion(const relation  &r, const tuple &match1, const tuple &match2, int &matched, int &new_size) const;
+	void count_expansion(const relation  &r, const int_tuple &match1, const int_tuple &match2, int &matched, int &new_size) const;
 	void at_pos(int n, interval_set &elems) const;
-	bool contains(const tuple &t) const;
+	bool contains(const int_tuple &t) const;
 	bool operator==(const relation &r) const;
 	void random_split(int k, relation *r1, relation *r2) const;
 	

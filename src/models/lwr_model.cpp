@@ -1,6 +1,5 @@
 #include <iostream>
 #include "lwr.h"
-#include "soar_interface.h"
 #include "svs.h"
 #include "model.h"
 
@@ -46,20 +45,12 @@ private:
 	LWR lwr;
 };
 
-model *_make_lwr_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {
+model *_make_lwr_model_(svs *owner, const string &name) {
 	Symbol *attr;
 	wme *nnbrs_wme = NULL, *var_wme = NULL;
 	long nnbrs = 50;
 	double noise_var = 1e-8;
 	string attrstr;
 	
-	si->find_child_wme(root, "num-neighbors", nnbrs_wme);
-	if (nnbrs_wme && !si->get_val(si->get_wme_val(nnbrs_wme), nnbrs)) {
-		cerr << "WARNING: attribute num-neighbors does not have integer value, using default" << endl;
-	}
-	si->find_child_wme(root, "noise-var", var_wme);
-	if (var_wme && !si->get_val(si->get_wme_val(var_wme), noise_var)) {
-		cerr << "WARNING: attribute noise-var does not have double value, using default" << endl;
-	}
 	return new lwr_model(nnbrs, noise_var, name);
 }

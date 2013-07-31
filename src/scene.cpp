@@ -93,8 +93,8 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 	return true;
 }
 
-scene::scene(const string &name, svs *owner, bool draw) 
-: name(name), owner(owner), draw(draw), nodes(1), track_dists(false)
+scene::scene(const string &name, svs *owner) 
+: name(name), owner(owner), draw(false), nodes(1), track_dists(false)
 {
 	root = new group_node(root_name, "world");
 	nodes[0].node = root;
@@ -109,26 +109,21 @@ scene::~scene() {
 	delete root;
 }
 
-scene *scene::clone(const string &cname, bool draw) const {
+scene *scene::clone(const string &cname) const {
 	scene *c;
 	string name;
 	std::vector<sgnode*> node_clones;
 
 	update_closest();
-	c = new scene(cname, owner, draw);
+	c = new scene(cname, owner);
 	delete c->root;
 	c->nodes = nodes;
 	c->root = root->clone()->as_group(); // root->clone copies entire scene graph
 	c->root->walk(node_clones);
-	
-	drawer *d = owner->get_drawer();
 	for(int i = 0, iend = node_clones.size(); i < iend; ++i) {
 		sgnode *n = node_clones[i];
 		c->find_name(n->get_name())->node = n;
 		n->listen(c);
-		if (draw) {
-			d->add(c->name, n);
-		}
 	}
 	return c;
 }
@@ -222,13 +217,17 @@ bool scene::add_node(const string &name, sgnode *n) {
 }
 
 bool scene::del_node(const string &name) {
-	delete find_name(name)->node;
-	/* rest is handled in node_update */
-	return true;
+	node_info *ni = find_name(name);
+	if (ni) {
+		delete ni->node;
+		/* rest is handled in node_update */
+		return true;
+	}
+	return false;
 }
 
 void scene::clear() {
-	for (int i = 0; i < root->num_children(); ++i) {
+	for (int i = root->num_children() - 1; i >= 0; --i) {
 		delete root->get_child(i);
 	}
 }
@@ -297,7 +296,7 @@ int scene::parse_add(vector<string> &f, string &error) {
 	}
 	par = get_group(f[2]);
 	if (!par) {
-		error = "parent node does not exist";
+		error = "parent node does not exist, or is not group node";
 		return 1;
 	}
 	
@@ -412,31 +411,71 @@ int scene::parse_change(vector<string> &f, string &error) {
 	return -1;
 }
 
+// parse_property(vector<string> &f, string &error)
+//   parses a property command (command 'p')
+//	 f is a list of the parameters given
+//   Changed the format of the command to be
+//     p <name> <subcommand> <property> <value?>
+//		<name> - name of the node
+//      <subcommand> - either 'a' for add, 'c' for change, or 'd' for delete
+//		<property> - the name of the property
+// 		<value?> - the value of the property, needed for the add or change subcommands only
 int scene::parse_property(vector<string> &f, string &error) {
 	int p = 0;
-	node_info *ninfo;
 	
+	// Parameter 1: Node Name
 	if (p >= f.size()) {
-		error = "expecting node name";
+		error = "Property Command P1: Expecting node name";
 		return p;
 	}
+	string name = f[p++];
 	
-	if (!(ninfo = find_name(f[p++]))) {
-		error = "node does not exist";
+	node_info *ninfo = find_name(name);
+	if (!ninfo) {
+		error = "Property Command P1: Node " + name + " does not exist";
+		return (p-1);
+	}
+
+	// Parameter 2: Subcommand (a = add, d = delete, c = change)
+	if (p >= f.size() || f[p].length() == 0){
+		error = "Property Command P2: Expecting subcommand";
 		return p;
 	}
-	if (p >= f.size()) {
-		error = "expecting property name";
+	char subcommand = tolower(f[p++][0]);
+
+	// Parameter 3: Property Name
+	if (p >= f.size()){
+		error = "Property Command P3: Expecting property name";
 		return p;
 	}
-	string prop = f[p++];
-	
-	double val;
-	if (!parse_double(f[p], val)) {
-		error = "expecting a number";
-		return p;
+	string propName = f[p++];
+
+	// Parameter 4 (For add/change): property value
+	string value;
+	if(subcommand == 'a' || subcommand == 'c'){
+		if(p >= f.size()){
+			error = "Property Command P4: Expecting value for " + propName;
+			return p;
+		}
+		value = f[p++];
 	}
-	ninfo->props[prop] = val;
+
+	switch(subcommand){
+	case 'a':
+		// Add property
+	case 'c':
+		// Change property
+		ninfo->node->set_property(propName, value);
+		break;
+	case 'd':
+		// Delete property
+		ninfo->node->delete_property(propName);
+		break;
+	default:
+		error = "Property Command P3: Unrecognized subcommand (Expecting a, c, d)";
+		return 2;
+	}
+
 	return -1;
 }
 
@@ -491,58 +530,35 @@ bool scene::parse_sgel(const string &s) {
 	return true;
 }
 
-void scene::get_property_names(int i, vector<string> &names) const {
-	for (int j = 0; j < NUM_NATIVE_PROPS; ++j) {
-		names.push_back(NATIVE_PROPS[j]);
-	}
-	
-	const node_info &info = nodes[i];
-	property_map::const_iterator k, kend;
-	for (k = info.props.begin(), kend = info.props.end(); k != kend; ++k) {
-		names.push_back(k->first);
-	}
-}
-
 void scene::get_properties(rvec &vals) const {
 	node_table::const_iterator i, iend;
 	property_map::const_iterator j, jend;
 	int k = 0;
 	
 	vals.resize(get_dof());
-	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
-		const node_info &info = *i;
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		const node_info &info = nodes[i];
 		for (const char *t = "prs"; *t != '\0'; ++t) {
 			vec3 trans = info.node->get_trans(*t);
 			vals.segment(k, 3) = trans;
 			k += 3;
 		}
-		for (j = info.props.begin(), jend = info.props.end(); j != jend; ++j) {
+		
+		const numeric_properties_map &pm = info.node->get_numeric_properties();
+		numeric_properties_map::const_iterator j, jend;
+		for (j = pm.begin(), jend = pm.end(); j != jend; ++j) {
 			vals(k++) = j->second;
 		}
 	}
 }
 
-bool scene::set_property(const string &obj, const string &prop, double val) {
-	char type; int d;
-	node_info *info = find_name(obj);
-	assert(info);
-	if (is_native_prop(prop, type, d)) {
-		vec3 trans = info->node->get_trans(type);
-		trans[d] = val;
-		info->node->set_trans(type, trans);
-	} else {
-		info->props[prop] = val;
-	}
-	return true;
-}
-
 bool scene::set_properties(const rvec &vals) {
-	node_table::iterator i, iend;;
 	const char *types = "prs";
 	vec3 trans;
 	int l = 0;
 	
-	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		sgnode *n = nodes[i].node;
 		int k1, k2;
 		for (k1 = 0; k1 < 3; ++k1) {
 			for (k2 = 0; k2 < 3; ++k2) {
@@ -551,32 +567,25 @@ bool scene::set_properties(const rvec &vals) {
 				}
 				trans(k2) = vals(l++);
 			}
-			i->node->set_trans(types[k1], trans);
+			n->set_trans(types[k1], trans);
 		}
 		
-		property_map::iterator j, jend;
-		for (j = i->props.begin(), jend = i->props.end(); j != jend; ++j) {
+		const numeric_properties_map &pm = n->get_numeric_properties();
+		numeric_properties_map::const_iterator j, jend;
+		for (j = pm.begin(), jend = pm.end(); j != jend; ++j) {
 			if (l >= vals.size()) {
 				return false;
 			}
-			j->second = vals(l++);
+			n->set_property(j->first, vals(l++));
 		}
 	}
 	return true;
 }
 
-void scene::remove_property(const std::string &name, const std::string &prop) {
-	node_info *info = find_name(name);
-	property_map::iterator j = info->props.find(prop);
-	assert(j != info->props.end());
-	info->props.erase(j);
-}
-
 int scene::get_dof() const {
 	int dof = 0;
-	node_table::const_iterator i, iend;
-	for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i) {
-		dof += NUM_NATIVE_PROPS + i->props.size();
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		dof += NUM_NATIVE_PROPS + nodes[i].node->get_numeric_properties().size();
 	}
 	return dof;
 }
@@ -593,13 +602,17 @@ void velocity_hack(const sgnode *n, drawer *d) {
 	d->send(ss.str());
 }
 
-void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
+void scene::node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
 	sgnode *child;
 	group_node *g;
 	relation *tr;
 	drawer *d = owner->get_drawer();
 	
 	if (t == sgnode::CHILD_ADDED) {
+		int added_child = 0;
+		if(!parse_int(update_info, added_child)){
+			return;
+		}
 		g = n->as_group();
 		child = g->get_child(added_child);
 		child->listen(this);
@@ -660,17 +673,24 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			break;
 		case sgnode::TRANSFORM_CHANGED:
 			update_dists(i);
-			if (!n->is_group() && draw) {
+			if (draw) {
 				d->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			nodes[i].rels_dirty = true;
 			velocity_hack(n, owner->get_drawer());
 			break;
+		case sgnode::PROPERTY_CHANGED:
+			sig_dirty = true;
+			nodes[i].rels_dirty = true;
+			break;
 	}
 }
 
-double scene::convex_distance(const sgnode *a, const sgnode *b) const {
-	assert(track_dists);
+double scene::get_convex_distance(const sgnode *a, const sgnode *b) const {
+	if (!track_dists) {
+		return convex_distance(a, b);
+	}
+	
 	int i, j;
 	for (i = 0; i < nodes.size() && nodes[i].node != a; ++i)
 		;
@@ -681,7 +701,7 @@ double scene::convex_distance(const sgnode *a, const sgnode *b) const {
 }
 
 bool scene::intersects(const sgnode *a, const sgnode *b) const {
-	return this->convex_distance(a, b) < INTERSECT_THRESH;
+	return this->get_convex_distance(a, b) < INTERSECT_THRESH;
 }
 
 void scene::update_dists(int i) {
@@ -728,7 +748,7 @@ void scene::update_all_dists() {
 	}
 	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
 		for (int j = i + 1, jend = nodes.size(); j < jend; ++j) {
-			double d = ::convex_distance(nodes[i].node, nodes[j].node);
+			double d = convex_distance(nodes[i].node, nodes[j].node);
 			nodes[i].dists[j] = nodes[j].dists[i] = d;
 		}
 	}
@@ -744,14 +764,24 @@ void scene::set_track_distances(bool v) {
 }
 
 void scene::update_sig() const {
+	vector<string> common_props;
+	for (int j = 0; j < NUM_NATIVE_PROPS; ++j) {
+		common_props.push_back(NATIVE_PROPS[j]);
+	}
 	sig.clear();
-	node_table::const_iterator i, iend;
 	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
 		scene_sig::entry e;
+		numeric_properties_map::const_iterator j, jend;
+		const numeric_properties_map &pm = nodes[i].node->get_numeric_properties();
+		
 		e.id = nodes[i].node->get_id();
 		e.name = nodes[i].node->get_name();
 		e.type = nodes[i].node->get_type();
-		get_property_names(i, e.props);
+		
+		e.props = common_props;
+		for (j = pm.begin(), jend = pm.end(); j != jend; ++j) {
+			e.props.push_back(j->first);
+		}
 		sig.add(e);
 	}
 }
@@ -764,22 +794,27 @@ const scene_sig &scene::get_signature() const {
 }
 
 void scene::get_relations(relation_table &rt) const {
-	tuple closest(2);
+	int_tuple closest(2);
 	vector<int> dirty_nodes;
-	node_table::const_iterator i, iend;
 	
 	rt = type_rels;
 	relation &closest_rel = rt["closest"];
 	closest_rel.reset(3);
 	update_closest();
-	for (i = nodes.begin() + 1, iend = nodes.end(); i != iend; ++i) {
-		if (i->rels_dirty) {
-			dirty_nodes.push_back(i->node->get_id());
-			i->rels_dirty = false;
+	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
+		const node_info &ni = nodes[i];
+		if (ni.rels_dirty) {
+			dirty_nodes.push_back(ni.node->get_id());
+			ni.rels_dirty = false;
 		}
-		closest[0] = i->node->get_id();
-		closest[1] = nodes[i->closest].node->get_id();
-		closest_rel.add(0, closest);
+		if (ni.closest != -1) {
+			closest[0] = ni.node->get_id();
+			closest[1] = nodes[ni.closest].node->get_id();
+			closest_rel.add(0, closest);
+		} else {
+			// if there's only one real object, then it won't be closest to anything
+			assert(nodes.size() == 2);
+		}
 	}
 	
 	relation_table::iterator j, jend;
@@ -819,6 +854,13 @@ void scene::proxy_get_children(map<string, cliproxy*> &c) {
 	                .add_arg("[RELATION]", "Relation name pattern. Can be * for any.")
 	                .add_arg("[PARAMS]",   "Argument patterns. Can be * for any.")
 	                ;
+
+	c["draw"] = new memfunc_proxy<scene>(this, &scene::cli_draw);
+	c["draw"]->set_help("Draw this scene in the viewer.")
+	           .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
+
+	c["clear"] = new memfunc_proxy<scene>(this, &scene::cli_clear);
+	c["clear"]->set_help("Delete all objects in scene except world");
 }
 
 void scene::cli_props(const vector<string> &args, ostream &os) const {
@@ -857,11 +899,7 @@ void scene::cli_dist(const vector<string> &args, ostream &os) const {
 		os << "node " << args[1] << " does not exist" << endl;
 		return;
 	}
-	if (track_dists) {
-		os << nodes[i0].dists[i1] << endl;
-	} else {
-		os << convex_distance(nodes[i0].node, nodes[i1].node) << endl;
-	}
+	os << get_convex_distance(nodes[i0].node, nodes[i1].node) << endl;
 }
 
 void scene::cli_sgel(const vector<string> &args, ostream &os) {
@@ -909,7 +947,7 @@ void scene::cli_relations(const vector<string> &args, ostream &os) const {
 	
 	for (i = begin; i != end; ++i) {
 		relation r = i->second;
-		tuple t(1);
+		int_tuple t(1);
 		
 		for (int j = 0, jend = min(int(ids.size()), r.arity() - 1); j < jend; ++j) {
 			if (ids[j] != -1) {
@@ -936,5 +974,39 @@ void scene::cli_relations(const vector<string> &args, ostream &os) const {
 			}
 		}
 		p.print(os);
+	}
+}
+
+void scene::cli_draw(const vector<string> &args, ostream &os) {
+	bool_proxy p(&draw, "");
+	bool old_draw = draw;
+	
+	p.proxy_use("", args, os);
+	if (!old_draw && draw) {
+		refresh_draw();
+	} else if (old_draw && !draw) {
+		owner->get_drawer()->delete_scene(name);
+	}
+}
+
+void scene::cli_clear(const vector<string> &args, ostream &os) {
+	clear();
+}
+
+void scene::refresh_draw() {
+	if (!draw) return;
+	
+	drawer *d = owner->get_drawer();
+	d->delete_scene(name);
+	for (int i = 1, iend = nodes.size(); i < iend; ++i) {
+		d->add(name, nodes[i].node);
+	}
+}
+
+void scene::verify_listeners() const {
+	for (int i = 0, iend = nodes.size(); i < iend; ++i) {
+		std::list<sgnode_listener*> l;
+		nodes[i].node->get_listeners(l);
+		assert(l.size() == 1 && l.front() == this);
 	}
 }

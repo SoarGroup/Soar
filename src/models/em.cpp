@@ -25,10 +25,6 @@
 using namespace std;
 using namespace Eigen;
 
-static bool approx_equal(double a, double b) {
-	return fabs(a - b) / min(fabs(a), fabs(b)) < .001;
-}
-
 /* Box-Muller method */
 double randgauss(double mean, double std) {
 	double x1, x2, w;
@@ -500,13 +496,15 @@ void EM::estep() {
 		if (stale) {
 			int prev = inst.mode, best = 0;
 			for (int j = 1, jend = modes.size(); j < jend; ++j) {
+				double p1 = inst.minfo[j].prob;
+				double p2 = inst.minfo[best].prob;
 				/*
 				 These conditions look awkward, but have justification. If I tested the >
 				 condition before the approx_equal condition, the test would succeed even
 				 if the probability of j was only slightly better than the probability of
 				 best.
 				*/
-				if (approx_equal(inst.minfo[j].prob, inst.minfo[best].prob)) {
+				if (approx_equal(p1, p2, 0.001 * min(p1, p2))) {
 					if (modes[j]->get_num_nonzero_coefs() < modes[best]->get_num_nonzero_coefs()) {
 						best = j;
 					}

@@ -19,11 +19,11 @@ const double RCOEF = 1.0;
 const double ECOEF = 2.0;
 const double CCOEF = 0.5;
 const double SCOEF = 0.5;
-const int MAXITERS = 50;
+const int NELDER_MEAD_MAXITERS = 50;
 
 
 bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, scene *scn, rvec &finalstate) {
-	scene *scncopy = scn->clone("", false);
+	scene *scncopy = scn->clone("");
 	const scene_sig &sig = scncopy->get_signature();
 	finalstate = initstate;
 	if (traj.size() == 0) {
@@ -354,14 +354,14 @@ public:
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &init)
 	: mdl(m), stepsize(stepsize), obj(obj)
 	{
-		scn = init.clone("", false);
+		scn = init.clone("");
 		scn->get_properties(initvals);
 	}
 	
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &tmp, const rvec &initvals)
 	: mdl(m), stepsize(stepsize), obj(obj), initvals(initvals)
 	{
-		scn = tmp.clone("", false);
+		scn = tmp.clone("");
 	}
 
 	~traj_eval() {
@@ -468,7 +468,7 @@ bool nelder_mead_constrained(const rvec &min, const rvec &max, traj_eval &ev, rv
 		simplex.push_back(rtmp);
 	}
 	
-	for(int iters = 0; iters < MAXITERS; ++iters) {
+	for(int iters = 0; iters < NELDER_MEAD_MAXITERS; ++iters) {
 		argmin(eval, wi, ni, bi);
 		worst = simplex[wi];
 		best = simplex[bi];
@@ -556,7 +556,7 @@ public:
 	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, const output_spec *outspec, double thresh)
 	: outspec(outspec), thresh(thresh)
 	{
-		ci.scn = scn->clone("", false);
+		ci.scn = scn->clone("");
 		ci.obj = obj;
 		ci.mdl = mdl;
 		ci.outspec = outspec;

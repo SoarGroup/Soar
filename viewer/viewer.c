@@ -46,8 +46,6 @@ static int scr_height = 480;
 static int show_grid = 1;
 static real grid_size = 1.0;
 static int redraw = 0;
-static int mousex = 0;
-static int mousey = 0;
 
 /*
  0 = screenshots requested by keyboard
@@ -141,7 +139,6 @@ int main(int argc, char *argv[]) {
 		glfwPollEvents();
 		if (redraw) {
 			draw_screen();
-			redraw = 0;
 		} else {
 			glfwSleep(0.01);
 		}
@@ -196,14 +193,6 @@ void GLFWCALL mouse_button_callback(int button, int state) {
 		glfwGetMousePos(&x, &y);
 		if (scene_button_hit_test(SCENE_MENU_OFFSET, scr_height - SCENE_MENU_OFFSET, x, scr_height - y)) {
 			set_redraw();
-		}
-	} else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-		if (state == GLFW_PRESS) {
-			glfwGetMousePos(&mousex, &mousey);
-			glfwDisable(GLFW_MOUSE_CURSOR);
-		} else {
-			glfwEnable(GLFW_MOUSE_CURSOR);
-			glfwSetMousePos(mousex, mousey);
 		}
 	}
 }
@@ -328,6 +317,7 @@ void draw_screen() {
 				semaphore_V(&redraw_semaphore);
 		}
 	}
+	redraw = 0;
 	glfwUnlockMutex(scene_lock);
 	glfwSwapBuffers();
 }
@@ -466,7 +456,7 @@ void set_geom_vertices(geometry *g, real *vertices, int nverts) {
 	for (i = 0; i < nverts; ++i) {
 		g->vertices[i] = vertices[i];
 	}
-	if (nverts < 3) {
+	if (nverts <= 9) {
 		ninds = nverts / 3;
 		for (i = 0; i < ninds; ++i) {
 			indexes[i] = i;
@@ -498,11 +488,6 @@ void set_geom_vertices(geometry *g, real *vertices, int nverts) {
 void set_geom_radius(geometry *g, real radius) {
 	free_geom_shape(g);
 	g->radius = radius;
-	g->quadric = gluNewQuadric();
-	if (!g->quadric) {
-		error("Not enough memory for quadric");
-	}
-	gluQuadricNormals(g->quadric, GLU_SMOOTH);
 }
 
 void set_geom_text(geometry *g, char *text) {
@@ -558,7 +543,14 @@ void draw_geom(geometry *g) {
 				glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, &g->indexes[i]);
 			}
 		}
-	} else if (g->quadric) {
+	} else if (g->radius >= 0.0) {
+		if (!g->quadric) {
+			g->quadric = gluNewQuadric();
+			if (!g->quadric) {
+				error("Not enough memory for quadric");
+			}
+			gluQuadricNormals(g->quadric, GLU_SMOOTH);
+		}
 		gluSphere(g->quadric, g->radius, 10, 10);
 	} else if (g->text) {
 		draw_text(g->text, 0, 0);

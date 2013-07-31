@@ -12,12 +12,6 @@
 
 using namespace std;
 
-long get_time_nanosecs() {
-	timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return ts.tv_sec * 1e9 + ts.tv_nsec;
-}
-
 int get_tcp_socket(const string &port_or_path) {
 	int family, fd, port, name_size;
 	sockaddr_in in_name;

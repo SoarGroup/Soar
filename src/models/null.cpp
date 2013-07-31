@@ -1,6 +1,5 @@
 #include <iostream>
 #include "model.h"
-#include "soar_interface.h"
 #include "svs.h"
 
 using namespace std;
@@ -15,6 +14,6 @@ public:
 	int get_output_size() const { return 0; }
 };
 
-model *_make_null_model_(soar_interface *si, Symbol* root, svs_state *state, const string &name) {
+model *_make_null_model_(svs *owner, const string &name) {
 	return new null_model(name);
 }

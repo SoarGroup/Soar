@@ -8,61 +8,6 @@
 
 using namespace std;
 
-// copied from http://stackoverflow.com/questions/5404277/porting-clock-gettime-to-windows
-LARGE_INTEGER getFILETIMEoffset() {
-	SYSTEMTIME s;
-	FILETIME f;
-	LARGE_INTEGER t;
-
-	s.wYear = 1970;
-	s.wMonth = 1;
-	s.wDay = 1;
-	s.wHour = 0;
-	s.wMinute = 0;
-	s.wSecond = 0;
-	s.wMilliseconds = 0;
-	SystemTimeToFileTime(&s, &f);
-	t.QuadPart = f.dwHighDateTime;
-	t.QuadPart <<= 32;
-	t.QuadPart |= f.dwLowDateTime;
-	return (t);
-}
-
-// adapted from from http://stackoverflow.com/questions/5404277/porting-clock-gettime-to-windows
-long get_time_nanosecs() {
-	LARGE_INTEGER t;
-	double microseconds;
-	static LARGE_INTEGER offset;
-	static double counts_per_nanosec;
-	static int initialized = 0;
-	static BOOL use_performance_counter = 0;
-
-	if (!initialized) {
-		LARGE_INTEGER freq;
-		initialized = 1;
-		use_performance_counter = QueryPerformanceFrequency(&freq);
-		if (use_performance_counter) {
-			QueryPerformanceCounter(&offset);
-			counts_per_nanosec = freq.QuadPart / 1e9;
-		} else {
-			offset = getFILETIMEoffset();
-			counts_per_nanosec = .01;     // 10 per microsec
-		}
-	}
-	if (use_performance_counter) {
-		QueryPerformanceCounter(&t);
-	} else {
-		FILETIME f;
-		GetSystemTimeAsFileTime(&f);
-		t.QuadPart = f.dwHighDateTime;
-		t.QuadPart <<= 32;
-		t.QuadPart |= f.dwLowDateTime;
-	}
-
-	t.QuadPart -= offset.QuadPart;
-	return t.QuadPart / counts_per_nanosec;
-}
-
 void winsock_cleanup() {
 	WSACleanup();
 }

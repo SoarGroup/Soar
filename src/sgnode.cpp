@@ -81,37 +81,10 @@ vec3 sgnode::get_trans(char type) const {
 	}
 }
 
-vec4 sgnode::get_quaternion() const {
-	double halfyaw = rot(0) / 2, halfpitch = rot(1) / 2, halfroll = rot(2) / 2;  
-	double cosyaw = cos(halfyaw);
- 	double sinyaw = sin(halfyaw);
-	double cospitch = cos(halfpitch);
-	double sinpitch = sin(halfpitch);
-	double cosroll = cos(halfroll);
-	double sinroll = sin(halfroll);
-	return vec4(cosroll * sinpitch * cosyaw + sinroll * cospitch * sinyaw,
-	            cosroll * cospitch * sinyaw - sinroll * sinpitch * cosyaw,
-	            sinroll * cospitch * cosyaw - cosroll * sinpitch * sinyaw,
-	            cosroll * cospitch * cosyaw + sinroll * sinpitch * sinyaw);
-}
-
 void sgnode::get_trans(vec3 &p, vec3 &r, vec3 &s) const {
 	p = pos;
 	r = rot;
 	s = scale;
-}
-
-void sgnode::get_world_trans(vec3 &p, vec3 &r, vec3 &s) const {
-	if (parent) {
-		parent->update_transform();
-		p = parent->wtransform(pos);
-		r = parent->wtransform(rot);
-		s = parent->wtransform(scale);
-	} else {
-		p = pos;
-		r = rot;
-		s = scale;
-	}
 }
 
 void sgnode::set_transform_dirty() {
@@ -150,12 +123,12 @@ void sgnode::update_transform() const {
 
 /* if updates result in observers removing themselves, the iteration may
  * screw up, so make a copy of the std::list first */
-void sgnode::send_update(sgnode::change_type t, int added) {
+void sgnode::send_update(sgnode::change_type t, const std::string& update_info) {
 	std::list<sgnode_listener*>::iterator i;
 	std::list<sgnode_listener*> c;
 	std::copy(listeners.begin(), listeners.end(), back_inserter(c));
 	for (i = c.begin(); i != c.end(); ++i) {
-		(**i).node_update(this, t, added);
+		(**i).node_update(this, t, update_info);
 	}
 }
 
@@ -196,20 +169,18 @@ const transform3 &sgnode::get_world_trans() const {
 }
 
 group_node *sgnode::as_group() {
-	group_node *g = dynamic_cast<group_node*>(this);
-	assert(g);
-	return g;
+	return dynamic_cast<group_node*>(this);
 }
 
 const group_node *sgnode::as_group() const {
-	const group_node *g = dynamic_cast<const group_node*>(this);
-	assert(g);
-	return g;
+	return dynamic_cast<const group_node*>(this);
 }
 
 sgnode *sgnode::clone() const {
 	sgnode *c = clone_sub();
 	c->set_trans(pos, rot, scale);
+	c->string_props = string_props;
+	c->numeric_props = numeric_props;
 	return c;
 }
 
@@ -222,27 +193,60 @@ bool sgnode::has_descendent(const sgnode *n) const {
 }
 
 void sgnode::proxy_use_sub(const vector<string> &args, ostream &os) {
-	table_printer t, t1;
+	vec3 lp, ls, wp, ws;
+	vec4 lr, wr;
+	table_printer t, t1, t2, t3;
+	
 	t.add_row() << "id:"     << id;
 	t.add_row() << "name:"   << name;
 	t.add_row() << "type:"   << type;
 	t.add_row() << "parent:" << (parent ? parent->get_name() : "none");
 	t.print(os);
-	os << endl;
 	
+	os << endl << "Local transform:" << endl;
+	update_transform();
+	ltransform.to_prs(lp, lr, ls);
 	t1.add_row() << "pos:";
 	for (int i = 0; i < 3; ++i) {
-		t1 << pos(i);
+		t1 << lp(i);
 	}
 	t1.add_row() << "rot:";
-	for (int i = 0; i < 3; ++i) {
-		t1 << rot(i);
+	for (int i = 0; i < 4; ++i) {
+		t1 << lr(i);
 	}
 	t1.add_row() << "scale:";
 	for (int i = 0; i < 3; ++i) {
-		t1 << scale(i);
+		t1 << ls(i);
 	}
 	t1.print(os);
+
+	wtransform.to_prs(wp, wr, ws);
+	os << endl << "World transform:" << endl;
+	t2.add_row() << "pos:";
+	for (int i = 0; i < 3; ++i) {
+		t2 << wp(i);
+	}
+	t2.add_row() << "rot:";
+	for (int i = 0; i < 4; ++i) {
+		t2 << wr(i);
+	}
+	t2.add_row() << "scale:";
+	for (int i = 0; i < 3; ++i) {
+		t2 << ws(i);
+	}
+	t2.print(os);
+
+	numeric_properties_map::const_iterator ni, ni_end;
+	string_properties_map::const_iterator si, si_end;
+	
+	os << endl << "Custom properties:" << endl;
+	for (ni = numeric_props.begin(), ni_end = numeric_props.end(); ni != ni_end; ++ni) {
+		t3.add_row() << ni->first << ni->second;
+	}
+	for (si = string_props.begin(), si_end = string_props.end(); si != si_end; ++si) {
+		t3.add_row() << si->first << si->second;
+	}
+	t3.print(os);
 }
 
 group_node::~group_node() {
@@ -303,7 +307,8 @@ bool group_node::attach_child(sgnode *c) {
 	c->parent = this;
 	c->set_transform_dirty();
 	set_shape_dirty();
-	send_update(sgnode::CHILD_ADDED, children.size() - 1);
+	std::string added_num = tostring(children.size() - 1);
+	send_update(sgnode::CHILD_ADDED, added_num);
 	
 	return true;
 }
@@ -375,7 +380,7 @@ void geometry_node::walk_geoms(std::vector<const geometry_node*> &g) const {
 }
 
 convex_node::convex_node(const string &name, const string &type, const ptlist &v)
-: geometry_node(name, type), verts(v), dirty(true)
+: geometry_node(name, type), verts(v), world_verts_dirty(true)
 {}
 
 sgnode *convex_node::clone_sub() const {
@@ -387,20 +392,21 @@ void convex_node::update_shape() {
 }
 
 void convex_node::set_transform_dirty_sub() {
-	dirty = true;
+	world_verts_dirty = true;
 }
 
 void convex_node::set_verts(const ptlist &v) {
 	verts = v;
-	dirty = true;
+	world_verts_dirty = true;
+	set_shape_dirty();
 }
 
 const ptlist &convex_node::get_world_verts() const {
-	if (dirty) {
+	if (world_verts_dirty) {
 		world_verts.clear();
 		world_verts.resize(verts.size());
 		transform(verts.begin(), verts.end(), world_verts.begin(), get_world_trans());
-		dirty = false;
+		world_verts_dirty = false;
 	}
 	return world_verts;
 }
@@ -580,4 +586,32 @@ bool intersects(const sgnode *n1, const sgnode *n2) {
 		return convex_distance(n1, n2) < INTERSECT_THRESH;
 	}
 	return false;
+}
+
+void sgnode::set_property(const std::string& propertyName, const std::string& value){
+	double numericValue;
+	if(parse_double(value, numericValue)){
+		numeric_props[propertyName] = numericValue;
+	} else {
+		string_props[propertyName] = value;
+	}
+	send_update(sgnode::PROPERTY_CHANGED, propertyName);
+}
+
+void sgnode::set_property(const std::string& propertyName, double value){
+	numeric_props[propertyName] = value;
+	send_update(sgnode::PROPERTY_CHANGED, propertyName);
+}
+
+void sgnode::delete_property(const std::string& propertyName){
+	bool deleted = false;
+	if(numeric_props.erase(propertyName) > 0){
+		deleted = true;
+	}
+	if(string_props.erase(propertyName) > 0){
+		deleted = true;
+	}
+	if(deleted){
+		send_update(sgnode::PROPERTY_DELETED, propertyName);
+	}
 }

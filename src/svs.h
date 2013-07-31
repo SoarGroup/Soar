@@ -24,12 +24,17 @@ class sgwme : public sgnode_listener {
 public:
 	sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node);
 	~sgwme();
-	void node_update(sgnode *n, sgnode::change_type t, int added_child);
+	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info);
     Symbol * get_id(){ return id;}
 	sgnode * get_node(){ return node;}
 	std::map<sgwme*,wme*> *get_childs(){ return &childs;}
 private:
 	void add_child(sgnode *c);
+
+	// These will create/maintain wmes on the child svs object
+	// For properties added to the node
+	void update_property(const std::string& propertyName);
+	void delete_property(const std::string& propertyName);
 	
 	sgwme          *parent;
 	sgnode         *node;
@@ -38,6 +43,9 @@ private:
 	soar_interface *soarint;
 
 	std::map<sgwme*,wme*> childs;
+
+	// AM: Puts the properties of the node onto the WM graph
+	std::map<std::string, wme*> properties;
 
 };
 
@@ -63,7 +71,7 @@ typedef std::vector<output_dim_spec> output_spec;
 */
 class svs_state : public cliproxy {
 public:
-	svs_state(svs *svsp, Symbol *state, soar_interface *soar);
+	svs_state(svs *svsp, Symbol *state, soar_interface *soar, scene *scn);
 	svs_state(Symbol *state, svs_state *parent);
 
 	~svs_state();
@@ -73,20 +81,24 @@ public:
 	void           update_scene_num();
 	void           clear_scene();
 	
+	std::string    get_name() const      { return name;      }
 	int            get_level() const     { return level;     }
 	int            get_scene_num() const { return scene_num; }
 	scene         *get_scene() const     { return scn;       }
 	Symbol        *get_state()           { return state;     }
 	svs           *get_svs()             { return svsp;      }
 	multi_model   *get_model()           { return mmdl;      }
-	Symbol *       get_sgnode_id(const sgnode *n, sgwme *r); //JK
-	Symbol *       get_sgnode_id(const sgnode *n); //JK
 	void set_output(const rvec &out);
 	bool get_output(rvec &out) const;
 	const output_spec *get_output_spec() const { return outspec; }
 	
 	void update_models();
-	void refresh_view();
+	
+	/*
+	 Should only be called by svs::state_deletion_callback to save top-state scene
+	 during init.
+	*/
+	void disown_scene();
 
 private:
 	void init();
@@ -96,6 +108,7 @@ private:
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_out(const std::vector<std::string> &args, std::ostream &os);
 
+	std::string     name;
 	svs            *svsp;
 	int             level;
 	svs_state      *parent;
@@ -158,6 +171,7 @@ private:
 	void cli_connect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_disconnect_viewer(const std::vector<std::string> &args, std::ostream &os);
 	void cli_use_models(const std::vector<std::string> &args, std::ostream &os);
+	void cli_add_model(const std::vector<std::string> &args, std::ostream &os);
 
 	soar_interface           *si;
 	std::vector<svs_state*>   state_stack;
@@ -167,6 +181,7 @@ private:
 	mutable drawer           *draw;
 	bool                      use_models;
 	bool                      record_movie;
+	scene                    *scn_cache;      // temporarily holds top-state scene during init
 	
 	std::map<std::string, model*> models;
 	

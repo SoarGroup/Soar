@@ -345,35 +345,11 @@ std::ostream& operator<<(std::ostream &os, const bbox &b);
 
 class transform3 {
 public:
-	transform3() {}
-	
-	transform3(const transform3 &t) : trans(t.trans) {}
-	
-	transform3(char type, const vec3 &v) {
-		switch(type) {
-			case 'p':
-				trans = Eigen::Translation<double, 3>(v);
-				break;
-			case 'r':
-				trans = Eigen::AngleAxisd(v(2), Eigen::Vector3d::UnitZ()) *
-				        Eigen::AngleAxisd(v(1), Eigen::Vector3d::UnitY()) *
-				        Eigen::AngleAxisd(v(0), Eigen::Vector3d::UnitX()) ;
-				break;
-			case 's':
-				trans = Eigen::Scaling(v);
-				break;
-			default:
-				assert(false);
-		}
-	}
-	
-	transform3(const vec3 &p, const vec3 &r, const vec3 &s) {
-		trans = Eigen::Translation<double, 3>(p) *
-		        Eigen::AngleAxisd(r(2), Eigen::Vector3d::UnitZ()) *
-		        Eigen::AngleAxisd(r(1), Eigen::Vector3d::UnitY()) *
-		        Eigen::AngleAxisd(r(0), Eigen::Vector3d::UnitX()) *
-		        Eigen::Scaling(s);
-	}
+	transform3();
+	transform3(const transform3 &t);
+	transform3(char type, const vec3 &v);
+	transform3(const vec3 &p, const vec3 &r, const vec3 &s);
+	void to_prs(vec3 &p, vec4 &r, vec3 &s) const;
 	
 	vec3 operator()(const vec3 &v) const {
 		return trans * v;

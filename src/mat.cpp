@@ -337,3 +337,45 @@ void unserialize(cvec &v, istream &is) {
 	assert(m.cols() == 1);
 	v = m.col(0);
 }
+
+transform3::transform3() {}
+	
+transform3::transform3(const transform3 &t) : trans(t.trans) {}
+	
+transform3::transform3(char type, const vec3 &v) {
+	switch(type) {
+		case 'p':
+			trans = Eigen::Translation<double, 3>(v);
+			break;
+		case 'r':
+			trans = Eigen::AngleAxisd(v(2), Eigen::Vector3d::UnitZ()) *
+			        Eigen::AngleAxisd(v(1), Eigen::Vector3d::UnitY()) *
+			        Eigen::AngleAxisd(v(0), Eigen::Vector3d::UnitX()) ;
+			break;
+		case 's':
+			trans = Eigen::Scaling(v);
+			break;
+		default:
+			assert(false);
+	}
+}
+	
+transform3::transform3(const vec3 &p, const vec3 &r, const vec3 &s) {
+	trans = Eigen::Translation<double, 3>(p) *
+	        Eigen::AngleAxisd(r(2), Eigen::Vector3d::UnitZ()) *
+	        Eigen::AngleAxisd(r(1), Eigen::Vector3d::UnitY()) *
+	        Eigen::AngleAxisd(r(0), Eigen::Vector3d::UnitX()) *
+	        Eigen::Scaling(s);
+}
+	
+void transform3::to_prs(vec3 &p, vec4 &r, vec3 &s) const {
+	Eigen::Matrix3d rm, sm;
+	
+	p = trans.translation();
+	trans.computeRotationScaling(&rm, &sm);
+	
+	Eigen::Quaterniond q(rm);
+	r(0) = q.x(); r(1) = q.y(); r(2) = q.z(); r(3) = q.w();
+	
+	s(0) = sm(0,0); s(1) = sm(1,1); s(2) = sm(2,2);
+}

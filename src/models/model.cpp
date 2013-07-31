@@ -7,9 +7,35 @@
 #include <limits>
 #include "serialize.h"
 #include "model.h"
+#include "svs.h"
 
 using namespace std;
 
+model *_make_null_model_(svs *owner, const string &name);
+model *_make_lwr_model_ (svs *owner, const string &name);
+model *_make_em_model_  (svs *owner, const string &name);
+
+struct model_constructor_table_entry {
+	const char *type;
+	model* (*func)(svs*, const string&);
+};
+
+static model_constructor_table_entry constructor_table[] = {
+	{ "null",        _make_null_model_},
+	{ "lwr",         _make_lwr_model_},
+	{ "em",          _make_em_model_},
+};
+
+model *make_model(svs *owner, const string &name, const string &type) {
+	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
+
+	for (int i = 0; i < table_size; ++i) {
+		if (type == constructor_table[i].type) {
+			return constructor_table[i].func(owner, name);
+		}
+	}
+	return NULL;
+}
 
 void slice(const rvec &src, rvec &tgt, const vector<int> &srcinds, const vector<int> &tgtinds) {
 	if (srcinds.empty() && tgtinds.empty()) {
@@ -26,12 +52,10 @@ void slice(const rvec &src, rvec &tgt, const vector<int> &srcinds, const vector<
 	}
 }
 
-bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vector<int> &obj_inds, vector<int> &prop_inds) {
+bool find_prop_inds(const scene_sig &sig, const vector<multi_model::obj_prop> &pv, vector<int> &obj_inds, vector<int> &prop_inds) {
 	int oind, pind;
 	for (int i = 0; i < pv.size(); ++i) {
-		const string &obj = pv[i].first;
-		const string &prop = pv[i].second;
-		if (!sig.get_dim(pv[i].first, pv[i].second, oind, pind)) {
+		if (!sig.get_dim(pv[i].object, pv[i].property, oind, pind)) {
 			return false;
 		}
 		if (obj_inds.empty() || obj_inds.back() != oind) {
@@ -39,6 +63,17 @@ bool find_prop_inds(const scene_sig &sig, const multi_model::prop_vec &pv, vecto
 		}
 		prop_inds.push_back(pind);
 	}
+	return true;
+}
+
+bool split_props(const string &unsplit, multi_model::obj_prop &out) {
+	vector<string> fields;
+	split(unsplit, ":", fields);
+	if (fields.size() != 2) {
+		return false;
+	}
+	out.object = fields[0];
+	out.property = fields[1];
 	return true;
 }
 
@@ -179,8 +214,8 @@ void multi_model::learn(const scene_sig &sig, const relation_table &rels, const 
 
 string multi_model::assign_model
 ( const string &name, 
-  const prop_vec &inputs, bool all_inputs,
-  const prop_vec &outputs)
+  const vector<string> &inputs, bool all_inputs,
+  const vector<string> &outputs)
 {
 	model *m;
 	model_config *cfg;
@@ -195,15 +230,27 @@ string multi_model::assign_model
 	cfg->allx = all_inputs;
 	if (!all_inputs) {
 		if (m->get_input_size() >= 0 && m->get_input_size() != inputs.size()) {
-			return "size mismatch";
+			return "input size mismatch";
 		}
-		cfg->xprops = inputs;
+		for (int i = 0, iend = inputs.size(); i < iend; ++i) {
+			obj_prop p;
+			if (!split_props(inputs[i], p)) {
+				return "invalid property name";
+			}
+			cfg->xprops.push_back(p);
+		}
 	}
 	
 	if (m->get_output_size() >= 0 && m->get_output_size() != outputs.size()) {
-		return "size mismatch";
+		return "output size mismatch";
 	}
-	cfg->yprops = outputs;
+	for (int i = 0, iend = outputs.size(); i < iend; ++i) {
+		obj_prop p;
+		if (!split_props(outputs[i], p)) {
+			return "invalid property name";
+		}
+		cfg->yprops.push_back(p);
+	}
 	
 	active_models.push_back(cfg);
 	return "";
@@ -230,16 +277,60 @@ void multi_model::proxy_use_sub(const vector<string> &args, ostream &os) {
 		} else {
 			os << indent << "xdims: ";
 			for (int i = 0; i < c->xprops.size(); ++i) {
-				os << c->xprops[i].first << ":" << c->xprops[i].second << " ";
+				os << c->xprops[i].object << ":" << c->xprops[i].property << " ";
 			}
 			os << endl;
 		}
 		os << indent << "ydims: ";
 		for (int i = 0; i < c->yprops.size(); ++i) {
-			os << c->yprops[i].first << ":" << c->yprops[i].second << " ";
+			os << c->yprops[i].object << ":" << c->yprops[i].property << " ";
 		}
 		os << endl;
 	}
+}
+
+void multi_model::proxy_get_children(std::map<std::string, cliproxy*> &c) {
+	c["assign"] = new memfunc_proxy<multi_model>(this, &multi_model::cli_assign);
+	c["assign"]->set_help("Assign a model to predict properties.")
+	             .add_arg("NAME", "Model name.")
+	             .add_arg("[-i OBJECT:PROPERTY ...]", "List of input properties.")
+	             .add_arg("[[-o] OBJECT:PROPERTY ...]", "List of output properties.");
+}
+
+void multi_model::cli_assign(const vector<string> &args, ostream &os) {
+	vector<string> inputs, outputs;
+	bool all_inputs;
+	char type;
+	
+	if (args.size() < 1) {
+		os << "Specify model name." << endl;
+		return;
+	}
+	
+	// assume using all inputs unless inputs explicitly provided
+	all_inputs = true;
+	type = 'o';
+	for (int i = 1, iend = args.size(); i < iend; ++i) {
+		if (args[i] == "-i") {
+			all_inputs = false;
+			type = 'i';
+			continue;
+		}
+		if (args[i] == "-o") {
+			type = 'o';
+			continue;
+		}
+		if (type == 'i') {
+			inputs.push_back(args[i]);
+		} else {
+			outputs.push_back(args[i]);
+		}
+	}
+	if (outputs.empty()) {
+		os << "Specify at least one output." << endl;
+		return;
+	}
+	os << assign_model(args[0], inputs, all_inputs, outputs) << endl;
 }
 
 model_train_data::model_train_data() {}
@@ -351,6 +442,7 @@ void model_train_data::unserialize(istream &is) {
 void model_train_data::proxy_get_children(map<string, cliproxy*> &c) {
 	c["rels"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_relations);
 	c["cont"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_contdata);
+	c["signatures"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_sigs);
 	c["save"] = new memfunc_proxy<model_train_data>(this, &model_train_data::cli_save);
 }
 
@@ -380,7 +472,7 @@ void model_train_data::cli_relations(const vector<string> &args, ostream &os) co
 
 	relation matches(*r);
 
-	tuple t(1);
+	int_tuple t(1);
 	int j, k;
 	for (j = i + 1, k = 0; j < args.size() && k < matches.arity(); ++j, ++k) {
 		if (args[j] != "*") {
@@ -426,6 +518,24 @@ void model_train_data::cli_contdata(const vector<string> &args, ostream &os) con
 		}
 	}
 	t.print(os);
+}
+
+void model_train_data::cli_sigs(const vector<string> &args, ostream &os) const {
+	if (args.size() > 0) {
+		int i;
+		if (!parse_int(args[0], i)) {
+			os << "specify a valid signature index" << endl;
+			return;
+		}
+		sigs[i]->print(os);
+	}
+
+	for (int i = 0, iend = sigs.size(); i < iend; ++i) {
+		if (i > 0) {
+			os << endl << endl;
+		}
+		sigs[i]->print(os);
+	}
 }
 
 void model_train_data::cli_save(const vector<string> &args, ostream &os) const {

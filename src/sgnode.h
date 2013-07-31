@@ -14,6 +14,9 @@ class sgnode_listener;
 class group_node;
 class geometry_node;
 
+typedef std::map<std::string, std::string> string_properties_map;
+typedef std::map<std::string, double> numeric_properties_map;
+
 class sgnode : public cliproxy {
 	friend class group_node;
 	
@@ -22,7 +25,9 @@ public:
 		CHILD_ADDED,
 		DELETED,        // sent from destructor
 		TRANSFORM_CHANGED,
-		SHAPE_CHANGED
+		SHAPE_CHANGED,
+		PROPERTY_CHANGED,
+		PROPERTY_DELETED
 	};
 	
 	sgnode(const std::string &name, const std::string &type, bool group);
@@ -56,12 +61,13 @@ public:
 	void set_trans(const vec3 &p, const vec3 &r, const vec3 &s);
 	vec3 get_trans(char type) const;
 	void get_trans(vec3 &p, vec3 &r, vec3 &s) const;
-	void get_world_trans(vec3 &p, vec3 &r, vec3 &s) const;
-	vec4 get_quaternion() const;
+	const transform3 &get_world_trans() const;
 	
 	void set_shape_dirty();
 	void listen(sgnode_listener *o);
 	void unlisten(sgnode_listener *o);
+	void get_listeners(std::list<sgnode_listener*> &l) const { l = listeners; }
+	
 	const bbox &get_bounds() const;
 	vec3 get_centroid() const;
 	bool has_descendent(const sgnode *n) const;
@@ -73,9 +79,15 @@ public:
 
 	virtual void walk_geoms(std::vector<geometry_node*> &g) = 0;
 	virtual void walk_geoms(std::vector<const geometry_node*> &g) const = 0;
-	
+
+	// AM: accessors/mutators for node properties
+	const string_properties_map  &get_string_properties() const  { return string_props; }
+	const numeric_properties_map &get_numeric_properties() const { return numeric_props; }
+	void set_property(const std::string& propertyName, const std::string& value);
+	void set_property(const std::string& propertyName, double value);
+	void delete_property(const std::string& propertyName);
+
 protected:
-	const transform3 &get_world_trans() const;
 	void set_bounds(const bbox &b);
 	virtual void update_shape() = 0;
 	virtual sgnode *clone_sub() const = 0;
@@ -84,7 +96,11 @@ protected:
 private:
 	void set_transform_dirty();
 	void update_transform() const;
-	void send_update(change_type t, int added=-1);
+	void send_update(change_type t, const std::string& update_info);
+	void send_update(change_type t){
+		std::string s = "";
+		send_update(t, s);
+	}
 	
 	int         id;
 	std::string name;
@@ -106,6 +122,10 @@ private:
 	mutable bool       trans_dirty;
 	
 	std::list<sgnode_listener*> listeners;
+
+	// AM: Maps that hold both numeric and string properties
+	string_properties_map string_props;
+	numeric_properties_map numeric_props;
 };
 
 class group_node : public sgnode {
@@ -173,7 +193,7 @@ private:
 	
 	ptlist verts;
 	mutable ptlist world_verts;
-	mutable bool dirty;
+	mutable bool world_verts_dirty;
 };
 
 class ball_node : public geometry_node {
@@ -199,7 +219,7 @@ private:
 
 class sgnode_listener {
 public:
-	virtual void node_update(sgnode *n, sgnode::change_type t, int added_child) = 0;
+	virtual void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) = 0;
 };
 
 double convex_distance(const sgnode *n1, const sgnode *n2);

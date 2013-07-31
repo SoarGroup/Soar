@@ -1,6 +1,6 @@
-import sys
+import sys, platform
 
-Import('env', 'compiler')
+Import('env', 'compiler', 'lsb_build')
 
 # svs viewer
 viewer_env = env.Clone()
@@ -21,28 +21,48 @@ if compiler == 'msvc':
 else:
 	viewer_src.append('viewer/platform_specific/posix.c')
 	if sys.platform == 'darwin':
-		opengl_libs = []
-		frameworks = [ 'Cocoa', 'OpenGL', 'IOKit' ]  # osx uses opengl as a framework instead of libraries
+		viewer_src.extend(Glob('glfw/lib/cocoa/*.c') + Glob('glfw/lib/cocoa/*.m'))
+		opengl_libs = []  # osx uses opengl as a framework instead of libraries
 		viewer_env.Append(
 			CPPFLAGS  = [ '-fno-common' ],
 			CPPPATH   = [ 'glfw/lib/cocoa/' ],
 		)
-		for f in frameworks:
+		for f in [ 'Cocoa', 'OpenGL', 'IOKit' ]:
 			viewer_env.Append(LINKFLAGS = [ '-framework', f ])
-		
-		viewer_src.extend(Glob('glfw/lib/cocoa/*.c') + Glob('glfw/lib/cocoa/*.m'))
 	else:
+		viewer_src.extend(Glob('glfw/lib/x11/*.c'))
 		opengl_libs = [ 'GL', 'GLU' ]
 		viewer_env.Append(
-			CPPFLAGS  = [ '-D_GLFW_HAS_PTHREAD', '-D_GLFW_HAS_SYSCONF', '-D_GLFW_HAS_SCHED_YIELD', '-pthread' ],
-			CPPPATH   = [ 'glfw/lib/x11' ],
-			LIBS      = [ 'm', 'pthread', 'X11' ] + opengl_libs,
+			CPPFLAGS = [
+				'-pthread',
+				'-D_GLFW_HAS_PTHREAD',
+				'-D_GLFW_HAS_SYSCONF',
+				'-D_GLFW_HAS_SCHED_YIELD',
+			],
+			CPPPATH = [ 'glfw/lib/x11' ],
+			LIBS    = [ 'm', 'pthread', 'X11', 'rt' ] + opengl_libs,
 		)
-		viewer_src.extend(Glob('glfw/lib/x11/*.c'))
 
-config = Configure(viewer_env)
-missing_libs = [ l for l in opengl_libs if not config.CheckLib(l)]
-viewer_env = config.Finish()
+conf = Configure(viewer_env)
+missing_libs = [ l for l in opengl_libs if not conf.CheckLib(l) ]
+
+if platform.system().startswith('Linux'):
+	PROCADDRESS_FUNCS = [
+		('glXGetProcAddressARB', 'GLXGETPROCADDRESSARB'),
+		('glXGetProcAddress',    'GLXGETPROCADDRESS'),
+		('glXGetProcAddressEXT', 'GLXGETPROCADDRESSEXT'),
+	]
+	macro = '_GLFW_HAS_DLOPEN'  # fallback
+	for f, m in PROCADDRESS_FUNCS:
+		if conf.CheckLibWithHeader('GL', 'GL/gl.h', 'C', '%s("");' % f):
+			macro = m
+			break;
+	viewer_env.Append(CPPFLAGS='-D_GLFW_HAS_' + macro)
+elif platform.system() == 'Darwin':
+	viewer_env.Append(CPPFLAGS='-D_GLFW_HAS_GLXGETPROCADDRESS')
+
+conf.Finish()
+
 if not missing_libs:
 	viewer_prog = viewer_env.Program('svs_viewer', viewer_src)
 	viewer_install = viewer_env.Alias('svs_viewer', viewer_env.Install('$OUT_DIR', viewer_prog))
@@ -57,8 +77,9 @@ test_install = env.Alias('test_svs', env.Install('$OUT_DIR', test_prog))
 svs_env = env.Clone()
 svs_env['LIBS'] = []
 
-srcdirs = ['src', 'src/filters', 'src/commands', 'src/models', 'src/algorithms']
-incdirs = [env.Dir(d).srcnode() for d in 'src src/algorithms src/models eigen ccd'.split()]
+srcdirs = ['src', 'src/filters', 'src/commands', 'src/models']
+incdirs = [env.Dir(d).srcnode() for d in 'src src/models eigen ccd'.split()]
+scu_src = ['SVS.cxx']
 
 if compiler == 'g++':
 	flags = [
@@ -70,12 +91,18 @@ if compiler == 'g++':
 		'-DEIGEN_DONT_ALIGN',
 		'-Wno-enum-compare',
 	]
+	if lsb_build:
+		flags.append('-DEIGEN_ALLOCA=aligned_malloc')   # alloca isn't in LSB
+	
 	if sys.platform == "darwin":
 		srcdirs.append('src/osx')
 		incdirs.append('src/osx')
+		scu_src.append('src/osx/platform_specific.cpp')
 	else:
 		srcdirs.append('src/posix')
 		incdirs.append('src/posix')
+		scu_src.append('src/posix/platform_specific.cpp')
+
 elif compiler == 'msvc':
 	flags = [
 		'/D', 'EIGEN_DONT_ALIGN',
@@ -84,10 +111,14 @@ elif compiler == 'msvc':
 	]
 	srcdirs.append('src/windows')
 	incdirs.append('src/windows')
+	scu_src.append('src/windows/platform_specific.cpp')
 
 src = []
-for d in srcdirs:
-	src += Glob(d + '/*.cpp')
+if env['SCU']:
+	src = scu_src
+else:
+	for d in srcdirs:
+		src += Glob(d + '/*.cpp')
 
 svs_env.Prepend(
 	CPPPATH = incdirs,
