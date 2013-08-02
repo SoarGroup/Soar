@@ -68,9 +68,6 @@ typedef std::list< instantiation* > inst_mpool_list;
 typedef std::list< condition* > cond_mpool_list;
 #endif
 
-/* Uncomment the following line to get instantiation printouts */
-/* #define DEBUG_INSTANTIATIONS */
-
 /* TEMPORARY HACK (Ideally this should be doable through
  the external kernel interface but for now using a
  couple of global STL lists to get this information
@@ -938,10 +935,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation *inst) {
 		assert(inst);
 		++next_iter;
 
-#ifdef DEBUG_INSTANTIATIONS
-		if (inst->prod)
-		print_with_symbols (thisAgent, "\nDeallocate instantiation of %y",inst->prod->name);
-#endif
+		dprint(DT_DEALLOCATES, "Deallocate instantiation of %s\n", (inst->prod ? inst->prod->name->to_string(thisAgent) : "no production name!!! (bug?)"));
 
 		level = inst->match_goal_level;
 
