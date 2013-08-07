@@ -151,6 +151,9 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
                                            (*sym)->var->name,
                                            thisAgent->newly_created_instantiations->prod->name->sc->name );
 
+  if (!strcmp((*sym)->var->name, "<s+3>"))
+    assert(true);
+
   hash_value = hash_variable_raw_info ((*sym)->var->name,ht->log2size);
   varname = reinterpret_cast<original_varname *>(*(ht->buckets + hash_value));
   for ( ; varname != NIL; varname = varname->next_in_hash_table)

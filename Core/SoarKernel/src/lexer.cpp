@@ -73,6 +73,8 @@
 
 #include <assert.h>
 
+extern void dprint_current_lexeme (TraceMode mode);
+
 //
 // These three should be safe for re-entrancy.  --JNW--
 //
@@ -806,10 +808,8 @@ void get_lexeme (agent* thisAgent) {
   else
     lex_eof(thisAgent);
 
-#ifdef DEBUG_TRACE_PARSER
-  print(thisAgent,  "Parser| get_lexeme read ");
-  debug_print_current_lexeme(thisAgent);
-#endif
+  dprint(DT_PARSER, "Parser| get_lexeme read ");
+  dprint_current_lexeme(DT_PARSER);
 
 }
 

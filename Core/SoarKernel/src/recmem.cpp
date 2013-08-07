@@ -56,6 +56,8 @@
 #include <string> // SBW 8/4/08
 #include <list>
 
+extern void dprint_instantiation (TraceMode mode, instantiation *inst);
+
 using namespace soar_TraceNames;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
@@ -836,10 +838,10 @@ void create_instantiation(agent* thisAgent, production *prod,
   }
 
 	deallocate_action_list (thisAgent, rhs_vars);
-#ifdef DEBUG_TRACE_PRINT_INSTANTIATIONS
-	print(thisAgent,  "\nCreate_instantiation created: \n");
-	debug_print_instantiation(inst);
-#endif
+
+	dprint(DT_PRINT_INSTANTIATIONS,  "\nCreate_instantiation created: \n");
+	dprint_instantiation(DT_PRINT_INSTANTIATIONS, inst);
+
 	if (!thisAgent->system_halted) {
 		/* --- invoke callback function --- */
 		soar_invoke_callbacks(thisAgent, FIRING_CALLBACK,

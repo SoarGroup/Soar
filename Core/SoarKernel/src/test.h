@@ -101,8 +101,8 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_u
 void add_all_variables_in_test (agent* thisAgent, test t, tc_number tc, list **var_list);
 void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc, ::list **var_list);
 
-extern const char *test_type_to_string(byte test_type);
-extern void print_test (agent* thisAgent, test t, const char *indent_string = "        ", const char *conj_indent_string = "+ ");
-extern void print_test_brief (agent* thisAgent, test t, bool trailing_space=true);
+/* UITODO| Make this method of Test */
+const char *test_type_to_string(byte test_type);
+const char *test_type_to_string_brief(byte test_type);
 
 #endif /* TEST_H_ */
