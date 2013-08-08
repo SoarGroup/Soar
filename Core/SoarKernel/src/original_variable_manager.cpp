@@ -169,8 +169,8 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
          *    instantiation. Note that we do not need to increase refcount, since caller will
          *    increase the refcount again when it uses the symbol in a test. -- */
 
-        dprint(DT_ORIGINAL_VAR_MANAGER, "...found existing unique sym %s (%s) for this instantiation.\n",
-                                          varname->current_unique_var_symbol->var->name, (*sym)->var->name);
+        dprint(DT_ORIGINAL_VAR_MANAGER, "...found existing mapping %s -> %s for this instantiation.\n",
+                (*sym)->var->name, varname->current_unique_var_symbol->var->name);
         *sym = varname->current_unique_var_symbol;
 
         return;
