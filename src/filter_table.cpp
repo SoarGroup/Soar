@@ -260,7 +260,7 @@ void filter_table::update_relations(const scene *scn, const vector<int> &dirty, 
 						} else {
 							// true for all permutations
 							single_combination_generator<int> gen2(arg_ids, arg_ids.size(), true, e->allow_repeat);
-							tuple perm;
+							int_tuple perm;
 							while (gen2.next(perm)) {
 								r.add(time, perm);
 							}

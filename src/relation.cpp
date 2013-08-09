@@ -5,12 +5,12 @@
 using namespace std;
 
 struct sliced_relation_tuple {
-	tuple match;
-	tuple extend;
+	int_tuple match;
+	int_tuple extend;
 	const interval_set *lead;
 }; 
 
-void slice_tuple(const tuple &t1, const tuple &inds, tuple &t2) {
+void slice_tuple(const int_tuple &t1, const int_tuple &inds, int_tuple &t2) {
 	int n = inds.size();
 	t2.clear();
 	t2.resize(inds.size());
@@ -19,8 +19,8 @@ void slice_tuple(const tuple &t1, const tuple &inds, tuple &t2) {
 	}
 }
 
-tuple concat_tuples(const tuple &t1, const tuple &t2) {
-	tuple t3(t1.begin(), t1.end());
+int_tuple concat_tuples(const int_tuple &t1, const int_tuple &t2) {
+	int_tuple t3(t1.begin(), t1.end());
 	t3.insert(t3.end(), t2.begin(), t2.end());
 	return t3;
 }
@@ -383,21 +383,21 @@ relation::relation(const relation &r)
 : sz(r.sz), arty(r.arty), tuples(r.tuples)
 {}
 	
-relation::relation(int n, const vector<tuple> &ts)
+relation::relation(int n, const vector<int_tuple> &ts)
 : sz(ts.size()), arty(n)
 {
 	assert(arty > 0);
-	vector<tuple>::const_iterator i;
+	vector<int_tuple>::const_iterator i;
 	for (i = ts.begin(); i != ts.end(); ++i) {
 		assert(i->size() == arty);
-		tuple tail(i->begin() + 1, i->end());
+		int_tuple tail(i->begin() + 1, i->end());
 		tuples[tail].insert(i->front());
 	}
 }
 	
-bool relation::contains(const tuple &t) const {
+bool relation::contains(const int_tuple &t) const {
 	assert(t.size() == arty);
-	tuple tail(t.begin() + 1, t.end());
+	int_tuple tail(t.begin() + 1, t.end());
 	tuple_map::const_iterator i = tuples.find(tail);
 	if (i == tuples.end()) {
 		return false;
@@ -405,14 +405,14 @@ bool relation::contains(const tuple &t) const {
 	return i->second.contains(t[0]);
 }
 
-void relation::slice(const tuple &inds, relation &out) const {
+void relation::slice(const int_tuple &inds, relation &out) const {
 	assert(0 < inds.size() && inds.size() <= arty && inds[0] == 0 && out.arity() == inds.size());
-	tuple tinds;
+	int_tuple tinds;
 	for (int i = 1; i < inds.size(); ++i) {
 		tinds.push_back(inds[i] - 1);
 	}
 	
-	tuple t;
+	int_tuple t;
 	tuple_map::const_iterator i;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
 		slice_tuple(i->first, tinds, t);
@@ -429,7 +429,7 @@ void relation::slice(int n, relation &out) const {
 	}
 	tuple_map::const_iterator i;
 	for (i = tuples.begin(); i != tuples.end(); ++i) {
-		tuple t(i->first);
+		int_tuple t(i->first);
 		t.resize(n - 1);
 		out.tuples[t].unify(i->second);
 	}
@@ -451,10 +451,10 @@ relation &relation::operator=(const relation &r) {
  Remove all tuples in this relation that does not match any tuple in r
  along indexes inds.
 */
-void relation::intersect(const tuple &inds, const relation &r) {
+void relation::intersect(const int_tuple &inds, const relation &r) {
 	assert(!inds.empty() && inds.front() == 0);
-	tuple s;
-	tuple tinds;
+	int_tuple s;
+	int_tuple tinds;
 	for (int i = 1; i < inds.size(); ++i) {
 		tinds.push_back(inds[i] - 1);
 	}
@@ -514,10 +514,10 @@ void relation::subtract(const relation &r, relation &out) const {
  Remove all tuples in this relation that matches some tuple in r along indexes
  inds.
 */
-void relation::subtract(const tuple &inds, const relation &r) {
+void relation::subtract(const int_tuple &inds, const relation &r) {
 	assert(!inds.empty() && inds.front() == 0);
-	tuple s;
-	tuple tinds;
+	int_tuple s;
+	int_tuple tinds;
 	for (int i = 1; i < inds.size(); ++i) {
 		tinds.push_back(inds[i] - 1);
 	}
@@ -540,12 +540,12 @@ void relation::subtract(const tuple &inds, const relation &r) {
  completion, this relation will contain all such t1's.
 */
 void relation::expand(const relation  &r,
-                      const tuple &match1,
-                      const tuple &match2,
-                      const tuple &extend)
+                      const int_tuple &match1,
+                      const int_tuple &match2,
+                      const int_tuple &extend)
 {
 	assert(!match1.empty() && match1.front() == 0 && !match2.empty() && match2.front() == 0);
-	tuple m1, m2, ex;
+	int_tuple m1, m2, ex;
 
 	for (int i = 1; i < match1.size(); ++i) {
 		m1.push_back(match1[i] - 1);
@@ -571,7 +571,7 @@ void relation::expand(const relation  &r,
 	}
 	
 	sz = 0;
-	tuple t1, t2;
+	int_tuple t1, t2;
 	for (i = old_tuples.begin(); i != old_tuples.end(); ++i) {
 		slice_tuple(i->first, m1, t1);
 		for (int j = 0; j < sliced.size(); ++j) {
@@ -587,15 +587,15 @@ void relation::expand(const relation  &r,
 }
 
 void relation::count_expansion(const relation  &r,
-                               const tuple &match1,
-                               const tuple &match2,
+                               const int_tuple &match1,
+                               const int_tuple &match2,
 							   int &matched,
 							   int &new_size) const
 {
 	assert(!match1.empty() && match1.front() == 0 && !match2.empty() && match2.front() == 0);
-	tuple m1, m2;
+	int_tuple m1, m2;
 	tuple_map::const_iterator i;
-	tuple t1, t2;
+	int_tuple t1, t2;
 
 	for (int i = 1; i < match1.size(); ++i) {
 		m1.push_back(match1[i] - 1);
@@ -630,14 +630,14 @@ void relation::count_expansion(const relation  &r,
 	}
 }
 
-void relation::add(const tuple &t) {
+void relation::add(const int_tuple &t) {
 	assert(t.size() == arty);
-	tuple tail(arty - 1);
+	int_tuple tail(arty - 1);
 	copy(t.begin() + 1, t.end(), tail.begin());
 	add(t[0], tail);
 }
 
-void relation::add(int i, const tuple &t) {
+void relation::add(int i, const int_tuple &t) {
 	assert(t.size() + 1 == arty);
 	if (tuples[t].insert(i)) {
 		++sz;
@@ -646,18 +646,18 @@ void relation::add(int i, const tuple &t) {
 
 void relation::add(int i, int n) {
 	assert(arty == 2);
-	tuple t(1, n);
+	int_tuple t(1, n);
 	add(i, t);
 }
 
-void relation::del(const tuple &t) {
+void relation::del(const int_tuple &t) {
 	assert(t.size() == arty);
-	tuple tail(arty - 1);
+	int_tuple tail(arty - 1);
 	copy(t.begin() + 1, t.end(), tail.begin());
 	del(t[0], tail);
 }
 
-void relation::del(int i, const tuple &t) {
+void relation::del(int i, const int_tuple &t) {
 	assert(t.size() + 1 == arty);
 	tuple_map::iterator j = tuples.find(t);
 	if (j != tuples.end()) {
@@ -669,7 +669,7 @@ void relation::del(int i, const tuple &t) {
 
 void relation::del(int i, int n) {
 	assert(arty == 2);
-	tuple t(1, n);
+	int_tuple t(1, n);
 	del(i, t);
 }
 
@@ -702,7 +702,7 @@ void relation::reset(int new_arity) {
  Remove tuples with unwanted values. vals specifies the values to keep for
  argument i. If complement is true, then keep the complement of vals.
 */
-void relation::filter(int i, tuple &vals, bool complement) {
+void relation::filter(int i, int_tuple &vals, bool complement) {
 	assert(0 <= i && i < arty);
 
 	tuple_map::iterator j, jend;
@@ -773,7 +773,7 @@ void relation::serialize(std::ostream &os) const {
 void relation::unserialize(std::istream &is) {
 	unserializer unsr(is);
 	int s, ntuples;
-	tuple tail;
+	int_tuple tail;
 	interval_set head;
 	char delim;
 	
@@ -801,7 +801,7 @@ void relation::dump_foil6(ostream &os, bool terminate) const {
 bool relation::load_foil6(istream &is) {
 	string line;
 	vector<string> fields;
-	tuple t(arty);
+	int_tuple t(arty);
 	
 	tuples.clear();
 	while (getline(is, line)) {
@@ -943,7 +943,7 @@ interval_set::const_iterator::const_iterator(const interval_set &is, bool begin)
 void extend_relations(relation_table &rels, const relation_table &add, int time) {
 	relation_table::const_iterator i, iend;
 	relation::const_iterator j, jend;
-	tuple t;
+	int_tuple t;
 	
 	for (i = add.begin(), iend = add.end(); i != iend; ++i) {
 		const string &name = i->first;
@@ -960,14 +960,14 @@ void extend_relations(relation_table &rels, const relation_table &add, int time)
 	}
 }
 
-void push_back_unique(tuple &t, int e) {
+void push_back_unique(int_tuple &t, int e) {
 	if (find(t.begin(), t.end(), e) == t.end()) {
 		t.push_back(e);
 	}
 }
 
 void get_context_rels(int target, const relation_table &rels, relation_table &context_rels) {
-	tuple close;
+	int_tuple close;
 	relation::const_iterator i, iend;
 	
 	/*

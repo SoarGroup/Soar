@@ -36,9 +36,7 @@ public:
 	void clear();
 
 	void get_properties(rvec &vals) const;
-	bool set_property(const std::string &obj, const std::string &prop, double val);
 	bool set_properties(const rvec &vals);
-	void remove_property(const std::string &obj, const std::string &prop);
 	bool parse_sgel(const std::string &s);
 	
 	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info);
@@ -66,9 +64,6 @@ private:
 		
 		sgnode *node;
 
-		property_map props;
-
-		
 		// these fields are used by the model learning system
 		std::vector<double> dists;
 		mutable int closest;
@@ -97,7 +92,6 @@ private:
 	
 	group_node *get_group(const std::string &name);
 	void update_sig() const;
-	void get_property_names(int i, std::vector<std::string> &names) const;
 
 	int parse_add(std::vector<std::string> &f, std::string &error);
 	int parse_del(std::vector<std::string> &f, std::string &error);

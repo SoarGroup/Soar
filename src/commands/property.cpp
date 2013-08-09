@@ -51,11 +51,13 @@ public:
 				set_status("output not of type float");
 				return false;
 			}
-
-			if (!scn->set_property(id, prop, v)) {
-				set_status("failed to set property");
+			
+			sgnode *n = scn->get_node(id);
+			if (!n) {
+				set_status("no such node");
 				return false;
 			}
+			n->set_property(prop, v);
 			set_status("success");
 		}
 		return true;

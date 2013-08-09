@@ -12,7 +12,7 @@ class literal : public serializable {
 public:
 	literal() : negate(false) {}
 	
-	literal(const std::string &name, const tuple &args, bool negate)
+	literal(const std::string &name, const int_tuple &args, bool negate)
 	: name(name), args(args), negate(negate)
 	{}
 	
@@ -31,7 +31,7 @@ public:
 	
 	int new_vars() const;
 	const std::string &get_name() const { return name; }
-	const tuple &get_args() const { return args; }
+	const int_tuple &get_args() const { return args; }
 	bool negated() const { return negate; }
 	
 	void set_arg(int i, int v) { args[i] = v; }
@@ -42,7 +42,7 @@ public:
 	
 private:
 	std::string name;
-	tuple args;
+	int_tuple args;
 	bool negate;
 
 	friend std::ostream &operator<<(std::ostream &os, const literal &l);

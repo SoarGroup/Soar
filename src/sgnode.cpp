@@ -195,7 +195,7 @@ bool sgnode::has_descendent(const sgnode *n) const {
 void sgnode::proxy_use_sub(const vector<string> &args, ostream &os) {
 	vec3 lp, ls, wp, ws;
 	vec4 lr, wr;
-	table_printer t, t1, t2;
+	table_printer t, t1, t2, t3;
 	
 	t.add_row() << "id:"     << id;
 	t.add_row() << "name:"   << name;
@@ -236,6 +236,17 @@ void sgnode::proxy_use_sub(const vector<string> &args, ostream &os) {
 	}
 	t2.print(os);
 
+	numeric_properties_map::const_iterator ni, ni_end;
+	string_properties_map::const_iterator si, si_end;
+	
+	os << endl << "Custom properties:" << endl;
+	for (ni = numeric_props.begin(), ni_end = numeric_props.end(); ni != ni_end; ++ni) {
+		t3.add_row() << ni->first << ni->second;
+	}
+	for (si = string_props.begin(), si_end = string_props.end(); si != si_end; ++si) {
+		t3.add_row() << si->first << si->second;
+	}
+	t3.print(os);
 }
 
 group_node::~group_node() {
@@ -580,12 +591,15 @@ bool intersects(const sgnode *n1, const sgnode *n2) {
 void sgnode::set_property(const std::string& propertyName, const std::string& value){
 	double numericValue;
 	if(parse_double(value, numericValue)){
-		string_props.erase(propertyName);
 		numeric_props[propertyName] = numericValue;
 	} else {
-		numeric_props.erase(propertyName);
 		string_props[propertyName] = value;
 	}
+	send_update(sgnode::PROPERTY_CHANGED, propertyName);
+}
+
+void sgnode::set_property(const std::string& propertyName, double value){
+	numeric_props[propertyName] = value;
 	send_update(sgnode::PROPERTY_CHANGED, propertyName);
 }
 

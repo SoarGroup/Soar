@@ -81,9 +81,10 @@ public:
 	virtual void walk_geoms(std::vector<const geometry_node*> &g) const = 0;
 
 	// AM: accessors/mutators for node properties
-	string_properties_map get_string_properties() const { return string_props;	}
-	numeric_properties_map get_numeric_properties() const{	return numeric_props;	}
+	const string_properties_map  &get_string_properties() const  { return string_props; }
+	const numeric_properties_map &get_numeric_properties() const { return numeric_props; }
 	void set_property(const std::string& propertyName, const std::string& value);
+	void set_property(const std::string& propertyName, double value);
 	void delete_property(const std::string& propertyName);
 
 protected:

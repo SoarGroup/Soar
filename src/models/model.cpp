@@ -472,7 +472,7 @@ void model_train_data::cli_relations(const vector<string> &args, ostream &os) co
 
 	relation matches(*r);
 
-	tuple t(1);
+	int_tuple t(1);
 	int j, k;
 	for (j = i + 1, k = 0; j < args.size() && k < matches.arity(); ++j, ++k) {
 		if (args[j] != "*") {
