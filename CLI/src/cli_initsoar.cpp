@@ -33,12 +33,12 @@ bool CommandLineInterface::DoInitSoar() {
     SetTrapPrintCallbacks( true );
 
     // restore the old result, ignoring output from init-soar
-    m_Result.str(oldResult); 
+    m_Result.str(oldResult);
 
     if (!ok)
         return SetError("Agent failed to reinitialize");
 
-    if (m_RawOutput) m_Result << "Agent reinitialized.";
+    if (m_RawOutput) m_Result << "Agent reinitialized.\n";
 
     return ok;
 }

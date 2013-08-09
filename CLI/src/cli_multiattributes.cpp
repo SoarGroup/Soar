@@ -32,7 +32,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
         // No args, print current setting
         int count = 0;
 
-        if ( !maList ) 
+        if ( !maList )
         {
             m_Result << "No multi-attributes found.";
         }
@@ -48,7 +48,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
             symbol_to_string(agnt, maList->symbol, TRUE, attributeName, 1024);
 
             if (m_RawOutput) {
-                m_Result << "\n" << maList->value << "\t" << symbol_to_string(agnt, maList->symbol, TRUE, attributeName, 1024);
+                m_Result  << maList->value << "\t" << symbol_to_string(agnt, maList->symbol, TRUE, attributeName, 1024)<< "\n";
 
             } else {
                 buffer << maList->value;
@@ -78,9 +78,9 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
     // Set it
     Symbol* s = make_sym_constant( agnt, pAttribute->c_str() );
 
-    while (maList) 
+    while (maList)
     {
-        if (maList->symbol == s) 
+        if (maList->symbol == s)
         {
             maList->value = n;
             symbol_remove_ref(agnt, s);

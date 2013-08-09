@@ -40,44 +40,44 @@ void CommandLineInterface::PrintSourceSummary(int sourced, const std::list< std:
     if (!excised.empty())
     {
         std::list< std::string >::const_iterator iter = excised.begin();
-        while (iter != excised.end()) 
+        while (iter != excised.end())
         {
             AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, *iter );
             ++iter;
         }
     }
 
-    if (m_RawOutput) 
+    if (m_RawOutput)
     {
         if (m_SourceFileStack.empty())
-            m_Result << "\nTotal";
+            m_Result << "Total";
         else
             m_Result << m_SourceFileStack.top();
         m_Result << ": " << sourced << " production" << ((sourced == 1) ? " " : "s ") << "sourced.";
 
-        if (!excised.empty()) 
+        if (!excised.empty())
         {
             m_Result << " " << excised.size() << " production" << ((excised.size() == 1) ? " " : "s ") << "excised.";
-            if (m_pSourceOptions && m_pSourceOptions->test(SOURCE_VERBOSE)) 
+            if (m_pSourceOptions && m_pSourceOptions->test(SOURCE_VERBOSE))
             {
                 // print excised production names
                 m_Result << "\nExcised productions:";
 
                 std::list< std::string >::const_iterator iter = excised.begin();
-                while (iter != excised.end()) 
+                while (iter != excised.end())
                 {
                     m_Result << "\n\t" << (*iter);
                     ++iter;
                 }
             }
         }
-        if (ignored) 
+        if (ignored)
             m_Result << " " << ignored << " production" << ((ignored == 1) ? " " : "s ") << "ignored.";
         m_Result << "\n";
     }
 }
 
-bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions) 
+bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
 {
     if (m_SourceFileStack.size() >= 100)
         return SetError("Source depth (100) exceeded, possible recursive source.");
@@ -88,12 +88,12 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     std::string filename;
     std::string folder;
     std::string::size_type lastSeparator = path.rfind('/');
-    if (lastSeparator == std::string::npos) 
+    if (lastSeparator == std::string::npos)
         filename.assign(path);
     else
     {
         ++lastSeparator;
-        if (lastSeparator < path.length()) 
+        if (lastSeparator < path.length())
         {
             folder = path.substr(0, lastSeparator);
             filename.assign(path.substr(lastSeparator, path.length() - lastSeparator));
@@ -103,7 +103,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     if (!folder.empty()) if (!DoPushD(folder)) return false;
 
     FILE* pFile = fopen ( filename.c_str() , "rb" );
-    if (!pFile) 
+    if (!pFile)
     {
         if (!folder.empty()) DoPopD();
         return SetError("Failed to open file for reading: " + path);
@@ -116,7 +116,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
 
     // allocate memory to contain the whole file:
     char* buffer = reinterpret_cast<char*>(malloc(sizeof(char)*(lSize + 1)));
-    if (!buffer) 
+    if (!buffer)
     {
         if (!folder.empty()) DoPopD();
         path.insert(0, "Memory allocation failed: ");
@@ -160,6 +160,18 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     temp.append(filename);
     m_SourceFileStack.push(temp);
 
+    if (m_RawOutput)
+    {
+        m_Result << "Sourcing " << filename.c_str() << ".\n";
+    }
+    else
+    {
+    	std::string outString;
+    	outString.assign("Sourcing ");
+    	outString.append(filename);
+    	outString.append(".\n");
+        AppendArgTagFast(sml_Names::kParamChunkNamePrefix, sml_Names::kTypeString, outString);
+    }
     bool ret = Source(buffer, true);
 
     if (m_pSourceOptions && m_pSourceOptions->test(SOURCE_ALL))
@@ -167,6 +179,8 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
 
     m_SourceFileStack.pop();
 
+    if ((m_NumProductionsSourced + m_NumProductionsIgnored) > 0)
+    	m_Result << "\n";
     m_NumTotalProductionsSourced += m_NumProductionsSourced;
     m_TotalExcisedDuringSource.insert(m_TotalExcisedDuringSource.end(), m_ExcisedDuringSource.begin(), m_ExcisedDuringSource.end());
     m_NumTotalProductionsIgnored += m_NumProductionsIgnored;
@@ -201,7 +215,7 @@ bool CommandLineInterface::Source(const char* buffer, bool printFileStack)
 
     int line = tokenizer.get_command_line_number();
     int offset = -1;
-    
+
     std::string sourceError;
     if (m_LastError.empty())
     {

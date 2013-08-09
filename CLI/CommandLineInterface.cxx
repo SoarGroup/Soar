@@ -6,6 +6,7 @@
 #include "src/cli_chunknameformat.cpp"
 #include "src/cli_clog.cpp"
 #include "src/cli_commandtofile.cpp"
+#include "src/cli_debug.cpp"
 #include "src/cli_defaultwmedepth.cpp"
 #include "src/cli_dirs.cpp"
 #include "src/cli_echo.cpp"
