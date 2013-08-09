@@ -75,7 +75,7 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 		if(c_node){
 			const ptlist& verts = c_node->get_world_verts();
 			for(ptlist::const_iterator i = verts.begin(); i != verts.end(); i++){
-				//std::cout << "Point: " << (*i)[0] << ", " << (*i)[1] << ", " << (*i)[2] << endl;
+				//std::cout << "Point " << view_lines.size() << ": " << (*i)[0] << ", " << (*i)[1] << ", " << (*i)[2] << endl;
 				std::string name = "_temp_line_" + tostring(view_lines.size());
 				view_lines.push_back(create_view_line(name, eyePos, *i));
 			}
@@ -94,6 +94,7 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 			// Don't test the target or eye objects
 			continue;
 		}
+		//std::cout << "Testing Object " << n->get_name() << std::endl;
 		for(view_line_list::iterator j = view_lines.begin(); j != view_lines.end(); j++){
 			view_line& view_line = *j;
 			if(view_line.second){
@@ -102,6 +103,9 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 			}
 			double dist = convex_distance(n, view_line.first);
 			if(dist <= 0){
+				//std::cout << "Occlusion detected" << std::endl;
+				//std::cout << "  " << j->first->get_name() << std::endl;
+				//std::cout << "  " << n->get_name() << std::endl; 
 				view_line.second = true;
 				num_occluded++;
 			}
