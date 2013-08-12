@@ -105,6 +105,8 @@ class rl_param_container: public soar_module::param_container
 		soar_module::decimal_param *apoptosis_decay;
 		rl_apoptosis_thresh_param *apoptosis_thresh;
 
+    soar_module::boolean_param *trace;
+
 		rl_param_container( agent *new_agent );
 
         // For writing parameters to a rule's documentation string.

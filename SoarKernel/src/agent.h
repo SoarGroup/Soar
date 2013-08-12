@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -24,7 +24,7 @@
 #include"gsysparam.h"
 #endif
 
-#include "kernel.h" 
+#include "kernel.h"
 #include "init_soar.h"
 #include "mem.h"
 #include "lexer.h"
@@ -38,6 +38,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#include "debug.h"
 
 #include <string>
 #include <map>
@@ -96,7 +97,7 @@ typedef struct dir_stack_struct {
   struct dir_stack_struct *next;
 } dir_stack_struct;
 /* AGR 568 end */
- 
+
 
 /* This typedef makes soar_callback_array equivalent to an array of list
    pointers. Since it was used only one time, it has been commented out
@@ -121,8 +122,8 @@ typedef signed short goal_stack_level;
    sure to use the current_agent macro to ensure compatibility
    with the multi-agent code!  E.g. if your new global is "foo"
    then do NOT refer to it in the code as "foo" but instead as
-   "current_agent(foo)". 
-   
+   "current_agent(foo)".
+
    As of version 8.6, the current_agent macro was deprecated
    when gSKI was added as a wrapper.  Use ptr directly, thisAgent->foo. */
 
@@ -142,7 +143,7 @@ typedef struct agent_struct {
    */
 
   /* ----------------------- Rete stuff -------------------------- */
-  /* 
+  /*
    * These are used for statistics in rete.cpp.  They were originally
    * global variables, but in the deglobalization effort, they were moved
    * to the (this) agent structure.
@@ -164,7 +165,7 @@ typedef struct agent_struct {
   //
   // Moved here from parser.cpp.  This is used to create temporary unique
   // identifiers for parsing.  This should probably be localized to the
-  // production, but for now, this is much better than having it as a 
+  // production, but for now, this is much better than having it as a
   // global.
   //
   uint64_t placeholder_counter[26];
@@ -195,12 +196,12 @@ typedef struct agent_struct {
   /* Hash tables for alpha memories, and for entries in left & right memories */
   void              * left_ht;
   void              * right_ht;
-  hash_table        *(alpha_hash_tables[32]);
-  
+  hash_table        *(alpha_hash_tables[8]);
+
   /* Number of WMEs, and list of WMEs, the Rete has been told about */
   uint64_t            num_wmes_in_rete;
   wme               * all_wmes_in_rete;
-  
+
   /* Memory pools */
   memory_pool         rete_node_pool;
   memory_pool         rete_test_pool;
@@ -211,7 +212,7 @@ typedef struct agent_struct {
   memory_pool         node_varnames_pool;
 
   memory_pool         gds_pool;
-	
+
   memory_pool		  rl_info_pool;
   memory_pool		  rl_et_pool;
   memory_pool		  rl_rule_pool;
@@ -230,7 +231,7 @@ typedef struct agent_struct {
   memory_pool		  epmem_pedge_pool;
   memory_pool		  epmem_uedge_pool;
   memory_pool		  epmem_interval_pool;
-  
+
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;
   struct token_struct * dummy_top_token;
@@ -244,8 +245,8 @@ typedef struct agent_struct {
   uint64_t       num_left_activations;
   uint64_t       num_null_right_activations;
   uint64_t       num_null_left_activations;
-  
-  
+
+
   /* Miscellaneous other stuff */
   uint32_t       alpha_mem_id_counter; /* node id's for hashing */
   uint32_t       beta_node_id_counter;
@@ -253,15 +254,15 @@ typedef struct agent_struct {
   struct ms_change_struct * ms_retractions;
 
   /* ----------------------- Lexer stuff -------------------------- */
-  
+
   lexer_source_file * current_file; /* file we're currently reading */
   int                 current_char; /* holds current input character */
   struct lexeme_info  lexeme;       /* holds current lexeme */
   Bool                print_prompt_flag;
-  
+
   /* ---------------- Predefined Symbols -------------------------
      Certain symbols are used so frequently that we create them at
-     system startup time and never deallocate them.  
+     system startup time and never deallocate them.
      ------------------------------------------------------------- */
 
   Symbol            * attribute_symbol;
@@ -309,7 +310,7 @@ typedef struct agent_struct {
   Symbol            * rl_sym_reward_link;
   Symbol            * rl_sym_reward;
   Symbol            * rl_sym_value;
-  
+
   Symbol            * epmem_sym;
   Symbol            * epmem_sym_cmd;
   Symbol            * epmem_sym_result;
@@ -341,7 +342,6 @@ typedef struct agent_struct {
   Symbol			* epmem_sym_before;
   Symbol			* epmem_sym_after;
   Symbol			* epmem_sym_prohibit;
-  Symbol			* epmem_sym_current;
   Symbol			* epmem_sym_yes;
   Symbol			* epmem_sym_no;
 
@@ -367,42 +367,42 @@ typedef struct agent_struct {
   /* ----------------------- Symbol table stuff -------------------------- */
 
   uint32_t       current_symbol_hash_id;
-  uint64_t       id_counter[26]; 
-  
+  uint64_t       id_counter[26];
+
   struct hash_table_struct * float_constant_hash_table;
   struct hash_table_struct * identifier_hash_table;
   struct hash_table_struct * int_constant_hash_table;
   struct hash_table_struct * sym_constant_hash_table;
   struct hash_table_struct * variable_hash_table;
-  
+
   memory_pool         float_constant_pool;
   memory_pool         identifier_pool;
   memory_pool         int_constant_pool;
   memory_pool         sym_constant_pool;
   memory_pool         variable_pool;
-  
+
   /* ----------------------- Top-level stuff -------------------------- */
 
   /* --- headers of dll's of all productions of each type --- */
   production        * all_productions_of_type[NUM_PRODUCTION_TYPES];
   /* --- counts of how many productions there are of each type --- */
   uint64_t            num_productions_of_type[NUM_PRODUCTION_TYPES];
-  
+
   /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
   ::list            * chunk_free_problem_spaces;
   ::list            * chunky_problem_spaces;   /* AGR MVL1 */
-  
+
   /* --- default depth for "print" command --- */
   int                 default_wme_depth;      /* AGR 646 */
-  
+
   /* --- stuff for "input-period" command --- */
   /* --- in Soar8, input runs once at beginning of D cycle, no matter what */
   int                 input_period;      /* AGR REW1 */
   Bool                input_cycle_flag;  /* AGR REW1 */
-  
+
   /* --- current top level phase --- */
-  enum top_level_phase current_phase; 
-  
+  enum top_level_phase current_phase;
+
   /* --- to interrupt at the end of the current phase, set stop_soar to TRUE
      and reason_for_stopping to some appropriate string --- */
   Bool                stop_soar;
@@ -414,27 +414,27 @@ typedef struct agent_struct {
   /* --- stuff for max-chunks (which is a sysparam) --- */
   uint64_t       chunks_this_d_cycle; /* # chunks built this DC */
   Bool		     max_chunks_reached;
-  
+
   /* --- list of productions whose firings are being traced --- */
-  ::list            * productions_being_traced; 
-  
+  ::list            * productions_being_traced;
+
   /* --- various user-settable system parameters --- */
   int64_t             sysparams[HIGHEST_SYSPARAM_NUMBER+1];
-  
+
   /* --- parameters for running Soar --- */
   /*  --- the code loops go_number times over the go_type phases --- */
   int64_t             go_number;     /* How many times to "go" */
   Symbol            * go_slot_attr;  /* The context slot checked */
   goal_stack_level    go_slot_level; /* The goal stack level checked */
   enum go_type_enum   go_type;       /* The phase type used */
-  
+
   /* --- Top-level Statistics --- */
-  
+
   /* running total of WM sizes at end of phases */
   double              cumulative_wm_size;
   /* number of items included in "cumulative_wm_size" sum */
-  uint64_t            num_wm_sizes_accumulated; 
-  
+  uint64_t            num_wm_sizes_accumulated;
+
   uint64_t            max_wm_size;    /* maximum size of WM so far */
   uint64_t            wme_addition_count; /* # of wmes added to WM */
   uint64_t            wme_removal_count;  /* # of wmes removed from WM */
@@ -444,6 +444,8 @@ typedef struct agent_struct {
   uint64_t            max_dc_wm_changes_value;  /* # of wmes added + removed in a single dc */
   uint64_t            max_dc_wm_changes_cycle;  /* # cycle of max_dc_wm_changes */
 
+  uint64_t            init_count;             /* # of inits done so far */
+  uint64_t            rl_init_count;             /* # of inits done so far */
   uint64_t            d_cycle_count;          /* # of DC's run so far */
   uint64_t            e_cycle_count;          /* # of EC's run so far */
   /*  in Soar 8, e_cycles_this_d_cycle is reset to zero for every
@@ -472,13 +474,13 @@ typedef struct agent_struct {
 
   parent_inst *parent_list_head;
 /* REW: end   09.15.96 */
-  
+
   /* State for new waterfall model */
   uint64_t            inner_e_cycle_count;     /* # of inner elaboration cycles run so far */
 
   /* ----------------------- Timing statistics -------------------------- */
 
-/* 
+/*
 For Soar 7, the timing code has been completely revamped.  When the compile
 flag NO_TIMING_STUFF is not set, statistics will be now be collected on the
 total cpu time, total kernel time, time spent in the individual phases of a
@@ -561,11 +563,11 @@ total_kernel_time.  If the ordering discussed above is strictly enforced,
 total_kernel_time should always be slightly greater than the derived total
 kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
-  /* REW: begin 28.07.96 */  
+  /* REW: begin 28.07.96 */
 #ifndef NO_TIMING_STUFF
-  soar_process_timer timers_cpu;	// start_total_tv
-  soar_process_timer timers_kernel;	// start_kernel_tv
-  soar_process_timer timers_phase;	// start_phase_tv
+  soar_timer timers_cpu;	// start_total_tv
+  soar_timer timers_kernel;	// start_kernel_tv
+  soar_timer timers_phase;	// start_phase_tv
 
   soar_timer_accumulator timers_total_cpu_time;							// total_cpu_time
   soar_timer_accumulator timers_total_kernel_time;						// total_kernel_time
@@ -575,7 +577,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   soar_timer_accumulator timers_input_function_cpu_time;			// input_function_cpu_time, uses timers_kernel
   soar_timer_accumulator timers_output_function_cpu_time;			// output_function_cpu_time, uses timers_kernel
 
-  uint64_t last_derived_kernel_time_usec;       // Total of the time spent in the phases of the decision cycle, 
+  uint64_t last_derived_kernel_time_usec;       // Total of the time spent in the phases of the decision cycle,
                                                 // excluding Input Function, Output function, and pre-defined callbacks.
                                                 // Computed at the end of the output phase, so it is not valid for current
                                                 // phase until then.
@@ -589,7 +591,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   double max_dc_smem_time_sec;                  // Holds maximum amount smem time
   double total_dc_smem_time_sec;                // Holds last amount smem time, used to calculate delta
   uint64_t max_dc_smem_time_cycle;              // Holds what cycle max_dc_smem_time_sec was acheived
-  
+
   soar_timer_accumulator callback_timers[NUMBER_OF_CALLBACKS];
 
   /* accumulated cpu time spent in various parts of the system */
@@ -609,16 +611,16 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
    /* used only if #def'd REAL_TIME_BEHAVIOR */
    struct timeval	*real_time_tracker;
    Bool			     real_time_idling;
- 
+
    /* RMJ */
    /* Keep track of duration of attentional lapses */
    /* Used only if #def'd ATTENTION_LAPSE in */
    struct timeval	*attention_lapse_tracker;
    Bool			     attention_lapsing;
- 
-  
+
+
   /* ----------------------- Chunker stuff -------------------------- */
-  
+
   tc_number           backtrace_number;
   memory_pool         chunk_cond_pool;
   uint64_t            chunk_count;
@@ -630,7 +632,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   tc_number           locals_tc;
   ::list            * positive_potentials;
   tc_number           potentials_tc;
-  chunk_cond_set      negated_set; 
+  chunk_cond_set      negated_set;
   preference        * results;
   goal_stack_level    results_match_goal_level;
   tc_number           results_tc_number;
@@ -638,60 +640,60 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   preference        * extra_result_prefs_from_instantiation;
   Bool                quiescence_t_flag;
   char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
-  
+
   /* ----------------------- Misc. top-level stuff -------------------------- */
-  
+
   memory_pool         action_pool;
   memory_pool         complex_test_pool;
   memory_pool         condition_pool;
   memory_pool         not_pool;
   memory_pool         production_pool;
-  
+
   /* ----------------------- Reorderer stuff -------------------------- */
-  
+
   memory_pool         saved_test_pool;
-  
+
   /* ----------------------- Memory utilities -------------------------- */
-  
+
   /* Counters for memory usage of various types */
   size_t              memory_for_usage[NUM_MEM_USAGE_CODES];
-  
+
   /* List of all memory pools being used */
   memory_pool       * memory_pools_in_use;
-  
+
   memory_pool         cons_cell_pool; /* pool for cons cells */
   memory_pool         dl_cons_pool;   /* doubly-linked list cells */
-  
+
   /* ----------------------- Explain.c stuff -------------------------- */
-  
+
   backtrace_str     * explain_backtrace_list;     /* AGR 564 */
   explain_chunk_str * explain_chunk_list;         /* AGR 564 */
   char                explain_chunk_name[256];    /* AGR 564 */
   /* made explain_flag EXPLAIN_SYSPARAM instead, KJC 7/96 */
   /* Bool                explain_flag; */
-  
+
   /* ----------------------- Firer stuff -------------------------- */
-  
+
   memory_pool         instantiation_pool;
   instantiation     * newly_created_instantiations;
-  
+
   /* production_being_fired -- during firing, points to the prod. being fired */
   production        * production_being_fired;
-  
+
   uint64_t            max_rhs_unbound_variables;
   Symbol           ** rhs_variable_bindings;
-  
+
   /* ==================================================================
-     Decider stuff 
+     Decider stuff
      =================================================================== */
-  
+
   memory_pool         preference_pool;
-  
+
   uint64_t            current_wme_timetag;
   memory_pool         wme_pool;
   ::list            * wmes_to_add;
   ::list            * wmes_to_remove;
-  
+
   /* ---------------------------------------------------------------------
      Top_goal and bottom_goal point to the top and bottom goal identifiers,
      respectively.  (If there is no goal stack at all, they're both NIL.)
@@ -725,30 +727,30 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
   int                 printer_output_column;
   int                 saved_printer_output_column;
-  
+
   /* ----------------------- Trace Formats -------------------------- */
-  
+
   struct trace_format_struct *(object_tf_for_anything[3]);
   struct hash_table_struct *(object_tr_ht[3]);
   Bool                printing_stack_traces;
   struct trace_format_struct *(stack_tf_for_anything[3]);
   struct hash_table_struct *(stack_tr_ht[3]);
-  tc_number           tf_printing_tc;   
-  
+  tc_number           tf_printing_tc;
+
   ::list            * wme_filter_list; /* kjh(CUSP-B2) */
 
   /* ----------------------- RHS Function Stuff -------------------------- */
-  
+
   /* --- "make-constant-symbol" counter --- */
   uint64_t            mcs_counter;
 
   /* ----------------------- O support stuff -------------------------- */
-  
-  tc_number           o_support_tc;   
+
+  tc_number           o_support_tc;
   preference        * rhs_prefs_from_instantiation;
-  
+
   /* ----------------------- I/O stuff -------------------------- */
-  
+
   io_wme            * collected_io_wmes;
   struct output_link_struct * existing_output_links;
 
@@ -757,50 +759,50 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   tc_number           output_link_tc_num;
 
   Bool                output_link_changed;
-  
+
   Symbol            * io_header;
   wme               * io_header_link;
-  
+
   Symbol            * io_header_input;
   Symbol            * io_header_output;
 
   memory_pool         io_wme_pool;
   Symbol            * prev_top_state;
-  
+
   /* ------------ Varible Generator stuff (in production.c) ---------------- */
-  
+
   uint64_t            current_variable_gensym_number;
   uint64_t            gensymed_variable_count[26];
-  
+
   /* ------------------- Experimental features ---------------------- */
   int                 o_support_calculation_type;
 
   /* ------------------- Info about the agent itself ---------------------- */
-  
+
   char              * name;  /* name of this Soar agent */
 
 /* --------- I (RBD) don't know what the following stuff is ------------ */
-  
+
   /* Soar uses these to generate nicely formatted output strings */
   char		    current_line[1024];
   int	        current_line_index;
- 
+
   /*mvp 5-17-94 */
   ::list            * variables_set;
-  
+
   multi_attribute   * multi_attributes;
   /* char                path[MAXPATHLEN];    AGR 568 */
-  
+
   //soar_callback_array soar_callbacks;
   ::list			      * soar_callbacks[NUMBER_OF_CALLBACKS];
-  
-  const char        * alternate_input_string; 
-  const char        * alternate_input_suffix; 
+
+  const char        * alternate_input_string;
+  const char        * alternate_input_suffix;
   Bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
   expansion_node    * lex_alias;         /* AGR 568 */
   Bool                load_errors_quit;  /* AGR 527c */
   dir_stack_struct  * top_dir_stack;   /* AGR 568 */
-  
+
 
   /* RCHONG: begin 10.11 */
   Bool       did_PE;
@@ -849,17 +851,17 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* REW: begin 10.24.97 */
   Bool       waitsnc;
-  Bool       waitsnc_detect; 
+  Bool       waitsnc_detect;
   /* REW: end   10.24.97 */
 
   /* JC ADDED: Need to store RHS functions here so that agent's don't step on each other */
   rhs_function* rhs_functions;
 
   enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */
-  
+
   // exploration
   exploration_parameter *exploration_params[ EXPLORATION_PARAMS ];
-  
+
   // reinforcement learning
   rl_param_container *rl_params;
   rl_stat_container *rl_stats;
@@ -878,8 +880,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   wma_param_container* wma_params;
   wma_stat_container* wma_stats;
   wma_timer_container* wma_timers;
-  
-  wma_pooled_wme_set* wma_touched_elements;  
+
+  wma_pooled_wme_set* wma_touched_elements;
   wma_forget_p_queue* wma_forget_pq;
   wma_decay_cycle_set* wma_touched_sets;
 
@@ -891,15 +893,18 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   tc_number wma_tc_counter;
   wma_d_cycle wma_d_cycle_count;
 
+  // debug parameters
+  debug_param_container *debug_params;
+
   // epmem
   epmem_param_container *epmem_params;
   epmem_stat_container *epmem_stats;
   epmem_timer_container *epmem_timers;
 
   soar_module::sqlite_database *epmem_db;
-  epmem_common_statement_container *epmem_stmts_common;  
+  epmem_common_statement_container *epmem_stmts_common;
   epmem_graph_statement_container *epmem_stmts_graph;
-  
+
 
   epmem_id_removal_map *epmem_node_removals;
   std::vector<epmem_time_id> *epmem_node_mins;
@@ -924,8 +929,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_rit_state epmem_rit_state_graph[2];
 
   uint64_t epmem_validation;
-  bool epmem_first_switch;
-
 
   // smem
   smem_param_container *smem_params;
@@ -936,7 +939,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   smem_statement_container *smem_stmts;
 
   uint64_t smem_validation;
-  bool smem_first_switch;
   int64_t smem_max_cycle;
 
   smem_pooled_symbol_set* smem_changed_ids;
@@ -962,10 +964,48 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool dc_stat_tracking;
   soar_module::sqlite_database *stats_db;
   stats_statement_container *stats_stmts;
-  
+
   // Soar execution will be interrupted when this substate level is removed
   goal_stack_level substate_break_level;
 
+  /// RL-trace structure -bazald
+  // goal stack level, WMEs attached to the operator, and the probability of selection
+  struct RL_Trace {
+    struct Entry {
+      Entry()
+       : probability(0.0),
+       next(NIL)
+      {
+      }
+
+      ~Entry() {
+        delete next;
+      }
+
+      Entry(const Entry &rhs)
+       : probability(rhs.probability),
+       next(rhs.next)
+      {
+        const_cast<Entry &>(rhs).next = NIL;
+      }
+
+      Entry & operator=(const Entry &rhs) {
+        Entry temp(rhs);
+
+        std::swap(probability, temp.probability);
+        std::swap(next, temp.next);
+
+        return *this;
+      }
+
+      uint64_t init;
+      double probability;
+      RL_Trace * next;
+    };
+
+    std::map<std::vector<std::string>, Entry> split;
+  };
+  std::map<goal_stack_level, RL_Trace> rl_trace;
 } agent;
 /*************** end of agent struct *****/
 
@@ -990,7 +1030,7 @@ void init_soar_agent(agent* thisAgent);
 #ifdef __cplusplus
 //}
 #endif
- 
+
 template <typename T>
 inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer)
 {

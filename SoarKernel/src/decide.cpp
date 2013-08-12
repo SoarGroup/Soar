@@ -64,6 +64,7 @@
 
 #include "assert.h"
 
+#include <algorithm>
 #include <list>
 
 using namespace soar_TraceNames;
@@ -921,11 +922,82 @@ void add_to_CDPS(agent* thisAgent, slot *s, preference *pref, bool unique_value)
 
 }
 
+/** Build our RL trace. -bazald **/
+
+void build_rl_trace(agent* const &thisAgent, preference * const &candidates, preference * const &selected) ///< bazald
+{
+  if(thisAgent->rl_params->trace->get_value() == soar_module::off)
+    return;
+
+  agent::RL_Trace ** next = NIL;
+
+  for(preference * cand = candidates; cand; cand = cand->next_candidate) {
+    if(cand->inst && cand->inst->prod) {
+      const production * const &prod = cand->inst->prod;
+
+//       std::cerr << "rl-trace: " << cand->inst->prod->name->sc.name << std::endl;
+
+//       for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+//         production * const &prod2 = pref->inst->prod;
+//         if(cand->value == pref->value && prod2->rl_rule) {
+//           std::cerr << "rl-trace: +" << prod2->name->sc.name << std::endl;
+//         }
+//       }
+
+      std::vector<std::string> index_str;
+      index_str.push_back("^name");
+//       for(wme *w = thisAgent->all_wmes_in_rete; w; w = w->rete_next) {
+      for(slot *s = cand->value->id.slots; s; s = s->next) {
+        for(wme *w = s->wmes; w; w = w->next) {
+          if(cand->value == w->id) {
+            const std::string attr = symbol_to_string(thisAgent, w->attr, false, NIL, 0);
+            const std::string value = symbol_to_string(thisAgent, w->value, false, NIL, 0);
+//             std::cerr << "rl-trace: ^" << attr << ' ' << value << std::endl;
+
+            if(attr == "name")
+              index_str[0] += ' ' + value;
+            else
+              index_str.push_back('^' + attr + ' ' + value);
+
+            std::sort(++index_str.begin(), index_str.end());
+          }
+        }
+      }
+
+      const double zero = 0.0;
+      const double probability = cand->rl_contribution
+        ? exploration_probability_according_to_policy(thisAgent, candidates->slot, candidates, cand)
+        : zero/zero;
+
+//       std::cerr << "rl-trace: =" << probability << std::endl;
+
+      agent::RL_Trace * const rl_trace = static_cast<agent::RL_Trace *>(candidates->slot->id->id.rl_trace);
+      rl_trace->split[index_str].init = thisAgent->rl_init_count;
+      rl_trace->split[index_str].probability = probability;
+      if(cand == selected)
+        next = &rl_trace->split[index_str].next;
+    }
+  }
+
+  if(next) {
+    if(!*next) {
+//       std::cerr << "rl-trace: Expanding" << std::endl;
+      *next = new agent::RL_Trace;
+    }
+//     else {
+//       std::cerr << "rl-trace: Traversing" << std::endl;
+//     }
+
+    candidates->slot->id->id.rl_trace = *next;
+  }
+}
+
 /* Perform reinforcement learning update for one valid candidate. */
 
 void rl_update_for_one_candidate(agent* thisAgent, slot *s, bool consistency, preference *candidates) {
 
   if (!consistency && rl_enabled(thisAgent)) {
+    build_rl_trace(thisAgent, candidates, candidates);
     rl_tabulate_reward_values(thisAgent);
     exploration_compute_value_of_candidate(thisAgent, candidates, s, 0);
     rl_perform_update(thisAgent, candidates->numeric_value,
@@ -969,7 +1041,7 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
   preference *p, *p2, *cand, *prev_cand;
-  Bool match_found, not_all_indifferent, some_numeric, do_CDPS;
+  Bool match_found, not_all_indifferent, some_numeric, do_CDPS, some_not_worst;
   preference *candidates;
   Symbol *value;
   cons *CDPS, *prev_cons;
@@ -1010,6 +1082,7 @@ byte run_preference_semantics(agent* thisAgent,
         *result_candidates = force_result;
 
         if (!predict && rl_enabled(thisAgent)) {
+          build_rl_trace(thisAgent, force_result, force_result);
           rl_tabulate_reward_values(thisAgent);
           exploration_compute_value_of_candidate(thisAgent, force_result, s, 0);
           rl_perform_update(thisAgent, force_result->numeric_value,
@@ -1342,9 +1415,17 @@ byte run_preference_semantics(agent* thisAgent,
     for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next)
       p->value->common.decider_flag = WORST_DECIDER_FLAG;
 
-    /* Reduce candidates list to only those that do not have a worst preference flag.  Note
-     * that this only occurs if there is at least one candidate that doesn't have a worse
-     * preference, otherwise the candidate list is not modified. */
+     /* Because we only want to add worst preferences to the CDPS if they actually have an impact
+     * on the candidate list, we must first see if there's at least one non-worst candidate. */
+
+    if (do_CDPS) {
+      some_not_worst = false;
+      for (cand = candidates; cand != NIL; cand = cand->next_candidate)  {
+        if (cand->value->common.decider_flag != WORST_DECIDER_FLAG) {
+    	  some_not_worst = true;
+        }
+      }
+    }
 
     prev_cand = NIL;
     for (cand = candidates; cand != NIL; cand = cand->next_candidate)  {
@@ -1355,7 +1436,7 @@ byte run_preference_semantics(agent* thisAgent,
           candidates = cand;
         prev_cand = cand;
       } else {
-        if (do_CDPS) {
+        if (do_CDPS && some_not_worst) {
           /* Add this worst preference to CDPS */
           for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next) {
             if (p->value == cand->value) {
@@ -1447,6 +1528,8 @@ byte run_preference_semantics(agent* thisAgent,
   if (!not_all_indifferent) {
     if (!consistency) {
       (*result_candidates) = exploration_choose_according_to_policy(thisAgent, s, candidates);
+      if(!predict && rl_enabled(thisAgent))
+        build_rl_trace(thisAgent, candidates, *result_candidates);
       (*result_candidates)->next_candidate = NIL;
 
       if (do_CDPS) {
@@ -1564,7 +1647,7 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_metamem, id->id.epmem_metamem_header );
 	// if it's the top goal, create a new unrecognized symbol
 	// all states then link to that same symbol
-  	if ( level == TOP_GOAL_LEVEL )
+	if ( level == TOP_GOAL_LEVEL )
 	{
 		thisAgent->epmem_unrecognized_header = make_new_identifier( thisAgent, 'U', level );
 	}
@@ -1594,7 +1677,7 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 	soar_module::add_module_wme( thisAgent, id->id.smem_header, thisAgent->smem_sym_metamem, id->id.smem_metamem_header );
 	// if it's the top goal, create a new unrecognized symbol
 	// all states then link to that same symbol
-  	if ( level == TOP_GOAL_LEVEL )
+	if ( level == TOP_GOAL_LEVEL )
 	{
 		thisAgent->smem_unrecognized_header = make_new_identifier( thisAgent, 'U', level );
 	}
@@ -1627,6 +1710,13 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
     add_impasse_wme (thisAgent, id, thisAgent->choices_symbol, thisAgent->none_symbol, NIL);
     break;
   }
+
+//   if(thisAgent->rl_trace.find(level) == thisAgent->rl_trace.end())
+//     std::cerr << "rl-trace: Init level " << level << std::endl;
+//   else
+//     std::cerr << "rl-trace: Restore level " << level << std::endl;
+  id->id.rl_trace = &thisAgent->rl_trace[level];
+
   return id;
 }
 
@@ -2365,7 +2455,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   // only remove unrecognized header if the top state is going
   if ( goal == thisAgent->top_goal )
   {
-  	symbol_remove_ref( thisAgent, thisAgent->epmem_unrecognized_header );
+    symbol_remove_ref( thisAgent, thisAgent->epmem_unrecognized_header );
   }
   symbol_remove_ref( thisAgent, goal->id.epmem_metamem_header );
   symbol_remove_ref( thisAgent, goal->id.epmem_header );
@@ -2375,14 +2465,14 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   free_with_pool( &( thisAgent->smem_wmes_pool ), goal->id.smem_info->smem_wmes );
   symbol_remove_ref( thisAgent, goal->id.smem_cmd_header );  
   symbol_remove_ref( thisAgent, goal->id.smem_result_header );  
-  symbol_remove_ref( thisAgent, goal->id.smem_header );
-  free_with_pool( &( thisAgent->smem_info_pool ), goal->id.smem_info );
   // only remove unrecognized header if the top state is going
   if ( goal == thisAgent->top_goal )
   {
-  	symbol_remove_ref( thisAgent, thisAgent->smem_unrecognized_header );
+    symbol_remove_ref( thisAgent, thisAgent->smem_unrecognized_header );
   }
   symbol_remove_ref( thisAgent, goal->id.smem_metamem_header );
+  symbol_remove_ref( thisAgent, goal->id.smem_header );
+  free_with_pool( &( thisAgent->smem_info_pool ), goal->id.smem_info );
 
 
   /* REW: BUG

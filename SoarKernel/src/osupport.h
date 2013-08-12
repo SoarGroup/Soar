@@ -27,7 +27,7 @@ typedef struct condition_struct condition;
 typedef struct action_struct action;
 typedef struct agent_struct agent;
 
-extern void calculate_support_for_instantiation_preferences (agent* thisAgent, instantiation *inst);
+extern void calculate_support_for_instantiation_preferences (agent* thisAgent, instantiation *inst, instantiation *original_inst);
 extern void calculate_compile_time_o_support (condition *lhs, action *rhs);
 
 extern void dougs_calculate_support_for_instantiation_preferences (agent* thisAgent, instantiation *inst);

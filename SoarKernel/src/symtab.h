@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
@@ -20,7 +20,7 @@
       symbol_type:  indicates which of the five kinds of symbols this is
       reference_count:  current reference count for this symbol
       hash_id:  used for hash functions in the rete (and elsewhere)
-      
+
    Fields on symbolic constants:
       name:  points to null-terminated string giving its name
       production:  points to a production structure, or NIL if there is
@@ -58,11 +58,11 @@
        allow_bottom_up_chunks:  Used for bottom-up chunking, and only on goal
          identifiers.  This is TRUE iff no chunk has yet been built for a
          subgoal of this goal.
-        
+
        could_be_a_link_from_below:  TRUE if there might be a link to this id
          from some other id lower in the goal stack.
 
-       did_PE: 
+       did_PE:
 
        level:  current goal_stack_level of this id
 
@@ -78,7 +78,7 @@
        slots:  this is the header for a dll of the slots for this id.
 
        tc_num:  used for transitive closures, marking id's, etc.
- 
+
        variablization:  used by the chunker when variablizing chunks--this
          points to the variable to which this id gets changed
 
@@ -282,6 +282,8 @@ typedef struct identifier_struct {
   smem_lti_id smem_lti;
   epmem_time_id smem_time_id;
   uint64_t smem_valid;
+
+  /*Agent::RL_Trace*/ void * rl_trace; ///< A pointer to the current state of the trace for this goal level if isa_goal -bazald
 } identifier;
 
 typedef union symbol_union {
@@ -339,13 +341,13 @@ typedef union symbol_union {
 
      Reset_id_and_variable_tc_numbers() resets the tc_num field of every
      existing id and variable to 0.
-     
+
      Reset_variable_gensym_numbers() resets the gensym_number field of
      every existing variable to 0.
-     
+
      Print_internal_symbols() just prints a list of all existing symbols.
      (This is useful for debugging memory leaks.)
-     
+
      Generate_new_sym_constant() is used to gensym new symbols that are
      guaranteed to not already exist.  It takes two arguments: "prefix"
      (the desired prefix of the new symbol's name), and "counter" (a
@@ -384,14 +386,14 @@ extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, 
   if ((x)->common.reference_count == 0) \
   deallocate_symbol(thisAgent, x); \
   }
- 
+
 #else
 
 #ifdef DEBUG_SYMBOL_REFCOUNTS
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
 #endif
 
-inline uint64_t symbol_add_ref(Symbol * x) 
+inline uint64_t symbol_add_ref(Symbol * x)
 {
   (x)->common.reference_count++;
   uint64_t refCount = (x)->common.reference_count ;
@@ -422,6 +424,13 @@ inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
   return refCount ;
 }
 
+inline bool symbol_is_constant( Symbol *sym )
+{
+	return ( ( sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
+		     ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+		     ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
+}
+
 #endif /* USE_MACROS */
 
 /* -----------------------------------------------------------------
@@ -430,7 +439,7 @@ inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
    Certain symbols are used so frequently that we create them at
    system startup time and never deallocate them.  These symbols are
    global variables (per-agent) and are named xxx_symbol (see glob_vars.h).
-   
+
    Create_predefined_symbols() should be called to do the creation.
    After that, the global variables can be accessed freely.  Note that
    the reference counts on these symbols should still be updated--

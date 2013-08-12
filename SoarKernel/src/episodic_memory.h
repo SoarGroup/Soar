@@ -25,17 +25,6 @@
 #include "soar_db.h"
 
 //////////////////////////////////////////////////////////
-// EpMem Experimentation
-//
-// If defined, we hijack the main EpMem function
-// for tight-loop experimentation/timing.
-//
-//////////////////////////////////////////////////////////
-
-//#define EPMEM_EXPERIMENT
-
-
-//////////////////////////////////////////////////////////
 // EpMem Constants
 //////////////////////////////////////////////////////////
 
@@ -69,6 +58,7 @@ enum epmem_variable_key
 #define EPMEM_RIT_STATE_NODE						0
 #define EPMEM_RIT_STATE_EDGE						1
 
+#define EPMEM_SCHEMA_VERSION "2.0"
 
 //////////////////////////////////////////////////////////
 // EpMem Typedefs
@@ -93,10 +83,10 @@ class epmem_path_param;
 class epmem_param_container: public soar_module::param_container
 {
 	public:
-		
+
 		// storage
 		enum db_choices { memory, file };
-		
+
 		// encoding
 		enum phase_choices { phase_output, phase_selection };
 		enum trigger_choices { none, output, dc };
@@ -114,8 +104,8 @@ class epmem_param_container: public soar_module::param_container
 		////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////
 
-		soar_module::boolean_param *learning;	
-		
+		soar_module::boolean_param *learning;
+
 		// encoding
 		soar_module::constant_param<phase_choices> *phase;
 		soar_module::constant_param<trigger_choices> *trigger;
@@ -126,6 +116,7 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::constant_param<db_choices> *database;
 		epmem_path_param *path;
 		soar_module::boolean_param *lazy_commit;
+		soar_module::boolean_param *append_db;
 
 		// retrieval
 		soar_module::boolean_param *graph_match;
@@ -143,6 +134,7 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::integer_param* recognition;
 		soar_module::constant_param<representation_choices>* recognition_representation;
 		soar_module::integer_param* recognition_merge_depth;
+
 
 		epmem_param_container( agent *new_agent );
 };
@@ -184,6 +176,7 @@ class epmem_stat_container: public soar_module::stat_container
 		epmem_db_lib_version_stat* db_lib_version;
 		epmem_mem_usage_stat *mem_usage;
 		epmem_mem_high_stat *mem_high;
+		soar_module::integer_stat *ncbr;
 		soar_module::integer_stat *cbr;
 		soar_module::integer_stat *nexts;
 		soar_module::integer_stat *prevs;
@@ -323,37 +316,54 @@ class epmem_common_statement_container: public soar_module::sqlite_statement_con
 		soar_module::sqlite_statement *rit_add_right;
 		soar_module::sqlite_statement *rit_truncate_right;
 
-		soar_module::sqlite_statement *hash_get;
-		soar_module::sqlite_statement *hash_add;
+		soar_module::sqlite_statement *hash_rev_int;
+        soar_module::sqlite_statement *hash_rev_float;
+        soar_module::sqlite_statement *hash_rev_str;
+        soar_module::sqlite_statement *hash_get_int;
+        soar_module::sqlite_statement *hash_get_float;
+        soar_module::sqlite_statement *hash_get_str;
+        soar_module::sqlite_statement *hash_get_type;
+        soar_module::sqlite_statement *hash_add_type;
+        soar_module::sqlite_statement *hash_add_int;
+        soar_module::sqlite_statement *hash_add_float;
+        soar_module::sqlite_statement *hash_add_str;
 
 		epmem_common_statement_container( agent *new_agent );
+
+	private:
+
+		void create_graph_tables();
+		void drop_graph_tables();
+		void create_graph_indices();
+
 };
 
 class epmem_graph_statement_container: public soar_module::sqlite_statement_container
 {
 	public:
+		soar_module::sqlite_statement *add_node;
 		soar_module::sqlite_statement *add_time;
 
 		//
 
-		soar_module::sqlite_statement *add_node_now;
-		soar_module::sqlite_statement *delete_node_now;
-		soar_module::sqlite_statement *add_node_point;
-		soar_module::sqlite_statement *add_node_range;
+		soar_module::sqlite_statement *add_epmem_wmes_constant_now;
+		soar_module::sqlite_statement *delete_epmem_wmes_constant_now;
+		soar_module::sqlite_statement *add_epmem_wmes_constant_point;
+		soar_module::sqlite_statement *add_epmem_wmes_constant_range;
 
-		soar_module::sqlite_statement *add_node_unique;
-		soar_module::sqlite_statement *find_node_unique;
+		soar_module::sqlite_statement *add_epmem_wmes_constant;
+		soar_module::sqlite_statement *find_epmem_wmes_constant;
 
 		//
 
-		soar_module::sqlite_statement *add_edge_now;
-		soar_module::sqlite_statement *delete_edge_now;
-		soar_module::sqlite_statement *add_edge_point;
-		soar_module::sqlite_statement *add_edge_range;
+		soar_module::sqlite_statement *add_epmem_wmes_identifier_now;
+		soar_module::sqlite_statement *delete_epmem_wmes_identifier_now;
+		soar_module::sqlite_statement *add_epmem_wmes_identifier_point;
+		soar_module::sqlite_statement *add_epmem_wmes_identifier_range;
 
-		soar_module::sqlite_statement *add_edge_unique;
-		soar_module::sqlite_statement *find_edge_unique;
-		soar_module::sqlite_statement *find_edge_unique_shared;
+		soar_module::sqlite_statement *add_epmem_wmes_identifier;
+		soar_module::sqlite_statement *find_epmem_wmes_identifier;
+		soar_module::sqlite_statement *find_epmem_wmes_identifier_shared;
 
 		//
 
@@ -361,8 +371,8 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 		soar_module::sqlite_statement *next_episode;
 		soar_module::sqlite_statement *prev_episode;
 
-		soar_module::sqlite_statement *get_nodes;
-		soar_module::sqlite_statement *get_edges;
+		soar_module::sqlite_statement *get_wmes_with_identifier_values;
+		soar_module::sqlite_statement *get_wmes_with_constant_values;
 
 		//
 
@@ -372,7 +382,7 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
 		//
 
-		soar_module::sqlite_statement *update_edge_unique_last;
+		soar_module::sqlite_statement *update_epmem_wmes_identifier_last_episode_id;
 
 		//
 
@@ -382,8 +392,14 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 		soar_module::sqlite_statement_pool *pool_dummy;
 
 		//
-		
+
 		epmem_graph_statement_container( agent *new_agent );
+
+	private:
+		void create_graph_tables();
+		void drop_graph_tables();
+		void create_graph_indices();
+
 };
 
 
@@ -412,7 +428,7 @@ typedef struct epmem_rit_state_struct
 	epmem_rit_state_param minstep;
 
 	soar_module::timer *timer;
-	soar_module::sqlite_statement *add_query;	
+	soar_module::sqlite_statement *add_query;
 } epmem_rit_state;
 
 //////////////////////////////////////////////////////////
@@ -484,10 +500,10 @@ typedef struct epmem_id_reservation_struct
 // follows cs theory notation of finite automata: q1 = d( q0, w )
 typedef struct epmem_edge_struct
 {
-	
-	epmem_node_id q0;							// id
-	Symbol *w;									// attr
-	epmem_node_id q1;							// value
+
+	epmem_node_id parent_n_id;							// id
+	Symbol *attribute;							// attr
+	epmem_node_id child_n_id;							// value
 
 	bool val_is_short_term;
 	char val_letter;
@@ -509,12 +525,15 @@ extern bool epmem_enabled( agent *my_agent );
 // init, end
 extern void epmem_reset( agent *my_agent, Symbol *state = NULL );
 extern void epmem_close( agent *my_agent );
+extern void epmem_reinit( agent *my_agent );
+
+extern void epmem_clear_transient_structures( agent *my_agent);
 
 // perform epmem actions
 extern void epmem_go( agent *my_agent, bool allow_store = true );
 extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 extern void epmem_schedule_promotion( agent* my_agent, Symbol* id );
-
+extern void epmem_init_db( agent *my_agent, bool readonly = false );
 // visualization
 extern void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
 extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
@@ -565,16 +584,16 @@ typedef std::set<epmem_node_pair> epmem_node_pair_set;
 
 // structs
 struct epmem_triple_struct {
-	epmem_node_id q0;
-	epmem_node_id w;
-	epmem_node_id q1;
+	epmem_node_id parent_n_id;
+	epmem_node_id attribute_s_id;
+	epmem_node_id child_n_id;
 	bool operator<(const epmem_triple& other) const {
-		if (q0 != other.q0) {
-			return (q0 < other.q0);
-		} else if (w != other.w) {
-			return (w < other.w);
+		if (parent_n_id != other.parent_n_id) {
+			return (parent_n_id < other.parent_n_id);
+		} else if (attribute_s_id != other.attribute_s_id) {
+			return (attribute_s_id < other.attribute_s_id);
 		} else {
-			return (q1 < other.q1);
+			return (child_n_id < other.child_n_id);
 		}
 	}
 };
@@ -585,9 +604,8 @@ struct epmem_literal_struct {
 	int is_neg_q;
 	int value_is_id;
 	bool is_leaf;
-	bool is_current;
-	epmem_node_id w;
-	epmem_node_id q1;
+	epmem_node_id attribute_s_id;
+	epmem_node_id child_n_id;
 	double weight;
 	epmem_literal_set parents;
 	epmem_literal_set children;
@@ -598,7 +616,6 @@ struct epmem_literal_struct {
 struct epmem_pedge_struct {
 	epmem_triple triple;
 	int value_is_id;
-	bool has_noncurrent;
 	epmem_literal_set literals;
 	soar_module::pooled_sqlite_statement* sql;
 	epmem_time_id time;
@@ -607,7 +624,6 @@ struct epmem_pedge_struct {
 struct epmem_uedge_struct {
 	epmem_triple triple;
 	int value_is_id;
-	bool has_noncurrent;
 	int activation_count;
 	epmem_pedge_set pedges;
 	int intervals;

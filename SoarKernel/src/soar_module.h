@@ -835,7 +835,7 @@ namespace soar_module
 		protected:
 			agent *my_agent;
 			
-			soar_process_timer stopwatch;
+			soar_timer stopwatch;
 			soar_timer_accumulator accumulator;
 
 			timer_level level;
@@ -1212,7 +1212,7 @@ namespace soar_module
 			}
 			else
 			{
-				std::pair< typename object_history_map::iterator, bool > ip = object_histories.insert( std::make_pair< const T*, object_history >( obj, object_history( obj ) ) );
+				std::pair< typename object_history_map::iterator, bool > ip = object_histories.insert( std::make_pair( obj, object_history( obj ) ) );
 				assert( ip.second );
 
 				h = &( ip.first->second );

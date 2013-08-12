@@ -484,7 +484,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *relia
            thisAgent->quiescence_symbol) &&
           (referent_of_equality_test(cond->data.tests.value_test) ==
            thisAgent->t_symbol) &&
-          (! cond->metadata_test.value & METADATA_ACCEPTABLE)) {
+		  (! cond->metadata_test.value & METADATA_ACCEPTABLE)) {
         *reliable = false;
       }
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {

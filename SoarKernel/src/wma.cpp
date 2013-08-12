@@ -747,7 +747,7 @@ inline void wma_forgetting_add_to_p_queue( agent* my_agent, wma_decay_element* d
 #endif
 			newbie->insert( decay_el );
 			
-			my_agent->wma_forget_pq->insert( std::make_pair< wma_d_cycle, wma_decay_set* >( new_cycle, newbie ) );
+			my_agent->wma_forget_pq->insert( std::make_pair( new_cycle, newbie ) );
 		}
 		else
 		{
@@ -955,7 +955,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 							{
 								for ( w=s->wmes; (w && do_forget); w=w->next )
 								{
-									if ( !w->wma_decay_el || ( w->wma_decay_el->forget_cycle != WMA_FORGOTTEN_CYCLE ) )
+									if ( w->preference->o_supported && ( !w->wma_decay_el || ( w->wma_decay_el->forget_cycle != WMA_FORGOTTEN_CYCLE ) ) )
 									{
 										do_forget = false;
 									}

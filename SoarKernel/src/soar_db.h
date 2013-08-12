@@ -21,6 +21,16 @@
 #include "soar_module.h"
 #include "sqlite3.h"
 
+#define DEBUG_SQL_ERRORS
+//#define DEBUG_SQL_QUERIES
+
+#ifdef DEBUG_SQL_QUERIES
+//static void profile(void *context, const char *sql, sqlite3_uint64 ns) {
+//fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);}
+static void trace( void* /*arg*/, const char* query )
+{	fprintf(stderr, "Query: %s\n", query );}
+#endif
+
 // separates this functionality
 // just for Soar modules
 namespace soar_module
@@ -153,7 +163,7 @@ namespace soar_module
 						case op_clean:
 							clean();
 							break;
-							
+
 						case op_none:
 							break;
 					}
@@ -191,7 +201,7 @@ namespace soar_module
 			}
 	};
 
-	
+
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
 
@@ -202,7 +212,7 @@ namespace soar_module
 
 		public:
 			statement_container(): statements( new std::list<statement *>() ) {}
-			
+
 			virtual ~statement_container()
 			{
 				for ( std::list<statement *>::iterator p=statements->begin(); p!=statements->end(); p++ )
@@ -272,6 +282,11 @@ namespace soar_module
 
 					set_errno( sqlite_err );
 					set_errmsg( NULL );
+
+					#ifdef DEBUG_SQL_QUERIES
+					//sqlite3_profile(my_db, &profile, NULL);
+					sqlite3_trace( my_db, trace, NULL );
+					#endif
 				}
 				else
 				{
@@ -297,7 +312,7 @@ namespace soar_module
 			inline int64_t memory_usage() { return static_cast<int64_t>( sqlite3_memory_used() ); }
 			inline int64_t memory_highwater() { return static_cast<int64_t>( sqlite3_memory_highwater( false ) ); }
 			inline const char* lib_version() { return sqlite3_libversion(); }
-			
+
 			inline bool backup( const char* file_name, std::string* err )
 			{
 				sqlite3* backup_db;
@@ -341,6 +356,64 @@ namespace soar_module
 
 				return return_val;
 			}
+
+			inline bool print_table(const char *table_name)
+			{
+				sqlite3_stmt *statement;
+				std::string query;
+				query.assign("select * from ");
+				query.append(table_name);
+
+				if ( sqlite3_prepare(my_db, query.c_str(), -1, &statement, 0 ) == SQLITE_OK )
+				{
+					int ctotal = sqlite3_column_count(statement);
+					int res = 0;
+					const char *val;
+//					std::string val;
+
+					fprintf(stderr, "----------------------------\n%s\n----------------------------\n", table_name);
+					while ( 1 )
+					{
+						res = sqlite3_step(statement);
+
+						if ( res == SQLITE_ROW )
+						{
+							for ( int i = 0; i < ctotal; i++ )
+							{
+//								val.assign((const char *)sqlite3_column_text(statement, i));
+//								if (val)
+//									fprintf(stderr, "%s ", val.c_str());
+								val = reinterpret_cast<const char *>(sqlite3_column_text(statement, i));
+								if (val)
+								{
+									fprintf(stderr, "%s ", val);
+								}
+								else
+								{
+									fprintf(stderr, "NULL ");
+								}
+							}
+							fprintf(stderr, "\n");
+						}
+						else if ( res == SQLITE_DONE)
+						{
+							fprintf(stderr, "Done.\n");
+							return true;
+							break;
+						}
+						else if ( res==SQLITE_ERROR)
+						{
+							fprintf(stderr, "{print_table error %d: %s\n", res, this->get_errmsg());
+						}
+					}
+				}
+				return false;
+			}
+			inline bool sql_execute(const char *sql);
+			inline bool sql_simple_get_int(const char *sql, int64_t &return_value);
+			inline bool sql_simple_get_float(const char *sql, double &return_value);
+			inline bool sql_simple_get_string(const char *sql, std::string& return_value);
+			inline bool sql_is_new_db(bool& return_value);
 	};
 
 
@@ -353,24 +426,31 @@ namespace soar_module
 			sqlite_database *my_db;
 			sqlite3_stmt *my_stmt;
 
-			inline void sqlite_err()
+			inline void sqlite_err(int sqlite_res)
 			{
 				set_errno( sqlite3_errcode( my_db->get_db() ) );
 				set_errmsg( sqlite3_errmsg( my_db->get_db() ) );
-			}
 
+				//asm("int $3");
+
+			    #ifdef DEBUG_SQL_ERRORS
+				fprintf(stderr, "SoarDB| Unexpected sqlite result!  result = %d. error = %d (%s)\n", sqlite_res, sqlite3_errcode( my_db->get_db() ),
+						sqlite3_errmsg( my_db->get_db() ));
+				fprintf(stderr, "SoarDB|...in SQL statement: %s\n", sql);
+				#endif
+			}
 			virtual bool _prep()
 			{
 				const char *tail;
 				bool return_val = false;
-
-				if ( sqlite3_prepare_v2( my_db->get_db(), sql, SQLITE_PREP_STR_MAX, &( my_stmt ), &tail ) == SQLITE_OK )
+				int sqlite_res = sqlite3_prepare_v2( my_db->get_db(), sql, SQLITE_PREP_STR_MAX, &( my_stmt ), &tail );
+				if (sqlite_res == SQLITE_OK )
 				{
 					return_val = true;
 				}
 				else
 				{
-					sqlite_err();
+					sqlite_err(sqlite_res);
 				}
 
 				return return_val;
@@ -398,7 +478,7 @@ namespace soar_module
 					 ( sqlite_res != SQLITE_DONE ) &&
 					 ( sqlite_res != SQLITE_ROW ) )
 				{
-					sqlite_err();
+					sqlite_err(sqlite_res);
 				}
 				else
 				{
@@ -479,6 +559,15 @@ namespace soar_module
 
 				return return_val;
 			}
+
+			inline int parameter (const char *paramName)
+			{
+				return sqlite3_bind_parameter_index(my_stmt, paramName);
+			}
+			inline int get_parameter_count()
+			{
+				 return sqlite3_bind_parameter_count(my_stmt);
+			}
 	};
 
 
@@ -514,12 +603,19 @@ namespace soar_module
 				for ( std::list<const char *>::iterator p=structures->begin(); p!=structures->end(); p++ )
 				{
 					temp_stmt = new sqlite_statement( my_db, (*p) );
+					exec_result execute_result = err;
 
 					temp_stmt->prepare();
 					assert( temp_stmt->get_status() == ready );
-					temp_stmt->execute();
-
+					execute_result = temp_stmt->execute();
+					#ifdef DEBUG_SQL_ERRORS
+						if (execute_result == err) {
+							fprintf(stderr, "SoarDB| Unexpected sqlite result in structure!  result = %d. error = %d (%s)\n", execute_result, temp_stmt->get_errno(), temp_stmt->get_errmsg());
+							fprintf(stderr, "SoarDB|...in SQL statement: %s\n", (*p));
+						}
+					#endif
 					delete temp_stmt;
+
 				}
 			}
 	};
@@ -529,7 +625,7 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 
 	class sqlite_statement_pool;
-	
+
 	class pooled_sqlite_statement: public sqlite_statement
 	{
 		protected:
@@ -537,7 +633,7 @@ namespace soar_module
 
 		public:
 			pooled_sqlite_statement( sqlite_statement_pool* new_pool, sqlite_database* new_db, const char* new_sql, timer* new_query_timer = NULL ): sqlite_statement( new_db, new_sql, new_query_timer ), stmt_pool( new_pool ) {}
-			
+
 			inline sqlite_statement_pool* get_pool()
 			{
 				return stmt_pool;
@@ -609,6 +705,69 @@ namespace soar_module
 				return return_val;
 			}
 	};
+
+	inline bool sqlite_database::sql_simple_get_int(const char *sql, int64_t &return_value)
+	{
+		soar_module::sqlite_statement *temp_q = new soar_module::sqlite_statement( this, sql );
+		temp_q->prepare();
+		bool result = ( temp_q->execute() == soar_module::row );
+		if (result)
+			return_value = temp_q->column_int( 0 );
+		delete temp_q;
+		return result;
+	}
+
+	inline bool sqlite_database::sql_execute(const char *sql)
+	{
+		soar_module::sqlite_statement *temp_q = new soar_module::sqlite_statement( this, sql );
+		exec_result execute_result = err;
+
+		temp_q->prepare();
+
+		execute_result = temp_q->execute();
+		#ifdef DEBUG_SQL_ERRORS
+		if (execute_result == err) {
+			fprintf(stderr, "SoarDB| Unexpected sqlite result in sql_execute!  result = %d. error = %d (%s)\n", execute_result, this->get_errno(), this->get_errmsg());
+			fprintf(stderr, "SoarDB|...in SQL statement: %s\n", sql);
+		}
+		#endif
+
+		delete temp_q;
+		return (execute_result == ok);
+	}
+
+
+	 inline bool sqlite_database::sql_simple_get_float(const char *sql, double &return_value)
+	{
+		soar_module::sqlite_statement *temp_q = new soar_module::sqlite_statement( this, sql );
+		temp_q->prepare();
+		bool result = ( temp_q->execute() == soar_module::row );
+		if (result) return_value = temp_q->column_double( 0 );
+		delete temp_q;
+		return result;
+	}
+
+	 inline bool sqlite_database::sql_simple_get_string(const char *sql, std::string& return_value)
+	{
+		soar_module::sqlite_statement *temp_q = new soar_module::sqlite_statement( this, sql );
+		temp_q->prepare();
+		bool result = ( temp_q->execute() == soar_module::row );
+		if (result)
+			return_value.assign(temp_q->column_text( 0 ));
+		delete temp_q;
+		return result;
+	}
+	 inline bool sqlite_database::sql_is_new_db(bool& return_value)
+	 {
+		 int64_t numTables, value_retrieved;
+
+		 value_retrieved = sql_simple_get_int("SELECT count(*) FROM sqlite_master WHERE type='table'", numTables);
+		 if (value_retrieved)
+			 return_value = (numTables == 0);
+		 else
+			 return_value = false;
+		 return value_retrieved;
+	 }
 }
 
 #endif

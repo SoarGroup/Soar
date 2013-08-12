@@ -187,7 +187,7 @@ namespace soar_module
 			memory_pool* newbie = new memory_pool;
 
 			init_memory_pool( my_agent, newbie, size, "dynamic" );
-			my_agent->dyn_memory_pools->insert( std::make_pair< size_t, memory_pool* >( size, newbie ) );
+			my_agent->dyn_memory_pools->insert( std::make_pair( size, newbie ) );
 
 			return_val = newbie;
 		}

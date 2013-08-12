@@ -30,6 +30,7 @@
 #include "gdatastructs.h"
 #include "mem.h"
 #include "agent.h"
+#include "prefmem.h"
 
 /* **********************************************************************
 

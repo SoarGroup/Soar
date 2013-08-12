@@ -485,12 +485,18 @@ test parse_test (agent* thisAgent) {
   return t;
 }
 
+/* -----------------------------------------------------------------
+                          Parse Metadata
+                      
+    <metadata_flat> ::= + [metadata_type]
+----------------------------------------------------------------- */
+
 metadata_pair parse_metadata_test (agent* thisAgent) {
 	metadata_pair mr;
 	mr.mask = '\0' | METADATA_ACCEPTABLE;
 	mr.value = '\0';
 	Bool error = FALSE;
-    if (thisAgent->lexeme.type == PLUS_LEXEME) {
+	if (thisAgent->lexeme.type == PLUS_LEXEME) {
 		mr.value |= METADATA_ACCEPTABLE;
 		get_lexeme(thisAgent);
 	}
@@ -499,43 +505,43 @@ metadata_pair parse_metadata_test (agent* thisAgent) {
 			break;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":smem-recognized")) {
-	      mr.mask |= METADATA_SMEM_RECOGNITION;
-	      mr.value &= ~METADATA_SMEM_RECOGNITION;
-		  get_lexeme(thisAgent);
-		  continue;
+			mr.mask |= METADATA_SMEM_RECOGNITION;
+			mr.value &= ~METADATA_SMEM_RECOGNITION;
+			get_lexeme(thisAgent);
+			continue;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":smem-unrecognized")) {
-	      mr.mask |= METADATA_SMEM_RECOGNITION;
-	      mr.value |= METADATA_SMEM_RECOGNITION;
-		  get_lexeme(thisAgent);
-		  continue;
+			mr.mask |= METADATA_SMEM_RECOGNITION;
+			mr.value |= METADATA_SMEM_RECOGNITION;
+			get_lexeme(thisAgent);
+			continue;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":epmem-recognized")) {
-	      mr.mask |= METADATA_EPMEM_RECOGNITION;
-	      mr.value &= ~METADATA_EPMEM_RECOGNITION;
-		  get_lexeme(thisAgent);
-		  continue;
+			mr.mask |= METADATA_EPMEM_RECOGNITION;
+			mr.value &= ~METADATA_EPMEM_RECOGNITION;
+			get_lexeme(thisAgent);
+			continue;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":epmem-unrecognized")) {
-	      mr.mask |= METADATA_EPMEM_RECOGNITION;
-	      mr.value |= METADATA_EPMEM_RECOGNITION;
-		  get_lexeme(thisAgent);
-		  continue;
+			mr.mask |= METADATA_EPMEM_RECOGNITION;
+			mr.value |= METADATA_EPMEM_RECOGNITION;
+			get_lexeme(thisAgent);
+			continue;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":is-lti")) {
-	      mr.mask |= METADATA_LTI;
-	      mr.value |= METADATA_LTI;
-		  get_lexeme(thisAgent);
-		  continue;
+			mr.mask |= METADATA_LTI;
+			mr.value |= METADATA_LTI;
+			get_lexeme(thisAgent);
+			continue;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":is-not-lti")) {
-	      mr.mask |= METADATA_LTI;
-	      mr.value &= ~METADATA_LTI;
-		  get_lexeme(thisAgent);
-		  continue;
+			mr.mask |= METADATA_LTI;
+			mr.value &= ~METADATA_LTI;
+			get_lexeme(thisAgent);
+			continue;
 		}
 		error = TRUE;
-    	break;
+		break;
 	}
 	if (error) {
 		print (thisAgent, "Expected metadata flag while reading test\n");
@@ -708,8 +714,8 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = make_placeholder_test (thisAgent, first_letter);
-	c->metadata_test.mask = METADATA_ACCEPTABLE;
-	c->metadata_test.value = '\0';
+    c->metadata_test.mask = METADATA_ACCEPTABLE;
+    c->metadata_test.value = '\0';
     return c;
   }
 
@@ -735,14 +741,12 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
         add_new_test_to_test (thisAgent, &value_test,make_placeholder_test(thisAgent, first_letter));
       }
     }
-
-    /* --- check for acceptable preference indicator --- */
-	metadata_pair mp = parse_metadata_test(thisAgent);
-	if (!mp.mask) {
+    /* --- check for metadata indicator --- */
+    metadata_pair mp = parse_metadata_test(thisAgent);
+    if (!mp.mask) {
         deallocate_condition_list (thisAgent, first_c);
-		return NIL;
-	}
-
+        return NIL;
+    }
     /* --- build condition using the new value test --- */
     allocate_with_pool (thisAgent, &thisAgent->condition_pool,  &c);
     insert_at_head_of_dll (new_conds, c, next, prev);
@@ -818,7 +822,7 @@ condition *parse_attr_value_tests (agent* thisAgent) {
     id_test_to_use = make_placeholder_test (thisAgent, first_letter_from_test(attr_test));
     c->data.tests.value_test = id_test_to_use;
     c->metadata_test.mask = METADATA_ACCEPTABLE;
-	c->metadata_test.value = '\0';
+    c->metadata_test.value = '\0';
     /* --- update id and attr tests for the next path element --- */
     attr_test = parse_test (thisAgent);
     if (!attr_test) {

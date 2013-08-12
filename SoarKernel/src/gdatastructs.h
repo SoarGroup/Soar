@@ -453,6 +453,8 @@ typedef struct metadata_pair_struct {
   char value;
 } metadata_pair;
 
+
+
 typedef struct complex_test_struct {
   byte type;                  /* see definitions below */
   union test_info_union {
@@ -474,7 +476,7 @@ typedef struct complex_test_struct {
 //#define CONJUNCTIVE_TEST 8       /* item must pass each of a list of tests */
 //#define GOAL_ID_TEST 9           /* item must be a goal identifier */
 //#define IMPASSE_ID_TEST 10       /* item must be an impasse identifier */
-//#define METADATA_TEST 11         /* item must have specified metadata values */
+//#define METADATA+TEST 11         /* item must have specified metadata values */
 enum ComplexTextTypes {
          NOT_EQUAL_TEST = 1,         /* various relational tests */
          LESS_TEST = 2,
@@ -486,7 +488,7 @@ enum ComplexTextTypes {
          CONJUNCTIVE_TEST = 8,       /* item must pass each of a list of tests */
          GOAL_ID_TEST = 9,           /* item must be a goal identifier */
          IMPASSE_ID_TEST = 10,       /* item must be an impasse identifier */
-		 METADATA_TEST = 11,         /* item must have specified metadata values */
+         METADATA_TEST = 11          /* item must have specified metadata values */
 };
 
 #define NUM_TEST_TYPES 11
@@ -522,7 +524,7 @@ enum ComplexTextTypes {
         LHS, or all subconditions of an NCC.
 
       data.tests.id_test, data.tests.attr_test, data.tests.value_test,
-      data.tests.metadata_test:
+	  data.tests.metadata_test:
         for positive and negative conditions, these are the four wme
         field tests for the condition.
 

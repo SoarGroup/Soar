@@ -861,7 +861,7 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
                            c2->data.tests.value_test, neg))
       return FALSE;
     if ((c1->metadata_test.mask != c2->metadata_test.mask) ||
-    		(c1->metadata_test.value != c2->metadata_test.value))
+        (c1->metadata_test.value != c2->metadata_test.value))
       return FALSE;
     return TRUE;
     
@@ -892,9 +892,9 @@ uint32_t hash_condition (agent* thisAgent,
     result ^= hash_test (thisAgent, cond->data.tests.attr_test);
     result = (result << 24) | (result >>  8);
     result ^= hash_test (thisAgent, cond->data.tests.value_test);
-	// JL (2012-07-10) I'm definitely making this up 
+    // JL (2012-07-10) I'm definitely making this up 
     result = (result << 24) | (result >>  8);
-	result ^= (static_cast<uint32_t>(cond->metadata_test.mask) << 16) | (static_cast<uint32_t>(cond->metadata_test.value) << 8);
+    result ^= (static_cast<uint32_t>(cond->metadata_test.mask) << 16) | (static_cast<uint32_t>(cond->metadata_test.value) << 8);
     break;
   case NEGATIVE_CONDITION:
     result = 1267818;
@@ -903,9 +903,8 @@ uint32_t hash_condition (agent* thisAgent,
     result ^= hash_test (thisAgent, cond->data.tests.attr_test);
     result = (result << 24) | (result >>  8);
     result ^= hash_test (thisAgent, cond->data.tests.value_test);
-	// JL (2012-07-10) I'm definitely making this up 
     result = (result << 24) | (result >>  8);
-	result ^= (static_cast<uint32_t>(cond->metadata_test.mask) << 16) | (static_cast<uint32_t>(cond->metadata_test.value) << 8);
+    result ^= (static_cast<uint32_t>(cond->metadata_test.mask) << 16) | (static_cast<uint32_t>(cond->metadata_test.value) << 8);
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
     result = 82348149;

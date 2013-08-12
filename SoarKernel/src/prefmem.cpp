@@ -20,7 +20,7 @@
 
 /* Debugging stuff:  #define DEBUG_PREFS to get preference printouts */
 
-//#define DEBUG_PREFS
+/* #define DEBUG_PREFS */
 
 #include <stdlib.h>
 #include "mem.h"
