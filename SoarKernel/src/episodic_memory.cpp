@@ -3223,7 +3223,7 @@ void epmem_new_episode( agent *my_agent )
 						wmes = epmem_get_augs_of_id( parent_sym, tc );
 						if ( ! wmes->empty() )
 						{
-							_epmem_store_level( my_agent, parent_syms, parent_ids, tc, wmes->begin(), wmes->end(), parent_id, time_counter, id_reservations, new_identifiers, epmem_node, epmem_edge );
+							_epmem_store_level( my_agent, parent_syms, parent_ids, tc, wmes->begin(), wmes->end(), parent_id, time_counter, id_reservations, new_identifiers, epmem_node, epmem_edge, unrecognized_wmes );
 						}
 						delete wmes;
 					}
@@ -3439,8 +3439,8 @@ void epmem_new_episode( agent *my_agent )
 						// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it; value constants don't have counters)
 						// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
 						smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
-						my_agent->smem_stmts->ct_attr_check->bind_int( 1, hash );
-						if ( my_agent->smem_stmts->ct_attr_check->execute( soar_module::op_reinit ) == soar_module::row )
+						my_agent->smem_stmts->attribute_frequency_check->bind_int( 1, hash );
+						if ( my_agent->smem_stmts->attribute_frequency_check->execute( soar_module::op_reinit ) == soar_module::row )
 						{
 							// if a counter is found, it is in smem, and therefore should be recognized
 							recognized = true;
