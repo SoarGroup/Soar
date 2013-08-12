@@ -1,3 +1,10 @@
+%begin %{
+/* This will make the linker link against python2x.lib instead of python2x_d.lib */
+#if defined _MSC_VER && defined _DEBUG
+#undef _DEBUG
+#endif
+%}
+
 %module Python_sml_ClientInterface
 
 // handle windows calling convention, __declspec(dllimport), correctly
