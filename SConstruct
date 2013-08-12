@@ -257,7 +257,7 @@ if 'MSVSSolution' in env['BUILDERS']:
 				g_msvs_variant = 'Release|Win32'
 			else:
 				g_msvs_variant = 'Debug|Win32'
- 		break
+		break
 
 Export('g_msvs_variant')
 
