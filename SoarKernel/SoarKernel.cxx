@@ -3,6 +3,7 @@
 #include "src/callback.cpp"
 #include "src/chunk.cpp"
 #include "src/consistency.cpp"
+#include "src/debug.cpp"
 #include "src/decide.cpp"
 #include "src/decision_manipulation.cpp"
 #include "src/episodic_memory.cpp"

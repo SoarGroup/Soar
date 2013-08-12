@@ -20,14 +20,11 @@ def CheckSWIG(env):
 Import('env', 'compiler', 'InstallDir', 'g_msvs_variant')
 kernel_env = env.Clone()
 
-if os.name == 'posix':
-	libs = ['pthread', 'm']
-	if 'freebsd' not in sys.platform:
-		libs.append('dl')
-elif os.name == 'nt':
-	libs = ['advapi32']
-
-kernel_env.Replace(LIBS = libs, LIBPATH=[])
+# Windows DLLs need to get linked to dependencies, whereas Linux and Mac shared objects do not
+if os.name == 'nt':
+	kernel_env['LIBS'] = ['advapi32']
+else:
+	kernel_env['LIBS'] = []
 
 if sys.platform == 'darwin':
 	install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
@@ -38,24 +35,24 @@ if env['SCU']:
 else:
 	scu = 1
 
-srcs = {
-#   Component          SCU source                         Non-SCU source
-	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
-	'sqlite'        : ('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']),
-	'KernelSML'     : ('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),
-	'ClientSML'     : ('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),
-	'ConnectionSML' : ('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')),
-	'ElementXML'    : ('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),
-	'CLI'           : ('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),
-}
+srcs = [
+    # SCU source                        Non-SCU source
+	('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),    # Kernel
+	('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']), # sqlite
+	('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),     # KernelSML
+	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     # ClientSML
+	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), # ConnectionSML
+	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    # ElementXML
+	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           # CLI
+]
 
 if compiler == 'msvc':
-	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
+	srcs.append(('pcre/pcre.cxx', Glob('pcre/*.c')))
 
 if GetOption('static'):
-	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
+	soarlib = kernel_env.Library('Soar', [s[scu] for s in srcs])
 else:
-	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs])[:2]
+	soarlib = kernel_env.SharedLibrary('Soar', [s[scu] for s in srcs])[:2]
 	if compiler == 'msvc':
 		kernel_env.Append(CPPFLAGS = ['/D', '_USRDLL'])
 
@@ -77,7 +74,7 @@ else:
 if 'MSVSProject' in kernel_env['BUILDERS']:
 	vcproj = kernel_env.MSVSProject(
 		target = '#core' + env['MSVSPROJECTSUFFIX'],
-		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs.values()])),
+		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs])),
 		buildtarget = lib_install,
 		variant = g_msvs_variant,
 		auto_build_solution = 0,
