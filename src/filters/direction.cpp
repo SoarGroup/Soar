@@ -135,12 +135,12 @@ bool below(const scene *scn, const vector<const sgnode*> &args) {
 Filter version
 */
 
-class direction_filter : public typed_map_filter<bool> {
+class direction_filter : public select_filter{ //typed_map_filter<bool> {
 public:
 	direction_filter(Symbol *root, soar_interface *si, filter_input *input, int axis, int comp)
-	: typed_map_filter<bool>(root, si, input), axis(axis), comp(comp) {}
+	: select_filter(root, si, input), axis(axis), comp(comp) {}
 	
-	bool compute(const filter_params *p, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *p, filter_val*& out, bool &changed) {// bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, p, "a", a)) {
@@ -151,16 +151,35 @@ public:
 		}
 		
 		bool newres = direction(a, b, axis, comp);
-		changed = (newres != res);
-		res = newres;
+		//changed = (newres != res);
+		//res = newres;
+		changed = true;
+		filter_val* a_val = new filter_val_c<const sgnode*>(b);
+		if(newres && out == NULL){
+			// Create a new filter val
+			out = new filter_val_c<const sgnode*>(b);
+		} else if(newres && a_val != out){
+			// The value has changed
+			set_filter_val(out, b);
+		} else if(!newres && out != NULL){
+			// We no longer are selecting the value, make it null
+			//std::cout << "nulled!" << std::endl;
+			out = NULL;
+		} else {
+			// the value didn't actually changed
+			changed = false;
+		}
+		delete a_val;
 		return true;
 	}
+
 	virtual int getAxis() {
 		return axis;
 	}
 	virtual int getComp() {
 		return comp;
 	}
+
 private:
 	int axis, comp;
 };
@@ -169,12 +188,12 @@ private:
 
 
 
-class size_comp_filter : public typed_map_filter<bool> {
+class size_comp_filter : public select_filter{//typed_map_filter<bool> {
 public:
 	size_comp_filter(Symbol *root, soar_interface *si, filter_input *input)
-	: typed_map_filter<bool>(root, si, input) {}
+	: select_filter(root, si, input) {}
 	
-	bool compute(const filter_params *p, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *p, filter_val*& out, bool &changed) {//bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, p, "a", a)) {
@@ -185,17 +204,33 @@ public:
 		}
 		
 		bool newres = size_comp(a, b);
-		changed = (newres != res);
-		res = newres;
+		changed = true;
+		filter_val* a_val = new filter_val_c<const sgnode*>(b);
+		if(newres && out == NULL){
+			// Create a new filter val
+			out = new filter_val_c<const sgnode*>(b);
+		} else if(newres && a_val != out){
+			// The value has changed
+			set_filter_val(out, b);
+		} else if(!newres && out != NULL){
+			// We no longer are selecting the value, make it null
+			out = NULL;
+		} else {
+			// the value didn't actually changed
+			changed = false;
+		}
+		delete a_val;
+		//changed = (newres != res);
+		//res = newres;
 		return true;
 	}
 };
-class linear_comp_filter : public typed_map_filter<bool> {
+class linear_comp_filter : public select_filter{//typed_map_filter<bool> {
 public:
 	linear_comp_filter(Symbol *root, soar_interface *si, filter_input *input)
-	: typed_map_filter<bool>(root, si, input) {}
+		: select_filter(root, si, input) {}
 	
-	bool compute(const filter_params *p, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *p, filter_val*& out, bool &changed) {//bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
 		
 		if (!get_filter_param(this, p, "a", a)) {
@@ -208,9 +243,25 @@ public:
 			return false;
 		}
 		
-		bool newres = linear_comp(a, b, c);
-		changed = (newres != res);
-		res = newres;
+	    bool newres = linear_comp(a, b, c);
+	changed = true;
+		filter_val* a_val = new filter_val_c<const sgnode*>(b);
+		if(newres && out == NULL){
+			// Create a new filter val
+			out = new filter_val_c<const sgnode*>(b);
+		} else if(newres && a_val != out){
+			// The value has changed
+			set_filter_val(out, b);
+		} else if(!newres && out != NULL){
+			// We no longer are selecting the value, make it null
+			out = NULL;
+		} else {
+			// the value didn't actually changed
+			changed = false;
+		}
+		delete a_val;
+	//changed = (newres != res);
+	//res = newres;
 		return true;
 	}
 };
@@ -390,3 +441,4 @@ filter_table_entry *below_fill_entry() {
 	e->calc = &below;
 	return e;
 }
+

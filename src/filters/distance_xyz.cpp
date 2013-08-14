@@ -22,6 +22,7 @@ public:
 	    !get_filter_param(this, params, "b", b) ||
 	    !get_filter_param(this, params, "axis", axis))
 	{
+		changed = false;
 	    return false;
 	}
 	

@@ -3,6 +3,7 @@
 #include <utility>
 #include "scene.h"
 #include "filter.h"
+#include <iostream>
 
 using namespace std;
 
@@ -94,15 +95,28 @@ void product_filter_input::combine(const input_table &inputs) {
 		for (int j = 0, jend = o->num_removed(); j < jend; ++j) {
 			filter_val *r = o->get_removed(j);
 			k = val2params.find(r);
-			assert(k != val2params.end());
+			//assert(k != val2params.end());
+			if (k == val2params.end())
+				continue;
 			param_set_list temp = k->second;
 			for (l = temp.begin(); l != temp.end(); ++l) {
 				remove(*l);
 				erase_param_set(*l);
 			}
 		}
+		//if (o == NULL)
+		//	std::cout << "NULL!" << std::endl;
 		for (int j = 0, jend = o->num_changed(); j < jend; ++j) {
 			k = val2params.find(o->get_changed(j));
+			if (k == val2params.end())
+			{
+				//std::cout << "k: " << k << std::endl;
+				//std::cout << "i: " << i << std::endl;
+				//std::cout << "iend: " << iend << std::endl;
+				//std::cout << "j: " << j << std::endl;
+				//std::cout << "jend: " << jend << std::endl;
+				continue;
+			}
 			assert(k != val2params.end());
 			for (l = k->second.begin(); l != k->second.end(); ++l) {
 				change(*l);
