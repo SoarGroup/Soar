@@ -1218,23 +1218,17 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 		//
 
-		// notice that the start and end queries in epmem_find_lti_queries are _asymmetric_
-		// in that the starts have ?<e.start and the ends have ?<=e.start
-		// this small difference means that the start of the very first interval
-		// (ie. the one where the start is at or before the promotion time) will be ignored
-		// then we can simply add a single epmem_interval to the queue, and it will
-		// terminate any LTI interval appropriately
 		const char *epmem_find_lti_queries[2][3] =
 		{
 			{
-				"SELECT (e.start_episode_id - 1) AS start FROM epmem_wmes_identifier_range e WHERE e.wi_id=? AND ?<e.start_episode_id AND e.start_episode_id<=? ORDER BY e.start_episode_id DESC",
-				"SELECT (e.start_episode_id - 1) AS start FROM epmem_wmes_identifier_now e WHERE e.wi_id=? AND ?<e.start_episode_id AND e.start_episode_id<=? ORDER BY e.start_episode_id DESC",
-				"SELECT (e.episode_id - 1) AS start FROM epmem_wmes_identifier_point e WHERE e.wi_id=? AND ?<e.episode_id AND e.episode_id<=? ORDER BY e.episode_id DESC"
+				"SELECT (e.start_episode_id - 1) AS start FROM epmem_wmes_identifier_range e WHERE e.wi_id=? AND e.end_episode_id>=? AND e.start_episode_id<=? ORDER BY e.start_episode_id DESC",
+				"SELECT (e.start_episode_id - 1) AS start FROM epmem_wmes_identifier_now e WHERE e.wi_id=? AND e.start_episode_id<=? ORDER BY e.start_episode_id DESC",
+				"SELECT (e.episode_id - 1) AS start FROM epmem_wmes_identifier_point e WHERE e.wi_id=? AND e.episode_id<=? ORDER BY e.episode_id DESC"
 			},
 			{
-				"SELECT e.end_episode_id AS end FROM epmem_wmes_identifier_range e WHERE e.wi_id=? AND e.end_episode_id>0 AND ?<=e.start_episode_id AND e.start_episode_id<=? ORDER BY e.end_episode_id DESC",
-				"SELECT ? AS end FROM epmem_wmes_identifier_now e WHERE e.wi_id=? AND ?<=e.start_episode_id AND e.start_episode_id<=? ORDER BY e.start_episode_id",
-				"SELECT e.episode_id AS end FROM epmem_wmes_identifier_point e WHERE e.wi_id=? AND ?<=e.episode_id AND e.episode_id<=? ORDER BY e.episode_id DESC"
+				"SELECT e.end_episode_id AS end FROM epmem_wmes_identifier_range e WHERE e.wi_id=? AND e.end_episode_id>=? AND e.start_episode_id<=? ORDER BY e.end_episode_id DESC",
+				"SELECT ? AS end FROM epmem_wmes_identifier_now e WHERE e.wi_id=? AND e.start_episode_id<=? ORDER BY e.start_episode_id",
+				"SELECT e.episode_id AS end FROM epmem_wmes_identifier_point e WHERE e.wi_id=? AND e.episode_id<=? ORDER BY e.episode_id DESC"
 			}
 		};
 
@@ -2477,6 +2471,9 @@ inline void _epmem_store_level( agent* my_agent,
 			}
 
 			// if still here, create reservation (case 1)
+			#ifdef debug_epmem_wme_add
+			fprintf(stderr, "   wme is known.  creating reservation.\n");
+			#endif
 			new_id_reservation = new epmem_id_reservation;
 			new_id_reservation->my_id = EPMEM_NODEID_BAD;
 			new_id_reservation->my_pool = NULL;
@@ -2494,10 +2491,16 @@ inline void _epmem_store_level( agent* my_agent,
 			my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ new_id_reservation->my_hash ];
 			if ( (*my_id_repo) )
 			{
+				#ifdef debug_epmem_wme_add
+				fprintf(stderr, "   id repository exists.  reserving id\n");
+				#endif
 				for ( pool_p = (*my_id_repo)->begin(); pool_p != (*my_id_repo)->end(); pool_p++ )
 				{
 					if ( pool_p->first == (*w_p)->value->id.epmem_id )
 					{
+						#ifdef debug_epmem_wme_add
+						fprintf(stderr, "   reserved id %d\n", (unsigned int) pool_p->second);
+						#endif
 						new_id_reservation->my_id = pool_p->second;
 						(*my_id_repo)->erase( pool_p );
 						break;
@@ -2506,6 +2509,9 @@ inline void _epmem_store_level( agent* my_agent,
 			}
 			else
 			{
+				#ifdef debug_epmem_wme_add
+				fprintf(stderr, "   no id repository found.  creating new id repository.\n");
+				#endif
 				// add repository
 				(*my_id_repo) = new epmem_id_pool;
 			}
@@ -2560,7 +2566,7 @@ inline void _epmem_store_level( agent* my_agent,
 			{
 				// find the lti or add new one
 				#ifdef DEBUG_EPMEM_WME_ADD
-				fprintf(stderr, "   Value is an LTI  Doing processing we haven't looke at!\n");
+				fprintf(stderr, "   Value is an LTI  Doing processing we haven't looked at!\n");
 				#endif
 				if ( !value_known_apriori )
 				{
@@ -4322,7 +4328,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_interval_set interval_cleanup = epmem_interval_set();
 #endif
 
-	// TODO additional indices
+	// TODO JUSTIN additional indices
 
 	// variables needed for building the DNF
 	epmem_literal* root_literal;
@@ -4507,7 +4513,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 					}
 				}
-				// TODO what I want to do here is, if there is no children which leads to a leaf, retract everything
+				// TODO JUSTIN what I want to do here is, if there is no children which leads to a leaf, retract everything
 				// I'm not sure how to properly test for this though
 
 				// look for uedge with triple; if none exist, create one
@@ -4576,8 +4582,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								interval_sql->bind_int(bind_pos++, current_episode);
 							}
 							interval_sql->bind_int(bind_pos++, edge_id);
-							if (is_lti) {
-								// find the promotion time of the LTI, and use that as an after constraint
+							if (is_lti && interval_type == EPMEM_RANGE_EP) {
 								interval_sql->bind_int(bind_pos++, promo_time);
 							}
 							interval_sql->bind_int(bind_pos++, current_episode);
@@ -4586,7 +4591,18 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &interval);
 								interval->is_end_point = point_type;
 								interval->uedge = uedge;
+								// If it's an start point of a range (ie. not a point) and it's before the promo time
+								// (this is possible if a the promotion is in the middle of a range)
+								// trim it to the promo time.
+								// This will only happen if the LTI is promoted in the last interval it appeared in
+								// (since otherwise the start point would not be before its promotion).
+								// We don't care about the remaining results of the query
+
+								// why wouldn't the LTI still be satisfied before its promotion time? what guards against that?
 								interval->time = interval_sql->column_int(0);
+								if (is_lti && point_type == EPMEM_RANGE_START && interval_type != EPMEM_RANGE_POINT && interval->time < promo_time) {
+									interval->time = promo_time;
+								}
 								interval->sql = interval_sql;
 								interval_pq.push(interval);
 								interval_cleanup.insert(interval);
@@ -4689,7 +4705,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							interval_cleanup.erase(interval);
 							free_with_pool(&(my_agent->epmem_interval_pool), interval);
 						} else {
-							// TODO retract intervals
+							// TODO JUSTIN retract intervals
 						}
 					}
 				}
