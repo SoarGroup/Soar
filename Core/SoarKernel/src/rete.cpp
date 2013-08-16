@@ -1602,6 +1602,10 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
       {
 	    // add id ref count
 	    (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]->insert( w );
+		#ifdef DEBUG_EPMEM_WME_ADD
+		fprintf(stderr, "   increasing ref_count of value in %d %d %d; new ref_count is %d\n",
+				(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id.epmem_id, (unsigned int)(*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]->size());
+		#endif
       }
 
 	  // if known id
@@ -1637,9 +1641,18 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 
 			(*my_agent->epmem_edge_removals)[ w->epmem_id ] = true;
 
+			#ifdef debug_epmem_wme_add
+			fprintf(stderr, "   wme destroyed: %d %d %d\n",
+					(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id.epmem_id);
+			#endif
+
 			// return to the id pool
 			if ( !lti )
 			{
+				#ifdef DEBUG_EPMEM_WME_ADD
+				fprintf(stderr, "   returning WME to pool: %d %d %d\n",
+						(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id.epmem_id);
+				#endif
 				epmem_return_id_pool::iterator p = my_agent->epmem_id_replacement->find( w->epmem_id );
 				(*p->second).push_front( std::make_pair( w->value->id.epmem_id, w->epmem_id ) );
 				my_agent->epmem_id_replacement->erase( p );
@@ -1655,6 +1668,10 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 			if ( rc_it != my_refs->end() )
 			{
 				my_refs->erase( rc_it );
+				#ifdef DEBUG_EPMEM_WME_ADD
+				fprintf(stderr, "   reducing ref_count of value in %d %d %d; new ref_count is %d\n",
+						(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id.epmem_id, (unsigned int) my_refs->size());
+				#endif
 
 				// recurse if no incoming edges from top-state (i.e. not in transitive closure of top-state)
 				bool recurse = true;
@@ -1668,6 +1685,10 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 
 				if ( recurse )
 				{
+					#ifdef DEBUG_EPMEM_WME_ADD
+					fprintf(stderr, "   clearing ref_count of value in %d %d %d\n",
+							(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id.epmem_id);
+					#endif
 					my_refs->clear();
 					my_agent->epmem_id_removes->push_front( w->value );
 				}

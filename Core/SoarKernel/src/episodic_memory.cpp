@@ -2400,7 +2400,7 @@ inline void _epmem_promote_id( agent* my_agent, Symbol* id, epmem_time_id t )
    queues so that they can be processed during the next "level"
 
    - The identifier symbol of each wme isn't set and is ignored. parent_id
-     is used to  specify the root.
+     is used to specify the root.
 
 
 	 three cases for sharing ids amongst identifiers in two passes:
@@ -2470,8 +2470,13 @@ inline void _epmem_store_level( agent* my_agent,
 				continue;
 			}
 
+			#ifdef DEBUG_EPMEM_WME_ADD
+			fprintf(stderr, "--------------------------------------------\nReserving WME: %d ^%s %s\n",
+				(unsigned int) parent_id, symbol_to_string (my_agent, (*w_p)->attr, TRUE, NIL, 0), symbol_to_string (my_agent, (*w_p)->value, TRUE, NIL, 0));
+			#endif
+
 			// if still here, create reservation (case 1)
-			#ifdef debug_epmem_wme_add
+			#ifdef DEBUG_EPMEM_WME_ADD
 			fprintf(stderr, "   wme is known.  creating reservation.\n");
 			#endif
 			new_id_reservation = new epmem_id_reservation;
@@ -2491,14 +2496,14 @@ inline void _epmem_store_level( agent* my_agent,
 			my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ new_id_reservation->my_hash ];
 			if ( (*my_id_repo) )
 			{
-				#ifdef debug_epmem_wme_add
+				#ifdef DEBUG_EPMEM_WME_ADD
 				fprintf(stderr, "   id repository exists.  reserving id\n");
 				#endif
 				for ( pool_p = (*my_id_repo)->begin(); pool_p != (*my_id_repo)->end(); pool_p++ )
 				{
 					if ( pool_p->first == (*w_p)->value->id.epmem_id )
 					{
-						#ifdef debug_epmem_wme_add
+						#ifdef DEBUG_EPMEM_WME_ADD
 						fprintf(stderr, "   reserved id %d\n", (unsigned int) pool_p->second);
 						#endif
 						new_id_reservation->my_id = pool_p->second;
@@ -2509,7 +2514,7 @@ inline void _epmem_store_level( agent* my_agent,
 			}
 			else
 			{
-				#ifdef debug_epmem_wme_add
+				#ifdef DEBUG_EPMEM_WME_ADD
 				fprintf(stderr, "   no id repository found.  creating new id repository.\n");
 				#endif
 				// add repository
@@ -2549,7 +2554,7 @@ inline void _epmem_store_level( agent* my_agent,
 		if ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 		{
 			#ifdef DEBUG_EPMEM_WME_ADD
-			fprintf(stderr, "   WME value is IDENTIFER.\n");
+			fprintf(stderr, "   WME value is IDENTIFIER.\n");
 			#endif
 			(*w_p)->epmem_valid = my_agent->epmem_validation;
 			(*w_p)->epmem_id = EPMEM_NODEID_BAD;
@@ -2754,6 +2759,9 @@ inline void _epmem_store_level( agent* my_agent,
 								{
 									(*w_p)->epmem_id = pool_p->second;
 									(*w_p)->value->id.epmem_id = pool_p->first;
+									#ifdef DEBUG_EPMEM_WME_ADD
+									fprintf(stderr, "   Found unused id. Setting wme id for VALUE to %d\n", (unsigned int) (*w_p)->value->id.epmem_id);
+									#endif
 									(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
 									(*my_id_repo)->erase( pool_p );
 									(*my_agent->epmem_id_replacement)[ (*w_p)->epmem_id ] = (*my_id_repo);
@@ -2796,7 +2804,7 @@ inline void _epmem_store_level( agent* my_agent,
 					epmem_set_variable( my_agent, var_next_id, (*w_p)->value->id.epmem_id + 1 );
 
 					#ifdef DEBUG_EPMEM_WME_ADD
-					fprintf(stderr, "   Adding new n_id and setting wme id for VALUE to %d \n", (unsigned int) (*w_p)->value->id.epmem_id);
+					fprintf(stderr, "   Adding new n_id and setting wme id for VALUE to %d\n", (unsigned int) (*w_p)->value->id.epmem_id);
 					#endif
 					// Update the node database with the new n_id
 					my_agent->epmem_stmts_graph->add_node->bind_int( 1, (*w_p)->value->id.epmem_id );
@@ -2815,7 +2823,7 @@ inline void _epmem_store_level( agent* my_agent,
 
 				// insert (parent_n_id,attribute_s_id,child_n_id)
 				#ifdef DEBUG_EPMEM_WME_ADD
-				fprintf(stderr, "   Peforming database insertion: %d %d %d\n",
+				fprintf(stderr, "   Performing database insertion: %d %d %d\n",
 						(unsigned int) parent_id, (unsigned int) my_hash, (unsigned int) (*w_p)->value->id.epmem_id);
 
 				fprintf(stderr, "   Adding wme to epmem_wmes_identifier table.\n");
@@ -2828,7 +2836,7 @@ inline void _epmem_store_level( agent* my_agent,
 
 				(*w_p)->epmem_id = static_cast<epmem_node_id>( my_agent->epmem_db->last_insert_rowid() );
 				#ifdef DEBUG_EPMEM_WME_ADD
-				fprintf(stderr, "   Incrementing and setting wme id to %d \n", (unsigned int) (*w_p)->epmem_id);
+				fprintf(stderr, "   Incrementing and setting wme id to %d\n", (unsigned int) (*w_p)->epmem_id);
 #endif
 				if ( !(*w_p)->value->id.smem_lti )
 				{
@@ -2874,6 +2882,10 @@ inline void _epmem_store_level( agent* my_agent,
 #endif
 				}
 				(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]->insert( (*w_p) );
+				#ifdef DEBUG_EPMEM_WME_ADD
+				fprintf(stderr, "   increasing ref_count of value in %d %d %d; new ref_count is %d\n",
+						(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id.epmem_id, (unsigned int)(*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]->size());
+				#endif
 			}
 
 			// if the value has not been iterated over, continue to augmentations
@@ -2925,7 +2937,7 @@ inline void _epmem_store_level( agent* my_agent,
 				{
 					#ifdef DEBUG_EPMEM_WME_ADD
 					fprintf(stderr, "   No duplicate wme found in epmem_wmes_constant.  Adding wme to table!!!!\n");
-					fprintf(stderr, "   Peforming database insertion: %d %d %d\n",
+					fprintf(stderr, "   Performing database insertion: %d %d %d\n",
 							(unsigned int) parent_id, (unsigned int) my_hash, (unsigned int) my_hash2);
 #endif
 					// insert (parent_n_id, attribute_s_id, value_s_id)
@@ -2936,7 +2948,7 @@ inline void _epmem_store_level( agent* my_agent,
 
 					(*w_p)->epmem_id = (epmem_node_id) my_agent->epmem_db->last_insert_rowid();
 					#ifdef DEBUG_EPMEM_WME_ADD
-					fprintf(stderr, "   Setting wme id from last row to  %d \n", (unsigned int) (*w_p)->epmem_id);
+					fprintf(stderr, "   Setting wme id from last row to %d\n", (unsigned int) (*w_p)->epmem_id);
 #endif
 					// new nodes definitely start
 					epmem_node.push( (*w_p)->epmem_id );
@@ -2947,7 +2959,7 @@ inline void _epmem_store_level( agent* my_agent,
 				{
 					#ifdef DEBUG_EPMEM_WME_ADD
 					fprintf(stderr, "   Node found in database, definitely don't remove.\n");
-					fprintf(stderr, "   Setting wme id from existing node to  %d \n", (unsigned int) (*w_p)->epmem_id);
+					fprintf(stderr, "   Setting wme id from existing node to %d\n", (unsigned int) (*w_p)->epmem_id);
 #endif
 					// definitely don't remove
 					(*my_agent->epmem_node_removals)[ (*w_p)->epmem_id ] = false;
@@ -4597,8 +4609,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								// This will only happen if the LTI is promoted in the last interval it appeared in
 								// (since otherwise the start point would not be before its promotion).
 								// We don't care about the remaining results of the query
-
-								// why wouldn't the LTI still be satisfied before its promotion time? what guards against that?
 								interval->time = interval_sql->column_int(0);
 								if (is_lti && point_type == EPMEM_RANGE_START && interval_type != EPMEM_RANGE_POINT && interval->time < promo_time) {
 									interval->time = promo_time;

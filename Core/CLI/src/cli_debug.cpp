@@ -24,7 +24,7 @@ using namespace sml;
 
 bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 {
-#ifdef SOAR_DEBUG_UTLITIES
+#ifdef SOAR_DEBUG_UTILITIES
 #include "debug.h"
 
   agent* agnt = m_pAgentSML->GetSoarAgent();

@@ -18,7 +18,7 @@
 
 #include "debug.h"
 
-#ifdef SOAR_DEBUG_UTLITIES
+#ifdef SOAR_DEBUG_UTILITIES
 #include "soar_db.h"
 #include "gsysparam.h"
 #include "sqlite3.h"
