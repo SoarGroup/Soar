@@ -131,7 +131,7 @@ class epmem_param_container: public soar_module::param_container
 		// experimental
 		soar_module::constant_param<gm_ordering_choices>* gm_ordering;
 		soar_module::constant_param<merge_choices>* merge;
-		soar_module::integer_param* recognition;
+		soar_module::boolean_param* recognition;
 		soar_module::constant_param<representation_choices>* recognition_representation;
 		soar_module::integer_param* recognition_merge_depth;
 

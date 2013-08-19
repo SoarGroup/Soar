@@ -23,9 +23,9 @@
 
 /* --  Comment out the following line for release versions or if you don't
  *     need these utilities. -- */
-// #define SOAR_DEBUG_UTLITIES
+// #define SOAR_DEBUG_UTILITIES
 
-#ifdef SOAR_DEBUG_UTLITIES
+#ifdef SOAR_DEBUG_UTILITIES
 
 #include <portability.h>
 

@@ -163,7 +163,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( mirroring );
 
 	// recognition
-	recognition = new soar_module::integer_param( "recognition", 0, new soar_module::btw_predicate<int64_t>( 0, 2, true ), new soar_module::f_predicate<int64_t>() );
+	recognition = new soar_module::boolean_param( "recognition", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
 	add( recognition );
 
 	// recognition reprensetation

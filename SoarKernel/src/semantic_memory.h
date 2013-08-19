@@ -80,7 +80,7 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::boolean_param* mirroring;
 
-		soar_module::integer_param* recognition;
+		soar_module::boolean_param* recognition;
 		soar_module::constant_param<representation_choices>* recognition_representation;
 
 		smem_param_container( agent *new_agent );

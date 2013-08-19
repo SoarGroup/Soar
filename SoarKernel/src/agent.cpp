@@ -404,9 +404,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_id_removes = new epmem_symbol_stack();
 #endif
 
-  newAgent->epmem_id_siblings = new epmem_id_disjoint_set();
-  newAgent->epmem_wm_tree = new epmem_elders();
-
   newAgent->epmem_validation = 0;
 
   // smem initialization
@@ -425,6 +422,15 @@ agent * create_soar_agent (char * agent_name) {                                 
 #endif
   newAgent->smem_ignore_changes = false;
   newAgent->smem_wme_adds = new smem_wme_list();
+
+  // recognition initialization
+  newAgent->epmem_id_siblings = new epmem_id_disjoint_set();
+  newAgent->epmem_wm_tree = new epmem_elders();
+#ifdef USE_MEM_POOL_ALLOCATORS
+  newAgent->recognition_wmes = new epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( newAgent ) );
+#else
+  newAgent->recognition_wmes = new epmem_wme_stack();
+#endif
 
   // statistics initialization
   newAgent->dc_stat_tracking = false;
@@ -497,8 +503,6 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_id_replacement;
   delete delete_agent->epmem_id_ref_counts;
   delete delete_agent->epmem_id_removes;
-  delete delete_agent->epmem_id_siblings;
-  delete delete_agent->epmem_wm_tree;
 
   delete delete_agent->epmem_wme_adds;
   delete delete_agent->epmem_promotions;
@@ -515,6 +519,11 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->smem_wme_adds;
 
   delete delete_agent->smem_db;
+
+  // cleanup recognition
+  delete delete_agent->epmem_id_siblings;
+  delete delete_agent->epmem_wm_tree;
+  delete delete_agent->recognition_wmes;
 
   // cleanup statistics db
   stats_close( delete_agent );
@@ -584,7 +593,7 @@ void destroy_soar_agent (agent * delete_agent)
   }
 
   /* Releasing memory allocated in init_rete */
-  for (int i=0; i<32; i++) {
+  for (int i=0; i<8; i++) {
 	  free_hash_table(delete_agent, delete_agent->alpha_hash_tables[i]);
   }
 

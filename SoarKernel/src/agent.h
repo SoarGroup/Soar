@@ -922,10 +922,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_symbol_set* epmem_wme_adds;
   epmem_symbol_set* epmem_promotions;
 
-  Symbol* epmem_unrecognized_header;
-  epmem_id_disjoint_set* epmem_id_siblings;
-  epmem_elders *epmem_wm_tree;
-
   epmem_rit_state epmem_rit_state_graph[2];
 
   uint64_t epmem_validation;
@@ -944,8 +940,13 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   smem_pooled_symbol_set* smem_changed_ids;
   bool smem_ignore_changes;
 
+  // recognition
+  Symbol* epmem_unrecognized_header;
+  epmem_id_disjoint_set* epmem_id_siblings;
+  epmem_elders *epmem_wm_tree;
   Symbol* smem_unrecognized_header;
   smem_wme_list* smem_wme_adds;
+  epmem_wme_stack* recognition_wmes;
 
   // dynamic memory pools
   std::map< size_t, memory_pool* >* dyn_memory_pools;
