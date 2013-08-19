@@ -1687,7 +1687,7 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 				{
 					#ifdef DEBUG_EPMEM_WME_ADD
 					fprintf(stderr, "   clearing ref_count of value in %d %d %d\n",
-							(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id.epmem_id);
+							(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id.epmem_id);
 					#endif
 					my_refs->clear();
 					my_agent->epmem_id_removes->push_front( w->value );

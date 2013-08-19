@@ -2884,7 +2884,7 @@ inline void _epmem_store_level( agent* my_agent,
 				(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]->insert( (*w_p) );
 				#ifdef DEBUG_EPMEM_WME_ADD
 				fprintf(stderr, "   increasing ref_count of value in %d %d %d; new ref_count is %d\n",
-						(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id.epmem_id, (unsigned int)(*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]->size());
+						(unsigned int) (*w_p)->id->id.epmem_id, (unsigned int) epmem_temporal_hash(my_agent, (*w_p)->attr), (unsigned int) (*w_p)->value->id.epmem_id, (unsigned int)(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]->size());
 				#endif
 			}
 
