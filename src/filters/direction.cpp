@@ -155,20 +155,20 @@ public:
 		//res = newres;
 		changed = true;
 		filter_val* a_val = new filter_val_c<const sgnode*>(b);
-		if(newres && out == NULL){
+		if (newres && out == NULL) {
 			// Create a new filter val
 			out = new filter_val_c<const sgnode*>(b);
-		} else if(newres && a_val != out){
+		} else if(newres && a_val != out) {
 			// The value has changed
 			set_filter_val(out, b);
-		} else if(!newres && out != NULL){
+		} else if(!newres && out != NULL) {
 			// We no longer are selecting the value, make it null
-			//std::cout << "nulled!" << std::endl;
 			out = NULL;
 		} else {
 			// the value didn't actually changed
 			changed = false;
 		}
+		
 		delete a_val;
 		return true;
 	}

@@ -207,19 +207,17 @@ private:
 		}
 	}
 	
+	
 	void handle_ctlist_change(const filter_params *p) {
 		record_map::iterator i;
-		int d = 0;
+		
 		for (i = records.begin(); i != records.end(); ++i) {
-			d++;
 			if (i->second.params == p) {
 				Symbol *pid = si->get_wme_val(i->second.params_wme);
 				update_param_struct(p, pid);
 				return;
 			}
 		}
-		//std::cout << "assert d: " << d << std::endl;
-		//assert(false);
 	}
 	
 	Symbol         *root;

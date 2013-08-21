@@ -39,7 +39,6 @@ filter_table_entry *closest_fill_entry();
 filter_table_entry *has_property_fill_entry();
 filter_table_entry *occlusion_fill_entry();
 filter_table_entry *dist_select_xyz_fill_entry();
-filter_table_entry *passthru_fill_entry();
 
 filter_table::filter_table() {
 	add(intersect_fill_entry());
@@ -72,7 +71,6 @@ filter_table::filter_table() {
 	add(has_property_fill_entry());
 	add(occlusion_fill_entry());
 	add(dist_select_xyz_fill_entry());
-	add(passthru_fill_entry());
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*> &c) {
