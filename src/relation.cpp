@@ -184,6 +184,7 @@ int interval_set::ith(int i) const {
 		}
 	}
 	assert(false);
+	return 0;
 }
 
 bool interval_set::insert(int x) {
