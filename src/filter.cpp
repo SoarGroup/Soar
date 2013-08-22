@@ -96,8 +96,8 @@ void product_filter_input::combine(const input_table &inputs) {
 			filter_val *r = o->get_removed(j);
 			k = val2params.find(r);
 			
-			if (k == val2params.end())
-				continue;
+			if (k == val2params.end() || val2params.empty())
+			  continue;
 			//assert(k != val2params.end());
 			
 			param_set_list temp = k->second;
@@ -109,7 +109,7 @@ void product_filter_input::combine(const input_table &inputs) {
 	   
 		for (int j = 0, jend = o->num_changed(); j < jend; ++j) {
 			k = val2params.find(o->get_changed(j));
-			if (k == val2params.end())
+			if (k == val2params.end() || val2params.empty())
 				continue;
 			
 			//assert(k != val2params.end());
