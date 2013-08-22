@@ -4611,7 +4611,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								// We don't care about the remaining results of the query
 								interval->time = interval_sql->column_int(0);
 								if (is_lti && point_type == EPMEM_RANGE_START && interval_type != EPMEM_RANGE_POINT && interval->time < promo_time) {
-									interval->time = promo_time;
+									interval->time = promo_time - 1;
 								}
 								interval->sql = interval_sql;
 								interval_pq.push(interval);
