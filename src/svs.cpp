@@ -182,10 +182,7 @@ void sgwme::update_property(const std::string& propertyName){
 }
 
 void sgwme::delete_property(const std::string& propertyName){
-	std::cout << "DELETING:" << propertyName << std::endl;
 	for(std::map<std::string, wme*>::iterator i = properties.begin(); i != properties.end(); i++){
-		std::cout << "D:" << i->first << "?" << std::endl;
-		std::cout << "  V:" << i->first.find(propertyName) << std::endl;
 		if (i->first.find(propertyName) == 0){
 			soarint->remove_wme(i->second);
 			properties.erase(i);

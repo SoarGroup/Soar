@@ -121,6 +121,7 @@ void sgnode::update_transform() const {
 	trans_dirty = false;
 }
 
+
 /* if updates result in observers removing themselves, the iteration may
  * screw up, so make a copy of the std::list first */
 void sgnode::send_update(sgnode::change_type t, const std::string& update_info) {
