@@ -78,6 +78,7 @@ vec3 sgnode::get_trans(char type) const {
 			return scale;
 		default:
 			assert (false);
+			return pos;
 	}
 }
 

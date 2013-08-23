@@ -25,6 +25,7 @@
 #include "src/filters/direction.cpp"
 #include "src/filters/distance.cpp"
 #include "src/filters/distance_xyz.cpp"
+#include "src/filters/dist_select_xyz.cpp"
 #include "src/filters/intersect.cpp"
 #include "src/filters/node.cpp"
 #include "src/filters/ontop.cpp"

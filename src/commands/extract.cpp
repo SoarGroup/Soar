@@ -207,8 +207,10 @@ private:
 		}
 	}
 	
+	
 	void handle_ctlist_change(const filter_params *p) {
 		record_map::iterator i;
+		
 		for (i = records.begin(); i != records.end(); ++i) {
 			if (i->second.params == p) {
 				Symbol *pid = si->get_wme_val(i->second.params_wme);
@@ -216,7 +218,6 @@ private:
 				return;
 			}
 		}
-		assert(false);
 	}
 	
 	Symbol         *root;
