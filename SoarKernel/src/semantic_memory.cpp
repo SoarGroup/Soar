@@ -655,7 +655,7 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 		// impasse wmes
 		for ( w=id->id.impasse_wmes; w!=NIL; w=w->next )
 		{
-			if ( !(w->metadata & METADATA_ACCEPTABLE) )
+			if ( !metadata_get(w, METADATA_ACCEPTABLE) )
 			{
 				return_val->push_back( w );
 			}
@@ -672,7 +672,7 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 		{
 			for ( w=s->wmes; w!=NIL; w=w->next )
 			{
-				if ( !(w->metadata & METADATA_ACCEPTABLE) )
+				if ( !metadata_get(w, METADATA_ACCEPTABLE) )
 				{
 					return_val->push_back( w );
 				}
@@ -2490,6 +2490,10 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 		}
 	}
 
+	////////////////////////////////////////////////////////////////////////////
+	my_agent->smem_timers->query->stop();
+	////////////////////////////////////////////////////////////////////////////
+
 	// reconstruction depends upon level
 	if ( query_level == qry_full )
 	{
@@ -2503,10 +2507,6 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, negquery );
 			}
 
-			////////////////////////////////////////////////////////////////////////////
-			my_agent->smem_timers->query->stop();
-			////////////////////////////////////////////////////////////////////////////
-
 			smem_install_memory( my_agent, state, king_id, NIL, ( my_agent->smem_params->activate_on_query->get_value() == soar_module::on ), meta_wmes, retrieval_wmes );
 		}
 		else
@@ -2516,17 +2516,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 			{
 				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, negquery );
 			}
-
-			////////////////////////////////////////////////////////////////////////////
-			my_agent->smem_timers->query->stop();
-			////////////////////////////////////////////////////////////////////////////
 		}
-	}
-	else
-	{
-		////////////////////////////////////////////////////////////////////////////
-		my_agent->smem_timers->query->stop();
-		////////////////////////////////////////////////////////////////////////////
 	}
 
 	return king_id;

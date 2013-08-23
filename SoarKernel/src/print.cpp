@@ -1040,11 +1040,11 @@ void print_wme (agent* thisAgent, wme *w) {
     print (thisAgent, " [%0.2g]", wma_get_wme_activation(thisAgent, w, true));
   }
 
-  if (w->metadata & METADATA_ACCEPTABLE) print_string (thisAgent, " +");
+  if (metadata_get(w, METADATA_ACCEPTABLE)) print_string (thisAgent, " +");
 
-  print(thisAgent, (w->metadata & METADATA_SMEM_RECOGNITION ? " :smem-unrecognized" : " :smem-recognized"));
-  print(thisAgent, (w->metadata & METADATA_EPMEM_RECOGNITION ? " :epmem-unrecognized" : " :epmem-recognized"));
-  print(thisAgent, (w->metadata & METADATA_LTI ? " :is-lti" : " :is-not-lti"));
+  print(thisAgent, (metadata_get(w, METADATA_SMEM_RECOGNITION) ? " :smem-unrecognized" : " :smem-recognized"));
+  print(thisAgent, (metadata_get(w, METADATA_EPMEM_RECOGNITION) ? " :epmem-unrecognized" : " :epmem-recognized"));
+  print(thisAgent, (metadata_get(w, METADATA_LTI) ? " :is-lti" : " :is-not-lti"));
 
   print_string (thisAgent, ")");
   print (thisAgent, "\n");
@@ -1055,7 +1055,7 @@ void print_wme (agent* thisAgent, wme *w) {
 
 void print_wme_without_timetag (agent* thisAgent, wme *w) {
   print_with_symbols (thisAgent, "(%y ^%y %y", w->id, w->attr, w->value);
-  if (w->metadata & METADATA_ACCEPTABLE) print_string (thisAgent, " +");
+  if (metadata_get(w, METADATA_ACCEPTABLE)) print_string (thisAgent, " +");
   print_string (thisAgent, ")");
   print (thisAgent, "\n");
 
@@ -1068,7 +1068,7 @@ void print_wme_for_tcl (agent* thisAgent, wme *w)
 {
   print (thisAgent, "%lu: ", w->timetag);
   print_with_symbols (thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
-  if (w->metadata & METADATA_ACCEPTABLE) print_string (thisAgent, " +");
+  if (metadata_get(w, METADATA_ACCEPTABLE)) print_string (thisAgent, " +");
 }
 //#endif /* USE_TCL */
 

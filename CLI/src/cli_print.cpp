@@ -159,7 +159,7 @@ void neatly_print_wme_augmentation_of_id (agent* thisAgent, wme *w, int indentat
     symbol_to_string(thisAgent, w->attr, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
     *(ch++) = ' ';
     symbol_to_string(thisAgent, w->value, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
-    if (w->metadata & METADATA_ACCEPTABLE) 
+    if (metadata_get(w, METADATA_ACCEPTABLE))
     { 
         strcpy(ch, " +"); 
         while (*ch) 
@@ -480,7 +480,7 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
         return NIL;
     }
 
-	// JUSTIN FIXME expand to include metadata
+	// FIXME JUSTIN expand to include metadata
 
     wmes = NIL;
     for (w=thisAgent->all_wmes_in_rete; w!=NIL; w=w->rete_next)
@@ -488,7 +488,7 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
         if (((id_result==1) || (id==w->id)) &&
 				((attr_result==1) || (attr==w->attr)) &&
 				((value_result==1) || (value==w->value)) &&
-				(acceptable && (w->metadata & METADATA_ACCEPTABLE)))
+				acceptable && metadata_get(w, METADATA_ACCEPTABLE))
 			push (thisAgent, w, wmes);
     }
     return wmes;  
@@ -582,7 +582,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                     {
                         // taken from print_wme_without_timetag
                         print_with_symbols (thisAgent, " ^%y %y", w->attr, w->value);
-                        if (w->metadata & METADATA_ACCEPTABLE) 
+                        if (metadata_get(w, METADATA_ACCEPTABLE))
                             print_string (thisAgent, " +");
 
                         // this handles xml case for the wme

@@ -1753,6 +1753,20 @@ inline void _epmem_process_ids( agent* my_agent )
 	}
 }
 
+inline void metadata_set(agent* my_agent, wme* w, char mask, bool value) {
+	remove_wme_from_rete(my_agent, w, false);
+	if (value) {
+		w->metadata |= mask;
+	} else {
+		w->metadata &= (~mask);
+	}
+	add_wme_to_rete(my_agent, w, false);
+}
+
+inline bool metadata_get(wme* w, char mask) {
+	return static_cast<bool>(w->metadata & mask);
+}
+
 /* --- Removes a WME from the Rete. --- */
 void remove_wme_from_rete (agent* thisAgent, wme *w, bool deal_with_epmem_ids) {
   right_mem *rm;

@@ -2640,7 +2640,7 @@ inline void _epmem_store_level( agent* my_agent,
 			new_id_reservation->my_id = EPMEM_NODEID_BAD;
 			new_id_reservation->my_pool = NULL;
 
-			if ( (*w_p)->metadata & METADATA_ACCEPTABLE )
+			if ( metadata_get(*w_p, METADATA_ACCEPTABLE) )
 			{
 				new_id_reservation->my_hash = EPMEM_HASH_ACCEPTABLE;
 			}
@@ -2775,7 +2775,7 @@ inline void _epmem_store_level( agent* my_agent,
 				// if failure, drop below and use standard channels
 				{
 					// get temporal hash
-					if ( (*w_p)->metadata & METADATA_ACCEPTABLE )
+					if ( metadata_get(*w_p, METADATA_ACCEPTABLE) )
 					{
 						my_hash = EPMEM_HASH_ACCEPTABLE;
 					}
@@ -2836,7 +2836,7 @@ inline void _epmem_store_level( agent* my_agent,
 						fprintf(stderr, "   No reservation found.  Looking for shared identifier at same level.\n");
 						#endif
 						// get temporal hash
-						if ( (*w_p)->metadata & METADATA_ACCEPTABLE )
+						if ( metadata_get(*w_p, METADATA_ACCEPTABLE) )
 						{
 							my_hash = EPMEM_HASH_ACCEPTABLE;
 						}
@@ -2889,7 +2889,7 @@ inline void _epmem_store_level( agent* my_agent,
 					new_identifiers.insert( (*w_p)->value );
 
 					// get temporal hash
-					if ( (*w_p)->metadata & METADATA_ACCEPTABLE )
+					if ( metadata_get(*w_p, METADATA_ACCEPTABLE) )
 					{
 						my_hash = EPMEM_HASH_ACCEPTABLE;
 					}
@@ -3431,9 +3431,7 @@ void epmem_new_episode( agent *my_agent )
 				}
 				else
 				{
-					remove_wme_from_rete(my_agent, (*recog_iter), false);
-					(*recog_iter)->metadata |= METADATA_EPMEM_RECOGNITION;
-					add_wme_to_rete(my_agent, (*recog_iter), false);
+					metadata_set(my_agent, (*recog_iter), METADATA_EPMEM_RECOGNITION, true);
 				}
 			}
 		}
@@ -3477,9 +3475,7 @@ void epmem_new_episode( agent *my_agent )
 						symbol_add_ref(st->attr);
 						symbol_add_ref(st->value);
 					} else {
-						remove_wme_from_rete(my_agent, (*iter), false);
-						(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
-						add_wme_to_rete(my_agent, (*iter), false);
+						metadata_set(my_agent, (*iter), METADATA_SMEM_RECOGNITION, true);
 					}
 				}
 			}

@@ -19,6 +19,7 @@
 #include "print.h"
 #include "agent.h"
 #include "wmem.h"
+#include "rete.h"
 
 using namespace cli;
 using namespace sml;
@@ -45,7 +46,7 @@ bool CommandLineInterface::DoGDSPrint() {
             }
             print (agnt, "(%lu: ", w->timetag);
             print_with_symbols (agnt, "%y ^%y %y", w->id, w->attr, w->value);
-            if (w->metadata & METADATA_ACCEPTABLE) 
+            if (metadata_get(w, METADATA_ACCEPTABLE))
             {
                 print_string (agnt, " +");
             }
@@ -64,7 +65,7 @@ bool CommandLineInterface::DoGDSPrint() {
             {
                 print (agnt, "                (%lu: ", w->timetag);
                 print_with_symbols (agnt, "%y ^%y %y", w->id, w->attr, w->value);
-                if (w->metadata & METADATA_ACCEPTABLE) 
+                if (metadata_get(w, METADATA_ACCEPTABLE) )
                 {
                     print_string (agnt, " +");
                 }
