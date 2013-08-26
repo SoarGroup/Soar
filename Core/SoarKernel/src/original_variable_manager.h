@@ -55,7 +55,7 @@ class Original_Variable_Manager
     {
       dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol being reversed %s.\n", reversed_var->to_string(thisAgent));
       (*id_symbol_map).erase(reversed_var);
-      /* -- MToDo | We need to clear this variable from table too b/c it won't be in the symbol map later -- */
+      /* MToDo | We need to clear this variable from table too b/c it won't be in the symbol map later -- */
     }
 
     Symbol *find_original_variable(Symbol *original_var)

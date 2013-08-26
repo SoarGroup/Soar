@@ -28,9 +28,8 @@
 
 ================================================================= */
 
-/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
-   do the reference count update */
-// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
+/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must do the reference count update */
+/* MToDoRefCnt | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
 
 inline rhs_value make_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym)
 {
@@ -38,7 +37,7 @@ inline rhs_value make_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symb
 
   if (!sym )
   {
-    print(thisAgent,  "Debug | make_rhs_value_symbol_no_refcount called with nil.\n");
+    dprint(DT_DEBUG, "make_rhs_value_symbol_no_refcount called with nil.\n");
     return reinterpret_cast<rhs_value>(NIL);
   }
   allocate_with_pool (thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
@@ -55,8 +54,8 @@ inline rhs_value make_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symb
   return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-/* Debug| symbol_to_rhs_value() (what this function used to be) didn't symbol_add_ref. The
- * caller had to do the reference count update.  Possible bug source. */
+/* MToDoRefCnt | symbol_to_rhs_value() (what this function used to be) didn't symbol_add_ref. The
+ *                  caller had to do the reference count update.  Possible bug source. -- */
 inline rhs_value make_rhs_value(agent* thisAgent, Symbol * sym, Symbol * original_sym)
 {
   if (sym)

@@ -732,9 +732,9 @@ void create_instantiation(agent* thisAgent, production *prod,
 	inst->preferences_generated = NIL;
 	need_to_do_support_calculations = FALSE;
 	for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next) {
-	  // Debug| Remove this assert.  Can rhs_vars differ from action_list?
-	  if ((a && !a2) || (!a && a2))
-	    assert(false);
+	  /* MToDo| Disabled this assert.  May re-enable later when testing, but does rhs_vars should not be able to differ from action_list */
+//	  if ((a && !a2) || (!a && a2))
+//	    assert(false);
 		if (prod->type != TEMPLATE_PRODUCTION_TYPE) {
 			pref = execute_action(thisAgent, a, tok, w, a2->id, a2->attr, a2->value, inst->top_of_instantiated_conditions);
 		} else {
@@ -839,8 +839,8 @@ void create_instantiation(agent* thisAgent, production *prod,
 
 	deallocate_action_list (thisAgent, rhs_vars);
 
-	dprint(DT_PRINT_INSTANTIATIONS,  "\nCreate_instantiation created: \n");
-	dprint_instantiation(DT_PRINT_INSTANTIATIONS, inst);
+//	dprint(DT_PRINT_INSTANTIATIONS,  "\nCreate_instantiation created: \n");
+//	dprint_instantiation(DT_PRINT_INSTANTIATIONS, inst);
 
 	if (!thisAgent->system_halted) {
 		/* --- invoke callback function --- */

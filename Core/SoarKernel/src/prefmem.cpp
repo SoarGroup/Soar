@@ -18,9 +18,6 @@
         Preference Memory routines for Soar 6
    ====================================================================== */
 
-/* Debugging stuff:  #define DEBUG_PREFS to get preference printouts */
-
-/* #define DEBUG_PREFS */
 
 #include <stdlib.h>
 #include "mem.h"

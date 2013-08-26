@@ -841,8 +841,8 @@ void operator delete[]( void *ptr, const std::nothrow_t &t ) throw()
 }
 
 //* Custom memory operators (w/ exceptions)
-// Debug | Note: original version of this had the throw commented out, but it was giving a warning.  Maybe
-//               bad idea to uncomment?
+/* MToDo | Note: original version of this had the throw commented out, but it was giving a warning.  Maybe
+                 bad idea to uncomment?  Then again, we're not using this memory checking stuff. */
 
 void *operator new( size_t size ) throw(std::bad_alloc)
 {

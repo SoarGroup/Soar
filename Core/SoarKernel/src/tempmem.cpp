@@ -18,10 +18,6 @@
  * =======================================================================
  */
 
-/* Debugging stuff:  #define DEBUG_SLOTS to get slot printouts */
-
-/* #define DEBUG_SLOTS */
-
 #include <stdlib.h>
 
 #include "tempmem.h"

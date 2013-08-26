@@ -1439,7 +1439,7 @@ bool AgentSML::CaptureInputWME(const CapturedAction& ca)
 
 void AgentSML::ReplayInputWMEs()
 {
-  /* -- Debug | These prints seem to be the only ones in the sml files.  Should they be using another mechanism? */
+  /* MToDo | These prints seem to be the only ones in the sml files.  Should they be using another mechanism? */
 	if (m_CapturedActions.empty())
 	{
 	  print(m_agent, "\n\nWarning: end of replay has been reached.\n");
