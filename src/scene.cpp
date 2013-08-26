@@ -25,7 +25,7 @@ const string root_name = "world";
 */
 const char *NATIVE_PROPS[] = { "px", "py", "pz", "rx", "ry", "rz", "sx", "sy", "sz" };
 
-bool is_native_prop(const string &name, char &type, int &dim) {
+bool is_native_prop(const std::string &name, char &type, int &dim) {
 	int d;
 	if (name.size() != 2) {
 		return false;
