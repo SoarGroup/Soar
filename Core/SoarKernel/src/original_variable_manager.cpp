@@ -52,7 +52,7 @@ bool print_original_var (agent* thisAgent, void *item, void*) {
 
   original_varname *varname = static_cast<original_varname *>(item);
 
-  dprint(DT_DEBUG, "%s, CurrUnqVarSym: %s(%lld) CurrInst: %d\n",
+  dprint(DT_ORIGINAL_VAR_MANAGER, "%s, CurrUnqVarSym: %s(%lld) CurrInst: %d\n",
         varname->name,
         (varname->current_unique_var_symbol ? varname->current_unique_var_symbol->to_string(thisAgent) : "None"),
         (varname->current_unique_var_symbol ? varname->current_unique_var_symbol->reference_count : 0),
@@ -62,17 +62,17 @@ bool print_original_var (agent* thisAgent, void *item, void*) {
 
 void Original_Variable_Manager::print_table()
 {
-  dprint(DT_DEBUG, "------------------------------------\n");
-  dprint(DT_DEBUG, "Original_Variable_Manager Hash Table\n");
-  dprint(DT_DEBUG, "------------------------------------\n");
+  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
+  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager Hash Table\n");
+  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
   do_for_all_items_in_hash_table( thisAgent, ht, print_original_var, 0);
-  dprint(DT_DEBUG, "------------------------------------\n");
-  dprint(DT_DEBUG, "Original_Variable_Manager Symbol Map\n");
-  dprint(DT_DEBUG, "------------------------------------\n");
+  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
+  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager Symbol Map\n");
+  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
   for (std::map< Symbol *, Symbol * >::iterator it=(*id_symbol_map).begin(); it!=(*id_symbol_map).end(); ++it)
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "Processing %s %s\n", it->first->to_string(thisAgent), it->second->to_string(thisAgent));
-    clear_symbol(it->first);
+    dprint(DT_ORIGINAL_VAR_MANAGER, "%s -> ", it->first->to_string(thisAgent));
+    dprint_noprefix(DT_ORIGINAL_VAR_MANAGER, "%s\n", it->second->to_string(thisAgent));
   }
 }
 

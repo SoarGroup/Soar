@@ -12,6 +12,7 @@
 #include "symtab.h"
 
 extern void dprint (TraceMode mode, const char *format, ... );
+extern void dprint_noprefix (TraceMode mode, const char *format, ...);
 extern void print (agent* thisAgent, const char *format, ... );
 
 typedef struct original_varname_struct {
