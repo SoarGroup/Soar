@@ -160,17 +160,20 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     temp.append(filename);
     m_SourceFileStack.push(temp);
 
-    if (m_RawOutput)
+    if (m_pSourceOptions && m_pSourceOptions->test(SOURCE_VERBOSE))
     {
+      if (m_RawOutput)
+      {
         m_Result << "Sourcing " << filename.c_str() << ".\n";
-    }
-    else
-    {
-    	std::string outString;
-    	outString.assign("Sourcing ");
-    	outString.append(filename);
-    	outString.append(".\n");
+      }
+      else
+      {
+        std::string outString;
+        outString.assign("Sourcing ");
+        outString.append(filename);
+        outString.append(".\n");
         AppendArgTagFast(sml_Names::kParamChunkNamePrefix, sml_Names::kTypeString, outString);
+      }
     }
     bool ret = Source(buffer, true);
 
