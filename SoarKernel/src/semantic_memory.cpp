@@ -52,6 +52,7 @@
 // activation					smem::act
 // long-term identifiers		smem::lti
 
+// metadata                     smem::metadata
 // storage						smem::storage
 // non-cue-based retrieval		smem::ncb
 // cue-based retrieval			smem::cbr
@@ -683,7 +684,7 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 	return return_val;
 }
 
-inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, bool meta )
+inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, smem_wme_stack* smem_wmes )
 {
 	if ( my_list.empty() )
 	{
@@ -702,12 +703,12 @@ inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soa
 			insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
 			pref->on_goal_list = true;
 
-			if ( meta )
+			if ( smem_wmes )
 			{
 				// if this is a meta wme, then it is completely local
 				// to the state and thus we will manually remove it
 				// (via preference removal) when the time comes
-				state->id.smem_info->smem_wmes->push_back( pref );
+				smem_wmes->push_back( pref );
 			}
 		}
 		else
@@ -717,7 +718,7 @@ inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soa
 		}
 	}
 
-	if ( !meta )
+	if ( !smem_wmes )
 	{
 		// otherwise, we submit the fake instantiation to backtracing
 		// such as to potentially produce justifications that can follow
@@ -733,8 +734,8 @@ inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soa
 			instantiation *next_justification = NIL;
 
 			for ( instantiation *my_justification=my_justification_list;
-				  my_justification!=NIL;
-				  my_justification=next_justification )
+					my_justification!=NIL;
+					my_justification=next_justification )
 			{
 				next_justification = my_justification->next;
 
@@ -761,12 +762,6 @@ inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soa
 			}
 		}
 	}
-}
-
-inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes )
-{
-	_smem_process_buffered_wme_list( my_agent, state, cue_wmes, meta_wmes, true );
-	_smem_process_buffered_wme_list( my_agent, state, cue_wmes, retrieval_wmes, false );
 }
 
 inline void smem_buffer_add_wme( soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value )
@@ -1550,6 +1545,28 @@ void smem_reset_id_counters( agent *my_agent )
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
+// Metadata Functions (smem::metadata)
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
+void smem_update_metadata(agent* my_agent, soar_module::wme_set& condition_wmes, soar_module::wme_set& data_wmes, smem_wme_stack* metadata_wme_stack)
+{
+	soar_module::symbol_triple_list triple_list;
+	for (soar_module::wme_set::iterator iter = data_wmes.begin(); iter != data_wmes.end(); iter++) {
+		soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->smem_unrecognized_header, (*iter)->attr, make_new_identifier(my_agent, 'U', TOP_GOAL_LEVEL));
+		triple_list.push_back(st);
+		symbol_add_ref(st->id);
+		symbol_add_ref(st->attr);
+		symbol_add_ref(st->value);
+	}
+	if (!triple_list.empty()) {
+		smem_process_buffered_wmes(my_agent, my_agent->top_goal, condition_wmes, triple_list, metadata_wme_stack);
+	}
+}
+
+
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 // Storage Functions (smem::storage)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -2093,6 +2110,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 			if ( expand_q->column_int( 6 ) != SMEM_AUGMENTATIONS_NULL )
 			{
 				value_sym = smem_lti_soar_make( my_agent, static_cast<smem_lti_id>( expand_q->column_int( 6 ) ), static_cast<char>( expand_q->column_int( 4 ) ), static_cast<uint64_t>( expand_q->column_int( 5 ) ), lti->id.level );
+				// FIXME JUSTIN update recognition metadata here
 			}
 			else
 			{
@@ -3734,7 +3752,8 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
 			{
 				// process preference assertion en masse
-				smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, retrieval_wmes );
+				smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, state->id.smem_info->smem_wmes);
+				smem_process_buffered_wmes( my_agent, state, cue_wmes, retrieval_wmes, NULL );
 
 				// clear cache
 				{

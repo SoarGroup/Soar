@@ -57,6 +57,7 @@
 
 // temporal hash				epmem::hash
 
+// metadata						epmem::metadata
 // storing new episodes			epmem::storage
 // non-cue-based queries		epmem::ncb
 // cue-based queries			epmem::cbr
@@ -1348,7 +1349,7 @@ inline void epmem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_mo
 		// add the preference to temporary memory
 		if ( add_preference_to_tm( my_agent, pref ) )
 		{
-			// add to the list of preferences to be removed
+			// and add it to the list of preferences to be removed
 			// when the goal is removed
 			insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
 			pref->on_goal_list = true;
@@ -1856,6 +1857,7 @@ void epmem_close( agent *my_agent )
 	}
 
 }
+
 /**
  * @name    epmem_reinit
  * @param   my_agent
@@ -1869,6 +1871,7 @@ void epmem_reinit( agent *my_agent)
 	epmem_close(my_agent);
 	epmem_init_db(my_agent, true);
 }
+
 /***************************************************************************
  * Function     : epmem_clear_result
  * Author		: Nate Derbinsky, Justin Li
@@ -2395,6 +2398,27 @@ void epmem_init_db( agent *my_agent, bool readonly )
 }
 
 
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+// Metadata Functions (epmem::metadata)
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
+void epmem_update_metadata(agent* my_agent, soar_module::wme_set& condition_wmes, soar_module::wme_set& data_wmes, epmem_wme_stack* metadata_wme_stack)
+{
+	soar_module::symbol_triple_list triple_list;
+	for (soar_module::wme_set::iterator iter = data_wmes.begin(); iter != data_wmes.end(); iter++) {
+		soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->epmem_unrecognized_header, (*iter)->attr, make_new_identifier(my_agent, 'U', TOP_GOAL_LEVEL));
+		triple_list.push_back(st);
+		symbol_add_ref(st->id);
+		symbol_add_ref(st->attr);
+		symbol_add_ref(st->value);
+	}
+	if (!triple_list.empty()) {
+		epmem_process_buffered_wmes(my_agent, my_agent->top_goal, condition_wmes, triple_list, metadata_wme_stack);
+	}
+}
+
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -2555,7 +2579,6 @@ void _epmem_merge_wm_trees(epmem_elders* wm_tree, epmem_id_disjoint_set* disjoin
 	 1. value known in phase one (try reservation)
 	 2. value unknown in phase one, but known at phase two (try assignment adhering to constraint)
 	 3. value unknown in phase one/two (if anything is left, unconstrained assignment)
-	FIXME JUSTIN the last step also splits into several cases for recognition
 
 ************************************************************************** */
 
@@ -2571,8 +2594,7 @@ inline void _epmem_store_level( agent* my_agent,
 		                        std::map< wme*, epmem_id_reservation* >& id_reservations,
 		                        std::set< Symbol* >& new_identifiers,
 		                        std::queue< epmem_node_id >& epmem_node,
-		                        std::queue< epmem_node_id >& epmem_edge,
-                                epmem_wme_list& unrecognized_wmes )
+		                        std::queue< epmem_node_id >& epmem_edge )
 {
 	epmem_wme_list::iterator w_p;
 	bool value_known_apriori = false;
@@ -3010,7 +3032,7 @@ inline void _epmem_store_level( agent* my_agent,
 						(*my_agent->epmem_id_siblings)[ (*w_p)->value->id.epmem_id ] = child_root;
 
 						// cache the WME to be inserted into working memory
-						unrecognized_wmes.push_back( (*w_p) );
+						my_agent->epmem_data_wmes->push_back( (*w_p) );
 					}
 				}
 
@@ -3059,7 +3081,7 @@ inline void _epmem_store_level( agent* my_agent,
 			}
 
 			// track all new WMEs, for smem recognition later
-			my_agent->smem_wme_adds->push_back( (*w_p) );
+			my_agent->smem_data_wmes->push_back((*w_p));
 
 			// at this point we have successfully added a new wme
 			// whose value is an identifier.  If the value was
@@ -3195,18 +3217,17 @@ void epmem_new_episode( agent *my_agent )
 	// provide trace output
 	print_trace(my_agent, TRACE_EPMEM_SYSPARAM,  "EpMem| NEW EPISODE: %ld\n", static_cast<long int>(time_counter));
 
-	std::map<wme*, soar_module::symbol_triple*> epmem_metadata_support_map;
-	std::map<wme*, soar_module::symbol_triple*> smem_metadata_support_map;
+	soar_module::wme_set epmem_unrecognized_wmes;
+	soar_module::wme_set smem_unrecognized_wmes;
 
 	// remove recognition information if it exists
-	epmem_clear_result(my_agent, my_agent->recognition_wmes);
+	epmem_clear_result(my_agent, my_agent->epmem_metadata_wmes);
 
 	// perform storage
 	{
 		// seen nodes (non-identifiers) and edges (identifiers)
 		std::queue<epmem_node_id> epmem_node;
 		std::queue<epmem_node_id> epmem_edge;
-		epmem_wme_list unrecognized_wmes;
 
 		// walk appropriate levels
 		{
@@ -3243,7 +3264,7 @@ void epmem_new_episode( agent *my_agent )
 						wmes = epmem_get_augs_of_id( parent_sym, tc );
 						if ( ! wmes->empty() )
 						{
-							_epmem_store_level( my_agent, parent_syms, parent_ids, tc, wmes->begin(), wmes->end(), parent_id, time_counter, id_reservations, new_identifiers, epmem_node, epmem_edge, unrecognized_wmes );
+							_epmem_store_level( my_agent, parent_syms, parent_ids, tc, wmes->begin(), wmes->end(), parent_id, time_counter, id_reservations, new_identifiers, epmem_node, epmem_edge );
 						}
 						delete wmes;
 					}
@@ -3419,20 +3440,9 @@ void epmem_new_episode( agent *my_agent )
 		// all substates link to the same recognition structure root, so we only need to update it once
 		if ( my_agent->epmem_params->recognition->get_value() >= soar_module::on )
 		{
-			for ( epmem_wme_list::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
+			for ( epmem_wme_list::iterator recog_iter = my_agent->epmem_data_wmes->begin(); recog_iter != my_agent->epmem_data_wmes->end(); recog_iter++)
 			{
-				if ( my_agent->epmem_params->recognition_representation->get_value() == epmem_param_container::recog_wm )
-				{
-					soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->epmem_unrecognized_header, (*recog_iter)->attr, (*recog_iter)->id);
-					epmem_metadata_support_map[*recog_iter] = st;
-					symbol_add_ref(st->id);
-					symbol_add_ref(st->attr);
-					symbol_add_ref(st->value);
-				}
-				else
-				{
-					metadata_set(my_agent, (*recog_iter), METADATA_EPMEM_RECOGNITION, true);
-				}
+				epmem_unrecognized_wmes.insert(*recog_iter);
 			}
 		}
 
@@ -3441,7 +3451,7 @@ void epmem_new_episode( agent *my_agent )
 		{
 			std::map<Symbol*, bool> attr_cache;
 			// check all attributes of newly added wmes
-			for (smem_wme_list::iterator iter = my_agent->smem_wme_adds->begin(); iter != my_agent->smem_wme_adds->end(); iter++) {
+			for (smem_wme_list::iterator iter = my_agent->smem_data_wmes->begin(); iter != my_agent->smem_data_wmes->end(); iter++) {
 				bool recognized = false;
 				Symbol* attr = (*iter)->attr;
 				std::map<Symbol*, bool>::iterator attr_iter = attr_cache.find(attr);
@@ -3468,54 +3478,47 @@ void epmem_new_episode( agent *my_agent )
 				my_agent->smem_stmts->hash_get_str->reinitialize();
 				attr_cache[(*iter)->attr] = recognized;
 				if (!recognized) {
-					if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm) {
-						soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->smem_unrecognized_header, (*iter)->attr, make_new_identifier(my_agent, 'U', TOP_GOAL_LEVEL));
-						smem_metadata_support_map[*iter] = st;
-						symbol_add_ref(st->id);
-						symbol_add_ref(st->attr);
-						symbol_add_ref(st->value);
-					} else {
-						metadata_set(my_agent, (*iter), METADATA_SMEM_RECOGNITION, true);
-					}
+					smem_unrecognized_wmes.insert(*iter);
 				}
 			}
 		}
 
-		// add recognition WMEs in batch
-		{
-			std::map<wme*, soar_module::symbol_triple*>::iterator iter;
-			soar_module::wme_set metadata_wmes;
-			metadata_wmes.insert(my_agent->top_goal->id.epmem_time_wme);
-			soar_module::symbol_triple_list triple_list;
-			for (iter = epmem_metadata_support_map.begin(); iter != epmem_metadata_support_map.end(); iter++) {
-				triple_list.push_back((*iter).second);
+		// add epmem recognition WMEs in batch
+		if (!epmem_unrecognized_wmes.empty()) {
+			if (my_agent->epmem_params->recognition_representation->get_value() == epmem_param_container::recog_wm) {
+				soar_module::wme_set condition_wmes;
+				condition_wmes.insert(my_agent->top_goal->id.epmem_time_wme);
+				epmem_update_metadata(my_agent, condition_wmes, epmem_unrecognized_wmes, my_agent->epmem_metadata_wmes);
+			} else {
+				for (soar_module::wme_set::iterator iter = epmem_unrecognized_wmes.begin(); iter != epmem_unrecognized_wmes.end(); iter++) {
+					metadata_set(my_agent, (*iter), METADATA_EPMEM_RECOGNITION, true);
+				}
 			}
-			for (iter = smem_metadata_support_map.begin(); iter != smem_metadata_support_map.end(); iter++) {
-				triple_list.push_back((*iter).second);
+		}
+
+		// add smem recognition WMEs in batch
+		if (!smem_unrecognized_wmes.empty()) {
+			if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm) {
+				soar_module::wme_set condition_wmes;
+				condition_wmes.insert(my_agent->top_goal->id.epmem_time_wme);
+				// below uses epmem_metadata_wmes; this is not a typo. See agent.h
+				smem_update_metadata(my_agent, condition_wmes, smem_unrecognized_wmes, my_agent->epmem_metadata_wmes);
+			} else {
+				for (soar_module::wme_set::iterator iter = smem_unrecognized_wmes.begin(); iter != smem_unrecognized_wmes.end(); iter++) {
+					metadata_set(my_agent, (*iter), METADATA_SMEM_RECOGNITION, true);
+				}
 			}
-			epmem_process_buffered_wmes(my_agent, my_agent->top_goal, metadata_wmes, triple_list, my_agent->recognition_wmes);
 		}
 
 		// clear add/remove maps
 		{
 			std::map<wme*, soar_module::symbol_triple*>::iterator iter;
-			for (iter = epmem_metadata_support_map.begin(); iter != epmem_metadata_support_map.end(); iter++) {
-				symbol_remove_ref( my_agent, (*iter).second->id );
-				symbol_remove_ref( my_agent, (*iter).second->attr );
-				symbol_remove_ref( my_agent, (*iter).second->value );
-				delete (*iter).second;
-			}
-			epmem_metadata_support_map.clear();
+			epmem_unrecognized_wmes.clear();
 			my_agent->epmem_wme_adds->clear();
+			my_agent->smem_data_wmes->clear();
 
-			for (iter = smem_metadata_support_map.begin(); iter != smem_metadata_support_map.end(); iter++) {
-				symbol_remove_ref( my_agent, (*iter).second->id );
-				symbol_remove_ref( my_agent, (*iter).second->attr );
-				symbol_remove_ref( my_agent, (*iter).second->value );
-				delete (*iter).second;
-			}
-			smem_metadata_support_map.clear();
-			my_agent->smem_wme_adds->clear();
+			smem_unrecognized_wmes.clear();
+			my_agent->smem_data_wmes->clear();
 		}
 	}
 
@@ -6027,7 +6030,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 				// process preference assertion en masse
 				epmem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, state->id.epmem_info->epmem_wmes );
 				epmem_process_buffered_wmes( my_agent, state, cue_wmes, retrieval_wmes, NULL );
-
 
 				// clear cache
 				{

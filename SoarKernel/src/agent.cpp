@@ -421,15 +421,18 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->smem_changed_ids = new smem_pooled_symbol_set();
 #endif
   newAgent->smem_ignore_changes = false;
-  newAgent->smem_wme_adds = new smem_wme_list();
 
   // recognition initialization
   newAgent->epmem_id_siblings = new epmem_id_disjoint_set();
   newAgent->epmem_wm_tree = new epmem_elders();
+  newAgent->epmem_data_wmes = new epmem_wme_list();
+  newAgent->smem_data_wmes = new smem_wme_list();
 #ifdef USE_MEM_POOL_ALLOCATORS
-  newAgent->recognition_wmes = new epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( newAgent ) );
+  newAgent->epmem_metadata_wmes = new epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( newAgent ) );
+  newAgent->smem_metadata_wmes = new smem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( newAgent ) );
 #else
-  newAgent->recognition_wmes = new epmem_wme_stack();
+  newAgent->epmem_metadata_wmes = new epmem_wme_stack();
+  newAgent->smem_metadata_wmes = new smem_wme_stack();
 #endif
 
   // statistics initialization
@@ -516,14 +519,16 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->smem_params;
   delete delete_agent->smem_stats;
   delete delete_agent->smem_timers;
-  delete delete_agent->smem_wme_adds;
 
   delete delete_agent->smem_db;
 
-  // cleanup recognition
+  // cleanup metadata
   delete delete_agent->epmem_id_siblings;
   delete delete_agent->epmem_wm_tree;
-  delete delete_agent->recognition_wmes;
+  delete delete_agent->epmem_data_wmes;
+  delete delete_agent->epmem_metadata_wmes;
+  delete delete_agent->smem_data_wmes;
+  delete delete_agent->smem_metadata_wmes;
 
   // cleanup statistics db
   stats_close( delete_agent );

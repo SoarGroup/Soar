@@ -944,9 +944,13 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   Symbol* epmem_unrecognized_header;
   epmem_id_disjoint_set* epmem_id_siblings;
   epmem_elders *epmem_wm_tree;
+  epmem_wme_list* epmem_data_wmes;
   Symbol* smem_unrecognized_header;
-  smem_wme_list* smem_wme_adds;
-  epmem_wme_stack* recognition_wmes;
+  smem_wme_list* smem_data_wmes;
+  // note: the two containers below denote who is in charge of removing the WMEs
+  // not which memories the WMEs describe
+  epmem_wme_stack* epmem_metadata_wmes;
+  smem_wme_stack* smem_metadata_wmes;
 
   // dynamic memory pools
   std::map< size_t, memory_pool* >* dyn_memory_pools;

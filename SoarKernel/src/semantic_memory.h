@@ -482,6 +482,7 @@ extern void smem_reset_id_counters( agent *my_agent );
 extern void smem_close( agent *my_agent );
 
 // perform smem actions
+extern void smem_update_metadata(agent* my_agent, soar_module::wme_set& condition_wmes, soar_module::wme_set& data_wmes, smem_wme_stack* metadata_wme_stack);
 extern void smem_go( agent *my_agent, bool store_only );
 extern bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 
