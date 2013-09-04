@@ -9,11 +9,8 @@
 #define ORIGINAL_VARIABLE_MANAGER_H_
 
 #include <portability.h>
+#include <set>
 #include "symtab.h"
-
-extern void dprint (TraceMode mode, const char *format, ... );
-extern void dprint_noprefix (TraceMode mode, const char *format, ...);
-extern void print (agent* thisAgent, const char *format, ... );
 
 typedef struct original_varname_struct {
 
@@ -40,31 +37,13 @@ class Original_Variable_Manager
     /* -- This is the main function that takes the name of a variable and potentially
      *    modifies it so that is is unique to the current instantiation being built -- */
     void make_name_unique(Symbol **sym);
-
-    /* -- The following functions are used to store the mapping from an original variable
-     *    on the LHS to the variable that was created for variablization.  It is used
-     *    to variablize the rhs actions. This mapping is temporary and cleared after
-     *    the chunk is built. -- */
+    bool already_unique(Symbol *original_var);
 
     void clear_symbol_map();
-    void store_variablization(Symbol *original_var, Symbol *current_variable)
-    {
-      dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager storing symbol %s -=> %s\n", original_var->to_string(thisAgent), current_variable->to_string(thisAgent));
-      (*id_symbol_map)[original_var] = current_variable;
-    }
-    void clear_variablization(Symbol *reversed_var)
-    {
-      dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol being reversed %s.\n", reversed_var->to_string(thisAgent));
-      (*id_symbol_map).erase(reversed_var);
-      /* MToDo | We need to clear this variable from table too b/c it won't be in the symbol map later -- */
-    }
-
-    Symbol *find_original_variable(Symbol *original_var)
-    {
-      dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager looking up %s: %s\n", original_var->to_string(thisAgent),
-          (*id_symbol_map)[original_var] ? (*id_symbol_map)[original_var]->to_string(thisAgent) : "not found");
-      return (*id_symbol_map)[original_var];
-    }
+    void clear_current_unique_vars();
+    void store_variablization(Symbol *original_var, Symbol *current_variable);
+    void clear_variablization(Symbol *reversed_var);
+    Symbol *find_original_variable(Symbol *original_var);
 
     void reinit_table();
     void print_table();
@@ -76,7 +55,18 @@ class Original_Variable_Manager
     void clear_table();
     void create_table();
 
+    /* -- id_symbol_map is used to store the mapping from an original variable
+     *    on the LHS to the variable that was created for variablization.  It is used
+     *    to variablize the rhs actions. This mapping is temporary and cleared after
+     *    the chunk is built. -- */
+
     std::map< Symbol *, Symbol * > * id_symbol_map;
+
+    /* -- current_unique_vars keeps a list of all original vars in the current instantiation
+     *    that have been made unique.  This is needed since the original var is replaced
+     *    with the unique version -- */
+
+    std::set< Symbol * > * current_unique_vars;
 
     struct hash_table_struct *ht;
     memory_pool mp;
