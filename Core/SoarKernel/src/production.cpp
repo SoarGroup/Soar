@@ -645,11 +645,17 @@ production *make_production (agent* thisAgent,
     reset_variable_generator (thisAgent, *lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list (thisAgent, *lhs_top, tc, NIL);
-    if (type == CHUNK_PRODUCTION_TYPE) {
-      reverse_unbound_lhs_referents (thisAgent, *lhs_top, tc);
-      //add_bound_variables_in_action_list (thisAgent, *rhs_top, tc, NIL);
-      reverse_rhs_action_list (thisAgent, *rhs_top, tc);
-    }
+
+    /* -- MToDo | I don't think we need to do any reversing any more.  LHS is
+     *            handled by the fact that original vars are now stored in tests
+     *            and RHS is handled by the cached in the Orig Var Manager -- */
+
+//    if (type == CHUNK_PRODUCTION_TYPE) {
+//      reverse_unbound_lhs_referents (thisAgent, *lhs_top, tc);
+//      //add_bound_variables_in_action_list (thisAgent, *rhs_top, tc, NIL);
+//      reverse_rhs_action_list (thisAgent, *rhs_top, tc);
+//    }
+
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
 

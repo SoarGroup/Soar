@@ -122,16 +122,16 @@ void Original_Variable_Manager::store_variablization(Symbol *original_var, Symbo
   (*id_symbol_map)[original_var] = current_variable;
 }
 
-void Original_Variable_Manager::clear_variablization(Symbol *reversed_var)
-{
-  /* -- Clear this variable from symbol_map so that any RHS items that use this original var wont' be variablized -- */
-  dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol %s from symbol_map b/c it's being reversed.\n", reversed_var->to_string(thisAgent));
-  (*id_symbol_map).erase(reversed_var);
-  /* -- Need to clear this variable from hash table too b/c it won't be in the symbol map later when it is cleaned up -- */
-  dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol %s from hash table b/c it's being reversed.\n", reversed_var->to_string(thisAgent));
-  clear_symbol(reversed_var);
-
-}
+//void Original_Variable_Manager::clear_variablization(Symbol *reversed_var)
+//{
+//  /* -- Clear this variable from symbol_map so that any RHS items that use this original var wont' be variablized -- */
+//  dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol %s from symbol_map b/c it's being reversed.\n", reversed_var->to_string(thisAgent));
+//  (*id_symbol_map).erase(reversed_var);
+//  /* -- Need to clear this variable from hash table too b/c it won't be in the symbol map later when it is cleaned up -- */
+//  dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol %s from hash table b/c it's being reversed.\n", reversed_var->to_string(thisAgent));
+//  clear_symbol(reversed_var);
+//
+//}
 
 bool Original_Variable_Manager::already_unique(Symbol *original_var) {
 

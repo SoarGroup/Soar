@@ -42,7 +42,7 @@ class Original_Variable_Manager
     void clear_symbol_map();
     void clear_current_unique_vars();
     void store_variablization(Symbol *original_var, Symbol *current_variable);
-    void clear_variablization(Symbol *reversed_var);
+//    void clear_variablization(Symbol *reversed_var);
     Symbol *find_original_variable(Symbol *original_var);
 
     void reinit_table();
