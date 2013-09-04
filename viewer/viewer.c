@@ -523,7 +523,7 @@ void draw_geom(geometry *g) {
 	glLineWidth(g->line_width);
 	glPushMatrix();
 	glTranslated(g->pos[0], g->pos[1], g->pos[2]);
-	glRotated(g->angle, g->axis[0], g->axis[1], g->axis[2]);
+	glRotated(g->angle * 180 / PI, g->axis[0], g->axis[1], g->axis[2]);
 	glScaled(g->scale[0], g->scale[1], g->scale[2]);
 	
 	if (g->ninds >= 0) {

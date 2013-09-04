@@ -122,6 +122,7 @@ void sgnode::update_transform() const {
 	trans_dirty = false;
 }
 
+
 /* if updates result in observers removing themselves, the iteration may
  * screw up, so make a copy of the std::list first */
 void sgnode::send_update(sgnode::change_type t, const std::string& update_info) {
@@ -592,14 +593,15 @@ bool intersects(const sgnode *n1, const sgnode *n2) {
 void sgnode::set_property(const std::string& propertyName, const std::string& value){
 	double numericValue;
 	if(parse_double(value, numericValue)){
-		numeric_props[propertyName] = numericValue;
-	} else {
-		string_props[propertyName] = value;
+		set_property(propertyName, numericValue);
+		return;
 	}
+	string_props[propertyName] = value;
 	send_update(sgnode::PROPERTY_CHANGED, propertyName);
 }
 
 void sgnode::set_property(const std::string& propertyName, double value){
+/*
 	char type;
 	int d;
 	if (propertyName[0] == 'p' &&
@@ -615,10 +617,39 @@ void sgnode::set_property(const std::string& propertyName, double value){
 	}
 	numeric_props[propertyName] = value;
 	send_update(sgnode::PROPERTY_CHANGED, propertyName);
+*/
+	char native_type;
+	int dim;
+	if(is_native_prop(propertyName, native_type, dim)){
+		set_native_property(native_type, dim, value);
+	} else {
+		numeric_props[propertyName] = value;
+		send_update(sgnode::PROPERTY_CHANGED, propertyName);
+	}
 }
 
 void sgnode::delete_property(const std::string& propertyName){
 	numeric_props.erase(propertyName);
 	string_props.erase(propertyName);
 	send_update(sgnode::PROPERTY_DELETED, propertyName);
+}
+
+void sgnode::set_native_property(char type, int dim, double value){
+	if(dim < 0 || dim > 2){
+		return;
+	}
+	switch(type){
+		case 'p':	
+			pos[dim] = value;
+			set_transform_dirty();
+		break;
+		case 'r':
+			rot[dim] = value;
+			set_transform_dirty();
+		break;
+		case 's':
+			scale[dim] = value;	
+			set_transform_dirty();
+		break;
+	}
 }

@@ -106,6 +106,7 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 				//std::cout << "Occlusion detected" << std::endl;
 				//std::cout << "  " << j->first->get_name() << std::endl;
 				//std::cout << "  " << n->get_name() << std::endl; 
+
 				view_line.second = true;
 				num_occluded++;
 			}

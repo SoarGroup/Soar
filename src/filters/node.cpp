@@ -113,6 +113,7 @@ public:
 		for (i = outputs.begin(); i != outputs.end(); ++i) {
 			i->first->unlisten(this);
 		}
+
 		vector<sgnode*> nodes;
 		scn->get_all_nodes(nodes);
 		nodes[0]->unlisten(this);

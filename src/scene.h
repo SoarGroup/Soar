@@ -13,6 +13,12 @@
 class svs;
 class logger_set;
 
+
+// Returns true if the given property name is a native type
+// If true, type is given either 'p' (pos), 'r' (rot), or 's' (scale)
+//      and dim is given 0=x, 1=y, 2=z
+bool is_native_prop(const std::string& name, char& type, int& dim);
+
 class scene : public sgnode_listener, public cliproxy {
 public:
 	scene(const std::string &name, svs *owner);
