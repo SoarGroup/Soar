@@ -2408,7 +2408,7 @@ void epmem_update_metadata(agent* my_agent, soar_module::wme_set& condition_wmes
 {
 	soar_module::symbol_triple_list triple_list;
 	for (soar_module::wme_set::iterator iter = data_wmes.begin(); iter != data_wmes.end(); iter++) {
-		soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->epmem_unrecognized_header, (*iter)->attr, make_new_identifier(my_agent, 'U', TOP_GOAL_LEVEL));
+		soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->epmem_unrecognized_header, (*iter)->attr, (*iter)->id);
 		triple_list.push_back(st);
 		symbol_add_ref(st->id);
 		symbol_add_ref(st->attr);
@@ -3456,8 +3456,7 @@ void epmem_new_episode( agent *my_agent )
 				Symbol* attr = (*iter)->attr;
 				std::map<Symbol*, bool>::iterator attr_iter = attr_cache.find(attr);
 				if (attr_iter != attr_cache.end()) {
-					if ((*attr_iter).second)
-					{
+					if ((*attr_iter).second) {
 						recognized = true;
 					}
 				} else {
@@ -3466,6 +3465,7 @@ void epmem_new_episode( agent *my_agent )
 					{
 						// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it; value constants don't have counters)
 						// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
+						// not that we couldn't; there are *_frequency_check SQL statements
 						smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
 						my_agent->smem_stmts->attribute_frequency_check->bind_int( 1, hash );
 						if ( my_agent->smem_stmts->attribute_frequency_check->execute( soar_module::op_reinit ) == soar_module::row )

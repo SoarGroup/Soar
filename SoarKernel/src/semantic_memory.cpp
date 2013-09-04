@@ -684,7 +684,7 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 	return return_val;
 }
 
-inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, smem_wme_stack* smem_wmes )
+inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, smem_wme_stack* smem_wmes=NULL, soar_module::wme_set* added_wmes=NULL)
 {
 	if ( my_list.empty() )
 	{
@@ -715,6 +715,17 @@ inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_mod
 		{
 			preference_add_ref( pref );
 			preference_remove_ref( my_agent, pref );
+		}
+		if (added_wmes) {
+			if ( pref->type == ACCEPTABLE_PREFERENCE_TYPE )
+			{
+				for (wme* w = pref->slot->wmes; w; w = w->next) {
+					// id and attr should already match so just compare the value
+					if (w->value == pref->value) {
+						added_wmes->insert(w);
+					}
+				}
+			}
 		}
 	}
 
@@ -2046,7 +2057,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Symbol *lti, bool activate_lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes )
+void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Symbol *lti, bool activate_lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, soar_module::symbol_triple_list& unrecognized_wmes )
 {
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->ncb_retrieval->start();
@@ -2105,20 +2116,43 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		{
 			// make the identifier symbol irrespective of value type
 			attr_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(0) ), static_cast<smem_hash_id>( expand_q->column_int(1) ) );
+			my_agent->smem_stmts->wmes_constant_frequency_check->bind_int(1, expand_q->column_int(0));
+			bool recognized = true;
 
 			// identifier vs. constant
 			if ( expand_q->column_int( 6 ) != SMEM_AUGMENTATIONS_NULL )
 			{
 				value_sym = smem_lti_soar_make( my_agent, static_cast<smem_lti_id>( expand_q->column_int( 6 ) ), static_cast<char>( expand_q->column_int( 4 ) ), static_cast<uint64_t>( expand_q->column_int( 5 ) ), lti->id.level );
-				// FIXME JUSTIN update recognition metadata here
+				my_agent->smem_stmts->wmes_lti_frequency_check->bind_int(2, expand_q->column_int(6));
+				if ( my_agent->smem_stmts->wmes_lti_frequency_check->execute() != soar_module::row ) {
+					// if the frequncy is 1, this is the only LTI with this attribute/child pair
+					// it is therefore not recognized
+					if (my_agent->smem_stmts->wmes_lti_frequency_check->column_int(1) == 1) { 
+						recognized = false;
+					}
+				}
+				my_agent->smem_stmts->wmes_lti_frequency_check->reinitialize();
 			}
 			else
 			{
 				value_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(2) ), static_cast<smem_hash_id>( expand_q->column_int(3) ) );
+				my_agent->smem_stmts->wmes_constant_frequency_check->bind_int(2, expand_q->column_int(3));
+				if ( my_agent->smem_stmts->wmes_constant_frequency_check->execute() != soar_module::row ) {
+					// if the frequncy is 1, this is the only LTI with this attribute/child pair
+					// it is therefore not recognized
+					if (my_agent->smem_stmts->wmes_constant_frequency_check->column_int(1) == 1) { 
+						recognized = false;
+					}
+				}
 			}
+			my_agent->smem_stmts->wmes_constant_frequency_check->reinitialize();
 
 			// add wme
-			smem_buffer_add_wme( retrieval_wmes, lti, attr_sym, value_sym );
+			if (recognized) {
+				smem_buffer_add_wme( retrieval_wmes, lti, attr_sym, value_sym );
+			} else {
+				smem_buffer_add_wme( unrecognized_wmes, lti, attr_sym, value_sym );
+			}
 
 			// deal with ref counts - attribute/values are always created in this function
 			// (thus an extra ref count is set before adding a wme)
@@ -2271,7 +2305,7 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
 	return good_wme;
 }
 
-smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *negquery, smem_lti_set *prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full )
+smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *negquery, smem_lti_set *prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, soar_module::symbol_triple_list& unrecognized_wmes, smem_query_levels query_level = qry_full )
 {
 	smem_weighted_cue_list weighted_cue;
 	bool good_cue = true;
@@ -2525,7 +2559,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, negquery );
 			}
 
-			smem_install_memory( my_agent, state, king_id, NIL, ( my_agent->smem_params->activate_on_query->get_value() == soar_module::on ), meta_wmes, retrieval_wmes );
+			smem_install_memory( my_agent, state, king_id, NIL, ( my_agent->smem_params->activate_on_query->get_value() == soar_module::on ), meta_wmes, retrieval_wmes, unrecognized_wmes );
 		}
 		else
 		{
@@ -3440,6 +3474,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 	soar_module::symbol_triple_list meta_wmes;
 	soar_module::symbol_triple_list retrieval_wmes;
+	soar_module::symbol_triple_list unrecognized_wmes;
 	soar_module::wme_set cue_wmes;
 
 	Symbol *query;
@@ -3686,7 +3721,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
 
 						// install memory directly onto the retrieve identifier
-						smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true, meta_wmes, retrieval_wmes );
+						smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true, meta_wmes, retrieval_wmes, unrecognized_wmes );
 
 						// add one to the expansions stat
 						my_agent->smem_stats->expansions->set_value( my_agent->smem_stats->expansions->get_value() + 1 );
@@ -3703,7 +3738,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						prohibit_lti.insert( (*sym_p)->id.smem_lti );
 					}
 
-					smem_process_query( my_agent, state, query, negquery, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
+					smem_process_query( my_agent, state, query, negquery, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes, unrecognized_wmes );
 
 					// add one to the cbr stat
 					my_agent->smem_stats->cbr->set_value( my_agent->smem_stats->cbr->get_value() + 1 );
@@ -3749,11 +3784,25 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
 			}
 
-			if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
+			if ( !meta_wmes.empty() || !retrieval_wmes.empty() || !unrecognized_wmes.empty())
 			{
 				// process preference assertion en masse
+				soar_module::wme_set added_wmes;
 				smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, state->id.smem_info->smem_wmes);
-				smem_process_buffered_wmes( my_agent, state, cue_wmes, retrieval_wmes, NULL );
+				smem_process_buffered_wmes( my_agent, state, cue_wmes, retrieval_wmes);
+				smem_process_buffered_wmes( my_agent, state, cue_wmes, unrecognized_wmes, NULL, (&added_wmes));
+
+				// update metadata data
+				if (!added_wmes.empty()) {
+					if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm) {
+						soar_module::wme_set condition_wmes;
+						smem_update_metadata(my_agent, condition_wmes, added_wmes, my_agent->smem_metadata_wmes);
+					} else {
+						for (soar_module::wme_set::iterator iter = added_wmes.begin(); iter != added_wmes.end(); iter++) {
+							metadata_set(my_agent, (*iter), METADATA_SMEM_RECOGNITION, true);
+						}
+					}
+				}
 
 				// clear cache
 				{
@@ -3768,6 +3817,16 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						delete (*mw_it);
 					}
 					retrieval_wmes.clear();
+
+					for ( mw_it=unrecognized_wmes.begin(); mw_it!=unrecognized_wmes.end(); mw_it++ )
+					{
+						symbol_remove_ref( my_agent, (*mw_it)->id );
+						symbol_remove_ref( my_agent, (*mw_it)->attr );
+						symbol_remove_ref( my_agent, (*mw_it)->value );
+
+						delete (*mw_it);
+					}
+					unrecognized_wmes.clear();
 
 					for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
 					{
