@@ -635,7 +635,7 @@ inline bool trace_firings_of_inst(agent* thisAgent, instantiation * inst) {
  newly_created_instantiations.  It also calls chunk_instantiation() to
  do any necessary chunk or justification building.
  ----------------------------------------------------------------------- */
-
+#include "original_variable_manager.h"
 void create_instantiation(agent* thisAgent, production *prod,
 		struct token_struct *tok, wme *w) {
 	instantiation *inst;
@@ -680,6 +680,8 @@ void create_instantiation(agent* thisAgent, production *prod,
 				symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
 		xml_generate_verbose(thisAgent, buf);
 	}
+
+	thisAgent->originalVarManager->print_table();
 
 	thisAgent->production_being_fired = inst->prod;
 	prod->firing_count++;

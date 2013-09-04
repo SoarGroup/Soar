@@ -94,7 +94,7 @@ void Original_Variable_Manager::clear_table()
   free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
 }
 
-void Original_Variable_Manager::clear_symbol(Symbol *var)
+void Original_Variable_Manager::clear_current_unique_var(Symbol *var)
 {
   uint32_t hash_value;
   original_varname *varname;
@@ -122,17 +122,6 @@ void Original_Variable_Manager::store_variablization(Symbol *original_var, Symbo
   (*id_symbol_map)[original_var] = current_variable;
 }
 
-//void Original_Variable_Manager::clear_variablization(Symbol *reversed_var)
-//{
-//  /* -- Clear this variable from symbol_map so that any RHS items that use this original var wont' be variablized -- */
-//  dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol %s from symbol_map b/c it's being reversed.\n", reversed_var->to_string(thisAgent));
-//  (*id_symbol_map).erase(reversed_var);
-//  /* -- Need to clear this variable from hash table too b/c it won't be in the symbol map later when it is cleaned up -- */
-//  dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol %s from hash table b/c it's being reversed.\n", reversed_var->to_string(thisAgent));
-//  clear_symbol(reversed_var);
-//
-//}
-
 bool Original_Variable_Manager::already_unique(Symbol *original_var) {
 
   dprint(DT_ORIGINAL_VAR_MANAGER, "...checking if %s is already unique...", original_var->to_string(thisAgent));
@@ -152,7 +141,7 @@ void Original_Variable_Manager::clear_symbol_map() {
   for (std::map< Symbol *, Symbol * >::iterator it=(*id_symbol_map).begin(); it!=(*id_symbol_map).end(); ++it)
   {
     dprint(DT_ORIGINAL_VAR_MANAGER, "Clearing %s -> %s\n", it->first->to_string(thisAgent), it->second->to_string(thisAgent));
-    clear_symbol(it->first);
+    clear_current_unique_var(it->first);
   }
   id_symbol_map->clear();
   print_table();
@@ -171,9 +160,9 @@ void Original_Variable_Manager::clear_current_unique_vars() {
 void Original_Variable_Manager::reinit_table()
 {
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager reinitializing hash table and clearing symbol map.\n");
+  clear_symbol_map();
   if (ht)
     clear_table();
-  clear_symbol_map();
   create_table();
 }
 
@@ -203,16 +192,12 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
   uint32_t hash_value;
   original_varname *varname, *new_varname;
 
-  assert(thisAgent->newly_created_instantiations != NIL);
   dprint(DT_ORIGINAL_VAR_MANAGER, "...uniqueifying %s for instantiation %s...\n",
                                            (*sym)->var->name,
                                            thisAgent->newly_created_instantiations->prod->name->sc->name );
 
-  if (!strcmp((*sym)->var->name, "<s+3>"))
-    assert(true);
   if (already_unique(*sym))
   {
-    symbol_add_ref(thisAgent, (*sym));
     dprint(DT_ORIGINAL_VAR_MANAGER, "...already unique, so using existing original variable %s\n",
                                       (*sym)->var->name);
     return;
@@ -256,8 +241,12 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
 
         varname->next_unique_suffix_number++;
         varname->current_instantiation = thisAgent->newly_created_instantiations;
+
+        /* MToDoRefCnt | After we clean up current_unique_vars in p_node, the following should never be necessary */
         if (varname->current_unique_var_symbol)
+        {
           symbol_remove_ref(thisAgent, varname->current_unique_var_symbol);
+        }
         varname->current_unique_var_symbol = make_variable(thisAgent, new_name.c_str());
 
         dprint(DT_ORIGINAL_VAR_MANAGER, "...creating new unique version of %s: %s\n",
@@ -266,9 +255,6 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
         *sym = varname->current_unique_var_symbol;
         current_unique_vars->insert(*sym);
 
-        /* -- Since caller will increase the refcount again when it uses the symbol in a test, we
-         *    don't need the refcount that was added by make_variable above, so we set it to 0 here -- */
-        symbol_remove_ref_no_deallocate(thisAgent, (*sym));
         return;
       }
     }
@@ -282,8 +268,7 @@ void Original_Variable_Manager::make_name_unique(Symbol **sym)
   new_varname->name = make_memory_block_for_string (thisAgent, (*sym)->var->name);
   new_varname->next_unique_suffix_number = 1;
   add_to_hash_table (thisAgent, ht, new_varname);
-  /* -- Increase refcount for our cached copy of the original variable (which new unique ones may be mapped
-   *    from in the future. -- */
+  /* -- Increase refcount for cached current_unique_var_symbol -- */
   symbol_add_ref(thisAgent, (*sym));
   current_unique_vars->insert(*sym);
   dprint(DT_ORIGINAL_VAR_MANAGER, "...first use, so using original variable %s\n",

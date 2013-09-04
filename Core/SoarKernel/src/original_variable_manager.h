@@ -42,7 +42,6 @@ class Original_Variable_Manager
     void clear_symbol_map();
     void clear_current_unique_vars();
     void store_variablization(Symbol *original_var, Symbol *current_variable);
-//    void clear_variablization(Symbol *reversed_var);
     Symbol *find_original_variable(Symbol *original_var);
 
     void reinit_table();
@@ -51,7 +50,7 @@ class Original_Variable_Manager
     ~Original_Variable_Manager();
 
   private:
-    void clear_symbol(Symbol *var);
+    void clear_current_unique_var(Symbol *var);
     void clear_table();
     void create_table();
 
@@ -63,8 +62,8 @@ class Original_Variable_Manager
     std::map< Symbol *, Symbol * > * id_symbol_map;
 
     /* -- current_unique_vars keeps a list of all original vars in the current instantiation
-     *    that have been made unique.  This is needed since the original var is replaced
-     *    with the unique version -- */
+     *    that have been made unique.  This is needed so we don't try to make an original variable
+     *    unique twice because it appears in two different conditions -- */
 
     std::set< Symbol * > * current_unique_vars;
 
