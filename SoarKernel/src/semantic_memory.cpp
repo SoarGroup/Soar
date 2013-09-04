@@ -684,7 +684,7 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 	return return_val;
 }
 
-inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, smem_wme_stack* smem_wmes=NULL, soar_module::wme_set* added_wmes=NULL)
+inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, smem_wme_stack* smem_wmes=NULL, bool unrecognized=false)
 {
 	if ( my_list.empty() )
 	{
@@ -716,16 +716,11 @@ inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_mod
 			preference_add_ref( pref );
 			preference_remove_ref( my_agent, pref );
 		}
-		if (added_wmes) {
-			if ( pref->type == ACCEPTABLE_PREFERENCE_TYPE )
-			{
-				for (wme* w = pref->slot->wmes; w; w = w->next) {
-					// id and attr should already match so just compare the value
-					if (w->value == pref->value) {
-						added_wmes->insert(w);
-					}
-				}
-			}
+	}
+	if (unrecognized) {
+		for ( preference* pref=inst->preferences_generated; pref; pref=pref->inst_next )
+		{
+			pref->slot->smem_unrecognized = TRUE;
 		}
 	}
 
@@ -1560,10 +1555,10 @@ void smem_reset_id_counters( agent *my_agent )
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_update_metadata(agent* my_agent, soar_module::wme_set& condition_wmes, soar_module::wme_set& data_wmes, smem_wme_stack* metadata_wme_stack)
+void smem_update_metadata(agent* my_agent, soar_module::wme_set& condition_wmes, smem_wme_list* data_wmes, smem_wme_stack* metadata_wme_stack)
 {
 	soar_module::symbol_triple_list triple_list;
-	for (soar_module::wme_set::iterator iter = data_wmes.begin(); iter != data_wmes.end(); iter++) {
+	for (smem_wme_list::iterator iter = data_wmes->begin(); iter != data_wmes->end(); iter++) {
 		soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->smem_unrecognized_header, (*iter)->attr, make_new_identifier(my_agent, 'U', TOP_GOAL_LEVEL));
 		triple_list.push_back(st);
 		symbol_add_ref(st->id);
@@ -2116,36 +2111,37 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		{
 			// make the identifier symbol irrespective of value type
 			attr_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(0) ), static_cast<smem_hash_id>( expand_q->column_int(1) ) );
-			my_agent->smem_stmts->wmes_constant_frequency_check->bind_int(1, expand_q->column_int(0));
 			bool recognized = true;
 
 			// identifier vs. constant
 			if ( expand_q->column_int( 6 ) != SMEM_AUGMENTATIONS_NULL )
 			{
 				value_sym = smem_lti_soar_make( my_agent, static_cast<smem_lti_id>( expand_q->column_int( 6 ) ), static_cast<char>( expand_q->column_int( 4 ) ), static_cast<uint64_t>( expand_q->column_int( 5 ) ), lti->id.level );
-				my_agent->smem_stmts->wmes_lti_frequency_check->bind_int(2, expand_q->column_int(6));
-				if ( my_agent->smem_stmts->wmes_lti_frequency_check->execute() != soar_module::row ) {
+				my_agent->smem_stmts->wmes_lti_frequency_get->bind_int(1, expand_q->column_int(1));
+				my_agent->smem_stmts->wmes_lti_frequency_get->bind_int(2, expand_q->column_int(6));
+				if ( my_agent->smem_stmts->wmes_lti_frequency_get->execute() == soar_module::row ) {
 					// if the frequncy is 1, this is the only LTI with this attribute/child pair
 					// it is therefore not recognized
-					if (my_agent->smem_stmts->wmes_lti_frequency_check->column_int(1) == 1) { 
+					if (my_agent->smem_stmts->wmes_lti_frequency_get->column_int(0) < 2) { 
 						recognized = false;
 					}
 				}
-				my_agent->smem_stmts->wmes_lti_frequency_check->reinitialize();
+				my_agent->smem_stmts->wmes_lti_frequency_get->reinitialize();
 			}
 			else
 			{
 				value_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(2) ), static_cast<smem_hash_id>( expand_q->column_int(3) ) );
-				my_agent->smem_stmts->wmes_constant_frequency_check->bind_int(2, expand_q->column_int(3));
-				if ( my_agent->smem_stmts->wmes_constant_frequency_check->execute() != soar_module::row ) {
+				my_agent->smem_stmts->wmes_constant_frequency_get->bind_int(1, expand_q->column_int(1));
+				my_agent->smem_stmts->wmes_constant_frequency_get->bind_int(2, expand_q->column_int(3));
+				if ( my_agent->smem_stmts->wmes_constant_frequency_get->execute() == soar_module::row ) {
 					// if the frequncy is 1, this is the only LTI with this attribute/child pair
 					// it is therefore not recognized
-					if (my_agent->smem_stmts->wmes_constant_frequency_check->column_int(1) == 1) { 
+					if (my_agent->smem_stmts->wmes_constant_frequency_get->column_int(0) < 2) { 
 						recognized = false;
 					}
 				}
+				my_agent->smem_stmts->wmes_constant_frequency_get->reinitialize();
 			}
-			my_agent->smem_stmts->wmes_constant_frequency_check->reinitialize();
 
 			// add wme
 			if (recognized) {
@@ -3787,22 +3783,9 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			if ( !meta_wmes.empty() || !retrieval_wmes.empty() || !unrecognized_wmes.empty())
 			{
 				// process preference assertion en masse
-				soar_module::wme_set added_wmes;
 				smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, state->id.smem_info->smem_wmes);
 				smem_process_buffered_wmes( my_agent, state, cue_wmes, retrieval_wmes);
-				smem_process_buffered_wmes( my_agent, state, cue_wmes, unrecognized_wmes, NULL, (&added_wmes));
-
-				// update metadata data
-				if (!added_wmes.empty()) {
-					if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm) {
-						soar_module::wme_set condition_wmes;
-						smem_update_metadata(my_agent, condition_wmes, added_wmes, my_agent->smem_metadata_wmes);
-					} else {
-						for (soar_module::wme_set::iterator iter = added_wmes.begin(); iter != added_wmes.end(); iter++) {
-							metadata_set(my_agent, (*iter), METADATA_SMEM_RECOGNITION, true);
-						}
-					}
-				}
+				smem_process_buffered_wmes( my_agent, state, cue_wmes, unrecognized_wmes, NULL, true); 
 
 				// clear cache
 				{

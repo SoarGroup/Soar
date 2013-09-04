@@ -3080,9 +3080,6 @@ inline void _epmem_store_level( agent* my_agent,
 				}
 			}
 
-			// track all new WMEs, for smem recognition later
-			my_agent->smem_data_wmes->push_back((*w_p));
-
 			// at this point we have successfully added a new wme
 			// whose value is an identifier.  If the value was
 			// unknown at the beginning of this episode, then we need
@@ -3218,7 +3215,6 @@ void epmem_new_episode( agent *my_agent )
 	print_trace(my_agent, TRACE_EPMEM_SYSPARAM,  "EpMem| NEW EPISODE: %ld\n", static_cast<long int>(time_counter));
 
 	soar_module::wme_set epmem_unrecognized_wmes;
-	soar_module::wme_set smem_unrecognized_wmes;
 
 	// remove recognition information if it exists
 	epmem_clear_result(my_agent, my_agent->epmem_metadata_wmes);
@@ -3446,43 +3442,6 @@ void epmem_new_episode( agent *my_agent )
 			}
 		}
 
-		// update smem recognition information on top state
-		if ( my_agent->smem_params->recognition->get_value() >= soar_module::on )
-		{
-			std::map<Symbol*, bool> attr_cache;
-			// check all attributes of newly added wmes
-			for (smem_wme_list::iterator iter = my_agent->smem_data_wmes->begin(); iter != my_agent->smem_data_wmes->end(); iter++) {
-				bool recognized = false;
-				Symbol* attr = (*iter)->attr;
-				std::map<Symbol*, bool>::iterator attr_iter = attr_cache.find(attr);
-				if (attr_iter != attr_cache.end()) {
-					if ((*attr_iter).second) {
-						recognized = true;
-					}
-				} else {
-					my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( attr->sc.name ) );
-					if ( my_agent->smem_stmts->hash_get_str->execute() == soar_module::row )
-					{
-						// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it; value constants don't have counters)
-						// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
-						// not that we couldn't; there are *_frequency_check SQL statements
-						smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
-						my_agent->smem_stmts->attribute_frequency_check->bind_int( 1, hash );
-						if ( my_agent->smem_stmts->attribute_frequency_check->execute( soar_module::op_reinit ) == soar_module::row )
-						{
-							// if a counter is found, it is in smem, and therefore should be recognized
-							recognized = true;
-						}
-					}
-				}
-				my_agent->smem_stmts->hash_get_str->reinitialize();
-				attr_cache[(*iter)->attr] = recognized;
-				if (!recognized) {
-					smem_unrecognized_wmes.insert(*iter);
-				}
-			}
-		}
-
 		// add epmem recognition WMEs in batch
 		if (!epmem_unrecognized_wmes.empty()) {
 			if (my_agent->epmem_params->recognition_representation->get_value() == epmem_param_container::recog_wm) {
@@ -3496,29 +3455,12 @@ void epmem_new_episode( agent *my_agent )
 			}
 		}
 
-		// add smem recognition WMEs in batch
-		if (!smem_unrecognized_wmes.empty()) {
-			if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm) {
-				soar_module::wme_set condition_wmes;
-				condition_wmes.insert(my_agent->top_goal->id.epmem_time_wme);
-				// below uses epmem_metadata_wmes; this is not a typo. See agent.h
-				smem_update_metadata(my_agent, condition_wmes, smem_unrecognized_wmes, my_agent->epmem_metadata_wmes);
-			} else {
-				for (soar_module::wme_set::iterator iter = smem_unrecognized_wmes.begin(); iter != smem_unrecognized_wmes.end(); iter++) {
-					metadata_set(my_agent, (*iter), METADATA_SMEM_RECOGNITION, true);
-				}
-			}
-		}
-
 		// clear add/remove maps
 		{
 			std::map<wme*, soar_module::symbol_triple*>::iterator iter;
 			epmem_unrecognized_wmes.clear();
 			my_agent->epmem_wme_adds->clear();
-			my_agent->smem_data_wmes->clear();
-
-			smem_unrecognized_wmes.clear();
-			my_agent->smem_data_wmes->clear();
+			my_agent->epmem_data_wmes->clear();
 		}
 	}
 
@@ -4915,7 +4857,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								// We don't care about the remaining results of the query
 								interval->time = interval_sql->column_int(0);
 								if (is_lti && point_type == EPMEM_RANGE_START && interval_type != EPMEM_RANGE_POINT && interval->time < promo_time) {
-									interval->time = promo_time;
+									interval->time = promo_time - 1;
 								}
 								interval->sql = interval_sql;
 								interval_pq.push(interval);

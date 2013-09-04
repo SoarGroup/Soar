@@ -331,6 +331,7 @@ typedef struct slot_struct {
   Bool isa_context_slot;
   byte impasse_type;
   Bool marked_for_possible_removal;
+  Bool smem_unrecognized;
   dl_cons *changed;   /* for non-context slots: points to the corresponding
                          dl_cons in changed_slots;  for context slots: just
                          zero/nonzero flag indicating slot changed */
@@ -546,7 +547,6 @@ enum ComplexTextTypes {
 #define METADATA_ACCEPTABLE 1
 #define METADATA_SMEM_RECOGNITION 2
 #define METADATA_EPMEM_RECOGNITION 4
-#define METADATA_LTI 8
 
 /* --- info on conditions used for backtracing (and by the rete) --- */
 typedef struct bt_info_struct {

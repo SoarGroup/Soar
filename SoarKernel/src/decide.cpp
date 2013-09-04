@@ -2077,6 +2077,12 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 					}
 				}
 
+				if (s->smem_unrecognized) {
+					for (wme* w = s->wmes; w; w = w->next) {
+						thisAgent->smem_data_wmes->push_back(w);
+					}
+				}
+
 				/* REW: begin 09.15.96 */
 				/* Whenever we add a WME to WM, we also want to check and see if
 				this new WME is o-supported.  If so, then we want to add the
@@ -2285,6 +2291,17 @@ void decide_non_context_slots (agent* thisAgent) {
     decide_non_context_slot (thisAgent, s);
     s->changed = NIL;
     free_with_pool (&thisAgent->dl_cons_pool, dc);
+  }
+  // update metadata data
+  if (!thisAgent->smem_data_wmes->empty()) {
+    if (thisAgent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm) {
+      soar_module::wme_set condition_wmes;
+      smem_update_metadata(thisAgent, condition_wmes, thisAgent->smem_data_wmes, thisAgent->smem_metadata_wmes);
+    } else {
+      for (smem_wme_list::iterator iter = thisAgent->smem_data_wmes->begin(); iter != thisAgent->smem_data_wmes->end(); iter++) {
+        metadata_set(thisAgent, (*iter), METADATA_SMEM_RECOGNITION, true);
+      }
+    }
   }
 }
 

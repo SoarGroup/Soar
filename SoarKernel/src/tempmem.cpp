@@ -112,6 +112,7 @@ slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr)
    s->impasse_id = NIL;
    s->acceptable_preference_wmes = NIL;
    s->marked_for_possible_removal = FALSE;
+   s->smem_unrecognized = FALSE;
 
    s->wma_val_references = NIL;
 
