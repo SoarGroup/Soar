@@ -229,8 +229,8 @@ public:
 				    find(changed.begin(), changed.end(), current[i]) == changed.end())
 				{
 					changed.push_back(current[i]);
-					for (int j = 0; j < listeners.size(); ++j) {
-						listeners[j]->handle_ctlist_change(current[i]);
+					for (int i = 0; i < listeners.size(); ++i) {
+						listeners[i]->handle_ctlist_change(current[i]);
 					}
 				}
 				return;

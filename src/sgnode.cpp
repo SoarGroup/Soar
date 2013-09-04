@@ -600,6 +600,19 @@ void sgnode::set_property(const std::string& propertyName, const std::string& va
 }
 
 void sgnode::set_property(const std::string& propertyName, double value){
+	char type;
+	int d;
+	if (propertyName[0] == 'p' &&
+		(propertyName[1] == 'x' || 
+		 propertyName[1] == 'y' || 
+		 propertyName[1] == 'z'))
+	{
+		if (is_native_prop(propertyName, type, d)) {
+			vec3 trans = get_trans(type);
+			trans[d] = value;
+			set_trans(type, trans);
+		}
+	}
 	numeric_props[propertyName] = value;
 	send_update(sgnode::PROPERTY_CHANGED, propertyName);
 }

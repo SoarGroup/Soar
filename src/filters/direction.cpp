@@ -142,15 +142,46 @@ public:
 	
 	bool compute(const filter_params *p, filter_val*& out, bool &changed) {// bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b;
-		
+		double top,bot;
 		if (!get_filter_param(this, p, "a", a)) {
 			return false;
 		}
 		if (!get_filter_param(this, p, "b", b)) {
 			return false;
 		}
+		//top bot, parameters optional
+		top = 100.0;
+		bot = 0.0;
 		
 		bool newres = direction(a, b, axis, comp);
+
+		if (newres && (comp != 0))
+		{
+			get_filter_param(this, p, "top", top);
+			get_filter_param(this, p, "bot", bot);
+			vec3 amin, amax, bmin, bmax, ac, bc;
+			double dist;
+			
+			ac = a->get_centroid();
+			bc = b->get_centroid();
+			bbox ba = a->get_bounds();
+			bbox bb = b->get_bounds();
+			ba.get_vals(amin, amax);
+			bb.get_vals(bmin, bmax);
+			
+			if (amax[axis] <= bmin[axis])
+				dist = abs(amax[axis] - bmin[axis]);
+			else if (bmax[axis] <= amin[axis])
+				dist = abs(bmax[axis] - amin[axis]);
+			else if ((amax[axis] < bmax[axis] && amax[axis] > bmin[axis]) ||
+					 (bmax[axis] < amax[axis] && bmax[axis] > amin[axis]) ||
+					 (amax[axis] == bmax[axis]) || (bmin[axis] == amin[axis]))
+				dist = 0.0; 
+			else
+				dist = 0.0;
+			newres = ((dist >= bot) && (dist <= top));
+		}
+		
 		//changed = (newres != res);
 		//res = newres;
 		changed = true;

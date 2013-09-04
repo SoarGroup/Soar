@@ -51,7 +51,7 @@ public:
 				set_status("output not of type float");
 				return false;
 			}
-			
+		
 			sgnode *n = scn->get_node(id);
 			if (!n) {
 				set_status("no such node");
