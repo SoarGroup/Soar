@@ -601,7 +601,8 @@ void sgnode::set_property(const std::string& propertyName, const std::string& va
 }
 
 void sgnode::set_property(const std::string& propertyName, double value){
-/*
+// JK: changes for set property incorrect/causing problems
+// so leaving in this hack for now
 	char type;
 	int d;
 	if (propertyName[0] == 'p' &&
@@ -614,17 +615,20 @@ void sgnode::set_property(const std::string& propertyName, double value){
 			trans[d] = value;
 			set_trans(type, trans);
 		}
-	}
-	numeric_props[propertyName] = value;
-	send_update(sgnode::PROPERTY_CHANGED, propertyName);
-*/
-	char native_type;
-	int dim;
-	if(is_native_prop(propertyName, native_type, dim)){
-		set_native_property(native_type, dim, value);
-	} else {
+		
 		numeric_props[propertyName] = value;
 		send_update(sgnode::PROPERTY_CHANGED, propertyName);
+	}
+	else
+	{
+		char native_type;
+		int dim;
+		if(is_native_prop(propertyName, native_type, dim)){
+			set_native_property(native_type, dim, value);
+		} else {
+			numeric_props[propertyName] = value;
+			send_update(sgnode::PROPERTY_CHANGED, propertyName);
+		}
 	}
 }
 
