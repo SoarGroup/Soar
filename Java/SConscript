@@ -7,7 +7,7 @@ import subprocess as sub
 # a copy of it and insert resource files. I have to make a copy because
 # scons doesn't like to have files it generated modified. This function
 # adds all files and directories under directory source[1] to the jar
-# source[0], creating a new jar target[0]. 
+# source[0], creating a new jar target[0].
 def AddResources(target, source, env):
 	src_jar = source[0].abspath
 	tgt_jar = target[0].abspath

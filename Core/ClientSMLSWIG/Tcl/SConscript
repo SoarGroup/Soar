@@ -40,7 +40,7 @@ if sys.platform == 'darwin':
 
 clone.Append(CPPFLAGS = ['-w'])
 
-shlib = clone.SharedLibrary(tclsml_shlib, tclsml_wrap) 
+shlib = clone.SharedLibrary(tclsml_shlib, tclsml_wrap)
 
 shlib_installed = env.Install(tclsml_pkgfolder, shlib)
 env.Command(str(tclsml_pkgfolder) + '/pkgIndex.tcl', shlib_installed, tclsml_mkpkg)

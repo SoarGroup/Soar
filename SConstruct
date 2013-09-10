@@ -51,7 +51,7 @@ def vc_version():
 	line = p.stdout.readline()
 	#for line in iter(p.stdout.readline, b''):
 	#	print line,
-	p.communicate() 
+	p.communicate()
 	m = re.search(r'Version ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', line)
 	if m:
 		t = tuple(int(n) for n in m.groups())

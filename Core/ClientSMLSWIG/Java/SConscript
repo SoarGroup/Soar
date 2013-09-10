@@ -52,7 +52,7 @@ if config == None:
 	print "the Java include, bin, and lib directories."
 	Return()
 
-clone = env.Clone()	
+clone = env.Clone()
 clone.Append(
 	CPPPATH = config[0],
 	LIBPATH = config[1],

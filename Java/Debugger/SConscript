@@ -45,8 +45,8 @@ classes = clone.Java(target = 'classes', source='src')
 clone.Depends(classes, libs1 + libs2)
 
 temp = clone.Jar(
-	target   = 'temp.jar', 
-	source   = ['classes', 'manifest1'], 
+	target   = 'temp.jar',
+	source   = ['classes', 'manifest1'],
 	JARCHDIR = clone.Dir('classes')
 )
 
