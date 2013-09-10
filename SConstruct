@@ -107,6 +107,8 @@ AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT
 AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR',
 	help='Directory to store intermediate (object) files. Defaults to "build".')
 
+AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
+
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
 AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
