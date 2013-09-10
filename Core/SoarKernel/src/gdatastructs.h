@@ -32,6 +32,7 @@ typedef struct symbol_struct Symbol;
 typedef cons list;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
+#include "soar_module.h"
 template <class T>
 class SoarMemoryPoolAllocator;
 

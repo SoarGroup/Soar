@@ -734,7 +734,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	inst->preferences_generated = NIL;
 	need_to_do_support_calculations = FALSE;
 	for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next) {
-	  /* MToDo| Disabled this assert.  May re-enable later when testing, but does rhs_vars should not be able to differ from action_list */
+	  /* MToDo| Disabled this assert.  May re-enable later when testing. rhs_vars should not be able to differ from action_list */
 //	  if ((a && !a2) || (!a && a2))
 //	    assert(false);
 		if (prod->type != TEMPLATE_PRODUCTION_TYPE) {
