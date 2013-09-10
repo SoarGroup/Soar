@@ -241,7 +241,14 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
                             if (s->preferences[i]) {            
                                 // print(soarAgent, "\n%ss:\n", preference_name[i]);            
                                 for (p = s->preferences[i]; p; p = p->next) {            
-                                    if (p->value == id) print_preference_and_source(soarAgent, p, print_prod, wtt);                
+                                    if (p->value == id) {
+                                        if ( i == ACCEPTABLE_PREFERENCE_TYPE ) {
+                                            double prob = exploration_probability_according_to_policy(soarAgent, s, s->preferences[i], p);
+                                            print_preference_and_source(soarAgent, p, print_prod, wtt, &prob);
+                                        }
+                                        else
+                                            print_preference_and_source(soarAgent, p, print_prod, wtt);
+                                    }
                                 }            
                             }        
                         }
