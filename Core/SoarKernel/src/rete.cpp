@@ -1673,20 +1673,10 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 						(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id.epmem_id, (unsigned int) my_refs->size());
 				#endif
 
-				// recurse if no incoming edges from top-state (i.e. not in transitive closure of top-state)
-				bool recurse = true;
-				for ( rc_it=my_refs->begin(); ( recurse && rc_it!=my_refs->end() ); rc_it++ )
-				{
-					if ( ( !(*rc_it) ) || ( (*rc_it)->id->id.level == my_agent->top_state->id.level ) )
-					{
-						recurse = false;
-					}
-				}
-
-				if ( recurse )
+				if ( my_refs->size() == 0 )
 				{
 					#ifdef DEBUG_EPMEM_WME_ADD
-					fprintf(stderr, "   clearing ref_count of value in %d %d %d\n",
+					fprintf(stderr, "   recursing; clearing ref_count of value in %d %d %d\n",
 							(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id.epmem_id);
 					#endif
 					my_refs->clear();

@@ -2742,6 +2742,9 @@ inline void _epmem_store_level( agent* my_agent,
 					}
 
 					// try to find node
+					#ifdef DEBUG_EPMEM_WME_ADD
+					fprintf(stderr, "   Trying to find node with parent=%d and attr=%d\n", (unsigned int) parent_id, (unsigned int) my_hash);
+					#endif
 					my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ my_hash ];
 					if ( (*my_id_repo) )
 					{
