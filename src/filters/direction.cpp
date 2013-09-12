@@ -52,10 +52,12 @@ bool size_comp(const sgnode *a, const sgnode *b) {
 
 	a->get_bounds().get_vals(amin, amax);
 	b->get_bounds().get_vals(bmin, bmax);
-	float adiag = (amax-amin).norm();
-	float bdiag = (bmax-bmin).norm();
+	//float adiag = (amax-amin).norm();
+	//float bdiag = (bmax-bmin).norm();
+	float atopsquare = (amax[0]-amin[0])*(amax[1]-amin[1]);
+	float btopsquare = (bmax[0]-bmin[0])*(bmax[1]-bmin[1]);
 	
-	return (adiag*1.1) < bdiag;
+	return (atopsquare*1.05) < btopsquare;
 }
 
 bool linear_comp(const sgnode *a, const sgnode *b, const sgnode *c) {
