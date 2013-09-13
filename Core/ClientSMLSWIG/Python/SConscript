@@ -16,8 +16,8 @@ clone['SWIGFLAGS'] = ['-c++', '-python']
 python_exe = GetOption('python')
 if os.name == 'nt':
 	commands = ("distutils.sysconfig.get_python_inc()",
-	            "os.path.join(sysconfig.get_config_vars('BINDIR')[0], 'libs')",
-	            "'python' + sysconfig.get_config_vars('VERSION')[0]")
+	            "os.path.join(distutils.sysconfig.get_config_vars('BINDIR')[0], 'libs')",
+	            "'python' + distutils.sysconfig.get_config_vars('VERSION')[0]")
 else:
 	commands = ("distutils.sysconfig.get_python_inc()",
 	            "distutils.sysconfig.get_config_vars('LIBP')[0]",
