@@ -1,12 +1,12 @@
 /*
- * original_variable_manager.h
+ * variablization_manager.h
  *
  *  Created on: Jul 25, 2013
  *      Author: mazzin
  */
 
-#ifndef ORIGINAL_VARIABLE_MANAGER_H_
-#define ORIGINAL_VARIABLE_MANAGER_H_
+#ifndef VARIABLIZATION_MANAGER_H_
+#define VARIABLIZATION_MANAGER_H_
 
 #include <portability.h>
 #include <set>
@@ -31,7 +31,7 @@ typedef struct original_varname_struct {
 
 } original_varname;
 
-class Original_Variable_Manager
+class Variablization_Manager
 {
   public:
     /* -- This is the main function that takes the name of a variable and potentially
@@ -45,10 +45,12 @@ class Original_Variable_Manager
     void clear_variablization(Symbol *reversed_var);
     Symbol *find_original_variable(Symbol *original_var);
 
+    void variablize_symbol (agent* thisAgent, Symbol **sym);
+
     void reinit_table();
     void print_table();
-    Original_Variable_Manager(agent *thisAgent);
-    ~Original_Variable_Manager();
+    Variablization_Manager(agent *thisAgent);
+    ~Variablization_Manager();
 
   private:
     void clear_current_unique_var(Symbol *var);
@@ -73,4 +75,4 @@ class Original_Variable_Manager
     agent* thisAgent;
 };
 
-#endif /* ORIGINAL_VARIABLE_MANAGER_H_ */
+#endif /* VARIABLIZATION_MANAGER_H_ */

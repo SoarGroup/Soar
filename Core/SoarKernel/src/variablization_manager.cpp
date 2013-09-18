@@ -5,7 +5,7 @@
  *      Author: mazzin
  */
 
-#include "original_variable_manager.h"
+#include "variablization_manager.h"
 #include "agent.h"
 #include "instantiations.h"
 #include "assert.h"
@@ -20,7 +20,7 @@ uint32_t hash_unique_string (void *item, short num_bits) {
   return compress (hash_string(var->name),num_bits);
 }
 
-Original_Variable_Manager::Original_Variable_Manager(agent *myAgent)
+Variablization_Manager::Variablization_Manager(agent *myAgent)
 {
   thisAgent = myAgent;
   create_table();
@@ -28,13 +28,13 @@ Original_Variable_Manager::Original_Variable_Manager(agent *myAgent)
   current_unique_vars = new std::set< Symbol *>();
 }
 
-Original_Variable_Manager::~Original_Variable_Manager()
+Variablization_Manager::~Variablization_Manager()
 {
   clear_table();
   delete id_symbol_map;
 }
 
-void Original_Variable_Manager::create_table()
+void Variablization_Manager::create_table()
 {
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager crating hash table.\n");
   ht = make_hash_table (thisAgent, 0, hash_unique_string);
@@ -54,7 +54,7 @@ bool print_original_var (agent* thisAgent, void *item, void*) {
   return false;
 }
 
-void Original_Variable_Manager::print_table()
+void Variablization_Manager::print_table()
 {
   dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager Hash Table\n");
@@ -85,7 +85,7 @@ bool free_original_var (agent* thisAgent, void *item, void*) {
   return false;
 }
 
-void Original_Variable_Manager::clear_table()
+void Variablization_Manager::clear_table()
 {
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager clearing hash table of original_vars...\n");
   do_for_all_items_in_hash_table( thisAgent, ht, free_original_var, 0);
@@ -94,7 +94,7 @@ void Original_Variable_Manager::clear_table()
   free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
 }
 
-void Original_Variable_Manager::clear_current_unique_var(Symbol *var)
+void Variablization_Manager::clear_current_unique_var(Symbol *var)
 {
   uint32_t hash_value;
   original_varname *varname;
@@ -116,13 +116,13 @@ void Original_Variable_Manager::clear_current_unique_var(Symbol *var)
   }
 }
 
-void Original_Variable_Manager::store_variablization(Symbol *original_var, Symbol *current_variable)
+void Variablization_Manager::store_variablization(Symbol *original_var, Symbol *current_variable)
 {
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager storing symbol %s -=> %s\n", original_var->to_string(thisAgent), current_variable->to_string(thisAgent));
   (*id_symbol_map)[original_var] = current_variable;
 }
 
-void Original_Variable_Manager::clear_variablization(Symbol *reversed_var)
+void Variablization_Manager::clear_variablization(Symbol *reversed_var)
 {
   /* -- Clear this variable from symbol_map so that any RHS items that use this original var wont' be variablized -- */
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager clearing symbol %s from symbol_map b/c it's being reversed.\n", reversed_var->to_string(thisAgent));
@@ -132,8 +132,54 @@ void Original_Variable_Manager::clear_variablization(Symbol *reversed_var)
   clear_current_unique_var(reversed_var);
 
 }
+void Variablization_Manager::variablize_symbol (agent* thisAgent, Symbol **sym)
+{
+  char prefix[2];
+  Symbol *var;
 
-bool Original_Variable_Manager::already_unique(Symbol *original_var) {
+  if ((*sym)->tc_num == thisAgent->variablization_tc) {
+    /* --- it's already been variablized, so use the existing variable --- */
+    dprint(DT_CHUNK_VARIABLIZATION, "Found existing variablization %s.\n", (*sym)->variablized_symbol->to_string(thisAgent));
+    var = (*sym)->variablized_symbol;
+    var->unvariablized_symbol = *sym;
+    /* -- Symbol being passed in is being replaced, so decrease refcount -- */
+    /* -- Increase refcount for new variable symbol being returned -- */
+    symbol_remove_ref (thisAgent, (*sym));
+    *sym = var;
+    symbol_add_ref(thisAgent, var);
+    return;
+  }
+
+  /* --- need to create a new variable.  If constant is being variablized
+   *     just used 'c' instead of first letter of id name --- */
+  (*sym)->tc_num = thisAgent->variablization_tc;
+  if((*sym)->is_identifier())
+    prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
+  else
+    prefix[0] = 'c';
+  prefix[1] = 0;
+  var = generate_new_variable (thisAgent, prefix);
+  if ((*sym)->variablized_symbol)
+  {
+    /* -- This symbol was variablized in a previous chunk or template, so decrease
+     *    the refcount to that cached link -- */
+    symbol_remove_ref (thisAgent, (*sym)->variablized_symbol);
+  }
+  (*sym)->variablized_symbol = var;
+  /* -- Though generate_new_variable adds a refcount too, we want to
+   *    increase it to 2.  One for the link from the symbol to its variablized
+   *    symbol and one for variable being returned. -- */
+  symbol_add_ref(thisAgent, var);
+
+  var->unvariablized_symbol = *sym;
+  /* -- Increase refcount for link to constant sym being replaced -- */
+  symbol_add_ref(thisAgent, var->unvariablized_symbol);
+  dprint(DT_CHUNK_VARIABLIZATION, "Created new variablization %s.\n", (*sym)->variablized_symbol->to_string(thisAgent));
+
+  *sym = var;
+}
+
+bool Variablization_Manager::already_unique(Symbol *original_var) {
 
   dprint(DT_ORIGINAL_VAR_MANAGER, "...checking if %s is already unique...", original_var->to_string(thisAgent));
 
@@ -146,7 +192,7 @@ bool Original_Variable_Manager::already_unique(Symbol *original_var) {
   return false;
 }
 
-void Original_Variable_Manager::clear_symbol_map() {
+void Variablization_Manager::clear_symbol_map() {
 
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager clearing symbol map...\n");
   for (std::map< Symbol *, Symbol * >::iterator it=(*id_symbol_map).begin(); it!=(*id_symbol_map).end(); ++it)
@@ -158,7 +204,7 @@ void Original_Variable_Manager::clear_symbol_map() {
   print_table();
 }
 
-void Original_Variable_Manager::clear_current_unique_vars() {
+void Variablization_Manager::clear_current_unique_vars() {
 
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager clearing unique var cache...\n");
   for (std::set< Symbol *>::iterator it=(*current_unique_vars).begin(); it!=(*current_unique_vars).end(); ++it)
@@ -168,7 +214,7 @@ void Original_Variable_Manager::clear_current_unique_vars() {
   current_unique_vars->clear();
 }
 
-void Original_Variable_Manager::reinit_table()
+void Variablization_Manager::reinit_table()
 {
   dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager reinitializing hash table and clearing symbol map.\n");
   clear_symbol_map();
@@ -177,7 +223,7 @@ void Original_Variable_Manager::reinit_table()
   create_table();
 }
 
-Symbol * Original_Variable_Manager::find_original_variable(Symbol *original_var)
+Symbol * Variablization_Manager::find_original_variable(Symbol *original_var)
 {
   std::map< Symbol *, Symbol * >::iterator iter = (*id_symbol_map).find(original_var);
   if (iter != (*id_symbol_map).end())
@@ -198,7 +244,7 @@ Symbol * Original_Variable_Manager::find_original_variable(Symbol *original_var)
  *    instantiation, a property needed by the chunker to match rhs bindings to lhs bindings.
  *    --- */
 
-void Original_Variable_Manager::make_name_unique(Symbol **sym)
+void Variablization_Manager::make_name_unique(Symbol **sym)
 {
   uint32_t hash_value;
   original_varname *varname, *new_varname;

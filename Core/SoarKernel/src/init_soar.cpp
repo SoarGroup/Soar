@@ -42,7 +42,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-#include "original_variable_manager.h"
+#include "variablization_manager.h"
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);

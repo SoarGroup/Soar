@@ -65,7 +65,7 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct select_info_struct select_info;
 class debug_param_container;
 class Output_Manager;
-class Original_Variable_Manager;
+class Variablization_Manager;
 
 class debug_param_container;
 
@@ -246,7 +246,7 @@ typedef struct agent_struct {
   bool                print_prompt_flag;
   Symbol            * current_production_name;
 
-  Original_Variable_Manager * originalVarManager;
+  Variablization_Manager * originalVarManager;
 
   /* ---------------- Predefined Symbols -------------------------
      Certain symbols are used so frequently that we create them at
