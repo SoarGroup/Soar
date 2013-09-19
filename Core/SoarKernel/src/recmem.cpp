@@ -681,7 +681,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 		xml_generate_verbose(thisAgent, buf);
 	}
 
-	thisAgent->originalVarManager->print_table();
+	thisAgent->variablizationManager->print_table();
 
 	thisAgent->production_being_fired = inst->prod;
 	prod->firing_count++;
@@ -834,9 +834,9 @@ void create_instantiation(agent* thisAgent, production *prod,
 	 *    execute_action but did not increase their refcount -- */
 	for (pref = inst->preferences_generated; pref != NIL;
       pref = pref->inst_next) {
-    pref->original_variables.id = NIL;
-    pref->original_variables.attr = NIL;
-    pref->original_variables.value = NIL;
+    pref->original_symbols.id = NIL;
+    pref->original_symbols.attr = NIL;
+    pref->original_symbols.value = NIL;
   }
 
 	deallocate_action_list (thisAgent, rhs_vars);

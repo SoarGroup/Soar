@@ -12,6 +12,12 @@
 #include <set>
 #include "symtab.h"
 
+typedef struct variablization_struct {
+    Symbol *instantiated_symbol;
+    Symbol *variablized_symbol;
+    bool grounded;
+} variablization;
+
 typedef struct original_varname_struct {
 
     /* --- pointer to next string that matches hash --- */
@@ -34,18 +40,18 @@ typedef struct original_varname_struct {
 class Variablization_Manager
 {
   public:
-    /* -- This is the main function that takes the name of a variable and potentially
-     *    modifies it so that is is unique to the current instantiation being built -- */
+    /* -- This function takes the name of a variable and potentially modifies it so
+     *    that is is unique to the current instantiation being built -- */
     void make_name_unique(Symbol **sym);
     bool already_unique(Symbol *original_var);
 
-    void clear_symbol_map();
+    void clear_variablization_table();
     void clear_current_unique_vars();
-    void store_variablization(Symbol *original_var, Symbol *current_variable);
-    void clear_variablization(Symbol *reversed_var);
-    Symbol *find_original_variable(Symbol *original_var);
+    void clear_variablization(Symbol *index_sym);
+    Symbol *get_variablization(Symbol *original_var);
+    Symbol *get_instantiated_symbol(Symbol *index_sym);
 
-    void variablize_symbol (agent* thisAgent, Symbol **sym);
+    void variablize_symbol (Symbol **sym, Symbol *original_symbol);
 
     void reinit_table();
     void print_table();
@@ -53,20 +59,24 @@ class Variablization_Manager
     ~Variablization_Manager();
 
   private:
+    void store_variablization(Symbol *index_sym, Symbol *instantiated_sym, Symbol *variable);
     void clear_current_unique_var(Symbol *var);
-    void clear_table();
+    void clear_original_var_table();
     void create_table();
 
-    /* -- id_symbol_map is used to store the mapping from an original variable
-     *    on the LHS to the variable that was created for variablization.  It is used
-     *    to variablize the rhs actions. This mapping is temporary and cleared after
-     *    the chunk is built. -- */
+    /* -- id_symbol_map is used during chunking.  It stores a mapping from either a
+     *    symbol's original variable, if available, or the actual symbol to the variable
+     *    that was created for variablization.  It is keep track of the current variablized
+     *    symbols in a chunk that is being built. This mapping is temporary and cleared after
+     *    the chunk is built. This replaces the variablized pointer in versions of Soar
+     *    prior to 9.4 -- */
 
     std::map< Symbol *, Symbol * > * id_symbol_map;
 
-    /* -- current_unique_vars keeps a list of all original vars in the current instantiation
-     *    that have been made unique.  This is needed so we don't try to make an original variable
-     *    unique twice because it appears in two different conditions -- */
+    /* -- current_unique_vars is used during instantiation creation.  It keeps a list
+     *    of all original vars in the current instantiation that have been made unique.
+     *    This is needed so we don't try to make an original variable unique twice
+     *    because it appears in two different conditions -- */
 
     std::set< Symbol * > * current_unique_vars;
 
