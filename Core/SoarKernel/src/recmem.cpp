@@ -681,7 +681,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 		xml_generate_verbose(thisAgent, buf);
 	}
 
-	thisAgent->variablizationManager->print_table();
+	thisAgent->variablizationManager->print_tables();
 
 	thisAgent->production_being_fired = inst->prod;
 	prod->firing_count++;
