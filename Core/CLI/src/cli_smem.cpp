@@ -139,6 +139,8 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         smem_lti_id lti_id = NIL;
         unsigned int depth = 1;
 
+		smem_attach(agnt);
+
 		if ( pAttr )
 		{
 			get_lexeme_from_string( agnt, pAttr->c_str() );
