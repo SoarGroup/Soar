@@ -47,9 +47,10 @@ class Variablization_Manager
 
     void clear_variablization_table();
     void clear_current_unique_var_set();
-    variablization *get_variablization(Symbol *original_var);
+    variablization *get_variablization(Symbol *index_sym);
 
     void variablize_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test);
+    void variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
 
     void reinit_original_symbol_data();
 

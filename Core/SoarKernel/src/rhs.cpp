@@ -21,6 +21,7 @@
 #include "agent.h"
 #include "print.h"
 #include "production.h"
+#include "variablization_manager.h"
 
 /* =================================================================
 
@@ -31,7 +32,7 @@
 /* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must do the reference count update */
 /* MToDoRefCnt | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
 
-inline rhs_value make_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym)
+inline rhs_value allocate_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym)
 {
   rhs_symbol new_rhs_symbol;
 
@@ -56,13 +57,13 @@ inline rhs_value make_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symb
 
 /* MToDoRefCnt | symbol_to_rhs_value() (what this function used to be) didn't symbol_add_ref. The
  *                  caller had to do the reference count update.  Possible bug source. -- */
-inline rhs_value make_rhs_value(agent* thisAgent, Symbol * sym, Symbol * original_sym)
+inline rhs_value allocate_rhs_value(agent* thisAgent, Symbol * sym, Symbol * original_sym)
 {
   if (sym)
   {
     symbol_add_ref(thisAgent, sym);
   }
-  return make_rhs_value_no_refcount(thisAgent, sym, original_sym);
+  return allocate_rhs_value_no_refcount(thisAgent, sym, original_sym);
 }
 
 /* ----------------------------------------------------------------
@@ -122,7 +123,7 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
     dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value copying rhs_symbol %s(%s).\n",
           symbol_to_string(thisAgent, r->referent),
          (r->original_rhs_variable ? symbol_to_string(thisAgent, r->original_rhs_variable) : "NIL"));
-    return make_rhs_value(thisAgent, r->referent, r->original_rhs_variable);
+    return allocate_rhs_value(thisAgent, r->referent, r->original_rhs_variable);
   }
 }
 
@@ -290,7 +291,7 @@ void add_bound_variables_in_action_list (agent* thisAgent, action *actions, tc_n
    For RHS unbound variables, we gensym new variable names.
 ------------------------------------------------------------------- */
 
-rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
+rhs_value create_RHS_value (agent* thisAgent,
                                                   rhs_value rv,
                                                   condition *cond,
                                                   char first_letter,
@@ -302,21 +303,26 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
   int64_t index;
   char prefix[2];
 
+  /* -- (1) Reteloc's seemed to be used for identifiers or constants originally bound to
+   *    variables
+   *    (2) unbound_vars for unbound vars of course
+   *    (3) rhs_symbols for literal constants, including those in RHS functions -- */
+
   if (rhs_value_is_reteloc(rv)) {
     /* -- rv is a symbol pointed to by a rete location -- */
     if (should_add_original_vars)
     {
       original_sym = var_bound_in_reconstructed_original_conds (thisAgent, cond,
-                                   rhs_value_to_reteloc_field_num(rv),
-                                   rhs_value_to_reteloc_levels_up(rv));
+          rhs_value_to_reteloc_field_num(rv),
+          rhs_value_to_reteloc_levels_up(rv));
     }
     sym = var_bound_in_reconstructed_conds (thisAgent, cond,
         rhs_value_to_reteloc_field_num(rv),
         rhs_value_to_reteloc_levels_up(rv));
-    dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames creating, from reteloc, rhs_symbol %s(%s).\n",
-              symbol_to_string(thisAgent, sym),
-             (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
-    return make_rhs_value(thisAgent, sym, original_sym);
+    dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(%s) from reteloc.\n",
+        symbol_to_string(thisAgent, sym),
+        (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
+    return allocate_rhs_value(thisAgent, sym, original_sym);
   }
 
   if (rhs_value_is_unboundvar(rv))
@@ -329,24 +335,28 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
       prefix[1] = 0;
 
       sym = generate_new_variable (thisAgent, prefix);
+      /* MToDo| Do we really need to make this unique? */
+      if (should_add_original_vars)
+      {
+        thisAgent->variablizationManager->make_name_unique(&sym);
+      }
       *(thisAgent->rhs_variable_bindings+index) = sym;
 
       if (thisAgent->highest_rhs_unboundvar_index < index)
       {
         thisAgent->highest_rhs_unboundvar_index = index;
       }
-      /* -- generate will already increment the refcount, so we don't
-       *    need to here -- */
-      return make_rhs_value_no_refcount(thisAgent, sym);
+      /* -- generate will increment the refcount on the new variable,
+       *    so don't need to do it here. -- */
+      return allocate_rhs_value_no_refcount(thisAgent, sym, NULL);
     }
     else
     {
       sym = *(thisAgent->rhs_variable_bindings+index);
     }
-    dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames created unbound var rhs_symbol %s(%s).\n",
-              symbol_to_string(thisAgent, sym),
-             (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
-    return make_rhs_value(thisAgent, sym);
+    dprint_noprefix(DT_RHS_VARIABLIZATION, "%s for unbound var.\n",
+        symbol_to_string(thisAgent, sym));
+    return allocate_rhs_value(thisAgent, sym, NULL);
   }
 
   if (rhs_value_is_funcall(rv)) {
@@ -357,11 +367,11 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
     prev_new_c = new_fl;
     for (c=fl->rest; c!=NIL; c=c->rest) {
       allocate_cons (thisAgent, &new_c);
-      new_c->first = copy_rhs_value_and_substitute_varnames (thisAgent,
-                                                             static_cast<char *>(c->first),
-                                                             cond,
-                                                             first_letter,
-                                                             should_add_original_vars);
+      new_c->first = create_RHS_value (thisAgent,
+          static_cast<char *>(c->first),
+          cond,
+          first_letter,
+          should_add_original_vars);
       prev_new_c->rest = new_c;
       prev_new_c = new_c;
     }
@@ -370,21 +380,21 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
   } else {
     /* -- rv is a rhs_symbol -- */
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-    dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value_and_substitute_varnames copying rhs_symbol %s(%s).\n",
-          symbol_to_string(thisAgent, rs->referent),
-         (rs->original_rhs_variable ? symbol_to_string(thisAgent, rs->original_rhs_variable) : "NIL"));
-    return make_rhs_value(thisAgent, rs->referent, rs->original_rhs_variable);
+    dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(NULL) from rhs_symbol (literal RHS constant).\n",
+        (rs->referent ? symbol_to_string(thisAgent, rs->referent) : "ERROR"));
+    return allocate_rhs_value(thisAgent, rs->referent, NULL);
   }
 }
 
-action *copy_action_list_and_substitute_varnames (agent* thisAgent,
+action *create_RHS_action_list (agent* thisAgent,
                                                   action *actions,
                                                   condition *cond,
                                                   bool should_add_original_vars) {
   action *old, *New, *prev, *first;
   char first_letter;
 
-  dprint(DT_RHS_VARIABLIZATION, "copy_action_list_and_substitute_varnames beginning.\n");
+  dprint(DT_RHS_VARIABLIZATION, "Rete creating RHS...(copy_action_list_and_substitute_varnames).\n");
+  dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
   prev = NIL;
   first = NIL;
   old = actions;
@@ -399,23 +409,30 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
     New->preference_type = old->preference_type;
     New->support = old->support;
     if (old->type==FUNCALL_ACTION) {
-      New->value = copy_rhs_value_and_substitute_varnames (thisAgent,
+      New->value = create_RHS_value (thisAgent,
                                                            old->value, cond,
                                                            'v', should_add_original_vars);
     } else {
-      New->id = copy_rhs_value_and_substitute_varnames (thisAgent, old->id, cond, 's', should_add_original_vars);
-      New->attr = copy_rhs_value_and_substitute_varnames (thisAgent, old->attr, cond,'a', should_add_original_vars);
+      dprint(DT_RHS_VARIABLIZATION, "ID: ");
+      New->id = create_RHS_value (thisAgent, old->id, cond, 's', should_add_original_vars);
+      dprint(DT_RHS_VARIABLIZATION, "Attribute: ");
+      New->attr = create_RHS_value (thisAgent, old->attr, cond,'a', should_add_original_vars);
       first_letter = first_letter_from_rhs_value (New->attr);
-      New->value = copy_rhs_value_and_substitute_varnames (thisAgent, old->value, cond,
+      dprint(DT_RHS_VARIABLIZATION, "Value: ");
+      New->value = create_RHS_value (thisAgent, old->value, cond,
                           first_letter, should_add_original_vars);
       if (preference_is_binary(old->preference_type))
-        New->referent = copy_rhs_value_and_substitute_varnames (thisAgent, old->referent,
+      {
+        dprint(DT_RHS_VARIABLIZATION, "Referent: ");
+        New->referent = create_RHS_value (thisAgent, old->referent,
                                               cond, first_letter, should_add_original_vars);
+      }
+      dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
     }
     old = old->next;
   }
   if (prev) prev->next = NIL; else first = NIL;
-  dprint(DT_RHS_VARIABLIZATION, "copy_action_list_and_substitute_varnames ending.\n");
+  dprint(DT_RHS_VARIABLIZATION, "Rete done creating RHS...(copy_action_list_and_substitute_varnames).\n");
   return first;
 }
 

@@ -43,10 +43,10 @@ Variablization_Manager::~Variablization_Manager()
 
 void Variablization_Manager::clear_variablization_table() {
 
-  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager clearing symbol map...\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol map...\n");
   for (std::map< Symbol *, variablization * >::iterator it=(*variablization_table).begin(); it!=(*variablization_table).end(); ++it)
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "Clearing %s -> %s/%s\n", it->first->to_string(thisAgent),
+    dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s -> %s/%s\n", it->first->to_string(thisAgent),
         it->second->instantiated_symbol->to_string(thisAgent), it->second->variablized_symbol->to_string(thisAgent));
     symbol_remove_ref(thisAgent, it->first);
     symbol_remove_ref(thisAgent, it->second->instantiated_symbol);
@@ -54,12 +54,12 @@ void Variablization_Manager::clear_variablization_table() {
     delete it->second;
   }
   variablization_table->clear();
-  print_tables();
+  //print_tables();
 }
 
 void Variablization_Manager::reinit_original_symbol_data()
 {
-  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager reinitializing hash table and clearing variablization map.\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing hash table and clearing variablization map.\n");
   clear_variablization_table();
   if (original_symbol_ht)
     clear_original_symbol_data_table();
@@ -71,13 +71,13 @@ variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
   std::map< Symbol *, variablization * >::iterator iter = (*variablization_table).find(index_sym);
   if (iter != (*variablization_table).end())
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager looking up %s in id_symbol_map: %s/%s\n", index_sym->to_string(thisAgent),
+    dprint(DT_VARIABLIZATION_MANAGER, "...found %s in variablization table: %s/%s\n", index_sym->to_string(thisAgent),
        iter->second->variablized_symbol->to_string(thisAgent), iter->second->instantiated_symbol->to_string(thisAgent));
       return iter->second;
   }
   else
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager looking up %s in id_symbol_map but not found.\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in variablization table.\n", index_sym->to_string(thisAgent));
     return NULL;
   }
 }
@@ -85,8 +85,8 @@ variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
 void Variablization_Manager::store_variablization(Symbol *index_sym, Symbol *instantiated_sym, Symbol *variable, bool is_equality_test)
 {
   variablization *new_variablization;
-
-  dprint(DT_ORIGINAL_VAR_MANAGER, "Original Variable Manager storing symbol %s -=> %s, %s\n",
+  assert(index_sym && instantiated_sym && variable);
+  dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager storing symbol %s -=> %s, %s\n",
           index_sym->to_string(thisAgent),
           instantiated_sym->to_string(thisAgent),
           variable->to_string(thisAgent));
@@ -105,7 +105,10 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
   Symbol *index_var, *var;
   variablization *var_info;
 
-  if (original_symbol)
+  dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager variablizing %s %s %d.\n", (*sym)->to_string(thisAgent)
+      , (original_symbol ? original_symbol->to_string(thisAgent) : "NULL"), is_equality_test);
+
+  if (!(*sym)->is_non_lti_identifier() && original_symbol)
     index_var = original_symbol;
   else
     index_var = *sym;
@@ -113,7 +116,6 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
   var_info = get_variablization(index_var);
   if (var_info)
   {
-    dprint(DT_CHUNK_VARIABLIZATION, "Found existing variablization %s.\n", var_info->variablized_symbol->to_string(thisAgent));
 
     if (is_equality_test)
       var_info->grounded = true;
@@ -147,9 +149,113 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
   else
     symbol_add_ref(thisAgent, *sym);
 
-  dprint(DT_CHUNK_VARIABLIZATION, "Created new variablization %s.\n", (*sym)->variablized_symbol->to_string(thisAgent));
+  dprint(DT_VARIABLIZATION_MANAGER, "...created new variablization %s.\n", var->to_string(thisAgent));
 
   *sym = var;
+}
+/* ======================================================================================================
+ *
+ *                                          variablize_rhs_symbol
+ *
+ *      The logic for variablizing the rhs is slightly different than the lhs since we need to
+ *      match constants on the rhs with the conditions they match up with on the lhs. We can't
+ *      just look up the variablization info from the symbol, like we do on the lhs.  So, we match
+ *      them up using the original variable names, which are cached by the rete for both rhs actions
+ *      and lhs tests when creating the instantiation.
+ *
+ *      We need to do this for 2 reasons.
+ *
+ *        (1) If an instantiation has two different conditions that each have an item that binds to
+ *            the same constant but, in their original productions,bind to different variables, we
+ *            will need a way to differentiate between the two to determine whether to variablize
+ *            this rhs action. But, since variablization info is stored in a symbol, we can't store
+ *            more than one mapping to a condition or variable without doing something convoluted.
+ *
+ *        (2) Second, the condition grounding a rhs action may have not made it into the conditions
+ *            of the chunk if it was produced without testing anything in the superstate.  (This is
+ *            further complicated by the fact that another variable might have been bound
+ *            coincidentally to the same constant, so variablization info will be stored in the
+ *            constant's symbol.)
+ *
+ *      So, we use the original variable names that we've stored in the both the symbol and the rhs
+ *      action to  match up with the specific binding on the lhs that it originated from.  To deal
+ *      with both the fact that a production can fire multiple times and have multiple versions of
+ *      the same conditions appear in a chunk and the fact that different productions may use the
+ *      same variable names, make_instantiation renames the original variable names when it creates
+ *      each instantiation to make them unique between instantiations.  So, we are guaranteed to
+ *      match up each element of the rhs action to the correct lhs binding.
+ *
+ *      The function does the following:
+ *
+ *      Check if original var names of rhs action matches with the original var name of what's in
+ *      the symbol that is bound there.  (not necessary since we look up in hash table directly in
+ *      the next step, but comes cheap since it's already cached there for lhs variablization
+ *      and will work in most cases)  If it matches, variablize using stored variablization sym.
+ *      If it doesn't match, search unique string table for the original variable name stringleave rhs item as constant if no variablization sym)
+ *
+ *        (No)  Look up the the last variablization symbol associated with that original
+ *              variable name in the unique var name hash table.
+ *
+ *              (Found)     Use the variablization info cached within it.
+ *
+ *              (Not found) Keep as a constant.
+ *
+ *      Note: the original id is in the sym's variablized symbol's original_var pointer
+ *
+  ====================================================================================================== */
+
+void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *original_symbol) {
+  char prefix[2];
+  Symbol *var, *index_var;
+  variablization *found_varsym;
+
+  if (!original_symbol)
+  {
+    dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for %s.  No original symbol, so was a rhs constant.  Not variablizing!\n", (*sym)->to_string(thisAgent));
+    return;
+  }
+  dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for %s %s.\n",
+      (*sym)->to_string(thisAgent), original_symbol->to_string(thisAgent));
+
+
+  if (!(*sym)->is_non_lti_identifier() && original_symbol)
+    index_var = original_symbol;
+  else
+    index_var = *sym;
+
+  dprint(DT_VARIABLIZATION_MANAGER, "...searching for varname %s in unique varname table...\n", index_var->to_string(thisAgent));
+  found_varsym = thisAgent->variablizationManager->get_variablization(index_var);
+
+  if (found_varsym && found_varsym->grounded)
+  {
+    /* --- it's been variablized on the lhs --- */
+
+    dprint(DT_VARIABLIZATION_MANAGER, "... found existing grounded variablization %s.\n", found_varsym->variablized_symbol->to_string(thisAgent));
+
+    symbol_add_ref(thisAgent, found_varsym->variablized_symbol);
+    symbol_remove_ref (thisAgent, (*sym));
+    *sym = found_varsym->variablized_symbol;
+    return;
+  }
+  /* --- At this point, we know sym is either an unbound rhs var or rhs constant. Since
+   *     We only need to variablize an unbound rhs var, which will have a dummy
+   *     identifier, we can just limit ourselves to only variablizing identifiers. -- */
+  if((*sym)->is_non_lti_identifier())
+  {
+    dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for non-lti identifier %s.\n",
+        (*sym)->to_string(thisAgent));
+    (*sym)->tc_num = thisAgent->variablization_tc;
+    prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
+    prefix[1] = 0;
+    var = generate_new_variable (thisAgent, prefix);
+    thisAgent->variablizationManager->store_variablization((*sym), (*sym), var, true);
+
+    dprint(DT_VARIABLIZATION_MANAGER, "...created new variable for unbound rhs %s.\n", var->to_string(thisAgent));
+    *sym = var;
+    return;
+  }
+  //assert(false);
+  dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded or a new constant.  Not variablizing!\n");
 }
 
 /* -- ----------------------------------
@@ -165,7 +271,7 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
 
 void Variablization_Manager::create_original_symbol_data_table()
 {
-  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager creating hash table.\n");
+  dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager creating hash table.\n");
   original_symbol_ht = make_hash_table (thisAgent, 0, hash_unique_string);
   init_memory_pool (thisAgent, &original_symbol_mp, sizeof(original_symbol_data), "unique_string");
 
@@ -176,19 +282,19 @@ bool free_original_symbol_data (agent* thisAgent, void *item, void*) {
   original_symbol_data *varname = static_cast<original_symbol_data *>(item);
   if (varname->current_unique_var_symbol)
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "...decreasing refcount on symbol %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
+    dprint(DT_UNIQUE_VARIABLIZATION, "...decreasing refcount on symbol %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
     symbol_remove_ref(thisAgent, varname->current_unique_var_symbol);
     varname->current_unique_var_symbol = NULL;
   }
   varname->current_instantiation = NULL;
-  dprint(DT_ORIGINAL_VAR_MANAGER, "...freeing memory for string %s\n", varname->name);
+  dprint(DT_UNIQUE_VARIABLIZATION, "...freeing memory for string %s\n", varname->name);
   free_memory_block_for_string(thisAgent, varname->name);
   return false;
 }
 
 void Variablization_Manager::clear_original_symbol_data_table()
 {
-  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager clearing hash table of original_vars...\n");
+  dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager clearing hash table of original_vars...\n");
   do_for_all_items_in_hash_table( thisAgent, original_symbol_ht, free_original_symbol_data, 0);
 
   free_memory(thisAgent, original_symbol_ht->buckets, HASH_TABLE_MEM_USAGE);
@@ -208,7 +314,7 @@ void Variablization_Manager::clear_current_unique_var(Symbol *var)
     {
       if (varname->current_unique_var_symbol)
       {
-        dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager decreasing refcount on symbol %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
+        dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager decreasing refcount on symbol %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
         symbol_remove_ref(thisAgent, varname->current_unique_var_symbol);
         varname->current_unique_var_symbol = NULL;
       }
@@ -218,24 +324,24 @@ void Variablization_Manager::clear_current_unique_var(Symbol *var)
 }
 void Variablization_Manager::clear_current_unique_var_set() {
 
-  dprint(DT_ORIGINAL_VAR_MANAGER, "Original_Variable_Manager clearing unique var cache...\n");
+  dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager clearing unique var cache...\n");
   for (std::set< Symbol *>::iterator it=(*current_unique_vars).begin(); it!=(*current_unique_vars).end(); ++it)
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "Erasing current_unique_var %s\n", (*it)->to_string(thisAgent));
+    dprint(DT_UNIQUE_VARIABLIZATION, "Erasing current_unique_var %s\n", (*it)->to_string(thisAgent));
   }
   current_unique_vars->clear();
 }
 
 bool Variablization_Manager::already_unique(Symbol *original_var) {
 
-  dprint(DT_ORIGINAL_VAR_MANAGER, "...checking if %s is already unique...", original_var->to_string(thisAgent));
+  dprint(DT_UNIQUE_VARIABLIZATION, "...checking if %s is already unique...", original_var->to_string(thisAgent));
 
   std::set< Symbol * >::iterator it = current_unique_vars->find(original_var);
   if (it != current_unique_vars->end()) {
-    dprint_noprefix(DT_ORIGINAL_VAR_MANAGER, " = TRUE\n");
+    dprint_noprefix(DT_UNIQUE_VARIABLIZATION, " = TRUE\n");
     return true;
   }
-  dprint_noprefix(DT_ORIGINAL_VAR_MANAGER, " = FALSE\n");
+  dprint_noprefix(DT_UNIQUE_VARIABLIZATION, " = FALSE\n");
   return false;
 }
 
@@ -247,13 +353,13 @@ void Variablization_Manager::make_name_unique(Symbol **sym)
   uint32_t hash_value;
   original_symbol_data *varname, *new_varname;
 
-  dprint(DT_ORIGINAL_VAR_MANAGER, "...uniqueifying %s for instantiation %s...\n",
+  dprint(DT_UNIQUE_VARIABLIZATION, "...uniqueifying %s for instantiation %s...\n",
                                            (*sym)->var->name,
                                            thisAgent->newly_created_instantiations->prod->name->sc->name );
 
   if (already_unique(*sym))
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "...already unique, so using existing original variable %s\n",
+    dprint(DT_UNIQUE_VARIABLIZATION, "...already unique, so using existing original variable %s\n",
                                       (*sym)->var->name);
     return;
   }
@@ -273,7 +379,7 @@ void Variablization_Manager::make_name_unique(Symbol **sym)
          *    instantiation. Note that we do not need to increase refcount, since caller will
          *    increase the refcount again when it uses the symbol in a test. -- */
 
-        dprint(DT_ORIGINAL_VAR_MANAGER, "...found existing mapping %s -> %s for this instantiation.\n",
+        dprint(DT_UNIQUE_VARIABLIZATION, "...found existing mapping %s -> %s for this instantiation.\n",
                 (*sym)->var->name, varname->current_unique_var_symbol->var->name);
         *sym = varname->current_unique_var_symbol;
 
@@ -304,7 +410,7 @@ void Variablization_Manager::make_name_unique(Symbol **sym)
         }
         varname->current_unique_var_symbol = make_variable(thisAgent, new_name.c_str());
 
-        dprint(DT_ORIGINAL_VAR_MANAGER, "...creating new unique version of %s: %s\n",
+        dprint(DT_UNIQUE_VARIABLIZATION, "...creating new unique version of %s: %s\n",
                                           (*sym)->var->name, new_name.c_str());
 
         *sym = varname->current_unique_var_symbol;
@@ -326,7 +432,7 @@ void Variablization_Manager::make_name_unique(Symbol **sym)
   /* -- Increase refcount for cached current_unique_var_symbol -- */
   symbol_add_ref(thisAgent, (*sym));
   current_unique_vars->insert(*sym);
-  dprint(DT_ORIGINAL_VAR_MANAGER, "...first use, so using original variable %s\n",
+  dprint(DT_UNIQUE_VARIABLIZATION, "...first use, so using original variable %s\n",
                                     (*sym)->var->name);
 }
 
@@ -336,7 +442,7 @@ bool print_original_symbol_data (agent* thisAgent, void *item, void*) {
 
   original_symbol_data *varname = static_cast<original_symbol_data *>(item);
 
-  dprint(DT_ORIGINAL_VAR_MANAGER, "%s, CurrUnqVarSym: %s(%lld) CurrInst: %d\n",
+  dprint(DT_VARIABLIZATION_MANAGER, "%s, CurrUnqVarSym: %s(%lld) CurrInst: %d\n",
         varname->name,
         (varname->current_unique_var_symbol ? varname->current_unique_var_symbol->to_string(thisAgent) : "None"),
         (varname->current_unique_var_symbol ? varname->current_unique_var_symbol->reference_count : 0),
@@ -346,31 +452,31 @@ bool print_original_symbol_data (agent* thisAgent, void *item, void*) {
 
 void Variablization_Manager::print_OSD_table()
 {
-  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
-  dprint(DT_ORIGINAL_VAR_MANAGER, "   Variablization OSD Hash Table\n");
-  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "   Variablization OSD Hash Table\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
   do_for_all_items_in_hash_table( thisAgent, original_symbol_ht, print_original_symbol_data, 0);
 }
 
 void Variablization_Manager::print_variablization_table()
 {
-  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
-  dprint(DT_ORIGINAL_VAR_MANAGER, "       Variablization Table\n");
-  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "       Variablization Table\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
   for (std::map< Symbol *, variablization * >::iterator it=(*variablization_table).begin(); it!=(*variablization_table).end(); ++it)
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "%s -> %s/%s\n", it->first->to_string(thisAgent),
+    dprint(DT_VARIABLIZATION_MANAGER, "%s -> %s/%s\n", it->first->to_string(thisAgent),
         it->second->variablized_symbol->to_string(thisAgent), it->second->instantiated_symbol->to_string(thisAgent));
   }
 }
 void Variablization_Manager::print_CUV_table() {
 
-  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
-  dprint(DT_ORIGINAL_VAR_MANAGER, "   Current Unique Variable Table\n");
-  dprint(DT_ORIGINAL_VAR_MANAGER, "------------------------------------\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "   Current Unique Variable Table\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
   for (std::set< Symbol *>::iterator it=(*current_unique_vars).begin(); it!=(*current_unique_vars).end(); ++it)
   {
-    dprint(DT_ORIGINAL_VAR_MANAGER, "%s\n", (*it)->to_string(thisAgent));
+    dprint(DT_VARIABLIZATION_MANAGER, "%s\n", (*it)->to_string(thisAgent));
   }
 }
 void Variablization_Manager::print_tables()

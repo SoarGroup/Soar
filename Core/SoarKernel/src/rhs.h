@@ -112,17 +112,17 @@ typedef struct binding_structure {
 
 /* -- Functions to create RHS -- */
 inline action *make_action(agent *thisAgent);
-inline rhs_value make_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
-inline rhs_value make_rhs_value(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
+inline rhs_value allocate_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
+inline rhs_value allocate_rhs_value(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
 
 /* -- Copy functions -- */
 rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv);
-rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
+rhs_value create_RHS_value (agent* thisAgent,
                                                   rhs_value rv,
                                                   condition *cond,
                                                   char first_letter,
                                                   bool should_add_original_vars);
-action *copy_action_list_and_substitute_varnames (agent* thisAgent,
+action *create_RHS_action_list (agent* thisAgent,
                                                   action *actions,
                                                   condition *cond,
                                                   bool should_add_original_vars = false);
