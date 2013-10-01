@@ -209,53 +209,78 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
   Symbol *var, *index_var;
   variablization *found_varsym;
 
-  if (!original_symbol)
-  {
-    dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for %s.  No original symbol, so was a rhs constant.  Not variablizing!\n", (*sym)->to_string(thisAgent));
-    return;
-  }
-  dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for %s %s.\n",
-      (*sym)->to_string(thisAgent), original_symbol->to_string(thisAgent));
+  dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for %s(%s).\n",
+      (*sym)->to_string(thisAgent),
+      (original_symbol ? original_symbol->to_string(thisAgent) : "NULL"));
 
-
-  if (!(*sym)->is_non_lti_identifier() && original_symbol)
-    index_var = original_symbol;
-  else
+  /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
+   *    instead of their original variable. --  */
+  if ((*sym)->is_non_lti_identifier())
     index_var = *sym;
+  else
+  {
+    if (original_symbol)
+      index_var = original_symbol;
+    else
+    {
+      dprint(DT_VARIABLIZATION_MANAGER, "...is a literal constant.  Not variablizing!\n");
+      return;
+    }
+  }
+
+//  if (!((*sym)->is_non_lti_identifier()) && original_symbol)
+//    index_var = original_symbol;
+//  else
+//    index_var = *sym;
 
   dprint(DT_VARIABLIZATION_MANAGER, "...searching for varname %s in unique varname table...\n", index_var->to_string(thisAgent));
   found_varsym = thisAgent->variablizationManager->get_variablization(index_var);
 
-  if (found_varsym && found_varsym->grounded)
+  if (found_varsym)
   {
-    /* --- it's been variablized on the lhs --- */
+    if (found_varsym->grounded)
+    {
+      /* --- Grounded symbol that has been variablized before--- */
 
-    dprint(DT_VARIABLIZATION_MANAGER, "... found existing grounded variablization %s.\n", found_varsym->variablized_symbol->to_string(thisAgent));
+      dprint(DT_VARIABLIZATION_MANAGER, "... found existing grounded variablization %s.\n", found_varsym->variablized_symbol->to_string(thisAgent));
 
-    symbol_add_ref(thisAgent, found_varsym->variablized_symbol);
-    symbol_remove_ref (thisAgent, (*sym));
-    *sym = found_varsym->variablized_symbol;
-    return;
+      symbol_add_ref(thisAgent, found_varsym->variablized_symbol);
+      symbol_remove_ref (thisAgent, (*sym));
+      *sym = found_varsym->variablized_symbol;
+    }
+    else
+    {
+      dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded constant.  Not variablizing!\n");
+    }
   }
-  /* --- At this point, we know sym is either an unbound rhs var or rhs constant. Since
-   *     We only need to variablize an unbound rhs var, which will have a dummy
-   *     identifier, we can just limit ourselves to only variablizing identifiers. -- */
-  if((*sym)->is_non_lti_identifier())
+  else
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for non-lti identifier %s.\n",
-        (*sym)->to_string(thisAgent));
-    (*sym)->tc_num = thisAgent->variablization_tc;
-    prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
-    prefix[1] = 0;
-    var = generate_new_variable (thisAgent, prefix);
-    thisAgent->variablizationManager->store_variablization((*sym), (*sym), var, true);
+    /* --- Variablization manager has never seen this symbol -- */
+    if((*sym)->is_non_lti_identifier())
+    {
+      /* -- First instance of an unbound rhs var -- */
+      dprint(DT_VARIABLIZATION_MANAGER, "...is unbound variable.\n");
+      (*sym)->tc_num = thisAgent->variablization_tc;
+      prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
+      prefix[1] = 0;
+      var = generate_new_variable (thisAgent, prefix);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "...created new variable for unbound rhs %s.\n", var->to_string(thisAgent));
-    *sym = var;
-    return;
+      dprint(DT_VARIABLIZATION_MANAGER, "...created new variable for unbound rhs %s.\n", var->to_string(thisAgent));
+      thisAgent->variablizationManager->store_variablization((*sym), (*sym), var, true);
+
+      /* -- Though generate_new_variable() adds a refcount, we also add them for our stored pointers
+       *    in the variablization table.  These are cleaned up after RHS variablization. -- */
+      symbol_add_ref(thisAgent, *sym);
+      symbol_add_ref(thisAgent, *sym);
+      symbol_add_ref(thisAgent, var);
+      *sym = var;
+    }
+    else
+    {
+      /* -- RHS constant that was not in LHS condition -- */
+      dprint(DT_VARIABLIZATION_MANAGER, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
+    }
   }
-  //assert(false);
-  dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded or a new constant.  Not variablizing!\n");
 }
 
 /* -- ----------------------------------
