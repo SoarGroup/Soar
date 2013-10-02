@@ -44,17 +44,19 @@ Variablization_Manager::~Variablization_Manager()
 void Variablization_Manager::clear_variablization_table() {
 
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol map...\n");
+  print_variablization_table();
   for (std::map< Symbol *, variablization * >::iterator it=(*variablization_table).begin(); it!=(*variablization_table).end(); ++it)
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s -> %s/%s\n", it->first->to_string(thisAgent),
-        it->second->instantiated_symbol->to_string(thisAgent), it->second->variablized_symbol->to_string(thisAgent));
+    dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s(%lld) -> %s(%lld)/%s(%lld)\n",
+        it->first->to_string(thisAgent), it->first->reference_count,
+        it->second->instantiated_symbol->to_string(thisAgent), it->second->instantiated_symbol->reference_count,
+        it->second->variablized_symbol->to_string(thisAgent),  it->second->variablized_symbol->reference_count);
     symbol_remove_ref(thisAgent, it->first);
     symbol_remove_ref(thisAgent, it->second->instantiated_symbol);
     symbol_remove_ref(thisAgent, it->second->variablized_symbol);
     delete it->second;
   }
   variablization_table->clear();
-  //print_tables();
 }
 
 void Variablization_Manager::reinit_original_symbol_data()
@@ -97,6 +99,25 @@ void Variablization_Manager::store_variablization(Symbol *index_sym, Symbol *ins
   new_variablization->grounded = is_equality_test;
 
   (*variablization_table)[index_sym] = new_variablization;
+
+  /* -- An identifier may have more than one original symbol (mostly due to the fact
+   *    that placeholder variables still exist to handle dot notation, and it wasn't
+   *    clear whether we should alter that mechanism).  So, we store two entries in
+   *    the variablization table.
+   *    (1) When variablizing identifiers, the identifier symbol will be used to look
+   *        up variablization info.
+   *    (2) Later, when looking for ungrounded variables in relational tests, the
+   *        identifier symbol will have already been replaced with a variable,
+   *        so we must use the variable instead to look up variablization info. -- */
+
+  if (index_sym->is_non_lti_identifier())
+  {
+    dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager also storing secondary index for identifier.\n");
+    store_variablization(variable, instantiated_sym, variable, is_equality_test);
+    symbol_add_ref(thisAgent, instantiated_sym);
+    symbol_add_ref(thisAgent, variable);
+    symbol_add_ref(thisAgent, variable);
+  }
 }
 
 void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test)
@@ -136,6 +157,7 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
     prefix[0] = 'c';
   prefix[1] = 0;
   var = generate_new_variable (thisAgent, prefix);
+  var->var->was_identifier = (*sym)->is_identifier();
 
   store_variablization(index_var, (*sym), var, is_equality_test);
 
