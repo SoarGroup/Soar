@@ -2163,21 +2163,17 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
 			{
 				value_lti = NIL;
 				value_hash = smem_temporal_hash( my_agent, w->value, false );
+				element_type = value_const_t;
 
 				if ( value_hash != NIL )
 				{
 					q = my_agent->smem_stmts->wmes_constant_frequency_get;
 					q->bind_int( 1, attr_hash );
 					q->bind_int( 2, value_hash );
-
-					element_type = value_const_t;
 				}
-				else
+				else if ( pos_cue )
 				{
-					if ( pos_cue )
-					{
-						good_wme = false;
-					}
+					good_wme = false;
 				}
 			}
 			else
