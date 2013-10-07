@@ -32,7 +32,7 @@
 /* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must do the reference count update */
 /* MToDoRefCnt | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
 
-inline rhs_value allocate_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym)
+inline rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym)
 {
   rhs_symbol new_rhs_symbol;
 
@@ -57,13 +57,13 @@ inline rhs_value allocate_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, 
 
 /* MToDoRefCnt | symbol_to_rhs_value() (what this function used to be) didn't symbol_add_ref. The
  *                  caller had to do the reference count update.  Possible bug source. -- */
-inline rhs_value allocate_rhs_value(agent* thisAgent, Symbol * sym, Symbol * original_sym)
+inline rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol * sym, Symbol * original_sym)
 {
   if (sym)
   {
     symbol_add_ref(thisAgent, sym);
   }
-  return allocate_rhs_value_no_refcount(thisAgent, sym, original_sym);
+  return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, original_sym);
 }
 
 /* ----------------------------------------------------------------
@@ -123,7 +123,7 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
     dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value copying rhs_symbol %s(%s).\n",
           symbol_to_string(thisAgent, r->referent),
          (r->original_rhs_variable ? symbol_to_string(thisAgent, r->original_rhs_variable) : "NIL"));
-    return allocate_rhs_value(thisAgent, r->referent, r->original_rhs_variable);
+    return allocate_rhs_value_for_symbol(thisAgent, r->referent, r->original_rhs_variable);
   }
 }
 
@@ -322,7 +322,7 @@ rhs_value create_RHS_value (agent* thisAgent,
     dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(%s) from reteloc.\n",
         symbol_to_string(thisAgent, sym),
         (original_sym ? symbol_to_string(thisAgent, original_sym) : "NIL"));
-    return allocate_rhs_value(thisAgent, sym, original_sym);
+    return allocate_rhs_value_for_symbol(thisAgent, sym, original_sym);
   }
 
   if (rhs_value_is_unboundvar(rv))
@@ -348,7 +348,7 @@ rhs_value create_RHS_value (agent* thisAgent,
       }
       /* -- generate will increment the refcount on the new variable,
        *    so don't need to do it here. -- */
-      return allocate_rhs_value_no_refcount(thisAgent, sym, NULL);
+      return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, NULL);
     }
     else
     {
@@ -356,7 +356,7 @@ rhs_value create_RHS_value (agent* thisAgent,
     }
     dprint_noprefix(DT_RHS_VARIABLIZATION, "%s for unbound var.\n",
         symbol_to_string(thisAgent, sym));
-    return allocate_rhs_value(thisAgent, sym, NULL);
+    return allocate_rhs_value_for_symbol(thisAgent, sym, NULL);
   }
 
   if (rhs_value_is_funcall(rv)) {
@@ -382,7 +382,7 @@ rhs_value create_RHS_value (agent* thisAgent,
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
     dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(NULL) from rhs_symbol (literal RHS constant).\n",
         (rs->referent ? symbol_to_string(thisAgent, rs->referent) : "ERROR"));
-    return allocate_rhs_value(thisAgent, rs->referent, NULL);
+    return allocate_rhs_value_for_symbol(thisAgent, rs->referent, NULL);
   }
 }
 

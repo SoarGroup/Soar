@@ -112,8 +112,8 @@ typedef struct binding_structure {
 
 /* -- Functions to create RHS -- */
 inline action *make_action(agent *thisAgent);
-inline rhs_value allocate_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
-inline rhs_value allocate_rhs_value(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
+inline rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
+inline rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL);
 
 /* -- Copy functions -- */
 rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv);
