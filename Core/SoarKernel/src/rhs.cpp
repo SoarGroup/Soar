@@ -38,7 +38,7 @@ inline rhs_value allocate_rhs_value_no_refcount(agent* thisAgent, Symbol * sym, 
 
   if (!sym )
   {
-    dprint(DT_DEBUG, "make_rhs_value_symbol_no_refcount called with nil.\n");
+    dprint(DT_DEBUG, "allocate_rhs_value_no_refcount called with nil.\n");
     return reinterpret_cast<rhs_value>(NIL);
   }
   allocate_with_pool (thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);

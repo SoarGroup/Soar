@@ -59,7 +59,7 @@ extern void add_results_for_id (agent* thisAgent, Symbol *id);
 
 extern void variablize_symbol (agent* thisAgent, Symbol **sym);
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
-extern void reverse_unbound_lhs_referents (agent* thisAgent, condition *lhs_top, tc_number tc);
+extern bool reverse_unbound_lhs_referents (agent* thisAgent, condition **lhs_top, tc_number tc);
 
 #endif
 

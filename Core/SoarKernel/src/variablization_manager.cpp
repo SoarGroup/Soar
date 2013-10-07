@@ -88,10 +88,11 @@ void Variablization_Manager::store_variablization(Symbol *index_sym, Symbol *ins
 {
   variablization *new_variablization;
   assert(index_sym && instantiated_sym && variable);
-  dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager storing symbol %s -=> %s, %s\n",
+  dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager storing symbol %s -=> %s, %s (grounded %d)\n",
           index_sym->to_string(thisAgent),
           instantiated_sym->to_string(thisAgent),
-          variable->to_string(thisAgent));
+          variable->to_string(thisAgent),
+          is_equality_test);
 
   new_variablization = new variablization;
   new_variablization->instantiated_symbol = instantiated_sym;
@@ -137,11 +138,20 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
   var_info = get_variablization(index_var);
   if (var_info)
   {
-
-    if (is_equality_test)
+    if (is_equality_test && !var_info->grounded)
+    {
       var_info->grounded = true;
-
-    /* -- Symbol being passed in is being replaced, so decrease refcount -- */
+      /* -- Update secondary index for identifiers -- */
+      if ((*sym)->is_non_lti_identifier())
+      {
+        variablization *var_info2;
+        dprint(DT_VARIABLIZATION_MANAGER, "...updating grounded info for %s %s %d.\n", index_var->to_string(thisAgent),
+               var_info->variablized_symbol->to_string(thisAgent), is_equality_test);
+        var_info2 = get_variablization(var_info->variablized_symbol);
+        var_info2->grounded = true;
+      }
+    }
+    /* -- Symbol being passed in is being replaced, so decrease -- */
     /* -- and increase refcount for new variable symbol being returned -- */
     symbol_remove_ref (thisAgent, (*sym));
     *sym = var_info->variablized_symbol;
@@ -167,10 +177,13 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
   symbol_add_ref(thisAgent, var);
   /* -- And one for the symbol we're indexing by -- */
   if (original_symbol)
+  {
     symbol_add_ref(thisAgent, original_symbol);
+  }
   else
+  {
     symbol_add_ref(thisAgent, *sym);
-
+  }
   dprint(DT_VARIABLIZATION_MANAGER, "...created new variablization %s.\n", var->to_string(thisAgent));
 
   *sym = var;
@@ -277,7 +290,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
   }
   else
   {
-    /* --- Variablization manager has never seen this symbol -- */
+    /* --- Variablization manager has never seen this symbol.  Unbound RHS var or constant. -- */
     if((*sym)->is_non_lti_identifier())
     {
       /* -- First instance of an unbound rhs var -- */
@@ -295,6 +308,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
       symbol_add_ref(thisAgent, *sym);
       symbol_add_ref(thisAgent, *sym);
       symbol_add_ref(thisAgent, var);
+      symbol_remove_ref (thisAgent, (*sym));
       *sym = var;
     }
     else
@@ -453,6 +467,7 @@ void Variablization_Manager::make_name_unique(Symbol **sym)
         /* MToDoRefCnt | After we clean up current_unique_vars in p_node, the following should never be necessary */
         if (varname->current_unique_var_symbol)
         {
+          dprint(DT_UNIQUE_VARIABLIZATION, "...cleaning up current unique var still in variablization manager OSD table: %s\n", varname->current_unique_var_symbol->to_string(thisAgent));
           symbol_remove_ref(thisAgent, varname->current_unique_var_symbol);
         }
         varname->current_unique_var_symbol = make_variable(thisAgent, new_name.c_str());
@@ -512,8 +527,8 @@ void Variablization_Manager::print_variablization_table()
   dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
   for (std::map< Symbol *, variablization * >::iterator it=(*variablization_table).begin(); it!=(*variablization_table).end(); ++it)
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "%s -> %s/%s\n", it->first->to_string(thisAgent),
-        it->second->variablized_symbol->to_string(thisAgent), it->second->instantiated_symbol->to_string(thisAgent));
+    dprint(DT_VARIABLIZATION_MANAGER, "%s -> %s/%s (grounded %d)\n", it->first->to_string(thisAgent),
+        it->second->variablized_symbol->to_string(thisAgent), it->second->instantiated_symbol->to_string(thisAgent), it->second->grounded);
   }
 }
 void Variablization_Manager::print_CUV_table() {
