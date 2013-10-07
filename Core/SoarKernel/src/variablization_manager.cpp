@@ -280,7 +280,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
       dprint(DT_VARIABLIZATION_MANAGER, "... found existing grounded variablization %s.\n", found_varsym->variablized_symbol->to_string(thisAgent));
 
       symbol_add_ref(thisAgent, found_varsym->variablized_symbol);
-      symbol_remove_ref (thisAgent, (*sym));
+      //symbol_remove_ref (thisAgent, (*sym));
       *sym = found_varsym->variablized_symbol;
     }
     else
@@ -308,7 +308,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
       symbol_add_ref(thisAgent, *sym);
       symbol_add_ref(thisAgent, *sym);
       symbol_add_ref(thisAgent, var);
-      symbol_remove_ref (thisAgent, (*sym));
+      //symbol_remove_ref (thisAgent, (*sym));
       *sym = var;
     }
     else

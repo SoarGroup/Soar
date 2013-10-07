@@ -108,7 +108,7 @@ extern void add_pref_to_results (agent* thisAgent, preference *pref) {
   pref->next_result = thisAgent->results;
   thisAgent->results = pref;
 
-  /* --- follow transitive closuse through value, referent links --- */
+  /* --- follow transitive closure through value, referent links --- */
   add_results_if_needed (thisAgent, pref->value);
   if (preference_is_binary(pref->type))
     add_results_if_needed (thisAgent, pref->referent);
