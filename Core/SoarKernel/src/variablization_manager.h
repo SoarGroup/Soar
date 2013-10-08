@@ -46,13 +46,13 @@ class Variablization_Manager
     bool already_unique(Symbol *original_var);
 
     void clear_variablization_table();
-    void clear_current_unique_var_set();
+    void clear_CUV_cache();
     variablization *get_variablization(Symbol *index_sym);
 
     void variablize_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test);
     void variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
 
-    void reinit_original_symbol_data();
+    void reinit();
 
     void print_OSD_table();
     void print_variablization_table();
@@ -66,9 +66,9 @@ class Variablization_Manager
     agent* thisAgent;
 
     void store_variablization(Symbol *index_sym, Symbol *instantiated_sym, Symbol *variable, bool is_equality_test);
-    void clear_current_unique_var(Symbol *var);
-    void clear_original_symbol_data_table();
-    void create_original_symbol_data_table();
+    void clear_CUV_for_symbol(Symbol *var);
+    void clear_OSD_table();
+    void create_OSD_table();
 
     /* -- The variablization_table is used during chunking.  It stores a mapping from either a
      *    symbol's original variable, if available, or the actual symbol to the variable

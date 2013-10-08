@@ -23,14 +23,14 @@ uint32_t hash_unique_string (void *item, short num_bits) {
 Variablization_Manager::Variablization_Manager(agent *myAgent)
 {
   thisAgent = myAgent;
-  create_original_symbol_data_table();
+  create_OSD_table();
   variablization_table = new std::map< Symbol *, variablization * >();
   current_unique_vars = new std::set< Symbol *>();
 }
 
 Variablization_Manager::~Variablization_Manager()
 {
-  clear_original_symbol_data_table();
+  clear_OSD_table();
   delete variablization_table;
 }
 /* -- ----------------------------------
@@ -59,13 +59,13 @@ void Variablization_Manager::clear_variablization_table() {
   variablization_table->clear();
 }
 
-void Variablization_Manager::reinit_original_symbol_data()
+void Variablization_Manager::reinit()
 {
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing hash table and clearing variablization map.\n");
   clear_variablization_table();
   if (original_symbol_ht)
-    clear_original_symbol_data_table();
-  create_original_symbol_data_table();
+    clear_OSD_table();
+  create_OSD_table();
 }
 
 variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
@@ -241,8 +241,9 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
 
 void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *original_symbol) {
   char prefix[2];
-  Symbol *var, *index_var;
-  variablization *found_varsym;
+  Symbol *var, *index_sym;
+  variablization *found_variablization;
+  bool is_non_lti_id;
 
   dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for %s(%s).\n",
       (*sym)->to_string(thisAgent),
@@ -250,12 +251,14 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
 
   /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
    *    instead of their original variable. --  */
-  if ((*sym)->is_non_lti_identifier())
-    index_var = *sym;
+  is_non_lti_id = (*sym)->is_non_lti_identifier();
+
+  if (is_non_lti_id)
+    index_sym = *sym;
   else
   {
     if (original_symbol)
-      index_var = original_symbol;
+      index_sym = original_symbol;
     else
     {
       dprint(DT_VARIABLIZATION_MANAGER, "...is a literal constant.  Not variablizing!\n");
@@ -268,56 +271,85 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
 //  else
 //    index_var = *sym;
 
-  dprint(DT_VARIABLIZATION_MANAGER, "...searching for varname %s in unique varname table...\n", index_var->to_string(thisAgent));
-  found_varsym = thisAgent->variablizationManager->get_variablization(index_var);
+  dprint(DT_VARIABLIZATION_MANAGER, "...searching for varname %s in unique varname table...\n", index_sym->to_string(thisAgent));
+  found_variablization = thisAgent->variablizationManager->get_variablization(index_sym);
 
-  if (found_varsym)
+  if (found_variablization)
   {
-    if (found_varsym->grounded)
+    if (found_variablization->grounded)
     {
       /* --- Grounded symbol that has been variablized before--- */
 
-      dprint(DT_VARIABLIZATION_MANAGER, "... found existing grounded variablization %s.\n", found_varsym->variablized_symbol->to_string(thisAgent));
+      dprint(DT_VARIABLIZATION_MANAGER, "... found existing grounded variablization %s.\n", found_variablization->variablized_symbol->to_string(thisAgent));
 
-      symbol_add_ref(thisAgent, found_varsym->variablized_symbol);
+      symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
       //symbol_remove_ref (thisAgent, (*sym));
-      *sym = found_varsym->variablized_symbol;
+      *sym = found_variablization->variablized_symbol;
+      return;
+    }
+    else if (!is_non_lti_id)
+    {
+      dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded constant.  Not variablizing!\n");
+      return;
     }
     else
     {
-      dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded constant.  Not variablizing!\n");
+      /* -- Ungrounded identifiers fall into this case.  Their enclosing action should
+       *    probably be discarded, but we are putting that on the backburner for
+       *    now.  For now, it will pass through this case and create an unbound var
+       *    instead, just like all previous versions of Soar. -- */
+
+      /* -- Delete the symbol references for both entries in the variablization table
+       *    then delete the entries themselves. */
+      dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded identifier.  Clearing variablization entry and generating unbound var.\n");
+      print_variablization_table();
+      symbol_remove_ref(thisAgent, index_sym);
+      symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
+      symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
+      variablization_table->erase(index_sym);
+
+      dprint(DT_VARIABLIZATION_MANAGER, "...searching for varname %s in unique varname table...\n", found_variablization->variablized_symbol->to_string(thisAgent));
+      delete found_variablization;
+      found_variablization = thisAgent->variablizationManager->get_variablization(found_variablization->variablized_symbol);
+      dprint(DT_VARIABLIZATION_MANAGER, "...searching for varname %s in unique varname table...\n", found_variablization->variablized_symbol->to_string(thisAgent));
+
+//      symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
+//      symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
+//      symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
+//      variablization_table->erase(found_variablization->variablized_symbol);
+      print_variablization_table();
     }
+  }
+
+  /* -- Variablization manager has never seen this symbol.  Unbound RHS var or constant. -- */
+
+  if((*sym)->is_non_lti_identifier())
+  {
+    /* -- First instance of an unbound rhs var -- */
+    dprint(DT_VARIABLIZATION_MANAGER, "...is unbound variable.\n");
+    (*sym)->tc_num = thisAgent->variablization_tc;
+    prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
+    prefix[1] = 0;
+    var = generate_new_variable (thisAgent, prefix);
+
+    dprint(DT_VARIABLIZATION_MANAGER, "...created new variable for unbound rhs %s.\n", var->to_string(thisAgent));
+    thisAgent->variablizationManager->store_variablization((*sym), (*sym), var, true);
+
+    /* -- Though generate_new_variable() adds a refcount, we also add them for our stored pointers
+     *    in the variablization table.  These are cleaned up after RHS variablization. -- */
+    symbol_add_ref(thisAgent, *sym);
+    symbol_add_ref(thisAgent, *sym);
+    symbol_add_ref(thisAgent, var);
+    //symbol_remove_ref (thisAgent, (*sym));
+    *sym = var;
   }
   else
   {
-    /* --- Variablization manager has never seen this symbol.  Unbound RHS var or constant. -- */
-    if((*sym)->is_non_lti_identifier())
-    {
-      /* -- First instance of an unbound rhs var -- */
-      dprint(DT_VARIABLIZATION_MANAGER, "...is unbound variable.\n");
-      (*sym)->tc_num = thisAgent->variablization_tc;
-      prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
-      prefix[1] = 0;
-      var = generate_new_variable (thisAgent, prefix);
-
-      dprint(DT_VARIABLIZATION_MANAGER, "...created new variable for unbound rhs %s.\n", var->to_string(thisAgent));
-      thisAgent->variablizationManager->store_variablization((*sym), (*sym), var, true);
-
-      /* -- Though generate_new_variable() adds a refcount, we also add them for our stored pointers
-       *    in the variablization table.  These are cleaned up after RHS variablization. -- */
-      symbol_add_ref(thisAgent, *sym);
-      symbol_add_ref(thisAgent, *sym);
-      symbol_add_ref(thisAgent, var);
-      //symbol_remove_ref (thisAgent, (*sym));
-      *sym = var;
-    }
-    else
-    {
-      /* -- RHS constant that was not in LHS condition -- */
-      dprint(DT_VARIABLIZATION_MANAGER, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
-    }
+    /* -- RHS constant that was not in LHS condition -- */
+    dprint(DT_VARIABLIZATION_MANAGER, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
   }
 }
+
 
 /* -- ----------------------------------
  *    Unique original variable functions
@@ -330,7 +362,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
  *    when variablizing LHS symbols and to match rhs bindings to the proper lhs bindings.
  * -- */
 
-void Variablization_Manager::create_original_symbol_data_table()
+void Variablization_Manager::create_OSD_table()
 {
   dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager creating hash table.\n");
   original_symbol_ht = make_hash_table (thisAgent, 0, hash_unique_string);
@@ -353,7 +385,7 @@ bool free_original_symbol_data (agent* thisAgent, void *item, void*) {
   return false;
 }
 
-void Variablization_Manager::clear_original_symbol_data_table()
+void Variablization_Manager::clear_OSD_table()
 {
   dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager clearing hash table of original_vars...\n");
   do_for_all_items_in_hash_table( thisAgent, original_symbol_ht, free_original_symbol_data, 0);
@@ -362,7 +394,7 @@ void Variablization_Manager::clear_original_symbol_data_table()
   free_memory(thisAgent, original_symbol_ht, HASH_TABLE_MEM_USAGE);
 }
 
-void Variablization_Manager::clear_current_unique_var(Symbol *var)
+void Variablization_Manager::clear_CUV_for_symbol(Symbol *var)
 {
   uint32_t hash_value;
   original_symbol_data *varname;
@@ -383,7 +415,7 @@ void Variablization_Manager::clear_current_unique_var(Symbol *var)
     }
   }
 }
-void Variablization_Manager::clear_current_unique_var_set() {
+void Variablization_Manager::clear_CUV_cache() {
 
   dprint(DT_UNIQUE_VARIABLIZATION, "Original_Variable_Manager clearing unique var cache...\n");
   for (std::set< Symbol *>::iterator it=(*current_unique_vars).begin(); it!=(*current_unique_vars).end(); ++it)
