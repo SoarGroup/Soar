@@ -175,17 +175,11 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
    *    in the variablization table.  These are cleaned up after RHS variablization. -- */
   symbol_add_ref(thisAgent, *sym);
   symbol_add_ref(thisAgent, var);
-  /* -- And one for the symbol we're indexing by -- */
-  if (original_symbol)
-  {
-    symbol_add_ref(thisAgent, original_symbol);
-  }
-  else
-  {
-    symbol_add_ref(thisAgent, *sym);
-  }
+  symbol_add_ref(thisAgent, index_var);
   dprint(DT_VARIABLIZATION_MANAGER, "...created new variablization %s.\n", var->to_string(thisAgent));
 
+  /* MToDoRefCnt | This remove ref was removed before, but it seems like we should have it, no? */
+  symbol_remove_ref (thisAgent, *sym);
   *sym = var;
 }
 /* ======================================================================================================
@@ -294,10 +288,8 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
     }
     else
     {
-      /* -- Ungrounded identifiers fall into this case.  Their enclosing action should
-       *    probably be discarded, but we are putting that on the backburner for
-       *    now.  For now, it will pass through this case and create an unbound var
-       *    instead, just like all previous versions of Soar. -- */
+      /* -- Ungrounded identifiers fall into this case.  This will pass through this case
+       *    and create an unbound var in next code block. -- */
 
       /* -- Delete the symbol references for both entries in the variablization table
        *    then delete the entries themselves. */
@@ -313,11 +305,12 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
       found_variablization = thisAgent->variablizationManager->get_variablization(found_variablization->variablized_symbol);
       dprint(DT_VARIABLIZATION_MANAGER, "...searching for varname %s in unique varname table...\n", found_variablization->variablized_symbol->to_string(thisAgent));
 
-//      symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
-//      symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
-//      symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
-//      variablization_table->erase(found_variablization->variablized_symbol);
-      print_variablization_table();
+      /* MToDoRefCnt | This was disabled before.  Might have just been for initial testing. */
+      symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
+      symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
+      symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
+      variablization_table->erase(found_variablization->variablized_symbol);
+//      print_variablization_table();
     }
   }
 

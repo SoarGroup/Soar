@@ -37,6 +37,9 @@
 #include "test.h"
 
 using namespace soar_TraceNames;
+void dprint_condition (TraceMode mode, condition *cond);
+void dprint_grounds (TraceMode mode);
+void check_symbol(agent *thisAgent, Symbol *sym, const char *message);
 
 /* ====================================================================
 
@@ -81,6 +84,14 @@ using namespace soar_TraceNames;
 
 inline void add_to_grounds(agent* thisAgent, condition * cond)
 {
+  /* MToDo | Remove */
+  cons *c;
+  if (cond->data.tests.value_test->type==CONJUNCTIVE_TEST) {
+    for (c=cond->data.tests.value_test->data.conjunct_list; c!=NIL; c=c->rest)
+      check_symbol(thisAgent, static_cast<test>(c->first)->data.referent, "ChkSym | ");
+  } else {
+    check_symbol(thisAgent, cond->data.tests.value_test->data.referent, "ChkSym | ");
+  }
   if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc) {
     (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
     push (thisAgent, (cond), thisAgent->grounds); }
@@ -288,33 +299,41 @@ void backtrace_through_instantiation (agent* thisAgent,
 
       /* --- positive cond's are grounds, potentials, or locals --- */
       if (c->data.tests.id_test->data.referent->tc_num == tc) {
+        dprint(DT_LHS_VARIABLIZATION, "Backtracing adding ground condition...\n");
+        dprint_condition(DT_LHS_VARIABLIZATION, c);
         add_to_grounds (thisAgent, c);
+        dprint(DT_LHS_VARIABLIZATION, "Grounds in backtrace 0:\n");
+        dprint_grounds(DT_LHS_VARIABLIZATION);
+
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
-	  push (thisAgent, c, grounds_to_print);
+          push (thisAgent, c, grounds_to_print);
       }
       else if (c->bt.level <= grounds_level) {
         add_to_potentials (thisAgent, c);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
-	  push (thisAgent, c, pots_to_print);
+          push (thisAgent, c, pots_to_print);
       }
       else {
         add_to_locals (thisAgent, c);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
-	        push (thisAgent, c, locals_to_print);
+          push (thisAgent, c, locals_to_print);
       }
     }
     else {
       /* --- negative or nc cond's are either grounds or potentials --- */
       add_to_chunk_cond_set (thisAgent, &thisAgent->negated_set,
-		                     make_chunk_cond_for_negated_condition(thisAgent, c));
+          make_chunk_cond_for_negated_condition(thisAgent, c));
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
-            thisAgent->sysparams[EXPLAIN_SYSPARAM])
-	push (thisAgent, c, negateds_to_print);
+          thisAgent->sysparams[EXPLAIN_SYSPARAM])
+        push (thisAgent, c, negateds_to_print);
     }
   } /* end of for loop */
+
+  dprint(DT_LHS_VARIABLIZATION, "Grounds in backtrace 1:\n");
+  dprint_grounds(DT_LHS_VARIABLIZATION);
 
   /* Now record the sets of conditions.  Note that these are not necessarily */
   /* the final resting place for these wmes.  In particular potentials may   */
@@ -324,6 +343,9 @@ void backtrace_through_instantiation (agent* thisAgent,
   if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
     explain_add_temp_to_backtrace_list(thisAgent, &temp_explain_backtrace,grounds_to_print,
                                        pots_to_print,locals_to_print,negateds_to_print);
+
+  dprint(DT_LHS_VARIABLIZATION, "Grounds in backtrace 2:\n");
+  dprint_grounds(DT_LHS_VARIABLIZATION);
 
   /* --- if tracing BT, print the resulting conditions, etc. --- */
   if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {

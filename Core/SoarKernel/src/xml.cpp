@@ -99,12 +99,14 @@ void xml_destroy( agent* pAgent )
 
 void xml_begin_tag( agent* pAgent, char const* pTag )
 {
+  return;
 	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->BeginTag( pTag ) ;
 }
 
 void xml_end_tag( agent* pAgent, char const* pTag )
 {
+  return;
 	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->EndTag( pTag ) ;
 }

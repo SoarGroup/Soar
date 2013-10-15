@@ -393,7 +393,7 @@ action *create_RHS_action_list (agent* thisAgent,
   action *old, *New, *prev, *first;
   char first_letter;
 
-  dprint(DT_RHS_VARIABLIZATION, "Rete creating RHS...(copy_action_list_and_substitute_varnames).\n");
+  dprint(DT_RHS_VARIABLIZATION, "Rete creating RHS in create_RHS_action_list()\n");
   dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
   prev = NIL;
   first = NIL;
@@ -432,7 +432,7 @@ action *create_RHS_action_list (agent* thisAgent,
     old = old->next;
   }
   if (prev) prev->next = NIL; else first = NIL;
-  dprint(DT_RHS_VARIABLIZATION, "Rete done creating RHS...(copy_action_list_and_substitute_varnames).\n");
+  dprint(DT_RHS_VARIABLIZATION, "Rete done creating RHS in create_RHS_action_list()\n");
   return first;
 }
 
