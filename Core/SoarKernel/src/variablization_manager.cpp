@@ -111,7 +111,7 @@ void Variablization_Manager::store_variablization(Symbol *index_sym, Symbol *ins
    *        identifier symbol will have already been replaced with a variable,
    *        so we must use the variable instead to look up variablization info. -- */
 
-  if (index_sym->is_non_lti_identifier())
+  if (index_sym->is_sti())
   {
     dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager also storing secondary index for identifier.\n");
     store_variablization(variable, instantiated_sym, variable, is_equality_test);
@@ -130,7 +130,7 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
   dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager variablizing %s %s %d.\n", (*sym)->to_string(thisAgent)
       , (original_symbol ? original_symbol->to_string(thisAgent) : "NULL"), is_equality_test);
 
-  if (!(*sym)->is_non_lti_identifier() && original_symbol)
+  if (!(*sym)->is_sti() && original_symbol)
     index_var = original_symbol;
   else
     index_var = *sym;
@@ -142,7 +142,7 @@ void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_s
     {
       var_info->grounded = true;
       /* -- Update secondary index for identifiers -- */
-      if ((*sym)->is_non_lti_identifier())
+      if ((*sym)->is_sti())
       {
         variablization *var_info2;
         dprint(DT_VARIABLIZATION_MANAGER, "...updating grounded info for %s %s %d.\n", index_var->to_string(thisAgent),
@@ -245,7 +245,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
 
   /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
    *    instead of their original variable. --  */
-  is_non_lti_id = (*sym)->is_non_lti_identifier();
+  is_non_lti_id = (*sym)->is_sti();
 
   if (is_non_lti_id)
     index_sym = *sym;
@@ -316,7 +316,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
 
   /* -- Variablization manager has never seen this symbol.  Unbound RHS var or constant. -- */
 
-  if((*sym)->is_non_lti_identifier())
+  if((*sym)->is_sti())
   {
     /* -- First instance of an unbound rhs var -- */
     dprint(DT_VARIABLIZATION_MANAGER, "...is unbound variable.\n");
