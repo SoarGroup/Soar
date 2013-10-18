@@ -66,6 +66,7 @@ inline test make_blank_test() {return static_cast<test>(0);}
 
 char first_letter_from_test (test t);
 bool tests_are_equal (test t1, test t2, bool neg);
+bool tests_and_originals_equal (test t1, test t2);
 bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);

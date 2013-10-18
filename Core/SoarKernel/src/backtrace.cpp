@@ -82,38 +82,88 @@ void check_symbol(agent *thisAgent, Symbol *sym, const char *message);
    the grounds.
 ==================================================================== */
 
+/* MToDo | The following two functions might not be used any more. */
+inline bool conds_equivalent (agent* thisAgent, condition *cond_new, condition *cond_ground)
+{
+  if (!tests_and_originals_equal(cond_new->data.tests.id_test, cond_ground->data.tests.id_test))
+    return false;
+  return true;
+}
+
+inline bool is_cond_in_list(agent* thisAgent, condition *cond, ::list *search_list)
+{
+  dprint(DT_LHS_VARIABLIZATION, "Looking in search_list for:\n");
+  dprint_condition(DT_LHS_VARIABLIZATION, cond);
+  if  (!search_list)
+  {
+    dprint(DT_LHS_VARIABLIZATION, "New! (search list empty)\n");
+  }
+  for (cons *c = search_list; c ; c = c->rest)
+  {
+    dprint(DT_LHS_VARIABLIZATION, "Comparing:\n");
+    dprint_condition(DT_LHS_VARIABLIZATION, static_cast<condition *> (c->first));
+    if (conds_equivalent(thisAgent, cond, static_cast<condition *> (c->first)))
+    {
+      dprint(DT_LHS_VARIABLIZATION, "Equivalent!  Condition is in list.\n");
+      return true;
+    } else {
+      dprint(DT_LHS_VARIABLIZATION, "Not a match.\n");
+    }
+  }
+  dprint(DT_LHS_VARIABLIZATION, "Condition not found in list\n");
+  return false;
+}
+
 inline void add_to_grounds(agent* thisAgent, condition * cond)
 {
   /* MToDo | Remove */
   cons *c;
-  if (cond->data.tests.value_test->type==CONJUNCTIVE_TEST) {
-    for (c=cond->data.tests.value_test->data.conjunct_list; c!=NIL; c=c->rest)
-      check_symbol(thisAgent, static_cast<test>(c->first)->data.referent, "ChkSym | ");
-  } else {
-    check_symbol(thisAgent, cond->data.tests.value_test->data.referent, "ChkSym | ");
-  }
-  if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc) {
+//  if (cond->data.tests.value_test->type==CONJUNCTIVE_TEST)
+//  {
+//    for (c=cond->data.tests.value_test->data.conjunct_list; c!=NIL; c=c->rest)
+//      check_symbol(thisAgent, static_cast<test>(c->first)->data.referent, "ChkSym | ");
+//  } else {
+//    check_symbol(thisAgent, cond->data.tests.value_test->data.referent, "ChkSym | ");
+//  }
+//  if (!is_cond_in_list(thisAgent, cond, thisAgent->grounds))
+//  {
+//    dprint(DT_LHS_VARIABLIZATION, "Have condition not in ground list:\n");
+//    dprint_condition(DT_LHS_VARIABLIZATION, cond);
+//  }
+  if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
+  {
     (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
-    push (thisAgent, (cond), thisAgent->grounds); }
+    dprint(DT_LHS_VARIABLIZATION, "Pushing condition to ground list:\n");
+    dprint_condition(DT_LHS_VARIABLIZATION, cond);
+    push (thisAgent, (cond), thisAgent->grounds);
+  }
 }
 inline void add_to_potentials(agent* thisAgent, condition * cond)
 {
-  if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc) {
+  if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)
+  {
     (cond)->bt.wme_->potentials_tc = thisAgent->potentials_tc;
     (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
     push (thisAgent, (cond), thisAgent->positive_potentials);
-  } else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace) {
-    push (thisAgent, (cond), thisAgent->positive_potentials); }
+  } else
+    if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace)
+  {
+    push (thisAgent, (cond), thisAgent->positive_potentials);
+  }
 }
 
 inline void add_to_locals(agent* thisAgent, condition * cond)
 {
-  if ((cond)->bt.wme_->locals_tc != thisAgent->locals_tc) {
+  if ((cond)->bt.wme_->locals_tc != thisAgent->locals_tc)
+  {
     (cond)->bt.wme_->locals_tc = thisAgent->locals_tc;
     (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
     push (thisAgent, (cond), thisAgent->locals);
-  } else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace) {
-    push (thisAgent, (cond), thisAgent->locals); }
+  } else
+    if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace)
+    {
+      push (thisAgent, (cond), thisAgent->locals);
+    }
 }
 
 /* -------------------------------------------------------------------
