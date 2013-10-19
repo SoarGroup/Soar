@@ -49,7 +49,7 @@ class Variablization_Manager
     void clear_CUV_cache();
     variablization *get_variablization(Symbol *index_sym);
 
-    void variablize_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test);
+    void variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test);
     void variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
 
     void reinit();

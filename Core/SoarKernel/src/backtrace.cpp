@@ -83,6 +83,28 @@ void check_symbol_in_test(agent *thisAgent, test t, const char *message);
    the grounds.
 ==================================================================== */
 
+inline condition *find_cond_for_match_wme(agent* thisAgent, wme *matched_wme, ::list *search_list)
+{
+  assert(matched_wme && search_list);
+  dprint(DT_LHS_VARIABLIZATION, "Looking in search_list...\n");
+
+  for (cons *c = search_list; c ; c = c->rest)
+  {
+    dprint(DT_LHS_VARIABLIZATION, "Comparing:\n");
+    dprint_condition(DT_LHS_VARIABLIZATION, static_cast<condition *> (c->first));
+    if (static_cast<condition *>(c->first)->bt.wme_ == matched_wme)
+    {
+      dprint(DT_LHS_VARIABLIZATION, "Equivalent!  Condition is in list.\n");
+      return static_cast<condition *>(c->first);
+    } else {
+      dprint(DT_LHS_VARIABLIZATION, "Not a match.\n");
+    }
+  }
+  dprint(DT_LHS_VARIABLIZATION, "Condition not found in list.  Big bug b/c it's marked!\n");
+  assert(false);
+  return NIL;
+}
+
 inline void add_to_grounds(agent* thisAgent, condition * cond)
 {
   /* MToDo | Remove */
@@ -96,8 +118,14 @@ inline void add_to_grounds(agent* thisAgent, condition * cond)
     dprint(DT_LHS_VARIABLIZATION, "Pushing condition to ground list:\n");
     dprint_condition(DT_LHS_VARIABLIZATION, cond);
     push (thisAgent, (cond), thisAgent->grounds);
+  } else
+  {
+    condition *first_condition = find_cond_for_match_wme(thisAgent, (cond)->bt.wme_, thisAgent->grounds);
+    add_non_identical_tests (thisAgent, &(first_condition->data.tests.value_test), cond->data.tests.value_test);
+    add_non_identical_tests (thisAgent, &(first_condition->data.tests.attr_test), cond->data.tests.attr_test);
   }
 }
+
 inline void add_to_potentials(agent* thisAgent, condition * cond)
 {
   if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)

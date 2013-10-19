@@ -121,7 +121,7 @@ void Variablization_Manager::store_variablization(Symbol *index_sym, Symbol *ins
   }
 }
 
-void Variablization_Manager::variablize_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test)
+void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test)
 {
   char prefix[2];
   Symbol *index_var, *var;

@@ -66,7 +66,7 @@ inline test make_blank_test() {return static_cast<test>(0);}
 
 char first_letter_from_test (test t);
 bool tests_are_equal (test t1, test t2, bool neg);
-bool tests_and_originals_equal (test t1, test t2);
+bool tests_identical (test t1, test t2);
 bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
@@ -101,6 +101,7 @@ void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter);
 void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_unique = false);
 void add_all_variables_in_test (agent* thisAgent, test t, tc_number tc, list **var_list);
 void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc, ::list **var_list);
+void add_non_identical_tests (agent* thisAgent, test *t, test add_me);
 
 /* UITODO| Make this method of Test */
 const char *test_type_to_string(byte test_type);
