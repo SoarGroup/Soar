@@ -87,7 +87,7 @@ void add_test_func (agent* thisAgent, test *t, test add_me, test add_me_original
                 add_test_func(thisAgent, t, add_me, add_me_original); \
         } while (0)
 #else
-void add_test (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
+void add_test (agent* thisAgent, test *t, test add_me);
 #endif
 void add_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
 
