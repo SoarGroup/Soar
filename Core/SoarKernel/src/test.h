@@ -80,16 +80,16 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *remo
 
 
 #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
-void add_new_test_to_test_func (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
-#define add_new_test_to_test(thisAgent, t, add_me, add_me_original) \
+void add_test_func (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
+#define add_test(thisAgent, t, add_me, add_me_original) \
         do { \
-                dprint(DT_DEBUG, "add_new_test_to_test called from %s\n", __func__); \
-                add_new_test_to_test_func(thisAgent, t, add_me, add_me_original); \
+                dprint(DT_DEBUG, "add_test called from %s\n", __func__); \
+                add_test_func(thisAgent, t, add_me, add_me_original); \
         } while (0)
 #else
-void add_new_test_to_test (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
+void add_test (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
 #endif
-void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
+void add_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 

@@ -470,7 +470,7 @@ test parse_test (agent* thisAgent) {
       deallocate_test(thisAgent, t);
       return NIL;
     }
-    add_new_test_to_test (thisAgent, &t, temp, NIL);
+    add_test (thisAgent, &t, temp, NIL);
   } while (thisAgent->lexeme.type!=R_BRACE_LEXEME);
   get_lexeme(thisAgent); /* consume the "}" */
 
@@ -663,7 +663,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
         return NIL;
       }
       if (! test_includes_equality_test_for_symbol (value_test, NIL)) {
-        add_new_test_to_test (thisAgent, &value_test,make_placeholder_test(thisAgent, first_letter), NIL);
+        add_test (thisAgent, &value_test,make_placeholder_test(thisAgent, first_letter), NIL);
       }
     }
     /* --- check for acceptable preference indicator --- */
@@ -720,7 +720,7 @@ condition *parse_attr_value_tests (agent* thisAgent) {
   attr_test = parse_test(thisAgent);
   if (!attr_test) return NIL;
   if (! test_includes_equality_test_for_symbol (attr_test, NIL)) {
-    add_new_test_to_test (thisAgent, &attr_test, make_placeholder_test (thisAgent, 'a'), NIL);
+    add_test (thisAgent, &attr_test, make_placeholder_test (thisAgent, 'a'), NIL);
   }
 
   /* --- read optional attribute path --- */
@@ -754,7 +754,7 @@ condition *parse_attr_value_tests (agent* thisAgent) {
     }
 /* AGR 544 begin */
     if (! test_includes_equality_test_for_symbol (attr_test, NIL)) {
-      add_new_test_to_test (thisAgent, &attr_test,make_placeholder_test(thisAgent, 'a'), NIL);
+      add_test (thisAgent, &attr_test,make_placeholder_test(thisAgent, 'a'), NIL);
     }
 /* AGR 544 end */
   } /* end of while (thisAgent->lexeme.type==PERIOD_LEXEME) */
@@ -828,7 +828,7 @@ test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_i
 				return NIL;
 			}
 			if (! test_includes_equality_test_for_symbol (id_test, NIL)) {
-				add_new_test_to_test
+				add_test
 					(thisAgent, &id_test, make_placeholder_test (thisAgent, first_letter_if_no_id_given), NIL);
 			} else {
 				check_for_symconstant = copy_of_equality_test_found_in_test(thisAgent, id_test);
@@ -858,7 +858,7 @@ test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_i
 	}
 
 	/* --- add the goal/impasse test to the id test --- */
-	add_new_test_to_test (thisAgent, &id_test, id_goal_impasse_test, NIL);
+	add_test (thisAgent, &id_test, id_goal_impasse_test, NIL);
 
 	/* --- return the resulting id test --- */
 	return id_test;
