@@ -80,14 +80,14 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *remo
 
 
 #ifdef DEBUG_TRACE_ADD_TEST_TO_TEST
-void add_test_func (agent* thisAgent, test *t, test add_me, test add_me_original=NULL);
-#define add_test(thisAgent, t, add_me, add_me_original) \
+void add_test_func (agent* thisAgent, test *dest_address, test add_me);
+#define add_test(thisAgent, dest_address, add_me) \
         do { \
                 dprint(DT_DEBUG, "add_test called from %s\n", __func__); \
-                add_test_func(thisAgent, t, add_me, add_me_original); \
+                add_test_func(thisAgent, dest_address, add_me); \
         } while (0)
 #else
-void add_test (agent* thisAgent, test *t, test add_me);
+void add_test (agent* thisAgent, test *dest_address, test add_me);
 #endif
 void add_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
 

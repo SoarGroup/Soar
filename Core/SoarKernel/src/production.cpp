@@ -646,10 +646,10 @@ production *make_production (agent* thisAgent,
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list (thisAgent, *lhs_top, tc, NIL);
 
-    if (type == CHUNK_PRODUCTION_TYPE) {
-      if (!reverse_unbound_lhs_referents (thisAgent, lhs_top, tc))
-        return NIL;
-    }
+//    if (type == CHUNK_PRODUCTION_TYPE) {
+//      if (!reverse_unbound_lhs_referents (thisAgent, lhs_top, tc))
+//        return NIL;
+//    }
 
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
