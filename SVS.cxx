@@ -4,6 +4,7 @@
 #include "src/commands/model.cpp"
 #include "src/commands/project.cpp"
 #include "src/commands/property.cpp"
+#include "src/commands/save_snapshot.cpp"
 
 #include "src/models/model.cpp"
 #include "src/models/em_model.cpp"

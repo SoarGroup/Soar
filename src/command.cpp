@@ -132,6 +132,7 @@ command *_make_assign_model_command_(svs_state *state, Symbol *root);
 command *_make_property_command_(svs_state *state, Symbol *root);
 command *_make_seek_command_(svs_state *state, Symbol *root);
 command *_make_random_control_command_(svs_state *state, Symbol *root);
+command *_make_save_snapshot_command_(svs_state* state, Symbol* root);
 
 command* make_command(svs_state *state, wme *w) {
 	string name;
@@ -150,12 +151,6 @@ command* make_command(svs_state *state, wme *w) {
 		return _make_extract_command_(state, id);
 	} else if (name == "project") {
 		return _make_project_command_(state, id);
-	} else if (name == "extract_once") {
-		return _make_extract_once_command_(state, id);
-	} else if (name == "add_node") {
-		return _make_add_node_command_(state, id);
-	} else if (name == "seek") {
-		return _make_seek_command_(state, id);
 	} else if (name == "random_control") {
 		return _make_random_control_command_(state, id);
 	} else if (name == "create-model") {
@@ -164,6 +159,8 @@ command* make_command(svs_state *state, wme *w) {
 		return _make_assign_model_command_(state, id);
 	} else if (name == "property") {
 		return _make_property_command_(state, id);
+	} else if (name == "save-snapshot"){
+		return _make_save_snapshot_command_(state, id);
 	}
 	return NULL;
 }

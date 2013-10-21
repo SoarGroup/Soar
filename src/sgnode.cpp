@@ -23,6 +23,8 @@ sgnode::sgnode(const string &name, const string &type, bool group)
   trans_dirty(true), shape_dirty(true), bounds_dirty(true),
   pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
 {
+	saved_pos = pos;
+	saved_scale = scale;
 	set_help("Reports information about this node.");
 }
 
@@ -40,6 +42,7 @@ void sgnode::set_trans(char type, const vec3 &t) {
 			if (pos != t) {
 				pos = t;
 				set_transform_dirty();
+				update_pos_diff();
 			}
 			break;
 		case 'r':
@@ -52,6 +55,7 @@ void sgnode::set_trans(char type, const vec3 &t) {
 			if (scale != t) {
 				scale = t;
 				set_transform_dirty();
+				update_scale_diff();
 			}
 			break;
 		default:
@@ -65,6 +69,8 @@ void sgnode::set_trans(const vec3 &p, const vec3 &r, const vec3 &s) {
 		rot = r;
 		scale = s;
 		set_transform_dirty();
+		update_pos_diff();
+		update_scale_diff();
 	}
 }
 
@@ -122,6 +128,30 @@ void sgnode::update_transform() const {
 	trans_dirty = false;
 }
 
+void sgnode::update_pos_diff(){
+	double dist;
+	if(numeric_props.find("pos-diff") == numeric_props.end()){
+		saved_pos = pos;
+		dist = 0;
+	} else {
+		vec3 diff = pos - saved_pos;
+		dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+	}
+	set_property("pos-diff", dist);
+}
+
+void sgnode::update_scale_diff(){
+	double vol_diff;
+	if(numeric_props.find("vol-diff") == numeric_props.end()){
+		saved_scale = scale;
+		vol_diff = 1;
+	} else {
+		double curVol = scale[0]*scale[1]*scale[2];
+		double savedVol = saved_scale[0]*saved_scale[1]*saved_scale[2];
+		vol_diff = curVol/savedVol;
+	}
+	set_property("vol-diff", vol_diff);
+}
 
 /* if updates result in observers removing themselves, the iteration may
  * screw up, so make a copy of the std::list first */

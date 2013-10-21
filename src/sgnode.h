@@ -14,6 +14,7 @@ class sgnode_listener;
 class group_node;
 class geometry_node;
 
+
 typedef std::map<std::string, std::string> string_properties_map;
 typedef std::map<std::string, double> numeric_properties_map;
 
@@ -88,6 +89,11 @@ public:
 	void delete_property(const std::string& propertyName);
 	void set_native_property(char type, int dim, double value);
 
+	void save_snapshot(){
+		saved_pos = pos;
+		saved_scale = scale;
+	}
+
 protected:
 	void set_bounds(const bbox &b);
 	virtual void update_shape() = 0;
@@ -103,6 +109,9 @@ private:
 		send_update(t, s);
 	}
 	
+	void update_pos_diff();
+	void update_scale_diff();
+
 	int         id;
 	std::string name;
 	std::string type;
@@ -127,6 +136,10 @@ private:
 	// AM: Maps that hold both numeric and string properties
 	string_properties_map string_props;
 	numeric_properties_map numeric_props;
+
+	// AM: Stored values for the agent
+	vec3 saved_pos;
+	vec3 saved_scale;
 };
 
 class group_node : public sgnode {

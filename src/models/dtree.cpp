@@ -9,7 +9,7 @@
 #include "dtree.h"
 #include "common.h"
 #include "mat.h"
-#include "platform_specific.h" // for log2
+#include "posix/platform_specific.h" // for log2
 
 using namespace std;
 
