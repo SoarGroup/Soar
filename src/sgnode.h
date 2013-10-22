@@ -90,6 +90,7 @@ public:
 	void set_native_property(char type, int dim, double value);
 
 	void save_snapshot(){
+		std::cout << "SAVED SNAPSHOT" << std::endl;
 		saved_pos = pos;
 		saved_scale = scale;
 	}

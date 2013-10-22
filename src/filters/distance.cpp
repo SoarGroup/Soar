@@ -93,6 +93,10 @@ public:
 		}
 		
 		rank = -scn->get_convex_distance(a, b);
+		if(a == b){
+			// Don't want the closest to report the given node
+			rank = -1000000000;
+		}
 		return true;
 	}
 private:

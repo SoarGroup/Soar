@@ -151,6 +151,12 @@ command* make_command(svs_state *state, wme *w) {
 		return _make_extract_command_(state, id);
 	} else if (name == "project") {
 		return _make_project_command_(state, id);
+	} else if (name == "extract_once") {
+		return _make_extract_once_command_(state, id);
+	} else if(name == "add_node") {
+		return _make_add_node_command_(state, id);
+	} else if(name == "seek"){
+		return _make_seek_command_(state, id);
 	} else if (name == "random_control") {
 		return _make_random_control_command_(state, id);
 	} else if (name == "create-model") {
