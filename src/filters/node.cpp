@@ -82,7 +82,10 @@ private:
 	
 	void del_entry(sgnode *n, const filter_params *params) {
 		map<sgnode*, node_info>::iterator i = nodes.find(n);
-		assert(i != nodes.end());
+		//JK assert crashes in real world TODO debug
+		//assert(i != nodes.end());
+		if (i== nodes.end())
+		  return;
 		std::list<const filter_params*> &p = i->second.params;
 		std::list<const filter_params*>::iterator j = find(p.begin(), p.end(), params);
 		assert(j != p.end());

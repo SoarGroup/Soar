@@ -184,15 +184,16 @@ public:
 			newres = ((dist >= bot) && (dist <= top));
 		}
 		
-		//changed = (newres != res);
+		
 		//res = newres;
-		changed = true;
+		changed = false;
 		filter_val* a_val = new filter_val_c<const sgnode*>(b);
 		if (newres && out == NULL) {
 			// Create a new filter val
 			out = new filter_val_c<const sgnode*>(b);
 		} else if(newres && a_val != out) {
 			// The value has changed
+		  //std::cout << "Changed here" << std::endl;
 			set_filter_val(out, b);
 		} else if(!newres && out != NULL) {
 			// We no longer are selecting the value, make it null
@@ -237,7 +238,7 @@ public:
 		}
 		
 		bool newres = size_comp(a, b);
-		changed = true;
+		changed = false;
 		filter_val* a_val = new filter_val_c<const sgnode*>(b);
 		if(newres && out == NULL){
 			// Create a new filter val
@@ -253,7 +254,7 @@ public:
 			changed = false;
 		}
 		delete a_val;
-		//changed = (newres != res);
+		
 		//res = newres;
 		return true;
 	}
@@ -277,7 +278,7 @@ public:
 		}
 		
 	    bool newres = linear_comp(a, b, c);
-	changed = true;
+	changed = false;
 		filter_val* a_val = new filter_val_c<const sgnode*>(b);
 		if(newres && out == NULL){
 			// Create a new filter val
@@ -293,7 +294,7 @@ public:
 			changed = false;
 		}
 		delete a_val;
-	//changed = (newres != res);
+	
 	//res = newres;
 		return true;
 	}

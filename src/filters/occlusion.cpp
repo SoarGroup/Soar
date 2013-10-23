@@ -103,6 +103,9 @@ double calc_occlusion(const scene* scn, const sgnode* a){
 			}
 			double dist = convex_distance(n, view_line.first);
 			if(dist <= 0){
+				if(n->get_name() == "arm"){
+					std::cout << "ARM OCCLUSION!" << std::endl;
+				}
 				//std::cout << "Occlusion detected" << std::endl;
 				//std::cout << "  " << j->first->get_name() << std::endl;
 				//std::cout << "  " << n->get_name() << std::endl; 
