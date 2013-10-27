@@ -624,7 +624,6 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
     say.  Normally deallocate_production() should be invoked only via
     the production_remove_ref() macro.
 ********************************************************************* */
-
 production *make_production (agent* thisAgent,
 							        byte type,
                              Symbol *name,

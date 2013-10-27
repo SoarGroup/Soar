@@ -978,6 +978,7 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
   condition *top, *bottom;
   action *rhs;
 
+  thisAgent->outputManager->set_dprint_enabled(false);
   /*
   --- print "sp" and production name ---
   */
@@ -1058,6 +1059,7 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
   xml_end_tag(thisAgent, kTagProduction);
 
   deallocate_action_list (thisAgent, rhs);
+  thisAgent->outputManager->set_dprint_enabled(true);
 }
 
 /* ------------------------------------------------------------------
