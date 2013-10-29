@@ -262,6 +262,14 @@ void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
 	}
 }
 
+void randomize_vec(vec3 &v, const vec3 &min, const vec3 &max) {
+	//v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
+	// apparently rvec::Random will generate numbers outside of [0, 1]
+	for (int i = 0; i < 3; ++i) {
+		v[i] = min[i] + (rand() / (double) RAND_MAX) * (max[i] - min[i]);
+	}
+}
+
 vec3 project(const vec3 &v, const vec3 &u) {
 	double m = u.squaredNorm();
 	if (m == 0.) {

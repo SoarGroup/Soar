@@ -186,6 +186,7 @@ std::ostream& output_mat(std::ostream &os, const const_mat_view m);
 bool normal(const_mat_view m);
 bool uniform(const_mat_view X);
 void randomize_vec(rvec &v, const rvec &min, const rvec &max);
+void randomize_vec(vec3 &v, const vec3 &min, const vec3 &max);
 
 /*
  Return indices of columns that have significantly different values,
@@ -334,6 +335,12 @@ public:
 		p.push_back(vec3(max_pt[0], max_pt[1], max_pt[2]));
 	}
 	
+	vec3 get_random_point() const {
+		vec3 randPt;
+		randomize_vec(randPt, min_pt, max_pt);
+		return randPt;
+	}
+
 	friend std::ostream& operator<<(std::ostream &os, const bbox &b);
 	
 private:
