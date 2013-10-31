@@ -38,9 +38,13 @@
 
 using namespace soar_TraceNames;
 void dprint_condition (TraceMode mode, condition *cond);
-void dprint_grounds (TraceMode mode);
+void dprint_condition_cons (TraceMode mode, cons *c);
 void check_symbol(agent *thisAgent, Symbol *sym, const char *message);
 void check_symbol_in_test(agent *thisAgent, test t, const char *message);
+
+//#define BACKTRACE_COMBINE_CONDITIONS
+#define BACKTRACE_ADD_ALL_CONDITIONS
+//#define BACKTRACE_ADD_ONLY_UNIQUE
 
 /* ====================================================================
 
@@ -83,24 +87,32 @@ void check_symbol_in_test(agent *thisAgent, test t, const char *message);
    the grounds.
 ==================================================================== */
 
+
+/* -- This version of the add functions combines the tests from two conditions if they both
+ *    match the same wme.  Not currently used because there were significant problems when
+ *    reordering and adding to rete.  Keeping around for now if adding all conditions proves
+ *    to be an issue. -- */
+
+#ifdef BACKTRACE_COMBINE_CONDITIONS
 inline condition *find_cond_for_match_wme(agent* thisAgent, wme *matched_wme, ::list *search_list)
 {
   assert(matched_wme && search_list);
-  dprint(DT_LHS_VARIABLIZATION, "Looking in search_list...\n");
+  dprint(DT_BACKTRACE, "Looking in search_list...\n");
 
   for (cons *c = search_list; c ; c = c->rest)
   {
-    dprint(DT_LHS_VARIABLIZATION, "Comparing:\n");
-    dprint_condition(DT_LHS_VARIABLIZATION, static_cast<condition *> (c->first));
+    dprint(DT_BACKTRACE, "Comparing:\n");
+    dprint_condition(DT_BACKTRACE, static_cast<condition *> (c->first));
     if (static_cast<condition *>(c->first)->bt.wme_ == matched_wme)
     {
-      dprint(DT_LHS_VARIABLIZATION, "Equivalent!  Condition is in list.\n");
+      dprint(DT_BACKTRACE, "Equivalent!  Condition is in list.\n");
       return static_cast<condition *>(c->first);
     } else {
-      dprint(DT_LHS_VARIABLIZATION, "Not a match.\n");
+      dprint(DT_BACKTRACE, "Not a match.\n");
     }
   }
-  dprint(DT_LHS_VARIABLIZATION, "Condition not found in list.  Big bug b/c it's marked!\n");
+  dprint(DT_BACKTRACE, "Condition not found in list.  Big bug b/c it's marked!\n");
+  dprint_condition_cons(DT_BACKTRACE, search_list);
   assert(false);
   return NIL;
 }
@@ -115,8 +127,8 @@ inline void add_to_grounds(agent* thisAgent, condition * cond)
   if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
   {
     (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
-    dprint(DT_LHS_VARIABLIZATION, "Pushing condition to ground list:\n");
-    dprint_condition(DT_LHS_VARIABLIZATION, cond);
+    dprint(DT_BACKTRACE, "Pushing condition to ground list:\n");
+    dprint_condition(DT_BACKTRACE, cond);
     push (thisAgent, (cond), thisAgent->grounds);
   } else
   {
@@ -153,6 +165,40 @@ inline void add_to_locals(agent* thisAgent, condition * cond)
       push (thisAgent, (cond), thisAgent->locals);
     }
 }
+#endif
+
+#ifdef BACKTRACE_ADD_ALL_CONDITIONS
+inline void add_to_grounds(agent* thisAgent, condition * cond)
+{
+  cons *c;
+
+  if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
+  {
+    (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
+  }
+  push (thisAgent, (cond), thisAgent->grounds);
+}
+
+inline void add_to_potentials(agent* thisAgent, condition * cond)
+{
+  if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)
+  {
+    (cond)->bt.wme_->potentials_tc = thisAgent->potentials_tc;
+    (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
+  }
+  push (thisAgent, (cond), thisAgent->positive_potentials);
+}
+
+inline void add_to_locals(agent* thisAgent, condition * cond)
+{
+  if ((cond)->bt.wme_->locals_tc != thisAgent->locals_tc)
+  {
+    (cond)->bt.wme_->locals_tc = thisAgent->locals_tc;
+    (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
+  }
+  push (thisAgent, (cond), thisAgent->locals);
+}
+#endif
 
 /* -------------------------------------------------------------------
                      Backtrace Through Instantiation
@@ -337,11 +383,9 @@ void backtrace_through_instantiation (agent* thisAgent,
 
       /* --- positive cond's are grounds, potentials, or locals --- */
       if (c->data.tests.id_test->data.referent->tc_num == tc) {
-        dprint(DT_LHS_VARIABLIZATION, "Backtracing adding ground condition...\n");
-        dprint_condition(DT_LHS_VARIABLIZATION, c);
+        dprint(DT_BACKTRACE, "Backtracing adding ground condition...\n");
+        dprint_condition(DT_BACKTRACE, c);
         add_to_grounds (thisAgent, c);
-        dprint(DT_LHS_VARIABLIZATION, "Grounds in backtrace 0:\n");
-        dprint_grounds(DT_LHS_VARIABLIZATION);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -370,8 +414,8 @@ void backtrace_through_instantiation (agent* thisAgent,
     }
   } /* end of for loop */
 
-  dprint(DT_LHS_VARIABLIZATION, "Grounds in backtrace 1:\n");
-  dprint_grounds(DT_LHS_VARIABLIZATION);
+  dprint(DT_BACKTRACE, "Grounds in backtrace:\n");
+  dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
 
   /* Now record the sets of conditions.  Note that these are not necessarily */
   /* the final resting place for these wmes.  In particular potentials may   */
@@ -381,9 +425,6 @@ void backtrace_through_instantiation (agent* thisAgent,
   if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
     explain_add_temp_to_backtrace_list(thisAgent, &temp_explain_backtrace,grounds_to_print,
                                        pots_to_print,locals_to_print,negateds_to_print);
-
-  dprint(DT_LHS_VARIABLIZATION, "Grounds in backtrace 2:\n");
-  dprint_grounds(DT_LHS_VARIABLIZATION);
 
   /* --- if tracing BT, print the resulting conditions, etc. --- */
   if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
@@ -412,8 +453,6 @@ void backtrace_through_instantiation (agent* thisAgent,
     print_consed_list_of_conditions (thisAgent, negateds_to_print, indent);
     xml_end_tag(thisAgent, kTagNegated);
     print(thisAgent,  "\n");
-    print_spaces (thisAgent, indent);
-    print(thisAgent,  "  -->Nots:\n");
     /* mvp done */
 
     xml_begin_tag(thisAgent, kTagNots);

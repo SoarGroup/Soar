@@ -18,6 +18,14 @@ typedef struct action_struct action;
 typedef struct condition_struct condition;
 typedef cons list;
 typedef struct symbol_struct Symbol;
+typedef struct test_struct test_info;
+typedef test_info * test;
+
+typedef struct saved_test_struct {
+  struct saved_test_struct *next;
+  Symbol *var;
+  test the_test;
+} saved_test;
 
 extern bool reorder_action_list (agent* thisAgent, action **action_list, tc_number lhs_tc);
 extern bool reorder_lhs (agent* thisAgent, condition **lhs_top,

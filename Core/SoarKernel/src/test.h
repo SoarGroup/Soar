@@ -33,15 +33,17 @@ typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer);
 
-/* --- Test struct stores information about all test types, including
- *     equality tests.  If nil, the test is considered blank.
+/* -- Test struct stores information about all test types, including
+ *    equality tests.  If nil, the test is considered blank.
  *
- *     The original_test pointer stores the test that was defined when the
- *     production was read in by the parser.  The values are filled in by the
- *     rete when reconstructing a production.  It is used by the chunker to
- *     determine when to variablize constant symbols. - MMA 2013
+ *    The original_test pointer stores the test that was defined when the
+ *    production was read in by the parser.  The values are filled in by the
+ *    rete when reconstructing a production.  It is used by the chunker to
+ *    determine when to variablize constant symbols. - MMA 2013
  *
- *     ---*/
+ *    Note that conjunctive tests always have a NULL original_test.  Each
+ *    constituent test of the conjunctive test contains links to its original
+ *    test already --*/
 
 typedef struct test_struct {
   TestType type;                  /* see definitions below */
