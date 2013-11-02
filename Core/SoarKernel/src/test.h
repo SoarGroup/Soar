@@ -81,8 +81,8 @@ test copy_test (agent* thisAgent, test t);
 test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *removed_goal, bool *removed_impasse);
 
 
-void add_test (agent* thisAgent, test *dest_address, test add_me);
-void add_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
+void add_test (agent* thisAgent, test *dest_address, test new_test);
+void add_test_if_not_already_there (agent* thisAgent, test *t, test new_test, bool neg);
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 
