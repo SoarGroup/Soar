@@ -1575,7 +1575,11 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 
 	/* MVP 6-8-94 */
 	if (!thisAgent->max_chunks_reached)
-		chunk_instantiation (thisAgent, chunk_inst, dont_variablize, custom_inst_list);
+	{
+	  dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantation...\n");
+	  dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+	  chunk_instantiation (thisAgent, chunk_inst, dont_variablize, custom_inst_list);
+	}
 
   print(thisAgent, "\nChunk_instantiation created: \n");
   debug_print_instantiation(inst);
