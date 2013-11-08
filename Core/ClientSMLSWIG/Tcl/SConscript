@@ -2,7 +2,6 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import distutils.sysconfig
 import sys
 import os
 import SCons.Script
@@ -10,39 +9,45 @@ import SCons.Script
 Import('env')
 clone = env.Clone()
 
-# Targets, sources, other constants
-tclsml_wrap = env.File('#ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp')
-tclsml_i = env.File('#ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i')
-swig_cmdline = 'swig -o ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp -c++ -tcl -pkgversion 9.0.1 -Wall -IClientSML/src -IElementXML/src -IConnectionSML/src ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i'
-tclsml_shlib = 'Tcl_sml_ClientInterface'
-makepkg_script = env.File('#ClientSMLSWIG/Tcl/SconsMakeTclSMLPackage.tcl')
-tclsml_pkgfolder = env.Dir('$PREFIX/lib/Tcl_sml_ClientInterface')
-tclsml_mkpkg = 'tclsh ' + str(makepkg_script) + ' ' + str(tclsml_pkgfolder)
+lib_install_dir = clone['OUT_DIR']
+
+libname = 'Tcl_sml_ClientInterface'
+
+tclsml_wrap = env.File('Tcl_sml_ClientInterface_wrap.cpp')
+tclsml_i = env.File('Tcl_sml_ClientInterface.i')
+include_dirs = [ env.Dir('#Core/%s/src' % d).abspath for d in 'ClientSML ElementXML ConnectionSML'.split() ]
+includes = ' '.join('-I%s' % d for d in include_dirs)
+wrap_cmd = 'swig -o %s -c++ -tcl -pkgversion 9.0.1 -Wall %s %s' % (tclsml_wrap.abspath, includes, tclsml_i)
+
+makepkg_script = env.File('SconsMakeTclSMLPackage.tcl')
+pkgdir = env.Dir('$OUT_DIR')
+pkgindex = os.path.join(pkgdir.abspath, 'pkgIndex.tcl')
+makepkg_cmd = 'tclsh %s %s' % (makepkg_script, pkgdir)
 
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
 clone.Append(SCANNERS=[SWIGScanner])
 
-# Create the wrapp cpp
-env.Command(tclsml_wrap, tclsml_i, swig_cmdline)
+# Create the wrap cpp
+tclstep1 = clone.Command(tclsml_wrap, tclsml_i, wrap_cmd)
+#env.Alias('tclstep1', tclstep1)
 
-# Prepare environment to build shared library
-clone.Prepend(CPPPATH = Split('#ClientSML/src #ElementXML/src #ConnectionSML/src /usr/include/tcl'))
+clone.Append(
+  CPPPATH  = ['/usr/include/tcl8.6'],
+  LIBS     = ['tcl8.6'],
+  CPPFLAGS = ['-w'],
+)
 
 if os.name == 'posix':
-	clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
-
-clone.Append(LIBS = Split('ClientSML ConnectionSML ElementXML tcl8.4'))
-clone.Append(LIBPATH = ['$PREFIX/lib'])
+  clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
 
 if sys.platform == 'darwin':
-	clone.Append(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
+  clone.Append(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
 
-clone.Append(CPPFLAGS = ['-w'])
+tclstep2 = clone.SharedLibrary(libname, tclsml_wrap)
+#env.Alias('tclstep2', tclstep2)
+lib = env.Install(lib_install_dir, tclstep2)
+#env.Alias('tclstep3', lib)
 
-shlib = clone.SharedLibrary(tclsml_shlib, tclsml_wrap)
-
-shlib_installed = env.Install(tclsml_pkgfolder, shlib)
-env.Command(str(tclsml_pkgfolder) + '/pkgIndex.tcl', shlib_installed, tclsml_mkpkg)
-env.Clean(shlib, tclsml_pkgfolder)
-
+env.Alias('sml_tcl', env.Command(pkgindex, lib, makepkg_cmd))
+env.Clean(lib, pkgdir)
