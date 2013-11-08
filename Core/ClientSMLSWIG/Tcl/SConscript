@@ -20,9 +20,9 @@ includes = ' '.join('-I%s' % d for d in include_dirs)
 wrap_cmd = 'swig -o %s -c++ -tcl -pkgversion 9.0.1 -Wall %s %s' % (tclsml_wrap.abspath, includes, tclsml_i)
 
 makepkg_script = env.File('SconsMakeTclSMLPackage.tcl')
-pkgdir = env.Dir('$OUT_DIR')
-pkgindex = os.path.join(pkgdir.abspath, 'pkgIndex.tcl')
-makepkg_cmd = 'tclsh %s %s' % (makepkg_script, pkgdir)
+lib_install_dir = env.Dir('$OUT_DIR')
+pkgindex = os.path.join(lib_install_dir.abspath, 'pkgIndex.tcl')
+makepkg_cmd = 'tclsh %s %s' % (makepkg_script, lib_install_dir)
 
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
@@ -30,11 +30,10 @@ clone.Append(SCANNERS=[SWIGScanner])
 
 # Create the wrap cpp
 tclstep1 = clone.Command(tclsml_wrap, tclsml_i, wrap_cmd)
-#env.Alias('tclstep1', tclstep1)
 
 clone.Append(
-  CPPPATH  = ['/usr/include/tcl8.6'],
-  LIBS     = ['tcl8.6'],
+  CPPPATH  = ['/Users/mazzin/git/tcl8.5.15/library'],
+  LIBS     = ['tcl8.5'],
   CPPFLAGS = ['-w'],
 )
 
@@ -42,12 +41,10 @@ if os.name == 'posix':
   clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
 
 if sys.platform == 'darwin':
-  clone.Append(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
+  clone.Append(SHLINKFLAGS = Split('$LINKFLAGS -flat_namespace -undefined suppress'))
+#  clone.Append(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
 
 tclstep2 = clone.SharedLibrary(libname, tclsml_wrap)
-#env.Alias('tclstep2', tclstep2)
 lib = env.Install(lib_install_dir, tclstep2)
-#env.Alias('tclstep3', lib)
 
 env.Alias('sml_tcl', env.Command(pkgindex, lib, makepkg_cmd))
-env.Clean(lib, pkgdir)
