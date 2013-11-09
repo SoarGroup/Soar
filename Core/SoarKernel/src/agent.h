@@ -627,7 +627,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   preference        * results;
   goal_stack_level    results_match_goal_level;
   tc_number           results_tc_number;
-  tc_number           variablization_tc;
   preference        * extra_result_prefs_from_instantiation;
   bool                quiescence_t_flag;
   char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */

@@ -320,7 +320,6 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
   {
     /* -- First instance of an unbound rhs var -- */
     dprint(DT_VARIABLIZATION_MANAGER, "...is unbound variable.\n");
-    (*sym)->tc_num = thisAgent->variablization_tc;
     prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
     prefix[1] = 0;
     var = generate_new_variable (thisAgent, prefix);

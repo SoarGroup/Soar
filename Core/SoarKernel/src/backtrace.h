@@ -20,14 +20,6 @@
 #ifndef BACKTRACE_H
 #define BACKTRACE_H
 
-/* MToDo| This does not seem like it would do anything useful.  Probably
- *        a typo in main trunk.  All other cases seem to be commented
- *        out in other Core files. -- */
-#ifdef __cplusplus
-extern "C"
-//{
-#endif
-
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef signed short goal_stack_level;
