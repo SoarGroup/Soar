@@ -155,4 +155,23 @@ inline rhs_value unboundvar_to_rhs_value(uint64_t n){ return reinterpret_cast<rh
 inline rhs_value funcall_list_to_rhs_value(::list * fl){ return reinterpret_cast<rhs_value>(reinterpret_cast<char *>(fl) + 1);}
 inline rhs_value reteloc_to_rhs_value(byte field_num, rete_node_level levels_up){ return reinterpret_cast<rhs_value>(levels_up << 4) + (field_num << 2) + 2;}
 
+/* -- Comparison functions -- */
+inline bool rhs_values_symbols_equal(rhs_value rv1, rhs_value rv2)
+{
+  return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
+}
+
+inline bool rhs_values_symbols_equal_with_originals(rhs_value rv1, rhs_value rv2)
+{
+  return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
+}
+
+inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
+{
+  if (rhs_value_is_symbol(rv1) && rhs_value_is_symbol(rv2))
+    return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
+  else
+    return (rv1 == rv2);
+}
+
 #endif /* RHS_H_ */
