@@ -5799,7 +5799,7 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
 			valid, even though, for retractions caused by goal removals, the
 			goal will be removed at the next WM phase. (You can see this by
 			printing the identifier for the goal in the elaboration cycle
-			after goal removal.  It's still there, although nothing is attacjed
+			after goal removal.  It's still there, although nothing is attached
 			to it.  One elab later, the identifier itself is removed.)  Because
 			Waterfall needs to know if the goal is valid or not, I look at the
 			link_count on the symbol.  A link_count of 0 is the trigger for the

@@ -91,7 +91,7 @@ void deallocate_condition_list (agent* thisAgent,
   }
 }
 
-extern void inline init_condition(condition *cond)
+extern void init_condition(condition *cond)
 {
 	  cond->next = cond->prev = NIL;
 	  cond->bt.trace = NIL;
