@@ -89,12 +89,6 @@ public:
 	void delete_property(const std::string& propertyName);
 	void set_native_property(char type, int dim, double value);
 
-	void save_snapshot(){
-		std::cout << "SAVED SNAPSHOT" << std::endl;
-		saved_pos = pos;
-		saved_scale = scale;
-	}
-
 protected:
 	void set_bounds(const bbox &b);
 	virtual void update_shape() = 0;
@@ -110,9 +104,6 @@ private:
 		send_update(t, s);
 	}
 	
-	void update_pos_diff();
-	void update_scale_diff();
-
 	int         id;
 	std::string name;
 	std::string type;
@@ -138,9 +129,6 @@ private:
 	string_properties_map string_props;
 	numeric_properties_map numeric_props;
 
-	// AM: Stored values for the agent
-	vec3 saved_pos;
-	vec3 saved_scale;
 };
 
 class group_node : public sgnode {

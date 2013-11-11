@@ -32,6 +32,7 @@ filter_table_entry *node_fill_entry();
 filter_table_entry *all_nodes_fill_entry();
 filter_table_entry *node_centroid_fill_entry();
 filter_table_entry *compare_fill_entry();
+filter_table_entry *compare_nodes_fill_entry();
 filter_table_entry *absval_fill_entry();
 filter_table_entry *vec3_fill_entry();
 filter_table_entry *max_fill_entry();
@@ -40,6 +41,9 @@ filter_table_entry *has_property_fill_entry();
 filter_table_entry *occlusion_fill_entry();
 filter_table_entry *dist_select_xyz_fill_entry();
 filter_table_entry *overlap_fill_entry();
+filter_table_entry *monitor_position_fill_entry();
+filter_table_entry *monitor_volume_fill_entry();
+filter_table_entry *remove_node_fill_entry();
 
 filter_table::filter_table() {
 	add(intersect_fill_entry());
@@ -65,6 +69,7 @@ filter_table::filter_table() {
 	add(all_nodes_fill_entry());
 	add(node_centroid_fill_entry());
 	add(compare_fill_entry());
+	add(compare_nodes_fill_entry());
 	add(absval_fill_entry());
 	add(vec3_fill_entry());
 	add(max_fill_entry());
@@ -73,6 +78,9 @@ filter_table::filter_table() {
 	add(occlusion_fill_entry());
 	add(dist_select_xyz_fill_entry());
 	add(overlap_fill_entry());
+	add(monitor_position_fill_entry());
+	add(monitor_volume_fill_entry());
+	add(remove_node_fill_entry());
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*> &c) {

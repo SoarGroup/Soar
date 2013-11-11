@@ -1010,3 +1010,113 @@ void scene::verify_listeners() const {
 		assert(l.size() == 1 && l.front() == this);
 	}
 }
+
+std::string scene::parse_query(const std::string &query) const {
+	vector<string> lines;
+	vector<string>::iterator i;
+	string cmd;
+	int errfield;
+	string error;
+	string result;
+	string output = "";
+
+	split(query, "\n", lines);
+	for (i = lines.begin(); i != lines.end(); ++i) {
+		vector<string> fields;
+		split(*i, "", fields);
+		error = "unknown error";
+
+		if (fields.size() == 0){
+			continue;
+		}
+
+		cmd = fields[0];
+		fields.erase(fields.begin());
+
+		if(cmd == "obj-info"){
+			errfield = parse_object_query(fields, result, error);
+		} else if(cmd == "objs-with-flag"){
+			errfield = parse_objects_with_flag_query(fields, result, error);
+		} else {
+			errfield = 0;
+			error = "Unknown command";
+		}
+
+		if (errfield >= 0) {
+			stringstream ss;
+			ss << "Error in F[" << (1 + errfield) << "] of line [" << *i << "]: " << error << endl;
+			output += ss.str();
+		} else {
+			output += result + "\n";
+		}
+	}
+	return output;
+}
+
+int scene::parse_object_query(std::vector<std::string>& f, std::string& result, std::string &error) const {
+	if(f.size() == 0){
+		error = "Expecting id argument";
+		return 1;
+	}
+
+	string name = f[0];
+	const sgnode* node = this->get_node(name);
+	if(node == 0){
+		error = "Node not found";
+		return 1;
+	}
+
+	vec3 pos, rot, scale;
+	node->get_trans(pos, rot, scale);
+
+	const string_properties_map string_props = node->get_string_properties();
+	const numeric_properties_map numeric_props = node->get_numeric_properties();
+
+	stringstream ss;
+	ss << "o " << name;
+	ss << " p " << pos[0] << " " << pos[1] << " " << pos[2];
+	ss << " r " << rot[0] << " " << rot[1] << " " << rot[2];
+	ss << " s " << scale[0] << " " << scale[1] << " " << scale[2];
+	ss << " f " << (string_props.size() + numeric_props.size());
+	for(string_properties_map::const_iterator i = string_props.begin(); i != string_props.end(); i++){
+		ss << " " << i->first << " " << i->second;
+	}
+	for(numeric_properties_map::const_iterator i = numeric_props.begin(); i != numeric_props.end(); i++){
+		ss << " " << i->first << " " << i->second;
+	}
+
+	result = ss.str();
+	return -1;
+}
+
+int scene::parse_objects_with_flag_query(std::vector<std::string>& f, std::string& result, std::string& error) const{
+	if(f.size() < 2){
+		error = "Expecting 2 arguments";
+		return 1;
+	}
+
+	string flagName = f[0];
+	string flagValue = f[1];
+
+	vector<string> nodeNames;
+
+	vector<const sgnode*> nodes;
+	this->get_all_nodes(nodes);
+	for(vector<const sgnode*>::const_iterator i = nodes.begin(); i != nodes.end(); i++){
+		const string_properties_map string_props = (*i)->get_string_properties();
+		string_properties_map::const_iterator prop_it = string_props.find(flagName);
+		if(prop_it != string_props.end() && prop_it->second == flagValue){
+			nodeNames.push_back((*i)->get_name());
+		}
+	}
+
+	stringstream ss;
+	ss << "objs " << nodeNames.size();
+	for(vector<string>::iterator i = nodeNames.begin(); i != nodeNames.end(); i++){
+		ss << " " << *i;
+	}
+
+	result = ss.str();
+
+	return -1;
+}

@@ -135,7 +135,14 @@ bool parse_int(const string &s, int &v) {
 	return true;
 }
 
-string tostring(int x) {
+template<class T>
+string tostring(T x) {
+	stringstream ss;
+	ss << x;
+	return ss.str();
+}
+
+string tostring(double x){
 	stringstream ss;
 	ss << x;
 	return ss.str();

@@ -184,6 +184,40 @@ private:
 	map<sgnode*, filter_val*> outputs;
 };
 
+class remove_node_filter : public typed_select_filter<const sgnode*>{
+public:
+	remove_node_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: typed_select_filter<const sgnode*>(root, si, input), scn(scn)
+	{}
+
+	bool compute(const filter_params *p, bool null_out, const sgnode*& out, bool& select, bool& changed) {
+		const sgnode *a;
+		const sgnode *b;
+
+		if (!get_filter_param(this, p, "a", a)) {
+			set_status("expecting parameter a");
+			return false;
+		}
+		if(!get_filter_param(this, p, "b", b)){
+			set_status("expecting parameter b");
+			return false;
+		}
+
+		out = a;
+		select = (a != b);
+		if(select){
+			// We always say a selected node has changed, so that changes from below get propagated
+			changed = true;
+		}
+
+		return true;
+	}
+
+private:
+
+	scene *scn;
+};
+
 class node_centroid_filter : public typed_map_filter<vec3> {
 public:
 	node_centroid_filter(Symbol *root, soar_interface *si, filter_input *input)
@@ -216,6 +250,10 @@ filter *make_node_centroid_filter(Symbol *root, soar_interface *si, scene *scn, 
 	return new node_centroid_filter(root, si, input);
 }
 
+filter *make_remove_node_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new remove_node_filter(root, si, input);
+}
+
 filter_table_entry *node_fill_entry() {
 	filter_table_entry *e = new filter_table_entry;
 	e->name = "node";
@@ -236,5 +274,14 @@ filter_table_entry *node_centroid_fill_entry() {
 	e->name = "node_centroid";
 	e->parameters.push_back("node");
 	e->create = &make_node_centroid_filter;
+	return e;
+}
+
+filter_table_entry *remove_node_fill_entry(){
+	filter_table_entry *e = new filter_table_entry;
+	e->name = "remove_node";
+	e->parameters.push_back("a");
+	e->parameters.push_back("b");
+	e->create = &make_remove_node_filter;
 	return e;
 }

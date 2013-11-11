@@ -27,6 +27,7 @@ public:
 	scene *clone(const std::string &name) const;
 	
 	group_node   *get_root() { return root; }
+	const group_node* get_root() const { return root; }
 	sgnode       *get_node(const std::string &name);
 	sgnode const *get_node(const std::string &name) const;
 	sgnode       *get_node(int id);
@@ -45,6 +46,8 @@ public:
 	bool set_properties(const rvec &vals);
 	bool parse_sgel(const std::string &s);
 	
+	std::string parse_query(const std::string& query) const;
+
 	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info);
 	double get_convex_distance(const sgnode *a, const sgnode *b) const;
 
@@ -114,6 +117,9 @@ private:
 	void cli_relations(const std::vector<std::string> &args, std::ostream &os) const;
 	void cli_draw(const std::vector<std::string> &args, std::ostream &os);
 	void cli_clear(const std::vector<std::string> &args, std::ostream &os);
+
+	int parse_object_query(std::vector<std::string>& f, std::string& result, std::string &error) const;
+	int parse_objects_with_flag_query(std::vector<std::string>& f, std::string& result, std::string& error) const;
 };
 
 #endif

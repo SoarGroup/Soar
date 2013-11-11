@@ -4,7 +4,8 @@
 #include "src/commands/model.cpp"
 #include "src/commands/project.cpp"
 #include "src/commands/property.cpp"
-#include "src/commands/save_snapshot.cpp"
+#include "src/commands/copy_node.cpp"
+#include "src/commands/delnode.cpp"
 
 #include "src/models/model.cpp"
 #include "src/models/em_model.cpp"
@@ -36,6 +37,7 @@
 #include "src/filters/ptlist.cpp"
 #include "src/filters/stats.cpp"
 #include "src/filters/vec3.cpp"
+#include "src/filters/monitor_object.cpp"
 
 #include "src/cliproxy.cpp"
 #include "src/command.cpp"

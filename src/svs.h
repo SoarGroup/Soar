@@ -144,6 +144,7 @@ private:
 	logger_set *loggers;
 };
 
+
 class svs : public svs_interface, public cliproxy {
 public:
 	svs(agent *a);
@@ -155,6 +156,7 @@ public:
 	void input_callback();
 	void add_input(const std::string &in);
 	std::string get_output() const;
+	std::string svs_query(const std::string &query);
 	bool add_model(const std::string &name, model *m);
 	std::map<std::string, model*> *get_models() { return &models; }
 

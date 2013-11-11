@@ -29,7 +29,10 @@ void strip(std::string &s, const std::string &whitespace);
 
 bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
-std::string tostring(int x);
+
+template<class T>
+std::string tostring(T x);
+
 bool is_nan(double x);
 bool is_inf(double x);
 bool approx_equal(double a, double b, double thresh);

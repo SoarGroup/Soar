@@ -132,7 +132,8 @@ command *_make_assign_model_command_(svs_state *state, Symbol *root);
 command *_make_property_command_(svs_state *state, Symbol *root);
 command *_make_seek_command_(svs_state *state, Symbol *root);
 command *_make_random_control_command_(svs_state *state, Symbol *root);
-command *_make_save_snapshot_command_(svs_state* state, Symbol* root);
+command *_make_copy_node_command_(svs_state *state, Symbol *root);
+command *_make_del_node_command_(svs_state *state, Symbol *root);
 
 command* make_command(svs_state *state, wme *w) {
 	string name;
@@ -165,8 +166,10 @@ command* make_command(svs_state *state, wme *w) {
 		return _make_assign_model_command_(state, id);
 	} else if (name == "property") {
 		return _make_property_command_(state, id);
-	} else if (name == "save-snapshot"){
-		return _make_save_snapshot_command_(state, id);
+	} else if(name == "copy_node"){
+		return _make_copy_node_command_(state, id);
+	} else if(name == "del_node"){
+		return _make_del_node_command_(state, id);
 	}
 	return NULL;
 }

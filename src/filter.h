@@ -629,6 +629,72 @@ private:
 	}
 };
 
+/*
+ User-defined filters should derive from this class so that they don't
+ have to work with filter_val* directly. Assumes that the filter only
+ returns one type of output.
+*/
+template <class T>
+class typed_select_filter : public select_filter {
+public:
+	typed_select_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: select_filter(root, si, input)
+	{}
+
+	virtual ~typed_select_filter() {}
+
+	// How to implement:
+	// params - a set of parameters chosen from the inputs
+	// null_out - true if the given out variable holds junk
+	// out - the result of the computation
+	// select - if true, the given out value will be added to the output, if false it will not be passed on
+	// changed - use to indicate whether the out value changed
+	virtual bool compute(const filter_params *params, bool null_out, T &out, bool& select, bool& changed) = 0;
+
+	virtual void output_removed(const T &out) { }
+
+private:
+	bool compute(const filter_params *params, filter_val *&out, bool &changed) {
+		bool success;
+		bool select;
+		T val;
+		if (out != NULL) {
+			success = get_filter_val(out, val);
+			assert(success);
+		}
+		success = compute(params, (out == NULL), val, select, changed);
+		if (!success) {
+			return false;
+		}
+		if(select && out == NULL){
+			// Create a new filter val
+			out = new filter_val_c<T>(val);
+			changed = true;
+		} else if(select && changed){
+			// The value has changed
+			success = set_filter_val(out, val);
+			assert(success);
+		} else if(!select && out != NULL){
+			// We no longer are selecting the value, make it null
+			out = NULL;
+			changed = true;
+		} else {
+			// the value didn't actually changed
+			// do nothing
+			changed = false;
+		}
+		return true;
+	}
+
+	void output_removed(const filter_val *out) {
+		T val;
+		bool success = get_filter_val(out, val);
+		assert(success);
+		output_removed(val);
+		delete val;
+	}
+};
+
 
 /*
  This type of filter processes all inputs and produces a single

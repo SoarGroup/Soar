@@ -47,13 +47,13 @@ bool has_property(const sgnode* node, const string& property_name, const string&
 This filter takes a property-name and property-value and checks to see if each
 node has that att/val pair
 */
-class has_property_filter : public select_filter{
+class has_property_filter : public typed_select_filter<const sgnode*>{
 public:
 	has_property_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input)
-	: select_filter(root, si, input), scn(scn)
+	: typed_select_filter<const sgnode*>(root, si, input), scn(scn)
 	{}
 
-	bool compute(const filter_params *p, filter_val*& out, bool &changed) {
+	bool compute(const filter_params *p, bool null_out, const sgnode*& out, bool &select, bool &changed) {
 		const sgnode *a;
 		string prop_name;
 		string prop_value;
@@ -71,26 +71,13 @@ public:
 			return false;
 		}
 
-		filter_val* a_val = new filter_val_c<const sgnode*>(a);
-
-		changed = true;
-		bool select = has_property(a, prop_name, prop_value);
-		if(select && out == NULL){
-			// Create a new filter val
-			out = new filter_val_c<const sgnode*>(a);
-		} else if(select && a_val != out){
-			// The value has changed
-			set_filter_val(out, a);
-		} else if(!select && out != NULL){
-			// We no longer are selecting the value, make it null
-			out = NULL;
-		} else {
-			// the value didn't actually changed
-			changed = false;
+		out = a;
+		select = has_property(a, prop_name, prop_value);
+		if(select){
+			// We want to pass all node changes through to the next filter
+			changed = true;
 		}
 
-		delete a_val;
-		
 		return true;
 	}
 

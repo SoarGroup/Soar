@@ -23,8 +23,6 @@ sgnode::sgnode(const string &name, const string &type, bool group)
   trans_dirty(true), shape_dirty(true), bounds_dirty(true),
   pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
 {
-	saved_pos = pos;
-	saved_scale = scale;
 	set_help("Reports information about this node.");
 }
 
@@ -42,7 +40,6 @@ void sgnode::set_trans(char type, const vec3 &t) {
 			if (pos != t) {
 				pos = t;
 				set_transform_dirty();
-				update_pos_diff();
 			}
 			break;
 		case 'r':
@@ -55,7 +52,6 @@ void sgnode::set_trans(char type, const vec3 &t) {
 			if (scale != t) {
 				scale = t;
 				set_transform_dirty();
-				update_scale_diff();
 			}
 			break;
 		default:
@@ -69,8 +65,6 @@ void sgnode::set_trans(const vec3 &p, const vec3 &r, const vec3 &s) {
 		rot = r;
 		scale = s;
 		set_transform_dirty();
-		update_pos_diff();
-		update_scale_diff();
 	}
 }
 
@@ -126,31 +120,6 @@ void sgnode::update_transform() const {
 		wtransform = ltransform;
 	}
 	trans_dirty = false;
-}
-
-void sgnode::update_pos_diff(){
-	double dist;
-	if(numeric_props.find("pos-diff") == numeric_props.end()){
-		saved_pos = pos;
-		dist = 0;
-	} else {
-		vec3 diff = pos - saved_pos;
-		dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
-	}
-	set_property("pos-diff", dist);
-}
-
-void sgnode::update_scale_diff(){
-	double vol_diff;
-	if(numeric_props.find("vol-diff") == numeric_props.end()){
-		saved_scale = scale;
-		vol_diff = 1;
-	} else {
-		double curVol = scale[0]*scale[1]*scale[2];
-		double savedVol = saved_scale[0]*saved_scale[1]*saved_scale[2];
-		vol_diff = curVol/savedVol;
-	}
-	set_property("vol-diff", vol_diff);
 }
 
 /* if updates result in observers removing themselves, the iteration may
@@ -749,34 +718,13 @@ void sgnode::set_property(const std::string& propertyName, const std::string& va
 }
 
 void sgnode::set_property(const std::string& propertyName, double value){
-// JK: changes for set property incorrect/causing problems
-// so leaving in this hack for now
 	char type;
 	int d;
-	if (propertyName[0] == 'p' &&
-		(propertyName[1] == 'x' || 
-		 propertyName[1] == 'y' || 
-		 propertyName[1] == 'z'))
-	{
-		if (is_native_prop(propertyName, type, d)) {
-			vec3 trans = get_trans(type);
-			trans[d] = value;
-			set_trans(type, trans);
-		}
-		
+	if(is_native_prop(propertyName, type, d)){
+		set_native_property(type, d, value);
+	} else {
 		numeric_props[propertyName] = value;
 		send_update(sgnode::PROPERTY_CHANGED, propertyName);
-	}
-	else
-	{
-		char native_type;
-		int dim;
-		if(is_native_prop(propertyName, native_type, dim)){
-			set_native_property(native_type, dim, value);
-		} else {
-			numeric_props[propertyName] = value;
-			send_update(sgnode::PROPERTY_CHANGED, propertyName);
-		}
 	}
 }
 

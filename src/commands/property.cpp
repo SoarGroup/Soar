@@ -10,16 +10,13 @@ using namespace std;
 class property_command : public command {
 public:
 	property_command(svs_state *state, Symbol *root)
-	: command(state, root), root(root), val(NULL)
+	: command(state, root), root(root), first(true)
 	{
 		si = state->get_svs()->get_soar_interface();
 		scn = state->get_scene();
 	}
 	
 	~property_command() {
-		if (val) {
-			delete val;
-		}
 	}
 	
 	string description() {
@@ -27,39 +24,26 @@ public:
 	}
 	
 	bool update_sub() {
-		if (changed()) {
-			if (val) {
-				delete val;
-			}
-			if (!parse()) {
+		if(first){
+			first = false;
+			if(!parse()){
 				return false;
 			}
+		} else {
+			return true;
 		}
-		
-		if (val) {
-			if (!val->update()) {
-				set_status("filter error");
-				return false;
-			}
-			filter_output *out = val->get_output();
-			if (out->num_current() == 0) {
-				set_status("no outputs");
-				return false;
-			}
-			double v;
-			if (!get_filter_val(out->get_current(0), v)) {
-				set_status("output not of type float");
-				return false;
-			}
-		
-			sgnode *n = scn->get_node(id);
-			if (!n) {
-				set_status("no such node");
-				return false;
-			}
-			n->set_property(prop, v);
-			set_status("success");
+
+		sgnode* n = scn->get_node(id);
+		if(!n){
+			set_status(string("Couldn't find node ") + id);
+			return false;
 		}
+
+		//std::cout << "Property " << prop << " of node " << id << " set to " << val << std::endl;
+
+		n->set_property(prop, val);
+		set_status("success");
+
 		return true;
 	}
 	
@@ -86,16 +70,18 @@ public:
 			return false;
 		}
 		
-		if (!si->find_child_wme(root, "value", valwme)) {
+		if(!si->find_child_wme(root, "value", valwme)){
 			set_status("no value specified");
 			return false;
 		}
-		
-		val = parse_filter_spec(si, si->get_wme_val(valwme), scn);
-		if (!val) {
-			set_status("incorrect filter syntax");
-			return false;
-		}
+		double dv;
+		if(!si->get_val(si->get_wme_val(valwme), val)){
+			if(!si->get_val(si->get_wme_val(valwme), dv)){
+				set_status("unknown value type");
+				return false;
+			}
+			val = tostring(dv);
+		}  
 		return true;
 	}
 	
@@ -103,9 +89,10 @@ private:
 	Symbol         *root;
 	scene          *scn;
 	soar_interface *si;
-	filter         *val;
+	bool 						first;
 	string          id;
 	string          prop;
+	string					val;
 };
 
 command *_make_property_command_(svs_state *state, Symbol *root) {

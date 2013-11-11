@@ -11,6 +11,7 @@ public:
 	virtual void output_callback() = 0;
 	virtual void input_callback() = 0;
 	virtual void add_input(const std::string &in) = 0;
+	virtual std::string svs_query(const std::string &in) = 0;
 	virtual std::string get_output() const = 0;
 	virtual bool do_cli_command(const std::vector<std::string> &args, std::string &output) = 0;
 };

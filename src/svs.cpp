@@ -559,6 +559,13 @@ string svs::get_output() const {
 	return env_output;
 }
 
+string svs::svs_query(const string &query){
+	if(state_stack.size() == 0){
+		return "";
+	}
+	return state_stack[0]->get_scene()->parse_query(query);
+}
+
 void svs::proxy_get_children(map<string, cliproxy*> &c) {
 	c["record_movie"]      = new bool_proxy(&record_movie, "Automatically take screenshots in viewer after every decision cycle.");
 	c["connect_viewer"]    = new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
