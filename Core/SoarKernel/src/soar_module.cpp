@@ -94,6 +94,7 @@ namespace soar_module
 		inst->backtrace_number = 0;
 		inst->in_ms = false;
 		inst->GDS_evaluated_already = false;
+		inst->skip_GDS = false;
 
 		// create preferences
 		inst->preferences_generated = NULL;

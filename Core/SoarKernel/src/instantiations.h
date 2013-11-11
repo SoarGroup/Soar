@@ -86,6 +86,7 @@ typedef struct instantiation_struct {
   bool in_ms;  /* true iff this inst. is still in the match set */
   tc_number backtrace_number;
   bool GDS_evaluated_already;
+  bool skip_GDS;
 } instantiation;
 
 /* A dll of instantiations that will be used to determine the gds through
