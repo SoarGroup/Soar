@@ -37,7 +37,7 @@ private:
 	void update_property(const std::string& propertyName);
 	template <class WmeType>
 	void set_property(const std::string& propertyName, const WmeType& value);
-	
+
 	sgwme          *parent;
 	sgnode         *node;
 	Symbol         *id;
@@ -77,12 +77,12 @@ public:
 	svs_state(Symbol *state, svs_state *parent);
 
 	~svs_state();
-	
+
 	void           process_cmds();
 	void           update_cmd_results(bool early);
 	void           update_scene_num();
 	void           clear_scene();
-	
+
 	std::string    get_name() const      { return name;      }
 	int            get_level() const     { return level;     }
 	int            get_scene_num() const { return scene_num; }
@@ -93,9 +93,9 @@ public:
 	void set_output(const rvec &out);
 	bool get_output(rvec &out) const;
 	const output_spec *get_output_spec() const { return outspec; }
-	
+
 	void update_models();
-	
+
 	/*
 	 Should only be called by svs::state_deletion_callback to save top-state scene
 	 during init.
@@ -106,7 +106,7 @@ private:
 	void init();
 	void collect_cmds(Symbol* id, std::set<wme*>& all_cmds);
 	void set_default_output();
-	
+
 	void proxy_get_children(std::map<std::string, cliproxy*> &c);
 	void cli_out(const std::vector<std::string> &args, std::ostream &os);
 
@@ -117,7 +117,7 @@ private:
 	scene          *scn;
 	sgwme          *root;
 	soar_interface *si;
-	
+
 	Symbol *state;
 	Symbol *svs_link;
 	Symbol *scene_link;
@@ -126,10 +126,10 @@ private:
 
 	int scene_num;
 	wme *scene_num_wme;
-	
+
 	/* command changes per decision cycle */
 	std::map<wme*, command*> curr_cmds;
-	
+
 	scene_sig                prev_sig;
 	relation_table           prev_rels;
 	rvec                     prev_pvals;
@@ -138,9 +138,9 @@ private:
 	const output_spec       *outspec;
 	bool learn_models;
 	bool test_models;
-	
+
 	timer_set timers;
-	
+
 	logger_set *loggers;
 };
 
@@ -148,13 +148,14 @@ class svs : public svs_interface, public cliproxy {
 public:
 	svs(agent *a);
 	~svs();
-	
+
 	void state_creation_callback(Symbol *goal);
 	void state_deletion_callback(Symbol *goal);
 	void output_callback();
 	void input_callback();
 	void add_input(const std::string &in);
 	std::string get_output() const;
+    std::string svs_query(const std::string &query);
 	bool add_model(const std::string &name, model *m);
 	std::map<std::string, model*> *get_models() { return &models; }
 
@@ -164,7 +165,7 @@ public:
 	logger_set *get_loggers()            { return loggers; }
 
 	bool do_cli_command(const std::vector<std::string> &args, std::string &output);
-	
+
 private:
 	void proc_input(svs_state *s);
 	int  parse_output_spec(const std::string &s);
@@ -184,9 +185,9 @@ private:
 	bool                      use_models;
 	bool                      record_movie;
 	scene                    *scn_cache;      // temporarily holds top-state scene during init
-	
+
 	std::map<std::string, model*> models;
-	
+
 	timer_set timers;
 	logger_set *loggers;
 };
