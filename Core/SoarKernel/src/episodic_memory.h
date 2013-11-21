@@ -128,15 +128,6 @@ class epmem_param_container: public soar_module::param_container
 		epmem_param_container( agent *new_agent );
 };
 
-template <typename T>
-class epmem_db_predicate: public soar_module::agent_predicate<T>
-{
-	public:
-		epmem_db_predicate( agent *new_agent );
-		bool operator() ( T val );
-};
-
-
 //////////////////////////////////////////////////////////
 // EpMem Statistics
 //////////////////////////////////////////////////////////
