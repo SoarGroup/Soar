@@ -12,10 +12,10 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-//#define DEBUG_FREE_SETTINGS
+#define DEBUG_FREE_SETTINGS
 //#define DEBUG_MINIMAL_SETTINGS
 //#define DEBUG_REFCOUNT_SETTINGS
-#define DEBUG_UNITTEST_SETTINGS
+//#define DEBUG_UNITTEST_SETTINGS
 
 #ifdef DEBUG_FREE_SETTINGS
 /* -- Which trace messages should be printed -- */
@@ -67,7 +67,7 @@
 #define OM_Init_db_mode           off
 #define OM_Init_XML_mode          off
 #define OM_Init_callback_mode     on
-#define OM_Init_stdout_mode       off
+#define OM_Init_stdout_mode       on
 #define OM_Init_file_mode         off
 
 /* -- Which output debug listeners should be initially turned on -- */
