@@ -121,11 +121,11 @@ rhs_value create_RHS_value (agent* thisAgent,
                                                   rhs_value rv,
                                                   condition *cond,
                                                   char first_letter,
-                                                  bool should_add_original_vars);
+                                                  AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
 action *create_RHS_action_list (agent* thisAgent,
                                                   action *actions,
                                                   condition *cond,
-                                                  bool should_add_original_vars = false);
+                                                  AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
 
 /* -- Deallocation functions -- */
 void deallocate_rhs_value (agent* thisAgent, rhs_value rv);

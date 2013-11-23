@@ -361,7 +361,7 @@ extern void p_node_to_conditions_and_rhs (agent* thisAgent,
                                            condition **dest_top_cond,
                                            condition **dest_bottom_cond,
                                            action **dest_rhs,
-                                           bool compile_chunk_test_info);
+                                           AddAdditionalTestsMode additional_tests = DONT_ADD_TESTS);
 extern Symbol *get_symbol_from_rete_loc (unsigned short levels_up,
                                          byte field_num,
                                          struct token_struct *tok, wme *w);

@@ -295,7 +295,7 @@ rhs_value create_RHS_value (agent* thisAgent,
                                                   rhs_value rv,
                                                   condition *cond,
                                                   char first_letter,
-                                                  bool should_add_original_vars)
+                                                  AddAdditionalTestsMode add_original_vars)
 {
   cons *c, *new_c, *prev_new_c;
   list *fl, *new_fl;
@@ -310,7 +310,7 @@ rhs_value create_RHS_value (agent* thisAgent,
 
   if (rhs_value_is_reteloc(rv)) {
     /* -- rv is a symbol pointed to by a rete location -- */
-    if (should_add_original_vars)
+    if (add_original_vars == ALL_ORIGINALS)
     {
       original_sym = var_bound_in_reconstructed_original_conds (thisAgent, cond,
           rhs_value_to_reteloc_field_num(rv),
@@ -336,7 +336,7 @@ rhs_value create_RHS_value (agent* thisAgent,
 
       sym = generate_new_variable (thisAgent, prefix);
       /* MToDo| Do we really need to make this unique? */
-      if (should_add_original_vars)
+      if (add_original_vars == ALL_ORIGINALS)
       {
         thisAgent->variablizationManager->make_name_unique(&sym);
       }
@@ -371,7 +371,7 @@ rhs_value create_RHS_value (agent* thisAgent,
           static_cast<char *>(c->first),
           cond,
           first_letter,
-          should_add_original_vars);
+          add_original_vars);
       prev_new_c->rest = new_c;
       prev_new_c = new_c;
     }
@@ -389,7 +389,7 @@ rhs_value create_RHS_value (agent* thisAgent,
 action *create_RHS_action_list (agent* thisAgent,
                                                   action *actions,
                                                   condition *cond,
-                                                  bool should_add_original_vars) {
+                                                  AddAdditionalTestsMode add_original_vars) {
   action *old, *New, *prev, *first;
   char first_letter;
 
@@ -409,23 +409,21 @@ action *create_RHS_action_list (agent* thisAgent,
     New->preference_type = old->preference_type;
     New->support = old->support;
     if (old->type==FUNCALL_ACTION) {
-      New->value = create_RHS_value (thisAgent,
-                                                           old->value, cond,
-                                                           'v', should_add_original_vars);
+      New->value = create_RHS_value (thisAgent,old->value, cond, 'v', add_original_vars);
     } else {
       dprint(DT_RHS_VARIABLIZATION, "ID: ");
-      New->id = create_RHS_value (thisAgent, old->id, cond, 's', should_add_original_vars);
+      New->id = create_RHS_value (thisAgent, old->id, cond, 's', add_original_vars);
       dprint(DT_RHS_VARIABLIZATION, "Attribute: ");
-      New->attr = create_RHS_value (thisAgent, old->attr, cond,'a', should_add_original_vars);
+      New->attr = create_RHS_value (thisAgent, old->attr, cond,'a', add_original_vars);
       first_letter = first_letter_from_rhs_value (New->attr);
       dprint(DT_RHS_VARIABLIZATION, "Value: ");
       New->value = create_RHS_value (thisAgent, old->value, cond,
-                          first_letter, should_add_original_vars);
+                          first_letter, add_original_vars);
       if (preference_is_binary(old->preference_type))
       {
         dprint(DT_RHS_VARIABLIZATION, "Referent: ");
         New->referent = create_RHS_value (thisAgent, old->referent,
-                                              cond, first_letter, should_add_original_vars);
+                                          cond, first_letter, add_original_vars);
       }
       dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
     }

@@ -86,7 +86,7 @@ void add_test_if_not_already_there (agent* thisAgent, test *t, test new_test, bo
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 
-void add_additional_tests_and_originals (agent *thisAgent, rete_node *node, wme *right_wme, condition *cond, node_varnames *nvn);
+void add_additional_tests_and_originals (agent *thisAgent, rete_node *node, wme *right_wme, condition *cond, node_varnames *nvn, AddAdditionalTestsMode additional_tests);
 void add_hash_info_to_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
 void add_hash_info_to_original_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests (agent* thisAgent, condition *cond, rete_test *rt);

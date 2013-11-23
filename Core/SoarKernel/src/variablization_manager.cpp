@@ -121,16 +121,76 @@ void Variablization_Manager::store_variablization(Symbol *index_sym, Symbol *ins
   }
 }
 
+/* -- variablize_rl_symbol is a very limited version of variablization for templates
+ *
+ *    Templates
+ */
+void Variablization_Manager::variablize_rl_symbol (Symbol **sym, bool is_equality_test)
+{
+  char prefix[2];
+  Symbol *var;
+  variablization *var_info;
+
+  if (!(*sym)->is_sti()) return;
+
+  dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager variablizing rl symbol %s.\n", (*sym)->to_string(thisAgent));
+
+  var_info = get_variablization((*sym));
+  if (var_info)
+  {
+    if (is_equality_test && !var_info->grounded)
+    {
+      var_info->grounded = true;
+      /* -- Update secondary index for identifiers -- */
+      variablization *var_info2;
+      dprint(DT_VARIABLIZATION_MANAGER, "...updating grounded info for %s %s %d.\n", (*sym)->to_string(thisAgent),
+          var_info->variablized_symbol->to_string(thisAgent), is_equality_test);
+      var_info2 = get_variablization(var_info->variablized_symbol);
+      var_info2->grounded = true;
+    }
+    /* -- Symbol being passed in is being replaced, so decrease -- */
+    /* -- and increase refcount for new variable symbol being returned -- */
+    symbol_remove_ref (thisAgent, (*sym));
+    *sym = var_info->variablized_symbol;
+    symbol_add_ref(thisAgent, var_info->variablized_symbol);
+    return;
+  }
+
+  /* --- need to create a new variable.  If constant is being variablized
+   *     just used 'c' instead of first letter of id name --- */
+  if((*sym)->is_identifier())
+    prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
+  else
+    prefix[0] = 'c';
+  prefix[1] = 0;
+  var = generate_new_variable (thisAgent, prefix);
+  var->var->was_identifier = (*sym)->is_identifier();
+
+  store_variablization((*sym), (*sym), var, is_equality_test);
+
+  /* -- Though generate_new_variable() adds a refcount, we also add them for our stored pointers
+   *    in the variablization table.  These are cleaned up after RHS variablization. -- */
+  symbol_add_ref(thisAgent, *sym);
+  symbol_add_ref(thisAgent, var);
+  symbol_add_ref(thisAgent, (*sym));
+  dprint(DT_VARIABLIZATION_MANAGER, "...created new variablization %s.\n", var->to_string(thisAgent));
+
+  /* MToDoRefCnt | This remove ref was removed before, but it seems like we should have it, no? */
+  symbol_remove_ref (thisAgent, *sym);
+  *sym = var;
+}
+
 void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test)
 {
   char prefix[2];
   Symbol *index_var, *var;
   variablization *var_info;
+  bool is_st_id = (*sym)->is_sti();
 
   dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager variablizing %s %s %d.\n", (*sym)->to_string(thisAgent)
       , (original_symbol ? original_symbol->to_string(thisAgent) : "NULL"), is_equality_test);
 
-  if (!(*sym)->is_sti() && original_symbol)
+  if (!is_st_id && original_symbol)
     index_var = original_symbol;
   else
     index_var = *sym;
@@ -142,7 +202,7 @@ void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, Symbol *origin
     {
       var_info->grounded = true;
       /* -- Update secondary index for identifiers -- */
-      if ((*sym)->is_sti())
+      if (is_st_id)
       {
         variablization *var_info2;
         dprint(DT_VARIABLIZATION_MANAGER, "...updating grounded info for %s %s %d.\n", index_var->to_string(thisAgent),
@@ -167,7 +227,7 @@ void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, Symbol *origin
     prefix[0] = 'c';
   prefix[1] = 0;
   var = generate_new_variable (thisAgent, prefix);
-  var->var->was_identifier = (*sym)->is_identifier();
+  var->var->was_identifier = is_st_id;
 
   store_variablization(index_var, (*sym), var, is_equality_test);
 
@@ -237,7 +297,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
   char prefix[2];
   Symbol *var, *index_sym;
   variablization *found_variablization;
-  bool is_non_lti_id;
+  bool is_st_id;
 
   dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for %s(%s).\n",
       (*sym)->to_string(thisAgent),
@@ -245,9 +305,9 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
 
   /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
    *    instead of their original variable. --  */
-  is_non_lti_id = (*sym)->is_sti();
+  is_st_id = (*sym)->is_sti();
 
-  if (is_non_lti_id)
+  if (is_st_id)
     index_sym = *sym;
   else
   {
@@ -281,7 +341,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
       *sym = found_variablization->variablized_symbol;
       return;
     }
-    else if (!is_non_lti_id)
+    else if (!is_st_id)
     {
       dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded constant.  Not variablizing!\n");
       return;

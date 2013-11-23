@@ -51,6 +51,7 @@ class Variablization_Manager
 
     void variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test);
     void variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
+    void variablize_rl_symbol (Symbol **sym, bool is_equality_test);
 
     void reinit();
 

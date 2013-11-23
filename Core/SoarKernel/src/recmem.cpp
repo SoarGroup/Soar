@@ -690,7 +690,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	/* --- build the instantiated conditions, and bind LHS variables --- */
 	p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
 			&(inst->top_of_instantiated_conditions),
-			&(inst->bottom_of_instantiated_conditions), &(rhs_vars), true);
+			&(inst->bottom_of_instantiated_conditions), &(rhs_vars), ALL_ORIGINALS);
 
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
 			cond = cond->next) {
