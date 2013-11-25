@@ -690,7 +690,8 @@ void create_instantiation(agent* thisAgent, production *prod,
 	/* --- build the instantiated conditions, and bind LHS variables --- */
 	p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
 			&(inst->top_of_instantiated_conditions),
-			&(inst->bottom_of_instantiated_conditions), &(rhs_vars), ALL_ORIGINALS);
+			&(inst->bottom_of_instantiated_conditions), &(rhs_vars),
+			((prod->type != TEMPLATE_PRODUCTION_TYPE) ? ALL_ORIGINALS : JUST_INEQUALITIES));
 
 	for (cond = inst->top_of_instantiated_conditions; cond != NIL;
 			cond = cond->next) {
@@ -838,7 +839,7 @@ void create_instantiation(agent* thisAgent, production *prod,
     pref->original_symbols.attr = NIL;
     pref->original_symbols.value = NIL;
   }
-
+	/* MToDoRefCnt | Note that the 9.3.2 did not deallocate the action list. */
 	deallocate_action_list (thisAgent, rhs_vars);
 
 //	dprint(DT_PRINT_INSTANTIATIONS,  "\nCreate_instantiation created: \n");

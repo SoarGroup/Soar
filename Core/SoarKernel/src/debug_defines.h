@@ -44,7 +44,7 @@
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
 //--
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            false
-#define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  false
+#define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  true
 #define TRACE_Init_DT_SAVEDVARS                   false
 #define TRACE_Init_DT_UNIQUE_VARIABLIZATION       false
 #define TRACE_Init_DT_REORDERER                   false

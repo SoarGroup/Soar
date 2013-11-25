@@ -16,7 +16,6 @@ typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef struct symbol_struct Symbol;
 typedef struct action_struct action;
-struct not_struct;
 
 /* RBD Need more comments here */
 #define CHUNK_COND_HASH_TABLE_SIZE 1024
@@ -54,11 +53,6 @@ extern void chunk_instantiation (agent* thisAgent,
                                  instantiation **custom_inst_list);
 extern chunk_cond *make_chunk_cond_for_negated_condition (agent* thisAgent, condition *cond);
 extern bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc);
-
-extern void add_results_for_id (agent* thisAgent, Symbol *id);
-
-extern void variablize_symbol (agent* thisAgent, Symbol **sym);
-extern void variablize_condition_list (agent* thisAgent, condition *cond);
 extern bool reverse_unbound_lhs_referents (agent* thisAgent, condition **lhs_top);
 
 #endif
