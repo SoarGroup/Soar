@@ -2,11 +2,32 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
+import subprocess
 import sys
 import os
 import SCons.Script
 
 Import('env')
+
+cpppath = '/Users/mazzin/git/tcl8.5.15/library'
+libname = 'tcl8.5'
+
+try:
+  open(cpppath + 'tcl.h')
+except:
+  print 'Tcl.h not found, not building Tcl SML wrappers'
+  Return()
+
+libs = subprocess.check_output(['/sbin/ldconfig', '-p'])
+lib_found = None
+for lib in libs.split('\n'):
+  if lib.find('lib' + libname + '.so') > -1:
+    lib_found = lib
+    break
+if lib_found == None:
+  print 'lib' + libname + '.so not found, not building Tcl SML wrappers'
+  Return()
+
 clone = env.Clone()
 
 lib_install_dir = clone['OUT_DIR']
@@ -32,8 +53,8 @@ clone.Append(SCANNERS=[SWIGScanner])
 tclstep1 = clone.Command(tclsml_wrap, tclsml_i, wrap_cmd)
 
 clone.Append(
-  CPPPATH  = ['/Users/mazzin/git/tcl8.5.15/library'],
-  LIBS     = ['tcl8.5'],
+  CPPPATH  = [cpppath],
+  LIBS     = [libname],
   CPPFLAGS = ['-w'],
 )
 
