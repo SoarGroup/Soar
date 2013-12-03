@@ -54,8 +54,8 @@ static void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_tr
 
   std::ostringstream label;
   std::queue<std::pair<const agent::RL_Trace *, std::string> > trace_queue;
-  trace_queue.push(std::make_pair(&rl_trace, "init"));
-  size_t c = 0;
+  trace_queue.push(std::make_pair(&rl_trace, "0"));
+  size_t c = 1;
 
   do {
     const agent::RL_Trace * const current_trace = trace_queue.front().first;
@@ -64,23 +64,28 @@ static void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_tr
     trace_queue.pop();
 
     for(std::map<std::vector<std::string>, agent::RL_Trace::Entry>::const_iterator tt = current_trace->split.begin(), tend = current_trace->split.end(); tt != tend; ++tt) {
-      label << "node" << c++;
+      label << c++;
 
-      os << "  " << label.str() << " [label=\"";
+      os << "  " << label.str();
 
-      bool sfirst = true;
-      for(std::vector<std::string>::const_iterator ss = tt->first.begin(), send = tt->first.end(); ss != send; ++ss) {
-        if(sfirst)
-          sfirst = false;
-        else
-          os << "\\n";
+//       os << " [label=\"";
+//       bool sfirst = true;
+//       for(std::vector<std::string>::const_iterator ss = tt->first.begin(), send = tt->first.end(); ss != send; ++ss) {
+//         if(sfirst)
+//           sfirst = false;
+//         else
+//           os << "\\n";
+// 
+//         os << *ss;
+//       }
+//       os << "\"];";
 
-        os << *ss;
-      }
-
-      os << "\"];" << std::endl;
+      os << std::endl;
 
       os << "  " << prev_label << " -> " << label.str() << " [label=\"";
+
+      for(std::vector<std::string>::const_iterator ss = tt->first.begin(), send = tt->first.end(); ss != send; ++ss)
+        os << *ss << "\\n";
 
       if(tt->second.probability == tt->second.probability)
         os << tt->second.probability;
