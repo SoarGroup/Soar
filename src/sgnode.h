@@ -86,8 +86,12 @@ public:
 	const numeric_properties_map &get_numeric_properties() const { return numeric_props; }
 	void set_property(const std::string& propertyName, const std::string& value);
 	void set_property(const std::string& propertyName, double value);
+	bool get_property(const std::string& propertyName, std::string& value) const;
+	bool get_property(const std::string& propertyName, double& value) const;
 	void delete_property(const std::string& propertyName);
 	void set_native_property(char type, int dim, double value);
+
+	void adjust_size(std::vector<const sgnode*> targets);
 
 protected:
 	void set_bounds(const bbox &b);
