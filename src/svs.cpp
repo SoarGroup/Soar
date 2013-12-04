@@ -28,12 +28,12 @@ svs_interface *make_svs(agent *a) {
 }
 
 
-sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node) 
+sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node)
 : soarint(si), id(ident), parent(parent), node(node)
 {
 	node->listen(this);
 	name_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_name());
-	
+
 	if (node->is_group()) {
 		group_node *g = node->as_group();
 		for (int i = 0; i < g->num_children(); ++i) {
@@ -108,14 +108,14 @@ void sgwme::add_child(sgnode *c) {
 	char letter;
 	string cname = c->get_name();
 	sgwme *child;
-	
+
 	if (cname.size() == 0 || !isalpha(cname[0])) {
 		letter = 'n';
 	} else {
 		letter = cname[0];
 	}
 	wme *cid_wme = soarint->make_id_wme(id, "child");
-	
+
 	child = new sgwme(soarint, soarint->get_wme_val(cid_wme), this, c);
 	childs[child] = cid_wme;
 }
@@ -149,10 +149,10 @@ void sgwme::set_property(const std::string& propertyName, const WmeType& value){
 				properties[parentAtt] = parentWME;
 			}
 		}
-		
+
 		rootID = soarint->get_wme_val(parentWME);
 	}
-	
+
   // Remove the old wme and add the new one
 	std::map<std::string, wme*>::iterator i = properties.find(propertyName);
 	if(i != properties.end()){
@@ -214,13 +214,13 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 
 svs_state::~svs_state() {
 	map<wme*, command*>::iterator i, iend;
-	
+
 	for (i = curr_cmds.begin(), iend = curr_cmds.end(); i != iend; ++i) {
 		delete i->second;
 	}
-	
+
 	delete mmdl;
-	
+
 	if (scn) {
 		svsp->get_drawer()->delete_scene(scn->get_name());
 		delete scn; // results in root being deleted also
@@ -230,7 +230,7 @@ svs_state::~svs_state() {
 void svs_state::init() {
 	string name;
 	common_syms &cs = si->get_common_syms();
-	
+
 	si->get_name(state, name);
 	svs_link = si->get_wme_val(si->make_id_wme(state, cs.svs));
 	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
@@ -295,7 +295,7 @@ void svs_state::process_cmds() {
 			++j;
 		}
 	}
-	
+
 	// all now contains only new commands
 	for (i = all.begin(); i != all.end(); ++i) {
 		command *c = make_command(this, *i);
@@ -319,21 +319,21 @@ void svs_state::update_models() {
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
 	relation_table curr_rels;
-	
+
 	if (level > 0) {
 		/* No legitimate information to learn from imagined states */
 		return;
 	}
-	
+
 	scn->get_properties(curr_pvals);
 	get_output(out);
 	curr_sig = scn->get_signature();
-	
+
 	timer &t1 = timers.get_or_add("up_rels");
 	t1.start();
 	scn->get_relations(curr_rels);
 	t1.stop();
-	
+
 	// add an entry to the signature for the output
 	scene_sig::entry out_entry;
 	out_entry.id = -2;
@@ -343,7 +343,7 @@ void svs_state::update_models() {
 		out_entry.props.push_back(outspec->at(i).name);
 	}
 	curr_sig.add(out_entry);
-	
+
 	if (prev_sig == curr_sig) {
 		rvec x(prev_pvals.size() + out.size());
 		if (out.size() > 0) {      // work-around for eigen bug when out.size() == 0
@@ -406,7 +406,7 @@ void svs_state::proxy_get_children(map<string, cliproxy*> &c) {
 		}
 		cmds->add(id, i->second);
 	}
-	
+
 	c["command"] = cmds;
 }
 
@@ -443,7 +443,7 @@ svs::~svs() {
 	if (scn_cache) {
 		delete scn_cache;
 	}
-	
+
 	delete si;
 	map<string, model*>::iterator j;
 	for (j = models.begin(); j != models.end(); ++j) {
@@ -455,7 +455,7 @@ svs::~svs() {
 void svs::state_creation_callback(Symbol *state) {
 	string type, msg;
 	svs_state *s;
-	
+
 	if (state_stack.empty()) {
 		if (scn_cache) {
 			scn_cache->verify_listeners();
@@ -465,7 +465,7 @@ void svs::state_creation_callback(Symbol *state) {
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
-	
+
 	state_stack.push_back(s);
 }
 
@@ -499,24 +499,24 @@ void svs::proc_input(svs_state *s) {
 
 void svs::output_callback() {
 	function_timer t(timers.get_or_add("output"));
-	
+
 	vector<svs_state*>::iterator i;
 	string sgel;
 	svs_state *topstate = state_stack.front();
-	
+
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).process_cmds();
 	}
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(true);
 	}
-	
+
 	/* environment IO */
 	rvec out;
 	topstate->get_output(out);
-	
+
 	assert(outspec.size() == out.size());
-	
+
 	stringstream ss;
 	for (int i = 0; i < outspec.size(); ++i) {
 		ss << outspec[i].name << " " << out[i] << endl;
