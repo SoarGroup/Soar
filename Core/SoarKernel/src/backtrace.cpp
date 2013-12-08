@@ -35,12 +35,12 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 #include "test.h"
+#include "debug.h"
 
 using namespace soar_TraceNames;
-void dprint_condition (TraceMode mode, condition *cond);
-void dprint_condition_cons (TraceMode mode, cons *c);
-void check_symbol(agent *thisAgent, Symbol *sym, const char *message);
-void check_symbol_in_test(agent *thisAgent, test t, const char *message);
+//void dprint_condition (TraceMode mode, condition *cond, const char *indent_string);
+//void check_symbol(agent *thisAgent, Symbol *sym, const char *message);
+//void check_symbol_in_test(agent *thisAgent, test t, const char *message);
 
 //#define BACKTRACE_COMBINE_CONDITIONS
 #define BACKTRACE_ADD_ALL_CONDITIONS
