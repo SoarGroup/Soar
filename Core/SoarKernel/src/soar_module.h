@@ -48,7 +48,17 @@ namespace soar_module
 
 		symbol_triple_struct( Symbol* new_id, Symbol* new_attr, Symbol* new_value ): id(new_id), attr(new_attr), value(new_value) {}
 	} symbol_triple;
-	typedef std::list< symbol_triple* > symbol_triple_list;
+
+	typedef struct grounding_struct
+  {
+    int64_t id;
+    int64_t attr;
+    int64_t value;
+
+    grounding_struct( int64_t new_id, int64_t new_attr, int64_t new_value ): id(new_id), attr(new_attr), value(new_value) {}
+  } grounding_ids;
+
+  typedef std::list< symbol_triple* > symbol_triple_list;
 
 	wme *add_module_wme( agent *my_agent, Symbol *id, Symbol *attr, Symbol *value );
 	void remove_module_wme( agent *my_agent, wme *w );

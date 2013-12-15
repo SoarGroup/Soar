@@ -339,7 +339,7 @@ rhs_value create_RHS_value (agent* thisAgent,
       if (add_original_vars == ALL_ORIGINALS)
       {
         thisAgent->variablizationManager->make_name_unique(&sym);
-        original_sym = sym;
+//        original_sym = sym;
       }
       *(thisAgent->rhs_variable_bindings+index) = sym;
 
@@ -385,6 +385,7 @@ rhs_value create_RHS_value (agent* thisAgent,
     /* -- rv is a rhs_symbol -- */
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
     original_sym = rs->referent;
+//    thisAgent->variablizationManager->make_name_unique(&original_sym);
     dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(%s) from rhs_symbol (literal RHS constant).\n",
         (rs->referent ? symbol_to_string(thisAgent, rs->referent) : "ERROR"),
         (rs->referent ? symbol_to_string(thisAgent, original_sym) : "ERROR"));
