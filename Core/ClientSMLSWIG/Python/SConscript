@@ -31,7 +31,7 @@ print({});
 lib_install_dir = clone['OUT_DIR']
 inc_path, lib_path, pylib = literal_eval(check_output((python_exe, "-c", command)))
 
-clone.Append(CPPPATH = inc_path, LIBPATH = os.path.dirname(lib_path), LIBS = pylib)
+clone.Append(CPPPATH = inc_path, LIBPATH = lib_path, LIBS = pylib)
 
 if os.name == 'posix':
 	clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
