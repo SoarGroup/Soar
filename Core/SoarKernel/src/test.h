@@ -45,23 +45,15 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_
  *    constituent test of the conjunctive test contains links to its original
  *    test already --*/
 
+/* This struct is used to hold the original symbol and grounding information for
+ * a test.  Note that conjunctive tests will not have symbol_type or grounding_id */
 
 typedef struct identity_struct {
     TestType  type;
     byte      symbol_type;
     int64_t   grounding_id;
-    ::list    *conjunct_list;
+    identity_struct( TestType new_type, byte new_sym_type, int64_t new_id ): type(new_type), symbol_type(new_sym_type), grounding_id(new_id) {}
 } identity_info;
-
-	typedef struct grounding_struct
-  {
-    int64_t id;
-    int64_t attr;
-    int64_t value;
-
-    grounding_struct( int64_t new_id, int64_t new_attr, int64_t new_value ): id(new_id), attr(new_attr), value(new_value) {}
-  } grounding_ids;
-
 
 typedef struct test_struct {
   TestType type;                  /* see definitions below */
