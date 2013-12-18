@@ -45,6 +45,14 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_
  *    constituent test of the conjunctive test contains links to its original
  *    test already --*/
 
+
+typedef struct identity_struct {
+    TestType  type;
+    byte      symbol_type;
+    int64_t   grounding_id;
+    ::list    *conjunct_list;
+} identity_info;
+
 typedef struct test_struct {
   TestType type;                  /* see definitions below */
   union test_info_union {
@@ -53,7 +61,7 @@ typedef struct test_struct {
     ::list *conjunct_list;      /* for conjunctive tests */
   } data;
   test_struct *original_test;
-
+  identity_info identity;
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is
