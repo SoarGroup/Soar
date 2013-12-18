@@ -53,6 +53,16 @@ typedef struct identity_struct {
     ::list    *conjunct_list;
 } identity_info;
 
+	typedef struct grounding_struct
+  {
+    int64_t id;
+    int64_t attr;
+    int64_t value;
+
+    grounding_struct( int64_t new_id, int64_t new_attr, int64_t new_value ): id(new_id), attr(new_attr), value(new_value) {}
+  } grounding_ids;
+
+
 typedef struct test_struct {
   TestType type;                  /* see definitions below */
   union test_info_union {
