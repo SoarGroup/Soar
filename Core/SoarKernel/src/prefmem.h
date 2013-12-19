@@ -115,27 +115,6 @@ typedef std::list< preference* > pref_buffer_list;
 
 extern const char * preference_name[NUM_PREFERENCE_TYPES];
 
-/* This struct holds a set of unique grounding id's for a preference. This is
- * used during chunking to determine when two constants have the same semantic
- * grounding.  Note that different substates will have different sets of grounding
- * ids for the same wme.  That's why this we have the next field to maintain a list
- * of grounding IDs.  This is to insure that we don't enforce equalities between
- * variablized constants if the problem-solving below did not require them to be equal */
-
-typedef struct grounding_struct
-{
-    int64_t id;
-    int64_t attr;
-    int64_t value;
-    goal_stack_level level;
-    grounding_struct *next;
-
-    grounding_struct( int64_t new_id, int64_t new_attr, int64_t new_value, goal_stack_level new_level, grounding_struct *new_next )
-    : id(new_id), attr(new_attr), value(new_value), level(new_level), next(new_next) {}
-} grounding_info;
-
-/* The actual preference struct */
-
 typedef struct preference_struct {
   byte type;         /* acceptable, better, etc. */
   bool o_supported;  /* is the preference o-supported? */
@@ -153,7 +132,6 @@ typedef struct preference_struct {
    *    since the instantiated value is not sufficient. -- */
 
   soar_module::symbol_triple original_symbols;
-  grounding_info *grounding_ids;
 
   struct slot_struct *slot;
 

@@ -77,7 +77,6 @@ typedef std::list< condition* > cond_mpool_list;
  from the rhs function to this preference adding code)*/
 wme* glbDeepCopyWMEs = NULL;
 
-
 /* --------------------------------------------------------------------------
                  Build context-dependent preference set
 

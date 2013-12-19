@@ -26,6 +26,7 @@ Variablization_Manager::Variablization_Manager(agent *myAgent)
   create_OSD_table();
   variablization_table = new std::map< Symbol *, variablization * >();
   current_unique_vars = new std::set< Symbol *>();
+  ground_id_counter = 0;
 }
 
 Variablization_Manager::~Variablization_Manager()
@@ -40,6 +41,7 @@ Variablization_Manager::~Variablization_Manager()
  *    variablize_symbol.
  *
  *    -- */
+
 
 void Variablization_Manager::clear_variablization_table() {
 
@@ -66,6 +68,7 @@ void Variablization_Manager::reinit()
   if (original_symbol_ht)
     clear_OSD_table();
   create_OSD_table();
+  ground_id_counter = 0;
 }
 
 variablization * Variablization_Manager::get_variablization(Symbol *index_sym)

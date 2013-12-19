@@ -51,8 +51,8 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_
 typedef struct identity_struct {
     TestType  type;
     byte      symbol_type;
-    int64_t   grounding_id;
-    identity_struct( TestType new_type, byte new_sym_type, int64_t new_id ): type(new_type), symbol_type(new_sym_type), grounding_id(new_id) {}
+    uint64_t   grounding_id;
+    identity_struct( TestType new_type, byte new_sym_type, uint64_t new_id ): type(new_type), symbol_type(new_sym_type), grounding_id(new_id) {}
 } identity_info;
 
 typedef struct test_struct {
