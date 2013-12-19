@@ -18,7 +18,7 @@
 
 #include "agent.h"
 #include "soar_rand.h"
-
+#include "prefmem.h"
 #include "decide.h"
 #include "misc.h"
 
@@ -36,10 +36,17 @@ void select_init( agent *my_agent )
  **************************************************************************/
 void select_next_operator( agent *my_agent, const char *operator_id )
 {
+<<<<<<< HEAD
 	select_init( my_agent );
 	std::string& op = my_agent->select->select_operator;
 
 	my_agent->select->select_enabled = true;
+=======
+	select_init( thisAgent );
+	std::string& op = thisAgent->select->select_operator;
+
+	thisAgent->select->select_enabled = true;
+>>>>>>> ce20e0c... - Eliminated gdatastructs.h 
 	op.assign(operator_id);
 
 	assert( !op.empty() );

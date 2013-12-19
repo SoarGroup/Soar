@@ -28,7 +28,7 @@
 #include "mem.h"
 #include "lexer.h"
 #include "symtab.h"
-#include "gdatastructs.h"
+
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "instantiations.h"

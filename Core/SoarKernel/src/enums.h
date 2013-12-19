@@ -89,6 +89,51 @@ enum boolean { off, on };
 #define NUM_PRODUCTION_TYPES 5
 // Soar-RL assumes that the production types start at 0 and go to (NUM_PRODUCTION_TYPES-1) sequentially
 
+/* WARNING: preference types must be numbered 0..(NUM_PREFERENCE_TYPES-1),
+   because the slot structure contains an array using these indices. Also
+   make sure to update the strings in prefmem.h.  Finally, make sure the
+   helper function defined below (for e.g. preference_is_unary) use the
+   correct indices.
+
+   NOTE: Reconsider, binary and unary parallel preferences are all
+   deprecated.  Their types are not removed here because it would break
+   backward compatibility of rete fast loading/saving.  It's possible that
+   can be fixed in rete.cpp, but for now, we're just keeping the preference
+   types.  There is no code that actually uses them any more, though.*/
+
+
+#define ACCEPTABLE_PREFERENCE_TYPE 0
+#define REQUIRE_PREFERENCE_TYPE 1
+#define REJECT_PREFERENCE_TYPE 2
+#define PROHIBIT_PREFERENCE_TYPE 3
+#define RECONSIDER_PREFERENCE_TYPE 4
+#define UNARY_INDIFFERENT_PREFERENCE_TYPE 5
+#define UNARY_PARALLEL_PREFERENCE_TYPE 6
+#define BEST_PREFERENCE_TYPE 7
+#define WORST_PREFERENCE_TYPE 8
+#define BINARY_INDIFFERENT_PREFERENCE_TYPE 9
+#define BINARY_PARALLEL_PREFERENCE_TYPE 10
+#define BETTER_PREFERENCE_TYPE 11
+#define WORSE_PREFERENCE_TYPE 12
+#define NUMERIC_INDIFFERENT_PREFERENCE_TYPE 13
+
+#define NUM_PREFERENCE_TYPES 14
+
+inline bool preference_is_unary(byte p) {return (p < 9);}
+inline bool preference_is_binary(byte p) {return (p > 8);}
+
+/* ------------------------------------------------------------------------
+
+                             Impasse Types
+
+------------------------------------------------------------------------ */
+
+#define NONE_IMPASSE_TYPE 0                   /* no impasse */
+#define CONSTRAINT_FAILURE_IMPASSE_TYPE 1
+#define CONFLICT_IMPASSE_TYPE 2
+#define TIE_IMPASSE_TYPE 3
+#define NO_CHANGE_IMPASSE_TYPE 4
+
 /* ---------------------------------------
     Match Set print parameters
 --------------------------------------- */

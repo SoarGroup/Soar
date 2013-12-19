@@ -28,7 +28,7 @@
 #include "osupport.h"
 #include "symtab.h"
 #include "wmem.h"
-#include "gdatastructs.h"
+
 #include "agent.h"
 #include "kernel.h"
 #include "production.h"
@@ -39,6 +39,9 @@
 #include "rete.h"
 #include "xml.h"
 #include "test.h"
+#include "prefmem.h"
+#include "decide.h"
+
 /* -----------------------------------------------------------------------
                   O-Support Transitive Closure Routines
 

@@ -22,7 +22,7 @@
 #include "reorder.h"
 #include "kernel.h"
 #include "rhs.h"
-#include "gdatastructs.h"
+
 #include "production.h"
 #include "mem.h"
 #include "symtab.h"

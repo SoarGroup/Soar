@@ -34,11 +34,12 @@
 #include "agent.h"
 #include "print.h"
 #include "init_soar.h"
-#include "gdatastructs.h"
+
 #include "tempmem.h"
 #include "wmem.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "decide.h"
 
 #include <ctype.h>
 

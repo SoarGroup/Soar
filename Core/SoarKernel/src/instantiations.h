@@ -8,6 +8,8 @@
 #ifndef INSTANTIATIONS_H
 #define INSTANTIATIONS_H
 
+typedef struct condition_struct condition;
+
 /* -------------------------------------------------------------------
                               Instantiations
 

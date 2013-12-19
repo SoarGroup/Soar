@@ -17,7 +17,7 @@
 #include "soar_module.h"
 
 #include "agent.h"
-#include "gdatastructs.h"
+
 #include "instantiations.h"
 #include "tempmem.h"
 #include "prefmem.h"

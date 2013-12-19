@@ -31,7 +31,7 @@
 #include "wmem.h"
 #include "io_soar.h"
 #include "rete.h"
-#include "gdatastructs.h"
+
 #include "xml.h"
 #include "stats.h"
 

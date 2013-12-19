@@ -23,7 +23,7 @@
 #include "mem.h"
 #include "kernel.h"
 #include "agent.h"
-#include "gdatastructs.h"
+
 #include "instantiations.h"
 #include "symtab.h"
 #include "recmem.h"

@@ -18,12 +18,13 @@
 #include "sml_KernelSML.h"
 
 #include "agent.h"
-#include "gdatastructs.h"
+
 #include "print.h"
 #include "tempmem.h"
 #include "trace.h"
 #include "wmem.h"
 #include "decide.h"
+#include "prefmem.h"
 
 using namespace cli;
 using namespace sml;

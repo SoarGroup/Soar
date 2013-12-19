@@ -50,9 +50,10 @@
 #include "io_soar.h"
 #include "recmem.h"
 #include "wmem.h"
-#include "gdatastructs.h"
+
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "decide.h"
 
 #include <map>
 #include <string>

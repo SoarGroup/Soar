@@ -25,7 +25,7 @@
 #include "kernel.h"
 #include "print.h"
 #include "wmem.h"
-#include "gdatastructs.h"
+
 #include "agent.h"
 #include "instantiations.h"
 #include "production.h"
@@ -36,6 +36,7 @@
 #include "soar_TraceNames.h"
 #include "test.h"
 #include "debug.h"
+#include "prefmem.h"
 
 using namespace soar_TraceNames;
 //void dprint_condition (TraceMode mode, condition *cond, const char *indent_string);

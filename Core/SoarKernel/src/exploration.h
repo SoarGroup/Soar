@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -13,7 +13,9 @@
 #ifndef EXPLORATION_H
 #define EXPLORATION_H
 
-#include "gdatastructs.h"
+typedef struct agent_struct agent;
+typedef struct slot_struct slot;
+typedef struct preference_struct preference;
 
 //////////////////////////////////////////////////////////
 // Exploration constants
@@ -29,7 +31,7 @@
 //////////////////////////////////////////////////////////
 // Exploration Types
 //////////////////////////////////////////////////////////
-typedef struct exploration_parameter_struct  
+typedef struct exploration_parameter_struct
 {
 	const char *name;
 	double value;

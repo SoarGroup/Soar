@@ -26,7 +26,7 @@
 #include "kernel.h"
 #include "print.h"
 #include "agent.h"
-#include "gdatastructs.h"
+
 #include "rhs.h"
 #include "instantiations.h"
 #include "reorder.h"

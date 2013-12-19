@@ -28,7 +28,7 @@
 
 #include <stdlib.h>
 
-#include "gdatastructs.h"
+
 #include "kernel.h"
 #include "mem.h"
 #include "symtab.h"
@@ -51,6 +51,7 @@
 #include "consistency.h"
 #include "misc.h"
 #include "soar_module.h"
+#include "decide.h"
 
 #include "assert.h"
 #include <string> // SBW 8/4/08

@@ -47,7 +47,7 @@
 #include "agent.h"
 #include "print.h"
 #include "init_soar.h"
-#include "gdatastructs.h"
+
 #include "wmem.h"
 #include "symtab.h"
 #include "decide.h"

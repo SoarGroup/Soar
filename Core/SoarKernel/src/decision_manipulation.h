@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -15,9 +15,8 @@
 
 #include <string>
 
-#include "gdatastructs.h"
-
 typedef struct agent_struct agent;
+typedef struct preference_struct preference;
 
 //////////////////////////////////////////////////////////
 // select types
