@@ -31,10 +31,40 @@ typedef struct cons_struct cons;
 typedef cons list;
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
+typedef signed short goal_stack_level;
 template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer);
 
-/* -- Test struct stores information about all test types, including
- *    equality tests.  If nil, the test is considered blank.
+/* identity_info is a struct used to hold the original symbol and grounding
+ * information for a test.  It is used during chunking to determine which
+ * constant symbols have the same semantics.
+ *
+ *    Type:             Test type in condition of original production matched
+ *    symbol_type:      Symbol type in condition of original production matched
+ *    grounding_id:     Unique numeric identifier of WME matched (a given WME
+ *                      will have a different grounding ID for every level of
+ *                      the goal stack.  Generated lazily.)
+ *    grounding_index:  Which field of the WME (id, attr or value)
+ *    grounding_wme:    This caches the matched wme when reconstructing the
+ *                      condition when creating the instantiation.  It is needed
+ *                      because we can't propagate the proper grounding IDs
+ *                      until we know the match level of an instantiation.  So,
+ *                      we temporarily cache the matched wme here while
+ *                      reconstructing the conditions, and then later use that
+ *                      wme to get IDs once we know the match level.
+ *
+ * Note: Conjunctive tests will not have symbol_type or grounding_id
+ * or grounding index.*/
+
+typedef struct identity_struct {
+    TestType      type;
+    byte          symbol_type;
+    uint64_t      grounding_id;
+    WME_Field     grounding_field;
+    wme           *grounding_wme;
+} identity_info;
+
+/* -- test_info stores information about a test.  If nil, the test is
+ *    considered blank.
  *
  *    The original_test pointer stores the test that was defined when the
  *    production was read in by the parser.  The values are filled in by the
@@ -45,25 +75,15 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_
  *    constituent test of the conjunctive test contains links to its original
  *    test already --*/
 
-/* This struct is used to hold the original symbol and grounding information for
- * a test.  Note that conjunctive tests will not have symbol_type or grounding_id */
-
-typedef struct identity_struct {
-    TestType  type;
-    byte      symbol_type;
-    uint64_t   grounding_id;
-    identity_struct( TestType new_type, byte new_sym_type, uint64_t new_id ): type(new_type), symbol_type(new_sym_type), grounding_id(new_id) {}
-} identity_info;
-
 typedef struct test_struct {
-  TestType type;                  /* see definitions below */
+  TestType        type;                  /* see definitions below */
   union test_info_union {
-    Symbol *referent;         /* for relational tests */
-    ::list *disjunction_list;   /* for disjunction tests */
-    ::list *conjunct_list;      /* for conjunctive tests */
+    Symbol        *referent;         /* for relational tests */
+    ::list        *disjunction_list;   /* for disjunction tests */
+    ::list        *conjunct_list;      /* for conjunctive tests */
   } data;
-  test_struct *original_test;
-  identity_info identity;
+  test_struct     *original_test;
+  identity_info   identity;
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is
@@ -97,6 +117,7 @@ void add_test_if_not_already_there (agent* thisAgent, test *t, test new_test, bo
 /* --- Some functions related to tests that used to be in rete.cpp */
 
 void add_additional_tests_and_originals (agent *thisAgent, rete_node *node, condition *cond, wme *w, node_varnames *nvn, AddAdditionalTestsMode additional_tests);
+void add_identity_to_test (agent *thisAgent, test t, goal_stack_level level);
 void add_hash_info_to_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
 void add_hash_info_to_original_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests (agent* thisAgent, condition *cond, rete_test *rt);

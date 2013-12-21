@@ -135,14 +135,12 @@ extern Symbol *find_name_of_object (agent* thisAgent, Symbol *id);
 
 typedef struct grounding_struct
 {
-    uint64_t id;
-    uint64_t attr;
-    uint64_t value;
+    uint64_t grounding_id;
     goal_stack_level level;
     grounding_struct *next;
 
-    grounding_struct( uint64_t new_id, uint64_t new_attr, uint64_t new_value, goal_stack_level new_level, grounding_struct *new_next )
-    : id(new_id), attr(new_attr), value(new_value), level(new_level), next(new_next) {}
+    grounding_struct( uint64_t new_id, goal_stack_level new_level, grounding_struct *new_next )
+    : grounding_id(new_id), level(new_level), next(new_next) {}
 } grounding_info;
 
 typedef struct wme_struct {
