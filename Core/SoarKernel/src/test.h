@@ -117,7 +117,7 @@ void add_test_if_not_already_there (agent* thisAgent, test *t, test new_test, bo
 /* --- Some functions related to tests that used to be in rete.cpp */
 
 void add_additional_tests_and_originals (agent *thisAgent, rete_node *node, condition *cond, wme *w, node_varnames *nvn, AddAdditionalTestsMode additional_tests);
-void add_identity_to_test (agent *thisAgent, test t, goal_stack_level level);
+void propagate_identity (agent* thisAgent, condition *cond, goal_stack_level level);
 void add_hash_info_to_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
 void add_hash_info_to_original_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests (agent* thisAgent, condition *cond, rete_test *rt);
@@ -129,6 +129,6 @@ void add_non_identical_tests (agent* thisAgent, test *t, test add_me);
 
 /* UITODO| Make this method of Test */
 const char *test_type_to_string(byte test_type);
-const char *test_type_to_string_brief(byte test_type);
+const char *test_type_to_string_brief(byte test_type, const char *equality_str="");
 
 #endif /* TEST_H_ */
