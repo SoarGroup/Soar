@@ -84,6 +84,7 @@ typedef struct test_struct {
   } data;
   test_struct     *original_test;
   identity_info   identity;
+  char            *original_var;
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is

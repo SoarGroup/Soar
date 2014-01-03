@@ -131,6 +131,13 @@ typedef struct preference_struct {
    *    chunker to match up rhs symbols with the correct lhs one,
    *    since the instantiated value is not sufficient. -- */
 
+  struct {
+      char *id;
+      char *attr;
+      char *value;
+      char *referent;
+  } original_vars;
+
   soar_module::symbol_triple original_symbols;
 
   struct slot_struct *slot;
