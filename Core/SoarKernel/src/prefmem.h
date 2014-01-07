@@ -138,6 +138,12 @@ typedef struct preference_struct {
       char *referent;
   } original_vars;
 
+  struct {
+      uint64_t id;
+      uint64_t attr;
+      uint64_t value;
+  } g_ids;
+
   soar_module::symbol_triple original_symbols;
 
   struct slot_struct *slot;

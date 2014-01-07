@@ -72,20 +72,22 @@ class Variablization_Manager
 {
   public:
 
+    uint64_t get_new_ground_id() {return (++ground_id_counter);};
     void make_name_unique(Symbol **sym);
     bool already_unique(Symbol *original_var);
 
     void clear_variablization_table();
     void clear_CUV_cache();
-    variablization *get_variablization(Symbol *index_sym);
-
-    void variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol, bool is_equality_test);
-    void variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
-    void variablize_rl_symbol (Symbol **sym, bool is_equality_test);
-
-    uint64_t get_new_ground_id() {return (++ground_id_counter);};
-
     void reinit();
+
+    variablization *get_variablization(Symbol *index_sym);
+    variablization *get_variablization(uint64_t index_id);
+    variablization *get_variablization(char *index_var);
+
+    void variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol,
+                                identity_info *identity, bool is_equality_test);
+    void variablize_rl_symbol (Symbol **sym, bool is_equality_test);
+    uint64_t variablize_rhs_symbol (Symbol **sym, char *original_var);
 
     void print_OSD_table();
     void print_variablization_table();
@@ -98,14 +100,16 @@ class Variablization_Manager
   private:
     agent* thisAgent;
 
-    void store_variablization(Symbol *index_sym, Symbol *instantiated_sym, Symbol *variable, bool is_equality_test);
+    void store_variablization(Symbol *instantiated_sym, Symbol *variable, char *orig_varname,
+                              identity_info *identity, bool is_equality_test);
     void clear_CUV_for_symbol(Symbol *var);
-    void clear_OSD_table();
-    void create_OSD_table();
+    void clear_data();
+    void clear_OS_hashtable();
+    void create_OS_hashtable();
 
 
     std::map< char *, variablization * > * variablization_ovar_table;
-    std::map< uint64_t *, variablization * > * variablization_g_id_table;
+    std::map< uint64_t, variablization * > * variablization_g_id_table;
     std::map< Symbol *, variablization * > * variablization_sym_table;
     std::set< Symbol * > * current_unique_vars;
     struct hash_table_struct *original_symbol_ht;
