@@ -11,10 +11,11 @@
 #include <portability.h>
 #include <set>
 #include "symtab.h"
-
+typedef struct identity_struct identity_info;
 typedef struct variablization_struct {
     Symbol *instantiated_symbol;
     Symbol *variablized_symbol;
+    uint64_t grounding_id;
     bool grounded;
 } variablization;
 
@@ -103,7 +104,9 @@ class Variablization_Manager
     void create_OSD_table();
 
 
-    std::map< Symbol *, variablization * > * variablization_table;
+    std::map< char *, variablization * > * variablization_ovar_table;
+    std::map< uint64_t *, variablization * > * variablization_g_id_table;
+    std::map< Symbol *, variablization * > * variablization_sym_table;
     std::set< Symbol * > * current_unique_vars;
     struct hash_table_struct *original_symbol_ht;
     memory_pool original_symbol_mp;

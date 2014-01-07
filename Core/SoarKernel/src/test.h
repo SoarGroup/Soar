@@ -58,6 +58,7 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_
 typedef struct identity_struct {
     TestType      type;
     byte          symbol_type;
+    char          *original_var;
     uint64_t      grounding_id;
     WME_Field     grounding_field;
     wme           *grounding_wme;
@@ -83,8 +84,7 @@ typedef struct test_struct {
     ::list        *conjunct_list;      /* for conjunctive tests */
   } data;
   test_struct     *original_test;
-  identity_info   identity;
-  char            *original_var;
+  identity_info   *identity;
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is

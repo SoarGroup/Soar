@@ -36,6 +36,7 @@
 #ifndef WMEM_H
 #define WMEM_H
 
+#include "enums.h"
 
 typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
@@ -135,12 +136,13 @@ extern Symbol *find_name_of_object (agent* thisAgent, Symbol *id);
 
 typedef struct grounding_struct
 {
-    uint64_t grounding_id;
+    uint64_t grounding_id[3];
     goal_stack_level level;
     grounding_struct *next;
 
-    grounding_struct( uint64_t new_id, goal_stack_level new_level, grounding_struct *new_next )
-    : grounding_id(new_id), level(new_level), next(new_next) {}
+    grounding_struct( goal_stack_level new_level, grounding_struct *new_next )
+    : level(new_level), next(new_next) {
+      grounding_id[ID_ELEMENT] = 0; grounding_id[ATTR_ELEMENT] = 0; grounding_id[VALUE_ELEMENT] = 0; }
 } grounding_info;
 
 typedef struct wme_struct {

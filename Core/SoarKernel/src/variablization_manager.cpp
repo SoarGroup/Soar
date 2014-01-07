@@ -24,7 +24,7 @@ Variablization_Manager::Variablization_Manager(agent *myAgent)
 {
   thisAgent = myAgent;
   create_OSD_table();
-  variablization_table = new std::map< Symbol *, variablization * >();
+  variablization_sym_table = new std::map< Symbol *, variablization * >();
   current_unique_vars = new std::set< Symbol *>();
   ground_id_counter = 0;
 }
@@ -32,7 +32,7 @@ Variablization_Manager::Variablization_Manager(agent *myAgent)
 Variablization_Manager::~Variablization_Manager()
 {
   clear_OSD_table();
-  delete variablization_table;
+  delete variablization_sym_table;
 }
 /* -- ----------------------------------
  *    Variablization functions
@@ -47,7 +47,7 @@ void Variablization_Manager::clear_variablization_table() {
 
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol map...\n");
   print_variablization_table();
-  for (std::map< Symbol *, variablization * >::iterator it=(*variablization_table).begin(); it!=(*variablization_table).end(); ++it)
+  for (std::map< Symbol *, variablization * >::iterator it=(*variablization_sym_table).begin(); it!=(*variablization_sym_table).end(); ++it)
   {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s(%lld) -> %s(%lld)/%s(%lld)\n",
         it->first->to_string(thisAgent), it->first->reference_count,
@@ -58,7 +58,7 @@ void Variablization_Manager::clear_variablization_table() {
     symbol_remove_ref(thisAgent, it->second->variablized_symbol);
     delete it->second;
   }
-  variablization_table->clear();
+  variablization_sym_table->clear();
 }
 
 void Variablization_Manager::reinit()
@@ -73,8 +73,8 @@ void Variablization_Manager::reinit()
 
 variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
 {
-  std::map< Symbol *, variablization * >::iterator iter = (*variablization_table).find(index_sym);
-  if (iter != (*variablization_table).end())
+  std::map< Symbol *, variablization * >::iterator iter = (*variablization_sym_table).find(index_sym);
+  if (iter != (*variablization_sym_table).end())
   {
     dprint(DT_VARIABLIZATION_MANAGER, "...found %s in variablization table: %s/%s\n", index_sym->to_string(thisAgent),
        iter->second->variablized_symbol->to_string(thisAgent), iter->second->instantiated_symbol->to_string(thisAgent));
@@ -102,7 +102,7 @@ void Variablization_Manager::store_variablization(Symbol *index_sym, Symbol *ins
   new_variablization->variablized_symbol = variable;
   new_variablization->grounded = is_equality_test;
 
-  (*variablization_table)[index_sym] = new_variablization;
+  (*variablization_sym_table)[index_sym] = new_variablization;
 
   /* -- An identifier may have more than one original symbol (mostly due to the fact
    *    that placeholder variables still exist to handle dot notation, and it wasn't
@@ -361,7 +361,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
       symbol_remove_ref(thisAgent, index_sym);
       symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
       symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
-      variablization_table->erase(index_sym);
+      variablization_sym_table->erase(index_sym);
 
       dprint(DT_VARIABLIZATION_MANAGER, "...searching for varname %s in unique varname table...\n", found_variablization->variablized_symbol->to_string(thisAgent));
       delete found_variablization;
@@ -372,7 +372,7 @@ void Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *origin
       symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
       symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
       symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
-      variablization_table->erase(found_variablization->variablized_symbol);
+      variablization_sym_table->erase(found_variablization->variablized_symbol);
 //      print_variablization_table();
     }
   }
@@ -612,7 +612,7 @@ void Variablization_Manager::print_variablization_table()
   dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
   dprint(DT_VARIABLIZATION_MANAGER, "       Variablization Table\n");
   dprint(DT_VARIABLIZATION_MANAGER, "------------------------------------\n");
-  for (std::map< Symbol *, variablization * >::iterator it=(*variablization_table).begin(); it!=(*variablization_table).end(); ++it)
+  for (std::map< Symbol *, variablization * >::iterator it=(*variablization_sym_table).begin(); it!=(*variablization_sym_table).end(); ++it)
   {
     dprint(DT_VARIABLIZATION_MANAGER, "%s -> %s/%s (grounded %d)\n", it->first->to_string(thisAgent),
         it->second->variablized_symbol->to_string(thisAgent), it->second->instantiated_symbol->to_string(thisAgent), it->second->grounded);
