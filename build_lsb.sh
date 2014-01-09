@@ -158,6 +158,6 @@ lsb_args='--cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
   --out="$OUT"'
 
 # need to use eval here so that quoting in $args is resolved correctly
-eval "scons $user_args $lsb_args" || exit 1
+eval "python scons/scons.py $user_args $lsb_args" || exit 1
 check_output $OUT
 
