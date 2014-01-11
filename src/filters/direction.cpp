@@ -20,18 +20,18 @@ Calculates whether a bounding box is located to the left (-1), overlapping
 */
 bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	assert(0 <= axis && axis < 3);
-	
+
 	int dir;
 	vec3 amin, amax, bmin, bmax;
 	double asize, bsize, margin;
 
 	a->get_bounds().get_vals(amin, amax);
 	b->get_bounds().get_vals(bmin, bmax);
-	
+
 	asize = amax(axis) - amin(axis);
 	bsize = bmax(axis) - bmin(axis);
 	margin = OVERLAP_MARGIN * ( asize < bsize ? asize : bsize );
-	
+
 	/*
 	 dir = [-1, 0, 1] if a is [less than, overlapping,
 	 greater than] b in that dimension.
@@ -46,18 +46,26 @@ bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	return comp == dir;
 }
 
+// AM: Note, changed so it uses the volume as reported by the scale
+// This assumes unit sized bounding volumes or spheres as the vertices
 bool size_comp(const sgnode *a, const sgnode *b) {
 	int i, dir[3];
-	vec3 amin, amax, bmin, bmax;
+    vec3 sa = a->get_trans('s');
+    vec3 sb = b->get_trans('s');
+    double va = sa[0] * sa[1] * sa[2];
+    double vb = sb[0] * sb[1] * sb[2];
 
-	a->get_bounds().get_vals(amin, amax);
-	b->get_bounds().get_vals(bmin, bmax);
+    return (va * 1.05) < vb;
+	//vec3 amin, amax, bmin, bmax;
+
+	//a->get_bounds().get_vals(amin, amax);
+	//b->get_bounds().get_vals(bmin, bmax);
 	//float adiag = (amax-amin).norm();
 	//float bdiag = (bmax-bmin).norm();
-	float atopsquare = (amax[0]-amin[0])*(amax[1]-amin[1]);
-	float btopsquare = (bmax[0]-bmin[0])*(bmax[1]-bmin[1]);
-	
-	return (atopsquare*1.05) < btopsquare;
+	//float atopsquare = (amax[0]-amin[0])*(amax[1]-amin[1]);
+	//float btopsquare = (bmax[0]-bmin[0])*(bmax[1]-bmin[1]);
+
+	//return (atopsquare*1.05) < btopsquare;
 }
 
 bool linear_comp(const sgnode *a, const sgnode *b, const sgnode *c) {
@@ -68,8 +76,8 @@ bool linear_comp(const sgnode *a, const sgnode *b, const sgnode *c) {
 	vec3 ca = a->get_centroid();
 	vec3 cb = b->get_centroid();
 	vec3 cc = c->get_centroid();
-	
-	float tri_area = 0.5*(ca[0]*(cb[1]-cc[1]) + cb[0]*(cc[1]-ca[1]) + 
+
+	float tri_area = 0.5*(ca[0]*(cb[1]-cc[1]) + cb[0]*(cc[1]-ca[1]) +
 						  cc[0]*(ca[1]-cb[1]));
 	if (tri_area < 0)
 		tri_area = -tri_area;
@@ -137,12 +145,12 @@ bool below(const scene *scn, const vector<const sgnode*> &args) {
 Filter version
 */
 
-class direction_filter : public select_filter{ //typed_map_filter<bool> {
+class direction_filter : public typed_select_filter<const sgnode*>{ 
 public:
 	direction_filter(Symbol *root, soar_interface *si, filter_input *input, int axis, int comp)
-	: select_filter(root, si, input), axis(axis), comp(comp) {}
-	
-	bool compute(const filter_params *p, filter_val*& out, bool &changed) {// bool adding, bool &res, bool &changed) {
+	  : typed_select_filter<const sgnode*>(root, si, input), axis(axis), comp(comp) {}
+
+  bool compute(const filter_params *p, bool null_out, const sgnode* &out, bool &select, bool &changed) {
 		const sgnode *a, *b;
 		double top,bot;
 		if (!get_filter_param(this, p, "a", a)) {
@@ -154,7 +162,7 @@ public:
 		//top bot, parameters optional
 		top = 100.0;
 		bot = 0.0;
-		
+
 		bool newres = direction(a, b, axis, comp);
 
 		if (newres && (comp != 0))
@@ -163,37 +171,40 @@ public:
 			get_filter_param(this, p, "bot", bot);
 			vec3 amin, amax, bmin, bmax, ac, bc;
 			double dist;
-			
+
 			ac = a->get_centroid();
 			bc = b->get_centroid();
 			bbox ba = a->get_bounds();
 			bbox bb = b->get_bounds();
 			ba.get_vals(amin, amax);
 			bb.get_vals(bmin, bmax);
-			
+
 			if (amax[axis] <= bmin[axis])
 				dist = abs(amax[axis] - bmin[axis]);
 			else if (bmax[axis] <= amin[axis])
 				dist = abs(bmax[axis] - amin[axis]);
+			/*
 			else if ((amax[axis] < bmax[axis] && amax[axis] > bmin[axis]) ||
 					 (bmax[axis] < amax[axis] && bmax[axis] > amin[axis]) ||
 					 (amax[axis] == bmax[axis]) || (bmin[axis] == amin[axis]))
-				dist = 0.0; 
+				dist = 0.0;
+			*/
 			else
 				dist = 0.0;
 			newres = ((dist >= bot) && (dist <= top));
 		}
-		
-		
+
+
 		//res = newres;
-		changed = false;
-		filter_val* a_val = new filter_val_c<const sgnode*>(b);
+		changed = true;
+		out = b;
+		select = newres;
+		/*
 		if (newres && out == NULL) {
-			// Create a new filter val
+			
 			out = new filter_val_c<const sgnode*>(b);
 		} else if(newres && a_val != out) {
-			// The value has changed
-		  //std::cout << "Changed here" << std::endl;
+			
 			set_filter_val(out, b);
 		} else if(!newres && out != NULL) {
 			// We no longer are selecting the value, make it null
@@ -202,8 +213,8 @@ public:
 			// the value didn't actually changed
 			changed = false;
 		}
-		
-		delete a_val;
+		*/
+		//delete a_val;
 		return true;
 	}
 
@@ -226,17 +237,17 @@ class size_comp_filter : public select_filter{//typed_map_filter<bool> {
 public:
 	size_comp_filter(Symbol *root, soar_interface *si, filter_input *input)
 	: select_filter(root, si, input) {}
-	
+
 	bool compute(const filter_params *p, filter_val*& out, bool &changed) {//bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b;
-		
+
 		if (!get_filter_param(this, p, "a", a)) {
 			return false;
 		}
 		if (!get_filter_param(this, p, "b", b)) {
 			return false;
 		}
-		
+
 		bool newres = size_comp(a, b);
 		changed = false;
 		filter_val* a_val = new filter_val_c<const sgnode*>(b);
@@ -254,7 +265,7 @@ public:
 			changed = false;
 		}
 		delete a_val;
-		
+
 		//res = newres;
 		return true;
 	}
@@ -263,10 +274,10 @@ class linear_comp_filter : public select_filter{//typed_map_filter<bool> {
 public:
 	linear_comp_filter(Symbol *root, soar_interface *si, filter_input *input)
 		: select_filter(root, si, input) {}
-	
+
 	bool compute(const filter_params *p, filter_val*& out, bool &changed) {//bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
-		
+
 		if (!get_filter_param(this, p, "a", a)) {
 			return false;
 		}
@@ -276,7 +287,7 @@ public:
 		if (!get_filter_param(this, p, "c", c)) {
 			return false;
 		}
-		
+
 	    bool newres = linear_comp(a, b, c);
 	changed = false;
 		filter_val* a_val = new filter_val_c<const sgnode*>(b);
@@ -294,7 +305,7 @@ public:
 			changed = false;
 		}
 		delete a_val;
-	
+
 	//res = newres;
 		return true;
 	}

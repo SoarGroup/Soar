@@ -111,7 +111,7 @@ void sgnode::update_transform() const {
 	if (!trans_dirty) {
 		return;
 	}
-	
+
 	ltransform = transform3(pos, rot, scale);
 	if (parent) {
 		parent->update_transform();
@@ -197,13 +197,13 @@ void sgnode::proxy_use_sub(const vector<string> &args, ostream &os) {
 	vec3 lp, ls, wp, ws;
 	vec4 lr, wr;
 	table_printer t, t1, t2, t3;
-	
+
 	t.add_row() << "id:"     << id;
 	t.add_row() << "name:"   << name;
 	t.add_row() << "type:"   << type;
 	t.add_row() << "parent:" << (parent ? parent->get_name() : "none");
 	t.print(os);
-	
+
 	os << endl << "Local transform:" << endl;
 	update_transform();
 	ltransform.to_prs(lp, lr, ls);
@@ -239,7 +239,7 @@ void sgnode::proxy_use_sub(const vector<string> &args, ostream &os) {
 
 	numeric_properties_map::const_iterator ni, ni_end;
 	string_properties_map::const_iterator si, si_end;
-	
+
 	os << endl << "Custom properties:" << endl;
 	for (ni = numeric_props.begin(), ni_end = numeric_props.end(); ni != ni_end; ++ni) {
 		t3.add_row() << ni->first << ni->second;
@@ -310,7 +310,7 @@ bool group_node::attach_child(sgnode *c) {
 	set_shape_dirty();
 	std::string added_num = tostring(children.size() - 1);
 	send_update(sgnode::CHILD_ADDED, added_num);
-	
+
 	return true;
 }
 
@@ -320,7 +320,7 @@ void group_node::update_shape() {
 		set_bounds(bbox(c));
 		return;
 	}
-	
+
 	bbox b = children[0]->get_bounds();
 	for (int i = 1; i < children.size(); ++i) {
 		b.include(children[i]->get_bounds());
@@ -354,9 +354,9 @@ void group_node::proxy_get_children(map<string, cliproxy*> &c) {
 /*
  Based on the fact that the support s_T(v) of a geometry under transformation
  T(x) = Bx + c is T(s(Bt(v))), where Bt is the transpose of B.
- 
+
  For more information see
- 
+
  "Bergen, G. (1999) A Fast and Robust GJK Implementation for Collision
   Detection of Convex Objects."
 */
@@ -364,7 +364,7 @@ void geometry_node::gjk_support(const vec3 &dir, vec3 &support) const {
 	vec3 tdir;
 	mat B;
 	transform3 t;
-	
+
 	t = get_world_trans();
 	t.get_matrix(B);
 	tdir = B.block(0, 0, 3, 3).transpose() * dir;
@@ -427,7 +427,7 @@ void convex_node::get_shape_sgel(string &s) const {
 void convex_node::gjk_local_support(const vec3 &dir, vec3 &support) const {
 	double dp, best;
 	int best_i = -1;
-	
+
 	for (int i = 0; i < verts.size(); ++i) {
 		dp = dir.dot(verts[i]);
 		if (best_i == -1 || dp > best) {
@@ -440,12 +440,12 @@ void convex_node::gjk_local_support(const vec3 &dir, vec3 &support) const {
 
 void convex_node::proxy_use_sub(const vector<string> &args, ostream &os) {
 	sgnode::proxy_use_sub(args, os);
-	
+
 	table_printer t;
 	for (int i = 0, iend = verts.size(); i < iend; ++i) {
 		t.add_row() << verts[i](0) << verts[i](1) << verts[i](2);
 	}
-	
+
 	os << endl << "vertices" << endl;
 	t.print(os);
 }
@@ -491,7 +491,7 @@ void ball_node::gjk_local_support(const vec3 &dir, vec3 &support) const {
 
 void ball_node::proxy_use_sub(const vector<string> &args, ostream &os) {
 	sgnode::proxy_use_sub(args, os);
-	
+
 	os << endl << "radius: " << radius << endl;
 }
 
@@ -505,7 +505,7 @@ void point_ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {
 void geom_ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {
 	vec3 d, support;
 	const geometry_node *n = static_cast<const geometry_node*>(obj);
-	
+
 	for (int i = 0; i < 3; ++i) {
 		d(i) = dir->v[i];
 	}
@@ -518,13 +518,13 @@ void geom_ccd_support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *v) {
 double geom_convex_dist(const geometry_node *n1, const geometry_node *n2) {
 	ccd_t ccd;
 	double dist;
-	
+
 	CCD_INIT(&ccd);
 	ccd.support1       = geom_ccd_support;
 	ccd.support2       = geom_ccd_support;
 	ccd.max_iterations = 100;
 	ccd.dist_tolerance = INTERSECT_THRESH;
-	
+
 	dist = ccdGJKDist(n1, n2, &ccd);
 	return dist > 0.0 ? dist : 0.0;
 }
@@ -532,13 +532,13 @@ double geom_convex_dist(const geometry_node *n1, const geometry_node *n2) {
 double point_geom_convex_dist(const vec3 &p, const geometry_node *g) {
 	ccd_t ccd;
 	double dist;
-	
+
 	CCD_INIT(&ccd);
 	ccd.support1       = point_ccd_support;
 	ccd.support2       = geom_ccd_support;
 	ccd.max_iterations = 100;
 	ccd.dist_tolerance = INTERSECT_THRESH;
-	
+
 	dist = ccdGJKDist(&p, g, &ccd);
 	return dist > 0.0 ? dist : 0.0;
 }
@@ -648,10 +648,10 @@ double overlap(const sgnode* n1, const sgnode* n2){
 		numIntersections++;
 	}
 
-	std::cout << "ITERS: " << numIters << std::endl;
-	std::cout << "XTION: " << numIntersections << std::endl;
-	std::cout << "TOTAL: " << numSamples << std::endl;
-	std::cout << "TIME : " << (get_time() - startTime) << std::endl;
+	//std::cout << "ITERS: " << numIters << std::endl;
+	//std::cout << "XTION: " << numIntersections << std::endl;
+	//std::cout << "TOTAL: " << numSamples << std::endl;
+	//std::cout << "TIME : " << (get_time() - startTime) << std::endl;
 
 
 	if(numSamples == 0){
@@ -665,18 +665,18 @@ double convex_distance(const sgnode *n1, const sgnode *n2) {
 	vector<const geometry_node*> g1, g2;
 	vector<double> dists;
 	vec3 c;
-	
+
 	if (n1 == n2 || n1->has_descendent(n2) || n2->has_descendent(n1)) {
 		return 0.0;
 	}
-	
+
 	n1->walk_geoms(g1);
 	n2->walk_geoms(g2);
-	
+
 	if (g1.empty() && g2.empty()) {
 		return (n1->get_centroid() - n2->get_centroid()).norm();
 	}
-	
+
 	if (g1.empty()) {
 		dists.reserve(g2.size());
 		c = n1->get_centroid();
@@ -759,7 +759,7 @@ void sgnode::set_native_property(char type, int dim, double value){
 		return;
 	}
 	switch(type){
-		case 'p':	
+		case 'p':
 			pos[dim] = value;
 			set_transform_dirty();
 		break;
@@ -768,7 +768,7 @@ void sgnode::set_native_property(char type, int dim, double value){
 			set_transform_dirty();
 		break;
 		case 's':
-			scale[dim] = value;	
+			scale[dim] = value;
 			set_transform_dirty();
 		break;
 	}
@@ -787,9 +787,8 @@ bool intersects(const sgnode* n, std::vector<const sgnode*> targets){
 using namespace std;
 vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d2, int d3){
 	vec3 scale = n->get_trans('s');
-	cout << "Old Scale here: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
 	vec3 tempScale = scale;
-	cout << "Adjusting on dims: " << d1 << ", " << d2 << ", " << d3 << endl;
+	//cout << "Adjusting on dims: " << d1 << ", " << d2 << ", " << d3 << endl;
 
 	// Simple binary search, finds it within 1%
 	double min = 0.001, max = 1.0;
@@ -799,12 +798,12 @@ vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d
 		tempScale[d2] = scale[d2] * s;
 		tempScale[d3] = scale[d3] * s;
 		n->set_trans('s', tempScale);
-		cout << "  Test " << s << ": ";
+//		cout << "  Test " << s << ": ";
 		if(intersects(n, targets)){
-			cout << "I" << endl;
+//			cout << "I" << endl;
 			max = s;
 		} else {
-			cout << "N" << endl;
+//			cout << "N" << endl;
 			min = s;
 		}
 	}
@@ -812,7 +811,7 @@ vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d
 	tempScale[d1] = scale[d1] * min;
 	tempScale[d2] = scale[d2] * min;
 	tempScale[d3] = scale[d3] * min;
-	cout << "Final Result: " << min << endl;
+//	cout << "Final Result: " << min << endl;
 	return tempScale;
 }
 
@@ -832,7 +831,7 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 	std::vector<const sgnode*> intersectors;
 	std::vector<const sgnode*>::iterator i;
 	// Find all the nodes that actually intersect the original sized object
-	cout << "Intersectors: " << endl;
+	//cout << "Intersectors: " << endl;
 	for(i = targets.begin(); i != targets.end(); i++){
 		if(*i == this){
 			continue;
@@ -840,29 +839,29 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 		if(!intersects(this, *i)){
 			continue;
 		}
-		cout << "  " << (*i)->get_name() << endl;
+		//cout << "  " << (*i)->get_name() << endl;
 		intersectors.push_back(*i);
 	}
 	if(intersectors.size() == 0){
-		cout << "No Intersectors" << endl;
+		//cout << "No Intersectors" << endl;
 		// Don't need to adjust at all
 		return;
 	}
-	cout << "Generating centroid" << endl;
+	//cout << "Generating centroid" << endl;
 
 	// Check to see if the centroid is already inside another object
 	ptlist centroid_pt;
 	centroid_pt.push_back(this->get_centroid());
 	convex_node* centroid = new convex_node("temp-centroid", "object", centroid_pt);
 	if(intersects(centroid, intersectors)){
-		cout << "Centroid is intersected" << endl;
+		//cout << "Centroid is intersected" << endl;
 		// Something is very wrong, the centroid is inside another object, just quit
 		delete centroid;
 		return;
 	}
 	delete centroid;
 
-	cout << "Copying points" << endl;
+//	cout << "Copying points" << endl;
 
 	// Now do the actual adjustment, on a copy of the original node
 	// Copy all the points from this node
@@ -872,7 +871,7 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 	vec3 tempScale = scale;
 	vec3 newScale = scale;
 
-	cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
+//	cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
 
 	int freeDim = -1;
 	// Test each dimension to see if just 1 needs to be adjusted
@@ -891,7 +890,7 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 	}
 	tempScale = scale;
 	copied_node->set_trans('s', scale);
-	cout << "Free Dim: " << freeDim << endl;
+//	cout << "Free Dim: " << freeDim << endl;
 	if(freeDim != -1){
 		newScale = adjust_single_dim(copied_node, intersectors, freeDim);
 	} else {
@@ -913,7 +912,7 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 		}
 		tempScale = scale;
 		copied_node->set_trans('s', scale);
-		cout << "Free Dim: " << freeDim << endl;
+//		cout << "Free Dim: " << freeDim << endl;
 		if(freeDim != -1){
 			newScale = adjust_two_dims(copied_node, intersectors, freeDim);
 		} else {

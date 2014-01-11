@@ -18,18 +18,18 @@ public:
 	node_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input)
 	: typed_map_filter<const sgnode*>(root, si, input), scn(scn)
 	{}
-	
+
 	~node_filter() {
 		map<sgnode*, node_info>::iterator i;
 		for (i = nodes.begin(); i != nodes.end(); ++i) {
 			i->first->unlisten(this);
 		}
 	}
-	
+
 	bool compute(const filter_params *params, bool adding, const sgnode *&res, bool &changed) {
 		sgnode *newres;
 		string id;
-		
+
 		if (!get_filter_param(this, params, "id", id)) {
 			set_status("expecting parameter id");
 			return false;
@@ -40,7 +40,7 @@ public:
 			set_status(ss.str());
 			return false;
 		}
-		
+
 		if (newres != res) {
 			add_entry(newres, params);
 			if (!adding) {
@@ -56,7 +56,7 @@ public:
 		}
 		return true;
 	}
-	
+
 	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
 			node_info &info = map_get(nodes, n);
@@ -79,7 +79,7 @@ private:
 		}
 		nodes[n].params.push_back(params);
 	}
-	
+
 	void del_entry(sgnode *n, const filter_params *params) {
 		map<sgnode*, node_info>::iterator i = nodes.find(n);
 		//JK assert crashes in real world TODO debug
@@ -95,12 +95,12 @@ private:
 			nodes.erase(i);
 		}
 	}
-	
+
 	struct node_info {
 		std::list<const filter_params*> params;
 		bool changed;
 	};
-	
+
 	scene *scn;
 	map<sgnode*, node_info> nodes;
 };
@@ -108,9 +108,9 @@ private:
 /* Return all nodes from the scene */
 class all_nodes_filter : public filter, public sgnode_listener {
 public:
-	all_nodes_filter(Symbol *root, soar_interface *si, scene *scn) 
+	all_nodes_filter(Symbol *root, soar_interface *si, scene *scn)
 	: filter(root, si, NULL), scn(scn), first(true) {}
-	
+
 	~all_nodes_filter() {
 		map<sgnode*, filter_val*>::iterator i;
 		for (i = outputs.begin(); i != outputs.end(); ++i) {
@@ -121,24 +121,24 @@ public:
 		scn->get_all_nodes(nodes);
 		nodes[0]->unlisten(this);
 	}
-	
+
 	bool update_outputs() {
 		vector<sgnode*> nodes;
-		
+
 		if (!first) {
 			return true;
 		}
-		
+
 		scn->get_all_nodes(nodes);
 		nodes[0]->listen(this);
-		
+
 		for (int i=1, iend=nodes.size(); i < iend; ++i) { // don't add world node
 			add_node(nodes[i]);
 		}
 		first = false;
 		return true;
 	}
-	
+
 	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
 		filter_val *r;
 		group_node *g;
@@ -160,6 +160,8 @@ public:
 				break;
 			case sgnode::TRANSFORM_CHANGED:
 			case sgnode::SHAPE_CHANGED:
+            case sgnode::PROPERTY_CHANGED:
+            case sgnode::PROPERTY_DELETED:
 				if (map_get(outputs, n, r)) {
 					change_output(r);
 				} else {
@@ -168,7 +170,7 @@ public:
 				break;
 		}
 	}
-	
+
 private:
 	filter_val *add_node(sgnode *n) {
 		n->listen(this);
@@ -177,10 +179,10 @@ private:
 		add_output(r, NULL);
 		return r;
 	}
-	
+
 	scene *scn;
 	bool first;
-	
+
 	map<sgnode*, filter_val*> outputs;
 };
 
@@ -223,14 +225,14 @@ public:
 	node_centroid_filter(Symbol *root, soar_interface *si, filter_input *input)
 	: typed_map_filter<vec3>(root, si, input)
 	{}
-	
+
 	bool compute(const filter_params *params, bool adding, vec3 &res, bool &changed) {
 		const sgnode *n;
-		
+
 		if (!get_filter_param(this, params, "node", n)) {
 			return false;
 		}
-		
+
 		vec3 newres = n->get_centroid();
 		changed = (newres != res);
 		res = newres;

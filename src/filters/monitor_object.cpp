@@ -37,7 +37,7 @@ public:
 			newres = 1;
 		} else {
 			double savedVol = it->second;
-			std::cout << "VOL: " << curVol << ", " << savedVol << std::endl;
+			//std::cout << "VOL: " << curVol << ", " << savedVol << std::endl;
 			if(savedVol < .000000001){
 				newres = 1;
 			} else {

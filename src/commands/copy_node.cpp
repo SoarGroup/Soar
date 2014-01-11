@@ -27,7 +27,7 @@ public:
 		}
 		return true;
 	}
-	
+
 
 	bool early() { return false; }
 
@@ -99,11 +99,10 @@ public:
 
 		vec3 pos, rot, scale;
 		sourceNode->get_trans(pos, rot, scale);
-		pos[0] += 3;
 		destNode->set_trans(pos, rot, scale);
 
 		if(adjust == "true"){
-			cout << "adjust = true" << endl;
+			//cout << "adjust = true" << endl;
 			std::vector<const sgnode*> targets;
 			std::vector<const sgnode*> all;
 			scn->get_all_nodes(all);
@@ -119,9 +118,9 @@ public:
 					}
 				}
 			}
-			cout << "Found Targets: " << endl;
+		//	cout << "Found Targets: " << endl;
 			for(std::vector<const sgnode*>::iterator i = targets.begin(); i != targets.end(); i++){
-				cout << "  " << (*i)->get_name() << endl;
+				//cout << "  " << (*i)->get_name() << endl;
 			}
 			destNode->adjust_size(targets);
 		}
