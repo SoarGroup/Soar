@@ -1,3 +1,5 @@
+#ifdef DEBUG_MAC_STACKTRACE
+#ifndef WIN32
 /*
  * debug_thread.cpp
  *
@@ -311,3 +313,5 @@ namespace tthread {
   }
 
 }
+#endif
+#endif

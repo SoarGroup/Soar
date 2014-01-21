@@ -1,3 +1,5 @@
+#ifdef DEBUG_MAC_STACKTRACE
+#ifndef WIN32
 /*
  * Simple and lightweight memory leak detector
  * Copyright (c) 2011,2012,2013 Mario 'rlyeh' Rodriguez
@@ -905,3 +907,5 @@ void operator delete[]( void *ptr ) throw()
 
 #undef $yes
 #undef $no
+#endif
+#endif
