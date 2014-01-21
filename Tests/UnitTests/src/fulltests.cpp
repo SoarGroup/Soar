@@ -60,6 +60,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testOSupportCopyDestroyCircular );
 	CPPUNIT_TEST( testSynchronize );
 	CPPUNIT_TEST( testRunningAgentCreation );  // bug 952
+	/* -- testShutdownHandlerShutdown has been disabled for at least a couple years.  -- */
 	//CPPUNIT_TEST( testShutdownHandlerShutdown );
 	CPPUNIT_TEST( testEventOrdering ); // bug 1100
 	CPPUNIT_TEST( testStatusCompleteDuplication ); // bug 1042
