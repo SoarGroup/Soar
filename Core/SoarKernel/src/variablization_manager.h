@@ -82,7 +82,7 @@ class Variablization_Manager
 
     variablization *get_variablization(Symbol *index_sym);
     variablization *get_variablization(uint64_t index_id);
-    variablization *get_variablization(char *index_var);
+    uint64_t get_gid_for_orig_var(char *index_var);
 
     void variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol,
                                 identity_info *identity, bool is_equality_test);
@@ -108,7 +108,7 @@ class Variablization_Manager
     void create_OS_hashtable();
 
 
-    std::map< char *, variablization * > * variablization_ovar_table;
+    std::map< char *, uint64_t > * variablization_ovar_table;
     std::map< uint64_t, variablization * > * variablization_g_id_table;
     std::map< Symbol *, variablization * > * variablization_sym_table;
     std::set< Symbol * > * current_unique_vars;
