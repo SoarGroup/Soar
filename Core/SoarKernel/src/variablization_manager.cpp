@@ -10,15 +10,28 @@
 #include "instantiations.h"
 #include "assert.h"
 #include "test.h"
+#include "debug.h"
 
 extern uint32_t hash_string (const char *s);
-uint32_t hash_variable_raw_info (const char *name, short num_bits);
-uint32_t compress (uint32_t h, short num_bits);
+extern uint32_t hash_variable_raw_info (const char *name, short num_bits);
+extern uint32_t compress (uint32_t h, short num_bits);
 
-uint32_t hash_unique_string (void *item, short num_bits) {
+inline uint32_t hash_unique_string (void *item, short num_bits) {
   original_symbol_data *var;
   var = static_cast<original_symbol_data *>(item);
   return compress (hash_string(var->name),num_bits);
+}
+
+inline variablization * copy_variablization(agent *thisAgent, variablization *v)
+{
+  variablization *new_variablization = new variablization;
+  new_variablization->instantiated_symbol = v->instantiated_symbol;
+  new_variablization->variablized_symbol = v->variablized_symbol;
+  symbol_add_ref(thisAgent, new_variablization->instantiated_symbol);
+  symbol_add_ref(thisAgent, new_variablization->variablized_symbol);
+  new_variablization->grounded = v->grounded;
+  new_variablization->grounding_id= v->grounding_id;
+  return new_variablization;
 }
 
 Variablization_Manager::Variablization_Manager(agent *myAgent)
@@ -137,37 +150,107 @@ variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
   }
   else
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in variablization table.\n", index_sym->to_string(thisAgent));
+//    dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in variablization table.\n", index_sym->to_string(thisAgent));
     return NULL;
   }
 }
 
 uint64_t Variablization_Manager::get_gid_for_orig_var(char *index_var)
 {
-  std::map< char *, uint64_t >::iterator iter = (*variablization_ovar_table).find(index_var);
-  if (iter != (*variablization_ovar_table).end())
+  for (std::map< char *, uint64_t >::iterator it=(*variablization_ovar_table).begin(); it!=(*variablization_ovar_table).end(); ++it)
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in g_id variablization table for %s\n",
-       iter->second, index_var);
-      return iter->second;
+    if (!strcmp(it->first, index_var))
+    {
+      dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in g_id variablization table for %s\n",
+         it->second, index_var);
+        return it->second;
+    }
   }
-  else
+  dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in g_id variablization table.\n", index_var);
+  thisAgent->variablizationManager->print_variablization_table();
+
+  return 0;
+
+//  std::map< char *, uint64_t >::iterator iter = (*variablization_ovar_table).find(index_var);
+//  if (iter != (*variablization_ovar_table).end())
+//  {
+//    dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in g_id variablization table for %s\n",
+//       iter->second, index_var);
+//      return iter->second;
+//  }
+//  else
+//  {
+//    dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in g_id variablization table.\n", index_var);
+//    thisAgent->variablizationManager->print_variablization_table();
+//
+//    return 0;
+//  }
+}
+
+void Variablization_Manager::add_orig_var_mappings_for_test(test t)
+{
+  cons *c;
+  test check_test;
+
+  switch (t->type)
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in g_id variablization table.\n", index_var);
-    return 0;
+    case DISJUNCTION_TEST:
+    case GOAL_ID_TEST:
+    case IMPASSE_ID_TEST:
+      break;
+    case CONJUNCTIVE_TEST:
+      dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for conjunctive test\n");
+      cons *c;
+      test check_test;
+      for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      {
+        add_orig_var_mappings_for_test(static_cast<test>(c->first));
+      }
+      break;
+    default:
+      assert(t->data.referent);
+//      dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for test with referent.\n");
+      if (t->identity && t->identity->original_var && (t->identity->grounding_id > 0))
+      {
+        dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings entry: %s -> %llu\n", t->identity->original_var, t->identity->grounding_id);
+        (*variablization_ovar_table)[make_memory_block_for_string(thisAgent, t->identity->original_var)] = t->identity->grounding_id;
+      } else {
+//        dprint(DT_VARIABLIZATION_MANAGER, "Did not add b/c %s %s %llu.\n",
+//            (t->identity ? "True" : "False"),
+//            ((t->identity && t->identity->original_var) ? t->identity->original_var : "No orig var"),
+//            ((t->identity && t->identity->grounding_id) ? t->identity->grounding_id : 0));
+      }
   }
 }
 
-inline variablization * copy_variablization(agent *thisAgent, variablization *v)
+void Variablization_Manager::add_orig_var_mappings_for_cond(condition *cond)
 {
-  variablization *new_variablization = new variablization;
-  new_variablization->instantiated_symbol = v->instantiated_symbol;
-  new_variablization->variablized_symbol = v->variablized_symbol;
-  symbol_add_ref(thisAgent, new_variablization->instantiated_symbol);
-  symbol_add_ref(thisAgent, new_variablization->variablized_symbol);
-  new_variablization->grounded = v->grounded;
-  new_variablization->grounding_id= v->grounding_id;
-  return new_variablization;
+  switch (cond->type) {
+  case POSITIVE_CONDITION:
+  case NEGATIVE_CONDITION:
+    add_orig_var_mappings_for_test(cond->data.tests.id_test);
+    add_orig_var_mappings_for_test(cond->data.tests.attr_test);
+    add_orig_var_mappings_for_test(cond->data.tests.value_test);
+    break;
+  case CONJUNCTIVE_NEGATION_CONDITION:
+    add_orig_var_mappings_for_cond_list (cond->data.ncc.top);
+    break;
+  }
+}
+
+void Variablization_Manager::add_orig_var_mappings_for_cond_list(condition *cond)
+{
+  dprint(DT_VARIABLIZATION_MANAGER, "=============================================\n");
+  dprint(DT_VARIABLIZATION_MANAGER, "add_orig_var_mappings_for_cond_list called...\n");
+  while (cond) {
+    dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for cond ");
+    dprint_condition(DT_VARIABLIZATION_MANAGER, cond, "", true, true, true);
+    add_orig_var_mappings_for_cond(cond);
+    cond = cond->next;
+  }
+  dprint(DT_VARIABLIZATION_MANAGER, "Done adding original var mappings.\n");
+  thisAgent->variablizationManager->print_variablization_table();
+  dprint(DT_VARIABLIZATION_MANAGER, "=============================================\n");
 }
 
 void Variablization_Manager::store_variablization(Symbol *instantiated_sym,
@@ -218,12 +301,12 @@ void Variablization_Manager::store_variablization(Symbol *instantiated_sym,
      *
      *    Note:  Old system also needed this to reverse ungrounded relational
      *    tests -- */
-    (*variablization_ovar_table)[make_memory_block_for_string(thisAgent, orig_varname)] = identity->grounding_id;
+//    (*variablization_ovar_table)[make_memory_block_for_string(thisAgent, orig_varname)] = identity->grounding_id;
 
     dprint_noprefix(DT_VARIABLIZATION_MANAGER, "identity[%llu] and original_var[%s] variablization tables.\n",
         identity->grounding_id, orig_varname);
   }
-  print_variablization_table();
+//  print_variablization_table();
 }
 
 /* -- variablize_rl_symbol is a very limited version of variablization for templates
@@ -346,51 +429,10 @@ void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, Symbol *origin
  *                                          variablize_rhs_symbol
  *
  *      The logic for variablizing the rhs is slightly different than the lhs since we need to
- *      match constants on the rhs with the conditions they match up with on the lhs. We can't
- *      just look up the variablization info from the symbol, like we do on the lhs.  So, we match
- *      them up using the original variable names, which are cached by the rete for both rhs actions
- *      and lhs tests when creating the instantiation.
+ *      match constants on the rhs with the conditions they match up with on the lhs. So, we match
+ *      them up using the original variable names.
  *
- *      We need to do this for 2 reasons.
- *
- *        (1) If an instantiation has two different conditions that each have an item that binds to
- *            the same constant but, in their original productions,bind to different variables, we
- *            will need a way to differentiate between the two to determine whether to variablize
- *            this rhs action. But, since variablization info is stored in a symbol, we can't store
- *            more than one mapping to a condition or variable without doing something convoluted.
- *
- *        (2) Second, the condition grounding a rhs action may have not made it into the conditions
- *            of the chunk if it was produced without testing anything in the superstate.  (This is
- *            further complicated by the fact that another variable might have been bound
- *            coincidentally to the same constant, so variablization info will be stored in the
- *            constant's symbol.)
- *
- *      So, we use the original variable names that we've stored in the both the symbol and the rhs
- *      action to  match up with the specific binding on the lhs that it originated from.  To deal
- *      with both the fact that a production can fire multiple times and have multiple versions of
- *      the same conditions appear in a chunk and the fact that different productions may use the
- *      same variable names, make_instantiation renames the original variable names when it creates
- *      each instantiation to make them unique between instantiations.  So, we are guaranteed to
- *      match up each element of the rhs action to the correct lhs binding.
- *
- *      The function does the following:
- *
- *      Check if original var names of rhs action matches with the original var name of what's in
- *      the symbol that is bound there.  (not necessary since we look up in hash table directly in
- *      the next step, but comes cheap since it's already cached there for lhs variablization
- *      and will work in most cases)  If it matches, variablize using stored variablization sym.
- *      If it doesn't match, search unique string table for the original variable name stringleave rhs item as constant if no variablization sym)
- *
- *        (No)  Look up the the last variablization symbol associated with that original
- *              variable name in the unique var name hash table.
- *
- *              (Found)     Use the variablization info cached within it.
- *
- *              (Not found) Keep as a constant.
- *
- *      Note: the original id is in the sym's variablized symbol's original_var pointer
- *
-  ====================================================================================================== */
+ * ====================================================================================================== */
 
 uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, char *original_var) {
   char prefix[2];
@@ -408,14 +450,14 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, char *orig
 
   if (is_st_id)
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "...searching for sti %s in unique varname table...\n", (*sym)->to_string(thisAgent));
+    dprint(DT_VARIABLIZATION_MANAGER, "...searching for sti %s in variablization sym table...\n", (*sym)->to_string(thisAgent));
     found_variablization = get_variablization(*sym);
   }
   else
   {
     if (original_var)
     {
-      dprint(DT_VARIABLIZATION_MANAGER, "...searching for original var %s in unique varname table...\n", original_var);
+      dprint(DT_VARIABLIZATION_MANAGER, "...searching for original var %s in variablization orig var table...\n", original_var);
       found_variablization = get_variablization(get_gid_for_orig_var(original_var));
     }
     else
@@ -454,7 +496,7 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, char *orig
       dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded identifier.  Clearing variablization entry for %s/%s and generating unbound var.\n",
           (*sym)->to_string(thisAgent), found_variablization->variablized_symbol->to_string(thisAgent));
 
-      print_variablization_table();
+//      print_variablization_table();
 
       variablization_sym_table->erase(*sym);
       variablization_sym_table->erase(found_variablization->variablized_symbol);
@@ -462,7 +504,7 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, char *orig
       symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
       delete found_variablization;
 
-      print_variablization_table();
+//      print_variablization_table();
     }
   }
 

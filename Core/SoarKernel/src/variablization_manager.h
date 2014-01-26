@@ -11,7 +11,12 @@
 #include <portability.h>
 #include <set>
 #include "symtab.h"
+
 typedef struct identity_struct identity_info;
+typedef struct test_struct test_info;
+typedef test_info * test;
+typedef struct condition_struct condition;
+
 typedef struct variablization_struct {
     Symbol *instantiated_symbol;
     Symbol *variablized_symbol;
@@ -80,6 +85,9 @@ class Variablization_Manager
     void clear_CUV_cache();
     void reinit();
 
+    void build_orig_var_mappings(cons *grounds);
+    void add_orig_var_mappings_for_cond_list(condition *cond);
+
     variablization *get_variablization(Symbol *index_sym);
     variablization *get_variablization(uint64_t index_id);
     uint64_t get_gid_for_orig_var(char *index_var);
@@ -102,6 +110,10 @@ class Variablization_Manager
 
     void store_variablization(Symbol *instantiated_sym, Symbol *variable, char *orig_varname,
                               identity_info *identity, bool is_equality_test);
+
+    void add_orig_var_mappings_for_test(test t);
+    void add_orig_var_mappings_for_cond(condition *cond);
+
     void clear_CUV_for_symbol(Symbol *var);
     void clear_data();
     void clear_OS_hashtable();

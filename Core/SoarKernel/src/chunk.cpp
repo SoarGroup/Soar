@@ -1303,6 +1303,9 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		reset_backtrace_list(thisAgent);
 	}
 
+	/* Build original var to grounding id mapping for constant symbols ground conditions */
+	thisAgent->variablizationManager->add_orig_var_mappings_for_cond_list(inst->top_of_instantiated_conditions);
+
 	/* --- backtrace through the instantiation that produced each result --- */
 	for (pref=results; pref!=NIL; pref=pref->next_result)
 	{
