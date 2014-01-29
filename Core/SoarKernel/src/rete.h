@@ -70,6 +70,8 @@ typedef struct symbol_struct Symbol;
 typedef struct cons_struct cons;
 typedef char varnames;
 typedef cons list;
+typedef struct test_struct test_info;
+typedef test_info * test;
 extern void abort_with_fatal_error_noagent (const char *msg);
 
 inline varnames * one_var_to_varnames(Symbol * x) { return reinterpret_cast<varnames *>(x); }
@@ -86,6 +88,11 @@ Symbol *var_bound_in_reconstructed_conds (
           condition *cond,
           byte where_field_num,
           rete_node_level where_levels_up);
+test var_test_bound_in_reconstructed_conds (
+    agent* thisAgent,
+    condition *cond,
+    byte where_field_num,
+    rete_node_level where_levels_up);
 Symbol *var_bound_in_reconstructed_original_conds (
           agent* thisAgent,
           condition *cond,

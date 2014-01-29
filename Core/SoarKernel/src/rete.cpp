@@ -3904,6 +3904,39 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
   return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
+
+test var_test_bound_in_reconstructed_conds (agent* thisAgent,
+                                          condition *cond, /* current cond */
+                                          byte where_field_num,
+                                          rete_node_level where_levels_up) {
+  test t;
+  cons *c;
+
+  while (where_levels_up) { where_levels_up--; cond = cond->prev; }
+
+  if (where_field_num==0) t = cond->data.tests.id_test;
+  else if (where_field_num==1) t = cond->data.tests.attr_test;
+  else t = cond->data.tests.value_test;
+
+  if (test_is_blank(t)) goto abort_var_test_bound_in_reconstructed_conds;
+  if (t->type==EQUALITY_TEST)
+    return t;
+  else if (t->type==CONJUNCTIVE_TEST) {
+    for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+      if ( (! test_is_blank (static_cast<test>(c->first))) &&
+          (static_cast<test>(c->first)->type == EQUALITY_TEST) )
+        return static_cast<test>(c->first);
+  }
+
+  abort_var_test_bound_in_reconstructed_conds:
+  { char msg[BUFFER_MSG_SIZE];
+  strncpy (msg, "Internal error in var_test_bound_in_reconstructed_conds\n", BUFFER_MSG_SIZE);
+  msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+  abort_with_fatal_error(thisAgent, msg);
+  }
+  return 0; /* unreachable, but without it, gcc -Wall warns here */
+}
+
 Symbol *var_bound_in_reconstructed_original_conds (agent* thisAgent,
                                           condition *cond, /* current cond */
                                           byte where_field_num,

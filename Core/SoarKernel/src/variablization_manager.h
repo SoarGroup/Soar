@@ -98,7 +98,7 @@ class Variablization_Manager
     uint64_t variablize_rhs_symbol (Symbol **sym, char *original_var);
 
     void print_OSD_table();
-    void print_variablization_table();
+    void print_variablization_tables(TraceMode mode, int whichTable=0);
     void print_CUV_table();
     void print_tables();
 

@@ -177,7 +177,8 @@ extern bool remove_preference_from_clones (agent* thisAgent, preference *pref);
 
 extern preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *attr,
                                     Symbol *value, Symbol *referent,
-                                    const soar_module::symbol_triple originals = soar_module::symbol_triple(NULL, NULL, NULL));
+                                    const soar_module::symbol_triple originals = soar_module::symbol_triple(NULL, NULL, NULL),
+                                    uint64_t id_gid=0, uint64_t attr_gid=0, uint64_t value_gid=0);
 
 extern bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref);
 
