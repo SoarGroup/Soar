@@ -67,6 +67,8 @@ public:
 			return false;
 		}
 
+		cout << "COPYING " << sourceId << " to " << destId << endl;
+
 		wme* adjustWme;
 		string adjust;
 		if(!si->find_child_wme(root, "adjust", adjustWme)){
@@ -101,6 +103,7 @@ public:
 		sourceNode->get_trans(pos, rot, scale);
 		destNode->set_trans(pos, rot, scale);
 
+		cout << "Adjust = " << adjust << endl;
 		if(adjust == "true"){
 			//cout << "adjust = true" << endl;
 			std::vector<const sgnode*> targets;
