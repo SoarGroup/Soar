@@ -388,6 +388,8 @@ extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
 extern bool save_rete_net (agent* thisAgent, FILE *dest_file, bool use_rete_net_64);
 extern bool load_rete_net (agent* thisAgent, FILE *source_file);
 
+extern void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t);
+
 /* ---------------------------------------------------------------------
 
        Test Type <---> Relational (Rete) Test Type Conversion

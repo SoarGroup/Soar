@@ -56,9 +56,7 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_
  * or grounding index.*/
 
 typedef struct identity_struct {
-    TestType      type;
-    byte          symbol_type;
-    char          *original_var;
+    Symbol        *original_var;
     uint64_t      grounding_id;
     WME_Field     grounding_field;
     wme           *grounding_wme;
@@ -123,7 +121,6 @@ void add_hash_info_to_id_test (agent* thisAgent, condition *cond, byte field_num
 void add_hash_info_to_original_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests (agent* thisAgent, condition *cond, rete_test *rt);
 void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter);
-void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t, bool force_unique = false);
 void add_all_variables_in_test (agent* thisAgent, test t, tc_number tc, list **var_list);
 void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc, ::list **var_list);
 void add_non_identical_tests (agent* thisAgent, test *t, test add_me);

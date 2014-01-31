@@ -131,20 +131,8 @@ typedef struct preference_struct {
    *    chunker to match up rhs symbols with the correct lhs one,
    *    since the instantiated value is not sufficient. -- */
 
-  struct {
-      char *id;
-      char *attr;
-      char *value;
-      char *referent;
-  } original_vars;
-
-  struct {
-      uint64_t id;
-      uint64_t attr;
-      uint64_t value;
-  } g_ids;
-
   soar_module::symbol_triple original_symbols;
+  soar_module::g_id_triple g_ids;
 
   struct slot_struct *slot;
 
@@ -178,7 +166,7 @@ extern bool remove_preference_from_clones (agent* thisAgent, preference *pref);
 extern preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *attr,
                                     Symbol *value, Symbol *referent,
                                     const soar_module::symbol_triple originals = soar_module::symbol_triple(NULL, NULL, NULL),
-                                    uint64_t id_gid=0, uint64_t attr_gid=0, uint64_t value_gid=0);
+                                    const soar_module::g_id_triple g_ids = soar_module::g_id_triple(0, 0, 0));
 
 extern bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref);
 

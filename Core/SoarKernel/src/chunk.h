@@ -53,7 +53,7 @@ extern void chunk_instantiation (agent* thisAgent,
                                  instantiation **custom_inst_list);
 extern chunk_cond *make_chunk_cond_for_negated_condition (agent* thisAgent, condition *cond);
 extern bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc);
-extern bool reverse_unbound_lhs_referents (agent* thisAgent, condition **lhs_top);
+//extern bool reverse_unbound_lhs_referents (agent* thisAgent, condition **lhs_top);
 
 #endif
 

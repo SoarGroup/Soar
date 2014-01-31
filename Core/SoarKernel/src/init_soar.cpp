@@ -71,7 +71,7 @@ int64_t lapse_duration;
    an error message and tries to write a file before exiting.
 =================================================================== */
 
-/* MToDo| May also want to close debug and other databases here -- */
+/* MToDo | May also want to close debug and other databases here -- */
 
 void abort_with_fatal_error (agent* thisAgent, const char *msg) {
   FILE *f;

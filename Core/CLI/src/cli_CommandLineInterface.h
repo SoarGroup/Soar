@@ -25,20 +25,23 @@
 #include "kernel.h"
 #include "cli_Cli.h"
 #include "cli_Parser.h"
-#include "soar_module.h"
-
 #include "Export.h"
+
+namespace soar_module
+{
+  class named_object;
+}
 
 namespace soarxml
 {
-    class ElementXML ;
+    class ElementXML;
     class XMLTrace;
 }
 
 namespace sml
 {
     class KernelSML;
-    class Connection ;
+    class Connection;
     class AgentSML;
 }
 

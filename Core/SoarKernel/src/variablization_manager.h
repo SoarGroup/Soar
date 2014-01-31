@@ -24,25 +24,6 @@ typedef struct variablization_struct {
     bool grounded;
 } variablization;
 
-typedef struct original_symbol_data_struct {
-
-    /* --- pointer to next string that matches hash --- */
-    struct original_symbol_data_struct *next_in_hash_table;
-
-    /* --- original var name that should not repeat across instantiations --- */
-    char *name;
-
-    /* --- Cache the current unique version of the requested string
-     *     current_unique_string for current_instantiation. --- */
-    Symbol *current_unique_var_symbol;
-    instantiation *current_instantiation;
-
-    /* --- Counter to be used as a suffix for the next unique version
-     *     of a requested var name --- */
-    int64_t next_unique_suffix_number;
-
-} original_symbol_data;
-
 /* -- Variablization_Manager
  *
  * make_name_unique
@@ -78,11 +59,8 @@ class Variablization_Manager
   public:
 
     uint64_t get_new_ground_id() {return (++ground_id_counter);};
-    void make_name_unique(Symbol **sym);
-    bool already_unique(Symbol *original_var);
 
     void clear_variablization_table();
-    void clear_CUV_cache();
     void reinit();
 
     void build_orig_var_mappings(cons *grounds);
@@ -90,16 +68,15 @@ class Variablization_Manager
 
     variablization *get_variablization(Symbol *index_sym);
     variablization *get_variablization(uint64_t index_id);
-    uint64_t get_gid_for_orig_var(char *index_var);
+    uint64_t get_gid_for_orig_var(Symbol *index_sym);
 
     void variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol,
                                 identity_info *identity, bool is_equality_test);
     void variablize_rl_symbol (Symbol **sym, bool is_equality_test);
-    uint64_t variablize_rhs_symbol (Symbol **sym, char *original_var);
+    uint64_t variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
 
     void print_OSD_table();
     void print_variablization_tables(TraceMode mode, int whichTable=0);
-    void print_CUV_table();
     void print_tables();
 
     Variablization_Manager(agent *thisAgent);
@@ -108,24 +85,18 @@ class Variablization_Manager
   private:
     agent* thisAgent;
 
-    void store_variablization(Symbol *instantiated_sym, Symbol *variable, char *orig_varname,
+    void store_variablization(Symbol *instantiated_sym, Symbol *variable,
                               identity_info *identity, bool is_equality_test);
 
     void add_orig_var_mappings_for_test(test t);
     void add_orig_var_mappings_for_cond(condition *cond);
 
-    void clear_CUV_for_symbol(Symbol *var);
     void clear_data();
-    void clear_OS_hashtable();
-    void create_OS_hashtable();
 
 
-    std::map< char *, uint64_t > * variablization_ovar_table;
+    std::map< Symbol *, uint64_t > * variablization_ovar_table;
     std::map< uint64_t, variablization * > * variablization_g_id_table;
     std::map< Symbol *, variablization * > * variablization_sym_table;
-    std::set< Symbol * > * current_unique_vars;
-    struct hash_table_struct *original_symbol_ht;
-    memory_pool original_symbol_mp;
 
     uint64_t ground_id_counter;
 };

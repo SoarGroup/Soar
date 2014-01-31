@@ -39,7 +39,6 @@ typedef struct rhs_struct {
   Symbol *referent;
   Symbol *original_rhs_variable;
   uint64_t g_id;
-  char *original_var;
 } rhs_info;
 
 typedef rhs_info * rhs_symbol;
@@ -103,8 +102,8 @@ typedef struct binding_structure {
 
 /* -- Functions to create RHS -- */
 extern action *make_action(agent *thisAgent);
-extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL, const char *pOrig_var=NULL, uint64_t pG_ID=0);
-extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol * sym, Symbol * original_sym=NULL, const char *pOrig_var=NULL, uint64_t pG_ID=0);
+extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol * sym, Symbol * pOrig_var=NULL, uint64_t pG_ID=0);
+extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol * sym, Symbol * pOrig_var=NULL, uint64_t pG_ID=0);
 
 /* -- Copy functions -- */
 rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv);
@@ -138,7 +137,6 @@ inline rhs_symbol rhs_value_to_rhs_symbol(rhs_value rv){ return reinterpret_cast
 inline Symbol *   rhs_value_to_symbol(rhs_value rv){ return reinterpret_cast<rhs_symbol>(rv)->referent;}
 inline Symbol *   rhs_value_to_original_symbol(rhs_value rv){ return reinterpret_cast<rhs_symbol>(rv)->original_rhs_variable;}
 inline uint64_t   rhs_value_to_g_id(rhs_value rv){ return reinterpret_cast<rhs_symbol>(rv)->g_id;}
-inline char *     rhs_value_to_original_var(rhs_value rv){ return reinterpret_cast<rhs_symbol>(rv)->original_var;}
 inline ::list *   rhs_value_to_funcall_list(rhs_value rv){ return reinterpret_cast< ::list * >(reinterpret_cast<char *>(rv) - 1);}
 inline uint8_t    rhs_value_to_reteloc_field_num(rhs_value rv){ return static_cast<uint8_t>((reinterpret_cast<uintptr_t>(rv) >> 2) & 3);}
 inline uint16_t   rhs_value_to_reteloc_levels_up(rhs_value rv){ return static_cast<uint16_t>((reinterpret_cast<uintptr_t>(rv) >> 4) & 0xFFFF);}
