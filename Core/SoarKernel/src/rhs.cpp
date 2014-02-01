@@ -62,7 +62,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol * s
   new_rhs_symbol->referent = sym;
   new_rhs_symbol->original_rhs_variable = pOrig_var;
   new_rhs_symbol->g_id = pG_ID;
-  dprint(DT_IDENTITY_PROP, "Setting g_id %llu in new rhs_symbol %s(%s).\n", pG_ID, sym->to_string(thisAgent), pOrig_var->to_string(thisAgent));
+  dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %llu to new rhs_symbol %s(%s).\n" : ""), pG_ID, sym->to_string(thisAgent), pOrig_var->to_string(thisAgent));
 
   /* -- Must always increase original_sym refcount if it exists because this function
    *    is only called when the newly generate rhs value is created with a brand new
