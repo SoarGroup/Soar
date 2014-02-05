@@ -678,6 +678,11 @@
 
 %include "../sml_ClientInterface.i"
 
+//%{
+//#include "soar_instance.h"
+//%}
+//%include "soar_instance.h"
+
 %newobject sml::Kernel::CreateKernelInCurrentThread;
 %newobject sml::Kernel::CreateKernelInNewThread;
 %newobject sml::Kernel::CreateRemoteConnection;

@@ -2,12 +2,6 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 
-SOAR_VERSION = "9.3.2"
-
-DEF_OUT = 'out'
-DEF_BUILD = 'build'
-
-DEF_TARGETS = 'kernel cli sml_python sml_java debugger'.split()
 
 import os
 import sys
@@ -19,6 +13,12 @@ import fnmatch
 from SCons.Node.Alias import default_ans
 
 join = os.path.join
+
+SOAR_VERSION = "9.3.2"
+DEF_OUT = 'out'
+DEF_BUILD = 'build'
+DEF_TCL = join('../../TclTk')
+DEF_TARGETS = 'kernel cli sml_python sml_java sml_tcl debugger tests'.split()
 
 def execute(cmd):
 	try:
@@ -41,7 +41,7 @@ def gcc_version(cc):
 		if m:
 			return tuple(int(n) for n in m.groups())
 	if 'clang' in version_info or 'LLVM' in version_info:
-		return [42,42,42]
+		return [42, 42, 42]
 
 	print 'cannot identify compiler version'
 	Exit(1)
@@ -49,8 +49,8 @@ def gcc_version(cc):
 def vc_version():
 	p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
 	line = p.stdout.readline()
-	#for line in iter(p.stdout.readline, b''):
-	#	print line,
+	# for line in iter(p.stdout.readline, b''):
+	# 	print line,
 	p.communicate()
 	m = re.search(r'Version ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', line)
 	if m:
@@ -74,7 +74,7 @@ def InstallDir(env, tgt, src, globstring="*"):
 			continue
 
 		# tgtsub is the target directory plus the relative sub directory
-		relative = dir[len(srcdir)+1:]
+		relative = dir[len(srcdir) + 1:]
 		tgtsub = join(tgtdir, relative)
 
 		for f in fnmatch.filter(files, globstring):
@@ -109,34 +109,38 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
 
+AddOption('--tcl', action='store', type='string', dest='tcl', default=DEF_TCL, nargs=1, metavar='DIR',
+    help='Directory of Tcl directory containing Tcl.h and Tcl dll to link against')
+
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
 AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
 
-AddOption('--verbose', action='store_true', dest='verbose', default = False, help='Output full compiler commands')
+AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 
-msvc_version = "11.0"
+msvc_version = "12.0"
 if sys.platform == 'win32':
 	msvc_version = vc_version()
 
 env = Environment(
-	MSVC_VERSION = msvc_version,
-	ENV = os.environ.copy(),
-	SCU = GetOption('scu'),
-	BUILD_DIR = GetOption('build-dir'),
-	OUT_DIR = os.path.realpath(GetOption('outdir')),
-	SOAR_VERSION = SOAR_VERSION,
-	VISHIDDEN = False,   # needed by swig
+	MSVC_VERSION=msvc_version,
+	ENV=os.environ.copy(),
+	SCU=GetOption('scu'),
+	BUILD_DIR=GetOption('build-dir'),
+	OUT_DIR=os.path.realpath(GetOption('outdir')),
+	SOAR_VERSION=SOAR_VERSION,
+	TCL_DIR = os.path.realpath(GetOption('tcl')),
+	VISHIDDEN=False,  # needed by swig
 )
 
 if GetOption('cc') != None:
-	env.Replace(CC = GetOption('cc'))
+	env.Replace(CC=GetOption('cc'))
 elif sys.platform == 'darwin':
-	env.Replace(CC = 'clang')
+	env.Replace(CC='clang')
 if GetOption('cxx') != None:
-	env.Replace(CXX = GetOption('cxx'))
+	env.Replace(CXX=GetOption('cxx'))
 elif sys.platform == 'darwin':
-	env.Replace(CXX = 'clang++')
+	env.Replace(CXX='clang++')
 
 print "Building intermediates to", env['BUILD_DIR']
 print "Installing targets to", env['OUT_DIR']
@@ -204,9 +208,9 @@ cflags.extend((GetOption('cflags') or '').split())
 lnflags.extend((GetOption('lnflags') or '').split())
 
 env.Replace(
-	CPPFLAGS = cflags,
-	LINKFLAGS = lnflags,
-	CPPPATH = [
+	CPPFLAGS=cflags,
+	LINKFLAGS=lnflags,
+	CPPPATH=[
 		'#Core/shared',
 		'#Core/pcre',
 		'#Core/SoarKernel/src',
@@ -216,8 +220,8 @@ env.Replace(
 		'#Core/ClientSML/src',
 		'#Core/CLI/src',
 	],
-	LIBS = libs,
-	LIBPATH = [os.path.realpath(GetOption('outdir'))],
+	LIBS=libs,
+	LIBPATH=[os.path.realpath(GetOption('outdir'))],
 )
 
 if sys.platform == 'win32':
@@ -230,7 +234,7 @@ else:
 	sys_lib_path = filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':'))
 	sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
 
-env.Append(CPPPATH = sys_inc_path, LIBPATH = sys_lib_path)
+env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
 
 # Setting *COMSTR will replace long commands with a short message "Making <something>"
 if not GetOption('verbose'):
@@ -272,9 +276,9 @@ for d in os.listdir('.'):
 if 'MSVSSolution' in env['BUILDERS']:
 
 	msvs_solution = env.MSVSSolution(
-		target = 'soar' + env['MSVSSOLUTIONSUFFIX'],
-		projects = msvs_projs,
-		variant = g_msvs_variant,
+		target='soar' + env['MSVSSOLUTIONSUFFIX'],
+		projects=msvs_projs,
+		variant=g_msvs_variant,
 	)
 
 	env.Alias('msvs', [msvs_solution] + msvs_projs)

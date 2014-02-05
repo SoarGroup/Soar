@@ -18,11 +18,10 @@
 #  SoarIO/bin, this means appending the current directory.  Other platforms may
 #  require some other directory to be there.  Modify the line below appropriately.
 #
-
+# 
 #load the sml stuff
 lappend auto_path .
-#this next line for tests on winter
-lappend auto_path ~/sandbox/SoarSuite/SoarLibrary/lib
+lappend auto_path [pwd]
 package require tcl_sml_clientinterface
 
 proc PrintCallback {id userData agent message} {
@@ -82,7 +81,7 @@ proc CheckForEvents {k} {
 }
 
 #create an embedded kernel running in a the current thread (running in a new thread isn't supported in Tcl because of Tcl threading issues))
-set kernel [Kernel_CreateKernelInCurrentThread SoarKernelSML]
+set kernel [Kernel_CreateKernelInCurrentThread]
 
 #start event loop (apparently not necessary in this example, presumably because there's no GUI, but illustrative)
 CheckForEvents $kernel
@@ -104,9 +103,9 @@ set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED Pha
 set structuredCallbackId [$agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT StructuredTraceCallback ""]
 
 #load the TOH productions
-set result [$agent LoadProductions ../Demos/towers-of-hanoi/towers-of-hanoi.soar]
+set result [$agent LoadProductions [file join [pwd] .. Agents towers-of-hanoi-simple towers-of-hanoi.soar]]
 #loads a function to test the user-defined RHS function stuff
-set result [$agent LoadProductions ../Tests/TOHtest.soar]
+set result [$agent LoadProductions [file join [pwd] test_agents TOHtest.soar]]
 
 $kernel SendClientMessage $agent "TestMessage" "This is a \"quoted\"\" message"
 $kernel UnregisterForClientMessageEvent $messageCallbackId
@@ -169,12 +168,11 @@ interp create red
 
 #load package in slave
 red eval lappend auto_path .
-#this next line for tests on winter
-red eval lappend auto_path ~/sandbox/SoarSuite/SoarLibrary/lib
+red eval lappend auto_path [pwd]
 red eval package require tcl_sml_clientinterface
 
 #create kernel and agent
-set kernel [red eval Kernel_CreateKernelInNewThread SoarKernelSML]
+set kernel [red eval Kernel_CreateKernelInNewThread]
 set agent [red eval $kernel CreateAgent Soar1]
 
 #add wme to input-link
