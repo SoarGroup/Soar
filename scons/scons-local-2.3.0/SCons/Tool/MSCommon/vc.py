@@ -249,10 +249,8 @@ def find_batch_file(env,msvc_version,host_arch,target_arch):
     elif vernum < 7:
         pdir = os.path.join(pdir, "Bin")
         batfilename = os.path.join(pdir, "vcvars32.bat")
-    elif 8 <= vernum < 12 : 
+    else: # >= 8
         batfilename = os.path.join(pdir, "vcvarsall.bat")
-    else: # >= 12
-        batfilename = os.path.join(pdir, "vcvars32.bat")
 
     if not os.path.exists(batfilename):
         debug("Not found: %s" % batfilename)
