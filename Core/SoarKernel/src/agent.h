@@ -128,10 +128,6 @@ class stats_statement_container;
 
 typedef struct agent_struct {
 
-  /* -- These objects are modules that encapsulate certain aspects of the kernel -- */
-  Output_Manager                *outputManager;
-  soar_module::sqlite_database  *debug_db;
-
   /* -- Rete stuff: These are used for statistics in rete.cpp -- */
   uint64_t actual[256], if_no_merging[256], if_no_sharing[256];
 
