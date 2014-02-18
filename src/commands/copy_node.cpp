@@ -67,7 +67,7 @@ public:
 			return false;
 		}
 
-		cout << "COPYING " << sourceId << " to " << destId << endl;
+		//cout << "COPYING " << sourceId << " to " << destId << endl;
 
 		wme* adjustWme;
 		string adjust;
@@ -103,7 +103,7 @@ public:
 		sourceNode->get_trans(pos, rot, scale);
 		destNode->set_trans(pos, rot, scale);
 
-		cout << "Adjust = " << adjust << endl;
+		//cout << "Adjust = " << adjust << endl;
 		if(adjust == "true"){
 			//cout << "adjust = true" << endl;
 			std::vector<const sgnode*> targets;

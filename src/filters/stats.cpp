@@ -24,24 +24,22 @@ public:
 	{}
 
 private:
-	bool input_added(const filter_params *params, double &res) {
+	bool input_added(const filter_params *params) {
 		double x;
 		if (!get_double(params, x)) {
 			return false;
 		}
 
 		elems.push_back(make_pair(x, params));
-		res = max_element(elems.begin(), elems.end())->first;
 		return true;
 	}
 
-	bool input_changed(const filter_params *params, double &res) {
+	bool input_changed(const filter_params *params) {
 		for (int i = 0; i < elems.size(); ++i) {
 			if (elems[i].second == params) {
 				if (!get_double(params, elems[i].first)) {
 					return false;
 				}
-				res = max_element(elems.begin(), elems.end())->first;
 				return true;
 			}
 		}
@@ -49,18 +47,20 @@ private:
 		return false;
 	}
 
-	bool input_removed(const filter_params *params, double &res) {
+	bool input_removed(const filter_params *params) {
 		for (int i = 0; i < elems.size(); ++i) {
 			if (elems[i].second == params) {
 				elems.erase(elems.begin() + i);
-				if (!elems.empty()) {
-					res = max_element(elems.begin(), elems.end())->first;
-				}
 				return true;
 			}
 		}
 		assert(false);
 		return false;
+	}
+
+	bool calculate_value(double &res){
+		res = max_element(elems.begin(), elems.end())->first;
+		return true;
 	}
 
 	vector<pair<double, const filter_params*> > elems;
