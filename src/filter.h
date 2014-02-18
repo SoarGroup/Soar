@@ -13,6 +13,24 @@
 #include "common.h"
 #include "soar_interface.h"
 
+extern int DEBUG_DEPTH;
+inline std::string padd(){
+	std::stringstream ss;
+	for(int i = 0; i < DEBUG_DEPTH; i++){
+		ss << " ";
+	}
+	return ss.str();
+}
+inline void enterf(const char* name){
+//	std::cout << padd() << "->" << name << std::endl;
+//	DEBUG_DEPTH++;
+}
+inline void exitf(const char* name){
+//	DEBUG_DEPTH--;
+//	std::cout << padd() << "<-" << name << std::endl;
+}
+
+
 /*
  Wrapper for all filter value types so we can cache them uniformly.
 */
@@ -23,6 +41,7 @@ public:
 	virtual filter_val *clone() const = 0;
 	virtual filter_val &operator=(const filter_val &rhs) = 0;
 	virtual bool operator==(const filter_val &rhs) const = 0;
+	virtual std::string toString() const = 0;
 };
 
 template <typename T>
@@ -32,9 +51,9 @@ public:
 	virtual ~filter_val_c() {}
 
 	void get_rep(std::map<std::string,std::string> &rep) const {
+		rep.clear();
 		std::stringstream ss;
 		ss << v;
-		rep.clear();
 		rep[""] = ss.str();
 	}
 	
@@ -60,11 +79,17 @@ public:
 	T get_value() const {
 		return v;
 	}
-	
+
 	void set_value(const T &n) {
 		v = n;
 	}
-	
+
+	std::string toString() const {
+		std::stringstream ss;
+		ss << v;
+		return ss.str();
+	}
+
 private:
 	T v;
 };
@@ -77,6 +102,7 @@ public:
 	
 	void get_rep(std::map<std::string,std::string> &rep) const {
 		rep.clear();
+		//std::cout << "NAME: " << v->get_name() << std::endl;
 		rep[""] = v->get_name();
 	}
 	
@@ -106,7 +132,13 @@ public:
 	void set_value(const sgnode *n) {
 		v = n;
 	}
-	
+
+	std::string toString() const {
+		std::stringstream ss;
+		ss << v;
+		return ss.str();
+	}
+
 private:
 	const sgnode *v;
 };
@@ -190,7 +222,8 @@ public:
 		clear_removed();
 	}
 	
-	void add(T* v) {
+	void add(T* v){ 
+		//std::cout << "ADDING FROM CTL: " << v << std::endl;
 		current.push_back(v);
 		for (int i = 0; i < listeners.size(); ++i) {
 			listeners[i]->handle_ctlist_add(v);
@@ -198,6 +231,7 @@ public:
 	}
 	
 	void remove(const T* v) {
+		//std::cout << "REMOVE FROM CTL: " << v << std::endl;
 		bool found = false;
 		for (int i = 0; i < current.size(); ++i) {
 			if (current[i] == v) {
@@ -223,6 +257,7 @@ public:
 	}
 	
 	void change(const T *v) {
+		//std::cout << "CHANGE FROM CTL: " << v << std::endl;
 		for(int i = 0; i < current.size(); ++i) {
 			if (current[i] == v) {
 				if (i < m_added_begin &&
@@ -238,8 +273,9 @@ public:
 		}
 		assert(false);
 	}
-	
+
 	void clear_changes() {
+		//std::cout << "CHANGED CLEARED" << std::endl;
 		m_added_begin = current.size();
 		changed.clear();
 		clear_removed();
@@ -250,18 +286,32 @@ public:
 	 makes everything a new addition.
 	*/
 	void reset() {
+		//std::cout << "CHANGE LIST RESET" << std::endl;
 		changed.clear();
 		clear_removed();
 		m_added_begin = 0;
 	}
 	
 	void clear() {
-		current.clear();
+		//std::cout << "CHANGE LIST CLEAR" << std::endl;
+		// Clear changed list
 		changed.clear();
-		clear_removed();
+
+		// Clear current list
 		m_added_begin = 0;
+		for(int i = 0; i < current.size(); i++){
+			for (int j = 0; j < listeners.size(); ++j) {
+				listeners[j]->handle_ctlist_remove(current[i]);
+			}
+			removed.push_back(current[i]);
+		}
+		current.clear();
+
+		// Clear removed list
+		clear_removed();
 	}
 		
+
 	int num_current() const {
 		return current.size();
 	}
@@ -438,6 +488,8 @@ private:
 	typedef std::list<filter_params*> param_set_list;
 	typedef std::map<filter_val*, param_set_list > val2param_map;
 	val2param_map val2params;
+
+	//void printVal2Params()
 };
 
 /*
@@ -710,20 +762,31 @@ public:
 	virtual ~reduce_filter() {}
 	
 	bool update_outputs() {
-		T new_val = value;
 		const filter_input *input = get_input();
+		bool changed = false;
+
 		for (int i = input->first_added(); i < input->num_current(); ++i) {
-			if (!input_added(input->get_current(i), new_val)) {
+			if (!input_added(input->get_current(i))) {
 				return false;
 			}
+			changed = true;
 		}
 		for (int i = 0; i < input->num_changed(); ++i) {
-			if (!input_changed(input->get_changed(i), new_val)) {
+			if (!input_changed(input->get_changed(i))) {
 				return false;
 			}
+			changed = true;
 		}
 		for (int i = 0; i < input->num_removed(); ++i) {
-			if (!input_removed(input->get_removed(i), new_val)) {
+			if (!input_removed(input->get_removed(i))) {
+				return false;
+			}
+			changed = true;
+		}
+
+		T new_val = value;
+		if(changed){
+			if(!calculate_value(new_val)){
 				return false;
 			}
 		}
@@ -744,9 +807,10 @@ public:
 	}
 	
 private:
-	virtual bool input_added(const filter_params *params, T &val) = 0;
-	virtual bool input_changed(const filter_params *params, T &val) = 0;
-	virtual bool input_removed(const filter_params *params, T &val) = 0;
+	virtual bool input_added(const filter_params *params) = 0;
+	virtual bool input_changed(const filter_params *params) = 0;
+	virtual bool input_removed(const filter_params *params) = 0;
+	virtual bool calculate_value(T &val) = 0;
 	
 	filter_val_c<T> *output;
 	T value;

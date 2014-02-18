@@ -27,6 +27,7 @@ typedef std::set<const sgnode*> c_sgnode_set;
 typedef std::vector<const geometry_node*> c_geom_node_list;
 typedef std::pair<convex_node*, bool> view_line;
 typedef std::vector<view_line> view_line_list;
+typedef std::map<const filter_params*, const sgnode*> element_map;
 
 
 // Creates a view_line consisting of a convex node with the given name
@@ -138,7 +139,7 @@ public:
 	}
 
 private:
-	bool input_added(const filter_params *params, double &res) {
+	bool input_added(const filter_params *params) {
 		if(a == 0){
 			if(!get_filter_param(this, params, "a", a)){
 				set_status("expecting parameter a");
@@ -160,27 +161,29 @@ private:
 			return false;
 		}
 
-		node_set.insert(b);
+		elements[params] = b;
 
-		res = calc_occlusion(view_lines, node_set);
 		return true;
 	}
 
-	bool input_changed(const filter_params *params, double &res) {
-		res = calc_occlusion(view_lines, node_set);
+	bool input_changed(const filter_params *params) {
 		return true;
 	}
 
-	bool input_removed(const filter_params *params, double &res) {
-		const sgnode* b;
-		if(get_filter_param(this, params, "b", b)){
-			set<const sgnode*>::iterator i = node_set.find(b);
-			if(i == node_set.end()){
-				return false;
-			}
-			node_set.erase(i);
+	bool input_removed(const filter_params *params) {
+		element_map::iterator i = elements.find(params);	
+		if(i != elements.end()){
+			elements.erase(i);	
 		}
 
+		return true;
+	}
+
+	bool calculate_value(double &res){
+		c_sgnode_set node_set;
+		for(element_map::const_iterator i = elements.begin(); i != elements.end(); i++){
+			node_set.insert(i->second);
+		}
 		res = calc_occlusion(view_lines, node_set);
 		return true;
 	}
@@ -188,7 +191,7 @@ private:
 	const sgnode* a;
 	const sgnode* eye;
 	view_line_list view_lines;
-	c_sgnode_set node_set;
+	element_map elements;
 };
 
 filter *make_occlusion_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {

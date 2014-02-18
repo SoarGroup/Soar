@@ -7,6 +7,8 @@
 
 using namespace std;
 
+int DEBUG_DEPTH = 0;
+
 filter_input::~filter_input() {
 	for (int i = 0, iend = input_info.size(); i < iend; ++i) {
 		delete input_info[i].in_fltr;
@@ -14,6 +16,7 @@ filter_input::~filter_input() {
 }
 
 bool filter_input::update() {
+	enterf("filter_input::update");
 	for (int i = 0, iend = input_info.size(); i < iend; ++i) {
 		if (!input_info[i].in_fltr->update()) {
 			clear();
@@ -27,6 +30,7 @@ bool filter_input::update() {
 		input_info[i].in_fltr->get_output()->clear_changes();
 	}
 	
+	exitf("filter_input::update");
 	return true;
 }
 
@@ -55,6 +59,7 @@ void filter_input::clear_changes() {
 }
 
 void concat_filter_input::combine(const input_table &inputs) {
+	enterf("concat_filter_input::combine");
 	for (int i = 0, iend = inputs.size(); i < iend; ++i) {
 		filter_params *p;
 		filter_output *o = inputs[i].in_fltr->get_output();
@@ -76,6 +81,7 @@ void concat_filter_input::combine(const input_table &inputs) {
 			change(p);
 		}
 	}
+	exitf("concat_filter_input::combine");
 }
 
 void concat_filter_input::reset_sub() {
@@ -86,18 +92,37 @@ void concat_filter_input::clear_sub() {
 	val2params.clear();
 }
 
+#include <iostream>
+using namespace std;
 void product_filter_input::combine(const input_table &inputs) {
+	val2param_map::iterator k;
+	param_set_list::iterator l;
+	enterf("product_filter_input::combine");
 	for (int i = 0, iend = inputs.size(); i < iend; ++i) {
-		val2param_map::iterator k;
-		param_set_list::iterator l;
 		filter_output *o = inputs[i].in_fltr->get_output();
+		
+//		cout << padd() << "  " << inputs[i].name << " = " << o << endl;
+//		cout << padd() << "  - Current: " << o->num_current() << endl;
+//		for(int j = 0; j < o->num_current(); j++){
+//			cout << padd() << "    * " << o->get_current(j)->toString() << endl;
+//		}
+//		cout << padd() << "  - Changed: " << o->num_changed() << endl;
+//		for(int j = 0; j < o->num_changed(); j++){
+//			cout << padd() << "    * " << o->get_changed(j)->toString() << endl;
+//		}
+//		cout << padd() << "  - Removed: " << o->num_removed() << endl;
+//		for(int j = 0; j < o->num_removed(); j++){
+//			cout << padd() << "    * " << o->get_removed(j)->toString() << endl;
+//		}
 		
 		for (int j = 0, jend = o->num_removed(); j < jend; ++j) {
 			filter_val *r = o->get_removed(j);
 			k = val2params.find(r);
 			
-			if (k == val2params.end() || val2params.empty())
+			if (k == val2params.end() || val2params.empty()){
+				cout << padd() << "  COULDNT FIND 1 " << endl;
 			  continue;
+			}
 			//assert(k != val2params.end());
 			
 			param_set_list temp = k->second;
@@ -105,12 +130,19 @@ void product_filter_input::combine(const input_table &inputs) {
 				remove(*l);
 				erase_param_set(*l);
 			}
+			val2params.erase(k);
 		}
+	}
+	//cout << padd() << "  finished deleting" << endl;
 	   
+	for (int i = 0, iend = inputs.size(); i < iend; ++i) {
+		filter_output *o = inputs[i].in_fltr->get_output();
 		for (int j = 0, jend = o->num_changed(); j < jend; ++j) {
 			k = val2params.find(o->get_changed(j));
-			if (k == val2params.end() || val2params.empty())
+			if (k == val2params.end() || val2params.empty()){
+				cout << padd() << "  COULDNT FIND 2 " <<  endl;
 				continue;
+			}
 			
 			//assert(k != val2params.end());
 			for (l = k->second.begin(); l != k->second.end(); ++l) {
@@ -118,7 +150,9 @@ void product_filter_input::combine(const input_table &inputs) {
 			}
 		}
 	}
+	//cout << padd() << "  finished changing" << endl;
 	gen_new_combinations(inputs);
+	exitf("product_filter_input::combine");
 }
 
 void product_filter_input::reset_sub() {
@@ -240,6 +274,7 @@ void filter::change_output(filter_val *v) {
 }
 
 bool filter::update() {
+	enterf("filter::update");
 	if (!input->update()) {
 		set_status("Errors in input");
 		output.clear();
@@ -255,6 +290,7 @@ bool filter::update() {
 	}
 	set_status("success");
 	input->clear_changes();
+	exitf("filter::update");
 	return true;
 }
 
@@ -263,6 +299,7 @@ map_filter::map_filter(Symbol *root, soar_interface *si, filter_input *input)
 {}
 
 bool map_filter::update_outputs() {
+	enterf("map_filter::update_outputs");
 	const filter_input* input = get_input();
 	std::vector<const filter_params*>::iterator j;
 	
@@ -293,6 +330,7 @@ bool map_filter::update_outputs() {
 		}
 	}
 	stale.clear();
+	exitf("map_filter::update_outputs");
 	return true;
 }
 
@@ -315,6 +353,7 @@ bool map_filter::update_one(const filter_params *params) {
 
 
 bool select_filter::update_outputs() {
+	enterf("select_filter::update_outputs");
 	const filter_input* input = get_input();
 	std::vector<const filter_params*>::iterator j;
 	bool error = false;
@@ -351,6 +390,7 @@ bool select_filter::update_outputs() {
 			return false;
 		}
 	}
+	exitf("select_filter::update_outputs");
 	return true;
 }
 
@@ -382,6 +422,7 @@ bool select_filter::update_one(const filter_params *params) {
 }
 
 bool rank_filter::update_outputs() {
+	enterf("rank_filter::update_outputs");
 	const filter_input *input = get_input();
 	double r;
 	const filter_params *p;
@@ -438,6 +479,7 @@ bool rank_filter::update_outputs() {
 		remove_output(output);
 		output = NULL;
 	}
+	exitf("rank_filter::update_ouputs");
 	return true;
 }
 
