@@ -580,7 +580,7 @@ double overlap(const sgnode* n1, const sgnode* n2){
 		vec3 pt = n1->get_centroid();
 		for(int i = 0, iend = g2.size(); i < iend; i++){
 			double dist = point_geom_convex_dist(pt, g2[i]);
-			std::cout << "  pt-geom dist: " << dist << std::endl;
+			//std::cout << "  pt-geom dist: " << dist << std::endl;
 			if(dist <= 0){
 				// Node 1's point is contained within node 2
 				return 1;
@@ -788,7 +788,7 @@ using namespace std;
 vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d2, int d3){
 	vec3 scale = n->get_trans('s');
 	vec3 tempScale = scale;
-	cout << "Adjusting on dims: " << d1 << ", " << d2 << ", " << d3 << endl;
+	//cout << "Adjusting on dims: " << d1 << ", " << d2 << ", " << d3 << endl;
 
 	// Simple binary search, finds it within 1%
 	double min = 0.001, max = 1.0;
@@ -798,12 +798,12 @@ vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d
 		tempScale[d2] = scale[d2] * s;
 		tempScale[d3] = scale[d3] * s;
 		n->set_trans('s', tempScale);
-		cout << "  Test " << s << ": ";
+		//cout << "  Test " << s << ": ";
 		if(intersects(n, targets)){
-			cout << "I" << endl;
+			//cout << "I" << endl;
 			max = s;
 		} else {
-			cout << "N" << endl;
+			//cout << "N" << endl;
 			min = s;
 		}
 	}
@@ -811,7 +811,7 @@ vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d
 	tempScale[d1] = scale[d1] * min;
 	tempScale[d2] = scale[d2] * min;
 	tempScale[d3] = scale[d3] * min;
-	cout << "Final Result: " << min << endl;
+	//cout << "Final Result: " << min << endl;
 	return tempScale;
 }
 
@@ -831,7 +831,7 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 	std::vector<const sgnode*> intersectors;
 	std::vector<const sgnode*>::iterator i;
 	// Find all the nodes that actually intersect the original sized object
-	cout << "Intersectors: " << endl;
+	//cout << "Intersectors: " << endl;
 	for(i = targets.begin(); i != targets.end(); i++){
 		if(*i == this){
 			continue;
@@ -839,29 +839,29 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 		if(!intersects(this, *i)){
 			continue;
 		}
-		cout << "  " << (*i)->get_name() << endl;
+		//cout << "  " << (*i)->get_name() << endl;
 		intersectors.push_back(*i);
 	}
 	if(intersectors.size() == 0){
-		cout << "No Intersectors" << endl;
+		//cout << "No Intersectors" << endl;
 		// Don't need to adjust at all
 		return;
 	}
-	cout << "Generating centroid" << endl;
+	//cout << "Generating centroid" << endl;
 
 	// Check to see if the centroid is already inside another object
 	ptlist centroid_pt;
 	centroid_pt.push_back(this->get_centroid());
 	convex_node* centroid = new convex_node("temp-centroid", "object", centroid_pt);
 	if(intersects(centroid, intersectors)){
-		cout << "Centroid is intersected" << endl;
+		//cout << "Centroid is intersected" << endl;
 		// Something is very wrong, the centroid is inside another object, just quit
 		delete centroid;
 		return;
 	}
 	delete centroid;
 
-	cout << "Copying points" << endl;
+	//cout << "Copying points" << endl;
 
 	// Now do the actual adjustment, on a copy of the original node
 	// Copy all the points from this node
@@ -871,7 +871,7 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 	vec3 tempScale = scale;
 	vec3 newScale = scale;
 
-	cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
+	//cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
 
 	int freeDim = -1;
 	// Test each dimension to see if just 1 needs to be adjusted
@@ -890,7 +890,7 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 	}
 	tempScale = scale;
 	copied_node->set_trans('s', scale);
-	cout << "Free Dim: " << freeDim << endl;
+	//cout << "Free Dim: " << freeDim << endl;
 	if(freeDim != -1){
 		newScale = adjust_single_dim(copied_node, intersectors, freeDim);
 	} else {
@@ -912,15 +912,15 @@ void sgnode::adjust_size(std::vector<const sgnode*> targets){
 		}
 		tempScale = scale;
 		copied_node->set_trans('s', scale);
-		cout << "Free Dim: " << freeDim << endl;
+		//cout << "Free Dim: " << freeDim << endl;
 		if(freeDim != -1){
 			newScale = adjust_two_dims(copied_node, intersectors, freeDim);
 		} else {
 			newScale = adjust_all_dims(copied_node, intersectors);
 		}
 	}
-	cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
-	cout << "New Scale: " << newScale[0] << ", " << newScale[1] << ", " << newScale[2] << endl;
+	//cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
+	//cout << "New Scale: " << newScale[0] << ", " << newScale[1] << ", " << newScale[2] << endl;
 	this->set_trans('s', newScale);
 	delete copied_node;
 }
