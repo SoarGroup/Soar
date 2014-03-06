@@ -138,8 +138,8 @@ int compare_attr (const void * e1, const void * e2)
     p2 = (wme **) e2;
 
     // passing null thisAgent is OK as long as dest is guaranteed != 0
-    symbol_to_string (0, (*p1)->attr, true, s1, MAX_LEXEME_LENGTH*2+20);
-    symbol_to_string (0, (*p2)->attr, true, s2, MAX_LEXEME_LENGTH*2+20);
+    (*p1)->attr->to_string(true, s1, MAX_LEXEME_LENGTH*2+20);
+    (*p2)->attr->to_string(true, s2, MAX_LEXEME_LENGTH*2+20);
 
     return strcmp (s1, s2);
 }
@@ -156,9 +156,11 @@ void neatly_print_wme_augmentation_of_id (agent* thisAgent, wme *w, int indentat
     ch = buf;
     while (*ch)
         ch++;
-    symbol_to_string(thisAgent, w->attr, true, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
+    w->attr->to_string(true, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf));
+    while (*ch) ch++;
     *(ch++) = ' ';
-    symbol_to_string(thisAgent, w->value, true, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
+    w->value->to_string(true, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf));
+   while (*ch) ch++;
     if (w->acceptable)
     {
         strcpy(ch, " +");

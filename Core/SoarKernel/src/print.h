@@ -109,23 +109,17 @@ extern void filtered_print_wme_add(agent* thisAgent, wme *w);
    '"ab\"c"'.  This is used for printing quoted strings and for printing
    symbols using |vbar| notation.
 
-   Symbol_to_string() converts a symbol to a string.  The "rereadable"
-   parameter indicates whether a rereadable representation is desired.
-   Normally symbols are printed rereadably, but for (write) and Text I/O,
-   we don't want this.
-
    Test_to_string() takes a test and produces a string representation.
 
    Rhs_value_to_string() takes an rhs_value and produces a string
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-extern char *string_to_escaped_string (agent* thisAgent, char *s, char first_and_last_char,
-                                       char *dest);
-extern char *symbol_to_string (agent* thisAgent, Symbol *sym, bool rereadable=false, char *dest=NIL, size_t dest_size=0);
-extern char *test_to_string (agent* thisAgent, test t, char *dest=NIL, size_t dest_size=0, bool show_equality=false);
-extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest=NIL, size_t dest_size=0);
-extern char preference_to_string (agent* thisAgent, byte type);
+extern char *string_to_escaped_string (char *s, char first_and_last_char, char *dest);
+extern char *test_to_string (test t, char *dest=NIL, size_t dest_size=0, bool show_equality=false);
+extern char *rhs_value_to_string (rhs_value rv, char *dest=NIL, size_t dest_size=0);
+extern char preference_to_string (byte type);
+
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production

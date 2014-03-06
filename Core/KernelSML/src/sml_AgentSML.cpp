@@ -44,7 +44,7 @@ AgentSML::AgentSML(KernelSML* pKernelSML, agent* pAgent)
 	m_pAgentRunCallback->SetAgentSML(this) ;
 
 	m_pCaptureFile = 0;
-  getSoarInstance()->Register_Soar_AgentSML(pAgent->name, this);
+  Soar_Instance::Get_Soar_Instance().Register_Soar_AgentSML(pAgent->name, this);
 
 }
 
@@ -1142,7 +1142,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
 	CHECK_RET_FALSE(pWME) ;  //BADBAD: above check means this will never be triggered; one of the checks should go, but not sure which (can this function be legitimately called with a timetag for a wme that's already been removed?)
 
 	if ( pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
-		this->RemoveID( symbol_to_string( GetSoarAgent(), pWME->value, true, 0, 0 ) ) ;
+		this->RemoveID( pWME->value->to_string(true)) ;
 	}
 
 	RemoveWmeFromWmeMap( pWME );

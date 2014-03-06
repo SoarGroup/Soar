@@ -88,6 +88,11 @@ namespace cli
         };
 
         /**
+         * @brief cli command
+         */
+        virtual bool DoCLIMessage(const std::string& pMessage) = 0;
+
+        /**
          * @brief clog command
          * @param mode The mode for the log command
          * @param pFilename The log filename, pass 0 (null) if not applicable to mode

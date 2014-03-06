@@ -19,6 +19,7 @@
 #include "sml_AgentSML.h"
 #include "XMLTrace.h"
 #include "KernelHeaders.h"
+#include "output_manager.h"
 
 #include "agent.h"
 #include "xml.h"
@@ -35,6 +36,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_VarPrint        = false;
     m_GPMax           = 20000;
     m_XMLResult       = new XMLTrace() ;
+    m_OutputManager   = &Output_Manager::Get_OM();
 
     // parser takes ownership and deletes commands in its destructor
     m_Parser.AddCommand(new cli::AddWMECommand(*this));
@@ -43,6 +45,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::BreakCommand(*this));
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
+    m_Parser.AddCommand(new cli::CliExtensionMessageCommand(*this));
     m_Parser.AddCommand(new cli::ChunkNameFormatCommand(*this));
     m_Parser.AddCommand(new cli::CliExtensionMessageCommand(*this));
     m_Parser.AddCommand(new cli::CLogCommand(*this));

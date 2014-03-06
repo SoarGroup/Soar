@@ -300,7 +300,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 	    for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next) {
 	      if ((act->type == MAKE_ACTION)  &&
 	          (rhs_value_is_symbol(act->attr)) &&
-	          (strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50), "operator") == NIL) &&
+	          (strcmp(rhs_value_to_string (act->attr, action_attr, 50), "operator") == NIL) &&
 	          (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
 	        if (rhs_value_is_reteloc(act->id) && get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up( act->id ),
 	            rhs_value_to_reteloc_field_num( act->id ),
@@ -423,7 +423,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
 					growable_string gs = make_blank_growable_string(thisAgent);
 					add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-					add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+					add_to_growable_string(thisAgent, &gs, inst->prod->name->to_string(true));
 					xml_generate_warning(thisAgent, text_of_growable_string(gs));
 					free_growable_string(thisAgent, gs);
 
@@ -433,7 +433,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
 					growable_string gs = make_blank_growable_string(thisAgent);
 					add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
-					add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+					add_to_growable_string(thisAgent, &gs, inst->prod->name->to_string(true));
 					xml_generate_warning(thisAgent, text_of_growable_string(gs));
 					free_growable_string(thisAgent, gs);
 

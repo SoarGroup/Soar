@@ -710,7 +710,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   int                 link_update_mode;
 
   /* ------------------ Printing utilities stuff --------------------- */
-  char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
   int                 printer_output_column;
   int                 saved_printer_output_column;
 

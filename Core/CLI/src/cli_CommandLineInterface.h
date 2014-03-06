@@ -27,6 +27,8 @@
 #include "cli_Parser.h"
 #include "Export.h"
 
+class Output_Manager;
+
 namespace soar_module
 {
   class named_object;
@@ -256,7 +258,7 @@ namespace cli
         void GetMemoryStats(); // for stats
         void GetMaxStats(); // for stats
         void GetReteStats(); // for stats
-		void GetAgentStats(); // for stats
+        void GetAgentStats(); // for stats
 
         bool Evaluate(const char* pInput); // source, formerly StreamSource
 
@@ -296,6 +298,8 @@ namespace cli
         std::list<std::string>  m_TotalExcisedDuringSource;
         int                     m_NumTotalProductionsIgnored;
         cli::Parser             m_Parser;
+
+        Output_Manager*         m_OutputManager;
     };
 } // namespace cli
 

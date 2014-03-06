@@ -62,7 +62,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol * s
   new_rhs_symbol->referent = sym;
   new_rhs_symbol->original_rhs_variable = pOrig_var;
   new_rhs_symbol->g_id = pG_ID;
-  dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %llu to new rhs_symbol %s(%s).\n" : ""), pG_ID, sym->to_string(thisAgent), pOrig_var->to_string(thisAgent));
+  dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %llu to new rhs_symbol %s(%s).\n" : ""), pG_ID, sym->to_string(), pOrig_var->to_string());
 
   /* -- Must always increase original_sym refcount if it exists because this function
    *    is only called when the newly generate rhs value is created with a brand new
@@ -141,8 +141,8 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
   } else {
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
     dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value copying rhs_symbol %s(%s).\n",
-          symbol_to_string(thisAgent, r->referent),
-         (r->original_rhs_variable ? symbol_to_string(thisAgent, r->original_rhs_variable) : "NIL"));
+          r->referent->to_string(),
+         (r->original_rhs_variable ? r->original_rhs_variable->to_string() : "NIL"));
     return allocate_rhs_value_for_symbol(thisAgent, r->referent, r->original_rhs_variable, r->g_id);
   }
 }
@@ -345,8 +345,8 @@ rhs_value create_RHS_value (agent* thisAgent,
         rhs_value_to_reteloc_levels_up(rv));
     sym = t->data.referent;
     dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(%s, ) from reteloc.\n",
-        symbol_to_string(thisAgent, sym),
-        (original_sym ? symbol_to_string(thisAgent, original_sym) : "NULL"));
+        sym->to_string(),
+        (original_sym ? original_sym->to_string() : "NULL"));
 
     /* MToDo | Might not need to regenerate original sym and just use t->identity->orig_var */
     return allocate_rhs_value_for_symbol(thisAgent,
@@ -372,8 +372,7 @@ rhs_value create_RHS_value (agent* thisAgent,
       }
       /* -- generate will increment the refcount on the new variable,
        *    so don't need to do it here. -- */
-      dprint_noprefix(DT_RHS_VARIABLIZATION, "%s for unbound var.\n",
-          symbol_to_string(thisAgent, sym));
+      dprint_noprefix(DT_RHS_VARIABLIZATION, "%s for unbound var.\n", sym->to_string());
       return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, sym);
     }
     else
@@ -382,10 +381,9 @@ rhs_value create_RHS_value (agent* thisAgent,
       original_sym = sym;
     }
 //    dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(%s) for unbound var.\n",
-//        symbol_to_string(thisAgent, sym), symbol_to_string(thisAgent, original_sym));
+//        sym->to_string(), original_sym->to_string());
 //    return allocate_rhs_value_for_symbol(thisAgent, sym, original_sym);
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "%s for unbound var.\n",
-        symbol_to_string(thisAgent, sym));
+        dprint_noprefix(DT_RHS_VARIABLIZATION, "%s for unbound var.\n", sym->to_string());
     return allocate_rhs_value_for_symbol(thisAgent, sym, sym);
   }
 
@@ -412,8 +410,8 @@ rhs_value create_RHS_value (agent* thisAgent,
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
     /* MToDo | May not need these originals.  Should always be NULL, no? */
     dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(%s - %s) from rhs_symbol (literal RHS constant).\n",
-        (rs->referent ? symbol_to_string(thisAgent, rs->referent) : "NULL"),
-        (rs->original_rhs_variable ? symbol_to_string(thisAgent, rs->original_rhs_variable) : "NULL"));
+        (rs->referent ? rs->referent->to_string() : "NULL"),
+        (rs->original_rhs_variable ? rs->original_rhs_variable->to_string() : "NULL"));
     return allocate_rhs_value_for_symbol(thisAgent, rs->referent, rs->referent);
   }
 }

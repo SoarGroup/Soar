@@ -43,6 +43,7 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "variablization_manager.h"
+#include "output_manager.h"
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
@@ -101,8 +102,16 @@ void abort_with_fatal_error_noagent (const char *msg) {
   FILE *f;
   const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
 
-  fprintf (stderr,"%s",msg);
-  fprintf (stderr,"%s",warning);
+  /* MToDo | Send error message to all clients, not just default one.
+   *         May not want to be a debug message either. */
+  if (Output_Manager::Get_OM().debug_mode_enabled(DT_DEBUG))
+  {
+    Output_Manager::Get_OM().print_debug(msg, DT_DEBUG, true);
+    Output_Manager::Get_OM().print_debug(warning, DT_DEBUG, true);
+  }
+
+//  fprintf (stderr,"%s",msg);
+//  fprintf (stderr,"%s",warning);å
 
   f = fopen("soarerror", "w");
   fprintf (f,"%s",msg);

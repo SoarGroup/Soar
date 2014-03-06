@@ -352,6 +352,38 @@ namespace cli
         ChunkNameFormatCommand& operator=(const ChunkNameFormatCommand&);
     };
 
+    class CliExtensionMessageCommand : public cli::ParserCommand
+    {
+
+      public:
+          CliExtensionMessageCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+          virtual ~CliExtensionMessageCommand() {}
+          virtual const char* GetString() const { return "cli"; }
+          virtual const char* GetSyntax() const
+          {
+              return "Syntax: cli extension-name command [args]";
+          }
+
+          virtual bool Parse(std::vector< std::string >&argv)
+          {
+              if (argv.size() < 3)
+                  return cli.SetError(GetSyntax());
+
+              std::string concat_message(argv[1]);
+              for (std::vector<int>::size_type i = 2; i < argv.size(); ++i)
+              {
+                concat_message += ' ' ;
+                concat_message += argv[i] ;
+              }
+              return cli.DoCLIMessage(concat_message);
+          }
+
+      private:
+          cli::Cli& cli;
+
+          CliExtensionMessageCommand& operator=(const CliExtensionMessageCommand&);
+    };
+
     class CLogCommand : public cli::ParserCommand
     {
     public:
