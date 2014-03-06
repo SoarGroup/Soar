@@ -92,6 +92,8 @@ class Output_Manager
 
     char* NULL_SYM_STR;
 
+    char* NULL_SYM_STR;
+
   private:
 
     Output_Manager();
