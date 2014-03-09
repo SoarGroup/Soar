@@ -54,6 +54,7 @@ enum TraceMode {
   DT_IDENTITY_PROP,
   DT_SOAR_INSTANCE,
   DT_CLI_LIBRARIES,
+  DT_CONSTRAINTS,
   num_trace_modes
 };
 

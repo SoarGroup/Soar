@@ -27,23 +27,27 @@ inline variablization * copy_variablization(agent *thisAgent, variablization *v)
 Variablization_Manager::Variablization_Manager(agent *myAgent)
 {
   thisAgent = myAgent;
-  variablization_sym_table = new std::map< Symbol *, variablization * >();
-  variablization_g_id_table = new std::map< uint64_t, variablization * >();
-  variablization_ovar_table = new std::map< Symbol *, uint64_t >();
+  sym_to_var_map = new std::map< Symbol *, variablization * >();
+  g_id_to_var_map = new std::map< uint64_t, variablization * >();
+  ovar_to_g_id_map = new std::map< Symbol *, uint64_t >();
+  constraints = new std::map< test , ::list * >();
+
   ground_id_counter = 0;
 }
 
 Variablization_Manager::~Variablization_Manager()
 {
   clear_data();
-  delete variablization_sym_table;
-  delete variablization_g_id_table;
-  delete variablization_ovar_table;
+  delete sym_to_var_map;
+  delete g_id_to_var_map;
+  delete ovar_to_g_id_map;
+  delete constraints;
 }
 
 void Variablization_Manager::clear_data()
 {
   dprint(DT_VARIABLIZATION_MANAGER, "Clearing variablization maps.\n");
+  clear_relational_constraints ();
   clear_variablization_table();
 }
 
@@ -70,16 +74,16 @@ void Variablization_Manager::clear_variablization_table() {
 
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar table...\n");
   /* -- Clear original variable map -- */
-  for (std::map< Symbol *, uint64_t >::iterator it=(*variablization_ovar_table).begin(); it!=(*variablization_ovar_table).end(); ++it)
+  for (std::map< Symbol *, uint64_t >::iterator it=(*ovar_to_g_id_map).begin(); it!=(*ovar_to_g_id_map).end(); ++it)
   {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s -> %llu\n", it->first->to_string(), it->second);
     symbol_remove_ref(thisAgent, it->first);
   }
-  variablization_ovar_table->clear();
+  ovar_to_g_id_map->clear();
 
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol->variablization map...\n");
   /* -- Clear symbol->variablization map -- */
-  for (std::map< Symbol *, variablization * >::iterator it=(*variablization_sym_table).begin(); it!=(*variablization_sym_table).end(); ++it)
+  for (std::map< Symbol *, variablization * >::iterator it=(*sym_to_var_map).begin(); it!=(*sym_to_var_map).end(); ++it)
   {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s -> %s(%lld)/%s(%lld)\n",
         it->first->to_string(),
@@ -89,11 +93,11 @@ void Variablization_Manager::clear_variablization_table() {
     symbol_remove_ref(thisAgent, it->second->variablized_symbol);
     delete it->second;
   }
-  variablization_sym_table->clear();
+  sym_to_var_map->clear();
 
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing grounding_id->variablization map...\n");
   /* -- Clear grounding_id->variablization map -- */
-  for (std::map< uint64_t, variablization * >::iterator it=(*variablization_g_id_table).begin(); it!=(*variablization_g_id_table).end(); ++it)
+  for (std::map< uint64_t, variablization * >::iterator it=(*g_id_to_var_map).begin(); it!=(*g_id_to_var_map).end(); ++it)
   {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing %llu -> %s(%lld)/%s(%lld)\n",
         it->first,
@@ -103,14 +107,14 @@ void Variablization_Manager::clear_variablization_table() {
     symbol_remove_ref(thisAgent, it->second->variablized_symbol);
     delete it->second;
   }
-  variablization_g_id_table->clear();
+  g_id_to_var_map->clear();
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing variablization data.\n");
 }
 
 variablization * Variablization_Manager::get_variablization(uint64_t index_id)
 {
-  std::map< uint64_t, variablization * >::iterator iter = (*variablization_g_id_table).find(index_id);
-  if (iter != (*variablization_g_id_table).end())
+  std::map< uint64_t, variablization * >::iterator iter = (*g_id_to_var_map).find(index_id);
+  if (iter != (*g_id_to_var_map).end())
   {
     dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in g_id variablization table: %s/%s\n", index_id,
        iter->second->variablized_symbol->to_string(), iter->second->instantiated_symbol->to_string());
@@ -126,8 +130,8 @@ variablization * Variablization_Manager::get_variablization(uint64_t index_id)
 
 variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
 {
-  std::map< Symbol *, variablization * >::iterator iter = (*variablization_sym_table).find(index_sym);
-  if (iter != (*variablization_sym_table).end())
+  std::map< Symbol *, variablization * >::iterator iter = (*sym_to_var_map).find(index_sym);
+  if (iter != (*sym_to_var_map).end())
   {
     dprint(DT_VARIABLIZATION_MANAGER, "...found %s in variablization table: %s/%s\n", index_sym->to_string(),
        iter->second->variablized_symbol->to_string(), iter->second->instantiated_symbol->to_string());
@@ -143,8 +147,8 @@ variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
 
 uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
 {
-  std::map< Symbol *, uint64_t >::iterator iter = (*variablization_ovar_table).find(index_sym);
-  if (iter != (*variablization_ovar_table).end())
+  std::map< Symbol *, uint64_t >::iterator iter = (*ovar_to_g_id_map).find(index_sym);
+  if (iter != (*ovar_to_g_id_map).end())
   {
     dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in orig_var variablization table for %s\n",
         iter->second, index_sym);
@@ -187,7 +191,7 @@ void Variablization_Manager::add_orig_var_mappings_for_test(test t)
       if (t->identity && t->identity->original_var && (t->identity->grounding_id > 0))
       {
         dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings entry: %s -> %llu\n", t->identity->original_var->to_string(), t->identity->grounding_id);
-        (*variablization_ovar_table)[t->identity->original_var] = t->identity->grounding_id;
+        (*ovar_to_g_id_map)[t->identity->original_var] = t->identity->grounding_id;
         symbol_add_ref(thisAgent, t->identity->original_var);
       } else {
 //        dprint(DT_VARIABLIZATION_MANAGER, "Did not add b/c %s %s %llu.\n",
@@ -262,15 +266,15 @@ void Variablization_Manager::store_variablization(Symbol *instantiated_sym,
      *    so we must use the variable instead to look up variablization info.
      *    This may not be necessary after we resurrect the old NOT code. -- */
 
-    (*variablization_sym_table)[instantiated_sym] = new_variablization;
-    (*variablization_sym_table)[variable] = copy_variablization(thisAgent, new_variablization);
+    (*sym_to_var_map)[instantiated_sym] = new_variablization;
+    (*sym_to_var_map)[variable] = copy_variablization(thisAgent, new_variablization);
     dprint_noprefix(DT_VARIABLIZATION_MANAGER, "symbol ([%s][%s] variablization table.\n",
         instantiated_sym->to_string(), variable->to_string());
   } else if (identity) {
 
     /* -- A constant symbol is being variablized, so store variablization info
      *    indexed by the constant's grounding id. -- */
-    (*variablization_g_id_table)[identity->grounding_id] = new_variablization;
+    (*g_id_to_var_map)[identity->grounding_id] = new_variablization;
 
     dprint_noprefix(DT_VARIABLIZATION_MANAGER, "identity[%llu] variablization table.\n",
         identity->grounding_id);
@@ -478,8 +482,8 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
           (*sym)->to_string(), found_variablization->variablized_symbol->to_string());
 
       print_variablization_tables(DT_VARIABLIZATION_MANAGER, 1);
-      variablization_sym_table->erase(*sym);
-      variablization_sym_table->erase(found_variablization->variablized_symbol);
+      sym_to_var_map->erase(*sym);
+      sym_to_var_map->erase(found_variablization->variablized_symbol);
       symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
       symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
       delete found_variablization;
@@ -513,6 +517,53 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
   return 0;
 }
 
+
+void Variablization_Manager::print_relational_constraints (TraceMode mode)
+{
+  dprint(mode, "------------------------------------\n");
+  dprint(mode, "            Constraint Map\n");
+  dprint(mode, "------------------------------------\n");
+
+  cons *c;
+
+  for (std::map< test, ::list * >::iterator it=constraints->begin(); it!=constraints->end(); ++it)
+  {
+    c = it->second;
+    while (c) {
+      dprint_test(mode, it->first, true, true, true);
+      dprint_test(mode, static_cast<test>(c->first), true, true, true, " ", "\n");
+      c = c->rest;
+    }
+  }
+}
+
+void Variablization_Manager::clear_relational_constraints ()
+{
+  for (std::map< test, ::list * >::iterator it=constraints->begin(); it!=constraints->end(); ++it)
+  {
+    free_list (thisAgent, it->second);
+  }
+  constraints->clear();
+}
+
+void Variablization_Manager::add_relational_constraint (test equality_test, test relational_test)
+{
+  ::list * new_list=NULL;
+  dprint(DT_CONSTRAINTS, "Adding relational constraint %s to %s.\n", test_to_string(relational_test), test_to_string(equality_test));
+  std::map< test, ::list * >::iterator iter = (*constraints).find(equality_test);
+  if (iter == constraints->end())
+  {
+    push(thisAgent, (relational_test), new_list);
+    (*constraints)[equality_test] = new_list;
+  }
+  else
+  {
+    new_list = (*constraints)[equality_test];
+    push(thisAgent, (relational_test), new_list);
+    (*constraints)[equality_test] = new_list;
+  }
+}
+
 /* -- A utility function to print all data stored in the variablization manager.  Used only for debugging -- */
 
 void Variablization_Manager::print_variablization_tables(TraceMode mode, int whichTable)
@@ -528,7 +579,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     dprint(mode, "------------ Symbol -> v_info table ----------\n");
     if (whichTable != 0)
       dprint(mode, "------------------------------------\n");
-    for (std::map< Symbol *, variablization * >::iterator it=(*variablization_sym_table).begin(); it!=(*variablization_sym_table).end(); ++it)
+    for (std::map< Symbol *, variablization * >::iterator it=(*sym_to_var_map).begin(); it!=(*sym_to_var_map).end(); ++it)
     {
       dprint(mode, "%s -> %s/%s (grounded %d)\n", it->first->to_string(),
           it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string(), it->second->grounded);
@@ -539,7 +590,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     dprint(mode, "--------- G_ID -> v_info table -------\n");
     if (whichTable != 0)
       dprint(mode, "------------------------------------\n");
-    for (std::map< uint64_t, variablization * >::iterator it=(*variablization_g_id_table).begin(); it!=(*variablization_g_id_table).end(); ++it)
+    for (std::map< uint64_t, variablization * >::iterator it=(*g_id_to_var_map).begin(); it!=(*g_id_to_var_map).end(); ++it)
     {
       dprint(mode, "%llu -> %s/%s (grounded %d)\n", it->first,
           it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string(), it->second->grounded);
@@ -550,7 +601,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     dprint(mode, "----- Original Var -> G_ID Table -----\n");
     if (whichTable != 0)
       dprint(mode, "------------------------------------\n");
-    for (std::map< Symbol *, uint64_t >::iterator it=(*variablization_ovar_table).begin(); it!=(*variablization_ovar_table).end(); ++it)
+    for (std::map< Symbol *, uint64_t >::iterator it=(*ovar_to_g_id_map).begin(); it!=(*ovar_to_g_id_map).end(); ++it)
     {
       dprint(mode, "%s -> %llu\n", it->first->to_string(), it->second);
     }

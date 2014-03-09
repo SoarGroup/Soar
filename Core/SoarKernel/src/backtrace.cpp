@@ -37,6 +37,7 @@
 #include "test.h"
 #include "debug.h"
 #include "prefmem.h"
+#include "variablization_manager.h"
 
 using namespace soar_TraceNames;
 //void dprint_condition (TraceMode mode, condition *cond, const char *indent_string);
@@ -239,6 +240,55 @@ void print_consed_list_of_condition_wmes (agent* thisAgent, list *c, int indent)
   }
 }
 
+void add_relational_constraints_for_test (agent* thisAgent, test t)
+{
+  if (t->type != CONJUNCTIVE_TEST)
+  {
+    assert(t->type == EQUALITY_TEST);
+    return;
+  }
+
+  test equality_test, referent_test, ctest;
+  cons *c;
+  dprint(DT_CONSTRAINTS, "Looking for equality constraint...\n");
+  for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+  {
+    dprint(DT_CONSTRAINTS, "Comparing against %s.\n", test_to_string(static_cast<test>(c->first)));
+    if (static_cast<test>(c->first)->type == EQUALITY_TEST)
+    {
+        equality_test = static_cast<test>(c->first);
+        break;
+    }
+  }
+  for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+  {
+    ctest = static_cast<test>(c->first);
+    switch (ctest->type) {
+      case EQUALITY_TEST:
+        break;
+      case GREATER_TEST:
+      case GREATER_OR_EQUAL_TEST:
+      case LESS_TEST:
+      case LESS_OR_EQUAL_TEST:
+      case NOT_EQUAL_TEST:
+      case SAME_TYPE_TEST:
+      case DISJUNCTION_TEST:
+        thisAgent->variablizationManager->add_relational_constraint(equality_test, ctest);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+void add_relational_constraints (agent* thisAgent, condition *c)
+{
+  /* Probably don't need to do id.  Code in backtrace always refers to it as an equality test */
+  add_relational_constraints_for_test(thisAgent, c->data.tests.id_test);
+  add_relational_constraints_for_test(thisAgent, c->data.tests.attr_test);
+  add_relational_constraints_for_test(thisAgent, c->data.tests.value_test);
+}
+
 /* This is the wme which is causing this production to be backtraced through.
    It is NULL when backtracing for a result preference.                   */
 
@@ -322,6 +372,11 @@ void backtrace_through_instantiation (agent* thisAgent,
     Symbol *id, *value;
 
     if (c->type!=POSITIVE_CONDITION) continue;
+
+    dprint(DT_CONSTRAINTS, "Backtracing through condition: ");
+    dprint_condition(DT_CONSTRAINTS, c, "", true, true, true);
+    add_relational_constraints(thisAgent, c);
+
     id = c->data.tests.id_test->data.referent;
 
     if (id->tc_num == tc) {

@@ -70,6 +70,9 @@ class Variablization_Manager
     variablization *get_variablization(uint64_t index_id);
     uint64_t get_gid_for_orig_var(Symbol *index_sym);
 
+    void clear_relational_constraints ();
+    void add_relational_constraint (test equality_test, test relational_test);
+
     void variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol,
                                 identity_info *identity, bool is_equality_test);
     void variablize_rl_symbol (Symbol **sym, bool is_equality_test);
@@ -78,6 +81,7 @@ class Variablization_Manager
     void print_OSD_table();
     void print_variablization_tables(TraceMode mode, int whichTable=0);
     void print_tables();
+    void print_relational_constraints (TraceMode mode);
 
     Variablization_Manager(agent *thisAgent);
     ~Variablization_Manager();
@@ -94,9 +98,10 @@ class Variablization_Manager
     void clear_data();
 
 
-    std::map< Symbol *, uint64_t > * variablization_ovar_table;
-    std::map< uint64_t, variablization * > * variablization_g_id_table;
-    std::map< Symbol *, variablization * > * variablization_sym_table;
+    std::map< Symbol *, uint64_t >          * ovar_to_g_id_map;
+    std::map< uint64_t, variablization * >  * g_id_to_var_map;
+    std::map< Symbol *, variablization * >  * sym_to_var_map;
+    std::map< test, ::list * >              * constraints;
 
     uint64_t ground_id_counter;
 };
