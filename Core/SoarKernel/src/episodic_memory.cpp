@@ -4167,8 +4167,14 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 				if (literal->matches.size() == 0) {
 					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
 						epmem_literal* child_lit = *child_iter;
-						for (epmem_node_pair_set::iterator node_iter = child_lit->matches.begin(); node_iter != child_lit->matches.end(); node_iter++) {
+						epmem_node_pair_set::iterator node_iter = child_lit->matches.begin();
+						while (node_iter != child_lit->matches.end()) {
 							changed_score |= epmem_unsatisfy_literal(child_lit, (*node_iter).first, (*node_iter).second, current_score, current_cardinality, symbol_node_count);
+							if (child_lit->matches.empty()) {
+								break;
+							} else {
+								node_iter++;
+							}
 						}
 					}
 				} else {
