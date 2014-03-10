@@ -6643,7 +6643,7 @@ uint32_t reteload_four_bytes (FILE* f) {
 }
 
 void retesave_eight_bytes (uint64_t w, FILE* f) {
-  if (!format_version_num < 4) {
+  if (format_version_num >= 4) {
     retesave_four_bytes(static_cast<uint32_t>(w), f);
     return;
   }
@@ -6658,7 +6658,7 @@ void retesave_eight_bytes (uint64_t w, FILE* f) {
 }
 
 uint64_t reteload_eight_bytes (FILE* f) {
-  if (!format_version_num < 4)
+  if (format_version_num >= 4)
     return reteload_four_bytes(f);
 
   uint64_t i;
