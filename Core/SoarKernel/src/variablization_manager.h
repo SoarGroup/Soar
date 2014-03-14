@@ -11,11 +11,18 @@
 #include <portability.h>
 #include <set>
 #include "symtab.h"
+#include "test.h"
 
-typedef struct identity_struct identity_info;
-typedef struct test_struct test_info;
-typedef test_info * test;
 typedef struct condition_struct condition;
+
+/* -- Following requires that both tests exists and are equality tests -- */
+//struct cmp_constraint_eq_test {
+//    bool operator()(test a,  test b) const {
+//      assert (a && b);
+//      return (a->data.referent == b->data.referent);
+//    }
+//};
+
 
 typedef struct variablization_struct {
     Symbol *instantiated_symbol;
@@ -54,6 +61,8 @@ typedef struct variablization_struct {
  *
  * -- */
 
+/* MToDo | Check if all of these functions really still need to be public */
+
 class Variablization_Manager
 {
   public:
@@ -63,20 +72,18 @@ class Variablization_Manager
     void clear_variablization_table();
     void reinit();
 
-    void build_orig_var_mappings(cons *grounds);
-    void add_orig_var_mappings_for_cond_list(condition *cond);
-
-    variablization *get_variablization(Symbol *index_sym);
-    variablization *get_variablization(uint64_t index_id);
-    uint64_t get_gid_for_orig_var(Symbol *index_sym);
+    void add_orig_var_mappings(condition *cond);
+    void add_relational_constraints(condition *cond);
 
     void clear_relational_constraints ();
-    void add_relational_constraint (test equality_test, test relational_test);
+    void cache_relational_constraint (test equality_test, test relational_test);
 
-    void variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol,
-                                identity_info *identity, bool is_equality_test);
-    void variablize_rl_symbol (Symbol **sym, bool is_equality_test);
-    uint64_t variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
+    void      variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol,
+                                     identity_info *identity, bool is_equality_test);
+    void      variablize_rl_symbol (Symbol **sym, bool is_equality_test);
+    uint64_t  variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
+    void      variablize_condition_list (condition *cond);
+    void      variablize_relational_constraints();
 
     void print_OSD_table();
     void print_variablization_tables(TraceMode mode, int whichTable=0);
@@ -91,17 +98,30 @@ class Variablization_Manager
 
     void store_variablization(Symbol *instantiated_sym, Symbol *variable,
                               identity_info *identity, bool is_equality_test);
+    variablization *get_variablization(Symbol *index_sym);
+    variablization *get_variablization(uint64_t index_id);
+    variablization *get_variablization(test equality_test);
+    uint64_t        get_gid_for_orig_var(Symbol *index_sym);
+
 
     void add_orig_var_mappings_for_test(test t);
     void add_orig_var_mappings_for_cond(condition *cond);
 
+    void add_relational_constraints_for_test(test *t);
+    void add_relational_constraints_for_cond(condition *cond);
+    void variablize_relational_constraints_for_symbol(::list **constraint_list);
+
+    bool symbol_in_chunk(Symbol *sym1, Symbol *sym2 = NULL);
+
     void clear_data();
 
+    void variablize_test(test *chunk_test);
 
     std::map< Symbol *, uint64_t >          * ovar_to_g_id_map;
     std::map< uint64_t, variablization * >  * g_id_to_var_map;
     std::map< Symbol *, variablization * >  * sym_to_var_map;
-    std::map< test, ::list * >              * constraints;
+    std::map< Symbol *, ::list * >          * sti_constraints;
+    std::map< uint64_t, ::list * >          * constant_constraints;
 
     uint64_t ground_id_counter;
 };

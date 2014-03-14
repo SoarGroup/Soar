@@ -102,6 +102,33 @@ extern void init_condition(condition *cond)
 	  cond->test_for_acceptable_preference = FALSE;
 }
 
+condition *copy_condition_without_relational_constraints (agent* thisAgent,
+               condition *cond) {
+  condition *New;
+
+  if (!cond) return NIL;
+  allocate_with_pool (thisAgent, &thisAgent->condition_pool, &New);
+  init_condition(New);
+  New->type = cond->type;
+
+  switch (cond->type) {
+  case POSITIVE_CONDITION:
+    New->bt = cond->bt;
+    /* ... and fall through to next case */
+  case NEGATIVE_CONDITION:
+    New->data.tests.id_test = copy_test_without_relationals (thisAgent, cond->data.tests.id_test);
+    New->data.tests.attr_test = copy_test_without_relationals (thisAgent, cond->data.tests.attr_test);
+    New->data.tests.value_test = copy_test_without_relationals (thisAgent, cond->data.tests.value_test);
+    New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
+    break;
+  case CONJUNCTIVE_NEGATION_CONDITION:
+    copy_condition_list (thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
+                         &(New->data.ncc.bottom));
+    break;
+  }
+  return New;
+}
+
 /* ----------------------------------------------------------------
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */

@@ -10,6 +10,7 @@
 #include "instantiations.h"
 #include "assert.h"
 #include "test.h"
+#include "print.h"
 #include "debug.h"
 
 inline variablization * copy_variablization(agent *thisAgent, variablization *v)
@@ -30,7 +31,8 @@ Variablization_Manager::Variablization_Manager(agent *myAgent)
   sym_to_var_map = new std::map< Symbol *, variablization * >();
   g_id_to_var_map = new std::map< uint64_t, variablization * >();
   ovar_to_g_id_map = new std::map< Symbol *, uint64_t >();
-  constraints = new std::map< test , ::list * >();
+  sti_constraints = new std::map< Symbol * , ::list * >();
+  constant_constraints = new std::map< uint64_t , ::list * >();
 
   ground_id_counter = 0;
 }
@@ -41,7 +43,8 @@ Variablization_Manager::~Variablization_Manager()
   delete sym_to_var_map;
   delete g_id_to_var_map;
   delete ovar_to_g_id_map;
-  delete constraints;
+  delete sti_constraints;
+  delete constant_constraints;
 }
 
 void Variablization_Manager::clear_data()
@@ -58,13 +61,85 @@ void Variablization_Manager::reinit()
   ground_id_counter = 0;
 }
 
-/* -- ----------------------------------
- *    Variablization functions
- *    ----------------------------------
- *    The following functions handle variablization of LHS items.  It replaces
- *    variablize_symbol.
- *
- *    -- */
+void Variablization_Manager::print_relational_constraints (TraceMode mode)
+{
+  dprint(mode, "------------------------------------\n");
+  dprint(mode, "            Constraint Map\n");
+  dprint(mode, "------------------------------------\n");
+
+  cons *c;
+
+  for (std::map< Symbol *, ::list * >::iterator it=sti_constraints->begin(); it!=sti_constraints->end(); ++it)
+  {
+    c = it->second;
+    while (c) {
+      dprint(mode, "%s: ", it->first->to_string());
+      dprint_test(mode, static_cast<test>(c->first), true, true, true, " ", "\n");
+      c = c->rest;
+    }
+  }
+  dprint(mode, "------------------------------------\n");
+  for (std::map< uint64_t, ::list * >::iterator it=constant_constraints->begin(); it!=constant_constraints->end(); ++it)
+  {
+    c = it->second;
+    while (c) {
+      dprint(mode, "%llu: ", it->first);
+      dprint_test(mode, static_cast<test>(c->first), true, true, true, " ", "\n");
+      c = c->rest;
+    }
+  }
+  dprint(mode, "------------------------------------\n");
+}
+/* -- A utility function to print all data stored in the variablization manager.  Used only for debugging -- */
+
+void Variablization_Manager::print_variablization_tables(TraceMode mode, int whichTable)
+{
+  dprint(mode, "------------------------------------\n");
+  if (whichTable == 0)
+  {
+    dprint(mode, "       Variablization Tables\n");
+    dprint(mode, "------------------------------------\n");
+  }
+  if ((whichTable == 0) || (whichTable == 1))
+  {
+    dprint(mode, "------------ Symbol -> v_info table ----------\n");
+    if (whichTable != 0)
+      dprint(mode, "------------------------------------\n");
+    for (std::map< Symbol *, variablization * >::iterator it=(*sym_to_var_map).begin(); it!=(*sym_to_var_map).end(); ++it)
+    {
+      dprint(mode, "%s -> %s/%s (grounded %d)\n", it->first->to_string(),
+          it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string(), it->second->grounded);
+    }
+  }
+  if ((whichTable == 0) || (whichTable == 2))
+  {
+    dprint(mode, "--------- G_ID -> v_info table -------\n");
+    if (whichTable != 0)
+      dprint(mode, "------------------------------------\n");
+    for (std::map< uint64_t, variablization * >::iterator it=(*g_id_to_var_map).begin(); it!=(*g_id_to_var_map).end(); ++it)
+    {
+      dprint(mode, "%llu -> %s/%s (grounded %d)\n", it->first,
+          it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string(), it->second->grounded);
+    }
+  }
+  if ((whichTable == 0) || (whichTable == 3))
+  {
+    dprint(mode, "---- Original Var -> G_ID Table ----\n");
+    if (whichTable != 0)
+      dprint(mode, "------------------------------------\n");
+    for (std::map< Symbol *, uint64_t >::iterator it=(*ovar_to_g_id_map).begin(); it!=(*ovar_to_g_id_map).end(); ++it)
+    {
+      dprint(mode, "%s -> %llu\n", it->first->to_string(), it->second);
+    }
+  }
+  dprint(mode, "------------------------------------\n");
+}
+
+void Variablization_Manager::print_tables()
+{
+  print_variablization_tables(DT_VARIABLIZATION_MANAGER);
+}
+
 
 
 void Variablization_Manager::clear_variablization_table() {
@@ -145,6 +220,21 @@ variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
   }
 }
 
+variablization * Variablization_Manager::get_variablization(test t)
+{
+  /* -- MToDo | I don't think this is used any more. Check and remove -- */
+  assert(t->data.referent);
+  if (t->data.referent->is_sti())
+  {
+    return get_variablization(t->data.referent);
+  }
+  else
+  {
+    assert(t->identity->grounding_id>0);
+    return get_variablization(t->identity->grounding_id);
+  }
+}
+
 uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
 {
   std::map< Symbol *, uint64_t >::iterator iter = (*ovar_to_g_id_map).find(index_sym);
@@ -168,7 +258,6 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
 void Variablization_Manager::add_orig_var_mappings_for_test(test t)
 {
   cons *c;
-  test check_test;
 
   switch (t->type)
   {
@@ -179,7 +268,6 @@ void Variablization_Manager::add_orig_var_mappings_for_test(test t)
     case CONJUNCTIVE_TEST:
       dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for conjunctive test\n");
       cons *c;
-      test check_test;
       for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
       {
         add_orig_var_mappings_for_test(static_cast<test>(c->first));
@@ -212,12 +300,12 @@ void Variablization_Manager::add_orig_var_mappings_for_cond(condition *cond)
     add_orig_var_mappings_for_test(cond->data.tests.value_test);
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
-    add_orig_var_mappings_for_cond_list (cond->data.ncc.top);
+    add_orig_var_mappings (cond->data.ncc.top);
     break;
   }
 }
 
-void Variablization_Manager::add_orig_var_mappings_for_cond_list(condition *cond)
+void Variablization_Manager::add_orig_var_mappings(condition *cond)
 {
   dprint(DT_VARIABLIZATION_MANAGER, "=============================================\n");
   dprint(DT_VARIABLIZATION_MANAGER, "add_orig_var_mappings_for_cond_list called...\n");
@@ -517,99 +605,473 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
   return 0;
 }
 
+/* =====================================================================
 
-void Variablization_Manager::print_relational_constraints (TraceMode mode)
+                  Variablizing Conditions and Results
+
+   Variablizing of conditions is done by walking over a condition list
+   and destructively modifying it, replacing tests with tests of variables.
+   The identifier-to-variable mapping is built as we go along:  identifiers
+   that have already been assigned a variablization are marked with
+   common.tc_num==variablization_tc, and id.variablization points to the
+   corresponding variable.
+
+   Variablizing of results can't be done destructively because we need
+   to convert the results--preferences--into actions.  This is done
+   by copy_and_variablize_result_list(), which takes the result preferences
+   and returns an action list.
+
+   Note:  The caller to this function is now responsible for making sure
+   the symbol passed in should be variablized.
+
+===================================================================== */
+
+void Variablization_Manager::variablize_test (test *t)
 {
-  dprint(mode, "------------------------------------\n");
-  dprint(mode, "            Constraint Map\n");
-  dprint(mode, "------------------------------------\n");
+  cons *c, *c_orig;
+  test ct, ct_original, *original_test;
+  TestType original_test_type, test_type;
+  Symbol *original_referent, *instantiated_referent;
 
-  cons *c;
+  original_test = &((*t)->original_test);
 
-  for (std::map< test, ::list * >::iterator it=constraints->begin(); it!=constraints->end(); ++it)
+  dprint(DT_LHS_VARIABLIZATION, "Variablizing: ");
+  dprint_test(DT_LHS_VARIABLIZATION, *t, true, true, true, "", "\n");
+
+  assert(*t);
+  test_type = (*t)->type;
+
+  if (test_is_blank(*original_test))
   {
-    c = it->second;
-    while (c) {
-      dprint_test(mode, it->first, true, true, true);
-      dprint_test(mode, static_cast<test>(c->first), true, true, true, " ", "\n");
-      c = c->rest;
+    if (test_type == CONJUNCTIVE_TEST)
+    {
+      //    if (test_type == EQUALITY_TEST)
+      //    {
+      //      dprint(DT_LHS_VARIABLIZATION, "...ignoring original conjunctive test (probably b/c of goal/impasse/disjunction)!!!\n");
+      //      /* MToDo | If original tests is a conjunction b/c goal but new test is not, the remaining equality test may still need to be
+      //       *         variablized, but it's not the way that it currently is.  Could be a bug. -- */
+      //      //assert(false);
+      //    }
+      //    dprint(DT_LHS_VARIABLIZATION, "...Comparing original test types: %s to %s\n", test_type_to_string(original_test_type), test_type_to_string((*chunk_test)->original_test->type));
+      dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
+      ct = *t;
+      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+      {
+        variablize_test (reinterpret_cast<test *>(&(c->first)));
+      }
+
+      dprint(DT_LHS_VARIABLIZATION, "Done iterating through conjunction list.\n");
+      dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
+    } else
+    {
+      dprint(DT_LHS_VARIABLIZATION, "...ignoring non-conjunctive test because original is blank (should not be possible!):\n");
+      dprint_test(DT_LHS_VARIABLIZATION, *t, true, true, true, "        ", "\n");
+      return;
+    }
+  } else
+  {
+    /* -- ORIGINAL can differ from CHUNK tests if there are goal, impasse or disjunction tests in ORIGINAL test. Those aren't added
+     *    because goal/impasse tests added in a separate step.
+     *
+     *    MToDo:  Is the part about disjunctions still true?  I think the logic was that original disjunctions are a list of constants and will
+     *    not be needed to variablize, so no need to copy?*/
+
+    original_test_type = (*original_test)->type;
+
+    assert(original_test_type);
+    switch (original_test_type) {
+      case DISJUNCTION_TEST:
+        break;
+      case EQUALITY_TEST:
+      case NOT_EQUAL_TEST:
+      case LESS_TEST:
+      case GREATER_TEST:
+      case LESS_OR_EQUAL_TEST:
+      case GREATER_OR_EQUAL_TEST:
+      case SAME_TYPE_TEST:
+        ct = *t;
+        instantiated_referent = (*t)->data.referent;
+        original_referent = (*original_test)->data.referent;
+
+        assert (instantiated_referent && original_referent);
+
+        if (instantiated_referent->is_variablizable(original_referent))
+        {
+          dprint(DT_LHS_VARIABLIZATION, "Variablizing test type %s with referent %s\n", test_type_to_string(test_type), instantiated_referent->to_string());
+          thisAgent->variablizationManager->variablize_lhs_symbol (&(ct->data.referent), original_referent,
+                                                                   (*t)->identity, (original_test_type == EQUALITY_TEST));
+        } else {
+          dprint(DT_LHS_VARIABLIZATION, "Non-variablizable original referent.  Should it be possible to get here?\n");
+          //assert(false);
+        }
+        break;
+      default:
+        dprint(DT_DEBUG, "Invalid test type in variablize_test!!!\n");
+        assert(false);
+        break;
     }
   }
+  dprint(DT_LHS_VARIABLIZATION, "Resulting in ");
+  dprint_test(DT_LHS_VARIABLIZATION, *t, true, true, true, "        ", "\n");
+  dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
+}
+
+/* This gets passed in a copy of the chunk instantiation's condition lists, which
+ * will get thrown away
+ */
+
+void Variablization_Manager::variablize_condition_list (condition *cond)
+{
+  dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
+  dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS condition list:\n");
+  dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
+
+  //thisAgent->varname_table->clear_symbol_map();
+
+  for (; cond!=NIL; cond=cond->next)
+  {
+    switch (cond->type) {
+    case POSITIVE_CONDITION:
+    case NEGATIVE_CONDITION:
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier...\n");
+      variablize_test (&(cond->data.tests.id_test));
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute...\n");
+      variablize_test (&(cond->data.tests.attr_test));
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing value...\n");
+      variablize_test (&(cond->data.tests.value_test));
+      break;
+    case CONJUNCTIVE_NEGATION_CONDITION:
+      dprint(DT_NCC_VARIABLIZATION, "Variablizing NCC!\n");
+      dprint_condition_list(DT_NCC_VARIABLIZATION, cond->data.ncc.top);
+      variablize_condition_list (cond->data.ncc.top);
+      break;
+    }
+  }
+  dprint(DT_LHS_VARIABLIZATION, "Done variablizing LHS condition list.\n");
+  dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
+}
+void Variablization_Manager::variablize_relational_constraints_for_symbol(::list **constraint_list)
+{
+  variablization *found_variablization = NULL;
+  cons *c, *c_next, *c_last;
+  test t;
+
+  c = (*constraint_list);
+  c_last = NULL;
+  while (c)
+  {
+    c_next = c->rest;
+    t = static_cast<test>(c->first);
+    // Disjunctions don't have referents and aren't variablized
+    if (t->type != DISJUNCTION_TEST)
+    {
+      found_variablization = NULL;
+      found_variablization = get_variablization(t);
+      /* -- Three cases for referent in relational constraint:
+       *    (1) It has been variablized before, so just variablize.
+       *    (2) It has not been variablized before and is a STI, so it's an ungrounded comparison.  So,
+       *        delete from list.
+       *    (3) It has not been variablized before and is a constant.  Ignore.  Will become a relational
+       *        test against a literal constant in final chunk.
+       * -- */
+      if (found_variablization)
+      {
+        /* -- Grounded symbol.  Variablize. -- */
+        variablize_test (&(t));
+      } else if (t->data.referent->is_sti())
+      {
+        /* -- STI identifier that is ungrounded.  Delete. -- */
+        dprint(DT_CONSTRAINTS, "Deleting constraint b/c STI not in in chunk.\n");
+        if (c_last)
+        {
+          /* -- Not at the head of the list -- */
+          c_last->rest = c->rest;
+          free_cons(thisAgent, c);
+          c = c_last;
+        } else {
+          /* -- At the head of the list -- */
+          (*constraint_list) = c->rest;
+          free_cons(thisAgent, c);
+          /* -- This will set c_list to NULL, so it appears like we're
+           *    at the head of the list to the while loop code -- */
+          c = NULL;
+        }
+        deallocate_test(thisAgent, t);
+      } else
+      {
+        /* -- Constant referent that is ungrounded.  Ignore. -- */
+        dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c referent not grounded in chunk.\n");
+      }
+    }
+    c_last = c;
+    c = c_next;
+  }
+}
+
+void Variablization_Manager::variablize_relational_constraints()
+{
+  variablization *found_variablization = NULL;
+  ::list *c;
+  std::map< Symbol *, ::list * > *variablized_sti_constraints = new std::map< Symbol *, ::list * >;
+  std::map< uint64_t, ::list * > *variablized_constant_constraints = new std::map< uint64_t, ::list * >;
+
+  dprint(DT_CONSTRAINTS, "=============================================\n");
+  dprint(DT_CONSTRAINTS, "Variablizing relational constraints.\n");
+  dprint(DT_CONSTRAINTS, "(1) Variablizing relational constraints for short-term identifiers.\n");
+  dprint_wmes(DT_CONSTRAINTS, true);
+
+  for (std::map< Symbol *, ::list * >::iterator it=sti_constraints->begin(); it!=sti_constraints->end(); ++it)
+  {
+
+    dprint(DT_CONSTRAINTS, "Looking for variablization for equality symbol %s.\n", it->first->to_string());
+    found_variablization = get_variablization(it->first);
+
+    if (found_variablization)
+    {
+      // Should always be grounded now that relationals are done on their own
+      assert(found_variablization->grounded);
+
+      dprint(DT_CONSTRAINTS, "...found grounding.  Variablizing constraint list.\n", it->first->to_string());
+      variablize_relational_constraints_for_symbol(&(it->second));
+
+      /* -- If at least one relational constraint remains in the list, add to variablized constraint
+       *    list, using the variablized equality symbol -- */
+      if (it->second)
+      {
+        dprint(DT_CONSTRAINTS, "...variablized constraints exist.  Copying to new constraint list.\n");
+        (*variablized_sti_constraints)[found_variablization->variablized_symbol] = it->second;
+      }
+    } else {
+      /* -- Delete entire constraint list for ungrounded identifier -- */
+      dprint(DT_CONSTRAINTS, "...not variablizing constraint list b/c equality symbol not in chunk.  Deallocating tests.\n");
+      c = it->second;
+      while (c)
+      {
+        dprint(DT_CONSTRAINTS, "...deallocating test %s\n", test_to_string(static_cast<test>(c->first)));
+        deallocate_test(thisAgent, static_cast<test>(c->first));
+        c = c->rest;
+      }
+      free_list (thisAgent, it->second);
+      it->second = NULL;
+    }
+  }
+
+  /* -- Replace sti constraints with variablized version.
+   *
+   *    Note:  Symbols in key did not have their refcount increased, so they don't need to be
+   *    deallocated.  Moreover, any relational constraints that were not relevant to this chunk
+   *    will have already had their tests deallocated above. So, we can just clear the map.
+   *
+   * -- */
+  sti_constraints->clear();
+  sti_constraints = variablized_sti_constraints;
+
+  dprint(DT_CONSTRAINTS, "(2) Variablizing relational constraints for constant symbols.\n");
+  for (std::map< uint64_t, ::list * >::iterator it=constant_constraints->begin(); it!=constant_constraints->end(); ++it)
+  {
+
+    dprint(DT_CONSTRAINTS, "Looking for variablization for equality g_id %llu.\n", it->first);
+    found_variablization = get_variablization(it->first);
+
+    if (found_variablization)
+    {
+      // Should always be grounded now that relationals are done on their own
+      assert(found_variablization->grounded);
+
+      dprint(DT_CONSTRAINTS, "...found grounding for grounding id %llu.  Variablizing constraint list.\n", it->first);
+      variablize_relational_constraints_for_symbol(&(it->second));
+
+      /* -- If at least one relational constraint remains in the list, add to variablized constraint
+       *    list, using the variablized equality symbol -- */
+      if (it->second)
+      {
+        dprint(DT_CONSTRAINTS, "...variablized constraints exist.  Copying to new constraint list.\n");
+        (*variablized_constant_constraints)[found_variablization->grounding_id] = it->second;
+      }
+    } else {
+      /* -- Delete entire constraint list for ungrounded identifier -- */
+      dprint(DT_CONSTRAINTS, "...not variablizing constraint list b/c equality g_id not in chunk.  Deallocating tests.\n");
+      c = it->second;
+      while (c)
+      {
+        dprint(DT_CONSTRAINTS, "...deallocating test %s\n", test_to_string(static_cast<test>(c->first)));
+        deallocate_test(thisAgent, static_cast<test>(c->first));
+        c = c->rest;
+      }
+      free_list (thisAgent, it->second);
+      it->second = NULL;
+    }
+  }
+
+  /* -- Replace constant constraints with variablized version. -- */
+  constant_constraints->clear();
+  constant_constraints = variablized_constant_constraints;
+
+  dprint(DT_CONSTRAINTS, "Done variablizing relational constraints.\n");
+
 }
 
 void Variablization_Manager::clear_relational_constraints ()
 {
-  for (std::map< test, ::list * >::iterator it=constraints->begin(); it!=constraints->end(); ++it)
+  for (std::map< Symbol *, ::list * >::iterator it=sti_constraints->begin(); it!=sti_constraints->end(); ++it)
   {
     free_list (thisAgent, it->second);
   }
-  constraints->clear();
+  sti_constraints->clear();
+
+  for (std::map< uint64_t, ::list * >::iterator it=constant_constraints->begin(); it!=constant_constraints->end(); ++it)
+  {
+    free_list (thisAgent, it->second);
+  }
+  constant_constraints->clear();
 }
 
-void Variablization_Manager::add_relational_constraint (test equality_test, test relational_test)
+void Variablization_Manager::cache_relational_constraint (test equality_test, test relational_test)
 {
-  ::list * new_list=NULL;
   dprint(DT_CONSTRAINTS, "Adding relational constraint %s to %s.\n", test_to_string(relational_test), test_to_string(equality_test));
-  std::map< test, ::list * >::iterator iter = (*constraints).find(equality_test);
-  if (iter == constraints->end())
+  ::list * new_list=NULL;
+  test copied_test = copy_test(thisAgent, relational_test);
+
+  if (equality_test->data.referent->is_sti())
   {
-    push(thisAgent, (relational_test), new_list);
-    (*constraints)[equality_test] = new_list;
-  }
-  else
-  {
-    new_list = (*constraints)[equality_test];
-    push(thisAgent, (relational_test), new_list);
-    (*constraints)[equality_test] = new_list;
+    std::map< Symbol *, ::list * >::iterator iter = (*sti_constraints).find(equality_test->data.referent);
+    if (iter == sti_constraints->end())
+    {
+      push(thisAgent, (copied_test), new_list);
+      (*sti_constraints)[equality_test->data.referent] = new_list;
+      dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+    }
+    else
+    {
+      new_list = (*sti_constraints)[equality_test->data.referent];
+      push(thisAgent, (copied_test), new_list);
+      (*sti_constraints)[equality_test->data.referent] = new_list;
+      dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+    }
+  } else {
+    std::map< uint64_t, ::list * >::iterator iter = (*constant_constraints).find(equality_test->identity->grounding_id);
+    if (iter == constant_constraints->end())
+    {
+      push(thisAgent, (copied_test), new_list);
+      (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
+      dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%llu] + %s\n", equality_test->identity->grounding_id, test_to_string(copied_test));
+    }
+    else
+    {
+      new_list = (*constant_constraints)[equality_test->identity->grounding_id];
+      push(thisAgent, (copied_test), new_list);
+      (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
+      dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%llu] + %s\n", equality_test->identity->grounding_id, test_to_string(copied_test));
+    }
   }
 }
 
-/* -- A utility function to print all data stored in the variablization manager.  Used only for debugging -- */
-
-void Variablization_Manager::print_variablization_tables(TraceMode mode, int whichTable)
+void Variablization_Manager::add_relational_constraints_for_test(test *t)
 {
-  dprint(mode, "------------------------------------\n");
-  if (whichTable == 0)
+  if (!t) return;
+
+  cons *c;
+  test eq_test, ct;
+  Symbol *eq_symbol;
+  variablization *found_variablization;
+
+  eq_test = equality_test_found_in_test(thisAgent, *t);
+  assert(eq_test);
+  eq_symbol = eq_test->data.referent;
+  dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %s(%llu).\n", eq_symbol->to_string(), eq_test->identity ? eq_test->identity->grounding_id : 0);
+  if (!eq_test->identity || (eq_test->identity->grounding_id == 0))
   {
-    dprint(mode, "       Variablization Tables\n");
-    dprint(mode, "------------------------------------\n");
-  }
-  if ((whichTable == 0) || (whichTable == 1))
-  {
-    dprint(mode, "------------ Symbol -> v_info table ----------\n");
-    if (whichTable != 0)
-      dprint(mode, "------------------------------------\n");
-    for (std::map< Symbol *, variablization * >::iterator it=(*sym_to_var_map).begin(); it!=(*sym_to_var_map).end(); ++it)
+    /* MToDo | Could also just use was_identifier, though that might not be needed now that we don't reverse */
+    assert(eq_symbol->is_variable() && eq_symbol->var->was_identifier);
+    dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Using symbol to look up.\n");
+    found_variablization = get_variablization(eq_symbol);
+    if (found_variablization)
     {
-      dprint(mode, "%s -> %s/%s (grounded %d)\n", it->first->to_string(),
-          it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string(), it->second->grounded);
+      dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %s.\n", found_variablization->variablized_symbol->to_string());
+      print_relational_constraints(DT_CONSTRAINTS);
+      std::map< Symbol *, ::list * >::iterator iter = (*sti_constraints).find(eq_symbol);
+      if (iter != (*sti_constraints).end())
+      {
+        dprint(DT_CONSTRAINTS, "...adding relational constraint list for symbol %s...\n", eq_symbol->to_string());
+        c = iter->second;
+        while (c) {
+          ct = static_cast<test>(c->first);
+          dprint_test(DT_CONSTRAINTS, ct, true, true, true, "...adding", "\n");
+          add_test(thisAgent, t, ct);
+          c = c->rest;
+        }
+        free_list (thisAgent, iter->second);
+        (*sti_constraints).erase(iter->first);
+      }
+      else
+      {
+        dprint(DT_CONSTRAINTS, "...no relational constraints found.\n");
+      }
+    } else {
+      dprint(DT_CONSTRAINTS, "... was never variablized. Skipping...\n");
+    }
+  } else {
+    dprint(DT_CONSTRAINTS, "...identity, so must be constant.  Using g_id to look up.\n");
+    found_variablization = get_variablization(eq_test->identity->grounding_id);
+    if (found_variablization)
+    {
+      dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %s.\n", found_variablization->variablized_symbol->to_string());
+      print_relational_constraints(DT_CONSTRAINTS);
+      std::map< uint64_t, ::list * >::iterator iter = (*constant_constraints).find(eq_test->identity->grounding_id);
+      if (iter != (*constant_constraints).end())
+      {
+        dprint(DT_CONSTRAINTS, "...adding relational constraint list for symbol %s...\n", eq_symbol->to_string());
+        c = iter->second;
+        while (c) {
+          ct = static_cast<test>(c->first);
+          dprint_test(DT_CONSTRAINTS, ct, true, true, true, "...adding ", "\n");
+          add_test(thisAgent, t, ct);
+          c = c->rest;
+        }
+        free_list (thisAgent, iter->second);
+        (*constant_constraints).erase(iter->first);
+      }
+      else
+      {
+        dprint(DT_CONSTRAINTS, "...no relational constraints found.\n");
+      }
+    } else {
+      dprint(DT_CONSTRAINTS, "... was never variablized. Skipping...\n");
     }
   }
-  if ((whichTable == 0) || (whichTable == 2))
-  {
-    dprint(mode, "--------- G_ID -> v_info table -------\n");
-    if (whichTable != 0)
-      dprint(mode, "------------------------------------\n");
-    for (std::map< uint64_t, variablization * >::iterator it=(*g_id_to_var_map).begin(); it!=(*g_id_to_var_map).end(); ++it)
-    {
-      dprint(mode, "%llu -> %s/%s (grounded %d)\n", it->first,
-          it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string(), it->second->grounded);
-    }
-  }
-  if ((whichTable == 0) || (whichTable == 3))
-  {
-    dprint(mode, "----- Original Var -> G_ID Table -----\n");
-    if (whichTable != 0)
-      dprint(mode, "------------------------------------\n");
-    for (std::map< Symbol *, uint64_t >::iterator it=(*ovar_to_g_id_map).begin(); it!=(*ovar_to_g_id_map).end(); ++it)
-    {
-      dprint(mode, "%s -> %llu\n", it->first->to_string(), it->second);
-    }
-  }
-  dprint(mode, "------------------------------------\n");
 }
 
-void Variablization_Manager::print_tables()
+void Variablization_Manager::add_relational_constraints_for_cond(condition *cond)
 {
-  print_variablization_tables(DT_VARIABLIZATION_MANAGER);
+  switch (cond->type) {
+  case POSITIVE_CONDITION:
+  case NEGATIVE_CONDITION:
+//    add_relational_constraints_for_test(&cond->data.tests.id_test);
+    add_relational_constraints_for_test(&cond->data.tests.attr_test);
+    add_relational_constraints_for_test(&cond->data.tests.value_test);
+    break;
+  case CONJUNCTIVE_NEGATION_CONDITION:
+    add_relational_constraints (cond->data.ncc.top);
+    break;
+  }
+}
+
+void Variablization_Manager::add_relational_constraints(condition *cond)
+{
+  dprint(DT_CONSTRAINTS, "=============================================\n");
+  dprint(DT_CONSTRAINTS, "add_relational_constraints called...\n");
+  print_variablization_tables(DT_CONSTRAINTS);
+  print_relational_constraints(DT_CONSTRAINTS);
+
+  while (cond && ((sti_constraints->size() > 0) || (constant_constraints->size() > 0))) {
+    dprint(DT_CONSTRAINTS, "Adding relational constraints for cond ");
+    dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
+    add_relational_constraints_for_cond(cond);
+    cond = cond->next;
+  }
+  dprint(DT_CONSTRAINTS, "add_relational_constraints done adding constraints.  Final tables:\n");
+  print_variablization_tables(DT_CONSTRAINTS);
+  print_relational_constraints(DT_CONSTRAINTS);
+  dprint_condition_list(DT_CONSTRAINTS, cond);
+  dprint(DT_CONSTRAINTS, "=============================================\n");
 }

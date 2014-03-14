@@ -987,8 +987,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 } agent;
 /*************** end of agent struct *****/
 
-/* MToDo | These cons list function should probably be somewhere else -- */
-
 template <typename T>
 inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer)
 {

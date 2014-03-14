@@ -240,26 +240,28 @@ void print_consed_list_of_condition_wmes (agent* thisAgent, list *c, int indent)
   }
 }
 
-void add_relational_constraints_for_test (agent* thisAgent, test t)
+void cache_relational_constraints_for_test (agent* thisAgent, test t)
 {
+  /* -- Only conjunctive tests can have relational tests here -- */
   if (t->type != CONJUNCTIVE_TEST)
   {
     assert(t->type == EQUALITY_TEST);
     return;
   }
 
-  test equality_test, referent_test, ctest;
+  test equality_test=NULL, referent_test, ctest;
   cons *c;
-  dprint(DT_CONSTRAINTS, "Looking for equality constraint...\n");
+//  dprint(DT_CONSTRAINTS, "Looking for equality constraint...\n");
   for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
   {
-    dprint(DT_CONSTRAINTS, "Comparing against %s.\n", test_to_string(static_cast<test>(c->first)));
     if (static_cast<test>(c->first)->type == EQUALITY_TEST)
     {
-        equality_test = static_cast<test>(c->first);
-        break;
+//      dprint(DT_CONSTRAINTS, "...found %s.\n", test_to_string(static_cast<test>(c->first)));
+      equality_test = static_cast<test>(c->first);
+      break;
     }
   }
+  assert(equality_test);
   for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
   {
     ctest = static_cast<test>(c->first);
@@ -273,7 +275,7 @@ void add_relational_constraints_for_test (agent* thisAgent, test t)
       case NOT_EQUAL_TEST:
       case SAME_TYPE_TEST:
       case DISJUNCTION_TEST:
-        thisAgent->variablizationManager->add_relational_constraint(equality_test, ctest);
+        thisAgent->variablizationManager->cache_relational_constraint(equality_test, ctest);
         break;
       default:
         break;
@@ -281,12 +283,12 @@ void add_relational_constraints_for_test (agent* thisAgent, test t)
   }
 }
 
-void add_relational_constraints (agent* thisAgent, condition *c)
+void cache_relational_constraints (agent* thisAgent, condition *c)
 {
   /* Probably don't need to do id.  Code in backtrace always refers to it as an equality test */
-  add_relational_constraints_for_test(thisAgent, c->data.tests.id_test);
-  add_relational_constraints_for_test(thisAgent, c->data.tests.attr_test);
-  add_relational_constraints_for_test(thisAgent, c->data.tests.value_test);
+  //cache_relational_constraints_for_test(thisAgent, c->data.tests.id_test);
+  cache_relational_constraints_for_test(thisAgent, c->data.tests.attr_test);
+  cache_relational_constraints_for_test(thisAgent, c->data.tests.value_test);
 }
 
 /* This is the wme which is causing this production to be backtraced through.
@@ -373,9 +375,9 @@ void backtrace_through_instantiation (agent* thisAgent,
 
     if (c->type!=POSITIVE_CONDITION) continue;
 
-    dprint(DT_CONSTRAINTS, "Backtracing through condition: ");
-    dprint_condition(DT_CONSTRAINTS, c, "", true, true, true);
-    add_relational_constraints(thisAgent, c);
+//    dprint(DT_CONSTRAINTS, "Backtracing through condition: ");
+//    dprint_condition(DT_CONSTRAINTS, c, "", true, true, true);
+    cache_relational_constraints(thisAgent, c);
 
     id = c->data.tests.id_test->data.referent;
 

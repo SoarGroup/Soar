@@ -117,8 +117,9 @@ extern void filtered_print_wme_add(agent* thisAgent, wme *w);
 
 extern char *string_to_escaped_string (char *s, char first_and_last_char, char *dest);
 extern char *rhs_value_to_string (rhs_value rv, char *dest=NIL, size_t dest_size=0);
-extern char preference_to_string (byte type);
+extern char preference_to_char (byte type);
 
+inline char bool_to_char (bool b)  { if (b) return 'T'; else return 'F';}
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production

@@ -101,6 +101,7 @@ bool tests_identical (test t1, test t2);
 bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
+test equality_test_found_in_test (agent* thisAgent, test t);
 
 test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
 uint32_t hash_test (agent* thisAgent, test t);
@@ -108,7 +109,7 @@ void deallocate_test (agent* thisAgent, test t, long indent=0);
 
 test copy_test (agent* thisAgent, test t);
 test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *removed_goal, bool *removed_impasse);
-
+test copy_test_without_relationals (agent* thisAgent, test t);
 
 void add_test (agent* thisAgent, test *dest_address, test new_test);
 void add_test_if_not_already_there (agent* thisAgent, test *t, test new_test, bool neg);
