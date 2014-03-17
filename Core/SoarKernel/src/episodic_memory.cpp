@@ -4070,6 +4070,9 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 		epmem_node_int_map::iterator values_iter = literal->values.find(child);
 		if (values_iter == literal->values.end()) {
 			literal->values[child] = 1;
+			if (QUERY_DEBUG >= 1) {
+				std::cout << "		LITERAL SATISFIED: " << literal << std::endl;
+			}
 			if (literal->is_leaf) {
 				if (literal->matches.size() == 1) {
 					current_score += literal->weight;
@@ -4145,6 +4148,9 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 		(*values_iter).second--;
 		if ((*values_iter).second == 0) {
 			literal->values.erase(values_iter);
+			if (QUERY_DEBUG >= 1) {
+				std::cout << "		LITERAL UNSATISFIED: " << literal << std::endl;
+			}
 			if (literal->is_leaf) {
 				if (literal->matches.size() == 0) {
 					current_score -= literal->weight;
@@ -4687,7 +4693,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					epmem_uedge* uedge = interval->uedge;
 					epmem_triple triple = uedge->triple;
 					if (QUERY_DEBUG >= 1) {
-						std::cout << "	INTERVAL (" << (interval->is_end_point ? "end" : "start") << "): " << triple.parent_n_id << "-" << triple.attribute_s_id << "-" << triple.child_n_id << std::endl;
+						std::cout << "	INTERVAL (" << (interval->is_end_point ? "end" : "start") << " at time " << interval->time << "): " << triple.parent_n_id << "-" << triple.attribute_s_id << "-" << triple.child_n_id << std::endl;
 					}
 					if (interval->is_end_point) {
 						uedge->activated = true;

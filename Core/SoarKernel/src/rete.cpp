@@ -1641,7 +1641,7 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 
 			(*my_agent->epmem_edge_removals)[ w->epmem_id ] = true;
 
-			#ifdef debug_epmem_wme_add
+			#ifdef DEBUG_EPMEM_WME_ADD
 			fprintf(stderr, "   wme destroyed: %d %d %d\n",
 					(unsigned int) w->id->id.epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id.epmem_id);
 			#endif
