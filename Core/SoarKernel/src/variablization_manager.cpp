@@ -188,6 +188,8 @@ void Variablization_Manager::clear_variablization_table() {
 
 variablization * Variablization_Manager::get_variablization(uint64_t index_id)
 {
+  if (index_id == 0) return NULL;
+
   std::map< uint64_t, variablization * >::iterator iter = (*g_id_to_var_map).find(index_id);
   if (iter != (*g_id_to_var_map).end())
   {
@@ -230,7 +232,6 @@ variablization * Variablization_Manager::get_variablization(test t)
   }
   else
   {
-    assert(t->identity->grounding_id>0);
     return get_variablization(t->identity->grounding_id);
   }
 }
