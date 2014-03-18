@@ -645,7 +645,7 @@ struct epmem_interval_comparator {
 		} else if (a->is_end_point == b->is_end_point) {
 			return (a < b);
 		} else {
-			// put starts before ends so intervals are closed first
+			// put ends before starts so intervals are closed first
 			return (a->is_end_point == EPMEM_RANGE_END);
 		}
 	}
