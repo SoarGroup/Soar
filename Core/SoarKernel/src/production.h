@@ -234,6 +234,9 @@ bool test_is_variable(agent* thisAgent, test t);
 /* Utilities for conditions */
 /* ------------------------ */
 
+/* --- Deallocates a condition (including any NCC's and tests in it). */
+void deallocate_condition (agent* thisAgent, condition *cond);
+
 /* --- Deallocates a condition list (including any NCC's and tests in it). */
 extern void deallocate_condition_list (agent* thisAgent, condition *cond_list);
 

@@ -73,6 +73,17 @@ void init_production_utilities (agent* thisAgent) {
    Deallocates a condition list (including any NCC's and tests in it).
 ---------------------------------------------------------------- */
 
+void deallocate_condition (agent* thisAgent, condition *cond) {
+    if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) {
+      deallocate_condition_list (thisAgent, cond->data.ncc.top);
+    } else { /* positive and negative conditions */
+      deallocate_test (thisAgent, cond->data.tests.id_test);
+      deallocate_test (thisAgent, cond->data.tests.attr_test);
+      deallocate_test (thisAgent, cond->data.tests.value_test);
+    }
+    free_with_pool (&thisAgent->condition_pool, cond);
+}
+
 void deallocate_condition_list (agent* thisAgent,
 								condition *cond_list) {
   condition *c;

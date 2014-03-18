@@ -73,10 +73,12 @@ class Variablization_Manager
     void reinit();
 
     void add_orig_var_mappings(condition *cond);
-    void add_relational_constraints(condition *cond);
 
+    void add_relational_constraints(condition *cond);
     void clear_relational_constraints ();
     void cache_relational_constraint (test equality_test, test relational_test);
+
+    void merge_conditions(condition **top_cond);
 
     void      variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol,
                                      identity_info *identity, bool is_equality_test);
@@ -103,6 +105,9 @@ class Variablization_Manager
     variablization *get_variablization(test equality_test);
     uint64_t        get_gid_for_orig_var(Symbol *index_sym);
 
+    void      merge_values_in_conds(condition *pDestCond, condition *pSrcCond);
+    void      set_cond_for_id_attr_tests(condition *pCond);
+    condition *get_previously_seen_cond(condition *pCond);
 
     void add_orig_var_mappings_for_test(test t);
     void add_orig_var_mappings_for_cond(condition *cond);
@@ -122,6 +127,8 @@ class Variablization_Manager
     std::map< Symbol *, variablization * >  * sym_to_var_map;
     std::map< Symbol *, ::list * >          * sti_constraints;
     std::map< uint64_t, ::list * >          * constant_constraints;
+
+    std::map< Symbol *, * std::map< Symbol *, ::list *> > *cond_merge_map;
 
     uint64_t ground_id_counter;
 };

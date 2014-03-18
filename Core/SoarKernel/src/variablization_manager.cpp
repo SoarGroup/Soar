@@ -793,8 +793,8 @@ void Variablization_Manager::variablize_relational_constraints_for_symbol(::list
           /* -- At the head of the list -- */
           (*constraint_list) = c->rest;
           free_cons(thisAgent, c);
-          /* -- This will set c_list to NULL, so it appears like we're
-           *    at the head of the list to the while loop code -- */
+          /* -- This will cause c_last to be set to NULL, indicating we're
+           *    at the head of the list -- */
           c = NULL;
         }
         deallocate_test(thisAgent, t);
@@ -1075,4 +1075,165 @@ void Variablization_Manager::add_relational_constraints(condition *cond)
   print_relational_constraints(DT_CONSTRAINTS);
   dprint_condition_list(DT_CONSTRAINTS, cond);
   dprint(DT_CONSTRAINTS, "=============================================\n");
+}
+
+void Variablization_Manager::merge_values_in_conds(condition *pDestCond, condition *pSrcCond)
+{
+    add_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
+
+//  if (srcTest->type == CONJUNCTIVE_TEST)
+//  {
+//    cons *c;
+//    c = srcTest->data.conjunct_list;
+//    while (c)
+//    {
+//      merge_values_in_tests(&(pDestCond->data.tests.value_test), static_cast<test>(c->first));
+//    }
+//  } else {
+//    merge_values_in_tests(&(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
+//  }
+}
+
+void Variablization_Manager::set_cond_for_id_attr_tests(condition *pCond)
+{
+  std::map< Symbol *, std::map< Symbol *, ::list *> >::iterator iter_id;
+  std::map< Symbol *, ::list *>::iterator iter_attr;
+  ::list * new_list=NULL;
+
+  test id_test = equality_test_found_in_test(thisAgent, pCond->data.tests.id_test);
+  test attr_test = equality_test_found_in_test(thisAgent, pCond->data.tests.attr_test);
+  test val_test = equality_test_found_in_test(thisAgent, pCond->data.tests.value_test);
+
+  iter_id = cond_merge_map->find(id_test->data.referent);
+  if (iter_id == cond_merge_map->end())
+  {
+    /* Add new attr->value-cons-list map */
+    cond_merge_map[id_test->data.referent] = new std::map< Symbol *, ::list *>;
+    push(thisAgent, pCond, new_list);
+    cond_merge_map[id_test->data.referent][attr_test->data.referent] = new_list;
+//    dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+  } else {
+    iter_attr = *(iter_id->second).find(attr_test->data.referent);
+    if (iter_attr == *(iter_id->second).end())
+    {
+      push(thisAgent, pCond, new_list);
+      cond_merge_map[id_test->data.referent][attr_test->data.referent] = new_list;
+      //    dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+    } else {
+      new_list = (*cond_merge_map)[id_test->data.referent][attr_test->data.referent];
+      push(thisAgent, pCond, new_list);
+      cond_merge_map[id_test->data.referent][attr_test->data.referent] = new_list;
+      //    dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+    }
+  }
+}
+
+condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
+{
+  std::map< Symbol *, std::map< Symbol *, ::list *> >::iterator iter_id;
+  std::map< Symbol *, ::list *>::iterator iter_attr;
+
+  test id_test = equality_test_found_in_test(thisAgent, pCond->data.tests.id_test);
+  test attr_test = equality_test_found_in_test(thisAgent, pCond->data.tests.attr_test);
+  test val_test = equality_test_found_in_test(thisAgent, pCond->data.tests.value_test);
+
+  iter_id = cond_merge_map->find(id_test->data.referent);
+  if (iter_id != cond_merge_map->end())
+  {
+    iter_attr = *(iter_id->second).find(attr_test->data.referent);
+    if (iter_attr != *(iter_id->second).end())
+    {
+      /* Iterate through cons list and look for matching equality value with the same identity or identifier */
+      cons *c;
+      condition *lCond;
+      test lEqTest;
+      Symbol *lEqSym;
+      c = iter_attr->second;
+      while (c)
+      {
+        lCond = c->first;
+        lEqTest = equality_test_found_in_test(thisAgent, lCond->data.tests.value_test);
+        lEqSym = lEqTest->data.referent;
+        if (lEqSym->is_sti())
+        {
+          if (lEqTest->data.referent == val_test->data.referent)
+          {
+            return lCond;
+          }
+        } else if (lEqTest->identity->grounding_id > 0) {
+          /* MToDo | Only equality tests on non-literals should be here.  Need to add something to make sure that's true! */
+          if (lEqTest->identity->grounding_id == val_test->identity->grounding_id)
+          {
+            return lCond;
+          }
+        }
+      }
+    }
+  }
+  return NULL;
+}
+
+void Variablization_Manager::merge_conditions(condition **top_cond)
+{
+  /* -- This function merges redundant conditions in a condition list by
+   *    combining constraints of conditions that share identical equality tests
+   *    for all three elements of the condition.
+   *
+   *    - Iterate through conditions
+   *        - Check if value exists in map
+   *          - If so,
+   *            - add test to original cond value if it doesn't exist (have asserts about extra info not being thrown away)
+   *            - delete condition
+   *          - If not,
+   *            - add cond to map
+   * -- */
+
+  /* MToDo | Will probably need to do this for attributes with the same value.  Would double cost but hardly be used I would
+   *         think. */
+
+  condition *cond, *found_cond, *last_cond, *next_cond;
+  cond = (*top_cond);
+  last_cond = NULL;
+
+  while (cond)
+  {
+    next_cond = cond->next;
+    if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) {
+      /* MToDo | NCCs need their own maps!  They need their own scope, so
+       *         make NCC merge map and clean up before and after.  */
+      merge_conditions(&cond->data.ncc.top);
+    } else { /* positive and negative conditions */
+      /* -- Check if there already exists a condition with the same id and
+       *    attribute equality tests -- */
+      found_cond = get_cond_for_id_attr_tests(cond);
+
+      if (found_cond)
+      {
+        /* -- Add tests in this condition to the already seen condition -- */
+        merge_values_in_conds(found_cond, cond);
+
+        /* -- Delete the redundant condition -- */
+        if (last_cond)
+        {
+          /* -- Not at the head of the list -- */
+          last_cond->next = cond->next;
+          deallocate_condition(thisAgent, cond);
+          cond = last_cond;
+        } else {
+          /* -- At the head of the list -- */
+          (*top_cond) = cond->next;
+          deallocate_condition(thisAgent, cond);
+          /* -- This will cause last_cond to be set to  NULL, indicating we're
+           *    at the head of the list -- */
+          cond = NULL;
+        }
+      } else {
+        /* -- First condition seen with given id/attr tests.  So just add to
+         *    map so that future similar conditions can add to it. -- */
+        set_cond_for_id_attr_tests(cond);
+      }
+    }
+    last_cond = cond;
+    cond = next_cond;
+  }
 }

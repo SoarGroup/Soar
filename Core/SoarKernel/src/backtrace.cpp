@@ -41,12 +41,10 @@
 
 using namespace soar_TraceNames;
 //void dprint_condition (TraceMode mode, condition *cond, const char *indent_string);
-//void check_symbol(agent *thisAgent, Symbol *sym, const char *message);
-//void check_symbol_in_test(agent *thisAgent, test t, const char *message);
 
 //#define BACKTRACE_COMBINE_CONDITIONS
 #define BACKTRACE_ADD_ALL_CONDITIONS
-//#define BACKTRACE_ADD_ONLY_UNIQUE
+//#define BACKTRACE_ADD_ONLY_UNIQUE (not implemented yet, may not)
 
 /* ====================================================================
 
