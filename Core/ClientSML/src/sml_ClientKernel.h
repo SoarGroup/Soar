@@ -22,7 +22,6 @@
 // Forward declare so clients can use this
 struct ElementXML_InterfaceStruct;
 typedef ElementXML_InterfaceStruct* ElementXML_Handle ;
-class Soar_Instance;
 
 namespace sock
 {

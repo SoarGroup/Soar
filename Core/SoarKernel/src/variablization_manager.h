@@ -79,6 +79,7 @@ class Variablization_Manager
     void cache_relational_constraint (test equality_test, test relational_test);
 
     void merge_conditions(condition **top_cond);
+    void clear_merge_map();
 
     void      variablize_lhs_symbol (Symbol **sym, Symbol *original_symbol,
                                      identity_info *identity, bool is_equality_test);
@@ -91,6 +92,7 @@ class Variablization_Manager
     void print_variablization_tables(TraceMode mode, int whichTable=0);
     void print_tables();
     void print_relational_constraints (TraceMode mode);
+    void print_merge_map (TraceMode mode);
 
     Variablization_Manager(agent *thisAgent);
     ~Variablization_Manager();
@@ -128,8 +130,7 @@ class Variablization_Manager
     std::map< Symbol *, ::list * >          * sti_constraints;
     std::map< uint64_t, ::list * >          * constant_constraints;
 
-    std::map< Symbol *, * std::map< Symbol *, ::list *> > *cond_merge_map;
-
+    std::map< Symbol *, std::map< Symbol *, ::list *> > *cond_merge_map;
     uint64_t ground_id_counter;
 };
 

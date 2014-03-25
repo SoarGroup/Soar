@@ -40,7 +40,6 @@
 #include "variablization_manager.h"
 
 using namespace soar_TraceNames;
-//void dprint_condition (TraceMode mode, condition *cond, const char *indent_string);
 
 //#define BACKTRACE_COMBINE_CONDITIONS
 #define BACKTRACE_ADD_ALL_CONDITIONS

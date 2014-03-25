@@ -34,6 +34,7 @@ Variablization_Manager::Variablization_Manager(agent *myAgent)
   sti_constraints = new std::map< Symbol * , ::list * >();
   constant_constraints = new std::map< uint64_t , ::list * >();
 
+  cond_merge_map = new std::map< Symbol *, std::map< Symbol *, ::list *> >();
   ground_id_counter = 0;
 }
 
@@ -45,6 +46,7 @@ Variablization_Manager::~Variablization_Manager()
   delete ovar_to_g_id_map;
   delete sti_constraints;
   delete constant_constraints;
+  delete cond_merge_map;
 }
 
 void Variablization_Manager::clear_data()
@@ -52,6 +54,7 @@ void Variablization_Manager::clear_data()
   dprint(DT_VARIABLIZATION_MANAGER, "Clearing variablization maps.\n");
   clear_relational_constraints ();
   clear_variablization_table();
+  clear_merge_map();
 }
 
 void Variablization_Manager::reinit()
@@ -1077,21 +1080,52 @@ void Variablization_Manager::add_relational_constraints(condition *cond)
   dprint(DT_CONSTRAINTS, "=============================================\n");
 }
 
+void Variablization_Manager::print_merge_map (TraceMode mode)
+{
+  dprint(mode, "------------------------------------\n");
+  dprint(mode, "            Merge Map\n");
+  dprint(mode, "------------------------------------\n");
+
+  cons *c;
+
+  std::map< Symbol *, std::map< Symbol *, ::list *> >::iterator iter_id;
+  std::map< Symbol *, ::list *>::iterator iter_attr;
+  std::map< Symbol *, ::list *> *attr_values;
+
+  for (iter_id = cond_merge_map->begin(); iter_id != cond_merge_map->end(); ++iter_id)
+  {
+    dprint(DT_MERGE, "%s conditions: \n", iter_id->first->to_string());
+    attr_values = &(iter_id->second);
+    for (iter_attr = attr_values->begin(); iter_attr != attr_values->end(); ++iter_attr)
+    {
+      dprint_condition_cons(DT_MERGE, iter_attr->second, true, true, true, "   ");
+    }
+  }
+
+  dprint(mode, "------------------------------------\n");
+}
+
+void Variablization_Manager::clear_merge_map()
+{
+  std::map< Symbol *, std::map< Symbol *, ::list *> >::iterator iter_id;
+  std::map< Symbol *, ::list *>::iterator iter_attr;
+  std::map< Symbol *, ::list *> *attr_values;
+
+  for (iter_id = cond_merge_map->begin(); iter_id != cond_merge_map->end(); ++iter_id)
+  {
+    attr_values = &(iter_id->second);
+    for (iter_attr = attr_values->begin(); iter_attr != attr_values->end(); ++iter_attr)
+    {
+      free_list (thisAgent, iter_attr->second);
+    }
+    attr_values->clear();
+  }
+  cond_merge_map->clear();
+}
+
 void Variablization_Manager::merge_values_in_conds(condition *pDestCond, condition *pSrcCond)
 {
     add_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
-
-//  if (srcTest->type == CONJUNCTIVE_TEST)
-//  {
-//    cons *c;
-//    c = srcTest->data.conjunct_list;
-//    while (c)
-//    {
-//      merge_values_in_tests(&(pDestCond->data.tests.value_test), static_cast<test>(c->first));
-//    }
-//  } else {
-//    merge_values_in_tests(&(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
-//  }
 }
 
 void Variablization_Manager::set_cond_for_id_attr_tests(condition *pCond)
@@ -1100,30 +1134,36 @@ void Variablization_Manager::set_cond_for_id_attr_tests(condition *pCond)
   std::map< Symbol *, ::list *>::iterator iter_attr;
   ::list * new_list=NULL;
 
+  dprint_condition(DT_MERGE, pCond, "Savind cond in merge map: ", true, false, true);
   test id_test = equality_test_found_in_test(thisAgent, pCond->data.tests.id_test);
   test attr_test = equality_test_found_in_test(thisAgent, pCond->data.tests.attr_test);
   test val_test = equality_test_found_in_test(thisAgent, pCond->data.tests.value_test);
-
+  dprint(DT_MERGE, "...found equality tests (%s ^%s %s)\n", id_test->data.referent->to_string(), attr_test->data.referent->to_string(), val_test->data.referent->to_string());
   iter_id = cond_merge_map->find(id_test->data.referent);
   if (iter_id == cond_merge_map->end())
   {
+    dprint(DT_MERGE, "...id test not found.  Creating new entry.\n");
     /* Add new attr->value-cons-list map */
-    cond_merge_map[id_test->data.referent] = new std::map< Symbol *, ::list *>;
     push(thisAgent, pCond, new_list);
-    cond_merge_map[id_test->data.referent][attr_test->data.referent] = new_list;
-//    dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+    std::map<Symbol *, ::list *> inner;
+    inner.insert(std::make_pair(attr_test->data.referent, new_list));
+    cond_merge_map->insert(std::make_pair(id_test->data.referent, inner));
+    dprint(DT_CONSTRAINTS, "ADDED (*cond_merge_map)[%s][%s] -> new_list (1 entry)\n", id_test->data.referent->to_string(), attr_test->data.referent->to_string());
   } else {
-    iter_attr = *(iter_id->second).find(attr_test->data.referent);
-    if (iter_attr == *(iter_id->second).end())
+    dprint(DT_MERGE, "...id test found.  Looking for attribute test...\n");
+    iter_attr = iter_id->second.find(attr_test->data.referent);
+    if (iter_attr == iter_id->second.end())
     {
+      dprint(DT_MERGE, "...attr test not found.  Creating new entry.\n");
       push(thisAgent, pCond, new_list);
-      cond_merge_map[id_test->data.referent][attr_test->data.referent] = new_list;
-      //    dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+      (*cond_merge_map)[id_test->data.referent][attr_test->data.referent] = new_list;
+      dprint(DT_CONSTRAINTS, "ADDED (*cond_merge_map)[%s][%s] -> new_list (1 entry)\n", id_test->data.referent->to_string(), attr_test->data.referent->to_string());
     } else {
+      dprint(DT_MERGE, "...attr test found.  Creating new entry.\n");
       new_list = (*cond_merge_map)[id_test->data.referent][attr_test->data.referent];
       push(thisAgent, pCond, new_list);
-      cond_merge_map[id_test->data.referent][attr_test->data.referent] = new_list;
-      //    dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+      (*cond_merge_map)[id_test->data.referent][attr_test->data.referent] = new_list;
+      dprint(DT_CONSTRAINTS, "ADDED (*cond_merge_map)[%s][%s] -> new_list (+ new entry)\n", id_test->data.referent->to_string(), attr_test->data.referent->to_string());
     }
   }
 }
@@ -1133,43 +1173,53 @@ condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
   std::map< Symbol *, std::map< Symbol *, ::list *> >::iterator iter_id;
   std::map< Symbol *, ::list *>::iterator iter_attr;
 
+//  dprint_condition(DT_MERGE, pCond, "get_previously_seen_cond() called with: ", true, false, true);
   test id_test = equality_test_found_in_test(thisAgent, pCond->data.tests.id_test);
   test attr_test = equality_test_found_in_test(thisAgent, pCond->data.tests.attr_test);
   test val_test = equality_test_found_in_test(thisAgent, pCond->data.tests.value_test);
 
+  dprint(DT_MERGE, "...looking for id equality test %s\n", test_to_string(id_test));
   iter_id = cond_merge_map->find(id_test->data.referent);
   if (iter_id != cond_merge_map->end())
   {
-    iter_attr = *(iter_id->second).find(attr_test->data.referent);
-    if (iter_attr != *(iter_id->second).end())
+    dprint(DT_MERGE, "...Found entry for %s.  Looking for attr equality test %s\n", static_cast<Symbol *>(iter_id->first)->to_string(), test_to_string(attr_test));
+    iter_attr = iter_id->second.find(attr_test->data.referent);
+    if (iter_attr != iter_id->second.end())
     {
+      dprint(DT_MERGE, "...Found.  Looking in cons list for value equality test %s\n", test_to_string(val_test));
       /* Iterate through cons list and look for matching equality value with the same identity or identifier */
       cons *c;
       condition *lCond;
       test lEqTest;
-      Symbol *lEqSym;
       c = iter_attr->second;
       while (c)
       {
-        lCond = c->first;
+        lCond = static_cast<condition *>(c->first);
         lEqTest = equality_test_found_in_test(thisAgent, lCond->data.tests.value_test);
-        lEqSym = lEqTest->data.referent;
-        if (lEqSym->is_sti())
+        dprint(DT_MERGE, "...comparing with %s\n", test_to_string(lEqTest));
+        if (lEqTest->data.referent->is_sti())
         {
+          dprint(DT_MERGE, "...comparing with sti %s\n", lEqTest->data.referent);
           if (lEqTest->data.referent == val_test->data.referent)
           {
+            dprint_condition(DT_MERGE, lCond, "...returning TRUE with condition: ", true, false, true);
             return lCond;
           }
         } else if (lEqTest->identity->grounding_id > 0) {
+          dprint(DT_MERGE, "...comparing with constant %s\n", lEqTest->data.referent);
           /* MToDo | Only equality tests on non-literals should be here.  Need to add something to make sure that's true! */
           if (lEqTest->identity->grounding_id == val_test->identity->grounding_id)
           {
+            dprint_condition(DT_MERGE, lCond, "...returning TRUE with condition: ", true, false, true);
             return lCond;
           }
         }
+        c = c->rest;
       }
     }
   }
+
+  dprint(DT_MERGE, "...returning FALSE\n");
   return NULL;
 }
 
@@ -1195,20 +1245,29 @@ void Variablization_Manager::merge_conditions(condition **top_cond)
   cond = (*top_cond);
   last_cond = NULL;
 
+  dprint(DT_MERGE, "======================\n");
+  dprint(DT_MERGE, "= Merging Conditions =\n");
+  dprint(DT_MERGE, "======================\n");
+  dprint_condition_list(DT_MERGE, *top_cond, "", true, false, true);
+  dprint(DT_MERGE, "======================\n");
   while (cond)
   {
+    dprint_condition(DT_MERGE, cond, "Merging constraint: ", true, false, true);
     next_cond = cond->next;
     if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) {
+      dprint(DT_MERGE, "...this is a NCC, so calling merge_conditions recursively.\n");
       /* MToDo | NCCs need their own maps!  They need their own scope, so
        *         make NCC merge map and clean up before and after.  */
       merge_conditions(&cond->data.ncc.top);
     } else { /* positive and negative conditions */
       /* -- Check if there already exists a condition with the same id and
        *    attribute equality tests -- */
-      found_cond = get_cond_for_id_attr_tests(cond);
+      dprint(DT_MERGE, "...looking for previously seen similar condition...\n");
+      found_cond = get_previously_seen_cond(cond);
 
       if (found_cond)
       {
+        dprint(DT_MERGE, "...found condition to merge into.  Merging conditions...\n");
         /* -- Add tests in this condition to the already seen condition -- */
         merge_values_in_conds(found_cond, cond);
 
@@ -1216,11 +1275,13 @@ void Variablization_Manager::merge_conditions(condition **top_cond)
         if (last_cond)
         {
           /* -- Not at the head of the list -- */
+          dprint(DT_MERGE, "...deleting non-head item.\n");
           last_cond->next = cond->next;
           deallocate_condition(thisAgent, cond);
           cond = last_cond;
         } else {
           /* -- At the head of the list -- */
+          dprint(DT_MERGE, "...deleting head of list.\n");
           (*top_cond) = cond->next;
           deallocate_condition(thisAgent, cond);
           /* -- This will cause last_cond to be set to  NULL, indicating we're
@@ -1230,10 +1291,19 @@ void Variablization_Manager::merge_conditions(condition **top_cond)
       } else {
         /* -- First condition seen with given id/attr tests.  So just add to
          *    map so that future similar conditions can add to it. -- */
+        dprint(DT_MERGE, "...did not find condition that matched.  Creating entry in merge map.\n");
         set_cond_for_id_attr_tests(cond);
       }
     }
     last_cond = cond;
     cond = next_cond;
+    dprint(DT_MERGE, "...done merging this constraint.\n");
   }
+  dprint(DT_MERGE, "======================\n");
+  dprint_condition_list(DT_MERGE, *top_cond, "", true, false, true);
+  dprint(DT_MERGE, "===========================\n");
+  dprint(DT_MERGE, "= Done Merging Conditions =\n");
+  dprint(DT_MERGE, "===========================\n");
 }
+
+
