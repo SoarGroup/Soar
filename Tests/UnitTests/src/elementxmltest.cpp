@@ -12,13 +12,13 @@ namespace soarxml
 class ElementXMLTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( ElementXMLTest );
-
+#ifdef DO_ELEMENTXML_TESTS
 	CPPUNIT_TEST( testSimple );
 	CPPUNIT_TEST( testChildren );
 	CPPUNIT_TEST( testParse );
 	CPPUNIT_TEST( testBinaryData );
 	CPPUNIT_TEST( testEquals ); // bug 1028
-
+#endif
 	CPPUNIT_TEST_SUITE_END();
 
 public:

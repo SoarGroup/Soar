@@ -1,6 +1,6 @@
 /*
 How to create a new test suite in a few minutes:
-	1) create cpp file for your new test. The class name and file name 
+	1) create cpp file for your new test. The class name and file name
 	   should end with the string 'test'. Note: header files are not
 	   required.
 	2) Include HelperMacros.h
@@ -9,7 +9,7 @@ How to create a new test suite in a few minutes:
 	5) Declare end of suite with macro CPPUNIT_TEST_SUITE_END
 	6) Declare public void setUp(void) and void tearDown(void)
 	7) Declare protected tests, usually void testSomething(void)
-	8) Call macro CPPUNIT_TEST between macros CPPUNIT_TEST_SUITE and 
+	8) Call macro CPPUNIT_TEST between macros CPPUNIT_TEST_SUITE and
 	   CPPUNIT_TEST_SUITE_END with the name of your test functions
 	   (such as testSomething), many tests can be declared, see
 	   existing tests for examples.
@@ -30,9 +30,9 @@ There are many more options and details. See online resources:
 class SanityTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( SanityTest );	// The name of this class
-
+#ifdef DO_SANITY_TESTS
 	CPPUNIT_TEST( testSanity );
-
+#endif
 	CPPUNIT_TEST_SUITE_END();
 
 public:

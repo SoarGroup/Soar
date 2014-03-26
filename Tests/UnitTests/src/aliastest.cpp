@@ -9,6 +9,7 @@ class AliasTest : public CPPUNIT_NS::TestCase
 {
     CPPUNIT_TEST_SUITE( AliasTest );    // The name of this class
 
+#ifdef DO_ALIAS_TESTS
     CPPUNIT_TEST( testOne );
     CPPUNIT_TEST( testTwo );
     CPPUNIT_TEST( testThree );
@@ -16,11 +17,11 @@ class AliasTest : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST( testDefaults );
 
     CPPUNIT_TEST( testSimpleCommand );
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
 public:
-    AliasTest() 
+    AliasTest()
     {}
     virtual ~AliasTest() {}
 

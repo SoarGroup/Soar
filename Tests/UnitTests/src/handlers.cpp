@@ -143,7 +143,7 @@ void Handlers::MyRunSelfRemovingHandler( sml::smlRunEventId, void* pUserData, sm
 	CPPUNIT_ASSERT( pUserData );
 	int* myCallback = static_cast< int* >( pUserData );
 
-	// This callback removes itself from the list of callbacks 
+	// This callback removes itself from the list of callbacks
 	// as a test to see if we can do that inside a callback handler.
 	CPPUNIT_ASSERT( *myCallback != -1 );
 	CPPUNIT_ASSERT( pAgent->UnregisterForRunEvent( *myCallback ) );
@@ -244,7 +244,7 @@ std::string Handlers::MyRhsFunctionHandler(sml::smlRhsEventId, void* pUserData, 
 {
 	// This is optional because the callback needs to be around for the program to function properly
 	// we only test for this specifically in one part of clientsmltest
-	if ( pUserData ) 
+	if ( pUserData )
 	{
 		bool* pHandlerReceived = static_cast< bool* >( pUserData );
 		*pHandlerReceived = true;
@@ -323,16 +323,16 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 
 			// These three child leaks are not detected by looking at GetIWMObjMapSize
 			// TODO: figure out how to detect these
-			CPPUNIT_ASSERT( pChildString->DestroyWME() );	
-			CPPUNIT_ASSERT( pChildFloat->DestroyWME() );	
-			CPPUNIT_ASSERT( pChildInt->DestroyWME() );		
+			CPPUNIT_ASSERT( pChildString->DestroyWME() );
+			CPPUNIT_ASSERT( pChildFloat->DestroyWME() );
+			CPPUNIT_ASSERT( pChildInt->DestroyWME() );
 		}
 
 		// Destroying the original apparently destroys this.
 		CPPUNIT_ASSERT( pSharedID->DestroyWME(  ) );
 
-		CPPUNIT_ASSERT( pRootID1->DestroyWME() );		
-		CPPUNIT_ASSERT( pRootID2->DestroyWME() );		
+		CPPUNIT_ASSERT( pRootID1->DestroyWME() );
+		CPPUNIT_ASSERT( pRootID2->DestroyWME() );
 		CPPUNIT_ASSERT( pRootString->DestroyWME() );
 		CPPUNIT_ASSERT( pRootFloat->DestroyWME() );
 		CPPUNIT_ASSERT( pRootInt->DestroyWME() );
@@ -392,7 +392,7 @@ void Handlers::MyOrderingPrintHandler( sml::smlPrintEventId /*id*/, void* pUserD
 	int* pInt = static_cast< int* >( pUserData );
 	std::stringstream value;
 	value << "pInt == " << *pInt;
-	//std::cout << value.str() << std::endl;
+//	std::cout << "Print handler " << value.str() << std::endl;
 	CPPUNIT_ASSERT_MESSAGE( value.str().c_str(), *pInt == 0 || *pInt == 2 );
 	++(*pInt);
 }
@@ -402,8 +402,8 @@ void Handlers::MyOrderingRunHandler( sml::smlRunEventId /*id*/, void* pUserData,
 	CPPUNIT_ASSERT( pUserData );
 	int* pInt = static_cast< int* >( pUserData );
 	std::stringstream value;
-	value << "pInt == " << *pInt;
-	//std::cout << value.str() << std::endl;
+	value << "Run handler "<< "pInt == " << *pInt;
+//	std::cout << value.str() << std::endl;
 	CPPUNIT_ASSERT_MESSAGE( value.str().c_str(), *pInt == 1 || *pInt == 3 );
 	++(*pInt);
 }

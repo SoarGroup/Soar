@@ -10,17 +10,17 @@
 
 class MultiAgentTest : public CPPUNIT_NS::TestCase
 {
-	CPPUNIT_TEST_SUITE( MultiAgentTest );	
-
-	//CPPUNIT_TEST( testOneAgentForSanity );
-	//CPPUNIT_TEST( testTwoAgents );
-	//CPPUNIT_TEST( testTenAgents );
-
+	CPPUNIT_TEST_SUITE( MultiAgentTest );
+#ifdef DO_MULTIAGENT_TESTS
+	CPPUNIT_TEST( testOneAgentForSanity );
+	CPPUNIT_TEST( testTwoAgents );
+	CPPUNIT_TEST( testTenAgents );
+#endif
 	CPPUNIT_TEST_SUITE_END();
 
 public:
-	void setUp();		
-	void tearDown();	
+	void setUp();
+	void tearDown();
 
 	static void MyPrintEventHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage );
 	static void MyUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
@@ -40,7 +40,7 @@ private:
 	int numberAgents;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( MultiAgentTest ); 
+CPPUNIT_TEST_SUITE_REGISTRATION( MultiAgentTest );
 
 const int MultiAgentTest::MAX_AGENTS = 100;
 
@@ -116,7 +116,7 @@ void MultiAgentTest::MyUpdateEventHandler( sml::smlUpdateEventId, void*, sml::Ke
 		int numberCommands = pAgent->GetNumberCommands() ;
 		for ( int i = 0 ; i < numberCommands ; ++i )
 		{
-			sml::Identifier* pCommand = pAgent->GetCommand( i ) ;			
+			sml::Identifier* pCommand = pAgent->GetCommand( i ) ;
 			CPPUNIT_ASSERT( pCommand != NULL );
 
 			char const* pName = pCommand->GetCommandName() ;
@@ -148,7 +148,7 @@ void MultiAgentTest::reportAgentStatus( sml::Kernel* pKernel, int numberAgents, 
 
 		//std::cout << "Trace from agent " << pAgent->GetAgentName() << std::endl ;
 
-		//std::cout << "Input link " << std::endl 
+		//std::cout << "Input link " << std::endl
 		//	<< pAgent->ExecuteCommandLine( "print --depth 3 i2" ) << std::endl ;
 
 		//std::cout << trace[agentCounter]->str() << std::endl << std::endl ;
@@ -203,7 +203,7 @@ void MultiAgentTest::doTest()
 	//pKernel->SetTraceCommunications(true) ;
 
 	CPPUNIT_ASSERT( numberAgents < MAX_AGENTS );
-	
+
 	std::vector< std::string > names;
 	std::vector< sml::Agent* > agents;
 	std::vector< std::stringstream* > trace;

@@ -28,13 +28,14 @@ typedef std::bitset<NUM_KERNEL_OPTIONS> KernelBitset;
 class IOTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( IOTest );	// The name of this class
-
-	//CPPUNIT_TEST( testInputLeak );
-	//CPPUNIT_TEST( testInputLeak2 );
-	//CPPUNIT_TEST( testInputLeak3 );
+#ifdef DO_IO_TESTS
+	CPPUNIT_TEST( testInputLeak );
+	CPPUNIT_TEST( testInputLeak2 );
+	CPPUNIT_TEST( testInputLeak3 );
+	/* -- This tests fails and seems to have for quite some time. (11-23-2013) -- */
 	//CPPUNIT_TEST( testInputLeak4 );
-	//CPPUNIT_TEST( testOutputLeak1 ); // bug 1062
-
+	CPPUNIT_TEST( testOutputLeak1 ); // bug 1062
+#endif
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -177,12 +178,12 @@ void IOTest::testInputLeak()
 
 			// creating the wme
 			CPPUNIT_ASSERT( pFooBar == 0 );
-			
+
 			pFooBar = pInputLink->CreateStringWME("foo", "bar");
 			CPPUNIT_ASSERT( pFooBar != 0 );
 
 			pKernel->RunAllAgents(1);
-		} 
+		}
 		else
 		{
 			// odd case
@@ -228,7 +229,7 @@ void IOTest::testInputLeak2()
 			// creating the wme
 			CPPUNIT_ASSERT( pIdentifier == 0 );
 			CPPUNIT_ASSERT( pFooBar == 0 );
-			
+
 			pIdentifier = pInputLink->CreateIdWME("alpha");
 			CPPUNIT_ASSERT( pIdentifier != 0 );
 
@@ -236,7 +237,7 @@ void IOTest::testInputLeak2()
 			CPPUNIT_ASSERT( pFooBar != 0 );
 
 			pKernel->RunAllAgents(1);
-		} 
+		}
 		else
 		{
 			// odd case
@@ -286,7 +287,7 @@ void IOTest::testInputLeak3()
 			// creating the wme
 			CPPUNIT_ASSERT( pIdentifier == 0 );
 			CPPUNIT_ASSERT( pFooBar == 0 );
-			
+
 			pIdentifier = pInputLink->CreateIdWME("alpha");
 			CPPUNIT_ASSERT( pIdentifier != 0 );
 
@@ -294,7 +295,7 @@ void IOTest::testInputLeak3()
 			CPPUNIT_ASSERT( pFooBar != 0 );
 
 			pKernel->RunAllAgents(1);
-		} 
+		}
 		else
 		{
 			// odd case
@@ -343,7 +344,7 @@ void IOTest::testInputLeak4()
 			CPPUNIT_ASSERT( pIdentifier == 0 );
 			CPPUNIT_ASSERT( pFooBar == 0 );
 			CPPUNIT_ASSERT( pSharedIdentifier == 0 );
-			
+
 			pIdentifier = pInputLink->CreateIdWME("alpha");
 			CPPUNIT_ASSERT( pIdentifier != 0 );
 
@@ -354,7 +355,7 @@ void IOTest::testInputLeak4()
 			CPPUNIT_ASSERT( pSharedIdentifier != 0 );
 
 			pKernel->RunAllAgents(1);
-		} 
+		}
 		else
 		{
 			// odd case

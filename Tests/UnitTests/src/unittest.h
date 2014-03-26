@@ -7,6 +7,17 @@
 #include <string>
 #include <sstream>
 
+#define DO_ALIAS_TESTS
+#define DO_CLIPARSER_TESTS
+#define DO_ELEMENTXML_TESTS
+#define DO_FULL_TESTS
+#define DO_IO_TESTS
+#define DO_MISC_TESTS
+#define DO_MULTIAGENT_TESTS
+#define DO_SANITY_TESTS
+#define DO_TOKENIZER_TESTS
+//#define SKIP_SLOW_TESTS
+
 #define CPPUNIT_STR_STR(x) #x
 #define CPPUNIT_STR(x) CPPUNIT_STR_STR(x)
 
@@ -126,7 +137,7 @@ public:
     bool wasSuccessful() const {return !m_failures;}
     size_t successes() const {return m_successes;}
     size_t failures() const {return m_failures;}
-    
+
   private:
     void tell(const bool &result) {
       ++(result ? m_successes : m_failures);
@@ -187,7 +198,7 @@ public:
     class TestCases : public TestCase {
       TestCases(const TestCases &);
       TestCases operator =(const TestCases &);
-      
+
       TestCases() {}
       ~TestCases() {}
 

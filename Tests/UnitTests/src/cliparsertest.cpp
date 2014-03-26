@@ -6,7 +6,7 @@
 class CliParserTest : public CPPUNIT_NS::TestCase
 {
     CPPUNIT_TEST_SUITE( CliParserTest );
-
+#ifdef DO_CLIPARSER_TESTS
     CPPUNIT_TEST( testEcho1 );
     CPPUNIT_TEST( testEcho2 );
     CPPUNIT_TEST( testEcho3 );
@@ -27,11 +27,11 @@ class CliParserTest : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST( testMaxDCTime10 );
     CPPUNIT_TEST( testMaxDCTime11 );
     CPPUNIT_TEST( testMaxDCTime12 );
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
 public:
-    CliParserTest() 
+    CliParserTest()
     {}
     virtual ~CliParserTest() {}
 

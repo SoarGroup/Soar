@@ -14,35 +14,33 @@ namespace sml
 
 class MiscTest : public CPPUNIT_NS::TestCase
 {
-    CPPUNIT_TEST_SUITE( MiscTest );    
-
-#if !defined(_DEBUG)
-    // this test takes forever in debug mode on windows (it needs to count high enough to overflow a 64-bit stack)
-    CPPUNIT_TEST( testInstiationDeallocationStackOverflow );
-#endif // _DEBUG
+    CPPUNIT_TEST_SUITE( MiscTest );
+#ifdef DO_MISC_TESTS
     CPPUNIT_TEST( testSource );
     CPPUNIT_TEST( test_clog );
     CPPUNIT_TEST( test_gp );
     CPPUNIT_TEST( test_echo );
     CPPUNIT_TEST( test_ls );
-	
-	// too much pain to keep up-to-date: nixing for now
-    //CPPUNIT_TEST( test_stats );
-
     CPPUNIT_TEST( testWrongAgentWmeFunctions );
     CPPUNIT_TEST( testRHSRand );
     CPPUNIT_TEST( testMultipleKernels );
-    CPPUNIT_TEST( testSmemArithmetic );
     CPPUNIT_TEST( testSoarRand );
     CPPUNIT_TEST( testPreferenceDeallocation );
-
+#ifndef SKIP_SLOW_TESTS
+    CPPUNIT_TEST( testInstiationDeallocationStackOverflow );
+    CPPUNIT_TEST( testSmemArithmetic );
+#endif
+    /* This test has not been kept up to date.  Disabled for quite some time
+     *
+     * CPPUNIT_TEST( test_stats ); -- */
+#endif
     CPPUNIT_TEST_SUITE_END();
 
-public:
-    void setUp();        
-    void tearDown();    
+  public:
+    void setUp();
+    void tearDown();
 
-protected:
+  protected:
     void testInstiationDeallocationStackOverflow();
     void test_clog();
     void test_gp();
@@ -353,7 +351,7 @@ void MiscTest::testWrongAgentWmeFunctions()
 
 void MiscTest::testRHSRand()
 {
-    pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
+    pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ;
     source("testRHSRand.soar");
     pAgent->RunSelf(5000);
 }

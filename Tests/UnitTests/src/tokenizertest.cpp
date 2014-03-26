@@ -44,7 +44,7 @@ struct CallData
 class TokenizerTest : public CPPUNIT_NS::TestCase, public soar::tokenizer_callback
 {
 	CPPUNIT_TEST_SUITE( TokenizerTest );	// The name of this class
-
+#ifdef DO_TOKENIZER_TESTS
 	CPPUNIT_TEST( testTokenizer01 );
 	CPPUNIT_TEST( testTokenizer02 );
 	CPPUNIT_TEST( testTokenizer03 );
@@ -93,12 +93,12 @@ class TokenizerTest : public CPPUNIT_NS::TestCase, public soar::tokenizer_callba
 	CPPUNIT_TEST( testTokenizer46 );
 	CPPUNIT_TEST( testTokenizer47 );
 	CPPUNIT_TEST( testTokenizer48 );
-
+#endif
 	CPPUNIT_TEST_SUITE_END();
 
 public:
-    TokenizerTest() 
-        : cd(0) 
+    TokenizerTest()
+        : cd(0)
     {}
     virtual ~TokenizerTest() {}
     virtual bool handle_command(std::vector<std::string>& argv);
@@ -190,122 +190,122 @@ void TokenizerTest::evaluate(CallData& cd)
     CPPUNIT_ASSERT_MESSAGE(cd.input, tokenizer->evaluate(cd.input));
 }
 
-void TokenizerTest::testTokenizer01() 
-{ 
+void TokenizerTest::testTokenizer01()
+{
     CallData cd("seek", 1, "seek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer02() 
-{ 
+void TokenizerTest::testTokenizer02()
+{
     CallData cd("\nseek", 1, "seek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer03() 
-{ 
+void TokenizerTest::testTokenizer03()
+{
     CallData cd(" \nseek", 1, "seek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer04() 
-{ 
+void TokenizerTest::testTokenizer04()
+{
     CallData cd(" \n seek", 1, "seek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer05() 
-{ 
+void TokenizerTest::testTokenizer05()
+{
     CallData cd("seek\n", 1, "seek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer06() 
-{ 
-    CallData cd("seek\n ", 1, "seek"); 
-    evaluate(cd); 
+void TokenizerTest::testTokenizer06()
+{
+    CallData cd("seek\n ", 1, "seek");
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer07() 
-{ 
-    CallData cd("seek \n", 1, "seek"); 
-    evaluate(cd); 
+void TokenizerTest::testTokenizer07()
+{
+    CallData cd("seek \n", 1, "seek");
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer08() 
-{ 
+void TokenizerTest::testTokenizer08()
+{
     CallData cd("seek \n ", 1, "seek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer09() 
-{ 
+void TokenizerTest::testTokenizer09()
+{
     CallData cd("s eek", 2, "s", "eek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer10() 
-{ 
+void TokenizerTest::testTokenizer10()
+{
     CallData cd(" s eek", 2, "s", "eek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer11() 
-{ 
+void TokenizerTest::testTokenizer11()
+{
     CallData cd("s eek ", 2, "s", "eek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer12() 
-{ 
+void TokenizerTest::testTokenizer12()
+{
     CallData cd("s  eek", 2, "s", "eek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer13() 
-{ 
+void TokenizerTest::testTokenizer13()
+{
     CallData cd("s  eek", 2, "s", "eek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer14() 
+void TokenizerTest::testTokenizer14()
 {
     CallData cd("s   eek", 2, "s", "eek");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer15() 
-{ 
+void TokenizerTest::testTokenizer15()
+{
     CallData cd(" s ee k", 3, "s", "ee", "k");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer16() 
-{ 
+void TokenizerTest::testTokenizer16()
+{
     CallData cd("s ee k", 3, "s", "ee", "k");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer17() 
-{ 
+void TokenizerTest::testTokenizer17()
+{
     CallData cd("s ee k ", 3, "s", "ee", "k");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer18() 
-{ 
+void TokenizerTest::testTokenizer18()
+{
     CallData cd(" s ee k ", 3, "s", "ee", "k");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer19() 
-{ 
-    CallData cd(" s ee k ", 3, "s", "ee", "k"); 
-    evaluate(cd); 
+void TokenizerTest::testTokenizer19()
+{
+    CallData cd(" s ee k ", 3, "s", "ee", "k");
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer20() 
-{ 
-    CallData cd("s \"ee\" k", 3, "s", "ee", "k"); 
-    evaluate(cd); 
+void TokenizerTest::testTokenizer20()
+{
+    CallData cd("s \"ee\" k", 3, "s", "ee", "k");
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer21() 
-{ 
+void TokenizerTest::testTokenizer21()
+{
     CallData cd("s \"e e\" k", 3, "s", "e e", "k");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer22() 
-{ 
+void TokenizerTest::testTokenizer22()
+{
     CallData cd("s \" e e\" k", 3, "s", " e e", "k");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer23() 
-{ 
+void TokenizerTest::testTokenizer23()
+{
     CallData cd("s \"e e \" k", 3, "s", "e e ", "k");
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer24() 
+void TokenizerTest::testTokenizer24()
 {
     CallData a("seek\nseek");
     a.addResult(1, "seek");
@@ -342,15 +342,15 @@ void TokenizerTest::testTokenizer28()
     a.addResult(1, "ek");
     evaluate(a);
 }
-void TokenizerTest::testTokenizer29() 
-{ 
-    CallData cd("\"se\nek\"", 1, "se\nek"); 
-    evaluate(cd); 
+void TokenizerTest::testTokenizer29()
+{
+    CallData cd("\"se\nek\"", 1, "se\nek");
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer30() 
-{ 
-    CallData cd("{{seek}}", 1, "{seek}"); 
-    evaluate(cd); 
+void TokenizerTest::testTokenizer30()
+{
+    CallData cd("{{seek}}", 1, "{seek}");
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer31()
 {
@@ -369,17 +369,17 @@ void TokenizerTest::testTokenizer31()
     rule.append(body);
     rule.append("}");
     CallData cd(rule.c_str(), 2, "sp", body);
-    evaluate(cd); 
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer32() 
-{ 
-    CallData cd("print -i (s1 ^* *)", 5, "print", "-i", "(s1", "^*", "*)"); 
-    evaluate(cd); 
+void TokenizerTest::testTokenizer32()
+{
+    CallData cd("print -i (s1 ^* *)", 5, "print", "-i", "(s1", "^*", "*)");
+    evaluate(cd);
 }
-void TokenizerTest::testTokenizer33() 
-{ 
-    CallData cd("{[seek]}", 1, "[seek]"); 
-    evaluate(cd); 
+void TokenizerTest::testTokenizer33()
+{
+    CallData cd("{[seek]}", 1, "[seek]");
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer34()
 {
@@ -413,7 +413,7 @@ void TokenizerTest::testTokenizer34()
     rule.append(body);
     rule.append("}");
     CallData cd(rule.c_str(), 2, "gp", body_nocomments);
-    evaluate(cd); 
+    evaluate(cd);
 }
 
 void TokenizerTest::testTokenizer35()
@@ -444,7 +444,7 @@ void TokenizerTest::testTokenizer35()
     rule.append(body);
     rule.append("}");
     CallData cd(rule.c_str(), 2, "sp", body_nocomments);
-    evaluate(cd); 
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer36()
 {
@@ -485,38 +485,38 @@ void TokenizerTest::testTokenizer40()
 }
 void TokenizerTest::testTokenizer41()
 {
-    CallData cd("\\nv\\\n t", 1, "\nv t"); 
-    evaluate(cd); 
+    CallData cd("\\nv\\\n t", 1, "\nv t");
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer42()
 {
-    CallData cd("sp a\" \\\"", 3, "sp", "a\"", "\""); 
-    evaluate(cd); 
+    CallData cd("sp a\" \\\"", 3, "sp", "a\"", "\"");
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer43()
 {
-    CallData cd("{} { } {  } \"\" \" \" \"  \"", 6, "", " ", "  ", "", " ", "  "); 
-    evaluate(cd); 
+    CallData cd("{} { } {  } \"\" \" \" \"  \"", 6, "", " ", "  ", "", " ", "  ");
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer44()
 {
-    CallData cd("{\\\"} \"\\\"\"", 2, "\\\"", "\""); 
-    evaluate(cd); 
+    CallData cd("{\\\"} \"\\\"\"", 2, "\\\"", "\"");
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer45()
 {
-    CallData cd("a ; b\n;c;;d"); 
+    CallData cd("a ; b\n;c;;d");
     cd.addResult(1, "a");
     cd.addResult(1, "b");
     cd.addResult(1, "c");
     cd.addResult(1, "d");
-    evaluate(cd); 
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer46()
 {
-    CallData cd("a {b c\\\n \td \\n\n \\}}"); 
+    CallData cd("a {b c\\\n \td \\n\n \\}}");
     cd.addResult(2, "a", "b c d \\n\n \\}");
-    evaluate(cd); 
+    evaluate(cd);
 }
 void TokenizerTest::testTokenizer47()
 {
@@ -543,5 +543,5 @@ void TokenizerTest::testTokenizer48()
     rule.append(body);
     rule.append("\"");
     CallData cd(rule.c_str(), 2, "sp", body);
-    evaluate(cd); 
+    evaluate(cd);
 }
