@@ -696,14 +696,15 @@ namespace cli
             cli::Options opt;
             OptionsData optionsData[] =
             {
-				{'b', "backup",       OPTARG_NONE},
+                {'b', "backup",       OPTARG_NONE},
+                {'c', "close",        OPTARG_NONE},
                 {'d', "disable",      OPTARG_NONE},
                 {'d', "off",          OPTARG_NONE},
                 {'e', "enable",       OPTARG_NONE},
                 {'e', "on",           OPTARG_NONE},
                 {'i', "init",         OPTARG_NONE},
                 {'g', "get",          OPTARG_NONE},
-				{'p', "print",        OPTARG_NONE},
+                {'p', "print",        OPTARG_NONE},
                 {'s', "set",          OPTARG_NONE},
                 {'S', "stats",        OPTARG_NONE},
                 {'t', "timers",       OPTARG_NONE},
@@ -727,92 +728,93 @@ namespace cli
 
             switch (option)
             {
-            case 0:
-            default:
+              case 0:
+              default:
                 // no options
                 break;
 
-            case 'i':
-            case 'e':
-            case 'd':
-                // case: init, on and off get no arguments
-                {
-                    if (!opt.CheckNumNonOptArgs(0, 0)) return cli.SetError( opt.GetError().c_str());
+              case 'i':
+              case 'e':
+              case 'd':
+              case 'c':
+                // case: init, close, on and off get no arguments
+              {
+                if (!opt.CheckNumNonOptArgs(0, 0)) return cli.SetError( opt.GetError().c_str());
 
-                    return cli.DoEpMem( option );
-                }
+                return cli.DoEpMem( option );
+              }
 
-			case 'b':
+              case 'b':
                 // case: backup requires one non-option argument
                 if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
                 return cli.DoEpMem( option, &( argv[2] ) );
 
-            case 'g':
+              case 'g':
                 // case: get requires one non-option argument
-                {
-                    if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
+              {
+                if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
-                    return cli.DoEpMem( option, &( argv[2] ) );
-                }
+                return cli.DoEpMem( option, &( argv[2] ) );
+              }
 
-			case 'p':
+              case 'p':
                 // case: print takes one non-option argument
-                {
-                    if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
+              {
+                if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
-                    std::string temp_str( argv[2] );
-                    epmem_time_id memory_id;
+                std::string temp_str( argv[2] );
+                epmem_time_id memory_id;
 
-                    if ( !from_string( memory_id, temp_str ) )
-                        return cli.SetError( "Invalid attribute." );
+                if ( !from_string( memory_id, temp_str ) )
+                  return cli.SetError( "Invalid attribute." );
 
-                    return cli.DoEpMem( option, 0, 0, memory_id );
-                }
+                return cli.DoEpMem( option, 0, 0, memory_id );
+              }
 
-            case 's':
+              case 's':
                 // case: set requires two non-option arguments
-                {
-                    if (!opt.CheckNumNonOptArgs(2, 2)) return cli.SetError( opt.GetError().c_str());
+              {
+                if (!opt.CheckNumNonOptArgs(2, 2)) return cli.SetError( opt.GetError().c_str());
 
-                    return cli.DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
-                }
+                return cli.DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
+              }
 
-            case 'S':
+              case 'S':
                 // case: stat can do zero or one non-option arguments
-                {
-                    if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
+              {
+                if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
 
-                    if ( opt.GetNonOptionArguments() == 0 )
-                        return cli.DoEpMem( option );
+                if ( opt.GetNonOptionArguments() == 0 )
+                  return cli.DoEpMem( option );
 
-                    return cli.DoEpMem( option, &( argv[2] ) );
-                }
+                return cli.DoEpMem( option, &( argv[2] ) );
+              }
 
-            case 't':
+              case 't':
                 // case: timer can do zero or one non-option arguments
-                {
-                    if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
+              {
+                if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
 
-                    if ( opt.GetNonOptionArguments() == 0 )
-                        return cli.DoEpMem( option );
+                if ( opt.GetNonOptionArguments() == 0 )
+                  return cli.DoEpMem( option );
 
-                    return cli.DoEpMem( option, &( argv[2] ) );
-                }
+                return cli.DoEpMem( option, &( argv[2] ) );
+              }
 
-            case 'v':
+              case 'v':
                 // case: viz takes one non-option argument
-                {
-                    if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
+              {
+                if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
-                    std::string temp_str( argv[2] );
-                    epmem_time_id memory_id;
+                std::string temp_str( argv[2] );
+                epmem_time_id memory_id;
 
-                    if ( !from_string( memory_id, temp_str ) )
-                        return cli.SetError( "Invalid attribute." );
+                if ( !from_string( memory_id, temp_str ) )
+                  return cli.SetError( "Invalid attribute." );
 
-                    return cli.DoEpMem( option, 0, 0, memory_id );
-                }
+                return cli.DoEpMem( option, 0, 0, memory_id );
+              }
             }
 
             // bad: no option, but more than one argument

@@ -71,7 +71,16 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 
         return result;
     }
-    else if ( pOp == 'e' )
+  else if ( pOp == 'c' )
+  {
+      const char *msg = "EpMem| EpMem database closed.";
+      const char *tag_type = sml_Names::kTypeString;
+
+      epmem_close( agnt );
+      PrintCLIMessage(msg);
+      return true;
+  }
+  else if ( pOp == 'e' )
     {
        bool result = agnt->epmem_params->learning->set_string("on");
 
