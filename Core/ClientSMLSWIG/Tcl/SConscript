@@ -1,71 +1,126 @@
 #!/usr/bin/python
 # Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
+# Author: Mazin Assanie
 #
-import subprocess
+# If you get an error when compiling Tcl_sml_ClientInterface_wrap.cpp, try
+# deleting that file from your build directory.  There's probably a way
+# to have scons detect that file should be regenerated
 import sys
 import os
 import SCons.Script
 
 Import('env')
-
-cpppath = '/Users/mazzina/git/tcl8.5.15/library'
-libname = 'tcl8.5'
-
-try:
-  open(cpppath + 'tcl.h')
-except:
-  print 'Tcl.h not found, not building Tcl SML wrappers'
-  Return()
-
-libs = subprocess.check_output(['/sbin/ldconfig', '-p'])
-lib_found = None
-for lib in libs.split('\n'):
-  if lib.find('lib' + libname + '.so') > -1:
-    lib_found = lib
-    break
-if lib_found == None:
-  print 'lib' + libname + '.so not found, not building Tcl SML wrappers'
-  Return()
-
 clone = env.Clone()
-
-lib_install_dir = clone['OUT_DIR']
 
 libname = 'Tcl_sml_ClientInterface'
 
-tclsml_wrap = env.File('Tcl_sml_ClientInterface_wrap.cpp')
-tclsml_i = env.File('Tcl_sml_ClientInterface.i')
-include_dirs = [ env.Dir('#Core/%s/src' % d).abspath for d in 'ClientSML ElementXML ConnectionSML'.split() ]
-includes = ' '.join('-I%s' % d for d in include_dirs)
-wrap_cmd = 'swig -o %s -c++ -tcl -pkgversion 9.0.1 -Wall %s %s' % (tclsml_wrap.abspath, includes, tclsml_i)
+# Make sure tcl header file exists before proceeding
 
-makepkg_script = env.File('SconsMakeTclSMLPackage.tcl')
-lib_install_dir = env.Dir('$OUT_DIR')
+tcl_dir = clone.Dir(env['TCL_DIR'])
+if sys.platform == 'win32':
+    tcl_platform_dir = os.path.join('C:/Tcl')
+    tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))
+    tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'include'))
+    tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
+    tcl_libname = 'tcl86.lib'
+    tcl_lib = 'tcl86'
+    tcl_shname = 'tclsh86'
+    tcl_pkgindex_name = 'pkgIndex_win.tcl'
+elif sys.platform == 'darwin':
+    tcl_platform_dir = os.path.join('/Library/Frameworks/Tcl.framework/Versions/Current')
+    tcl_libs = clone.Dir(tcl_platform_dir)
+    tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'Headers'))
+    tcl_bins = clone.Dir(tcl_platform_dir)
+    tcl_libname = 'Tcl'
+    tcl_lib = 'Tcl'
+    tcl_shname = 'tclsh8.6'
+    tcl_pkgindex_name = 'pkgIndex_mac.tcl'
+else:
+    tcl_platform_dir = os.path.join('/opt/ActiveTcl-8.6')
+    tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))
+    tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'include'))
+    tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
+    tcl_libname = 'libtcl8.6.so'
+    tcl_lib = 'tcl8.6'
+    tcl_shname = 'tclsh8.6'
+    tcl_pkgindex_name = 'pkgIndex_linux.tcl'
+
+if ((not tcl_libs.exists()) or (not tcl_headers.exists()) or
+    (not File(os.path.join(tcl_headers.abspath, 'tcl.h')).exists()) or
+    (not File(os.path.join(tcl_libs.abspath, tcl_libname)).exists())) :
+    print 'Tcl headers and libraries not found at ', tcl_platform_dir, ', not building Tcl SML wrappers: ',
+    Return()
+else:
+    print 'Tcl headers and libraries found at ', tcl_platform_dir, '.  Will build Tcl SML wrappers.'
+
+# dirs
+lib_install_dir = clone.Dir('$OUT_DIR')
+include_dirs = [ clone.Dir('#Core/%s/src' % d).abspath for d in 'ClientSML ElementXML ConnectionSML SoarKernel'.split() ]
+
+# files
+swig_tcl_wrapper_cpp = clone.File('Tcl_sml_ClientInterface_wrap.cpp')
+swig_tcl_interface = clone.File('Tcl_sml_ClientInterface.i')
+makepkg_script = clone.File('SconsMakeTclSMLPackage.tcl')
 pkgindex = os.path.join(lib_install_dir.abspath, 'pkgIndex.tcl')
-makepkg_cmd = 'tclsh %s %s' % (makepkg_script, lib_install_dir)
+soar_dll = clone.File(os.path.join(lib_install_dir.abspath, 'Soar'))
 
-# Scanner for dependencies in .i files
-SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
+# Create commands to create SWIG wrapper file and pkgIndex file
+includes = ' '.join('-I%s' % d for d in include_dirs)
+wrap_cmd = 'swig -o %s -c++ -tcl -pkgversion 9.0.1 -Wall %s %s' % (swig_tcl_wrapper_cpp.abspath, includes, swig_tcl_interface)
+makepkg_cmd = '%s %s %s' % (os.path.join(tcl_bins.abspath, tcl_shname), makepkg_script, lib_install_dir)
+
+# Set up SWIGScanner to find dependencies for .i file
+SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan", ".i", "CPPPATH", '^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
 clone.Append(SCANNERS=[SWIGScanner])
 
-# Create the wrap cpp
-tclstep1 = clone.Command(tclsml_wrap, tclsml_i, wrap_cmd)
-
+# Create the SWIG wrapper cpp file
+tclstep1 = clone.Command(swig_tcl_wrapper_cpp, swig_tcl_interface, wrap_cmd)
 clone.Append(
-  CPPPATH  = [cpppath],
-  LIBS     = [libname],
-  CPPFLAGS = ['-w'],
+  LIBPATH=[tcl_libs],
+  CPPPATH=[tcl_headers],
+  CPPFLAGS=['-w']
 )
 
+# clone.Append(CPPFLAGS = ['-w', '-DUSE_TCL_STUBS'])
+
 if os.name == 'posix':
-  clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
+  clone.Append(CXXFLAGS=Split('-Wno-unused -fno-strict-aliasing'))
 
 if sys.platform == 'darwin':
-  clone.Append(SHLINKFLAGS = Split('$LINKFLAGS -flat_namespace -undefined suppress'))
-#  clone.Append(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
+  # including the -bundle flag with -flat_namespace now gives an error, so we removed it
+  clone.Append(SHLINKFLAGS=Split('$LINKFLAGS -flat_namespace -undefined suppress'))
+  clone.Append(LINKFLAGS=['-framework', tcl_lib])
+elif sys.platform == 'linux2':
+  clone.Append(CPPFLAGS = ['-fPIC'])
+  clone.Append(LIBS = [tcl_lib])
+else:
+  clone.Append(LIBS=[tcl_lib])
 
-tclstep2 = clone.SharedLibrary(libname, tclsml_wrap)
-lib = env.Install(lib_install_dir, tclstep2)
+# Create the SWIG dll for tcl
+tclstep2 = clone.SharedLibrary(libname, swig_tcl_wrapper_cpp)
+lib = clone.Install(lib_install_dir, tclstep2)
 
-env.Alias('sml_tcl', env.Command(pkgindex, lib, makepkg_cmd))
+# Create the pkgIndex file for the SWIG dll (so tcl can find it with a package require command)
+# tclstep3 = clone.Command(pkgindex, lib, makepkg_cmd)
+
+# Note: Disabled script that manually generated pkgindex.  Unless it's being put in a directory with
+#       other files that would need to be included in the index, it should always generate the same
+#       file.  Script can have issues when being built on some network drives or if it can't find
+#       tclsh, so it doesn't seem to be worth the hassle.  Instead, we'll just copy a pkgindex file.
+#       Users who need to regenerate can do so manually
+tclstep3 = clone.InstallAs(os.path.join(lib_install_dir.abspath, 'pkgIndex.tcl'), tcl_pkgindex_name)
+
+# Set up dependencies between steps, so SCons knows when to re-compile
+clone.Depends(tclstep1, swig_tcl_interface)
+clone.Depends(tclstep2, swig_tcl_wrapper_cpp)
+clone.Depends(tclstep3, lib)
+clone.Depends(clone.File('#Core/SoarKernel/src/soar_instance.h'), swig_tcl_wrapper_cpp)
+# clone.Depends(soarlib, swig_tcl_wrapper_cpp)
+
+# Tell SCons to clean up intermediate files when doing a scons -c
+clone.Clean(lib, [swig_tcl_wrapper_cpp, pkgindex])
+
+# Set up alias to compile everything
+clone.Alias('sml_tcl', tclstep3)
+
+
