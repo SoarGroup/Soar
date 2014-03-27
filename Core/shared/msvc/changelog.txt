@@ -16,7 +16,7 @@ Forgot about #ifdef __cplusplus guard around 'extern "C"', so inclusion to C fil
 ------------------------------------------------------------------------
 r23 | 2009-05-12 01:27:45 +0400 | 3 lines
 
-[Issue 2] Always wrap <wcharîàž with external "C" {}.
+[Issue 2] Always wrap <wcharï¿½ï¿½ï¿½ with external "C" {}.
 It turns out that not only Visual Studio 6 requires this, but also newer versions when compiling for ARM.
 
 ------------------------------------------------------------------------
