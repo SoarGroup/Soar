@@ -77,7 +77,7 @@ void Variablization_Manager::print_relational_constraints (TraceMode mode)
     c = it->second;
     while (c) {
       dprint(mode, "%s: ", it->first->to_string());
-      dprint_test(mode, static_cast<test>(c->first), true, true, true, " ", "\n");
+      dprint_test(mode, static_cast<test>(c->first), true, false, true, " ", "\n");
       c = c->rest;
     }
   }
@@ -87,7 +87,7 @@ void Variablization_Manager::print_relational_constraints (TraceMode mode)
     c = it->second;
     while (c) {
       dprint(mode, "%llu: ", it->first);
-      dprint_test(mode, static_cast<test>(c->first), true, true, true, " ", "\n");
+      dprint_test(mode, static_cast<test>(c->first), true, false, true, " ", "\n");
       c = c->rest;
     }
   }
@@ -142,8 +142,6 @@ void Variablization_Manager::print_tables()
 {
   print_variablization_tables(DT_VARIABLIZATION_MANAGER);
 }
-
-
 
 void Variablization_Manager::clear_variablization_table() {
 
@@ -316,7 +314,7 @@ void Variablization_Manager::add_orig_var_mappings(condition *cond)
   print_variablization_tables(DT_VARIABLIZATION_MANAGER, 3);
   while (cond) {
     dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for cond ");
-    dprint_condition(DT_VARIABLIZATION_MANAGER, cond, "", true, true, true);
+    dprint_condition(DT_VARIABLIZATION_MANAGER, cond, "", true, false, true);
     add_orig_var_mappings_for_cond(cond);
     cond = cond->next;
   }
@@ -639,8 +637,7 @@ void Variablization_Manager::variablize_test (test *t)
 
   original_test = &((*t)->original_test);
 
-  dprint(DT_LHS_VARIABLIZATION, "Variablizing: ");
-  dprint_test(DT_LHS_VARIABLIZATION, *t, true, true, true, "", "\n");
+  dprint_test(DT_LHS_VARIABLIZATION, *t, true, false, true, "", "\n");
 
   assert(*t);
   test_type = (*t)->type;
@@ -669,7 +666,7 @@ void Variablization_Manager::variablize_test (test *t)
     } else
     {
       dprint(DT_LHS_VARIABLIZATION, "...ignoring non-conjunctive test because original is blank (should not be possible!):\n");
-      dprint_test(DT_LHS_VARIABLIZATION, *t, true, true, true, "        ", "\n");
+      dprint_test(DT_LHS_VARIABLIZATION, *t, true, false, true, "          ", "\n");
       return;
     }
   } else
@@ -701,22 +698,22 @@ void Variablization_Manager::variablize_test (test *t)
 
         if (instantiated_referent->is_variablizable(original_referent))
         {
-          dprint(DT_LHS_VARIABLIZATION, "Variablizing test type %s with referent %s\n", test_type_to_string(test_type), instantiated_referent->to_string());
+          dprint(DT_LHS_VARIABLIZATION, "...variablizing test type %s with referent %s\n", test_type_to_string(test_type), instantiated_referent->to_string());
           thisAgent->variablizationManager->variablize_lhs_symbol (&(ct->data.referent), original_referent,
                                                                    (*t)->identity, (original_test_type == EQUALITY_TEST));
         } else {
-          dprint(DT_LHS_VARIABLIZATION, "Non-variablizable original referent.  Should it be possible to get here?\n");
+          dprint(DT_LHS_VARIABLIZATION, "...non-variablizable referent %s.  Original: %s.\n", instantiated_referent->to_string(), original_referent->to_string());
           //assert(false);
         }
         break;
       default:
-        dprint(DT_DEBUG, "Invalid test type in variablize_test!!!\n");
+        dprint(DT_DEBUG, "...invalid test type in variablize_test!!!\n");
         assert(false);
         break;
     }
   }
-  dprint(DT_LHS_VARIABLIZATION, "Resulting in ");
-  dprint_test(DT_LHS_VARIABLIZATION, *t, true, true, true, "        ", "\n");
+  dprint(DT_LHS_VARIABLIZATION, "Result: ");
+  dprint_test(DT_LHS_VARIABLIZATION, *t, true, false, true, "", "\n");
   dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
 }
 
@@ -737,15 +734,15 @@ void Variablization_Manager::variablize_condition_list (condition *cond)
     switch (cond->type) {
     case POSITIVE_CONDITION:
     case NEGATIVE_CONDITION:
-      dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier...\n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
       variablize_test (&(cond->data.tests.id_test));
-      dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute...\n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
       variablize_test (&(cond->data.tests.attr_test));
-      dprint(DT_LHS_VARIABLIZATION, "Variablizing value...\n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
       variablize_test (&(cond->data.tests.value_test));
       break;
     case CONJUNCTIVE_NEGATION_CONDITION:
-      dprint(DT_NCC_VARIABLIZATION, "Variablizing NCC!\n");
+      dprint(DT_NCC_VARIABLIZATION, "Variablizing NCC:\n");
       dprint_condition_list(DT_NCC_VARIABLIZATION, cond->data.ncc.top);
       variablize_condition_list (cond->data.ncc.top);
       break;
@@ -754,6 +751,7 @@ void Variablization_Manager::variablize_condition_list (condition *cond)
   dprint(DT_LHS_VARIABLIZATION, "Done variablizing LHS condition list.\n");
   dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
 }
+
 void Variablization_Manager::variablize_relational_constraints_for_symbol(::list **constraint_list)
 {
   variablization *found_variablization = NULL;
@@ -1000,7 +998,7 @@ void Variablization_Manager::add_relational_constraints_for_test(test *t)
         c = iter->second;
         while (c) {
           ct = static_cast<test>(c->first);
-          dprint_test(DT_CONSTRAINTS, ct, true, true, true, "...adding", "\n");
+          dprint_test(DT_CONSTRAINTS, ct, true, false, true, "...adding", "\n");
           add_test(thisAgent, t, ct);
           c = c->rest;
         }
@@ -1028,7 +1026,7 @@ void Variablization_Manager::add_relational_constraints_for_test(test *t)
         c = iter->second;
         while (c) {
           ct = static_cast<test>(c->first);
-          dprint_test(DT_CONSTRAINTS, ct, true, true, true, "...adding ", "\n");
+          dprint_test(DT_CONSTRAINTS, ct, true, false, true, "...adding ", "\n");
           add_test(thisAgent, t, ct);
           c = c->rest;
         }
@@ -1098,7 +1096,7 @@ void Variablization_Manager::print_merge_map (TraceMode mode)
     attr_values = &(iter_id->second);
     for (iter_attr = attr_values->begin(); iter_attr != attr_values->end(); ++iter_attr)
     {
-      dprint_condition_cons(DT_MERGE, iter_attr->second, true, true, true, "   ");
+      dprint_condition_cons(DT_MERGE, iter_attr->second, true, false, true, "   ");
     }
   }
 
@@ -1196,7 +1194,6 @@ condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
       {
         lCond = static_cast<condition *>(c->first);
         lEqTest = equality_test_found_in_test(thisAgent, lCond->data.tests.value_test);
-        dprint(DT_MERGE, "...comparing with %s\n", test_to_string(lEqTest));
         if (lEqTest->data.referent->is_sti())
         {
           dprint(DT_MERGE, "...comparing with sti %s\n", lEqTest->data.referent);
@@ -1206,13 +1203,22 @@ condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
             return lCond;
           }
         } else if (lEqTest->identity->grounding_id > 0) {
-          dprint(DT_MERGE, "...comparing with constant %s\n", lEqTest->data.referent);
+          dprint(DT_MERGE, "...comparing with constant %s\n", lEqTest->data.referent->to_string());
           /* MToDo | Only equality tests on non-literals should be here.  Need to add something to make sure that's true! */
           if (lEqTest->identity->grounding_id == val_test->identity->grounding_id)
           {
-            dprint_condition(DT_MERGE, lCond, "...returning TRUE with condition: ", true, false, true);
-            return lCond;
+            if (lEqTest->identity->original_var == val_test->identity->original_var)
+            {
+              dprint_condition(DT_MERGE, lCond, "...orig vars and g_id match.  returning TRUE with condition: ", true, false, true);
+              return lCond;
+            } else {
+              dprint(DT_MERGE, "...Not merging.  Different original vars: %s != %s\n", val_test->identity->original_var->to_string(), lEqTest->identity->original_var->to_string());
+            }
+          } else {
+            dprint(DT_MERGE, "...Not merging.  Different g_ids: %llu != %llu\n", val_test->identity->grounding_id, lEqTest->identity->grounding_id);
           }
+        } else {
+          dprint(DT_MERGE, "...no grounding id for constant %s!  Should not happen.\n", lEqTest->data.referent);
         }
         c = c->rest;
       }

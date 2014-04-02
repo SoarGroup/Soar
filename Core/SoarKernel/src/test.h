@@ -102,6 +102,7 @@ bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
 test equality_test_found_in_test (agent* thisAgent, test t);
+test equality_var_test_found_in_test (agent* thisAgent, test t);
 
 test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
 uint32_t hash_test (agent* thisAgent, test t);

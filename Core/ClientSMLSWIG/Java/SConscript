@@ -27,7 +27,7 @@ def ConfigureJNI(env):
 
 	if sys.platform == 'darwin':
 		headers = [os.path.join(base, 'Headers')]
-		libs = [os.path.join(base, 'Libraries')]
+		libs = [os.path.join(base, 'Commands')]
 	else:
 		headers = [os.path.join(base, 'include')]
 		libs = [os.path.join(base, 'lib')]
@@ -37,7 +37,7 @@ def ConfigureJNI(env):
 			headers.append(os.path.join(base, 'include', 'linux'))
 		else:
 			return None
-	
+
 	return (headers, libs)
 
 def get_headers(d):
@@ -83,7 +83,7 @@ def late_java_builder(target, source, env):
 	if not os.path.isdir(srcdir.abspath):
 		print('source directory does not exist',srcdir.abspath)
 		sys.exit(1)
-	
+
 	clone.Java(classdir, srcdir)
 	clone['JARCHDIR'] = classdir
 	smljar = clone.Jar(jar, classdir)

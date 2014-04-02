@@ -373,7 +373,7 @@ void backtrace_through_instantiation (agent* thisAgent,
     if (c->type!=POSITIVE_CONDITION) continue;
 
 //    dprint(DT_CONSTRAINTS, "Backtracing through condition: ");
-//    dprint_condition(DT_CONSTRAINTS, c, "", true, true, true);
+//    dprint_condition(DT_CONSTRAINTS, c, "", true, false, true);
     cache_relational_constraints(thisAgent, c);
 
     id = c->data.tests.id_test->data.referent;
