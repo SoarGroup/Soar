@@ -70,7 +70,7 @@ def InstallDir(env, tgt, src, globstring="*"):
 	tgtdir = env.GetBuildPath(tgt)
 	srcdir = env.GetBuildPath(src)
 	for dir, _, files in os.walk(srcdir):
-		if fnmatch.fnmatch(dir, '*/.*'):
+		if fnmatch.fnmatch(dir[len(srcdir) + 1:], '*/.*'):
 			continue
 
 		# tgtsub is the target directory plus the relative sub directory
