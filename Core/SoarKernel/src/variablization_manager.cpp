@@ -1048,7 +1048,7 @@ void Variablization_Manager::add_relational_constraints_for_cond(condition *cond
   switch (cond->type) {
   case POSITIVE_CONDITION:
   case NEGATIVE_CONDITION:
-//    add_relational_constraints_for_test(&cond->data.tests.id_test);
+    add_relational_constraints_for_test(&cond->data.tests.id_test);
     add_relational_constraints_for_test(&cond->data.tests.attr_test);
     add_relational_constraints_for_test(&cond->data.tests.value_test);
     break;
@@ -1284,12 +1284,16 @@ void Variablization_Manager::merge_conditions(condition **top_cond)
           dprint(DT_MERGE, "...deleting non-head item.\n");
           last_cond->next = cond->next;
           deallocate_condition(thisAgent, cond);
+          if (last_cond->next)
+            last_cond->next->prev = last_cond;
           cond = last_cond;
         } else {
           /* -- At the head of the list -- */
           dprint(DT_MERGE, "...deleting head of list.\n");
           (*top_cond) = cond->next;
           deallocate_condition(thisAgent, cond);
+          if ((*top_cond)->next)
+            (*top_cond)->next->prev = (*top_cond);
           /* -- This will cause last_cond to be set to  NULL, indicating we're
            *    at the head of the list -- */
           cond = NULL;

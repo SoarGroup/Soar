@@ -282,8 +282,8 @@ void cache_relational_constraints_for_test (agent* thisAgent, test t)
 
 void cache_relational_constraints (agent* thisAgent, condition *c)
 {
-  /* Probably don't need to do id.  Code in backtrace always refers to it as an equality test */
-  //cache_relational_constraints_for_test(thisAgent, c->data.tests.id_test);
+  /* MToDo | Probably don't need to do id.  Code in backtrace always refers to it as an equality test */
+  cache_relational_constraints_for_test(thisAgent, c->data.tests.id_test);
   cache_relational_constraints_for_test(thisAgent, c->data.tests.attr_test);
   cache_relational_constraints_for_test(thisAgent, c->data.tests.value_test);
 }
@@ -374,6 +374,12 @@ void backtrace_through_instantiation (agent* thisAgent,
 
 //    dprint(DT_CONSTRAINTS, "Backtracing through condition: ");
 //    dprint_condition(DT_CONSTRAINTS, c, "", true, false, true);
+    /* -- We copy any relational constraints found in this condition into a temporary map.
+     *    When backtracing is complete and we are building the chunk conditions, we will
+     *    add all of the relational constraints found while backtracing into the final
+     *    chunk, whether the original condition the constraint came from made it into
+     *    the chunk or not.  Since the constraint was necessary for the problem-solving
+     *    -- */
     cache_relational_constraints(thisAgent, c);
 
     id = c->data.tests.id_test->data.referent;
