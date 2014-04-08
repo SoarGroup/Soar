@@ -103,7 +103,7 @@ bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool loo
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
 test equality_test_found_in_test (agent* thisAgent, test t);
 test equality_var_test_found_in_test (agent* thisAgent, test t);
-test find_equality_test_preferring_vars (agent* thisAgent, test t, bool useOriginals=false);
+test find_original_equality_test_preferring_vars (agent* thisAgent, test t, bool useOriginals=false);
 
 test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
 uint32_t hash_test (agent* thisAgent, test t);

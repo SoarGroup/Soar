@@ -631,7 +631,7 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
 void Variablization_Manager::variablize_test (test *t)
 {
   cons *c, *c_orig;
-  test ct, ct_original, *original_test;
+  test ct, ct_original, *original_test, original_eq_test;
   TestType original_test_type, test_type;
   Symbol *original_referent, *instantiated_referent;
 
@@ -690,21 +690,30 @@ void Variablization_Manager::variablize_test (test *t)
       case LESS_OR_EQUAL_TEST:
       case GREATER_OR_EQUAL_TEST:
       case SAME_TYPE_TEST:
-        ct = *t;
-        instantiated_referent = (*t)->data.referent;
-        original_referent = (*original_test)->data.referent;
-
-        assert (instantiated_referent && original_referent);
-
-        if (instantiated_referent->is_variablizable(original_referent))
+      case CONJUNCTIVE_TEST:
+        if (original_test_type == CONJUNCTIVE_TEST)
         {
-          dprint(DT_LHS_VARIABLIZATION, "...variablizing test type %s with referent %s\n", test_type_to_string(test_type), instantiated_referent->to_string());
-          thisAgent->variablizationManager->variablize_lhs_symbol (&(ct->data.referent), original_referent,
-                                                                   (*t)->identity, (original_test_type == EQUALITY_TEST));
+          dprint(DT_LHS_VARIABLIZATION, "Equality test with conjunctive set of original equalities.\n");
+          // Only equality tests can have multiple originals and hence a conjunction
+          assert(test_type==EQUALITY_TEST);
+          original_eq_test = find_original_equality_test_preferring_vars(thisAgent, (*original_test), false);
+          if (!original_eq_test) return;
+          original_referent = original_eq_test->data.referent;
         } else {
-          dprint(DT_LHS_VARIABLIZATION, "...non-variablizable referent %s.  Original: %s.\n", instantiated_referent->to_string(), original_referent->to_string());
-          //assert(false);
+          original_referent = (*original_test)->data.referent;
         }
+        instantiated_referent = (*t)->data.referent;
+          assert (instantiated_referent && original_referent);
+
+          if (instantiated_referent->is_variablizable(original_referent))
+          {
+            dprint(DT_LHS_VARIABLIZATION, "...variablizing test type %s with referent %s\n", test_type_to_string(test_type), instantiated_referent->to_string());
+            thisAgent->variablizationManager->variablize_lhs_symbol (&((*t)->data.referent), original_referent,
+                (*t)->identity, (original_test_type == EQUALITY_TEST));
+          } else {
+            dprint(DT_LHS_VARIABLIZATION, "...non-variablizable referent %s.  Original: %s.\n", instantiated_referent->to_string(), original_referent->to_string());
+            //assert(false);
+          }
         break;
       default:
         dprint(DT_DEBUG, "...invalid test type in variablize_test!!!\n");
