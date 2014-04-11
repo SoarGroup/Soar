@@ -105,7 +105,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
   }
   if ((whichTable == 0) || (whichTable == 1))
   {
-    dprint(mode, "------------ Symbol -> v_info table ----------\n");
+    dprint(mode, "------ Symbol -> v_info table -----\n");
     if (whichTable != 0)
       dprint(mode, "------------------------------------\n");
     for (std::map< Symbol *, variablization * >::iterator it=(*sym_to_var_map).begin(); it!=(*sym_to_var_map).end(); ++it)
@@ -116,7 +116,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
   }
   if ((whichTable == 0) || (whichTable == 2))
   {
-    dprint(mode, "--------- G_ID -> v_info table -------\n");
+    dprint(mode, "-------- G_ID -> v_info table ------\n");
     if (whichTable != 0)
       dprint(mode, "------------------------------------\n");
     for (std::map< uint64_t, variablization * >::iterator it=(*g_id_to_var_map).begin(); it!=(*g_id_to_var_map).end(); ++it)
@@ -743,15 +743,20 @@ void Variablization_Manager::variablize_condition_list (condition *cond)
     switch (cond->type) {
     case POSITIVE_CONDITION:
     case NEGATIVE_CONDITION:
-      dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
+      dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS Positive condition: ");
+      dprint_condition(DT_LHS_VARIABLIZATION, cond, "", true, false, true);
+      dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: ");
       variablize_test (&(cond->data.tests.id_test));
-      dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: ");
       variablize_test (&(cond->data.tests.attr_test));
-      dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing value: ");
       variablize_test (&(cond->data.tests.value_test));
       break;
     case CONJUNCTIVE_NEGATION_CONDITION:
-      dprint(DT_NCC_VARIABLIZATION, "Variablizing NCC:\n");
+      dprint(DT_LHS_VARIABLIZATION, "-------------======-----------\n");
+      dprint(DT_NCC_VARIABLIZATION, "Variablizing LHS NC condition:\n");
       dprint_condition_list(DT_NCC_VARIABLIZATION, cond->data.ncc.top);
       variablize_condition_list (cond->data.ncc.top);
       break;
