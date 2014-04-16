@@ -73,6 +73,7 @@ class Variablization_Manager
     void reinit();
 
     void add_orig_var_mappings(condition *cond);
+    void clear_ovar_gid_table();
 
     void add_relational_constraints(condition *cond);
     void clear_relational_constraints ();
@@ -93,6 +94,7 @@ class Variablization_Manager
     void print_tables();
     void print_relational_constraints (TraceMode mode);
     void print_merge_map (TraceMode mode);
+    void print_ovar_gid_propogation_table (TraceMode mode, bool printHeader=false);
 
     Variablization_Manager(agent *thisAgent);
     ~Variablization_Manager();
@@ -102,9 +104,12 @@ class Variablization_Manager
 
     void store_variablization(Symbol *instantiated_sym, Symbol *variable,
                               identity_info *identity, bool is_equality_test);
-    variablization *get_variablization(Symbol *index_sym);
+    variablization *get_variablization_for_symbol(std::map< Symbol *, variablization * > *pMap,
+                                                  Symbol *index_sym);
     variablization *get_variablization(uint64_t index_id);
     variablization *get_variablization(test equality_test);
+    variablization *get_variablization(Symbol *index_sym);
+
     uint64_t        get_gid_for_orig_var(Symbol *index_sym);
 
     void      merge_values_in_conds(condition *pDestCond, condition *pSrcCond);
@@ -112,11 +117,10 @@ class Variablization_Manager
     condition *get_previously_seen_cond(condition *pCond);
 
     void add_orig_var_mappings_for_test(test t);
-    void add_orig_var_mappings_for_cond(condition *cond);
 
     void add_relational_constraints_for_test(test *t);
-    void add_relational_constraints_for_cond(condition *cond);
     void variablize_relational_constraints_for_symbol(::list **constraint_list);
+
 
     bool symbol_in_chunk(Symbol *sym1, Symbol *sym2 = NULL);
 
@@ -124,13 +128,26 @@ class Variablization_Manager
 
     void variablize_test(test *chunk_test);
 
-    std::map< Symbol *, uint64_t >          * ovar_to_g_id_map;
+    /* -- The following are tables used by the variablization manager during
+     *    instantiation creation, backtracing and chunk formation.  The data
+     *    they store is temporary and cleared after use. -- */
+
+    /* -- Look-up tables for LHS variablization -- */
+    std::map< Symbol *, uint64_t >          * orig_var_to_g_id_map;
     std::map< uint64_t, variablization * >  * g_id_to_var_map;
     std::map< Symbol *, variablization * >  * sym_to_var_map;
+
+    /* -- Cache of constraint tests collected during backtracing -- */
     std::map< Symbol *, ::list * >          * sti_constraints;
     std::map< uint64_t, ::list * >          * constant_constraints;
 
+    /* -- Table of previously seen conditions.  Used to determine
+     *    whether to merge or eliminate positive conditions on
+     *    the LHS of a chunk. -- */
     std::map< Symbol *, std::map< Symbol *, ::list *> > *cond_merge_map;
+
+    /* -- A counter for the next grounding id to assign. 0 is the default
+     *    value and not considered a valid grounding id. -- */
     uint64_t ground_id_counter;
 };
 

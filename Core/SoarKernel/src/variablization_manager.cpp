@@ -30,7 +30,7 @@ Variablization_Manager::Variablization_Manager(agent *myAgent)
   thisAgent = myAgent;
   sym_to_var_map = new std::map< Symbol *, variablization * >();
   g_id_to_var_map = new std::map< uint64_t, variablization * >();
-  ovar_to_g_id_map = new std::map< Symbol *, uint64_t >();
+  orig_var_to_g_id_map = new std::map< Symbol *, uint64_t >();
   sti_constraints = new std::map< Symbol * , ::list * >();
   constant_constraints = new std::map< uint64_t , ::list * >();
 
@@ -43,9 +43,10 @@ Variablization_Manager::~Variablization_Manager()
   clear_data();
   delete sym_to_var_map;
   delete g_id_to_var_map;
-  delete ovar_to_g_id_map;
+  delete orig_var_to_g_id_map;
   delete sti_constraints;
   delete constant_constraints;
+
   delete cond_merge_map;
 }
 
@@ -62,6 +63,21 @@ void Variablization_Manager::reinit()
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
   clear_data();
   ground_id_counter = 0;
+}
+
+void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bool printHeader)
+{
+  if (printHeader)
+  {
+    dprint(mode, "------------------------------------\n");
+    dprint(mode, "OrigVariable to g_id Propagation Map\n");
+    dprint(mode, "------------------------------------\n");
+  }
+  for (std::map< Symbol *, uint64_t >::iterator it=(*orig_var_to_g_id_map).begin(); it!=(*orig_var_to_g_id_map).end(); ++it)
+  {
+    dprint(mode, "%s -> %llu\n", it->first->to_string(), it->second);
+  }
+
 }
 
 void Variablization_Manager::print_relational_constraints (TraceMode mode)
@@ -130,10 +146,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     dprint(mode, "---- Original Var -> G_ID Table ----\n");
     if (whichTable != 0)
       dprint(mode, "------------------------------------\n");
-    for (std::map< Symbol *, uint64_t >::iterator it=(*ovar_to_g_id_map).begin(); it!=(*ovar_to_g_id_map).end(); ++it)
-    {
-      dprint(mode, "%s -> %llu\n", it->first->to_string(), it->second);
-    }
+    print_ovar_gid_propogation_table(mode);
   }
   dprint(mode, "------------------------------------\n");
 }
@@ -143,19 +156,25 @@ void Variablization_Manager::print_tables()
   print_variablization_tables(DT_VARIABLIZATION_MANAGER);
 }
 
-void Variablization_Manager::clear_variablization_table() {
-
-  dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing variablization data...\n");
-  print_variablization_tables(DT_VARIABLIZATION_MANAGER);
-
-  dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar table...\n");
+void Variablization_Manager::clear_ovar_gid_table()
+{
+  dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar g_id table...\n");
   /* -- Clear original variable map -- */
-  for (std::map< Symbol *, uint64_t >::iterator it=(*ovar_to_g_id_map).begin(); it!=(*ovar_to_g_id_map).end(); ++it)
+  for (std::map< Symbol *, uint64_t >::iterator it=(*orig_var_to_g_id_map).begin(); it!=(*orig_var_to_g_id_map).end(); ++it)
   {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s -> %llu\n", it->first->to_string(), it->second);
     symbol_remove_ref(thisAgent, it->first);
   }
-  ovar_to_g_id_map->clear();
+  orig_var_to_g_id_map->clear();
+}
+
+void Variablization_Manager::clear_variablization_table()
+{
+
+  dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing variablization data...\n");
+  print_variablization_tables(DT_VARIABLIZATION_MANAGER);
+
+  clear_ovar_gid_table();
 
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol->variablization map...\n");
   /* -- Clear symbol->variablization map -- */
@@ -206,10 +225,10 @@ variablization * Variablization_Manager::get_variablization(uint64_t index_id)
   }
 }
 
-variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
+variablization * Variablization_Manager::get_variablization_for_symbol(std::map< Symbol *, variablization * > *pMap, Symbol *index_sym)
 {
-  std::map< Symbol *, variablization * >::iterator iter = (*sym_to_var_map).find(index_sym);
-  if (iter != (*sym_to_var_map).end())
+  std::map< Symbol *, variablization * >::iterator iter = (*pMap).find(index_sym);
+  if (iter != (*pMap).end())
   {
     dprint(DT_VARIABLIZATION_MANAGER, "...found %s in variablization table: %s/%s\n", index_sym->to_string(),
        iter->second->variablized_symbol->to_string(), iter->second->instantiated_symbol->to_string());
@@ -221,6 +240,10 @@ variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
     print_variablization_tables(DT_VARIABLIZATION_MANAGER, 1);
     return NULL;
   }
+}
+variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
+{
+  return get_variablization_for_symbol(sym_to_var_map, index_sym);
 }
 
 variablization * Variablization_Manager::get_variablization(test t)
@@ -239,8 +262,8 @@ variablization * Variablization_Manager::get_variablization(test t)
 
 uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
 {
-  std::map< Symbol *, uint64_t >::iterator iter = (*ovar_to_g_id_map).find(index_sym);
-  if (iter != (*ovar_to_g_id_map).end())
+  std::map< Symbol *, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
+  if (iter != (*orig_var_to_g_id_map).end())
   {
     dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in orig_var variablization table for %s\n",
         iter->second, index_sym);
@@ -250,9 +273,8 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
   else
   {
     dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in orig_var variablization table.\n", index_sym);
+    print_ovar_gid_propogation_table(DT_VARIABLIZATION_MANAGER);
   }
-
-  print_variablization_tables(DT_VARIABLIZATION_MANAGER, 3);
 
   return 0;
 }
@@ -281,7 +303,7 @@ void Variablization_Manager::add_orig_var_mappings_for_test(test t)
       if (t->identity && t->identity->original_var && (t->identity->grounding_id > 0))
       {
         dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings entry: %s -> %llu\n", t->identity->original_var->to_string(), t->identity->grounding_id);
-        (*ovar_to_g_id_map)[t->identity->original_var] = t->identity->grounding_id;
+        (*orig_var_to_g_id_map)[t->identity->original_var] = t->identity->grounding_id;
         symbol_add_ref(thisAgent, t->identity->original_var);
       } else {
 //        dprint(DT_VARIABLIZATION_MANAGER, "Did not add b/c %s %s %llu.\n",
@@ -292,30 +314,20 @@ void Variablization_Manager::add_orig_var_mappings_for_test(test t)
   }
 }
 
-void Variablization_Manager::add_orig_var_mappings_for_cond(condition *cond)
-{
-  switch (cond->type) {
-  case POSITIVE_CONDITION:
-  case NEGATIVE_CONDITION:
-    add_orig_var_mappings_for_test(cond->data.tests.id_test);
-    add_orig_var_mappings_for_test(cond->data.tests.attr_test);
-    add_orig_var_mappings_for_test(cond->data.tests.value_test);
-    break;
-  case CONJUNCTIVE_NEGATION_CONDITION:
-    add_orig_var_mappings (cond->data.ncc.top);
-    break;
-  }
-}
-
 void Variablization_Manager::add_orig_var_mappings(condition *cond)
 {
   dprint(DT_VARIABLIZATION_MANAGER, "=============================================\n");
   dprint(DT_VARIABLIZATION_MANAGER, "add_orig_var_mappings_for_cond_list called...\n");
   print_variablization_tables(DT_VARIABLIZATION_MANAGER, 3);
   while (cond) {
-    dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for cond ");
-    dprint_condition(DT_VARIABLIZATION_MANAGER, cond, "", true, false, true);
-    add_orig_var_mappings_for_cond(cond);
+    if (cond->type == POSITIVE_CONDITION)
+    {
+      dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for cond ");
+      dprint_condition(DT_VARIABLIZATION_MANAGER, cond, "", true, false, true);
+      add_orig_var_mappings_for_test(cond->data.tests.id_test);
+      add_orig_var_mappings_for_test(cond->data.tests.attr_test);
+      add_orig_var_mappings_for_test(cond->data.tests.value_test);
+    }
     cond = cond->next;
   }
   dprint(DT_VARIABLIZATION_MANAGER, "Done adding original var mappings.\n");
@@ -646,14 +658,6 @@ void Variablization_Manager::variablize_test (test *t)
   {
     if (test_type == CONJUNCTIVE_TEST)
     {
-      //    if (test_type == EQUALITY_TEST)
-      //    {
-      //      dprint(DT_LHS_VARIABLIZATION, "...ignoring original conjunctive test (probably b/c of goal/impasse/disjunction)!!!\n");
-      //      /* MToDo | If original tests is a conjunction b/c goal but new test is not, the remaining equality test may still need to be
-      //       *         variablized, but it's not the way that it currently is.  Could be a bug. -- */
-      //      //assert(false);
-      //    }
-      //    dprint(DT_LHS_VARIABLIZATION, "...Comparing original test types: %s to %s\n", test_type_to_string(original_test_type), test_type_to_string((*chunk_test)->original_test->type));
       dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
       ct = *t;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
@@ -671,8 +675,10 @@ void Variablization_Manager::variablize_test (test *t)
     }
   } else
   {
-    /* -- ORIGINAL can differ from CHUNK tests if there are goal, impasse or disjunction tests in ORIGINAL test. Those aren't added
-     *    because goal/impasse tests added in a separate step.
+    /* -- ORIGINAL can differ from CHUNK tests if there are goal, impasse or disjunction tests in ORIGINAL test. Goal/impasse
+     *    tests added in a separate step.  Disjunctions don't need to be variablized.  Original can also differ if there
+     *    are multiple equality tests in the original.  The instantiated test will only have one equality test for the symbol
+     *    matched.
      *
      *    MToDo:  Is the part about disjunctions still true?  I think the logic was that original disjunctions are a list of constants and will
      *    not be needed to variablize, so no need to copy?*/
@@ -730,7 +736,7 @@ void Variablization_Manager::variablize_test (test *t)
  * will get thrown away
  */
 
-void Variablization_Manager::variablize_condition_list (condition *cond)
+void Variablization_Manager::variablize_condition_list (condition *top_cond)
 {
   dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
   dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS condition list:\n");
@@ -738,13 +744,13 @@ void Variablization_Manager::variablize_condition_list (condition *cond)
 
   //thisAgent->varname_table->clear_symbol_map();
 
-  for (; cond!=NIL; cond=cond->next)
+  dprint(DT_LHS_VARIABLIZATION, "Pass 1: Variablizing positive conditions...\n");
+  for (condition *cond = top_cond; cond!=NIL; cond=cond->next)
   {
-    switch (cond->type) {
-    case POSITIVE_CONDITION:
-    case NEGATIVE_CONDITION:
+    if (cond->type == POSITIVE_CONDITION)
+    {
       dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
-      dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS Positive condition: ");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS positive condition: ");
       dprint_condition(DT_LHS_VARIABLIZATION, cond, "", true, false, true);
       dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
       dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: ");
@@ -753,13 +759,29 @@ void Variablization_Manager::variablize_condition_list (condition *cond)
       variablize_test (&(cond->data.tests.attr_test));
       dprint(DT_LHS_VARIABLIZATION, "Variablizing value: ");
       variablize_test (&(cond->data.tests.value_test));
-      break;
-    case CONJUNCTIVE_NEGATION_CONDITION:
+    }
+  }
+  dprint(DT_LHS_VARIABLIZATION, "Pass 2: Variablizing negative conditions and negative conjunctive conditions...\n");
+  for (condition *cond = top_cond; cond!=NIL; cond=cond->next)
+  {
+    if (cond->type == NEGATIVE_CONDITION)
+    {
+      dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS negative condition: ");
+      dprint_condition(DT_LHS_VARIABLIZATION, cond, "", true, false, true);
+      dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: ");
+      variablize_test (&(cond->data.tests.id_test));
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: ");
+      variablize_test (&(cond->data.tests.attr_test));
+      dprint(DT_LHS_VARIABLIZATION, "Variablizing value: ");
+      variablize_test (&(cond->data.tests.value_test));
+    } else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
+    {
       dprint(DT_LHS_VARIABLIZATION, "-------------======-----------\n");
-      dprint(DT_NCC_VARIABLIZATION, "Variablizing LHS NC condition:\n");
+      dprint(DT_NCC_VARIABLIZATION, "Variablizing LHS NCC condition:\n");
       dprint_condition_list(DT_NCC_VARIABLIZATION, cond->data.ncc.top);
       variablize_condition_list (cond->data.ncc.top);
-      break;
     }
   }
   dprint(DT_LHS_VARIABLIZATION, "Done variablizing LHS condition list.\n");
@@ -1057,21 +1079,6 @@ void Variablization_Manager::add_relational_constraints_for_test(test *t)
   }
 }
 
-void Variablization_Manager::add_relational_constraints_for_cond(condition *cond)
-{
-  switch (cond->type) {
-  case POSITIVE_CONDITION:
-  case NEGATIVE_CONDITION:
-    add_relational_constraints_for_test(&cond->data.tests.id_test);
-    add_relational_constraints_for_test(&cond->data.tests.attr_test);
-    add_relational_constraints_for_test(&cond->data.tests.value_test);
-    break;
-  case CONJUNCTIVE_NEGATION_CONDITION:
-    add_relational_constraints (cond->data.ncc.top);
-    break;
-  }
-}
-
 void Variablization_Manager::add_relational_constraints(condition *cond)
 {
   dprint(DT_CONSTRAINTS, "=============================================\n");
@@ -1080,9 +1087,17 @@ void Variablization_Manager::add_relational_constraints(condition *cond)
   print_relational_constraints(DT_CONSTRAINTS);
 
   while (cond && ((sti_constraints->size() > 0) || (constant_constraints->size() > 0))) {
-    dprint(DT_CONSTRAINTS, "Adding relational constraints for cond ");
-    dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
-    add_relational_constraints_for_cond(cond);
+    if (cond->type == POSITIVE_CONDITION)
+    {
+      dprint(DT_CONSTRAINTS, "Adding for positive condition ");
+      dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
+      add_relational_constraints_for_test(&cond->data.tests.id_test);
+      add_relational_constraints_for_test(&cond->data.tests.attr_test);
+      add_relational_constraints_for_test(&cond->data.tests.value_test);
+    } else {
+      dprint(DT_CONSTRAINTS, (cond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition " : "Skipping for negative conjunctive condition:\n");
+      dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
+    }
     cond = cond->next;
   }
   dprint(DT_CONSTRAINTS, "add_relational_constraints done adding constraints.  Final tables:\n");
@@ -1274,12 +1289,7 @@ void Variablization_Manager::merge_conditions(condition **top_cond)
   {
     dprint_condition(DT_MERGE, cond, "Merging constraint: ", true, false, true);
     next_cond = cond->next;
-    if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) {
-      dprint(DT_MERGE, "...this is a NCC, so calling merge_conditions recursively.\n");
-      /* MToDo | NCCs need their own maps!  They need their own scope, so
-       *         make NCC merge map and clean up before and after.  */
-      merge_conditions(&cond->data.ncc.top);
-    } else { /* positive and negative conditions */
+    if (cond->type==POSITIVE_CONDITION) {
       /* -- Check if there already exists a condition with the same id and
        *    attribute equality tests -- */
       dprint(DT_MERGE, "...looking for previously seen similar condition...\n");
