@@ -291,7 +291,6 @@ void cache_relational_constraints (agent* thisAgent, condition *c)
 /* This is the wme which is causing this production to be backtraced through.
    It is NULL when backtracing for a result preference.                   */
 
-/* mvp 5-17-94 */
 void backtrace_through_instantiation (agent* thisAgent,
                                       instantiation *inst,
                                       goal_stack_level grounds_level,

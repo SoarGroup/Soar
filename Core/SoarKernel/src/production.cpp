@@ -125,11 +125,15 @@ condition *copy_condition_without_relational_constraints (agent* thisAgent,
   switch (cond->type) {
   case POSITIVE_CONDITION:
     New->bt = cond->bt;
-    /* ... and fall through to next case */
-  case NEGATIVE_CONDITION:
     New->data.tests.id_test = copy_test_without_relationals (thisAgent, cond->data.tests.id_test);
     New->data.tests.attr_test = copy_test_without_relationals (thisAgent, cond->data.tests.attr_test);
     New->data.tests.value_test = copy_test_without_relationals (thisAgent, cond->data.tests.value_test);
+    New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
+    break;
+  case NEGATIVE_CONDITION:
+    New->data.tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
+    New->data.tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
+    New->data.tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
     New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
