@@ -73,7 +73,9 @@ class Variablization_Manager
     void reinit();
 
     void add_orig_var_mappings(condition *cond);
+    void add_orig_var_to_gid_mapping(Symbol *index_sym, uint64_t index_g_id);
     void clear_ovar_gid_table();
+    uint64_t get_gid_for_orig_var(Symbol *index_sym);
 
     void add_relational_constraints(condition *cond);
     void clear_relational_constraints ();
@@ -109,8 +111,6 @@ class Variablization_Manager
     variablization *get_variablization(uint64_t index_id);
     variablization *get_variablization(test equality_test);
     variablization *get_variablization(Symbol *index_sym);
-
-    uint64_t        get_gid_for_orig_var(Symbol *index_sym);
 
     void      merge_values_in_conds(condition *pDestCond, condition *pSrcCond);
     void      set_cond_for_id_attr_tests(condition *pCond);

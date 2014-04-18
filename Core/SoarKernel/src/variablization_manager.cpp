@@ -278,6 +278,12 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
 
   return 0;
 }
+void Variablization_Manager::add_orig_var_to_gid_mapping(Symbol *index_sym, uint64_t index_g_id)
+{
+  dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings entry: %s -> %llu\n", index_sym, index_g_id);
+  (*orig_var_to_g_id_map)[index_sym] = index_g_id;
+  symbol_add_ref(thisAgent, index_sym);
+}
 
 void Variablization_Manager::add_orig_var_mappings_for_test(test t)
 {
@@ -662,6 +668,7 @@ void Variablization_Manager::variablize_test (test *t)
       ct = *t;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
+        dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: ");
         variablize_test (reinterpret_cast<test *>(&(c->first)));
       }
 
