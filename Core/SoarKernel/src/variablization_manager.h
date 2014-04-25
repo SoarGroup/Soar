@@ -73,7 +73,7 @@ class Variablization_Manager
     void reinit();
 
     void add_orig_var_mappings(condition *cond);
-    void add_orig_var_to_gid_mapping(Symbol *index_sym, uint64_t index_g_id);
+    uint64_t add_orig_var_to_gid_mapping(Symbol *index_sym, uint64_t index_g_id);
     void clear_ovar_gid_table();
     uint64_t get_gid_for_orig_var(Symbol *index_sym);
 

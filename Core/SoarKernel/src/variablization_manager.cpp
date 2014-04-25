@@ -278,11 +278,22 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
 
   return 0;
 }
-void Variablization_Manager::add_orig_var_to_gid_mapping(Symbol *index_sym, uint64_t index_g_id)
+
+uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol *index_sym, uint64_t index_g_id)
 {
-  dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings entry: %s -> %llu\n", index_sym, index_g_id);
-  (*orig_var_to_g_id_map)[index_sym] = index_g_id;
-  symbol_add_ref(thisAgent, index_sym);
+  std::map< Symbol *, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
+  if (iter == (*orig_var_to_g_id_map).end())
+  {
+    dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings entry: %s -> %llu\n", index_sym->to_string(), index_g_id);
+    (*orig_var_to_g_id_map)[index_sym] = index_g_id;
+    symbol_add_ref(thisAgent, index_sym);
+    return 0;
+  } else {
+    dprint(DT_VARIABLIZATION_MANAGER,
+        "...%llu already exists in orig_var variablization table for %s.  add_orig_var_to_gid_mapping returning false.\n",
+        iter->second, index_sym);
+  }
+  return iter->second;
 }
 
 void Variablization_Manager::add_orig_var_mappings_for_test(test t)
@@ -308,9 +319,7 @@ void Variablization_Manager::add_orig_var_mappings_for_test(test t)
 //      dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for test with referent.\n");
       if (t->identity && t->identity->original_var && (t->identity->grounding_id > 0))
       {
-        dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings entry: %s -> %llu\n", t->identity->original_var->to_string(), t->identity->grounding_id);
-        (*orig_var_to_g_id_map)[t->identity->original_var] = t->identity->grounding_id;
-        symbol_add_ref(thisAgent, t->identity->original_var);
+        add_orig_var_to_gid_mapping(t->identity->original_var, t->identity->grounding_id);
       } else {
 //        dprint(DT_VARIABLIZATION_MANAGER, "Did not add b/c %s %s %llu.\n",
 //            (t->identity ? "True" : "False"),
@@ -1098,7 +1107,6 @@ void Variablization_Manager::add_relational_constraints(condition *cond)
     {
       dprint(DT_CONSTRAINTS, "Adding for positive condition ");
       dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
-      add_relational_constraints_for_test(&cond->data.tests.id_test);
       add_relational_constraints_for_test(&cond->data.tests.attr_test);
       add_relational_constraints_for_test(&cond->data.tests.value_test);
     } else {

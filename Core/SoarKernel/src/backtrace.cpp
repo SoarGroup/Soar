@@ -283,7 +283,6 @@ void cache_relational_constraints_for_test (agent* thisAgent, test t)
 void cache_relational_constraints (agent* thisAgent, condition *c)
 {
   /* MToDo | Probably don't need to do id.  Code in backtrace always refers to it as an equality test */
-  cache_relational_constraints_for_test(thisAgent, c->data.tests.id_test);
   cache_relational_constraints_for_test(thisAgent, c->data.tests.attr_test);
   cache_relational_constraints_for_test(thisAgent, c->data.tests.value_test);
 }
