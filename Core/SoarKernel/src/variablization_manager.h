@@ -33,11 +33,6 @@ typedef struct variablization_struct {
 
 /* -- Variablization_Manager
  *
- * make_name_unique
- *
- *    Takes the name of a variable and potentially modifies it so
- *    that is is unique to the current instantiation being built
- *
  * variablization_table
  *
  *    The variablization_table is used during chunking.  It stores a mapping from either a
@@ -46,13 +41,6 @@ typedef struct variablization_struct {
  *    symbols in a chunk that is being built. This mapping is temporary and cleared after
  *    the chunk is built. This replaces the variablized pointer in versions of Soar
  *    prior to 9.4
- *
- * current_unique_vars
- *
- *    The current_unique_vars set is used during instantiation creation.  It keeps a list
- *    of all original vars in the current instantiation that have been made unique.
- *    This is needed so we don't try to make an original variable unique twice
- *    because it appears in two different conditions
  *
  * original_symbol_ht and original_symbol_mp
  *
@@ -77,9 +65,9 @@ class Variablization_Manager
     void clear_ovar_gid_table();
     uint64_t get_gid_for_orig_var(Symbol *index_sym);
 
-    void add_relational_constraints(condition *cond);
+    void cache_relational_constraints_in_cond (condition *c);
+    void install_relational_constraints(condition *cond);
     void clear_relational_constraints ();
-    void cache_relational_constraint (test equality_test, test relational_test);
 
     void merge_conditions(condition **top_cond);
     void clear_merge_map();
@@ -118,8 +106,10 @@ class Variablization_Manager
 
     void add_orig_var_mappings_for_test(test t);
 
-    void add_relational_constraints_for_test(test *t);
+    void cache_relational_constraint (test equality_test, test relational_test);
+    void cache_relational_constraints_in_test(test t);
     void variablize_relational_constraints_for_symbol(::list **constraint_list);
+    void install_relational_constraints_for_test(test *t);
 
 
     bool symbol_in_chunk(Symbol *sym1, Symbol *sym2 = NULL);

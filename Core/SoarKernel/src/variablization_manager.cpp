@@ -1020,7 +1020,60 @@ void Variablization_Manager::cache_relational_constraint (test equality_test, te
   }
 }
 
-void Variablization_Manager::add_relational_constraints_for_test(test *t)
+void Variablization_Manager::cache_relational_constraints_in_test (test t)
+{
+  /* -- Only conjunctive tests can have relational tests here.  Otherwise,
+   *    should be an equality test. -- */
+  if (t->type != CONJUNCTIVE_TEST)
+  {
+    assert(t->type == EQUALITY_TEST);
+    return;
+  }
+
+  test equality_test=NULL, referent_test, ctest;
+  cons *c;
+//  dprint(DT_CONSTRAINTS, "Looking for equality constraint...\n");
+  for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+  {
+    if (static_cast<test>(c->first)->type == EQUALITY_TEST)
+    {
+//      dprint(DT_CONSTRAINTS, "...found %s.\n", test_to_string(static_cast<test>(c->first)));
+      equality_test = static_cast<test>(c->first);
+      break;
+    }
+  }
+  assert(equality_test);
+  for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+  {
+    ctest = static_cast<test>(c->first);
+    switch (ctest->type) {
+      case EQUALITY_TEST:
+        break;
+      case GREATER_TEST:
+      case GREATER_OR_EQUAL_TEST:
+      case LESS_TEST:
+      case LESS_OR_EQUAL_TEST:
+      case NOT_EQUAL_TEST:
+      case SAME_TYPE_TEST:
+      case DISJUNCTION_TEST:
+        thisAgent->variablizationManager->cache_relational_constraint(equality_test, ctest);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+void Variablization_Manager::cache_relational_constraints_in_cond (condition *c)
+{
+  /* Don't need to do id element.  It should always be an equality test */
+  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
+
+  cache_relational_constraints_in_test(c->data.tests.attr_test);
+  cache_relational_constraints_in_test(c->data.tests.value_test);
+}
+
+void Variablization_Manager::install_relational_constraints_for_test(test *t)
 {
   if (!t) return;
 
@@ -1095,10 +1148,10 @@ void Variablization_Manager::add_relational_constraints_for_test(test *t)
   }
 }
 
-void Variablization_Manager::add_relational_constraints(condition *cond)
+void Variablization_Manager::install_relational_constraints(condition *cond)
 {
   dprint(DT_CONSTRAINTS, "=============================================\n");
-  dprint(DT_CONSTRAINTS, "add_relational_constraints called...\n");
+  dprint(DT_CONSTRAINTS, "install_relational_constraints called...\n");
   print_variablization_tables(DT_CONSTRAINTS);
   print_relational_constraints(DT_CONSTRAINTS);
 
@@ -1107,15 +1160,15 @@ void Variablization_Manager::add_relational_constraints(condition *cond)
     {
       dprint(DT_CONSTRAINTS, "Adding for positive condition ");
       dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
-      add_relational_constraints_for_test(&cond->data.tests.attr_test);
-      add_relational_constraints_for_test(&cond->data.tests.value_test);
+      install_relational_constraints_for_test(&cond->data.tests.attr_test);
+      install_relational_constraints_for_test(&cond->data.tests.value_test);
     } else {
       dprint(DT_CONSTRAINTS, (cond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition " : "Skipping for negative conjunctive condition:\n");
       dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
     }
     cond = cond->next;
   }
-  dprint(DT_CONSTRAINTS, "add_relational_constraints done adding constraints.  Final tables:\n");
+  dprint(DT_CONSTRAINTS, "install_relational_constraints done adding constraints.  Final tables:\n");
   print_variablization_tables(DT_CONSTRAINTS);
   print_relational_constraints(DT_CONSTRAINTS);
   dprint_condition_list(DT_CONSTRAINTS, cond);

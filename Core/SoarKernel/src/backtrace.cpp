@@ -237,55 +237,7 @@ void print_consed_list_of_condition_wmes (agent* thisAgent, list *c, int indent)
   }
 }
 
-void cache_relational_constraints_for_test (agent* thisAgent, test t)
-{
-  /* -- Only conjunctive tests can have relational tests here -- */
-  if (t->type != CONJUNCTIVE_TEST)
-  {
-    assert(t->type == EQUALITY_TEST);
-    return;
-  }
 
-  test equality_test=NULL, referent_test, ctest;
-  cons *c;
-//  dprint(DT_CONSTRAINTS, "Looking for equality constraint...\n");
-  for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-  {
-    if (static_cast<test>(c->first)->type == EQUALITY_TEST)
-    {
-//      dprint(DT_CONSTRAINTS, "...found %s.\n", test_to_string(static_cast<test>(c->first)));
-      equality_test = static_cast<test>(c->first);
-      break;
-    }
-  }
-  assert(equality_test);
-  for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-  {
-    ctest = static_cast<test>(c->first);
-    switch (ctest->type) {
-      case EQUALITY_TEST:
-        break;
-      case GREATER_TEST:
-      case GREATER_OR_EQUAL_TEST:
-      case LESS_TEST:
-      case LESS_OR_EQUAL_TEST:
-      case NOT_EQUAL_TEST:
-      case SAME_TYPE_TEST:
-      case DISJUNCTION_TEST:
-        thisAgent->variablizationManager->cache_relational_constraint(equality_test, ctest);
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-void cache_relational_constraints (agent* thisAgent, condition *c)
-{
-  /* MToDo | Probably don't need to do id.  Code in backtrace always refers to it as an equality test */
-  cache_relational_constraints_for_test(thisAgent, c->data.tests.attr_test);
-  cache_relational_constraints_for_test(thisAgent, c->data.tests.value_test);
-}
 
 /* This is the wme which is causing this production to be backtraced through.
    It is NULL when backtracing for a result preference.                   */
@@ -378,7 +330,7 @@ void backtrace_through_instantiation (agent* thisAgent,
      *    chunk, whether the original condition the constraint came from made it into
      *    the chunk or not.  Since the constraint was necessary for the problem-solving
      *    -- */
-    cache_relational_constraints(thisAgent, c);
+    thisAgent->variablizationManager->cache_relational_constraints_in_cond(c);
 
     id = c->data.tests.id_test->data.referent;
 
