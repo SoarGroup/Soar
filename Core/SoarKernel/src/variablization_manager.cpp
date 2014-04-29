@@ -268,7 +268,7 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
   }
   else
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in orig_var variablization table.\n", index_sym);
+    dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in orig_var variablization table.\n", index_sym->to_string());
     print_ovar_gid_propogation_table(DT_VARIABLIZATION_MANAGER);
   }
 
@@ -287,7 +287,7 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol *index_sym, 
   } else {
     dprint(DT_OVAR_MAPPINGS,
         "...%llu already exists in orig_var variablization table for %s.  add_orig_var_to_gid_mapping returning false.\n",
-        iter->second, index_sym);
+        iter->second, index_sym->to_string());
   }
   return iter->second;
 }
@@ -492,7 +492,7 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
   {
     if (original_var)
     {
-      dprint(DT_VARIABLIZATION_MANAGER, "...searching for original var %s in variablization orig var table...\n", original_var);
+      dprint(DT_VARIABLIZATION_MANAGER, "...searching for original var %s in variablization orig var table...\n", original_var->to_string());
       g_id = get_gid_for_orig_var(original_var);
       if (g_id > 0)
       {
@@ -1007,7 +1007,7 @@ void Variablization_Manager::cache_relational_constraints_in_test (test t)
 void Variablization_Manager::cache_relational_constraints_in_cond (condition *c)
 {
   /* Don't need to do id element.  It should always be an equality test */
-  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
+//  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
   dprint_condition(DT_CONSTRAINTS, c, "Caching relational constraints in condition: ", true, false, true);
   cache_relational_constraints_in_test(c->data.tests.attr_test);
   cache_relational_constraints_in_test(c->data.tests.value_test);
