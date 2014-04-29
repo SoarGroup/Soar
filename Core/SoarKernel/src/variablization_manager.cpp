@@ -54,7 +54,8 @@ void Variablization_Manager::clear_data()
 {
   dprint(DT_VARIABLIZATION_MANAGER, "Clearing variablization maps.\n");
   clear_relational_constraints ();
-  clear_variablization_table();
+  clear_ovar_gid_table();
+  clear_variablization_tables();
   clear_merge_map();
 }
 
@@ -168,13 +169,8 @@ void Variablization_Manager::clear_ovar_gid_table()
   orig_var_to_g_id_map->clear();
 }
 
-void Variablization_Manager::clear_variablization_table()
+void Variablization_Manager::clear_variablization_tables()
 {
-
-  dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing variablization data...\n");
-  print_variablization_tables(DT_VARIABLIZATION_MANAGER);
-
-  clear_ovar_gid_table();
 
   dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol->variablization map...\n");
   /* -- Clear symbol->variablization map -- */
@@ -284,70 +280,16 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol *index_sym, 
   std::map< Symbol *, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
   if (iter == (*orig_var_to_g_id_map).end())
   {
-    dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings entry: %s -> %llu\n", index_sym->to_string(), index_g_id);
+    dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %s -> %llu\n", index_sym->to_string(), index_g_id);
     (*orig_var_to_g_id_map)[index_sym] = index_g_id;
     symbol_add_ref(thisAgent, index_sym);
     return 0;
   } else {
-    dprint(DT_VARIABLIZATION_MANAGER,
+    dprint(DT_OVAR_MAPPINGS,
         "...%llu already exists in orig_var variablization table for %s.  add_orig_var_to_gid_mapping returning false.\n",
         iter->second, index_sym);
   }
   return iter->second;
-}
-
-void Variablization_Manager::add_orig_var_mappings_for_test(test t)
-{
-  cons *c;
-
-  switch (t->type)
-  {
-    case DISJUNCTION_TEST:
-    case GOAL_ID_TEST:
-    case IMPASSE_ID_TEST:
-      break;
-    case CONJUNCTIVE_TEST:
-      dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for conjunctive test\n");
-      cons *c;
-      for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      {
-        add_orig_var_mappings_for_test(static_cast<test>(c->first));
-      }
-      break;
-    default:
-      assert(t->data.referent);
-//      dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for test with referent.\n");
-      if (t->identity && t->identity->original_var && (t->identity->grounding_id > 0))
-      {
-        add_orig_var_to_gid_mapping(t->identity->original_var, t->identity->grounding_id);
-      } else {
-//        dprint(DT_VARIABLIZATION_MANAGER, "Did not add b/c %s %s %llu.\n",
-//            (t->identity ? "True" : "False"),
-//            ((t->identity && t->identity->original_var) ? t->identity->original_var : "No orig var"),
-//            ((t->identity && t->identity->grounding_id) ? t->identity->grounding_id : 0));
-      }
-  }
-}
-
-void Variablization_Manager::add_orig_var_mappings(condition *cond)
-{
-  dprint(DT_VARIABLIZATION_MANAGER, "=============================================\n");
-  dprint(DT_VARIABLIZATION_MANAGER, "add_orig_var_mappings_for_cond_list called...\n");
-  print_variablization_tables(DT_VARIABLIZATION_MANAGER, 3);
-  while (cond) {
-    if (cond->type == POSITIVE_CONDITION)
-    {
-      dprint(DT_VARIABLIZATION_MANAGER, "Adding original variable mappings for cond ");
-      dprint_condition(DT_VARIABLIZATION_MANAGER, cond, "", true, false, true);
-      add_orig_var_mappings_for_test(cond->data.tests.id_test);
-      add_orig_var_mappings_for_test(cond->data.tests.attr_test);
-      add_orig_var_mappings_for_test(cond->data.tests.value_test);
-    }
-    cond = cond->next;
-  }
-  dprint(DT_VARIABLIZATION_MANAGER, "Done adding original var mappings.\n");
-  print_variablization_tables(DT_VARIABLIZATION_MANAGER, 3);
-  dprint(DT_VARIABLIZATION_MANAGER, "=============================================\n");
 }
 
 void Variablization_Manager::store_variablization(Symbol *instantiated_sym,
@@ -1032,12 +974,10 @@ void Variablization_Manager::cache_relational_constraints_in_test (test t)
 
   test equality_test=NULL, referent_test, ctest;
   cons *c;
-//  dprint(DT_CONSTRAINTS, "Looking for equality constraint...\n");
   for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
   {
     if (static_cast<test>(c->first)->type == EQUALITY_TEST)
     {
-//      dprint(DT_CONSTRAINTS, "...found %s.\n", test_to_string(static_cast<test>(c->first)));
       equality_test = static_cast<test>(c->first);
       break;
     }
@@ -1068,7 +1008,7 @@ void Variablization_Manager::cache_relational_constraints_in_cond (condition *c)
 {
   /* Don't need to do id element.  It should always be an equality test */
   assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
-
+  dprint_condition(DT_CONSTRAINTS, c, "Caching relational constraints in condition: ", true, false, true);
   cache_relational_constraints_in_test(c->data.tests.attr_test);
   cache_relational_constraints_in_test(c->data.tests.value_test);
 }
