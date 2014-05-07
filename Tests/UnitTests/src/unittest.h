@@ -7,15 +7,15 @@
 #include <string>
 #include <sstream>
 
-#define DO_ALIAS_TESTS
-#define DO_CLIPARSER_TESTS
-#define DO_ELEMENTXML_TESTS
-#define DO_FULL_TESTS
-#define DO_IO_TESTS
+//#define DO_ALIAS_TESTS
+//#define DO_CLIPARSER_TESTS
+//#define DO_ELEMENTXML_TESTS
+//#define DO_FULL_TESTS
+//#define DO_IO_TESTS
 #define DO_MISC_TESTS
-#define DO_MULTIAGENT_TESTS
-#define DO_SANITY_TESTS
-#define DO_TOKENIZER_TESTS
+//#define DO_MULTIAGENT_TESTS
+//#define DO_SANITY_TESTS
+//#define DO_TOKENIZER_TESTS
 //#define SKIP_SLOW_TESTS
 
 #define CPPUNIT_STR_STR(x) #x

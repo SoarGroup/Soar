@@ -16,18 +16,18 @@ class MiscTest : public CPPUNIT_NS::TestCase
 {
     CPPUNIT_TEST_SUITE( MiscTest );
 #ifdef DO_MISC_TESTS
-    CPPUNIT_TEST( testSource );
-    CPPUNIT_TEST( test_clog );
-    CPPUNIT_TEST( test_gp );
-    CPPUNIT_TEST( test_echo );
-    CPPUNIT_TEST( test_ls );
-    CPPUNIT_TEST( testWrongAgentWmeFunctions );
-    CPPUNIT_TEST( testRHSRand );
-    CPPUNIT_TEST( testMultipleKernels );
-    CPPUNIT_TEST( testSoarRand );
-    CPPUNIT_TEST( testPreferenceDeallocation );
+//    CPPUNIT_TEST( testSource );
+//    CPPUNIT_TEST( test_clog );
+//    CPPUNIT_TEST( test_gp );
+//    CPPUNIT_TEST( test_echo );
+//    CPPUNIT_TEST( test_ls );
+//    CPPUNIT_TEST( testWrongAgentWmeFunctions );
+//    CPPUNIT_TEST( testRHSRand );
+//    CPPUNIT_TEST( testMultipleKernels );
+//    CPPUNIT_TEST( testSoarRand );
+//    CPPUNIT_TEST( testPreferenceDeallocation );
 #ifndef SKIP_SLOW_TESTS
-    CPPUNIT_TEST( testInstiationDeallocationStackOverflow );
+//    CPPUNIT_TEST( testInstiationDeallocationStackOverflow );
     CPPUNIT_TEST( testSmemArithmetic );
 #endif
     /* This test has not been kept up to date.  Disabled for quite some time
