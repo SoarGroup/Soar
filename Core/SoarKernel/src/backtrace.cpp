@@ -330,7 +330,7 @@ void backtrace_through_instantiation (agent* thisAgent,
      *    chunk, whether the original condition the constraint came from made it into
      *    the chunk or not.  Since the constraint was necessary for the problem-solving
      *    -- */
-    thisAgent->variablizationManager->cache_relational_constraints_in_cond(c);
+    thisAgent->variablizationManager->cache_constraints_in_cond(c);
 
     id = c->data.tests.id_test->data.referent;
 

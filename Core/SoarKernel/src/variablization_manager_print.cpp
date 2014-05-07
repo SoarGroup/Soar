@@ -52,7 +52,7 @@ void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bo
 
 }
 
-void Variablization_Manager::print_relational_constraints (TraceMode mode)
+void Variablization_Manager::print_cached_constraints (TraceMode mode)
 {
     dprint(mode, "------------------------------------\n");
     dprint(mode, "            Constraint Map\n");

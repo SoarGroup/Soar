@@ -45,7 +45,7 @@ void Variablization_Manager::variablize_relational_constraints()
 
             dprint(DT_CONSTRAINTS, "...found grounding.  Variablizing constraint list.\n", it->first->to_string());
 
-            variablize_relational_constraints_for_symbol(&(it->second));
+            variablize_cached_constraints_for_symbol(&(it->second));
 
             /* -- If at least one relational constraint remains in the list, add to variablized constraint
              *    list, using the variablized equality symbol -- */
@@ -89,7 +89,7 @@ void Variablization_Manager::variablize_relational_constraints()
             assert(found_variablization->grounded);
 
             dprint(DT_CONSTRAINTS, "...found grounding for grounding id %llu.  Variablizing constraint list.\n", it->first);
-            variablize_relational_constraints_for_symbol(&(it->second));
+            variablize_cached_constraints_for_symbol(&(it->second));
 
             /* -- If at least one relational constraint remains in the list, add to variablized constraint
              *    list, using the variablized equality symbol -- */
@@ -123,7 +123,7 @@ void Variablization_Manager::variablize_relational_constraints()
 
 }
 
-void Variablization_Manager::variablize_relational_constraints_for_symbol(::list **constraint_list)
+void Variablization_Manager::variablize_cached_constraints_for_symbol(::list **constraint_list)
 {
     variablization *found_variablization = NULL;
     cons *c, *c_next, *c_last;
@@ -169,7 +169,7 @@ void Variablization_Manager::variablize_relational_constraints_for_symbol(::list
     }
 }
 
-void Variablization_Manager::clear_relational_constraints ()
+void Variablization_Manager::clear_cached_constraints ()
 {
     for (std::map< Symbol *, ::list * >::iterator it=sti_constraints->begin(); it!=sti_constraints->end(); ++it)
     {
@@ -184,7 +184,7 @@ void Variablization_Manager::clear_relational_constraints ()
     constant_constraints->clear();
 }
 
-void Variablization_Manager::cache_relational_constraint (test equality_test, test relational_test)
+void Variablization_Manager::cache_constraint (test equality_test, test relational_test)
 {
     dprint(DT_CONSTRAINTS, "Adding relational constraint %s to %s.\n", test_to_string(relational_test), test_to_string(equality_test));
     ::list * new_list=NULL;
@@ -224,7 +224,7 @@ void Variablization_Manager::cache_relational_constraint (test equality_test, te
     }
 }
 
-void Variablization_Manager::cache_relational_constraints_in_test (test t)
+void Variablization_Manager::cache_constraints_in_test (test t)
 {
     /* -- Only conjunctive tests can have relational tests here.  Otherwise,
      *    should be an equality test. -- */
@@ -258,7 +258,7 @@ void Variablization_Manager::cache_relational_constraints_in_test (test t)
             case NOT_EQUAL_TEST:
             case SAME_TYPE_TEST:
             case DISJUNCTION_TEST:
-                cache_relational_constraint(equality_test, ctest);
+                cache_constraint(equality_test, ctest);
                 break;
             default:
                 break;
@@ -266,16 +266,16 @@ void Variablization_Manager::cache_relational_constraints_in_test (test t)
     }
 }
 
-void Variablization_Manager::cache_relational_constraints_in_cond (condition *c)
+void Variablization_Manager::cache_constraints_in_cond (condition *c)
 {
     /* Don't need to do id element.  It should always be an equality test */
     //  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
     dprint_condition(DT_CONSTRAINTS, c, "Caching relational constraints in condition: ", true, false, true);
-    cache_relational_constraints_in_test(c->data.tests.attr_test);
-    cache_relational_constraints_in_test(c->data.tests.value_test);
+    cache_constraints_in_test(c->data.tests.attr_test);
+    cache_constraints_in_test(c->data.tests.value_test);
 }
 
-void Variablization_Manager::install_relational_constraints_for_test(test *t)
+void Variablization_Manager::install_cached_constraints_for_test(test *t)
 {
     if (!t) return;
 
@@ -297,7 +297,7 @@ void Variablization_Manager::install_relational_constraints_for_test(test *t)
         if (found_variablization)
         {
             dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %s.\n", found_variablization->variablized_symbol->to_string());
-            print_relational_constraints(DT_CONSTRAINTS);
+            print_cached_constraints(DT_CONSTRAINTS);
             std::map< Symbol *, ::list * >::iterator iter = (*sti_constraints).find(eq_symbol);
             if (iter != (*sti_constraints).end())
             {
@@ -325,7 +325,7 @@ void Variablization_Manager::install_relational_constraints_for_test(test *t)
         if (found_variablization)
         {
             dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %s.\n", found_variablization->variablized_symbol->to_string());
-            print_relational_constraints(DT_CONSTRAINTS);
+            print_cached_constraints(DT_CONSTRAINTS);
             std::map< uint64_t, ::list * >::iterator iter = (*constant_constraints).find(eq_test->identity->grounding_id);
             if (iter != (*constant_constraints).end())
             {
@@ -350,12 +350,12 @@ void Variablization_Manager::install_relational_constraints_for_test(test *t)
     }
 }
 
-void Variablization_Manager::install_relational_constraints(condition *cond)
+void Variablization_Manager::install_cached_constraints(condition *cond)
 {
     dprint(DT_CONSTRAINTS, "=============================================\n");
     dprint(DT_CONSTRAINTS, "install_relational_constraints called...\n");
     print_variablization_tables(DT_CONSTRAINTS);
-    print_relational_constraints(DT_CONSTRAINTS);
+    print_cached_constraints(DT_CONSTRAINTS);
 
   /* MToDo | Vast majority of constraints will be on value element.  Making this work with a pass for
    *         values followed by attributes could be faster. */
@@ -365,8 +365,8 @@ void Variablization_Manager::install_relational_constraints(condition *cond)
         {
             dprint(DT_CONSTRAINTS, "Adding for positive condition ");
             dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
-            install_relational_constraints_for_test(&cond->data.tests.attr_test);
-            install_relational_constraints_for_test(&cond->data.tests.value_test);
+            install_cached_constraints_for_test(&cond->data.tests.attr_test);
+            install_cached_constraints_for_test(&cond->data.tests.value_test);
         } else {
             dprint(DT_CONSTRAINTS, (cond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition " : "Skipping for negative conjunctive condition:\n");
             dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
@@ -375,7 +375,7 @@ void Variablization_Manager::install_relational_constraints(condition *cond)
     }
     dprint(DT_CONSTRAINTS, "install_relational_constraints done adding constraints.  Final tables:\n");
     print_variablization_tables(DT_CONSTRAINTS);
-    print_relational_constraints(DT_CONSTRAINTS);
+    print_cached_constraints(DT_CONSTRAINTS);
     dprint_condition_list(DT_CONSTRAINTS, cond);
     dprint(DT_CONSTRAINTS, "=============================================\n");
 }

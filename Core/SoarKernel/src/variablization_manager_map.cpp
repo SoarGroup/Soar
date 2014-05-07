@@ -29,7 +29,7 @@ inline variablization * copy_variablization(agent *thisAgent, variablization *v)
 void Variablization_Manager::clear_data()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing variablization maps.\n");
-    clear_relational_constraints ();
+    clear_cached_constraints ();
     clear_ovar_gid_table();
     clear_variablization_tables();
     clear_merge_map();
