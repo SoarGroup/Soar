@@ -11,6 +11,7 @@ public:
 	extract_command(svs_state *state, Symbol *root, bool once)
 	: command(state, root), root(root), state(state), fltr(NULL), res_root(NULL), first(true), once(once)
 	{
+		//cout << padd() << "NEW EXTRACT COMMAND" << endl;
 		si = state->get_svs()->get_soar_interface();
 	}
 	
@@ -25,6 +26,7 @@ public:
 	}
 	
 	bool update_sub() {
+		//cout << padd() << "extract::update_sub" << endl;
 		if (!res_root) {
 			res_root = si->get_wme_val(si->make_id_wme(root, "result"));
 		}
@@ -68,13 +70,16 @@ public:
 	}
 	
 	void update_results() {
+		enterf("extract::update_results");
 		wme *w;
 		filter_output *out = fltr->get_output();
 		
 		for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i) {
 			handle_output(out->get_current(i));
+			//cout << padd() << "Added output" << endl;
 		}
 		for (int i = 0, iend = out->num_removed(); i < iend; ++i) {
+			//cout << padd() << "Removed output" << endl;
 			filter_val *fv = out->get_removed(i);
 			record r;
 			if (!map_pop(records, fv, r)) {
@@ -83,8 +88,10 @@ public:
 			si->remove_wme(r.rec_wme);
 		}
 		for (int i = 0, iend = out->num_changed(); i < iend; ++i) {
+			//cout << padd() << "Changed output" << endl;
 			handle_output(out->get_changed(i));
 		}
+		exitf("extract::update_results");
 	}
 	
 	void clear_results() {
@@ -198,11 +205,14 @@ private:
 	}
 	
 	void handle_output(filter_val *output) {
+		//cout << padd() << "extract_filter::handle_output " << endl;
 		record *r;
 		if ((r = map_getp(records, output))) {
+			//cout << padd() << "  replace existing wme" << endl;
 			si->remove_wme(r->val_wme);
 			r->val_wme = make_value_wme(output, r->rec_id);
 		} else {
+			//cout << padd() << "  make new record" << endl;
 			make_record(output);
 		}
 	}
@@ -242,6 +252,7 @@ private:
 };
 
 command *_make_extract_command_(svs_state *state, Symbol *root) {
+	//cout << "MAKE EXTRACT COMMAND" << endl;
 	return new extract_command(state, root, false);
 }
 

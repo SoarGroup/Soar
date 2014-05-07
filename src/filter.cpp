@@ -254,8 +254,10 @@ void filter::set_status(const std::string &msg) {
 }
 
 void filter::add_output(filter_val *v, const filter_params *p) {
+	enterf("filter::add_output");
 	output.add(v);
 	output2params[v] = p;
+	exitf("filter::add_output");
 }
 
 void filter::get_output_params(filter_val *v, const filter_params *&p) {
@@ -265,8 +267,10 @@ void filter::get_output_params(filter_val *v, const filter_params *&p) {
 }
 
 void filter::remove_output(filter_val *v) {
+	enterf("filter::remove_output");
 	output.remove(v);
 	output2params.erase(v);
+	exitf("filter::remove_output");
 }
 
 void filter::change_output(filter_val *v) {
@@ -360,6 +364,7 @@ bool select_filter::update_outputs() {
 
 	// Check all added
 	for (int i = input->first_added(); i < input->num_current(); ++i) {
+		//cout << padd() << "New output" << endl;
 		const filter_params* params = input->get_current(i);
 		bool changed = false;
 		filter_val* out = NULL;
@@ -368,15 +373,18 @@ bool select_filter::update_outputs() {
 		}
 		if(out != NULL){
 			// An output was provided, add it
+			//cout << padd() << "Adding output " << endl;
 			add_output(out, params);
 			io_map[params] = out;
 		}
 	}
 	// Check all removed
 	for (int i = 0; i < input->num_removed(); ++i) {
+		//cout << padd() << "Removed input" << endl;
 		const filter_params* params = input->get_removed(i);
 		io_map_t::iterator out_it = io_map.find(params);
 		if(out_it != io_map.end()){
+			//cout << padd() << "Delete output" << endl;
 			// Only delete if an output value was actually created
 			filter_val* out = out_it->second;
 			remove_output(out);
@@ -395,6 +403,7 @@ bool select_filter::update_outputs() {
 }
 
 bool select_filter::update_one(const filter_params *params) {
+	enterf("select_filter::update_one");
 	io_map_t::iterator out_it = io_map.find(params);
 	bool is_present = (out_it != io_map.end());
 	bool changed = false;
@@ -407,17 +416,24 @@ bool select_filter::update_one(const filter_params *params) {
 	}
 	if(out == NULL && is_present){
 		// Have to remove the output
+		//cout << padd() << "update_one - remove output" << endl;
 		remove_output(out_it->second);
 		output_removed(out_it->second);
 		io_map.erase(out_it);
 	} else if(out != NULL && is_present && changed){
 		// Update the output 
+		//cout << padd() << "update_one - change output" << endl;
 		change_output(out);
 	} else if(out != NULL && !is_present){
 		// Need to add
+		//cout << padd() << "update_one - add output" << endl;
 		add_output(out, params);
 		io_map[params] = out;
 	}
+	//cout << padd() << "is_present = " << (is_present ? "T" : "F") << endl;
+	//cout << padd() << "changed = " << (changed ? "T" : "F") << endl;
+	//cout << padd() << "null out = " << (out == NULL ? "T" : "F") << endl;
+	exitf("select_filter::update_one");
 	return true;
 }
 

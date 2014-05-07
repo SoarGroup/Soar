@@ -9,100 +9,152 @@
 
 using namespace std;
 
+typedef map<sgnode*, const filter_params*> node_param_map;
+
 /*
  This filter takes a "name" parameter and outputs a pointer to the node
  with that name in the scene graph.
 */
-class node_filter : public typed_map_filter<const sgnode*>, public sgnode_listener {
+class node_filter : public typed_select_filter<const sgnode*>, public sgnode_listener {
 public:
 	node_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input)
-	: typed_map_filter<const sgnode*>(root, si, input), scn(scn)
-	{}
+	: typed_select_filter<const sgnode*>(root, si, input), scn(scn)
+	{
+		enterf("node_filter::node_filter");
+		exitf("node_filter::node_filter");
+	}
 
 	~node_filter() {
-		map<sgnode*, node_info>::iterator i;
-		for (i = nodes.begin(); i != nodes.end(); ++i) {
+		enterf("node_filter::~node_filter");
+		exitf("node_filter::~node_filter");
+		node_param_map::iterator i;
+		for (i = nodes.begin(); i != nodes.end(); i++){
+			//cout << padd() << "Unlisten " << i->first->get_name() << endl;
 			i->first->unlisten(this);
 		}
 	}
-
-	bool compute(const filter_params *params, bool adding, const sgnode *&res, bool &changed) {
-		sgnode *newres;
+	
+	bool compute(const filter_params* params, bool null_out, const sgnode*& out, bool& select, bool& changed){
+		enterf("node_filter::compute");
+		//out = NULL;
+		//changed = false;
+		//select = false;
+		//return true;
 		string id;
-
-		if (!get_filter_param(this, params, "id", id)) {
+		if(!get_filter_param(this, params, "id", id)){
 			set_status("expecting parameter id");
 			return false;
 		}
-		if ((newres = scn->get_node(id)) == NULL) {
-			stringstream ss;
-			ss << "no node with id \"" << id << "\"";
-			set_status(ss.str());
-			return false;
+
+
+		sgnode* n = scn->get_node(id);
+
+		if(n == NULL){
+			select = false;
+			changed = (out != NULL);
+			out = NULL;
+		} else {
+			changed = true; // Always pass on node changes
+			out = n;
+			node_param_map::iterator i = nodes.find(n);
+			if(i == nodes.end()){
+				// First time seeing this node, add it
+				nodes[n] = params;
+				//cout << padd() << "Listen " << n->get_name() << endl;
+				n->listen(this);
+				select = true;
+			} else if(i->second != params){
+				// Duplicate, don't select
+				select = false;
+			} else {
+				// Seeing a node already in the list
+				select = true;
+			}
 		}
 
-		if (newres != res) {
-			add_entry(newres, params);
-			if (!adding) {
-				del_entry(const_cast<sgnode*>(res), params);
-			}
-			res = newres;
-			changed = true;
-		} else {
-			// report whether the node itself changed since the last time
-			node_info &info = map_get(nodes, const_cast<sgnode*>(res));
-			changed = info.changed;
-			info.changed = false;
-		}
+		//cout << padd() << "Change " << (changed ? "T" : "F") << endl;
+		//cout << padd() << "Select " << (select ? "T" : "F") << endl;
+		//cout << padd() << "Node " << (out == NULL ? "NULL" : out->get_name()) << endl;
+		exitf("node_filter::compute");
+
 		return true;
 	}
+	node_param_map nodes;
 
-	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
-		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
-			node_info &info = map_get(nodes, n);
-			std::list<const filter_params*>::const_iterator i;
-			for (i = info.params.begin(); i != info.params.end(); ++i) {
-				mark_stale(*i);
-			}
-			info.changed = true;
-			if (t == sgnode::DELETED) {
-				nodes.erase(n);
-			}
+	void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info){
+		enterf("node_filter::node_update");
+		//cout << padd() << "Change " << t << " on " << n->get_name() << endl;
+		switch(t){
+			case sgnode::SHAPE_CHANGED:
+			case sgnode::TRANSFORM_CHANGED:
+			case sgnode::DELETED:
+				node_param_map::iterator i = nodes.find(n);
+				assert(i != nodes.end());
+				mark_stale(i->second);	// Update the filter params
+				if(t == sgnode::DELETED){
+					//cout << padd() << "Unlisten " << i->first->get_name() << endl;
+					i->first->unlisten(this);
+					nodes.erase(i);
+				}
+				break;
 		}
+		exitf("node_filter::node_update");
 	}
 
-private:
-	void add_entry(sgnode *n, const filter_params *params) {
-		map<sgnode*, node_info>::iterator i = nodes.find(n);
-		if (i == nodes.end()) {
-			n->listen(this);
-		}
-		nodes[n].params.push_back(params);
-	}
 
-	void del_entry(sgnode *n, const filter_params *params) {
-		map<sgnode*, node_info>::iterator i = nodes.find(n);
-		//JK assert crashes in real world TODO debug
-		//assert(i != nodes.end());
-		if (i== nodes.end())
-		  return;
-		std::list<const filter_params*> &p = i->second.params;
-		std::list<const filter_params*>::iterator j = find(p.begin(), p.end(), params);
-		assert(j != p.end());
-		p.erase(j);
-		if (p.empty()) {
-			i->first->unlisten(this);
-			nodes.erase(i);
-		}
-	}
+	scene* scn;
 
-	struct node_info {
-		std::list<const filter_params*> params;
-		bool changed;
-	};
-
-	scene *scn;
-	map<sgnode*, node_info> nodes;
+//	void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
+//		cout << "node_filter::node_update" << this << endl;
+//		cout << "  " << t << " on " << n->get_name() << endl;
+//		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
+//			node_info &info = map_get(nodes, n);
+//			std::list<const filter_params*>::const_iterator i;
+//			for (i = info.params.begin(); i != info.params.end(); ++i) {
+//				mark_stale(*i);
+//			}
+//			info.changed = true;
+//			if (t == sgnode::DELETED) {
+//				nodes.erase(n);
+//			}
+//		}
+//	}
+//
+//private:
+//	void add_entry(sgnode *n, const filter_params *params) {
+//		cout << "node_filter::add_entry" << this << endl;
+//		map<sgnode*, node_info>::iterator i = nodes.find(n);
+//		if (i == nodes.end()) {
+//			n->listen(this);
+//		}
+//		cout << "Nodes size: " << nodes.size() << endl;
+//		nodes[n].params.push_back(params);
+//	}
+//
+//	void del_entry(sgnode *n, const filter_params *params) {
+//		cout << "node_filter::del_entry" << this << endl;
+//		map<sgnode*, node_info>::iterator i = nodes.find(n);
+//		//JK assert crashes in real world TODO debug
+//		//assert(i != nodes.end());
+//		if (i== nodes.end())
+//		  return;
+//		std::list<const filter_params*> &p = i->second.params;
+//		std::list<const filter_params*>::iterator j = find(p.begin(), p.end(), params);
+//		assert(j != p.end());
+//		p.erase(j);
+//		if (p.empty()) {
+//			i->first->unlisten(this);
+//			nodes.erase(i);
+//		}
+//	}
+//
+//	struct node_info {
+//		std::list<const filter_params*> params;
+//		bool changed;
+//	};
+//
+//	scene *scn;
+//	map<sgnode*, node_info> nodes;
 };
 
 /* Return all nodes from the scene */

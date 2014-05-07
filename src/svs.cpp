@@ -21,7 +21,7 @@
 
 using namespace std;
 
-typedef map<wme*,command*>::iterator cmd_iter;
+typedef map<string,command*>::iterator cmd_iter;
 
 svs_interface *make_svs(agent *a) {
 	return new svs(a);
@@ -213,7 +213,7 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 }
 
 svs_state::~svs_state() {
-	map<wme*, command*>::iterator i, iend;
+	map<string, command*>::iterator i, iend;
 
 	for (i = curr_cmds.begin(), iend = curr_cmds.end(); i != iend; ++i) {
 		delete i->second;
@@ -279,31 +279,64 @@ void svs_state::update_cmd_results(bool early) {
 	}
 }
 
+#include <iostream>
+using namespace std;
+
 void svs_state::process_cmds() {
 	wme_list all;
-	wme_list::iterator i;
-	cmd_iter j;
-
+	wme_list::iterator all_it;
+	cmd_iter curr_it;
 	si->get_child_wmes(cmd_link, all);
 
-	for (j = curr_cmds.begin(); j != curr_cmds.end(); ) {
-		if ((i = find(all.begin(), all.end(), j->first)) == all.end()) {
-			delete j->second;
-			curr_cmds.erase(j++);
-		} else {
-			all.erase(i);
-			++j;
+	wme_list new_commands;    // List of new commands
+	vector<string> curr_ids;  // All identifiers on the command wme
+	for(all_it = all.begin(); all_it != all.end(); all_it++){
+		// Convert wme val to string
+		Symbol* idSym = si->get_wme_val(*all_it);
+		string new_id;
+		if(!si->get_name(idSym, new_id)){
+			// Not an identifier, continue;
+			continue;
+		}
+		curr_ids.push_back(new_id);
+
+		// Check if the command is new
+		curr_it = curr_cmds.find(new_id);
+		if(curr_it == curr_cmds.end()){
+			new_commands.push_back(*all_it);
 		}
 	}
 
-	// all now contains only new commands
-	for (i = all.begin(); i != all.end(); ++i) {
-		command *c = make_command(this, *i);
+	// Find all commands removed from the svs command wme
+	vector<string> old_commands; 
+	for(curr_it = curr_cmds.begin(); curr_it != curr_cmds.end(); curr_it++){
+		vector<string>::iterator new_it = find(curr_ids.begin(), 
+				curr_ids.end(), curr_it->first);
+		if(new_it == curr_ids.end()){
+			old_commands.push_back(curr_it->first);
+		}
+	}
+
+	// Delete the command
+	vector<string>::iterator old_it;
+	for(old_it = old_commands.begin(); old_it != old_commands.end(); old_it++){
+		curr_it = curr_cmds.find(*old_it);
+		delete curr_it->second;
+		curr_cmds.erase(curr_it);
+	}
+
+	// Add the new commands
+	wme_list::iterator new_it;
+	for (new_it = new_commands.begin(); new_it != new_commands.end(); new_it++) {
+		command *c = make_command(this, *new_it);
 		if (c) {
-			curr_cmds[*i] = c;
+			Symbol* idSym = si->get_wme_val(*new_it);
+			string new_id;
+			si->get_name(idSym, new_id);
+			curr_cmds[new_id] = c;
 		} else {
 			string attr;
-			si->get_val(si->get_wme_attr(*i), attr);
+			si->get_val(si->get_wme_attr(*new_it), attr);
 			loggers->get(LOG_ERR) << "could not create command " << attr << endl;
 		}
 	}
@@ -398,13 +431,9 @@ void svs_state::proxy_get_children(map<string, cliproxy*> &c) {
 	c["output"]->set_help("Print current output.");
 
 	proxy_group *cmds = new proxy_group;
-	map<wme*, command*>::const_iterator i;
+	map<string, command*>::const_iterator i;
 	for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
-		string id;
-		if (!si->get_name(si->get_wme_val(i->first), id)) {
-			assert(false);
-		}
-		cmds->add(id, i->second);
+		cmds->add(i->first, i->second);
 	}
 
 	c["command"] = cmds;
