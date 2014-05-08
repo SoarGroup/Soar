@@ -13,6 +13,8 @@
 #include "common.h"
 #include "soar_interface.h"
 
+using namespace std;
+
 extern int DEBUG_DEPTH;
 inline std::string padd(){
 	std::stringstream ss;
@@ -23,7 +25,7 @@ inline std::string padd(){
 }
 inline void enterf(const char* name){
 //	std::cout << padd() << "->" << name << std::endl;
-//	DEBUG_DEPTH++;
+ // DEBUG_DEPTH++;
 }
 inline void exitf(const char* name){
 //	DEBUG_DEPTH--;
@@ -223,14 +225,19 @@ public:
 	}
 	
 	void add(T* v){ 
+		enterf("change_tracking_list::add");
 		//std::cout << "ADDING FROM CTL: " << v << std::endl;
 		current.push_back(v);
 		for (int i = 0; i < listeners.size(); ++i) {
+			//cout << "CALLING ALL LISTENERS" << endl;
 			listeners[i]->handle_ctlist_add(v);
 		}
+		exitf("change_tracking_list::add");
 	}
 	
+
 	void remove(const T* v) {
+		enterf("change_tracking_list::remove");
 		//std::cout << "REMOVE FROM CTL: " << v << std::endl;
 		bool found = false;
 		for (int i = 0; i < current.size(); ++i) {
@@ -252,8 +259,10 @@ public:
 			}
 		}
 		for (int i = 0; i < listeners.size(); ++i) {
+			//cout << "CTL LISTENER - REMOVE" << endl;
 			listeners[i]->handle_ctlist_remove(v);
 		}
+		exitf("change_tracking_list::remove");
 	}
 	
 	void change(const T *v) {
@@ -354,6 +363,7 @@ public:
 	
 	void listen(ctlist_listener<T> *l) {
 		listeners.push_back(l);
+		//cout << "ADDED LISTENER" << endl;
 	}
 	
 	void unlisten(ctlist_listener<T> *l) {
@@ -707,6 +717,7 @@ public:
 
 private:
 	bool compute(const filter_params *params, filter_val *&out, bool &changed) {
+		enterf("select_filter::compute");
 		bool success;
 		bool select;
 		T val;
@@ -735,10 +746,16 @@ private:
 			// do nothing
 			changed = false;
 		}
+		//cout << padd() << "changed = " << (changed ? "T" : "F") << endl;
+		//cout << padd() << "select = " << (select ? "T" : "F") << endl;
+		//cout << padd() << "null = " << (out == NULL ? "T" : "F") << endl;
+		exitf("select_filter::compute");
+		
 		return true;
 	}
 
 	void output_removed(const filter_val *out) {
+		//cout << "typed_select_filter::output_removed" << endl;
 		T val;
 		bool success = get_filter_val(out, val);
 		assert(success);

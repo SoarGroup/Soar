@@ -7,6 +7,8 @@
 #include "ccd/ccd.h"
 #include "params.h"
 
+#include <iostream>
+
 using namespace std;
 
 /*

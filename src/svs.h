@@ -128,7 +128,7 @@ private:
 	wme *scene_num_wme;
 	
 	/* command changes per decision cycle */
-	std::map<wme*, command*> curr_cmds;
+	std::map<std::string, command*> curr_cmds;
 	
 	scene_sig                prev_sig;
 	relation_table           prev_rels;
