@@ -12,6 +12,7 @@
 #include "test.h"
 #include "print.h"
 #include "debug.h"
+#include "rhs.h"
 
 Variablization_Manager::Variablization_Manager(agent *myAgent)
 {
@@ -573,4 +574,136 @@ void Variablization_Manager::variablize_condition_list (condition *top_cond, boo
     }
     dprint(DT_LHS_VARIABLIZATION, "Done variablizing LHS condition list.\n");
     dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
+}
+
+
+/* =====================================================================
+
+          variablize_rl_symbol and variablize_rl_condition_list
+
+   Variablizing of conditions is done by walking over a condition list
+   and destructively modifying it, replacing tests of identifiers with
+   tests of tests of variables.
+
+   These functions are analogous to the ones in chunk.cpp but without
+   all of the generalized variablization logic introduced in Soar 9.4
+===================================================================== */
+
+void Variablization_Manager::variablize_rl_test (agent* thisAgent, test *chunk_test) {
+  cons *c;
+  test ct;
+  TestType test_type;
+  Symbol *instantiated_referent;
+
+  dprint(DT_RL_VARIABLIZATION, "Variablizing rl test: ");
+  dprint_test(DT_RL_VARIABLIZATION, *chunk_test, true, false, true, "", "\n");
+
+  assert(*chunk_test);
+  test_type = (*chunk_test)->type;
+
+  switch (test_type) {
+    case EQUALITY_TEST:
+    case NOT_EQUAL_TEST:
+      ct = *chunk_test;
+      instantiated_referent = (*chunk_test)->data.referent;
+      assert (instantiated_referent);
+
+      if (instantiated_referent->is_sti())
+      {
+        dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %s\n", test_type_to_string(test_type), instantiated_referent->to_string());
+        thisAgent->variablizationManager->variablize_rl_symbol (&(ct->data.referent), (test_type == EQUALITY_TEST));
+      } else
+      {
+        dprint(DT_RL_VARIABLIZATION, "Non-variablizable original referent.\n");
+      }
+      break;
+    case CONJUNCTIVE_TEST:
+      dprint(DT_RL_VARIABLIZATION, "Iterating through conjunction list.\n");
+      ct = *chunk_test;
+      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+      {
+        variablize_rl_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
+      }
+
+      dprint(DT_RL_VARIABLIZATION, "Done iterating through conjunction list.\n");
+      dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
+      break;
+    case GOAL_ID_TEST:
+    case IMPASSE_ID_TEST:
+      break;
+    default:
+      dprint(DT_RL_VARIABLIZATION, "Illegal test type %s with referent %s\n",
+          test_type_to_string(test_type), (*chunk_test)->data.referent->to_string());
+      assert(false);
+      break;
+  }
+
+  dprint(DT_RL_VARIABLIZATION, "Resulting in ");
+  dprint_test(DT_RL_VARIABLIZATION, *chunk_test, true, true, false, "", "\n");
+  dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
+}
+
+
+// creates an action for a template instantiation
+action * Variablization_Manager::make_variablized_rl_action( agent *thisAgent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym )
+{
+  action *rhs;
+  Symbol *temp;
+
+  rhs = make_action(thisAgent);
+  rhs->type = MAKE_ACTION;
+
+  // id
+  temp = id_sym;
+  /* MToDoRefCnt | May not need these 3 refcount adds b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
+  /* MToDo | Might need to also add symbol as original var if that's what it is at this point */
+  // symbol_add_ref(thisAgent, temp );
+  variablize_rl_symbol (&temp, false);
+  rhs->id = allocate_rhs_value_for_symbol(thisAgent, temp );
+
+  // attribute
+  temp = attr_sym;
+  // symbol_add_ref(thisAgent, temp );
+  variablize_rl_symbol (&temp, false);
+  rhs->attr = allocate_rhs_value_for_symbol(thisAgent, temp );
+
+  // value
+  temp = val_sym;
+  // symbol_add_ref(thisAgent, temp );
+  variablize_rl_symbol (&temp, false);
+  rhs->value = allocate_rhs_value_for_symbol(thisAgent, temp );
+
+  // referent
+  temp = ref_sym;
+  // symbol_add_ref(thisAgent, temp );
+  variablize_rl_symbol (&temp, false);
+  rhs->referent = allocate_rhs_value_for_symbol(thisAgent, temp );
+
+  return rhs;
+}
+
+void Variablization_Manager::variablize_rl_condition_list (agent* thisAgent, condition *cond) {
+
+  dprint(DT_RL_VARIABLIZATION, "=============================================\n");
+  dprint(DT_RL_VARIABLIZATION, "Variablizing LHS condition list for template:\n");
+  dprint(DT_RL_VARIABLIZATION, "=============================================\n");
+
+  //thisAgent->varname_table->clear_symbol_map();
+
+  for (; cond!=NIL; cond=cond->next)
+  {
+    switch (cond->type) {
+    case POSITIVE_CONDITION:
+    case NEGATIVE_CONDITION:
+      variablize_rl_test (thisAgent, &(cond->data.tests.id_test));
+      variablize_rl_test (thisAgent, &(cond->data.tests.attr_test));
+      variablize_rl_test (thisAgent, &(cond->data.tests.value_test));
+      break;
+    case CONJUNCTIVE_NEGATION_CONDITION:
+        variablize_rl_condition_list (thisAgent, cond->data.ncc.top);
+      break;
+    }
+  }
+  dprint(DT_RL_VARIABLIZATION, "Done variablizing LHS condition list for template.\n");
+  dprint(DT_RL_VARIABLIZATION, "==================================================\n");
 }

@@ -252,9 +252,6 @@ extern void rl_revert_template_id( agent *thisAgent );
 // builds a new Soar-RL rule from a template instantiation
 extern Symbol *rl_build_template_instantiation( agent *thisAgent, instantiation *my_template_instance, struct token_struct *tok, wme *w );
 
-// creates an incredibly simple action
-extern action *rl_make_simple_action( agent *my_gent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym );
-
 // adds a test to a condition list for goals or impasses contained within the condition list
 extern void rl_add_goal_or_impasse_tests_to_conds(agent *thisAgent, condition *all_conds);
 

@@ -14,6 +14,7 @@
 #include "test.h"
 
 typedef struct condition_struct condition;
+typedef struct action_struct action;
 
 /* -- Following requires that both tests exists and are equality tests -- */
 //struct cmp_constraint_eq_test {
@@ -72,10 +73,13 @@ class Variablization_Manager
 
       void merge_conditions(condition **top_cond);
 
-      void      variablize_rl_symbol (Symbol **sym, bool is_equality_test);
       uint64_t  variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
-      void      variablize_condition_list (condition *cond, bool pInNegativeCondition = false);
       void      variablize_relational_constraints();
+
+      void      variablize_condition_list (condition *cond, bool pInNegativeCondition = false);
+      void      variablize_rl_condition_list (agent* thisAgent, condition *cond);
+
+      action * make_variablized_rl_action( agent *thisAgent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym );
 
       void print_OSD_table();
       void print_variablization_tables(TraceMode mode, int whichTable=0);
@@ -95,6 +99,9 @@ class Variablization_Manager
       void variablize_test(test *t, Symbol *original_referent);
       void variablize_equality_test(test *t);
       void variablize_equality_tests(test *t);
+
+      void variablize_rl_test (agent* thisAgent, test *chunk_test);
+      void variablize_rl_symbol (Symbol **sym, bool is_equality_test);
 
       bool variablize_test_by_lookup(test *t, bool pSkipTopLevelEqualities);
       void variablize_tests_by_lookup(test *t, bool pSkipTopLevelEqualities);
