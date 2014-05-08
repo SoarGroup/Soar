@@ -808,9 +808,9 @@ vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d
 		}
 	}
 
-	tempScale[d1] = scale[d1] * min;
-	tempScale[d2] = scale[d2] * min;
-	tempScale[d3] = scale[d3] * min;
+	tempScale[d1] = scale[d1] * min * .98;
+	tempScale[d2] = scale[d2] * min * .98;
+	tempScale[d3] = scale[d3] * min * .98;
 	//cout << "Final Result: " << min << endl;
 	return tempScale;
 }

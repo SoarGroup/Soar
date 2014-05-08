@@ -54,8 +54,8 @@ void calc_view_lines(const sgnode* target, const sgnode* eye, view_line_list& vi
 //	std::cout << "EYE: " << eyePos[0] << ", " << eyePos[1] << ", " << eyePos[2] << std::endl;
 
 	// Create a view_line for the centroid
-	std::string name = "_centroid_line_";
-	view_lines.push_back(create_view_line(name, eyePos, target->get_centroid()));
+	//std::string name = "_centroid_line_";
+	//view_lines.push_back(create_view_line(name, eyePos, target->get_centroid()));
 
 	c_geom_node_list geom_nodes;
 	target->walk_geoms(geom_nodes);
