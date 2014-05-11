@@ -72,6 +72,8 @@ class Variablization_Manager
       void install_cached_constraints(condition *cond);
 
       void merge_conditions(condition **top_cond);
+      bool condition_is_duplicate(condition *new_condition);
+      void remove_dupe_conditions(condition **top_cond);
 
       uint64_t  variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
       void      variablize_relational_constraints();

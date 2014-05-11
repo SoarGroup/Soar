@@ -168,7 +168,7 @@ void Variablization_Manager::merge_conditions(condition **top_cond)
     dprint(DT_MERGE, "======================\n");
     while (cond)
     {
-        dprint_condition(DT_MERGE, cond, "Merging constraint: ", true, false, true);
+        dprint_condition(DT_MERGE, cond, "Merging condition: ", true, false, true);
         next_cond = cond->next;
         if (cond->type==POSITIVE_CONDITION) {
             /* -- Check if there already exists a condition with the same id and
@@ -219,4 +219,109 @@ void Variablization_Manager::merge_conditions(condition **top_cond)
     dprint(DT_MERGE, "===========================\n");
     dprint(DT_MERGE, "= Done Merging Conditions =\n");
     dprint(DT_MERGE, "===========================\n");
+}
+
+bool is_duplicate_cond (condition *c1, condition *c2) {
+  if (c1->type != c2->type) return false;
+  bool neg = true;
+  switch (c1->type) {
+  case POSITIVE_CONDITION:
+      neg = false;
+  case NEGATIVE_CONDITION:
+    if (! tests_are_equal (c1->data.tests.id_test,
+                           c2->data.tests.id_test, neg))
+      return false;
+    if (! tests_are_equal (c1->data.tests.attr_test,
+                           c2->data.tests.attr_test, neg))
+      return false;
+    if (! tests_are_equal (c1->data.tests.value_test,
+                           c2->data.tests.value_test, neg))
+      return false;
+    if (c1->test_for_acceptable_preference !=
+        c2->test_for_acceptable_preference)
+      return false;
+    return true;
+
+  case CONJUNCTIVE_NEGATION_CONDITION:
+    for (c1=c1->data.ncc.top, c2=c2->data.ncc.top;
+         ((c1!=NIL)&&(c2!=NIL));
+         c1=c1->next, c2=c2->next)
+      if (! conditions_are_equal (c1,c2)) return false;
+    if (c1==c2) return true;  /* make sure they both hit end-of-list */
+    return false;
+  }
+  return false; /* unreachable, but without it, gcc -Wall warns here */
+}
+
+/* --
+ * Requires:  A condition in a valid doubly-linked condition list
+ * Modifies:  Nothing
+ * Effect:    Returns whether the condition passed in has a duplicate
+ *            previously in the list.  takes a condition and iterates through -- */
+
+ bool Variablization_Manager::condition_is_duplicate(condition *new_condition)
+{
+    for (condition *check_condition = new_condition->prev; check_condition; check_condition = check_condition->prev)
+    {
+        if (is_duplicate_cond(check_condition, new_condition))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Variablization_Manager::remove_dupe_conditions(condition **top_cond)
+{
+    condition *cond, *last_cond, *next_cond;
+
+    dprint(DT_MERGE, "=================================\n");
+    dprint(DT_MERGE, "= Removing duplicate conditions =\n");
+    dprint(DT_MERGE, "=================================\n");
+    dprint_condition_list(DT_MERGE, *top_cond, "", true, false, true);
+    dprint(DT_MERGE, "======================\n");
+
+    last_cond = NULL;
+    for (cond = (*top_cond); cond ;)
+    {
+        dprint_condition(DT_MERGE, cond, "Attempting to add condition: ", true, false, true);
+        next_cond = cond->next;
+        if (cond->type!=CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            if (condition_is_duplicate(cond))
+            {
+                dprint(DT_MERGE, "...condition is duplicate. Deleting.\n");
+                if (last_cond)
+                {
+                    /* -- Not at the head of the list -- */
+                    dprint(DT_MERGE, "...deleting non-head item.\n");
+                    last_cond->next = cond->next;
+                    deallocate_condition(thisAgent, cond);
+                    if (last_cond->next)
+                        last_cond->next->prev = last_cond;
+                    cond = last_cond;
+                } else {
+                    /* -- At the head of the list -- */
+                    dprint(DT_MERGE, "...deleting head of list.\n");
+                    (*top_cond) = cond->next;
+                    deallocate_condition(thisAgent, cond);
+                    if ((*top_cond)->next)
+                        (*top_cond)->next->prev = (*top_cond);
+                    /* -- Following will cause last_cond to be set to  NULL, indicating we're
+                     *    at the head of the list -- */
+                    cond = NULL;
+                }
+            }
+        } else {
+            // Might need to do merges on NCCs.  Check if really need it.
+        }
+        last_cond = cond;
+        cond = next_cond;
+    }
+
+    dprint(DT_MERGE, "======================\n");
+    dprint_condition_list(DT_MERGE, *top_cond, "", true, false, true);
+    dprint(DT_MERGE, "======================================\n");
+    dprint(DT_MERGE, "= Done removing duplicate conditions =\n");
+    dprint(DT_MERGE, "======================================\n");
 }
