@@ -38,6 +38,7 @@
 #include "src/filters/stats.cpp"
 #include "src/filters/vec3.cpp"
 #include "src/filters/monitor_object.cpp"
+#include "src/filters/higher_than.cpp"
 
 #include "src/cliproxy.cpp"
 #include "src/command.cpp"

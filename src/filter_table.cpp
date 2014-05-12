@@ -44,6 +44,7 @@ filter_table_entry *overlap_fill_entry();
 filter_table_entry *monitor_position_fill_entry();
 filter_table_entry *monitor_volume_fill_entry();
 filter_table_entry *remove_node_fill_entry();
+filter_table_entry *higher_than_fill_entry();
 
 filter_table::filter_table() {
 	add(intersect_fill_entry());
@@ -81,6 +82,7 @@ filter_table::filter_table() {
 	add(monitor_position_fill_entry());
 	add(monitor_volume_fill_entry());
 	add(remove_node_fill_entry());
+	add(higher_than_fill_entry());
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*> &c) {
