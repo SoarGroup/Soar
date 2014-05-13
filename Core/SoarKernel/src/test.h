@@ -60,6 +60,7 @@ typedef struct identity_struct {
     uint64_t      grounding_id;
     WME_Field     grounding_field;
     wme           *grounding_wme;
+    identity_struct() : original_var(NULL), grounding_id(0), grounding_field(NO_ELEMENT), grounding_wme(NULL) {}
 } identity_info;
 
 /* -- test_info stores information about a test.  If nil, the test is
@@ -68,21 +69,26 @@ typedef struct identity_struct {
  *    The original_test pointer stores the test that was defined when the
  *    production was read in by the parser.  The values are filled in by the
  *    rete when reconstructing a production.  It is used by the chunker to
- *    determine when to variablize constant symbols. - MMA 2013
+ *    determine when to variablize non-STI symbols.
+ *
+ *    The eq_test pointer is used to cache the main equality test for an
+ *    element in a condition so that we do not have to continually re-scan
  *
  *    Note that conjunctive tests always have a NULL original_test.  Each
  *    constituent test of the conjunctive test contains links to its original
  *    test already --*/
 
 typedef struct test_struct {
-  TestType        type;                  /* see definitions below */
+  TestType        type;                  /* see definitions in enums.h */
   union test_info_union {
     Symbol        *referent;         /* for relational tests */
     ::list        *disjunction_list;   /* for disjunction tests */
     ::list        *conjunct_list;      /* for conjunctive tests */
   } data;
   test_struct     *original_test;
+  test_struct     *eq_test;
   identity_info   *identity;
+  test_struct() : type(NUM_TEST_TYPES), original_test(NULL), eq_test(NULL), identity(NULL) { data.referent = NULL; }
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is
