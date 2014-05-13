@@ -23,7 +23,7 @@ Variablization_Manager::Variablization_Manager(agent *myAgent)
     sti_constraints = new std::map< Symbol * , ::list * >();
     constant_constraints = new std::map< uint64_t , ::list * >();
 
-    cond_merge_map = new std::map< Symbol *, std::map< Symbol *, ::list *> >();
+    cond_merge_map = new std::map< Symbol *, std::map< Symbol *, std::map< Symbol *, condition *> > >();
     ground_id_counter = 0;
 }
 

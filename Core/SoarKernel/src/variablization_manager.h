@@ -31,6 +31,12 @@ typedef struct variablization_struct {
       uint64_t grounding_id;
       bool grounded;
 } variablization;
+//
+//typedef struct merge_struct {
+//        Symbol *value_equality_test;
+//        condition *cond;
+//        merge_struct() : value_equality_test(NULL), cond(NULL) {}
+//} merge_info;
 
 /* -- Variablization_Manager
  *
@@ -71,9 +77,9 @@ class Variablization_Manager
       void cache_constraints_in_cond (condition *c);
       void install_cached_constraints(condition *cond);
 
-      void merge_conditions(condition **top_cond);
-      bool condition_is_duplicate(condition *new_condition);
-      void remove_dupe_conditions(condition **top_cond);
+      void find_redundancies(condition *top_cond);
+      void fix_tests(condition *top_cond);
+      void merge_conditions(condition *top_cond);
 
       uint64_t  variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
       void      variablize_relational_constraints();
@@ -141,7 +147,7 @@ class Variablization_Manager
       /* -- Table of previously seen conditions.  Used to determine
        *    whether to merge or eliminate positive conditions on
        *    the LHS of a chunk. -- */
-      std::map< Symbol *, std::map< Symbol *, ::list *> > *cond_merge_map;
+      std::map< Symbol *, std::map< Symbol *, std::map< Symbol *, condition *> > > *cond_merge_map;
 
       /* -- A counter for the next grounding id to assign. 0 is the default
        *    value and not considered a valid grounding id. -- */

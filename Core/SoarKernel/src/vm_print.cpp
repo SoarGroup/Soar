@@ -19,19 +19,19 @@ void Variablization_Manager::print_merge_map (TraceMode mode)
     dprint(mode, "            Merge Map\n");
     dprint(mode, "------------------------------------\n");
 
-    cons *c;
-
-    std::map< Symbol *, std::map< Symbol *, ::list *> >::iterator iter_id;
-    std::map< Symbol *, ::list *>::iterator iter_attr;
-    std::map< Symbol *, ::list *> *attr_values;
+    std::map< Symbol *, std::map< Symbol *, std::map< Symbol *, condition *> > >::iterator iter_id;
+    std::map< Symbol *, std::map< Symbol *, condition *> >::iterator iter_attr;
+    std::map< Symbol *, condition *>::iterator iter_value;
 
     for (iter_id = cond_merge_map->begin(); iter_id != cond_merge_map->end(); ++iter_id)
     {
         dprint(DT_MERGE, "%s conditions: \n", iter_id->first->to_string());
-        attr_values = &(iter_id->second);
-        for (iter_attr = attr_values->begin(); iter_attr != attr_values->end(); ++iter_attr)
+        for (iter_attr = iter_id->second.begin(); iter_attr != iter_id->second.end(); ++iter_attr)
         {
-            dprint_condition_cons(DT_MERGE, iter_attr->second, true, false, true, "   ");
+            for (iter_value = iter_attr->second.begin(); iter_value != iter_attr->second.end(); ++iter_value)
+            {
+                dprint_condition(DT_MERGE, iter_value->second, "   ", true, false, true);
+            }
         }
     }
 
