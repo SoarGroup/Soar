@@ -122,6 +122,8 @@ class Variablization_Manager
       variablization *get_variablization(test equality_test);
       variablization *get_variablization(Symbol *index_sym);
 
+      void fix_test(test *t);
+
       void      merge_values_in_conds(condition *pDestCond, condition *pSrcCond);
       void      set_cond_for_id_attr_tests(condition *pCond);
       condition *get_previously_seen_cond(condition *pCond);

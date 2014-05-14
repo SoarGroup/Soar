@@ -99,6 +99,9 @@ typedef test_info * test;
 /* --- Descriptions of these functions can be found in the test.cpp --- */
 inline bool test_is_blank(test t){return (t == 0);}
 inline bool test_is_variable(agent* thisAgent, test t);
+inline bool test_has_referent(test t) {
+    return ((t->type!=DISJUNCTION_TEST) && (t->type!=GOAL_ID_TEST) &&
+            (t->type!=IMPASSE_ID_TEST) && (t->type!=CONJUNCTIVE_TEST));};
 inline test make_blank_test() {return static_cast<test>(0);}
 
 char first_letter_from_test (test t);
@@ -107,9 +110,9 @@ bool tests_identical (test t1, test t2);
 bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
-test equality_test_found_in_test (agent* thisAgent, test t);
-test equality_var_test_found_in_test (agent* thisAgent, test t);
-test find_original_equality_test_preferring_vars (agent* thisAgent, test t, bool useOriginals=false);
+test equality_test_found_in_test (test t);
+test equality_var_test_found_in_test (test t);
+test find_original_equality_test_preferring_vars (test t, bool useOriginals=false);
 
 test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
 uint32_t hash_test (agent* thisAgent, test t);
@@ -121,6 +124,8 @@ test copy_test_without_relationals (agent* thisAgent, test t);
 
 void add_test (agent* thisAgent, test *dest_address, test new_test);
 void add_test_if_not_already_there (agent* thisAgent, test *t, test new_test, bool neg);
+
+::list * delete_test_from_conjunct(agent* thisAgent, test *t, ::list *pDeleteItem);
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 

@@ -366,7 +366,7 @@ void Variablization_Manager::variablize_equality_test(test *t)
 
         dprint(DT_LHS_VARIABLIZATION, "Equality test with conjunctive set of original equalities.\n");
         assert((*t)->type==EQUALITY_TEST);
-        original_eq_test = find_original_equality_test_preferring_vars(thisAgent, original_test, false);
+        original_eq_test = find_original_equality_test_preferring_vars(original_test, false);
         if (!original_eq_test) return;
         original_referent = original_eq_test->data.referent;
     }

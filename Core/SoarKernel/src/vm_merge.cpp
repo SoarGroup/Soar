@@ -204,10 +204,82 @@ void Variablization_Manager::merge_conditions(condition *top_cond)
     dprint(DT_MERGE, "===========================\n");
 }
 
+void Variablization_Manager::fix_test(test *t)
+{
+    switch ((*t)->type)
+    {
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+        case DISJUNCTION_TEST:
+            break;
+        case CONJUNCTIVE_TEST:
+        {
+            dprint_test(DT_MERGE, (*t), true, false, false, "Fixing conjunctive test: ", "\n");
+            ::list *c = (*t)->data.conjunct_list;
+            test tt;
+            while (c) {
+                tt = static_cast<test>(c->first);
+                if (test_has_referent(tt) && (tt->data.referent->is_sti()))
+                {
+                    dprint_noprefix(DT_MERGE, "Ungrounded STI found: %s\n", tt->data.referent->to_string());
+                    c = delete_test_from_conjunct(thisAgent, t, c);
+                    dprint_test(DT_MERGE, (*t), true, false, true, "...after deletion: ", "\n");
+                } else
+                    c = c->rest;
+            }
+            dprint_test(DT_MERGE, (*t), true, false, false, "After fixing conjunctive tests: ", "\n");
+            break;
+        }
+        default:
+            if ((*t)->data.referent->is_sti())
+            {
+                dprint_noprefix(DT_MERGE, "Ungrounded STI in main equality test: %s!!!\n", (*t)->data.referent->to_string());
+                assert(false);
+            }
+            break;
+    }
+}
 
 void Variablization_Manager::fix_tests(condition *top_cond)
 {
+    dprint(DT_MERGE, "================\n");
+    dprint(DT_MERGE, "= Fixing Tests =\n");
+    dprint(DT_MERGE, "================\n");
+    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+    dprint(DT_MERGE, "================\n");
 
+    condition *next_cond, *last_cond=NULL;
+    for (condition *cond = top_cond; cond;)
+    {
+        dprint_condition(DT_MERGE, cond, "Processing condition: ", true, false, true);
+        next_cond = cond->next;
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION) {
+            fix_test(&cond->data.tests.id_test);
+            fix_test(&cond->data.tests.attr_test);
+            fix_test(&cond->data.tests.value_test);
+        } else {
+            fix_tests(cond->data.ncc.top);
+        }
+        last_cond = cond;
+        cond = next_cond;
+        dprint(DT_MERGE, "...done merging this constraint.\n");
+    }
+    dprint(DT_MERGE, "======================\n");
+    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+    dprint(DT_MERGE, "=====================\n");
+    dprint(DT_MERGE, "= Done Fixing Tests =\n");
+    dprint(DT_MERGE, "=====================\n");
+}
+
+inline void cache_eq_test(test t)
+{
+    if (t->type==CONJUNCTIVE_TEST)
+    {
+        t->eq_test = equality_test_found_in_test(t);
+        t->eq_test->eq_test = t->eq_test;
+    }
+    else if (t->type==EQUALITY_TEST) t->eq_test = t;
+    else t->eq_test = NULL;
 }
 
 void Variablization_Manager::find_redundancies(condition *top_cond)
@@ -218,16 +290,18 @@ void Variablization_Manager::find_redundancies(condition *top_cond)
     dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
     dprint(DT_MERGE, "========================\n");
 
-    // Right now, this just
+    /* -- Right now, this just cache's the equality tests to minimize searching
+     *    through conjuncts while merging -- */
+
     condition *next_cond, *last_cond=NULL;
     for (condition *cond = top_cond; cond;)
     {
         dprint_condition(DT_MERGE, cond, "Processing condition: ", true, false, true);
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION) {
-            cond->data.tests.id_test->eq_test = equality_test_found_in_test(thisAgent, cond->data.tests.id_test);
-            cond->data.tests.attr_test->eq_test = equality_test_found_in_test(thisAgent, cond->data.tests.attr_test);
-            cond->data.tests.value_test->eq_test = equality_test_found_in_test(thisAgent, cond->data.tests.value_test);
+            cache_eq_test(cond->data.tests.id_test);
+            cache_eq_test(cond->data.tests.attr_test);
+            cache_eq_test(cond->data.tests.value_test);
         } else {
             // Do we really need for NCCs?
         }

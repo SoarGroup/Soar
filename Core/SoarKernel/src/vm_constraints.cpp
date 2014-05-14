@@ -284,7 +284,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test *t)
     Symbol *eq_symbol;
     variablization *found_variablization;
 
-    eq_test = equality_test_found_in_test(thisAgent, *t);
+    eq_test = equality_test_found_in_test(*t);
     assert(eq_test);
     eq_symbol = eq_test->data.referent;
     dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %s(%llu).\n", eq_symbol->to_string(), eq_test->identity ? eq_test->identity->grounding_id : 0);
