@@ -35,7 +35,7 @@ void Variablization_Manager::clear_merge_map()
 void Variablization_Manager::merge_values_in_conds(condition *pDestCond, condition *pSrcCond)
 {
     dprint(DT_MERGE, "...merging conditions in attribute element...\n");
-    copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
+    copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.attr_test), pSrcCond->data.tests.attr_test);
     dprint(DT_MERGE, "...merging conditions in value element...\n");
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
 }
@@ -92,7 +92,7 @@ condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
     std::map< Symbol *, std::map< Symbol *, condition *> >::iterator iter_attr;
     std::map< Symbol *, condition *>::iterator iter_value;
 
-    //  dprint_condition(DT_MERGE, pCond, "get_previously_seen_cond() called with: ", true, false, true);
+    //  dprint_condition(DT_MERGE, pCond, "get_previously_seen_cond() called with: ", true, false, false);
 
     dprint(DT_MERGE, "...looking for id equality test %s\n", pCond->data.tests.id_test->eq_test->data.referent->to_string());
     iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);
@@ -107,7 +107,7 @@ condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
             iter_value = iter_attr->second.find(pCond->data.tests.value_test->eq_test->data.referent);
             if (iter_value != iter_attr->second.end())
             {
-                dprint_condition(DT_MERGE, iter_value->second, "...found similar condition: ", true, false, true);
+                dprint_condition(DT_MERGE, iter_value->second, "          ...found similar condition: ", true, false, false);
                 return iter_value->second;
             }
             else dprint(DT_MERGE, "...no previously seen similar condition with that value element.\n");
@@ -116,7 +116,6 @@ condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
     }
     else dprint(DT_MERGE, "...no previously seen similar condition with that ID element.\n");
 
-    dprint(DT_MERGE, "...returning NULL.\n");
     return NULL;
 }
 
@@ -137,18 +136,28 @@ condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
  *              assume they have the same grounding (or one that is unified.)
  * -- */
 
+inline int64_t count_conditions(condition *top_cond)
+{
+    int64_t count=0;
+    for (condition *cond = top_cond; cond; cond = cond->next, count++) {}
+    return count;
+}
+
 void Variablization_Manager::merge_conditions(condition *top_cond)
 {
     dprint(DT_MERGE, "======================\n");
     dprint(DT_MERGE, "= Merging Conditions =\n");
     dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, false);
+    int64_t current_cond=1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
+    dprint(DT_MERGE, "# of conditions = %lld\n", old_num_conds);
     dprint(DT_MERGE, "======================\n");
 
     condition *found_cond, *next_cond, *last_cond=NULL;
-    for (condition *cond = top_cond; cond;)
+    for (condition *cond = top_cond; cond; ++current_cond)
     {
-        dprint_condition(DT_MERGE, cond, "Processing condition: ", true, false, true);
+        dprint(DT_MERGE, "Processing condition %lld: ", current_cond);
+        dprint_condition(DT_MERGE, cond, "", true, false, false);
         next_cond = cond->next;
         if (cond->type==POSITIVE_CONDITION) {
             /* -- Check if there already exists a condition with the same
@@ -198,7 +207,12 @@ void Variablization_Manager::merge_conditions(condition *top_cond)
         dprint(DT_MERGE, "...done merging this constraint.\n");
     }
     dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, false);
+    new_num_conds = count_conditions(top_cond);
+    cond_diff = old_num_conds - new_num_conds;
+    dprint(DT_MERGE, "# of conditions = %lld\n", new_num_conds);
+    dprint(DT_DEBUG, ((cond_diff > 0) ? "Conditions decreased by %lld conditions! (%lld - %lld)\n" : "No decrease in number of conditions. [%lld = (%lld - %lld)]\n"), cond_diff, old_num_conds, new_num_conds);
+
     dprint(DT_MERGE, "===========================\n");
     dprint(DT_MERGE, "= Done Merging Conditions =\n");
     dprint(DT_MERGE, "===========================\n");
@@ -214,7 +228,7 @@ void Variablization_Manager::fix_test(test *t)
             break;
         case CONJUNCTIVE_TEST:
         {
-            dprint_test(DT_MERGE, (*t), true, false, false, "Fixing conjunctive test: ", "\n");
+            dprint_test(DT_MERGE, (*t), true, false, false, "          Fixing conjunctive test: ", "\n");
             ::list *c = (*t)->data.conjunct_list;
             test tt;
             while (c) {
@@ -223,11 +237,11 @@ void Variablization_Manager::fix_test(test *t)
                 {
                     dprint_noprefix(DT_MERGE, "Ungrounded STI found: %s\n", tt->data.referent->to_string());
                     c = delete_test_from_conjunct(thisAgent, t, c);
-                    dprint_test(DT_MERGE, (*t), true, false, true, "...after deletion: ", "\n");
+                    dprint_test(DT_MERGE, (*t), true, false, true, "          ...after deletion: ", "\n");
                 } else
                     c = c->rest;
             }
-            dprint_test(DT_MERGE, (*t), true, false, false, "After fixing conjunctive tests: ", "\n");
+            dprint_test(DT_MERGE, (*t), true, false, false, "          After fixing conjunctive tests: ", "\n");
             break;
         }
         default:
@@ -245,13 +259,13 @@ void Variablization_Manager::fix_tests(condition *top_cond)
     dprint(DT_MERGE, "================\n");
     dprint(DT_MERGE, "= Fixing Tests =\n");
     dprint(DT_MERGE, "================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, true);
     dprint(DT_MERGE, "================\n");
 
     condition *next_cond, *last_cond=NULL;
     for (condition *cond = top_cond; cond;)
     {
-        dprint_condition(DT_MERGE, cond, "Processing condition: ", true, false, true);
+        dprint_condition(DT_MERGE, cond, "Fixing condition: ", true, false, true);
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION) {
             fix_test(&cond->data.tests.id_test);
@@ -262,10 +276,10 @@ void Variablization_Manager::fix_tests(condition *top_cond)
         }
         last_cond = cond;
         cond = next_cond;
-        dprint(DT_MERGE, "...done merging this constraint.\n");
+        dprint(DT_MERGE, "...done fixing condition.\n");
     }
     dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, true);
     dprint(DT_MERGE, "=====================\n");
     dprint(DT_MERGE, "= Done Fixing Tests =\n");
     dprint(DT_MERGE, "=====================\n");
@@ -287,7 +301,7 @@ void Variablization_Manager::find_redundancies(condition *top_cond)
     dprint(DT_MERGE, "========================\n");
     dprint(DT_MERGE, "= Finding redundancies =\n");
     dprint(DT_MERGE, "========================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, true);
     dprint(DT_MERGE, "========================\n");
 
     /* -- Right now, this just cache's the equality tests to minimize searching
@@ -296,7 +310,7 @@ void Variablization_Manager::find_redundancies(condition *top_cond)
     condition *next_cond, *last_cond=NULL;
     for (condition *cond = top_cond; cond;)
     {
-        dprint_condition(DT_MERGE, cond, "Processing condition: ", true, false, true);
+        dprint_condition(DT_MERGE, cond, "Finding redundancies in condition: ", true, false, true);
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION) {
             cache_eq_test(cond->data.tests.id_test);
@@ -307,13 +321,13 @@ void Variablization_Manager::find_redundancies(condition *top_cond)
         }
         last_cond = cond;
         cond = next_cond;
-        dprint(DT_MERGE, "...done merging this constraint.\n");
+        dprint(DT_MERGE, "...done finding redundancies in condition.\n");
     }
-    dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
-    dprint(DT_MERGE, "===========================\n");
-    dprint(DT_MERGE, "= Done Merging Conditions =\n");
-    dprint(DT_MERGE, "===========================\n");
+    dprint(DT_MERGE, "=============================\n");
+    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, true);
+    dprint(DT_MERGE, "=============================\n");
+    dprint(DT_MERGE, "= Done finding redundancies =\n");
+    dprint(DT_MERGE, "=============================\n");
 }
 
 
