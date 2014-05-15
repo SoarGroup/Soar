@@ -41,10 +41,6 @@
 
 using namespace soar_TraceNames;
 
-//#define BACKTRACE_COMBINE_CONDITIONS
-#define BACKTRACE_ADD_ALL_CONDITIONS
-//#define BACKTRACE_ADD_ONLY_UNIQUE (not implemented yet, may not)
-
 /* ====================================================================
 
                             Backtracing
@@ -88,11 +84,9 @@ using namespace soar_TraceNames;
 
 
 /* -- This version of the add functions combines the tests from two conditions if they both
- *    match the same wme.  Not currently used because there were significant problems when
- *    reordering and adding to rete.  Keeping around for now if adding all conditions proves
- *    to be an issue. -- */
+ *    match the same wme.  Experimental. -- */
 
-#ifdef BACKTRACE_COMBINE_CONDITIONS
+#ifdef MERGE_CONDITIONS_EARLY
 inline condition *find_cond_for_match_wme(agent* thisAgent, wme *matched_wme, ::list *search_list)
 {
   assert(matched_wme && search_list);
@@ -118,11 +112,7 @@ inline condition *find_cond_for_match_wme(agent* thisAgent, wme *matched_wme, ::
 
 inline void add_to_grounds(agent* thisAgent, condition * cond)
 {
-  /* MToDo | Remove */
   cons *c;
-
-  check_symbol_in_test(thisAgent, cond->data.tests.value_test, "Add_To_Grounds | ");
-
   if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
   {
     (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
@@ -132,8 +122,8 @@ inline void add_to_grounds(agent* thisAgent, condition * cond)
   } else
   {
     condition *first_condition = find_cond_for_match_wme(thisAgent, (cond)->bt.wme_, thisAgent->grounds);
-    copy_non_identical_tests (thisAgent, &(first_condition->data.tests.value_test), cond->data.tests.value_test);
-    copy_non_identical_tests (thisAgent, &(first_condition->data.tests.attr_test), cond->data.tests.attr_test);
+    copy_non_identical_tests (thisAgent, &(first_condition->data.tests.value_test), cond->data.tests.value_test, BT_MERGE_USE_IDENTITY);
+    copy_non_identical_tests (thisAgent, &(first_condition->data.tests.attr_test), cond->data.tests.attr_test, BT_MERGE_USE_IDENTITY);
   }
 }
 
@@ -164,9 +154,14 @@ inline void add_to_locals(agent* thisAgent, condition * cond)
       push (thisAgent, (cond), thisAgent->locals);
     }
 }
-#endif
 
-#ifdef BACKTRACE_ADD_ALL_CONDITIONS
+#else
+
+/* MToDo | MERGE_CONDITIONS_EARLY is false.  So add all conditions during
+ *         backtracing and merge after variablization.  We implemented
+ *         while dealing with two different issues.  It seems only one
+ *         is needed now.  Figure out which and eliminate one.  */
+
 inline void add_to_grounds(agent* thisAgent, condition * cond)
 {
   cons *c;
@@ -197,6 +192,7 @@ inline void add_to_locals(agent* thisAgent, condition * cond)
   }
   push (thisAgent, (cond), thisAgent->locals);
 }
+
 #endif
 
 /* -------------------------------------------------------------------
