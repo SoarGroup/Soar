@@ -132,8 +132,8 @@ inline void add_to_grounds(agent* thisAgent, condition * cond)
   } else
   {
     condition *first_condition = find_cond_for_match_wme(thisAgent, (cond)->bt.wme_, thisAgent->grounds);
-    add_non_identical_tests (thisAgent, &(first_condition->data.tests.value_test), cond->data.tests.value_test);
-    add_non_identical_tests (thisAgent, &(first_condition->data.tests.attr_test), cond->data.tests.attr_test);
+    copy_non_identical_tests (thisAgent, &(first_condition->data.tests.value_test), cond->data.tests.value_test);
+    copy_non_identical_tests (thisAgent, &(first_condition->data.tests.attr_test), cond->data.tests.attr_test);
   }
 }
 

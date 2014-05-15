@@ -35,9 +35,9 @@ void Variablization_Manager::clear_merge_map()
 void Variablization_Manager::merge_values_in_conds(condition *pDestCond, condition *pSrcCond)
 {
     dprint(DT_MERGE, "...merging conditions in attribute element...\n");
-    add_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
+    copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
     dprint(DT_MERGE, "...merging conditions in value element...\n");
-    add_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
+    copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
 }
 
 /* MToDo | Remove.  I think we can just set item directly since we don't need to add to a list any more */

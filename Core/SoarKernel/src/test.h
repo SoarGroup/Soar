@@ -106,7 +106,7 @@ inline test make_blank_test() {return static_cast<test>(0);}
 
 char first_letter_from_test (test t);
 bool tests_are_equal (test t1, test t2, bool neg);
-bool tests_identical (test t1, test t2);
+bool tests_identical (test t1, test t2, bool considerIdentity=false);
 bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
@@ -137,7 +137,7 @@ void add_rete_test_list_to_tests (agent* thisAgent, condition *cond, rete_test *
 void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter);
 void add_all_variables_in_test (agent* thisAgent, test t, tc_number tc, list **var_list);
 void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc, ::list **var_list);
-void add_non_identical_tests (agent* thisAgent, test *t, test add_me);
+void copy_non_identical_tests (agent* thisAgent, test *t, test add_me, bool considerIdentity=false);
 
 /* UITODO| Make this method of Test */
 char *test_to_string (test t, char *dest=NIL, size_t dest_size=0, bool show_equality=false);
