@@ -68,6 +68,7 @@ class Variablization_Manager
       void clear_cached_constraints ();
       void clear_variablization_tables();
       void clear_merge_map();
+      void clear_substitution_map();
       void clear_data();
       void reinit();
 
@@ -77,8 +78,8 @@ class Variablization_Manager
       void cache_constraints_in_cond (condition *c);
       void install_cached_constraints(condition *cond);
 
-      void find_redundancies(condition *top_cond);
-      void fix_tests(condition *top_cond);
+      void fix_conditions(condition *top_cond);
+      void consolidate_variables(condition *top_cond, tc_number tc_num);
       void merge_conditions(condition *top_cond);
 
       uint64_t  variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
@@ -122,10 +123,13 @@ class Variablization_Manager
       variablization *get_variablization(test equality_test);
       variablization *get_variablization(Symbol *index_sym);
 
-      void fix_test(test *t);
+      test      get_substitution(Symbol *sym);
+      void      set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
+      void      update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
+      void      consolidate_variables_in_test(test t, tc_number tc_num);
+      void      remove_redundancies_and_ungroundeds(test *t, tc_number tc_num);
 
       void      merge_values_in_conds(condition *pDestCond, condition *pSrcCond);
-      void      set_cond_for_id_attr_tests(condition *pCond);
       condition *get_previously_seen_cond(condition *pCond);
 
       void cache_constraint (test equality_test, test relational_test);
@@ -150,6 +154,7 @@ class Variablization_Manager
        *    whether to merge or eliminate positive conditions on
        *    the LHS of a chunk. -- */
       std::map< Symbol *, std::map< Symbol *, std::map< Symbol *, condition *> > > *cond_merge_map;
+      std::map< Symbol * , test > *substitution_map;
 
       /* -- A counter for the next grounding id to assign. 0 is the default
        *    value and not considered a valid grounding id. -- */

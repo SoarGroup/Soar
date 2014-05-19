@@ -19,6 +19,9 @@ void Variablization_Manager::print_merge_map (TraceMode mode)
     dprint(mode, "            Merge Map\n");
     dprint(mode, "------------------------------------\n");
 
+    if (cond_merge_map->size() == 0)
+        dprint(mode, "EMPTY MAP");
+
     std::map< Symbol *, std::map< Symbol *, std::map< Symbol *, condition *> > >::iterator iter_id;
     std::map< Symbol *, std::map< Symbol *, condition *> >::iterator iter_attr;
     std::map< Symbol *, condition *>::iterator iter_value;
@@ -45,6 +48,10 @@ void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bo
         dprint(mode, "OrigVariable to g_id Propagation Map\n");
         dprint(mode, "------------------------------------\n");
     }
+
+    if (orig_var_to_g_id_map->size() == 0)
+        dprint(mode, "EMPTY MAP");
+
     for (std::map< Symbol *, uint64_t >::iterator it=(*orig_var_to_g_id_map).begin(); it!=(*orig_var_to_g_id_map).end(); ++it)
     {
         dprint(mode, "%s -> %llu\n", it->first->to_string(), it->second);
@@ -55,8 +62,11 @@ void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bo
 void Variablization_Manager::print_cached_constraints (TraceMode mode)
 {
     dprint(mode, "------------------------------------\n");
-    dprint(mode, "            Constraint Map\n");
+    dprint(mode, "           STI Constraint Map\n");
     dprint(mode, "------------------------------------\n");
+
+    if (sti_constraints->size() == 0)
+        dprint(mode, "EMPTY MAP");
 
     cons *c;
 
@@ -70,6 +80,10 @@ void Variablization_Manager::print_cached_constraints (TraceMode mode)
         }
     }
     dprint(mode, "------------------------------------\n");
+    dprint(mode, "         Non-STI Constraint Map\n");
+    dprint(mode, "------------------------------------\n");
+    if (constant_constraints->size() == 0)
+        dprint(mode, "EMPTY MAP");
     for (std::map< uint64_t, ::list * >::iterator it=constant_constraints->begin(); it!=constant_constraints->end(); ++it)
     {
         c = it->second;
@@ -86,16 +100,18 @@ void Variablization_Manager::print_cached_constraints (TraceMode mode)
 void Variablization_Manager::print_variablization_tables(TraceMode mode, int whichTable)
 {
     dprint(mode, "------------------------------------\n");
-    if (whichTable == 0)
-    {
-        dprint(mode, "       Variablization Tables\n");
-        dprint(mode, "------------------------------------\n");
-    }
+//    if (whichTable == 0)
+//    {
+//        dprint(mode, "       Variablization Tables\n");
+//        dprint(mode, "------------------------------------\n");
+//    }
     if ((whichTable == 0) || (whichTable == 1))
     {
-        dprint(mode, "------ Symbol -> v_info table -----\n");
-        if (whichTable != 0)
-            dprint(mode, "------------------------------------\n");
+        dprint(mode, "== Symbol -> v_info table ==\n");
+//        if (whichTable != 0)
+//            dprint(mode, "------------------------------------\n");
+        if (sym_to_var_map->size() == 0)
+            dprint(mode, "EMPTY MAP");
         for (std::map< Symbol *, variablization * >::iterator it=(*sym_to_var_map).begin(); it!=(*sym_to_var_map).end(); ++it)
         {
             dprint(mode, "%s -> %s/%s (grounded %d)\n", it->first->to_string(),
@@ -104,9 +120,11 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     }
     if ((whichTable == 0) || (whichTable == 2))
     {
-        dprint(mode, "-------- G_ID -> v_info table ------\n");
-        if (whichTable != 0)
-            dprint(mode, "------------------------------------\n");
+        dprint(mode, "== G_ID -> v_info table ==\n");
+//        if (whichTable != 0)
+//            dprint(mode, "------------------------------------\n");
+        if (g_id_to_var_map->size() == 0)
+            dprint(mode, "EMPTY MAP");
         for (std::map< uint64_t, variablization * >::iterator it=(*g_id_to_var_map).begin(); it!=(*g_id_to_var_map).end(); ++it)
         {
             dprint(mode, "%llu -> %s/%s (grounded %d)\n", it->first,

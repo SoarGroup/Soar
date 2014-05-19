@@ -15,20 +15,6 @@
 
 void Variablization_Manager::clear_merge_map()
 {
-    /* MToDo | Remove.  No dynamically allocated items in merge map any more. */
-//    std::map< Symbol *, std::map< Symbol *, condition *> >::iterator iter_id;
-//    std::map< Symbol *, condition *>::iterator iter_attr;
-//    std::map< Symbol *, condition *> *attr_values;
-//
-//    for (iter_id = cond_merge_map->begin(); iter_id != cond_merge_map->end(); ++iter_id)
-//    {
-//        attr_values = &(iter_id->second);
-//        for (iter_attr = attr_values->begin(); iter_attr != attr_values->end(); ++iter_attr)
-//        {
-//            delete iter_attr->second;
-//        }
-//        attr_values->clear();
-//    }
     cond_merge_map->clear();
 }
 
@@ -40,59 +26,11 @@ void Variablization_Manager::merge_values_in_conds(condition *pDestCond, conditi
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
 }
 
-/* MToDo | Remove.  I think we can just set item directly since we don't need to add to a list any more */
-
-void Variablization_Manager::set_cond_for_id_attr_tests(condition *pCond)
-{
-
-    //    std::map< Symbol *, std::map< Symbol *, condition *> >::iterator iter_id;
-//    std::map< Symbol *, condition *>::iterator iter_attr;
-//    condition * new_merge_info = NULL;
-//
-//    dprint_condition(DT_MERGE, pCond, "Savind cond in merge map: ", true, false, true);
-//
-//    dprint(DT_MERGE, "...found equality tests (%s ^%s %s)\n", pCond->data.tests.id_test->eq_test->data.referent->to_string(), pCond->data.tests.attr_test->eq_test->data.referent->to_string(), pCond->data.tests.value_test->eq_test->data.referent->to_string());
-//    iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);
-//    if (iter_id == cond_merge_map->end())
-//    {
-//        dprint(DT_MERGE, "...id test not found.  Creating new entry.\n");
-//
-//        new_merge_info = new merge_info;
-//        new_merge_info->cond = pCond;
-//        new_merge_info->value_equality_test = pCond->data.tests.value_test->eq_test->data.referent;
-//
-//        std::map<Symbol *, condition *> inner;
-//        inner.insert(std::make_pair(pCond->data.tests.attr_test->eq_test->data.referent, pCond));
-//        cond_merge_map->insert(std::make_pair(pCond->data.tests.id_test->eq_test->data.referent, inner));
-//        dprint(DT_CONSTRAINTS, "ADDED (*cond_merge_map)[%s][%s][%s]\n", pCond->data.tests.id_test->eq_test->data.referent->to_string(), pCond->data.tests.attr_test->eq_test->data.referent->to_string(),pCond->data.tests.value_test->eq_test->data.referent->to_string());
-//    } else {
-//        dprint(DT_MERGE, "...id test found.  Looking for attribute test...\n");
-//        iter_attr = iter_id->second.find(pCond->data.tests.attr_test->eq_test->data.referent);
-//        if (iter_attr == iter_id->second.end())
-//        {
-//            dprint(DT_MERGE, "...attr test not found.  Creating new entry.\n");
-//            new_merge_info = new merge_info;
-//            new_merge_info->cond = pCond;
-//            new_merge_info->value_equality_test = pCond->data.tests.value_test->eq_test->data.referent;
-//            (*cond_merge_map)[pCond->data.tests.id_test->eq_test->data.referent][pCond->data.tests.attr_test->eq_test->data.referent] = new_merge_info;
-//            dprint(DT_CONSTRAINTS, "ADDED (*cond_merge_map)[%s][%s][%s]\n", pCond->data.tests.id_test->eq_test->data.referent->to_string(), pCond->data.tests.attr_test->eq_test->data.referent->to_string(),pCond->data.tests.value_test->eq_test->data.referent->to_string());
-//        } else {
-//            dprint(DT_MERGE, "...attr test found.  Creating new entry.\n");
-//            new_merge_info = (*cond_merge_map)[pCond->data.tests.id_test->eq_test->data.referent][pCond->data.tests.attr_test->eq_test->data.referent];
-//            new_merge_info->cond = pCond;
-//            new_merge_info->value_equality_test = pCond->data.tests.value_test->eq_test->data.referent;
-//            dprint(DT_CONSTRAINTS, "UPDATED (*cond_merge_map)[%s][%s][%s]\n", pCond->data.tests.id_test->eq_test->data.referent->to_string(), pCond->data.tests.attr_test->eq_test->data.referent->to_string(),pCond->data.tests.value_test->eq_test->data.referent->to_string());
-//        }
-//    }
-}
-
 condition *Variablization_Manager::get_previously_seen_cond(condition *pCond)
 {
     std::map< Symbol *, std::map< Symbol *, std::map< Symbol *, condition *> > >::iterator iter_id;
     std::map< Symbol *, std::map< Symbol *, condition *> >::iterator iter_attr;
     std::map< Symbol *, condition *>::iterator iter_value;
-
-    //  dprint_condition(DT_MERGE, pCond, "get_previously_seen_cond() called with: ", true, false, false);
 
     dprint(DT_MERGE, "...looking for id equality test %s\n", pCond->data.tests.id_test->eq_test->data.referent->to_string());
     iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);
@@ -211,123 +149,10 @@ void Variablization_Manager::merge_conditions(condition *top_cond)
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %lld\n", new_num_conds);
-    dprint(DT_DEBUG, ((cond_diff > 0) ? "Conditions decreased by %lld conditions! (%lld - %lld)\n" : "No decrease in number of conditions. [%lld = (%lld - %lld)]\n"), cond_diff, old_num_conds, new_num_conds);
+    dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %lld conditions! (%lld - %lld)\n" : "No decrease in number of conditions. [%lld = (%lld - %lld)]\n"), cond_diff, old_num_conds, new_num_conds);
 
+    clear_merge_map();
     dprint(DT_MERGE, "===========================\n");
     dprint(DT_MERGE, "= Done Merging Conditions =\n");
     dprint(DT_MERGE, "===========================\n");
 }
-
-void Variablization_Manager::fix_test(test *t)
-{
-    switch ((*t)->type)
-    {
-        case GOAL_ID_TEST:
-        case IMPASSE_ID_TEST:
-        case DISJUNCTION_TEST:
-            break;
-        case CONJUNCTIVE_TEST:
-        {
-            dprint_test(DT_MERGE, (*t), true, false, false, "          Fixing conjunctive test: ", "\n");
-            ::list *c = (*t)->data.conjunct_list;
-            test tt;
-            while (c) {
-                tt = static_cast<test>(c->first);
-                if (test_has_referent(tt) && (tt->data.referent->is_sti()))
-                {
-                    dprint_noprefix(DT_MERGE, "Ungrounded STI found: %s\n", tt->data.referent->to_string());
-                    c = delete_test_from_conjunct(thisAgent, t, c);
-                    dprint_test(DT_MERGE, (*t), true, false, true, "          ...after deletion: ", "\n");
-                } else
-                    c = c->rest;
-            }
-            dprint_test(DT_MERGE, (*t), true, false, false, "          After fixing conjunctive tests: ", "\n");
-            break;
-        }
-        default:
-            if ((*t)->data.referent->is_sti())
-            {
-                dprint_noprefix(DT_MERGE, "Ungrounded STI in main equality test: %s!!!\n", (*t)->data.referent->to_string());
-                assert(false);
-            }
-            break;
-    }
-}
-
-void Variablization_Manager::fix_tests(condition *top_cond)
-{
-    dprint(DT_MERGE, "================\n");
-    dprint(DT_MERGE, "= Fixing Tests =\n");
-    dprint(DT_MERGE, "================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, true);
-    dprint(DT_MERGE, "================\n");
-
-    condition *next_cond, *last_cond=NULL;
-    for (condition *cond = top_cond; cond;)
-    {
-        dprint_condition(DT_MERGE, cond, "Fixing condition: ", true, false, true);
-        next_cond = cond->next;
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION) {
-            fix_test(&cond->data.tests.id_test);
-            fix_test(&cond->data.tests.attr_test);
-            fix_test(&cond->data.tests.value_test);
-        } else {
-            fix_tests(cond->data.ncc.top);
-        }
-        last_cond = cond;
-        cond = next_cond;
-        dprint(DT_MERGE, "...done fixing condition.\n");
-    }
-    dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, true);
-    dprint(DT_MERGE, "=====================\n");
-    dprint(DT_MERGE, "= Done Fixing Tests =\n");
-    dprint(DT_MERGE, "=====================\n");
-}
-
-inline void cache_eq_test(test t)
-{
-    if (t->type==CONJUNCTIVE_TEST)
-    {
-        t->eq_test = equality_test_found_in_test(t);
-        t->eq_test->eq_test = t->eq_test;
-    }
-    else if (t->type==EQUALITY_TEST) t->eq_test = t;
-    else t->eq_test = NULL;
-}
-
-void Variablization_Manager::find_redundancies(condition *top_cond)
-{
-    dprint(DT_MERGE, "========================\n");
-    dprint(DT_MERGE, "= Finding redundancies =\n");
-    dprint(DT_MERGE, "========================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, true);
-    dprint(DT_MERGE, "========================\n");
-
-    /* -- Right now, this just cache's the equality tests to minimize searching
-     *    through conjuncts while merging -- */
-
-    condition *next_cond, *last_cond=NULL;
-    for (condition *cond = top_cond; cond;)
-    {
-        dprint_condition(DT_MERGE, cond, "Finding redundancies in condition: ", true, false, true);
-        next_cond = cond->next;
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION) {
-            cache_eq_test(cond->data.tests.id_test);
-            cache_eq_test(cond->data.tests.attr_test);
-            cache_eq_test(cond->data.tests.value_test);
-        } else {
-            // Do we really need for NCCs?
-        }
-        last_cond = cond;
-        cond = next_cond;
-        dprint(DT_MERGE, "...done finding redundancies in condition.\n");
-    }
-    dprint(DT_MERGE, "=============================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, true);
-    dprint(DT_MERGE, "=============================\n");
-    dprint(DT_MERGE, "= Done finding redundancies =\n");
-    dprint(DT_MERGE, "=============================\n");
-}
-
-

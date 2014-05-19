@@ -24,6 +24,7 @@ Variablization_Manager::Variablization_Manager(agent *myAgent)
     constant_constraints = new std::map< uint64_t , ::list * >();
 
     cond_merge_map = new std::map< Symbol *, std::map< Symbol *, std::map< Symbol *, condition *> > >();
+    substitution_map = new std::map< Symbol *, test >();
     ground_id_counter = 0;
 }
 
@@ -37,6 +38,7 @@ Variablization_Manager::~Variablization_Manager()
     delete constant_constraints;
 
     delete cond_merge_map;
+    delete substitution_map;
 }
 
 void Variablization_Manager::reinit()
@@ -119,10 +121,10 @@ void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, identity_info 
     variablization *var_info;
     bool is_st_id = (*sym)->is_sti();
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Variablizing %s(%llu, %s) %s.\n",
+    dprint(DT_VARIABLIZATION_MANAGER, "Variablizing %s(g%llu).  %s.\n",
            (*sym)->to_string(),
            (identity ? identity->grounding_id : 0),
-           (is_equality_test ? "T" : "F"));
+           (is_equality_test ? "equality test" : "non-equality test"));
 
     if (!is_st_id)
     {
@@ -187,11 +189,11 @@ void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, identity_info 
 uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *original_var) {
     char prefix[2];
     Symbol *var;
-    variablization *found_variablization=NIL;
+    variablization *found_variablization = NULL;
     bool is_st_id;
     uint64_t g_id;
 
-    dprint(DT_VARIABLIZATION_MANAGER, "variablize_rhs_symbol called for %s(%s).\n",
+    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %s(%s).\n",
            (*sym)->to_string(),
            (original_var ? original_var->to_string() : "NULL"));
 
@@ -201,14 +203,14 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
 
     if (is_st_id)
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "...searching for sti %s in variablization sym table...\n", (*sym)->to_string());
+        dprint(DT_RHS_VARIABLIZATION, "...searching for sti %s in variablization sym table...\n", (*sym)->to_string());
         found_variablization = get_variablization(*sym);
     }
     else
     {
         if (original_var)
         {
-            dprint(DT_VARIABLIZATION_MANAGER, "...searching for original var %s in variablization orig var table...\n", original_var->to_string());
+            dprint(DT_RHS_VARIABLIZATION, "...searching for original var %s in variablization orig var table...\n", original_var->to_string());
             g_id = get_gid_for_orig_var(original_var);
             if (g_id > 0)
             {
@@ -216,13 +218,24 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
             }
             else
             {
-                dprint(DT_VARIABLIZATION_MANAGER, "...did not find entry for g_id %llu!  Not variablizing!\n", g_id);
-//                this->print_variablization_tables(DT_VARIABLIZATION_MANAGER, 2);
+                /* Normally this should not occur.  All ovars on rhs for constants should have
+                 * entries in table since we scanned original variables of starting conditions
+                 * of instantiation.
+                 *
+                 * But I think there is one exception.  If we have a preference that is added to
+                 * the result because it is a rhs identifier that previously was linked to the
+                 * resulting state.  The identifier will seem ungrounded because its original
+                 * variable came from another production.  It should be treated like an unbound
+                 * variable, so we'll fall through to code at end of function.
+                 * */
+                dprint(DT_RHS_VARIABLIZATION, "...%s has original_var %s that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", (*sym)->to_string(), original_var->to_string());
+                //                this->print_variablization_tables(DT_RHS_VARIABLIZATION, 2);
+//                return 0;
             }
         }
         else
         {
-            dprint(DT_VARIABLIZATION_MANAGER, "...is a literal constant.  Not variablizing!\n");
+            dprint(DT_RHS_VARIABLIZATION, "...is a literal constant.  Not variablizing!\n");
             return 0;
         }
     }
@@ -234,7 +247,7 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
         {
             /* --- Grounded symbol that has been variablized before--- */
 
-            dprint(DT_VARIABLIZATION_MANAGER, "... found existing grounded variablization %s.\n", found_variablization->variablized_symbol->to_string());
+            dprint(DT_RHS_VARIABLIZATION, "... found existing grounded variablization %s.\n", found_variablization->variablized_symbol->to_string());
 
             symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
             /* MToDo | Why don't we need remove this symbol reference? */
@@ -244,7 +257,7 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
         }
         else if (!is_st_id)
         {
-            dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded constant.  Not variablizing!\n");
+            dprint(DT_RHS_VARIABLIZATION, "...is ungrounded constant.  Not variablizing!\n");
             return 0;
         }
         else
@@ -254,16 +267,16 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
              *    Delete the symbol references for both entries in the variablization table
              *    then delete the entries themselves.  This will pass through this case and
              *    create an unbound var in next code block.*/
-            dprint(DT_VARIABLIZATION_MANAGER, "...is ungrounded identifier.  Clearing variablization entry for %s/%s and generating unbound var.\n",
+            dprint(DT_RHS_VARIABLIZATION, "...is ungrounded identifier.  Clearing variablization entry for %s/%s and generating unbound var.\n",
                             (*sym)->to_string(), found_variablization->variablized_symbol->to_string());
 
-            print_variablization_tables(DT_VARIABLIZATION_MANAGER, 1);
+            print_variablization_tables(DT_RHS_VARIABLIZATION, 1);
             sym_to_var_map->erase(*sym);
             sym_to_var_map->erase(found_variablization->variablized_symbol);
             symbol_remove_ref(thisAgent, found_variablization->variablized_symbol);
             symbol_remove_ref(thisAgent, found_variablization->instantiated_symbol);
             delete found_variablization;
-            print_variablization_tables(DT_VARIABLIZATION_MANAGER, 1);
+            print_variablization_tables(DT_RHS_VARIABLIZATION, 1);
         }
     }
 
@@ -273,12 +286,12 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
     if((*sym)->is_sti())
     {
         /* -- First instance of an unbound rhs var -- */
-        dprint(DT_VARIABLIZATION_MANAGER, "...is unbound variable.\n");
+        dprint(DT_RHS_VARIABLIZATION, "...is unbound variable.\n");
         prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
         prefix[1] = 0;
         var = generate_new_variable (thisAgent, prefix);
 
-        dprint(DT_VARIABLIZATION_MANAGER, "...created new variable for unbound rhs %s.\n", var->to_string());
+        dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound rhs %s.\n", var->to_string());
         store_variablization((*sym), var, NULL, true);
 
         *sym = var;
@@ -287,7 +300,7 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
     {
         /* -- RHS constant with an original variable that does not map onto a LHS condition.  Do not variablize. -- */
         /* MToDo | Remove.  Is this even possible?  Won't this be caught by not having an original var above? */
-        dprint(DT_VARIABLIZATION_MANAGER, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
+        dprint(DT_RHS_VARIABLIZATION, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
     }
     return 0;
 }
@@ -456,7 +469,7 @@ bool Variablization_Manager::variablize_test_by_lookup(test *t, bool pSkipTopLev
         if ((*t)->data.referent->is_sti())
         {
             /* -- STI identifier that is ungrounded.  Error.  -- */
-            dprint(DT_DEBUG, "Ungrounded STI in in chunk.  Will delete during merge.\n");
+            dprint(DT_DEBUG, "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n");
             return false;
         }
         else

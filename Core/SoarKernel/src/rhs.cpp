@@ -337,16 +337,13 @@ rhs_value create_RHS_value (agent* thisAgent,
           rhs_value_to_reteloc_field_num(rv),
           rhs_value_to_reteloc_levels_up(rv));
     }
-//    sym = var_bound_in_reconstructed_conds (thisAgent, cond,
-//        rhs_value_to_reteloc_field_num(rv),
-//        rhs_value_to_reteloc_levels_up(rv));
     t = var_test_bound_in_reconstructed_conds (thisAgent, cond,
         rhs_value_to_reteloc_field_num(rv),
         rhs_value_to_reteloc_levels_up(rv));
     sym = t->data.referent;
     dprint_noprefix(DT_RHS_VARIABLIZATION, "%s(%s %llu) from reteloc.\n", sym->to_string(), original_sym->to_string(), t->identity->grounding_id);
-
     /* MToDo | Might not need to regenerate original sym and just use t->identity->orig_var */
+    assert(original_sym == t->identity->original_var);
     return allocate_rhs_value_for_symbol(thisAgent, sym, original_sym, t->identity->grounding_id);
   }
 
@@ -405,9 +402,9 @@ rhs_value create_RHS_value (agent* thisAgent,
     /* -- rv is a rhs_symbol -- */
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
     /* MToDo | May not need these originals.  Should always be NULL, no? */
-    dprint_noprefix(DT_RHS_VARIABLIZATION, "%s (%s - %llu) from rhs_symbol (literal RHS constant).\n",
+    dprint_noprefix(DT_RHS_VARIABLIZATION, "%s (%s, g%llu) from rhs_symbol (literal RHS constant).\n",
         rs->referent->to_string(), rs->original_rhs_variable->to_string(), rs->g_id);
-    return allocate_rhs_value_for_symbol(thisAgent, rs->referent, rs->referent);
+    return allocate_rhs_value_for_symbol(thisAgent, rs->referent, NULL);
   }
 }
 

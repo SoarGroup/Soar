@@ -33,6 +33,7 @@ void Variablization_Manager::clear_data()
     clear_ovar_gid_table();
     clear_variablization_tables();
     clear_merge_map();
+    clear_substitution_map();
 }
 
 void Variablization_Manager::clear_ovar_gid_table()
@@ -140,7 +141,7 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol *index_sym)
     if (iter != (*orig_var_to_g_id_map).end())
     {
         dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in orig_var variablization table for %s\n",
-                        iter->second, index_sym);
+                        iter->second, index_sym->to_string());
 
         return iter->second;
     }
@@ -158,7 +159,7 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol *index_sym, 
     std::map< Symbol *, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
     if (iter == (*orig_var_to_g_id_map).end())
     {
-        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %s -> %llu\n", index_sym->to_string(), index_g_id);
+        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %s to %llu\n", index_sym->to_string(), index_g_id);
         (*orig_var_to_g_id_map)[index_sym] = index_g_id;
         symbol_add_ref(thisAgent, index_sym);
         return 0;
@@ -177,11 +178,11 @@ void Variablization_Manager::store_variablization(Symbol *instantiated_sym,
 {
     variablization *new_variablization;
     assert(instantiated_sym && variable);
-    dprint(DT_VARIABLIZATION_MANAGER, "Storing variablization for %s(%llu) -=> %s (grounded %s) in ",
+    dprint(DT_VARIABLIZATION_MANAGER, "Storing variablization for %s(%llu) to %s (%s).\n",
            instantiated_sym->to_string(),
            identity ? identity->grounding_id : 0,
-                           variable->to_string(),
-                           is_equality_test ? "T" : "F");
+           variable->to_string(),
+           (is_equality_test ? "equality test" : "non-equality test"));
 
     new_variablization = new variablization;
     new_variablization->instantiated_symbol = instantiated_sym;
@@ -205,7 +206,7 @@ void Variablization_Manager::store_variablization(Symbol *instantiated_sym,
 
         (*sym_to_var_map)[instantiated_sym] = new_variablization;
         (*sym_to_var_map)[variable] = copy_variablization(thisAgent, new_variablization);
-        dprint_noprefix(DT_VARIABLIZATION_MANAGER, "symbol ([%s][%s] variablization table.\n",
+        dprint_noprefix(DT_VARIABLIZATION_MANAGER, "Created symbol_to_var_map ([%s] and [%s] to new variablization.\n",
                         instantiated_sym->to_string(), variable->to_string());
     } else if (identity) {
 
@@ -213,7 +214,7 @@ void Variablization_Manager::store_variablization(Symbol *instantiated_sym,
          *    indexed by the constant's grounding id. -- */
         (*g_id_to_var_map)[identity->grounding_id] = new_variablization;
 
-        dprint_noprefix(DT_VARIABLIZATION_MANAGER, "identity[%llu] variablization table.\n",
+        dprint_noprefix(DT_VARIABLIZATION_MANAGER, "Created g_id_to_var_map[%llu] to new variablization.\n",
                         identity->grounding_id);
     } else {
         assert(false);

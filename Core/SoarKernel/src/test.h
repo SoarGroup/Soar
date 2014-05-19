@@ -110,6 +110,7 @@ bool tests_identical (test t1, test t2, bool considerIdentity=false);
 bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
+void cache_eq_test(test t);
 test equality_test_found_in_test (test t);
 test equality_var_test_found_in_test (test t);
 test find_original_equality_test_preferring_vars (test t, bool useOriginals=false);
