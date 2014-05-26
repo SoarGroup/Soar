@@ -46,25 +46,21 @@ class smem_path_param;
 class smem_param_container: public soar_module::param_container
 {
 	public:
-		enum db_choices { memory, file };
 		enum cache_choices { cache_S, cache_M, cache_L };
-		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
-		enum opt_choices { opt_safety, opt_speed };
-
 		enum merge_choices { merge_none, merge_add };
 		enum act_choices { act_recency, act_frequency, act_base };
 
 		soar_module::boolean_param *learning;
-		soar_module::constant_param<db_choices> *database;
+		soar_module::constant_param<soar_module::db_choices> *database;
 		soar_module::path_param *path;
 		soar_module::boolean_param *lazy_commit;
 		soar_module::boolean_param *append_db;
 
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
 
-		soar_module::constant_param<page_choices> *page_size;
+		soar_module::constant_param<soar_module::page_choices> *page_size;
 		soar_module::integer_param *cache_size;
-		soar_module::constant_param<opt_choices> *opt;
+		soar_module::constant_param<soar_module::opt_choices> *opt;
 
 		soar_module::integer_param *thresh;
 

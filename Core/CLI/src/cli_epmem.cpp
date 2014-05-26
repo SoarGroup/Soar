@@ -22,6 +22,18 @@
 using namespace cli;
 using namespace sml;
 
+inline void warn_append_mode(agent* thisAgent, CommandLineInterface* Cli)
+{
+    if (( thisAgent->epmem_params->database->get_value() != soar_module::memory )) {
+        if ( thisAgent->epmem_params->append_db->get_value() == off ) {
+            Cli->PrintCLIMessage("EPMEM| Note: Will erase contents of episodic memory database on disk because append mode is off.\n" );
+        } else {
+            Cli->PrintCLIMessage("EPMEM| Note: Will append new episodes to database on disk because append mode is on.\n" );
+        }
+    }
+
+}
+
 bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, const std::string* pVal, epmem_time_id memory_id )
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
@@ -87,8 +99,10 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         if ( !result )
             SetError( "This parameter is protected while the episodic memory database is open." );
         else
+        {
      	   PrintCLIMessage( "EpMem| learning = on");
-
+           warn_append_mode(thisAgent, this);
+        }
         return result;
     }
     else if ( pOp == 'd' )

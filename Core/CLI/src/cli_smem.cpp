@@ -23,6 +23,18 @@
 using namespace cli;
 using namespace sml;
 
+inline void warn_append_mode(agent* thisAgent, CommandLineInterface* Cli)
+{
+    if (( thisAgent->smem_params->database->get_value() != soar_module::memory )) {
+        if ( thisAgent->smem_params->append_db->get_value() == off ) {
+            Cli->PrintCLIMessage("SMEM| Note: Will erase contents of smem database on disk because append mode is off.\n" );
+        } else {
+            Cli->PrintCLIMessage("SMEM| Note: Will append new knowledge to smem database on disk because append mode is on.\n" );
+        }
+    }
+
+}
+
 bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, const std::string* pVal )
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
@@ -92,8 +104,10 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         if ( !result )
             SetError( "This parameter is protected while the semantic memory database is open." );
         else
+        {
      	   PrintCLIMessage( "SMem| learning = on");
-
+           warn_append_mode(thisAgent, this);
+        }
         return result;
     }
     else if ( pOp == 'd' )
@@ -324,3 +338,4 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
     return SetError( "Unknown option." );
 }
+
