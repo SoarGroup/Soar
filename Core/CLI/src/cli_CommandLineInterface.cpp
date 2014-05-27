@@ -45,7 +45,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::BreakCommand(*this));
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
-    m_Parser.AddCommand(new cli::CliExtensionMessageCommand(*this));
     m_Parser.AddCommand(new cli::ChunkNameFormatCommand(*this));
     m_Parser.AddCommand(new cli::CliExtensionMessageCommand(*this));
     m_Parser.AddCommand(new cli::CLogCommand(*this));

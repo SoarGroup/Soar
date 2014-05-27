@@ -44,7 +44,7 @@ AgentSML::AgentSML(KernelSML* pKernelSML, agent* pAgent)
 	m_pAgentRunCallback->SetAgentSML(this) ;
 
 	m_pCaptureFile = 0;
-  Soar_Instance::Get_Soar_Instance().Register_Soar_AgentSML(pAgent->name, this);
+	Soar_Instance::Get_Soar_Instance().Register_Soar_AgentSML(pAgent->name, this);
 
 }
 
