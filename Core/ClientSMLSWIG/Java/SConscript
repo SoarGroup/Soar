@@ -27,7 +27,7 @@ def ConfigureJNI(env):
 
 	if sys.platform == 'darwin':
 		headers = [os.path.join(base, 'Headers')]
-        libs = [os.path.join(base, 'Libraries')]
+		libs = [os.path.join(base, 'Libraries')]
 	else:
 		headers = [os.path.join(base, 'include')]
 		libs = [os.path.join(base, 'lib')]
