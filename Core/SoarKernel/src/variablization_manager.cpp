@@ -48,49 +48,6 @@ void Variablization_Manager::reinit()
     ground_id_counter = 0;
 }
 
-/* -- variablize_rl_symbol is a very limited version of variablization for templates
- *    - The symbol passed in is guaranteed to be a short-term identifier.
- */
-void Variablization_Manager::variablize_rl_symbol (Symbol **sym)
-{
-    char prefix[2];
-    Symbol *var;
-    variablization *var_info;
-
-    if (!(*sym)->is_sti()) return;
-
-    dprint(DT_VARIABLIZATION_MANAGER, "Variablization_Manager variablizing rl symbol %s.\n", (*sym)->to_string());
-
-    var_info = get_variablization((*sym));
-    if (var_info)
-    {
-        /* -- Symbol being passed in is being replaced, so decrease -- */
-        /* -- and increase refcount for new variable symbol being returned -- */
-        symbol_remove_ref (thisAgent, (*sym));
-        *sym = var_info->variablized_symbol;
-        symbol_add_ref(thisAgent, var_info->variablized_symbol);
-        return;
-    }
-
-    /* --- need to create a new variable.  If constant is being variablized
-     *     just used 'c' instead of first letter of id name --- */
-    if((*sym)->is_identifier())
-        prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
-    else
-        prefix[0] = 'c';
-    prefix[1] = 0;
-    var = generate_new_variable (thisAgent, prefix);
-    var->var->was_identifier = (*sym)->is_identifier();
-
-    store_variablization((*sym), var, NULL);
-
-    dprint(DT_VARIABLIZATION_MANAGER, "...created new variablization %s.\n", var->to_string());
-
-    /* MToDoRefCnt | This remove ref was removed before, but it seems like we should have it, no? */
-    symbol_remove_ref (thisAgent, *sym);
-    *sym = var;
-}
-
 /* ============================================================================
  *            Variablization_Manager::variablize_lhs_symbol
  *
@@ -551,63 +508,46 @@ void Variablization_Manager::variablize_condition_list (condition *top_cond, boo
    all of the generalized variablization logic introduced in Soar 9.4
 ===================================================================== */
 
-void Variablization_Manager::variablize_rl_test (agent* thisAgent, test *chunk_test) {
+void Variablization_Manager::variablize_rl_test (test *t) {
   cons *c;
   test ct;
-  TestType test_type;
-  Symbol *instantiated_referent;
 
   dprint(DT_RL_VARIABLIZATION, "Variablizing rl test: ");
-  dprint_test(DT_RL_VARIABLIZATION, *chunk_test, true, false, true, "", "\n");
+  assert(*t);
+  dprint_test(DT_RL_VARIABLIZATION, *t, true, false, true, "", "\n");
 
-  assert(*chunk_test);
-  test_type = (*chunk_test)->type;
-
-  switch (test_type) {
-    case EQUALITY_TEST:
-    case NOT_EQUAL_TEST:
-      ct = *chunk_test;
-      instantiated_referent = (*chunk_test)->data.referent;
-      assert (instantiated_referent);
-
-      if (instantiated_referent->is_sti())
-      {
-        dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %s\n", test_type_to_string(test_type), instantiated_referent->to_string());
-        thisAgent->variablizationManager->variablize_rl_symbol (&(ct->data.referent));
-      } else
-      {
-        dprint(DT_RL_VARIABLIZATION, "Non-variablizable original referent.\n");
-      }
-      break;
-    case CONJUNCTIVE_TEST:
+  if ((*t)->type == CONJUNCTIVE_TEST)
+  {
       dprint(DT_RL_VARIABLIZATION, "Iterating through conjunction list.\n");
-      ct = *chunk_test;
+      ct = *t;
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       {
-        variablize_rl_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
+        variablize_rl_test (reinterpret_cast<test *>(&(c->first)));
       }
 
       dprint(DT_RL_VARIABLIZATION, "Done iterating through conjunction list.\n");
       dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
-      break;
-    case GOAL_ID_TEST:
-    case IMPASSE_ID_TEST:
-      break;
-    default:
-      dprint(DT_RL_VARIABLIZATION, "Illegal test type %s with referent %s\n",
-          test_type_to_string(test_type), (*chunk_test)->data.referent->to_string());
-      assert(false);
-      break;
+
+  } else {
+      if (test_has_referent((*t)) && ((*t)->data.referent->is_sti()))
+      {
+          dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %s\n",
+                          test_type_to_string((*t)->type), (*t)->data.referent->to_string());
+          thisAgent->variablizationManager->variablize_lhs_symbol (&(ct->data.referent), NULL);
+      } else {
+          dprint(DT_RL_VARIABLIZATION, "Not an STI or a non-variablizable test type.\n");
+
+      }
   }
 
   dprint(DT_RL_VARIABLIZATION, "Resulting in ");
-  dprint_test(DT_RL_VARIABLIZATION, *chunk_test, true, true, false, "", "\n");
+  dprint_test(DT_RL_VARIABLIZATION, *t, true, true, false, "", "\n");
   dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
 }
 
 
 // creates an action for a template instantiation
-action * Variablization_Manager::make_variablized_rl_action( agent *thisAgent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym )
+action * Variablization_Manager::make_variablized_rl_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym)
 {
   action *rhs;
   Symbol *temp;
@@ -620,52 +560,93 @@ action * Variablization_Manager::make_variablized_rl_action( agent *thisAgent, S
   /* MToDoRefCnt | May not need these 3 refcount adds b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
   /* MToDo | Might need to also add symbol as original var if that's what it is at this point */
   // symbol_add_ref(thisAgent, temp );
-  variablize_rl_symbol (&temp);
+  variablize_rhs_symbol (&temp, NULL);
   rhs->id = allocate_rhs_value_for_symbol(thisAgent, temp );
 
   // attribute
   temp = attr_sym;
   // symbol_add_ref(thisAgent, temp );
-  variablize_rl_symbol (&temp);
+  variablize_rhs_symbol (&temp, NULL);
   rhs->attr = allocate_rhs_value_for_symbol(thisAgent, temp );
 
   // value
   temp = val_sym;
   // symbol_add_ref(thisAgent, temp );
-  variablize_rl_symbol (&temp);
+  variablize_rhs_symbol (&temp, NULL);
   rhs->value = allocate_rhs_value_for_symbol(thisAgent, temp );
 
   // referent
   temp = ref_sym;
   // symbol_add_ref(thisAgent, temp );
-  variablize_rl_symbol (&temp);
+  variablize_rhs_symbol (&temp, NULL);
   rhs->referent = allocate_rhs_value_for_symbol(thisAgent, temp );
 
   return rhs;
 }
 
-void Variablization_Manager::variablize_rl_condition_list (agent* thisAgent, condition *cond) {
+void Variablization_Manager::variablize_rl_condition_list (condition *top_cond, bool pInNegativeCondition) {
 
   dprint(DT_RL_VARIABLIZATION, "=============================================\n");
   dprint(DT_RL_VARIABLIZATION, "Variablizing LHS condition list for template:\n");
   dprint(DT_RL_VARIABLIZATION, "=============================================\n");
 
-  //thisAgent->varname_table->clear_symbol_map();
+  dprint(DT_LHS_VARIABLIZATION, "Pass 1: Variablizing equality tests in positive conditions...\n");
 
-  for (; cond!=NIL; cond=cond->next)
+  if (!pInNegativeCondition)
   {
-    switch (cond->type) {
-    case POSITIVE_CONDITION:
-    case NEGATIVE_CONDITION:
-      variablize_rl_test (thisAgent, &(cond->data.tests.id_test));
-      variablize_rl_test (thisAgent, &(cond->data.tests.attr_test));
-      variablize_rl_test (thisAgent, &(cond->data.tests.value_test));
-      break;
-    case CONJUNCTIVE_NEGATION_CONDITION:
-        variablize_rl_condition_list (thisAgent, cond->data.ncc.top);
-      break;
-    }
+      for (condition *cond = top_cond; cond!=NIL; cond=cond->next)
+      {
+          if (cond->type == POSITIVE_CONDITION)
+          {
+              dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+              dprint(DT_RL_VARIABLIZATION, "Variablizing LHS positive condition equality tests: ");
+              dprint_condition(DT_RL_VARIABLIZATION, cond, "", true, false, true);
+              dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+              dprint(DT_RL_VARIABLIZATION, "Variablizing identifier: ");
+              variablize_rl_test (&(cond->data.tests.id_test));
+              dprint(DT_RL_VARIABLIZATION, "Variablizing attribute: ");
+              variablize_rl_test (&(cond->data.tests.attr_test));
+              dprint(DT_RL_VARIABLIZATION, "Variablizing value: ");
+              variablize_rl_test (&(cond->data.tests.value_test));
+          }
+      }
   }
+  dprint(DT_RL_VARIABLIZATION, "Pass 2: Variablizing all other LHS tests via lookup only:\n");
+  for (condition *cond = top_cond; cond!=NIL; cond=cond->next)
+  {
+      if (cond->type == POSITIVE_CONDITION)
+      {
+          dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+          dprint(DT_RL_VARIABLIZATION, "Variablizing LHS positive non-equality tests: ");
+          dprint_condition(DT_RL_VARIABLIZATION, cond, "", true, false, true);
+          dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+          dprint(DT_RL_VARIABLIZATION, "Variablizing identifier: ");
+          variablize_tests_by_lookup (&(cond->data.tests.id_test), !pInNegativeCondition);
+          dprint(DT_RL_VARIABLIZATION, "Variablizing attribute: ");
+          variablize_tests_by_lookup (&(cond->data.tests.attr_test), !pInNegativeCondition);
+          dprint(DT_RL_VARIABLIZATION, "Variablizing value: ");
+          variablize_tests_by_lookup (&(cond->data.tests.value_test), !pInNegativeCondition);
+      } else if (cond->type == NEGATIVE_CONDITION)
+      {
+          dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+          dprint(DT_RL_VARIABLIZATION, "Variablizing LHS negative condition: ");
+          dprint_condition(DT_RL_VARIABLIZATION, cond, "", true, false, true);
+          dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+          dprint(DT_RL_VARIABLIZATION, "Variablizing identifier: ");
+          variablize_tests_by_lookup (&(cond->data.tests.id_test), false);
+          dprint(DT_RL_VARIABLIZATION, "Variablizing attribute: ");
+          variablize_tests_by_lookup (&(cond->data.tests.attr_test), false);
+          dprint(DT_RL_VARIABLIZATION, "Variablizing value: ");
+          variablize_tests_by_lookup (&(cond->data.tests.value_test), false);
+      } else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
+      {
+          dprint(DT_RL_VARIABLIZATION, "-------------======-----------\n");
+          dprint(DT_NCC_VARIABLIZATION, "Variablizing LHS negative conjunctive condition:\n");
+          dprint_condition_list(DT_NCC_VARIABLIZATION, cond->data.ncc.top);
+          variablize_rl_condition_list (cond->data.ncc.top, false);
+      }
+  }
+
   dprint(DT_RL_VARIABLIZATION, "Done variablizing LHS condition list for template.\n");
   dprint(DT_RL_VARIABLIZATION, "==================================================\n");
 }
