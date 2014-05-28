@@ -340,19 +340,20 @@ void Variablization_Manager::variablize_equality_tests (test *t)
  * Requires: Nothing
  * Modifies: t
  * Effect:   Variablizes any symbols in a test that were previously variablized
- *          when variablizing the equality test.  Returns false if the the
- *          tests contains an ungrounded STI.  This is used to throw out
- *          ungrounded STI test that may have been collected during backtracing.
+ *           when variablizing the equality test.
+ *
+ *           Returns true if test should be kept in condition.  Only returns
+ *           false for ungrounded STI that may have been collected during
+ *           backtracing.
  *
  * ========================================================================= */
 bool Variablization_Manager::variablize_test_by_lookup(test *t, bool pSkipTopLevelEqualities)
 {
     variablization *found_variablization = NULL;
 
-    dprint_test(DT_LHS_VARIABLIZATION, *t, true, false, true, "Variablizing by lookup ", "\n");
+    if (!test_has_referent((*t))) return true;
 
-    // Sanity check
-    assert((*t)->original_test->type && ((*t)->original_test->type < NUM_TEST_TYPES));
+    dprint_test(DT_LHS_VARIABLIZATION, *t, true, false, true, "Variablizing by lookup ", "\n");
 
     if (pSkipTopLevelEqualities && ((*t)->type == EQUALITY_TEST))
     {
@@ -360,8 +361,6 @@ bool Variablization_Manager::variablize_test_by_lookup(test *t, bool pSkipTopLev
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
         return true;
     }
-    if ((*t)->original_test->type == DISJUNCTION_TEST) return true;
-
     found_variablization = get_variablization(*t);
     if (found_variablization)
     {
@@ -533,7 +532,7 @@ void Variablization_Manager::variablize_rl_test (test *t) {
       {
           dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %s\n",
                           test_type_to_string((*t)->type), (*t)->data.referent->to_string());
-          thisAgent->variablizationManager->variablize_lhs_symbol (&(ct->data.referent), NULL);
+          thisAgent->variablizationManager->variablize_lhs_symbol (&((*t)->data.referent), NULL);
       } else {
           dprint(DT_RL_VARIABLIZATION, "Not an STI or a non-variablizable test type.\n");
 
@@ -541,7 +540,7 @@ void Variablization_Manager::variablize_rl_test (test *t) {
   }
 
   dprint(DT_RL_VARIABLIZATION, "Resulting in ");
-  dprint_test(DT_RL_VARIABLIZATION, *t, true, true, false, "", "\n");
+  dprint_test(DT_RL_VARIABLIZATION, (*t), true, true, false, "", "\n");
   dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
 }
 
