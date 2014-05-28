@@ -66,13 +66,12 @@ void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, identity_info 
     char prefix[2];
     Symbol *var;
     variablization *var_info;
-    bool is_st_id = (*sym)->is_sti();
 
     dprint(DT_VARIABLIZATION_MANAGER, "Variablizing %s(g%llu)...\n",
            (*sym)->to_string(),
            (identity ? identity->grounding_id : 0));
 
-    if (!is_st_id)
+    if (!((*sym)->is_sti()))
     {
         /* MToDo | Identity currently exists for all tests.  This isn't necessary until we change that */
         assert(identity);
@@ -98,7 +97,6 @@ void Variablization_Manager::variablize_lhs_symbol (Symbol **sym, identity_info 
         prefix[0] = 'c';
     prefix[1] = 0;
     var = generate_new_variable (thisAgent, prefix);
-    var->var->was_identifier = is_st_id;
 
     store_variablization((*sym), var, identity);
 
@@ -122,7 +120,6 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
     char prefix[2];
     Symbol *var;
     variablization *found_variablization = NULL;
-    bool is_st_id;
     uint64_t g_id;
 
     dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %s(%s).\n",
@@ -131,9 +128,8 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
 
     /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
      *    instead of their original variable. --  */
-    is_st_id = (*sym)->is_sti();
 
-    if (is_st_id)
+    if ((*sym)->is_sti())
     {
         dprint(DT_RHS_VARIABLIZATION, "...searching for sti %s in variablization sym table...\n", (*sym)->to_string());
         found_variablization = get_variablization(*sym);
@@ -161,8 +157,6 @@ uint64_t Variablization_Manager::variablize_rhs_symbol (Symbol **sym, Symbol *or
                  * variable, so we'll fall through to code at end of function.
                  * */
                 dprint(DT_RHS_VARIABLIZATION, "...%s has original_var %s that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", (*sym)->to_string(), original_var->to_string());
-                //                this->print_variablization_tables(DT_RHS_VARIABLIZATION, 2);
-//                return 0;
             }
         }
         else

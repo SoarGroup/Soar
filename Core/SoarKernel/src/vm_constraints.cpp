@@ -284,8 +284,6 @@ void Variablization_Manager::install_cached_constraints_for_test(test *t)
     dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %s(%llu).\n", eq_symbol->to_string(), eq_test->identity ? eq_test->identity->grounding_id : 0);
     if (!eq_test->identity || (eq_test->identity->grounding_id == 0))
     {
-        /* MToDo | Could also just use was_identifier, though that might not be needed now that we don't reverse */
-        assert(eq_symbol->is_variable() && eq_symbol->var->was_identifier);
         dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Using symbol to look up.\n");
         found_variablization = get_variablization(eq_symbol);
         if (found_variablization)
