@@ -21,7 +21,6 @@ inline variablization * copy_variablization(agent *thisAgent, variablization *v)
     new_variablization->variablized_symbol = v->variablized_symbol;
     symbol_add_ref(thisAgent, new_variablization->instantiated_symbol);
     symbol_add_ref(thisAgent, new_variablization->variablized_symbol);
-    new_variablization->grounded = v->grounded;
     new_variablization->grounding_id= v->grounding_id;
     return new_variablization;
 }
@@ -123,7 +122,6 @@ variablization * Variablization_Manager::get_variablization(Symbol *index_sym)
 
 variablization * Variablization_Manager::get_variablization(test t)
 {
-    /* -- MToDo | I don't think this is used any more. Check and remove -- */
     assert(t->data.referent);
     if (t->data.referent->is_sti())
     {
@@ -173,23 +171,20 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol *index_sym, 
 
 void Variablization_Manager::store_variablization(Symbol *instantiated_sym,
                                                   Symbol *variable,
-                                                  identity_info *identity,
-                                                  bool is_equality_test)
+                                                  identity_info *identity)
 {
     variablization *new_variablization;
     assert(instantiated_sym && variable);
-    dprint(DT_VARIABLIZATION_MANAGER, "Storing variablization for %s(%llu) to %s (%s).\n",
+    dprint(DT_VARIABLIZATION_MANAGER, "Storing variablization for %s(%llu) to %s.\n",
            instantiated_sym->to_string(),
            identity ? identity->grounding_id : 0,
-           variable->to_string(),
-           (is_equality_test ? "equality test" : "non-equality test"));
+           variable->to_string());
 
     new_variablization = new variablization;
     new_variablization->instantiated_symbol = instantiated_sym;
     new_variablization->variablized_symbol = variable;
     symbol_add_ref(thisAgent, instantiated_sym);
     symbol_add_ref(thisAgent, variable);
-    new_variablization->grounded = is_equality_test;
     new_variablization->grounding_id = identity ? identity->grounding_id : 0;
 
     if (instantiated_sym->is_sti())

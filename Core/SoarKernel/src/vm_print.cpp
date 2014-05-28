@@ -114,8 +114,8 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
             dprint(mode, "EMPTY MAP");
         for (std::map< Symbol *, variablization * >::iterator it=(*sym_to_var_map).begin(); it!=(*sym_to_var_map).end(); ++it)
         {
-            dprint(mode, "%s -> %s/%s (grounded %d)\n", it->first->to_string(),
-                            it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string(), it->second->grounded);
+            dprint(mode, "%s -> %s/%s\n", it->first->to_string(),
+                            it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string());
         }
     }
     if ((whichTable == 0) || (whichTable == 2))
@@ -127,8 +127,8 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
             dprint(mode, "EMPTY MAP");
         for (std::map< uint64_t, variablization * >::iterator it=(*g_id_to_var_map).begin(); it!=(*g_id_to_var_map).end(); ++it)
         {
-            dprint(mode, "%llu -> %s/%s (grounded %d)\n", it->first,
-                            it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string(), it->second->grounded);
+            dprint(mode, "%llu -> %s/%s\n", it->first,
+                            it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string());
         }
     }
     if ((whichTable == 0) || (whichTable == 3))

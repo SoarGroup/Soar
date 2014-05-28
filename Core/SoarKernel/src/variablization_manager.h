@@ -16,27 +16,11 @@
 typedef struct condition_struct condition;
 typedef struct action_struct action;
 
-/* -- Following requires that both tests exists and are equality tests -- */
-//struct cmp_constraint_eq_test {
-//    bool operator()(test a,  test b) const {
-//      assert (a && b);
-//      return (a->data.referent == b->data.referent);
-//    }
-//};
-
-
 typedef struct variablization_struct {
       Symbol *instantiated_symbol;
       Symbol *variablized_symbol;
       uint64_t grounding_id;
-      bool grounded;
 } variablization;
-//
-//typedef struct merge_struct {
-//        Symbol *value_equality_test;
-//        condition *cond;
-//        merge_struct() : value_equality_test(NULL), cond(NULL) {}
-//} merge_info;
 
 /* -- Variablization_Manager
  *
@@ -103,20 +87,19 @@ class Variablization_Manager
    private:
       agent* thisAgent;
 
-      void variablize_lhs_symbol (Symbol **sym, identity_info *identity, bool is_equality_test);
+      void variablize_lhs_symbol (Symbol **sym, identity_info *identity);
 
       void variablize_test(test *t, Symbol *original_referent);
       void variablize_equality_test(test *t);
       void variablize_equality_tests(test *t);
 
       void variablize_rl_test (agent* thisAgent, test *chunk_test);
-      void variablize_rl_symbol (Symbol **sym, bool is_equality_test);
+      void variablize_rl_symbol (Symbol **sym);
 
       bool variablize_test_by_lookup(test *t, bool pSkipTopLevelEqualities);
       void variablize_tests_by_lookup(test *t, bool pSkipTopLevelEqualities);
 
-      void store_variablization(Symbol *instantiated_sym, Symbol *variable,
-                                identity_info *identity, bool is_equality_test);
+      void store_variablization(Symbol *instantiated_sym, Symbol *variable, identity_info *identity);
 
       variablization *get_variablization_for_symbol(std::map< Symbol *, variablization * > *pMap, Symbol *index_sym);
       variablization *get_variablization(uint64_t index_id);

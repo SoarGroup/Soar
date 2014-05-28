@@ -40,9 +40,6 @@ void Variablization_Manager::variablize_relational_constraints()
 
         if (found_variablization)
         {
-            // Should always be grounded now that relationals are done on their own
-            assert(found_variablization->grounded);
-
             dprint(DT_CONSTRAINTS, "...found grounding.  Variablizing constraint list.\n", it->first->to_string());
 
             variablize_cached_constraints_for_symbol(&(it->second));
@@ -85,9 +82,6 @@ void Variablization_Manager::variablize_relational_constraints()
 
         if (found_variablization)
         {
-            // Should always be grounded now that relationals are done on their own
-            assert(found_variablization->grounded);
-
             dprint(DT_CONSTRAINTS, "...found grounding for grounding id %llu.  Variablizing constraint list.\n", it->first);
             variablize_cached_constraints_for_symbol(&(it->second));
 
