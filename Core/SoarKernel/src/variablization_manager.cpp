@@ -278,7 +278,7 @@ void Variablization_Manager::variablize_equality_test(test *t)
         /* MToDo | It may be legal, but are multiple original equality tests really sensical?  Does it
                  *         ever make sense to put that in a rule?  Can they ever become conjunctive at runtime. */
 
-        dprint(DT_LHS_VARIABLIZATION, "Equality test with conjunctive set of original equalities.\n");
+        dprint_test(DT_LHS_VARIABLIZATION, original_test, true, false, true, "...this is an eq test with conj original test: ", "\n");
         assert((*t)->type==EQUALITY_TEST);
         original_eq_test = find_original_equality_test_preferring_vars(original_test, false);
         if (!original_eq_test) return;
