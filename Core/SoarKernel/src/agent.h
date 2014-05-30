@@ -56,7 +56,6 @@ typedef struct lexer_source_file_struct lexer_source_file;
 typedef struct production_struct production;
 typedef struct preference_struct preference;
 typedef struct pi_struct parent_inst;
-typedef struct preference_struct preference;
 typedef struct backtrace_struct backtrace_str;
 typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;

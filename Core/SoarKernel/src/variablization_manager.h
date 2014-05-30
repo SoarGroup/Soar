@@ -15,6 +15,7 @@
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;
+typedef struct preference_struct preference;
 
 typedef struct variablization_struct {
       Symbol *instantiated_symbol;
@@ -72,6 +73,7 @@ class Variablization_Manager
       void      variablize_condition_list (condition *top_cond, bool pInNegativeCondition = false);
       void      variablize_rl_condition_list (condition *top_cond, bool pInNegativeCondition = false);
 
+      action * variablize_results (preference *result, bool variablize);
       action * make_variablized_rl_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym );
 
       void print_OSD_table();
@@ -87,6 +89,13 @@ class Variablization_Manager
    private:
       agent* thisAgent;
 
+      void store_variablization(Symbol *instantiated_sym, Symbol *variable, identity_info *identity);
+
+      variablization *get_variablization_for_symbol(std::map< Symbol *, variablization * > *pMap, Symbol *index_sym);
+      variablization *get_variablization(uint64_t index_id);
+      variablization *get_variablization(test equality_test);
+      variablization *get_variablization(Symbol *index_sym);
+
       void variablize_lhs_symbol (Symbol **sym, identity_info *identity);
 
       void variablize_test(test *t, Symbol *original_referent);
@@ -97,13 +106,6 @@ class Variablization_Manager
 
       bool variablize_test_by_lookup(test *t, bool pSkipTopLevelEqualities);
       void variablize_tests_by_lookup(test *t, bool pSkipTopLevelEqualities);
-
-      void store_variablization(Symbol *instantiated_sym, Symbol *variable, identity_info *identity);
-
-      variablization *get_variablization_for_symbol(std::map< Symbol *, variablization * > *pMap, Symbol *index_sym);
-      variablization *get_variablization(uint64_t index_id);
-      variablization *get_variablization(test equality_test);
-      variablization *get_variablization(Symbol *index_sym);
 
       test      get_substitution(Symbol *sym);
       void      set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
@@ -132,9 +134,8 @@ class Variablization_Manager
       std::map< Symbol *, ::list * >          * sti_constraints;
       std::map< uint64_t, ::list * >          * constant_constraints;
 
-      /* -- Table of previously seen conditions.  Used to determine
-       *    whether to merge or eliminate positive conditions on
-       *    the LHS of a chunk. -- */
+      /* -- Table of previously seen conditions.  Used to determine whether to
+       *    merge or eliminate positive conditions on the LHS of a chunk. -- */
       std::map< Symbol *, std::map< Symbol *, std::map< Symbol *, condition *> > > *cond_merge_map;
       std::map< Symbol * , test > *substitution_map;
 

@@ -8,6 +8,7 @@
 #include "variablization_manager.h"
 #include "agent.h"
 #include "instantiations.h"
+#include "prefmem.h"
 #include "assert.h"
 #include "test.h"
 #include "print.h"
@@ -642,4 +643,52 @@ void Variablization_Manager::variablize_rl_condition_list (condition *top_cond, 
 
   dprint(DT_RL_VARIABLIZATION, "Done variablizing LHS condition list for template.\n");
   dprint(DT_RL_VARIABLIZATION, "==================================================\n");
+}
+
+action* Variablization_Manager::variablize_results (preference *result, bool variablize) {
+    action *a;
+    Symbol *id, *attr, *val, *ref;
+
+    if (!result) return NIL;
+
+    a = make_action(thisAgent);
+    a->type = MAKE_ACTION;
+
+    id = result->id;
+    attr = result->attr;
+    val = result->value;
+    ref = result->referent;
+
+    if (variablize) {
+        dprint_preferences(DT_RHS_VARIABLIZATION, result, "          Variablizing preference for ", true, false, true, 0);
+        dprint(DT_IDENTITY_PROP, "Setting g_ids for action using variablization results...\n");
+
+        result->g_ids.id = thisAgent->variablizationManager->variablize_rhs_symbol(&id, result->original_symbols.id);
+        result->g_ids.attr = thisAgent->variablizationManager->variablize_rhs_symbol(&attr, result->original_symbols.attr);
+        result->g_ids.value = thisAgent->variablizationManager->variablize_rhs_symbol(&val, result->original_symbols.value);
+        if (preference_is_binary(result->type)) {
+            thisAgent->variablizationManager->variablize_rhs_symbol(&ref, NIL);
+        }
+    } else {
+        /* MToDo | We might need to set these g_ids properly.  For example, do
+         *         we need g_ids when we have chunk-less states that are being
+         *         chunked through from a chunky state. So justifications need
+         *         them? -- */
+        dprint(DT_IDENTITY_PROP, "Setting g_ids for action to 0 b/c variablize is false.\n");
+        result->g_ids.id = 0;
+        result->g_ids.attr = 0;
+        result->g_ids.value = 0;
+    }
+
+    a->id = allocate_rhs_value_for_symbol(thisAgent, id, result->original_symbols.id, result->g_ids.id);
+    a->attr = allocate_rhs_value_for_symbol(thisAgent, attr, result->original_symbols.attr, result->g_ids.attr);
+    a->value = allocate_rhs_value_for_symbol(thisAgent, val, result->original_symbols.value, result->g_ids.value);
+    if (preference_is_binary(result->type)) {
+        a->referent = allocate_rhs_value_for_symbol(thisAgent, ref);
+    }
+
+    a->preference_type = result->type;
+
+    a->next = variablize_results(result->next_result, variablize);
+    return a;
 }
