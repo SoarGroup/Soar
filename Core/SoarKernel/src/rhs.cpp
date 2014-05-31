@@ -140,9 +140,6 @@ rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
     return funcall_list_to_rhs_value (new_fl);
   } else {
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-    dprint(DT_RHS_VARIABLIZATION, "copy_rhs_value copying rhs_symbol %s(%s).\n",
-          r->referent->to_string(),
-         (r->original_rhs_variable ? r->original_rhs_variable->to_string() : "NIL"));
     return allocate_rhs_value_for_symbol(thisAgent, r->referent, r->original_rhs_variable, r->g_id);
   }
 }
@@ -401,10 +398,11 @@ rhs_value create_RHS_value (agent* thisAgent,
   } else {
     /* -- rv is a rhs_symbol -- */
     rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-    /* MToDo | May not need these originals.  Should always be NULL, no? */
     dprint_noprefix(DT_RHS_VARIABLIZATION, "%s (%s, g%llu) from rhs_symbol (literal RHS constant).\n",
         rs->referent->to_string(), rs->original_rhs_variable->to_string(), rs->g_id);
-    return allocate_rhs_value_for_symbol(thisAgent, rs->referent, NULL);
+    original_sym = (add_original_vars != DONT_ADD_TESTS) ? rs->original_rhs_variable : NULL;
+    uint64_t g_id = (add_original_vars != DONT_ADD_TESTS) ? rs->g_id : 0;
+    return allocate_rhs_value_for_symbol(thisAgent, rs->referent, original_sym, g_id);
   }
 }
 

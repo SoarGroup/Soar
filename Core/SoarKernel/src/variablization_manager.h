@@ -16,6 +16,7 @@
 typedef struct condition_struct condition;
 typedef struct action_struct action;
 typedef struct preference_struct preference;
+typedef char * rhs_value;
 
 typedef struct variablization_struct {
       Symbol *instantiated_symbol;
@@ -67,7 +68,6 @@ class Variablization_Manager
       void consolidate_variables(condition *top_cond, tc_number tc_num);
       void merge_conditions(condition *top_cond);
 
-      uint64_t  variablize_rhs_symbol (Symbol **sym, Symbol *original_var);
       void      variablize_relational_constraints();
 
       void      variablize_condition_list (condition *top_cond, bool pInNegativeCondition = false);
@@ -97,6 +97,7 @@ class Variablization_Manager
       variablization *get_variablization(Symbol *index_sym);
 
       void variablize_lhs_symbol (Symbol **sym, identity_info *identity);
+      void variablize_rhs_symbol (rhs_value pRhs_val, Symbol *original_var);
 
       void variablize_test(test *t, Symbol *original_referent);
       void variablize_equality_test(test *t);
