@@ -633,7 +633,7 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 		}
 	}
 	// architectural
-	else if ( !o_only && !w->preference )
+	else if ( !o_only && !w->preference && ( w->reference_count != 0 ) )
 	{
 		// only action is to add it to the o_set
 		if ( o_set )
