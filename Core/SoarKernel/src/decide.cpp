@@ -2154,7 +2154,8 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 						for (pref=w->preference; pref!=NIL; pref=pref->next) 
 						{
 #ifdef DEBUG_GDS_HIGH
-							print(thisAgent, thisAgent, "\n\n   "); print_preference(pref);
+							print(thisAgent, "\n\n   ");
+							print_preference(thisAgent, pref);
 							print(thisAgent, "   Goal level of preference: %d\n",
 								pref->id->id.level);
 #endif
