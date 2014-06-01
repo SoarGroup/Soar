@@ -4064,9 +4064,12 @@ void rete_node_to_conditions (agent* thisAgent,
       }
     } else {
       am = node->b.posneg.alpha_mem_;
-      cond->data.tests.id_test = make_test(thisAgent, am->id, EQUALITY_TEST);
-      cond->data.tests.attr_test = make_test(thisAgent, am->attr, EQUALITY_TEST);
-      cond->data.tests.value_test = make_test(thisAgent, am->value, EQUALITY_TEST);
+      if (am->id)
+          cond->data.tests.id_test = make_test(thisAgent, am->id, EQUALITY_TEST);
+      if (am->attr)
+          cond->data.tests.attr_test = make_test(thisAgent, am->attr, EQUALITY_TEST);
+      if (am->value)
+          cond->data.tests.value_test = make_test(thisAgent, am->value, EQUALITY_TEST);
       cond->test_for_acceptable_preference = am->acceptable;
       /* -- Debug| do we need varnames added here to be unique? -- */
       if (nvn) {
