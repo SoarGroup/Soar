@@ -8,7 +8,7 @@
 #ifndef SEMANTIC_MEMORY_MATH_QUERIES_H_
 #define SEMANTIC_MEMORY_MATH_QUERIES_H_
 
-//#include <limits>
+#include <limits>
 #undef min
 #undef max
 

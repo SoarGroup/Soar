@@ -32,7 +32,7 @@ except OSError:
 	Exit(1)
 	
 ver = '.'.join(ver_str.split('.')[:2])
-if ver == '1.7':
+if ver == '1.7' or ver == '1.8':
 	# scons 2.0.1 claims that jdk 1.7 is not supported, but tricking it into
 	# thinking it's 1.6 seems to work fine
 	ver = '1.6'
