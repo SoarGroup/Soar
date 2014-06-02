@@ -225,10 +225,10 @@ class MathQueryMax: public MathQuery
 	public:
 		MathQueryMax()
 		{
-			doubleValue = std::numeric_limits<double>::lowest();
-			stagedDoubleValue = std::numeric_limits<double>::lowest();
-			longValue = std::numeric_limits<int64_t>::lowest();
-			stagedLongValue = std::numeric_limits<int64_t>::lowest();
+			doubleValue = -std::numeric_limits<double>::max();
+			stagedDoubleValue = -std::numeric_limits<double>::max();
+			longValue = -std::numeric_limits<int64_t>::max();
+			stagedLongValue = -std::numeric_limits<int64_t>::max();
 		}
 
 		bool valueIsAcceptable(double value)
