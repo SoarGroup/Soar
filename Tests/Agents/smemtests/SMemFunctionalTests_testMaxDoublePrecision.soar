@@ -1,0 +1,124 @@
+smem --set learning on
+
+### initialize
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init)
+-->
+   (<s> ^name double-precision
+        ^storage.float 3.14159265358979323846) #This truncates at 3.141592653589793
+}
+
+sp {propose*store-in-smem
+   (state <s> ^storage.float <float>
+             -^smem.command.store <store>)
+-->
+   (<s> ^operator.name store-in-smem)
+}
+
+sp {apply*store-in-smem
+   (state <s> ^operator.name store-in-smem
+              ^smem.command <sc>
+              ^storage <storage>)
+-->
+   (<sc> ^store <storage>)
+}
+
+sp {propose*successful-store
+   (state <s> ^smem <smem>)
+   (<smem> ^command <sc>
+   		   ^result.success <lti>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name successful-store)
+}
+
+sp {apply*successful-store
+   (state <s> ^operator.name successful-store
+              ^smem.command <sc>
+              ^storage <storage>)
+   (<sc> ^store <store>)
+-->
+   (<sc> ^store <store> -)
+   (<s> ^storage <storage> -
+        ^in-smem true)
+}
+
+### query when done counting
+sp {propose*query
+   (state <s> ^name double-precision
+             -^storage
+             -^smem.command.query
+              ^in-smem true)
+-->
+   (<s> ^operator.name query)
+}
+
+sp {apply*query
+   (state <s> ^operator.name query
+              ^smem.command <cmd>)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^float 3.14159265358979323846)
+}
+
+### halt when query returns
+sp {propose*check-smem*success
+   (state <s> ^smem <smem>)
+   (<smem> ^command.query <q>
+            ^result.success <q>
+            ^result.retrieved <result>)
+   (<result> ^float { >= 3.14159265358979 <= 3.14159265358980 })
+-->
+   (<s> ^operator <check-smem> + >)
+   (<check-smem> ^name check-smem
+                  ^status success)
+}
+
+sp {propose*check-smem*failure*query-fail
+   (state <s> ^smem <smem>)
+   (<smem> ^command.query <q>
+            ^result.failure)
+-->
+   (<s> ^operator <failure-op> +)
+   (<failure-op> ^name check-smem
+                 ^status failure
+                 ^condition |result.failure|)
+}
+
+sp {propose*check-smem*failure*query-result-fail
+   (state <s> ^smem <smem>)
+   (<smem> ^command.query <q>
+            ^result.success <q>)
+-->
+   (<s> ^operator <failure-op> +)
+   (<failure-op> ^name check-smem
+                 ^status failure
+                 ^condition |result.success - unexpected result|)
+}
+
+sp {apply*check-smem*success
+   (state <s> ^operator <check-smem>)
+   (<check-smem> ^name check-smem
+                  ^status success)
+-->
+   (write |Success!| (crlf))
+   (exec succeeded)
+}
+
+sp {apply*check-smem*failure
+   (state <s> ^operator <check-smem>)
+   (<check-smem> ^name check-smem
+                  ^status failure
+                  ^condition <condition>)
+-->
+   (write |Failed because '| <condition> |'!| (crlf))
+   (failed)
+}

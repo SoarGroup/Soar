@@ -415,3 +415,11 @@ std::string Handlers::MyRhsFunctionFailureHandler(sml::smlRhsEventId, void*, sml
 	CPPUNIT_ASSERT_MESSAGE(message.str().c_str(), false);
 	return "";
 }
+
+std::string Handlers::MySuccessHandler( sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument )
+{
+	CPPUNIT_ASSERT( pUserData );
+	bool* pHandlerReceived = static_cast< bool* >( pUserData );
+	*pHandlerReceived = true;
+	return "";
+}

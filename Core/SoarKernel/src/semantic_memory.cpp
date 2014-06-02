@@ -447,6 +447,9 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	hash_rev_str = new soar_module::sqlite_statement( new_db, "SELECT symbol_value FROM smem_symbols_string WHERE s_id=?" );
 	add( hash_rev_str );
 
+	hash_rev_type = new soar_module::sqlite_statement( new_db, "SELECT symbol_type FROM smem_symbols_type WHERE s_id=?" );
+	add( hash_rev_type );
+
 	hash_get_int = new soar_module::sqlite_statement( new_db, "SELECT s_id FROM smem_symbols_integer WHERE symbol_value=?" );
 	add( hash_get_int );
 
@@ -520,13 +523,13 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	web_attr_child = new soar_module::sqlite_statement( new_db, "SELECT lti_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=?" );
+	web_attr_child = new soar_module::sqlite_statement( new_db, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=?" );
 	add( web_attr_child );
 
-	web_const_child = new soar_module::sqlite_statement( new_db, "SELECT lti_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=?" );
+	web_const_child = new soar_module::sqlite_statement( new_db, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=?" );
 	add( web_const_child );
 
-	web_lti_child = new soar_module::sqlite_statement( new_db, "SELECT lti_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=?" );
+	web_lti_child = new soar_module::sqlite_statement( new_db, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=?" );
 	add( web_lti_child );
 
 	//
@@ -2142,7 +2145,7 @@ inline soar_module::sqlite_statement* smem_setup_web_crawl(agent* my_agent, smem
 	return q;
 }
 
-inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq )
+inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery )
 {
 	bool good_wme = true;
 	smem_weighted_cue_element *new_cue_element;
@@ -2159,7 +2162,7 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
 		attr_hash = smem_temporal_hash( my_agent, w->attr, false );
 		if ( attr_hash != NIL )
 		{
-			if ( symbol_is_constant( w->value ) )
+			if ( symbol_is_constant( w->value ) && mathQuery == NIL)
 			{
 				value_lti = NIL;
 				value_hash = smem_temporal_hash( my_agent, w->value, false );
@@ -2178,7 +2181,15 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
 			}
 			else
 			{
+				//If we get here on a math query, the value may not be an identifier
+				if(w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+				{
 				value_lti = w->value->id.smem_lti;
+				}
+				else
+				{
+					value_lti = 0;
+				}
 				value_hash = NIL;
 
 				if ( value_lti == NIL )
@@ -2212,6 +2223,7 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
 
 					new_cue_element->element_type = element_type;
 					new_cue_element->pos_element = pos_cue;
+					new_cue_element->mathElement = mathQuery;
 
 					weighted_pq.push( new_cue_element );
 					new_cue_element = NULL;
@@ -2235,14 +2247,160 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
 			}
 		}
 	}
-
+	//If we brought in a math query and didn't use it
+	if(!good_wme && mathQuery != NIL)
+	{
+		delete mathQuery;
+	}
 	return good_wme;
 }
 
-smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *negquery, smem_lti_set *prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full )
+//this returns a pair with <needFullSearch, goodCue>
+std::pair<bool,bool>* processMathQuery( agent* my_agent, Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq){
+        bool needFullSearch = false;
+        //Use this set to track when certain elements have been added, so we don't add them twice
+        std::set<Symbol*> uniqueMathQueryElements;
+        std::pair<bool,bool>* result = new std::pair<bool,bool>(true, true);
+
+        smem_wme_list* cue = smem_get_direct_augs_of_id(mathQuery);
+        for(smem_wme_list::iterator cue_p = cue->begin(); cue_p!=cue->end();cue_p++)
+        {
+
+        	smem_wme_list* cueTypes = smem_get_direct_augs_of_id((*cue_p)->value);
+            if(cueTypes->empty())
+            {
+                //This would be an attribute without a query type attached
+                result->first = false;
+                result->second = false;
+                break;
+            }
+            else
+            {
+            	for(smem_wme_list::iterator cueType = cueTypes->begin(); cueType!=cueTypes->end();cueType++)
+				{
+					if((*cueType)->attr == my_agent->smem_sym_math_query_less)
+					{
+						if((*cueType)->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						{
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->fc.value));
+						}
+						else if((*cueType)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						{
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->ic.value));
+						}
+						else
+						{
+							//There isn't a valid value to compare against
+							result->first = false;
+							result->second = false;
+							break;
+						}
+					}
+					else if((*cueType)->attr == my_agent->smem_sym_math_query_greater)
+					{
+						if((*cueType)->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						{
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->fc.value));
+						}
+						else if((*cueType)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						{
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->ic.value));
+						}
+						else
+						{
+							//There isn't a valid value to compare against
+							result->first = false;
+							result->second = false;
+							break;
+						}
+					}
+					else if((*cueType)->attr == my_agent->smem_sym_math_query_less_or_equal)
+					{
+						if((*cueType)->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						{
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->fc.value));
+						}
+						else if((*cueType)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						{
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->ic.value));
+						}
+						else
+						{
+							//There isn't a valid value to compare against
+							result->first = false;
+							result->second = false;
+							break;
+						}
+					}
+					else if((*cueType)->attr == my_agent->smem_sym_math_query_greater_or_equal)
+					{
+						if((*cueType)->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						{
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->fc.value));
+						}
+						else if((*cueType)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						{
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->ic.value));
+						}
+						else
+						{
+							//There isn't a valid value to compare against
+							result->first = false;
+							result->second = false;
+							break;
+						}
+					}
+					else if ((*cueType)->attr == my_agent->smem_sym_math_query_max)
+					{
+						if(uniqueMathQueryElements.find(my_agent->smem_sym_math_query_max) != uniqueMathQueryElements.end())
+						{
+							//Only one max at a time
+							result->first = false;
+							result->second = false;
+							break;
+						}
+						else
+						{
+							uniqueMathQueryElements.insert(my_agent->smem_sym_math_query_max);
+						}
+						needFullSearch = true;
+						_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryMax());
+					}
+					else if ((*cueType)->attr == my_agent->smem_sym_math_query_min)
+					{
+						if(uniqueMathQueryElements.find(my_agent->smem_sym_math_query_min) != uniqueMathQueryElements.end())
+						{
+							//Only one min at a time
+							result->first = false;
+							result->second = false;
+							break;
+						}
+						else
+						{
+							uniqueMathQueryElements.insert(my_agent->smem_sym_math_query_min);
+						}
+						needFullSearch = true;
+						_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryMin());
+					}
+				}
+            }
+            delete cueTypes;
+        }
+        delete cue;
+        if(result->second){
+        	result->first = needFullSearch;
+        	return result;
+        }
+        return result;
+}
+
+smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *negquery, Symbol *mathQuery, smem_lti_set *prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full )
 {
 	smem_weighted_cue_list weighted_cue;
 	bool good_cue = true;
+
+	//This is used when doing math queries that need to look at more that just the first valid element
+	bool needFullSearch = false;
 
 	soar_module::sqlite_statement *q = NULL;
 
@@ -2270,11 +2428,19 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 
 				if ( good_cue )
 				{
-					good_cue = _smem_process_cue_wme( my_agent, (*cue_p), true, weighted_pq );
+					good_cue = _smem_process_cue_wme( my_agent, (*cue_p), true, weighted_pq, NIL );
 				}
 			}
 
 			delete cue;
+		}
+
+		//Look through while were here, so that we can make sure the attributes we need are in the results
+		if(mathQuery != NIL){
+			std::pair<bool,bool>* mpr = processMathQuery(my_agent, mathQuery, &weighted_pq);
+			needFullSearch = mpr->first;
+			good_cue = mpr->second;
+			delete mpr;
 		}
 
 		// negative cue - if present
@@ -2288,7 +2454,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 
 				if ( good_cue )
 				{
-					good_cue = _smem_process_cue_wme( my_agent, (*cue_p), false, weighted_pq );
+					good_cue = _smem_process_cue_wme( my_agent, (*cue_p), false, weighted_pq, NIL );
 				}
 			}
 
@@ -2309,8 +2475,16 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 		{
 			while ( !weighted_pq.empty() )
 			{
-				delete weighted_pq.top();
+				smem_prioritized_weighted_cue::value_type top = weighted_pq.top();
 				weighted_pq.pop();
+				if (top->mathElement != NIL)
+					delete top->mathElement;
+				delete top;
+				/*if(weighted_pq.top()->mathElement != NIL){
+					delete weighted_pq.top()->mathElement;
+				}
+				delete weighted_pq.top();
+				weighted_pq.pop();*/
 			}
 		}
 	}
@@ -2385,7 +2559,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 				more_rows = ( q->execute() == soar_module::row );
 			}
 
-			while ( ( king_id == NIL ) && ( ( more_rows ) || ( !plentiful_parents.empty() ) ) )
+			while ( (( king_id == NIL ) || (needFullSearch)) && ( ( more_rows ) || ( !plentiful_parents.empty() ) ) )
 			{
 				// choose next candidate (db vs. priority queue)
 				{
@@ -2422,10 +2596,11 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 				{
 					good_cand = true;
 
-					for ( next_element=weighted_cue.begin(); next_element!=weighted_cue.end(); next_element++ )
+					for ( next_element=weighted_cue.begin(); next_element!=weighted_cue.end() && good_cand; next_element++ )
 					{
 						// don't need to check the generating list
-						if ( (*next_element) == (*cand_set) )
+						//If the cand_set is a math query, we care about more than its existence
+						if ( (*next_element) == (*cand_set) && (*next_element)->mathElement == NIL)
 						{
 							continue;
 						}
@@ -2452,8 +2627,39 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 						q2->bind_int( 1, cand );
 						q2->bind_int( 2, (*next_element)->attr_hash );
 
-						has_feature = ( q2->execute( soar_module::op_reinit ) == soar_module::row );
+						has_feature = ( q2->execute( ) == soar_module::row );
+						bool mathQueryMet = false;
+						if((*next_element)->mathElement != NIL && has_feature)
+						{
+							do{
+								smem_hash_id valueHash = q2->column_int( 2 - 1);
+								my_agent->smem_stmts->hash_rev_type->bind_int(1, valueHash);
+
+								if(my_agent->smem_stmts->hash_rev_type->execute() != soar_module::row)
+								{
+									good_cand = false;
+								}
+								else
+								{
+									switch(my_agent->smem_stmts->hash_rev_type->column_int(1 - 1))
+									{
+										case FLOAT_CONSTANT_SYMBOL_TYPE:
+											mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(smem_reverse_hash_float(my_agent, valueHash));
+											break;
+										case INT_CONSTANT_SYMBOL_TYPE:
+											mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(smem_reverse_hash_int(my_agent, valueHash));
+											break;
+									}
+								}
+								my_agent->smem_stmts->hash_rev_type->reinitialize();
+							}while(q2->execute( ) == soar_module::row);
+							good_cand = mathQueryMet;
+						}else
+						{
 						good_cand = ( ( (*next_element)->pos_element )?( has_feature ):( !has_feature ) );
+						}
+						//In CSoar this needs to happen before the break, or the query might not be ready next time
+						q2->reinitialize();
 						if ( !good_cand )
 						{
 							break;
@@ -2463,6 +2669,23 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 					if ( good_cand )
 					{
 						king_id = cand;
+						for(smem_weighted_cue_list::iterator wce=weighted_cue.begin(); wce!=weighted_cue.end(); wce++)
+						{
+							if((*wce)->mathElement != NIL)
+							{
+								(*wce)->mathElement->commit();
+							}
+						}
+					}
+					else
+					{
+						for(smem_weighted_cue_list::iterator wce=weighted_cue.begin(); wce!=weighted_cue.end(); wce++)
+						{
+							if((*wce)->mathElement != NIL)
+							{
+								(*wce)->mathElement->rollback();
+							}
+						}
 					}
 				}
 			}
@@ -2472,6 +2695,9 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 		// clean weighted cue
 		for ( next_element=weighted_cue.begin(); next_element!=weighted_cue.end(); next_element++ )
 		{
+			if((*next_element)->mathElement != NIL){
+				delete (*next_element)->mathElement;
+			}
 			delete (*next_element);
 		}
 	}
@@ -3423,6 +3649,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	Symbol *query;
 	Symbol *negquery;
 	Symbol *retrieve;
+	Symbol *math;
 	smem_sym_list prohibit;
 	smem_sym_list store;
 
@@ -3539,6 +3766,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			retrieve = NIL;
 			query = NIL;
 			negquery = NIL;
+			math = NIL;
 			store.clear();
 			prohibit.clear();
 			path = blank_slate;
@@ -3601,6 +3829,20 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 							 ( (*w_p)->value->id.smem_lti != NIL ) )
 						{
 							prohibit.push_back( (*w_p)->value );
+							path = cmd_query;
+						}
+						else
+						{
+							path = cmd_bad;
+						}
+					}
+					else if ( (*w_p)->attr == my_agent->smem_sym_math_query )
+					{
+						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						   ( ( path == blank_slate) || ( path == cmd_query ) ) &&
+						   ( math == NIL ) )
+						{
+							math = (*w_p)->value;
 							path = cmd_query;
 						}
 						else
@@ -3681,7 +3923,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						prohibit_lti.insert( (*sym_p)->id.smem_lti );
 					}
 
-					smem_process_query( my_agent, state, query, negquery, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
+					smem_process_query( my_agent, state, query, negquery, math, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
 
 					// add one to the cbr stat
 					my_agent->smem_stats->cbr->set_value( my_agent->smem_stats->cbr->get_value() + 1 );

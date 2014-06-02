@@ -1,0 +1,49 @@
+smem --set learning on
+
+#Dump some records into smem
+smem --add {
+  (<x> ^name val
+  	   ^value 1)
+}
+smem --add {
+  (<x> ^name val
+  	   ^value 5)
+}
+smem --add {
+  (<x> ^name val
+  	   ^value 2)
+}
+smem --add {
+  (<x> ^name val
+  	   ^value 4)
+}
+smem --add {
+  (<x> ^name val
+  	   ^value 3)
+}
+
+#Test the max query
+sp {propose*query
+  (state <s> ^superstate nil 
+             ^smem <smem>)
+  (<smem> -^result.retrieved)
+--> 
+  (<s> ^operator.name query)
+}
+
+sp {apply*query
+  (state <s> ^operator.name query
+             ^smem.command <sc>)
+-->
+  (<sc> ^query.name |val|)
+  (<sc> ^neg-query.value 1)
+  (<sc> ^math-query.value.less 3)
+}
+
+sp {success
+  (state <s> ^smem.result.retrieved <lti>)
+  (<lti> ^name val
+         ^value 2)
+-->
+  (exec succeeded)
+}

@@ -1,0 +1,102 @@
+smem --set learning on
+smem --set merge add
+
+# First store something in SMEM
+
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <init> + >)
+   (<init> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init)
+-->
+   (<s> ^person <p>
+        ^name mirroring)
+   (<p> ^name Steve
+        ^email |jobs@apple.com|)
+}
+
+sp {propose*store
+  (state <s> ^superstate nil 
+            -^stored
+             ^name
+             ^smem <smem>)
+  (<smem> -^result.success)
+--> 
+  (<s> ^operator.name store)
+}
+
+sp {apply*store
+  (state <s> ^operator.name store
+             ^smem.command <sc>
+             ^person <p>)
+-->
+  (<s> ^stored true)
+  (<sc> ^store <p>)
+}
+
+# Now correct the name
+
+sp {propose*correction
+   (state <s> ^stored
+              ^person <p>)
+   (<p> ^name Steve)
+-->
+   (<s> ^operator.name correction)
+}
+
+sp {apply*correction
+   (state <s> ^operator.name correction
+              ^person <p>
+              ^smem.command <sc>)
+   (<p> ^name <Bill>)
+   (<sc> ^store <store>)
+-->
+   (<sc> ^store <store> -)
+   (<p> ^name <Bill> -
+        ^name Bill)
+}
+
+# Now query for it to see if it got into SMEM.
+
+sp {propose*query
+  (state <s> ^superstate nil 
+             ^stored true
+             ^person.name Bill
+             ^smem <smem>)
+  (<smem> -^result.retrieved)
+--> 
+  (<s> ^operator.name query)
+}
+
+sp {apply*query
+   (state <s> ^operator.name query
+              ^smem.command <sc>
+              ^person <p>)
+-->
+   (<sc> ^query.email |jobs@apple.com|)
+}
+
+sp {success
+  (state <s> ^smem.result.retrieved <lti>)
+  (<lti> ^name Bill
+         ^name Steve
+         ^email |jobs@apple.com|)
+-->
+  (exec succeeded)
+  (halt)
+}
+
+sp {failed-to-mirror
+   (state <s> ^smem.result.retrieved <lti>)
+   (<lti> ^name Steve
+         -^name Bill)
+-->
+   (write |Failed to mirror!|)
+   (halt)
+}
+

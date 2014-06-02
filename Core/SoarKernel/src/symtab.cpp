@@ -760,6 +760,13 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->smem_sym_negquery = make_sym_constant( thisAgent, "neg-query" );
   thisAgent->smem_sym_prohibit = make_sym_constant( thisAgent, "prohibit" );
   thisAgent->smem_sym_store = make_sym_constant( thisAgent, "store" );
+  thisAgent->smem_sym_math_query = make_sym_constant( thisAgent, "math-query" );
+  thisAgent->smem_sym_math_query_less = make_sym_constant( thisAgent, "less" );
+  thisAgent->smem_sym_math_query_greater = make_sym_constant( thisAgent, "greater" );
+  thisAgent->smem_sym_math_query_less_or_equal = make_sym_constant( thisAgent, "less-or-equal" );
+  thisAgent->smem_sym_math_query_greater_or_equal = make_sym_constant( thisAgent, "greater-or-equal" );
+  thisAgent->smem_sym_math_query_max = make_sym_constant( thisAgent, "max" );
+  thisAgent->smem_sym_math_query_min = make_sym_constant( thisAgent, "min" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -867,4 +874,11 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->smem_sym_negquery ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_prohibit ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_store ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_less ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_greater ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_less_or_equal ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_greater_or_equal ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_max ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_min ) );
 }
