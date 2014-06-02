@@ -113,134 +113,134 @@ void SMemMathTest::tearDown()
 
 void SMemMathTest::testSimpleCueBasedRetrieval() {
 	source("SMemFunctionalTests_testSimpleCueBasedRetrieval.soar");
-	pAgent->RunSelf(3, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(3, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemMathTest::testSimpleNonCueBasedRetrieval() {
 	source("SMemFunctionalTests_testSimpleNonCueBasedRetrieval.soar");
-	pAgent->RunSelf(6, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(6, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemMathTest::testSimpleStore() {
 	source("SMemFunctionalTests_testSimpleStore.soar");
-	pAgent->RunSelf(3, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(3, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemMathTest::testTrivialMathQuery() {
 	source("SMemFunctionalTests_testTrivialMathQuery.soar");
-	pAgent->RunSelf(3, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(3, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemMathTest::testBadMathQuery() {
 	source("SMemFunctionalTests_testBadMathQuery.soar");
-	pAgent->RunSelf(3, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(3, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemMathTest::testMaxQuery() {
 	source("SMemFunctionalTests_testMax.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMaxMixedTypes() {
 	source("SMemFunctionalTests_testMaxMixedTypes.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMaxMultivalued() {
 	source("SMemFunctionalTests_testMaxMultivalued.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMin() {
 	source("SMemFunctionalTests_testMin.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMaxNegQuery() {
 	source("SMemFunctionalTests_testMaxNegation.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemMathTest::testGreater() {
 	source("SMemFunctionalTests_testGreater.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testLess() {
 	source("SMemFunctionalTests_testLess.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testGreaterOrEqual() {
 	source("SMemFunctionalTests_testGreaterOrEqual.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testLessOrEqual() {
 	source("SMemFunctionalTests_testLessOrEqual.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testLessWithNeg() {
 	source("SMemFunctionalTests_testLessWithNeg.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testLessNoSolution() {
 	source("SMemFunctionalTests_testLessNoSolution.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMirroring() {
 	source("SMemFunctionalTests_testMirroring.soar");
-	pAgent->RunSelf(5, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(5, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMergeAdd() {
 	source("SMemFunctionalTests_testMergeAdd.soar");
-	pAgent->RunSelf(5, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(5, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMergeNone() {
 	source("SMemFunctionalTests_testMergeNone.soar");
-	pAgent->RunSelf(5, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(5, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemMathTest::testSimpleStoreMultivaluedAttribute() {
 	source("SMemFunctionalTests_testLess.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testSimpleFloat() {
 	source("SMemFunctionalTests_testLessWithNeg.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMaxDoublePrecision_Irrational() {
 	source("SMemFunctionalTests_testLessNoSolution.soar");
-	pAgent->RunSelf(2, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(2, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testMaxDoublePrecision() {
 	source("SMemFunctionalTests_testMirroring.soar");
-	pAgent->RunSelf(5, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(5, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testSimpleNonCueBasedRetrievalOfNonExistingLTI() {
 	source("SMemFunctionalTests_testMergeAdd.soar");
-	pAgent->RunSelf(5, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(5, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 void SMemMathTest::testNegQuery() {
 	source("SMemFunctionalTests_testMergeNone.soar");
-	pAgent->RunSelf(5, sml::smlRunStepSize::sml_DECISION);
+	pAgent->RunSelf(5, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
 

@@ -15,6 +15,8 @@
 class MathQuery
 {
 	public:
+		virtual ~MathQuery() {}
+
 		//Use these to indicate if the current value is a potential new best match
 		virtual bool valueIsAcceptable(int64_t value)=0;
 		virtual bool valueIsAcceptable(double value)=0;
