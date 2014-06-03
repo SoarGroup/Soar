@@ -38,6 +38,8 @@ class SMemMathTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testMaxDoublePrecision );
 	CPPUNIT_TEST( testSimpleNonCueBasedRetrievalOfNonExistingLTI );
 	CPPUNIT_TEST( testNegQuery );
+	CPPUNIT_TEST( testNegStringFloat );
+	CPPUNIT_TEST( testNegQueryNoHash );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -74,6 +76,8 @@ protected:
 	void testMaxDoublePrecision();
 	void testSimpleNonCueBasedRetrievalOfNonExistingLTI();
 	void testNegQuery();
+	void testNegStringFloat();
+	void testNegQueryNoHash();
 
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
@@ -243,5 +247,14 @@ void SMemMathTest::testNegQuery() {
 	pAgent->RunSelf(5, sml::sml_DECISION);
 	CPPUNIT_ASSERT(succeeded);
 }
-
+void SMemMathTest::testNegStringFloat() {
+	source("SMemFunctionalTests_testNegStringFloat.soar");
+	pAgent->RunSelf(6, sml::sml_DECISION);
+	CPPUNIT_ASSERT(succeeded);
+}
+void SMemMathTest::testNegQueryNoHash() {
+	source("SMemFunctionalTests_testNegQueryNoHash.soar");
+	pAgent->RunSelf(2, sml::sml_DECISION);
+	CPPUNIT_ASSERT(succeeded);
+}
 
