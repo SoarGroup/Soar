@@ -10,7 +10,7 @@ Import('env', 'InstallDir')
 clone = env.Clone()
 
 # Set up variables (some are hardcoded for now)
-libname = 'TclSoarLib'
+libname = 'tclsoarlib'
 
 # Set up includes variables
 if sys.platform == 'win32':
