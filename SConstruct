@@ -11,14 +11,14 @@ import subprocess
 import re
 import fnmatch
 from SCons.Node.Alias import default_ans
+import SCons.Script
 
 join = os.path.join
 
-SOAR_VERSION = "9.3.2"
+SOAR_VERSION = "9.3.3"
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
-DEF_TCL = join('../../TclTk')
-DEF_TARGETS = 'kernel cli sml_python sml_java sml_tcl debugger tests'.split()
+DEF_TARGETS = 'kernel cli sml_python sml_tcl sml_java debugger tests tclsoarlib'.split()
 
 def execute(cmd):
 	try:
@@ -109,9 +109,6 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
 
-AddOption('--tcl', action='store', type='string', dest='tcl', default=DEF_TCL, nargs=1, metavar='DIR',
-    help='Directory of Tcl directory containing Tcl.h and Tcl dll to link against')
-
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
 AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
@@ -129,7 +126,6 @@ env = Environment(
 	BUILD_DIR=GetOption('build-dir'),
 	OUT_DIR=os.path.realpath(GetOption('outdir')),
 	SOAR_VERSION=SOAR_VERSION,
-	TCL_DIR = os.path.realpath(GetOption('tcl')),
 	VISHIDDEN=False,  # needed by swig
 )
 

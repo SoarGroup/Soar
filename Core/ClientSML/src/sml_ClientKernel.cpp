@@ -28,9 +28,11 @@
 #include "sml_EmbeddedConnection.h"	// For access to direct methods
 #include "sml_ClientDirect.h"
 #include "misc.h"
+#include "soar_instance.h"
+#include "output_manager.h"
 
-#include <iostream>     
-#include <sstream>     
+#include <iostream>
+#include <sstream>
 #include <iomanip>
 
 #include <assert.h>
@@ -75,11 +77,11 @@ Kernel::Kernel(Connection* pConnection)
 /* voigtjr, rmarinie
  *
  * Upon further tinkering, we have discovered that the use of the code within
- * the following symbol on Linux is no longer necessary, and, in fact, causes 
+ * the following symbol on Linux is no longer necessary, and, in fact, causes
  * problems, but we are leaving it in in case our analysis turns out to be
  * incorrect.
  */
-	
+
 //#ifdef LINUX_STATIC_LINK
 	// On Linux the linker only makes a single pass through the libraries
 	// so if we try to statically link all of the code together, it fails to
@@ -107,12 +109,20 @@ static void InitSoarHandler(smlAgentEventId /*id*/, void* /*pUserData*/, Agent* 
 }
 
 /*************************************************************
-* @brief Called when an init-soar event happens so we know
-*		 to refresh the input/output links.
+* @brief Called when a dynamically linked library is called
+*    so we can load it into memory and initialize it.
 *************************************************************/
 static std::string LoadLibraryHandler(smlStringEventId /*id*/, void* /*pUserData*/, Kernel* pKernel, char const* pString)
 {
 	return pKernel->LoadExternalLibrary(pString);
+}
+/*************************************************************
+* @brief Called when a command needs to be passed to a library
+*    that extends the Soar command line interface.
+*************************************************************/
+static std::string CliExtensionMessageHandler(smlStringEventId /*id*/, void* /*pUserData*/, Kernel* pKernel, char const* pString)
+{
+  return Soar_Instance::Get_Soar_Instance().Message_Library(pString);
 }
 
 void Kernel::InitEvents()
@@ -123,6 +133,7 @@ void Kernel::InitEvents()
 	// Register for load-library events (local client only)
 	if(!this->GetConnection()->IsRemoteConnection()) {
 		RegisterForStringEvent(smlEVENT_LOAD_LIBRARY, &LoadLibraryHandler, NULL);
+    RegisterForStringEvent(smlEVENT_CLI_EXTENSION_MESSAGE, &CliExtensionMessageHandler, NULL);
 	}
 }
 
@@ -664,6 +675,21 @@ Kernel* Kernel::CreateKernelInNewThread(int portToListenOn)
 	return CreateEmbeddedConnection(false, false, portToListenOn) ;
 }
 
+inline Soar_Instance* instantiate_singletons()
+{
+  /* -- This creates the singletons for Soar_Instance and the Output_Manager.
+   *
+   *    Note: Since this function is static and should be the first function
+   *    called by a program that uses Soar, creating Soar_Instance and the
+   *    Output Manager here should guarantee that they are both created
+   *    before the kernel and CommandLineInterface objects.  This is
+   *    is important since the output manager might be needed to print
+   *    debug output during initialization.  -- */
+
+	Output_Manager::Get_OM();
+	return (&Soar_Instance::Get_Soar_Instance());
+}
+
 /*************************************************************
 * @brief Creates a connection to the Soar kernel that is embedded
 *        within the same process as the caller.
@@ -684,6 +710,9 @@ Kernel* Kernel::CreateKernelInNewThread(int portToListenOn)
 Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn)
 {
 	ErrorCode errorCode = 0 ;
+
+	/* -- Create Soar_Instance and Output_Manager singletons -- */
+	Soar_Instance *lSoarInstance = instantiate_singletons();
 	Connection* pConnection = Connection::CreateEmbeddedConnection(clientThread, optimized, portToListenOn, &errorCode) ;
 
 	// Even if pConnection is NULL, we still build a kernel object, so we have
@@ -696,7 +725,9 @@ Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int 
 	// Register for "calls" from the kernel.
 	if (pConnection)
 	{
-		pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
+	  lSoarInstance->init_Soar_Instance(pKernel);
+
+	  pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
 
 		pKernel->InitializeTimeTagCounter() ;
 
@@ -708,7 +739,7 @@ Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int 
 
 int Kernel::GetListenerPort()
 {
-	if (GetConnection()) 
+	if (GetConnection())
 	{
 		AnalyzeXML response ;
 		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetListenerPort))
@@ -723,6 +754,9 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 {
 	ErrorCode errorCode = 0 ;
 
+	/* -- Create Soar_Instance and Output_Manager singletons -- */
+	Soar_Instance *lSoarInstance = instantiate_singletons();
+
 	// Initialize the socket library before attempting to create a connection
 	sock::SocketLib* pLib = new sock::SocketLib() ;
 
@@ -732,6 +766,8 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	// Even if pConnection is NULL, we still build a kernel object, so we have
 	// a clean way to pass the error code back to the caller.
 	Kernel* pKernel = new Kernel(pConnection) ;
+	lSoarInstance->init_Soar_Instance(pKernel);
+
 	pKernel->SetSocketLib(pLib) ;
 	pKernel->SetError(errorCode) ;
 
@@ -794,7 +830,7 @@ void Kernel::InitializeTimeTagCounter()
 		m_TimeTagCounter = initialTimeTag ;
 
 		// Start IDs from this value too, so they don't collide
-		m_IdCounter = -initialTimeTag ;		
+		m_IdCounter = -initialTimeTag ;
 	}
 }
 
@@ -810,7 +846,7 @@ void Kernel::UpdateAgentList()
 	{
 		ElementXML const* pResult = response.GetResultTag() ;
 		ElementXML child(NULL) ;
-		
+
 		// Keep a record of the agents we find, so we can delete any that have been removed.
 		std::list<Agent*>	inUse ;
 
@@ -866,7 +902,7 @@ bool Kernel::GetAllConnectionInfo()
 	{
 		ElementXML const* pResult = response.GetResultTag() ;
 		ElementXML child(NULL) ;
-		
+
 		for (int i = 0 ; i < pResult->GetNumberChildren() ; i++)
 		{
 			pResult->GetChild(&child, i) ;
@@ -1028,7 +1064,7 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 {
 	AnalyzeXML response ;
 	Agent* agent = NULL ;
-	
+
 	// See if this agent already exists
 	agent = GetAgent(pAgentName) ;
 
@@ -1233,7 +1269,7 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
 
 	// Create the command line for the run command
 	std::string step ;
-	
+
 	switch (stepSize)
 	{
 		case sml_DECISION:		step = "-d" ; break ;
@@ -1758,7 +1794,7 @@ int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handl
 * This event is registered with the kernel because they relate to events we think may be useful to use to trigger updates
 * in synchronous environments.
 *
-* @returns A unique ID for this callback (used to unregister the callback later) 
+* @returns A unique ID for this callback (used to unregister the callback later)
 *************************************************************/
 int	Kernel::RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventHandler handler, void* pUserData, bool addToBack)
 {
@@ -1802,7 +1838,7 @@ int	Kernel::RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventHandler handl
 * This event is registered with the kernel because they relate to events we think may be useful to use to trigger updates
 * in synchronous environments.
 *
-* @returns A unique ID for this callback (used to unregister the callback later) 
+* @returns A unique ID for this callback (used to unregister the callback later)
 *************************************************************/
 int	Kernel::RegisterForStringEvent(smlStringEventId id, StringEventHandler handler, void* pUserData, bool addToBack)
 {
@@ -1850,7 +1886,7 @@ int	Kernel::RegisterForStringEvent(smlStringEventId id, StringEventHandler handl
 * smlEVENT_BEFORE_AGENT_REINITIALIZED,
 * smlEVENT_AFTER_AGENT_REINITIALIZED,
 *
-* @returns A unique ID for this callback (used to unregister the callback later) 
+* @returns A unique ID for this callback (used to unregister the callback later)
 *************************************************************/
 int Kernel::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack)
 {
@@ -1917,7 +1953,7 @@ int	Kernel::InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionNam
 	return m_CallbackIDCounter ;
 }
 
-bool Kernel::InternalRemoveRhsFunction(smlRhsEventId id, int callbackID) 
+bool Kernel::InternalRemoveRhsFunction(smlRhsEventId id, int callbackID)
 {
 	// Build a test object for the callbackID we're interested in
 	TestRhsCallback test(callbackID) ;
@@ -1996,7 +2032,7 @@ bool Kernel::RemoveRhsFunction(int callbackID)
 *
 *		 Multiple handlers can be registered for a given message type and the results will be concatenated together and returned
 *		 to the original caller.  (This is expected to be an usual situation).
-*		 
+*
 *		 A RHS (right hand side) function handler is used just to reduce the number of types in the system and because it is sufficient
 *		 for this purpose.
 *
@@ -2261,8 +2297,8 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 
 	// The first index of the argv is the library name
 	// Make a copy of the library name so we can work on it.
-	std::string libraryName = vectorArgv[0];	
-		
+	std::string libraryName = vectorArgv[0];
+
 	// We shouldn't be passed something with an extension
 	// but if we are, we'll try to strip the extension to be helpful
 	size_t pos = libraryName.find_last_of('.') ;
@@ -2274,7 +2310,7 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 #ifdef _WIN32
 	// The windows shared library
 	libraryName = libraryName + ".dll";
-	
+
 	// Now load the library itself.
 	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
 
@@ -2299,8 +2335,8 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 #endif
 	} else {
 		InitLibraryFunction pInitLibraryFunction = Dangerous_Pointer_Cast<InitLibraryFunction>::from(GetProcAddress(hLibrary, "sml_InitLibrary"));
-		
-		if (!pInitLibraryFunction) 
+
+		if (!pInitLibraryFunction)
 			return "Couldn't find sml_InitLibrary in library";
 
 		// Create main-style argc/argv (argv is null-terminated);

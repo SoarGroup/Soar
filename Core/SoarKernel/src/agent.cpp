@@ -23,6 +23,7 @@
 #include <map>
 
 #include "agent.h"
+#include "debug.h"
 #include "kernel.h"
 #include "mem.h"
 #include "lexer.h"
@@ -52,7 +53,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-
+#include "soar_instance.h"
 
 /* ================================================================== */
 
@@ -383,7 +384,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_id_replacement = new epmem_return_id_pool();
   newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
 
-  // experimental memory consolidation parameters
+  // debug module settings
   newAgent->debug_params = new debug_param_container( newAgent );
 
   #ifdef USE_MEM_POOL_ALLOCATORS
@@ -469,7 +470,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->prediction;
 
   // cleanup wma
-  delete_agent->wma_params->activation->set_value( soar_module::off );
+  delete_agent->wma_params->activation->set_value( off );
   delete delete_agent->wma_forget_pq;
   delete delete_agent->wma_touched_elements;
   delete delete_agent->wma_touched_sets;
@@ -518,6 +519,8 @@ void destroy_soar_agent (agent * delete_agent)
   /////////////////////////////////////////////////////////
 
   remove_built_in_rhs_functions(delete_agent);
+
+  getSoarInstance()->Delete_Agent(delete_agent->name);
 
   /* Free structures stored in agent structure */
   free(delete_agent->name);

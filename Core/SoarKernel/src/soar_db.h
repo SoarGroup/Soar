@@ -57,6 +57,13 @@ namespace soar_module
 	// execution result
 	enum exec_result { row, ok, err };
 
+	// storage
+	enum db_choices { memory, file };
+
+	// performance
+	enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
+	enum opt_choices { opt_safety, opt_speed };
+
 
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
@@ -768,6 +775,20 @@ namespace soar_module
 			 return_value = false;
 		 return value_retrieved;
 	 }
+
+	  template <typename T>
+	  class db_predicate: public soar_module::agent_predicate<T>
+	  {
+	    public:
+	      db_predicate( agent *new_agent );
+	      bool operator() ( T val );
+	  };
+	  template <typename T>
+	  db_predicate<T>::db_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {}
+
+	  template <typename T>
+	  bool db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->epmem_db->get_status() == soar_module::connected ); }
+
 }
 
 #endif

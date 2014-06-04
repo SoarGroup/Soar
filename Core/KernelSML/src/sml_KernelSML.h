@@ -28,6 +28,7 @@ typedef struct wme_struct wme;
 #include "sml_Utils.h"
 #include "sml_Events.h"
 #include "init_soar.h"
+#include "soar_instance.h"
 
 namespace soar_thread
 {
@@ -46,7 +47,7 @@ class Connection ;
 class AnalyzeXML ;
 class KernelSML ;
 class OutputListener ;
-class AgentSML; 
+class AgentSML;
 class ConnectionManager ;
 class Events ;
 class RunScheduler ;
@@ -77,6 +78,7 @@ class KernelSML
 	friend class RhsListener;
 	friend class RunScheduler ;
 	friend class AgentSML ;
+	friend class Soar_Instance ;
 
 protected:
 
@@ -180,7 +182,7 @@ public:
 	*			we're aware of to this soar kernel.
 	*************************************************************/
 	void AddConnection(Connection* pConnection) ;
-	
+
 	/*************************************************************
 	* @brief	Add or remove a connection from the list listening
 	*			for a particular event in the kernel.
@@ -197,17 +199,17 @@ public:
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
 	*************************************************************/
-	void FireUpdateListenerEvent(smlUpdateEventId eventID, int runFlags)	
-	{ 
-		m_UpdateListener.OnKernelEvent(eventID, 0, &runFlags) ; 
+	void FireUpdateListenerEvent(smlUpdateEventId eventID, int runFlags)
+	{
+		m_UpdateListener.OnKernelEvent(eventID, 0, &runFlags) ;
 	}
 
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
 	*************************************************************/
-	void FireSystemEvent(smlSystemEventId eventID)						
-	{ 
-		m_SystemListener.OnKernelEvent(eventID, 0 , 0) ; 
+	void FireSystemEvent(smlSystemEventId eventID)
+	{
+		m_SystemListener.OnKernelEvent(eventID, 0 , 0) ;
 	}
 
 	/*************************************************************
@@ -224,6 +226,11 @@ public:
 	* @brief	Notify listeners that this event has occured.
 	*************************************************************/
 	std::string FireLoadLibraryEvent(char const* pLibraryCommand);
+
+  /*************************************************************
+  * @brief  Notify listeners that this event has occured.
+  *************************************************************/
+  std::string FireCliExtensionMessageEvent(char const* pCliExtCommand);
 
 	/*************************************************************
 	* @brief	Add or remove a connection from the list implementing
@@ -269,8 +276,8 @@ public:
 	* @brief Flags used to suppress the firing of system start and
 	*		 system stop events.
 	*************************************************************/
-	void SetSuppressSystemStart(bool state) { m_SuppressSystemStart = state ; }	
-	void SetSuppressSystemStop(bool state)  { m_SuppressSystemStop = state ; }	
+	void SetSuppressSystemStart(bool state) { m_SuppressSystemStart = state ; }
+	void SetSuppressSystemStop(bool state)  { m_SuppressSystemStop = state ; }
 
 	void RequireSystemStop(bool state)		{ m_RequireSystemStop = state ; }
 
@@ -323,35 +330,35 @@ public:
 
 	/*************************************************************
 	* @brief	Returns the number of agents.
-	*************************************************************/	
+	*************************************************************/
 	int			GetNumberAgents() ;
 
 	/*************************************************************
 	* @brief	Delete the agent sml object for this agent.
 	*			This object stores the data SML uses when working
 	*			with the underlying gSKI agent.
-	*************************************************************/	
+	*************************************************************/
 	bool DeleteAgentSML( const char* agentName ) ;
 	//bool DeleteAgentSML(agent* pAgent) ;
 
 	/*************************************************************
 	* @brief	Stops and deletes all agents.  Generally called
 	*			just prior to shutdown.
-	*************************************************************/	
+	*************************************************************/
 	void DeleteAllAgents(bool waitTillDeleted) ;
 
 	/*************************************************************
 	* @brief	The run scheduler is responsible for deciding which
 	*			agents to include in a run and actually performing
 	*			that run.
-	*************************************************************/	
+	*************************************************************/
 	RunScheduler*	GetRunScheduler() { return m_pRunScheduler ; }
 
 	/*************************************************************
 	* @brief	Defines which phase we stop before when running by decision.
 	*			E.g. Pass input phase to stop just after generating output and before receiving input.
 	*			This is a setting which modifies the future behavior of "run <n> --decisions" commands.
-	*************************************************************/	
+	*************************************************************/
 	void SetStopBefore(smlPhase phase) ;
 	smlPhase GetStopBefore() ;
 	top_level_phase ConvertSMLToSoarPhase( smlPhase phase ) ;
@@ -360,13 +367,13 @@ public:
 	* @brief	If true, whenever a user issues a command that changes the state of the kernel in some manner
 	*			the command and its results are echoed to anyone listening.  This is useful when two users
 	*			are debugging the same kernel (and should be off at other times).
-	*************************************************************/	
+	*************************************************************/
 	void SetEchoCommands(bool state) { m_EchoCommands = state ; }
 	bool GetEchoCommands()			 { return m_EchoCommands ; }
 
 	/*************************************************************
 	* @brief	Request that all agents stop soon
-	*************************************************************/	
+	*************************************************************/
 	void InterruptAllAgents(smlStopLocationFlags stopLoc) ;
 	void ClearAllInterrupts() ;
 

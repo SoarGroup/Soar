@@ -89,6 +89,7 @@ Events::Events()
 	// Untyped events
 	RegisterEvent(smlEVENT_EDIT_PRODUCTION, "edit-production") ;
 	RegisterEvent(smlEVENT_LOAD_LIBRARY, "load-library") ;
+  RegisterEvent(smlEVENT_CLI_EXTENSION_MESSAGE, "cli") ;
 
 	// Rhs user function fired
 	RegisterEvent(smlEVENT_RHS_USER_FUNCTION, "rhs-user-function") ;

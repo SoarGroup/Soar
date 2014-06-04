@@ -114,6 +114,7 @@
 #include "sml_ClientXML.h"
 #include "sml_ClientTraceXML.h"
 #include "sml_ClientAnalyzedXML.h"
+#include "soar_instance.h"
 %}
 
 //
@@ -140,6 +141,8 @@
 %include "sml_ClientXML.h"
 %include "sml_ClientTraceXML.h"
 %include "sml_ClientAnalyzedXML.h"
+%include "soar_instance.h"
+
 
 %{
 // Check for memory leaks
@@ -149,13 +152,13 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
-bool __stdcall DllMain( void * hModule, 
-                       unsigned long  ul_reason_for_call, 
+bool __stdcall DllMain( void * hModule,
+                       unsigned long  ul_reason_for_call,
                        void * lpReserved
 					 )
 {
 	//_crtBreakAlloc = 13542;
-	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 	unused(hModule) ;
 	unused(ul_reason_for_call) ;
 	unused(lpReserved) ;

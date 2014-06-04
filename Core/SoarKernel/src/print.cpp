@@ -34,6 +34,7 @@
 #include "instantiations.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "debug.h"
 
 #include <stdarg.h>
 
@@ -104,9 +105,6 @@ void print_string (agent* thisAgent, const char *s) {
    ways to do this, depending on whether we're using a fully ANSI
    compatible compiler or not.)
 --------------------------------------------------------------- */
-
-/* --- size of output buffer for a single call to one of these routines --- */
-#define PRINT_BUFSIZE 5000   /* This better be large enough!! */
 
 void print (agent* thisAgent, const char *format, ...) {
   va_list args;

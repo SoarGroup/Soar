@@ -19,56 +19,38 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
+#include <portability.h>
+#include "kernel.h"
 #include "soar_module.h"
+#include "Export.h"
 
-/* --  Comment out the following line for release versions or if you don't
- *     need these utilities. -- */
-// #define SOAR_DEBUG_UTILITIES
+#define SOAR_DEBUG_UTILITIES
 
 #ifdef SOAR_DEBUG_UTILITIES
 
-#include <portability.h>
+#ifdef DEBUG_EPMEM_SQL
+static void profile_sql(void *context, const char *sql, sqlite3_uint64 ns)
+{ fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);}
+static void trace_sql( void* /*arg*/, const char* query ) { fprintf(stderr, "Query: %s\n", query );}
+#endif
+#endif
 
-#define DEBUG_USE_STDERR_TRACE
-//#define DEBUG_EPMEM_SQL
-//#define DEBUG_EPMEM_WME_ADD
+extern EXPORT void dprint (TraceMode mode, const char *format, ... );
+extern EXPORT void dprint_noprefix (TraceMode mode, const char *format, ... );
 
-
-extern void debug_print(const char *format, ...);
-extern void debug_print_db_err();
-extern void debug_init_db( agent *my_agent);
-extern void debug_print_epmem_table(const char *table_name);
-extern void debug_print_smem_table(const char *table_name);
-
+extern void debug_test(int type=1);
 /**
  * @brief Contains the parameters for the debug command
  */
 class debug_param_container: public soar_module::param_container
 {
-    public:
+  public:
 
-        // storage
-        soar_module::boolean_param *epmem_commands, *smem_commands, *sql_commands;
+    soar_module::boolean_param *epmem_commands, *smem_commands, *sql_commands;
 
-        debug_param_container( agent *new_agent ): soar_module::param_container( new_agent )
-        {
-            epmem_commands = new soar_module::boolean_param("epmem", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
-            smem_commands = new soar_module::boolean_param("smem", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
-            sql_commands = new soar_module::boolean_param("sql", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
-            add(epmem_commands);
-            add(smem_commands);
-            add(sql_commands);
-            debug_init_db(new_agent);
-        }
+    debug_param_container( agent *new_agent );
+
 };
-
-#else
-class debug_param_container: public soar_module::param_container{
-    public:
-        debug_param_container( agent *new_agent ): soar_module::param_container( new_agent ) {}
-};
-#endif
-
 
 #endif
 

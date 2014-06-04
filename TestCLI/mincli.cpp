@@ -31,7 +31,7 @@ string strip(string s, string lc, string rc) {
 bool totalnesting(string line, int &result) {
 	int nesting = 0;
 	size_t p = line.find_first_of("{}|");
-	
+
 	while (p != string::npos) {
 		switch (line[p]) {
 			case '{':
@@ -65,7 +65,7 @@ bool readcmd(string &result) {
 	int nestlvl, i, n;
 	string line;
 	stringstream cmd;
-	
+
 	nestlvl = 0;
 	while(getline(cin, line)) {
 		if (!totalnesting(line, n)) {
@@ -79,7 +79,7 @@ bool readcmd(string &result) {
 			break;
 		}
 	}
-	
+
 	if (nestlvl > 0) {
 		return false;
 	}
@@ -97,7 +97,7 @@ void printcb(smlPrintEventId id, void *d, Agent *a, char const *m) {
 void execcmd(const string &c) {
 	bool isident = false;
 	string out;
-	
+
 	if (c == "exit") {
 		agent->ExecuteCommandLine("halt");
 		kernel->Shutdown();
@@ -126,7 +126,7 @@ void execcmd(const string &c) {
 
 void repl() {
 	string cmd, last;
-	
+
 	while (cin) {
 		cout << endl << "% ";
 		if (!readcmd(cmd)) {
@@ -166,7 +166,7 @@ string log_handler(smlRhsEventId id, void *userdata, Agent *agent, char const *f
 	bool iscmd, append;
 	string fn, text;
 	int c;
-	
+
 	iscmd = false; append = false;
 	while (true) {
 		ss >> fn;
@@ -180,13 +180,13 @@ string log_handler(smlRhsEventId id, void *userdata, Agent *agent, char const *f
 	}
 	while ((c = ss.get()) == ' ' || c == '	');  // ignore leading whitespace
 	ss.putback(c);
-	
+
 	if (iscmd) {
 		text = agent->ExecuteCommandLine(args + ss.tellg());
 	} else {
 		text = (args + ss.tellg());
 	}
-	
+
 	f.open(fn.c_str(), ios_base::out | (append ? ios_base::app : ios_base::trunc));
 	if (!f) {
 		cerr << "Failed to open " << fn << " for writing" << endl;
@@ -250,27 +250,32 @@ int main(int argc, char *argv[]) {
 		interactive = false;
 	}
 
-	if (listen) {
+//  pthread_setname_np("minCLI_main_thread");
+//  cout << "minCLI thread is " << tname2() << endl;
+
+  if (listen) {
+	  cout << "Instantiating Soar.  (kernel in new thread, port " << port << ")" << endl;
 		kernel = Kernel::CreateKernelInNewThread(port);
 	} else {
-		kernel = Kernel::CreateKernelInCurrentThread(true, 0);
+    cout << "Instantiating Soar.  (kernel in current thread (optimized) on port " << port << ")" << endl;
+		kernel = Kernel::CreateKernelInCurrentThread(true, port);
 	}
 
 	kernel->AddRhsFunction("exit", exit_handler, NULL);
 	kernel->AddRhsFunction("log", log_handler, NULL);
-	
+
 	agent = kernel->CreateAgent(agentname);
 	agent->RegisterForPrintEvent(smlEVENT_PRINT, printcb, NULL);
 	agent->SetOutputLinkChangeTracking(false);
-	
+
 	if (signal(stopsig, SIG_IGN) != SIG_IGN) {
 		signal(stopsig, sighandler);
 	}
-	
+
 	for (j = sources.begin(); j != sources.end(); ++j) {
 		execcmd("source " + *j);
 	}
-	
+
 	for (j = cmds.begin(); j != cmds.end(); ++j) {
 		execcmd(*j);
 	}

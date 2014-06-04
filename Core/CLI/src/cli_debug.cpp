@@ -18,6 +18,8 @@
 
 #include "agent.h"
 #include "misc.h"
+#include "soar_instance.h"
+#include "debug.h"
 
 using namespace cli;
 using namespace sml;
@@ -109,20 +111,21 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 			std::string table_name = argv->at(2);
 			if (database_name[0] == 'e')
 			{
-				debug_print_epmem_table(table_name.c_str());
+//				debug_print_epmem_table(agnt, table_name.c_str());
 			}
 			else if (database_name[0] == 's')
 			{
-				debug_print_smem_table(table_name.c_str());
+//				debug_print_smem_table(agnt, table_name.c_str());
 			}
 			else
 			{
 				tempString.str("");
-				tempString << "Debug| Invalid database parameter: " << sub_command << ".";
+				tempString << "Debug| Invalid print database parameter: " << sub_command << ".";
 				SetError( tempString.str().c_str() );
 				goto print_syntax;
 			}
 		}
+
 		else
 		{
 			tempString.str("");
@@ -135,14 +138,9 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	}
 	else if (numArgs == 0)
 	{
-		if (sub_command[0] == 'i')
+if (sub_command[0] == 'd')
 		{
-			PrintCLIMessage("Debug| Initializing debug variables.");
-			debug_init_db(agnt);
-		}
-		else if (sub_command[0] == 'd')
-		{
-			debug_print_db_err();
+//			debug_print_db_err(agnt);
 		}
 		else
 		{

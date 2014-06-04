@@ -28,7 +28,6 @@
 #include "init_soar.h"
 #include "mem.h"
 #include "lexer.h"
-#include "chunk.h"
 #include "callback.h"
 #include <map>
 
@@ -38,7 +37,6 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-#include "debug.h"
 
 #include <string>
 #include <map>
@@ -78,6 +76,8 @@ typedef struct backtrace_struct backtrace_str;
 typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
+
+class debug_param_container;
 
 // following def's moved here from old interface.h file  KJC nov 05
 /* AGR 568 begin */

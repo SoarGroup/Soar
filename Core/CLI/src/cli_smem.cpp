@@ -215,7 +215,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
         else
         {
-            soar_module::stat *my_stat = agnt->smem_stats->get( pAttr->c_str() );
+            soar_module::statistic *my_stat = agnt->smem_stats->get( pAttr->c_str() );
             if ( !my_stat )
                 return SetError( "Invalid statistic." );
 

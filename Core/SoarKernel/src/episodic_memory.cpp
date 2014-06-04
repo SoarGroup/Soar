@@ -75,7 +75,7 @@
 epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {
 	// learning
-	learning = new soar_module::boolean_param( "learning", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+	learning = new soar_module::boolean_param( "learning", off, new soar_module::f_predicate<boolean>() );
 	add( learning );
 
 	////////////////////
@@ -118,7 +118,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( database );
 
 	// append database or dump data on init
-	append_db = new soar_module::boolean_param( "append-database", soar_module::off, new soar_module::f_predicate<soar_module::boolean>(  ) );
+	append_db = new soar_module::boolean_param( "append-database", off, new soar_module::f_predicate<boolean>(  ) );
 	add( append_db );
 
 	// path
@@ -126,7 +126,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( path );
 
 	// auto-commit
-	lazy_commit = new soar_module::boolean_param( "lazy-commit", soar_module::on, new epmem_db_predicate<soar_module::boolean>( my_agent ) );
+	lazy_commit = new soar_module::boolean_param( "lazy-commit", on, new epmem_db_predicate<boolean>( my_agent ) );
 	add( lazy_commit );
 
 	////////////////////
@@ -134,7 +134,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	////////////////////
 
 	// graph-match
-	graph_match = new soar_module::boolean_param( "graph-match", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
+	graph_match = new soar_module::boolean_param( "graph-match", on, new soar_module::f_predicate<boolean>() );
 	add( graph_match );
 
 	// balance
@@ -223,7 +223,7 @@ bool epmem_db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->
  **************************************************************************/
 bool epmem_enabled( agent *my_agent )
 {
-	return ( my_agent->epmem_params->learning->get_value() == soar_module::on );
+	return ( my_agent->epmem_params->learning->get_value() == on );
 }
 
 //////////////////////////////////////////////////////////
@@ -858,7 +858,7 @@ epmem_common_statement_container::epmem_common_statement_container( agent *new_a
 
 	// Drop tables in the database if append setting is off.  (Tried DELETE before, but it had problems.)
 	if (( new_agent->epmem_params->database->get_value() != epmem_param_container::memory ) &&
-		( new_agent->epmem_params->append_db->get_value() == soar_module::off )) {
+		( new_agent->epmem_params->append_db->get_value() == off )) {
 		drop_graph_tables();
 	}
 
@@ -1019,7 +1019,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	// Delete all entries from the tables in the database if append setting is off
 	if (( new_agent->epmem_params->database->get_value() != epmem_param_container::memory ) &&
-		( new_agent->epmem_params->append_db->get_value() == soar_module::off )) {
+		( new_agent->epmem_params->append_db->get_value() == off )) {
 		print_trace(new_agent, 0, "EpMem| Erasing contents of database because append mode is off.\n" );
 		drop_graph_tables();
 	}
@@ -1809,7 +1809,7 @@ void epmem_close( agent *my_agent )
 	{
 		print_trace(my_agent, TRACE_EPMEM_SYSPARAM, "EpMem| Closing database %s.\n", my_agent->epmem_params->path->get_value());
 		// if lazy, commit
-		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
+		if ( my_agent->epmem_params->lazy_commit->get_value() == on )
 		{
 			my_agent->epmem_stmts_common->commit->execute( soar_module::op_reinit );
 		}
@@ -2345,7 +2345,7 @@ void epmem_init_db( agent *my_agent, bool readonly )
 		}
 
 		// if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
-		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
+		if ( my_agent->epmem_params->lazy_commit->get_value() == on )
 		{
 			my_agent->epmem_stmts_common->begin->execute( soar_module::op_reinit );
 		}
@@ -4338,7 +4338,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	// epmem options
-	bool do_graph_match = (my_agent->epmem_params->graph_match->get_value() == soar_module::on);
+	bool do_graph_match = (my_agent->epmem_params->graph_match->get_value() == on);
 	epmem_param_container::gm_ordering_choices gm_order = my_agent->epmem_params->gm_ordering->get_value();
 
 	// variables needed for cleanup
@@ -5831,14 +5831,14 @@ bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err )
 
 	if ( my_agent->epmem_db->get_status() == soar_module::connected )
 	{
-		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
+		if ( my_agent->epmem_params->lazy_commit->get_value() == on )
 		{
 			my_agent->epmem_stmts_common->commit->execute( soar_module::op_reinit );
 		}
 
 		return_val = my_agent->epmem_db->backup( file_name, err );
 
-		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
+		if ( my_agent->epmem_params->lazy_commit->get_value() == on )
 		{
 			my_agent->epmem_stmts_common->begin->execute( soar_module::op_reinit );
 		}

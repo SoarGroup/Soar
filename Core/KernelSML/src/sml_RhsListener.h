@@ -85,7 +85,7 @@ public:
 
 	// Called for a filter event
 	bool HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, char const* pArgument,
-						    int maxLengthReturnValue, char* pReturnValue) ;
+						    std::string &pReturnValue);
 
 	// Called when a "RhsEvent" occurs in the kernel
 	virtual bool HandleEvent(smlRhsEventId eventId, AgentSML* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,

@@ -62,7 +62,7 @@ KernelSML::KernelSML(int portToListenOn)
 	m_CommandLineInterface.SetKernel(this);
 
 	// Create the map from command name to handler function
-	BuildCommandMap() ; 
+	BuildCommandMap() ;
 
 	// Start listening for incoming connections
 	m_pConnectionManager = new ConnectionManager(portToListenOn, this) ;
@@ -163,9 +163,9 @@ void KernelSML::SetStopPoint(bool forever, smlRunStepSize runStepSize, smlPhase 
 /*************************************************************
 * @brief	Notify listeners that this event has occured.
 *************************************************************/
-std::string KernelSML::FireEditProductionEvent(char const* pProduction) { 
+std::string KernelSML::FireEditProductionEvent(char const* pProduction) {
 
-	const int kBufferLength = 10000; 
+	const int kBufferLength = 10000;
 	char response[kBufferLength] ;
 	response[0] = 0 ;
 
@@ -191,9 +191,9 @@ std::string KernelSML::FireEditProductionEvent(char const* pProduction) {
 /*************************************************************
 * @brief	Notify listeners that this event has occured.
 *************************************************************/
-std::string KernelSML::FireLoadLibraryEvent(char const* pLibraryCommand) { 
+std::string KernelSML::FireLoadLibraryEvent(char const* pLibraryCommand) {
 
-	const int kBufferLength = 10000; 
+	const int kBufferLength = 10000;
 	char response[kBufferLength] ;
 	response[0] = 0 ;
 
@@ -214,6 +214,24 @@ std::string KernelSML::FireLoadLibraryEvent(char const* pLibraryCommand) {
 	//}
 
 	return response ;
+
+}
+
+std::string KernelSML::FireCliExtensionMessageEvent(char const* pCliExtCommand) {
+
+  const int kBufferLength = 10000;
+  char response[kBufferLength] ;
+  response[0] = 0 ;
+
+  StringListenerCallbackData callbackData;
+
+  callbackData.pData = pCliExtCommand;
+  callbackData.maxLengthReturnStringBuffer = kBufferLength;
+  callbackData.pReturnStringBuffer = response;
+
+  m_StringListener.OnKernelEvent( smlEVENT_CLI_EXTENSION_MESSAGE, 0, &callbackData );
+
+  return response ;
 
 }
 //////////////////////////////////////
@@ -246,10 +264,9 @@ std::string KernelSML::SendClientMessage(AgentSML* pAgentSML, char const* pMessa
 *************************************************************/
 bool KernelSML::SendFilterMessage(AgentSML* pAgent, char const* pCommandLine, std::string* pResult)
 {
-	char response[10000] ;
-	response[0] = 0 ;
+    std::string s_response;
 
-	bool ok = m_RhsListener.HandleFilterEvent(smlEVENT_FILTER, pAgent, pCommandLine, sizeof(response), response) ;
+	bool ok = m_RhsListener.HandleFilterEvent(smlEVENT_FILTER, pAgent, pCommandLine, s_response);
 
 	if (!ok)
 	{
@@ -261,7 +278,7 @@ bool KernelSML::SendFilterMessage(AgentSML* pAgent, char const* pCommandLine, st
 	{
 		// Somebody filtered this command, so return the results of that filtering
 		// (this can be "")
-		*pResult = response ;
+		*pResult = s_response.c_str() ;
 		return true ;
 	}
 }
@@ -361,7 +378,7 @@ bool KernelSML::IsTracingCommunications()
 
 /*************************************************************
 * @brief	Returns the number of agents.
-*************************************************************/	
+*************************************************************/
 int	KernelSML::GetNumberAgents()
 {
 	// FIXME: this function should return unsigned
@@ -370,7 +387,7 @@ int	KernelSML::GetNumberAgents()
 
 /*************************************************************
 * @brief	Remove any event listeners for this connection.
-*************************************************************/	
+*************************************************************/
 void KernelSML::RemoveAllListeners(Connection* pConnection)
 {
 	// Remove any agent specific listeners
@@ -391,7 +408,7 @@ void KernelSML::RemoveAllListeners(Connection* pConnection)
 
 /*************************************************************
 * @brief	Delete the agent sml object for this agent.
-*************************************************************/	
+*************************************************************/
 bool KernelSML::DeleteAgentSML( const char* agentName )
 {
 	// See if we already have an object in our map
@@ -466,7 +483,7 @@ bool KernelSML::InvalidArg(Connection* pConnection, soarxml::ElementXML* pRespon
 	msg << "Invalid arguments for command : " << pCommandName << pErrorDescription ;
 
 	AddErrorMsg(pConnection, pResponse, msg.str().c_str()) ;
-	
+
 	// Return true because we've already added the error message.
 	return true ;
 }
@@ -478,7 +495,7 @@ AgentSML* KernelSML::GetAgentSML(char const* pAgentName)
 {
 	if (!pAgentName)
 		return NULL ;
-	
+
 	AgentMapIter iter = m_AgentMap.find( pAgentName ) ;
 
 	if (iter == m_AgentMap.end())
@@ -496,7 +513,7 @@ AgentSML* KernelSML::GetAgentSML(char const* pAgentName)
 * @brief	Defines which phase we stop before when running by decision.
 *			E.g. Pass input phase to stop just after generating output and before receiving input.
 *			This is a setting which modifies the future behavior of "run <n> --decisions" commands.
-*************************************************************/	
+*************************************************************/
 void KernelSML::SetStopBefore(smlPhase phase)
 {
 	m_pRunScheduler->SetStopBefore(phase) ;
@@ -508,12 +525,12 @@ smlPhase KernelSML::GetStopBefore()
 	return m_pRunScheduler->GetStopBefore() ;
 }
 
-top_level_phase KernelSML::ConvertSMLToSoarPhase( smlPhase phase ) 
+top_level_phase KernelSML::ConvertSMLToSoarPhase( smlPhase phase )
 {
 	// check a few
 	assert( INPUT_PHASE == static_cast< top_level_phase >( sml_INPUT_PHASE ) );
 	assert( PREFERENCE_PHASE == static_cast< top_level_phase >( sml_PREFERENCE_PHASE ) );
-	
+
 	// just cast
 	return static_cast< top_level_phase >( phase );
 }
@@ -521,7 +538,7 @@ top_level_phase KernelSML::ConvertSMLToSoarPhase( smlPhase phase )
 
 /*************************************************************
 * @brief	Request that all agents stop soon
-*************************************************************/	
+*************************************************************/
 void KernelSML::InterruptAllAgents(smlStopLocationFlags stopLoc)
 {
 	for (AgentMapIter iter = m_AgentMap.begin() ; iter != m_AgentMap.end() ; iter++)

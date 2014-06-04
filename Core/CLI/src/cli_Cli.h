@@ -51,6 +51,11 @@ namespace cli
         virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0) = 0;
 
         /**
+         * @brief cli command
+         */
+        virtual bool DoCLIMessage(const std::string& pMessage) = 0;
+
+        /**
          * @brief cd command
          * @param pDirectory Pointer to the directory to pass in to. Pass null to return
          *        to the initial (home) directory.

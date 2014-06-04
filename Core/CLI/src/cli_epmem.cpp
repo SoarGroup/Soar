@@ -115,7 +115,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     {
     	epmem_reinit( agnt );
     	PrintCLIMessage( "EpMem| Episodic memory system re-initialized.");
-    	if ((agnt->epmem_params->append_db->get_value() == soar_module::on) &&
+    	if ((agnt->epmem_params->append_db->get_value() == on) &&
     		(agnt->epmem_params->database->get_value() != epmem_param_container::memory))
     	{
         	PrintCLIMessage( "EpMem|   Note: There was no effective change to memory contents because append mode is on and path set to file.");
@@ -178,7 +178,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         else
         {
             // check attribute name
-            soar_module::stat *my_stat = agnt->epmem_stats->get( pAttr->c_str() );
+            soar_module::statistic *my_stat = agnt->epmem_stats->get( pAttr->c_str() );
             if ( !my_stat )
                 return SetError( "Invalid statistic." );
 

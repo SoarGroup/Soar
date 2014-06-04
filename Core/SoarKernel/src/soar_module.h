@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -39,7 +39,7 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 
 	typedef std::set< wme* > wme_set;
-	
+
 	typedef struct symbol_triple_struct
 	{
 		Symbol* id;
@@ -49,15 +49,15 @@ namespace soar_module
 		symbol_triple_struct( Symbol* new_id, Symbol* new_attr, Symbol* new_value ): id(new_id), attr(new_attr), value(new_value) {}
 	} symbol_triple;
 	typedef std::list< symbol_triple* > symbol_triple_list;
-	
+
 	wme *add_module_wme( agent *my_agent, Symbol *id, Symbol *attr, Symbol *value );
 	void remove_module_wme( agent *my_agent, wme *w );
 	instantiation* make_fake_instantiation( agent* my_agent, Symbol* state, wme_set* conditions, symbol_triple_list* actions );
-	
+
 	///////////////////////////////////////////////////////////////////////////
 	// Predicates
 	///////////////////////////////////////////////////////////////////////////
-	
+
 	// a functor for validating parameter values
 	template <typename T>
 	class predicate: public std::unary_function<T, bool>
@@ -65,13 +65,13 @@ namespace soar_module
 		public:
 			virtual ~predicate() {}
 			virtual bool operator() ( T /*val*/ ) { return true; }
-	};	
+	};
 
 	// a false predicate
 	template <typename T>
 	class f_predicate: public predicate<T>
 	{
-		public:			
+		public:
 			virtual bool operator() ( T /*val*/ ) { return false; }
 	};
 
@@ -85,7 +85,7 @@ namespace soar_module
 			T my_min;
 			T my_max;
 			bool inclusive;
-		
+
 		public:
 			btw_predicate( T new_min, T new_max, bool new_inclusive ): my_min( new_min ), my_max( new_max ), inclusive( new_inclusive ) {}
 
@@ -94,7 +94,7 @@ namespace soar_module
 				return ( ( inclusive )?( ( val >= my_min ) && ( val <= my_max ) ):( ( val > my_min ) && ( val < my_max ) ) );
 			}
 	};
-	
+
 	// predefined predicate for validating
 	// a value greater than a value known at
 	// predicate initialization
@@ -102,18 +102,18 @@ namespace soar_module
 	class gt_predicate: public predicate<T>
 	{
 		private:
-			T my_min;			
+			T my_min;
 			bool inclusive;
-		
+
 		public:
 			gt_predicate( T new_min, bool new_inclusive ): my_min( new_min ), inclusive( new_inclusive ) {}
-			
+
 			bool operator() ( T val )
 			{
 				return ( ( inclusive )?( ( val >= my_min ) ):( ( val > my_min ) ) );
 			}
 	};
-		
+
 	// predefined predicate for validating
 	// a value less than a value known at
 	// predicate initialization
@@ -121,12 +121,12 @@ namespace soar_module
 	class lt_predicate: public predicate<T>
 	{
 		private:
-			T my_max;			
+			T my_max;
 			bool inclusive;
-		
+
 		public:
-			lt_predicate( T new_max, bool new_inclusive ): my_max( new_max ), inclusive( new_inclusive ) {}		
-			
+			lt_predicate( T new_max, bool new_inclusive ): my_max( new_max ), inclusive( new_inclusive ) {}
+
 			bool operator() ( T val )
 			{
 				return ( ( inclusive )?( ( val <= my_max ) ):( ( val < my_max ) ) );
@@ -181,16 +181,16 @@ namespace soar_module
 			virtual void operator() ( T /*val*/ ) {}
 	};
 
-		
-	// this class provides for efficient 
+
+	// this class provides for efficient
 	// string->object access
 	template <class T>
 	class object_container
-	{					
+	{
 		protected:
 			agent *my_agent;
 			std::map<std::string, T *> *objects;
-			
+
 			void add( T *new_object )
 			{
 				std::string temp_str( new_object->get_name() );
@@ -199,7 +199,7 @@ namespace soar_module
 
 		public:
 			object_container( agent *new_agent ): my_agent( new_agent ), objects( new std::map<std::string, T *> ) {}
-			
+
 			virtual ~object_container()
 			{
 				typename std::map<std::string, T *>::iterator p;
@@ -238,23 +238,23 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 	// Parameters
 	///////////////////////////////////////////////////////////////////////////
-	
+
 	// all parameters have a name and
 	// can be manipulated generically
 	// via strings
 	class param: public named_object
-	{			
-		public:		
+	{
+		public:
 			param( const char *new_name ): named_object( new_name ) {}
 			virtual ~param() {}
 
 			//
 
 			virtual bool set_string( const char *new_string ) = 0;
-			virtual bool validate_string( const char *new_string ) = 0;			
+			virtual bool validate_string( const char *new_string ) = 0;
 	};
 
-	
+
 	// a primitive parameter can take any primitive
 	// data type as value and is validated via
 	// any unary predicate
@@ -265,18 +265,18 @@ namespace soar_module
 			T value;
 			predicate<T> *val_pred;
 			predicate<T> *prot_pred;
-		
+
 		public:
 			primitive_param( const char *new_name, T new_value, predicate<T> *new_val_pred, predicate<T> *new_prot_pred ): param( new_name ), value( new_value ), val_pred( new_val_pred ), prot_pred( new_prot_pred ) {}
-			
+
 			virtual ~primitive_param()
 			{
 				delete val_pred;
 				delete prot_pred;
 			}
-			
+
 			//
-			
+
 			virtual char *get_string()
 			{
 				std::string temp_str;
@@ -307,9 +307,9 @@ namespace soar_module
 
 				return (*val_pred)( new_val );
 			}
-			
+
 			//
-			
+
 			virtual T get_value()
 			{
 				return value;
@@ -320,11 +320,11 @@ namespace soar_module
 				value = new_value;
 			}
 	};
-	
+
 	// these are easy definitions for int and double parameters
 	typedef primitive_param<int64_t> integer_param;
 	typedef primitive_param<double> decimal_param;
-	
+
 
 	// a string param deals with character strings
 	class string_param: public param
@@ -333,7 +333,7 @@ namespace soar_module
 			std::string *value;
 			predicate<const char *> *val_pred;
 			predicate<const char *> *prot_pred;
-		
+
 		public:
 			string_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred ): param( new_name ), value( new std::string( new_value ) ), val_pred( new_val_pred ), prot_pred( new_prot_pred ) {}
 
@@ -343,9 +343,9 @@ namespace soar_module
 				delete val_pred;
 				delete prot_pred;
 			}
-			
+
 			//
-			
+
 			virtual char *get_string()
 			{
 				char *return_val = new char[ value->length() + 1 ];
@@ -372,9 +372,9 @@ namespace soar_module
 			{
 				return (*val_pred)( new_value );
 			}
-			
+
 			//
-			
+
 			virtual const char *get_value()
 			{
 				return value->c_str();
@@ -425,7 +425,7 @@ namespace soar_module
 			{
 				T new_val;
 				from_string( new_val, new_string );
-				
+
 				if ( (*prot_pred)( new_val ) )
 				{
 					return false;
@@ -504,7 +504,7 @@ namespace soar_module
 			{
 				for ( std::set<Symbol *>::iterator p=my_set->begin(); p!=my_set->end(); p++ )
 					symbol_remove_ref( my_agent, (*p) );
-				
+
 				delete my_set;
 				delete value;
 				delete prot_pred;
@@ -622,24 +622,24 @@ namespace soar_module
 	template <typename T>
 	class constant_param: public param
 	{
-		protected:		
+		protected:
 			T value;
 			std::map<T, const char *> *value_to_string;
 			std::map<std::string, T> *string_to_value;
-			predicate<T> *prot_pred;			
-			
-		public:						
+			predicate<T> *prot_pred;
+
+		public:
 			constant_param( const char *new_name, T new_value, predicate<T> *new_prot_pred ): param( new_name ), value( new_value ), value_to_string( new std::map<T, const char *>() ), string_to_value( new std::map<std::string, T> ), prot_pred( new_prot_pred ) {}
-			
+
 			virtual ~constant_param()
 			{
 				delete value_to_string;
 				delete string_to_value;
 				delete prot_pred;
 			}
-			
+
 			//
-			
+
 			virtual char *get_string()
 			{
 				typename std::map<T, const char *>::iterator p;
@@ -688,7 +688,7 @@ namespace soar_module
 			}
 
 			//
-			
+
 			virtual T get_value()
 			{
 				return value;
@@ -698,9 +698,9 @@ namespace soar_module
 			{
 				value = new_value;
 			}
-			
+
 			//
-			
+
 			virtual void add_mapping( T val, const char *str )
 			{
 				std::string my_string( str );
@@ -713,8 +713,6 @@ namespace soar_module
 			}
 	};
 
-	// this is an easy implementation of a boolean parameter
-	enum boolean { off, on };
 	class boolean_param: public constant_param<boolean>
 	{
 		public:
@@ -724,7 +722,22 @@ namespace soar_module
 				add_mapping( on, "on" );
 			}
 	};
-	
+
+
+	class path_param: public soar_module::string_param
+	{
+	  protected:
+	    agent *thisAgent;
+
+	  public:
+	    path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent ):
+        soar_module::string_param( new_name, new_value, new_val_pred, new_prot_pred ), thisAgent( new_agent ) {}
+
+	    virtual void set_value( const char *new_value )
+	    {
+	      value->assign( new_value );
+	    }
+	};
 
 	///////////////////////////////////////////////////////////////////////////
 	// Parameter Container
@@ -736,18 +749,18 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 	// Statistics
 	///////////////////////////////////////////////////////////////////////////
-	
+
 	// all statistics have a name and
 	// can be retrieved generically
 	// via strings
-	class stat: public named_object
-	{			
-		public:		
-			stat( const char *new_name ): named_object( new_name ) {}
-			virtual ~stat() {}
-			
+	class statistic: public named_object
+	{
+		public:
+			statistic( const char *new_name ): named_object( new_name ) {}
+			virtual ~statistic() {}
+
 			//
-			
+
 			virtual void reset() = 0;
 	};
 
@@ -755,23 +768,23 @@ namespace soar_module
 	// a primitive statistic can take any primitive
 	// data type as value
 	template <typename T>
-	class primitive_stat: public stat
+	class primitive_stat: public statistic
 	{
 		private:
 			T value;
 			T reset_val;
 			predicate<T> *prot_pred;
-		
+
 		public:
-			primitive_stat( const char *new_name, T new_value, predicate<T> *new_prot_pred ): stat( new_name ), value( new_value ), reset_val( new_value ), prot_pred( new_prot_pred ) {}			
-			
+			primitive_stat( const char *new_name, T new_value, predicate<T> *new_prot_pred ): statistic( new_name ), value( new_value ), reset_val( new_value ), prot_pred( new_prot_pred ) {}
+
 			virtual ~primitive_stat()
 			{
 				delete prot_pred;
 			}
-			
+
 			//
-			
+
 			virtual char *get_string()
 			{
 				T my_val = get_value();
@@ -786,9 +799,9 @@ namespace soar_module
 				if ( !(*prot_pred)( value ) )
 					value = reset_val;
 			}
-			
+
 			//
-			
+
 			virtual T get_value()
 			{
 				return value;
@@ -802,22 +815,22 @@ namespace soar_module
 
 	// these are easy definitions for int and double stats
 	typedef primitive_stat<int64_t> integer_stat;
-	typedef primitive_stat<double> decimal_stat;	
-	
+	typedef primitive_stat<double> decimal_stat;
+
 	///////////////////////////////////////////////////////////////////////////
 	// Statistic Containers
 	///////////////////////////////////////////////////////////////////////////
 
-	class stat_container: public object_container<stat>
+	class stat_container: public object_container<statistic>
 	{
 		public:
-			stat_container( agent *new_agent ): object_container<stat>( new_agent ) {}
+			stat_container( agent *new_agent ): object_container<statistic>( new_agent ) {}
 
 			//
 
 			void reset()
 			{
-				for ( std::map<std::string, stat *>::iterator p=objects->begin(); p!=objects->end(); p++ )
+				for ( std::map<std::string, statistic *>::iterator p=objects->begin(); p!=objects->end(); p++ )
 					p->second->reset();
 			}
 	};
@@ -825,21 +838,21 @@ namespace soar_module
 
 	///////////////////////////////////////////////////////////////////////////
 	// timers
-	///////////////////////////////////////////////////////////////////////////	
+	///////////////////////////////////////////////////////////////////////////
 
 	class timer: public named_object
 	{
 		public:
 			enum timer_level { zero, one, two, three, four, five };
-	
+
 		protected:
 			agent *my_agent;
-			
+
 			soar_timer stopwatch;
 			soar_timer_accumulator accumulator;
 
 			timer_level level;
-			predicate<timer_level> *pred;			
+			predicate<timer_level> *pred;
 
 		public:
 
@@ -968,19 +981,19 @@ namespace soar_module
 			, const void* = 0 )
 		{
 			assert( n == 1 );
-			
+
 			if ( !mem_pool )
 			{
 				mem_pool = get_memory_pool( my_agent, size );
 			}
-			
+
 			pointer t;
 			allocate_with_pool( my_agent, mem_pool, &t );
 
 			return t;
 		}
 
-		void deallocate( void* p, size_type 
+		void deallocate( void* p, size_type
 #ifndef NDEBUG
 			n
 #endif
@@ -996,7 +1009,7 @@ namespace soar_module
 			{
 				mem_pool = get_memory_pool( my_agent, size );
 			}
-			
+
 			if ( p )
 			{
 				free_with_pool( mem_pool, p );
@@ -1129,16 +1142,16 @@ namespace soar_module
 		{
 			return ( ( current == 0 )?( N - 1 ):( current - 1 ) );
 		}
-		
+
 	private:
 		typedef std::map< const T*, object_history > object_history_map;
 		typedef std::set< object_history* > history_set;
 		typedef std::set< time_step > time_set;
 		typedef std::map< time_step, history_set > forgetting_map;
-		
+
 	protected:
 		const object_history* get_history( const T* obj )
-		{			
+		{
 			typename object_history_map::iterator p = object_histories.find( obj );
 			if ( p != object_histories.end() )
 			{
@@ -1165,7 +1178,7 @@ namespace soar_module
 
 		virtual void _init() = 0;
 		virtual void _down() = 0;
-		
+
 	public:
 		object_memory(): initialized( false )
 		{
@@ -1178,7 +1191,7 @@ namespace soar_module
 				step_count = 1;
 
 				_init();
-				
+
 				initialized = true;
 			}
 		}
@@ -1186,7 +1199,7 @@ namespace soar_module
 		void teardown()
 		{
 			if ( initialized )
-			{				
+			{
 				touched_histories.clear();
 				touched_times.clear();
 				forgetting_pq.clear();
@@ -1194,7 +1207,7 @@ namespace soar_module
 				object_histories.clear();
 
 				_down();
-				
+
 				initialized = false;
 			}
 		}
@@ -1204,7 +1217,7 @@ namespace soar_module
 		{
 			object_history* h = NULL;
 			bool return_val = false;
-			
+
 			typename object_history_map::iterator p = object_histories.find( obj );
 			if ( p != object_histories.end() )
 			{
@@ -1299,7 +1312,7 @@ namespace soar_module
 		void forget()
 		{
 			forgotten.clear();
-			
+
 			if ( !forgetting_pq.empty() )
 			{
 				typename forgetting_map::iterator pq_p = forgetting_pq.begin();
@@ -1359,7 +1372,7 @@ namespace soar_module
 		void add_to_pq( object_history* h, time_step t )
 		{
 			assert( h->decay_step == 0 );
-			
+
 			h->decay_step = t;
 			forgetting_pq[ t ].insert( h );
 		}
@@ -1417,12 +1430,12 @@ namespace soar_module
 		typedef typename object_memory<T, N>::time_step time_step;
 		typedef typename object_memory<T, N>::object_reference object_reference;
 		typedef typename object_memory<T, N>::object_history object_history;
-		
+
 	private:
 		double activation_none;
 		double activation_low;
 		double time_sum_none;
-		
+
 		bool use_petrov;
 		double decay_rate;
 		double decay_thresh;
@@ -1580,7 +1593,7 @@ namespace soar_module
 				time_step to_add = 1;
 
 				if ( !should_forget( h, ( return_val + to_add ) ) )
-				{					
+				{
 					// find absolute upper bound
 					do
 					{
@@ -1628,7 +1641,7 @@ namespace soar_module
 
 				return_val += to_add;
 			}
-			
+
 			return return_val;
 		}
 
@@ -1637,7 +1650,7 @@ namespace soar_module
 			return ( compute_history_activation( h, t, false ) < decay_thresh_exp );
 		}
 
-	private:	
+	private:
 		double _pow( time_step t_diff )
 		{
 			if ( t_diff < pow_cache_size )
@@ -1657,7 +1670,7 @@ namespace soar_module
 			if ( h && h->history_ct )
 			{
 				return_val = 0.0;
-				
+
 				// sum history
 				{
 					unsigned int p = h->next_p;
@@ -1674,7 +1687,7 @@ namespace soar_module
 						assert( t_diff > 0 );
 
 						return_val += ( h->reference_history[ p ].num_references * _pow( t_diff ) );
-						
+
 						counter--;
 					}
 
@@ -1690,8 +1703,8 @@ namespace soar_module
 
 							// decay_rate is negated (for nice printing)
 							double d_inv = ( 1 + decay_rate );
-							
-							return_val += ( ( ( h->total_references - h->history_references ) * ( pow( static_cast<double>( t - h->first_reference ), d_inv ) - pow( static_cast<double>( t_diff ), d_inv ) ) ) / 
+
+							return_val += ( ( ( h->total_references - h->history_references ) * ( pow( static_cast<double>( t - h->first_reference ), d_inv ) - pow( static_cast<double>( t_diff ), d_inv ) ) ) /
 											( d_inv * ( ( t - h->first_reference ) - t_diff ) ) );
 						}
 					}
@@ -1713,7 +1726,7 @@ namespace soar_module
 					}
 				}
 			}
-			
+
 			return return_val;
 		}
 

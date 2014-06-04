@@ -72,7 +72,7 @@
 smem_param_container::smem_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {
 	// learning
-	learning = new soar_module::boolean_param( "learning", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+	learning = new soar_module::boolean_param( "learning", off, new soar_module::f_predicate<boolean>() );
 	add( learning );
 
 	// database
@@ -82,7 +82,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( database );
 
 	// append database or dump data on init
-	append_db = new soar_module::boolean_param( "append-database", soar_module::on, new soar_module::f_predicate<soar_module::boolean>(  ) );
+	append_db = new soar_module::boolean_param( "append-database", on, new soar_module::f_predicate<boolean>(  ) );
 	add( append_db );
 
 	// path
@@ -90,7 +90,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( path );
 
 	// auto-commit
-	lazy_commit = new soar_module::boolean_param( "lazy-commit", soar_module::on, new smem_db_predicate<soar_module::boolean>( my_agent ) );
+	lazy_commit = new soar_module::boolean_param( "lazy-commit", on, new smem_db_predicate<boolean>( my_agent ) );
 	add( lazy_commit );
 
 	// timers
@@ -133,7 +133,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( merge );
 
 	// activate_on_query
-	activate_on_query = new soar_module::boolean_param( "activate-on-query", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
+	activate_on_query = new soar_module::boolean_param( "activate-on-query", on, new soar_module::f_predicate<boolean>() );
 	add( activate_on_query );
 
 	// activation_mode
@@ -159,7 +159,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( base_incremental_threshes );
 
 	// mirroring
-	mirroring = new soar_module::boolean_param( "mirroring", soar_module::off, new smem_db_predicate< soar_module::boolean >( my_agent ) );
+	mirroring = new soar_module::boolean_param( "mirroring", off, new smem_db_predicate< boolean >( my_agent ) );
 	add( mirroring );
 }
 
@@ -188,7 +188,7 @@ bool smem_db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->s
 
 bool smem_enabled( agent *my_agent )
 {
-	return ( my_agent->smem_params->learning->get_value() == soar_module::on );
+	return ( my_agent->smem_params->learning->get_value() == on );
 }
 
 
@@ -405,7 +405,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	// Delete all entries from the tables in the database if append setting is off
 	if (( new_agent->smem_params->database->get_value() != smem_param_container::memory ) &&
-		( new_agent->smem_params->append_db->get_value() == soar_module::off )) {
+		( new_agent->smem_params->append_db->get_value() == off )) {
 		print_trace(new_agent, 0, "SMem| Erasing contents of semantic memory database because append mode is off.\n" );
 		drop_tables(new_agent);
 	}
@@ -2726,7 +2726,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 			my_agent->smem_timers->query->stop();
 			////////////////////////////////////////////////////////////////////////////
 
-			smem_install_memory( my_agent, state, king_id, NIL, ( my_agent->smem_params->activate_on_query->get_value() == soar_module::on ), meta_wmes, retrieval_wmes );
+			smem_install_memory( my_agent, state, king_id, NIL, ( my_agent->smem_params->activate_on_query->get_value() == on ), meta_wmes, retrieval_wmes );
 		}
 		else
 		{
@@ -2974,7 +2974,7 @@ void smem_init_db( agent *my_agent )
 		// setup common structures/queries
 		my_agent->smem_stmts = new smem_statement_container( my_agent );
 
-		if ( tabula_rasa || (my_agent->smem_params->append_db->get_value() == soar_module::off))
+		if ( tabula_rasa || (my_agent->smem_params->append_db->get_value() == off))
 		{
 			my_agent->smem_stmts->structure();
 		}
@@ -3035,7 +3035,7 @@ void smem_init_db( agent *my_agent )
 		smem_reset_id_counters( my_agent );
 
 		// if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
-		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		if ( my_agent->smem_params->lazy_commit->get_value() == on )
 		{
 			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
 		}
@@ -3072,7 +3072,7 @@ void smem_close( agent *my_agent )
 		_smem_close_vars( my_agent );
 
 		// if lazy, commit
-		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		if ( my_agent->smem_params->lazy_commit->get_value() == on )
 		{
 			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
 		}
@@ -3675,7 +3675,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	std::queue<int> levels;
 
 	bool do_wm_phase = false;
-	bool mirroring_on = ( my_agent->smem_params->mirroring->get_value() == soar_module::on );
+	bool mirroring_on = ( my_agent->smem_params->mirroring->get_value() == on );
 
 	//
 
@@ -3944,7 +3944,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					////////////////////////////////////////////////////////////////////////////
 
 					// start transaction (if not lazy)
-					if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+					if ( my_agent->smem_params->lazy_commit->get_value() == off )
 					{
 						my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
 					}
@@ -3961,7 +3961,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 
 					// commit transaction (if not lazy)
-					if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+					if ( my_agent->smem_params->lazy_commit->get_value() == off )
 					{
 						my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
 					}
@@ -4033,7 +4033,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		////////////////////////////////////////////////////////////////////////////
 
 		// start transaction (if not lazy)
-		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+		if ( my_agent->smem_params->lazy_commit->get_value() == off )
 		{
 			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
 		}
@@ -4053,7 +4053,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		}
 
 		// commit transaction (if not lazy)
-		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+		if ( my_agent->smem_params->lazy_commit->get_value() == off )
 		{
 			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
 		}
@@ -4099,14 +4099,14 @@ bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err )
 	{
 		_smem_close_vars( my_agent );
 
-		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		if ( my_agent->smem_params->lazy_commit->get_value() == on )
 		{
 			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
 		}
 
 		return_val = my_agent->smem_db->backup( file_name, err );
 
-		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		if ( my_agent->smem_params->lazy_commit->get_value() == on )
 		{
 			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
 		}

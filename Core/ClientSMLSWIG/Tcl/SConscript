@@ -16,7 +16,6 @@ libname = 'Tcl_sml_ClientInterface'
 
 # Make sure tcl header file exists before proceeding
 
-tcl_dir = clone.Dir(env['TCL_DIR'])
 if sys.platform == 'win32':
     tcl_platform_dir = os.path.join('C:/Tcl')
     tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))

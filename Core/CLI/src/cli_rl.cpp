@@ -301,7 +301,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
         else
         {
             // check attribute name
-            soar_module::stat *my_stat = agnt->rl_stats->get( pAttr->c_str() );
+            soar_module::statistic *my_stat = agnt->rl_stats->get( pAttr->c_str() );
             if ( !my_stat )
                 return SetError( "Invalid statistic." );
 

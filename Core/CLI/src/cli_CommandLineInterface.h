@@ -116,6 +116,7 @@ namespace cli
         virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
         virtual bool DoCD(const std::string* pDirectory = 0);
         virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
+        virtual bool DoCLIMessage(const std::string& pMessage);
         virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
         virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
         virtual bool DoDebug(std::vector< std::string >* argv = 0);

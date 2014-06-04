@@ -1617,7 +1617,7 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
     }
   }
 
-  if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == soar_module::on ) )
+  if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == on ) )
   {
 	  std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert( w->id );
 	  if ( insert_result.second )
@@ -1773,7 +1773,7 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 	}
   }
 
-  if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == soar_module::on ) )
+  if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == on ) )
   {
 	std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert( w->id );
 	if ( insert_result.second )
@@ -3769,7 +3769,7 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	for (p_node=bottom_node->first_child; p_node!=NIL;
 		p_node=p_node->next_sibling) {
 			if (p_node->node_type != P_BNODE) continue;
-			if ( !ignore_rhs && !same_rhs (p_node->b.p.prod->action_list, p->action_list, thisAgent->rl_params->chunk_stop->get_value()==soar_module::on)) continue;
+			if ( !ignore_rhs && !same_rhs (p_node->b.p.prod->action_list, p->action_list, thisAgent->rl_params->chunk_stop->get_value()==on)) continue;
 			/* --- duplicate production found --- */
 			if (warn_on_duplicates)
 			{

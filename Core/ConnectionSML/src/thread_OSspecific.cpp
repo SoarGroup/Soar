@@ -29,7 +29,7 @@ void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
 }
 
 /* voigtjr:
-   I rewrote the WindowsMutex class to use "critical sections" rather than 
+   I rewrote the WindowsMutex class to use "critical sections" rather than
    actual mutexes, the critical sections are faster for thread synchronization.
    The tradeoff is that critical sections, unlike mutexes, cannot
    be used among different processes, only different threads. Our usage of
@@ -77,8 +77,8 @@ public:
 	//The timeout is seconds + milliseconds, where milliseconds < 1000
 	bool WaitForEvent(int sec, int milli)	{
 		assert(milli < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
-		DWORD res = WaitForSingleObject(m_Event, (sec*1000) + milli) ; 
-		return (res != WAIT_TIMEOUT) ; 
+		DWORD res = WaitForSingleObject(m_Event, (sec*1000) + milli) ;
+		return (res != WAIT_TIMEOUT) ;
 	}
 	void TriggerEvent()				{ SetEvent(m_Event) ; }
 } ;
@@ -104,15 +104,17 @@ static void* LinuxThreadFunc(void* thread_args) {
     ThreadArgs* threadArgs = static_cast<ThreadArgs*>(thread_args);
     threadArgs->threadFuncPtr(threadArgs->param);
     delete threadArgs;
-	return 0;	
+	return 0;
 }
+//#include <string>
+//#include <iostream>
 
 void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
 {
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
-    
+
     pthread_t t;
 
     ThreadArgs* threadArgs = new ThreadArgs();
@@ -121,6 +123,13 @@ void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
 
     pthread_create(&t,&attr,LinuxThreadFunc,threadArgs);
 
+/*    static char mtid='a';
+    std::string new_name("SoarThread-");
+    new_name += mtid;
+    mtid++;
+    std::cout << "BeginThread creating thread named " << new_name << std::endl;
+    pthread_setname_np(new_name.c_str());
+*/
     pthread_attr_destroy(&attr);
 }
 
@@ -131,19 +140,19 @@ protected:
 	pthread_mutexattr_t mutexattr;
 
 public:
-	LinuxMutex()			
-	{ 
+	LinuxMutex()
+	{
 		pthread_mutexattr_init(&mutexattr);
 #if (defined(__APPLE__) && defined(__MACH__)) || (__LSB_VERSION__ >= 12) || defined(__FreeBSD__)
 		pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
 #else
 		pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE_NP);
 #endif
-		pthread_mutex_init(&mutex, &mutexattr); 
+		pthread_mutex_init(&mutex, &mutexattr);
 	}
-	virtual ~LinuxMutex()	
-	{ 
-		pthread_mutex_destroy(&mutex); 
+	virtual ~LinuxMutex()
+	{
+		pthread_mutex_destroy(&mutex);
 		pthread_mutexattr_destroy(&mutexattr);
 	}
 
@@ -167,22 +176,22 @@ protected:
     bool m_signaled ;
 
 public:
-	LinuxEvent()					{ 
-		m_signaled = false ; 
-		pthread_cond_init(&m_cond, NULL); 
-		pthread_mutex_init(&m_mutex, NULL); 
+	LinuxEvent()					{
+		m_signaled = false ;
+		pthread_cond_init(&m_cond, NULL);
+		pthread_mutex_init(&m_mutex, NULL);
 	}
-	virtual ~LinuxEvent()			{ 
-		pthread_cond_destroy(&m_cond); 
+	virtual ~LinuxEvent()			{
+		pthread_cond_destroy(&m_cond);
 		pthread_mutex_destroy(&m_mutex);
 	}
-	void WaitForEventForever()		{ 
-		pthread_mutex_lock(&m_mutex); 
-		while(!m_signaled) { 
-			pthread_cond_wait(&m_cond,&m_mutex); 
-		} 
-		m_signaled = false; 
-		pthread_mutex_unlock(&m_mutex); 
+	void WaitForEventForever()		{
+		pthread_mutex_lock(&m_mutex);
+		while(!m_signaled) {
+			pthread_cond_wait(&m_cond,&m_mutex);
+		}
+		m_signaled = false;
+		pthread_mutex_unlock(&m_mutex);
 	}
 
 	//The timeout is seconds + milliseconds, where milliseconds < 1000
@@ -190,14 +199,14 @@ public:
 		assert(milli < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
 		//return false;
 		pthread_mutex_lock(&m_mutex);
-		
+
 		struct timeval now;
 		if (gettimeofday(&now, 0) != 0) {
 			// can't get time!?
 			pthread_mutex_unlock(&m_mutex);
 			return false;
 		}
-		
+
 		struct timespec timeout;
 		timeout.tv_sec = now.tv_sec + sec;
 		timeout.tv_nsec = now.tv_usec * 1000L;
@@ -208,7 +217,7 @@ public:
 			timeout.tv_nsec -= 1000000000L;
 			timeout.tv_sec++;
 		}
-		
+
 		while (!m_signaled) {
 			if (pthread_cond_timedwait(&m_cond, &m_mutex, &timeout) == ETIMEDOUT) {
 				pthread_mutex_unlock(&m_mutex);
@@ -219,11 +228,11 @@ public:
 		pthread_mutex_unlock(&m_mutex);
 		return true;
 	}
-	void TriggerEvent()				{ 
-		pthread_mutex_lock(&m_mutex); 
-		m_signaled = true; 
-		pthread_mutex_unlock(&m_mutex); 
-		pthread_cond_signal(&m_cond); 
+	void TriggerEvent()				{
+		pthread_mutex_lock(&m_mutex);
+		m_signaled = true;
+		pthread_mutex_unlock(&m_mutex);
+		pthread_cond_signal(&m_cond);
 	}
 } ;
 

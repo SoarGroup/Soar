@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -19,7 +19,6 @@
 #include <vector>
 
 #include "soar_module.h"
-
 #include "chunk.h"
 #include "production.h"
 
@@ -75,7 +74,7 @@ class rl_param_container: public soar_module::param_container
 {
 	public:
 		enum learning_choices { sarsa, q };
-        
+
         // How the learning rate cools over time.
         // normal_decay: default, same learning rate for each rule
         // exponential_decay: rate = rate / # updates for this rule
@@ -84,7 +83,7 @@ class rl_param_container: public soar_module::param_container
         enum decay_choices { normal_decay, exponential_decay, logarithmic_decay, delta_bar_delta_decay };
 
 		enum apoptosis_choices { apoptosis_none, apoptosis_chunks, apoptosis_rl };
-		
+
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
 		soar_module::decimal_param *learning_rate;
@@ -119,8 +118,8 @@ class rl_learning_param: public soar_module::boolean_param
 		agent *my_agent;
 
 	public:
-		rl_learning_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent );
-		void set_value( soar_module::boolean new_value );
+		rl_learning_param( const char *new_name, boolean new_value, soar_module::predicate<boolean> *new_prot_pred, agent *new_agent );
+		void set_value( boolean new_value );
 };
 
 class rl_apoptosis_param: public soar_module::constant_param< rl_param_container::apoptosis_choices >
@@ -154,11 +153,11 @@ class rl_apoptosis_predicate: public soar_module::agent_predicate<T>
 
 class rl_stat_container: public soar_module::stat_container
 {
-	public:	
+	public:
 		soar_module::decimal_stat *update_error;
 		soar_module::decimal_stat *total_reward;
 		soar_module::decimal_stat *global_reward;
-				
+
 		rl_stat_container( agent *new_agent );
 };
 
@@ -185,7 +184,7 @@ typedef std::list< production* > rl_rule_list;
 typedef struct rl_data_struct {
 	rl_et_map *eligibility_traces;			// traces associated with productions
 	rl_rule_list *prev_op_rl_rules;			// rl rules associated with the previous operator
-	
+
 	double previous_q;						// q-value of the previous state
 	double reward;							// accumulated discounted reward
 

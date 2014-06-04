@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -35,7 +35,7 @@ typedef struct wme_struct wme;
 #define WMA_REFERENCES_PER_DECISION 50
 
 /**
- * If an external caller asks for the activation level/value 
+ * If an external caller asks for the activation level/value
  * of a WME that is not activated, then this is the value that
  * is returned.
  */
@@ -48,7 +48,7 @@ typedef struct wme_struct wme;
 #define WMA_ACTIVATION_LOW -1000000000
 
 /**
- * If below decay thresh, but not forgotten, forget_cycle = 
+ * If below decay thresh, but not forgotten, forget_cycle =
  */
 #define WMA_FORGOTTEN_CYCLE 0
 
@@ -61,13 +61,13 @@ class wma_decay_param;
 
 class wma_param_container: public soar_module::param_container
 {
-	public:		
+	public:
 		wma_activation_param* activation;
 		wma_decay_param* decay_rate;
 		wma_decay_param* decay_thresh;
 		soar_module::boolean_param* petrov_approx;
 
-		enum forgetting_choices { off, naive, bsearch, approx };
+		enum forgetting_choices { disabled, naive, bsearch, approx };
 		soar_module::constant_param<forgetting_choices>* forgetting;
 
 		enum forget_wme_choices { all, lti };
@@ -78,15 +78,15 @@ class wma_param_container: public soar_module::param_container
 		// performance
 		soar_module::constant_param< soar_module::timer::timer_level >* timers;
 		soar_module::integer_param* max_pow_cache;
-				
+
 		wma_param_container( agent* new_agent );
 };
 
 class wma_activation_param: public soar_module::boolean_param
 {
 	public:
-		wma_activation_param( const char* new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean>* new_prot_pred, agent* new_agent );
-		virtual void set_value( soar_module::boolean new_value );
+		wma_activation_param( const char* new_name, boolean new_value, soar_module::predicate<boolean>* new_prot_pred, agent* new_agent );
+		virtual void set_value( boolean new_value );
 
 	private:
 		agent *my_agent;
@@ -101,7 +101,7 @@ class wma_decay_param: public soar_module::decimal_param
 
 template <typename T>
 class wma_activation_predicate: public soar_module::agent_predicate<T>
-{	
+{
 	public:
 		wma_activation_predicate( agent* new_agent );
 		bool operator() ( T val );
@@ -113,9 +113,9 @@ class wma_activation_predicate: public soar_module::agent_predicate<T>
 
 class wma_stat_container: public soar_module::stat_container
 {
-	public:	
-		soar_module::integer_stat* forgotten_wmes;		
-				
+	public:
+		soar_module::integer_stat* forgotten_wmes;
+
 		wma_stat_container( agent* new_agent );
 };
 
@@ -193,7 +193,7 @@ typedef struct wma_decay_element_struct
 
 	// when and how often this wme has been referenced in recent
 	// history.
-	wma_history touches;	
+	wma_history touches;
 
 	// if forgetting is enabled, this tells us when we think
 	// we need to forget this wme
@@ -234,7 +234,7 @@ extern bool wma_enabled( agent* my_agent );
 // generic call to activate a wme
 extern void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references = 1, wma_pooled_wme_set* o_set = NULL, bool o_only = false );
 
-// Removes a decay element from an existing WME so that 
+// Removes a decay element from an existing WME so that
 // it is no longer activated.
 extern void wma_remove_decay_element( agent* my_agent, wme* w );
 

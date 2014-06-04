@@ -49,7 +49,7 @@
 
 namespace sml {
 
-enum smlSystemEventId 
+enum smlSystemEventId
 {
     smlEVENT_BEFORE_SHUTDOWN            = 1,
 	smlEVENT_AFTER_CONNECTION,
@@ -61,7 +61,7 @@ enum smlSystemEventId
 	smlEVENT_LAST_SYSTEM_EVENT = smlEVENT_SYSTEM_PROPERTY_CHANGED
 } ;
 
-enum smlRunEventId 
+enum smlRunEventId
 {
     smlEVENT_BEFORE_SMALLEST_STEP = smlEVENT_LAST_SYSTEM_EVENT + 1,
     smlEVENT_AFTER_SMALLEST_STEP,
@@ -97,7 +97,7 @@ enum smlRunEventId
 	smlEVENT_LAST_RUN_EVENT = smlEVENT_AFTER_RUNNING
 } ;
 
- enum smlProductionEventId 
+ enum smlProductionEventId
  {
     // Production Manager
     smlEVENT_AFTER_PRODUCTION_ADDED = smlEVENT_LAST_RUN_EVENT + 1,
@@ -108,7 +108,7 @@ enum smlRunEventId
 	smlEVENT_LAST_PRODUCTION_EVENT = smlEVENT_BEFORE_PRODUCTION_RETRACTED
 } ;
 
-enum smlAgentEventId 
+enum smlAgentEventId
 {
 	// Agent manager
     smlEVENT_AFTER_AGENT_CREATED = smlEVENT_LAST_PRODUCTION_EVENT + 1,
@@ -119,7 +119,7 @@ enum smlAgentEventId
 	smlEVENT_LAST_AGENT_EVENT = smlEVENT_AFTER_AGENT_REINITIALIZED
 }  ;
 
-enum smlWorkingMemoryEventId 
+enum smlWorkingMemoryEventId
 {
 	// Working memory changes
 	smlEVENT_OUTPUT_PHASE_CALLBACK = smlEVENT_LAST_AGENT_EVENT + 1,
@@ -127,7 +127,7 @@ enum smlWorkingMemoryEventId
 	smlEVENT_LAST_WM_EVENT = smlEVENT_OUTPUT_PHASE_CALLBACK
 } ;
 
-enum smlPrintEventId 
+enum smlPrintEventId
 {
     // Error and print callbacks
 	smlEVENT_ECHO = smlEVENT_LAST_WM_EVENT + 1,
@@ -136,7 +136,7 @@ enum smlPrintEventId
 	smlEVENT_LAST_PRINT_EVENT = smlEVENT_PRINT
 } ;
 
-enum smlRhsEventId 
+enum smlRhsEventId
 {
 	// Used to provide user handler functions for RHS (right hand side) functions
 	// fired within Soar productions.  This is different from normal events in that
@@ -148,7 +148,7 @@ enum smlRhsEventId
 	smlEVENT_LAST_RHS_EVENT = smlEVENT_CLIENT_MESSAGE
 } ;
 
-enum smlXMLEventId 
+enum smlXMLEventId
 {
 	smlEVENT_XML_TRACE_OUTPUT = smlEVENT_LAST_RHS_EVENT + 1,
 	smlEVENT_XML_INPUT_RECEIVED,		// Echo event for input wmes added by a client (so others can listen in)
@@ -156,7 +156,7 @@ enum smlXMLEventId
 } ;
 
 // Events that can be used by environments to trigger when the world should update
-enum smlUpdateEventId 
+enum smlUpdateEventId
 {
 	smlEVENT_AFTER_ALL_OUTPUT_PHASES = smlEVENT_LAST_XML_EVENT + 1,	// All agents have completed output phase
 	smlEVENT_AFTER_ALL_GENERATED_OUTPUT,						// All agents have generated output (since run began)
@@ -164,14 +164,15 @@ enum smlUpdateEventId
 } ;
 
 // Events that pass a string as an argument
-enum smlStringEventId 
+enum smlStringEventId
 {
 	smlEVENT_EDIT_PRODUCTION = smlEVENT_LAST_UPDATE_EVENT + 1,	// Arg is "char const*" -- the name of the production to edit
-	smlEVENT_LOAD_LIBRARY,
+	smlEVENT_CLI_EXTENSION_MESSAGE,
+  smlEVENT_LOAD_LIBRARY,
 	smlEVENT_LAST_STRING_EVENT = smlEVENT_LOAD_LIBRARY
 } ;
 
-enum smlGenericEventId 
+enum smlGenericEventId
 {
     // Used to indicate an error in some cases
     smlEVENT_INVALID_EVENT              = 0,
@@ -196,7 +197,7 @@ static inline bool IsRunEventID(int id)
 	return (id >= smlEVENT_BEFORE_SMALLEST_STEP && id <= smlEVENT_LAST_RUN_EVENT) ;
 }
 static inline bool IsPhaseEventID (int id)
-{   
+{
 	return (id > smlEVENT_BEFORE_PHASE_EXECUTED && id < smlEVENT_AFTER_PHASE_EXECUTED) ;
 }
 static inline bool IsBEFOREPhaseEventID (int id)
@@ -243,7 +244,7 @@ static inline bool IsUpdateEventID(int id)
 	return (id >= smlEVENT_AFTER_ALL_OUTPUT_PHASES && id <= smlEVENT_LAST_UPDATE_EVENT) ;
 }
 
-enum smlPhase 
+enum smlPhase
 {
     sml_INPUT_PHASE,		// NOTE: This enum MUST be kept in synch with egSKIPhaseType defined in gSKI_Enumerations.h
     sml_PROPOSAL_PHASE,
@@ -274,12 +275,12 @@ enum smlRunFlags
 
 enum smlRunResult
 {
-    sml_RUN_ERROR,				
+    sml_RUN_ERROR,
     sml_RUN_EXECUTING,
     sml_RUN_INTERRUPTED,
     sml_RUN_COMPLETED,
     sml_RUN_COMPLETED_AND_INTERRUPTED,	// Stop was requested but run completed before agent was interrupted.
-    sml_RUN_ERROR_ALREADY_RUNNING				
+    sml_RUN_ERROR_ALREADY_RUNNING
 };
 
 enum smlRunState

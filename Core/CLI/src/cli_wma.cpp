@@ -282,7 +282,7 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
         }
         else
         {
-            soar_module::stat *my_stat = agnt->wma_stats->get( pAttr->c_str() );
+            soar_module::statistic *my_stat = agnt->wma_stats->get( pAttr->c_str() );
             if ( !my_stat )
                 return SetError( "Invalid statistic." );
 

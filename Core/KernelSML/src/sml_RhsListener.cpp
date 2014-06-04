@@ -102,7 +102,7 @@ void RhsListener::RemoveAllListeners(Connection* pConnection)
 }
 
 bool RhsListener::HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, char const* pArgument,
-						    int maxLengthReturnValue, char* pReturnValue)
+						    std::string &pReturnValue)
 {
 	// Currently only supporting one event here, but that could change in time.
 	assert(eventID == smlEVENT_FILTER) ;
@@ -135,8 +135,8 @@ bool RhsListener::HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, cha
 	// A side effect of this is that the order the filters work on the data is significant.
 	// Anyone in the chain can set the string to be the empty string, which brings the
 	// whole process to a halt (they have eaten the command line at that point).
-	strncpy(pReturnValue, pArgument, maxLengthReturnValue) ;
-	pReturnValue[maxLengthReturnValue-1] = 0 ;	// Make sure it's NULL terminated
+    pReturnValue.reserve(strlen(pArgument) + 1); //adding 1 because strlen does not count the terminating null character
+	pReturnValue.assign(pArgument);	
 
 	bool stop = false ;
 
@@ -149,7 +149,7 @@ bool RhsListener::HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, cha
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgent ? pAgent->GetName() : "") ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamFunction, sml_Names::kFilterName) ;
-		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, pReturnValue) ;	// We send the current command line over
+		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, pReturnValue.c_str()) ;	// We send the current command line over
 
 #ifdef _DEBUG
 		// Generate a text form of the XML so we can look at it in the debugger.
@@ -170,10 +170,9 @@ bool RhsListener::HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, cha
 			{
 				// If the listener returns a result then take that
 				// value and return it in "pReturnValue" to the caller.
-				// If the client returns a longer string than the caller allowed we just truncate it.
-				// (In practice this shouldn't be a problem--just need to make sure nobody crashes on a super long return string).
-				strncpy(pReturnValue, pResult, maxLengthReturnValue) ;
-				pReturnValue[maxLengthReturnValue-1] = 0 ;	// Make sure it's NULL terminated
+				// If the client returns a longer string than the caller, pReturnValue is resized to fit it.
+                pReturnValue.reserve(strlen(pResult) + 1); //adding 1 because strlen does not count the terminating null character
+                pReturnValue.assign(pResult);	
 				result = true ;
 			}
 			else

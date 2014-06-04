@@ -22,6 +22,7 @@
 // Forward declare so clients can use this
 struct ElementXML_InterfaceStruct;
 typedef ElementXML_InterfaceStruct* ElementXML_Handle ;
+class Soar_Instance;
 
 namespace sock
 {
@@ -149,8 +150,8 @@ class EXPORT Kernel : public ClientErrors
 	friend class WorkingMemory ;	// Access to generate next ID methods
 
 public:
-	enum 
-	{ 
+	enum
+	{
 		kDefaultSMLPort = 12121,
 		kSuppressListener = 0,
 		kUseAnyPort = -1,
@@ -303,7 +304,7 @@ public:
 	*						Also if you're looking for maximum performance be sure to read about the "auto commit" options below.
 	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (kDefaultSMLPort)
 	*						(picked at random). Passing 0 (kSuppressListener) means no listening port will be created (so it will be impossible to make
-	*						remote connections to the kernel). Passing -1 (kUseAnyPort) means bind to any availble port (retrieve after success using 
+	*						remote connections to the kernel). Passing -1 (kUseAnyPort) means bind to any availble port (retrieve after success using
 	*						GetListenerPort()), and, for local connections, create a named pipe using the PID. To connect to this high-performance
 	*						local connection, simply pass the PID as the port in CreateRemoteConnection().
 	*
@@ -314,6 +315,8 @@ public:
 	static Kernel* CreateKernelInNewThread(int portToListenOn = kDefaultSMLPort) ;
 
 	int GetListenerPort();
+
+	Soar_Instance *m_SoarInstance;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -763,7 +766,7 @@ public:
 	*
 	*		 Multiple handlers can be registered for a given message type and the results will be concatenated together and returned
 	*		 to the original caller.  (This is expected to be an usual situation).
-	*		 
+	*
 	*		 A RHS (right hand side) function handler is used just to reduce the number of types in the system and because it is sufficient
 	*		 for this purpose.
 	*
@@ -826,7 +829,7 @@ public:
 	* smlEVENT_BEFORE_AGENT_REINITIALIZED,
 	* smlEVENT_AFTER_AGENT_REINITIALIZED,
 	*
-	* @returns A unique ID for this callback (used to unregister the callback later) 
+	* @returns A unique ID for this callback (used to unregister the callback later)
 	*************************************************************/
 	int	RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack = true) ;
 
@@ -847,7 +850,7 @@ public:
 	* This event is registered with the kernel because they relate to events we think may be useful to use to trigger updates
 	* in synchronous environments.
 	*
-	* @returns A unique ID for this callback (used to unregister the callback later) 
+	* @returns A unique ID for this callback (used to unregister the callback later)
 	*************************************************************/
 	int	RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventHandler handler, void* pUserData, bool addToBack = true) ;
 
@@ -868,7 +871,7 @@ public:
 	* This event is registered with the kernel because they relate to events we think may be useful to use to trigger updates
 	* in synchronous environments.
 	*
-	* @returns A unique ID for this callback (used to unregister the callback later) 
+	* @returns A unique ID for this callback (used to unregister the callback later)
 	*************************************************************/
 	int	RegisterForStringEvent(smlStringEventId id, StringEventHandler handler, void* pUserData, bool addToBack = true) ;
 
@@ -924,7 +927,7 @@ public:
 	*
 	*		 You should not generally need to call here.  If you are doing
 	*		 so for more than debugging information something is prob. wrong
-	*		 
+	*
 	*************************************************************/
 	Connection* GetConnection() const { return m_Connection ; }
 

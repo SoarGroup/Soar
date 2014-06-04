@@ -426,7 +426,7 @@ bool reinitialize_soar (agent* thisAgent) {
 	smem_close(thisAgent);
 
 	bool wma_was_enabled = wma_enabled( thisAgent );
-	thisAgent->wma_params->activation->set_value( soar_module::off );
+	thisAgent->wma_params->activation->set_value( off );
 
 	rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->rl_params->apoptosis->get_value();
 	thisAgent->rl_params->apoptosis->set_value( rl_param_container::apoptosis_none );
@@ -435,7 +435,7 @@ bool reinitialize_soar (agent* thisAgent) {
 
 	if ( wma_was_enabled )
 	{
-		thisAgent->wma_params->activation->set_value( soar_module::on );
+		thisAgent->wma_params->activation->set_value( on );
 	}
 
 	thisAgent->rl_params->apoptosis->set_value( rl_apoptosis );
