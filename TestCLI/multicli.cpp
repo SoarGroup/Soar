@@ -274,8 +274,9 @@ void repl() {
             cout << acc::BIRed << "Huh?" << acc::Off << endl;
             continue;
         }
-        if (!cin) {
-            return;
+        if (!cin.good()) {
+            cin.clear(); //clear the error flags
+            cin.sync(); //flush the input buffer
         }
         if (cmd.empty() && !last.empty()) {
             execcmd(last);

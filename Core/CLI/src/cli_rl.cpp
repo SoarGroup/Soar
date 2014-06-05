@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////
 // rl command file.
 //
-// Author: Jonathan Voigt, voigtjr@gmail.com, 
+// Author: Jonathan Voigt, voigtjr@gmail.com,
 //         Nate Derbinsky, nlderbin@umich.edu
 // Date  : 2007
 //
@@ -75,7 +75,7 @@ static void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_tr
 //           sfirst = false;
 //         else
 //           os << "\\n";
-// 
+//
 //         os << *ss;
 //       }
 //       os << "\"];";
@@ -105,13 +105,13 @@ static void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_tr
   os << "}" << std::endl;
 }
 
-bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const std::string* pVal ) 
+bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const std::string* pVal )
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
     if ( !pOp )
     {
 		CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
-		
+
 		CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "Soar-RL learning: ", agnt->rl_params->learning->get_string() ) );
 
@@ -196,7 +196,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 
         soar_module::param *my_param = agnt->rl_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid setting." );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "", my_param->get_string() ), false );
@@ -207,10 +207,10 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
     {
         soar_module::param *my_param = agnt->rl_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid setting." );
 
         if ( !my_param->validate_string( pVal->c_str() ) )
-            return SetError( "Invalid value." );
+            return SetError( "Invalid value for setting." );
 
         if (!my_param->set_string( pVal->c_str() ))
             return SetError( "Failed to set value." );
@@ -270,7 +270,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
         }
 
         std::ostringstream oss;
-        
+
         oss << "# RL Trace, Goal Level " << goal_level << ':' << std::endl;
 
         std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(goal_level);

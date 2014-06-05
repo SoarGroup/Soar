@@ -112,7 +112,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     {
         soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid SMem setting.  Use 'help smem' to see list of valid settings." );
 
         PrintCLIMessage_Item("", my_param, 0);
         return true;
@@ -132,6 +132,13 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         DoExcise( options, 0 );
 
     	PrintCLIMessage( "SMem| Semantic memory system re-initialized.");
+        if ((agnt->epmem_params->database->get_value() != epmem_param_container::memory) &&
+           (agnt->epmem_params->append_db->get_value() == on))
+        {
+            PrintCLIMessage( "EpMem| Note that there was no effective change to semantic memory \n"
+                             "       because Soar is storing semantic memory to a database file and \n"
+                             "       append mode is on.");
+        }
         return true;
     }
 	else if ( pOp == 'p' )
@@ -158,7 +165,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 			}
 
 			if ( lti_id == NIL )
-				return SetError( "Invalid attribute." );
+				return SetError( "LTI not found." );
 		}
 
         std::string viz;
@@ -182,18 +189,30 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     {
         soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid settings parameter." );
 
         if ( !my_param->validate_string( pVal->c_str() ) )
-            return SetError( "Invalid value." );
+            return SetError( "Invalid settings value." );
 
         bool result = my_param->set_string( pVal->c_str() );
 
         if ( !result )
             SetError( "This parameter is protected while the semantic memory database is open." );
         else {
-        	tempString << "SMem| "<< pAttr->c_str() << " = " << pVal->c_str();
-        	PrintCLIMessage(&tempString);
+            if ((!strcmp(pAttr->c_str(),"append-database") || (!strcmp(pAttr->c_str(),"database"))))
+            {
+                tempString << "SMem| "<< pAttr->c_str() << " = " << pVal->c_str();
+                PrintCLIMessage(&tempString);
+                if ((agnt->smem_params->append_db->get_value() == off) &&
+                    (agnt->smem_params->database->get_value() != smem_param_container::memory))
+                {
+                    PrintCLIMessage( "EpMem| Note that Soar is storing semantic facts to a database file and \n"
+                                     "       append mode is off.  If you later initialize or restart Soar with \n"
+                                     "       these settings, old semantic facts will be cleared before adding \n"
+                                     "       new ones.");
+                }
+
+            }
         }
         return result;
     }
@@ -284,7 +303,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 			}
 
 			if ( lti_id == NIL )
-				return SetError( "Invalid attribute." );
+				return SetError( "Invalid long-term identifier." );
 		}
 
         std::string viz;

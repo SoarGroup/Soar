@@ -799,7 +799,7 @@ namespace cli
                 epmem_time_id memory_id;
 
                 if ( !from_string( memory_id, temp_str ) )
-                  return cli.SetError( "Invalid attribute." );
+                  return cli.SetError( "Invalid epmem time tag." );
 
                 return cli.DoEpMem( option, 0, 0, memory_id );
               }
@@ -843,7 +843,7 @@ namespace cli
                 epmem_time_id memory_id;
 
                 if ( !from_string( memory_id, temp_str ) )
-                  return cli.SetError( "Invalid attribute." );
+                  return cli.SetError( "Invalid epmem time tag." );
 
                 return cli.DoEpMem( option, 0, 0, memory_id );
               }

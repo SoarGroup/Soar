@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -10,10 +10,10 @@
  *  file:  reorder.cpp
  *
  * =======================================================================
- *  
+ *
  *  Need header/description comments here
- *  
- *  
+ *
+ *
  * =======================================================================
  */
 
@@ -64,16 +64,16 @@ inline Bool symbol_is_constant_or_marked_variable(Symbol * sym, tc_number tc)
   what level of the goal stack it's at.  If the <newid> appears in the
   attribute or value slot of a make, we just give it the same level as
   whatever's in the id slot of that make.  But if <newid> appears in the
-  id slot of a make, we can't tell what level it goes at.  
+  id slot of a make, we can't tell what level it goes at.
 
   To avoid this problem, we reorder the list of RHS actions so that when
   the actions are executed (in the resulting order), each <newid> is
   encountered in an attribute or value slot *before* it is encountered
   in an id slot.
-  
+
   Furthermore, we make sure all arguments to function calls are bound
   before the function call is executed.
-  
+
   Reorder_action_list() does the reordering.  Its parameter action_list
   is reordered in place (destructively modified).  It also requires at entry
   that the variables bound on the LHS are marked.  The function returns
@@ -82,7 +82,7 @@ inline Bool symbol_is_constant_or_marked_variable(Symbol * sym, tc_number tc)
 
 Bool legal_to_execute_action (action *a, tc_number tc);
 
-Bool reorder_action_list (agent* thisAgent, action **action_list, 
+Bool reorder_action_list (agent* thisAgent, action **action_list,
 						  tc_number lhs_tc) {
   list *new_bound_vars;
   action *remaining_actions;
@@ -94,7 +94,7 @@ Bool reorder_action_list (agent* thisAgent, action **action_list,
   remaining_actions = *action_list;
   first_action = NIL;
   last_action = NIL;
-  
+
   while (remaining_actions) {
     /* --- scan through remaining_actions, look for one that's legal --- */
     prev_a = NIL;
@@ -117,19 +117,20 @@ Bool reorder_action_list (agent* thisAgent, action **action_list,
 
   if (remaining_actions) {
     /* --- there are remaining_actions but none can be legally added --- */
-    print (thisAgent, "Error: production %s has a bad RHS--\n",
-           thisAgent->name_of_production_being_reordered);
-    print (thisAgent, "       Either it creates structure not connected to anything\n");
-    print (thisAgent, "       else in WM, or it tries to pass an unbound variable as\n");
-    print (thisAgent, "       an argument to a function.\n");
-    /* --- reconstruct list of all actions --- */
-    if (last_action)
-      last_action->next = remaining_actions;
-    else
-      first_action = remaining_actions;
-    result_flag = FALSE;
+      print (thisAgent, "Error: production %s has a bad RHS--\n",
+                      thisAgent->name_of_production_being_reordered);
+      print (thisAgent, "       Either it creates a variable that is not tested in a\n");
+      print (thisAgent, "       positive condition on the LHS (negative conditions\n");
+      print (thisAgent, "       don't count) or it tries to pass an unbound variable\n");
+      print (thisAgent, "       as an argument to a function.\n");
+      /* --- reconstruct list of all actions --- */
+      if (last_action)
+          last_action->next = remaining_actions;
+      else
+          first_action = remaining_actions;
+      result_flag = FALSE;
   } else {
-    result_flag = TRUE;
+      result_flag = TRUE;
   }
 
   /* --- unmark variables that we just marked --- */
@@ -144,7 +145,7 @@ Bool all_variables_in_rhs_value_bound (rhs_value rv, tc_number tc) {
   cons *c;
   list *fl;
   Symbol *sym;
-  
+
   if (rhs_value_is_funcall(rv)) {
     /* --- function calls --- */
     fl = rhs_value_to_funcall_list (rv);
@@ -197,7 +198,7 @@ Bool legal_to_execute_action (action *a, tc_number tc) {
 
   The two main routines here are simplify_condition_list() and
   restore_and_deallocate_saved_tests().
-       
+
 ===================================================================== */
 
 typedef struct saved_test_struct {
@@ -238,9 +239,9 @@ saved_test *simplify_test (agent* thisAgent, test *t, saved_test *old_sts) {
   }
 
   ct = complex_test_from_test(*t);
-  
+
   switch (ct->type) {
-    
+
   case CONJUNCTIVE_TEST:
     /* --- look at subtests for an equality test --- */
     sym = NIL;
@@ -283,7 +284,7 @@ saved_test *simplify_test (agent* thisAgent, test *t, saved_test *old_sts) {
       c = next_c;
     }
     break;
-    
+
   default:
     /* --- goal/impasse, disjunction, and non-equality relational tests --- */
     var = generate_new_variable (thisAgent, "dummy-");
@@ -339,7 +340,7 @@ byte reverse_direction_of_relational_test (agent* thisAgent, byte type) {
   return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-saved_test *restore_saved_tests_to_test (agent* thisAgent, 
+saved_test *restore_saved_tests_to_test (agent* thisAgent,
 										 test *t,
                                          Bool is_id_field,
                                          tc_number bound_vars_tc_number,
@@ -348,7 +349,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
   Bool added_it;
   Symbol *referent;
   complex_test *ct;
-  
+
   prev_st = NIL;
   st = tests_to_restore;
   while (st) {
@@ -374,7 +375,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
            (st->var == referent)) {
           add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
           added_it = TRUE;
-        } 
+        }
       } else if (test_includes_equality_test_for_symbol (*t, referent)) {
         if (symbol_is_constant_or_marked_variable (st->var,
                                                    bound_vars_tc_number) ||
@@ -400,10 +401,10 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
   return tests_to_restore;
 }
 
-void restore_and_deallocate_saved_tests (agent* thisAgent, 
+void restore_and_deallocate_saved_tests (agent* thisAgent,
 										 condition *conds_list,
                                          /* tc number for vars bound outside */
-                                         tc_number tc, 
+                                         tc_number tc,
                                          saved_test *tests_to_restore) {
   condition *cond;
   list *new_vars;
@@ -458,21 +459,21 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
            Finding The Variables in a Negated Condition (or NCC)
                 That Refer to Variables Bound Outside
 
-  If a variable occurs within a negated condition (or NCC), and that 
+  If a variable occurs within a negated condition (or NCC), and that
   same variable is bound by some positive condition outside the negation,
-  then the reorderer must ensure that the positive (binding) condition 
+  then the reorderer must ensure that the positive (binding) condition
   comes before the negated (testing) condition.  To do this, we put
   a list on every NC or NCC of all the variables whose bindings it requires.
 
   When the reorderer is finished, these lists are removed.
-  
+
   The main routines here are fill_in_vars_requiring_bindings() and
   remove_vars_requiring_bindings().  Each of these recursively traverses
   the lhs and does its work at all nesting levels.
   Fill_in_vars_requiring_bindings() takes a tc_number parameter which
   indicates the variables that are bound outside the given condition list.
   (At the top level, this should be *no* variables.)
-  
+
 ===================================================================== */
 
 list *collect_vars_tested_by_test_that_are_bound (agent* thisAgent, test t,
@@ -493,30 +494,30 @@ list *collect_vars_tested_by_test_that_are_bound (agent* thisAgent, test t,
   }
 
   ct = complex_test_from_test(t);
-  
+
   switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
   case DISJUNCTION_TEST:
-    return starting_list; 
-    
+    return starting_list;
+
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       starting_list = collect_vars_tested_by_test_that_are_bound
         (thisAgent, static_cast<char *>(c->first), tc, starting_list);
     return starting_list;
-    
+
   default:
     /* --- relational tests other than equality --- */
     referent = ct->data.referent;
     if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
       if (referent->var.tc_num == tc)
         starting_list = add_if_not_member (thisAgent, referent, starting_list);
-    return starting_list; 
+    return starting_list;
   }
 }
-                          
-list *collect_vars_tested_by_cond_that_are_bound (agent* thisAgent, 
+
+list *collect_vars_tested_by_cond_that_are_bound (agent* thisAgent,
 												  condition *cond,
                                                   tc_number tc,
                                                   list *starting_list) {
@@ -561,7 +562,7 @@ void fill_in_vars_requiring_bindings (agent* thisAgent, condition *cond_list, tc
   unmark_variables_and_free_list (thisAgent, new_bound_vars);
 }
 
-void remove_vars_requiring_bindings (agent* thisAgent, 
+void remove_vars_requiring_bindings (agent* thisAgent,
 									 condition *cond_list) {
   condition *c;
 
@@ -587,7 +588,7 @@ void remove_vars_requiring_bindings (agent* thisAgent,
    goal or impasse id test, and prints a warning message if it isn't.
 ===================================================================== */
 
-list *collect_root_variables (agent* thisAgent, 
+list *collect_root_variables (agent* thisAgent,
 							  condition *cond_list,
                               tc_number tc, /* for vars bound outside */
                               Bool allow_printing_warnings) {
@@ -597,7 +598,7 @@ list *collect_root_variables (agent* thisAgent,
   cons *c;
   condition *cond;
   Bool found_goal_impasse_test;
- 
+
   /* --- find everthing that's in the value slot of some condition --- */
   new_vars_from_value_slot = NIL;
   for (cond=cond_list; cond!=NIL; cond=cond->next)
@@ -616,7 +617,7 @@ list *collect_root_variables (agent* thisAgent,
   unmark_variables_and_free_list (thisAgent, new_vars_from_value_slot);
   for (c=new_vars_from_id_slot; c!=NIL; c=c->rest)
     static_cast<Symbol *>(c->first)->var.tc_num = 0;
-  
+
   /* --- make sure each root var has some condition with goal/impasse --- */
   if (allow_printing_warnings && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
     for (c=new_vars_from_id_slot; c!=NIL; c=c->rest) {
@@ -650,7 +651,7 @@ list *collect_root_variables (agent* thisAgent,
       }
     }
   }
-  
+
   return new_vars_from_id_slot;
 }
 
@@ -663,7 +664,7 @@ list *collect_root_variables (agent* thisAgent,
    most of this code will eventually get thrown out anyway...)
 ===================================================================== */
 
-/* --- estimated k-search branching factors --- */ 
+/* --- estimated k-search branching factors --- */
 #define MAX_COST 10000005           /* cost of a disconnected condition */
 #define BF_FOR_ACCEPTABLE_PREFS 8   /* cost of (. ^. <var> +) */
 #define BF_FOR_VALUES 8             /* cost of (. ^. <var>) */
@@ -682,7 +683,7 @@ Bool test_covered_by_bound_vars (test t, tc_number tc, list *extra_vars) {
   complex_test *ct;
 
   if (test_is_blank_test(t)) return FALSE;
-  
+
   if (test_is_blank_or_equality_test(t)) {
     referent = referent_of_equality_test(t);
     if (symbol_is_constant_or_marked_variable (referent, tc))
@@ -723,7 +724,7 @@ int64_t get_cost_of_possible_multi_attribute(agent* thisAgent, Symbol *sym)
    variables.
 ------------------------------------------------------------- */
 
-int64_t cost_of_adding_condition (agent* thisAgent, 
+int64_t cost_of_adding_condition (agent* thisAgent,
 							   condition *cond,
                                tc_number tc,
                                list *root_vars_not_bound_yet) {
@@ -794,7 +795,7 @@ int64_t cost_of_adding_condition (agent* thisAgent,
    added first.
 ------------------------------------------------------------- */
 
-int64_t find_lowest_cost_lookahead (agent* thisAgent, 
+int64_t find_lowest_cost_lookahead (agent* thisAgent,
 								 condition *candidates,
                                  condition *chosen,
                                  tc_number tc,
@@ -828,14 +829,14 @@ int64_t find_lowest_cost_lookahead (agent* thisAgent,
    built chunks, this is never necessary.)
 ------------------------------------------------------------- */
 
-void reorder_condition_list (agent* thisAgent, 
+void reorder_condition_list (agent* thisAgent,
 							 condition **top_of_conds,
                              condition **bottom_of_conds,
                              list *roots,
                              tc_number tc,
                              Bool reorder_nccs);
 
-void reorder_simplified_conditions (agent* thisAgent, 
+void reorder_simplified_conditions (agent* thisAgent,
 									condition **top_of_conds,
                                     condition **bottom_of_conds,
                                     list *roots,
@@ -853,13 +854,13 @@ void reorder_simplified_conditions (agent* thisAgent,
   first_cond = NIL;
   last_cond = NIL;
   new_vars = NIL;
-  
+
   /* repeat:  scan through remaining_conds
               rate each one
               if tie, call lookahead routine
               add min-cost item to conds
   */
-  
+
   while (remaining_conds) {
     /* --- find min-cost set --- */
     min_cost_conds = NIL;
@@ -970,7 +971,7 @@ void reorder_simplified_conditions (agent* thisAgent,
 
     /* --- update set of bound variables for newly added condition --- */
     add_bound_variables_in_condition (thisAgent, chosen, bound_vars_tc_number, &new_vars);
-    
+
     /* --- if all roots are bound, set roots=NIL: don't need 'em anymore --- */
     if (roots) {
       cons *c;
@@ -987,7 +988,7 @@ void reorder_simplified_conditions (agent* thisAgent,
   *bottom_of_conds = last_cond;
 }
 
-void reorder_condition_list (agent* thisAgent, 
+void reorder_condition_list (agent* thisAgent,
 							 condition **top_of_conds,
                              condition **bottom_of_conds,
                              list *roots,
@@ -1054,10 +1055,10 @@ Bool test_tests_for_root(test t, list *roots) {
 
 	These two functions are for fixing bug 517. The bug stems
 	from two different code paths being used to check the bound
-	variables after reordering the left hand side; one for 
+	variables after reordering the left hand side; one for
 	positive conditions and one for negated conditions.
 
-	Specifically, the old system would let unbound referents of 
+	Specifically, the old system would let unbound referents of
 	non-equality relational tests continue past the reordering
 	until the production addition failed as the bad production
 	was added to the rete.
@@ -1077,7 +1078,7 @@ Bool test_tests_for_root(test t, list *roots) {
     -->
 	}
 ------------------------------------------------------------- */
-bool check_unbound_negative_relational_test_referents (agent* thisAgent, test t, tc_number tc) 
+bool check_unbound_negative_relational_test_referents (agent* thisAgent, test t, tc_number tc)
 {
   cons *c;
   complex_test *ct;
@@ -1093,20 +1094,20 @@ bool check_unbound_negative_relational_test_referents (agent* thisAgent, test t,
   case IMPASSE_ID_TEST:
   case DISJUNCTION_TEST:
     break;
-    
+
   case CONJUNCTIVE_TEST:
 	// we do need to loop over conjunctive tests, however
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       if (!check_unbound_negative_relational_test_referents (thisAgent, static_cast<test>(c->first), tc))
 		  return false;
 	break;
-    
+
   default:
     /* --- relational tests other than equality --- */
     referent = ct->data.referent;
 	if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) {
       if (referent->var.tc_num != tc) {
-        print (thisAgent, 
+        print (thisAgent,
 			"Error: production %s has an unbound referent in negated relational test %s",
 			thisAgent->name_of_production_being_reordered,
 			test_to_string (thisAgent, t, NULL, 0));
@@ -1148,14 +1149,14 @@ bool check_negative_relational_test_bindings(agent* thisAgent, condition *cond_l
   return ret;
 }
 
-void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition **lhs_top, 
+void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition **lhs_top,
 										  condition ** /*lhs_bottom*/, list *roots)
 {
   condition *cond;
   Bool a,b;
   test temp;
 
-  a = FALSE; 
+  a = FALSE;
   b = FALSE;
 
   for (cond = *lhs_top; cond != NIL; cond = cond->next) {
@@ -1172,7 +1173,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition **lhs_top,
   }
 }
 
-Bool reorder_lhs (agent* thisAgent, condition **lhs_top, 
+Bool reorder_lhs (agent* thisAgent, condition **lhs_top,
 				  condition **lhs_bottom, Bool reorder_nccs) {
   tc_number tc;
   list *roots;
@@ -1189,7 +1190,7 @@ Bool reorder_lhs (agent* thisAgent, condition **lhs_top,
   /* MVP 6-8-94 - fix provided by Bob */
   if (!roots) {
     condition *cond;
- 
+
     for (cond = *lhs_top; cond!=NIL; cond=cond->next) {
       if ((cond->type == POSITIVE_CONDITION) &&
           (test_includes_goal_or_impasse_id_test (cond->data.tests.id_test,

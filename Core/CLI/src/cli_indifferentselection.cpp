@@ -26,7 +26,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::string* p1, const std::string* p2, const std::string* p3 ) 
+bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::string* p1, const std::string* p2, const std::string* p3 )
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
     // show selection policy
@@ -71,7 +71,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
             return true;
         }
         else
-        {	
+        {
             if ( *p1 != "on" && *p1 != "off" )
                 return SetError( "Invalid value." );
 
@@ -84,7 +84,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
     {
         if ( !p1 )
         {
-            double param_value = exploration_get_parameter_value( agnt, "epsilon" ); 
+            double param_value = exploration_get_parameter_value( agnt, "epsilon" );
             std::string temp;
             to_string( param_value, temp );
 
@@ -111,7 +111,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
     {
         if ( !p1 )
         {
-            double param_value = exploration_get_parameter_value( agnt, "temperature" ); 
+            double param_value = exploration_get_parameter_value( agnt, "temperature" );
             std::string temp;
             to_string( param_value, temp );
 
@@ -141,7 +141,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         if ( !p2 )
         {
             if ( !exploration_valid_parameter( agnt, p1->c_str() ) )
-                return SetError( "Invalid attribute." );
+                return SetError( "Invalid parameter." );
 
             const char *policy_name = exploration_convert_reduction_policy( exploration_get_reduction_policy( agnt, p1->c_str() ) );
 
@@ -165,10 +165,10 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
     else if ( pOp == 'r' )
     {
         if ( !exploration_valid_parameter( agnt, p1->c_str() ) )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid exploration parameter." );
 
         if ( !exploration_valid_reduction_policy( agnt, p1->c_str(), p2->c_str() ) )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid exploration reduction policy." );
 
         if ( !p3 )
         {
@@ -208,7 +208,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         temp += exploration_convert_policy( exploration_get_policy( agnt ) );
 
         if ( m_RawOutput )
-            m_Result << temp << "\n"; 
+            m_Result << temp << "\n";
         else
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
@@ -219,7 +219,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         temp += ( ( exploration_get_auto_update( agnt ) )?( "on" ):( "off" ) );
 
         if ( m_RawOutput )
-            m_Result << temp << "\n\n"; 
+            m_Result << temp << "\n\n";
         else
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
@@ -228,16 +228,16 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         temp = "";
 
         for ( int i=0; i<EXPLORATION_PARAMS; i++ )
-        {	
+        {
             // value
             temp = exploration_convert_parameter( agnt, i );
             temp += ": ";
-            temp_value = exploration_get_parameter_value( agnt, i ); 
+            temp_value = exploration_get_parameter_value( agnt, i );
             to_string( temp_value, temp4 );
             temp += temp4;
 
             if ( m_RawOutput )
-                m_Result << temp << "\n"; 
+                m_Result << temp << "\n";
             else
                 AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 
@@ -250,7 +250,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
             else
                 AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 
-            // rates			
+            // rates
             temp2 = "";
             temp3 = "";
             for ( int j=0; j<EXPLORATION_REDUCTIONS; j++ )
@@ -271,7 +271,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
             temp += "): ";
             temp += temp3;
             if ( m_RawOutput )
-                m_Result << temp << "\n\n"; 
+                m_Result << temp << "\n\n";
             else
             {
                 AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );

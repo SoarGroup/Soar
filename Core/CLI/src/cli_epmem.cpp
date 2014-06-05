@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////
-// epmem command file.
+// EpMem command file.
 //
 // Author: Jonathan Voigt, voigtjr@gmail.com,
 //         Nate Derbinsky, nlderbin@umich.edu
@@ -106,7 +106,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     {
         soar_module::param *my_param = agnt->epmem_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid EpMem setting." );
 
         PrintCLIMessage_Item("", my_param, 0);
         return true;
@@ -115,11 +115,13 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     {
     	epmem_reinit( agnt );
     	PrintCLIMessage( "EpMem| Episodic memory system re-initialized.");
-    	if ((agnt->epmem_params->append_db->get_value() == on) &&
-    		(agnt->epmem_params->database->get_value() != epmem_param_container::memory))
-    	{
-        	PrintCLIMessage( "EpMem|   Note: There was no effective change to memory contents because append mode is on and path set to file.");
-    	}
+        if ((agnt->epmem_params->database->get_value() != epmem_param_container::memory) &&
+           (agnt->epmem_params->append_db->get_value() == on))
+        {
+            PrintCLIMessage( "EpMem| Note that there was no effective change to episodic memory contents \n"
+                             "       because Soar is storing episodic memory to a database file and append \n"
+                             "       mode is on.");
+        }
     	return true;
     }
 	else if ( pOp == 'p' )
@@ -140,18 +142,30 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     {
         soar_module::param *my_param = agnt->epmem_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid EpMem setting." );
 
         if ( !my_param->validate_string( pVal->c_str() ) )
-            return SetError( "Invalid value." );
+            return SetError( "Invalid value for EpMem setting." );
 
         bool result = my_param->set_string( pVal->c_str() );
-
         if ( !result )
+        {
             SetError( "This parameter is protected while the episodic memory database is open." );
-        else {
-        	tempString << "EpMem| "<< pAttr->c_str() << " = " << pVal->c_str();
-        	PrintCLIMessage(&tempString);
+        } else {
+            tempString << "EpMem| "<< pAttr->c_str() << " = " << pVal->c_str();
+            PrintCLIMessage(&tempString);
+            if ((!strcmp(pAttr->c_str(),"append-database") || (!strcmp(pAttr->c_str(),"database"))))
+            {
+                if ((agnt->epmem_params->append_db->get_value() == off) &&
+                    (agnt->epmem_params->database->get_value() != epmem_param_container::memory))
+                {
+                    PrintCLIMessage( "EpMem| Note that Soar is storing episodic memory to a database file and \n"
+                                     "       append mode is off.  If you later initialize or restart Soar with \n"
+                                     "       these settings, the stored episodes will be cleared before adding \n"
+                                     "       new episodic memories.");
+                }
+
+            }
         }
         return result;
     }

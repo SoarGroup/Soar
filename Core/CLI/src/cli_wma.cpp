@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////
 // wma command file.
 //
-// Author: Jonathan Voigt, voigtjr@gmail.com, 
+// Author: Jonathan Voigt, voigtjr@gmail.com,
 //         Nate Derbinsky, nlderbin@umich.edu
 // Date  : 2008
 //
@@ -24,7 +24,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, const std::string* pVal ) 
+bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, const std::string* pVal )
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
     if ( !pOp )
@@ -197,16 +197,16 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
         }
 
         return true;
-    }	
+    }
     else if ( pOp == 'g' )
     {
         soar_module::param *my_param = agnt->wma_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid activation setting." );
 
         char *temp2 = my_param->get_string();
         std::string output( temp2 );
-        delete temp2;		
+        delete temp2;
 
         if ( m_RawOutput )
             m_Result << output;
@@ -220,7 +220,7 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 		uint64_t timetag;
 		if ( !from_string( timetag, *pAttr ) || ( timetag == 0 ) )
 			return SetError( "Invalid timetag." );
-		
+
 		wme* pWme = NULL;
 		agent* agnt = m_pAgentSML->GetSoarAgent();
 
@@ -242,19 +242,19 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
             else
                 AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 		}
-		
+
 		return true;
 	}
     else if ( pOp == 's' )
     {
         soar_module::param *my_param = agnt->wma_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid attribute." );
+            return SetError( "Invalid activation setting." );
 
         if ( !my_param->validate_string( pVal->c_str() ) )
-            return SetError( "Invalid value." );
+            return SetError( "Invalid value for activation setting." );
 
-        bool result = my_param->set_string( pVal->c_str() );		
+        bool result = my_param->set_string( pVal->c_str() );
 
         // since parameter name and value have been validated,
         // this can only mean the parameter is protected
@@ -266,9 +266,9 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
     else if ( pOp == 'S' )
     {
         if ( !pAttr )
-        {			
+        {
             std::string output;
-            char *temp2;			
+            char *temp2;
 
             output = "Forgotten WMEs: ";
             temp2 = agnt->wma_stats->forgotten_wmes->get_string();
@@ -278,7 +278,7 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
             if ( m_RawOutput )
                 m_Result << output << "\n";
             else
-                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );			
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
         }
         else
         {
@@ -288,7 +288,7 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 
             char *temp2 = my_stat->get_string();
             std::string output( temp2 );
-            delete temp2;			
+            delete temp2;
 
             if ( m_RawOutput )
                 m_Result << output;
@@ -303,7 +303,7 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 		if ( !pAttr )
         {
             struct foo: public soar_module::accumulator< soar_module::timer* >
-            {				
+            {
             private:
                 bool raw;
                 cli::CommandLineInterface* this_cli;
@@ -311,7 +311,7 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 
                 foo& operator= (const foo&) { return *this; }
 
-            public:				
+            public:
                 foo( bool m_RawOutput, cli::CommandLineInterface *new_cli, std::ostringstream& m_Result ): raw( m_RawOutput ), this_cli( new_cli ), m_Result( m_Result ) {};
 
 
@@ -346,7 +346,7 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 
             char *temp2 = my_timer->get_string();
             std::string output( temp2 );
-            delete temp2;			
+            delete temp2;
 
             if ( m_RawOutput )
             {
