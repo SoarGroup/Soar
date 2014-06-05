@@ -7,6 +7,10 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
+#include <functional>
+#include <cctype>
+#include <locale>
 #include "sml_Client.h"
 
 using namespace std;
