@@ -2443,7 +2443,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 		}
 
 		//Look through while were here, so that we can make sure the attributes we need are in the results
-		if(mathQuery != NIL){
+		if(mathQuery != NIL && good_cue){
 			std::pair<bool,bool>* mpr = processMathQuery(my_agent, mathQuery, &weighted_pq);
 			needFullSearch = mpr->first;
 			good_cue = mpr->second;
