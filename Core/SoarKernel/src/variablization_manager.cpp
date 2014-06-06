@@ -267,34 +267,36 @@ void Variablization_Manager::variablize_equality_test(test *t)
 
     dprint_test(DT_LHS_VARIABLIZATION, *t, true, false, true, "Variablizing equality test ", "\n");
 
-    // Sanity check on originals
-    assert(original_test->type && (original_test->type < NUM_TEST_TYPES));
+    if (original_test)
+    {
+        // Sanity check on originals
+        assert(original_test->type && (original_test->type < NUM_TEST_TYPES));
 
-    if (original_test->type == EQUALITY_TEST)
-    {
-        original_referent = original_test->data.referent;
-    }
-    else if (original_test->type == CONJUNCTIVE_TEST)
-    {
-        /* --  A non-conjunctive test with a conjunctive original test must be an equality tests,
+        if (original_test->type == EQUALITY_TEST)
+        {
+            original_referent = original_test->data.referent;
+        }
+        else if (original_test->type == CONJUNCTIVE_TEST)
+        {
+            /* --  A non-conjunctive test with a conjunctive original test must be an equality tests,
                    since it is the only type that can sensically have multiple originals and be a conjunction.  -- */
 
-        /* MToDo | It may be legal, but are multiple original equality tests really sensical?  Does it
-                 *         ever make sense to put that in a rule?  Can they ever become conjunctive at runtime. */
+            /* MToDo | It may be legal, but are multiple original equality tests really sensical?  Does it
+             *         ever make sense to put that in a rule?  Can they ever become conjunctive at runtime. */
 
-        dprint_test(DT_LHS_VARIABLIZATION, original_test, true, false, true, "...this is an eq test with conj original test: ", "\n");
-        assert((*t)->type==EQUALITY_TEST);
-        original_eq_test = find_original_equality_test_preferring_vars(original_test, false);
-        if (!original_eq_test) return;
-        original_referent = original_eq_test->data.referent;
+            dprint_test(DT_LHS_VARIABLIZATION, original_test, true, false, true, "...this is an eq test with conj original test: ", "\n");
+            assert((*t)->type==EQUALITY_TEST);
+            original_eq_test = find_original_equality_test_preferring_vars(original_test, false);
+            if (!original_eq_test) return;
+            original_referent = original_eq_test->data.referent;
+        }
+        else /* -- Not an equality test -- */
+        {
+            return;
+        }
+        variablize_test(t, original_referent);
     }
-    else /* -- Not an equality test -- */
-    {
-        return;
-    }
-    variablize_test(t, original_referent);
 }
-
 /* ============================================================================
  *            Variablization_Manager::variablize_equality_tests
  *
