@@ -1972,278 +1972,289 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
 
 void decide_non_context_slot (agent* thisAgent, slot *s)
 {
-	byte impasse_type;
-	wme *w, *next_w;
-	preference *candidates, *cand, *pref;
+    byte impasse_type;
+    wme *w, *next_w;
+    preference *candidates, *cand, *pref;
 
-	impasse_type = run_preference_semantics (thisAgent, s, &candidates);
+    impasse_type = run_preference_semantics (thisAgent, s, &candidates);
 
-	if (impasse_type==NONE_IMPASSE_TYPE)
-	{
-		/* --- no impasse, so remove any existing one and update the wmes --- */
-		if (s->impasse_type != NONE_IMPASSE_TYPE)
-			remove_existing_attribute_impasse_for_slot (thisAgent, s);
+    if (impasse_type==NONE_IMPASSE_TYPE)
+    {
+        /* --- no impasse, so remove any existing one and update the wmes --- */
+        if (s->impasse_type != NONE_IMPASSE_TYPE)
+            remove_existing_attribute_impasse_for_slot (thisAgent, s);
 
-		/* --- reset marks on existing wme values to "NOTHING" --- */
-		for (w=s->wmes; w!=NIL; w=w->next)
-			w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+        /* --- reset marks on existing wme values to "NOTHING" --- */
+        for (w=s->wmes; w!=NIL; w=w->next)
+            w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
 
-		/* --- set marks on desired values to "CANDIDATES" --- */
-		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-			cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+        /* --- set marks on desired values to "CANDIDATES" --- */
+        for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+            cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
 
-		/* --- for each existing wme, if we want it there, mark it as
+        /* --- for each existing wme, if we want it there, mark it as
 		ALREADY_EXISTING; otherwise remove it --- */
-		w = s->wmes;
-		while (w)
-		{
-			next_w = w->next;
-			if (w->value->common.decider_flag == CANDIDATE_DECIDER_FLAG)
-			{
-				w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
-				w->value->common.a.decider_wme = w; /* so we can set the pref later */
-			}
-			else
-			{
-				remove_from_dll (s->wmes, w, next, prev);
-				/* REW: begin 09.15.96 */
-				if (w->gds)
-				{
-					if (w->gds->goal != NIL)
-					{
-						/* If the goal pointer is non-NIL, then goal is in the stack */
-						gds_invalid_so_remove_goal(thisAgent, w);
-					}
-				}
-				/* REW: end   09.15.96 */
-				remove_wme_from_wm (thisAgent, w);
-			}
-			w = next_w;
-		}  /* end while (W) */
+        w = s->wmes;
+        while (w)
+        {
+            next_w = w->next;
+            if (w->value->common.decider_flag == CANDIDATE_DECIDER_FLAG)
+            {
+                w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
+                w->value->common.a.decider_wme = w; /* so we can set the pref later */
+            }
+            else
+            {
+                remove_from_dll (s->wmes, w, next, prev);
+                /* REW: begin 09.15.96 */
+                if (w->gds)
+                {
+                    if (w->gds->goal != NIL)
+                    {
+                        /* If the goal pointer is non-NIL, then goal is in the stack */
+                        gds_invalid_so_remove_goal(thisAgent, w);
+                    }
+                }
+                /* REW: end   09.15.96 */
+                remove_wme_from_wm (thisAgent, w);
+            }
+            w = next_w;
+        }  /* end while (W) */
 
-		/* --- for each desired value, if it's not already there, add it --- */
-		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-		{
-			if (cand->value->common.decider_flag==ALREADY_EXISTING_WME_DECIDER_FLAG)
-			{
-				/* REW: begin 11.22.97 */
-				/* print(thisAgent, "\n This WME was marked as already existing...."); print_wme(cand->value->common.a.decider_wme); */
+        /* --- for each desired value, if it's not already there, add it --- */
+        for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+        {
+            if (cand->value->common.decider_flag==ALREADY_EXISTING_WME_DECIDER_FLAG)
+            {
+                /* REW: begin 11.22.97 */
+                /* print(thisAgent, "\n This WME was marked as already existing...."); print_wme(cand->value->common.a.decider_wme); */
 
-				/* REW: end   11.22.97 */
-				cand->value->common.a.decider_wme->preference = cand;
-			}
-			else
-			{
-				w = make_wme (thisAgent, cand->id, cand->attr, cand->value, FALSE);
-				insert_at_head_of_dll (s->wmes, w, next, prev);
-				w->preference = cand;
+                /* REW: end   11.22.97 */
+                cand->value->common.a.decider_wme->preference = cand;
+            }
+            else
+            {
+                if (cand->o_supported && (cand->inst->match_goal_level != 1) &&
+                                (cand->inst->match_goal->id.gds == NIL) &&
+                                (cand->inst->match_goal_level != cand->id->id.level))
+                {
+                    /* -- WME from duplicate production.  Skipping GDS processing for new wme.  This avoids
+                     *    creating a GDS for a WME level different from the instantiation level.  This
+                     *    solution seems to work well, but it's possible that there are subtle aspects
+                     *    of the GDS that aren't being appreciated.  See comments below. -- */
+                    continue;
+                }
+                w = make_wme (thisAgent, cand->id, cand->attr, cand->value, FALSE);
+                insert_at_head_of_dll (s->wmes, w, next, prev);
+                w->preference = cand;
 
-				if ( ( s->wma_val_references != NIL ) && wma_enabled( thisAgent ) )
-				{
-					wma_sym_reference_map::iterator it = s->wma_val_references->find( w->value );
-					if ( it != s->wma_val_references->end() )
-					{
-						// should only activate at this point if WME is o-supported
-						wma_activate_wme( thisAgent, w, it->second, NULL, true );
+                if ( ( s->wma_val_references != NIL ) && wma_enabled( thisAgent ) )
+                {
+                    wma_sym_reference_map::iterator it = s->wma_val_references->find( w->value );
+                    if ( it != s->wma_val_references->end() )
+                    {
+                        // should only activate at this point if WME is o-supported
+                        wma_activate_wme( thisAgent, w, it->second, NULL, true );
 
-						s->wma_val_references->erase( it );
-						if ( s->wma_val_references->empty() )
-						{
-							s->wma_val_references->~wma_sym_reference_map();
-							free_with_pool( &( thisAgent->wma_slot_refs_pool ), s->wma_val_references );
-							s->wma_val_references = NIL;
-						}
-					}
-				}
+                        s->wma_val_references->erase( it );
+                        if ( s->wma_val_references->empty() )
+                        {
+                            s->wma_val_references->~wma_sym_reference_map();
+                            free_with_pool( &( thisAgent->wma_slot_refs_pool ), s->wma_val_references );
+                            s->wma_val_references = NIL;
+                        }
+                    }
+                }
 
-				/* REW: begin 09.15.96 */
-				/* Whenever we add a WME to WM, we also want to check and see if
+                /* REW: begin 09.15.96 */
+                /* Whenever we add a WME to WM, we also want to check and see if
 				this new WME is o-supported.  If so, then we want to add the
 				supergoal dependencies of the new, o-supported element to the
 				goal in which the element was created (as long as the o_supported
 				element was not created in the top state -- the top goal has
 				no gds).  */
 
-				/* REW: begin 11.25.96 */
+                /* REW: begin 11.25.96 */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-				thisAgent->timers_gds.start();
+                thisAgent->timers_gds.start();
 #endif
 #endif
-				/* REW: end   11.25.96 */
+                /* REW: end   11.25.96 */
 
-				thisAgent->parent_list_head = NIL;
+                thisAgent->parent_list_head = NIL;
 
-				/* If the working memory element being added is going to have
-				o_supported preferences and the instantion that created it
+                /* If the working memory element being added is going to have
+				o_supported preferences and the instantiation that created it
 				is not in the top_level_goal (where there is no GDS), then
 				loop over the preferences for this WME and determine which
 				WMEs should be added to the goal's GDS (the goal here being the
 				goal to which the added memory is attached). */
 
-				if ((w->preference->o_supported == TRUE) && (w->preference->inst->match_goal_level != 1))
-				{
-					if (w->preference->inst->match_goal->id.gds == NIL)
-					{
-						/* If there is no GDS yet for this goal,
-						* then we need to create one */
-						if (w->preference->inst->match_goal_level == w->preference->id->id.level)
-						{
-							/*
-							* NLD: BUG when the system has already halted and this code is reached, Soar will
-							* report a memory leak because the elaborate_gds call below will not execute (notice the
-							* check for system_halted), and hence the gds for this goal will not be populated,
-							* leading to the gds struct not being freed on quit.
-							*
-							* I'm not sure if this situation will come up anymore (after r12593), so not doing
-							* anything about it. However, if it does, this can lead to a memory leak. I know
-							* it can add up between calls to init-soar, but I'm not sure if it can increase
-							* more frequently than that.
-							*/
-							create_gds_for_goal( thisAgent, w->preference->inst->match_goal );
+                if ((w->preference->o_supported == TRUE) && (w->preference->inst->match_goal_level != 1))
+                {
+                    if (w->preference->inst->match_goal->id.gds == NIL)
+                    {
+                        /* If there is no GDS yet for this goal,
+                         * then we need to create one */
+                        if (w->preference->inst->match_goal_level == w->preference->id->id.level)
+                        {
+                            /*
+                             * NLD: BUG when the system has already halted and this code is reached, Soar will
+                             * report a memory leak because the elaborate_gds call below will not execute (notice the
+                             * check for system_halted), and hence the gds for this goal will not be populated,
+                             * leading to the gds struct not being freed on quit.
+                             *
+                             * I'm not sure if this situation will come up anymore (after r12593), so not doing
+                             * anything about it. However, if it does, this can lead to a memory leak. I know
+                             * it can add up between calls to init-soar, but I'm not sure if it can increase
+                             * more frequently than that.
+                             */
+                            create_gds_for_goal( thisAgent, w->preference->inst->match_goal );
 
-							/* REW: BUG When chunks and result instantiations both create
-							* preferences for the same WME, then we only want to create
-							* the GDS for the highest goal.  Right now I ensure that we
-							* elaborate the correct GDS with the tests in the loop just
-							* below this code, but the GDS creation above assumes that
-							* the chunk will be first on the GDS list.  This order
-							* appears to be always true, although I am not 100% certain
-							* (I think it occurs this way because the chunk is
-							* necessarily added to the instantiation list after the
-							* original instantiation and lists get built such older items
-							* appear further from the head of the list) . If not true,
-							* then we need to keep track of any GDS's that get created
-							* here to remove them later if we find a higher match goal
-							* for the WME. For now, the program just exits in this
-							* situation; otherwise, we would build a GDS for the wrong
-							* level and never elaborate it (resulting in a memory
-							* leak).
-							*/
-						}
-						else
-						{
-							// If this happens, we better be halted, see chunk.cpp:chunk_instantiation
-							// This can happen if a chunk can't be created, because then the match level
-							// of the preference instantiation can map back to the original matching
-							// production which can be at a different level than the id wme.
-							// Normally, there would be a chunk or justification firing at the higher
-							// goal with a match level equal to the id level.
-							// See more comments in chunk_instantiation.
-							if (!thisAgent->system_halted)
-							{
-								abort_with_fatal_error(thisAgent, "**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n");
-							}
-						}
-					} /* end if no GDS yet for goal... */
+                            /* REW: BUG When chunks and result instantiations both create
+                             * preferences for the same WME, then we only want to create
+                             * the GDS for the highest goal.  Right now I ensure that we
+                             * elaborate the correct GDS with the tests in the loop just
+                             * below this code, but the GDS creation above assumes that
+                             * the chunk will be first on the GDS list.  This order
+                             * appears to be always true, although I am not 100% certain
+                             * (I think it occurs this way because the chunk is
+                             * necessarily added to the instantiation list after the
+                             * original instantiation and lists get built such older items
+                             * appear further from the head of the list) . If not true,
+                             * then we need to keep track of any GDS's that get created
+                             * here to remove them later if we find a higher match goal
+                             * for the WME. For now, the program just exits in this
+                             * situation; otherwise, we would build a GDS for the wrong
+                             * level and never elaborate it (resulting in a memory
+                             * leak).
+                             */
+                        }
+                        else
+                        {
+                            /* -- Should not be able to get here any more with new clause checking for this
+                             *    cumulative state earlier. Leaving comment in case this solution doesn't
+                             *    prove to be sufficient and we need to do something more complex, as
+                             *    described in the previous comment by REW. -- */
 
-					/* Loop over all the preferences for this WME:
-					*   If the instantiation that lead to the preference has not
-					*         been already explored; OR
-					*   If the instantiation is not an subgoal instantiation
-					*          for a chunk instantiation we are already exploring
-					*   Then
-					*      Add the instantiation to a list of instantiations that
-					*          will be explored in elaborate_gds().
-					*/
+                            // If this happens, we better be halted, see chunk.cpp:chunk_instantiation
+                            // This can happen if a chunk can't be created, because then the match level
+                            // of the preference instantiation can map back to the original matching
+                            // production which can be at a different level than the id wme.
+                            // Normally, there would be a chunk or justification firing at the higher
+                            // goal with a match level equal to the id level.
+                            // See more comments in chunk_instantiation.
+                        }
+                    } /* end if no GDS yet for goal... */
 
-					// Added halt test because chunk_instantiation can cause problems,
-					// see comment a few lines above and in chunk_instantiation.
-					if (!thisAgent->system_halted)
-					{
-						for (pref=w->preference; pref!=NIL; pref=pref->next)
-						{
+                    /* Loop over all the preferences for this WME:
+                     *   If the instantiation that lead to the preference has not
+                     *         been already explored; OR
+                     *   If the instantiation is not an subgoal instantiation
+                     *          for a chunk instantiation we are already exploring
+                     *   Then
+                     *      Add the instantiation to a list of instantiations that
+                     *          will be explored in elaborate_gds().
+                     */
+
+                    // Added halt test because chunk_instantiation can cause problems,
+                    // see comment a few lines above and in chunk_instantiation.
+                    if (!thisAgent->system_halted)
+                    {
+                        for (pref=w->preference; pref!=NIL; pref=pref->next)
+                        {
 #ifdef DEBUG_GDS_HIGH
-							print(thisAgent, "\n\n   ");
-							print_preference(thisAgent, pref);
-							print(thisAgent, "   Goal level of preference: %d\n",
-								pref->id->id.level);
+                            print(thisAgent, "\n\n   ");
+                            print_preference(thisAgent, pref);
+                            print(thisAgent, "   Goal level of preference: %d\n",
+                                  pref->id->id.level);
 #endif
 
-							if (pref->inst->GDS_evaluated_already == FALSE)
-							{
+                            if (pref->inst->GDS_evaluated_already == FALSE)
+                            {
 #ifdef DEBUG_GDS_HIGH
-								print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
-									pref->inst->prod->name);
-								print(thisAgent, "is %d\n", pref->inst->match_goal_level);
+                                print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
+                                                pref->inst->prod->name);
+                                print(thisAgent, "is %d\n", pref->inst->match_goal_level);
 #endif
-								if (pref->inst->match_goal_level > pref->id->id.level)
-								{
+                                if (pref->inst->match_goal_level > pref->id->id.level)
+                                {
 #ifdef DEBUG_GDS_HIGH
-									print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
-#endif
-
-								}
-								else
-								{
-#ifdef DEBUG_GDS_HIGH
-									print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name);
-#endif
-									uniquely_add_to_head_of_dll(thisAgent, pref->inst);
-									pref->inst->GDS_evaluated_already = TRUE;
-								}
-							}  /* end if GDS_evaluated_already is FALSE */
-#ifdef DEBUG_GDS_HIGH
-							else
-								print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod->name);
+                                    print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
 #endif
 
-						}  /* end of forloop over preferences for this wme */
+                                }
+                                else
+                                {
+#ifdef DEBUG_GDS_HIGH
+                                    print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name);
+#endif
+                                    uniquely_add_to_head_of_dll(thisAgent, pref->inst);
+                                    pref->inst->GDS_evaluated_already = TRUE;
+                                }
+                            }  /* end if GDS_evaluated_already is FALSE */
+#ifdef DEBUG_GDS_HIGH
+                            else
+                                print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod->name);
+#endif
+
+                        }  /* end of forloop over preferences for this wme */
 
 #ifdef DEBUG_GDS_HIGH
-						print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
+                        print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
 #endif
-						elaborate_gds(thisAgent);
+                        elaborate_gds(thisAgent);
 
-						/* technically, the list should be empty at this point ??? */
+                        /* technically, the list should be empty at this point ??? */
 
-						free_parent_list(thisAgent);
+                        free_parent_list(thisAgent);
 #ifdef DEBUG_GDS_HIGH
-						print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
+                        print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
 #endif
-					} /* end if not halted */
-				}  /* end if w->preference->o_supported == TRUE ... */
+                    } /* end if not halted */
+                }  /* end if w->preference->o_supported == TRUE ... */
 
-				/* REW: begin 11.25.96 */
+                /* REW: begin 11.25.96 */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-				thisAgent->timers_gds.stop();
-				thisAgent->timers_gds_cpu_time[thisAgent->current_phase].update(thisAgent->timers_gds);
+                thisAgent->timers_gds.stop();
+                thisAgent->timers_gds_cpu_time[thisAgent->current_phase].update(thisAgent->timers_gds);
 #endif
 #endif
-				/* REW: end   11.25.96 */
-				/* REW: end   09.15.96 */
+                /* REW: end   11.25.96 */
+                /* REW: end   09.15.96 */
 
-				add_wme_to_wm (thisAgent, w);
-			}
-		}
+                add_wme_to_wm (thisAgent, w);
+            }
+        }
 
-		return;
-	} /* end of if impasse type == NONE */
+        return;
+    } /* end of if impasse type == NONE */
 
-	/* --- impasse type != NONE --- */
-	if (s->wmes)
-	{
-		/* --- remove any existing wmes --- */
-		remove_wme_list_from_wm (thisAgent, s->wmes);
-		s->wmes = NIL;
-	}
+    /* --- impasse type != NONE --- */
+    if (s->wmes)
+    {
+        /* --- remove any existing wmes --- */
+        remove_wme_list_from_wm (thisAgent, s->wmes);
+        s->wmes = NIL;
+    }
 
-	/* --- create and/or update impasse structure --- */
-	if (s->impasse_type != NONE_IMPASSE_TYPE)
-	{
-		if (s->impasse_type != impasse_type)
-		{
-			remove_existing_attribute_impasse_for_slot (thisAgent, s);
-			create_new_attribute_impasse_for_slot (thisAgent, s, impasse_type);
-		}
-		update_impasse_items (thisAgent, s->impasse_id, candidates);
-	}
-	else
-	{
-		create_new_attribute_impasse_for_slot (thisAgent, s, impasse_type);
-		update_impasse_items (thisAgent, s->impasse_id, candidates);
-	}
+    /* --- create and/or update impasse structure --- */
+    if (s->impasse_type != NONE_IMPASSE_TYPE)
+    {
+        if (s->impasse_type != impasse_type)
+        {
+            remove_existing_attribute_impasse_for_slot (thisAgent, s);
+            create_new_attribute_impasse_for_slot (thisAgent, s, impasse_type);
+        }
+        update_impasse_items (thisAgent, s->impasse_id, candidates);
+    }
+    else
+    {
+        create_new_attribute_impasse_for_slot (thisAgent, s, impasse_type);
+        update_impasse_items (thisAgent, s->impasse_id, candidates);
+    }
 }
 
 /* ------------------------------------------------------------------
