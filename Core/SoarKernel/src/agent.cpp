@@ -441,12 +441,6 @@ void destroy_soar_agent (agent * delete_agent)
 {
   //print(delete_agent, "\nDestroying agent %s.\n", delete_agent->name);  /* AGR 532 */
 
-//#ifdef USE_X_DISPLAY
-//
-//  /* Destroy X window associated with agent */
-//  destroy_agent_window (delete_agent);
-//#endif /* USE_X_DISPLAY */
-
   /////////////////////////////////////////////////////////
   // Soar Modules - could potentially rely on hash tables
   /////////////////////////////////////////////////////////
@@ -514,6 +508,8 @@ void destroy_soar_agent (agent * delete_agent)
   stats_close( delete_agent );
   delete delete_agent->stats_db;
   delete_agent->stats_db = 0;
+
+  delete delete_agent->debug_params;
 
   /////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////
