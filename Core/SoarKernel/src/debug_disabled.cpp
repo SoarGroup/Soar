@@ -18,6 +18,6 @@
 extern void dprint (TraceMode mode, const char *format, ... ) {}
 extern void dprint_noprefix (TraceMode mode, const char *format, ... ) {}
 
-extern void debug_test(int type=1) {}
+extern void debug_test(int type) {}
 
 #endif
