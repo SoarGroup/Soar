@@ -43,7 +43,6 @@ alias ss                stop-soar
 alias st                stats
 alias step              run -d
 alias stop              stop-soar
-alias topd              pwd
 alias un                unalias
 alias varprint          print -v -d 100
 alias w                 watch

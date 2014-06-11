@@ -129,6 +129,22 @@ proc smlDestroyAgentCallback {id userData agent } {
   }
 }
 
+proc smlReInitAgentCallback  {id userData agent } {
+#  puts "smlReInitAgentCallback [$agent GetAgentName]"
+  if {[interp exists [$agent GetAgentName]]} {
+#    puts "Deleting old slave"
+    interp delete [$agent GetAgentName]
+    if {![interp exists [$agent GetAgentName]]} {
+#    puts "Creating new slave"
+    createSlave [$agent GetAgentName]
+    }
+  }
+#  set slave [getSlave $agentName]
+#  $slave eval reinitSlave
+#  $slave eval [concat uplevel #0 foreach var [info globals] {unset $var}]
+#  $slave eval [concat uplevel #0 foreach var [info procs] {rename $var ""}]
+}
+
 #####################
 ### Callback handlers
 
@@ -210,7 +226,7 @@ proc createCallbackHandlers {} {
     set callbackIDs(agent_destroyed) [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED smlDestroyAgentCallback ""]
   }
   if {$callbackIDs(agent_reinit) == -1} {
-    set callbackIDs(agent_destroyed) [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED smlDestroyAgentCallback ""]
+    set callbackIDs(agent_destroyed) [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED smlReInitAgentCallback ""]
   }
 }
 
