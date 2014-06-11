@@ -124,6 +124,7 @@ defineSoarCommands [set allSoarCommands {
    set-library-location
    set-stop-phase
    smem
+   soar
    soarnews
    sp
    srand
@@ -308,7 +309,7 @@ proc alias {{name ""} args} {
   global defined_aliases print_alias_switch
 
   if {[string compare $name ""] == 0} {
-    lsort [set defined_aliases]
+    puts [lsort [set defined_aliases]]
   } elseif {[string compare $args ""] == 0} {
     set position [lsearch -exact $defined_aliases $name]
     if {$position >= 0} {
