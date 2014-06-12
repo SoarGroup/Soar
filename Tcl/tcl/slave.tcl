@@ -360,20 +360,6 @@ proc unalias {name} {
   }
 }
 
-proc reinitSlave {} {
-  #puts "reinitializing slave"
-  uplevel #0 foreach v [info globals] {
-  #puts "deleting $v"
-    uplevel #0 unset $v
-  }
-  uplevel #0 foreach p [info procs] {rename $p ""}
-  #return "reinitializing slave"
-}
-
-proc upeval {expression} {
-  uplevel #0 eval $expression
-}
-
 proc initializeSlave {} {
   reconfigureOutput
 }

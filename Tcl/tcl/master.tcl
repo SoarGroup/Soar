@@ -8,7 +8,6 @@ array set callbackIDs {
   rhs -1
   filter -1
   agent_destroyed -1
-  agent_reinit -1
 }
 
 lappend auto_path $soarDir
@@ -129,22 +128,6 @@ proc smlDestroyAgentCallback {id userData agent } {
   }
 }
 
-proc smlReInitAgentCallback  {id userData agent } {
-#  puts "smlReInitAgentCallback [$agent GetAgentName]"
-  if {[interp exists [$agent GetAgentName]]} {
-#    puts "Deleting old slave"
-    interp delete [$agent GetAgentName]
-    if {![interp exists [$agent GetAgentName]]} {
-#    puts "Creating new slave"
-    createSlave [$agent GetAgentName]
-    }
-  }
-#  set slave [getSlave $agentName]
-#  $slave eval reinitSlave
-#  $slave eval [concat uplevel #0 foreach var [info globals] {unset $var}]
-#  $slave eval [concat uplevel #0 foreach var [info procs] {rename $var ""}]
-}
-
 #####################
 ### Callback handlers
 
@@ -208,7 +191,7 @@ proc loadSmlLibrary {} {
 
 proc createCallbackHandlers {} {
   global _kernel callbackIDs
-  global sml_Names_kFilterName smlEVENT_BEFORE_AGENT_DESTROYED smlEVENT_BEFORE_AGENT_REINITIALIZED
+  global sml_Names_kFilterName smlEVENT_BEFORE_AGENT_DESTROYED
 
   # Register main command processing callback function
   if {$callbackIDs(filter) == -1} {
@@ -225,9 +208,7 @@ proc createCallbackHandlers {} {
   if {$callbackIDs(agent_destroyed) == -1} {
     set callbackIDs(agent_destroyed) [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED smlDestroyAgentCallback ""]
   }
-  if {$callbackIDs(agent_reinit) == -1} {
-    set callbackIDs(agent_destroyed) [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED smlReInitAgentCallback ""]
-  }
+
 }
 
 proc removeCallbackHandlers {} {
@@ -250,10 +231,6 @@ proc removeCallbackHandlers {} {
 #  if {$callbackIDs(agent_destroyed) != -1} {
 #    set result [$_kernel UnregisterForClientMessageEvent $callbackIDs(agent_destroyed)]
 #    set callbackIDs(agent_destroyed) -1
-#  }
-#  if {$callbackIDs(agent_reinit) != -1} {
-#    set result [$_kernel UnregisterForClientMessageEvent $callbackIDs(agent_reinit)]
-#    set callbackIDs(agent_reinit) -1
 #  }
 }
 
