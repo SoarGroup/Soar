@@ -67,6 +67,28 @@ extern "C"
         return out;
     }
 
+    int TclSoarLib::GlobalDirEval(const std::string& command, std::string& result)
+    {
+        if(!m_interp)
+        {
+            return TCL_ERROR;
+        } else {
+
+            string tcl_cmd_string;
+
+            EscapeTclString(command.c_str(), tcl_cmd_string);
+            if(Tcl_Eval(m_interp, (char*) tcl_cmd_string.c_str()) != TCL_OK)
+            {
+                tcl_cmd_string.erase();
+                result = Tcl_GetStringResult(m_interp);
+                return TCL_ERROR;
+            }
+            tcl_cmd_string.erase();
+            result = Tcl_GetStringResult(m_interp);
+        }
+        return TCL_OK;
+    }
+
     int TclSoarLib::GlobalEval(const std::string& command, std::string& result)
     {
         if(!m_interp)
@@ -148,9 +170,9 @@ extern "C"
     {
         string smlTclDir,  libDir, masterFilePath, result_string;
 
-        if (((GlobalEval("pwd", libDir) != TCL_OK) ||
-                        (GlobalEval("file join [pwd] tcl", smlTclDir) != TCL_OK) ||
-                        (GlobalEval("file join [pwd] tcl master.tcl", masterFilePath) != TCL_OK)))
+        if (((GlobalDirEval("pwd", libDir) != TCL_OK) ||
+                        (GlobalDirEval("file join [pwd] tcl", smlTclDir) != TCL_OK) ||
+                        (GlobalDirEval("file join [pwd] tcl master.tcl", masterFilePath) != TCL_OK)))
         {
             return false;
         }
@@ -180,9 +202,9 @@ extern "C"
         if (!evaluateDirCommand("pushd \"" + smlTclDir + "\""))
             return false;
 
-        if (GlobalEval("source master.tcl", result_string) != TCL_OK)
+        if (GlobalDirEval("source master.tcl", result_string) != TCL_OK)
             return false;
-        if (GlobalEval("initializeMaster", result_string) != TCL_OK)
+        if (GlobalDirEval("initializeMaster", result_string) != TCL_OK)
             return false;
 
         if (!evaluateDirCommand("popd"))
