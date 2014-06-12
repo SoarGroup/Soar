@@ -18,7 +18,7 @@ join = os.path.join
 SOAR_VERSION = "9.3.3"
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
-DEF_TARGETS = 'kernel cli sml_python sml_tcl sml_java debugger tests tclsoarlib'.split()
+DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
 
 def execute(cmd):
 	try:
