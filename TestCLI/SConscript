@@ -12,9 +12,9 @@ if sys.platform == 'linux2':
 	cli_env.Append(LINKFLAGS = [r'-Wl,--no-as-needed'])
 
 
-testcli = cli_env.Install('$OUT_DIR', cli_env.Program('TestCLI', ['testcli.cpp']))
+testcli = cli_env.Install('$OUT_DIR', cli_env.Program('testcli', ['testcli.cpp']))
 mincli = cli_env.Install('$OUT_DIR', cli_env.Program('cli', 'mincli.cpp'))
-multicli = cli_env.Install('$OUT_DIR', cli_env.Program('mCli', 'multicli.cpp'))
+multicli = cli_env.Install('$OUT_DIR', cli_env.Program('mcli', 'multicli.cpp'))
 cli_env.Alias('cli', [testcli, mincli, multicli])
 
 if 'MSVSProject' in cli_env['BUILDERS']:
