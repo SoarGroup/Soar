@@ -195,6 +195,13 @@ extern "C"
                     smlTclDir += '/';
                 }
                 smlTclDir += "tcl";
+
+                /* -- Normalize directory for any cross-platform differences-- */
+                string normalizeCmd("file normalize ");
+                normalizeCmd += smlTclDir;
+                if (GlobalDirEval(normalizeCmd.c_str(), smlTclDir) != TCL_OK)
+                    return false;
+
                 masterFilePath = smlTclDir;
                 masterFilePath += "/master.tcl";
                 if (!(isDir(libDir.c_str()) && isDir(smlTclDir.c_str()) && isFile(masterFilePath.c_str())))
