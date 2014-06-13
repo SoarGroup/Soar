@@ -181,11 +181,10 @@ extern "C"
         {
             if (!(isDir(libDir.c_str()) && isDir(smlTclDir.c_str()) && isFile(masterFilePath.c_str())))
             {
-                GlobalEval("puts {Unable to find tcl scripts in working directory. Checking under SOAR_HOME}", result_string);
                 libDir = getenv("SOAR_HOME");
                 if (libDir.size() == 0) 
                 {
-                    GlobalEval("puts {SOAR_HOME not set}", result_string);
+                    GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME, which is not currently set.}", result_string);
                     return false; 
                 }
 
@@ -214,18 +213,18 @@ extern "C"
 
         if (!evaluateDirCommand("source \"" + smlTclDir + "/dirstack.tcl\""))
         { 
-            GlobalEval("puts {Unable to find tcl scripts under SOAR_HOME}", result_string);
+            GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
             return false; 
         }
         if (!evaluateDirCommand("pushd \"" + smlTclDir + "\""))
         {
-            GlobalEval("puts {Unable to find tcl scripts under SOAR_HOME}", result_string);
+            GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
             return false;
         }
 
         if (GlobalDirEval("source master.tcl", result_string) != TCL_OK)
         {
-            GlobalEval("puts {Unable to find tcl scripts under SOAR_HOME}", result_string);
+            GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
             return false;
         }
         if (GlobalDirEval("initializeMaster", result_string) != TCL_OK)
