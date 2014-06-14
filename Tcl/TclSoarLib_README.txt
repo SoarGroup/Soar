@@ -74,15 +74,8 @@ Building from Source Code
 Known Bugs
 ==========
 
-1.  If you call a tcl function from the command line that returns a list as a 
-    result, it will only print one element from the list.  
-    
-    For now, you can can get around this by enclosing the command in a puts, 
-    for example:
-
-      puts [info globals]
-
-2.	Turn off tcl mode causes a crash on some systems.  Don’t do for now.
+1.  Turning off tcl mode causes a crash on some systems.  That option is
+    currently disabled as a result.
 
 =======
 Caveats
