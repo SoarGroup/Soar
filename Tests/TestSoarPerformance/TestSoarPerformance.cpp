@@ -9,8 +9,8 @@
 #include "sml_Client.h"
 #include "sml_Connection.h"
 
-#define QUIET_MODE
-#define BRIEF_MODE
+//#define QUIET_MODE
+//#define BRIEF_MODE
 #define DEFAULT_TRIALS 3
 #define DEFAULT_AGENT "test_agents/TestSoarPerformance.soar";
 
