@@ -853,7 +853,7 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
     xml_att_val(thisAgent, kProductionDeclaredSupport, kProductionDeclaredISupport);
   }
 
-  if (p->interrupt)
+  if (p->interrupt && !p->interrupt_break)
     print_string(thisAgent, "    :interrupt\n");
 
   /*

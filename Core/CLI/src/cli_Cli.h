@@ -38,6 +38,12 @@ namespace cli
 
         virtual bool DoAllocate(const std::string& pool, int blocks) = 0;
 
+        /**
+         * @brief break command
+         * @param pProduction The production
+         */
+        virtual bool DoBreak(const char &mode, const std::string &production) = 0;
+
         enum eCaptureInputMode
         {
             CAPTURE_INPUT_OPEN,

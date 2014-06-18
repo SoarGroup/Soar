@@ -110,6 +110,78 @@ namespace cli
         AllocateCommand& operator=(const AllocateCommand&);
     };
 
+    class BreakCommand : public cli::ParserCommand
+    {
+    public:
+        BreakCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+        virtual ~BreakCommand() {}
+        virtual const char* GetString() const { return "break"; }
+        virtual const char* GetSyntax() const
+        {
+            return "Syntax: break [-cps] production_name";
+        }
+
+        virtual bool Parse(std::vector< std::string >&argv)
+        {
+            cli::Options opt;
+            OptionsData optionsData[] =
+            {
+                {'c', "clear", OPTARG_NONE},
+                {'p', "print", OPTARG_NONE},
+                {'s', "set",   OPTARG_NONE},
+                {0, 0, OPTARG_NONE} // null
+            };
+
+            char option = 0;
+
+            for (;;)
+            {
+                if ( !opt.ProcessOptions( argv, optionsData ) )
+                    return cli.SetError( opt.GetError().c_str());
+
+                if (opt.GetOption() == -1) break;
+
+                if (option != 0)
+                    return cli.SetError( "break takes only one option at a time." );
+                option = static_cast<char>(opt.GetOption());
+            }
+
+            switch (option)
+            {
+            case 'c':
+            case 's':
+                if(argv.size() != 3)
+                    return cli.SetError( "break --set/--clear takes exactly one argument." );
+
+                // case: clear the interrupt flag on the production
+                return cli.DoBreak(option, argv[2]);
+
+            case 'p':
+                if(argv.size() != 2)
+                    return cli.SetError( "break --print takes no arguments." );
+                
+                // case: set the interrupt flag on the production
+                return cli.DoBreak('p', "");
+
+            default:
+                if(argv.size() == 1)
+                    return cli.DoBreak('p', "");
+                else if(argv.size() == 2)
+                    return cli.DoBreak('s', argv[1]);
+                else
+                    return cli.SetError( "break used incorrectly." );
+            }
+
+            // bad: no option, but more than one argument
+            return cli.SetError( "break takes exactly one argument." );
+        }
+
+    private:
+        cli::Cli& cli;
+
+        BreakCommand& operator=(const BreakCommand&);
+    };
+
     class CaptureInputCommand : public cli::ParserCommand
     {
     public:
