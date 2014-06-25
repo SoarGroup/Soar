@@ -3,7 +3,7 @@
 This is the code base for Soar, a cognitive architecture for developing systems that exhibit intelligent behavior. For more information about this project, please visit:
 
 * The Soar home page
-* The Google Code project page
+* The GitHub project page (https://github.com/SoarGroup/Soar)
 
 # License
 
@@ -42,5 +42,6 @@ California/Information Sciences Institute, or the Soar Consortium.
 
 ## Included Software
 
-Licenses for other software included in this distribution are in Release/license.txt
+Licenses for other software included in this distribution are included at:
 
+https://raw.githubusercontent.com/SoarGroup/Release-Support/master/docs/license.txt
