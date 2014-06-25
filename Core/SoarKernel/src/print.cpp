@@ -37,6 +37,7 @@
 #include "debug.h"
 
 #include <stdarg.h>
+#include <iostream>
 
 /* if enabled will forward certain trace/debug output to stderr instead of
    print callbacks or xml */
@@ -232,101 +233,101 @@ char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
 
 char *symbol_to_string (agent* thisAgent, Symbol *sym,
 						Bool rereadable, char *dest, size_t dest_size) {
-  Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-  Bool is_rereadable;
-  Bool has_angle_bracket;
+	Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+	Bool is_rereadable;
+	Bool has_angle_bracket;
 
-  switch(sym->common.symbol_type) {
+	switch(sym->common.symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
-    if (!dest) return sym->var.name;
-    strncpy (dest, sym->var.name, dest_size);
-	dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+			if (!dest) return sym->var.name;
+			strncpy (dest, sym->var.name, dest_size);
+			dest[dest_size - 1] = 0; /* ensure null termination */
+			return dest;
 
   case IDENTIFIER_SYMBOL_TYPE:
-	if (!dest) {
-	  dest=thisAgent->printed_output_string;
-	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
-	}
-	if (sym->id.smem_lti == NIL) {
-		// NOT an lti (long term identifier), print like we always have
-	    SNPRINTF (dest, dest_size, "%c%llu", sym->id.name_letter, static_cast<long long unsigned>(sym->id.name_number));
-	}
-	else {
-		// IS an lti (long term identifier), prepend an @ symbol
-	    SNPRINTF (dest, dest_size, "@%c%llu", sym->id.name_letter, static_cast<long long unsigned>(sym->id.name_number));
-	}
-	dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+			if (!dest) {
+				dest=thisAgent->printed_output_string;
+				dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+			}
+			if (sym->id.smem_lti == NIL) {
+				// NOT an lti (long term identifier), print like we always have
+				SNPRINTF (dest, dest_size, "%c%llu", sym->id.name_letter, static_cast<long long unsigned>(sym->id.name_number));
+			}
+			else {
+				// IS an lti (long term identifier), prepend an @ symbol
+				SNPRINTF (dest, dest_size, "@%c%llu", sym->id.name_letter, static_cast<long long unsigned>(sym->id.name_number));
+			}
+			dest[dest_size - 1] = 0; /* ensure null termination */
+			return dest;
 
   case INT_CONSTANT_SYMBOL_TYPE:
-	if (!dest) {
-	  dest=thisAgent->printed_output_string;
-	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
-	}
-    SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->ic.value));
-	dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+			if (!dest) {
+				dest=thisAgent->printed_output_string;
+				dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+			}
+			SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->ic.value));
+			dest[dest_size - 1] = 0; /* ensure null termination */
+			return dest;
 
   case FLOAT_CONSTANT_SYMBOL_TYPE:
-	if (!dest) {
-	  dest=thisAgent->printed_output_string;
-	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
-	}
-    SNPRINTF (dest, dest_size, "%#.16g", sym->fc.value);
-	dest[dest_size - 1] = 0; /* ensure null termination */
-    { /* --- strip off trailing zeros --- */
-      char *start_of_exponent;
-      char *end_of_mantissa;
-      start_of_exponent = dest;
-      while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
-        start_of_exponent++;
-      end_of_mantissa = start_of_exponent - 1;
-      while (*end_of_mantissa == '0') end_of_mantissa--;
-      end_of_mantissa++;
-      while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
-      *end_of_mantissa = 0;
-    }
-    return dest;
+			if (!dest) {
+				dest=thisAgent->printed_output_string;
+				dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+			}
+			SNPRINTF (dest, dest_size, "%#.16g", sym->fc.value);
+			dest[dest_size - 1] = 0; /* ensure null termination */
+		{ /* --- strip off trailing zeros --- */
+			char *start_of_exponent;
+			char *end_of_mantissa;
+			start_of_exponent = dest;
+			while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
+				start_of_exponent++;
+			end_of_mantissa = start_of_exponent - 1;
+			while (*end_of_mantissa == '0') end_of_mantissa--;
+			end_of_mantissa++;
+			while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
+			*end_of_mantissa = 0;
+		}
+			return dest;
 
   case SYM_CONSTANT_SYMBOL_TYPE:
-    if (!rereadable) {
-      if (!dest) return sym->sc.name;
-      strncpy (dest, sym->sc.name, dest_size);
-      return dest;
-    }
-    determine_possible_symbol_types_for_string (sym->sc.name,
-                                                strlen (sym->sc.name),
-                                                &possible_id,
-                                                &possible_var,
-                                                &possible_sc,
-                                                &possible_ic,
-                                                &possible_fc,
-                                                &is_rereadable);
+			if (!rereadable) {
+				if (!dest) return sym->sc.name;
+				strncpy (dest, sym->sc.name, dest_size);
+				return dest;
+			}
+			determine_possible_symbol_types_for_string (sym->sc.name,
+														strlen (sym->sc.name),
+														&possible_id,
+														&possible_var,
+														&possible_sc,
+														&possible_ic,
+														&possible_fc,
+														&is_rereadable);
 
-    has_angle_bracket = sym->sc.name[0] == '<' ||
-                        sym->sc.name[strlen(sym->sc.name)-1] == '>';
+			has_angle_bracket = sym->sc.name[0] == '<' ||
+			sym->sc.name[strlen(sym->sc.name)-1] == '>';
 
-    if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-        (!is_rereadable) ||
-        has_angle_bracket) {
-      /* BUGBUG if in context where id's could occur, should check
-         possible_id flag here also */
-      return string_to_escaped_string (thisAgent, sym->sc.name, '|', dest);
-    }
-    if (!dest) return sym->sc.name;
-    strncpy (dest, sym->sc.name, dest_size);
-    return dest;
+			if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
+				(!is_rereadable) ||
+				has_angle_bracket) {
+				/* BUGBUG if in context where id's could occur, should check
+				 possible_id flag here also */
+				return string_to_escaped_string (thisAgent, sym->sc.name, '|', dest);
+			}
+			if (!dest) return sym->sc.name;
+			strncpy (dest, sym->sc.name, dest_size);
+			return dest;
 
   default:
-    {
+		{
 	  char msg[BUFFER_MSG_SIZE];
-      strncpy(msg, "Internal Soar Error:  symbol_to_string called on bad symbol\n", BUFFER_MSG_SIZE);
-      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-      abort_with_fatal_error(thisAgent, msg);
-    }
-  }
-  return NIL; /* unreachable, but without it, gcc -Wall warns here */
+			strncpy(msg, "Internal Soar Error:  symbol_to_string called on bad symbol\n", BUFFER_MSG_SIZE);
+			msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+			abort_with_fatal_error(thisAgent, msg);
+		}
+	}
+	return NIL; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 

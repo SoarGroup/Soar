@@ -498,7 +498,17 @@ list *collect_vars_tested_by_test_that_are_bound (agent* thisAgent, test t,
   switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
+	return starting_list;
+
   case DISJUNCTION_TEST:
+		  for (c=ct->data.disjunction_list;c!=NIL;c=c->rest)
+		  {
+			  referent = static_cast<Symbol*>(c->first);
+
+			  if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+				  if (referent->var.tc_num == tc)
+					  starting_list = add_if_not_member (thisAgent, referent, starting_list);
+		  }
     return starting_list;
 
   case CONJUNCTIVE_TEST:
@@ -1010,43 +1020,53 @@ void reorder_condition_list (agent* thisAgent,
 
 Bool test_tests_for_root(test t, list *roots) {
 
-  cons *c;
-  complex_test *ct;
-  Symbol *referent;
+	cons *c;
+	complex_test *ct;
+	Symbol *referent;
 
-  /* Gather variables from test. */
+	/* Gather variables from test. */
 
-  if (test_is_blank_test(t)) return FALSE;
+	if (test_is_blank_test(t)) return FALSE;
 
-  if (test_is_blank_or_equality_test(t)) {
-    referent = referent_of_equality_test(t);
-    if ((referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
-        member_of_list(referent,roots)) return TRUE;
-    return FALSE;
-  }
-  ct = complex_test_from_test(t);
+	if (test_is_blank_or_equality_test(t)) {
+		referent = referent_of_equality_test(t);
+		if ((referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
+			member_of_list(referent,roots)) return TRUE;
+		return FALSE;
+	}
+	ct = complex_test_from_test(t);
 
-  switch (ct->type) {
+	switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
+			return FALSE;
+			break;
+
   case DISJUNCTION_TEST:
-    return FALSE;
-    break;
+			for (c=ct->data.disjunction_list;c!= NIL; c=c->rest)
+			{
+				referent = static_cast<Symbol*>(c->first);
+
+				if ((referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
+					member_of_list(referent,roots)) return TRUE;
+			}
+			return FALSE;
+			break;
 
   case CONJUNCTIVE_TEST:
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_tests_for_root(static_cast<char *>(c->first), roots)) return TRUE;
-    return FALSE;
-    break;
+			for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+				if (test_tests_for_root(static_cast<char *>(c->first), roots)) return TRUE;
+			return FALSE;
+			break;
 
   default:
-    /* --- relational tests other than equality --- */
-    referent = ct->data.referent;
-    if ((referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
-        member_of_list(referent,roots)) return TRUE;
-    return FALSE;
-    break;
-  }
+			/* --- relational tests other than equality --- */
+			referent = ct->data.referent;
+			if ((referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
+				member_of_list(referent,roots)) return TRUE;
+			return FALSE;
+			break;
+	}
 }
 
 /* -------------------------------------------------------------

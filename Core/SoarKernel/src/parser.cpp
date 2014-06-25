@@ -39,6 +39,8 @@
 
 #include <ctype.h>
 
+#include <iostream>
+
 /* =================================================================
                    Placeholder (Dummy) Variables
    
@@ -137,34 +139,43 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
 }
 
 void substitute_for_placeholders_in_test (agent* thisAgent, test *t) {
-  cons *c;
-  complex_test *ct;
+	cons *c;
+	complex_test *ct;
 
-  if (test_is_blank_test(*t)) return;
-  if (test_is_blank_or_equality_test(*t)) {
-    substitute_for_placeholders_in_symbol (thisAgent, (Symbol **) t);
-    /* Warning: this relies on the representation of tests */
-    return;
-  }
+	if (test_is_blank_test(*t)) return;
+	if (test_is_blank_or_equality_test(*t)) {
+		substitute_for_placeholders_in_symbol (thisAgent, (Symbol **) t);
+		/* Warning: this relies on the representation of tests */
+		return;
+	}
 
-  ct = complex_test_from_test(*t);
-  
-  switch (ct->type) {
+	ct = complex_test_from_test(*t);
+
+	switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
+			return;
+
   case DISJUNCTION_TEST:
-    return;
+			for (c=ct->data.disjunction_list; c != NIL; c=c->rest)
+			{
+				Symbol* referent = static_cast<Symbol*>(c->first);
+
+				if (referent->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+					substitute_for_placeholders_in_symbol (thisAgent, &referent);
+			}
+			return;
   case CONJUNCTIVE_TEST:
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      substitute_for_placeholders_in_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
-    return;
+			for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+				substitute_for_placeholders_in_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
+			return;
   default:  /* relational tests other than equality */
-    substitute_for_placeholders_in_symbol (thisAgent, &(ct->data.referent));
-    return;
-  }
+			substitute_for_placeholders_in_symbol (thisAgent, &(ct->data.referent));
+			return;
+	}
 }
 
-void substitute_for_placeholders_in_condition_list (agent* thisAgent, 
+void substitute_for_placeholders_in_condition_list (agent* thisAgent,
 													condition *cond) {
   for ( ; cond!=NIL; cond=cond->next) {
     switch (cond->type) {
@@ -401,40 +412,47 @@ test parse_relational_test (agent* thisAgent) {
 ----------------------------------------------------------------- */
 
 test parse_disjunction_test (agent* thisAgent) {
-  complex_test *ct;
-  test t;
+	complex_test *ct;
+	test t;
 
-  if (thisAgent->lexeme.type!=LESS_LESS_LEXEME) {
-    print (thisAgent, "Expected << to begin disjunction test\n");
-    print_location_of_most_recent_lexeme(thisAgent);
-    return NIL;
-  }
-  get_lexeme(thisAgent);
+	if (thisAgent->lexeme.type!=LESS_LESS_LEXEME) {
+		print (thisAgent, "Expected << to begin disjunction test\n");
+		print_location_of_most_recent_lexeme(thisAgent);
+		return NIL;
+	}
+	get_lexeme(thisAgent);
 
-  allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
-  ct->type = DISJUNCTION_TEST;
-  ct->data.disjunction_list = NIL;
-  t = make_test_from_complex_test (ct);
+	allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
+	ct->type = DISJUNCTION_TEST;
+	ct->data.disjunction_list = NIL;
+	ct->disjunction_variable_referents = NIL;
+	t = make_test_from_complex_test (ct);
 
-  while (thisAgent->lexeme.type!=GREATER_GREATER_LEXEME) {
-    switch (thisAgent->lexeme.type) {
-    case SYM_CONSTANT_LEXEME:
-    case INT_CONSTANT_LEXEME:
-    case FLOAT_CONSTANT_LEXEME:
-      push (thisAgent, make_symbol_for_current_lexeme(thisAgent, false), ct->data.disjunction_list);
-      get_lexeme(thisAgent);
-      break;
-    default:
-      print (thisAgent, "Expected constant or >> while reading disjunction test\n");
-      print_location_of_most_recent_lexeme(thisAgent);
-      deallocate_test (thisAgent, t);
-      return NIL;
-    }
-  }
-  get_lexeme(thisAgent);  /* consume the >> */
-  ct->data.disjunction_list =
-    destructively_reverse_list (ct->data.disjunction_list);
-  return t;
+	while (thisAgent->lexeme.type!=GREATER_GREATER_LEXEME)
+	{
+		bool id_lti = parse_lti(thisAgent);
+
+		switch (thisAgent->lexeme.type) {
+			case SYM_CONSTANT_LEXEME:
+			case INT_CONSTANT_LEXEME:
+			case FLOAT_CONSTANT_LEXEME:
+			case VARIABLE_LEXEME:
+			case IDENTIFIER_LEXEME:
+				push (thisAgent, make_symbol_for_current_lexeme(thisAgent, id_lti), ct->data.disjunction_list);
+
+				get_lexeme(thisAgent);
+				break;
+			default:
+				print (thisAgent, "Expected constant or >> while reading disjunction test\n");
+				print_location_of_most_recent_lexeme(thisAgent);
+				deallocate_test (thisAgent, t);
+				return NIL;
+		}
+	}
+
+	get_lexeme(thisAgent);  /* consume the >> */
+	ct->data.disjunction_list = destructively_reverse_list (ct->data.disjunction_list);
+	return t;
 }
 
 /* -----------------------------------------------------------------

@@ -113,6 +113,7 @@
 #include "assert.h"
 
 #include <sstream>
+#include <iostream>
 
 /* ----------- basic functionality switches ----------- */
 
@@ -255,14 +256,6 @@ inline Bool test_is_not_equal_test(byte x)
 		  || ((x)==(VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST)));
 }
 
-/* --- tells where to find a variable --- */
-typedef unsigned short rete_node_level;
-
-typedef struct var_location_struct {
-  rete_node_level levels_up; /* 0=current node's alphamem, 1=parent's, etc. */
-  byte field_num;            /* 0=id, 1=attr, 2=value */
-} var_location;
-
 /* define an equality predicate for var_location structures */
 /*#define var_locations_equal(v1,v2) \
   ( ((v1).levels_up==(v2).levels_up) && ((v1).field_num==(v2).field_num) )*/
@@ -296,14 +289,15 @@ inline Symbol * field_from_wme(wme * _wme, byte field_num)
 
 /* --- gives data for a test that must be applied at a node --- */
 typedef struct rete_test_struct {
-  byte right_field_num;          /* field (0, 1, or 2) from wme */
-  byte type;                     /* test type (ID_IS_GOAL_RETE_TEST, etc.) */
-  union rete_test_data_union {
-    var_location variable_referent;   /* for relational tests to a variable */
-    Symbol *constant_referent;        /* for relational tests to a constant */
-    list *disjunction_list;           /* list of symbols in disjunction test */
-  } data;
-  struct rete_test_struct *next; /* next in list of tests at the node */
+	byte right_field_num;          /* field (0, 1, or 2) from wme */
+	byte type;                     /* test type (ID_IS_GOAL_RETE_TEST, etc.) */
+	union rete_test_data_union {
+		var_location variable_referent;   /* for relational tests to a variable */
+		Symbol *constant_referent;        /* for relational tests to a constant */
+		list *disjunction_list;           /* list of symbols in disjunction test */
+	} data;
+	list* disjunction_variable_referents;
+	struct rete_test_struct *next; /* next in list of tests at the node */
 } rete_test;
 
 /* --- types and structure of beta nodes --- */
@@ -2388,20 +2382,23 @@ rete_node *make_new_production_node (agent* thisAgent,
 ********************************************************************** */
 
 void deallocate_rete_test_list (agent* thisAgent, rete_test *rt) {
-  rete_test *next_rt;
+	rete_test *next_rt;
 
-  while (rt) {
-    next_rt = rt->next;
+	while (rt) {
+		next_rt = rt->next;
 
-    if (test_is_constant_relational_test(rt->type)) {
-      symbol_remove_ref (thisAgent, rt->data.constant_referent);
-    } else if (rt->type==DISJUNCTION_RETE_TEST) {
-      deallocate_symbol_list_removing_references (thisAgent, rt->data.disjunction_list);
-    }
+		if (test_is_constant_relational_test(rt->type)) {
+			symbol_remove_ref (thisAgent, rt->data.constant_referent);
+		} else if (rt->type==DISJUNCTION_RETE_TEST) {
+			deallocate_symbol_list_removing_references (thisAgent, rt->data.disjunction_list);
 
-    free_with_pool (&thisAgent->rete_test_pool, rt);
-    rt = next_rt;
-  }
+//			for (cons* c = rt->disjunction_variable_referents;c != NIL; c=c->rest)
+//				delete static_cast<var_location*>(c->first);
+		}
+
+		free_with_pool (&thisAgent->rete_test_pool, rt);
+		rt = next_rt;
+	}
 }
 
 void deallocate_rete_node (agent* thisAgent, rete_node *node) {
@@ -3107,8 +3104,31 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
     allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
     new_rt->right_field_num = field_num;
     new_rt->type = DISJUNCTION_RETE_TEST;
-    new_rt->data.disjunction_list =
-      copy_symbol_list_adding_references (thisAgent, ct->data.disjunction_list);
+    new_rt->data.disjunction_list = copy_symbol_list_adding_references (thisAgent, ct->data.disjunction_list);
+
+	for (cons* c = new_rt->data.disjunction_list;c != NIL;c = c->rest)
+	{
+		Symbol* referent = static_cast<Symbol*>(c->first);
+
+		if (referent->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+		{
+			if (! find_var_location (referent, current_depth, &where)) {
+				char msg[BUFFER_MSG_SIZE];
+				print_with_symbols (thisAgent, "Error: Rete build found test of unbound var: %y\n",
+									referent);
+				SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
+						  symbol_to_string(thisAgent, referent,TRUE, NIL, 0));
+				msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+				abort_with_fatal_error(thisAgent, msg);
+			}
+
+			var_location* var_referent = new var_location;
+			*var_referent = where;
+
+			push(thisAgent, var_referent, new_rt->disjunction_variable_referents);
+		}
+	}
+
     new_rt->next = *rt;
     *rt = new_rt;
     return;
@@ -3183,16 +3203,36 @@ Bool single_rete_tests_are_identical (agent* thisAgent, rete_test *rt1, rete_tes
   if (rt1->type==ID_IS_GOAL_RETE_TEST) return TRUE;
   if (rt1->type==ID_IS_IMPASSE_RETE_TEST) return TRUE;
 
-  if (rt1->type == DISJUNCTION_RETE_TEST) {
-    c1 = rt1->data.disjunction_list;
-    c2 = rt2->data.disjunction_list;
-    while ((c1!=NIL)&&(c2!=NIL)) {
-      if (c1->first != c2->first) return FALSE;
-      c1 = c1->rest;
-      c2 = c2->rest;
-    }
-    if (c1==c2) return TRUE;
-    return FALSE;
+  if (rt1->type == DISJUNCTION_RETE_TEST)
+  {
+	  c1 = rt1->data.disjunction_list;
+	  c2 = rt2->data.disjunction_list;
+
+	  cons* v1 = rt1->disjunction_variable_referents;
+	  cons* v2 = rt2->disjunction_variable_referents;
+
+	  while ((c1!=NIL) && (c2!=NIL))
+	  {
+		  Symbol* sym1 = static_cast<Symbol*>(c1->first), *sym2 = static_cast<Symbol*>(c2->first);
+
+		  if (sym1->common.symbol_type != sym2->common.symbol_type) return false;
+
+		  if (sym1->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+		  {
+			  if (!var_locations_equal(*static_cast<var_location*>(v1->first), *static_cast<var_location*>(v2->first)))
+				  return false;
+
+			  v1 = v1->rest;
+			  v2 = v2->rest;
+		  }
+		  else if (sym1 != sym2)
+			  return false;
+
+		  c1 = c1->rest;
+		  c2 = c2->rest;
+	  }
+	  if (c1==c2) return TRUE;
+	  return FALSE;
   }
   { char msg[BUFFER_MSG_SIZE];
   strncpy(msg,"Internal error: bad rete test type in single_rete_tests_are_identical\n", BUFFER_MSG_SIZE);
@@ -4109,11 +4149,75 @@ void add_rete_test_list_to_tests (agent* thisAgent,
       New = make_test_from_complex_test(new_ct);
       new_ct->type = IMPASSE_ID_TEST;
     } else if (rt->type==DISJUNCTION_RETE_TEST) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
-      New = make_test_from_complex_test(new_ct);
-      new_ct->type = DISJUNCTION_TEST;
-      new_ct->data.disjunction_list =
-        copy_symbol_list_adding_references (thisAgent, rt->data.disjunction_list);
+		allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
+		New = make_test_from_complex_test(new_ct);
+		new_ct->type = DISJUNCTION_TEST;
+		new_ct->data.disjunction_list = NIL;
+		new_ct->disjunction_variable_referents = NIL;
+
+		// Copy the symbol list but exclude the variables because we're about to reconstruct them
+		cons *sym_list = rt->data.disjunction_list;
+
+		while (sym_list)
+		{
+			Symbol* sym_first = static_cast<Symbol*>(sym_list->first);
+
+			if (sym_first->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+			{
+				sym_list = sym_list->rest;
+				continue;
+			}
+
+			symbol_add_ref (sym_first);
+			push(thisAgent, sym_first, new_ct->data.disjunction_list);
+
+			sym_list = sym_list->rest;
+		}
+
+		// Add the variables to the symbol list by reconstruction
+
+		for (cons* c=rt->disjunction_variable_referents;c != NIL; c=c->rest)
+		{
+			var_location* var_referent = static_cast<var_location*>(c->first);
+
+			if (!var_referent->levels_up)
+			{
+				/* --- before calling var_bound_in_reconstructed_conds, make sure
+				 there's an equality test in the referent location (add one if
+				 there isn't one already there), otherwise there'd be no variable
+				 there to test against --- */
+				if (var_referent->field_num==0)
+				{
+					if (! test_includes_equality_test_for_symbol
+						(cond->data.tests.id_test, NIL))
+						add_gensymmed_equality_test (thisAgent, &(cond->data.tests.id_test), 's');
+				}
+				else if (var_referent->field_num==1)
+				{
+					if (! test_includes_equality_test_for_symbol
+						(cond->data.tests.attr_test, NIL))
+						add_gensymmed_equality_test (thisAgent, &(cond->data.tests.attr_test), 'a');
+				}
+				else
+				{
+					if (! test_includes_equality_test_for_symbol
+						(cond->data.tests.value_test, NIL))
+						add_gensymmed_equality_test (thisAgent, &(cond->data.tests.value_test),
+													 first_letter_from_test(cond->data.tests.attr_test));
+				}
+			}
+
+			referent = var_bound_in_reconstructed_conds (thisAgent, cond,
+														 var_referent->field_num,
+														 var_referent->levels_up);
+			symbol_add_ref (referent);
+
+			push(thisAgent, referent, new_ct->data.disjunction_list);
+			push(thisAgent, var_referent, new_ct->disjunction_variable_referents);
+		}
+
+		for (cons* c = new_ct->data.disjunction_list;c != NIL;c=c->rest)
+			std::cout << "SYM: " << symbol_to_string(thisAgent, static_cast<Symbol*>(c->first), TRUE, NIL, 0) << std::endl;
     } else if (test_is_constant_relational_test(rt->type)) {
       test_type =
         relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
@@ -4742,14 +4846,42 @@ Bool id_is_impasse_rete_test_routine (agent* /*thisAgent*/, rete_test * /*rt*/, 
   return w->id->id.isa_impasse;
 }
 
-Bool disjunction_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
-  Symbol *sym;
-  cons *c;
+Bool disjunction_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * left, wme *w) {
+	Symbol *sym;
+	cons *c, *var_referents = rt->disjunction_variable_referents;
 
-  sym = field_from_wme (w,rt->right_field_num);
-  for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
-    if (c->first==sym) return TRUE;
-  return FALSE;
+	sym = field_from_wme (w,rt->right_field_num);
+	for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
+	{
+		Symbol* referent = static_cast<Symbol*>(c->first);
+
+		if (referent->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+		{
+			var_location* var_referent = static_cast<var_location*>(var_referents->first);
+			wme* original = w;
+			token* originalLeft = left;
+
+			if (var_referent->levels_up != 0)
+			{
+				for (int i = var_referent->levels_up - 1;i != 0;i--)
+					left = left->parent;
+
+				w = left->w;
+			}
+
+			Symbol* sym2 = field_from_wme(w, var_referent->field_num);
+
+			if (sym == sym2)
+				return TRUE;
+
+			w = original;
+			left = originalLeft;
+		}
+		else if (referent == sym)
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 Bool constant_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {

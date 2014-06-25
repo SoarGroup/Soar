@@ -148,6 +148,26 @@ list *copy_symbol_list_adding_references (agent* thisAgent,
   return first;
 }
 
+list *copy_symbol_list_without_adding_references (agent* thisAgent,
+												  list *sym_list) {
+	cons *c, *first, *prev;
+
+	if (! sym_list) return NIL;
+	allocate_cons (thisAgent, &first);
+	first->first = sym_list->first;
+	sym_list = sym_list->rest;
+	prev = first;
+	while (sym_list) {
+		allocate_cons (thisAgent, &c);
+		prev->rest = c;
+		c->first = sym_list->first;
+		sym_list = sym_list->rest;
+		prev = c;
+	}
+	prev->rest = NIL;
+	return first;
+}
+
 /* ----------------------------------------------------------------
    Frees a list of symbols, decrementing their reference counts.
 ---------------------------------------------------------------- */
@@ -208,6 +228,7 @@ test copy_test (agent* thisAgent, test t) {
   case DISJUNCTION_TEST:
     new_ct->data.disjunction_list =
       copy_symbol_list_adding_references (thisAgent, ct->data.disjunction_list);
+	new_ct->disjunction_variable_referents = copy_symbol_list_without_adding_references(thisAgent, ct->disjunction_variable_referents);
     break;
   case CONJUNCTIVE_TEST:
     new_ct->data.conjunct_list = copy_test_list (thisAgent, ct->data.conjunct_list);
@@ -517,7 +538,7 @@ uint32_t hash_test (agent* thisAgent, test t) {
   case IMPASSE_ID_TEST: return 2089521;
   case DISJUNCTION_TEST:
     result = 7245;
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+    for (c=ct->data.disjunction_list; c!=NIL; c=c->rest)
       result = result + static_cast<Symbol *>(c->first)->common.hash_id;
     return result;
   case CONJUNCTIVE_TEST:
@@ -1202,41 +1223,50 @@ void add_bound_variables_in_condition_list (agent* thisAgent, condition *cond_li
    the header of the list of marked variables being constructed.
 ===================================================================== */
 
-void add_all_variables_in_test (agent* thisAgent, test t, 
+void add_all_variables_in_test (agent* thisAgent, test t,
 								tc_number tc, list **var_list) {
-  cons *c;
-  Symbol *referent;
-  complex_test *ct;
+	cons *c;
+	Symbol *referent;
+	complex_test *ct;
 
-  if (test_is_blank_test(t)) return;
+	if (test_is_blank_test(t)) return;
 
-  if (test_is_blank_or_equality_test(t)) {
-    referent = referent_of_equality_test(t);
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
-    return;
-  }
+	if (test_is_blank_or_equality_test(t)) {
+		referent = referent_of_equality_test(t);
+		if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+			mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
+		return;
+	}
 
-  ct = complex_test_from_test(t);
-  
-  switch (ct->type) {
+	ct = complex_test_from_test(t);
+
+	switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
+			break;
+
   case DISJUNCTION_TEST:
-    break;
+			for (c=ct->data.disjunction_list; c!=NIL; c=c->rest)
+			{
+				referent = static_cast<Symbol*>(c->first);
+
+				if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+					mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
+			}
+			break;
 
   case CONJUNCTIVE_TEST:
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      add_all_variables_in_test (thisAgent, static_cast<char *>(c->first), tc, var_list);
-    break;
+			for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+				add_all_variables_in_test (thisAgent, static_cast<char *>(c->first), tc, var_list);
+			break;
 
   default:
-    /* --- relational tests other than equality --- */
-    referent = ct->data.referent;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
-    break;
-  }
+			/* --- relational tests other than equality --- */
+			referent = ct->data.referent;
+			if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+				mark_variable_if_unmarked (thisAgent, referent, tc, var_list);
+			break;
+	}
 }
 
 void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list,

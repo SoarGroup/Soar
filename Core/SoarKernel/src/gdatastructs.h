@@ -449,13 +449,22 @@ inline complex_test * complex_test_from_test(test t)
 #endif /* USE_MACROS */
 
 typedef struct complex_test_struct {
-  byte type;                  /* see definitions below */
-  union test_info_union {
-    Symbol *referent;         /* for relational tests */
-    ::list *disjunction_list;   /* for disjunction tests */
-    ::list *conjunct_list;      /* for conjunctive tests */
-  } data;
+	byte type;                  /* see definitions below */
+	union test_info_union {
+		Symbol *referent;         /* for relational tests */
+		::list *disjunction_list;   /* for disjunction tests */
+		::list *conjunct_list;      /* for conjunctive tests */
+	} data;
+	::list* disjunction_variable_referents;
 } complex_test;
+
+/* --- tells where to find a variable --- */
+typedef unsigned short rete_node_level;
+
+typedef struct var_location_struct {
+	rete_node_level levels_up; /* 0=current node's alphamem, 1=parent's, etc. */
+	byte field_num;            /* 0=id, 1=attr, 2=value */
+} var_location;
 
 /* types of the complex_test's */
 /* WARNING -- none of these can be 254 or 255 -- see rete.cpp */
