@@ -82,7 +82,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( database );
 
 	// append database or dump data on init
-	append_db = new soar_module::boolean_param( "append-database", on, new soar_module::f_predicate<boolean>(  ) );
+	append_db = new soar_module::boolean_param( "append", on, new soar_module::f_predicate<boolean>(  ) );
 	add( append_db );
 
 	// path
@@ -404,9 +404,8 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	soar_module::sqlite_database *new_db = new_agent->smem_db;
 
 	// Delete all entries from the tables in the database if append setting is off
-	if (( new_agent->smem_params->database->get_value() != smem_param_container::memory ) &&
-		( new_agent->smem_params->append_db->get_value() == off )) {
-		print_trace(new_agent, 0, "SMem| Erasing contents of semantic memory database because append mode is off.\n" );
+	if ( new_agent->smem_params->append_db->get_value() == off ) {
+		print_trace(new_agent, 0, "Erasing contents of semantic memory database. (append = off)\n" );
 		drop_tables(new_agent);
 	}
 
@@ -2181,7 +2180,7 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
                 else
                 {
                     //This would be a negative query that smem has no hash for.  This means that
-                    //there is no way it could be in any of the results, and we don't 
+                    //there is no way it could be in any of the results, and we don't
                     //need to continue processing it, let alone use it in the search.  --ACN
                     return true;
                 }
@@ -2799,11 +2798,11 @@ void smem_reset( agent *my_agent, Symbol *state )
 	}
 }
 
-inline void smem_switch_to_memory_db(agent *my_agent, std::string& buf)
+void smem_switch_to_memory_db(agent *my_agent, std::string& buf)
 {
 	print_trace(my_agent, 0, buf.c_str() );
-	my_agent->smem_params->database->set_value(smem_param_container::memory);
-	my_agent->smem_db->disconnect();
+    my_agent->smem_db->disconnect();
+    my_agent->smem_params->database->set_value(smem_param_container::memory);
 	smem_init_db( my_agent );
 }
 
@@ -2826,12 +2825,12 @@ void smem_init_db( agent *my_agent )
 	{
 		db_path = ":memory:";
 		tabula_rasa = true;
-		print_trace(my_agent, TRACE_SMEM_SYSPARAM, "SMem| Initializing semantic memory database in cpu memory.\n" );
+		print_trace(my_agent, TRACE_SMEM_SYSPARAM, "Initializing semantic memory database in cpu memory.\n" );
 	}
 	else
 	{
 		db_path = my_agent->smem_params->path->get_value();
-		print_trace(my_agent, TRACE_SMEM_SYSPARAM, "SMem| Initializing semantic memory memory database at %s\n", db_path );
+		print_trace(my_agent, TRACE_SMEM_SYSPARAM, "Initializing semantic memory memory database at %s\n", db_path );
 	}
 
 	// attempt connection
@@ -2839,7 +2838,7 @@ void smem_init_db( agent *my_agent )
 
 	if ( my_agent->smem_db->get_status() == soar_module::problem )
 	{
-		print_trace(my_agent, 0, "SMem| Database Error: %s\n", my_agent->smem_db->get_errmsg() );
+		print_trace(my_agent, 0, "Semantic memory database Error: %s\n", my_agent->smem_db->get_errmsg() );
 	}
 	else
 	{
@@ -2849,18 +2848,19 @@ void smem_init_db( agent *my_agent )
 		// If the database is on file, make sure the database contents use the current schema
 		// If it does not, switch to memory-based database
 
-		if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
+		if (strcmp(db_path, ":memory:")) // Check if database mode is to a file
 		{
 			bool switch_to_memory, versions_exists, sql_is_new;
 			std::string schema_version, version_error_message;
 
+			/* -- Set switch_to_memory true in case we have any errors with the database -- */
 			switch_to_memory = true;
 
 			if (my_agent->smem_db->sql_is_new_db(sql_is_new))
 			{
 				if (sql_is_new)
 				{
-					print_trace(my_agent, TRACE_SMEM_SYSPARAM, "SMem| ...semantic memory database is new.\n" );
+					print_trace(my_agent, TRACE_SMEM_SYSPARAM, "...semantic memory database is new.\n" );
 					switch_to_memory = false;
 					tabula_rasa = true;
 				}
@@ -2878,7 +2878,7 @@ void smem_init_db( agent *my_agent )
 								version_error_message.append(".\n...Please convert old semantic memory database or start a new database by "
 										"setting a new database file path.\n...Switching to memory-based database.\n");
 							} else {
-								print_trace(my_agent, TRACE_SMEM_SYSPARAM, "SMem| ...version of semantic memory database ok.\n" );
+								print_trace(my_agent, TRACE_SMEM_SYSPARAM, "...version of semantic memory database ok.\n" );
 								switch_to_memory = false;
 								tabula_rasa = false;
 							}
@@ -2983,7 +2983,7 @@ void smem_init_db( agent *my_agent )
 		my_agent->smem_stmts->prepare();
 
 		// initialize persistent variables
-		if ( tabula_rasa )
+        if ( tabula_rasa || (my_agent->smem_params->append_db->get_value() == off))
 		{
 			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
 			{
@@ -3085,6 +3085,23 @@ void smem_close( agent *my_agent )
 	}
 }
 
+void smem_reinit_cmd( agent *my_agent)
+{
+    smem_close(my_agent);
+//    smem_init_db(my_agent);
+}
+
+void smem_reinit ( agent *my_agent)
+{
+    if ( my_agent->smem_db->get_status() == soar_module::connected )
+    {
+        if ( my_agent->smem_params->append_db->get_value() == off )
+        {
+            smem_close(my_agent);
+            smem_init_db(my_agent);
+        }
+    }
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -3641,7 +3658,10 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **e
 
 void smem_respond_to_cmd( agent *my_agent, bool store_only )
 {
-	// start at the bottom and work our way up
+
+    smem_attach(my_agent);
+
+    // start at the bottom and work our way up
 	// (could go in the opposite direction as well)
 	Symbol *state = my_agent->bottom_goal;
 
@@ -4128,9 +4148,6 @@ bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err )
 
 void smem_visualize_store( agent *my_agent, std::string *return_val )
 {
-	// vizualizing the store requires an open semantic database
-	smem_attach( my_agent );
-
 	// header
 	return_val->append( "digraph smem {" );
 	return_val->append( "\n" );
@@ -4656,10 +4673,9 @@ inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti
 	std::map< std::string, std::list< std::string > >::iterator lti_slot;
 	std::list< std::string >::iterator slot_val;
 
-	soar_module::sqlite_statement* expand_q = my_agent->smem_stmts->web_expand;
+    smem_attach(my_agent);
 
-	//
-	//
+    soar_module::sqlite_statement* expand_q = my_agent->smem_stmts->web_expand;
 
 	return_val->append( "(@" );
 	return_val->push_back( lti_letter );
@@ -4768,9 +4784,6 @@ inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti
 
 void smem_print_store( agent *my_agent, std::string *return_val )
 {
-	// vizualizing the store requires an open semantic database
-	smem_attach( my_agent );
-
 	// id, soar_letter, number
 	soar_module::sqlite_statement* q = my_agent->smem_stmts->vis_lti;
 	while ( q->execute() == soar_module::row )
@@ -4782,7 +4795,7 @@ void smem_print_store( agent *my_agent, std::string *return_val )
 
 void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val )
 {
-	std::set< smem_lti_id > visited;
+    std::set< smem_lti_id > visited;
 	std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;
 
 	std::queue< std::pair< smem_lti_id, unsigned int > > to_visit;
@@ -4795,8 +4808,6 @@ void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, st
 	soar_module::sqlite_statement* act_q = my_agent->smem_stmts->vis_lti_act;
 	unsigned int i;
 
-	// vizualizing the store requires an open semantic database
-	smem_attach( my_agent );
 
 	// initialize queue/set
 	to_visit.push( std::make_pair( lti_id, 1u ) );

@@ -35,7 +35,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         PrintCLIMessage_Item("learning:", agnt->smem_params->learning, 40);
         PrintCLIMessage_Section("Storage", 40);
         PrintCLIMessage_Item("database:", agnt->smem_params->database, 40);
-        PrintCLIMessage_Item("append-database:", agnt->smem_params->append_db, 40);
+        PrintCLIMessage_Item("append:", agnt->smem_params->append_db, 40);
         PrintCLIMessage_Item("path:", agnt->smem_params->path, 40);
         PrintCLIMessage_Item("lazy-commit:", agnt->smem_params->lazy_commit, 40);
         PrintCLIMessage_Section("Activation", 40);
@@ -67,7 +67,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             SetError( *err );
             delete err;
         } else {
-        	PrintCLIMessage("SMem| Knowledge added to semantic memory.");
+        	PrintCLIMessage("Knowledge added to semantic memory.");
         }
 
         return result;
@@ -80,7 +80,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         if ( !result )
             SetError( "Error while backing up database: " + err );
         else {
-           	tempString << "SMem| Database backed up to " << pAttr->c_str();
+           	tempString << "Semantic memory database backed up to " << pAttr->c_str();
            	PrintCLIMessage(&tempString);
         }
 
@@ -93,7 +93,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         if ( !result )
             SetError( "This parameter is protected while the semantic memory database is open." );
         else
-     	   PrintCLIMessage( "SMem| learning = on");
+     	   PrintCLIMessage( "Semantic memory enabled.");
 
         return result;
     }
@@ -104,7 +104,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
        if ( !result )
            SetError( "This parameter is protected while the semantic memory database is open." );
        else
-    	   PrintCLIMessage( "SMem| learning = off");
+    	   PrintCLIMessage( "Semantic memory disabled.");
 
         return result;
     }
@@ -112,7 +112,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     {
         soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid SMem setting.  Use 'help smem' to see list of valid settings." );
+            return SetError( "Invalid semantic memory parameter.  Use 'help smem' to see list of valid settings." );
 
         PrintCLIMessage_Item("", my_param, 0);
         return true;
@@ -124,21 +124,14 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         // smem - close before working/production memories to prevent id counter mess-ups
         // production memory (automatic init-soar clears working memory as a result)
 
-        epmem_close(agnt);
-        smem_close( agnt );
+        epmem_reinit_cmd(agnt);
+        smem_reinit_cmd(agnt);
 
         ExciseBitset options(0);
 		options.set( EXCISE_ALL, true );
         DoExcise( options, 0 );
 
-    	PrintCLIMessage( "SMem| Semantic memory system re-initialized.");
-        if ((agnt->epmem_params->database->get_value() != epmem_param_container::memory) &&
-           (agnt->epmem_params->append_db->get_value() == on))
-        {
-            PrintCLIMessage( "EpMem| Note that there was no effective change to semantic memory \n"
-                             "       because Soar is storing semantic memory to a database file and \n"
-                             "       append mode is on.");
-        }
+    	PrintCLIMessage( "Semantic memory system re-initialized.");
         return true;
     }
 	else if ( pOp == 'p' )
@@ -147,6 +140,10 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         unsigned int depth = 1;
 
 		smem_attach(agnt);
+	    if ( agnt->smem_db->get_status() != soar_module::connected )
+	    {
+	        return SetError( "Semantic memory database not connected." );
+	    }
 
 		if ( pAttr )
 		{
@@ -173,15 +170,15 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         if ( lti_id == NIL )
         {
             smem_print_store( agnt, &( viz ) );
+            PrintCLIMessage_Header("Semantic Memory", 40);
         }
         else
         {
             smem_print_lti( agnt, lti_id, depth, &( viz ) );
         }
         if (viz.empty())
-        	return SetError("SMem| Semantic memory is empty.");
+        	return SetError("Semantic memory is empty.");
 
-        PrintCLIMessage_Header("Semantic Memory", 40);
         PrintCLIMessage(&viz);
         return true;
     }
@@ -189,27 +186,33 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     {
         soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid settings parameter." );
+            return SetError( "Invalid SMem parameter." );
 
         if ( !my_param->validate_string( pVal->c_str() ) )
-            return SetError( "Invalid settings value." );
+            return SetError( "Invalid setting for SMem parameter." );
 
+        smem_param_container::db_choices last_db_mode = agnt->smem_params->database->get_value();
         bool result = my_param->set_string( pVal->c_str() );
 
         if ( !result )
             SetError( "This parameter is protected while the semantic memory database is open." );
         else {
-            if ((!strcmp(pAttr->c_str(),"append-database") || (!strcmp(pAttr->c_str(),"database"))))
+            tempString << pAttr->c_str() << " = " << pVal->c_str();
+            PrintCLIMessage(&tempString);
+            if ( agnt->smem_db->get_status() == soar_module::connected )
             {
-                tempString << "SMem| "<< pAttr->c_str() << " = " << pVal->c_str();
-                PrintCLIMessage(&tempString);
-                if ((agnt->smem_params->append_db->get_value() == off) &&
-                    (agnt->smem_params->database->get_value() != smem_param_container::memory))
+                if (((!strcmp(pAttr->c_str(),"database")) && (agnt->smem_params->database->get_value() != last_db_mode)) ||
+                     (!strcmp(pAttr->c_str(),"path")))
                 {
-                    PrintCLIMessage( "EpMem| Note that Soar is storing semantic facts to a database file and \n"
-                                     "       append mode is off.  If you later initialize or restart Soar with \n"
-                                     "       these settings, old semantic facts will be cleared before adding \n"
-                                     "       new ones.");
+                    PrintCLIMessage( "To finalize database switch, issue an smem --init command.\n");
+                }
+            }
+            if (!strcmp(pAttr->c_str(),"append"))
+            {
+                if (agnt->smem_params->append_db->get_value() == off)
+                {
+                    PrintCLIMessage( "Warning: Since append mode is off, starting/reinitializing,\n"
+                                     "         Soar will erase the semantic memory database.\n");
                 }
 
             }
@@ -218,6 +221,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 'S' )
     {
+        smem_attach(agnt);
         if ( !pAttr )
         {   // Print SMem Settings
             PrintCLIMessage_Header("Semantic Memory Statistics", 40);
@@ -286,7 +290,10 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         smem_lti_id lti_id = NIL;
         unsigned int depth = 1;
 
-		if ( pAttr )
+        // vizualizing the store requires an open semantic database
+        smem_attach( agnt );
+
+        if ( pAttr )
 		{
 			get_lexeme_from_string( agnt, pAttr->c_str() );
 			if ( agnt->lexeme.type == IDENTIFIER_LEXEME )

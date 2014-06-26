@@ -281,9 +281,8 @@ proc source {arg} {
   # Source the file in the global scope and catch any errors so
   # we can properly clean up the directory stack with popd
   if { [catch {uplevel #0 builtInSource $file} errorMessage] } {
-    set savedInfo [einfo]
     popd
-    error $errorMessage $savedInfo
+    error $errorMessage
   }
 
   popd

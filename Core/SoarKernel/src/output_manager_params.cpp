@@ -18,7 +18,7 @@ OM_Parameters::OM_Parameters(): soar_module::param_container(NULL)
   database = new soar_module::constant_param<soar_module::db_choices>( "database", soar_module::file, new soar_module::f_predicate<soar_module::db_choices>());
   database->add_mapping( soar_module::memory, "memory");
   database->add_mapping( soar_module::file, "file");
-  append_db = new soar_module::boolean_param( "append-database", off, new soar_module::f_predicate<boolean>());
+  append_db = new soar_module::boolean_param( "append", off, new soar_module::f_predicate<boolean>());
   path = new soar_module::string_param( "path", "debug.db", new soar_module::predicate<const char *>(), new soar_module::f_predicate<const char *>());
   lazy_commit = new soar_module::boolean_param( "lazy-commit", off, new soar_module::f_predicate<boolean>());
   page_size = new soar_module::constant_param<soar_module::page_choices>( "page-size", soar_module::page_8k, new soar_module::f_predicate<soar_module::page_choices>());
