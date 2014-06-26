@@ -38,7 +38,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         PrintCLIMessage_Item("exclusions:", agnt->epmem_params->exclusions, 40);
         PrintCLIMessage_Section("Storage", 40);
         PrintCLIMessage_Item("database:", agnt->epmem_params->database, 40);
-        PrintCLIMessage_Item("append-database:", agnt->epmem_params->append_db, 40);
+        PrintCLIMessage_Item("append:", agnt->epmem_params->append_db, 40);
         PrintCLIMessage_Item("path:", agnt->epmem_params->path, 40);
         PrintCLIMessage_Item("lazy-commit:", agnt->epmem_params->lazy_commit, 40);
         PrintCLIMessage_Section("Retrieval", 40);
@@ -65,7 +65,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         if ( !result )
             SetError( "Error while backing up database: " + err );
         else {
-           	tempString << "EpMem| Database backed up to " << pAttr->c_str();
+           	tempString << "Episodic memory database backed up to " << pAttr->c_str();
            	PrintCLIMessage(&tempString);
         }
 
@@ -73,7 +73,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     }
   else if ( pOp == 'c' )
   {
-      const char *msg = "EpMem| EpMem database closed.";
+      const char *msg = "Episodic memory database closed.";
       const char *tag_type = sml_Names::kTypeString;
 
       epmem_close( agnt );
@@ -87,7 +87,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         if ( !result )
             SetError( "This parameter is protected while the episodic memory database is open." );
         else
-     	   PrintCLIMessage( "EpMem| learning = on");
+     	   PrintCLIMessage( "Episodic memory enabled.");
 
         return result;
     }
@@ -98,7 +98,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
        if ( !result )
            SetError( "This parameter is protected while the episodic memory database is open." );
        else
-    	   PrintCLIMessage( "EpMem| learning = off");
+    	   PrintCLIMessage( "Episodic memory disabled.");
 
         return result;
     }
@@ -106,21 +106,21 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     {
         soar_module::param *my_param = agnt->epmem_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid EpMem setting." );
+            return SetError( "Invalid epmem parameter." );
 
         PrintCLIMessage_Item("", my_param, 0);
         return true;
     }
     else if ( pOp == 'i' )
     {
-    	epmem_reinit( agnt );
-    	PrintCLIMessage( "EpMem| Episodic memory system re-initialized.");
+    	epmem_reinit_cmd( agnt );
+    	PrintCLIMessage( "Episodic memory system re-initialized.");
         if ((agnt->epmem_params->database->get_value() != epmem_param_container::memory) &&
            (agnt->epmem_params->append_db->get_value() == on))
         {
-            PrintCLIMessage( "EpMem| Note that there was no effective change to episodic memory contents \n"
-                             "       because Soar is storing episodic memory to a database file and append \n"
-                             "       mode is on.");
+            PrintCLIMessage( "Note: There was no effective change to episodic memory contents \n"
+                             "      because Soar is storing episodic memory to a database file and append \n"
+                             "      mode is on.");
         }
     	return true;
     }
@@ -142,27 +142,34 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     {
         soar_module::param *my_param = agnt->epmem_params->get( pAttr->c_str() );
         if ( !my_param )
-            return SetError( "Invalid EpMem setting." );
+            return SetError( "Invalid epmem parameter." );
 
         if ( !my_param->validate_string( pVal->c_str() ) )
-            return SetError( "Invalid value for EpMem setting." );
+            return SetError( "Invalid setting for epmem parameter." );
 
+        epmem_param_container::db_choices last_db_mode = agnt->epmem_params->database->get_value();
         bool result = my_param->set_string( pVal->c_str() );
+
         if ( !result )
         {
             SetError( "This parameter is protected while the episodic memory database is open." );
         } else {
-            tempString << "EpMem| "<< pAttr->c_str() << " = " << pVal->c_str();
+            tempString << pAttr->c_str() << " = " << pVal->c_str();
             PrintCLIMessage(&tempString);
-            if ((!strcmp(pAttr->c_str(),"append-database") || (!strcmp(pAttr->c_str(),"database"))))
+            if ( agnt->epmem_db->get_status() == soar_module::connected )
             {
-                if ((agnt->epmem_params->append_db->get_value() == off) &&
-                    (agnt->epmem_params->database->get_value() != epmem_param_container::memory))
+                if (((!strcmp(pAttr->c_str(),"database")) && (agnt->epmem_params->database->get_value() != last_db_mode)) ||
+                     (!strcmp(pAttr->c_str(),"path")))
                 {
-                    PrintCLIMessage( "EpMem| Note that Soar is storing episodic memory to a database file and \n"
-                                     "       append mode is off.  If you later initialize or restart Soar with \n"
-                                     "       these settings, the stored episodes will be cleared before adding \n"
-                                     "       new episodic memories.");
+                    PrintCLIMessage( "To finalize episodic memory database switch, issue an epmem --init command.\n");
+                }
+            }
+            if (!strcmp(pAttr->c_str(),"append"))
+            {
+                if (agnt->epmem_params->append_db->get_value() == off)
+                {
+                    PrintCLIMessage( "Warning: Since append mode is off, starting/reinitializing,\n"
+                                     "         Soar will erase the episodic memory database.\n");
                 }
 
             }
@@ -171,6 +178,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
     }
     else if ( pOp == 'S' )
     {
+        epmem_attach(agnt);
         if ( !pAttr )
         {   // Print SMem Settings
             PrintCLIMessage_Header("Episodic Memory Statistics", 40);

@@ -513,9 +513,11 @@ extern bool epmem_enabled( agent *my_agent );
 //////////////////////////////////////////////////////////
 
 // init, end
+extern void epmem_attach( agent *my_agent );
 extern void epmem_reset( agent *my_agent, Symbol *state = NULL );
 extern void epmem_close( agent *my_agent );
-extern void epmem_reinit( agent *my_agent );
+extern void epmem_reinit ( agent *my_agent);
+extern void epmem_reinit_cmd( agent *my_agent );
 
 extern void epmem_clear_transient_structures( agent *my_agent);
 
