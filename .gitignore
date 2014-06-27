@@ -136,7 +136,8 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -161,5 +162,34 @@ Temporary Items
 
 ### Soar ###
 
-/.sconf_temp//.externalToolBuilders//.settings//build*//config.log/.gitignore/.cproject/.project/.pydevproject/.sconsign.dblite/out**/user-env*.*/Release/Shuffler***/*.pyc*.pycDocumentation/ManualSource/*.auxDocumentation/ManualSource/funclist.texDocumentation/ManualSource/manual.gloDocumentation/ManualSource/manual.idxDocumentation/ManualSource/manual.ilgDocumentation/ManualSource/manual.indDocumentation/ManualSource/manual.lofDocumentation/ManualSource/manual.logDocumentation/ManualSource/manual.outDocumentation/ManualSource/manual.pdfDocumentation/ManualSource/manual.tocDocumentation/ManualSource/wikicmd/tex/Documentation/ManualSource/wikicmd/wiki/
+/.sconf_temp/
+/.externalToolBuilders/
+/.settings/
+/build*/
+/config.log
+/.gitignore
+/.cproject
+/.project
+/.pydevproject
+/.sconsign.dblite
+/out
+out/
+build/
+**/user-env*.*
+/Release/Shuffler*
+**/*.pyc
+*.pyc
+Documentation/ManualSource/*.aux
+Documentation/ManualSource/funclist.tex
+Documentation/ManualSource/manual.glo
+Documentation/ManualSource/manual.idx
+Documentation/ManualSource/manual.ilg
+Documentation/ManualSource/manual.ind
+Documentation/ManualSource/manual.lof
+Documentation/ManualSource/manual.log
+Documentation/ManualSource/manual.out
+Documentation/ManualSource/manual.pdf
+Documentation/ManualSource/manual.toc
+Documentation/ManualSource/wikicmd/tex/
+Documentation/ManualSource/wikicmd/wiki/
 
