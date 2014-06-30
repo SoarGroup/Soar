@@ -421,9 +421,9 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
 	set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      FALSE);
 
-	/* Close episodic and semantic memory database and clean up */
-	epmem_close(thisAgent);
-	smem_close(thisAgent);
+	/* Re-init episodic and semantic memory databases */
+	epmem_reinit(thisAgent);
+	smem_reinit(thisAgent);
 
 	bool wma_was_enabled = wma_enabled( thisAgent );
 	thisAgent->wma_params->activation->set_value( off );

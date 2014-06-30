@@ -479,12 +479,13 @@ extern Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_l
 extern void smem_reset( agent *my_agent, Symbol *state );
 extern void smem_reset_id_counters( agent *my_agent );
 extern void smem_close( agent *my_agent );
+extern void smem_reinit ( agent *my_agent);
+extern void smem_reinit_cmd( agent *my_agent);
 
 // perform smem actions
 extern void smem_go( agent *my_agent, bool store_only );
 extern bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 
-inline void smem_switch_to_memory_db(agent *my_agent, std::string& buf);
 void smem_init_db( agent *my_agent );
 
 #endif

@@ -23,6 +23,7 @@
 #include "sml_AgentSML.h"
 #include "symtab.h"
 #include "production.h"
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
