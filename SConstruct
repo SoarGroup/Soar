@@ -100,6 +100,8 @@ AddOption('--no-default-flags', action='store_false', dest='defflags', default=T
 
 AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
+AddOption('--scu', action='store_true', dest='scu', default=True,
+	help='Build using single compilation units.')
 
 AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR',
 	help='Directory to install binaries. Defaults to "out".')

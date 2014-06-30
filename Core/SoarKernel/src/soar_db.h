@@ -21,7 +21,7 @@
 #include "soar_module.h"
 #include "sqlite3.h"
 
-#define DEBUG_SQL_ERRORS
+//#define DEBUG_SQL_ERRORS
 //#define DEBUG_SQL_QUERIES
 
 #ifdef DEBUG_SQL_QUERIES
