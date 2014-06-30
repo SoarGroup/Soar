@@ -109,8 +109,8 @@ static void InitSoarHandler(smlAgentEventId /*id*/, void* /*pUserData*/, Agent* 
 }
 
 /*************************************************************
-* @brief Called when a dynamically linked library is called
-*    so we can load it into memory and initialize it.
+* @brief Called when an init-soar event happens so we know
+*		 to refresh the input/output links.
 *************************************************************/
 static std::string LoadLibraryHandler(smlStringEventId /*id*/, void* /*pUserData*/, Kernel* pKernel, char const* pString)
 {
@@ -727,7 +727,7 @@ Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int 
 	{
 	  lSoarInstance->init_Soar_Instance(pKernel);
 
-	  pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
+		pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
 
 		pKernel->InitializeTimeTagCounter() ;
 
@@ -768,7 +768,7 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	Kernel* pKernel = new Kernel(pConnection) ;
 	lSoarInstance->init_Soar_Instance(pKernel);
 
-	pKernel->SetSocketLib(pLib) ;
+  pKernel->SetSocketLib(pLib) ;
 	pKernel->SetError(errorCode) ;
 
 	// If this client isn't interested in getting output we can speed things up a bit for them.
@@ -777,21 +777,21 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	// If we had an error creating the connection, abort before
 	// we try to get the current agent list
 	if (pKernel->HadError())
-		return pKernel ;
+		return pKernel;
 
 	// Register for "calls" from the kernel.
 	pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
 
 	// Register for important events
-	pKernel->InitEvents() ;
+	pKernel->InitEvents();
 
 	// Initialize our time tags
-	pKernel->InitializeTimeTagCounter() ;
+	pKernel->InitializeTimeTagCounter();
 
 	// Get the current list of active agents
-	pKernel->UpdateAgentList() ;
+	pKernel->UpdateAgentList();
 
-	return pKernel ;
+	return pKernel;
 }
 
 /*************************************************************

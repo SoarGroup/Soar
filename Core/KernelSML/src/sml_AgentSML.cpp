@@ -22,7 +22,6 @@
 #include "KernelHeaders.h"
 #include "xml.h"
 #include "soar_rand.h"
-#include "soar_instance.h"
 
 #ifdef _DEBUG
 // Comment this in to debug init-soar and inputwme::update calls
@@ -527,7 +526,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
    {
 	   // if the agent halted because it is in an infinite loop of no-change impasses
 	   // interrupt the agents and allow the user to try to recover.
-	   if (m_agent->bottom_goal->data.id.level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
+	   if (m_agent->bottom_goal->id->level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
 	   {// the agent halted because it seems to be in an infinite loop, so throw interrupt
 		   m_pKernelSML->InterruptAllAgents(sml_STOP_AFTER_PHASE) ;
 		   m_agent->system_halted = false; // hack! otherwise won't run again.
@@ -788,7 +787,7 @@ void AgentSML::RegisterRHSFunction(RhsFunction* rhsFunction)
 {
 	// Tell Soar about it
 	add_rhs_function (m_agent,
-					make_sym_constant(m_agent, rhsFunction->GetName()),
+					make_str_constant(m_agent, rhsFunction->GetName()),
 					RhsFunction::RhsFunctionCallback,
 					rhsFunction->GetNumExpectedParameters(),
 					rhsFunction->IsValueReturned(),
@@ -805,7 +804,7 @@ void AgentSML::RemoveRHSFunction(RhsFunction* rhsFunction)
 
 	// Tell the kernel we are done listening.
 	//RPM 9/06: removed symbol ref so symbol is released properly
-	Symbol* tmp = make_sym_constant(m_agent, szName);
+	Symbol* tmp = make_str_constant(m_agent, szName);
 	remove_rhs_function(m_agent, tmp);
 	symbol_remove_ref (m_agent, tmp);
 }
@@ -817,7 +816,7 @@ char const* AgentSML::GetValueType(int type)
 	case VARIABLE_SYMBOL_TYPE: return sml_Names::kTypeVariable ;
 	case FLOAT_CONSTANT_SYMBOL_TYPE: return sml_Names::kTypeDouble ;
 	case INT_CONSTANT_SYMBOL_TYPE:	  return sml_Names::kTypeInt ;
-	case SYM_CONSTANT_SYMBOL_TYPE: return sml_Names::kTypeString ;
+	case STR_CONSTANT_SYMBOL_TYPE: return sml_Names::kTypeString ;
 	case IDENTIFIER_SYMBOL_TYPE: return sml_Names::kTypeID ;
 	default: return NULL ;
 	}
@@ -881,7 +880,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
 
 	// Now create the wme
 	Symbol* pIDSymbol   = get_io_identifier( m_agent, idLetter, idNumber) ;
-	Symbol* pAttrSymbol = get_io_sym_constant( m_agent, pAttribute ) ;
+	Symbol* pAttrSymbol = get_io_str_constant( m_agent, pAttribute ) ;
 
 	CHECK_RET_FALSE( pIDSymbol ) ;
 	CHECK_RET_FALSE( pAttrSymbol ) ;
@@ -911,7 +910,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
 bool AgentSML::AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag)
 {
 	// Creating a wme with a string constant value
-	Symbol* pValueSymbol = get_io_sym_constant(m_agent, pValue) ;
+	Symbol* pValueSymbol = get_io_str_constant(m_agent, pValue) ;
 
 	if (CaptureQuery())
 	{
@@ -1020,8 +1019,8 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
 	// If pValueSymbol is a new id, then RecordIDMapping will create a map between the client and kernel id names.
 	// Otherwise, RecordIDMapping will add a ref count to client id name.
 	std::ostringstream buffer;
-	buffer << pValueSymbol->data.id.name_letter ;
-	buffer << pValueSymbol->data.id.name_number ;
+	buffer << pValueSymbol->id->name_letter ;
+	buffer << pValueSymbol->id->name_number ;
 	this->RecordIDMapping(pValue, buffer.str().c_str()) ;
 	//if (kDebugInput)
 	//{

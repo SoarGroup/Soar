@@ -13,11 +13,11 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable) {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
     // Get ID
     Symbol* pId = 0;
-    if ( !read_id_or_context_var_from_string( agnt, id.c_str(), &pId ) )
+    if ( !read_id_or_context_var_from_string( thisAgent, id.c_str(), &pId ) )
         return SetError("Invalid identifier");
 
     // skip optional '^', if present
@@ -27,28 +27,28 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     // get attribute or '*'
     Symbol* pAttr = 0;
     if ( attribute == "*" )
-        pAttr = make_new_identifier( agnt, 'I', pId->data.id.level );
+        pAttr = make_new_identifier( thisAgent, 'I', pId->id->level, NIL );
     else
     {
-        get_lexeme_from_string( agnt, attribute.c_str() );
+        get_lexeme_from_string( thisAgent, attribute.c_str() );
 
-        switch (agnt->lexeme.type)
+        switch (thisAgent->lexeme.type)
         {
-        case SYM_CONSTANT_LEXEME:
-            pAttr = make_sym_constant( agnt, agnt->lexeme.string );
+        case STR_CONSTANT_LEXEME:
+            pAttr = make_str_constant( thisAgent, thisAgent->lexeme.string );
             break;
         case INT_CONSTANT_LEXEME:
-            pAttr = make_int_constant( agnt, agnt->lexeme.int_val );
+            pAttr = make_int_constant( thisAgent, thisAgent->lexeme.int_val );
             break;
         case FLOAT_CONSTANT_LEXEME:
-            pAttr = make_float_constant( agnt, agnt->lexeme.float_val );
+            pAttr = make_float_constant( thisAgent, thisAgent->lexeme.float_val );
             break;
         case IDENTIFIER_LEXEME:
         case VARIABLE_LEXEME:
-            pAttr = read_identifier_or_context_variable( agnt );
+            pAttr = read_identifier_or_context_variable( thisAgent );
             if ( !pAttr )
                 return SetError( "Invalid attribute." );
-            symbol_add_ref(agnt, pAttr );
+            symbol_add_ref(thisAgent, pAttr );
             break;
         default:
             return SetError( "Unknown attribute type." );
@@ -58,53 +58,53 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     // get value or '*'
     Symbol* pValue = 0;
     if ( value == "*" )
-        pValue = make_new_identifier( agnt, 'I', pId->data.id.level );
+        pValue = make_new_identifier( thisAgent, 'I', pId->id->level, NIL );
     else
     {
-        get_lexeme_from_string( agnt, value.c_str() );
-        switch ( agnt->lexeme.type )
+        get_lexeme_from_string( thisAgent, value.c_str() );
+        switch ( thisAgent->lexeme.type )
         {
-        case SYM_CONSTANT_LEXEME:
-            pValue = make_sym_constant( agnt, agnt->lexeme.string );
+        case STR_CONSTANT_LEXEME:
+            pValue = make_str_constant( thisAgent, thisAgent->lexeme.string );
             break;
         case INT_CONSTANT_LEXEME:
-            pValue = make_int_constant( agnt, agnt->lexeme.int_val );
+            pValue = make_int_constant( thisAgent, thisAgent->lexeme.int_val );
             break;
         case FLOAT_CONSTANT_LEXEME:
-            pValue = make_float_constant( agnt, agnt->lexeme.float_val );
+            pValue = make_float_constant( thisAgent, thisAgent->lexeme.float_val );
             break;
         case IDENTIFIER_LEXEME:
         case VARIABLE_LEXEME:
-            pValue = read_identifier_or_context_variable( agnt );
+            pValue = read_identifier_or_context_variable( thisAgent );
             if (!pValue)
             {
-                symbol_remove_ref( agnt, pAttr );
+                symbol_remove_ref( thisAgent, pAttr );
                 return SetError( "Invalid value." );
             }
-            symbol_add_ref(agnt, pValue);
+            symbol_add_ref(thisAgent, pValue);
             break;
         default:
-            symbol_remove_ref( agnt, pAttr );
+            symbol_remove_ref( thisAgent, pAttr );
             return SetError( "Unknown value type." );
         }
     }
 
     // now create and add the wme
-    wme* pWme = make_wme( agnt, pId, pAttr, pValue, acceptable );
+    wme* pWme = make_wme( thisAgent, pId, pAttr, pValue, acceptable );
 
-    symbol_remove_ref( agnt, pWme->attr );
-    symbol_remove_ref( agnt, pWme->value );
-    insert_at_head_of_dll( pWme->id->data.id.input_wmes, pWme, next, prev );
+    symbol_remove_ref( thisAgent, pWme->attr );
+    symbol_remove_ref( thisAgent, pWme->value );
+    insert_at_head_of_dll( pWme->id->id->input_wmes, pWme, next, prev );
 
-    if ( wma_enabled( agnt ) )
+    if ( wma_enabled( thisAgent ) )
     {
-        wma_activate_wme( agnt, pWme );
+        wma_activate_wme( thisAgent, pWme );
     }
 
-    add_wme_to_wm( agnt, pWme );
+    add_wme_to_wm( thisAgent, pWme );
 
 #ifndef NO_TOP_LEVEL_REFS
-    do_buffered_wm_and_ownership_changes( agnt );
+    do_buffered_wm_and_ownership_changes( thisAgent );
 #endif // NO_TOP_LEVEL_REFS
 
     if (m_RawOutput)

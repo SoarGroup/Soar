@@ -24,8 +24,6 @@
 #include "soar_module.h"
 #include "soar_db.h"
 
-#include "semantic_memory_math_queries.h"
-
 //////////////////////////////////////////////////////////
 // SMem Experimentation
 //
@@ -203,7 +201,6 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *hash_rev_int;
 		soar_module::sqlite_statement *hash_rev_float;
 		soar_module::sqlite_statement *hash_rev_str;
-		soar_module::sqlite_statement *hash_rev_type;
 		soar_module::sqlite_statement *hash_get_int;
 		soar_module::sqlite_statement *hash_get_float;
 		soar_module::sqlite_statement *hash_get_str;
@@ -357,7 +354,6 @@ typedef struct smem_weighted_cue_element_struct
 
 	smem_cue_element_type element_type;
 	bool pos_element;
-	MathQuery *mathElement;
 
 } smem_weighted_cue_element;
 

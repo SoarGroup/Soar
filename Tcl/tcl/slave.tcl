@@ -124,7 +124,6 @@ defineSoarCommands [set allSoarCommands {
    set-library-location
    set-stop-phase
    smem
-   soar
    soarnews
    sp
    srand
@@ -281,8 +280,9 @@ proc source {arg} {
   # Source the file in the global scope and catch any errors so
   # we can properly clean up the directory stack with popd
   if { [catch {uplevel #0 builtInSource $file} errorMessage] } {
+    set savedInfo [einfo]
     popd
-    error $errorMessage
+    error $errorMessage $savedInfo
   }
 
   popd
@@ -308,7 +308,7 @@ proc alias {{name ""} args} {
   global defined_aliases print_alias_switch
 
   if {[string compare $name ""] == 0} {
-    puts [lsort [set defined_aliases]]
+    lsort [set defined_aliases]
   } elseif {[string compare $args ""] == 0} {
     set position [lsearch -exact $defined_aliases $name]
     if {$position >= 0} {
@@ -357,6 +357,10 @@ proc unalias {name} {
   } else {
     puts "Error: There is no alias named \"$name\"."
   }
+}
+
+proc upeval {expression} {
+  uplevel #0 eval $expression
 }
 
 proc initializeSlave {} {

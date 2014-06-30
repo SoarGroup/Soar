@@ -20,21 +20,21 @@ if os.name == 'nt':
 	            "'python' + distutils.sysconfig.get_config_vars('VERSION')[0]")
 else:
 	commands = ("distutils.sysconfig.get_python_inc()",
-	            "distutils.sysconfig.get_config_vars('LIBDIR')",
+	            "distutils.sysconfig.get_config_vars('LIBP')[0]",
 	            "distutils.sysconfig.get_config_vars('LIBRARY')[0]")
 command = """
 import distutils.sysconfig;
 import os.path;
-print(tuple([{}]));
+print({});
 """.format(", ".join(commands))
 
 lib_install_dir = clone['OUT_DIR']
 inc_path, lib_path, pylib = literal_eval(check_output((python_exe, "-c", command)))
 
-if isinstance(lib_path, list):
-    lib_path = lib_path[0]
-
-clone.Append(CPPPATH = inc_path, LIBPATH = lib_path, LIBS = pylib)
+if os.name == 'nt':
+    clone.Append(CPPPATH = inc_path, LIBPATH = lib_path, LIBS = pylib)
+else:
+	clone.Append(CPPPATH = inc_path, LIBPATH = os.path.dirname(lib_path), LIBS = pylib)
 
 if os.name == 'posix':
 	clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))

@@ -34,19 +34,12 @@
 #include "init_soar.h"
 #include "rete.h"
 #include "reinforcement_learning.h"
+#include "test.h"
+#include "chunk.h"
 
 #include <ctype.h>
 
-/* comment out the following line to supress compile-time o-support
-   calculations */
-/* RCHONG: begin 10.11 */
-/* #define DO_COMPILE_TIME_O_SUPPORT_CALCS */
-/* RCHONG: end 10.11 */
-
-
-/* uncomment the following line to get printouts of names of productions
-   that can't be fully compile-time o-support evaluated */
-/* #define LIST_COMPILE_TIME_O_SUPPORT_FAILURES */
+extern void dprint_test (TraceMode mode, test t, bool print_actual, bool print_original, bool print_identity, const char *pre_string, const char *post_string);
 
 void init_production_utilities (agent* thisAgent) {
   init_memory_pool (thisAgent, &thisAgent->test_pool, sizeof(test_info), "test");
@@ -94,6 +87,10 @@ void deallocate_condition_list (agent* thisAgent,
     if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
       deallocate_condition_list (thisAgent, c->data.ncc.top);
     } else { /* positive and negative conditions */
+      dprint(DT_DEALLOCATES, "Deallocating condition: ");
+      dprint_test(DT_DEALLOCATES, c->data.tests.id_test, true, false, true, "(", " ");
+      dprint_test(DT_DEALLOCATES, c->data.tests.attr_test, true, false, true, "^", "");
+      dprint_test(DT_DEALLOCATES, c->data.tests.value_test, true, false, true, " ", ")\n");
       deallocate_test (thisAgent, c->data.tests.id_test);
       deallocate_test (thisAgent, c->data.tests.attr_test);
       deallocate_test (thisAgent, c->data.tests.value_test);
@@ -110,7 +107,7 @@ extern void init_condition(condition *cond)
 	  cond->data.tests.id_test = NIL;
 	  cond->data.tests.attr_test = NIL;
 	  cond->data.tests.value_test = NIL;
-	  cond->test_for_acceptable_preference = FALSE;
+	  cond->test_for_acceptable_preference = false;
 }
 
 condition *copy_condition_without_relational_constraints (agent* thisAgent,
@@ -199,11 +196,11 @@ void copy_condition_list (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the two conditions are identical.
+   Returns true iff the two conditions are identical.
 ---------------------------------------------------------------- */
 
-Bool conditions_are_equal (condition *c1, condition *c2) {
-  if (c1->type != c2->type) return FALSE;
+bool conditions_are_equal (condition *c1, condition *c2) {
+  if (c1->type != c2->type) return false;
   bool neg = true;
   switch (c1->type) {
   case POSITIVE_CONDITION:
@@ -211,27 +208,27 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
   case NEGATIVE_CONDITION:
     if (! tests_are_equal (c1->data.tests.id_test,
                            c2->data.tests.id_test, neg))
-      return FALSE;
+      return false;
     if (! tests_are_equal (c1->data.tests.attr_test,
                            c2->data.tests.attr_test, neg))
-      return FALSE;
+      return false;
     if (! tests_are_equal (c1->data.tests.value_test,
                            c2->data.tests.value_test, neg))
-      return FALSE;
+      return false;
     if (c1->test_for_acceptable_preference !=
         c2->test_for_acceptable_preference)
-      return FALSE;
-    return TRUE;
+      return false;
+    return true;
 
   case CONJUNCTIVE_NEGATION_CONDITION:
     for (c1=c1->data.ncc.top, c2=c2->data.ncc.top;
          ((c1!=NIL)&&(c2!=NIL));
          c1=c1->next, c2=c2->next)
-      if (! conditions_are_equal (c1,c2)) return FALSE;
-    if (c1==c2) return TRUE;  /* make sure they both hit end-of-list */
-    return FALSE;
+      if (! conditions_are_equal (c1,c2)) return false;
+    if (c1==c2) return true;  /* make sure they both hit end-of-list */
+    return false;
   }
-  return FALSE; /* unreachable, but without it, gcc -Wall warns here */
+  return false; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 /* ----------------------------------------------------------------
@@ -293,7 +290,7 @@ uint32_t hash_condition (agent* thisAgent,
    Get_new_tc_number() is called from lots of places.  Any time we need
    to mark a set of identifiers and/or variables, we get a new tc_number
    by calling this routine, then proceed to mark various ids or vars
-   by setting the sym->tc_num.
+   by setting the sym->id->tc_num or sym->var->tc_num fields.
 
    A global tc number counter is maintained and incremented by this
    routine in order to generate a different tc_number each time.  If
@@ -324,9 +321,6 @@ tc_number get_new_tc_number (agent* thisAgent) {
    This argument should be NIL if no such list is desired.  If non-NIL,
    it should point to the header of the linked list being built.
 
-   Mark_identifier_if_unmarked() and mark_variable_if_unmarked() are
-   macros for adding id's and var's to the set of symbols.
-
    Unmark_identifiers_and_free_list() unmarks all the id's in the given
    list, and deallocates the list.  Unmark_variables_and_free_list()
    is similar, only the list should be a list of variables rather than
@@ -336,35 +330,6 @@ tc_number get_new_tc_number (agent* thisAgent) {
    is either a constant (non-variable) or a variable marked with the
    given tc number.
 ===================================================================== */
-
-/*#define mark_identifier_if_unmarked(ident,tc,id_list) { \
-  if ((ident)->data.tc_num != (tc)) { \
-    (ident)->data.tc_num = (tc); \
-    if (id_list) push ((ident),(*(id_list))); } }*/
-inline void mark_identifier_if_unmarked(agent* thisAgent,
-										Symbol * ident, tc_number tc, list ** id_list)
-{
-  if ((ident)->tc_num != (tc))
-  {
-    (ident)->tc_num = (tc);
-    if (id_list)
-		push (thisAgent, (ident),(*(id_list)));
-  }
-}
-
-/*#define mark_variable_if_unmarked(v,tc,var_list) { \
-  if ((v)->data.tc_num != (tc)) { \
-    (v)->data.tc_num = (tc); \
-    if (var_list) push ((v),(*(var_list))); } }*/
-inline void mark_variable_if_unmarked(agent* thisAgent, Symbol * v,
-									  tc_number tc, list ** var_list)
-{
-  if ((v)->tc_num != (tc))
-  {
-    (v)->tc_num = (tc);
-    if (var_list) push (thisAgent, (v),(*(var_list)));
-  }
-}
 
 void unmark_identifiers_and_free_list (agent* thisAgent, list *id_list) {
   cons *next;
@@ -422,7 +387,7 @@ void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list
                                           tc_number tc, list **var_list);
 
 void add_all_variables_in_condition (agent* thisAgent,
-                   condition *c, tc_number tc,
+									 condition *c, tc_number tc,
                                      list **var_list) {
   if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
     add_all_variables_in_condition_list (thisAgent, c->data.ncc.top, tc, var_list);
@@ -470,12 +435,11 @@ void add_all_variables_in_condition_list (agent* thisAgent, condition *cond_list
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 ==================================================================== */
 
+/* MToDo | This can also be moved to a symbol method -- */
 void add_symbol_to_tc (agent* thisAgent, Symbol *sym, tc_number tc,
                        list **id_list, list **var_list) {
-  if (sym->symbol_type==VARIABLE_SYMBOL_TYPE) {
-    mark_variable_if_unmarked (thisAgent, sym, tc, var_list);
-  } else if (sym->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
-    mark_identifier_if_unmarked (thisAgent, sym, tc, id_list);
+  if ((sym->symbol_type==VARIABLE_SYMBOL_TYPE) || (sym->symbol_type==IDENTIFIER_SYMBOL_TYPE)) {
+    sym->mark_if_unmarked(thisAgent, tc, id_list);
   }
 }
 
@@ -493,7 +457,7 @@ void add_test_to_tc (agent* thisAgent, test t, tc_number tc,
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
       add_test_to_tc (thisAgent, static_cast<test>(c->first), tc, id_list, var_list);
   }
-}
+  }
 
 void add_cond_to_tc (agent* thisAgent, condition *c, tc_number tc,
                      list **id_list, list **var_list) {
@@ -514,28 +478,24 @@ void add_action_to_tc (agent* thisAgent, action *a, tc_number tc,
       add_symbol_to_tc (thisAgent, rhs_value_to_symbol(a->referent),tc,id_list,var_list);
 }
 
-Bool symbol_is_in_tc (Symbol *sym, tc_number tc) {
-    return (sym->tc_num == tc);
-}
-
-Bool test_is_in_tc (test t, tc_number tc) {
+bool test_is_in_tc (test t, tc_number tc) {
   cons *c;
 
-  if (test_is_blank(t)) return FALSE;
+  if (test_is_blank(t)) return false;
   if (t->type==EQUALITY_TEST) {
-    return symbol_is_in_tc (t->data.referent, tc);
+    return t->data.referent->is_in_tc(tc);
   } else if (t->type==CONJUNCTIVE_TEST) {
     for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_is_in_tc (static_cast<test>(c->first), tc)) return TRUE;
-    return FALSE;
+      if (test_is_in_tc (static_cast<test>(c->first), tc)) return true;
+    return false;
   }
-  return FALSE;
+  return false;
 }
 
-Bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
+bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
   condition *c;
-  Bool anything_changed;
-  Bool result;
+  bool anything_changed;
+  bool result;
   list *new_ids, *new_vars;
 
   if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
@@ -545,23 +505,23 @@ Bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
   new_ids = NIL;
   new_vars = NIL;
   for (c=cond->data.ncc.top; c!=NIL; c=c->next)
-    c->already_in_tc = FALSE;
-  while (TRUE) {
-    anything_changed = FALSE;
+    c->already_in_tc = false;
+  while (true) {
+    anything_changed = false;
     for (c=cond->data.ncc.top; c!=NIL; c=c->next)
       if (! c->already_in_tc)
         if (cond_is_in_tc (thisAgent, c, tc)) {
           add_cond_to_tc (thisAgent, c, tc, &new_ids, &new_vars);
-          c->already_in_tc = TRUE;
-          anything_changed = TRUE;
+          c->already_in_tc = true;
+          anything_changed = true;
         }
     if (! anything_changed) break;
   }
 
   /* --- complete TC found, look for anything that didn't get hit --- */
-  result = TRUE;
+  result = true;
   for (c=cond->data.ncc.top; c!=NIL; c=c->next)
-    if (! c->already_in_tc) result = FALSE;
+    if (! c->already_in_tc) result = false;
 
   /* --- unmark identifiers and variables that we just marked --- */
   unmark_identifiers_and_free_list (thisAgent, new_ids);
@@ -570,9 +530,9 @@ Bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
   return result;
 }
 
-Bool action_is_in_tc (action *a, tc_number tc) {
-  if (a->type != MAKE_ACTION) return FALSE;
-  return symbol_is_in_tc (rhs_value_to_symbol(a->id), tc);
+bool action_is_in_tc (action *a, tc_number tc) {
+  if (a->type != MAKE_ACTION) return false;
+  return rhs_value_to_symbol(a->id)->is_in_tc(tc);
 }
 
 /* *********************************************************************
@@ -595,7 +555,7 @@ Bool action_is_in_tc (action *a, tc_number tc) {
 
 
 void reset_variable_generator (agent* thisAgent,
-							                 condition *conds_with_vars_to_avoid,
+							   condition *conds_with_vars_to_avoid,
                                action *actions_with_vars_to_avoid) {
   tc_number tc;
   list *var_list;
@@ -616,7 +576,7 @@ void reset_variable_generator (agent* thisAgent,
   add_all_variables_in_condition_list (thisAgent, conds_with_vars_to_avoid,tc, &var_list);
   add_all_variables_in_action_list (thisAgent, actions_with_vars_to_avoid, tc, &var_list);
   for (c=var_list; c!=NIL; c=c->rest)
-    static_cast<Symbol *>(c->first)->data.var.gensym_number = thisAgent->current_variable_gensym_number;
+    static_cast<Symbol *>(c->first)->var->gensym_number = thisAgent->current_variable_gensym_number;
   free_list (thisAgent, var_list);
 }
 
@@ -633,18 +593,21 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
     first_letter = 'v';
   }
 
-  while (TRUE) {
+  while (true) {
     SNPRINTF (name,GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
              static_cast<long unsigned int>(thisAgent->gensymed_variable_count[first_letter-'a']++));
 	name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
 
     New = make_variable (thisAgent, name);
-    if (New->data.var.gensym_number != thisAgent->current_variable_gensym_number) break;
+    if (New->var->gensym_number != thisAgent->current_variable_gensym_number)
+      break;
+    /* -- A variable with that name already existed.  make_variable just returned it and
+     *    incremented its refcount, so reverse that refcount addition and try again. -- */
     symbol_remove_ref (thisAgent, New);
   }
 
-  New->data.var.current_binding_value = NIL;
-  New->data.var.gensym_number = thisAgent->current_variable_gensym_number;
+  New->var->current_binding_value = NIL;
+  New->var->gensym_number = thisAgent->current_variable_gensym_number;
   return New;
 }
 
@@ -672,15 +635,14 @@ production *make_production (agent* thisAgent,
                              condition **lhs_top,
                              condition **lhs_bottom,
                              action **rhs_top,
-                             Bool reorder_nccs,
-                             preference *results,
-                             bool variablize) {
+                             bool reorder_nccs,
+                             preference *results) {
   production *p;
   tc_number tc;
   action *a;
 
 
-  thisAgent->name_of_production_being_reordered = name->data.sc.name;
+  thisAgent->name_of_production_being_reordered = name->sc->name;
 
   if (type!=JUSTIFICATION_PRODUCTION_TYPE) {
     reset_variable_generator (thisAgent, *lhs_top, *rhs_top);
@@ -690,16 +652,16 @@ production *make_production (agent* thisAgent,
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
 
-    // Debug | Do we need this any more?
+    /* MToDo | Do we need to check smem_valid_production any more? */
     if ( !smem_valid_production( *lhs_top, *rhs_top ) )
     {
-      print( thisAgent, "ungrounded LTI in production\n" );
+      print(thisAgent,  "ungrounded LTI in production\n" );
       return NIL;
     }
 
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
     calculate_compile_time_o_support (*lhs_top, *rhs_top);
-#ifdef LIST_COMPILE_TIME_O_SUPPORT_FAILURES
+#ifdef DEBUG_CT_OSUPPORT
     for (a = *rhs_top; a!=NIL; a=a->next)
       if ((a->type==MAKE_ACTION) && (a->support==UNKNOWN_SUPPORT)) break;
     if (a) print_with_symbols (thisAgent, "\nCan't classify %y\n", name);
@@ -715,12 +677,12 @@ production *make_production (agent* thisAgent,
 
   allocate_with_pool (thisAgent, &thisAgent->production_pool, &p);
   p->name = name;
-  if (name->data.sc.production) {
-    print (thisAgent, "Internal error: make_production called with name %s\n",
-           thisAgent->name_of_production_being_reordered);
-    print (thisAgent, "for which a production already exists\n");
+  if (name->sc->production) {
+    print(thisAgent,  "Internal error: make_production called with name %s\n",
+        thisAgent->name_of_production_being_reordered);
+    print(thisAgent,  "for which a production already exists\n");
   }
-  name->data.sc.production = p;
+  name->sc->production = p;
   p->documentation = NIL;
   p->filename = NIL;
   p->firing_count = 0;
@@ -729,12 +691,12 @@ production *make_production (agent* thisAgent,
   thisAgent->num_productions_of_type[type]++;
   p->type = type;
   p->declared_support = UNDECLARED_SUPPORT;
-  p->trace_firings = FALSE;
+  p->trace_firings = false;
   p->p_node = NIL;               /* it's not in the Rete yet */
   p->action_list = *rhs_top;
   p->rhs_unbound_variables = NIL; /* the Rete fills this in */
   p->instantiations = NIL;
-  p->interrupt = FALSE;
+  p->interrupt = false;
 
   // Soar-RL stuff
   p->rl_update_count = 0.0;
@@ -748,15 +710,15 @@ production *make_production (agent* thisAgent,
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )
   {
     p->rl_rule = rl_valid_rule( p );
-	if ( p->rl_rule )
-	{
-	  p->rl_efr = get_number_from_symbol( rhs_value_to_symbol( p->action_list->referent ) );
-	}
+    if ( p->rl_rule )
+    {
+      p->rl_efr = get_number_from_symbol( rhs_value_to_symbol( p->action_list->referent ) );
+    }
   }
   p->rl_template_conds = NIL;
   p->rl_template_instantiations = NIL;
 
-  rl_update_template_tracking( thisAgent, name->data.sc.name );
+  rl_update_template_tracking( thisAgent, name->sc->name );
 
   return p;
 }
@@ -782,7 +744,9 @@ void deallocate_production (agent* thisAgent, production *prod) {
   free_with_pool (&thisAgent->production_pool, prod);
 }
 
-void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sign) {
+void excise_production (agent* thisAgent, production *prod, bool print_sharp_sign) {
+  dprint(DT_DEALLOCATES, "=======================\n");
+  dprint(DT_DEALLOCATES, "Excising production %s.\n", prod->name->to_string());
   if (prod->trace_firings) remove_pwatch (thisAgent, prod);
   remove_from_dll (thisAgent->all_productions_of_type[prod->type], prod, next, prev);
 
@@ -795,15 +759,16 @@ void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sig
     rl_remove_refs_for_prod( thisAgent, prod );
 
   thisAgent->num_productions_of_type[prod->type]--;
-  if (print_sharp_sign) print (thisAgent, "#");
+  if (print_sharp_sign) print(thisAgent,  "#");
   if (prod->p_node) excise_production_from_rete (thisAgent, prod);
-  prod->name->data.sc.production = NIL;
+  prod->name->sc->production = NIL;
   production_remove_ref (thisAgent, prod);
+  dprint(DT_DEALLOCATES, "=======================\n");
 }
 
 void excise_all_productions_of_type(agent* thisAgent,
                                     byte type,
-                                    Bool print_sharp_sign) {
+                                    bool print_sharp_sign) {
 
   // Iterating through the productions of the appropriate type and excising them
   while (thisAgent->all_productions_of_type[type]) {
@@ -814,7 +779,7 @@ void excise_all_productions_of_type(agent* thisAgent,
 }
 
 void excise_all_productions(agent* thisAgent,
-                            Bool print_sharp_sign) {
+                            bool print_sharp_sign) {
 
   // Excise all the productions of the four different types
   for (int i=0; i < NUM_PRODUCTION_TYPES; i++) {
@@ -861,7 +826,7 @@ uint32_t canonical_test(test t)
 #define CANONICAL_TEST_ORDER hash_test
 */
 
-Bool canonical_cond_greater(condition *c1, condition *c2)
+bool canonical_cond_greater(condition *c1, condition *c2)
 /*
 
  Original:  676,362 total rete nodes (1 dummy + 560045 positive + 4
@@ -949,13 +914,13 @@ Changed  < to > 10/5/92*/
 
   if ((test_order_1 = CANONICAL_TEST_ORDER(c1->data.tests.attr_test)) <
       (test_order_2 = CANONICAL_TEST_ORDER(c2->data.tests.attr_test))) {
-    return TRUE;
+    return true;
   } else if (test_order_1 == test_order_2 &&
            CANONICAL_TEST_ORDER(c1->data.tests.value_test) <
            CANONICAL_TEST_ORDER(c2->data.tests.value_test)) {
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 

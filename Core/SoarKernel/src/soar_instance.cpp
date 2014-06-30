@@ -16,11 +16,13 @@
 #include "agent.h"
 
 Soar_Instance::Soar_Instance() :
-    m_Kernel(NULL),
-    m_default_soar_agent(NULL)
+m_Kernel(NULL),
+m_Output_Manager(NULL),
+m_default_soar_agent(NULL)
 {
     m_loadedLibraries = new std::map<std::string, Soar_Loaded_Library * >();
     m_agent_table = new std::map< char *, Agent_Info *, cmp_str >();
+    dprint(DT_SOAR_INSTANCE, "======================= Soar instance created =======================\n");
 }
 
 void Soar_Instance::init_Soar_Instance(sml::Kernel *pKernel)
@@ -35,11 +37,14 @@ void Soar_Instance::init_Soar_Instance(sml::Kernel *pKernel)
 
 Soar_Instance::~Soar_Instance()
 {
+    dprint(DT_SOAR_INSTANCE, "======================= Destroying Soar instance =======================\n");
     m_Kernel = NULL;
+    m_Output_Manager = NULL;
     m_default_soar_agent = NULL;
 
     for (std::map< std::string, Soar_Loaded_Library * >::iterator it=(*m_loadedLibraries).begin(); it!=(*m_loadedLibraries).end(); ++it)
     {
+        dprint(DT_SOAR_INSTANCE, "Sending CLI module %s a DELETE command.\n", it->first.c_str());
         it->second->libMessageFunction("delete", NULL);
     }
     for (std::map< std::string, Soar_Loaded_Library * >::iterator it=(*m_loadedLibraries).begin(); it!=(*m_loadedLibraries).end(); ++it)
@@ -49,12 +54,14 @@ Soar_Instance::~Soar_Instance()
     m_loadedLibraries->clear();
     delete m_loadedLibraries;
 
-    for (std::map< char *, Agent_Info *, cmp_str >::iterator it=(*m_agent_table).begin(); it!=(*m_agent_table).end(); ++it)
+    for (std::map< char *, Agent_Info * >::iterator it=(*m_agent_table).begin(); it!=(*m_agent_table).end(); ++it)
     {
         delete it->second;
     }
     m_agent_table->clear();
     delete m_agent_table;
+
+    dprint(DT_SOAR_INSTANCE, "======================= Soar instance destroyed =======================\n");
 }
 
 void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char *pLibName, MessageFunction pMessageFunction)
@@ -77,12 +84,17 @@ void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char *pLibName,
         new_library->libMessageFunction = pMessageFunction;
         new_library->isOn = false;
         (*m_loadedLibraries)[lLibName] = new_library;
+
+        dprint(DT_SOAR_INSTANCE, "CLI Extension %s registered.\n", lLibName.c_str());
+
     }
 }
 
 std::string Soar_Instance::Message_Library(const char *pMessage)
 {
-    std::string resultString("CLI extension command failed.");
+    dprint(DT_SOAR_INSTANCE, "Soar_Instance sending Tcl library message \"%s\".\n", pMessage);
+
+    std::string resultString("Command line interface extension command failed.");
     Soar_Loaded_Library *libraryInfo;
 
     /* -- Convert command to lower case -- */
@@ -104,7 +116,7 @@ std::string Soar_Instance::Message_Library(const char *pMessage)
 
         // zero length is success
         if (result.size() != 0) {
-            resultString = "Could not load library " + lCLIExtensionName + ": " + result;
+            m_Output_Manager->printv("Could not load library %s: %s", lCLIExtensionName.c_str(), result.c_str());
             return resultString;
         }
     }
@@ -114,33 +126,21 @@ std::string Soar_Instance::Message_Library(const char *pMessage)
 
     if (((lMessage == "on") && libraryInfo->isOn) || ((lMessage == "off") && !libraryInfo->isOn))
     {
-        resultString = "CLI extension " + lCLIExtensionName + "is already " + lMessage + ".  Ignoring command.";
-        return resultString;
-    }
-    if (lMessage == "off")
-    {
-        resultString = "Turning off CLI modules is currently disabled. Will be fixed in future version.  Restart Soar to turn off for now.";
+        m_Output_Manager->printv("CLI Extension %s is already %s.  Ignoring command.\n", lCLIExtensionName.c_str(), lMessage.c_str());
         return resultString;
     }
     void *success = libraryInfo->libMessageFunction(lMessage.c_str(), NULL);
     if (!success)
     {
-        resultString = "Message " + lMessage + " to CLI library " + lCLIExtensionName + " returned unsuccessful.";
+        m_Output_Manager->printv("Message %s to library %s returned unsuccessful.\n", lMessage.c_str(), lCLIExtensionName.c_str());
         return resultString;
     } else {
         // Note that may be other possible messages in the future, so these
         // arent' the only two cases.
         if (lMessage == "on")
-        {
             libraryInfo->isOn = true;
-            resultString = lCLIExtensionName + " CLI module loaded and enabled.\n";
-            m_Output_Manager->print_trace(resultString.c_str());
-        } else if (lMessage == "off")
-        {
-            resultString = lCLIExtensionName + " CLI module deactivated.\n";
-            m_Output_Manager->print_trace(resultString.c_str());
+        else if (lMessage == "off")
             libraryInfo->isOn = false;
-        }
     }
 
     resultString.erase();
@@ -179,7 +179,7 @@ void Soar_Instance::Delete_Agent(char *pAgentName)
     }
 
     /* -- Delete agent from agent table -- */
-    std::map< char *, Agent_Info *, cmp_str >::iterator iter = (*m_agent_table).find(pAgentName);
+    std::map< char *, Agent_Info * >::iterator iter = (*m_agent_table).find(pAgentName);
     if (iter != (*m_agent_table).end())
     {
         lAgent_Name = iter->first;
@@ -192,10 +192,10 @@ void Soar_Instance::Delete_Agent(char *pAgentName)
         {
             if (m_agent_table->size() > 0)
             {
-				m_default_soar_agent = (*m_agent_table).begin()->second->soarAgentSML->GetSoarAgent();
+                m_default_soar_agent = (*m_agent_table).begin()->second->soarAgentSML->GetSoarAgent();
                 m_Output_Manager->set_default_agent((*m_agent_table).begin()->second->soarAgentSML->GetSoarAgent());
             } else {
-				m_default_soar_agent = NULL;
+                m_default_soar_agent = NULL;
                 m_Output_Manager->set_default_agent(NULL);
             }
         }
@@ -208,7 +208,7 @@ void Soar_Instance::Print_Agent_Table()
     m_Output_Manager->printv("------------------------------------\n");
     m_Output_Manager->printv("------------ Agent Table -----------\n");
     m_Output_Manager->printv("------------------------------------\n");
-    for (std::map< char *, Agent_Info *, cmp_str >::iterator it=(*m_agent_table).begin(); it!=(*m_agent_table).end(); ++it)
+    for (std::map< char *, Agent_Info * >::iterator it=(*m_agent_table).begin(); it!=(*m_agent_table).end(); ++it)
     {
         m_Output_Manager->printv("%s -> %s\n", it->first, it->second->soarAgentSML->GetSoarAgent()->name);
     }
@@ -216,7 +216,7 @@ void Soar_Instance::Print_Agent_Table()
 
 Agent_Info *Soar_Instance::Get_Agent_Info(char *pAgentName)
 {
-    std::map< char *, Agent_Info *, cmp_str >::iterator iter = (*m_agent_table).find(pAgentName);
+    std::map< char *, Agent_Info * >::iterator iter = (*m_agent_table).find(pAgentName);
     if (iter != (*m_agent_table).end())
     {
         return iter->second;
@@ -235,13 +235,10 @@ sml::AgentSML *Soar_Instance::Get_Soar_AgentSML(char *pAgentName)
     }
     return NULL;
 }
-
 void Soar_Instance::CLI_Debug_Print(const char *text)
 {
     this->m_Output_Manager->print_debug(text, DT_CLI_LIBRARIES, true);
 }
-
-
 /* -- The following is a bit of a hack used to get Tcl access
  *    to Soar data structures via SWIG proxy functions. -- */
 

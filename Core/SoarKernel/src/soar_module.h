@@ -50,9 +50,18 @@ namespace soar_module
 	} symbol_triple;
   typedef std::list< symbol_triple* > symbol_triple_list;
 
-	wme *add_module_wme( agent *my_agent, Symbol *id, Symbol *attr, Symbol *value );
-	void remove_module_wme( agent *my_agent, wme *w );
-	instantiation* make_fake_instantiation( agent* my_agent, Symbol* state, wme_set* conditions, symbol_triple_list* actions );
+  typedef struct g_id_triple_struct
+  {
+      uint64_t id;
+      uint64_t attr;
+      uint64_t value;
+
+      g_id_triple_struct( uint64_t new_id, uint64_t new_attr, uint64_t new_value ): id(new_id), attr(new_attr), value(new_value) {}
+  } g_id_triple;
+
+  wme *add_module_wme( agent *thisAgent, Symbol *id, Symbol *attr, Symbol *value );
+	void remove_module_wme( agent *thisAgent, wme *w );
+	instantiation* make_fake_instantiation( agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions );
 
 	///////////////////////////////////////////////////////////////////////////
 	// Predicates
@@ -139,10 +148,10 @@ namespace soar_module
 	class agent_predicate: public predicate<T>
 	{
 		protected:
-			agent *my_agent;
+			agent *thisAgent;
 
 		public:
-			agent_predicate( agent *new_agent ): my_agent( new_agent ) {}
+			agent_predicate( agent *new_agent ): thisAgent( new_agent ) {}
 	};
 
 
@@ -188,7 +197,7 @@ namespace soar_module
 	class object_container
 	{
 		protected:
-			agent *my_agent;
+			agent *thisAgent;
 			std::map<std::string, T *> *objects;
 
 			void add( T *new_object )
@@ -198,7 +207,7 @@ namespace soar_module
 			}
 
 		public:
-			object_container( agent *new_agent ): my_agent( new_agent ), objects( new std::map<std::string, T *> ) {}
+			object_container( agent *new_agent ): thisAgent( new_agent ), objects( new std::map<std::string, T *> ) {}
 
 			virtual ~object_container()
 			{
@@ -495,15 +504,15 @@ namespace soar_module
 			std::string *value;
 			predicate<const char *> *prot_pred;
 
-			agent *my_agent;
+			agent *thisAgent;
 
 		public:
-			sym_set_param( const char *new_name, predicate<const char *> *new_prot_pred, agent *new_agent ): param( new_name ), my_set( new std::set<Symbol *>() ), value( new std::string ), prot_pred( new_prot_pred ), my_agent( new_agent ) {}
+			sym_set_param( const char *new_name, predicate<const char *> *new_prot_pred, agent *new_agent ): param( new_name ), my_set( new std::set<Symbol *>() ), value( new std::string ), prot_pred( new_prot_pred ), thisAgent( new_agent ) {}
 
 			virtual ~sym_set_param()
 			{
 				for ( std::set<Symbol *>::iterator p=my_set->begin(); p!=my_set->end(); p++ )
-					symbol_remove_ref( my_agent, (*p) );
+					symbol_remove_ref( thisAgent, (*p) );
 
 				delete my_set;
 				delete value;
@@ -545,26 +554,26 @@ namespace soar_module
 			{
 				bool return_val = false;
 
-				if ( ( test_sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
-					 ( test_sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-					 ( test_sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) )
+				if ( ( test_sym->symbol_type == STR_CONSTANT_SYMBOL_TYPE ) ||
+					 ( test_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+					 ( test_sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) )
 				{
 					Symbol *my_sym = test_sym;
 
-					if ( my_sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
+					if ( my_sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE )
 					{
 						std::string temp_str;
 
-						if ( my_sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+						if ( my_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE )
 						{
-							to_string( my_sym->ic.value, temp_str );
+							to_string( my_sym->ic->value, temp_str );
 						}
 						else
 						{
-							to_string( my_sym->fc.value, temp_str );
+							to_string( my_sym->fc->value, temp_str );
 						}
 
-						my_sym = make_sym_constant( my_agent, temp_str.c_str() );
+						my_sym = make_str_constant( thisAgent, temp_str.c_str() );
 					}
 
 					std::set<Symbol *>::iterator p = my_set->find( my_sym );
@@ -572,7 +581,7 @@ namespace soar_module
 
 					if ( test_sym != my_sym )
 					{
-						symbol_remove_ref( my_agent, my_sym );
+						symbol_remove_ref( thisAgent, my_sym );
 					}
 				}
 
@@ -581,7 +590,7 @@ namespace soar_module
 
 			virtual void set_value( const char *new_value )
 			{
-				Symbol *my_sym = make_sym_constant( my_agent, new_value );
+				Symbol *my_sym = make_str_constant( thisAgent, new_value );
 				std::set<Symbol *>::iterator p = my_set->find( my_sym );
 
 				if ( p != my_set->end() )
@@ -589,14 +598,14 @@ namespace soar_module
 					my_set->erase( p );
 
 					// remove for now and when added to the set
-					symbol_remove_ref( my_agent, my_sym );
-					symbol_remove_ref( my_agent, my_sym );
+					symbol_remove_ref( thisAgent, my_sym );
+					symbol_remove_ref( thisAgent, my_sym );
 
 					// regenerate value from scratch
 					value->clear();
 					for ( p=my_set->begin(); p!=my_set->end(); )
 					{
-						value->append( (*p)->sc.name );
+						value->append( (*p)->sc->name );
 
 						p++;
 
@@ -611,7 +620,7 @@ namespace soar_module
 					if ( !value->empty() )
 						value->append( ", " );
 
-					value->append( my_sym->sc.name );
+					value->append( my_sym->sc->name );
 				}
 			}
 	};
@@ -753,6 +762,8 @@ namespace soar_module
 	// all statistics have a name and
 	// can be retrieved generically
 	// via strings
+	// Refactored from stat to statistic to avoid a conflict with a Tcl structure
+	// of the same name.
 	class statistic: public named_object
 	{
 		public:
@@ -846,7 +857,7 @@ namespace soar_module
 			enum timer_level { zero, one, two, three, four, five };
 
 		protected:
-			agent *my_agent;
+			agent *thisAgent;
 
 			soar_timer stopwatch;
 			soar_timer_accumulator accumulator;
@@ -933,7 +944,7 @@ namespace soar_module
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
-	memory_pool* get_memory_pool( agent* my_agent, size_t size );
+	memory_pool* get_memory_pool( agent* thisAgent, size_t size );
 
 	template <class T>
 	class soar_memory_pool_allocator
@@ -950,22 +961,22 @@ namespace soar_module
 		typedef const T&	const_reference;
 
 	public:
-		agent* get_agent() const { return my_agent; }
+		agent* get_agent() const { return thisAgent; }
 
-		soar_memory_pool_allocator( agent* new_agent ): my_agent(new_agent), mem_pool(NULL), size(sizeof(value_type))
+		soar_memory_pool_allocator( agent* new_agent ): thisAgent(new_agent), mem_pool(NULL), size(sizeof(value_type))
 		{
 			// useful for debugging
 			// std::string temp_this( typeid( value_type ).name() );
 		}
 
-		soar_memory_pool_allocator( const soar_memory_pool_allocator& obj ): my_agent(obj.get_agent()), mem_pool(NULL), size(sizeof(value_type))
+		soar_memory_pool_allocator( const soar_memory_pool_allocator& obj ): thisAgent(obj.get_agent()), mem_pool(NULL), size(sizeof(value_type))
 		{
 			// useful for debugging
 			// std::string temp_this( typeid( value_type ).name() );
 		}
 
 		template <class _other>
-		soar_memory_pool_allocator( const soar_memory_pool_allocator<_other>& other ): my_agent(other.get_agent()), mem_pool(NULL), size(sizeof(value_type))
+		soar_memory_pool_allocator( const soar_memory_pool_allocator<_other>& other ): thisAgent(other.get_agent()), mem_pool(NULL), size(sizeof(value_type))
 		{
 			// useful for debugging
 			// std::string temp_this( typeid( T ).name() );
@@ -982,11 +993,11 @@ namespace soar_module
 
 			if ( !mem_pool )
 			{
-				mem_pool = get_memory_pool( my_agent, size );
+				mem_pool = get_memory_pool( thisAgent, size );
 			}
 
 			pointer t;
-			allocate_with_pool( my_agent, mem_pool, &t );
+			allocate_with_pool( thisAgent, mem_pool, &t );
 
 			return t;
 		}
@@ -1005,7 +1016,7 @@ namespace soar_module
 			// it's quite possible, then, that the sizes would be off
 			if ( !mem_pool )
 			{
-				mem_pool = get_memory_pool( my_agent, size );
+				mem_pool = get_memory_pool( thisAgent, size );
 			}
 
 			if ( p )
@@ -1047,7 +1058,7 @@ namespace soar_module
 
 
 	private:
-		agent* my_agent;
+		agent* thisAgent;
 		memory_pool* mem_pool;
 		size_type size;
 

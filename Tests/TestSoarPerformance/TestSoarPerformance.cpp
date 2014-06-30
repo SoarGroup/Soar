@@ -9,8 +9,8 @@
 #include "sml_Client.h"
 #include "sml_Connection.h"
 
-//#define QUIET_MODE
-//#define BRIEF_MODE
+#define QUIET_MODE
+#define BRIEF_MODE
 #define DEFAULT_TRIALS 3
 #define DEFAULT_AGENT "test_agents/TestSoarPerformance.soar";
 
@@ -20,6 +20,7 @@ using namespace sml;
 class StatsTracker {
 public:
 	vector<double> realtimes;
+	vector<double> proctimes;
 	vector<double> kerneltimes;
 	vector<double> totaltimes;
 
@@ -66,6 +67,7 @@ public:
 		cout << endl;
 #endif
 		PrintResultsHelper("OS Real", GetAverage(realtimes), GetLow(realtimes), GetHigh(realtimes));
+		PrintResultsHelper("OS Proc", GetAverage(proctimes), GetLow(proctimes), GetHigh(proctimes));
 		PrintResultsHelper("Soar Kernel", GetAverage(kerneltimes), GetLow(kerneltimes), GetHigh(kerneltimes));
 		PrintResultsHelper("Soar Total", GetAverage(totaltimes), GetLow(totaltimes), GetHigh(totaltimes));
 	}
@@ -120,6 +122,7 @@ void Test1(int numTrials, StatsTracker* pSt, const vector<string> &commands) {
 		agent->ExecuteCommandLineXML("time run", &response);
 
 		pSt->realtimes.push_back(response.GetArgFloat(sml_Names::kParamRealSeconds, 0.0));
+		pSt->proctimes.push_back(response.GetArgFloat(sml_Names::kParamProcSeconds, 0.0));
 
 		agent->ExecuteCommandLineXML("stats", &response);
 

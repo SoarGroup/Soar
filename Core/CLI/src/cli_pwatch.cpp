@@ -26,7 +26,7 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, bool setting) {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     // check for query or not production 
     if (query || !pProduction) {
         // list all productions currently being traced
@@ -34,7 +34,7 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
         int productionCount = 0;
         for(unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
         {
-            for( pSoarProduction = agnt->all_productions_of_type[i]; 
+            for( pSoarProduction = thisAgent->all_productions_of_type[i]; 
                 pSoarProduction != 0; 
                 pSoarProduction = pSoarProduction->next )
             {
@@ -46,15 +46,15 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
                         ++productionCount;
                         if (m_RawOutput) 
                         {
-                            m_Result << '\n' << pSoarProduction->name->data.sc.name;
+                            m_Result << '\n' << pSoarProduction->name->sc->name;
                         } else {
-                            AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pSoarProduction->name->data.sc.name);
+                            AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pSoarProduction->name->sc->name);
                         }
                     }
                     else
                     {
                         // not querying, shut it off
-                        remove_pwatch( agnt, pSoarProduction );
+                        remove_pwatch( thisAgent, pSoarProduction );
                     }
                 }
 
@@ -78,18 +78,18 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
         return true;
     }
 
-    Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
+    Symbol* sym = find_str_constant( thisAgent, pProduction->c_str() );
 
-    if (!sym || !(sym->data.sc.production))
+    if (!sym || !(sym->sc->production))
     {
         return SetError("Production not found.");
     }
 
     // we have a production
     if (setting) {
-        add_pwatch( agnt, sym->data.sc.production );
+        add_pwatch( thisAgent, sym->sc->production );
     } else {
-        remove_pwatch( agnt, sym->data.sc.production );
+        remove_pwatch( thisAgent, sym->sc->production );
     }
     return true;
 }

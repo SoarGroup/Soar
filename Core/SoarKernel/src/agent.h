@@ -66,8 +66,6 @@ class debug_param_container;
 class Output_Manager;
 class Variablization_Manager;
 
-class debug_param_container;
-
 // following def's moved here from old interface.h file  KJC nov 05
 /* AGR 568 begin */
 typedef struct expansion_node {
@@ -279,7 +277,6 @@ typedef struct agent_struct {
   Symbol            * to_context_variable;
   Symbol            * ts_context_variable;
   Symbol            * type_symbol;
-  Symbol            * wait_symbol;   /* REW:  10.24.97 */
 
   Symbol            * item_count_symbol; // SBW 5/07
   Symbol            * non_numeric_count_symbol; // NLD 11/11
@@ -341,14 +338,6 @@ typedef struct agent_struct {
   Symbol			* smem_sym_negquery;
   Symbol			* smem_sym_prohibit;
   Symbol			* smem_sym_store;
-  Symbol			* smem_sym_math_query;
-
-  Symbol			* smem_sym_math_query_less;
-  Symbol			* smem_sym_math_query_greater;
-  Symbol			* smem_sym_math_query_less_or_equal;
-  Symbol			* smem_sym_math_query_greater_or_equal;
-  Symbol			* smem_sym_math_query_max;
-  Symbol			* smem_sym_math_query_min;
 
 
   /* ----------------------- Symbol table stuff -------------------------- */
@@ -359,13 +348,13 @@ typedef struct agent_struct {
   struct hash_table_struct * float_constant_hash_table;
   struct hash_table_struct * identifier_hash_table;
   struct hash_table_struct * int_constant_hash_table;
-  struct hash_table_struct * sym_constant_hash_table;
+  struct hash_table_struct * str_constant_hash_table;
   struct hash_table_struct * variable_hash_table;
 
   memory_pool         float_constant_pool;
   memory_pool         identifier_pool;
   memory_pool         int_constant_pool;
-  memory_pool         sym_constant_pool;
+  memory_pool         str_constant_pool;
   memory_pool         variable_pool;
 
   /* ----------------------- Top-level stuff -------------------------- */
@@ -800,13 +789,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   struct ms_change_struct * postponed_assertions;  /* New waterfall model: postponed assertion list */
 
-  /* REW: begin 08.20.97 */
   goal_stack_level active_level;
   goal_stack_level previous_active_level;
   Symbol *active_goal;
   Symbol *previous_active_goal;
   struct ms_change_struct *nil_goal_retractions; /* dll of all retractions for removed (ie nil) goals */
-  /* REW: end   08.20.97 */
 
   /**
    * State for new waterfall model
@@ -880,6 +867,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // debug parameters
   debug_param_container *debug_params;
 
+  // parser symbol clean-up list
+  ::list            * parser_syms;
   // epmem
   epmem_param_container *epmem_params;
   epmem_stat_container *epmem_stats;

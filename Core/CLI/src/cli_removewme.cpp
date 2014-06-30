@@ -18,7 +18,6 @@
 #include "sml_KernelSML.h"
 
 #include "agent.h"
-#include "utilities.h"
 #include "wmem.h"
 #include "symtab.h"
 #include "decide.h"
@@ -47,25 +46,25 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
         Symbol* pId = pWme->id;
 
         // remove w from whatever list of wmes it's on
-        for ( wme* pWme2 = pId->data.id.input_wmes; pWme2 != 0; pWme2 = pWme2->next)
+        for ( wme* pWme2 = pId->id->input_wmes; pWme2 != 0; pWme2 = pWme2->next)
         {
             if ( pWme == pWme2 )
             {
-                remove_from_dll( pId->data.id.input_wmes, pWme, next, prev );
+                remove_from_dll( pId->id->input_wmes, pWme, next, prev );
                 break;
             }
         }
 
-        for ( wme* pWme2 = pId->data.id.impasse_wmes; pWme2 != 0; pWme2 = pWme2->next )
+        for ( wme* pWme2 = pId->id->impasse_wmes; pWme2 != 0; pWme2 = pWme2->next )
         {
             if ( pWme == pWme2 )
             {
-                remove_from_dll( pId->data.id.impasse_wmes, pWme, next, prev );
+                remove_from_dll( pId->id->impasse_wmes, pWme, next, prev );
                 break;
             }
         }
 
-        for ( slot* s = pId->data.id.slots; s != 0; s = s->next ) 
+        for ( slot* s = pId->id->slots; s != 0; s = s->next )
         {
 
             for ( wme* pWme2 = s->wmes; pWme2 != 0; pWme2 = pWme2->next )
@@ -88,9 +87,9 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
         }
 
         /* REW: begin 09.15.96 */
-        if ( pWme->gds ) 
+        if ( pWme->gds )
         {
-            if ( pWme->gds->goal != 0 ) 
+            if ( pWme->gds->goal != 0 )
             {
                 gds_invalid_so_remove_goal( thisAgent, pWme );
                 /* NOTE: the call to remove_wme_from_wm will take care of checking if

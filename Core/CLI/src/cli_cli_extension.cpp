@@ -30,11 +30,12 @@ bool CommandLineInterface::DoCLIMessage(const std::string& pMessage) {
 
         // zero length is success
         if (result.size() == 0) {
+            PrintCLIMessage(("CLI extension command \"" + pMessage + "\" successful.").c_str());
             return true;
         }
-        return SetError(result);
+        return SetError("CLI Extension message failed: " + result);
     } else {
-        return SetError("Illegal CLI command " + pMessage);
+        return SetError("Illegal CLI Extension command: " + pMessage);
 
     }
 }

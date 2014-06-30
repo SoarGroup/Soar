@@ -155,7 +155,7 @@ Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const
 
 		std::stringstream name;
 		name << port;
-
+		
 		bool ok = pNamedPipe->ConnectToServer(name.str().c_str()) ;
 
 		if(ok) {
@@ -178,7 +178,7 @@ Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const
 			delete pSocket ;
 			return NULL ;
 		}
-
+		
 		// Wrap the socket inside a remote connection object
 		pConnection = new RemoteConnection(sharedFileSystem, pSocket) ;
 	}
@@ -295,7 +295,7 @@ void Connection::RegisterCallback(IncomingCallback callback, void* pUserData, ch
 		pList = new CallbackList() ;
 		m_CallbackMap[pType] = pList ;
 	}
-
+	
 	// Add the callback to the list
 	if (addToEnd)
 		pList->push_back(pCallback) ;
@@ -375,7 +375,7 @@ CallbackList* Connection::GetCallbackList(char const* pType)
 
 	if (iter == m_CallbackMap.end())
 		return NULL ;
-
+	
 	return iter->second ;
 }
 
@@ -450,9 +450,7 @@ ElementXML* Connection::InvokeCallbacks(ElementXML *pIncomingMsg)
 	// Nobody returned a response
 	return NULL ;
 }
-//#include <thread>
-//#include <iostream>
-//#include "soar_instance.h"
+
 /*************************************************************
 * @brief Send a message and get the response.
 *
@@ -462,7 +460,7 @@ ElementXML* Connection::InvokeCallbacks(ElementXML *pIncomingMsg)
 *************************************************************/
 bool Connection::SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg)
 {
-  // If the connection is already closed, don't do anything
+	// If the connection is already closed, don't do anything
 	if (IsClosed())
 		return false ;
 
@@ -529,7 +527,7 @@ bool Connection::SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg)
 * a named agent.  This agent's name is passed as the first
 * parameter and then the other parameters define the details
 * of which method to call for the agent.
-*
+* 
 * Passing NULL for the agent name is valid and indicates
 * that the command is not agent specific (e.g. "shutdown-kernel"
 * would pass NULL).
@@ -552,7 +550,7 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -572,7 +570,7 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -597,7 +595,7 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -624,7 +622,7 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -653,7 +651,7 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -669,7 +667,7 @@ bool Connection::SendClassCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -691,7 +689,7 @@ bool Connection::SendClassCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -717,7 +715,7 @@ bool Connection::SendClassCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -749,7 +747,7 @@ bool Connection::SendClassCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -776,7 +774,7 @@ bool Connection::SendClassCommand(AnalyzeXML* pResponse, char const* pCommandNam
 
 	//add the 'this' pointer parameter
 	AddParameterToSMLCommand(pMsg, sml_Names::kParamThis, pThisID);
-
+	
 	if (pParamVal1)								AddParameterToSMLCommand(pMsg, pParamName1, pParamVal1);
 	if (pParamVal1 && pParamVal2)				AddParameterToSMLCommand(pMsg, pParamName2, pParamVal2);
 	if (pParamVal1 && pParamVal2 && pParamVal3) AddParameterToSMLCommand(pMsg, pParamName3, pParamVal3);
@@ -784,7 +782,7 @@ bool Connection::SendClassCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
 	delete pMsg ;
-
+	
 	return result ;
 }
 
@@ -819,7 +817,7 @@ ElementXML* Connection::CreateSMLMessage(char const* pType)
 *
 * @param pName		The name of the command (the meaning depends on whoever receives this command).
 * @param rawOutput	If true, results from command will be a string wrapped in a <raw> tag, rather than full structured XML.
-*
+* 
 * @returns The new SML command message.
 *************************************************************/
 ElementXML* Connection::CreateSMLCommand(char const* pName, bool rawOutput /* == false */)
@@ -848,7 +846,7 @@ ElementXML* Connection::CreateSMLCommand(char const* pName, bool rawOutput /* ==
 * @param pName		The name of this parameter (can't be NULL).
 * @param pValue		The value of this parameter (represented as a string).  Can be empty, can't be NULL.
 * @param pValueType	The type of the value (e.g. "int" or "string".  Anything can go here as long as the recipient understands it) (usually will be NULL).
-*
+* 
 * @returns Pointer to the ElementXML_Handle for the <command> tag (not the full message, just the <command> part)
 *		   This is rarely needed, but could be used to optimize the code.  DO NOT release this handle.
 *************************************************************/
@@ -890,7 +888,7 @@ ElementXML_Handle Connection::AddParameterToSMLCommand(ElementXML* pMsg, char co
 
 	pArg->SetParam(pName) ;
 	pArg->SetValue(pValue) ;
-
+	
 	if (pValueType)
 		pArg->SetType(pValueType) ;
 
@@ -905,7 +903,7 @@ ElementXML_Handle Connection::AddParameterToSMLCommand(ElementXML* pMsg, char co
 *		 to respond to the incoming message.
 *
 * @param pIncomingMsg	The original message that we are responding to.
-*
+* 
 * @returns The new SML response message.
 *************************************************************/
 ElementXML* Connection::CreateSMLResponse(ElementXML const* pIncomingMsg)

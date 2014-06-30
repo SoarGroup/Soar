@@ -19,6 +19,8 @@
 #include "agent.h"
 #include "misc.h"
 #include "soar_instance.h"
+#include "output_manager.h"
+#include "output_manager_params.h"
 #include "debug.h"
 
 using namespace cli;
@@ -29,7 +31,7 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 #ifdef SOAR_DEBUG_UTILITIES
 #include "debug.h"
 
-  agent* agnt = m_pAgentSML->GetSoarAgent();
+  agent* thisAgent = m_pAgentSML->GetSoarAgent();
 	bool result = false;
 	int	numArgs = 0;
 	std::ostringstream tempString;
@@ -37,28 +39,34 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 
 	if (!argv)
 	{
-        struct print_function: public soar_module::accumulator< soar_module::param * >
-        {
-        private:
-            cli::CommandLineInterface *this_cli;
-
-            print_function& operator=(const print_function&) { return *this; }
-
-        public:
-            print_function( cli::CommandLineInterface *new_cli): this_cli( new_cli ) {};
-
-            void operator() ( soar_module::param *p )
-            {
-                std::string output( p->get_name() );
-                output += ":";
-                this_cli->PrintCLIMessage_Item(output.c_str(), p, 40);
-            }
-        } print_function_accumulator(this);
-
-
-        PrintCLIMessage_Header("Debug", 40);
+		PrintCLIMessage_Header("Debug", 40);
         PrintCLIMessage_Section("Settings", 40);
-        agnt->debug_params->for_each( print_function_accumulator );
+    PrintCLIMessage_Item("epmem:", thisAgent->debug_params->epmem_commands, 40);
+    PrintCLIMessage_Item("smem:", thisAgent->debug_params->smem_commands, 40);
+    PrintCLIMessage_Item("sql:", thisAgent->debug_params->sql_commands, 40);
+    PrintCLIMessage_Item("use_new_chunking:", thisAgent->debug_params->use_new_chunking, 40);
+    PrintCLIMessage_Section("Debug Database Storage", 40);
+    PrintCLIMessage_Item("database:", m_OutputManager->m_params->database, 40);
+    PrintCLIMessage_Item("append-database:", m_OutputManager->m_params->append_db, 40);
+    PrintCLIMessage_Item("path:", m_OutputManager->m_params->path, 40);
+    PrintCLIMessage_Section("Performance", 40);
+    PrintCLIMessage_Item("lazy-commit:", m_OutputManager->m_params->lazy_commit, 40);
+    PrintCLIMessage_Item("page-size:", m_OutputManager->m_params->page_size, 40);
+    PrintCLIMessage_Item("cache-size:", m_OutputManager->m_params->cache_size, 40);
+    PrintCLIMessage_Item("optimization:", m_OutputManager->m_params->opt, 40);
+    PrintCLIMessage_Section("Trace Output", 40);
+    PrintCLIMessage_Item("db_mode:", m_OutputManager->m_params->db_mode, 40);
+    PrintCLIMessage_Item("XML_mode:", m_OutputManager->m_params->XML_mode, 40);
+    PrintCLIMessage_Item("callback_mode:", m_OutputManager->m_params->callback_mode, 40);
+    PrintCLIMessage_Item("stdout_mode:", m_OutputManager->m_params->stdout_mode, 40);
+    PrintCLIMessage_Item("file_mode:", m_OutputManager->m_params->file_mode, 40);
+    PrintCLIMessage_Section("Debug Output", 40);
+    PrintCLIMessage_Item("db_dbg_mode:", m_OutputManager->m_params->db_dbg_mode, 40);
+    PrintCLIMessage_Item("XML_dbg_mode:", m_OutputManager->m_params->XML_dbg_mode, 40);
+    PrintCLIMessage_Item("callback_dbg_mode:", m_OutputManager->m_params->callback_dbg_mode, 40);
+    PrintCLIMessage_Item("stdout_dbg_mode:", m_OutputManager->m_params->stdout_dbg_mode, 40);
+    PrintCLIMessage_Item("file_dbg_mode:", m_OutputManager->m_params->file_dbg_mode, 40);
+		PrintCLIMessage("");
 
 		result = true;
 		goto print_syntax;
@@ -69,94 +77,110 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 
 	if (numArgs == 1)
 	{
-		if (sub_command[0] == 'g')
-		{
-			std::string parameter_name = argv->at(1);
-	        soar_module::param *my_param = agnt->debug_params->get( parameter_name.c_str() );
-	        if ( !my_param ) {
-				tempString.str("");
-	            tempString << "Debug| Invalid parameter: " << parameter_name;
-	        	SetError( tempString.str().c_str() );
-				goto print_syntax;
-	        }
-			tempString.str("");
-        	tempString << "Debug| "<< parameter_name << " = " << my_param->get_string();
-			PrintCLIMessage(&tempString);
-	        return true;
-		}
+	  if (sub_command[0] == 'g')
+	  {
+	    std::string parameter_name = argv->at(1);
+	    soar_module::param *my_param = thisAgent->debug_params->get( parameter_name.c_str() );
+	    if ( !my_param ) {
+	      tempString.str("");
+	      tempString << "Debug| Invalid parameter: " << parameter_name;
+	      SetError( tempString.str().c_str() );
+	      goto print_syntax;
+	    }
+	    tempString.str("");
+	    tempString << "Debug| "<< parameter_name << " = " << my_param->get_string();
+	    PrintCLIMessage(&tempString);
+	    return true;
+	  }
+	  else if (sub_command[0] == 't')
+	  {
+	    std::string mode = argv->at(1);
+	    int debug_type;
+	    if (!from_string(debug_type, mode))
+	    {
+	      tempString.str("");
+	      tempString << "Debug | Invalid value: " << mode;
+	      SetError( tempString.str().c_str() );
+	      goto print_syntax;
+	    }
+	    else
+	    {
+	      debug_test(debug_type);
+	      return true;
+	    }
+	  }
 	}
 	else if (numArgs == 2)
 	{
-		if (sub_command[0] == 's')
-		{
-			std::string parameter_name = argv->at(1);
-			std::string parameter_value = argv->at(2);
+	  if (sub_command[0] == 's')
+	  {
+	    std::string parameter_name = argv->at(1);
+	    std::string parameter_value = argv->at(2);
 
-			soar_module::param *my_param = agnt->debug_params->get( parameter_name.c_str() );
-			if ( !my_param ) {
-				tempString.str("");
-				tempString << "Debug| Invalid parameter: " << parameter_name;
-				SetError( tempString.str().c_str() );
-				goto print_syntax;
-			}
-			if ( !my_param->validate_string( parameter_value.c_str() ) )
-			{
-				tempString.str("");
-				tempString << "Debug| Invalid value: " << parameter_value;
-				SetError( tempString.str().c_str() );
-				goto print_syntax;
-			}
+	    soar_module::param *my_param = thisAgent->debug_params->get( parameter_name.c_str() );
+	    if ( !my_param ) {
+	      tempString.str("");
+	      tempString << "Debug| Invalid parameter: " << parameter_name;
+	      SetError( tempString.str().c_str() );
+	      goto print_syntax;
+	    }
+	    if ( !my_param->validate_string( parameter_value.c_str() ) )
+	    {
+	      tempString.str("");
+	      tempString << "Debug| Invalid value: " << parameter_value;
+	      SetError( tempString.str().c_str() );
+	      goto print_syntax;
+	    }
 
-			bool result = my_param->set_string( parameter_value.c_str() );
+	    bool result = my_param->set_string( parameter_value.c_str() );
 
-			if ( !result )
-			{
-				SetError( "Debug| Could not set parameter!" );
-				goto print_syntax;
-			}
-			else
-			{
-				tempString << "Debug| "<< parameter_name.c_str() << " = " << parameter_value.c_str();
-				PrintCLIMessage(&tempString);
-				return true;
-			}
-		}
-		else if (sub_command[0] == 'p')
-		{
-			std::string database_name = argv->at(1);
-			std::string table_name = argv->at(2);
-			if (database_name[0] == 'e')
-			{
-//				debug_print_epmem_table(agnt, table_name.c_str());
-			}
-			else if (database_name[0] == 's')
-			{
-//				debug_print_smem_table(agnt, table_name.c_str());
-			}
-			else
-			{
-				tempString.str("");
-				tempString << "Debug| Invalid print database parameter: " << sub_command << ".";
-				SetError( tempString.str().c_str() );
-				goto print_syntax;
-			}
-		}
+	    if ( !result )
+	    {
+	      SetError( "Debug| Could not set parameter!" );
+	      goto print_syntax;
+	    }
+	    else
+	    {
+	      tempString << "Debug| "<< parameter_name.c_str() << " = " << parameter_value.c_str();
+	      PrintCLIMessage(&tempString);
+	      return true;
+	    }
+	  }
+	  else if (sub_command[0] == 'p')
+	  {
+	    std::string database_name = argv->at(1);
+	    std::string table_name = argv->at(2);
+	    if (database_name[0] == 'e')
+	    {
+				debug_print_epmem_table(table_name.c_str());
+	    }
+	    else if (database_name[0] == 's')
+	    {
+				debug_print_smem_table(table_name.c_str());
+	    }
+	    else
+	    {
+	      tempString.str("");
+	      tempString << "Debug | Invalid database parameter: " << sub_command << ".";
+	      SetError( tempString.str().c_str() );
+	      goto print_syntax;
+	    }
+	  }
+	  else
+	  {
+	    tempString.str("");
+	    tempString << "Debug| Invalid command: " << sub_command << ".";
+	    SetError( tempString.str().c_str() );
+	    goto print_syntax;
+	  }
 
-		else
-		{
-			tempString.str("");
-			tempString << "Debug| Invalid command: " << sub_command << ".";
-			SetError( tempString.str().c_str() );
-			goto print_syntax;
-		}
-
-		return result;
+	  return result;
 	}
 	else if (numArgs == 0)
 	{
 if (sub_command[0] == 'd')
 		{
-//			debug_print_db_err(agnt);
+			debug_print_db_err();
 		}
 		else
 		{
@@ -191,10 +215,10 @@ if (sub_command[0] == 'd')
  *        has the episodes it needs to do an issued experiment.  (i.e.
  *        just saves us the hassle of having to run
  *
- * @param agnt			Agent to run
+ * @param thisAgent			Agent to run
  * @param run_count		Number of decision cycles to run for
  */
-void CommandLineInterface::Run_DC(agent* agnt, int run_count)
+void CommandLineInterface::Run_DC(agent* thisAgent, int run_count)
 {
 	std::ostringstream tempString;
 	tempString << "MemCon| Running for " << run_count << " decision cycles.\n";

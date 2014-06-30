@@ -36,7 +36,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
 
 	Symbol* pSoarReturn = 0;
 
-	// Check to make sure we have the right number of arguments.   
+	// Check to make sure we have the right number of arguments.
 	if( (rhsFunction->GetNumExpectedParameters() == kPARAM_NUM_VARIABLE) ||
 	  (static_cast<int>(symVector.size()) == rhsFunction->GetNumExpectedParameters()) )
 	{
@@ -57,7 +57,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
 			else
 			{
 			   // We have to return something to prevent a crash, so we return an error code
-			   pSoarReturn = make_sym_constant(thisAgent, "error_expected_rhs_function_to_return_value_but_it_did_NOT");
+			   pSoarReturn = make_str_constant(thisAgent, "error_expected_rhs_function_to_return_value_but_it_did_NOT");
 			}
 		 }
 		 else
@@ -79,7 +79,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
 
 		// We can return anything we want to soar; we return an error message so at least the problem is obvious.
 		if(rhsFunction->IsValueReturned() == true)
-			pSoarReturn = make_sym_constant(thisAgent, "error_wrong_number_of_args_passed_to_rhs_function");
+			pSoarReturn = make_str_constant(thisAgent, "error_wrong_number_of_args_passed_to_rhs_function");
 	}
 
 	return pSoarReturn;
@@ -101,18 +101,18 @@ Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 		  Symbol* pSymbol = *iter ;
 
 		if ( !pSymbol ) {
-		 std::cerr << "Concat function was sent a null symbol! " 
+		 std::cerr << "Concat function was sent a null symbol! "
 				   << "Ignoring it..."
 				   << std::endl;
 		} else {
-			std::string nextString = symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0 );
+			std::string nextString = pSymbol->to_string();
 			ostr << nextString;
 		}
 	  }
 
 	  std::string result = ostr.str();
 	  char const* pResultStr = result.c_str() ;
-	  Symbol* pResult = make_sym_constant(m_pAgentSML->GetSoarAgent(), pResultStr) ;
+	  Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), pResultStr) ;
 	  return pResult ;
 }
 
@@ -123,7 +123,7 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 	// Didn't pass a function name to "cmd"
 	if (pArguments->size() == 0)
 	{
-	 std::cerr << GetName() << " should be followed by a command name " 
+	 std::cerr << GetName() << " should be followed by a command name "
 			   << std::endl;
 
 	  return NULL ;
@@ -141,11 +141,11 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 			else ostr << " " ;
 
 			if ( !pSymbol ) {
-			 std::cerr << "Concat function was sent a null symbol! " 
+			 std::cerr << "Concat function was sent a null symbol! "
 					   << "Ignoring it..."
 					   << std::endl;
 			} else {
-				ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0 );
+				ostr << pSymbol->to_string();
 			}
 	  }
 
@@ -153,7 +153,7 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 
 	std::string result = m_pAgentSML->ExecuteCommandLine(argument) ;
 
-	Symbol* pResult = make_sym_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
+	Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
 	return pResult ;
 }
 
@@ -164,13 +164,13 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 	// Didn't pass a function name to "exec"
 	if (pArguments->size() == 0)
 	{
-	 std::cerr << GetName() << " should be followed by a function name " 
+	 std::cerr << GetName() << " should be followed by a function name "
 			   << std::endl;
 
 	  return NULL ;
 	}
 
-	std::string function = symbol_to_string( m_pAgentSML->GetSoarAgent(), pArguments->front(), false, 0, 0 );
+	std::string function = pArguments->front()->to_string();
 
 	// Get the command line string.
 	// We've decided for "exec" to just concatenate all arguments together without inserting
@@ -180,11 +180,11 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 			Symbol* pSymbol = *iter ;
 
 			if ( !pSymbol ) {
-				std::cerr << "Concat function was sent a null symbol! " 
+				std::cerr << "Concat function was sent a null symbol! "
 					   << "Ignoring it..."
 					   << std::endl;
 			} else {
-				ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0 );
+				ostr << pSymbol->to_string();
 			}
 	  }
 
@@ -198,6 +198,6 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 		result = std::string("Error: Nobody was registered to implement rhs function ") + function ;
 	}
 
-	Symbol* pResult = make_sym_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
+	Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
 	return pResult ;
 }

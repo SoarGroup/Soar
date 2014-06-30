@@ -42,7 +42,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::AddWMECommand(*this));
     m_Parser.AddCommand(new cli::AliasCommand(*this));
     m_Parser.AddCommand(new cli::AllocateCommand(*this));
-    m_Parser.AddCommand(new cli::BreakCommand(*this));
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkNameFormatCommand(*this));
@@ -519,8 +518,8 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
         // Only called when source command is active
         production* p = static_cast<production*>(pCallData);
         assert(p);
-        assert(p->name->data.sc.name);
-        m_ExcisedDuringSource.push_back(std::string(p->name->data.sc.name));
+        assert(p->name->sc->name);
+        m_ExcisedDuringSource.push_back(std::string(p->name->sc->name));
     }
     else
     {

@@ -14,10 +14,9 @@ typedef unsigned char byte;
  *
  *     NOTE: IF YOU ADD A NEW TRACE OR DEBUG MODE, MAKE SURE TO
  *
- *       (1) KEEP num_trace_modes UPDATED (below immediately after enum)
- *       (2) SET AN INITIAL VALUE IN debug_defines.h
- *       (3) INITIALIZE OUTPUT PREFIX INFO AND INITIAL VALUE IN
- *           Output_Manager::fill_mode_info (AT BOTTOM OF output_manager.cpp)!
+ *       (1) SET AN INITIAL VALUE IN debug_defines.h
+ *       (2) INITIALIZE OUTPUT PREFIX INFO AND INITIAL VALUE IN
+ *           Output_Manager::fill_mode_info
  *
  * ------------------------------------------------------------------------------ */
 
@@ -65,9 +64,31 @@ enum MessageType {
   refcnt_msg
 };
 
+enum SymbolTypes {
+  VARIABLE_SYMBOL_TYPE = 0,
+  IDENTIFIER_SYMBOL_TYPE = 1,
+  STR_CONSTANT_SYMBOL_TYPE = 2,
+  INT_CONSTANT_SYMBOL_TYPE = 3,
+  FLOAT_CONSTANT_SYMBOL_TYPE = 4,
+  UNDEFINED_SYMBOL_TYPE = 5
+};
+
+enum AddAdditionalTestsMode {
+  DONT_ADD_TESTS,
+  ALL_ORIGINALS,
+  JUST_INEQUALITIES
+};
+
+enum WME_Field {
+  ID_ELEMENT=0,
+  ATTR_ELEMENT=1,
+  VALUE_ELEMENT=2,
+  NO_ELEMENT=3,
+};
+
 /* MToDo | This was moved from soar_module to make it easier to use debug_defines without including soar_module,
- *    since that file is included in many places.  Naming it "boolean" doesn't seem to conflict with other things,
- *    but this seems risky.  Maybe we can move it back and just do some sort of forward declaration or perhaps
+ *    since that file is included in many places.  Naming doesn't seem to conflict with other things, but
+ *    this seems risky.  Maybe we can move it back and just do some sort of forward declaration or perhaps
  *    rename to something less common. -- */
 
 /* -- An implementation of an on/off boolean parameter --*/
@@ -76,8 +97,29 @@ enum boolean { off, on };
 
 /* -- Possible modes for numeric indifference -- */
 
+enum ni_mode {
+    NUMERIC_INDIFFERENT_MODE_AVG,
+    NUMERIC_INDIFFERENT_MODE_SUM,
+};
 
-/* -- MToDo | Change these to enums -- */
+/* --- Types of tests (can't be 255 -- see rete.cpp) --- */
+
+enum TestType {
+         NOT_EQUAL_TEST = 1,          /* various relational tests */
+         LESS_TEST = 2,
+         GREATER_TEST = 3,
+         LESS_OR_EQUAL_TEST = 4,
+         GREATER_OR_EQUAL_TEST = 5,
+         SAME_TYPE_TEST = 6,
+         DISJUNCTION_TEST = 7,        /* item must be one of a list of constants */
+         CONJUNCTIVE_TEST = 8,        /* item must pass each of a list of non-conjunctive tests */
+         GOAL_ID_TEST = 9,            /* item must be a goal identifier */
+         IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
+         EQUALITY_TEST = 11,
+         NUM_TEST_TYPES
+};
+
+/* MToDo | Change these to enums -- */
 /* -------------------------------
       Types of Productions
 ------------------------------- */

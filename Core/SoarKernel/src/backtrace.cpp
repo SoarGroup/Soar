@@ -295,7 +295,7 @@ void backtrace_through_instantiation (agent* thisAgent,
     temp_explain_backtrace.negated    = NIL;
 
 	if (inst->prod) {
-      strncpy(temp_explain_backtrace.prod_name,inst->prod->name->data.sc.name, BUFFER_PROD_NAME_SIZE);
+      strncpy(temp_explain_backtrace.prod_name,inst->prod->name->sc->name, BUFFER_PROD_NAME_SIZE);
 	} else {
       strncpy(temp_explain_backtrace.prod_name,"Dummy production", BUFFER_PROD_NAME_SIZE);
 	}
@@ -339,7 +339,7 @@ void backtrace_through_instantiation (agent* thisAgent,
         if (value->tc_num == tc2) need_another_pass = true;
         value->tc_num = tc;
       }
-    } else if ((id->data.id.isa_goal) && (c->bt.level <= grounds_level)) {
+    } else if ((id->id->isa_goal) && (c->bt.level <= grounds_level)) {
       /* --- id is a higher goal id that was tested: so add id to the TC --- */
       id->tc_num = tc;
       value = c->data.tests.value_test->data.referent;
@@ -548,7 +548,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *relia
 	}
     /* --- for augmentations of the local goal id, either handle the
        "^quiescence t" test or discard it --- */
-    if (cond->data.tests.id_test->data.referent->data.id.isa_goal) {
+    if (cond->data.tests.id_test->data.referent->id->isa_goal) {
       if ((cond->data.tests.attr_test->data.referent ==
            thisAgent->quiescence_symbol) &&
           (cond->data.tests.value_test->data.referent ==

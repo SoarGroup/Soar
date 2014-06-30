@@ -31,6 +31,8 @@
 #include "init_soar.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "test.h"
+#include "debug.h"
 
 /* *********************************************************************
 
@@ -46,15 +48,6 @@
    holds the name of the production currently being reordered, so it
    can be printed with the error message.
 ===================================================================== */
-
-/*#define symbol_is_constant_or_marked_variable(sym,tc) \
-  ( ((sym)->common.symbol_type!=VARIABLE_SYMBOL_TYPE) || \
-    ((sym)->var.tc_num == (tc)) )*/
-inline Bool symbol_is_constant_or_marked_variable(Symbol * sym, tc_number tc)
-{
-  return ( ((sym)->common.symbol_type!=VARIABLE_SYMBOL_TYPE) ||
-    ((sym)->var.tc_num == (tc)) );
-}
 
 /* =====================================================================
 
@@ -77,18 +70,18 @@ inline Bool symbol_is_constant_or_marked_variable(Symbol * sym, tc_number tc)
   Reorder_action_list() does the reordering.  Its parameter action_list
   is reordered in place (destructively modified).  It also requires at entry
   that the variables bound on the LHS are marked.  The function returns
-  TRUE if successful, FALSE if it was unable to produce a legal ordering.
+  true if successful, false if it was unable to produce a legal ordering.
 ===================================================================== */
 
-Bool legal_to_execute_action (action *a, tc_number tc);
+bool legal_to_execute_action (action *a, tc_number tc);
 
-Bool reorder_action_list (agent* thisAgent, action **action_list,
+bool reorder_action_list (agent* thisAgent, action **action_list,
 						  tc_number lhs_tc) {
   list *new_bound_vars;
   action *remaining_actions;
   action *first_action, *last_action;
   action *a, *prev_a;
-  Bool result_flag;
+  bool result_flag;
 
   new_bound_vars = NIL;
   remaining_actions = *action_list;
@@ -99,7 +92,7 @@ Bool reorder_action_list (agent* thisAgent, action **action_list,
     /* --- scan through remaining_actions, look for one that's legal --- */
     prev_a = NIL;
     a = remaining_actions;
-    while (TRUE) {
+    while (true) {
       if (!a) break; /* looked at all candidates, but none were legal */
       if (legal_to_execute_action (a, lhs_tc)) break;
       prev_a = a;
@@ -117,20 +110,19 @@ Bool reorder_action_list (agent* thisAgent, action **action_list,
 
   if (remaining_actions) {
     /* --- there are remaining_actions but none can be legally added --- */
-      print (thisAgent, "Error: production %s has a bad RHS--\n",
-                      thisAgent->name_of_production_being_reordered);
-      print (thisAgent, "       Either it creates a variable that is not tested in a\n");
-      print (thisAgent, "       positive condition on the LHS (negative conditions\n");
-      print (thisAgent, "       don't count) or it tries to pass an unbound variable\n");
-      print (thisAgent, "       as an argument to a function.\n");
-      /* --- reconstruct list of all actions --- */
-      if (last_action)
-          last_action->next = remaining_actions;
-      else
-          first_action = remaining_actions;
-      result_flag = FALSE;
+    print(thisAgent,  "Error: production %s has a bad RHS--\n",
+           thisAgent->name_of_production_being_reordered);
+    print(thisAgent,  "       Either it creates structure not connected to anything\n");
+    print(thisAgent,  "       else in WM, or it tries to pass an unbound variable as\n");
+    print(thisAgent,  "       an argument to a function.\n");
+    /* --- reconstruct list of all actions --- */
+    if (last_action)
+      last_action->next = remaining_actions;
+    else
+      first_action = remaining_actions;
+    result_flag = false;
   } else {
-      result_flag = TRUE;
+    result_flag = true;
   }
 
   /* --- unmark variables that we just marked --- */
@@ -141,7 +133,7 @@ Bool reorder_action_list (agent* thisAgent, action **action_list,
   return result_flag;
 }
 
-Bool all_variables_in_rhs_value_bound (rhs_value rv, tc_number tc) {
+bool all_variables_in_rhs_value_bound (rhs_value rv, tc_number tc) {
   cons *c;
   list *fl;
   Symbol *sym;
@@ -151,28 +143,28 @@ Bool all_variables_in_rhs_value_bound (rhs_value rv, tc_number tc) {
     fl = rhs_value_to_funcall_list (rv);
     for (c=fl->rest; c!=NIL; c=c->rest)
       if (! all_variables_in_rhs_value_bound (static_cast<char *>(c->first), tc))
-        return FALSE;
-    return TRUE;
+        return false;
+    return true;
   } else {
     /* --- ordinary (symbol) rhs values --- */
     sym = rhs_value_to_symbol (rv);
-    if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      return (sym->var.tc_num == tc);
-    return TRUE;
+    if (sym->symbol_type==VARIABLE_SYMBOL_TYPE)
+      return (sym->tc_num == tc);
+    return true;
   }
 }
 
-Bool legal_to_execute_action (action *a, tc_number tc) {
+bool legal_to_execute_action (action *a, tc_number tc) {
   if (a->type==MAKE_ACTION) {
-    if (! all_variables_in_rhs_value_bound (a->id, tc)) return FALSE;
+    if (! all_variables_in_rhs_value_bound (a->id, tc)) return false;
     if (rhs_value_is_funcall(a->attr) &&
-        (! all_variables_in_rhs_value_bound (a->attr, tc))) return FALSE;
+        (! all_variables_in_rhs_value_bound (a->attr, tc))) return false;
     if (rhs_value_is_funcall(a->value) &&
-        (! all_variables_in_rhs_value_bound (a->value, tc))) return FALSE;
+        (! all_variables_in_rhs_value_bound (a->value, tc))) return false;
     if (preference_is_binary(a->preference_type) &&
         rhs_value_is_funcall(a->referent) &&
-        (! all_variables_in_rhs_value_bound (a->referent, tc))) return FALSE;
-    return TRUE;
+        (! all_variables_in_rhs_value_bound (a->referent, tc))) return false;
+    return true;
   }
   /* --- otherwise it's a function call; make sure args are all bound  --- */
   return all_variables_in_rhs_value_bound (a->value, tc);
@@ -201,102 +193,145 @@ Bool legal_to_execute_action (action *a, tc_number tc) {
 
 ===================================================================== */
 
-typedef struct saved_test_struct {
-  struct saved_test_struct *next;
-  Symbol *var;
-  test the_test;
-} saved_test;
-
-
 void print_saved_test (agent* thisAgent, saved_test *st) {
-  print_with_symbols (thisAgent, "  Symbol: %y  Test: ", st->var);
-  print_string (thisAgent, test_to_string (thisAgent, st->the_test, NULL, 0));
+  print_with_symbols (thisAgent, "  Index: %y  Test: ", st->var);
+  print(thisAgent,  test_to_string (st->the_test, NULL, 0));
 }
 
 void print_saved_test_list (agent* thisAgent, saved_test *st) {
   while (st) {
     print_saved_test (thisAgent, st);
-    print (thisAgent, "\n");
+    print(thisAgent,  "\n");
     st = st->next;
   }
 }
 
 saved_test *simplify_test (agent* thisAgent, test *t, saved_test *old_sts) {
-  test New, subtest;
+  test ct, New, subtest;
   saved_test *saved;
   Symbol *var, *sym;
   cons *c, *prev_c, *next_c;
-  complex_test *ct;
 
-  if (test_is_blank_test(*t)) {
+  dprint(DT_REORDERER, "Simplifying test ");
+  dprint_test(DT_REORDERER, (*t), true, false, false, "", "");
+
+  if (test_is_blank(*t)) {
     sym = generate_new_variable (thisAgent, "dummy-");
-    *t = make_equality_test_without_adding_reference (sym);
+    //    *t = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
+    *t = make_test (thisAgent, sym, EQUALITY_TEST);
+    /* -- generate variable already creates refcount -- */
+    symbol_remove_ref(thisAgent, sym);
+    dprint_noprefix(DT_REORDERER, "\n");
+    dprint(DT_REORDERER, "...returning by reference dummy equality test with %s.\n", sym->to_string());
+    dprint(DT_REORDERER, "...equality...skipping....\n");
     return old_sts;
   }
 
-  if (test_is_blank_or_equality_test(*t)) {
-    return old_sts;
-  }
-
-  ct = complex_test_from_test(*t);
+  ct = *t;
 
   switch (ct->type) {
-
-  case CONJUNCTIVE_TEST:
-    /* --- look at subtests for an equality test --- */
-    sym = NIL;
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
-      subtest = static_cast<char *>(c->first);
-      if (test_is_blank_or_equality_test(subtest))
-        sym = referent_of_equality_test(subtest);
-    }
-    /* --- if no equality test was found, generate a variable for it --- */
-    if (!sym) {
-      sym = generate_new_variable (thisAgent, "dummy-");
-      New = make_equality_test_without_adding_reference (sym);
-      allocate_cons (thisAgent, &c);
-      c->first = New;
-      c->rest = ct->data.conjunct_list;
-      ct->data.conjunct_list = c;
-    }
-    /* --- scan through, create saved_test for subtests except equality --- */
-    prev_c = NIL;
-    c = ct->data.conjunct_list;
-    while (c) {
-      next_c = c->rest;
-      subtest = static_cast<char *>(c->first);
-      if (! test_is_blank_or_equality_test(subtest)) {
-        /* --- create saved_test, splice this cons out of conjunct_list --- */
-        allocate_with_pool (thisAgent, &thisAgent->saved_test_pool, &saved);
-        saved->next = old_sts;
-        old_sts = saved;
-        saved->var = sym;
-        symbol_add_ref (sym);
-        saved->the_test = subtest;
-        if (prev_c)
-          prev_c->rest = next_c;
-        else
-          ct->data.conjunct_list = next_c;
-        free_cons (thisAgent, c);
-      } else {
-        prev_c = c;
+    case EQUALITY_TEST:
+      dprint_noprefix(DT_REORDERER, "...equality...skipping...\n");
+      return old_sts;
+      break;
+    case CONJUNCTIVE_TEST:
+      /* -- set sym to symbol found in an last equality test in a conjunction list
+       *
+       *    Note: Could be a problem because we have more than one equality sym in
+       *           a conjunction list. Which one do we want to index on? It's storing
+       *           all the non-equality tests based on that symbol.  Couldn't this have
+       *           occurred before with { <var> <var2> } where they match different
+       *           symbols? --- */
+      dprint_noprefix(DT_REORDERER, "\n");
+      dprint(DT_REORDERER, "...Processing conjunctive test.  First find sym to index saved tests by...\n");
+      sym = NIL;
+      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
+        subtest = static_cast<test>(c->first);
+        if (!test_is_blank(subtest) && (subtest->type == EQUALITY_TEST))
+        {
+          if (subtest->data.referent->is_constant() && sym && sym->is_variable())
+          {
+            dprint(DT_REORDERER, "...found equality test on %s.  Skipping because we already have variable index.\n", subtest->data.referent->to_string());
+            continue;
+          }
+          sym = subtest->data.referent;
+          dprint(DT_REORDERER, "...found equality symbol on %s.  Setting as index.\n", sym->to_string());
+        }
       }
-      c = next_c;
-    }
-    break;
+      /* --- if no equality test was found, generate a dummy variable for it --- */
+      if (!sym) {
+        sym = generate_new_variable (thisAgent, "dummy-");
+        //New = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
+        New = make_test (thisAgent, sym, EQUALITY_TEST);
+        c->first = New;
+        c->rest = ct->data.conjunct_list;
+        ct->data.conjunct_list = c;
+        dprint(DT_REORDERER, "...no equality symbol found.  Generated EQ test for %s and added to beginning of t's conjunct list.\n", sym->to_string());
+      }
+      /* -- moves all tests except equality in this conjunction list to the saved test
+       *    list passed in.
+       *    - Use sym determined above to index the test
+       *      - Does add refcount for sym that it uses for indexing.
+       *      - Must make sure saved->var is getting cleaned up.
+       *    - Destroys the cons list in conjunct_list but doesn't deallocate tests
+       *      because it isn't copying the test, just "moving" it to the saved_test
+       *      struct
+       *
+       *      Note: Could be a problem because an equality test with another symbol
+       *            won't be saved anywhere.  It also won't be deallocated.-- */
+      dprint(DT_REORDERER, "...now save non-equality tests...\n");
+      prev_c = NIL;
+      c = ct->data.conjunct_list;
+      while (c) {
+        next_c = c->rest;
+        subtest = static_cast<test>(c->first);
+        if (subtest->type != EQUALITY_TEST) {
+          /* -- create saved_test, splice this cons out of conjunct_list -- */
+          allocate_with_pool (thisAgent, &thisAgent->saved_test_pool, &saved);
+          saved->next = old_sts;
+          old_sts = saved;
+          saved->var = sym;
+          symbol_add_ref(thisAgent, sym);
+          saved->the_test = subtest;
+          if (prev_c)
+            prev_c->rest = next_c;
+          else
+            ct->data.conjunct_list = next_c;
+          dprint_noprefix(DT_REORDERER, "\n");
+          dprint(DT_REORDERER, "...spliced test ");
+          dprint_test(DT_REORDERER, subtest, true, false, false, "", "");
+          dprint_noprefix(DT_REORDERER, " out of t's conjunct list and saved to saved_tests with index %s.\n", sym->to_string());
+          free_cons (thisAgent, c);
+        } else {
+          prev_c = c;
+        }
+        c = next_c;
+      }
+      break;
 
-  default:
-    /* --- goal/impasse, disjunction, and non-equality relational tests --- */
-    var = generate_new_variable (thisAgent, "dummy-");
-    New = make_equality_test_without_adding_reference (var);
-    allocate_with_pool (thisAgent, &thisAgent->saved_test_pool, &saved);
-    saved->next = old_sts;
-    old_sts = saved;
-    saved->var = var;
-    symbol_add_ref (var);
-    saved->the_test = *t;
-    *t = New;
-    break;
+    default:
+      /* -- for goal/impasse, disjunction, and non-equality relational tests,
+       *    add a dummy variable and use that as an index to a new entry in the
+       *    saved_test list passed in.  Full test with original referent still
+       *    saved.
+       *    - Must make sure dummy variable also gets cleaned up-- */
+      var = generate_new_variable (thisAgent, "dummy-");
+      //    New = make_test_without_refcount (thisAgent, var, EQUALITY_TEST);
+      New = make_test (thisAgent, var, EQUALITY_TEST);
+      allocate_with_pool (thisAgent, &thisAgent->saved_test_pool, &saved);
+      saved->next = old_sts;
+      old_sts = saved;
+      saved->var = var;
+      /* MToDoRefCnt | Removed this b/c it used to make a test without a refcount.
+       *               Logically, it already had two refcounts, one when it was
+       *               generated and one when the test was made with it.  That
+       *               should cover saved_var and the test */
+      // symbol_add_ref(thisAgent, var);
+      saved->the_test = *t;
+      *t = New;
+      dprint(DT_REORDERER, "...goal/impasse, disjunction or non-equality relational tests...\n");
+      dprint(DT_REORDERER, "... generated EQ test with dummy variable %s using dummy variable as index %s.\n", var->to_string());
+      break;
   }
   return old_sts;
 }
@@ -306,6 +341,10 @@ saved_test *simplify_condition_list (agent* thisAgent, condition *conds_list) {
   saved_test *sts;
 
   sts = NIL;
+  dprint(DT_REORDERER, "==============================\n");
+  dprint(DT_REORDERER, "=   Simplifying Conditions   =\n");
+  dprint_condition_list(DT_REORDERER, conds_list);
+  dprint(DT_REORDERER, "==============================\n");
   for (c=conds_list; c!=NIL; c=c->next) {
 //#define CONSIDER_NEGATIVE 1
 #ifdef CONSIDER_NEGATIVE
@@ -313,15 +352,24 @@ saved_test *simplify_condition_list (agent* thisAgent, condition *conds_list) {
 #else
     if (c->type==POSITIVE_CONDITION) {
 #endif
+//      dprint(DT_REORDERER, "Simplifying tests for cond's id:\n");
       sts = simplify_test (thisAgent, &(c->data.tests.id_test), sts);
+//      dprint(DT_REORDERER, "Simplifying tests for cond's attr:\n");
       sts = simplify_test (thisAgent, &(c->data.tests.attr_test), sts);
+//      dprint(DT_REORDERER, "Simplifying tests for cond's value:\n");
       sts = simplify_test (thisAgent, &(c->data.tests.value_test), sts);
     }
   }
+    dprint(DT_REORDERER, "======== end  simplify =======\n");
+    dprint(DT_REORDERER, "Simplified Conditions:\n");
+    dprint_condition_list(DT_REORDERER, conds_list);
+    dprint(DT_REORDERER, "Saved Tests:\n");
+    dprint_saved_test_list (DT_REORDERER, sts);
+    dprint(DT_REORDERER, "======== end  simplify =======\n");
   return sts;
 }
 
-byte reverse_direction_of_relational_test (agent* thisAgent, byte type) {
+TestType reverse_direction_of_relational_test (agent* thisAgent, byte type) {
   switch (type) {
     case NOT_EQUAL_TEST: return NOT_EQUAL_TEST;
     case LESS_TEST: return GREATER_TEST;
@@ -335,59 +383,76 @@ byte reverse_direction_of_relational_test (agent* thisAgent, byte type) {
 	      "Internal error: arg to reverse_direction_of_relational_test\n", BUFFER_MSG_SIZE);
       msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
       abort_with_fatal_error(thisAgent, msg);
+      break;
       }
   }
-  return 0; /* unreachable, but without it, gcc -Wall warns here */
+    return NOT_EQUAL_TEST; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 saved_test *restore_saved_tests_to_test (agent* thisAgent,
-										                     test *t,
-                                         Bool is_id_field,
+										 test *t,
+                                         bool is_id_field,
                                          tc_number bound_vars_tc_number,
                                          saved_test *tests_to_restore, bool neg) {
   saved_test *st, *prev_st, *next_st;
-  Bool added_it;
+  bool added_it;
   Symbol *referent;
-  complex_test *ct;
+
+  dprint(DT_REORDERER, "Looking for saved tests for: ");
+  dprint_test(DT_REORDERER, (*t), true, false, false, "", "\n");
+//  dprint_saved_test_list (DT_REORDERER, tests_to_restore);
 
   prev_st = NIL;
   st = tests_to_restore;
   while (st) {
     next_st = st->next;
-    added_it = FALSE;
-    ct = complex_test_from_test(st->the_test);
-    switch (ct->type) {
-    case GOAL_ID_TEST:
-    case IMPASSE_ID_TEST:
-      if (! is_id_field) break; /* goal/impasse tests only go in id fields */
-      /* ... otherwise fall through to the next case below ... */
-    case DISJUNCTION_TEST:
-      if (test_includes_equality_test_for_symbol (*t, st->var)) {
-        add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
-        added_it = TRUE;
-      }
-      break;
-    default:  /* --- st->test is a relational test other than equality --- */
-      referent = ct->data.referent;
-      if (test_includes_equality_test_for_symbol (*t, st->var)) {
-        if (symbol_is_constant_or_marked_variable (referent,
-                                                   bound_vars_tc_number) ||
-           (st->var == referent)) {
-          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
-          added_it = TRUE;
+    added_it = false;
+
+    dprint(DT_REORDERER, "...comparing with: %s --> ", st->var->to_string());
+    dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "...");
+
+    switch (st->the_test->type) {
+      case GOAL_ID_TEST:
+      case IMPASSE_ID_TEST:
+        if (! is_id_field) break; /* goal/impasse tests only go in id fields */
+        /* ... otherwise fall through to the next case below ... */
+      case DISJUNCTION_TEST:
+        dprint_noprefix(DT_REORDERER, "test is goal/impasse/disj...\n");
+        if (test_includes_equality_test_for_symbol (*t, st->var)) {
+          dprint(DT_REORDERER, "Found match with  using index var %s: ", st->var->to_string());
+          dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "\n");
+          dprint(DT_REORDERER, "Removing entry with index %s and adding test.\n", st->var->to_string());
+          add_test_if_not_already_there (thisAgent, t, st->the_test, neg);
+          added_it = true;
         }
-      } else if (test_includes_equality_test_for_symbol (*t, referent)) {
-        if (symbol_is_constant_or_marked_variable (st->var,
-                                                   bound_vars_tc_number) ||
-           (st->var == referent)) {
-          ct->type = reverse_direction_of_relational_test (thisAgent, ct->type);
-          ct->data.referent = st->var;
-          st->var = referent;
-          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
-          added_it = TRUE;
+        break;
+      default:  /* --- st->test is a relational test --- */
+        dprint_noprefix(DT_REORDERER, "test is relational...\n");
+        referent = st->the_test->data.referent;
+        if (test_includes_equality_test_for_symbol (*t, st->var)) {
+          dprint(DT_REORDERER, "Found match using index var %s: ", st->var->to_string());
+          dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "\n");
+          if ( referent->is_constant_or_marked_variable(bound_vars_tc_number) ||
+              (st->var == referent)) {
+            dprint(DT_REORDERER, "Adding test if not already there...\n");
+            add_test_if_not_already_there (thisAgent, t, st->the_test, neg);
+            added_it = true;
+          }
+        } else if (test_includes_equality_test_for_symbol (*t, referent)) {
+          dprint(DT_REORDERER, "Found match using referent %s: ", referent->to_string());
+          dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "\n");
+          if (st->var->is_constant_or_marked_variable(bound_vars_tc_number) ||
+              (st->var == referent)) {
+            dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
+            st->the_test->type = reverse_direction_of_relational_test (thisAgent, st->the_test->type);
+            st->the_test->data.referent = st->var;
+            /* MToDo | If we need to reverse original test as well, we do it here.  */
+            st->var = referent;
+            add_test_if_not_already_there (thisAgent, t, st->the_test, neg);
+            added_it = true;
+          }
         }
-      }
-      break;
+        break;
     } /* end of switch statement */
     if (added_it) {
       if (prev_st) prev_st->next = next_st; else tests_to_restore = next_st;
@@ -402,12 +467,19 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
 }
 
 void restore_and_deallocate_saved_tests (agent* thisAgent,
-										 condition *conds_list,
-                                         /* tc number for vars bound outside */
-                                         tc_number tc,
+										                     condition *conds_list,
+                                         tc_number tc, /* tc number for vars bound outside */
                                          saved_test *tests_to_restore) {
   condition *cond;
   list *new_vars;
+
+  dprint(DT_REORDERER, "===============================\n");
+  dprint(DT_REORDERER, "=    Restoring Saved Tests    =\n");
+  dprint(DT_REORDERER, "===============================\n");
+  dprint(DT_REORDERER, "Simplified Conditons:\n");
+  dprint_condition_list(DT_REORDERER, conds_list);
+  dprint(DT_REORDERER, "Saved Tests:\n");
+  dprint_saved_test_list (DT_REORDERER, tests_to_restore);
 
   new_vars = NIL;
   for (cond=conds_list; cond!=NIL; cond=cond->next) {
@@ -417,18 +489,50 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
     if (cond->type!=POSITIVE_CONDITION) continue;
 #endif
     bool neg = cond->type == NEGATIVE_CONDITION;
-    tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.id_test), TRUE, tc, tests_to_restore, neg);
+
+    dprint(DT_REORDERER, "Starting Saved Tests:\n");
+    dprint_saved_test_list (DT_REORDERER, tests_to_restore);
+
+    dprint(DT_REORDERER, "Restoring saved tests for cond's id:\n");
+    tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.id_test), true, tc, tests_to_restore, neg);
+
+    dprint(DT_REORDERER, "After ID Saved Tests:\n");
+    dprint_saved_test_list (DT_REORDERER, tests_to_restore);
+
     add_bound_variables_in_test (thisAgent, cond->data.tests.id_test, tc, &new_vars);
-    tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.attr_test), FALSE, tc, tests_to_restore, neg);
+
+    dprint(DT_REORDERER, "Restoring saved tests for cond's attr:\n");
+    tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.attr_test), false, tc, tests_to_restore, neg);
+
+    dprint(DT_REORDERER, "After attr Saved Tests:\n");
+    dprint_saved_test_list (DT_REORDERER, tests_to_restore);
+
     add_bound_variables_in_test (thisAgent, cond->data.tests.attr_test, tc, &new_vars);
-    tests_to_restore = restore_saved_tests_to_test (thisAgent, (&cond->data.tests.value_test), FALSE, tc, tests_to_restore, neg);
+
+    dprint(DT_REORDERER, "Restoring saved tests for cond's value:\n");
+    tests_to_restore = restore_saved_tests_to_test (thisAgent, (&cond->data.tests.value_test), false, tc, tests_to_restore, neg);
+
+    dprint(DT_REORDERER, "After value Saved Tests:\n");
+    dprint_saved_test_list (DT_REORDERER, tests_to_restore);
+
     add_bound_variables_in_test (thisAgent, cond->data.tests.value_test, tc, &new_vars);
+
+    dprint(DT_REORDERER, "Current Saved Tests:\n");
+    dprint_saved_test_list (DT_REORDERER, tests_to_restore);
   }
+
+  dprint(DT_REORDERER, "===============================\n");
+  dprint(DT_REORDERER, "Final Conditons:\n");
+  dprint_condition_list(DT_REORDERER, conds_list);
+  dprint(DT_REORDERER, "Saved Tests:\n");
+  dprint_saved_test_list (DT_REORDERER, tests_to_restore);
+  dprint(DT_REORDERER, "========= end  restore ========\n");
+
   if (tests_to_restore) {
     if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
-      print (thisAgent, "\nWarning:  in production %s,\n",
-             thisAgent->name_of_production_being_reordered);
-      print (thisAgent, "      ignoring test(s) whose referent is unbound:\n");
+      print(thisAgent,  "\nWarning:  in production %s,\n",
+          thisAgent->name_of_production_being_reordered);
+      print(thisAgent,  "      ignoring test(s) whose referent is unbound:\n");
       print_saved_test_list (thisAgent, tests_to_restore);
       // TODO: XML tagged output -- how to create this string?
       // KJC TODO:  need a tagged output version of print_saved_test_list
@@ -477,42 +581,30 @@ list *collect_vars_tested_by_test_that_are_bound (agent* thisAgent, test t,
                                                   tc_number tc,
                                                   list *starting_list) {
   cons *c;
-  complex_test *ct;
   Symbol *referent;
 
-  if (test_is_blank_test(t)) return starting_list;
+    if (test_is_blank(t)) return starting_list;
 
-  if (test_is_blank_or_equality_test(t)) {
-    referent = referent_of_equality_test(t);
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      if (referent->var.tc_num == tc)
-        starting_list = add_if_not_member (thisAgent, referent, starting_list);
-    return starting_list;
-  }
-
-  ct = complex_test_from_test(t);
-
-  switch (ct->type) {
+    switch (t->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
   case DISJUNCTION_TEST:
-    return starting_list;
-
+        break;
   case CONJUNCTIVE_TEST:
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+        for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
       starting_list = collect_vars_tested_by_test_that_are_bound
-        (thisAgent, static_cast<char *>(c->first), tc, starting_list);
-    return starting_list;
-
+          (thisAgent, static_cast<test>(c->first), tc, starting_list);
+        break;
   default:
-    /* --- relational tests other than equality --- */
-    referent = ct->data.referent;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      if (referent->var.tc_num == tc)
+        /* --- relational tests and equality --- */
+        referent = t->data.referent;
+        if (referent->symbol_type==VARIABLE_SYMBOL_TYPE)
+          if (referent->tc_num == tc)
         starting_list = add_if_not_member (thisAgent, referent, starting_list);
+        break;
+    }
     return starting_list;
   }
-}
 
 list *collect_vars_tested_by_cond_that_are_bound (agent* thisAgent,
 												  condition *cond,
@@ -580,7 +672,7 @@ void remove_vars_requiring_bindings (agent* thisAgent,
    The caller should setup the current tc to be the set of variables
    bound outside the given condition list.  (This should normally be
    an empty TC, except when the condition list is the subconditions
-   of an NCC.)  If the "allow_printing_warnings" flag is TRUE, then
+   of an NCC.)  If the "allow_printing_warnings" flag is true, then
    this routine makes sure each root variable is accompanied by a
    goal or impasse id test, and prints a warning message if it isn't.
 ===================================================================== */
@@ -588,13 +680,13 @@ void remove_vars_requiring_bindings (agent* thisAgent,
 list *collect_root_variables (agent* thisAgent,
 							  condition *cond_list,
                               tc_number tc, /* for vars bound outside */
-                              Bool allow_printing_warnings) {
+                              bool allow_printing_warnings) {
 
   list *new_vars_from_value_slot;
   list *new_vars_from_id_slot;
   cons *c;
   condition *cond;
-  Bool found_goal_impasse_test;
+  bool found_goal_impasse_test;
 
   /* --- find everthing that's in the value slot of some condition --- */
   new_vars_from_value_slot = NIL;
@@ -613,24 +705,24 @@ list *collect_root_variables (agent* thisAgent,
   /* --- unmark everything we just marked --- */
   unmark_variables_and_free_list (thisAgent, new_vars_from_value_slot);
   for (c=new_vars_from_id_slot; c!=NIL; c=c->rest)
-    static_cast<Symbol *>(c->first)->var.tc_num = 0;
+      static_cast<Symbol *>(c->first)->tc_num = 0;
 
   /* --- make sure each root var has some condition with goal/impasse --- */
   if (allow_printing_warnings && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
     for (c=new_vars_from_id_slot; c!=NIL; c=c->rest) {
-      found_goal_impasse_test = FALSE;
+      found_goal_impasse_test = false;
       for (cond=cond_list; cond!=NIL; cond=cond->next) {
         if (cond->type!=POSITIVE_CONDITION) continue;
         if (test_includes_equality_test_for_symbol (cond->data.tests.id_test,
-                                                    static_cast<symbol_union *>(c->first)))
+                                                    static_cast<symbol_struct *>(c->first)))
           if (test_includes_goal_or_impasse_id_test (cond->data.tests.id_test,
-                                                     TRUE, TRUE)) {
-            found_goal_impasse_test = TRUE;
+                                                     true, true)) {
+            found_goal_impasse_test = true;
             break;
           }
       }
       if (! found_goal_impasse_test) {
-        print (thisAgent, "\nWarning: On the LHS of production %s, identifier ",
+        print(thisAgent,  "\nWarning: On the LHS of production %s, identifier ",
                thisAgent->name_of_production_being_reordered);
         print_with_symbols (thisAgent, "%y is not connected to any goal or impasse.\n",
                             static_cast<Symbol *>(c->first));
@@ -640,7 +732,7 @@ list *collect_root_variables (agent* thisAgent,
         add_to_growable_string(thisAgent, &gs, "Warning: On the LHS of production ");
         add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
         add_to_growable_string(thisAgent, &gs, ", identifier ");
-        add_to_growable_string(thisAgent, &gs, symbol_to_string (thisAgent, static_cast<Symbol *>(c->first), true, 0, 0));
+        add_to_growable_string(thisAgent, &gs, static_cast<Symbol *>(c->first)->to_string(true));
         add_to_growable_string(thisAgent, &gs, " is not connected to any goal or impasse.");
         xml_generate_warning(thisAgent, text_of_growable_string(gs));
         free_growable_string(thisAgent, gs);
@@ -668,34 +760,33 @@ list *collect_root_variables (agent* thisAgent,
 #define BF_FOR_ATTRIBUTES 8         /* cost of (. ^<var> .) */
 
 /* -------------------------------------------------------------
-   Return TRUE iff the given test is covered by the previously
+   Return true iff the given test is covered by the previously
    bound variables.  The set of previously bound variables is
    given by the current TC, PLUS any variables in the list
    "extra_vars."
 ------------------------------------------------------------- */
 
-Bool test_covered_by_bound_vars (test t, tc_number tc, list *extra_vars) {
+bool test_covered_by_bound_vars (test t, tc_number tc, list *extra_vars) {
   cons *c;
   Symbol *referent;
-  complex_test *ct;
 
-  if (test_is_blank_test(t)) return FALSE;
+    if (test_is_blank(t)) return false;
 
-  if (test_is_blank_or_equality_test(t)) {
-    referent = referent_of_equality_test(t);
-    if (symbol_is_constant_or_marked_variable (referent, tc))
-      return TRUE;
-    if (extra_vars) return member_of_list (referent, extra_vars);
-    return FALSE;
+    if (t->type == EQUALITY_TEST) {
+      referent = t->data.referent;
+      if (referent->is_constant_or_marked_variable(tc))
+        return true;
+    if (extra_vars)
+      return member_of_list (referent, extra_vars);
+    return false;
   }
 
-  ct = complex_test_from_test(t);
-  if (ct->type==CONJUNCTIVE_TEST) {
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_covered_by_bound_vars (static_cast<char *>(c->first), tc, extra_vars))
-        return TRUE;
+    if (t->type==CONJUNCTIVE_TEST) {
+      for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+        if (test_covered_by_bound_vars (static_cast<test>(c->first), tc, extra_vars))
+        return true;
   }
-  return FALSE;
+  return false;
 }
 
 /* -------------------------------------------------------------
@@ -731,25 +822,22 @@ int64_t cost_of_adding_condition (agent* thisAgent,
   /* --- handle the common simple case quickly up front --- */
   if ((! root_vars_not_bound_yet) &&
       (cond->type==POSITIVE_CONDITION) &&
-      (test_is_blank_or_equality_test (cond->data.tests.id_test)) &&
-      (test_is_blank_or_equality_test (cond->data.tests.attr_test)) &&
-      (test_is_blank_or_equality_test (cond->data.tests.value_test)) &&
-      (! test_is_blank_test (cond->data.tests.id_test)) &&
-      (! test_is_blank_test (cond->data.tests.attr_test)) &&
-      (! test_is_blank_test (cond->data.tests.value_test)) ) {
+      (! test_is_blank (cond->data.tests.id_test)) &&
+      (! test_is_blank (cond->data.tests.attr_test)) &&
+      (! test_is_blank (cond->data.tests.value_test)) &&
+      (cond->data.tests.id_test->type == EQUALITY_TEST) &&
+      (cond->data.tests.attr_test->type == EQUALITY_TEST) &&
+      (cond->data.tests.value_test->type == EQUALITY_TEST) ) {
 
-    if (! symbol_is_constant_or_marked_variable
-          (referent_of_equality_test (cond->data.tests.id_test), tc))
+    if (!(cond->data.tests.id_test->data.referent->is_constant_or_marked_variable(tc)))
       return MAX_COST;
-    if (symbol_is_constant_or_marked_variable
-          (referent_of_equality_test (cond->data.tests.attr_test), tc))
+    if ((cond->data.tests.attr_test->data.referent->is_constant_or_marked_variable(tc)))
       result = get_cost_of_possible_multi_attribute
-          (thisAgent, referent_of_equality_test (cond->data.tests.attr_test));
+      (thisAgent, cond->data.tests.attr_test->data.referent);
     else
       result =  BF_FOR_ATTRIBUTES;
 
-    if (! symbol_is_constant_or_marked_variable
-          (referent_of_equality_test(cond->data.tests.value_test),tc)){
+    if (!(cond->data.tests.value_test->data.referent->is_constant_or_marked_variable(tc))){
       if (cond->test_for_acceptable_preference)
         result = result * BF_FOR_ACCEPTABLE_PREFS;
       else
@@ -761,15 +849,15 @@ int64_t cost_of_adding_condition (agent* thisAgent,
   if (cond->type==POSITIVE_CONDITION) {
     /* --- for pos cond's, check what's bound, etc. --- */
     if (! test_covered_by_bound_vars (cond->data.tests.id_test, tc,
-                                      root_vars_not_bound_yet))
+        root_vars_not_bound_yet))
       return MAX_COST;
     if (test_covered_by_bound_vars (cond->data.tests.attr_test, tc,
-                                    root_vars_not_bound_yet))
+        root_vars_not_bound_yet))
       result = 1;
     else
       result =  BF_FOR_ATTRIBUTES;
     if (! test_covered_by_bound_vars (cond->data.tests.value_test, tc,
-                                      root_vars_not_bound_yet)) {
+        root_vars_not_bound_yet)) {
       if (cond->test_for_acceptable_preference)
         result = result * BF_FOR_ACCEPTABLE_PREFS;
       else
@@ -781,7 +869,7 @@ int64_t cost_of_adding_condition (agent* thisAgent,
      requiring bindings are actually bound.  If so, return 1, else
      return MAX_COST --- */
   for (c=cond->reorder.vars_requiring_bindings; c!=NIL; c=c->rest) {
-    if (static_cast<Symbol *>(c->first)->var.tc_num != tc) return MAX_COST;
+    if (static_cast<Symbol *>(c->first)->tc_num != tc) return MAX_COST;
   }
   return 1;
 }
@@ -831,14 +919,14 @@ void reorder_condition_list (agent* thisAgent,
                              condition **bottom_of_conds,
                              list *roots,
                              tc_number tc,
-                             Bool reorder_nccs);
+                             bool reorder_nccs);
 
 void reorder_simplified_conditions (agent* thisAgent,
 									condition **top_of_conds,
                                     condition **bottom_of_conds,
                                     list *roots,
                                     tc_number bound_vars_tc_number,
-                                    Bool reorder_nccs) {
+                                    bool reorder_nccs) {
   condition *remaining_conds;           /* header of dll */
   condition *first_cond, *last_cond;
   condition *cond, *next_cond;
@@ -858,7 +946,15 @@ void reorder_simplified_conditions (agent* thisAgent,
               add min-cost item to conds
   */
 
+  dprint(DT_REORDERER, "==================================\n");
+  dprint(DT_REORDERER, "Re-ordering simplified conditions:\n");
+//  dprint(DT_REORDERER, "Before Reorder Conditons:\n");
+  dprint_condition_list(DT_REORDERER, *top_of_conds);
+  dprint(DT_REORDERER, "Saved Tests:\n");
+//  dprint_saved_test_list (DT_REORDERER, saved_tests);
+  dprint(DT_REORDERER, "==================================\n");
   while (remaining_conds) {
+    dprint(DT_REORDERER, "Processing one of remaining conds...\n");
     /* --- find min-cost set --- */
     min_cost_conds = NIL;
     min_cost = 0;
@@ -877,12 +973,14 @@ void reorder_simplified_conditions (agent* thisAgent,
                                     Without the tie set we can't check the
                                     canonical order. */
     }
+    dprint(DT_REORDERER, "...cost is %lld\n", min_cost);
+
     /* --- if min_cost==MAX_COST, print error message --- */
     if ((min_cost==MAX_COST) &&
         thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
-      print (thisAgent, "Warning:  in production %s,\n",
+      print(thisAgent,  "Warning:  in production %s,\n",
              thisAgent->name_of_production_being_reordered);
-      print (thisAgent, "     The LHS conditions are not all connected.\n");
+      print(thisAgent,  "     The LHS conditions are not all connected.\n");
       /* BUGBUG I'm not sure whether this can ever happen. */
 
       // XML geneneration
@@ -896,6 +994,7 @@ void reorder_simplified_conditions (agent* thisAgent,
      }
     /* --- if more than one min-cost item, and cost>1, do lookahead --- */
     if ((min_cost > 1) && (min_cost_conds->reorder.next_min_cost)) {
+      dprint(DT_REORDERER, "...multiple candidates.  Doing lookahead.\n");
       min_cost = MAX_COST + 1;
       for (cond=min_cost_conds, next_cond = cond->reorder.next_min_cost;
            cond!=NIL;
@@ -947,7 +1046,12 @@ void reorder_simplified_conditions (agent* thisAgent,
 
     /* --- install the first item in the min-cost set --- */
     chosen = min_cost_conds;
+    dprint_condition(DT_REORDERER, chosen, "...reorderer adding chosen item: ", true, false, true);
+    dprint(DT_REORDERER, "Before removing condition:\n");
+    dprint_condition_list(DT_REORDERER, remaining_conds);
     remove_from_dll (remaining_conds, chosen, next, prev);
+    dprint(DT_REORDERER, "After removing condition:\n");
+    dprint_condition_list(DT_REORDERER, remaining_conds);
     if (!first_cond) first_cond = chosen;
     /* Note: args look weird on the next line, because we're really
        inserting the chosen item at the *end* of the list */
@@ -955,9 +1059,10 @@ void reorder_simplified_conditions (agent* thisAgent,
 
     /* --- if a conjunctive negation, recursively reorder its conditions --- */
     if ((chosen->type==CONJUNCTIVE_NEGATION_CONDITION) && reorder_nccs) {
+      dprint(DT_REORDERER, "...conjunctive negation being reordered...\n");
       list *ncc_roots;
       ncc_roots = collect_root_variables (thisAgent, chosen->data.ncc.top,
-                                          bound_vars_tc_number, TRUE);
+                                          bound_vars_tc_number, true);
       reorder_condition_list (thisAgent, &(chosen->data.ncc.top),
                               &(chosen->data.ncc.bottom),
                               ncc_roots,
@@ -967,22 +1072,27 @@ void reorder_simplified_conditions (agent* thisAgent,
     }
 
     /* --- update set of bound variables for newly added condition --- */
+    dprint(DT_REORDERER, "...updating bound variables in chosen condition.\n");
     add_bound_variables_in_condition (thisAgent, chosen, bound_vars_tc_number, &new_vars);
 
     /* --- if all roots are bound, set roots=NIL: don't need 'em anymore --- */
     if (roots) {
       cons *c;
       for (c=roots; c!=NIL; c=c->rest)
-        if (static_cast<Symbol *>(c->first)->var.tc_num != bound_vars_tc_number)
+          if (static_cast<Symbol *>(c->first)->tc_num != bound_vars_tc_number)
           break;
       if (!c) roots=NIL;
     }
 
   } /* end of while (remaining_conds) */
 
+  dprint(DT_REORDERER, "...unmarking variables.\n");
   unmark_variables_and_free_list (thisAgent, new_vars);
   *top_of_conds = first_cond;
   *bottom_of_conds = last_cond;
+  dprint(DT_REORDERER, "==================================\n");
+  dprint(DT_REORDERER, "======== Done re-ordering ========\n");
+  dprint(DT_REORDERER, "==================================\n");
 }
 
 void reorder_condition_list (agent* thisAgent,
@@ -990,12 +1100,16 @@ void reorder_condition_list (agent* thisAgent,
                              condition **bottom_of_conds,
                              list *roots,
                              tc_number tc, /* for vars bound outside */
-                             Bool reorder_nccs) {
+                             bool reorder_nccs) {
   saved_test *saved_tests;
 
   saved_tests = simplify_condition_list (thisAgent, *top_of_conds);
+
   reorder_simplified_conditions (thisAgent, top_of_conds, bottom_of_conds, roots, tc,
                                  reorder_nccs);
+  dprint(DT_REORDERER, "After Reorder Conditons:\n");
+  dprint_condition_list(DT_REORDERER, *top_of_conds);
+  dprint(DT_REORDERER, "Saved Tests:\n");
   restore_and_deallocate_saved_tests (thisAgent, *top_of_conds, tc, saved_tests);
 }
 
@@ -1005,45 +1119,37 @@ void reorder_condition_list (agent* thisAgent,
 
 /* SBH/MVP 6-24-94 */
 
-Bool test_tests_for_root(test t, list *roots) {
+bool test_tests_for_root(test t, list *roots) {
 
   cons *c;
-  complex_test *ct;
   Symbol *referent;
 
   /* Gather variables from test. */
 
-  if (test_is_blank_test(t)) return FALSE;
+    if (test_is_blank(t)) return false;
 
-  if (test_is_blank_or_equality_test(t)) {
-    referent = referent_of_equality_test(t);
-    if ((referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
-        member_of_list(referent,roots)) return TRUE;
-    return FALSE;
-  }
-  ct = complex_test_from_test(t);
-
-  switch (ct->type) {
+    switch (t->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
   case DISJUNCTION_TEST:
-    return FALSE;
+    return false;
     break;
 
   case CONJUNCTIVE_TEST:
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_tests_for_root(static_cast<char *>(c->first), roots)) return TRUE;
-    return FALSE;
+        for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
+          if (test_tests_for_root(static_cast<test>(c->first), roots)) return true;
+    return false;
     break;
 
   default:
     /* --- relational tests other than equality --- */
-    referent = ct->data.referent;
-    if ((referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
-        member_of_list(referent,roots)) return TRUE;
-    return FALSE;
+        referent = t->data.referent;
+        if ((referent->symbol_type==VARIABLE_SYMBOL_TYPE) &&
+        member_of_list(referent,roots)) return true;
+    return false;
     break;
   }
+    return false;
 }
 
 /* -------------------------------------------------------------
@@ -1078,15 +1184,12 @@ Bool test_tests_for_root(test t, list *roots) {
 bool check_unbound_negative_relational_test_referents (agent* thisAgent, test t, tc_number tc)
 {
   cons *c;
-  complex_test *ct;
-  Symbol *referent;
 
   // we only care about relational tests other than equality
-  if (test_is_blank_test(t)) return true;
-  if (test_is_blank_or_equality_test(t)) return true;
+    if (test_is_blank(t)) return true;
 
-  ct = complex_test_from_test(t);
-  switch (ct->type) {
+    switch (t->type) {
+      case EQUALITY_TEST:
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
   case DISJUNCTION_TEST:
@@ -1094,20 +1197,19 @@ bool check_unbound_negative_relational_test_referents (agent* thisAgent, test t,
 
   case CONJUNCTIVE_TEST:
 	// we do need to loop over conjunctive tests, however
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+        for (c=t->data.conjunct_list; c!=NIL; c=c->rest)
       if (!check_unbound_negative_relational_test_referents (thisAgent, static_cast<test>(c->first), tc))
 		  return false;
 	break;
 
   default:
     /* --- relational tests other than equality --- */
-    referent = ct->data.referent;
-	if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) {
-      if (referent->var.tc_num != tc) {
-        print (thisAgent,
+        if (t->data.referent->symbol_type==VARIABLE_SYMBOL_TYPE) {
+          if (t->data.referent->tc_num != tc) {
+        print(thisAgent,
 			"Error: production %s has an unbound referent in negated relational test %s",
 			thisAgent->name_of_production_being_reordered,
-			test_to_string (thisAgent, t, NULL, 0));
+			test_to_string (t, NULL, 0));
 		return false;
 	  }
 	}
@@ -1150,48 +1252,47 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition **lhs_top,
 										  condition ** /*lhs_bottom*/, list *roots)
 {
   condition *cond;
-  Bool a,b;
+  bool a,b;
   test temp;
 
-  a = FALSE;
-  b = FALSE;
+  a = false;
+  b = false;
 
-  for (cond = *lhs_top; cond != NIL; cond = cond->next) {
+    for (cond = *lhs_top; cond != NIL; cond = cond->next)
+    {
     if ((cond->type == POSITIVE_CONDITION) &&
-        (test_is_complex_test(cond->data.tests.id_test)) &&
-        (test_includes_goal_or_impasse_id_test (cond->data.tests.id_test,
-                                                TRUE, FALSE)) &&
-        (!test_tests_for_root(cond->data.tests.id_test, roots))) {
+          (test_includes_goal_or_impasse_id_test (cond->data.tests.id_test, true, false)) &&
+          (!test_tests_for_root(cond->data.tests.id_test, roots)))
+      {
       temp = cond->data.tests.id_test;
       cond->data.tests.id_test =
         copy_test_removing_goal_impasse_tests (thisAgent, temp,&a,&b);
-      deallocate_test (thisAgent, temp); /* RBD fixed memory leak 3/29/95 */
+        deallocate_test (thisAgent, temp);
     }
   }
 }
 
-Bool reorder_lhs (agent* thisAgent, condition **lhs_top,
-				  condition **lhs_bottom, Bool reorder_nccs) {
+bool reorder_lhs (agent* thisAgent, condition **lhs_top,
+				  condition **lhs_bottom, bool reorder_nccs) {
   tc_number tc;
   list *roots;
 
   tc = get_new_tc_number (thisAgent);
   /* don't mark any variables, since nothing is bound outside the LHS */
 
-  roots = collect_root_variables (thisAgent, *lhs_top, tc, TRUE);
+  roots = collect_root_variables (thisAgent, *lhs_top, tc, true);
 
 
   /* SBH/MVP 6-24-94 Fix to include only root "STATE" test in the LHS of a chunk.*/
   if (roots) remove_isa_state_tests_for_non_roots(thisAgent, lhs_top,lhs_bottom,roots);
 
-  /* MVP 6-8-94 - fix provided by Bob */
   if (!roots) {
     condition *cond;
 
     for (cond = *lhs_top; cond!=NIL; cond=cond->next) {
       if ((cond->type == POSITIVE_CONDITION) &&
           (test_includes_goal_or_impasse_id_test (cond->data.tests.id_test,
-            TRUE, FALSE))) {
+            true, false))) {
         add_bound_variables_in_test (thisAgent, cond->data.tests.id_test, tc, &roots);
         if (roots) break;
       }
@@ -1199,10 +1300,10 @@ Bool reorder_lhs (agent* thisAgent, condition **lhs_top,
   }
 
   if (!roots) {
-    print (thisAgent, "Error:  in production %s,\n", thisAgent->name_of_production_being_reordered);
-    print (thisAgent, "        The LHS has no roots.\n");
+    print(thisAgent,  "Error:  in production %s,\n", thisAgent->name_of_production_being_reordered);
+    print(thisAgent,  "        The LHS has no roots.\n");
     /* hmmm... most people aren't going to understand this error message */
-    return FALSE;
+    return false;
   }
 
   fill_in_vars_requiring_bindings (thisAgent, *lhs_top, tc);

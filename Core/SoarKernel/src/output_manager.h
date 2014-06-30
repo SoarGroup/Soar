@@ -45,8 +45,6 @@ typedef struct AgentOutput_Info_Struct {
     bool dprint_enabled, db_dbg_mode, XML_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
 } AgentOutput_Info;
 
-
-
 class Output_Manager
 {
     friend class OM_DB;
@@ -67,7 +65,7 @@ class Output_Manager
     void init();
     void fill_mode_info();
     bool debug_mode_enabled(TraceMode mode);
-    void    set_default_agent(agent *pSoarAgent);
+    void set_default_agent(agent *pSoarAgent);
     agent* get_default_agent() {return m_defaultAgent;};
     void set_dprint_enabled (bool activate);
 
@@ -90,7 +88,7 @@ class Output_Manager
       return printed_output_strings[next_output_string];
     }
 
-    char* NULL_SYM_STR;
+    void store_refcount(Symbol *sym, const char *trace, bool isAdd);
 
     char* NULL_SYM_STR;
 
@@ -109,8 +107,8 @@ class Output_Manager
     OM_Parameters                           * m_params;
     OM_DB                                   * m_db;
 
-    bool                            print_enabled, db_mode, callback_mode, stdout_mode, file_mode;
-    bool                            dprint_enabled, db_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
+    bool                            print_enabled, db_mode, XML_mode, callback_mode, stdout_mode, file_mode;
+    bool                            dprint_enabled, db_dbg_mode, XML_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
 
     /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
      *    one string buffer, it rotates through 10 of them.  It allows us to have multiple

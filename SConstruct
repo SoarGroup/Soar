@@ -15,10 +15,22 @@ import SCons.Script
 
 join = os.path.join
 
-SOAR_VERSION = "9.3.3"
+SOAR_VERSION = "9.4"
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
-DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
+#DEF_TARGETS = 'kernel cli sml_python sml_tcl sml_java debugger tests'.split()
+DEF_TARGETS = 'kernel cli tests'.split()
+
+print "================================================================================"
+print "Soar", SOAR_VERSION, "scons build script started."
+print "Build targets available:"
+print "   kernel cli sml_python sml_tcl sml_java debugger tests tclsoarlib"
+print "Default targets:"
+print "   kernel cli sml_java debugger"
+print "Settings available:"
+print "   --opt, --static, --out, --build, --no-scu, --verbose"
+print "   --cc, --cxx, --cflags, --lnflags, --no-default-flags"
+print "================================================================================"
 
 def execute(cmd):
 	try:
@@ -100,8 +112,6 @@ AddOption('--no-default-flags', action='store_false', dest='defflags', default=T
 
 AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
-AddOption('--scu', action='store_true', dest='scu', default=True,
-	help='Build using single compilation units.')
 
 AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR',
 	help='Directory to install binaries. Defaults to "out".')
@@ -122,7 +132,7 @@ if sys.platform == 'win32':
 	msvc_version = vc_version()
 
 env = Environment(
-	MSVC_VERSION=msvc_version,
+    MSVC_VERSION = msvc_version,
 	ENV=os.environ.copy(),
 	SCU=GetOption('scu'),
 	BUILD_DIR=GetOption('build-dir'),

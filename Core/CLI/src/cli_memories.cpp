@@ -32,7 +32,7 @@ struct MemoriesSort {
 
 bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const std::string* pProduction) {
     std::vector< std::pair< std::string, uint64_t > > memories;
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
     // get either one production or all of them
     if (options.none()) {
@@ -41,9 +41,9 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
             return SetError("Production required.");
         }
 
-        Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
+        Symbol* sym = find_str_constant( thisAgent, pProduction->c_str() );
 
-        if (!sym || !(sym->data.sc.production))
+        if (!sym || !(sym->sc->production))
         {
             return SetError("Production not found.");
         }
@@ -51,7 +51,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
         // save the tokens/name pair
         std::pair< std::string, uint64_t > memory;
         memory.first = *pProduction;
-        memory.second = count_rete_tokens_for_production(agnt, sym->data.sc.production);
+        memory.second = count_rete_tokens_for_production(thisAgent, sym->sc->production);
         memories.push_back(memory);
 
     } else {
@@ -104,7 +104,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
                 }
             }
 
-            for( production* pSoarProduction = agnt->all_productions_of_type[i];
+            for( production* pSoarProduction = thisAgent->all_productions_of_type[i];
                 pSoarProduction != 0;
                 pSoarProduction = pSoarProduction->next )
             {
@@ -112,8 +112,8 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 
                 // save the tokens/name pair
                 std::pair< std::string, uint64_t > memory;
-                memory.first = pSoarProduction->name->data.sc.name;
-                memory.second = count_rete_tokens_for_production(agnt, pSoarProduction);
+                memory.first = pSoarProduction->name->sc->name;
+                memory.second = count_rete_tokens_for_production(thisAgent, pSoarProduction);
                 memories.push_back(memory);
             }
         }

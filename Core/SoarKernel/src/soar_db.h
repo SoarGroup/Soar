@@ -21,7 +21,7 @@
 #include "soar_module.h"
 #include "sqlite3.h"
 
-//#define DEBUG_SQL_ERRORS
+#define DEBUG_SQL_ERRORS
 //#define DEBUG_SQL_QUERIES
 
 #ifdef DEBUG_SQL_QUERIES
@@ -535,7 +535,6 @@ namespace soar_module
 				#ifdef USE_MEM_POOL_ALLOCATORS
 				statements = new sqlite_statement_pool_pool( thisAgent );
 				#else
-				thisAgent;
 				statements = new sqlite_statement_pool_pool();
 				#endif
 			}
@@ -655,7 +654,7 @@ namespace soar_module
 	  db_predicate<T>::db_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {}
 
 	  template <typename T>
-	  bool db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->epmem_db->get_status() == soar_module::connected ); }
+	  bool db_predicate<T>::operator() ( T /*val*/ ) { return ( this->thisAgent->epmem_db->get_status() == soar_module::connected ); }
 
 }
 

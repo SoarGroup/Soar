@@ -402,11 +402,11 @@ void OM_DB::increment_message_count(MessageType msgType)
 void OM_DB::store_refcount(Symbol *sym, const char *callers, bool isAdd)
 {
   increment_message_count(refcnt_msg);
-  //  printv("Storing refcount %lld %s %s\n", message_count, sym->to_string(thisAgent), callers);
+  //  printv("Storing refcount %lld %s %s\n", message_count, sym->to_string(), callers);
   //  if (message_count == 1874)
   //    printv("Problem case reached %lld.\n", message_count);
   add_refcnt_message->bind_int( 1, message_count);
-  //  add_refcnt_message->bind_text( 2, sym->to_string(thisAgent));
+  //  add_refcnt_message->bind_text( 2, sym->to_string());
   add_refcnt_message->bind_text( 3, callers );
   //  add_refcnt_message->bind_int( 4, sym->reference_count );
   //  add_refcnt_message->bind_int( 5, (isAdd ? (sym->reference_count + 1) : (sym->reference_count - 1)));

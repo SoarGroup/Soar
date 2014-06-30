@@ -69,7 +69,7 @@ extern Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
    indicate the id/attr/value components of the wme to be added.  Each of
    these components must be either (1) the current value of the global
    variable "top_state", or (2) the returned value from a call to
-   get_new_io_identifier(), get_io_sym_constant(), get_io_int_constant(),
+   get_new_io_identifier(), get_io_str_constant(), get_io_int_constant(),
    or get_io_float_constant().  [The idea behind creating the components this
    way is to avoid having I/O functions deal with the reference counts on
    symbols.]  For every call an I/O function makes to get_xxx(), it should
@@ -85,7 +85,7 @@ extern Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
          wme *w;
          Symbol *s1,*s2;
          ... insert code to read value into current_sensor_value here ...
-         s1 = get_io_sym_constant ("sensor-value");
+         s1 = get_io_str_constant ("sensor-value");
          s2 = get_io_float_constant (current_sensor_value);
          ... add to working memory (S1 ^sensor-value 37.5) ...
          w = add_input_wme (top_state, s1, s2);
@@ -114,10 +114,10 @@ extern Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
 
 extern Symbol *get_new_io_identifier(agent* thisAgent, char first_letter) ;
 extern Symbol *get_io_identifier (agent* thisAgent, char first_letter, uint64_t number);
-extern Symbol *get_io_sym_constant (agent* thisAgent, char const *name);
+extern Symbol *get_io_str_constant (agent* thisAgent, char const *name);
 extern Symbol *get_io_int_constant (agent* thisAgent, int64_t value);
 extern Symbol *get_io_float_constant (agent* thisAgent, double value);
-extern uint64_t release_io_symbol (agent* thisAgent, Symbol *sym);
+extern void release_io_symbol (agent* thisAgent, Symbol *sym);
 
 extern wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value);
 extern bool remove_input_wme (agent* thisAgent, wme *w);

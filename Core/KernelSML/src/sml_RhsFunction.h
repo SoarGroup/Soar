@@ -12,7 +12,7 @@
 
 #include <vector>
 
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;
 typedef struct cons_struct list;
 

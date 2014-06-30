@@ -67,28 +67,6 @@ extern "C"
         return out;
     }
 
-    int TclSoarLib::GlobalDirEval(const std::string& command, std::string& result)
-    {
-        if(!m_interp)
-        {
-            return TCL_ERROR;
-        } else {
-
-            string tcl_cmd_string;
-
-            EscapeTclString(command.c_str(), tcl_cmd_string);
-            if(Tcl_Eval(m_interp, (char*) tcl_cmd_string.c_str()) != TCL_OK)
-            {
-                tcl_cmd_string.erase();
-                result = Tcl_GetStringResult(m_interp);
-                return TCL_ERROR;
-            }
-            tcl_cmd_string.erase();
-            result = Tcl_GetStringResult(m_interp);
-        }
-        return TCL_OK;
-    }
-
     int TclSoarLib::GlobalEval(const std::string& command, std::string& result)
     {
         if(!m_interp)
@@ -170,11 +148,10 @@ extern "C"
     {
         string smlTclDir,  libDir, masterFilePath, result_string;
 
-        if (((GlobalDirEval("pwd", libDir) != TCL_OK) ||
-                    (GlobalDirEval("file join [pwd] tcl", smlTclDir) != TCL_OK) ||
-                    (GlobalDirEval("file join [pwd] tcl master.tcl", masterFilePath) != TCL_OK)))
+        if (((GlobalEval("pwd", libDir) != TCL_OK) ||
+                        (GlobalEval("file join [pwd] tcl", smlTclDir) != TCL_OK) ||
+                        (GlobalEval("file join [pwd] tcl master.tcl", masterFilePath) != TCL_OK)))
         {
-            GlobalEval("puts {Error finding tcl scripts.}", result_string);
             return false;
         }
         else
@@ -182,11 +159,8 @@ extern "C"
             if (!(isDir(libDir.c_str()) && isDir(smlTclDir.c_str()) && isFile(masterFilePath.c_str())))
             {
                 libDir = getenv("SOAR_HOME");
-                if (libDir.size() == 0) 
-                {
-                    GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME, which is not currently set.}", result_string);
-                    return false; 
-                }
+                if (libDir.size() == 0)
+                    return false;
 
                 smlTclDir = libDir;
                 if (smlTclDir.find_last_of("/\\") != smlTclDir.size() - 1)
@@ -194,50 +168,25 @@ extern "C"
                     smlTclDir += '/';
                 }
                 smlTclDir += "tcl";
-
-                /* -- Normalize directory for any cross-platform differences-- */
-                string normalizeCmd("file normalize ");
-                normalizeCmd += smlTclDir;
-                if (GlobalDirEval(normalizeCmd.c_str(), smlTclDir) != TCL_OK)
-                    return false;
-
                 masterFilePath = smlTclDir;
                 masterFilePath += "/master.tcl";
                 if (!(isDir(libDir.c_str()) && isDir(smlTclDir.c_str()) && isFile(masterFilePath.c_str())))
-                {
-                    GlobalEval("puts {Unable to find tcl scripts under SOAR_HOME}", result_string);
                     return false;
-                }
             }
         }
 
         if (!evaluateDirCommand("source \"" + smlTclDir + "/dirstack.tcl\""))
-        { 
-            GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
-            return false; 
-        }
+            return false;
         if (!evaluateDirCommand("pushd \"" + smlTclDir + "\""))
-        {
-            GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
             return false;
-        }
 
-        if (GlobalDirEval("source master.tcl", result_string) != TCL_OK)
-        {
-            GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
+        if (GlobalEval("source master.tcl", result_string) != TCL_OK)
             return false;
-        }
-        if (GlobalDirEval("initializeMaster", result_string) != TCL_OK)
-        {
-            GlobalEval("puts {Error initializing master tcl interpreter}", result_string);
+        if (GlobalEval("initializeMaster", result_string) != TCL_OK)
             return false;
-        }
 
         if (!evaluateDirCommand("popd"))
-        {
-            GlobalEval("puts {Error initializing master tcl interpreter}", result_string);
             return false;
-        }
 
         return true;
     }

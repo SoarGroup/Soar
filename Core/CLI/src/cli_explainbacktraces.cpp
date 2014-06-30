@@ -51,7 +51,7 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
 
     get_lexeme_from_string(thisAgent, const_cast<char*>(pProduction));
 
-    if (thisAgent->lexeme.type != SYM_CONSTANT_LEXEME) {
+    if (thisAgent->lexeme.type != STR_CONSTANT_LEXEME) {
         return false; // invalid production
     }
 

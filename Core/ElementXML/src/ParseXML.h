@@ -85,19 +85,19 @@ protected:
 	char		GetEscapeChar() ;
 
 	/************************************************************************
-	* 
+	*
 	* Returns the current character from the input stream.
-	* 
+	*
 	*************************************************************************/
 	virtual char GetCurrentChar() = 0 ;
-	
+
 	virtual void GetNextChar() = 0 ;
 	virtual void ReadLine() = 0 ;
 
 	/************************************************************************
-	* 
+	*
 	* Returns true if we're at the end of the file.
-	* 
+	*
 	*************************************************************************/
 	inline bool IsEOF()
 	{
@@ -105,19 +105,19 @@ protected:
 	}
 
 	/************************************************************************
-	* 
+	*
 	* Returns true if the character is white space.
-	* 
+	*
 	*************************************************************************/
 	bool IsWhiteSpace(char ch)
 	{
 		return (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') ;
 	}
-	
+
 	/************************************************************************
-	* 
+	*
 	* Returns true if this is a symbol (i.e. a special char in XML, like "<")
-	* 
+	*
 	*************************************************************************/
 	bool IsSymbol(char ch)
 	{
@@ -129,9 +129,9 @@ protected:
 	}
 
 	/************************************************************************
-	* 
+	*
 	* Returns true if this is the start of a comment block <!
-	* 
+	*
 	*************************************************************************/
 	bool IsCommentStart(char ch)
 	{
@@ -139,9 +139,9 @@ protected:
 	}
 
 	/************************************************************************
-	* 
+	*
 	* Returns true if this character ends a block of character data.
-	* 
+	*
 	*************************************************************************/
 	bool IsEndOfCharData(char ch)
 	{
@@ -149,9 +149,9 @@ protected:
 	}
 
 	/************************************************************************
-	* 
+	*
 	* Returns true if this is the quote character (")
-	* 
+	*
 	*************************************************************************/
 	bool IsQuote(char ch)
 	{
@@ -159,28 +159,28 @@ protected:
 	}
 
 	/************************************************************************
-	* 
+	*
 	* Returns true if the current token matches the given type.
 	* E.g. if (Have(kSymbol)) { // Process symbol }
-	* 
+	*
 	* @param type			The type to test against.
-	* 
+	*
 	*************************************************************************/
 	bool Have(TokenType type)
 	{
 		return (GetTokenType() == type) ;
 	}
-		
+
 	/************************************************************************
-	* 
+	*
 	* Returns true AND consumes the current token, if the values match.
 	* We can consume the token, because the parser already knows its value.
 	* E.g. if (Have("<")) { // Parse what comes after "<" }
-	* 
+	*
 	* @param value			The string value to test
-	* 
+	*
 	* @return True if value matches current token.
-	* 
+	*
 	*************************************************************************/
 	bool Have(char const* pValue, bool advance = true)
 	{
@@ -206,14 +206,14 @@ protected:
 		}
 		return false ;
 	}
-	
+
 	/************************************************************************
-	* 
+	*
 	* Returns true AND consumes the current token if the value and type match.
-	* 
+	*
 	* @param value			The value to test
 	* @param type			The type to test
-	* 
+	*
 	*************************************************************************/
 	bool Have(char const* pValue, TokenType type)
 	{
@@ -221,24 +221,24 @@ protected:
 			return Have(pValue) ;
 		return false ;
 	}
-	
+
 	/************************************************************************
-	* 
+	*
 	* Checks that the current token matches the given value.
 	* If not, throws an exception.
 	* Used for places in the parse when you know what must come next.
 	* E.g. At the end of an XML token : MustBe("/") ; MustBe(">") ;
-	* 
+	*
 	* @param value			The value to test
-	* 
+	*
 	*************************************************************************/
 	void MustBe(char const* pValue)
 	{
-		if (m_TokenValue.compare(pValue) != 0)
-		{			
+		if (!(m_TokenValue.compare(pValue) == 0))
+		{
 			RecordError("Looking for " + std::string(pValue) + " instead found " + GetTokenValue()) ;
 		}
-		
+
 		GetNextToken() ;
 	}
 
@@ -251,20 +251,20 @@ protected:
 			msg << "Looking for " << value << " instead found " << GetTokenValue();
 			RecordError(msg.str()) ;
 		}
-		
+
 		GetNextToken() ;
 	}
 
 	/************************************************************************
-	* 
+	*
 	* Checks that the current token matches the given type.
 	* If it does, returns the value (this is often useful when testing
 	* for identifiers).
 	* If it does not match, throws an exception.
-	* 
+	*
 	* @param type		The type to test (e.g. kSymbol)
 	* @param value		Iss et to the value of the current token (if matches type).
-	* 
+	*
 	*************************************************************************/
 	void MustBe(TokenType type, ParseString& value)
 	{
@@ -272,17 +272,17 @@ protected:
 		{
 			RecordError("Found incorrect type when parsing token '" + GetTokenValue() + "'") ;
 		}
-		
+
 		value = GetTokenValue() ;
-		
+
 		GetNextToken() ;
 	}
-	
+
 	/************************************************************************
-	* 
+	*
 	* Checks that both the type and value match.
 	* If not, throws an exception.
-	* 
+	*
 	*************************************************************************/
 	void MustBe(char const* pValue, int type)
 	{

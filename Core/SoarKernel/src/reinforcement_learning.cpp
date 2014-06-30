@@ -32,10 +32,13 @@
 #include "xml.h"
 #include "recmem.h"
 #include "test.h"
+#include "debug.h"
+#include "variablization_manager.h"
+#include "prefmem.h"
+#include "decide.h"
 
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
-extern void variablize_symbol (agent* thisAgent, Symbol **sym);
-extern void variablize_condition_list (agent* thisAgent, condition *cond);
+extern void dprint_production (TraceMode mode, production *prod);
 
 /////////////////////////////////////////////////////
 // Parameters
@@ -119,18 +122,18 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	add( meta );
 
 	// apoptosis
-	apoptosis = new rl_apoptosis_param( "apoptosis", apoptosis_none, new soar_module::f_predicate<apoptosis_choices>(), my_agent );
+	apoptosis = new rl_apoptosis_param( "apoptosis", apoptosis_none, new soar_module::f_predicate<apoptosis_choices>(), thisAgent );
 	apoptosis->add_mapping( apoptosis_none, "none" );
 	apoptosis->add_mapping( apoptosis_chunks, "chunks" );
 	apoptosis->add_mapping( apoptosis_rl, "rl-chunks" );
 	add( apoptosis );
 
 	// apoptosis-decay
-	apoptosis_decay = new soar_module::decimal_param( "apoptosis-decay", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new rl_apoptosis_predicate<double>( my_agent ) );
+	apoptosis_decay = new soar_module::decimal_param( "apoptosis-decay", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new rl_apoptosis_predicate<double>( thisAgent ) );
 	add( apoptosis_decay );
 
 	// apoptosis-thresh
-	apoptosis_thresh = new rl_apoptosis_thresh_param( "apoptosis-thresh", -2.0, new soar_module::gt_predicate<double>( 0, false ), new rl_apoptosis_predicate<double>( my_agent ) );
+	apoptosis_thresh = new rl_apoptosis_thresh_param( "apoptosis-thresh", -2.0, new soar_module::gt_predicate<double>( 0, false ), new rl_apoptosis_predicate<double>( thisAgent ) );
 	add( apoptosis_thresh );
 
   // trace
@@ -142,7 +145,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 
 void rl_reset_data( agent* );
 
-rl_learning_param::rl_learning_param( const char *new_name, boolean new_value, soar_module::predicate<boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+rl_learning_param::rl_learning_param( const char *new_name, boolean new_value, soar_module::predicate<boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), thisAgent( new_agent ) {}
 
 void rl_learning_param::set_value( boolean new_value )
 {
@@ -150,7 +153,7 @@ void rl_learning_param::set_value( boolean new_value )
 	{
 		if ( new_value == off )
 		{
-			rl_reset_data( my_agent );
+			rl_reset_data( thisAgent );
 		}
 
 		value = new_value;
@@ -159,7 +162,7 @@ void rl_learning_param::set_value( boolean new_value )
 
 //
 
-rl_apoptosis_param::rl_apoptosis_param( const char *new_name, rl_param_container::apoptosis_choices new_value, soar_module::predicate<rl_param_container::apoptosis_choices> *new_prot_pred, agent *new_agent ): soar_module::constant_param<rl_param_container::apoptosis_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+rl_apoptosis_param::rl_apoptosis_param( const char *new_name, rl_param_container::apoptosis_choices new_value, soar_module::predicate<rl_param_container::apoptosis_choices> *new_prot_pred, agent *new_agent ): soar_module::constant_param<rl_param_container::apoptosis_choices>( new_name, new_value, new_prot_pred ), thisAgent( new_agent ) {}
 
 void rl_apoptosis_param::set_value( rl_param_container::apoptosis_choices new_value )
 {
@@ -168,14 +171,14 @@ void rl_apoptosis_param::set_value( rl_param_container::apoptosis_choices new_va
 		// from off to on (doesn't matter which)
 		if ( value == rl_param_container::apoptosis_none )
 		{
-			my_agent->rl_prods->set_decay_rate( my_agent->rl_params->apoptosis_decay->get_value() );
-			my_agent->rl_prods->set_decay_thresh( my_agent->rl_params->apoptosis_thresh->get_value() );
-			my_agent->rl_prods->initialize();
+			thisAgent->rl_prods->set_decay_rate( thisAgent->rl_params->apoptosis_decay->get_value() );
+			thisAgent->rl_prods->set_decay_thresh( thisAgent->rl_params->apoptosis_thresh->get_value() );
+			thisAgent->rl_prods->initialize();
 		}
 		// from on to off
 		else if ( new_value == rl_param_container::apoptosis_none )
 		{
-			my_agent->rl_prods->teardown();
+			thisAgent->rl_prods->teardown();
 		}
 
 		value = new_value;
@@ -194,7 +197,7 @@ template <typename T>
 rl_apoptosis_predicate<T>::rl_apoptosis_predicate( agent *new_agent ): soar_module::agent_predicate<T>( new_agent ) {}
 
 template <typename T>
-bool rl_apoptosis_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none ); }
+bool rl_apoptosis_predicate<T>::operator() ( T /*val*/ ) { return ( this->thisAgent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none ); }
 
 
 /////////////////////////////////////////////////////
@@ -224,9 +227,9 @@ rl_stat_container::rl_stat_container( agent *new_agent ): stat_container( new_ag
 /////////////////////////////////////////////////////
 
 // quick shortcut to determine if rl is enabled
-bool rl_enabled( agent *my_agent )
+bool rl_enabled( agent *thisAgent )
 {
-	return ( my_agent->rl_params->learning->get_value() == on );
+	return ( thisAgent->rl_params->learning->get_value() == on );
 }
 
 /////////////////////////////////////////////////////
@@ -234,13 +237,13 @@ bool rl_enabled( agent *my_agent )
 
 inline void rl_add_ref( Symbol* goal, production* prod )
 {
-	goal->id.rl_info->prev_op_rl_rules->push_back( prod );
+	goal->id->rl_info->prev_op_rl_rules->push_back( prod );
 	prod->rl_ref_count++;
 }
 
 inline void rl_remove_ref( Symbol* goal, production* prod )
 {
-	rl_rule_list* rules = goal->id.rl_info->prev_op_rl_rules;
+	rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
 	for ( rl_rule_list::iterator p=rules->begin(); p!=rules->end(); p++ )
 	{
@@ -255,7 +258,7 @@ inline void rl_remove_ref( Symbol* goal, production* prod )
 
 void rl_clear_refs( Symbol* goal )
 {
-	rl_rule_list* rules = goal->id.rl_info->prev_op_rl_rules;
+	rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
 	for ( rl_rule_list::iterator p=rules->begin(); p!=rules->end(); p++ )
 	{
@@ -269,12 +272,12 @@ void rl_clear_refs( Symbol* goal )
 /////////////////////////////////////////////////////
 
 // resets rl data structures
-void rl_reset_data( agent *my_agent )
+void rl_reset_data( agent *thisAgent )
 {
-	Symbol *goal = my_agent->top_goal;
+	Symbol *goal = thisAgent->top_goal;
 	while( goal )
 	{
-		rl_data *data = goal->id.rl_info;
+		rl_data *data = goal->id->rl_info;
 
 		data->eligibility_traces->clear();
 		rl_clear_refs( goal );
@@ -285,16 +288,16 @@ void rl_reset_data( agent *my_agent )
 		data->gap_age = 0;
 		data->hrl_age = 0;
 
-		goal = goal->id.lower_goal;
+		goal = goal->id->lower_goal;
 	}
 }
 
 // removes rl references to a production (used for excise)
-void rl_remove_refs_for_prod( agent *my_agent, production *prod )
+void rl_remove_refs_for_prod( agent *thisAgent, production *prod )
 {
-	for ( Symbol* state = my_agent->top_state; state; state = state->id.lower_goal )
+	for ( Symbol* state = thisAgent->top_state; state; state = state->id->lower_goal )
 	{
-		state->id.rl_info->eligibility_traces->erase( prod );
+		state->id->rl_info->eligibility_traces->erase( prod );
 		rl_remove_ref( state, prod );
 	}
 }
@@ -321,7 +324,7 @@ bool rl_valid_template( production *prod )
 			}
 			else if ( a->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE )
 			{
-				if ( rhs_value_is_symbol( a->referent ) && ( rhs_value_to_symbol( a->referent )->id.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE ) )
+        if ( rhs_value_is_symbol( a->referent ) && ( rhs_value_to_symbol( a->referent )->symbol_type == VARIABLE_SYMBOL_TYPE ) )
 					var_pref = true;
 			}
 		}
@@ -350,13 +353,13 @@ bool rl_valid_rule( production *prod )
 }
 
 // sets rl meta-data from a production documentation string
-void rl_rule_meta( agent* my_agent, production* prod )
+void rl_rule_meta( agent* thisAgent, production* prod )
 {
-	if ( prod->documentation && ( my_agent->rl_params->meta->get_value() == on ) )
+	if ( prod->documentation && ( thisAgent->rl_params->meta->get_value() == on ) )
 	{
 		std::string doc( prod->documentation );
 
-        const std::vector<std::pair<std::string, param_accessor<double> *> > &documentation_params = my_agent->rl_params->get_documentation_params();
+        const std::vector<std::pair<std::string, param_accessor<double> *> > &documentation_params = thisAgent->rl_params->get_documentation_params();
         for (std::vector<std::pair<std::string, param_accessor<double> *> >::const_iterator doc_params_it = documentation_params.begin();
                 doc_params_it != documentation_params.end(); ++doc_params_it) {
             const std::string &param_name = doc_params_it->first;
@@ -446,49 +449,49 @@ int rl_get_template_id( const char *prod_name )
 }
 
 // initializes the max rl template counter
-void rl_initialize_template_tracking( agent *my_agent )
+void rl_initialize_template_tracking( agent *thisAgent )
 {
-	my_agent->rl_template_count = 1;
+	thisAgent->rl_template_count = 1;
 }
 
 // updates rl template counter for a rule
-void rl_update_template_tracking( agent *my_agent, const char *rule_name )
+void rl_update_template_tracking( agent *thisAgent, const char *rule_name )
 {
 	int new_id = rl_get_template_id( rule_name );
 
-	if ( ( new_id != -1 ) && ( new_id > my_agent->rl_template_count ) )
-		my_agent->rl_template_count = ( new_id + 1 );
+	if ( ( new_id != -1 ) && ( new_id > thisAgent->rl_template_count ) )
+		thisAgent->rl_template_count = ( new_id + 1 );
 }
 
 // gets the next template-assigned id
-int rl_next_template_id( agent *my_agent )
+int rl_next_template_id( agent *thisAgent )
 {
-	return (my_agent->rl_template_count++);
+	return (thisAgent->rl_template_count++);
 }
 
 // gives back a template-assigned id (on auto-retract)
-void rl_revert_template_id( agent *my_agent )
+void rl_revert_template_id( agent *thisAgent )
 {
-	my_agent->rl_template_count--;
+	thisAgent->rl_template_count--;
 }
 
 inline void rl_get_symbol_constant( Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants )
 {
-	if ( ( p_sym->common.symbol_type == VARIABLE_SYMBOL_TYPE ) && ( ( i_sym->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( i_sym->id.smem_lti != NIL ) ) )
+	if ( ( p_sym->symbol_type == VARIABLE_SYMBOL_TYPE ) && ( ( i_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( i_sym->id->smem_lti != NIL ) ) )
 	{
-		constants->insert( std::make_pair( p_sym, i_sym ) );
+    constants->insert( std::make_pair< Symbol*, Symbol* >( p_sym, i_sym ) );
 	}
 }
 
 /* MToDo | The part that Nate commented out might need to be fixed.  He may have just punted on it. */
 void rl_get_test_constant( test* p_test, test* i_test, rl_symbol_map* constants )
 {
-	if ( test_is_blank( *p_test ) )
+  if ( test_is_blank( *p_test ) )
 	{
 		return;
 	}
 
-	if ( (*p_test)->type == EQUALITY_TEST )
+  if ( (*p_test)->type == EQUALITY_TEST )
 	{
 		rl_get_symbol_constant( *(reinterpret_cast<Symbol**>( p_test )), *(reinterpret_cast<Symbol**>( i_test )), constants );
 
@@ -559,7 +562,7 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 }
 
 // builds a template instantiation
- Symbol *rl_build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
+ Symbol *rl_build_template_instantiation( agent *thisAgent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
 {
 	Symbol* return_val = NULL;
 
@@ -569,7 +572,8 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 		condition* c_top;
 		condition* c_bottom;
 
-		p_node_to_conditions_and_rhs( my_agent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), NIL, false );
+//    p_node_to_conditions_and_rhs( thisAgent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), NIL, JUST_INEQUALITIES );
+    p_node_to_conditions_and_rhs( thisAgent, my_template_instance->prod->p_node, tok, w, &( c_top ), &( c_bottom ), NIL, JUST_INEQUALITIES );
 
 		my_template_instance->prod->rl_template_conds = c_top;
 	}
@@ -607,65 +611,64 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 			int new_id;
 			do
 			{
-				new_id = rl_next_template_id( my_agent );
+				new_id = rl_next_template_id( thisAgent );
 				to_string( new_id, temp_id );
-				new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + temp_id );
-			} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
-			new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
+				new_name = ( "rl*" + empty_string + my_template->name->sc->name + "*" + temp_id );
+			} while ( find_str_constant( thisAgent, new_name.c_str() ) != NIL );
+			new_name_symbol = make_str_constant( thisAgent, new_name.c_str() );
 
 			// prep conditions
-			copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
-			rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
-			reset_variable_generator( my_agent, cond_top, NIL );
-			my_agent->variablization_tc = get_new_tc_number( my_agent );
-			variablize_condition_list( my_agent, cond_top );
-			//Debug | Disabled.  New system should handle.  Test.
-			//variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
+			copy_condition_list( thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
+			reset_variable_generator( thisAgent, cond_top, NIL );
+			rl_add_goal_or_impasse_tests_to_conds( thisAgent, cond_top );
+			thisAgent->variablizationManager->variablize_rl_condition_list( cond_top );
 
 			// get the preference value
-			id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
-			attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
+			id = instantiate_rhs_value( thisAgent, my_action->id, -1, 's', tok, w );
+			attr = instantiate_rhs_value( thisAgent, my_action->attr, id->id->level, 'a', tok, w );
 			first_letter = first_letter_from_symbol( attr );
-			value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
-			referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
+			value = instantiate_rhs_value( thisAgent, my_action->value, id->id->level, first_letter, tok, w );
+			referent = instantiate_rhs_value( thisAgent, my_action->referent, id->id->level, first_letter, tok, w );
 
 			// clean up after yourself :)
-			symbol_remove_ref( my_agent, id );
-			symbol_remove_ref( my_agent, attr );
-			symbol_remove_ref( my_agent, value );
-			symbol_remove_ref( my_agent, referent );
+			symbol_remove_ref( thisAgent, id );
+			symbol_remove_ref( thisAgent, attr );
+			symbol_remove_ref( thisAgent, value );
+			symbol_remove_ref( thisAgent, referent );
 
 			// make new action list
-			action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
-			new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+			action *new_action = thisAgent->variablizationManager->make_variablized_rl_action( id, attr, value, referent );
 
 			// make new production
-			production *new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
+			production *new_production = make_production( thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
+
+		  thisAgent->variablizationManager->clear_data();
 
 			// set initial expected reward values
 			{
-				if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+        if ( referent->symbol_type == INT_CONSTANT_SYMBOL_TYPE )
 				{
-					init_value = static_cast< double >( referent->ic.value );
+					init_value = static_cast< double >( referent->ic->value );
 				}
-				else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+        else if ( referent->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
 				{
-					init_value = referent->fc.value;
+					init_value = referent->fc->value;
 				}
 
 				new_production->rl_ecr = 0.0;
 				new_production->rl_efr = init_value;
 			}
-
+			dprint(DT_RL_VARIABLIZATION, "Adding new RL produciton: \n");
+			dprint_cond_actions(DT_RL_VARIABLIZATION, cond_top, new_action, "          ");
 			// attempt to add to rete, remove if duplicate
-			if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, false, true ) == DUPLICATE_PRODUCTION )
+			if ( add_production_to_rete( thisAgent, new_production, cond_top, NULL, false, true ) == DUPLICATE_PRODUCTION )
 			{
-				excise_production( my_agent, new_production, false );
-				rl_revert_template_id( my_agent );
+				excise_production( thisAgent, new_production, false );
+				rl_revert_template_id( thisAgent );
 
 				new_name_symbol = NULL;
 			}
-			deallocate_condition_list( my_agent, cond_top );
+			deallocate_condition_list( thisAgent, cond_top );
 
 			return_val = new_name_symbol;
 		}
@@ -674,67 +677,25 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 	return return_val;
 }
 
-// creates an action for a template instantiation
-action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym )
-{
-    action *rhs;
-    Symbol *temp;
-
-    rhs = make_action(my_agent);
-    rhs->type = MAKE_ACTION;
-
-    // id
-	temp = id_sym;
-	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-	// Debug | Might need to also add symbol as original var if that's what it is at this point
-	// symbol_add_ref(my_agent, temp );
-	variablize_symbol( my_agent, &temp );
-	rhs->id = make_rhs_value_symbol(my_agent, temp );
-
-    // attribute
-    temp = attr_sym;
-    // Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-	// symbol_add_ref(my_agent, temp );
-	variablize_symbol( my_agent, &temp );
-	rhs->attr = make_rhs_value_symbol(my_agent, temp );
-
-	// value
-	temp = val_sym;
-	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-	// symbol_add_ref(my_agent, temp );
-	variablize_symbol( my_agent, &temp );
-	rhs->value = make_rhs_value_symbol(my_agent, temp );
-
-	// referent
-	temp = ref_sym;
-	// Debug | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does
-	// symbol_add_ref(my_agent, temp );
-	variablize_symbol( my_agent, &temp );
-	rhs->referent = make_rhs_value_symbol(my_agent, temp );
-
-    return rhs;
-}
-
-void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_conds )
+void rl_add_goal_or_impasse_tests_to_conds( agent *thisAgent, condition *all_conds )
 {
 	// mark each id as we add a test for it, so we don't add a test for the same id in two different places
 	Symbol *id;
 	test t;
-	tc_number tc = get_new_tc_number( my_agent );
+	tc_number tc = get_new_tc_number( thisAgent );
 
 	for ( condition *cond = all_conds; cond != NIL; cond = cond->next )
 	{
 		if ( cond->type != POSITIVE_CONDITION )
 			continue;
 
-		id = cond->data.tests.id_test->data.referent;
-
-		if ( ( id->id.isa_goal || id->id.isa_impasse ) && ( id->id.tc_num != tc ) )
-		{
-		  t = make_test(my_agent, NIL,( ( id->id.isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) ));
-			add_new_test_to_test( my_agent, &( cond->data.tests.id_test ), t );
-			id->id.tc_num = tc;
-		}
+    id = cond->data.tests.id_test->data.referent;
+    if ( ( id->id->isa_goal || id->id->isa_impasse ) && ( id->tc_num != tc ) )
+    {
+      t = make_test(thisAgent, NIL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
+      add_test( thisAgent, &( cond->data.tests.id_test ), t );
+      id->tc_num = tc;
+    }
 	}
 }
 
@@ -743,31 +704,31 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
 /////////////////////////////////////////////////////
 
 // gathers discounted reward for a state
-void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
+void rl_tabulate_reward_value_for_goal( agent *thisAgent, Symbol *goal )
 {
-	rl_data *data = goal->id.rl_info;
+	rl_data *data = goal->id->rl_info;
 
 	if ( !data->prev_op_rl_rules->empty() )
 	{
-		slot *s = find_slot( goal->id.reward_header, my_agent->rl_sym_reward );
+		slot *s = find_slot( goal->id->reward_header, thisAgent->rl_sym_reward );
 		slot *t;
 		wme *w, *x;
 
 		double reward = 0.0;
-		double discount_rate = my_agent->rl_params->discount_rate->get_value();
+		double discount_rate = thisAgent->rl_params->discount_rate->get_value();
 
 		if ( s )
 		{
 			for ( w=s->wmes; w; w=w->next )
 			{
-				if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+        if ( w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE )
 				{
-					t = find_slot( w->value, my_agent->rl_sym_value );
+					t = find_slot( w->value, thisAgent->rl_sym_value );
 					if ( t )
 					{
 						for ( x=t->wmes; x; x=x->next )
 						{
-							if ( ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
+              if ( ( x->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
 							{
 								reward += get_number_from_symbol( x->value );
 							}
@@ -778,7 +739,7 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 
 			// if temporal_discount is off, don't discount for gaps
 			unsigned int effective_age = data->hrl_age;
-			if (my_agent->rl_params->temporal_discount->get_value() == on) {
+			if (thisAgent->rl_params->temporal_discount->get_value() == on) {
 				effective_age += data->gap_age;
 			}
 
@@ -786,11 +747,11 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 		}
 
 		// update stats
-		double global_reward = my_agent->rl_stats->global_reward->get_value();
-		my_agent->rl_stats->total_reward->set_value( reward );
-		my_agent->rl_stats->global_reward->set_value( global_reward + reward );
+		double global_reward = thisAgent->rl_stats->global_reward->get_value();
+		thisAgent->rl_stats->total_reward->set_value( reward );
+		thisAgent->rl_stats->global_reward->set_value( global_reward + reward );
 
-		if ( ( goal != my_agent->bottom_goal ) && ( my_agent->rl_params->hrl_discount->get_value() == on ) )
+		if ( ( goal != thisAgent->bottom_goal ) && ( thisAgent->rl_params->hrl_discount->get_value() == on ) )
 		{
 			data->hrl_age++;
 		}
@@ -798,28 +759,28 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 }
 
 // gathers reward for all states
-void rl_tabulate_reward_values( agent *my_agent )
+void rl_tabulate_reward_values( agent *thisAgent )
 {
-	Symbol *goal = my_agent->top_goal;
+	Symbol *goal = thisAgent->top_goal;
 
 	while( goal )
 	{
-		rl_tabulate_reward_value_for_goal( my_agent, goal );
-	    goal = goal->id.lower_goal;
+		rl_tabulate_reward_value_for_goal( thisAgent, goal );
+	    goal = goal->id->lower_goal;
 	}
 }
 
 // stores rl info for a state w.r.t. a selected operator
-void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
+void rl_store_data( agent *thisAgent, Symbol *goal, preference *cand )
 {
-	rl_data *data = goal->id.rl_info;
+	rl_data *data = goal->id->rl_info;
 	Symbol *op = cand->value;
 
-	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == on );
+	bool using_gaps = ( thisAgent->rl_params->temporal_extension->get_value() == on );
 
 	// Make list of just-fired prods
 	unsigned int just_fired = 0;
-	for ( preference *pref = goal->id.operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
+	for ( preference *pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
 	{
 		if ( ( op == pref->value ) && pref->inst->prod->rl_rule )
 		{
@@ -839,14 +800,14 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 	}
 	else
 	{
-		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps &&
+		if ( thisAgent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps &&
 			( data->gap_age == 0 ) && !data->prev_op_rl_rules->empty() )
 		{
 			char buf[256];
-			SNPRINTF( buf, 254, "gap started (%c%llu)", goal->id.name_letter, static_cast<long long unsigned>(goal->id.name_number) );
+			SNPRINTF( buf, 254, "gap started (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number) );
 
-			print( my_agent, buf );
-			xml_generate_warning( my_agent, buf );
+			print(thisAgent,  buf );
+			xml_generate_warning( thisAgent, buf );
 		}
 
 		if ( !using_gaps )
@@ -869,39 +830,39 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 }
 
 // performs the rl update at a state
-void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal, bool update_efr )
+void rl_perform_update( agent *thisAgent, double op_value, bool op_rl, Symbol *goal, bool update_efr )
 {
-	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == on );
+	bool using_gaps = ( thisAgent->rl_params->temporal_extension->get_value() == on );
 
 	if ( !using_gaps || op_rl )
 	{
-		rl_data *data = goal->id.rl_info;
+		rl_data *data = goal->id->rl_info;
 
 		if ( !data->prev_op_rl_rules->empty() )
 		{
 			rl_et_map::iterator iter;
-			double alpha = my_agent->rl_params->learning_rate->get_value();
-			double lambda = my_agent->rl_params->et_decay_rate->get_value();
-			double gamma = my_agent->rl_params->discount_rate->get_value();
-			double tolerance = my_agent->rl_params->et_tolerance->get_value();
-            double theta = my_agent->rl_params->meta_learning_rate->get_value();
+			double alpha = thisAgent->rl_params->learning_rate->get_value();
+			double lambda = thisAgent->rl_params->et_decay_rate->get_value();
+			double gamma = thisAgent->rl_params->discount_rate->get_value();
+			double tolerance = thisAgent->rl_params->et_tolerance->get_value();
+            double theta = thisAgent->rl_params->meta_learning_rate->get_value();
 
 			// if temporal_discount is off, don't discount for gaps
 			unsigned int effective_age = data->hrl_age + 1;
-			if (my_agent->rl_params->temporal_discount->get_value() == on) {
+			if (thisAgent->rl_params->temporal_discount->get_value() == on) {
 				effective_age += data->gap_age;
 			}
 
 			double discount = pow( gamma, static_cast< double >( effective_age ) );
 
 			// notify of gap closure
-			if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+			if ( data->gap_age && using_gaps && thisAgent->sysparams[ TRACE_RL_SYSPARAM ] )
 			{
 				char buf[256];
-				SNPRINTF( buf, 254, "gap ended (%c%llu)", goal->id.name_letter, static_cast<long long unsigned>(goal->id.name_number) );
+				SNPRINTF( buf, 254, "gap ended (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number) );
 
-				print( my_agent, buf );
-				xml_generate_warning( my_agent, buf );
+				print(thisAgent,  buf );
+				xml_generate_warning( thisAgent, buf );
 			}
 
 			// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
@@ -973,7 +934,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
                     // Adjust alpha based on decay policy
                     // Miller 11/14/2011
                     double adjusted_alpha;
-                    switch (my_agent->rl_params->decay_mode->get_value())
+                    switch (thisAgent->rl_params->decay_mode->get_value())
                     {
                         case rl_param_container::exponential_decay:
                             adjusted_alpha = 1.0 / (prod->rl_update_count + 1.0);
@@ -1016,19 +977,19 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					new_combined = ( new_ecr + new_efr );
 
 					// print as necessary
-					if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+					if ( thisAgent->sysparams[ TRACE_RL_SYSPARAM ] )
 					{
 						std::ostringstream ss;
-						ss << "RL update " << prod->name->sc.name << " "
+						ss << "RL update " << prod->name->sc->name << " "
 						   << old_ecr << " " << old_efr << " " << old_ecr + old_efr << " -> "
 						   << new_ecr << " " << new_efr << " " << new_combined ;
 
 						std::string temp_str( ss.str() );
-						print( my_agent, "%s\n", temp_str.c_str() );
-						xml_generate_message( my_agent, temp_str.c_str() );
+						print(thisAgent,  "%s\n", temp_str.c_str() );
+						xml_generate_message( thisAgent, temp_str.c_str() );
 
                         // Log update to file if the log file has been set
-                        std::string log_path = my_agent->rl_params->update_log_path->get_value();
+                        std::string log_path = thisAgent->rl_params->update_log_path->get_value();
                         if (!log_path.empty()) {
                             std::ofstream file(log_path.c_str(), std::ios_base::app);
                             file << ss.str() << std::endl;
@@ -1037,29 +998,29 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
                     }
 
                     // Change value of rule
-                    symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
+                    symbol_remove_ref( thisAgent, rhs_value_to_symbol( prod->action_list->referent ) );
 
-                    // No refcount needed here because make_float_constant will increase
-                    prod->action_list->referent = make_rhs_value_symbol_no_refcount(my_agent, make_float_constant( my_agent, new_combined ) );
+          // No refcount needed here because make_float_constant will increase
+          prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, make_float_constant( thisAgent, new_combined ) );
 
                     prod->rl_update_count += 1;
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
 
                     // change documentation
-                    if ( my_agent->rl_params->meta->get_value() == on )
+                    if ( thisAgent->rl_params->meta->get_value() == on )
                     {
                         if ( prod->documentation )
                         {
-                            free_memory_block_for_string( my_agent, prod->documentation );
+                            free_memory_block_for_string( thisAgent, prod->documentation );
                         }
                         std::stringstream doc_ss;
-                        const std::vector<std::pair<std::string, param_accessor<double> *> > &documentation_params = my_agent->rl_params->get_documentation_params();
+                        const std::vector<std::pair<std::string, param_accessor<double> *> > &documentation_params = thisAgent->rl_params->get_documentation_params();
                         for (std::vector<std::pair<std::string, param_accessor<double> *> >::const_iterator doc_params_it = documentation_params.begin();
                                 doc_params_it != documentation_params.end(); ++doc_params_it) {
                             doc_ss << doc_params_it->first << "=" << doc_params_it->second->get_param(prod) << ";";
                         }
-                        prod->documentation = make_memory_block_for_string(my_agent, doc_ss.str().c_str());
+                        prod->documentation = make_memory_block_for_string(thisAgent, doc_ss.str().c_str());
 
                         /*
 						std::string rlupdates( "rlupdates=" );
@@ -1067,7 +1028,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 						to_string( static_cast< uint64_t >( prod->rl_update_count ), val );
 						rlupdates.append( val );
 
-						prod->documentation = make_memory_block_for_string( my_agent, rlupdates.c_str() );
+						prod->documentation = make_memory_block_for_string( thisAgent, rlupdates.c_str() );
                         */
 					}
 
@@ -1078,8 +1039,8 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 						{
 							for ( preference *pref = inst->preferences_generated; pref; pref = pref->inst_next )
 							{
-								symbol_remove_ref( my_agent, pref->referent );
-								pref->referent = make_float_constant( my_agent, new_combined );
+								symbol_remove_ref( thisAgent, pref->referent );
+								pref->referent = make_float_constant( thisAgent, new_combined );
 							}
 						}
 					}
@@ -1094,7 +1055,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 }
 
 // clears eligibility traces
-void rl_watkins_clear( agent * /*my_agent*/, Symbol *goal )
+void rl_watkins_clear( agent * /*thisAgent*/, Symbol *goal )
 {
-	goal->id.rl_info->eligibility_traces->clear();
+	goal->id->rl_info->eligibility_traces->clear();
 }

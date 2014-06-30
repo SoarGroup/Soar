@@ -30,13 +30,14 @@
 #include "soar_TraceNames.h"
 #include "test.h"
 #include "wma.h"
+#include "wmem.h"
 
-wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
-typedef struct agent_struct agent;
+//wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
+//typedef struct agent_struct agent;
 
 namespace soar_module
 {
-	timer::timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred, bool soar_control ): named_object( new_name ), my_agent( new_agent ), level( new_level ), pred( new_pred )
+	timer::timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred, bool soar_control ): named_object( new_name ), thisAgent( new_agent ), level( new_level ), pred( new_pred )
 	{
 		stopwatch.set_enabled( ( ( soar_control )?( &( new_agent->sysparams[ TIMERS_ENABLED ] ) ):( NULL ) ) );
 		reset();
@@ -46,18 +47,18 @@ namespace soar_module
 	// Utility functions
 	/////////////////////////////////////////////////////////////
 
-	wme *add_module_wme( agent *my_agent, Symbol *id, Symbol *attr, Symbol *value )
+	wme *add_module_wme( agent *thisAgent, Symbol *id, Symbol *attr, Symbol *value )
 	{
-		slot *my_slot = make_slot( my_agent, id, attr );
-		wme *w = make_wme( my_agent, id, attr, value, false );
+		slot *my_slot = make_slot( thisAgent, id, attr );
+		wme *w = make_wme( thisAgent, id, attr, value, false );
 
 		insert_at_head_of_dll( my_slot->wmes, w, next, prev );
-		add_wme_to_wm( my_agent, w );
+		add_wme_to_wm( thisAgent, w );
 
 		return w;
 	}
 
-	void remove_module_wme( agent *my_agent, wme *w )
+	void remove_module_wme( agent *thisAgent, wme *w )
 	{
 		slot *my_slot = find_slot( w->id, w->attr );
 
@@ -69,27 +70,27 @@ namespace soar_module
 			{
 				if ( w->gds->goal != NIL )
 				{
-					gds_invalid_so_remove_goal( my_agent, w );
+					gds_invalid_so_remove_goal( thisAgent, w );
 
 					/* NOTE: the call to remove_wme_from_wm will take care of checking if GDS should be removed */
 				}
 			}
 
-			remove_wme_from_wm( my_agent, w );
+			remove_wme_from_wm( thisAgent, w );
 		}
 	}
 
-	instantiation* make_fake_instantiation( agent* my_agent, Symbol* state, wme_set* conditions, symbol_triple_list* actions )
+	instantiation* make_fake_instantiation( agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions )
 	{
 		// make fake instantiation
 		instantiation* inst;
-		allocate_with_pool( my_agent, &( my_agent->instantiation_pool ), &inst );
+		allocate_with_pool( thisAgent, &( thisAgent->instantiation_pool ), &inst );
 		inst->prod = NULL;
 		inst->next = inst->prev = NULL;
 		inst->rete_token = NULL;
 		inst->rete_wme = NULL;
 		inst->match_goal = state;
-		inst->match_goal_level = state->data.id.level;
+		inst->match_goal_level = state->id->level;
 		inst->reliable = true;
 		inst->backtrace_number = 0;
 		inst->in_ms = false;
@@ -102,11 +103,11 @@ namespace soar_module
 
 			for ( symbol_triple_list::iterator a_it=actions->begin(); a_it!=actions->end(); a_it++ )
 			{
-				pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL );
+				pref = make_preference( thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL );
 				pref->o_supported = true;
-				symbol_add_ref(my_agent, pref->id );
-				symbol_add_ref(my_agent, pref->attr );
-				symbol_add_ref(my_agent, pref->value );
+				symbol_add_ref(thisAgent, pref->id );
+				symbol_add_ref(thisAgent, pref->attr );
+				symbol_add_ref(thisAgent, pref->value );
 
 				pref->inst = inst;
 				pref->inst_next = pref->inst_prev = NULL;
@@ -123,7 +124,7 @@ namespace soar_module
 			for ( wme_set::iterator c_it=conditions->begin(); c_it!=conditions->end(); c_it++ )
 			{
 				// construct the condition
-				allocate_with_pool( my_agent, &( my_agent->condition_pool ), &cond );
+				allocate_with_pool( thisAgent, &( thisAgent->condition_pool ), &cond );
 				init_condition(cond);
 				cond->type = POSITIVE_CONDITION;
 				cond->prev = prev_cond;
@@ -137,9 +138,9 @@ namespace soar_module
 					inst->top_of_instantiated_conditions = cond;
 					inst->bottom_of_instantiated_conditions = cond;
 				}
-				cond->data.tests.id_test = make_test(my_agent, (*c_it)->id, EQUALITY_TEST );
-				cond->data.tests.attr_test = make_test(my_agent, (*c_it)->attr, EQUALITY_TEST );
-				cond->data.tests.value_test = make_test(my_agent, (*c_it)->value, EQUALITY_TEST );
+				cond->data.tests.id_test = make_test(thisAgent, (*c_it)->id, EQUALITY_TEST );
+				cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST );
+				cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST );
 				cond->test_for_acceptable_preference = (*c_it)->acceptable;
 				cond->bt.wme_ = (*c_it);
 
@@ -150,7 +151,7 @@ namespace soar_module
 					wme_add_ref( (*c_it) );
 				}
 
-				cond->bt.level = (*c_it)->id->data.id.level;
+				cond->bt.level = (*c_it)->id->id->level;
 				cond->bt.trace = (*c_it)->preference;
 
 				if ( cond->bt.trace )
@@ -177,17 +178,17 @@ namespace soar_module
 	// Memory Pool Allocators
 	/////////////////////////////////////////////////////////////
 
-	memory_pool* get_memory_pool( agent* my_agent, size_t size )
+	memory_pool* get_memory_pool( agent* thisAgent, size_t size )
 	{
 		memory_pool* return_val = NULL;
 
-		std::map< size_t, memory_pool* >::iterator it = my_agent->dyn_memory_pools->find( size );
-		if ( it == my_agent->dyn_memory_pools->end() )
+		std::map< size_t, memory_pool* >::iterator it = thisAgent->dyn_memory_pools->find( size );
+		if ( it == thisAgent->dyn_memory_pools->end() )
 		{
 			memory_pool* newbie = new memory_pool;
 
-			init_memory_pool( my_agent, newbie, size, "dynamic" );
-			my_agent->dyn_memory_pools->insert( std::make_pair( size, newbie ) );
+			init_memory_pool( thisAgent, newbie, size, "dynamic" );
+			thisAgent->dyn_memory_pools->insert( std::make_pair( size, newbie ) );
 
 			return_val = newbie;
 		}

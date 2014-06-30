@@ -7,10 +7,6 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <algorithm>
-#include <functional>
-#include <cctype>
-#include <locale>
 #include "sml_Client.h"
 
 using namespace std;
@@ -20,21 +16,11 @@ const int stopsig = SIGINT;
 Kernel* kernel = NULL;
 Agent* agent = NULL;
 
-// trim from start
-static inline std::string &ltrim(std::string &s) {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-        return s;
-}
-
-// trim from end
-static inline std::string &rtrim(std::string &s) {
-        s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-        return s;
-}
-
-// trim from both ends
-static inline std::string &trim(std::string &s) {
-        return ltrim(rtrim(s));
+string strip(string s, string lc, string rc) {
+	size_t b, e;
+	b = s.find_first_not_of(lc);
+	e = s.find_last_not_of(rc);
+	return s.substr(b, e - b + 1);
 }
 
 /*
@@ -105,8 +91,7 @@ bool readcmd(string &result) {
 }
 
 void printcb(smlPrintEventId id, void *d, Agent *a, char const *m) {
-    string msg(m);
-    cout << trim(msg) << endl;
+	cout << strip(m, "\n", "\n\t ") << endl;
 }
 
 void execcmd(const string &c) {
@@ -118,31 +103,25 @@ void execcmd(const string &c) {
 		kernel->Shutdown();
 		delete kernel;
 		exit(0);
-    } else {
-
-        /* -- The following is a shortcut to allow the user to simply type an
-         *    identifier on the command line to print it.  Not sure how
-         *    useful this is, but it was in the old mincli but had a bug. -- */
-        if ((c.length()>1) && isupper(c[0])) {
-            isident = true;
-            for (int i = 1; i < c.size(); ++i) {
-                if (!isdigit(c[i])) {
-                    isident = false;
-                }
-            }
-        }
-        string pc;
-        if (isident) {
-            pc.assign("print ");
-            pc += c;
-        } else {
-            pc = c;
-        }
-
-        out = agent->ExecuteCommandLine(pc.c_str());
-        out = trim(out);
-        cout << out;
-    }
+	}
+	if (isupper(c[1])) {
+		isident = true;
+		for (int i = 1; i < c.size(); ++i) {
+			if (!isdigit(c[i])) {
+				isident = false;
+			}
+		}
+	}
+	if (isident) {
+		string pc("print ");
+		pc += c;
+		out = agent->ExecuteCommandLine(pc.c_str());
+	} else {
+		out = agent->ExecuteCommandLine(c.c_str());
+	}
+	if (out.size() > 0) {
+		cout << strip(out, "\n", "\n\t ") << endl;
+	}
 }
 
 void repl() {
@@ -273,8 +252,8 @@ int main(int argc, char *argv[]) {
 
 //  pthread_setname_np("minCLI_main_thread");
 //  cout << "minCLI thread is " << tname2() << endl;
-
-  if (listen) {
+	cout << "minCLI Soar Command Line Interface" << endl;
+	if (listen) {
 	  cout << "Instantiating Soar.  (kernel in new thread, port " << port << ")" << endl;
 		kernel = Kernel::CreateKernelInNewThread(port);
 	} else {

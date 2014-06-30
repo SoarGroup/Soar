@@ -8,6 +8,7 @@ array set callbackIDs {
   rhs -1
   filter -1
   agent_destroyed -1
+  agent_reinit -1
 }
 
 lappend auto_path $soarDir
@@ -93,7 +94,7 @@ proc smlfilter {agentName commandLine} {
 
   $slave eval clearOutputBuffer
   # That evaluates the command within the child interpreter for this agent
-  if { [catch {$slave eval [concat uplevel #0 puts [list \[$commandLine\]]]} returnVal] } {
+  if { [catch {$slave eval [concat uplevel #0 puts \[$commandLine\]]} returnVal] } {
     $slave eval [list appendOutputBuffer $returnVal]
   }
 
@@ -106,7 +107,7 @@ proc smltclrhsfunction { agentName expression } {
 
   set slave [getSlave $agentName]
   $slave eval clearOutputBuffer
-  if { [catch {$slave eval [concat uplevel #0 puts [list \[$expression\]]]} returnVal] } {
+  if { [catch {$slave eval [concat uplevel #0 puts \[$expression]]} returnVal] } {
     $slave eval [list appendOutputBuffer $returnVal]
   }
 
@@ -116,16 +117,14 @@ proc smltclrhsfunction { agentName expression } {
 ##
 # Called when the system shuts down
 proc smlshutdown {} {
-  removeCallbackHandlers
+  #removeCallbackHandlers
   foreach slave [interp slaves] {
     interp delete slave
   }
 }
 
 proc smlDestroyAgentCallback {id userData agent } {
-  if {[interp exists [$agent GetAgentName]]} {
-    interp delete [$agent GetAgentName]
-  }
+  interp delete [$agent GetAgentName]
 }
 
 #####################
@@ -191,7 +190,7 @@ proc loadSmlLibrary {} {
 
 proc createCallbackHandlers {} {
   global _kernel callbackIDs
-  global sml_Names_kFilterName smlEVENT_BEFORE_AGENT_DESTROYED
+  global sml_Names_kFilterName smlEVENT_BEFORE_AGENT_DESTROYED smlEVENT_BEFORE_AGENT_REINITIALIZED
 
   # Register main command processing callback function
   if {$callbackIDs(filter) == -1} {
@@ -208,30 +207,30 @@ proc createCallbackHandlers {} {
   if {$callbackIDs(agent_destroyed) == -1} {
     set callbackIDs(agent_destroyed) [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED smlDestroyAgentCallback ""]
   }
-
+  if {$callbackIDs(agent_reinit) == -1} {
+    set callbackIDs(agent_destroyed) [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED smlDestroyAgentCallback ""]
+  }
 }
 
 proc removeCallbackHandlers {} {
   global  _kernel callbackIDs
 
-  # These should be re-enabled after someone fixes the issues with callback IDs.  Currently
-  # I think there's a bug in our swig interface where it's not properly returning an
-  # integer, which is what the ID should be.  Instead callback registration returns a string
-  # that starts with "intptr_t".  That string does not seem to a proc that manipulates a C++ object
-  # like the kernel.
-
-#  if {$callbackIDs(filter) != -1} {
-#    set result [$_kernel UnregisterForClientMessageEvent $callbackIDs(filter)]
-#    set callbackIDs(filter) -1
-#  }
-#  if {$callbackIDs(rhs) != -1} {
-#    $_kernel RemoveRhsFunction $callbackIDs(rhs);
-#    set callbackIDs(rhs) -1
-#  }
-#  if {$callbackIDs(agent_destroyed) != -1} {
-#    set result [$_kernel UnregisterForClientMessageEvent $callbackIDs(agent_destroyed)]
-#    set callbackIDs(agent_destroyed) -1
-#  }
+  if {$callbackIDs(filter) != -1} {
+    set result [$_kernel UnregisterForClientMessageEvent $callbackIDs(filter)]
+    set callbackIDs(filter) -1
+  }
+  if {$callbackIDs(rhs) != -1} {
+    $_kernel RemoveRhsFunction $callbackIDs(rhs);
+    set callbackIDs(rhs) -1
+  }
+  if {$callbackIDs(agent_destroyed) != -1} {
+    set result [$_kernel UnregisterForClientMessageEvent $callbackIDs(agent_destroyed)]
+    set callbackIDs(agent_destroyed) -1
+  }
+  if {$callbackIDs(agent_reinit) != -1} {
+    set result [$_kernel UnregisterForClientMessageEvent $callbackIDs(agent_reinit)]
+    set callbackIDs(agent_reinit) -1
+  }
 }
 
 ##

@@ -24,8 +24,8 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int n) {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
-    multi_attribute* maList = agnt->multi_attributes;
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    multi_attribute* maList = thisAgent->multi_attributes;
 
     if (!pAttribute && !n) {
 
@@ -45,10 +45,10 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
         {
             // Arbitrary buffer and size
             char attributeName[1024];
-            symbol_to_string(agnt, maList->symbol, true, attributeName, 1024);
+            maList->symbol->to_string(true, attributeName, 1024);
 
             if (m_RawOutput) {
-                m_Result  << maList->value << "\t" << symbol_to_string(agnt, maList->symbol, true, attributeName, 1024)<< "\n";
+                m_Result  << maList->value << "\t" << maList->symbol->to_string(true, attributeName, 1024) << std::endl;
 
             } else {
                 buffer << maList->value;
@@ -76,14 +76,14 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
     if (!n) n = 10;
 
     // Set it
-    Symbol* s = make_sym_constant( agnt, pAttribute->c_str() );
+    Symbol* s = make_str_constant( thisAgent, pAttribute->c_str() );
 
     while (maList)
     {
         if (maList->symbol == s)
         {
             maList->value = n;
-            symbol_remove_ref(agnt, s);
+            symbol_remove_ref(thisAgent, s);
             return true;
         }
 
@@ -91,13 +91,13 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
     }
 
     /* sym wasn't in the table if we get here, so add it */
-    maList = static_cast<multi_attribute *>(allocate_memory(agnt, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
+    maList = static_cast<multi_attribute *>(allocate_memory(thisAgent, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
     assert(maList);
 
     maList->value = n;
     maList->symbol = s;
-    maList->next = agnt->multi_attributes;
-    agnt->multi_attributes = maList;
+    maList->next = thisAgent->multi_attributes;
+    thisAgent->multi_attributes = maList;
 
      return true;
 }

@@ -110,78 +110,6 @@ namespace cli
         AllocateCommand& operator=(const AllocateCommand&);
     };
 
-    class BreakCommand : public cli::ParserCommand
-    {
-    public:
-        BreakCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-        virtual ~BreakCommand() {}
-        virtual const char* GetString() const { return "break"; }
-        virtual const char* GetSyntax() const
-        {
-            return "Syntax: break [-cps] production_name";
-        }
-
-        virtual bool Parse(std::vector< std::string >&argv)
-        {
-            cli::Options opt;
-            OptionsData optionsData[] =
-            {
-                {'c', "clear", OPTARG_NONE},
-                {'p', "print", OPTARG_NONE},
-                {'s', "set",   OPTARG_NONE},
-                {0, 0, OPTARG_NONE} // null
-            };
-
-            char option = 0;
-
-            for (;;)
-            {
-                if ( !opt.ProcessOptions( argv, optionsData ) )
-                    return cli.SetError( opt.GetError().c_str());
-
-                if (opt.GetOption() == -1) break;
-
-                if (option != 0)
-                    return cli.SetError( "break takes only one option at a time." );
-                option = static_cast<char>(opt.GetOption());
-            }
-
-            switch (option)
-            {
-            case 'c':
-            case 's':
-                if(argv.size() != 3)
-                    return cli.SetError( "break --set/--clear takes exactly one argument." );
-
-                // case: clear the interrupt flag on the production
-                return cli.DoBreak(option, argv[2]);
-
-            case 'p':
-                if(argv.size() != 2)
-                    return cli.SetError( "break --print takes no arguments." );
-                
-                // case: set the interrupt flag on the production
-                return cli.DoBreak('p', "");
-
-            default:
-                if(argv.size() == 1)
-                    return cli.DoBreak('p', "");
-                else if(argv.size() == 2)
-                    return cli.DoBreak('s', argv[1]);
-                else
-                    return cli.SetError( "break used incorrectly." );
-            }
-
-            // bad: no option, but more than one argument
-            return cli.SetError( "break takes exactly one argument." );
-        }
-
-    private:
-        cli::Cli& cli;
-
-        BreakCommand& operator=(const BreakCommand&);
-    };
-
     class CaptureInputCommand : public cli::ParserCommand
     {
     public:
@@ -352,38 +280,6 @@ namespace cli
         ChunkNameFormatCommand& operator=(const ChunkNameFormatCommand&);
     };
 
-    class CliExtensionMessageCommand : public cli::ParserCommand
-    {
-
-      public:
-          CliExtensionMessageCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-          virtual ~CliExtensionMessageCommand() {}
-          virtual const char* GetString() const { return "cli"; }
-          virtual const char* GetSyntax() const
-          {
-              return "Syntax: cli extension-name command [args]";
-          }
-
-          virtual bool Parse(std::vector< std::string >&argv)
-          {
-              if (argv.size() < 3)
-                  return cli.SetError(GetSyntax());
-
-              std::string concat_message(argv[1]);
-              for (std::vector<int>::size_type i = 2; i < argv.size(); ++i)
-              {
-                concat_message += ' ' ;
-                concat_message += argv[i] ;
-              }
-              return cli.DoCLIMessage(concat_message);
-          }
-
-      private:
-          cli::Cli& cli;
-
-          CliExtensionMessageCommand& operator=(const CliExtensionMessageCommand&);
-    };
-
     class CLogCommand : public cli::ParserCommand
     {
     public:
@@ -525,7 +421,7 @@ namespace cli
 
           CliExtensionMessageCommand& operator=(const CliExtensionMessageCommand&);
     };
-
+    
     class CommandToFileCommand : public cli::ParserCommand
     {
     public:
@@ -832,15 +728,14 @@ namespace cli
             cli::Options opt;
             OptionsData optionsData[] =
             {
-                {'b', "backup",       OPTARG_NONE},
-                {'c', "close",        OPTARG_NONE},
+				{'b', "backup",       OPTARG_NONE},
                 {'d', "disable",      OPTARG_NONE},
                 {'d', "off",          OPTARG_NONE},
                 {'e', "enable",       OPTARG_NONE},
                 {'e', "on",           OPTARG_NONE},
                 {'i', "init",         OPTARG_NONE},
                 {'g', "get",          OPTARG_NONE},
-                {'p', "print",        OPTARG_NONE},
+				{'p', "print",        OPTARG_NONE},
                 {'s', "set",          OPTARG_NONE},
                 {'S', "stats",        OPTARG_NONE},
                 {'t', "timers",       OPTARG_NONE},
@@ -864,93 +759,92 @@ namespace cli
 
             switch (option)
             {
-              case 0:
-              default:
+            case 0:
+            default:
                 // no options
                 break;
 
-              case 'i':
-              case 'e':
-              case 'd':
-              case 'c':
-                // case: init, close, on and off get no arguments
-              {
-                if (!opt.CheckNumNonOptArgs(0, 0)) return cli.SetError( opt.GetError().c_str());
+            case 'i':
+            case 'e':
+            case 'd':
+                // case: init, on and off get no arguments
+                {
+                    if (!opt.CheckNumNonOptArgs(0, 0)) return cli.SetError( opt.GetError().c_str());
 
-                return cli.DoEpMem( option );
-              }
+                    return cli.DoEpMem( option );
+                }
 
-              case 'b':
+			case 'b':
                 // case: backup requires one non-option argument
                 if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
                 return cli.DoEpMem( option, &( argv[2] ) );
 
-              case 'g':
+            case 'g':
                 // case: get requires one non-option argument
-              {
-                if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
+                {
+                    if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
-                return cli.DoEpMem( option, &( argv[2] ) );
-              }
+                    return cli.DoEpMem( option, &( argv[2] ) );
+                }
 
-              case 'p':
+			case 'p':
                 // case: print takes one non-option argument
-              {
-                if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
+                {
+                    if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
-                std::string temp_str( argv[2] );
-                epmem_time_id memory_id;
+                    std::string temp_str( argv[2] );
+                    epmem_time_id memory_id;
 
-                if ( !from_string( memory_id, temp_str ) )
-                  return cli.SetError( "Invalid epmem time tag." );
+                    if ( !from_string( memory_id, temp_str ) )
+                        return cli.SetError( "Invalid attribute." );
 
-                return cli.DoEpMem( option, 0, 0, memory_id );
-              }
+                    return cli.DoEpMem( option, 0, 0, memory_id );
+                }
 
-              case 's':
+            case 's':
                 // case: set requires two non-option arguments
-              {
-                if (!opt.CheckNumNonOptArgs(2, 2)) return cli.SetError( opt.GetError().c_str());
+                {
+                    if (!opt.CheckNumNonOptArgs(2, 2)) return cli.SetError( opt.GetError().c_str());
 
-                return cli.DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
-              }
+                    return cli.DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
+                }
 
-              case 'S':
+            case 'S':
                 // case: stat can do zero or one non-option arguments
-              {
-                if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
+                {
+                    if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
 
-                if ( opt.GetNonOptionArguments() == 0 )
-                  return cli.DoEpMem( option );
+                    if ( opt.GetNonOptionArguments() == 0 )
+                        return cli.DoEpMem( option );
 
-                return cli.DoEpMem( option, &( argv[2] ) );
-              }
+                    return cli.DoEpMem( option, &( argv[2] ) );
+                }
 
-              case 't':
+            case 't':
                 // case: timer can do zero or one non-option arguments
-              {
-                if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
+                {
+                    if (!opt.CheckNumNonOptArgs(0, 1)) return cli.SetError( opt.GetError().c_str());
 
-                if ( opt.GetNonOptionArguments() == 0 )
-                  return cli.DoEpMem( option );
+                    if ( opt.GetNonOptionArguments() == 0 )
+                        return cli.DoEpMem( option );
 
-                return cli.DoEpMem( option, &( argv[2] ) );
-              }
+                    return cli.DoEpMem( option, &( argv[2] ) );
+                }
 
-              case 'v':
+            case 'v':
                 // case: viz takes one non-option argument
-              {
-                if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
+                {
+                    if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
-                std::string temp_str( argv[2] );
-                epmem_time_id memory_id;
+                    std::string temp_str( argv[2] );
+                    epmem_time_id memory_id;
 
-                if ( !from_string( memory_id, temp_str ) )
-                  return cli.SetError( "Invalid epmem time tag." );
+                    if ( !from_string( memory_id, temp_str ) )
+                        return cli.SetError( "Invalid attribute." );
 
-                return cli.DoEpMem( option, 0, 0, memory_id );
-              }
+                    return cli.DoEpMem( option, 0, 0, memory_id );
+                }
             }
 
             // bad: no option, but more than one argument

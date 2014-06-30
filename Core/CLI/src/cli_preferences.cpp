@@ -39,7 +39,7 @@ using namespace sml;
 ===============================
 */
 
-bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Symbol * * attr)
+bool read_attribute_from_string (agent* thisAgent, Symbol *id, char * the_lexeme, Symbol * * attr)
 {
     Symbol *attr_tmp;
     slot *s;
@@ -50,25 +50,25 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
         the_lexeme++;
     }
 
-    get_lexeme_from_string(agnt, the_lexeme);
+    get_lexeme_from_string(thisAgent, the_lexeme);
 
-    switch (agnt->lexeme.type) 
+    switch (thisAgent->lexeme.type)
     {
-    case SYM_CONSTANT_LEXEME:
-        attr_tmp = find_sym_constant (agnt, agnt->lexeme.string);
+    case STR_CONSTANT_LEXEME:
+        attr_tmp = find_str_constant (thisAgent, thisAgent->lexeme.string);
         break;
     case INT_CONSTANT_LEXEME:
-        attr_tmp = find_int_constant (agnt, agnt->lexeme.int_val);
+        attr_tmp = find_int_constant (thisAgent, thisAgent->lexeme.int_val);
         break;
     case FLOAT_CONSTANT_LEXEME:
-        attr_tmp = find_float_constant (agnt, agnt->lexeme.float_val);
+        attr_tmp = find_float_constant (thisAgent, thisAgent->lexeme.float_val);
         break;
     case IDENTIFIER_LEXEME:
-        attr_tmp = find_identifier (agnt, agnt->lexeme.id_letter,
-            agnt->lexeme.id_number);
+        attr_tmp = find_identifier (thisAgent, thisAgent->lexeme.id_letter,
+            thisAgent->lexeme.id_number);
         break;
     case VARIABLE_LEXEME:
-        attr_tmp = read_identifier_or_context_variable(agnt);
+        attr_tmp = read_identifier_or_context_variable(thisAgent);
         if (!attr_tmp)
             return false;
         break;
@@ -79,7 +79,7 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
     if (s) {
         *attr = attr_tmp;
         return true;
-    } else                        
+    } else
         *attr = attr_tmp;
         return false;
 }
@@ -95,27 +95,27 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
 * Side effects:
 *    Prints the preference and its source production.
 *
-* NOTE:  The called of this routine should be stepping thru slots only, 
+* NOTE:  The called of this routine should be stepping thru slots only,
 *        (not stepping thru WMEs) and therefore input wmes and arch-wmes
-*        are already excluded and we can print :I when o_support is FALSE.
-* 
+*        are already excluded and we can print :I when o_support is false.
+*
 ===============================
 */
-void print_preference_and_source (agent* agnt, preference *pref,
+void print_preference_and_source (agent* thisAgent, preference *pref,
                                   bool print_source,
                                   wme_trace_type wtt,
-                                  double* selection_probability = 0) 
+                                  double* selection_probability = 0)
 {
-    print_string (agnt, "  ");
-    if (pref->attr == agnt->operator_symbol) {
-        print_object_trace (agnt, pref->value);
-    } else {                    
-        print_with_symbols (agnt, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
-    }     
-    if (pref->attr == agnt->operator_symbol) {
-        print (agnt, " %c", preference_to_string (agnt, pref->type));
+    print(thisAgent,  "  ");
+    if (pref->attr == thisAgent->operator_symbol) {
+        print_object_trace (thisAgent, pref->value);
+    } else {
+        print_with_symbols (thisAgent, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
     }
-    if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
+    if (pref->attr == thisAgent->operator_symbol) {
+        print(thisAgent,  " %c", preference_to_char (pref->type));
+    }
+    if (preference_is_binary(pref->type)) print_object_trace (thisAgent, pref->referent);
     if (selection_probability) {
       char dest[MAX_LEXEME_LENGTH*2+10]; /* from agent.h */
       SNPRINTF(dest, sizeof(dest), "%#.16g", pref->numeric_value);
@@ -132,19 +132,19 @@ void print_preference_and_source (agent* agnt, preference *pref,
         while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
         *end_of_mantissa = 0;
       }
-      print (agnt, " =%s", dest);
+      print(thisAgent,  " =%s", dest);
     }
-    if (pref->o_supported) print (agnt, " :O "); else print (agnt, " :I ");
-    if (selection_probability) print (agnt, "(%.1f%%)", (*selection_probability) * 100.0);
-    print (agnt, "\n");
+    if (pref->o_supported) print(thisAgent,  " :O "); else print(thisAgent,  " :I ");
+    if (selection_probability) print(thisAgent,  "(%.1f%%)", (*selection_probability) * 100.0);
+    print(thisAgent,  "\n");
     if (print_source) {
-        print (agnt, "    From ");
-        print_instantiation_with_wmes (agnt, pref->inst, wtt, -1);
-        print (agnt, "\n");
+        print(thisAgent,  "    From ");
+        print_instantiation_with_wmes (thisAgent, pref->inst, wtt, -1);
+        print(thisAgent,  "\n");
     }
 }
 
-int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool object, bool print_prod, wme_trace_type wtt)
+int soar_ecPrintPreferences(agent* thisAgent, char *szId, char *szAttr, bool object, bool print_prod, wme_trace_type wtt)
 {
 
     Symbol *id, *attr = 0;
@@ -153,8 +153,8 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
     wme *w;
     int i;
 
-    if (!read_id_or_context_var_from_string(soarAgent, szId, &id)) {
-        print(soarAgent, "Could not find the id '%s'\n", szId);
+    if (!read_id_or_context_var_from_string(thisAgent, szId, &id)) {
+        print(thisAgent,  "Could not find the id '%s'\n", szId);
         return -1;
     }
 
@@ -162,26 +162,26 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
     /// change soon, so I'll cheat for now.  If we have an ID that isn't a
     /// state (goal), then don't use the default ^operator.  Instead, search
     /// for wmes with that ID as a value.  See below
-    if (!id->data.id.isa_goal && !strcmp(szAttr, "operator")) {
+    if (!id->id->isa_goal && !strcmp(szAttr, "operator")) {
         attr = NIL;
     } else {
         if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
-            if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {        
+            if (!read_attribute_from_string(thisAgent, id, szAttr, &attr)) {
                 // NOT tested:  but here goes...
-                // This is code to determine whether ^attr arg is misspelled 
-                // or an arch-wme.  Had to modify read_attribute_from_string() to  
+                // This is code to determine whether ^attr arg is misspelled
+                // or an arch-wme.  Had to modify read_attribute_from_string() to
                 // always set the attr:  symbol exists but no slot, or attr = NIL.
                 if (attr) {
-                    print (soarAgent,"  This is probably an io- or arch-wme and does not have preferences\n");                            
-                    return 0;                                        
+                    print(thisAgent, "  This is probably an io- or arch-wme and does not have preferences\n");
+                    return 0;
                 }
-                print(soarAgent, "Could not find prefs for the id,attribute pair: %s %s\n", szId, szAttr);
+                print(thisAgent,  "Could not find prefs for the id,attribute pair: %s %s\n", szId, szAttr);
                 return -2;
-            }            
+            }
             s = find_slot(id, attr);
             if (!s && !object) {
                 // Should we check for input wmes and arch-wmes ?? ...covered above...
-                print(soarAgent, "Could not find preferences for %s ^%s.", szId, szAttr);
+                print(thisAgent,  "Could not find preferences for %s ^%s.", szId, szAttr);
                 return -3;
             }
         }
@@ -195,104 +195,104 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 
     if (object) {
         // step thru dll of slots for ID, printing prefs for each one
-        for (s = id->data.id.slots; s != NIL; s = s->next ) {        
-            if (s->attr == soarAgent->operator_symbol)
-                print_with_symbols(soarAgent, "Preferences for %y ^%y:", s->id, s->attr);                
-            else 
-                print_with_symbols(soarAgent, "Support for %y ^%y:\n", s->id, s->attr);                
+        for (s = id->id->slots; s != NIL; s = s->next ) {
+            if (s->attr == thisAgent->operator_symbol)
+                print_with_symbols(thisAgent, "Preferences for %y ^%y:", s->id, s->attr);
+            else
+                print_with_symbols(thisAgent, "Support for %y ^%y:\n", s->id, s->attr);
             for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
                 if (s->preferences[i]) {
-                    if (s->isa_context_slot) print(soarAgent, "\n%ss:\n", preference_name[i]);
+                    if (s->isa_context_slot) print(thisAgent,  "\n%ss:\n", preference_name[i]);
                     for (p = s->preferences[i]; p; p = p->next) {
-                        print_preference_and_source(soarAgent, p, print_prod, wtt);
+                        print_preference_and_source(thisAgent, p, print_prod, wtt);
                     }
                 }
             }
         }
-        if (id->data.id.impasse_wmes)
-            print_with_symbols(soarAgent, "Arch-created wmes for %y :\n", id);                
-        for (w=id->data.id.impasse_wmes; w!=NIL; w=w->next)   {
-            print_wme(soarAgent, w);
+        if (id->id->impasse_wmes)
+            print_with_symbols(thisAgent, "Arch-created wmes for %y :\n", id);
+        for (w=id->id->impasse_wmes; w!=NIL; w=w->next)   {
+            print_wme(thisAgent, w);
         }
-        if (id->data.id.input_wmes)
-            print_with_symbols(soarAgent, "Input (IO) wmes for %y :\n", id);                
-        for (w=id->data.id.input_wmes; w!=NIL; w=w->next) {
-            print_wme(soarAgent, w);
+        if (id->id->input_wmes)
+            print_with_symbols(thisAgent, "Input (IO) wmes for %y :\n", id);
+        for (w=id->id->input_wmes; w!=NIL; w=w->next) {
+            print_wme(thisAgent, w);
         }
 
         return 0;
-    } else if (!id->data.id.isa_goal && !attr ) {  
+    } else if (!id->id->isa_goal && !attr ) {
         // find wme(s?) whose value is <ID> and print prefs if they exist
-        // ??? should write print_prefs_for_id(soarAgent, id, print_prod, wtt);
-        // return;                    
-        for (w=soarAgent->all_wmes_in_rete; w!=NIL; w=w->rete_next) {                
-            if (w->value == id )  {                
-                if (w->value == soarAgent->operator_symbol)
-                    print (soarAgent, "Preferences for (%lu: ", w->timetag);                    
-                else 
-                    print (soarAgent, "Support for (%lu: ", w->timetag);                    
-                print_with_symbols (soarAgent, "%y ^%y %y)\n", w->id, w->attr, w->value);
+        // ??? should write print_prefs_for_id(thisAgent, id, print_prod, wtt);
+        // return;
+        for (w=thisAgent->all_wmes_in_rete; w!=NIL; w=w->rete_next) {
+            if (w->value == id )  {
+                if (w->value == thisAgent->operator_symbol)
+                    print(thisAgent,  "Preferences for (%lu: ", w->timetag);
+                else
+                    print(thisAgent,  "Support for (%lu: ", w->timetag);
+                print_with_symbols (thisAgent, "%y ^%y %y)\n", w->id, w->attr, w->value);
                 if (w->preference) {
                     s = find_slot(w->id, w->attr);
                     if (!s) {
-                        print (soarAgent, "    This is an arch-wme and has no prefs.\n");
-                    } else {        
+                        print(thisAgent,  "    This is an arch-wme and has no prefs.\n");
+                    } else {
                         for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
-                            if (s->preferences[i]) {            
-                                // print(soarAgent, "\n%ss:\n", preference_name[i]);            
-                                for (p = s->preferences[i]; p; p = p->next) {            
+                            if (s->preferences[i]) {
+                                // thisAgent->OutputManager->print( "\n%ss:\n", preference_name[i]);
+                                for (p = s->preferences[i]; p; p = p->next) {
                                     if (p->value == id) {
                                         if ( i == ACCEPTABLE_PREFERENCE_TYPE ) {
-                                            double prob = exploration_probability_according_to_policy(soarAgent, s, s->preferences[i], p);
-                                            print_preference_and_source(soarAgent, p, print_prod, wtt, &prob);
+                                            double prob = exploration_probability_according_to_policy(thisAgent, s, s->preferences[i], p);
+                                            print_preference_and_source(thisAgent, p, print_prod, wtt, &prob);
                                         }
                                         else
-                                            print_preference_and_source(soarAgent, p, print_prod, wtt);
+                                            print_preference_and_source(thisAgent, p, print_prod, wtt);
                                     }
-                                }            
-                            }        
+                                }
+                            }
                         }
                     }
                     //print it
                 } else {
-                    print (soarAgent, "    This is an input-wme and has no prefs.\n");
+                    print(thisAgent,  "    This is an input-wme and has no prefs.\n");
                 }
             }
         }
-        return 0;            
+        return 0;
     }
 
     //print prefs for specified slot
-    print_with_symbols(soarAgent, "\nPreferences for %y ^%y:\n", id, attr);
+    print_with_symbols(thisAgent, "\nPreferences for %y ^%y:\n", id, attr);
 
-    for (i = 0; i < NUM_PREFERENCE_TYPES; i++) 
+    for (i = 0; i < NUM_PREFERENCE_TYPES; i++)
     {
-        if (s->preferences[i]) 
+        if (s->preferences[i])
         {
-            print(soarAgent, "\n%ss:\n", preference_name[i]);
-            for (p = s->preferences[i]; p; p = p->next) 
-                print_preference_and_source(soarAgent, p, print_prod, wtt);
+            print(thisAgent,  "\n%ss:\n", preference_name[i]);
+            for (p = s->preferences[i]; p; p = p->next)
+                print_preference_and_source(thisAgent, p, print_prod, wtt);
         }
     }
 
-	if ( id->data.id.isa_goal && !strcmp(szAttr, "operator") )
+	if ( id->id->isa_goal && !strcmp(szAttr, "operator") )
 	{
 		// voigtjr march 2010
 		// print selection probabilities re: issue 18
 		// run preference semantics "read only" via _consistency_check
 		// returns a list of candidates without deciding which one in the event of indifference
 		preference* cand = 0;
-		byte impasse_type = run_preference_semantics(soarAgent, s, &cand, true);
+		byte impasse_type = run_preference_semantics(thisAgent, s, &cand, true);
 
 		// if the impasse isn't NONE_IMPASSE_TYPE, there's an impasse and we don't want to print anything
 		// if we have no candidates, we don't want to print anything
 		if ((impasse_type == NONE_IMPASSE_TYPE) && cand)
 		{
-			print(soarAgent, "\nselection probabilities:\n");
+			print(thisAgent,  "\nselection probabilities:\n");
 
       for (p = cand; p; p = p->next_candidate) {
-        double prob = exploration_probability_according_to_policy(soarAgent, s, cand, p);
-        print_preference_and_source(soarAgent, p, print_prod, wtt, &prob);
+        double prob = exploration_probability_according_to_policy(thisAgent, s, cand, p);
+        print_preference_and_source(thisAgent, p, print_prod, wtt, &prob);
       }
 		}
 	}
@@ -308,11 +308,11 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
 
     const char* idString = pId ? pId->c_str() : 0;
     const char* attrString = pAttribute ? pAttribute->c_str() : 0;
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
     // Establish defaults
-    symbol_to_string(agnt, agnt->bottom_goal, TRUE, id, PREFERENCES_BUFFER_SIZE);
-    symbol_to_string(agnt, agnt->operator_symbol, TRUE, attr, PREFERENCES_BUFFER_SIZE);
+    thisAgent->bottom_goal->to_string(true, id, PREFERENCES_BUFFER_SIZE);
+    thisAgent->operator_symbol->to_string(true, attr, PREFERENCES_BUFFER_SIZE);
 
     // Override defaults
     if (idString) {
@@ -321,7 +321,7 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
         // Notice: attrString arg ignored if no idString passed
         if (attrString) {
             strncpy(attr, attrString, PREFERENCES_BUFFER_SIZE);
-        } 
+        }
     }
 
     bool print_productions = false;
@@ -348,7 +348,7 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
             break;
     }
 
-    if (soar_ecPrintPreferences(agnt, id, attr, object, print_productions, wtt))
+    if (soar_ecPrintPreferences(thisAgent, id, attr, object, print_productions, wtt))
         return SetError("An Error occured trying to print the prefs.");
     return true;
 }

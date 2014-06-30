@@ -64,38 +64,60 @@ const char * preference_name[] =
    for binary preferences.)  The preference is not yet added to preference
    memory, however.
 
-   The last three items are used by the chunker and have default nil
-   values, so they can be left out.
+   The last three parameters are original variable names used by the chunker
+   and are optional/have default nil values.
 ---------------------------------------------------------------------- */
 
 preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *attr,
-                             Symbol *value, Symbol *referent, Symbol *original_id_var,
-                             Symbol *original_attr_var, Symbol *original_value_var) {
+                             Symbol *value, Symbol *referent,
+                             const soar_module::symbol_triple originals,
+                             const soar_module::g_id_triple g_ids)
+{
   preference *p;
 
   allocate_with_pool (thisAgent, &thisAgent->preference_pool, &p);
   p->type = type;
-  p->in_tm = FALSE;
-  p->o_supported = FALSE;
-  p->on_goal_list = FALSE;
+  p->in_tm = false;
+  p->o_supported = false;
+  p->on_goal_list = false;
   p->reference_count = 0;
   p->id = id;
   p->attr = attr;
   p->value = value;
   p->referent = referent;
   p->slot = NIL;
-  p->next_clone = NIL;
-  p->prev_clone = NIL;
   p->total_preferences_for_candidate = 0;
   p->numeric_value = 0;
   p->rl_contribution = false;
   p->wma_o_set = NIL;
-  p->original_id_var = original_id_var;
-  p->original_attr_var = original_attr_var;
-  p->original_value_var = original_value_var;
+  p->next_clone = NIL;
+  p->prev_clone = NIL;
+  p->next = NIL;
+  p->prev = NIL;
+  p->inst_next = NIL;
+  p->inst_prev = NIL;
+  p->inst_next = NIL;
+  p->inst_prev = NIL;
+  p->all_of_slot_next = NIL;
+  p->all_of_slot_prev = NIL;
+  p->all_of_goal_next = NIL;
+  p->all_of_goal_prev = NIL;
+  p->next_candidate = NIL;
+  p->next_result = NIL;
 
-#ifdef DEBUG_PREFS
-  print (thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
+  p->original_symbols.id = originals.id;
+  p->original_symbols.attr = originals.attr;
+  p->original_symbols.value = originals.value;
+  if (originals.id) symbol_add_ref(thisAgent, originals.id);
+  if (originals.attr) symbol_add_ref(thisAgent, originals.attr);
+  if (originals.value) symbol_add_ref(thisAgent, originals.value);
+
+  p->g_ids.id = g_ids.id;
+  p->g_ids.attr = g_ids.attr;
+  p->g_ids.value = g_ids.value;
+
+  #ifdef DEBUG_PREFS
+  thisAgent->OutputManager->print( "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
   print_preference (thisAgent, p);
 #endif
 
@@ -112,7 +134,7 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
 void deallocate_preference (agent* thisAgent, preference *pref) {
 
 #ifdef DEBUG_PREFS
-  print (thisAgent, "\nDeallocating preference at 0x%8x: ",reinterpret_cast<uintptr_t>(pref));
+  thisAgent->OutputManager->print( "\nDeallocating preference at 0x%8x: ",reinterpret_cast<uintptr_t>(pref));
   print_preference (thisAgent, pref);
   if (pref->reference_count != 0) {   /* --- sanity check --- */
     char msg[BUFFER_MSG_SIZE];
@@ -124,7 +146,7 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
 
   /* --- remove it from the list of pref's for its match goal --- */
   if (pref->on_goal_list)
-    remove_from_dll (pref->inst->match_goal->data.id.preferences_from_goal,
+    remove_from_dll (pref->inst->match_goal->id->preferences_from_goal,
                      pref, all_of_goal_next, all_of_goal_prev);
 
   /* --- remove it from the list of pref's from that instantiation --- */
@@ -138,7 +160,9 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
   symbol_remove_ref (thisAgent, pref->value);
   if (preference_is_binary(pref->type))
     symbol_remove_ref (thisAgent, pref->referent);
-
+  if (pref->original_symbols.id) symbol_remove_ref(thisAgent, pref->original_symbols.id);
+  if (pref->original_symbols.attr) symbol_remove_ref(thisAgent, pref->original_symbols.attr);
+  if (pref->original_symbols.value) symbol_remove_ref(thisAgent, pref->original_symbols.value);
   if ( pref->wma_o_set )
   {
 	wma_remove_pref_o_set( thisAgent, pref );
@@ -151,18 +175,18 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
 /* ----------------------------------------------------------------------
    Possibly_deallocate_preference_and_clones() checks whether a given
    preference and all its clones have reference_count 0, and deallocates
-   them all if they do.  It returns TRUE if they were actually
-   deallocated, FALSE otherwise.
+   them all if they do.  It returns true if they were actually
+   deallocated, false otherwise.
 ---------------------------------------------------------------------- */
 
 bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref) {
   preference *clone, *next;
 
-  if (pref->reference_count) return FALSE;
+  if (pref->reference_count) return false;
   for (clone=pref->next_clone; clone!=NIL; clone=clone->next_clone)
-    if (clone->reference_count) return FALSE;
+    if (clone->reference_count) return false;
   for (clone=pref->prev_clone; clone!=NIL; clone=clone->prev_clone)
-    if (clone->reference_count) return FALSE;
+    if (clone->reference_count) return false;
 
   /* --- deallocate all the clones --- */
   clone = pref->next_clone;
@@ -181,13 +205,13 @@ bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pr
   /* --- deallocate pref --- */
   deallocate_preference (thisAgent, pref);
 
-  return TRUE;
+  return true;
 }
 
 /* ----------------------------------------------------------------------
    Remove_preference_from_clones() splices a given preference out of the
    list of clones.  If the preference's reference_count is 0, it also
-   deallocates it and returns TRUE.  Otherwise it returns FALSE.
+   deallocates it and returns true.  Otherwise it returns false.
 ---------------------------------------------------------------------- */
 
 bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
@@ -206,9 +230,9 @@ bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
   if (any_clone) possibly_deallocate_preference_and_clones (thisAgent, any_clone);
   if (! pref->reference_count) {
     deallocate_preference (thisAgent, pref);
-    return TRUE;
+    return true;
   } else {
-    return FALSE;
+    return false;
   }
 }
 
@@ -220,7 +244,7 @@ bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
 bool add_preference_to_tm (agent* thisAgent, preference *pref)
 {
 #ifdef DEBUG_PREFS
-   print (thisAgent, "\nAdd preference at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
+   thisAgent->OutputManager->print( "\nAdd preference at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
    print_preference (thisAgent, pref);
 #endif
 
@@ -282,7 +306,7 @@ bool add_preference_to_tm (agent* thisAgent, preference *pref)
    }
 
    /* --- other miscellaneous stuff --- */
-   pref->in_tm = TRUE;
+   pref->in_tm = true;
    preference_add_ref (pref);
 
    // if it's the case that the slot is unchanged, but has
@@ -369,7 +393,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
   s = pref->slot;
 
 #ifdef DEBUG_PREFS
-  print (thisAgent, "\nRemove preference at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
+  thisAgent->OutputManager->print( "\nRemove preference at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
   print_preference (thisAgent, pref);
 #endif
 
@@ -379,7 +403,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
   remove_from_dll (s->preferences[pref->type], pref, next, prev);
 
   /* --- other miscellaneous stuff --- */
-  pref->in_tm = FALSE;
+  pref->in_tm = false;
   pref->slot = NIL;      /* BUG shouldn't we use pref->slot in place of pref->in_tm? */
   mark_slot_as_changed (thisAgent, s);
 
@@ -421,7 +445,7 @@ void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_reje
                                    a clone of some other pref we're about to
                                    remove */
 #ifdef DEBUG_PREFS
-  print (thisAgent, "\nO-reject posted at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
+  thisAgent->OutputManager->print( "\nO-reject posted at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
   print_preference (thisAgent, pref);
 #endif
   }

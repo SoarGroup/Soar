@@ -97,7 +97,7 @@ void add_output_function (agent* thisAgent,
   if (soar_exists_callback_id (thisAgent, OUTPUT_PHASE_CALLBACK, output_link_name)
       != NULL)
     {
-      print (thisAgent, "Error: tried to add_output_function with duplicate name %s\n",
+      print(thisAgent,  "Error: tried to add_output_function with duplicate name %s\n",
              output_link_name);
       /* Replaced deprecated control_c_handler with an appropriate assertion */
 	  //control_c_handler(0);
@@ -138,7 +138,7 @@ void remove_output_function (agent* thisAgent, const char * name) {
 /* ====================================================================
                             Input Routines
 
-   Get_new_io_identifier(), get_io_sym_constant(), get_io_int_constant(),
+   Get_new_io_identifier(), get_io_str_constant(), get_io_int_constant(),
    and get_io_float_constant() just call the appropriate symbol table
    routines.  This has the effect of incrementing the reference count
    on the symbol (or creating one with a reference count of 1).
@@ -159,7 +159,7 @@ void remove_output_function (agent* thisAgent, const char * name) {
 
 Symbol *get_new_io_identifier(agent* thisAgent, char first_letter)
 {
-	return make_new_identifier (thisAgent, first_letter, TOP_GOAL_LEVEL);
+	return make_new_identifier (thisAgent, first_letter, TOP_GOAL_LEVEL, NIL);
 }
 
 Symbol *get_io_identifier (agent* thisAgent, char first_letter, uint64_t number) {
@@ -173,14 +173,14 @@ Symbol *get_io_identifier (agent* thisAgent, char first_letter, uint64_t number)
   }
   else
   {
-	  id = make_new_identifier (thisAgent, first_letter, TOP_GOAL_LEVEL);
+	  id = make_new_identifier (thisAgent, first_letter, TOP_GOAL_LEVEL, NIL);
   }
 
   return id ;
 }
 
-Symbol *get_io_sym_constant (agent* thisAgent, char const *name) {
-  return make_sym_constant (thisAgent, name);
+Symbol *get_io_str_constant (agent* thisAgent, char const *name) {
+  return make_str_constant (thisAgent, name);
 }
 
 Symbol *get_io_int_constant (agent* thisAgent, int64_t value) {
@@ -191,8 +191,8 @@ Symbol *get_io_float_constant (agent* thisAgent, double value) {
   return make_float_constant (thisAgent, value);
 }
 
-uint64_t release_io_symbol (agent* thisAgent, Symbol *sym) {
-  return symbol_remove_ref (thisAgent, sym);
+void release_io_symbol (agent* thisAgent, Symbol *sym) {
+  symbol_remove_ref (thisAgent, sym);
 }
 
 wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
@@ -200,13 +200,13 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
 
   /* --- a little bit of error checking --- */
   if (! (id && attr && value)) {
-    print (thisAgent, "Error: an input routine gave a NULL argument to add_input_wme.\n");
+    print(thisAgent,  "Error: an input routine gave a NULL argument to add_input_wme.\n");
     return NIL;
   }
 
   /* --- go ahead and add the wme --- */
-  w = make_wme (thisAgent, id, attr, value, FALSE);
-  insert_at_head_of_dll (id->data.id.input_wmes, w, next, prev);
+  w = make_wme (thisAgent, id, attr, value, false);
+  insert_at_head_of_dll (id->id->input_wmes, w, next, prev);
 
   if ( wma_enabled( thisAgent ) )
   {
@@ -215,7 +215,7 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
 
   add_wme_to_wm (thisAgent, w);
 
-  //PrintDebugFormat("Added wme with timetag %d to id %c%d ",w->timetag,id->data.id.name_letter,id->data.id.name_number) ;
+  //PrintDebugFormat("Added wme with timetag %d to id %c%d ",w->timetag,id->id->name_letter,id->id->name_number) ;
 
   return w;
 }
@@ -223,20 +223,20 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
 wme* find_input_wme_by_timetag_from_id (agent* thisAgent, Symbol* idSym, uint64_t timetag, tc_number tc) {
    wme *pWME,*w;
 
-  //PrintDebugFormat("Scanning id %c%d", idSym->data.id.name_letter, idSym->data.id.name_number) ;
+  //PrintDebugFormat("Scanning id %c%d", idSym->id->name_letter, idSym->id->name_number) ;
 
   // Mark this id as having been visited (the key here is that tc numbers always increase so tc_num must be < tc until it's marked)
-  idSym->tc_num = tc ;
+  idSym->id->tc_num = tc ;
 
    // This is inefficient.  Using a hash table could save a lot here.
-	for (pWME = idSym->data.id.input_wmes; pWME != NIL; pWME = pWME->next)
+	for (pWME = idSym->id->input_wmes; pWME != NIL; pWME = pWME->next)
 	{
 		//PrintDebugFormat("Timetag %ld", pWME->timetag) ;
 		if (pWME->timetag == timetag)
 			return pWME ;
 
 		// NOTE: The test for the tc_num keeps us from getting stuck in loops within graphs
-		if (pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && pWME->value->tc_num != tc)
+		if (pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && pWME->value->id->tc_num != tc)
 		{
 			w = find_input_wme_by_timetag_from_id(thisAgent, pWME->value, timetag, tc) ;
 			if (w)
@@ -252,21 +252,21 @@ bool remove_input_wme (agent* thisAgent, wme *w) {
 
 	/* --- a little bit of error checking --- */
 	if (!w) {
-		print (thisAgent, "Error: an input routine called remove_input_wme on a NULL wme.\n");
-		return FALSE;
+		print(thisAgent,  "Error: an input routine called remove_input_wme on a NULL wme.\n");
+		return false;
 	}
-	for (temp=w->id->data.id.input_wmes; temp!=NIL; temp=temp->next)
+	for (temp=w->id->id->input_wmes; temp!=NIL; temp=temp->next)
 		if (temp==w) break;
 	if (!temp) {
-		print (thisAgent, "Error: an input routine called remove_input_wme on a wme that\n");
-		print (thisAgent, "isn't one of the input wmes currently in working memory.\n");
-		return FALSE;
+		print(thisAgent,  "Error: an input routine called remove_input_wme on a wme that\n");
+		print(thisAgent,  "isn't one of the input wmes currently in working memory.\n");
+		return false;
 	}
 	/* Note: for efficiency, it might be better to use a hash table for the
 	above test, rather than scanning the linked list.  We could have one
 	global hash table for all the input wmes in the system. */
 	/* --- go ahead and remove the wme --- */
-	remove_from_dll (w->id->data.id.input_wmes, w, next, prev);
+	remove_from_dll (w->id->id->input_wmes, w, next, prev);
 	/* REW: begin 09.15.96 */
 	if (w->gds) {
 		if (w->gds->goal != NIL) {
@@ -279,7 +279,7 @@ bool remove_input_wme (agent* thisAgent, wme *w) {
 
 	remove_wme_from_wm (thisAgent, w);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -308,10 +308,10 @@ void do_input_cycle (agent* thisAgent) {
       thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');
       thisAgent->io_header_output = get_new_io_identifier (thisAgent, 'I');
       add_input_wme (thisAgent, thisAgent->io_header,
-      make_sym_constant(thisAgent, "input-link"),
+      make_str_constant(thisAgent, "input-link"),
       thisAgent->io_header_input);
       add_input_wme (thisAgent, thisAgent->io_header,
-      make_sym_constant(thisAgent, "output-link"),
+      make_str_constant(thisAgent, "output-link"),
       thisAgent->io_header_output);
     */
     /* --- add top state io link before calling input phase callback so
@@ -338,13 +338,13 @@ void do_input_cycle (agent* thisAgent) {
   /* --- save current top state for next time --- */
   thisAgent->prev_top_state = thisAgent->top_state;
 
-  /* --- reset the output-link status flag to FALSE
+  /* --- reset the output-link status flag to false
    * --- when running til output, only want to stop if agent
    * --- does add-wme to output.  don't stop if add-wme done
    * --- during input cycle (eg simulator updates sensor status)
    *     KJC 11/23/98
    */
-  thisAgent->output_link_changed = FALSE;
+  thisAgent->output_link_changed = false;
 
 }
 
@@ -417,7 +417,7 @@ void update_for_top_state_wme_addition (agent* thisAgent, wme *w) {
   char link_name[LINK_NAME_SIZE];
 
   /* --- check whether the attribute is an output function --- */
-  symbol_to_string(thisAgent, w->attr, FALSE, link_name, LINK_NAME_SIZE);
+  w->attr->to_string(false, link_name, LINK_NAME_SIZE);
   cb = soar_exists_callback_id(thisAgent, OUTPUT_PHASE_CALLBACK, link_name);
   if (!cb) return;
 
@@ -454,10 +454,10 @@ void update_for_top_state_wme_addition (agent* thisAgent, wme *w) {
   /* KJC & RPM 10/06 commenting out SW's change.
      See near end of init_agent_memory for details  */
     //thisAgent->output_link_tc_num = get_new_tc_number(thisAgent);
-    //ol->link_wme->value->tc_num = thisAgent->output_link_tc_num;
+    //ol->link_wme->value->id->tc_num = thisAgent->output_link_tc_num;
     //thisAgent->output_link_for_tc = ol;
     ///* --- add output_link to id's list --- */
-    //push(thisAgent, thisAgent->output_link_for_tc, ol->link_wme->value->data.id.associated_output_links);
+    //push(thisAgent, thisAgent->output_link_for_tc, ol->link_wme->value->id->associated_output_links);
 }
 
 void update_for_top_state_wme_removal (wme *w) {
@@ -469,7 +469,7 @@ void update_for_io_wme_change (wme *w) {
   cons *c;
   output_link *ol;
 
-  for (c=w->id->data.id.associated_output_links; c!=NIL; c=c->rest) {
+  for (c=w->id->id->associated_output_links; c!=NIL; c=c->rest) {
     ol = static_cast<output_link_struct *>(c->first);
     if (w->value->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
       /* --- mark ol "modified" --- */
@@ -495,12 +495,12 @@ void inform_output_module_of_wm_changes (agent* thisAgent,
     w = static_cast<wme_struct *>(c->first);
     if (w->id==thisAgent->io_header) {
 		update_for_top_state_wme_addition (thisAgent, w);
-		thisAgent->output_link_changed = TRUE; /* KJC 11/23/98 */
+		thisAgent->output_link_changed = true; /* KJC 11/23/98 */
         thisAgent->d_cycle_last_output = thisAgent->d_cycle_count;   /* KJC 11/17/05 */
 	}
-    if (w->id->data.id.associated_output_links) {
+    if (w->id->id->associated_output_links) {
 		update_for_io_wme_change (w);
- 		thisAgent->output_link_changed = TRUE; /* KJC 11/23/98 */
+ 		thisAgent->output_link_changed = true; /* KJC 11/23/98 */
         thisAgent->d_cycle_last_output = thisAgent->d_cycle_count;   /* KJC 11/17/05 */
 	}
 
@@ -508,9 +508,9 @@ void inform_output_module_of_wm_changes (agent* thisAgent,
     else {
       char id[100];
 
-      symbol_to_string(thisAgent, w->id, FALSE, id, 100 );
+      w->id->to_string(false, id, 100 );
       if ( !strcmp( id, "I3" ) ) {
-        print(thisAgent, "--> Added to I3, but doesn't register as an OL change!" );
+        print(thisAgent,  "--> Added to I3, but doesn't register as an OL change!" );
       }
     }
  #endif
@@ -519,7 +519,7 @@ void inform_output_module_of_wm_changes (agent* thisAgent,
   for (c=wmes_being_removed; c!=NIL; c=c->rest) {
     w = static_cast<wme_struct *>(c->first);
     if (w->id==thisAgent->io_header) update_for_top_state_wme_removal (w);
-    if (w->id->data.id.associated_output_links) update_for_io_wme_change (w);
+    if (w->id->id->associated_output_links) update_for_io_wme_change (w);
   }
 }
 
@@ -547,7 +547,7 @@ void remove_output_link_tc_info (agent* thisAgent, output_link *ol) {
 
     /* --- remove "ol" from the list of associated_output_links(id) --- */
     prev_c = NIL;
-    for (c=id->data.id.associated_output_links; c!=NIL; prev_c=c, c=c->rest)
+    for (c=id->id->associated_output_links; c!=NIL; prev_c=c, c=c->rest)
       if (c->first == ol) break;
     if (!c) {
       char msg[BUFFER_MSG_SIZE];
@@ -556,7 +556,7 @@ void remove_output_link_tc_info (agent* thisAgent, output_link *ol) {
       abort_with_fatal_error(thisAgent, msg);
     }
     if (prev_c) prev_c->rest = c->rest;
-      else id->data.id.associated_output_links = c->rest;
+      else id->id->associated_output_links = c->rest;
     free_cons (thisAgent, c);
     symbol_remove_ref (thisAgent, id);
   }
@@ -568,8 +568,8 @@ void add_id_to_output_link_tc (agent* thisAgent, Symbol *id) {
   wme *w;
 
   /* --- if id is already in the TC, exit --- */
-  if (id->tc_num == thisAgent->output_link_tc_num) return;
-  id->tc_num = thisAgent->output_link_tc_num;
+  if (id->id->tc_num == thisAgent->output_link_tc_num) return;
+  id->id->tc_num = thisAgent->output_link_tc_num;
 
 
   /* --- add id to output_link's list --- */
@@ -578,14 +578,14 @@ void add_id_to_output_link_tc (agent* thisAgent, Symbol *id) {
                            have a chance to free the cons cell we just added */
 
   /* --- add output_link to id's list --- */
-  push (thisAgent, thisAgent->output_link_for_tc, id->data.id.associated_output_links);
+  push (thisAgent, thisAgent->output_link_for_tc, id->id->associated_output_links);
 
   /* --- do TC through working memory --- */
   /* --- scan through all wmes for all slots for this id --- */
-  for (w=id->data.id.input_wmes; w!=NIL; w=w->next)
+  for (w=id->id->input_wmes; w!=NIL; w=w->next)
     if (w->value->symbol_type==IDENTIFIER_SYMBOL_TYPE)
       add_id_to_output_link_tc (thisAgent, w->value);
-  for (s=id->data.id.slots; s!=NIL; s=s->next)
+  for (s=id->id->slots; s!=NIL; s=s->next)
     for (w=s->wmes; w!=NIL; w=w->next)
       if (w->value->symbol_type==IDENTIFIER_SYMBOL_TYPE)
         add_id_to_output_link_tc (thisAgent, w->value);
@@ -635,9 +635,9 @@ io_wme *get_io_wmes_for_output_link (agent* thisAgent, output_link *ol) {
   add_wme_to_collected_io_wmes (thisAgent, ol->link_wme);
   for (c=ol->ids_in_tc; c!=NIL; c=c->rest) {
     id = static_cast<symbol_struct *>(c->first);
-    for (w=id->data.id.input_wmes; w!=NIL; w=w->next)
+    for (w=id->id->input_wmes; w!=NIL; w=w->next)
       add_wme_to_collected_io_wmes (thisAgent, w);
-    for (s=id->data.id.slots; s!=NIL; s=s->next)
+    for (s=id->id->slots; s!=NIL; s=s->next)
       for (w=s->wmes; w!=NIL; w=w->next)
         add_wme_to_collected_io_wmes (thisAgent, w);
   }
@@ -845,7 +845,7 @@ Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input
     errno = 0;
     int_val = strtol (input_string,NULL,10);
     if (errno) {
-      print (thisAgent, "Text Input Error: bad integer (probably too large)\n");
+      print(thisAgent,  "Text Input Error: bad integer (probably too large)\n");
       return NIL;
     }
     return get_io_int_constant (thisAgent, int_val);
@@ -856,14 +856,14 @@ Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input
     errno = 0;
     float_val = strtod (input_string,NULL);
     if (errno) {
-      print (thisAgent, "Text Input Error: bad floating point number\n");
+      print(thisAgent,  "Text Input Error: bad floating point number\n");
       return NIL;
     }
     return get_io_float_constant (thisAgent, float_val);
   }
 
   /* --- otherwise it must be a symbolic constant --- */
-  return get_io_sym_constant (thisAgent, input_string);
+  return get_io_str_constant (thisAgent, input_string);
 }
 
 #define MAX_TEXT_INPUT_LINE_LENGTH 1000 /* used to be in soarkernel.h */
@@ -887,7 +887,7 @@ Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
     input_string[0] = *ch++;
     input_string[1] = 0;
     *text_read_position = ch;
-    return get_io_sym_constant (thisAgent, input_string);
+    return get_io_str_constant (thisAgent, input_string);
   }
 
   /* --- read string of constituents --- */
@@ -918,10 +918,10 @@ void init_soar_io (agent* thisAgent) {
   /* --- setup constituent_char array --- */
   for (i=0; i<256; i++) tio_constituent_char[i] = (isalnum(i) != 0);
   for (i=0; i<strlen(extra_tio_constituents); i++)
-    tio_constituent_char[static_cast<int>(extra_tio_constituents[i])]=TRUE;
+    tio_constituent_char[static_cast<int>(extra_tio_constituents[i])]=true;
 
   /* --- setup whitespace array --- */
   for (i=0; i<256; i++) tio_whitespace[i] = (isspace(i) != 0);
-  tio_whitespace[static_cast<int>('\n')]=FALSE;  /* for text i/o, crlf isn't whitespace */
+  tio_whitespace[static_cast<int>('\n')]=false;  /* for text i/o, crlf isn't whitespace */
 }
 

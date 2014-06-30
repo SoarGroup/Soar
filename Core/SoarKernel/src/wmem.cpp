@@ -122,9 +122,9 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool a
 
 void add_wme_to_wm (agent* thisAgent, wme *w)
 {
-	assert( ( ( w->id->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->id->data.id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
-		( ( w->attr->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->attr->data.id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
-		( ( w->value->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->value->data.id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) );
+	assert( ( ( w->id->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
+		( ( w->attr->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
+		( ( w->value->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL ) ) );
 
 	push (thisAgent, w, thisAgent->wmes_to_add);
 	if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -132,7 +132,7 @@ void add_wme_to_wm (agent* thisAgent, wme *w)
 		post_link_addition (thisAgent, w->id, w->value);
 		if (w->attr == thisAgent->operator_symbol)
 		{
-			w->value->data.id.isa_operator++;
+			w->value->id->isa_operator++;
 		}
 	}
 }
@@ -147,7 +147,7 @@ void remove_wme_from_wm (agent* thisAgent, wme *w)
       if (w->attr==thisAgent->operator_symbol)
       {
          /* Do this afterward so that gSKI can know that this is an operator */
-         w->value->data.id.isa_operator--;
+         w->value->id->isa_operator--;
       }
    }
 
@@ -162,7 +162,7 @@ void remove_wme_from_wm (agent* thisAgent, wme *w)
 
       if (!w->gds->wmes_in_gds)
 	  {
-		 if (w->gds->goal) w->gds->goal->data.id.gds = NIL;
+		 if (w->gds->goal) w->gds->goal->id->gds = NIL;
 		 free_with_pool( &( thisAgent->gds_pool ), w->gds );
          /* printf("REMOVING GDS FROM MEMORY. \n"); */
       }

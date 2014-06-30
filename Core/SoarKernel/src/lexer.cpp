@@ -44,8 +44,8 @@
  *  R_PAREN_LEXEME token the next time it reaches the end of a line.
  *
  *  Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
- *  be read.  If FALSE, things that look like identifiers will be returned
- *  as SYM_CONSTANT_LEXEME's instead.
+ *  be read.  If false, things that look like identifiers will be returned
+ *  as STR_CONSTANT_LEXEME's instead.
  *
  *  BUGBUG There are still problems with Soar not being very friendly
  *  when users have typos in productions, particularly with mismatched
@@ -105,8 +105,8 @@ void start_lex_from_file (agent* thisAgent, const char *filename,
   thisAgent->current_file = lsf;
   lsf->filename = make_memory_block_for_string (thisAgent, filename);
   lsf->file = already_opened_file;
-  lsf->fake_rparen_at_eol = FALSE;
-  lsf->allow_ids = TRUE;
+  lsf->fake_rparen_at_eol = false;
+  lsf->allow_ids = true;
   lsf->parentheses_level = 0;
   lsf->column_of_start_of_last_lexeme = 0;
   lsf->line_of_start_of_last_lexeme = 0;
@@ -321,7 +321,7 @@ bool determine_type_of_constituent_string (agent* thisAgent) {
 
 	if (possible_var) {
 		thisAgent->lexeme.type = VARIABLE_LEXEME;
-		return TRUE;
+		return true;
 	}
 
 	if (possible_ic) {
@@ -368,7 +368,7 @@ bool determine_type_of_constituent_string (agent* thisAgent) {
 	}
 
 	if (possible_sc) {
-		thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
+		thisAgent->lexeme.type = STR_CONSTANT_LEXEME;
 		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 			if ( (thisAgent->lexeme.string[0] == '<') ||
 				 (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') )
@@ -378,11 +378,11 @@ bool determine_type_of_constituent_string (agent* thisAgent) {
 				xml_generate_warning(thisAgent, "Warning: Suspicious string constant");
 			}
 		}
-		return TRUE;
+		return true;
 	}
 
 	thisAgent->lexeme.type = QUOTED_STRING_LEXEME;
-	return TRUE;
+	return true;
 }
 
 void do_fake_rparen (agent* thisAgent) {
@@ -392,7 +392,7 @@ void do_fake_rparen (agent* thisAgent) {
   thisAgent->lexeme.string[0] = ')';
   thisAgent->lexeme.string[1] = 0;
   if (thisAgent->current_file->parentheses_level > 0) thisAgent->current_file->parentheses_level--;
-  thisAgent->current_file->fake_rparen_at_eol = FALSE;
+  thisAgent->current_file->fake_rparen_at_eol = false;
 }
 
 /* ======================================================================
@@ -566,9 +566,9 @@ void lex_plus (agent* thisAgent) {
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
   if (thisAgent->current_char=='.') {
-    could_be_floating_point = TRUE;
+    could_be_floating_point = true;
     for (i=1; i<thisAgent->lexeme.length; i++)
-      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = FALSE;
+      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = false;
     if (could_be_floating_point) read_rest_of_floating_point_number(thisAgent);
   }
   if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = PLUS_LEXEME; return; }
@@ -585,9 +585,9 @@ void lex_minus (agent* thisAgent) {
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
   if (thisAgent->current_char=='.') {
-    could_be_floating_point = TRUE;
+    could_be_floating_point = true;
     for (i=1; i<thisAgent->lexeme.length; i++)
-      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = FALSE;
+      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = false;
     if (could_be_floating_point) read_rest_of_floating_point_number(thisAgent);
   }
   if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = MINUS_LEXEME; return; }
@@ -606,9 +606,9 @@ void lex_digit (agent* thisAgent) {
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
   if (thisAgent->current_char=='.') {
-    could_be_floating_point = TRUE;
+    could_be_floating_point = true;
     for (i=1; i<thisAgent->lexeme.length; i++)
-      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = FALSE;
+      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = false;
     if (could_be_floating_point) read_rest_of_floating_point_number(thisAgent);
   }
   determine_type_of_constituent_string(thisAgent);
@@ -639,7 +639,7 @@ void lex_constituent_string (agent* thisAgent) {
 }
 
 void lex_vbar (agent* thisAgent) {
-  thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
+  thisAgent->lexeme.type = STR_CONSTANT_LEXEME;
   get_next_char(thisAgent);
   do {
     if ((thisAgent->current_char==EOF)||
@@ -664,7 +664,7 @@ void lex_vbar (agent* thisAgent) {
       thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
       get_next_char(thisAgent);
     }
-  } while(TRUE);
+  } while(true);
   thisAgent->lexeme.string[thisAgent->lexeme.length]=0;
 }
 
@@ -692,7 +692,7 @@ void lex_quote (agent* thisAgent) {
       thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
       get_next_char(thisAgent);
     }
-  } while(TRUE);
+  } while(true);
   thisAgent->lexeme.string[thisAgent->lexeme.length]=0;
 }
 
@@ -765,9 +765,9 @@ void get_lexeme (agent* thisAgent) {
    entering a production, then the parentheses level will be > 0, so that's
    the criteria we will use.  AGR  5-Apr-94  */
 
-  thisAgent->load_errors_quit = FALSE;  /* AGR 527c */
+  thisAgent->load_errors_quit = false;  /* AGR 527c */
 
-  while (thisAgent->load_errors_quit==FALSE) {   /* AGR 527c */
+  while (thisAgent->load_errors_quit==false) {   /* AGR 527c */
     if (thisAgent->current_char==EOF) break;
     if (whitespace[static_cast<unsigned char>(thisAgent->current_char)]) {
       if (thisAgent->current_char == '\n')
@@ -848,7 +848,7 @@ void init_lexer (agent* thisAgent)
         //
         if((strchr(extra_constituents, i) != 0) && i != 0)
         {
-           constituent_char[i]=TRUE;
+           constituent_char[i]=true;
         }
         else
         {
@@ -858,7 +858,7 @@ void init_lexer (agent* thisAgent)
 
    //  for (i=0; i<strlen(extra_constituents); i++)
    //  {
-   //    constituent_char[(int)extra_constituents[i]]=TRUE;
+   //    constituent_char[(int)extra_constituents[i]]=true;
    //  }
 
      /* --- setup whitespace array --- */
@@ -873,13 +873,13 @@ void init_lexer (agent* thisAgent)
        switch(i)
        {
        case '+':
-          number_starters[(int)'+']=TRUE;
+          number_starters[(int)'+']=true;
           break;
        case '-':
-          number_starters[(int)'-']=TRUE;
+          number_starters[(int)'-']=true;
           break;
        case '.':
-          number_starters[(int)'.']=TRUE;
+          number_starters[(int)'.']=true;
           break;
        default:
           number_starters[i] = (isdigit(i) != 0);
@@ -1050,7 +1050,7 @@ int current_lexer_parentheses_level (agent* thisAgent) {
 
 void skip_ahead_to_balanced_parentheses (agent* thisAgent,
 										 int parentheses_level) {
-  while (TRUE) {
+  while (true) {
     if (thisAgent->lexeme.type==EOF_LEXEME) return;
     if ((thisAgent->lexeme.type==R_PAREN_LEXEME) &&
         (parentheses_level==thisAgent->current_file->parentheses_level)) return;
@@ -1060,15 +1060,15 @@ void skip_ahead_to_balanced_parentheses (agent* thisAgent,
 
 void fake_rparen_at_next_end_of_line (agent* thisAgent) {
   thisAgent->current_file->parentheses_level++;
-  thisAgent->current_file->fake_rparen_at_eol = TRUE;
+  thisAgent->current_file->fake_rparen_at_eol = true;
 }
 
 /* ======================================================================
                         Set lexer allow ids
 
   This routine should be called to tell the lexer whether to allow
-  identifiers to be read.  If FALSE, things that look like identifiers
-  will be returned as SYM_CONSTANT_LEXEME's instead.
+  identifiers to be read.  If false, things that look like identifiers
+  will be returned as STR_CONSTANT_LEXEME's instead.
 ====================================================================== */
 
 void set_lexer_allow_ids (agent* thisAgent, bool allow_identifiers) {
@@ -1084,9 +1084,9 @@ bool get_lexer_allow_ids(agent* thisAgent) {
 
   This is a utility routine which figures out what kind(s) of symbol a
   given string could represent.  At entry:  s, length_of_s represent the
-  string.  At exit:  possible_xxx is set to TRUE/FALSE to indicate
+  string.  At exit:  possible_xxx is set to true/false to indicate
   whether the given string could represent that kind of symbol; rereadable
-  is set to TRUE indicating whether the lexer would read the given string
+  is set to true indicating whether the lexer would read the given string
   as a symbol with exactly the same name (as opposed to treating it as a
   special lexeme like "+", changing upper to lower case, etc.
 ====================================================================== */
@@ -1102,12 +1102,12 @@ void determine_possible_symbol_types_for_string (char *s,
 	char *ch;
 	bool all_alphanum;
 
-	*possible_id = FALSE;
-	*possible_var = FALSE;
-	*possible_sc = FALSE;
-	*possible_ic = FALSE;
-	*possible_fc = FALSE;
-	*rereadable = FALSE;
+	*possible_id = false;
+	*possible_var = false;
+	*possible_sc = false;
+	*possible_ic = false;
+	*possible_fc = false;
+	*rereadable = false;
 
 	/* --- check if it's an integer or floating point number --- */
 	if (number_starters[static_cast<unsigned char>(*s)]) {
@@ -1117,7 +1117,7 @@ void determine_possible_symbol_types_for_string (char *s,
 		while (isdigit(*ch))
 			ch++;								/* string of digits */
 		if ((*ch==0)&&(isdigit(*(ch-1))))
-			*possible_ic = TRUE;
+			*possible_ic = true;
 		if (*ch=='.') {
 			ch++;								/* decimal point */
 			while (isdigit(*ch))
@@ -1130,7 +1130,7 @@ void determine_possible_symbol_types_for_string (char *s,
 					ch++;						/* string of digits */
 			}
 			if (*ch==0)
-				*possible_fc = TRUE;
+				*possible_fc = true;
 		}
 	}
 
@@ -1140,10 +1140,10 @@ void determine_possible_symbol_types_for_string (char *s,
 			return;
 
 	/* --- check for rereadability --- */
-	all_alphanum = TRUE;
+	all_alphanum = true;
 	for (ch=s; *ch!='\0'; ch++) {
 		if (!isalnum(*ch)) {
-			all_alphanum = FALSE;
+			all_alphanum = false;
 			break;
 		}
 	}
@@ -1151,15 +1151,15 @@ void determine_possible_symbol_types_for_string (char *s,
 	     (length_of_s > LENGTH_OF_LONGEST_SPECIAL_LEXEME) ||
 	     ((length_of_s==1)&&(*s=='*')) )
 	{
-		*rereadable = TRUE;
+		*rereadable = true;
 	}
 
 	/* --- any string of constituents could be a sym constant --- */
-	*possible_sc = TRUE;
+	*possible_sc = true;
 
 	/* --- check whether it's a variable --- */
 	if ((*s=='<')&&(*(s+length_of_s-1)=='>'))
-		*possible_var = TRUE;
+		*possible_var = true;
 
 	/* --- check if it's an identifier --- */
 	// long term identifiers start with @
@@ -1173,7 +1173,7 @@ void determine_possible_symbol_types_for_string (char *s,
 		while (isdigit(*ch))
 			ch++;
 		if (*ch=='\0')
-			*possible_id = TRUE;
+			*possible_id = true;
 	}
 }
 

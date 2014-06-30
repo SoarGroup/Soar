@@ -14,16 +14,16 @@
 	#ifndef unused
 	#define unused(x) (void)(x)
 	#endif
-
+	
 	#include <string>
 	#include <list>
 	#include <algorithm>
-
+	
 	namespace sml {
 	class Agent;
 	}
-	#include "sml_ClientEvents.h"
-
+	#include "sml_ClientEvents.h" 
+	
 	struct TclUserData {
 	    Tcl_ThreadId threadId;
 		Tcl_Interp* interp;
@@ -33,9 +33,9 @@
 			Tcl_DecrRefCount(script);
 		}
 	};
-
+	
 	std::list<TclUserData*> callbackdatas;
-
+	
 	typedef struct ThreadEventResult {
 		Tcl_Condition done;         /* Signaled when the script completes */
 		int code;                   /* Return value of Tcl_Eval */
@@ -76,7 +76,7 @@
 		char const* errorInfo;
 
 		// Check which thread we're on.
-		// I hope this is the thread I asked to be part of.
+		// I hope this is the thread I asked to be part of.	
 		Tcl_ThreadId currentThread = Tcl_GetCurrentThread() ;
 
 		if (interp == NULL) {
@@ -140,7 +140,7 @@
 
 		return TCL_OK;
 	}
-
+	
 	// Embedded $, [, \ and " are replaced with \$ \[ and \" to stop them being evaluated by
 	// Tcl on the way through the callback.
 	void EscapeSpecial(std::string* s) {
@@ -148,9 +148,9 @@
 	    while(pos != std::basic_string<char*>::npos) {
 	        s->insert(pos, "\\");
 	        pos = s->find_first_of("[$\"\\", pos+2);
-	    }
+	    }	    
 	}
-
+	
 	void TclOutputNotificationEventCallback(void* pUserData, sml::Agent* pAgent)
 	{
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
@@ -160,7 +160,7 @@
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
-
+	
 	std::string TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
 	                    char const* pArgument)
 	{
@@ -168,11 +168,11 @@
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
-
+	    
 	    // the argument could have embedded quotes, so we need to escape them
 	    std::string argument = pArgument;
 	    EscapeSpecial(&argument);
-
+	    
 	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", argument.c_str(), "\"", NULL);
 	    // since we're returning a value, we need to clear out any old values
 		Tcl_ResetResult(tud->interp);
@@ -183,7 +183,7 @@
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
-
+		
 		return Tcl_GetString(res);
 	}
 
@@ -194,11 +194,11 @@
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
-
+	    
 	    // the message could have embedded quotes, so we need to escape them
 	    std::string message = pMessage;
 	    EscapeSpecial(&message);
-
+	    
 	    Tcl_AppendStringsToObj(script, " ", pClientName, " \"", message.c_str(), "\"", NULL);
 	    // since we're returning a value, we need to clear out any old values
 		Tcl_ResetResult(tud->interp);
@@ -209,37 +209,37 @@
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
-
+		
 		return Tcl_GetString(res);
 	}
-
+	
 	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
 	{
 		// we can ignore the id parameter because it's already in the script (from when we registered it)
 		unused(id);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
 	    // since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
-
+		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
-
+	
 	void TclProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
 	{
 		// we can ignore the agent and id parameters because they're already in the script (from when we registered it)
 		unused(pAgent);
 		unused(id);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		Tcl_AppendStringsToObj(script, " \"", pProdName, "\"", NULL);
-
+		
 		// we need to check if pInstantiation is null, because if it is it will prematurely end the appending
 		//  and we will lose the closing double quote, resulting in a syntax error
 		if(pInstantiation) {
@@ -247,20 +247,20 @@
 		} else {
 			Tcl_AppendStringsToObj(script, " \"\"", NULL);
 		}
-
+		
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
-
+		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
-
+	
 	void TclRunEventCallback(sml::smlRunEventId id, void* pUserData, sml::Agent* agent, sml::smlPhase phase)
 	{
 		// we can ignore the agent and id parameters because they're already in the script (from when we registered it)
 		unused(agent);
 		unused(id);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -268,40 +268,40 @@
 		Tcl_AppendObjToObj(script, Tcl_NewLongObj(long(phase)));
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
-
+		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
-
+	
 	void TclPrintEventCallback(sml::smlPrintEventId id, void* pUserData, sml::Agent* agent, char const* pMessage)
 	{
 		// we can ignore these parameters because they're already in the script (from when we registered it)
 		unused(agent);
 		unused(id);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-
+		
 		// the message could have embedded quotes, so we need to escape them
 	    std::string message = pMessage;
 	    EscapeSpecial(&message);
-
+	    
 		// wrap the message in quotes in case it has spaces
 		Tcl_AppendStringsToObj(script, " \"", message.c_str(), "\"", NULL);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
-
+		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
-
+	
 	void TclXMLEventCallback(sml::smlXMLEventId id, void* pUserData, sml::Agent* agent, sml::ClientXML* pXML)
 	{
 		// we can ignore these parameters because they're already in the script (from when we registered it)
 		unused(agent);
 		unused(id);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -310,16 +310,16 @@
 		Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pXML, SWIGTYPE_p_sml__ClientXML,0));
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
-
+		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
-
+	
 	void TclOutputEventCallback(void* pUserData, sml::Agent* agent, char const* commandName, sml::WMElement* pOutputWme)
 	{
 		unused(agent);
 		unused(commandName);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -328,22 +328,22 @@
 		Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pOutputWme, SWIGTYPE_p_sml__WMElement,0));
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
-
+		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
-
+		
 	}
-
+	
 	void TclSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* kernel)
 	{
 		// we can ignore these parameters because they're already in the script (from when we registered it)
 		unused(kernel);
 		unused(id);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this script will never change, so we don't make a copy and we allow it to be compiled into bytecode (i.e. we don't pass TCL_EVAL_DIRECT)
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
-
+		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, tud->script) ;
 	}
@@ -353,7 +353,7 @@
 	    // we can ignore these parameters because they're already in the script (from when we registered it)
 		unused(kernel);
 		unused(id);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -365,36 +365,36 @@
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
-
+	
 	std::string TclStringEventCallback(sml::smlStringEventId id, void* pUserData, sml::Kernel* kernel, char const* pData)
 	{
 		// we can ignore these parameters because they're already in the script (from when we registered it)
 		unused(kernel);
 		unused(id);
-
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		// this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-
+		
 		// the message could have embedded quotes, so we need to escape them
 	    std::string data = pData;
 	    EscapeSpecial(&data);
-
+	    
 		Tcl_AppendStringsToObj(script, " \"", data.c_str(), "\"", NULL);
 		// since this script will never be executed again, we use TCL_EVAL_DIRECT, which skips the compilation step
 		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
-
+		
 		// Send the event to the given interpreter using the given thread
 //		tcl_thread_send(tud->interp, tud->threadId, tud->script) ;
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
-
+		
 		return Tcl_GetString(res);
 	}
-
+	
 	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
-
+	    
 	    tud->threadId = Tcl_GetCurrentThread();
 	    tud->interp = interp;
 	    // put all of the arguments together so we can just execute this as a single script later
@@ -402,69 +402,69 @@
 	    tud->script = Tcl_NewObj();
 	    Tcl_AppendStringsToObj(tud->script, proc, " ", NULL);
 	    Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(id));
-
+	    
 	    // the user data could have embedded quotes, so we need to escape them
 	    std::string ud = userData;
 	    EscapeSpecial(&ud);
-
+	    
 	    Tcl_AppendStringsToObj(tud->script, " \"", ud.c_str(), "\" ", NULL);
-
+		
 		// Save the callback data so we can free it later
 		callbackdatas.push_back(tud);
-
+	    
 	    return tud;
 	}
-
+	
 	TclUserData* CreateTclOutputNotificationUserData(const char* proc, const char* userData, sml::Agent* self, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
-
+	    
 	    tud->threadId = Tcl_GetCurrentThread();
 	    tud->interp = interp;
 	    // put all of the arguments together so we can just execute this as a single script later
 	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
 	    tud->script = Tcl_NewObj();
-
+	    
 	    // the user data could have embedded quotes, so we need to escape them
 	    std::string ud = userData;
 	    EscapeSpecial(&ud);
-
+	    
 	    Tcl_AppendStringsToObj(tud->script, proc, " \"", ud.c_str(), "\"", NULL);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
-
+	    
 	    return tud;
 	}
-
+	
 	TclUserData* CreateTclAgentUserData(sml::Agent* self, int id, const char* proc, const char* userData, Tcl_Interp* interp) {
 	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
-
+	    
 	    return tud;
 	}
-
+	
 	TclUserData* CreateTclSystemUserData(sml::Kernel* self, int id, const char* proc, const char* userData, Tcl_Interp* interp) {
 	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Kernel,0));
-
+	    
 	    return tud;
 	}
-
+	
 	TclUserData* CreateTclOutputUserData(sml::Agent* self, const char* commandName, const char* proc, const char* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
-
+	    
 	    tud->threadId = Tcl_GetCurrentThread();
 	    tud->interp = interp;
 	    // put all of the arguments together so we can just execute this as a single script later
 	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
 	    tud->script = Tcl_NewObj();
-
+	    
 	    // the user data could have embedded quotes, so we need to escape them
 	    std::string ud = userData;
 	    EscapeSpecial(&ud);
-
+	    
 	    Tcl_AppendStringsToObj(tud->script, proc, " \"", ud.c_str(), "\" ", NULL);
 	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
 	    Tcl_AppendStringsToObj(tud->script, " ", commandName, " ", NULL);
-
+	    
 	    return tud;
 	}
 
@@ -476,7 +476,7 @@
 			delete tud;
 		}
     }
-
+    
     bool IsValidCallbackData(TclUserData* tud) {
 		std::list<TclUserData*>::iterator itr = find(callbackdatas.begin(), callbackdatas.end(), tud);
 		if(itr == callbackdatas.end()) {
@@ -485,7 +485,7 @@
 			return true;
 		}
     }
-
+    
 %}
 
 %extend sml::Agent {
@@ -495,37 +495,37 @@
 	    tud->callbackid = self->RegisterForRunEvent(id, TclRunEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     intptr_t RegisterForProductionEvent(Tcl_Interp* interp, sml::smlProductionEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForProductionEvent(id, TclProductionEventCallback, (void*)tud, addToBack);
 	    return (intptr_t)tud;
     }
 
-    intptr_t RegisterForPrintEvent(Tcl_Interp* interp, sml::smlPrintEventId id, char* proc, char* userData, bool ignoreOwnEchos = true, bool addToBack = true) {
+    intptr_t RegisterForPrintEvent(Tcl_Interp* interp, sml::smlPrintEventId id, char* proc, char* userData, bool ignoreOwnEchos = true, bool addToBack = true) {	    
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForPrintEvent(id, TclPrintEventCallback, (void*)tud, ignoreOwnEchos, addToBack);
 		return (intptr_t)tud;
     }
-
-    intptr_t RegisterForXMLEvent(Tcl_Interp* interp, sml::smlXMLEventId id, char* proc, char* userData, bool addToBack = true) {
+    
+    intptr_t RegisterForXMLEvent(Tcl_Interp* interp, sml::smlXMLEventId id, char* proc, char* userData, bool addToBack = true) {	    
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForXMLEvent(id, TclXMLEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     intptr_t AddOutputHandler(Tcl_Interp* interp, char* attributeName, char* proc, char* userData, bool addToBack = true) {
 		TclUserData* tud = CreateTclOutputUserData(self, attributeName, proc, userData, interp);
 		tud->callbackid = self->AddOutputHandler(attributeName, TclOutputEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     intptr_t RegisterForOutputNotification(Tcl_Interp* interp, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclOutputNotificationUserData(proc, userData, self, interp);
 	    tud->callbackid = self->RegisterForOutputNotification(TclOutputNotificationEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     bool UnregisterForRunEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -533,7 +533,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool UnregisterForProductionEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -541,7 +541,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool UnregisterForPrintEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -549,7 +549,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool UnregisterForXMLEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -557,7 +557,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool UnregisterForOutputNotification(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -565,7 +565,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool RemoveOutputHandler(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -576,31 +576,31 @@
 };
 
 %extend sml::Kernel {
-
+	
     intptr_t RegisterForSystemEvent(Tcl_Interp* interp, sml::smlSystemEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForSystemEvent(id, TclSystemEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     intptr_t RegisterForUpdateEvent(Tcl_Interp* interp, sml::smlUpdateEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForUpdateEvent(id, TclUpdateEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     intptr_t RegisterForStringEvent(Tcl_Interp* interp, sml::smlStringEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForStringEvent(id, TclStringEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     intptr_t RegisterForAgentEvent(Tcl_Interp* interp, sml::smlAgentEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     // Note that we're not exposing both the function name and callback as separate parameters, because it doesn't make much sense
     // to have different names in Tcl (and they are both strings -- in C++ they're not the same type; hence the separation there)
     intptr_t AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
@@ -608,7 +608,7 @@
 	    tud->callbackid = self->AddRhsFunction(pRhsFunctionName, TclRhsEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
-
+    
     intptr_t RegisterForClientMessageEvent(Tcl_Interp* interp, char const* pClientName, char const* pMessageHandler, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pMessageHandler, userData, interp);
 	    tud->callbackid = self->RegisterForClientMessageEvent(pClientName, TclClientMessageEventCallback, (void*)tud, addToBack);
@@ -622,7 +622,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool UnregisterForUpdateEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -630,7 +630,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool UnregisterForStringEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -638,7 +638,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool UnregisterForAgentEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -646,7 +646,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool RemoveRhsFunction(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
@@ -654,7 +654,7 @@
 		ReleaseCallbackData(tud);
 		return true;
     }
-
+    
     bool UnregisterForClientMessageEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
