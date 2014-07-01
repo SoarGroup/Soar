@@ -184,9 +184,13 @@ typedef struct production_struct {
   struct instantiation_struct *instantiations; /* dll of inst's in MS */
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
   byte interrupt;						  /* SW: 7.31.03 */
-  bool already_fired;         /* RPM test workaround for bug #139 */
 
-  bool rl_rule;					/* if true, is a Soar-RL rule */
+  struct {
+    bool interrupt_break : 1;
+    bool already_fired : 1;         /* RPM test workaround for bug #139 */
+    bool rl_rule : 1;					/* if true, is a Soar-RL rule */
+  };
+
   double rl_update_count;		/* number of (potentially fractional) updates to this rule */
   unsigned int rl_ref_count;    /* number of states referencing this rule in prev_op_rl_rules list */
 

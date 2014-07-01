@@ -118,6 +118,7 @@ namespace cli
         virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
         virtual bool DoAlias(std::vector< std::string >* argv = 0);
         virtual bool DoAllocate(const std::string& pool, int blocks);
+        virtual bool DoBreak(const char &mode, const std::string &production);
         virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
         virtual bool DoCD(const std::string* pDirectory = 0);
         virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);

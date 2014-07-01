@@ -38,6 +38,12 @@ namespace cli
 
         virtual bool DoAllocate(const std::string& pool, int blocks) = 0;
 
+        /**
+         * @brief break command
+         * @param pProduction The production
+         */
+        virtual bool DoBreak(const char &mode, const std::string &production) = 0;
+
         enum eCaptureInputMode
         {
             CAPTURE_INPUT_OPEN,
@@ -49,6 +55,11 @@ namespace cli
          * @brief capture-input command
          */
         virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0) = 0;
+
+        /**
+         * @brief cli command
+         */
+        virtual bool DoCLIMessage(const std::string& pMessage) = 0;
 
         /**
          * @brief cd command
@@ -75,11 +86,6 @@ namespace cli
             LOG_CLOSE,
             LOG_ADD,
         };
-
-        /**
-         * @brief cli command
-         */
-        virtual bool DoCLIMessage(const std::string& pMessage) = 0;
 
         /**
          * @brief clog command

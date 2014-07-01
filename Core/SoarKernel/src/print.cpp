@@ -631,8 +631,8 @@ void print_production (agent* thisAgent, production *p, bool internal) {
     xml_att_val(thisAgent, kProductionDeclaredSupport, kProductionDeclaredISupport);
   }
 
-  if (p->interrupt)
-    print(thisAgent, "    :interrupt\n");
+  if (p->interrupt && !p->interrupt_break)
+    print_string(thisAgent, "    :interrupt\n");
 
   /*
   --- print the LHS and RHS ---

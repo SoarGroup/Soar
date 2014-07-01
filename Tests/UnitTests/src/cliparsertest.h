@@ -13,10 +13,11 @@ public:
     virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable) { return false; }
     virtual bool DoAlias(std::vector< std::string >* argv = 0) { return false; }
     virtual bool DoAllocate(const std::string& pool, int blocks) { return false; }
+    virtual bool DoBreak(const char &mode, const std::string &production) { return false; }
     virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0) { return false; }
     virtual bool DoCD(const std::string* pDirectory = 0) { return false; }
     virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0) { return false; }
-    virtual bool DoCLIMessage(const std::string& pMessage) { return false; }
+    virtual bool DoCLIMessage(const std::string& pMessage) { return false; };
     virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false) { return false; }
     virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv) { return false; }
     virtual bool DoDebug(std::vector< std::string >* argv = 0) { return false; }
