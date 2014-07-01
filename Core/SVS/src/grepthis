@@ -1,0 +1,4 @@
+#!/bin/sh
+
+PREFIX=`dirname $0`
+grep -n "$*" $PREFIX/*.cpp $PREFIX/*.h $PREFIX/*/*.cpp $PREFIX/*/*.h

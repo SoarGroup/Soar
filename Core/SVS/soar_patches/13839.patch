@@ -1,0 +1,419 @@
+Index: Core/CLI/CommandLineInterface.cxx
+===================================================================
+--- Core/CLI/CommandLineInterface.cxx	(revision 13839)
++++ Core/CLI/CommandLineInterface.cxx	(working copy)
+@@ -72,3 +72,4 @@
+ #include "src/cli_watchwmes.cpp"
+ #include "src/cli_wma.cpp"
+ #include "src/cli_CommandLineInterface.cpp"
++#include "src/cli_svs.cpp"
+Index: Core/CLI/src/cli_Cli.h
+===================================================================
+--- Core/CLI/src/cli_Cli.h	(revision 13839)
++++ Core/CLI/src/cli_Cli.h	(working copy)
+@@ -481,6 +481,8 @@
+          * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
+          */
+         virtual bool DoRL( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 ) = 0;
++        
++        virtual bool DoSVS(const std::vector<std::string> &args) = 0;
+ 
+         enum eRunOptions
+         {
+Index: Core/CLI/src/cli_CommandLineInterface.cpp
+===================================================================
+--- Core/CLI/src/cli_CommandLineInterface.cpp	(revision 13839)
++++ Core/CLI/src/cli_CommandLineInterface.cpp	(working copy)
+@@ -110,6 +110,7 @@
+     m_Parser.AddCommand(new cli::WatchCommand(*this));
+     m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
+     m_Parser.AddCommand(new cli::WMACommand(*this));
++    m_Parser.AddCommand(new cli::SVSCommand(*this));
+ }
+ 
+ EXPORT CommandLineInterface::~CommandLineInterface()
+Index: Core/CLI/src/cli_CommandLineInterface.h
+===================================================================
+--- Core/CLI/src/cli_CommandLineInterface.h	(revision 13839)
++++ Core/CLI/src/cli_CommandLineInterface.h	(working copy)
+@@ -183,6 +183,7 @@
+         virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
+         virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
+         virtual bool DoWMA( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 );
++        bool DoSVS(const std::vector<std::string> &args);
+ 
+         // utility for kernel SML
+         bool IsLogOpen();
+Index: Core/CLI/src/cli_Commands.h
+===================================================================
+--- Core/CLI/src/cli_Commands.h	(revision 13839)
++++ Core/CLI/src/cli_Commands.h	(working copy)
+@@ -4409,7 +4409,27 @@
+ 
+         WMACommand& operator=(const WMACommand&);
+     };
++    
++    class SVSCommand : public cli::ParserCommand
++    {
++    public:
++        SVSCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
++        virtual ~SVSCommand() {}
++        virtual const char* GetString() const { return "svs"; }
++        virtual const char* GetSyntax() const 
++        {
++            return "Syntax: svs <elements to inspect>";
++        }
+ 
++        virtual bool Parse(std::vector< std::string > &argv)
++        {
++            return cli.DoSVS(argv);
++        }
++
++    private:
++        cli::Cli& cli;
++    };
++
+ }
+ 
+ #endif // CLI_COMMANDS_H
+Index: Core/CLI/src/cli_svs.cpp
+===================================================================
+--- Core/CLI/src/cli_svs.cpp	(revision 0)
++++ Core/CLI/src/cli_svs.cpp	(working copy)
+@@ -0,0 +1,21 @@
++#include "cli_CommandLineInterface.h"
++#include "sml_AgentSML.h"
++#include "agent.h"
++#include "svs_interface.h"
++
++using namespace cli;
++using namespace sml;
++
++bool CommandLineInterface::DoSVS(const std::vector<std::string> &args) {
++    std::string out;
++    bool res = m_pAgentSML->GetSoarAgent()->svs->do_cli_command(args, out);
++    if ( m_RawOutput )
++    {
++        m_Result << out;
++    }
++    else
++    {
++        AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, out.c_str() );
++    }
++    return res;
++}
+Index: Core/ClientSML/src/sml_ClientAgent.cpp
+===================================================================
+--- Core/ClientSML/src/sml_ClientAgent.cpp	(revision 13839)
++++ Core/ClientSML/src/sml_ClientAgent.cpp	(working copy)
+@@ -1422,3 +1422,11 @@
+ 	}
+ 	return pClientIdentifier;
+ }
++
++void Agent::SendSVSInput(const std::string &txt) {
++	GetKernel()->SendSVSInput(GetAgentName(), txt);
++}
++
++std::string Agent::GetSVSOutput() {
++	return GetKernel()->GetSVSOutput(GetAgentName());
++}
+Index: Core/ClientSML/src/sml_ClientAgent.h
+===================================================================
+--- Core/ClientSML/src/sml_ClientAgent.h	(revision 13839)
++++ Core/ClientSML/src/sml_ClientAgent.h	(working copy)
+@@ -790,6 +790,9 @@
+ 	*************************************************************/
+ 	bool ExecuteCommandLineXML(char const* pCommandLine, ClientAnalyzedXML* pResponse) ;
+ 
++	void        SendSVSInput(const std::string &txt);
++	std::string GetSVSOutput();
++	
+ 	/*************************************************************
+ 	* @brief Get last command line result
+ 	*
+Index: Core/ClientSML/src/sml_ClientKernel.cpp
+===================================================================
+--- Core/ClientSML/src/sml_ClientKernel.cpp	(revision 13839)
++++ Core/ClientSML/src/sml_ClientKernel.cpp	(working copy)
+@@ -2336,3 +2336,18 @@
+ 
+ 	return resultString;
+ }
++
++void Kernel::SendSVSInput(const char* agentName, const std::string &txt) {
++	AnalyzeXML response;
++	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SVSInput, agentName, sml_Names::kParamLine, txt.c_str() );
++}
++
++std::string Kernel::GetSVSOutput(const char* agentName) {
++	AnalyzeXML response;
++	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SVSOutput, agentName, sml_Names::kParamLine, NULL))
++	{
++		return response.GetResultString();
++	} else {
++		return "";
++	}
++}
+Index: Core/ClientSML/src/sml_ClientKernel.h
+===================================================================
+--- Core/ClientSML/src/sml_ClientKernel.h	(revision 13839)
++++ Core/ClientSML/src/sml_ClientKernel.h	(working copy)
+@@ -947,6 +947,8 @@
+ 	*************************************************************/
+ 	static Kernel* CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn) ;
+ 
++	void        SendSVSInput(const char* agentName, const std::string &txt);
++	std::string GetSVSOutput(const char* agentName);
+ };
+ 
+ }//closes namespace
+Index: Core/ConnectionSML/src/sml_Names.cpp
+===================================================================
+--- Core/ConnectionSML/src/sml_Names.cpp	(revision 13839)
++++ Core/ConnectionSML/src/sml_Names.cpp	(working copy)
+@@ -450,3 +450,6 @@
+ 
+ // command line interface
+ char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;
++
++char const* const sml_Names::kCommand_SVSInput   = "svs_input";
++char const* const sml_Names::kCommand_SVSOutput  = "svs_output";
+Index: Core/ConnectionSML/src/sml_Names.h
+===================================================================
+--- Core/ConnectionSML/src/sml_Names.h	(revision 13839)
++++ Core/ConnectionSML/src/sml_Names.h	(working copy)
+@@ -440,6 +440,9 @@
+ 
+ 	// Command line interface
+ 	static char const* const kCommand_CommandLine ;
++	
++	static char const* const kCommand_SVSInput ;
++	static char const* const kCommand_SVSOutput ;
+ } ;
+ 
+ }
+Index: Core/KernelSML/src/KernelHeaders.h
+===================================================================
+--- Core/KernelSML/src/KernelHeaders.h	(revision 13839)
++++ Core/KernelSML/src/KernelHeaders.h	(working copy)
+@@ -29,3 +29,4 @@
+ #include "symtab.h"
+ #include "io_soar.h"
+ #include "wmem.h"
++#include "svs_interface.h"
+Index: Core/KernelSML/src/sml_KernelSML.h
+===================================================================
+--- Core/KernelSML/src/sml_KernelSML.h	(revision 13839)
++++ Core/KernelSML/src/sml_KernelSML.h	(working copy)
+@@ -451,6 +451,10 @@
+ 	// Note: Register and unregister are both sent to this one handler
+ 	bool HandleRegisterForEvent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+ 
++	bool HandleSVSInput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
++
++	bool HandleSVSOutput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
++
+ };
+ 
+ }
+Index: Core/KernelSML/src/sml_KernelSMLHandlers.cpp
+===================================================================
+--- Core/KernelSML/src/sml_KernelSMLHandlers.cpp	(revision 13839)
++++ Core/KernelSML/src/sml_KernelSMLHandlers.cpp	(working copy)
+@@ -34,6 +34,7 @@
+ #include <stdlib.h>
+ #include <assert.h>
+ #include <algorithm>
++#include <sstream>
+ #include "xml.h"
+ 
+ using namespace sml ;
+@@ -67,6 +68,8 @@
+ 	m_CommandMap[sml_Names::kCommand_GetInitialTimeTag] = &sml::KernelSML::HandleGetInitialTimeTag ;
+ 	m_CommandMap[sml_Names::kCommand_ConvertIdentifier] = &sml::KernelSML::HandleConvertIdentifier;
+ 	m_CommandMap[sml_Names::kCommand_GetListenerPort]	= &sml::KernelSML::HandleGetListenerPort;
++	m_CommandMap[sml_Names::kCommand_SVSInput] = &sml::KernelSML::HandleSVSInput;
++	m_CommandMap[sml_Names::kCommand_SVSOutput] = &sml::KernelSML::HandleSVSOutput;
+ }
+ 
+ /*************************************************************
+@@ -927,3 +930,22 @@
+ {
+ 	return this->ReturnIntResult(pConnection, pResponse, this->GetListenerPort());
+ }
++
++bool KernelSML::HandleSVSInput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
++{
++	// Get the parameters
++	char const* pLine = pIncoming->GetArgString(sml_Names::kParamLine) ;
++	if (!pLine)
++	{
++		return InvalidArg(pConnection, pResponse, pCommandName, "Command line missing") ;
++	}
++	pAgentSML->GetSoarAgent()->svs->add_input(pLine);
++	return true;
++}
++
++bool KernelSML::HandleSVSOutput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
++{
++	std::string s = pAgentSML->GetSoarAgent()->svs->get_output();
++	return this->ReturnResult(pConnection, pResponse, s.c_str()) ;
++}
++
+Index: Core/SConscript
+===================================================================
+--- Core/SConscript	(revision 13839)
++++ Core/SConscript	(working copy)
+@@ -49,10 +49,13 @@
+ if compiler == 'msvc':
+ 	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
+ 
++svs_objs, svs_inc = SConscript('SVS/SConscript')
++kernel_env.Prepend(CPPPATH = svs_inc)
++
+ if GetOption('static'):
+-	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
++	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs] + svs_objs)
+ else:
+-	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs])[:2]
++	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs] + svs_objs)[:2]
+ 	if compiler == 'msvc':
+ 		kernel_env.Append(CPPFLAGS = ['/D', '_USRDLL'])
+ 
+Index: Core/SoarKernel/src/agent.cpp
+===================================================================
+--- Core/SoarKernel/src/agent.cpp	(revision 13839)
++++ Core/SoarKernel/src/agent.cpp	(working copy)
+@@ -52,6 +52,7 @@
+ #include "wma.h"
+ #include "episodic_memory.h"
+ #include "semantic_memory.h"
++#include "svs_interface.h"
+ 
+ 
+ /* ================================================================== */
+@@ -136,6 +137,8 @@
+ 
+   reset_statistics (thisAgent);
+ 
++  thisAgent->svs = make_svs(thisAgent);
++
+   /* RDF: For gSKI */
+   init_agent_memory(thisAgent);
+   /* END */
+@@ -506,6 +509,8 @@
+ 
+   delete delete_agent->smem_db;
+ 
++  delete delete_agent->svs;
++
+   // cleanup statistics db
+   stats_close( delete_agent );
+   delete delete_agent->stats_db;
+Index: Core/SoarKernel/src/agent.h
+===================================================================
+--- Core/SoarKernel/src/agent.h	(revision 13839)
++++ Core/SoarKernel/src/agent.h	(working copy)
+@@ -135,6 +135,7 @@
+ typedef char * test;
+ 
+ class stats_statement_container;
++class svs_interface;
+ 
+ typedef struct agent_struct {
+   /* After v8.6.1, all conditional compilations were removed
+@@ -992,6 +993,7 @@
+     std::map<std::vector<std::string>, Entry> split;
+   };
+   std::map<goal_stack_level, RL_Trace> rl_trace;
++  svs_interface *svs;
+ } agent;
+ /*************** end of agent struct *****/
+ 
+Index: Core/SoarKernel/src/decide.cpp
+===================================================================
+--- Core/SoarKernel/src/decide.cpp	(revision 13839)
++++ Core/SoarKernel/src/decide.cpp	(working copy)
+@@ -61,6 +61,7 @@
+ 
+ #include "episodic_memory.h"
+ #include "semantic_memory.h"
++#include "svs_interface.h"
+ 
+ #include "assert.h"
+ 
+@@ -2441,7 +2442,8 @@
+   symbol_remove_ref( thisAgent, goal->id.smem_header );
+   free_with_pool( &( thisAgent->smem_info_pool ), goal->id.smem_info );
+ 
+-
++  thisAgent->svs->state_deletion_callback(goal);
++  
+   /* REW: BUG
+    * Tentative assertions can exist for removed goals.  However, it looks
+    * like the removal forces a tentative retraction, which then leads to
+@@ -2570,6 +2572,8 @@
+   soar_invoke_callbacks(thisAgent, 
+                        CREATE_NEW_CONTEXT_CALLBACK, 
+                        static_cast<soar_call_data>(id) );
++  
++  thisAgent->svs->state_creation_callback(id);
+ }
+ 
+ /* ------------------------------------------------------------------
+Index: Core/SoarKernel/src/init_soar.cpp
+===================================================================
+--- Core/SoarKernel/src/init_soar.cpp	(revision 13839)
++++ Core/SoarKernel/src/init_soar.cpp	(working copy)
+@@ -42,6 +42,7 @@
+ #include "wma.h"
+ #include "episodic_memory.h"
+ #include "semantic_memory.h"
++#include "svs_interface.h"
+ 
+ /* REW: begin 08.20.97   these defined in consistency.c  */
+ extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
+@@ -603,6 +604,8 @@
+ 		  BEFORE_INPUT_PHASE_CALLBACK,
+ 		  reinterpret_cast<soar_call_data>(INPUT_PHASE));
+ 
++	  thisAgent->svs->input_callback();
++
+       do_input_cycle(thisAgent);
+ 
+ 	  thisAgent->run_phase_count++ ;
+@@ -927,6 +930,8 @@
+  	  soar_invoke_callbacks(thisAgent,
+ 			 BEFORE_OUTPUT_PHASE_CALLBACK,
+ 			 reinterpret_cast<soar_call_data>(OUTPUT_PHASE) );
++ 	  
++ 	  thisAgent->svs->output_callback();
+ 
+ 	  /** KJC June 05:  moved output function timers into do_output_cycle ***/
+ 
+Index: SConstruct
+===================================================================
+--- SConstruct	(revision 13839)
++++ SConstruct	(working copy)
+@@ -164,7 +164,7 @@
+ 		if GetOption('static'):
+ 			cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
+ 
+-	libs += [ 'pthread', 'dl', 'm' ]
++	libs += [ 'pthread', 'dl', 'm', 'rt']
+ 
+ elif compiler == 'msvc':
+ 	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
+Index: Tests/UnitTests/src/cliparsertest.h
+===================================================================
+--- Tests/UnitTests/src/cliparsertest.h	(revision 13839)
++++ Tests/UnitTests/src/cliparsertest.h	(working copy)
+@@ -84,6 +84,7 @@
+     virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) { return false; }
+     virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0) { return false; }
+     virtual bool DoWMA( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 ) { return false; }
++    virtual bool DoSVS( const std::vector<std::string> &args) { return false; }
+ };
+ 
+ class CliEcho : public CliAdapter
