@@ -175,7 +175,7 @@ Temporary Items
 /out
 out/
 build/
-**/user-env*.*
+user-env*.*
 /Release/Shuffler*
 **/*.pyc
 *.pyc
