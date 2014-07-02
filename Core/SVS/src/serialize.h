@@ -4,7 +4,7 @@
  and Eigen matrices. The template functions defined here allow the
  serialization of most STL containers used in the rest of the code,
  even ones that are nested to arbitrary depths.
- 
+
  Any class you define that needs to be serialized should inherit from
  the pure abstract class "serializable", defined in serializable.h.
 */
@@ -234,7 +234,7 @@ public:
 	serializer(std::ostream &os) : delim(true), os(os) {}
 
 	~serializer() { os.put('\n'); }
-	
+
 	template <typename T>
 	serializer &operator<<(const T &obj) {
 		if (!delim) {
@@ -244,10 +244,8 @@ public:
 		delim = false;
 		return *this;
 	}
-	
+
 	serializer &operator<<(char c);
-	
-	operator void*() { return os; }
 
 private:
 	std::ostream &os;
@@ -263,8 +261,6 @@ public:
 		::unserialize(obj, is);
 		return *this;
 	}
-	
-	operator void*() { return is; }
 
 private:
 	std::istream &is;
