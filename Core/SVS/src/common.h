@@ -31,7 +31,11 @@ bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
 
 template<class T>
-std::string tostring(T x);
+std::string tostring(T x) {
+    std::stringstream ss;
+    ss << x;
+    return ss.str();
+}
 
 bool is_nan(double x);
 bool is_inf(double x);
@@ -46,7 +50,7 @@ void sample(int k, const C &input, C &output) {
 	std::vector<int> inds;
 	sample(k, 0, input.size() - 1, inds);
 	std::sort(inds.begin(), inds.end());
-	
+
 	typename C::const_iterator i = input.begin();
 	std::insert_iterator<C> j(output, output.end());
 	for (int n = 0; n < inds.size(); ++n) {
@@ -151,7 +155,7 @@ std::ostream &join(std::ostream &os, const C& container, const D &delim) {
 	if (container.empty()) {
 		return os;
 	}
-	
+
 	typename C::const_iterator i = container.begin();
 	os << *i++;
 	while (i != container.end()) {
@@ -209,7 +213,7 @@ public:
 	void set_column_alignment(int col, int align);
 	void set_spacer_width(int w);
 	void print(std::ostream &os) const;
-	
+
 	template<typename T>
 	table_printer &operator<<(const T &x) {
 		ss.str("");
@@ -217,7 +221,7 @@ public:
 		rows.back().push_back(ss.str());
 		return *this;
 	}
-	
+
 	/*
 	 To save space, print integers when possible
 	*/
@@ -231,7 +235,7 @@ public:
 		rows.back().push_back(ss.str());
 		return *this;
 	}
-	
+
 	template<typename T>
 	table_printer &set(int r, int c, const T &x) {
 		if (r >= rows.size()) {
@@ -246,7 +250,7 @@ public:
 		row[c] = ss.str();
 		return *this;
 	}
-	
+
 	template<typename C>
 	table_printer &add(const C &container) {
 		std::vector<std::string> &r = rows.back();

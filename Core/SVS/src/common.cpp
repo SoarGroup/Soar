@@ -113,7 +113,7 @@ bool parse_double(const string &s, double &v) {
 	if (s.empty()) {
 		return false;
 	}
-	
+
 	char *end;
 	v = strtod(s.c_str(), &end);
 	if (*end != '\0') {
@@ -126,26 +126,13 @@ bool parse_int(const string &s, int &v) {
 	if (s.empty()) {
 		return false;
 	}
-	
+
 	char *end;
 	v = strtol(s.c_str(), &end, 10);
 	if (*end != '\0') {
 		return false;
 	}
 	return true;
-}
-
-template<class T>
-string tostring(T x) {
-	stringstream ss;
-	ss << x;
-	return ss.str();
-}
-
-string tostring(double x){
-	stringstream ss;
-	ss << x;
-	return ss.str();
 }
 
 bool is_nan(double x) {
@@ -207,12 +194,12 @@ void table_printer::print(ostream &os) const {
 			}
 		}
 	}
-	
+
 	for (int i = 0; i < rows.size(); ++i) {
 		const vector<string> &row = rows[i];
 		for (int j = 0; j < row.size(); ++j) {
 			int a = -1, pad;
-			
+
 			map_get(alignments, j, a);
 			switch (a) {
 				case -1:
