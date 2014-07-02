@@ -150,7 +150,8 @@ elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('c
 else:
 	compiler = os.path.split(env['CXX'])[1]
 
-Export('compiler')
+lsb_build = ('lsbc++' in env['CXX'])
+Export('compiler', 'lsb_build')
 
 cflags = []
 lnflags = []
