@@ -43,6 +43,7 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "svs_interface.h"
+#include "output_manager.h"
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
@@ -114,6 +115,30 @@ void abort_with_fatal_error (agent* thisAgent, const char *msg) {
 		//	(soar_call_data) FALSE);
 }
 
+/* -- A version for use when the current agent variable is not available == */
+
+void abort_with_fatal_error_noagent (const char *msg) {
+  FILE *f;
+  const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
+
+  /* MToDo | Send error message to all clients, not just default one.
+   *         May not want to be a debug message either. */
+  if (Output_Manager::Get_OM().debug_mode_enabled(DT_DEBUG))
+  {
+    Output_Manager::Get_OM().print_debug(msg, DT_DEBUG, true);
+    Output_Manager::Get_OM().print_debug(warning, DT_DEBUG, true);
+  }
+
+//  fprintf (stderr,"%s",msg);
+//  fprintf (stderr,"%s",warning);å
+
+  f = fopen("soarerror", "w");
+  fprintf (f,"%s",msg);
+  fprintf (f,"%s",warning);
+  fclose(f);
+
+  assert(false);
+}
 /* ===================================================================
 
                         Signal Handling
@@ -255,7 +280,7 @@ void add_pwatch (agent* thisAgent, production *prod)
   push (thisAgent, prod, thisAgent->productions_being_traced);
 }
 
-Bool remove_pwatch_test_fn (agent* /*thisAgent*/, cons *c,
+bool remove_pwatch_test_fn (agent* /*thisAgent*/, cons *c,
 							       void *prod_to_remove_pwatch_of)
 {
   return (c->first == static_cast<production *>(prod_to_remove_pwatch_of));
@@ -930,7 +955,7 @@ void do_one_top_level_phase (agent* thisAgent)
  	  soar_invoke_callbacks(thisAgent,
 			 BEFORE_OUTPUT_PHASE_CALLBACK,
 			 reinterpret_cast<soar_call_data>(OUTPUT_PHASE) );
- 	  
+
  	  thisAgent->svs->output_callback();
 
 	  /** KJC June 05:  moved output function timers into do_output_cycle ***/
@@ -1041,7 +1066,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  }
           if (thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] > 0) {
               if (dc_time_usec >= static_cast<uint64_t>(thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT])) {
-                  thisAgent->stop_soar++;
+                  thisAgent->stop_soar = true;
                   thisAgent->reason_for_stopping = "decision cycle time greater than interrupt threshold";
               }
           }
@@ -1152,7 +1177,7 @@ void do_one_top_level_phase (agent* thisAgent)
 #ifdef AGRESSIVE_ONC
 	  /* test for Operator NC, if TRUE, generate substate and go to OUTPUT */
 	  if ((thisAgent->ms_o_assertions == NIL) &&
-		  (thisAgent->bottom_goal->id.operator_slot->wmes != NIL))
+		  (thisAgent->bottom_goal->id->operator_slot->wmes != NIL))
 	  {
 
 		  soar_invoke_callbacks(thisAgent, thisAgent,
@@ -1236,7 +1261,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  // To model episodic task, after halt, perform RL update with next-state value 0
 	  if ( rl_enabled( thisAgent ) )
 	  {
-		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->id.higher_goal)
+		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->id->higher_goal)
 		  {
 			  rl_tabulate_reward_value_for_goal( thisAgent, g );
 			  rl_perform_update( thisAgent, 0, true, g );
@@ -1327,7 +1352,7 @@ void run_for_n_elaboration_cycles (agent* thisAgent, int64_t n) {
 }
 
 void run_for_n_modifications_of_output (agent* thisAgent, int64_t n) {
-  Bool was_output_phase;
+  bool was_output_phase;
   int64_t count = 0;
 
   if (n == -1) { run_forever(thisAgent); return; }
@@ -1389,14 +1414,14 @@ void run_for_n_decision_cycles (agent* thisAgent, int64_t n) {
 }
 
 Symbol *attr_of_slot_just_decided (agent* thisAgent) {
-  if (thisAgent->bottom_goal->id.operator_slot->wmes)
+  if (thisAgent->bottom_goal->id->operator_slot->wmes)
     return thisAgent->operator_symbol;
   return thisAgent->state_symbol;
 }
 
 void run_for_n_selections_of_slot (agent* thisAgent, int64_t n, Symbol *attr_of_slot) {
   int64_t count;
-  Bool was_decision_phase;
+  bool was_decision_phase;
 
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
@@ -1425,7 +1450,7 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
                                             Symbol *attr_of_slot,
                                             goal_stack_level level) {
   int64_t count;
-  Bool was_decision_phase;
+  bool was_decision_phase;
 
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
@@ -1440,8 +1465,8 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
     was_decision_phase = (thisAgent->current_phase==DECISION_PHASE);
     do_one_top_level_phase(thisAgent);
     if (was_decision_phase) {
-      if (thisAgent->bottom_goal->id.level < level) break;
-      if (thisAgent->bottom_goal->id.level==level) {
+      if (thisAgent->bottom_goal->id->level < level) break;
+      if (thisAgent->bottom_goal->id->level==level) {
         if (attr_of_slot_just_decided(thisAgent)==attr_of_slot) count++;
       }
     }
@@ -1469,7 +1494,7 @@ extern char *getenv();
 
 // KJC Nov 05:  moved here from old interface.cpp, so could remove interface.* files
 void load_file (agent* thisAgent, char *file_name, FILE *already_open_file) {
-Bool old_print_prompt_flag;
+bool old_print_prompt_flag;
 
   old_print_prompt_flag = thisAgent->print_prompt_flag;
   thisAgent->print_prompt_flag = FALSE;

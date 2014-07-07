@@ -37,16 +37,16 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
     // if we have a production, just get that one, otherwise get them all
     if (pProduction)
     {
-        Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
+        Symbol* sym = find_str_constant( agnt, pProduction->c_str() );
 
-        if (!sym || !(sym->sc.production))
+        if (!sym || !(sym->sc->production))
         {
             return SetError("Production not found.");
         }
 
         std::pair< std::string, uint64_t > firing;
         firing.first = *pProduction;
-        firing.second = sym->sc.production->firing_count;
+        firing.second = sym->sc->production->firing_count;
         firings.push_back(firing);
     }
     else
@@ -70,7 +70,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
 
                 // store the name and count
                 std::pair< std::string, uint64_t > firing;
-                firing.first = pSoarProduction->name->sc.name;
+                firing.first = pSoarProduction->name->sc->name;
                 firing.second = pSoarProduction->firing_count;
                 firings.push_back(firing);
             }

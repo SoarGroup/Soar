@@ -37,7 +37,7 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
     const int maxStates = 500;
     int stateCount = 0 ;
 
-    for (Symbol* g = thisAgent->top_goal; g != NIL; g = g->id.lower_goal) 
+    for (Symbol* g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
     {
         stateCount++ ;
 
@@ -49,9 +49,9 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
             print_stack_trace (thisAgent, g, g, FOR_STATES_TF, false);
             print (thisAgent, "\n");
         }
-        if (print_operators && g->id.operator_slot->wmes) 
+        if (print_operators && g->id->operator_slot->wmes)
         {
-            print_stack_trace (thisAgent, g->id.operator_slot->wmes->value, g, FOR_OPERATORS_TF, false);
+            print_stack_trace (thisAgent, g->id->operator_slot->wmes->value, g, FOR_OPERATORS_TF, false);
             print (thisAgent, "\n");
         }
     }
@@ -60,16 +60,16 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
         print (thisAgent, "...Stack goes on for another %d states\n", stateCount - maxStates);
 }
 
-void do_print_for_production (agent* thisAgent, production *prod, bool intern, bool print_filename, bool full_prod) 
+void do_print_for_production (agent* thisAgent, production *prod, bool intern, bool print_filename, bool full_prod)
 {
-    if (print_filename) 
+    if (print_filename)
     {
         if (full_prod)
             print_string(thisAgent, "# source file: ");
 
-        if (prod->filename) 
+        if (prod->filename)
             print_string(thisAgent, prod->filename);
-        else 
+        else
             print_string(thisAgent, "_unknown_");
 
         if (full_prod)
@@ -78,7 +78,7 @@ void do_print_for_production (agent* thisAgent, production *prod, bool intern, b
             print_string(thisAgent, ": ");
     }
 
-    if (full_prod) 
+    if (full_prod)
         print_production(thisAgent, prod, intern);
     else
     {
@@ -127,7 +127,7 @@ void print_rl_rules(agent* thisAgent, bool intern, bool print_filename, bool ful
     }
 }
 
-// compare_attr is used for cstdlib::qsort below. 
+// compare_attr is used for cstdlib::qsort below.
 int compare_attr (const void * e1, const void * e2)
 {
     wme **p1, **p2;
@@ -154,16 +154,16 @@ void neatly_print_wme_augmentation_of_id (agent* thisAgent, wme *w, int indentat
 
     strcpy(buf, " ^");
     ch = buf;
-    while (*ch) 
+    while (*ch)
         ch++;
     symbol_to_string(thisAgent, w->attr, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
     *(ch++) = ' ';
     symbol_to_string(thisAgent, w->value, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
-    if (w->acceptable) 
-    { 
-        strcpy(ch, " +"); 
-        while (*ch) 
-            ch++; 
+    if (w->acceptable)
+    {
+        strcpy(ch, " +");
+        while (*ch)
+            ch++;
     }
 
     if (get_printer_output_column(thisAgent) + (ch - buf) >= 80)
@@ -176,7 +176,7 @@ void neatly_print_wme_augmentation_of_id (agent* thisAgent, wme *w, int indentat
 
 // RPM 4/07: Note, mark_depths_augs_of_id must be called before the root call to print_augs_of_id
 //           Thus, this should probably only be called from do_print_for_identifier
-void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bool intern, bool tree, tc_number tc) 
+void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bool intern, bool tree, tc_number tc)
 {
     slot *s;
     wme *w;
@@ -190,57 +190,57 @@ void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bo
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) 
+    if (!id->is_identifier())
         return;
-    if (id->id.tc_num==tc) 
+    if (id->tc_num==tc)
         return;  // this has already been printed, so return RPM 4/07 bug 988
-    if (id->id.depth > depth) 
+    if (id->id->depth > depth)
         return;  // this can be reached via an equal or shorter path, so return without printing RPM 4/07 bug 988
 
     // if we're here, then we haven't printed this id yet, so print it
 
-    depth = id->id.depth; // set the depth to the depth via the shallowest path, RPM 4/07 bug 988
+    depth = id->id->depth; // set the depth to the depth via the shallowest path, RPM 4/07 bug 988
     int indent = (maxdepth-depth)*2; // set the indent based on how deep we are, RPM 4/07 bug 988
 
-    id->id.tc_num = tc;  // mark id as printed
+    id->tc_num = tc;  // mark id as printed
 
     /* --- first, count all direct augmentations of this id --- */
     num_attr = 0;
-    for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
+    for (w=id->id->impasse_wmes; w!=NIL; w=w->next)
         num_attr++;
-    for (w=id->id.input_wmes; w!=NIL; w=w->next) 
+    for (w=id->id->input_wmes; w!=NIL; w=w->next)
         num_attr++;
-    for (s=id->id.slots; s!=NIL; s=s->next) 
+    for (s=id->id->slots; s!=NIL; s=s->next)
     {
-        for (w=s->wmes; w!=NIL; w=w->next) 
+        for (w=s->wmes; w!=NIL; w=w->next)
             num_attr++;
-        for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next) 
+        for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next)
             num_attr++;
     }
 
     /* --- next, construct the array of wme pointers and sort them --- */
     list = (wme**)allocate_memory(thisAgent, num_attr*sizeof(wme *), MISCELLANEOUS_MEM_USAGE);
     attr = 0;
-    for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
+    for (w=id->id->impasse_wmes; w!=NIL; w=w->next)
         list[attr++] = w;
-    for (w=id->id.input_wmes; w!=NIL; w=w->next)
+    for (w=id->id->input_wmes; w!=NIL; w=w->next)
         list[attr++] = w;
-    for (s=id->id.slots; s!=NIL; s=s->next) 
+    for (s=id->id->slots; s!=NIL; s=s->next)
     {
         for (w=s->wmes; w!=NIL; w=w->next)
             list[attr++] = w;
         for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next)
             list[attr++] = w;
     }
-    qsort (list, num_attr, sizeof (wme *), compare_attr); 
+    qsort (list, num_attr, sizeof (wme *), compare_attr);
 
 
     /* --- finally, print the sorted wmes and deallocate the array --- */
 
     // RPM 4/07 If this is a tree print, then for each wme in the list, print it and its children
-    if(tree) 
+    if(tree)
     {
-        for (attr=0; attr < num_attr; attr++) 
+        for (attr=0; attr < num_attr; attr++)
         {
             w = list[attr];
             print_spaces (thisAgent, indent);
@@ -256,19 +256,19 @@ void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bo
         }
         // RPM 4/07 This is not a tree print, so for each wme in the list, print it
         // Then, after all wmes have been printed, print the children
-    } 
-    else 
+    }
+    else
     {
-        for (attr=0; attr < num_attr; attr++) 
+        for (attr=0; attr < num_attr; attr++)
         {
             w = list[attr];
             print_spaces (thisAgent, indent);
 
-            if(intern) 
+            if(intern)
             {
                 print_wme (thisAgent, w);
-            } 
-            else 
+            }
+            else
             {
                 print_with_symbols (thisAgent, "(%y", id);
 
@@ -277,7 +277,7 @@ void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bo
                 xml_begin_tag(thisAgent, soar_TraceNames::kWME_Id);
                 xml_att_val(thisAgent, soar_TraceNames::kWME_Id, id);
 
-                for (attr=0; attr < num_attr; attr++) 
+                for (attr=0; attr < num_attr; attr++)
                 {
                     w = list[attr];
                     neatly_print_wme_augmentation_of_id (thisAgent, w, indent);
@@ -292,7 +292,7 @@ void print_augs_of_id (agent* thisAgent, Symbol *id, int depth, int maxdepth, bo
         // If there is still depth left, recurse
         if (depth > 1)
         {
-            for (attr=0; attr < num_attr; attr++) 
+            for (attr=0; attr < num_attr; attr++)
             {
                 w = list[attr];
                 /* --- call this routine recursively --- */
@@ -312,7 +312,7 @@ That is, if an id can be reached by multiple paths, this will find the shortest 
 the depth of that path on the id.  Thus, when we print, the wmes will be indented properly,
 making it much easier to read, and avoiding bugs (see bug 988).
 */
-void mark_depths_augs_of_id (agent* thisAgent, Symbol *id, int depth, tc_number tc) 
+void mark_depths_augs_of_id (agent* thisAgent, Symbol *id, int depth, tc_number tc)
 {
     slot *s;
     wme *w;
@@ -322,30 +322,30 @@ void mark_depths_augs_of_id (agent* thisAgent, Symbol *id, int depth, tc_number 
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    if (!id->is_identifier())
         return;
-    if (id->id.tc_num==tc && id->id.depth >= depth) 
+    if (id->tc_num==tc && id->id->depth >= depth)
         return;  // this has already been printed at an equal-or-lower depth, RPM 4/07 bug 988
 
-    id->id.depth = depth; // set the depth of this id
-    id->id.tc_num = tc;
+    id->id->depth = depth; // set the depth of this id
+    id->tc_num = tc;
 
     /* --- if depth<=1, we're done --- */
     if (depth<=1)
         return;
 
     /* --- call this routine recursively --- */
-    for (w=id->id.input_wmes; w!=NIL; w=w->next) 
+    for (w=id->id->input_wmes; w!=NIL; w=w->next)
     {
         mark_depths_augs_of_id (thisAgent, w->attr, depth-1, tc);
         mark_depths_augs_of_id (thisAgent, w->value, depth-1, tc);
     }
-    for (w=id->id.impasse_wmes; w!=NIL; w=w->next) 
+    for (w=id->id->impasse_wmes; w!=NIL; w=w->next)
     {
         mark_depths_augs_of_id (thisAgent, w->attr, depth-1, tc);
         mark_depths_augs_of_id (thisAgent, w->value, depth-1, tc);
     }
-    for (s=id->id.slots; s!=NIL; s=s->next) 
+    for (s=id->id->slots; s!=NIL; s=s->next)
     {
         for (w=s->wmes; w!=NIL; w=w->next)
         {
@@ -372,37 +372,37 @@ void do_print_for_identifier (agent* thisAgent, Symbol *id, int depth, bool inte
     print_augs_of_id (thisAgent, id, depth, depth, intern, tree, tc);
 }
 
-void do_print_for_production_name (agent* thisAgent, const char *prod_name, bool intern, bool print_filename, bool full_prod) 
+void do_print_for_production_name (agent* thisAgent, const char *prod_name, bool intern, bool print_filename, bool full_prod)
 {
     Symbol *sym;
 
-    sym = find_sym_constant (thisAgent, thisAgent->lexeme.string);
-    if (sym && sym->sc.production) 
-        do_print_for_production(thisAgent, sym->sc.production, intern, print_filename, full_prod);
-    else 
+    sym = find_str_constant (thisAgent, thisAgent->lexeme.string);
+    if (sym && sym->sc->production)
+        do_print_for_production(thisAgent, sym->sc->production, intern, print_filename, full_prod);
+    else
         print (thisAgent, "No production named %s\n", prod_name);
 }
 
 void do_print_for_wme (agent* thisAgent, wme *w, int depth, bool intern, bool tree) {
-    if (intern && (depth==0)) 
+    if (intern && (depth==0))
     {
         print_wme (thisAgent, w);
         print (thisAgent, "\n");
-    } 
+    }
     else
         do_print_for_identifier(thisAgent, w->id, depth, intern, tree);
 }
 
 /* --- Read and consume one pattern element.  Return 0 if error, 1 if "*",
 otherwise return 2 and set dest_sym to find_symbol() result. --- */
-int read_pattern_component (agent* thisAgent, Symbol **dest_sym) 
+int read_pattern_component (agent* thisAgent, Symbol **dest_sym)
 {
-    if (strcmp(thisAgent->lexeme.string,"*") == 0) 
+    if (strcmp(thisAgent->lexeme.string,"*") == 0)
         return 1;
-    switch (thisAgent->lexeme.type) 
+    switch (thisAgent->lexeme.type)
     {
     case SYM_CONSTANT_LEXEME:
-        *dest_sym = find_sym_constant (thisAgent, thisAgent->lexeme.string); return 2;
+        *dest_sym = find_str_constant (thisAgent, thisAgent->lexeme.string); return 2;
     case INT_CONSTANT_LEXEME:
         *dest_sym = find_int_constant (thisAgent, thisAgent->lexeme.int_val); return 2;
     case FLOAT_CONSTANT_LEXEME:
@@ -411,7 +411,7 @@ int read_pattern_component (agent* thisAgent, Symbol **dest_sym)
         *dest_sym = find_identifier (thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number); return 2;
     case VARIABLE_LEXEME:
         *dest_sym = read_identifier_or_context_variable(thisAgent);
-        if (*dest_sym) 
+        if (*dest_sym)
             return 2;
         return 0;
     default:
@@ -420,7 +420,7 @@ int read_pattern_component (agent* thisAgent, Symbol **dest_sym)
     }
 }
 
-list *read_pattern_and_get_matching_wmes (agent* thisAgent) 
+list *read_pattern_and_get_matching_wmes (agent* thisAgent)
 {
     int parentheses_level;
     list *wmes;
@@ -438,13 +438,13 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
 
     get_lexeme(thisAgent);
     id_result = read_pattern_component (thisAgent, &id);
-    if (! id_result) 
+    if (! id_result)
     {
         skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
         return NIL;
     }
     get_lexeme(thisAgent);
-    if (thisAgent->lexeme.type!=UP_ARROW_LEXEME) 
+    if (thisAgent->lexeme.type!=UP_ARROW_LEXEME)
     {
         print (thisAgent, "Expected ^ in wme pattern\n");
         skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
@@ -452,24 +452,24 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
     }
     get_lexeme(thisAgent);
     attr_result = read_pattern_component (thisAgent, &attr);
-    if (! attr_result) 
+    if (! attr_result)
     {
         skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
         return NIL;
     }
     get_lexeme(thisAgent);
     value_result = read_pattern_component (thisAgent, &value);
-    if (! value_result) 
+    if (! value_result)
     {
         skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
         return NIL;
     }
     get_lexeme(thisAgent);
-    if (thisAgent->lexeme.type==PLUS_LEXEME) 
+    if (thisAgent->lexeme.type==PLUS_LEXEME)
     {
         acceptable = TRUE;
         get_lexeme(thisAgent);
-    } 
+    }
     else
     {
         acceptable = FALSE;
@@ -489,7 +489,7 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
                     if (acceptable == (w->acceptable == TRUE))
                         push (thisAgent, w, wmes);
     }
-    return wmes;  
+    return wmes;
 }
 
 void soar_alternate_input(agent *ai_agent, const char *ai_string, const char *ai_suffix, bool ai_exit)
@@ -510,7 +510,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 
     get_lexeme_from_string(thisAgent, arg);
 
-    switch (thisAgent->lexeme.type) 
+    switch (thisAgent->lexeme.type)
     {
     case SYM_CONSTANT_LEXEME:
         do_print_for_production_name(thisAgent, arg, intern, print_filename, full_prod);
@@ -525,14 +525,14 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                 break;
             }
         }
-        if (!w) 
+        if (!w)
             print(thisAgent, "No wme %ld in working memory.", thisAgent->lexeme.int_val);
         break;
 
     case IDENTIFIER_LEXEME:
     case VARIABLE_LEXEME:
         id = read_identifier_or_context_variable(thisAgent);
-        if (id) 
+        if (id)
             do_print_for_identifier(thisAgent, id, depth, intern, tree);
         break;
 
@@ -544,7 +544,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
         */
         get_lexeme(thisAgent);
         wmes = read_pattern_and_get_matching_wmes(thisAgent);
-        soar_alternate_input(thisAgent, NIL, NIL, FALSE); 
+        soar_alternate_input(thisAgent, NIL, NIL, FALSE);
         thisAgent->current_char = ' ';
         if (exact)
         {
@@ -558,29 +558,29 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
             }
             // Loop through objects and print its wmes
             std::map< Symbol*, std::list<wme*> >::iterator iter = objects.begin();
-            while ( iter != objects.end() ) 
+            while ( iter != objects.end() )
             {
                 std::list<wme*> wmelist = iter->second;
                 std::list<wme*>::iterator wmeiter = wmelist.begin();
 
                 // If we're printing internally, we just print the wme
                 // taken from print_wme_without_timetag
-                if (!intern) 
+                if (!intern)
                     print_with_symbols(thisAgent, "(%y", iter->first);
 
-                while ( wmeiter != wmelist.end() ) 
+                while ( wmeiter != wmelist.end() )
                 {
                     wme* w = *wmeiter;
-                    if (intern) 
+                    if (intern)
                     {
                         // This does everything for us in the internal case, including xml
                         print_wme(thisAgent, w);
                     }
-                    else 
+                    else
                     {
                         // taken from print_wme_without_timetag
                         print_with_symbols (thisAgent, " ^%y %y", w->attr, w->value);
-                        if (w->acceptable) 
+                        if (w->acceptable)
                             print_string (thisAgent, " +");
 
                         // this handles xml case for the wme
@@ -593,10 +593,10 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                     print_string(thisAgent, ")\n");
                 ++iter;
             }
-        } 
-        else 
+        }
+        else
         {
-            for (c = wmes; c != NIL; c = c->rest) 
+            for (c = wmes; c != NIL; c = c->rest)
                 do_print_for_wme(thisAgent, static_cast<wme *>(c->first), depth, intern, tree);
         }
         free_list(thisAgent, wmes);
@@ -608,16 +608,16 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     } /* end of switch statement */
 }
 
-bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::string* pArg) 
+bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::string* pArg)
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
     if (depth < 0)
         depth = agnt->default_wme_depth;
 
-    if (options.test(PRINT_STACK)) 
+    if (options.test(PRINT_STACK))
     {
         // if neither states option nor operators option are set, set them both
-        if (!options.test(PRINT_STATES) && !options.test(PRINT_OPERATORS)) 
+        if (!options.test(PRINT_STATES) && !options.test(PRINT_OPERATORS))
         {
             options.set(PRINT_STATES);
             options.set(PRINT_OPERATORS);
@@ -634,7 +634,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
     bool full = options.test(PRINT_FULL) || intern; // internal implies full
     bool exact = options.test(PRINT_EXACT);
 
-    if (pArg) 
+    if (pArg)
     {
         // Default with arg is full print
         full = !options.test(PRINT_NAME);
@@ -644,16 +644,16 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
         print_symbol(agnt, pArg->c_str(), filename, intern, tree, full, depth, exact);
         m_VarPrint = false;
         return true;
-    } 
+    }
 
     // Print all productions if there are no other production flags set
-    if (options.test(PRINT_ALL) || 
+    if (options.test(PRINT_ALL) ||
         (!options.test(PRINT_CHUNKS) &&
         !options.test(PRINT_DEFAULTS) &&
         !options.test(PRINT_JUSTIFICATIONS) &&
         !options.test(PRINT_USER) &&
         !options.test(PRINT_RL) &&
-        !options.test(PRINT_TEMPLATE))) 
+        !options.test(PRINT_TEMPLATE)))
     {
         options.set(PRINT_CHUNKS);
         options.set(PRINT_DEFAULTS);
@@ -661,19 +661,19 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
         options.set(PRINT_USER);
         //options.set(PRINT_RL);     // these aren't really a different "type", it's just extra data
         options.set(PRINT_TEMPLATE);
-    } 
+    }
 
-    if (options.test(PRINT_CHUNKS)) 
+    if (options.test(PRINT_CHUNKS))
         print_productions_of_type(agnt, intern, filename, full, CHUNK_PRODUCTION_TYPE);
-    if (options.test(PRINT_DEFAULTS)) 
+    if (options.test(PRINT_DEFAULTS))
         print_productions_of_type(agnt, intern, filename, full, DEFAULT_PRODUCTION_TYPE);
-    if (options.test(PRINT_JUSTIFICATIONS)) 
+    if (options.test(PRINT_JUSTIFICATIONS))
         print_productions_of_type(agnt, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-    if (options.test(PRINT_USER)) 
+    if (options.test(PRINT_USER))
         print_productions_of_type(agnt, intern, filename, full, USER_PRODUCTION_TYPE);
-    if (options.test(PRINT_RL)) 
+    if (options.test(PRINT_RL))
         print_rl_rules(agnt, intern, filename, full);
-    if (options.test(PRINT_TEMPLATE)) 
+    if (options.test(PRINT_TEMPLATE))
         print_productions_of_type(agnt, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
 
     return true;

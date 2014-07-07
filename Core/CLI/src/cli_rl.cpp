@@ -239,16 +239,16 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
           if(goal_level < 1)
             return SetError( "Invalid RL goal level for rl -t init." );
 
-          for(Symbol *goal = agnt->top_goal; goal; goal = goal->id.lower_goal, ++level) {
+          for(Symbol *goal = agnt->top_goal; goal; goal = goal->id->lower_goal, ++level) {
             if(level == goal_level) {
-              goal->id.rl_trace = &agnt->rl_trace[level];
+              goal->id->rl_trace = &agnt->rl_trace[level];
               break;
             }
           }
         }
         else {
-          for(Symbol *goal = agnt->top_goal; goal; goal = goal->id.lower_goal, ++level)
-            goal->id.rl_trace = &agnt->rl_trace[level];
+          for(Symbol *goal = agnt->top_goal; goal; goal = goal->id->lower_goal, ++level)
+            goal->id->rl_trace = &agnt->rl_trace[level];
         }
 
         ++agnt->rl_init_count;

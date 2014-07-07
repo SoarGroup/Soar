@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <cmath>
 
+#include "kernel.h"
 #include "misc.h"
 #include "symtab.h"
 #include "mem.h"
@@ -545,26 +546,26 @@ namespace soar_module
 			{
 				bool return_val = false;
 
-				if ( ( test_sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
-					 ( test_sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-					 ( test_sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) )
+				if ( ( test_sym->symbol_type == STR_CONSTANT_SYMBOL_TYPE ) ||
+					 ( test_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+					 ( test_sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) )
 				{
 					Symbol *my_sym = test_sym;
 
-					if ( my_sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
+					if ( my_sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE )
 					{
 						std::string temp_str;
 
-						if ( my_sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+						if ( my_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE )
 						{
-							to_string( my_sym->ic.value, temp_str );
+							to_string( my_sym->ic->value, temp_str );
 						}
 						else
 						{
-							to_string( my_sym->fc.value, temp_str );
+							to_string( my_sym->fc->value, temp_str );
 						}
 
-						my_sym = make_sym_constant( my_agent, temp_str.c_str() );
+						my_sym = make_str_constant( my_agent, temp_str.c_str() );
 					}
 
 					std::set<Symbol *>::iterator p = my_set->find( my_sym );
@@ -581,7 +582,7 @@ namespace soar_module
 
 			virtual void set_value( const char *new_value )
 			{
-				Symbol *my_sym = make_sym_constant( my_agent, new_value );
+				Symbol *my_sym = make_str_constant( my_agent, new_value );
 				std::set<Symbol *>::iterator p = my_set->find( my_sym );
 
 				if ( p != my_set->end() )
@@ -596,7 +597,7 @@ namespace soar_module
 					value->clear();
 					for ( p=my_set->begin(); p!=my_set->end(); )
 					{
-						value->append( (*p)->sc.name );
+						value->append( (*p)->sc->name );
 
 						p++;
 
@@ -611,7 +612,7 @@ namespace soar_module
 					if ( !value->empty() )
 						value->append( ", " );
 
-					value->append( my_sym->sc.name );
+					value->append( my_sym->sc->name );
 				}
 			}
 	};
@@ -930,8 +931,6 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 	// Memory Pool Allocators
 	///////////////////////////////////////////////////////////////////////////
-
-#define USE_MEM_POOL_ALLOCATORS 1
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 

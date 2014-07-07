@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*
@@ -9,13 +9,13 @@
  * File: callback.h
  *
  * Description: This file contains the callback facility header decls.
- * 
+ *
  * Exported data types:
  *   SOAR_CALLBACK_TYPE
  *   soar_callback_data
  *   soar_call_data
  *   soar_callback_fn
- *   
+ *
  * Exported functions:
  *   soar_add_callback
  *   soar_invoke_callbacks
@@ -105,15 +105,15 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 
   All callback functions installed by the user must use the function
   soar_add_callback.  The type signature of all callback functions is
-  the same and has the following form: 
+  the same and has the following form:
 
-    my_callback_fn(agent * a, 
-                   soar_callback_data scd, 
+    my_callback_fn(agent * a,
+                   soar_callback_data scd,
 		   soar_call_data call_data);
 
   where "a" is a pointer to the agent structure for the agent in which
-  the callback was invoked, "scd" is the data structure given in the 
-  installation when soar_add_callback was called, and "call_data" is 
+  the callback was invoked, "scd" is the data structure given in the
+  installation when soar_add_callback was called, and "call_data" is
   the data relevant to this particular call.  To use the "call_data"
   parameter, it should first be cast to the appropriate type, which
   is mentioned below.  Since only the "call_data" argument varies for
@@ -122,57 +122,57 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
   SYSTEM_STARTUP_CALLBACK
 
     This function is called only once, at system startup time.  It can
-    be used to set up any Soar I/O routines and install any interface 
+    be used to set up any Soar I/O routines and install any interface
     commands.  This function is called after most of the system has been
-    initialized, but before any agent initialization file is loaded. 
+    initialized, but before any agent initialization file is loaded.
     The "call_data" argument is given as NULL.
-  
- 
+
+
   Unused: SYSTEM_TERMINATION_CALLBACK
 
     This function is called only once, just before the system exits back
-    to the shell.  The "call_data" parameter is of type "Bool" which is 
-    TRUE if the system is exiting normally, and FALSE if the exit is 
+    to the shell.  The "call_data" parameter is of type "bool" which is
+    TRUE if the system is exiting normally, and FALSE if the exit is
     happening because some fatal error situation was detected.  Typically,
-    this routine should do any final cleanup (closing files, etc.) 
+    this routine should do any final cleanup (closing files, etc.)
     necessary.
 
   AFTER_INIT_AGENT_CALLBACK
 
     This function is called only once per each agent after the agent
-    has been initialized.  This function is called after most of the 
+    has been initialized.  This function is called after most of the
     agent data structures have been initialized, but before the agent
-    initialization file is loaded.  The "call_data" argument is given 
+    initialization file is loaded.  The "call_data" argument is given
     as NULL.
 
   BEFORE_INIT_SOAR_CALLBACK
 
-    This function is called just before any init-soar is done.  (This 
-    includes not only the init-soar command, but also excise-task and 
-    excise-all, which do an init-soar.)  The "call_data" argument is 
+    This function is called just before any init-soar is done.  (This
+    includes not only the init-soar command, but also excise-task and
+    excise-all, which do an init-soar.)  The "call_data" argument is
     given as NULL.
 
   AFTER_INIT_SOAR_CALLBACK
 
-    This function is called just after any init-soar is done.  (This 
-    includes not only the init-soar command, but also excise-task and 
-    excise-all, which do an init-soar.)  The "call_data" argument is 
+    This function is called just after any init-soar is done.  (This
+    includes not only the init-soar command, but also excise-task and
+    excise-all, which do an init-soar.)  The "call_data" argument is
     given as NULL.
 
   AFTER_HALT_SOAR_CALLBACK
 
     This function is called after Soar halts; i.e., after the preference
-    phase in which the RHS function "halt" is executed.  The "call_data" 
+    phase in which the RHS function "halt" is executed.  The "call_data"
     argument is given as NULL.
 
   BEFORE_SCHEDULE_CYCLE_CALLBACK
 
-    This function is called just before the agent is scheduled.  The 
+    This function is called just before the agent is scheduled.  The
     "call_data" argument is given as NULL.
 
   AFTER_SCHEDULE_CYCLE_CALLBACK
 
-    This function is called just after the agent is scheduled.  The 
+    This function is called just after the agent is scheduled.  The
     "call_data" argument is given as NULL.
 
   BEFORE_DECISION_CYCLE_CALLBACK
@@ -188,7 +188,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
   BEFORE_INPUT_PHASE_CALLBACK
 
     This function is called at the start of each input phase.  This
-    is called even if the input cycle is effectively null because 
+    is called even if the input cycle is effectively null because
     there is no top state.  The "call_data" argument is given as NULL.
 
   INPUT_PHASE_CALLBACK
@@ -199,7 +199,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
   AFTER_INPUT_PHASE_CALLBACK
 
     This function is called at the end of each input phase.  This
-    is called even if the input cycle is effectively null because 
+    is called even if the input cycle is effectively null because
     there is no top state.  The "call_data" argument is given as NULL.
 
   BEFORE_PREFERENCE_PHASE_CALLBACK
@@ -225,7 +225,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
   BEFORE_OUTPUT_PHASE_CALLBACK
 
     This function is called at the start of each Soar output cycle.
-    This is called even if the output cycle is effectively null because 
+    This is called even if the output cycle is effectively null because
     there is no top state.  The "call_data" argument is given as NULL.
 
   OUTPUT_PHASE_CALLBACK
@@ -237,7 +237,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
   AFTER_OUTPUT_PHASE_CALLBACK
 
     This function is called at the end of each Soar output cycle.
-    This is called even if the output cycle is effectively null because 
+    This is called even if the output cycle is effectively null because
     there is no top state.  The "call_data" argument is given as NULL.
 
   BEFORE_DECISION_PHASE_CALLBACK
@@ -252,9 +252,9 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 
   WM_CHANGES_CALLBACK
 
-    This function is called just before changes are made to working 
+    This function is called just before changes are made to working
     memory.  The pre-callback hook function passed two arguments to
-    the corresponding hook function.  However, the "call_data" 
+    the corresponding hook function.  However, the "call_data"
     argument is given as NULL, in this callback.  The wmes_being_added
     and wmes_being_removed can be retrieved from the agent structure
     already being passed.
@@ -268,10 +268,10 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 
   POP_CONTEXT_STACK_CALLBACK
 
-    This function is called just before the context stack is popped.  
+    This function is called just before the context stack is popped.
     The "call_data" argument is a pointer to a "Symbol" which is the
     identifier of the goal about to be removed.  This goal identifier
-    is equal to the aget variable bottom_goal.  If the stack is popped 
+    is equal to the aget variable bottom_goal.  If the stack is popped
     k levels at once, this routine is called k times in bottom-up order.
 
   CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK
@@ -295,30 +295,30 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
   PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK
 
     This function is called just before a production (including chunks
-    and justifications) is excised from the system.  The "call_data" 
-    argument is a pointer to a "production" which is the production 
+    and justifications) is excised from the system.  The "call_data"
+    argument is a pointer to a "production" which is the production
     just about to be removed.
 
   FIRING_CALLBACK
 
-    This function is called after every production firing.  The 
-    "call_data" argument is a pointer to an "instantiation" which 
+    This function is called after every production firing.  The
+    "call_data" argument is a pointer to an "instantiation" which
     is the newly created instantiation.
 
   RETRACTION_CALLBACK
 
-    This function is called before every production retraction.  The 
-    "call_data" argument is a pointer to an "instantiation" which 
+    This function is called before every production retraction.  The
+    "call_data" argument is a pointer to an "instantiation" which
     is the instantiation about to be retracted.
 
   SYSTEM_PARAMETER_CHANGED_CALLBACK
 
    This function is called after any change to one of the agent system
    parameters (e.g., learn on/off).  See soarkernel.h for a list of these
-   system parameters.  The "call_data" argument is an "int" which 
-   indicates which system parameter is being changed.  This function 
-   should examine the new value of the parameter by looking at the 
-   appropriate agent variable.  (For most parameters, this means 
+   system parameters.  The "call_data" argument is an "int" which
+   indicates which system parameter is being changed.  This function
+   should examine the new value of the parameter by looking at the
+   appropriate agent variable.  (For most parameters, this means
    looking at the sysparams[] array.)
 
 -------------------------------------------------------------------- */
@@ -327,7 +327,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 #define CALLBACK_H
 
 //typedef list * soar_callback_array[NUMBER_OF_CALLBACKS];
-typedef char Bool;
+
 typedef const char * soar_callback_id;
 typedef void * soar_callback_data;
 typedef void * soar_call_data;
@@ -335,9 +335,9 @@ typedef int	   soar_callback_event_id;
 
 typedef struct agent_struct agent;
 
-typedef void (*soar_callback_fn)(agent*, 
+typedef void (*soar_callback_fn)(agent*,
 				 soar_callback_event_id,
-				 soar_callback_data, 
+				 soar_callback_data,
 				 soar_call_data);
 typedef void (*soar_callback_free_fn)(soar_callback_data);	// JRV 2008 This is a function pointer used to free the user data but currently nobody uses it
 typedef struct cons_struct cons;
@@ -346,7 +346,7 @@ typedef struct agent_struct agent;
 
 #include <string>
 
-typedef struct callback_struct 
+typedef struct callback_struct
 {
   std::string           id;
   soar_callback_fn      function;
@@ -355,43 +355,43 @@ typedef struct callback_struct
   soar_callback_free_fn free_function;
 } soar_callback;
 
-extern void soar_add_callback (agent* thisAgent, 
-			       SOAR_CALLBACK_TYPE, 
-			       soar_callback_fn, 
+extern void soar_add_callback (agent* thisAgent,
+			       SOAR_CALLBACK_TYPE,
+			       soar_callback_fn,
 				   soar_callback_event_id,
 			       soar_callback_data,
-			       soar_callback_free_fn, 
+			       soar_callback_free_fn,
 			       soar_callback_id);
 extern void soar_callback_data_free_string (soar_callback_data);
-extern const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE, Bool);
-extern SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char *, Bool);
+extern const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE, bool);
+extern SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char *, bool);
 extern void soar_destroy_callback(soar_callback *);
-extern Bool soar_exists_callback (agent*, SOAR_CALLBACK_TYPE);
+extern bool soar_exists_callback (agent*, SOAR_CALLBACK_TYPE);
 extern soar_callback * soar_exists_callback_id (agent* the_agent,
   					      SOAR_CALLBACK_TYPE callback_type,
 						soar_callback_id id);
 extern void soar_init_callbacks (agent*);
-extern void soar_invoke_callbacks (agent* thisAgent, 
-				   SOAR_CALLBACK_TYPE, 
+extern void soar_invoke_callbacks (agent* thisAgent,
+				   SOAR_CALLBACK_TYPE,
 				   soar_call_data);
-extern void soar_invoke_first_callback (agent* thisAgent, 
-					SOAR_CALLBACK_TYPE, 
+extern void soar_invoke_first_callback (agent* thisAgent,
+					SOAR_CALLBACK_TYPE,
 					soar_call_data);
-extern void soar_list_all_callbacks (agent*, 
-				     Bool);
-extern void soar_list_all_callbacks_for_event (agent* thisAgent, 
+extern void soar_list_all_callbacks (agent*,
+				     bool);
+extern void soar_list_all_callbacks_for_event (agent* thisAgent,
 					       SOAR_CALLBACK_TYPE);
-extern void soar_pop_callback (agent* the_agent, 
+extern void soar_pop_callback (agent* the_agent,
 			       SOAR_CALLBACK_TYPE callback_type);
-extern void soar_push_callback (agent* the_agent, 
-				SOAR_CALLBACK_TYPE callback_type, 
-				soar_callback_fn fn, 
+extern void soar_push_callback (agent* the_agent,
+				SOAR_CALLBACK_TYPE callback_type,
+				soar_callback_fn fn,
 				soar_callback_data data,
 				soar_callback_free_fn free_fn);
 extern void soar_remove_all_monitorable_callbacks (agent* thisAgent);
 extern void soar_remove_all_callbacks_for_event (agent* thisAgent, SOAR_CALLBACK_TYPE);
-extern void soar_remove_callback (agent* thisAgent, 
-				  SOAR_CALLBACK_TYPE, 
+extern void soar_remove_callback (agent* thisAgent,
+				  SOAR_CALLBACK_TYPE,
 				  soar_callback_id);
 extern void soar_test_all_monitorable_callbacks(agent*);
 

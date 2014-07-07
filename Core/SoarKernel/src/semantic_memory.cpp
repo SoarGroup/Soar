@@ -630,22 +630,22 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 	smem_wme_list *return_val = new smem_wme_list;
 
 	// augs only exist for identifiers
-	if ( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	if ( id->is_identifier())
 	{
 		if ( tc != NIL )
 		{
-			if ( tc == id->id.tc_num )
+			if ( tc == id->tc_num )
 			{
 				return return_val;
 			}
 			else
 			{
-				id->id.tc_num = tc;
+				id->tc_num = tc;
 			}
 		}
 
 		// impasse wmes
-		for ( w=id->id.impasse_wmes; w!=NIL; w=w->next )
+		for ( w=id->id->impasse_wmes; w!=NIL; w=w->next )
 		{
 			if ( !w->acceptable )
 			{
@@ -654,13 +654,13 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 		}
 
 		// input wmes
-		for ( w=id->id.input_wmes; w!=NIL; w=w->next )
+		for ( w=id->id->input_wmes; w!=NIL; w=w->next )
 		{
 			return_val->push_back( w );
 		}
 
 		// regular wmes
-		for ( s=id->id.slots; s!=NIL; s=s->next )
+		for ( s=id->id->slots; s!=NIL; s=s->next )
 		{
 			for ( w=s->wmes; w!=NIL; w=w->next )
 			{
@@ -691,7 +691,7 @@ inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soa
 		{
 			// and add it to the list of preferences to be removed
 			// when the goal is removed
-			insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
+			insert_at_head_of_dll( state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
 			pref->on_goal_list = true;
 
 			if ( meta )
@@ -699,7 +699,7 @@ inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soa
 				// if this is a meta wme, then it is completely local
 				// to the state and thus we will manually remove it
 				// (via preference removal) when the time comes
-				state->id.smem_info->smem_wmes->push_back( pref );
+				state->id->smem_info->smem_wmes->push_back( pref );
 			}
 		}
 		else
@@ -761,13 +761,13 @@ inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_mod
 	_smem_process_buffered_wme_list( my_agent, state, cue_wmes, retrieval_wmes, false );
 }
 
-inline void smem_buffer_add_wme( soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value )
+inline void smem_buffer_add_wme(agent* my_agent, soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value )
 {
 	my_list.push_back( new soar_module::symbol_triple( id, attr, value ) );
 
-	symbol_add_ref( id );
-	symbol_add_ref( attr );
-	symbol_add_ref( value );
+	symbol_add_ref(my_agent, id );
+	symbol_add_ref(my_agent, attr );
+	symbol_add_ref(my_agent, value );
 }
 
 //////////////////////////////////////////////////////////
@@ -916,7 +916,7 @@ inline smem_hash_id smem_temporal_hash_str( agent *my_agent, char* val, bool add
 	if ( !return_val && add_on_fail )
 	{
 		// type first
-		return_val = smem_temporal_hash_add_type( my_agent, SYM_CONSTANT_SYMBOL_TYPE );
+		return_val = smem_temporal_hash_add_type( my_agent, STR_CONSTANT_SYMBOL_TYPE );
 
 		// then content
 		my_agent->smem_stmts->hash_add_str->bind_int( 1, return_val );
@@ -936,34 +936,34 @@ smem_hash_id smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail 
 	my_agent->smem_timers->hash->start();
 	////////////////////////////////////////////////////////////////////////////
 
-	if ( symbol_is_constant( sym ) )
+	if ( sym->is_constant())
 	{
-		if ( ( !sym->common.smem_hash ) || ( sym->common.smem_valid != my_agent->smem_validation ) )
+		if ( ( !sym->smem_hash ) || ( sym->smem_valid != my_agent->smem_validation ) )
 		{
-			sym->common.smem_hash = NIL;
-			sym->common.smem_valid = my_agent->smem_validation;
+			sym->smem_hash = NIL;
+			sym->smem_valid = my_agent->smem_validation;
 
-			switch ( sym->common.symbol_type )
+			switch ( sym->symbol_type )
 			{
-				case SYM_CONSTANT_SYMBOL_TYPE:
-					return_val = smem_temporal_hash_str( my_agent, sym->sc.name, add_on_fail );
+				case STR_CONSTANT_SYMBOL_TYPE:
+					return_val = smem_temporal_hash_str( my_agent, sym->sc->name, add_on_fail );
 					break;
 
 				case INT_CONSTANT_SYMBOL_TYPE:
-					return_val = smem_temporal_hash_int( my_agent, sym->ic.value, add_on_fail );
+					return_val = smem_temporal_hash_int( my_agent, sym->ic->value, add_on_fail );
 					break;
 
 				case FLOAT_CONSTANT_SYMBOL_TYPE:
-					return_val = smem_temporal_hash_float( my_agent, sym->fc.value, add_on_fail );
+					return_val = smem_temporal_hash_float( my_agent, sym->fc->value, add_on_fail );
 					break;
 			}
 
 			// cache results for later re-use
-			sym->common.smem_hash = return_val;
-			sym->common.smem_valid = my_agent->smem_validation;
+			sym->smem_hash = return_val;
+			sym->smem_valid = my_agent->smem_validation;
 		}
 
-		return_val = sym->common.smem_hash;
+		return_val = sym->smem_hash;
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -1018,9 +1018,9 @@ inline Symbol* smem_reverse_hash( agent* my_agent, byte symbol_type, smem_hash_i
 
 	switch ( symbol_type )
 	{
-		case SYM_CONSTANT_SYMBOL_TYPE:
+		case STR_CONSTANT_SYMBOL_TYPE:
 			smem_reverse_hash_str( my_agent, hash_value, dest );
-			return_val = make_sym_constant( my_agent, const_cast<char *>( dest.c_str() ) );
+			return_val = make_str_constant( my_agent, const_cast<char *>( dest.c_str() ) );
 			break;
 
 		case INT_CONSTANT_SYMBOL_TYPE:
@@ -1260,7 +1260,7 @@ void _smem_lti_from_test( test t, std::set<Symbol *> *valid_ltis )
 	if ( test_is_blank_or_equality_test(t) )
 	{
 		Symbol *referent = referent_of_equality_test(t);
-		if ( ( referent->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( referent->id.smem_lti != NIL ) )
+		if ( ( referent->symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( referent->id->smem_lti != NIL ) )
 		{
 			valid_ltis->insert( referent );
 		}
@@ -1287,7 +1287,7 @@ void _smem_lti_from_rhs_value( rhs_value rv, std::set<Symbol *> *valid_ltis )
 	if ( rhs_value_is_symbol( rv ) )
 	{
 		Symbol *sym = rhs_value_to_symbol( rv );
-		if ( ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( sym->id.smem_lti != NIL ) )
+		if ( ( sym->symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( sym->id->smem_lti != NIL ) )
 		{
 			valid_ltis->insert( sym );
 		}
@@ -1351,12 +1351,12 @@ bool smem_valid_production( condition *lhs_top, action *rhs_top )
 						id = rhs_value_to_symbol( a->id );
 
 						// non-identifiers are ok
-						if ( id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+						if (!id->is_identifier())
 						{
 							good_action = true;
 						}
 						// short-term identifiers are ok
-						else if ( id->id.smem_lti == NIL )
+						else if ( id->id->smem_lti == NIL )
 						{
 							good_action = true;
 						}
@@ -1401,11 +1401,11 @@ bool smem_valid_production( condition *lhs_top, action *rhs_top )
 }
 
 // instance of hash_table_callback_fn2
-Bool smem_count_ltis( agent * /*my_agent*/, void *item, void *userdata )
+bool smem_count_ltis( agent * /*my_agent*/, void *item, void *userdata )
 {
-	Symbol *id = static_cast<symbol_union *>(item);
+	Symbol *id = static_cast<symbol_struct *>(item);
 
-	if ( id->id.smem_lti != NIL )
+	if ( id->id->smem_lti != NIL )
 	{
 		uint64_t* counter = reinterpret_cast<uint64_t*>( userdata );
 		(*counter)++;
@@ -1462,24 +1462,24 @@ inline smem_lti_id smem_lti_add_id( agent *my_agent, char name_letter, uint64_t 
 // makes a non-long-term identifier into a long-term identifier
 inline smem_lti_id smem_lti_soar_add( agent *my_agent, Symbol *id )
 {
-	if ( ( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-		 ( id->id.smem_lti == NIL ) )
+	if ( ( id->is_identifier()) &&
+		 ( id->id->smem_lti == NIL ) )
 	{
 		// try to find existing lti
-		id->id.smem_lti = smem_lti_get_id( my_agent, id->id.name_letter, id->id.name_number );
+		id->id->smem_lti = smem_lti_get_id( my_agent, id->id->name_letter, id->id->name_number );
 
 		// if doesn't exist, add
-		if ( id->id.smem_lti == NIL )
+		if ( id->id->smem_lti == NIL )
 		{
-			id->id.smem_lti = smem_lti_add_id( my_agent, id->id.name_letter, id->id.name_number );
+			id->id->smem_lti = smem_lti_add_id( my_agent, id->id->name_letter, id->id->name_number );
 
-			id->id.smem_time_id = my_agent->epmem_stats->time->get_value();
-			id->id.smem_valid = my_agent->epmem_validation;
+			id->id->smem_time_id = my_agent->epmem_stats->time->get_value();
+			id->id->smem_valid = my_agent->epmem_validation;
 			epmem_schedule_promotion( my_agent, id );
 		}
 	}
 
-	return id->id.smem_lti;
+	return id->id->smem_lti;
 }
 
 // returns a reference to an lti
@@ -1497,17 +1497,17 @@ Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_letter, 
 	}
 	else
 	{
-		symbol_add_ref( return_val );
+		symbol_add_ref(my_agent, return_val );
 
-		if ( ( return_val->id.level == SMEM_LTI_UNKNOWN_LEVEL ) && ( level != SMEM_LTI_UNKNOWN_LEVEL ) )
+		if ( ( return_val->id->level == SMEM_LTI_UNKNOWN_LEVEL ) && ( level != SMEM_LTI_UNKNOWN_LEVEL ) )
 		{
-			return_val->id.level = level;
-			return_val->id.promotion_level = level;
+			return_val->id->level = level;
+			return_val->id->promotion_level = level;
 		}
 	}
 
 	// set lti field irrespective
-	return_val->id.smem_lti = lti;
+	return_val->id->smem_lti = lti;
 
 	return return_val;
 }
@@ -1720,10 +1720,10 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 
 						if ( (*v)->val_lti.val_value->soar_id != NIL )
 						{
-							(*v)->val_lti.val_value->soar_id->id.smem_lti = value_lti;
+							(*v)->val_lti.val_value->soar_id->id->smem_lti = value_lti;
 
-							(*v)->val_lti.val_value->soar_id->id.smem_time_id = my_agent->epmem_stats->time->get_value();
-							(*v)->val_lti.val_value->soar_id->id.smem_valid = my_agent->epmem_validation;
+							(*v)->val_lti.val_value->soar_id->id->smem_time_id = my_agent->epmem_stats->time->get_value();
+							(*v)->val_lti.val_value->soar_id->id->smem_valid = my_agent->epmem_validation;
 							epmem_schedule_promotion( my_agent, (*v)->val_lti.val_value->soar_id );
 						}
 					}
@@ -1946,7 +1946,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 
 			// create value, per type
 			v = new smem_chunk_value;
-			if ( symbol_is_constant( (*w)->value ) )
+			if ((*w)->value->is_constant())
 			{
 				v->val_const.val_type = value_const_t;
 				v->val_const.val_value = (*w)->value;
@@ -1962,9 +1962,9 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 				if ( !(*c) )
 				{
 					(*c) = new smem_chunk;
-					(*c)->lti_id = (*w)->value->id.smem_lti;
-					(*c)->lti_letter = (*w)->value->id.name_letter;
-					(*c)->lti_number = (*w)->value->id.name_number;
+					(*c)->lti_id = (*w)->value->id->smem_lti;
+					(*c)->lti_letter = (*w)->value->id->name_letter;
+					(*c)->lti_number = (*w)->value->id->name_number;
 					(*c)->slots = NULL;
 					(*c)->soar_id = (*w)->value;
 
@@ -1982,7 +1982,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 			s->push_back( v );
 		}
 
-		smem_store_chunk( my_agent, id->id.smem_lti, &( slots ), true, id );
+		smem_store_chunk( my_agent, id->id->smem_lti, &( slots ), true, id );
 
 		// clean up
 		{
@@ -2028,7 +2028,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 	////////////////////////////////////////////////////////////////////////////
 
 	// get the ^result header for this state
-	Symbol *result_header = state->id.smem_result_header;
+	Symbol *result_header = state->id->smem_result_header;
 
 	// get identifier if not known
 	bool lti_created_here = false;
@@ -2039,7 +2039,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		q->bind_int( 1, lti_id );
 		q->execute();
 
-		lti = smem_lti_soar_make( my_agent, lti_id, static_cast<char>( q->column_int( 0 ) ), static_cast<uint64_t>( q->column_int( 1 ) ), result_header->id.level );
+		lti = smem_lti_soar_make( my_agent, lti_id, static_cast<char>( q->column_int( 0 ) ), static_cast<uint64_t>( q->column_int( 1 ) ), result_header->id->level );
 
 		q->reinitialize();
 
@@ -2053,7 +2053,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 	}
 
 	// point retrieved to lti
-	smem_buffer_add_wme( meta_wmes, result_header, my_agent->smem_sym_retrieved, lti );
+	smem_buffer_add_wme(my_agent,meta_wmes, result_header, my_agent->smem_sym_retrieved, lti );
 	if ( lti_created_here )
 	{
 		// if the identifier was created above we need to
@@ -2066,9 +2066,9 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 	// if no children, then retrieve children
 	// merge may override this behavior
 	if ( ( my_agent->smem_params->merge->get_value() == smem_param_container::merge_add ) ||
-		 ( ( lti->id.impasse_wmes == NIL ) &&
-		 ( lti->id.input_wmes == NIL ) &&
-		 ( lti->id.slots == NIL ) ) )
+		 ( ( lti->id->impasse_wmes == NIL ) &&
+		 ( lti->id->input_wmes == NIL ) &&
+		 ( lti->id->slots == NIL ) ) )
 	{
 		soar_module::sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
 		Symbol *attr_sym;
@@ -2084,7 +2084,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 			// identifier vs. constant
 			if ( expand_q->column_int( 6 ) != SMEM_AUGMENTATIONS_NULL )
 			{
-				value_sym = smem_lti_soar_make( my_agent, static_cast<smem_lti_id>( expand_q->column_int( 6 ) ), static_cast<char>( expand_q->column_int( 4 ) ), static_cast<uint64_t>( expand_q->column_int( 5 ) ), lti->id.level );
+				value_sym = smem_lti_soar_make( my_agent, static_cast<smem_lti_id>( expand_q->column_int( 6 ) ), static_cast<char>( expand_q->column_int( 4 ) ), static_cast<uint64_t>( expand_q->column_int( 5 ) ), lti->id->level );
 			}
 			else
 			{
@@ -2092,7 +2092,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 			}
 
 			// add wme
-			smem_buffer_add_wme( retrieval_wmes, lti, attr_sym, value_sym );
+			smem_buffer_add_wme(my_agent,retrieval_wmes, lti, attr_sym, value_sym );
 
 			// deal with ref counts - attribute/values are always created in this function
 			// (thus an extra ref count is set before adding a wme)
@@ -2161,7 +2161,7 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
 		attr_hash = smem_temporal_hash( my_agent, w->attr, false );
 		if ( attr_hash != NIL )
 		{
-			if ( symbol_is_constant( w->value ) && mathQuery == NIL)
+			if ( w->value->is_constant() && mathQuery == NIL)
 			{
 				value_lti = NIL;
 				value_hash = smem_temporal_hash( my_agent, w->value, false );
@@ -2188,9 +2188,9 @@ inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_p
 			else
 			{
 				//If we get here on a math query, the value may not be an identifier
-				if(w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+				if(w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
 				{
-				value_lti = w->value->id.smem_lti;
+				value_lti = w->value->id->smem_lti;
 				}
 				else
 				{
@@ -2286,13 +2286,13 @@ std::pair<bool,bool>* processMathQuery( agent* my_agent, Symbol* mathQuery, smem
 				{
 					if((*cueType)->attr == my_agent->smem_sym_math_query_less)
 					{
-						if((*cueType)->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						if((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 						{
-							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->fc.value));
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->fc->value));
 						}
-						else if((*cueType)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						else if((*cueType)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 						{
-							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->ic.value));
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->ic->value));
 						}
 						else
 						{
@@ -2304,13 +2304,13 @@ std::pair<bool,bool>* processMathQuery( agent* my_agent, Symbol* mathQuery, smem
 					}
 					else if((*cueType)->attr == my_agent->smem_sym_math_query_greater)
 					{
-						if((*cueType)->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						if((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 						{
-							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->fc.value));
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->fc->value));
 						}
-						else if((*cueType)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						else if((*cueType)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 						{
-							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->ic.value));
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->ic->value));
 						}
 						else
 						{
@@ -2322,13 +2322,13 @@ std::pair<bool,bool>* processMathQuery( agent* my_agent, Symbol* mathQuery, smem
 					}
 					else if((*cueType)->attr == my_agent->smem_sym_math_query_less_or_equal)
 					{
-						if((*cueType)->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						if((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 						{
-							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->fc.value));
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->fc->value));
 						}
-						else if((*cueType)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						else if((*cueType)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 						{
-							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->ic.value));
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->ic->value));
 						}
 						else
 						{
@@ -2340,13 +2340,13 @@ std::pair<bool,bool>* processMathQuery( agent* my_agent, Symbol* mathQuery, smem
 					}
 					else if((*cueType)->attr == my_agent->smem_sym_math_query_greater_or_equal)
 					{
-						if((*cueType)->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						if((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 						{
-							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->fc.value));
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->fc->value));
 						}
-						else if((*cueType)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						else if((*cueType)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 						{
-							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->ic.value));
+							_smem_process_cue_wme(my_agent, (*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->ic->value));
 						}
 						else
 						{
@@ -2715,10 +2715,10 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 		if ( king_id != NIL )
 		{
 			// success!
-			smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, query );
+			smem_buffer_add_wme(my_agent,meta_wmes, state->id->smem_result_header, my_agent->smem_sym_success, query );
 			if ( negquery )
 			{
-				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, negquery );
+				smem_buffer_add_wme(my_agent,meta_wmes, state->id->smem_result_header, my_agent->smem_sym_success, negquery );
 			}
 
 			////////////////////////////////////////////////////////////////////////////
@@ -2729,10 +2729,10 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 		}
 		else
 		{
-			smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, query );
+			smem_buffer_add_wme(my_agent,meta_wmes, state->id->smem_result_header, my_agent->smem_sym_failure, query );
 			if ( negquery )
 			{
-				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, negquery );
+				smem_buffer_add_wme(my_agent,meta_wmes, state->id->smem_result_header, my_agent->smem_sym_failure, negquery );
 			}
 
 			////////////////////////////////////////////////////////////////////////////
@@ -2761,10 +2761,10 @@ void smem_clear_result( agent *my_agent, Symbol *state )
 {
 	preference *pref;
 
-	while ( !state->id.smem_info->smem_wmes->empty() )
+	while ( !state->id->smem_info->smem_wmes->empty() )
 	{
-		pref = state->id.smem_info->smem_wmes->back();
-		state->id.smem_info->smem_wmes->pop_back();
+		pref = state->id->smem_info->smem_wmes->back();
+		state->id->smem_info->smem_wmes->pop_back();
 
 		if ( pref->in_tm )
 		{
@@ -2783,7 +2783,7 @@ void smem_reset( agent *my_agent, Symbol *state )
 
 	while( state )
 	{
-		smem_data *data = state->id.smem_info;
+		smem_data *data = state->id->smem_info;
 
 		data->last_cmd_time[0] = 0;
 		data->last_cmd_time[1] = 0;
@@ -2794,7 +2794,7 @@ void smem_reset( agent *my_agent, Symbol *state )
 		// so just clear out result stack
 		data->smem_wmes->clear();
 
-		state = state->id.lower_goal;
+		state = state->id->lower_goal;
 	}
 }
 
@@ -3200,7 +3200,7 @@ inline Symbol *smem_parse_constant_attr( agent *my_agent, struct lexeme_info *le
 
 	if ( (*lexeme).type == SYM_CONSTANT_LEXEME )
 	{
-		return_val = make_sym_constant( my_agent, static_cast<const char *>( (*lexeme).string ) );
+		return_val = make_str_constant( my_agent, static_cast<const char *>( (*lexeme).string ) );
 	}
 	else if ( (*lexeme).type == INT_CONSTANT_LEXEME )
 	{
@@ -3293,7 +3293,7 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 					{
 						// create a new chunk
 						temp_chunk = new smem_chunk;
-						temp_chunk->lti_letter = ( ( chunk_attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( static_cast<char>( static_cast<int>( chunk_attr->sc.name[0] ) ) ):( 'X' ) );
+						temp_chunk->lti_letter = ( ( chunk_attr->symbol_type == STR_CONSTANT_SYMBOL_TYPE )?( static_cast<char>( static_cast<int>( chunk_attr->sc->name[0] ) ) ):( 'X' ) );
 						temp_chunk->lti_number = ( intermediate_counter++ );
 						temp_chunk->lti_id = NIL;
 						temp_chunk->slots = new smem_slot_map;
@@ -3345,7 +3345,7 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 							{
 								chunk_value = new smem_chunk_value;
 								chunk_value->val_const.val_type = value_const_t;
-								chunk_value->val_const.val_value = make_sym_constant( my_agent, static_cast<const char *>( my_agent->lexeme.string ) );
+								chunk_value->val_const.val_value = make_str_constant( my_agent, static_cast<const char *>( my_agent->lexeme.string ) );
 							}
 							else if ( my_agent->lexeme.type == INT_CONSTANT_LEXEME )
 							{
@@ -3591,10 +3591,10 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **e
 								if ( id_parent != NIL )
 								{
 									// if so we make it an lti manually
-									id_parent->id.smem_lti = (*c_new)->lti_id;
+									id_parent->id->smem_lti = (*c_new)->lti_id;
 
-									id_parent->id.smem_time_id = my_agent->epmem_stats->time->get_value();
-									id_parent->id.smem_valid = my_agent->epmem_validation;
+									id_parent->id->smem_time_id = my_agent->epmem_stats->time->get_value();
+									id_parent->id->smem_valid = my_agent->epmem_validation;
 									epmem_schedule_promotion( my_agent, id_parent );
 								}
 							}
@@ -3714,7 +3714,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			tc = get_new_tc_number( my_agent );
 
 			// initialize BFS at command
-			syms.push( state->id.smem_cmd_header );
+			syms.push( state->id->smem_cmd_header );
 			levels.push( 0 );
 
 			while ( !syms.empty() )
@@ -3736,13 +3736,13 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						{
 							wme_count++;
 
-							if ( (*w_p)->timetag > state->id.smem_info->last_cmd_time[ time_slot ] )
+							if ( (*w_p)->timetag > state->id->smem_info->last_cmd_time[ time_slot ] )
 							{
 								new_cue = true;
-								state->id.smem_info->last_cmd_time[ time_slot ] = (*w_p)->timetag;
+								state->id->smem_info->last_cmd_time[ time_slot ] = (*w_p)->timetag;
 							}
 
-							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+							if ( ( (*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 								 ( parent_level == 0 ) &&
 								 ( ( (*w_p)->attr == my_agent->smem_sym_query ) || ( (*w_p)->attr == my_agent->smem_sym_store ) ) )
 							{
@@ -3765,10 +3765,10 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 
 			// see if any WMEs were removed
-			if ( state->id.smem_info->last_cmd_count[ time_slot ] != wme_count )
+			if ( state->id->smem_info->last_cmd_count[ time_slot ] != wme_count )
 			{
 				new_cue = true;
-				state->id.smem_info->last_cmd_count[ time_slot ] = wme_count;
+				state->id->smem_info->last_cmd_count[ time_slot ] = wme_count;
 			}
 
 
@@ -3808,7 +3808,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					// collect information about known commands
 					if ( (*w_p)->attr == my_agent->smem_sym_retrieve )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( path == blank_slate ) )
 						{
 							retrieve = (*w_p)->value;
@@ -3821,7 +3821,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_query )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
 							 ( query == NIL ) )
 
@@ -3836,7 +3836,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_negquery )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
 							 ( negquery == NIL ) )
 
@@ -3851,9 +3851,9 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_prohibit )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
-							 ( (*w_p)->value->id.smem_lti != NIL ) )
+							 ( (*w_p)->value->id->smem_lti != NIL ) )
 						{
 							prohibit.push_back( (*w_p)->value );
 							path = cmd_query;
@@ -3865,7 +3865,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_math_query )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 						   ( ( path == blank_slate) || ( path == cmd_query ) ) &&
 						   ( math == NIL ) )
 						{
@@ -3879,7 +3879,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					}
 					else if ( (*w_p)->attr == my_agent->smem_sym_store )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						if ( ( (*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == blank_slate ) || ( path == cmd_store ) ) )
 						{
 							store.push_back( (*w_p)->value );
@@ -3922,18 +3922,18 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				// retrieve
 				if ( path == cmd_retrieve )
 				{
-					if ( retrieve->id.smem_lti == NIL )
+					if ( retrieve->id->smem_lti == NIL )
 					{
 						// retrieve is not pointing to an lti!
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, retrieve );
+						smem_buffer_add_wme(my_agent,meta_wmes, state->id->smem_result_header, my_agent->smem_sym_failure, retrieve );
 					}
 					else
 					{
 						// status: success
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
+						smem_buffer_add_wme(my_agent,meta_wmes, state->id->smem_result_header, my_agent->smem_sym_success, retrieve );
 
 						// install memory directly onto the retrieve identifier
-						smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true, meta_wmes, retrieval_wmes );
+						smem_install_memory( my_agent, state, retrieve->id->smem_lti, retrieve, true, meta_wmes, retrieval_wmes );
 
 						// add one to the expansions stat
 						my_agent->smem_stats->expansions->set_value( my_agent->smem_stats->expansions->get_value() + 1 );
@@ -3947,7 +3947,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 					for ( sym_p=prohibit.begin(); sym_p!=prohibit.end(); sym_p++ )
 					{
-						prohibit_lti.insert( (*sym_p)->id.smem_lti );
+						prohibit_lti.insert( (*sym_p)->id->smem_lti );
 					}
 
 					smem_process_query( my_agent, state, query, negquery, math, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
@@ -3974,7 +3974,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						smem_soar_store( my_agent, (*sym_p), ( ( mirroring_on )?( store_recursive ):( store_level ) ) );
 
 						// status: success
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
+						smem_buffer_add_wme(my_agent,meta_wmes, state->id->smem_result_header, my_agent->smem_sym_success, (*sym_p) );
 
 						// add one to the store stat
 						my_agent->smem_stats->stores->set_value( my_agent->smem_stats->stores->get_value() + 1 );
@@ -3993,7 +3993,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 			else
 			{
-				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
+				smem_buffer_add_wme(my_agent,meta_wmes, state->id->smem_result_header, my_agent->smem_sym_bad_cmd, state->id->smem_cmd_header );
 			}
 
 			if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
@@ -4043,7 +4043,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		// free space from aug list
 		delete cmds;
 
-		state = state->id.higher_goal;
+		state = state->id->higher_goal;
 	}
 
 	if ( store_only && mirroring_on && ( !my_agent->smem_changed_ids->empty() ) )
@@ -4061,7 +4061,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		for ( smem_pooled_symbol_set::iterator it=my_agent->smem_changed_ids->begin(); it!=my_agent->smem_changed_ids->end(); it++ )
 		{
 			// require that the lti has at least one augmentation
-			if ( (*it)->id.slots )
+			if ( (*it)->id->slots )
 			{
 				smem_soar_store( my_agent, (*it), store_recursive );
 
@@ -4244,7 +4244,7 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 					{
 						switch ( q->column_int( 3 ) )
 						{
-							case SYM_CONSTANT_SYMBOL_TYPE:
+							case STR_CONSTANT_SYMBOL_TYPE:
 								smem_reverse_hash_str( my_agent, q->column_int(4), temp_str );
 								break;
 
@@ -4270,7 +4270,7 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 					{
 						switch ( q->column_int(1) )
 						{
-							case SYM_CONSTANT_SYMBOL_TYPE:
+							case STR_CONSTANT_SYMBOL_TYPE:
 								smem_reverse_hash_str( my_agent, q->column_int(2), temp_str );
 								break;
 
@@ -4355,7 +4355,7 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 					{
 						switch ( q->column_int(1) )
 						{
-							case SYM_CONSTANT_SYMBOL_TYPE:
+							case STR_CONSTANT_SYMBOL_TYPE:
 								smem_reverse_hash_str( my_agent, q->column_int(2), temp_str );
 								break;
 
@@ -4484,7 +4484,7 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 					// get attribute
 					switch ( expand_q->column_int(0) )
 					{
-						case SYM_CONSTANT_SYMBOL_TYPE:
+						case STR_CONSTANT_SYMBOL_TYPE:
 							smem_reverse_hash_str( my_agent, expand_q->column_int(1), temp_str );
 							break;
 
@@ -4549,7 +4549,7 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 					// get value
 					switch ( expand_q->column_int(2) )
 					{
-						case SYM_CONSTANT_SYMBOL_TYPE:
+						case STR_CONSTANT_SYMBOL_TYPE:
 							smem_reverse_hash_str( my_agent, expand_q->column_int(3), temp_str );
 							break;
 
@@ -4583,7 +4583,7 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 					// get attribute
 					switch ( expand_q->column_int(0) )
 					{
-						case SYM_CONSTANT_SYMBOL_TYPE:
+						case STR_CONSTANT_SYMBOL_TYPE:
 							smem_reverse_hash_str( my_agent, expand_q->column_int(1), temp_str );
 							break;
 
@@ -4689,7 +4689,7 @@ inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti
 		// get attribute
 		switch ( expand_q->column_int(0) )
 		{
-			case SYM_CONSTANT_SYMBOL_TYPE:
+			case STR_CONSTANT_SYMBOL_TYPE:
 				smem_reverse_hash_str( my_agent, expand_q->column_int(1), temp_str );
 				break;
 
@@ -4729,7 +4729,7 @@ inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti
 		{
 			switch ( expand_q->column_int(2) )
 			{
-				case SYM_CONSTANT_SYMBOL_TYPE:
+				case STR_CONSTANT_SYMBOL_TYPE:
 					smem_reverse_hash_str( my_agent, expand_q->column_int(3), temp_str2 );
 					break;
 

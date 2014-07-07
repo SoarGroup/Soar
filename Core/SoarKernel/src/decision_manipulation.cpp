@@ -74,17 +74,17 @@ preference *select_force( agent *my_agent, preference *candidates, bool reinit )
 		// go through the list till we find a match or done
 		while ( cand && !return_val )
 		{
-			if ( cand->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+			if ( cand->value->symbol_type == IDENTIFIER_SYMBOL_TYPE )
 			{
 				// clear comparison string
 				temp = "";
 
 				// get first letter of comparison string
-				temp += cand->value->id.name_letter;
+				temp += cand->value->id->name_letter;
 
 				// get number of comparison string
 				std::string temp2;
-				to_string( cand->value->id.name_number, temp2 );
+				to_string( cand->value->id->name_number, temp2 );
 				temp += temp2;
 
 				if ( !my_agent->select->select_operator.compare( temp ) )

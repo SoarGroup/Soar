@@ -35,13 +35,8 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 #include "debug.h"
-
+#include "output_manager.h"
 #include <stdarg.h>
-
-/* if enabled will forward certain trace/debug output to stderr instead of
-   print callbacks or xml */
-
-// #define DEBUG_USE_STDERR_TRACE 1
 
 using namespace soar_TraceNames;
 
@@ -83,6 +78,12 @@ void tell_printer_that_output_column_has_been_reset (agent* thisAgent) {
 void print_string (agent* thisAgent, const char *s) {
 	const char *ch;
 
+/* MToDo | This shouldn't really depend on debug_utilities anymore.  It should
+ *         always go through the OM */
+
+#ifndef SOAR_DEBUG_UTILITIES
+  Output_Manager::Get_OM().print_trace_agent(thisAgent, s);
+#else
 	for (ch=s; *ch!=0; ch++) {
 		if (*ch=='\n')
 			thisAgent->printer_output_column = 1;
@@ -90,9 +91,6 @@ void print_string (agent* thisAgent, const char *s) {
 			thisAgent->printer_output_column++;
 	}
 
-#ifdef DEBUG_USE_STDERR_TRACE
-		fputs(s, stderr);
-#else
 		soar_invoke_callbacks(thisAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(s)));
 #endif
 }
@@ -195,11 +193,10 @@ void print_spaces (agent* thisAgent, int n) {
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-char *string_to_escaped_string (agent* thisAgent, char *s,
-								char first_and_last_char, char *dest) {
+char *string_to_escaped_string (char *s, char first_and_last_char, char *dest) {
   char *ch;
 
-  if (!dest) dest = thisAgent->printed_output_string;
+  if (!dest) dest = Output_Manager::Get_OM().get_printed_output_string();
   ch = dest;
   *ch++ = first_and_last_char;
   while (*s) {
@@ -214,7 +211,7 @@ char *string_to_escaped_string (agent* thisAgent, char *s,
 
 char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
 {
-  switch(sym->common.symbol_type) {
+  switch(sym->symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
 	  return kTypeVariable ;
   case IDENTIFIER_SYMBOL_TYPE:
@@ -223,7 +220,7 @@ char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
 	  return kTypeInt ;
   case FLOAT_CONSTANT_SYMBOL_TYPE:
 	  return kTypeDouble ;
-  case SYM_CONSTANT_SYMBOL_TYPE:
+  case STR_CONSTANT_SYMBOL_TYPE:
 	  return kTypeString ;
   default:
 	  return 0 ;
@@ -231,15 +228,15 @@ char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
 }
 
 char *symbol_to_string (agent* thisAgent, Symbol *sym,
-						Bool rereadable, char *dest, size_t dest_size) {
-  Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-  Bool is_rereadable;
-  Bool has_angle_bracket;
+						bool rereadable, char *dest, size_t dest_size) {
+  bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+  bool is_rereadable;
+  bool has_angle_bracket;
 
-  switch(sym->common.symbol_type) {
+  switch(sym->symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
-    if (!dest) return sym->var.name;
-    strncpy (dest, sym->var.name, dest_size);
+    if (!dest) return sym->var->name;
+    strncpy (dest, sym->var->name, dest_size);
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 
@@ -248,13 +245,13 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-	if (sym->id.smem_lti == NIL) {
+	if (sym->id->smem_lti == NIL) {
 		// NOT an lti (long term identifier), print like we always have
-	    SNPRINTF (dest, dest_size, "%c%llu", sym->id.name_letter, static_cast<long long unsigned>(sym->id.name_number));
+	    SNPRINTF (dest, dest_size, "%c%llu", sym->id->name_letter, static_cast<long long unsigned>(sym->id->name_number));
 	}
 	else {
 		// IS an lti (long term identifier), prepend an @ symbol
-	    SNPRINTF (dest, dest_size, "@%c%llu", sym->id.name_letter, static_cast<long long unsigned>(sym->id.name_number));
+	    SNPRINTF (dest, dest_size, "@%c%llu", sym->id->name_letter, static_cast<long long unsigned>(sym->id->name_number));
 	}
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
@@ -264,7 +261,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->ic.value));
+    SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->ic->value));
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 
@@ -273,7 +270,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    SNPRINTF (dest, dest_size, "%#.16g", sym->fc.value);
+    SNPRINTF (dest, dest_size, "%#.16g", sym->fc->value);
 	dest[dest_size - 1] = 0; /* ensure null termination */
     { /* --- strip off trailing zeros --- */
       char *start_of_exponent;
@@ -289,14 +286,14 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
     }
     return dest;
 
-  case SYM_CONSTANT_SYMBOL_TYPE:
+  case STR_CONSTANT_SYMBOL_TYPE:
     if (!rereadable) {
-      if (!dest) return sym->sc.name;
-      strncpy (dest, sym->sc.name, dest_size);
+      if (!dest) return sym->sc->name;
+      strncpy (dest, sym->sc->name, dest_size);
       return dest;
     }
-    determine_possible_symbol_types_for_string (sym->sc.name,
-                                                strlen (sym->sc.name),
+    determine_possible_symbol_types_for_string (sym->sc->name,
+                                                strlen (sym->sc->name),
                                                 &possible_id,
                                                 &possible_var,
                                                 &possible_sc,
@@ -304,18 +301,18 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
                                                 &possible_fc,
                                                 &is_rereadable);
 
-    has_angle_bracket = sym->sc.name[0] == '<' ||
-                        sym->sc.name[strlen(sym->sc.name)-1] == '>';
+    has_angle_bracket = sym->sc->name[0] == '<' ||
+                        sym->sc->name[strlen(sym->sc->name)-1] == '>';
 
     if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
         (!is_rereadable) ||
         has_angle_bracket) {
       /* BUGBUG if in context where id's could occur, should check
          possible_id flag here also */
-      return string_to_escaped_string (thisAgent, sym->sc.name, '|', dest);
+      return string_to_escaped_string (sym->sc->name, '|', dest);
     }
-    if (!dest) return sym->sc.name;
-    strncpy (dest, sym->sc.name, dest_size);
+    if (!dest) return sym->sc->name;
+    strncpy (dest, sym->sc->name, dest_size);
     return dest;
 
   default:
@@ -398,7 +395,7 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
     for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
-      symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), TRUE, ch, dest_size - (ch - dest));
+      symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), TRUE, ch, dest_size - (ch - dest));
 	  while (*ch) ch++;
       *(ch++) = ' ';
     }
@@ -459,10 +456,10 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
   ch[dest_size - 1] = 0;
   while (*ch) ch++;
 
-  if (!strcmp(rf->name->sc.name,"+")) {
+  if (!strcmp(rf->name->sc->name,"+")) {
 	strncpy (ch, "+", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0;
-  } else if (!strcmp(rf->name->sc.name,"-")) {
+  } else if (!strcmp(rf->name->sc->name,"-")) {
     strncpy (ch, "-", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0;
   } else {
@@ -496,7 +493,7 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
    conditions for the same id into one line.
 ------------------------------------------------------------------ */
 
-Bool pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
+bool pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
   condition *cond;
   cond = static_cast<condition_struct *>(dc->item);
   if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) return FALSE;
@@ -510,12 +507,12 @@ Bool pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
 */
 #define PRINT_CONDITION_LIST_TEMP_SIZE 10000
 void print_condition_list (agent* thisAgent, condition *conds,
-						   int indent, Bool internal) {
+						   int indent, bool internal) {
    dl_list *conds_not_yet_printed, *tail_of_conds_not_yet_printed;
    dl_list *conds_for_this_id;
    dl_cons *dc;
    condition *c;
-   Bool removed_goal_test, removed_impasse_test;
+   bool removed_goal_test, removed_impasse_test;
    test id_test;
 
    if (!conds) return;
@@ -542,7 +539,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
    tail_of_conds_not_yet_printed->next = NIL;
 
    /* --- main loop: find all conds for first id, print them together --- */
-   Bool did_one_line_already = FALSE;
+   bool did_one_line_already = FALSE;
    while (conds_not_yet_printed)
    {
       if (did_one_line_already)
@@ -676,7 +673,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
    Note:  the actions MUST NOT contain any reteloc's.
 ------------------------------------------------------------------ */
 
-Bool pick_actions_with_matching_id (dl_cons *dc, agent* thisAgent) {
+bool pick_actions_with_matching_id (dl_cons *dc, agent* thisAgent) {
   action *a;
   a = static_cast<action_struct *>(dc->item);
   if (a->type!=MAKE_ACTION) return FALSE;
@@ -685,8 +682,8 @@ Bool pick_actions_with_matching_id (dl_cons *dc, agent* thisAgent) {
 
 #define PRINT_ACTION_LIST_TEMP_SIZE 10000
 void print_action_list (agent* thisAgent, action *actions,
-						int indent, Bool internal) {
-  Bool did_one_line_already;
+						int indent, bool internal) {
+  bool did_one_line_already;
   dl_list *actions_not_yet_printed, *tail_of_actions_not_yet_printed;
   dl_list *actions_for_this_id;
   dl_cons *dc;
@@ -793,7 +790,7 @@ void print_action_list (agent* thisAgent, action *actions,
    indicates that the LHS and RHS should be printed in internal format.
 ------------------------------------------------------------------ */
 
-void print_production (agent* thisAgent, production *p, Bool internal) {
+void print_production (agent* thisAgent, production *p, bool internal) {
   condition *top, *bottom;
   action *rhs;
 
@@ -811,7 +808,7 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
   if (p->documentation)
   {
     char temp[MAX_LEXEME_LENGTH*2+10];
-    string_to_escaped_string (thisAgent, p->documentation, '"', temp);
+    string_to_escaped_string (p->documentation, '"', temp);
     print (thisAgent, "    %s\n", temp);
 	xml_att_val(thisAgent, kProductionDocumentation, temp);
   }
@@ -979,7 +976,7 @@ void print_preference (agent* thisAgent, preference *pref) {
 
 /* kjh(CUSP-B2) begin */
 
-extern "C" Bool passes_wme_filtering(agent* thisAgent, wme *w, Bool isAdd);
+extern "C" bool passes_wme_filtering(agent* thisAgent, wme *w, bool isAdd);
 void
 filtered_print_wme_add(agent* thisAgent, wme *w) {
   if (passes_wme_filtering(thisAgent, w,TRUE))
@@ -1202,9 +1199,9 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
 
 ===========================
 */
-Bool wme_filter_component_match(Symbol * filterComponent, Symbol * wmeComponent) {
-  if ((filterComponent->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
-      (!strcmp(filterComponent->sc.name,"*")))
+bool wme_filter_component_match(Symbol * filterComponent, Symbol * wmeComponent) {
+  if ((filterComponent->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
+      (!strcmp(filterComponent->sc->name,"*")))
     return TRUE;
 
   return(filterComponent == wmeComponent);
@@ -1216,7 +1213,7 @@ Bool wme_filter_component_match(Symbol * filterComponent, Symbol * wmeComponent)
 
 ===========================
 */
-Bool passes_wme_filtering(agent* thisAgent, wme * w, Bool isAdd) {
+bool passes_wme_filtering(agent* thisAgent, wme * w, bool isAdd) {
   cons *c;
   wme_filter *wf;
 

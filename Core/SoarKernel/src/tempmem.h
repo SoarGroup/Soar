@@ -34,8 +34,8 @@
 //{
 #endif
 
-typedef char Bool;
-typedef union symbol_union Symbol;
+
+typedef struct symbol_struct Symbol;
 typedef struct slot_struct slot;
 typedef struct agent_struct agent;
 

@@ -65,14 +65,14 @@ Output_Manager::Output_Manager()
 
   print_enabled = true;
   dprint_enabled = true;
-  callback_mode = true;
-  db_mode = false;
-  stdout_mode = false;
+  callback_mode = OM_Init_callback_mode;
+  db_mode = OM_Init_db_dbg_mode;
+  stdout_mode = OM_Init_stdout_mode;
 
-  db_dbg_mode = false;
-  callback_dbg_mode = true;
-  stdout_dbg_mode = true;
-  file_dbg_mode = false;
+  db_dbg_mode = OM_Init_db_dbg_mode;
+  callback_dbg_mode = OM_Init_callback_dbg_mode;
+  stdout_dbg_mode = OM_Init_stdout_dbg_mode;
+  file_dbg_mode = OM_Init_file_dbg_mode;
 
   /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best
    *    place to put for now. -- */
@@ -264,31 +264,32 @@ void Output_Manager::fill_mode_info()
   mode_info[TM_WMA].prefix =                    new std::string("WMA   ");
 
   mode_info[DT_DEBUG].prefix =                      new std::string("Debug ");
-  mode_info[DT_ID_LEAKING].prefix =                 new std::string("CndTst");
-  mode_info[DT_LHS_VARIABLIZATION].prefix =         new std::string("VarLHS");
-  mode_info[DT_UNIQUE_VARIABLIZATION].prefix =      new std::string("VarUNQ");
-  mode_info[DT_ADD_CONSTRAINTS_ORIG_TESTS].prefix = new std::string("AddOrg");
-  mode_info[DT_RHS_VARIABLIZATION].prefix =         new std::string("VarRHS");
-  mode_info[DT_PRINT_INSTANTIATIONS].prefix =       new std::string("PntIns");
-  mode_info[DT_ADD_TEST_TO_TEST].prefix =           new std::string("AddTst");
+  mode_info[DT_ID_LEAKING].prefix =                 new std::string("ID Leak ");
+  mode_info[DT_LHS_VARIABLIZATION].prefix =         new std::string("VrblzLHS");
+  mode_info[DT_ADD_CONSTRAINTS_ORIG_TESTS].prefix = new std::string("Add Orig");
+  mode_info[DT_RHS_VARIABLIZATION].prefix =         new std::string("VrblzRHS");
+  mode_info[DT_PRINT_INSTANTIATIONS].prefix =       new std::string("PrntInst");
+  mode_info[DT_ADD_TEST_TO_TEST].prefix =           new std::string("Add Test");
   mode_info[DT_DEALLOCATES].prefix =                new std::string("Memory");
   mode_info[DT_DEALLOCATE_SYMBOLS].prefix =         new std::string("Memory");
   mode_info[DT_REFCOUNT_ADDS].prefix =              new std::string("RefCnt");
   mode_info[DT_REFCOUNT_REMS].prefix =              new std::string("RefCnt");
-  mode_info[DT_VARIABLIZATION_MANAGER].prefix =     new std::string("VarMgr");
+  mode_info[DT_VARIABLIZATION_MANAGER].prefix =     new std::string("VrblzMgr");
   mode_info[DT_PARSER].prefix =                     new std::string("Parser");
-  mode_info[DT_FUNC_PRODUCTIONS].prefix =           new std::string("FnCall");
-  mode_info[DT_FUNC_PRODUCTIONS].prefix =           new std::string("FnCall");
-  mode_info[DT_VARIABLIZATION_REV].prefix =         new std::string("VarRev");
-  mode_info[DT_REORDERER].prefix =                  new std::string("ReOrdr");
-  mode_info[DT_BACKTRACE].prefix =                  new std::string("BackTr");
-  mode_info[DT_SAVEDVARS].prefix =                  new std::string("SavedV");
+  mode_info[DT_FUNC_PRODUCTIONS].prefix =           new std::string("FuncCall");
+  mode_info[DT_OVAR_MAPPINGS].prefix =              new std::string("OVar Map");
+  mode_info[DT_REORDERER].prefix =                  new std::string("Reorder ");
+  mode_info[DT_BACKTRACE].prefix =                  new std::string("BackTrce");
+  mode_info[DT_SAVEDVARS].prefix =                  new std::string("SavedVar");
   mode_info[DT_GDS].prefix =                        new std::string("GDS   ");
-  mode_info[DT_RL_VARIABLIZATION].prefix =          new std::string("VarRL ");
-  mode_info[DT_NCC_VARIABLIZATION].prefix =         new std::string("VarNCC");
+  mode_info[DT_RL_VARIABLIZATION].prefix =          new std::string("Vrblz RL");
+  mode_info[DT_NCC_VARIABLIZATION].prefix =         new std::string("VrblzNCC");
   mode_info[DT_IDENTITY_PROP].prefix =              new std::string("IDProp");
-  mode_info[DT_SOAR_INSTANCE].prefix =              new std::string("Soar_I");
+  mode_info[DT_SOAR_INSTANCE].prefix =              new std::string("SoarInst");
   mode_info[DT_CLI_LIBRARIES].prefix =              new std::string("CLILib");
+  mode_info[DT_CONSTRAINTS].prefix =                new std::string("Cnstrnts");
+  mode_info[DT_MERGE].prefix =                      new std::string("Merge Cs");
+  mode_info[DT_FIX_CONDITIONS].prefix =             new std::string("Fix Cond");
 
   mode_info[No_Mode].trace_enabled =                      TRACE_Init_No_Mode;
   mode_info[TM_EPMEM].trace_enabled =                     TRACE_Init_TM_EPMEM;
@@ -302,7 +303,6 @@ void Output_Manager::fill_mode_info()
   mode_info[DT_DEBUG].debug_enabled =                       TRACE_Init_DT_DEBUG;
   mode_info[DT_ID_LEAKING].debug_enabled =                  TRACE_Init_DT_ID_LEAKING;
   mode_info[DT_LHS_VARIABLIZATION].debug_enabled =          TRACE_Init_DT_LHS_VARIABLIZATION;
-  mode_info[DT_UNIQUE_VARIABLIZATION].debug_enabled =       TRACE_Init_DT_UNIQUE_VARIABLIZATION;
   mode_info[DT_ADD_CONSTRAINTS_ORIG_TESTS].debug_enabled =  TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS;
   mode_info[DT_RHS_VARIABLIZATION].debug_enabled =          TRACE_Init_DT_RHS_VARIABLIZATION;
   mode_info[DT_PRINT_INSTANTIATIONS].debug_enabled =        TRACE_Init_DT_PRINT_INSTANTIATIONS;
@@ -314,7 +314,7 @@ void Output_Manager::fill_mode_info()
   mode_info[DT_VARIABLIZATION_MANAGER].debug_enabled =      TRACE_Init_DT_VARIABLIZATION_MANAGER;
   mode_info[DT_PARSER].debug_enabled =                      TRACE_Init_DT_PARSER;
   mode_info[DT_FUNC_PRODUCTIONS].debug_enabled =            TRACE_Init_DT_FUNC_PRODUCTIONS;
-  mode_info[DT_VARIABLIZATION_REV].debug_enabled =          TRACE_Init_DT_VARIABLIZATION_REV;
+  mode_info[DT_OVAR_MAPPINGS].debug_enabled =               TRACE_Init_DT_OVAR_MAPPINGS;
   mode_info[DT_REORDERER].debug_enabled =                   TRACE_Init_DT_REORDERER;
   mode_info[DT_BACKTRACE].debug_enabled =                   TRACE_Init_DT_BACKTRACE;
   mode_info[DT_SAVEDVARS].debug_enabled =                   TRACE_Init_DT_SAVEDVARS;
@@ -322,8 +322,9 @@ void Output_Manager::fill_mode_info()
   mode_info[DT_RL_VARIABLIZATION].debug_enabled =           TRACE_Init_DT_RL_VARIABLIZATION;
   mode_info[DT_NCC_VARIABLIZATION].debug_enabled =          TRACE_Init_DT_NCC_VARIABLIZATION;
   mode_info[DT_IDENTITY_PROP].debug_enabled =               TRACE_Init_DT_IDENTITY_PROP;
-  mode_info[DT_SOAR_INSTANCE].debug_enabled =               TRACE_Init_DT_SOAR_INSTANCE;
-  mode_info[DT_CLI_LIBRARIES].debug_enabled =               TRACE_Init_DT_CLI_LIBRARIES;
+  mode_info[DT_CONSTRAINTS].debug_enabled =                 TRACE_Init_DT_CONSTRAINTS;
+  mode_info[DT_MERGE].debug_enabled =                       TRACE_Init_DT_MERGE;
+  mode_info[DT_FIX_CONDITIONS].debug_enabled =              TRACE_Init_DT_FIX_CONDITIONS;
 
 }
 

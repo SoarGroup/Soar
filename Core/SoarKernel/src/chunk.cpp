@@ -70,17 +70,17 @@ using namespace soar_TraceNames;
 
 #ifdef USE_MACROS
 #define add_results_if_needed(thisAgent, sym) \
-  { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
-      if ( ((sym)->id.level >= thisAgent->results_match_goal_level) && \
-           ((sym)->id.tc_num != thisAgent->results_tc_number) ) \
+  { if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE) \
+      if ( ((sym)->id->level >= thisAgent->results_match_goal_level) && \
+           ((sym)->tc_num != thisAgent->results_tc_number) ) \
         add_results_for_id(thisAgent, sym); }
 
 #else
 inline void add_results_if_needed(agent* thisAgent, Symbol * sym)
 {
-  if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-      if ( ((sym)->id.level >= thisAgent->results_match_goal_level) &&
-           ((sym)->id.tc_num != thisAgent->results_tc_number) )
+  if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE)
+      if ( ((sym)->id->level >= thisAgent->results_match_goal_level) &&
+           ((sym)->tc_num != thisAgent->results_tc_number) )
         add_results_for_id(thisAgent, sym);
 }
 #endif /* USE_MACROS */
@@ -125,12 +125,12 @@ void add_results_for_id (agent* thisAgent, Symbol *id) {
   preference *pref;
   wme *w;
 
-  id->id.tc_num = thisAgent->results_tc_number;
+  id->tc_num = thisAgent->results_tc_number;
 
   /* --- scan through all preferences and wmes for all slots for this id --- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
+  for (w=id->id->input_wmes; w!=NIL; w=w->next)
     add_results_if_needed (thisAgent, w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next) {
+  for (s=id->id->slots; s!=NIL; s=s->next) {
     for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next)
       add_pref_to_results(thisAgent, pref);
     for (w=s->wmes; w!=NIL; w=w->next)
@@ -151,8 +151,8 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
   thisAgent->results_tc_number = get_new_tc_number(thisAgent);
   thisAgent->extra_result_prefs_from_instantiation = inst->preferences_generated;
   for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
-    if ( (pref->id->id.level < thisAgent->results_match_goal_level) &&
-         (pref->id->id.tc_num != thisAgent->results_tc_number) ) {
+    if ( (pref->id->id->level < thisAgent->results_match_goal_level) &&
+         (pref->id->tc_num != thisAgent->results_tc_number) ) {
       add_pref_to_results(thisAgent, pref);
     }
   return thisAgent->results;
@@ -180,29 +180,29 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 	char prefix[2];
 	Symbol *var;
 
-	if ((*sym)->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;	// only variablize identifiers
-	if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
+	if ((*sym)->symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;	// only variablize identifiers
+	if ((*sym)->id->smem_lti != NIL)									// don't variablize lti (long term identifiers)
 	{
-		(*sym)->id.tc_num = thisAgent->variablization_tc;
-		(*sym)->id.variablization = (*sym);
+		(*sym)->tc_num = thisAgent->variablization_tc;
+		(*sym)->id->variablization = (*sym);
 		return;
 	}
 
-	if ((*sym)->id.tc_num == thisAgent->variablization_tc) {
+	if ((*sym)->tc_num == thisAgent->variablization_tc) {
 		/* --- it's already been variablized, so use the existing variable --- */
-		var = (*sym)->id.variablization;
+		var = (*sym)->id->variablization;
 		symbol_remove_ref (thisAgent, *sym);
 		*sym = var;
-		symbol_add_ref (var);
+		symbol_add_ref (thisAgent, var);
 		return;
 	}
 
 	/* --- need to create a new variable --- */
-	(*sym)->id.tc_num = thisAgent->variablization_tc;
-	prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+	(*sym)->tc_num = thisAgent->variablization_tc;
+	prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
 	prefix[1] = 0;
 	var = generate_new_variable (thisAgent, prefix);
-	(*sym)->id.variablization = var;
+	(*sym)->id->variablization = var;
 	symbol_remove_ref (thisAgent, *sym);
 	*sym = var;
 }
@@ -264,9 +264,9 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
   val = pref->value;
   ref = pref->referent;
 
-  symbol_add_ref (id);
-  symbol_add_ref (attr);
-  symbol_add_ref (val);
+  symbol_add_ref (thisAgent, id);
+  symbol_add_ref (thisAgent, attr);
+  symbol_add_ref (thisAgent, val);
 
   if (variablize) {
     variablize_symbol (thisAgent, &id);
@@ -281,7 +281,7 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
   a->preference_type = pref->type;
 
   if (preference_is_binary(pref->type)) {
-    symbol_add_ref (ref);
+    symbol_add_ref (thisAgent, ref);
     if (variablize) {
       variablize_symbol (thisAgent, &ref);
     }
@@ -361,7 +361,7 @@ chunk_cond *make_chunk_cond_for_condition (agent* thisAgent, condition *cond) {
   return cc;
 }
 
-Bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc) {
+bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc) {
   chunk_cond *old;
 
   for (old=set->table[new_cc->compressed_hash_value]; old!=NIL;
@@ -540,8 +540,8 @@ not_struct *get_nots_for_instantiated_conditions (agent* thisAgent,
     free_cons (thisAgent, c);
     for (n1=inst->nots; n1 != NIL; n1=n1->next) {
       /* --- Are both id's marked? If no, goto next loop iteration --- */
-      if (n1->s1->id.tc_num != tc_of_grounds) continue;
-      if (n1->s2->id.tc_num != tc_of_grounds) continue;
+      if (n1->s1->tc_num != tc_of_grounds) continue;
+      if (n1->s2->tc_num != tc_of_grounds) continue;
       /* --- If the pair already in collected_nots, goto next iteration --- */
       for (n2=collected_nots; n2!=NIL; n2=n2->next) {
         if ((n2->s1 == n1->s1) && (n2->s2 == n1->s2)) break;
@@ -553,9 +553,9 @@ not_struct *get_nots_for_instantiated_conditions (agent* thisAgent,
       new_not->next = collected_nots;
       collected_nots = new_not;
       new_not->s1 = n1->s1;
-      symbol_add_ref (new_not->s1);
+      symbol_add_ref (thisAgent, new_not->s1);
       new_not->s2 = n1->s2;
-      symbol_add_ref (new_not->s2);
+      symbol_add_ref (thisAgent, new_not->s2);
     } /* end of for n1 */
   } /* end of while instantiations_with_nots */
 
@@ -581,17 +581,17 @@ void variablize_nots_and_insert_into_conditions (agent* thisAgent,
   test t;
   complex_test *ct;
   condition *c;
-  Bool added_it;
+  bool added_it;
 
   for (n=nots; n!=NIL; n=n->next) {
-    var1 = n->s1->id.variablization;
-    var2 = n->s2->id.variablization;
+    var1 = n->s1->id->variablization;
+    var2 = n->s2->id->variablization;
     /* --- find where var1 is bound, and add "<> var2" to that test --- */
     allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
     t = make_test_from_complex_test (ct);
     ct->type = NOT_EQUAL_TEST;
     ct->data.referent = var2;
-    symbol_add_ref (var2);
+    symbol_add_ref (thisAgent, var2);
     added_it = FALSE;
     for (c=conds; c!=NIL; c=c->next) {
       if (c->type != POSITIVE_CONDITION) continue;
@@ -649,13 +649,13 @@ void add_goal_or_impasse_tests (agent* thisAgent, chunk_cond *all_ccs) {
   for (cc=all_ccs; cc!=NIL; cc=cc->next) {
     if (cc->instantiated_cond->type!=POSITIVE_CONDITION) continue;
     id = referent_of_equality_test (cc->instantiated_cond->data.tests.id_test);
-    if ( (id->id.isa_goal || id->id.isa_impasse) &&
-         (id->id.tc_num != tc) ) {
+    if ( (id->id->isa_goal || id->id->isa_impasse) &&
+         (id->tc_num != tc) ) {
       allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-      ct->type = static_cast<byte>((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST);
+      ct->type = static_cast<byte>((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST);
       t = make_test_from_complex_test(ct);
       add_new_test_to_test (thisAgent, &(cc->variablized_cond->data.tests.id_test), t);
-      id->id.tc_num = tc;
+      id->tc_num = tc;
     }
   }
 }
@@ -744,11 +744,11 @@ void make_clones_of_results (agent* thisAgent, preference *results,
     /* --- copy the preference --- */
     p = make_preference (thisAgent, result_p->type, result_p->id, result_p->attr,
                          result_p->value, result_p->referent);
-    symbol_add_ref (p->id);
-    symbol_add_ref (p->attr);
-    symbol_add_ref (p->value);
+    symbol_add_ref (thisAgent, p->id);
+    symbol_add_ref (thisAgent, p->attr);
+    symbol_add_ref (thisAgent, p->value);
     if (preference_is_binary(p->type))
-      symbol_add_ref (p->referent);
+      symbol_add_ref (thisAgent, p->referent);
     /* --- put it onto the list for chunk_inst --- */
     p->inst = chunk_inst;
     insert_at_head_of_dll (chunk_inst->preferences_generated, p,
@@ -765,8 +765,8 @@ void make_clones_of_results (agent* thisAgent, preference *results,
 Symbol *find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level) {
  Symbol *g;
 
- for (g = thisAgent->top_goal; g != NIL; g = g->id.lower_goal)
-   if (g->id.level == level)
+ for (g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
+   if (g->id->level == level)
      return(g);
  return(NIL);
 }
@@ -774,7 +774,7 @@ Symbol *find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level) 
 Symbol *find_impasse_wme_value(Symbol *id, Symbol *attr) {
   wme *w;
 
-  for (w = id->id.impasse_wmes; w != NIL; w = w->next)
+  for (w = id->id->impasse_wmes; w != NIL; w = w->next)
     if (w->attr == attr) return w->value;
   return NIL;
 }
@@ -791,13 +791,13 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
   goal_stack_level lowest_result_level;
 
   if (!thisAgent->sysparams[USE_LONG_CHUNK_NAMES])
-    return(generate_new_sym_constant (thisAgent, thisAgent->chunk_name_prefix,
+    return(generate_new_str_constant (thisAgent, thisAgent->chunk_name_prefix,
                                       &thisAgent->chunk_count));
 
-  lowest_result_level = thisAgent->top_goal->id.level;
+  lowest_result_level = thisAgent->top_goal->id->level;
   for (p=inst->preferences_generated; p!=NIL; p=p->inst_next)
-    if (p->id->id.level > lowest_result_level)
-      lowest_result_level = p->id->id.level;
+    if (p->id->id->level > lowest_result_level)
+      lowest_result_level = p->id->id->level;
 
   goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
 
@@ -824,12 +824,12 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
         {
           Symbol *sym;
 
-          if ((sym = find_impasse_wme_value(goal->id.lower_goal,thisAgent->attribute_symbol)) == NIL) {
+          if ((sym = find_impasse_wme_value(goal->id->lower_goal,thisAgent->attribute_symbol)) == NIL) {
             #ifdef DEBUG_CHUNK_NAMES
 		    // TODO: generate warning XML: I think we need to get a string for "do_print_for_identifier" and append it
 		    // but this seems low priority since it's not even included in a normal build
             print ("Warning: Failed to find ^attribute impasse wme.\n");
-            do_print_for_identifier(goal->id.lower_goal, 1, 0, 0);
+            do_print_for_identifier(goal->id->lower_goal, 1, 0, 0);
             #endif
             strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
           } else if (sym == thisAgent->operator_symbol) {
@@ -875,7 +875,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
 
 
   /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
-  if (find_sym_constant (thisAgent, name)) {
+  if (find_str_constant (thisAgent, name)) {
     uint64_t collision_count;
 
     collision_count = 1;
@@ -892,10 +892,10 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
               );
       name[BUFFER_GEN_CHUNK_NAME_SIZE - 1] = 0; /* ensure null termination */
 
-    } while (find_sym_constant (thisAgent, name));
+    } while (find_str_constant (thisAgent, name));
   }
 
-  generated_name = make_sym_constant(thisAgent, name);
+  generated_name = make_str_constant(thisAgent, name);
   return generated_name;
 }
 /* kjh (B14) end */
@@ -940,7 +940,7 @@ bool should_variablize(agent *thisAgent, instantiation *inst) {
 	   learned in a lower goal
 	 */
 	if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
-	    !inst->match_goal->id.allow_bottom_up_chunks)
+	    !inst->match_goal->id->allow_bottom_up_chunks)
 	{
 		return false;
 	}
@@ -968,7 +968,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	instantiation *chunk_inst;
 	Symbol *prod_name;
 	byte prod_type;
-	Bool print_name, print_prod;
+	bool print_name, print_prod;
 	byte rete_addition_result;
 	condition *lhs_top, *lhs_bottom;
 	not_struct *nots;
@@ -993,7 +993,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	/* --- if no preference is above the match goal level, exit --- */
 	for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
 	{
-		if (pref->id->id.level < inst->match_goal_level)
+		if (pref->id->id->level < inst->match_goal_level)
 			break;
 	}
 	if (! pref)
@@ -1011,8 +1011,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	/* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
 	{
 		Symbol *g;
-		for (g=inst->match_goal->id.higher_goal; g && g->id.allow_bottom_up_chunks; g=g->id.higher_goal)
-			g->id.allow_bottom_up_chunks = FALSE;
+		for (g=inst->match_goal->id->higher_goal; g && g->id->allow_bottom_up_chunks; g=g->id->higher_goal)
+			g->id->allow_bottom_up_chunks = FALSE;
 	}
 
 	grounds_level = inst->match_goal_level - 1;
@@ -1121,7 +1121,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		/* kjh (B14) end */
 
 		/*   old way of generating chunk names ...
-		prod_name = generate_new_sym_constant ("chunk-",&thisAgent->chunk_count);
+		prod_name = generate_new_str_constant ("chunk-",&thisAgent->chunk_count);
 		thisAgent->chunks_this_d_cycle)++;
 		*/
 
@@ -1131,7 +1131,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	}
 	else
 	{
-		prod_name = generate_new_sym_constant (thisAgent, "justification-", &thisAgent->justification_count);
+		prod_name = generate_new_str_constant (thisAgent, "justification-", &thisAgent->justification_count);
 		prod_type = JUSTIFICATION_PRODUCTION_TYPE;
 		print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
 		print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
@@ -1274,7 +1274,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 			&& ((prod_type != JUSTIFICATION_PRODUCTION_TYPE)
 			|| (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH) ))
 		{
-			strncpy(temp_explain_chunk.name,prod_name->sc.name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
+			strncpy(temp_explain_chunk.name,prod_name->sc->name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
 			temp_explain_chunk.name[EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE - 1] = 0;
 			explain_add_temp_to_chunk_list (thisAgent, &temp_explain_chunk);
 		}

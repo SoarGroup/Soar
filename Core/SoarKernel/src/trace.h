@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ======================================================================
@@ -23,7 +23,7 @@
    FOR_OPERATORS_TF.  The "name_restriction" argument should be either
    a pointer to a symbol, if the trace format is  restricted to apply
    to objects with that name, or NIL if the format can apply to any object.
-   
+
    Print_all_trace_formats() prints out either all existing stack trace
    or object trace formats.
 
@@ -49,22 +49,22 @@
 #define FOR_STATES_TF 1            /* format applies only to states */
 #define FOR_OPERATORS_TF 2         /* format applies only to operators */
 
-typedef char Bool;
+
 typedef struct agent_struct agent;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 extern void init_tracing (agent* thisAgent);
-extern Bool add_trace_format (agent* thisAgent, Bool stack_trace, int type_restriction,
+extern bool add_trace_format (agent* thisAgent, bool stack_trace, int type_restriction,
                               Symbol *name_restriction, const char *format_string);
-extern Bool remove_trace_format (agent* thisAgent, Bool stack_trace, int type_restriction,
+extern bool remove_trace_format (agent* thisAgent, bool stack_trace, int type_restriction,
                                  Symbol *name_restriction);
-extern void print_all_trace_formats (agent* thisAgent, Bool stack_trace);
+extern void print_all_trace_formats (agent* thisAgent, bool stack_trace);
 //#ifdef USE_TCL
-extern void print_all_trace_formats_tcl (Bool stack_trace);
+extern void print_all_trace_formats_tcl (bool stack_trace);
 //#endif /* USE_TCL */
 extern void print_object_trace (agent* thisAgent, Symbol *object);
 extern void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slot_type,
-                               Bool allow_cycle_counts);
+                               bool allow_cycle_counts);
 
 extern char * help_on_trace_format_escapes[];
 

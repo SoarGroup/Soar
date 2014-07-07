@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
@@ -15,10 +15,10 @@
 //{
 #endif
 
-typedef char Bool;
+
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 struct not_struct;
 
 /* RBD Need more comments here */
@@ -36,7 +36,7 @@ typedef struct chunk_cond_struct {
   struct chunk_cond_struct *next, *prev;
 
   /* dll of cond's in this particular hash bucket for this set */
-  struct chunk_cond_struct *next_in_bucket, *prev_in_bucket; 
+  struct chunk_cond_struct *next_in_bucket, *prev_in_bucket;
 
   uint32_t hash_value;             /* equals hash_condition(cond) */
   uint32_t compressed_hash_value;  /* above, compressed to a few bits */
@@ -51,12 +51,12 @@ typedef struct chunk_cond_set_struct {
 typedef struct agent_struct agent;
 
 extern void init_chunker (agent* thisAgent);
-extern void chunk_instantiation (agent* thisAgent, 
+extern void chunk_instantiation (agent* thisAgent,
 								 instantiation *inst,
                                  bool variablize,
 								 instantiation **custom_inst_list);
 extern chunk_cond *make_chunk_cond_for_condition (agent* thisAgent, condition *cond);
-extern Bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc);
+extern bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc);
 
 extern void add_results_for_id (agent* thisAgent, Symbol *id);
 

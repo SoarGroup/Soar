@@ -46,9 +46,9 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
                         ++productionCount;
                         if (m_RawOutput) 
                         {
-                            m_Result << '\n' << pSoarProduction->name->sc.name;
+                            m_Result << '\n' << pSoarProduction->name->sc->name;
                         } else {
-                            AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pSoarProduction->name->sc.name);
+                            AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pSoarProduction->name->sc->name);
                         }
                     }
                     else
@@ -78,18 +78,18 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
         return true;
     }
 
-    Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
+    Symbol* sym = find_str_constant( agnt, pProduction->c_str() );
 
-    if (!sym || !(sym->sc.production))
+    if (!sym || !(sym->sc->production))
     {
         return SetError("Production not found.");
     }
 
     // we have a production
     if (setting) {
-        add_pwatch( agnt, sym->sc.production );
+        add_pwatch( agnt, sym->sc->production );
     } else {
-        remove_pwatch( agnt, sym->sc.production );
+        remove_pwatch( agnt, sym->sc->production );
     }
     return true;
 }

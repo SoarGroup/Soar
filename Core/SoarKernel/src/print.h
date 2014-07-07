@@ -50,7 +50,7 @@
 //{
 #endif
 
-typedef char Bool;
+
 typedef char * test;
 typedef char * rhs_value;
 typedef unsigned char byte;
@@ -62,7 +62,7 @@ typedef struct production_struct production;
 typedef struct preference_struct preference;
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 typedef struct wme_filter_struct {
     Symbol *id;
@@ -72,7 +72,7 @@ typedef struct wme_filter_struct {
     bool removes;
 } wme_filter;
 
-extern void start_log_file (agent* thisAgent, char *filename, Bool append);
+extern void start_log_file (agent* thisAgent, char *filename, bool append);
 extern void stop_log_file (agent* thisAgent);
 extern void print_string_to_log_file_only (agent* thisAgent, char *string);
 
@@ -124,10 +124,9 @@ extern void filtered_print_wme_add(agent* thisAgent, wme *w);
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-extern char *string_to_escaped_string (agent* thisAgent, char *s, char first_and_last_char,
-                                       char *dest);
+extern char *string_to_escaped_string (char *s, char first_and_last_char, char *dest);
 extern char const* symbol_to_typeString (agent* thisAgent, Symbol *sym);
-extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
+extern char *symbol_to_string (agent* thisAgent, Symbol *sym, bool rereadable, char *dest, size_t dest_size);
 extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size);
 extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size);
 
@@ -149,9 +148,9 @@ extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, si
    format.
 ----------------------------------------------------------------------- */
 
-extern void print_condition_list (agent* thisAgent, condition *conds, int indent, Bool internal);
-extern void print_action_list (agent* thisAgent, action *actions, int indent, Bool internal);
-extern void print_production (agent* thisAgent, production *p, Bool internal);
+extern void print_condition_list (agent* thisAgent, condition *conds, int indent, bool internal);
+extern void print_action_list (agent* thisAgent, action *actions, int indent, bool internal);
+extern void print_production (agent* thisAgent, production *p, bool internal);
 
 /* -----------------------------------------------------------------------
                        Other Printing Utilities

@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* gdatastructs.h */
@@ -25,7 +25,7 @@
 //{
 #endif
 
-typedef char Bool;
+
 typedef unsigned char byte;
 typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
@@ -33,7 +33,7 @@ typedef struct complex_test_struct complex_test;
 typedef struct cons_struct cons;
 typedef struct dl_cons_struct dl_cons;
 typedef struct wme_struct wme;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef cons list;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
@@ -67,11 +67,11 @@ typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 
    The GDS is created only when necessary; that is, when an o-supported WME
    is created in some subgoal and that subgoal has no GDS already.  The
-   instantiations that led to the creation of the o-supported WME are 
-   examined; any supergoal WMEs in these instantiations are added to the 
+   instantiations that led to the creation of the o-supported WME are
+   examined; any supergoal WMEs in these instantiations are added to the
    wmes_in_gds DLL.  The GDS for each goal is examined for every WM change;
    if a WME changes that is on a GDS, the goal that the GDS points to is
-   immediately removed.  
+   immediately removed.
 
    When a goal is removed, the GDS is not immediately removed.  Instead,
    whenever a WME is removed (or when it is added to another GDS), we check
@@ -154,69 +154,11 @@ typedef struct gds_struct {
           (hence there's no way we'll ever want to BT through it)
 ------------------------------------------------------------------------ */
 
-/* WARNING: preference types must be numbered 0..(NUM_PREFERENCE_TYPES-1),
-   because the slot structure contains an array using these indices. Also
-   make sure to update the strings in prefmem.h.  Finally, make sure the
-   helper function defined below (for e.g. preference_is_unary) use the
-   correct indices.
-
-   NOTE: Reconsider, binary and unary parallel preferences are all
-   deprecated.  Their types are not removed here because it would break
-   backward compatibility of rete fast loading/saving.  It's possible that
-   can be fixed in rete.cpp, but for now, we're just keeping the preference
-   types.  There is no code that actually uses them any more, though.*/
-
-
-
-#define ACCEPTABLE_PREFERENCE_TYPE 0
-#define REQUIRE_PREFERENCE_TYPE 1
-#define REJECT_PREFERENCE_TYPE 2
-#define PROHIBIT_PREFERENCE_TYPE 3
-#define RECONSIDER_PREFERENCE_TYPE 4
-#define UNARY_INDIFFERENT_PREFERENCE_TYPE 5
-#define UNARY_PARALLEL_PREFERENCE_TYPE 6
-#define BEST_PREFERENCE_TYPE 7
-#define WORST_PREFERENCE_TYPE 8
-#define BINARY_INDIFFERENT_PREFERENCE_TYPE 9
-#define BINARY_PARALLEL_PREFERENCE_TYPE 10
-#define BETTER_PREFERENCE_TYPE 11
-#define WORSE_PREFERENCE_TYPE 12
-#define NUMERIC_INDIFFERENT_PREFERENCE_TYPE 13
-#define NUM_PREFERENCE_TYPES 14
-
-#ifdef USE_MACROS
-
-#define preference_is_unary(p) ((p)<9)
-#define preference_is_binary(p) ((p)>8)
-
-#else
-
-inline Bool preference_is_unary(byte p)
-{
-  return (p < 9);
-}
-
-inline Bool preference_is_binary(byte p)
-{
-  return (p > 8);
-}
-#endif /* USE_MACROS */
-
-#ifdef __cplusplus
-//extern "C" {
-#endif
-
-   extern const char * preference_name[NUM_PREFERENCE_TYPES];
-
-#ifdef __cplusplus
-//}
-#endif
-
 typedef struct preference_struct {
   byte type;         /* acceptable, better, etc. */
-  Bool o_supported;  /* is the preference o-supported? */
-  Bool in_tm;        /* is this currently in TM? */
-  Bool on_goal_list; /* is this pref on the list for its match goal */
+  bool o_supported;  /* is the preference o-supported? */
+  bool in_tm;        /* is this currently in TM? */
+  bool on_goal_list; /* is this pref on the list for its match goal */
   uint64_t reference_count;
   Symbol *id;
   Symbol *attr;
@@ -232,10 +174,10 @@ typedef struct preference_struct {
 
   /* dll of all pref's from the same match goal */
   struct preference_struct *all_of_goal_next, *all_of_goal_prev;
-  
+
   /* dll (without header) of cloned preferences (created when chunking) */
   struct preference_struct *next_clone, *prev_clone;
-    
+
   struct instantiation_struct *inst;
   struct preference_struct *inst_next, *inst_prev;
   struct preference_struct *next_candidate;
@@ -250,19 +192,8 @@ typedef struct preference_struct {
 } preference;
 
 /* Decl'd in prefmem.cpp and needed in decide.cpp */
-extern Bool remove_preference_from_clones (agent* thisAgent, preference *pref);
+extern bool remove_preference_from_clones (agent* thisAgent, preference *pref);
 
-/* ------------------------------------------------------------------------
-
-                             Impasse Types
-
------------------------------------------------------------------------- */
-
-#define NONE_IMPASSE_TYPE 0                   /* no impasse */
-#define CONSTRAINT_FAILURE_IMPASSE_TYPE 1
-#define CONFLICT_IMPASSE_TYPE 2
-#define TIE_IMPASSE_TYPE 3
-#define NO_CHANGE_IMPASSE_TYPE 4
 
 /* ------------------------------------------------------------------------
                                 Slots
@@ -303,7 +234,7 @@ extern Bool remove_preference_from_clones (agent* thisAgent, preference *pref);
 
       impasse_type:  indicates the type of the impasse for this slot.  This
         is one of NONE_IMPASSE_TYPE, CONSTRAINT_FAILURE_IMPASSE_TYPE, etc.
-  
+
       marked_for_possible_removal:  TRUE iff this slot is on the list of
         slots that might be deallocated at the end of the current top-level
         phase.
@@ -328,9 +259,9 @@ typedef struct slot_struct {
   preference *preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
   ::list *CDPS;						          /* list of prefs in the CDPS to backtrace through */
   Symbol *impasse_id;               /* NIL if slot is not impassed */
-  Bool isa_context_slot;
+  bool isa_context_slot;
   byte impasse_type;
-  Bool marked_for_possible_removal;
+  bool marked_for_possible_removal;
   dl_cons *changed;   /* for non-context slots: points to the corresponding
                          dl_cons in changed_slots;  for context slots: just
                          zero/nonzero flag indicating slot changed */
@@ -344,7 +275,7 @@ typedef struct slot_struct {
 
 /* -------------------------------------------------------------------
                               Tests
-   
+
    Tests in conditions can be blank (null) tests, tests for equality
    with a variable or constant, or more complicated tests (such as
    not-equal tests, conjunctive tests, etc.).  We use some bit twiddling
@@ -352,7 +283,7 @@ typedef struct slot_struct {
    of test.  For blank tests, this is the NIL pointer.  For equality tests,
    it points to the symbol referent of the test.  For other kinds of tests,
    bit 0 of the pointer is set to 1, and the pointer (minus 1) points to
-   a complex_test structure.  (A field in the complex_test structure 
+   a complex_test structure.  (A field in the complex_test structure
    further indicates the type of the test.)
 ------------------------------------------------------------------- */
 
@@ -365,7 +296,7 @@ typedef char * test;
 #define test_is_blank_or_equality_test(t) (! test_is_complex_test(t))
 
 #define make_blank_test() ((test)NIL)
-#define make_equality_test(sym) ((sym)->common.reference_count++, (test)(sym)) // what's this???
+#define make_equality_test(sym) ((sym)->reference_count++, (test)(sym)) // what's this???
 #define make_equality_test_without_adding_reference(sym) ((test)(sym))
 #define make_blank_or_equality_test(sym_or_nil) \
   ((sym_or_nil) ? make_equality_test(sym_or_nil) : make_blank_test() )
@@ -373,12 +304,12 @@ typedef char * test;
 
 #define referent_of_equality_test(t) ((Symbol *) (t))
 #define complex_test_from_test(t) ((complex_test *) (((char *)(t))-1))
- 
+
 #else
 
-inline Bool test_is_blank_test(test t) 
-{ 
-  return (t == NIL); 
+inline bool test_is_blank_test(test t)
+{
+  return (t == NIL);
 }
 
 //// This is to silence a warning (warning C4311: 'static_cast' : pointer truncation from 'test' to 'uint64_t')
@@ -387,10 +318,10 @@ inline Bool test_is_blank_test(test t)
 //#pragma warning (disable : 4311)
 //#endif
 
-inline Bool test_is_complex_test(test t) 
-{ 
+inline bool test_is_complex_test(test t)
+{
   return (char)(
-	  reinterpret_cast<uint64_t>(t) 
+	  reinterpret_cast<uint64_t>(t)
 	  & 1);
 }
 
@@ -398,7 +329,7 @@ inline Bool test_is_complex_test(test t)
 #pragma warning (default : 4311)
 #endif
 
-inline Bool test_is_blank_or_equality_test(test t)
+inline bool test_is_blank_or_equality_test(test t)
 {
   return (!test_is_complex_test(t));
 }
@@ -410,12 +341,12 @@ inline test make_blank_test()
 
 inline test make_equality_test(Symbol * sym) // is this equivalent to the macro above??
 {
-  (sym)->common.reference_count++;
+  (sym)->reference_count++;
 #ifdef DEBUG_SYMBOL_REFCOUNTS
   char buf[64];
   OutputDebugString(symbol_to_string(0, (sym), FALSE, buf, 64));
   OutputDebugString(":+ ");
-  OutputDebugString(_itoa((sym)->common.reference_count, buf, 10));
+  OutputDebugString(_itoa((sym)->reference_count, buf, 10));
   OutputDebugString("\n");
 #endif // DEBUG_SYMBOL_REFCOUNTS
   return reinterpret_cast<test>(sym);
@@ -457,52 +388,14 @@ typedef struct complex_test_struct {
   } data;
 } complex_test;
 
-/* types of the complex_test's */
-/* WARNING -- none of these can be 254 or 255 -- see rete.cpp */
-//#define NOT_EQUAL_TEST 1         /* various relational tests */
-//#define LESS_TEST 2
-//#define GREATER_TEST 3
-//#define LESS_OR_EQUAL_TEST 4
-//#define GREATER_OR_EQUAL_TEST 5
-//#define SAME_TYPE_TEST 6
-//#define DISJUNCTION_TEST 7       /* item must be one of a list of constants */
-//#define CONJUNCTIVE_TEST 8       /* item must pass each of a list of tests */
-//#define GOAL_ID_TEST 9           /* item must be a goal identifier */
-//#define IMPASSE_ID_TEST 10       /* item must be an impasse identifier */
-enum ComplexTextTypes {
-         NOT_EQUAL_TEST = 1,         /* various relational tests */
-         LESS_TEST = 2,
-         GREATER_TEST = 3,
-         LESS_OR_EQUAL_TEST = 4,
-         GREATER_OR_EQUAL_TEST = 5,
-         SAME_TYPE_TEST = 6,
-         DISJUNCTION_TEST = 7,       /* item must be one of a list of constants */
-         CONJUNCTIVE_TEST = 8,       /* item must pass each of a list of tests */
-         GOAL_ID_TEST = 9,           /* item must be a goal identifier */
-         IMPASSE_ID_TEST = 10       /* item must be an impasse identifier */
-};
-
-#define NUM_TEST_TYPES 10
-
-//
-// Symbol types.
-//
-#define VARIABLE_SYMBOL_TYPE 0
-#define IDENTIFIER_SYMBOL_TYPE 1
-#define SYM_CONSTANT_SYMBOL_TYPE 2
-#define INT_CONSTANT_SYMBOL_TYPE 3
-#define FLOAT_CONSTANT_SYMBOL_TYPE 4
-#define NUM_SYMBOL_TYPES 5
-#define NUM_PRODUCTION_TYPES 5
-
 
 /* -------------------------------------------------------------------
                              Conditions
 
    Conditions are used for two things:  (1) to represent the LHS of newly
-   entered productions (new SP's or chunks); and (2) to represent the 
+   entered productions (new SP's or chunks); and (2) to represent the
    instantiated LHS in production instantiations.
-   
+
    Fields in a condition:
 
       type:  indicates the type of condition:  either POSITIVE_CONDITION,
@@ -569,8 +462,8 @@ typedef struct ncc_info_struct {
 /* --- finally, the structure of a condition --- */
 typedef struct condition_struct {
   byte type;
-  Bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
-  Bool test_for_acceptable_preference;   /* for pos, neg cond's only */
+  bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
+  bool test_for_acceptable_preference;   /* for pos, neg cond's only */
   struct condition_struct *next, *prev;
   union condition_main_data_union {
     three_field_tests tests;             /* for pos, neg cond's only */

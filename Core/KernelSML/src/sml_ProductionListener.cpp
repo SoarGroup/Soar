@@ -88,8 +88,8 @@ void ProductionListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* p
 	}
 
 	assert(p) ;
-	assert(p->name->sc.name) ;
-	productionName = p->name->sc.name ;
+	assert(p->name->sc->name) ;
+	productionName = p->name->sc->name ;
 
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;

@@ -57,7 +57,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
            if ( prod->rl_rule )
            {
                exciseCount++;
-               excise_production( agnt, prod, static_cast<Bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
+               excise_production( agnt, prod, static_cast<bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
            }
        }
 
@@ -66,7 +66,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
            if ( prod->rl_rule )
            {
                exciseCount++;
-               excise_production( agnt, prod, static_cast<Bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
+               excise_production( agnt, prod, static_cast<bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
            }
        }
 
@@ -75,7 +75,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
            if ( prod->rl_rule )
            {
                exciseCount++;
-               excise_production( agnt, prod, static_cast<Bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
+               excise_production( agnt, prod, static_cast<bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
            }
        }
 
@@ -104,9 +104,9 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
     // Excise specific production
     if (pProduction)
     {
-        Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
+        Symbol* sym = find_str_constant( agnt, pProduction->c_str() );
 
-        if (!sym || !(sym->sc.production))
+        if (!sym || !(sym->sc->production))
         {
             return SetError("Production not found.");
         }
@@ -120,7 +120,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         // Increment the count for the structured response
         ++exciseCount;
 
-        excise_production(agnt, sym->sc.production, false);
+        excise_production(agnt, sym->sc->production, false);
     }
 
     if (m_RawOutput) {

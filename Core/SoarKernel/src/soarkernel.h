@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -124,7 +124,7 @@ struct node_varnames_struct;
 
 #include "explain.h"
 #include "agent.h"
-                              
+
 /*=====================================================================*/
 
 #ifdef __cplusplus
@@ -139,14 +139,14 @@ struct node_varnames_struct;
 //#ifdef USE_X_DISPLAY
 //  extern char *  x_input_buffer;
 //  extern int     x_input_buffer_index;
-//  extern Bool    waiting_for_command;
+//  extern bool   waiting_for_command;
 //  extern void create_agent_window (agent *, char * agent_class);
 //  extern void create_monitor_window (agent *, char * command);
 //  extern void handle_soar_x_events (void);
 //  extern void refresh_monitor_window (agent *);
 //  extern void destroy_soar_display (void);
 //
-//  extern Bool text_io_mode;
+//  extern bool text_io_mode;
 //
 //#ifdef USE_STDARGS
 //  extern void print_x_format_string (x_info * window, char *format, ... );

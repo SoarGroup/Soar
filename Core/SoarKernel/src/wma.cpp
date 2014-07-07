@@ -518,43 +518,43 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 				msg.append( temp );
 				msg.append( " " );
 
-				to_string( w->id->id.name_letter, temp );
+				to_string( w->id->id->name_letter, temp );
 				msg.append( temp );
 
-				to_string( w->id->id.name_number, temp );
+				to_string( w->id->id->name_number, temp );
 				msg.append( temp );
 				msg.append( " " );
 
-				switch ( w->attr->common.symbol_type )
+				switch ( w->attr->symbol_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						to_string( w->attr->ic.value, temp );
+						to_string( w->attr->ic->value, temp );
 						break;
 
 					case FLOAT_CONSTANT_SYMBOL_TYPE:
-						to_string( w->attr->fc.value, temp );
+						to_string( w->attr->fc->value, temp );
 						break;
 
-					case SYM_CONSTANT_SYMBOL_TYPE:
-						to_string( w->attr->sc.name, temp );
+					case STR_CONSTANT_SYMBOL_TYPE:
+						to_string( w->attr->sc->name, temp );
 						break;
 				}
 
 				msg.append( temp );
 				msg.append( " " );
 
-				switch ( w->value->common.symbol_type )
+				switch ( w->value->symbol_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						to_string( w->value->ic.value, temp );
+						to_string( w->value->ic->value, temp );
 						break;
 
 					case FLOAT_CONSTANT_SYMBOL_TYPE:
-						to_string( w->value->fc.value, temp );
+						to_string( w->value->fc->value, temp );
 						break;
 
-					case SYM_CONSTANT_SYMBOL_TYPE:
-						to_string( w->value->sc.name, temp );
+					case STR_CONSTANT_SYMBOL_TYPE:
+						to_string( w->value->sc->name, temp );
 						break;
 				}
 
@@ -944,14 +944,14 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 				{
 					(*current_p)->forget_cycle = WMA_FORGOTTEN_CYCLE;
 
-					if ( !forget_only_lti || ( (*current_p)->this_wme->id->id.smem_lti != NIL ) )
+					if ( !forget_only_lti || ( (*current_p)->this_wme->id->id->smem_lti != NIL ) )
 					{
 						do_forget = true;
 
 						// implements all-or-nothing check for lti mode
 						if ( forget_only_lti )
 						{
-							for ( s=(*current_p)->this_wme->id->id.slots; (s && do_forget); s=s->next )
+							for ( s=(*current_p)->this_wme->id->id->slots; (s && do_forget); s=s->next )
 							{
 								for ( w=s->wmes; (w && do_forget); w=w->next )
 								{
@@ -968,7 +968,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 							if ( forget_only_lti )
 							{
 								// implements all-or-nothing forget for lti mode
-								for ( s=(*current_p)->this_wme->id->id.slots; (s && do_forget); s=s->next )
+								for ( s=(*current_p)->this_wme->id->id->slots; (s && do_forget); s=s->next )
 								{
 									for ( w=s->wmes; (w && do_forget); w=w->next )
 									{
@@ -1028,7 +1028,7 @@ inline bool wma_forgetting_naive_sweep( agent* my_agent )
 
 	for ( wme* w=my_agent->all_wmes_in_rete; w; w=w->rete_next )
 	{
-		if ( w->wma_decay_el && ( !forget_only_lti || ( w->id->id.smem_lti != NIL ) ) )
+		if ( w->wma_decay_el && ( !forget_only_lti || ( w->id->id->smem_lti != NIL ) ) )
 		{
 			// to be forgotten, wme must...
 			// - have been accessed (can't imagine why not, but just in case)

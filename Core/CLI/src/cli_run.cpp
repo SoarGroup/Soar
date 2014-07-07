@@ -117,7 +117,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
     agent* agnt = m_pAgentSML->GetSoarAgent();
     if (options.test(RUN_GOAL))
     {
-        agnt->substate_break_level = agnt->bottom_goal->id.level;
+        agnt->substate_break_level = agnt->bottom_goal->id->level;
     }
 
     // Do the run

@@ -25,7 +25,7 @@
 
 // Forward definitions for kernel
 typedef struct agent_struct agent;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef struct cons_struct list;
 typedef struct wme_struct wme;
 

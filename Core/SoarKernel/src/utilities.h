@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* utilities.h */
@@ -16,14 +16,14 @@
 /*
 *	This procedure parses a string to determine if it is a
 *      lexeme for an identifier or context variable.
-* 
-*      Many interface routines take identifiers as arguments.  
-*      These ids can be given as normal ids, or as special variables 
-*      such as <s> for the current state, etc.  This routine reads 
-*      (without consuming it) an identifier or context variable, 
-*      and returns a pointer (Symbol *) to the id.  (In the case of 
-*      context variables, the instantiated variable is returned.  If 
-*      any error occurs (e.g., no such id, no instantiation of the 
+*
+*      Many interface routines take identifiers as arguments.
+*      These ids can be given as normal ids, or as special variables
+*      such as <s> for the current state, etc.  This routine reads
+*      (without consuming it) an identifier or context variable,
+*      and returns a pointer (Symbol *) to the id.  (In the case of
+*      context variables, the instantiated variable is returned.  If
+*      any error occurs (e.g., no such id, no instantiation of the
 *      variable), an error message is printed and NIL is returned.
 *
 * Results:
@@ -62,13 +62,6 @@ extern bool is_whole_number(const std::string &str);
 extern bool is_whole_number(const char * str);
 
 //////////////////////////////////////////////////////////
-// Misc
-//////////////////////////////////////////////////////////
-
-// get a numeric value from a symbol
-extern double get_number_from_symbol( Symbol *sym );
-
-//////////////////////////////////////////////////////////
 // Statistics database
 //////////////////////////////////////////////////////////
 
@@ -101,9 +94,9 @@ extern void stats_close( agent *my_agent );
 // Useful for converting enumerations to string
 #define stringify( name ) # name
 
-/* derived_kernel_time := Total of the time spent in the phases of the decision cycle, 
-excluding Input Function, Output function, and pre-defined callbacks. 
-This computed time should be roughly equal to total_kernel_time, 
+/* derived_kernel_time := Total of the time spent in the phases of the decision cycle,
+excluding Input Function, Output function, and pre-defined callbacks.
+This computed time should be roughly equal to total_kernel_time,
 as determined above. */
 uint64_t get_derived_kernel_time_usec(agent* thisAgent);
 

@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ====================================================================
@@ -31,7 +31,7 @@
 
 /* -------------------------------------------------------------------
                       Right-Hand-Side Values
-   
+
    Values on the RHS of productions can be given by symbols
    (constants or variables), by Rete locations, by indices of variables
    not bound on the LHS, or by function calls.  We use the low-order two
@@ -65,7 +65,7 @@ typedef unsigned char byte;
 typedef unsigned short rete_node_level;
 typedef struct cons_struct cons;
 typedef cons list;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 
 #ifdef USE_MACROS
@@ -92,52 +92,52 @@ typedef union symbol_union Symbol;
 #else
 
 //#define rhs_value_is_symbol(rv) ((((uintptr_t)(rv)) & 3)==0)
-inline bool rhs_value_is_symbol(rhs_value rv) 
-{ 
-  return (reinterpret_cast<uintptr_t>(rv) & 3) == 0; 
+inline bool rhs_value_is_symbol(rhs_value rv)
+{
+  return (reinterpret_cast<uintptr_t>(rv) & 3) == 0;
 }
 
 //#define rhs_value_is_funcall(rv) ((((uintptr_t)(rv)) & 3)==1)
-inline bool rhs_value_is_funcall(rhs_value rv) 
+inline bool rhs_value_is_funcall(rhs_value rv)
 {
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 1;
 }
 
 //#define rhs_value_is_reteloc(rv) ((((uintptr_t)(rv)) & 3)==2)
-inline bool rhs_value_is_reteloc(rhs_value rv) 
-{ 
+inline bool rhs_value_is_reteloc(rhs_value rv)
+{
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 2;
 }
 
 //#define rhs_value_is_unboundvar(rv) ((((uintptr_t)(rv)) & 3)==3)
-inline bool rhs_value_is_unboundvar(rhs_value rv) 
-{ 
+inline bool rhs_value_is_unboundvar(rhs_value rv)
+{
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 3;
 }
 
 /* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
    do the reference count update */
 //#define symbol_to_rhs_value(sym) ((rhs_value) (sym))
-inline rhs_value symbol_to_rhs_value(Symbol * sym) 
-{ 
+inline rhs_value symbol_to_rhs_value(Symbol * sym)
+{
   return reinterpret_cast<rhs_value>(sym);
 }
 
 //#define funcall_list_to_rhs_value(fl) ((rhs_value) (((char *)(fl))+1))
-inline rhs_value funcall_list_to_rhs_value(::list * fl) 
+inline rhs_value funcall_list_to_rhs_value(::list * fl)
 {
   return reinterpret_cast<rhs_value>(reinterpret_cast<char *>(fl) + 1);
 }
 
 //#define reteloc_to_rhs_value(field_num,levels_up) ((rhs_value) ( (levels_up)<<4) + ((field_num)<<2) + 2 )
-inline rhs_value reteloc_to_rhs_value(byte field_num, rete_node_level levels_up) 
+inline rhs_value reteloc_to_rhs_value(byte field_num, rete_node_level levels_up)
 {
   return reinterpret_cast<rhs_value>(levels_up << 4) + (field_num << 2) + 2;
 }
 
 //#define unboundvar_to_rhs_value(n) ((rhs_value) (((n)<<2) + 3))
-inline rhs_value unboundvar_to_rhs_value(uint64_t n) 
-{ 
+inline rhs_value unboundvar_to_rhs_value(uint64_t n)
+{
   return reinterpret_cast<rhs_value>((n << 2) + 3);
 }
 
@@ -177,7 +177,7 @@ inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
                              RHS Actions
 
    Fields in an action:
- 
+
       next:  points to the next action in a singly-linked list of all
         actions in the RHS.
 
@@ -189,7 +189,7 @@ inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
 
       support:  indicates the compile-time calculated o-support of the action.
         This is either UNKNOWN_SUPPORT, O_SUPPORT, or I_SUPPORT.
-  
+
       already_in_tc:  (reserved for use by compile-time o-support calcs)
 
       id, attr:  for make actions, these give the symbols (or Rete locations)
@@ -198,7 +198,7 @@ inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
       value:  for MAKE_ACTION's, this gives the value field of the preference
         (a symbol or function call).  For FUNCALL_ACTION's, this holds the
         function call itself.
-  
+
       referent:  for MAKE_ACTION's of binary preferences, this gives the
         referent field of the preference.
 ------------------------------------------------------------------- */
@@ -210,7 +210,7 @@ inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
 #define O_SUPPORT 1
 #define I_SUPPORT 2
 
-typedef char Bool;
+
 typedef unsigned char byte;
 
 typedef struct agent_struct agent;
@@ -220,7 +220,7 @@ typedef struct action_struct {
   byte type;
   byte preference_type;
   byte support;
-  Bool already_in_tc;  /* used only by compile-time o-support calcs */
+  bool already_in_tc;  /* used only by compile-time o-support calcs */
   rhs_value id;
   rhs_value attr;
   rhs_value value;   /* for FUNCALL_ACTION's, this holds the funcall */
@@ -234,17 +234,17 @@ typedef struct rhs_function_struct {
   Symbol *name;
   rhs_function_routine f;
   int num_args_expected;     /* -1 means it can take any number of args */
-  Bool can_be_rhs_value;
-  Bool can_be_stand_alone_action;
+  bool can_be_rhs_value;
+  bool can_be_stand_alone_action;
   void* user_data;           /* Pointer to anything the user may want to pass into the function */
 } rhs_function;
 
-extern void add_rhs_function (agent* thisAgent, 
+extern void add_rhs_function (agent* thisAgent,
                               Symbol *name,
                               rhs_function_routine f,
                               int num_args_expected,
-                              Bool can_be_rhs_value,
-                              Bool can_be_stand_alone_action,
+                              bool can_be_rhs_value,
+                              bool can_be_stand_alone_action,
                               void* user_data);
 extern void remove_rhs_function (agent* thisAgent, Symbol *name);
 extern rhs_function *lookup_rhs_function(agent* thisAgent, Symbol *name);

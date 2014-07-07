@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -24,25 +24,25 @@
  *  The lexer maintains a stack of files being read, in order to handle nested
  *  loads.  Start_lex_from_file() and stop_lex_from_file() push and pop the
  *  stack.  Immediately after start_lex_from_file(), the current lexeme (global
- *  variable) is undefined.  Immediately after stop_lex_from_file(), the 
+ *  variable) is undefined.  Immediately after stop_lex_from_file(), the
  *  current lexeme is automatically restored to whatever it was just before
  *  the corresponding start_lex_from_file() call.
- *  
+ *
  *  Determine_possible_symbol_types_for_string() is a utility routine which
  *  figures out what kind(s) of symbol a given string could represent.
- *  
+ *
  *  Print_location_of_most_recent_lexeme() is used to print an indication
  *  of where a parser error occurred.  It tries to print out the current
  *  source line with a pointer to where the error was detected.
- *  
+ *
  *  Current_lexer_parentheses_level() returns the current level of parentheses
  *  nesting (0 means no open paren's have been encountered).
  *  Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
  *  closing paren is found (0 means eat until back at the top level).
- *  
+ *
  *  Fake_rparen_at_next_end_of_line() tells the lexer to insert a fake
  *  R_PAREN_LEXEME token the next time it reaches the end of a line.
- *  
+ *
  *  Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
  *  be read.  If FALSE, things that look like identifiers will be returned
  *  as SYM_CONSTANT_LEXEME's instead.
@@ -76,22 +76,22 @@
 //
 // These three should be safe for re-entrancy.  --JNW--
 //
-Bool constituent_char[256];   /* is the character a symbol constituent? */
-Bool whitespace[256];         /* is the character whitespace? */
-Bool number_starters[256];    /* could the character initiate a number? */
+bool constituent_char[256];   /* is the character a symbol constituent? */
+bool whitespace[256];         /* is the character whitespace? */
+bool number_starters[256];    /* could the character initiate a number? */
 
 /* ======================================================================
                        Start/Stop Lex from File
-                       
+
   The lexer maintains a stack of files being read, in order to handle nested
   loads.  Start_lex_from_file() and stop_lex_from_file() push and pop the
   stack.  Immediately after start_lex_from_file(), the current lexeme (agent
-  variable) is undefined.  Immediately after stop_lex_from_file(), the 
+  variable) is undefined.  Immediately after stop_lex_from_file(), the
   current lexeme is automatically restored to whatever it was just before
   the corresponding start_lex_from_file() call.
 ====================================================================== */
 
-void start_lex_from_file (agent* thisAgent, const char *filename, 
+void start_lex_from_file (agent* thisAgent, const char *filename,
 						  FILE *already_opened_file) {
   lexer_source_file *lsf;
 
@@ -152,10 +152,10 @@ void get_next_char (agent* thisAgent) {
 	{
 		thisAgent->current_char = *thisAgent->alternate_input_string++;
 
-		if (thisAgent->current_char == '\0') 
+		if (thisAgent->current_char == '\0')
 		{
 			thisAgent->alternate_input_string = NIL;
-			thisAgent->current_char = 
+			thisAgent->current_char =
 				*thisAgent->alternate_input_suffix++;
 		}
 	}
@@ -163,7 +163,7 @@ void get_next_char (agent* thisAgent) {
 	{
 		thisAgent->current_char = *thisAgent->alternate_input_suffix++;
 
-		if (thisAgent->current_char == '\0') 
+		if (thisAgent->current_char == '\0')
 		{
 			thisAgent->alternate_input_suffix = NIL;
 
@@ -173,13 +173,13 @@ void get_next_char (agent* thisAgent) {
 				return;
 			}
 
-			thisAgent->current_char = thisAgent->current_file->buffer 
+			thisAgent->current_char = thisAgent->current_file->buffer
 				[thisAgent->current_file->current_column++];
 		}
-	} 
-	else 
+	}
+	else
 	{
-		thisAgent->current_char = thisAgent->current_file->buffer 
+		thisAgent->current_char = thisAgent->current_file->buffer
 			[thisAgent->current_file->current_column++];
 	}
 
@@ -241,7 +241,7 @@ inline void record_position_of_start_of_lexeme(agent* thisAgent)
     thisAgent->current_file->current_line;
 }
 
-/*  redefined for Soar 7, want case-sensitivity to match Tcl.  KJC 5/96 
+/*  redefined for Soar 7, want case-sensitivity to match Tcl.  KJC 5/96
 #define store_and_advance() { \
   thisAgent->lexeme.string[thisAgent->lexeme.length++] = (isupper((char)thisAgent->current_char) ? \
                                     tolower((char)thisAgent->current_char) : \
@@ -259,7 +259,7 @@ inline void store_and_advance(agent* thisAgent)
 
 /*#define finish() { thisAgent->lexeme.string[thisAgent->lexeme.length]=0; }*/
 inline void finish(agent* thisAgent)
-{ 
+{
   thisAgent->lexeme.string[thisAgent->lexeme.length]=0;
 }
 
@@ -273,7 +273,7 @@ void read_constituent_string (agent* thisAgent) {
          constituent_char[static_cast<unsigned char>(thisAgent->current_char)])
     store_and_advance(thisAgent);
   finish(thisAgent);
-}  
+}
 
 void read_rest_of_floating_point_number (agent* thisAgent) {
   /* --- at entry, current_char=="."; we read the "." and rest of number --- */
@@ -304,9 +304,9 @@ void read_rest_of_floating_point_number (agent* thisAgent) {
 #endif
 }
 
-Bool determine_type_of_constituent_string (agent* thisAgent) {
-	Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-	Bool rereadable;
+bool determine_type_of_constituent_string (agent* thisAgent) {
+	bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+	bool rereadable;
 
 	determine_possible_symbol_types_for_string (thisAgent->lexeme.string,
 		thisAgent->lexeme.length,
@@ -337,7 +337,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 	if (possible_fc) {
 		errno = 0;
 		thisAgent->lexeme.type = FLOAT_CONSTANT_LEXEME;
-		thisAgent->lexeme.float_val = strtod (thisAgent->lexeme.string,NULL); 
+		thisAgent->lexeme.float_val = strtod (thisAgent->lexeme.string,NULL);
 		if (errno) {
 			print (thisAgent, "Error: bad floating point number\n");
 			print_location_of_most_recent_lexeme(thisAgent);
@@ -368,12 +368,12 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 	if (possible_sc) {
 		thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
 		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
-			if ( (thisAgent->lexeme.string[0] == '<') || 
+			if ( (thisAgent->lexeme.string[0] == '<') ||
 				 (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') )
 			{
 				print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", thisAgent->lexeme.string);
 				print_location_of_most_recent_lexeme(thisAgent);
-				xml_generate_warning(thisAgent, "Warning: Suspicious string constant");		   
+				xml_generate_warning(thisAgent, "Warning: Suspicious string constant");
 			}
 		}
 		return TRUE;
@@ -398,7 +398,7 @@ void do_fake_rparen (agent* thisAgent) {
 
   These routines are called from get_lexeme().  Which routine gets called
   depends on the first character of the new lexeme being read.  Each routine's
-  job is to finish reading the lexeme and store the necessary items in 
+  job is to finish reading the lexeme and store the necessary items in
   the agent variable "lexeme".
 ====================================================================== */
 
@@ -524,7 +524,7 @@ void lex_greater (agent* thisAgent) {
   }
   determine_type_of_constituent_string(thisAgent);
 }
-    
+
 void lex_less (agent* thisAgent) {
   /* Lexeme might be "<", "<=", "<=>", "<>", "<<", or variable */
   /* Note: this routine relies on =,<,> being constituent characters */
@@ -558,8 +558,8 @@ void lex_plus (agent* thisAgent) {
   /* Lexeme might be +, number, or symbol */
   /* Note: this routine relies on various things being constituent chars */
   int i;
-  Bool could_be_floating_point;
-  
+  bool could_be_floating_point;
+
   read_constituent_string(thisAgent);
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
@@ -572,12 +572,12 @@ void lex_plus (agent* thisAgent) {
   if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = PLUS_LEXEME; return; }
   determine_type_of_constituent_string(thisAgent);
 }
-      
+
 void lex_minus (agent* thisAgent) {
   /* Lexeme might be -, -->, number, or symbol */
   /* Note: this routine relies on various things being constituent chars */
   int i;
-  Bool could_be_floating_point;
+  bool could_be_floating_point;
 
   read_constituent_string(thisAgent);
   /* --- if we stopped at '.', it might be a floating-point number, so be
@@ -598,7 +598,7 @@ void lex_minus (agent* thisAgent) {
 
 void lex_digit (agent* thisAgent) {
   int i;
-  Bool could_be_floating_point;
+  bool could_be_floating_point;
 
   read_constituent_string(thisAgent);
   /* --- if we stopped at '.', it might be a floating-point number, so be
@@ -616,10 +616,10 @@ void lex_unknown (agent* thisAgent) {
   if(reading_from_top_level(thisAgent) && thisAgent->current_char == 0) {
   }
   else {
-    print (thisAgent, "Error:  Unknown character encountered by lexer, code=%d\n", 
+    print (thisAgent, "Error:  Unknown character encountered by lexer, code=%d\n",
            thisAgent->current_char);
     print (thisAgent, "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
-           thisAgent->current_file->current_line, 
+           thisAgent->current_file->current_line,
            thisAgent->current_file->current_column);
     if (! reading_from_top_level(thisAgent)) {
       //respond_to_load_errors (thisAgent);
@@ -739,7 +739,7 @@ void lex_dollar (void) {
 /* ======================================================================
                              Get lexeme
 
-  This is the main routine called from outside the lexer.  It reads past 
+  This is the main routine called from outside the lexer.  It reads past
   any whitespace, then calls some lex_xxx routine (using the lexer_routines[]
   table) based on the first character of the lexeme.
 ====================================================================== */
@@ -769,7 +769,7 @@ void get_lexeme (agent* thisAgent) {
     if (thisAgent->current_char==EOF) break;
     if (whitespace[static_cast<unsigned char>(thisAgent->current_char)]) {
       if (thisAgent->current_char == '\n')
-      {    
+      {
          if (thisAgent->current_file->fake_rparen_at_eol) {
               do_fake_rparen(thisAgent);
               return;
@@ -779,7 +779,7 @@ void get_lexeme (agent* thisAgent) {
       continue;
     }
 
-//#ifdef USE_TCL 
+//#ifdef USE_TCL
     if (thisAgent->current_char==';') {
       /* --- skip the semi-colon, forces newline in TCL --- */
       get_next_char(thisAgent);  /* consume it */
@@ -843,11 +843,11 @@ void get_lexeme (agent* thisAgent) {
   else
     lex_eof(thisAgent);
 }
-  
+
 /* ======================================================================
                             Init lexer
 
-  This should be called before anything else in this file.  It does all 
+  This should be called before anything else in this file.  It does all
   the necessary init stuff for the lexer, and starts the lexer reading from
   standard input.
 ====================================================================== */
@@ -858,11 +858,11 @@ void get_lexeme (agent* thisAgent) {
 // call to start_lext_from_file.  It does a memory allocation and other things that should
 // never happen more than once.
 //
-void init_lexer (agent* thisAgent) 
+void init_lexer (agent* thisAgent)
 {
   static bool initialized = false;
 
-  if(!initialized) 
+  if(!initialized)
   {
      initialized = true;
 
@@ -891,7 +891,7 @@ void init_lexer (agent* thisAgent)
    //  {
    //    constituent_char[(int)extra_constituents[i]]=TRUE;
    //  }
-  
+
      /* --- setup whitespace array --- */
      for (i=0; i<256; i++)
      {
@@ -923,7 +923,7 @@ void init_lexer (agent* thisAgent)
      // get overwritten.  That could cause problems in a multi-
      // threaded sense because values could get switched to one
      // value and then another.  If a value is only ever set to
-     // one thing, resetting it to the same thing should be 
+     // one thing, resetting it to the same thing should be
      // perfectly safe.
      //
      for (i=0; i<256; i++)
@@ -988,17 +988,17 @@ void init_lexer (agent* thisAgent)
            lexer_routines[(int)'$'] = lex_dollar;   /* AGR 562 */
            break;
         default:
-           if (isdigit(i)) 
+           if (isdigit(i))
            {
               lexer_routines[i] = lex_digit;
               continue;
            }
 
-           if (constituent_char[i]) 
+           if (constituent_char[i])
            {
               lexer_routines[i] = lex_constituent_string;
               continue;
-           } 
+           }
         }
      }
   }
@@ -1021,7 +1021,7 @@ void init_lexer (agent* thisAgent)
 
 void print_location_of_most_recent_lexeme (agent* thisAgent) {
   int i;
-  
+
   if (thisAgent->current_file->line_of_start_of_last_lexeme ==
       thisAgent->current_file->current_line) {
     /* --- error occurred on current line, so print out the line --- */
@@ -1070,7 +1070,7 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
 
   Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
   closing paren is found (0 means eat until back at the top level).
-  
+
   Fake_rparen_at_next_end_of_line() tells the lexer to insert a fake
   R_PAREN_LEXEME token the next time it reaches the end of a line.
 ====================================================================== */
@@ -1079,7 +1079,7 @@ int current_lexer_parentheses_level (agent* thisAgent) {
   return thisAgent->current_file->parentheses_level;
 }
 
-void skip_ahead_to_balanced_parentheses (agent* thisAgent, 
+void skip_ahead_to_balanced_parentheses (agent* thisAgent,
 										 int parentheses_level) {
   while (TRUE) {
     if (thisAgent->lexeme.type==EOF_LEXEME) return;
@@ -1090,8 +1090,8 @@ void skip_ahead_to_balanced_parentheses (agent* thisAgent,
 }
 
 void fake_rparen_at_next_end_of_line (agent* thisAgent) {
-  thisAgent->current_file->parentheses_level++;  
-  thisAgent->current_file->fake_rparen_at_eol = TRUE;  
+  thisAgent->current_file->parentheses_level++;
+  thisAgent->current_file->fake_rparen_at_eol = TRUE;
 }
 
 /* ======================================================================
@@ -1102,18 +1102,18 @@ void fake_rparen_at_next_end_of_line (agent* thisAgent) {
   will be returned as SYM_CONSTANT_LEXEME's instead.
 ====================================================================== */
 
-void set_lexer_allow_ids (agent* thisAgent, Bool allow_identifiers) {
+void set_lexer_allow_ids (agent* thisAgent, bool allow_identifiers) {
   thisAgent->current_file->allow_ids = allow_identifiers;
 }
 
-Bool get_lexer_allow_ids(agent* thisAgent) {
+bool get_lexer_allow_ids(agent* thisAgent) {
 	return thisAgent->current_file->allow_ids;
 }
 
 /* ======================================================================
                Determine possible symbol types for string
 
-  This is a utility routine which figures out what kind(s) of symbol a 
+  This is a utility routine which figures out what kind(s) of symbol a
   given string could represent.  At entry:  s, length_of_s represent the
   string.  At exit:  possible_xxx is set to TRUE/FALSE to indicate
   whether the given string could represent that kind of symbol; rereadable
@@ -1122,16 +1122,16 @@ Bool get_lexer_allow_ids(agent* thisAgent) {
   special lexeme like "+", changing upper to lower case, etc.
 ====================================================================== */
 
-void determine_possible_symbol_types_for_string (char *s, 
+void determine_possible_symbol_types_for_string (char *s,
 												 size_t length_of_s,
-												 Bool *possible_id, 
-												 Bool *possible_var, 
-												 Bool *possible_sc, 
-												 Bool *possible_ic, 
-												 Bool *possible_fc, 
-												 Bool *rereadable) {
+												 bool*possible_id,
+												 bool*possible_var,
+												 bool*possible_sc,
+												 bool*possible_ic,
+												 bool*possible_fc,
+												 bool*rereadable) {
 	char *ch;
-	Bool all_alphanum;
+	bool all_alphanum;
 
 	*possible_id = FALSE;
 	*possible_var = FALSE;
@@ -1145,29 +1145,29 @@ void determine_possible_symbol_types_for_string (char *s,
 		ch = s;
 		if ((*ch=='+')||(*ch=='-'))
 			ch++;								/* optional leading + or - */
-		while (isdigit(*ch)) 
+		while (isdigit(*ch))
 			ch++;								/* string of digits */
 		if ((*ch==0)&&(isdigit(*(ch-1))))
 			*possible_ic = TRUE;
 		if (*ch=='.') {
 			ch++;								/* decimal point */
-			while (isdigit(*ch)) 
+			while (isdigit(*ch))
 				ch++;							/* string of digits */
 			if ((*ch=='e')||(*ch=='E')) {
 				ch++;							/* E */
-				if ((*ch=='+')||(*ch=='-')) 
+				if ((*ch=='+')||(*ch=='-'))
 					ch++;						/* optional leading + or - */
 				while (isdigit(*ch))
 					ch++;						/* string of digits */
 			}
-			if (*ch==0) 
+			if (*ch==0)
 				*possible_fc = TRUE;
 		}
 	}
 
 	/* --- make sure it's entirely constituent characters --- */
 	for (ch=s; *ch!=0; ch++)
-		if (! constituent_char[static_cast<unsigned char>(*ch)]) 
+		if (! constituent_char[static_cast<unsigned char>(*ch)])
 			return;
 
 	/* --- check for rereadability --- */
@@ -1189,7 +1189,7 @@ void determine_possible_symbol_types_for_string (char *s,
 	*possible_sc = TRUE;
 
 	/* --- check whether it's a variable --- */
-	if ((*s=='<')&&(*(s+length_of_s-1)=='>')) 
+	if ((*s=='<')&&(*(s+length_of_s-1)=='>'))
 		*possible_var = TRUE;
 
 	/* --- check if it's an identifier --- */
@@ -1201,7 +1201,7 @@ void determine_possible_symbol_types_for_string (char *s,
 	}
 	if (isalpha(*ch) && *(++ch) != '\0') {
 		/* --- is the rest of the string an integer? --- */
-		while (isdigit(*ch)) 
+		while (isdigit(*ch))
 			ch++;
 		if (*ch=='\0')
 			*possible_id = TRUE;

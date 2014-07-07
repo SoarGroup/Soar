@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
@@ -40,7 +40,7 @@
    and returns the symbol at that location.  The firer uses this for
    resolving references in RHS actions to variables bound on the LHS.
 
-   Count_rete_tokens_for_production() returns a count of the number of 
+   Count_rete_tokens_for_production() returns a count of the number of
    tokens currently in use for the given production.
 
    Print_partial_match_information(), print_match_set(), and
@@ -63,7 +63,7 @@
 
 struct not_struct;
 
-typedef char Bool;
+
 typedef unsigned char byte;
 typedef byte wme_trace_type;
 typedef byte ms_trace_type;
@@ -74,10 +74,10 @@ typedef struct action_struct action;
 typedef struct wme_struct wme;
 typedef struct rete_node_struct rete_node;
 typedef struct agent_struct agent;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 
 typedef struct token_struct {
-  /* --- Note: "parent" is NIL on negative node negrm (local join result) 
+  /* --- Note: "parent" is NIL on negative node negrm (local join result)
      tokens, non-NIL on all other tokens including CN and CN_P stuff.
      I put "parent" at offset 0 in the structure, so that upward scans
      are fast (saves doing an extra integer addition in the inner loop) --- */
@@ -103,14 +103,14 @@ typedef struct token_struct {
 
 extern void init_rete (agent* thisAgent);
 
-extern Bool any_assertions_or_retractions_ready (agent* thisAgent);
-extern Bool postpone_assertion (agent* thisAgent, production **prod, struct token_struct **tok, wme **w);
+extern bool any_assertions_or_retractions_ready (agent* thisAgent);
+extern bool postpone_assertion (agent* thisAgent, production **prod, struct token_struct **tok, wme **w);
 extern void consume_last_postponed_assertion(agent* thisAgent);
 extern void restore_postponed_assertions (agent* thisAgent);
-extern Bool get_next_retraction (agent* thisAgent, struct instantiation_struct **inst);
+extern bool get_next_retraction (agent* thisAgent, struct instantiation_struct **inst);
 /* REW: begin 08.20.97 */
 /* Special routine for retractions in removed goals.  See note in rete.cpp */
-extern Bool get_next_nil_goal_retraction (agent* thisAgent, struct instantiation_struct **inst);
+extern bool get_next_nil_goal_retraction (agent* thisAgent, struct instantiation_struct **inst);
 /* REW: end   08.20.97 */
 
 #define NO_REFRACTED_INST 0              /* no refracted inst. was given */
@@ -119,13 +119,13 @@ extern Bool get_next_nil_goal_retraction (agent* thisAgent, struct instantiation
 #define DUPLICATE_PRODUCTION 3           /* the prod. was a duplicate */
 extern byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top,
                                     instantiation *refracted_inst,
-                                    Bool warn_on_duplicates, Bool ignore_rhs = false);
+                                    bool warn_on_duplicates, bool ignore_rhs = false);
 extern void excise_production_from_rete (agent* thisAgent, production *p);
 
 extern void add_wme_to_rete (agent* thisAgent, wme *w);
 extern void remove_wme_from_rete (agent* thisAgent, wme *w);
 
-extern void p_node_to_conditions_and_nots (agent* thisAgent, 
+extern void p_node_to_conditions_and_nots (agent* thisAgent,
                                            struct rete_node_struct *p_node,
                                            struct token_struct *tok,
                                            wme *w,
@@ -145,12 +145,12 @@ extern void xml_partial_match_information (agent* thisAgent, rete_node *p_node, 
 extern void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
 extern void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
 extern void get_all_node_count_stats (agent* thisAgent);
-extern int get_node_count_statistic (agent* thisAgent, char * node_type_name, 
-				     char * column_name, 
+extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
+				     char * column_name,
 				     uint64_t * result);
 
-extern Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64);
-extern Bool load_rete_net (agent* thisAgent, FILE *source_file);
+extern bool save_rete_net (agent* thisAgent, FILE *dest_file, bool use_rete_net_64);
+extern bool load_rete_net (agent* thisAgent, FILE *source_file);
 
 #ifdef __cplusplus
 //}

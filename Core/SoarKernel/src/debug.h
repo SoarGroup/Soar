@@ -24,8 +24,6 @@
 #include "soar_module.h"
 #include "Export.h"
 
-//#define SOAR_DEBUG_UTILITIES
-
 #ifdef SOAR_DEBUG_UTILITIES
 
 #ifdef DEBUG_EPMEM_SQL

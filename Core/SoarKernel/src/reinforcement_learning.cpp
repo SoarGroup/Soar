@@ -235,13 +235,13 @@ bool rl_enabled( agent *my_agent )
 
 inline void rl_add_ref( Symbol* goal, production* prod )
 {
-	goal->id.rl_info->prev_op_rl_rules->push_back( prod );
+	goal->id->rl_info->prev_op_rl_rules->push_back( prod );
 	prod->rl_ref_count++;
 }
 
 inline void rl_remove_ref( Symbol* goal, production* prod )
 {
-	rl_rule_list* rules = goal->id.rl_info->prev_op_rl_rules;
+	rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
 	for ( rl_rule_list::iterator p=rules->begin(); p!=rules->end(); p++ )
 	{
@@ -256,7 +256,7 @@ inline void rl_remove_ref( Symbol* goal, production* prod )
 
 void rl_clear_refs( Symbol* goal )
 {
-	rl_rule_list* rules = goal->id.rl_info->prev_op_rl_rules;
+	rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
 	for ( rl_rule_list::iterator p=rules->begin(); p!=rules->end(); p++ )
 	{
@@ -275,7 +275,7 @@ void rl_reset_data( agent *my_agent )
 	Symbol *goal = my_agent->top_goal;
 	while( goal )
 	{
-		rl_data *data = goal->id.rl_info;
+		rl_data *data = goal->id->rl_info;
 
 		data->eligibility_traces->clear();
 		rl_clear_refs( goal );
@@ -286,16 +286,16 @@ void rl_reset_data( agent *my_agent )
 		data->gap_age = 0;
 		data->hrl_age = 0;
 
-		goal = goal->id.lower_goal;
+		goal = goal->id->lower_goal;
 	}
 }
 
 // removes rl references to a production (used for excise)
 void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 {
-	for ( Symbol* state = my_agent->top_state; state; state = state->id.lower_goal )
+	for ( Symbol* state = my_agent->top_state; state; state = state->id->lower_goal )
 	{
-		state->id.rl_info->eligibility_traces->erase( prod );
+		state->id->rl_info->eligibility_traces->erase( prod );
 		rl_remove_ref( state, prod );
 	}
 }
@@ -322,7 +322,7 @@ bool rl_valid_template( production *prod )
 			}
 			else if ( a->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE )
 			{
-				if ( rhs_value_is_symbol( a->referent ) && ( rhs_value_to_symbol( a->referent )->id.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE ) )
+				if ( rhs_value_is_symbol( a->referent ) && ( rhs_value_to_symbol( a->referent )->id->is_variable()) )
 					var_pref = true;
 			}
 		}
@@ -457,7 +457,7 @@ void rl_revert_template_id( agent *my_agent )
 
 inline void rl_get_symbol_constant( Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants )
 {
-	if ( ( p_sym->common.symbol_type == VARIABLE_SYMBOL_TYPE ) && ( ( i_sym->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( i_sym->id.smem_lti != NIL ) ) )
+	if ( ( p_sym->symbol_type == VARIABLE_SYMBOL_TYPE ) && ( ( i_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( i_sym->id->smem_lti != NIL ) ) )
 	{
 		constants->insert( std::make_pair( p_sym, i_sym ) );
 	}
@@ -592,9 +592,9 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 			{
 				new_id = rl_next_template_id( my_agent );
 				to_string( new_id, temp_id );
-				new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + temp_id );
-			} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
-			new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
+				new_name = ( "rl*" + empty_string + my_template->name->sc->name + "*" + temp_id );
+			} while ( find_str_constant( my_agent, new_name.c_str() ) != NIL );
+			new_name_symbol = make_str_constant( my_agent, new_name.c_str() );
 
 			// prep conditions
 			copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
@@ -606,10 +606,10 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 
 			// get the preference value
 			id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
-			attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
+			attr = instantiate_rhs_value( my_agent, my_action->attr, id->id->level, 'a', tok, w );
 			first_letter = first_letter_from_symbol( attr );
-			value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
-			referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
+			value = instantiate_rhs_value( my_agent, my_action->value, id->id->level, first_letter, tok, w );
+			referent = instantiate_rhs_value( my_agent, my_action->referent, id->id->level, first_letter, tok, w );
 
 			// clean up after yourself :)
 			symbol_remove_ref( my_agent, id );
@@ -626,13 +626,13 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 
 			// set initial expected reward values
 			{
-				if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+				if ( referent->symbol_type == INT_CONSTANT_SYMBOL_TYPE )
 				{
-					init_value = static_cast< double >( referent->ic.value );
+					init_value = static_cast< double >( referent->ic->value );
 				}
-				else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+				else if ( referent->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
 				{
-					init_value = referent->fc.value;
+					init_value = referent->fc->value;
 				}
 
 				new_production->rl_ecr = 0.0;
@@ -668,25 +668,25 @@ action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym
 
     // id
 	temp = id_sym;
-	symbol_add_ref( temp );
+	symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
 	rhs->id = symbol_to_rhs_value( temp );
 
     // attribute
     temp = attr_sym;
-	symbol_add_ref( temp );
+	symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
 	rhs->attr = symbol_to_rhs_value( temp );
 
 	// value
 	temp = val_sym;
-	symbol_add_ref( temp );
+	symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
 	rhs->value = symbol_to_rhs_value( temp );
 
 	// referent
 	temp = ref_sym;
-	symbol_add_ref( temp );
+	symbol_add_ref(my_agent, temp );
 	variablize_symbol( my_agent, &temp );
 	rhs->referent = symbol_to_rhs_value( temp );
 
@@ -708,13 +708,13 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
 
 		id = referent_of_equality_test( cond->data.tests.id_test );
 
-		if ( ( id->id.isa_goal || id->id.isa_impasse ) && ( id->id.tc_num != tc ) )
+		if ( ( id->id->isa_goal || id->id->isa_impasse ) && ( id->tc_num != tc ) )
 		{
 			allocate_with_pool( my_agent, &my_agent->complex_test_pool, &ct );
-			ct->type = static_cast<byte>( ( id->id.isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) );
+			ct->type = static_cast<byte>( ( id->id->isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) );
 			t = make_test_from_complex_test( ct );
 			add_new_test_to_test( my_agent, &( cond->data.tests.id_test ), t );
-			id->id.tc_num = tc;
+			id->tc_num = tc;
 		}
 	}
 }
@@ -726,11 +726,11 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
 // gathers discounted reward for a state
 void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 {
-	rl_data *data = goal->id.rl_info;
+	rl_data *data = goal->id->rl_info;
 
 	if ( !data->prev_op_rl_rules->empty() )
 	{
-		slot *s = find_slot( goal->id.reward_header, my_agent->rl_sym_reward );
+		slot *s = find_slot( goal->id->reward_header, my_agent->rl_sym_reward );
 		slot *t;
 		wme *w, *x;
 
@@ -741,14 +741,14 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 		{
 			for ( w=s->wmes; w; w=w->next )
 			{
-				if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+				if ( w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE )
 				{
 					t = find_slot( w->value, my_agent->rl_sym_value );
 					if ( t )
 					{
 						for ( x=t->wmes; x; x=x->next )
 						{
-							if ( ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
+							if ( ( x->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
 							{
 								reward += get_number_from_symbol( x->value );
 							}
@@ -786,21 +786,21 @@ void rl_tabulate_reward_values( agent *my_agent )
 	while( goal )
 	{
 		rl_tabulate_reward_value_for_goal( my_agent, goal );
-	    goal = goal->id.lower_goal;
+	    goal = goal->id->lower_goal;
 	}
 }
 
 // stores rl info for a state w.r.t. a selected operator
 void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 {
-	rl_data *data = goal->id.rl_info;
+	rl_data *data = goal->id->rl_info;
 	Symbol *op = cand->value;
 
 	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == on );
 
 	// Make list of just-fired prods
 	unsigned int just_fired = 0;
-	for ( preference *pref = goal->id.operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
+	for ( preference *pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
 	{
 		if ( ( op == pref->value ) && pref->inst->prod->rl_rule )
 		{
@@ -824,7 +824,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 			( data->gap_age == 0 ) && !data->prev_op_rl_rules->empty() )
 		{
 			char buf[256];
-			SNPRINTF( buf, 254, "gap started (%c%llu)", goal->id.name_letter, static_cast<long long unsigned>(goal->id.name_number) );
+			SNPRINTF( buf, 254, "gap started (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number) );
 
 			print( my_agent, buf );
 			xml_generate_warning( my_agent, buf );
@@ -856,7 +856,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 
 	if ( !using_gaps || op_rl )
 	{
-		rl_data *data = goal->id.rl_info;
+		rl_data *data = goal->id->rl_info;
 
 		if ( !data->prev_op_rl_rules->empty() )
 		{
@@ -879,7 +879,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 			{
 				char buf[256];
-				SNPRINTF( buf, 254, "gap ended (%c%llu)", goal->id.name_letter, static_cast<long long unsigned>(goal->id.name_number) );
+				SNPRINTF( buf, 254, "gap ended (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number) );
 
 				print( my_agent, buf );
 				xml_generate_warning( my_agent, buf );
@@ -1000,7 +1000,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 					{
 						std::ostringstream ss;
-						ss << "RL update " << prod->name->sc.name << " "
+						ss << "RL update " << prod->name->sc->name << " "
 						   << old_ecr << " " << old_efr << " " << old_ecr + old_efr << " -> "
 						   << new_ecr << " " << new_efr << " " << new_combined ;
 
@@ -1074,5 +1074,5 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 // clears eligibility traces
 void rl_watkins_clear( agent * /*my_agent*/, Symbol *goal )
 {
-	goal->id.rl_info->eligibility_traces->clear();
+	goal->id->rl_info->eligibility_traces->clear();
 }

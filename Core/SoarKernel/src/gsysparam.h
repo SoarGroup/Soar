@@ -27,65 +27,7 @@
 #ifndef GSYSPARAM_H
 #define GSYSPARAM_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-typedef char Bool;
-typedef unsigned char byte;
 typedef struct agent_struct agent;
-
-/* -------------------------------
-      Types of Productions
-------------------------------- */
-
-#define USER_PRODUCTION_TYPE 0
-#define DEFAULT_PRODUCTION_TYPE 1
-#define CHUNK_PRODUCTION_TYPE 2
-#define JUSTIFICATION_PRODUCTION_TYPE 3
-#define TEMPLATE_PRODUCTION_TYPE 4
-
-#define NUM_PRODUCTION_TYPES 5
-// Soar-RL assumes that the production types start at 0 and go to (NUM_PRODUCTION_TYPES-1) sequentially
-
-/* ---------------------------------------
-    Match Set print parameters
---------------------------------------- */
-
-#define MS_ASSERT_RETRACT 0      /* print both retractions and assertions */
-#define MS_ASSERT         1      /* print just assertions */
-#define MS_RETRACT        2      /* print just retractions */
-
-typedef byte ms_trace_type;   /* must be one of the above constants */
-
-/* ---------------------------------------
-    How much information to print about
-    the wmes matching an instantiation
---------------------------------------- */
-
-#define NONE_WME_TRACE    1      /* don't print anything */
-#define TIMETAG_WME_TRACE 2      /* print just timetag */
-#define FULL_WME_TRACE    3      /* print whole wme */
-#define NO_WME_TRACE_SET  4
-
-typedef byte wme_trace_type;   /* must be one of the above constants */
-
-/* -------------------------------
-      Ways to Do User-Select
-------------------------------- */
-
-#define USER_SELECT_BOLTZMANN	1		/* boltzmann algorithm, with respect to temperature */
-#define USER_SELECT_E_GREEDY	2		/* with probability epsilon choose random, otherwise greedy */
-#define USER_SELECT_FIRST  		3		/* just choose the first candidate item */
-#define USER_SELECT_LAST   		4		/* choose the last item   AGR 615 */
-#define USER_SELECT_RANDOM 		5		/* pick one at random */
-#define USER_SELECT_SOFTMAX		6		/* pick one at random, probabalistically biased by numeric preferences */
-#define USER_SELECT_INVALID		7		/* should be 1+ last item, used for validity checking */
-
-/* ---------------------------
-   And now, the sysparam's
---------------------------- */
 
 /* ====== Sysparams for what to trace === */
 #define INVALID_SYSPARAM                          0

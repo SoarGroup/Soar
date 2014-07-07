@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
@@ -25,7 +25,7 @@ extern "C"
 //{
 #endif
 
-typedef char Bool;
+
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef signed short goal_stack_level;
@@ -46,8 +46,8 @@ typedef struct backtrace_struct {
 /* RBD Note: more comments here */
 extern void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *reliable);
 extern void trace_grounded_potentials (agent* thisAgent);
-extern Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *reliable);
-extern void backtrace_through_instantiation (agent* thisAgent, 
+extern bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *reliable);
+extern void backtrace_through_instantiation (agent* thisAgent,
                                              instantiation *inst,
                                              goal_stack_level grounds_level,
                                              condition *trace_cond,

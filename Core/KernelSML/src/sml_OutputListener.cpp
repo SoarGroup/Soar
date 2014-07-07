@@ -29,13 +29,13 @@
 
 using namespace sml ;
 
-TagWme* OutputListener::CreateTagIOWme( AgentSML* pAgent, io_wme* wme ) 
+TagWme* OutputListener::CreateTagIOWme( AgentSML* pAgent, io_wme* wme )
 {
 	// Create the wme tag
 	TagWme* pTag = new TagWme() ;
 
 	// Look up the type of value this is
-	char const* pValueType = AgentSML::GetValueType( wme->value->sc.common_symbol_info.symbol_type ) ;
+	char const* pValueType = AgentSML::GetValueType( wme->value->symbol_type ) ;
 
 	// For additions we send everything
 	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
@@ -64,7 +64,7 @@ TagWme* OutputListener::CreateTagWme( AgentSML* pAgent, wme* wme )
 	TagWme* pTag = new TagWme() ;
 
 	// Look up the type of value this is
-	char const* pValueType = AgentSML::GetValueType( wme->value->sc.common_symbol_info.symbol_type ) ;
+	char const* pValueType = AgentSML::GetValueType( wme->value->symbol_type ) ;
 
 	// For additions we send everything
 	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
@@ -316,7 +316,7 @@ void OutputListener::SendOutputInitEvent() {
 
 // Agent event listener (called when soar has been or is about to be re-initialized)
 // BADBAD: This shouldn't really be handled in a class called OutputListener.
-void OutputListener::ReinitializeEvent(smlAgentEventId eventId) 
+void OutputListener::ReinitializeEvent(smlAgentEventId eventId)
 {
 	// Before the kernel is re-initialized we have to release all input WMEs.
 	// If we don't do this, gSKI will fail to re-initialize the kernel correctly as it

@@ -21,7 +21,7 @@
 //{
 #endif
 
-typedef char Bool;
+
 typedef struct agent_struct agent;
 
 extern void init_built_in_rhs_math_functions (agent* thisAgent);

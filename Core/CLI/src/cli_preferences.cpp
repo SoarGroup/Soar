@@ -55,7 +55,7 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
     switch (agnt->lexeme.type) 
     {
     case SYM_CONSTANT_LEXEME:
-        attr_tmp = find_sym_constant (agnt, agnt->lexeme.string);
+        attr_tmp = find_str_constant (agnt, agnt->lexeme.string);
         break;
     case INT_CONSTANT_LEXEME:
         attr_tmp = find_int_constant (agnt, agnt->lexeme.int_val);
@@ -162,7 +162,7 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
     /// change soon, so I'll cheat for now.  If we have an ID that isn't a
     /// state (goal), then don't use the default ^operator.  Instead, search
     /// for wmes with that ID as a value.  See below
-    if (!id->id.isa_goal && !strcmp(szAttr, "operator")) {
+    if (!id->id->isa_goal && !strcmp(szAttr, "operator")) {
         attr = NIL;
     } else {
         if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
@@ -195,7 +195,7 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 
     if (object) {
         // step thru dll of slots for ID, printing prefs for each one
-        for (s = id->id.slots; s != NIL; s = s->next ) {        
+        for (s = id->id->slots; s != NIL; s = s->next ) {        
             if (s->attr == soarAgent->operator_symbol)
                 print_with_symbols(soarAgent, "Preferences for %y ^%y:", s->id, s->attr);                
             else 
@@ -209,19 +209,19 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
                 }
             }
         }
-        if (id->id.impasse_wmes)
+        if (id->id->impasse_wmes)
             print_with_symbols(soarAgent, "Arch-created wmes for %y :\n", id);                
-        for (w=id->id.impasse_wmes; w!=NIL; w=w->next)   {
+        for (w=id->id->impasse_wmes; w!=NIL; w=w->next)   {
             print_wme(soarAgent, w);
         }
-        if (id->id.input_wmes)
+        if (id->id->input_wmes)
             print_with_symbols(soarAgent, "Input (IO) wmes for %y :\n", id);                
-        for (w=id->id.input_wmes; w!=NIL; w=w->next) {
+        for (w=id->id->input_wmes; w!=NIL; w=w->next) {
             print_wme(soarAgent, w);
         }
 
         return 0;
-    } else if (!id->id.isa_goal && !attr ) {  
+    } else if (!id->id->isa_goal && !attr ) {  
         // find wme(s?) whose value is <ID> and print prefs if they exist
         // ??? should write print_prefs_for_id(soarAgent, id, print_prod, wtt);
         // return;                    
@@ -275,7 +275,7 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
         }
     }
 
-	if ( id->id.isa_goal && !strcmp(szAttr, "operator") )
+	if ( id->id->isa_goal && !strcmp(szAttr, "operator") )
 	{
 		// voigtjr march 2010
 		// print selection probabilities re: issue 18

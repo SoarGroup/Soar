@@ -88,7 +88,7 @@ private:
 
 
 inline Symbol *soar_interface::make_sym(const std::string &val) {
-	return make_sym_constant(agnt, val.c_str());
+	return make_str_constant(agnt, val.c_str());
 }
 
 inline Symbol *soar_interface::make_sym(int val) {
@@ -116,41 +116,41 @@ wme *soar_interface::make_wme(Symbol *id, Symbol *attr, const T &val) {
 }
 
 inline bool soar_interface::is_identifier(Symbol *sym) {
-	return sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE;
+	return sym->symbol_type == IDENTIFIER_SYMBOL_TYPE;
 }
 
 inline bool soar_interface::is_string(Symbol *sym) {
-	return sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE;
+	return sym->symbol_type == STR_CONSTANT_SYMBOL_TYPE;
 }
 
 inline bool soar_interface::is_int(Symbol *sym) {
-	return sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE;
+	return sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE;
 }
 
 inline bool soar_interface::is_float(Symbol *sym) {
-	return sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE;
+	return sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE;
 }
 
 inline bool soar_interface::is_state(Symbol *sym) {
-	return is_identifier(sym) && sym->id.isa_goal;
+	return is_identifier(sym) && sym->id->isa_goal;
 }
 
 inline bool soar_interface::is_top_state(Symbol *sym) {
-	return is_state(sym) && (sym->id.higher_goal == NULL);
+	return is_state(sym) && (sym->id->higher_goal == NULL);
 }
 
 inline bool soar_interface::get_name(Symbol *sym, std::string &n) {
 	std::stringstream ss;
 	if (!is_identifier(sym))
 		return false;
-	ss << sym->id.name_letter << sym->id.name_number;
+	ss << sym->id->name_letter << sym->id->name_number;
 	n = ss.str();
 	return true;
 }
 
 inline bool soar_interface::get_val(Symbol *sym, std::string &v) {
 	if (is_string(sym)) {
-		v = sym->sc.name;
+		v = sym->sc->name;
 		return true;
 	}
 	return false;
@@ -158,7 +158,7 @@ inline bool soar_interface::get_val(Symbol *sym, std::string &v) {
 
 inline bool soar_interface::get_val(Symbol *sym, long &v) {
 	if (is_int(sym)) {
-		v = sym->ic.value;
+		v = sym->ic->value;
 		return true;
 	}
 	return false;
@@ -166,11 +166,11 @@ inline bool soar_interface::get_val(Symbol *sym, long &v) {
 
 inline bool soar_interface::get_val(Symbol *sym, double &v) {
 	if (is_float(sym)) {
-		v = sym->fc.value;
+		v = sym->fc->value;
 		return true;
 	}
 	if (is_int(sym)) {
-		v = static_cast<double>(sym->ic.value);
+		v = static_cast<double>(sym->ic->value);
 		return true;
 	}
 	return false;
@@ -193,11 +193,11 @@ inline tc_num soar_interface::new_tc_num() {
 }
 
 inline tc_num soar_interface::get_tc_num(Symbol *s) {
-	return s->id.tc_num;
+	return s->tc_num;
 }
 
 inline void soar_interface::set_tc_num(Symbol *s, tc_num n) {
-	s->id.tc_num = n;
+	s->tc_num = n;
 }
 
 inline int soar_interface::get_timetag(wme *w) {
@@ -205,7 +205,7 @@ inline int soar_interface::get_timetag(wme *w) {
 }
 
 inline Symbol *soar_interface::get_parent_state(Symbol *id) {
-	return id->id.higher_goal;
+	return id->id->higher_goal;
 }
 
 template<class T>

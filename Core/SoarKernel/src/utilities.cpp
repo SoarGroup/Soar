@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* utilities.cpp */
@@ -18,17 +18,17 @@
 #include <time.h>
 
 bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
-	Symbol * * result_id) 
+	Symbol * * result_id)
 {
 	Symbol *id;
 	Symbol *g, *attr, *value;
 
 	get_lexeme_from_string(agnt, the_lexeme);
 
-	if (agnt->lexeme.type == IDENTIFIER_LEXEME) 
+	if (agnt->lexeme.type == IDENTIFIER_LEXEME)
 	{
 		id = find_identifier(agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number);
-		if (!id) 
+		if (!id)
 		{
 			return false;
 		}
@@ -39,7 +39,7 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 		}
 	}
 
-	if (agnt->lexeme.type==VARIABLE_LEXEME) 
+	if (agnt->lexeme.type==VARIABLE_LEXEME)
 	{
 		get_context_var_info (agnt, &g, &attr, &value);
 
@@ -48,7 +48,7 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 			return false;
 		}
 
-		if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) 
+		if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
 		{
 			return false;
 		}
@@ -85,7 +85,7 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 		else
 		{
 			agnt->lexeme.string[i] = *c;
-		} 
+		}
 	}
 
 	agnt->lexeme.string[i] = '\0'; /* Null terminate lexeme string */
@@ -96,7 +96,7 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 	{
 		agnt->lexeme.type = SYM_CONSTANT_LEXEME;
 	}
-	else 
+	else
 	{
 		determine_type_of_constituent_string(agnt);
 	}
@@ -104,7 +104,7 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 
 void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	Symbol **dest_attr_of_slot,
-	Symbol **dest_current_value) 
+	Symbol **dest_current_value)
 {
 	Symbol *v, *g;
 	int levels_up;
@@ -130,10 +130,10 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 		levels_up = 2;
 		*dest_attr_of_slot = agnt->operator_symbol;
 	} else if (v==agnt->ts_context_variable) {
-		levels_up = agnt->top_goal ? agnt->bottom_goal->id.level-agnt->top_goal->id.level : 0;
+		levels_up = agnt->top_goal ? agnt->bottom_goal->id->level-agnt->top_goal->id->level : 0;
 		*dest_attr_of_slot = agnt->state_symbol;
 	} else if (v==agnt->to_context_variable) {
-		levels_up = agnt->top_goal ? agnt->bottom_goal->id.level-agnt->top_goal->id.level : 0;
+		levels_up = agnt->top_goal ? agnt->bottom_goal->id->level-agnt->top_goal->id->level : 0;
 		*dest_attr_of_slot = agnt->operator_symbol;
 	} else {
 		*dest_goal = NIL;
@@ -144,7 +144,7 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 
 	g = agnt->bottom_goal;
 	while (g && levels_up) {
-		g = g->id.higher_goal;
+		g = g->id->higher_goal;
 		levels_up--;
 	}
 	*dest_goal = g;
@@ -157,12 +157,12 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	if (*dest_attr_of_slot==agnt->state_symbol) {
 		*dest_current_value = g;
 	} else {
-		w = g->id.operator_slot->wmes;
+		w = g->id->operator_slot->wmes;
 		*dest_current_value = w ? w->value : NIL;
 	}
 }
 
-Symbol *read_identifier_or_context_variable (agent* agnt) 
+Symbol *read_identifier_or_context_variable (agent* agnt)
 {
 	Symbol *id;
 	Symbol *g, *attr, *value;
@@ -177,7 +177,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 		}
 		return id;
 	}
-	if (agnt->lexeme.type==VARIABLE_LEXEME) 
+	if (agnt->lexeme.type==VARIABLE_LEXEME)
 	{
 		get_context_var_info (agnt, &g, &attr, &value);
 		if (!attr) {
@@ -190,7 +190,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 			print_location_of_most_recent_lexeme(agnt);
 			return NIL;
 		}
-		if (value->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
+		if (value->symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
 			print (agnt, "The current %s ", agnt->lexeme.string);
 			print_with_symbols (agnt, "(%y) is not an identifier.\n", value);
 			print_location_of_most_recent_lexeme(agnt);
@@ -201,7 +201,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 	print (agnt, "Expected identifier (or context variable)\n");
 	print_location_of_most_recent_lexeme(agnt);
 	return NIL;
-}		
+}
 
 #ifdef REAL_TIME_BEHAVIOR
 * RMJ */
@@ -215,7 +215,7 @@ void init_real_time (agent* thisAgent) {
 }
 void test_for_input_delay (agent* thisAgent) {
   /* RMJ; For real-time behavior, don't start any new decision phase
-   * until the specified "artificial" time step has passed 
+   * until the specified "artificial" time step has passed
    */
    start_timer (thisAgent, current_real_time);
    if (timercmp(current_real_time, thisAgent->real_time_tracker, <)) {
@@ -227,8 +227,8 @@ void test_for_input_delay (agent* thisAgent) {
       }
       break;
    }
-   /* Artificial time delay has passed.  
-    * Reset new delay and start the decision phase with input 
+   /* Artificial time delay has passed.
+    * Reset new delay and start the decision phase with input
 	*/
    thisAgent->real_time_tracker->tv_sec = current_real_time->tv_sec;
    thisAgent->real_time_tracker->tv_usec =
@@ -277,7 +277,7 @@ void determine_lapsing (agent* thisAgent) {
       if (thisAgent->attention_lapsing) {
          /* If lapsing, is it time to stop? */
          start_timer (thisAgent, current_real_time);
-         if (`cmp(current_real_time,
+         if (cmp(current_real_time,
                       thisAgent->attention_lapse_tracker, >)) {
             wake_from_attention_lapse();
          }
@@ -325,18 +325,6 @@ bool is_whole_number(const char * str)
 	return true;
 }
 
-/***************************************************************************
- * Function     : get_number_from_symbol
- **************************************************************************/
-double get_number_from_symbol( Symbol *sym )
-{
-	if ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
-		return sym->fc.value;
-	else if ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		return static_cast<double>(sym->ic.value);
-	
-	return 0.0;
-}
 
 void stats_init_db( agent *my_agent )
 {
@@ -367,7 +355,7 @@ void stats_init_db( agent *my_agent )
 }
 
 
-void stats_db_store(agent* my_agent, const uint64_t& dc_time, const uint64_t& dc_wm_changes, const uint64_t& dc_firing_counts) 
+void stats_db_store(agent* my_agent, const uint64_t& dc_time, const uint64_t& dc_wm_changes, const uint64_t& dc_firing_counts)
 {
 	if ( my_agent->stats_db->get_status() == soar_module::disconnected )
 	{

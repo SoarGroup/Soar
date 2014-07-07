@@ -13,10 +13,10 @@ void read_list(soar_interface *si, Symbol *id, vector<string> &words) {
 		return;
 	}
 
-	for ( s=id->id.slots; s!=NULL; s=s->next ) {
+	for ( s=id->id->slots; s!=NULL; s=s->next ) {
 		for ( w=s->wmes; w!=NULL; w=w->next ) {
 			if (si->is_string(w->attr)) {
-				words.push_back( w->attr->sc.name );
+				words.push_back( w->attr->sc->name );
 				read_list(si, w->value, words);
 			}
 		}

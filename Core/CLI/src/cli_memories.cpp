@@ -41,9 +41,9 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
             return SetError("Production required.");
         }
 
-        Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
+        Symbol* sym = find_str_constant( agnt, pProduction->c_str() );
 
-        if (!sym || !(sym->sc.production))
+        if (!sym || !(sym->sc->production))
         {
             return SetError("Production not found.");
         }
@@ -51,7 +51,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
         // save the tokens/name pair
         std::pair< std::string, uint64_t > memory;
         memory.first = *pProduction;
-        memory.second = count_rete_tokens_for_production(agnt, sym->sc.production);
+        memory.second = count_rete_tokens_for_production(agnt, sym->sc->production);
         memories.push_back(memory);
 
     } else {
@@ -112,7 +112,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 
                 // save the tokens/name pair
                 std::pair< std::string, uint64_t > memory;
-                memory.first = pSoarProduction->name->sc.name;
+                memory.first = pSoarProduction->name->sc->name;
                 memory.second = count_rete_tokens_for_production(agnt, pSoarProduction);
                 memories.push_back(memory);
             }

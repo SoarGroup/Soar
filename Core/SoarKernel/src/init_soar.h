@@ -15,9 +15,9 @@
 //{
 #endif
 
-typedef char Bool;
+
 typedef signed short goal_stack_level;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;
 
 /* added this prototype -ajc (5/3/02) */
@@ -47,7 +47,7 @@ extern void setup_signal_handling (void);
 
 //extern void exit_soar (agent* thisAgent);
 extern void abort_with_fatal_error (agent* thisAgent, const char *);
-//extern void just_before_exit_soar (agent* thisAgent);
+extern void abort_with_fatal_error_noagent (const char *msg);
 
 /* ---------------------------------------------------------------------
                      Adding and Removing Pwatchs

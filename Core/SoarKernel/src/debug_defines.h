@@ -46,7 +46,6 @@
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            false
 #define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  false
 #define TRACE_Init_DT_SAVEDVARS                   false
-#define TRACE_Init_DT_UNIQUE_VARIABLIZATION       false
 #define TRACE_Init_DT_REORDERER                   false
 //--
 #define TRACE_Init_DT_BACKTRACE                   false
@@ -54,11 +53,14 @@
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
-#define TRACE_Init_DT_VARIABLIZATION_REV          false
+#define TRACE_Init_DT_OVAR_MAPPINGS               false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_IDENTITY_PROP               false
-#define TRACE_Init_DT_SOAR_INSTANCE               true
-#define TRACE_Init_DT_CLI_LIBRARIES               true
+#define TRACE_Init_DT_SOAR_INSTANCE               false
+#define TRACE_Init_DT_CLI_LIBRARIES               false
+#define TRACE_Init_DT_CONSTRAINTS                 false
+#define TRACE_Init_DT_MERGE                       false
+#define TRACE_Init_DT_FIX_CONDITIONS              false
 
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */
@@ -66,8 +68,8 @@
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_db_mode           off
 #define OM_Init_XML_mode          off
-#define OM_Init_callback_mode     on
-#define OM_Init_stdout_mode       off
+#define OM_Init_callback_mode     off
+#define OM_Init_stdout_mode       on
 #define OM_Init_file_mode         off
 
 /* -- Which output debug listeners should be initially turned on -- */
@@ -112,7 +114,6 @@
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            false
 #define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  false
 #define TRACE_Init_DT_SAVEDVARS                   false
-#define TRACE_Init_DT_UNIQUE_VARIABLIZATION       false
 #define TRACE_Init_DT_REORDERER                   false
 //--
 #define TRACE_Init_DT_BACKTRACE                   false
@@ -120,11 +121,14 @@
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
-#define TRACE_Init_DT_VARIABLIZATION_REV          false
+#define TRACE_Init_DT_OVAR_MAPPINGS               false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_SOAR_INSTANCE               false
 #define TRACE_Init_DT_CLI_LIBRARIES               false
+#define TRACE_Init_DT_CONSTRAINTS                 false
+#define TRACE_Init_DT_MERGE                       false
+#define TRACE_Init_DT_FIX_CONDITIONS              false
 
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */
@@ -176,7 +180,6 @@
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            true
 #define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  true
 #define TRACE_Init_DT_SAVEDVARS                   true
-#define TRACE_Init_DT_UNIQUE_VARIABLIZATION       true
 #define TRACE_Init_DT_REORDERER                   true
 //--
 #define TRACE_Init_DT_BACKTRACE                   true
@@ -184,11 +187,14 @@
 #define TRACE_Init_DT_RHS_VARIABLIZATION          true
 #define TRACE_Init_DT_RL_VARIABLIZATION           true
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
-#define TRACE_Init_DT_VARIABLIZATION_REV          true
+#define TRACE_Init_DT_OVAR_MAPPINGS               true
 #define TRACE_Init_DT_NCC_VARIABLIZATION          true
 #define TRACE_Init_DT_IDENTITY_PROP               true
 #define TRACE_Init_DT_SOAR_INSTANCE               true
-#define TRACE_Init_DT_CLI_LIBRARIES               true
+#define TRACE_Init_DT_CLI_LIBRARIES               false
+#define TRACE_Init_DT_CONSTRAINTS                 true
+#define TRACE_Init_DT_MERGE                       true
+#define TRACE_Init_DT_FIX_CONDITIONS              true
 
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */
@@ -240,7 +246,6 @@
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            false
 #define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  false
 #define TRACE_Init_DT_SAVEDVARS                   false
-#define TRACE_Init_DT_UNIQUE_VARIABLIZATION       false
 #define TRACE_Init_DT_REORDERER                   false
 //--
 #define TRACE_Init_DT_BACKTRACE                   false
@@ -248,11 +253,14 @@
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
-#define TRACE_Init_DT_VARIABLIZATION_REV          false
+#define TRACE_Init_DT_OVAR_MAPPINGS               false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_SOAR_INSTANCE               false
 #define TRACE_Init_DT_CLI_LIBRARIES               false
+#define TRACE_Init_DT_CONSTRAINTS                 false
+#define TRACE_Init_DT_MERGE                       false
+#define TRACE_Init_DT_FIX_CONDITIONS              false
 
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */

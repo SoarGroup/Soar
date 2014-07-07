@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
@@ -24,17 +24,17 @@
 #include "instantiations.h"
 
 /* TEMPORARY HACK (Ideally this should be doable through
-   the external kernel interface but for now using a 
+   the external kernel interface but for now using a
    couple of global STL lists to get this information
    from the rhs function to this prefference adding code)*/
-extern wme* glbDeepCopyWMEs;   
+extern wme* glbDeepCopyWMEs;
 
 #ifdef __cplusplus
 //extern "C"
 //{
 #endif
 
-typedef char Bool;
+
 typedef signed short goal_stack_level;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
@@ -48,7 +48,7 @@ extern void do_preference_phase (agent* thisAgent);
 /* RBD Definitely need more comments here */
 extern preference *find_clone_for_level(preference *p, goal_stack_level level);
 extern void fill_in_new_instantiation_stuff (agent* thisAgent, instantiation *inst,
-                                      Bool need_to_do_support_calculations, instantiation *original_inst);
+                                      bool need_to_do_support_calculations, instantiation *original_inst);
 
 /* MMA 9-12 */
 extern void build_CDPS (agent* thisAgent, instantiation *inst);
@@ -60,7 +60,7 @@ extern void deallocate_instantiation (agent* thisAgent, instantiation *inst);
   if ((! (inst)->preferences_generated) && \
       (! (inst)->in_ms)) \
     deallocate_instantiation (thisAgent, inst); }
- 
+
 #else
 inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation * inst)
 {

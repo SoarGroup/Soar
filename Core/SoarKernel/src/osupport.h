@@ -21,7 +21,7 @@
 //{
 #endif
 
-typedef char Bool;
+
 typedef struct instantiation_struct instantiation;
 typedef struct condition_struct condition;
 typedef struct action_struct action;

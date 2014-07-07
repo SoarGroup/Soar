@@ -125,7 +125,7 @@ void init_soar_agent(agent* thisAgent) {
   add_trace_format (thisAgent, FALSE, FOR_STATES_TF, NIL,
                     "%id %ifdef[(%v[attribute] %v[impasse])]");
   { Symbol *evaluate_object_sym;
-    evaluate_object_sym = make_sym_constant (thisAgent, "evaluate-object");
+    evaluate_object_sym = make_str_constant (thisAgent, "evaluate-object");
     add_trace_format (thisAgent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym,
                       "%id (evaluate-object %o[object])");
     symbol_remove_ref (thisAgent, evaluate_object_sym);
@@ -569,7 +569,7 @@ void destroy_soar_agent (agent * delete_agent)
   /* Releasing trace formats (needs to happen before tracing hashtables are released) */
   remove_trace_format (delete_agent, FALSE, FOR_ANYTHING_TF, NIL);
   remove_trace_format (delete_agent, FALSE, FOR_STATES_TF, NIL);
-  Symbol *evaluate_object_sym = find_sym_constant (delete_agent, "evaluate-object");
+  Symbol *evaluate_object_sym = find_str_constant (delete_agent, "evaluate-object");
   remove_trace_format (delete_agent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym);
   remove_trace_format (delete_agent, TRUE, FOR_STATES_TF, NIL);
   remove_trace_format (delete_agent, TRUE, FOR_OPERATORS_TF, NIL);
@@ -588,7 +588,7 @@ void destroy_soar_agent (agent * delete_agent)
   /* Releasing other hashtables */
   free_hash_table(delete_agent, delete_agent->variable_hash_table);
   free_hash_table(delete_agent, delete_agent->identifier_hash_table);
-  free_hash_table(delete_agent, delete_agent->sym_constant_hash_table);
+  free_hash_table(delete_agent, delete_agent->str_constant_hash_table);
   free_hash_table(delete_agent, delete_agent->int_constant_hash_table);
   free_hash_table(delete_agent, delete_agent->float_constant_hash_table);
 

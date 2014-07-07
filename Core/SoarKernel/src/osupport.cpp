@@ -55,23 +55,23 @@
 ----------------------------------------------------------------------- */
 
 /* This prototype is needed by the following macros. */
-void add_to_os_tc (agent* thisAgent, Symbol *id, Bool isa_state);
+void add_to_os_tc (agent* thisAgent, Symbol *id, bool isa_state);
 
 /*#define add_to_os_tc_if_needed(sym) \
-  { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
+  { if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE) \
       add_to_os_tc (sym,FALSE); }*/
 inline void add_to_os_tc_if_needed(agent* thisAgent, Symbol * sym)
 {
-  if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
+  if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE)
     add_to_os_tc (thisAgent, sym,FALSE);
 }
 
 /*#define add_to_os_tc_if_id(sym,flag) \
-  { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
+  { if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE) \
       add_to_os_tc (sym,flag); }*/
-inline void add_to_os_tc_if_id(agent* thisAgent, Symbol * sym, Bool flag)
+inline void add_to_os_tc_if_id(agent* thisAgent, Symbol * sym, bool flag)
 {
-  if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
+  if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE) \
     add_to_os_tc (thisAgent, sym,flag);
 }
 
@@ -81,19 +81,19 @@ inline void add_to_os_tc_if_id(agent* thisAgent, Symbol * sym, Bool flag)
  * If it isa_state, check for the operator slot before the recursive call.
  */
 
-void add_to_os_tc (agent* thisAgent, Symbol *id, Bool isa_state) {
+void add_to_os_tc (agent* thisAgent, Symbol *id, bool isa_state) {
   slot *s;
   preference *pref;
   wme *w;
 
   /* --- if id is already in the TC, exit; else mark it as in the TC --- */
-  if (id->id.tc_num==thisAgent->o_support_tc) return;
-  id->id.tc_num = thisAgent->o_support_tc;
+  if (id->tc_num==thisAgent->o_support_tc) return;
+  id->tc_num = thisAgent->o_support_tc;
 
   /* --- scan through all preferences and wmes for all slots for this id --- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
+  for (w=id->id->input_wmes; w!=NIL; w=w->next)
     add_to_os_tc_if_needed (thisAgent, w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next) {
+  for (s=id->id->slots; s!=NIL; s=s->next) {
     if ((!isa_state) || (s->attr != thisAgent->operator_symbol)) {
       for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next) {
 	add_to_os_tc_if_needed (thisAgent, pref->value);
@@ -137,7 +137,7 @@ void begin_os_tc (agent* thisAgent, preference *rhs_prefs_or_nil) {
    the id is not allowed to be "sym_excluded_from_value".
 ----------------------------------------------------------------------- */
 
-Bool test_has_id_in_os_tc (agent* thisAgent, test t, Symbol *excluded_sym) {
+bool test_has_id_in_os_tc (agent* thisAgent, test t, Symbol *excluded_sym) {
   cons *c;
   Symbol *referent;
   complex_test *ct;
@@ -145,8 +145,8 @@ Bool test_has_id_in_os_tc (agent* thisAgent, test t, Symbol *excluded_sym) {
   if (test_is_blank_test(t)) return FALSE;
   if (test_is_blank_or_equality_test(t)) {
     referent = referent_of_equality_test(t);
-    if (referent->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-      if (referent->id.tc_num==thisAgent->o_support_tc)
+    if (referent->symbol_type==IDENTIFIER_SYMBOL_TYPE)
+      if (referent->tc_num==thisAgent->o_support_tc)
         if (referent!=excluded_sym)
           return TRUE;
     return FALSE;
@@ -160,7 +160,7 @@ Bool test_has_id_in_os_tc (agent* thisAgent, test t, Symbol *excluded_sym) {
   return FALSE;
 }
 
-Bool id_or_value_of_condition_list_is_in_os_tc (agent* thisAgent, condition *conds,
+bool id_or_value_of_condition_list_is_in_os_tc (agent* thisAgent, condition *conds,
                  Symbol *sym_excluded_from_value,
                  Symbol *match_state_to_exclude_test_of_the_operator_off_of) {
   /* RBD 8/19/94 Under NNPSCM, when we use this routine to look for "something
@@ -204,11 +204,11 @@ Bool id_or_value_of_condition_list_is_in_os_tc (agent* thisAgent, condition *con
    in super-states.
 
 ----------------------------------------------------------------------- */
-Bool is_state_id(agent* thisAgent, Symbol *sym,Symbol *match_state)
+bool is_state_id(agent* thisAgent, Symbol *sym,Symbol *match_state)
 {
   Symbol *c;
 
-  for(c = thisAgent->top_goal; c != match_state; c = c->id.lower_goal) {
+  for(c = thisAgent->top_goal; c != match_state; c = c->id->lower_goal) {
     if (sym == c)
       return TRUE;
   }
@@ -269,8 +269,8 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 	wme *w;
 	condition *c;
 	action    *act;
-	Bool      o_support,op_elab;
-	Bool      operator_proposal;
+	bool     o_support,op_elab;
+	bool     operator_proposal;
 	char      action_attr[50];
 	int       pass;
 	wme       *lowest_goal_wme;
@@ -305,7 +305,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 	        if (rhs_value_is_reteloc(act->id) && get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up( act->id ),
 	            rhs_value_to_reteloc_field_num( act->id ),
 	            non_variabilized_inst->rete_token,
-	            non_variabilized_inst->rete_wme )->id.isa_goal)
+	            non_variabilized_inst->rete_wme )->id->isa_goal)
 	        {
 	          operator_proposal = TRUE;
 	          o_support = FALSE;
@@ -355,13 +355,13 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
 						if (pass == 0) {
 
-							if (w->id->id.isa_goal == TRUE) {
+							if (w->id->id->isa_goal == TRUE) {
 
 								if (lowest_goal_wme == NIL)
 									lowest_goal_wme = w;
 
 								else {
-									if (w->id->id.level > lowest_goal_wme->id->id.level)
+									if (w->id->id->level > lowest_goal_wme->id->id->level)
 										lowest_goal_wme = w;
 								}
 							}
@@ -492,7 +492,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
 void dougs_calculate_support_for_instantiation_preferences (agent* thisAgent, instantiation *inst) {
   Symbol *match_state;
-  Bool rule_2_or_3, anything_added;
+  bool rule_2_or_3, anything_added;
   preference *rhs, *pref;
   wme *w;
   condition *lhs, *c;
@@ -528,8 +528,8 @@ void dougs_calculate_support_for_instantiation_preferences (agent* thisAgent, in
           (pref->attr==thisAgent->operator_symbol) &&
           ((pref->type==ACCEPTABLE_PREFERENCE_TYPE) ||
            (pref->type==REQUIRE_PREFERENCE_TYPE)) &&
-          (pref->value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)) {
-        pref->value->id.tc_num = thisAgent->o_support_tc;
+          (pref->value->symbol_type==IDENTIFIER_SYMBOL_TYPE)) {
+        pref->value->tc_num = thisAgent->o_support_tc;
         anything_added = TRUE;
       }
     }
@@ -537,15 +537,15 @@ void dougs_calculate_support_for_instantiation_preferences (agent* thisAgent, in
     while (anything_added) {
       anything_added = FALSE;
       for (pref=rhs; pref!=NIL; pref=pref->inst_next) {
-        if (pref->id->id.tc_num != thisAgent->o_support_tc) continue;
+        if (pref->id->tc_num != thisAgent->o_support_tc) continue;
         if (pref->o_supported) continue; /* already added this thing */
         pref->o_supported = TRUE;
         anything_added = TRUE;
-        if (pref->value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-          pref->value->id.tc_num = thisAgent->o_support_tc;
+        if (pref->value->symbol_type==IDENTIFIER_SYMBOL_TYPE)
+          pref->value->tc_num = thisAgent->o_support_tc;
         if ((preference_is_binary(pref->type)) &&
-            (pref->referent->common.symbol_type==IDENTIFIER_SYMBOL_TYPE))
-          pref->referent->id.tc_num = thisAgent->o_support_tc;
+            (pref->referent->symbol_type==IDENTIFIER_SYMBOL_TYPE))
+          pref->referent->tc_num = thisAgent->o_support_tc;
       }
     }
   }
@@ -579,7 +579,7 @@ enum yes_no_maybe { YES, NO, MAYBE } ;
 yes_no_maybe test_is_for_symbol (test t, Symbol *sym) {
   cons *c;
   yes_no_maybe temp;
-  Bool maybe_found;
+  bool maybe_found;
   complex_test *ct;
   Symbol *referent;
 
@@ -588,8 +588,8 @@ yes_no_maybe test_is_for_symbol (test t, Symbol *sym) {
   if (test_is_blank_or_equality_test(t)) {
     referent = referent_of_equality_test(t);
     if (referent==sym) return YES;
-    if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
-    if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
+    if (referent->symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
+    if (sym->symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
     return NO;
   }
 
@@ -597,7 +597,7 @@ yes_no_maybe test_is_for_symbol (test t, Symbol *sym) {
 
   switch (ct->type) {
   case DISJUNCTION_TEST:
-    if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
+    if (sym->symbol_type==VARIABLE_SYMBOL_TYPE) return MAYBE;
     if (member_of_list (sym, ct->data.disjunction_list)) return MAYBE;
     return NO;
   case CONJUNCTIVE_TEST:
@@ -686,7 +686,7 @@ Symbol *find_compile_time_match_goal (agent* thisAgent, condition *lhs, list *kn
         prev_c = NIL;
         for (c=root_goals; c!=NIL; c=next_c) {
           next_c = c->rest;
-          if (test_is_for_symbol (cond->data.tests.id_test, static_cast<symbol_union *>(c->first))==YES) {
+          if (test_is_for_symbol (cond->data.tests.id_test, static_cast<symbol_struct *>(c->first))==YES) {
             /* --- remove c from the root_goals list --- */
             if (prev_c) prev_c->rest = next_c; else root_goals = next_c;
             free_cons (thisAgent, c);
@@ -703,7 +703,7 @@ Symbol *find_compile_time_match_goal (agent* thisAgent, condition *lhs, list *kn
 
   /* --- if there's only one root goal, that's it! --- */
   if (num_root_goals==1)
-    result = static_cast<symbol_union *>(root_goals->first);
+    result = static_cast<symbol_struct *>(root_goals->first);
   else
     result = NIL;
 
@@ -741,7 +741,7 @@ Symbol *find_thing_off_goal (agent* thisAgent, condition *lhs,
     vars = NIL;
     add_bound_variables_in_test (thisAgent, c->data.tests.value_test, tc, &vars);
     if (vars) {
-      result = static_cast<symbol_union *>(vars->first);
+      result = static_cast<symbol_struct *>(vars->first);
       free_list (thisAgent, vars);
       return result;
     }
@@ -757,7 +757,7 @@ Symbol *find_thing_off_goal (agent* thisAgent, condition *lhs,
    within NCC's).
 ------------------------------------------------------------------ */
 
-Bool condition_list_has_id_test_for_sym (condition *conds, Symbol *sym) {
+bool condition_list_has_id_test_for_sym (condition *conds, Symbol *sym) {
   for ( ; conds!=NIL; conds=conds->next) {
     switch (conds->type) {
     case POSITIVE_CONDITION:
@@ -782,7 +782,7 @@ Bool condition_list_has_id_test_for_sym (condition *conds, Symbol *sym) {
 
 ------------------------------------------------------------------ */
 
-Bool match_state_tests_non_operator_slot (agent* thisAgent, condition *conds,
+bool match_state_tests_non_operator_slot (agent* thisAgent, condition *conds,
 										  Symbol *match_state) {
   yes_no_maybe ynm;
 
@@ -819,7 +819,7 @@ void add_tc_through_lhs_and_rhs (agent* thisAgent, condition *lhs, action *rhs,
 								 tc_number tc, list **id_list, list **var_list) {
   condition *c;
   action *a;
-  Bool anything_changed;
+  bool anything_changed;
 
   for (c=lhs; c!=NIL; c=c->next) c->already_in_tc = FALSE;
   for (a=rhs; a!=NIL; a=a->next) a->already_in_tc = FALSE;
@@ -862,7 +862,7 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs, action 
 	action *a;
 	condition *cond;
 	yes_no_maybe ynm;
-	Bool operator_found, possible_operator_found;
+	bool operator_found, possible_operator_found;
 	tc_number tc;
 
 	/* --- initialize:  mark all rhs actions as "unknown" --- */
@@ -887,7 +887,7 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs, action 
 				attr = rhs_value_to_symbol(a->attr);
 				if (attr==thisAgent->operator_symbol)
 				{ operator_found = possible_operator_found = TRUE; break; }
-				if (attr->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+				if (attr->symbol_type==VARIABLE_SYMBOL_TYPE)
 					possible_operator_found = TRUE;
 			} else {
 				possible_operator_found = TRUE; /* for funcall, must play it safe */
@@ -944,7 +944,7 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs, action 
 				if (rhs_value_is_symbol(a->attr)) { /* RBD 3/29/95 */
 					Symbol *attr;
 					attr = rhs_value_to_symbol(a->attr);
-					if ((attr->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
+					if ((attr->symbol_type==VARIABLE_SYMBOL_TYPE) &&
 						(attr != match_state))
 					{ possible_operator_found = TRUE; break; }
 				} else { /* RBD 3/29/95 */

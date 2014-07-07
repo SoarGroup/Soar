@@ -6,103 +6,9 @@
 /* =======================================================================
                              symtab.h
 
-   Soar 6 uses five kinds of symbols:  symbolic constants, integer
+   Soar uses five kinds of symbols:  symbolic constants, integer
    constants, floating-point constants, identifiers, and variables.
    We use five resizable hash tables, one for each kind of symbol.
-
-   "symbol" is typedef-ed as a union of the five kinds of symbol
-   structures.  Some fields common to all symbols are accessed via
-   sym->common.field_name; fields particular to a certain kind of
-   symbol are accessed via sym->var.field_name_on_variables, etc.
-   (See the definitions below.)  Note that "common" is #defined below.
-
-   Some (but not all) of the fields common to all symbols are:
-      symbol_type:  indicates which of the five kinds of symbols this is
-      reference_count:  current reference count for this symbol
-      hash_id:  used for hash functions in the rete (and elsewhere)
-
-   Fields on symbolic constants:
-      name:  points to null-terminated string giving its name
-      production:  points to a production structure, or NIL if there is
-                   no production with that name
-
-   Fields on integer constants:
-      value:  gives the value of the symbol.  This is of type (int64_t).
-
-   Fields on floating-point constants:
-      value:  gives the value of the symbol.  This is of type (float).
-
-   Fields on variables:
-      name:  points to null-terminated string giving its name
-      tc_num:  used for transitive closure computations
-      current_binding_value:  when productions are fired, this indicates
-                              the variable's binding
-      gensym_number:  used by the variable generator to prevent certain
-                      already-in-use variables from being generated
-      rete_binding_locations:  used temporarily by the Rete, while adding
-                      productions, to store a list of places where this
-                      variable is bound and/or tested
-
-   Fields on identifiers:
-
-       name_number, name_letter:  indicate the name of the identifier
-
-       isa_goal, isa_impasse:  indicate whether this is the identifier of a
-                               goal or attribute impasse
-
-       isa_operator:  keeps a count of how many (normal or acceptable
-                      preference) wmes contain (^operator <this-id>).
-                      The tracing code uses this to figure out whether
-                      a given object is an operator.
-
-       allow_bottom_up_chunks:  Used for bottom-up chunking, and only on goal
-         identifiers.  This is TRUE iff no chunk has yet been built for a
-         subgoal of this goal.
-
-       could_be_a_link_from_below:  TRUE if there might be a link to this id
-         from some other id lower in the goal stack.
-
-       did_PE:
-
-       level:  current goal_stack_level of this id
-
-       promotion_level:  level to which this id is going to be promoted as
-         soon as ownership info is updated.
-
-       link_count:  count of how many links there are to this id.
-
-       unknown_level:  if the goal_stack_level of this id is known, this is
-         NIL.  If the level isn't known, it points to a dl_cons in a dl_list
-         used by the demotion routines.
-
-       slots:  this is the header for a dll of the slots for this id.
-
-       tc_num:  used for transitive closures, marking id's, etc.
-
-       variablization:  used by the chunker when variablizing chunks--this
-         points to the variable to which this id gets changed
-
-       impasse_wmes:  for goal and impasse ids only:  this is the header
-         of the dll of architecture-created wmes (e.g., (G37 ^object G36))
-
-       higher_goal, lower_goal:  for goals, these point to adjacent goals
-         in the context stack
-       problem_space_slot, state_slot, operator_slot:  for goals, these
-         point to the corresponding context slots
-       preferences_from_goal:  for goals, this is the header of the dll
-         of all preferences supported by this goal.  This is needed so
-         we can remove o-supported preferences when the goal goes away.
-
-       gds: pointer to a goal's dependency set
-       saved_firing_type: the firing type that must be restored if
-          Waterfall processing returns to this level. see consistency.c
-       ms_o_assertions:  dll of o-assertions at this level
-       ms_i_assertions:  dll of i-assertions at this level
-       ms_retractions:   dll of all retractions at this level
-
-       associated_output_links:  used by the output module
-
-       input_wmes:  dll of wmes added by input functions
 
    Reference counting for symbols:  I can't remember all the places I add
      reference counts to symbols.  Here's a bunch I can remember though.
@@ -125,332 +31,507 @@
   We deallocate a symbol when its reference count goes to 0.
 ======================================================================= */
 
-#include "kernel.h"
 
 #ifndef SYMTAB_H
 #define SYMTAB_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
+#include "kernel.h"
+#include "soar_TraceNames.h"
+#include "mem.h"
+#include <assert.h>
+#include <map>
+
+#ifdef SOAR_DEBUG_UTILITIES
+/* MToDo | Temporary debugging code.  Remove.
+           Allows refcount debug trace for a single, hardcoded ID.
+           Quicker than using full refcount inventory system. */
+//#define DEBUG_TRACE_REFCOUNT_FOR "R7"
 #endif
 
-#define VARIABLE_SYMBOL_TYPE 0
-#define IDENTIFIER_SYMBOL_TYPE 1
-#define SYM_CONSTANT_SYMBOL_TYPE 2
-#define INT_CONSTANT_SYMBOL_TYPE 3
-#define FLOAT_CONSTANT_SYMBOL_TYPE 4
-
-typedef char Bool;
-typedef unsigned char byte;
-typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
 typedef struct cons_struct cons;
-typedef struct agent_struct agent;
 typedef struct dl_cons_struct dl_cons;
 typedef cons list;
-
+typedef struct instantiation_struct instantiation;
 typedef int64_t epmem_node_id;
 typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 typedef uint64_t smem_lti_id;
 typedef uint64_t smem_hash_id;
 
-/* WARNING:  In the following structure, next_in_hash_table MUST be the
-   first field.  This field is used by the resizable hash table routines. */
+/* -- Forward declarations needed for symbol base struct -- */
+struct floatSymbol;
+struct idSymbol;
+struct varSymbol;
+struct intSymbol;
+struct strSymbol;
 
-typedef struct symbol_common_data_struct {
-  union symbol_union *next_in_hash_table;  /* next item in hash bucket */
-  uint64_t reference_count;
-  byte symbol_type;                /* one of the above xxx_SYMBOL_TYPE's */
-  byte decider_flag;               /* used only by the decider */
-  union a_union {
-    struct wme_struct *decider_wme;  /* used only by the decider */
-    uint64_t retesave_symindex; /* used for rete fastsave/fastload */
-  } a;
-  uint32_t hash_id;           /* used for hashing in the rete */
+/* -------------------------
+ * Symbol base struct
+ * -------------------------
+ *
+ * This contains the common data found in all five symbol types.
+ *
+ * fc, ic, sc, id, var:  These are cached pointers for each of the 5 type-specific
+ * symbol structs.  It made refactoring the code much easier and makes the code
+ * much cleaner than using helper functions to typecast all over the place.
 
-  epmem_hash_id epmem_hash;
-  uint64_t epmem_valid;
+   Symbol_to_string() converts a symbol to a string.  The "rereadable"
+   parameter indicates whether a rereadable representation is desired.
+   Normally symbols are printed rereadably, but for (write) and Text I/O,
+   we don't want this.
 
-  smem_hash_id smem_hash;
-  uint64_t smem_valid;
-} symbol_common_data;
+ *
+ * Note:  I've disabled the union when in debugging mode.  It makes it much easier
+ * to see the type-specific variables in a debugger.  It can also help find some
+ * bugs where some part of the kernel may be treating a symbol as the wrong type.
+ *
+ * WARNING: next_in_hash_table MUST be the first field.  This field is used
+ *       by the resizable hash table routines.
+ *
+ * Explanations of all the fields are at the end of the file.
+ *
+ * -- */
 
-/* WARNING:  In the following structures (the five kinds of symbols),
-   common_symbol_info MUST be the first field. */
+typedef struct symbol_struct {
+    struct symbol_struct *next_in_hash_table;
+    uint64_t reference_count;
+    byte symbol_type;
+    byte decider_flag;
+    struct wme_struct *decider_wme;
+    uint64_t retesave_symindex;
+    uint32_t hash_id;
+    tc_number tc_num;
 
-typedef struct sym_constant_struct {
-  symbol_common_data common_symbol_info;
-  char *name;
-  struct production_struct *production;  /* NIL if no prod. has this name */
-} sym_constant;
+    epmem_hash_id epmem_hash;
+    uint64_t epmem_valid;
 
-typedef struct int_constant_struct {
-  symbol_common_data common_symbol_info;
-  int64_t value;
-} int_constant;
+    smem_hash_id smem_hash;
+    uint64_t smem_valid;
 
-typedef struct float_constant_struct {
-  symbol_common_data common_symbol_info;
-  double value;
-} float_constant;
+    #ifndef SOAR_DEBUG_UTILITIES
+    union {
+    #endif
 
-typedef struct variable_struct {
-  symbol_common_data common_symbol_info;
-  char *name;
-  tc_number tc_num;
-  union symbol_union *current_binding_value;
-  uint64_t gensym_number;
-  ::list *rete_binding_locations;
-} variable;
+    floatSymbol *fc;
+    idSymbol    *id;
+    varSymbol   *var;
+    intSymbol   *ic;
+    strSymbol   *sc;
 
-/* Note: I arranged the fields below to try to minimize space */
-typedef struct identifier_struct {
-  symbol_common_data common_symbol_info;
-  uint64_t name_number;
-  char name_letter;
+    #ifndef SOAR_DEBUG_UTILITIES
+    };
+    #endif
 
-  Bool isa_goal;        /* TRUE iff this is a goal identifier */
-  Bool isa_impasse;     /* TRUE iff this is an attr. impasse identifier */
+    bool is_identifier();
+    bool is_variable();
+    bool is_constant();
+    bool is_lti();
+    bool is_sti();
+    bool is_variablizable_constant();
+    bool is_variablizable(symbol_struct *original_sym);
+    bool is_constant_or_marked_variable(tc_number tc);
+    bool is_in_tc (tc_number tc);
+    void mark_if_unmarked(agent* thisAgent, tc_number tc, list ** sym_list);
+    const char *type_string();
+    char *to_string(bool rereadable = false, char *dest = NIL, size_t dest_size = 0);
 
-  Bool did_PE;   /* RCHONG: 10.11 */
-
-  unsigned short isa_operator;
-
-  Bool allow_bottom_up_chunks;
-
-  /* --- ownership, promotion, demotion, & garbage collection stuff --- */
-  Bool could_be_a_link_from_below;
-  goal_stack_level level;
-  goal_stack_level promotion_level;
-  uint64_t link_count;
-  dl_cons *unknown_level;
-
-  struct slot_struct *slots;  /* dll of slots for this identifier */
-  tc_number tc_num;           /* used for transitive closures, marking, etc. */
-  union symbol_union *variablization;  /* used by the chunker */
-
-  /* --- fields used only on goals and impasse identifiers --- */
-  struct wme_struct *impasse_wmes;
-
-  /* --- fields used only on goals --- */
-  union symbol_union *higher_goal, *lower_goal;
-  struct slot_struct *operator_slot;
-  struct preference_struct *preferences_from_goal;
-
-  union symbol_union *reward_header;		// pointer to reward_link
-  struct rl_data_struct *rl_info;			// various Soar-RL information
-
-  union symbol_union *epmem_header;
-  union symbol_union *epmem_cmd_header;
-  union symbol_union *epmem_result_header;
-  struct wme_struct* epmem_time_wme;
-  struct epmem_data_struct *epmem_info;		// various EpMem information
-
-
-  union symbol_union *smem_header;
-  union symbol_union *smem_cmd_header;
-  union symbol_union *smem_result_header;
-  struct smem_data_struct *smem_info;		// various SMem information
-
-
-  /* REW: begin 09.15.96 */
-  struct gds_struct *gds;    /* Pointer to a goal's dependency set */
-  /* REW: begin 09.15.96 */
-
-  /* REW: begin 08.20.97 */
-  int saved_firing_type;     /* FIRING_TYPE that must be restored if Waterfall
-				processing returns to this level.
-				See consistency.cpp */
-  struct ms_change_struct *ms_o_assertions; /* dll of o assertions at this level */
-  struct ms_change_struct *ms_i_assertions; /* dll of i assertions at this level */
-  struct ms_change_struct *ms_retractions;  /* dll of retractions at this level */
-  /* REW: end   08.2097 */
-
-  /* --- fields used for Soar I/O stuff --- */
-  ::list *associated_output_links;
-  struct wme_struct *input_wmes;
-
-  int depth; /* used to track depth of print (bug 988) RPM 4/07 */
-
-  epmem_node_id epmem_id;
-  uint64_t epmem_valid;
-
-  smem_lti_id smem_lti;
-  epmem_time_id smem_time_id;
-  uint64_t smem_valid;
-
-  /*Agent::RL_Trace*/ void * rl_trace; ///< A pointer to the current state of the trace for this goal level if isa_goal -bazald
-} identifier;
-
-typedef union symbol_union {
-  variable var;
-  identifier id;
-  sym_constant sc;
-  int_constant ic;
-  float_constant fc;
 } Symbol;
 
-/* WARNING: this #define's "common".  Don't use "common" anywhere in the
-   code unless you intend this meaning of it.  This is so we can
-   conveniently access fields used in all kinds of symbols, like this:
-   "sym.common.reference_count" rather than "sym.var.common.reference_count"
-   or "sym.id.common.reference_count", etc. */
+struct floatSymbol : public Symbol {
+    double value;
+};
+struct intSymbol   : public Symbol {
+    int64_t value;
+};
+struct strSymbol   : public Symbol {
+    char *name;
+    struct production_struct *production;
+};
+struct varSymbol   : public Symbol {
+    char *name;
+    Symbol *current_binding_value;
+    uint64_t gensym_number;
+    ::list *rete_binding_locations;
+};
 
-#define common var.common_symbol_info
+struct idSymbol    : public Symbol {
+    uint64_t name_number;
+    char name_letter;
 
-/* -----------------------------------------------------------------
-                       Symbol Table Routines
+    bool isa_goal;
+    bool isa_impasse;
 
-   Initialization:
+    bool did_PE;
 
-     Init_symbol_tables() should be called first, to initialize the
-     module.
+    unsigned short isa_operator;
 
-   Lookup and Creation:
+    bool allow_bottom_up_chunks;
 
-     The find_xxx() routines look for an existing symbol and return it
-     if found; if no such symbol exists, they return NIL.
+    /* --- ownership, promotion, demotion, & garbage collection stuff --- */
+    bool could_be_a_link_from_below;
+    goal_stack_level level;
+    goal_stack_level promotion_level;
+    uint64_t link_count;
+    dl_cons *unknown_level;
 
-     The make_xxx() routines look for an existing symbol; if the find one,
-     they increment the reference count and return it.  If no such symbol
-     exists, they create a new one, set the reference count to 1, and
-     return it.
+    struct slot_struct *slots;  /* dll of slots for this identifier */
+    Symbol *variablization;  /* used by the chunker */
 
-     Note that rather than a make_identifier() routine, we have a
-     make_new_identifier() routine, which takes two arguments: the first
-     letter for the new identifier, and its initial goal_stack_level.
-     There is no way to force creation of an identifier with a particular
-     name letter/number combination like J37.
+    /* --- fields used only on goals and impasse identifiers --- */
+    struct wme_struct *impasse_wmes;
 
-   Reference Counting:
+    /* --- fields used only on goals --- */
+    Symbol *higher_goal, *lower_goal;
+    struct slot_struct *operator_slot;
+    struct preference_struct *preferences_from_goal;
 
-     Symbol_add_ref() and symbol_remove_ref() are macros for incrementing
-     and decrementing the reference count on a symbol.  When the count
-     goes to zero, symbol_remove_ref() calls deallocate_symbol().
+    Symbol *reward_header;
+    struct rl_data_struct *rl_info;
 
-   Other Utilities:
+    Symbol *epmem_header;
+    Symbol *epmem_cmd_header;
+    Symbol *epmem_result_header;
+    struct wme_struct* epmem_time_wme;
+    struct epmem_data_struct *epmem_info;
 
-     Reset_id_counters() is called during an init-soar to reset the id
-     gensym numbers to 1.  It first makes sure there are no existing
-     identifiers in the system--otherwise we might generate a second
-     identifier with the same name later on.
 
-     Reset_id_and_variable_tc_numbers() resets the tc_num field of every
-     existing id and variable to 0.
+    Symbol *smem_header;
+    Symbol *smem_cmd_header;
+    Symbol *smem_result_header;
+    struct smem_data_struct *smem_info;
 
-     Reset_variable_gensym_numbers() resets the gensym_number field of
-     every existing variable to 0.
 
-     Print_internal_symbols() just prints a list of all existing symbols.
-     (This is useful for debugging memory leaks.)
+    struct gds_struct *gds;
 
-     Generate_new_sym_constant() is used to gensym new symbols that are
-     guaranteed to not already exist.  It takes two arguments: "prefix"
-     (the desired prefix of the new symbol's name), and "counter" (a
-     pointer to a counter (uint64_t) that is incremented to produce
-     new gensym names).
------------------------------------------------------------------ */
+    int saved_firing_type;
+    struct ms_change_struct *ms_o_assertions;
+    struct ms_change_struct *ms_i_assertions;
+    struct ms_change_struct *ms_retractions;
+
+
+    /* --- fields used for Soar I/O stuff --- */
+    ::list *associated_output_links;
+    struct wme_struct *input_wmes;
+
+    int depth;
+
+    epmem_node_id epmem_id;
+    uint64_t epmem_valid;
+
+    smem_lti_id smem_lti;
+    epmem_time_id smem_time_id;
+    uint64_t smem_valid;
+
+    /*Agent::RL_Trace*/ void * rl_trace;
+};
+
+inline bool Symbol::is_identifier()             { return (symbol_type == IDENTIFIER_SYMBOL_TYPE); };
+inline bool Symbol::is_variable()               { return (symbol_type == VARIABLE_SYMBOL_TYPE); };
+inline bool Symbol::is_constant()               { return ((symbol_type == STR_CONSTANT_SYMBOL_TYPE) ||
+                                                  (symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
+                                                  (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)); };
+inline bool Symbol::is_variablizable_constant() { return ((symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+                                                  (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) ||
+                                                  (symbol_type == STR_CONSTANT_SYMBOL_TYPE )); };
+inline bool Symbol::is_sti()                    { return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                                          (id->smem_lti == NIL));};
+inline bool Symbol::is_lti()                    { return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                                          (id->smem_lti != NIL)); };
+
+inline bool Symbol::is_variablizable(Symbol *original_sym) {
+
+    if (is_sti()) return true;
+
+    return (original_sym->is_variable() && !is_variable());
+
+};
+
+inline bool Symbol::is_constant_or_marked_variable(tc_number tc) {
+  return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc)); };
+
+/* MToDo | Might need to expand is_in_tc to other symbol types b/c of new variablization? Note:
+ *         callers are only testing this for equality tests, if that matters*/
+
+inline bool Symbol::is_in_tc (tc_number tc) {
+  if ((symbol_type==VARIABLE_SYMBOL_TYPE) || (symbol_type==IDENTIFIER_SYMBOL_TYPE))
+    return (tc_num == tc); else return false; };
+
+/* -- mark_if_unmarked set the tc number to the new tc and add the symbol to the list passed in -- */
+
+template <typename P, typename T> void push(agent* thisAgent, P item, T * & list_header);
+inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, list ** sym_list)
+{
+  if (tc_num != tc)
+  {
+    tc_num = tc;
+    if (sym_list)
+      push (thisAgent, this, (*(sym_list)));
+  }
+}
+
+inline char const* symbol_type_to_string(byte pType)
+{
+  switch(pType) {
+    case VARIABLE_SYMBOL_TYPE:
+      return soar_TraceNames::kTypeVariable ;
+    case IDENTIFIER_SYMBOL_TYPE:
+      return soar_TraceNames::kTypeID ;
+    case INT_CONSTANT_SYMBOL_TYPE:
+      return soar_TraceNames::kTypeInt ;
+    case FLOAT_CONSTANT_SYMBOL_TYPE:
+      return soar_TraceNames::kTypeDouble ;
+    case STR_CONSTANT_SYMBOL_TYPE:
+      return soar_TraceNames::kTypeString ;
+    default:
+      return "UNDEFINED!";
+  }
+}
+
+inline char const* Symbol::type_string()
+{
+  return symbol_type_to_string(symbol_type);
+}
+/* -- Inline functions to make casting to specific symbol types more readable. Also
+ *    useful when sym might be null, in which case you couldn't use cached pointers to cast. -- */
+
+inline idSymbol     *idSym    (Symbol *sym) {return static_cast<idSymbol *>(sym);};
+inline varSymbol    *varSym   (Symbol *sym) {return static_cast<varSymbol *>(sym);};
+inline floatSymbol  *floatSym (Symbol *sym) {return static_cast<floatSymbol *>(sym);};
+inline intSymbol    *intSym   (Symbol *sym) {return static_cast<intSymbol *>(sym);};
+inline strSymbol    *strSym   (Symbol *sym) {return static_cast<strSymbol *>(sym);};
+
+/* -- Functions related to symbols.  Descriptions in symtab.cpp -- */
 
 extern void init_symbol_tables (agent* thisAgent);
+extern void create_predefined_symbols (agent* thisAgent);
+extern void release_predefined_symbols (agent* thisAgent);
+extern void print_internal_symbols (agent* thisAgent);
 
-extern Symbol *find_variable (agent* thisAgent, const char *name);
-extern Symbol *find_identifier (agent* thisAgent, char name_letter, uint64_t name_number);
-extern Symbol *find_sym_constant (agent* thisAgent, const char *name);  /* AGR 600 */
-extern Symbol *find_int_constant (agent* thisAgent, int64_t value);
-extern Symbol *find_float_constant (agent* thisAgent, double value);
+#ifdef SOAR_DEBUG_UTILITIES
+extern void debug_store_refcount(Symbol *sym, bool isAdd);
+#endif
 
-extern Symbol *make_variable (agent* thisAgent, const char *name);
-extern Symbol *make_sym_constant (agent* thisAgent, char const *name);
-extern Symbol *make_int_constant (agent* thisAgent, int64_t value);
+extern Symbol *make_variable       (agent* thisAgent, const char *name);
+extern Symbol *make_str_constant   (agent* thisAgent, char const *name);
+extern Symbol *make_int_constant   (agent* thisAgent, int64_t value);
 extern Symbol *make_float_constant (agent* thisAgent, double value);
 extern Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
+extern Symbol *generate_new_str_constant (agent* thisAgent, const char *prefix, uint64_t *counter);
 
-extern void deallocate_symbol (agent* thisAgent, Symbol *sym);
+extern void deallocate_symbol (agent* thisAgent, Symbol *sym, long indent=0);
+extern void deallocate_symbol_list_removing_references (agent* thisAgent, ::list *sym_list, long indent=0);
+::list *copy_symbol_list_adding_references (agent* thisAgent, ::list *sym_list);
+
+extern Symbol *find_variable       (agent* thisAgent, const char *name);
+extern Symbol *find_identifier     (agent* thisAgent, char name_letter, uint64_t name_number);
+extern Symbol *find_str_constant   (agent* thisAgent, const char *name);
+extern Symbol *find_int_constant   (agent* thisAgent, int64_t value);
+extern Symbol *find_float_constant (agent* thisAgent, double value);
 
 extern bool reset_id_counters (agent* thisAgent);
 extern void reset_id_and_variable_tc_numbers (agent* thisAgent);
 extern void reset_variable_gensym_numbers (agent* thisAgent);
-extern void print_internal_symbols (agent* thisAgent);
-extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_t *counter);
 
-#ifdef USE_MACROS
+char first_letter_from_symbol (Symbol *sym);
 
-/* --- macros used for changing the reference count --- */
-#define symbol_add_ref(x) {(x)->common.reference_count++;}
-#define symbol_remove_ref(thisAgent, x) { \
-  (x)->common.reference_count--; \
-  if ((x)->common.reference_count == 0) \
-  deallocate_symbol(thisAgent, x); \
-  }
+/* -- This function returns a numeric value from a symbol -- */
+extern double get_number_from_symbol( Symbol *sym );
 
-#else
+/* -- Reference count functions for symbols
+ *      All symbol creation/copying use these now, so we can avoid accidental leaks more easily.
+ *      If DEBUG_TRACE_REFCOUNT_INVENTORY is defined, an alternate version of the function is used
+ *      that sends a bunch of trace information to the debug database for deeper analysis of possible
+ *      bugs. -- */
 
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
+/* MToDo | Remove.  Just for debugging. */
+#ifdef DEBUG_TRACE_REFCOUNT_FOR
+#include <string>
+extern std::string get_refcount_stacktrace_string(const char *prefix);
 #endif
 
-inline uint64_t symbol_add_ref(Symbol * x)
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#define symbol_add_ref(thisAgent, sym) \
+  ({debug_store_refcount(sym, true); \
+    symbol_add_ref_func(thisAgent, sym); })
+
+inline void symbol_add_ref_func(agent* thisAgent, Symbol * x)
+#else
+inline void symbol_add_ref(agent* thisAgent, Symbol * x, long indent=0)
+#endif
 {
-  (x)->common.reference_count++;
-  uint64_t refCount = (x)->common.reference_count ;
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-  char buf[64];
-  OutputDebugString(symbol_to_string(0, x, FALSE, buf, 64));
-  OutputDebugString(":+ ");
-  OutputDebugString(_itoa(refCount, buf, 10));
-  OutputDebugString("\n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
-  return refCount ;
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+  dprint(DT_REFCOUNT_ADDS, "ADD-REF %s -> %lld\n", x->to_string(), (x)->reference_count + 1);
+#else
+ dprint(DT_REFCOUNT_ADDS, "%*sADD-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count + 1);
+#endif
+
+#ifdef DEBUG_TRACE_REFCOUNT_FOR
+ std::string strName(x->to_string());
+ if (strName == DEBUG_TRACE_REFCOUNT_FOR)
+ {
+   std::string caller_string = get_refcount_stacktrace_string("add_ref");
+   dprint(DT_ID_LEAKING, "-- | %s(%lld) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
+ }
+#endif
+
+ (x)->reference_count++;
 }
 
-inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#define symbol_remove_ref(thisAgent, sym) \
+        ({debug_store_refcount(sym, false); \
+          symbol_remove_ref_func(thisAgent, sym);})
+
+inline void symbol_remove_ref_func(agent* thisAgent, Symbol * x)
+#else
+inline void symbol_remove_ref(agent* thisAgent, Symbol * x, long indent=0)
+#endif
 {
-  (x)->common.reference_count--;
-  uint64_t refCount = (x)->common.reference_count ;
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-  char buf[64];
-  OutputDebugString(symbol_to_string(thisAgent, x, FALSE, buf, 64));
-  OutputDebugString(":- ");
-  OutputDebugString(_itoa(refCount, buf, 10));
-  OutputDebugString("\n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
-  if ((x)->common.reference_count == 0)
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+  dprint(DT_REFCOUNT_REMS, "REMOVE-REF %s -> %lld\n", x->to_string(), (x)->reference_count - 1);
+#else
+  dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
+#endif
+  (x)->reference_count--;
+
+#ifdef DEBUG_TRACE_REFCOUNT_FOR
+  std::string strName(x->to_string());
+  if (strName == DEBUG_TRACE_REFCOUNT_FOR)
+  {
+    std::string caller_string = get_refcount_stacktrace_string("remove_ref");
+    dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+  }
+#endif
+
+  assert((x)->reference_count >= 0);
+  if ((x)->reference_count == 0)
     deallocate_symbol(thisAgent, x);
-
-  return refCount ;
 }
 
-inline bool symbol_is_constant( Symbol *sym )
+/* -- To avoid possible refcount bugs in the future, all symbol creation functions will by default increase
+ *    the refcount.  Code that doesn't need that initial refcount must consciously take another step to
+ *    reverse that initial count by using this function. -- */
+
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#define symbol_remove_ref_no_deallocate(thisAgent, sym) \
+        ({debug_store_refcount(sym, false); \
+          symbol_remove_ref_no_deallocate_func(thisAgent, sym);})
+
+inline void symbol_remove_ref_no_deallocate_func(agent* thisAgent, Symbol * x)
+#else
+inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol * x, long indent=0)
+#endif
 {
-	return ( ( sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
-		     ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-		     ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
-}
+#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+  dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %s -> %lld\n", x->to_string(), (x)->reference_count - 1);
+#else
+  dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF UNNECESSARY %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
+#endif
 
-#endif /* USE_MACROS */
+#ifdef DEBUG_TRACE_REFCOUNT_FOR
+  std::string strName(x->to_string());
+  if (strName == DEBUG_TRACE_REFCOUNT_FOR)
+  {
+    std::string caller_string = get_refcount_stacktrace_string("remove_ref");
+    dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+  }
+#endif
+  (x)->reference_count--;
+  assert((x)->reference_count >= 0);
+}
 
 /* -----------------------------------------------------------------
-                       Predefined Symbols
+ *
+ *                  Symbol Struct Variables
+ *
+ * =====================
+ * Common to all 5 types
+ * =====================
+ * symbol_type                 Indicates which of the five kinds of symbols
+ * reference_count             Current reference count for this symbol
+ * next_in_hash_table          Next item in hash bucket
+ * hash_id                     Used for hashing in the rete (and elsewhere)
+ * retesave_symindex           Used for rete fastsave/fastload
+ * tc_num                      Used for transitive closure/marking
+ * =====================
+ * Floating-point constants
+ * =====================
+ * value      The floating point value of the symbol.
+ * =====================
+ * Integer constants
+ * =====================
+ * value      The integer value value of the symbol. (int64_t).
+ * =====================
+ * String constants
+ * =====================
+ * name                        A null-terminated string giving its name
+ * production                  When string is used for a production name, this
+ *                             points to the production structure.  NIL otherwise
+ * =====================
+ * Variables
+ * =====================
+ * name                        Points to null-terminated string giving its name
+ * tc_num                      Used for transitive closure computations
+ * current_binding_value       When productions are fired, this indicates
+ *                             the variable's binding
+ * gensym_number               Used by the variable generator to prevent certain
+ *                             already-in-use variables from being generated
+ * rete_binding_locations      Used temporarily by the Rete, while adding
+ *                             productions, to store a list of places where this
+ *                             variable is bound and/or tested
+ * =====================
+ * Identifiers
+ * =====================
+ * isa_goal, isa_impasse       Whether this is the identifier of a goal or attribute
+ *                             impasse
+ * isa_operator                How many (normal or acceptable preference) wmes contain
+ *                             (^operator <this-id>). The tracing code uses this to
+ *                             figure out whether a given object is an operator.
+ * name_number, name_letter    Name and letter of the identifier
+ * slots                       DLL of all slots this symbol is used in
+ * tc_num                      Unique numbers put in here to mark ID for things like
+ *                             transitive closures
+ * variablization              When variablizing chunks, this points to the variable to
+ *                             which this bound id gets replaced with
+ * ---------------
+ * Link/Level Info
+ * ---------------
+ * could_be_a_link_from_below  true if there might be a link to this id from some other
+ *                             id lower in the goal stack.
+ * level                       Current goal_stack_level of this id
+ * link_count                  How many links there are to this id.
+ * promotion_level             Level to which this id is going to be promoted as soon as
+ *                             ownership info is updated.
+ * unknown_level               If the goal_stack_level of this id is known, this is NIL.
+ *                             If the level isn't known, it points to a dl_cons in a
+ *                             dl_list used by the demotion routines.
+ * --------------
+ * For goals only
+ * --------------
+ * allow_bottom_up_chunks      For goals, true iff no chunk has yet been built for a
+ *                             subgoal of this goal
+ * gds                         For goals, its goal's dependency set
+ * higher_goal                 For goals, superstate of this goal in the context stack
+ * impasse_wmes                For goals and impasses, DLL of architecturally created
+ *                             wmes (e.g., (G37 ^object G36))
+ * lower_goal                  For goals, substate of this goal in the context stack
+ * operator_slot               For goals, the operator slot of this goal
+ * preferences_from_goal       For goals, DLL of all preferences supported by this goal.
+ *                             This is needed so we can remove o-supported preferences
+ *                             when the goal goes away.
+ * --------------------------
+ * Find out if only for goals
+ * --------------------------
+ * did_PE
+ * saved_firing_type           The firing type that must be restored if Waterfall
+ *                             processing returns to this level. See consistency.cpp.
+ * ms_o_assertions             DLL of o-assertions at this level
+ * ms_i_assertions             DLL of i-assertions at this level
+ * ms_retractions              DLL of all retractions at this level
+ * associated_output_links     Used by the output module
+ * input_wmes                  DLL of wmes added by input functions --*/
 
-   Certain symbols are used so frequently that we create them at
-   system startup time and never deallocate them.  These symbols are
-   global variables (per-agent) and are named xxx_symbol (see glob_vars.h).
 
-   Create_predefined_symbols() should be called to do the creation.
-   After that, the global variables can be accessed freely.  Note that
-   the reference counts on these symbols should still be updated--
-   symbol_add_ref() should be called, etc.--it's just that when the
-   symbol isn't really being used, it stays around because the count
-   is still 1.
------------------------------------------------------------------ */
-
-extern void create_predefined_symbols (agent* thisAgent);
-extern void release_predefined_symbols (agent* thisAgent);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

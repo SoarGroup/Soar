@@ -76,7 +76,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
     if (!n) n = 10;
 
     // Set it
-    Symbol* s = make_sym_constant( agnt, pAttribute->c_str() );
+    Symbol* s = make_str_constant( agnt, pAttribute->c_str() );
 
     while (maList)
     {

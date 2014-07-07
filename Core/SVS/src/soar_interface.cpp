@@ -42,8 +42,8 @@ soar_interface::~soar_interface() {
 
 
 wme *soar_interface::make_id_wme(Symbol *id, const string &attr) {
-	Symbol *attrsym = make_sym_constant(agnt, attr.c_str());
-	Symbol *valsym = make_new_identifier(agnt, attr[0], id->id.level);
+	Symbol *attrsym = make_str_constant(agnt, attr.c_str());
+	Symbol *valsym = make_new_identifier(agnt, attr[0], id->id->level);
 	wme* w = soar_module::add_module_wme(agnt, id, attrsym, valsym);
 	symbol_remove_ref(agnt, attrsym);
 	symbol_remove_ref(agnt, valsym);
@@ -54,15 +54,15 @@ wme *soar_interface::make_id_wme(Symbol *id, Symbol *attr) {
 	char n;
 	Symbol *val;
 
-	if (attr->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE ||
-	    strlen(attr->sc.name) == 0)
+	if (attr->symbol_type != STR_CONSTANT_SYMBOL_TYPE ||
+	    strlen(attr->sc->name) == 0)
 	{
 		n = 'a';
 	} else {
-		n = attr->sc.name[0];
+		n = attr->sc->name[0];
 	}
 
-	val = make_new_identifier(agnt, n, id->id.level);
+	val = make_new_identifier(agnt, n, id->id->level);
 	wme* w = soar_module::add_module_wme(agnt, id, attr, val);
 	symbol_remove_ref(agnt, val);
 	return w;
@@ -81,7 +81,7 @@ bool soar_interface::get_child_wmes(Symbol *id, wme_list &childs) {
 	}
 
 	childs.clear();
-	for ( s=id->id.slots; s!=NULL; s=s->next ) {
+	for ( s=id->id->slots; s!=NULL; s=s->next ) {
 		for ( w=s->wmes; w!=NULL; w=w->next ) {
 			childs.push_back( w );
 		}
@@ -99,7 +99,7 @@ bool soar_interface::find_child_wme(Symbol *id, const string &attr, wme *&w) {
 		return false;
 	}
 
-	for ( s=id->id.slots; s!=NULL; s=s->next ) {
+	for ( s=id->id->slots; s!=NULL; s=s->next ) {
 		for ( w1=s->wmes; w1!=NULL; w1=w1->next ) {
 			if (get_val(get_wme_attr(w1), a) && a == attr) {
 				w = w1;

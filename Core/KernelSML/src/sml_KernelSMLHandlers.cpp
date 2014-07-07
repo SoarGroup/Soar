@@ -123,7 +123,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
 
 	//pAgentSML->m_inputlink->GetInputLinkMemory()->m_RemoveWmeCallback = RemoveInputWMERecordsCallback;
 
-	if (this->m_pRunScheduler->IsRunning()) 
+	if (this->m_pRunScheduler->IsRunning())
 	{
 		// bug 952: if soar is running, the agent should start running
 
@@ -389,10 +389,10 @@ bool KernelSML::HandleGetRunState(AgentSML* pAgentSML, char const* pCommandName,
 		// Report the current decision number of decisions that have been executed
 		buffer << pAgentSML->GetNumDecisionsExecuted();
 	}
-	else if (strcmp(pValue, sml_Names::kParamRunState) == 0) 	 
-	{ 	 
-		// Report the current run state 	 
-		buffer << pAgentSML->GetRunState() ; 	 
+	else if (strcmp(pValue, sml_Names::kParamRunState) == 0)
+	{
+		// Report the current run state
+		buffer << pAgentSML->GetRunState() ;
 	}
 	else
 	{
@@ -418,55 +418,55 @@ bool KernelSML::HandleGetResultOfLastRun(AgentSML* pAgentSML, char const* /*pCom
 	return this->ReturnIntResult(pConnection, pResponse, runResult) ;
 }
 
-// Return a starting value for client side time tags for this client to use 	 
-bool KernelSML::HandleGetInitialTimeTag(AgentSML* /*pAgentSML*/, char const* /*pCommandName*/, Connection* pConnection, AnalyzeXML* /*pIncoming*/, soarxml::ElementXML* pResponse) 	 
-{ 	 
-	// We use negative values for client time tags (so we can tell they're client side not kernel side) 	 
-	int64_t timeTagStart = -1 ; 	 
+// Return a starting value for client side time tags for this client to use
+bool KernelSML::HandleGetInitialTimeTag(AgentSML* /*pAgentSML*/, char const* /*pCommandName*/, Connection* pConnection, AnalyzeXML* /*pIncoming*/, soarxml::ElementXML* pResponse)
+{
+	// We use negative values for client time tags (so we can tell they're client side not kernel side)
+	int64_t timeTagStart = -1 ;
 
-	// Allow up to 8 simultaneous clients using different ids 	 
-	int maxTries = 8 ; 	 
-	bool done = false ; 	 
+	// Allow up to 8 simultaneous clients using different ids
+	int maxTries = 8 ;
+	bool done = false ;
 
-	while (maxTries > 0 && !done) 	 
-	{ 	 
-		// Walk the list of connections and see if we can find an time tag start value that's not in use 	 
-		// (We do this walking so if connections are made, broken and remade and we'll reuse the id space). 	 
-		int index = 0 ; 	 
-		Connection* connect = m_pConnectionManager->GetConnectionByIndex(index) ; 	 
+	while (maxTries > 0 && !done)
+	{
+		// Walk the list of connections and see if we can find an time tag start value that's not in use
+		// (We do this walking so if connections are made, broken and remade and we'll reuse the id space).
+		int index = 0 ;
+		Connection* connect = m_pConnectionManager->GetConnectionByIndex(index) ;
 
-		// See if any existing connection is using the timeTagStart value already 	 
-		bool ok = true ; 	 
-		while (connect && ok) 	 
-		{ 	 
-			if (connect->GetInitialTimeTagCounter() == timeTagStart) 	 
-			{ 	 
-				ok = false ; 	 
-				timeTagStart -= (1<<27) ;       // 8 * (1<<27) is (1<<30) so won't overflow.  Allows (1<<27) values per client w/o collision or more than 100 million wmes each. 	 
-			} 	 
+		// See if any existing connection is using the timeTagStart value already
+		bool ok = true ;
+		while (connect && ok)
+		{
+			if (connect->GetInitialTimeTagCounter() == timeTagStart)
+			{
+				ok = false ;
+				timeTagStart -= (1<<27) ;       // 8 * (1<<27) is (1<<30) so won't overflow.  Allows (1<<27) values per client w/o collision or more than 100 million wmes each.
+			}
 
-			index++ ; 	 
-			connect = m_pConnectionManager->GetConnectionByIndex(index) ; 	 
-		} 	 
+			index++ ;
+			connect = m_pConnectionManager->GetConnectionByIndex(index) ;
+		}
 
-		// If this value's not already in use we're done 	 
-		// Otherwise, we'll test the new value. 	 
-		if (ok) 	 
-			done = true ; 	 
+		// If this value's not already in use we're done
+		// Otherwise, we'll test the new value.
+		if (ok)
+			done = true ;
 
-		maxTries-- ; 	 
-	} 	 
+		maxTries-- ;
+	}
 
-	// If we fail this it means we couldn't find a valid start value for the time tag counter. 	 
-	// Either we have 8 existing connections or there's a bug in this code. 	 
-	assert(maxTries >= 0) ; 	 
+	// If we fail this it means we couldn't find a valid start value for the time tag counter.
+	// Either we have 8 existing connections or there's a bug in this code.
+	assert(maxTries >= 0) ;
 
-	// Record the value we picked and return it. 	 
-	pConnection->SetInitialTimeTagCounter(timeTagStart) ; 	 
-	return this->ReturnIntResult(pConnection, pResponse, timeTagStart) ; 	 
+	// Record the value we picked and return it.
+	pConnection->SetInitialTimeTagCounter(timeTagStart) ;
+	return this->ReturnIntResult(pConnection, pResponse, timeTagStart) ;
 }
 
-bool KernelSML::HandleConvertIdentifier(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) 	 
+bool KernelSML::HandleConvertIdentifier(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
 {
 	// Get the identifier to convert
 	char const* pClientId = pIncoming->GetArgString(sml_Names::kParamName) ;
@@ -477,11 +477,11 @@ bool KernelSML::HandleConvertIdentifier(AgentSML* pAgentSML, char const* pComman
 	}
 
 	std::string convertedId;
-	if (pAgentSML->ConvertID(pClientId, &convertedId)) 
+	if (pAgentSML->ConvertID(pClientId, &convertedId))
 	{
 		return ReturnResult(pConnection, pResponse, convertedId.c_str()) ;
-	} 
-	else 
+	}
+	else
 	{
 		return ReturnResult(pConnection, pResponse, "") ;
 	}
@@ -498,10 +498,10 @@ bool KernelSML::HandleIsProductionLoaded(AgentSML* pAgentSML, char const* pComma
 		return InvalidArg(pConnection, pResponse, pCommandName, "Need to specify the production name to check.") ;
 	}
 
-	Symbol* sym = find_sym_constant( pAgentSML->GetSoarAgent(), pName );
+	Symbol* sym = find_str_constant( pAgentSML->GetSoarAgent(), pName );
 
 	bool found = true;
-	if (!sym || !(sym->sc.production))
+	if (!sym || !(sym->sc->production))
 	{
 		found = false;
 	}
@@ -640,7 +640,7 @@ bool KernelSML::HandleGetInputLink(AgentSML* pAgentSML, char const* /*pCommandNa
 	// Turn the id symbol into an actual string
 	char buf[ MAX_LEXEME_LENGTH ];
 	char * id = symbol_to_string ( pAgentSML->GetSoarAgent(), sym, true, buf, MAX_LEXEME_LENGTH );
-	
+
 	if (id)
 	{
 		// FIXME: this doesn't work
@@ -659,7 +659,7 @@ static bool AddWmeChildrenToXML( AgentSML* pAgentSML, wme* pRoot, soarxml::Eleme
 	if (!pRoot || !pTagResult)
 		return false ;
 
-    for (wme* w = pRoot->value->id.input_wmes; w != NIL; w = w->next)
+    for (wme* w = pRoot->value->id->input_wmes; w != NIL; w = w->next)
 	{
 		TagWme* pTagWme = OutputListener::CreateTagWme( pAgentSML, w ) ;
 
@@ -673,8 +673,8 @@ static bool AddWmeChildrenToXML( AgentSML* pAgentSML, wme* pRoot, soarxml::Eleme
 		pTagResult->AddChild(pTagWme) ;
 
 		// If this is an identifier then add all of its children too
-		if ( w->value->sc.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-		{	
+		if ( w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE )
+		{
 			if ( std::find( traversedList.begin(), traversedList.end(), w ) == traversedList.end() )
 			{
 				traversedList.push_back( w );
@@ -696,7 +696,7 @@ bool KernelSML::HandleGetAllInput(AgentSML* pAgentSML, char const* /*pCommandNam
 
 	// Find the input link wme I1 ^input-link I2
 	wme* pInputLinkWme = 0;
-    for (wme* w = pSoarAgent->io_header->id.input_wmes; w != NIL; w = w->next)
+    for (wme* w = pSoarAgent->io_header->id->input_wmes; w != NIL; w = w->next)
 	{
 		if ( w->attr == pSoarAgent->input_link_symbol )
 		{
@@ -837,7 +837,7 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
 
 	if (kDebugCommandLine)
 		sml::PrintDebugFormat("Executing %s", pLine) ;
-	
+
 	// If we're echoing the results, also echo the command we're executing
 	if (echoResults && pAgentSML)
 		pAgentSML->FireEchoEvent(pConnection, pLine) ;
@@ -853,7 +853,7 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
 
 	if (!noFiltering && HasFilterRegistered())
 	{
-        // Update: to simplify things, I'm removing expand command line. 
+        // Update: to simplify things, I'm removing expand command line.
         // If aliases need to be expanded before going to the filter, we can change this then.
         // Removed code that called removed function m_CommandLineInterface.ExpandCommandToString
 
