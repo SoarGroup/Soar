@@ -17,17 +17,17 @@
 
 #include <time.h>
 
-bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
+bool read_id_or_context_var_from_string (agent* thisAgent, const char * the_lexeme,
 	Symbol * * result_id)
 {
 	Symbol *id;
 	Symbol *g, *attr, *value;
 
-	get_lexeme_from_string(agnt, the_lexeme);
+	get_lexeme_from_string(thisAgent, the_lexeme);
 
-	if (agnt->lexeme.type == IDENTIFIER_LEXEME)
+	if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
 	{
-		id = find_identifier(agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number);
+		id = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
 		if (!id)
 		{
 			return false;
@@ -39,9 +39,9 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 		}
 	}
 
-	if (agnt->lexeme.type==VARIABLE_LEXEME)
+	if (thisAgent->lexeme.type==VARIABLE_LEXEME)
 	{
-		get_context_var_info (agnt, &g, &attr, &value);
+		get_context_var_info (thisAgent, &g, &attr, &value);
 
 		if ((!attr) || (!value))
 		{
@@ -60,7 +60,7 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 	return false;
 }
 
-void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
+void get_lexeme_from_string (agent* thisAgent, const char * the_lexeme)
 {
 	int i;
 	const char * c;
@@ -84,25 +84,25 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 		}
 		else
 		{
-			agnt->lexeme.string[i] = *c;
+			thisAgent->lexeme.string[i] = *c;
 		}
 	}
 
-	agnt->lexeme.string[i] = '\0'; /* Null terminate lexeme string */
+	thisAgent->lexeme.string[i] = '\0'; /* Null terminate lexeme string */
 
-	agnt->lexeme.length = i;
+	thisAgent->lexeme.length = i;
 
 	if (sym_constant_end_found)
 	{
-		agnt->lexeme.type = SYM_CONSTANT_LEXEME;
+		thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
 	}
 	else
 	{
-		determine_type_of_constituent_string(agnt);
+		determine_type_of_constituent_string(thisAgent);
 	}
 }
 
-void get_context_var_info ( agent* agnt, Symbol **dest_goal,
+void get_context_var_info ( agent* thisAgent, Symbol **dest_goal,
 	Symbol **dest_attr_of_slot,
 	Symbol **dest_current_value)
 {
@@ -110,31 +110,31 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	int levels_up;
 	wme *w;
 
-	v = find_variable (agnt, agnt->lexeme.string);
-	if (v==agnt->s_context_variable) {
+	v = find_variable (thisAgent, thisAgent->lexeme.string);
+	if (v==thisAgent->s_context_variable) {
 		levels_up = 0;
-		*dest_attr_of_slot = agnt->state_symbol;
-	} else if (v==agnt->o_context_variable) {
+		*dest_attr_of_slot = thisAgent->state_symbol;
+	} else if (v==thisAgent->o_context_variable) {
 		levels_up = 0;
-		*dest_attr_of_slot = agnt->operator_symbol;
-	} else if (v==agnt->ss_context_variable) {
+		*dest_attr_of_slot = thisAgent->operator_symbol;
+	} else if (v==thisAgent->ss_context_variable) {
 		levels_up = 1;
-		*dest_attr_of_slot = agnt->state_symbol;
-	} else if (v==agnt->so_context_variable) {
+		*dest_attr_of_slot = thisAgent->state_symbol;
+	} else if (v==thisAgent->so_context_variable) {
 		levels_up = 1;
-		*dest_attr_of_slot = agnt->operator_symbol;
-	} else if (v==agnt->sss_context_variable) {
+		*dest_attr_of_slot = thisAgent->operator_symbol;
+	} else if (v==thisAgent->sss_context_variable) {
 		levels_up = 2;
-		*dest_attr_of_slot = agnt->state_symbol;
-	} else if (v==agnt->sso_context_variable) {
+		*dest_attr_of_slot = thisAgent->state_symbol;
+	} else if (v==thisAgent->sso_context_variable) {
 		levels_up = 2;
-		*dest_attr_of_slot = agnt->operator_symbol;
-	} else if (v==agnt->ts_context_variable) {
-		levels_up = agnt->top_goal ? agnt->bottom_goal->id->level-agnt->top_goal->id->level : 0;
-		*dest_attr_of_slot = agnt->state_symbol;
-	} else if (v==agnt->to_context_variable) {
-		levels_up = agnt->top_goal ? agnt->bottom_goal->id->level-agnt->top_goal->id->level : 0;
-		*dest_attr_of_slot = agnt->operator_symbol;
+		*dest_attr_of_slot = thisAgent->operator_symbol;
+	} else if (v==thisAgent->ts_context_variable) {
+		levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level-thisAgent->top_goal->id->level : 0;
+		*dest_attr_of_slot = thisAgent->state_symbol;
+	} else if (v==thisAgent->to_context_variable) {
+		levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level-thisAgent->top_goal->id->level : 0;
+		*dest_attr_of_slot = thisAgent->operator_symbol;
 	} else {
 		*dest_goal = NIL;
 		*dest_attr_of_slot = NIL;
@@ -142,7 +142,7 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 		return;
 	}
 
-	g = agnt->bottom_goal;
+	g = thisAgent->bottom_goal;
 	while (g && levels_up) {
 		g = g->id->higher_goal;
 		levels_up--;
@@ -154,7 +154,7 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 		return;
 	}
 
-	if (*dest_attr_of_slot==agnt->state_symbol) {
+	if (*dest_attr_of_slot==thisAgent->state_symbol) {
 		*dest_current_value = g;
 	} else {
 		w = g->id->operator_slot->wmes;
@@ -162,44 +162,44 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	}
 }
 
-Symbol *read_identifier_or_context_variable (agent* agnt)
+Symbol *read_identifier_or_context_variable (agent* thisAgent)
 {
 	Symbol *id;
 	Symbol *g, *attr, *value;
 
-	if (agnt->lexeme.type==IDENTIFIER_LEXEME) {
-		id = find_identifier (agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number);
+	if (thisAgent->lexeme.type==IDENTIFIER_LEXEME) {
+		id = find_identifier (thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
 		if (!id) {
-			print (agnt, "There is no identifier %c%lu.\n", agnt->lexeme.id_letter,
-				agnt->lexeme.id_number);
-			print_location_of_most_recent_lexeme(agnt);
+			print (thisAgent, "There is no identifier %c%lu.\n", thisAgent->lexeme.id_letter,
+				thisAgent->lexeme.id_number);
+			print_location_of_most_recent_lexeme(thisAgent);
 			return NIL;
 		}
 		return id;
 	}
-	if (agnt->lexeme.type==VARIABLE_LEXEME)
+	if (thisAgent->lexeme.type==VARIABLE_LEXEME)
 	{
-		get_context_var_info (agnt, &g, &attr, &value);
+		get_context_var_info (thisAgent, &g, &attr, &value);
 		if (!attr) {
-			print (agnt, "Expected identifier (or context variable)\n");
-			print_location_of_most_recent_lexeme(agnt);
+			print (thisAgent, "Expected identifier (or context variable)\n");
+			print_location_of_most_recent_lexeme(thisAgent);
 			return NIL;
 		}
 		if (!value) {
-			print (agnt, "There is no current %s.\n", agnt->lexeme.string);
-			print_location_of_most_recent_lexeme(agnt);
+			print (thisAgent, "There is no current %s.\n", thisAgent->lexeme.string);
+			print_location_of_most_recent_lexeme(thisAgent);
 			return NIL;
 		}
 		if (value->symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
-			print (agnt, "The current %s ", agnt->lexeme.string);
-			print_with_symbols (agnt, "(%y) is not an identifier.\n", value);
-			print_location_of_most_recent_lexeme(agnt);
+			print (thisAgent, "The current %s ", thisAgent->lexeme.string);
+			print_with_symbols (thisAgent, "(%y) is not an identifier.\n", value);
+			print_location_of_most_recent_lexeme(thisAgent);
 			return NIL;
 		}
 		return value;
 	}
-	print (agnt, "Expected identifier (or context variable)\n");
-	print_location_of_most_recent_lexeme(agnt);
+	print (thisAgent, "Expected identifier (or context variable)\n");
+	print_location_of_most_recent_lexeme(thisAgent);
 	return NIL;
 }
 
@@ -326,48 +326,48 @@ bool is_whole_number(const char * str)
 }
 
 
-void stats_init_db( agent *my_agent )
+void stats_init_db( agent *thisAgent )
 {
-	if ( my_agent->stats_db->get_status() != soar_module::disconnected )
+	if ( thisAgent->stats_db->get_status() != soar_module::disconnected )
 		return;
 
 	const char *db_path = ":memory:";
 	//const char *db_path = "C:\\Users\\voigtjr\\Desktop\\stats_debug.db";
 
 	// attempt connection
-	my_agent->stats_db->connect( db_path );
+	thisAgent->stats_db->connect( db_path );
 
-	if ( my_agent->stats_db->get_status() == soar_module::problem )
+	if ( thisAgent->stats_db->get_status() == soar_module::problem )
 	{
 		char buf[256];
-		SNPRINTF( buf, 254, "DB ERROR: %s", my_agent->stats_db->get_errmsg() );
+		SNPRINTF( buf, 254, "DB ERROR: %s", thisAgent->stats_db->get_errmsg() );
 
-		print( my_agent, buf );
-		xml_generate_warning( my_agent, buf );
+		print( thisAgent, buf );
+		xml_generate_warning( thisAgent, buf );
 	}
 	else
 	{
 		// setup common structures/queries
-		my_agent->stats_stmts = new stats_statement_container( my_agent );
-		my_agent->stats_stmts->structure();
-		my_agent->stats_stmts->prepare();
+		thisAgent->stats_stmts = new stats_statement_container( thisAgent );
+		thisAgent->stats_stmts->structure();
+		thisAgent->stats_stmts->prepare();
 	}
 }
 
 
-void stats_db_store(agent* my_agent, const uint64_t& dc_time, const uint64_t& dc_wm_changes, const uint64_t& dc_firing_counts)
+void stats_db_store(agent* thisAgent, const uint64_t& dc_time, const uint64_t& dc_wm_changes, const uint64_t& dc_firing_counts)
 {
-	if ( my_agent->stats_db->get_status() == soar_module::disconnected )
+	if ( thisAgent->stats_db->get_status() == soar_module::disconnected )
 	{
-		stats_init_db( my_agent );
+		stats_init_db( thisAgent );
 	}
 
-	my_agent->stats_stmts->insert->bind_int(1, my_agent->d_cycle_count);
-	my_agent->stats_stmts->insert->bind_int(2, dc_time);
-	my_agent->stats_stmts->insert->bind_int(3, dc_wm_changes);
-	my_agent->stats_stmts->insert->bind_int(4, dc_firing_counts);
+	thisAgent->stats_stmts->insert->bind_int(1, thisAgent->d_cycle_count);
+	thisAgent->stats_stmts->insert->bind_int(2, dc_time);
+	thisAgent->stats_stmts->insert->bind_int(3, dc_wm_changes);
+	thisAgent->stats_stmts->insert->bind_int(4, dc_firing_counts);
 
-	my_agent->stats_stmts->insert->execute( soar_module::op_reinit ); // makes it ready for next execution
+	thisAgent->stats_stmts->insert->execute( soar_module::op_reinit ); // makes it ready for next execution
 }
 
 stats_statement_container::stats_statement_container( agent *new_agent ): soar_module::sqlite_statement_container( new_agent->stats_db )
@@ -420,16 +420,16 @@ stats_statement_container::stats_statement_container( agent *new_agent ): soar_m
 	add( sel_firing_count_dec );
 }
 
-void stats_close( agent *my_agent )
+void stats_close( agent *thisAgent )
 {
-	if ( my_agent->stats_db->get_status() == soar_module::connected )
+	if ( thisAgent->stats_db->get_status() == soar_module::connected )
 	{
 		// de-allocate common statements
-		delete my_agent->stats_stmts;
-		my_agent->stats_stmts = 0;
+		delete thisAgent->stats_stmts;
+		thisAgent->stats_stmts = 0;
 
 		// close the database
-		my_agent->stats_db->disconnect();
+		thisAgent->stats_db->disconnect();
 	}
 }
 

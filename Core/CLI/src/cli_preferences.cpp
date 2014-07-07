@@ -39,7 +39,7 @@ using namespace sml;
 ===============================
 */
 
-bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Symbol * * attr)
+bool read_attribute_from_string (agent* thisAgent, Symbol *id, char * the_lexeme, Symbol * * attr)
 {
     Symbol *attr_tmp;
     slot *s;
@@ -50,25 +50,25 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
         the_lexeme++;
     }
 
-    get_lexeme_from_string(agnt, the_lexeme);
+    get_lexeme_from_string(thisAgent, the_lexeme);
 
-    switch (agnt->lexeme.type) 
+    switch (thisAgent->lexeme.type) 
     {
     case SYM_CONSTANT_LEXEME:
-        attr_tmp = find_str_constant (agnt, agnt->lexeme.string);
+        attr_tmp = find_str_constant (thisAgent, thisAgent->lexeme.string);
         break;
     case INT_CONSTANT_LEXEME:
-        attr_tmp = find_int_constant (agnt, agnt->lexeme.int_val);
+        attr_tmp = find_int_constant (thisAgent, thisAgent->lexeme.int_val);
         break;
     case FLOAT_CONSTANT_LEXEME:
-        attr_tmp = find_float_constant (agnt, agnt->lexeme.float_val);
+        attr_tmp = find_float_constant (thisAgent, thisAgent->lexeme.float_val);
         break;
     case IDENTIFIER_LEXEME:
-        attr_tmp = find_identifier (agnt, agnt->lexeme.id_letter,
-            agnt->lexeme.id_number);
+        attr_tmp = find_identifier (thisAgent, thisAgent->lexeme.id_letter,
+            thisAgent->lexeme.id_number);
         break;
     case VARIABLE_LEXEME:
-        attr_tmp = read_identifier_or_context_variable(agnt);
+        attr_tmp = read_identifier_or_context_variable(thisAgent);
         if (!attr_tmp)
             return false;
         break;
@@ -101,21 +101,21 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
 * 
 ===============================
 */
-void print_preference_and_source (agent* agnt, preference *pref,
+void print_preference_and_source (agent* thisAgent, preference *pref,
                                   bool print_source,
                                   wme_trace_type wtt,
                                   double* selection_probability = 0) 
 {
-    print_string (agnt, "  ");
-    if (pref->attr == agnt->operator_symbol) {
-        print_object_trace (agnt, pref->value);
+    print_string (thisAgent, "  ");
+    if (pref->attr == thisAgent->operator_symbol) {
+        print_object_trace (thisAgent, pref->value);
     } else {                    
-        print_with_symbols (agnt, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
+        print_with_symbols (thisAgent, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
     }     
-    if (pref->attr == agnt->operator_symbol) {
-        print (agnt, " %c", preference_type_indicator (agnt, pref->type));
+    if (pref->attr == thisAgent->operator_symbol) {
+        print (thisAgent, " %c", preference_type_indicator (thisAgent, pref->type));
     }
-    if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
+    if (preference_is_binary(pref->type)) print_object_trace (thisAgent, pref->referent);
     if (selection_probability) {
       char dest[MAX_LEXEME_LENGTH*2+10]; /* from agent.h */
       SNPRINTF(dest, sizeof(dest), "%#.16g", pref->numeric_value);
@@ -132,15 +132,15 @@ void print_preference_and_source (agent* agnt, preference *pref,
         while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
         *end_of_mantissa = 0;
       }
-      print (agnt, " =%s", dest);
+      print (thisAgent, " =%s", dest);
     }
-    if (pref->o_supported) print (agnt, " :O "); else print (agnt, " :I ");
-    if (selection_probability) print (agnt, "(%.1f%%)", (*selection_probability) * 100.0);
-    print (agnt, "\n");
+    if (pref->o_supported) print (thisAgent, " :O "); else print (thisAgent, " :I ");
+    if (selection_probability) print (thisAgent, "(%.1f%%)", (*selection_probability) * 100.0);
+    print (thisAgent, "\n");
     if (print_source) {
-        print (agnt, "    From ");
-        print_instantiation_with_wmes (agnt, pref->inst, wtt, -1);
-        print (agnt, "\n");
+        print (thisAgent, "    From ");
+        print_instantiation_with_wmes (thisAgent, pref->inst, wtt, -1);
+        print (thisAgent, "\n");
     }
 }
 
@@ -308,11 +308,11 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
 
     const char* idString = pId ? pId->c_str() : 0;
     const char* attrString = pAttribute ? pAttribute->c_str() : 0;
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
     // Establish defaults
-    symbol_to_string(agnt, agnt->bottom_goal, true, id, PREFERENCES_BUFFER_SIZE);
-    symbol_to_string(agnt, agnt->operator_symbol, true, attr, PREFERENCES_BUFFER_SIZE);
+    symbol_to_string(thisAgent, thisAgent->bottom_goal, true, id, PREFERENCES_BUFFER_SIZE);
+    symbol_to_string(thisAgent, thisAgent->operator_symbol, true, attr, PREFERENCES_BUFFER_SIZE);
 
     // Override defaults
     if (idString) {
@@ -348,7 +348,7 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
             break;
     }
 
-    if (soar_ecPrintPreferences(agnt, id, attr, object, print_productions, wtt))
+    if (soar_ecPrintPreferences(thisAgent, id, attr, object, print_productions, wtt))
         return SetError("An Error occured trying to print the prefs.");
     return true;
 }

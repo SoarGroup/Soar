@@ -137,7 +137,7 @@ class epmem_param_container: public soar_module::param_container
 class epmem_path_param: public soar_module::string_param
 {
 	protected:
-		agent *my_agent;
+		agent *thisAgent;
 
 	public:
 		epmem_path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent );
@@ -195,7 +195,7 @@ class epmem_stat_container: public soar_module::stat_container
 		soar_module::integer_stat *rit_right_root_2;
 		soar_module::integer_stat *rit_min_step_2;
 
-		epmem_stat_container( agent *my_agent );
+		epmem_stat_container( agent *thisAgent );
 };
 
 //
@@ -203,7 +203,7 @@ class epmem_stat_container: public soar_module::stat_container
 class epmem_db_lib_version_stat: public soar_module::primitive_stat< const char* >
 {
 	protected:
-		agent* my_agent;
+		agent* thisAgent;
 
 	public:
 		epmem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred );
@@ -215,7 +215,7 @@ class epmem_db_lib_version_stat: public soar_module::primitive_stat< const char*
 class epmem_mem_usage_stat: public soar_module::integer_stat
 {
 	protected:
-		agent *my_agent;
+		agent *thisAgent;
 
 	public:
 		epmem_mem_usage_stat( agent *new_agent, const char *new_name, int64_t new_value, soar_module::predicate<int64_t> *new_prot_pred );
@@ -227,7 +227,7 @@ class epmem_mem_usage_stat: public soar_module::integer_stat
 class epmem_mem_high_stat: public soar_module::integer_stat
 {
 	protected:
-		agent *my_agent;
+		agent *thisAgent;
 
 	public:
 		epmem_mem_high_stat( agent *new_agent, const char *new_name, int64_t new_value, soar_module::predicate<int64_t> *new_prot_pred );
@@ -275,7 +275,7 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *query_sql_end_now;
 		soar_module::timer *query_sql_end_point;
 
-		epmem_timer_container( agent *my_agent );
+		epmem_timer_container( agent *thisAgent );
 };
 
 class epmem_timer_level_predicate: public soar_module::agent_predicate<soar_module::timer::timer_level>
@@ -506,29 +506,29 @@ typedef struct epmem_edge_struct
 //////////////////////////////////////////////////////////
 
 // shortcut for determining if EpMem is enabled
-extern bool epmem_enabled( agent *my_agent );
+extern bool epmem_enabled( agent *thisAgent );
 
 //////////////////////////////////////////////////////////
 // Soar Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
 // init, end
-extern void epmem_attach( agent *my_agent );
-extern void epmem_reset( agent *my_agent, Symbol *state = NULL );
-extern void epmem_close( agent *my_agent );
-extern void epmem_reinit ( agent *my_agent);
-extern void epmem_reinit_cmd( agent *my_agent );
+extern void epmem_attach( agent *thisAgent );
+extern void epmem_reset( agent *thisAgent, Symbol *state = NULL );
+extern void epmem_close( agent *thisAgent );
+extern void epmem_reinit ( agent *thisAgent);
+extern void epmem_reinit_cmd( agent *thisAgent );
 
-extern void epmem_clear_transient_structures( agent *my_agent);
+extern void epmem_clear_transient_structures( agent *thisAgent);
 
 // perform epmem actions
-extern void epmem_go( agent *my_agent, bool allow_store = true );
-extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err );
-extern void epmem_schedule_promotion( agent* my_agent, Symbol* id );
-extern void epmem_init_db( agent *my_agent, bool readonly = false );
+extern void epmem_go( agent *thisAgent, bool allow_store = true );
+extern bool epmem_backup_db( agent* thisAgent, const char* file_name, std::string *err );
+extern void epmem_schedule_promotion( agent* thisAgent, Symbol* id );
+extern void epmem_init_db( agent *thisAgent, bool readonly = false );
 // visualization
-extern void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
-extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
+extern void epmem_visualize_episode( agent* thisAgent, epmem_time_id memory_id, std::string* buf );
+extern void epmem_print_episode( agent* thisAgent, epmem_time_id memory_id, std::string* buf );
 
 //////////////////////////////////////////////////////////
 // Episodic Memory Search

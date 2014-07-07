@@ -43,20 +43,20 @@ bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail d
             assert(false);
     }
 
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (mode == MATCHES_PRODUCTION) {
         if (!pProduction) return SetError("Production required.");
 
-        Symbol* sym = find_str_constant(agnt, pProduction->c_str());
+        Symbol* sym = find_str_constant(thisAgent, pProduction->c_str());
         rete_node* prod = (sym && sym->sc->production) ? sym->sc->production->p_node : 0;
 
         if (!prod) 
             return SetError("Production not found: " + *pProduction);
 
         if (m_RawOutput)
-            print_partial_match_information(agnt, prod, wtt);
+            print_partial_match_information(thisAgent, prod, wtt);
         else
-            xml_partial_match_information(agnt, prod, wtt);
+            xml_partial_match_information(thisAgent, prod, wtt);
 
     } else {
         ms_trace_type mst = MS_ASSERT_RETRACT;
@@ -64,9 +64,9 @@ bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail d
         if (mode == MATCHES_RETRACTIONS) mst = MS_RETRACT;
 
         if (m_RawOutput)
-            print_match_set(agnt, wtt, mst);
+            print_match_set(thisAgent, wtt, mst);
         else
-            xml_match_set(agnt, wtt, mst);
+            xml_match_set(thisAgent, wtt, mst);
     }
 
     // Transfer the result from m_XMLResult into pResponse

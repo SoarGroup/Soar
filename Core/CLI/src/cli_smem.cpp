@@ -26,33 +26,33 @@ using namespace sml;
 
 bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, const std::string* pVal )
 {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempString;
 
     if ( !pOp )
     {   // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
-        PrintCLIMessage_Item("learning:", agnt->smem_params->learning, 40);
+        PrintCLIMessage_Item("learning:", thisAgent->smem_params->learning, 40);
         PrintCLIMessage_Section("Storage", 40);
-        PrintCLIMessage_Item("database:", agnt->smem_params->database, 40);
-        PrintCLIMessage_Item("append:", agnt->smem_params->append_db, 40);
-        PrintCLIMessage_Item("path:", agnt->smem_params->path, 40);
-        PrintCLIMessage_Item("lazy-commit:", agnt->smem_params->lazy_commit, 40);
+        PrintCLIMessage_Item("database:", thisAgent->smem_params->database, 40);
+        PrintCLIMessage_Item("append:", thisAgent->smem_params->append_db, 40);
+        PrintCLIMessage_Item("path:", thisAgent->smem_params->path, 40);
+        PrintCLIMessage_Item("lazy-commit:", thisAgent->smem_params->lazy_commit, 40);
         PrintCLIMessage_Section("Activation", 40);
-        PrintCLIMessage_Item("activation-mode:", agnt->smem_params->activation_mode, 40);
-        PrintCLIMessage_Item("activate-on-query:", agnt->smem_params->activate_on_query, 40);
-        PrintCLIMessage_Item("base-decay:", agnt->smem_params->base_decay, 40);
-        PrintCLIMessage_Item("base-update-policy:", agnt->smem_params->base_update, 40);
-        PrintCLIMessage_Item("base-incremental-threshes:", agnt->smem_params->base_incremental_threshes, 40);
-        PrintCLIMessage_Item("thresh:", agnt->smem_params->thresh, 40);
+        PrintCLIMessage_Item("activation-mode:", thisAgent->smem_params->activation_mode, 40);
+        PrintCLIMessage_Item("activate-on-query:", thisAgent->smem_params->activate_on_query, 40);
+        PrintCLIMessage_Item("base-decay:", thisAgent->smem_params->base_decay, 40);
+        PrintCLIMessage_Item("base-update-policy:", thisAgent->smem_params->base_update, 40);
+        PrintCLIMessage_Item("base-incremental-threshes:", thisAgent->smem_params->base_incremental_threshes, 40);
+        PrintCLIMessage_Item("thresh:", thisAgent->smem_params->thresh, 40);
         PrintCLIMessage_Section("Performance", 40);
-        PrintCLIMessage_Item("page-size:", agnt->smem_params->page_size, 40);
-        PrintCLIMessage_Item("cache-size:", agnt->smem_params->cache_size, 40);
-        PrintCLIMessage_Item("optimization:", agnt->smem_params->opt, 40);
-        PrintCLIMessage_Item("timers:", agnt->smem_params->timers, 40);
+        PrintCLIMessage_Item("page-size:", thisAgent->smem_params->page_size, 40);
+        PrintCLIMessage_Item("cache-size:", thisAgent->smem_params->cache_size, 40);
+        PrintCLIMessage_Item("optimization:", thisAgent->smem_params->opt, 40);
+        PrintCLIMessage_Item("timers:", thisAgent->smem_params->timers, 40);
         PrintCLIMessage_Section("Experimental", 40);
-        PrintCLIMessage_Item("merge:", agnt->smem_params->merge, 40);
-        PrintCLIMessage_Item("mirroring:", agnt->smem_params->mirroring, 40);
+        PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
+        PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
         PrintCLIMessage("");
 
         return true;
@@ -60,7 +60,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     else if ( pOp == 'a' )
     {
         std::string *err = NULL;
-        bool result = smem_parse_chunks( agnt, pAttr->c_str(), &( err ) );
+        bool result = smem_parse_chunks( thisAgent, pAttr->c_str(), &( err ) );
 
         if ( !result )
         {
@@ -75,7 +75,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 	else if ( pOp == 'b' )
     {
         std::string err;
-		bool result = smem_backup_db( agnt, pAttr->c_str(), &( err ) );
+		bool result = smem_backup_db( thisAgent, pAttr->c_str(), &( err ) );
 
         if ( !result )
             SetError( "Error while backing up database: " + err );
@@ -88,7 +88,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 'e' )
     {
-       bool result = agnt->smem_params->learning->set_string("on");
+       bool result = thisAgent->smem_params->learning->set_string("on");
 
         if ( !result )
             SetError( "This parameter is protected while the semantic memory database is open." );
@@ -99,7 +99,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 'd' )
     {
-       bool result = agnt->smem_params->learning->set_string("off");
+       bool result = thisAgent->smem_params->learning->set_string("off");
 
        if ( !result )
            SetError( "This parameter is protected while the semantic memory database is open." );
@@ -110,7 +110,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 'g' )
     {
-        soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
+        soar_module::param *my_param = thisAgent->smem_params->get( pAttr->c_str() );
         if ( !my_param )
             return SetError( "Invalid semantic memory parameter.  Use 'help smem' to see list of valid settings." );
 
@@ -124,8 +124,8 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         // smem - close before working/production memories to prevent id counter mess-ups
         // production memory (automatic init-soar clears working memory as a result)
 
-        epmem_reinit_cmd(agnt);
-        smem_reinit_cmd(agnt);
+        epmem_reinit_cmd(thisAgent);
+        smem_reinit_cmd(thisAgent);
 
         ExciseBitset options(0);
 		options.set( EXCISE_ALL, true );
@@ -139,20 +139,20 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         smem_lti_id lti_id = NIL;
         unsigned int depth = 1;
 
-		smem_attach(agnt);
-	    if ( agnt->smem_db->get_status() != soar_module::connected )
+		smem_attach(thisAgent);
+	    if ( thisAgent->smem_db->get_status() != soar_module::connected )
 	    {
 	        return SetError( "Semantic memory database not connected." );
 	    }
 
 		if ( pAttr )
 		{
-			get_lexeme_from_string( agnt, pAttr->c_str() );
-			if ( agnt->lexeme.type == IDENTIFIER_LEXEME )
+			get_lexeme_from_string( thisAgent, pAttr->c_str() );
+			if ( thisAgent->lexeme.type == IDENTIFIER_LEXEME )
 			{
-				if ( agnt->smem_db->get_status() == soar_module::connected )
+				if ( thisAgent->smem_db->get_status() == soar_module::connected )
 				{
-					lti_id = smem_lti_get_id( agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number );
+					lti_id = smem_lti_get_id( thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number );
 
 					if ( ( lti_id != NIL ) && pVal )
 					{
@@ -169,12 +169,12 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
         if ( lti_id == NIL )
         {
-            smem_print_store( agnt, &( viz ) );
+            smem_print_store( thisAgent, &( viz ) );
             PrintCLIMessage_Header("Semantic Memory", 40);
         }
         else
         {
-            smem_print_lti( agnt, lti_id, depth, &( viz ) );
+            smem_print_lti( thisAgent, lti_id, depth, &( viz ) );
         }
         if (viz.empty())
         	return SetError("Semantic memory is empty.");
@@ -184,14 +184,14 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 's' )
     {
-        soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
+        soar_module::param *my_param = thisAgent->smem_params->get( pAttr->c_str() );
         if ( !my_param )
             return SetError( "Invalid SMem parameter." );
 
         if ( !my_param->validate_string( pVal->c_str() ) )
             return SetError( "Invalid setting for SMem parameter." );
 
-        smem_param_container::db_choices last_db_mode = agnt->smem_params->database->get_value();
+        smem_param_container::db_choices last_db_mode = thisAgent->smem_params->database->get_value();
         bool result = my_param->set_string( pVal->c_str() );
 
         if ( !result )
@@ -199,9 +199,9 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         else {
             tempString << pAttr->c_str() << " = " << pVal->c_str();
             PrintCLIMessage(&tempString);
-            if ( agnt->smem_db->get_status() == soar_module::connected )
+            if ( thisAgent->smem_db->get_status() == soar_module::connected )
             {
-                if (((!strcmp(pAttr->c_str(),"database")) && (agnt->smem_params->database->get_value() != last_db_mode)) ||
+                if (((!strcmp(pAttr->c_str(),"database")) && (thisAgent->smem_params->database->get_value() != last_db_mode)) ||
                      (!strcmp(pAttr->c_str(),"path")))
                 {
                     PrintCLIMessage( "To finalize database switch, issue an smem --init command.\n");
@@ -209,7 +209,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             }
             if (!strcmp(pAttr->c_str(),"append"))
             {
-                if (agnt->smem_params->append_db->get_value() == off)
+                if (thisAgent->smem_params->append_db->get_value() == off)
                 {
                     PrintCLIMessage( "Warning: Since append mode is off, starting/reinitializing,\n"
                                      "         Soar will erase the semantic memory database.\n");
@@ -221,24 +221,24 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 'S' )
     {
-        smem_attach(agnt);
+        smem_attach(thisAgent);
         if ( !pAttr )
         {   // Print SMem Settings
             PrintCLIMessage_Header("Semantic Memory Statistics", 40);
-            PrintCLIMessage_Item("SQLite Version:", agnt->smem_stats->db_lib_version, 40);
-            PrintCLIMessage_Item("Memory Usage:", agnt->smem_stats->mem_usage, 40);
-            PrintCLIMessage_Item("Memory Highwater:", agnt->smem_stats->mem_high, 40);
-            PrintCLIMessage_Item("Retrieves:", agnt->smem_stats->expansions, 40);
-            PrintCLIMessage_Item("Queries:", agnt->smem_stats->cbr, 40);
-            PrintCLIMessage_Item("Stores:", agnt->smem_stats->stores, 40);
-            PrintCLIMessage_Item("Activation Updates:", agnt->smem_stats->act_updates, 40);
-            PrintCLIMessage_Item("Mirrors:", agnt->smem_stats->mirrors, 40);
-            PrintCLIMessage_Item("Nodes:", agnt->smem_stats->chunks, 40);
-            PrintCLIMessage_Item("Edges:", agnt->smem_stats->slots, 40);
+            PrintCLIMessage_Item("SQLite Version:", thisAgent->smem_stats->db_lib_version, 40);
+            PrintCLIMessage_Item("Memory Usage:", thisAgent->smem_stats->mem_usage, 40);
+            PrintCLIMessage_Item("Memory Highwater:", thisAgent->smem_stats->mem_high, 40);
+            PrintCLIMessage_Item("Retrieves:", thisAgent->smem_stats->expansions, 40);
+            PrintCLIMessage_Item("Queries:", thisAgent->smem_stats->cbr, 40);
+            PrintCLIMessage_Item("Stores:", thisAgent->smem_stats->stores, 40);
+            PrintCLIMessage_Item("Activation Updates:", thisAgent->smem_stats->act_updates, 40);
+            PrintCLIMessage_Item("Mirrors:", thisAgent->smem_stats->mirrors, 40);
+            PrintCLIMessage_Item("Nodes:", thisAgent->smem_stats->chunks, 40);
+            PrintCLIMessage_Item("Edges:", thisAgent->smem_stats->slots, 40);
         }
         else
         {
-            soar_module::statistic *my_stat = agnt->smem_stats->get( pAttr->c_str() );
+            soar_module::statistic *my_stat = thisAgent->smem_stats->get( pAttr->c_str() );
             if ( !my_stat )
                 return SetError( "Invalid statistic." );
 
@@ -272,11 +272,11 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             } bar( m_RawOutput, this, m_Result );
 
             PrintCLIMessage_Header("Semantic Memory Timers", 40);
-            agnt->smem_timers->for_each( bar );
+            thisAgent->smem_timers->for_each( bar );
         }
         else
         {
-            soar_module::timer *my_timer = agnt->smem_timers->get( pAttr->c_str() );
+            soar_module::timer *my_timer = thisAgent->smem_timers->get( pAttr->c_str() );
             if ( !my_timer )
                 return SetError( "Invalid timer." );
 
@@ -291,16 +291,16 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         unsigned int depth = 1;
 
         // vizualizing the store requires an open semantic database
-        smem_attach( agnt );
+        smem_attach( thisAgent );
 
         if ( pAttr )
 		{
-			get_lexeme_from_string( agnt, pAttr->c_str() );
-			if ( agnt->lexeme.type == IDENTIFIER_LEXEME )
+			get_lexeme_from_string( thisAgent, pAttr->c_str() );
+			if ( thisAgent->lexeme.type == IDENTIFIER_LEXEME )
 			{
-				if ( agnt->smem_db->get_status() == soar_module::connected )
+				if ( thisAgent->smem_db->get_status() == soar_module::connected )
 				{
-					lti_id = smem_lti_get_id( agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number );
+					lti_id = smem_lti_get_id( thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number );
 
 					if ( ( lti_id != NIL ) && pVal )
 					{
@@ -317,11 +317,11 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
         if ( lti_id == NIL )
         {
-            smem_visualize_store( agnt, &( viz ) );
+            smem_visualize_store( thisAgent, &( viz ) );
         }
         else
         {
-            smem_visualize_lti( agnt, lti_id, depth, &( viz ) );
+            smem_visualize_lti( thisAgent, lti_id, depth, &( viz ) );
         }
 
         if ( viz.empty() ) return SetError( "Nothing to visualize." );

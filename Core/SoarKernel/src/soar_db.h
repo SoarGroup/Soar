@@ -662,12 +662,12 @@ namespace soar_module
 			const char* my_sql;
 
 		public:
-			sqlite_statement_pool( agent* my_agent, sqlite_database* new_db, const char* new_sql ): my_db( new_db ), my_sql( new_sql )
+			sqlite_statement_pool( agent* thisAgent, sqlite_database* new_db, const char* new_sql ): my_db( new_db ), my_sql( new_sql )
 			{
 				#ifdef USE_MEM_POOL_ALLOCATORS
-				statements = new sqlite_statement_pool_pool( my_agent );
+				statements = new sqlite_statement_pool_pool( thisAgent );
 				#else
-				my_agent;
+				thisAgent;
 				statements = new sqlite_statement_pool_pool();
 				#endif
 			}
@@ -787,7 +787,7 @@ namespace soar_module
 	  db_predicate<T>::db_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {}
 
 	  template <typename T>
-	  bool db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->epmem_db->get_status() == soar_module::connected ); }
+	  bool db_predicate<T>::operator() ( T /*val*/ ) { return ( this->thisAgent->epmem_db->get_status() == soar_module::connected ); }
 
 }
 

@@ -32,12 +32,12 @@ struct FiringsSort {
 
 bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::string* pProduction) {
     std::vector< std::pair< std::string, uint64_t > > firings;
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
     // if we have a production, just get that one, otherwise get them all
     if (pProduction)
     {
-        Symbol* sym = find_str_constant( agnt, pProduction->c_str() );
+        Symbol* sym = find_str_constant( thisAgent, pProduction->c_str() );
 
         if (!sym || !(sym->sc->production))
         {
@@ -55,7 +55,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
 
         for(unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
         {
-            for( production* pSoarProduction = agnt->all_productions_of_type[i];
+            for( production* pSoarProduction = thisAgent->all_productions_of_type[i];
                 pSoarProduction != 0;
                 pSoarProduction = pSoarProduction->next )
             {

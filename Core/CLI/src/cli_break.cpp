@@ -29,10 +29,10 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoBreak(const char &mode, const std::string &production) {
-  agent* agnt = m_pAgentSML->GetSoarAgent();
+  agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
   if(mode == 's' || mode == 'c') {
-    Symbol* sym = find_str_constant(agnt, production.c_str());
+    Symbol* sym = find_str_constant(thisAgent, production.c_str());
     rete_node* prod = (sym && sym->sc->production) ? sym->sc->production->p_node : 0;
 
     if(!prod)
@@ -51,7 +51,7 @@ bool CommandLineInterface::DoBreak(const char &mode, const std::string &producti
     assert(mode == 'p');
     
     for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
-      for(struct production_struct * prod = agnt->all_productions_of_type[i]; prod; prod = prod->next) {
+      for(struct production_struct * prod = thisAgent->all_productions_of_type[i]; prod; prod = prod->next) {
         if(prod->interrupt_break)
           m_Result << prod->name->sc->name << std::endl;
       }

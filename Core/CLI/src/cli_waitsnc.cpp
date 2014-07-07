@@ -20,16 +20,16 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoWaitSNC(bool* pSetting) {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (!pSetting) {
         if (m_RawOutput) {
-            m_Result << "Current waitsnc setting: " << (agnt->waitsnc ? "enabled" : "disabled");
+            m_Result << "Current waitsnc setting: " << (thisAgent->waitsnc ? "enabled" : "disabled");
         } else {
-            AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, agnt->waitsnc ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, thisAgent->waitsnc ? sml_Names::kTrue : sml_Names::kFalse);
         }
         return true;
     }
 
-    agnt->waitsnc = *pSetting;
+    thisAgent->waitsnc = *pSetting;
     return true;
 }

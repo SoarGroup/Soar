@@ -610,9 +610,9 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 
 bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::string* pArg)
 {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (depth < 0)
-        depth = agnt->default_wme_depth;
+        depth = thisAgent->default_wme_depth;
 
     if (options.test(PRINT_STACK))
     {
@@ -623,7 +623,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
             options.set(PRINT_OPERATORS);
         }
 
-        print_stack_trace(agnt, options.test(PRINT_STATES), options.test(PRINT_OPERATORS));
+        print_stack_trace(thisAgent, options.test(PRINT_STATES), options.test(PRINT_OPERATORS));
         return true;
     }
 
@@ -641,7 +641,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
 
         // Watch out, this case handles all args identifier/pattern/timetag/production_name
         m_VarPrint = options.test(PRINT_VARPRINT); // This is a member because it affects the print callback.
-        print_symbol(agnt, pArg->c_str(), filename, intern, tree, full, depth, exact);
+        print_symbol(thisAgent, pArg->c_str(), filename, intern, tree, full, depth, exact);
         m_VarPrint = false;
         return true;
     }
@@ -664,17 +664,17 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
     }
 
     if (options.test(PRINT_CHUNKS))
-        print_productions_of_type(agnt, intern, filename, full, CHUNK_PRODUCTION_TYPE);
+        print_productions_of_type(thisAgent, intern, filename, full, CHUNK_PRODUCTION_TYPE);
     if (options.test(PRINT_DEFAULTS))
-        print_productions_of_type(agnt, intern, filename, full, DEFAULT_PRODUCTION_TYPE);
+        print_productions_of_type(thisAgent, intern, filename, full, DEFAULT_PRODUCTION_TYPE);
     if (options.test(PRINT_JUSTIFICATIONS))
-        print_productions_of_type(agnt, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        print_productions_of_type(thisAgent, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
     if (options.test(PRINT_USER))
-        print_productions_of_type(agnt, intern, filename, full, USER_PRODUCTION_TYPE);
+        print_productions_of_type(thisAgent, intern, filename, full, USER_PRODUCTION_TYPE);
     if (options.test(PRINT_RL))
-        print_rl_rules(agnt, intern, filename, full);
+        print_rl_rules(thisAgent, intern, filename, full);
     if (options.test(PRINT_TEMPLATE))
-        print_productions_of_type(agnt, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
+        print_productions_of_type(thisAgent, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
 
     return true;
 }

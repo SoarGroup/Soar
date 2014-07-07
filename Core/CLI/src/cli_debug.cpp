@@ -29,7 +29,7 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 #ifdef SOAR_DEBUG_UTILITIES
 #include "debug.h"
 
-  agent* agnt = m_pAgentSML->GetSoarAgent();
+  agent* thisAgent = m_pAgentSML->GetSoarAgent();
 	bool result = false;
 	int	numArgs = 0;
 	std::ostringstream tempString;
@@ -39,9 +39,9 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	{
 		PrintCLIMessage_Header("Debug", 40);
         PrintCLIMessage_Section("Settings", 40);
-        PrintCLIMessage_Item("epmem:", agnt->debug_params->epmem_commands, 40);
-        PrintCLIMessage_Item("smem:", agnt->debug_params->smem_commands, 40);
-        PrintCLIMessage_Item("sql:", agnt->debug_params->sql_commands, 40);
+        PrintCLIMessage_Item("epmem:", thisAgent->debug_params->epmem_commands, 40);
+        PrintCLIMessage_Item("smem:", thisAgent->debug_params->smem_commands, 40);
+        PrintCLIMessage_Item("sql:", thisAgent->debug_params->sql_commands, 40);
 		PrintCLIMessage("");
 
 		result = true;
@@ -56,7 +56,7 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 		if (sub_command[0] == 'g')
 		{
 			std::string parameter_name = argv->at(1);
-	        soar_module::param *my_param = agnt->debug_params->get( parameter_name.c_str() );
+	        soar_module::param *my_param = thisAgent->debug_params->get( parameter_name.c_str() );
 	        if ( !my_param ) {
 				tempString.str("");
 	            tempString << "Debug| Invalid parameter: " << parameter_name;
@@ -76,7 +76,7 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 			std::string parameter_name = argv->at(1);
 			std::string parameter_value = argv->at(2);
 
-			soar_module::param *my_param = agnt->debug_params->get( parameter_name.c_str() );
+			soar_module::param *my_param = thisAgent->debug_params->get( parameter_name.c_str() );
 			if ( !my_param ) {
 				tempString.str("");
 				tempString << "Debug| Invalid parameter: " << parameter_name;
@@ -111,11 +111,11 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 			std::string table_name = argv->at(2);
 			if (database_name[0] == 'e')
 			{
-//				debug_print_epmem_table(agnt, table_name.c_str());
+//				debug_print_epmem_table(thisAgent, table_name.c_str());
 			}
 			else if (database_name[0] == 's')
 			{
-//				debug_print_smem_table(agnt, table_name.c_str());
+//				debug_print_smem_table(thisAgent, table_name.c_str());
 			}
 			else
 			{
@@ -140,7 +140,7 @@ bool CommandLineInterface::DoDebug( std::vector< std::string >* argv)
 	{
 if (sub_command[0] == 'd')
 		{
-//			debug_print_db_err(agnt);
+//			debug_print_db_err(thisAgent);
 		}
 		else
 		{
@@ -175,10 +175,10 @@ if (sub_command[0] == 'd')
  *        has the episodes it needs to do an issued experiment.  (i.e.
  *        just saves us the hassle of having to run
  *
- * @param agnt			Agent to run
+ * @param thisAgent			Agent to run
  * @param run_count		Number of decision cycles to run for
  */
-void CommandLineInterface::Run_DC(agent* agnt, int run_count)
+void CommandLineInterface::Run_DC(agent* thisAgent, int run_count)
 {
 	std::ostringstream tempString;
 	tempString << "MemCon| Running for " << run_count << " decision cycles.\n";

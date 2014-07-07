@@ -107,46 +107,46 @@ static void CLI_DoRL_print_trace( std::ostream &os, const agent::RL_Trace &rl_tr
 
 bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const std::string* pVal )
 {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if ( !pOp )
     {
 		CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
 		CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "Soar-RL learning: ", agnt->rl_params->learning->get_string() ) );
+            CLI_DoRL_generate_output( "Soar-RL learning: ", thisAgent->rl_params->learning->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "temporal-extension: ", agnt->rl_params->temporal_extension->get_string() ) );
+            CLI_DoRL_generate_output( "temporal-extension: ", thisAgent->rl_params->temporal_extension->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "Discount" );
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "--------" );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "discount-rate: ", agnt->rl_params->discount_rate->get_string() ) );
+            CLI_DoRL_generate_output( "discount-rate: ", thisAgent->rl_params->discount_rate->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "Learning" );
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "--------" );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "learning-policy: ", agnt->rl_params->learning_policy->get_string() ) );
+            CLI_DoRL_generate_output( "learning-policy: ", thisAgent->rl_params->learning_policy->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "learning-rate: ", agnt->rl_params->learning_rate->get_string() ) );
+            CLI_DoRL_generate_output( "learning-rate: ", thisAgent->rl_params->learning_rate->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "hrl-discount: ", agnt->rl_params->hrl_discount->get_string() ) );
+            CLI_DoRL_generate_output( "hrl-discount: ", thisAgent->rl_params->hrl_discount->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "Eligibility Traces" );
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "------------------" );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "eligibility-trace-decay-rate: ", agnt->rl_params->et_decay_rate->get_string() ) );
+            CLI_DoRL_generate_output( "eligibility-trace-decay-rate: ", thisAgent->rl_params->et_decay_rate->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "eligibility-trace-tolerance: ", agnt->rl_params->et_tolerance->get_string() ) );
+            CLI_DoRL_generate_output( "eligibility-trace-tolerance: ", thisAgent->rl_params->et_tolerance->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
@@ -155,35 +155,35 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "------------" );
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "chunk-stop: ", agnt->rl_params->chunk_stop->get_string() ) );
+            CLI_DoRL_generate_output( "chunk-stop: ", thisAgent->rl_params->chunk_stop->get_string() ) );
 
          CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "decay-mode: ", agnt->rl_params->decay_mode->get_string() ) );
+            CLI_DoRL_generate_output( "decay-mode: ", thisAgent->rl_params->decay_mode->get_string() ) );
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "meta: ", agnt->rl_params->meta->get_string() ) );
+            CLI_DoRL_generate_output( "meta: ", thisAgent->rl_params->meta->get_string() ) );
 
          CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "meta-learning-rate: ", agnt->rl_params->meta_learning_rate->get_string() ) );
+            CLI_DoRL_generate_output( "meta-learning-rate: ", thisAgent->rl_params->meta_learning_rate->get_string() ) );
 
          CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "update-log-path: ", agnt->rl_params->update_log_path->get_string() ) );
+            CLI_DoRL_generate_output( "update-log-path: ", thisAgent->rl_params->update_log_path->get_string() ) );
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "apoptosis: ", agnt->rl_params->apoptosis->get_string() ) );
+            CLI_DoRL_generate_output( "apoptosis: ", thisAgent->rl_params->apoptosis->get_string() ) );
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "apoptosis-decay: ", agnt->rl_params->apoptosis_decay->get_string() ) );
+            CLI_DoRL_generate_output( "apoptosis-decay: ", thisAgent->rl_params->apoptosis_decay->get_string() ) );
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "apoptosis-thresh: ", agnt->rl_params->apoptosis_thresh->get_string() ) );
+            CLI_DoRL_generate_output( "apoptosis-thresh: ", thisAgent->rl_params->apoptosis_thresh->get_string() ) );
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "trace: ", agnt->rl_params->trace->get_string() ) );
+            CLI_DoRL_generate_output( "trace: ", thisAgent->rl_params->trace->get_string() ) );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
@@ -194,7 +194,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
         if(pVal)
           return SetError( "Unneccessary argument to rl -g" );
 
-        soar_module::param *my_param = agnt->rl_params->get( pAttr->c_str() );
+        soar_module::param *my_param = thisAgent->rl_params->get( pAttr->c_str() );
         if ( !my_param )
             return SetError( "Invalid setting." );
 
@@ -205,7 +205,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
     }
     else if ( pOp == 's' )
     {
-        soar_module::param *my_param = agnt->rl_params->get( pAttr->c_str() );
+        soar_module::param *my_param = thisAgent->rl_params->get( pAttr->c_str() );
         if ( !my_param )
             return SetError( "Invalid setting." );
 
@@ -225,10 +225,10 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
           if(goal_level < 1)
             return SetError( "Invalid RL goal level for rl -t clear." );
 
-          agnt->rl_trace.erase(goal_level);
+          thisAgent->rl_trace.erase(goal_level);
         }
         else {
-          agnt->rl_trace.clear();
+          thisAgent->rl_trace.clear();
         }
       }
       else if(pAttr && *pAttr == "init") {
@@ -239,19 +239,19 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
           if(goal_level < 1)
             return SetError( "Invalid RL goal level for rl -t init." );
 
-          for(Symbol *goal = agnt->top_goal; goal; goal = goal->id->lower_goal, ++level) {
+          for(Symbol *goal = thisAgent->top_goal; goal; goal = goal->id->lower_goal, ++level) {
             if(level == goal_level) {
-              goal->id->rl_trace = &agnt->rl_trace[level];
+              goal->id->rl_trace = &thisAgent->rl_trace[level];
               break;
             }
           }
         }
         else {
-          for(Symbol *goal = agnt->top_goal; goal; goal = goal->id->lower_goal, ++level)
-            goal->id->rl_trace = &agnt->rl_trace[level];
+          for(Symbol *goal = thisAgent->top_goal; goal; goal = goal->id->lower_goal, ++level)
+            goal->id->rl_trace = &thisAgent->rl_trace[level];
         }
 
-        ++agnt->rl_init_count;
+        ++thisAgent->rl_init_count;
       }
       else {
         int goal_level = 1;
@@ -273,8 +273,8 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 
         oss << "# RL Trace, Goal Level " << goal_level << ':' << std::endl;
 
-        std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = agnt->rl_trace.find(goal_level);
-        if(tt != agnt->rl_trace.end())
+        std::map<goal_stack_level, agent::RL_Trace>::const_iterator tt = thisAgent->rl_trace.find(goal_level);
+        if(tt != thisAgent->rl_trace.end())
           CLI_DoRL_print_trace(oss, tt->second);
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result, oss.str().c_str(), false );
@@ -290,18 +290,18 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
         if ( !pAttr )
         {
             CLI_DoRL_print( *this, m_RawOutput, m_Result,
-                CLI_DoRL_generate_output( "Error from last update: ", agnt->rl_stats->update_error->get_string() ) );
+                CLI_DoRL_generate_output( "Error from last update: ", thisAgent->rl_stats->update_error->get_string() ) );
 
             CLI_DoRL_print( *this, m_RawOutput, m_Result,
-                CLI_DoRL_generate_output( "Total reward in last cycle: ", agnt->rl_stats->total_reward->get_string() ) );
+                CLI_DoRL_generate_output( "Total reward in last cycle: ", thisAgent->rl_stats->total_reward->get_string() ) );
 
             CLI_DoRL_print( *this, m_RawOutput, m_Result,
-                CLI_DoRL_generate_output( "Global reward since init: ", agnt->rl_stats->global_reward->get_string() ) );
+                CLI_DoRL_generate_output( "Global reward since init: ", thisAgent->rl_stats->global_reward->get_string() ) );
         }
         else
         {
             // check attribute name
-            soar_module::statistic *my_stat = agnt->rl_stats->get( pAttr->c_str() );
+            soar_module::statistic *my_stat = thisAgent->rl_stats->get( pAttr->c_str() );
             if ( !my_stat )
                 return SetError( "Invalid statistic." );
 

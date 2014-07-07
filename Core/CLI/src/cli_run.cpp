@@ -114,17 +114,17 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 
     SetTrapPrintCallbacks( false );
 
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (options.test(RUN_GOAL))
     {
-        agnt->substate_break_level = agnt->bottom_goal->id->level;
+        thisAgent->substate_break_level = thisAgent->bottom_goal->id->level;
     }
 
     // Do the run
     runResult = pScheduler->RunScheduledAgents(forever, runType, count, runFlags, interleave, synchronizeAtStart) ;
 
     // Reset goal retraction stop flag after any run
-    agnt->substate_break_level = 0;
+    thisAgent->substate_break_level = 0;
 
     SetTrapPrintCallbacks( true );
 

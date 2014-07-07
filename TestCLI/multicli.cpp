@@ -299,14 +299,14 @@ void sighandler(int sig) {
     signal(stopsig, sighandler);
 }
 
-string exit_handler(smlRhsEventId id, void *userdata, Agent *myAgent, char const *fname, char const *args) {
+string exit_handler(smlRhsEventId id, void *userdata, Agent *thisAgent, char const *fname, char const *args) {
     int code = atoi(args);
     kernel->Shutdown();
     delete kernel;
     exit(code);
 }
 
-string log_handler(smlRhsEventId id, void *userdata, Agent *myAgent, char const *fname, char const *args) {
+string log_handler(smlRhsEventId id, void *userdata, Agent *thisAgent, char const *fname, char const *args) {
     istringstream ss(args);
     ofstream f;
     bool iscmd, append;
@@ -328,7 +328,7 @@ string log_handler(smlRhsEventId id, void *userdata, Agent *myAgent, char const 
     ss.putback(c);
 
     if (iscmd) {
-        text = myAgent->ExecuteCommandLine(args + ss.tellg());
+        text = thisAgent->ExecuteCommandLine(args + ss.tellg());
     } else {
         text = (args + ss.tellg());
     }

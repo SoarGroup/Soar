@@ -82,25 +82,25 @@ public:
 	void         print(const std::string &msg);
 	
 private:
-	agent* agnt;
+	agent* thisAgent;
 	common_syms cs;
 };
 
 
 inline Symbol *soar_interface::make_sym(const std::string &val) {
-	return make_str_constant(agnt, val.c_str());
+	return make_str_constant(thisAgent, val.c_str());
 }
 
 inline Symbol *soar_interface::make_sym(int val) {
-	return make_int_constant(agnt, val);
+	return make_int_constant(thisAgent, val);
 }
 
 inline Symbol *soar_interface::make_sym(double val) {
-	return make_float_constant(agnt, val);
+	return make_float_constant(thisAgent, val);
 }
 
 inline void soar_interface::del_sym(Symbol *s) {
-	symbol_remove_ref(agnt, s);
+	symbol_remove_ref(thisAgent, s);
 }
 
 template<class T>
@@ -189,7 +189,7 @@ inline Symbol *soar_interface::get_wme_val(wme *w) {
 }
 
 inline tc_num soar_interface::new_tc_num() {
-	return get_new_tc_number(agnt);
+	return get_new_tc_number(thisAgent);
 }
 
 inline tc_num soar_interface::get_tc_num(Symbol *s) {

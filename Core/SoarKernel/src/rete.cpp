@@ -1600,7 +1600,7 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
   }
 }
 
-inline void _epmem_remove_wme( agent* my_agent, wme* w )
+inline void _epmem_remove_wme( agent* thisAgent, wme* w )
 {
 	bool was_encoded = false;
 
@@ -1608,15 +1608,15 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 	{
 		bool lti = ( w->value->id->smem_lti != NIL );
 
-		if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == my_agent->epmem_validation ) )
+		if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
 		{
 			was_encoded = true;
 
-			(*my_agent->epmem_edge_removals)[ w->epmem_id ] = true;
+			(*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
 
 			#ifdef DEBUG_EPMEM_WME_ADD
 			fprintf(stderr, "   wme destroyed: %d %d %d\n",
-					(unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id->epmem_id);
+					(unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id->epmem_id);
 			#endif
 
 			// return to the id pool
@@ -1624,18 +1624,18 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 			{
 				#ifdef DEBUG_EPMEM_WME_ADD
 				fprintf(stderr, "   returning WME to pool: %d %d %d\n",
-						(unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id->epmem_id);
+						(unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id->epmem_id);
 				#endif
-				epmem_return_id_pool::iterator p = my_agent->epmem_id_replacement->find( w->epmem_id );
+				epmem_return_id_pool::iterator p = thisAgent->epmem_id_replacement->find( w->epmem_id );
 				(*p->second).push_front( std::make_pair( w->value->id->epmem_id, w->epmem_id ) );
-				my_agent->epmem_id_replacement->erase( p );
+				thisAgent->epmem_id_replacement->erase( p );
 			}
 		}
 
 		// reduce the ref count on the value
-		if ( !lti && ( w->value->id->epmem_id != EPMEM_NODEID_BAD ) && ( w->value->id->epmem_valid == my_agent->epmem_validation ) )
+		if ( !lti && ( w->value->id->epmem_id != EPMEM_NODEID_BAD ) && ( w->value->id->epmem_valid == thisAgent->epmem_validation ) )
 		{
-			epmem_wme_set* my_refs = (*my_agent->epmem_id_ref_counts)[ w->value->id->epmem_id ];
+			epmem_wme_set* my_refs = (*thisAgent->epmem_id_ref_counts)[ w->value->id->epmem_id ];
 
 			epmem_wme_set::iterator rc_it = my_refs->find( w );
 			if ( rc_it != my_refs->end() )
@@ -1643,26 +1643,26 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 				my_refs->erase( rc_it );
 				#ifdef DEBUG_EPMEM_WME_ADD
 				fprintf(stderr, "   reducing ref_count of value in %d %d %d; new ref_count is %d\n",
-						(unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id->epmem_id, (unsigned int) my_refs->size());
+						(unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id->epmem_id, (unsigned int) my_refs->size());
 				#endif
 
 				if ( my_refs->size() == 0 )
 				{
 					#ifdef DEBUG_EPMEM_WME_ADD
 					fprintf(stderr, "   recursing; clearing ref_count of value in %d %d %d\n",
-							(unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(my_agent, w->attr), (unsigned int) w->value->id->epmem_id);
+							(unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id->epmem_id);
 					#endif
 					my_refs->clear();
-					my_agent->epmem_id_removes->push_front( w->value );
+					thisAgent->epmem_id_removes->push_front( w->value );
 				}
 			}
 		}
 	}
-	else if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == my_agent->epmem_validation ) )
+	else if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
 	{
 		was_encoded = true;
 
-		(*my_agent->epmem_node_removals)[ w->epmem_id ] = true;
+		(*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
 	}
 
 	if ( was_encoded )
@@ -1683,20 +1683,20 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 
 ------------------------------------------------------------------ */
 
-inline void _epmem_process_ids( agent* my_agent )
+inline void _epmem_process_ids( agent* thisAgent )
 {
 	Symbol* id;
 	slot* s;
 	wme* w;
 
-	while ( !my_agent->epmem_id_removes->empty() )
+	while ( !thisAgent->epmem_id_removes->empty() )
 	{
-		id = my_agent->epmem_id_removes->front();
-		my_agent->epmem_id_removes->pop_front();
+		id = thisAgent->epmem_id_removes->front();
+		thisAgent->epmem_id_removes->pop_front();
 
 		assert( id->is_identifier());
 
-		if ( ( id->id->epmem_id != EPMEM_NODEID_BAD ) && ( id->id->epmem_valid == my_agent->epmem_validation ) )
+		if ( ( id->id->epmem_id != EPMEM_NODEID_BAD ) && ( id->id->epmem_valid == thisAgent->epmem_validation ) )
 		{
 			// invalidate identifier encoding
 			id->id->epmem_id = EPMEM_NODEID_BAD;
@@ -1705,13 +1705,13 @@ inline void _epmem_process_ids( agent* my_agent )
 			// impasse wmes
 			for ( w=id->id->impasse_wmes; w!=NIL; w=w->next )
 			{
-				_epmem_remove_wme( my_agent, w );
+				_epmem_remove_wme( thisAgent, w );
 			}
 
 			// input wmes
 			for ( w=id->id->input_wmes; w!=NIL; w=w->next )
 			{
-				_epmem_remove_wme( my_agent, w );
+				_epmem_remove_wme( thisAgent, w );
 			}
 
 			// regular wmes
@@ -1719,12 +1719,12 @@ inline void _epmem_process_ids( agent* my_agent )
 			{
 				for ( w=s->wmes; w!=NIL; w=w->next )
 				{
-					_epmem_remove_wme( my_agent, w );
+					_epmem_remove_wme( thisAgent, w );
 				}
 
 				for ( w=s->acceptable_preference_wmes; w!=NIL; w=w->next )
 				{
-					_epmem_remove_wme( my_agent, w );
+					_epmem_remove_wme( thisAgent, w );
 				}
 			}
 		}

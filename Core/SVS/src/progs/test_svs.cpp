@@ -131,7 +131,7 @@ struct test_info_struct {
 
 test_info_struct test_info;
 
-string rhs_count(smlRhsEventId id, void *data, Agent *agnt, char const *func, char const *arg) {
+string rhs_count(smlRhsEventId id, void *data, Agent *thisAgent, char const *func, char const *arg) {
 	vector<string> fields;
 	int count;
 	

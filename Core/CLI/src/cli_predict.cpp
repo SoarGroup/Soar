@@ -23,8 +23,8 @@ using namespace sml;
 
 bool CommandLineInterface::DoPredict() 
 {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
-    const char *prediction_result = predict_get( agnt );
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    const char *prediction_result = predict_get( thisAgent );
 
     if ( m_RawOutput )
         m_Result << prediction_result;

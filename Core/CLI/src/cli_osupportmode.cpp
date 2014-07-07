@@ -20,9 +20,9 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoOSupportMode(int mode) {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (mode < 0) {
-        mode = agnt->o_support_calculation_type;
+        mode = thisAgent->o_support_calculation_type;
 
         if (m_RawOutput) {
             m_Result << mode;
@@ -33,7 +33,7 @@ bool CommandLineInterface::DoOSupportMode(int mode) {
         }
     } else {
         assert(mode != 1);
-        agnt->o_support_calculation_type = mode;
+        thisAgent->o_support_calculation_type = mode;
     }
 
     return true;

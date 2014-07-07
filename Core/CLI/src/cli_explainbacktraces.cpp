@@ -113,14 +113,14 @@ bool CommandLineInterface::DoExplainBacktraces(const std::string* pProduction, c
     // quick sanity check
     if (condition < -1) return SetError("Condition number must be a non-negative integer.");
 
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (!pProduction) {
         // no production means query, ignore other args
-        ExplainListChunks(agnt);
+        ExplainListChunks(thisAgent);
         return true;
     }
 
-    ExplainChunks(agnt, pProduction->c_str(), condition);
+    ExplainChunks(thisAgent, pProduction->c_str(), condition);
     return true;
 }
 

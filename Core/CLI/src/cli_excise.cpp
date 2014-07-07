@@ -26,85 +26,85 @@ using namespace sml;
 
 bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::string* pProduction) {
     int64_t exciseCount = 0;
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
     // Process the general options
     if (options.test(EXCISE_ALL)) {
-        exciseCount += agnt->num_productions_of_type[USER_PRODUCTION_TYPE];
-        exciseCount += agnt->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
-        exciseCount += agnt->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
-        exciseCount += agnt->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 
-        excise_all_productions( agnt, false );
+        excise_all_productions( thisAgent, false );
 
         this->DoInitSoar();    // from the manual, init when --all or --task are executed
     }
     if (options.test(EXCISE_CHUNKS)) {
-        exciseCount += agnt->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
-        exciseCount += agnt->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
 
-        excise_all_productions_of_type(agnt, CHUNK_PRODUCTION_TYPE, false);
-        excise_all_productions_of_type(agnt, JUSTIFICATION_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, CHUNK_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, JUSTIFICATION_PRODUCTION_TYPE, false);
     }
     if (options.test(EXCISE_DEFAULT)) {
-      exciseCount += agnt->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+      exciseCount += thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 
-      excise_all_productions_of_type(agnt, DEFAULT_PRODUCTION_TYPE, false);
+      excise_all_productions_of_type(thisAgent, DEFAULT_PRODUCTION_TYPE, false);
     }
     if (options.test(EXCISE_RL)) {
-       for ( production *prod = agnt->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+       for ( production *prod = thisAgent->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
        {
            if ( prod->rl_rule )
            {
                exciseCount++;
-               excise_production( agnt, prod, static_cast<bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
+               excise_production( thisAgent, prod, static_cast<bool>(thisAgent->sysparams[TRACE_LOADING_SYSPARAM]) );
            }
        }
 
-       for ( production *prod = agnt->all_productions_of_type[USER_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+       for ( production *prod = thisAgent->all_productions_of_type[USER_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
        {
            if ( prod->rl_rule )
            {
                exciseCount++;
-               excise_production( agnt, prod, static_cast<bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
+               excise_production( thisAgent, prod, static_cast<bool>(thisAgent->sysparams[TRACE_LOADING_SYSPARAM]) );
            }
        }
 
-       for ( production *prod = agnt->all_productions_of_type[CHUNK_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+       for ( production *prod = thisAgent->all_productions_of_type[CHUNK_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
        {
            if ( prod->rl_rule )
            {
                exciseCount++;
-               excise_production( agnt, prod, static_cast<bool>(agnt->sysparams[TRACE_LOADING_SYSPARAM]) );
+               excise_production( thisAgent, prod, static_cast<bool>(thisAgent->sysparams[TRACE_LOADING_SYSPARAM]) );
            }
        }
 
-       rl_initialize_template_tracking( agnt );
+       rl_initialize_template_tracking( thisAgent );
     }
     if (options.test(EXCISE_TASK)) {
-        exciseCount += agnt->num_productions_of_type[USER_PRODUCTION_TYPE];
-        exciseCount += agnt->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 
-        excise_all_productions_of_type(agnt, USER_PRODUCTION_TYPE, false);
-        excise_all_productions_of_type(agnt, DEFAULT_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, USER_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, DEFAULT_PRODUCTION_TYPE, false);
 
         this->DoInitSoar();    // from the manual, init when --all or --task are executed
     }
     if (options.test(EXCISE_TEMPLATE)) {
-        exciseCount += agnt->num_productions_of_type[TEMPLATE_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[TEMPLATE_PRODUCTION_TYPE];
 
-        excise_all_productions_of_type(agnt, TEMPLATE_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, TEMPLATE_PRODUCTION_TYPE, false);
     }
     if (options.test(EXCISE_USER)) {
-        exciseCount += agnt->num_productions_of_type[USER_PRODUCTION_TYPE];
+        exciseCount += thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE];
 
-        excise_all_productions_of_type(agnt, USER_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, USER_PRODUCTION_TYPE, false);
     }
 
     // Excise specific production
     if (pProduction)
     {
-        Symbol* sym = find_str_constant( agnt, pProduction->c_str() );
+        Symbol* sym = find_str_constant( thisAgent, pProduction->c_str() );
 
         if (!sym || !(sym->sc->production))
         {
@@ -120,7 +120,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         // Increment the count for the structured response
         ++exciseCount;
 
-        excise_production(agnt, sym->sc->production, false);
+        excise_production(thisAgent, sym->sc->production, false);
     }
 
     if (m_RawOutput) {

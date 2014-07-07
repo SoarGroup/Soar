@@ -221,7 +221,7 @@ namespace cli
 
     protected:
 
-        void Run_DC(agent* agnt, int run_count);
+        void Run_DC(agent* thisAgent, int run_count);
         void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults);
 
         void SetTrapPrintCallbacks(bool setting);
