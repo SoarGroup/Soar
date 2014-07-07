@@ -138,8 +138,8 @@ int compare_attr (const void * e1, const void * e2)
     p2 = (wme **) e2;
 
     // passing null thisAgent is OK as long as dest is guaranteed != 0
-    symbol_to_string (0, (*p1)->attr, TRUE, s1, MAX_LEXEME_LENGTH*2+20);
-    symbol_to_string (0, (*p2)->attr, TRUE, s2, MAX_LEXEME_LENGTH*2+20);
+    symbol_to_string (0, (*p1)->attr, true, s1, MAX_LEXEME_LENGTH*2+20);
+    symbol_to_string (0, (*p2)->attr, true, s2, MAX_LEXEME_LENGTH*2+20);
 
     return strcmp (s1, s2);
 }
@@ -156,9 +156,9 @@ void neatly_print_wme_augmentation_of_id (agent* thisAgent, wme *w, int indentat
     ch = buf;
     while (*ch)
         ch++;
-    symbol_to_string(thisAgent, w->attr, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
+    symbol_to_string(thisAgent, w->attr, true, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
     *(ch++) = ' ';
-    symbol_to_string(thisAgent, w->value, TRUE, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
+    symbol_to_string(thisAgent, w->value, true, ch, NEATLY_PRINT_BUF_SIZE - (ch - buf)); while (*ch) ch++;
     if (w->acceptable)
     {
         strcpy(ch, " +");
@@ -467,12 +467,12 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
     get_lexeme(thisAgent);
     if (thisAgent->lexeme.type==PLUS_LEXEME)
     {
-        acceptable = TRUE;
+        acceptable = true;
         get_lexeme(thisAgent);
     }
     else
     {
-        acceptable = FALSE;
+        acceptable = false;
     }
     if (thisAgent->lexeme.type!=R_PAREN_LEXEME) {
         print (thisAgent, "Expected ')' to end wme pattern\n");
@@ -486,7 +486,7 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
         if ((id_result==1) || (id==w->id))
             if ((attr_result==1) || (attr==w->attr))
                 if ((value_result==1) || (value==w->value))
-                    if (acceptable == (w->acceptable == TRUE))
+                    if (acceptable == (w->acceptable == true))
                         push (thisAgent, w, wmes);
     }
     return wmes;
@@ -544,7 +544,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
         */
         get_lexeme(thisAgent);
         wmes = read_pattern_and_get_matching_wmes(thisAgent);
-        soar_alternate_input(thisAgent, NIL, NIL, FALSE);
+        soar_alternate_input(thisAgent, NIL, NIL, false);
         thisAgent->current_char = ' ';
         if (exact)
         {

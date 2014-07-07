@@ -137,7 +137,7 @@ extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, si
    parameter tells how many spaces to indent each line other than the
    first--the first line is not indented (the caller must handle this).
    The last line is printed without a trailing linefeed.  The "internal"
-   parameter, if TRUE, indicates that the condition list should be printed
+   parameter, if true, indicates that the condition list should be printed
    in internal format--one condition per line, without grouping all the
    conditions for the same id into one line.
 

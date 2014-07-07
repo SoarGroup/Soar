@@ -640,7 +640,7 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 			}
 
 			// attempt to add to rete, remove if duplicate
-			if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, FALSE, TRUE ) == DUPLICATE_PRODUCTION )
+			if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, false, true ) == DUPLICATE_PRODUCTION )
 			{
 				excise_production( my_agent, new_production, false );
 				rl_revert_template_id( my_agent );

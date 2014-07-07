@@ -57,7 +57,7 @@ Symbol *plus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
   }
 
   i = 0;
-  float_found = FALSE;
+  float_found = false;
   while (args) {
     arg = static_cast<symbol_struct *>(args->first);
     if (arg->symbol_type==INT_CONSTANT_SYMBOL_TYPE) {
@@ -65,7 +65,7 @@ Symbol *plus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
       else i += arg->ic->value;
     } else {
       if (float_found) f += arg->fc->value;
-      else { float_found = TRUE; f = arg->fc->value + i; }
+      else { float_found = true; f = arg->fc->value + i; }
     }
     args = args->rest;
   }
@@ -98,7 +98,7 @@ Symbol *times_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
   }
 
   i = 1;
-  float_found = FALSE;
+  float_found = false;
   while (args) {
     arg = static_cast<symbol_struct *>(args->first);
     if (arg->symbol_type==INT_CONSTANT_SYMBOL_TYPE) {
@@ -106,7 +106,7 @@ Symbol *times_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
       else i *= arg->ic->value;
     } else {
       if (float_found) f *= arg->fc->value;
-      else { float_found = TRUE; f = arg->fc->value * i; }
+      else { float_found = true; f = arg->fc->value * i; }
     }
     args = args->rest;
   }
@@ -155,9 +155,9 @@ Symbol *minus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
 
   /* --- two or more arguments --- */
   arg = static_cast<symbol_struct *>(args->first);
-  float_found = FALSE;
+  float_found = false;
   if (arg->symbol_type==INT_CONSTANT_SYMBOL_TYPE) i = arg->ic->value;
-  else { float_found = TRUE; f = arg->fc->value; }
+  else { float_found = true; f = arg->fc->value; }
   for (c=args->rest; c!=NIL; c=c->rest) {
     arg = static_cast<symbol_struct *>(c->first);
     if (arg->symbol_type==INT_CONSTANT_SYMBOL_TYPE) {
@@ -165,7 +165,7 @@ Symbol *minus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
       else i -= arg->ic->value;
     } else {
       if (float_found) f -= arg->fc->value;
-      else { float_found = TRUE; f = i - arg->fc->value; }
+      else { float_found = true; f = i - arg->fc->value; }
     }
   }
 
@@ -498,7 +498,7 @@ Symbol *int_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
     int64_t int_val;
 
     errno = 0;
-    int_val = strtol(symbol_to_string (thisAgent, sym, FALSE, NIL, 0), NULL, 10);
+    int_val = strtol(symbol_to_string (thisAgent, sym, false, NIL, 0), NULL, 10);
     if (errno) {
       print (thisAgent, "Error: bad integer (%y) given to 'int' RHS function\n",
 	     sym);
@@ -554,7 +554,7 @@ Symbol *float_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
     double float_val;
 
     errno = 0;
-    float_val = strtod(symbol_to_string (thisAgent, sym, FALSE, NIL, 0), NULL);
+    float_val = strtod(symbol_to_string (thisAgent, sym, false, NIL, 0), NULL);
     if (errno) {
       print (thisAgent, "Error: bad float (%y) given to 'float' RHS function\n",
 	     sym);
@@ -659,7 +659,7 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
     double n = 0, f_m = 0;
     int64_t i_m = 0;
     cons *c;
-    bool float_found = FALSE;
+    bool float_found = false;
 
     if (!args) {
         print(thisAgent, "Error: 'round_off_heading' function called with no arguments\n");
@@ -690,7 +690,7 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         i_m = arg->ic->value;
     else if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
-        float_found = TRUE;
+        float_found = true;
         f_m = arg->fc->value;
     }
 
@@ -715,7 +715,7 @@ Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* /*us
     double n = 0, f_m = 0;
     int64_t i_m = 0;
     cons *c;
-    bool float_found = FALSE;
+    bool float_found = false;
 
     if (!args) {
         print(thisAgent, "Error: 'round_off' function called with no arguments\n");
@@ -746,7 +746,7 @@ Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* /*us
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         i_m = arg->ic->value;
     else if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
-        float_found = TRUE;
+        float_found = true;
         f_m = arg->fc->value;
     }
 
@@ -856,7 +856,7 @@ int64_t heading_to_point(int64_t current_x, int64_t current_y, int64_t x, int64_
     waypoint_pos[2] = 0;
 
     vector_from_to_position(plane_pos, waypoint_pos, dir);
-    vec2_norm(dir, dir, FALSE);
+    vec2_norm(dir, dir, false);
     hrl_xydof_to_heading(dir, &heading);
 
     return convert(bracket_rad_to_deg(heading));
@@ -1315,78 +1315,78 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 void init_built_in_rhs_math_functions (agent* thisAgent)
 {
 	add_rhs_function (thisAgent, make_str_constant (thisAgent, "+"), plus_rhs_function_code,
-					-1, TRUE, FALSE, 0);
+					-1, true, false, 0);
 	add_rhs_function (thisAgent, make_str_constant (thisAgent, "*"), times_rhs_function_code,
-					-1, TRUE, FALSE, 0);
+					-1, true, false, 0);
 	add_rhs_function (thisAgent, make_str_constant (thisAgent, "-"), minus_rhs_function_code,
-					-1, TRUE, FALSE, 0);
+					-1, true, false, 0);
 	add_rhs_function (thisAgent, make_str_constant (thisAgent, "/"), fp_divide_rhs_function_code,
-					-1, TRUE, FALSE, 0);
+					-1, true, false, 0);
 	add_rhs_function (thisAgent, make_str_constant (thisAgent, "div"), div_rhs_function_code,
-					2, TRUE, FALSE, 0);
+					2, true, false, 0);
 	add_rhs_function (thisAgent, make_str_constant (thisAgent, "mod"), mod_rhs_function_code,
-					2, TRUE, FALSE, 0);
+					2, true, false, 0);
 
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "sin"),
 			sin_rhs_function_code,
 			1,
-			TRUE,
-			FALSE, 0);
+			true,
+			false, 0);
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "cos"),
 			cos_rhs_function_code,
 			1,
-			TRUE,
-			FALSE, 0);
+			true,
+			false, 0);
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "atan2"),
 			atan2_rhs_function_code,
 			2,
-			TRUE,
-			FALSE, 0);
+			true,
+			false, 0);
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "sqrt"),
 			sqrt_rhs_function_code,
 			1,
-			TRUE,
-			FALSE, 0);
+			true,
+			false, 0);
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "abs"),
 			abs_rhs_function_code,
 			1,
-			TRUE,
-			FALSE, 0);
+			true,
+			false, 0);
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "int"),
 			int_rhs_function_code,
 			1,
-			TRUE,
-			FALSE, 0);
+			true,
+			false, 0);
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "float"),
 			float_rhs_function_code,
 			1,
-			TRUE,
-			FALSE, 0);
+			true,
+			false, 0);
 
 	/* voigtjr 6/12/2007: added these built in functions on laird's request
 	these are straight out of the <8.6 kernel */
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "round-off-heading"),
-		round_off_heading_air_rhs_function_code, 2, TRUE, FALSE, 0);
+		round_off_heading_air_rhs_function_code, 2, true, false, 0);
 
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "round-off"),
-		round_off_air_rhs_function_code, 2, TRUE, FALSE, 0);
+		round_off_air_rhs_function_code, 2, true, false, 0);
 
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "compute-heading"),
-		compute_heading_rhs_function_code, 4, TRUE, FALSE, 0);
+		compute_heading_rhs_function_code, 4, true, false, 0);
 
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "compute-range"),
-		compute_range_rhs_function_code, 4, TRUE, FALSE, 0);
+		compute_range_rhs_function_code, 4, true, false, 0);
 
 	// NLD: 11/11 (ditto voigtjr's motivation above)
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "compute-dice-probability"),
-		dice_prob_rhs_function_code, 4, TRUE, FALSE, 0);
+		dice_prob_rhs_function_code, 4, true, false, 0);
 
 	// Bug 800: implement rhs rand functions
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "rand-int"),
-		rand_int_rhs_function_code, -1, TRUE, FALSE, 0);
+		rand_int_rhs_function_code, -1, true, false, 0);
 
 	add_rhs_function (thisAgent, make_str_constant(thisAgent, "rand-float"),
-		rand_float_rhs_function_code, -1, TRUE, FALSE, 0);
+		rand_float_rhs_function_code, -1, true, false, 0);
 
 }
 

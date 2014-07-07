@@ -120,20 +120,20 @@ void init_soar_agent(agent* thisAgent) {
 
 
   /* --- add default object trace formats --- */
-  add_trace_format (thisAgent, FALSE, FOR_ANYTHING_TF, NIL,
+  add_trace_format (thisAgent, false, FOR_ANYTHING_TF, NIL,
                     "%id %ifdef[(%v[name])]");
-  add_trace_format (thisAgent, FALSE, FOR_STATES_TF, NIL,
+  add_trace_format (thisAgent, false, FOR_STATES_TF, NIL,
                     "%id %ifdef[(%v[attribute] %v[impasse])]");
   { Symbol *evaluate_object_sym;
     evaluate_object_sym = make_str_constant (thisAgent, "evaluate-object");
-    add_trace_format (thisAgent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym,
+    add_trace_format (thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
                       "%id (evaluate-object %o[object])");
     symbol_remove_ref (thisAgent, evaluate_object_sym);
   }
   /* --- add default stack trace formats --- */
-  add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL,
+  add_trace_format (thisAgent, true, FOR_STATES_TF, NIL,
                     "%right[6,%dc]: %rsd[   ]==>S: %cs");
-  add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
+  add_trace_format (thisAgent, true, FOR_OPERATORS_TF, NIL,
                     "%right[6,%dc]: %rsd[   ]   O: %co");
 
   reset_statistics (thisAgent);
@@ -168,7 +168,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->alpha_mem_id_counter               = 0;
   newAgent->alternate_input_string             = NIL;
   newAgent->alternate_input_suffix             = NIL;
-  newAgent->alternate_input_exit               = FALSE;/* Soar-Bugs #54 */
+  newAgent->alternate_input_exit               = false;/* Soar-Bugs #54 */
   newAgent->backtrace_number                   = 0;
   newAgent->beta_node_id_counter               = 0;
   newAgent->bottom_goal                        = NIL;
@@ -180,15 +180,15 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->context_slots_with_changed_acceptable_preferences = NIL;
   newAgent->current_file                       = NIL;
   newAgent->current_phase                      = INPUT_PHASE;
-  newAgent->applyPhase                         = FALSE;
+  newAgent->applyPhase                         = false;
   newAgent->current_symbol_hash_id             = 0;
   newAgent->current_variable_gensym_number     = 0;
   newAgent->current_wme_timetag                = 1;
   newAgent->default_wme_depth                  = 1;  /* AGR 646 */
   newAgent->disconnected_ids                   = NIL;
   newAgent->existing_output_links              = NIL;
-  newAgent->output_link_changed                = FALSE;  /* KJC 11/9/98 */
-  /* newAgent->explain_flag                       = FALSE; */
+  newAgent->output_link_changed                = false;  /* KJC 11/9/98 */
+  /* newAgent->explain_flag                       = false; */
   newAgent->go_number                          = 1;
   newAgent->go_type                            = GO_DECISION;
   newAgent->init_count                         = 0;
@@ -197,12 +197,12 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->highest_goal_whose_context_changed = NIL;
   newAgent->ids_with_unknown_level             = NIL;
   newAgent->input_period                       = 0;     /* AGR REW1 */
-  newAgent->input_cycle_flag                   = TRUE;  /* AGR REW1 */
+  newAgent->input_cycle_flag                   = true;  /* AGR REW1 */
   newAgent->justification_count                = 1;
   newAgent->lex_alias                          = NIL;  /* AGR 568 */
   newAgent->link_update_mode                   = UPDATE_LINKS_NORMALLY;
   newAgent->locals_tc                          = 0;
-  newAgent->max_chunks_reached                 = FALSE; /* MVP 6-24-94 */
+  newAgent->max_chunks_reached                 = false; /* MVP 6-24-94 */
   newAgent->mcs_counter                        = 1;
   newAgent->memory_pools_in_use                = NIL;
   newAgent->ms_assertions                      = NIL;
@@ -211,15 +211,15 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->num_wmes_in_rete                   = 0;
   newAgent->potentials_tc                      = 0;
   newAgent->prev_top_state                     = NIL;
-  newAgent->print_prompt_flag                  = TRUE;
+  newAgent->print_prompt_flag                  = true;
   newAgent->printer_output_column              = 1;
   newAgent->production_being_fired             = NIL;
   newAgent->productions_being_traced           = NIL;
   newAgent->promoted_ids                       = NIL;
   newAgent->reason_for_stopping                = "Startup";
   newAgent->slots_for_possible_removal         = NIL;
-  newAgent->stop_soar                          = TRUE;
-  newAgent->system_halted                      = FALSE;
+  newAgent->stop_soar                          = true;
+  newAgent->system_halted                      = false;
   newAgent->token_additions                    = 0;
   newAgent->top_dir_stack                      = NIL;   /* AGR 568 */
   newAgent->top_goal                           = NIL;
@@ -233,8 +233,8 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   /* REW: begin 09.15.96 */
 
-  newAgent->did_PE                             = FALSE;
-  newAgent->soar_verbose_flag                  = FALSE;
+  newAgent->did_PE                             = false;
+  newAgent->soar_verbose_flag                  = false;
   newAgent->FIRING_TYPE                        = IE_PRODS;
   newAgent->ms_o_assertions                    = NIL;
   newAgent->ms_i_assertions                    = NIL;
@@ -253,8 +253,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   /* REW: end   08.20.97 */
 
   /* REW: begin 10.24.97 */
-  newAgent->waitsnc                            = FALSE;
-  newAgent->waitsnc_detect                     = FALSE;
+  newAgent->waitsnc                            = false;
+  newAgent->waitsnc_detect                     = false;
   /* REW: end   10.24.97 */
 
   /* Initializing rete stuff */
@@ -567,12 +567,12 @@ void destroy_soar_agent (agent * delete_agent)
   free_memory (delete_agent, delete_agent->current_file, MISCELLANEOUS_MEM_USAGE);
 
   /* Releasing trace formats (needs to happen before tracing hashtables are released) */
-  remove_trace_format (delete_agent, FALSE, FOR_ANYTHING_TF, NIL);
-  remove_trace_format (delete_agent, FALSE, FOR_STATES_TF, NIL);
+  remove_trace_format (delete_agent, false, FOR_ANYTHING_TF, NIL);
+  remove_trace_format (delete_agent, false, FOR_STATES_TF, NIL);
   Symbol *evaluate_object_sym = find_str_constant (delete_agent, "evaluate-object");
-  remove_trace_format (delete_agent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym);
-  remove_trace_format (delete_agent, TRUE, FOR_STATES_TF, NIL);
-  remove_trace_format (delete_agent, TRUE, FOR_OPERATORS_TF, NIL);
+  remove_trace_format (delete_agent, false, FOR_OPERATORS_TF, evaluate_object_sym);
+  remove_trace_format (delete_agent, true, FOR_STATES_TF, NIL);
+  remove_trace_format (delete_agent, true, FOR_OPERATORS_TF, NIL);
 
   /* Releasing hashtables allocated in init_tracing */
   for (int i=0; i<3; i++) {

@@ -220,9 +220,9 @@ void backtrace_through_instantiation (agent* thisAgent,
   if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) {
     temp_explain_backtrace.trace_cond = trace_cond;  /* Not copied yet */
     if (trace_cond == NULL)   /* Backtracing for a result */
-      temp_explain_backtrace.result = TRUE;
+      temp_explain_backtrace.result = true;
     else
-      temp_explain_backtrace.result = FALSE;
+      temp_explain_backtrace.result = false;
 
     temp_explain_backtrace.grounds    = NIL;
     temp_explain_backtrace.potentials = NIL;
@@ -246,7 +246,7 @@ void backtrace_through_instantiation (agent* thisAgent,
      the id field of a top-level positive condition --- */
   tc = get_new_tc_number (thisAgent);
   tc2 = get_new_tc_number (thisAgent);
-  need_another_pass = FALSE;
+  need_another_pass = false;
 
   for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next) {
     Symbol *id, *value;
@@ -260,7 +260,7 @@ void backtrace_through_instantiation (agent* thisAgent,
       if (value->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
         /* --- if we already saw it before, we're going to have to go back
            and make another pass to get the complete TC --- */
-        if (value->tc_num == tc2) need_another_pass = TRUE;
+        if (value->tc_num == tc2) need_another_pass = true;
         value->tc_num = tc;
       }
     } else if ((id->id->isa_goal) && (c->bt.level <= grounds_level)) {
@@ -270,7 +270,7 @@ void backtrace_through_instantiation (agent* thisAgent,
       if (value->symbol_type==IDENTIFIER_SYMBOL_TYPE) {
         /* --- if we already saw it before, we're going to have to go back
            and make another pass to get the complete TC --- */
-        if (value->tc_num == tc2) need_another_pass = TRUE;
+        if (value->tc_num == tc2) need_another_pass = true;
         value->tc_num = tc;
       }
     } else {
@@ -286,7 +286,7 @@ void backtrace_through_instantiation (agent* thisAgent,
   while (need_another_pass) {
     Symbol *value;
 
-    need_another_pass = FALSE;
+    need_another_pass = false;
     for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next) {
       if (c->type!=POSITIVE_CONDITION)
         continue;
@@ -296,7 +296,7 @@ void backtrace_through_instantiation (agent* thisAgent,
       if (value->symbol_type==IDENTIFIER_SYMBOL_TYPE)
         if (value->tc_num != tc) {
           value->tc_num = tc;
-          need_another_pass = TRUE;
+          need_another_pass = true;
         }
     } /* end of for loop */
   } /* end of while loop */
@@ -537,9 +537,9 @@ void trace_grounded_potentials (agent* thisAgent) {
   for (c=thisAgent->grounds; c!=NIL; c=c->rest)
 	  add_cond_to_tc (thisAgent, static_cast<condition_struct *>(c->first), tc, NIL, NIL);
 
-  need_another_pass = TRUE;
+  need_another_pass = true;
   while (need_another_pass) {
-    need_another_pass = FALSE;
+    need_another_pass = false;
     /* --- look for any potentials that are in the tc now --- */
     prev_c = NIL;
     for (c=thisAgent->positive_potentials; c!=NIL; c=next_c) {
@@ -556,7 +556,7 @@ void trace_grounded_potentials (agent* thisAgent) {
           pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
           c->rest = thisAgent->grounds; thisAgent->grounds = c;
           add_cond_to_tc (thisAgent, pot, tc, NIL, NIL);
-          need_another_pass = TRUE;
+          need_another_pass = true;
         } else { /* pot was already in the grounds, do don't add it */
           free_cons (thisAgent, c);
         }
@@ -577,8 +577,8 @@ void trace_grounded_potentials (agent* thisAgent) {
    This routine backtraces through ungrounded potentials.  At entry,
    all potentials must be ungrounded.  This BT's through each
    potential that has some trace (at the right level) that we can
-   BT through.  Other potentials are left alone.  TRUE is returned
-   if anything was BT'd; FALSE if nothing changed.
+   BT through.  Other potentials are left alone.  true is returned
+   if anything was BT'd; false if nothing changed.
 --------------------------------------------------------------- */
 
 bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *reliable) {
@@ -616,7 +616,7 @@ bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
           xml_end_tag(thisAgent, kTagUngroundedPotentials);
       }
-      return FALSE;
+      return false;
   }
 
   /* --- backtrace through each one --- */
@@ -663,7 +663,7 @@ bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
       xml_end_tag(thisAgent, kTagUngroundedPotentials);
   }
 
-  return TRUE;
+  return true;
 }
 
 void report_local_negation (agent* thisAgent, condition* c) {

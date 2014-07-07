@@ -126,7 +126,7 @@ NamedPipe* ListenerNamedPipe::CheckForClientConnection()
 
 	//sml::PrintDebug("About to check for a connection") ;
 
-	int connected = ConnectNamedPipe(m_hPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED); 
+	int connected = ConnectNamedPipe(m_hPipe, NULL) ? true : (GetLastError() == ERROR_PIPE_CONNECTED); 
 
 	// If we failed to find a valid socket we're done.
 	if (!connected)

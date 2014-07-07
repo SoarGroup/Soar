@@ -167,9 +167,9 @@ Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
 
   for ( ; args!=NIL; args=args->rest) {
     arg = static_cast<symbol_struct *>(args->first);
-    /* --- Note use of FALSE here--print the symbol itself, not a rereadable
+    /* --- Note use of false here--print the symbol itself, not a rereadable
        version of it --- */
-    string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
+    string = symbol_to_string (thisAgent, arg, false, NIL, 0);
     add_to_growable_string(thisAgent, &gs, string); // for XML generation
     print_string (thisAgent, string);
   }
@@ -198,7 +198,7 @@ Symbol *crlf_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_
 -------------------------------------------------------------------- */
 
 Symbol *halt_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_data*/) {
-  thisAgent->system_halted = TRUE;
+  thisAgent->system_halted = true;
   	  soar_invoke_callbacks(thisAgent,
 		  AFTER_HALT_SOAR_CALLBACK,
 		  0);
@@ -224,7 +224,7 @@ Symbol *make_constant_symbol_rhs_function_code (agent* thisAgent, list *args, vo
 		buf << "constant";
 	} else {
 		for (c=args; c!=NIL; c=c->rest) {
-			string = symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), FALSE, NIL, 0);
+			string = symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), false, NIL, 0);
 			buf << string;
 		}
 	}
@@ -283,7 +283,7 @@ Symbol *accept_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*use
   char buf[2000], *s;
   Symbol *sym;
 
-  while (TRUE) {
+  while (true) {
     s = fgets (buf, 2000, stdin);
     //    s = Soar_Read(thisAgent, buf, 2000); /* kjh(CUSP-B10) */
     if (!s) {
@@ -326,7 +326,7 @@ capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_
     return NIL;
   }
 
-  symbol_to_capitalize = symbol_to_string(thisAgent, sym, FALSE, NIL, 0);
+  symbol_to_capitalize = symbol_to_string(thisAgent, sym, false, NIL, 0);
   symbol_to_capitalize = savestring(symbol_to_capitalize);
   *symbol_to_capitalize = static_cast<char>(toupper(*symbol_to_capitalize));
   return make_str_constant(thisAgent, symbol_to_capitalize);
@@ -452,7 +452,7 @@ Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data
 		return NIL;
 	}
 
-	symbol_to_trim = symbol_to_string( thisAgent, sym, FALSE, NIL, 0 );
+	symbol_to_trim = symbol_to_string( thisAgent, sym, false, NIL, 0 );
 	symbol_to_trim = savestring( symbol_to_trim );
 
 	std::string str( symbol_to_trim );
@@ -473,9 +473,9 @@ Symbol *strlen_rhs_function_code (agent* thisAgent, list *args, void* /*user_dat
 
   arg = static_cast<symbol_struct *>(args->first);
 
-  /* --- Note use of FALSE here--print the symbol itself, not a rereadable
+  /* --- Note use of false here--print the symbol itself, not a rereadable
      version of it --- */
-  string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
+  string = symbol_to_string (thisAgent, arg, false, NIL, 0);
 
   return make_int_constant (thisAgent, static_cast<int64_t>(strlen(string)));
 }
@@ -713,9 +713,9 @@ Symbol *count_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
 
   for ( ; args!=NIL; args=args->rest) {
     arg = static_cast<symbol_struct *>(args->first);
-    /* --- Note use of FALSE here--print the symbol itself, not a rereadable
+    /* --- Note use of false here--print the symbol itself, not a rereadable
        version of it --- */
-    string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
+    string = symbol_to_string (thisAgent, arg, false, NIL, 0);
 	(*thisAgent->dyn_counters)[ string ]++;
   }
 
@@ -730,58 +730,58 @@ Symbol *count_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
 
 void init_built_in_rhs_functions (agent* thisAgent) {
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "write"), write_rhs_function_code,
-                    -1, FALSE, TRUE, 0);
+                    -1, false, true, 0);
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "crlf"), crlf_rhs_function_code,
-                    0, TRUE, FALSE, 0);
+                    0, true, false, 0);
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "halt"), halt_rhs_function_code,
-                    0, FALSE, TRUE, 0);
+                    0, false, true, 0);
   /*
     Replaced with a gSKI rhs function
     add_rhs_function (thisAgent, make_str_constant (thisAgent, "interrupt"),
     interrupt_rhs_function_code,
-    0, FALSE, TRUE, 0);
+    0, false, true, 0);
   */
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "make-constant-symbol"),
                     make_constant_symbol_rhs_function_code,
-                    -1, TRUE, FALSE, 0);
+                    -1, true, false, 0);
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "timestamp"),
                     timestamp_rhs_function_code,
-                    0, TRUE, FALSE, 0);
+                    0, true, false, 0);
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "accept"), accept_rhs_function_code,
-                    0, TRUE, FALSE, 0);
+                    0, true, false, 0);
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "trim"),
   		    trim_rhs_function_code,
   		    1,
-  		    TRUE,
-  		    FALSE,
+  		    true,
+  		    false,
             0);
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "capitalize-symbol"),
 		    capitalize_symbol_rhs_function_code,
 		    1,
-		    TRUE,
-		    FALSE,
+		    true,
+		    false,
           0);
 /* AGR 520  begin */
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "ifeq"), ifeq_rhs_function_code,
-		    4, TRUE, FALSE, 0);
+		    4, true, false, 0);
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "strlen"), strlen_rhs_function_code,
-		    1, TRUE, FALSE, 0);
+		    1, true, false, 0);
 /* AGR 520  end   */
 
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "dont-learn"),
 		    dont_learn_rhs_function_code,
-                    1, FALSE, TRUE, 0);
+                    1, false, true, 0);
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "force-learn"),
 		    force_learn_rhs_function_code,
-                    1, FALSE, TRUE, 0);
+                    1, false, true, 0);
 
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "deep-copy"),
                     deep_copy_rhs_function_code,
-                    1,TRUE,FALSE,0);
+                    1,true,false,0);
 
   add_rhs_function (thisAgent, make_str_constant (thisAgent, "count"),
 					count_rhs_function_code,
-					-1,FALSE,TRUE,0);
+					-1,false,true,0);
 
   init_built_in_rhs_math_functions(thisAgent);
 }

@@ -14,7 +14,7 @@
    (or NIL if any error occurred).  Parse_lhs() reads just an LHS,
    and returns a condition list (or NIL if an error occurred).
    Parse_rhs() reads an RHS, setting "dest_rhs" to point to the resulting
-   action list; it returns TRUE if successful, FALSE if any error occurred.
+   action list; it returns true if successful, false if any error occurred.
 ====================================================================== */
 
 #ifndef PARSER_H

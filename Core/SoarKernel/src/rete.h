@@ -14,10 +14,10 @@
 
    Init_rete() initializes the rete.  It should be called at startup time.
 
-   Any_assertions_or_retractions_ready() returns TRUE iff there are any
+   Any_assertions_or_retractions_ready() returns true iff there are any
    pending changes to the match set.  This is used to test for quiescence.
-   Get_next_assertion() retrieves a pending assertion (returning TRUE) or
-   returns FALSE is no more are available.  Get_next_retraction() is
+   Get_next_assertion() retrieves a pending assertion (returning true) or
+   returns false is no more are available.  Get_next_retraction() is
    similar.
 
    Add_production_to_rete() adds a given production, with a given LHS,
@@ -48,7 +48,7 @@
 
    Save_rete_net() and load_rete_net() are used for the fastsave/load
    commands.  They save/load everything to/from the given (already open)
-   files.  They return TRUE if successful, FALSE if any error occurred.
+   files.  They return true if successful, false if any error occurred.
 ======================================================================= */
 
 #ifndef RETE_H

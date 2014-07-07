@@ -213,10 +213,10 @@ bool soar_exists_callback(agent* the_agent,
 
   if (cb_cons == NULL)
     {
-      return FALSE;
+      return false;
     }
 
-  return TRUE;
+  return true;
 }
 
 soar_callback * soar_exists_callback_id (agent* the_agent,
@@ -508,7 +508,7 @@ void soar_list_all_callbacks (agent* thisAgent,
 
   for (ct = 1; ct < limit; ct++)
     {
-      print(thisAgent, "%s: ", soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(ct), FALSE));
+      print(thisAgent, "%s: ", soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(ct), false));
       soar_list_all_callbacks_for_event (thisAgent, static_cast<SOAR_CALLBACK_TYPE>(ct));
       print(thisAgent, "\n");
     }
@@ -664,7 +664,7 @@ void soar_test_all_monitorable_callbacks(agent* thisAgent)
     {
       soar_add_callback(thisAgent, static_cast<SOAR_CALLBACK_TYPE>(i),
 			reinterpret_cast<soar_callback_fn>(soar_callback_test_callback), i,
-			static_cast<void*>(const_cast<char*>(soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), TRUE))),
+			static_cast<void*>(const_cast<char*>(soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), true))),
 			NULL, test_callback_name);
     }
 }

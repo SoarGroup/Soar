@@ -97,7 +97,7 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
 *
 * NOTE:  The called of this routine should be stepping thru slots only, 
 *        (not stepping thru WMEs) and therefore input wmes and arch-wmes
-*        are already excluded and we can print :I when o_support is FALSE.
+*        are already excluded and we can print :I when o_support is false.
 * 
 ===============================
 */
@@ -311,8 +311,8 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
     agent* agnt = m_pAgentSML->GetSoarAgent();
 
     // Establish defaults
-    symbol_to_string(agnt, agnt->bottom_goal, TRUE, id, PREFERENCES_BUFFER_SIZE);
-    symbol_to_string(agnt, agnt->operator_symbol, TRUE, attr, PREFERENCES_BUFFER_SIZE);
+    symbol_to_string(agnt, agnt->bottom_goal, true, id, PREFERENCES_BUFFER_SIZE);
+    symbol_to_string(agnt, agnt->operator_symbol, true, attr, PREFERENCES_BUFFER_SIZE);
 
     // Override defaults
     if (idString) {

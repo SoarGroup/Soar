@@ -323,9 +323,9 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
    for the negated conditions, not grounds.
 
    Add_to_chunk_cond_set() adds a given chunk_cond to a given chunk_cond_set
-   and returns TRUE if the condition isn't already in the set.  If the
+   and returns true if the condition isn't already in the set.  If the
    condition is already in the set, the routine deallocates the given
-   chunk_cond and returns FALSE.
+   chunk_cond and returns false.
 
    Remove_from_chunk_cond_set() removes a given chunk_cond from a given
    chunk_cond_set, but doesn't deallocate it.
@@ -372,13 +372,13 @@ bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *n
   if (old) {
     /* --- the new condition was already in the set; so don't add it --- */
     free_with_pool (&thisAgent->chunk_cond_pool, new_cc);
-    return FALSE;
+    return false;
   }
   /* --- add new_cc to the table --- */
   insert_at_head_of_dll (set->all, new_cc, next, prev);
   insert_at_head_of_dll (set->table[new_cc->compressed_hash_value], new_cc,
                          next_in_bucket, prev_in_bucket);
-  return TRUE;
+  return true;
 }
 
 void remove_from_chunk_cond_set (chunk_cond_set *set, chunk_cond *cc) {
@@ -488,7 +488,7 @@ void build_chunk_conds_for_grounds_and_add_negateds (agent* thisAgent,
     } else {
       /* --- not in TC, so discard the condition --- */
 
-      if ( thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == FALSE )
+      if ( thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == false )
 	  {
         // this chunk will be overgeneral! don't create it
 
@@ -592,25 +592,25 @@ void variablize_nots_and_insert_into_conditions (agent* thisAgent,
     ct->type = NOT_EQUAL_TEST;
     ct->data.referent = var2;
     symbol_add_ref (thisAgent, var2);
-    added_it = FALSE;
+    added_it = false;
     for (c=conds; c!=NIL; c=c->next) {
       if (c->type != POSITIVE_CONDITION) continue;
       if (test_includes_equality_test_for_symbol (c->data.tests.id_test,
                                                   var1)) {
         add_new_test_to_test (thisAgent, &(c->data.tests.id_test), t);
-        added_it = TRUE;
+        added_it = true;
         break;
       }
       if (test_includes_equality_test_for_symbol (c->data.tests.attr_test,
                                                   var1)) {
         add_new_test_to_test (thisAgent, &(c->data.tests.attr_test), t);
-        added_it = TRUE;
+        added_it = true;
         break;
       }
       if (test_includes_equality_test_for_symbol (c->data.tests.value_test,
                                                   var1)) {
         add_new_test_to_test (thisAgent, &(c->data.tests.value_test), t);
-        added_it = TRUE;
+        added_it = true;
         break;
       }
     }
@@ -953,8 +953,8 @@ bool should_variablize(agent *thisAgent, instantiation *inst) {
                         Chunk Instantiation
 
    This the main chunking routine.  It takes an instantiation, and a
-   flag "variablize"--if FALSE, the chunk will not be
-   variablized.  (If TRUE, it may still not be variablized, due to
+   flag "variablize"--if false, the chunk will not be
+   variablized.  (If true, it may still not be variablized, due to
    chunk-free-problem-spaces, ^quiescence t, etc.)
 ==================================================================== */
 
@@ -1012,7 +1012,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	{
 		Symbol *g;
 		for (g=inst->match_goal->id->higher_goal; g && g->id->allow_bottom_up_chunks; g=g->id->higher_goal)
-			g->id->allow_bottom_up_chunks = FALSE;
+			g->id->allow_bottom_up_chunks = false;
 	}
 
 	grounds_level = inst->match_goal_level - 1;
@@ -1069,7 +1069,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		}
 	}
 
-	while (TRUE)
+	while (true)
 	{
 		trace_locals (thisAgent, grounds_level, &reliable);
 		trace_grounded_potentials (thisAgent);
@@ -1173,7 +1173,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 			print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
 			xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
 		}
-		thisAgent->max_chunks_reached = TRUE;
+		thisAgent->max_chunks_reached = true;
 
 		symbol_remove_ref(thisAgent, prod_name);
 		goto chunking_done;
@@ -1191,14 +1191,14 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 
 	add_goal_or_impasse_tests (thisAgent, top_cc);
 
-	prod = make_production (thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs, FALSE);
+	prod = make_production (thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs, false);
 
 	if (!prod)
 	{
 		print (thisAgent, "\nUnable to reorder this chunk:\n  ");
-		print_condition_list (thisAgent, lhs_top, 2, FALSE);
+		print_condition_list (thisAgent, lhs_top, 2, false);
 		print (thisAgent, "\n  -->\n   ");
-		print_action_list (thisAgent, rhs, 3, FALSE);
+		print_action_list (thisAgent, rhs, 3, false);
 		print (thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
 		print (thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n");
 		print (thisAgent, "\n");
@@ -1221,8 +1221,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		symbol_remove_ref(thisAgent, prod_name);
 
 		// We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
-		thisAgent->stop_soar = TRUE;
-		thisAgent->system_halted = TRUE;
+		thisAgent->stop_soar = true;
+		thisAgent->system_halted = true;
 
 		goto chunking_done;
 	}
@@ -1242,13 +1242,13 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
 		chunk_inst->nots = nots;
 
-		chunk_inst->GDS_evaluated_already = FALSE;  /* REW:  09.15.96 */
+		chunk_inst->GDS_evaluated_already = false;  /* REW:  09.15.96 */
 
 		chunk_inst->reliable = reliable;
 
-		chunk_inst->in_ms = TRUE;  /* set TRUE for now, we'll find out later... */
+		chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
 		make_clones_of_results (thisAgent, results, chunk_inst);
-		fill_in_new_instantiation_stuff (thisAgent, chunk_inst, TRUE, inst);
+		fill_in_new_instantiation_stuff (thisAgent, chunk_inst, true, inst);
 	}
 
 	/* RBD 4/6/95 Need to copy cond's and actions for the production here,
@@ -1302,18 +1302,18 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	{
 		print_string (thisAgent, "\n");
 		xml_begin_tag(thisAgent, kTagLearning);
-		print_production (thisAgent, prod, FALSE);
+		print_production (thisAgent, prod, false);
 		xml_end_tag(thisAgent, kTagLearning);
 	}
 
 	if (rete_addition_result==DUPLICATE_PRODUCTION)
 	{
-		excise_production (thisAgent, prod, FALSE);
+		excise_production (thisAgent, prod, false);
 	}
 	else if ((prod_type==JUSTIFICATION_PRODUCTION_TYPE)
 		&& (rete_addition_result==REFRACTED_INST_DID_NOT_MATCH))
 	{
-			excise_production (thisAgent, prod, FALSE);
+			excise_production (thisAgent, prod, false);
 	}
 
 	if (rete_addition_result!=REFRACTED_INST_MATCHED)
@@ -1321,7 +1321,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 		/* --- it didn't match, or it was a duplicate production --- */
 		/* --- tell the firer it didn't match, so it'll only assert the
 		o-supported preferences --- */
-		chunk_inst->in_ms = FALSE;
+		chunk_inst->in_ms = false;
 	}
 
 	/* --- assert the preferences --- */

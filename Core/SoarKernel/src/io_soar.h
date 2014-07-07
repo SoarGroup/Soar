@@ -109,8 +109,8 @@ extern Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
    with TOP_STATE_JUST_REMOVED, all existing input structures have already
    been garbage collected (since the top state no longer exists), so the
    input function should never call remove_input_wme() when mode is
-   TOP_STATE_JUST_REMOVED.  Remove_input_wme() normally returns TRUE,
-   indicating success.  It returns FALSE if an error occurs (e.g., if the
+   TOP_STATE_JUST_REMOVED.  Remove_input_wme() normally returns true,
+   indicating success.  It returns false if an error occurs (e.g., if the
    wme argument isn't in WM).
 ======================================================================= */
 

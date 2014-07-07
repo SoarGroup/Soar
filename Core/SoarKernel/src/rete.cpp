@@ -18,10 +18,10 @@
  *
  * Init_rete() initializes the rete.  It should be called at startup time.
  *
- * Any_assertions_or_retractions_ready() returns TRUE iff there are any
+ * Any_assertions_or_retractions_ready() returns true iff there are any
  * pending changes to the match set.  This is used to test for quiescence.
- * Get_next_assertion() retrieves a pending assertion (returning TRUE) or
- * returns FALSE is no more are available.  Get_next_retraction() is
+ * Get_next_assertion() retrieves a pending assertion (returning true) or
+ * returns false is no more are available.  Get_next_retraction() is
  * similar.
  *
  * Add_production_to_rete() adds a given production, with a given LHS,
@@ -52,7 +52,7 @@
  *
  * Save_rete_net() and load_rete_net() are used for the fastsave/load
  * commands.  They save/load everything to/from the given (already open)
- * files.  They return TRUE if successful, FALSE if any error occurred.
+ * files.  They return true if successful, false if any error occurred.
  *
  * =======================================================================
  */
@@ -885,7 +885,7 @@ inline void token_added(rete_node * node)
 
 #endif
 
-/* --- Invoked on every right activation; add=TRUE means right addition --- */
+/* --- Invoked on every right activation; add=true means right addition --- */
 /* NOT invoked on removals unless DO_ACTIVATION_STATS_ON_REMOVALS is set */
 /*#define right_node_activation(node,add) { \
   null_activation_stats_for_right_activation(node); }*/
@@ -895,7 +895,7 @@ inline void right_node_activation(rete_node * node, bool/*add*/)
   null_activation_stats_for_right_activation(node);
 }
 
-/* --- Invoked on every left activation; add=TRUE means left addition --- */
+/* --- Invoked on every left activation; add=true means left addition --- */
 /* NOT invoked on removals unless DO_ACTIVATION_STATS_ON_REMOVALS is set */
 /*#define left_node_activation(node,add) { \
   null_activation_stats_for_left_activation(node); }*/
@@ -960,10 +960,10 @@ inline void update_stats_for_destroying_node(agent* thisAgent, rete_node * node)
    list makes this possible.
 
    EXTERNAL INTERFACE:
-   Any_assertions_or_retractions_ready() returns TRUE iff there are any
+   Any_assertions_or_retractions_ready() returns true iff there are any
    pending changes to the match set.  This is used to test for quiescence.
-   Get_next_assertion() retrieves a pending assertion (returning TRUE) or
-   returns FALSE is no more are available.  Get_next_retraction() is
+   Get_next_assertion() retrieves a pending assertion (returning true) or
+   returns false is no more are available.  Get_next_retraction() is
    similar.
 ********************************************************************** */
 
@@ -986,7 +986,7 @@ Symbol *find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change *ms
   lowest_level_so_far = -1;
 
   if (msc->w) {
-      if (msc->w->id->id->isa_goal == TRUE) {
+      if (msc->w->id->id->isa_goal == true) {
         lowest_goal_wme = msc->w;
         lowest_level_so_far = msc->w->id->id->level;
       }
@@ -995,7 +995,7 @@ Symbol *find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change *ms
   for (tok=msc->tok; tok!=thisAgent->dummy_top_token; tok=tok->parent) {
     if (tok->w != NIL) {
       /* print_wme(tok->w); */
-      if (tok->w->id->id->isa_goal == TRUE) {
+      if (tok->w->id->id->isa_goal == true) {
 
         if (lowest_goal_wme == NIL)
           lowest_goal_wme = tok->w;
@@ -1018,7 +1018,7 @@ Symbol *find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change *ms
   { char msg[BUFFER_MSG_SIZE];
   print_with_symbols(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
   SNPRINTF(msg, BUFFER_MSG_SIZE,"\nError: Did not find goal for ms_change assertion: %s\n",
-         symbol_to_string(thisAgent, msc->p_node->b.p.prod->name,TRUE,NIL, 0));
+         symbol_to_string(thisAgent, msc->p_node->b.p.prod->name,true,NIL, 0));
   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
   abort_with_fatal_error(thisAgent, msg);
   }
@@ -1075,24 +1075,24 @@ bool any_assertions_or_retractions_ready (agent* thisAgent) {
 	/* Determining if assertions or retractions are ready require looping over
 	all goals in Waterfall/Operand2 */
 
-	if (thisAgent->nil_goal_retractions) return TRUE;
+	if (thisAgent->nil_goal_retractions) return true;
 
 	/* Loop from bottom to top because we expect activity at
 	the bottom usually */
 
 	for (goal=thisAgent->bottom_goal;goal;goal=goal->id->higher_goal) {
 		/* if there are any assertions or retrctions for this goal,
-		return TRUE */
+		return true */
 		if (goal->id->ms_o_assertions || goal->id->ms_i_assertions ||
 			goal->id->ms_retractions)
-			return TRUE;
+			return true;
 	}
 
 	/* if there are no nil_goal_retractions and no assertions or retractions
-	for any  goal then return FALSE -- there aren't any productions
+	for any  goal then return false -- there aren't any productions
 	ready to fire or retract */
 
-	return FALSE;
+	return false;
 	/* REW: end   08.20.97 */
 }
 
@@ -1128,7 +1128,7 @@ bool postpone_assertion (agent* thisAgent, production **prod, struct token_struc
 
 	if (thisAgent->active_goal) { /* Just do asserts for current goal */
 		if (thisAgent->FIRING_TYPE == PE_PRODS) {
-			if (! thisAgent->active_goal->id->ms_o_assertions) return FALSE;
+			if (! thisAgent->active_goal->id->ms_o_assertions) return false;
 
 			msc = thisAgent->active_goal->id->ms_o_assertions;
 			remove_from_dll (thisAgent->ms_o_assertions, msc, next, prev);
@@ -1137,7 +1137,7 @@ bool postpone_assertion (agent* thisAgent, production **prod, struct token_struc
 
 		} else {
 			/* IE PRODS */
-			if (! thisAgent->active_goal->id->ms_i_assertions) return FALSE;
+			if (! thisAgent->active_goal->id->ms_i_assertions) return false;
 
 			msc = thisAgent->active_goal->id->ms_i_assertions;
 			remove_from_dll (thisAgent->ms_i_assertions, msc, next, prev);
@@ -1165,8 +1165,8 @@ bool postpone_assertion (agent* thisAgent, production **prod, struct token_struc
 
 }
 
-		return FALSE; /* if we are in an initiazation and there are no
-					  assertions, just retrurn FALSE to terminate
+		return false; /* if we are in an initiazation and there are no
+					  assertions, just retrurn false to terminate
 					  the procedure. */
 
 }
@@ -1182,7 +1182,7 @@ bool postpone_assertion (agent* thisAgent, production **prod, struct token_struc
 	// save the assertion on the postponed list
 	insert_at_head_of_dll (thisAgent->postponed_assertions, msc, next, prev);
 
-	return TRUE;
+	return true;
 }
 
 void consume_last_postponed_assertion(agent* thisAgent) {
@@ -1232,9 +1232,9 @@ bool get_next_retraction (agent* thisAgent, instantiation **inst) {
 	/* just do the retractions for the current level */
 
 	/* initialization condition (2.107/2.111) */
-	if (thisAgent->active_level == 0) return FALSE;
+	if (thisAgent->active_level == 0) return false;
 
-	if (! thisAgent->active_goal->id->ms_retractions) return FALSE;
+	if (! thisAgent->active_goal->id->ms_retractions) return false;
 
 	msc = thisAgent->active_goal->id->ms_retractions;
 
@@ -1248,7 +1248,7 @@ bool get_next_retraction (agent* thisAgent, instantiation **inst) {
 		next_of_node, prev_of_node);
 	*inst = msc->inst;
 	free_with_pool (&thisAgent->ms_change_pool, msc);
-	return TRUE;
+	return true;
 }
 
 
@@ -1258,14 +1258,14 @@ bool get_next_retraction (agent* thisAgent, instantiation **inst) {
 /* REW: begin 08.20.97 */
 
 /* Retract an instantiation on the nil goal list.  If there are no
-   retractions on the nil goal retraction list, return FALSE.  This
+   retractions on the nil goal retraction list, return false.  This
    procedure is only called in Operand2 mode, so there is no need for
    any checks for Operand2-specific processing. */
 
 bool get_next_nil_goal_retraction (agent* thisAgent, instantiation **inst) {
   ms_change *msc;
 
-    if (! thisAgent->nil_goal_retractions) return FALSE;
+    if (! thisAgent->nil_goal_retractions) return false;
     msc = thisAgent->nil_goal_retractions;
 
     /* Remove this retraction from the NIL goal list */
@@ -1283,7 +1283,7 @@ bool get_next_nil_goal_retraction (agent* thisAgent, instantiation **inst) {
     }
     *inst = msc->inst;
     free_with_pool (&thisAgent->ms_change_pool, msc);
-    return TRUE;
+    return true;
 
 }
 
@@ -1323,7 +1323,7 @@ bool get_next_nil_goal_retraction (agent* thisAgent, instantiation **inst) {
    Add_wme_to_rete() and remove_wme_from_rete() do just what they say.
 ********************************************************************** */
 
-/* --- Returns TRUE iff the given wme goes into the given alpha memory --- */
+/* --- Returns true iff the given wme goes into the given alpha memory --- */
 /*#define wme_matches_alpha_mem(w,am) ( \
   (((am)->id==NIL) || ((am)->id==(w)->id)) && \
   (((am)->attr==NIL) || ((am)->attr==(w)->attr)) && \
@@ -1770,7 +1770,7 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
     /* --- if doing statistics stuff, then activate each attached node --- */
     for (node=am->beta_nodes; node!=NIL; node=next) {
       next = node->b.posneg.next_from_alpha_mem;
-      right_node_activation (node,FALSE);
+      right_node_activation (node,false);
     }
 #endif
 
@@ -2465,7 +2465,7 @@ void deallocate_rete_node (agent* thisAgent, rete_node *node) {
    The basic operations on these binding stacks are done with a few
    macros below.  A binding location is represented by the CAR of a
    CONS -- the level and field numbers are crammed into the CAR.
-   Var_is_bound() returns TRUE iff the given variable has been bound.
+   Var_is_bound() returns true iff the given variable has been bound.
    Push_var_binding() pushes a new binding of the given variable.
    Pop_var_binding() pops the top binding.
 ********************************************************************** */
@@ -2524,18 +2524,18 @@ inline void pop_var_binding(agent* thisAgent, void * v)
    This routine finds the most recent place a variable was bound.
    It does this simply by looking at the top of the binding stack
    for that variable.  If there is any binding, its location is stored
-   in the parameter *result, and the function returns TRUE.  If no
-   binding is found, the function returns FALSE.
+   in the parameter *result, and the function returns true.  If no
+   binding is found, the function returns false.
 ------------------------------------------------------------------- */
 
 bool find_var_location (Symbol *var, rete_node_level current_depth,
                         var_location *result) {
   void *dummy;
-  if (! var->var->rete_binding_locations) return FALSE;
+  if (! var->var->rete_binding_locations) return false;
   dummy = var->var->rete_binding_locations->first;
   result->levels_up = current_depth - dummy_to_varloc_depth (dummy);
   result->field_num = dummy_to_varloc_field_num (dummy);
-  return TRUE;
+  return true;
 }
 
 /* -------------------------------------------------------------------
@@ -2617,7 +2617,7 @@ void pop_bindings_and_deallocate_list_of_variables (agent* thisAgent, list *vars
    original source code for a production when we want to print it.  For
    chunks, we don't save any of this information -- we just re-gensym
    the variable names on each printing (unless DISCARD_CHUNK_VARNAMES
-   is set to FALSE).
+   is set to false).
 
    For each production, a chain of node_varnames structures is built,
    paralleling the structure of the rete net (i.e., the portion of the rete
@@ -2783,12 +2783,12 @@ node_varnames *make_nvn_for_posneg_cond (agent* thisAgent,
     add_unbound_varnames_in_test (thisAgent, cond->data.tests.id_test, NIL);
 
   /* --- add sparse bindings for id, then get attr field varnames --- */
-  bind_variables_in_test (thisAgent, cond->data.tests.id_test, 0, 0, FALSE, &vars_bound);
+  bind_variables_in_test (thisAgent, cond->data.tests.id_test, 0, 0, false, &vars_bound);
   New->data.fields.attr_varnames =
     add_unbound_varnames_in_test (thisAgent, cond->data.tests.attr_test, NIL);
 
   /* --- add sparse bindings for attr, then get value field varnames --- */
-  bind_variables_in_test (thisAgent, cond->data.tests.attr_test, 0, 0, FALSE,&vars_bound);
+  bind_variables_in_test (thisAgent, cond->data.tests.attr_test, 0, 0, false,&vars_bound);
   New->data.fields.value_varnames =
     add_unbound_varnames_in_test (thisAgent, cond->data.tests.value_test, NIL);
 
@@ -2814,9 +2814,9 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
       New = make_nvn_for_posneg_cond (thisAgent, cond, parent_nvn);
 
       /* --- Add sparse variable bindings for this condition --- */
-      bind_variables_in_test (thisAgent, cond->data.tests.id_test, 0, 0, FALSE, &vars);
-      bind_variables_in_test (thisAgent, cond->data.tests.attr_test, 0, 0, FALSE, &vars);
-      bind_variables_in_test (thisAgent, cond->data.tests.value_test, 0, 0, FALSE, &vars);
+      bind_variables_in_test (thisAgent, cond->data.tests.id_test, 0, 0, false, &vars);
+      bind_variables_in_test (thisAgent, cond->data.tests.attr_test, 0, 0, false, &vars);
+      bind_variables_in_test (thisAgent, cond->data.tests.value_test, 0, 0, false, &vars);
       break;
     case NEGATIVE_CONDITION:
       New = make_nvn_for_posneg_cond (thisAgent, cond, parent_nvn);
@@ -2933,10 +2933,10 @@ byte relational_test_type_to_test_type[256] =
 void init_test_type_conversion_tables (void)
 {
   /* This is to avoid multiple initializations. (This may not yet thread-safe.) */
-  static bool bInit = FALSE;
+  static bool bInit = false;
   if (bInit)
           return;
-  bInit = TRUE;
+  bInit = true;
 
   /* we don't need ...[equal test] */
   test_type_to_relational_test_type[NOT_EQUAL_TEST] =   RELATIONAL_NOT_EQUAL_RETE_TEST;
@@ -3019,7 +3019,7 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
       print_with_symbols (thisAgent, "Error: Rete build found test of unbound var: %y\n",
                           referent);
       SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                          symbol_to_string(thisAgent, referent,TRUE, NIL, 0));
+                          symbol_to_string(thisAgent, referent,true, NIL, 0));
      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
      abort_with_fatal_error(thisAgent, msg);
     }
@@ -3063,7 +3063,7 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
       print_with_symbols (thisAgent, "Error: Rete build found test of unbound var: %y\n",
                           ct->data.referent);
       SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                          symbol_to_string(thisAgent, ct->data.referent,TRUE, NIL, 0));
+                          symbol_to_string(thisAgent, ct->data.referent,true, NIL, 0));
       msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
       abort_with_fatal_error(thisAgent, msg);
     }
@@ -3141,9 +3141,9 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
 bool single_rete_tests_are_identical (agent* thisAgent, rete_test *rt1, rete_test *rt2) {
   cons *c1, *c2;
 
-  if (rt1->type != rt2->type) return FALSE;
+  if (rt1->type != rt2->type) return false;
 
-  if (rt1->right_field_num != rt2->right_field_num) return FALSE;
+  if (rt1->right_field_num != rt2->right_field_num) return false;
 
   if (test_is_variable_relational_test(rt1->type))
     return (var_locations_equal (rt1->data.variable_referent,
@@ -3153,44 +3153,44 @@ bool single_rete_tests_are_identical (agent* thisAgent, rete_test *rt1, rete_tes
     return (rt1->data.constant_referent == rt2->data.constant_referent);
   }
 
-  if (rt1->type==ID_IS_GOAL_RETE_TEST) return TRUE;
-  if (rt1->type==ID_IS_IMPASSE_RETE_TEST) return TRUE;
+  if (rt1->type==ID_IS_GOAL_RETE_TEST) return true;
+  if (rt1->type==ID_IS_IMPASSE_RETE_TEST) return true;
 
   if (rt1->type == DISJUNCTION_RETE_TEST) {
     c1 = rt1->data.disjunction_list;
     c2 = rt2->data.disjunction_list;
     while ((c1!=NIL)&&(c2!=NIL)) {
-      if (c1->first != c2->first) return FALSE;
+      if (c1->first != c2->first) return false;
       c1 = c1->rest;
       c2 = c2->rest;
     }
-    if (c1==c2) return TRUE;
-    return FALSE;
+    if (c1==c2) return true;
+    return false;
   }
   { char msg[BUFFER_MSG_SIZE];
   strncpy(msg,"Internal error: bad rete test type in single_rete_tests_are_identical\n", BUFFER_MSG_SIZE);
   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
   abort_with_fatal_error(thisAgent, msg);
   }
-  return FALSE; /* unreachable, but without it, gcc -Wall warns here */
+  return false; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 bool rete_test_lists_are_identical (agent* thisAgent, rete_test *rt1, rete_test *rt2) {
   while (rt1 && rt2) {
     if (! single_rete_tests_are_identical(thisAgent, rt1,rt2))
-                return FALSE;
+                return false;
     rt1 = rt1->next;
     rt2 = rt2->next;
   }
-  if (rt1==rt2) return TRUE;  /* make sure they both hit end-of-list */
-  return FALSE;
+  if (rt1==rt2) return true;  /* make sure they both hit end-of-list */
+  return false;
 }
 
 /* ------------------------------------------------------------------------
                       Extract Rete Test to Hash With
 
    Extracts from a Rete test list the variable equality test to use for
-   hashing.  Returns TRUE if successful, or FALSE if there was no such
+   hashing.  Returns true if successful, or false if there was no such
    test to use for hashing.  The Rete test list ("rt") is destructively
    modified to splice out the extracted test.
 ------------------------------------------------------------------------ */
@@ -3206,7 +3206,7 @@ bool extract_rete_test_to_hash_with (agent* thisAgent,
     if (current->type==VARIABLE_RELATIONAL_RETE_TEST +
                        RELATIONAL_EQUAL_RETE_TEST) break;
 
-  if (!current) return FALSE;  /* no variable equality test was found */
+  if (!current) return false;  /* no variable equality test was found */
 
   /* --- unlink it from rt --- */
   if (prev) prev->next = current->next; else *rt = current->next;
@@ -3215,7 +3215,7 @@ bool extract_rete_test_to_hash_with (agent* thisAgent,
   *dest_hash_loc = current->data.variable_referent;
   current->next = NIL;
   deallocate_rete_test_list (thisAgent, current);
-  return TRUE;
+  return true;
 }
 
 /* ------------------------------------------------------------------------
@@ -3249,11 +3249,11 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
 
   /* --- Add sparse variable bindings for this condition --- */
   bind_variables_in_test (thisAgent, cond->data.tests.id_test, current_depth, 0,
-                          FALSE, &vars_bound_here);
+                          false, &vars_bound_here);
   bind_variables_in_test (thisAgent, cond->data.tests.attr_test, current_depth, 1,
-                          FALSE, &vars_bound_here);
+                          false, &vars_bound_here);
   bind_variables_in_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
-                          FALSE, &vars_bound_here);
+                          false, &vars_bound_here);
 
   /* --- Get Rete tests, alpha constants, and hash location --- */
   add_rete_tests_for_test (thisAgent, cond->data.tests.id_test, current_depth, 0,
@@ -3312,7 +3312,7 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
       remove_ref_to_alpha_mem (thisAgent, am);
       return node;
     } else {       /* --- No match was found, so create a new node --- */
-      node = make_new_positive_node (thisAgent, mem_node, pos_node_type, am ,rt, FALSE);
+      node = make_new_positive_node (thisAgent, mem_node, pos_node_type, am ,rt, false);
       return node;
     }
   }
@@ -3337,12 +3337,12 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
 
     /* --- Delete MP node, replace it with M and two positive joins --- */
     mem_node = split_mp_node (thisAgent, mp_node);
-    node = make_new_positive_node (thisAgent, mem_node, pos_node_type, am, rt, FALSE);
+    node = make_new_positive_node (thisAgent, mem_node, pos_node_type, am, rt, false);
     return node;
   }
 
   /* --- Didn't even find a matching M part of MP, so make a new MP node --- */
-  return make_new_mp_node (thisAgent, parent, mp_node_type, left_hash_loc, am, rt, FALSE);
+  return make_new_mp_node (thisAgent, parent, mp_node_type, left_hash_loc, am, rt, false);
 }
 
 /* ------------------------------------------------------------------------
@@ -3376,11 +3376,11 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
 
   /* --- Add sparse variable bindings for this condition --- */
   bind_variables_in_test (thisAgent, cond->data.tests.id_test, current_depth, 0,
-                          FALSE, &vars_bound_here);
+                          false, &vars_bound_here);
   bind_variables_in_test (thisAgent, cond->data.tests.attr_test, current_depth, 1,
-                          FALSE, &vars_bound_here);
+                          false, &vars_bound_here);
   bind_variables_in_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
-                          FALSE, &vars_bound_here);
+                          false, &vars_bound_here);
 
   /* --- Get Rete tests, alpha constants, and hash location --- */
   add_rete_tests_for_test (thisAgent, cond->data.tests.id_test, current_depth, 0,
@@ -3463,11 +3463,11 @@ void build_network_for_condition_list (agent* thisAgent,
       new_node = make_node_for_positive_cond (thisAgent, cond, current_depth, node);
       /* --- Add dense variable bindings for this condition --- */
       bind_variables_in_test (thisAgent, cond->data.tests.id_test, current_depth, 0,
-                              TRUE, &vars_bound);
+                              true, &vars_bound);
       bind_variables_in_test (thisAgent, cond->data.tests.attr_test, current_depth, 1,
-                              TRUE, &vars_bound);
+                              true, &vars_bound);
       bind_variables_in_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
-                              TRUE, &vars_bound);
+                              true, &vars_bound);
       break;
 
     case NEGATIVE_CONDITION:
@@ -3550,12 +3550,12 @@ bool same_rhs (action *rhs1, action *rhs2, bool rl_chunk_stop) {
   a2 = rhs2;
 
   while (a1 && a2) {
-    if (a1->type == FUNCALL_ACTION) return FALSE;
-    if (a2->type == FUNCALL_ACTION) return FALSE;
-    if (a1->preference_type != a2->preference_type) return FALSE;
-    if (a1->id != a2->id) return FALSE;
-    if (a1->attr != a2->attr) return FALSE;
-    if (a1->value != a2->value) return FALSE;
+    if (a1->type == FUNCALL_ACTION) return false;
+    if (a2->type == FUNCALL_ACTION) return false;
+    if (a1->preference_type != a2->preference_type) return false;
+    if (a1->id != a2->id) return false;
+    if (a1->attr != a2->attr) return false;
+    if (a1->value != a2->value) return false;
     if (preference_is_binary(a1->preference_type))
       if (a1->referent != a2->referent)
 	  {
@@ -3577,7 +3577,7 @@ bool same_rhs (action *rhs1, action *rhs2, bool rl_chunk_stop) {
 			}
 		  }
 	    }
-	    if (stop) return FALSE;
+	    if (stop) return false;
 	  }
     a1 = a1->next;
     a2 = a2->next;
@@ -3585,10 +3585,10 @@ bool same_rhs (action *rhs1, action *rhs2, bool rl_chunk_stop) {
 
   /* --- If we reached the end of one RHS but not the other, then
      they must be different --- */
-  if (a1 != a2) return FALSE;
+  if (a1 != a2) return false;
 
   /* --- If we got this far, the RHS's must be identical. --- */
-  return TRUE;
+  return true;
 }
 
 /* ---------------------------------------------------------------------
@@ -3748,9 +3748,9 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 			{
 				std::stringstream output;
 				output << "\nIgnoring "
-					<< symbol_to_string( thisAgent, p->name, TRUE, 0, 0 )
+					<< symbol_to_string( thisAgent, p->name, true, 0, 0 )
 					<< " because it is a duplicate of "
-					<< symbol_to_string( thisAgent, p_node->b.p.prod->name, TRUE, 0, 0 )
+					<< symbol_to_string( thisAgent, p_node->b.p.prod->name, true, 0, 0 )
 					<< " ";
 				xml_generate_warning( thisAgent, output.str().c_str() );
 
@@ -3785,7 +3785,7 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	caveat: we must refract justifications, otherwise they would fire
 	and in doing so would produce more chunks/justifications.
 
-	if ((thisAgent->operand_mode == TRUE) && 1)
+	if ((thisAgent->operand_mode == true) && 1)
 	if (refracted_inst != NIL) {
 	if (refracted_inst->prod->type != JUSTIFICATION_PRODUCTION_TYPE)
 	refracted_inst = NIL;
@@ -4639,10 +4639,10 @@ inline bool match_left_and_right(agent* thisAgent, rete_test * _rete_test,
   ( ((s1)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
     ((s2)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
     (((s1)->fc->value) comparator_op ((s2)->fc->value)) : \
-  FALSE )
+  false )
 */
 
-/* Note:  "=" and "<>" tests always return FALSE when one argument is
+/* Note:  "=" and "<>" tests always return false when one argument is
    an integer and the other is a floating point number */
 
 #define numcmp(x,y) (((x) < (y)) ? -1 : (((x) > (y)) ? 1 : 0))
@@ -4704,7 +4704,7 @@ bool error_rete_test_routine (agent* thisAgent, rete_test * /*rt*/, token * /*le
   strncpy (msg, "Internal error: bad rete test type, hit error_rete_test_routine\n", BUFFER_MSG_SIZE);
   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
   abort_with_fatal_error(thisAgent, msg);
-  return FALSE; /* unreachable, but without it, gcc -Wall warns here */
+  return false; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 bool id_is_goal_rete_test_routine (agent* /*thisAgent*/, rete_test * /*rt*/, token * /*left*/, wme *w) {
@@ -4721,8 +4721,8 @@ bool disjunction_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *
 
   sym = field_from_wme (w,rt->right_field_num);
   for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
-    if (c->first==sym) return TRUE;
-  return FALSE;
+    if (c->first==sym) return true;
+  return false;
 }
 
 bool constant_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
@@ -4957,7 +4957,7 @@ void beta_memory_node_left_addition (agent* thisAgent, rete_node *node,
   token *New;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   {
     int levels_up;
@@ -4997,7 +4997,7 @@ void unhashed_beta_memory_node_left_addition (agent* thisAgent,
   token *New;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   hv = node->node_id;
 
@@ -5027,7 +5027,7 @@ void positive_node_left_addition (agent* thisAgent,
   rete_node *child;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   am = node->b.posneg.alpha_mem_;
 
@@ -5046,10 +5046,10 @@ void positive_node_left_addition (agent* thisAgent,
     if (rm->am != am) continue;
     /* --- does rm->w match New? --- */
     if (hash_referent != rm->w->id) continue;
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, New, rm->w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5067,7 +5067,7 @@ void unhashed_positive_node_left_addition (agent* thisAgent, rete_node *node, to
   rete_node *child;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   if (node_is_right_unlinked(node)) {
     relink_to_right_mem (node);
@@ -5082,10 +5082,10 @@ void unhashed_positive_node_left_addition (agent* thisAgent, rete_node *node, to
   for (rm=node->b.posneg.alpha_mem_->right_mems; rm!=NIL;
 rm=rm->next_in_am) {
     /* --- does rm->w match new? --- */
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, New, rm->w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5108,7 +5108,7 @@ void mp_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
   bool failed_a_test;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   {
     int levels_up;
@@ -5154,10 +5154,10 @@ void mp_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
     if (rm->am != am) continue;
     /* --- does rm->w match new? --- */
     if (referent != rm->w->id) continue;
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, New, rm->w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5179,7 +5179,7 @@ void unhashed_mp_node_left_addition (agent* thisAgent, rete_node *node,
   bool failed_a_test;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   hv = node->node_id;
 
@@ -5205,10 +5205,10 @@ void unhashed_mp_node_left_addition (agent* thisAgent, rete_node *node,
   for (rm=node->b.posneg.alpha_mem_->right_mems; rm!=NIL;
 rm=rm->next_in_am) {
     /* --- does rm->w match new? --- */
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, New, rm->w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5228,7 +5228,7 @@ void positive_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
   rete_node *child;
 
   activation_entry_sanity_check();
-  right_node_activation(node,TRUE);
+  right_node_activation(node,true);
 
   if (node_is_left_unlinked(node)) {
     relink_to_left_mem (node);
@@ -5246,10 +5246,10 @@ void positive_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
     if (tok->node != node->parent) continue;
     /* --- does tok match w? --- */
     if (tok->a.ht.referent != referent) continue;
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, tok, w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5268,7 +5268,7 @@ void unhashed_positive_node_right_addition (agent* thisAgent, rete_node *node, w
   rete_node *child;
 
   activation_entry_sanity_check();
-  right_node_activation(node,TRUE);
+  right_node_activation(node,true);
 
   if (node_is_left_unlinked(node)) {
     relink_to_left_mem (node);
@@ -5284,10 +5284,10 @@ void unhashed_positive_node_right_addition (agent* thisAgent, rete_node *node, w
   for (tok=left_ht_bucket(thisAgent, hv); tok!=NIL; tok=tok->a.ht.next_in_bucket) {
     if (tok->node != node->parent) continue;
     /* --- does tok match w? --- */
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, tok, w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5307,7 +5307,7 @@ void mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
   rete_node *child;
 
   activation_entry_sanity_check();
-  right_node_activation(node,TRUE);
+  right_node_activation(node,true);
 
   if (mp_bnode_is_left_unlinked(node)) {
     make_mp_bnode_left_linked (node);
@@ -5325,10 +5325,10 @@ void mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
     if (tok->node != node) continue;
     /* --- does tok match w? --- */
     if (tok->a.ht.referent != referent) continue;
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, tok, w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5347,7 +5347,7 @@ void unhashed_mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w)
   rete_node *child;
 
   activation_entry_sanity_check();
-  right_node_activation(node,TRUE);
+  right_node_activation(node,true);
 
   if (mp_bnode_is_left_unlinked(node)) {
     make_mp_bnode_left_linked (node);
@@ -5363,10 +5363,10 @@ void unhashed_mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w)
   for (tok=left_ht_bucket(thisAgent, hv); tok!=NIL; tok=tok->a.ht.next_in_bucket) {
     if (tok->node != node) continue;
     /* --- does tok match w? --- */
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, tok, w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5395,7 +5395,7 @@ void negative_node_left_addition (agent* thisAgent, rete_node *node,
   token *New;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   if (node_is_right_unlinked(node)) relink_to_right_mem (node);
 
@@ -5429,10 +5429,10 @@ void negative_node_left_addition (agent* thisAgent, rete_node *node,
     if (rm->am != am) continue;
     /* --- does rm->w match new? --- */
     if (referent != rm->w->id) continue;
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, New, rm->w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5467,7 +5467,7 @@ void unhashed_negative_node_left_addition (agent* thisAgent, rete_node *node,
   token *New;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   if (node_is_right_unlinked(node)) relink_to_right_mem (node);
 
@@ -5484,10 +5484,10 @@ void unhashed_negative_node_left_addition (agent* thisAgent, rete_node *node,
   /* --- look through right memory for matches --- */
   for (rm=node->b.posneg.alpha_mem_->right_mems; rm!=NIL; rm=rm->next_in_am) {
     /* --- does rm->w match new? --- */
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, New, rm->w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5520,7 +5520,7 @@ void negative_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
   bool failed_a_test;
 
   activation_entry_sanity_check();
-  right_node_activation(node,TRUE);
+  right_node_activation(node,true);
 
   referent = w->id;
   hv = node->node_id ^ referent->hash_id;
@@ -5529,10 +5529,10 @@ void negative_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
     if (tok->node != node) continue;
     /* --- does tok match w? --- */
     if (tok->a.ht.referent != referent) continue;
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, tok, w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5560,17 +5560,17 @@ void unhashed_negative_node_right_addition (agent* thisAgent, rete_node *node, w
   bool failed_a_test;
 
   activation_entry_sanity_check();
-  right_node_activation(node,TRUE);
+  right_node_activation(node,true);
 
   hv = node->node_id;
 
   for (tok=left_ht_bucket(thisAgent, hv); tok!=NIL; tok=tok->a.ht.next_in_bucket) {
     if (tok->node != node) continue;
     /* --- does tok match w? --- */
-    failed_a_test = FALSE;
+    failed_a_test = false;
     for (rt=node->b.posneg.other_tests; rt!=NIL; rt=rt->next)
       if (! match_left_and_right (thisAgent, rt, tok, w)) {
-        failed_a_test = TRUE;
+        failed_a_test = true;
         break;
       }
     if (failed_a_test) continue;
@@ -5606,7 +5606,7 @@ void cn_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
   rete_node *child;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   hv = node->node_id ^ cast_and_possibly_truncate<uint32_t>(tok) ^ cast_and_possibly_truncate<uint32_t>(w);
 
@@ -5637,7 +5637,7 @@ void cn_partner_node_left_addition (agent* thisAgent, rete_node *node,
   token *left, *negrm_tok;
 
   activation_entry_sanity_check();
-  left_node_activation(node,TRUE);
+  left_node_activation(node,true);
 
   partner = node->b.cn.partner;
 
@@ -5734,7 +5734,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 	/* RCHONG: end 10.11 */
 
 	activation_entry_sanity_check();
-	left_node_activation(node,TRUE);
+	left_node_activation(node,true);
 
 	/* --- build new left token (used only for tree-based remove) --- */
 	token_added(node);
@@ -5742,9 +5742,9 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 	new_left_token (New, node, tok, w);
 
 	/* --- check for match in tentative_retractions --- */
-	match_found = FALSE;
+	match_found = false;
 	for (msc=node->b.p.tentative_retractions; msc!=NIL; msc=msc->next_of_node) {
-		match_found = TRUE;
+		match_found = true;
 		cond = msc->inst->bottom_of_instantiated_conditions;
 		current_token = tok;
 		current_wme = w;
@@ -5752,7 +5752,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 		while (current_node->node_type!=DUMMY_TOP_BNODE) {
 			if (bnode_is_positive(current_node->node_type))
 				if (current_wme != cond->bt.wme_) {
-					match_found=FALSE; break;
+					match_found=false; break;
 				}
 				current_node = real_parent_node (current_node);
 				current_wme = current_token->w;
@@ -5874,7 +5874,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 		is, then this instantiation is i-supported.
 		*/
 
-		operator_proposal = FALSE;
+		operator_proposal = false;
 
 		for (act = node->b.p.prod->action_list; act != NIL ; act = act->next) {
 			if ((act->type == MAKE_ACTION) &&
@@ -5886,14 +5886,14 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 								                   rhs_value_to_reteloc_field_num( act->id ),
 								                   tok, w )->id->isa_goal))
 					{
-						operator_proposal = TRUE;
+						operator_proposal = true;
 						prod_type = !PE_PRODS;
 						break;
 					}
 			}
 		}
 
-		if (operator_proposal == FALSE) {
+		if (operator_proposal == false) {
 
 			/*
 			examine all the different matches for this productions
@@ -5928,7 +5928,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 					and the user is warned that <o> elabs will be o-supported.
 
 					*/
-					op_elab = FALSE;
+					op_elab = false;
 					lowest_goal_wme = NIL;
 
 					for (pass = 0; pass != 2; pass++) {
@@ -5943,7 +5943,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 							if (temp_tok->w == NIL) break;
 
 							if (pass == 0) {
-								if (temp_tok->w->id->id->isa_goal == TRUE) {
+								if (temp_tok->w->id->id->isa_goal == true) {
 									if (lowest_goal_wme == NIL)
 										lowest_goal_wme = temp_tok->w;
 									else {
@@ -5953,7 +5953,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 									}
 								}
 							} else {
-								if ((temp_tok->w->attr == thisAgent->operator_symbol) && (temp_tok->w->acceptable == FALSE) && (temp_tok->w->id == lowest_goal_wme->id)) {
+								if ((temp_tok->w->attr == thisAgent->operator_symbol) && (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id)) {
 									if ((thisAgent->o_support_calculation_type == 3) || (thisAgent->o_support_calculation_type == 4)) {
 										/* iff RHS has only operator elaborations
 										then it's IE_PROD, otherwise PE_PROD, so
@@ -5974,11 +5974,11 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 													act->id == rhs_value_to_symbol(temp..)**/
 													(rhs_value_to_symbol(act->id) ==
 													temp_tok->w->value)) {
-														op_elab = TRUE;
+														op_elab = true;
 												} else if ( (thisAgent->o_support_calculation_type == 4)
 													&& (rhs_value_is_reteloc(act->id))
 													&& (temp_tok->w->value == get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), tok, w ))) {
-														op_elab = TRUE;
+														op_elab = true;
 												} else {
 													/* this is not an operator elaboration */
 													prod_type = PE_PRODS;
@@ -5997,7 +5997,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 						if (prod_type == PE_PRODS) {
 							if ((thisAgent->o_support_calculation_type != 3) && (thisAgent->o_support_calculation_type != 4)) {
 								break;
-							} else if (op_elab == TRUE) {
+							} else if (op_elab == true) {
 
 								/* warn user about mixed actions */
 
@@ -6045,7 +6045,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 			Ron C. wanted or if it's a bug --
 			i need to talk to him about it. */
 
-		}  /* end if (operator_proposal == FALSE) */
+		}  /* end if (operator_proposal == false) */
 
 	}        /* end UNDECLARED_SUPPORT */
 
@@ -6060,7 +6060,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 
 		node->b.p.prod->OPERAND_which_assert_list = O_LIST;
 
-		if (thisAgent->soar_verbose_flag == TRUE) {
+		if (thisAgent->soar_verbose_flag == true) {
 			print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
 				node->b.p.prod->name);
 			char buf[256];
@@ -6080,7 +6080,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 
 		node->b.p.prod->OPERAND_which_assert_list = I_LIST;
 
-		if (thisAgent->soar_verbose_flag == TRUE) {
+		if (thisAgent->soar_verbose_flag == true) {
 			print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
 				node->b.p.prod->name);
 			char buf[256];
@@ -6145,7 +6145,7 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
 			if (node->b.p.prod->interrupt > 1) {
 				node->b.p.prod->interrupt--;
 				thisAgent->stop_soar = false;
-				if (thisAgent->soar_verbose_flag == TRUE) {
+				if (thisAgent->soar_verbose_flag == true) {
 					print(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", node->b.p.prod->interrupt, thisAgent->stop_soar);
 				}
 			}
@@ -6284,7 +6284,7 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
 
 	/* REW: begin 09.15.96 */
 
-	if (thisAgent->soar_verbose_flag == TRUE) {
+	if (thisAgent->soar_verbose_flag == true) {
 			print_with_symbols (thisAgent, "\n%y: ",node->b.p.prod->name);
 			char buf[256];
 			SNPRINTF(buf, 254, "%s: ", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
@@ -6326,14 +6326,14 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
 
   tok = root;
 
-  while (TRUE) {
+  while (true) {
     /* --- move down to the leftmost leaf --- */
     while (tok->first_child) tok = tok->first_child;
     next_value_for_tok = tok->next_sibling ? tok->next_sibling : tok->parent;
 
     /* --- cleanup stuff common to all types of nodes --- */
     node = tok->node;
-    left_node_activation(node,FALSE);
+    left_node_activation(node,false);
     fast_remove_from_dll (node->a.np.tokens, tok, token, next_of_node,
                           prev_of_node);
     fast_remove_from_dll (tok->parent->first_child, tok, token,
@@ -6377,7 +6377,7 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
       /* --- if doing statistics stuff, then activate each attached node --- */
       for (child=node->b.mem.first_linked_child; child!=NIL; child=next) {
         next = child->a.pos.next_from_beta_mem;
-        left_node_activation (child,FALSE);
+        left_node_activation (child,false);
       }
 #endif
       /* --- for right unlinking, then if the beta memory just went to
@@ -6511,8 +6511,8 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
 
   EXTERNAL INTERFACE:
   Save_rete_net() and load_rete_net() save and load everything to and
-  from the given (already open) files.  They return TRUE if successful,
-  FALSE if any error occurred.
+  from the given (already open) files.  They return true if successful,
+  false if any error occurred.
 ********************************************************************** */
 
 FILE *rete_fs_file;  /* File handle we're using -- "fs" for "fast-save" */
@@ -6664,8 +6664,8 @@ bool retesave_symbol_and_assign_index (agent* thisAgent, void *item, void* userd
   sym = static_cast<symbol_struct *>(item);
   thisAgent->current_retesave_symindex++;
   sym->retesave_symindex = thisAgent->current_retesave_symindex;
-  retesave_string (symbol_to_string (thisAgent, sym, FALSE, NIL, 0), f);
-  return FALSE;
+  retesave_string (symbol_to_string (thisAgent, sym, false, NIL, 0), f);
+  return false;
 }
 
 void retesave_symbol_table (agent* thisAgent, FILE* f) {
@@ -6785,7 +6785,7 @@ bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, void* us
   retesave_eight_bytes (am->attr ? am->attr->retesave_symindex : 0,f);
   retesave_eight_bytes (am->value ? am->value->retesave_symindex : 0,f);
   retesave_one_byte (static_cast<byte>(am->acceptable ? 1 : 0),f);
-  return FALSE;
+  return false;
 }
 
 void retesave_alpha_memories (agent* thisAgent, FILE* f) {
@@ -6812,7 +6812,7 @@ void reteload_alpha_memories (agent* thisAgent, FILE* f) {
     id = reteload_symbol_from_index(thisAgent,f);
     attr = reteload_symbol_from_index(thisAgent,f);
     value = reteload_symbol_from_index(thisAgent,f);
-    acceptable = reteload_one_byte(f) ? TRUE : FALSE;
+    acceptable = reteload_one_byte(f) ? true : false;
     *(thisAgent->reteload_am_table+i) = find_or_make_alpha_mem (thisAgent,id,attr,value,acceptable);
   }
 }
@@ -6899,7 +6899,7 @@ varnames *reteload_varnames (agent* thisAgent, FILE* f) {
 }
 
 void retesave_node_varnames (node_varnames *nvn, rete_node *node, FILE* f) {
-  while (TRUE) {
+  while (true) {
     if (node->node_type == DUMMY_TOP_BNODE) return;
     if (node->node_type == CN_BNODE) {
       node=node->b.cn.partner->parent;
@@ -7016,7 +7016,7 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
     if (!rf) {
       char msg[BUFFER_MSG_SIZE];
       print_with_symbols (thisAgent, "Error: can't load this file because it uses an undefined RHS function %y\n", sym);
-      SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: can't load this file because it uses an undefined RHS function %s\n", symbol_to_string(thisAgent, sym,TRUE,NIL, 0));
+      SNPRINTF (msg, BUFFER_MSG_SIZE, "Error: can't load this file because it uses an undefined RHS function %s\n", symbol_to_string(thisAgent, sym,true,NIL, 0));
       msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
       abort_with_fatal_error(thisAgent, msg);
     }
@@ -7448,11 +7448,11 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     allocate_with_pool (thisAgent, &thisAgent->production_pool, &prod);
     prod->reference_count = 1;
     prod->firing_count = 0;
-    prod->trace_firings = FALSE;
+    prod->trace_firings = false;
     prod->instantiations = NIL;
     prod->filename = NIL;
     prod->p_node = NIL;
-    prod->interrupt = FALSE;
+    prod->interrupt = false;
     prod->interrupt_break = false;
 
     sym = reteload_symbol_from_index (thisAgent,f);
@@ -7541,8 +7541,8 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
                         Save/Load The Whole Net
 
   Save_rete_net() and load_rete_net() save and load everything to and
-  from the given (already open) files.  They return TRUE if successful,
-  FALSE if any error occurred.
+  from the given (already open) files.  They return true if successful,
+  false if any error occurred.
 ---------------------------------------------------------------------- */
 
 bool save_rete_net (agent* thisAgent, FILE *dest_file, bool use_rete_net_64) {
@@ -7550,7 +7550,7 @@ bool save_rete_net (agent* thisAgent, FILE *dest_file, bool use_rete_net_64) {
   /* --- make sure there are no justifications present --- */
   if (thisAgent->all_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE]) {
     print (thisAgent, "Internal error: save_rete_net() with justifications present.\n");
-    return FALSE;
+    return false;
   }
 
   rete_fs_file = dest_file;
@@ -7562,7 +7562,7 @@ bool save_rete_net (agent* thisAgent, FILE *dest_file, bool use_rete_net_64) {
   retesave_symbol_table(thisAgent, dest_file);
   retesave_alpha_memories(thisAgent,dest_file);
   retesave_children_of_node (thisAgent, thisAgent->dummy_top_node,dest_file);
-  return TRUE;
+  return true;
 }
 
 bool load_rete_net (agent* thisAgent, FILE *source_file) {
@@ -7572,19 +7572,19 @@ bool load_rete_net (agent* thisAgent, FILE *source_file) {
   /* RDF: 20020814 RDF Cleaning up the agent working memory and production
      memory to avoid unnecessary errors in this function. */
   reinitialize_soar(thisAgent);
-  excise_all_productions(thisAgent, TRUE);
+  excise_all_productions(thisAgent, true);
 
   /* DONE clearing old productions */
 
   /* --- check for empty system --- */
   if (thisAgent->all_wmes_in_rete) {
     print (thisAgent, "Internal error: load_rete_net() called with nonempty WM.\n");
-    return FALSE;
+    return false;
   }
   for (i=0; i<NUM_PRODUCTION_TYPES; i++)
     if (thisAgent->num_productions_of_type[i]) {
       print (thisAgent, "Internal error: load_rete_net() called with nonempty PM.\n");
-      return FALSE;
+      return false;
     }
 
   // BADBAD: this is global, used in retesave_one_byte
@@ -7594,22 +7594,22 @@ bool load_rete_net (agent* thisAgent, FILE *source_file) {
   reteload_string(source_file);
   if (strcmp(reteload_string_buf,"SoarCompactReteNet\n")) {
     print (thisAgent, "This file isn't a Soar fastsave file.\n");
-    return FALSE;
+    return false;
   }
   format_version_num = reteload_one_byte(source_file);
   switch(format_version_num)
   {
     case 3:
       // Since there's already a global, I'm putting the 32- or 64-bit switch out there globally
-      rete_net_64 = FALSE; // used by reteload_eight_bytes
+      rete_net_64 = false; // used by reteload_eight_bytes
       break;
     case 4:
       // Since there's already a global, I'm putting the 32- or 64-bit switch out there globally
-      rete_net_64 = TRUE; // used by reteload_eight_bytes
+      rete_net_64 = true; // used by reteload_eight_bytes
       break;
     default:
       print (thisAgent, "This file is in a format (version %d) I don't understand.\n", format_version_num);
-      return FALSE;
+      return false;
   }
 
   reteload_all_symbols(thisAgent,source_file);
@@ -7624,7 +7624,7 @@ bool load_rete_net (agent* thisAgent, FILE *source_file) {
   /* RDF: 20020814 Now adding the top state and io symbols and wmes */
   init_agent_memory(thisAgent);
 
-  return TRUE;
+  return true;
 }
 
 
@@ -8270,7 +8270,7 @@ void xml_whole_token (agent* thisAgent, token *t, wme_trace_type wtt) {
 bool xml_pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
   condition *cond;
   cond = static_cast<condition_struct *>(dc->item);
-  if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) return FALSE;
+  if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) return false;
   return tests_are_equal (thisAgent->id_test_to_match, cond->data.tests.id_test, false);
 }
 
@@ -8296,7 +8296,7 @@ void xml_test (agent* thisAgent, char const* pTag, test t) {
   if (test_is_blank_or_equality_test(t)) {
     xml_att_val(thisAgent, pTag, referent_of_equality_test(t)) ;	// Using tag as attribute name
 	return ;
-    //return symbol_to_string (thisAgent, referent_of_equality_test(t), TRUE, dest, dest_size);
+    //return symbol_to_string (thisAgent, referent_of_equality_test(t), true, dest, dest_size);
   }
 
   if (!dest) {
@@ -8312,37 +8312,37 @@ void xml_test (agent* thisAgent, char const* pTag, test t) {
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch)
 		ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case LESS_TEST:
     strncpy (ch, "< ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case GREATER_TEST:
     strncpy (ch, "> ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case LESS_OR_EQUAL_TEST:
     strncpy (ch, "<= ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case GREATER_OR_EQUAL_TEST:
     strncpy (ch, ">= ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case SAME_TYPE_TEST:
     strncpy (ch, "<=> ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case DISJUNCTION_TEST:
     // BUGBUG: Need to think this through more carefully
@@ -8351,7 +8351,7 @@ void xml_test (agent* thisAgent, char const* pTag, test t) {
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
     for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
-      symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), TRUE, ch, dest_size - (ch - dest));
+      symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), true, ch, dest_size - (ch - dest));
 	  while (*ch) ch++;
       *(ch++) = ' ';
     }
@@ -8421,7 +8421,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
    tail_of_conds_not_yet_printed->next = NIL;
 
    /* --- main loop: find all conds for first id, print them together --- */
-   bool did_one_line_already = FALSE;
+   bool did_one_line_already = false;
    while (conds_not_yet_printed)
    {
       if (did_one_line_already)
@@ -8431,7 +8431,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
       }
       else
       {
-         did_one_line_already = TRUE;
+         did_one_line_already = true;
       }
 
       dc = conds_not_yet_printed;
@@ -8449,7 +8449,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
       }
 
       /* --- normal pos/neg conditions --- */
-      removed_goal_test = removed_impasse_test = FALSE;
+      removed_goal_test = removed_impasse_test = false;
       id_test = copy_test_removing_goal_impasse_tests(thisAgent, c->data.tests.id_test,
          &removed_goal_test,
          &removed_impasse_test);
@@ -8556,7 +8556,7 @@ void xml_condition (agent* thisAgent, condition *cond) {
   old_prev = cond->prev;
   cond->next = NIL;
   cond->prev = NIL;
-  xml_condition_list (thisAgent, cond, 0, TRUE);
+  xml_condition_list (thisAgent, cond, 0, true);
   cond->next = old_next;
   cond->prev = old_prev;
 }
@@ -9102,11 +9102,11 @@ void init_rete (agent* thisAgent) {
     allocate_memory_and_zerofill (thisAgent, sizeof(Symbol *), MISCELLANEOUS_MEM_USAGE);
 
   /* This is still not thread-safe. -AJC (8/9/02) */
-  static bool bInit = FALSE;
+  static bool bInit = false;
   if (bInit)
     return;
 
-  bInit = TRUE;
+  bInit = true;
 
   init_test_type_conversion_tables ();
 

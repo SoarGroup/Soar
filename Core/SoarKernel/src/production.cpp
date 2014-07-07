@@ -148,8 +148,8 @@ test copy_test (agent* thisAgent, test t) {
 
 /* ----------------------------------------------------------------
    Same as copy_test(), only it doesn't include goal or impasse tests
-   in the new copy.  The caller should initialize the two flags to FALSE
-   before calling this routine; it sets them to TRUE if it finds a goal
+   in the new copy.  The caller should initialize the two flags to false
+   before calling this routine; it sets them to true if it finds a goal
    or impasse test.
 ---------------------------------------------------------------- */
 
@@ -166,10 +166,10 @@ test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t,
 
   switch(ct->type) {
   case GOAL_ID_TEST:
-    *removed_goal = TRUE;
+    *removed_goal = true;
     return make_blank_test();
   case IMPASSE_ID_TEST:
-    *removed_impasse = TRUE;
+    *removed_impasse = true;
     return make_blank_test();
 
   case CONJUNCTIVE_TEST:
@@ -277,10 +277,10 @@ void add_new_test_to_test (agent* thisAgent,
   }
 
   /* --- if *t isn't already a conjunctive test, make it into one --- */
-  already_a_conjunctive_test = FALSE;
+  already_a_conjunctive_test = false;
   if (test_is_complex_test(*t)) {
     ct = complex_test_from_test (*t);
-    if (ct->type==CONJUNCTIVE_TEST) already_a_conjunctive_test = TRUE;
+    if (ct->type==CONJUNCTIVE_TEST) already_a_conjunctive_test = true;
   }
 
   if (! already_a_conjunctive_test)  {
@@ -329,7 +329,7 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test 
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the two tests are identical.
+   Returns true iff the two tests are identical.
    If neg is true, ignores order of members in conjunctive tests
    and assumes variables are all equal.
 ---------------------------------------------------------------- */
@@ -341,13 +341,13 @@ bool tests_are_equal (test t1, test t2, bool neg) {
 	if (test_is_blank_or_equality_test(t1))
 	{
 		if (!test_is_blank_or_equality_test(t2))
-			return FALSE;
+			return false;
 
 		if (t1 == t2) /* Warning: this relies on the representation of tests */
-			return TRUE;
+			return true;
 
 		if (!neg)
-			return FALSE;
+			return false;
 
 		// ignore variables in negation tests
 		Symbol* s1 = referent_of_equality_test(t1);
@@ -355,33 +355,33 @@ bool tests_are_equal (test t1, test t2, bool neg) {
 
 		if ((s1->symbol_type == VARIABLE_SYMBOL_TYPE) && (s2->symbol_type == VARIABLE_SYMBOL_TYPE))
 		{
-			return TRUE;
+			return true;
 		}
-		return FALSE;
+		return false;
 	}
 
 	ct1 = complex_test_from_test(t1);
 	ct2 = complex_test_from_test(t2);
 
 	if (ct1->type != ct2->type)
-		return FALSE;
+		return false;
 
 	switch(ct1->type) {
 	case GOAL_ID_TEST:
-		return TRUE;
+		return true;
 
 	case IMPASSE_ID_TEST:
-		return TRUE;
+		return true;
 
 	case DISJUNCTION_TEST:
 		for (c1 = ct1->data.disjunction_list, c2 = ct2->data.disjunction_list; (c1!=NIL) && (c2!=NIL); c1 = c1->rest, c2 = c2->rest)
 		{
 			if (c1->first != c2->first)
-				return FALSE;
+				return false;
 		}
 		if (c1 == c2)
-			return TRUE;  /* make sure they both hit end-of-list */
-		return FALSE;
+			return true;  /* make sure they both hit end-of-list */
+		return false;
 
 	case CONJUNCTIVE_TEST:
 		// bug 510 fix: ignore order of test members in conjunctions
@@ -402,7 +402,7 @@ bool tests_are_equal (test t1, test t2, bool neg) {
 
 				// iter will be end if no match
 				if (iter == copy2.end())
-					return FALSE;
+					return false;
 
 				// there was a match, remove it from unmatched
 				copy2.erase(iter);
@@ -410,14 +410,14 @@ bool tests_are_equal (test t1, test t2, bool neg) {
 
 			// make sure no unmatched remain
 			if (copy2.empty())
-				return TRUE;
+				return true;
 		}
-		return FALSE;
+		return false;
 
 	default:  /* relational tests other than equality */
 		if (ct1->data.referent == ct2->data.referent)
-			return TRUE;
-		return FALSE;
+			return true;
+		return false;
 	}
 }
 
@@ -595,18 +595,18 @@ Changed  < to > 10/5/92*/
 
   if ((test_order_1 = CANONICAL_TEST_ORDER(c1->data.tests.attr_test)) <
       (test_order_2 = CANONICAL_TEST_ORDER(c2->data.tests.attr_test))) {
-    return TRUE;
+    return true;
   } else if (test_order_1 == test_order_2 &&
            CANONICAL_TEST_ORDER(c1->data.tests.value_test) <
            CANONICAL_TEST_ORDER(c2->data.tests.value_test)) {
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the test contains an equality test for the given
-   symbol.  If sym==NIL, returns TRUE iff the test contains any
+   Returns true iff the test contains an equality test for the given
+   symbol.  If sym==NIL, returns true iff the test contains any
    equality test.
 ---------------------------------------------------------------- */
 
@@ -614,25 +614,25 @@ bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
   cons *c;
   complex_test *ct;
 
-  if (test_is_blank_test(t)) return FALSE;
+  if (test_is_blank_test(t)) return false;
 
   if (test_is_blank_or_equality_test(t)) {
     if (sym) return (referent_of_equality_test(t) == sym);
-    return TRUE;
+    return true;
   }
 
   ct = complex_test_from_test(t);
 
   if (ct->type==CONJUNCTIVE_TEST) {
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_includes_equality_test_for_symbol (static_cast<char *>(c->first), sym)) return TRUE;
+      if (test_includes_equality_test_for_symbol (static_cast<char *>(c->first), sym)) return true;
   }
-  return FALSE;
+  return false;
 }
 
 /* ----------------------------------------------------------------
    Looks for goal or impasse tests (as directed by the two flag
-   parameters) in the given test, and returns TRUE if one is found.
+   parameters) in the given test, and returns true if one is found.
 ---------------------------------------------------------------- */
 
 bool test_includes_goal_or_impasse_id_test (test t,
@@ -641,19 +641,19 @@ bool test_includes_goal_or_impasse_id_test (test t,
   complex_test *ct;
   cons *c;
 
-  if (test_is_blank_or_equality_test(t)) return FALSE;
+  if (test_is_blank_or_equality_test(t)) return false;
   ct = complex_test_from_test(t);
-  if (look_for_goal && (ct->type==GOAL_ID_TEST)) return TRUE;
-  if (look_for_impasse && (ct->type==IMPASSE_ID_TEST)) return TRUE;
+  if (look_for_goal && (ct->type==GOAL_ID_TEST)) return true;
+  if (look_for_impasse && (ct->type==IMPASSE_ID_TEST)) return true;
   if (ct->type == CONJUNCTIVE_TEST) {
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       if (test_includes_goal_or_impasse_id_test (static_cast<char *>(c->first),
                                                  look_for_goal,
                                                  look_for_impasse))
-        return TRUE;
-    return FALSE;
+        return true;
+    return false;
   }
-  return FALSE;
+  return false;
 }
 
 /* ----------------------------------------------------------------
@@ -767,11 +767,11 @@ void copy_condition_list (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the two conditions are identical.
+   Returns true iff the two conditions are identical.
 ---------------------------------------------------------------- */
 
 bool conditions_are_equal (condition *c1, condition *c2) {
-  if (c1->type != c2->type) return FALSE;
+  if (c1->type != c2->type) return false;
   bool neg = true;
   switch (c1->type) {
   case POSITIVE_CONDITION:
@@ -779,27 +779,27 @@ bool conditions_are_equal (condition *c1, condition *c2) {
   case NEGATIVE_CONDITION:
     if (! tests_are_equal (c1->data.tests.id_test,
                            c2->data.tests.id_test, neg))
-      return FALSE;
+      return false;
     if (! tests_are_equal (c1->data.tests.attr_test,
                            c2->data.tests.attr_test, neg))
-      return FALSE;
+      return false;
     if (! tests_are_equal (c1->data.tests.value_test,
                            c2->data.tests.value_test, neg))
-      return FALSE;
+      return false;
     if (c1->test_for_acceptable_preference !=
         c2->test_for_acceptable_preference)
-      return FALSE;
-    return TRUE;
+      return false;
+    return true;
 
   case CONJUNCTIVE_NEGATION_CONDITION:
     for (c1=c1->data.ncc.top, c2=c2->data.ncc.top;
          ((c1!=NIL)&&(c2!=NIL));
          c1=c1->next, c2=c2->next)
-      if (! conditions_are_equal (c1,c2)) return FALSE;
-    if (c1==c2) return TRUE;  /* make sure they both hit end-of-list */
-    return FALSE;
+      if (! conditions_are_equal (c1,c2)) return false;
+    if (c1==c2) return true;  /* make sure they both hit end-of-list */
+    return false;
   }
-  return FALSE; /* unreachable, but without it, gcc -Wall warns here */
+  return false; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 /* ----------------------------------------------------------------
@@ -1329,14 +1329,14 @@ bool symbol_is_in_tc (Symbol *sym, tc_number tc) {
     return (sym->tc_num == tc);
   if (sym->symbol_type==IDENTIFIER_SYMBOL_TYPE)
     return (sym->tc_num == tc);
-  return FALSE;
+  return false;
 }
 
 bool test_is_in_tc (test t, tc_number tc) {
   cons *c;
   complex_test *ct;
 
-  if (test_is_blank_test(t)) return FALSE;
+  if (test_is_blank_test(t)) return false;
   if (test_is_blank_or_equality_test(t)) {
     return symbol_is_in_tc (referent_of_equality_test(t), tc);
   }
@@ -1344,10 +1344,10 @@ bool test_is_in_tc (test t, tc_number tc) {
   ct = complex_test_from_test(t);
   if (ct->type==CONJUNCTIVE_TEST) {
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if (test_is_in_tc (static_cast<char *>(c->first), tc)) return TRUE;
-    return FALSE;
+      if (test_is_in_tc (static_cast<char *>(c->first), tc)) return true;
+    return false;
   }
-  return FALSE;
+  return false;
 }
 
 bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
@@ -1363,23 +1363,23 @@ bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
   new_ids = NIL;
   new_vars = NIL;
   for (c=cond->data.ncc.top; c!=NIL; c=c->next)
-    c->already_in_tc = FALSE;
-  while (TRUE) {
-    anything_changed = FALSE;
+    c->already_in_tc = false;
+  while (true) {
+    anything_changed = false;
     for (c=cond->data.ncc.top; c!=NIL; c=c->next)
       if (! c->already_in_tc)
         if (cond_is_in_tc (thisAgent, c, tc)) {
           add_cond_to_tc (thisAgent, c, tc, &new_ids, &new_vars);
-          c->already_in_tc = TRUE;
-          anything_changed = TRUE;
+          c->already_in_tc = true;
+          anything_changed = true;
         }
     if (! anything_changed) break;
   }
 
   /* --- complete TC found, look for anything that didn't get hit --- */
-  result = TRUE;
+  result = true;
   for (c=cond->data.ncc.top; c!=NIL; c=c->next)
-    if (! c->already_in_tc) result = FALSE;
+    if (! c->already_in_tc) result = false;
 
   /* --- unmark identifiers and variables that we just marked --- */
   unmark_identifiers_and_free_list (thisAgent, new_ids);
@@ -1389,7 +1389,7 @@ bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc) {
 }
 
 bool action_is_in_tc (action *a, tc_number tc) {
-  if (a->type != MAKE_ACTION) return FALSE;
+  if (a->type != MAKE_ACTION) return false;
   return symbol_is_in_tc (rhs_value_to_symbol(a->id), tc);
 }
 
@@ -1451,7 +1451,7 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
     first_letter = 'v';
   }
 
-  while (TRUE) {
+  while (true) {
     SNPRINTF (name,GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
              static_cast<long unsigned int>(thisAgent->gensymed_variable_count[first_letter-'a']++));
 	name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
@@ -1544,12 +1544,12 @@ production *make_production (agent* thisAgent,
   thisAgent->num_productions_of_type[type]++;
   p->type = type;
   p->declared_support = UNDECLARED_SUPPORT;
-  p->trace_firings = FALSE;
+  p->trace_firings = false;
   p->p_node = NIL;               /* it's not in the Rete yet */
   p->action_list = *rhs_top;
   p->rhs_unbound_variables = NIL; /* the Rete fills this in */
   p->instantiations = NIL;
-  p->interrupt = FALSE;
+  p->interrupt = false;
 
   // Soar-RL stuff
   p->rl_update_count = 0.0;

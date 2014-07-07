@@ -140,16 +140,16 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
   if (goal->id->operator_slot->wmes) {
     /* There is an operator in the slot */
     current_operator = goal->id->operator_slot->wmes;
-    operator_in_slot = TRUE;
+    operator_in_slot = true;
   } else {
     /* There is not an operator in the slot */
     current_operator = NIL;
-    operator_in_slot = FALSE;
+    operator_in_slot = false;
   }
 
   if (goal->id->lower_goal){
     /* the goal is impassed */
-    goal_is_impassed = TRUE;
+    goal_is_impassed = true;
     current_impasse_type      = type_of_existing_impasse(thisAgent, goal);
     current_impasse_attribute = attribute_of_existing_impasse(thisAgent, goal);
 #ifdef DEBUG_CONSISTENCY_CHECK
@@ -172,7 +172,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
       current_impasse_type = NONE_IMPASSE_TYPE;
     }
   } else {
-    goal_is_impassed = FALSE;
+    goal_is_impassed = false;
     current_impasse_type      = NONE_IMPASSE_TYPE;
     current_impasse_attribute = NIL;
 #ifdef DEBUG_CONSISTENCY_CHECK
@@ -200,9 +200,9 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
   if (current_impasse_type != new_impasse_type) {
       /* Then there is an inconsistency: no more work necessary */
 #ifdef DEBUG_CONSISTENCY_CHECK
-      printf("    Impasse types are different: Returning FALSE, preferences are not consistent with prior decision.\n");
+      printf("    Impasse types are different: Returning false, preferences are not consistent with prior decision.\n");
 #endif
-      return FALSE;
+      return false;
   }
 
 
@@ -214,7 +214,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
   case NONE_IMPASSE_TYPE:
     /* There are four cases to consider when NONE_IMPASSE_TYPE is returned: */
     /* 1.  Previous operator and operator returned by run_pref_sem are the same.
-           In this case, return TRUE (decision remains consistent) */
+           In this case, return true (decision remains consistent) */
 
     /* This next if is meant to test that there actually is something in the slot but
        I'm nut quite certain that it will not always be true? */
@@ -232,26 +232,26 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
              current_operator->value,
              cand->value);
 #endif
-	 return TRUE;
+	 return true;
 	 }
        }
 
     /* 2.  A different operator is indicated for the slot than the one that is
-           currently installed.  In this case, we return FALSE (the decision is
+           currently installed.  In this case, we return false (the decision is
            not consistent with the preferences). */
 
        /* Now we know that the decision is inconsistent */
-	 return FALSE;
+	 return false;
 
     /* 3.  A single operator is suggested when an impasse existed previously.
-           In this case, return FALSE so that the impasse can be removed. */
+           In this case, return false so that the impasse can be removed. */
 
     } else { /* There is no operator in the slot */
       if (goal->id->lower_goal) { /* But there is an impasse */
 	if (goal->id->lower_goal->id->isa_impasse) printf("This goal is an impasse\n");
 	printf("      No Impasse Needed but Impasse exists: remove impasse now\n");
         printf("\n\n   *************This should never be executed*******************\n\n");
-        return FALSE;
+        return false;
       }
     }
 
@@ -259,45 +259,45 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol *goal
            impasse for the operator slot created yet.  We shouldn't call this
            routine in this case (this condition is checked before
            decision_consistent_with_current_preferences is called) but, for
-           completeness' sake, we check this condition and return TRUE
+           completeness' sake, we check this condition and return true
            (because no decision has been made at this level, there is no
            need to remove anything). */
         printf("\n\n   *************This should never be executed*******************\n\n");
-	return TRUE;
+	return true;
     break;
 
   case CONSTRAINT_FAILURE_IMPASSE_TYPE:
 #ifdef DEBUG_CONSISTENCY_CHECK
-    printf("    Constraint Failure Impasse: Returning TRUE\n");
+    printf("    Constraint Failure Impasse: Returning true\n");
 #endif
-    return TRUE;
+    return true;
     break;
 
   case CONFLICT_IMPASSE_TYPE:
 #ifdef DEBUG_CONSISTENCY_CHECK
-    printf("    Conflict Impasse: Returning TRUE\n");
+    printf("    Conflict Impasse: Returning true\n");
 #endif
-    return TRUE;
+    return true;
     break;
 
   case TIE_IMPASSE_TYPE:
 #ifdef DEBUG_CONSISTENCY_CHECK
-    printf("    Tie Impasse: Returning TRUE\n");
+    printf("    Tie Impasse: Returning true\n");
 #endif
-    return TRUE;
+    return true;
     break;
 
   case NO_CHANGE_IMPASSE_TYPE:
 #ifdef DEBUG_CONSISTENCY_CHECK
-    printf("    No change Impasse: Returning TRUE\n");
+    printf("    No change Impasse: Returning true\n");
 #endif
-    return TRUE;
+    return true;
     break;
   }
 
         printf("\n   After switch................");
         printf("\n\n   *************This should never be executed*******************\n\n");
-   return TRUE;
+   return true;
 
 
 }
@@ -366,7 +366,7 @@ bool check_context_slot_decisions (agent* thisAgent, goal_stack_level level) {
           print_with_symbols(thisAgent, "Removing state %y because of a failed consistency check.\n", goal);
 	    /* This doesn;t seem like it should be necessary but evidently it is: see 2.008 */
 	    remove_current_decision(thisAgent, s);
-	    return FALSE;
+	    return false;
 	    break;   /* No need to continue once a decision is removed */
 	  }
 	}
@@ -378,7 +378,7 @@ bool check_context_slot_decisions (agent* thisAgent, goal_stack_level level) {
 #endif
   }
 
-  return TRUE;
+  return true;
 }
 
 /* REW: begin 08.20.97 */
@@ -388,21 +388,21 @@ bool i_activity_at_goal(Symbol *goal) {
   /* print_with_symbols("\nLooking for I-activity at goal: %y\n", goal); */
 
    if (goal->id->ms_i_assertions)
-       return TRUE;
+       return true;
 
    if (goal->id->ms_retractions)
-       return TRUE;
+       return true;
 
 
-   /* printf("\nNo instantiation found.  Returning FALSE\n");  */
-  return FALSE;
+   /* printf("\nNo instantiation found.  Returning false\n");  */
+  return false;
 }
 
 /*   Minor Quiescence at GOAL
 
-     This procedure returns TRUE if the current firing type is IE_PRODS and
+     This procedure returns true if the current firing type is IE_PRODS and
      there are no i-assertions (or any retractions) ready to fire in the
-     current GOAL.  Else it returns FALSE.  */
+     current GOAL.  Else it returns false.  */
 
 
 bool minor_quiescence_at_goal(agent* thisAgent, Symbol *goal) {
@@ -410,9 +410,9 @@ bool minor_quiescence_at_goal(agent* thisAgent, Symbol *goal) {
   if ((thisAgent->FIRING_TYPE == IE_PRODS) &&
       (!i_activity_at_goal(goal)))
     /* firing IEs but no more to fire == minor quiescence */
-    return TRUE;
+    return true;
   else
-    return FALSE;
+    return false;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -665,7 +665,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
    thisAgent->previous_active_level = thisAgent->active_level;
 
    /* Determine the new highest level of activity */
-   thisAgent->active_goal = highest_active_goal_apply(thisAgent, thisAgent->top_goal, FALSE);
+   thisAgent->active_goal = highest_active_goal_apply(thisAgent, thisAgent->top_goal, false);
    if (thisAgent->active_goal)
       thisAgent->active_level = thisAgent->active_goal->id->level;
    else
@@ -900,7 +900,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
    thisAgent->previous_active_level = thisAgent->active_level;
 
    /* Determine the new highest level of activity */
-   thisAgent->active_goal = highest_active_goal_propose(thisAgent, thisAgent->top_goal, FALSE);
+   thisAgent->active_goal = highest_active_goal_propose(thisAgent, thisAgent->top_goal, false);
    if (thisAgent->active_goal)
       thisAgent->active_level = thisAgent->active_goal->id->level;
    else

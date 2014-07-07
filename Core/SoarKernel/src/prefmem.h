@@ -16,8 +16,8 @@
 
    Possibly_deallocate_preference_and_clones() checks whether a given
    preference and all its clones have reference_count 0, and deallocates
-   them all if they do; it returns TRUE if they were actually deallocated,
-   FALSE otherwise.   Deallocate_preference() deallocates a given
+   them all if they do; it returns true if they were actually deallocated,
+   false otherwise.   Deallocate_preference() deallocates a given
    preference.  These routines should normally be invoked only via the
    preference_remove_ref() macro.
 

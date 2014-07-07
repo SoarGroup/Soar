@@ -253,7 +253,7 @@ bool exploration_set_parameter_value( agent *my_agent, const int parameter, doub
  **************************************************************************/
 bool exploration_get_auto_update( agent *my_agent )
 {
-	return my_agent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] != FALSE;
+	return my_agent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] != false;
 }
 
 /***************************************************************************
@@ -261,7 +261,7 @@ bool exploration_get_auto_update( agent *my_agent )
  **************************************************************************/
 bool exploration_set_auto_update( agent *my_agent, bool setting )
 {
-	my_agent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] = setting ? TRUE : FALSE;
+	my_agent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] = setting ? true : false;
 
 	return true;
 }

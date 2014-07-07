@@ -61,9 +61,9 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
 
   allocate_with_pool (thisAgent, &thisAgent->preference_pool, &p);
   p->type = type;
-  p->in_tm = FALSE;
-  p->o_supported = FALSE;
-  p->on_goal_list = FALSE;
+  p->in_tm = false;
+  p->o_supported = false;
+  p->on_goal_list = false;
   p->reference_count = 0;
   p->id = id;
   p->attr = attr;
@@ -134,18 +134,18 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
 /* ----------------------------------------------------------------------
    Possibly_deallocate_preference_and_clones() checks whether a given
    preference and all its clones have reference_count 0, and deallocates
-   them all if they do.  It returns TRUE if they were actually
-   deallocated, FALSE otherwise.
+   them all if they do.  It returns true if they were actually
+   deallocated, false otherwise.
 ---------------------------------------------------------------------- */
 
 bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref) {
   preference *clone, *next;
 
-  if (pref->reference_count) return FALSE;
+  if (pref->reference_count) return false;
   for (clone=pref->next_clone; clone!=NIL; clone=clone->next_clone)
-    if (clone->reference_count) return FALSE;
+    if (clone->reference_count) return false;
   for (clone=pref->prev_clone; clone!=NIL; clone=clone->prev_clone)
-    if (clone->reference_count) return FALSE;
+    if (clone->reference_count) return false;
 
   /* --- deallocate all the clones --- */
   clone = pref->next_clone;
@@ -164,13 +164,13 @@ bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pr
   /* --- deallocate pref --- */
   deallocate_preference (thisAgent, pref);
 
-  return TRUE;
+  return true;
 }
 
 /* ----------------------------------------------------------------------
    Remove_preference_from_clones() splices a given preference out of the
    list of clones.  If the preference's reference_count is 0, it also
-   deallocates it and returns TRUE.  Otherwise it returns FALSE.
+   deallocates it and returns true.  Otherwise it returns false.
 ---------------------------------------------------------------------- */
 
 bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
@@ -189,9 +189,9 @@ bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
   if (any_clone) possibly_deallocate_preference_and_clones (thisAgent, any_clone);
   if (! pref->reference_count) {
     deallocate_preference (thisAgent, pref);
-    return TRUE;
+    return true;
   } else {
-    return FALSE;
+    return false;
   }
 }
 
@@ -265,7 +265,7 @@ bool add_preference_to_tm (agent* thisAgent, preference *pref)
    }
 
    /* --- other miscellaneous stuff --- */
-   pref->in_tm = TRUE;
+   pref->in_tm = true;
    preference_add_ref (pref);
 
    // if it's the case that the slot is unchanged, but has
@@ -362,7 +362,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
   remove_from_dll (s->preferences[pref->type], pref, next, prev);
 
   /* --- other miscellaneous stuff --- */
-  pref->in_tm = FALSE;
+  pref->in_tm = false;
   pref->slot = NIL;      /* BUG shouldn't we use pref->slot in place of pref->in_tm? */
   mark_slot_as_changed (thisAgent, s);
 

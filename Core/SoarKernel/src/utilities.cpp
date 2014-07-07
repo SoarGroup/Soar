@@ -64,8 +64,8 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 {
 	int i;
 	const char * c;
-	bool sym_constant_start_found = FALSE;
-	bool sym_constant_end_found = FALSE;
+	bool sym_constant_start_found = false;
+	bool sym_constant_end_found = false;
 
 	for (c = the_lexeme, i = 0; *c; c++, i++)
 	{
@@ -74,12 +74,12 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 			if (!sym_constant_start_found)
 			{
 				i--;
-				sym_constant_start_found = TRUE;
+				sym_constant_start_found = true;
 			}
 			else
 			{
 				i--;
-				sym_constant_end_found = TRUE;
+				sym_constant_end_found = true;
 			}
 		}
 		else
@@ -209,7 +209,7 @@ void init_real_time (agent* thisAgent) {
    thisAgent->real_time_tracker =
          (struct timeval *) malloc(sizeof(struct timeval));
    timerclear(thisAgent->real_time_tracker);
-   thisAgent->real_time_idling = FALSE;
+   thisAgent->real_time_idling = false;
    current_real_time =
          (struct timeval *) malloc(sizeof(struct timeval));
 }
@@ -220,7 +220,7 @@ void test_for_input_delay (agent* thisAgent) {
    start_timer (thisAgent, current_real_time);
    if (timercmp(current_real_time, thisAgent->real_time_tracker, <)) {
       if (!(thisAgent->real_time_idling)) {
-         thisAgent->real_time_idling = TRUE;
+         thisAgent->real_time_idling = true;
          if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
             print_phase (thisAgent, "\n--- Real-time Idle Phase ---\n");
          }
@@ -239,7 +239,7 @@ void test_for_input_delay (agent* thisAgent) {
             thisAgent->real_time_tracker->tv_usec / 1000000;
       thisAgent->real_time_tracker->tv_usec %= 1000000;
    }
-   thisAgent->real_time_idling = FALSE;
+   thisAgent->real_time_idling = false;
 }
 #endif // REAL_TIME_BEHAVIOR
 
@@ -264,12 +264,12 @@ void start_attention_lapse (int64_t duration) {
             thisAgent->attention_lapse_tracker->tv_usec / 1000000;
       thisAgent->attention_lapse_tracker->tv_usec %= 1000000;
    }
-   thisAgent->attention_lapsing = TRUE;
+   thisAgent->attention_lapsing = true;
 }
 void wake_from_attention_lapse (void) {
    /* Set tracker to last time we woke up */
    start_timer (thisAgent->attention_lapse_tracker);
-   thisAgent->attention_lapsing = FALSE;
+   thisAgent->attention_lapsing = false;
 }
 void determine_lapsing (agent* thisAgent) {
    /* RMJ; decide whether to start or finish an attentional lapse */

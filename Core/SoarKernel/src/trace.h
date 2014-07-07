@@ -12,13 +12,13 @@
    formats for anything.  This routine should be called at startup time.
 
    Trace formats are changed by calls to add_trace_format() and
-   remove_trace_format().  Add_trace_format() returns TRUE if the
-   format was successfully added, or FALSE if the format string didn't
-   parse right.  Remove_trace_format() returns TRUE if a trace format
-   was actually removed, or FALSE if there was no such trace format for
+   remove_trace_format().  Add_trace_format() returns true if the
+   format was successfully added, or false if the format string didn't
+   parse right.  Remove_trace_format() returns true if a trace format
+   was actually removed, or false if there was no such trace format for
    the given type/name restrictions.  These routines take a "stack_trace"
-   argument, which should be TRUE if the stack trace format is intended,
-   or FALSE if the object trace format is intended.  Their
+   argument, which should be true if the stack trace format is intended,
+   or false if the object trace format is intended.  Their
    "type_restriction" argument should be one of FOR_ANYTHING_TF, ...,
    FOR_OPERATORS_TF.  The "name_restriction" argument should be either
    a pointer to a symbol, if the trace format is  restricted to apply
@@ -31,8 +31,8 @@
    trace for that object.  Print_stack_trace() takes a (context)
    object (the state or op), the current state, the "slot_type"
    (one of FOR_OPERATORS_TF, etc.), and a flag indicating whether to
-   allow %dc and %ec escapes (this flag should normally be TRUE for
-   watch 0 traces but FALSE during a "print -stack" command).  It prints
+   allow %dc and %ec escapes (this flag should normally be true for
+   watch 0 traces but false during a "print -stack" command).  It prints
    the stack trace for that context object.
 ====================================================================== */
 

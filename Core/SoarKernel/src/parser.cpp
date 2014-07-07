@@ -120,14 +120,14 @@ void substitute_for_placeholders_in_symbol (agent* thisAgent, Symbol **sym) {
   /* --- if not a placeholder variable, do nothing --- */
   if (*((*sym)->var->name + 1) != '#') return;
 
-  just_created = FALSE;
+  just_created = false;
 
   if (! (*sym)->var->current_binding_value) {
     prefix[0] = *((*sym)->var->name + 2);
     prefix[1] = '*';
     prefix[2] = 0;
     (*sym)->var->current_binding_value = generate_new_variable (thisAgent, prefix);
-    just_created = TRUE;
+    just_created = true;
   }
 
   var = (*sym)->var->current_binding_value;
@@ -319,13 +319,13 @@ test parse_relational_test (agent* thisAgent) {
   Symbol *referent;
   complex_test *ct;
 
-  use_equality_test = FALSE;
+  use_equality_test = false;
   test_type = NOT_EQUAL_TEST; /* unnecessary, but gcc -Wall warns without it */
 
   /* --- read optional relation symbol --- */
   switch(thisAgent->lexeme.type) {
   case EQUAL_LEXEME:
-    use_equality_test = TRUE;
+    use_equality_test = true;
     get_lexeme(thisAgent);
     break;
 
@@ -360,7 +360,7 @@ test parse_relational_test (agent* thisAgent) {
     break;
 
   default:
-    use_equality_test = TRUE;
+    use_equality_test = true;
     break;
   }
 
@@ -646,7 +646,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = make_placeholder_test (thisAgent, first_letter);
-    c->test_for_acceptable_preference = FALSE;
+    c->test_for_acceptable_preference = false;
     return c;
   }
 
@@ -673,8 +673,8 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
       }
     }
     /* --- check for acceptable preference indicator --- */
-    acceptable = FALSE;
-    if (thisAgent->lexeme.type==PLUS_LEXEME) { acceptable = TRUE; get_lexeme(thisAgent); }
+    acceptable = false;
+    if (thisAgent->lexeme.type==PLUS_LEXEME) { acceptable = true; get_lexeme(thisAgent); }
     /* --- build condition using the new value test --- */
     allocate_with_pool (thisAgent, &thisAgent->condition_pool,  &c);
     insert_at_head_of_dll (new_conds, c, next, prev);
@@ -709,8 +709,8 @@ condition *parse_attr_value_tests (agent* thisAgent) {
   condition *first_c, *last_c, *c, *new_conds;
 
   /* --- read optional minus sign --- */
-  negate_it = FALSE;
-  if (thisAgent->lexeme.type==MINUS_LEXEME) { negate_it = TRUE; get_lexeme(thisAgent); }
+  negate_it = false;
+  if (thisAgent->lexeme.type==MINUS_LEXEME) { negate_it = true; get_lexeme(thisAgent); }
 
   /* --- read up arrow --- */
   if (thisAgent->lexeme.type!=UP_ARROW_LEXEME) {
@@ -749,7 +749,7 @@ condition *parse_attr_value_tests (agent* thisAgent) {
     c->data.tests.attr_test = attr_test;
     id_test_to_use = make_placeholder_test (thisAgent, first_letter_from_test(attr_test));
     c->data.tests.value_test = id_test_to_use;
-    c->test_for_acceptable_preference = FALSE;
+    c->test_for_acceptable_preference = false;
     /* --- update id and attr tests for the next path element --- */
     attr_test = parse_test (thisAgent);
     if (!attr_test) {
@@ -898,7 +898,7 @@ condition *parse_tail_of_conds_for_one_id (agent* thisAgent) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = make_placeholder_test (thisAgent, 'a');
     c->data.tests.value_test = make_placeholder_test (thisAgent, 'v');
-    c->test_for_acceptable_preference = FALSE;
+    c->test_for_acceptable_preference = false;
     return c;
   }
 
@@ -984,8 +984,8 @@ condition *parse_cond (agent* thisAgent) {
   bool negate_it;
 
   /* --- look for leading "-" sign --- */
-  negate_it = FALSE;
-  if (thisAgent->lexeme.type==MINUS_LEXEME) { negate_it = TRUE; get_lexeme(thisAgent); }
+  negate_it = false;
+  if (thisAgent->lexeme.type==MINUS_LEXEME) { negate_it = true; get_lexeme(thisAgent); }
 
   /* --- parse <positive_cond> --- */
   if (thisAgent->lexeme.type==L_BRACE_LEXEME) {
@@ -1227,7 +1227,7 @@ rhs_value parse_rhs_value (agent* thisAgent) {
 
 	if (thisAgent->lexeme.type==L_PAREN_LEXEME) {
 		get_lexeme(thisAgent);
-		return parse_function_call_after_lparen (thisAgent, FALSE);
+		return parse_function_call_after_lparen (thisAgent, false);
 	}
 
 	// Check for long term identifier notation
@@ -1252,7 +1252,7 @@ rhs_value parse_rhs_value (agent* thisAgent) {
 /* -----------------------------------------------------------------
                          Is Preference Lexeme
 
-   Given a token type, returns TRUE if the token is a preference
+   Given a token type, returns true if the token is a preference
    lexeme.
 
 ----------------------------------------------------------------- */
@@ -1262,23 +1262,23 @@ bool is_preference_lexeme( enum lexer_token_type test_lexeme )
   switch (test_lexeme) {
 
   case PLUS_LEXEME:
-    return TRUE;
+    return true;
   case MINUS_LEXEME:
-    return TRUE;
+    return true;
   case EXCLAMATION_POINT_LEXEME:
-    return TRUE;
+    return true;
   case TILDE_LEXEME:
-    return TRUE;
+    return true;
   case GREATER_LEXEME:
-    return TRUE;
+    return true;
   case EQUAL_LEXEME:
-    return TRUE;
+    return true;
   case LESS_LEXEME:
-    return TRUE;
+    return true;
   case AMPERSAND_LEXEME:
-    return TRUE;
+    return true;
   default:
-    return FALSE;
+    return false;
   }
 }
 
@@ -1420,7 +1420,7 @@ action *parse_preferences (agent* thisAgent, Symbol *id,
     if (thisAgent->lexeme.type==COMMA_LEXEME) get_lexeme(thisAgent);
   }
 
-  while (TRUE) {
+  while (true) {
     /* --- read referent --- */
     if (preference_is_binary(preference_type)) {
       referent = parse_rhs_value(thisAgent);
@@ -1508,7 +1508,7 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
     if (thisAgent->lexeme.type==COMMA_LEXEME) get_lexeme(thisAgent);
   }
 
-  while (TRUE) {
+  while (true) {
     /* step through the pref list, print warning messages when necessary. */
 
     /* --- read referent --- */
@@ -1520,7 +1520,7 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
                correctly before we print */
       rhs_value_to_string(thisAgent, attr, szPrintAttr, 256);
       rhs_value_to_string(thisAgent, value, szPrintValue, 256);
-      symbol_to_string(thisAgent, id, TRUE, szPrintId, 256);
+      symbol_to_string(thisAgent, id, true, szPrintId, 256);
       print(thisAgent, "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
       deallocate_action_list (thisAgent, prev_a);
@@ -1539,7 +1539,7 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
                correctly before we print */
       rhs_value_to_string(thisAgent, attr, szPrintAttr, 256);
       rhs_value_to_string(thisAgent, value, szPrintValue, 256);
-      symbol_to_string(thisAgent, id, TRUE, szPrintId, 256);
+      symbol_to_string(thisAgent, id, true, szPrintId, 256);
       print(thisAgent, "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
       print_location_of_most_recent_lexeme(thisAgent);
@@ -1730,7 +1730,7 @@ action *parse_rhs_action (agent* thisAgent) {
 
 	if ((thisAgent->lexeme.type!=VARIABLE_LEXEME) && (thisAgent->lexeme.type!=IDENTIFIER_LEXEME)) {
 		/* --- the action is a function call --- */
-		funcall_value = parse_function_call_after_lparen (thisAgent, TRUE);
+		funcall_value = parse_function_call_after_lparen (thisAgent, true);
 		if (!funcall_value) return NIL;
 		allocate_with_pool (thisAgent, &thisAgent->action_pool,  &all_actions);
 		all_actions->type = FUNCALL_ACTION;
@@ -1796,7 +1796,7 @@ bool parse_lti(agent* thisAgent) {
                             Parse RHS
 
    Parses the <rhs> and sets *dest_rhs to the resulting action list.
-   Returns TRUE if successful, FALSE if any error occurred.
+   Returns true if successful, false if any error occurred.
 
    <rhs> ::= <rhs_action>*
 ----------------------------------------------------------------- */
@@ -1813,11 +1813,11 @@ bool parse_rhs (agent* thisAgent, action **dest_rhs) {
       all_actions = new_actions;
     } else {
       deallocate_action_list (thisAgent, all_actions);
-      return FALSE;
+      return false;
     }
   }
   *dest_rhs = all_actions;
-  return TRUE;
+  return true;
 }
 
 
@@ -1890,7 +1890,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
 
   /* --- if there's already a prod with this name, excise it --- */
   if (name->sc->production) {
-    excise_production (thisAgent, name->sc->production, (TRUE && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
+    excise_production (thisAgent, name->sc->production, (true && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
   }
 
   /* --- read optional documentation string --- */
@@ -1904,8 +1904,8 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   /* --- read optional flags --- */
   declared_support = UNDECLARED_SUPPORT;
   prod_type = USER_PRODUCTION_TYPE;
-  interrupt_on_match = FALSE;
-  while (TRUE) {
+  interrupt_on_match = false;
+  while (true) {
     if (thisAgent->lexeme.type!=SYM_CONSTANT_LEXEME) break;
     if (!strcmp(thisAgent->lexeme.string,":o-support")) {
       declared_support = DECLARED_O_SUPPORT;
@@ -1933,12 +1933,12 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
       continue;
     }
 	if (!strcmp(thisAgent->lexeme.string, ":interrupt")) {
-	  interrupt_on_match = TRUE;
+	  interrupt_on_match = true;
 	  get_lexeme(thisAgent);
 	  continue;
 	}
     break;
-  } /* end of while (TRUE) */
+  } /* end of while (true) */
 
   /* --- read the LHS --- */
   lhs = parse_lhs(thisAgent);
@@ -1997,7 +1997,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   /* --- everything parsed okay, so make the production structure --- */
   lhs_top = lhs;
   for (lhs_bottom=lhs; lhs_bottom->next!=NIL; lhs_bottom=lhs_bottom->next);
-  p = make_production (thisAgent, prod_type, name, &lhs_top, &lhs_bottom, &rhs, TRUE);
+  p = make_production (thisAgent, prod_type, name, &lhs_top, &lhs_bottom, &rhs, true);
 
   if (!p) {
     if (documentation) free_memory_block_for_string (thisAgent, documentation);
@@ -2022,11 +2022,11 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
   p->documentation = documentation;
   p->declared_support = declared_support;
   p->interrupt = interrupt_on_match;
-  *rete_addition_result = add_production_to_rete (thisAgent, p, lhs_top, NIL, TRUE);
+  *rete_addition_result = add_production_to_rete (thisAgent, p, lhs_top, NIL, true);
   deallocate_condition_list (thisAgent, lhs_top);
 
   if (*rete_addition_result==DUPLICATE_PRODUCTION) {
-    excise_production (thisAgent, p, FALSE);
+    excise_production (thisAgent, p, false);
     p = NIL;
   }
 

@@ -71,7 +71,7 @@ void AgentSML::InitListeners()
 void AgentSML::Init()
 {
 	// Temporary HACK.  This should be fixed in the kernel.
-	m_agent->stop_soar = FALSE;
+	m_agent->stop_soar = false;
 
 	ResetCaptureReplay();
 
@@ -394,14 +394,14 @@ void AgentSML::Interrupt(smlStopLocationFlags stopLoc)
 
   // These are immediate requests for interrupt, such as from RHS or application
   if ((sml_STOP_AFTER_SMALLEST_STEP == stopLoc) || (sml_STOP_AFTER_PHASE == stopLoc)) {
-	  m_agent->stop_soar = TRUE;
+	  m_agent->stop_soar = true;
 	  // If the agent is not running, we should set the runState flag now so agent won't run
 	  if (m_runState == sml_RUNSTATE_STOPPED)
 	  {
 		  m_runState = sml_RUNSTATE_INTERRUPTED;
 	  }
 	  // Running agents must test stopLoc & stop_soar in Step method to see if interrupted.
-	  // Because we set m_agent->stop_soar == TRUE above, any running agents should return to
+	  // Because we set m_agent->stop_soar == true above, any running agents should return to
 	  // gSKI at the end of the current phase, even if interleaving by larger steps.  KJC
   }
 }
@@ -530,7 +530,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
 	   if (m_agent->bottom_goal->id->level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
 	   {// the agent halted because it seems to be in an infinite loop, so throw interrupt
 		   m_pKernelSML->InterruptAllAgents(sml_STOP_AFTER_PHASE) ;
-		   m_agent->system_halted = FALSE; // hack! otherwise won't run again.
+		   m_agent->system_halted = false; // hack! otherwise won't run again.
 		   m_runState = sml_RUNSTATE_INTERRUPTED;
 		   retVal     = sml_RUN_INTERRUPTED;
 		   // Notify of the interrupt

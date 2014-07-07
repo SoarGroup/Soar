@@ -2500,7 +2500,7 @@ inline void _epmem_store_level( agent* my_agent,
 
 			#ifdef DEBUG_EPMEM_WME_ADD
 			fprintf(stderr, "--------------------------------------------\nReserving WME: %d ^%s %s\n",
-				(unsigned int) parent_id, symbol_to_string (my_agent, (*w_p)->attr, TRUE, NIL, 0), symbol_to_string (my_agent, (*w_p)->value, TRUE, NIL, 0));
+				(unsigned int) parent_id, symbol_to_string (my_agent, (*w_p)->attr, true, NIL, 0), symbol_to_string (my_agent, (*w_p)->value, true, NIL, 0));
 			#endif
 
 			// if still here, create reservation (case 1)
@@ -2559,7 +2559,7 @@ inline void _epmem_store_level( agent* my_agent,
 	{
 		#ifdef DEBUG_EPMEM_WME_ADD
 		fprintf(stderr, "--------------------------------------------\nProcessing WME: %d ^%s %s\n",
-				(unsigned int) parent_id, symbol_to_string (my_agent, (*w_p)->attr, TRUE, NIL, 0), symbol_to_string (my_agent, (*w_p)->value, TRUE, NIL, 0));
+				(unsigned int) parent_id, symbol_to_string (my_agent, (*w_p)->attr, true, NIL, 0), symbol_to_string (my_agent, (*w_p)->value, true, NIL, 0));
 		#endif
 		// skip over WMEs already in the system
 		if ( ( (*w_p)->epmem_id != EPMEM_NODEID_BAD ) && ( (*w_p)->epmem_valid == my_agent->epmem_validation ) )

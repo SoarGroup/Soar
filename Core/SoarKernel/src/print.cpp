@@ -118,7 +118,7 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
   char *ch;
 
   ch = dest;
-  while (TRUE) {
+  while (true) {
     /* --- copy anything up to the first "%" --- */
     while ((*format != '%') && (*format != 0)) *(ch++) = *(format++);
     if (*format == 0) break;
@@ -128,7 +128,7 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
 			the difference between the address of ch and
 			the address of the beginning of the buffer
 			*/
-      symbol_to_string (thisAgent, va_arg(args, Symbol *), TRUE, ch, count - (ch - dest));
+      symbol_to_string (thisAgent, va_arg(args, Symbol *), true, ch, count - (ch - dest));
       while (*ch) ch++;
     } else {
       *(ch++) = '%';
@@ -342,7 +342,7 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
   }
 
   if (test_is_blank_or_equality_test(t)) {
-    return symbol_to_string (thisAgent, referent_of_equality_test(t), TRUE, dest, dest_size);
+    return symbol_to_string (thisAgent, referent_of_equality_test(t), true, dest, dest_size);
   }
 
   if (!dest) {
@@ -358,44 +358,44 @@ char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch)
 		ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case LESS_TEST:
     strncpy (ch, "< ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case GREATER_TEST:
     strncpy (ch, "> ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case LESS_OR_EQUAL_TEST:
     strncpy (ch, "<= ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case GREATER_OR_EQUAL_TEST:
     strncpy (ch, ">= ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case SAME_TYPE_TEST:
     strncpy (ch, "<=> ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, TRUE, ch, dest_size - (ch - dest));
+    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
     break;
   case DISJUNCTION_TEST:
     strncpy (ch, "<< ", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
 	while (*ch) ch++;
     for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
-      symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), TRUE, ch, dest_size - (ch - dest));
+      symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), true, ch, dest_size - (ch - dest));
 	  while (*ch) ch++;
       *(ch++) = ' ';
     }
@@ -440,7 +440,7 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
   }
 
   if (rhs_value_is_symbol(rv)) {
-    return symbol_to_string (thisAgent, rhs_value_to_symbol(rv), TRUE, dest, dest_size);
+    return symbol_to_string (thisAgent, rhs_value_to_symbol(rv), true, dest, dest_size);
   }
 
   fl = rhs_value_to_funcall_list(rv);
@@ -463,7 +463,7 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
     strncpy (ch, "-", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0;
   } else {
-	symbol_to_string (thisAgent, rf->name, TRUE, ch, dest_size - (ch - dest));
+	symbol_to_string (thisAgent, rf->name, true, ch, dest_size - (ch - dest));
   }
 
   while (*ch) ch++;
@@ -488,7 +488,7 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
    how many spaces to indent each line other than the first--the first
    line is not indented (the caller must handle this).  The last line
    is printed without a trailing linefeed.  The "internal" parameter,
-   if TRUE, indicates that the condition list should be printed in
+   if true, indicates that the condition list should be printed in
    internal format--one condition per line, without grouping all the
    conditions for the same id into one line.
 ------------------------------------------------------------------ */
@@ -496,7 +496,7 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
 bool pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
   condition *cond;
   cond = static_cast<condition_struct *>(dc->item);
-  if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) return FALSE;
+  if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) return false;
   return tests_are_equal (thisAgent->id_test_to_match, cond->data.tests.id_test, false);
 }
 
@@ -539,7 +539,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
    tail_of_conds_not_yet_printed->next = NIL;
 
    /* --- main loop: find all conds for first id, print them together --- */
-   bool did_one_line_already = FALSE;
+   bool did_one_line_already = false;
    while (conds_not_yet_printed)
    {
       if (did_one_line_already)
@@ -549,7 +549,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
       }
       else
       {
-         did_one_line_already = TRUE;
+         did_one_line_already = true;
       }
 
       dc = conds_not_yet_printed;
@@ -567,7 +567,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
       }
 
       /* --- normal pos/neg conditions --- */
-      removed_goal_test = removed_impasse_test = FALSE;
+      removed_goal_test = removed_impasse_test = false;
       id_test = copy_test_removing_goal_impasse_tests(thisAgent, c->data.tests.id_test,
          &removed_goal_test,
          &removed_impasse_test);
@@ -667,7 +667,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
    many spaces to indent each line other than the first--the first
    line is not indented (the caller must handle this).  The last line
    is printed without a trailing linefeed.  The "internal" parameter,
-   if TRUE, indicates that the action list should be printed in
+   if true, indicates that the action list should be printed in
    internal format--one action per line, without grouping all the
    actions for the same id into one line.
    Note:  the actions MUST NOT contain any reteloc's.
@@ -676,7 +676,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
 bool pick_actions_with_matching_id (dl_cons *dc, agent* thisAgent) {
   action *a;
   a = static_cast<action_struct *>(dc->item);
-  if (a->type!=MAKE_ACTION) return FALSE;
+  if (a->type!=MAKE_ACTION) return false;
   return (rhs_value_to_symbol(a->id) == thisAgent->action_id_to_match);
 }
 
@@ -691,7 +691,7 @@ void print_action_list (agent* thisAgent, action *actions,
 
   if (!actions) return;
 
-  did_one_line_already = FALSE;
+  did_one_line_already = false;
 
   /* --- build dl_list of all the actions --- */
   actions_not_yet_printed = NIL;
@@ -712,7 +712,7 @@ void print_action_list (agent* thisAgent, action *actions,
       print (thisAgent, "\n");
       print_spaces (thisAgent, indent);
     } else {
-      did_one_line_already = TRUE;
+      did_one_line_already = true;
     }
     dc = actions_not_yet_printed;
     remove_from_dll (actions_not_yet_printed, dc, next, prev);
@@ -786,7 +786,7 @@ void print_action_list (agent* thisAgent, action *actions,
 /* ------------------------------------------------------------------
                          Print Production
 
-   This prints a production.  The "internal" parameter, if TRUE,
+   This prints a production.  The "internal" parameter, if true,
    indicates that the LHS and RHS should be printed in internal format.
 ------------------------------------------------------------------ */
 
@@ -902,7 +902,7 @@ void print_condition (agent* thisAgent, condition *cond) {
   old_prev = cond->prev;
   cond->next = NIL;
   cond->prev = NIL;
-  print_condition_list (thisAgent, cond, 0, TRUE);
+  print_condition_list (thisAgent, cond, 0, true);
   cond->next = old_next;
   cond->prev = old_prev;
 }
@@ -912,7 +912,7 @@ void print_action (agent* thisAgent, action *a) {
 
   old_next = a->next;
   a->next = NIL;
-  print_action_list (thisAgent, a, 0, TRUE);
+  print_action_list (thisAgent, a, 0, true);
   a->next = old_next;
 }
 
@@ -979,7 +979,7 @@ void print_preference (agent* thisAgent, preference *pref) {
 extern "C" bool passes_wme_filtering(agent* thisAgent, wme *w, bool isAdd);
 void
 filtered_print_wme_add(agent* thisAgent, wme *w) {
-  if (passes_wme_filtering(thisAgent, w,TRUE))
+  if (passes_wme_filtering(thisAgent, w,true))
   {
     print (thisAgent, "=>WM: ");
 	xml_begin_tag(thisAgent, kTagWMEAdd);
@@ -990,7 +990,7 @@ filtered_print_wme_add(agent* thisAgent, wme *w) {
 
 void filtered_print_wme_remove(agent* thisAgent, wme *w)
 {
-  if (passes_wme_filtering(thisAgent, w,FALSE))
+  if (passes_wme_filtering(thisAgent, w,false))
   {
     print (thisAgent, "<=WM: ");
 	xml_begin_tag(thisAgent, kTagWMERemove);
@@ -1202,7 +1202,7 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
 bool wme_filter_component_match(Symbol * filterComponent, Symbol * wmeComponent) {
   if ((filterComponent->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
       (!strcmp(filterComponent->sc->name,"*")))
-    return TRUE;
+    return true;
 
   return(filterComponent == wmeComponent);
 
@@ -1226,9 +1226,9 @@ bool passes_wme_filtering(agent* thisAgent, wme * w, bool isAdd) {
         (!wme_filter_component_match(wf->id,w->id)
         || !wme_filter_component_match(wf->attr,w->attr)
         || !wme_filter_component_match(wf->value,w->value)))
-      return FALSE;
+      return false;
   }
-  return TRUE; /* no defined filters match -> w passes */
+  return true; /* no defined filters match -> w passes */
 }
 
 /*

@@ -60,18 +60,18 @@ bool symbols_are_equal_with_bindings (agent* agnt, Symbol *s1, Symbol *s2, list 
 
     /* SBH/MVP 7-5-94 */
     if ((s1 == s2) && (s1->symbol_type != VARIABLE_SYMBOL_TYPE))
-        return TRUE;
+        return true;
 
     /* "*" matches everything. */
     if ((s1->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
-        (!strcmp(s1->sc->name,"*"))) return TRUE;
+        (!strcmp(s1->sc->name,"*"))) return true;
     if ((s2->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
-        (!strcmp(s2->sc->name,"*"))) return TRUE;
+        (!strcmp(s2->sc->name,"*"))) return true;
 
 
     if ((s1->symbol_type != VARIABLE_SYMBOL_TYPE) ||
         (s2->symbol_type != VARIABLE_SYMBOL_TYPE))
-        return FALSE;
+        return false;
     /* Both are variables */
     bvar = get_binding(s1,*bindings);
     if (bvar == NIL) {
@@ -79,12 +79,12 @@ bool symbols_are_equal_with_bindings (agent* agnt, Symbol *s1, Symbol *s2, list 
         b->from = s1;
         b->to = s2;
         push(agnt, b,*bindings);
-        return TRUE;
+        return true;
     }
     else if (bvar == s2) {
-        return TRUE;
+        return true;
     }
-    else return FALSE;
+    else return false;
 }
 
 bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list **bindings)
@@ -96,28 +96,28 @@ bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list 
     //               if (funcalls_match(rhs_value_to_funcall_list(a1->value),
     //                  rhs_value_to_funcall_list(a2->value)))
     //               {
-    //                     return TRUE;
+    //                     return true;
     //               }
-    //               else return FALSE;
+    //               else return false;
     //            }
-    //            else return FALSE;
+    //            else return false;
     //         }
-    if (a2->type == FUNCALL_ACTION) return FALSE;
+    if (a2->type == FUNCALL_ACTION) return false;
 
     /* Both are make_actions. */
 
-    if (a1->preference_type != a2->preference_type) return FALSE;
+    if (a1->preference_type != a2->preference_type) return false;
 
     if (!symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->id),
         rhs_value_to_symbol(a2->id),
-        bindings)) return FALSE;
+        bindings)) return false;
 
     if ((rhs_value_is_symbol(a1->attr)) && (rhs_value_is_symbol(a2->attr)))
     {
         if (!symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->attr),
             rhs_value_to_symbol(a2->attr), bindings))
         {
-            return FALSE;
+            return false;
         }
     } else {
         //            if ((rhs_value_is_funcall(a1->attr)) && (rhs_value_is_funcall(a2->attr)))
@@ -125,7 +125,7 @@ bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list 
         //               if (!funcalls_match(rhs_value_to_funcall_list(a1->attr),
         //                  rhs_value_to_funcall_list(a2->attr)))
         //               {
-        //                  return FALSE;
+        //                  return false;
         //               }
         //            }
     }
@@ -137,11 +137,11 @@ bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list 
         if (symbols_are_equal_with_bindings(agnt, rhs_value_to_symbol(a1->value),
             rhs_value_to_symbol(a2->value), bindings))
         {
-            return TRUE;
+            return true;
         }
         else
         {
-            return FALSE;
+            return false;
         }
     }
     if ((rhs_value_is_funcall(a1->value)) && (rhs_value_is_funcall(a2->value)))
@@ -149,14 +149,14 @@ bool actions_are_equal_with_bindings (agent* agnt, action *a1, action *a2, list 
         //            if (funcalls_match(rhs_value_to_funcall_list(a1->value),
         //               rhs_value_to_funcall_list(a2->value)))
         //            {
-        //               return TRUE;
+        //               return true;
         //            }
         //            else
         {
-            return FALSE;
+            return false;
         }
     }
-    return FALSE;
+    return false;
 }
 
 
@@ -183,11 +183,11 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
     /* If the pattern doesn't include "(state", but the test from the
     * production does, strip it out of the production's.
     */
-    if ((!test_includes_goal_or_impasse_id_test(t1,TRUE,FALSE)) &&
-        test_includes_goal_or_impasse_id_test(test2,TRUE,FALSE))
+    if ((!test_includes_goal_or_impasse_id_test(t1,true,false)) &&
+        test_includes_goal_or_impasse_id_test(test2,true,false))
     {
-        goal_test = FALSE;
-        impasse_test = FALSE;
+        goal_test = false;
+        impasse_test = false;
         t2 = copy_test_removing_goal_impasse_tests(agnt, test2, &goal_test, &impasse_test);
     }
     else
@@ -199,7 +199,7 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
     {
         if (!(test_is_blank_or_equality_test(t2) && !(test_is_blank_test(t2))))
         {
-            dealloc_and_return(agnt, t2,FALSE);
+            dealloc_and_return(agnt, t2,false);
         }
         else
         {
@@ -207,11 +207,11 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
                 referent_of_equality_test(t2),
                 bindings))
             {
-                dealloc_and_return(agnt, t2,TRUE);
+                dealloc_and_return(agnt, t2,true);
             }
             else
             {
-                dealloc_and_return(agnt, t2,FALSE);
+                dealloc_and_return(agnt, t2,false);
             }
         }
     }
@@ -221,16 +221,16 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
 
     if (ct1->type != ct2->type)
     {
-        dealloc_and_return(agnt, t2,FALSE);
+        dealloc_and_return(agnt, t2,false);
     }
 
     switch(ct1->type)
     {
     case GOAL_ID_TEST:
-        dealloc_and_return(agnt, t2,TRUE);
+        dealloc_and_return(agnt, t2,true);
         break;
     case IMPASSE_ID_TEST:
-        dealloc_and_return(agnt, t2,TRUE);
+        dealloc_and_return(agnt, t2,true);
         break;
 
     case DISJUNCTION_TEST:
@@ -239,16 +239,16 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
         {
             if (c1->first != c2->first)
             {
-                dealloc_and_return(agnt, t2,FALSE)
+                dealloc_and_return(agnt, t2,false)
             }
         }
         if (c1==c2)
         {
-            dealloc_and_return(agnt, t2,TRUE);  /* make sure they both hit end-of-list */
+            dealloc_and_return(agnt, t2,true);  /* make sure they both hit end-of-list */
         }
         else
         {
-            dealloc_and_return(agnt, t2,FALSE);
+            dealloc_and_return(agnt, t2,false);
         }
 
     case CONJUNCTIVE_TEST:
@@ -256,25 +256,25 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
             ((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
         {
             if (! tests_are_equal_with_bindings(agnt, static_cast<test>(c1->first), static_cast<test>(c2->first), bindings))
-                dealloc_and_return(agnt, t2,FALSE)
+                dealloc_and_return(agnt, t2,false)
         }
         if (c1==c2)
         {
-            dealloc_and_return(agnt, t2,TRUE);  /* make sure they both hit end-of-list */
+            dealloc_and_return(agnt, t2,true);  /* make sure they both hit end-of-list */
         }
         else
         {
-            dealloc_and_return(agnt, t2,FALSE);
+            dealloc_and_return(agnt, t2,false);
         }
 
     default:  /* relational tests other than equality */
         if (symbols_are_equal_with_bindings(agnt, ct1->data.referent,ct2->data.referent,bindings))
         {
-            dealloc_and_return(agnt, t2,TRUE);
+            dealloc_and_return(agnt, t2,true);
         }
         else
         {
-            dealloc_and_return(agnt, t2,FALSE);
+            dealloc_and_return(agnt, t2,false);
         }
     }
 }
@@ -290,34 +290,34 @@ void print_binding_list (agent* agnt, list *bindings)
 }
 
 bool conditions_are_equal_with_bindings (agent* agnt, condition *c1, condition *c2, list **bindings) {
-    if (c1->type != c2->type) return FALSE;
+    if (c1->type != c2->type) return false;
     switch (c1->type)
     {
     case POSITIVE_CONDITION:
     case NEGATIVE_CONDITION:
         if (! tests_are_equal_with_bindings (agnt, c1->data.tests.id_test,
             c2->data.tests.id_test,bindings))
-            return FALSE;
+            return false;
         if (! tests_are_equal_with_bindings (agnt, c1->data.tests.attr_test,
             c2->data.tests.attr_test,bindings))
 
-            return FALSE;
+            return false;
         if (! tests_are_equal_with_bindings (agnt, c1->data.tests.value_test,
             c2->data.tests.value_test,bindings))
-            return FALSE;
+            return false;
         if (c1->test_for_acceptable_preference != c2->test_for_acceptable_preference)
-            return FALSE;
-        return TRUE;
+            return false;
+        return true;
 
     case CONJUNCTIVE_NEGATION_CONDITION:
         for (c1=c1->data.ncc.top, c2=c2->data.ncc.top;
             ((c1!=NIL)&&(c2!=NIL));
             c1=c1->next, c2=c2->next)
-            if (! conditions_are_equal_with_bindings (agnt, c1,c2,bindings)) return FALSE;
-        if (c1==c2) return TRUE;  /* make sure they both hit end-of-list */
-        return FALSE;
+            if (! conditions_are_equal_with_bindings (agnt, c1,c2,bindings)) return false;
+        if (c1==c2) return true;  /* make sure they both hit end-of-list */
+        return false;
     }
-    return FALSE; /* unreachable, but without it, gcc -Wall warns here */
+    return false; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 void reset_old_binding_point(agent* agnt, list **bindings, list **current_binding_point)
@@ -360,7 +360,7 @@ void read_pattern_and_get_matching_productions (agent* agnt,
     }
     /*
     print("Valid condition list:\n");
-    print_condition_list(clist,0,FALSE);
+    print_condition_list(clist,0,false);
     print("\nMatches:\n");
     */
 
@@ -385,7 +385,7 @@ void read_pattern_and_get_matching_productions (agent* agnt,
                 /* Also note that we need bindings for every production.  Very expensive
                 (but don't necc. need to save them -- maybe can just print them as we go). */
 
-                match = TRUE;
+                match = true;
                 p_node_to_conditions_and_nots (agnt, prod->p_node, NIL, NIL, &top, &bottom,
                     NIL, NIL);
 
@@ -393,12 +393,12 @@ void read_pattern_and_get_matching_productions (agent* agnt,
                 bindings = NIL;
 
                 for (c=clist;c!=NIL;c=c->next) {
-                    match_this_c= FALSE;
+                    match_this_c= false;
                     current_binding_point = bindings;
 
                     for (pc = top; pc != NIL; pc=pc->next) {
                         if (conditions_are_equal_with_bindings(agnt, c,pc,&bindings)) {
-                            match_this_c = TRUE;
+                            match_this_c = true;
                             break;}
                         else {
                             /* Remove new, incorrect bindings. */
@@ -406,7 +406,7 @@ void read_pattern_and_get_matching_productions (agent* agnt,
                             bindings= current_binding_point;
                         }
                     }
-                    if (!match_this_c) {match = FALSE; break;}
+                    if (!match_this_c) {match = false; break;}
                 }
                 deallocate_condition_list (agnt, top); /* DJP 4/3/96 -- Never dealloced */
                 if (match) {
@@ -440,7 +440,7 @@ void read_rhs_pattern_and_get_matching_productions (agent* agnt,
     current_binding_point = NIL;
 
     /*  print("Parsing as a rhs...\n"); */
-    parsed_ok = (parse_rhs(agnt, &alist) == TRUE);
+    parsed_ok = (parse_rhs(agnt, &alist) == true);
     if (!parsed_ok) {
         print(agnt, "Error: not a valid rhs.\n");
         current_pf_list = NIL;
@@ -449,7 +449,7 @@ void read_rhs_pattern_and_get_matching_productions (agent* agnt,
 
     /*
     print("Valid RHS:\n");
-    print_action_list(alist,0,FALSE);
+    print_action_list(alist,0,false);
     print("\nMatches:\n");
     */
 
@@ -459,7 +459,7 @@ void read_rhs_pattern_and_get_matching_productions (agent* agnt,
         {
             for (prod=agnt->all_productions_of_type[i]; prod!=NIL; prod=prod->next)
             {
-                match = TRUE;
+                match = true;
 
                 free_binding_list(agnt, bindings);
                 bindings = NIL;
@@ -469,14 +469,14 @@ void read_rhs_pattern_and_get_matching_productions (agent* agnt,
                 deallocate_condition_list (agnt, top_cond);
                 for (a=alist;a!=NIL;a=a->next)
                 {
-                    match_this_a= FALSE;
+                    match_this_a= false;
                     current_binding_point = bindings;
 
                     for (pa = rhs; pa != NIL; pa=pa->next)
                     {
                         if (actions_are_equal_with_bindings(agnt, a,pa,&bindings))
                         {
-                            match_this_a = TRUE;
+                            match_this_a = true;
                             break;
                         }
                         else
@@ -488,7 +488,7 @@ void read_rhs_pattern_and_get_matching_productions (agent* agnt,
                     }
                     if (!match_this_a)
                     {
-                        match = FALSE;
+                        match = false;
                         break;
                     }
                 }

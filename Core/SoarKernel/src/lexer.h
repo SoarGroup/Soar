@@ -37,7 +37,7 @@
   R_PAREN_LEXEME token the next time it reaches the end of a line.
 
   Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
-  be read.  If FALSE, things that look like identifiers will be returned
+  be read.  If false, things that look like identifiers will be returned
   as SYM_CONSTANT_LEXEME's instead.
 ====================================================================== */
 

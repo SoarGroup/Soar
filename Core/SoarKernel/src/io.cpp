@@ -206,7 +206,7 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
   }
 
   /* --- go ahead and add the wme --- */
-  w = make_wme (thisAgent, id, attr, value, FALSE);
+  w = make_wme (thisAgent, id, attr, value, false);
   insert_at_head_of_dll (id->id->input_wmes, w, next, prev);
 
   if ( wma_enabled( thisAgent ) )
@@ -254,14 +254,14 @@ bool remove_input_wme (agent* thisAgent, wme *w) {
 	/* --- a little bit of error checking --- */
 	if (!w) {
 		print (thisAgent, "Error: an input routine called remove_input_wme on a NULL wme.\n");
-		return FALSE;
+		return false;
 	}
 	for (temp=w->id->id->input_wmes; temp!=NIL; temp=temp->next)
 		if (temp==w) break;
 	if (!temp) {
 		print (thisAgent, "Error: an input routine called remove_input_wme on a wme that\n");
 		print (thisAgent, "isn't one of the input wmes currently in working memory.\n");
-		return FALSE;
+		return false;
 	}
 	/* Note: for efficiency, it might be better to use a hash table for the
 	above test, rather than scanning the linked list.  We could have one
@@ -280,7 +280,7 @@ bool remove_input_wme (agent* thisAgent, wme *w) {
 
 	remove_wme_from_wm (thisAgent, w);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -339,13 +339,13 @@ void do_input_cycle (agent* thisAgent) {
   /* --- save current top state for next time --- */
   thisAgent->prev_top_state = thisAgent->top_state;
 
-  /* --- reset the output-link status flag to FALSE
+  /* --- reset the output-link status flag to false
    * --- when running til output, only want to stop if agent
    * --- does add-wme to output.  don't stop if add-wme done
    * --- during input cycle (eg simulator updates sensor status)
    *     KJC 11/23/98
    */
-  thisAgent->output_link_changed = FALSE;
+  thisAgent->output_link_changed = false;
 
 }
 
@@ -418,7 +418,7 @@ void update_for_top_state_wme_addition (agent* thisAgent, wme *w) {
   char link_name[LINK_NAME_SIZE];
 
   /* --- check whether the attribute is an output function --- */
-  symbol_to_string(thisAgent, w->attr, FALSE, link_name, LINK_NAME_SIZE);
+  symbol_to_string(thisAgent, w->attr, false, link_name, LINK_NAME_SIZE);
   cb = soar_exists_callback_id(thisAgent, OUTPUT_PHASE_CALLBACK, link_name);
   if (!cb) return;
 
@@ -496,12 +496,12 @@ void inform_output_module_of_wm_changes (agent* thisAgent,
     w = static_cast<wme_struct *>(c->first);
     if (w->id==thisAgent->io_header) {
 		update_for_top_state_wme_addition (thisAgent, w);
-		thisAgent->output_link_changed = TRUE; /* KJC 11/23/98 */
+		thisAgent->output_link_changed = true; /* KJC 11/23/98 */
         thisAgent->d_cycle_last_output = thisAgent->d_cycle_count;   /* KJC 11/17/05 */
 	}
     if (w->id->id->associated_output_links) {
 		update_for_io_wme_change (w);
- 		thisAgent->output_link_changed = TRUE; /* KJC 11/23/98 */
+ 		thisAgent->output_link_changed = true; /* KJC 11/23/98 */
         thisAgent->d_cycle_last_output = thisAgent->d_cycle_count;   /* KJC 11/17/05 */
 	}
 
@@ -509,7 +509,7 @@ void inform_output_module_of_wm_changes (agent* thisAgent,
     else {
       char id[100];
 
-      symbol_to_string(thisAgent, w->id, FALSE, id, 100 );
+      symbol_to_string(thisAgent, w->id, false, id, 100 );
       if ( !strcmp( id, "I3" ) ) {
         print(thisAgent, "--> Added to I3, but doesn't register as an OL change!" );
       }
@@ -919,10 +919,10 @@ void init_soar_io (agent* thisAgent) {
   /* --- setup constituent_char array --- */
   for (i=0; i<256; i++) tio_constituent_char[i] = (isalnum(i) != 0);
   for (i=0; i<strlen(extra_tio_constituents); i++)
-    tio_constituent_char[static_cast<int>(extra_tio_constituents[i])]=TRUE;
+    tio_constituent_char[static_cast<int>(extra_tio_constituents[i])]=true;
 
   /* --- setup whitespace array --- */
   for (i=0; i<256; i++) tio_whitespace[i] = (isspace(i) != 0);
-  tio_whitespace[static_cast<int>('\n')]=FALSE;  /* for text i/o, crlf isn't whitespace */
+  tio_whitespace[static_cast<int>('\n')]=false;  /* for text i/o, crlf isn't whitespace */
 }
 

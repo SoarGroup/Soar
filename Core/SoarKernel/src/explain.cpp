@@ -63,10 +63,10 @@ void init_explain (agent* thisAgent) {
   thisAgent->explain_chunk_list = NULL;
   thisAgent->explain_backtrace_list = NULL;
   /* added in this initialization, not sure why removed...  KJC 7/96 */
-  /* thisAgent->explain_flag = FALSE;
+  /* thisAgent->explain_flag = false;
    */
   /*  should we be re-initializing here??  */
-  set_sysparam (thisAgent, EXPLAIN_SYSPARAM,FALSE);
+  set_sysparam (thisAgent, EXPLAIN_SYSPARAM,false);
 
 /*
  * add_help("explain",help_on_explain);
@@ -74,7 +74,7 @@ void init_explain (agent* thisAgent) {
  *
  * explain_chunk_list = NULL;
  * explain_backtrace_list = NULL;
- * thisAgent->explain_flag = FALSE;
+ * thisAgent->explain_flag = false;
  */
 }
 
@@ -413,7 +413,7 @@ backtrace_str *prod;
   target = prod->trace_cond; 
   count = 0;
 
-  while (prod->result == FALSE && count < 50 && match != NULL) {
+  while (prod->result == false && count < 50 && match != NULL) {
     prod = prod_list; 
     match = NULL; 
     count++;
@@ -442,7 +442,7 @@ backtrace_str *prod;
     }
   }
 
-  if (prod->result == TRUE)
+  if (prod->result == true)
     print(thisAgent, "A result to be generated.\n");
   if (count >= 50)
     print(thisAgent, "EXPLAIN: Exceeded 50 productions traced through, so terminating now.\n");
@@ -488,9 +488,9 @@ int i;
   /* First print out the production in "normal" form */
 
   print (thisAgent, "(sp %s\n  ", chunk->name);
-  print_condition_list (thisAgent, chunk->conds, 2, FALSE);
+  print_condition_list (thisAgent, chunk->conds, 2, false);
   print (thisAgent, "\n-->\n   ");
-  print_action_list (thisAgent, chunk->actions, 3, FALSE);
+  print_action_list (thisAgent, chunk->actions, 3, false);
   print(thisAgent, ")\n\n");
 
   /* Then list each condition and the associated "ground" WME */

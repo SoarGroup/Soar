@@ -30,7 +30,7 @@
         :o-support or :i-support.  This field is either UNDECLARED_SUPPORT,
         DECLARED_O_SUPPORT, or DECLARED_I_SUPPORT.
 
-      trace_firings:  TRUE iff a (pwatch) has been set on this production.
+      trace_firings:  true iff a (pwatch) has been set on this production.
 
       p_node:  If the production is currently in the Rete, this points to
         the corresponding p_node in the Rete.  If the production is not in
@@ -165,8 +165,8 @@ extern void unmark_variables_and_free_list (agent* thisAgent, ::list *var_list);
 extern test copy_test (agent* thisAgent, test t);
 
 /* --- Same as copy_test(), only it doesn't include goal or impasse tests
-   in the new copy.  The caller should initialize the two flags to FALSE
-   before calling this routine; it sets them to TRUE if it finds a goal
+   in the new copy.  The caller should initialize the two flags to false
+   before calling this routine; it sets them to true if it finds a goal
    or impasse test. --- */
 extern test copy_test_removing_goal_impasse_tests
   (agent* thisAgent, test t, bool*removed_goal, bool*removed_impasse);
@@ -183,7 +183,7 @@ extern void add_new_test_to_test (agent* thisAgent, test *t, test add_me);
    included in the first one. --- */
 extern void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
 
-/* --- Returns TRUE iff the two tests are identical.
+/* --- Returns true iff the two tests are identical.
    If neg is true, ignores order of members in conjunctive tests
    and assumes variables are all equal. --- */
 extern bool tests_are_equal (test t1, test t2, bool neg);
@@ -191,13 +191,13 @@ extern bool tests_are_equal (test t1, test t2, bool neg);
 /* --- Returns a hash value for the given test. --- */
 extern uint32_t hash_test (agent* thisAgent, test t);
 
-/* --- Returns TRUE iff the test contains an equality test for the given
-   symbol.  If sym==NIL, returns TRUE iff the test contains any equality
+/* --- Returns true iff the test contains an equality test for the given
+   symbol.  If sym==NIL, returns true iff the test contains any equality
    test. --- */
 extern bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
 
 /* --- Looks for goal or impasse tests (as directed by the two flag
-   parameters) in the given test, and returns TRUE if one is found. --- */
+   parameters) in the given test, and returns true if one is found. --- */
 extern bool test_includes_goal_or_impasse_id_test (test t,
                                                    bool look_for_goal,
                                                    bool look_for_impasse);
@@ -226,7 +226,7 @@ extern condition *copy_condition (agent* thisAgent, condition *cond);
 extern void copy_condition_list (agent* thisAgent, condition *top_cond, condition **dest_top,
                                  condition **dest_bottom);
 
-/* --- Returns TRUE iff the two conditions are identical. --- */
+/* --- Returns true iff the two conditions are identical. --- */
 extern bool conditions_are_equal (condition *c1, condition *c2);
 
 /* --- Returns a hash value for the given condition. --- */

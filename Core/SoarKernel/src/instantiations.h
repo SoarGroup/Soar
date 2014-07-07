@@ -58,7 +58,7 @@
         Intuitively, a justification is unreliable if its creation is
         not guaranteed by the state of production and working memory
 
-      in_ms:  TRUE iff this instantiation is still in the match set (i.e.,
+      in_ms:  true iff this instantiation is still in the match set (i.e.,
         Rete-supported).
       backtrace_number:  used by the chunker to avoid backtracing through
         the same instantiation twice during the building of the same chunk.
@@ -68,7 +68,7 @@
         instantiation, there's no point in redoing the work for a second wme
         from the same instantiation since the gds will be the same.  By
         testing this flag, we avoid duplicating this work.  The value is set
-        to FALSE whenever an instantiation is created.
+        to false whenever an instantiation is created.
 
    Reference counts on instantiations:
       +1 if it's in the match set
@@ -99,7 +99,7 @@ typedef struct instantiation_struct {
   Symbol *match_goal;                   /* symbol, or NIL if none */
   goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
   bool reliable;
-  bool in_ms;  /* TRUE iff this inst. is still in the match set */
+  bool in_ms;  /* true iff this inst. is still in the match set */
   tc_number backtrace_number;
   bool GDS_evaluated_already;
 } instantiation;

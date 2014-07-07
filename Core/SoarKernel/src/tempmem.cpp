@@ -81,11 +81,11 @@ slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr)
     */
    if ((id->id->isa_goal) && (attr == thisAgent->operator_symbol))
    {
-      s->isa_context_slot = TRUE;
+      s->isa_context_slot = true;
    }
    else
    {
-      s->isa_context_slot = FALSE;
+      s->isa_context_slot = false;
    }
 
    s->changed = NIL;
@@ -107,7 +107,7 @@ slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr)
    s->impasse_type = NONE_IMPASSE_TYPE;
    s->impasse_id = NIL;
    s->acceptable_preference_wmes = NIL;
-   s->marked_for_possible_removal = FALSE;
+   s->marked_for_possible_removal = false;
 
    s->wma_val_references = NIL;
 
@@ -154,7 +154,7 @@ void mark_slot_as_changed (agent* thisAgent, slot *s) {
 
 void mark_slot_for_possible_removal (agent* thisAgent, slot *s) {
   if (s->marked_for_possible_removal) return;
-  s->marked_for_possible_removal = TRUE;
+  s->marked_for_possible_removal = true;
   push (thisAgent, s, thisAgent->slots_for_possible_removal);
 }
 
@@ -190,7 +190,7 @@ void remove_garbage_slots (agent* thisAgent) {
 
     if (s->wmes || s->all_preferences) {
       /* --- don't deallocate it if it still has any wmes or preferences --- */
-      s->marked_for_possible_removal = FALSE;
+      s->marked_for_possible_removal = false;
       continue;
     }
 

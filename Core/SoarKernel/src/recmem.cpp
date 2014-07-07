@@ -329,7 +329,7 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 
 	/* --- build up a list of the argument values --- */
 	prev_c = NIL;
-	nil_arg_found = FALSE;
+	nil_arg_found = false;
 	arglist = NIL; /* unnecessary, but gcc -Wall warns without it */
 	for (arg_cons = fl->rest; arg_cons != NIL; arg_cons = arg_cons->rest) {
 		allocate_cons(thisAgent, &c);
@@ -337,7 +337,7 @@ Symbol *instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 				static_cast<char *>(arg_cons->first), new_id_level,
 				new_id_letter, tok, w);
 		if (!c->first)
-			nil_arg_found = TRUE;
+			nil_arg_found = true;
 		if (prev_c)
 			prev_c->rest = c;
 		else
@@ -468,7 +468,7 @@ preference *execute_action(agent* thisAgent, action *a,
  - for each preference_generated, adds that pref to the list of all
  pref's for the match goal
  - fills in backtrace_number;
- - if "need_to_do_support_calculations" is TRUE, calculates o-support
+ - if "need_to_do_support_calculations" is true, calculates o-support
  for preferences_generated;
  ----------------------------------------------------------------------- */
 
@@ -530,7 +530,7 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
 		for (p = inst->preferences_generated; p != NIL; p = p->inst_next) {
 			insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p,
 					all_of_goal_next, all_of_goal_prev);
-			p->on_goal_list = TRUE;
+			p->on_goal_list = true;
 		}
 	}
 	inst->backtrace_number = 0;
@@ -560,17 +560,17 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation *inst,
 			saved_flags = destructively_reverse_list(saved_flags);
 			dougs_calculate_support_for_instantiation_preferences(thisAgent,
 					inst);
-			difference_found = FALSE;
+			difference_found = false;
 			for (pref = inst->preferences_generated; pref != NIL;
 					pref = pref->inst_next) {
 				cons *c;
 				bool b;
 				c = saved_flags;
 				saved_flags = c->rest;
-				b = (c->first ? TRUE : FALSE);
+				b = (c->first ? true : false);
 				free_cons(thisAgent, c);
 				if (pref->o_supported != b)
-					difference_found = TRUE;
+					difference_found = true;
 				pref->o_supported = b;
 			}
 			if (difference_found) {
@@ -620,7 +620,7 @@ void init_firer(agent* thisAgent) {
 			sizeof(instantiation), "instantiation");
 }
 
-/* --- Macro returning TRUE iff we're supposed to trace firings for the
+/* --- Macro returning true iff we're supposed to trace firings for the
  given instantiation, which should have the "prod" field filled in. --- */
 #ifdef USE_MACROS
 #define trace_firings_of_inst(thisAgent, inst) \
@@ -671,16 +671,16 @@ void create_instantiation(agent* thisAgent, production *prod,
 	inst->rete_token = tok;
 	inst->rete_wme = w;
 	inst->reliable = true;
-	inst->in_ms = TRUE;
+	inst->in_ms = true;
 
 	/* REW: begin   09.15.96 */
 	/*  We want to initialize the GDS_evaluated_already flag
 	 *  when a new instantiation is created.
 	 */
 
-	inst->GDS_evaluated_already = FALSE;
+	inst->GDS_evaluated_already = false;
 
-	if (thisAgent->soar_verbose_flag == TRUE) {
+	if (thisAgent->soar_verbose_flag == true) {
 		print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
 				inst->prod->name);
 		char buf[256];
@@ -740,7 +740,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 
 	/* --- execute the RHS actions, collect the results --- */
 	inst->preferences_generated = NIL;
-	need_to_do_support_calculations = FALSE;
+	need_to_do_support_calculations = false;
 	for (a = prod->action_list; a != NIL; a = a->next) {
 
 		if (prod->type != TEMPLATE_PRODUCTION_TYPE) {
@@ -777,13 +777,13 @@ void create_instantiation(agent* thisAgent, production *prod,
 			insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,
 					inst_prev);
 			if (inst->prod->declared_support == DECLARED_O_SUPPORT)
-				pref->o_supported = TRUE;
+				pref->o_supported = true;
 			else if (inst->prod->declared_support == DECLARED_I_SUPPORT) {
-				pref->o_supported = FALSE;
+				pref->o_supported = false;
 			} else {
 
 				pref->o_supported =
-						(thisAgent->FIRING_TYPE == PE_PRODS) ? TRUE : FALSE;
+						(thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
 				/* REW: end   09.15.96 */
 			}
 
@@ -853,11 +853,11 @@ void create_instantiation(agent* thisAgent, production *prod,
 bool shouldCreateInstantiation(agent* thisAgent, production *prod,
 		struct token_struct *tok, wme *w) {
 	if (thisAgent->active_level == thisAgent->highest_active_level) {
-		return TRUE;
+		return true;
 	}
 
 	if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
-		return TRUE;
+		return true;
 	}
 
 	// Scan RHS identifiers for their levels, don't fire those at or higher than the change level
@@ -894,10 +894,10 @@ bool shouldCreateInstantiation(agent* thisAgent, production *prod,
 						" level %d is on or higher (lower int) than change level %d\n",
 						sym->id->level, thisAgent->change_level);
 			}
-			return FALSE;
+			return false;
 		}
 	}
-	return TRUE;
+	return true;
 }
 /* -----------------------------------------------------------------------
  Deallocate Instantiation
@@ -1103,7 +1103,7 @@ void retract_instantiation(agent* thisAgent, instantiation *inst) {
 	soar_invoke_callbacks(thisAgent, RETRACTION_CALLBACK,
 			static_cast<soar_call_data>(inst));
 
-	retracted_a_preference = FALSE;
+	retracted_a_preference = false;
 
 	trace_it = trace_firings_of_inst(thisAgent, inst);
 
@@ -1134,7 +1134,7 @@ void retract_instantiation(agent* thisAgent, instantiation *inst) {
 			}
 
 			remove_preference_from_tm(thisAgent, pref);
-			retracted_a_preference = TRUE;
+			retracted_a_preference = true;
 		}
 		pref = next;
 	}
@@ -1151,7 +1151,7 @@ void retract_instantiation(agent* thisAgent, instantiation *inst) {
 	production* prod = inst->prod;
 	if (prod->type == JUSTIFICATION_PRODUCTION_TYPE
 			&& prod->reference_count > 1) {
-		excise_production(thisAgent, prod, FALSE);
+		excise_production(thisAgent, prod, false);
 	} else if (prod->type == CHUNK_PRODUCTION_TYPE) {
 		rl_param_container::apoptosis_choices apoptosis =
 				thisAgent->rl_params->apoptosis->get_value();
@@ -1173,7 +1173,7 @@ void retract_instantiation(agent* thisAgent, instantiation *inst) {
 	}
 
 	/* --- mark as no longer in MS, and possibly deallocate  --- */
-	inst->in_ms = FALSE;
+	inst->in_ms = false;
 	possibly_deallocate_instantiation(thisAgent, inst);
 }
 
@@ -1200,7 +1200,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo) {
 	o_rejects = NIL;
 
 	/* REW: begin 09.15.96 */
-	if (thisAgent->soar_verbose_flag == TRUE) {
+	if (thisAgent->soar_verbose_flag == true) {
 		printf("\n   in assert_new_preferences:");
 		xml_generate_verbose(thisAgent, "in assert_new_preferences:");
 	}
@@ -1261,7 +1261,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo) {
 			insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
 
 		/* REW: begin 09.15.96 */
-		if (thisAgent->soar_verbose_flag == TRUE) {
+		if (thisAgent->soar_verbose_flag == true) {
 			print_with_symbols(thisAgent,
 					"\n      asserting instantiation: %y\n", inst->prod->name);
 			char buf[256];
@@ -1407,17 +1407,17 @@ void do_preference_phase(agent* thisAgent) {
 
 		thisAgent->newly_created_instantiations = NIL;
 
-		bool assertionsExist = FALSE;
+		bool assertionsExist = false;
 		production *prod = 0;
 		struct token_struct *tok = 0;
 		wme *w = 0;
-		bool once = TRUE;
+		bool once = true;
 		while (postpone_assertion(thisAgent, &prod, &tok, &w)) {
-			assertionsExist = TRUE;
+			assertionsExist = true;
 
 			if (thisAgent->max_chunks_reached) {
 				consume_last_postponed_assertion(thisAgent);
-				thisAgent->system_halted = TRUE;
+				thisAgent->system_halted = true;
 				soar_invoke_callbacks(thisAgent, AFTER_HALT_SOAR_CALLBACK, 0);
 				return;
 			}
@@ -1430,7 +1430,7 @@ void do_preference_phase(agent* thisAgent) {
 			}
 
 			if (shouldCreateInstantiation(thisAgent, prod, tok, w)) {
-				once = FALSE;
+				once = false;
 				consume_last_postponed_assertion(thisAgent);
 				create_instantiation(thisAgent, prod, tok, w);
 			}
@@ -1469,11 +1469,11 @@ void do_preference_phase(agent* thisAgent) {
 
 		if (thisAgent->current_phase == APPLY_PHASE) {
 			thisAgent->active_goal = highest_active_goal_apply(thisAgent,
-					thisAgent->active_goal->id->lower_goal, TRUE);
+					thisAgent->active_goal->id->lower_goal, true);
 		} else {
 			assert(thisAgent->current_phase == PROPOSE_PHASE);
 			thisAgent->active_goal = highest_active_goal_propose(thisAgent,
-					thisAgent->active_goal->id->lower_goal, TRUE);
+					thisAgent->active_goal->id->lower_goal, true);
 		}
 
 		if (thisAgent->active_goal != NIL) {
