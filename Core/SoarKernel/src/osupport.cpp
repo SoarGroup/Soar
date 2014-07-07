@@ -300,7 +300,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 	    for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next) {
 	      if ((act->type == MAKE_ACTION)  &&
 	          (rhs_value_is_symbol(act->attr)) &&
-	          (strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50), "operator") == NIL) &&
+	          (strcmp(rhs_value_to_string (act->attr, action_attr, 50), "operator") == NIL) &&
 	          (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
 	        if (rhs_value_is_reteloc(act->id) && get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up( act->id ),
 	            rhs_value_to_reteloc_field_num( act->id ),

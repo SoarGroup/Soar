@@ -1518,8 +1518,8 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
 
       /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
                correctly before we print */
-      rhs_value_to_string(thisAgent, attr, szPrintAttr, 256);
-      rhs_value_to_string(thisAgent, value, szPrintValue, 256);
+      rhs_value_to_string(attr, szPrintAttr, 256);
+      rhs_value_to_string(value, szPrintValue, 256);
       symbol_to_string(thisAgent, id, true, szPrintId, 256);
       print(thisAgent, "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
@@ -1537,8 +1537,8 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
 
       /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
                correctly before we print */
-      rhs_value_to_string(thisAgent, attr, szPrintAttr, 256);
-      rhs_value_to_string(thisAgent, value, szPrintValue, 256);
+      rhs_value_to_string(attr, szPrintAttr, 256);
+      rhs_value_to_string(value, szPrintValue, 256);
       symbol_to_string(thisAgent, id, true, szPrintId, 256);
       print(thisAgent, "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
@@ -1621,7 +1621,7 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
      return NIL;
 
   /* JC Added, we will need the attribute as a string, so we get it here */
-  rhs_value_to_string(thisAgent, attr, szAttribute, 256);
+  rhs_value_to_string(attr, szAttribute, 256);
 
   all_actions = NIL;
 
@@ -1669,7 +1669,7 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
        return NIL;
 
     /* JC Added. We need to get the new attribute's name */
-    rhs_value_to_string(thisAgent, attr, szAttribute, 256);
+    rhs_value_to_string(attr, szAttribute, 256);
   }
   /* end of while (thisAgent->lexeme.type == PERIOD_LEXEME */
   /* end KJC 10/15/98 */

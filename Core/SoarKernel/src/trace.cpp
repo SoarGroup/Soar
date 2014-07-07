@@ -1492,8 +1492,7 @@ void print_object_trace_using_provided_format_string (agent* thisAgent,
 
   tparams = saved_tparams;
 
-  if(thisAgent->printer_output_column != 1)
-    print_string (thisAgent, "\n");
+  start_fresh_line(thisAgent);
 
   print_string (thisAgent, text_of_growable_string(gs));
   free_growable_string (thisAgent, gs);

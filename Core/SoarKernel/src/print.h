@@ -76,7 +76,8 @@ extern void start_log_file (agent* thisAgent, char *filename, bool append);
 extern void stop_log_file (agent* thisAgent);
 extern void print_string_to_log_file_only (agent* thisAgent, char *string);
 
-extern int get_printer_output_column (agent* thisAgent);
+extern void start_fresh_line (agent* thisAgent);
+extern int  get_printer_output_column (agent* thisAgent);
 extern void tell_printer_that_output_column_has_been_reset (agent* thisAgent);
 
 extern void start_redirection_to_file (agent* thisAgent, FILE *already_opened_file);
@@ -87,8 +88,8 @@ extern void print_phase  (agent* thisAgent, const char *s, bool end_phase);
 
 extern void print (agent* thisAgent, const char *format, ... );
 extern void print_with_symbols (agent* thisAgent, const char *format, ...);
-extern void snprintf_with_symbols (agent* thisAgent, char* dest, size_t count, const char *format, ...);
 extern void print_spaces (agent* thisAgent, int n);
+extern void snprintf_with_symbols (agent* thisAgent, char* dest, size_t count, const char *format, ...);
 
 extern void filtered_print_wme_remove(agent* thisAgent, wme *w);
 extern void filtered_print_wme_add(agent* thisAgent, wme *w);
@@ -125,10 +126,14 @@ extern void filtered_print_wme_add(agent* thisAgent, wme *w);
 ----------------------------------------------------------------------- */
 
 extern char *string_to_escaped_string (char *s, char first_and_last_char, char *dest);
-extern char const* symbol_to_typeString (agent* thisAgent, Symbol *sym);
+extern char *rhs_value_to_string (rhs_value rv, char *dest=NULL, size_t dest_size=0);
+
+inline char bool_to_char (bool b)  { if (b) return 'T'; else return 'F';}
+
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, bool rereadable, char *dest, size_t dest_size);
-extern char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size);
-extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size);
+extern char const* symbol_to_typeString (agent* thisAgent, Symbol *sym);
+
+extern char *test_to_string (test t, char *dest=NULL, size_t dest_size=0, bool show_equality=false);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production
@@ -146,6 +151,9 @@ extern char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, si
 
    Print_production() prints a given production, optionally using internal
    format.
+
+   print_test() print a verbose representation of a test for use during
+   debugging.  test_to_string() can be used to print tests more generally.
 ----------------------------------------------------------------------- */
 
 extern void print_condition_list (agent* thisAgent, condition *conds, int indent, bool internal);
@@ -174,7 +182,7 @@ extern void print_production (agent* thisAgent, production *p, bool internal);
 
 extern void print_condition (agent* thisAgent, condition *cond);
 extern void print_action (agent* thisAgent, action *a);
-extern char preference_type_indicator (agent* thisAgent, byte type);
+extern char preference_to_char (byte type);
 extern void print_preference (agent* thisAgent, preference *pref);
 extern void print_wme (agent* thisAgent, wme *w);
 extern void print_wme_without_timetag (agent* thisAgent, wme *w);
@@ -186,7 +194,7 @@ extern void print_instantiation_with_wmes (agent* thisAgent,
 
 extern void print_list_of_conditions(agent* thisAgent, condition *cond);
 
-extern void print_trace (agent* thisAgent, int64_t sysParamIndex, const char *format, ...);
+extern void print_sysparam_trace (agent* thisAgent, int64_t sysParamIndex, const char *format, ...);
 
 #ifdef __cplusplus
 //}

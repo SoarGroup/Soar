@@ -711,8 +711,7 @@ void create_instantiation(agent* thisAgent, production *prod,
 	/* --- print trace info --- */
 	trace_it = trace_firings_of_inst(thisAgent, inst);
 	if (trace_it) {
-		if (get_printer_output_column(thisAgent) != 1)
-			print(thisAgent, "\n"); /* AGR 617/634 */
+        start_fresh_line(thisAgent);
 		print(thisAgent, "Firing ");
 		print_instantiation_with_wmes(thisAgent, inst,
 				static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
@@ -1116,8 +1115,7 @@ void retract_instantiation(agent* thisAgent, instantiation *inst) {
 
 			if (trace_it) {
 				if (!retracted_a_preference) {
-					if (get_printer_output_column(thisAgent) != 1)
-						print(thisAgent, "\n"); /* AGR 617/634 */
+			        start_fresh_line(thisAgent);
 					print(thisAgent, "Retracting ");
 					print_instantiation_with_wmes(thisAgent, inst,
 							static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),

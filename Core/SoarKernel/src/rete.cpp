@@ -5879,7 +5879,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 		for (act = node->b.p.prod->action_list; act != NIL ; act = act->next) {
 			if ((act->type == MAKE_ACTION) &&
 				(rhs_value_is_symbol(act->attr))) {
-					if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
+					if ((strcmp(rhs_value_to_string (act->attr, action_attr, 50),
 						"operator") == NIL) &&
 						(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE) &&
 						(get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ),
@@ -8274,118 +8274,6 @@ bool xml_pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
   return tests_are_equal (thisAgent->id_test_to_match, cond->data.tests.id_test, false);
 }
 
-#if 0
-// Not currently using
-// xml_test is based on test_to_string.
-void xml_test (agent* thisAgent, char const* pTag, test t) {
-	char *dest = 0 ;
-	size_t dest_size = 0 ;
-	cons *c;
-  complex_test *ct;
-  char *ch;
-
-  if (test_is_blank_test(t)) {
-    //if (!dest) dest=thisAgent->printed_output_string;
-    xml_att_val(thisAgent, pTag, "[BLANK TEST]") ;	// Using tag as attribute name
-    //strncpy (dest, "[BLANK TEST]", dest_size);  /* this should never get executed */
-	//dest[dest_size - 1] = 0; /* ensure null termination */
-    //return dest;
-	return ;
-  }
-
-  if (test_is_blank_or_equality_test(t)) {
-    xml_att_val(thisAgent, pTag, referent_of_equality_test(t)) ;	// Using tag as attribute name
-	return ;
-    //return symbol_to_string (thisAgent, referent_of_equality_test(t), true, dest, dest_size);
-  }
-
-  if (!dest) {
- 	dest=thisAgent->printed_output_string;
-	dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
-  }
-  ch = dest;
-  ct = complex_test_from_test(t);
-
-  switch (ct->type) {
-  case NOT_EQUAL_TEST:
-    strncpy (ch, "<> ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch)
-		ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case LESS_TEST:
-    strncpy (ch, "< ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case GREATER_TEST:
-    strncpy (ch, "> ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case LESS_OR_EQUAL_TEST:
-    strncpy (ch, "<= ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case GREATER_OR_EQUAL_TEST:
-    strncpy (ch, ">= ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case SAME_TYPE_TEST:
-    strncpy (ch, "<=> ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case DISJUNCTION_TEST:
-    // BUGBUG: Need to think this through more carefully
-    xml_att_val(thisAgent, pTag, "BUGBUG--Adding disjunction in XML--not done yet") ;
-    strncpy (ch, "<< ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
-      symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), true, ch, dest_size - (ch - dest));
-	  while (*ch) ch++;
-      *(ch++) = ' ';
-    }
-    strncpy (ch, ">>", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-    break;
-  case CONJUNCTIVE_TEST:
-    // BUGBUG: Need to think this through more carefully
-    xml_att_val(thisAgent, pTag, "BUGBUG--Adding conjunction in XML--not done yet") ;
-    strncpy (ch, "{ ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
-      xml_test (thisAgent, pTag, static_cast<char *>(c->first)) ; //, ch, dest_size - (ch - dest));
-	  while (*ch) ch++;
-      *(ch++) = ' ';
-    }
-    strncpy (ch, "}", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-    break;
-  case GOAL_ID_TEST:
-    strncpy (dest, "[GOAL ID TEST]", dest_size - (ch - dest)); /* this should never get executed */
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-    break;
-  case IMPASSE_ID_TEST:
-    strncpy (dest, "[IMPASSE ID TEST]", dest_size - (ch - dest)); /* this should never get executed */
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-    break;
-  }
-
-  xml_att_val(thisAgent, pTag, dest) ;
-  return ;
-}
-#endif //0
 
 #define XML_CONDITION_LIST_TEMP_SIZE 10000
 void xml_condition_list (agent* thisAgent, condition *conds,
@@ -8489,9 +8377,9 @@ void xml_condition_list (agent* thisAgent, condition *conds,
 			 xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
 		  }
 
-		  //print_string (thisAgent, test_to_string (thisAgent, id_test, NULL, 0));
+		  //print_string (thisAgent, test_to_string(id_test, NULL, 0));
 		  //xml_test(thisAgent, kConditionId, id_test) ;
-		  xml_att_val(thisAgent, kConditionId, test_to_string(thisAgent, id_test, NULL, 0)) ;
+		  xml_att_val(thisAgent, kConditionId, test_to_string(id_test, NULL, 0)) ;
 		  deallocate_test (thisAgent, thisAgent->id_test_to_match);
 		  deallocate_test (thisAgent, id_test);
 
@@ -8514,7 +8402,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
 
             //strncat (ch, "^", XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
 			while (*ch) ch++;
-            test_to_string (thisAgent, c->data.tests.attr_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+            test_to_string(c->data.tests.attr_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
 			while (*ch) ch++;
 
 			*ch = 0 ; // Terminate
@@ -8525,7 +8413,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
             if (! test_is_blank_test(c->data.tests.value_test))
             {
                *(ch++) = ' ';
-               test_to_string (thisAgent, c->data.tests.value_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+               test_to_string(c->data.tests.value_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
 			   while (*ch) ch++;
                if (c->test_for_acceptable_preference)
                {
@@ -8533,7 +8421,7 @@ void xml_condition_list (agent* thisAgent, condition *conds,
                }
             }
             *ch = 0;
-            if (thisAgent->printer_output_column + (ch - temp) >= COLUMNS_PER_LINE)
+            if (get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
             {
                //print_string (thisAgent, "\n");
                //print_spaces (thisAgent, indent+6);

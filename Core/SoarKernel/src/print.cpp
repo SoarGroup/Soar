@@ -19,7 +19,7 @@
                  Printing Utility Routines for Soar 6
    ================================================================= */
 
-#include <stdlib.h>
+#include "gdatastructs.h"
 
 #include "print.h"
 #include "kernel.h"
@@ -27,15 +27,18 @@
 #include "symtab.h"
 #include "init_soar.h"
 #include "wmem.h"
-#include "gdatastructs.h"
+#include "debug.h"
+
 #include "rete.h"
 #include "rhsfun.h"
 #include "production.h"
 #include "instantiations.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
-#include "debug.h"
 #include "output_manager.h"
+#include "prefmem.h"
+
+#include <stdlib.h>
 #include <stdarg.h>
 
 using namespace soar_TraceNames;
@@ -58,11 +61,15 @@ using namespace soar_TraceNames;
 ------------------------------------------------------------------- */
 
 int get_printer_output_column (agent* thisAgent) {
-  return thisAgent->printer_output_column;
+  return Output_Manager::Get_OM().get_printer_output_column(thisAgent);
+}
+
+void start_fresh_line (agent* thisAgent) {
+  Output_Manager::Get_OM().start_fresh_line(thisAgent);
 }
 
 void tell_printer_that_output_column_has_been_reset (agent* thisAgent) {
-  thisAgent->printer_output_column = 1;
+    Output_Manager::Get_OM().set_printer_output_column(thisAgent, 1);
 }
 
 
@@ -75,24 +82,8 @@ void tell_printer_that_output_column_has_been_reset (agent* thisAgent) {
 
 
 
-void print_string (agent* thisAgent, const char *s) {
-	const char *ch;
-
-/* MToDo | This shouldn't really depend on debug_utilities anymore.  It should
- *         always go through the OM */
-
-#ifndef SOAR_DEBUG_UTILITIES
-  Output_Manager::Get_OM().print_trace_agent(thisAgent, s);
-#else
-	for (ch=s; *ch!=0; ch++) {
-		if (*ch=='\n')
-			thisAgent->printer_output_column = 1;
-		else
-			thisAgent->printer_output_column++;
-	}
-
-		soar_invoke_callbacks(thisAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(s)));
-#endif
+inline void print_string (agent* thisAgent, const char *s) {
+  Output_Manager::Get_OM().print_agent(thisAgent, s);
 }
 
 /* ---------------------------------------------------------------
@@ -128,7 +119,7 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
 			the difference between the address of ch and
 			the address of the beginning of the buffer
 			*/
-      symbol_to_string (thisAgent, va_arg(args, Symbol *), true, ch, count - (ch - dest));
+      (va_arg(args, Symbol *))->to_string(true, ch, count - (ch - dest));
       while (*ch) ch++;
     } else {
       *(ch++) = '%';
@@ -182,11 +173,6 @@ void print_spaces (agent* thisAgent, int n) {
    For example, input 'ab"c' with first/last character '"' yields
    '"ab\"c"'.  This is used for printing quoted strings and for printing
    symbols using |vbar| notation.
-
-   Symbol_to_string() converts a symbol to a string.  The "rereadable"
-   parameter indicates whether a rereadable representation is desired.
-   Normally symbols are printed rereadably, but for (write) and Text I/O,
-   we don't want this.
 
    Test_to_string() takes a test and produces a string representation.
    Rhs_value_to_string() takes an rhs_value and produces a string
@@ -242,7 +228,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 
   case IDENTIFIER_SYMBOL_TYPE:
 	if (!dest) {
-	  dest=thisAgent->printed_output_string;
+	  dest = Output_Manager::Get_OM().get_printed_output_string();
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
 	if (sym->id->smem_lti == NIL) {
@@ -258,7 +244,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 
   case INT_CONSTANT_SYMBOL_TYPE:
 	if (!dest) {
-	  dest=thisAgent->printed_output_string;
+	  dest = Output_Manager::Get_OM().get_printed_output_string();
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
     SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->ic->value));
@@ -267,7 +253,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 
   case FLOAT_CONSTANT_SYMBOL_TYPE:
 	if (!dest) {
-	  dest=thisAgent->printed_output_string;
+	  dest = Output_Manager::Get_OM().get_printed_output_string();
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
     SNPRINTF (dest, dest_size, "%#.16g", sym->fc->value);
@@ -326,107 +312,121 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
   return NIL; /* unreachable, but without it, gcc -Wall warns here */
 }
 
+char *test_to_string (test t, char *dest, size_t dest_size, bool show_equality) {
 
 
+    cons *c;
+    complex_test *ct;
+    char *ch;
 
-char *test_to_string (agent* thisAgent, test t, char *dest, size_t dest_size) {
-  cons *c;
-  complex_test *ct;
-  char *ch;
+  if (!dest) {
+    dest = Output_Manager::Get_OM().get_printed_output_string();
+    dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+  }
+  ch = dest;
 
-  if (test_is_blank_test(t)) {
-    if (!dest) dest=thisAgent->printed_output_string;
+  if (!t) {
     strncpy (dest, "[BLANK TEST]", dest_size);  /* this should never get executed */
-	dest[dest_size - 1] = 0; /* ensure null termination */
+    dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
   }
 
   if (test_is_blank_or_equality_test(t)) {
-    return symbol_to_string (thisAgent, referent_of_equality_test(t), true, dest, dest_size);
+    return referent_of_equality_test(t)->to_string(true, dest, dest_size);
   }
 
-  if (!dest) {
- 	dest=thisAgent->printed_output_string;
-	dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
-  }
-  ch = dest;
   ct = complex_test_from_test(t);
 
   switch (ct->type) {
-  case NOT_EQUAL_TEST:
-    strncpy (ch, "<> ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch)
-		ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case LESS_TEST:
-    strncpy (ch, "< ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case GREATER_TEST:
-    strncpy (ch, "> ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case LESS_OR_EQUAL_TEST:
-    strncpy (ch, "<= ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case GREATER_OR_EQUAL_TEST:
-    strncpy (ch, ">= ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case SAME_TYPE_TEST:
-    strncpy (ch, "<=> ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    symbol_to_string (thisAgent, ct->data.referent, true, ch, dest_size - (ch - dest));
-    break;
-  case DISJUNCTION_TEST:
-    strncpy (ch, "<< ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
-      symbol_to_string (thisAgent, static_cast<symbol_struct *>(c->first), true, ch, dest_size - (ch - dest));
-	  while (*ch) ch++;
-      *(ch++) = ' ';
-    }
-    strncpy (ch, ">>", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-    break;
-  case CONJUNCTIVE_TEST:
-    strncpy (ch, "{ ", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-	while (*ch) ch++;
-    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
-      test_to_string (thisAgent, static_cast<char *>(c->first), ch, dest_size - (ch - dest));
-	  while (*ch) ch++;
-      *(ch++) = ' ';
-    }
-    strncpy (ch, "}", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-    break;
-  case GOAL_ID_TEST:
-    strncpy (dest, "[GOAL ID TEST]", dest_size - (ch - dest)); /* this should never get executed */
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-    break;
-  case IMPASSE_ID_TEST:
-    strncpy (dest, "[IMPASSE ID TEST]", dest_size - (ch - dest)); /* this should never get executed */
-    ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-    break;
+    case EQUALITY_TEST:
+      if (show_equality)
+      {
+        strncpy (ch, "= ", dest_size - (ch - dest));
+        ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+        while (*ch) ch++;
+        ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
+      } else {
+        return (ct->data.referent->to_string(true, dest, dest_size));
+      }
+      break;
+    case NOT_EQUAL_TEST:
+      strncpy (ch, "<> ", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      while (*ch)
+        ch++;
+      ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
+      break;
+    case LESS_TEST:
+      strncpy (ch, "< ", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      while (*ch) ch++;
+      ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
+      break;
+    case GREATER_TEST:
+      strncpy (ch, "> ", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      while (*ch) ch++;
+      ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
+      break;
+    case LESS_OR_EQUAL_TEST:
+      strncpy (ch, "<= ", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      while (*ch) ch++;
+      ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
+      break;
+    case GREATER_OR_EQUAL_TEST:
+      strncpy (ch, ">= ", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      while (*ch) ch++;
+      ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
+      break;
+    case SAME_TYPE_TEST:
+      strncpy (ch, "<=> ", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      while (*ch) ch++;
+      ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
+      break;
+    case DISJUNCTION_TEST:
+      strncpy (ch, "<< ", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      while (*ch) ch++;
+      for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
+        static_cast<symbol_struct *>(c->first)->to_string(true, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        *(ch++) = ' ';
+      }
+      strncpy (ch, ">>", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      break;
+    case CONJUNCTIVE_TEST:
+      strncpy (ch, "{ ", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      while (*ch) ch++;
+      for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
+        test_to_string (static_cast<char *>(c->first), ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        *(ch++) = ' ';
+      }
+      strncpy (ch, "}", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      break;
+    case GOAL_ID_TEST:
+      strncpy (dest, "[GOAL ID TEST]", dest_size - (ch - dest)); /* this should never get executed */
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      break;
+    case IMPASSE_ID_TEST:
+      strncpy (dest, "[IMPASSE ID TEST]", dest_size - (ch - dest)); /* this should never get executed */
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      break;
+    default:
+      strncpy (ch, "INVALID TEST!", dest_size - (ch - dest));
+      ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+      break;
   }
   return dest;
 }
 
-char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t dest_size) {
+char *rhs_value_to_string (rhs_value rv, char *dest, size_t dest_size) {
   cons *c;
   list *fl;
   rhs_function *rf;
@@ -436,18 +436,18 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
     char msg[BUFFER_MSG_SIZE];
     strncpy (msg, "Internal error: rhs_value_to_string called on reteloc.\n", BUFFER_MSG_SIZE);
     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error(thisAgent, msg);
+    abort_with_fatal_error_noagent(msg);
   }
 
   if (rhs_value_is_symbol(rv)) {
-    return symbol_to_string (thisAgent, rhs_value_to_symbol(rv), true, dest, dest_size);
+    return rhs_value_to_symbol(rv)->to_string(true, dest, dest_size);
   }
 
   fl = rhs_value_to_funcall_list(rv);
   rf = static_cast<rhs_function_struct *>(fl->first);
 
   if (!dest) {
- 	dest=thisAgent->printed_output_string;
+ 	dest=Output_Manager::Get_OM().get_printed_output_string();
 	dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
   }
   ch = dest;
@@ -463,7 +463,7 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
     strncpy (ch, "-", dest_size - (ch - dest));
     ch[dest_size - (ch - dest) - 1] = 0;
   } else {
-	symbol_to_string (thisAgent, rf->name, true, ch, dest_size - (ch - dest));
+	rf->name->to_string(true, ch, dest_size - (ch - dest));
   }
 
   while (*ch) ch++;
@@ -472,13 +472,38 @@ char *rhs_value_to_string (agent* thisAgent, rhs_value rv, char *dest, size_t de
 	ch[dest_size - (ch - dest) - 1] = 0;
 	while (*ch)
 		ch++;
-    rhs_value_to_string (thisAgent, static_cast<char *>(c->first), ch, dest_size - (ch - dest));
+    rhs_value_to_string (static_cast<char *>(c->first), ch, dest_size - (ch - dest));
 	while (*ch)
 		ch++;
   }
   strncpy (ch, ")", dest_size - (ch - dest));
   ch[dest_size - (ch - dest) - 1] = 0;
   return dest;
+}
+
+/* UITODO| Make this preference type to string.  Maybe move to preference struct? */
+char preference_to_char (byte type) {
+  switch (type) {
+  case ACCEPTABLE_PREFERENCE_TYPE: return '+';
+  case REQUIRE_PREFERENCE_TYPE: return '!';
+  case REJECT_PREFERENCE_TYPE: return '-';
+  case PROHIBIT_PREFERENCE_TYPE: return '~';
+  case NUMERIC_INDIFFERENT_PREFERENCE_TYPE: return '=';
+  case UNARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
+  case BINARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
+  case BEST_PREFERENCE_TYPE: return '>';
+  case BETTER_PREFERENCE_TYPE: return '>';
+  case WORST_PREFERENCE_TYPE: return '<';
+  case WORSE_PREFERENCE_TYPE: return '<';
+  default:
+    { char msg[BUFFER_MSG_SIZE];
+    strncpy(msg,
+       "print.c: Error: bad type passed to preference_type_indicator\n", BUFFER_MSG_SIZE);
+    msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+    abort_with_fatal_error_noagent(msg);
+    }
+  }
+  return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 /* ------------------------------------------------------------------
@@ -603,8 +628,8 @@ void print_condition_list (agent* thisAgent, condition *conds,
          xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
       }
 
-      print_string (thisAgent, test_to_string (thisAgent, id_test, NULL, 0));
-      xml_att_val(thisAgent, kConditionId, test_to_string (thisAgent, id_test, NULL, 0));
+      print_string(thisAgent, test_to_string (id_test, NULL, 0));
+      xml_att_val(thisAgent, kConditionId, test_to_string (id_test, NULL, 0));
       deallocate_test (thisAgent, thisAgent->id_test_to_match);
       deallocate_test (thisAgent, id_test);
 
@@ -630,12 +655,12 @@ void print_condition_list (agent* thisAgent, condition *conds,
 
             strncpy (ch, "^", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
             while (*ch) ch++;
-            test_to_string (thisAgent, c->data.tests.attr_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+            test_to_string (c->data.tests.attr_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
             while (*ch) ch++;
-            if (! test_is_blank_test(c->data.tests.value_test))
+            if (c->data.tests.value_test)
             {
                *(ch++) = ' ';
-               test_to_string (thisAgent, c->data.tests.value_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+               test_to_string (c->data.tests.value_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
                while (*ch) ch++;
                if (c->test_for_acceptable_preference)
                {
@@ -644,7 +669,7 @@ void print_condition_list (agent* thisAgent, condition *conds,
                }
             }
             *ch = 0;
-            if (thisAgent->printer_output_column + (ch - temp) >= COLUMNS_PER_LINE)
+            if (get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
             {
                print_string (thisAgent, "\n");
                print_spaces (thisAgent, indent+6);
@@ -720,8 +745,8 @@ void print_action_list (agent* thisAgent, action *actions,
     if (a->type==FUNCALL_ACTION) {
       free_with_pool (&thisAgent->dl_cons_pool, dc);
       xml_begin_tag(thisAgent, kTagAction);
-      print_string (thisAgent, rhs_value_to_string (thisAgent, a->value, NULL, 0));
-      xml_att_val(thisAgent, kAction, rhs_value_to_string (thisAgent, a->value, NULL, 0));
+      print_string(thisAgent, rhs_value_to_string (a->value, NULL, 0));
+      xml_att_val(thisAgent, kAction, rhs_value_to_string (a->value, NULL, 0));
       xml_end_tag(thisAgent, kTagAction);
       continue;
     }
@@ -754,20 +779,20 @@ void print_action_list (agent* thisAgent, action *actions,
 
         ch = temp;
         strncpy (ch, " ^", PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp)); while (*ch) ch++;
-        rhs_value_to_string (thisAgent, a->attr, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+        rhs_value_to_string (a->attr, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
 		while (*ch) ch++;
         *(ch++) = ' ';
-        rhs_value_to_string (thisAgent, a->value, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+        rhs_value_to_string (a->value, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
 		while (*ch) ch++;
         *(ch++) = ' ';
-        *(ch++) = preference_type_indicator (thisAgent, a->preference_type);
+        *(ch++) = preference_to_char (a->preference_type);
         if (preference_is_binary (a->preference_type)) {
           *(ch++) = ' ';
-          rhs_value_to_string (thisAgent, a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+          rhs_value_to_string (a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
 		  while (*ch) ch++;
         }
         *ch = 0;
-        if (thisAgent->printer_output_column + (ch - temp) >=
+        if (get_printer_output_column(thisAgent) + (ch - temp) >=
             COLUMNS_PER_LINE) {
           print_string (thisAgent, "\n");
           print_spaces (thisAgent, indent+6);
@@ -794,6 +819,7 @@ void print_production (agent* thisAgent, production *p, bool internal) {
   condition *top, *bottom;
   action *rhs;
 
+  Output_Manager::Get_OM().set_dprint_enabled(false);
   /*
   --- print "sp" and production name ---
   */
@@ -874,6 +900,7 @@ void print_production (agent* thisAgent, production *p, bool internal) {
   xml_end_tag(thisAgent, kTagProduction);
 
   deallocate_action_list (thisAgent, rhs);
+  Output_Manager::Get_OM().set_dprint_enabled(true);
 }
 
 /* ------------------------------------------------------------------
@@ -916,41 +943,17 @@ void print_action (agent* thisAgent, action *a) {
   a->next = old_next;
 }
 
-char preference_type_indicator (agent* thisAgent, byte type) {
-  switch (type) {
-  case ACCEPTABLE_PREFERENCE_TYPE: return '+';
-  case REQUIRE_PREFERENCE_TYPE: return '!';
-  case REJECT_PREFERENCE_TYPE: return '-';
-  case PROHIBIT_PREFERENCE_TYPE: return '~';
-  case NUMERIC_INDIFFERENT_PREFERENCE_TYPE: return '=';
-  case UNARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
-  case BINARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
-  case BEST_PREFERENCE_TYPE: return '>';
-  case BETTER_PREFERENCE_TYPE: return '>';
-  case WORST_PREFERENCE_TYPE: return '<';
-  case WORSE_PREFERENCE_TYPE: return '<';
-  default:
-    { char msg[BUFFER_MSG_SIZE];
-    strncpy(msg,
-	   "print.c: Error: bad type passed to preference_type_indicator\n", BUFFER_MSG_SIZE);
-    msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error(thisAgent, msg);
-    }
-  }
-  return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
 
 void print_preference (agent* thisAgent, preference *pref) {
-  char pref_type = preference_type_indicator (thisAgent, pref->type);
+  char pref_type = preference_to_char (pref->type);
 
   print_with_symbols (thisAgent, "(%y ^%y %y ", pref->id, pref->attr, pref->value);
   print (thisAgent, "%c", pref_type);
   if (preference_is_binary(pref->type)) {
     print_with_symbols (thisAgent, " %y", pref->referent);
   }
-  if (pref->o_supported) print_string (thisAgent, "  :O ");
-  print_string (thisAgent, ")");
-  print (thisAgent, "\n");
+  if (pref->o_supported) print(thisAgent, "  :O ");
+  print_string(thisAgent, ")\n");
 
   // <preference id="s1" attr="foo" value="123" pref_type=">"></preference>
   xml_begin_tag(thisAgent, kTagPreference);
@@ -972,7 +975,6 @@ void print_preference (agent* thisAgent, preference *pref) {
   xml_end_tag(thisAgent, kTagPreference);
 
 }
-//#ifdef USE_TCL
 
 /* kjh(CUSP-B2) begin */
 
@@ -998,9 +1000,6 @@ void filtered_print_wme_remove(agent* thisAgent, wme *w)
 	xml_end_tag(thisAgent, kTagWMERemove);
   }
 }
-//#endif /* USE_TCL */
-
-/* kjh(CUSP-B2) end */
 
 void print_wme (agent* thisAgent, wme *w) {
   print (thisAgent, "(%lu: ", w->timetag);
@@ -1029,14 +1028,12 @@ void print_wme_without_timetag (agent* thisAgent, wme *w) {
   xml_object( thisAgent, w, XML_WME_NO_TIMETAG );
 }
 
-//#ifdef USE_TCL
 void print_wme_for_tcl (agent* thisAgent, wme *w)
 {
   print (thisAgent, "%lu: ", w->timetag);
   print_with_symbols (thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
   if (w->acceptable) print_string (thisAgent, " +");
 }
-//#endif /* USE_TCL */
 
 void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 									wme_trace_type wtt, int action)
@@ -1059,7 +1056,7 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 
   if (inst->prod) {
       print_with_symbols  (thisAgent, "%y", inst->prod->name);
-      xml_att_val(thisAgent, kProduction_Name, symbol_to_string (thisAgent, inst->prod->name, true, 0, 0));
+    xml_att_val(thisAgent, kProduction_Name, inst->prod->name->to_string(true));
   } else {
       print (thisAgent, "[dummy production]");
 	  xml_att_val(thisAgent, kProduction_Name, "[dummy_production]");
@@ -1242,7 +1239,7 @@ bool passes_wme_filtering(agent* thisAgent, wme * w, bool isAdd) {
 
 =================================================================================
 */
-extern void print_trace (agent* thisAgent, int64_t sysParamIndex, const char *format, ...) {
+extern void print_sysparam_trace (agent* thisAgent, int64_t sysParamIndex, const char *format, ...) {
   va_list args;
   char buf[PRINT_BUFSIZE];
 

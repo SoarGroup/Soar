@@ -168,7 +168,7 @@ void neatly_print_wme_augmentation_of_id (agent* thisAgent, wme *w, int indentat
 
     if (get_printer_output_column(thisAgent) + (ch - buf) >= 80)
     {
-        print(thisAgent, "\n");
+        start_fresh_line(thisAgent);
         print_spaces(thisAgent, indentation+6);
     }
     print_string(thisAgent, buf);

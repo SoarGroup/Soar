@@ -1140,8 +1140,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	/* AGR 617/634 begin */
 	if (print_name)
 	{
-		if (get_printer_output_column(thisAgent)!=1)
-			print (thisAgent, "\n");
+		start_fresh_line(thisAgent);
 		print_with_symbols (thisAgent, "Building %y", prod_name);
 
 		xml_begin_tag(thisAgent, kTagLearning);

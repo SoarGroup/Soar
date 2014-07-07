@@ -123,15 +123,23 @@ Output_Manager::~Output_Manager()
     delete m_db;
 }
 
-inline bool Output_Manager::update_printer_column(const char *msg)
+void Output_Manager::start_fresh_line(agent *pSoarAgent)
+{
+    if (!pSoarAgent)
+        pSoarAgent = m_defaultAgent;
+    if (printer_output_column != 1)
+        print_agent(pSoarAgent, "\n");
+}
+
+bool Output_Manager::update_printer_column(agent *pSoarAgent, const char *msg)
 {
   const char *ch;
 
   for (ch=msg; *ch!=0; ch++) {
-  //    if (*ch=='\n')
-  //      thisAgent->printer_output_column = 1;
-  //    else
-  //      thisAgent->printer_output_column++;
+      if (*ch=='\n')
+        printer_output_column = 1;
+      else
+        printer_output_column++;
   }
   return true;
 }
@@ -148,13 +156,16 @@ void Output_Manager::print_db_agent(agent *pSoarAgent, MessageType msgType, Trac
 
 void Output_Manager::printv(const char *format, ...)
 {
-  va_list args;
-  char buf[PRINT_BUFSIZE];
+    if (m_defaultAgent)
+    {
+        va_list args;
+        char buf[PRINT_BUFSIZE];
 
-  va_start (args, format);
-  vsprintf (buf, format, args);
-  va_end (args);
-  print_trace_agent(m_defaultAgent, buf);
+        va_start (args, format);
+        vsprintf (buf, format, args);
+        va_end (args);
+        print_agent(m_defaultAgent, buf);
+    }
 }
 
 void Output_Manager::printv_agent(agent *pSoarAgent, const char *format, ...) {
@@ -164,20 +175,20 @@ void Output_Manager::printv_agent(agent *pSoarAgent, const char *format, ...) {
   va_start (args, format);
   vsprintf (buf, format, args);
   va_end (args);
-  print_trace_agent(pSoarAgent, buf);
+  print_agent(pSoarAgent, buf);
 }
 
-void Output_Manager::print_trace_agent (agent *pSoarAgent, const char *msg) {
+void Output_Manager::print_agent (agent *pSoarAgent, const char *msg) {
   bool printer_column_updated = false;
 
   if (callback_mode && pSoarAgent) {
-    printer_column_updated = update_printer_column(msg);
+    printer_column_updated = update_printer_column(pSoarAgent, msg);
     soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(msg)));
   }
 
   if (stdout_mode) {
     if (!printer_column_updated)
-      printer_column_updated = update_printer_column(msg);
+      printer_column_updated = update_printer_column(NULL, msg);
     printer_column_updated = true;
     fputs(msg, stdout);
   }
@@ -188,7 +199,7 @@ void Output_Manager::print_trace_agent (agent *pSoarAgent, const char *msg) {
 
 }
 
-void Output_Manager::print_trace_prefix_agent (agent *pSoarAgent, const char *msg, TraceMode mode, bool no_prefix)
+void Output_Manager::print_prefix_agent (agent *pSoarAgent, const char *msg, TraceMode mode, bool no_prefix)
 {
   bool printer_column_updated = false;
 
@@ -205,13 +216,13 @@ void Output_Manager::print_trace_prefix_agent (agent *pSoarAgent, const char *ms
     }
 
     if (callback_mode && pSoarAgent) {
-      printer_column_updated = update_printer_column(newTrace.c_str());
+      printer_column_updated = update_printer_column(pSoarAgent, newTrace.c_str());
       soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(newTrace.c_str())));
     }
 
     if (stdout_mode) {
       if (!printer_column_updated)
-        printer_column_updated = update_printer_column(newTrace.c_str());
+        printer_column_updated = update_printer_column(NULL, newTrace.c_str());
       fputs(newTrace.c_str(), stdout);
     }
 
@@ -236,14 +247,14 @@ void Output_Manager::print_debug_agent (agent *pSoarAgent, const char *msg, Trac
       newTrace.assign(msg);
     }
     if (callback_dbg_mode && pSoarAgent) {
-      printer_column_updated = update_printer_column(newTrace.c_str());
+      printer_column_updated = update_printer_column(pSoarAgent, newTrace.c_str());
       /* MToDo | Need default agent */
       soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(newTrace.c_str())));
     }
 
     if (stdout_dbg_mode) {
       if (!printer_column_updated)
-        printer_column_updated = update_printer_column(newTrace.c_str());
+        printer_column_updated = update_printer_column(NULL, newTrace.c_str());
       fputs(newTrace.c_str(), stdout);
     }
 

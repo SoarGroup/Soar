@@ -405,7 +405,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	// Delete all entries from the tables in the database if append setting is off
 	if ( new_agent->smem_params->append_db->get_value() == off ) {
-		print_trace(new_agent, 0, "Erasing contents of semantic memory database. (append = off)\n" );
+		print_sysparam_trace(new_agent, 0, "Erasing contents of semantic memory database. (append = off)\n" );
 		drop_tables(new_agent);
 	}
 
@@ -2800,7 +2800,7 @@ void smem_reset( agent *thisAgent, Symbol *state )
 
 void smem_switch_to_memory_db(agent *thisAgent, std::string& buf)
 {
-	print_trace(thisAgent, 0, buf.c_str() );
+	print_sysparam_trace(thisAgent, 0, buf.c_str() );
     thisAgent->smem_db->disconnect();
     thisAgent->smem_params->database->set_value(smem_param_container::memory);
 	smem_init_db( thisAgent );
@@ -2825,12 +2825,12 @@ void smem_init_db( agent *thisAgent )
 	{
 		db_path = ":memory:";
 		tabula_rasa = true;
-		print_trace(thisAgent, TRACE_SMEM_SYSPARAM, "Initializing semantic memory database in cpu memory.\n" );
+		print_sysparam_trace(thisAgent, TRACE_SMEM_SYSPARAM, "Initializing semantic memory database in cpu memory.\n" );
 	}
 	else
 	{
 		db_path = thisAgent->smem_params->path->get_value();
-		print_trace(thisAgent, TRACE_SMEM_SYSPARAM, "Initializing semantic memory memory database at %s\n", db_path );
+		print_sysparam_trace(thisAgent, TRACE_SMEM_SYSPARAM, "Initializing semantic memory memory database at %s\n", db_path );
 	}
 
 	// attempt connection
@@ -2838,7 +2838,7 @@ void smem_init_db( agent *thisAgent )
 
 	if ( thisAgent->smem_db->get_status() == soar_module::problem )
 	{
-		print_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->smem_db->get_errmsg() );
+		print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->smem_db->get_errmsg() );
 	}
 	else
 	{
@@ -2860,7 +2860,7 @@ void smem_init_db( agent *thisAgent )
 			{
 				if (sql_is_new)
 				{
-					print_trace(thisAgent, TRACE_SMEM_SYSPARAM, "...semantic memory database is new.\n" );
+					print_sysparam_trace(thisAgent, TRACE_SMEM_SYSPARAM, "...semantic memory database is new.\n" );
 					switch_to_memory = false;
 					tabula_rasa = true;
 				}
@@ -2878,7 +2878,7 @@ void smem_init_db( agent *thisAgent )
 								version_error_message.append(".\n...Please convert old semantic memory database or start a new database by "
 										"setting a new database file path.\n...Switching to memory-based database.\n");
 							} else {
-								print_trace(thisAgent, TRACE_SMEM_SYSPARAM, "...version of semantic memory database ok.\n" );
+								print_sysparam_trace(thisAgent, TRACE_SMEM_SYSPARAM, "...version of semantic memory database ok.\n" );
 								switch_to_memory = false;
 								tabula_rasa = false;
 							}

@@ -210,7 +210,7 @@ typedef struct saved_test_struct {
 
 void print_saved_test (agent* thisAgent, saved_test *st) {
   print_with_symbols (thisAgent, "  Symbol: %y  Test: ", st->var);
-  print_string (thisAgent, test_to_string (thisAgent, st->the_test, NULL, 0));
+  print_string (thisAgent, test_to_string(st->the_test, NULL, 0));
 }
 
 void print_saved_test_list (agent* thisAgent, saved_test *st) {
@@ -1110,7 +1110,7 @@ bool check_unbound_negative_relational_test_referents (agent* thisAgent, test t,
         print (thisAgent,
 			"Error: production %s has an unbound referent in negated relational test %s",
 			thisAgent->name_of_production_being_reordered,
-			test_to_string (thisAgent, t, NULL, 0));
+			test_to_string(t, NULL, 0));
 		return false;
 	  }
 	}

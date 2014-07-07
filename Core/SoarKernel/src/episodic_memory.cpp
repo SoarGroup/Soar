@@ -1019,7 +1019,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	// Delete all entries from the tables in the database if append setting is off
 	if ( new_agent->epmem_params->append_db->get_value() == off ) {
-		print_trace(new_agent, 0, "Erasing contents of episodic memory database. (append = off)\n" );
+		print_sysparam_trace(new_agent, 0, "Erasing contents of episodic memory database. (append = off)\n" );
 		drop_graph_tables();
 	}
 
@@ -1806,7 +1806,7 @@ void epmem_close( agent *thisAgent )
 {
 	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
 	{
-		print_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Closing episodic memory database %s.\n", thisAgent->epmem_params->path->get_value());
+		print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Closing episodic memory database %s.\n", thisAgent->epmem_params->path->get_value());
 		// if lazy, commit
 		if ( thisAgent->epmem_params->lazy_commit->get_value() == on )
 		{
@@ -1851,13 +1851,13 @@ void epmem_reinit ( agent *thisAgent)
         {
             if (thisAgent->epmem_params->append_db->get_value() == off )
             {
-                print_trace(thisAgent, 0, "Episodic memory re-initializing.\n" );
+                print_sysparam_trace(thisAgent, 0, "Episodic memory re-initializing.\n" );
             } else {
-                print_trace(thisAgent, 0, "Note: Episodic memory can currently only append to an an on-disk database.  Ignoring append = on.\n" );
-                print_trace(thisAgent, 0, "Episodic memory re-initializing.\n" );
+                print_sysparam_trace(thisAgent, 0, "Note: Episodic memory can currently only append to an an on-disk database.  Ignoring append = on.\n" );
+                print_sysparam_trace(thisAgent, 0, "Episodic memory re-initializing.\n" );
             }
         } else {
-            print_trace(thisAgent, 0, "Episodic memory re-initializing.\n" );
+            print_sysparam_trace(thisAgent, 0, "Episodic memory re-initializing.\n" );
         }
         epmem_close(thisAgent);
     }
@@ -1917,7 +1917,7 @@ void epmem_reset( agent *thisAgent, Symbol *state )
 
 void epmem_switch_db_mode(agent *thisAgent, std::string& buf, bool readonly)
 {
-	print_trace(thisAgent, 0, buf.c_str());
+	print_sysparam_trace(thisAgent, 0, buf.c_str());
     thisAgent->epmem_db->disconnect();
 	thisAgent->epmem_params->database->set_value(epmem_param_container::memory);
 	epmem_init_db( thisAgent, readonly );
@@ -1951,7 +1951,7 @@ void epmem_init_db( agent *thisAgent, bool readonly )
 {
 	if ( thisAgent->epmem_db->get_status() != soar_module::disconnected )
 	{
-		print_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Cannot initialize episodic memory database.  It is already connected!" );
+		print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Cannot initialize episodic memory database.  It is already connected!" );
 		return;
 	}
 
@@ -1964,12 +1964,12 @@ void epmem_init_db( agent *thisAgent, bool readonly )
 	if ( thisAgent->epmem_params->database->get_value() == epmem_param_container::memory )
 	{
 		db_path = ":memory:";
-		print_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Initializing episodic memory database in cpu memory.\n" );
+		print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Initializing episodic memory database in cpu memory.\n" );
 	}
 	else
 	{
 		db_path = thisAgent->epmem_params->path->get_value();
-		print_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Initializing episodic memory database at %s\n", db_path );
+		print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Initializing episodic memory database at %s\n", db_path );
 	}
 
 	// attempt connection
@@ -1982,7 +1982,7 @@ void epmem_init_db( agent *thisAgent, bool readonly )
 
 	if ( thisAgent->epmem_db->get_status() == soar_module::problem )
 	{
-		print_trace(thisAgent, 0, "Episodic memory database error: %s\n", thisAgent->epmem_db->get_errmsg() );
+		print_sysparam_trace(thisAgent, 0, "Episodic memory database error: %s\n", thisAgent->epmem_db->get_errmsg() );
 	}
 	else
 	{
@@ -2005,7 +2005,7 @@ void epmem_init_db( agent *thisAgent, bool readonly )
 				if (sql_is_new)
 				{
 					switch_to_memory = false;
-					print_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "...episodic memory database is new.\n" );
+					print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "...episodic memory database is new.\n" );
 				}
 				else
 				{	// Check if table exists already
@@ -2021,7 +2021,7 @@ void epmem_init_db( agent *thisAgent, bool readonly )
 								version_error_message.append(".\n...Please convert old database or start a new database by "
 										"setting a new database file path.\n...Switching to memory-based database.\n");
 							} else { // Version is OK
-								print_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "...version of episodic memory database ok.\n" );
+								print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "...version of episodic memory database ok.\n" );
 								switch_to_memory = false;
 							}
 
@@ -3025,7 +3025,7 @@ void epmem_new_episode( agent *thisAgent )
 	epmem_time_id time_counter = thisAgent->epmem_stats->time->get_value();
 
 	// provide trace output
-	print_trace(thisAgent, TRACE_EPMEM_SYSPARAM,  "New episodic memory recorded for time %ld.\n", static_cast<long int>(time_counter));
+	print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM,  "New episodic memory recorded for time %ld.\n", static_cast<long int>(time_counter));
 
 	// perform storage
 	{
@@ -4776,7 +4776,7 @@ void epmem_process_query(agent *thisAgent, Symbol *state, Symbol *pos_query, Sym
 					epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
 				}
 
-				print_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Considering episode (time, cardinality, score) (%lld, %ld, %f)\n", static_cast<long long int>(current_episode), current_cardinality, current_score);
+				print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Considering episode (time, cardinality, score) (%lld, %ld, %f)\n", static_cast<long long int>(current_episode), current_cardinality, current_score);
 
 				// if
 				// * the current time is still before any new intervals

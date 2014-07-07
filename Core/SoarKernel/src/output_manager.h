@@ -73,14 +73,14 @@ class Output_Manager
 
     /* Print functions that don't take an agent.  Will use default agent if necessary */
     void printv(const char *format, ...);
-    void print_trace(const char *msg ) { print_trace_agent(m_defaultAgent, msg); }
-    void print_trace_prefix(const char *msg, TraceMode mode=No_Mode, bool no_prefix = false) { print_trace_prefix_agent(m_defaultAgent, msg, mode, no_prefix);}
+    void print_trace(const char *msg ) { print_agent(m_defaultAgent, msg); }
+    void print_trace_prefix(const char *msg, TraceMode mode=No_Mode, bool no_prefix = false) { print_prefix_agent(m_defaultAgent, msg, mode, no_prefix);}
     void print_debug(const char *msg, TraceMode mode=No_Mode, bool no_prefix = false) { print_debug_agent(m_defaultAgent, msg, mode, no_prefix); }
     void print_db(MessageType msgType, TraceMode mode, const char *msg) { print_db_agent(m_defaultAgent, msgType, mode, msg); }
 
     void printv_agent(agent *pSoarAgent, const char *format, ...);
-    void print_trace_agent(agent *pSoarAgent, const char *msg );
-    void print_trace_prefix_agent(agent *pSoarAgent, const char *msg, TraceMode mode=No_Mode, bool no_prefix = false);
+    void print_agent(agent *pSoarAgent, const char *msg );
+    void print_prefix_agent(agent *pSoarAgent, const char *msg, TraceMode mode=No_Mode, bool no_prefix = false);
     void print_debug_agent(agent *pSoarAgent, const char *msg, TraceMode mode=No_Mode, bool no_prefix = false);
     void print_db_agent(agent *pSoarAgent, MessageType msgType, TraceMode mode, const char *msg);
 
@@ -89,6 +89,10 @@ class Output_Manager
         next_output_string = 0;
       return printed_output_strings[next_output_string];
     }
+
+    int get_printer_output_column(agent* thisAgent=NULL) { return printer_output_column;}
+    void set_printer_output_column(agent* thisAgent, int pOutputColumn=1) { printer_output_column = pOutputColumn;}
+    void start_fresh_line(agent *pSoarAgent = NULL);
 
     char* NULL_SYM_STR;
 
@@ -107,18 +111,20 @@ class Output_Manager
     OM_Parameters                           * m_params;
     OM_DB                                   * m_db;
 
-    bool                            print_enabled, db_mode, callback_mode, stdout_mode, file_mode;
-    bool                            dprint_enabled, db_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
+    bool print_enabled, db_mode, callback_mode, stdout_mode, file_mode;
+    bool dprint_enabled, db_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
 
     /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
      *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
      *    function calls that use that buffer within one print statements.  There are
      *    probably better approaches, but this avoided revising a lot of other code and
      *    does the job.  -- */
-    char                            printed_output_strings[MAX_LEXEME_LENGTH*2+10][num_output_strings];
-    int64_t                         next_output_string;
+    char    printed_output_strings[MAX_LEXEME_LENGTH*2+10][num_output_strings];
+    int64_t next_output_string;
 
-    bool update_printer_column(const char *msg);
+    int     printer_output_column;
+    int     saved_printer_output_column;
+    bool    update_printer_column(agent *pSoarAgent, const char *msg);
 
 };
 
