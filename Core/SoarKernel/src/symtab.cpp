@@ -360,7 +360,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->preferences_from_goal = NIL;
   sym->associated_output_links = NIL;
   sym->input_wmes = NIL;
-  
+
   sym->rl_info = NIL;
   sym->reward_header = NIL;
 
@@ -379,7 +379,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->smem_valid = NIL;
 
   sym->variablization = NIL;
-  
+
   sym->rl_trace = NIL;
 
   sym->fc = NIL;
@@ -877,7 +877,13 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->smem_sym_negquery = make_str_constant( thisAgent, "neg-query" );
   thisAgent->smem_sym_prohibit = make_str_constant( thisAgent, "prohibit" );
   thisAgent->smem_sym_store = make_str_constant( thisAgent, "store" );
-}
+  thisAgent->smem_sym_math_query = make_str_constant( thisAgent, "math-query" );
+  thisAgent->smem_sym_math_query_less = make_str_constant( thisAgent, "less" );
+  thisAgent->smem_sym_math_query_greater = make_str_constant( thisAgent, "greater" );
+  thisAgent->smem_sym_math_query_less_or_equal = make_str_constant( thisAgent, "less-or-equal" );
+  thisAgent->smem_sym_math_query_greater_or_equal = make_str_constant( thisAgent, "greater-or-equal" );
+  thisAgent->smem_sym_math_query_max = make_str_constant( thisAgent, "max" );
+  thisAgent->smem_sym_math_query_min = make_str_constant( thisAgent, "min" );}
 
 inline void release_helper(agent* thisAgent, Symbol** sym) {
   symbol_remove_ref(thisAgent,(*sym));
@@ -975,6 +981,13 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->smem_sym_negquery ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_prohibit ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_store ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_less ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_greater ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_less_or_equal ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_greater_or_equal ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_max ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_math_query_min ) );
 }
 
 char *Symbol::to_string (bool rereadable, char *dest, size_t dest_size) {
