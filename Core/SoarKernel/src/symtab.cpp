@@ -1013,7 +1013,7 @@ char *Symbol::to_string (bool rereadable, char *dest, size_t dest_size) {
     case IDENTIFIER_SYMBOL_TYPE:
       if (!dest)
       {
-        dest_size= MAX_LEXEME_LENGTH*2+10; /* from agent.h */;
+        dest_size= output_string_size; /* from agent.h */;
         dest=Output_Manager::Get_OM().get_printed_output_string();
       }
       if (is_lti())
@@ -1026,7 +1026,7 @@ char *Symbol::to_string (bool rereadable, char *dest, size_t dest_size) {
     case INT_CONSTANT_SYMBOL_TYPE:
       if (!dest)
       {
-        dest_size= MAX_LEXEME_LENGTH*2+10; /* from agent.h */;
+        dest_size= output_string_size; /* from agent.h */;
         dest=Output_Manager::Get_OM().get_printed_output_string();
       }
       SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(ic->value));
@@ -1036,7 +1036,7 @@ char *Symbol::to_string (bool rereadable, char *dest, size_t dest_size) {
     case FLOAT_CONSTANT_SYMBOL_TYPE:
       if (!dest)
       {
-        dest_size= MAX_LEXEME_LENGTH*2+10; /* from agent.h */;
+        dest_size= output_string_size; /* from agent.h */;
         dest=Output_Manager::Get_OM().get_printed_output_string();
       }
       SNPRINTF (dest, dest_size, "%#.16g", fc->value);

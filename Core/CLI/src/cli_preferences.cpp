@@ -25,6 +25,7 @@
 #include "trace.h"
 #include "wmem.h"
 #include "decide.h"
+#include "output_manager.h"
 
 using namespace cli;
 using namespace sml;
@@ -117,7 +118,7 @@ void print_preference_and_source (agent* thisAgent, preference *pref,
     }
     if (preference_is_binary(pref->type)) print_object_trace (thisAgent, pref->referent);
     if (selection_probability) {
-      char dest[MAX_LEXEME_LENGTH*2+10]; /* from agent.h */
+      char dest[output_string_size]; /* from agent.h */
       SNPRINTF(dest, sizeof(dest), "%#.16g", pref->numeric_value);
       dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
       { /* --- strip off trailing zeros --- */

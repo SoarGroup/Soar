@@ -17,6 +17,7 @@
 #include "lexer.h"
 #include "soar_db.h"
 
+#define output_string_size MAX_LEXEME_LENGTH*2+10
 #define num_output_strings 10
 
 typedef struct trace_mode_info_struct {
@@ -121,7 +122,7 @@ class Output_Manager
      *    function calls that use that buffer within one print statements.  There are
      *    probably better approaches, but this avoided revising a lot of other code and
      *    does the job.  -- */
-    char    printed_output_strings[MAX_LEXEME_LENGTH*2+10][num_output_strings];
+    char    printed_output_strings[output_string_size][num_output_strings];
     int64_t next_output_string;
 
     int     printer_output_column;

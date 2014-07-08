@@ -229,7 +229,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
   case IDENTIFIER_SYMBOL_TYPE:
 	if (!dest) {
 	  dest = Output_Manager::Get_OM().get_printed_output_string();
-	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+	  dest_size = output_string_size; /* from agent.h */
 	}
 	if (sym->id->smem_lti == NIL) {
 		// NOT an lti (long term identifier), print like we always have
@@ -245,7 +245,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
   case INT_CONSTANT_SYMBOL_TYPE:
 	if (!dest) {
 	  dest = Output_Manager::Get_OM().get_printed_output_string();
-	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+	  dest_size = output_string_size; /* from agent.h */
 	}
     SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->ic->value));
 	dest[dest_size - 1] = 0; /* ensure null termination */
@@ -254,7 +254,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
   case FLOAT_CONSTANT_SYMBOL_TYPE:
 	if (!dest) {
 	  dest = Output_Manager::Get_OM().get_printed_output_string();
-	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+	  dest_size = output_string_size; /* from agent.h */
 	}
     SNPRINTF (dest, dest_size, "%#.16g", sym->fc->value);
 	dest[dest_size - 1] = 0; /* ensure null termination */
@@ -321,7 +321,7 @@ char *test_to_string (test t, char *dest, size_t dest_size, bool show_equality) 
 
   if (!dest) {
     dest = Output_Manager::Get_OM().get_printed_output_string();
-    dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+    dest_size = output_string_size; /* from agent.h */
   }
   ch = dest;
 
@@ -448,7 +448,7 @@ char *rhs_value_to_string (rhs_value rv, char *dest, size_t dest_size) {
 
   if (!dest) {
  	dest=Output_Manager::Get_OM().get_printed_output_string();
-	dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+	dest_size = output_string_size; /* from agent.h */
   }
   ch = dest;
 
@@ -833,7 +833,7 @@ void print_production (agent* thisAgent, production *p, bool internal) {
   */
   if (p->documentation)
   {
-    char temp[MAX_LEXEME_LENGTH*2+10];
+    char temp[output_string_size];
     string_to_escaped_string (p->documentation, '"', temp);
     print (thisAgent, "    %s\n", temp);
 	xml_att_val(thisAgent, kProductionDocumentation, temp);
