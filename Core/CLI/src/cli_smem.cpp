@@ -19,7 +19,6 @@
 #include "semantic_memory.h"
 #include "agent.h"
 #include "misc.h"
-#include "utilities.h"
 
 using namespace cli;
 using namespace sml;

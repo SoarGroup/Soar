@@ -25,7 +25,6 @@
 #include "decide.h"
 #include "parser.h"
 #include "soar_TraceNames.h"
-#include "utilities.h"
 #include "sml_AgentSML.h"
 
 using namespace cli;
@@ -115,7 +114,7 @@ int RemoveWme(agent* thisAgent, wme* pWme)
 #endif // NO_TIMING_STUFF
     }
 
-    /* note: 
+    /* note:
     *  See note at the NO_TOP_LEVEL_REFS flag in soar_cAddWme
     */
 
@@ -136,7 +135,7 @@ bool read_wme_filter_component(agent* thisAgent, const char *s, Symbol ** sym)
     } else {
         *sym = make_symbol_for_current_lexeme(thisAgent, false);
     }
-    // Added by voigtjr because if this function can 
+    // Added by voigtjr because if this function can
     // legally return success with *sym == 0, my logic in AddWmeFilter will be broken.
     assert(*sym);
     return true;
@@ -170,11 +169,11 @@ int AddWMEFilter(agent* thisAgent, const char *pIdString, const char *pAttrStrin
         existing_wf = static_cast<wme_filter*>(c->first);
 
         // check for duplicate
-        if ((existing_wf->adds == adds) 
+        if ((existing_wf->adds == adds)
             && (existing_wf->removes == removes)
-            && (existing_wf->id == pId) 
+            && (existing_wf->id == pId)
             && (existing_wf->attr == pAttr)
-            && (existing_wf->value == pValue)) 
+            && (existing_wf->value == pValue))
         {
             symbol_remove_ref(thisAgent, pId);
             symbol_remove_ref(thisAgent, pAttr);
@@ -190,12 +189,12 @@ int AddWMEFilter(agent* thisAgent, const char *pIdString, const char *pAttrStrin
     wf->adds = adds;
     wf->removes = removes;
 
-    /* Rather than add refs for the new filter symbols and then remove refs 
+    /* Rather than add refs for the new filter symbols and then remove refs
     * for the identical symbols created from the string parameters, skip
     * the two nullifying steps altogether and just return immediately
     * after pushing the new filter:
     */
-    push(thisAgent, wf, thisAgent->wme_filter_list);     
+    push(thisAgent, wf, thisAgent->wme_filter_list);
     return 0;
 }
 
@@ -225,11 +224,11 @@ int RemoveWMEFilter(agent* thisAgent, const char *pIdString, const char *pAttrSt
         wme_filter* wf = static_cast<wme_filter*>(c->first);
 
         // check for duplicate
-        if ((wf->adds == adds) 
+        if ((wf->adds == adds)
             && (wf->removes == removes)
-            && (wf->id == pId) 
+            && (wf->id == pId)
             && (wf->attr == pAttr)
-            && (wf->value == pValue)) 
+            && (wf->value == pValue))
         {
             *prev_cons_rest = c->rest;
             symbol_remove_ref(thisAgent, pId);

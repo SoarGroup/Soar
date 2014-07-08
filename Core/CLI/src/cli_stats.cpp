@@ -18,7 +18,7 @@
 #include "sml_AgentSML.h"
 
 #include "agent.h"
-#include "utilities.h" // for timer_value
+#include "stats.h"
 #include "print.h"
 #include "rete.h" // for get_node_count_statistics
 #include "soar_db.h"
@@ -127,17 +127,17 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
         select->reinitialize();
 
     }
-    
+
     if ( options.test(STATS_TRACK) )
         thisAgent->dc_stat_tracking = true;
 
-    if ( options.test(STATS_STOP_TRACK) ) 
+    if ( options.test(STATS_STOP_TRACK) )
     {
         stats_close( thisAgent );
         thisAgent->dc_stat_tracking = false;
     }
 
-    if ( (!options.test(STATS_CYCLE) && !options.test(STATS_TRACK) && !options.test(STATS_STOP_TRACK) && !options.test(STATS_MEMORY) && !options.test(STATS_RETE) && !options.test(STATS_MAX) && !options.test(STATS_RESET)) 
+    if ( (!options.test(STATS_CYCLE) && !options.test(STATS_TRACK) && !options.test(STATS_STOP_TRACK) && !options.test(STATS_MEMORY) && !options.test(STATS_RETE) && !options.test(STATS_MAX) && !options.test(STATS_RESET))
         || options.test(STATS_SYSTEM) )
     {
         GetSystemStats();
@@ -162,13 +162,13 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 #ifndef NO_TIMING_STUFF
     AppendArgTagFast(sml_Names::kParamStatsKernelCPUTime,                        sml_Names::kTypeDouble, to_string(thisAgent->timers_total_kernel_time.get_sec(), temp));
     AppendArgTagFast(sml_Names::kParamStatsTotalCPUTime,                        sml_Names::kTypeDouble, to_string(thisAgent->timers_total_cpu_time.get_sec(), temp));
-    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeInputPhase,                    sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[INPUT_PHASE].get_sec(), temp)); 
-    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeProposePhase,                sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[PROPOSE_PHASE].get_sec(), temp)); 
+    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeInputPhase,                    sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[INPUT_PHASE].get_sec(), temp));
+    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeProposePhase,                sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[PROPOSE_PHASE].get_sec(), temp));
     AppendArgTagFast(sml_Names::kParamStatsPhaseTimeDecisionPhase,                sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[DECISION_PHASE].get_sec(), temp));
-    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeApplyPhase,                    sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[APPLY_PHASE].get_sec(), temp));  
-    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeOutputPhase,                sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[OUTPUT_PHASE].get_sec(), temp)); 
-    AppendArgTagFast(sml_Names::kParamStatsPhaseTimePreferencePhase,            sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[PREFERENCE_PHASE].get_sec(), temp)); 
-    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeWorkingMemoryPhase,            sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[WM_PHASE].get_sec(), temp)); 
+    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeApplyPhase,                    sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[APPLY_PHASE].get_sec(), temp));
+    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeOutputPhase,                sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[OUTPUT_PHASE].get_sec(), temp));
+    AppendArgTagFast(sml_Names::kParamStatsPhaseTimePreferencePhase,            sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[PREFERENCE_PHASE].get_sec(), temp));
+    AppendArgTagFast(sml_Names::kParamStatsPhaseTimeWorkingMemoryPhase,            sml_Names::kTypeDouble, to_string(thisAgent->timers_decision_cycle_phase[WM_PHASE].get_sec(), temp));
     AppendArgTagFast(sml_Names::kParamStatsMonitorTimeInputPhase,                sml_Names::kTypeDouble, to_string(thisAgent->timers_monitors_cpu_time[INPUT_PHASE].get_sec(), temp));
     AppendArgTagFast(sml_Names::kParamStatsMonitorTimeProposePhase,                sml_Names::kTypeDouble, to_string(thisAgent->timers_monitors_cpu_time[PROPOSE_PHASE].get_sec(), temp));
     AppendArgTagFast(sml_Names::kParamStatsMonitorTimeDecisionPhase,            sml_Names::kTypeDouble, to_string(thisAgent->timers_monitors_cpu_time[DECISION_PHASE].get_sec(), temp));
@@ -177,7 +177,7 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
     AppendArgTagFast(sml_Names::kParamStatsMonitorTimePreferencePhase,            sml_Names::kTypeDouble, to_string(thisAgent->timers_monitors_cpu_time[PREFERENCE_PHASE].get_sec(), temp));
     AppendArgTagFast(sml_Names::kParamStatsMonitorTimeWorkingMemoryPhase,        sml_Names::kTypeDouble, to_string(thisAgent->timers_monitors_cpu_time[WM_PHASE].get_sec(), temp));
     AppendArgTagFast(sml_Names::kParamStatsInputFunctionTime,                    sml_Names::kTypeDouble, to_string(thisAgent->timers_input_function_cpu_time.get_sec(), temp));
-    AppendArgTagFast(sml_Names::kParamStatsOutputFunctionTime,                    sml_Names::kTypeDouble, to_string(thisAgent->timers_output_function_cpu_time.get_sec(), temp));    
+    AppendArgTagFast(sml_Names::kParamStatsOutputFunctionTime,                    sml_Names::kTypeDouble, to_string(thisAgent->timers_output_function_cpu_time.get_sec(), temp));
 
 #ifdef DETAILED_TIMING_STATS
     AppendArgTagFast(sml_Names::kParamStatsMatchTimeInputPhase,                    sml_Names::kTypeDouble, to_string(thisAgent->timers_match_cpu_time[INPUT_PHASE].get_sec(), temp));
@@ -307,7 +307,7 @@ void CommandLineInterface::GetSystemStats()
         + thisAgent->timers_monitors_cpu_time[DECISION_PHASE].get_sec();
 #endif // NO_TIMING_STUFF
 
-    /* The sum of these phase timers is exactly equal to the 
+    /* The sum of these phase timers is exactly equal to the
     * derived_total_cpu_time
     */
 
@@ -324,10 +324,10 @@ void CommandLineInterface::GetSystemStats()
 
     m_Result << "   + " << thisAgent->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE] << " justifications\n";
 
-    /* The fields for the timers are 8.3, providing an upper limit of 
-    approximately 2.5 hours the printing of the run time calculations.  
-    Obviously, these will need to be increased if you plan on needing 
-    run-time data for a process that you expect to take longer than 
+    /* The fields for the timers are 8.3, providing an upper limit of
+    approximately 2.5 hours the printing of the run time calculations.
+    Obviously, these will need to be increased if you plan on needing
+    run-time data for a process that you expect to take longer than
     2 hours. :) */
 
 #ifndef NO_TIMING_STUFF
@@ -395,7 +395,7 @@ void CommandLineInterface::GetSystemStats()
     m_Result << thisAgent->inner_e_cycle_count << " inner elaboration cycles\n";
 
     m_Result << thisAgent->pe_cycle_count << " p-elaboration cycles ("
-        << (thisAgent->decision_phases_count ? static_cast<double>(thisAgent->pe_cycle_count) / thisAgent->decision_phases_count : 0) 
+        << (thisAgent->decision_phases_count ? static_cast<double>(thisAgent->pe_cycle_count) / thisAgent->decision_phases_count : 0)
         << " pe's per dc, "
         << (thisAgent->pe_cycle_count ? total_kernel_msec / thisAgent->pe_cycle_count : 0)
         << " msec/pe)\n";
@@ -403,7 +403,7 @@ void CommandLineInterface::GetSystemStats()
     m_Result << thisAgent->production_firing_count << " production firings ("
         << (thisAgent->e_cycle_count ? static_cast<double>(thisAgent->production_firing_count) / thisAgent->e_cycle_count : 0.0)
         << " pf's per ec, "
-        << (thisAgent->production_firing_count ? total_kernel_msec / thisAgent->production_firing_count : 0.0) 
+        << (thisAgent->production_firing_count ? total_kernel_msec / thisAgent->production_firing_count : 0.0)
         << " msec/pf)\n";
 #endif // NO_TIMING_STUFF
 
@@ -414,12 +414,12 @@ void CommandLineInterface::GetSystemStats()
 
     m_Result << "WM size: "
         << thisAgent->num_wmes_in_rete << " current, "
-        << (thisAgent->num_wm_sizes_accumulated ? (thisAgent->cumulative_wm_size / thisAgent->num_wm_sizes_accumulated) : 0.0) 
+        << (thisAgent->num_wm_sizes_accumulated ? (thisAgent->cumulative_wm_size / thisAgent->num_wm_sizes_accumulated) : 0.0)
         << " mean, "
         << thisAgent->max_wm_size << " maximum\n\n";
 }
 
-void CommandLineInterface::GetMaxStats() 
+void CommandLineInterface::GetMaxStats()
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     m_Result << "Single decision cycle maximums:\n";
@@ -482,9 +482,9 @@ void CommandLineInterface::GetMemoryPoolStatistics()
     m_Result << "---------------  ---------  -------  ------  -----------\n";
 #endif
 
-    for (memory_pool* p = thisAgent->memory_pools_in_use; p != NIL; p = p->next) 
+    for (memory_pool* p = thisAgent->memory_pools_in_use; p != NIL; p = p->next)
     {
-        m_Result << std::setw(MAX_POOL_NAME_LENGTH) << p->name; 
+        m_Result << std::setw(MAX_POOL_NAME_LENGTH) << p->name;
 #ifdef MEMORY_POOL_STATS
         m_Result << "  " << std::setw(10) << p->used_count;
         size_t total_items = p->num_blocks * p->items_per_block;
@@ -520,11 +520,11 @@ void CommandLineInterface::GetReteStats()
 #endif
 
     /* --- print main table --- */
-    for (i=0; i<256; i++) 
-        if (*bnode_type_names[i]) 
+    for (i=0; i<256; i++)
+        if (*bnode_type_names[i])
         {
-            m_Result << std::setw(21) << bnode_type_names[i] << "  " 
-                << std::setw(10) << thisAgent->actual[i] << "  " 
+            m_Result << std::setw(21) << bnode_type_names[i] << "  "
+                << std::setw(10) << thisAgent->actual[i] << "  "
                 << std::setw(13) << thisAgent->if_no_merging[i];
 #ifdef SHARING_FACTORS
             m_Result << "  " << std::setw(13) << thisAgent->if_no_sharing[i];
@@ -539,20 +539,20 @@ void CommandLineInterface::GetReteStats()
     m_Result << "---------------------  ----------  -------------\n";
 #endif
     m_Result << "                Total";
-    for (tot=0, i=0; i<256; i++) 
+    for (tot=0, i=0; i<256; i++)
     {
         tot+=thisAgent->actual[i];
     }
     m_Result << "  " << std::setw(10) << tot;
 
-    for (tot=0, i=0; i<256; i++) 
+    for (tot=0, i=0; i<256; i++)
     {
         tot+=thisAgent->if_no_merging[i];
     }
     m_Result << "  " << std::setw(13) << tot;
 
 #ifdef SHARING_FACTORS
-    for (tot=0, i=0; i<256; i++) 
+    for (tot=0, i=0; i<256; i++)
     {
         tot+=thisAgent->if_no_sharing[i];
     }
@@ -560,8 +560,8 @@ void CommandLineInterface::GetReteStats()
 #endif
     m_Result << "\n";
 
-    m_Result << "\nActivations: " 
-        << thisAgent->num_right_activations << " right (" 
+    m_Result << "\nActivations: "
+        << thisAgent->num_right_activations << " right ("
         << thisAgent->num_null_right_activations << " null), "
         << thisAgent->num_left_activations << " left ("
         << thisAgent->num_null_left_activations << " null)\n";

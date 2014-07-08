@@ -26,7 +26,6 @@
 #include "trace.h"
 #include "wmem.h"
 #include "rhsfun.h"
-#include "utilities.h"
 
 using namespace cli;
 using namespace sml;

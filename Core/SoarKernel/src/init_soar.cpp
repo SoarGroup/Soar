@@ -32,8 +32,9 @@
 #include "io_soar.h"
 #include "rete.h"
 #include "gdatastructs.h"
+
 #include "xml.h"
-#include "utilities.h"
+#include "stats.h"
 
 #include <assert.h>
 #include <time.h>

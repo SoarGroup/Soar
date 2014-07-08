@@ -46,7 +46,7 @@
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "xml.h"
-#include "utilities.h"
+
 #include "soar_TraceNames.h"
 #include "consistency.h"
 #include "misc.h"

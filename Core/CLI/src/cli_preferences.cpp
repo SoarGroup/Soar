@@ -19,7 +19,6 @@
 
 #include "agent.h"
 #include "gdatastructs.h"
-#include "utilities.h"
 #include "print.h"
 #include "tempmem.h"
 #include "trace.h"

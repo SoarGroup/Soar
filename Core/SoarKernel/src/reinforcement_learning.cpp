@@ -30,7 +30,7 @@
 #include "tempmem.h"
 #include "print.h"
 #include "xml.h"
-#include "utilities.h"
+
 #include "recmem.h"
 
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
@@ -391,6 +391,24 @@ void rl_rule_meta( agent* thisAgent, production* prod )
 	}
 }
 
+/***************************************************************************
+ * Function     : is_natural_number
+ **************************************************************************/
+
+bool is_whole_number(const char * str)
+{
+  if(!str || !*str)
+    return false;
+
+  do {
+    if(isdigit(*str))
+      ++str;
+    else
+      return false;
+  } while(*str);
+
+  return true;
+}
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -418,8 +436,9 @@ int rl_get_template_id( const char *prod_name )
 		return -1;
 
 	// make sure id is a valid natural number
-	std::string id_str = temp.substr( last_star + 1 );
-	if ( !is_whole_number( id_str ) )
+
+    std::string id_str = temp.substr( last_star + 1 );
+    if ( !is_whole_number( id_str.c_str() ) )
 		return -1;
 
 	// convert id

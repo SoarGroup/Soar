@@ -33,6 +33,7 @@
 #include "src/soar_instance.cpp"
 #include "src/soar_module.cpp"
 #include "src/soar_rand.cpp"
+#include "src/stats.cpp"
 #include "src/symtab.cpp"
 #include "src/tempmem.cpp"
 #include "src/trace.cpp"

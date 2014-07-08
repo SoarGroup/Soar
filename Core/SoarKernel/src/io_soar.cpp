@@ -55,7 +55,7 @@
 #include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
-#include "utilities.h"
+
 
 #include "wma.h"
 
