@@ -21,8 +21,7 @@
 
 #include "reorder.h"
 #include "kernel.h"
-#include "rhsfun.h"
-
+#include "rhs.h"
 #include "production.h"
 #include "mem.h"
 #include "symtab.h"

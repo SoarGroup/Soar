@@ -28,8 +28,8 @@
 #include "mem.h"
 #include "lexer.h"
 #include "symtab.h"
-
-#include "rhsfun.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "instantiations.h"
 #include "production.h"
 #include "gsysparam.h"

@@ -28,9 +28,9 @@
 #include "init_soar.h"
 #include "wmem.h"
 #include "debug.h"
-
 #include "rete.h"
-#include "rhsfun.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "production.h"
 #include "instantiations.h"
 #include "xml.h"

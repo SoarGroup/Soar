@@ -25,7 +25,7 @@
 #include "print.h"
 #include "trace.h"
 #include "wmem.h"
-#include "rhsfun.h"
+#include "rhs.h"
 #include "decide.h"
 
 using namespace cli;

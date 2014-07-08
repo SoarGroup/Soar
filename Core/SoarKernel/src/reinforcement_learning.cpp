@@ -23,7 +23,7 @@
 #include "agent.h"
 #include "reinforcement_learning.h"
 #include "production.h"
-#include "rhsfun.h"
+#include "rhs.h"
 #include "instantiations.h"
 #include "rete.h"
 #include "wmem.h"

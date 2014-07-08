@@ -20,6 +20,8 @@
 #include "instantiations.h"
 #include "rete.h"
 #include "reorder.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "output_manager.h"
 #include "prefmem.h"
 #include "wmem.h"

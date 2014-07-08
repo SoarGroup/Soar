@@ -21,7 +21,8 @@
 #include "callback.h"
 #include "agent.h"
 #include "init_soar.h"
-#include "rhsfun.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "production.h" // for struct multi_attributes
 #include "print.h"      // for symboltostring
 #include "decide.h"

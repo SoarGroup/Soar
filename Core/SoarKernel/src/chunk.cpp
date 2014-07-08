@@ -34,7 +34,7 @@
 #include "agent.h"
 #include "instantiations.h"
 #include "production.h"
-#include "rhsfun.h"
+#include "rhs.h"
 #include "print.h"
 #include "init_soar.h"
 #include "prefmem.h"

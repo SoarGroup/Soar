@@ -28,7 +28,8 @@
 
 #include "production.h"
 #include "mem.h"
-#include "rhsfun.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "agent.h"
 #include "init_soar.h"
 #include "print.h"

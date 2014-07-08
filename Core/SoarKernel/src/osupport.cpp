@@ -33,7 +33,7 @@
 #include "kernel.h"
 #include "production.h"
 #include "instantiations.h"
-#include "rhsfun.h"
+#include "rhs.h"
 #include "print.h"
 #include "reorder.h"
 #include "rete.h"

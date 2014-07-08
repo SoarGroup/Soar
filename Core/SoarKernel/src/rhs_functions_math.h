@@ -5,7 +5,7 @@
 
 /*************************************************************************
  *
- *  file:  rhsfun_math.h
+ *  file:  rhs_functions_math.h
  *
  * =======================================================================
  *  used only by rhsfun.cpp ...  explicitly add to file and drop this one?
@@ -13,8 +13,8 @@
  * =======================================================================
  */
 
-#ifndef RHSFUN_MATH_H
-#define RHSFUN_MATH_H
+#ifndef rhs_functions_math_H
+#define rhs_functions_math_H
 
 
 typedef struct agent_struct agent;

@@ -2,33 +2,6 @@
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
-
-/* ====================================================================
-                             rhsfun.h
-
-   The system maintains a list of available RHS functions.  Functions
-   can appear on the RHS of productions either as values (in make actions
-   or as arguments to other function calls) or as stand-alone actions
-   (e.g., "write" and "halt").  When a function is executed, its C code
-   is called with one parameter--a (consed) list of the arguments (symbols).
-   The C function should return either a symbol (if all goes well) or NIL
-   (if an error occurred, or if the function is a stand-alone action).
-
-   All available RHS functions should be setup at system startup time via
-   calls to add_rhs_function().  It takes as arguments the name of the
-   function (a symbol), a pointer to the corresponding C function, the
-   number of arguments the function expects (-1 if the function can take
-   any number of arguments), and flags indicating whether the function can
-   be a RHS value or a stand-alone action.
-
-   Lookup_rhs_function() takes a symbol and returns the corresponding
-   rhs_function structure (or NIL if there is no such function).
-
-   Init_built_in_rhs_functions() should be called at system startup time
-   to setup all the built-in functions.
-==================================================================== */
-
-
 /* -------------------------------------------------------------------
                       Right-Hand-Side Values
 
@@ -52,15 +25,38 @@
    while two representing the same funcall will not be equal (==).
 ------------------------------------------------------------------- */
 
-#ifndef RHSFUN_H
-#define RHSFUN_H
+#ifndef RHS_H
+#define RHS_H
 
-typedef char * rhs_value;
-typedef unsigned char byte;
-typedef unsigned short rete_node_level;
+#include "kernel.h"
+
+/* -- Forward declarations -- */
+typedef struct condition_struct condition;
 typedef struct cons_struct cons;
 typedef cons list;
+typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
+typedef unsigned char byte;
+typedef unsigned short rete_node_level;
+typedef char * rhs_value;
+
+/* ------------------------------------ */
+/* Utilities for actions and RHS values */
+/* ------------------------------------ */
+
+/* --- Deallocates the given rhs_value. --- */
+extern void deallocate_rhs_value (agent* thisAgent, rhs_value rv);
+
+/* --- Returns a new copy of the given rhs_value. --- */
+extern rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv);
+
+/* --- Deallocates the given action (singly-linked) list. --- */
+extern void deallocate_action_list (agent* thisAgent, action *actions);
+
+/* --- Looks through an rhs_value, returns appropriate first letter for a
+   dummy variable to follow it.  Returns '*' if none found. --- */
+extern char first_letter_from_rhs_value (rhs_value rv);
+
 
 
 inline bool rhs_value_is_symbol(rhs_value rv)
@@ -184,29 +180,5 @@ typedef struct action_struct {
   rhs_value value;   /* for FUNCALL_ACTION's, this holds the funcall */
   rhs_value referent;
 } action;
-
-typedef Symbol * ((*rhs_function_routine)(agent* thisAgent, ::list *args, void* user_data));
-
-typedef struct rhs_function_struct {
-  struct rhs_function_struct *next;
-  Symbol *name;
-  rhs_function_routine f;
-  int num_args_expected;     /* -1 means it can take any number of args */
-  bool can_be_rhs_value;
-  bool can_be_stand_alone_action;
-  void* user_data;           /* Pointer to anything the user may want to pass into the function */
-} rhs_function;
-
-extern void add_rhs_function (agent* thisAgent,
-                              Symbol *name,
-                              rhs_function_routine f,
-                              int num_args_expected,
-                              bool can_be_rhs_value,
-                              bool can_be_stand_alone_action,
-                              void* user_data);
-extern void remove_rhs_function (agent* thisAgent, Symbol *name);
-extern rhs_function *lookup_rhs_function(agent* thisAgent, Symbol *name);
-extern void init_built_in_rhs_functions(agent* thisAgent);
-extern void remove_built_in_rhs_functions(agent* thisAgent);
 
 #endif

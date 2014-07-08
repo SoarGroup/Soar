@@ -236,23 +236,6 @@ extern bool conditions_are_equal (condition *c1, condition *c2);
 /* --- Returns a hash value for the given condition. --- */
 extern uint32_t hash_condition (agent* thisAgent, condition *cond);
 
-/* ------------------------------------ */
-/* Utilities for actions and RHS values */
-/* ------------------------------------ */
-
-/* --- Deallocates the given rhs_value. --- */
-extern void deallocate_rhs_value (agent* thisAgent, rhs_value rv);
-
-/* --- Returns a new copy of the given rhs_value. --- */
-extern rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv);
-
-/* --- Deallocates the given action (singly-linked) list. --- */
-extern void deallocate_action_list (agent* thisAgent, action *actions);
-
-/* --- Looks through an rhs_value, returns appropriate first letter for a
-   dummy variable to follow it.  Returns '*' if none found. --- */
-extern char first_letter_from_rhs_value (rhs_value rv);
-
 /* ------------------ */
 /* Utilities for nots */
 /* ------------------ */

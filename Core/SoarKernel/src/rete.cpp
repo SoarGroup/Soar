@@ -92,7 +92,6 @@
 #include "kernel.h"
 #include "mem.h"
 #include "wmem.h"
-
 #include "explain.h"
 #include "symtab.h"
 #include "agent.h"
@@ -100,7 +99,8 @@
 #include "production.h"
 #include "init_soar.h"
 #include "instantiations.h"
-#include "rhsfun.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"

@@ -7,7 +7,7 @@
 
 /*************************************************************************
  *
- *  file:  rhsfun_math.cpp
+ *  file:  rhs_functions_math.cpp
  *
  * =======================================================================
  *  Support routines for doing math in the RHS of productions.
@@ -19,14 +19,15 @@
 
 #include <stdlib.h>
 
-#include "rhsfun_math.h"
+#include "rhs_functions_math.h"
 #include "symtab.h"
 #include "kernel.h"
 #include "mem.h"
 #include "print.h"
 #include "lexer.h"
-#include "rhsfun.h"
 #include "soar_rand.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 
 #include <math.h>
 

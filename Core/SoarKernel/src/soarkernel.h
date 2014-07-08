@@ -31,7 +31,7 @@ struct node_varnames_struct;
 #include "lexer.h"
 #include "symtab.h"
 
-#include "rhsfun.h"
+#include "rhs_functions.h"
 #include "instantiations.h"
 #include "production.h"
 #include "gsysparam.h"
