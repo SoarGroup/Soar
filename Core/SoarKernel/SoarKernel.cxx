@@ -12,7 +12,7 @@
 #include "src/explain.cpp"
 #include "src/exploration.cpp"
 #include "src/init_soar.cpp"
-#include "src/io.cpp"
+#include "src/io_soar.cpp"
 #include "src/lexer.cpp"
 #include "src/mem.cpp"
 #include "src/osupport.cpp"
