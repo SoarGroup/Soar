@@ -29,12 +29,6 @@
 
 #include "gdatastructs.h"
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-
 typedef signed short goal_stack_level;
 typedef struct slot_struct slot;
 typedef struct wme_struct wme;
@@ -87,9 +81,5 @@ Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool 
 Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool noneOk);
 
 /* REW: end   08.20.97 */
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

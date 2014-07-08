@@ -39,12 +39,6 @@
 
 #include "gdatastructs.h"
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-
 typedef unsigned char byte;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
@@ -61,16 +55,6 @@ extern preference *make_preference (agent* thisAgent, byte type, Symbol *id, Sym
 
 extern bool possibly_deallocate_preference_and_clones (agent* thisAgent, preference *pref);
 
-#ifdef USE_MACROS
-
-#define preference_add_ref(p) { (p)->reference_count++; }
-#define preference_remove_ref(thisAgent, p) { \
-  (p)->reference_count--; \
-  if ((p)->reference_count == 0) \
-    possibly_deallocate_preference_and_clones(thisAgent, p); }
-
-#else
-
 inline void preference_add_ref(preference * p)
 {
   (p)->reference_count++;
@@ -83,17 +67,11 @@ inline void preference_remove_ref(agent* thisAgent, preference * p)
     possibly_deallocate_preference_and_clones(thisAgent, p);
 }
 
-#endif /* USE_MACROS */
-
 extern void deallocate_preference (agent* thisAgent, preference *pref);
 
 extern bool add_preference_to_tm (agent* thisAgent, preference *pref);
 extern void remove_preference_from_tm (agent* thisAgent, preference *pref);
 extern void process_o_rejects_and_deallocate_them (agent* thisAgent,
 												   preference *o_rejects, pref_buffer_list& bufdeallo);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

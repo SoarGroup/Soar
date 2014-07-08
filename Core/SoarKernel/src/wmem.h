@@ -36,12 +36,6 @@
 #ifndef WMEM_H
 #define WMEM_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-
 typedef uint64_t tc_number;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
@@ -161,15 +155,6 @@ typedef struct wme_struct {
 
 } wme;
 
-#ifdef USE_MACROS
-
-#define wme_add_ref(w) { (w)->reference_count++; }
-#define wme_remove_ref(thisAgent, w) { \
-  if ((w)->reference_count != 0) (w)->reference_count--;   \
-  if ((w)->reference_count == 0) deallocate_wme(thisAgent, w); }
-
-#else
-
 inline void wme_add_ref(wme * w) {
    (w)->reference_count++;
 }
@@ -181,12 +166,5 @@ inline void wme_remove_ref(agent* thisAgent, wme * w)
   if ((w)->reference_count != 0) (w)->reference_count--;
   if ((w)->reference_count == 0) deallocate_wme(thisAgent, w);
 }
-
-#endif /* USE_MACROS */
-
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

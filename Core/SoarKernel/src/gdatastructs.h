@@ -20,12 +20,6 @@
 
 #include <set>
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-
 typedef unsigned char byte;
 typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
@@ -289,34 +283,10 @@ typedef struct slot_struct {
 
 typedef char * test;
 
-#ifdef USE_MACROS
-
-#define test_is_blank_test(t) ((t)==NIL)
-#define test_is_complex_test(t) (((uint64_t)(t)) & 1)
-#define test_is_blank_or_equality_test(t) (! test_is_complex_test(t))
-
-#define make_blank_test() ((test)NIL)
-#define make_equality_test(sym) ((sym)->reference_count++, (test)(sym)) // what's this???
-#define make_equality_test_without_adding_reference(sym) ((test)(sym))
-#define make_blank_or_equality_test(sym_or_nil) \
-  ((sym_or_nil) ? make_equality_test(sym_or_nil) : make_blank_test() )
-#define make_test_from_complex_test(ct) ((test) (((char *)(ct))+1))
-
-#define referent_of_equality_test(t) ((Symbol *) (t))
-#define complex_test_from_test(t) ((complex_test *) (((char *)(t))-1))
-
-#else
-
 inline bool test_is_blank_test(test t)
 {
   return (t == NIL);
 }
-
-//// This is to silence a warning (warning C4311: 'static_cast' : pointer truncation from 'test' to 'uint64_t')
-//// that only appears when the project settings are set to warn on possible 64-bit portability issues.
-//#ifdef _MSC_VER
-//#pragma warning (disable : 4311)
-//#endif
 
 inline bool test_is_complex_test(test t)
 {
@@ -376,8 +346,6 @@ inline complex_test * complex_test_from_test(test t)
 {
   return reinterpret_cast<complex_test *>(t - 1);
 }
-
-#endif /* USE_MACROS */
 
 typedef struct complex_test_struct {
   byte type;                  /* see definitions below */
@@ -472,9 +440,5 @@ typedef struct condition_struct {
   bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
   reorder_info reorder;  /* used only during reordering */
 } condition;
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

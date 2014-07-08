@@ -78,31 +78,6 @@ using namespace soar_TraceNames;
    the grounds.
 ==================================================================== */
 
-#ifdef USE_MACROS
-
-#define add_to_grounds(thisAgent, cond) { \
-  if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc) { \
-    (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc; \
-    push (thisAgent, (cond), thisAgent->grounds); } }
-
-#define add_to_potentials(thisAgent, cond) { \
-  if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc) { \
-    (cond)->bt.wme_->potentials_tc = thisAgent->potentials_tc; \
-    (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace; \
-    push (thisAgent, (cond), thisAgent->positive_potentials); \
-  } else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace) { \
-    push (thisAgent, (cond), thisAgent->positive_potentials); } }
-
-#define add_to_locals(thisAgent, cond) { \
-  if ((cond)->bt.wme_->locals_tc != thisAgent->locals_tc) { \
-    (cond)->bt.wme_->locals_tc = thisAgent->locals_tc; \
-    (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace; \
-    push (thisAgent, (cond), thisAgent->locals); \
-  } else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace) { \
-    push (thisAgent, (cond), thisAgent->locals); } }
-
-#else
-
 inline void add_to_grounds(agent* thisAgent, condition * cond)
 {
   if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc) {
@@ -129,7 +104,6 @@ inline void add_to_locals(agent* thisAgent, condition * cond)
   } else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace) {
     push (thisAgent, (cond), thisAgent->locals); }
 }
-#endif /* USE_MACROS */
 
 /* -------------------------------------------------------------------
                      Backtrace Through Instantiation

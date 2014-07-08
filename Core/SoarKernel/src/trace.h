@@ -39,11 +39,6 @@
 #ifndef TRACE_H
 #define TRACE_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 /* trace format type restrictions */
 #define FOR_ANYTHING_TF 0          /* format applies to any object */
 #define FOR_STATES_TF 1            /* format applies only to states */
@@ -59,18 +54,11 @@ extern bool add_trace_format (agent* thisAgent, bool stack_trace, int type_restr
 extern bool remove_trace_format (agent* thisAgent, bool stack_trace, int type_restriction,
                                  Symbol *name_restriction);
 extern void print_all_trace_formats (agent* thisAgent, bool stack_trace);
-//#ifdef USE_TCL
 extern void print_all_trace_formats_tcl (bool stack_trace);
-//#endif /* USE_TCL */
 extern void print_object_trace (agent* thisAgent, Symbol *object);
 extern void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slot_type,
                                bool allow_cycle_counts);
 
 extern char * help_on_trace_format_escapes[];
 
-#ifdef __cplusplus
-//}
 #endif
-
-#endif
-

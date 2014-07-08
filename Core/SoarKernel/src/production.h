@@ -58,11 +58,6 @@
 #ifndef PRODUCTION_H
 #define PRODUCTION_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 #define UNDECLARED_SUPPORT 0
 #define DECLARED_O_SUPPORT 1
 #define DECLARED_I_SUPPORT 2
@@ -374,16 +369,6 @@ extern void excise_all_productions(agent* thisAgent,
 
 extern bool canonical_cond_greater(condition *c1, condition *c2);
 
-#ifdef USE_MACROS
-
-#define production_add_ref(p) { (p)->reference_count++; }
-#define production_remove_ref(thisAgent, p) { \
-  (p)->reference_count--; \
-  if ((p)->reference_count == 0) \
-    deallocate_production(thisAgent, p); }
-
-#else
-
 inline void production_add_ref(production * p)
 {
   (p)->reference_count++;
@@ -395,11 +380,5 @@ inline void production_remove_ref(agent* thisAgent, production * p)
   if ((p)->reference_count == 0)
     deallocate_production(thisAgent, p);
 }
-
-#endif /* USE_MACROS */
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

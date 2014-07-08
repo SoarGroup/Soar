@@ -28,12 +28,6 @@
 
 #include "callback.h"
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-
 typedef unsigned char byte;
 typedef struct cons_struct cons;
 typedef struct wme_struct wme;
@@ -208,9 +202,5 @@ extern void add_output_function (agent* thisAgent, soar_callback_fn f,
 				 int eventID,
 				 const char * output_link_name);
 extern void remove_output_function (agent* thisAgent, const char * name);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

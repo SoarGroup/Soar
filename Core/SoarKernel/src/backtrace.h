@@ -20,11 +20,6 @@
 #ifndef BACKTRACE_H
 #define BACKTRACE_H
 
-#ifdef __cplusplus
-extern "C"
-//{
-#endif
-
 
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
@@ -56,9 +51,5 @@ extern void backtrace_through_instantiation (agent* thisAgent,
 
 // To print out the message similar to: a chunk was not created because...
 void report_local_negation (agent* thisAgent, condition* c);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

@@ -68,14 +68,6 @@ using namespace soar_TraceNames;
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
 
-#ifdef USE_MACROS
-#define add_results_if_needed(thisAgent, sym) \
-  { if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE) \
-      if ( ((sym)->id->level >= thisAgent->results_match_goal_level) && \
-           ((sym)->tc_num != thisAgent->results_tc_number) ) \
-        add_results_for_id(thisAgent, sym); }
-
-#else
 inline void add_results_if_needed(agent* thisAgent, Symbol * sym)
 {
   if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE)
@@ -83,7 +75,6 @@ inline void add_results_if_needed(agent* thisAgent, Symbol * sym)
            ((sym)->tc_num != thisAgent->results_tc_number) )
         add_results_for_id(thisAgent, sym);
 }
-#endif /* USE_MACROS */
 
 extern void add_pref_to_results (agent* thisAgent, preference *pref) {
   preference *p;

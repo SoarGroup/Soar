@@ -37,11 +37,6 @@
 #ifndef CALLBACK_H_INCLUDED         /* Avoid duplicate includes  */
 #define CALLBACK_H_INCLUDED
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 /* First we define the possible callbacks in an enum.  Then we  */
 /* describe how each one will be called in user code.           */
 
@@ -396,10 +391,6 @@ extern void soar_remove_callback (agent* thisAgent,
 extern void soar_test_all_monitorable_callbacks(agent*);
 
 extern void soar_print_detailed_callback_stats();
-#endif
-
-#ifdef __cplusplus
-//}
 #endif
 
 #endif

@@ -29,12 +29,6 @@
    from the rhs function to this prefference adding code)*/
 extern wme* glbDeepCopyWMEs;
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-
 typedef signed short goal_stack_level;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
@@ -55,25 +49,13 @@ extern void build_CDPS (agent* thisAgent, instantiation *inst);
 
 extern void deallocate_instantiation (agent* thisAgent, instantiation *inst);
 
-#ifdef USE_MACROS
-#define possibly_deallocate_instantiation(thisAgent, inst) { \
-  if ((! (inst)->preferences_generated) && \
-      (! (inst)->in_ms)) \
-    deallocate_instantiation (thisAgent, inst); }
-
-#else
 inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation * inst)
 {
   if ((! (inst)->preferences_generated) &&
       (! (inst)->in_ms))
     deallocate_instantiation (thisAgent, inst);
 }
-#endif /* USE_MACROS */
 
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

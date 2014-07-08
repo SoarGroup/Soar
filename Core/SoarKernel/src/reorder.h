@@ -11,12 +11,6 @@
 #ifndef REORDER_H
 #define REORDER_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-
 typedef uint64_t tc_number;
 typedef struct cons_struct cons;
 typedef struct agent_struct agent;
@@ -32,10 +26,5 @@ extern void init_reorderer (agent* thisAgent);
 /* this prototype moved here from osupport.cpp -ajc (5/3/02) */
 extern list *collect_root_variables(agent* thisAgent, condition *, tc_number, bool);
 
-#ifdef __cplusplus
-//}
 #endif
-
-#endif
-
 

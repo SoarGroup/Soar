@@ -56,11 +56,6 @@
 
 #include <stdio.h>	// Needed for FILE token below
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 struct not_struct;
 
 
@@ -151,9 +146,5 @@ extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
 
 extern bool save_rete_net (agent* thisAgent, FILE *dest_file, bool use_rete_net_64);
 extern bool load_rete_net (agent* thisAgent, FILE *source_file);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

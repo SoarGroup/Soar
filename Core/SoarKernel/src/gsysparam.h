@@ -149,8 +149,4 @@ extern void set_sysparam (agent* thisAgent, int param_number, int64_t new_value)
 
 #define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
 
-#ifdef __cplusplus
-//}
-#endif
-
 #endif

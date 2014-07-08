@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* =======================================================================
@@ -20,18 +20,12 @@
 
    Whenever some acceptable or require preference for a context slot
    changes, we call mark_context_slot_as_acceptable_preference_changed().
-   
+
    see decide.cpp for more information in the comments.
 ======================================================================= */
 
 #ifndef DECIDE_H
 #define DECIDE_H
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 
 typedef unsigned char byte;
 typedef struct symbol_struct Symbol;
@@ -58,7 +52,7 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation *inst);
 void create_gds_for_goal( agent* thisAgent, Symbol *goal );
 extern void remove_operator_if_necessary(agent* thisAgent, slot *s, wme *w);
 
-extern int GDS_PrintCmd (/****ClientData****/ int clientData, 
+extern int GDS_PrintCmd (/****ClientData****/ int clientData,
                          /****Tcl_Interp****/ void * interp,
                          int argc, char *argv[]);
 /* REW: end   09.15.96 */
@@ -108,9 +102,5 @@ extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
 
 // SBW 5/07 added prototype
 unsigned int count_candidates(preference * candidates);
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

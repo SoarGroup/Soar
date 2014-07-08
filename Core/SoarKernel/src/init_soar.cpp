@@ -227,11 +227,7 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[MAX_GOAL_DEPTH] = 100;  /* generate an interrupt so users can recover before exceed program stack*/
   thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = 100000000; /* default to 100MB.  Event generated when exceeded*/
 
-//#ifdef USE_X_DISPLAY
-//  thisAgent->sysparams[RESPOND_TO_LOAD_ERRORS_SYSPARAM] = false;
-//#else
   thisAgent->sysparams[RESPOND_TO_LOAD_ERRORS_SYSPARAM] = true;
-//#endif
 
 #ifdef ATTENTION_LAPSE
   /* RMJ */
@@ -1160,12 +1156,7 @@ void do_one_top_level_phase (agent* thisAgent)
 			 reinterpret_cast<soar_call_data>(DECISION_PHASE) );
 
 	  if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) {
-     //     #ifdef USE_TCL
 		  print_string (thisAgent, "\n");
-    //      #else
-		  //if(thisAgent->printer_output_column != 1)
-			 // print_string ("\n");
-    //      #endif /* USE_TCL */
 		  print_lowest_slot_in_context_stack (thisAgent);
 	  }
 
@@ -1190,11 +1181,7 @@ void do_one_top_level_phase (agent* thisAgent)
 			  static_cast<soar_call_data>(thisAgent->current_phase) );
 
 		  if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) {
-			  //                  #ifdef USE_TCL
 			  print_string (thisAgent, "\n");
-			  //                  #else
-			  //				  if(thisAgent->printer_output_column != 1) print_string ("\n");
-			  //                  #endif /* USE_TCL */
 			  print_lowest_slot_in_context_stack (thisAgent);
 		  }
 		  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])

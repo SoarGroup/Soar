@@ -8,11 +8,6 @@
 #ifndef INSTANTIATIONS_H
 #define INSTANTIATIONS_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 /* -------------------------------------------------------------------
                         Instantiations and Nots
 
@@ -113,9 +108,5 @@ typedef struct pi_struct {
   instantiation *inst;
 } parent_inst;
 /* REW: end   09.15.96 */
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif

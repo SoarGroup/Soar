@@ -13,12 +13,6 @@
 #ifndef EXPLAIN_H
 #define EXPLAIN_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-
 typedef signed short goal_stack_level;
 typedef struct condition_struct condition;
 typedef struct action_struct action;
@@ -110,9 +104,5 @@ typedef struct ms_change_struct {
 
 extern bool explain_interface_routine (void);
 extern char *help_on_explain[];
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif
