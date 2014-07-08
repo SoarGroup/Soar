@@ -54,6 +54,7 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "soar_instance.h"
+#include "output_manager.h"
 #include "svs_interface.h"
 
 /* ================================================================== */
@@ -388,6 +389,7 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   // debug module settings
   newAgent->debug_params = new debug_param_container( newAgent );
+  newAgent->output_settings = new AgentOutput_Info();
 
   #ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->epmem_node_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
@@ -514,6 +516,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete_agent->stats_db = 0;
 
   delete delete_agent->debug_params;
+  delete delete_agent->output_settings;
 
   /////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////

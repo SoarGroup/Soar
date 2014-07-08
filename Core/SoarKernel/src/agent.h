@@ -76,7 +76,7 @@ typedef struct backtrace_struct backtrace_str;
 typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
-
+class AgentOutput_Info;
 class debug_param_container;
 
 // following def's moved here from old interface.h file  KJC nov 05
@@ -894,7 +894,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   // debug parameters
   debug_param_container *debug_params;
-
+  AgentOutput_Info *output_settings;
   // epmem
   epmem_param_container *epmem_params;
   epmem_stat_container *epmem_stats;

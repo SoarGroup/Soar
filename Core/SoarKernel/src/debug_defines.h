@@ -65,6 +65,9 @@
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */
 
+#define OM_Init_print_enabled on
+#define OM_Init_dprint_enabled on
+
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_db_mode           off
 #define OM_Init_XML_mode          off
@@ -133,6 +136,9 @@
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */
 
+#define OM_Init_print_enabled on
+#define OM_Init_dprint_enabled on
+
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_db_mode           off
 #define OM_Init_XML_mode          off
@@ -147,6 +153,7 @@
 #define OM_Init_stdout_dbg_mode   on
 #define OM_Init_file_dbg_mode     off
 #endif
+
 #ifdef DEBUG_REFCOUNT_SETTINGS
 /* ----------------------------------------------------------------------------------
  * -- MToDo | Remove these. Just a quick set of init settings for refcount tracing --
@@ -198,6 +205,9 @@
 
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */
+
+#define OM_Init_print_enabled on
+#define OM_Init_dprint_enabled on
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_db_mode           on
@@ -264,6 +274,9 @@
 
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */
+
+#define OM_Init_print_enabled on
+#define OM_Init_dprint_enabled off
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_db_mode           off

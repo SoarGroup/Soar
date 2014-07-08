@@ -38,12 +38,15 @@ class Soar_Instance;
 class OM_DB;
 class OM_Parameters;
 
-typedef struct AgentOutput_Info_Struct {
-    agent * soarAgent;
-    sml::Agent * clientAgent;
-    bool print_enabled, db_mode, XML_mode, callback_mode, stdout_mode, file_mode;
-    bool dprint_enabled, db_dbg_mode, XML_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
-} AgentOutput_Info;
+class AgentOutput_Info
+{
+    public:
+        AgentOutput_Info();
+
+        bool print_enabled, db_mode, callback_mode, file_mode;
+        bool dprint_enabled, db_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
+        int  printer_output_column;
+} ;
 
 
 
@@ -107,12 +110,11 @@ class Output_Manager
     Soar_Instance                           * m_Soar_Instance;
     sml::Kernel                             * m_Kernel;
     agent                                   * m_defaultAgent;
-    std::map< agent *, AgentOutput_Info *>  * m_agent_table;
     OM_Parameters                           * m_params;
     OM_DB                                   * m_db;
 
-    bool print_enabled, db_mode, callback_mode, stdout_mode, file_mode;
-    bool dprint_enabled, db_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
+    bool print_enabled, db_mode, stdout_mode, file_mode;
+    bool dprint_enabled, db_dbg_mode, stdout_dbg_mode, file_dbg_mode;
 
     /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
      *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
@@ -123,8 +125,7 @@ class Output_Manager
     int64_t next_output_string;
 
     int     printer_output_column;
-    int     saved_printer_output_column;
-    bool    update_printer_column(agent *pSoarAgent, const char *msg);
+    void    update_printer_columns(agent *pSoarAgent, bool update_global, const char *msg);
 
 };
 
