@@ -29,7 +29,7 @@
 #include "chunk.h"
 #include "symtab.h"
 #include "wmem.h"
-#include "gdatastructs.h"
+
 #include "kernel.h"
 #include "agent.h"
 #include "instantiations.h"
@@ -45,8 +45,8 @@
 #include "rete.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
-
 #include "wma.h"
+#include "test.h"
 
 #include <ctype.h>
 

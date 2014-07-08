@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -21,6 +21,7 @@
 
 #include "decide.h"
 #include "misc.h"
+#include "prefmem.h"
 
 /***************************************************************************
  * Function     : select_init
@@ -38,10 +39,10 @@ void select_next_operator( agent *thisAgent, const char *operator_id )
 {
 	select_init( thisAgent );
 	std::string& op = thisAgent->select->select_operator;
-	
+
 	thisAgent->select->select_enabled = true;
 	op.assign(operator_id);
-	
+
 	assert( !op.empty() );
 
 	// lazy users may use a lower-case letter
@@ -90,7 +91,7 @@ preference *select_force( agent *thisAgent, preference *candidates, bool reinit 
 				if ( !thisAgent->select->select_operator.compare( temp ) )
 					return_val = cand;
 			}
-			
+
 			cand = cand->next;
 		}
 

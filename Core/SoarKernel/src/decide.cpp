@@ -20,7 +20,7 @@
 
 
 #include "decide.h"
-#include "gdatastructs.h"
+
 #include "instantiations.h"
 #include "mem.h"
 #include "kernel.h"
@@ -49,6 +49,7 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "svs_interface.h"
+#include "test.h"
 
 #include "assert.h"
 

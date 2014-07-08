@@ -21,7 +21,7 @@
 #include "wmem.h"
 #include "symtab.h"
 #include "decide.h"
-#include "gdatastructs.h"
+
 #include "print.h"
 #include "soar_TraceNames.h"
 #include "misc.h"

@@ -92,7 +92,7 @@
 #include "kernel.h"
 #include "mem.h"
 #include "wmem.h"
-#include "gdatastructs.h"
+
 #include "explain.h"
 #include "symtab.h"
 #include "agent.h"
@@ -108,7 +108,8 @@
 #include "reinforcement_learning.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-
+#include "test.h"
+#include "decide.h"
 
 #include "assert.h"
 

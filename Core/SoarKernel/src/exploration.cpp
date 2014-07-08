@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -32,6 +32,8 @@
 #include "misc.h"
 
 #include "instantiations.h"
+#include "prefmem.h"
+#include "decide.h"
 
 using namespace soar_TraceNames;
 
@@ -92,7 +94,7 @@ const char *exploration_convert_policy( const int policy )
  * Function     : exploration_set_policy
  **************************************************************************/
 bool exploration_set_policy( agent *thisAgent, const char *policy_name )
-{	
+{
 	const int policy = exploration_convert_policy( policy_name );
 
 	if ( policy )
@@ -102,13 +104,13 @@ bool exploration_set_policy( agent *thisAgent, const char *policy_name )
 }
 
 bool exploration_set_policy( agent *thisAgent, const int policy )
-{	
+{
 	if ( exploration_valid_policy( policy ) )
 	{
 		set_sysparam( thisAgent, USER_SELECT_MODE_SYSPARAM, policy );
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -171,7 +173,7 @@ const bool exploration_valid_parameter( agent *thisAgent, const int parameter )
  * Function     : exploration_get_parameter_value
  **************************************************************************/
 double exploration_get_parameter_value( agent *thisAgent, const char *parameter )
-{	
+{
 	const int param = exploration_convert_parameter( thisAgent, parameter );
 	if ( param == EXPLORATION_PARAMS )
 		return 0;
@@ -270,7 +272,7 @@ bool exploration_set_auto_update( agent *thisAgent, bool setting )
  * Function     : exploration_update_parameters
  **************************************************************************/
 void exploration_update_parameters( agent *thisAgent )
-{	
+{
 	if ( exploration_get_auto_update( thisAgent ) )
 	{
 		for ( int i = 0; i < EXPLORATION_PARAMS; ++i )
@@ -345,17 +347,17 @@ const int exploration_get_reduction_policy( agent *thisAgent, const int paramete
  * Function     : exploration_valid_reduction_policy
  **************************************************************************/
 bool exploration_valid_reduction_policy( agent * /*thisAgent*/, const char * /*parameter*/, const char *policy_name )
-{	
+{
 	return exploration_convert_reduction_policy( policy_name ) != EXPLORATION_REDUCTIONS;
 }
 
 bool exploration_valid_reduction_policy( agent * /*thisAgent*/, const char * /*parameter*/, const int policy )
-{	
+{
 	return exploration_convert_reduction_policy( policy ) != NULL;
 }
 
 bool exploration_valid_reduction_policy( agent * /*thisAgent*/, const int /*parameter*/, const int policy )
-{	
+{
 	return exploration_convert_reduction_policy( policy ) != NULL;
 }
 
@@ -460,7 +462,7 @@ double exploration_get_reduction_rate( agent *thisAgent, const char *parameter, 
 }
 
 double exploration_get_reduction_rate( agent *thisAgent, const int parameter, const int policy )
-{	
+{
 	if ( exploration_valid_parameter( thisAgent, parameter ) &&
 		 exploration_valid_reduction_policy( thisAgent, parameter, policy ) )
 		return thisAgent->exploration_params[ parameter ]->rates[ policy ];
@@ -501,7 +503,7 @@ bool exploration_set_reduction_rate( agent *thisAgent, const int parameter, cons
  * Function     : exploration_choose_according_to_policy
  **************************************************************************/
 preference *exploration_choose_according_to_policy( agent *thisAgent, slot *s, preference *candidates )
-{	
+{
 	const int exploration_policy = exploration_get_policy( thisAgent );
 	preference *return_val = NULL;
 
@@ -557,7 +559,7 @@ preference *exploration_choose_according_to_policy( agent *thisAgent, slot *s, p
 			break;
 	}
 
-	// should perform update here for chosen candidate in sarsa	
+	// should perform update here for chosen candidate in sarsa
 	if ( my_rl_enabled )
 	{
 		rl_tabulate_reward_values( thisAgent );
@@ -582,7 +584,7 @@ preference *exploration_choose_according_to_policy( agent *thisAgent, slot *s, p
  * Function     : exploration_probability_according_to_policy, bazald
  **************************************************************************/
 double exploration_probability_according_to_policy( agent *thisAgent, slot *s, preference *candidates, preference *selection )
-{ 
+{
   const int exploration_policy = exploration_get_policy(thisAgent);
 
   // get preference values for each candidate
@@ -733,7 +735,7 @@ preference *exploration_probabilistically_select( preference *candidates )
  * Select a candidate whose Q-value is Q_i with probability
  *
  * e^(Q_i / t) / sum(j=1 to n, e^(Q_j / t)).
- * 
+ *
  * Since Q values can get very large or very small (negative values),
  * overflow and underflow problems can occur when calculating the
  * exponentials. This is avoided by subtracting a constant k from
@@ -755,13 +757,13 @@ preference *exploration_boltzmann_select( agent *thisAgent, preference *candidat
 	double t = exploration_get_parameter_value( thisAgent, EXPLORATION_PARAM_TEMPERATURE );
 	double maxq;
 	preference* c;
-	
+
 	maxq = candidates->numeric_value;
 	for (c = candidates->next_candidate; c; c = c->next_candidate) {
 		if (maxq < c->numeric_value)
 			maxq = c->numeric_value;
 	}
-	
+
 	double exptotal = 0.0;
 	std::list<double> expvals;
 	std::list<double>::iterator i;
@@ -772,7 +774,7 @@ preference *exploration_boltzmann_select( agent *thisAgent, preference *candidat
 		expvals.push_back(v);
 		exptotal += v;
 	}
-	
+
 	// output trace information
 	if ( thisAgent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
 	{
@@ -798,7 +800,7 @@ preference *exploration_boltzmann_select( agent *thisAgent, preference *candidat
 		if (sum >= r)
 			return c;
 	}
-	
+
 	return NIL;
 }
 
@@ -845,7 +847,7 @@ preference *exploration_get_highest_q_value_pref( preference *candidates )
 			top_value = cand->numeric_value;
 			top_cand = cand;
 			num_max_cand = 1;
-		} 
+		}
 		else if ( cand->numeric_value == top_value )
 			++num_max_cand;
 	}

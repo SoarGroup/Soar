@@ -25,7 +25,7 @@
 #include "kernel.h"
 #include "print.h"
 #include "wmem.h"
-#include "gdatastructs.h"
+
 #include "agent.h"
 #include "instantiations.h"
 #include "production.h"
@@ -34,6 +34,8 @@
 #include "recmem.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "test.h"
+#include "prefmem.h"
 
 using namespace soar_TraceNames;
 

@@ -24,6 +24,7 @@
 #include "prefmem.h"
 #include "wmem.h"
 #include "soar_instance.h"
+#include "test.h"
 
 inline void dprint_string(TraceMode mode, const char *message, bool noPrefix=false)
 {

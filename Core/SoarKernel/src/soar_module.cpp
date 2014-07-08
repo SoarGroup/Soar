@@ -17,7 +17,7 @@
 #include "soar_module.h"
 
 #include "agent.h"
-#include "gdatastructs.h"
+
 #include "instantiations.h"
 #include "tempmem.h"
 #include "prefmem.h"
@@ -29,6 +29,7 @@
 #include "agent.h"
 #include "soar_TraceNames.h"
 #include "wma.h"
+#include "test.h"
 
 wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
 typedef struct agent_struct agent;

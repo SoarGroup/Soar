@@ -23,10 +23,12 @@
 #include "tempmem.h"
 #include "kernel.h"
 #include "symtab.h"
-#include "gdatastructs.h"
+
 #include "mem.h"
 #include "agent.h"
 #include "prefmem.h"
+#include "decide.h"
+
 
 /* **********************************************************************
 

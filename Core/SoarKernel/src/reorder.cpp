@@ -22,7 +22,7 @@
 #include "reorder.h"
 #include "kernel.h"
 #include "rhsfun.h"
-#include "gdatastructs.h"
+
 #include "production.h"
 #include "mem.h"
 #include "symtab.h"
@@ -31,6 +31,7 @@
 #include "init_soar.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "test.h"
 
 /* *********************************************************************
 

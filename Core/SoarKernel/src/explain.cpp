@@ -32,7 +32,7 @@
 #include "agent.h"
 #include "backtrace.h"
 #include "production.h"
-#include "gdatastructs.h"
+
 #include "print.h"
 
 /* Define the "local" globals if that makes sense.   

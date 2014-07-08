@@ -19,7 +19,7 @@
                  Printing Utility Routines for Soar 6
    ================================================================= */
 
-#include "gdatastructs.h"
+
 
 #include "print.h"
 #include "kernel.h"
@@ -37,6 +37,7 @@
 #include "soar_TraceNames.h"
 #include "output_manager.h"
 #include "prefmem.h"
+#include "test.h"
 
 #include <stdlib.h>
 #include <stdarg.h>

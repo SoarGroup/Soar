@@ -25,7 +25,7 @@
 #include "parser.h"
 #include "symtab.h"
 #include "kernel.h"
-#include "gdatastructs.h"
+
 #include "production.h"
 #include "mem.h"
 #include "rhsfun.h"
@@ -36,7 +36,7 @@
 #include "xml.h"
 #include "reinforcement_learning.h"
 #include "semantic_memory.h"
-
+#include "test.h"
 #include <ctype.h>
 
 /* =================================================================

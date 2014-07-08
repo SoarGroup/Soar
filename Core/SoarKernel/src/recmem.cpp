@@ -28,7 +28,7 @@
 
 #include <stdlib.h>
 
-#include "gdatastructs.h"
+
 #include "instantiations.h"
 #include "kernel.h"
 #include "mem.h"
@@ -46,7 +46,7 @@
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "xml.h"
-
+#include "decide.h"
 #include "soar_TraceNames.h"
 #include "consistency.h"
 #include "misc.h"

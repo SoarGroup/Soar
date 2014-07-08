@@ -19,6 +19,7 @@
 #include "soar_module.h"
 #include "soar_instance.h"
 #include "lexer.h"
+#include "test.h"
 
 debug_param_container::debug_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {

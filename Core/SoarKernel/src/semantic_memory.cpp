@@ -26,6 +26,7 @@
 #include "instantiations.h"
 #include "rhsfun.h"
 #include "decide.h"
+#include "test.h"
 
 #include <list>
 #include <map>

@@ -23,6 +23,7 @@
 #include "parser.h"
 #include "rete.h"
 #include "rhsfun.h"
+#include "test.h"
 
 using namespace cli;
 using namespace sml;

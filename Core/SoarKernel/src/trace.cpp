@@ -34,7 +34,7 @@
 #include "agent.h"
 #include "print.h"
 #include "init_soar.h"
-#include "gdatastructs.h"
+#include "decide.h"
 #include "tempmem.h"
 #include "wmem.h"
 #include "xml.h"

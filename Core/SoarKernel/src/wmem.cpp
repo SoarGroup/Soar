@@ -20,7 +20,7 @@
 #include "wmem.h"
 #include "kernel.h"
 #include "agent.h"
-#include "gdatastructs.h"
+
 #include "symtab.h"
 #include "decide.h"
 #include "io_soar.h"

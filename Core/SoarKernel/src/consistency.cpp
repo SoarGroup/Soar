@@ -37,6 +37,7 @@
 #include "rete.h"
 #include "wmem.h"
 #include "xml.h"
+#include "prefmem.h"
 
 void remove_operator_if_necessary(agent* thisAgent, slot *s, wme *w){
 

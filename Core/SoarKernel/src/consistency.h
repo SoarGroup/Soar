@@ -27,7 +27,7 @@
 #ifndef CONSISTENCY_H
 #define CONSISTENCY_H
 
-#include "gdatastructs.h"
+
 
 typedef signed short goal_stack_level;
 typedef struct slot_struct slot;

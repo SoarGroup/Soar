@@ -30,7 +30,7 @@ struct node_varnames_struct;
 #include "mem.h"
 #include "lexer.h"
 #include "symtab.h"
-#include "gdatastructs.h"
+
 #include "rhsfun.h"
 #include "instantiations.h"
 #include "production.h"

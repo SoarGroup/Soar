@@ -8,6 +8,7 @@
 #include "wmem.h"
 #include "print.h"
 #include "soar_interface.h"
+#include "decide.h"
 
 using namespace std;
 

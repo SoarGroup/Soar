@@ -58,20 +58,7 @@
 #ifndef PRODUCTION_H
 #define PRODUCTION_H
 
-#define UNDECLARED_SUPPORT 0
-#define DECLARED_O_SUPPORT 1
-#define DECLARED_I_SUPPORT 2
-
-/* RCHONG: begin 10.11 */
-
-#define PE_PRODS 0
-#define IE_PRODS 1
-#define NO_SAVED_PRODS -1
-
-/* RCHONG: end 10.11 */
-
 struct not_struct;
-
 
 typedef char * test;
 typedef char * rhs_value;
@@ -83,12 +70,96 @@ typedef struct cons_struct cons;
 typedef struct agent_struct agent;
 typedef cons list;
 typedef struct symbol_struct Symbol;
+typedef struct wme_struct wme;
+typedef struct preference_struct preference;
+typedef signed short goal_stack_level;
 
 #include <map>
 #include <set>
+#include "enums.h"
 
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
 typedef std::set< rl_symbol_map > rl_symbol_map_set;
+
+/* -------------------------------------------------------------------
+                             Conditions
+
+   Conditions are used for two things:  (1) to represent the LHS of newly
+   entered productions (new SP's or chunks); and (2) to represent the
+   instantiated LHS in production instantiations.
+
+   Fields in a condition:
+
+      type:  indicates the type of condition:  either POSITIVE_CONDITION,
+        NEGATIVE_CONDITION, or CONJUNCTIVE_NEGATION_CONDITION.
+
+      already_in_tc:  (reserved for use by the cond_is_in_tc() stuff in
+        production.c)
+
+      next, prev:  used for a doubly-linked list of all conditions on the
+        LHS, or all subconditions of an NCC.
+
+      data.tests.id_test, data.tests.attr_test, data.tests.value_test:
+        for positive and negative conditions, these are the three wme
+        field tests for the condition.
+
+      test_for_acceptable_preference:  for positive and negative conditions,
+        this is true iff the condition tests for acceptable preference wmes.
+
+      data.ncc.top, data.ncc.bottom:  for NCC's, these point to the top and
+        bottom of the subconditions likned list.
+
+      bt:  for top-level positive conditions in production instantiations,
+        this structure gives information for that will be used in backtracing.
+
+      reorder:  (reserved for use by the reorderer)
+------------------------------------------------------------------- */
+
+
+/* --- info on conditions used for backtracing (and by the rete) --- */
+typedef struct bt_info_struct {
+  wme * wme_;               /* the actual wme that was matched */
+  goal_stack_level level;   /* level (at firing time) of the id of the wme */
+  preference *trace;        /* preference for BT, or NIL */
+
+  /* mvp 5-17-94 */
+  ::list *CDPS;            /* list of substate evaluation prefs to backtrace through,
+                              i.e. the context dependent preference set. */
+
+} bt_info;
+
+/* --- info on conditions used only by the reorderer --- */
+typedef struct reorder_info_struct {
+  ::list *vars_requiring_bindings;         /* used only during reordering */
+  struct condition_struct *next_min_cost;  /* used only during reordering */
+} reorder_info;
+
+/* --- info on positive and negative conditions only --- */
+typedef struct three_field_tests_struct {
+  test id_test;
+  test attr_test;
+  test value_test;
+} three_field_tests;
+
+/* --- info on negated conjunctive conditions only --- */
+typedef struct ncc_info_struct {
+  struct condition_struct *top;
+  struct condition_struct *bottom;
+} ncc_info;
+
+/* --- finally, the structure of a condition --- */
+typedef struct condition_struct {
+  byte type;
+  bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
+  bool test_for_acceptable_preference;   /* for pos, neg cond's only */
+  struct condition_struct *next, *prev;
+  union condition_main_data_union {
+    three_field_tests tests;             /* for pos, neg cond's only */
+    ncc_info ncc;                        /* for ncc's only */
+  } data;
+  bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
+  reorder_info reorder;  /* used only during reordering */
+} condition;
 
 typedef struct production_struct {
   Symbol *name;
@@ -143,68 +214,6 @@ typedef struct multi_attributes_struct {
 } multi_attribute;
 
 extern void init_production_utilities (agent* thisAgent);
-
-/* ------------------- */
-/* Utilities for tests */
-/* ------------------- */
-
-extern void add_all_variables_in_action (agent* thisAgent, action *a, tc_number tc,
-					 ::list **var_list);
-extern void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc,
-					 ::list **var_list);
-extern void add_bound_variables_in_condition (agent* thisAgent, condition *c, tc_number tc,
-					      ::list **var_list);
-extern void unmark_variables_and_free_list (agent* thisAgent, ::list *var_list);
-
-/* --- Takes a test and returns a new copy of it. --- */
-extern test copy_test (agent* thisAgent, test t);
-
-/* --- Same as copy_test(), only it doesn't include goal or impasse tests
-   in the new copy.  The caller should initialize the two flags to false
-   before calling this routine; it sets them to true if it finds a goal
-   or impasse test. --- */
-extern test copy_test_removing_goal_impasse_tests
-  (agent* thisAgent, test t, bool*removed_goal, bool*removed_impasse);
-
-/* --- Deallocates a test. --- */
-extern void deallocate_test (agent* thisAgent, test t);
-
-/* --- Destructively modifies the first test (t) by adding the second
-   one (add_me) to it (usually as a new conjunct).  The first test
-   need not be a conjunctive test. --- */
-extern void add_new_test_to_test (agent* thisAgent, test *t, test add_me);
-
-/* --- Same as above, only has no effect if the second test is already
-   included in the first one. --- */
-extern void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
-
-/* --- Returns true iff the two tests are identical.
-   If neg is true, ignores order of members in conjunctive tests
-   and assumes variables are all equal. --- */
-extern bool tests_are_equal (test t1, test t2, bool neg);
-
-/* --- Returns a hash value for the given test. --- */
-extern uint32_t hash_test (agent* thisAgent, test t);
-
-/* --- Returns true iff the test contains an equality test for the given
-   symbol.  If sym==NIL, returns true iff the test contains any equality
-   test. --- */
-extern bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
-
-/* --- Looks for goal or impasse tests (as directed by the two flag
-   parameters) in the given test, and returns true if one is found. --- */
-extern bool test_includes_goal_or_impasse_id_test (test t,
-                                                   bool look_for_goal,
-                                                   bool look_for_impasse);
-
-/* --- Looks through a test, and returns a new copy of the first equality
-   test it finds.  Signals an error if there is no equality test in the
-   given test. --- */
-extern test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
-
-/* --- Looks through a test, returns appropriate first letter for a dummy
-   variable to follow it.  Returns '*' if none found. --- */
-extern char first_letter_from_test (test t);
 
 /* ------------------------ */
 /* Utilities for conditions */
