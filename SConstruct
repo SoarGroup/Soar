@@ -111,11 +111,14 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
 
+AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Active TCL (>= 8.6) libraries')
+
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
 AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
 
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
+
 
 msvc_version = "12.0"
 if sys.platform == 'win32':
