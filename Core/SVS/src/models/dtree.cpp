@@ -9,7 +9,7 @@
 #include "dtree.h"
 #include "common.h"
 #include "mat.h"
-#include "posix/platform_specific.h" // for log2
+#include "platform_specific.h" // for log2
 
 using namespace std;
 
@@ -54,7 +54,7 @@ double gammln(double xx) {
 		-.210264441724104883e-3,.217439618115212643e-3,-.164318106536763890e-3,
 		.844182239838527433e-4,-.261908384015814087e-4,.368991826595316234e-5
 	};
-	
+
 	if (xx <= 0) {
 		return NAN;
 	}
@@ -75,7 +75,7 @@ double gammln(double xx) {
 class Gamma {
 public:
 	Gamma() {}
-	
+
 	// Returns the incomplete gamma function P(a, x)
 	double gammp(const double a, const double x) {
 		if (x < 0.0 || a <= 0.0) {
@@ -90,7 +90,7 @@ public:
 		}
 		return 1.0-gcf(a,x);            // Use the continued fraction representation.
 	}
-	
+
 	// Returns the incomplete gamma function Q(a, x) = 1 - P(a, x).
 	double gammq(const double a, const double x) {
 		if (x < 0.0 || a <= 0.0) {
@@ -105,7 +105,7 @@ public:
 		}
 		return gcf(a,x);                 // Use the continued fraction representation.
 	}
-	
+
 private:
 	// Returns the incomplete gamma function P(a, x) evaluated by its series representation.
 	// Also sets ln(gamma(a)) as gln.
@@ -140,7 +140,7 @@ private:
 				d=FPMIN;
 			}
 			c=b+an/c;
-			if (fabs(c) < FPMIN) { 
+			if (fabs(c) < FPMIN) {
 				c=FPMIN;
 			}
 			d=1.0/d;
@@ -159,14 +159,14 @@ private:
 		double xu, t, sum, ans;
 		double a1 = a-1.0, lna1 = log(a1), sqrta1 = sqrt(a1);
 		gln = gammln(a);
-		
+
 		// Set how far to integrate into the tail:
 		if (x > a1) {
 			xu = max(a1 + 11.5*sqrta1, x + 6.0*sqrta1);
 		} else {
 			xu = max(0., min(a1 - 7.5*sqrta1, x - 5.0*sqrta1));
 		}
-		
+
 		sum = 0;
 		for (int j=0;j<ngau;j++) {    // Gauss-Legendre.
 			 t = x + (xu-x)*y[j];
@@ -177,7 +177,7 @@ private:
 	}
 
 	// double invgammp(double p, double a);
-	
+
 	static const int ASWITCH=100;  // When to switch to quadrature method.
 	static const double EPS;       // See end of struct for initializations.
 	static const double FPMIN;
@@ -217,11 +217,11 @@ const double Gamma::w[18] = {
 class chi2 {
 public:
 	chi2() {}
-	
+
 	double cdf(double x, int k) {
 		return gam.gammp(k / 2.0, x / 2.0);
 	}
-	
+
 	double ppf(double p, int k, double tolerance) {
 		if (p < 0 || p > 1) {
 			return NAN;
@@ -231,9 +231,9 @@ public:
 			low = high;
 			high *= 2;
 		}
-		
+
 		assert(cdf(low, k) <= p && p <= cdf(high, k));
-		
+
 		while (high - low > tolerance) {
 			double m = low + (high - low) / 2.0;
 			if (cdf(m, k) > p) {
@@ -242,10 +242,10 @@ public:
 				low = m;
 			}
 		}
-		
+
 		return low;
 	}
-	
+
 private:
 	Gamma gam;
 };
@@ -257,16 +257,16 @@ public:
 			fill_chi2thresh();
 		}
 	}
-	
+
 	void fill_chi2thresh() {
 		double pv = 0.1;
-		
+
 		chi2 c;
 		for (int i = 1; i <= 10; ++i) {
 			chi2thresh.push_back(c.ppf(pv, i, 0.000001));
 		}
 	}
-	
+
 	void add(int rlabel, int clabel) {
 		int i, j;
 		for (i = 0; i < row_labels.size() && row_labels[i] != rlabel; ++i) ;
@@ -279,7 +279,7 @@ public:
 			col_labels.push_back(clabel);
 			col_ttls.push_back(0);
 		}
-		
+
 		int oldrows = counts.rows(), oldcols = counts.cols();
 		counts.conservativeResize(row_labels.size(), col_labels.size());
 		for (int k = oldrows; k < counts.rows(); ++k) {
@@ -288,13 +288,13 @@ public:
 		for (int k = oldcols; k < counts.cols(); ++k) {
 			counts.col(k).setConstant(0.0);
 		}
-		
+
 		counts(i, j) += 1.0;
 		++row_ttls[i];
 		++col_ttls[j];
 		++ttl;
 	}
-	
+
 	double score() const {
 		mat expected(row_labels.size(), col_labels.size());
 		for (int i = 0; i < row_labels.size(); ++i) {
@@ -306,14 +306,14 @@ public:
 		double s = ((counts - expected).array().square() / expected.array()).sum();
 		return s;
 	}
-	
+
 	// Returns true if data is likely to be dependent
 	bool test() const {
 		int df = (row_ttls.size() - 1) * (col_ttls.size() - 1);
 		assert(df < chi2thresh.size());
 		return score() > chi2thresh[df];
 	}
-	
+
 private:
 	vector<int> row_labels, col_labels;
 	vector<int> row_ttls, col_ttls;
@@ -332,7 +332,7 @@ int node_id_counter = 0;
  a reference to it, so it can grow after the tree is created. The
  insts_here variable indexes into this list.
 */
-ID5Tree::ID5Tree(const vector<classifier_inst> &insts, int nattrs) 
+ID5Tree::ID5Tree(const vector<classifier_inst> &insts, int nattrs)
 : id(node_id_counter++), insts(insts), split_attr(-1), cat(90909)
 {
 	for (int i = 0; i < nattrs; ++i) {
@@ -340,7 +340,7 @@ ID5Tree::ID5Tree(const vector<classifier_inst> &insts, int nattrs)
 	}
 }
 
-ID5Tree::ID5Tree(const vector<classifier_inst> &insts, const vector<int> &attrs) 
+ID5Tree::ID5Tree(const vector<classifier_inst> &insts, const vector<int> &attrs)
 : id(node_id_counter++), insts(insts), attrs_here(attrs), split_attr(-1), cat(90909)
 { }
 
@@ -368,13 +368,13 @@ void ID5Tree::update_tree(int i) {
 	if (expanded() && (left->empty() || right->empty())) {
 		shrink();
 	}
-	
+
 	if (i >= 0) {
 		assert(find(insts_here.begin(), insts_here.end(), i) == insts_here.end());
 		insts_here.push_back(i);
 		update_counts_new(i);
 	}
-	
+
 	if (cats_all_same()) {
 		cat = insts[insts_here[0]].cat;
 		shrink();
@@ -428,7 +428,7 @@ void ID5Tree::pull_up(int i) {
 		left->pull_up(i);
 		right->pull_up(i);
 		assert(left->expanded() && right->expanded());
-		
+
 		/*
 		 Children now split on i and current node splits on
 		 j. When we reverse this the left->right and right->left
@@ -439,14 +439,14 @@ void ID5Tree::pull_up(int i) {
 		vec_remove_item(right->attrs_here, i);
 		left->attrs_here.push_back(split_attr);
 		right->attrs_here.push_back(split_attr);
-		
+
 		assert(is_unique(left->attrs_here));
 		assert(is_unique(right->attrs_here));
-		
+
 		left->split_attr = split_attr;
 		right->split_attr = split_attr;
 		split_attr = i;
-		
+
 		swap(left->right, right->left);
 		left->pull_up_repair();
 		right->pull_up_repair();
@@ -461,7 +461,7 @@ void ID5Tree::pull_up_repair() {
 	insts_here.clear();
 	copy(left->insts_here.begin(), left->insts_here.end(), back_inserter(insts_here));
 	copy(right->insts_here.begin(), right->insts_here.end(), back_inserter(insts_here));
-	
+
 	update_counts_from_children();
 }
 
@@ -469,7 +469,7 @@ void ID5Tree::reset_counts() {
 	ttl_counts.clear();
 	av_counts.clear();
 	vector<int>::iterator i;
-	
+
 	/*
 	 This is just so that the map actually has all the entries,
 	 even though all counts may be 0
@@ -508,7 +508,7 @@ void ID5Tree::update_counts_new(int i) {
 void ID5Tree::update_counts_change(int i, category old) {
 	assert(find(insts_here.begin(), insts_here.end(), i) != insts_here.end());
 	assert(is_unique(attrs_here));
-	
+
 	--ttl_counts[old];
 	++ttl_counts[insts[i].cat];
 	vector<int>::iterator j;
@@ -524,7 +524,7 @@ void ID5Tree::update_counts_change(int i, category old) {
 			++c.false_counts[insts[i].cat];
 		}
 	}
-	
+
 	if (expanded()) {
 		if (insts[i].attrs[split_attr]) {
 			left->update_counts_change(i, old);
@@ -532,7 +532,7 @@ void ID5Tree::update_counts_change(int i, category old) {
 			right->update_counts_change(i, old);
 		}
 	}
-	
+
 	//assert(validate_counts());
 }
 
@@ -544,7 +544,7 @@ void ID5Tree::update_counts_change(int i, category old) {
 void ID5Tree::update_counts_from_children() {
 	ttl_counts.clear();
 	av_counts.clear();
-	
+
 	map<category, int>::iterator i;
 	for (i = left->ttl_counts.begin(); i != left->ttl_counts.end(); ++i) {
 		ttl_counts[i->first] += i->second;
@@ -556,7 +556,7 @@ void ID5Tree::update_counts_from_children() {
 		av_counts[split_attr].ttl_false += i->second;
 		av_counts[split_attr].false_counts[i->first] = i->second;
 	}
-	
+
 	vector<int>::iterator j;
 	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 		if (*j == split_attr) {
@@ -565,7 +565,7 @@ void ID5Tree::update_counts_from_children() {
 		val_counts &ccounts = av_counts[*j];
 		val_counts &lcounts = left->av_counts[*j];
 		val_counts &rcounts = right->av_counts[*j];
-		
+
 		ccounts.ttl_true = lcounts.ttl_true + rcounts.ttl_true;
 		ccounts.ttl_false = lcounts.ttl_false + rcounts.ttl_false;
 		map<category, int>::const_iterator k;
@@ -589,11 +589,11 @@ bool ID5Tree::validate_counts() {
 	map<category, int>::iterator k;
 	map<int, val_counts> ref_av_counts;
 	map<category, int> ref_ttl_counts;
-	
+
 	/* clear all zero count entries */
 	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 		val_counts &counts = av_counts[*j];
-		
+
 		k = counts.true_counts.begin();
 		while (k != counts.true_counts.end()) {
 			if (k->second == 0) {
@@ -611,7 +611,7 @@ bool ID5Tree::validate_counts() {
 			}
 		}
 	}
-	
+
 	for (i = insts_here.begin(); i != insts_here.end(); ++i) {
 		const classifier_inst &inst = insts[*i];
 		++ref_ttl_counts[inst.cat];
@@ -626,7 +626,7 @@ bool ID5Tree::validate_counts() {
 			}
 		}
 	}
-	
+
 	for (k = ttl_counts.begin(); k != ttl_counts.end(); ) {
 		if (k->second == 0) {
 			ttl_counts.erase(k++);
@@ -634,14 +634,14 @@ bool ID5Tree::validate_counts() {
 			++k;
 		}
 	}
-	
+
 	assert(ref_ttl_counts == ttl_counts);
 	assert(ref_av_counts == av_counts);
-	
+
 	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 		val_counts &counts = av_counts[*j];
 		int ttl_true = 0, ttl_false = 0;
-		
+
 		for (k = counts.true_counts.begin(); k != counts.true_counts.end(); ++k) {
 			assert (k->second + counts.false_counts[k->first] == ttl_counts[k->first]);
 			ttl_true += k->second;
@@ -661,7 +661,7 @@ bool ID5Tree::validate_counts() {
 		val_counts &counts = av_counts[*j];
 		val_counts &lcounts = left->av_counts[*j];
 		val_counts &rcounts = right->av_counts[*j];
-		
+
 		for (k = counts.true_counts.begin(); k != counts.true_counts.end(); ++k) {
 			if (k->second != lcounts.true_counts[k->first] + rcounts.true_counts[k->first]) {
 				return false;
@@ -813,9 +813,9 @@ void ID5Tree::print_graphviz(ostream &os) const {
 		}
 		lss << ")";
 	}
-	
+
 	os << '"' << this << "\" \" [label=\"" << lss.str() << "\"]" << endl;
-	
+
 	if (split_attr >= 0) {
 		os << '"' << this << "\" -> \"" << left.get() << "\" [label=\"1\"];" << endl;
 		left->print_graphviz(os);
@@ -909,7 +909,7 @@ void ID5Tree::prune() {
 	if (!expanded()) {
 		return;
 	}
-	
+
 	for (int i = 0; i < left->insts_here.size(); ++i) {
 		chi.add(0, insts[left->insts_here[i]].cat);
 	}
