@@ -545,18 +545,22 @@ double point_geom_convex_dist(const vec3 &p, const geometry_node *g) {
 	return dist > 0.0 ? dist : 0.0;
 }
 
-#include <sys/time.h>
-#include <ctime>
+/* -- Looks like some debug code for measuring performance in overlap(). Commented
+ *    out since it does build on Windows.  Also was not even printing out
+ *    timing results any more, so looks like it wasn't used. - MMA 2014 -- */
 
-long get_time(){
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	unsigned long usec = tv.tv_usec;
-	unsigned long sec = tv.tv_sec;
-	usec /= 1000;
-	sec = (sec % 1000000) * 1000;
-	return sec + usec;
-}
+//#include <sys/time.h>
+//#include <ctime>
+//
+//long get_time(){
+//	struct timeval tv;
+//	gettimeofday(&tv, NULL);
+//	unsigned long usec = tv.tv_usec;
+//	unsigned long sec = tv.tv_sec;
+//	usec /= 1000;
+//	sec = (sec % 1000000) * 1000;
+//	return sec + usec;
+//}
 
 /*  overlap(sgnode* n1, sgnode* n2)
  * This will estimate the percentage of node 1 that is contained within node 2
@@ -614,7 +618,7 @@ double overlap(const sgnode* n1, const sgnode* n2){
 	int numIntersections = 0;
 	int numIters = 0;
 
-  long startTime = get_time();
+    // long startTime = get_time();
 
 	// Generate random points within node 1, and test if within node 2
 	while(numSamples < DESIRED_SAMPLES && numIters < 100000){
