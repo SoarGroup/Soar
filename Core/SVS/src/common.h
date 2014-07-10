@@ -31,7 +31,7 @@ bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
 
 template<class T>
-std::string tostring(T x) {
+std::string tostring(const T& x) {
     std::stringstream ss;
     ss << x;
     return ss.str();

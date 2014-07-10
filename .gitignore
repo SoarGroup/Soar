@@ -172,6 +172,7 @@ Temporary Items
 /.project
 /.pydevproject
 /.sconsign.dblite
+/format_*
 /out
 out/
 build/
