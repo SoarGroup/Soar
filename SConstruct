@@ -47,7 +47,12 @@ def gcc_version(cc):
 	Exit(1)
 
 def vc_version():
-	p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
+	try:
+		p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
+	except WindowsError as e:
+		print "error running link.exe: {0}".format(e.strerror)
+		print 'make sure Microsoft Visual C++ is installed and you are using the Visual Studio Command Prompt'
+		Exit(1)
 	line = p.stdout.readline()
 	# for line in iter(p.stdout.readline, b''):
 	# 	print line,
