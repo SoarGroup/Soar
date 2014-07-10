@@ -270,152 +270,21 @@ namespace soar_module
 			{
 				set_errno( SQLITE_OK );
 			}
-
 			virtual ~sqlite_database() {}
-
-			//
 
 			inline sqlite3 *get_db() { return my_db; }
 
-			//
-
-			inline void connect( const char *file_name, int flags = ( SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE ) )
-			{
-				int sqlite_err = sqlite3_open_v2( file_name, &( my_db ), flags, NULL );
-
-				if ( sqlite_err == SQLITE_OK )
-				{
-					set_status( connected );
-
-					set_errno( sqlite_err );
-					set_errmsg( NULL );
-
-					#ifdef DEBUG_SQL_QUERIES
-					//sqlite3_profile(my_db, &profile, NULL);
-					sqlite3_trace( my_db, trace, NULL );
-					#endif
-				}
-				else
-				{
-					set_status( problem );
-
-					set_errno( sqlite_err );
-					set_errmsg( sqlite3_errmsg( my_db ) );
-				}
-			}
-
-			inline void disconnect()
-			{
-				if ( get_status() == connected )
-				{
-					sqlite3_close( my_db );
-					set_status( disconnected );
-				}
-			}
-
-			//
+			void connect( const char *file_name, int flags = ( SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE ) );
+			void disconnect();
+            bool backup( const char* file_name, std::string* err );
+            bool print_table(const char *table_name);
 
 			inline int64_t last_insert_rowid() { return static_cast<int64_t>( sqlite3_last_insert_rowid( my_db ) ); }
 			inline int64_t memory_usage() { return static_cast<int64_t>( sqlite3_memory_used() ); }
 			inline int64_t memory_highwater() { return static_cast<int64_t>( sqlite3_memory_highwater( false ) ); }
 			inline const char* lib_version() { return sqlite3_libversion(); }
 
-			inline bool backup( const char* file_name, std::string* err )
-			{
-				sqlite3* backup_db;
-				bool return_val = false;
 
-				err->clear();
-
-				if ( get_status() == connected )
-				{
-					int sqlite_err = sqlite3_open_v2( file_name, &( backup_db ), ( SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE ), NULL );
-					if ( sqlite_err == SQLITE_OK )
-					{
-						sqlite3_backup* backup_h = sqlite3_backup_init( backup_db, "main", my_db, "main" );
-						if ( backup_h )
-						{
-							sqlite3_backup_step( backup_h, -1 );
-							sqlite3_backup_finish( backup_h );
-						}
-
-						if ( sqlite3_errcode( backup_db ) == SQLITE_OK )
-						{
-							return_val = true;
-						}
-						else
-						{
-							err->assign( "Error during backup: " );
-							err->append( sqlite3_errmsg( backup_db ) );
-						}
-					}
-					else
-					{
-						err->assign( "Error opening backup file: " );
-						err->append( sqlite3_errmsg( backup_db ) );
-					}
-					sqlite3_close( backup_db );
-				}
-				else
-				{
-					err->assign( "Database is not currently connected." );
-				}
-
-				return return_val;
-			}
-
-			inline bool print_table(const char *table_name)
-			{
-				sqlite3_stmt *statement;
-				std::string query;
-				query.assign("select * from ");
-				query.append(table_name);
-
-				if ( sqlite3_prepare(my_db, query.c_str(), -1, &statement, 0 ) == SQLITE_OK )
-				{
-					int ctotal = sqlite3_column_count(statement);
-					int res = 0;
-					const char *val;
-//					std::string val;
-
-					fprintf(stderr, "----------------------------\n%s\n----------------------------\n", table_name);
-					while ( 1 )
-					{
-						res = sqlite3_step(statement);
-
-						if ( res == SQLITE_ROW )
-						{
-							for ( int i = 0; i < ctotal; i++ )
-							{
-//								val.assign((const char *)sqlite3_column_text(statement, i));
-//								if (val)
-//									fprintf(stderr, "%s ", val.c_str());
-								val = reinterpret_cast<const char *>(sqlite3_column_text(statement, i));
-								if (val)
-								{
-									fprintf(stderr, "%s ", val);
-								}
-								else
-								{
-									fprintf(stderr, "NULL ");
-								}
-							}
-							fprintf(stderr, "\n");
-						}
-						else if ( res == SQLITE_DONE)
-						{
-							fprintf(stderr, "Done.\n");
-							return true;
-							break;
-						}
-						else if ( res==SQLITE_ERROR)
-						{
-							fprintf(stderr, "{print_table error %d: %s\n", res, this->get_errmsg());
-						}
-					}
-				}
-				return false;
-			}
 			inline bool sql_execute(const char *sql);
 			inline bool sql_simple_get_int(const char *sql, int64_t &return_value);
 			inline bool sql_simple_get_float(const char *sql, double &return_value);
@@ -667,7 +536,6 @@ namespace soar_module
 				#ifdef USE_MEM_POOL_ALLOCATORS
 				statements = new sqlite_statement_pool_pool( thisAgent );
 				#else
-				thisAgent;
 				statements = new sqlite_statement_pool_pool();
 				#endif
 			}
