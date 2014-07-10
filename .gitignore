@@ -129,6 +129,13 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
+# Visual Studio files
+*.vcproj
+*.sdf
+*.suo
+*.vcxproj
+*.vcxproj.filters
+*.sln
 
 ### OSX ###
 .DS_Store
