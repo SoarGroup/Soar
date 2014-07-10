@@ -59,7 +59,7 @@
 
 /* ======================================================================
 
-                      Rete Net Routines for Soar 6
+                      Rete Net Routines
 
    TABLE OF CONTENTS (each part is labeled "SECTION" in the code)
 
@@ -247,7 +247,7 @@ inline bool var_locations_equal(var_location v1, var_location v2)
 
 /* --- extract field (id/attr/value) from wme --- */
 /* WARNING: this relies on the id/attr/value fields being consecutive in
-   the wme structure (defined in soarkernel.h) */
+   the wme structure */
 /*#define field_from_wme(wme,field_num) \
   ( (&((wme)->id))[(field_num)] )*/
 
@@ -381,8 +381,8 @@ typedef struct p_node_data_struct {
   struct ms_change_struct *tentative_retractions;
 } p_node_data;
 
-#define O_LIST 0     /* moved here from soarkernel.h.  only used in rete.cpp */
-#define I_LIST 1     /*   values for prod->OPERAND_which_assert_list */
+#define O_LIST 0     /* only used in rete.cpp */
+#define I_LIST 1     /* values for prod->OPERAND_which_assert_list */
 
 /* --- data for all except positive nodes --- */
 typedef struct non_pos_node_data_struct {
@@ -2870,7 +2870,7 @@ node_varnames *get_nvn_for_condition_list (agent* thisAgent,
 
        Test Type <---> Relational (Rete) Test Type Conversion Tables
 
-   These tables convert from xxx_TEST's (defined in soarkernel.h for various
+   These tables convert from xxx_TEST's (defined in test.h for various
    kinds of complex_test's) to xxx_RETE_TEST's (defined in rete.cpp for
    the different kinds of Rete tests), and vice-versa.  We might just
    use the same set of constants for both purposes, but we want to be
@@ -2927,7 +2927,7 @@ byte relational_test_type_to_test_type[256] =
 };
 
 /* Warning: the two items below must not be the same as any xxx_TEST's defined
-   in soarkernel.h for the types of complex_test's */
+   in test.h for the types of complex_test's */
 #define EQUAL_TEST_TYPE 254
 #define ERROR_TEST_TYPE 255
 

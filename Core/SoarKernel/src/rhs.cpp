@@ -10,7 +10,7 @@
  *  file:  rhsfun.cpp
  *
  * =======================================================================
- *                   RHS Function Management for Soar 6
+ *                   RHS Function Management
  *
  * The system maintains a list of available RHS functions.  Functions
  * can appear on the RHS of productions either as values (in make actions

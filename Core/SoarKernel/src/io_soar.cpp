@@ -33,11 +33,10 @@
 
 
 /* ==================================================================
-                         I/O Code for Soar 6
+                         I/O Code
 
          General Soar I/O System Routines, and Text I/O Routines
 
-   See comments in soarkernel.h for more information.
    ================================================================== */
 
 #include <stdlib.h>
@@ -867,7 +866,7 @@ Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input
   return get_io_sym_constant (thisAgent, input_string);
 }
 
-#define MAX_TEXT_INPUT_LINE_LENGTH 1000 /* used to be in soarkernel.h */
+#define MAX_TEXT_INPUT_LINE_LENGTH 1000
 
 Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
 												 char **text_read_position) {

@@ -11,9 +11,6 @@
  *
  * =======================================================================
  *  Support routines for doing math in the RHS of productions.
- *  Need more comments here.  Nothing in soarkernel.h either.
- *
- *
  * =======================================================================
  */
 

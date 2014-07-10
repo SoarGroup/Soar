@@ -481,8 +481,7 @@ typedef struct agent_struct {
   /* ----------------------- Timing statistics -------------------------- */
 
 /*
-For Soar 7, the timing code has been completely revamped.  When the compile
-flag NO_TIMING_STUFF is not set, statistics will be now be collected on the
+When the compile flag NO_TIMING_STUFF is off, statistics will be collected on
 total cpu time, total kernel time, time spent in the individual phases of a
 decision cycle, time spent executing the input and output functions, and time
 spent executing callbacks (or monitors).  When the DETAILED_TIMING_STATS flag

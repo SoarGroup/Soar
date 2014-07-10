@@ -21,13 +21,6 @@ extern void reset_statistics (agent* thisAgent);
 extern void setup_signal_handling (void);
 //extern void load_init_file (Kernel* thisKernel, agent* thisAgent);
 
-/* --- signal handler that gets invoked on SIGINT --- */
-// (deprecated)
-//extern void control_c_handler (int the_signal);
-
-/* Main pgm stuff -- moved here from soarkernel.h -ajc (5/7/02) */
-
-//extern int  terminate_soar (void);
 
 /* ---------------------------------------------------------------------
                             Exiting Soar
@@ -39,7 +32,6 @@ extern void setup_signal_handling (void);
    for interfaces that do their own exiting.
 --------------------------------------------------------------------- */
 
-//extern void exit_soar (agent* thisAgent);
 extern void abort_with_fatal_error (agent* thisAgent, const char *);
 extern void abort_with_fatal_error_noagent (const char *msg);
 

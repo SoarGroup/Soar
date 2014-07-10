@@ -11,14 +11,12 @@
  *
  * =======================================================================
  *
- *                   Trace Format Routines for Soar 6
+ *                   Trace Format Routines
  *
  * This file contains definitions and routines for dealing with the trace
  * formats used by Soar 6.  Trace format are specified by the user as
  * strings (with % escape sequences in them).  At entry time, Soar 6
  * parses these strings into trace_format structures.
- *
- * see soarkernel.h for more comments.
  *
  * =======================================================================
  */
@@ -614,7 +612,7 @@ void print_trace_format_list (agent* thisAgent, trace_format *tf) {
    a "stack_trace" argument, which should be true if the stack trace
    format is intended, or false if the object trace format is intended.
    Their "type_restriction" argument should be one of FOR_ANYTHING_TF,
-   ..., FOR_OPERATORS_TF (see soarkernel.h).  The "name_restriction"
+   ..., FOR_OPERATORS_TF .  The "name_restriction"
    argument should be either a pointer to a symbol, if the trace format
    is restricted to apply to objects with that name, or NIL if the format
    can apply to any object.

@@ -10,7 +10,7 @@
  *  file:  parser.cpp
  *
  * =======================================================================
- *                  Production (SP) Parser for Soar 6
+ *                  Production (SP) Parser
  *
  * There are two top-level routines here:  init_parser(), which
  * should be called at startup time, and parse_production(), which
@@ -1287,7 +1287,7 @@ bool is_preference_lexeme( enum lexer_token_type test_lexeme )
                Parse Preference Specifier Without Referent
 
    Parses a <preference-specifier>.  Returns the appropriate
-   xxx_PREFERENCE_TYPE (see soarkernel.h).
+   xxx_PREFERENCE_TYPE
 
    Note:  in addition to the grammar below, if there is no preference
    specifier given, then this routine returns ACCEPTABLE_PREFERENCE_TYPE.

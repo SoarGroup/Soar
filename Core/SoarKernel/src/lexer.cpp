@@ -54,8 +54,6 @@
  */
 /* ======================================================================
                              lexer.c
-
-    See comments in soarkernel.h for an overview.
    ====================================================================== */
 
 #include <stdlib.h>
@@ -228,11 +226,7 @@ void get_next_char (agent* thisAgent) {
 
 ====================================================================== */
 
-/*#define record_position_of_start_of_lexeme() { \
-  thisAgent->current_file->column_of_start_of_last_lexeme = \
-    thisAgent->current_file->current_column - 1; \
-  thisAgent->current_file->line_of_start_of_last_lexeme = \
-    thisAgent->current_file->current_line; }*/
+
 inline void record_position_of_start_of_lexeme(agent* thisAgent)
 {
   thisAgent->current_file->column_of_start_of_last_lexeme =
@@ -241,16 +235,6 @@ inline void record_position_of_start_of_lexeme(agent* thisAgent)
     thisAgent->current_file->current_line;
 }
 
-/*  redefined for Soar 7, want case-sensitivity to match Tcl.  KJC 5/96
-#define store_and_advance() { \
-  thisAgent->lexeme.string[thisAgent->lexeme.length++] = (isupper((char)thisAgent->current_char) ? \
-                                    tolower((char)thisAgent->current_char) : \
-                                    (char)thisAgent->current_char); \
-  get_next_char(); }
-#define store_and_advance() { \
-  thisAgent->lexeme.string[thisAgent->lexeme.length++] = \
-    (char)thisAgent->current_char; \
-  get_next_char(); }*/
 inline void store_and_advance(agent* thisAgent)
 {
   thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);

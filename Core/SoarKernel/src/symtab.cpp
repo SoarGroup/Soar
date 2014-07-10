@@ -11,7 +11,7 @@
  *
  * =======================================================================
  *
- *                 Symbol Table Routines for Soar 6
+ *                 Symbol Table Routines
  *
  * Soar 6 uses five kinds of symbols:  symbolic constants, integer
  * constants, floating-point constants, identifiers, and variables.
@@ -21,7 +21,6 @@
  *  structures.  Some fields common to all symbols are accessed via
  *  sym->field_name; fields particular to a certain kind of
  *  symbol are accessed via sym->var->field_name_on_variables, etc.
- *  See soarkernel.h for the Symbol structure definitions.
  *
  * =======================================================================
  */

@@ -10,7 +10,7 @@
  *  file:  production.cpp
  *
  * ====================================================================
- *                    Production Utilities for Soar 6
+ *                    Production Utilities
  *
  * This file contains various utility routines for manipulating
  * productions and parts of productions:  tests, conditions, actions,

@@ -11,9 +11,7 @@
  *
  * =======================================================================
  *
- *             Temporary Memory and Slot routines for Soar 6
- *
- * see comments below and in soarkernel.h
+ *             Temporary Memory and Slot routines
  *
  * =======================================================================
  */

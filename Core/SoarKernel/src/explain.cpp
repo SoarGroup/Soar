@@ -46,11 +46,6 @@
    static char explain_chunk_name[256] = { '\0' };
    AGR 564 */
 
-/* AGR 564  This bug report came complete with fixes from Frank Koss.
-   So, I just implemented the fixes.  The files with changes in them
-   for this bug are explain.c, explain.h,
-   init_soar.c, interface.c, and soarkernel.h.  AGR 564 2-May-94  */
-
 /***************************************************************************
  * Function     : init_explain
  **************************************************************************/
