@@ -33,8 +33,8 @@ static void trace_sql( void* /*arg*/, const char* query ) { fprintf(stderr, "Que
 #endif
 #endif
 
-extern EXPORT void dprint (TraceMode mode, const char *format, ... );
-extern EXPORT void dprint_noprefix (TraceMode mode, const char *format, ... );
+extern void dprint (TraceMode mode, const char *format, ... );
+extern void dprint_noprefix (TraceMode mode, const char *format, ... );
 
 extern void debug_test(int type=1);
 /**

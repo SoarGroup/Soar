@@ -29,9 +29,7 @@ AgentOutput_Info::AgentOutput_Info() :
   callback_dbg_mode(OM_Init_callback_dbg_mode),
   file_dbg_mode(OM_Init_file_dbg_mode),
   printer_output_column(1)
-  {
-    dprint(DT_DEBUG, "Initializing agent output info %s!!!!\n", bool_to_char(dprint_enabled));
-  }
+  {}
 
 void Output_Manager::init_Output_Manager(sml::Kernel *pKernel, Soar_Instance *pSoarInstance)
 {
