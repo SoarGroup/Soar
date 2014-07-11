@@ -54,7 +54,7 @@
 #ifndef RETE_H
 #define RETE_H
 
-#include <stdio.h>	// Needed for FILE token below
+#include <stdio.h>  // Needed for FILE token below
 
 struct not_struct;
 
@@ -71,80 +71,84 @@ typedef struct rete_node_struct rete_node;
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 
-typedef struct token_struct {
-  /* --- Note: "parent" is NIL on negative node negrm (local join result)
-     tokens, non-NIL on all other tokens including CN and CN_P stuff.
-     I put "parent" at offset 0 in the structure, so that upward scans
-     are fast (saves doing an extra integer addition in the inner loop) --- */
-  struct token_struct *parent;
-  union token_a_union {
-    struct token_in_hash_table_data_struct {
-      struct token_struct *next_in_bucket, *prev_in_bucket; /*hash bucket dll*/
-      Symbol *referent; /* referent of the hash test (thing we hashed on) */
-    } ht;
-    struct token_from_right_memory_of_negative_or_cn_node_struct {
-      struct token_struct *next_negrm, *prev_negrm;/*other local join results*/
-      struct token_struct *left_token; /* token this is local join result for*/
-    } neg;
-  } a;
-  rete_node *node;
-  wme *w;
-  struct token_struct *first_child;  /* first of dll of children */
-  struct token_struct *next_sibling, *prev_sibling; /* for dll of children */
-  struct token_struct *next_of_node, *prev_of_node; /* dll of tokens at node */
-  struct token_struct *next_from_wme, *prev_from_wme; /* tree-based remove */
-  struct token_struct *negrm_tokens; /* join results: for Neg, CN nodes only */
+typedef struct token_struct
+{
+    /* --- Note: "parent" is NIL on negative node negrm (local join result)
+       tokens, non-NIL on all other tokens including CN and CN_P stuff.
+       I put "parent" at offset 0 in the structure, so that upward scans
+       are fast (saves doing an extra integer addition in the inner loop) --- */
+    struct token_struct* parent;
+    union token_a_union
+    {
+        struct token_in_hash_table_data_struct
+        {
+            struct token_struct* next_in_bucket, *prev_in_bucket; /*hash bucket dll*/
+            Symbol* referent; /* referent of the hash test (thing we hashed on) */
+        } ht;
+        struct token_from_right_memory_of_negative_or_cn_node_struct
+        {
+            struct token_struct* next_negrm, *prev_negrm;/*other local join results*/
+            struct token_struct* left_token; /* token this is local join result for*/
+        } neg;
+    } a;
+    rete_node* node;
+    wme* w;
+    struct token_struct* first_child;  /* first of dll of children */
+    struct token_struct* next_sibling, *prev_sibling; /* for dll of children */
+    struct token_struct* next_of_node, *prev_of_node; /* dll of tokens at node */
+    struct token_struct* next_from_wme, *prev_from_wme; /* tree-based remove */
+    struct token_struct* negrm_tokens; /* join results: for Neg, CN nodes only */
 } token;
 
-extern void init_rete (agent* thisAgent);
+extern void init_rete(agent* thisAgent);
 
-extern bool any_assertions_or_retractions_ready (agent* thisAgent);
-extern bool postpone_assertion (agent* thisAgent, production **prod, struct token_struct **tok, wme **w);
+extern bool any_assertions_or_retractions_ready(agent* thisAgent);
+extern bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct** tok, wme** w);
 extern void consume_last_postponed_assertion(agent* thisAgent);
-extern void restore_postponed_assertions (agent* thisAgent);
-extern bool get_next_retraction (agent* thisAgent, struct instantiation_struct **inst);
+extern void restore_postponed_assertions(agent* thisAgent);
+extern bool get_next_retraction(agent* thisAgent, struct instantiation_struct** inst);
 /* REW: begin 08.20.97 */
 /* Special routine for retractions in removed goals.  See note in rete.cpp */
-extern bool get_next_nil_goal_retraction (agent* thisAgent, struct instantiation_struct **inst);
+extern bool get_next_nil_goal_retraction(agent* thisAgent, struct instantiation_struct** inst);
 /* REW: end   08.20.97 */
 
 #define NO_REFRACTED_INST 0              /* no refracted inst. was given */
 #define REFRACTED_INST_MATCHED 1         /* there was a match for the inst. */
 #define REFRACTED_INST_DID_NOT_MATCH 2   /* there was no match for it */
 #define DUPLICATE_PRODUCTION 3           /* the prod. was a duplicate */
-extern byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top,
-                                    instantiation *refracted_inst,
-                                    bool warn_on_duplicates, bool ignore_rhs = false);
-extern void excise_production_from_rete (agent* thisAgent, production *p);
+extern byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
+                                   instantiation* refracted_inst,
+                                   bool warn_on_duplicates, bool ignore_rhs = false);
+extern void excise_production_from_rete(agent* thisAgent, production* p);
 
-extern void add_wme_to_rete (agent* thisAgent, wme *w);
-extern void remove_wme_from_rete (agent* thisAgent, wme *w);
+extern void add_wme_to_rete(agent* thisAgent, wme* w);
+extern void remove_wme_from_rete(agent* thisAgent, wme* w);
 
-extern void p_node_to_conditions_and_nots (agent* thisAgent,
-                                           struct rete_node_struct *p_node,
-                                           struct token_struct *tok,
-                                           wme *w,
-                                           condition **dest_top_cond,
-                                           condition **dest_bottom_cond,
-                                           not_struct **dest_nots,
-                                           action **dest_rhs);
-extern Symbol *get_symbol_from_rete_loc (unsigned short levels_up,
-                                         byte field_num,
-                                         struct token_struct *tok, wme *w);
+extern void p_node_to_conditions_and_nots(agent* thisAgent,
+        struct rete_node_struct* p_node,
+        struct token_struct* tok,
+        wme* w,
+        condition** dest_top_cond,
+        condition** dest_bottom_cond,
+        not_struct** dest_nots,
+        action** dest_rhs);
+extern Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
+                                        byte field_num,
+                                        struct token_struct* tok, wme* w);
 
-extern uint64_t count_rete_tokens_for_production (agent* thisAgent, production *prod);
-extern void print_partial_match_information (agent* thisAgent, struct rete_node_struct *p_node,
-                                             wme_trace_type wtt);
-extern void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_trace_type wtt) ;
+extern uint64_t count_rete_tokens_for_production(agent* thisAgent, production* prod);
+extern void print_partial_match_information(agent* thisAgent, struct rete_node_struct* p_node,
+        wme_trace_type wtt);
+extern void xml_partial_match_information(agent* thisAgent, rete_node* p_node, wme_trace_type wtt) ;
 
-extern void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
-extern void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
-extern void get_all_node_count_stats (agent* thisAgent);
-extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
-				     char * column_name,
-				     uint64_t * result);
+extern void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
+extern void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
+extern void get_all_node_count_stats(agent* thisAgent);
+extern int get_node_count_statistic(agent* thisAgent, char* node_type_name,
+                                    char* column_name,
+                                    uint64_t* result);
 
-extern bool save_rete_net (agent* thisAgent, FILE *dest_file, bool use_rete_net_64);
-extern bool load_rete_net (agent* thisAgent, FILE *source_file);
+extern bool save_rete_net(agent* thisAgent, FILE* dest_file, bool use_rete_net_64);
+extern bool load_rete_net(agent* thisAgent, FILE* source_file);
 
 #endif

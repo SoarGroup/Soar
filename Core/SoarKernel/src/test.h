@@ -34,7 +34,7 @@ typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 typedef signed short goal_stack_level;
 typedef struct action_struct action;
-template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer);
+template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
 /* -------------------------------------------------------------------
                               Tests
@@ -50,88 +50,90 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_
    further indicates the type of the test.)
 ------------------------------------------------------------------- */
 
-typedef char * test;
-typedef struct complex_test_struct {
-  byte type;                  /* see definitions below */
-  union test_info_union {
-    Symbol *referent;         /* for relational tests */
-    ::list *disjunction_list;   /* for disjunction tests */
-    ::list *conjunct_list;      /* for conjunctive tests */
-  } data;
+typedef char* test;
+typedef struct complex_test_struct
+{
+    byte type;                  /* see definitions below */
+    union test_info_union
+    {
+        Symbol* referent;         /* for relational tests */
+        ::list* disjunction_list;   /* for disjunction tests */
+        ::list* conjunct_list;      /* for conjunctive tests */
+    } data;
 } complex_test;
 
 /* ------------------- */
 /* Utilities for tests */
 /* ------------------- */
 
-extern void add_all_variables_in_action (agent* thisAgent, action *a, tc_number tc,
-                     ::list **var_list);
-extern void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc,
-                     ::list **var_list);
-extern void add_bound_variables_in_condition (agent* thisAgent, condition *c, tc_number tc,
-                          ::list **var_list);
-extern void unmark_variables_and_free_list (agent* thisAgent, ::list *var_list);
+extern void add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc,
+                                        ::list** var_list);
+extern void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc,
+                                        ::list** var_list);
+extern void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
+        ::list** var_list);
+extern void unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
 
 /* --- Takes a test and returns a new copy of it. --- */
-extern test copy_test (agent* thisAgent, test t);
+extern test copy_test(agent* thisAgent, test t);
 
 /* --- Same as copy_test(), only it doesn't include goal or impasse tests
    in the new copy.  The caller should initialize the two flags to false
    before calling this routine; it sets them to true if it finds a goal
    or impasse test. --- */
 extern test copy_test_removing_goal_impasse_tests
-  (agent* thisAgent, test t, bool*removed_goal, bool*removed_impasse);
+(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
 
 /* --- Deallocates a test. --- */
-extern void deallocate_test (agent* thisAgent, test t);
+extern void deallocate_test(agent* thisAgent, test t);
 
 /* --- Destructively modifies the first test (t) by adding the second
    one (add_me) to it (usually as a new conjunct).  The first test
    need not be a conjunctive test. --- */
-extern void add_new_test_to_test (agent* thisAgent, test *t, test add_me);
+extern void add_new_test_to_test(agent* thisAgent, test* t, test add_me);
 
 /* --- Same as above, only has no effect if the second test is already
    included in the first one. --- */
-extern void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
+extern void add_new_test_to_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool neg);
 
 /* --- Returns true iff the two tests are identical.
    If neg is true, ignores order of members in conjunctive tests
    and assumes variables are all equal. --- */
-extern bool tests_are_equal (test t1, test t2, bool neg);
+extern bool tests_are_equal(test t1, test t2, bool neg);
 
 /* --- Returns a hash value for the given test. --- */
-extern uint32_t hash_test (agent* thisAgent, test t);
+extern uint32_t hash_test(agent* thisAgent, test t);
 
 /* --- Returns true iff the test contains an equality test for the given
    symbol.  If sym==NIL, returns true iff the test contains any equality
    test. --- */
-extern bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
+extern bool test_includes_equality_test_for_symbol(test t, Symbol* sym);
 
 /* --- Looks for goal or impasse tests (as directed by the two flag
    parameters) in the given test, and returns true if one is found. --- */
-extern bool test_includes_goal_or_impasse_id_test (test t,
-                                                   bool look_for_goal,
-                                                   bool look_for_impasse);
+extern bool test_includes_goal_or_impasse_id_test(test t,
+        bool look_for_goal,
+        bool look_for_impasse);
 
 /* --- Looks through a test, and returns a new copy of the first equality
    test it finds.  Signals an error if there is no equality test in the
    given test. --- */
-extern test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
+extern test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
 
 /* --- Looks through a test, returns appropriate first letter for a dummy
    variable to follow it.  Returns '*' if none found. --- */
-extern char first_letter_from_test (test t);
+extern char first_letter_from_test(test t);
 
 inline bool test_is_blank_test(test t)
 {
-  return (t == NIL);
+    return (t == NIL);
 }
 
 inline bool test_is_complex_test(test t)
 {
-  return (char)(
-      reinterpret_cast<uint64_t>(t)
-      & 1);
+    return (char)(
+               reinterpret_cast<uint64_t>(t)
+               & 1);
 }
 
 #ifdef _MSC_VER
@@ -140,62 +142,63 @@ inline bool test_is_complex_test(test t)
 
 inline bool test_is_blank_or_equality_test(test t)
 {
-  return (!test_is_complex_test(t));
+    return (!test_is_complex_test(t));
 }
 
 inline test make_blank_test()
 {
-  return static_cast<test>(NIL);
+    return static_cast<test>(NIL);
 }
 
-inline test make_equality_test(Symbol * sym)
+inline test make_equality_test(Symbol* sym)
 {
-  (sym)->reference_count++;
+    (sym)->reference_count++;
 #ifdef DEBUG_SYMBOL_REFCOUNTS
-  char buf[64];
-  OutputDebugString(symbol_to_string(0, (sym), false, buf, 64));
-  OutputDebugString(":+ ");
-  OutputDebugString(_itoa((sym)->reference_count, buf, 10));
-  OutputDebugString("\n");
+    char buf[64];
+    OutputDebugString(symbol_to_string(0, (sym), false, buf, 64));
+    OutputDebugString(":+ ");
+    OutputDebugString(_itoa((sym)->reference_count, buf, 10));
+    OutputDebugString("\n");
 #endif // DEBUG_SYMBOL_REFCOUNTS
-  return reinterpret_cast<test>(sym);
+    return reinterpret_cast<test>(sym);
 }
 
-inline test make_equality_test_without_adding_reference(Symbol * sym)
+inline test make_equality_test_without_adding_reference(Symbol* sym)
 {
-  return reinterpret_cast<test>(sym);
+    return reinterpret_cast<test>(sym);
 }
 
-inline test make_blank_or_equality_test(Symbol * sym_or_nil)
+inline test make_blank_or_equality_test(Symbol* sym_or_nil)
 {
-  return ((sym_or_nil) ? (make_equality_test(sym_or_nil)) : make_blank_test());
+    return ((sym_or_nil) ? (make_equality_test(sym_or_nil)) : make_blank_test());
 }
 
-inline char * make_test_from_complex_test(complex_test * ct)
+inline char* make_test_from_complex_test(complex_test* ct)
 {
-  return reinterpret_cast<test>(ct) + 1;
+    return reinterpret_cast<test>(ct) + 1;
 }
 
-inline Symbol * referent_of_equality_test(test t)
+inline Symbol* referent_of_equality_test(test t)
 {
-  return reinterpret_cast<Symbol *>(t);
+    return reinterpret_cast<Symbol*>(t);
 }
 
-inline complex_test * complex_test_from_test(test t)
+inline complex_test* complex_test_from_test(test t)
 {
-  return reinterpret_cast<complex_test *>(t - 1);
+    return reinterpret_cast<complex_test*>(t - 1);
 }
 
 inline void quickly_deallocate_test(agent* thisAgent, test t)
 {
-    if (! test_is_blank_test(t))  {
+    if (! test_is_blank_test(t))
+    {
         if (test_is_blank_or_equality_test(t))
         {
-          symbol_remove_ref (thisAgent, referent_of_equality_test(t));
+            symbol_remove_ref(thisAgent, referent_of_equality_test(t));
         }
         else
         {
-          deallocate_test (thisAgent, t);
+            deallocate_test(thisAgent, t);
         }
     }
 }

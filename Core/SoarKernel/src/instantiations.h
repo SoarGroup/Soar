@@ -83,37 +83,40 @@ typedef uint64_t tc_number;
 
 
 
-struct not_struct {
-  struct not_struct *next;  /* next Not in the singly-linked list */
-  Symbol *s1;               /* the two identifiers constrained to be "<>" */
-  Symbol *s2;
+struct not_struct
+{
+    struct not_struct* next;  /* next Not in the singly-linked list */
+    Symbol* s1;               /* the two identifiers constrained to be "<>" */
+    Symbol* s2;
 };
 
-typedef struct instantiation_struct {
-  struct production_struct *prod; /* used full name of struct because
-								     a forward declaration is needed -ajc (5/1/02) */
-  struct instantiation_struct *next, *prev; /* dll of inst's from same prod */
-  struct token_struct *rete_token;       /* used by Rete for retractions */
-  wme *rete_wme;                         /* ditto */
-  condition *top_of_instantiated_conditions;
-  condition *bottom_of_instantiated_conditions;
-  not_struct *nots;
-  preference *preferences_generated;    /* header for dll of prefs */
-  Symbol *match_goal;                   /* symbol, or NIL if none */
-  goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
-  bool reliable;
-  bool in_ms;  /* true iff this inst. is still in the match set */
-  tc_number backtrace_number;
-  bool GDS_evaluated_already;
+typedef struct instantiation_struct
+{
+    struct production_struct* prod; /* used full name of struct because
+                                     a forward declaration is needed -ajc (5/1/02) */
+    struct instantiation_struct* next, *prev; /* dll of inst's from same prod */
+    struct token_struct* rete_token;       /* used by Rete for retractions */
+    wme* rete_wme;                         /* ditto */
+    condition* top_of_instantiated_conditions;
+    condition* bottom_of_instantiated_conditions;
+    not_struct* nots;
+    preference* preferences_generated;    /* header for dll of prefs */
+    Symbol* match_goal;                   /* symbol, or NIL if none */
+    goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
+    bool reliable;
+    bool in_ms;  /* true iff this inst. is still in the match set */
+    tc_number backtrace_number;
+    bool GDS_evaluated_already;
 } instantiation;
 
 /* REW: begin 09.15.96 */
 /* A dll of instantiations that will be used to determine the gds through
    a backtracing-style procedure, evaluate_gds in decide.cpp */
 
-typedef struct pi_struct {
-  struct pi_struct *next, *prev;
-  instantiation *inst;
+typedef struct pi_struct
+{
+    struct pi_struct* next, *prev;
+    instantiation* inst;
 } parent_inst;
 /* REW: end   09.15.96 */
 

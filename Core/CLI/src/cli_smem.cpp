@@ -23,13 +23,14 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, const std::string* pVal )
+bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, const std::string* pVal)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempString;
-
-    if ( !pOp )
-    {   // Print SMem Settings
+    
+    if (!pOp)
+    {
+        // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
         PrintCLIMessage_Item("learning:", thisAgent->smem_params->learning, 40);
         PrintCLIMessage_Section("Storage", 40);
@@ -53,176 +54,203 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
         PrintCLIMessage("");
-
+        
         return true;
     }
-    else if ( pOp == 'a' )
+    else if (pOp == 'a')
     {
-        std::string *err = NULL;
-        bool result = smem_parse_chunks( thisAgent, pAttr->c_str(), &( err ) );
-
-        if ( !result )
+        std::string* err = NULL;
+        bool result = smem_parse_chunks(thisAgent, pAttr->c_str(), &(err));
+        
+        if (!result)
         {
-            SetError( *err );
+            SetError(*err);
             delete err;
-        } else {
-        	PrintCLIMessage("Knowledge added to semantic memory.");
         }
-
+        else
+        {
+            PrintCLIMessage("Knowledge added to semantic memory.");
+        }
+        
         return result;
     }
-	else if ( pOp == 'b' )
+    else if (pOp == 'b')
     {
         std::string err;
-		bool result = smem_backup_db( thisAgent, pAttr->c_str(), &( err ) );
-
-        if ( !result )
-            SetError( "Error while backing up database: " + err );
-        else {
-           	tempString << "Semantic memory database backed up to " << pAttr->c_str();
-           	PrintCLIMessage(&tempString);
+        bool result = smem_backup_db(thisAgent, pAttr->c_str(), &(err));
+        
+        if (!result)
+        {
+            SetError("Error while backing up database: " + err);
         }
-
-        return result;
-    }
-    else if ( pOp == 'e' )
-    {
-       bool result = thisAgent->smem_params->learning->set_string("on");
-
-        if ( !result )
-            SetError( "This parameter is protected while the semantic memory database is open." );
         else
-     	   PrintCLIMessage( "Semantic memory enabled.");
-
+        {
+            tempString << "Semantic memory database backed up to " << pAttr->c_str();
+            PrintCLIMessage(&tempString);
+        }
+        
         return result;
     }
-    else if ( pOp == 'd' )
+    else if (pOp == 'e')
     {
-       bool result = thisAgent->smem_params->learning->set_string("off");
-
-       if ( !result )
-           SetError( "This parameter is protected while the semantic memory database is open." );
-       else
-    	   PrintCLIMessage( "Semantic memory disabled.");
-
+        bool result = thisAgent->smem_params->learning->set_string("on");
+        
+        if (!result)
+        {
+            SetError("This parameter is protected while the semantic memory database is open.");
+        }
+        else
+        {
+            PrintCLIMessage("Semantic memory enabled.");
+        }
+        
         return result;
     }
-    else if ( pOp == 'g' )
+    else if (pOp == 'd')
     {
-        soar_module::param *my_param = thisAgent->smem_params->get( pAttr->c_str() );
-        if ( !my_param )
-            return SetError( "Invalid semantic memory parameter.  Use 'help smem' to see list of valid settings." );
-
+        bool result = thisAgent->smem_params->learning->set_string("off");
+        
+        if (!result)
+        {
+            SetError("This parameter is protected while the semantic memory database is open.");
+        }
+        else
+        {
+            PrintCLIMessage("Semantic memory disabled.");
+        }
+        
+        return result;
+    }
+    else if (pOp == 'g')
+    {
+        soar_module::param* my_param = thisAgent->smem_params->get(pAttr->c_str());
+        if (!my_param)
+        {
+            return SetError("Invalid semantic memory parameter.  Use 'help smem' to see list of valid settings.");
+        }
+        
         PrintCLIMessage_Item("", my_param, 0);
         return true;
     }
-    else if ( pOp == 'i' )
+    else if (pOp == 'i')
     {
         // Because of LTIs, re-initializing requires all other memories to be reinitialized.
         // epmem - close before working/production memories to get re-init benefits
         // smem - close before working/production memories to prevent id counter mess-ups
         // production memory (automatic init-soar clears working memory as a result)
-
+        
         epmem_reinit_cmd(thisAgent);
         smem_reinit_cmd(thisAgent);
-
+        
         ExciseBitset options(0);
-		options.set( EXCISE_ALL, true );
-        DoExcise( options, 0 );
-
-    	PrintCLIMessage( "Semantic memory system re-initialized.");
+        options.set(EXCISE_ALL, true);
+        DoExcise(options, 0);
+        
+        PrintCLIMessage("Semantic memory system re-initialized.");
         return true;
     }
-	else if ( pOp == 'p' )
+    else if (pOp == 'p')
     {
         smem_lti_id lti_id = NIL;
         unsigned int depth = 1;
-
-		smem_attach(thisAgent);
-	    if ( thisAgent->smem_db->get_status() != soar_module::connected )
-	    {
-	        return SetError( "Semantic memory database not connected." );
-	    }
-
-		if ( pAttr )
-		{
-			get_lexeme_from_string( thisAgent, pAttr->c_str() );
-			if ( thisAgent->lexeme.type == IDENTIFIER_LEXEME )
-			{
-				if ( thisAgent->smem_db->get_status() == soar_module::connected )
-				{
-					lti_id = smem_lti_get_id( thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number );
-
-					if ( ( lti_id != NIL ) && pVal )
-					{
-						from_c_string( depth, pVal->c_str() );
-					}
-				}
-			}
-
-			if ( lti_id == NIL )
-				return SetError( "LTI not found." );
-		}
-
-        std::string viz;
-
-        if ( lti_id == NIL )
+        
+        smem_attach(thisAgent);
+        if (thisAgent->smem_db->get_status() != soar_module::connected)
         {
-            smem_print_store( thisAgent, &( viz ) );
+            return SetError("Semantic memory database not connected.");
+        }
+        
+        if (pAttr)
+        {
+            get_lexeme_from_string(thisAgent, pAttr->c_str());
+            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            {
+                if (thisAgent->smem_db->get_status() == soar_module::connected)
+                {
+                    lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                    
+                    if ((lti_id != NIL) && pVal)
+                    {
+                        from_c_string(depth, pVal->c_str());
+                    }
+                }
+            }
+            
+            if (lti_id == NIL)
+            {
+                return SetError("LTI not found.");
+            }
+        }
+        
+        std::string viz;
+        
+        if (lti_id == NIL)
+        {
+            smem_print_store(thisAgent, &(viz));
             PrintCLIMessage_Header("Semantic Memory", 40);
         }
         else
         {
-            smem_print_lti( thisAgent, lti_id, depth, &( viz ) );
+            smem_print_lti(thisAgent, lti_id, depth, &(viz));
         }
         if (viz.empty())
-        	return SetError("Semantic memory is empty.");
-
+        {
+            return SetError("Semantic memory is empty.");
+        }
+        
         PrintCLIMessage(&viz);
         return true;
     }
-    else if ( pOp == 's' )
+    else if (pOp == 's')
     {
-        soar_module::param *my_param = thisAgent->smem_params->get( pAttr->c_str() );
-        if ( !my_param )
-            return SetError( "Invalid SMem parameter." );
-
-        if ( !my_param->validate_string( pVal->c_str() ) )
-            return SetError( "Invalid setting for SMem parameter." );
-
+        soar_module::param* my_param = thisAgent->smem_params->get(pAttr->c_str());
+        if (!my_param)
+        {
+            return SetError("Invalid SMem parameter.");
+        }
+        
+        if (!my_param->validate_string(pVal->c_str()))
+        {
+            return SetError("Invalid setting for SMem parameter.");
+        }
+        
         smem_param_container::db_choices last_db_mode = thisAgent->smem_params->database->get_value();
-        bool result = my_param->set_string( pVal->c_str() );
-
-        if ( !result )
-            SetError( "This parameter is protected while the semantic memory database is open." );
-        else {
+        bool result = my_param->set_string(pVal->c_str());
+        
+        if (!result)
+        {
+            SetError("This parameter is protected while the semantic memory database is open.");
+        }
+        else
+        {
             tempString << pAttr->c_str() << " = " << pVal->c_str();
             PrintCLIMessage(&tempString);
-            if ( thisAgent->smem_db->get_status() == soar_module::connected )
+            if (thisAgent->smem_db->get_status() == soar_module::connected)
             {
-                if (((!strcmp(pAttr->c_str(),"database")) && (thisAgent->smem_params->database->get_value() != last_db_mode)) ||
-                     (!strcmp(pAttr->c_str(),"path")))
+                if (((!strcmp(pAttr->c_str(), "database")) && (thisAgent->smem_params->database->get_value() != last_db_mode)) ||
+                        (!strcmp(pAttr->c_str(), "path")))
                 {
-                    PrintCLIMessage( "To finalize database switch, issue an smem --init command.\n");
+                    PrintCLIMessage("To finalize database switch, issue an smem --init command.\n");
                 }
             }
-            if (!strcmp(pAttr->c_str(),"append"))
+            if (!strcmp(pAttr->c_str(), "append"))
             {
                 if (thisAgent->smem_params->append_db->get_value() == off)
                 {
-                    PrintCLIMessage( "Warning: Since append mode is off, starting/reinitializing,\n"
-                                     "         Soar will erase the semantic memory database.\n");
+                    PrintCLIMessage("Warning: Since append mode is off, starting/reinitializing,\n"
+                                    "         Soar will erase the semantic memory database.\n");
                 }
-
+                
             }
         }
         return result;
     }
-    else if ( pOp == 'S' )
+    else if (pOp == 'S')
     {
         smem_attach(thisAgent);
-        if ( !pAttr )
-        {   // Print SMem Settings
+        if (!pAttr)
+        {
+            // Print SMem Settings
             PrintCLIMessage_Header("Semantic Memory Statistics", 40);
             PrintCLIMessage_Item("SQLite Version:", thisAgent->smem_stats->db_lib_version, 40);
             PrintCLIMessage_Item("Memory Usage:", thisAgent->smem_stats->mem_usage, 40);
@@ -237,97 +265,109 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
         else
         {
-            soar_module::statistic *my_stat = thisAgent->smem_stats->get( pAttr->c_str() );
-            if ( !my_stat )
-                return SetError( "Invalid statistic." );
-
+            soar_module::statistic* my_stat = thisAgent->smem_stats->get(pAttr->c_str());
+            if (!my_stat)
+            {
+                return SetError("Invalid statistic.");
+            }
+            
             PrintCLIMessage_Item("", my_stat, 0);
         }
-
+        
         return true;
     }
-    else if ( pOp == 't' )
+    else if (pOp == 't')
     {
-        if ( !pAttr )
+        if (!pAttr)
         {
-            struct foo: public soar_module::accumulator< soar_module::timer * >
+            struct foo: public soar_module::accumulator< soar_module::timer* >
             {
-            private:
-                bool raw;
-                cli::CommandLineInterface *this_cli;
-                std::ostringstream& m_Result;
-
-                foo& operator=(const foo&) { return *this; }
-
-            public:
-                foo( bool m_RawOutput, cli::CommandLineInterface *new_cli, std::ostringstream& m_Result ): raw( m_RawOutput ), this_cli( new_cli ), m_Result( m_Result ) {};
-
-                void operator() ( soar_module::timer *t )
-                {
-                    std::string output( t->get_name() );
-                    output += ":";
-                    this_cli->PrintCLIMessage_Item(output.c_str(), t, 40);
-                }
-            } bar( m_RawOutput, this, m_Result );
-
+                private:
+                    bool raw;
+                    cli::CommandLineInterface* this_cli;
+                    std::ostringstream& m_Result;
+                    
+                    foo& operator=(const foo&)
+                    {
+                        return *this;
+                    }
+                    
+                public:
+                    foo(bool m_RawOutput, cli::CommandLineInterface* new_cli, std::ostringstream& m_Result): raw(m_RawOutput), this_cli(new_cli), m_Result(m_Result) {};
+                    
+                    void operator()(soar_module::timer* t)
+                    {
+                        std::string output(t->get_name());
+                        output += ":";
+                        this_cli->PrintCLIMessage_Item(output.c_str(), t, 40);
+                    }
+            } bar(m_RawOutput, this, m_Result);
+            
             PrintCLIMessage_Header("Semantic Memory Timers", 40);
-            thisAgent->smem_timers->for_each( bar );
+            thisAgent->smem_timers->for_each(bar);
         }
         else
         {
-            soar_module::timer *my_timer = thisAgent->smem_timers->get( pAttr->c_str() );
-            if ( !my_timer )
-                return SetError( "Invalid timer." );
-
+            soar_module::timer* my_timer = thisAgent->smem_timers->get(pAttr->c_str());
+            if (!my_timer)
+            {
+                return SetError("Invalid timer.");
+            }
+            
             PrintCLIMessage_Item("", my_timer, 0);
         }
-
+        
         return true;
     }
-    else if ( pOp == 'v' )
+    else if (pOp == 'v')
     {
         smem_lti_id lti_id = NIL;
         unsigned int depth = 1;
-
+        
         // vizualizing the store requires an open semantic database
-        smem_attach( thisAgent );
-
-        if ( pAttr )
-		{
-			get_lexeme_from_string( thisAgent, pAttr->c_str() );
-			if ( thisAgent->lexeme.type == IDENTIFIER_LEXEME )
-			{
-				if ( thisAgent->smem_db->get_status() == soar_module::connected )
-				{
-					lti_id = smem_lti_get_id( thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number );
-
-					if ( ( lti_id != NIL ) && pVal )
-					{
-						from_c_string( depth, pVal->c_str() );
-					}
-				}
-			}
-
-			if ( lti_id == NIL )
-				return SetError( "Invalid long-term identifier." );
-		}
-
-        std::string viz;
-
-        if ( lti_id == NIL )
+        smem_attach(thisAgent);
+        
+        if (pAttr)
         {
-            smem_visualize_store( thisAgent, &( viz ) );
+            get_lexeme_from_string(thisAgent, pAttr->c_str());
+            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            {
+                if (thisAgent->smem_db->get_status() == soar_module::connected)
+                {
+                    lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                    
+                    if ((lti_id != NIL) && pVal)
+                    {
+                        from_c_string(depth, pVal->c_str());
+                    }
+                }
+            }
+            
+            if (lti_id == NIL)
+            {
+                return SetError("Invalid long-term identifier.");
+            }
+        }
+        
+        std::string viz;
+        
+        if (lti_id == NIL)
+        {
+            smem_visualize_store(thisAgent, &(viz));
         }
         else
         {
-            smem_visualize_lti( thisAgent, lti_id, depth, &( viz ) );
+            smem_visualize_lti(thisAgent, lti_id, depth, &(viz));
         }
-
-        if ( viz.empty() ) return SetError( "Nothing to visualize." );
+        
+        if (viz.empty())
+        {
+            return SetError("Nothing to visualize.");
+        }
         PrintCLIMessage(&viz);
-
+        
         return true;
     }
-
-    return SetError( "Unknown option." );
+    
+    return SetError("Unknown option.");
 }

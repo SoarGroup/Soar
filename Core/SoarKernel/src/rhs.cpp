@@ -73,73 +73,103 @@ using namespace soar_TraceNames;
    Deallocates the given rhs_value.
 ---------------------------------------------------------------- */
 
-void deallocate_rhs_value (agent* thisAgent, rhs_value rv) {
-  cons *c;
-  list *fl;
-
-  if (rhs_value_is_reteloc(rv)) return;
-  if (rhs_value_is_unboundvar(rv)) return;
-  if (rhs_value_is_funcall(rv)) {
-    fl = rhs_value_to_funcall_list(rv);
-    for (c=fl->rest; c!=NIL; c=c->rest)
-      deallocate_rhs_value (thisAgent, static_cast<char *>(c->first));
-    free_list (thisAgent, fl);
-  } else {
-    symbol_remove_ref (thisAgent, rhs_value_to_symbol(rv));
-  }
+void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
+{
+    cons* c;
+    list* fl;
+    
+    if (rhs_value_is_reteloc(rv))
+    {
+        return;
+    }
+    if (rhs_value_is_unboundvar(rv))
+    {
+        return;
+    }
+    if (rhs_value_is_funcall(rv))
+    {
+        fl = rhs_value_to_funcall_list(rv);
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            deallocate_rhs_value(thisAgent, static_cast<char*>(c->first));
+        }
+        free_list(thisAgent, fl);
+    }
+    else
+    {
+        symbol_remove_ref(thisAgent, rhs_value_to_symbol(rv));
+    }
 }
 
 /* ----------------------------------------------------------------
    Returns a new copy of the given rhs_value.
 ---------------------------------------------------------------- */
 
-rhs_value copy_rhs_value (agent* thisAgent, rhs_value rv) {
-  cons *c, *new_c, *prev_new_c;
-  list *fl, *new_fl;
-
-  if (rhs_value_is_reteloc(rv)) return rv;
-  if (rhs_value_is_unboundvar(rv)) return rv;
-  if (rhs_value_is_funcall(rv)) {
-    fl = rhs_value_to_funcall_list(rv);
-    allocate_cons (thisAgent, &new_fl);
-    new_fl->first = fl->first;
-    prev_new_c = new_fl;
-    for (c=fl->rest; c!=NIL; c=c->rest) {
-      allocate_cons (thisAgent, &new_c);
-      new_c->first = copy_rhs_value (thisAgent, static_cast<char *>(c->first));
-      prev_new_c->rest = new_c;
-      prev_new_c = new_c;
+rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
+{
+    cons* c, *new_c, *prev_new_c;
+    list* fl, *new_fl;
+    
+    if (rhs_value_is_reteloc(rv))
+    {
+        return rv;
     }
-    prev_new_c->rest = NIL;
-    return funcall_list_to_rhs_value (new_fl);
-  } else {
-    symbol_add_ref (thisAgent, rhs_value_to_symbol(rv));
-    return rv;
-  }
+    if (rhs_value_is_unboundvar(rv))
+    {
+        return rv;
+    }
+    if (rhs_value_is_funcall(rv))
+    {
+        fl = rhs_value_to_funcall_list(rv);
+        allocate_cons(thisAgent, &new_fl);
+        new_fl->first = fl->first;
+        prev_new_c = new_fl;
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            allocate_cons(thisAgent, &new_c);
+            new_c->first = copy_rhs_value(thisAgent, static_cast<char*>(c->first));
+            prev_new_c->rest = new_c;
+            prev_new_c = new_c;
+        }
+        prev_new_c->rest = NIL;
+        return funcall_list_to_rhs_value(new_fl);
+    }
+    else
+    {
+        symbol_add_ref(thisAgent, rhs_value_to_symbol(rv));
+        return rv;
+    }
 }
 
 /* ----------------------------------------------------------------
    Deallocates the given action (singly-linked) list.
 ---------------------------------------------------------------- */
 
-void deallocate_action_list (agent* thisAgent, action *actions) {
-  action *a;
-
-  while (actions) {
-    a = actions;
-    actions = actions->next;
-    if (a->type==FUNCALL_ACTION) {
-      deallocate_rhs_value (thisAgent, a->value);
-    } else {
-      /* --- make actions --- */
-      deallocate_rhs_value (thisAgent, a->id);
-      deallocate_rhs_value (thisAgent, a->attr);
-      deallocate_rhs_value (thisAgent, a->value);
-      if (preference_is_binary(a->preference_type))
-        deallocate_rhs_value (thisAgent, a->referent);
+void deallocate_action_list(agent* thisAgent, action* actions)
+{
+    action* a;
+    
+    while (actions)
+    {
+        a = actions;
+        actions = actions->next;
+        if (a->type == FUNCALL_ACTION)
+        {
+            deallocate_rhs_value(thisAgent, a->value);
+        }
+        else
+        {
+            /* --- make actions --- */
+            deallocate_rhs_value(thisAgent, a->id);
+            deallocate_rhs_value(thisAgent, a->attr);
+            deallocate_rhs_value(thisAgent, a->value);
+            if (preference_is_binary(a->preference_type))
+            {
+                deallocate_rhs_value(thisAgent, a->referent);
+            }
+        }
+        free_with_pool(&thisAgent->action_pool, a);
     }
-    free_with_pool (&thisAgent->action_pool,a);
-  }
 }
 
 /* -----------------------------------------------------------------
@@ -147,9 +177,12 @@ void deallocate_action_list (agent* thisAgent, action *actions) {
    (See comments on first_letter_from_symbol for more explanation.)
 ----------------------------------------------------------------- */
 
-char first_letter_from_rhs_value (rhs_value rv) {
-  if (rhs_value_is_symbol(rv))
-    return first_letter_from_symbol (rhs_value_to_symbol(rv));
-  return '*'; /* function calls, reteloc's, unbound variables */
+char first_letter_from_rhs_value(rhs_value rv)
+{
+    if (rhs_value_is_symbol(rv))
+    {
+        return first_letter_from_symbol(rhs_value_to_symbol(rv));
+    }
+    return '*'; /* function calls, reteloc's, unbound variables */
 }
 

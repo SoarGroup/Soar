@@ -35,7 +35,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_VarPrint        = false;
     m_GPMax           = 20000;
     m_XMLResult       = new XMLTrace() ;
-
+    
     // parser takes ownership and deletes commands in its destructor
     m_Parser.AddCommand(new cli::AddWMECommand(*this));
     m_Parser.AddCommand(new cli::AliasCommand(*this));
@@ -123,7 +123,7 @@ EXPORT CommandLineInterface::~CommandLineInterface()
         (*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
         delete m_pLogFile;
     }
-
+    
     delete m_XMLResult ;
     m_XMLResult = NULL ;
 }
@@ -131,53 +131,67 @@ EXPORT CommandLineInterface::~CommandLineInterface()
 EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
 {
     if (!pCommandLine)
+    {
         return false ;
-
+    }
+    
     // echo everything but edit-production
     return strncmp(pCommandLine, "edit-production", strlen("edit_production")) != 0;
 }
 
 EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse)
 {
-    if (!m_pKernelSML) return false;
-
-    PushCall( CallData(pAgent, rawOutput) );
-
+    if (!m_pKernelSML)
+    {
+        return false;
+    }
+    
+    PushCall(CallData(pAgent, rawOutput));
+    
     // Log input
     if (m_pLogFile)
     {
-        if (pAgent) (*m_pLogFile) << pAgent->GetName() << "> ";
+        if (pAgent)
+        {
+            (*m_pLogFile) << pAgent->GetName() << "> ";
+        }
         (*m_pLogFile) << pCommandLine << std::endl;
     }
-
-    SetTrapPrintCallbacks( true );
-
+    
+    SetTrapPrintCallbacks(true);
+    
     m_LastError.clear();
-
+    
     Source(pCommandLine);
-
-    SetTrapPrintCallbacks( false );
-
+    
+    SetTrapPrintCallbacks(false);
+    
     if (pConnection && pResponse)
+    {
         GetLastResultSML(pConnection, pResponse, echoResults);
-
+    }
+    
     PopCall();
-
+    
     // Always returns true to indicate that we've generated any needed error message already
     return true;
 }
 
-void CommandLineInterface::PushCall( CallData callData )
+void CommandLineInterface::PushCall(CallData callData)
 {
-    m_CallDataStack.push( callData );
-
+    m_CallDataStack.push(callData);
+    
     if (callData.pAgent)
+    {
         m_pAgentSML = callData.pAgent;
+    }
     else
+    {
         m_pAgentSML = 0;
-
+    }
+    
     m_RawOutput = callData.rawOutput;
-
+    
     // For kernel callback class we inherit
     SetAgentSML(m_pAgentSML) ;
 }
@@ -186,15 +200,15 @@ void CommandLineInterface::PopCall()
 {
     m_CallDataStack.pop();
     sml::AgentSML* pAgent = 0;
-
-    if ( m_CallDataStack.size() )
+    
+    if (m_CallDataStack.size())
     {
         const CallData& callData = m_CallDataStack.top();
         pAgent = callData.pAgent;
         m_RawOutput = callData.rawOutput;
-
+        
         // reset these for the next command
-        SetAgentSML( pAgent ) ;
+        SetAgentSML(pAgent) ;
         m_pAgentSML = pAgent;
     }
 }
@@ -202,12 +216,16 @@ void CommandLineInterface::PopCall()
 void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
 {
     if (!m_pAgentSML)
+    {
         return;
-
+    }
+    
     // If we've already set it, don't re-set it
-    if ( m_TrapPrintEvents == setting )
+    if (m_TrapPrintEvents == setting)
+    {
         return;
-
+    }
+    
     if (setting)
     {
         // Trap print callbacks
@@ -215,38 +233,40 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
         m_TrapPrintEvents = true;
         if (!m_pLogFile)
             // If we're logging, we're already registered for this.
+        {
             RegisterWithKernel(smlEVENT_PRINT);
-
+        }
+        
         // Tell kernel to collect result in command buffer as opposed to trace buffer
-        xml_begin_command_mode( m_pAgentSML->GetSoarAgent() );
+        xml_begin_command_mode(m_pAgentSML->GetSoarAgent());
     }
     else
     {
         // Retrieve command buffer, tell kernel to use trace buffer again
-        ElementXML* pXMLCommandResult = xml_end_command_mode( m_pAgentSML->GetSoarAgent() );
-
+        ElementXML* pXMLCommandResult = xml_end_command_mode(m_pAgentSML->GetSoarAgent());
+        
         // The root object is just a <trace> tag.  The substance is in the children
         // Add children of the command buffer to response tags
-        for ( int i = 0; i < pXMLCommandResult->GetNumberChildren(); ++i )
+        for (int i = 0; i < pXMLCommandResult->GetNumberChildren(); ++i)
         {
             ElementXML* pChildXML = new ElementXML();
-            pXMLCommandResult->GetChild( pChildXML, i );
-
-            m_ResponseTags.push_back( pChildXML );
+            pXMLCommandResult->GetChild(pChildXML, i);
+            
+            m_ResponseTags.push_back(pChildXML);
         }
-
+        
         delete pXMLCommandResult;
-
-        if ( !m_RawOutput )
+        
+        if (!m_RawOutput)
         {
             // Add text result to response tags
-            if ( m_Result.str().length() )
+            if (m_Result.str().length())
             {
-                AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str() );
+                AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str());
                 m_Result.str("");
             }
         }
-
+        
         // Re-enable print callbacks
         if (!m_pLogFile)
         {
@@ -262,21 +282,26 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
 {
     assert(pConnection);
     assert(pResponse);
-
+    
     // Log output
-    if (m_pLogFile) (*m_pLogFile) << m_Result.str() << std::endl;
-
+    if (m_pLogFile)
+    {
+        (*m_pLogFile) << m_Result.str() << std::endl;
+    }
+    
     if (m_LastError.empty())
     {
         if (m_RawOutput)
+        {
             pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
+        }
         else
         {
             // If there are tags in the response list, add them
             if (!m_ResponseTags.empty())
             {
                 TagResult* pTag = new TagResult();
-
+                
                 ElementXMLListIter iter = m_ResponseTags.begin();
                 while (iter != m_ResponseTags.end())
                 {
@@ -284,26 +309,34 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
                     m_ResponseTags.erase(iter);
                     iter = m_ResponseTags.begin();
                 }
-
+                
                 pResponse->AddChild(pTag);
             }
             else
+            {
                 pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
+            }
         }
     }
     else
+    {
         pConnection->AddErrorToSMLResponse(pResponse, m_Result.str().c_str(), 1);
-
+    }
+    
     if (echoResults && m_pAgentSML)
+    {
         m_pAgentSML->FireEchoEvent(pConnection, m_Result.str().c_str()) ;
-
+    }
+    
     // reset state
     m_Result.str("");
-
+    
     // Delete all remaining xml objects
-    for ( ElementXMLListIter cleanupIter = m_ResponseTags.begin(); cleanupIter != m_ResponseTags.end(); ++cleanupIter )
+    for (ElementXMLListIter cleanupIter = m_ResponseTags.begin(); cleanupIter != m_ResponseTags.end(); ++cleanupIter)
+    {
         delete *cleanupIter;
-
+    }
+    
     m_ResponseTags.clear();
 }
 
@@ -314,7 +347,9 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv)
     {
         // Is one of the two help strings present?
         if (argv[1] == "-h" || argv[1] == "--help")
+        {
             return true;
+        }
     }
     return false;
 }
@@ -329,10 +364,13 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory)
     // Pull an arbitrary buffer size of 1024 out of a hat and use it
     char buf[1024];
     char* ret = getcwd(buf, 1024);
-
+    
     // If getcwd returns 0, that is bad
-    if (!ret) return SetError("Error getting current working directory.");
-
+    if (!ret)
+    {
+        return SetError("Error getting current working directory.");
+    }
+    
     // Store directory in output parameter and return success
     directory = buf;
     normalize_separators(directory);
@@ -399,7 +437,9 @@ bool CommandLineInterface::SetError(const std::string& error)
 {
     if (!m_Result.str().empty())
         if (m_Result.str().at(m_Result.str().length() - 1) != '\n')
+        {
             m_Result << std::endl;
+        }
     m_Result << error;
     m_LastError = error;
     return false;
@@ -449,15 +489,15 @@ void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
     // The result is XML in this format (e.g. for matches):
     // <result><matches>...</matches></result>
     // where ... contains the XML specific to that command.
-
+    
     // Extract the XML object from the xmlTrace object and
     // add it as a child of this message.  This is just moving a few pointers around, nothing is getting copied.
     ElementXML_Handle xmlHandle = m_XMLResult->Detach() ;
     ElementXML* pXMLResult = new ElementXML(xmlHandle) ;
     pXMLResult->SetTagName(pCommandName) ;
-
+    
     m_ResponseTags.push_back(pXMLResult) ;
-
+    
     // Clear the XML result, so it's ready for use again.
     m_XMLResult->Reset() ;
 }
@@ -467,29 +507,29 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
     if (eventID == smlEVENT_PRINT)
     {
         char const* msg = static_cast<char const*>(pCallData);
-
+        
         if (m_TrapPrintEvents || m_pLogFile)
         {
             if (m_VarPrint)
             {
                 // Transform if varprint, see print command
                 std::string message(msg);
-
+                
                 regex_t comp;
                 regcomp(&comp, "[A-Z][0-9]+", REG_EXTENDED);
-
+                
                 regmatch_t match;
                 memset(&match, 0, sizeof(regmatch_t));
-
+                
                 while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0)
                 {
                     message.insert(match.rm_so, "<");
                     message.insert(match.rm_eo + 1, ">");
                     match.rm_eo += 2;
                 }
-
+                
                 regfree(&comp);
-
+                
                 // Simply append to message result
                 if (m_TrapPrintEvents)
                 {
@@ -498,7 +538,9 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
                     //std::cout.flush();
                 }
                 else if (m_pLogFile)
+                {
                     (*m_pLogFile) << msg;
+                }
             }
             else
             {
@@ -509,7 +551,9 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
                     //std::cout.flush();
                 }
                 else if (m_pLogFile)
+                {
                     (*m_pLogFile) << msg;
+                }
             }
         }
     }
@@ -529,18 +573,22 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
     }
 } // function
 
-bool CommandLineInterface::IsLogOpen() {
-	return m_pLogFile ? true : false;
+bool CommandLineInterface::IsLogOpen()
+{
+    return m_pLogFile ? true : false;
 }
 
 void CommandLineInterface::PrintCLIMessage(const char* printString, bool add_raw_lf)
 {
-	if ( m_RawOutput ){
-    	m_Result << printString << (add_raw_lf ? "\n" : "");
-    } else {
-    	AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, printString);
+    if (m_RawOutput)
+    {
+        m_Result << printString << (add_raw_lf ? "\n" : "");
     }
-
+    else
+    {
+        AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, printString);
+    }
+    
 }
 void CommandLineInterface::PrintCLIMessage(std::string* printString, bool add_raw_lf)
 {
@@ -557,14 +605,16 @@ void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, con
     std::ostringstream tempString;
     int left_width, right_width, middle_width;
     std::string sep_string("");
-
+    
     left_width = strlen(prefixString);
     right_width = strlen(printString);
     middle_width = column_width - left_width - right_width;
     if (middle_width < 0)
-    	middle_width = 1;
+    {
+        middle_width = 1;
+    }
     sep_string.insert(0, middle_width, ' ');
-
+    
     tempString << prefixString << sep_string << printString;
     PrintCLIMessage(&tempString);
 }
@@ -572,10 +622,10 @@ void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, con
 void CommandLineInterface::PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf)
 {
     std::ostringstream tempString;
-    char *temp = printObject->get_string();
+    char* temp = printObject->get_string();
     PrintCLIMessage_Justify(prefixString, temp, column_width);
     delete temp;
-
+    
 }
 
 void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf)
@@ -583,16 +633,16 @@ void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int 
     std::ostringstream tempString;
     int left_width, right_width, header_width;
     std::string left_string(""), right_string(""), sep_string("");
-
+    
     header_width = strlen(headerString) + 2;
     left_width = (column_width - header_width) / 2;
     right_width = column_width - left_width - header_width;
     left_string.insert(0, left_width, ' ');
     right_string.insert(0, right_width, ' ');
     sep_string.insert(0, column_width, '=');
-
+    
     tempString << "" << left_string << ' ' << headerString << ' ' << right_string << "";
-
+    
     PrintCLIMessage(&sep_string);
     PrintCLIMessage(&tempString);
     PrintCLIMessage(&sep_string);
@@ -603,86 +653,108 @@ void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int
     std::ostringstream tempString;
     int left_width, right_width, header_width;
     std::string left_string(""), right_string("");
-
+    
     header_width = strlen(headerString) + 2;
     left_width = (column_width - header_width) / 2;
     right_width = column_width - left_width - header_width;
-
+    
     left_string.insert(0, left_width, '-');
     right_string.insert(0, right_width, '-');
     tempString << left_string << ' ' << headerString << ' ' << right_string;
-
+    
     PrintCLIMessage(&tempString);
 }
 
-void get_context_var_info ( agent* thisAgent, Symbol **dest_goal,
-    Symbol **dest_attr_of_slot,
-    Symbol **dest_current_value)
+void get_context_var_info(agent* thisAgent, Symbol** dest_goal,
+                          Symbol** dest_attr_of_slot,
+                          Symbol** dest_current_value)
 {
-    Symbol *v, *g;
+    Symbol* v, *g;
     int levels_up;
-    wme *w;
-
-    v = find_variable (thisAgent, thisAgent->lexeme.string);
-    if (v==thisAgent->s_context_variable) {
+    wme* w;
+    
+    v = find_variable(thisAgent, thisAgent->lexeme.string);
+    if (v == thisAgent->s_context_variable)
+    {
         levels_up = 0;
         *dest_attr_of_slot = thisAgent->state_symbol;
-    } else if (v==thisAgent->o_context_variable) {
+    }
+    else if (v == thisAgent->o_context_variable)
+    {
         levels_up = 0;
         *dest_attr_of_slot = thisAgent->operator_symbol;
-    } else if (v==thisAgent->ss_context_variable) {
+    }
+    else if (v == thisAgent->ss_context_variable)
+    {
         levels_up = 1;
         *dest_attr_of_slot = thisAgent->state_symbol;
-    } else if (v==thisAgent->so_context_variable) {
+    }
+    else if (v == thisAgent->so_context_variable)
+    {
         levels_up = 1;
         *dest_attr_of_slot = thisAgent->operator_symbol;
-    } else if (v==thisAgent->sss_context_variable) {
+    }
+    else if (v == thisAgent->sss_context_variable)
+    {
         levels_up = 2;
         *dest_attr_of_slot = thisAgent->state_symbol;
-    } else if (v==thisAgent->sso_context_variable) {
+    }
+    else if (v == thisAgent->sso_context_variable)
+    {
         levels_up = 2;
         *dest_attr_of_slot = thisAgent->operator_symbol;
-    } else if (v==thisAgent->ts_context_variable) {
-        levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level-thisAgent->top_goal->id->level : 0;
+    }
+    else if (v == thisAgent->ts_context_variable)
+    {
+        levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level - thisAgent->top_goal->id->level : 0;
         *dest_attr_of_slot = thisAgent->state_symbol;
-    } else if (v==thisAgent->to_context_variable) {
-        levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level-thisAgent->top_goal->id->level : 0;
+    }
+    else if (v == thisAgent->to_context_variable)
+    {
+        levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level - thisAgent->top_goal->id->level : 0;
         *dest_attr_of_slot = thisAgent->operator_symbol;
-    } else {
+    }
+    else
+    {
         *dest_goal = NIL;
         *dest_attr_of_slot = NIL;
         *dest_current_value = NIL;
         return;
     }
-
+    
     g = thisAgent->bottom_goal;
-    while (g && levels_up) {
+    while (g && levels_up)
+    {
         g = g->id->higher_goal;
         levels_up--;
     }
     *dest_goal = g;
-
-    if (!g) {
+    
+    if (!g)
+    {
         *dest_current_value = NIL;
         return;
     }
-
-    if (*dest_attr_of_slot==thisAgent->state_symbol) {
+    
+    if (*dest_attr_of_slot == thisAgent->state_symbol)
+    {
         *dest_current_value = g;
-    } else {
+    }
+    else
+    {
         w = g->id->operator_slot->wmes;
         *dest_current_value = w ? w->value : NIL;
     }
 }
 
-bool read_id_or_context_var_from_string (agent* thisAgent, const char * the_lexeme,
-    Symbol * * result_id)
+bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme,
+                                        Symbol** result_id)
 {
-    Symbol *id;
-    Symbol *g, *attr, *value;
-
+    Symbol* id;
+    Symbol* g, *attr, *value;
+    
     get_lexeme_from_string(thisAgent, the_lexeme);
-
+    
     if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
     {
         id = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
@@ -696,35 +768,35 @@ bool read_id_or_context_var_from_string (agent* thisAgent, const char * the_lexe
             return true;
         }
     }
-
-    if (thisAgent->lexeme.type==VARIABLE_LEXEME)
+    
+    if (thisAgent->lexeme.type == VARIABLE_LEXEME)
     {
-        get_context_var_info (thisAgent, &g, &attr, &value);
-
+        get_context_var_info(thisAgent, &g, &attr, &value);
+        
         if ((!attr) || (!value))
         {
             return false;
         }
-
+        
         if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         {
             return false;
         }
-
+        
         *result_id = value;
         return true;
     }
-
+    
     return false;
 }
 
-void get_lexeme_from_string (agent* thisAgent, const char * the_lexeme)
+void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme)
 {
     int i;
-    const char * c;
+    const char* c;
     bool sym_constant_start_found = false;
     bool sym_constant_end_found = false;
-
+    
     for (c = the_lexeme, i = 0; *c; c++, i++)
     {
         if (*c == '|')
@@ -745,11 +817,11 @@ void get_lexeme_from_string (agent* thisAgent, const char * the_lexeme)
             thisAgent->lexeme.string[i] = *c;
         }
     }
-
+    
     thisAgent->lexeme.string[i] = '\0'; /* Null terminate lexeme string */
-
+    
     thisAgent->lexeme.length = i;
-
+    
     if (sym_constant_end_found)
     {
         thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
@@ -760,43 +832,48 @@ void get_lexeme_from_string (agent* thisAgent, const char * the_lexeme)
     }
 }
 
-Symbol *read_identifier_or_context_variable (agent* thisAgent)
+Symbol* read_identifier_or_context_variable(agent* thisAgent)
 {
-    Symbol *id;
-    Symbol *g, *attr, *value;
-
-    if (thisAgent->lexeme.type==IDENTIFIER_LEXEME) {
-        id = find_identifier (thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
-        if (!id) {
-            print (thisAgent, "There is no identifier %c%lu.\n", thisAgent->lexeme.id_letter,
-                thisAgent->lexeme.id_number);
+    Symbol* id;
+    Symbol* g, *attr, *value;
+    
+    if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+    {
+        id = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+        if (!id)
+        {
+            print(thisAgent, "There is no identifier %c%lu.\n", thisAgent->lexeme.id_letter,
+                  thisAgent->lexeme.id_number);
             print_location_of_most_recent_lexeme(thisAgent);
             return NIL;
         }
         return id;
     }
-    if (thisAgent->lexeme.type==VARIABLE_LEXEME)
+    if (thisAgent->lexeme.type == VARIABLE_LEXEME)
     {
-        get_context_var_info (thisAgent, &g, &attr, &value);
-        if (!attr) {
-            print (thisAgent, "Expected identifier (or context variable)\n");
+        get_context_var_info(thisAgent, &g, &attr, &value);
+        if (!attr)
+        {
+            print(thisAgent, "Expected identifier (or context variable)\n");
             print_location_of_most_recent_lexeme(thisAgent);
             return NIL;
         }
-        if (!value) {
-            print (thisAgent, "There is no current %s.\n", thisAgent->lexeme.string);
+        if (!value)
+        {
+            print(thisAgent, "There is no current %s.\n", thisAgent->lexeme.string);
             print_location_of_most_recent_lexeme(thisAgent);
             return NIL;
         }
-        if (value->symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
-            print (thisAgent, "The current %s ", thisAgent->lexeme.string);
-            print_with_symbols (thisAgent, "(%y) is not an identifier.\n", value);
+        if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+        {
+            print(thisAgent, "The current %s ", thisAgent->lexeme.string);
+            print_with_symbols(thisAgent, "(%y) is not an identifier.\n", value);
             print_location_of_most_recent_lexeme(thisAgent);
             return NIL;
         }
         return value;
     }
-    print (thisAgent, "Expected identifier (or context variable)\n");
+    print(thisAgent, "Expected identifier (or context variable)\n");
     print_location_of_most_recent_lexeme(thisAgent);
     return NIL;
 }

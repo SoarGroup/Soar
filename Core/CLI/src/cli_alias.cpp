@@ -18,34 +18,39 @@ bool CommandLineInterface::DoAlias(std::vector< std::string >* argv)
             m_Result << "No aliases found.";
             return true;
         }
-
+        
         while (iter != m_Parser.GetAliases().End())
         {
             if (!argv || argv->front() == iter->first)
             {
                 std::string expansion;
-                for (std::vector<std::string>::const_iterator j = iter->second.begin(); j != iter->second.end(); ++j) {
+                for (std::vector<std::string>::const_iterator j = iter->second.begin(); j != iter->second.end(); ++j)
+                {
                     expansion += *j;
                     expansion += ' ';
                 }
                 expansion = expansion.substr(0, expansion.length() - 1);
-
+                
                 if (m_RawOutput)
+                {
                     m_Result << iter->first << "=" << expansion << "\n";
+                }
                 else
                 {
                     AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, iter->first);
                     AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, expansion);
                 }
-
+                
                 if (argv)
+                {
                     return true;
+                }
             }
             ++iter;
         }
         return true;
     }
-
+    
     m_Parser.GetAliases().SetAlias(*argv);
     return true;
 }

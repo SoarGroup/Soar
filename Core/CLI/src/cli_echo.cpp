@@ -15,24 +15,31 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv, bool echoNewline) {
+bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv, bool echoNewline)
+{
 
     std::string message;
-
+    
     // Concatenate arguments (spaces between arguments are lost unless enclosed in quotes)
-    for (unsigned i = 1; i < argv.size(); ++i) {
+    for (unsigned i = 1; i < argv.size(); ++i)
+    {
         message += argv[i];
         message += ' ';
     }
-
+    
     // remove trailing space
     message = message.substr(0, message.length() - 1);
-
+    
     // Convert backslash characters
-    for(std::string::size_type pos = 0; (pos = message.find('\\', pos)) != std::string::npos; ++pos) {
-        if (message.size() <= pos + 1) break;
+    for (std::string::size_type pos = 0; (pos = message.find('\\', pos)) != std::string::npos; ++pos)
+    {
+        if (message.size() <= pos + 1)
+        {
+            break;
+        }
         // Found a backslash with a character after it, remove it
-        switch (message[pos + 1]) {
+        switch (message[pos + 1])
+        {
             case '\\':
                 message.erase(pos, 1);
                 break;
@@ -68,17 +75,21 @@ bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv, bool ech
                 break;
             default: // ignore it
                 break;
-        } 
+        }
     }
-
+    
     // Add newline if applicable
-    if (echoNewline) {
+    if (echoNewline)
+    {
         message += '\n';
     }
-
-    if (m_RawOutput) {
+    
+    if (m_RawOutput)
+    {
         m_Result << message;
-    } else {
+    }
+    else
+    {
         AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, message);
     }
     return true;

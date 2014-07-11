@@ -29,10 +29,10 @@
  */
 
 
- /* Two points about this enumeration: a) The first entry is not */
- /* a valid callback because 0 is used to indicate an invalid or */
- /* missing callback and b) The last entry in the enum list      */
- /* indicates how many enums are defined.                        */
+/* Two points about this enumeration: a) The first entry is not */
+/* a valid callback because 0 is used to indicate an invalid or */
+/* missing callback and b) The last entry in the enum list      */
+/* indicates how many enums are defined.                        */
 
 #ifndef CALLBACK_H_INCLUDED         /* Avoid duplicate includes  */
 #define CALLBACK_H_INCLUDED
@@ -40,58 +40,58 @@
 /* First we define the possible callbacks in an enum.  Then we  */
 /* describe how each one will be called in user code.           */
 
-enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
+enum SOAR_CALLBACK_TYPE             // if you change this, update soar_callback_names
 {
-  NO_CALLBACK,                      /* Used for missing callback */
-  AFTER_INIT_AGENT_CALLBACK,
-  BEFORE_INIT_SOAR_CALLBACK,
-  AFTER_INIT_SOAR_CALLBACK,
-  AFTER_HALT_SOAR_CALLBACK,
-  BEFORE_ELABORATION_CALLBACK,
-  AFTER_ELABORATION_CALLBACK,
-  BEFORE_DECISION_CYCLE_CALLBACK,
-  AFTER_DECISION_CYCLE_CALLBACK,
-  BEFORE_INPUT_PHASE_CALLBACK,
-  INPUT_PHASE_CALLBACK,
-  AFTER_INPUT_PHASE_CALLBACK,
-  BEFORE_PREFERENCE_PHASE_CALLBACK,
-  AFTER_PREFERENCE_PHASE_CALLBACK,
-  BEFORE_WM_PHASE_CALLBACK,
-  AFTER_WM_PHASE_CALLBACK,
-  BEFORE_OUTPUT_PHASE_CALLBACK,
-  OUTPUT_PHASE_CALLBACK,
-  AFTER_OUTPUT_PHASE_CALLBACK,
-  BEFORE_DECISION_PHASE_CALLBACK,
-  AFTER_DECISION_PHASE_CALLBACK,
-  BEFORE_PROPOSE_PHASE_CALLBACK,
-  AFTER_PROPOSE_PHASE_CALLBACK,
-  BEFORE_APPLY_PHASE_CALLBACK,
-  AFTER_APPLY_PHASE_CALLBACK,
-  WM_CHANGES_CALLBACK,
-  CREATE_NEW_CONTEXT_CALLBACK,
-  POP_CONTEXT_STACK_CALLBACK,
-  CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK,
-  REMOVE_ATTRIBUTE_IMPASSE_CALLBACK,
-  PRODUCTION_JUST_ADDED_CALLBACK,
-  PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK,
-  AFTER_INTERRUPT_CALLBACK,
-  AFTER_HALTED_CALLBACK,
-  BEFORE_RUN_STARTS_CALLBACK,
-  AFTER_RUN_ENDS_CALLBACK,
-  BEFORE_RUNNING_CALLBACK,
-  AFTER_RUNNING_CALLBACK,
-  FIRING_CALLBACK,
-  RETRACTION_CALLBACK,
-  SYSTEM_PARAMETER_CHANGED_CALLBACK,
-  MAX_MEMORY_USAGE_CALLBACK,
-  XML_GENERATION_CALLBACK,
-  PRINT_CALLBACK,
-  LOG_CALLBACK,
-  INPUT_WME_GARBAGE_COLLECTED_CALLBACK,
-  NUMBER_OF_CALLBACKS               /* Not actually a callback   */
-                                    /* type.  Used to indicate   */
-                                    /* list size and MUST ALWAYS */
-                                    /* BE LAST.                  */
+    NO_CALLBACK,                      /* Used for missing callback */
+    AFTER_INIT_AGENT_CALLBACK,
+    BEFORE_INIT_SOAR_CALLBACK,
+    AFTER_INIT_SOAR_CALLBACK,
+    AFTER_HALT_SOAR_CALLBACK,
+    BEFORE_ELABORATION_CALLBACK,
+    AFTER_ELABORATION_CALLBACK,
+    BEFORE_DECISION_CYCLE_CALLBACK,
+    AFTER_DECISION_CYCLE_CALLBACK,
+    BEFORE_INPUT_PHASE_CALLBACK,
+    INPUT_PHASE_CALLBACK,
+    AFTER_INPUT_PHASE_CALLBACK,
+    BEFORE_PREFERENCE_PHASE_CALLBACK,
+    AFTER_PREFERENCE_PHASE_CALLBACK,
+    BEFORE_WM_PHASE_CALLBACK,
+    AFTER_WM_PHASE_CALLBACK,
+    BEFORE_OUTPUT_PHASE_CALLBACK,
+    OUTPUT_PHASE_CALLBACK,
+    AFTER_OUTPUT_PHASE_CALLBACK,
+    BEFORE_DECISION_PHASE_CALLBACK,
+    AFTER_DECISION_PHASE_CALLBACK,
+    BEFORE_PROPOSE_PHASE_CALLBACK,
+    AFTER_PROPOSE_PHASE_CALLBACK,
+    BEFORE_APPLY_PHASE_CALLBACK,
+    AFTER_APPLY_PHASE_CALLBACK,
+    WM_CHANGES_CALLBACK,
+    CREATE_NEW_CONTEXT_CALLBACK,
+    POP_CONTEXT_STACK_CALLBACK,
+    CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK,
+    REMOVE_ATTRIBUTE_IMPASSE_CALLBACK,
+    PRODUCTION_JUST_ADDED_CALLBACK,
+    PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK,
+    AFTER_INTERRUPT_CALLBACK,
+    AFTER_HALTED_CALLBACK,
+    BEFORE_RUN_STARTS_CALLBACK,
+    AFTER_RUN_ENDS_CALLBACK,
+    BEFORE_RUNNING_CALLBACK,
+    AFTER_RUNNING_CALLBACK,
+    FIRING_CALLBACK,
+    RETRACTION_CALLBACK,
+    SYSTEM_PARAMETER_CHANGED_CALLBACK,
+    MAX_MEMORY_USAGE_CALLBACK,
+    XML_GENERATION_CALLBACK,
+    PRINT_CALLBACK,
+    LOG_CALLBACK,
+    INPUT_WME_GARBAGE_COLLECTED_CALLBACK,
+    NUMBER_OF_CALLBACKS               /* Not actually a callback   */
+    /* type.  Used to indicate   */
+    /* list size and MUST ALWAYS */
+    /* BE LAST.                  */
 } ;
 
 #define NUMBER_OF_MONITORABLE_CALLBACKS (NUMBER_OF_CALLBACKS - 2)
@@ -104,7 +104,7 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 
     my_callback_fn(agent * a,
                    soar_callback_data scd,
-		   soar_call_data call_data);
+           soar_call_data call_data);
 
   where "a" is a pointer to the agent structure for the agent in which
   the callback was invoked, "scd" is the data structure given in the
@@ -322,18 +322,18 @@ enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 
 //typedef list * soar_callback_array[NUMBER_OF_CALLBACKS];
 
-typedef const char * soar_callback_id;
-typedef void * soar_callback_data;
-typedef void * soar_call_data;
-typedef int	   soar_callback_event_id;
+typedef const char* soar_callback_id;
+typedef void* soar_callback_data;
+typedef void* soar_call_data;
+typedef int    soar_callback_event_id;
 
 typedef struct agent_struct agent;
 
 typedef void (*soar_callback_fn)(agent*,
-				 soar_callback_event_id,
-				 soar_callback_data,
-				 soar_call_data);
-typedef void (*soar_callback_free_fn)(soar_callback_data);	// JRV 2008 This is a function pointer used to free the user data but currently nobody uses it
+                                 soar_callback_event_id,
+                                 soar_callback_data,
+                                 soar_call_data);
+typedef void (*soar_callback_free_fn)(soar_callback_data);  // JRV 2008 This is a function pointer used to free the user data but currently nobody uses it
 typedef struct cons_struct cons;
 typedef cons list;
 typedef struct agent_struct agent;
@@ -342,51 +342,51 @@ typedef struct agent_struct agent;
 
 typedef struct callback_struct
 {
-  std::string           id;
-  soar_callback_fn      function;
-  soar_callback_data    data;
-  soar_callback_event_id eventid ;
-  soar_callback_free_fn free_function;
+    std::string           id;
+    soar_callback_fn      function;
+    soar_callback_data    data;
+    soar_callback_event_id eventid ;
+    soar_callback_free_fn free_function;
 } soar_callback;
 
-extern void soar_add_callback (agent* thisAgent,
-			       SOAR_CALLBACK_TYPE,
-			       soar_callback_fn,
-				   soar_callback_event_id,
-			       soar_callback_data,
-			       soar_callback_free_fn,
-			       soar_callback_id);
-extern void soar_callback_data_free_string (soar_callback_data);
-extern const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE, bool);
-extern SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char *, bool);
-extern void soar_destroy_callback(soar_callback *);
-extern bool soar_exists_callback (agent*, SOAR_CALLBACK_TYPE);
-extern soar_callback * soar_exists_callback_id (agent* the_agent,
-  					      SOAR_CALLBACK_TYPE callback_type,
-						soar_callback_id id);
-extern void soar_init_callbacks (agent*);
-extern void soar_invoke_callbacks (agent* thisAgent,
-				   SOAR_CALLBACK_TYPE,
-				   soar_call_data);
-extern void soar_invoke_first_callback (agent* thisAgent,
-					SOAR_CALLBACK_TYPE,
-					soar_call_data);
-extern void soar_list_all_callbacks (agent*,
-				     bool);
-extern void soar_list_all_callbacks_for_event (agent* thisAgent,
-					       SOAR_CALLBACK_TYPE);
-extern void soar_pop_callback (agent* the_agent,
-			       SOAR_CALLBACK_TYPE callback_type);
-extern void soar_push_callback (agent* the_agent,
-				SOAR_CALLBACK_TYPE callback_type,
-				soar_callback_fn fn,
-				soar_callback_data data,
-				soar_callback_free_fn free_fn);
-extern void soar_remove_all_monitorable_callbacks (agent* thisAgent);
-extern void soar_remove_all_callbacks_for_event (agent* thisAgent, SOAR_CALLBACK_TYPE);
-extern void soar_remove_callback (agent* thisAgent,
-				  SOAR_CALLBACK_TYPE,
-				  soar_callback_id);
+extern void soar_add_callback(agent* thisAgent,
+                              SOAR_CALLBACK_TYPE,
+                              soar_callback_fn,
+                              soar_callback_event_id,
+                              soar_callback_data,
+                              soar_callback_free_fn,
+                              soar_callback_id);
+extern void soar_callback_data_free_string(soar_callback_data);
+extern const char* soar_callback_enum_to_name(SOAR_CALLBACK_TYPE, bool);
+extern SOAR_CALLBACK_TYPE soar_callback_name_to_enum(char*, bool);
+extern void soar_destroy_callback(soar_callback*);
+extern bool soar_exists_callback(agent*, SOAR_CALLBACK_TYPE);
+extern soar_callback* soar_exists_callback_id(agent* the_agent,
+        SOAR_CALLBACK_TYPE callback_type,
+        soar_callback_id id);
+extern void soar_init_callbacks(agent*);
+extern void soar_invoke_callbacks(agent* thisAgent,
+                                  SOAR_CALLBACK_TYPE,
+                                  soar_call_data);
+extern void soar_invoke_first_callback(agent* thisAgent,
+                                       SOAR_CALLBACK_TYPE,
+                                       soar_call_data);
+extern void soar_list_all_callbacks(agent*,
+                                    bool);
+extern void soar_list_all_callbacks_for_event(agent* thisAgent,
+        SOAR_CALLBACK_TYPE);
+extern void soar_pop_callback(agent* the_agent,
+                              SOAR_CALLBACK_TYPE callback_type);
+extern void soar_push_callback(agent* the_agent,
+                               SOAR_CALLBACK_TYPE callback_type,
+                               soar_callback_fn fn,
+                               soar_callback_data data,
+                               soar_callback_free_fn free_fn);
+extern void soar_remove_all_monitorable_callbacks(agent* thisAgent);
+extern void soar_remove_all_callbacks_for_event(agent* thisAgent, SOAR_CALLBACK_TYPE);
+extern void soar_remove_callback(agent* thisAgent,
+                                 SOAR_CALLBACK_TYPE,
+                                 soar_callback_id);
 extern void soar_test_all_monitorable_callbacks(agent*);
 
 extern void soar_print_detailed_callback_stats();

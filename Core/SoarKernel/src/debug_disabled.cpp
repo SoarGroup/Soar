@@ -15,8 +15,8 @@
 //#include "soar_db.h"
 
 /* -- Empty functions that should get optimized away in the release build -- */
-extern void dprint (TraceMode mode, const char *format, ... ) {}
-extern void dprint_noprefix (TraceMode mode, const char *format, ... ) {}
+extern void dprint(TraceMode mode, const char* format, ...) {}
+extern void dprint_noprefix(TraceMode mode, const char* format, ...) {}
 
 extern void debug_test(int type) {}
 

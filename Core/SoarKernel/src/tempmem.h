@@ -33,11 +33,11 @@ typedef struct symbol_struct Symbol;
 typedef struct slot_struct slot;
 typedef struct agent_struct agent;
 
-extern slot *find_slot (Symbol *id, Symbol *attr);
-extern slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr);
-extern void mark_slot_as_changed (agent* thisAgent, slot *s);
-extern void mark_slot_for_possible_removal (agent* thisAgent, slot *s);
-extern void remove_garbage_slots (agent* thisAgent);
-extern void clear_CDPS (agent* thisAgent, slot *s);
+extern slot* find_slot(Symbol* id, Symbol* attr);
+extern slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr);
+extern void mark_slot_as_changed(agent* thisAgent, slot* s);
+extern void mark_slot_for_possible_removal(agent* thisAgent, slot* s);
+extern void remove_garbage_slots(agent* thisAgent);
+extern void clear_CDPS(agent* thisAgent, slot* s);
 
 #endif

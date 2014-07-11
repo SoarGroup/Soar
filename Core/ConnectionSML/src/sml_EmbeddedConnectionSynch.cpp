@@ -28,84 +28,86 @@ using namespace soarxml ;
 
 /*************************************************************
 * @brief Send the message over to the other side of the connection
-*		 and store the response.
+*        and store the response.
 *
-*		 The caller can pick up the response later with a
-*		 call to GetResponseForID().
+*        The caller can pick up the response later with a
+*        call to GetResponseForID().
 *************************************************************/
 void EmbeddedConnectionSynch::SendMsg(ElementXML* pMsg)
 {
-	ClearError() ;
-
-	// Check that we have somebody to send this message to.
-	assert(m_hConnection);
-	if (m_hConnection == NULL)
-	{
-		SetError(Error::kNoEmbeddedLink) ;
-		return ;
-	}
-
+    ClearError() ;
+    
+    // Check that we have somebody to send this message to.
+    assert(m_hConnection);
+    if (m_hConnection == NULL)
+    {
+        SetError(Error::kNoEmbeddedLink) ;
+        return ;
+    }
+    
 #ifdef _DEBUG
-	if (IsTracingCommunications())
-	{
-		char* pStr = pMsg->GenerateXMLString(true) ;
-		sml::PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
-		pMsg->DeleteString(pStr) ;
-	}
+    if (IsTracingCommunications())
+    {
+        char* pStr = pMsg->GenerateXMLString(true) ;
+        sml::PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
+        pMsg->DeleteString(pStr) ;
+    }
 #endif
-
-	ElementXML_Handle hResponse = NULL ;
-
-	// Add a reference to this object, which will then be released by the receiver of this message when
-	// they are done with it.
-	pMsg->AddRefOnHandle() ;
-	ElementXML_Handle hSendMsg = pMsg->GetXMLHandle() ;
-
-	// Make the call to the kernel, passing the message over and getting an immediate response since this is
-	// an embedded synchronous (in thread) call.
-	hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_SYNCH) ;
-
-	// We cache the response
-	m_pLastResponse->Attach(hResponse) ;
+    
+    ElementXML_Handle hResponse = NULL ;
+    
+    // Add a reference to this object, which will then be released by the receiver of this message when
+    // they are done with it.
+    pMsg->AddRefOnHandle() ;
+    ElementXML_Handle hSendMsg = pMsg->GetXMLHandle() ;
+    
+    // Make the call to the kernel, passing the message over and getting an immediate response since this is
+    // an embedded synchronous (in thread) call.
+    hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_SYNCH) ;
+    
+    // We cache the response
+    m_pLastResponse->Attach(hResponse) ;
 }
 
 /*************************************************************
 * @brief Look up the response to a particular message.
 *
-*		We require these calls to be paired with the order the messages
-*		were sent (so send-msg-1, send-msg-2, get-response-2, get-response-1).
-*		Think of sending a message as a message call.  You can't return to
-*		a function higher up the stack, you need to go in order.
+*       We require these calls to be paired with the order the messages
+*       were sent (so send-msg-1, send-msg-2, get-response-2, get-response-1).
+*       Think of sending a message as a message call.  You can't return to
+*       a function higher up the stack, you need to go in order.
 *
-*		As a result, we only store a single response at a time
-*		and this must match the message we just sent (since its a synchronous
-*		connection so it's executed immediately).
+*       As a result, we only store a single response at a time
+*       and this must match the message we just sent (since its a synchronous
+*       connection so it's executed immediately).
 *************************************************************/
 ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* /*pID*/, bool /*wait*/)
 {
-	// For the embedded connection there's no ambiguity over what was the "last" call.
-	// There's also no need to wait, we always have the result on hand.
-	
-	ClearError() ;
-
-	ElementXML_Handle hResponse = m_pLastResponse->Detach() ;
-
-	if (!hResponse)
-		return NULL ;
-
-	// We create a new wrapper object and return that.
-	// (If we returned a pointer to m_LastResponse it could change when new messages come in).
-	ElementXML* pResult = new ElementXML(hResponse) ;
-
+    // For the embedded connection there's no ambiguity over what was the "last" call.
+    // There's also no need to wait, we always have the result on hand.
+    
+    ClearError() ;
+    
+    ElementXML_Handle hResponse = m_pLastResponse->Detach() ;
+    
+    if (!hResponse)
+    {
+        return NULL ;
+    }
+    
+    // We create a new wrapper object and return that.
+    // (If we returned a pointer to m_LastResponse it could change when new messages come in).
+    ElementXML* pResult = new ElementXML(hResponse) ;
+    
 #ifdef _DEBUG
-	if (IsTracingCommunications())
-	{
-		char* pStr = pResult->GenerateXMLString(true) ;
-		sml::PrintDebugFormat("%s Received %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
-		pResult->DeleteString(pStr) ;
-	}
+    if (IsTracingCommunications())
+    {
+        char* pStr = pResult->GenerateXMLString(true) ;
+        sml::PrintDebugFormat("%s Received %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
+        pResult->DeleteString(pStr) ;
+    }
 #endif
-
-	return pResult ;
+    
+    return pResult ;
 }
 

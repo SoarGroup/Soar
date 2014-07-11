@@ -15,20 +15,30 @@
 
 using namespace cli;
 
-bool CommandLineInterface::DoPushD(const std::string& directory) {
-    
+bool CommandLineInterface::DoPushD(const std::string& directory)
+{
+
     // Sanity check thanks to rchong
-    if (directory.length() == 0) return true;
-
+    if (directory.length() == 0)
+    {
+        return true;
+    }
+    
     // Target directory required, checked in DoCD call.
-
+    
     // Save the current (soon to be old) directory
     std::string oldDirectory;
-    if (!GetCurrentWorkingDirectory(oldDirectory)) return false;// Error message handled in function
-
+    if (!GetCurrentWorkingDirectory(oldDirectory))
+    {
+        return false;    // Error message handled in function
+    }
+    
     // Change to the new directory.
-    if (!DoCD(&directory)) return false;// Error message handled in function
-
+    if (!DoCD(&directory))
+    {
+        return false;    // Error message handled in function
+    }
+    
     // Directory change successful, store old directory and move on
     m_DirectoryStack.push(oldDirectory);
     return true;

@@ -22,17 +22,22 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoVerbose(bool* pSetting) {
+bool CommandLineInterface::DoVerbose(bool* pSetting)
+{
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (!pSetting) {
-        if (m_RawOutput) {
+    if (!pSetting)
+    {
+        if (m_RawOutput)
+        {
             m_Result << "Verbose is " << (thisAgent->soar_verbose_flag ? "on." : "off.");
-        } else {
+        }
+        else
+        {
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, thisAgent->soar_verbose_flag ? sml_Names::kTrue : sml_Names::kFalse);
         }
         return true;
     }
-
+    
     thisAgent->soar_verbose_flag = *pSetting;
     return true;
 }

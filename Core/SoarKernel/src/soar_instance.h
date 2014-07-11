@@ -12,15 +12,17 @@
 #include <map>
 #include "Export.h"
 
-namespace sml {
-  class Kernel;
-  class AgentSML;
+namespace sml
+{
+    class Kernel;
+    class AgentSML;
 }
 
 class Output_Manager;
 
 typedef void* (*MessageFunction)(const char* pMessage, void* pMessageData);
-typedef struct Soar_Loaded_Library_struct {
+typedef struct Soar_Loaded_Library_struct
+{
     MessageFunction libMessageFunction;
     bool isOn;
 } Soar_Loaded_Library;
@@ -31,70 +33,88 @@ typedef struct Soar_Loaded_Library_struct {
  *     -- */
 typedef struct agent_struct agent;
 
-typedef struct Agent_Info_Struct {
-    sml::AgentSML *soarAgentSML;
+typedef struct Agent_Info_Struct
+{
+    sml::AgentSML* soarAgentSML;
 } Agent_Info;
 
-struct cmp_str {
-    bool operator()(char const *a, char const *b) const {
-      return strcmp(a, b) < 0;
+struct cmp_str
+{
+    bool operator()(char const* a, char const* b) const
+    {
+        return strcmp(a, b) < 0;
     }
 };
 
 class EXPORT Soar_Instance
 {
-  public:
-
-    static Soar_Instance& Get_Soar_Instance()
-    {
-      static Soar_Instance instance;
-      return instance;
-    }
-    ~Soar_Instance();
-
-    void init_Soar_Instance(sml::Kernel *pKernel);
-    void Register_Library(sml::Kernel* pKernel, const char *pLibName, MessageFunction pMessageFunction);
-    std::string Message_Library(const char *pMessage);
-
-    agent *Get_Default_Agent() {return m_default_soar_agent;};
-
-    void Register_Soar_AgentSML(char *pAgentName, sml::AgentSML *pSoarAgentSML);
-    void Delete_Agent(char *pAgentName);
-    sml::AgentSML *Get_Soar_AgentSML(char *pAgentName);
-
-    void Set_Kernel(sml::Kernel *pKernel) {m_Kernel = pKernel;};
-    sml::Kernel *Get_Kernel() {return m_Kernel;};
-
-    void Set_OM(Output_Manager *pOutput_Manager) {m_Output_Manager = pOutput_Manager;};
-    Output_Manager *Get_OM() {return m_Output_Manager;};
-
-    void CLI_Debug_Print(const char *text);
-
-  private:
-
-    Soar_Instance();
-
-    /* The following two functions are declared but not implemented to avoid copies of singletons */
-    Soar_Instance(Soar_Instance const&) {};
-    void operator=(Soar_Instance const&) {};
-
-    sml::Kernel             *m_Kernel;
-    Output_Manager          *m_Output_Manager;
-    agent                   *m_default_soar_agent;
-
-    std::map< char *, Agent_Info *, cmp_str> * m_agent_table;
-    std::map< std::string, Soar_Loaded_Library * > * m_loadedLibraries;
-
-    Agent_Info *Get_Agent_Info(char *pAgentName);
-    void Print_Agent_Table();
-
+    public:
+    
+        static Soar_Instance& Get_Soar_Instance()
+        {
+            static Soar_Instance instance;
+            return instance;
+        }
+        ~Soar_Instance();
+        
+        void init_Soar_Instance(sml::Kernel* pKernel);
+        void Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction);
+        std::string Message_Library(const char* pMessage);
+        
+        agent* Get_Default_Agent()
+        {
+            return m_default_soar_agent;
+        };
+        
+        void Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoarAgentSML);
+        void Delete_Agent(char* pAgentName);
+        sml::AgentSML* Get_Soar_AgentSML(char* pAgentName);
+        
+        void Set_Kernel(sml::Kernel* pKernel)
+        {
+            m_Kernel = pKernel;
+        };
+        sml::Kernel* Get_Kernel()
+        {
+            return m_Kernel;
+        };
+        
+        void Set_OM(Output_Manager* pOutput_Manager)
+        {
+            m_Output_Manager = pOutput_Manager;
+        };
+        Output_Manager* Get_OM()
+        {
+            return m_Output_Manager;
+        };
+        
+        void CLI_Debug_Print(const char* text);
+        
+    private:
+    
+        Soar_Instance();
+        
+        /* The following two functions are declared but not implemented to avoid copies of singletons */
+        Soar_Instance(Soar_Instance const&) {};
+        void operator=(Soar_Instance const&) {};
+        
+        sml::Kernel*             m_Kernel;
+        Output_Manager*          m_Output_Manager;
+        agent*                   m_default_soar_agent;
+        
+        std::map< char*, Agent_Info*, cmp_str>* m_agent_table;
+        std::map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;
+        
+        Agent_Info* Get_Agent_Info(char* pAgentName);
+        void Print_Agent_Table();
+        
 };
 
 /* -- getSoarInstance is used by libraries to retrieve the
  *    SoarInstance via a SWIG proxy function.  It is a bit of a hack
  *    currently used CLI libraries like the SoarTcl library module. -- */
 
-EXPORT Soar_Instance * getSoarInstance();
-EXPORT Output_Manager * getOM();
+EXPORT Soar_Instance* getSoarInstance();
+EXPORT Output_Manager* getOM();
 
 #endif /* SOARINSTANCE_H_ */

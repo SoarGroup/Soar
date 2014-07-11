@@ -28,38 +28,46 @@
 #include "soar_instance.h"
 #include "test.h"
 
-inline void dprint_string(TraceMode mode, const char *message, bool noPrefix=false)
+inline void dprint_string(TraceMode mode, const char* message, bool noPrefix = false)
 {
     Output_Manager::Get_OM().print_debug(message, mode, noPrefix);
-  }
-
-void dprint (TraceMode mode, const char *format, ...) {
-
-  if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
-
-  va_list args;
-  char buf[PRINT_BUFSIZE];
-
-  va_start (args, format);
-  vsprintf (buf, format, args);
-  va_end (args);
-
-  dprint_string(mode, buf);
-
 }
 
-void dprint_noprefix (TraceMode mode, const char *format, ...) {
+void dprint(TraceMode mode, const char* format, ...)
+{
 
-  if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
+    {
+        return;
+    }
+    
+    va_list args;
+    char buf[PRINT_BUFSIZE];
+    
+    va_start(args, format);
+    vsprintf(buf, format, args);
+    va_end(args);
+    
+    dprint_string(mode, buf);
+    
+}
 
-  va_list args;
-  char buf[PRINT_BUFSIZE];
+void dprint_noprefix(TraceMode mode, const char* format, ...)
+{
 
-  va_start (args, format);
-  vsprintf (buf, format, args);
-  va_end (args);
-
-  dprint_string(mode, buf, true);
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
+    {
+        return;
+    }
+    
+    va_list args;
+    char buf[PRINT_BUFSIZE];
+    
+    va_start(args, format);
+    vsprintf(buf, format, args);
+    va_end(args);
+    
+    dprint_string(mode, buf, true);
 }
 
 #endif

@@ -18,13 +18,13 @@ typedef struct action_struct action;
 typedef struct condition_struct condition;
 typedef cons list;
 
-extern bool reorder_action_list (agent* thisAgent, action **action_list, tc_number lhs_tc);
-extern bool reorder_lhs (agent* thisAgent, condition **lhs_top,
-						 condition **lhs_bottom, bool reorder_nccs);
-extern void init_reorderer (agent* thisAgent);
+extern bool reorder_action_list(agent* thisAgent, action** action_list, tc_number lhs_tc);
+extern bool reorder_lhs(agent* thisAgent, condition** lhs_top,
+                        condition** lhs_bottom, bool reorder_nccs);
+extern void init_reorderer(agent* thisAgent);
 
 /* this prototype moved here from osupport.cpp -ajc (5/3/02) */
-extern list *collect_root_variables(agent* thisAgent, condition *, tc_number, bool);
+extern list* collect_root_variables(agent* thisAgent, condition*, tc_number, bool);
 
 #endif
 

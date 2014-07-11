@@ -8,7 +8,7 @@
 //
 // Creates a named pipe by connecting to a server at a known
 // pipe name.
-// 
+//
 /////////////////////////////////////////////////////////////////
 
 #ifndef CLIENT_NAMED_PIPE_H
@@ -16,26 +16,27 @@
 
 #include "sock_NamedPipe.h"
 
-namespace sock {
-
-class ClientNamedPipe : public NamedPipe
+namespace sock
 {
-public:
-	ClientNamedPipe();
-	virtual ~ClientNamedPipe();
 
-	/////////////////////////////////////////////////////////////////////
-	// Function name  : ClientNamedPipe::ConnectToServer
-	// 
-	// Return type    : bool 	
-	// Argument       : char* pPipeName
-	// 
-	// Description	  : Connect to a server
-	//
-	/////////////////////////////////////////////////////////////////////
-	bool	ConnectToServer(char const* pipeName) ;
-};
-
+    class ClientNamedPipe : public NamedPipe
+    {
+        public:
+            ClientNamedPipe();
+            virtual ~ClientNamedPipe();
+            
+            /////////////////////////////////////////////////////////////////////
+            // Function name  : ClientNamedPipe::ConnectToServer
+            //
+            // Return type    : bool
+            // Argument       : char* pPipeName
+            //
+            // Description    : Connect to a server
+            //
+            /////////////////////////////////////////////////////////////////////
+            bool    ConnectToServer(char const* pipeName) ;
+    };
+    
 } // Namespace
 
 #endif // CLIENT_NAMED_PIPE_H

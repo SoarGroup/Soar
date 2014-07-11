@@ -4,11 +4,11 @@
  *************************************************************************/
 
 /*------------------------------------------------------------------
-					   debug.cpp
+                       debug.cpp
 
    @brief debug.cpp provides some utility functions for inspecting and
-   	   	  manipulating the data structures of the Soar kernel at run
-   	   	  time.
+          manipulating the data structures of the Soar kernel at run
+          time.
 
 ------------------------------------------------------------------ */
 
@@ -21,11 +21,11 @@
 #include "lexer.h"
 #include "test.h"
 
-debug_param_container::debug_param_container( agent *new_agent ): soar_module::param_container( new_agent )
+debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
-    epmem_commands = new soar_module::boolean_param("epmem", off, new soar_module::f_predicate<boolean>() );
-    smem_commands = new soar_module::boolean_param("smem", off, new soar_module::f_predicate<boolean>() );
-    sql_commands = new soar_module::boolean_param("sql", off, new soar_module::f_predicate<boolean>() );
+    epmem_commands = new soar_module::boolean_param("epmem", off, new soar_module::f_predicate<boolean>());
+    smem_commands = new soar_module::boolean_param("smem", off, new soar_module::f_predicate<boolean>());
+    sql_commands = new soar_module::boolean_param("sql", off, new soar_module::f_predicate<boolean>());
     add(epmem_commands);
     add(smem_commands);
     add(sql_commands);
@@ -39,30 +39,33 @@ debug_param_container::debug_param_container( agent *new_agent ): soar_module::p
 /* -- Just a simple function that can be called from the debug command.  Something to put random code for testing/debugging -- */
 void debug_test(int type)
 {
-agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
-    if(!debug_agent) return;
-  switch (type)
-  {
-    case 1:
-//      print_internal_symbols(debug_agent);
-      break;
-    case 2:
-      break;
-    case 3:
+    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    if (!debug_agent)
     {
+        return;
+    }
+    switch (type)
+    {
+        case 1:
+//      print_internal_symbols(debug_agent);
+            break;
+        case 2:
+            break;
+        case 3:
+        {
 //      Symbol *newSym  = find_identifier(debug_agent, 'S', 1);
-      break;
-}
-    case 4:
-      break;
-
-    case 5:
-      break;
-
-    case 6:
-      break;
-
-  }
+            break;
+        }
+        case 4:
+            break;
+            
+        case 5:
+            break;
+            
+        case 6:
+            break;
+            
+    }
 }
 
 

@@ -19,19 +19,24 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoMaxNilOutputCycles(const int n) {
+bool CommandLineInterface::DoMaxNilOutputCycles(const int n)
+{
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (!n) {
+    if (!n)
+    {
         // query
-        if (m_RawOutput) {
+        if (m_RawOutput)
+        {
             m_Result << thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM];
-        } else {
+        }
+        else
+        {
             std::string temp;
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM], temp));
         }
         return true;
     }
-
+    
     thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM] = n;
     return true;
 }

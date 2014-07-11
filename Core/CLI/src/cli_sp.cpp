@@ -22,7 +22,7 @@
 using namespace cli;
 
 // FIXME: copied from gSKI
-void soarAlternateInput(agent *ai_agent, const char  *ai_string, char  *ai_suffix, bool  ai_exit   )
+void soarAlternateInput(agent* ai_agent, const char*  ai_string, char*  ai_suffix, bool  ai_exit)
 {
     // Side effects:
     //    The soar agents alternate input values are updated and its
@@ -34,37 +34,45 @@ void soarAlternateInput(agent *ai_agent, const char  *ai_string, char  *ai_suffi
     return;
 }
 
-bool CommandLineInterface::DoSP(const std::string& productionString) {
+bool CommandLineInterface::DoSP(const std::string& productionString)
+{
     // Load the production
     // voigtjr: note: this TODO from gSKI:
     // TODO: This should not be needed, FIX!
     // contents of gSKI ProductionManager::soarAlternateInput function:
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    soarAlternateInput( thisAgent, productionString.c_str(), const_cast<char*>(") "), true );
-    set_lexer_allow_ids( thisAgent, false );
-    get_lexeme( thisAgent );
-
+    soarAlternateInput(thisAgent, productionString.c_str(), const_cast<char*>(") "), true);
+    set_lexer_allow_ids(thisAgent, false);
+    get_lexeme(thisAgent);
+    
     production* p;
     unsigned char rete_addition_result = 0;
-    p = parse_production( thisAgent, &rete_addition_result );
-
-    set_lexer_allow_ids( thisAgent, true );
-    soarAlternateInput( thisAgent, 0, 0, true ); 
-
-    if (!p) { 
+    p = parse_production(thisAgent, &rete_addition_result);
+    
+    set_lexer_allow_ids(thisAgent, true);
+    soarAlternateInput(thisAgent, 0, 0, true);
+    
+    if (!p)
+    {
         // There was an error, but duplicate production is just a warning
-        if (rete_addition_result != DUPLICATE_PRODUCTION) {
-          return SetError("Production addition failed.");
+        if (rete_addition_result != DUPLICATE_PRODUCTION)
+        {
+            return SetError("Production addition failed.");
         }
         // production ignored
         m_NumProductionsIgnored += 1;
-    } else {
+    }
+    else
+    {
         if (!m_SourceFileStack.empty())
+        {
             p->filename = make_memory_block_for_string(thisAgent, m_SourceFileStack.top().c_str());
-
+        }
+        
         // production was sourced
         m_NumProductionsSourced += 1;
-        if (m_RawOutput) {
+        if (m_RawOutput)
+        {
             m_Result << '*';
         }
     }

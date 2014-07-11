@@ -19,7 +19,7 @@
 
 typedef struct agent_struct agent;
 
-extern void init_built_in_rhs_math_functions (agent* thisAgent);
-extern void remove_built_in_rhs_math_functions (agent* thisAgent);
+extern void init_built_in_rhs_math_functions(agent* thisAgent);
+extern void remove_built_in_rhs_math_functions(agent* thisAgent);
 
 #endif

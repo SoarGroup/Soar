@@ -18,30 +18,30 @@
 namespace sml
 {
 
-class TagCommand : public soarxml::ElementXML
-{
-public:
-	TagCommand() ;
-
-	char const* GetName()
-	{
-		char const* pID = this->GetAttribute(sml_Names::kCommandName) ;
-		return pID ;
-	}
-
-	void SetName(char const* pName)
-	{
-		this->AddAttributeFast(sml_Names::kCommandName, CopyString(pName), false) ;
-	}
-
-	// NOTE: Be careful with this one.  If you call this, you must keep pName in scope
-	// for the life of this object, which generally means it needs to be a static constant.
-	void SetNameFast(char const* pName)
-	{
-		this->AddAttributeFastFast(sml_Names::kCommandName, pName) ;
-	}
-} ;
-
+    class TagCommand : public soarxml::ElementXML
+    {
+        public:
+            TagCommand() ;
+            
+            char const* GetName()
+            {
+                char const* pID = this->GetAttribute(sml_Names::kCommandName) ;
+                return pID ;
+            }
+            
+            void SetName(char const* pName)
+            {
+                this->AddAttributeFast(sml_Names::kCommandName, CopyString(pName), false) ;
+            }
+            
+            // NOTE: Be careful with this one.  If you call this, you must keep pName in scope
+            // for the life of this object, which generally means it needs to be a static constant.
+            void SetNameFast(char const* pName)
+            {
+                this->AddAttributeFastFast(sml_Names::kCommandName, pName) ;
+            }
+    } ;
+    
 }
 
-#endif	// SML_TAG_COMMAND
+#endif  // SML_TAG_COMMAND

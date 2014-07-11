@@ -15,10 +15,10 @@ typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;
 
 /* added this prototype -ajc (5/3/02) */
-extern void set_sysparam (agent* thisAgent, int param_number, int64_t new_value);
+extern void set_sysparam(agent* thisAgent, int param_number, int64_t new_value);
 
-extern void reset_statistics (agent* thisAgent);
-extern void setup_signal_handling (void);
+extern void reset_statistics(agent* thisAgent);
+extern void setup_signal_handling(void);
 //extern void load_init_file (Kernel* thisKernel, agent* thisAgent);
 
 
@@ -32,8 +32,8 @@ extern void setup_signal_handling (void);
    for interfaces that do their own exiting.
 --------------------------------------------------------------------- */
 
-extern void abort_with_fatal_error (agent* thisAgent, const char *);
-extern void abort_with_fatal_error_noagent (const char *msg);
+extern void abort_with_fatal_error(agent* thisAgent, const char*);
+extern void abort_with_fatal_error_noagent(const char* msg);
 
 /* ---------------------------------------------------------------------
                      Adding and Removing Pwatchs
@@ -43,8 +43,8 @@ extern void abort_with_fatal_error_noagent (const char *msg);
    calls to add_pwatch() and remove_pwatch().
 --------------------------------------------------------------------- */
 
-extern void add_pwatch (agent* thisAgent, struct production_struct *prod);
-extern void remove_pwatch (agent* thisAgent, struct production_struct *prod);
+extern void add_pwatch(agent* thisAgent, struct production_struct* prod);
+extern void remove_pwatch(agent* thisAgent, struct production_struct* prod);
 
 /* ---------------------------------------------------------------------
                          Reinitializing Soar
@@ -52,20 +52,20 @@ extern void remove_pwatch (agent* thisAgent, struct production_struct *prod);
    Reinitialize_soar() does all the work for an init-soar.
 --------------------------------------------------------------------- */
 
-extern bool reinitialize_soar (agent* thisAgent);
+extern bool reinitialize_soar(agent* thisAgent);
 
 /* ---------------------------------------------------------------------
                          Reset Timers
    This code was duplicated in three spots. It is now consolidated.
    This stops and sets all timers to zero.
 --------------------------------------------------------------------- */
-extern void reset_timers (agent* thisAgent);
+extern void reset_timers(agent* thisAgent);
 
 /* ---------------------------------------------------------------------
                          Reset Timers
    This code used to be in the CLI, it resets the per-cycle max stats.
 --------------------------------------------------------------------- */
-extern void reset_max_stats (agent* thisAgent);
+extern void reset_max_stats(agent* thisAgent);
 
 /* ---------------------------------------------------------------------
                          Reinitializing Soar
@@ -74,7 +74,7 @@ extern void reset_max_stats (agent* thisAgent);
    agent's working memory. (This is a modification for the gSKI project).
 --------------------------------------------------------------------- */
 
-extern void init_agent_memory (agent* thisAgent);
+extern void init_agent_memory(agent* thisAgent);
 
 /* ---------------------------------------------------------------------
                             Running Soar
@@ -105,28 +105,29 @@ extern void init_agent_memory (agent* thisAgent);
 --------------------------------------------------------------------- */
 
 enum go_type_enum { GO_PHASE, GO_ELABORATION, GO_DECISION,
-                    GO_STATE, GO_OPERATOR, GO_SLOT, GO_OUTPUT };
+                    GO_STATE, GO_OPERATOR, GO_SLOT, GO_OUTPUT
+                  };
 
-extern void run_forever (agent* thisAgent);
-extern void run_for_n_phases (agent* thisAgent, int64_t n);
-extern void run_for_n_elaboration_cycles (agent* thisAgent, int64_t n);
-extern void run_for_n_decision_cycles (agent* thisAgent, int64_t n);
-extern void run_for_n_modifications_of_output (agent* thisAgent, int64_t n);
-extern void run_for_n_selections_of_slot (agent*, int64_t n, Symbol *attr_of_slot);
-extern void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
-                                                   Symbol *attr_of_slot,
-                                                   goal_stack_level level);
+extern void run_forever(agent* thisAgent);
+extern void run_for_n_phases(agent* thisAgent, int64_t n);
+extern void run_for_n_elaboration_cycles(agent* thisAgent, int64_t n);
+extern void run_for_n_decision_cycles(agent* thisAgent, int64_t n);
+extern void run_for_n_modifications_of_output(agent* thisAgent, int64_t n);
+extern void run_for_n_selections_of_slot(agent*, int64_t n, Symbol* attr_of_slot);
+extern void run_for_n_selections_of_slot_at_level(agent* thisAgent, int64_t n,
+        Symbol* attr_of_slot,
+        goal_stack_level level);
 
-extern void do_one_top_level_phase (agent* thisAgent);
+extern void do_one_top_level_phase(agent* thisAgent);
 
 /* removed DETERMINE_LEVEL_PHASE for Soar 8.6
  *  added PROPOSE and APPLY.   KJC May 2005
  */
 
 enum top_level_phase { INPUT_PHASE = 0,
-		               PROPOSE_PHASE,
+                       PROPOSE_PHASE,
                        DECISION_PHASE,
-		               APPLY_PHASE,
+                       APPLY_PHASE,
                        OUTPUT_PHASE,
                        PREFERENCE_PHASE,
                        WM_PHASE,

@@ -19,19 +19,24 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoMaxGoalDepth(const int n) {
+bool CommandLineInterface::DoMaxGoalDepth(const int n)
+{
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (!n) {
+    if (!n)
+    {
         // query
-        if (m_RawOutput) {
+        if (m_RawOutput)
+        {
             m_Result << thisAgent->sysparams[MAX_GOAL_DEPTH];
-        } else {
+        }
+        else
+        {
             std::string temp;
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(thisAgent->sysparams[MAX_GOAL_DEPTH], temp));
         }
         return true;
     }
-
+    
     thisAgent->sysparams[MAX_GOAL_DEPTH] = n;
     return true;
 }

@@ -24,71 +24,83 @@ using namespace soarxml;
 
 ClientAnalyzedXML::ClientAnalyzedXML()
 {
-	m_pAnalyzeXML = new AnalyzeXML() ;
+    m_pAnalyzeXML = new AnalyzeXML() ;
 }
 
 ClientAnalyzedXML::~ClientAnalyzedXML()
 {
-	delete m_pAnalyzeXML ;
+    delete m_pAnalyzeXML ;
 }
 
 void ClientAnalyzedXML::Attach(AnalyzeXML* pAnalyzeXML)
 {
-	delete m_pAnalyzeXML ;
-	m_pAnalyzeXML = pAnalyzeXML ;
+    delete m_pAnalyzeXML ;
+    m_pAnalyzeXML = pAnalyzeXML ;
 }
 
 // Each of these either returns a reference to the tag or NULL (if this document doesn't contain that tag)
-ElementXML const* ClientAnalyzedXML::GetCommandTag() const			{ return m_pAnalyzeXML->GetCommandTag() ; }
-ElementXML const* ClientAnalyzedXML::GetResultTag() const			{ return m_pAnalyzeXML->GetResultTag() ; }
-ElementXML const* ClientAnalyzedXML::GetErrorTag()	const			{ return m_pAnalyzeXML->GetErrorTag() ; }
+ElementXML const* ClientAnalyzedXML::GetCommandTag() const
+{
+    return m_pAnalyzeXML->GetCommandTag() ;
+}
+ElementXML const* ClientAnalyzedXML::GetResultTag() const
+{
+    return m_pAnalyzeXML->GetResultTag() ;
+}
+ElementXML const* ClientAnalyzedXML::GetErrorTag()  const
+{
+    return m_pAnalyzeXML->GetErrorTag() ;
+}
 
-bool ClientAnalyzedXML::IsSML() const { return m_pAnalyzeXML->IsSML() ; }
+bool ClientAnalyzedXML::IsSML() const
+{
+    return m_pAnalyzeXML->IsSML() ;
+}
 
 // Returns the name of the command (or NULL if no command tag or no name in that tag)
 char const* ClientAnalyzedXML::GetCommandName() const
 {
-	return m_pAnalyzeXML->GetCommandName() ;
+    return m_pAnalyzeXML->GetCommandName() ;
 }
 
 // Returns the character data from the result tag (or NULL if no result tag or no character data in that tag)
 char const* ClientAnalyzedXML::GetResultString() const
 {
-	return m_pAnalyzeXML->GetResultString() ;
+    return m_pAnalyzeXML->GetResultString() ;
 }
 
 // Returns the character data from the result tag as an int (or default value if there is no character data in the tag)
 int ClientAnalyzedXML::GetResultInt(int defaultValue) const
 {
-	return m_pAnalyzeXML->GetResultInt(defaultValue) ;
+    return m_pAnalyzeXML->GetResultInt(defaultValue) ;
 }
 
 long long ClientAnalyzedXML::GetResultInt(long long defaultValue) const
 {
-	return m_pAnalyzeXML->GetResultInt(static_cast<int64_t>(defaultValue));
+    return m_pAnalyzeXML->GetResultInt(static_cast<int64_t>(defaultValue));
 }
 
 // Returns the result as a bool
 bool ClientAnalyzedXML::GetResultBool(bool defaultValue) const
 {
-	return m_pAnalyzeXML->GetResultBool(defaultValue) ;
+    return m_pAnalyzeXML->GetResultBool(defaultValue) ;
 }
 
 // Returns the result as a double
 double ClientAnalyzedXML::GetResultFloat(double defaultValue) const
 {
-	return m_pAnalyzeXML->GetResultFloat(defaultValue) ;
+    return m_pAnalyzeXML->GetResultFloat(defaultValue) ;
 }
 
 // Returns the string form of the XML.  Must be released with the static DeleteString method
 char* ClientAnalyzedXML::GenerateXMLString(bool includeChildren, bool insertNewLines) const
 {
-	return m_pAnalyzeXML->GenerateXMLString(includeChildren, insertNewLines) ;
+    return m_pAnalyzeXML->GenerateXMLString(includeChildren, insertNewLines) ;
 }
 
 void ClientAnalyzedXML::DeleteString(char* pString)
 {
-	return AnalyzeXML::DeleteString(pString) ;
+    return AnalyzeXML::DeleteString(pString) ;
 }
 
 /*************************************************************
@@ -96,7 +108,7 @@ void ClientAnalyzedXML::DeleteString(char* pString)
 *************************************************************/
 char const* ClientAnalyzedXML::GetArgString(char const* pArgName) const
 {
-	return m_pAnalyzeXML->GetArgString(pArgName) ;
+    return m_pAnalyzeXML->GetArgString(pArgName) ;
 }
 
 /*************************************************************
@@ -104,7 +116,7 @@ char const* ClientAnalyzedXML::GetArgString(char const* pArgName) const
 *************************************************************/
 bool ClientAnalyzedXML::GetArgBool(char const* pArgName, bool defaultValue) const
 {
-	return m_pAnalyzeXML->GetArgBool(pArgName, defaultValue) ;
+    return m_pAnalyzeXML->GetArgBool(pArgName, defaultValue) ;
 }
 
 /*************************************************************
@@ -112,12 +124,12 @@ bool ClientAnalyzedXML::GetArgBool(char const* pArgName, bool defaultValue) cons
 *************************************************************/
 int ClientAnalyzedXML::GetArgInt(char const* pArgName, int defaultValue) const
 {
-	return m_pAnalyzeXML->GetArgInt(pArgName, defaultValue) ;
+    return m_pAnalyzeXML->GetArgInt(pArgName, defaultValue) ;
 }
 
 long long ClientAnalyzedXML::GetArgInt(char const* pArgName, long long defaultValue) const
 {
-	return m_pAnalyzeXML->GetArgInt(pArgName, static_cast<int64_t>(defaultValue)) ;
+    return m_pAnalyzeXML->GetArgInt(pArgName, static_cast<int64_t>(defaultValue)) ;
 }
 
 /*************************************************************
@@ -125,5 +137,5 @@ long long ClientAnalyzedXML::GetArgInt(char const* pArgName, long long defaultVa
 *************************************************************/
 double ClientAnalyzedXML::GetArgFloat(char const* pArgName, double defaultValue) const
 {
-	return m_pAnalyzeXML->GetArgFloat(pArgName, defaultValue) ;
+    return m_pAnalyzeXML->GetArgFloat(pArgName, defaultValue) ;
 }

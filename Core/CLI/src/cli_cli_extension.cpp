@@ -19,23 +19,27 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoCLIMessage(const std::string& pMessage) {
+bool CommandLineInterface::DoCLIMessage(const std::string& pMessage)
+{
 
     /* -- This function is hardcoded to work for tcl right now.  Should generalize
      * so that command can be sent to a variety of cli extensions -- */
-
+    
     if ((pMessage == "tcl on") || (pMessage == "tcl off"))
     {
         std::string result = this->m_pKernelSML->FireCliExtensionMessageEvent(pMessage.c_str());
-
+        
         // zero length is success
-        if (result.size() == 0) {
+        if (result.size() == 0)
+        {
             return true;
         }
         return SetError(result);
-    } else {
+    }
+    else
+    {
         return SetError("Illegal CLI command " + pMessage);
-
+        
     }
 }
 

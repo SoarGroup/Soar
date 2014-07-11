@@ -19,22 +19,26 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoEchoCommands(bool onlyGetValue, bool echoCommands) {
+bool CommandLineInterface::DoEchoCommands(bool onlyGetValue, bool echoCommands)
+{
 
     // We only set the value if asked, but we always report the current setting.
     if (!onlyGetValue)
     {
         m_pKernelSML->SetEchoCommands(echoCommands) ;
     }
-
+    
     echoCommands = m_pKernelSML->GetEchoCommands() ;
-
-    if (m_RawOutput) {
+    
+    if (m_RawOutput)
+    {
         m_Result << (echoCommands ? "Echoing commands." : "Not echoing commands.") ;
-    } else {
+    }
+    else
+    {
         AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, echoCommands ? sml_Names::kTrue : sml_Names::kFalse);
     }
-
+    
     return true;
 }
 

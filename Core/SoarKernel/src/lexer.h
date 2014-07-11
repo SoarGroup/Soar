@@ -44,7 +44,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <stdio.h>	// Needed for FILE token below
+#include <stdio.h>  // Needed for FILE token below
 
 typedef struct agent_struct agent;
 
@@ -52,79 +52,82 @@ typedef struct agent_struct agent;
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5) /* a little bigger to avoid
                                                        any off-by-one-errors */
 
-enum lexer_token_type {
-  EOF_LEXEME,                        /* end-of-file */
-  IDENTIFIER_LEXEME,                 /* identifier */
-  VARIABLE_LEXEME,                   /* variable */
-  SYM_CONSTANT_LEXEME,               /* symbolic constant */
-  INT_CONSTANT_LEXEME,               /* integer constant */
-  FLOAT_CONSTANT_LEXEME,             /* floating point constant */
-  L_PAREN_LEXEME,                    /* "(" */
-  R_PAREN_LEXEME,                    /* ")" */
-  L_BRACE_LEXEME,                    /* "{" */
-  R_BRACE_LEXEME,                    /* "}" */
-  PLUS_LEXEME,                       /* "+" */
-  MINUS_LEXEME,                      /* "-" */
-  RIGHT_ARROW_LEXEME,                /* "-->" */
-  GREATER_LEXEME,                    /* ">" */
-  LESS_LEXEME,                       /* "<" */
-  EQUAL_LEXEME,                      /* "=" */
-  LESS_EQUAL_LEXEME,                 /* "<=" */
-  GREATER_EQUAL_LEXEME,              /* ">=" */
-  NOT_EQUAL_LEXEME,                  /* "<>" */
-  LESS_EQUAL_GREATER_LEXEME,         /* "<=>" */
-  LESS_LESS_LEXEME,                  /* "<<" */
-  GREATER_GREATER_LEXEME,            /* ">>" */
-  AMPERSAND_LEXEME,                  /* "&" */
-  AT_LEXEME,                         /* "@" */
-  TILDE_LEXEME,                      /* "~" */
-  UP_ARROW_LEXEME,                   /* "^" */
-  EXCLAMATION_POINT_LEXEME,          /* "!" */
-  COMMA_LEXEME,                      /* "," */
-  PERIOD_LEXEME,                     /* "." */
-  QUOTED_STRING_LEXEME,              /* string in double quotes */
-  DOLLAR_STRING_LEXEME,              /* string for shell escape */
-  NULL_LEXEME };                     /* Initial value */
+enum lexer_token_type
+{
+    EOF_LEXEME,                        /* end-of-file */
+    IDENTIFIER_LEXEME,                 /* identifier */
+    VARIABLE_LEXEME,                   /* variable */
+    SYM_CONSTANT_LEXEME,               /* symbolic constant */
+    INT_CONSTANT_LEXEME,               /* integer constant */
+    FLOAT_CONSTANT_LEXEME,             /* floating point constant */
+    L_PAREN_LEXEME,                    /* "(" */
+    R_PAREN_LEXEME,                    /* ")" */
+    L_BRACE_LEXEME,                    /* "{" */
+    R_BRACE_LEXEME,                    /* "}" */
+    PLUS_LEXEME,                       /* "+" */
+    MINUS_LEXEME,                      /* "-" */
+    RIGHT_ARROW_LEXEME,                /* "-->" */
+    GREATER_LEXEME,                    /* ">" */
+    LESS_LEXEME,                       /* "<" */
+    EQUAL_LEXEME,                      /* "=" */
+    LESS_EQUAL_LEXEME,                 /* "<=" */
+    GREATER_EQUAL_LEXEME,              /* ">=" */
+    NOT_EQUAL_LEXEME,                  /* "<>" */
+    LESS_EQUAL_GREATER_LEXEME,         /* "<=>" */
+    LESS_LESS_LEXEME,                  /* "<<" */
+    GREATER_GREATER_LEXEME,            /* ">>" */
+    AMPERSAND_LEXEME,                  /* "&" */
+    AT_LEXEME,                         /* "@" */
+    TILDE_LEXEME,                      /* "~" */
+    UP_ARROW_LEXEME,                   /* "^" */
+    EXCLAMATION_POINT_LEXEME,          /* "!" */
+    COMMA_LEXEME,                      /* "," */
+    PERIOD_LEXEME,                     /* "." */
+    QUOTED_STRING_LEXEME,              /* string in double quotes */
+    DOLLAR_STRING_LEXEME,              /* string for shell escape */
+    NULL_LEXEME
+};                     /* Initial value */
 
 #define LENGTH_OF_LONGEST_SPECIAL_LEXEME 3  /* length of "-->" and "<=>"--
                                                if a longer one is added, be
                                                sure to update this! */
 
-struct lexeme_info {
-  enum lexer_token_type type;         /* what kind of lexeme it is */
-  char string[MAX_LEXEME_LENGTH+1];   /* text of the lexeme */
-  int length;                         /* length of the above string */
-  int64_t int_val;                     /* for INT_CONSTANT_LEXEME's */
-  double float_val;                    /* for FLOAT_CONSTANT_LEXEME's */
-  char id_letter;                     /* for IDENTIFIER_LEXEME's */
-  uint64_t id_number;                 /* for IDENTIFIER_LEXEME's */
+struct lexeme_info
+{
+    enum lexer_token_type type;         /* what kind of lexeme it is */
+    char string[MAX_LEXEME_LENGTH + 1]; /* text of the lexeme */
+    int length;                         /* length of the above string */
+    int64_t int_val;                     /* for INT_CONSTANT_LEXEME's */
+    double float_val;                    /* for FLOAT_CONSTANT_LEXEME's */
+    char id_letter;                     /* for IDENTIFIER_LEXEME's */
+    uint64_t id_number;                 /* for IDENTIFIER_LEXEME's */
 };
 
-extern void determine_possible_symbol_types_for_string (char *s,
-                                                        size_t length_of_s,
-                                                        bool *possible_id,
-                                                        bool *possible_var,
-                                                        bool *possible_sc,
-                                                        bool *possible_ic,
-                                                        bool *possible_fc,
-                                                        bool *rereadable);
+extern void determine_possible_symbol_types_for_string(char* s,
+        size_t length_of_s,
+        bool* possible_id,
+        bool* possible_var,
+        bool* possible_sc,
+        bool* possible_ic,
+        bool* possible_fc,
+        bool* rereadable);
 
-extern void init_lexer (agent* thisAgent);
-extern void start_lex_from_file (agent* thisAgent, const char *filename,
-								 FILE *already_opened_file);
-extern void stop_lex_from_file (agent* thisAgent);
+extern void init_lexer(agent* thisAgent);
+extern void start_lex_from_file(agent* thisAgent, const char* filename,
+                                FILE* already_opened_file);
+extern void stop_lex_from_file(agent* thisAgent);
 
-extern void get_lexeme (agent* thisAgent);
-extern void print_location_of_most_recent_lexeme (agent* thisAgent);
+extern void get_lexeme(agent* thisAgent);
+extern void print_location_of_most_recent_lexeme(agent* thisAgent);
 
-extern int current_lexer_parentheses_level (agent* thisAgent);
-extern void skip_ahead_to_balanced_parentheses (agent* thisAgent,
-												int parentheses_level);
-extern void fake_rparen_at_next_end_of_line (agent* thisAgent);
-extern void set_lexer_allow_ids (agent* thisAgent, bool allow_identifiers);
-extern bool get_lexer_allow_ids (agent* thisAgent);
+extern int current_lexer_parentheses_level(agent* thisAgent);
+extern void skip_ahead_to_balanced_parentheses(agent* thisAgent,
+        int parentheses_level);
+extern void fake_rparen_at_next_end_of_line(agent* thisAgent);
+extern void set_lexer_allow_ids(agent* thisAgent, bool allow_identifiers);
+extern bool get_lexer_allow_ids(agent* thisAgent);
 
-extern bool determine_type_of_constituent_string (agent* thisAgent);
+extern bool determine_type_of_constituent_string(agent* thisAgent);
 
 /* (RBD) the rest of this stuff shouldn't be in the module interface... */
 
@@ -132,20 +135,21 @@ extern bool determine_type_of_constituent_string (agent* thisAgent);
 
 /* --- we'll use one of these structures for each file being read --- */
 
-typedef struct lexer_source_file_struct {
-  struct lexer_source_file_struct *parent_file;
-  char *filename;
-  FILE *file;
-  bool fake_rparen_at_eol;
-  bool allow_ids;
-  int parentheses_level;    /* 0 means top level, no left paren's seen */
-  int current_column;       /* column number of next char to read (0-based) */
-  uint64_t current_line;   /* line number of line in buffer (1-based) */
-  int column_of_start_of_last_lexeme;   /* (used for error messages) */
-  uint64_t line_of_start_of_last_lexeme;
-  char buffer[BUFSIZE];              /* holds text of current input line */
-  struct lexeme_info saved_lexeme;   /* save/restore it during nested loads */
-  int saved_current_char;           /* save/restore this too */
+typedef struct lexer_source_file_struct
+{
+    struct lexer_source_file_struct* parent_file;
+    char* filename;
+    FILE* file;
+    bool fake_rparen_at_eol;
+    bool allow_ids;
+    int parentheses_level;    /* 0 means top level, no left paren's seen */
+    int current_column;       /* column number of next char to read (0-based) */
+    uint64_t current_line;   /* line number of line in buffer (1-based) */
+    int column_of_start_of_last_lexeme;   /* (used for error messages) */
+    uint64_t line_of_start_of_last_lexeme;
+    char buffer[BUFSIZE];              /* holds text of current input line */
+    struct lexeme_info saved_lexeme;   /* save/restore it during nested loads */
+    int saved_current_char;           /* save/restore this too */
 } lexer_source_file;
 
 #endif // LEXER_H

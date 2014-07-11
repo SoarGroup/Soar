@@ -23,16 +23,21 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoWarnings(bool* pSetting) {
+bool CommandLineInterface::DoWarnings(bool* pSetting)
+{
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (pSetting) {
+    if (pSetting)
+    {
         set_sysparam(thisAgent, PRINT_WARNINGS_SYSPARAM, *pSetting);
         return true;
     }
-
-    if (m_RawOutput) {
+    
+    if (m_RawOutput)
+    {
         m_Result << "Printing of warnings is " << (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] ? "enabled." : "disabled.");
-    } else {
+    }
+    else
+    {
         const char* setting = thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse;
         AppendArgTagFast(sml_Names::kParamWarningsSetting, sml_Names::kTypeBoolean, setting);
     }

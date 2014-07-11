@@ -17,5 +17,5 @@ using namespace sml ;
 
 TagArg::TagArg()
 {
-	this->SetTagNameFast(sml_Names::kTagArg) ;
+    this->SetTagNameFast(sml_Names::kTagArg) ;
 }

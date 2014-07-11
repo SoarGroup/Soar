@@ -60,8 +60,8 @@
 
 struct not_struct;
 
-typedef char * test;
-typedef char * rhs_value;
+typedef char* test;
+typedef char* rhs_value;
 typedef unsigned char byte;
 typedef uint64_t tc_number;
 typedef struct action_struct action;
@@ -117,85 +117,93 @@ typedef std::set< rl_symbol_map > rl_symbol_map_set;
 
 
 /* --- info on conditions used for backtracing (and by the rete) --- */
-typedef struct bt_info_struct {
-  wme * wme_;               /* the actual wme that was matched */
-  goal_stack_level level;   /* level (at firing time) of the id of the wme */
-  preference *trace;        /* preference for BT, or NIL */
-
-  /* mvp 5-17-94 */
-  ::list *CDPS;            /* list of substate evaluation prefs to backtrace through,
+typedef struct bt_info_struct
+{
+    wme* wme_;                /* the actual wme that was matched */
+    goal_stack_level level;   /* level (at firing time) of the id of the wme */
+    preference* trace;        /* preference for BT, or NIL */
+    
+    /* mvp 5-17-94 */
+    ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
 
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
-typedef struct reorder_info_struct {
-  ::list *vars_requiring_bindings;         /* used only during reordering */
-  struct condition_struct *next_min_cost;  /* used only during reordering */
+typedef struct reorder_info_struct
+{
+    ::list* vars_requiring_bindings;         /* used only during reordering */
+    struct condition_struct* next_min_cost;  /* used only during reordering */
 } reorder_info;
 
 /* --- info on positive and negative conditions only --- */
-typedef struct three_field_tests_struct {
-  test id_test;
-  test attr_test;
-  test value_test;
+typedef struct three_field_tests_struct
+{
+    test id_test;
+    test attr_test;
+    test value_test;
 } three_field_tests;
 
 /* --- info on negated conjunctive conditions only --- */
-typedef struct ncc_info_struct {
-  struct condition_struct *top;
-  struct condition_struct *bottom;
+typedef struct ncc_info_struct
+{
+    struct condition_struct* top;
+    struct condition_struct* bottom;
 } ncc_info;
 
 /* --- finally, the structure of a condition --- */
-typedef struct condition_struct {
-  byte type;
-  bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
-  bool test_for_acceptable_preference;   /* for pos, neg cond's only */
-  struct condition_struct *next, *prev;
-  union condition_main_data_union {
-    three_field_tests tests;             /* for pos, neg cond's only */
-    ncc_info ncc;                        /* for ncc's only */
-  } data;
-  bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
-  reorder_info reorder;  /* used only during reordering */
+typedef struct condition_struct
+{
+    byte type;
+    bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
+    bool test_for_acceptable_preference;   /* for pos, neg cond's only */
+    struct condition_struct* next, *prev;
+    union condition_main_data_union
+    {
+        three_field_tests tests;             /* for pos, neg cond's only */
+        ncc_info ncc;                        /* for ncc's only */
+    } data;
+    bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
+    reorder_info reorder;  /* used only during reordering */
 } condition;
 
-typedef struct production_struct {
-  Symbol *name;
-  char *documentation;        /* pointer to memory block, or NIL */
-  char *filename;             /* name of source file, or NIL.  kjh CUSP(b11) */
-  uint64_t reference_count;
-  uint64_t firing_count;             /* how many times it's fired */
-  struct production_struct *next, *prev;  /* used for dll */
-  byte type;
-  byte declared_support;
-  bool trace_firings;                     /* used by pwatch */
-  struct rete_node_struct *p_node;        /* NIL if it's not in the rete */
-  action *action_list;                    /* RHS actions */
-  ::list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
-  struct instantiation_struct *instantiations; /* dll of inst's in MS */
-  int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
-  byte interrupt;						  /* SW: 7.31.03 */
-
-  struct {
-    bool interrupt_break : 1;
-    bool already_fired : 1;         /* RPM test workaround for bug #139 */
-    bool rl_rule : 1;					/* if true, is a Soar-RL rule */
-  };
-
-  double rl_update_count;		/* number of (potentially fractional) updates to this rule */
-  unsigned int rl_ref_count;    /* number of states referencing this rule in prev_op_rl_rules list */
-
-  // Per-input memory parameters for delta bar delta algorithm
-  double rl_delta_bar_delta_beta;
-  double rl_delta_bar_delta_h;
-
-  double rl_ecr;				// expected current reward (discounted reward)
-  double rl_efr;				// expected future reward (discounted next state)
-
-  condition* rl_template_conds;
-  rl_symbol_map_set* rl_template_instantiations;
+typedef struct production_struct
+{
+    Symbol* name;
+    char* documentation;        /* pointer to memory block, or NIL */
+    char* filename;             /* name of source file, or NIL.  kjh CUSP(b11) */
+    uint64_t reference_count;
+    uint64_t firing_count;             /* how many times it's fired */
+    struct production_struct* next, *prev;  /* used for dll */
+    byte type;
+    byte declared_support;
+    bool trace_firings;                     /* used by pwatch */
+    struct rete_node_struct* p_node;        /* NIL if it's not in the rete */
+    action* action_list;                    /* RHS actions */
+    ::list* rhs_unbound_variables;            /* RHS vars not bound on LHS */
+    struct instantiation_struct* instantiations; /* dll of inst's in MS */
+    int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
+    byte interrupt;                         /* SW: 7.31.03 */
+    
+    struct
+    {
+        bool interrupt_break : 1;
+        bool already_fired : 1;         /* RPM test workaround for bug #139 */
+        bool rl_rule : 1;                   /* if true, is a Soar-RL rule */
+    };
+    
+    double rl_update_count;       /* number of (potentially fractional) updates to this rule */
+    unsigned int rl_ref_count;    /* number of states referencing this rule in prev_op_rl_rules list */
+    
+    // Per-input memory parameters for delta bar delta algorithm
+    double rl_delta_bar_delta_beta;
+    double rl_delta_bar_delta_h;
+    
+    double rl_ecr;                // expected current reward (discounted reward)
+    double rl_efr;                // expected future reward (discounted next state)
+    
+    condition* rl_template_conds;
+    rl_symbol_map_set* rl_template_instantiations;
 } production;
 
 /* ========================================================================
@@ -207,41 +215,42 @@ typedef struct production_struct {
 ======================================================================== */
 
 /* This structure is used to break ties in favor of non-multi-attributes */
-typedef struct multi_attributes_struct {
-  Symbol *symbol;
-  int64_t value;
-  struct multi_attributes_struct *next;
+typedef struct multi_attributes_struct
+{
+    Symbol* symbol;
+    int64_t value;
+    struct multi_attributes_struct* next;
 } multi_attribute;
 
-extern void init_production_utilities (agent* thisAgent);
+extern void init_production_utilities(agent* thisAgent);
 
 /* ------------------------ */
 /* Utilities for conditions */
 /* ------------------------ */
 
 /* --- Deallocates a condition list (including any NCC's and tests in it). */
-extern void deallocate_condition_list (agent* thisAgent, condition *cond_list);
+extern void deallocate_condition_list(agent* thisAgent, condition* cond_list);
 
 /* --- Returns a new copy of the given condition. --- */
-extern condition *copy_condition (agent* thisAgent, condition *cond);
+extern condition* copy_condition(agent* thisAgent, condition* cond);
 
 /* --- Copies the given condition list, returning pointers to the
    top-most and bottom-most conditions in the new copy. --- */
-extern void copy_condition_list (agent* thisAgent, condition *top_cond, condition **dest_top,
-                                 condition **dest_bottom);
+extern void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
+                                condition** dest_bottom);
 
 /* --- Returns true iff the two conditions are identical. --- */
-extern bool conditions_are_equal (condition *c1, condition *c2);
+extern bool conditions_are_equal(condition* c1, condition* c2);
 
 /* --- Returns a hash value for the given condition. --- */
-extern uint32_t hash_condition (agent* thisAgent, condition *cond);
+extern uint32_t hash_condition(agent* thisAgent, condition* cond);
 
 /* ------------------ */
 /* Utilities for nots */
 /* ------------------ */
 
 /* --- Deallocates the given (singly-linked) list of Nots. --- */
-extern void deallocate_list_of_nots (agent* thisAgent, not_struct *nots);
+extern void deallocate_list_of_nots(agent* thisAgent, not_struct* nots);
 
 /* --------------------------------------------------------------------
                       Transitive Closure Utilities
@@ -282,16 +291,16 @@ extern void deallocate_list_of_nots (agent* thisAgent, not_struct *nots);
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 -------------------------------------------------------------------- */
 
-tc_number get_new_tc_number (agent* thisAgent);
+tc_number get_new_tc_number(agent* thisAgent);
 
-extern void add_symbol_to_tc (agent* thisAgent, Symbol *sym, tc_number tc,
-                              ::list **id_list, ::list **var_list);
-extern void add_cond_to_tc (agent* thisAgent, condition *c, tc_number tc,
-                            ::list **id_list, ::list **var_list);
-extern void add_action_to_tc (agent* thisAgent, action *a, tc_number tc,
-                              ::list **id_list, ::list **var_list);
-extern bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc);
-extern bool action_is_in_tc (action *a, tc_number tc);
+extern void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
+                             ::list** id_list, ::list** var_list);
+extern void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
+                           ::list** id_list, ::list** var_list);
+extern void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
+                             ::list** id_list, ::list** var_list);
+extern bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc);
+extern bool action_is_in_tc(action* a, tc_number tc);
 
 /* --------------------------------------------------------------------
                          Variable Generator
@@ -310,10 +319,10 @@ extern bool action_is_in_tc (action *a, tc_number tc);
    name.  The prefix string should not include the opening "<".
 -------------------------------------------------------------------- */
 
-extern void reset_variable_generator (agent* thisAgent,
-									  condition *conds_with_vars_to_avoid,
-                                      action *actions_with_vars_to_avoid);
-extern Symbol *generate_new_variable (agent* thisAgent, const char *prefix);
+extern void reset_variable_generator(agent* thisAgent,
+                                     condition* conds_with_vars_to_avoid,
+                                     action* actions_with_vars_to_avoid);
+extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
 
 /* -------------------------------------------------------------------
                          Production Management
@@ -344,33 +353,35 @@ extern Symbol *generate_new_variable (agent* thisAgent, const char *prefix);
     the production_remove_ref() macro.
 ------------------------------------------------------------------- */
 
-extern production *make_production (agent* thisAgent,
-									byte type,
-                                    Symbol *name,
-                                    condition **lhs_top,
-                                    condition **lhs_bottom,
-                                    action **rhs_top,
-                                    bool reorder_nccs);
-extern void deallocate_production (agent* thisAgent, production *prod);
-extern void excise_production (agent* thisAgent, production *prod, bool print_sharp_sign);
+extern production* make_production(agent* thisAgent,
+                                   byte type,
+                                   Symbol* name,
+                                   condition** lhs_top,
+                                   condition** lhs_bottom,
+                                   action** rhs_top,
+                                   bool reorder_nccs);
+extern void deallocate_production(agent* thisAgent, production* prod);
+extern void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);
 extern void excise_all_productions_of_type(agent* thisAgent,
-                                           byte type,
-                                           bool print_sharp_sign);
+        byte type,
+        bool print_sharp_sign);
 extern void excise_all_productions(agent* thisAgent,
                                    bool print_sharp_sign);
 
-extern bool canonical_cond_greater(condition *c1, condition *c2);
+extern bool canonical_cond_greater(condition* c1, condition* c2);
 
-inline void production_add_ref(production * p)
+inline void production_add_ref(production* p)
 {
-  (p)->reference_count++;
+    (p)->reference_count++;
 }
 
-inline void production_remove_ref(agent* thisAgent, production * p)
+inline void production_remove_ref(agent* thisAgent, production* p)
 {
-  (p)->reference_count--;
-  if ((p)->reference_count == 0)
-    deallocate_production(thisAgent, p);
+    (p)->reference_count--;
+    if ((p)->reference_count == 0)
+    {
+        deallocate_production(thisAgent, p);
+    }
 }
 
 #endif

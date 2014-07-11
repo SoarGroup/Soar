@@ -19,19 +19,24 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoMaxMemoryUsage(const int n) {
+bool CommandLineInterface::DoMaxMemoryUsage(const int n)
+{
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (!n) {
+    if (!n)
+    {
         // query
-        if (m_RawOutput) {
+        if (m_RawOutput)
+        {
             m_Result << thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] << " bytes";
-        } else {
+        }
+        else
+        {
             std::string temp;
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM], temp));
         }
         return true;
     }
-
+    
     thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = n;
     return true;
 }

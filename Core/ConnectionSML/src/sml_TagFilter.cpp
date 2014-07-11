@@ -14,13 +14,13 @@
 #include "sml_Names.h"
 
 using namespace sml ;
-	
+
 TagFilter::TagFilter()
 {
-	this->SetTagNameFast(sml_Names::kTagFilter) ;
+    this->SetTagNameFast(sml_Names::kTagFilter) ;
 }
 
 void TagFilter::SetCommand(char const* pCommandLine)
 {
-	this->AddAttributeFast(sml_Names::kFilterCommand, pCommandLine) ;
+    this->AddAttributeFast(sml_Names::kFilterCommand, pCommandLine) ;
 }

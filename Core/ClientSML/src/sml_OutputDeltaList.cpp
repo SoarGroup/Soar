@@ -19,8 +19,10 @@ using namespace sml ;
 
 WMDelta::~WMDelta()
 {
-	// If this is an item that's been removed then we own it.
-	// (Others are still attached to the output link).
-	if (m_ChangeType == kRemoved)
-		delete m_pWME ;
+    // If this is an item that's been removed then we own it.
+    // (Others are still attached to the output link).
+    if (m_ChangeType == kRemoved)
+    {
+        delete m_pWME ;
+    }
 }

@@ -36,19 +36,19 @@ typedef struct callback_struct soar_callback;
 typedef cons list;
 typedef struct symbol_struct Symbol;
 
-typedef void * soar_callback_data;
-typedef void * soar_call_data;
+typedef void* soar_callback_data;
+typedef void* soar_call_data;
 
-extern void init_soar_io (agent* thisAgent);
-extern void do_input_cycle (agent* thisAgent);
-extern void do_output_cycle (agent* thisAgent);
+extern void init_soar_io(agent* thisAgent);
+extern void do_input_cycle(agent* thisAgent);
+extern void do_output_cycle(agent* thisAgent);
 
-extern void inform_output_module_of_wm_changes (agent* thisAgent,
-												::list *wmes_being_added,
-                                                ::list *wmes_being_removed);
+extern void inform_output_module_of_wm_changes(agent* thisAgent,
+        ::list* wmes_being_added,
+        ::list* wmes_being_removed);
 
-extern Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
-														char **text_read_position); /* in io.cpp */
+extern Symbol* get_next_io_symbol_from_text_input_line(agent* thisAgent,
+        char** text_read_position); /* in io.cpp */
 
 /* =======================================================================
                             Input Functions
@@ -112,15 +112,15 @@ extern Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
 #define NORMAL_INPUT_CYCLE 2
 #define TOP_STATE_JUST_REMOVED 3
 
-extern Symbol *get_new_io_identifier(agent* thisAgent, char first_letter) ;
-extern Symbol *get_io_identifier (agent* thisAgent, char first_letter, uint64_t number);
-extern Symbol *get_io_sym_constant (agent* thisAgent, char const *name);
-extern Symbol *get_io_int_constant (agent* thisAgent, int64_t value);
-extern Symbol *get_io_float_constant (agent* thisAgent, double value);
-extern void release_io_symbol (agent* thisAgent, Symbol *sym);
+extern Symbol* get_new_io_identifier(agent* thisAgent, char first_letter) ;
+extern Symbol* get_io_identifier(agent* thisAgent, char first_letter, uint64_t number);
+extern Symbol* get_io_sym_constant(agent* thisAgent, char const* name);
+extern Symbol* get_io_int_constant(agent* thisAgent, int64_t value);
+extern Symbol* get_io_float_constant(agent* thisAgent, double value);
+extern void release_io_symbol(agent* thisAgent, Symbol* sym);
 
-extern wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value);
-extern bool remove_input_wme (agent* thisAgent, wme *w);
+extern wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
+extern bool remove_input_wme(agent* thisAgent, wme* w);
 
 /* =======================================================================
                             Output Functions
@@ -161,20 +161,22 @@ extern bool remove_input_wme (agent* thisAgent, wme *w);
 
 
 
-typedef struct io_wme_struct {
-  struct io_wme_struct *next;  /* points to next io_wme in the chain */
-  Symbol *id;                  /* id, attribute, and value of the wme */
-  Symbol *attr;
-  Symbol *value;
-  uint64_t timetag ;		/* DJP: Added.  Only guaranteed valid for an output wme. */
+typedef struct io_wme_struct
+{
+    struct io_wme_struct* next;  /* points to next io_wme in the chain */
+    Symbol* id;                  /* id, attribute, and value of the wme */
+    Symbol* attr;
+    Symbol* value;
+    uint64_t timetag ;        /* DJP: Added.  Only guaranteed valid for an output wme. */
 } io_wme;
 
-typedef struct output_link_struct {
-  struct output_link_struct *next, *prev;  /* dll of all existing links */
-  byte status;                             /* current xxx_OL_STATUS */
-  wme *link_wme;                           /* points to the output link wme */
-  ::list *ids_in_tc;                         /* ids in TC(link) */
-  soar_callback *cb;                       /* corresponding output function */
+typedef struct output_link_struct
+{
+    struct output_link_struct* next, *prev;  /* dll of all existing links */
+    byte status;                             /* current xxx_OL_STATUS */
+    wme* link_wme;                           /* points to the output link wme */
+    ::list* ids_in_tc;                         /* ids in TC(link) */
+    soar_callback* cb;                       /* corresponding output function */
 } output_link;
 
 
@@ -182,25 +184,26 @@ typedef struct output_link_struct {
 #define MODIFIED_OUTPUT_COMMAND 2
 #define REMOVED_OUTPUT_COMMAND 3
 
-typedef struct output_call_info_struct {
-  int mode;
-  io_wme * outputs;
+typedef struct output_call_info_struct
+{
+    int mode;
+    io_wme* outputs;
 } output_call_info;
 
-extern Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr);
-extern io_wme *get_io_wmes_for_output_link (agent* thisAgent, output_link *ol) ;
-extern void deallocate_io_wme_list (agent* thisAgent, io_wme *iw) ;
+extern Symbol* get_output_value(io_wme* outputs, Symbol* id, Symbol* attr);
+extern io_wme* get_io_wmes_for_output_link(agent* thisAgent, output_link* ol) ;
+extern void deallocate_io_wme_list(agent* thisAgent, io_wme* iw) ;
 
-extern void add_input_function (agent * a, soar_callback_fn f,
-				soar_callback_data cb_data,
-				soar_callback_free_fn free_fn,
-				const char * name);
-extern void remove_input_function (agent * a, const char * name);
-extern void add_output_function (agent* thisAgent, soar_callback_fn f,
-				 soar_callback_data cb_data,
-				 soar_callback_free_fn free_fn,
-				 int eventID,
-				 const char * output_link_name);
-extern void remove_output_function (agent* thisAgent, const char * name);
+extern void add_input_function(agent* a, soar_callback_fn f,
+                               soar_callback_data cb_data,
+                               soar_callback_free_fn free_fn,
+                               const char* name);
+extern void remove_input_function(agent* a, const char* name);
+extern void add_output_function(agent* thisAgent, soar_callback_fn f,
+                                soar_callback_data cb_data,
+                                soar_callback_free_fn free_fn,
+                                int eventID,
+                                const char* output_link_name);
+extern void remove_output_function(agent* thisAgent, const char* name);
 
 #endif

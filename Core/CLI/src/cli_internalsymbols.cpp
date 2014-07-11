@@ -22,7 +22,8 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoInternalSymbols() {
+bool CommandLineInterface::DoInternalSymbols()
+{
     print_internal_symbols(m_pAgentSML->GetSoarAgent());
     return true;
 }

@@ -9,22 +9,24 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoAllocate(const std::string& pool, int blocks) 
+bool CommandLineInterface::DoAllocate(const std::string& pool, int blocks)
 {
     if (pool.empty())
     {
         GetMemoryPoolStatistics(); // cli_stats.cpp
         return true;
     }
-
+    
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    for (memory_pool* p = thisAgent->memory_pools_in_use; p != NIL; p = p->next) 
+    for (memory_pool* p = thisAgent->memory_pools_in_use; p != NIL; p = p->next)
     {
         if (pool == p->name)
         {
             for (int i = 0; i < blocks; ++i)
+            {
                 add_block_to_memory_pool(thisAgent, p);
-
+            }
+            
             m_Result << p->name << " blocks increased by " << blocks;
             return true;
         }

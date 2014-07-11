@@ -18,12 +18,12 @@ using namespace soar_thread ;
 
 Event::Event()
 {
-	m_Imp = MakeEvent() ;
+    m_Imp = MakeEvent() ;
 }
 
 Event::~Event()
 {
-	delete m_Imp ;
+    delete m_Imp ;
 }
 
 
