@@ -47,7 +47,12 @@ def gcc_version(cc):
 	Exit(1)
 
 def vc_version():
-	p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
+	try:
+		p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
+	except WindowsError as e:
+		print "error running link.exe: {0}".format(e.strerror)
+		print 'make sure Microsoft Visual C++ is installed and you are using the Visual Studio Command Prompt'
+		Exit(1)
 	line = p.stdout.readline()
 	# for line in iter(p.stdout.readline, b''):
 	# 	print line,
@@ -111,11 +116,14 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
 
+AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Active TCL (>= 8.6) libraries')
+
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
 AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
 
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
+
 
 msvc_version = "12.0"
 if sys.platform == 'win32':
