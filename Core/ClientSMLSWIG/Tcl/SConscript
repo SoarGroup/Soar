@@ -18,6 +18,12 @@ libname = 'Tcl_sml_ClientInterface'
 
 if sys.platform == 'win32':
     tcl_platform_dir = os.path.join('C:/Tcl')
+
+    tcl_user_platform_dir = GetOption('tcl')
+
+    if tcl_user_platform_dir:
+        tcl_platform_dir = tcl_user_platform_dir
+
     tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))
     tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'include'))
     tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
@@ -27,6 +33,12 @@ if sys.platform == 'win32':
     tcl_pkgindex_name = 'pkgIndex_win.tcl'
 elif sys.platform == 'darwin':
     tcl_platform_dir = os.path.join('/Library/Frameworks/Tcl.framework/Versions/Current')
+
+    tcl_user_platform_dir = GetOption('tcl')
+
+    if tcl_user_platform_dir:
+        tcl_platform_dir = tcl_user_platform_dir
+
     tcl_libs = clone.Dir(tcl_platform_dir)
     tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'Headers'))
     tcl_bins = clone.Dir(tcl_platform_dir)
@@ -36,6 +48,12 @@ elif sys.platform == 'darwin':
     tcl_pkgindex_name = 'pkgIndex_mac.tcl'
 else:
     tcl_platform_dir = os.path.join('/opt/ActiveTcl-8.6')
+
+    tcl_user_platform_dir = GetOption('tcl')
+
+    if tcl_user_platform_dir:
+         tcl_platform_dir = tcl_user_platform_dir
+
     tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))
     tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'include'))
     tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
