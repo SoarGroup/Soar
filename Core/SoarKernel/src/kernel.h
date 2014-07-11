@@ -16,9 +16,9 @@
 
 #include "enums.h"
 typedef struct agent_struct agent;
-extern void dprint (TraceMode mode, const char *format, ... );
-extern void dprint_noprefix (TraceMode mode, const char *format, ... );
-extern void print (agent* thisAgent, const char *format, ... );
+extern void dprint(TraceMode mode, const char* format, ...);
+extern void dprint_noprefix(TraceMode mode, const char* format, ...);
+extern void print(agent* thisAgent, const char* format, ...);
 
 /* -- Enables tracing functions that print SQL processing and errors -- */
 //#define DEBUG_EPMEM_SQL

@@ -37,24 +37,26 @@ typedef struct instantiation_struct instantiation;
 typedef struct wme_struct wme;
 
 
-extern void init_firer (agent* thisAgent);
-extern void do_preference_phase (agent* thisAgent);
+extern void init_firer(agent* thisAgent);
+extern void do_preference_phase(agent* thisAgent);
 
-extern preference *find_clone_for_level(preference *p, goal_stack_level level);
-extern void fill_in_new_instantiation_stuff (agent* thisAgent, instantiation *inst,
-                                      bool need_to_do_support_calculations, instantiation *original_inst);
+extern preference* find_clone_for_level(preference* p, goal_stack_level level);
+extern void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
+        bool need_to_do_support_calculations, instantiation* original_inst);
 
-extern void build_CDPS (agent* thisAgent, instantiation *inst);
+extern void build_CDPS(agent* thisAgent, instantiation* inst);
 
-extern void deallocate_instantiation (agent* thisAgent, instantiation *inst);
+extern void deallocate_instantiation(agent* thisAgent, instantiation* inst);
 
-inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation * inst)
+inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
 {
-  if ((! (inst)->preferences_generated) &&
-      (! (inst)->in_ms))
-    deallocate_instantiation (thisAgent, inst);
+    if ((!(inst)->preferences_generated) &&
+            (!(inst)->in_ms))
+    {
+        deallocate_instantiation(thisAgent, inst);
+    }
 }
 
-extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
+extern Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
 
 #endif

@@ -23,15 +23,20 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoTimers(bool* pSetting) {
+bool CommandLineInterface::DoTimers(bool* pSetting)
+{
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (pSetting) {
+    if (pSetting)
+    {
         // set, don't print
         set_sysparam(thisAgent, TIMERS_ENABLED, *pSetting);
-
-    } else {
+        
+    }
+    else
+    {
         // print current setting
-        if (m_RawOutput) {
+        if (m_RawOutput)
+        {
 #ifdef NO_TIMING_STUFF
             m_Result << "Timers are disabled (compiled out).";
 #else // NO_TIMING_STUFF
@@ -46,7 +51,9 @@ bool CommandLineInterface::DoTimers(bool* pSetting) {
 #endif // DETAILED_TIMING_STATS
 #endif // NO_TIMING_STUFF
             m_Result << ".";
-        } else {
+        }
+        else
+        {
             // adds <arg name="timers">true</arg> (or false) if the timers are
             // enabled (or disabled)
             AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean, thisAgent->sysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);

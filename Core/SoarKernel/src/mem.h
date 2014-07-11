@@ -127,8 +127,8 @@
 
 #include "kernel.h"
 
-#include <stdio.h>	// Needed for FILE token below
-#include <string.h> 	// Needed for strlen, etc. below
+#include <stdio.h>  // Needed for FILE token below
+#include <string.h>     // Needed for strlen, etc. below
 
 #ifndef _WIN32
 #include <strings.h>
@@ -137,26 +137,26 @@
 
 typedef struct agent_struct agent;
 
-extern void init_memory_utilities (agent* thisAgent);
+extern void init_memory_utilities(agent* thisAgent);
 
 /* ----------------------- */
 /* basic memory allocation */
 /* ----------------------- */
 
 #ifdef DEBUG_MEMORY
-  template <typename T>
-  inline void fill_with_garbage(T * block, size_t size)
-  {
-    memset(static_cast<void *>(block), 0xBB, (size));
-  }
-  template <typename T>
-  inline void fill_with_zeroes(T * block, size_t size)
-  {
-      memset(static_cast<void *>(block), 0, (size));
-  }
+template <typename T>
+inline void fill_with_garbage(T* block, size_t size)
+{
+    memset(static_cast<void*>(block), 0xBB, (size));
+}
+template <typename T>
+inline void fill_with_zeroes(T* block, size_t size)
+{
+    memset(static_cast<void*>(block), 0, (size));
+}
 #else
-  #define fill_with_garbage(block,size) { }
-  #define fill_with_zeroes(block,size) { }
+#define fill_with_garbage(block,size) { }
+#define fill_with_zeroes(block,size) { }
 #endif
 
 #define MISCELLANEOUS_MEM_USAGE  0
@@ -167,46 +167,46 @@ extern void init_memory_utilities (agent* thisAgent);
 
 #define NUM_MEM_USAGE_CODES 5
 
-extern void *allocate_memory (agent* thisAgent, size_t size, int usage_code);
-extern void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_code);
-extern void free_memory (agent* thisAgent, void *mem, int usage_code);
-extern void print_memory_statistics (agent* thisAgent);
+extern void* allocate_memory(agent* thisAgent, size_t size, int usage_code);
+extern void* allocate_memory_and_zerofill(agent* thisAgent, size_t size, int usage_code);
+extern void free_memory(agent* thisAgent, void* mem, int usage_code);
+extern void print_memory_statistics(agent* thisAgent);
 
 /* ---------------- */
 /* string utilities */
 /* ---------------- */
 
-extern char *make_memory_block_for_string (agent* thisAgent, char const*s);
-extern void free_memory_block_for_string (agent* thisAgent, char *p);
+extern char* make_memory_block_for_string(agent* thisAgent, char const* s);
+extern void free_memory_block_for_string(agent* thisAgent, char* p);
 
 
-typedef void * growable_string;
+typedef void* growable_string;
 
 // voigtjr 11/2005: platform specific code (strlen/malloc/etc) should be in .cpp files!
 // except it can't be (?) because of the inline restriction
-inline char * savestring(char * x)
+inline char* savestring(char* x)
 {
-  return strcpy(static_cast<char *>(malloc (strlen (x) + 1)), (x));
+    return strcpy(static_cast<char*>(malloc(strlen(x) + 1)), (x));
 }
 
-inline int & memsize_of_growable_string(growable_string gs)
+inline int& memsize_of_growable_string(growable_string gs)
 {
-  return (*((int *)(gs)));
+    return (*((int*)(gs)));
 }
 
-inline int & length_of_growable_string(growable_string gs)
+inline int& length_of_growable_string(growable_string gs)
 {
-  return (*(((int *)(gs))+1));
+    return (*(((int*)(gs)) + 1));
 }
 
-inline char * text_of_growable_string(growable_string gs)
+inline char* text_of_growable_string(growable_string gs)
 {
-  return (((char *)(gs)) + 2*sizeof(int *));
+    return (((char*)(gs)) + 2 * sizeof(int*));
 }
 
-extern growable_string make_blank_growable_string (agent* thisAgent);
-extern void add_to_growable_string (agent* thisAgent, growable_string *gs, const char *string_to_add);
-extern void free_growable_string (agent* thisAgent, growable_string gs);
+extern growable_string make_blank_growable_string(agent* thisAgent);
+extern void add_to_growable_string(agent* thisAgent, growable_string* gs, const char* string_to_add);
+extern void free_growable_string(agent* thisAgent, growable_string gs);
 
 /* ------------ */
 /* memory pools */
@@ -214,33 +214,34 @@ extern void free_growable_string (agent* thisAgent, growable_string gs);
 
 #define MAX_POOL_NAME_LENGTH 15
 
-typedef struct memory_pool_struct {
-  void *free_list;             /* header of chain of free items */
-  size_t used_count;             /* used for statistics only when #def'd MEMORY_POOL_STATS */
-  size_t item_size;               /* bytes per item */
-  size_t items_per_block;        /* number of items in each big block */
-  size_t num_blocks;             /* number of big blocks in use by this pool */
-  void *first_block;           /* header of chain of blocks */
-  char name[MAX_POOL_NAME_LENGTH];  /* name of the pool (for memory-stats) */
-  struct memory_pool_struct *next;  /* next in list of all memory pools */
+typedef struct memory_pool_struct
+{
+    void* free_list;             /* header of chain of free items */
+    size_t used_count;             /* used for statistics only when #def'd MEMORY_POOL_STATS */
+    size_t item_size;               /* bytes per item */
+    size_t items_per_block;        /* number of items in each big block */
+    size_t num_blocks;             /* number of big blocks in use by this pool */
+    void* first_block;           /* header of chain of blocks */
+    char name[MAX_POOL_NAME_LENGTH];  /* name of the pool (for memory-stats) */
+    struct memory_pool_struct* next;  /* next in list of all memory pools */
 } memory_pool;
 
-extern void add_block_to_memory_pool (agent* thisAgent, memory_pool *p);
-extern void init_memory_pool (agent* thisAgent, memory_pool *p, size_t item_size, const char *name);
-extern void free_memory_pool (agent*, memory_pool *p); /* RPM 6/09, with help from AMN */
+extern void add_block_to_memory_pool(agent* thisAgent, memory_pool* p);
+extern void init_memory_pool(agent* thisAgent, memory_pool* p, size_t item_size, const char* name);
+extern void free_memory_pool(agent*, memory_pool* p);  /* RPM 6/09, with help from AMN */
 
 #ifdef MEMORY_POOL_STATS
 
 template <typename P>
 inline void increment_used_count(P p)
 {
-  (p)->used_count++;
+    (p)->used_count++;
 }
 
 template <typename P>
 inline void decrement_used_count(P p)
 {
-  (p)->used_count--;
+    (p)->used_count--;
 }
 
 #else
@@ -255,50 +256,53 @@ inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_p
 {
 
 #if MEM_POOLS_ENABLED
-  // if there's no memory blocks left in the pool, then allocate a new one
-  if (! (p)->free_list) add_block_to_memory_pool(thisAgent, p);
-  // take the beginning of the next free block and give it to the T pointer
-  *(dest_item_pointer) = static_cast< T* > ((p)->free_list);
-  // we think this line increments free_list to the next available memory block
-  // we thought it took advantage of the fact that free_list is the first
-  //  member of memory_pool, but I tried changing that and it still works, so now I'm at a loss
-  // if it helps, we think this line is equivalent to the following
-  //  (at least, everything appears to work properly if you swap these lines):
-  // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
-  (p)->free_list =  *(void * *)(*(dest_item_pointer));
-
-  fill_with_zeroes (*(dest_item_pointer), (p)->item_size);
-  increment_used_count(p);
-
+    // if there's no memory blocks left in the pool, then allocate a new one
+    if (!(p)->free_list)
+    {
+        add_block_to_memory_pool(thisAgent, p);
+    }
+    // take the beginning of the next free block and give it to the T pointer
+    *(dest_item_pointer) = static_cast< T* >((p)->free_list);
+    // we think this line increments free_list to the next available memory block
+    // we thought it took advantage of the fact that free_list is the first
+    //  member of memory_pool, but I tried changing that and it still works, so now I'm at a loss
+    // if it helps, we think this line is equivalent to the following
+    //  (at least, everything appears to work properly if you swap these lines):
+    // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
+    (p)->free_list =  *(void**)(*(dest_item_pointer));
+    
+    fill_with_zeroes(*(dest_item_pointer), (p)->item_size);
+    increment_used_count(p);
+    
 #else // !MEM_POOLS_ENABLED
-   // this is for debugging -- it disables the memory pool usage and just allocates
-   //  new memory every time.  If you want to use it, be sure to make the corresponding
-   //  change to free_with_pool below
-   *dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
-
-   // simply prevents compiler warnings when memory pools disabled
+    // this is for debugging -- it disables the memory pool usage and just allocates
+    //  new memory every time.  If you want to use it, be sure to make the corresponding
+    //  change to free_with_pool below
+    *dest_item_pointer = static_cast< T* >(malloc(sizeof(T)));
+    
+    // simply prevents compiler warnings when memory pools disabled
 //   thisAgent=thisAgent;
 //   p=p;
-
+    
 #endif // !MEM_POOLS_ENABLED
 }
 
 template <typename T>
-inline void free_with_pool(memory_pool* p, T * item)
+inline void free_with_pool(memory_pool* p, T* item)
 {
 #if MEM_POOLS_ENABLED
-  fill_with_garbage ((item), (p)->item_size);
-  *(void * *)(item) = (p)->free_list;
-  (p)->free_list = (void *)(item);
-  decrement_used_count(p);
-
+    fill_with_garbage((item), (p)->item_size);
+    *(void**)(item) = (p)->free_list;
+    (p)->free_list = (void*)(item);
+    decrement_used_count(p);
+    
 #else // !MEM_POOLS_ENABLED
-   // this is for debugging -- it disables the memory pool usage and just deallocates
-   //  the memory every time.  If you want to use it, be sure to make the corresponding
-   //  change to allocate_with_pool above
-   free(item);
-
-   // simply prevents compiler warnings when memory pools disabled
+    // this is for debugging -- it disables the memory pool usage and just deallocates
+    //  the memory every time.  If you want to use it, be sure to make the corresponding
+    //  change to allocate_with_pool above
+    free(item);
+    
+    // simply prevents compiler warnings when memory pools disabled
 //   p=p;
 #endif // !MEM_POOLS_ENABLED
 }
@@ -319,10 +323,10 @@ inline void free_with_pool(memory_pool* p, T * item)
    Some additional changes are required.
 */
 #define insert_at_head_of_dll(header,item,next_field_name,prev_field_name) { \
-  ((item)->next_field_name) = (header) ; \
-  ((item)->prev_field_name) = NIL ; \
-  if (header) ((header)->prev_field_name) = (item) ; \
-  (header) = (item) ; }
+        ((item)->next_field_name) = (header) ; \
+        ((item)->prev_field_name) = NIL ; \
+        if (header) ((header)->prev_field_name) = (item) ; \
+        (header) = (item) ; }
 /*template <typename T>
 inline void insert_at_head_of_dll(T header, T item, T next_field_name,
                                   T prev_field_name)
@@ -337,13 +341,13 @@ inline void insert_at_head_of_dll(T header, T item, T next_field_name,
    Some additional changes are required.
 */
 #define remove_from_dll(header,item,next_field_name,prev_field_name) { \
-  if ((item)->next_field_name) \
-    ((item)->next_field_name->prev_field_name) = ((item)->prev_field_name); \
-  if ((item)->prev_field_name) { \
-    ((item)->prev_field_name->next_field_name) = ((item)->next_field_name); \
-  } else { \
-    (header) = ((item)->next_field_name); \
-  } }
+        if ((item)->next_field_name) \
+            ((item)->next_field_name->prev_field_name) = ((item)->prev_field_name); \
+        if ((item)->prev_field_name) { \
+            ((item)->prev_field_name->next_field_name) = ((item)->next_field_name); \
+        } else { \
+            (header) = ((item)->next_field_name); \
+        } }
 /*template <typename T>
 inline void remove_from_dll(T header, T item, T next_field_name,
                             T prev_field_name)
@@ -361,38 +365,40 @@ inline void remove_from_dll(T header, T item, T next_field_name,
    Some additional changes are required.
 */
 #define fast_remove_from_dll(header,item,typename,next_field_name,prev_field_name) { \
-  typename *tempnext, *tempprev; \
-  tempnext = (item)->next_field_name; \
-  tempprev = (item)->prev_field_name; \
-  if (tempnext) tempnext->prev_field_name = tempprev; \
-  if (tempprev) { \
-    tempprev->next_field_name = tempnext; \
-  } else { \
-    (header) = tempnext; } }
+        typename *tempnext, *tempprev; \
+        tempnext = (item)->next_field_name; \
+        tempprev = (item)->prev_field_name; \
+        if (tempnext) tempnext->prev_field_name = tempprev; \
+        if (tempprev) { \
+            tempprev->next_field_name = tempnext; \
+        } else { \
+            (header) = tempnext; } }
 
 /* ------------------------- */
 /* Cons cell, list utilities */
 /* ------------------------- */
 
-typedef struct cons_struct {
-  void *first;
-  struct cons_struct *rest;
+typedef struct cons_struct
+{
+    void* first;
+    struct cons_struct* rest;
 } cons;
 
 typedef cons list;
 
-typedef struct dl_cons_struct {
-  void *item;
-  struct dl_cons_struct *next;
-  struct dl_cons_struct *prev;
+typedef struct dl_cons_struct
+{
+    void* item;
+    struct dl_cons_struct* next;
+    struct dl_cons_struct* prev;
 } dl_cons;
 
 typedef dl_cons dl_list;
 
-extern ::list *destructively_reverse_list (::list *c);
-extern bool member_of_list (void *item, ::list *the_list);
-extern ::list *add_if_not_member (agent* thisAgent, void *item, ::list *old_list);
-extern void free_list (agent* thisAgent, ::list *the_list);
+extern ::list* destructively_reverse_list(::list* c);
+extern bool member_of_list(void* item, ::list* the_list);
+extern ::list* add_if_not_member(agent* thisAgent, void* item, ::list* old_list);
+extern void free_list(agent* thisAgent, ::list* the_list);
 
 /* Added a void* parameter to cons_test_fn, because remove_pwatch_test_fn(),
    one of the callback functions, requires a third parameter that points to a
@@ -401,19 +407,19 @@ extern void free_list (agent* thisAgent, ::list *the_list);
 /* Added thisAgent to cons_test_fn type, because we are eliminating the
    global soar_agent. -AJC (8/7/02) */
 //typedef bool (*cons_test_fn)(cons *c);
-typedef bool (*cons_test_fn)(agent* thisAgent, cons *c, void* data);
+typedef bool (*cons_test_fn)(agent* thisAgent, cons* c, void* data);
 
-typedef bool (*dl_cons_test_fn)(dl_cons *dc, agent* thisAgent);
+typedef bool (*dl_cons_test_fn)(dl_cons* dc, agent* thisAgent);
 
 /* Added a void* parameter to extract_list_elements, because remove_pwatch_test_fn(),
    one of the callback functions, requires a third parameter that points to a
    production. In the future, other callback functions of type cons_test_fn may
    need parameters of different types, so a void pointer is best. -AJC (8/7/02) */
-extern ::list *extract_list_elements (agent* thisAgent, ::list **header, cons_test_fn f, void* data = 0);
+extern ::list* extract_list_elements(agent* thisAgent, ::list** header, cons_test_fn f, void* data = 0);
 
-extern dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f);
+extern dl_list* extract_dl_list_elements(agent* thisAgent, dl_list** header, dl_cons_test_fn f);
 
-extern bool cons_equality_fn (agent*, cons *c, void *data);
+extern bool cons_equality_fn(agent*, cons* c, void* data);
 
 /* ----------------------------- */
 /* Resizable hash table routines */
@@ -421,38 +427,40 @@ extern bool cons_equality_fn (agent*, cons *c, void *data);
 
 extern uint32_t masks_for_n_low_order_bits[33];
 
-typedef uint32_t ((*hash_function)(void *item, short num_bits));
+typedef uint32_t ((*hash_function)(void* item, short num_bits));
 
-typedef struct item_in_hash_table_struct {
-  struct item_in_hash_table_struct *next;
-  char data;
+typedef struct item_in_hash_table_struct
+{
+    struct item_in_hash_table_struct* next;
+    char data;
 } item_in_hash_table;
 
-typedef item_in_hash_table *bucket_array;
+typedef item_in_hash_table* bucket_array;
 
-typedef struct hash_table_struct {
-  int64_t count;            /* number of items in the table */
-  uint32_t size;            /* number of buckets */
-  short log2size;           /* log (base 2) of size */
-  short minimum_log2size;   /* table never shrinks below this size */
-  bucket_array *buckets;
-  hash_function h;          /* call this to hash or rehash an item */
+typedef struct hash_table_struct
+{
+    int64_t count;            /* number of items in the table */
+    uint32_t size;            /* number of buckets */
+    short log2size;           /* log (base 2) of size */
+    short minimum_log2size;   /* table never shrinks below this size */
+    bucket_array* buckets;
+    hash_function h;          /* call this to hash or rehash an item */
 } hash_table;
 
-extern struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2size,
-                                                  hash_function h);
-extern void free_hash_table(agent* thisAgent, struct hash_table_struct *ht); /* RPM 6/09 */
-extern void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht, void *item);
-extern void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht, void *item);
+extern struct hash_table_struct* make_hash_table(agent* thisAgent, short minimum_log2size,
+        hash_function h);
+extern void free_hash_table(agent* thisAgent, struct hash_table_struct* ht); /* RPM 6/09 */
+extern void remove_from_hash_table(agent* thisAgent, struct hash_table_struct* ht, void* item);
+extern void add_to_hash_table(agent* thisAgent, struct hash_table_struct* ht, void* item);
 
-typedef bool (*hash_table_callback_fn)(void *item);
-typedef bool (*hash_table_callback_fn2)(agent* thisAgent, void *item, void* f);
+typedef bool (*hash_table_callback_fn)(void* item);
+typedef bool (*hash_table_callback_fn2)(agent* thisAgent, void* item, void* f);
 
-extern void do_for_all_items_in_hash_table (agent* thisAgent, struct hash_table_struct *ht,
-                                            hash_table_callback_fn2 f, void* userdata);
-extern void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
-                                             hash_table_callback_fn f,
-                                             uint32_t hash_value);
+extern void do_for_all_items_in_hash_table(agent* thisAgent, struct hash_table_struct* ht,
+        hash_table_callback_fn2 f, void* userdata);
+extern void do_for_all_items_in_hash_bucket(struct hash_table_struct* ht,
+        hash_table_callback_fn f,
+        uint32_t hash_value);
 
 #endif
 

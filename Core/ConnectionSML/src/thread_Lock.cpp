@@ -11,10 +11,10 @@
 //
 // Use it like this:
 //
-// MyClass 
+// MyClass
 // {
 //    private: Mutex m_Mutex ;
-// 
+//
 //    public: void MyMethod() { Lock lock(&m_Mutex) ; Safely modify data now ; }
 // }
 //
@@ -27,25 +27,25 @@ using namespace soar_thread ;
 
 Mutex::Mutex()
 {
-	m_Imp = MakeMutex() ;
+    m_Imp = MakeMutex() ;
 }
 
 Mutex::~Mutex()
 {
-	delete m_Imp ;
+    delete m_Imp ;
 }
 
 void Mutex::Lock()
 {
-	m_Imp->Lock() ;
+    m_Imp->Lock() ;
 }
 
 void Mutex::Unlock()
 {
-	m_Imp->Unlock() ;
+    m_Imp->Unlock() ;
 }
 
 bool Mutex::TryToLock()
 {
-	return m_Imp->TryToLock() ;
+    return m_Imp->TryToLock() ;
 }

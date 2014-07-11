@@ -19,23 +19,30 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoOSupportMode(int mode) {
+bool CommandLineInterface::DoOSupportMode(int mode)
+{
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (mode < 0) {
+    if (mode < 0)
+    {
         mode = thisAgent->o_support_calculation_type;
-
-        if (m_RawOutput) {
+        
+        if (m_RawOutput)
+        {
             m_Result << mode;
-        } else {
+        }
+        else
+        {
             std::stringstream buffer;
             buffer << mode;
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, buffer.str());
         }
-    } else {
+    }
+    else
+    {
         assert(mode != 1);
         thisAgent->o_support_calculation_type = mode;
     }
-
+    
     return true;
 }
 

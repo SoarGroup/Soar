@@ -24,37 +24,46 @@
 
 #include <list>
 
-namespace sml {
+namespace sml
+{
 
 // Forward declarations
-class ConnectionManager ;
-class KernelSML ;
-
+    class ConnectionManager ;
+    class KernelSML ;
+    
 // A listener socket wrapped in a thread
-class ListenerThread : public soar_thread::Thread
-{
-protected:
-	int							m_Port ;
-	ConnectionManager*			m_Parent ;
-	sock::ListenerSocket		m_ListenerSocket ;
-	sock::ListenerSocket		m_LocalListenerSocket;
+    class ListenerThread : public soar_thread::Thread
+    {
+        protected:
+            int                         m_Port ;
+            ConnectionManager*          m_Parent ;
+            sock::ListenerSocket        m_ListenerSocket ;
+            sock::ListenerSocket        m_LocalListenerSocket;
 #ifdef ENABLE_NAMED_PIPES
-	sock::ListenerNamedPipe		m_ListenerNamedPipe ;
+            sock::ListenerNamedPipe     m_ListenerNamedPipe ;
 #endif
-
-	sml::KernelSML*				m_pKernel;
-
-	void Run() ;
-
-	void CreateConnection(sock::DataSender* pSender);
-
-public:
-	ListenerThread(ConnectionManager* parent, int port, KernelSML* pKernel) { m_Parent = parent ; m_Port = port ; m_pKernel = pKernel; }
-
-	int GetPort() { return m_Port; }
-} ;
-
-
+            
+            sml::KernelSML*             m_pKernel;
+            
+            void Run() ;
+            
+            void CreateConnection(sock::DataSender* pSender);
+            
+        public:
+            ListenerThread(ConnectionManager* parent, int port, KernelSML* pKernel)
+            {
+                m_Parent = parent ;
+                m_Port = port ;
+                m_pKernel = pKernel;
+            }
+            
+            int GetPort()
+            {
+                return m_Port;
+            }
+    } ;
+    
+    
 } // Namespace
 
-#endif	// LISTENER_THREAD_H
+#endif  // LISTENER_THREAD_H

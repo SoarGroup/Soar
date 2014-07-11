@@ -18,17 +18,17 @@
 namespace sml
 {
 
-class TagName : public soarxml::ElementXML
-{
-public:
-	TagName() ;
-
-	void SetName(char const* pName)
-	{
-		this->SetCharacterData(pName) ;
-	}
-} ;
-
+    class TagName : public soarxml::ElementXML
+    {
+        public:
+            TagName() ;
+            
+            void SetName(char const* pName)
+            {
+                this->SetCharacterData(pName) ;
+            }
+    } ;
+    
 }
 
-#endif	// SML_TAG_NAME_H
+#endif  // SML_TAG_NAME_H

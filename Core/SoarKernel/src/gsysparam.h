@@ -40,7 +40,7 @@ typedef struct agent_struct agent;
 #define TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM   4
 #define TRACE_FIRINGS_OF_CHUNKS_SYSPARAM          5
 #define TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM  6
-#define TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM		  7
+#define TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM       7
 
 #define TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM     8
 #define TRACE_FIRINGS_PREFERENCES_SYSPARAM        9
@@ -88,7 +88,7 @@ typedef struct agent_struct agent;
 #define TRACE_OPERAND2_REMOVALS_SYSPARAM         29
 
 /* RMJ */
-#define REAL_TIME_SYSPARAM         				 30
+#define REAL_TIME_SYSPARAM                       30
 
 /* RMJ */
 #define ATTENTION_LAPSE_ON_SYSPARAM              31
@@ -101,40 +101,40 @@ typedef struct agent_struct agent;
 /* rmarinie 11/04 */
 #define TIMERS_ENABLED                           34
 
-#define MAX_GOAL_DEPTH							 35
+#define MAX_GOAL_DEPTH                           35
 
 /* KJC 8/06:  generate warning and event if memory usage exceeds this value */
 #define MAX_MEMORY_USAGE_SYSPARAM                36
 
 /* NLD: auto-reduction of exploration parameters */
-#define USER_SELECT_REDUCE_SYSPARAM				 37
+#define USER_SELECT_REDUCE_SYSPARAM              37
 
 /* NLD: Soar-RL trace information */
-#define TRACE_RL_SYSPARAM						 38
+#define TRACE_RL_SYSPARAM                        38
 
 /* JRV: Bug 1087: Chunk through local negations */
-#define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM	 39
+#define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM   39
 
 /* New waterfall model: trace waterfall events */
-#define TRACE_WATERFALL_SYSPARAM				 40
+#define TRACE_WATERFALL_SYSPARAM                 40
 
 /* NLD: WMA trace information */
-#define TRACE_WMA_SYSPARAM						 41
+#define TRACE_WMA_SYSPARAM                       41
 
 /* NLD: EpMem trace information */
-#define TRACE_EPMEM_SYSPARAM					 42
+#define TRACE_EPMEM_SYSPARAM                     42
 
 /* NLD: SMem trace information */
-#define TRACE_SMEM_SYSPARAM						 43
+#define TRACE_SMEM_SYSPARAM                      43
 
 /* JRV: GDS */
-#define TRACE_GDS_SYSPARAM						 44
+#define TRACE_GDS_SYSPARAM                       44
 
 /* JRV: Break on long decision cycle time */
 #define DECISION_CYCLE_MAX_USEC_INTERRUPT        45
 
 /* MMA: Chunk over evaluation rules in subgoals */
-#define CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM	 46
+#define CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM  46
 
 #define TRACE_PARSER 47
 
@@ -146,8 +146,8 @@ typedef struct agent_struct agent;
    should be used to modify them.
 ----------------------------------------- */
 
-extern void init_sysparams (agent* thisAgent);
-extern void set_sysparam (agent* thisAgent, int param_number, int64_t new_value);
+extern void init_sysparams(agent* thisAgent);
+extern void set_sysparam(agent* thisAgent, int param_number, int64_t new_value);
 
 
 

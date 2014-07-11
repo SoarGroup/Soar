@@ -18,9 +18,9 @@ void Variablization_Manager::clear_substitution_map()
     substitution_map->clear();
 }
 
-test Variablization_Manager::get_substitution(Symbol *sym)
+test Variablization_Manager::get_substitution(Symbol* sym)
 {
-    std::map< Symbol *, test >::iterator iter;
+    std::map< Symbol*, test >::iterator iter;
     iter = substitution_map->find(sym);
     if (iter != substitution_map->end())
     {
@@ -42,8 +42,9 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
         case CONJUNCTIVE_TEST:
         {
             dprint_test(DT_FIX_CONDITIONS, t, true, false, false, "          Consolidating vars in conj test: ", "\n");
-            ::list *c = t->data.conjunct_list;
-            while (c) {
+            ::list* c = t->data.conjunct_list;
+            while (c)
+            {
                 test tt = static_cast<test>(c->first);
                 consolidate_variables_in_test(tt, tc_num);
                 c = c->rest;
@@ -66,24 +67,27 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
     }
 }
 
-void Variablization_Manager::consolidate_variables(condition *top_cond, tc_number tc_num)
+void Variablization_Manager::consolidate_variables(condition* top_cond, tc_number tc_num)
 {
     dprint(DT_FIX_CONDITIONS, "====================================\n");
     dprint(DT_FIX_CONDITIONS, "= Consolidating variables in tests =\n");
     dprint(DT_FIX_CONDITIONS, "====================================\n");
     dprint_condition_list(DT_FIX_CONDITIONS, top_cond, "          ", true, false, true);
     dprint(DT_FIX_CONDITIONS, "====================================\n");
-
-    condition *next_cond, *last_cond=NULL;
-    for (condition *cond = top_cond; cond;)
+    
+    condition* next_cond, *last_cond = NULL;
+    for (condition* cond = top_cond; cond;)
     {
         dprint_condition(DT_FIX_CONDITIONS, cond, "Fixing condition: ", true, false, true);
         next_cond = cond->next;
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION) {
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        {
             consolidate_variables_in_test(cond->data.tests.id_test, tc_num);
             consolidate_variables_in_test(cond->data.tests.attr_test, tc_num);
             consolidate_variables_in_test(cond->data.tests.value_test, tc_num);
-        } else {
+        }
+        else
+        {
             consolidate_variables(cond->data.ncc.top, tc_num);
         }
         last_cond = cond;
@@ -95,17 +99,17 @@ void Variablization_Manager::consolidate_variables(condition *top_cond, tc_numbe
     dprint(DT_FIX_CONDITIONS, "=========================================\n");
     dprint(DT_FIX_CONDITIONS, "= Done consolidating variables in tests =\n");
     dprint(DT_FIX_CONDITIONS, "=========================================\n");
-
+    
 }
 
 void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest)
 {
-    std::map< Symbol *, uint64_t >::iterator iter;
-
+    std::map< Symbol*, uint64_t >::iterator iter;
+    
     print_ovar_gid_propogation_table(DT_FIX_CONDITIONS, true);
     for (iter = orig_var_to_g_id_map->begin(); iter != orig_var_to_g_id_map->end(); ++iter)
     {
-
+    
         if (iter->second == sacrificeSymTest->identity->grounding_id)
         {
             dprint_noprefix(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: %s = g%llu -> g%llu.\n", iter->first->to_string(), iter->second, survivorSymTest->identity->grounding_id);
@@ -121,7 +125,7 @@ void Variablization_Manager::set_substitution(test sacrificeSymTest, test surviv
                     sacrificeSymTest->data.referent->to_string(), sacrificeSymTest->identity->grounding_id,
                     survivorSymTest->data.referent->to_string(), survivorSymTest->identity->grounding_id,
                     tc_num);
-
+                    
     /* -- If we're already supposed to substitute the survivor sym for another, we need to
           scan ovar->g_id list looking for g_ids that match previous survivor and redirect
           to new survivor -- */
@@ -133,18 +137,18 @@ void Variablization_Manager::set_substitution(test sacrificeSymTest, test surviv
         existing_survivor->data.referent->tc_num = tc_num;
         substitution_map->erase(survivorSymTest->data.referent);
     }
-
+    
     (*substitution_map)[sacrificeSymTest->data.referent] = survivorSymTest;
-
+    
     sacrificeSymTest->data.referent->tc_num = tc_num;
     survivorSymTest->data.referent->tc_num = 0;
-
+    
     dprint_noprefix(DT_FIX_CONDITIONS, "...fixing ovar table...\n");
     update_ovar_table_for_sub(sacrificeSymTest, survivorSymTest);
-
+    
     // Scan substitution map looking for values that match sacrifice and redirect to survivor
     dprint_noprefix(DT_FIX_CONDITIONS, "...updating existing substitutions...\n");
-    std::map< Symbol *, test >::iterator iter;
+    std::map< Symbol*, test >::iterator iter;
     for (iter = substitution_map->begin(); iter != substitution_map->end(); ++iter)
     {
         if (iter->second->data.referent == sacrificeSymTest->data.referent)
@@ -155,22 +159,24 @@ void Variablization_Manager::set_substitution(test sacrificeSymTest, test surviv
     }
 }
 
-void Variablization_Manager::remove_redundancies_and_ungroundeds(test *t, tc_number tc_num)
+void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_number tc_num)
 {
     assert(t);
-
+    
     if ((*t)->type == EQUALITY_TEST)
     {
         /* Cache main equality test.  Clearly redundant for an equality test, but simplifies code. */
         (*t)->eq_test = (*t);
         return;
-    } else if ((*t)->type==CONJUNCTIVE_TEST) {
+    }
+    else if ((*t)->type == CONJUNCTIVE_TEST)
+    {
         test found_eq_test = NULL, tt, survivor, sacrifice;
-        ::list *c = (*t)->data.conjunct_list;
+        ::list* c = (*t)->data.conjunct_list;
         while (c)
         {
             tt = static_cast<test>(c->first);
-
+            
             // For all tests, check if referent is STI.  If so, it's ungrounded.  Delete.
             if (test_has_referent(tt) && (tt->data.referent->is_sti()))
             {
@@ -178,7 +184,7 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test *t, tc_num
                 c = delete_test_from_conjunct(thisAgent, t, c);
                 dprint_test(DT_FIX_CONDITIONS, (*t), true, false, true, "          ...after deletion: ", "\n");
             }
-
+            
             // Code to detect a conjunction that contain more than one equality tests.  If found, eliminate the redundancy.
             else if (tt->type == EQUALITY_TEST)
             {
@@ -190,10 +196,12 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test *t, tc_num
                     {
                         survivor = tt;
                         sacrifice = found_eq_test;
-                    } else {
+                    }
+                    else
+                    {
                         survivor = found_eq_test;
                         sacrifice = tt;
-
+                        
                     }
                     dprint(DT_FIX_CONDITIONS, "Surviving test = %s, sacrificed test = %s.\n", survivor->data.referent->to_string(), sacrifice->data.referent->to_string());
                     // MToDo | If there's a problem, make sure we have g_id in this variablized test.
@@ -206,11 +214,13 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test *t, tc_num
                     found_eq_test = survivor = tt;
                     c = c->rest;
                 }
-            } else {
+            }
+            else
+            {
                 c = c->rest;
             }
         }
-
+        
         /* -- We also cache the main equality test for each element in each condition
          *    since it's easy to do here. This allows us to avoid searching conjunctive
          *    tests repeatedly during merging. -- */
@@ -219,27 +229,30 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test *t, tc_num
     }
 }
 
-void Variablization_Manager::fix_conditions(condition *top_cond)
+void Variablization_Manager::fix_conditions(condition* top_cond)
 {
     dprint(DT_FIX_CONDITIONS, "========================\n");
     dprint(DT_FIX_CONDITIONS, "= Finding redundancies =\n");
     dprint(DT_FIX_CONDITIONS, "========================\n");
     dprint_condition_list(DT_FIX_CONDITIONS, top_cond, "          ", true, false, true);
     dprint(DT_FIX_CONDITIONS, "========================\n");
-
+    
     // get new tc_num to mark any variables that need to be substituted
     tc_number tc_num = get_new_tc_number(thisAgent);;
-
-    condition *next_cond, *last_cond=NULL;
-    for (condition *cond = top_cond; cond;)
+    
+    condition* next_cond, *last_cond = NULL;
+    for (condition* cond = top_cond; cond;)
     {
         dprint_condition(DT_FIX_CONDITIONS, cond, "Finding redundancies in condition: ", true, false, true);
         next_cond = cond->next;
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION) {
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        {
             remove_redundancies_and_ungroundeds(&(cond->data.tests.id_test), tc_num);
             remove_redundancies_and_ungroundeds(&(cond->data.tests.attr_test), tc_num);
             remove_redundancies_and_ungroundeds(&(cond->data.tests.value_test), tc_num);
-        } else {
+        }
+        else
+        {
             // Do we really need for NCCs?  I do think it might be possible to get
             // ungroundeds in NCCs
         }
@@ -247,10 +260,10 @@ void Variablization_Manager::fix_conditions(condition *top_cond)
         cond = next_cond;
         dprint(DT_FIX_CONDITIONS, "...done finding redundancies in condition.\n");
     }
-
+    
     consolidate_variables(top_cond, tc_num);
     clear_substitution_map();
-
+    
     dprint(DT_FIX_CONDITIONS, "=============================\n");
     dprint_condition_list(DT_FIX_CONDITIONS, top_cond, "          ", true, false, true);
     dprint(DT_FIX_CONDITIONS, "=============================\n");

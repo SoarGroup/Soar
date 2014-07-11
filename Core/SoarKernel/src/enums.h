@@ -20,70 +20,75 @@ typedef unsigned char byte;
  *
  * ------------------------------------------------------------------------------ */
 
-enum TraceMode {
-  No_Mode,
-  TM_EPMEM,
-  TM_SMEM,
-  TM_LEARNING,
-  TM_CHUNKING,
-  TM_RL,
-  TM_WMA,
-  DT_DEBUG,
-  DT_ID_LEAKING,
-  DT_LHS_VARIABLIZATION,
-  DT_ADD_CONSTRAINTS_ORIG_TESTS,
-  DT_RHS_VARIABLIZATION,
-  DT_VARIABLIZATION_MANAGER,
-  DT_PRINT_INSTANTIATIONS,
-  DT_ADD_TEST_TO_TEST,
-  DT_DEALLOCATES,
-  DT_DEALLOCATE_SYMBOLS,
-  DT_REFCOUNT_ADDS,
-  DT_REFCOUNT_REMS,
-  DT_PARSER,
-  DT_FUNC_PRODUCTIONS,
-  DT_OVAR_MAPPINGS,
-  DT_REORDERER,
-  DT_BACKTRACE,
-  DT_SAVEDVARS,
-  DT_GDS,
-  DT_RL_VARIABLIZATION,
-  DT_NCC_VARIABLIZATION,
-  DT_IDENTITY_PROP,
-  DT_SOAR_INSTANCE,
-  DT_CLI_LIBRARIES,
-  DT_CONSTRAINTS,
-  DT_MERGE,
-  DT_FIX_CONDITIONS,
-  num_trace_modes
+enum TraceMode
+{
+    No_Mode,
+    TM_EPMEM,
+    TM_SMEM,
+    TM_LEARNING,
+    TM_CHUNKING,
+    TM_RL,
+    TM_WMA,
+    DT_DEBUG,
+    DT_ID_LEAKING,
+    DT_LHS_VARIABLIZATION,
+    DT_ADD_CONSTRAINTS_ORIG_TESTS,
+    DT_RHS_VARIABLIZATION,
+    DT_VARIABLIZATION_MANAGER,
+    DT_PRINT_INSTANTIATIONS,
+    DT_ADD_TEST_TO_TEST,
+    DT_DEALLOCATES,
+    DT_DEALLOCATE_SYMBOLS,
+    DT_REFCOUNT_ADDS,
+    DT_REFCOUNT_REMS,
+    DT_PARSER,
+    DT_FUNC_PRODUCTIONS,
+    DT_OVAR_MAPPINGS,
+    DT_REORDERER,
+    DT_BACKTRACE,
+    DT_SAVEDVARS,
+    DT_GDS,
+    DT_RL_VARIABLIZATION,
+    DT_NCC_VARIABLIZATION,
+    DT_IDENTITY_PROP,
+    DT_SOAR_INSTANCE,
+    DT_CLI_LIBRARIES,
+    DT_CONSTRAINTS,
+    DT_MERGE,
+    DT_FIX_CONDITIONS,
+    num_trace_modes
 };
 
-enum MessageType {
-  debug_msg,
-  trace_msg,
-  refcnt_msg
+enum MessageType
+{
+    debug_msg,
+    trace_msg,
+    refcnt_msg
 };
 
-enum SymbolTypes {
-  VARIABLE_SYMBOL_TYPE = 0,
-  IDENTIFIER_SYMBOL_TYPE = 1,
-  STR_CONSTANT_SYMBOL_TYPE = 2,
-  INT_CONSTANT_SYMBOL_TYPE = 3,
-  FLOAT_CONSTANT_SYMBOL_TYPE = 4,
-  UNDEFINED_SYMBOL_TYPE = 5
+enum SymbolTypes
+{
+    VARIABLE_SYMBOL_TYPE = 0,
+    IDENTIFIER_SYMBOL_TYPE = 1,
+    STR_CONSTANT_SYMBOL_TYPE = 2,
+    INT_CONSTANT_SYMBOL_TYPE = 3,
+    FLOAT_CONSTANT_SYMBOL_TYPE = 4,
+    UNDEFINED_SYMBOL_TYPE = 5
 };
 
-enum AddAdditionalTestsMode {
-  DONT_ADD_TESTS,
-  ALL_ORIGINALS,
-  JUST_INEQUALITIES
+enum AddAdditionalTestsMode
+{
+    DONT_ADD_TESTS,
+    ALL_ORIGINALS,
+    JUST_INEQUALITIES
 };
 
-enum WME_Field {
-  ID_ELEMENT=0,
-  ATTR_ELEMENT=1,
-  VALUE_ELEMENT=2,
-  NO_ELEMENT=3,
+enum WME_Field
+{
+    ID_ELEMENT = 0,
+    ATTR_ELEMENT = 1,
+    VALUE_ELEMENT = 2,
+    NO_ELEMENT = 3,
 };
 
 /* MToDo | This was moved from soar_module to make it easier to use debug_defines without including soar_module,
@@ -97,26 +102,28 @@ enum boolean { off, on };
 
 /* -- Possible modes for numeric indifference -- */
 
-enum ni_mode {
+enum ni_mode
+{
     NUMERIC_INDIFFERENT_MODE_AVG,
     NUMERIC_INDIFFERENT_MODE_SUM,
 };
 
 /* --- Types of tests (can't be 255 -- see rete.cpp) --- */
 
-enum TestType {
-         NOT_EQUAL_TEST = 1,          /* various relational tests */
-         LESS_TEST = 2,
-         GREATER_TEST = 3,
-         LESS_OR_EQUAL_TEST = 4,
-         GREATER_OR_EQUAL_TEST = 5,
-         SAME_TYPE_TEST = 6,
-         DISJUNCTION_TEST = 7,        /* item must be one of a list of constants */
-         CONJUNCTIVE_TEST = 8,        /* item must pass each of a list of non-conjunctive tests */
-         GOAL_ID_TEST = 9,            /* item must be a goal identifier */
-         IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
-         EQUALITY_TEST = 11,
-         NUM_TEST_TYPES
+enum TestType
+{
+    NOT_EQUAL_TEST = 1,          /* various relational tests */
+    LESS_TEST = 2,
+    GREATER_TEST = 3,
+    LESS_OR_EQUAL_TEST = 4,
+    GREATER_OR_EQUAL_TEST = 5,
+    SAME_TYPE_TEST = 6,
+    DISJUNCTION_TEST = 7,        /* item must be one of a list of constants */
+    CONJUNCTIVE_TEST = 8,        /* item must pass each of a list of non-conjunctive tests */
+    GOAL_ID_TEST = 9,            /* item must be a goal identifier */
+    IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
+    EQUALITY_TEST = 11,
+    NUM_TEST_TYPES
 };
 
 /* MToDo | Change these to enums -- */
@@ -163,8 +170,14 @@ enum TestType {
 
 #define NUM_PREFERENCE_TYPES 14
 
-inline bool preference_is_unary(byte p) {return (p < 9);}
-inline bool preference_is_binary(byte p) {return (p > 8);}
+inline bool preference_is_unary(byte p)
+{
+    return (p < 9);
+}
+inline bool preference_is_binary(byte p)
+{
+    return (p > 8);
+}
 
 /* ------------------------------------------------------------------------
 

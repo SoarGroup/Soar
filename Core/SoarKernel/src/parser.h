@@ -20,17 +20,17 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-   
-   typedef struct condition_struct condition;
-   typedef struct action_struct action;
-   typedef struct agent_struct agent;
-   typedef struct symbol_struct Symbol;
 
-   extern void init_parser (void);
-   extern condition *parse_lhs (agent* thisAgent);
-   extern bool parse_rhs (agent* thisAgent, action **dest_rhs);
-   extern struct production_struct *parse_production (agent* thisAgent, unsigned char* rete_addition_result);
-   extern Symbol *make_symbol_for_current_lexeme (agent* thisAgent, bool allow_lti);
-   extern bool parse_lti(agent* thisAgent);
+typedef struct condition_struct condition;
+typedef struct action_struct action;
+typedef struct agent_struct agent;
+typedef struct symbol_struct Symbol;
+
+extern void init_parser(void);
+extern condition* parse_lhs(agent* thisAgent);
+extern bool parse_rhs(agent* thisAgent, action** dest_rhs);
+extern struct production_struct* parse_production(agent* thisAgent, unsigned char* rete_addition_result);
+extern Symbol* make_symbol_for_current_lexeme(agent* thisAgent, bool allow_lti);
+extern bool parse_lti(agent* thisAgent);
 
 #endif

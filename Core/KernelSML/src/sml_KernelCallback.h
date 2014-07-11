@@ -29,35 +29,46 @@ typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 typedef struct cons_struct list;
 
-namespace sml {
+namespace sml
+{
 
-class AgentSML ;
-
-class KernelCallback {
-protected:
-	AgentSML*	m_pCallbackAgentSML ;
-	std::map<int, bool> m_Registered ;
-	static int  InternalGetCallbackFromEventID(int eventID) ;
-
-public:
-	static void KernelCallbackStatic(agent* pAgent, int eventID, void* pData, void* pCallData) ;
-	static int  GetCallbackFromEventID(int eventID) ;
-	static bool IsCallbackImplementedInKernel(int eventID) ;
-
-	KernelCallback() { m_pCallbackAgentSML = 0 ; }
-	virtual ~KernelCallback() ;
-
-	virtual void SetAgentSML(AgentSML* pAgentSML)	{ m_pCallbackAgentSML = pAgentSML ; }
-	virtual	AgentSML* GetAgentSML()					{ return m_pCallbackAgentSML ; }
-	void ClearKernelCallback() ;
-	void RegisterWithKernel(int eventID) ;
-	void UnregisterWithKernel(int eventID) ;
-	bool IsRegisteredWithKernel(int eventID) ;
-
-	// This is the actual callback for the event
-	virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) = 0 ;
-} ;
-
+    class AgentSML ;
+    
+    class KernelCallback
+    {
+        protected:
+            AgentSML*   m_pCallbackAgentSML ;
+            std::map<int, bool> m_Registered ;
+            static int  InternalGetCallbackFromEventID(int eventID) ;
+            
+        public:
+            static void KernelCallbackStatic(agent* pAgent, int eventID, void* pData, void* pCallData) ;
+            static int  GetCallbackFromEventID(int eventID) ;
+            static bool IsCallbackImplementedInKernel(int eventID) ;
+            
+            KernelCallback()
+            {
+                m_pCallbackAgentSML = 0 ;
+            }
+            virtual ~KernelCallback() ;
+            
+            virtual void SetAgentSML(AgentSML* pAgentSML)
+            {
+                m_pCallbackAgentSML = pAgentSML ;
+            }
+            virtual AgentSML* GetAgentSML()
+            {
+                return m_pCallbackAgentSML ;
+            }
+            void ClearKernelCallback() ;
+            void RegisterWithKernel(int eventID) ;
+            void UnregisterWithKernel(int eventID) ;
+            bool IsRegisteredWithKernel(int eventID) ;
+            
+            // This is the actual callback for the event
+            virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) = 0 ;
+    } ;
+    
 }
 
 

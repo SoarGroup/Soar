@@ -24,23 +24,28 @@ using namespace sml;
 
 inline void warn_append_mode(agent* thisAgent, CommandLineInterface* Cli)
 {
-    if (( thisAgent->epmem_params->database->get_value() != soar_module::memory )) {
-        if ( thisAgent->epmem_params->append_db->get_value() == off ) {
-            Cli->PrintCLIMessage("EPMEM| Note: Will erase contents of episodic memory database on disk because append mode is off.\n" );
-        } else {
-            Cli->PrintCLIMessage("EPMEM| Note: Will append new episodes to database on disk because append mode is on.\n" );
+    if ((thisAgent->epmem_params->database->get_value() != soar_module::memory))
+    {
+        if (thisAgent->epmem_params->append_db->get_value() == off)
+        {
+            Cli->PrintCLIMessage("EPMEM| Note: Will erase contents of episodic memory database on disk because append mode is off.\n");
+        }
+        else
+        {
+            Cli->PrintCLIMessage("EPMEM| Note: Will append new episodes to database on disk because append mode is on.\n");
         }
     }
-
+    
 }
 
-bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, const std::string* pVal, epmem_time_id memory_id )
+bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, const std::string* pVal, epmem_time_id memory_id)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-   	std::ostringstream tempString;
-
-   	if ( !pOp )
-    {   // Print Epmem Settings
+    std::ostringstream tempString;
+    
+    if (!pOp)
+    {
+        // Print Epmem Settings
         PrintCLIMessage_Header("Episodic Memory Settings", 40);
         PrintCLIMessage_Item("learning:", thisAgent->epmem_params->learning, 40);
         PrintCLIMessage_Section("Encoding", 40);
@@ -65,105 +70,124 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         PrintCLIMessage_Section("Experimental", 40);
         PrintCLIMessage_Item("merge:", thisAgent->epmem_params->merge, 40);
         PrintCLIMessage("");
-
+        
         return true;
     }
-	else if ( pOp == 'b' )
+    else if (pOp == 'b')
     {
         std::string err;
-
-        bool result = epmem_backup_db( thisAgent, pAttr->c_str(), &( err ) );
-
-        if ( !result )
-            SetError( "Error while backing up database: " + err );
-        else {
-           	tempString << "EpMem| Database backed up to " << pAttr->c_str();
-           	PrintCLIMessage(&tempString);
+        
+        bool result = epmem_backup_db(thisAgent, pAttr->c_str(), &(err));
+        
+        if (!result)
+        {
+            SetError("Error while backing up database: " + err);
         }
-
-        return result;
-    }
-    else if ( pOp == 'e' )
-    {
-       bool result = thisAgent->epmem_params->learning->set_string("on");
-
-        if ( !result )
-            SetError( "This parameter is protected while the episodic memory database is open." );
         else
         {
-     	   PrintCLIMessage( "EpMem| learning = on");
-           warn_append_mode(thisAgent, this);
+            tempString << "EpMem| Database backed up to " << pAttr->c_str();
+            PrintCLIMessage(&tempString);
+        }
+        
+        return result;
+    }
+    else if (pOp == 'e')
+    {
+        bool result = thisAgent->epmem_params->learning->set_string("on");
+        
+        if (!result)
+        {
+            SetError("This parameter is protected while the episodic memory database is open.");
+        }
+        else
+        {
+            PrintCLIMessage("EpMem| learning = on");
+            warn_append_mode(thisAgent, this);
         }
         return result;
     }
-    else if ( pOp == 'd' )
+    else if (pOp == 'd')
     {
-       bool result = thisAgent->epmem_params->learning->set_string("off");
-
-       if ( !result )
-           SetError( "This parameter is protected while the episodic memory database is open." );
-       else
-    	   PrintCLIMessage( "EpMem| learning = off");
-
+        bool result = thisAgent->epmem_params->learning->set_string("off");
+        
+        if (!result)
+        {
+            SetError("This parameter is protected while the episodic memory database is open.");
+        }
+        else
+        {
+            PrintCLIMessage("EpMem| learning = off");
+        }
+        
         return result;
     }
-    else if ( pOp == 'g' )
+    else if (pOp == 'g')
     {
-        soar_module::param *my_param = thisAgent->epmem_params->get( pAttr->c_str() );
-        if ( !my_param )
-            return SetError( "Invalid attribute." );
-
+        soar_module::param* my_param = thisAgent->epmem_params->get(pAttr->c_str());
+        if (!my_param)
+        {
+            return SetError("Invalid attribute.");
+        }
+        
         PrintCLIMessage_Item("", my_param, 0);
         return true;
     }
-    else if ( pOp == 'i' )
+    else if (pOp == 'i')
     {
-    	epmem_reinit( thisAgent );
-    	PrintCLIMessage( "EpMem| Episodic memory system re-initialized.");
-    	if ((thisAgent->epmem_params->append_db->get_value() == on) &&
-    		(thisAgent->epmem_params->database->get_value() != soar_module::memory))
-    	{
-        	PrintCLIMessage( "EpMem|   Note: There was no effective change to memory contents because append mode is on and path set to file.");
-    	}
-    	return true;
+        epmem_reinit(thisAgent);
+        PrintCLIMessage("EpMem| Episodic memory system re-initialized.");
+        if ((thisAgent->epmem_params->append_db->get_value() == on) &&
+                (thisAgent->epmem_params->database->get_value() != soar_module::memory))
+        {
+            PrintCLIMessage("EpMem|   Note: There was no effective change to memory contents because append mode is on and path set to file.");
+        }
+        return true;
     }
-	else if ( pOp == 'p' )
+    else if (pOp == 'p')
     {
         std::string viz;
-
-        epmem_print_episode( thisAgent, memory_id, &( viz ) );
-        if ( viz.empty() )
+        
+        epmem_print_episode(thisAgent, memory_id, &(viz));
+        if (viz.empty())
         {
-            return SetError( "Invalid episode." );
+            return SetError("Invalid episode.");
         }
         tempString << "Episode " << memory_id;
         PrintCLIMessage_Header(tempString.str().c_str(), 40);
         PrintCLIMessage(&viz);
         return true;
     }
-    else if ( pOp == 's' )
+    else if (pOp == 's')
     {
-        soar_module::param *my_param = thisAgent->epmem_params->get( pAttr->c_str() );
-        if ( !my_param )
-            return SetError( "Invalid attribute." );
-
-        if ( !my_param->validate_string( pVal->c_str() ) )
-            return SetError( "Invalid value." );
-
-        bool result = my_param->set_string( pVal->c_str() );
-
-        if ( !result )
-            SetError( "This parameter is protected while the episodic memory database is open." );
-        else {
-        	tempString << "EpMem| "<< pAttr->c_str() << " = " << pVal->c_str();
-        	PrintCLIMessage(&tempString);
+        soar_module::param* my_param = thisAgent->epmem_params->get(pAttr->c_str());
+        if (!my_param)
+        {
+            return SetError("Invalid attribute.");
+        }
+        
+        if (!my_param->validate_string(pVal->c_str()))
+        {
+            return SetError("Invalid value.");
+        }
+        
+        bool result = my_param->set_string(pVal->c_str());
+        
+        if (!result)
+        {
+            SetError("This parameter is protected while the episodic memory database is open.");
+        }
+        else
+        {
+            tempString << "EpMem| " << pAttr->c_str() << " = " << pVal->c_str();
+            PrintCLIMessage(&tempString);
         }
         return result;
     }
-    else if ( pOp == 'S' )
+    else if (pOp == 'S')
     {
-        if ( !pAttr )
-        {   // print episodic memory statistics
+        if (!pAttr)
+        {
+            // print episodic memory statistics
             PrintCLIMessage_Header("Episodic Memory Statistics", 40);
             PrintCLIMessage_Item("Time:", thisAgent->epmem_stats->time, 40);
             PrintCLIMessage_Item("SQLite Version:", thisAgent->epmem_stats->db_lib_version, 40);
@@ -183,66 +207,76 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         else
         {
             // check attribute name
-            soar_module::statistic *my_stat = thisAgent->epmem_stats->get( pAttr->c_str() );
-            if ( !my_stat )
-                return SetError( "Invalid statistic." );
-
+            soar_module::statistic* my_stat = thisAgent->epmem_stats->get(pAttr->c_str());
+            if (!my_stat)
+            {
+                return SetError("Invalid statistic.");
+            }
+            
             PrintCLIMessage_Item("", my_stat, 0);
         }
-
+        
         return true;
     }
-    else if ( pOp == 't' )
+    else if (pOp == 't')
     {
-        if ( !pAttr )
+        if (!pAttr)
         {
-            struct foo: public soar_module::accumulator< soar_module::timer * >
+            struct foo: public soar_module::accumulator< soar_module::timer* >
             {
-            private:
-                bool raw;
-                cli::CommandLineInterface *this_cli;
-                std::ostringstream& m_Result;
-
-                foo& operator=(const foo&) { return *this; }
-
-            public:
-                foo( bool m_RawOutput, cli::CommandLineInterface *new_cli, std::ostringstream& m_Result ): raw( m_RawOutput ), this_cli( new_cli ), m_Result( m_Result ) {};
-
-
-                void operator() ( soar_module::timer *t )
-                {
-                    std::string output( t->get_name() );
-                    output += ":";
-                    this_cli->PrintCLIMessage_Item(output.c_str(), t, 40);
-                }
-            } bar( m_RawOutput, this, m_Result );
-
+                private:
+                    bool raw;
+                    cli::CommandLineInterface* this_cli;
+                    std::ostringstream& m_Result;
+                    
+                    foo& operator=(const foo&)
+                    {
+                        return *this;
+                    }
+                    
+                public:
+                    foo(bool m_RawOutput, cli::CommandLineInterface* new_cli, std::ostringstream& m_Result): raw(m_RawOutput), this_cli(new_cli), m_Result(m_Result) {};
+                    
+                    
+                    void operator()(soar_module::timer* t)
+                    {
+                        std::string output(t->get_name());
+                        output += ":";
+                        this_cli->PrintCLIMessage_Item(output.c_str(), t, 40);
+                    }
+            } bar(m_RawOutput, this, m_Result);
+            
             PrintCLIMessage_Header("Episodic Memory Timers", 40);
-            thisAgent->epmem_timers->for_each( bar );
+            thisAgent->epmem_timers->for_each(bar);
         }
         else
         {
             // check attribute name
-            soar_module::timer *my_timer = thisAgent->epmem_timers->get( pAttr->c_str() );
-            if ( !my_timer )
-                return SetError( "Invalid timer." );
-
+            soar_module::timer* my_timer = thisAgent->epmem_timers->get(pAttr->c_str());
+            if (!my_timer)
+            {
+                return SetError("Invalid timer.");
+            }
+            
             PrintCLIMessage_Item("", my_timer, 0);
         }
-
+        
         return true;
     }
-    else if ( pOp == 'v' )
+    else if (pOp == 'v')
     {
         std::string viz;
-
-        epmem_visualize_episode( thisAgent, memory_id, &( viz ) );
-
-        if ( viz.empty() ) return SetError( "Invalid episode." );
+        
+        epmem_visualize_episode(thisAgent, memory_id, &(viz));
+        
+        if (viz.empty())
+        {
+            return SetError("Invalid episode.");
+        }
         PrintCLIMessage(&viz);
-
+        
         return true;
     }
-
-    return SetError( "Unknown option." );
+    
+    return SetError("Unknown option.");
 }

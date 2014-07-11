@@ -50,17 +50,17 @@ typedef int64_t epmem_node_id;
 typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 
-extern void reset_wme_timetags (agent* thisAgent);
+extern void reset_wme_timetags(agent* thisAgent);
 
-extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,bool acceptable);
+extern wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
 
-extern void add_wme_to_wm (agent* thisAgent, wme *w);
-extern void remove_wme_from_wm (agent* thisAgent, wme *w);
-extern void remove_wme_list_from_wm (agent* thisAgent, wme *w, bool updateWmeMap = false);
-extern void do_buffered_wm_changes (agent* thisAgent);
+extern void add_wme_to_wm(agent* thisAgent, wme* w);
+extern void remove_wme_from_wm(agent* thisAgent, wme* w);
+extern void remove_wme_list_from_wm(agent* thisAgent, wme* w, bool updateWmeMap = false);
+extern void do_buffered_wm_changes(agent* thisAgent);
 
-extern void deallocate_wme (agent* thisAgent, wme *w);
-extern Symbol *find_name_of_object (agent* thisAgent, Symbol *id);
+extern void deallocate_wme(agent* thisAgent, wme* w);
+extern Symbol* find_name_of_object(agent* thisAgent, Symbol* id);
 
 /* ------------------------------------------------------------------------
                       Working Memory Elements (WMEs)
@@ -107,16 +107,16 @@ extern Symbol *find_name_of_object (agent* thisAgent, Symbol *id);
 
       These are the additions to the WME structure that will be used
          to track dependencies for goals.  Each working memory element
-	 now includes a pointer  to a gds_struct (defined below) and
-	 pointers to other WMEs on the same GDS.
+     now includes a pointer  to a gds_struct (defined below) and
+     pointers to other WMEs on the same GDS.
 
       gds: the goal dependency set the wme is in
       gds_next, gds_prev:  used for dll of all wmes in gds
 
       If a particular working memory element is not dependent for any goal,
-	 then the values for these pointers will all be NIL. If a WME is
-	 dependent for more than one goal, then it will point to the GDS
-	 of the highest goal.
+     then the values for these pointers will all be NIL. If a WME is
+     dependent for more than one goal, then it will point to the GDS
+     of the highest goal.
 
    Reference counts on wmes:
       +1 if the wme is currently in WM
@@ -138,55 +138,67 @@ typedef struct grounding_struct
 {
     uint64_t grounding_id[3];
     goal_stack_level level;
-    grounding_struct *next;
-
-    grounding_struct( goal_stack_level new_level, grounding_struct *new_next )
-    : level(new_level), next(new_next) {
-      grounding_id[ID_ELEMENT] = 0; grounding_id[ATTR_ELEMENT] = 0; grounding_id[VALUE_ELEMENT] = 0; }
+    grounding_struct* next;
+    
+    grounding_struct(goal_stack_level new_level, grounding_struct* new_next)
+        : level(new_level), next(new_next)
+    {
+        grounding_id[ID_ELEMENT] = 0;
+        grounding_id[ATTR_ELEMENT] = 0;
+        grounding_id[VALUE_ELEMENT] = 0;
+    }
 } grounding_info;
 
-typedef struct wme_struct {
-  /* WARNING:  The next three fields (id,attr,value) MUST be consecutive--
-     the rete code relies on this! */
-  Symbol *id;
-  Symbol *attr;
-  Symbol *value;
-  bool acceptable;
-  uint64_t timetag;
-  uint64_t reference_count;
-  struct wme_struct *rete_next, *rete_prev; /* used for dll of wmes in rete */
-  struct right_mem_struct *right_mems;      /* used for dll of rm's it's in */
-  struct token_struct *tokens;              /* dll of tokens in rete */
-  struct wme_struct *next, *prev;           /* (see above) */
-  struct preference_struct *preference;     /* pref. supporting it, or NIL */
-  struct output_link_struct *output_link;   /* for top-state output commands */
-  tc_number grounds_tc;                     /* for chunker use only */
-  tc_number potentials_tc, locals_tc;
-  struct preference_struct *chunker_bt_pref;
-
-  grounding_info *ground_id_list;           /* used for chunking (see struct above) */
-
-  struct gds_struct *gds;
-  struct wme_struct *gds_next, *gds_prev;   /* used for dll of wmes in gds */
-
-  epmem_node_id epmem_id;
-  uint64_t epmem_valid;
-
-  wma_decay_element* wma_decay_el;
-  tc_number wma_tc_value;
-
+typedef struct wme_struct
+{
+    /* WARNING:  The next three fields (id,attr,value) MUST be consecutive--
+       the rete code relies on this! */
+    Symbol* id;
+    Symbol* attr;
+    Symbol* value;
+    bool acceptable;
+    uint64_t timetag;
+    uint64_t reference_count;
+    struct wme_struct* rete_next, *rete_prev; /* used for dll of wmes in rete */
+    struct right_mem_struct* right_mems;      /* used for dll of rm's it's in */
+    struct token_struct* tokens;              /* dll of tokens in rete */
+    struct wme_struct* next, *prev;           /* (see above) */
+    struct preference_struct* preference;     /* pref. supporting it, or NIL */
+    struct output_link_struct* output_link;   /* for top-state output commands */
+    tc_number grounds_tc;                     /* for chunker use only */
+    tc_number potentials_tc, locals_tc;
+    struct preference_struct* chunker_bt_pref;
+    
+    grounding_info* ground_id_list;           /* used for chunking (see struct above) */
+    
+    struct gds_struct* gds;
+    struct wme_struct* gds_next, *gds_prev;   /* used for dll of wmes in gds */
+    
+    epmem_node_id epmem_id;
+    uint64_t epmem_valid;
+    
+    wma_decay_element* wma_decay_el;
+    tc_number wma_tc_value;
+    
 } wme;
 
-inline void wme_add_ref(wme * w) {
-   (w)->reference_count++;
-}
-inline void wme_remove_ref(agent* thisAgent, wme * w)
+inline void wme_add_ref(wme* w)
 {
-  /* There are occaisionally wme's with zero reference counts
-     created in the system. Make sure this function handles them
-     correctly. */
-  if ((w)->reference_count != 0) (w)->reference_count--;
-  if ((w)->reference_count == 0) deallocate_wme(thisAgent, w);
+    (w)->reference_count++;
+}
+inline void wme_remove_ref(agent* thisAgent, wme* w)
+{
+    /* There are occaisionally wme's with zero reference counts
+       created in the system. Make sure this function handles them
+       correctly. */
+    if ((w)->reference_count != 0)
+    {
+        (w)->reference_count--;
+    }
+    if ((w)->reference_count == 0)
+    {
+        deallocate_wme(thisAgent, w);
+    }
 }
 
 #endif

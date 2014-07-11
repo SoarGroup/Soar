@@ -15,15 +15,16 @@
 #include "ElementXML.h"
 #include "sml_Names.h"
 
-namespace sml {
-
-class TagResult : public soarxml::ElementXML
+namespace sml
 {
-public:
-	TagResult(void);
-	~TagResult(void);
-};
 
+    class TagResult : public soarxml::ElementXML
+    {
+        public:
+            TagResult(void);
+            ~TagResult(void);
+    };
+    
 }
 
-#endif	// SML_TAG_ERROR_H
+#endif  // SML_TAG_ERROR_H

@@ -18,18 +18,23 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoDefaultWMEDepth(const int* pDepth) {
+bool CommandLineInterface::DoDefaultWMEDepth(const int* pDepth)
+{
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (!pDepth) {
-        if (m_RawOutput) {
+    if (!pDepth)
+    {
+        if (m_RawOutput)
+        {
             m_Result << thisAgent->default_wme_depth;
-        } else {
+        }
+        else
+        {
             std::string temp;
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(thisAgent->default_wme_depth, temp));
         }
         return true;
     }
-
+    
     thisAgent->default_wme_depth = *pDepth;
     return true;
 }

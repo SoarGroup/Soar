@@ -19,22 +19,23 @@ typedef struct condition_struct condition;
 typedef cons list;
 typedef struct symbol_struct Symbol;
 typedef struct test_struct test_info;
-typedef test_info * test;
+typedef test_info* test;
 
-typedef struct saved_test_struct {
-  struct saved_test_struct *next;
-  Symbol *var;
-  test the_test;
+typedef struct saved_test_struct
+{
+    struct saved_test_struct* next;
+    Symbol* var;
+    test the_test;
 } saved_test;
 
-extern bool reorder_action_list (agent* thisAgent, action **action_list, tc_number lhs_tc);
-extern bool reorder_lhs (agent* thisAgent, condition **lhs_top,
-						 condition **lhs_bottom, bool reorder_nccs);
-extern void init_reorderer (agent* thisAgent);
-extern void print_saved_test_list (agent* thisAgent, saved_test *st);
+extern bool reorder_action_list(agent* thisAgent, action** action_list, tc_number lhs_tc);
+extern bool reorder_lhs(agent* thisAgent, condition** lhs_top,
+                        condition** lhs_bottom, bool reorder_nccs);
+extern void init_reorderer(agent* thisAgent);
+extern void print_saved_test_list(agent* thisAgent, saved_test* st);
 
 /* this prototype moved here from osupport.cpp -ajc (5/3/02) */
-extern list *collect_root_variables(agent* thisAgent, condition *, tc_number, bool);
+extern list* collect_root_variables(agent* thisAgent, condition*, tc_number, bool);
 
 #endif
 

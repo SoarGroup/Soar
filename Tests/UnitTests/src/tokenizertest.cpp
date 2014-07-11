@@ -12,7 +12,7 @@ struct CallData
         : input(input)
     {
     }
-
+    
     CallData(const char* input, int expected, ...)
         : input(input)
     {
@@ -20,149 +20,153 @@ struct CallData
         va_start(args, expected);
         std::vector<std::string> argv;
         for (int i = 0; i < expected; ++i)
+        {
             argv.push_back(va_arg(args, const char*));
+        }
         va_end(args);
-
+        
         q.push(argv);
     }
-
+    
     void addResult(int expected, ...)
     {
         va_list args;
         va_start(args, expected);
         std::vector<std::string> argv;
         for (int i = 0; i < expected; ++i)
+        {
             argv.push_back(va_arg(args, const char*));
+        }
         va_end(args);
         q.push(argv);
     }
-
+    
     const char* input;
     std::queue< std::vector<std::string> > q;
 };
 
 class TokenizerTest : public CPPUNIT_NS::TestCase, public soar::tokenizer_callback
 {
-	CPPUNIT_TEST_SUITE( TokenizerTest );	// The name of this class
+        CPPUNIT_TEST_SUITE(TokenizerTest);   // The name of this class
 #ifdef DO_TOKENIZER_TESTS
-	CPPUNIT_TEST( testTokenizer01 );
-	CPPUNIT_TEST( testTokenizer02 );
-	CPPUNIT_TEST( testTokenizer03 );
-	CPPUNIT_TEST( testTokenizer04 );
-	CPPUNIT_TEST( testTokenizer05 );
-	CPPUNIT_TEST( testTokenizer06 );
-	CPPUNIT_TEST( testTokenizer07 );
-	CPPUNIT_TEST( testTokenizer08 );
-	CPPUNIT_TEST( testTokenizer09 );
-	CPPUNIT_TEST( testTokenizer10 );
-	CPPUNIT_TEST( testTokenizer11 );
-	CPPUNIT_TEST( testTokenizer12 );
-	CPPUNIT_TEST( testTokenizer13 );
-	CPPUNIT_TEST( testTokenizer14 );
-	CPPUNIT_TEST( testTokenizer15 );
-	CPPUNIT_TEST( testTokenizer16 );
-	CPPUNIT_TEST( testTokenizer17 );
-	CPPUNIT_TEST( testTokenizer18 );
-	CPPUNIT_TEST( testTokenizer19 );
-	CPPUNIT_TEST( testTokenizer20 );
-	CPPUNIT_TEST( testTokenizer21 );
-	CPPUNIT_TEST( testTokenizer22 );
-	CPPUNIT_TEST( testTokenizer23 );
-	CPPUNIT_TEST( testTokenizer24 );
-	CPPUNIT_TEST( testTokenizer25 );
-	CPPUNIT_TEST( testTokenizer26 );
-	CPPUNIT_TEST( testTokenizer27 );
-	CPPUNIT_TEST( testTokenizer28 );
-	CPPUNIT_TEST( testTokenizer29 );
-	CPPUNIT_TEST( testTokenizer30 );
-	CPPUNIT_TEST( testTokenizer31 );
-	CPPUNIT_TEST( testTokenizer32 );
-	CPPUNIT_TEST( testTokenizer33 );
-	CPPUNIT_TEST( testTokenizer34 );
-	CPPUNIT_TEST( testTokenizer35 );
-	CPPUNIT_TEST( testTokenizer36 );
-	CPPUNIT_TEST( testTokenizer37 );
-	CPPUNIT_TEST( testTokenizer38 );
-	CPPUNIT_TEST( testTokenizer39 );
-	CPPUNIT_TEST( testTokenizer40 );
-	CPPUNIT_TEST( testTokenizer41 );
-	CPPUNIT_TEST( testTokenizer42 );
-	CPPUNIT_TEST( testTokenizer43 );
-	CPPUNIT_TEST( testTokenizer44 );
-	CPPUNIT_TEST( testTokenizer45 );
-	CPPUNIT_TEST( testTokenizer46 );
-	CPPUNIT_TEST( testTokenizer47 );
-	CPPUNIT_TEST( testTokenizer48 );
+        CPPUNIT_TEST(testTokenizer01);
+        CPPUNIT_TEST(testTokenizer02);
+        CPPUNIT_TEST(testTokenizer03);
+        CPPUNIT_TEST(testTokenizer04);
+        CPPUNIT_TEST(testTokenizer05);
+        CPPUNIT_TEST(testTokenizer06);
+        CPPUNIT_TEST(testTokenizer07);
+        CPPUNIT_TEST(testTokenizer08);
+        CPPUNIT_TEST(testTokenizer09);
+        CPPUNIT_TEST(testTokenizer10);
+        CPPUNIT_TEST(testTokenizer11);
+        CPPUNIT_TEST(testTokenizer12);
+        CPPUNIT_TEST(testTokenizer13);
+        CPPUNIT_TEST(testTokenizer14);
+        CPPUNIT_TEST(testTokenizer15);
+        CPPUNIT_TEST(testTokenizer16);
+        CPPUNIT_TEST(testTokenizer17);
+        CPPUNIT_TEST(testTokenizer18);
+        CPPUNIT_TEST(testTokenizer19);
+        CPPUNIT_TEST(testTokenizer20);
+        CPPUNIT_TEST(testTokenizer21);
+        CPPUNIT_TEST(testTokenizer22);
+        CPPUNIT_TEST(testTokenizer23);
+        CPPUNIT_TEST(testTokenizer24);
+        CPPUNIT_TEST(testTokenizer25);
+        CPPUNIT_TEST(testTokenizer26);
+        CPPUNIT_TEST(testTokenizer27);
+        CPPUNIT_TEST(testTokenizer28);
+        CPPUNIT_TEST(testTokenizer29);
+        CPPUNIT_TEST(testTokenizer30);
+        CPPUNIT_TEST(testTokenizer31);
+        CPPUNIT_TEST(testTokenizer32);
+        CPPUNIT_TEST(testTokenizer33);
+        CPPUNIT_TEST(testTokenizer34);
+        CPPUNIT_TEST(testTokenizer35);
+        CPPUNIT_TEST(testTokenizer36);
+        CPPUNIT_TEST(testTokenizer37);
+        CPPUNIT_TEST(testTokenizer38);
+        CPPUNIT_TEST(testTokenizer39);
+        CPPUNIT_TEST(testTokenizer40);
+        CPPUNIT_TEST(testTokenizer41);
+        CPPUNIT_TEST(testTokenizer42);
+        CPPUNIT_TEST(testTokenizer43);
+        CPPUNIT_TEST(testTokenizer44);
+        CPPUNIT_TEST(testTokenizer45);
+        CPPUNIT_TEST(testTokenizer46);
+        CPPUNIT_TEST(testTokenizer47);
+        CPPUNIT_TEST(testTokenizer48);
 #endif
-	CPPUNIT_TEST_SUITE_END();
-
-public:
-    TokenizerTest()
-        : cd(0)
-    {}
-    virtual ~TokenizerTest() {}
-    virtual bool handle_command(std::vector<std::string>& argv);
-
-	void setUp();		// Called before each function outlined by CPPUNIT_TEST
-	void tearDown();	// Called after each function outlined by CPPUNIT_TEST
-
-protected:
-	void testTokenizer01();
-	void testTokenizer02();
-	void testTokenizer03();
-	void testTokenizer04();
-	void testTokenizer05();
-	void testTokenizer06();
-	void testTokenizer07();
-	void testTokenizer08();
-	void testTokenizer09();
-	void testTokenizer10();
-	void testTokenizer11();
-	void testTokenizer12();
-	void testTokenizer13();
-	void testTokenizer14();
-	void testTokenizer15();
-	void testTokenizer16();
-	void testTokenizer17();
-	void testTokenizer18();
-	void testTokenizer19();
-	void testTokenizer20();
-	void testTokenizer21();
-	void testTokenizer22();
-	void testTokenizer23();
-	void testTokenizer24();
-	void testTokenizer25();
-	void testTokenizer26();
-	void testTokenizer27();
-	void testTokenizer28();
-	void testTokenizer29();
-	void testTokenizer30();
-	void testTokenizer31();
-	void testTokenizer32();
-	void testTokenizer33();
-	void testTokenizer34();
-	void testTokenizer35();
-	void testTokenizer36();
-	void testTokenizer37();
-	void testTokenizer38();
-	void testTokenizer39();
-	void testTokenizer40();
-	void testTokenizer41();
-	void testTokenizer42();
-	void testTokenizer43();
-	void testTokenizer44();
-	void testTokenizer45();
-	void testTokenizer46();
-	void testTokenizer47();
-	void testTokenizer48();
-
-    void evaluate(CallData& cd);
-
-    soar::tokenizer* tokenizer;
-    CallData* cd;
+        CPPUNIT_TEST_SUITE_END();
+        
+    public:
+        TokenizerTest()
+            : cd(0)
+        {}
+        virtual ~TokenizerTest() {}
+        virtual bool handle_command(std::vector<std::string>& argv);
+        
+        void setUp();       // Called before each function outlined by CPPUNIT_TEST
+        void tearDown();    // Called after each function outlined by CPPUNIT_TEST
+        
+    protected:
+        void testTokenizer01();
+        void testTokenizer02();
+        void testTokenizer03();
+        void testTokenizer04();
+        void testTokenizer05();
+        void testTokenizer06();
+        void testTokenizer07();
+        void testTokenizer08();
+        void testTokenizer09();
+        void testTokenizer10();
+        void testTokenizer11();
+        void testTokenizer12();
+        void testTokenizer13();
+        void testTokenizer14();
+        void testTokenizer15();
+        void testTokenizer16();
+        void testTokenizer17();
+        void testTokenizer18();
+        void testTokenizer19();
+        void testTokenizer20();
+        void testTokenizer21();
+        void testTokenizer22();
+        void testTokenizer23();
+        void testTokenizer24();
+        void testTokenizer25();
+        void testTokenizer26();
+        void testTokenizer27();
+        void testTokenizer28();
+        void testTokenizer29();
+        void testTokenizer30();
+        void testTokenizer31();
+        void testTokenizer32();
+        void testTokenizer33();
+        void testTokenizer34();
+        void testTokenizer35();
+        void testTokenizer36();
+        void testTokenizer37();
+        void testTokenizer38();
+        void testTokenizer39();
+        void testTokenizer40();
+        void testTokenizer41();
+        void testTokenizer42();
+        void testTokenizer43();
+        void testTokenizer44();
+        void testTokenizer45();
+        void testTokenizer46();
+        void testTokenizer47();
+        void testTokenizer48();
+        
+        void evaluate(CallData& cd);
+        
+        soar::tokenizer* tokenizer;
+        CallData* cd;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( TokenizerTest ); // Registers the test so it will be used
+CPPUNIT_TEST_SUITE_REGISTRATION(TokenizerTest);   // Registers the test so it will be used
 
 void TokenizerTest::setUp()
 {
@@ -178,8 +182,10 @@ void TokenizerTest::tearDown()
 bool TokenizerTest::handle_command(std::vector<std::string>& argv)
 {
     CPPUNIT_ASSERT_MESSAGE(cd->input, argv.size() == cd->q.front().size());
-	for (std::vector<std::string>::size_type i = 0; i < argv.size(); i++)
+    for (std::vector<std::string>::size_type i = 0; i < argv.size(); i++)
+    {
         CPPUNIT_ASSERT(argv[i] == cd->q.front()[i]);
+    }
     cd->q.pop();
     return true;
 }

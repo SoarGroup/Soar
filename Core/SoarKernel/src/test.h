@@ -32,7 +32,7 @@ typedef cons list;
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 typedef signed short goal_stack_level;
-template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer);
+template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
 /* identity_info is a struct used to hold the original symbol and grounding
  * information for a test.  It is used during chunking to determine which
@@ -55,11 +55,12 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T * dest_cons_
  * Note: Conjunctive tests will not have symbol_type or grounding_id
  * or grounding index.*/
 
-typedef struct identity_struct {
-    Symbol        *original_var;
+typedef struct identity_struct
+{
+    Symbol*        original_var;
     uint64_t      grounding_id;
     WME_Field     grounding_field;
-    wme           *grounding_wme;
+    wme*           grounding_wme;
     identity_struct() : original_var(NULL), grounding_id(0), grounding_field(NO_ELEMENT), grounding_wme(NULL) {}
 } identity_info;
 
@@ -78,71 +79,84 @@ typedef struct identity_struct {
  *    constituent test of the conjunctive test contains links to its original
  *    test already --*/
 
-typedef struct test_struct {
-  TestType        type;                  /* see definitions in enums.h */
-  union test_info_union {
-    Symbol        *referent;         /* for relational tests */
-    ::list        *disjunction_list;   /* for disjunction tests */
-    ::list        *conjunct_list;      /* for conjunctive tests */
-  } data;
-  test_struct     *original_test;
-  test_struct     *eq_test;
-  identity_info   *identity;
-  test_struct() : type(NUM_TEST_TYPES), original_test(NULL), eq_test(NULL), identity(NULL) { data.referent = NULL; }
+typedef struct test_struct
+{
+    TestType        type;                  /* see definitions in enums.h */
+    union test_info_union
+    {
+        Symbol*        referent;         /* for relational tests */
+        ::list*        disjunction_list;   /* for disjunction tests */
+        ::list*        conjunct_list;      /* for conjunctive tests */
+    } data;
+    test_struct*     original_test;
+    test_struct*     eq_test;
+    identity_info*   identity;
+    test_struct() : type(NUM_TEST_TYPES), original_test(NULL), eq_test(NULL), identity(NULL)
+    {
+        data.referent = NULL;
+    }
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is
  *     considered blank when that pointer is nil. --- */
-typedef test_info * test;
+typedef test_info* test;
 
 
 /* --- Descriptions of these functions can be found in the test.cpp --- */
-inline bool test_is_blank(test t){return (t == 0);}
+inline bool test_is_blank(test t)
+{
+    return (t == 0);
+}
 inline bool test_is_variable(agent* thisAgent, test t);
-inline bool test_has_referent(test t) {
-    return ((t->type!=DISJUNCTION_TEST) && (t->type!=GOAL_ID_TEST) &&
-            (t->type!=IMPASSE_ID_TEST) && (t->type!=CONJUNCTIVE_TEST));};
-inline test make_blank_test() {return static_cast<test>(0);}
+inline bool test_has_referent(test t)
+{
+    return ((t->type != DISJUNCTION_TEST) && (t->type != GOAL_ID_TEST) &&
+            (t->type != IMPASSE_ID_TEST) && (t->type != CONJUNCTIVE_TEST));
+};
+inline test make_blank_test()
+{
+    return static_cast<test>(0);
+}
 
-char first_letter_from_test (test t);
-bool tests_are_equal (test t1, test t2, bool neg);
-bool tests_identical (test t1, test t2, bool considerIdentity=false);
-bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
-bool test_includes_goal_or_impasse_id_test (test t, bool look_for_goal, bool look_for_impasse);
-test copy_of_equality_test_found_in_test (agent* thisAgent, test t);
+char first_letter_from_test(test t);
+bool tests_are_equal(test t1, test t2, bool neg);
+bool tests_identical(test t1, test t2, bool considerIdentity = false);
+bool test_includes_equality_test_for_symbol(test t, Symbol* sym);
+bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse);
+test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
 void cache_eq_test(test t);
-test equality_test_found_in_test (test t);
-test equality_var_test_found_in_test (test t);
-test find_original_equality_test_preferring_vars (test t, bool useOriginals=false);
+test equality_test_found_in_test(test t);
+test equality_var_test_found_in_test(test t);
+test find_original_equality_test_preferring_vars(test t, bool useOriginals = false);
 
-test make_test(agent* thisAgent, Symbol * sym, TestType test_type);
-uint32_t hash_test (agent* thisAgent, test t);
-void deallocate_test (agent* thisAgent, test t, long indent=0);
+test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
+uint32_t hash_test(agent* thisAgent, test t);
+void deallocate_test(agent* thisAgent, test t, long indent = 0);
 
-test copy_test (agent* thisAgent, test t);
-test copy_test_removing_goal_impasse_tests (agent* thisAgent, test t, bool *removed_goal, bool *removed_impasse);
-test copy_test_without_relationals (agent* thisAgent, test t);
+test copy_test(agent* thisAgent, test t);
+test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
+test copy_test_without_relationals(agent* thisAgent, test t);
 
-void add_test (agent* thisAgent, test *dest_address, test new_test);
-void add_test_if_not_already_there (agent* thisAgent, test *t, test new_test, bool neg);
+void add_test(agent* thisAgent, test* dest_address, test new_test);
+void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg);
 
-::list * delete_test_from_conjunct(agent* thisAgent, test *t, ::list *pDeleteItem);
+::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem);
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 
-void add_additional_tests_and_originals (agent *thisAgent, rete_node *node, condition *cond, wme *w, node_varnames *nvn, AddAdditionalTestsMode additional_tests);
-void propagate_identity (agent* thisAgent, condition *cond, goal_stack_level level, bool use_negation_lookup=false);
-void add_hash_info_to_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
-void add_hash_info_to_original_id_test (agent* thisAgent, condition *cond, byte field_num, rete_node_level levels_up);
-void add_rete_test_list_to_tests (agent* thisAgent, condition *cond, rete_test *rt);
-void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter);
-void add_all_variables_in_test (agent* thisAgent, test t, tc_number tc, list **var_list);
-void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc, ::list **var_list);
-void copy_non_identical_tests (agent* thisAgent, test *t, test add_me, bool considerIdentity=false);
+void add_additional_tests_and_originals(agent* thisAgent, rete_node* node, condition* cond, wme* w, node_varnames* nvn, AddAdditionalTestsMode additional_tests);
+void propagate_identity(agent* thisAgent, condition* cond, goal_stack_level level, bool use_negation_lookup = false);
+void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
+void add_hash_info_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
+void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
+void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
+void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
+void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
+void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
 
 /* UITODO| Make this method of Test */
-char *test_to_string (test t, char *dest=NIL, size_t dest_size=0, bool show_equality=false);
-const char *test_type_to_string(byte test_type);
-const char *test_type_to_string_brief(byte test_type, const char *equality_str="");
+char* test_to_string(test t, char* dest = NIL, size_t dest_size = 0, bool show_equality = false);
+const char* test_type_to_string(byte test_type);
+const char* test_type_to_string_brief(byte test_type, const char* equality_str = "");
 
 #endif /* TEST_H_ */

@@ -17,5 +17,5 @@ using namespace sml ;
 
 TagWme::TagWme()
 {
-	this->SetTagNameFast(sml_Names::kTagWME) ;
+    this->SetTagNameFast(sml_Names::kTagWME) ;
 }
