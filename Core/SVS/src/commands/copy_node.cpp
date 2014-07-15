@@ -50,7 +50,7 @@ class copy_node_command : public command
             
             // Get the value of the ^source-id wme
             string sourceId;
-            if (!si->get_val(si->get_wme_val(srcWme), sourceId))
+            if (!get_symbol_value(si->get_wme_val(srcWme), sourceId))
             {
                 set_status("^source-id must be a string");
                 return false;
@@ -74,7 +74,7 @@ class copy_node_command : public command
             
             // Get the value of the ^source-id wme
             string destId;
-            if (!si->get_val(si->get_wme_val(destWme), destId))
+            if (!get_symbol_value(si->get_wme_val(destWme), destId))
             {
                 set_status("^dest-id must be a string");
                 return false;
@@ -88,7 +88,7 @@ class copy_node_command : public command
             {
                 adjust = "false";
             }
-            else if (!si->get_val(si->get_wme_val(adjustWme), adjust))
+            else if (!get_symbol_value(si->get_wme_val(adjustWme), adjust))
             {
                 adjust = "false";
             }

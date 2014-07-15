@@ -66,7 +66,7 @@ class del_node_command : public command
             }
             
             // Get the value of the ^source-id wme
-            if (!si->get_val(si->get_wme_val(idWme), nodeId))
+            if (!get_symbol_value(si->get_wme_val(idWme), nodeId))
             {
                 set_status("^id must be a string");
                 return false;

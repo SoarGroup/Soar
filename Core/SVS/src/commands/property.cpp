@@ -70,7 +70,7 @@ class property_command : public command
                 set_status("no object id specified");
                 return false;
             }
-            if (!si->get_val(si->get_wme_val(idwme), id))
+            if (!get_symbol_value(si->get_wme_val(idwme), id))
             {
                 set_status("object id must be a string");
                 return false;
@@ -81,7 +81,7 @@ class property_command : public command
                 set_status("no property specified");
                 return false;
             }
-            if (!si->get_val(si->get_wme_val(propwme), prop))
+            if (!get_symbol_value(si->get_wme_val(propwme), prop))
             {
                 set_status("property name must be a string");
                 return false;
@@ -93,9 +93,9 @@ class property_command : public command
                 return false;
             }
             double dv;
-            if (!si->get_val(si->get_wme_val(valwme), val))
+            if (!get_symbol_value(si->get_wme_val(valwme), val))
             {
-                if (!si->get_val(si->get_wme_val(valwme), dv))
+                if (!get_symbol_value(si->get_wme_val(valwme), dv))
                 {
                     set_status("unknown value type");
                     return false;

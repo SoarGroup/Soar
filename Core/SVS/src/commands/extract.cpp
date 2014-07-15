@@ -179,15 +179,15 @@ class extract_command : public command, public filter_input::listener
             
             if (get_filter_val(fv, fiv))
             {
-                return (si->get_val(s, siv) && siv == fiv);
+                return (get_symbol_value(s, siv) && siv == fiv);
             }
             if (get_filter_val(fv, ffv))
             {
-                return (si->get_val(s, sfv) && sfv == ffv);
+                return (get_symbol_value(s, sfv) && sfv == ffv);
             }
             if (get_filter_val(fv, fbv))
             {
-                return (si->get_val(s, str) && ((fbv && str == "t") || (!fbv && str == "f")));
+                return (get_symbol_value(s, str) && ((fbv && str == "t") || (!fbv && str == "f")));
             }
             
             map<string, string> rep;
@@ -196,7 +196,7 @@ class extract_command : public command, public filter_input::listener
             fv->get_rep(rep);
             if (map_get(rep, string(""), def))
             {
-                si->get_val(s, str);
+                get_symbol_value(s, str);
                 return str == def;
             }
             

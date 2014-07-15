@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <sstream>
 #include <limits>
+#include <stack>
 
 #include "command.h"
 #include "filter.h"
@@ -9,6 +10,8 @@
 #include "svs.h"
 #include "scene.h"
 #include "soar_interface.h"
+
+#include "symtab.h"
 
 using namespace std;
 
@@ -57,14 +60,14 @@ bool command::changed()
 
 void command::parse_substructure(int& size, int& max_time)
 {
-    tc_num tc;
+    tc_number tc;
     stack< Symbol*> to_process;
     wme_list childs;
     wme_list::iterator i;
     Symbol* parent, *v;
     int tt;
     string attr;
-    
+
     tc = si->new_tc_num();
     size = 0;
     max_time = -1;
@@ -73,11 +76,11 @@ void command::parse_substructure(int& size, int& max_time)
     {
         parent = to_process.top();
         to_process.pop();
-        
+
         si->get_child_wmes(parent, childs);
         for (i = childs.begin(); i != childs.end(); ++i)
         {
-            if (si->get_val(si->get_wme_attr(*i), attr) &&
+            if (get_symbol_value(si->get_wme_attr(*i), attr) &&
                     (attr == "result" || attr == "status"))
             {
                 /* result and status wmes are added by svs */
@@ -86,15 +89,15 @@ void command::parse_substructure(int& size, int& max_time)
             v = si->get_wme_val(*i);
             tt = si->get_timetag(*i);
             size++;
-            
+
             if (tt > max_time)
             {
                 max_time = tt;
             }
-            
-            if (si->is_identifier(v) && si->get_tc_num(v) != tc)
+
+            if (v->is_identifier() && (v->get_tc_num() != tc))
             {
-                si->set_tc_num(v, tc);
+                v->set_tc_num(tc);
                 to_process.push(v);
             }
         }
@@ -106,17 +109,17 @@ bool command::get_str_param(const string& name, string& val)
     wme_list children;
     wme_list::iterator i;
     string attr, v;
-    
+
     si->get_child_wmes(root, children);
     for (i = children.begin(); i != children.end(); ++i)
     {
-        if (si->get_val(si->get_wme_attr(*i), attr))
+        if (get_symbol_value(si->get_wme_attr(*i), attr))
         {
             if (name != attr)
             {
                 continue;
             }
-            if (si->get_val(si->get_wme_val(*i), v))
+            if (get_symbol_value(si->get_wme_val(*i), v))
             {
                 val = v;
                 return true;
@@ -162,13 +165,13 @@ command* make_command(svs_state* state, wme* w)
     string name;
     Symbol* id;
     soar_interface* si;
-    
+
     si = state->get_svs()->get_soar_interface();
-    if (!si->get_val(si->get_wme_attr(w), name))
+    if (!get_symbol_value(si->get_wme_attr(w), name))
     {
         return NULL;
     }
-    if (!si->is_identifier(si->get_wme_val(w)))
+    if (!si->get_wme_val(w)->is_identifier())
     {
         return NULL;
     }
@@ -235,47 +238,47 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
     filter_input* input;
     bool fail;
     filter* f;
-    
-    if (!si->is_identifier(root))
+
+    if (!root->is_identifier())
     {
         string strval;
         long intval;
         double floatval;
-        
-        if (si->get_val(root, strval))
+
+        if (get_symbol_value(root, strval))
         {
             return new const_filter<string>(strval);
         }
-        else if (si->get_val(root, intval))
+        else if (get_symbol_value(root, intval))
         {
             return new const_filter<int>(intval);
         }
-        else if (si->get_val(root, floatval))
+        else if (get_symbol_value(root, floatval))
         {
             return new const_filter<double>(floatval);
         }
         return NULL;
     }
-    
+
     fail = false;
     si->get_child_wmes(root, children);
     for (i = children.begin(); i != children.end(); ++i)
     {
-        if (!si->get_val(si->get_wme_attr(*i), pname))
+        if (!get_symbol_value(si->get_wme_attr(*i), pname))
         {
             continue;
         }
         Symbol* cval = si->get_wme_val(*i);
         if (pname == "type")
         {
-            if (!si->get_val(cval, ftype))
+            if (!get_symbol_value(cval, ftype))
             {
                 return NULL;
             }
         }
         else if (pname == "input-type")
         {
-            if (!si->get_val(cval, itype))
+            if (!get_symbol_value(cval, itype))
             {
                 return NULL;
             }
@@ -285,7 +288,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
             params.push_back(*i);
         }
     }
-    
+
     // The combine type check is a bit of a hack
     if (itype == "concat" || ftype == "combine")
     {
@@ -299,10 +302,10 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
     {
         input = new product_filter_input();
     }
-    
+
     for (i = params.begin(); i != params.end(); ++i)
     {
-        if (!si->get_val(si->get_wme_attr(*i), pname))
+        if (!get_symbol_value(si->get_wme_attr(*i), pname))
         {
             continue;
         }
@@ -315,7 +318,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
         }
         input->add_param(pname, cf);
     }
-    
+
     if (!fail)
     {
         if (ftype == "combine")
@@ -327,7 +330,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
             f = get_filter_table().make_filter(ftype, root, si, scn, input);
         }
     }
-    
+
     if (fail || ftype == "" || f == NULL)
     {
         delete input;

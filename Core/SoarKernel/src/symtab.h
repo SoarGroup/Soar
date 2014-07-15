@@ -40,6 +40,7 @@
 #include "mem.h"
 #include <assert.h>
 #include <map>
+#include <sstream>
 
 #ifdef SOAR_DEBUG_UTILITIES
 /* MToDo | Temporary debugging code.  Remove.
@@ -49,9 +50,9 @@
 #endif
 
 typedef signed short goal_stack_level;
-typedef struct cons_struct cons;
-typedef struct dl_cons_struct dl_cons;
-typedef cons list;
+//typedef struct cons_struct cons;
+//typedef struct dl_cons_struct dl_cons;
+//typedef cons list;
 typedef struct instantiation_struct instantiation;
 typedef int64_t epmem_node_id;
 typedef uint64_t epmem_hash_id;
@@ -103,41 +104,50 @@ typedef struct symbol_struct
     uint64_t retesave_symindex;
     uint32_t hash_id;
     tc_number tc_num;
-    
+
     epmem_hash_id epmem_hash;
     uint64_t epmem_valid;
-    
+
     smem_hash_id smem_hash;
     uint64_t smem_valid;
-    
+
 #ifndef SOAR_DEBUG_UTILITIES
     union
     {
 #endif
-    
+
         floatSymbol* fc;
         idSymbol*    id;
         varSymbol*   var;
         intSymbol*   ic;
         strSymbol*   sc;
-        
+
 #ifndef SOAR_DEBUG_UTILITIES
     };
 #endif
-    
-    bool is_identifier();
-    bool is_variable();
-    bool is_constant();
-    bool is_lti();
-    bool is_sti();
-    bool is_variablizable_constant();
-    bool is_variablizable(symbol_struct* original_sym);
-    bool is_constant_or_marked_variable(tc_number tc);
-    bool is_in_tc(tc_number tc);
-    void mark_if_unmarked(agent* thisAgent, tc_number tc, list** sym_list);
+
+    bool        is_identifier();
+    bool        is_variable();
+    bool        is_constant();
+    bool        is_lti();
+    bool        is_sti();
+    bool        is_variablizable_constant();
+    bool        is_variablizable(symbol_struct* original_sym);
+    bool        is_constant_or_marked_variable(tc_number tc);
+    bool        is_in_tc(tc_number tc);
+    bool        is_string();
+    bool        is_int();
+    bool        is_float();
+    bool        is_state();
+    bool        is_top_state();
+    tc_number   get_tc_num();
+    void        set_tc_num(tc_number n);
+    bool        get_id_name(std::string& n);
+    void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
     const char* type_string();
-    char* to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
-    
+    char*       to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
+
+    struct symbol_struct*   get_parent_state();
 } Symbol;
 
 struct floatSymbol : public Symbol
@@ -158,78 +168,78 @@ struct varSymbol   : public Symbol
     char* name;
     Symbol* current_binding_value;
     uint64_t gensym_number;
-    ::list* rete_binding_locations;
+    ::cons* rete_binding_locations;
 };
 
 struct idSymbol    : public Symbol
 {
     uint64_t name_number;
     char name_letter;
-    
+
     bool isa_goal;
     bool isa_impasse;
-    
+
     bool did_PE;
-    
+
     unsigned short isa_operator;
-    
+
     bool allow_bottom_up_chunks;
-    
+
     /* --- ownership, promotion, demotion, & garbage collection stuff --- */
     bool could_be_a_link_from_below;
     goal_stack_level level;
     goal_stack_level promotion_level;
     uint64_t link_count;
     dl_cons* unknown_level;
-    
+
     struct slot_struct* slots;  /* dll of slots for this identifier */
     Symbol* variablization;  /* used by the chunker */
-    
+
     /* --- fields used only on goals and impasse identifiers --- */
     struct wme_struct* impasse_wmes;
-    
+
     /* --- fields used only on goals --- */
     Symbol* higher_goal, *lower_goal;
     struct slot_struct* operator_slot;
     struct preference_struct* preferences_from_goal;
-    
+
     Symbol* reward_header;
     struct rl_data_struct* rl_info;
-    
+
     Symbol* epmem_header;
     Symbol* epmem_cmd_header;
     Symbol* epmem_result_header;
     struct wme_struct* epmem_time_wme;
     struct epmem_data_struct* epmem_info;
-    
-    
+
+
     Symbol* smem_header;
     Symbol* smem_cmd_header;
     Symbol* smem_result_header;
     struct smem_data_struct* smem_info;
-    
-    
+
+
     struct gds_struct* gds;
-    
+
     int saved_firing_type;
     struct ms_change_struct* ms_o_assertions;
     struct ms_change_struct* ms_i_assertions;
     struct ms_change_struct* ms_retractions;
-    
-    
+
+
     /* --- fields used for Soar I/O stuff --- */
-    ::list* associated_output_links;
+    ::cons* associated_output_links;
     struct wme_struct* input_wmes;
-    
+
     int depth;
-    
+
     epmem_node_id epmem_id;
     uint64_t epmem_valid;
-    
+
     smem_lti_id smem_lti;
     epmem_time_id smem_time_id;
     uint64_t smem_valid;
-    
+
     /*Agent::RL_Trace*/ void* rl_trace;
 };
 
@@ -271,9 +281,9 @@ inline bool Symbol::is_variablizable(Symbol* original_sym)
     {
         return true;
     }
-    
+
     return (original_sym->is_variable() && !is_variable());
-    
+
 };
 
 inline bool Symbol::is_constant_or_marked_variable(tc_number tc)
@@ -296,10 +306,94 @@ inline bool Symbol::is_in_tc(tc_number tc)
     }
 };
 
+inline bool Symbol::is_string()
+{
+    return (symbol_type == STR_CONSTANT_SYMBOL_TYPE);
+}
+
+inline bool Symbol::is_int()
+{
+    return (symbol_type == INT_CONSTANT_SYMBOL_TYPE);
+}
+
+inline bool Symbol::is_float()
+{
+    return (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE);
+}
+
+inline bool Symbol::is_state()
+{
+    return (is_identifier() && id->isa_goal);
+}
+
+inline bool Symbol::is_top_state()
+{
+    return (is_state() && (id->higher_goal == NULL));
+}
+inline tc_number Symbol::get_tc_num()
+{
+    return tc_num;
+}
+
+inline void Symbol::set_tc_num(tc_number n)
+{
+    tc_num = n;
+}
+inline Symbol* Symbol::get_parent_state()
+{
+    return id->higher_goal;
+}
+inline bool Symbol::get_id_name(std::string& n)
+{
+    std::stringstream ss;
+    if (!is_identifier())
+    {
+        return false;
+    }
+    ss << id->name_letter << id->name_number;
+    n = ss.str();
+    return true;
+}
+
+inline bool get_symbol_value(Symbol* sym, std::string& v)
+{
+    if (sym->is_string())
+    {
+        v = sym->to_string();
+        return true;
+    }
+    return false;
+}
+
+inline bool get_symbol_value(Symbol* sym, long& v)
+{
+    if (sym->is_int())
+    {
+        v = sym->ic->value;
+        return true;
+    }
+    return false;
+}
+
+inline bool get_symbol_value(Symbol* sym, double& v)
+{
+    if (sym->is_float())
+    {
+        v = sym->fc->value;
+        return true;
+    }
+    if (sym->is_int())
+    {
+        v = static_cast<double>(sym->ic->value);
+        return true;
+    }
+    return false;
+}
+
 /* -- mark_if_unmarked set the tc number to the new tc and add the symbol to the list passed in -- */
 
 template <typename P, typename T> void push(agent* thisAgent, P item, T*& list_header);
-inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, list** sym_list)
+inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list)
 {
     if (tc_num != tc)
     {
@@ -377,8 +471,8 @@ extern Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stac
 extern Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t* counter);
 
 extern void deallocate_symbol(agent* thisAgent, Symbol* sym, long indent = 0);
-extern void deallocate_symbol_list_removing_references(agent* thisAgent, ::list* sym_list, long indent = 0);
-::list* copy_symbol_list_adding_references(agent* thisAgent, ::list* sym_list);
+extern void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons* sym_list, long indent = 0);
+::cons* copy_symbol_list_adding_references(agent* thisAgent, ::cons* sym_list);
 
 extern Symbol* find_variable(agent* thisAgent, const char* name);
 extern Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
@@ -422,7 +516,7 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
 #else
     dprint(DT_REFCOUNT_ADDS, "%*sADD-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count + 1);
 #endif
-    
+
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
     std::string strName(x->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
@@ -431,7 +525,7 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
         dprint(DT_ID_LEAKING, "-- | %s(%lld) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
-    
+
     (x)->reference_count++;
 }
 
@@ -451,7 +545,7 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
     dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
 #endif
     (x)->reference_count--;
-    
+
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
     std::string strName(x->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
@@ -460,7 +554,7 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
         dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
-    
+
     assert((x)->reference_count >= 0);
     if ((x)->reference_count == 0)
     {
@@ -487,7 +581,7 @@ inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x, long in
 #else
     dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF UNNECESSARY %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
 #endif
-    
+
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
     std::string strName(x->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)

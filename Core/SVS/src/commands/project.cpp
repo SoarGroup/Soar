@@ -206,7 +206,7 @@ class project_command : public command
             si->get_child_wmes(root, children);
             for (i = children.begin(); i != children.end(); ++i)
             {
-                if (!si->get_val(si->get_wme_attr(*i), pname))
+                if (!get_symbol_value(si->get_wme_attr(*i), pname))
                 {
                     continue;
                 }
@@ -217,7 +217,7 @@ class project_command : public command
                 }
                 else if (pname == "input-type")
                 {
-                    if (!si->get_val(cval, itype))
+                    if (!get_symbol_value(cval, itype))
                     {
                         return NULL;
                     }
@@ -243,12 +243,12 @@ class project_command : public command
             
             for (i = params.begin(); i != params.end(); ++i)
             {
-                if (!si->get_val(si->get_wme_attr(*i), pname))
+                if (!get_symbol_value(si->get_wme_attr(*i), pname))
                 {
                     continue;
                 }
                 cval = si->get_wme_val(*i);
-                if (si->get_val(cval, strval))
+                if (get_symbol_value(cval, strval))
                 {
                     input->add_param(pname, new const_filter<string>(strval));
                     if ((parent_pname.compare("a") == 0) &&
@@ -262,11 +262,11 @@ class project_command : public command
                         b = scn->get_node(strval);
                     }
                 }
-                else if (si->get_val(cval, intval))
+                else if (get_symbol_value(cval, intval))
                 {
                     input->add_param(pname, new const_filter<int>(intval));
                 }
-                else if (si->get_val(cval, floatval))
+                else if (get_symbol_value(cval, floatval))
                 {
                     input->add_param(pname, new const_filter<float>(floatval));
                 }
@@ -314,7 +314,7 @@ class project_command : public command
             si->get_child_wmes(root, children);
             for (i = children.begin(); i != children.end(); ++i)
             {
-                if (!si->get_val(si->get_wme_attr(*i), pname))
+                if (!get_symbol_value(si->get_wme_attr(*i), pname))
                 {
                     continue;
                 }
@@ -323,7 +323,7 @@ class project_command : public command
                 if ((pname.compare("aligned") == 0))
                 {
                     cval = si->get_wme_val(*i);
-                    if (!si->get_val(cval, sval))
+                    if (!get_symbol_value(cval, sval))
                     {
                         continue;
                     }
@@ -342,14 +342,14 @@ class project_command : public command
                     si->get_child_wmes(cval, children2);
                     for (j = children2.begin(); j != children2.end(); ++j)
                     {
-                        if (!si->get_val(si->get_wme_attr(*j), pname2))
+                        if (!get_symbol_value(si->get_wme_attr(*j), pname2))
                         {
                             continue;
                         }
                         cval2 = si->get_wme_val(*j);
                         if (pname2.compare("axis") == 0)
                         {
-                            if (!si->get_val(cval2, intval))
+                            if (!get_symbol_value(cval2, intval))
                             {
                                 continue;
                             }
@@ -357,7 +357,7 @@ class project_command : public command
                         }
                         else if (pname2.compare("avg") == 0)
                         {
-                            if (!si->get_val(cval2, dval))
+                            if (!get_symbol_value(cval2, dval))
                             {
                                 continue;
                             }
@@ -365,7 +365,7 @@ class project_command : public command
                         }
                         else if (pname2.compare("type") == 0)
                         {
-                            if (!si->get_val(cval2, ftype))
+                            if (!get_symbol_value(cval2, ftype))
                             {
                                 continue;
                             }

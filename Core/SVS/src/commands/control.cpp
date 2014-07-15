@@ -11,6 +11,7 @@
 #include "common.h"
 #include "params.h"
 #include "filter_table.h"
+#include "symtab.h"
 
 using namespace std;
 
@@ -31,15 +32,15 @@ bool predict_traj(multi_model* mdl, const rvec& initstate, const std::list<rvec>
     {
         return true;
     }
-    
+
     std::list<rvec>::const_iterator i;
     rvec x(initstate.size() + traj.front().size());
-    
+
     for (i = traj.begin(); i != traj.end(); ++i)
     {
         x << finalstate, *i;
         relation_table rels;
-        
+
         scncopy->set_properties(finalstate);
         scncopy->get_relations(rels);
         if (!mdl->predict(sig, rels, x, finalstate))
@@ -57,7 +58,7 @@ class objective
     public:
         objective() : negated(false) {}
         virtual ~objective() {}
-        
+
         double evaluate(scene& scn) const
         {
             if (negated)
@@ -66,14 +67,14 @@ class objective
             }
             return eval(scn);
         }
-        
+
         void set_negated(bool n)
         {
             negated = n;
         }
-        
+
         virtual double eval(scene& scn) const = 0;
-        
+
     private:
         bool negated;
 };
@@ -84,23 +85,23 @@ class euclidean_obj : public objective
     public:
         euclidean_obj(const string& obj1, const string& obj2)
             : obj1(obj1), obj2(obj2) {}
-            
+
         double eval(scene& scn) const
         {
             sgnode* n1, *n2;
             ::vec3 c1, c2;
-            
+
             if (!(n1 = scn.get_node(obj1)) ||
                     !(n2 = scn.get_node(obj2)))
             {
                 return INF;
             }
-            
+
             c1 = n1->get_centroid();
             c2 = n2->get_centroid();
             return (c1 - c2).norm();
         }
-        
+
     private:
         string obj1, obj2;
 };
@@ -113,23 +114,23 @@ class axis_diff_obj : public objective
         {
             assert(0 <= axis && axis < 3);
         }
-        
+
         double eval(scene& scn) const
         {
             sgnode* n1, *n2;
             ::vec3 c1, c2;
-            
+
             if (!(n1 = scn.get_node(obj1)) ||
                     !(n2 = scn.get_node(obj2)))
             {
                 return INF;
             }
-            
+
             c1 = n1->get_centroid();
             c2 = n2->get_centroid();
             return c1[axis] - c2[axis];
         }
-        
+
     private:
         string obj1, obj2;
         int axis;
@@ -143,24 +144,24 @@ class abs_axis_diff_obj : public objective
         {
             assert(0 <= axis && axis < 3);
         }
-        
+
         double eval(scene& scn) const
         {
             sgnode* n1, *n2;
             ::vec3 c1, c2;
-            
+
             if (!(n1 = scn.get_node(obj1)) ||
                     !(n2 = scn.get_node(obj2)))
             {
                 return INF;
             }
-            
+
             c1 = n1->get_centroid();
             c2 = n2->get_centroid();
             double v = abs(c1[axis] - c2[axis]);
             return v;
         }
-        
+
     private:
         string obj1, obj2;
         int axis;
@@ -175,18 +176,18 @@ class behind_obj : public objective
     public:
         behind_obj(const string& a, const string& b, const string& c)
             : a(a), b(b), c(c) {}
-            
+
         double eval(scene& scn) const
         {
             sgnode* na, *nb, *nc;
-            
+
             if (!(na = scn.get_node(a)) ||
                     !(nb = scn.get_node(b)) ||
                     !(nc = scn.get_node(c)))
             {
                 return INF;
             }
-            
+
             ptlist pa, pc;
             na->get_bounds().get_points(pa);
             nc->get_bounds().get_points(pc);
@@ -194,7 +195,7 @@ class behind_obj : public objective
             vec3 cb = nb->get_centroid();
             vec3 u = cb - ca;
             u.normalize();
-            
+
             double d = dir_separation(pa, pc, u);
             if (d < 0.)
             {
@@ -202,7 +203,7 @@ class behind_obj : public objective
             }
             return d;
         }
-        
+
     private:
         string a, b, c;
 };
@@ -212,24 +213,24 @@ class align_facing_objective : public objective
     public:
         align_facing_objective(const string& a, const string& b, const string& c)
             : a(a), b(b), c(c) {}
-            
+
         double eval(scene& scn) const
         {
             sgnode* na, *nb, *nc;
-            
+
             if (!(na = scn.get_node(a)) ||
                     !(nb = scn.get_node(b)) ||
                     !(nc = scn.get_node(c)))
             {
                 return INF;
             }
-            
+
             transform3 rot('r', na->get_trans('r'));
             vec3 facing = rot(vec3(1, 0, 0));
-            
+
             vec3 desired = nc->get_centroid() - nb->get_centroid();
             desired.normalize();
-            
+
             /*
              Return the negative cosine between the two
              directions. This will be minimized at -1 if the angle
@@ -238,7 +239,7 @@ class align_facing_objective : public objective
             double negcos = -(facing.dot(desired));
             return negcos;
         }
-        
+
     private:
         string a, b, c;
 };
@@ -255,12 +256,12 @@ class multi_objective
                 delete *i;
             }
         }
-        
+
         void add(objective* o)
         {
             objs.push_back(o);
         }
-        
+
         void evaluate(scene& scn, rvec& val) const
         {
             val.resize(objs.size());
@@ -289,21 +290,21 @@ class multi_objective
 multi_objective* parse_obj_struct(soar_interface* si, Symbol* root)
 {
     multi_objective* m = new multi_objective();
-    while (root && si->is_identifier(root))
+    while (root && root->is_identifier())
     {
         objective* obj;
         string name, sign;
-        
+
         if (!si->get_const_attr(root, "name", name))
         {
             break;
         }
-        
+
         if (!si->get_const_attr(root, "sign", sign))
         {
             sign = "positive";
         }
-        
+
         if (name == "euclidean")
         {
             string a, b;
@@ -369,13 +370,13 @@ multi_objective* parse_obj_struct(soar_interface* si, Symbol* root)
         {
             si->print("skipping unknown objective\n");
         }
-        
+
         if (sign == "negative")
         {
             obj->set_negated(true);
         }
         m->add(obj);
-        
+
         wme* next_wme;
         if (!si->find_child_wme(root, "next", next_wme))
         {
@@ -400,29 +401,29 @@ class traj_eval
             scn = init.clone("");
             scn->get_properties(initvals);
         }
-        
+
         traj_eval(int stepsize, multi_model* m, multi_objective* obj, const scene& tmp, const rvec& initvals)
             : mdl(m), stepsize(stepsize), obj(obj), initvals(initvals)
         {
             scn = tmp.clone("");
         }
-        
+
         ~traj_eval()
         {
             delete scn;
         }
-        
+
         void set_init(const rvec& v)
         {
             initvals = v;
         }
-        
+
         bool evaluate(const rvec& traj, rvec& value, rvec& finalstate)
         {
             function_timer t(timers.get_or_add("evaluate"));
-            
+
             const scene_sig& sig = scn->get_signature();
-            
+
             if (traj.size() > 0)
             {
                 rvec x(initvals.size() + stepsize), y = initvals;
@@ -443,20 +444,20 @@ class traj_eval
             {
                 finalstate = initvals;
             }
-            
+
             scn->set_properties(finalstate);
             obj->evaluate(*scn, value);
-            
+
             return true;
         }
-        
+
     private:
         multi_model*      mdl;
         multi_objective*  obj;
         int               stepsize;  // dimensionality of output
         scene*            scn;       // copy of initial scene to be modified after prediction
         rvec              initvals;  // flattened values of initial scene
-        
+
         timer_set timers;
 };
 
@@ -520,12 +521,12 @@ bool nelder_mead_constrained(const rvec& min, const rvec& max, traj_eval& ev, rv
     int ndim = min.size(), i, wi, ni, bi;
     vector<rvec> eval(ndim + 1), final(ndim + 1);
     rvec reval, eeval, ceval, rstate, estate, cstate;
-    
+
     rvec range = max - min;
     vector<rvec> simplex;
     rvec centroid(ndim), dir(ndim), reflect(ndim), expand(ndim),
          contract(ndim), worst(ndim);
-         
+
     /* random initialization */
     rvec rtmp(ndim);
     for (i = 0; i < ndim + 1; ++i)
@@ -540,7 +541,7 @@ bool nelder_mead_constrained(const rvec& min, const rvec& max, traj_eval& ev, rv
         }
         simplex.push_back(rtmp);
     }
-    
+
     for (int iters = 0; iters < NELDER_MEAD_MAXITERS; ++iters)
     {
         argmin(eval, wi, ni, bi);
@@ -549,12 +550,12 @@ bool nelder_mead_constrained(const rvec& min, const rvec& max, traj_eval& ev, rv
         bestval = eval[bi];
         beststate = final[bi];
         rvec sum(ndim);
-        
+
         /*
          This used to be
-        
+
          centroid = (sum(simplex, 1) - worst) / (simplex.n_cols - 1);
-        
+
          which I'm pretty sure was wrong.
         */
         centroid.setZero();
@@ -566,11 +567,11 @@ bool nelder_mead_constrained(const rvec& min, const rvec& max, traj_eval& ev, rv
             }
         }
         centroid /= (simplex.size() - 1);
-        
+
         dir = centroid - worst;
         reflect = centroid + dir * RCOEF;
         constrain(reflect, min, max);
-        
+
         if (!ev.evaluate(reflect, reval, rstate))
         {
             return false;
@@ -583,7 +584,7 @@ bool nelder_mead_constrained(const rvec& min, const rvec& max, traj_eval& ev, rv
             final[wi] = rstate;
             continue;
         }
-        
+
         if (lexical_compare(reval, eval[bi]) < 0)
         {
             // expansion
@@ -607,9 +608,9 @@ bool nelder_mead_constrained(const rvec& min, const rvec& max, traj_eval& ev, rv
             }
             continue;
         }
-        
+
         assert(lexical_compare(reval, eval[ni]) >= 0);
-        
+
         contract = worst + dir * CCOEF;
         if (!ev.evaluate(contract, ceval, cstate))
         {
@@ -623,7 +624,7 @@ bool nelder_mead_constrained(const rvec& min, const rvec& max, traj_eval& ev, rv
             final[wi] = cstate;
             continue;
         }
-        
+
         // shrink
         for (i = 0; i < simplex.size(); ++i)
         {
@@ -660,7 +661,7 @@ class tree_search
                 ci.max[i] = (*outspec)[i].max;
                 ci.range[i] = ci.max[i] - ci.min[i];
             }
-            
+
             rvec initstate;
             scn->get_properties(initstate);
             bestnode = new node(initstate, &ci);
@@ -670,7 +671,7 @@ class tree_search
             avg_depth = 1.0;
             avg_bf = 1.0;
         }
-        
+
         ~tree_search()
         {
             std::list<node*>::iterator i;
@@ -683,13 +684,13 @@ class tree_search
                 delete *i;
             }
         }
-        
+
         bool expand()
         {
             bool isleaf;
             node* newnode;
             std::list<node*>::iterator selected;
-            
+
             if (nonleafs.size() > 0 && avg_depth / avg_bf > thresh)
             {
                 int r = rand() % nonleafs.size();
@@ -704,26 +705,26 @@ class tree_search
                 advance(selected, r);
                 isleaf = true;
             }
-            
+
             newnode = (**selected).extend();
-            
+
             if (newnode == NULL)
             {
                 return false;
             }
-            
+
             if (isleaf)
             {
                 nonleafs.push_back(*selected);
                 leafs.erase(selected);
             }
-            
+
             leafs.push_back(newnode);
             num_nodes++;
             total_depth += newnode->traj.size();
             avg_depth = total_depth / num_nodes;
             avg_bf = ((double) num_nodes) / nonleafs.size();
-            
+
             if (lexical_compare(newnode->value, bestnode->value) < 0)
             {
                 bestnode = newnode;
@@ -731,7 +732,7 @@ class tree_search
             }
             return false;
         }
-        
+
         void search(int iterations, std::list<rvec>& besttraj, rvec& bestval, rvec& beststate)
         {
             for (int i = 0; i < iterations; ++i)
@@ -741,14 +742,14 @@ class tree_search
                     break;
                 }
             }
-            
+
             besttraj = bestnode->traj;
             beststate = bestnode->state;
             bestval = bestnode->value;
             cout << "BEST TRAJ LENGTH " << bestnode->traj.size() << endl;
             cout << "AVG DEPTH " << avg_depth << endl;
             cout << "AVG BF " << avg_bf << endl;
-            
+
             /*
             rvec lengths(leafs.size());
             std::list<node*>::iterator i;
@@ -758,7 +759,7 @@ class tree_search
             histogram(lengths, 10);
             */
         }
-        
+
     private:
         struct common_info
         {
@@ -768,7 +769,7 @@ class tree_search
             const output_spec* outspec;
             rvec min, max, range;
         };
-        
+
         class node
         {
             public:
@@ -777,18 +778,18 @@ class tree_search
                 rvec state;
                 common_info* ci;
                 bool triedseek;
-                
+
                 node(const rvec& state, common_info* ci)
                     : state(state), ci(ci), triedseek(false)
                 {
                     ci->scn->set_properties(state);
                     ci->obj->evaluate(*ci->scn, value);
                 }
-                
+
                 node(const node& n)
                     : traj(n.traj), value(n.value), state(n.state), ci(n.ci), triedseek(false)
                 {}
-                
+
                 /*
                  Follow a trajectory to a local minimum of the objective
                  function or the maximum number of steps, whichever
@@ -816,15 +817,15 @@ class tree_search
                     }
                     return steps;
                 }
-                
+
                 int random_step(int maxsteps)
                 {
                     const scene_sig& sig = ci->scn->get_signature();
-                    
+
                     rvec step(ci->outspec->size()), newval;
                     randomize_vec(step, ci->min, ci->max);
                     int numsteps = rand() % maxsteps + 1;
-                    
+
                     rvec x(state.size() + step.size());
                     for (int i = 0; i < numsteps; ++i)
                     {
@@ -842,7 +843,7 @@ class tree_search
                     ci->obj->evaluate(*ci->scn, value);
                     return true;
                 }
-                
+
                 node* extend()
                 {
                     node* n = new node(*this);;
@@ -866,7 +867,7 @@ class tree_search
                     return n;
                 }
         };
-        
+
         struct node_compare
         {
             bool operator()(const node* lhs, const node* rhs) const
@@ -878,7 +879,7 @@ class tree_search
                 return lexical_compare(lhs->value, rhs->value) > 0;
             }
         };
-        
+
         //priority_queue<node*, vector<node*>, node_compare> nodes;
         std::list<node*> leafs;
         std::list<node*> nonleafs;
@@ -896,7 +897,7 @@ class controller
             : mmdl(mmdl), obj(obj), outspec(outspec), depth(depth), type(type), incr(depth, outspec)
         {
             int i, j;
-            
+
             stepsize = outspec->size();
             min.resize(depth * outspec->size());
             max.resize(depth * outspec->size());
@@ -909,12 +910,12 @@ class controller
                 }
             }
         }
-        
+
         int seek(scene* scn, rvec& bestout)
         {
             rvec currval;
             obj->evaluate(*scn, currval);
-            
+
             if (cached_traj.size() > 0)
             {
                 // verify that cached trajectory is still valid, given current model
@@ -927,7 +928,7 @@ class controller
                     cached_traj.clear();
                 }
             }
-            
+
             if (cached_traj.size() == 0)
             {
                 // generate a new trajectory
@@ -959,7 +960,7 @@ class controller
                         cached_traj.push_back(besttraj.segment(i, stepsize));
                     }
                 }
-                
+
                 if (lexical_compare(currval, bestval) <= 0)
                 {
                     cached_traj.clear();
@@ -970,7 +971,7 @@ class controller
                     cached_value = bestval;
                 }
             }
-            
+
             if (cached_traj.size() == 0)
             {
                 return 1;
@@ -979,12 +980,12 @@ class controller
             cached_traj.pop_front();
             return 2;
         }
-        
+
         bool naive_seek(traj_eval& evaluator, rvec& besttraj, rvec& bestval, rvec& beststate)
         {
             rvec val, finalstate;
             bool found = false;
-            
+
             incr.reset();
             while (true)
             {
@@ -1008,7 +1009,7 @@ class controller
             }
             return found;
         }
-        
+
     private:
         /*
          Incrementer for a single step within a trajectory
@@ -1021,7 +1022,7 @@ class controller
                 {
                     reset();
                 }
-                
+
                 void reset()
                 {
                     for (int i = 0; i < outspec->size(); ++i)
@@ -1029,7 +1030,7 @@ class controller
                         (*traj)[start + i] = (*outspec)[i].min;
                     }
                 }
-                
+
                 bool next()
                 {
                     for (int i = 0; i < outspec->size(); ++i)
@@ -1046,14 +1047,14 @@ class controller
                     }
                     return false;
                 }
-                
+
             private:
                 const output_spec* outspec;
                 int start, divisions;
                 rvec* traj;
                 rvec inc;
         };
-        
+
         /*
          Incrementer for a trajectory, used with naive search
         */
@@ -1061,7 +1062,7 @@ class controller
         {
             public:
                 traj_incr() : len(0) {}
-                
+
                 traj_incr(int len, const output_spec* outspec)
                     : len(len)
                 {
@@ -1073,7 +1074,7 @@ class controller
                     }
                     reset();
                 }
-                
+
                 void reset()
                 {
                     std::vector<step_incr>::iterator i;
@@ -1082,7 +1083,7 @@ class controller
                         i->reset();
                     }
                 }
-                
+
                 bool next()
                 {
                     std::vector<step_incr>::iterator i;
@@ -1096,14 +1097,14 @@ class controller
                     }
                     return false;
                 }
-                
+
                 rvec traj;
-                
+
             private:
                 vector<step_incr> steps;
                 int len;
         };
-        
+
         multi_model*     mmdl;
         multi_objective* obj;
         const output_spec* outspec;
@@ -1127,21 +1128,21 @@ class seek_command : public command
             si = state->get_svs()->get_soar_interface();
             //update_step();
         }
-        
+
         ~seek_command()
         {
             cleanup();
         }
-        
+
         string description()
         {
             return string("control");
         }
-        
+
         bool update_sub()
         {
             rvec out;
-            
+
             if (changed())
             {
                 broken = !parse_cmd();
@@ -1150,7 +1151,7 @@ class seek_command : public command
             {
                 return false;
             }
-            
+
             int result = ctrl->seek(state->get_scene(), out);
             switch (result)
             {
@@ -1169,12 +1170,12 @@ class seek_command : public command
             }
             return true;
         }
-        
+
         bool early()
         {
             return true;
         }
-        
+
     private:
         /* Assumes this format:
            C1 ^outputs ( ... )
@@ -1185,24 +1186,24 @@ class seek_command : public command
             wme* objective_wme, *model_wme, *depth_wme, *type_wme;
             long depth;
             string type;
-            
+
             cleanup();
             if (!si->find_child_wme(get_root(), "type", type_wme) ||
-                    !si->get_val(si->get_wme_val(type_wme), type))
+                    !get_symbol_value(si->get_wme_val(type_wme), type))
             {
                 set_status("missing or invalid type");
                 return false;
             }
             if (!si->find_child_wme(get_root(), "objective", objective_wme) ||
-                    !si->is_identifier(si->get_wme_val(objective_wme)) ||
+                    !si->get_wme_val(objective_wme)->is_identifier() ||
                     (obj = parse_obj_struct(si, si->get_wme_val(objective_wme))) == NULL)
             {
                 set_status("missing or invalid objective");
                 return false;
             }
-            
+
             if (!si->find_child_wme(get_root(), "depth", depth_wme) ||
-                    !si->get_val(si->get_wme_val(depth_wme), depth))
+                    !get_symbol_value(si->get_wme_val(depth_wme), depth))
             {
                 set_status("missing or invalid depth");
                 return false;
@@ -1210,7 +1211,7 @@ class seek_command : public command
             ctrl = new controller(state->get_model(), obj, state->get_output_spec(), depth, type);
             return true;
         }
-        
+
         void cleanup()
         {
             delete obj;
@@ -1218,7 +1219,7 @@ class seek_command : public command
             delete ctrl;
             ctrl = NULL;
         }
-        
+
         void update_step()
         {
             if (stepwme)
@@ -1227,7 +1228,7 @@ class seek_command : public command
             }
             stepwme = si->make_wme(get_root(), "step", step);
         }
-        
+
         soar_interface*  si;
         svs_state*       state;
         controller*      ctrl;
@@ -1248,12 +1249,12 @@ class random_control_command : public command
         random_control_command(svs_state* state, Symbol* root)
             : command(state, root), state(state)
         { }
-        
+
         string description()
         {
             return string("random control");
         }
-        
+
         bool update_sub()
         {
             const output_spec* outspec = state->get_output_spec();
@@ -1265,18 +1266,18 @@ class random_control_command : public command
                 min[i] = (*outspec)[i].min;
                 max[i] = (*outspec)[i].max;
             }
-            
+
             randomize_vec(out, min, max);
             state->set_output(out);
             set_status("success");
             return true;
         }
-        
+
         bool early()
         {
             return true;
         }
-        
+
     private:
         svs_state* state;
         rvec out, min, max;
