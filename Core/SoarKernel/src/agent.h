@@ -26,12 +26,10 @@
 
 #include "kernel.h"
 #include "init_soar.h"
+#include "soar_module.h"
 #include "mem.h"
 #include "lexer.h"
 #include "callback.h"
-#include <map>
-
-#include "soar_module.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "wma.h"
@@ -44,12 +42,6 @@
 // JRV: Added to support XML management inside Soar
 // These handles should not be used directly, see xml.h
 typedef void* xml_handle;
-
-/* JC ADDED: Included so we can put the RHS functions in here */
-typedef struct rhs_function_struct rhs_function;
-
-// select types
-typedef struct select_info_struct select_info;
 
 /* RBD Need more comments here, or should this stuff be here at all? */
 
@@ -66,11 +58,12 @@ typedef struct lexer_source_file_struct lexer_source_file;
 typedef struct production_struct production;
 typedef struct preference_struct preference;
 typedef struct pi_struct parent_inst;
-typedef struct preference_struct preference;
 typedef struct backtrace_struct backtrace_str;
 typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
+typedef struct rhs_function_struct rhs_function;
+typedef struct select_info_struct select_info;
 class AgentOutput_Info;
 class debug_param_container;
 
@@ -138,16 +131,8 @@ class svs_interface;
 
 typedef struct agent_struct
 {
-    /* After v8.6.1, all conditional compilations were removed
-     * from struct definitions, including the agent struct below
-     */
     
-    /* ----------------------- Rete stuff -------------------------- */
-    /*
-     * These are used for statistics in rete.cpp.  They were originally
-     * global variables, but in the deglobalization effort, they were moved
-     * to the (this) agent structure.
-     */
+    /* -- Rete stuff: These are used for statistics in rete.cpp -- */
     uint64_t actual[256], if_no_merging[256], if_no_sharing[256];
     
     uint64_t current_retesave_amindex;
@@ -813,13 +798,11 @@ typedef struct agent_struct
     
     struct ms_change_struct* postponed_assertions;   /* New waterfall model: postponed assertion list */
     
-    /* REW: begin 08.20.97 */
     goal_stack_level active_level;
     goal_stack_level previous_active_level;
     Symbol* active_goal;
     Symbol* previous_active_goal;
     struct ms_change_struct* nil_goal_retractions; /* dll of all retractions for removed (ie nil) goals */
-    /* REW: end   08.20.97 */
     
     /**
      * State for new waterfall model
@@ -1004,8 +987,6 @@ typedef struct agent_struct
 } agent;
 /*************** end of agent struct *****/
 
-void init_soar_agent(agent* thisAgent);
-
 template <typename T>
 inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer)
 {
@@ -1028,13 +1009,16 @@ inline void push(agent* thisAgent, P item, T*& list_header)
     (list_header) = push_cons_xy298;
 }
 
-
+extern void     init_soar_agent(agent* thisAgent);
 extern agent* create_soar_agent(char* name);
 extern void    destroy_soar_agent(agent* soar_agent);
 
-inline bool reading_from_top_level(agent* soarAgent)
+/* Ideally, this should be in "lexer.h", but to avoid circular dependencies
+   among header files, I am forced to put it here. */
+
+inline bool reading_from_top_level(agent* thisAgent)
 {
-    return (!soarAgent->current_file->parent_file);
+    return (!thisAgent->current_file->parent_file);
 }
 
 #endif
