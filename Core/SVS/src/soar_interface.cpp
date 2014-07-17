@@ -66,7 +66,7 @@ wme* soar_interface::make_id_wme(Symbol* id, Symbol* attr)
 {
     char n;
     Symbol* val;
-
+    
     if (attr->symbol_type != STR_CONSTANT_SYMBOL_TYPE ||
             strlen(attr->sc->name) == 0)
     {
@@ -76,7 +76,7 @@ wme* soar_interface::make_id_wme(Symbol* id, Symbol* attr)
     {
         n = attr->sc->name[0];
     }
-
+    
     val = make_new_identifier(thisAgent, n, id->id->level);
     wme* w = soar_module::add_module_wme(thisAgent, id, attr, val);
     symbol_remove_ref(thisAgent, val);
@@ -92,12 +92,12 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_list& childs)
 {
     slot* s;
     wme* w;
-
+    
     if (!id->is_identifier())
     {
         return false;
     }
-
+    
     childs.clear();
     for (s = id->id->slots; s != NULL; s = s->next)
     {
@@ -106,7 +106,7 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_list& childs)
             childs.push_back(w);
         }
     }
-
+    
     return true;
 }
 
@@ -115,12 +115,12 @@ bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
     slot* s;
     wme* w1;
     string a;
-
+    
     if (!id->is_identifier())
     {
         return false;
     }
-
+    
     for (s = id->id->slots; s != NULL; s = s->next)
     {
         for (w1 = s->wmes; w1 != NULL; w1 = w1->next)
@@ -132,7 +132,7 @@ bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
             }
         }
     }
-
+    
     return false;
 }
 
@@ -149,7 +149,7 @@ wme* soar_interface::make_wme(Symbol* id, const std::string& attr, Symbol* val)
     Symbol* attrsym = make_sym(attr);
     w = make_wme(id, attrsym, val);
     symbol_remove_ref(thisAgent, attrsym);
-
+    
     return w;
 }
 

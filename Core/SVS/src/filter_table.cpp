@@ -92,7 +92,7 @@ filter_table::filter_table()
 void filter_table::proxy_get_children(map<string, cliproxy*>& c)
 {
     c["timers"] = &timers;
-
+    
     map<string, filter_table_entry*>::iterator i, iend;
     for (i = t.begin(), iend = t.end(); i != iend; ++i)
     {
@@ -111,7 +111,7 @@ class single_combination_generator
             assert(n <= nelems);
             reset();
         }
-
+        
         void reset()
         {
             if (!ordered && !allow_repeat)
@@ -126,14 +126,14 @@ class single_combination_generator
                 fill(indices.begin(), indices.end(), 0);
             }
         }
-
+        
         bool next(std::vector<T>& comb)
         {
             if (nelems == 0 || n == 0)
             {
                 return false;
             }
-
+            
             comb.resize(n);
             std::set<int> s;
             while (!finished)
@@ -165,7 +165,7 @@ class single_combination_generator
             }
             return false;
         }
-
+        
     private:
         int increment(int max, int i)
         {
@@ -200,7 +200,7 @@ class single_combination_generator
             }
             return indices[i];
         }
-
+        
         const std::vector<T>& elems;
         std::vector<int> indices;
         int n, nelems;
@@ -227,7 +227,7 @@ void filter_table::get_all_atoms(scene* scn, vector<string>& atoms) const
     {
         all_node_names[i - 1] = all_nodes[i]->get_name();
     }
-
+    
     map<string, filter_table_entry*>::const_iterator i, iend;
     for (i = t.begin(), iend = t.end(); i != iend; ++i)
     {
@@ -283,7 +283,7 @@ void filter_table::update_relations(const scene* scn, const vector<int>& dirty, 
     vector<const sgnode*> nodes;
     scn->get_all_nodes(nodes);
     nodes.erase(nodes.begin());
-
+    
     map<string, filter_table_entry*>::const_iterator i, iend;
     for (i = t.begin(), iend = t.end(); i != iend; ++i)
     {
@@ -378,109 +378,109 @@ Example input:
 */
 filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
 {
-   wme_list children, params;
-   wme_list::iterator i;
-   string pname, ftype, itype;
-   filter_input* input;
-   bool fail;
-   filter* f;
-
-   if (!root->is_identifier())
-   {
-       string strval;
-       long intval;
-       double floatval;
-
-       if (get_symbol_value(root, strval))
-       {
-           return new const_filter<string>(strval);
-       }
-       else if (get_symbol_value(root, intval))
-       {
-           return new const_filter<int>(intval);
-       }
-       else if (get_symbol_value(root, floatval))
-       {
-           return new const_filter<double>(floatval);
-       }
-       return NULL;
-   }
-
-   fail = false;
-   si->get_child_wmes(root, children);
-   for (i = children.begin(); i != children.end(); ++i)
-   {
-       if (!get_symbol_value(si->get_wme_attr(*i), pname))
-       {
-           continue;
-       }
-       Symbol* cval = si->get_wme_val(*i);
-       if (pname == "type")
-       {
-           if (!get_symbol_value(cval, ftype))
-           {
-               return NULL;
-           }
-       }
-       else if (pname == "input-type")
-       {
-           if (!get_symbol_value(cval, itype))
-           {
-               return NULL;
-           }
-       }
-       else if (pname != "status" && pname != "result")
-       {
-           params.push_back(*i);
-       }
-   }
-
-   // The combine type check is a bit of a hack
-   if (itype == "concat" || ftype == "combine")
-   {
-       input = new concat_filter_input();
-   }
-   else if (params.size() == 0)
-   {
-       input = new null_filter_input();
-   }
-   else
-   {
-       input = new product_filter_input();
-   }
-
-   for (i = params.begin(); i != params.end(); ++i)
-   {
-       if (!get_symbol_value(si->get_wme_attr(*i), pname))
-       {
-           continue;
-       }
-       Symbol* cval = si->get_wme_val(*i);
-       filter* cf = parse_filter_spec(si, cval, scn);
-       if (!cf)
-       {
-           fail = true;
-           break;
-       }
-       input->add_param(pname, cf);
-   }
-
-   if (!fail)
-   {
-       if (ftype == "combine")
-       {
-           f = new passthru_filter(root, si, input);
-       }
-       else
-       {
-           f = get_filter_table().make_filter(ftype, root, si, scn, input);
-       }
-   }
-
-   if (fail || ftype == "" || f == NULL)
-   {
-       delete input;
-       return NULL;
-   }
-   return f;
+    wme_list children, params;
+    wme_list::iterator i;
+    string pname, ftype, itype;
+    filter_input* input;
+    bool fail;
+    filter* f;
+    
+    if (!root->is_identifier())
+    {
+        string strval;
+        long intval;
+        double floatval;
+        
+        if (get_symbol_value(root, strval))
+        {
+            return new const_filter<string>(strval);
+        }
+        else if (get_symbol_value(root, intval))
+        {
+            return new const_filter<int>(intval);
+        }
+        else if (get_symbol_value(root, floatval))
+        {
+            return new const_filter<double>(floatval);
+        }
+        return NULL;
+    }
+    
+    fail = false;
+    si->get_child_wmes(root, children);
+    for (i = children.begin(); i != children.end(); ++i)
+    {
+        if (!get_symbol_value(si->get_wme_attr(*i), pname))
+        {
+            continue;
+        }
+        Symbol* cval = si->get_wme_val(*i);
+        if (pname == "type")
+        {
+            if (!get_symbol_value(cval, ftype))
+            {
+                return NULL;
+            }
+        }
+        else if (pname == "input-type")
+        {
+            if (!get_symbol_value(cval, itype))
+            {
+                return NULL;
+            }
+        }
+        else if (pname != "status" && pname != "result")
+        {
+            params.push_back(*i);
+        }
+    }
+    
+    // The combine type check is a bit of a hack
+    if (itype == "concat" || ftype == "combine")
+    {
+        input = new concat_filter_input();
+    }
+    else if (params.size() == 0)
+    {
+        input = new null_filter_input();
+    }
+    else
+    {
+        input = new product_filter_input();
+    }
+    
+    for (i = params.begin(); i != params.end(); ++i)
+    {
+        if (!get_symbol_value(si->get_wme_attr(*i), pname))
+        {
+            continue;
+        }
+        Symbol* cval = si->get_wme_val(*i);
+        filter* cf = parse_filter_spec(si, cval, scn);
+        if (!cf)
+        {
+            fail = true;
+            break;
+        }
+        input->add_param(pname, cf);
+    }
+    
+    if (!fail)
+    {
+        if (ftype == "combine")
+        {
+            f = new passthru_filter(root, si, input);
+        }
+        else
+        {
+            f = get_filter_table().make_filter(ftype, root, si, scn, input);
+        }
+    }
+    
+    if (fail || ftype == "" || f == NULL)
+    {
+        delete input;
+        return NULL;
+    }
+    return f;
 }

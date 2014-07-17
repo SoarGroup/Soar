@@ -16,22 +16,22 @@ class add_node_command : public command, public sgnode_listener
         {
             si = state->get_svs()->get_soar_interface();
         }
-
+        
         ~add_node_command()
         {
             reset();
         }
-
+        
         string description()
         {
             return string("add-node");
         }
-
+        
         bool update_sub()
         {
             wme* parent_wme, *gen_wme;
             bool c = changed();
-
+            
             if (!parent || c)
             {
                 reset();
@@ -41,7 +41,7 @@ class add_node_command : public command, public sgnode_listener
                     set_status("missing parameters");
                     return false;
                 }
-
+                
                 string pname;
                 if (!get_symbol_value(si->get_wme_val(parent_wme), pname))
                 {
@@ -54,7 +54,7 @@ class add_node_command : public command, public sgnode_listener
                     {
                         parent->unlisten(this);
                     }
-
+                    
                     if (!(parent = scn->get_node(pname)))
                     {
                         set_status("parent node doesn't exist");
@@ -62,7 +62,7 @@ class add_node_command : public command, public sgnode_listener
                     }
                     parent->listen(this);
                 }
-
+                
                 if ((node_filter = parse_filter_spec(si, si->get_wme_val(gen_wme), scn)) == NULL)
                 {
                     set_status("incorrect node filter syntax");
@@ -80,12 +80,12 @@ class add_node_command : public command, public sgnode_listener
             }
             return false;
         }
-
+        
         bool early()
         {
             return false;
         }
-
+        
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
         {
             if (t == sgnode::DELETED)
@@ -93,7 +93,7 @@ class add_node_command : public command, public sgnode_listener
                 parent = NULL;
             }
         }
-
+        
     private:
         bool proc_changes()
         {
@@ -102,7 +102,7 @@ class add_node_command : public command, public sgnode_listener
                 set_status("error");
                 return false;
             }
-
+            
             filter_output* out = node_filter->get_output();
             for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i)
             {
@@ -121,7 +121,7 @@ class add_node_command : public command, public sgnode_listener
             out->clear_changes();
             return true;
         }
-
+        
         bool add_node(filter_val* v)
         {
             sgnode* n;
@@ -139,7 +139,7 @@ class add_node_command : public command, public sgnode_listener
             }
             return true;
         }
-
+        
         bool del_node(filter_val* v)
         {
             sgnode* n;
@@ -157,7 +157,7 @@ class add_node_command : public command, public sgnode_listener
             }
             return true;
         }
-
+        
         void reset()
         {
             if (parent)
@@ -165,14 +165,14 @@ class add_node_command : public command, public sgnode_listener
                 parent->unlisten(this);
             }
             parent = NULL;
-
+            
             if (node_filter)
             {
                 delete node_filter;
                 node_filter = NULL;
             }
         }
-
+        
         scene*             scn;
         Symbol*            root;
         soar_interface*    si;

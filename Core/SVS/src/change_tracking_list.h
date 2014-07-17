@@ -35,10 +35,10 @@ class ctlist_listener
     public:
         // Called when an item is added to the list
         virtual void handle_ctlist_add(const T* e) {}
-
+        
         // Called when an item is removed from the list
         virtual void handle_ctlist_remove(const T* e) {}
-
+        
         // Called when an item in the list changes
         // (Occurs when change_tracking_list.change(T) is called)
         virtual void handle_ctlist_change(const T* e) {}
@@ -74,7 +74,7 @@ class change_tracking_list
 {
     public:
         typedef ctlist_listener<T> listener;
-
+        
         // Constructor
         change_tracking_list()
         {
@@ -86,12 +86,12 @@ class change_tracking_list
         {
             clear();
         }
-
-
+        
+        
         ////////////////////////
         // Changing the list
         ////////////////////////
-
+        
         // Puts an item in the list
         //   will invoke ctlist_listener::handle_ctlist_add
         virtual void add(T* v)
@@ -102,7 +102,7 @@ class change_tracking_list
                 listeners[i]->handle_ctlist_add(v);
             }
         }
-
+        
         // Removes an item from the list
         //   will invoke ctlist_listener::handle_ctlist_remove
         //   The item is not actually deleted until clear_changes is called
@@ -137,7 +137,7 @@ class change_tracking_list
                 listeners[i]->handle_ctlist_remove(v);
             }
         }
-
+        
         // Marks an item in the list as changed
         //   will invoke ctlist_listener::handle_ctlist_change
         virtual void change(const T* v)
@@ -160,12 +160,12 @@ class change_tracking_list
             }
             assert(false);
         }
-
-
+        
+        
         ////////////////////////
         // Managing the list
         ////////////////////////
-
+        
         // Clears all changes in the list so all items remaining are marked as current
         // Updates all lists so there is nothing in the removed or changed lists
         //   and no items are designated as added
@@ -175,7 +175,7 @@ class change_tracking_list
             changed.clear();
             clear_removed();
         }
-
+        
         // Clears all changes and causes all items to be marked as newly added
         virtual void reset()
         {
@@ -183,14 +183,14 @@ class change_tracking_list
             clear_removed();
             m_added_begin = 0;
         }
-
+        
         // Removes all items from the list and frees their memory
         // (will call ctlist_listener::handle_ctlist_remove on all current items)
         virtual void clear()
         {
             // Clear changed list
             changed.clear();
-
+            
             // Clear current list
             m_added_begin = 0;
             for (int i = 0; i < current.size(); i++)
@@ -202,12 +202,12 @@ class change_tracking_list
                 removed.push_back(current[i]);
             }
             current.clear();
-
+            
             // Clear removed list
             clear_removed();
         }
-
-
+        
+        
         ///////////////////////
         // change listeners
         ///////////////////////
@@ -215,7 +215,7 @@ class change_tracking_list
         {
             listeners.push_back(l);
         }
-
+        
         void unlisten(ctlist_listener<T>* l)
         {
             typename std::vector<ctlist_listener<T>*>::iterator i;
@@ -225,11 +225,11 @@ class change_tracking_list
                 listeners.erase(i);
             }
         }
-
+        
         //////////////////////
         // accessors
         /////////////////////
-
+        
         // current:
         //   all items in the list (including added + changed)
         //   but not those that have been removed
@@ -237,17 +237,17 @@ class change_tracking_list
         {
             return current.size();
         }
-
+        
         T* get_current(int i)
         {
             return current[i];
         }
-
+        
         const T* get_current(int i) const
         {
             return current[i];
         }
-
+        
         // added:
         //   All items added since clear_changes was last called
         //   Added items can be accessed by get_current
@@ -256,42 +256,42 @@ class change_tracking_list
         {
             return m_added_begin;
         }
-
+        
         // changed:
         //   All items changed since clear_changes was last called
         int num_changed() const
         {
             return changed.size();
         }
-
+        
         T* get_changed(int i)
         {
             return changed[i];
         }
-
+        
         const T* get_changed(int i) const
         {
             return changed[i];
         }
-
+        
         // removed:
         //   All items removed since clear_changes was last called
         int num_removed() const
         {
             return removed.size();
         }
-
+        
         T* get_removed(int i)
         {
             return removed[i];
         }
-
+        
         const T* get_removed(int i) const
         {
             return removed[i];
         }
-
-
+        
+        
     protected:
         // Deletes all items in the removed list and clears it
         virtual void clear_removed()
@@ -302,16 +302,16 @@ class change_tracking_list
             }
             removed.clear();
         }
-
+        
         std::vector<T*> current;
         std::vector<T*> removed;
         std::vector<T*> changed;
         // changed is a subset of the current list
         // (all items in changed are also in current)
-
+        
         // Index of the first new element in the current list
         int m_added_begin;
-
+        
         std::vector<ctlist_listener<T>*> listeners;
 };
 

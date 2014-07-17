@@ -32,14 +32,14 @@ bool filter_input::update()
             return false;
         }
     }
-
+    
     combine(input_info);
-
+    
     for (int i = 0, iend = input_info.size(); i < iend; ++i)
     {
         input_info[i].in_fltr->get_output()->clear_changes();
     }
-
+    
     return true;
 }
 
@@ -70,7 +70,7 @@ void concat_filter_input::combine(const input_table& inputs)
     {
         filter_params* p;
         filter_output* o = inputs[i].in_fltr->get_output();
-
+        
         for (int j = o->first_added(), jend = o->num_current(); j < jend; ++j)
         {
             p = new filter_params();
@@ -114,7 +114,7 @@ void product_filter_input::combine(const input_table& inputs)
     for (int i = 0, iend = inputs.size(); i < iend; ++i)
     {
         filter_output* o = inputs[i].in_fltr->get_output();
-
+        
 //      cout << padd() << "  " << inputs[i].name << " = " << o << endl;
 //      cout << padd() << "  - Current: " << o->num_current() << endl;
 //      for(int j = 0; j < o->num_current(); j++){
@@ -133,13 +133,13 @@ void product_filter_input::combine(const input_table& inputs)
         {
             filter_val* r = o->get_removed(j);
             k = val2params.find(r);
-
+            
             if (k == val2params.end() || val2params.empty())
             {
                 continue;
             }
             //assert(k != val2params.end());
-
+            
             param_set_list temp = k->second;
             for (l = temp.begin(); l != temp.end(); ++l)
             {
@@ -150,7 +150,7 @@ void product_filter_input::combine(const input_table& inputs)
         }
     }
     //cout << padd() << "  finished deleting" << endl;
-
+    
     for (int i = 0, iend = inputs.size(); i < iend; ++i)
     {
         filter_output* o = inputs[i].in_fltr->get_output();
@@ -161,7 +161,7 @@ void product_filter_input::combine(const input_table& inputs)
             {
                 continue;
             }
-
+            
             //assert(k != val2params.end());
             for (l = k->second.begin(); l != k->second.end(); ++l)
             {
@@ -237,7 +237,7 @@ void product_filter_input::gen_new_combinations(const input_table& inputs)
                 val2params[v].push_back(p);
             }
             add(p);
-
+            
             int j, jend;
             for (j = 0, jend = curr.size(); j < jend && ++curr[j] == end[j]; ++j)
             {

@@ -131,7 +131,7 @@ class svs_interface;
 
 typedef struct agent_struct
 {
-    
+
     /* -- Rete stuff: These are used for statistics in rete.cpp -- */
     uint64_t actual[256], if_no_merging[256], if_no_sharing[256];
     

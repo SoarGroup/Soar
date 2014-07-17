@@ -25,9 +25,9 @@ class common_syms
     public:
         common_syms(soar_interface* si);
         ~common_syms();
-
+        
         Symbol* svs, *cmd, *scene, *child, *result, *models, *id, *status;
-
+        
     private:
         soar_interface* si;
 };
@@ -37,45 +37,45 @@ class soar_interface
     public:
         soar_interface(agent* a);
         ~soar_interface();
-
+        
         Symbol*      make_sym(const std::string& val);
         Symbol*      make_sym(int val);
         Symbol*      make_sym(double val);
         void         del_sym(Symbol* s);
-
+        
         wme*         make_id_wme(Symbol* id, const std::string& attr);
         wme*         make_id_wme(Symbol* id, Symbol* attr);
-
+        
         wme*         make_wme(Symbol* id, Symbol* attr, Symbol* val);
         wme*         make_wme(Symbol* id, const std::string& attr, Symbol* val);
-
+        
         template<class T>
         wme*         make_wme(Symbol* id, const std::string& attr, const T& val);
-
+        
         template<class T>
         wme*         make_wme(Symbol* id, Symbol* attr, const T& val);
-
+        
         void         remove_wme(wme* w);
         bool         get_child_wmes(Symbol* id, wme_list& childs);
         bool         find_child_wme(Symbol* id, const std::string& attr, wme*& w);
-
+        
         template<class T>
         bool         get_const_attr(Symbol* id, const std::string& attr, T& val);
-
+        
         Symbol*      get_wme_id(wme* w);
         Symbol*      get_wme_attr(wme* w);
         Symbol*      get_wme_val(wme* w);
-
+        
         tc_number    new_tc_num();
-
+        
         int          get_timetag(wme* w);
         common_syms& get_common_syms()
         {
             return cs;
         }
-
+        
         void         print(const std::string& msg);
-
+        
     private:
         agent* thisAgent;
         common_syms cs;

@@ -50,7 +50,7 @@ command* command_table::make_command(svs_state* state, wme* w)
     string name;
     Symbol* id;
     soar_interface* si;
-
+    
     si = state->get_svs()->get_soar_interface();
     if (!get_symbol_value(si->get_wme_attr(w), name))
     {
@@ -61,7 +61,7 @@ command* command_table::make_command(svs_state* state, wme* w)
         return NULL;
     }
     id = si->get_wme_val(w);
-
+    
     map<string, make_command_fp*>::iterator i = table.find(name);
     if (i != table.end())
     {

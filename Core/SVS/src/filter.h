@@ -24,13 +24,13 @@ class filter_output :
 {
     public:
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info);
-
+        
         virtual void add(filter_val* v);
-
+        
         virtual void remove(filter_val* v);
-
+        
         virtual void clear();
-
+        
     protected:
         typedef std::map<sgnode*, const filter_val*> node_filter_val_map;
         node_filter_val_map node_map;
@@ -65,30 +65,30 @@ typedef std::vector<std::pair<std::string, filter_val*> > filter_params;
 class filter
 {
     public:
-
+    
         filter(Symbol* root, soar_interface* si, filter_input* in);
-
+        
         virtual ~filter();
-
+        
         void set_status(const std::string& msg);
-
+        
         void add_output(filter_val* v, const filter_params* p);
         void get_output_params(filter_val* v, const filter_params*& p);
         void remove_output(filter_val* v);
         void change_output(filter_val* v);
         bool update();
-
+        
 //TODO slightly less ugly hack
         virtual int getAxis()
         {
             return -3;
         }
-
+        
         virtual int getComp()
         {
             return -3;
         }
-
+        
         filter_output* get_output()
         {
             return &output;
@@ -109,10 +109,10 @@ class filter
         {
             input->change(s);
         }
-
+        
     private:
         virtual bool update_outputs() = 0;
-
+        
         filter_input* input;
         filter_output output;
         std::string status;
@@ -133,13 +133,13 @@ class map_filter : public filter
 {
     public:
         map_filter(Symbol* root, soar_interface* si, filter_input* input);
-
+        
         /*
          All created filter_vals are owned by the output list and cleaned
          up there, so don't do it here.
         */
         virtual ~map_filter() {}
-
+        
         /*
          Compute the output from parameters. If called with a new
          parameter set, out will be NULL, and the implementation should
@@ -150,20 +150,20 @@ class map_filter : public filter
          true. The implementation should return false if an error occurs.
          */
         virtual bool compute(const filter_params* params, filter_val*& out, bool& changed) = 0;
-
+        
         /*
          Some derived classes might allocate memory associated with each
          output. They should override this function so they know when
          to deallocate that memory.
         */
         virtual void output_removed(const filter_val* out) { }
-
+        
         bool update_outputs();
         void reset();
-
+        
     private:
         bool update_one(const filter_params* params);
-
+        
         typedef std::map<const filter_params*, filter_val*> io_map_t;
         io_map_t io_map;
         std::vector<const filter_params*> stale;
@@ -181,12 +181,12 @@ class typed_map_filter : public map_filter
         typed_map_filter(Symbol* root, soar_interface* si, filter_input* input)
             : map_filter(root, si, input)
         {}
-
+        
         virtual ~typed_map_filter() {}
-
+        
         virtual bool compute(const filter_params* params, bool adding, T& out, bool& changed) = 0;
         virtual void output_removed(const T& out) { }
-
+        
     private:
         bool compute(const filter_params* params, filter_val*& out, bool& changed)
         {
@@ -220,7 +220,7 @@ class typed_map_filter : public map_filter
             assert(success);
             output_removed(val);
         }
-
+        
 };
 
 
@@ -240,27 +240,27 @@ class select_filter : public filter
         select_filter(Symbol* root, soar_interface* si, filter_input* input)
             : filter(root, si, input)
         {}
-
+        
         virtual ~select_filter() {}
-
+        
         // This is the main function to implement in the derived class
         // out is the output value to create, leave it NULL to avoid adding it to the output
         // changed should be true if the value changed
         // The function returns true if successful, false if an error occurred
         // To see a sample implementation, see the has_property filter
         virtual bool compute(const filter_params* params, filter_val*& out, bool& changed) = 0;
-
+        
         bool update_outputs();
-
+        
         // Override this if you need to take care of memory when an output is removed
         virtual void output_removed(filter_val* out) { }
-
+        
     private:
         bool update_one(const filter_params* params);
-
+        
         typedef std::map<const filter_params*, filter_val*> io_map_t;
         io_map_t io_map;
-
+        
         void reset()
         {
             io_map.clear();
@@ -279,9 +279,9 @@ class typed_select_filter : public select_filter
         typed_select_filter(Symbol* root, soar_interface* si, filter_input* input)
             : select_filter(root, si, input)
         {}
-
+        
         virtual ~typed_select_filter() {}
-
+        
         // How to implement:
         // params - a set of parameters chosen from the inputs
         // null_out - true if the given out variable holds junk
@@ -289,9 +289,9 @@ class typed_select_filter : public select_filter
         // select - if true, the given out value will be added to the output, if false it will not be passed on
         // changed - use to indicate whether the out value changed
         virtual bool compute(const filter_params* params, bool null_out, T& out, bool& select, bool& changed) = 0;
-
+        
         virtual void output_removed(const T& out) { }
-
+        
     private:
         bool compute(const filter_params* params, filter_val*& out, bool& changed)
         {
@@ -332,10 +332,10 @@ class typed_select_filter : public select_filter
                 // do nothing
                 changed = false;
             }
-
+            
             return true;
         }
-
+        
         void output_removed(const filter_val* out)
         {
             T val;
@@ -358,14 +358,14 @@ class reduce_filter : public filter
         reduce_filter(Symbol* root, soar_interface* si, filter_input* input)
             : filter(root, si, input), output(NULL)
         {}
-
+        
         virtual ~reduce_filter() {}
-
+        
         bool update_outputs()
         {
             const filter_input* input = get_input();
             bool changed = false;
-
+            
             for (int i = input->first_added(); i < input->num_current(); ++i)
             {
                 if (!input_added(input->get_current(i)))
@@ -390,7 +390,7 @@ class reduce_filter : public filter
                 }
                 changed = true;
             }
-
+            
             T new_val = value;
             if (changed)
             {
@@ -399,7 +399,7 @@ class reduce_filter : public filter
                     return false;
                 }
             }
-
+            
             if (!output && input->num_current() > 0)
             {
                 output = new filter_val_c<T>(new_val);
@@ -419,13 +419,13 @@ class reduce_filter : public filter
             value = new_val;
             return true;
         }
-
+        
     private:
         virtual bool input_added(const filter_params* params) = 0;
         virtual bool input_changed(const filter_params* params) = 0;
         virtual bool input_removed(const filter_params* params) = 0;
         virtual bool calculate_value(T& val) = 0;
-
+        
         filter_val_c<T>* output;
         T value;
 };
@@ -436,12 +436,12 @@ class rank_filter : public filter
         rank_filter(Symbol* root, soar_interface* si, filter_input* input)
             : filter(root, si, input), output(NULL), old(NULL)
         {}
-
+        
         virtual bool rank(const filter_params* params, double& r) = 0;
-
+        
     private:
         bool update_outputs();
-
+        
         std::vector<std::pair<double, const filter_params*> > elems;
         filter_val* output;
         const filter_params* old;
@@ -455,8 +455,8 @@ class const_filter : public filter
 {
     public:
         const_filter(const T& v) : filter(NULL, NULL, NULL), added(false), v(v) {}
-
-
+        
+        
         bool update_outputs()
         {
             if (!added)
@@ -466,7 +466,7 @@ class const_filter : public filter
             }
             return true;
         }
-
+        
     private:
         T v;
         bool added;
@@ -484,7 +484,7 @@ class passthru_filter : public map_filter
         passthru_filter(Symbol* root, soar_interface* si, filter_input* input)
             : map_filter(root, si, input)
         {}
-
+        
         bool compute(const filter_params* params, filter_val*& out, bool& changed);
 };
 

@@ -67,7 +67,7 @@ void command::parse_substructure(int& size, int& max_time)
     Symbol* parent, *v;
     int tt;
     string attr;
-
+    
     tc = si->new_tc_num();
     size = 0;
     max_time = -1;
@@ -76,7 +76,7 @@ void command::parse_substructure(int& size, int& max_time)
     {
         parent = to_process.top();
         to_process.pop();
-
+        
         si->get_child_wmes(parent, childs);
         for (i = childs.begin(); i != childs.end(); ++i)
         {
@@ -89,12 +89,12 @@ void command::parse_substructure(int& size, int& max_time)
             v = si->get_wme_val(*i);
             tt = si->get_timetag(*i);
             size++;
-
+            
             if (tt > max_time)
             {
                 max_time = tt;
             }
-
+            
             if (v->is_identifier() && (v->get_tc_num() != tc))
             {
                 v->set_tc_num(tc);
@@ -109,7 +109,7 @@ bool command::get_str_param(const string& name, string& val)
     wme_list children;
     wme_list::iterator i;
     string attr, v;
-
+    
     si->get_child_wmes(root, children);
     for (i = children.begin(); i != children.end(); ++i)
     {

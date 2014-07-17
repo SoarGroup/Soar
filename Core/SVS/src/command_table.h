@@ -18,9 +18,9 @@ class command_table
 {
     public:
         command_table();
-
+        
         command* make_command(svs_state* state, wme* w);
-
+        
     private:
         std::map<std::string, make_command_fp*> table;
 };
