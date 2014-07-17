@@ -7,7 +7,6 @@
 #include "soar_interface.h"
 #include "sgnode.h"
 #include "common.h"
-#include "model.h"
 #include "timer.h"
 #include "relation.h"
 #include "svs_interface.h"
@@ -15,7 +14,6 @@
 
 class command;
 class scene;
-class multi_model;
 class drawer;
 class logger_set;
 
@@ -93,7 +91,7 @@ struct command_entry
 typedef std::set<command_entry> command_set;
 typedef command_set::iterator command_set_it;
 /*
- Each state in the state stack has its own SVS link, scene, models, etc.
+ Each state in the state stack has its own SVS link, scene, etc.
 */
 class svs_state : public cliproxy
 {
@@ -132,18 +130,12 @@ class svs_state : public cliproxy
         {
             return svsp;
         }
-        multi_model*   get_model()
-        {
-            return mmdl;
-        }
         void set_output(const rvec& out);
         bool get_output(rvec& out) const;
         const output_spec* get_output_spec() const
         {
             return outspec;
         }
-        
-        void update_models();
         
         /*
          Should only be called by svs::state_deletion_callback to save top-state scene
@@ -171,7 +163,6 @@ class svs_state : public cliproxy
         Symbol* svs_link;
         Symbol* scene_link;
         Symbol* cmd_link;
-        Symbol* model_link;
         
         int scene_num;
         wme* scene_num_wme;
@@ -182,11 +173,8 @@ class svs_state : public cliproxy
         scene_sig                prev_sig;
         relation_table           prev_rels;
         rvec                     prev_pvals;
-        multi_model*              mmdl;
         rvec                     next_out;
         const output_spec*       outspec;
-        bool learn_models;
-        bool test_models;
         
         timer_set timers;
         
@@ -207,11 +195,6 @@ class svs : public svs_interface, public cliproxy
         void add_input(const std::string& in);
         std::string get_output() const;
         std::string svs_query(const std::string& query);
-        bool add_model(const std::string& name, model* m);
-        std::map<std::string, model*>* get_models()
-        {
-            return &models;
-        }
         
         const output_spec* get_output_spec()
         {
@@ -247,8 +230,6 @@ class svs : public svs_interface, public cliproxy
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         void cli_connect_viewer(const std::vector<std::string>& args, std::ostream& os);
         void cli_disconnect_viewer(const std::vector<std::string>& args, std::ostream& os);
-        void cli_use_models(const std::vector<std::string>& args, std::ostream& os);
-        void cli_add_model(const std::vector<std::string>& args, std::ostream& os);
         
         soar_interface*           si;
         std::vector<svs_state*>   state_stack;
@@ -256,11 +237,8 @@ class svs : public svs_interface, public cliproxy
         std::string               env_output;
         output_spec               outspec;
         mutable drawer*           draw;
-        bool                      use_models;
         bool                      record_movie;
         scene*                    scn_cache;      // temporarily holds top-state scene during init
-        
-        std::map<std::string, model*> models;
         
         timer_set timers;
         logger_set* loggers;

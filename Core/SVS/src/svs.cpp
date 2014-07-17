@@ -14,12 +14,10 @@
 #include "soar_interface.h"
 #include "scene.h"
 #include "common.h"
-#include "model.h"
 #include "filter_table.h"
 #include "command_table.h"
 #include "drawer.h"
 #include "logger.h"
-#include "model.h"
 
 #include "symtab.h"
 
@@ -305,9 +303,6 @@ void svs_state::init()
     }
     scn->refresh_draw();
     root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
-    mmdl = new multi_model(svsp->get_models());
-    learn_models = false;
-    test_models = false;
 }
 
 void svs_state::update_scene_num()
@@ -441,65 +436,6 @@ void svs_state::clear_scene()
     scn->clear();
 }
 
-void svs_state::update_models()
-{
-    function_timer t(timers.get_or_add("model"));
-    scene_sig curr_sig, out_names;
-    output_spec::const_iterator i;
-    rvec curr_pvals, out;
-    relation_table curr_rels;
-    
-    if (level > 0)
-    {
-        /* No legitimate information to learn from imagined states */
-        return;
-    }
-    
-    scn->get_properties(curr_pvals);
-    get_output(out);
-    curr_sig = scn->get_signature();
-    
-    timer& t1 = timers.get_or_add("up_rels");
-    t1.start();
-    scn->get_relations(curr_rels);
-    t1.stop();
-    
-    // add an entry to the signature for the output
-    scene_sig::entry out_entry;
-    out_entry.id = -2;
-    out_entry.name = "output";
-    out_entry.type = "output";
-    for (int i = 0; i < outspec->size(); ++i)
-    {
-        out_entry.props.push_back(outspec->at(i).name);
-    }
-    curr_sig.add(out_entry);
-    
-    if (prev_sig == curr_sig)
-    {
-        rvec x(prev_pvals.size() + out.size());
-        if (out.size() > 0)        // work-around for eigen bug when out.size() == 0
-        {
-            x << prev_pvals, out;
-        }
-        else
-        {
-            x = prev_pvals;
-        }
-        if (test_models)
-        {
-            mmdl->test(curr_sig, prev_rels, x, curr_pvals);
-        }
-        if (learn_models)
-        {
-            mmdl->learn(curr_sig, prev_rels, x, curr_pvals);
-        }
-    }
-    prev_sig = curr_sig;
-    prev_rels = curr_rels;
-    prev_pvals = curr_pvals;
-}
-
 void svs_state::set_output(const rvec& out)
 {
     assert(out.size() == outspec->size());
@@ -535,8 +471,6 @@ bool svs_state::get_output(rvec& out) const
 
 void svs_state::proxy_get_children(map<string, cliproxy*>& c)
 {
-    c["learn_models"] = new bool_proxy(&learn_models, "Learn models in this state.");
-    c["test_models"]  = new bool_proxy(&test_models, "Test models in this state.");
     c["timers"]       = &timers;
     c["mconfig"]      = mmdl;
     c["scene"]        = scn;
@@ -578,7 +512,7 @@ void svs_state::disown_scene()
 }
 
 svs::svs(agent* a)
-    : use_models(false), record_movie(false), scn_cache(NULL)
+    : record_movie(false), scn_cache(NULL)
 {
     si = new soar_interface(a);
     draw = new drawer();
@@ -598,11 +532,6 @@ svs::~svs()
     }
     
     delete si;
-    map<string, model*>::iterator j;
-    for (j = models.begin(); j != models.end(); ++j)
-    {
-        delete j->second;
-    }
     delete draw;
 }
 
@@ -703,10 +632,6 @@ void svs::input_callback()
     
     svs_state* topstate = state_stack.front();
     proc_input(topstate);
-    if (use_models)
-    {
-        topstate->update_models();
-    }
     
     vector<svs_state*>::iterator i;
     for (i = state_stack.begin(); i != state_stack.end(); ++i)
@@ -759,27 +684,9 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
     c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);
     c["disconnect_viewer"]->set_help("Disconnect from viewer.");
     
-    c["use_models"]        = new memfunc_proxy<svs>(this, &svs::cli_use_models);
-    c["use_models"]->set_help("Use model learning system.")
-    .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
-    
-    c["add_model"]         = new memfunc_proxy<svs>(this, &svs::cli_add_model);
-    c["add_model"]->set_help("Add a model.")
-    .add_arg("NAME", "Name of the model.")
-    .add_arg("TYPE", "Type of the model.")
-    .add_arg("[PATH]", "Path of file to load model from.");
-    
     c["timers"]            = &timers;
     c["loggers"]           = loggers;
     c["filters"]           = &get_filter_table();
-    
-    proxy_group* model_group = new proxy_group;
-    map<string, model*>::iterator i, iend;
-    for (i = models.begin(), iend = models.end(); i != iend; ++i)
-    {
-        model_group->add(i->first, i->second);
-    }
-    c["model"] = model_group;
     
     for (int j = 0, jend = state_stack.size(); j < jend; ++j)
     {
@@ -869,47 +776,3 @@ int svs::parse_output_spec(const string& s)
     return -1;
 }
 
-bool svs::add_model(const string& name, model* m)
-{
-    if (models.find(name) != models.end())
-    {
-        return false;
-    }
-    models[name] = m;
-    return true;
-}
-
-void svs::cli_use_models(const vector<string>& args, ostream& os)
-{
-    bool_proxy p(&use_models, "Use model learning system.");
-    p.proxy_use("", args, os);
-    state_stack[0]->get_scene()->set_track_distances(use_models);
-}
-
-void svs::cli_add_model(const vector<string>& args, ostream& os)
-{
-    if (args.size() < 2)
-    {
-        os << "Specify name and type." << endl;
-        return;
-    }
-    model* m = make_model(this, args[0], args[1]);
-    if (!m)
-    {
-        os << "Cannot create model. Probably no such type." << endl;
-        return;
-    }
-    if (args.size() >= 3)
-    {
-        ifstream input(args[2].c_str());
-        if (!input)
-        {
-            os << "File could not be read. Model not loaded." << endl;
-            delete m;
-            return;
-        }
-        m->unserialize(input);
-        input.close();
-    }
-    add_model(args[0], m);
-}
