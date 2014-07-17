@@ -79,6 +79,19 @@ struct output_dim_spec
 
 typedef std::vector<output_dim_spec> output_spec;
 
+struct command_entry
+{
+    std::string id;
+    command* cmd;
+    wme* cmd_wme;
+    command_entry(std::string id, command* cmd, wme* cmd_wme): id(id), cmd(cmd), cmd_wme(cmd_wme) {}
+    bool operator < (const command_entry e) const
+    {
+        return id.compare(e.id) < 0;
+    }
+};
+typedef std::set<command_entry> command_set;
+typedef command_set::iterator command_set_it;
 /*
  Each state in the state stack has its own SVS link, scene, models, etc.
 */
@@ -164,7 +177,7 @@ class svs_state : public cliproxy
         wme* scene_num_wme;
         
         /* command changes per decision cycle */
-        std::map<std::string, command*> curr_cmds;
+        command_set curr_cmds;
         
         scene_sig                prev_sig;
         relation_table           prev_rels;
@@ -219,6 +232,14 @@ class svs : public svs_interface, public cliproxy
         
         bool do_cli_command(const std::vector<std::string>& args, std::string& output);
         
+        static void mark_filter_dirty_bit()
+        {
+            svs::filter_dirty_bit = true;
+        }
+        static bool get_filter_dirty_bit()
+        {
+            return svs::filter_dirty_bit;
+        }
     private:
         void proc_input(svs_state* s);
         int  parse_output_spec(const std::string& s);
@@ -243,6 +264,8 @@ class svs : public svs_interface, public cliproxy
         
         timer_set timers;
         logger_set* loggers;
+    public:
+        static bool filter_dirty_bit;
 };
 
 #endif

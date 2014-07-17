@@ -1,0 +1,40 @@
+svs_interface.h
+
+class svs_interface{
+  void state_creation_callback(Symbol* goal)
+  void state_deletion_callback(Symbol* goal)
+  void output_callback()
+  void input_callback()
+  void add_input(string in)
+  string get_output()
+  string svs_query(string query)
+  bool do_cli_command(vector<string> args, string& output)
+}
+
+svs_interface make_svs(agent*)
+
+
+class sgwme
+  Wrapper for an sgnode that maintains structures in working memory
+
+class svs_state
+  Corresponds to the svs link on each state (separate scene, nodes)
+
+class drawer
+  Basic class used to send updates about the scene to the viewer
+  (Maybe have this listen to the scene itself)
+
+change_tracking_list
+  class change_tracking_list
+    Generic class that wraps a list and tracks changes made to that list
+
+class cliproxy
+  Uniform interface for handling cli commands
+  cliproxys arranged in a tree structure starting at the root svs 
+
+class command
+  Base class for all commands that can be placed into working memory by the agent
+
+
+  
+

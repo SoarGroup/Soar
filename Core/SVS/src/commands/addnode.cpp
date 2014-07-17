@@ -2,6 +2,7 @@
 #include "command.h"
 #include "scene.h"
 #include "filter.h"
+#include "filter_table.h"
 #include "svs.h"
 #include "symtab.h"
 

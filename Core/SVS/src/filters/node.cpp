@@ -21,14 +21,10 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
         node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
             : typed_select_filter<const sgnode*>(root, si, input), scn(scn)
         {
-            enterf("node_filter::node_filter");
-            exitf("node_filter::node_filter");
         }
         
         ~node_filter()
         {
-            enterf("node_filter::~node_filter");
-            exitf("node_filter::~node_filter");
             node_param_map::iterator i;
             for (i = nodes.begin(); i != nodes.end(); i++)
             {
@@ -39,7 +35,6 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
         
         bool compute(const filter_params* params, bool null_out, const sgnode*& out, bool& select, bool& changed)
         {
-            enterf("node_filter::compute");
             //out = NULL;
             //changed = false;
             //select = false;
@@ -88,7 +83,6 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
             //cout << padd() << "Change " << (changed ? "T" : "F") << endl;
             //cout << padd() << "Select " << (select ? "T" : "F") << endl;
             //cout << padd() << "Node " << (out == NULL ? "NULL" : out->get_name()) << endl;
-            exitf("node_filter::compute");
             
             return true;
         }
@@ -96,7 +90,6 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
         
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
         {
-            enterf("node_filter::node_update");
             //cout << padd() << "Change " << t << " on " << n->get_name() << endl;
             switch (t)
             {
@@ -114,7 +107,6 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
                     }
                     break;
             }
-            exitf("node_filter::node_update");
         }
         
         
