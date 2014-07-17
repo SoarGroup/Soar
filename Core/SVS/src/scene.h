@@ -66,11 +66,6 @@ class scene : public sgnode_listener, public cliproxy
             return name;
         }
         void get_relations(relation_table& rt) const;
-        bool tracking_distances() const
-        {
-            return track_dists;
-        }
-        void set_track_distances(bool v);
         
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         
@@ -84,19 +79,7 @@ class scene : public sgnode_listener, public cliproxy
     private:
         typedef std::map<std::string, double> property_map;
         
-        struct node_info
-        {
-            node_info() : node(NULL), rels_dirty(true), closest(-1) {}
-            
-            sgnode* node;
-            
-            // these fields are used by the model learning system
-            std::vector<double> dists;
-            mutable int closest;
-            mutable bool rels_dirty;
-        };
-        
-        typedef std::vector<node_info> node_table;
+        typedef std::vector<sgnode*> node_table;
         
         std::string  name;
         group_node*  root;
@@ -105,16 +88,11 @@ class scene : public sgnode_listener, public cliproxy
         node_table   nodes;
         bool         draw;
         bool         sig_dirty;
-        bool         track_dists;
-        mutable bool closest_dirty;
         
         mutable scene_sig sig;
         
         mutable relation_table cached_rels;
         relation_table type_rels;
-        
-        node_info*       find_name(const std::string& name);
-        const node_info* find_name(const std::string& name) const;
         
         group_node* get_group(const std::string& name);
         void update_sig() const;
@@ -124,9 +102,6 @@ class scene : public sgnode_listener, public cliproxy
         int parse_change(std::vector<std::string>& f, std::string& error);
         int parse_property(std::vector<std::string>& f, std::string& error);
         
-        void update_closest() const;
-        void update_dists(int i);
-        void update_all_dists();
         
         void cli_props(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_dist(const std::vector<std::string>& args, std::ostream& os) const;

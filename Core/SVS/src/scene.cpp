@@ -108,13 +108,12 @@ bool parse_transforms(vector<string>& f, int& start, vec3& pos, vec3& rot, vec3&
 }
 
 scene::scene(const string& name, svs* owner)
-    : name(name), owner(owner), draw(false), nodes(1), track_dists(false)
+    : name(name), owner(owner), draw(false), nodes(1)
 {
     root = new group_node(root_name, "world");
     nodes[0].node = root;
     root->listen(this);
     sig_dirty = true;
-    closest_dirty = false;
     loggers = owner->get_loggers();
 }
 
@@ -130,22 +129,18 @@ scene* scene::clone(const string& cname) const
     string name;
     std::vector<sgnode*> node_clones;
     
-    update_closest();
     c = new scene(cname, owner);
     delete c->root;
-    c->nodes = nodes;
     c->root = root->clone()->as_group(); // root->clone copies entire scene graph
-    c->root->walk(node_clones);
-    for (int i = 0, iend = node_clones.size(); i < iend; ++i)
+    c->root->walk(c->nodes);
+    for (int i = 0, iend = c->nodes.size(); i < iend; ++i)
     {
-        sgnode* n = node_clones[i];
-        c->find_name(n->get_name())->node = n;
-        n->listen(c);
+      c->nodes[i]->listen(c);
     }
     return c;
 }
 
-scene::node_info* scene::find_name(const string& name)
+scene::sgnode* scene::get_node(const string& name)
 {
     node_table::iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
@@ -158,7 +153,7 @@ scene::node_info* scene::find_name(const string& name)
     return NULL;
 }
 
-const scene::node_info* scene::find_name(const string& name) const
+const scene::sgnode* scene::get_node(const string& name) const
 {
     node_table::const_iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
@@ -169,26 +164,6 @@ const scene::node_info* scene::find_name(const string& name) const
         }
     }
     return NULL;
-}
-
-sgnode* scene::get_node(const string& name)
-{
-    node_info* info = find_name(name);
-    if (!info)
-    {
-        return NULL;
-    }
-    return info->node;
-}
-
-sgnode const* scene::get_node(const string& name) const
-{
-    const node_info* info = find_name(name);
-    if (!info)
-    {
-        return NULL;
-    }
-    return info->node;
 }
 
 sgnode* scene::get_node(int id)
@@ -259,14 +234,14 @@ bool scene::add_node(const string& name, sgnode* n)
 
 bool scene::del_node(const string& name)
 {
-    node_info* ni = find_name(name);
-    if (ni)
-    {
-        delete ni->node;
-        /* rest is handled in node_update */
-        return true;
-    }
-    return false;
+  sgnode* node = get_node(name);
+  if(node)
+  {
+    delete node;
+    /* rest is handled in node_update */
+    return true;
+  }
+  return false;
 }
 
 void scene::clear()
@@ -511,8 +486,8 @@ int scene::parse_property(vector<string>& f, string& error)
     }
     string name = f[p++];
     
-    node_info* ninfo = find_name(name);
-    if (!ninfo)
+    sgnode* node = get_node(name);
+    if (!node)
     {
         error = "Property Command P1: Node " + name + " does not exist";
         return (p - 1);
@@ -552,11 +527,11 @@ int scene::parse_property(vector<string>& f, string& error)
         // Add property
         case 'c':
             // Change property
-            ninfo->node->set_property(propName, value);
+            node->set_property(propName, value);
             break;
         case 'd':
             // Delete property
-            ninfo->node->delete_property(propName);
+            node->delete_property(propName);
             break;
         default:
             error = "Property Command P3: Unrecognized subcommand (Expecting a, c, d)";
@@ -633,15 +608,15 @@ void scene::get_properties(rvec& vals) const
     vals.resize(get_dof());
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
-        const node_info& info = nodes[i];
+        const sgnode* node = nodes[i];
         for (const char* t = "prs"; *t != '\0'; ++t)
         {
-            vec3 trans = info.node->get_trans(*t);
+            vec3 trans = node->get_trans(*t);
             vals.segment(k, 3) = trans;
             k += 3;
         }
         
-        const numeric_properties_map& pm = info.node->get_numeric_properties();
+        const numeric_properties_map& pm = node->get_numeric_properties();
         numeric_properties_map::const_iterator j, jend;
         for (j = pm.begin(), jend = pm.end(); j != jend; ++j)
         {
@@ -728,10 +703,9 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
         g = n->as_group();
         child = g->get_child(added_child);
         child->listen(this);
-        node_info& ninfo = grow_vec(nodes);
-        ninfo.node = child;
+        sgnode*& node = grow_vec(nodes);
+        node = child;
         sig_dirty = true;
-        update_dists(nodes.size() - 1);
         
         tr = map_getp(type_rels, child->get_type());
         if (!tr)
@@ -762,17 +736,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
         case sgnode::DELETED:
             nodes.erase(nodes.begin() + i);
             
-            if (track_dists)
-            {
-                // update distance vectors for other nodes
-                for (int j = 1, jend = nodes.size(); j < jend; ++j)
-                {
-                    node_info& info = nodes[j];
-                    assert(info.dists.size() == nodes.size() + 1);
-                    info.dists.erase(info.dists.begin() + i);
-                }
-                closest_dirty = true;
-            }
             tr = map_getp(type_rels, n->get_type());
             if (tr)
             {
@@ -785,7 +748,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
             }
             break;
         case sgnode::SHAPE_CHANGED:
-            update_dists(i);
             if (!n->is_group() && draw)
             {
                 d->change(name, n, drawer::SHAPE);
@@ -793,7 +755,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
             nodes[i].rels_dirty = true;
             break;
         case sgnode::TRANSFORM_CHANGED:
-            update_dists(i);
             if (draw)
             {
                 d->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
@@ -810,100 +771,12 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
 
 double scene::get_convex_distance(const sgnode* a, const sgnode* b) const
 {
-    if (!track_dists)
-    {
-        return convex_distance(a, b);
-    }
-    
-    int i, j;
-    for (i = 0; i < nodes.size() && nodes[i].node != a; ++i)
-        ;
-    for (j = 0; j < nodes.size() && nodes[j].node != b; ++j)
-        ;
-    assert(i != nodes.size() && j != nodes.size());
-    return nodes[i].dists[j];
+    return convex_distance(a, b);
 }
 
 bool scene::intersects(const sgnode* a, const sgnode* b) const
 {
     return this->get_convex_distance(a, b) < INTERSECT_THRESH;
-}
-
-void scene::update_dists(int i)
-{
-    if (i == 0 || !track_dists)
-    {
-        return;
-    }
-    
-    node_info& n1 = nodes[i];
-    n1.dists.resize(nodes.size(), -1);
-    n1.dists[0] = 0.0;
-    n1.dists[i] = 0.0;
-    for (int j = 1, jend = nodes.size(); j < jend; ++j)
-    {
-        if (i == j)
-        {
-            continue;
-        }
-        
-        node_info& n2 = nodes[j];
-        n2.dists.resize(nodes.size(), -1);
-        double d = convex_distance(n1.node, n2.node);
-        n1.dists[j] = d;
-        n2.dists[i] = d;
-    }
-    closest_dirty = true;
-}
-
-void scene::update_closest() const
-{
-    if (!closest_dirty || !track_dists)
-    {
-        return;
-    }
-    
-    for (int i = 1, iend = nodes.size(); i < iend; ++i)
-    {
-        int c = -1;
-        const vector<double>& d = nodes[i].dists;
-        for (int j = 1, jend = d.size(); j < jend; ++j)
-        {
-            if (i != j && d[j] >= 0 && (c < 0 || d[j] < d[c]))
-            {
-                c = j;
-            }
-        }
-        nodes[i].closest = c;
-    }
-    closest_dirty = false;
-}
-
-void scene::update_all_dists()
-{
-    for (int i = 1, iend = nodes.size(); i < iend; ++i)
-    {
-        nodes[i].dists.resize(nodes.size(), -1);
-    }
-    for (int i = 1, iend = nodes.size(); i < iend; ++i)
-    {
-        for (int j = i + 1, jend = nodes.size(); j < jend; ++j)
-        {
-            double d = convex_distance(nodes[i].node, nodes[j].node);
-            nodes[i].dists[j] = nodes[j].dists[i] = d;
-        }
-    }
-    closest_dirty = true;
-    update_closest();
-}
-
-void scene::set_track_distances(bool v)
-{
-    if (!track_dists && v)
-    {
-        update_all_dists();
-    }
-    track_dists = v;
 }
 
 void scene::update_sig() const
@@ -944,33 +817,9 @@ const scene_sig& scene::get_signature() const
 
 void scene::get_relations(relation_table& rt) const
 {
-    int_tuple closest(2);
     vector<int> dirty_nodes;
     
     rt = type_rels;
-    relation& closest_rel = rt["closest"];
-    closest_rel.reset(3);
-    update_closest();
-    for (int i = 1, iend = nodes.size(); i < iend; ++i)
-    {
-        const node_info& ni = nodes[i];
-        if (ni.rels_dirty)
-        {
-            dirty_nodes.push_back(ni.node->get_id());
-            ni.rels_dirty = false;
-        }
-        if (ni.closest != -1)
-        {
-            closest[0] = ni.node->get_id();
-            closest[1] = nodes[ni.closest].node->get_id();
-            closest_rel.add(0, closest);
-        }
-        else
-        {
-            // if there's only one real object, then it won't be closest to anything
-            assert(nodes.size() == 2);
-        }
-    }
     
     relation_table::iterator j, jend;
     for (j = cached_rels.begin(), jend = cached_rels.end(); j != jend; ++j)
