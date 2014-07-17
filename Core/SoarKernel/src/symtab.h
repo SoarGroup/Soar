@@ -50,15 +50,13 @@
 #endif
 
 typedef signed short goal_stack_level;
-//typedef struct cons_struct cons;
-//typedef struct dl_cons_struct dl_cons;
-//typedef cons list;
 typedef struct instantiation_struct instantiation;
 typedef int64_t epmem_node_id;
 typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 typedef uint64_t smem_lti_id;
 typedef uint64_t smem_hash_id;
+typedef uint64_t tc_number;
 
 /* -- Forward declarations needed for symbol base struct -- */
 struct floatSymbol;

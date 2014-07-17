@@ -66,7 +66,6 @@ extern void print(agent* thisAgent, const char* format, ...);
 #define PRINT_BUFSIZE 5000   /* --- size of output buffer for a calls to print routines --- */
 #define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
 
-typedef uint64_t tc_number;
 typedef unsigned char byte;
 
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */
