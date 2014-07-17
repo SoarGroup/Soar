@@ -111,7 +111,7 @@ scene::scene(const string& name, svs* owner)
     : name(name), owner(owner), draw(false), nodes(1)
 {
     root = new group_node(root_name, "world");
-    nodes[0].node = root;
+    nodes[0] = root;
     root->listen(this);
     sig_dirty = true;
     loggers = owner->get_loggers();
@@ -140,27 +140,27 @@ scene* scene::clone(const string& cname) const
     return c;
 }
 
-scene::sgnode* scene::get_node(const string& name)
+sgnode* scene::get_node(const string& name)
 {
     node_table::iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
     {
-        if (i->node->get_name() == name)
+        if ((*i)->get_name() == name)
         {
-            return &(*i);
+            return *i;
         }
     }
     return NULL;
 }
 
-const scene::sgnode* scene::get_node(const string& name) const
+const sgnode* scene::get_node(const string& name) const
 {
     node_table::const_iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
     {
-        if (i->node->get_name() == name)
+        if ((*i)->get_name() == name)
         {
-            return &(*i);
+            return *i;
         }
     }
     return NULL;
@@ -171,9 +171,9 @@ sgnode* scene::get_node(int id)
     node_table::iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
     {
-        if (i->node->get_id() == id)
+        if ((*i)->get_id() == id)
         {
-            return i->node;
+            return *i;
         }
     }
     return NULL;
@@ -184,9 +184,9 @@ const sgnode* scene::get_node(int id) const
     node_table::const_iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
     {
-        if (i->node->get_id() == id)
+        if ((*i)->get_id() == id)
         {
-            return i->node;
+            return *i;
         }
     }
     return NULL;
@@ -207,7 +207,7 @@ void scene::get_all_nodes(vector<sgnode*>& n)
     n.resize(nodes.size());
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
-        n[i] = nodes[i].node;
+        n[i] = nodes[i];
     }
 }
 
@@ -216,7 +216,7 @@ void scene::get_all_nodes(vector<const sgnode*>& n) const
     n.resize(nodes.size());
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
-        n[i] = nodes[i].node;
+        n[i] = nodes[i];
     }
 }
 
@@ -633,7 +633,7 @@ bool scene::set_properties(const rvec& vals)
     
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
-        sgnode* n = nodes[i].node;
+        sgnode* n = nodes[i];
         int k1, k2;
         for (k1 = 0; k1 < 3; ++k1)
         {
@@ -667,7 +667,7 @@ int scene::get_dof() const
     int dof = 0;
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
-        dof += NUM_NATIVE_PROPS + nodes[i].node->get_numeric_properties().size();
+        dof += NUM_NATIVE_PROPS + nodes[i]->get_numeric_properties().size();
     }
     return dof;
 }
@@ -723,7 +723,7 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
     }
     
     int i, iend;
-    for (i = 0, iend = nodes.size(); i < iend && nodes[i].node != n; ++i)
+    for (i = 0, iend = nodes.size(); i < iend && nodes[i] != n; ++i)
         ;
     assert(i != nodes.size());
     if (i == 0)
@@ -752,19 +752,16 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
             {
                 d->change(name, n, drawer::SHAPE);
             }
-            nodes[i].rels_dirty = true;
             break;
         case sgnode::TRANSFORM_CHANGED:
             if (draw)
             {
                 d->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
             }
-            nodes[i].rels_dirty = true;
             velocity_hack(n, owner->get_drawer());
             break;
         case sgnode::PROPERTY_CHANGED:
             sig_dirty = true;
-            nodes[i].rels_dirty = true;
             break;
     }
 }
@@ -791,11 +788,11 @@ void scene::update_sig() const
     {
         scene_sig::entry e;
         numeric_properties_map::const_iterator j, jend;
-        const numeric_properties_map& pm = nodes[i].node->get_numeric_properties();
+        const numeric_properties_map& pm = nodes[i]->get_numeric_properties();
         
-        e.id = nodes[i].node->get_id();
-        e.name = nodes[i].node->get_name();
-        e.type = nodes[i].node->get_type();
+        e.id = nodes[i]->get_id();
+        e.name = nodes[i]->get_name();
+        e.type = nodes[i]->get_type();
         
         e.props = common_props;
         for (j = pm.begin(), jend = pm.end(); j != jend; ++j)
@@ -899,11 +896,11 @@ void scene::cli_dist(const vector<string>& args, ostream& os) const
     int i0 = -1, i1 = -1;
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
-        if (nodes[i].node->get_name() == args[0])
+        if (nodes[i]->get_name() == args[0])
         {
             i0 = i;
         }
-        else if (nodes[i].node->get_name() == args[1])
+        else if (nodes[i]->get_name() == args[1])
         {
             i1 = i;
         }
@@ -918,7 +915,7 @@ void scene::cli_dist(const vector<string>& args, ostream& os) const
         os << "node " << args[1] << " does not exist" << endl;
         return;
     }
-    os << get_convex_distance(nodes[i0].node, nodes[i1].node) << endl;
+    os << get_convex_distance(nodes[i0], nodes[i1]) << endl;
 }
 
 void scene::cli_sgel(const vector<string>& args, ostream& os)
@@ -1050,7 +1047,7 @@ void scene::refresh_draw()
     d->delete_scene(name);
     for (int i = 1, iend = nodes.size(); i < iend; ++i)
     {
-        d->add(name, nodes[i].node);
+        d->add(name, nodes[i]);
     }
 }
 
@@ -1059,7 +1056,7 @@ void scene::verify_listeners() const
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
         std::list<sgnode_listener*> l;
-        nodes[i].node->get_listeners(l);
+        nodes[i]->get_listeners(l);
         assert(l.size() == 1 && l.front() == this);
     }
 }

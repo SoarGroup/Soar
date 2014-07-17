@@ -27,14 +27,7 @@ class intersect_filter : public typed_map_filter<bool>
                 return false;
             }
             
-            if (scn->tracking_distances())
-            {
-                newres = scn->intersects(a, b);
-            }
-            else
-            {
-                newres = intersects(a, b);
-            }
+            newres = intersects(a, b);
             changed = (res != newres);
             res = newres;
             return true;
@@ -53,10 +46,6 @@ filter* make_intersect_filter(Symbol* root, soar_interface* si, scene* scn, filt
 bool standalone_intersect(const scene* scn, const vector<const sgnode*>& args)
 {
     assert(args.size() == 2);
-    if (scn->tracking_distances())
-    {
-        return scn->intersects(args[0], args[1]);
-    }
     return intersects(args[0], args[1]);
 }
 

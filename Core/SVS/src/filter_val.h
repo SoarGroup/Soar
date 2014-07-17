@@ -160,62 +160,6 @@ class filter_val_c<sgnode*> : public filter_val
         sgnode* v;
 };
 
-//////////////////////////////////////
-// template specialization for const sgnode*
-//////////////////////////////////////
-
-typedef filter_val_c<const sgnode*> c_sgnode_filter_val;
-
-template <>
-class filter_val_c<const sgnode*> : public filter_val
-{
-    public:
-        filter_val_c(const sgnode* v) : v(v) {}
-        virtual ~filter_val_c() {}
-        
-        filter_val* clone() const
-        {
-            return new c_sgnode_filter_val(v);
-        }
-        
-        filter_val& operator=(const filter_val& rhs)
-        {
-            const c_sgnode_filter_val* c = dynamic_cast<const c_sgnode_filter_val*>(&rhs);
-            assert(c);
-            v = c->v;
-            return *this;
-        }
-        
-        bool operator==(const filter_val& rhs) const
-        {
-            const c_sgnode_filter_val* c = dynamic_cast<const c_sgnode_filter_val*>(&rhs);
-            if (!c)
-            {
-                return false;
-            }
-            return v == c->v;
-        }
-        
-        const sgnode* get_value() const
-        {
-            return v;
-        }
-        
-        void set_value(const sgnode* n)
-        {
-            v = n;
-        }
-        
-        // Implementation is at top of file filter.cpp
-        void get_rep(std::map<std::string, std::string>& rep) const;
-        
-        // Implementation is at top of file filter.cpp
-        std::string toString() const;
-        
-    private:
-        const sgnode* v;
-};
-
 /*
  Convenience functions for getting filter outputs as specific values
  with error checking

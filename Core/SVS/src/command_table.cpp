@@ -23,7 +23,6 @@ command* _make_project_command_(svs_state* state, Symbol* root);
 command* _make_extract_once_command_(svs_state* state, Symbol* root);
 command* _make_add_node_command_(svs_state* state, Symbol* root);
 command* _make_property_command_(svs_state* state, Symbol* root);
-command* _make_seek_command_(svs_state* state, Symbol* root);
 command* _make_random_control_command_(svs_state* state, Symbol* root);
 command* _make_copy_node_command_(svs_state* state, Symbol* root);
 command* _make_del_node_command_(svs_state* state, Symbol* root);
@@ -34,7 +33,6 @@ command_table::command_table()
     table["project"] = &_make_project_command_;
     table["extract_once"] = &_make_extract_once_command_;
     table["add_node"] = &_make_add_node_command_;
-    table["seek"] = &_make_seek_command_;
     table["property"] = &_make_property_command_;
     table["copy_node"] = &_make_copy_node_command_;
     table["del_node"] = &_make_del_node_command_;

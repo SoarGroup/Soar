@@ -270,8 +270,6 @@ svs_state::~svs_state()
         delete i->cmd;
     }
     
-    delete mmdl;
-    
     if (scn)
     {
         svsp->get_drawer()->delete_scene(scn->get_name());
@@ -472,7 +470,6 @@ bool svs_state::get_output(rvec& out) const
 void svs_state::proxy_get_children(map<string, cliproxy*>& c)
 {
     c["timers"]       = &timers;
-    c["mconfig"]      = mmdl;
     c["scene"]        = scn;
     c["output"]       = new memfunc_proxy<svs_state>(this, &svs_state::cli_out);
     c["output"]->set_help("Print current output.");

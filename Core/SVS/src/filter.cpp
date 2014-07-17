@@ -13,18 +13,6 @@ using namespace std;
 /**********************************************
  * member functions for filter_val_c<sgnode*>
  ***********************************************/
-void filter_val_c<const sgnode*>::get_rep(map<string, string>& rep) const
-{
-    rep.clear();
-    rep[""] = v->get_name();
-}
-
-string filter_val_c<const sgnode*>::toString() const
-{
-    stringstream ss;
-    ss << v;
-    return ss.str();
-}
 
 void filter_val_c<sgnode*>::get_rep(map<string, string>& rep) const
 {
