@@ -4,6 +4,7 @@
 #include "filter.h"
 #include "svs.h"
 #include "scene.h"
+#include "soar_interface.h"
 
 using namespace std;
 
@@ -16,12 +17,12 @@ class copy_node_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-        
+
         string description()
         {
             return string("copy-node");
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -31,13 +32,13 @@ class copy_node_command : public command
             }
             return true;
         }
-        
-        
+
+
         bool early()
         {
             return false;
         }
-        
+
         bool parse()
         {
             // Get the ^source-id wme
@@ -47,7 +48,7 @@ class copy_node_command : public command
                 set_status("^source-id must be specified");
                 return false;
             }
-            
+
             // Get the value of the ^source-id wme
             string sourceId;
             if (!get_symbol_value(si->get_wme_val(srcWme), sourceId))
@@ -55,7 +56,7 @@ class copy_node_command : public command
                 set_status("^source-id must be a string");
                 return false;
             }
-            
+
             // Find the source node with the given name
             const sgnode* sourceNode = scn->get_node(sourceId);
             if (!sourceNode)
@@ -63,7 +64,7 @@ class copy_node_command : public command
                 set_status("Could not find the given source node");
                 return false;
             }
-            
+
             // Get the ^dest-id wme
             wme* destWme;
             if (!si->find_child_wme(root, "dest-id", destWme))
@@ -71,7 +72,7 @@ class copy_node_command : public command
                 set_status("^dest-id must be specified");
                 return false;
             }
-            
+
             // Get the value of the ^source-id wme
             string destId;
             if (!get_symbol_value(si->get_wme_val(destWme), destId))
@@ -79,9 +80,9 @@ class copy_node_command : public command
                 set_status("^dest-id must be a string");
                 return false;
             }
-            
+
             //cout << "COPYING " << sourceId << " to " << destId << endl;
-            
+
             wme* adjustWme;
             string adjust;
             if (!si->find_child_wme(root, "adjust", adjustWme))
@@ -96,7 +97,7 @@ class copy_node_command : public command
             {
                 adjust = "false";
             }
-            
+
             // Make sure the given destination doesn't already exist
             sgnode* destNode = scn->get_node(destId);
             if (!destNode)
@@ -118,15 +119,15 @@ class copy_node_command : public command
                     set_status("Error: Source node must be either a convex or ball node");
                     return false;
                 }
-                
+
                 sgnode* rootNode = scn->get_root();
                 rootNode->as_group()->attach_child(destNode);
             }
-            
+
             vec3 pos, rot, scale;
             sourceNode->get_trans(pos, rot, scale);
             destNode->set_trans(pos, rot, scale);
-            
+
             //cout << "Adjust = " << adjust << endl;
             if (adjust == "true")
             {
@@ -157,11 +158,11 @@ class copy_node_command : public command
                 }
                 destNode->adjust_size(targets);
             }
-            
+
             set_status("success");
             return true;
         }
-        
+
     private:
         Symbol*         root;
         scene*          scn;
