@@ -113,7 +113,6 @@ scene::scene(const string& name, svs* owner)
     root = new group_node(root_name, "world");
     nodes[0] = root;
     root->listen(this);
-    sig_dirty = true;
     loggers = owner->get_loggers();
 }
 
@@ -705,7 +704,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
         child->listen(this);
         sgnode*& node = grow_vec(nodes);
         node = child;
-        sig_dirty = true;
         
         tr = map_getp(type_rels, child->get_type());
         if (!tr)
@@ -741,7 +739,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
             {
                 tr->del(0, i);
             }
-            sig_dirty = true;
             if (draw && i != 0)
             {
                 d->del(name, n);
@@ -761,7 +758,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
             velocity_hack(n, owner->get_drawer());
             break;
         case sgnode::PROPERTY_CHANGED:
-            sig_dirty = true;
             break;
     }
 }
@@ -774,42 +770,6 @@ double scene::get_convex_distance(const sgnode* a, const sgnode* b) const
 bool scene::intersects(const sgnode* a, const sgnode* b) const
 {
     return this->get_convex_distance(a, b) < INTERSECT_THRESH;
-}
-
-void scene::update_sig() const
-{
-    vector<string> common_props;
-    for (int j = 0; j < NUM_NATIVE_PROPS; ++j)
-    {
-        common_props.push_back(NATIVE_PROPS[j]);
-    }
-    sig.clear();
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
-    {
-        scene_sig::entry e;
-        numeric_properties_map::const_iterator j, jend;
-        const numeric_properties_map& pm = nodes[i]->get_numeric_properties();
-        
-        e.id = nodes[i]->get_id();
-        e.name = nodes[i]->get_name();
-        e.type = nodes[i]->get_type();
-        
-        e.props = common_props;
-        for (j = pm.begin(), jend = pm.end(); j != jend; ++j)
-        {
-            e.props.push_back(j->first);
-        }
-        sig.add(e);
-    }
-}
-
-const scene_sig& scene::get_signature() const
-{
-    if (sig_dirty)
-    {
-        update_sig();
-    }
-    return sig;
 }
 
 void scene::get_relations(relation_table& rt) const
@@ -872,16 +832,33 @@ void scene::cli_props(const vector<string>& args, ostream& os) const
 {
     rvec vals;
     table_printer t;
-    
-    get_properties(vals);
-    int i = 0;
-    for (int j = 0, jend = sig.size(); j < jend; ++j)
+
+    // Create list of properties common to all nodes
+    vector<string> common_props;
+    for (int j = 0; j < NUM_NATIVE_PROPS; ++j)
     {
-        for (int k = 0, kend = sig[j].props.size(); k < kend; ++k)
-        {
-            t.add_row() << sig[j].name + ':' + sig[j].props[k] << vals(i++);
+        common_props.push_back(NATIVE_PROPS[j]);
+    }
+
+    get_properties(vals);
+
+    // For each node, add each property to the output
+    for (int i = 0, iend = nodes.size(); i < iend; ++i)
+    {
+        string name = nodes[i]->get_name();
+
+        // Common properties
+        for (int j = 0; j < common_props.size(); j++){
+          t.add_row() << name + ':' + common_props[j] << vals(i++);
+        }
+
+        // Numeric properties (pos, rot, scale)
+        const numeric_properties_map& props = nodes[i]->get_numeric_properties();
+        for(numeric_properties_map::const_iterator j = props.begin(); j != props.end(); j++){
+          t.add_row() << name + ':' + j->first << vals(i++);
         }
     }
+
     t.print(os);
 }
 

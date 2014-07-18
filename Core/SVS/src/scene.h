@@ -6,7 +6,6 @@
 #include <cassert>
 #include "sgnode.h"
 #include "common.h"
-#include "scene_sig.h"
 #include "relation.h"
 #include "cliproxy.h"
 
@@ -59,7 +58,6 @@ class scene : public sgnode_listener, public cliproxy
         double get_convex_distance(const sgnode* a, const sgnode* b) const;
         
         bool intersects(const sgnode* a, const sgnode* b) const;
-        const scene_sig& get_signature() const;
         
         std::string get_name() const
         {
@@ -87,15 +85,12 @@ class scene : public sgnode_listener, public cliproxy
         logger_set*  loggers;
         node_table   nodes;
         bool         draw;
-        bool         sig_dirty;
         
-        mutable scene_sig sig;
         
         mutable relation_table cached_rels;
         relation_table type_rels;
         
         group_node* get_group(const std::string& name);
-        void update_sig() const;
         
         int parse_add(std::vector<std::string>& f, std::string& error);
         int parse_del(std::vector<std::string>& f, std::string& error);

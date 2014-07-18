@@ -36,7 +36,6 @@
 #include "src/mat.cpp"
 #include "src/relation.cpp"
 #include "src/scene.cpp"
-#include "src/scene_sig.cpp"
 #include "src/serialize.cpp"
 #include "src/sgnode.cpp"
 #include "src/soar_interface.cpp"

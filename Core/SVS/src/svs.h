@@ -170,7 +170,6 @@ class svs_state : public cliproxy
         /* command changes per decision cycle */
         command_set curr_cmds;
         
-        scene_sig                prev_sig;
         relation_table           prev_rels;
         rvec                     prev_pvals;
         rvec                     next_out;
