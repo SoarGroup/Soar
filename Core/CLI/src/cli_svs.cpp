@@ -9,7 +9,39 @@ using namespace sml;
 bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
 {
     std::string out;
-    bool res = m_pAgentSML->GetSoarAgent()->svs->do_cli_command(args, out);
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+
+    if (args.size() == 1)
+    {
+            m_Result << "Soar Visual System is " << (thisAgent->svs->is_enabled() ? "enabled." : "disabled.");
+            return true;
+    }
+    else if (args.size() == 2)
+    {
+        if ((args[1] == "--enable") || (args[1] == "-e") || (args[1] == "--on"))
+        {
+            if (thisAgent->svs->is_enabled())
+            {
+                m_Result << "Soar Visual System is already enabled.";
+            } else {
+                thisAgent->svs->set_enabled(true);
+                m_Result << "Soar Visual System enabled.";
+            }
+            return true;
+        }
+        else if ((args[1] == "--disable") || (args[1] == "-d") || (args[1] == "--off"))
+        {
+            if (!thisAgent->svs->is_enabled())
+            {
+                m_Result << "Soar Visual System is already disabled.";
+            } else {
+                thisAgent->svs->set_enabled(false);
+                m_Result << "Soar Visual System disabled.";
+            }
+            return true;
+        }
+    }
+    bool res = thisAgent->svs->do_cli_command(args, out);
     if (m_RawOutput)
     {
         m_Result << out;

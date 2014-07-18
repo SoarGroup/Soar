@@ -19,21 +19,21 @@ namespace cli
             {
                 return "add-wme";
             }
-            
+
             virtual const char* GetSyntax() const
             {
                 return "Syntax: add-wme id [^]attribute value [+]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 if (argv.size() < 4)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 unsigned attributeIndex = (argv[2] == "^") ? 3 : 2;
-                
+
                 if (argv.size() < (attributeIndex + 2))
                 {
                     return cli.SetError(GetSyntax());
@@ -42,7 +42,7 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 bool acceptable = false;
                 if (argv.size() > (attributeIndex + 2))
                 {
@@ -52,16 +52,16 @@ namespace cli
                     }
                     acceptable = true;
                 }
-                
+
                 return cli.DoAddWME(argv[1], argv[attributeIndex], argv[attributeIndex + 1], acceptable);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             AddWMECommand& operator=(const AddWMECommand&);
     };
-    
+
     class AliasCommand : public cli::ParserCommand
     {
         public:
@@ -75,25 +75,25 @@ namespace cli
             {
                 return "Syntax: alias [name [cmd [args]]]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 if (argv.size() == 1)
                 {
                     return cli.DoAlias();    // list all
                 }
-                
+
                 argv.erase(argv.begin());
-                
+
                 return cli.DoAlias(&argv);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             AliasCommand& operator=(const AliasCommand&);
     };
-    
+
     class AllocateCommand : public cli::ParserCommand
     {
         public:
@@ -107,39 +107,39 @@ namespace cli
             {
                 return "Syntax: allocate [pool blocks]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 if (argv.size() == 1)
                 {
                     return cli.DoAllocate(std::string(), 0);
                 }
-                
+
                 if (argv.size() != 3)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 int blocks = 0;
                 if (!from_string(blocks, argv[2]))
                 {
                     return cli.SetError("Expected an integer (number of blocks).");
                 }
-                
+
                 if (blocks < 1)
                 {
                     return cli.SetError("Expected a positive integer (number of blocks).");
                 }
-                
+
                 return cli.DoAllocate(argv[1], blocks);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             AllocateCommand& operator=(const AllocateCommand&);
     };
-    
+
     class BreakCommand : public cli::ParserCommand
     {
         public:
@@ -153,7 +153,7 @@ namespace cli
             {
                 return "Syntax: break [-cps] production_name";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -164,28 +164,28 @@ namespace cli
                     {'s', "set",   OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
-                
+
                 char option = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError().c_str());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     if (option != 0)
                     {
                         return cli.SetError("break takes only one option at a time.");
                     }
                     option = static_cast<char>(opt.GetOption());
                 }
-                
+
                 switch (option)
                 {
                     case 'c':
@@ -194,19 +194,19 @@ namespace cli
                         {
                             return cli.SetError("break --set/--clear takes exactly one argument.");
                         }
-                        
+
                         // case: clear the interrupt flag on the production
                         return cli.DoBreak(option, argv[2]);
-                        
+
                     case 'p':
                         if (argv.size() != 2)
                         {
                             return cli.SetError("break --print takes no arguments.");
                         }
-                        
+
                         // case: set the interrupt flag on the production
                         return cli.DoBreak('p', "");
-                        
+
                     default:
                         if (argv.size() == 1)
                         {
@@ -221,17 +221,17 @@ namespace cli
                             return cli.SetError("break used incorrectly.");
                         }
                 }
-                
+
                 // bad: no option, but more than one argument
                 return cli.SetError("break takes exactly one argument.");
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             BreakCommand& operator=(const BreakCommand&);
     };
-    
+
     class CaptureInputCommand : public cli::ParserCommand
     {
         public:
@@ -248,7 +248,7 @@ namespace cli
                     "capture-input [--query]\n"
                     "capture-input --close";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -260,10 +260,10 @@ namespace cli
                     {'q', "query", OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::eCaptureInputMode mode = Cli::CAPTURE_INPUT_QUERY;
                 std::string pathname;
-                
+
                 bool autoflush = false;
                 for (;;)
                 {
@@ -271,12 +271,12 @@ namespace cli
                     {
                         return cli.SetError(opt.GetError());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'c':
@@ -294,16 +294,16 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 return cli.DoCaptureInput(mode, autoflush, mode == Cli::CAPTURE_INPUT_OPEN ? &pathname : 0);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             CaptureInputCommand& operator=(const CaptureInputCommand&);
     };
-    
+
     class CDCommand : public cli::ParserCommand
     {
         public:
@@ -317,7 +317,7 @@ namespace cli
             {
                 return "Syntax: cd [directory]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // Only takes one optional argument, the directory to change into
@@ -325,20 +325,20 @@ namespace cli
                 {
                     return cli.SetError("Only one argument (a directory) is allowed. Paths with spaces should be enclosed in quotes.");
                 }
-                
+
                 if (argv.size() > 1)
                 {
                     return cli.DoCD(&(argv[1]));
                 }
                 return cli.DoCD();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             CDCommand& operator=(const CDCommand&);
     };
-    
+
     class ChunkNameFormatCommand : public cli::ParserCommand
     {
         public:
@@ -354,7 +354,7 @@ namespace cli
                     "Syntax: chunk-name-format [-sl] -p [prefix]\n"
                     "chunk-name-format [-sl] -c [count]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -366,26 +366,26 @@ namespace cli
                     {'s', "short",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool changeFormat = false;
                 bool countFlag = false;
                 int64_t count = -1;
                 bool patternFlag = false;
                 std::string pattern;
                 bool longFormat = true;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'c':
@@ -415,21 +415,21 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoChunkNameFormat(changeFormat ? &longFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             ChunkNameFormatCommand& operator=(const ChunkNameFormatCommand&);
     };
-    
+
     class CLogCommand : public cli::ParserCommand
     {
         public:
@@ -443,7 +443,7 @@ namespace cli
             {
                 return "Syntax: clog -[Ae] filename\nclog -a string\nclog [-cdoq]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -458,9 +458,9 @@ namespace cli
                     {'q', "query",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::eLogMode mode = Cli::LOG_NEW;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -472,7 +472,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'a':
@@ -492,7 +492,7 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 switch (mode)
                 {
                     case Cli::LOG_ADD:
@@ -503,14 +503,14 @@ namespace cli
                         {
                             return cli.SetError("Provide a string to add.");
                         }
-                        
+
                         // move to the first non-option arg
                         std::vector<std::string>::iterator iter = argv.begin();
                         for (int i = 0; i < (opt.GetArgument() - opt.GetNonOptionArguments()); ++i)
                         {
                             ++iter;
                         }
-                        
+
                         // combine all args
                         while (iter != argv.end())
                         {
@@ -520,33 +520,33 @@ namespace cli
                         }
                         return cli.DoCLog(mode, 0, &toAdd);
                     }
-                    
+
                     case Cli::LOG_NEW:
                         // no more than one argument, no filename == query
                         if (opt.GetNonOptionArguments() > 1)
                         {
                             return cli.SetError("Filename or nothing expected, enclose filename in quotes if there are spaces in the path.");
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 1)
                         {
                             return cli.DoCLog(mode, &argv[1]);
                         }
                         break; // no args case handled below
-                        
+
                     case Cli::LOG_NEWAPPEND:
                         // exactly one argument
                         if (opt.GetNonOptionArguments() > 1)
                         {
                             return cli.SetError("Filename expected, enclose filename in quotes if there are spaces in the path.");
                         }
-                        
+
                         if (opt.GetNonOptionArguments() < 1)
                         {
                             return cli.SetError("Please provide a filename.");
                         }
                         return cli.DoCLog(mode, &argv[1]);
-                        
+
                     default:
                     case Cli::LOG_CLOSE:
                     case Cli::LOG_QUERY:
@@ -557,20 +557,20 @@ namespace cli
                         }
                         break; // no args case handled below
                 }
-                
+
                 // the no args case
                 return cli.DoCLog(mode);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             CLogCommand& operator=(const CLogCommand&);
     };
-    
+
     class CliExtensionMessageCommand : public cli::ParserCommand
     {
-    
+
         public:
             CliExtensionMessageCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
             virtual ~CliExtensionMessageCommand() {}
@@ -582,14 +582,14 @@ namespace cli
             {
                 return "Syntax: cli extension-name command [args]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 if (argv.size() < 3)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 std::string concat_message(argv[1]);
                 for (std::vector<int>::size_type i = 2; i < argv.size(); ++i)
                 {
@@ -598,13 +598,13 @@ namespace cli
                 }
                 return cli.DoCLIMessage(concat_message);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             CliExtensionMessageCommand& operator=(const CliExtensionMessageCommand&);
     };
-    
+
     class CommandToFileCommand : public cli::ParserCommand
     {
         public:
@@ -618,7 +618,7 @@ namespace cli
             {
                 return "Syntax: command-to-file [-a] filename command [args]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // Not going to use normal option parsing in this case because I do not want to disturb the other command on the line
@@ -626,13 +626,13 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // Index of command in argv:  command-to-file filename command ...
                 // Unless append option is present, which is handled later.
                 int startOfCommand = 2;
                 Cli::eLogMode mode = Cli::LOG_NEW;
                 std::string filename = argv[1];
-                
+
                 // Parse out option.
                 for (int i = 1; i < 3; ++i)
                 {
@@ -661,50 +661,50 @@ namespace cli
                             unrecognized = true;
                         }
                     }
-                    
+
                     if (unrecognized)
                     {
                         return cli.SetError("Unrecognized option: " + arg);
                     }
-                    
+
                     if (append)
                     {
                         mode = Cli::LOG_NEWAPPEND;
-                        
+
                         // Index of command in argv:  command-to-file -a filename command ...
                         if (argv.size() < 4)
                         {
                             return cli.SetError(GetSyntax());
                         }
-                        
+
                         startOfCommand = 3;
-                        
+
                         // Re-set filename if necessary
                         if (i == 1)
                         {
                             filename = argv[2];
                         }
-                        
+
                         break;
                     }
                 }
-                
+
                 // Restructure argv
                 std::vector<std::string> newArgv;
                 for (std::vector<int>::size_type i = startOfCommand; i < argv.size(); ++i)
                 {
                     newArgv.push_back(argv[i]);
                 }
-                
+
                 return cli.DoCommandToFile(mode, filename, newArgv);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             CommandToFileCommand& operator=(const CommandToFileCommand&);
     };
-    
+
     class DebugCommand : public cli::ParserCommand
     {
         public:
@@ -718,25 +718,25 @@ namespace cli
             {
                 return "Syntax: debug [command] [arguments]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 if (argv.size() == 1)
                 {
                     return cli.DoDebug();    // list all
                 }
-                
+
                 argv.erase(argv.begin());
-                
+
                 return cli.DoDebug(&argv);
-                
+
             }
         private:
             cli::Cli& cli;
             DebugCommand& operator=(const DebugCommand&);
     };
-    
-    
+
+
     class DefaultWMEDepthCommand : public cli::ParserCommand
     {
         public:
@@ -750,17 +750,17 @@ namespace cli
             {
                 return "Syntax: default-wme-depth [depth]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // n defaults to 0 (query)
                 int n = 0;
-                
+
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // one argument, figure out if it is a positive integer
                 if (argv.size() == 2)
                 {
@@ -770,16 +770,16 @@ namespace cli
                         return cli.SetError("Depth argument must be positive.");
                     }
                 }
-                
+
                 return cli.DoDefaultWMEDepth(n ? &n : 0);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             DefaultWMEDepthCommand& operator=(const DefaultWMEDepthCommand&);
     };
-    
+
     class DirsCommand : public cli::ParserCommand
     {
         public:
@@ -793,18 +793,18 @@ namespace cli
             {
                 return "Syntax: dirs";
             }
-            
+
             virtual bool Parse(std::vector< std::string >&)
             {
                 return cli.DoDirs();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             DirsCommand& operator=(const DirsCommand&);
     };
-    
+
     class EchoCommand : public cli::ParserCommand
     {
         public:
@@ -818,7 +818,7 @@ namespace cli
             {
                 return "Syntax: echo [--nonewline] [string]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -827,21 +827,21 @@ namespace cli
                     {'n', "no-newline", OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool echoNewline(true);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'n':
@@ -849,22 +849,22 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // remove the -n arg
                 if (!echoNewline)
                 {
                     argv.erase(++argv.begin());
                 }
-                
+
                 return cli.DoEcho(argv, echoNewline);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             EchoCommand& operator=(const EchoCommand&);
     };
-    
+
     class EchoCommandsCommand : public cli::ParserCommand
     {
         public:
@@ -878,7 +878,7 @@ namespace cli
             {
                 return "Syntax: echo-commands [-yn]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -888,10 +888,10 @@ namespace cli
                     {'n', "no",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool echoCommands = true ;
                 bool onlyGetValue = true ;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -903,7 +903,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'y':
@@ -916,21 +916,21 @@ namespace cli
                             break ;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError("Format is 'echo-commands [--yes | --no]") ;
                 }
-                
+
                 return cli.DoEchoCommands(onlyGetValue, echoCommands);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             EchoCommandsCommand& operator=(const EchoCommandsCommand&);
     };
-    
+
     class EditProductionCommand : public cli::ParserCommand
     {
         public:
@@ -944,23 +944,23 @@ namespace cli
             {
                 return "Syntax: edit-production production_name";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 if (argv.size() != 2)
                 {
                     return cli.SetError("Need to include the name of the production to edit.");
                 }
-                
+
                 return cli.DoEditProduction(argv[1]);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             EditProductionCommand& operator=(const EditProductionCommand&);
     };
-    
+
     class EpMemCommand : public cli::ParserCommand
     {
         public:
@@ -974,7 +974,7 @@ namespace cli
             {
                 return "Syntax: epmem [options]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -995,35 +995,35 @@ namespace cli
                     {'v', "viz",          OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
-                
+
                 char option = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError().c_str());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     if (option != 0)
                     {
                         return cli.SetError("Invalid parameters.");
                     }
                     option = static_cast<char>(opt.GetOption());
                 }
-                
+
                 switch (option)
                 {
                     case 0:
                     default:
                         // no options
                         break;
-                        
+
                     case 'i':
                     case 'e':
                     case 'd':
@@ -1034,19 +1034,19 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoEpMem(option);
                     }
-                    
+
                     case 'b':
                         // case: backup requires one non-option argument
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoEpMem(option, &(argv[2]));
-                        
+
                     case 'g':
                         // case: get requires one non-option argument
                     {
@@ -1054,10 +1054,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoEpMem(option, &(argv[2]));
                     }
-                    
+
                     case 'p':
                         // case: print takes one non-option argument
                     {
@@ -1065,18 +1065,18 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         std::string temp_str(argv[2]);
                         epmem_time_id memory_id;
-                        
+
                         if (!from_string(memory_id, temp_str))
                         {
                             return cli.SetError("Invalid epmem time tag.");
                         }
-                        
+
                         return cli.DoEpMem(option, 0, 0, memory_id);
                     }
-                    
+
                     case 's':
                         // case: set requires two non-option arguments
                     {
@@ -1084,10 +1084,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoEpMem('s', &(argv[2]), &(argv[3]));
                     }
-                    
+
                     case 'S':
                         // case: stat can do zero or one non-option arguments
                     {
@@ -1095,15 +1095,15 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoEpMem(option);
                         }
-                        
+
                         return cli.DoEpMem(option, &(argv[2]));
                     }
-                    
+
                     case 't':
                         // case: timer can do zero or one non-option arguments
                     {
@@ -1111,15 +1111,15 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoEpMem(option);
                         }
-                        
+
                         return cli.DoEpMem(option, &(argv[2]));
                     }
-                    
+
                     case 'v':
                         // case: viz takes one non-option argument
                     {
@@ -1127,35 +1127,35 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         std::string temp_str(argv[2]);
                         epmem_time_id memory_id;
-                        
+
                         if (!from_string(memory_id, temp_str))
                         {
                             return cli.SetError("Invalid epmem time tag.");
                         }
-                        
+
                         return cli.DoEpMem(option, 0, 0, memory_id);
                     }
                 }
-                
+
                 // bad: no option, but more than one argument
                 if (argv.size() > 1)
                 {
                     return cli.SetError("Too many arguments, check syntax.");
                 }
-                
+
                 // case: nothing = full configuration information
                 return cli.DoEpMem();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             EpMemCommand& operator=(const EpMemCommand&);
     };
-    
+
     class ExciseCommand : public cli::ParserCommand
     {
         public:
@@ -1169,7 +1169,7 @@ namespace cli
             {
                 return "Syntax: excise production_name\nexcise options";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -1184,9 +1184,9 @@ namespace cli
                     {'u', "user",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::ExciseBitset options(0);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -1198,7 +1198,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'a':
@@ -1224,7 +1224,7 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // If there are options, no additional argument.
                 if (options.any())
                 {
@@ -1234,7 +1234,7 @@ namespace cli
                     }
                     return cli.DoExcise(options);
                 }
-                
+
                 // If there are no options, there must be only one production name argument
                 if (opt.GetNonOptionArguments() < 1)
                 {
@@ -1244,17 +1244,17 @@ namespace cli
                 {
                     return cli.SetError("Only one production name allowed, call excise multiple times to excise more than one specific production.");
                 }
-                
+
                 // Pass the production to the cli.DoExcise function
                 return cli.DoExcise(options, &(argv[opt.GetArgument() - opt.GetNonOptionArguments()]));
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             ExciseCommand& operator=(const ExciseCommand&);
     };
-    
+
     class ExplainBacktracesCommand : public cli::ParserCommand
     {
         public:
@@ -1268,7 +1268,7 @@ namespace cli
             {
                 return "Syntax: explain-backtraces [options] [prod_name]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -1278,9 +1278,9 @@ namespace cli
                     {'f', "full",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 int condition = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -1292,13 +1292,13 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'f':
                             condition = -1;
                             break;
-                            
+
                         case 'c':
                             if (!from_string(condition, opt.GetOptionArgument()) || (condition <= 0))
                             {
@@ -1307,36 +1307,36 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // never more than one arg
                 if (opt.GetNonOptionArguments() > 1)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // we need a production if full or condition given
                 if (condition)
                     if (opt.GetNonOptionArguments() < 1)
                     {
                         return cli.SetError("Production name required for that option.");
                     }
-                    
+
                 // we have a production
                 if (opt.GetNonOptionArguments() == 1)
                 {
                     return cli.DoExplainBacktraces(&argv[opt.GetArgument() - opt.GetNonOptionArguments()], condition);
                 }
-                
+
                 // query
                 return cli.DoExplainBacktraces();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             ExplainBacktracesCommand& operator=(const ExplainBacktracesCommand&);
     };
-    
+
     class FiringCountsCommand : public cli::ParserCommand
     {
         public:
@@ -1350,21 +1350,21 @@ namespace cli
             {
                 return "Syntax: firing-counts [n]\nfiring-counts production_name";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // The number to list defaults to -1 (list all)
                 int numberToList = -1;
-                
+
                 // Production defaults to no production
                 std::string* pProduction = 0;
-                
+
                 // no more than 1 arg
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 if (argv.size() == 2)
                 {
                     // one argument, figure out if it is a non-negative integer or a production
@@ -1374,26 +1374,26 @@ namespace cli
                         {
                             return cli.SetError("Expected non-negative integer (count).");
                         }
-                        
+
                     }
                     else
                     {
                         numberToList = -1;
-                        
+
                         // non-integer argument, hopfully a production
                         pProduction = &(argv[1]);
                     }
                 }
-                
+
                 return cli.DoFiringCounts(numberToList, pProduction);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             FiringCountsCommand& operator=(const FiringCountsCommand&);
     };
-    
+
     class GDSPrintCommand : public cli::ParserCommand
     {
         public:
@@ -1407,18 +1407,18 @@ namespace cli
             {
                 return "Syntax: gds-print";
             }
-            
+
             virtual bool Parse(std::vector< std::string >&)
             {
                 return cli.DoGDSPrint();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             GDSPrintCommand& operator=(const GDSPrintCommand&);
     };
-    
+
     class GPCommand : public cli::ParserCommand
     {
         public:
@@ -1432,7 +1432,7 @@ namespace cli
             {
                 return "Syntax: gp { production_body }";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // One argument
@@ -1444,16 +1444,16 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoGP(argv[1]);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             GPCommand& operator=(const GPCommand&);
     };
-    
+
     class GPMaxCommand : public cli::ParserCommand
     {
         public:
@@ -1467,17 +1467,17 @@ namespace cli
             {
                 return "Syntax: gp-max [value]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // n defaults to 0 (print current value)
                 int n = -1;
-                
+
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // one argument, figure out if it is a positive integer
                 if (argv.size() == 2)
                 {
@@ -1487,16 +1487,16 @@ namespace cli
                         return cli.SetError("Value must be non-negative.");
                     }
                 }
-                
+
                 return cli.DoGPMax(n);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             GPMaxCommand& operator=(const GPMaxCommand&);
     };
-    
+
     class HelpCommand : public cli::ParserCommand
     {
         public:
@@ -1510,18 +1510,18 @@ namespace cli
             {
                 return "Syntax: help [command]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 return cli.DoHelp(argv);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             HelpCommand& operator=(const HelpCommand&);
     };
-    
+
     class IndifferentSelectionCommand : public cli::ParserCommand
     {
         public:
@@ -1542,7 +1542,7 @@ namespace cli
                     "indifferent-selection [-r] parameter reduction_policy [reduction_rate]\n"
                     "indifferent-selection [-a] [setting]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -1555,52 +1555,52 @@ namespace cli
                     {'l', "last",                OPTARG_NONE},
                     //{'u', "random-uniform",        OPTARG_NONE},
                     {'x', "softmax",            OPTARG_NONE},
-                    
+
                     // selection parameters
                     {'e', "epsilon",            OPTARG_NONE},
                     {'t', "temperature",        OPTARG_NONE},
-                    
+
                     // auto-reduction control
                     {'a', "auto-reduce",        OPTARG_NONE},
-                    
+
                     // selection parameter reduction
                     {'p', "reduction-policy",    OPTARG_NONE},
                     {'r', "reduction-rate",        OPTARG_NONE},
-                    
+
                     // stats
                     {'s', "stats",                OPTARG_NONE},
-                    
+
                     {0, 0, OPTARG_NONE} // null
                 };
-                
+
                 char option = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError().c_str());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     if (option != 0)
                     {
                         return cli.SetError("indifferent-selection takes only one option at a time.");
                     }
                     option = static_cast<char>(opt.GetOption());
                 }
-                
+
                 switch (option)
                 {
                     case 0:
                     default:
                         // no options
                         break;
-                        
+
                     case 'b':
                     case 'g':
                     case 'f':
@@ -1612,7 +1612,7 @@ namespace cli
                             return cli.SetError(opt.GetError().c_str());
                         }
                         return cli.DoIndifferentSelection(option);
-                        
+
                     case 'e':
                     case 't':
                         // case: selection parameter can do zero or one non-option arguments
@@ -1620,82 +1620,82 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoIndifferentSelection(option);
                         }
-                        
+
                         return cli.DoIndifferentSelection(option, &(argv[2]));
-                        
+
                     case 'a':
                         // case: auto reduction control can do zero or one non-option arguments
                         if (!opt.CheckNumNonOptArgs(0, 1))
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoIndifferentSelection(option);
                         }
-                        
+
                         return cli.DoIndifferentSelection(option, &(argv[2]));
-                        
+
                     case 'p':
                         // case: reduction policy requires one or two non-option arguments
                         if (!opt.CheckNumNonOptArgs(1, 2))
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 1)
                         {
                             return cli.DoIndifferentSelection(option, &(argv[2]));
                         }
-                        
+
                         return cli.DoIndifferentSelection(option, &(argv[2]), &(argv[3]));
-                        
+
                     case 'r':
                         // case: reduction policy rate requires two or three arguments
                         if (!opt.CheckNumNonOptArgs(2, 3))
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 2)
                         {
                             return cli.DoIndifferentSelection(option, &(argv[2]), &(argv[3]));
                         }
-                        
+
                         return cli.DoIndifferentSelection(option, &(argv[2]), &(argv[3]), &(argv[4]));
-                        
+
                     case 's':
                         // case: stats takes no parameters
                         if (!opt.CheckNumNonOptArgs(0, 0))
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoIndifferentSelection(option);
                 }
-                
+
                 // bad: no option, but more than one argument
                 if (argv.size() > 1)
                 {
                     return cli.SetError("Too many args.");
                 }
-                
+
                 // case: nothing = full configuration information
                 return cli.DoIndifferentSelection();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             IndifferentSelectionCommand& operator=(const IndifferentSelectionCommand&);
     };
-    
+
     class InitSoarCommand : public cli::ParserCommand
     {
         public:
@@ -1709,18 +1709,18 @@ namespace cli
             {
                 return "Syntax: init-soar";
             }
-            
+
             virtual bool Parse(std::vector< std::string >&)
             {
                 return cli.DoInitSoar();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             InitSoarCommand& operator=(const InitSoarCommand&);
     };
-    
+
     class InternalSymbolsCommand : public cli::ParserCommand
     {
         public:
@@ -1734,18 +1734,18 @@ namespace cli
             {
                 return "Syntax: internal-symbols";
             }
-            
+
             virtual bool Parse(std::vector< std::string >&)
             {
                 return cli.DoInternalSymbols();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             InternalSymbolsCommand& operator=(const InternalSymbolsCommand&);
     };
-    
+
     class LearnCommand : public cli::ParserCommand
     {
         public:
@@ -1759,7 +1759,7 @@ namespace cli
             {
                 return "Syntax: learn [-abdeElonNpP]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -1780,9 +1780,9 @@ namespace cli
                     {'P', "no-desirability-prefs", OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::LearnBitset options(0);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -1794,7 +1794,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'a':
@@ -1832,22 +1832,22 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // No non-option arguments
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoLearn(options);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             LearnCommand& operator=(const LearnCommand&);
     };
-    
+
     class LoadLibraryCommand : public cli::ParserCommand
     {
         public:
@@ -1861,16 +1861,16 @@ namespace cli
             {
                 return "Syntax: load-library [library_name] [arguments]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // command-name library-name [library-args ...]
-                
+
                 if (argv.size() < 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // strip the command name, combine the rest
                 std::string libraryCommand(argv[1]);
                 for (std::string::size_type i = 2; i < argv.size(); ++i)
@@ -1878,16 +1878,16 @@ namespace cli
                     libraryCommand += " ";
                     libraryCommand += argv[i];
                 }
-                
+
                 return cli.DoLoadLibrary(libraryCommand);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             LoadLibraryCommand& operator=(const LoadLibraryCommand&);
     };
-    
+
     class LSCommand : public cli::ParserCommand
     {
         public:
@@ -1901,7 +1901,7 @@ namespace cli
             {
                 return "Syntax: ls";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // No arguments
@@ -1911,13 +1911,13 @@ namespace cli
                 }
                 return cli.DoLS();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             LSCommand& operator=(const LSCommand&);
     };
-    
+
     class MatchesCommand : public cli::ParserCommand
     {
         public:
@@ -1931,7 +1931,7 @@ namespace cli
             {
                 return "Syntax: matches [options] production_name\nmatches [options] -[a|r]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -1945,10 +1945,10 @@ namespace cli
                     {'w', "wmes",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::eWMEDetail detail = Cli::WME_DETAIL_NONE;
                 Cli::eMatchesMode mode = Cli::MATCHES_ASSERTIONS_RETRACTIONS;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -1960,7 +1960,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'n':
@@ -1981,13 +1981,13 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // Max one additional argument and it is a production
                 if (opt.GetNonOptionArguments() > 1)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 if (opt.GetNonOptionArguments() == 1)
                 {
                     if (mode != Cli::MATCHES_ASSERTIONS_RETRACTIONS)
@@ -1996,16 +1996,16 @@ namespace cli
                     }
                     return cli.DoMatches(Cli::MATCHES_PRODUCTION, detail, &argv[opt.GetArgument() - opt.GetNonOptionArguments()]);
                 }
-                
+
                 return cli.DoMatches(mode, detail);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MatchesCommand& operator=(const MatchesCommand&);
     };
-    
+
     class MaxChunksCommand : public cli::ParserCommand
     {
         public:
@@ -2019,17 +2019,17 @@ namespace cli
             {
                 return "Syntax: max-chunks [n]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // n defaults to 0 (print current value)
                 int n = 0;
-                
+
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // one argument, figure out if it is a positive integer
                 if (argv.size() == 2)
                 {
@@ -2039,16 +2039,16 @@ namespace cli
                         return cli.SetError("Expected positive integer.");
                     }
                 }
-                
+
                 return cli.DoMaxChunks(n);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MaxChunksCommand& operator=(const MaxChunksCommand&);
     };
-    
+
     class MaxDCTimeCommand : public cli::ParserCommand
     {
         public:
@@ -2062,7 +2062,7 @@ namespace cli
             {
                 return "Syntax: max-dc-time [--seconds] [n]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -2073,12 +2073,12 @@ namespace cli
                     {'o', "off", OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool seconds = false;
-                
+
                 // n defaults to 0 (print current value)
                 int n = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -2090,7 +2090,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 's':
@@ -2102,47 +2102,47 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments() > 1)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 if (opt.GetNonOptionArguments() == 1)
                 {
                     int index = opt.GetArgument() - opt.GetNonOptionArguments();
-                    
+
                     if (seconds)
                     {
                         double nsec = 0;
-                        
+
                         if (!from_string(nsec, argv[index]))
                         {
                             return cli.SetError(GetSyntax());
                         }
-                        
+
                         n = static_cast<int>(nsec * 1000000);
                     }
                     else
                     {
                         from_string(n, argv[index]);
                     }
-                    
+
                     if (n <= 0)
                     {
                         return cli.SetError("Expected positive value.");
                     }
                 }
-                
+
                 return cli.DoMaxDCTime(n);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MaxDCTimeCommand& operator=(const MaxDCTimeCommand&);
     };
-    
+
     class MaxElaborationsCommand : public cli::ParserCommand
     {
         public:
@@ -2156,17 +2156,17 @@ namespace cli
             {
                 return "Syntax: max-elaborations [n]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // n defaults to 0 (print current value)
                 int n = 0;
-                
+
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // one argument, figure out if it is a positive integer
                 if (argv.size() == 2)
                 {
@@ -2176,16 +2176,16 @@ namespace cli
                         return cli.SetError("Expected positive integer.");
                     }
                 }
-                
+
                 return cli.DoMaxElaborations(n);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MaxElaborationsCommand& operator=(const MaxElaborationsCommand&);
     };
-    
+
     class MaxGoalDepthCommand : public cli::ParserCommand
     {
         public:
@@ -2199,17 +2199,17 @@ namespace cli
             {
                 return "Syntax: max-goal-depth [n]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // n defaults to 0 (print current value)
                 int n = 0;
-                
+
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // one argument, figure out if it is a positive integer
                 if (argv.size() == 2)
                 {
@@ -2219,16 +2219,16 @@ namespace cli
                         return cli.SetError("Expected positive integer.");
                     }
                 }
-                
+
                 return cli.DoMaxGoalDepth(n);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MaxGoalDepthCommand& operator=(const MaxGoalDepthCommand&);
     };
-    
+
     class MaxMemoryUsageCommand : public cli::ParserCommand
     {
         public:
@@ -2242,17 +2242,17 @@ namespace cli
             {
                 return "Syntax: max-memory-usage [n]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // n defaults to 0 (print current value)
                 int n = 0;
-                
+
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // one argument, figure out if it is a positive integer
                 if (argv.size() == 2)
                 {
@@ -2262,16 +2262,16 @@ namespace cli
                         return cli.SetError("Expected positive integer.");
                     }
                 }
-                
+
                 return cli.DoMaxMemoryUsage(n);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MaxMemoryUsageCommand& operator=(const MaxMemoryUsageCommand&);
     };
-    
+
     class MaxNilOutputCyclesCommand : public cli::ParserCommand
     {
         public:
@@ -2285,17 +2285,17 @@ namespace cli
             {
                 return "Syntax: max-nil-output-cycles [n]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // n defaults to 0 (print current value)
                 int n = 0;
-                
+
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // one argument, figure out if it is a positive integer
                 if (argv.size() == 2)
                 {
@@ -2305,16 +2305,16 @@ namespace cli
                         return cli.SetError("Expected positive integer.");
                     }
                 }
-                
+
                 return cli.DoMaxNilOutputCycles(n);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MaxNilOutputCyclesCommand& operator=(const MaxNilOutputCyclesCommand&);
     };
-    
+
     class MemoriesCommand : public cli::ParserCommand
     {
         public:
@@ -2328,7 +2328,7 @@ namespace cli
             {
                 return "Syntax: memories [options] [number]\nmemories production_name";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -2341,9 +2341,9 @@ namespace cli
                     {'u', "user",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::MemoriesBitset options(0);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -2355,7 +2355,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'c':
@@ -2375,13 +2375,13 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // Max one additional argument
                 if (opt.GetNonOptionArguments() > 1)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // It is either a production or a number
                 int n = 0;
                 if (opt.GetNonOptionArguments() == 1)
@@ -2405,23 +2405,23 @@ namespace cli
                         return cli.DoMemories(options, 0, &argv[optind]);
                     }
                 }
-                
+
                 // Default to all types when no production and no type specified
                 if (options.none())
                 {
                     options.flip();
                 }
-                
+
                 // handle production/number cases
                 return cli.DoMemories(options, n);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MemoriesCommand& operator=(const MemoriesCommand&);
     };
-    
+
     class MultiAttributesCommand : public cli::ParserCommand
     {
         public:
@@ -2435,7 +2435,7 @@ namespace cli
             {
                 return "Syntax: multi-attributes [symbol [n]]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // No more than three arguments
@@ -2443,7 +2443,7 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 int n = 0;
                 // If we have 3 arguments, third one is an integer
                 if (argv.size() > 2)
@@ -2453,22 +2453,22 @@ namespace cli
                         return cli.SetError("Expected non-negative integer.");
                     }
                 }
-                
+
                 // If we have two arguments, second arg is an attribute/identifer/whatever
                 if (argv.size() > 1)
                 {
                     return cli.DoMultiAttributes(&argv[1], n);
                 }
-                
+
                 return cli.DoMultiAttributes();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             MultiAttributesCommand& operator=(const MultiAttributesCommand&);
     };
-    
+
     class NumericIndifferentModeCommand : public cli::ParserCommand
     {
         public:
@@ -2482,7 +2482,7 @@ namespace cli
             {
                 return "Syntax: numeric-indifferent-mode [-as]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -2493,10 +2493,10 @@ namespace cli
                     {'s', "sum",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 ni_mode mode = NUMERIC_INDIFFERENT_MODE_AVG;
                 bool query = true;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -2508,7 +2508,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'a':
@@ -2521,22 +2521,22 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // No additional arguments
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoNumericIndifferentMode(query, mode);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             NumericIndifferentModeCommand& operator=(const NumericIndifferentModeCommand&);
     };
-    
+
     class OSupportModeCommand : public cli::ParserCommand
     {
         public:
@@ -2550,14 +2550,14 @@ namespace cli
             {
                 return "Syntax: o-support-mode [n]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 int mode = -1;
                 if (argv.size() == 2)
                 {
@@ -2571,16 +2571,16 @@ namespace cli
                         return cli.SetError("Expected an integer 0, 2, 3, or 4.");
                     }
                 }
-                
+
                 return cli.DoOSupportMode(mode);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             OSupportModeCommand& operator=(const OSupportModeCommand&);
     };
-    
+
     class PopDCommand : public cli::ParserCommand
     {
         public:
@@ -2594,7 +2594,7 @@ namespace cli
             {
                 return "Syntax: popd";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // No arguments
@@ -2604,13 +2604,13 @@ namespace cli
                 }
                 return cli.DoPopD();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             PopDCommand& operator=(const PopDCommand&);
     };
-    
+
     class PortCommand : public cli::ParserCommand
     {
         public:
@@ -2624,18 +2624,18 @@ namespace cli
             {
                 return "Syntax: port";
             }
-            
+
             virtual bool Parse(std::vector< std::string >&)
             {
                 return cli.DoPort();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             PortCommand& operator=(const PortCommand&);
     };
-    
+
     class PredictCommand : public cli::ParserCommand
     {
         public:
@@ -2649,7 +2649,7 @@ namespace cli
             {
                 return "Syntax: predict";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // No arguments to predict next operator
@@ -2657,16 +2657,16 @@ namespace cli
                 {
                     return cli.SetError("predict takes no arguments.");
                 }
-                
+
                 return cli.DoPredict();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             PredictCommand& operator=(const PredictCommand&);
     };
-    
+
     class PreferencesCommand : public cli::ParserCommand
     {
         public:
@@ -2680,7 +2680,7 @@ namespace cli
             {
                 return "Syntax: preferences [options] [identifier [attribute]]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -2697,10 +2697,10 @@ namespace cli
                     {'o', "object",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::ePreferencesDetail detail = Cli::PREFERENCES_ONLY;
                 bool object = false;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -2712,7 +2712,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case '0':
@@ -2731,20 +2731,20 @@ namespace cli
                         case 'w':
                             detail = Cli::PREFERENCES_WMES;
                             break;
-                            
+
                         case 'o':
                         case 'O':
                             object = true;
                             break;
                     }
                 }
-                
+
                 // Up to two non-option arguments allowed, id/attribute
                 if (opt.GetNonOptionArguments() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 int optind = opt.GetArgument() - opt.GetNonOptionArguments();
                 if (opt.GetNonOptionArguments() == 2)
                 {
@@ -2756,16 +2756,16 @@ namespace cli
                     // id
                     return cli.DoPreferences(detail, object, &argv[optind]);
                 }
-                
+
                 return cli.DoPreferences(detail, object);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             PreferencesCommand& operator=(const PreferencesCommand&);
     };
-    
+
     class PrintCommand : public cli::ParserCommand
     {
         public:
@@ -2779,7 +2779,7 @@ namespace cli
             {
                 return "Syntax: print [options] [production_name]\nprint [options] identifier|timetag|pattern";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -2805,10 +2805,10 @@ namespace cli
                     {'v', "varprint",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 int depth = -1;
                 Cli::PrintBitset options(0);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -2820,7 +2820,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'a':
@@ -2883,7 +2883,7 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // STATES and OPERATORS are sub-options of STACK
                 if (options.test(Cli::PRINT_OPERATORS) || options.test(Cli::PRINT_STATES))
                 {
@@ -2892,7 +2892,7 @@ namespace cli
                         return cli.SetError("Options --operators (-o) and --states (-S) are only valid when printing the stack.");
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments() == 0)
                 {
                     // d and t options require an argument
@@ -2902,7 +2902,7 @@ namespace cli
                     }
                     return cli.DoPrint(options, depth);
                 }
-                
+
                 // the acDjus options don't allow an argument
                 if (options.test(Cli::PRINT_ALL)
                         || options.test(Cli::PRINT_CHUNKS)
@@ -2919,7 +2919,7 @@ namespace cli
                 {
                     return cli.SetError("No depth/tree flags allowed when printing exact.");
                 }
-                
+
                 std::string arg;
                 for (int i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
                 {
@@ -2931,13 +2931,13 @@ namespace cli
                 }
                 return cli.DoPrint(options, depth, &arg);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             PrintCommand& operator=(const PrintCommand&);
     };
-    
+
     class ProductionFindCommand : public cli::ParserCommand
     {
         public:
@@ -2951,7 +2951,7 @@ namespace cli
             {
                 return "Syntax: production-find [-lrs[n|c]] pattern";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -2964,9 +2964,9 @@ namespace cli
                     {'s', "show-bindings",    OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::ProductionFindBitset options(0);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -2978,7 +2978,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'c':
@@ -3000,17 +3000,17 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (!opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 if (options.none())
                 {
                     options.set(Cli::PRODUCTION_FIND_INCLUDE_LHS);
                 }
-                
+
                 std::string pattern;
                 for (unsigned i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
                 {
@@ -3018,16 +3018,16 @@ namespace cli
                     pattern += ' ';
                 }
                 pattern = pattern.substr(0, pattern.length() - 1);
-                
+
                 return cli.DoProductionFind(options, pattern);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             ProductionFindCommand& operator=(const ProductionFindCommand&);
     };
-    
+
     class PushDCommand : public cli::ParserCommand
     {
         public:
@@ -3041,7 +3041,7 @@ namespace cli
             {
                 return "Syntax: pushd directory";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // Only takes one argument, the directory to change into
@@ -3055,13 +3055,13 @@ namespace cli
                 }
                 return cli.DoPushD(argv[1]);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             PushDCommand& operator=(const PushDCommand&);
     };
-    
+
     class PWatchCommand : public cli::ParserCommand
     {
         public:
@@ -3075,7 +3075,7 @@ namespace cli
             {
                 return "Syntax: pwatch [-d|e] [production name]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3087,10 +3087,10 @@ namespace cli
                     {'e', "on",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool setting = true;
                 bool query = true;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -3102,7 +3102,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'd':
@@ -3118,20 +3118,20 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 if (opt.GetNonOptionArguments() == 1)
                 {
                     return cli.DoPWatch(false, &argv[opt.GetArgument() - opt.GetNonOptionArguments()], setting);
                 }
                 return cli.DoPWatch(query, 0);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             PWatchCommand& operator=(const PWatchCommand&);
     };
-    
+
     class PWDCommand : public cli::ParserCommand
     {
         public:
@@ -3145,7 +3145,7 @@ namespace cli
             {
                 return "Syntax: pwd";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // No arguments to print working directory
@@ -3155,13 +3155,13 @@ namespace cli
                 }
                 return cli.DoPWD();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             PWDCommand& operator=(const PWDCommand&);
     };
-    
+
     class RandCommand : public cli::ParserCommand
     {
         public:
@@ -3175,7 +3175,7 @@ namespace cli
             {
                 return "Syntax: rand\nrand n\nrand --integer\nrand --integer n";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3184,9 +3184,9 @@ namespace cli
                     {'i', "integer", OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool integer(false);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -3198,7 +3198,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'i':
@@ -3206,7 +3206,7 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments() > 1)
                 {
                     return cli.SetError(GetSyntax());
@@ -3216,16 +3216,16 @@ namespace cli
                     unsigned optind = opt.GetArgument() - opt.GetNonOptionArguments();
                     return cli.DoRand(integer, &(argv[optind]));
                 }
-                
+
                 return cli.DoRand(integer, 0);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             RandCommand& operator=(const RandCommand&);
     };
-    
+
     class RemoveWMECommand : public cli::ParserCommand
     {
         public:
@@ -3239,7 +3239,7 @@ namespace cli
             {
                 return "Syntax: remove-wme timetag";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // Exactly one argument
@@ -3251,23 +3251,23 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 uint64_t timetag = 0;
                 from_string(timetag, argv[1]);
                 if (!timetag)
                 {
                     return cli.SetError("Timetag must be positive.");
                 }
-                
+
                 return cli.DoRemoveWME(timetag);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             RemoveWMECommand& operator=(const RemoveWMECommand&);
     };
-    
+
     class ReplayInputCommand : public cli::ParserCommand
     {
         public:
@@ -3281,7 +3281,7 @@ namespace cli
             {
                 return "Syntax: replay-input --open filename\nreplay-input [--query]\nreplay-input --close";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3292,10 +3292,10 @@ namespace cli
                     {'q', "query", OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::eReplayInputMode mode = Cli::REPLAY_INPUT_QUERY;
                 std::string pathname;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -3307,7 +3307,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'c':
@@ -3322,16 +3322,16 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 return cli.DoReplayInput(mode, mode == Cli::REPLAY_INPUT_OPEN ? &pathname : 0);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             ReplayInputCommand& operator=(const ReplayInputCommand&);
     };
-    
+
     class ReteNetCommand : public cli::ParserCommand
     {
         public:
@@ -3346,7 +3346,7 @@ namespace cli
                 return
                     "Syntax: rete-net -s|l filename";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3357,11 +3357,11 @@ namespace cli
                     {'s', "save",        OPTARG_REQUIRED},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool save = false;
                 bool load = false;
                 std::string filename;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -3373,7 +3373,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'l':
@@ -3389,7 +3389,7 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // Must have a save or load operation
                 if (!save && !load)
                 {
@@ -3399,16 +3399,16 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoReteNet(save, filename);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             ReteNetCommand& operator=(const ReteNetCommand&);
     };
-    
+
     class RLCommand : public cli::ParserCommand
     {
         public:
@@ -3422,7 +3422,7 @@ namespace cli
             {
                 return "Syntax: rl [options parameter|statstic]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3434,35 +3434,35 @@ namespace cli
                     {'S', "stats",    OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
-                
+
                 char option = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError().c_str());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     if (option != 0)
                     {
                         return cli.SetError("rl takes only one option at a time.");
                     }
                     option = static_cast<char>(opt.GetOption());
                 }
-                
+
                 switch (option)
                 {
                     case 0:
                     default:
                         // no options
                         break;
-                        
+
                     case 'g':
                         // case: get requires one non-option argument
                     {
@@ -3470,10 +3470,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoRL(option, &(argv[2]));
                     }
-                    
+
                     case 's':
                         // case: set requires two non-option arguments
                     {
@@ -3481,10 +3481,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoRL(option, &(argv[2]), &(argv[3]));
                     }
-                    
+
                     case 't':
                         // case: trace can do 0-2 non-option arguments
                     {
@@ -3492,7 +3492,7 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoRL(option);
@@ -3501,10 +3501,10 @@ namespace cli
                         {
                             return cli.DoRL(option, &(argv[2]));
                         }
-                        
+
                         return cli.DoRL(option, &(argv[2]), &(argv[3]));
                     }
-                    
+
                     case 'S':
                         // case: stat and trace can do zero or one non-option arguments
                     {
@@ -3512,32 +3512,32 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoRL(option);
                         }
-                        
+
                         return cli.DoRL(option, &(argv[2]));
                     }
                 }
-                
+
                 // bad: no option, but more than one argument
                 if (argv.size() > 1)
                 {
                     return cli.SetError("Invalid syntax.");
                 }
-                
+
                 // case: nothing = full configuration information
                 return cli.DoRL();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             RLCommand& operator=(const RLCommand&);
     };
-    
+
     class RunCommand : public cli::ParserCommand
     {
         public:
@@ -3551,7 +3551,7 @@ namespace cli
             {
                 return "Syntax: run  [-f|count]\nrun -[d|e|o|p][s][un][g] [f|count]\nrun -[d|e|o|p][un] count [-i e|p|d|o]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3568,10 +3568,10 @@ namespace cli
                     {'u', "update",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::RunBitset options(0);
                 Cli::eRunInterleaveMode interleaveMode = Cli::RUN_INTERLEAVE_DEFAULT;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -3583,7 +3583,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'd':
@@ -3620,16 +3620,16 @@ namespace cli
                             break ;
                     }
                 }
-                
+
                 // Only one non-option argument allowed, count
                 if (opt.GetNonOptionArguments() > 1)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 // Decide if we explicitly indicated how to run
                 bool specifiedType = (options.test(Cli::RUN_ELABORATION) || options.test(Cli::RUN_DECISION) || options.test(Cli::RUN_PHASE) || options.test(Cli::RUN_OUTPUT)) ;
-                
+
                 // Count defaults to -1
                 int count = -1;
                 if (opt.GetNonOptionArguments() == 1)
@@ -3645,13 +3645,13 @@ namespace cli
                         return cli.SetError("Count must be positive.");
                     }
                 }
-                
+
                 return cli.DoRun(options, count, interleaveMode);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             Cli::eRunInterleaveMode ParseRunInterleaveOptarg(cli::Options& opt)
             {
                 if (opt.GetOptionArgument() == "d")
@@ -3670,14 +3670,14 @@ namespace cli
                 {
                     return Cli::RUN_INTERLEAVE_PHASE;
                 }
-                
+
                 cli.SetError("Invalid interleave switch: " + opt.GetOptionArgument());
                 return Cli::RUN_INTERLEAVE_DEFAULT;
             }
-            
+
             RunCommand& operator=(const RunCommand&);
     };
-    
+
     class SaveBacktracesCommand : public cli::ParserCommand
     {
         public:
@@ -3691,7 +3691,7 @@ namespace cli
             {
                 return "Syntax: save-backtraces [-ed]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3703,10 +3703,10 @@ namespace cli
                     {'e', "on",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool setting = true;
                 bool query = true;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -3718,7 +3718,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'd':
@@ -3737,13 +3737,13 @@ namespace cli
                 }
                 return cli.DoSaveBacktraces(query ? 0 : &setting);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             SaveBacktracesCommand& operator=(const SaveBacktracesCommand&);
     };
-    
+
     class SelectCommand : public cli::ParserCommand
     {
         public:
@@ -3757,7 +3757,7 @@ namespace cli
             {
                 return "Syntax: select id";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // At most one argument to select the next operator
@@ -3765,21 +3765,21 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 if (argv.size() == 2)
                 {
                     return cli.DoSelect(&(argv[1]));
                 }
-                
+
                 return cli.DoSelect();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             SelectCommand& operator=(const SelectCommand&);
     };
-    
+
     class SetStopPhaseCommand : public cli::ParserCommand
     {
         public:
@@ -3793,7 +3793,7 @@ namespace cli
             {
                 return "Syntax: set-stop-phase -[ABadiop]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3808,11 +3808,11 @@ namespace cli
                     {'o', "output",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 sml::smlPhase phase = sml::sml_INPUT_PHASE ;
                 int countPhaseArgs = 0 ;
                 bool before = true ;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -3824,7 +3824,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'B':
@@ -3855,21 +3855,21 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments() || countPhaseArgs > 1)
                 {
                     return cli.SetError("Format is 'set-stop-phase [--Before | --After] <phase>' where <phase> is --input | --proposal | --decision | --apply | --output\ne.g. set-stop-phase --before --input") ;
                 }
-                
+
                 return cli.DoSetStopPhase(countPhaseArgs == 1, before, phase);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             SetStopPhaseCommand& operator=(const SetStopPhaseCommand&);
     };
-    
+
     class SMemCommand : public cli::ParserCommand
     {
         public:
@@ -3883,7 +3883,7 @@ namespace cli
             {
                 return "Syntax: smem [options]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -3904,54 +3904,54 @@ namespace cli
                     {'v', "viz",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
-                
+
                 char option = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError().c_str());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     if (option != 0)
                     {
                         return cli.SetError("smem takes only one option at a time.");
                     }
-                    
+
                     option = static_cast<char>(opt.GetOption());
                 }
-                
+
                 switch (option)
                 {
                     case 0:
                     default:
                         // no options
                         break;
-                        
+
                     case 'a':
                         // case: add requires one non-option argument
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoSMem(option, &(argv[2]));
-                        
+
                     case 'b':
                         // case: backup requires one non-option argument
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoSMem(option, &(argv[2]));
-                        
+
                     case 'g':
                     {
                         // case: get requires one non-option argument
@@ -3959,10 +3959,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoSMem(option, &(argv[2]));
                     }
-                    
+
                     case 'i':
                     case 'e':
                     case 'd':
@@ -3971,9 +3971,9 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoSMem(option);
-                        
+
                     case 'p':
                     {
                         // case: print does zero or 1/2 non-option arguments
@@ -3981,20 +3981,20 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoSMem(option);
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 1)
                         {
                             return cli.DoSMem(option, &(argv[2]), 0);
                         }
-                        
+
                         return cli.DoSMem(option, &(argv[2]), &(argv[3]));
                     }
-                    
+
                     case 's':
                     {
                         // case: set requires two non-option arguments
@@ -4002,10 +4002,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoSMem(option, &(argv[2]), &(argv[3]));
                     }
-                    
+
                     case 'S':
                     {
                         // case: stat can do zero or one non-option arguments
@@ -4013,15 +4013,15 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoSMem('S');
                         }
-                        
+
                         return cli.DoSMem(option, &(argv[2]));
                     }
-                    
+
                     case 't':
                     {
                         // case: timer can do zero or one non-option arguments
@@ -4029,15 +4029,15 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoSMem('t');
                         }
-                        
+
                         return cli.DoSMem(option, &(argv[2]));
                     }
-                    
+
                     case 'v':
                     {
                         // case: viz does zero or 1/2 non-option arguments
@@ -4045,37 +4045,37 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoSMem(option);
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 1)
                         {
                             return cli.DoSMem(option, &(argv[2]), 0);
                         }
-                        
+
                         return cli.DoSMem(option, &(argv[2]), &(argv[3]));
                     }
                 }
-                
+
                 // bad: no option, but more than one argument
                 if (argv.size() > 1)
                 {
                     return cli.SetError("Too many arguments.");
                 }
-                
+
                 // case: nothing = full configuration information
                 return cli.DoSMem();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             SMemCommand& operator=(const SMemCommand&);
     };
-    
+
     class SoarNewsCommand : public cli::ParserCommand
     {
         public:
@@ -4089,18 +4089,18 @@ namespace cli
             {
                 return "Syntax: soarnews";
             }
-            
+
             virtual bool Parse(std::vector< std::string >&)
             {
                 return cli.DoSoarNews();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             SoarNewsCommand& operator=(const SoarNewsCommand&);
     };
-    
+
     class SourceCommand : public cli::ParserCommand
     {
         public:
@@ -4115,7 +4115,7 @@ namespace cli
                 return
                     "Syntax: source [options] filename";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -4126,9 +4126,9 @@ namespace cli
                     {'v', "verbose",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::SourceBitset options(0);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -4140,7 +4140,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'd':
@@ -4154,7 +4154,7 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments() < 1)
                 {
                     return cli.SetError(GetSyntax());
@@ -4163,16 +4163,16 @@ namespace cli
                 {
                     return cli.SetError("Please supply one file to source. If there are spaces in the path, enclose it in quotes.");
                 }
-                
+
                 return cli.DoSource(argv[opt.GetArgument() - opt.GetNonOptionArguments()], &options);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             SourceCommand& operator=(const SourceCommand&);
     };
-    
+
     class SPCommand : public cli::ParserCommand
     {
         public:
@@ -4187,7 +4187,7 @@ namespace cli
                 return
                     "Syntax: sp {production_body}";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // One argument (the stuff in the brackets, minus the brackets
@@ -4199,16 +4199,16 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoSP(argv[1]);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             SPCommand& operator=(const SPCommand&);
     };
-    
+
     class SRandCommand : public cli::ParserCommand
     {
         public:
@@ -4223,30 +4223,30 @@ namespace cli
                 return
                     "Syntax: srand [seed]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 if (argv.size() < 2)
                 {
                     return cli.DoSRand();
                 }
-                
+
                 if (argv.size() > 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 uint32_t seed = 0;
                 sscanf(argv[1].c_str(), "%u", &seed);
                 return cli.DoSRand(&seed);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             SRandCommand& operator=(const SRandCommand&);
     };
-    
+
     class StatsCommand : public cli::ParserCommand
     {
         public:
@@ -4261,7 +4261,7 @@ namespace cli
                 return
                     "Syntax: stats [options]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -4281,10 +4281,10 @@ namespace cli
                     {'a', "agent",      OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::StatsBitset options(0);
                 int sort = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -4296,7 +4296,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'd':
@@ -4341,22 +4341,22 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // No arguments
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoStats(options, sort);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             StatsCommand& operator=(const StatsCommand&);
     };
-    
+
     class StopSoarCommand : public cli::ParserCommand
     {
         public:
@@ -4371,7 +4371,7 @@ namespace cli
                 return
                     "Syntax: stop-soar [-s] [reason string]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -4380,9 +4380,9 @@ namespace cli
                     {'s', "self",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool self = false;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -4394,7 +4394,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 's':
@@ -4402,7 +4402,7 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // Concatinate remaining args for 'reason'
                 if (opt.GetNonOptionArguments())
                 {
@@ -4416,13 +4416,13 @@ namespace cli
                 }
                 return cli.DoStopSoar(self);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             StopSoarCommand& operator=(const StopSoarCommand&);
     };
-    
+
     class TimeCommand : public cli::ParserCommand
     {
         public:
@@ -4436,7 +4436,7 @@ namespace cli
             {
                 return "Syntax: time command [arguments]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // There must at least be a command
@@ -4444,19 +4444,19 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 std::vector<std::string>::iterator iter = argv.begin();
                 argv.erase(iter);
-                
+
                 return cli.DoTime(argv);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             TimeCommand& operator=(const TimeCommand&);
     };
-    
+
     class TimersCommand : public cli::ParserCommand
     {
         public:
@@ -4470,7 +4470,7 @@ namespace cli
             {
                 return "Syntax: timers [options]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -4482,10 +4482,10 @@ namespace cli
                     {'e', "on",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool print = true;
                 bool setting = false;    // enable or disable timers, default of false ignored
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -4497,7 +4497,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'e':
@@ -4510,22 +4510,22 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // No non-option arguments
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoTimers(print ? 0 : &setting);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             TimersCommand& operator=(const TimersCommand&);
     };
-    
+
     class UnaliasCommand : public cli::ParserCommand
     {
         public:
@@ -4539,7 +4539,7 @@ namespace cli
             {
                 return "Syntax: unalias name";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 // Need exactly one argument
@@ -4551,17 +4551,17 @@ namespace cli
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 argv.erase(argv.begin());
                 return cli.DoUnalias(argv);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             UnaliasCommand& operator=(const UnaliasCommand&);
     };
-    
+
     class VerboseCommand : public cli::ParserCommand
     {
         public:
@@ -4575,7 +4575,7 @@ namespace cli
             {
                 return "Syntax: verbose [-ed]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -4587,10 +4587,10 @@ namespace cli
                     {'e', "onn",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool setting = false;
                 bool query = true;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -4602,7 +4602,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'd':
@@ -4615,21 +4615,21 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoVerbose(query ? 0 : &setting);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             VerboseCommand& operator=(const VerboseCommand&);
     };
-    
+
     class VersionCommand : public cli::ParserCommand
     {
         public:
@@ -4643,18 +4643,18 @@ namespace cli
             {
                 return "Syntax: version";
             }
-            
+
             virtual bool Parse(std::vector< std::string >&)
             {
                 return cli.DoVersion();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             VersionCommand& operator=(const VersionCommand&);
     };
-    
+
     class WaitSNCCommand : public cli::ParserCommand
     {
         public:
@@ -4668,7 +4668,7 @@ namespace cli
             {
                 return "Syntax: waitsnc -[e|d]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -4680,10 +4680,10 @@ namespace cli
                     {'e', "on",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool query = true;
                 bool enable = false;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -4695,7 +4695,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'd':
@@ -4708,22 +4708,22 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 // No additional arguments
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoWaitSNC(query ? 0 : &enable);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             WaitSNCCommand& operator=(const WaitSNCCommand&);
     };
-    
+
     class WarningsCommand : public cli::ParserCommand
     {
         public:
@@ -4738,7 +4738,7 @@ namespace cli
                 return
                     "Syntax: warnings [options]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -4750,10 +4750,10 @@ namespace cli
                     {'d', "off",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 bool query = true;
                 bool setting = true;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -4765,7 +4765,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'e':
@@ -4778,21 +4778,21 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments())
                 {
                     cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoWarnings(query ? 0 : &setting);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             WarningsCommand& operator=(const WarningsCommand&);
     };
-    
+
     class WatchCommand : public cli::ParserCommand
     {
         public:
@@ -4806,7 +4806,7 @@ namespace cli
             {
                 return "Syntax: watch [options]\nwatch [level]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -4838,24 +4838,24 @@ namespace cli
                     {'W', "waterfall",                   OPTARG_OPTIONAL}, // TODO: document. note: added to watch 5
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::WatchBitset options(0);
                 Cli::WatchBitset settings(0);
                 int learnSetting = 0;
                 int wmeSetting = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'a':
@@ -4873,7 +4873,7 @@ namespace cli
                                 settings.set(Cli::WATCH_WMA);
                             }
                             break;
-                            
+
                         case 'b':
                             options.set(Cli::WATCH_BACKTRACING);
                             if (opt.GetOptionArgument().size())
@@ -4889,7 +4889,7 @@ namespace cli
                                 settings.set(Cli::WATCH_BACKTRACING);
                             }
                             break;
-                            
+
                         case 'c':
                             options.set(Cli::WATCH_CHUNKS);
                             if (opt.GetOptionArgument().size())
@@ -4905,7 +4905,7 @@ namespace cli
                                 settings.set(Cli::WATCH_CHUNKS);
                             }
                             break;
-                            
+
                         case 'd':
                             options.set(Cli::WATCH_DECISIONS);
                             if (opt.GetOptionArgument().size())
@@ -4921,7 +4921,7 @@ namespace cli
                                 settings.set(Cli::WATCH_DECISIONS);
                             }
                             break;
-                            
+
                         case 'D':
                             options.set(Cli::WATCH_DEFAULT);
                             if (opt.GetOptionArgument().size())
@@ -4937,7 +4937,7 @@ namespace cli
                                 settings.set(Cli::WATCH_DEFAULT);
                             }
                             break;
-                            
+
                         case 'e':
                             options.set(Cli::WATCH_EPMEM);
                             if (opt.GetOptionArgument().size())
@@ -4953,12 +4953,12 @@ namespace cli
                                 settings.set(Cli::WATCH_EPMEM);
                             }
                             break;
-                            
+
                         case 'f': // fullwmes
                             options.set(Cli::WATCH_WME_DETAIL);
                             wmeSetting = 2;
                             break;
-                            
+
                         case 'g':
                             options.set(Cli::WATCH_GDS);
                             if (opt.GetOptionArgument().size())
@@ -4974,7 +4974,7 @@ namespace cli
                                 settings.set(Cli::WATCH_GDS);
                             }
                             break;
-                            
+
                         case 'i':
                             options.set(Cli::WATCH_INDIFFERENT);
                             if (opt.GetOptionArgument().size())
@@ -4990,7 +4990,7 @@ namespace cli
                                 settings.set(Cli::WATCH_INDIFFERENT);
                             }
                             break;
-                            
+
                         case 'j':
                             options.set(Cli::WATCH_JUSTIFICATIONS);
                             if (opt.GetOptionArgument().size())
@@ -5006,7 +5006,7 @@ namespace cli
                                 settings.set(Cli::WATCH_JUSTIFICATIONS);
                             }
                             break;
-                            
+
                         case 'L':
                             options.set(Cli::WATCH_LEARNING);
                             learnSetting = ParseLearningOptarg(opt);
@@ -5015,7 +5015,7 @@ namespace cli
                                 return cli.SetError(opt.GetError().c_str());
                             }
                             break;
-                            
+
                         case 'l':
                         {
                             int level = 0;
@@ -5023,14 +5023,14 @@ namespace cli
                             {
                                 return cli.SetError("Integer argument expected.");
                             }
-                            
+
                             if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting))
                             {
                                 return cli.SetError(opt.GetError().c_str());
                             }
                         }
                         break;
-                        
+
                         case 'N': // none
                             options.reset();
                             options.flip();
@@ -5038,12 +5038,12 @@ namespace cli
                             learnSetting = 0;
                             wmeSetting = 0;
                             break;
-                            
+
                         case 'n': // nowmes
                             options.set(Cli::WATCH_WME_DETAIL);
                             wmeSetting = 0;
                             break;
-                            
+
                         case 'p':
                             options.set(Cli::WATCH_PHASES);
                             if (opt.GetOptionArgument().size())
@@ -5059,7 +5059,7 @@ namespace cli
                                 settings.set(Cli::WATCH_PHASES);
                             }
                             break;
-                            
+
                         case 'P': // productions (all)
                             options.set(Cli::WATCH_DEFAULT);
                             options.set(Cli::WATCH_USER);
@@ -5084,7 +5084,7 @@ namespace cli
                                 settings.set(Cli::WATCH_JUSTIFICATIONS);
                             }
                             break;
-                            
+
                         case 'r':
                             options.set(Cli::WATCH_PREFERENCES);
                             if (opt.GetOptionArgument().size())
@@ -5100,7 +5100,7 @@ namespace cli
                                 settings.set(Cli::WATCH_PREFERENCES);
                             }
                             break;
-                            
+
                         case 'R':
                             options.set(Cli::WATCH_RL);
                             if (opt.GetOptionArgument().size())
@@ -5116,7 +5116,7 @@ namespace cli
                                 settings.set(Cli::WATCH_RL);
                             }
                             break;
-                            
+
                         case 's':
                             options.set(Cli::WATCH_SMEM);
                             if (opt.GetOptionArgument().size())
@@ -5132,12 +5132,12 @@ namespace cli
                                 settings.set(Cli::WATCH_SMEM);
                             }
                             break;
-                            
+
                         case 't'://timetags
                             options.set(Cli::WATCH_WME_DETAIL);
                             wmeSetting = 1;
                             break;
-                            
+
                         case 'T':
                             options.set(Cli::WATCH_TEMPLATES);
                             if (opt.GetOptionArgument().size())
@@ -5153,7 +5153,7 @@ namespace cli
                                 settings.set(Cli::WATCH_TEMPLATES);
                             }
                             break;
-                            
+
                         case 'u':
                             options.set(Cli::WATCH_USER);
                             if (opt.GetOptionArgument().size())
@@ -5201,12 +5201,12 @@ namespace cli
                             break;
                     }
                 }
-                
+
                 if (opt.GetNonOptionArguments() > 1)
                 {
                     return cli.SetError("Only non option argument allowed is watch level.");
                 }
-                
+
                 // Allow watch level by itself
                 if (opt.GetNonOptionArguments() == 1)
                 {
@@ -5221,25 +5221,25 @@ namespace cli
                         return cli.SetError(opt.GetError().c_str());
                     }
                 }
-                
+
                 return cli.DoWatch(options, settings, wmeSetting, learnSetting);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             bool ProcessWatchLevelSettings(const int level, Cli::WatchBitset& options, Cli::WatchBitset& settings, int& wmeSetting, int& learnSetting)
             {
                 if (level < 0)
                 {
                     return cli.SetError("Expected watch level from 0 to 5.");
                 }
-                
+
                 if (level > 5)
                 {
                     return cli.SetError("Expected watch level from 0 to 5.");
                 }
-                
+
                 // All of these are going to change
                 options.set(Cli::WATCH_PREFERENCES);
                 options.set(Cli::WATCH_WMES);
@@ -5252,7 +5252,7 @@ namespace cli
                 options.set(Cli::WATCH_DECISIONS);
                 options.set(Cli::WATCH_WATERFALL);
                 options.set(Cli::WATCH_GDS);
-                
+
                 // Start with all off, turn on as appropriate
                 settings.reset(Cli::WATCH_PREFERENCES);
                 settings.reset(Cli::WATCH_WMES);
@@ -5265,7 +5265,7 @@ namespace cli
                 settings.reset(Cli::WATCH_DECISIONS);
                 settings.reset(Cli::WATCH_WATERFALL);
                 settings.reset(Cli::WATCH_GDS);
-                
+
                 switch (level)
                 {
                     case 0:// none
@@ -5275,7 +5275,7 @@ namespace cli
                         learnSetting = 0;
                         wmeSetting = 0;
                         break;
-                        
+
                     case 5:// preferences, waterfall
                         settings.set(Cli::WATCH_PREFERENCES);
                         settings.set(Cli::WATCH_WATERFALL);
@@ -5300,7 +5300,7 @@ namespace cli
                 }
                 return true;
             }
-            
+
             int ParseLearningOptarg(cli::Options& opt)
             {
                 if (opt.GetOptionArgument() == "noprint"   || opt.GetOptionArgument() == "0")
@@ -5315,24 +5315,24 @@ namespace cli
                 {
                     return 2;
                 }
-                
+
                 cli.SetError("Invalid learn setting, expected noprint, print, fullprint, or 0-2. Got: " + opt.GetOptionArgument());
                 return -1;
             }
-            
+
             bool CheckOptargRemoveOrZero(cli::Options& opt)
             {
                 if (opt.GetOptionArgument() == "remove" || opt.GetOptionArgument() == "0")
                 {
                     return true;
                 }
-                
+
                 return cli.SetError("Invalid argument, expected remove or 0. Got: " + opt.GetOptionArgument());
             }
-            
+
             WatchCommand& operator=(const WatchCommand&);
     };
-    
+
     class WatchWMEsCommand : public cli::ParserCommand
     {
         public:
@@ -5346,7 +5346,7 @@ namespace cli
             {
                 return "Syntax: watch-wmes -[a|r]  -t type  pattern\nwatch-wmes -[l|R] [-t type]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -5359,10 +5359,10 @@ namespace cli
                     {'t', "type",            OPTARG_REQUIRED},
                     {0, 0, OPTARG_NONE}
                 };
-                
+
                 Cli::eWatchWMEsMode mode = Cli::WATCH_WMES_LIST;
                 Cli::WatchWMEsTypeBitset type(0);
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -5374,7 +5374,7 @@ namespace cli
                     {
                         break;
                     }
-                    
+
                     switch (opt.GetOption())
                     {
                         case 'a':
@@ -5413,7 +5413,7 @@ namespace cli
                         break;
                     }
                 }
-                
+
                 if (mode == Cli::WATCH_WMES_ADD || mode == Cli::WATCH_WMES_REMOVE)
                 {
                     // type required
@@ -5421,7 +5421,7 @@ namespace cli
                     {
                         return cli.SetError("Wme type required.");
                     }
-                    
+
                     // check for too few/many args
                     if (opt.GetNonOptionArguments() > 3)
                     {
@@ -5431,26 +5431,26 @@ namespace cli
                     {
                         return cli.SetError(GetSyntax());
                     }
-                    
+
                     int optind = opt.GetArgument() - opt.GetNonOptionArguments();
                     return cli.DoWatchWMEs(mode, type, &argv[optind], &argv[optind + 1], &argv[optind + 2]);
                 }
-                
+
                 // no additional arguments
                 if (opt.GetNonOptionArguments())
                 {
                     return cli.SetError(GetSyntax());
                 }
-                
+
                 return cli.DoWatchWMEs(mode, type);
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             WatchWMEsCommand& operator=(const WatchWMEsCommand&);
     };
-    
+
     class WMACommand : public cli::ParserCommand
     {
         public:
@@ -5464,7 +5464,7 @@ namespace cli
             {
                 return "Syntax: wma [options]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
@@ -5477,36 +5477,36 @@ namespace cli
                     {'t', "timers",     OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
-                
+
                 char option = 0;
-                
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         return cli.SetError(opt.GetError().c_str());
                     }
-                    
+
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-                    
+
                     if (option != 0)
                     {
                         return cli.SetError("wma takes only one option at a time.");
                     }
-                    
+
                     option = static_cast<char>(opt.GetOption());
                 }
-                
+
                 switch (option)
                 {
                     case 0:
                     default:
                         // no options
                         break;
-                        
+
                     case 'g':
                         // case: get requires one non-option argument
                     {
@@ -5514,10 +5514,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoWMA(option, &(argv[2]));
                     }
-                    
+
                     case 'h':
                         // case: history requires one non-option argument
                     {
@@ -5525,10 +5525,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoWMA(option, &(argv[2]));
                     }
-                    
+
                     case 's':
                         // case: set requires two non-option arguments
                     {
@@ -5536,10 +5536,10 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         return cli.DoWMA(option, &(argv[2]), &(argv[3]));
                     }
-                    
+
                     case 'S':
                         // case: stat can do zero or one non-option arguments
                     {
@@ -5547,15 +5547,15 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoWMA('S');
                         }
-                        
+
                         return cli.DoWMA(option, &(argv[2]));
                     }
-                    
+
                     case 't':
                         // case: timer can do zero or one non-option arguments
                     {
@@ -5563,32 +5563,32 @@ namespace cli
                         {
                             return cli.SetError(opt.GetError().c_str());
                         }
-                        
+
                         if (opt.GetNonOptionArguments() == 0)
                         {
                             return cli.DoWMA(option);
                         }
-                        
+
                         return cli.DoWMA(option, &(argv[2]));
                     }
                 }
-                
+
                 // bad: no option, but more than one argument
                 if (argv.size() > 1)
                 {
                     return cli.SetError("Too many args.");
                 }
-                
+
                 // case: nothing = full configuration information
                 return cli.DoWMA();
             }
-            
+
         private:
             cli::Cli& cli;
-            
+
             WMACommand& operator=(const WMACommand&);
     };
-    
+
     class SVSCommand : public cli::ParserCommand
     {
         public:
@@ -5600,18 +5600,19 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: svs <elements to inspect>";
+                return "Syntax: svs <elements to inspect>\n"
+                       "        svs [--enable | -e | --on | --disable | -d | --off]";
             }
-            
+
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 return cli.DoSVS(argv);
             }
-            
+
         private:
             cli::Cli& cli;
     };
-    
+
 }
 
 #endif // CLI_COMMANDS_H

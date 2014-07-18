@@ -40,25 +40,25 @@ class sgwme : public sgnode_listener
         }
     private:
         void add_child(sgnode* c);
-        
+
         // These will create/maintain wmes on the child svs object
         // For properties added to the node
         void delete_property(const std::string& propertyName);
         void update_property(const std::string& propertyName);
         template <class WmeType>
         void set_property(const std::string& propertyName, const WmeType& value);
-        
+
         sgwme*          parent;
         sgnode*         node;
         Symbol*         id;
         wme*            name_wme;
         soar_interface* soarint;
-        
+
         std::map<sgwme*, wme*> childs;
-        
+
         // AM: Puts the properties of the node onto the WM graph
         std::map<std::string, wme*> properties;
-        
+
 };
 
 
@@ -100,14 +100,14 @@ class svs_state : public cliproxy
     public:
         svs_state(svs* svsp, Symbol* state, soar_interface* soar, scene* scn);
         svs_state(Symbol* state, svs_state* parent);
-        
+
         ~svs_state();
-        
+
         void           process_cmds();
         void           update_cmd_results(bool early);
         void           update_scene_num();
         void           clear_scene();
-        
+
         std::string    get_name() const
         {
             return name;
@@ -142,23 +142,23 @@ class svs_state : public cliproxy
         {
             return outspec;
         }
-        
+
         void update_models();
-        
+
         /*
          Should only be called by svs::state_deletion_callback to save top-state scene
          during init.
         */
         void disown_scene();
-        
+
     private:
         void init();
         void collect_cmds(Symbol* id, std::set<wme*>& all_cmds);
         void set_default_output();
-        
+
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         void cli_out(const std::vector<std::string>& args, std::ostream& os);
-        
+
         std::string     name;
         svs*            svsp;
         int             level;
@@ -166,19 +166,19 @@ class svs_state : public cliproxy
         scene*          scn;
         sgwme*          root;
         soar_interface* si;
-        
+
         Symbol* state;
         Symbol* svs_link;
         Symbol* scene_link;
         Symbol* cmd_link;
         Symbol* model_link;
-        
+
         int scene_num;
         wme* scene_num_wme;
-        
+
         /* command changes per decision cycle */
         command_set curr_cmds;
-        
+
         scene_sig                prev_sig;
         relation_table           prev_rels;
         rvec                     prev_pvals;
@@ -187,9 +187,9 @@ class svs_state : public cliproxy
         const output_spec*       outspec;
         bool learn_models;
         bool test_models;
-        
+
         timer_set timers;
-        
+
         logger_set* loggers;
 };
 
@@ -199,7 +199,7 @@ class svs : public svs_interface, public cliproxy
     public:
         svs(agent* a);
         ~svs();
-        
+
         void state_creation_callback(Symbol* goal);
         void state_deletion_callback(Symbol* goal);
         void output_callback();
@@ -212,7 +212,7 @@ class svs : public svs_interface, public cliproxy
         {
             return &models;
         }
-        
+
         const output_spec* get_output_spec()
         {
             return &outspec;
@@ -229,27 +229,24 @@ class svs : public svs_interface, public cliproxy
         {
             return loggers;
         }
-        
+
         bool do_cli_command(const std::vector<std::string>& args, std::string& output);
-        
-        static void mark_filter_dirty_bit()
-        {
-            svs::filter_dirty_bit = true;
-        }
-        static bool get_filter_dirty_bit()
-        {
-            return svs::filter_dirty_bit;
-        }
+
+        static void mark_filter_dirty_bit() { svs::filter_dirty_bit = true; }
+        static bool get_filter_dirty_bit() { return svs::filter_dirty_bit; }
+        bool is_enabled() { return enabled; }
+        void set_enabled(bool newSetting) { enabled = newSetting; }
+
     private:
         void proc_input(svs_state* s);
         int  parse_output_spec(const std::string& s);
-        
+
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         void cli_connect_viewer(const std::vector<std::string>& args, std::ostream& os);
         void cli_disconnect_viewer(const std::vector<std::string>& args, std::ostream& os);
         void cli_use_models(const std::vector<std::string>& args, std::ostream& os);
         void cli_add_model(const std::vector<std::string>& args, std::ostream& os);
-        
+
         soar_interface*           si;
         std::vector<svs_state*>   state_stack;
         std::vector<std::string>  env_inputs;
@@ -259,11 +256,13 @@ class svs : public svs_interface, public cliproxy
         bool                      use_models;
         bool                      record_movie;
         scene*                    scn_cache;      // temporarily holds top-state scene during init
-        
+        bool enabled;
+
         std::map<std::string, model*> models;
-        
+
         timer_set timers;
         logger_set* loggers;
+
     public:
         static bool filter_dirty_bit;
 };
