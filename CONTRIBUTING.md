@@ -88,6 +88,7 @@ it in.
 
 * [General GitHub documentation](http://help.github.com/)
 * [GitHub pull request documentation](http://help.github.com/send-pull-requests/)
+* [How to GitHub: Fork, Branch, Track, Squash and Pull Request](https://gun.io/blog/how-to-github-fork-branch-and-pull-request/)
 * [Soar Home Page](http://sitemaker.umich.edu/soar/home)
 * [Soar Github Page](https://github.com/SoarGroup/Soar)
 * [Soar Google Code Wiki](https://code.google.com/p/soar/wiki/Home?tm=6)
