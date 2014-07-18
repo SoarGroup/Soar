@@ -453,3 +453,4 @@ char const* const sml_Names::kCommand_CommandLine        = "cmdline" ;
 
 char const* const sml_Names::kCommand_SVSInput   = "svs_input";
 char const* const sml_Names::kCommand_SVSOutput  = "svs_output";
+char const* const sml_Names::kCommand_SVSQuery  = "svs_query";

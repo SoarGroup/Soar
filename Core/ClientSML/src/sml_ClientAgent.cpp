@@ -1587,6 +1587,11 @@ void Agent::SendSVSInput(const std::string& txt)
     GetKernel()->SendSVSInput(GetAgentName(), txt);
 }
 
+std::string Agent::SVSQuery(const std::string& q)
+{
+  return GetKernel()->SVSQuery(GetAgentName(), q);
+}
+
 std::string Agent::GetSVSOutput()
 {
     assert(false);
