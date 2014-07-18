@@ -1,3 +1,18 @@
+/*********************************************************
+ * file: filters/bbox.cpp
+ *
+ * Filter: bbox_filter
+ * Base: map_filter<bbox>
+ * Type: bbox
+ *
+ * filter_params:
+ *  a [double]
+ *
+ * output:
+ *  For every double input this outputs the absolute value of that number
+ *
+ * *******************************************************/
+
 #include "filter.h"
 #include "filter_table.h"
 #include "common.h"

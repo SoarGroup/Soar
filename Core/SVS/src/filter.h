@@ -222,6 +222,15 @@ class typed_filter : public filter, public sgnode_listener
  ***********************************************/
 
 template <>
+void typed_filter<sgnode*>::add_output(const filter_params* p, sgnode* v){
+  filter_val* fv = new filter_val_c<const sgnode*>(v);
+  output_added(v);
+  in2out[p] = fv;
+  out2in[fv] = p;
+  filter::add_output(fv);
+}
+
+template <>
 void typed_filter<sgnode*>::output_added(sgnode*& out){
   out->listen(this);
 }
@@ -239,7 +248,7 @@ void typed_filter<sgnode*>::node_update(sgnode* n, sgnode::change_type t, const 
     return;
   }
 
-  filter_val* fv = new filter_val_c<sgnode*>(n);
+  filter_val* fv = new filter_val_c<const sgnode*>(n);
   std::map<filter_val*, const filter_params*>::iterator i = out2in.find(fv);
   if(i != out2in.end()){
     filter::change_output(i->first);
