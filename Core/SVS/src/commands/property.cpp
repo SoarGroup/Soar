@@ -4,6 +4,7 @@
 #include "filter.h"
 #include "svs.h"
 #include "scene.h"
+#include "soar_interface.h"
 
 using namespace std;
 
@@ -16,16 +17,16 @@ class property_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-        
+
         ~property_command()
         {
         }
-        
+
         string description()
         {
             return string("property");
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -40,31 +41,31 @@ class property_command : public command
             {
                 return true;
             }
-            
+
             sgnode* n = scn->get_node(id);
             if (!n)
             {
                 set_status(string("Couldn't find node ") + id);
                 return false;
             }
-            
+
             //std::cout << "Property " << prop << " of node " << id << " set to " << val << std::endl;
-            
+
             n->set_property(prop, val);
             set_status("success");
-            
+
             return true;
         }
-        
+
         bool early()
         {
             return false;
         }
-        
+
         bool parse()
         {
             wme* idwme, *propwme, *valwme;
-            
+
             if (!si->find_child_wme(root, "id", idwme))
             {
                 set_status("no object id specified");
@@ -75,7 +76,7 @@ class property_command : public command
                 set_status("object id must be a string");
                 return false;
             }
-            
+
             if (!si->find_child_wme(root, "property", propwme))
             {
                 set_status("no property specified");
@@ -86,7 +87,7 @@ class property_command : public command
                 set_status("property name must be a string");
                 return false;
             }
-            
+
             if (!si->find_child_wme(root, "value", valwme))
             {
                 set_status("no value specified");
@@ -104,7 +105,7 @@ class property_command : public command
             }
             return true;
         }
-        
+
     private:
         Symbol*         root;
         scene*          scn;
