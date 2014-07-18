@@ -19,35 +19,18 @@
 #include "soar_interface.h"
 
 
-class filter_output :
-    public change_tracking_list<filter_val>, public sgnode_listener
-{
-    public:
-        void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info);
-        
-        virtual void add(filter_val* v);
-        
-        virtual void remove(filter_val* v);
-        
-        virtual void clear();
-        
-    protected:
-        typedef std::map<sgnode*, const filter_val*> node_filter_val_map;
-        node_filter_val_map node_map;
-};
-
-
 /*
  Every filter generates a list of filter values as output, even if
  the list is empty or a singleton.
 */
-//typedef change_tracking_list<filter_val> filter_output;
+typedef change_tracking_list<filter_val> filter_output;
 
 /*
  A filter parameter set represents one complete input into a filter. It's
  just a list of pairs <parameter name, value>.
 */
 typedef std::vector<std::pair<std::string, filter_val*> > filter_params;
+
 
 /*
  The filter is the basic query unit in SVS. Each filter takes a list of
@@ -62,6 +45,7 @@ typedef std::vector<std::pair<std::string, filter_val*> > filter_params;
  input. Filters should also try to cache outputs when possible to avoid
  unnecessary computation.
 */
+
 class filter
 {
     public:
@@ -71,13 +55,22 @@ class filter
         virtual ~filter();
         
         void set_status(const std::string& msg);
-        
-        void add_output(filter_val* v, const filter_params* p);
-        void get_output_params(filter_val* v, const filter_params*& p);
-        void remove_output(filter_val* v);
-        void change_output(filter_val* v);
+
+        void add_output(filter_val* fv){
+          output.add(fv);
+        }
+
+        void change_output(filter_val* fv){
+          output.change(fv);
+        }
+
+        void remove_output(filter_val* fv){
+          output.remove(fv);
+        }
+
         bool update();
-        
+
+
 //TODO slightly less ugly hack
         virtual int getAxis()
         {
@@ -91,7 +84,7 @@ class filter
         
         filter_output* get_output()
         {
-            return &output;
+          return &output;
         }
         const filter_input* get_input() const
         {
@@ -109,384 +102,152 @@ class filter
         {
             input->change(s);
         }
+
+        // Classes that inherit from filter are responsible for 
+        // handling output
+
+        virtual void get_output_params(filter_val* v, const filter_params*& p) = 0;
+
+    protected:
+        virtual void clear_output(){
+          output.clear();
+        }
         
-    private:
         virtual bool update_outputs() = 0;
-        
+
+    private:
         filter_input* input;
         filter_output output;
         std::string status;
         soar_interface* si;
         Symbol* root;
         wme* status_wme;
-        std::map<filter_val*, const filter_params*> output2params;
 };
 
-/*
- This type of filter assumes a one-to-one mapping of outputs to input
- parameter sets. It's also assumed that each output is only dependent
- on one parameter set. This is in contrast to filters that perform some
- kind of quantification over its inputs; returning the closest object,
- for example.
-*/
-class map_filter : public filter
-{
-    public:
-        map_filter(Symbol* root, soar_interface* si, filter_input* input);
-        
-        /*
-         All created filter_vals are owned by the output list and cleaned
-         up there, so don't do it here.
-        */
-        virtual ~map_filter() {}
-        
-        /*
-         Compute the output from parameters. If called with a new
-         parameter set, out will be NULL, and the implementation should
-         set it to a new filter_val object (which will be owned by the
-         output list). Otherwise, out will point to a valid filter_val and
-         the implementation should change its value. If the value is
-         actually changed, the changed output argument should be set to
-         true. The implementation should return false if an error occurs.
-         */
-        virtual bool compute(const filter_params* params, filter_val*& out, bool& changed) = 0;
-        
-        /*
-         Some derived classes might allocate memory associated with each
-         output. They should override this function so they know when
-         to deallocate that memory.
-        */
-        virtual void output_removed(const filter_val* out) { }
-        
-        bool update_outputs();
-        void reset();
-        
-    private:
-        bool update_one(const filter_params* params);
-        
-        typedef std::map<const filter_params*, filter_val*> io_map_t;
-        io_map_t io_map;
-        std::vector<const filter_params*> stale;
+struct filter_output_info{
+  filter_output_info()
+    :output_val(NULL), source_params(NULL)
+  {}
+
+  filter_output_info(filter_val* fv, const filter_params* fp)
+    :output_val(fv), source_params(fp)
+  {}
+
+  filter_val* output_val;
+  const filter_params* source_params;
 };
 
-/*
- User-defined filters should derive from this class so that they don't
- have to work with filter_val* directly. Assumes that the filter only
- returns one type of output.
-*/
 template <class T>
-class typed_map_filter : public map_filter
+class typed_filter : public filter, public sgnode_listener
 {
     public:
-        typed_map_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : map_filter(root, si, input)
+        typed_filter(Symbol* root, soar_interface* si, filter_input* in)
+          : filter(root, si, in)
         {}
         
-        virtual ~typed_map_filter() {}
+        virtual ~typed_filter(){}
         
-        virtual bool compute(const filter_params* params, bool adding, T& out, bool& changed) = 0;
-        virtual void output_removed(const T& out) { }
-        
+        void add_output(T v, const filter_params* p){
+          filter_val* fv = new filter_val_c<T>(v);
+          filter::add_output(fv);
+          output_info_map[v] = filter_output_info(fv, p);
+        }
+
+        void get_output_params(filter_val* fv, const filter_params*& p){
+          T v;
+          if(!get_filter_val(fv, v)){
+            p = NULL;
+            return;
+          }
+          filter_output_info info;
+          if(!map_get(output_info_map, v, info) || info.output_val != fv){
+            p = NULL;
+          } else {
+            p = info.source_params;
+          }
+        }
+
+        void remove_output(T v){
+          filter_output_info info;
+          if(map_get(output_info_map, v, info)){
+            filter::remove_output(info.output_val);
+            output_info_map.erase(v);
+          }
+        }
+
+        void change_output(T v){
+          filter_output_info info;
+          if(map_get(output_info_map, v, info)){
+            filter::change_output(info.output_val);
+          }
+        }
+
+        void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info){}
+
+    protected:
+        void clear_output(){
+          filter::clear_output();
+          typename std::map<T, filter_output_info>::iterator i;
+          for(i = output_info_map.begin(); i != output_info_map.end(); i++){
+            delete i->second.output_val;
+          }
+          output_info_map.clear();
+        }
+
     private:
-        bool compute(const filter_params* params, filter_val*& out, bool& changed)
-        {
-            bool success;
-            T val;
-            if (out != NULL)
-            {
-                success = get_filter_val(out, val);
-                assert(success);
-            }
-            success = compute(params, out == NULL, val, changed);
-            if (!success)
-            {
-                return false;
-            }
-            if (!out)
-            {
-                out = new filter_val_c<T>(val);
-            }
-            else
-            {
-                success = set_filter_val(out, val);
-                assert(success);
-            }
-            return true;
-        }
-        void output_removed(const filter_val* out)
-        {
-            T val;
-            bool success = get_filter_val(out, val);
-            assert(success);
-            output_removed(val);
-        }
-        
+        // map from an output value to info about that value (source params and filter_val wrapper)
+        std::map<T, filter_output_info> output_info_map;
 };
 
+/***********************************************
+ * template specialization for sgnode*
+ * We want to listen to shape/transform changes
+ *   for the nodes and pass the changes to the 
+ *   output ctl
+ ***********************************************/
+template <>
+void typed_filter<sgnode*>::add_output(sgnode* v, const filter_params* p){
+  filter_val* fv = new filter_val_c<const sgnode*>(v);
+  filter::add_output(fv);
+  output_info_map[v] = filter_output_info(fv, p);
+  v->listen(this);
+}
 
-/* select_filter
-   This filter is very similar to a map filter
-   It takes a list of inputs, and for each input it does a computation and possibly
-     creates an output if some conditions are met.
-     Thus the number of outputs is at most the number of inputs
-   For example, an intersection filter based on the select_filter would return a list of
-    nodes that intersect the target instead of producing T/F values for every node
-   This is useful for feeding in a subset of the all_nodes filter into another filter
-   A filter based on the select_filter is the has_property filter
-*/
-class select_filter : public filter
-{
-    public:
-        select_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : filter(root, si, input)
-        {}
-        
-        virtual ~select_filter() {}
-        
-        // This is the main function to implement in the derived class
-        // out is the output value to create, leave it NULL to avoid adding it to the output
-        // changed should be true if the value changed
-        // The function returns true if successful, false if an error occurred
-        // To see a sample implementation, see the has_property filter
-        virtual bool compute(const filter_params* params, filter_val*& out, bool& changed) = 0;
-        
-        bool update_outputs();
-        
-        // Override this if you need to take care of memory when an output is removed
-        virtual void output_removed(filter_val* out) { }
-        
-    private:
-        bool update_one(const filter_params* params);
-        
-        typedef std::map<const filter_params*, filter_val*> io_map_t;
-        io_map_t io_map;
-        
-        void reset()
-        {
-            io_map.clear();
-        }
-};
+template <>
+void typed_filter<sgnode*>::remove_output(sgnode* v){
+  v->unlisten(this);
+  filter_output_info info;
+  if(map_get(output_info_map, v, info)){
+    filter::remove_output(info.output_val);
+    output_info_map.erase(v);
+  }
+}
 
-/*
- User-defined filters should derive from this class so that they don't
- have to work with filter_val* directly. Assumes that the filter only
- returns one type of output.
-*/
-template <class T>
-class typed_select_filter : public select_filter
-{
-    public:
-        typed_select_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : select_filter(root, si, input)
-        {}
-        
-        virtual ~typed_select_filter() {}
-        
-        // How to implement:
-        // params - a set of parameters chosen from the inputs
-        // null_out - true if the given out variable holds junk
-        // out - the result of the computation
-        // select - if true, the given out value will be added to the output, if false it will not be passed on
-        // changed - use to indicate whether the out value changed
-        virtual bool compute(const filter_params* params, bool null_out, T& out, bool& select, bool& changed) = 0;
-        
-        virtual void output_removed(const T& out) { }
-        
-    private:
-        bool compute(const filter_params* params, filter_val*& out, bool& changed)
-        {
-            bool success;
-            bool select;
-            T val;
-            if (out != NULL)
-            {
-                success = get_filter_val(out, val);
-                assert(success);
-            }
-            success = compute(params, (out == NULL), val, select, changed);
-            if (!success)
-            {
-                return false;
-            }
-            if (select && out == NULL)
-            {
-                // Create a new filter val
-                out = new filter_val_c<T>(val);
-                changed = true;
-            }
-            else if (select && changed)
-            {
-                // The value has changed
-                success = set_filter_val(out, val);
-                assert(success);
-            }
-            else if (!select && out != NULL)
-            {
-                // We no longer are selecting the value, make it null
-                out = NULL;
-                changed = true;
-            }
-            else
-            {
-                // the value didn't actually changed
-                // do nothing
-                changed = false;
-            }
-            
-            return true;
-        }
-        
-        void output_removed(const filter_val* out)
-        {
-            T val;
-            bool success = get_filter_val(out, val);
-            assert(success);
-            output_removed(val);
-            delete val;
-        }
-};
+template <>
+void typed_filter<sgnode*>::clear_output(){
+  filter::clear_output();
+  std::map<sgnode*, filter_output_info>::iterator i;
+  for(i = output_info_map.begin(); i != output_info_map.end(); i++){
+    i->first->unlisten(this);
+  }
+  output_info_map.clear();
+}
 
+template <>
+void typed_filter<sgnode*>::node_update(sgnode* n, sgnode::change_type t, const std::string& update_info){
+  if(t != sgnode::TRANSFORM_CHANGED && t != sgnode::SHAPE_CHANGED){
+    // Only care about transform/shape changes
+    return;
+  }
 
-/*
- This type of filter processes all inputs and produces a single
- output.
-*/
-template<typename T>
-class reduce_filter : public filter
-{
-    public:
-        reduce_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : filter(root, si, input), output(NULL)
-        {}
-        
-        virtual ~reduce_filter() {}
-        
-        bool update_outputs()
-        {
-            const filter_input* input = get_input();
-            bool changed = false;
-            
-            for (int i = input->first_added(); i < input->num_current(); ++i)
-            {
-                if (!input_added(input->get_current(i)))
-                {
-                    return false;
-                }
-                changed = true;
-            }
-            for (int i = 0; i < input->num_changed(); ++i)
-            {
-                if (!input_changed(input->get_changed(i)))
-                {
-                    return false;
-                }
-                changed = true;
-            }
-            for (int i = 0; i < input->num_removed(); ++i)
-            {
-                if (!input_removed(input->get_removed(i)))
-                {
-                    return false;
-                }
-                changed = true;
-            }
-            
-            T new_val = value;
-            if (changed)
-            {
-                if (!calculate_value(new_val))
-                {
-                    return false;
-                }
-            }
-            
-            if (!output && input->num_current() > 0)
-            {
-                output = new filter_val_c<T>(new_val);
-                add_output(output, NULL);
-            }
-            else if (output && input->num_current() == 0)
-            {
-                remove_output(output);
-                output = NULL;
-            }
-            else if (output && value != new_val)
-            {
-                bool success = set_filter_val(output, new_val);
-                assert(success);
-                change_output(output);
-            }
-            value = new_val;
-            return true;
-        }
-        
-    private:
-        virtual bool input_added(const filter_params* params) = 0;
-        virtual bool input_changed(const filter_params* params) = 0;
-        virtual bool input_removed(const filter_params* params) = 0;
-        virtual bool calculate_value(T& val) = 0;
-        
-        filter_val_c<T>* output;
-        T value;
-};
+  std::map<sgnode*, filter_output_info>::iterator i = output_info_map.find(n);
+  if(i == output_info_map.end()){
+    // Should never happen
+    return;
+  }
+  filter::change_output(i->second.output_val);
+}
 
-class rank_filter : public filter
-{
-    public:
-        rank_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : filter(root, si, input), output(NULL), old(NULL)
-        {}
-        
-        virtual bool rank(const filter_params* params, double& r) = 0;
-        
-    private:
-        bool update_outputs();
-        
-        std::vector<std::pair<double, const filter_params*> > elems;
-        filter_val* output;
-        const filter_params* old;
-};
-
-/*
- Filters that don't take any inputs and always outputs the same value
-*/
-template <class T>
-class const_filter : public filter
-{
-    public:
-        const_filter(const T& v) : filter(NULL, NULL, NULL), added(false), v(v) {}
-        
-        
-        bool update_outputs()
-        {
-            if (!added)
-            {
-                add_output(new filter_val_c<T>(v), NULL);
-                added = true;
-            }
-            return true;
-        }
-        
-    private:
-        T v;
-        bool added;
-};
-
-/*
- Passes an arbitrary element in each input parameter set to the output
- list. This filter is intended to be used with concat_filter_input to
- implement a "combine" filter that multiplexes an arbitrary number of
- inputs into a single list.
-*/
-class passthru_filter : public map_filter
-{
-    public:
-        passthru_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : map_filter(root, si, input)
-        {}
-        
-        bool compute(const filter_params* params, filter_val*& out, bool& changed);
-};
 
 template <typename T>
 inline bool get_filter_param(filter* f, const filter_params* params, const std::string& name, T& val)
@@ -519,5 +280,371 @@ inline bool get_filter_param(filter* f, const filter_params* params, const std::
     }
     return true;
 }
+
+///*
+// This type of filter assumes a one-to-one mapping of outputs to input
+// parameter sets. It's also assumed that each output is only dependent
+// on one parameter set. This is in contrast to filters that perform some
+// kind of quantification over its inputs; returning the closest object,
+// for example.
+//*/
+//class map_filter : public filter
+//{
+//    public:
+//        map_filter(Symbol* root, soar_interface* si, filter_input* input);
+//        
+//        /*
+//         All created filter_vals are owned by the output list and cleaned
+//         up there, so don't do it here.
+//        */
+//        virtual ~map_filter() {}
+//        
+//        /*
+//         Compute the output from parameters. If called with a new
+//         parameter set, out will be NULL, and the implementation should
+//         set it to a new filter_val object (which will be owned by the
+//         output list). Otherwise, out will point to a valid filter_val and
+//         the implementation should change its value. If the value is
+//         actually changed, the changed output argument should be set to
+//         true. The implementation should return false if an error occurs.
+//         */
+//        virtual bool compute(const filter_params* params, filter_val*& out, bool& changed) = 0;
+//        
+//        /*
+//         Some derived classes might allocate memory associated with each
+//         output. They should override this function so they know when
+//         to deallocate that memory.
+//        */
+//        virtual void output_removed(const filter_val* out) { }
+//        
+//        bool update_outputs();
+//        void reset();
+//        
+//    private:
+//        bool update_one(const filter_params* params);
+//        
+//        typedef std::map<const filter_params*, filter_val*> io_map_t;
+//        io_map_t io_map;
+//        std::vector<const filter_params*> stale;
+//};
+//
+///*
+// User-defined filters should derive from this class so that they don't
+// have to work with filter_val* directly. Assumes that the filter only
+// returns one type of output.
+//*/
+//template <class T>
+//class typed_map_filter : public map_filter
+//{
+//    public:
+//        typed_map_filter(Symbol* root, soar_interface* si, filter_input* input)
+//            : map_filter(root, si, input)
+//        {}
+//        
+//        virtual ~typed_map_filter() {}
+//        
+//        virtual bool compute(const filter_params* params, bool adding, T& out, bool& changed) = 0;
+//        virtual void output_removed(const T& out) { }
+//        
+//    private:
+//        bool compute(const filter_params* params, filter_val*& out, bool& changed)
+//        {
+//            bool success;
+//            T val;
+//            if (out != NULL)
+//            {
+//                success = get_filter_val(out, val);
+//                assert(success);
+//            }
+//            success = compute(params, out == NULL, val, changed);
+//            if (!success)
+//            {
+//                return false;
+//            }
+//            if (!out)
+//            {
+//                out = new filter_val_c<T>(val);
+//            }
+//            else
+//            {
+//                success = set_filter_val(out, val);
+//                assert(success);
+//            }
+//            return true;
+//        }
+//        void output_removed(const filter_val* out)
+//        {
+//            T val;
+//            bool success = get_filter_val(out, val);
+//            assert(success);
+//            output_removed(val);
+//        }
+//        
+//};
+//
+//
+///* select_filter
+//   This filter is very similar to a map filter
+//   It takes a list of inputs, and for each input it does a computation and possibly
+//     creates an output if some conditions are met.
+//     Thus the number of outputs is at most the number of inputs
+//   For example, an intersection filter based on the select_filter would return a list of
+//    nodes that intersect the target instead of producing T/F values for every node
+//   This is useful for feeding in a subset of the all_nodes filter into another filter
+//   A filter based on the select_filter is the has_property filter
+//*/
+//class select_filter : public filter
+//{
+//    public:
+//        select_filter(Symbol* root, soar_interface* si, filter_input* input)
+//            : filter(root, si, input)
+//        {}
+//        
+//        virtual ~select_filter() {}
+//        
+//        // This is the main function to implement in the derived class
+//        // out is the output value to create, leave it NULL to avoid adding it to the output
+//        // changed should be true if the value changed
+//        // The function returns true if successful, false if an error occurred
+//        // To see a sample implementation, see the has_property filter
+//        virtual bool compute(const filter_params* params, filter_val*& out, bool& changed) = 0;
+//        
+//        bool update_outputs();
+//        
+//        // Override this if you need to take care of memory when an output is removed
+//        virtual void output_removed(filter_val* out) { }
+//        
+//    private:
+//        bool update_one(const filter_params* params);
+//        
+//        typedef std::map<const filter_params*, filter_val*> io_map_t;
+//        io_map_t io_map;
+//        
+//        void reset()
+//        {
+//            io_map.clear();
+//        }
+//};
+//
+///*
+// User-defined filters should derive from this class so that they don't
+// have to work with filter_val* directly. Assumes that the filter only
+// returns one type of output.
+//*/
+//template <class T>
+//class typed_select_filter : public select_filter
+//{
+//    public:
+//        typed_select_filter(Symbol* root, soar_interface* si, filter_input* input)
+//            : select_filter(root, si, input)
+//        {}
+//        
+//        virtual ~typed_select_filter() {}
+//        
+//        // How to implement:
+//        // params - a set of parameters chosen from the inputs
+//        // null_out - true if the given out variable holds junk
+//        // out - the result of the computation
+//        // select - if true, the given out value will be added to the output, if false it will not be passed on
+//        // changed - use to indicate whether the out value changed
+//        virtual bool compute(const filter_params* params, bool null_out, T& out, bool& select, bool& changed) = 0;
+//        
+//        virtual void output_removed(const T& out) { }
+//        
+//    private:
+//        bool compute(const filter_params* params, filter_val*& out, bool& changed)
+//        {
+//            bool success;
+//            bool select;
+//            T val;
+//            if (out != NULL)
+//            {
+//                success = get_filter_val(out, val);
+//                assert(success);
+//            }
+//            success = compute(params, (out == NULL), val, select, changed);
+//            if (!success)
+//            {
+//                return false;
+//            }
+//            if (select && out == NULL)
+//            {
+//                // Create a new filter val
+//                out = new filter_val_c<T>(val);
+//                changed = true;
+//            }
+//            else if (select && changed)
+//            {
+//                // The value has changed
+//                success = set_filter_val(out, val);
+//                assert(success);
+//            }
+//            else if (!select && out != NULL)
+//            {
+//                // We no longer are selecting the value, make it null
+//                out = NULL;
+//                changed = true;
+//            }
+//            else
+//            {
+//                // the value didn't actually changed
+//                // do nothing
+//                changed = false;
+//            }
+//            
+//            return true;
+//        }
+//        
+//        void output_removed(const filter_val* out)
+//        {
+//            T val;
+//            bool success = get_filter_val(out, val);
+//            assert(success);
+//            output_removed(val);
+//            delete val;
+//        }
+//};
+//
+//
+///*
+// This type of filter processes all inputs and produces a single
+// output.
+//*/
+//template<typename T>
+//class reduce_filter : public filter
+//{
+//    public:
+//        reduce_filter(Symbol* root, soar_interface* si, filter_input* input)
+//            : filter(root, si, input), output(NULL)
+//        {}
+//        
+//        virtual ~reduce_filter() {}
+//        
+//        bool update_outputs()
+//        {
+//            const filter_input* input = get_input();
+//            bool changed = false;
+//            
+//            for (int i = input->first_added(); i < input->num_current(); ++i)
+//            {
+//                if (!input_added(input->get_current(i)))
+//                {
+//                    return false;
+//                }
+//                changed = true;
+//            }
+//            for (int i = 0; i < input->num_changed(); ++i)
+//            {
+//                if (!input_changed(input->get_changed(i)))
+//                {
+//                    return false;
+//                }
+//                changed = true;
+//            }
+//            for (int i = 0; i < input->num_removed(); ++i)
+//            {
+//                if (!input_removed(input->get_removed(i)))
+//                {
+//                    return false;
+//                }
+//                changed = true;
+//            }
+//            
+//            T new_val = value;
+//            if (changed)
+//            {
+//                if (!calculate_value(new_val))
+//                {
+//                    return false;
+//                }
+//            }
+//            
+//            if (!output && input->num_current() > 0)
+//            {
+//                output = new filter_val_c<T>(new_val);
+//                add_output(output, NULL);
+//            }
+//            else if (output && input->num_current() == 0)
+//            {
+//                remove_output(output);
+//                output = NULL;
+//            }
+//            else if (output && value != new_val)
+//            {
+//                bool success = set_filter_val(output, new_val);
+//                assert(success);
+//                change_output(output);
+//            }
+//            value = new_val;
+//            return true;
+//        }
+//        
+//    private:
+//        virtual bool input_added(const filter_params* params) = 0;
+//        virtual bool input_changed(const filter_params* params) = 0;
+//        virtual bool input_removed(const filter_params* params) = 0;
+//        virtual bool calculate_value(T& val) = 0;
+//        
+//        filter_val_c<T>* output;
+//        T value;
+//};
+//
+//class rank_filter : public filter
+//{
+//    public:
+//        rank_filter(Symbol* root, soar_interface* si, filter_input* input)
+//            : filter(root, si, input), output(NULL), old(NULL)
+//        {}
+//        
+//        virtual bool rank(const filter_params* params, double& r) = 0;
+//        
+//    private:
+//        bool update_outputs();
+//        
+//        std::vector<std::pair<double, const filter_params*> > elems;
+//        filter_val* output;
+//        const filter_params* old;
+//};
+//
+/*
+ Filters that don't take any inputs and always outputs the same value
+*/
+template <class T>
+class const_filter : public typed_filter<T>
+{
+    public:
+        const_filter(const T& v) : typed_filter<T>(NULL, NULL, NULL), added(false), v(v) {}
+        
+        
+        bool update_outputs()
+        {
+            if (!added)
+            {
+                add_output(v, NULL);
+                added = true;
+            }
+            return true;
+        }
+        
+    private:
+        T v;
+        bool added;
+};
+//
+///*
+// Passes an arbitrary element in each input parameter set to the output
+// list. This filter is intended to be used with concat_filter_input to
+// implement a "combine" filter that multiplexes an arbitrary number of
+// inputs into a single list.
+//*/
+//class passthru_filter : public map_filter
+//{
+//    public:
+//        passthru_filter(Symbol* root, soar_interface* si, filter_input* input)
+//            : map_filter(root, si, input)
+//        {}
+//        
+//        bool compute(const filter_params* params, filter_val*& out, bool& changed);
+//};
 
 #endif

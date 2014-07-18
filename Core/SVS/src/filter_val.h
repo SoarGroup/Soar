@@ -108,13 +108,13 @@ class filter_val_c : public filter_val    // c for concrete
 // template specialization for sgnode
 //////////////////////////////////////
 
-typedef filter_val_c<sgnode*> sgnode_filter_val;
+typedef filter_val_c<const sgnode*> sgnode_filter_val;
 
 template <>
-class filter_val_c<sgnode*> : public filter_val
+class filter_val_c<const sgnode*> : public filter_val
 {
     public:
-        filter_val_c(sgnode* v) : v(v) {}
+        filter_val_c(const sgnode* v) : v(v) {}
         virtual ~filter_val_c() {}
         
         filter_val* clone() const
@@ -140,12 +140,12 @@ class filter_val_c<sgnode*> : public filter_val
             return v == c->v;
         }
         
-        sgnode* get_value() const
+        const sgnode* get_value() const
         {
             return v;
         }
         
-        void set_value(sgnode* n)
+        void set_value(const sgnode* n)
         {
             v = n;
         }
@@ -157,7 +157,7 @@ class filter_val_c<sgnode*> : public filter_val
         std::string toString() const;
         
     private:
-        sgnode* v;
+        const sgnode* v;
 };
 
 /*
