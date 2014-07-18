@@ -76,6 +76,12 @@ T& grow_vec(std::vector<T>& v)
     return v.back();
 }
 
+template <typename A>
+inline bool set_has(const std::set<A>& s, const A& key){
+  typename std::set<A>::const_iterator i = s.find(key);
+  return (i != s.end());
+}
+
 template <typename A, typename B>
 inline B& map_get(std::map<A, B>& m, const A& key)
 {
