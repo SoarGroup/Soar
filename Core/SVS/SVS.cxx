@@ -38,6 +38,7 @@
 #include "src/scene.cpp"
 #include "src/serialize.cpp"
 #include "src/sgnode.cpp"
+#include "src/sgnode_algs.cpp"
 #include "src/soar_interface.cpp"
 #include "src/svs.cpp"
 #include "src/timer.cpp"

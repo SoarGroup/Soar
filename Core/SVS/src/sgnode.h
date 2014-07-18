@@ -14,7 +14,6 @@ class sgnode_listener;
 class group_node;
 class geometry_node;
 
-
 typedef std::map<std::string, std::string> string_properties_map;
 typedef std::map<std::string, double> numeric_properties_map;
 
@@ -268,9 +267,5 @@ class sgnode_listener
     public:
         virtual void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info) = 0;
 };
-
-double convex_distance(const sgnode* n1, const sgnode* n2);
-bool intersects(const sgnode* n1, const sgnode* n2);
-double overlap(const sgnode* n1, const sgnode* n2);
 
 #endif

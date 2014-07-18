@@ -7,6 +7,7 @@
 #include <utility>
 #include "scene.h"
 #include "sgnode.h"
+#include "sgnode_algs.h"
 #include "common.h"
 #include "drawer.h"
 #include "filter.h"
