@@ -2,14 +2,40 @@
  * file: filters/bbox.cpp
  *
  * Filter: bbox_filter
- * Base: map_filter<bbox>
- * Type: bbox
+ *  Base: map_filter<bbox>
+ *  Type: bbox
  *
- * filter_params:
- *  a [double]
+ *  filter_params:
+ *   node [sgnode]
  *
- * output:
- *  For every double input this outputs the absolute value of that number
+ *  output:
+ *   For every node input this outputs the AA bounding box of that node
+ *
+ *
+ * Filter: bbox_binary_filter
+ *  Base: map_filter<bool>
+ *  Type: bbox_contains
+ *
+ *  filter_params:
+ *   a [bbox]
+ *   b [bbox]
+ *
+ *  output:
+ *   Returns true if bbox a contains bbox b, (b is entirely inside a)
+ *   Returns false otherwise
+ *
+ *
+ *  Filter: bbox_binary_filter
+ *   Base: map_filter<bool>
+ *   Type: bbox_intersects
+ *
+ *   filter_params:
+ *    a [bbox]
+ *    b [bbox]
+ *
+ *   output:
+ *    Returns true if bbox a intersects bbox b
+ *    Returns false otherwise
  *
  * *******************************************************/
 
@@ -18,14 +44,14 @@
 #include "common.h"
 
 /* bbox of a single node */
-class bbox_filter : public typed_map_filter<bbox>
+class bbox_filter : public map_filter<bbox>
 {
     public:
         bbox_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : typed_map_filter<bbox>(root, si, input)
+            : map_filter<bbox>(root, si, input)
         {}
         
-        bool compute(const filter_params* params, bool adding, bbox& res, bool& changed)
+        bool compute(const filter_params* params, bbox& out)
         {
             const sgnode* n;
             
@@ -33,8 +59,7 @@ class bbox_filter : public typed_map_filter<bbox>
             {
                 return false;
             }
-            changed = (res != n->get_bounds());
-            res = n->get_bounds();
+            out = n->get_bounds();
             return true;
         }
 };
@@ -43,16 +68,15 @@ class bbox_filter : public typed_map_filter<bbox>
  Handles all binary operations between bounding boxes. Currently this
  includes intersection and containment.
 */
-class bbox_binary_filter : public typed_map_filter<bool>
+class bbox_binary_filter : public map_filter<bool>
 {
     public:
         bbox_binary_filter(Symbol* root, soar_interface* si, filter_input* input, char type)
-            : typed_map_filter<bool>(root, si, input), type(type)
+            : map_filter<bool>(root, si, input), type(type)
         {}
         
-        bool compute(const filter_params* params, bool adding, bool& res, bool& changed)
+        bool compute(const filter_params* params, bool& out)
         {
-            filter_val* av, *bv;
             bbox a, b;
             
             if (!get_filter_param(this, params, "a", a))
@@ -64,20 +88,17 @@ class bbox_binary_filter : public typed_map_filter<bool>
                 return false;
             }
             
-            bool newres;
             switch (type)
             {
                 case 'i':
-                    newres = a.intersects(b);
+                    out = a.intersects(b);
                     break;
                 case 'c':
-                    newres = a.contains(b);
+                    out = a.contains(b);
                     break;
                 default:
                     assert(false);
             }
-            changed = (newres != res);
-            res = newres;
             return true;
         }
         
@@ -106,20 +127,16 @@ filter_table_entry* bbox_fill_entry()
     e->name = "bbox";
     e->parameters.push_back("node");
     e->create = &make_bbox;
-    e->calc = NULL;
     return e;
 }
 
 filter_table_entry* bbox_int_fill_entry()
 {
     filter_table_entry* e = new filter_table_entry;
-    e->name = "bbox_int";
+    e->name = "bbox_intersects";
     e->parameters.push_back("a");
     e->parameters.push_back("b");
-    e->ordered = false;
-    e->allow_repeat = false;
     e->create = &make_bbox_int;
-    e->calc = NULL;
     return e;
 }
 
@@ -129,9 +146,6 @@ filter_table_entry* bbox_contains_fill_entry()
     e->name = "bbox_contains";
     e->parameters.push_back("a");
     e->parameters.push_back("b");
-    e->ordered = false;
-    e->allow_repeat = false;
     e->create = &make_bbox_contains;
-    e->calc = NULL;
     return e;
 }

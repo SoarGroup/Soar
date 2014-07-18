@@ -6,7 +6,7 @@
 #include "src/commands/delnode.cpp"
 
 #include "src/filters/absval.cpp"
-//#include "src/filters/bbox.cpp"
+#include "src/filters/bbox.cpp"
 //#include "src/filters/compare.cpp"
 //#include "src/filters/direction.cpp"
 //#include "src/filters/distance.cpp"

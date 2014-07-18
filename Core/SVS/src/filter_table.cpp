@@ -18,9 +18,9 @@ filter_table& get_filter_table()
 //filter_table_entry* distance_xyz_fill_entry();
 //filter_table_entry* smaller_fill_entry();
 //filter_table_entry* linear_fill_entry();
-//filter_table_entry* bbox_fill_entry();
-//filter_table_entry* bbox_int_fill_entry();
-//filter_table_entry* bbox_contains_fill_entry();
+filter_table_entry* bbox_fill_entry();
+filter_table_entry* bbox_int_fill_entry();
+filter_table_entry* bbox_contains_fill_entry();
 //filter_table_entry* ontop_fill_entry();
 //filter_table_entry* north_of_fill_entry();
 //filter_table_entry* south_of_fill_entry();
@@ -57,9 +57,9 @@ filter_table::filter_table()
     //add(distance_xyz_fill_entry());
     //add(smaller_fill_entry());
     //add(linear_fill_entry());
-    //add(bbox_fill_entry());
-    //add(bbox_int_fill_entry());
-    //add(bbox_contains_fill_entry());
+    add(bbox_fill_entry());
+    add(bbox_int_fill_entry());
+    add(bbox_contains_fill_entry());
     //add(ontop_fill_entry());
     //add(north_of_fill_entry());
     //add(south_of_fill_entry());
