@@ -2,8 +2,9 @@
 
 This is the code base for Soar, a cognitive architecture for developing systems that exhibit intelligent behavior. For more information about this project, please visit:
 
-* The Soar home page
+* [The Soar home page](http://sitemaker.umich.edu/soar/home)
 * [The GitHub project page](https://github.com/SoarGroup/Soar)
+* [The old Google Code project page](https://code.google.com/p/soar/)
 
 # Soar Builds
 
