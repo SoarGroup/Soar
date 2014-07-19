@@ -988,6 +988,7 @@ namespace sml
             
             void        SendSVSInput(const char* agentName, const std::string& txt);
             std::string GetSVSOutput(const char* agentName);
+            std::string SVSQuery(const char* agentName, const std::string& q);
     };
     
 }//closes namespace

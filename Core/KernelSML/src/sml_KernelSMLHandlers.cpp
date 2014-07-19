@@ -70,6 +70,7 @@ void KernelSML::BuildCommandMap()
     m_CommandMap[sml_Names::kCommand_GetListenerPort]   = &sml::KernelSML::HandleGetListenerPort;
     m_CommandMap[sml_Names::kCommand_SVSInput] = &sml::KernelSML::HandleSVSInput;
     m_CommandMap[sml_Names::kCommand_SVSOutput] = &sml::KernelSML::HandleSVSOutput;
+    m_CommandMap[sml_Names::kCommand_SVSQuery] = &sml::KernelSML::HandleSVSQuery;
 }
 
 /*************************************************************
@@ -1057,4 +1058,16 @@ bool KernelSML::HandleSVSOutput(AgentSML* pAgentSML, char const* pCommandName, C
         std::string s = pAgentSML->GetSoarAgent()->svs->get_output();
         return this->ReturnResult(pConnection, pResponse, s.c_str()) ;
     }
+}
+
+bool KernelSML::HandleSVSQuery(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
+{
+    // Get the parameters
+    char const* pLine = pIncoming->GetArgString(sml_Names::kParamLine) ;
+    if (!pLine)
+    {
+        return InvalidArg(pConnection, pResponse, pCommandName, "Command line missing") ;
+    }
+    std::string res = pAgentSML->GetSoarAgent()->svs->svs_query(pLine);
+    return this->ReturnResult(pConnection, pResponse, res.c_str());
 }

@@ -2569,3 +2569,16 @@ std::string Kernel::GetSVSOutput(const char* agentName)
         return "";
     }
 }
+
+std::string Kernel::SVSQuery(const char* agentName, const std::string& q)
+{
+    AnalyzeXML response;
+    if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SVSQuery, agentName, sml_Names::kParamLine, q.c_str()))
+    {
+        return response.GetResultString();
+    }
+    else
+    {
+        return "";
+    }
+}
