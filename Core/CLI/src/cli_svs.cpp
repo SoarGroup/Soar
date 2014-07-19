@@ -13,8 +13,8 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
 
     if (args.size() == 1)
     {
-            m_Result << "Soar Visual System is " << (thisAgent->svs->is_enabled() ? "enabled." : "disabled.");
-            return true;
+        m_Result << "Soar Visual System is " << (thisAgent->svs->is_enabled() ? "enabled." : "disabled.");
+        return true;
     }
     else if (args.size() == 2)
     {
@@ -41,14 +41,20 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
             return true;
         }
     }
-    bool res = thisAgent->svs->do_cli_command(args, out);
-    if (m_RawOutput)
+    if (thisAgent->svs->is_enabled())
     {
-        m_Result << out;
+        bool res = thisAgent->svs->do_cli_command(args, out);
+        if (m_RawOutput)
+        {
+            m_Result << out;
+        }
+        else
+        {
+            AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, out.c_str());
+        }
+        return res;
+    } else {
+        m_Result << "Soar Visual System is currently disabled.  Please enable to execute SVS commands.";
+        return false;
     }
-    else
-    {
-        AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, out.c_str());
-    }
-    return res;
 }

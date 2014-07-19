@@ -1589,6 +1589,5 @@ void Agent::SendSVSInput(const std::string& txt)
 
 std::string Agent::GetSVSOutput()
 {
-    assert(false);
     return GetKernel()->GetSVSOutput(GetAgentName());
 }

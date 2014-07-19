@@ -631,6 +631,7 @@ void svs::state_creation_callback(Symbol* state)
 void svs::state_deletion_callback(Symbol* state)
 {
     svs_state* s;
+    if (state_stack.size() == 0) return;
     s = state_stack.back();
     assert(state == s->get_state());
     if (state_stack.size() == 1)
