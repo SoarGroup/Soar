@@ -125,38 +125,62 @@ class filter
 };
 
 template <class T>
-class typed_filter : public filter, public sgnode_listener
+class typed_filter : public filter
 {
     public:
         typed_filter(Symbol* root, soar_interface* si, filter_input* in)
           : filter(root, si, in)
         {}
         
-        virtual ~typed_filter();
+        virtual ~typed_filter(){}
 
         // Get the input filter_params associated with an output filter_val
-        void get_output_params(filter_val* fv, const filter_params*& p);
+        void get_output_params(filter_val* fv, const filter_params*& p){
+          if(!map_get(out2in, fv, p)){
+            p = NULL;
+          }
+        }
         
         // Add an output to the filter for the given filter_params
-        void add_output(const filter_params* p, T v);
+        void add_output(const filter_params* p, T v){
+          filter_val* fv = new filter_val_c<T>(v);
+          in2out[p] = fv;
+          out2in[fv] = p;
+          filter::add_output(fv);
+        }
 
         // Change the filter output associated with the given filter_params
-        void update_output(const filter_params* p, T v);
+        void update_output(const filter_params* p, T v){
+          filter_val* fv;
+          if(map_get(in2out, p, fv)){
+            T old_out;
+            if(v == old_out){
+              return;
+            }
+            set_filter_val(fv, v);
+            filter::change_output(fv);
+          }
+        }
 
         // Remove the filter output associated with the given filter_params
-        void remove_output(const filter_params* p);
-
-        // Generic 
-        void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info){}
+        void remove_output(const filter_params* p){
+          filter_val* fv;
+          if(map_get(in2out, p, fv)){
+            in2out.erase(p);
+            if(map_get(out2in, fv, p)){
+              out2in.erase(fv);
+            }
+            filter::remove_output(fv);
+          }
+        }
 
     protected:
         // Clears all output values from the filter
-        void clear_output();
-
-        // classes that inherit from this can override these functions to get notified about output changes
-        // (cleanup memory, etc)
-        virtual void output_added(T& out){}
-        virtual void output_removed(T& out){}
+        void clear_output(){
+          in2out.clear();
+          out2in.clear();
+          filter::clear_output();
+        }
 
     private:
         // Mapping between inputs and outputs (both directions)
@@ -172,116 +196,134 @@ class typed_filter : public filter, public sgnode_listener
  *   for the nodes and pass the changes to the 
  *   output ctl
  ***********************************************/
-
 template <>
-void typed_filter<sgnode*>::add_output(const filter_params* p, sgnode* v){
-  filter_val* fv = new filter_val_c<const sgnode*>(v);
-  output_added(v);
-  in2out[p] = fv;
-  out2in[fv] = p;
-  filter::add_output(fv);
-}
+class typed_filter<sgnode*> : public filter, public sgnode_listener
+{
+    public:
+        typed_filter(Symbol* root, soar_interface* si, filter_input* in)
+          : filter(root, si, in)
+        {}
+        
+        virtual ~typed_filter(){}
 
-template <>
-void typed_filter<sgnode*>::output_added(sgnode*& out){
-  out->listen(this);
-}
+        // Get the input filter_params associated with an output filter_val
+        void get_output_params(filter_val* fv, const filter_params*& p){
+          std::map<filter_val*, std::set<const filter_params*> >::iterator out2in_it = out2in.find(fv);
+          if(out2in_it == out2in.end()){
+            p = NULL;
+          } else {
+            p = *out2in_it->second.begin();
+          }
+        }
+        
+        // Add an output to the filter for the given filter_params
+        void add_output(const filter_params* p, sgnode* v){
+          in2out[p] = v;
 
-template <>
-void typed_filter<sgnode*>::output_removed(sgnode*& out){
-  out->unlisten(this);
-}
+          // Find the filter_val associated with the sgnode
+          std::map<sgnode*, filter_val*>::iterator node_vals_it = node_vals.find(v);
+          if(node_vals_it == node_vals.end()){
+            // New node, add it to the output
+            filter_val* fv = new filter_val_c<const sgnode*>(v);
+            node_vals[v] = fv;
 
+            std::set<const filter_params*> param_set;
+            param_set.insert(p);
+            out2in[fv] = param_set;
 
-template <>
-void typed_filter<sgnode*>::node_update(sgnode* n, sgnode::change_type t, const std::string& update_info){
-  if(t != sgnode::TRANSFORM_CHANGED && t != sgnode::SHAPE_CHANGED){
-    // Only care about transform/shape changes
-    return;
-  }
+            v->listen(this);
+            filter::add_output(fv);
+          } else {
+            // Node is already in the output
+            std::map<filter_val*, std::set<const filter_params*> >::iterator out2in_it = out2in.find(node_vals_it->second);
+            if(out2in_it != out2in.end()){
+              out2in_it->second.insert(p);
+            }
+          }
+        }
 
-  filter_val* fv = new filter_val_c<const sgnode*>(n);
-  std::map<filter_val*, const filter_params*>::iterator i = out2in.find(fv);
-  if(i != out2in.end()){
-    filter::change_output(i->first);
-  }
-}
+        // Change the filter output associated with the given filter_params
+        void update_output(const filter_params* p, sgnode* v){
+          sgnode* prev;
+          if(map_get(in2out, p, prev)){
+            if(prev == v)
+              return;
+            remove_output(p);
+            add_output(p, v);
+          }
+        }
 
-/*******************************
- * Standard definitions of 
- * typed_filter<T> methods
- * *****************************/
-template <class T>
-virtual typed_filter<T>::~typed_filter(){
-  std::map<const filter_params*, filter_val*>::iterator i;
-  for(i = in2out.begin(); i != in2out.end(); i++){
-    T out;
-    if(get_filter_val(i->second, out)){
-      output_removed(out);
-    }
-  }
-}
+        // Remove the filter output associated with the given filter_params
+        void remove_output(const filter_params* p){
+          // Find the sgnode* associated with the filter params
+          std::map<const filter_params*, sgnode*>::iterator in2out_it = in2out.find(p);
+          if(in2out_it == in2out.end())
+            return;
 
-template <class T>
-void typed_filter<T>::get_output_params(filter_val* fv, const filter_params*& p){
-  if(!map_get(out2in, fv, p)){
-    p = NULL;
-  }
-}
+          // Remove the entry from the map
+          sgnode* node = in2out_it->second;
+          in2out.erase(in2out_it);
 
-template <class T>
-void add_output(const filter_params* p, T v){
-  filter_val* fv = new filter_val_c<T>(v);
-  output_added(v);
-  in2out[p] = fv;
-  out2in[fv] = p;
-  filter::add_output(fv);
-}
+          // Find the filter_val associated with the sgnode
+          std::map<sgnode*, filter_val*>::iterator node_vals_it = node_vals.find(node);
+          if(node_vals_it == node_vals.end())
+            return;
+          filter_val* fv = node_vals_it->second;
 
-template <class T>
-void typed_filter<T>::update_output(const filter_params* p, T v){
-  filter_val* fv;
-  if(map_get(in2out, p, fv)){
-    T old_out;
-    if(get_filter_val(fv, old_out)){
-      output_removed(old_out);
-    }
-    set_filter_val(fv, v);
-    output_added(v);
-    filter::change_output(fv);
-  }
-}
+          // Find the set of filter_params associated with the filter_val
+          std::map<filter_val*, std::set<const filter_params*> >::iterator out2in_it = out2in.find(fv);
+          if(out2in_it == out2in.end())
+            return;
+          
+          // Make sure the given filter_param is in the set (should always be the case)
+          std::set<const filter_params*>::iterator param_set_it = out2in_it->second.find(p);
+          if(param_set_it == out2in_it->second.end())
+            return;
 
-template <class T>
-void typed_filter<T>::remove_output(const filter_params* p){
-  filter_val* fv;
-  if(map_get(in2out, p, fv)){
-    in2out.erase(p);
-    if(map_get(out2in, fv, p)){
-      out2in.erase(fv);
-    }
-    T out;
-    if(get_filter_val(fv, out)){
-      output_removed(out);
-    }
-    filter::remove_output(fv);
-  }
-}
+          if(out2in_it->second.size() == 1){
+            // Removing the only reference to a node, remove it from the output
+            node_vals.erase(node_vals_it);
+            out2in.erase(out2in_it);
+            node->unlisten(this);
+            filter::remove_output(fv);
+          } else {
+            out2in_it->second.erase(param_set_it);
+          }
+        }
 
+        void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info){
+          if(t != sgnode::TRANSFORM_CHANGED && t != sgnode::SHAPE_CHANGED){
+            // Only care about transform/shape changes
+            return;
+          }
 
-template <class T>
-void typed_filter<T>::clear_output(){
-  std::map<const filter_params*, filter_val*>::iterator i;
-  for(i = in2out.begin(); i != in2out.end(); i++){
-    T out;
-    if(get_filter_val(i->second, out)){
-      output_removed(out);
-    }
-  }
-  in2out.clear();
-  out2in.clear();
-  filter::clear_output();
-}
+          filter_val* fv;
+          if(map_get(node_vals, n, fv)){
+            filter::change_output(fv);
+          }
+        }
+
+    protected:
+        // Clears all output values from the filter
+        void clear_output(){
+          std::map<sgnode*, filter_val*>::iterator i;
+          for(i = node_vals.begin(); i != node_vals.end(); i++){
+            i->first->unlisten(this);
+          }
+          in2out.clear();
+          out2in.clear();
+          node_vals.clear();
+          filter::clear_output();
+        }
+
+    private:
+        // Mapping between inputs and outputs (both directions)
+        // Assumes each filter_param is associated with a single output
+        std::map<const filter_params*, sgnode*> in2out;
+        std::map<filter_val*, std::set<const filter_params*> > out2in;
+        std::map<sgnode*, filter_val*> node_vals;
+};
+
 
 
 template <typename T>
