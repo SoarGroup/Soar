@@ -81,17 +81,6 @@ class debug_param_container;
 
 // following def's moved here from old interface.h file  KJC nov 05
 /* AGR 568 begin */
-typedef struct expansion_node {
-  struct lexeme_info lexeme;
-  struct expansion_node *next;
-} expansion_node;
-
-typedef struct alias_struct {
-  char *alias;
-  struct expansion_node *expansion;
-  struct alias_struct *next;
-} alias_struct;
-
 typedef struct dir_stack_struct {
   char *directory;
   struct dir_stack_struct *next;
@@ -803,7 +792,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   const char        * alternate_input_string;
   const char        * alternate_input_suffix;
   Bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
-  expansion_node    * lex_alias;         /* AGR 568 */
   Bool                load_errors_quit;  /* AGR 527c */
   dir_stack_struct  * top_dir_stack;   /* AGR 568 */
 

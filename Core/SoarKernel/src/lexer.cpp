@@ -746,14 +746,6 @@ void lex_dollar (void) {
 
 void get_lexeme (agent* thisAgent) {
 
-  /* AGR 568 begin */
-  if (thisAgent->lex_alias) {
-    thisAgent->lexeme = thisAgent->lex_alias->lexeme;
-    thisAgent->lex_alias = thisAgent->lex_alias->next;
-    return;
-  }
-  /* AGR 568 end */
-
   thisAgent->lexeme.length = 0;
   thisAgent->lexeme.string[0] = 0;
 

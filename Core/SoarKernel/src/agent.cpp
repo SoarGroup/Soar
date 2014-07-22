@@ -196,7 +196,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->input_period                       = 0;     /* AGR REW1 */
   newAgent->input_cycle_flag                   = TRUE;  /* AGR REW1 */
   newAgent->justification_count                = 1;
-  newAgent->lex_alias                          = NIL;  /* AGR 568 */
   newAgent->link_update_mode                   = UPDATE_LINKS_NORMALLY;
   newAgent->locals_tc                          = 0;
   newAgent->max_chunks_reached                 = FALSE; /* MVP 6-24-94 */
