@@ -46,11 +46,6 @@
 
 #include <stdio.h>	// Needed for FILE token below
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
 typedef char Bool;
 typedef struct agent_struct agent;
 
@@ -153,9 +148,5 @@ typedef struct lexer_source_file_struct {
   struct lexeme_info saved_lexeme;   /* save/restore it during nested loads */
   int saved_current_char;           /* save/restore this too */
 } lexer_source_file;
-
-#ifdef __cplusplus
-//}
-#endif
 
 #endif // LEXER_H
