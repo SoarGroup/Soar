@@ -217,7 +217,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->stop_soar                          = TRUE;
   newAgent->system_halted                      = FALSE;
   newAgent->token_additions                    = 0;
-  newAgent->top_dir_stack                      = NIL;   /* AGR 568 */
   newAgent->top_goal                           = NIL;
   newAgent->top_state                          = NIL;
   newAgent->wmes_to_add                        = NIL;
@@ -276,10 +275,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   if(!getcwd(cur_path, MAXPATHLEN))
     print(newAgent, "Unable to set current directory while initializing agent.\n");
-  newAgent->top_dir_stack = static_cast<dir_stack_struct *>(malloc(sizeof(dir_stack_struct)));   /* AGR 568 */
-  newAgent->top_dir_stack->directory = static_cast<char *>(malloc(MAXPATHLEN*sizeof(char)));   /* AGR 568 */
-  newAgent->top_dir_stack->next = NIL;   /* AGR 568 */
-  strcpy(newAgent->top_dir_stack->directory, cur_path);   /* AGR 568 */
 
   /* changed all references of 'i', a var belonging to a previous for loop, to 'productionTypeCounter' to be unique
     stokesd Sept 10 2004*/
@@ -519,8 +514,6 @@ void destroy_soar_agent (agent * delete_agent)
 
   /* Free structures stored in agent structure */
   free(delete_agent->name);
-  free(delete_agent->top_dir_stack->directory);
-  free(delete_agent->top_dir_stack);
 
   /* Freeing the agent's multi attributes structure */
   multi_attribute* lastmattr = 0;
