@@ -14,7 +14,7 @@
 //#include "src/filters/dist_select_xyz.cpp"
 //#include "src/filters/has_property.cpp"
 //#include "src/filters/intersect.cpp"
-//#include "src/filters/node.cpp"
+#include "src/filters/node.cpp"
 //#include "src/filters/occlusion.cpp"
 //#include "src/filters/ontop.cpp"
 //#include "src/filters/overlap.cpp"

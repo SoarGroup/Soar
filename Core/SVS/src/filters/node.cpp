@@ -15,25 +15,15 @@ typedef map<sgnode*, const filter_params*> node_param_map;
  This filter takes a "name" parameter and outputs a pointer to the node
  with that name in the scene graph.
 */
-class node_filter : public typed_select_filter<const sgnode*>, public sgnode_listener
+class node_filter : public select_filter<sgnode*>
 {
     public:
         node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
-            : typed_select_filter<const sgnode*>(root, si, input), scn(scn)
+            : select_filter<sgnode*>(root, si, input), scn(scn)
         {
         }
         
-        ~node_filter()
-        {
-            node_param_map::iterator i;
-            for (i = nodes.begin(); i != nodes.end(); i++)
-            {
-                //cout << padd() << "Unlisten " << i->first->get_name() << endl;
-                i->first->unlisten(this);
-            }
-        }
-        
-        bool compute(const filter_params* params, bool null_out, const sgnode*& out, bool& select, bool& changed)
+        bool compute(const filter_params* params, sgnode*& out, bool& select)
         {
             //out = NULL;
             //changed = false;
@@ -47,122 +37,17 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
             }
             
             
-            sgnode* n = scn->get_node(id);
-            
-            if (n == NULL)
-            {
-                select = false;
-                changed = (out != NULL);
-                out = NULL;
+            out = scn->get_node(id);
+            if(out == NULL){
+              select = false;
+            } else {
+              select = true;
             }
-            else
-            {
-                changed = true; // Always pass on node changes
-                out = n;
-                node_param_map::iterator i = nodes.find(n);
-                if (i == nodes.end())
-                {
-                    // First time seeing this node, add it
-                    nodes[n] = params;
-                    //cout << padd() << "Listen " << n->get_name() << endl;
-                    n->listen(this);
-                    select = true;
-                }
-                else if (i->second != params)
-                {
-                    // Duplicate, don't select
-                    select = false;
-                }
-                else
-                {
-                    // Seeing a node already in the list
-                    select = true;
-                }
-            }
-            
-            //cout << padd() << "Change " << (changed ? "T" : "F") << endl;
-            //cout << padd() << "Select " << (select ? "T" : "F") << endl;
-            //cout << padd() << "Node " << (out == NULL ? "NULL" : out->get_name()) << endl;
-            
+
             return true;
         }
-        node_param_map nodes;
-        
-        void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
-        {
-            //cout << padd() << "Change " << t << " on " << n->get_name() << endl;
-            switch (t)
-            {
-                case sgnode::SHAPE_CHANGED:
-                case sgnode::TRANSFORM_CHANGED:
-                case sgnode::DELETED:
-                    node_param_map::iterator i = nodes.find(n);
-                    assert(i != nodes.end());
-                    mark_stale(i->second);  // Update the filter params
-                    if (t == sgnode::DELETED)
-                    {
-                        //cout << padd() << "Unlisten " << i->first->get_name() << endl;
-                        i->first->unlisten(this);
-                        nodes.erase(i);
-                    }
-                    break;
-            }
-        }
-        
-        
+    private:
         scene* scn;
-        
-//  void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
-//      cout << "node_filter::node_update" << this << endl;
-//      cout << "  " << t << " on " << n->get_name() << endl;
-//      if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
-//          node_info &info = map_get(nodes, n);
-//          std::list<const filter_params*>::const_iterator i;
-//          for (i = info.params.begin(); i != info.params.end(); ++i) {
-//              mark_stale(*i);
-//          }
-//          info.changed = true;
-//          if (t == sgnode::DELETED) {
-//              nodes.erase(n);
-//          }
-//      }
-//  }
-//
-//private:
-//  void add_entry(sgnode *n, const filter_params *params) {
-//      cout << "node_filter::add_entry" << this << endl;
-//      map<sgnode*, node_info>::iterator i = nodes.find(n);
-//      if (i == nodes.end()) {
-//          n->listen(this);
-//      }
-//      cout << "Nodes size: " << nodes.size() << endl;
-//      nodes[n].params.push_back(params);
-//  }
-//
-//  void del_entry(sgnode *n, const filter_params *params) {
-//      cout << "node_filter::del_entry" << this << endl;
-//      map<sgnode*, node_info>::iterator i = nodes.find(n);
-//      //JK assert crashes in real world TODO debug
-//      //assert(i != nodes.end());
-//      if (i== nodes.end())
-//        return;
-//      std::list<const filter_params*> &p = i->second.params;
-//      std::list<const filter_params*>::iterator j = find(p.begin(), p.end(), params);
-//      assert(j != p.end());
-//      p.erase(j);
-//      if (p.empty()) {
-//          i->first->unlisten(this);
-//          nodes.erase(i);
-//      }
-//  }
-//
-//  struct node_info {
-//      std::list<const filter_params*> params;
-//      bool changed;
-//  };
-//
-//  scene *scn;
-//  map<sgnode*, node_info> nodes;
 };
 
 /* Return all nodes from the scene */
@@ -252,7 +137,7 @@ class all_nodes_filter : public filter, public sgnode_listener
             n->listen(this);
             filter_val* r = new filter_val_c<const sgnode*>(n);
             outputs[n] = r;
-            add_output(r, NULL);
+            add_output(r);
             return r;
         }
         
@@ -262,17 +147,17 @@ class all_nodes_filter : public filter, public sgnode_listener
         map<sgnode*, filter_val*> outputs;
 };
 
-class remove_node_filter : public typed_select_filter<const sgnode*>
+class remove_node_filter : public select_filter<sgnode*>
 {
     public:
         remove_node_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : typed_select_filter<const sgnode*>(root, si, input), scn(scn)
+            : select_filter<sgnode*>(root, si, input), scn(scn)
         {}
         
-        bool compute(const filter_params* p, bool null_out, const sgnode*& out, bool& select, bool& changed)
+        bool compute(const filter_params* p, sgnode*& out, bool& select)
         {
-            const sgnode* a;
-            const sgnode* b;
+            sgnode* a;
+            sgnode* b;
             
             if (!get_filter_param(this, p, "a", a))
             {
@@ -287,39 +172,29 @@ class remove_node_filter : public typed_select_filter<const sgnode*>
             
             out = a;
             select = (a != b);
-            if (select)
-            {
-                // We always say a selected node has changed, so that changes from below get propagated
-                changed = true;
-            }
-            
             return true;
         }
         
     private:
-    
         scene* scn;
 };
 
-class node_centroid_filter : public typed_map_filter<vec3>
+class node_centroid_filter : public map_filter<vec3>
 {
     public:
         node_centroid_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : typed_map_filter<vec3>(root, si, input)
+            : map_filter<vec3>(root, si, input)
         {}
         
-        bool compute(const filter_params* params, bool adding, vec3& res, bool& changed)
+        bool compute(const filter_params* params, vec3& out)
         {
             const sgnode* n;
-            
             if (!get_filter_param(this, params, "node", n))
             {
                 return false;
             }
             
-            vec3 newres = n->get_centroid();
-            changed = (newres != res);
-            res = newres;
+            out = n->get_centroid();
             return true;
         }
 };

@@ -106,7 +106,9 @@ class filter
         // Classes that inherit from filter are responsible for 
         // handling output
 
-        virtual void get_output_params(filter_val* v, const filter_params*& p) = 0;
+        virtual void get_output_params(filter_val* v, const filter_params*& p){
+          p = NULL;
+        }
 
     protected:
         virtual void clear_output(){
@@ -204,50 +206,44 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
           : filter(root, si, in)
         {}
         
-        virtual ~typed_filter(){}
+        virtual ~typed_filter(){
+          clear_output();
+        }
 
         // Get the input filter_params associated with an output filter_val
         void get_output_params(filter_val* fv, const filter_params*& p){
-          std::map<filter_val*, std::set<const filter_params*> >::iterator out2in_it = out2in.find(fv);
-          if(out2in_it == out2in.end()){
+          if(!map_get(out2in, fv, p)){
             p = NULL;
-          } else {
-            p = *out2in_it->second.begin();
           }
         }
-        
+
         // Add an output to the filter for the given filter_params
         void add_output(const filter_params* p, sgnode* v){
-          in2out[p] = v;
+          filter_val* fv = new filter_val_c<sgnode*>(v);
 
-          // Find the filter_val associated with the sgnode
-          std::map<sgnode*, filter_val*>::iterator node_vals_it = node_vals.find(v);
-          if(node_vals_it == node_vals.end()){
-            // New node, add it to the output
-            filter_val* fv = new filter_val_c<const sgnode*>(v);
-            node_vals[v] = fv;
-
-            std::set<const filter_params*> param_set;
-            param_set.insert(p);
-            out2in[fv] = param_set;
-
+          std::map<sgnode*, std::set<filter_val*> >::iterator o_it = outputs.find(v);
+          if(o_it != outputs.end()){
             v->listen(this);
-            filter::add_output(fv);
+            o_it->second.insert(fv);
           } else {
-            // Node is already in the output
-            std::map<filter_val*, std::set<const filter_params*> >::iterator out2in_it = out2in.find(node_vals_it->second);
-            if(out2in_it != out2in.end()){
-              out2in_it->second.insert(p);
-            }
+            std::set<filter_val*> fv_set;
+            fv_set.insert(fv);
+            outputs[v] = fv_set;
           }
+
+          in2out[p] = fv;
+          out2in[fv] = p;
+          filter::add_output(fv);
         }
 
         // Change the filter output associated with the given filter_params
         void update_output(const filter_params* p, sgnode* v){
-          sgnode* prev;
-          if(map_get(in2out, p, prev)){
-            if(prev == v)
+          filter_val* fv;
+          if(map_get(in2out, p, fv)){
+            sgnode* old_out;
+            if(v == old_out){
               return;
+            }
             remove_output(p);
             add_output(p, v);
           }
@@ -255,73 +251,80 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
 
         // Remove the filter output associated with the given filter_params
         void remove_output(const filter_params* p){
-          // Find the sgnode* associated with the filter params
-          std::map<const filter_params*, sgnode*>::iterator in2out_it = in2out.find(p);
-          if(in2out_it == in2out.end())
-            return;
-
-          // Remove the entry from the map
-          sgnode* node = in2out_it->second;
-          in2out.erase(in2out_it);
-
-          // Find the filter_val associated with the sgnode
-          std::map<sgnode*, filter_val*>::iterator node_vals_it = node_vals.find(node);
-          if(node_vals_it == node_vals.end())
-            return;
-          filter_val* fv = node_vals_it->second;
-
-          // Find the set of filter_params associated with the filter_val
-          std::map<filter_val*, std::set<const filter_params*> >::iterator out2in_it = out2in.find(fv);
-          if(out2in_it == out2in.end())
-            return;
-          
-          // Make sure the given filter_param is in the set (should always be the case)
-          std::set<const filter_params*>::iterator param_set_it = out2in_it->second.find(p);
-          if(param_set_it == out2in_it->second.end())
-            return;
-
-          if(out2in_it->second.size() == 1){
-            // Removing the only reference to a node, remove it from the output
-            node_vals.erase(node_vals_it);
-            out2in.erase(out2in_it);
-            node->unlisten(this);
+          filter_val* fv;
+          if(map_get(in2out, p, fv)){
+            in2out.erase(p);
+            if(map_get(out2in, fv, p)){
+              out2in.erase(fv);
+            }
+            sgnode* node;
+            if(get_filter_val(fv, node)){
+              std::map<sgnode*, std::set<filter_val*> >::iterator out_it = outputs.find(node);
+              if(out_it != outputs.end()){
+                if(out_it->second.find(fv) != out_it->second.end()){
+                  if(out_it->second.size() == 1){
+                    node->unlisten(this);
+                    outputs.erase(node);
+                  } else {
+                    out_it->second.erase(fv);
+                  }
+                }
+              }
+            }
             filter::remove_output(fv);
-          } else {
-            out2in_it->second.erase(param_set_it);
           }
         }
-
+        
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info){
-          if(t != sgnode::TRANSFORM_CHANGED && t != sgnode::SHAPE_CHANGED){
-            // Only care about transform/shape changes
-            return;
-          }
-
-          filter_val* fv;
-          if(map_get(node_vals, n, fv)){
-            filter::change_output(fv);
+          std::map<sgnode*, std::set<filter_val*> >::iterator node_it;
+          std::set<filter_val*>::iterator fv_it;
+          const filter_params* params;
+          switch(t){
+            case sgnode::DELETED:
+              n->unlisten(this);
+              // Find all the inputs associated with the given node and 
+              // mark as stale
+              node_it = outputs.find(n);
+              if(node_it != outputs.end()){
+                for(fv_it = node_it->second.begin(); fv_it != node_it->second.end(); fv_it++){
+                  if(map_get(out2in, *fv_it, params)){
+                    mark_stale(params);
+                  }
+                }
+              }
+              break;
+            case sgnode::TRANSFORM_CHANGED:
+            case sgnode::SHAPE_CHANGED:
+              // Find all outputs associated with the given input
+              // and mark as changed
+              if(node_it != outputs.end()){
+                for(fv_it = node_it->second.begin(); fv_it != node_it->second.end(); fv_it++){
+                  change_output(*fv_it);
+                }
+              }
+              break;
           }
         }
 
     protected:
         // Clears all output values from the filter
         void clear_output(){
-          std::map<sgnode*, filter_val*>::iterator i;
-          for(i = node_vals.begin(); i != node_vals.end(); i++){
+          std::map<sgnode*, std::set<filter_val*> >::iterator i;
+          for(i = outputs.begin(); i != outputs.end(); i++){
             i->first->unlisten(this);
           }
           in2out.clear();
           out2in.clear();
-          node_vals.clear();
+          outputs.clear();
           filter::clear_output();
         }
 
     private:
         // Mapping between inputs and outputs (both directions)
         // Assumes each filter_param is associated with a single output
-        std::map<const filter_params*, sgnode*> in2out;
-        std::map<filter_val*, std::set<const filter_params*> > out2in;
-        std::map<sgnode*, filter_val*> node_vals;
+        std::map<const filter_params*, filter_val*> in2out;
+        std::map<filter_val*, const filter_params*> out2in;
+        std::map<sgnode*, std::set<filter_val*> > outputs;
 };
 
 

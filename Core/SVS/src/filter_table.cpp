@@ -31,9 +31,9 @@ filter_table_entry* bbox_contains_fill_entry();
 //filter_table_entry* z_aligned_fill_entry();
 //filter_table_entry* above_fill_entry();
 //filter_table_entry* below_fill_entry();
-//filter_table_entry* node_fill_entry();
-//filter_table_entry* all_nodes_fill_entry();
-//filter_table_entry* node_centroid_fill_entry();
+filter_table_entry* node_fill_entry();
+filter_table_entry* all_nodes_fill_entry();
+filter_table_entry* node_centroid_fill_entry();
 //filter_table_entry* compare_fill_entry();
 //filter_table_entry* compare_nodes_fill_entry();
 filter_table_entry* absval_fill_entry();
@@ -46,7 +46,7 @@ filter_table_entry* absval_fill_entry();
 //filter_table_entry* overlap_fill_entry();
 //filter_table_entry* monitor_position_fill_entry();
 //filter_table_entry* monitor_volume_fill_entry();
-//filter_table_entry* remove_node_fill_entry();
+filter_table_entry* remove_node_fill_entry();
 //filter_table_entry* higher_than_fill_entry();
 
 filter_table::filter_table()
@@ -70,9 +70,9 @@ filter_table::filter_table()
     //add(z_aligned_fill_entry());
     //add(above_fill_entry());
     //add(below_fill_entry());
-    //add(node_fill_entry());
-    //add(all_nodes_fill_entry());
-    //add(node_centroid_fill_entry());
+    add(node_fill_entry());
+    add(all_nodes_fill_entry());
+    add(node_centroid_fill_entry());
     //add(compare_fill_entry());
     //add(compare_nodes_fill_entry());
     add(absval_fill_entry());
@@ -85,7 +85,7 @@ filter_table::filter_table()
     //add(overlap_fill_entry());
     //add(monitor_position_fill_entry());
     //add(monitor_volume_fill_entry());
-    //add(remove_node_fill_entry());
+    add(remove_node_fill_entry());
     //add(higher_than_fill_entry());
 }
 
