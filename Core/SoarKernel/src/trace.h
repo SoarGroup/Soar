@@ -59,9 +59,7 @@ extern Bool add_trace_format (agent* thisAgent, Bool stack_trace, int type_restr
 extern Bool remove_trace_format (agent* thisAgent, Bool stack_trace, int type_restriction,
                                  Symbol *name_restriction);
 extern void print_all_trace_formats (agent* thisAgent, Bool stack_trace);
-//#ifdef USE_TCL
 extern void print_all_trace_formats_tcl (Bool stack_trace);
-//#endif /* USE_TCL */
 extern void print_object_trace (agent* thisAgent, Symbol *object);
 extern void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slot_type,
                                Bool allow_cycle_counts);

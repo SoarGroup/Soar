@@ -975,10 +975,8 @@ void print_preference (agent* thisAgent, preference *pref) {
   xml_end_tag(thisAgent, kTagPreference);
 
 }
-//#ifdef USE_TCL
 
 /* kjh(CUSP-B2) begin */
-
 extern "C" Bool passes_wme_filtering(agent* thisAgent, wme *w, Bool isAdd);
 void
 filtered_print_wme_add(agent* thisAgent, wme *w) {
@@ -1001,8 +999,6 @@ void filtered_print_wme_remove(agent* thisAgent, wme *w)
 	xml_end_tag(thisAgent, kTagWMERemove);
   }
 }
-//#endif /* USE_TCL */
-
 /* kjh(CUSP-B2) end */
 
 void print_wme (agent* thisAgent, wme *w) {
@@ -1032,14 +1028,12 @@ void print_wme_without_timetag (agent* thisAgent, wme *w) {
   xml_object( thisAgent, w, XML_WME_NO_TIMETAG );
 }
 
-//#ifdef USE_TCL
 void print_wme_for_tcl (agent* thisAgent, wme *w)
 {
   print (thisAgent, "%lu: ", w->timetag);
   print_with_symbols (thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
   if (w->acceptable) print_string (thisAgent, " +");
 }
-//#endif /* USE_TCL */
 
 void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 									wme_trace_type wtt, int action)

@@ -47,53 +47,6 @@ struct rete_node_struct;
 /*                                                                      */
 /* Macros for handling multi-agent switching in Soar.                   */
 
-//#ifdef USE_X_DISPLAY
-//#include <X11/Xlib.h>
-//#include <X11/Xutil.h>
-//
-//typedef struct x_info_struct {
-//  Window  parent_window;
-//  Window  window;
-//  GC      gc;
-//  XFontStruct * font_struct;
-//  int     char_height;
-//  char    input_buffer[2000];
-//  int     input_buffer_index;
-//  int     window_x;
-//  int     window_y;
-//  int     width;
-//  int     height;
-//  uint64_t foreground;
-//  uint64_t background;
-//  int     borderwidth;
-//  Symbol * last_op_id; /* Used in monitors */
-//} x_info;
-//#endif
-
-
-/* These functions define the protocol functions for the X interface to  */
-/* Soar.                                                                 */
-
-//#ifdef USE_X_DISPLAY
-//  extern char *  x_input_buffer;
-//  extern int     x_input_buffer_index;
-//  extern Bool    waiting_for_command;
-//  extern void create_agent_window (agent *, char * agent_class);
-//  extern void create_monitor_window (agent *, char * command);
-//  extern void handle_soar_x_events (void);
-//  extern void refresh_monitor_window (agent *);
-//  extern void destroy_soar_display (void);
-//
-//  extern Bool text_io_mode;
-//
-//#ifdef USE_STDARGS
-//  extern void print_x_format_string (x_info * window, char *format, ... );
-//#else
-//  extern void print_x_format_string ();
-//#endif
-//
-//#endif  /* USE_X_DISPLAY */
-//
 /* This is deprecated. -AJC (8/9/02) */
 //extern char * c_interrupt_msg;
 
@@ -138,12 +91,6 @@ typedef union symbol_union Symbol;
 /* UNcomment the following line to get some marginally useful msgs
    about creating chunk names. */
 /*  #define DEBUG_CHUNK_NAMES */
-
-/* UnComment the following lines if you want to use X windows rather    */
-/* than standard I/O and are not using Tcl. */
-/* #ifndef USE_TCL */
-/* #define USE_X_DISPLAY */
-/* #endif */ /* #ifndef USE_TCL */
 
 /* Possible modes for numeric indifference */
 enum ni_mode {
