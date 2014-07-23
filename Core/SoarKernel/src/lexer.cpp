@@ -20,13 +20,6 @@
  *  Restrictions:  the lexer cannot read individual input lines longer than
  *  MAX_LEXER_LINE_LENGTH characters.  Thus, a single lexeme can't be longer
  *  than that either.
- *
- *  The lexer maintains a stack of files being read, in order to handle nested
- *  loads.  Start_lex_from_file() and stop_lex_from_file() push and pop the
- *  stack.  Immediately after start_lex_from_file(), the current lexeme (global
- *  variable) is undefined.  Immediately after stop_lex_from_file(), the 
- *  current lexeme is automatically restored to whatever it was just before
- *  the corresponding start_lex_from_file() call.
  *  
  *  Determine_possible_symbol_types_for_string() is a utility routine which
  *  figures out what kind(s) of symbol a given string could represent.
@@ -81,39 +74,6 @@ Bool whitespace[256];         /* is the character whitespace? */
 Bool number_starters[256];    /* could the character initiate a number? */
 
 /* ======================================================================
-                       Start/Stop Lex from File
-                       
-  The lexer maintains a stack of files being read, in order to handle nested
-  loads.  Start_lex_from_file() and stop_lex_from_file() push and pop the
-  stack.  Immediately after start_lex_from_file(), the current lexeme (agent
-  variable) is undefined.  Immediately after stop_lex_from_file(), the 
-  current lexeme is automatically restored to whatever it was just before
-  the corresponding start_lex_from_file() call.
-====================================================================== */
-
-void start_lex_from_file (agent* thisAgent, const char *filename, 
-						  FILE *already_opened_file) {
-  lexer_source_file *lsf;
-
-  lsf = static_cast<lexer_source_file_struct *>(allocate_memory (thisAgent, sizeof(lexer_source_file),
-                                                                 MISCELLANEOUS_MEM_USAGE));
-  lsf->saved_lexeme = thisAgent->lexeme;
-  lsf->saved_current_char = thisAgent->current_char;
-  lsf->parent_file = thisAgent->current_file;
-  thisAgent->current_file = lsf;
-  lsf->filename = make_memory_block_for_string (thisAgent, filename);
-  lsf->file = already_opened_file;
-  lsf->allow_ids = TRUE;
-  lsf->parentheses_level = 0;
-  lsf->column_of_start_of_last_lexeme = 0;
-  lsf->line_of_start_of_last_lexeme = 0;
-  lsf->current_line = 0;
-  lsf->current_column = 0;
-  lsf->buffer[0] = 0;
-  thisAgent->current_char = ' ';   /* whitespace--to force immediate read of first line */
-}
-
-/* ======================================================================
                              Get next char
 
   Get_next_char() gets the next character from the current input file and
@@ -161,17 +121,13 @@ void get_next_char (agent* thisAgent) {
 
 ====================================================================== */
 
-/*#define record_position_of_start_of_lexeme() { \
-  thisAgent->current_file->column_of_start_of_last_lexeme = \
-    thisAgent->current_file->current_column - 1; \
-  thisAgent->current_file->line_of_start_of_last_lexeme = \
-    thisAgent->current_file->current_line; }*/
 inline void record_position_of_start_of_lexeme(agent* thisAgent)
 {
-  thisAgent->current_file->column_of_start_of_last_lexeme =
-    thisAgent->current_file->current_column - 1;
-  thisAgent->current_file->line_of_start_of_last_lexeme =
-    thisAgent->current_file->current_line;
+  //TODO: rewrite this, since the lexer no longer keeps track of files
+  // thisAgent->current_file->column_of_start_of_last_lexeme =
+  //   thisAgent->current_file->current_column - 1;
+  // thisAgent->current_file->line_of_start_of_last_lexeme =
+  //   thisAgent->current_file->current_line;
 }
 
 /*  redefined for Soar 7, want case-sensitivity to match Tcl.  KJC 5/96 
@@ -258,7 +214,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 		return (errno == 0);
 	}
 
-	if (thisAgent->current_file->allow_ids && possible_id) {
+	if (thisAgent->allow_ids && possible_id) {
 		// long term identifiers start with @
 		unsigned lti_index = 0;
 		if (thisAgent->lexeme.string[lti_index] == '@') {
@@ -400,14 +356,14 @@ void lex_lparen (agent* thisAgent) {
   store_and_advance(thisAgent);
   finish(thisAgent);
   thisAgent->lexeme.type = L_PAREN_LEXEME;
-  thisAgent->current_file->parentheses_level++;
+  thisAgent->parentheses_level++;
 }
 
 void lex_rparen (agent* thisAgent) {
   store_and_advance(thisAgent);
   finish(thisAgent);
   thisAgent->lexeme.type = R_PAREN_LEXEME;
-  if (thisAgent->current_file->parentheses_level > 0) thisAgent->current_file->parentheses_level--;
+  if (thisAgent->parentheses_level > 0) thisAgent->parentheses_level--;
 }
 
 void lex_greater (agent* thisAgent) {
@@ -639,9 +595,8 @@ void consume_whitespace_and_comments(agent* thisAgent)
 
 
 //
-// This file badly need to be locked.  Probably not the whole thing, but certainly the last
-// call to start_lext_from_file.  It does a memory allocation and other things that should
-// never happen more than once.
+// TODO: This file badly need to be locked. 
+// TODO: Does it still need locking even though memory allocation was removed?
 //
 void init_lexer (agent* thisAgent) 
 {
@@ -784,9 +739,6 @@ void init_lexer (agent* thisAgent)
         }
      }
   }
-
-  /* --- initially we're reading from the standard input --- */
-  start_lex_from_file (thisAgent, "[standard input]", stdin);
 }
 
 /* ======================================================================
@@ -837,7 +789,7 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
 ====================================================================== */
 
 int current_lexer_parentheses_level (agent* thisAgent) {
-  return thisAgent->current_file->parentheses_level;
+  return thisAgent->parentheses_level;
 }
 
 void skip_ahead_to_balanced_parentheses (agent* thisAgent, 
@@ -845,7 +797,7 @@ void skip_ahead_to_balanced_parentheses (agent* thisAgent,
   while (TRUE) {
     if (thisAgent->lexeme.type==EOF_LEXEME) return;
     if ((thisAgent->lexeme.type==R_PAREN_LEXEME) &&
-        (parentheses_level==thisAgent->current_file->parentheses_level)) return;
+        (parentheses_level==thisAgent->parentheses_level)) return;
     get_lexeme(thisAgent);
   }
 }
@@ -859,11 +811,11 @@ void skip_ahead_to_balanced_parentheses (agent* thisAgent,
 ====================================================================== */
 
 void set_lexer_allow_ids (agent* thisAgent, Bool allow_identifiers) {
-  thisAgent->current_file->allow_ids = allow_identifiers;
+  thisAgent->allow_ids = allow_identifiers;
 }
 
 Bool get_lexer_allow_ids(agent* thisAgent) {
-	return thisAgent->current_file->allow_ids;
+	return thisAgent->allow_ids;
 }
 
 /* ======================================================================

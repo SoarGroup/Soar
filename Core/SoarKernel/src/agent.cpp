@@ -163,8 +163,10 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->all_wmes_in_rete                   = NIL;
   newAgent->alpha_mem_id_counter               = 0;
-  newAgent->lexer_input_string             = NIL;
-  newAgent->lexer_input_suffix             = NIL;
+  newAgent->lexer_input_string                 = NIL;
+  newAgent->lexer_input_suffix                 = NIL;
+  newAgent->parentheses_level                  = 0;
+  newAgent->allow_ids                          = TRUE;
   newAgent->backtrace_number                   = 0;
   newAgent->beta_node_id_counter               = 0;
   newAgent->bottom_goal                        = NIL;
@@ -172,9 +174,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->chunk_count                        = 1;
   newAgent->chunk_free_problem_spaces          = NIL;
   newAgent->chunky_problem_spaces              = NIL;  /* AGR MVL1 */
-  strcpy(newAgent->chunk_name_prefix,"chunk");	/* ajc (5/14/02) */
+  strcpy(newAgent->chunk_name_prefix,"chunk");  /* ajc (5/14/02) */
   newAgent->context_slots_with_changed_acceptable_preferences = NIL;
-  newAgent->current_file                       = NIL;
   newAgent->current_phase                      = INPUT_PHASE;
   newAgent->applyPhase                         = FALSE;
   newAgent->current_symbol_hash_id             = 0;
@@ -547,10 +548,6 @@ void destroy_soar_agent (agent * delete_agent)
   free_memory(delete_agent, delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
   free_memory(delete_agent, delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
   free_memory(delete_agent, delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
-
-  /* Releasing memory allocated in inital call to start_lex_from_file from init_lexer */
-  free_memory_block_for_string(delete_agent, delete_agent->current_file->filename);
-  free_memory (delete_agent, delete_agent->current_file, MISCELLANEOUS_MEM_USAGE);
 
   /* Releasing trace formats (needs to happen before tracing hashtables are released) */
   remove_trace_format (delete_agent, FALSE, FOR_ANYTHING_TF, NIL);
