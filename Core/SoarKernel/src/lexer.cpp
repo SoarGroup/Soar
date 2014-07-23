@@ -70,6 +70,9 @@
 
 #include <assert.h>
 
+//forward declaration for internal use
+void consume_whitespace_and_comments(agent* thisAgent);
+
 //
 // These three should be safe for re-entrancy.  --JNW--
 //
@@ -689,6 +692,19 @@ void get_lexeme (agent* thisAgent) {
   thisAgent->lexeme.length = 0;
   thisAgent->lexeme.string[0] = 0;
 
+  consume_whitespace_and_comments(thisAgent);
+
+  // dispatch to lexer routine by first character in lexeme
+  record_position_of_start_of_lexeme(thisAgent);
+  if (thisAgent->current_char!=EOF)
+    (*(lexer_routines[static_cast<unsigned char>(thisAgent->current_char)]))(thisAgent);
+  else
+    lex_eof(thisAgent);
+}
+
+void consume_whitespace_and_comments(agent* thisAgent)
+{
+
 /* AGR 534  The only time a prompt should be printed out is if there's
    a command being expected; ie. the prompt shouldn't print out if we're
    in the middle of entering a production.  So if we're in the middle of
@@ -704,61 +720,22 @@ void get_lexeme (agent* thisAgent) {
       continue;
     }
 
-//#ifdef USE_TCL 
+    //skip the semi-colon, forces newline in TCL
     if (thisAgent->current_char==';') {
-      /* --- skip the semi-colon, forces newline in TCL --- */
-      get_next_char(thisAgent);  /* consume it */
+      get_next_char(thisAgent);
       continue;
     }
+    //hash is end-of-line comment; read to the end
     if (thisAgent->current_char=='#') {
-      /* --- read from hash to end-of-line --- */
       while ((thisAgent->current_char!='\n') &&
              (thisAgent->current_char!=EOF))
         get_next_char(thisAgent);
       if (thisAgent->current_char!=EOF) get_next_char(thisAgent);
       continue;
     }
-//#else
-//    if (thisAgent->current_char==';') {
-//      /* --- read from semicolon to end-of-line --- */
-//      while ((thisAgent->current_char!='\n') &&
-//             (thisAgent->current_char!=EOF))
-//        get_next_char(thisAgent);
-//      if (thisAgent->current_char!=EOF) get_next_char(thisAgent);
-//      continue;
-//    }
-//    if (thisAgent->current_char=='#') {
-//      /* --- comments surrounded by "#|" and "|#" delimiters --- */
-//      record_position_of_start_of_lexeme(); /* in case of later error mesg. */
-//      get_next_char(thisAgent);
-//      if (thisAgent->current_char!='|') {
-//        print ("Error: '#' not followed by '|'\n");
-//        print_location_of_most_recent_lexeme(thisAgent);
-//        continue;
-//      }
-//      get_next_char(thisAgent);  /* consume the vbar */
-//      while (TRUE) {
-//        if (thisAgent->current_char==EOF) {
-//          print ("Error: '#|' without terminating '|#'\n");
-//          print_location_of_most_recent_lexeme(thisAgent);
-//          break;
-//        }
-//        if (thisAgent->current_char!='|') { get_next_char(thisAgent); continue; }
-//        get_next_char(thisAgent);
-//        if (thisAgent->current_char=='#') break;
-//      }
-//      get_next_char(thisAgent);  /* consume the closing '#' */
-//      continue; /* continue outer while(TRUE), reading more whitespace */
-//    }
-//#endif  /* USE_TCL */
-    break; /* if no whitespace or comments found, break out of the loop */
+    //if no whitespace or comments found, break out of the loop
+    break;
   }
-  /* --- no more whitespace, so go get the actual lexeme --- */
-  record_position_of_start_of_lexeme(thisAgent);
-  if (thisAgent->current_char!=EOF)
-    (*(lexer_routines[static_cast<unsigned char>(thisAgent->current_char)]))(thisAgent);
-  else
-    lex_eof(thisAgent);
 }
   
 /* ======================================================================
