@@ -1946,7 +1946,6 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     print_with_symbols (thisAgent, "(Ignoring production %y)\n\n", name);
     if (documentation) free_memory_block_for_string (thisAgent, documentation);
     symbol_remove_ref (thisAgent, name);
-/*    if (! reading_from_top_level()) respond_to_load_errors ();  AGR 527c */
     return NIL;
   }
 
@@ -1958,7 +1957,6 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     if (documentation) free_memory_block_for_string (thisAgent, documentation);
     symbol_remove_ref (thisAgent, name);
     deallocate_condition_list (thisAgent, lhs);
-/*    if (! reading_from_top_level()) respond_to_load_errors ();  AGR 527c */
     return NIL;
   }
   get_lexeme(thisAgent);
@@ -1970,7 +1968,6 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     if (documentation) free_memory_block_for_string (thisAgent, documentation);
     symbol_remove_ref (thisAgent, name);
     deallocate_condition_list (thisAgent, lhs);
-/*    if (! reading_from_top_level()) respond_to_load_errors ();  AGR 527c */
     return NIL;
   }
   rhs = destructively_reverse_action_list (rhs);
@@ -1985,7 +1982,6 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     symbol_remove_ref (thisAgent, name);
     deallocate_condition_list (thisAgent, lhs);
     deallocate_action_list (thisAgent, rhs);
-/*    if (! reading_from_top_level()) respond_to_load_errors ();  AGR 527c */
     return NIL;
   }
 
@@ -2005,7 +2001,6 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     symbol_remove_ref (thisAgent, name);
     deallocate_condition_list (thisAgent, lhs_top);
     deallocate_action_list (thisAgent, rhs);
-/*    if (! reading_from_top_level()) respond_to_load_errors ();  AGR 527c */
     return NIL;
   }
 

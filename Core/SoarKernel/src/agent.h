@@ -783,7 +783,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   const char        * alternate_input_string;
   const char        * alternate_input_suffix;
   Bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
-  Bool                load_errors_quit;  /* AGR 527c */
 
   /* RCHONG: begin 10.11 */
   Bool       did_PE;

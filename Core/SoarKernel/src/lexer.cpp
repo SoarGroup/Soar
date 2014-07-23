@@ -606,11 +606,6 @@ void lex_unknown (agent* thisAgent) {
     print (thisAgent, "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
            thisAgent->current_file->current_line, 
            thisAgent->current_file->current_column);
-    if (! reading_from_top_level(thisAgent)) {
-      //respond_to_load_errors (thisAgent);
-      if (thisAgent->load_errors_quit)
-	thisAgent->current_char = EOF;
-    }
   }
     get_next_char(thisAgent);
     get_lexeme(thisAgent);
@@ -704,16 +699,8 @@ void get_lexeme (agent* thisAgent) {
 
 void consume_whitespace_and_comments(agent* thisAgent)
 {
-
-/* AGR 534  The only time a prompt should be printed out is if there's
-   a command being expected; ie. the prompt shouldn't print out if we're
-   in the middle of entering a production.  So if we're in the middle of
-   entering a production, then the parentheses level will be > 0, so that's
-   the criteria we will use.  AGR  5-Apr-94  */
-
-  thisAgent->load_errors_quit = FALSE;  /* AGR 527c */
-
-  while (thisAgent->load_errors_quit==FALSE) {   /* AGR 527c */
+  // loop until whitespace and comments are gone
+  while (TRUE) {
     if (thisAgent->current_char==EOF) break;
     if (whitespace[static_cast<unsigned char>(thisAgent->current_char)]) {
       get_next_char(thisAgent);
@@ -919,7 +906,6 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
     if (! reading_from_top_level(thisAgent)) {
       print (thisAgent, "File %s, line %lu:\n", thisAgent->current_file->filename,
              thisAgent->current_file->current_line);
-      /*       respond_to_load_errors ();     AGR 527a */
     }
     if (thisAgent->current_file->buffer[strlen(thisAgent->current_file->buffer)-1]=='\n')
       print_string (thisAgent, thisAgent->current_file->buffer);
@@ -928,28 +914,11 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
     for (i=0; i<thisAgent->current_file->column_of_start_of_last_lexeme; i++)
       print_string (thisAgent, "-");
     print_string (thisAgent, "^\n");
-
-    if (! reading_from_top_level(thisAgent)) {
-      //respond_to_load_errors (thisAgent); /* AGR 527a */
-      if (thisAgent->load_errors_quit)
-	thisAgent->current_char = EOF;
-    }
-
-/* AGR 527a  The respond_to_load_errors call came too early (above),
-   and the "continue" prompt appeared before the offending line was printed
-   out, so the respond_to_load_errors call was moved here.
-   AGR 26-Apr-94 */
-
   } else {
     /* --- error occurred on a previous line, so just give the position --- */
     print (thisAgent, "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
            thisAgent->current_file->line_of_start_of_last_lexeme,
            thisAgent->current_file->column_of_start_of_last_lexeme + 1);
-    if (! reading_from_top_level(thisAgent)) {
-      //respond_to_load_errors (thisAgent);
-      if (thisAgent->load_errors_quit)
-	thisAgent->current_char = EOF;
-    }
   }
 }
 
