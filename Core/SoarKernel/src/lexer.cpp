@@ -123,31 +123,31 @@ void start_lex_from_file (agent* thisAgent, const char *filename,
 void get_next_char (agent* thisAgent) {
 	char *s;
 
-	if ((thisAgent->alternate_input_string == NULL) &&
-		(thisAgent->alternate_input_suffix == NULL)   ) {
+	if ((thisAgent->lexer_input_string == NULL) &&
+		(thisAgent->lexer_input_suffix == NULL)   ) {
 			thisAgent->current_char = EOF;
 			//assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
 			return;
 	}
 
-	if (thisAgent->alternate_input_string != NULL)
+	if (thisAgent->lexer_input_string != NULL)
 	{
-		thisAgent->current_char = *thisAgent->alternate_input_string++;
+		thisAgent->current_char = *thisAgent->lexer_input_string++;
 
 		if (thisAgent->current_char == '\0') 
 		{
-			thisAgent->alternate_input_string = NIL;
+			thisAgent->lexer_input_string = NIL;
 			thisAgent->current_char = 
-				*thisAgent->alternate_input_suffix++;
+				*thisAgent->lexer_input_suffix++;
 		}
 	}
-	else if (thisAgent->alternate_input_suffix != NULL)
+	else if (thisAgent->lexer_input_suffix != NULL)
 	{
-		thisAgent->current_char = *thisAgent->alternate_input_suffix++;
+		thisAgent->current_char = *thisAgent->lexer_input_suffix++;
 
 		if (thisAgent->current_char == '\0') 
 		{
-			thisAgent->alternate_input_suffix = NIL;
+			thisAgent->lexer_input_suffix = NIL;
 			thisAgent->current_char = EOF;
 			//assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
 			return;

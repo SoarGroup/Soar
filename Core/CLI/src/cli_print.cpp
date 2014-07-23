@@ -494,8 +494,8 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
 
 void soar_alternate_input(agent *ai_agent, const char *ai_string, const char *ai_suffix)
 {
-    ai_agent->alternate_input_string = ai_string;
-    ai_agent->alternate_input_suffix = ai_suffix;
+    ai_agent->lexer_input_string = ai_string;
+    ai_agent->lexer_input_suffix = ai_suffix;
     ai_agent->current_char = ' ';
     return;
 }
@@ -538,8 +538,8 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     case QUOTED_STRING_LEXEME:
         /* Soar-Bugs #54 TMH */
         soar_alternate_input(thisAgent, arg, ") ");
-        /* ((agent *)clientData)->alternate_input_string = argv[next_arg];
-        * ((agent *)clientData)->alternate_input_suffix = ") ";
+        /* ((agent *)clientData)->lexer_input_string = argv[next_arg];
+        * ((agent *)clientData)->lexer_input_suffix = ") ";
         */
         get_lexeme(thisAgent);
         wmes = read_pattern_and_get_matching_wmes(thisAgent);

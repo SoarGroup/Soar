@@ -163,8 +163,8 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->all_wmes_in_rete                   = NIL;
   newAgent->alpha_mem_id_counter               = 0;
-  newAgent->alternate_input_string             = NIL;
-  newAgent->alternate_input_suffix             = NIL;
+  newAgent->lexer_input_string             = NIL;
+  newAgent->lexer_input_suffix             = NIL;
   newAgent->backtrace_number                   = 0;
   newAgent->beta_node_id_counter               = 0;
   newAgent->bottom_goal                        = NIL;
