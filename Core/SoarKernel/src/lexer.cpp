@@ -197,11 +197,6 @@ inline void finish(agent* thisAgent)
 }
 
 void read_constituent_string (agent* thisAgent) {
-#ifdef __SC__
-	char *buf;
-	int i,len;
-#endif
-
   while ((thisAgent->current_char!=EOF) &&
          constituent_char[static_cast<unsigned char>(thisAgent->current_char)])
     store_and_advance(thisAgent);
@@ -219,22 +214,6 @@ void read_rest_of_floating_point_number (agent* thisAgent) {
     while (isdigit(thisAgent->current_char)) store_and_advance(thisAgent); /* string of digits */
   }
   finish(thisAgent);
-
-#ifdef __SC__
-  if (strcmp("soar>",thisAgent->lexeme.string)) { /* if the lexeme doesn't equal "soar>" */
-  	if (!(strncmp("soar>",thisAgent->lexeme.string,5))) { /* but the first 5 chars are "soar>" */
-		/* then SIOW messed up so ignore the "soar>" */
-	   buf = (char *)allocate_memory(thisAgent, (len=(strlen(thisAgent->lexeme.string)+1))*sizeof(char),STRING_MEM_USAGE);
-	   for (i=0;i<=len;i++) {
-	   	   buf[i] = thisAgent->lexeme.string[i];
-	   }
-	   for (i=5;i<=len;i++) {
-	   	   thisAgent->lexeme.string[i-5] = buf[i];
-	   }
-	   free_memory_block_for_string(thisAgent, buf);
-	}
-  }
-#endif
 }
 
 Bool determine_type_of_constituent_string (agent* thisAgent) {
