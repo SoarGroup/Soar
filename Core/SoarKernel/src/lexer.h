@@ -33,9 +33,6 @@
   Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
   closing paren is found (0 means eat until back at the top level).
   
-  Fake_rparen_at_next_end_of_line() tells the lexer to insert a fake
-  R_PAREN_LEXEME token the next time it reaches the end of a line.
-  
   Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
   be read.  If FALSE, things that look like identifiers will be returned
   as SYM_CONSTANT_LEXEME's instead.
@@ -121,7 +118,6 @@ extern void print_location_of_most_recent_lexeme (agent* thisAgent);
 extern int current_lexer_parentheses_level (agent* thisAgent);
 extern void skip_ahead_to_balanced_parentheses (agent* thisAgent, 
 												int parentheses_level);
-extern void fake_rparen_at_next_end_of_line (agent* thisAgent);
 extern void set_lexer_allow_ids (agent* thisAgent, Bool allow_identifiers);
 extern Bool get_lexer_allow_ids (agent* thisAgent);
 
@@ -137,7 +133,6 @@ typedef struct lexer_source_file_struct {
   struct lexer_source_file_struct *parent_file;
   char *filename;
   FILE *file;
-  Bool fake_rparen_at_eol;
   Bool allow_ids;
   int parentheses_level;    /* 0 means top level, no left paren's seen */
   int current_column;       /* column number of next char to read (0-based) */

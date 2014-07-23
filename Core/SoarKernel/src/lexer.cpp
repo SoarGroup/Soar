@@ -40,9 +40,6 @@
  *  Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
  *  closing paren is found (0 means eat until back at the top level).
  *  
- *  Fake_rparen_at_next_end_of_line() tells the lexer to insert a fake
- *  R_PAREN_LEXEME token the next time it reaches the end of a line.
- *  
  *  Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
  *  be read.  If FALSE, things that look like identifiers will be returned
  *  as SYM_CONSTANT_LEXEME's instead.
@@ -103,7 +100,6 @@ void start_lex_from_file (agent* thisAgent, const char *filename,
   thisAgent->current_file = lsf;
   lsf->filename = make_memory_block_for_string (thisAgent, filename);
   lsf->file = already_opened_file;
-  lsf->fake_rparen_at_eol = FALSE;
   lsf->allow_ids = TRUE;
   lsf->parentheses_level = 0;
   lsf->column_of_start_of_last_lexeme = 0;
@@ -383,16 +379,6 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 	return TRUE;
 }
 
-void do_fake_rparen (agent* thisAgent) {
-  record_position_of_start_of_lexeme(thisAgent);
-  thisAgent->lexeme.type = R_PAREN_LEXEME;
-  thisAgent->lexeme.length = 1;
-  thisAgent->lexeme.string[0] = ')';
-  thisAgent->lexeme.string[1] = 0;
-  if (thisAgent->current_file->parentheses_level > 0) thisAgent->current_file->parentheses_level--;
-  thisAgent->current_file->fake_rparen_at_eol = FALSE;
-}
-
 /* ======================================================================
                         Lex such-and-such Routines
 
@@ -429,10 +415,6 @@ void (*(lexer_routines[256]))(agent*) =
 };
 
 void lex_eof (agent* thisAgent) {
-  if (thisAgent->current_file->fake_rparen_at_eol) {
-    do_fake_rparen(thisAgent);
-    return;
-  }
   store_and_advance(thisAgent);
   finish(thisAgent);
   thisAgent->lexeme.type = EOF_LEXEME;
@@ -760,13 +742,6 @@ void get_lexeme (agent* thisAgent) {
   while (thisAgent->load_errors_quit==FALSE) {   /* AGR 527c */
     if (thisAgent->current_char==EOF) break;
     if (whitespace[static_cast<unsigned char>(thisAgent->current_char)]) {
-      if (thisAgent->current_char == '\n')
-      {    
-         if (thisAgent->current_file->fake_rparen_at_eol) {
-              do_fake_rparen(thisAgent);
-              return;
-         }
-      }
       get_next_char(thisAgent);
       continue;
     }
@@ -782,10 +757,6 @@ void get_lexeme (agent* thisAgent) {
       while ((thisAgent->current_char!='\n') &&
              (thisAgent->current_char!=EOF))
         get_next_char(thisAgent);
-      if (thisAgent->current_file->fake_rparen_at_eol) {
-        do_fake_rparen(thisAgent);
-        return;
-      }
       if (thisAgent->current_char!=EOF) get_next_char(thisAgent);
       continue;
     }
@@ -795,10 +766,6 @@ void get_lexeme (agent* thisAgent) {
 //      while ((thisAgent->current_char!='\n') &&
 //             (thisAgent->current_char!=EOF))
 //        get_next_char(thisAgent);
-//      if (thisAgent->current_file->fake_rparen_at_eol) {
-//        do_fake_rparen(thisAgent);
-//        return;
-//      }
 //      if (thisAgent->current_char!=EOF) get_next_char(thisAgent);
 //      continue;
 //    }
@@ -1063,8 +1030,6 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
   Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
   closing paren is found (0 means eat until back at the top level).
   
-  Fake_rparen_at_next_end_of_line() tells the lexer to insert a fake
-  R_PAREN_LEXEME token the next time it reaches the end of a line.
 ====================================================================== */
 
 int current_lexer_parentheses_level (agent* thisAgent) {
@@ -1079,11 +1044,6 @@ void skip_ahead_to_balanced_parentheses (agent* thisAgent,
         (parentheses_level==thisAgent->current_file->parentheses_level)) return;
     get_lexeme(thisAgent);
   }
-}
-
-void fake_rparen_at_next_end_of_line (agent* thisAgent) {
-  thisAgent->current_file->parentheses_level++;  
-  thisAgent->current_file->fake_rparen_at_eol = TRUE;  
 }
 
 /* ======================================================================
