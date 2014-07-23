@@ -1049,6 +1049,7 @@ bool KernelSML::HandleSVSInput(AgentSML* pAgentSML, char const* pCommandName, Co
         pAgentSML->GetSoarAgent()->svs->add_input(pLine);
         return true;
     }
+    return true;
 }
 
 bool KernelSML::HandleSVSOutput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
@@ -1058,6 +1059,7 @@ bool KernelSML::HandleSVSOutput(AgentSML* pAgentSML, char const* pCommandName, C
         std::string s = pAgentSML->GetSoarAgent()->svs->get_output();
         return this->ReturnResult(pConnection, pResponse, s.c_str()) ;
     }
+    return true;
 }
 
 bool KernelSML::HandleSVSQuery(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
