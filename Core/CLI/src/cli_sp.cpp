@@ -22,7 +22,7 @@
 using namespace cli;
 
 // FIXME: copied from gSKI
-void soarAlternateInput(agent *ai_agent, const char  *ai_string, char  *ai_suffix, Bool   ai_exit   )
+void soarAlternateInput(agent *ai_agent, const char  *ai_string, char  *ai_suffix)
 {
     // Side effects:
     //    The soar agents alternate input values are updated and its
@@ -30,7 +30,6 @@ void soarAlternateInput(agent *ai_agent, const char  *ai_string, char  *ai_suffi
     ai_agent->alternate_input_string = const_cast<char*>(ai_string);
     ai_agent->alternate_input_suffix = ai_suffix;
     ai_agent->current_char = ' ';
-    ai_agent->alternate_input_exit = ai_exit;
     return;
 }
 
@@ -40,7 +39,9 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
     // TODO: This should not be needed, FIX!
     // contents of gSKI ProductionManager::soarAlternateInput function:
     agent* agnt = m_pAgentSML->GetSoarAgent();
-    soarAlternateInput( agnt, productionString.c_str(), const_cast<char*>(") "), true );
+    soarAlternateInput( agnt, productionString.c_str(), const_cast<char*>(") "));
+    //whitespace forces immediate read of first line
+    agnt->current_char = ' ';
     set_lexer_allow_ids( agnt, false );
     get_lexeme( agnt );
 
@@ -49,7 +50,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
     p = parse_production( agnt, &rete_addition_result );
 
     set_lexer_allow_ids( agnt, true );
-    soarAlternateInput( agnt, 0, 0, true ); 
+    soarAlternateInput( agnt, 0, 0 ); 
 
     if (!p) { 
         // There was an error, but duplicate production is just a warning
