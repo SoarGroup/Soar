@@ -676,48 +676,6 @@ void lex_quote (agent* thisAgent) {
   thisAgent->lexeme.string[thisAgent->lexeme.length]=0;
 }
 
-/* AGR 562 begin */
-
-/* There are 2 functions here, for 2 different schemes for handling the
-   shell escape.
-   Scheme 1:  A '$' signals that all the rest of the text up to the '\n'
-   is to be passed to the system() command verbatim.  The whole string,
-   including the '$' as its first character, is stored in a single
-   lexeme which has the type DOLLAR_STRING_LEXEME.
-   Scheme 2:  A '$' is a single lexeme, much like a '(' or '&'.  All the
-   subsequent lexemes are gotten individually with calls to get_lexeme().
-   This makes it easier to parse the shell command, so that commands like
-   cd, pushd, popd, etc. can be trapped and the equivalent Soar commands
-   executed instead.  The problem with this scheme is that pulling the
-   string apart into lexemes eliminates any special spacing the user may
-   have done in specifying the shell command.  For that reason, my current
-   plan is to follow scheme 1.  AGR 3-Jun-94  */
-
-void lex_dollar (agent* thisAgent) {
-  thisAgent->lexeme.type = DOLLAR_STRING_LEXEME;
-  thisAgent->lexeme.string[0] = '$';
-  thisAgent->lexeme.length = 1;
-  get_next_char(thisAgent);   /* consume the '$' */
-  while ((thisAgent->current_char!='\n') &&
-	 (thisAgent->current_char!=EOF) &&
-	 (thisAgent->lexeme.length < MAX_LEXEME_LENGTH-1)) {
-    thisAgent->lexeme.string[thisAgent->lexeme.length++] =
-      char(thisAgent->current_char);
-    get_next_char(thisAgent);
-  }
-  thisAgent->lexeme.string[thisAgent->lexeme.length] = '\0';
-}
-
-/*
-void lex_dollar (void) {
-  store_and_advance();
-  finish();
-  thisAgent->lexeme.type = DOLLAR_STRING_LEXEME;
-}
-*/
-
-/* AGR 562 end */
-
 /* ======================================================================
                              Get lexeme
 
@@ -942,9 +900,6 @@ void init_lexer (agent* thisAgent)
            break;
         case '"':
            lexer_routines[(int)'"'] = lex_quote;
-           break;
-        case '$':
-           lexer_routines[(int)'$'] = lex_dollar;   /* AGR 562 */
            break;
         default:
            if (isdigit(i)) 
