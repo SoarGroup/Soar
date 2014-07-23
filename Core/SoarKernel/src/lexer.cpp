@@ -113,22 +113,6 @@ void start_lex_from_file (agent* thisAgent, const char *filename,
   thisAgent->current_char = ' ';   /* whitespace--to force immediate read of first line */
 }
 
-void stop_lex_from_file (agent* thisAgent) {
-  lexer_source_file *lsf;
-
-  if (reading_from_top_level(thisAgent)) {
-    print (thisAgent, "Internal error: tried to stop_lex_from_file at top level\n");
-    return;
-  }
-  lsf = thisAgent->current_file;
-  thisAgent->current_file = thisAgent->current_file->parent_file;
-  thisAgent->current_char = lsf->saved_current_char;
-  thisAgent->lexeme = lsf->saved_lexeme;
-
-  free_memory_block_for_string (thisAgent, lsf->filename);
-  free_memory (thisAgent, lsf, MISCELLANEOUS_MEM_USAGE);
-}
-
 /* ======================================================================
                              Get next char
 
@@ -201,19 +185,12 @@ void get_next_char (agent* thisAgent) {
 
 	if (s) {
 		thisAgent->current_file->current_line++;
-		if (reading_from_top_level(thisAgent)) {
-			tell_printer_that_output_column_has_been_reset (thisAgent);
-		}
+		tell_printer_that_output_column_has_been_reset (thisAgent);
 	} else {
 		/* s==NIL means immediate eof encountered or read error occurred */
 		if (! feof(thisAgent->current_file->file)) {
-			if(reading_from_top_level(thisAgent)) {
-				assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
-				return;
-			} else {
-				print (thisAgent, "I/O error while reading file %s; ignoring the rest of it.\n",
-					thisAgent->current_file->filename);
-			}
+			assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
+			return;
 		}
 		thisAgent->current_file->buffer[0] = 0;
 	}
@@ -598,17 +575,8 @@ void lex_digit (agent* thisAgent) {
 }
 
 void lex_unknown (agent* thisAgent) {
-  if(reading_from_top_level(thisAgent) && thisAgent->current_char == 0) {
-  }
-  else {
-    print (thisAgent, "Error:  Unknown character encountered by lexer, code=%d\n", 
-           thisAgent->current_char);
-    print (thisAgent, "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
-           thisAgent->current_file->current_line, 
-           thisAgent->current_file->current_column);
-  }
-    get_next_char(thisAgent);
-    get_lexeme(thisAgent);
+  get_next_char(thisAgent);
+  get_lexeme(thisAgent);
 }
 
 void lex_constituent_string (agent* thisAgent) {
@@ -903,10 +871,6 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
   if (thisAgent->current_file->line_of_start_of_last_lexeme ==
       thisAgent->current_file->current_line) {
     /* --- error occurred on current line, so print out the line --- */
-    if (! reading_from_top_level(thisAgent)) {
-      print (thisAgent, "File %s, line %lu:\n", thisAgent->current_file->filename,
-             thisAgent->current_file->current_line);
-    }
     if (thisAgent->current_file->buffer[strlen(thisAgent->current_file->buffer)-1]=='\n')
       print_string (thisAgent, thisAgent->current_file->buffer);
     else

@@ -1041,19 +1041,6 @@ extern agent * create_soar_agent (char * name);
 extern void    destroy_soar_agent (agent* soar_agent);
 
 //void initialize_soar_agent(Kernel *thisKernel, agent* thisAgent);
-//
-/* Ideally, this should be in "lexer.h", but to avoid circular dependencies
-   among header files, I am forced to put it here. */
-#ifdef USE_MACROS
-#define reading_from_top_level(soar_agent) (!soar_agent->current_file->parent_file)
-#else
-
-inline Bool reading_from_top_level(agent* soarAgent)
-{
-   return (!soarAgent->current_file->parent_file);
-}
-
-#endif /* USE_MACROS */
 
 #ifdef __cplusplus
 //}

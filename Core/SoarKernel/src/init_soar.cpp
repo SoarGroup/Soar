@@ -1446,23 +1446,6 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
 
 extern char *getenv();
 
-/* AGR 536  Soar core dumped when it used filenames longer than 1000 chars
-   but shorter than MAXPATHLEN (from sys/param.h).  4-May-94  */
-
-// KJC Nov 05:  moved here from old interface.cpp, so could remove interface.* files
-void load_file (agent* thisAgent, char *file_name, FILE *already_open_file) {
-Bool old_print_prompt_flag;
-
-  old_print_prompt_flag = thisAgent->print_prompt_flag;
-  thisAgent->print_prompt_flag = FALSE;
-
-  start_lex_from_file (thisAgent, file_name, already_open_file);
-  //repeatedly_read_and_dispatch_commands (thisKernel, thisAgent);
-  stop_lex_from_file (thisAgent);
-
-  thisAgent->print_prompt_flag = old_print_prompt_flag;
-}
-
 /*
   RDF: 20020706 Added this for the gSKI project. This makes it so that
                 created agents have a top state and the appropriate io
