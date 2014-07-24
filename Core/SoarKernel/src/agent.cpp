@@ -206,7 +206,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->num_wmes_in_rete                   = 0;
   newAgent->potentials_tc                      = 0;
   newAgent->prev_top_state                     = NIL;
-  newAgent->print_prompt_flag                  = TRUE;
   newAgent->printer_output_column              = 1;
   newAgent->production_being_fired             = NIL;
   newAgent->productions_being_traced           = NIL;

@@ -238,7 +238,6 @@ typedef struct agent_struct {
   int                 parentheses_level; //0 means top level, no left paren's seen 
   int                 current_char; /* holds current input character */
   struct lexeme_info  lexeme;       /* holds current lexeme */
-  Bool                print_prompt_flag;
 
   /* ---------------- Predefined Symbols -------------------------
      Certain symbols are used so frequently that we create them at

@@ -51,11 +51,8 @@
 #include <stdlib.h>
 
 #include "lexer.h"
-#include "mem.h"
-#include "kernel.h"
 #include "agent.h"
 #include "print.h"
-#include "init_soar.h"
 #include "xml.h"
 
 #include <math.h>
