@@ -1,5 +1,3 @@
-#include <portability.h>
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
@@ -51,7 +49,6 @@
 #include <stdlib.h>
 
 #include "lexer.h"
-#include "agent.h"
 #include "print.h"
 #include "xml.h"
 
@@ -60,15 +57,15 @@
 
 #include <assert.h>
 
-//forward declaration for internal use
-void consume_whitespace_and_comments(agent* thisAgent);
+using soar::Lexer;
 
-//
-// These three should be safe for re-entrancy.  --JNW--
-//
-Bool constituent_char[256];   /* is the character a symbol constituent? */
-Bool whitespace[256];         /* is the character whitespace? */
-Bool number_starters[256];    /* could the character initiate a number? */
+//static lexing structures
+Lexer::lex_func_ptr Lexer::lexer_routines[256];
+Bool Lexer::constituent_char[256];
+Bool Lexer::whitespace[256];
+Bool Lexer::number_starters[256];
+//initialize them all here
+Bool Lexer::initialized = init();
 
 /* ======================================================================
                              Get next char
@@ -77,22 +74,22 @@ Bool number_starters[256];    /* could the character initiate a number? */
   puts it into the agent variable current_char.
 ====================================================================== */
 
-void get_next_char (agent* thisAgent) {
+void Lexer::get_next_char () {
 	char *s;
 
-	if(thisAgent->current_char == EOF)
+	if(current_char == EOF)
 		return;
 
-	if (thisAgent->lexer_input_string == NULL) {
-		thisAgent->current_char = EOF;
+	if (production_string == NULL) {
+		current_char = EOF;
 		return;
 	}
 
-	thisAgent->current_char = *thisAgent->lexer_input_string++;
-	if (thisAgent->current_char == '\0') 
+	current_char = *production_string++;
+	if (current_char == '\0') 
 	{
-		thisAgent->lexer_input_string = NIL;
-		thisAgent->current_char = EOF;
+		production_string = NIL;
+		current_char = EOF;
 		return;
 	}
 }
@@ -103,63 +100,52 @@ void get_next_char (agent* thisAgent) {
 
 ====================================================================== */
 
-inline void record_position_of_start_of_lexeme(agent* thisAgent)
+inline void Lexer::record_position_of_start_of_lexeme()
 {
   //TODO: rewrite this, since the lexer no longer keeps track of files
-  // thisAgent->current_file->column_of_start_of_last_lexeme =
-  //   thisAgent->current_file->current_column - 1;
-  // thisAgent->current_file->line_of_start_of_last_lexeme =
-  //   thisAgent->current_file->current_line;
+  // current_file->column_of_start_of_last_lexeme =
+  //   current_file->current_column - 1;
+  // current_file->line_of_start_of_last_lexeme =
+  //   current_file->current_line;
 }
 
-/*  redefined for Soar 7, want case-sensitivity to match Tcl.  KJC 5/96 
-#define store_and_advance() { \
-  thisAgent->lexeme.string[thisAgent->lexeme.length++] = (isupper((char)thisAgent->current_char) ? \
-                                    tolower((char)thisAgent->current_char) : \
-                                    (char)thisAgent->current_char); \
-  get_next_char(); }
-#define store_and_advance() { \
-  thisAgent->lexeme.string[thisAgent->lexeme.length++] = \
-    (char)thisAgent->current_char; \
-  get_next_char(); }*/
-inline void store_and_advance(agent* thisAgent)
+inline void Lexer::store_and_advance()
 {
-  thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
-  get_next_char(thisAgent);
+  current_lexeme.string[current_lexeme.length++] = char(current_char);
+  get_next_char();
 }
 
-/*#define finish() { thisAgent->lexeme.string[thisAgent->lexeme.length]=0; }*/
-inline void finish(agent* thisAgent)
+inline void Lexer::finish()
 { 
-  thisAgent->lexeme.string[thisAgent->lexeme.length]=0;
+  current_lexeme.string[current_lexeme.length]=0;
 }
 
-void read_constituent_string (agent* thisAgent) {
-  while ((thisAgent->current_char!=EOF) &&
-         constituent_char[static_cast<unsigned char>(thisAgent->current_char)])
-    store_and_advance(thisAgent);
-  finish(thisAgent);
+void Lexer::read_constituent_string () {
+  while ((current_char!=EOF) &&
+         constituent_char[static_cast<unsigned char>(current_char)])
+    store_and_advance();
+  finish();
 }  
 
-void read_rest_of_floating_point_number (agent* thisAgent) {
+void Lexer::read_rest_of_floating_point_number () {
   /* --- at entry, current_char=="."; we read the "." and rest of number --- */
-  store_and_advance(thisAgent);
-  while (isdigit(thisAgent->current_char)) store_and_advance(thisAgent); /* string of digits */
-  if ((thisAgent->current_char=='e')||(thisAgent->current_char=='E')) {
-    store_and_advance(thisAgent);                             /* E */
-    if ((thisAgent->current_char=='+')||(thisAgent->current_char=='-'))
-      store_and_advance(thisAgent);                       /* optional leading + or - */
-    while (isdigit(thisAgent->current_char)) store_and_advance(thisAgent); /* string of digits */
+  store_and_advance();
+  while (isdigit(current_char)) store_and_advance(); /* string of digits */
+  if ((current_char=='e')||(current_char=='E')) {
+    store_and_advance();                             /* E */
+    if ((current_char=='+')||(current_char=='-'))
+      store_and_advance();                       /* optional leading + or - */
+    while (isdigit(current_char)) store_and_advance(); /* string of digits */
   }
-  finish(thisAgent);
+  finish();
 }
 
-Bool determine_type_of_constituent_string (agent* thisAgent) {
+Bool Lexer::determine_type_of_constituent_string () {
 	Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
 	Bool rereadable;
 
-	determine_possible_symbol_types_for_string (thisAgent->lexeme.string,
-		thisAgent->lexeme.length,
+	determine_possible_symbol_types_for_string (current_lexeme.string,
+		current_lexeme.length,
 		&possible_id,
 		&possible_var,
 		&possible_sc,
@@ -168,68 +154,68 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 		&rereadable);
 
 	if (possible_var) {
-		thisAgent->lexeme.type = VARIABLE_LEXEME;
+		current_lexeme.type = VARIABLE_LEXEME;
 		return TRUE;
 	}
 
 	if (possible_ic) {
 		errno = 0;
-		thisAgent->lexeme.type = INT_CONSTANT_LEXEME;
-		thisAgent->lexeme.int_val = strtol (thisAgent->lexeme.string,NULL,10);
+		current_lexeme.type = INT_CONSTANT_LEXEME;
+		current_lexeme.int_val = strtol (current_lexeme.string,NULL,10);
 		if (errno) {
 			print (thisAgent, "Error: bad integer (probably too large)\n");
-			print_location_of_most_recent_lexeme(thisAgent);
-			thisAgent->lexeme.int_val = 0;
+			print_location_of_most_recent_lexeme();
+			current_lexeme.int_val = 0;
 		}
 		return (errno == 0);
 	}
 
 	if (possible_fc) {
 		errno = 0;
-		thisAgent->lexeme.type = FLOAT_CONSTANT_LEXEME;
-		thisAgent->lexeme.float_val = strtod (thisAgent->lexeme.string,NULL); 
+		current_lexeme.type = FLOAT_CONSTANT_LEXEME;
+		current_lexeme.float_val = strtod (current_lexeme.string,NULL); 
 		if (errno) {
 			print (thisAgent, "Error: bad floating point number\n");
-			print_location_of_most_recent_lexeme(thisAgent);
-			thisAgent->lexeme.float_val = 0.0;
+			print_location_of_most_recent_lexeme();
+			current_lexeme.float_val = 0.0;
 		}
 		return (errno == 0);
 	}
 
-	if (thisAgent->allow_ids && possible_id) {
+	if (get_allow_ids() && possible_id) {
 		// long term identifiers start with @
 		unsigned lti_index = 0;
-		if (thisAgent->lexeme.string[lti_index] == '@') {
+		if (current_lexeme.string[lti_index] == '@') {
 			lti_index += 1;
 		}
-		thisAgent->lexeme.id_letter = static_cast<char>(toupper(thisAgent->lexeme.string[lti_index]));
+		current_lexeme.id_letter = static_cast<char>(toupper(current_lexeme.string[lti_index]));
 		lti_index += 1;
 		errno = 0;
-		thisAgent->lexeme.type = IDENTIFIER_LEXEME;
-        if (!from_c_string(thisAgent->lexeme.id_number, &(thisAgent->lexeme.string[lti_index]))) {
+		current_lexeme.type = IDENTIFIER_LEXEME;
+        if (!from_c_string(current_lexeme.id_number, &(current_lexeme.string[lti_index]))) {
 			print (thisAgent, "Error: bad number for identifier (probably too large)\n");
-			print_location_of_most_recent_lexeme(thisAgent);
-			thisAgent->lexeme.id_number = 0;
+			print_location_of_most_recent_lexeme();
+			current_lexeme.id_number = 0;
             errno = 1;
 		}
 		return (errno == 0);
 	}
 
 	if (possible_sc) {
-		thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
+		current_lexeme.type = SYM_CONSTANT_LEXEME;
 		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
-			if ( (thisAgent->lexeme.string[0] == '<') || 
-				 (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') )
+			if ( (current_lexeme.string[0] == '<') || 
+				 (current_lexeme.string[current_lexeme.length-1] == '>') )
 			{
-				print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", thisAgent->lexeme.string);
-				print_location_of_most_recent_lexeme(thisAgent);
+				print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", current_lexeme.string);
+				print_location_of_most_recent_lexeme();
 				xml_generate_warning(thisAgent, "Warning: Suspicious string constant");		   
 			}
 		}
 		return TRUE;
 	}
 
-	thisAgent->lexeme.type = QUOTED_STRING_LEXEME;
+	current_lexeme.type = QUOTED_STRING_LEXEME;
 	return TRUE;
 }
 
@@ -242,278 +228,252 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
   the agent variable "lexeme".
 ====================================================================== */
 
-void lex_unknown (agent* thisAgent);
-#define lu lex_unknown
-
-//
-// This should be safe for re-entrant code. --JNW--
-//
-void (*(lexer_routines[256]))(agent*) =
-{
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-   lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,lu,
-};
-
-void lex_eof (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = EOF_LEXEME;
+void Lexer::lex_eof () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = EOF_LEXEME;
 }
 
-void lex_at (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = AT_LEXEME;
+void Lexer::lex_at () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = AT_LEXEME;
 }
 
-void lex_tilde (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = TILDE_LEXEME;
+void Lexer::lex_tilde () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = TILDE_LEXEME;
 }
 
-void lex_up_arrow (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = UP_ARROW_LEXEME;
+void Lexer::lex_up_arrow () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = UP_ARROW_LEXEME;
 }
 
-void lex_lbrace (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = L_BRACE_LEXEME;
+void Lexer::lex_lbrace () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = L_BRACE_LEXEME;
 }
 
-void lex_rbrace (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = R_BRACE_LEXEME;
+void Lexer::lex_rbrace () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = R_BRACE_LEXEME;
 }
 
-void lex_exclamation_point (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = EXCLAMATION_POINT_LEXEME;
+void Lexer::lex_exclamation_point () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = EXCLAMATION_POINT_LEXEME;
 }
 
-void lex_comma (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = COMMA_LEXEME;
+void Lexer::lex_comma () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = COMMA_LEXEME;
 }
 
-void lex_equal (agent* thisAgent) {
+void Lexer::lex_equal () {
   /* Lexeme might be "=", or symbol */
   /* Note: this routine relies on = being a constituent character */
 
-  read_constituent_string(thisAgent);
-  if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = EQUAL_LEXEME; return; }
-  determine_type_of_constituent_string(thisAgent);
+  read_constituent_string();
+  if (current_lexeme.length==1) { current_lexeme.type = EQUAL_LEXEME; return; }
+  determine_type_of_constituent_string();
 }
 
-void lex_ampersand (agent* thisAgent) {
+void Lexer::lex_ampersand () {
   /* Lexeme might be "&", or symbol */
   /* Note: this routine relies on & being a constituent character */
 
-  read_constituent_string(thisAgent);
-  if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = AMPERSAND_LEXEME; return; }
-  determine_type_of_constituent_string(thisAgent);
+  read_constituent_string();
+  if (current_lexeme.length==1) { current_lexeme.type = AMPERSAND_LEXEME; return; }
+  determine_type_of_constituent_string();
 }
 
-void lex_lparen (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = L_PAREN_LEXEME;
-  thisAgent->parentheses_level++;
+void Lexer::lex_lparen () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = L_PAREN_LEXEME;
+  parentheses_level++;
 }
 
-void lex_rparen (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
-  thisAgent->lexeme.type = R_PAREN_LEXEME;
-  if (thisAgent->parentheses_level > 0) thisAgent->parentheses_level--;
+void Lexer::lex_rparen () {
+  store_and_advance();
+  finish();
+  current_lexeme.type = R_PAREN_LEXEME;
+  if (parentheses_level > 0) parentheses_level--;
 }
 
-void lex_greater (agent* thisAgent) {
+void Lexer::lex_greater () {
   /* Lexeme might be ">", ">=", ">>", or symbol */
   /* Note: this routine relies on =,> being constituent characters */
 
-  read_constituent_string(thisAgent);
-  if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = GREATER_LEXEME; return; }
-  if (thisAgent->lexeme.length==2) {
-    if (thisAgent->lexeme.string[1]=='>') { thisAgent->lexeme.type = GREATER_GREATER_LEXEME; return;}
-    if (thisAgent->lexeme.string[1]=='=') { thisAgent->lexeme.type = GREATER_EQUAL_LEXEME; return; }
+  read_constituent_string();
+  if (current_lexeme.length==1) { current_lexeme.type = GREATER_LEXEME; return; }
+  if (current_lexeme.length==2) {
+    if (current_lexeme.string[1]=='>') { current_lexeme.type = GREATER_GREATER_LEXEME; return;}
+    if (current_lexeme.string[1]=='=') { current_lexeme.type = GREATER_EQUAL_LEXEME; return; }
   }
-  determine_type_of_constituent_string(thisAgent);
+  determine_type_of_constituent_string();
 }
     
-void lex_less (agent* thisAgent) {
+void Lexer::lex_less () {
   /* Lexeme might be "<", "<=", "<=>", "<>", "<<", or variable */
   /* Note: this routine relies on =,<,> being constituent characters */
 
-  read_constituent_string(thisAgent);
-  if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = LESS_LEXEME; return; }
-  if (thisAgent->lexeme.length==2) {
-    if (thisAgent->lexeme.string[1]=='>') { thisAgent->lexeme.type = NOT_EQUAL_LEXEME; return; }
-    if (thisAgent->lexeme.string[1]=='=') { thisAgent->lexeme.type = LESS_EQUAL_LEXEME; return; }
-    if (thisAgent->lexeme.string[1]=='<') { thisAgent->lexeme.type = LESS_LESS_LEXEME; return; }
+  read_constituent_string();
+  if (current_lexeme.length==1) { current_lexeme.type = LESS_LEXEME; return; }
+  if (current_lexeme.length==2) {
+    if (current_lexeme.string[1]=='>') { current_lexeme.type = NOT_EQUAL_LEXEME; return; }
+    if (current_lexeme.string[1]=='=') { current_lexeme.type = LESS_EQUAL_LEXEME; return; }
+    if (current_lexeme.string[1]=='<') { current_lexeme.type = LESS_LESS_LEXEME; return; }
   }
-  if (thisAgent->lexeme.length==3) {
-    if ((thisAgent->lexeme.string[1]=='=')&&(thisAgent->lexeme.string[2]=='>'))
-      { thisAgent->lexeme.type = LESS_EQUAL_GREATER_LEXEME; return; }
+  if (current_lexeme.length==3) {
+    if ((current_lexeme.string[1]=='=')&&(current_lexeme.string[2]=='>'))
+      { current_lexeme.type = LESS_EQUAL_GREATER_LEXEME; return; }
   }
-  determine_type_of_constituent_string(thisAgent);
+  determine_type_of_constituent_string();
 
 }
 
-void lex_period (agent* thisAgent) {
-  store_and_advance(thisAgent);
-  finish(thisAgent);
+void Lexer::lex_period () {
+  store_and_advance();
+  finish();
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
-  if (isdigit(thisAgent->current_char)) read_rest_of_floating_point_number(thisAgent);
-  if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = PERIOD_LEXEME; return; }
-  determine_type_of_constituent_string(thisAgent);
+  if (isdigit(current_char)) read_rest_of_floating_point_number();
+  if (current_lexeme.length==1) { current_lexeme.type = PERIOD_LEXEME; return; }
+  determine_type_of_constituent_string();
 }
 
-void lex_plus (agent* thisAgent) {
+void Lexer::lex_plus () {
   /* Lexeme might be +, number, or symbol */
   /* Note: this routine relies on various things being constituent chars */
   int i;
   Bool could_be_floating_point;
   
-  read_constituent_string(thisAgent);
+  read_constituent_string();
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
-  if (thisAgent->current_char=='.') {
+  if (current_char=='.') {
     could_be_floating_point = TRUE;
-    for (i=1; i<thisAgent->lexeme.length; i++)
-      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = FALSE;
-    if (could_be_floating_point) read_rest_of_floating_point_number(thisAgent);
+    for (i=1; i<current_lexeme.length; i++)
+      if (! isdigit(current_lexeme.string[i])) could_be_floating_point = FALSE;
+    if (could_be_floating_point) read_rest_of_floating_point_number();
   }
-  if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = PLUS_LEXEME; return; }
-  determine_type_of_constituent_string(thisAgent);
+  if (current_lexeme.length==1) { current_lexeme.type = PLUS_LEXEME; return; }
+  determine_type_of_constituent_string();
 }
       
-void lex_minus (agent* thisAgent) {
+void Lexer::lex_minus () {
   /* Lexeme might be -, -->, number, or symbol */
   /* Note: this routine relies on various things being constituent chars */
   int i;
   Bool could_be_floating_point;
 
-  read_constituent_string(thisAgent);
+  read_constituent_string();
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
-  if (thisAgent->current_char=='.') {
+  if (current_char=='.') {
     could_be_floating_point = TRUE;
-    for (i=1; i<thisAgent->lexeme.length; i++)
-      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = FALSE;
-    if (could_be_floating_point) read_rest_of_floating_point_number(thisAgent);
+    for (i=1; i<current_lexeme.length; i++)
+      if (! isdigit(current_lexeme.string[i])) could_be_floating_point = FALSE;
+    if (could_be_floating_point) read_rest_of_floating_point_number();
   }
-  if (thisAgent->lexeme.length==1) { thisAgent->lexeme.type = MINUS_LEXEME; return; }
-  if (thisAgent->lexeme.length==3) {
-    if ((thisAgent->lexeme.string[1]=='-')&&(thisAgent->lexeme.string[2]=='>'))
-      { thisAgent->lexeme.type = RIGHT_ARROW_LEXEME; return; }
+  if (current_lexeme.length==1) { current_lexeme.type = MINUS_LEXEME; return; }
+  if (current_lexeme.length==3) {
+    if ((current_lexeme.string[1]=='-')&&(current_lexeme.string[2]=='>'))
+      { current_lexeme.type = RIGHT_ARROW_LEXEME; return; }
   }
-  determine_type_of_constituent_string(thisAgent);
+  determine_type_of_constituent_string();
 }
 
-void lex_digit (agent* thisAgent) {
+void Lexer::lex_digit () {
   int i;
   Bool could_be_floating_point;
 
-  read_constituent_string(thisAgent);
+  read_constituent_string();
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
-  if (thisAgent->current_char=='.') {
+  if (current_char=='.') {
     could_be_floating_point = TRUE;
-    for (i=1; i<thisAgent->lexeme.length; i++)
-      if (! isdigit(thisAgent->lexeme.string[i])) could_be_floating_point = FALSE;
-    if (could_be_floating_point) read_rest_of_floating_point_number(thisAgent);
+    for (i=1; i<current_lexeme.length; i++)
+      if (! isdigit(current_lexeme.string[i])) could_be_floating_point = FALSE;
+    if (could_be_floating_point) read_rest_of_floating_point_number();
   }
-  determine_type_of_constituent_string(thisAgent);
+  determine_type_of_constituent_string();
 }
 
-void lex_unknown (agent* thisAgent) {
-  get_next_char(thisAgent);
-  get_lexeme(thisAgent);
+void Lexer::lex_unknown () {
+  get_next_char();
+  get_lexeme();
 }
 
-void lex_constituent_string (agent* thisAgent) {
-  read_constituent_string(thisAgent);
-  determine_type_of_constituent_string(thisAgent);
+void Lexer::lex_constituent_string () {
+  read_constituent_string();
+  determine_type_of_constituent_string();
 }
 
-void lex_vbar (agent* thisAgent) {
-  thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
-  get_next_char(thisAgent);
+void Lexer::lex_vbar () {
+  current_lexeme.type = SYM_CONSTANT_LEXEME;
+  get_next_char();
   do {
-    if ((thisAgent->current_char==EOF)||
-        (thisAgent->lexeme.length==MAX_LEXEME_LENGTH)) {
+    if ((current_char==EOF)||
+        (current_lexeme.length==MAX_LEXEME_LENGTH)) {
       print (thisAgent, "Error:  opening '|' without closing '|'\n");
-      print_location_of_most_recent_lexeme(thisAgent);
+      print_location_of_most_recent_lexeme();
       /* BUGBUG if reading from top level, don't want to signal EOF */
-      thisAgent->lexeme.type = EOF_LEXEME;
-      thisAgent->lexeme.string[0]=EOF;
-      thisAgent->lexeme.string[1]=0;
-      thisAgent->lexeme.length = 1;
+      current_lexeme.type = EOF_LEXEME;
+      current_lexeme.string[0]=EOF;
+      current_lexeme.string[1]=0;
+      current_lexeme.length = 1;
       return;
     }
-    if (thisAgent->current_char=='\\') {
-      get_next_char(thisAgent);
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
-      get_next_char(thisAgent);
-    } else if (thisAgent->current_char=='|') {
-      get_next_char(thisAgent);
+    if (current_char=='\\') {
+      get_next_char();
+      current_lexeme.string[current_lexeme.length++] = char(current_char);
+      get_next_char();
+    } else if (current_char=='|') {
+      get_next_char();
       break;
     } else {
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
-      get_next_char(thisAgent);
+      current_lexeme.string[current_lexeme.length++] = char(current_char);
+      get_next_char();
     }
   } while(TRUE);
-  thisAgent->lexeme.string[thisAgent->lexeme.length]=0;
+  current_lexeme.string[current_lexeme.length]=0;
 }
 
-void lex_quote (agent* thisAgent) {
-  thisAgent->lexeme.type = QUOTED_STRING_LEXEME;
-  get_next_char(thisAgent);
+void Lexer::lex_quote () {
+  current_lexeme.type = QUOTED_STRING_LEXEME;
+  get_next_char();
   do {
-    if ((thisAgent->current_char==EOF)||(thisAgent->lexeme.length==MAX_LEXEME_LENGTH)) {
+    if ((current_char==EOF)||(current_lexeme.length==MAX_LEXEME_LENGTH)) {
       print (thisAgent, "Error:  opening '\"' without closing '\"'\n");
-      print_location_of_most_recent_lexeme(thisAgent);
+      print_location_of_most_recent_lexeme();
       /* BUGBUG if reading from top level, don't want to signal EOF */
-      thisAgent->lexeme.type = EOF_LEXEME;
-      thisAgent->lexeme.string[0]=0;
-      thisAgent->lexeme.length = 1;
+      current_lexeme.type = EOF_LEXEME;
+      current_lexeme.string[0]=0;
+      current_lexeme.length = 1;
       return;
     }
-    if (thisAgent->current_char=='\\') {
-      get_next_char(thisAgent);
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
-      get_next_char(thisAgent);
-    } else if (thisAgent->current_char=='"') {
-      get_next_char(thisAgent);
+    if (current_char=='\\') {
+      get_next_char();
+      current_lexeme.string[current_lexeme.length++] = char(current_char);
+      get_next_char();
+    } else if (current_char=='"') {
+      get_next_char();
       break;
     } else {
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
-      get_next_char(thisAgent);
+      current_lexeme.string[current_lexeme.length++] = char(current_char);
+      get_next_char();
     }
   } while(TRUE);
-  thisAgent->lexeme.string[thisAgent->lexeme.length]=0;
+  current_lexeme.string[current_lexeme.length]=0;
 }
 
 /* ======================================================================
@@ -524,203 +484,185 @@ void lex_quote (agent* thisAgent) {
   table) based on the first character of the lexeme.
 ====================================================================== */
 
-void get_lexeme (agent* thisAgent) {
+void Lexer::get_lexeme () {
 
-  thisAgent->lexeme.length = 0;
-  thisAgent->lexeme.string[0] = 0;
+  current_lexeme.length = 0;
+  current_lexeme.string[0] = 0;
 
-  consume_whitespace_and_comments(thisAgent);
+  consume_whitespace_and_comments();
 
   // dispatch to lexer routine by first character in lexeme
-  record_position_of_start_of_lexeme(thisAgent);
-  if (thisAgent->current_char!=EOF)
-    (*(lexer_routines[static_cast<unsigned char>(thisAgent->current_char)]))(thisAgent);
+  record_position_of_start_of_lexeme();
+  if (current_char!=EOF)
+    (this->*lexer_routines[static_cast<unsigned char>(current_char)])();
   else
-    lex_eof(thisAgent);
+    lex_eof();
 }
 
-void consume_whitespace_and_comments(agent* thisAgent)
+void Lexer::consume_whitespace_and_comments()
 {
   // loop until whitespace and comments are gone
   while (TRUE) {
-    if (thisAgent->current_char==EOF) break;
-    if (whitespace[static_cast<unsigned char>(thisAgent->current_char)]) {
-      get_next_char(thisAgent);
+    if (current_char==EOF) break;
+    if (whitespace[static_cast<unsigned char>(current_char)]) {
+      get_next_char();
       continue;
     }
 
     //skip the semi-colon, forces newline in TCL
-    if (thisAgent->current_char==';') {
-      get_next_char(thisAgent);
+    if (current_char==';') {
+      get_next_char();
       continue;
     }
     //hash is end-of-line comment; read to the end
-    if (thisAgent->current_char=='#') {
-      while ((thisAgent->current_char!='\n') &&
-             (thisAgent->current_char!=EOF))
-        get_next_char(thisAgent);
-      if (thisAgent->current_char!=EOF) get_next_char(thisAgent);
+    if (current_char=='#') {
+      while ((current_char!='\n') &&
+             (current_char!=EOF))
+        get_next_char();
+      if (current_char!=EOF) get_next_char();
       continue;
     }
     //if no whitespace or comments found, break out of the loop
     break;
   }
 }
-  
-/* ======================================================================
-                            Init lexer
 
-  This should be called before anything else in this file.  It does all 
-  the necessary init stuff for the lexer, and starts the lexer reading from
-  standard input.
-====================================================================== */
-
-
-//
+// Static initialization function to set up lexing structures and the
+// lexer_routine dispatch table.
+// 
 // TODO: This file badly need to be locked. 
 // TODO: Does it still need locking even though memory allocation was removed?
-//
-void init_lexer (agent* thisAgent) 
+#define lu &Lexer::lex_unknown
+Bool Lexer::init () 
 {
-  static bool initialized = false;
-
-  if(!initialized) 
+  unsigned int i;
+ 
+  /* --- setup constituent_char array --- */
+  char extra_constituents[] = "$%&*+-/:<=>?_@";
+  for (i=0; i<256; i++)
   {
-     initialized = true;
-
-     unsigned int i;
-
-     /* --- setup constituent_char array --- */
-     char extra_constituents[] = "$%&*+-/:<=>?_@";
-     for (i=0; i<256; i++)
-     {
-        //
-        // When i == 1, strchr returns true based on the terminating
-        // character.  This is not the intent, so we exclude that case
-        // here.
-        //
-        if((strchr(extra_constituents, i) != 0) && i != 0)
-        {
-           constituent_char[i]=TRUE;
-        }
-        else
-        {
-           constituent_char[i] = (isalnum(i) != 0);
-        }
-     }
-
-   //  for (i=0; i<strlen(extra_constituents); i++)
-   //  {
-   //    constituent_char[(int)extra_constituents[i]]=TRUE;
-   //  }
-  
-     /* --- setup whitespace array --- */
-     for (i=0; i<256; i++)
-     {
-       whitespace[i] = (isspace(i) != 0);
-     }
-
-     /* --- setup number_starters array --- */
-     for (i=0; i<256; i++)
-     {
-       switch(i)
-       {
-       case '+':
-          number_starters[(int)'+']=TRUE;
-          break;
-       case '-':
-          number_starters[(int)'-']=TRUE;
-          break;
-       case '.':
-          number_starters[(int)'.']=TRUE;
-          break;
-       default:
-          number_starters[i] = (isdigit(i) != 0);
-       }
-     }
-
-     /* --- setup lexer_routines array --- */
-     //
-     // I go to some effort here to insure that values do not
-     // get overwritten.  That could cause problems in a multi-
-     // threaded sense because values could get switched to one
-     // value and then another.  If a value is only ever set to
-     // one thing, resetting it to the same thing should be 
-     // perfectly safe.
-     //
-     for (i=0; i<256; i++)
-     {
-        switch(i)
-        {
-        case '@':
-           lexer_routines[(int)'@'] = lex_at;
-           break;
-        case '(':
-           lexer_routines[(int)'('] = lex_lparen;
-           break;
-        case ')':
-           lexer_routines[(int)')'] = lex_rparen;
-           break;
-        case '+':
-           lexer_routines[(int)'+'] = lex_plus;
-           break;
-        case '-':
-           lexer_routines[(int)'-'] = lex_minus;
-           break;
-        case '~':
-           lexer_routines[(int)'~'] = lex_tilde;
-           break;
-        case '^':
-           lexer_routines[(int)'^'] = lex_up_arrow;
-           break;
-        case '{':
-           lexer_routines[(int)'{'] = lex_lbrace;
-           break;
-        case '}':
-           lexer_routines[(int)'}'] = lex_rbrace;
-           break;
-        case '!':
-           lexer_routines[(int)'!'] = lex_exclamation_point;
-           break;
-        case '>':
-           lexer_routines[(int)'>'] = lex_greater;
-           break;
-        case '<':
-           lexer_routines[(int)'<'] = lex_less;
-           break;
-        case '=':
-           lexer_routines[(int)'='] = lex_equal;
-           break;
-        case '&':
-           lexer_routines[(int)'&'] = lex_ampersand;
-           break;
-        case '|':
-           lexer_routines[(int)'|'] = lex_vbar;
-           break;
-        case ',':
-           lexer_routines[(int)','] = lex_comma;
-           break;
-        case '.':
-           lexer_routines[(int)'.'] = lex_period;
-           break;
-        case '"':
-           lexer_routines[(int)'"'] = lex_quote;
-           break;
-        default:
-           if (isdigit(i)) 
-           {
-              lexer_routines[i] = lex_digit;
-              continue;
-           }
-
-           if (constituent_char[i]) 
-           {
-              lexer_routines[i] = lex_constituent_string;
-              continue;
-           } 
-        }
-     }
+    //
+    // When i == 1, strchr returns true based on the terminating
+    // character.  This is not the intent, so we exclude that case
+    // here.
+    //
+    if((strchr(extra_constituents, i) != 0) && i != 0)
+    {
+      constituent_char[i]=TRUE;
+    }
+    else
+    {
+      constituent_char[i] = (isalnum(i) != 0);
+    }
   }
+
+  /* --- setup whitespace array --- */
+  for (i=0; i<256; i++)
+  {
+    whitespace[i] = (isspace(i) != 0);
+  }
+ 
+  /* --- setup number_starters array --- */
+  for (i=0; i<256; i++)
+  {
+    switch(i)
+    {
+    case '+':
+       number_starters[(int)'+']=TRUE;
+       break;
+    case '-':
+       number_starters[(int)'-']=TRUE;
+       break;
+    case '.':
+       number_starters[(int)'.']=TRUE;
+       break;
+    default:
+       number_starters[i] = (isdigit(i) != 0);
+    }
+  }
+
+  /* --- setup lexer_routines array --- */
+  //
+  // I go to some effort here to insure that values do not
+  // get overwritten.  That could cause problems in a multi-
+  // threaded sense because values could get switched to one
+  // value and then another.  If a value is only ever set to
+  // one thing, resetting it to the same thing should be 
+  // perfectly safe.
+  //
+  for (i=0; i<256; i++)
+  {
+    switch(i)
+    {
+    case '@':
+      lexer_routines[(int)'@'] = &Lexer::lex_at;
+      break;
+    case '(':
+      lexer_routines[(int)'('] = &Lexer::lex_lparen;
+      break;
+    case ')':
+      lexer_routines[(int)')'] = &Lexer::lex_rparen;
+      break;
+    case '+':
+      lexer_routines[(int)'+'] = &Lexer::lex_plus;
+      break;
+    case '-':
+      lexer_routines[(int)'-'] = &Lexer::lex_minus;
+      break;
+    case '~':
+      lexer_routines[(int)'~'] = &Lexer::lex_tilde;
+      break;
+    case '^':
+      lexer_routines[(int)'^'] = &Lexer::lex_up_arrow;
+      break;
+    case '{':
+      lexer_routines[(int)'{'] = &Lexer::lex_lbrace;
+      break;
+    case '}':
+      lexer_routines[(int)'}'] = &Lexer::lex_rbrace;
+      break;
+    case '!':
+      lexer_routines[(int)'!'] = &Lexer::lex_exclamation_point;
+      break;
+    case '>':
+      lexer_routines[(int)'>'] = &Lexer::lex_greater;
+      break;
+    case '<':
+      lexer_routines[(int)'<'] = &Lexer::lex_less;
+      break;
+    case '=':
+      lexer_routines[(int)'='] = &Lexer::lex_equal;
+      break;
+    case '&':
+      lexer_routines[(int)'&'] = &Lexer::lex_ampersand;
+      break;
+    case '|':
+      lexer_routines[(int)'|'] = &Lexer::lex_vbar;
+      break;
+    case ',':
+      lexer_routines[(int)','] = &Lexer::lex_comma;
+      break;
+    case '.':
+      lexer_routines[(int)'.'] = &Lexer::lex_period;
+      break;
+    case '"':
+      lexer_routines[(int)'"'] = &Lexer::lex_quote;
+      break;
+    default:
+      if (isdigit(i)) 
+      {
+         lexer_routines[i] = &Lexer::lex_digit;
+         continue;
+      }
+      if (constituent_char[i]) 
+      {
+         lexer_routines[i] = &Lexer::lex_constituent_string;
+         continue;
+      }
+      lexer_routines[i] = &Lexer::lex_unknown; 
+    }
+  }
+  return true;
 }
 
 /* ======================================================================
@@ -735,27 +677,27 @@ void init_lexer (agent* thisAgent)
   the wrong place.
 ====================================================================== */
 
-void print_location_of_most_recent_lexeme (agent* thisAgent) {
+void Lexer::print_location_of_most_recent_lexeme () {
   //TODO: below was commented out because file input isn't used anymore.
   //write something else to track input line, column and offset
   
   // int i;
   
-  // if (thisAgent->current_file->line_of_start_of_last_lexeme ==
-  //     thisAgent->current_file->current_line) {
+  // if (current_file->line_of_start_of_last_lexeme ==
+  //     current_file->current_line) {
   //   /* --- error occurred on current line, so print out the line --- */
-  //   if (thisAgent->current_file->buffer[strlen(thisAgent->current_file->buffer)-1]=='\n')
-  //     print_string (thisAgent, thisAgent->current_file->buffer);
+  //   if (current_file->buffer[strlen(current_file->buffer)-1]=='\n')
+  //     print_string (thisAgent, current_file->buffer);
   //   else
-  //     print (thisAgent, "%s\n",thisAgent->current_file->buffer);
-  //   for (i=0; i<thisAgent->current_file->column_of_start_of_last_lexeme; i++)
+  //     print (thisAgent, "%s\n",current_file->buffer);
+  //   for (i=0; i<current_file->column_of_start_of_last_lexeme; i++)
   //     print_string (thisAgent, "-");
   //   print_string (thisAgent, "^\n");
   // } else {
   //   /* --- error occurred on a previous line, so just give the position --- */
-  //   print (thisAgent, "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
-  //          thisAgent->current_file->line_of_start_of_last_lexeme,
-  //          thisAgent->current_file->column_of_start_of_last_lexeme + 1);
+  //   print (thisAgent, "File %s, line %lu, column %lu.\n", current_file->filename,
+  //          current_file->line_of_start_of_last_lexeme,
+  //          current_file->column_of_start_of_last_lexeme + 1);
   // }
 }
 
@@ -770,34 +712,17 @@ void print_location_of_most_recent_lexeme (agent* thisAgent) {
   
 ====================================================================== */
 
-int current_lexer_parentheses_level (agent* thisAgent) {
-  return thisAgent->parentheses_level;
+int Lexer::current_parentheses_level () {
+  return parentheses_level;
 }
 
-void skip_ahead_to_balanced_parentheses (agent* thisAgent, 
-										 int parentheses_level) {
+void Lexer::skip_ahead_to_balanced_parentheses (int parentheses_level) {
   while (TRUE) {
-    if (thisAgent->lexeme.type==EOF_LEXEME) return;
-    if ((thisAgent->lexeme.type==R_PAREN_LEXEME) &&
-        (parentheses_level==thisAgent->parentheses_level)) return;
-    get_lexeme(thisAgent);
+    if (current_lexeme.type==EOF_LEXEME) return;
+    if ((current_lexeme.type==R_PAREN_LEXEME) &&
+        (parentheses_level==parentheses_level)) return;
+    get_lexeme();
   }
-}
-
-/* ======================================================================
-                        Set lexer allow ids
-
-  This routine should be called to tell the lexer whether to allow
-  identifiers to be read.  If FALSE, things that look like identifiers
-  will be returned as SYM_CONSTANT_LEXEME's instead.
-====================================================================== */
-
-void set_lexer_allow_ids (agent* thisAgent, Bool allow_identifiers) {
-  thisAgent->allow_ids = allow_identifiers;
-}
-
-Bool get_lexer_allow_ids(agent* thisAgent) {
-	return thisAgent->allow_ids;
 }
 
 /* ======================================================================
@@ -812,7 +737,7 @@ Bool get_lexer_allow_ids(agent* thisAgent) {
   special lexeme like "+", changing upper to lower case, etc.
 ====================================================================== */
 
-void determine_possible_symbol_types_for_string (char *s, 
+void Lexer::determine_possible_symbol_types_for_string (char *s, 
 												 size_t length_of_s,
 												 Bool *possible_id, 
 												 Bool *possible_var, 
@@ -898,3 +823,28 @@ void determine_possible_symbol_types_for_string (char *s,
 	}
 }
 
+Lexer::Lexer(agent* agent, const char* string)
+{
+	thisAgent = agent;
+	production_string = string;
+	current_char = ' ';
+	parentheses_level = 0;
+	allow_ids = true;
+
+	//Initializing lexeme
+	current_lexeme.type = NULL_LEXEME;
+	current_lexeme.string[0] = 0;
+	current_lexeme.length = 0;
+	current_lexeme.int_val = 0;
+	current_lexeme.float_val = 0.0;
+	current_lexeme.id_letter = 'A';
+	current_lexeme.id_number = 0;
+}
+
+void Lexer::set_allow_ids (Bool allow_identifiers) {
+  allow_ids = allow_identifiers;
+}
+
+Bool Lexer::get_allow_ids() {
+	return allow_ids;
+}

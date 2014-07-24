@@ -9,12 +9,14 @@
 #include "wma.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
+#include "lexer.h"
 
 using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable) {
     agent* agnt = m_pAgentSML->GetSoarAgent();
+    lexeme_info lexeme;
 
     // Get ID
     Symbol* pId = 0;
@@ -31,22 +33,22 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
         pAttr = make_new_identifier( agnt, 'I', pId->id.level );
     else 
     {
-        get_lexeme_from_string( agnt, attribute.c_str() );
+        lexeme = get_lexeme_from_string( agnt, attribute.c_str() );
 
-        switch (agnt->lexeme.type) 
+        switch (lexeme.type) 
         {
         case SYM_CONSTANT_LEXEME:
-            pAttr = make_sym_constant( agnt, agnt->lexeme.string );
+            pAttr = make_sym_constant( agnt, lexeme.string );
             break;
         case INT_CONSTANT_LEXEME:
-            pAttr = make_int_constant( agnt, agnt->lexeme.int_val );
+            pAttr = make_int_constant( agnt, lexeme.int_val );
             break;
         case FLOAT_CONSTANT_LEXEME:
-            pAttr = make_float_constant( agnt, agnt->lexeme.float_val );
+            pAttr = make_float_constant( agnt, lexeme.float_val );
             break;
         case IDENTIFIER_LEXEME:
         case VARIABLE_LEXEME:
-            pAttr = read_identifier_or_context_variable( agnt );
+            pAttr = read_identifier_or_context_variable( agnt, &lexeme );
             if ( !pAttr ) 
                 return SetError( "Invalid attribute." );
             symbol_add_ref( pAttr );
@@ -62,21 +64,21 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
         pValue = make_new_identifier( agnt, 'I', pId->id.level );
     else 
     {
-        get_lexeme_from_string( agnt, value.c_str() );
-        switch ( agnt->lexeme.type ) 
+        lexeme = get_lexeme_from_string( agnt, value.c_str() );
+        switch ( lexeme.type ) 
         {
         case SYM_CONSTANT_LEXEME:
-            pValue = make_sym_constant( agnt, agnt->lexeme.string );
+            pValue = make_sym_constant( agnt, lexeme.string );
             break;
         case INT_CONSTANT_LEXEME:
-            pValue = make_int_constant( agnt, agnt->lexeme.int_val );
+            pValue = make_int_constant( agnt, lexeme.int_val );
             break;
         case FLOAT_CONSTANT_LEXEME:
-            pValue = make_float_constant( agnt, agnt->lexeme.float_val );
+            pValue = make_float_constant( agnt, lexeme.float_val );
             break;
         case IDENTIFIER_LEXEME:
         case VARIABLE_LEXEME:
-            pValue = read_identifier_or_context_variable( agnt );
+            pValue = read_identifier_or_context_variable( agnt, &lexeme );
             if (!pValue) 
             {
                 symbol_remove_ref( agnt, pAttr );

@@ -76,7 +76,6 @@ void init_soar_agent(agent* thisAgent) {
   init_production_utilities(thisAgent);
   init_built_in_rhs_functions (thisAgent);
   init_rete (thisAgent);
-  init_lexer (thisAgent);
   init_firer (thisAgent);
   init_decider (thisAgent);
   init_soar_io (thisAgent);
@@ -163,9 +162,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->all_wmes_in_rete                   = NIL;
   newAgent->alpha_mem_id_counter               = 0;
-  newAgent->lexer_input_string                 = NIL;
-  newAgent->parentheses_level                  = 0;
-  newAgent->allow_ids                          = TRUE;
   newAgent->backtrace_number                   = 0;
   newAgent->beta_node_id_counter               = 0;
   newAgent->bottom_goal                        = NIL;
@@ -256,15 +252,6 @@ agent * create_soar_agent (char * agent_name) {                                 
      newAgent->if_no_merging[i]=0;
      newAgent->if_no_sharing[i]=0;
   }
-
-  /* Initializing lexeme */
-  newAgent->lexeme.type = NULL_LEXEME;
-  newAgent->lexeme.string[0] = 0;
-  newAgent->lexeme.length = 0;
-  newAgent->lexeme.int_val = 0;
-  newAgent->lexeme.float_val = 0.0;
-  newAgent->lexeme.id_letter = 'A';
-  newAgent->lexeme.id_number = 0;
 
   reset_max_stats(newAgent);
 
@@ -598,12 +585,4 @@ void destroy_soar_agent (agent * delete_agent)
 
   /* Free soar agent structure */
   delete delete_agent;
-}
-
-void set_lexer_input(agent *thisAgent, const char *input)
-{
-  thisAgent->lexer_input_string = input;
-  //required so that get_next_char doesn't think lexing is finished
-  thisAgent->current_char = ' ';
-  return;
 }

@@ -24,16 +24,10 @@ using namespace cli;
 bool CommandLineInterface::DoSP(const std::string& productionString) {
     // Load the production
     agent* agnt = m_pAgentSML->GetSoarAgent();
-    set_lexer_input( agnt, productionString.c_str());
-    set_lexer_allow_ids( agnt, false );
-    get_lexeme( agnt );
 
     production* p;
     unsigned char rete_addition_result = 0;
-    p = parse_production( agnt, &rete_addition_result );
-
-    set_lexer_allow_ids( agnt, true );
-    set_lexer_input( agnt, NULL); 
+    p = parse_production( agnt, productionString.c_str(), &rete_addition_result );
 
     if (!p) { 
         // There was an error, but duplicate production is just a warning

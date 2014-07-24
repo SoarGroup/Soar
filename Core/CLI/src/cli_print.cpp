@@ -372,11 +372,11 @@ void do_print_for_identifier (agent* thisAgent, Symbol *id, int depth, bool inte
     print_augs_of_id (thisAgent, id, depth, depth, intern, tree, tc);
 }
 
-void do_print_for_production_name (agent* thisAgent, const char *prod_name, bool intern, bool print_filename, bool full_prod) 
+void do_print_for_production_name (agent* thisAgent, lexeme_info lexeme, const char *prod_name, bool intern, bool print_filename, bool full_prod) 
 {
     Symbol *sym;
 
-    sym = find_sym_constant (thisAgent, thisAgent->lexeme.string);
+    sym = find_sym_constant (thisAgent, lexeme.string);
     if (sym && sym->sc.production) 
         do_print_for_production(thisAgent, sym->sc.production, intern, print_filename, full_prod);
     else 
@@ -395,22 +395,22 @@ void do_print_for_wme (agent* thisAgent, wme *w, int depth, bool intern, bool tr
 
 /* --- Read and consume one pattern element.  Return 0 if error, 1 if "*",
 otherwise return 2 and set dest_sym to find_symbol() result. --- */
-int read_pattern_component (agent* thisAgent, Symbol **dest_sym) 
+int read_pattern_component (agent* thisAgent, lexeme_info* lexeme, Symbol **dest_sym) 
 {
-    if (strcmp(thisAgent->lexeme.string,"*") == 0) 
+    if (strcmp(lexeme->string,"*") == 0) 
         return 1;
-    switch (thisAgent->lexeme.type) 
+    switch (lexeme->type) 
     {
     case SYM_CONSTANT_LEXEME:
-        *dest_sym = find_sym_constant (thisAgent, thisAgent->lexeme.string); return 2;
+        *dest_sym = find_sym_constant (thisAgent, lexeme->string); return 2;
     case INT_CONSTANT_LEXEME:
-        *dest_sym = find_int_constant (thisAgent, thisAgent->lexeme.int_val); return 2;
+        *dest_sym = find_int_constant (thisAgent, lexeme->int_val); return 2;
     case FLOAT_CONSTANT_LEXEME:
-        *dest_sym = find_float_constant (thisAgent, thisAgent->lexeme.float_val); return 2;
+        *dest_sym = find_float_constant (thisAgent, lexeme->float_val); return 2;
     case IDENTIFIER_LEXEME:
-        *dest_sym = find_identifier (thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number); return 2;
+        *dest_sym = find_identifier (thisAgent, lexeme->id_letter, lexeme->id_number); return 2;
     case VARIABLE_LEXEME:
-        *dest_sym = read_identifier_or_context_variable(thisAgent);
+        *dest_sym = read_identifier_or_context_variable(thisAgent, lexeme);
         if (*dest_sym) 
             return 2;
         return 0;
@@ -420,7 +420,7 @@ int read_pattern_component (agent* thisAgent, Symbol **dest_sym)
     }
 }
 
-list *read_pattern_and_get_matching_wmes (agent* thisAgent) 
+list *read_pattern_and_get_matching_wmes (agent* thisAgent, soar::Lexer* lexer) 
 {
     int parentheses_level;
     list *wmes;
@@ -429,54 +429,54 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
     int id_result, attr_result, value_result;
     bool acceptable;
 
-    if (thisAgent->lexeme.type!=L_PAREN_LEXEME)
+    if (lexer->current_lexeme.type!=L_PAREN_LEXEME)
     {
-        print (thisAgent, "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", thisAgent->lexeme.string, thisAgent->current_char);
+        print (thisAgent, "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", lexer->current_lexeme.string, lexer->current_char);
         return NIL;
     }
-    parentheses_level = current_lexer_parentheses_level(thisAgent);
+    parentheses_level = lexer->current_parentheses_level();
 
-    get_lexeme(thisAgent);
-    id_result = read_pattern_component (thisAgent, &id);
+    lexer->get_lexeme();
+    id_result = read_pattern_component(thisAgent, &(lexer->current_lexeme), &id);
     if (! id_result) 
     {
-        skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
+        lexer->skip_ahead_to_balanced_parentheses(parentheses_level-1);
         return NIL;
     }
-    get_lexeme(thisAgent);
-    if (thisAgent->lexeme.type!=UP_ARROW_LEXEME) 
+    lexer->get_lexeme();
+    if (lexer->current_lexeme.type!=UP_ARROW_LEXEME) 
     {
         print (thisAgent, "Expected ^ in wme pattern\n");
-        skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
+        lexer->skip_ahead_to_balanced_parentheses(parentheses_level-1);
         return NIL;
     }
-    get_lexeme(thisAgent);
-    attr_result = read_pattern_component (thisAgent, &attr);
+    lexer->get_lexeme();
+    attr_result = read_pattern_component(thisAgent, &(lexer->current_lexeme), &attr);
     if (! attr_result) 
     {
-        skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
+        lexer->skip_ahead_to_balanced_parentheses(parentheses_level-1);
         return NIL;
     }
-    get_lexeme(thisAgent);
-    value_result = read_pattern_component (thisAgent, &value);
+    lexer->get_lexeme();
+    value_result = read_pattern_component(thisAgent, &(lexer->current_lexeme), &value);
     if (! value_result) 
     {
-        skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
+        lexer->skip_ahead_to_balanced_parentheses(parentheses_level-1);
         return NIL;
     }
-    get_lexeme(thisAgent);
-    if (thisAgent->lexeme.type==PLUS_LEXEME) 
+    lexer->get_lexeme();
+    if (lexer->current_lexeme.type==PLUS_LEXEME) 
     {
         acceptable = TRUE;
-        get_lexeme(thisAgent);
+        lexer->get_lexeme();
     } 
     else
     {
         acceptable = FALSE;
     }
-    if (thisAgent->lexeme.type!=R_PAREN_LEXEME) {
+    if (lexer->current_lexeme.type!=R_PAREN_LEXEME) {
         print (thisAgent, "Expected ')' to end wme pattern\n");
-        skip_ahead_to_balanced_parentheses (thisAgent, parentheses_level-1);
+        lexer->skip_ahead_to_balanced_parentheses(parentheses_level-1);
         return NIL;
     }
 
@@ -498,40 +498,39 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     wme* w;
     list* wmes;
 
-    get_lexeme_from_string(thisAgent, arg);
+    lexeme_info lexeme = get_lexeme_from_string(thisAgent, arg);
 
-    switch (thisAgent->lexeme.type) 
+    switch (lexeme.type) 
     {
     case SYM_CONSTANT_LEXEME:
-        do_print_for_production_name(thisAgent, arg, intern, print_filename, full_prod);
+        do_print_for_production_name(thisAgent, lexeme, arg, intern, print_filename, full_prod);
         break;
 
     case INT_CONSTANT_LEXEME:
         for (w=thisAgent->all_wmes_in_rete; w!=NIL; w=w->rete_next)
         {
-            if (w->timetag == static_cast<uint64_t>(thisAgent->lexeme.int_val))
+            if (w->timetag == static_cast<uint64_t>(lexeme.int_val))
             {
                 do_print_for_wme(thisAgent, w, depth, intern, tree);
                 break;
             }
         }
         if (!w) 
-            print(thisAgent, "No wme %ld in working memory.", thisAgent->lexeme.int_val);
+            print(thisAgent, "No wme %ld in working memory.", lexeme.int_val);
         break;
 
     case IDENTIFIER_LEXEME:
     case VARIABLE_LEXEME:
-        id = read_identifier_or_context_variable(thisAgent);
+        id = read_identifier_or_context_variable(thisAgent, &lexeme);
         if (id) 
             do_print_for_identifier(thisAgent, id, depth, intern, tree);
         break;
 
     case QUOTED_STRING_LEXEME:
-        /* Soar-Bugs #54 TMH */
-        set_lexer_input(thisAgent, arg);
-        get_lexeme(thisAgent);
-        wmes = read_pattern_and_get_matching_wmes(thisAgent);
-        set_lexer_input(thisAgent, NIL); 
+    {
+        soar::Lexer lexer(thisAgent, arg);
+        lexer.get_lexeme();
+        wmes = read_pattern_and_get_matching_wmes(thisAgent, &lexer);
         if (exact)
         {
             // When printing exact, we want to list only those wmes who match.
@@ -587,7 +586,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
         }
         free_list(thisAgent, wmes);
         break;
-
+    }   
     default:
         // TODO: Report error? Unrecognized arg?
         return;

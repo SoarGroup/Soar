@@ -14,20 +14,23 @@
 #include "wmem.h"
 #include "print.h"
 #include "xml.h"
+#include "lexer.h"
 
 #include <time.h>
 
-bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
+//TODO: can the lexer be used instead of these functions?
+
+bool read_id_or_context_var_from_string (agent* agnt, const char * lex_string,
 	Symbol * * result_id) 
 {
 	Symbol *id;
 	Symbol *g, *attr, *value;
 
-	get_lexeme_from_string(agnt, the_lexeme);
+	lexeme_info lexeme = get_lexeme_from_string(agnt, lex_string);
 
-	if (agnt->lexeme.type == IDENTIFIER_LEXEME) 
+	if (lexeme.type == IDENTIFIER_LEXEME) 
 	{
-		id = find_identifier(agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number);
+		id = find_identifier(agnt, lexeme.id_letter, lexeme.id_number);
 		if (!id) 
 		{
 			return false;
@@ -39,9 +42,9 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 		}
 	}
 
-	if (agnt->lexeme.type==VARIABLE_LEXEME) 
+	if (lexeme.type==VARIABLE_LEXEME) 
 	{
-		get_context_var_info (agnt, &g, &attr, &value);
+		get_context_var_info (agnt, lexeme.string, &g, &attr, &value);
 
 		if ((!attr) || (!value))
 		{
@@ -60,14 +63,15 @@ bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme,
 	return false;
 }
 
-void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
+lexeme_info get_lexeme_from_string (agent* agnt, const char * lex_string)
 {
 	int i;
 	const char * c;
 	bool sym_constant_start_found = FALSE;
 	bool sym_constant_end_found = FALSE;
+	lexeme_info lexeme;
 
-	for (c = the_lexeme, i = 0; *c; c++, i++)
+	for (c = lex_string, i = 0; *c; c++, i++)
 	{
 		if (*c == '|')
 		{
@@ -84,25 +88,29 @@ void get_lexeme_from_string (agent* agnt, const char * the_lexeme)
 		}
 		else
 		{
-			agnt->lexeme.string[i] = *c;
+			lexeme.string[i] = *c;
 		} 
 	}
 
-	agnt->lexeme.string[i] = '\0'; /* Null terminate lexeme string */
+	lexeme.string[i] = '\0'; /* Null terminate lexeme string */
 
-	agnt->lexeme.length = i;
+	lexeme.length = i;
 
 	if (sym_constant_end_found)
 	{
-		agnt->lexeme.type = SYM_CONSTANT_LEXEME;
+		lexeme.type = SYM_CONSTANT_LEXEME;
 	}
 	else 
 	{
-		determine_type_of_constituent_string(agnt);
+		soar::Lexer lexer(agnt, lex_string);
+		lexer.current_lexeme = lexeme;
+		lexer.determine_type_of_constituent_string();
+		return lexer.current_lexeme;
 	}
+	return lexeme;
 }
 
-void get_context_var_info ( agent* agnt, Symbol **dest_goal,
+void get_context_var_info ( agent* agnt, char* var_name, Symbol **dest_goal,
 	Symbol **dest_attr_of_slot,
 	Symbol **dest_current_value) 
 {
@@ -110,7 +118,7 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	int levels_up;
 	wme *w;
 
-	v = find_variable (agnt, agnt->lexeme.string);
+	v = find_variable (agnt, var_name);
 	if (v==agnt->s_context_variable) {
 		levels_up = 0;
 		*dest_attr_of_slot = agnt->state_symbol;
@@ -162,44 +170,45 @@ void get_context_var_info ( agent* agnt, Symbol **dest_goal,
 	}
 }
 
-Symbol *read_identifier_or_context_variable (agent* agnt) 
+Symbol *read_identifier_or_context_variable (agent* agnt, lexeme_info* lexeme) 
 {
 	Symbol *id;
 	Symbol *g, *attr, *value;
 
-	if (agnt->lexeme.type==IDENTIFIER_LEXEME) {
-		id = find_identifier (agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number);
+	if (lexeme->type==IDENTIFIER_LEXEME) {
+		id = find_identifier (agnt, lexeme->id_letter, lexeme->id_number);
 		if (!id) {
-			print (agnt, "There is no identifier %c%lu.\n", agnt->lexeme.id_letter,
-				agnt->lexeme.id_number);
-			print_location_of_most_recent_lexeme(agnt);
+			print (agnt, "There is no identifier %c%lu.\n", lexeme->id_letter,
+				lexeme->id_number);
+			//todo: store location in lexeme and then rewrite comment print statements
+			// lexer->print_location_of_most_recent_lexeme();
 			return NIL;
 		}
 		return id;
 	}
-	if (agnt->lexeme.type==VARIABLE_LEXEME) 
+	if (lexeme->type==VARIABLE_LEXEME) 
 	{
-		get_context_var_info (agnt, &g, &attr, &value);
+		get_context_var_info (agnt, lexeme->string, &g, &attr, &value);
 		if (!attr) {
 			print (agnt, "Expected identifier (or context variable)\n");
-			print_location_of_most_recent_lexeme(agnt);
+			// lexer->print_location_of_most_recent_lexeme();
 			return NIL;
 		}
 		if (!value) {
-			print (agnt, "There is no current %s.\n", agnt->lexeme.string);
-			print_location_of_most_recent_lexeme(agnt);
+			print (agnt, "There is no current %s.\n", lexeme->string);
+			// lexer->print_location_of_most_recent_lexeme();
 			return NIL;
 		}
 		if (value->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
-			print (agnt, "The current %s ", agnt->lexeme.string);
+			print (agnt, "The current %s ", lexeme->string);
 			print_with_symbols (agnt, "(%y) is not an identifier.\n", value);
-			print_location_of_most_recent_lexeme(agnt);
+			// lexer->print_location_of_most_recent_lexeme();
 			return NIL;
 		}
 		return value;
 	}
 	print (agnt, "Expected identifier (or context variable)\n");
-	print_location_of_most_recent_lexeme(agnt);
+	// lexer->print_location_of_most_recent_lexeme();
 	return NIL;
 }		
 

@@ -35,6 +35,7 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 #include "debug.h"
+#include "lexer.h"
 
 #include <stdarg.h>
 
@@ -295,7 +296,8 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
       strncpy (dest, sym->sc.name, dest_size);
       return dest;
     }
-    determine_possible_symbol_types_for_string (sym->sc.name,
+
+    soar::Lexer::determine_possible_symbol_types_for_string (sym->sc.name,
                                                 strlen (sym->sc.name),
                                                 &possible_id,
                                                 &possible_var,

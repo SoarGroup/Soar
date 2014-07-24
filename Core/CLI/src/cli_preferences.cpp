@@ -50,25 +50,25 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
         the_lexeme++;
     }
 
-    get_lexeme_from_string(agnt, the_lexeme);
+    lexeme_info lexeme = get_lexeme_from_string(agnt, the_lexeme);
 
-    switch (agnt->lexeme.type) 
+    switch (lexeme.type) 
     {
     case SYM_CONSTANT_LEXEME:
-        attr_tmp = find_sym_constant (agnt, agnt->lexeme.string);
+        attr_tmp = find_sym_constant (agnt, lexeme.string);
         break;
     case INT_CONSTANT_LEXEME:
-        attr_tmp = find_int_constant (agnt, agnt->lexeme.int_val);
+        attr_tmp = find_int_constant (agnt, lexeme.int_val);
         break;
     case FLOAT_CONSTANT_LEXEME:
-        attr_tmp = find_float_constant (agnt, agnt->lexeme.float_val);
+        attr_tmp = find_float_constant (agnt, lexeme.float_val);
         break;
     case IDENTIFIER_LEXEME:
-        attr_tmp = find_identifier (agnt, agnt->lexeme.id_letter,
-            agnt->lexeme.id_number);
+        attr_tmp = find_identifier (agnt, lexeme.id_letter,
+            lexeme.id_number);
         break;
     case VARIABLE_LEXEME:
-        attr_tmp = read_identifier_or_context_variable(agnt);
+        attr_tmp = read_identifier_or_context_variable(agnt, &lexeme);
         if (!attr_tmp)
             return false;
         break;

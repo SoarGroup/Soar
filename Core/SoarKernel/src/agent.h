@@ -232,13 +232,6 @@ typedef struct agent_struct {
   struct ms_change_struct * ms_assertions;  /* changes to match set */
   struct ms_change_struct * ms_retractions;
 
-  /* ----------------------- Lexer stuff -------------------------- */
-
-  Bool                allow_ids;        
-  int                 parentheses_level; //0 means top level, no left paren's seen 
-  int                 current_char; /* holds current input character */
-  struct lexeme_info  lexeme;       /* holds current lexeme */
-
   /* ---------------- Predefined Symbols -------------------------
      Certain symbols are used so frequently that we create them at
      system startup time and never deallocate them.
@@ -779,8 +772,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   //soar_callback_array soar_callbacks;
   ::list			      * soar_callbacks[NUMBER_OF_CALLBACKS];
 
-  const char        * lexer_input_string;
-
   /* RCHONG: begin 10.11 */
   Bool       did_PE;
   Bool       soar_verbose_flag;
@@ -980,8 +971,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 /*************** end of agent struct *****/
 
 void init_soar_agent(agent* thisAgent);
-
-void set_lexer_input(agent* thisAgent, const char* input);
 
 #ifdef USE_MACROS
 
