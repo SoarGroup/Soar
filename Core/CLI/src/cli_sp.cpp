@@ -22,26 +22,18 @@
 using namespace cli;
 
 // FIXME: copied from gSKI
-void soarAlternateInput(agent *ai_agent, const char  *ai_string, char  *ai_suffix)
+void setLexerInput(agent *ai_agent, const char  *ai_string)
 {
-    // Side effects:
-    //    The soar agents alternate input values are updated and its
-    //      current character is reset to a whitespace value.
     ai_agent->lexer_input_string = const_cast<char*>(ai_string);
-    ai_agent->lexer_input_suffix = ai_suffix;
+    //whitespace forces immediate read of first line
     ai_agent->current_char = ' ';
     return;
 }
 
 bool CommandLineInterface::DoSP(const std::string& productionString) {
     // Load the production
-    // voigtjr: note: this TODO from gSKI:
-    // TODO: This should not be needed, FIX!
-    // contents of gSKI ProductionManager::soarAlternateInput function:
     agent* agnt = m_pAgentSML->GetSoarAgent();
-    soarAlternateInput( agnt, productionString.c_str(), const_cast<char*>(") "));
-    //whitespace forces immediate read of first line
-    agnt->current_char = ' ';
+    setLexerInput( agnt, productionString.c_str());
     set_lexer_allow_ids( agnt, false );
     get_lexeme( agnt );
 
@@ -50,7 +42,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
     p = parse_production( agnt, &rete_addition_result );
 
     set_lexer_allow_ids( agnt, true );
-    soarAlternateInput( agnt, 0, 0 ); 
+    setLexerInput( agnt, NULL); 
 
     if (!p) { 
         // There was an error, but duplicate production is just a warning

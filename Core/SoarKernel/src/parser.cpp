@@ -1805,7 +1805,7 @@ Bool parse_rhs (agent* thisAgent, action **dest_rhs) {
   action *all_actions, *new_actions, *last;
 
   all_actions = NIL;
-  while (thisAgent->lexeme.type!=R_PAREN_LEXEME) {
+  while (thisAgent->lexeme.type!= EOF_LEXEME) {
     new_actions = parse_rhs_action (thisAgent);
     if (new_actions) {
       for (last=new_actions; last->next!=NIL; last=last->next);
@@ -1971,19 +1971,6 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     return NIL;
   }
   rhs = destructively_reverse_action_list (rhs);
-
-  /* --- finally, make sure there's a closing right parenthesis (but
-     don't consume it) --- */
-  if (thisAgent->lexeme.type!=R_PAREN_LEXEME) {
-    print (thisAgent, "Expected ) to end production\n");
-    print_location_of_most_recent_lexeme(thisAgent);
-    if (documentation) free_memory_block_for_string (thisAgent, documentation);
-    print_with_symbols (thisAgent, "(Ignoring production %y)\n\n", name);
-    symbol_remove_ref (thisAgent, name);
-    deallocate_condition_list (thisAgent, lhs);
-    deallocate_action_list (thisAgent, rhs);
-    return NIL;
-  }
 
   /* --- replace placeholder variables with real variables --- */
   reset_variable_generator (thisAgent, lhs, rhs);

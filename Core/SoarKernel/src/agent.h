@@ -781,7 +781,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   ::list			      * soar_callbacks[NUMBER_OF_CALLBACKS];
 
   const char        * lexer_input_string;
-  const char        * lexer_input_suffix;
 
   /* RCHONG: begin 10.11 */
   Bool       did_PE;
