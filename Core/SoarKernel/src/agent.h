@@ -982,6 +982,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
 void init_soar_agent(agent* thisAgent);
 
+void set_lexer_input(agent* thisAgent, const char* input);
+
 #ifdef USE_MACROS
 
 #define allocate_cons(thisAgent, dest_cons_pointer) \

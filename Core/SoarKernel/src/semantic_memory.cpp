@@ -3534,8 +3534,7 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **e
 	smem_attach( my_agent );
 
 	// copied primarily from cli_sp
-	my_agent->lexer_input_string = chunks_str;
-	my_agent->current_char = ' ';
+	set_lexer_input(my_agent, chunks_str);
 	set_lexer_allow_ids( my_agent, true );
 
     bool good_chunk = true;

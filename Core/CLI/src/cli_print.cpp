@@ -491,15 +491,6 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent)
     }
     return wmes;  
 }
-
-void set_lexer_input(agent *ai_agent, const char *ai_string)
-{
-    ai_agent->lexer_input_string = ai_string;
-    //whitespace forces immediate read of first line
-    ai_agent->current_char = ' ';
-    return;
-}
-
 void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool intern, bool tree, bool full_prod, int depth, bool exact)
 {
     cons *c;

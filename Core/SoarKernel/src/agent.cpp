@@ -600,3 +600,11 @@ void destroy_soar_agent (agent * delete_agent)
   /* Free soar agent structure */
   delete delete_agent;
 }
+
+void set_lexer_input(agent *thisAgent, const char *input)
+{
+  thisAgent->lexer_input_string = input;
+  //required so that get_next_char doesn't think lexing is finished
+  thisAgent->current_char = ' ';
+  return;
+}

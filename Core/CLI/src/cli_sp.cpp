@@ -21,19 +21,10 @@
 
 using namespace cli;
 
-// FIXME: copied from gSKI
-void setLexerInput(agent *ai_agent, const char  *ai_string)
-{
-    ai_agent->lexer_input_string = const_cast<char*>(ai_string);
-    //whitespace forces immediate read of first line
-    ai_agent->current_char = ' ';
-    return;
-}
-
 bool CommandLineInterface::DoSP(const std::string& productionString) {
     // Load the production
     agent* agnt = m_pAgentSML->GetSoarAgent();
-    setLexerInput( agnt, productionString.c_str());
+    set_lexer_input( agnt, productionString.c_str());
     set_lexer_allow_ids( agnt, false );
     get_lexeme( agnt );
 
@@ -42,7 +33,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
     p = parse_production( agnt, &rete_addition_result );
 
     set_lexer_allow_ids( agnt, true );
-    setLexerInput( agnt, NULL); 
+    set_lexer_input( agnt, NULL); 
 
     if (!p) { 
         // There was an error, but duplicate production is just a warning
