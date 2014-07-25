@@ -3896,8 +3896,11 @@ namespace cli
                     {'e', "enable",     OPTARG_NONE},
                     {'e', "on",         OPTARG_NONE},
                     {'g', "get",        OPTARG_NONE},
+                    ('h', "history",    OPTARG_NONE),//Testing/unstable - 23-7-2014
                     {'i', "init",       OPTARG_NONE},
                     {'p', "print",      OPTARG_NONE},
+                    {'q', "query",      OPTARG_NONE},//Testing/unstable - 23-7-2014
+                    {'r', "remove",     OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'s', "set",        OPTARG_NONE},
                     {'S', "stats",      OPTARG_NONE},
                     {'t', "timers",     OPTARG_NONE},
@@ -3963,6 +3966,17 @@ namespace cli
                         return cli.DoSMem(option, &(argv[2]));
                     }
 
+                    case 'h':
+                    {
+                        // case: history only accepts 1 non-option argument
+                        if (!opt.CheckNumNonOptArgs(1, 1))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+
+                        return cli.DoSMem(option, &(argv[2]), 0);
+                    }
+
                     case 'i':
                     case 'e':
                     case 'd':
@@ -3993,6 +4007,38 @@ namespace cli
                         }
 
                         return cli.DoSMem(option, &(argv[2]), &(argv[3]));
+                    }
+
+                    case 'q':
+                    {
+                        // case: query requires one non-option argument, but can have a depth argument
+                        if (!opt.CheckNumNonOptArgs(1,2))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+
+                        if (opt.GetNonOptionArguments() == 1)
+                        {
+                            return cli.DoSMem(option, &(argv[2]));
+                        }
+
+                        return cli.DoSMem(option, &(argv[2], &(argv[3]));// This is the case of "depth".
+                    }
+
+                    case 'r':
+                    {
+                        // case: remove requires one non-option argument, but can have a "force" argument
+                        if (!opt.CheckNumNonOptArgs(1,2))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+
+                        if (opt.GetNonOptionArguments() == 1)
+                        {
+                            return cli.DoSMem(option, &(argv[2]));
+                        }
+
+                        return cli.DoSMem(option, &(argv[2], &(argv[3]));//
                     }
 
                     case 's':

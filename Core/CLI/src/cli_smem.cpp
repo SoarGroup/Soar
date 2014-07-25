@@ -132,6 +132,44 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("", my_param, 0);
         return true;
     }
+    else if (pOp == 'h')
+    {
+        smem_lti_id lti_id = NIL;
+        uint64_t depth = 1;
+        bool history = true;
+        smem_attach(thisAgent);
+
+        if (thisAgent->smem_db->get_status() != soar_module::connected)
+        {
+            return SetError("Semantic memory database not connected.");
+        }
+
+        if (pAttr)
+        {
+            get_lexeme_from_string(thisAgent, pAttr->c_str());
+            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            {
+                lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+            }
+            if (lti_id == NIL)
+            {
+                return SetError("LTI not found");
+            }
+        }
+
+        std::string viz;
+
+        smem_print_lti(thisAgent, lti_id, depth, &(viz), history);
+
+        if (viz.empty())
+        {
+            return SetError("Could not find information on LTI.");
+        }
+
+        PrintCLIMessage_Header("Semantic Memory", 40);
+        PrintCLIMessage(&viz);
+        return true;
+    }
     else if (pOp == 'i')
     {
         // Because of LTIs, re-initializing requires all other memories to be reinitialized.
@@ -200,6 +238,60 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         
         PrintCLIMessage(&viz);
         return true;
+    }
+    else if (pOp == 'q')
+    {
+        std::string *err = new std::string;
+        std::string *retrieved = new std::string;
+        uint64_t nunmber_to_retrieve = 1;
+
+        if (pVal)
+        {
+            from_c_string(number_to_retrieve, pVal->c_str());
+        }
+
+        bool result = smem_parse_cues(thisAgent, pAttr->c_str(), &(err), &(retrieved), number_to_retrieve);
+
+        if (!result)
+        {
+            SetError("Error while parsing query" + *err + ".");
+        }
+        else
+        {
+            PrintCLIMessage(retrieved);
+            PrintCLIMessage("SMem| Query complete.");
+        }
+        delete err;
+        delete retrieved;
+        return result;
+    }
+    else if (pOp == 'r')
+    {
+        std::string *err = new std::string;
+        std::string *retrieved = new std::string;
+        bool force = false;
+        //I need to add here a check for the number of arguments, and if there is an extra one,
+        //check if it is the "force". If it is, then I need to pass a nondefault boolean argument to smem_parse_remove
+        //that tells the function to attempt to continue removing even when something doesn't seem right.
+        if (pVal)
+        {
+            force = (!strcmp(pVal->c_str(),'f') || (!strcmp(pVal->c_str(),'force'));
+        }
+
+        bool result = smem_parse_remove(thisAgent, pAttr->c_str(), &(err), &(retrieved), force);
+
+        if (!result)
+        {
+            SetError("Error while attempting removal.\n" + *err);
+        }
+        else
+        {
+            PrintCLIMessage(retrieved);
+            PrintCLIMessage("SMem| Removal complete.");
+        }
+        delete err;
+        delete retrieved;
+        return result;
     }
     else if (pOp == 's')
     {
