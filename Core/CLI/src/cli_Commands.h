@@ -3896,7 +3896,7 @@ namespace cli
                     {'e', "enable",     OPTARG_NONE},
                     {'e', "on",         OPTARG_NONE},
                     {'g', "get",        OPTARG_NONE},
-                    ('h', "history",    OPTARG_NONE),//Testing/unstable - 23-7-2014
+                    {'h', "history",    OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'i', "init",       OPTARG_NONE},
                     {'p', "print",      OPTARG_NONE},
                     {'q', "query",      OPTARG_NONE},//Testing/unstable - 23-7-2014
@@ -4022,7 +4022,7 @@ namespace cli
                             return cli.DoSMem(option, &(argv[2]));
                         }
 
-                        return cli.DoSMem(option, &(argv[2], &(argv[3]));// This is the case of "depth".
+                        return cli.DoSMem(option, &(argv[2]), &(argv[3]));// This is the case of "depth".
                     }
 
                     case 'r':
@@ -4038,7 +4038,7 @@ namespace cli
                             return cli.DoSMem(option, &(argv[2]));
                         }
 
-                        return cli.DoSMem(option, &(argv[2], &(argv[3]));//
+                        return cli.DoSMem(option, &(argv[2]), &(argv[3]));//
                     }
 
                     case 's':

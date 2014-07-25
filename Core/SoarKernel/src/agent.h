@@ -344,6 +344,7 @@ typedef struct agent_struct
     Symbol*             smem_sym_prohibit;
     Symbol*             smem_sym_store;
     Symbol*             smem_sym_math_query;
+    Symbol*             smem_sym_depth;
     
     Symbol*             smem_sym_math_query_less;
     Symbol*             smem_sym_math_query_greater;

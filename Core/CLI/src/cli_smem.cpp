@@ -243,7 +243,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     {
         std::string *err = new std::string;
         std::string *retrieved = new std::string;
-        uint64_t nunmber_to_retrieve = 1;
+        uint64_t number_to_retrieve = 1;
 
         if (pVal)
         {
@@ -275,7 +275,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         //that tells the function to attempt to continue removing even when something doesn't seem right.
         if (pVal)
         {
-            force = (!strcmp(pVal->c_str(),'f') || (!strcmp(pVal->c_str(),'force'));
+            force = (!strcmp(pVal->c_str(),"f") || (!strcmp(pVal->c_str(),"force")));
         }
 
         bool result = smem_parse_remove(thisAgent, pAttr->c_str(), &(err), &(retrieved), force);

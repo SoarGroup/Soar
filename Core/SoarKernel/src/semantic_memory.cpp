@@ -1704,7 +1704,7 @@ void smem_disconnect_chunk(agent* thisAgent, smem_lti_id lti_id)
     }
 }
 
-void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL)
+void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true)
 {
     // if remove children, disconnect chunk -> no existing edges
     // else, need to query number of existing edges
@@ -1883,6 +1883,7 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     }
     
     // now we can safely activate the lti
+    if (activate)
     {
         double lti_act = smem_lti_activate(thisAgent, lti_id, true, new_edges);
         
@@ -2109,13 +2110,14 @@ void smem_soar_store(agent* thisAgent, Symbol* id, smem_storage_type store_type 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_install_type = wm_install, uint64_t depth = 1)
+void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1)
 {
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->ncb_retrieval->start();
     ////////////////////////////////////////////////////////////////////////////
     
     // get the ^result header for this state
+    Symbol* result_header;
     if (install_type == wm_install)
     {
         Symbol* result_header = state->id->smem_result_header;
@@ -2171,6 +2173,9 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
         expand_q->bind_int(1, lti_id);
+
+        std::list<Symbol*> children;
+
         while (expand_q->execute() == soar_module::row)
         {
             // make the identifier symbol irrespective of value type
@@ -2205,7 +2210,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         std::list<Symbol*>::iterator end = children.end();
         for (iterator = children.begin(); iterator != end; ++iterator)
         {
-            smem_install_memory(thisAgent, state, (*iterator)->id.smem_lti, (*iterator), (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, wm_install, depth-1);
+            smem_install_memory(thisAgent, state, (*iterator)->id->smem_lti, (*iterator), (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, wm_install, depth-1);
         }
     }
     
@@ -2510,7 +2515,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
     return result;
 }
 
-smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full)
+smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, int number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL)
 {
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
@@ -2520,6 +2525,12 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     
     soar_module::sqlite_statement* q = NULL;
     
+    std::list<smem_lti_id> temp_list;
+    if (query_level == qry_full)
+    {
+        match_ids = &(temp_list);
+    }
+
     smem_lti_id king_id = NIL;
     
     ////////////////////////////////////////////////////////////////////////////
@@ -2678,7 +2689,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                 more_rows = (q->execute() == soar_module::row);
             }
             
-            while (((king_id == NIL) || (needFullSearch)) && ((more_rows) || (!plentiful_parents.empty())))
+            while (((match_ids->size() < number_to_retrieve) || (needFullSearch)) && ((more_rows) || (!plentiful_parents.empty())))
             {
                 // choose next candidate (db vs. priority queue)
                 {
@@ -2790,7 +2801,8 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                     
                     if (good_cand)
                     {
-                        king_id = cand;
+                        match_ids->push_back(cand);
+                        prohibit->insert(cand);
                         for (smem_weighted_cue_list::iterator wce = weighted_cue.begin(); wce != weighted_cue.end(); wce++)
                         {
                             if ((*wce)->mathElement != NIL)
@@ -2810,6 +2822,10 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                         }
                     }
                 }
+            }
+            if (!match_ids->empty())
+            {
+                king_id = match_ids->front();
             }
         }
         q->reinitialize();
@@ -3882,9 +3898,9 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
  * -Steven 23-7-2014
  */
 
-bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err_msg, std::string** result_message, uint64_t number_to_receive)
+bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve)
 {
-    uint64_t lexeme_count = 0;  // This is counting up the number of parsed attribute or value lexemes
+    uint64_t clause_count = 0;  // This is counting up the number of parsed clauses
                                 // so that there is a pointer to a failure location.
 
     //Parsing requires an open semantic database.
@@ -4013,7 +4029,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     value = NIL;
                     if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
                     {
-                        value = make_sym_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
+                        value = make_str_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
                         get_lexeme(thisAgent);
                     }
                     else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
@@ -4040,7 +4056,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     }
                     else if (thisAgent->lexeme.type == VARIABLE_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME)
                     {
-                        std::map<std::basic_string<char>, symbol_union*>::iterator value_iterator;
+                        std::map<std::basic_string<char>, Symbol*>::iterator value_iterator;
                         value_iterator = cue_ids.find(thisAgent->lexeme.string);
 
                         if(value_iterator == cue_ids.end())
@@ -4102,7 +4118,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     else
     {
         smem_lti_set* prohibit = new smem_lti_set;
-        soar_module::sme_set cue_wmes;
+        soar_module::wme_set cue_wmes;
         soar_module::symbol_triple_list meta_wmes;
         soar_module::symbol_triple_list retrieval_wmes;
         (*result_message) = new std::string();
@@ -4115,7 +4131,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         {
             for (std::list<smem_lti_id>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
             {
-                smem_print_lti(thisAgent, (*id), 1, *resule_message); //"1" is the depth.
+                smem_print_lti(thisAgent, (*id), 1, *result_message); //"1" is the depth.
             }
         }
         else
@@ -4132,7 +4148,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
     slot*s;
 
-    for (s = root_cue_id->id.slots; s != NIL; s = s->next)
+    for (s = root_cue_id->id->slots; s != NIL; s = s->next)
     {//Remove all wme's from the slot.
         wme* delete_wme;
         for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
@@ -4145,9 +4161,9 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         symbol_remove_ref(thisAgent, s->attr);
         mark_slot_for_possible_removal(thisAgent, s);
     }//End of for-slots loop.
-    root_cue_id->id.slots = NIL;
+    root_cue_id->id->slots = NIL;
 
-    for (s = negative_cues->id.slots; s != NIL; s = s->next)
+    for (s = negative_cues->id->slots; s != NIL; s = s->next)
     {//Remove all wme's from the slot.
         wme* delete_wme;
         for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
@@ -4160,7 +4176,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         symbol_remove_ref(thisAgent, s->attr);
         mark_slot_for_possible_removal(thisAgent, s);
     }//End of for-slots loop.
-    negative_cues->id.slots = NIL;
+    negative_cues->id->slots = NIL;
 
     symbol_remove_ref(thisAgent, root_cue_id);//gets rid of cue id.
     symbol_remove_ref(thisAgent, negative_cues);//gets rid of negative cues id.
@@ -4172,15 +4188,15 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
  * This is intended to allow the user to remove part or all of information stored on a LTI.
  * (All attributes, selected attributes, or just values from particular attributes.)
  */
-bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** err_msg, std::string** result_message)
+bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** err_msg, std::string** result_message, bool force)
 {//TODO: need to fix so that err_msg and result_message are actually used or not passed.
-    bool good_command == true;
+    bool good_command = true;
 
     //parsing chunks requires an open semantic database
     smem_attach(thisAgent);
 
     //copied primarily from cli_sp
-    thisAgent->alternate_input_string = chunk_str;
+    thisAgent->alternate_input_string = chunks_str;
     thisAgent->alternate_input_suffix = const_cast<char*>(") ");
     thisAgent->current_char = ' ';
     thisAgent->alternate_input_exit = true;
@@ -4208,7 +4224,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
     }
     else
     {
-        break; //Update the error message
+        (*err_msg) = new std::string("Error: No LTI found for that letter and number.");
     }
 
     soar_module::symbol_triple_list retrieval_wmes;
@@ -4216,7 +4232,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
 
     if (good_command && lti_id != NIL)
     {
-        Symbol* lti = smem_ti_soar_make(thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
+        Symbol* lti = smem_lti_soar_make(thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
 
         get_lexeme(thisAgent);//Consume the identifier.
 
@@ -4226,10 +4242,10 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
         {
             //Now that we know we have a good lti, we can do a NCBR so that we know what attributes and values we can delete.
             //"--force" will ignore attempts to delete that which isn't there, while the default will be to stop and report back.
-            smem_install_memory(thisAgent, NIL, lti_id, lti false, meta_wmes, retrieval_wmes, fake_install);
+            smem_install_memory(thisAgent, NIL, lti_id, lti, false, meta_wmes, retrieval_wmes, fake_install);
 
             //First, we'll create the slot_map according to retrieval_wmes, then we'll remove what we encounter during parsing.
-            soar_module::symbol_triple_list::iterator triple_ptr_iterator;
+            soar_module::symbol_triple_list::iterator triple_ptr_iter;
             smem_slot* temp_slot;
             for (triple_ptr_iter = retrieval_wmes.begin(); triple_ptr_iter != retrieval_wmes.end(); triple_ptr_iter++)
             {
@@ -4237,7 +4253,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                 {
                     temp_slot = (children.find((*triple_ptr_iter)->attr)->second);
                     smem_chunk_value* temp_val = new smem_chunk_value;
-                    if ((*triple_ptr_iter)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+                    if ((*triple_ptr_iter)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
                     {
                         //If the chunk was retrieved and it is an identifier it is lti.
                         smem_chunk_value_lti temp_lti;
@@ -4247,9 +4263,9 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_lti_t;
                         smem_chunk* temp_chunk = new smem_chunk;
-                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id.smem_lti;
-                        temp_chunk->lti_letter = (*triple_ptr_iter)->value->id.name_letter;
-                        temp_chunk->lti_number = (*triple_ptr_iter)->value->id.name_number;
+                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id->smem_lti;
+                        temp_chunk->lti_letter = (*triple_ptr_iter)->value->id->name_letter;
+                        temp_chunk->lti_number = (*triple_ptr_iter)->value->id->name_number;
                         temp_chunk->soar_id = (*triple_ptr_iter)->value;
                         temp_val->val_lti.val_value = temp_chunk;
                     }
@@ -4260,7 +4276,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_const_t;
                         temp_val->val_const.val_type = value_const_t;
-                        temp_val->val_const.val_value = (*triple_ptr_iter)-value;
+                        temp_val->val_const.val_value = (*triple_ptr_iter)->value;
                     }
                     (*temp_slot).push_back(temp_val);
                 }
@@ -4268,7 +4284,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                 {
                     temp_slot = new smem_slot;
                     smem_chunk_value* temp_val = new smem_chunk_value;
-                    if ((*triple_ptr_iter)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+                    if ((*triple_ptr_iter)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
                     {
                         //If the chunk was retrieved and it is an identifier it is lti.
                         smem_chunk_value_lti temp_lti;
@@ -4278,9 +4294,9 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_lti_t;
                         smem_chunk* temp_chunk = new smem_chunk;
-                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id.smem_lti;
-                        temp_chunk->lti_letter = (*triple_ptr_iter)->value->id.name_letter;
-                        temp_chunk->lti_number = (*triple_ptr_iter)->value->id.name_number;
+                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id->smem_lti;
+                        temp_chunk->lti_letter = (*triple_ptr_iter)->value->id->name_letter;
+                        temp_chunk->lti_number = (*triple_ptr_iter)->value->id->name_number;
                         temp_chunk->soar_id = (*triple_ptr_iter)->value;
                         temp_val->val_lti.val_value = temp_chunk;
                     }
@@ -4291,7 +4307,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_const_t;
                         temp_val->val_const.val_type = value_const_t;
-                        temp_val->val_const.val_value = (*triple_ptr_iter)-value;
+                        temp_val->val_const.val_value = (*triple_ptr_iter)->value;
                     }
                     (*temp_slot).push_back(temp_val);
                     children[(*triple_ptr_iter)->attr] = temp_slot;
@@ -4299,7 +4315,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
             }
 
             //Now we process attributes one at a time.
-            while (thisAgent->lexeme.type = UP_ARROW_LEXEME && good_command)
+            while (thisAgent->lexeme.type == UP_ARROW_LEXEME && good_command)
             {
                 get_lexeme(thisAgent);// Consume the up arrow.
 
@@ -4307,15 +4323,15 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
 
                 if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
                 {
-                    attribute = find_sym_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
+                    attribute = find_str_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
                 }
                 else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
                 {
-                    attribute = find_int_constant(thisAgent, my_agent->lexeme.int_val);
+                    attribute = find_int_constant(thisAgent, thisAgent->lexeme.int_val);
                 }
                 else if (thisAgent->lexeme.type == FLOAT_CONSTANT_LEXEME)
                 {
-                    attribute = find_float_constant(thisAgent, my_agent->lexeme.float_val);
+                    attribute = find_float_constant(thisAgent, thisAgent->lexeme.float_val);
                 }
 
                 if (attribute == NIL)
@@ -4336,17 +4352,17 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         value = NIL;
                         if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
                         {
-                            value = find_sym_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
+                            value = find_str_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
                             get_lexeme(thisAgent);
                         }
                         else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
                         {
-                            value = find_int_constant(thisAgent, my_agent->lexeme.int_val);
+                            value = find_int_constant(thisAgent, thisAgent->lexeme.int_val);
                             get_lexeme(thisAgent);
                         }
                         else if (thisAgent->lexeme.type == FLOAT_CONSTANT_LEXEME)
                         {
-                            value = find_float_constant(thisAgent, my_agent->lexeme.float_val);
+                            value = find_float_constant(thisAgent, thisAgent->lexeme.float_val);
                             get_lexeme(thisAgent);
                         }
                         else if (thisAgent->lexeme.type == AT_LEXEME)
@@ -4373,7 +4389,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                             smem_slot::iterator values;
                             for (values = (children.find(attribute))->second->begin(); values != (children.find(attribute))->second->end(); values++)
                             {
-                                if (value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE && (*values)->val_lti.val_type == value_lti_t)
+                                if (value->symbol_type == IDENTIFIER_SYMBOL_TYPE && (*values)->val_lti.val_type == value_lti_t)
                                 {
                                     if ((*values)->val_lti.val_value->soar_id == value)
                                     {
@@ -4383,7 +4399,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                                         break;
                                     }
                                 }
-                                else if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE && (*values)->val_const.val_type == value_const_t)
+                                else if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE && (*values)->val_const.val_type == value_const_t)
                                 {
                                     if ((*values)->val_const.val_value == value)
                                     {
@@ -4409,7 +4425,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
         }
         if (good_command)
         {
-            smem_store_chunk(my_agent, lti_id, &(children), true, NULL, false);
+            smem_store_chunk(thisAgent, lti_id, &(children), true, NULL, false);
         }
 
         //Clean up.
@@ -4420,7 +4436,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
             smem_slot::iterator values, end = result->end();
             for (values = result->begin(); values != end; values++)
             {
-                if ((*values)->val_lti.val_type == values_lti_t)
+                if ((*values)->val_lti.val_type == value_lti_t)
                 {
                     delete (*values)->val_lti.val_value;
                 }
@@ -4686,9 +4702,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                     }
                     else if ((*w_p)->attr == thisAgent->smem_sym_depth)
                     {
-                        if ((*w_p)->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+                        if ((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
                         {
-                            depth = ((*w_p)->value->ic.value > 0) ? (*w_p)->value->ic.value : 1;
+                            depth = ((*w_p)->value->ic->value > 0) ? (*w_p)->value->ic->value : 1;
                         }
                         else
                         {
@@ -5595,7 +5611,7 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
             {
                 return_val->append(", -");
             }
-            temp_string << ((int64_t)my_agent->smem_max_cycle-(int64_t)*history_item);
+            temp_string << ((int64_t)thisAgent->smem_max_cycle-(int64_t)*history_item);
             return_val->append(temp_string.str());
             temp_string.str("");
         }
@@ -5616,7 +5632,7 @@ void smem_print_store(agent* thisAgent, std::string* return_val)
     q->reinitialize();
 }
 
-void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val)
+void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val, bool history)
 {
     std::set< smem_lti_id > visited;
     std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;
