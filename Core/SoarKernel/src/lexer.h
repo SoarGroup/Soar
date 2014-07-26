@@ -145,7 +145,6 @@ namespace soar
           Bool *possible_fc, //float constant
           Bool *rereadable);
 
-        Bool determine_type_of_constituent_string ();
         /**
          * The last character read from the input string
          */
@@ -201,6 +200,7 @@ namespace soar
         void lex_vbar ();
         void lex_quote ();
 
+        Bool determine_type_of_constituent_string ();
         void record_position_of_start_of_lexeme();
         void read_constituent_string ();
         void read_rest_of_floating_point_number ();
