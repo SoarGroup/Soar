@@ -82,7 +82,7 @@ namespace soar
         /**
          * @return the text of the lexeme
          */
-        char* string(){return lex_string;}
+        const char* string(){return lex_string;}
         /**
          * @return the length of the lexeme string
          */
@@ -148,7 +148,7 @@ namespace soar
          * case, etc.)
          */
         static void determine_possible_symbol_types_for_string (
-          char *s,
+          const char *s,
           size_t length_of_s,
           Bool *possible_id,
           Bool *possible_var,

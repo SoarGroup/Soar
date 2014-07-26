@@ -660,7 +660,7 @@ void Lexer::skip_ahead_to_balanced_parentheses (int parentheses_level) {
   }
 }
 
-void Lexer::determine_possible_symbol_types_for_string (char *s, 
+void Lexer::determine_possible_symbol_types_for_string (const char *s, 
 												 size_t length_of_s,
 												 Bool *possible_id, 
 												 Bool *possible_var, 
@@ -668,7 +668,7 @@ void Lexer::determine_possible_symbol_types_for_string (char *s,
 												 Bool *possible_ic, 
 												 Bool *possible_fc, 
 												 Bool *rereadable) {
-	char *ch;
+	const char *ch;
 	Bool all_alphanum;
 
 	*possible_id = FALSE;

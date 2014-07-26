@@ -70,7 +70,7 @@ soar::Lexeme get_lexeme_from_string (agent* agnt, const char * lex_string)
 	return lexer.current_lexeme;
 }
 
-void get_context_var_info ( agent* agnt, char* var_name, Symbol **dest_goal,
+void get_context_var_info ( agent* agnt, const char* var_name, Symbol **dest_goal,
 	Symbol **dest_attr_of_slot,
 	Symbol **dest_current_value) 
 {
