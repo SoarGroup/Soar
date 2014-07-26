@@ -108,7 +108,7 @@ Bool Lexer::determine_type_of_constituent_string () {
 	Bool rereadable;
 
 	determine_possible_symbol_types_for_string (current_lexeme.string(),
-		current_lexeme.length,
+		current_lexeme.size(),
 		&possible_id,
 		&possible_var,
 		&possible_sc,
@@ -168,7 +168,7 @@ Bool Lexer::determine_type_of_constituent_string () {
 		current_lexeme.type = SYM_CONSTANT_LEXEME;
 		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 			if ( (current_lexeme.string()[0] == '<') || 
-				 (current_lexeme.string()[current_lexeme.length-1] == '>') )
+				 (current_lexeme.string()[current_lexeme.size()-1] == '>') )
 			{
 				print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", current_lexeme.string());
 				print_location_of_most_recent_lexeme();
@@ -244,7 +244,7 @@ void Lexer::lex_equal () {
   /* Note: this routine relies on = being a constituent character */
 
   read_constituent_string();
-  if (current_lexeme.length==1) { current_lexeme.type = EQUAL_LEXEME; return; }
+  if (current_lexeme.size()==1) { current_lexeme.type = EQUAL_LEXEME; return; }
   determine_type_of_constituent_string();
 }
 
@@ -253,7 +253,7 @@ void Lexer::lex_ampersand () {
   /* Note: this routine relies on & being a constituent character */
 
   read_constituent_string();
-  if (current_lexeme.length==1) { current_lexeme.type = AMPERSAND_LEXEME; return; }
+  if (current_lexeme.size()==1) { current_lexeme.type = AMPERSAND_LEXEME; return; }
   determine_type_of_constituent_string();
 }
 
@@ -276,8 +276,8 @@ void Lexer::lex_greater () {
   /* Note: this routine relies on =,> being constituent characters */
 
   read_constituent_string();
-  if (current_lexeme.length==1) { current_lexeme.type = GREATER_LEXEME; return; }
-  if (current_lexeme.length==2) {
+  if (current_lexeme.size()==1) { current_lexeme.type = GREATER_LEXEME; return; }
+  if (current_lexeme.size()==2) {
     if (current_lexeme.string()[1]=='>') { current_lexeme.type = GREATER_GREATER_LEXEME; return;}
     if (current_lexeme.string()[1]=='=') { current_lexeme.type = GREATER_EQUAL_LEXEME; return; }
   }
@@ -289,13 +289,13 @@ void Lexer::lex_less () {
   /* Note: this routine relies on =,<,> being constituent characters */
 
   read_constituent_string();
-  if (current_lexeme.length==1) { current_lexeme.type = LESS_LEXEME; return; }
-  if (current_lexeme.length==2) {
+  if (current_lexeme.size()==1) { current_lexeme.type = LESS_LEXEME; return; }
+  if (current_lexeme.size()==2) {
     if (current_lexeme.string()[1]=='>') { current_lexeme.type = NOT_EQUAL_LEXEME; return; }
     if (current_lexeme.string()[1]=='=') { current_lexeme.type = LESS_EQUAL_LEXEME; return; }
     if (current_lexeme.string()[1]=='<') { current_lexeme.type = LESS_LESS_LEXEME; return; }
   }
-  if (current_lexeme.length==3) {
+  if (current_lexeme.size()==3) {
     if ((current_lexeme.string()[1]=='=')&&(current_lexeme.string()[2]=='>'))
       { current_lexeme.type = LESS_EQUAL_GREATER_LEXEME; return; }
   }
@@ -309,7 +309,7 @@ void Lexer::lex_period () {
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
   if (isdigit(current_char)) read_rest_of_floating_point_number();
-  if (current_lexeme.length==1) { current_lexeme.type = PERIOD_LEXEME; return; }
+  if (current_lexeme.size()==1) { current_lexeme.type = PERIOD_LEXEME; return; }
   determine_type_of_constituent_string();
 }
 
@@ -324,11 +324,11 @@ void Lexer::lex_plus () {
      careful to check for this case --- */
   if (current_char=='.') {
     could_be_floating_point = TRUE;
-    for (i=1; i<current_lexeme.length; i++)
+    for (i=1; i<current_lexeme.size(); i++)
       if (! isdigit(current_lexeme.string()[i])) could_be_floating_point = FALSE;
     if (could_be_floating_point) read_rest_of_floating_point_number();
   }
-  if (current_lexeme.length==1) { current_lexeme.type = PLUS_LEXEME; return; }
+  if (current_lexeme.size()==1) { current_lexeme.type = PLUS_LEXEME; return; }
   determine_type_of_constituent_string();
 }
       
@@ -343,12 +343,12 @@ void Lexer::lex_minus () {
      careful to check for this case --- */
   if (current_char=='.') {
     could_be_floating_point = TRUE;
-    for (i=1; i<current_lexeme.length; i++)
+    for (i=1; i<current_lexeme.size(); i++)
       if (! isdigit(current_lexeme.string()[i])) could_be_floating_point = FALSE;
     if (could_be_floating_point) read_rest_of_floating_point_number();
   }
-  if (current_lexeme.length==1) { current_lexeme.type = MINUS_LEXEME; return; }
-  if (current_lexeme.length==3) {
+  if (current_lexeme.size()==1) { current_lexeme.type = MINUS_LEXEME; return; }
+  if (current_lexeme.size()==3) {
     if ((current_lexeme.string()[1]=='-')&&(current_lexeme.string()[2]=='>'))
       { current_lexeme.type = RIGHT_ARROW_LEXEME; return; }
   }
@@ -364,7 +364,7 @@ void Lexer::lex_digit () {
      careful to check for this case --- */
   if (current_char=='.') {
     could_be_floating_point = TRUE;
-    for (i=1; i<current_lexeme.length; i++)
+    for (i=1; i<current_lexeme.size(); i++)
       if (! isdigit(current_lexeme.string()[i])) could_be_floating_point = FALSE;
     if (could_be_floating_point) read_rest_of_floating_point_number();
   }
@@ -386,7 +386,7 @@ void Lexer::lex_vbar () {
   get_next_char();
   do {
     if ((current_char==EOF)||
-        (current_lexeme.length==MAX_LEXEME_LENGTH)) {
+        (current_lexeme.size()==MAX_LEXEME_LENGTH)) {
       print (thisAgent, "Error:  opening '|' without closing '|'\n");
       print_location_of_most_recent_lexeme();
       /* BUGBUG if reading from top level, don't want to signal EOF */
@@ -415,7 +415,7 @@ void Lexer::lex_quote () {
   current_lexeme.type = QUOTED_STRING_LEXEME;
   get_next_char();
   do {
-    if ((current_char==EOF)||(current_lexeme.length==MAX_LEXEME_LENGTH)) {
+    if ((current_char==EOF)||(current_lexeme.size()==MAX_LEXEME_LENGTH)) {
       print (thisAgent, "Error:  opening '\"' without closing '\"'\n");
       print_location_of_most_recent_lexeme();
       /* BUGBUG if reading from top level, don't want to signal EOF */
@@ -436,7 +436,7 @@ void Lexer::lex_quote () {
       get_next_char();
     }
   } while(TRUE);
-  current_lexeme.lex_string[current_lexeme.length]=0;
+  current_lexeme.lex_string[current_lexeme.size()]=0;
 }
 
 /* ======================================================================

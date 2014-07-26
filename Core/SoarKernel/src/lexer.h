@@ -83,6 +83,10 @@ namespace soar
          * @return the text of the lexeme
          */
         char* string(){return lex_string;}
+        /**
+         * @return the length of the lexeme string
+         */
+        int size(){return length;}
     private:
         char lex_string[MAX_LEXEME_LENGTH+1];/**< text of the lexeme */
     };
