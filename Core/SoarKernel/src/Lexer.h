@@ -71,7 +71,6 @@ namespace soar
             id_number(0){}
         ~Lexeme(){}
         enum lexer_token_type type;         /**< what kind of lexeme it is */
-        int length;                         /**< length of the above string */
         int64_t int_val;                    /**< for INT_CONSTANT_LEXEME's */
         double float_val;                   /**< for FLOAT_CONSTANT_LEXEME's */
         char id_letter;                     /**< for IDENTIFIER_LEXEME's */
@@ -83,7 +82,7 @@ namespace soar
         /**
          * @return the length of the lexeme string
          */
-        int size(){return lex_string.length();}
+        int length(){return lex_string.length();}
     private:
         /** text of the lexeme */
         std::string lex_string;
