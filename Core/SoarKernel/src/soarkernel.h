@@ -58,7 +58,7 @@ struct node_varnames_struct;
 /* ======================================================================*/
 
 #include "mem.h"
-#include "lexer.h"
+#include "Lexer.h"
 #include "symtab.h"
 #include "gdatastructs.h"
 #include "rhsfun.h"

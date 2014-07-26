@@ -52,7 +52,7 @@
 #include "symtab.h"
 #include "decide.h"
 #include "production.h"
-#include "lexer.h"
+#include "Lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
 #include "utilities.h"

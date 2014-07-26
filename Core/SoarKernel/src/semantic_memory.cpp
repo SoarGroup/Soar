@@ -22,7 +22,7 @@
 #include "wmem.h"
 #include "print.h"
 #include "xml.h"
-#include "lexer.h"
+#include "Lexer.h"
 #include "instantiations.h"
 #include "rhsfun.h"
 #include "decide.h"

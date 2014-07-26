@@ -5,13 +5,13 @@
 
 /*************************************************************************
  *
- *  file:  lexer.cpp
+ *  file:  Lexer.cpp
  *  
  * =======================================================================
  */
 
 #include <stdlib.h>
-#include "lexer.h"
+#include "Lexer.h"
 #include "print.h"
 #include "xml.h"
 
