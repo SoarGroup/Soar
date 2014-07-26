@@ -50,7 +50,7 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
         the_lexeme++;
     }
 
-    lexeme_info lexeme = get_lexeme_from_string(agnt, the_lexeme);
+    soar::Lexeme lexeme = get_lexeme_from_string(agnt, the_lexeme);
 
     switch (lexeme.type) 
     {

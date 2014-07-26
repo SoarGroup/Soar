@@ -36,9 +36,9 @@
 ===============================
 */
 extern bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme, Symbol * * result_id);
-extern lexeme_info get_lexeme_from_string (agent* agnt, const char * the_lexeme);
+extern soar::Lexeme get_lexeme_from_string (agent* agnt, const char * the_lexeme);
 extern void get_context_var_info ( agent* agnt, char* var_name, Symbol **dest_goal, Symbol **dest_attr_of_slot, Symbol **dest_current_value);
-extern Symbol *read_identifier_or_context_variable (agent* agnt, lexeme_info* lexeme);
+extern Symbol *read_identifier_or_context_variable (agent* agnt, soar::Lexeme* lexeme);
 
 #ifdef REAL_TIME_BEHAVIOR
 /* RMJ */

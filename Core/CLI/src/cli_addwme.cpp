@@ -16,7 +16,7 @@ using namespace sml;
 
 bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable) {
     agent* agnt = m_pAgentSML->GetSoarAgent();
-    lexeme_info lexeme;
+    soar::Lexeme lexeme;
 
     // Get ID
     Symbol* pId = 0;

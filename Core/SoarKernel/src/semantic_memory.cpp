@@ -3168,7 +3168,7 @@ void smem_deallocate_chunk( agent *my_agent, smem_chunk *chunk, bool free_chunk 
 	}
 }
 
-inline std::string *smem_parse_lti_name( struct lexeme_info *lexeme, char *id_letter, uint64_t *id_number )
+inline std::string *smem_parse_lti_name( soar::Lexeme *lexeme, char *id_letter, uint64_t *id_number )
 {
 	std::string *return_val = new std::string;
 
@@ -3194,7 +3194,7 @@ inline std::string *smem_parse_lti_name( struct lexeme_info *lexeme, char *id_le
 	return return_val;
 }
 
-inline Symbol *smem_parse_constant_attr( agent *my_agent, struct lexeme_info *lexeme )
+inline Symbol *smem_parse_constant_attr( agent *my_agent, soar::Lexeme *lexeme )
 {
 	Symbol *return_val = NIL;
 

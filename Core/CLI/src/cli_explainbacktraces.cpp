@@ -50,7 +50,7 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
     // mode == 0 name
     // mode > 0 condition
 
-    lexeme_info lexeme = get_lexeme_from_string(thisAgent, const_cast<char*>(pProduction));
+    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, const_cast<char*>(pProduction));
 
     if (lexeme.type != SYM_CONSTANT_LEXEME) {
         return false; // invalid production

@@ -31,7 +31,7 @@
    extern condition *parse_lhs (agent* thisAgent, soar::Lexer* lexer);
    extern Bool parse_rhs (agent* thisAgent, soar::Lexer* lexer, action **dest_rhs);
    extern struct production_struct *parse_production (agent* thisAgent, const char* prod_string, unsigned char* rete_addition_result);
-   extern Symbol *make_symbol_for_lexeme (agent* thisAgent, lexeme_info* lexeme, bool allow_lti);
+   extern Symbol *make_symbol_for_lexeme (agent* thisAgent, soar::Lexeme* lexeme, bool allow_lti);
    extern bool parse_lti(agent* thisAgent, soar::Lexer* lexer);
 
 #endif

@@ -147,7 +147,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
 		if ( pAttr )
 		{
-            lexeme_info lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
+            soar::Lexeme lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
 			if ( lexeme.type == IDENTIFIER_LEXEME )
 			{
 				if ( agnt->smem_db->get_status() == soar_module::connected )
@@ -295,7 +295,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
         if ( pAttr )
 		{
-			lexeme_info lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
+			soar::Lexeme lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
 			if ( lexeme.type == IDENTIFIER_LEXEME )
 			{
 				if ( agnt->smem_db->get_status() == soar_module::connected )
