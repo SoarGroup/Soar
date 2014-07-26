@@ -700,6 +700,10 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* ------------------ Printing utilities stuff --------------------- */
 
+  //TODO: this isn't good enough. Arbitrary length should be acceptable.
+  #define MAX_LEXER_LINE_LENGTH 1000
+  //a little bigger to avoid any off-by-one-errors
+  #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5) 
   char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
   int                 printer_output_column;
   int                 saved_printer_output_column;

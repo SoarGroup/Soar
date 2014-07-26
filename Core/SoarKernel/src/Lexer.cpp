@@ -74,20 +74,14 @@ inline void Lexer::record_position_of_start_of_lexeme()
 
 inline void Lexer::store_and_advance()
 {
-  current_lexeme.lex_string[current_lexeme.length++] = char(current_char);
+  current_lexeme.lex_string.append(1, char(current_char));
   get_next_char();
-}
-
-inline void Lexer::finish()
-{ 
-  current_lexeme.lex_string[current_lexeme.length]=0;
 }
 
 void Lexer::read_constituent_string () {
   while ((current_char!=EOF) &&
          constituent_char[static_cast<unsigned char>(current_char)])
     store_and_advance();
-  finish();
 }  
 
 void Lexer::read_rest_of_floating_point_number () {
@@ -100,7 +94,6 @@ void Lexer::read_rest_of_floating_point_number () {
       store_and_advance();                       /* optional leading + or - */
     while (isdigit(current_char)) store_and_advance(); /* string of digits */
   }
-  finish();
 }
 
 Bool Lexer::determine_type_of_constituent_string () {
@@ -193,49 +186,41 @@ Bool Lexer::determine_type_of_constituent_string () {
 
 void Lexer::lex_eof () {
   store_and_advance();
-  finish();
   current_lexeme.type = EOF_LEXEME;
 }
 
 void Lexer::lex_at () {
   store_and_advance();
-  finish();
   current_lexeme.type = AT_LEXEME;
 }
 
 void Lexer::lex_tilde () {
   store_and_advance();
-  finish();
   current_lexeme.type = TILDE_LEXEME;
 }
 
 void Lexer::lex_up_arrow () {
   store_and_advance();
-  finish();
   current_lexeme.type = UP_ARROW_LEXEME;
 }
 
 void Lexer::lex_lbrace () {
   store_and_advance();
-  finish();
   current_lexeme.type = L_BRACE_LEXEME;
 }
 
 void Lexer::lex_rbrace () {
   store_and_advance();
-  finish();
   current_lexeme.type = R_BRACE_LEXEME;
 }
 
 void Lexer::lex_exclamation_point () {
   store_and_advance();
-  finish();
   current_lexeme.type = EXCLAMATION_POINT_LEXEME;
 }
 
 void Lexer::lex_comma () {
   store_and_advance();
-  finish();
   current_lexeme.type = COMMA_LEXEME;
 }
 
@@ -259,14 +244,12 @@ void Lexer::lex_ampersand () {
 
 void Lexer::lex_lparen () {
   store_and_advance();
-  finish();
   current_lexeme.type = L_PAREN_LEXEME;
   parentheses_level++;
 }
 
 void Lexer::lex_rparen () {
   store_and_advance();
-  finish();
   current_lexeme.type = R_PAREN_LEXEME;
   if (parentheses_level > 0) parentheses_level--;
 }
@@ -305,7 +288,6 @@ void Lexer::lex_less () {
 
 void Lexer::lex_period () {
   store_and_advance();
-  finish();
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
   if (isdigit(current_char)) read_rest_of_floating_point_number();
@@ -373,7 +355,6 @@ void Lexer::lex_digit () {
 
 void Lexer::lex_unknown () {
   get_next_char();
-  get_lexeme();
 }
 
 void Lexer::lex_constituent_string () {
@@ -385,58 +366,48 @@ void Lexer::lex_vbar () {
   current_lexeme.type = SYM_CONSTANT_LEXEME;
   get_next_char();
   do {
-    if ((current_char==EOF)||
-        (current_lexeme.size()==MAX_LEXEME_LENGTH)) {
+    if (current_char==EOF) {
       print (thisAgent, "Error:  opening '|' without closing '|'\n");
       print_location_of_most_recent_lexeme();
       /* BUGBUG if reading from top level, don't want to signal EOF */
       current_lexeme.type = EOF_LEXEME;
-      current_lexeme.lex_string[0]=EOF;
-      current_lexeme.lex_string[1]=0;
-      current_lexeme.length = 1;
+      current_lexeme.lex_string = std::string(1, EOF);
       return;
     }
     if (current_char=='\\') {
       get_next_char();
-      current_lexeme.lex_string[current_lexeme.length++] = char(current_char);
-      get_next_char();
+      store_and_advance();
     } else if (current_char=='|') {
       get_next_char();
       break;
     } else {
-      current_lexeme.lex_string[current_lexeme.length++] = char(current_char);
-      get_next_char();
+      store_and_advance();
     }
   } while(TRUE);
-  current_lexeme.lex_string[current_lexeme.length]=0;
 }
 
 void Lexer::lex_quote () {
   current_lexeme.type = QUOTED_STRING_LEXEME;
   get_next_char();
   do {
-    if ((current_char==EOF)||(current_lexeme.size()==MAX_LEXEME_LENGTH)) {
+    if (current_char==EOF) {
       print (thisAgent, "Error:  opening '\"' without closing '\"'\n");
       print_location_of_most_recent_lexeme();
       /* BUGBUG if reading from top level, don't want to signal EOF */
       current_lexeme.type = EOF_LEXEME;
-      current_lexeme.lex_string[0]=0;
-      current_lexeme.length = 1;
+      current_lexeme.lex_string = std::string(1, EOF);
       return;
     }
     if (current_char=='\\') {
       get_next_char();
-      current_lexeme.lex_string[current_lexeme.length++] = char(current_char);
-      get_next_char();
+      store_and_advance();
     } else if (current_char=='"') {
       get_next_char();
       break;
     } else {
-      current_lexeme.lex_string[current_lexeme.length++] = char(current_char);
-      get_next_char();
+      store_and_advance();
     }
   } while(TRUE);
-  current_lexeme.lex_string[current_lexeme.size()]=0;
 }
 
 /* ======================================================================
@@ -448,8 +419,7 @@ void Lexer::lex_quote () {
 ====================================================================== */
 void Lexer::get_lexeme () {
 
-  current_lexeme.length = 0;
-  current_lexeme.lex_string[0] = 0;
+  current_lexeme.lex_string = "";
 
   consume_whitespace_and_comments();
 
@@ -753,15 +723,7 @@ Lexer::Lexer(agent* agent, const char* string)
 	current_char = ' ';
 	parentheses_level = 0;
 	allow_ids = true;
-
-	//Initializing lexeme
-	current_lexeme.type = NULL_LEXEME;
-	current_lexeme.lex_string[0] = 0;
-	current_lexeme.length = 0;
-	current_lexeme.int_val = 0;
-	current_lexeme.float_val = 0.0;
-	current_lexeme.id_letter = 'A';
-	current_lexeme.id_number = 0;
+  current_lexeme = Lexeme();
 }
 
 void Lexer::set_allow_ids (Bool allow_identifiers) {
