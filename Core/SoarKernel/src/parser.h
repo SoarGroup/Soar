@@ -20,6 +20,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "Lexer.h"
+#include "agent.h"
+
    typedef char Bool;
    typedef char * test;
    typedef struct condition_struct condition;

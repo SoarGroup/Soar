@@ -15,6 +15,10 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <string>
+#include "agent.h"
+#include "stdint.h"
+
 typedef char Bool;
 
 /**
