@@ -6,48 +6,11 @@
 /*************************************************************************
  *
  *  file:  lexer.cpp
- *
- * =======================================================================
- *
- *                              lexer.c
- *
- *  The lexer reads files and returns a stream of lexemes.  Get_lexeme() is
- *  the main routine; it looks for the next lexeme in the input, and stores
- *  it in the global variable "lexeme".  See the structure definition below.
- *
- *  Restrictions:  the lexer cannot read individual input lines longer than
- *  MAX_LEXER_LINE_LENGTH characters.  Thus, a single lexeme can't be longer
- *  than that either.
  *  
- *  Determine_possible_symbol_types_for_string() is a utility routine which
- *  figures out what kind(s) of symbol a given string could represent.
- *  
- *  Print_location_of_most_recent_lexeme() is used to print an indication
- *  of where a parser error occurred.  It tries to print out the current
- *  source line with a pointer to where the error was detected.
- *  
- *  Current_lexer_parentheses_level() returns the current level of parentheses
- *  nesting (0 means no open paren's have been encountered).
- *  Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
- *  closing paren is found (0 means eat until back at the top level).
- *  
- *  Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
- *  be read.  If FALSE, things that look like identifiers will be returned
- *  as SYM_CONSTANT_LEXEME's instead.
- *
- *  BUGBUG There are still problems with Soar not being very friendly
- *  when users have typos in productions, particularly with mismatched
- *  braces and parens.  see also parser.c
  * =======================================================================
  */
-/* ======================================================================
-                             lexer.c
-
-    See comments in soarkernel.h for an overview.
-   ====================================================================== */
 
 #include <stdlib.h>
-
 #include "lexer.h"
 #include "print.h"
 #include "xml.h"
@@ -71,7 +34,7 @@ Bool Lexer::initialized = init();
                              Get next char
 
   Get_next_char() gets the next character from the current input file and
-  puts it into the agent variable current_char.
+  puts it into the member variable current_char.
 ====================================================================== */
 
 void Lexer::get_next_char () {
@@ -225,7 +188,7 @@ Bool Lexer::determine_type_of_constituent_string () {
   These routines are called from get_lexeme().  Which routine gets called
   depends on the first character of the new lexeme being read.  Each routine's
   job is to finish reading the lexeme and store the necessary items in 
-  the agent variable "lexeme".
+  the member variable "current_lexeme".
 ====================================================================== */
 
 void Lexer::lex_eof () {
@@ -483,7 +446,6 @@ void Lexer::lex_quote () {
   any whitespace, then calls some lex_xxx routine (using the lexer_routines[]
   table) based on the first character of the lexeme.
 ====================================================================== */
-
 void Lexer::get_lexeme () {
 
   current_lexeme.length = 0;
@@ -529,10 +491,6 @@ void Lexer::consume_whitespace_and_comments()
 
 // Static initialization function to set up lexing structures and the
 // lexer_routine dispatch table.
-// 
-// TODO: This file badly need to be locked. 
-// TODO: Does it still need locking even though memory allocation was removed?
-#define lu &Lexer::lex_unknown
 Bool Lexer::init () 
 {
   unsigned int i;
@@ -665,18 +623,6 @@ Bool Lexer::init ()
   return true;
 }
 
-/* ======================================================================
-                   Print location of most recent lexeme
-
-  This routine is used to print an indication of where a parser or interface
-  command error occurred.  It tries to print out the current source line
-  with a pointer to where the error was detected.  If the current source
-  line is no longer available, it just prints out the line number instead.
-
-  BUGBUG: if the input line contains any tabs, the pointer comes out in
-  the wrong place.
-====================================================================== */
-
 void Lexer::print_location_of_most_recent_lexeme () {
   //TODO: below was commented out because file input isn't used anymore.
   //write something else to track input line, column and offset
@@ -701,17 +647,6 @@ void Lexer::print_location_of_most_recent_lexeme () {
   // }
 }
 
-/* ======================================================================
-                       Parentheses Utilities
-
-  Current_lexer_parentheses_level() returns the current level of parentheses
-  nesting (0 means no open paren's have been encountered).
-
-  Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
-  closing paren is found (0 means eat until back at the top level).
-  
-====================================================================== */
-
 int Lexer::current_parentheses_level () {
   return parentheses_level;
 }
@@ -724,18 +659,6 @@ void Lexer::skip_ahead_to_balanced_parentheses (int parentheses_level) {
     get_lexeme();
   }
 }
-
-/* ======================================================================
-               Determine possible symbol types for string
-
-  This is a utility routine which figures out what kind(s) of symbol a 
-  given string could represent.  At entry:  s, length_of_s represent the
-  string.  At exit:  possible_xxx is set to TRUE/FALSE to indicate
-  whether the given string could represent that kind of symbol; rereadable
-  is set to TRUE indicating whether the lexer would read the given string
-  as a symbol with exactly the same name (as opposed to treating it as a
-  special lexeme like "+", changing upper to lower case, etc.
-====================================================================== */
 
 void Lexer::determine_possible_symbol_types_for_string (char *s, 
 												 size_t length_of_s,
@@ -794,7 +717,7 @@ void Lexer::determine_possible_symbol_types_for_string (char *s,
 		}
 	}
 	if ( all_alphanum ||
-	     (length_of_s > LENGTH_OF_LONGEST_SPECIAL_LEXEME) ||
+	     (length_of_s > length_of_longest_special_lexeme) ||
 	     ((length_of_s==1)&&(*s=='*')) )
 	{
 		*rereadable = TRUE;
