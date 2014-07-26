@@ -55,7 +55,7 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
     switch (lexeme.type) 
     {
     case SYM_CONSTANT_LEXEME:
-        attr_tmp = find_sym_constant (agnt, lexeme.string);
+        attr_tmp = find_sym_constant (agnt, lexeme.string());
         break;
     case INT_CONSTANT_LEXEME:
         attr_tmp = find_int_constant (agnt, lexeme.int_val);

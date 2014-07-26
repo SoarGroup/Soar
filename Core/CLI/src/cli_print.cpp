@@ -376,7 +376,7 @@ void do_print_for_production_name (agent* thisAgent, soar::Lexeme lexeme, const 
 {
     Symbol *sym;
 
-    sym = find_sym_constant (thisAgent, lexeme.string);
+    sym = find_sym_constant (thisAgent, lexeme.string());
     if (sym && sym->sc.production) 
         do_print_for_production(thisAgent, sym->sc.production, intern, print_filename, full_prod);
     else 
@@ -397,12 +397,12 @@ void do_print_for_wme (agent* thisAgent, wme *w, int depth, bool intern, bool tr
 otherwise return 2 and set dest_sym to find_symbol() result. --- */
 int read_pattern_component (agent* thisAgent, soar::Lexeme* lexeme, Symbol **dest_sym) 
 {
-    if (strcmp(lexeme->string,"*") == 0) 
+    if (strcmp(lexeme->string(),"*") == 0) 
         return 1;
     switch (lexeme->type) 
     {
     case SYM_CONSTANT_LEXEME:
-        *dest_sym = find_sym_constant (thisAgent, lexeme->string); return 2;
+        *dest_sym = find_sym_constant (thisAgent, lexeme->string()); return 2;
     case INT_CONSTANT_LEXEME:
         *dest_sym = find_int_constant (thisAgent, lexeme->int_val); return 2;
     case FLOAT_CONSTANT_LEXEME:
@@ -433,7 +433,7 @@ list *read_pattern_and_get_matching_wmes (agent* thisAgent, const char* pattern)
     lexer.get_lexeme();
     if (lexer.current_lexeme.type!=L_PAREN_LEXEME)
     {
-        print (thisAgent, "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", lexer.current_lexeme.string, lexer.current_char);
+        print (thisAgent, "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", lexer.current_lexeme.string(), lexer.current_char);
         return NIL;
     }
     parentheses_level = lexer.current_parentheses_level();

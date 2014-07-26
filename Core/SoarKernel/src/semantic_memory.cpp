@@ -3185,9 +3185,9 @@ inline std::string *smem_parse_lti_name( soar::Lexeme *lexeme, char *id_letter, 
 	}
 	else
 	{
-		return_val->assign( (*lexeme).string );
+		return_val->assign( (*lexeme).string() );
 
-		(*id_letter) = static_cast<char>( toupper( (*lexeme).string[1] ) );
+		(*id_letter) = static_cast<char>( toupper( (*lexeme).string()[1] ) );
 		(*id_number) = 0;
 	}
 
@@ -3200,7 +3200,7 @@ inline Symbol *smem_parse_constant_attr( agent *my_agent, soar::Lexeme *lexeme )
 
 	if ( (*lexeme).type == SYM_CONSTANT_LEXEME )
 	{
-		return_val = make_sym_constant( my_agent, static_cast<const char *>( (*lexeme).string ) );
+		return_val = make_sym_constant( my_agent, static_cast<const char *>( (*lexeme).string() ) );
 	}
 	else if ( (*lexeme).type == INT_CONSTANT_LEXEME )
 	{
@@ -3345,7 +3345,7 @@ bool smem_parse_chunk( agent *my_agent, soar::Lexer* lexer, smem_str_to_chunk_ma
 							{
 								chunk_value = new smem_chunk_value;
 								chunk_value->val_const.val_type = value_const_t;
-								chunk_value->val_const.val_value = make_sym_constant( my_agent, static_cast<const char *>( lexer->current_lexeme.string ) );
+								chunk_value->val_const.val_value = make_sym_constant( my_agent, static_cast<const char *>( lexer->current_lexeme.string() ) );
 							}
 							else if ( lexer->current_lexeme.type == INT_CONSTANT_LEXEME )
 							{

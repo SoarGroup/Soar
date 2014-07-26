@@ -259,8 +259,8 @@ const char *help_on_lhs_grammar[] = {
 
 Symbol *make_symbol_for_lexeme (agent* thisAgent, Lexeme* lexeme, bool allow_lti) {
   switch (lexeme->type) {
-  case SYM_CONSTANT_LEXEME:  return make_sym_constant (thisAgent, lexeme->string);
-  case VARIABLE_LEXEME:  return make_variable (thisAgent, lexeme->string);
+  case SYM_CONSTANT_LEXEME:  return make_sym_constant (thisAgent, lexeme->string());
+  case VARIABLE_LEXEME:  return make_variable (thisAgent, lexeme->string());
   case INT_CONSTANT_LEXEME:  return make_int_constant (thisAgent, lexeme->int_val);
   case FLOAT_CONSTANT_LEXEME:  return make_float_constant (thisAgent, lexeme->float_val);
 
@@ -287,7 +287,7 @@ Symbol *make_symbol_for_lexeme (agent* thisAgent, Lexeme* lexeme, bool allow_lti
 	  break;
   default:
     { char msg[BUFFER_MSG_SIZE];
-    SNPRINTF(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_lexeme\n, lexeme->string=%s\n", lexeme->string);
+    SNPRINTF(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_lexeme\n, lexeme->string()=%s\n", lexeme->string());
     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
     abort_with_fatal_error(thisAgent, msg);
     }
@@ -811,13 +811,13 @@ test parse_head_of_conds_for_one_id (agent* thisAgent, Lexer* lexer, char first_
 
 	/* --- look for goal/impasse indicator --- */
 	if (lexer->current_lexeme.type==SYM_CONSTANT_LEXEME) {
-		if (!strcmp(lexer->current_lexeme.string,"state")) {
+		if (!strcmp(lexer->current_lexeme.string(),"state")) {
 			allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
 			ct->type = GOAL_ID_TEST;
 			id_goal_impasse_test = make_test_from_complex_test(ct);
 			lexer->get_lexeme();
 			first_letter_if_no_id_given = 's';
-		} else if (!strcmp(lexer->current_lexeme.string,"impasse")) {
+		} else if (!strcmp(lexer->current_lexeme.string(),"impasse")) {
 			allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
 			ct->type = IMPASSE_ID_TEST;
 			id_goal_impasse_test = make_test_from_complex_test(ct);
@@ -1153,15 +1153,15 @@ rhs_value parse_function_call_after_lparen (agent* thisAgent, Lexer* lexer,
   /* --- read function name, find the rhs_function structure --- */
   if (lexer->current_lexeme.type==PLUS_LEXEME) fun_name = find_sym_constant (thisAgent, "+");
   else if (lexer->current_lexeme.type==MINUS_LEXEME) fun_name = find_sym_constant (thisAgent, "-");
-  else fun_name = find_sym_constant (thisAgent, lexer->current_lexeme.string);
+  else fun_name = find_sym_constant (thisAgent, lexer->current_lexeme.string());
   if (!fun_name) {
-    print (thisAgent, "No RHS function named %s\n",lexer->current_lexeme.string);
+    print (thisAgent, "No RHS function named %s\n",lexer->current_lexeme.string());
     lexer->print_location_of_most_recent_lexeme();
     return NIL;
   }
   rf = lookup_rhs_function (thisAgent, fun_name);
   if (!rf) {
-    print (thisAgent, "No RHS function named %s\n",lexer->current_lexeme.string);
+    print (thisAgent, "No RHS function named %s\n",lexer->current_lexeme.string());
     lexer->print_location_of_most_recent_lexeme();
     return NIL;
   }
@@ -1169,13 +1169,13 @@ rhs_value parse_function_call_after_lparen (agent* thisAgent, Lexer* lexer,
   /* --- make sure stand-alone/rhs_value is appropriate --- */
   if (is_stand_alone_action && (! rf->can_be_stand_alone_action)) {
     print (thisAgent, "Function %s cannot be used as a stand-alone action\n",
-           lexer->current_lexeme.string);
+           lexer->current_lexeme.string());
     lexer->print_location_of_most_recent_lexeme();
     return NIL;
   }
   if ((! is_stand_alone_action) && (! rf->can_be_rhs_value)) {
     print (thisAgent, "Function %s can only be used as a stand-alone action\n",
-           lexer->current_lexeme.string);
+           lexer->current_lexeme.string());
     lexer->print_location_of_most_recent_lexeme();
     return NIL;
   }
@@ -1756,7 +1756,7 @@ action *parse_rhs_action (agent* thisAgent, Lexer* lexer) {
 	  }
 	}
 	else {
-		var = make_variable (thisAgent, lexer->current_lexeme.string);
+		var = make_variable (thisAgent, lexer->current_lexeme.string());
 	}
 
 	lexer->get_lexeme();
@@ -1892,7 +1892,7 @@ production *parse_production (agent* thisAgent, const char* prod_string, unsigne
     lexer.print_location_of_most_recent_lexeme();
     return NIL;
   }
-  name = make_sym_constant (thisAgent, lexer.current_lexeme.string);
+  name = make_sym_constant (thisAgent, lexer.current_lexeme.string());
   lexer.get_lexeme();
 
   /* --- if there's already a prod with this name, excise it --- */
@@ -1902,7 +1902,7 @@ production *parse_production (agent* thisAgent, const char* prod_string, unsigne
 
   /* --- read optional documentation string --- */
   if (lexer.current_lexeme.type==QUOTED_STRING_LEXEME) {
-    documentation = make_memory_block_for_string (thisAgent, lexer.current_lexeme.string);
+    documentation = make_memory_block_for_string (thisAgent, lexer.current_lexeme.string());
     lexer.get_lexeme();
   } else {
     documentation = NIL;
@@ -1914,32 +1914,32 @@ production *parse_production (agent* thisAgent, const char* prod_string, unsigne
   interrupt_on_match = FALSE;
   while (TRUE) {
     if (lexer.current_lexeme.type!=SYM_CONSTANT_LEXEME) break;
-    if (!strcmp(lexer.current_lexeme.string,":o-support")) {
+    if (!strcmp(lexer.current_lexeme.string(),":o-support")) {
       declared_support = DECLARED_O_SUPPORT;
       lexer.get_lexeme();
       continue;
     }
-    if (!strcmp(lexer.current_lexeme.string,":i-support")) {
+    if (!strcmp(lexer.current_lexeme.string(),":i-support")) {
       declared_support = DECLARED_I_SUPPORT;
       lexer.get_lexeme();
       continue;
     }
-    if (!strcmp(lexer.current_lexeme.string,":chunk")) {
+    if (!strcmp(lexer.current_lexeme.string(),":chunk")) {
       prod_type = CHUNK_PRODUCTION_TYPE;
       lexer.get_lexeme();
       continue;
     }
-    if (!strcmp(lexer.current_lexeme.string,":default")) {
+    if (!strcmp(lexer.current_lexeme.string(),":default")) {
       prod_type = DEFAULT_PRODUCTION_TYPE;
       lexer.get_lexeme();
       continue;
     }
-    if (!strcmp(lexer.current_lexeme.string,":template")) {
+    if (!strcmp(lexer.current_lexeme.string(),":template")) {
       prod_type = TEMPLATE_PRODUCTION_TYPE;
       lexer.get_lexeme();
       continue;
     }
-	if (!strcmp(lexer.current_lexeme.string, ":interrupt")) {
+	if (!strcmp(lexer.current_lexeme.string(), ":interrupt")) {
 	  interrupt_on_match = TRUE;
 	  lexer.get_lexeme();
 	  continue;
