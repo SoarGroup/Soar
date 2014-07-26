@@ -1038,7 +1038,8 @@ TEST_DEFINITION( testSimpleCopy )
 	//std::cout << m_pAgent->ExecuteCommandLine("print --depth 5 s1 --tree") << std::endl;
 
 	// Test the iterator
-	sml::Identifier* pOutputLink = m_pAgent->GetOutputLink();
+	sml::Identifier* pOutputLink;
+	CPPUNIT_ASSERT( pOutputLink = m_pAgent->GetOutputLink() );
 	sml::Identifier::ChildrenIter iter = pOutputLink->GetChildrenBegin();
 	sml::WMElement* pTextOutputWME = 0;
 	while( iter != pOutputLink->GetChildrenEnd() )
