@@ -47,7 +47,12 @@ def gcc_version(cc):
 	Exit(1)
 
 def vc_version():
-	p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
+	try:
+		p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
+	except WindowsError as e:
+		print "error running link.exe: {0}".format(e.strerror)
+		print 'make sure Microsoft Visual C++ is installed and you are using the Visual Studio Command Prompt'
+		Exit(1)
 	line = p.stdout.readline()
 	# for line in iter(p.stdout.readline, b''):
 	# 	print line,
@@ -59,6 +64,14 @@ def vc_version():
 
 	print 'cannot identify compiler version'
 	Exit(1)
+
+#run cl (MSVC compiler) and return the target architecture (x64 or x86)
+def cl_target_arch():
+    cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    for line in cl.stdout:
+        if re.search('x64', line):
+            return 'x64'
+    return 'x86'
 
 def Mac_m64_Capable():
 	return execute('sysctl -n hw.optional.x86_64'.split()).strip() == '1'
@@ -111,6 +124,8 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
 
+AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Active TCL (>= 8.6) libraries')
+
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
 AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
@@ -118,8 +133,11 @@ AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable 
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 
 msvc_version = "12.0"
+cl_target_architecture = ''
 if sys.platform == 'win32':
-	msvc_version = vc_version()
+    msvc_version = vc_version()
+    cl_target_architecture = cl_target_arch()
+    print "MSVC compiler target architecture is", cl_target_architecture
 
 env = Environment(
 	MSVC_VERSION=msvc_version,
@@ -246,22 +264,19 @@ Export('env')
 g_msvs_variant = 'Debug|Win32'
 
 if 'MSVSSolution' in env['BUILDERS']:
-	msvs_projs = []
-	Export('msvs_projs')
+    msvs_projs = []
+    Export('msvs_projs')
 
-	cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-	for line in cl.stdout:
-		if re.search('x64', line):
-			if GetOption('opt'):
-				g_msvs_variant = 'Release|x64'
-			else:
-				g_msvs_variant = 'Debug|x64'
-		else:
-			if GetOption('opt'):
-				g_msvs_variant = 'Release|Win32'
-			else:
-				g_msvs_variant = 'Debug|Win32'
-		break
+    if (cl_target_architecture == 'x64'):
+        if GetOption('opt'):
+            g_msvs_variant = 'Release|x64'
+        else:
+            g_msvs_variant = 'Debug|x64'
+    else:
+        if GetOption('opt'):
+            g_msvs_variant = 'Release|Win32'
+        else:
+            g_msvs_variant = 'Debug|Win32'
 
 Export('g_msvs_variant')
 
