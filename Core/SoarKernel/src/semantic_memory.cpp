@@ -3883,7 +3883,7 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
         std::string num;
         to_string(clause_count, num);
         
-        (*err_msg) = new std::string("Error parsing clause #");
+        (*err_msg)->append("Error parsing clause #");
         (*err_msg)->append(num);
     }
     
@@ -3973,7 +3973,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             bool minus = false;
 
             //Loop as long as positive or negative cues keep popping up.
-            while (thisAgent->lexeme.type == UP_ARROW_LEXEME || thisAgent->lexeme.type == MINUS_LEXEME)
+            while (good_cue && (thisAgent->lexeme.type == UP_ARROW_LEXEME || thisAgent->lexeme.type == MINUS_LEXEME))
             {
                 if (thisAgent->lexeme.type == MINUS_LEXEME)
                 {
@@ -4224,7 +4224,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
     }
     else
     {
-        (*err_msg) = new std::string("Error: No LTI found for that letter and number.");
+        (*err_msg)->append("Error: No LTI found for that letter and number.");
     }
 
     soar_module::symbol_triple_list retrieval_wmes;
@@ -4315,7 +4315,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
             }
 
             //Now we process attributes one at a time.
-            while (thisAgent->lexeme.type == UP_ARROW_LEXEME && good_command)
+            while (thisAgent->lexeme.type == UP_ARROW_LEXEME && (good_command || force))
             {
                 get_lexeme(thisAgent);// Consume the up arrow.
 
@@ -4337,11 +4337,12 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                 if (attribute == NIL)
                 {
                     good_command = false;
-                    break;
+                    (*err_msg)->append("Error: Attribute was not found.");
                 }
                 else
                 {
                     get_lexeme(thisAgent);//Consume the attribute.
+                    good_command = true;
                 }
 
                 if (good_command && (thisAgent->lexeme.type != UP_ARROW_LEXEME && thisAgent->lexeme.type != R_PAREN_LEXEME)) //If there are values.
@@ -4375,6 +4376,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                             }
                             else
                             {
+                                (*err_msg)->append("Error: '@' should be followed by an identifier.");
                                 good_command = false;
                                 break;
                             }
@@ -4382,6 +4384,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         else
                         {
                             good_command = (thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME);
+                            (*err_msg)->append("Error: Expected ')' or '^'.");
                         }
 
                         if (value != NIL && good_command) //Value might be nil, but that can be just fine.
@@ -4405,8 +4408,21 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                                     {
                                         delete *values;
                                         (*(children.find(attribute))).second->erase(values);
+                                        break;
                                     }
                                 }
+                            }
+                            if (values == (children.find(attribute))->second->end())
+                            {
+                                (*err_msg)->append("Error: Value does not exist on attribute.");
+                            }
+                        }
+                        else
+                        {
+                            if (good_command && !force)
+                            {
+                                (*err_msg)->append("Error: Attribute contained a value that could not be found.");
+                                break;
                             }
                         }
                     } while (good_command && (value != NIL || !(thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME)));
@@ -4420,6 +4436,13 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         delete *values;
                     }
                     children.erase(attribute);
+                }
+                if (force)
+                {
+                    while ((thisAgent->lexeme.type != EOF_LEXEME && thisAgent->lexeme.type != UP_ARROW_LEXEME) && thisAgent->lexeme.type != R_PAREN_LEXEME) //Loop until the lexeme is EOF, another ^, or ")".
+                    {
+                        get_lexeme(thisAgent);
+                    }
                 }
             }
         }

@@ -287,6 +287,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         else
         {
             PrintCLIMessage(retrieved);
+            PrintCLIMessage(err);
             PrintCLIMessage("SMem| Removal complete.");
         }
         delete err;
