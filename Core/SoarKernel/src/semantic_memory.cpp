@@ -3935,6 +3935,8 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     while((thisAgent->lexeme.type == L_PAREN_LEXEME) && good_cue )
     {
         //First, consume the left paren.
+        get_lexeme(thisAgent);
+
         if (trigger_first)
         {
             good_cue = thisAgent->lexeme.type == VARIABLE_LEXEME;
@@ -4023,6 +4025,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
                 //consume the attribute.
                 get_lexeme(thisAgent);
+                bool hasAddedValue = false;
 
                 do //Add value by type
                 {
@@ -4068,7 +4071,12 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     }
                     else
                     {
-                        if ((thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME) || thisAgent->lexeme.type == MINUS_LEXEME)
+                        if (((thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME) || thisAgent->lexeme.type == MINUS_LEXEME) && hasAddedValue)
+                        {
+                            good_cue = true;
+                            break;
+                        }
+                        else
                         {
                             good_cue = false;
                             break;
@@ -4077,6 +4085,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
                     if (value != NIL && good_cue)
                     {//Value might be nil, but R_paren or next attribute could make it a good cue.
+                        hasAddedValue = true;
                         if (minus)
                         {
                             temp_wme = make_wme(thisAgent, negative_cues, attribute, value, false);
