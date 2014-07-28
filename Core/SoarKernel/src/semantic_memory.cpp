@@ -5668,6 +5668,8 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, st
     
     soar_module::sqlite_statement* lti_q = thisAgent->smem_stmts->lti_letter_num;
     soar_module::sqlite_statement* act_q = thisAgent->smem_stmts->vis_lti_act;
+    soar_module::sqlite_statement* hist_q = thisAgent->smem_stmts->history_get;
+    soar_module::sqlite_statement* lti_access_q = thisAgent->smem_stmts->lti_access_get;
     unsigned int i;
     
     
@@ -5694,7 +5696,34 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, st
             act_q->bind_int(1, c.first);
             act_q->execute();
             
-            next = _smem_print_lti(thisAgent, c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val);
+            //Look up activation history.
+            std::list<uint64_t> access_history;
+            if (history)
+            {
+                lti_access_q->bind_int(1, c.first);
+                lti_access_q->execute();
+                uint64_t n = lti_access_q->column_int(0);
+                lti_access_q->reinitialize();
+                hist_q->bind_int(1, c.first);
+                hist_q->execute();
+                for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
+                {
+                    if (thisAgent->smem_stmts->history_get->column_int(i) != 0)
+                    {
+                        access_history.push_back(hist_q->column_int(i));
+                    }
+                }
+                hist_q->reinitialize();
+            }
+
+            if (history && !access_history.empty())
+            {
+                next = _smem_print_lti(thisAgent, c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val, &(access_history));
+            }
+            else
+            {
+                next = _smem_print_lti(thisAgent, c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val);
+            }
             
             // done with lookup
             lti_q->reinitialize();
