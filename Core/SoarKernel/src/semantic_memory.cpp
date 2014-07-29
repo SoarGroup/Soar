@@ -2120,7 +2120,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
     Symbol* result_header;
     if (install_type == wm_install)
     {
-        Symbol* result_header = state->id->smem_result_header;
+        result_header = state->id->smem_result_header;
     }
     
     // get identifier if not known
@@ -2146,7 +2146,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
     }
     
     // point retrieved to lti
-    if (install_type = wm_install)
+    if (install_type == wm_install)
     {
         smem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->smem_sym_retrieved, lti);
     }
