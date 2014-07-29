@@ -5,6 +5,7 @@
 #include "svs.h"
 #include "scene.h"
 #include "filter_table.h"
+#include "symtab.h"
 
 using namespace std;
 

@@ -165,6 +165,21 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
 
 //
 
+/*This is a test of whether or not the SMEM database with no version number is the one
+that smem_update_schema_one_to_two can convert
+
+It tests for the existence of a table name to determine if this is the old version.
+-scijones 2013*/
+inline bool smem_version_one(agent *thisAgent) {
+    double check_num_tables;
+    thisAgent->smem_db->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'",check_num_tables);
+    if(check_num_tables==0)
+    {
+        return false;
+    }
+    return true;
+}
+
 smem_path_param::smem_path_param(const char* new_name, const char* new_value, soar_module::predicate<const char*>* new_val_pred, soar_module::predicate<const char*>* new_prot_pred, agent* new_agent): soar_module::string_param(new_name, new_value, new_val_pred, new_prot_pred), thisAgent(new_agent) {}
 
 void smem_path_param::set_value(const char* new_value)
@@ -173,8 +188,68 @@ void smem_path_param::set_value(const char* new_value)
        that switching databases and database modes on the fly seems to work, there's
        no need to attach special significance to the first time the path is set.
        MMA 2013 */
-    
-    value->assign(new_value);
+
+        /* So, as it turns out, the first time you set the path, it is nice to check that
+           the database is the right version, so you can warn someone before they try to
+           use it that conversion will take some time. That way, they can then switch to
+           another before dedicating that time.
+           scijones 2014*/
+    value->assign( new_value );
+
+    const char *db_path;
+    db_path = thisAgent->smem_params->path->get_value();
+    bool attempt_connection_here = thisAgent->smem_db->get_status() == soar_module::disconnected;
+    if (attempt_connection_here)
+    {
+        thisAgent->smem_db->connect( db_path );
+    }
+
+    if ( thisAgent->smem_db->get_status() == soar_module::problem )
+    {
+        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->smem_db->get_errmsg() );
+    }
+    else
+    {
+        // temporary queries for one-time init actions
+        soar_module::sqlite_statement *temp_q = NULL;
+
+        // If the database is on file, make sure the database contents use the current schema
+        // If it does not, switch to memory-based database
+
+        if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
+        {
+            bool sql_is_new;
+            std::string schema_version;
+            if (thisAgent->smem_db->sql_is_new_db(sql_is_new))
+            {
+                if (!sql_is_new)
+                {   // Check if table exists already
+                    temp_q = new soar_module::sqlite_statement( thisAgent->smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)" );
+                    temp_q->prepare();
+                    if ( temp_q->get_status() == soar_module::ready )
+                    {
+                        if (!thisAgent->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version ))
+                        {
+                            if (smem_version_one(thisAgent))
+                            {
+                                print(thisAgent,"...You have selected a database with an old version.\n"
+                                        "...If you proceed, the database will be converted to a\n"
+                                        "...new version when the database is initialized.\n"
+                                        "...Conversion can take a large amount of time with large databases.\n");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        delete temp_q;
+        temp_q = NULL;
+    }
+    if (attempt_connection_here)
+    {
+        thisAgent->smem_db->disconnect();
+    }
 }
 
 //
@@ -2811,11 +2886,11 @@ void smem_reset(agent* thisAgent, Symbol* state)
         data->last_cmd_time[1] = 0;
         data->last_cmd_count[0] = 0;
         data->last_cmd_count[1] = 0;
-        
+
         // this will be called after prefs from goal are already removed,
         // so just clear out result stack
         data->smem_wmes->clear();
-        
+
         state = state->id->lower_goal;
     }
 }
@@ -2826,6 +2901,75 @@ void smem_switch_to_memory_db(agent* thisAgent, std::string& buf)
     thisAgent->smem_db->disconnect();
     thisAgent->smem_params->database->set_value(smem_param_container::memory);
     smem_init_db(thisAgent);
+}
+
+//Supposing a database exists with the old version, this should update it. - Steven Jones
+inline void smem_update_schema_one_to_two(agent *thisAgent)
+{
+	thisAgent->smem_db->sql_execute("BEGIN TRANSACTION");
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY,symbol_type INTEGER)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_type (s_id, symbol_type) SELECT id, sym_type FROM smem7_symbols_type");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_type");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY,symbol_value TEXT)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_string (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_str");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_str");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY,symbol_value INTEGER)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_integer (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_int");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_int");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_ascii (ascii_num INTEGER PRIMARY KEY,ascii_chr TEXT)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_ascii (ascii_num, ascii_chr) SELECT ascii_num, ascii_num FROM smem7_ascii");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_ascii");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY,symbol_value REAL)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_float");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,soar_letter INTEGER,soar_number INTEGER,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_lti (lti_id, soar_letter, soar_number, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, letter, num, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_lti");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY,t1 INTEGER,t2 INTEGER,t3 INTEGER,t4 INTEGER,t5 INTEGER,t6 INTEGER,t7 INTEGER,t8 INTEGER,t9 INTEGER,t10 INTEGER)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_activation_history (lti_id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) SELECT id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10 FROM smem7_history");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_history");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_augmentations (lti_id INTEGER,attribute_s_id INTEGER,value_constant_s_id INTEGER,value_lti_id INTEGER,activation_value REAL)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value) SELECT parent_id, attr, val_const, val_lti, act_value FROM smem7_web");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_web");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY,edge_frequency INTEGER)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) SELECT attr, ct FROM smem7_ct_attr");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_attr");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_wmes_constant_frequency (attribute_s_id INTEGER,value_constant_s_id INTEGER,edge_frequency INTEGER)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) SELECT attr, val_const, ct FROM smem7_ct_const");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_const");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_wmes_lti_frequency (attribute_s_id INTEGER,value_lti_id INTEGER,edge_frequency INTEGER)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) SELECT attr, val_lti, ct FROM smem7_ct_lti");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_lti");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
+	thisAgent->smem_db->sql_execute("INSERT INTO smem_persistent_variables (variable_id, variable_value) SELECT id, value FROM smem7_vars");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_vars");
+
+	thisAgent->smem_db->sql_execute("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+	thisAgent->smem_db->sql_execute("INSERT INTO versions (system, version_number) VALUES ('smem_schema','2.0')");
+	thisAgent->smem_db->sql_execute("DROP TABLE smem7_signature");
+
+	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_int_const ON smem_symbols_integer (symbol_value)");
+	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
+	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
+	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
+	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter,soar_number)");
+	thisAgent->smem_db->sql_execute("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
+	thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
+	thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
+	thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
+	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
+	thisAgent->smem_db->sql_execute("COMMIT");
 }
 
 // opens the SQLite database and performs all initialization required for the current mode
@@ -2912,15 +3056,41 @@ void smem_init_db(agent* thisAgent)
                         }
                         else
                         {
-                            version_error_message.assign("...Error: Cannot read version number from file-based semantic memory database.\n"
-                                                         "...Switching to memory-based database.\n");
+                            version_error_message.assign("...Error: Cannot read version number from file-based semantic memory database.\n");
+                            if (smem_version_one(thisAgent))
+                            {
+								version_error_message.assign("...Version of semantic memory database is old.\n"
+										                     "...Converting to version 2.0.\n" );
+								smem_update_schema_one_to_two(thisAgent);
+								switch_to_memory = false;
+								tabula_rasa = false;
+								delete temp_q;
+								temp_q = NULL;
+							}
+                            else
+                            {
+								version_error_message.assign("...Switching to memory-based database.\n");
+							}
                         }
                     }
                     else     // Non-empty database exists with no version table.  Probably schema 1.0
                     {
-                        version_error_message.assign("...Error: Cannot load a semantic memory database with an old schema version.\n...Please convert "
-                                                     "old semantic memory database or start a new database by setting a new database file path.\n...Switching "
-                                                     "to memory-based database.\n");
+                        if (smem_version_one(thisAgent))
+                        {
+                            version_error_message.assign("...Version of semantic memory database is old.\n"
+                                    "...Converting to version 2.0.\n" );
+                            smem_update_schema_one_to_two(thisAgent);
+                            switch_to_memory = false;
+                            tabula_rasa = false;
+                            delete temp_q;
+                            temp_q = NULL;
+                        }
+                        else
+                        {
+                            version_error_message.assign("...Error: Cannot load a semantic memory database with an old schema version.\n...Please convert "
+                                                         "old semantic memory database or start a new database by setting a new database file path.\n...Switching "
+                                                         "to memory-based database.\n");
+                        }
                     }
                     delete temp_q;
                     temp_q = NULL;

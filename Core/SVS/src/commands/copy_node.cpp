@@ -5,6 +5,7 @@
 #include "svs.h"
 #include "scene.h"
 #include "soar_interface.h"
+#include "symtab.h"
 
 using namespace std;
 
