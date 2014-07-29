@@ -23,27 +23,38 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int64_t* pCount, const std::string* pPrefix)
+bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkFormat, const int64_t* pCount, const std::string* pPrefix)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (!pLongFormat && !pCount && !pPrefix)
+    if (!pChunkFormat && !pCount && !pPrefix)
     {
         if (m_RawOutput)
         {
-            m_Result << "Using " << (thisAgent->sysparams[USE_LONG_CHUNK_NAMES] ? "long" : "short") << " chunk format.";
+            m_Result << "Using " ;
+            switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format()) {
+                case numberedFormat:
+                    m_Result << "numbered chunk format.";
+                    break;
+                case longFormat:
+                    m_Result << "long chunk format.";
+                    break;
+                case ruleFormat:
+                    m_Result << "rule-based chunk format.";
+                    break;
+            }
         }
         else
         {
-            AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, thisAgent->sysparams[USE_LONG_CHUNK_NAMES] ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format() == longFormat) ? sml_Names::kTrue : sml_Names::kFalse);
         }
         return true;
     }
-    
-    if (pLongFormat)
+
+    if (pChunkFormat)
     {
-        set_sysparam(thisAgent, USE_LONG_CHUNK_NAMES, *pLongFormat);
+        Soar_Instance::Get_Soar_Instance().Set_Chunk_Name_Format(*pChunkFormat);
     }
-    
+
     if (pCount)
     {
         if (*pCount >= 0)
@@ -52,12 +63,12 @@ bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int6
             {
                 return SetError("Cannot set count greater than the max-chunks sysparam.");
             }
-            
+
             if (static_cast<uint64_t>(*pCount) < thisAgent->chunk_count)
             {
                 return SetError("Cannot set chunk count less than the current number of chunks.");
             }
-            
+
             thisAgent->chunk_count = static_cast<uint64_t>(*pCount);
         }
         else
@@ -74,7 +85,7 @@ bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int6
             }
         }
     }
-    
+
     if (pPrefix)
     {
         if (pPrefix->size())
@@ -83,9 +94,9 @@ bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int6
             {
                 return SetError("Failed to set prefix (does it contain a '*'?).");
             }
-            
+
             strcpy(thisAgent->chunk_name_prefix, pPrefix->c_str());
-            
+
         }
         else
         {
@@ -104,6 +115,6 @@ bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int6
             }
         }
     }
-    
+
     return true;
 }

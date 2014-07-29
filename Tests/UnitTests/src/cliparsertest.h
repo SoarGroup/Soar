@@ -8,7 +8,7 @@ class CliAdapter : public cli::Cli
 {
     public:
         virtual ~CliAdapter() {}
-        
+
         virtual bool SetError(const std::string& error)
         {
             return false;
@@ -37,7 +37,7 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0)
+        virtual bool DoChunkNameFormat(const chunkNameFormats* chunkNameFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0)
         {
             return false;
         }
@@ -331,13 +331,13 @@ class CliEcho : public CliAdapter
 {
     public:
         virtual ~CliEcho() {}
-        
+
         void SetExpected(unsigned numArgs, bool newLine)
         {
             this->numArgs = numArgs;
             this->newLine = newLine;
         }
-        
+
         virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline)
         {
             return (argv.size() == numArgs) && (echoNewline == newLine);
@@ -351,12 +351,12 @@ class CliMaxDCTime : public CliAdapter
 {
     public:
         virtual ~CliMaxDCTime() {}
-        
+
         void SetExpected(int n)
         {
             this->n = n;
         }
-        
+
         virtual bool DoMaxDCTime(const int n)
         {
             return this->n == n;

@@ -254,7 +254,6 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
     thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = true;  /* AGR 627 */
     thisAgent->sysparams[EXPLAIN_SYSPARAM] = false; /* KJC 7/96 */
-    thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = true;  /* kjh(B14) */
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
 

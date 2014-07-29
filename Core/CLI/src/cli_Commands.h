@@ -360,10 +360,11 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'c', "count",        OPTARG_OPTIONAL},
-                    {'l', "long",        OPTARG_NONE},
-                    {'p', "prefix",        OPTARG_OPTIONAL},
-                    {'s', "short",        OPTARG_NONE},
+                    {'c', "count",    OPTARG_OPTIONAL},
+                    {'l', "long",     OPTARG_NONE},
+                    {'n', "numbered", OPTARG_NONE},
+                    {'p', "prefix",   OPTARG_OPTIONAL},
+                    {'r', "rule",     OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -372,7 +373,7 @@ namespace cli
                 int64_t count = -1;
                 bool patternFlag = false;
                 std::string pattern;
-                bool longFormat = true;
+                chunkNameFormats chunkFormat = ruleFormat;
 
                 for (;;)
                 {
@@ -407,11 +408,15 @@ namespace cli
                             break;
                         case 'l':
                             changeFormat = true;
-                            longFormat = true;
+                            chunkFormat = longFormat;
                             break;
-                        case 's':
+                        case 'r':
                             changeFormat = true;
-                            longFormat = false;
+                            chunkFormat = ruleFormat;
+                            break;
+                        case 'n':
+                            changeFormat = true;
+                            chunkFormat = numberedFormat;
                             break;
                     }
                 }
@@ -421,7 +426,7 @@ namespace cli
                     return cli.SetError(GetSyntax());
                 }
 
-                return cli.DoChunkNameFormat(changeFormat ? &longFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
+                return cli.DoChunkNameFormat(changeFormat ? &chunkFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
             }
 
         private:

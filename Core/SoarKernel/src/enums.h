@@ -59,6 +59,12 @@ enum TraceMode
     num_trace_modes
 };
 
+enum chunkNameFormats {
+    numberedFormat,
+    longFormat,
+    ruleFormat
+};
+
 enum MessageType
 {
     debug_msg,
