@@ -2689,7 +2689,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                 
                 more_rows = (q->execute() == soar_module::row);
             }
-            
+            bool first_element = false;
             while (((match_ids->size() < number_to_retrieve) || (needFullSearch)) && ((more_rows) || (!plentiful_parents.empty())))
             {
                 // choose next candidate (db vs. priority queue)
@@ -2802,8 +2802,13 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                     
                     if (good_cand)
                     {
+                        king_id = cand;
+                        first_element = true;
                         match_ids->push_back(cand);
                         prohibit->insert(cand);
+                    }
+                    if (good_cand && first_element)
+                    {
                         for (smem_weighted_cue_list::iterator wce = weighted_cue.begin(); wce != weighted_cue.end(); wce++)
                         {
                             if ((*wce)->mathElement != NIL)
@@ -2812,7 +2817,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                             }
                         }
                     }
-                    else
+                    else if (first_element)
                     {
                         for (smem_weighted_cue_list::iterator wce = weighted_cue.begin(); wce != weighted_cue.end(); wce++)
                         {
@@ -2824,10 +2829,10 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                     }
                 }
             }
-            if (!match_ids->empty())
-            {
-                king_id = match_ids->front();
-            }
+//            if (!match_ids->empty())
+//            {
+//                king_id = match_ids->front();
+//            }
         }
         q->reinitialize();
         
