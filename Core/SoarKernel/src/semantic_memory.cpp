@@ -4051,27 +4051,21 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     {
                         //If the LTI isn't recognized, then it cannot be a good cue.
                         get_lexeme(thisAgent);
-                        value = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
-                        if (value == NIL)
+                        smem_lti_id value_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                        if (value_id == NIL)
                         {
                             good_cue = false;
+                            (*err_msg)->append("Error: LTI was not found.\n");
                             break;
+                        }
+                        else
+                        {
+                            value = smem_lti_soar_make(thisAgent, value_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
                         }
                         get_lexeme(thisAgent);
                     }
-                    else if ((thisAgent->lexeme.type == VARIABLE_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME) || thisAgent->lexeme.type == AT_LEXEME)
+                    else if (thisAgent->lexeme.type == VARIABLE_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME)
                     {
-                        if (thisAgent->lexeme.type == AT_LEXEME)
-                        {
-                            get_lexeme(thisAgent);
-                            if (thisAgent->lexeme.type != IDENTIFIER_LEXEME)
-                            {
-                                good_cue = false;
-                                (*err_msg)->append("Error: '@' should be followed by an identifier.\n");
-                                break;
-                            }
-                        }
-
                         std::map<std::basic_string<char>, Symbol*>::iterator value_iterator;
                         value_iterator = cue_ids.find(thisAgent->lexeme.string);
 
