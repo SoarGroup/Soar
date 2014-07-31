@@ -26,6 +26,7 @@
 #include "rhs.h"
 #include "decide.h"
 #include "test.h"
+#include "tempmem.h"
 
 #include <list>
 #include <map>
