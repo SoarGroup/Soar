@@ -3923,7 +3923,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
     good_cue = thisAgent->lexeme.type == L_PAREN_LEXEME;
 
-    Symbol* root_cue_id;    //This is the id that gets passed to smem_process_query.
+    Symbol* root_cue_id = NIL;    //This is the id that gets passed to smem_process_query.
                             //It's main purpose is to contain augmentations
     Symbol* negative_cues;  //This is supposed to contain the negative augmentations.
 
@@ -3949,7 +3949,8 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             }
             else
             {
-                //Spit out that the cue must be a variable.
+                (*err_msg)->append("Error: The cue must be a variable.\n");//Spit out that the cue must be a variable.
+                break;
             }
 
             trigger_first = false;
@@ -3959,7 +3960,8 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             good_cue = cue_ids[thisAgent->lexeme.string] == root_cue_id;
             if (!good_cue)
             {
-                //Spit out that additional clauses must share the same variable as the original cue variable.
+                (*err_msg)->append("Error: Additional clauses must share same variable.\n");//Spit out that additional clauses must share the same variable as the original cue variable.
+                break;
             }
         }
 
@@ -4154,41 +4156,43 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     /*
      * Below is the clean-up
      */
+    if (root_cue_id != NIL)
+    {
+        slot*s;
 
-    slot*s;
+        for (s = root_cue_id->id->slots; s != NIL; s = s->next)
+        {//Remove all wme's from the slot.
+            wme* delete_wme;
+            for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
+            {
+                symbol_remove_ref(thisAgent, delete_wme->value);
+                deallocate_wme(thisAgent, delete_wme);
+            }
 
-    for (s = root_cue_id->id->slots; s != NIL; s = s->next)
-    {//Remove all wme's from the slot.
-        wme* delete_wme;
-        for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
-        {
-            symbol_remove_ref(thisAgent, delete_wme->value);
-            deallocate_wme(thisAgent, delete_wme);
-        }
+            s->wmes = NIL;
+            symbol_remove_ref(thisAgent, s->attr);
+            mark_slot_for_possible_removal(thisAgent, s);
+        }//End of for-slots loop.
+        root_cue_id->id->slots = NIL;
 
-        s->wmes = NIL;
-        symbol_remove_ref(thisAgent, s->attr);
-        mark_slot_for_possible_removal(thisAgent, s);
-    }//End of for-slots loop.
-    root_cue_id->id->slots = NIL;
+        for (s = negative_cues->id->slots; s != NIL; s = s->next)
+        {//Remove all wme's from the slot.
+            wme* delete_wme;
+            for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
+            {
+                symbol_remove_ref(thisAgent, delete_wme->value);
+                deallocate_wme(thisAgent, delete_wme);
+            }
 
-    for (s = negative_cues->id->slots; s != NIL; s = s->next)
-    {//Remove all wme's from the slot.
-        wme* delete_wme;
-        for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
-        {
-            symbol_remove_ref(thisAgent, delete_wme->value);
-            deallocate_wme(thisAgent, delete_wme);
-        }
+            s->wmes = NIL;
+            symbol_remove_ref(thisAgent, s->attr);
+            mark_slot_for_possible_removal(thisAgent, s);
+        }//End of for-slots loop.
+        negative_cues->id->slots = NIL;
 
-        s->wmes = NIL;
-        symbol_remove_ref(thisAgent, s->attr);
-        mark_slot_for_possible_removal(thisAgent, s);
-    }//End of for-slots loop.
-    negative_cues->id->slots = NIL;
-
-    symbol_remove_ref(thisAgent, root_cue_id);//gets rid of cue id.
-    symbol_remove_ref(thisAgent, negative_cues);//gets rid of negative cues id.
+        symbol_remove_ref(thisAgent, root_cue_id);//gets rid of cue id.
+        symbol_remove_ref(thisAgent, negative_cues);//gets rid of negative cues id.
+    }
 
     return good_cue;
 }
@@ -4395,7 +4399,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                             good_command = (thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME);
                             if (!good_command)
                             {
-                                (*err_msg)->append("Error: Expected ')' or '^'.\n");
+                                (*err_msg)->append("Error: Expected ')' or '^'.\n... The value was likely not found.\n");
                             }
                         }
 
@@ -4458,9 +4462,13 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                 }
             }
         }
-        if (good_command)
+        if (good_command && thisAgent->lexeme.type == R_PAREN_LEXEME)
         {
             smem_store_chunk(thisAgent, lti_id, &(children), true, NULL, false);
+        }
+        else if (good_command)
+        {
+            (*err_msg)->append("Error: Expected a ')'.\n");
         }
 
         //Clean up.
