@@ -254,7 +254,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (!result)
         {
-            SetError("Error while parsing query" + *err + ".");
+            SetError("Error while parsing query\n" + *err);
         }
         else
         {

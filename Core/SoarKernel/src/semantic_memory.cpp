@@ -4073,7 +4073,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     {
                         if (((thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME) || thisAgent->lexeme.type == MINUS_LEXEME) && hasAddedValue)
                         {
-                            good_cue = true;
+                            //good_cue = true;
                             break;
                         }
                         else
@@ -4233,7 +4233,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
     }
     else
     {
-        (*err_msg)->append("Error: No LTI found for that letter and number.");
+        (*err_msg)->append("Error: No LTI found for that letter and number.\n");
     }
 
     soar_module::symbol_triple_list retrieval_wmes;
@@ -4278,7 +4278,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         temp_chunk->soar_id = (*triple_ptr_iter)->value;
                         temp_val->val_lti.val_value = temp_chunk;
                     }
-                    else //If the value is nt an identifier, then it is a "constant".
+                    else //If the value is not an identifier, then it is a "constant".
                     {
                         smem_chunk_value_constant temp_const;
                         smem_chunk_value_lti temp_lti;
@@ -4346,7 +4346,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                 if (attribute == NIL)
                 {
                     good_command = false;
-                    (*err_msg)->append("Error: Attribute was not found.");
+                    (*err_msg)->append("Error: Attribute was not found.\n");
                 }
                 else
                 {
@@ -4385,7 +4385,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                             }
                             else
                             {
-                                (*err_msg)->append("Error: '@' should be followed by an identifier.");
+                                (*err_msg)->append("Error: '@' should be followed by an identifier.\n");
                                 good_command = false;
                                 break;
                             }
@@ -4393,7 +4393,10 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         else
                         {
                             good_command = (thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME);
-                            (*err_msg)->append("Error: Expected ')' or '^'.");
+                            if (!good_command)
+                            {
+                                (*err_msg)->append("Error: Expected ')' or '^'.\n");
+                            }
                         }
 
                         if (value != NIL && good_command) //Value might be nil, but that can be just fine.
@@ -4423,14 +4426,14 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                             }
                             if (values == (children.find(attribute))->second->end())
                             {
-                                (*err_msg)->append("Error: Value does not exist on attribute.");
+                                (*err_msg)->append("Error: Value does not exist on attribute.\n");
                             }
                         }
                         else
                         {
-                            if (good_command && !force)
+                            if ((good_command && !force) && (thisAgent->lexeme.type != R_PAREN_LEXEME && thisAgent->lexeme.type != UP_ARROW_LEXEME))
                             {
-                                (*err_msg)->append("Error: Attribute contained a value that could not be found.");
+                                (*err_msg)->append("Error: Attribute contained a value that could not be found.\n");
                                 break;
                             }
                         }
