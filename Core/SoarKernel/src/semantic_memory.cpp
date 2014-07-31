@@ -4059,8 +4059,19 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                         }
                         get_lexeme(thisAgent);
                     }
-                    else if (thisAgent->lexeme.type == VARIABLE_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+                    else if ((thisAgent->lexeme.type == VARIABLE_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME) || thisAgent->lexeme.type == AT_LEXEME)
                     {
+                        if (thisAgent->lexeme.type == AT_LEXEME)
+                        {
+                            get_lexeme(thisAgent);
+                            if (thisAgent->lexeme.type != IDENTIFIER_LEXEME)
+                            {
+                                good_cue = false;
+                                (*err_msg)->append("Error: '@' should be followed by an identifier.\n");
+                                break;
+                            }
+                        }
+
                         std::map<std::basic_string<char>, Symbol*>::iterator value_iterator;
                         value_iterator = cue_ids.find(thisAgent->lexeme.string);
 
