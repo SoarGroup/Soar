@@ -225,7 +225,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         if (lti_id == NIL)
         {
             smem_print_store(thisAgent, &(viz));
-            PrintCLIMessage_Header("Semantic Memory", 40);
+            if (!viz.empty())
+            {
+                PrintCLIMessage_Header("Semantic Memory", 40);
+            }
         }
         else
         {
@@ -270,9 +273,6 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         std::string *err = new std::string;
         std::string *retrieved = new std::string;
         bool force = false;
-        //I need to add here a check for the number of arguments, and if there is an extra one,
-        //check if it is the "force". If it is, then I need to pass a nondefault boolean argument to smem_parse_remove
-        //that tells the function to attempt to continue removing even when something doesn't seem right.
         if (pVal)
         {
             force = (!strcmp(pVal->c_str(),"f") || (!strcmp(pVal->c_str(),"force")));
