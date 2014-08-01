@@ -22,7 +22,7 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
             : typed_select_filter<const sgnode*>(root, si, input), scn(scn)
         {
         }
-        
+
         ~node_filter()
         {
             node_param_map::iterator i;
@@ -32,7 +32,7 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
                 i->first->unlisten(this);
             }
         }
-        
+
         bool compute(const filter_params* params, bool null_out, const sgnode*& out, bool& select, bool& changed)
         {
             //out = NULL;
@@ -45,10 +45,10 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
                 set_status("expecting parameter id");
                 return false;
             }
-            
-            
+
+
             sgnode* n = scn->get_node(id);
-            
+
             if (n == NULL)
             {
                 select = false;
@@ -79,20 +79,24 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
                     select = true;
                 }
             }
-            
+
             //cout << padd() << "Change " << (changed ? "T" : "F") << endl;
             //cout << padd() << "Select " << (select ? "T" : "F") << endl;
             //cout << padd() << "Node " << (out == NULL ? "NULL" : out->get_name()) << endl;
-            
+
             return true;
         }
         node_param_map nodes;
-        
+
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
         {
             //cout << padd() << "Change " << t << " on " << n->get_name() << endl;
             switch (t)
             {
+                case sgnode::CHILD_ADDED:
+                case sgnode::PROPERTY_CHANGED:
+                case sgnode::PROPERTY_DELETED:
+                    break;
                 case sgnode::SHAPE_CHANGED:
                 case sgnode::TRANSFORM_CHANGED:
                 case sgnode::DELETED:
@@ -108,10 +112,10 @@ class node_filter : public typed_select_filter<const sgnode*>, public sgnode_lis
                     break;
             }
         }
-        
-        
+
+
         scene* scn;
-        
+
 //  void node_update(sgnode *n, sgnode::change_type t, const std::string& update_info) {
 //      cout << "node_filter::node_update" << this << endl;
 //      cout << "  " << t << " on " << n->get_name() << endl;
@@ -171,7 +175,7 @@ class all_nodes_filter : public filter, public sgnode_listener
     public:
         all_nodes_filter(Symbol* root, soar_interface* si, scene* scn)
             : filter(root, si, NULL), scn(scn), first(true) {}
-            
+
         ~all_nodes_filter()
         {
             map<sgnode*, filter_val*>::iterator i;
@@ -179,24 +183,24 @@ class all_nodes_filter : public filter, public sgnode_listener
             {
                 i->first->unlisten(this);
             }
-            
+
             vector<sgnode*> nodes;
             scn->get_all_nodes(nodes);
             nodes[0]->unlisten(this);
         }
-        
+
         bool update_outputs()
         {
             vector<sgnode*> nodes;
-            
+
             if (!first)
             {
                 return true;
             }
-            
+
             scn->get_all_nodes(nodes);
             nodes[0]->listen(this);
-            
+
             for (int i = 1, iend = nodes.size(); i < iend; ++i) // don't add world node
             {
                 add_node(nodes[i]);
@@ -204,7 +208,7 @@ class all_nodes_filter : public filter, public sgnode_listener
             first = false;
             return true;
         }
-        
+
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
         {
             filter_val* r;
@@ -245,7 +249,7 @@ class all_nodes_filter : public filter, public sgnode_listener
                     break;
             }
         }
-        
+
     private:
         filter_val* add_node(sgnode* n)
         {
@@ -255,25 +259,25 @@ class all_nodes_filter : public filter, public sgnode_listener
             add_output(r, NULL);
             return r;
         }
-        
+
         scene* scn;
         bool first;
-        
+
         map<sgnode*, filter_val*> outputs;
 };
 
 class remove_node_filter : public typed_select_filter<const sgnode*>
 {
     public:
-        remove_node_filter(Symbol* root, soar_interface* si, filter_input* input)
+        remove_node_filter(Symbol* root, soar_interface* si, filter_input* input, scene* scn)
             : typed_select_filter<const sgnode*>(root, si, input), scn(scn)
         {}
-        
+
         bool compute(const filter_params* p, bool null_out, const sgnode*& out, bool& select, bool& changed)
         {
             const sgnode* a;
             const sgnode* b;
-            
+
             if (!get_filter_param(this, p, "a", a))
             {
                 set_status("expecting parameter a");
@@ -284,7 +288,7 @@ class remove_node_filter : public typed_select_filter<const sgnode*>
                 set_status("expecting parameter b");
                 return false;
             }
-            
+
             out = a;
             select = (a != b);
             if (select)
@@ -292,12 +296,12 @@ class remove_node_filter : public typed_select_filter<const sgnode*>
                 // We always say a selected node has changed, so that changes from below get propagated
                 changed = true;
             }
-            
+
             return true;
         }
-        
+
     private:
-    
+
         scene* scn;
 };
 
@@ -307,16 +311,16 @@ class node_centroid_filter : public typed_map_filter<vec3>
         node_centroid_filter(Symbol* root, soar_interface* si, filter_input* input)
             : typed_map_filter<vec3>(root, si, input)
         {}
-        
+
         bool compute(const filter_params* params, bool adding, vec3& res, bool& changed)
         {
             const sgnode* n;
-            
+
             if (!get_filter_param(this, params, "node", n))
             {
                 return false;
             }
-            
+
             vec3 newres = n->get_centroid();
             changed = (newres != res);
             res = newres;
@@ -341,7 +345,7 @@ filter* make_node_centroid_filter(Symbol* root, soar_interface* si, scene* scn, 
 
 filter* make_remove_node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
-    return new remove_node_filter(root, si, input);
+    return new remove_node_filter(root, si, input, scn);
 }
 
 filter_table_entry* node_fill_entry()
