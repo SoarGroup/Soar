@@ -24,20 +24,6 @@
 #include "symtab.h"
 
 using namespace std;
-#include <sys/time.h>
-#include <unistd.h>
-long getTime()
-{
-    struct timeval curTime;
-    gettimeofday(&curTime, NULL);
-    return (curTime.tv_sec % 1000) * 1000000 + curTime.tv_usec;
-}
-long recordTime(long startTime, const char* message)
-{
-    long curTime = getTime();
-    cout << message << " = " << (curTime - startTime) << endl;
-    return curTime;
-}
 
 typedef map<string, command*>::iterator cmd_iter;
 
@@ -352,7 +338,6 @@ void svs_state::update_cmd_results(bool early)
 
 void svs_state::process_cmds()
 {
-    long time = getTime();
     wme_list all;
     wme_list::iterator all_it;
     si->get_child_wmes(cmd_link, all);
@@ -668,7 +653,6 @@ void svs::proc_input(svs_state* s)
 
 void svs::output_callback()
 {
-    long time = getTime();
     function_timer t(timers.get_or_add("output"));
 
     vector<svs_state*>::iterator i;
@@ -700,7 +684,7 @@ void svs::output_callback()
 
 void svs::input_callback()
 {
-    long time = getTime();
+    function_timer t(timers.get_or_add("input"));
 
     svs_state* topstate = state_stack.front();
     proc_input(topstate);
