@@ -33,13 +33,13 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
             m_Result << "Using " ;
             switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format()) {
                 case numberedFormat:
-                    m_Result << "numbered chunk format.";
+                    m_Result << "numbered chunk naming format.";
                     break;
                 case longFormat:
-                    m_Result << "long chunk format.";
+                    m_Result << "long chunk naming format.";
                     break;
                 case ruleFormat:
-                    m_Result << "rule-based chunk format.";
+                    m_Result << "rule-based chunk naming format.";
                     break;
             }
         }
@@ -53,6 +53,25 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
     if (pChunkFormat)
     {
         Soar_Instance::Get_Soar_Instance().Set_Chunk_Name_Format(*pChunkFormat);
+        if (m_RawOutput)
+        {
+            m_Result << "Using " ;
+            switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format()) {
+                case numberedFormat:
+                    m_Result << "numbered chunk naming format.";
+                    break;
+                case longFormat:
+                    m_Result << "long chunk naming format.";
+                    break;
+                case ruleFormat:
+                    m_Result << "rule-based chunk naming format.";
+                    break;
+            }
+        }
+        else
+        {
+            AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format() == longFormat) ? sml_Names::kTrue : sml_Names::kFalse);
+        }
     }
 
     if (pCount)
