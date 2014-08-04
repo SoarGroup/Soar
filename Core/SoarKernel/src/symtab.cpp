@@ -981,6 +981,7 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->smem_sym_success = make_str_constant(thisAgent, "success");
     thisAgent->smem_sym_failure = make_str_constant(thisAgent, "failure");
     thisAgent->smem_sym_bad_cmd = make_str_constant(thisAgent, "bad-cmd");
+    thisAgent->smem_sym_depth = make_str_constant(thisAgent, "depth");
     
     thisAgent->smem_sym_retrieve = make_str_constant(thisAgent, "retrieve");
     thisAgent->smem_sym_query = make_str_constant(thisAgent, "query");
