@@ -644,6 +644,10 @@ int em_mode::get_num_nonzero_coefs() const
 {
     if (noise)
     {
+        /* -- Undefining max seems to be necessary for Windows machines (Microsoft
+         *    has a different max function that is conflicting).  Doesn't seem to
+         *    break other platforms -- */
+        #undef max
         return numeric_limits<int>::max();
     }
     assert(n_nonzero >= 0);
