@@ -204,7 +204,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 }		
 
 #ifdef REAL_TIME_BEHAVIOR
-* RMJ */
+/* RMJ */
 void init_real_time (agent* thisAgent) {
    thisAgent->real_time_tracker =
          (struct timeval *) malloc(sizeof(struct timeval));
@@ -244,7 +244,7 @@ void test_for_input_delay (agent* thisAgent) {
 #endif // REAL_TIME_BEHAVIOR
 
 #ifdef ATTENTION_LAPSE
-* RMJ */
+/* RMJ */
 
 void init_attention_lapse (void) {
    thisAgent->attention_lapse_tracker =
@@ -290,7 +290,7 @@ void determine_lapsing (agent* thisAgent) {
       }
    }
 }
-* RMJ;
+/* RMJ;
    When doing attentional lapsing, we need a function that determines
    when (and for how long) attentional lapses should occur.  This
    will normally be provided as a user-defined TCL procedure.  But
