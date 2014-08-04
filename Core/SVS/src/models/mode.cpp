@@ -1,3 +1,4 @@
+#include <limits>
 #include "mode.h"
 #include "em.h"
 #include "serialize.h"
@@ -34,20 +35,20 @@ class multi_combination_generator
                 }
             }
         }
-        
+
         void reset()
         {
             finished = false;
             fill(indices.begin(), indices.end(), 0);
         }
-        
+
         bool next(std::vector<T>& comb)
         {
             if (empty)
             {
                 return false;
             }
-            
+
             comb.resize(elems.size());
             std::set<int> s;
             while (!finished)
@@ -75,7 +76,7 @@ class multi_combination_generator
             }
             return false;
         }
-        
+
     private:
         void increment(int i)
         {
@@ -89,7 +90,7 @@ class multi_combination_generator
                 increment(i + 1);
             }
         }
-        
+
         const std::vector<std::vector<T> >& elems;
         std::vector<int> indices;
         bool allow_repeat, finished, empty;
@@ -106,7 +107,7 @@ em_mode::em_mode(bool noise, bool manual, const model_train_data& data, logger_s
     {
         stale = true;
     }
-    
+
 }
 
 void em_mode::get_params(scene_sig& sig, rvec& coefs, double& intercept) const
@@ -151,7 +152,7 @@ void em_mode::set_params(const scene_sig& dsig, int target, const mat& coefs, co
                 relevant_objs.push_back(i);
             }
         }
-        
+
         int end = 0;
         lin_coefs.resize(coefs.rows(), 1);
         sig.clear();
@@ -164,7 +165,7 @@ void em_mode::set_params(const scene_sig& dsig, int target, const mat& coefs, co
             end += n;
         }
         lin_coefs.conservativeResize(end, 1);
-        
+
         if (obj_maps.size() == 0)
         {
             obj_map_entry e;
@@ -191,14 +192,14 @@ bool em_mode::map_objs(int target, const scene_sig& dsig, const relation_table& 
     used[target] = true;
     mapping.resize(sig.empty() ? 1 : sig.size(), -1);
     mapping[0] = target;  // target always maps to target
-    
+
     learn_obj_clauses(data.get_all_rels());
-    
+
     var_domains domains;
     // 0 = time, 1 = target, 2 = object we're searching for
     domains[0].insert(0);
     domains[1].insert(dsig[target].id);
-    
+
     for (int i = 1; i < sig.size(); ++i)
     {
         set<int>& d = domains[2];
@@ -251,14 +252,14 @@ void em_mode::learn_obj_clauses(const relation_table& rels) const
     {
         return;
     }
-    
+
     obj_clauses.resize(sig.size());
     for (int i = 1; i < sig.size(); ++i)     // 0 is always target, no need to map
     {
         string type = sig[i].type;
         relation pos_obj(3), neg_obj(3);
         int_tuple objs(2);
-        
+
         for (int j = 0, jend = obj_maps.size(); j < jend; ++j)
         {
             const vector<int>& m = obj_maps[j].obj_map;
@@ -269,7 +270,7 @@ void em_mode::learn_obj_clauses(const relation_table& rels) const
             {
                 const model_train_inst& d = data.get_inst(*k);
                 int o = (*d.sig)[m[i]].id;
-                
+
                 objs[0] = d.target;
                 objs[1] = o;
                 pos_obj.add(*k, objs);
@@ -283,7 +284,7 @@ void em_mode::learn_obj_clauses(const relation_table& rels) const
                 }
             }
         }
-        
+
         FOIL foil(loggers);
         foil.set_problem(pos_obj, neg_obj, rels);
         if (!foil.learn(true, false))
@@ -383,24 +384,24 @@ double em_mode::calc_prob(int target, const scene_sig& dsig, const rvec& x, doub
         return PNOISE;
         best_error = INF;
     }
-    
+
     rvec py;
     double w = 1.0;
-    
+
     /*
      Each mode has a signature that specifies the types and orders of
      objects it expects for inputs. This is recorded in this->sig.
      Call this the mode signature.
-    
+
      Each data point has a signature that specifies which types and
      orders of object properties encoded by the property vector. This
      is recorded in dsig. Call this the data signature.
-    
+
      P(d, m) = MAX[assignment][P(d, m, assignment)] where 'assignment'
      is a mapping of objects in the data signature to the objects in
      the mode signature.
     */
-    
+
     if (sig.empty())
     {
         // should be constant prediction
@@ -412,7 +413,7 @@ double em_mode::calc_prob(int target, const scene_sig& dsig, const rvec& x, doub
         double p = (1.0 - EPSILON) * w * d;
         return p;
     }
-    
+
     /*
      Create the input table for the combination generator to generate
      all possible assignments. possibles[i] should be a list of all
@@ -432,7 +433,7 @@ double em_mode::calc_prob(int target, const scene_sig& dsig, const rvec& x, doub
         }
     }
     multi_combination_generator<int> gen(possibles, false);
-    
+
     /*
      Iterate through all assignments and find the one that gives
      highest probability.
@@ -453,7 +454,7 @@ double em_mode::calc_prob(int target, const scene_sig& dsig, const rvec& x, doub
             s += l;
         }
         assert(s == xlen);
-        
+
         py = (xc * lin_coefs) + lin_inter;
         double d = gausspdf(y, py(0), noise_var);
         double p = (1.0 - EPSILON) * w * d;
@@ -485,7 +486,7 @@ bool em_mode::update_fits(double noise_var)
     {
         xcols += sig[i].props.size();
     }
-    
+
     mat X(members.size(), xcols), Y(members.size(), 1);
     int j = 0;
     for (int i = 0, iend = obj_maps.size(); i < iend; ++i)
@@ -524,7 +525,7 @@ void em_mode::predict(const scene_sig& dsig, const rvec& x, const vector<int>& e
         y = lin_inter(0);
         return;
     }
-    
+
     assert(ex_omap.size() == sig.size());
     rvec xc(x.size());
     int xsize = 0;
@@ -542,10 +543,10 @@ void em_mode::predict(const scene_sig& dsig, const rvec& x, const vector<int>& e
 void em_mode::add_example(int t, const vector<int>& ex_obj_map)
 {
     assert(!members.contains(t) && ex_obj_map.size() == sig.size());
-    
+
     const model_train_inst& d = data.get_inst(t);
     members.insert(t);
-    
+
     bool found = false;
     for (int i = 0, iend = obj_maps.size(); i < iend; ++i)
     {
@@ -563,7 +564,7 @@ void em_mode::add_example(int t, const vector<int>& ex_obj_map)
         e.members.insert(t);
         obj_maps.push_back(e);
     }
-    
+
     if (noise)
     {
         sorted_ys.insert(make_pair(d.y(0), t));
@@ -583,7 +584,7 @@ void em_mode::add_example(int t, const vector<int>& ex_obj_map)
 void em_mode::del_example(int t)
 {
     const model_train_inst& d = data.get_inst(t);
-    
+
     members.erase(t);
     for (int i = 0, iend = obj_maps.size(); i < iend; ++i)
     {
@@ -661,7 +662,7 @@ void em_mode::get_function_string(string& s) const
         s = "noise";
         return;
     }
-    
+
     stringstream ss;
     int k = 0;
     bool first = true;
@@ -705,7 +706,7 @@ void em_mode::get_function_string(string& s) const
             ss << sig[i].name << ":" << sig[i].props[j];
         }
     }
-    
+
     if (first)
     {
         ss << lin_inter(0);
