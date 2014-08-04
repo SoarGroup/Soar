@@ -25,6 +25,7 @@
    ==================================================================== */
 
 #include <stdlib.h>
+#include <cstring>
 
 #include "chunk.h"
 #include "symtab.h"
@@ -932,18 +933,24 @@ Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr)
 
 Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
 {
-#define BUFFER_GEN_CHUNK_NAME_SIZE 512
-    char name[BUFFER_GEN_CHUNK_NAME_SIZE];
-#define BUFFER_IMPASS_NAME_SIZE 32
-    char impass_name[BUFFER_IMPASS_NAME_SIZE];
     Symbol* generated_name;
     Symbol* goal;
     byte impasse_type;
     preference* p;
     goal_stack_level lowest_result_level;
+    std::string lImpasseName;
+    std::stringstream lName;
+
     chunkNameFormats chunkNameFormat = Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format();
 
-    name[0] = '/0';
+    lowest_result_level = thisAgent->top_goal->id->level;
+    for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+        if (p->id->id->level > lowest_result_level)
+        {
+            lowest_result_level = p->id->id->level;
+        }
+
+    goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
 
     switch (chunkNameFormat)
     {
@@ -956,31 +963,22 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
         }
         case longFormat:
         {
-            lowest_result_level = thisAgent->top_goal->id->level;
-            for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
-                if (p->id->id->level > lowest_result_level)
-                {
-                    lowest_result_level = p->id->id->level;
-                }
-
-            goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
-
             if (goal)
             {
                 impasse_type = type_of_existing_impasse(thisAgent, goal);
                 switch (impasse_type)
                 {
                     case NONE_IMPASSE_TYPE:
-                        strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
+                        lImpasseName = "unknownimpasse";
                         break;
                     case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-                        strncpy(impass_name, "cfailure", BUFFER_IMPASS_NAME_SIZE);
+                        lImpasseName = "cfailure";
                         break;
                     case CONFLICT_IMPASSE_TYPE:
-                        strncpy(impass_name, "conflict", BUFFER_IMPASS_NAME_SIZE);
+                        lImpasseName = "conflict";
                         break;
                     case TIE_IMPASSE_TYPE:
-                        strncpy(impass_name, "tie", BUFFER_IMPASS_NAME_SIZE);
+                        lImpasseName = "tie";
                         break;
                     case NO_CHANGE_IMPASSE_TYPE:
                     {
@@ -988,82 +986,115 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
 
                         if ((sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol)) == NIL)
                         {
-                            strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
+                            lImpasseName = "unknownimpasse";
                         }
                         else if (sym == thisAgent->operator_symbol)
                         {
-                            strncpy(impass_name, "opnochange", BUFFER_IMPASS_NAME_SIZE);
+                            lImpasseName = "opnochange";
                         }
                         else if (sym == thisAgent->state_symbol)
                         {
-                            strncpy(impass_name, "snochange", BUFFER_IMPASS_NAME_SIZE);
+                            lImpasseName = "snochange";
                         }
                         else
                         {
-                            strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
+                            lImpasseName = "unknownimpasse";
                         }
                     }
                     break;
                     default:
-                        strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
+                        lImpasseName = "unknownimpasse";
                         break;
                 }
             }
             else
             {
-                strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
+                lImpasseName = "unknownimpasse";
             }
-            impass_name[BUFFER_IMPASS_NAME_SIZE - 1] = 0; /* ensure null termination */
-
-            SNPRINTF(name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu",
-                thisAgent->chunk_name_prefix,
-                static_cast<long unsigned int>(thisAgent->chunk_count++),
-                static_cast<long unsigned int>(thisAgent->d_cycle_count),
-                impass_name,
-                static_cast<long unsigned int>(thisAgent->chunks_this_d_cycle)
-            );
-            name[BUFFER_GEN_CHUNK_NAME_SIZE - 1] = 0; /* ensure null termination */
+            lName << thisAgent->chunk_name_prefix << "-" << thisAgent->chunk_count++ << "*" <<
+                     thisAgent->d_cycle_count << "*" << lImpasseName << "*" << thisAgent->chunks_this_d_cycle;
 
             break;
         }
         case ruleFormat:
         {
-            thisAgent->chunk_count++;
-            SNPRINTF(name, BUFFER_GEN_CHUNK_NAME_SIZE, "chunk*%s*t%lu-%lu", inst->prod->name->sc->name,
-                     static_cast<long unsigned int>(thisAgent->d_cycle_count),
-                     static_cast<long unsigned int>(thisAgent->chunks_this_d_cycle));
-            name[BUFFER_GEN_CHUNK_NAME_SIZE - 1] = 0; /* ensure null termination */
+            std::string real_prod_name;
 
+            lImpasseName.erase();
+            lName << thisAgent->chunk_name_prefix;
+
+            thisAgent->chunk_count++;
+            if (goal)
+            {
+                impasse_type = type_of_existing_impasse(thisAgent, goal);
+                switch (impasse_type)
+                {
+                    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+                        lImpasseName = "cfo";
+                        break;
+                    case CONFLICT_IMPASSE_TYPE:
+                        lImpasseName = "con";
+                        break;
+                    case TIE_IMPASSE_TYPE:
+                        lImpasseName = "tie";
+                        break;
+                    case NO_CHANGE_IMPASSE_TYPE:
+                    {
+                        Symbol* sym;
+                        sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol);
+                        if (sym)
+                        {
+                            if (sym == thisAgent->operator_symbol)
+                            {
+                                lImpasseName = "onc";
+                            }
+                            else if (sym == thisAgent->state_symbol)
+                            {
+                                lImpasseName = "snc";
+                            }
+                        }
+                    }
+                    break;
+                    default:
+                        break;
+                }
+            }
+
+            if (strstr(inst->prod->name->sc->name, thisAgent->chunk_name_prefix) != inst->prod->name->sc->name)
+            {
+                /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
+                lName << "-multi";
+            }
+            lName << "*" << inst->prod->original_rule_name;
+            if (!lImpasseName.empty())
+            {
+                lName << "*" << lImpasseName;
+            }
+            lName << "*t" << thisAgent->d_cycle_count << "-" << thisAgent->chunks_this_d_cycle;
         }
     }
-
-    if (name[0] == '/0') { return NULL; }
+    lImpasseName.erase();
+    if (lName.str().empty()) { return NULL; }
 
     /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
-    if (find_str_constant(thisAgent, name))
+    if (find_str_constant(thisAgent, lName.str().c_str()))
     {
-        uint64_t collision_count;
+        uint64_t collision_count = 1;
+        std::stringstream newLName;
 
-        collision_count = 1;
         print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
         xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
         do
         {
-            SNPRINTF(name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu*%lu",
-                thisAgent->chunk_name_prefix,
-                static_cast<long unsigned int>(thisAgent->chunk_count++),
-                static_cast<long unsigned int>(thisAgent->d_cycle_count),
-                impass_name,
-                static_cast<long unsigned int>(thisAgent->chunks_this_d_cycle),
-                static_cast<long unsigned int>(collision_count++)
-            );
-            name[BUFFER_GEN_CHUNK_NAME_SIZE - 1] = 0; /* ensure null termination */
-
+            newLName.str(lName.str().c_str());
+            newLName << "-" << collision_count++;
         }
-        while (find_str_constant(thisAgent, name));
+        while (find_str_constant(thisAgent, newLName.str().c_str()));
+        lName.str(newLName.str());
+        newLName.str("");
     }
 
-    generated_name = make_str_constant(thisAgent, name);
+    generated_name = make_str_constant(thisAgent, lName.str().c_str());
     return generated_name;
 }
 
@@ -1305,15 +1336,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)
     {
-        /* kjh (B14) begin */
         thisAgent->chunks_this_d_cycle++;
         prod_name = generate_chunk_name_sym_constant(thisAgent, inst);
-        /* kjh (B14) end */
-
-        /*   old way of generating chunk names ...
-        prod_name = generate_new_str_constant ("chunk-",&thisAgent->chunk_count);
-        thisAgent->chunks_this_d_cycle)++;
-        */
 
         prod_type = CHUNK_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
@@ -1326,6 +1350,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
     }
+
+
 
     /* AGR 617/634 begin */
     if (print_name)
@@ -1381,7 +1407,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     add_goal_or_impasse_tests(thisAgent, top_cc);
 
-    prod = make_production(thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs, false);
+    prod = make_production(thisAgent, prod_type, prod_name, inst->prod->name->sc->name, &lhs_top, &lhs_bottom, &rhs, false);
 
     if (!prod)
     {
@@ -1439,6 +1465,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         chunk_inst->reliable = reliable;
 
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
+
         make_clones_of_results(thisAgent, results, chunk_inst);
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
