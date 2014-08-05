@@ -10,8 +10,7 @@
 
 namespace ANSI_Color_Constants
 {
-
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(NO_COLORS)
     // Reset
     static const char* Off = "\e[0m";               // Text Reset
     
