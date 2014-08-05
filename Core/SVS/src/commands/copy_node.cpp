@@ -82,21 +82,6 @@ class copy_node_command : public command
             
             //cout << "COPYING " << sourceId << " to " << destId << endl;
             
-            wme* adjustWme;
-            string adjust;
-            if (!si->find_child_wme(root, "adjust", adjustWme))
-            {
-                adjust = "false";
-            }
-            else if (!get_symbol_value(si->get_wme_val(adjustWme), adjust))
-            {
-                adjust = "false";
-            }
-            else if (adjust != "true" && adjust != "false")
-            {
-                adjust = "false";
-            }
-            
             // Make sure the given destination doesn't already exist
             sgnode* destNode = scn->get_node(destId);
             if (!destNode)
@@ -126,37 +111,6 @@ class copy_node_command : public command
             vec3 pos, rot, scale;
             sourceNode->get_trans(pos, rot, scale);
             destNode->set_trans(pos, rot, scale);
-            
-            //cout << "Adjust = " << adjust << endl;
-            if (adjust == "true")
-            {
-                //cout << "adjust = true" << endl;
-                std::vector<const sgnode*> targets;
-                std::vector<const sgnode*> all;
-                scn->get_all_nodes(all);
-                for (std::vector<const sgnode*>::const_iterator i = all.begin(); i != all.end(); i++)
-                {
-                    if (*i == destNode)
-                    {
-                        continue;
-                    }
-                    std::string propName = "object-source";
-                    std::string src;
-                    if ((*i)->get_property(propName, src))
-                    {
-                        if (src == "belief")
-                        {
-                            targets.push_back(*i);
-                        }
-                    }
-                }
-                //  cout << "Found Targets: " << endl;
-                for (std::vector<const sgnode*>::iterator i = targets.begin(); i != targets.end(); i++)
-                {
-                    //cout << "  " << (*i)->get_name() << endl;
-                }
-                destNode->adjust_size(targets);
-            }
             
             set_status("success");
             return true;

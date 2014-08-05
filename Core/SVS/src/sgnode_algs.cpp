@@ -37,7 +37,7 @@ void geom_ccd_support(const void* obj, const ccd_vec3_t* dir, ccd_vec3_t* v)
     }
 }
 
-double geom_convex_dist(const geometry_node* n1, const geometry_node* n2)
+double geom_convex_dist(const geometry_node* a, const geometry_node* b)
 {
     ccd_t ccd;
     double dist;
@@ -48,7 +48,7 @@ double geom_convex_dist(const geometry_node* n1, const geometry_node* n2)
     ccd.max_iterations = 100;
     ccd.dist_tolerance = INTERSECT_THRESH;
     
-    dist = ccdGJKDist(n1, n2, &ccd);
+    dist = ccdGJKDist(a, b, &ccd);
     return dist > 0.0 ? dist : 0.0;
 }
 
@@ -67,152 +67,29 @@ double point_geom_convex_dist(const vec3& p, const geometry_node* g)
     return dist > 0.0 ? dist : 0.0;
 }
 
-
-/*  overlap(sgnode* n1, sgnode* n2)
- * This will estimate the percentage of node 1 that is contained within node 2
- * Using random sampling
- */
-double overlap(const sgnode* n1, const sgnode* n2)
-{
-    if (n1 == n2 || n1->has_descendent(n2) || n2->has_descendent(n1))
-    {
-        // Something is weird, the given nodes are part of the same object
-        return 0;
-    }
-    
-    vector<const geometry_node*> g1, g2;
-    n1->walk_geoms(g1);
-    n2->walk_geoms(g2);
-    
-    if (g2.empty())
-    {
-        // Node 2 is a point, so return 0
-        return 0;
-    }
-    
-    if (g1.empty())
-    {
-        // Node 1 is a point
-        vec3 pt = n1->get_centroid();
-        for (int i = 0, iend = g2.size(); i < iend; i++)
-        {
-            double dist = point_geom_convex_dist(pt, g2[i]);
-            //std::cout << "  pt-geom dist: " << dist << std::endl;
-            if (dist <= 0)
-            {
-                // Node 1's point is contained within node 2
-                return 1;
-            }
-        }
-        // Node 1's point is not contained within node 2
-        return 0;
-    }
-    
-    // Early exit, first check if they intersect at all
-    double dist = convex_distance(n1, n2);
-    if (dist > 0)
-    {
-        // No intersection
-        return 0;
-    }
-    
-    ccd_t ccd;
-    
-    CCD_INIT(&ccd);
-    ccd.support1 = point_ccd_support;
-    ccd.support2 = geom_ccd_support;
-    ccd.max_iterations = 100;
-    ccd.dist_tolerance = INTERSECT_THRESH;
-    
-    bbox bounds = n1->get_bounds();
-    
-    int DESIRED_SAMPLES = 200;
-    int numSamples = 0;
-    int numIntersections = 0;
-    int numIters = 0;
-    
-    // long startTime = get_time();
-    
-    // Generate random points within node 1, and test if within node 2
-    while (numSamples < DESIRED_SAMPLES && numIters < 100000)
-    {
-        numIters++;
-        vec3 randPt = bounds.get_random_point();
-        
-        bool inNode1 = false;
-        for (int i = 0, iend = g1.size(); i < iend; i++)
-        {
-            double dist = ccdGJKDist(&randPt, g1[i], &ccd);
-            if (dist <= 0)
-            {
-                inNode1 = true;
-                break;
-            }
-        }
-        if (!inNode1)
-        {
-            continue;
-        }
-        
-        numSamples++;
-        
-        bool inNode2 = false;
-        for (int j = 0, jend = g2.size(); j < jend; j++)
-        {
-            double dist = ccdGJKDist(&randPt, g2[j], &ccd);
-            if (dist <= 0)
-            {
-                inNode2 = true;
-                break;
-            }
-        }
-        if (!inNode2)
-        {
-            continue;
-        }
-        
-        numIntersections++;
-    }
-    
-    //std::cout << "ITERS: " << numIters << std::endl;
-    //std::cout << "XTION: " << numIntersections << std::endl;
-    //std::cout << "TOTAL: " << numSamples << std::endl;
-    //std::cout << "TIME : " << (get_time() - startTime) << std::endl;
-    
-    
-    if (numSamples == 0)
-    {
-        return 0;
-    }
-    else
-    {
-        return numIntersections / (double)numSamples;
-    }
-}
-
-double convex_distance(const sgnode* n1, const sgnode* n2)
+double convex_distance(const sgnode* a, const sgnode* b)
 {
     vector<const geometry_node*> g1, g2;
     vector<double> dists;
     vec3 c;
     
-    if (n1 == n2 || n1->has_descendent(n2) || n2->has_descendent(n1))
+    if (a == b || a->has_descendent(b) || b->has_descendent(a))
     {
         return 0.0;
     }
     
-    n1->walk_geoms(g1);
-    n2->walk_geoms(g2);
+    a->walk_geoms(g1);
+    b->walk_geoms(g2);
     
     if (g1.empty() && g2.empty())
     {
-        return (n1->get_centroid() - n2->get_centroid()).norm();
+        return (a->get_centroid() - b->get_centroid()).norm();
     }
     
     if (g1.empty())
     {
         dists.reserve(g2.size());
-        c = n1->get_centroid();
+        c = a->get_centroid();
         for (int i = 0, iend = g2.size(); i < iend; ++i)
         {
             dists.push_back(point_geom_convex_dist(c, g2[i]));
@@ -221,7 +98,7 @@ double convex_distance(const sgnode* n1, const sgnode* n2)
     else if (g2.empty())
     {
         dists.reserve(g1.size());
-        c = n2->get_centroid();
+        c = b->get_centroid();
         for (int i = 0, iend = g1.size(); i < iend; ++i)
         {
             dists.push_back(point_geom_convex_dist(c, g1[i]));
@@ -241,23 +118,54 @@ double convex_distance(const sgnode* n1, const sgnode* n2)
     return *min_element(dists.begin(), dists.end());
 }
 
-bool intersects(const sgnode* n1, const sgnode* n2)
+double centroid_distance(const sgnode* a, const sgnode* b){
+  vec3 ca = a->get_centroid();
+  vec3 cb = b->get_centroid();
+  return (cb - ca).norm();
+}
+
+double distance_on_axis(const sgnode* a, const sgnode* b, int axis){
+  if(axis < 0 || axis > 2){
+    return 0;
+  }
+  double mina = a->get_bounds().get_min()[axis];
+  double maxa = a->get_bounds().get_max()[axis];
+  double minb = b->get_bounds().get_min()[axis];
+  double maxb = b->get_bounds().get_max()[axis];
+
+  if(minb > maxa){
+    return (minb - maxa);
+  } else if(maxb < mina){
+    return (maxb - mina);
+  } else {
+    return 0;
+  }
+}
+
+
+double bbox_volume(const sgnode* a){
+  bbox boxa = a->get_bounds();
+  return boxa.get_volume();
+}
+
+bool convex_intersects(const sgnode* a, const sgnode* b)
 {
-    if (n1->get_bounds().intersects(n2->get_bounds()))
+    if (a->get_bounds().intersects(b->get_bounds()))
     {
-        return convex_distance(n1, n2) < INTERSECT_THRESH;
+        return convex_distance(a, b) < INTERSECT_THRESH;
     }
     return false;
 }
 
-bool intersects(const sgnode* n, std::vector<const sgnode*> targets)
-{
-    for (std::vector<const sgnode*>::iterator i = targets.begin(); i != targets.end(); i++)
-    {
-        if (intersects(n, *i))
-        {
-            return true;
-        }
-    }
-    return false;
+bool bbox_intersects(const sgnode* a, const sgnode* b){
+  bbox boxa = a->get_bounds();
+  bbox boxb = b->get_bounds();
+  return boxa.intersects(boxb);
 }
+
+bool bbox_contains(const sgnode* a, const sgnode* b){
+  bbox boxa = a->get_bounds();
+  bbox boxb = b->get_bounds();
+  return boxa.contains(boxb);
+}
+

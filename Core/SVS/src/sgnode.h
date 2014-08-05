@@ -116,8 +116,6 @@ class sgnode : public cliproxy
         void delete_property(const std::string& propertyName);
         void set_native_property(char type, int dim, double value);
         
-        void adjust_size(std::vector<const sgnode*> targets);
-        
     protected:
         void set_bounds(const bbox& b);
         virtual void update_shape() = 0;
