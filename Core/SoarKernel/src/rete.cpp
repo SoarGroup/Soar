@@ -107,7 +107,7 @@
 
 #include "reinforcement_learning.h"
 #include "episodic_memory.h"
-#include "semantic_memory.h"
+#include "Semantic Memory/semantic_memory.h"
 #include "test.h"
 #include "decide.h"
 

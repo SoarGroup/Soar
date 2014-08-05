@@ -47,7 +47,7 @@
 #include "misc.h"
 
 #include "episodic_memory.h"
-#include "semantic_memory.h"
+#include "Semantic Memory/semantic_memory.h"
 #include "svs_interface.h"
 #include "test.h"
 

@@ -42,7 +42,7 @@
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "episodic_memory.h"
-#include "semantic_memory.h"
+#include "Semantic Memory/semantic_memory.h"
 #include "svs_interface.h"
 #include "output_manager.h"
 

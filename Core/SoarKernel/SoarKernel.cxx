@@ -30,7 +30,7 @@
 #include "src/rhs.cpp"
 #include "src/rhs_functions.cpp"
 #include "src/rhs_functions_math.cpp"
-#include "src/semantic_memory.cpp"
+#include "src/Semantic Memory/semantic_memory.cpp"
 #include "src/soar_db.cpp"
 #include "src/soar_instance.cpp"
 #include "src/soar_module.cpp"

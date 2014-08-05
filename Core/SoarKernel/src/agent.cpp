@@ -52,7 +52,7 @@
 #include "decision_manipulation.h"
 #include "wma.h"
 #include "episodic_memory.h"
-#include "semantic_memory.h"
+#include "Semantic Memory/semantic_memory.h"
 #include "soar_instance.h"
 #include "output_manager.h"
 #include "svs_interface.h"

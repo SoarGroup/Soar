@@ -24,7 +24,7 @@
 #include <climits>
 
 #include "episodic_memory.h"
-#include "semantic_memory.h"
+#include "Semantic Memory/semantic_memory.h"
 
 #include "agent.h"
 #include "prefmem.h"
