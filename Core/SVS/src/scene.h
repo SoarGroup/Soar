@@ -75,8 +75,6 @@ class scene : public sgnode_listener, public cliproxy
         
         void verify_listeners() const;
     private:
-        typedef std::map<std::string, double> property_map;
-        
         typedef std::vector<sgnode*> node_table;
         
         std::string  name;
@@ -95,9 +93,10 @@ class scene : public sgnode_listener, public cliproxy
         int parse_add(std::vector<std::string>& f, std::string& error);
         int parse_del(std::vector<std::string>& f, std::string& error);
         int parse_change(std::vector<std::string>& f, std::string& error);
-        int parse_property(std::vector<std::string>& f, std::string& error);
+        int parse_tag(std::vector<std::string>& f, std::string& error);
         
         
+        void cli_tags(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_props(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_dist(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_sgel(const std::vector<std::string>& args, std::ostream& os);

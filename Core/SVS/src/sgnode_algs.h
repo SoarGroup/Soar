@@ -13,10 +13,10 @@ double distance_on_axis(const sgnode* a, const sgnode* b, int axis);
 
 double bbox_volume(const sgnode* a);
 
-bool convex_intersect(const sgnode* a, const sgnode* b);
+bool convex_intersects(const sgnode* a, const sgnode* b);
 
-bool bbox_intersect(const sgnode* a, const sgnode* b);
+bool bbox_intersects(const sgnode* a, const sgnode* b);
 
-bool bbox_contain(const sgnode* a, const sgnode* b);
+bool bbox_contains(const sgnode* a, const sgnode* b);
 
 #endif

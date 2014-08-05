@@ -59,19 +59,11 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
             add_child(g->get_child(i));
         }
     }
-    
-    // Create wmes for all string properties
-    const string_properties_map& str_props = node->get_string_properties();
-    for (string_properties_map::const_iterator i = str_props.begin(); i != str_props.end(); i++)
-    {
-        set_property(i->first, i->second);
-    }
-    
-    // Create wmes for all numeric properties
-    const numeric_properties_map& num_props = node->get_numeric_properties();
-    for (numeric_properties_map::const_iterator i = num_props.begin(); i != num_props.end(); i++)
-    {
-        set_property(i->first, i->second);
+
+    const tag_map& node_tags = node->get_all_tags();
+    tag_map::const_iterator ti;
+    for(ti = node_tags.begin(); ti != node_tags.end(); ti++){
+      set_tag(ti->first, ti->second);
     }
 }
 
@@ -84,10 +76,10 @@ sgwme::~sgwme()
         node->unlisten(this);
     }
     soarint->remove_wme(name_wme);
-    
-    for (std::map<std::string, wme*>::iterator i = properties.begin(); i != properties.end(); i++)
-    {
-        soarint->remove_wme(i->second);
+
+    map<string, wme*>::iterator ti;
+    for(ti = tags.begin(); ti != tags.end(); ti++){
+      soarint->remove_wme(ti->second);
     }
     
     for (i = childs.begin(); i != childs.end(); ++i)
@@ -122,11 +114,11 @@ void sgwme::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
             node = NULL;
             delete this;
             break;
-        case sgnode::PROPERTY_CHANGED:
-            update_property(update_info);
+        case sgnode::TAG_CHANGED:
+            update_tag(update_info);
             break;
-        case sgnode::PROPERTY_DELETED:
-            delete_property(update_info);
+        case sgnode::TAG_DELETED:
+            delete_tag(update_info);
             break;
         default:
             break;
@@ -153,90 +145,33 @@ void sgwme::add_child(sgnode* c)
     childs[child] = cid_wme;
 }
 
-template <class WmeType>
-void sgwme::set_property(const std::string& propertyName, const WmeType& value)
+void sgwme::set_tag(const string& tag_name, const string& tag_value)
 {
     Symbol* rootID = id;
-    std::string att = propertyName;
-    std::string parentAtt = "";
-    size_t periodPos = propertyName.find_first_of('.');
-    if (periodPos != std::string::npos)
-    {
-        // This is a two level property
-        parentAtt = propertyName.substr(0, periodPos);
-        att = propertyName.substr(periodPos + 1);
-        wme* parentWME;
-        
-        // First, we get the parent WME
-        std::map<std::string, wme*>::iterator i = properties.find(parentAtt);
-        
-        if (i == properties.end())
-        {
-            // First time seeing this parent WME, make a new one
-            parentWME = soarint->make_id_wme(id, parentAtt);
-            properties[parentAtt] = parentWME;
-        }
-        else
-        {
-            // The parent WME already exists
-            parentWME = i->second;
-            if (!soarint->get_wme_val(parentWME)->is_identifier())
-            {
-                // Something weird, the parent WME exists but not as an identifier
-                soarint->remove_wme(parentWME);
-                parentWME = soarint->make_id_wme(id, parentAtt);
-                properties[parentAtt] = parentWME;
-            }
-        }
-        
-        rootID = soarint->get_wme_val(parentWME);
+    std::string att = tag_name;
+
+    wme* value_wme;
+    if(map_get(tags, tag_name, value_wme)){
+      soarint->remove_wme(value_wme);
     }
-    
-    // Remove the old wme and add the new one
-    std::map<std::string, wme*>::iterator i = properties.find(propertyName);
-    if (i != properties.end())
-    {
-        soarint->remove_wme(i->second);
-    }
-    properties[propertyName] = soarint->make_wme(rootID, att, value);
+    tags[tag_name] = soarint->make_wme(rootID, att, tag_value);
 }
 
-void sgwme::update_property(const std::string& propertyName)
+void sgwme::update_tag(const string& tag_name)
 {
-    wme* propWme;
-    const string_properties_map& str_props = node->get_string_properties();
-    const numeric_properties_map& num_props = node->get_numeric_properties();
-    
-    string_properties_map::const_iterator str_it = str_props.find(propertyName);
-    numeric_properties_map::const_iterator num_it = num_props.find(propertyName);
-    
-    if (str_it != str_props.end())
-    {
-        // Make a wme with a string value
-        set_property(propertyName, str_it->second);
-    }
-    else if (num_it != num_props.end())
-    {
-        // Make a wme with a numeric value
-        set_property(propertyName, num_it->second);
-    }
-    else
-    {
-        // Something went wrong, the property is not on the node
-        return;
+    string tag_value;
+    if(node->get_tag(tag_name, tag_value)){
+      set_tag(tag_name, tag_value);
     }
 }
 
-void sgwme::delete_property(const std::string& propertyName)
+void sgwme::delete_tag(const string& tag_name)
 {
-    for (std::map<std::string, wme*>::iterator i = properties.begin(); i != properties.end(); i++)
-    {
-        if (i->first.find(propertyName) == 0)
-        {
-            soarint->remove_wme(i->second);
-            properties.erase(i);
-        }
-    }
+  wme* value_wme;
+  if(map_get(tags, tag_name, value_wme)){
+    soarint->remove_wme(value_wme);
+    tags.erase(tag_name);
+  }
 }
 
 

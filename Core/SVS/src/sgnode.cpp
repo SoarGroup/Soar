@@ -218,8 +218,7 @@ sgnode* sgnode::clone() const
 {
     sgnode* c = clone_sub();
     c->set_trans(pos, rot, scale);
-    c->string_props = string_props;
-    c->numeric_props = numeric_props;
+    c->tags = tags;
     return c;
 }
 
@@ -286,17 +285,10 @@ void sgnode::proxy_use_sub(const vector<string>& args, ostream& os)
     }
     t2.print(os);
     
-    numeric_properties_map::const_iterator ni, ni_end;
-    string_properties_map::const_iterator si, si_end;
-    
-    os << endl << "Custom properties:" << endl;
-    for (ni = numeric_props.begin(), ni_end = numeric_props.end(); ni != ni_end; ++ni)
-    {
-        t3.add_row() << ni->first << ni->second;
-    }
-    for (si = string_props.begin(), si_end = string_props.end(); si != si_end; ++si)
-    {
-        t3.add_row() << si->first << si->second;
+    tag_map::const_iterator ti;
+    os << endl << "Tags:" << endl;
+    for(ti = tags.begin(); ti != tags.end(); ti++){
+      t3.add_row() << ti->first << ti->second;
     }
     t3.print(os);
 }
@@ -593,66 +585,25 @@ void ball_node::proxy_use_sub(const vector<string>& args, ostream& os)
     os << endl << "radius: " << radius << endl;
 }
 
-void sgnode::set_property(const std::string& propertyName, const std::string& value)
-{
-    double numericValue;
-    if (parse_double(value, numericValue))
-    {
-        set_property(propertyName, numericValue);
-        return;
-    }
-    string_props[propertyName] = value;
-    send_update(sgnode::PROPERTY_CHANGED, propertyName);
+const tag_map& sgnode::get_all_tags() const{
+  return tags;
 }
 
-void sgnode::set_property(const std::string& propertyName, double value)
-{
-    char type;
-    int d;
-    if (is_native_prop(propertyName, type, d))
-    {
-        set_native_property(type, d, value);
-    }
-    else
-    {
-        numeric_props[propertyName] = value;
-        send_update(sgnode::PROPERTY_CHANGED, propertyName);
-    }
+bool sgnode::get_tag(const std::string& tag_name, std::string& tag_value) const {
+  return map_get(tags, tag_name, tag_value);
 }
 
-bool sgnode::get_property(const std::string& propertyName, std::string& value) const
-{
-    string_properties_map::const_iterator i = string_props.find(propertyName);
-    if (i == string_props.end())
-    {
-        return false;
-    }
-    else
-    {
-        value = i->second;
-        return true;
-    }
+void sgnode::set_tag(const std::string& tag_name, const std::string& tag_value){
+  tags[tag_name] = tag_value;
+  send_update(sgnode::TAG_CHANGED, tag_name);
 }
 
-bool sgnode::get_property(const std::string& propertyName, double& value) const
-{
-    numeric_properties_map::const_iterator i = numeric_props.find(propertyName);
-    if (i == numeric_props.end())
-    {
-        return false;
-    }
-    else
-    {
-        value = i->second;
-        return true;
-    }
-}
-
-void sgnode::delete_property(const std::string& propertyName)
-{
-    numeric_props.erase(propertyName);
-    string_props.erase(propertyName);
-    send_update(sgnode::PROPERTY_DELETED, propertyName);
+void sgnode::delete_tag(const std::string& tag_name){
+  tag_map::iterator i = tags.find(tag_name);
+  if(i != tags.end()){
+    tags.erase(i);
+    send_update(sgnode::TAG_DELETED, tag_name);
+  }
 }
 
 void sgnode::set_native_property(char type, int dim, double value)

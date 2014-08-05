@@ -39,12 +39,10 @@ class sgwme : public sgnode_listener
     private:
         void add_child(sgnode* c);
         
-        // These will create/maintain wmes on the child svs object
-        // For properties added to the node
-        void delete_property(const std::string& propertyName);
-        void update_property(const std::string& propertyName);
-        template <class WmeType>
-        void set_property(const std::string& propertyName, const WmeType& value);
+        // Functions dealing with maintaining tags on sgnodes
+        void update_tag(const std::string& tag_name);
+        void delete_tag(const std::string& tag_name);
+        void set_tag(const std::string& tag_name, const std::string& tag_value);
         
         sgwme*          parent;
         sgnode*         node;
@@ -54,9 +52,7 @@ class sgwme : public sgnode_listener
         
         std::map<sgwme*, wme*> childs;
         
-        // AM: Puts the properties of the node onto the WM graph
-        std::map<std::string, wme*> properties;
-        
+        std::map<std::string, wme*> tags;
 };
 
 

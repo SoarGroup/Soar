@@ -14,8 +14,7 @@ class sgnode_listener;
 class group_node;
 class geometry_node;
 
-typedef std::map<std::string, std::string> string_properties_map;
-typedef std::map<std::string, double> numeric_properties_map;
+typedef std::map<std::string, std::string> tag_map;
 
 class sgnode : public cliproxy
 {
@@ -28,8 +27,8 @@ class sgnode : public cliproxy
             DELETED,        // sent from destructor
             TRANSFORM_CHANGED,
             SHAPE_CHANGED,
-            PROPERTY_CHANGED,
-            PROPERTY_DELETED
+            TAG_CHANGED,
+            TAG_DELETED
         };
         
         sgnode(const std::string& name, const std::string& type, bool group);
@@ -100,20 +99,13 @@ class sgnode : public cliproxy
         virtual void walk_geoms(std::vector<geometry_node*>& g) = 0;
         virtual void walk_geoms(std::vector<const geometry_node*>& g) const = 0;
         
-        // AM: accessors/mutators for node properties
-        const string_properties_map&  get_string_properties() const
-        {
-            return string_props;
-        }
-        const numeric_properties_map& get_numeric_properties() const
-        {
-            return numeric_props;
-        }
-        void set_property(const std::string& propertyName, const std::string& value);
-        void set_property(const std::string& propertyName, double value);
-        bool get_property(const std::string& propertyName, std::string& value) const;
-        bool get_property(const std::string& propertyName, double& value) const;
-        void delete_property(const std::string& propertyName);
+
+        // Accessors/Mutators for tags
+        const tag_map& get_all_tags() const;
+        bool get_tag(const std::string& tag_name, std::string& tag_value) const ;
+        void set_tag(const std::string& tag_name, const std::string& tag_value);
+        void delete_tag(const std::string& tag_name);
+
         void set_native_property(char type, int dim, double value);
         
     protected:
@@ -152,10 +144,8 @@ class sgnode : public cliproxy
         mutable bool       trans_dirty;
         
         std::list<sgnode_listener*> listeners;
-        
-        // AM: Maps that hold both numeric and string properties
-        string_properties_map string_props;
-        numeric_properties_map numeric_props;
+
+        tag_map tags;
         
 };
 

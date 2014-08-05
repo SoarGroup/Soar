@@ -465,23 +465,23 @@ int scene::parse_change(vector<string>& f, string& error)
     return -1;
 }
 
-// parse_property(vector<string> &f, string &error)
-//   parses a property command (command 'p')
+// parse_tag(vector<string> &f, string &error)
+//   parses a tag command (command 't')
 //   f is a list of the parameters given
 //   Changed the format of the command to be
-//     p <name> <subcommand> <property> <value?>
+//     t <name> <subcommand> <tag_name> <value?>
 //      <name> - name of the node
 //      <subcommand> - either 'a' for add, 'c' for change, or 'd' for delete
-//      <property> - the name of the property
-//      <value?> - the value of the property, needed for the add or change subcommands only
-int scene::parse_property(vector<string>& f, string& error)
+//      <tag_name> - the name of the tag
+//      <value?> - the value of the tag, needed for the add or change subcommands only
+int scene::parse_tag(vector<string>& f, string& error)
 {
     int p = 0;
     
     // Parameter 1: Node Name
     if (p >= f.size())
     {
-        error = "Property Command P1: Expecting node name";
+        error = "Tag Command P1: Expecting node name";
         return p;
     }
     string name = f[p++];
@@ -489,25 +489,25 @@ int scene::parse_property(vector<string>& f, string& error)
     sgnode* node = get_node(name);
     if (!node)
     {
-        error = "Property Command P1: Node " + name + " does not exist";
+        error = "Tag Command P1: Node " + name + " does not exist";
         return (p - 1);
     }
     
     // Parameter 2: Subcommand (a = add, d = delete, c = change)
     if (p >= f.size() || f[p].length() == 0)
     {
-        error = "Property Command P2: Expecting subcommand";
+        error = "Tag Command P2: Expecting subcommand";
         return p;
     }
     char subcommand = tolower(f[p++][0]);
     
-    // Parameter 3: Property Name
+    // Parameter 3: Tag Name
     if (p >= f.size())
     {
-        error = "Property Command P3: Expecting property name";
+        error = "Tag Command P3: Expecting property name";
         return p;
     }
-    string propName = f[p++];
+    string tag_name = f[p++];
     
     // Parameter 4 (For add/change): property value
     string value;
@@ -515,7 +515,7 @@ int scene::parse_property(vector<string>& f, string& error)
     {
         if (p >= f.size())
         {
-            error = "Property Command P4: Expecting value for " + propName;
+            error = "Tag Command P4: Expecting value for " + tag_name;
             return p;
         }
         value = f[p++];
@@ -527,14 +527,14 @@ int scene::parse_property(vector<string>& f, string& error)
         // Add property
         case 'c':
             // Change property
-            node->set_property(propName, value);
+            node->set_tag(tag_name, value);
             break;
         case 'd':
             // Delete property
-            node->delete_property(propName);
+            node->delete_tag(tag_name);
             break;
         default:
-            error = "Property Command P3: Unrecognized subcommand (Expecting a, c, d)";
+            error = "Tag Command P3: Unrecognized subcommand (Expecting a, c, d)";
             return 2;
     }
     
@@ -580,8 +580,8 @@ bool scene::parse_sgel(const string& s)
             case 'c':
                 errfield = parse_change(fields, error);
                 break;
-            case 'p':
-                errfield = parse_property(fields, error);
+            case 't':
+                errfield = parse_tag(fields, error);
                 break;
             default:
                 loggers->get(LOG_ERR) << "expecting a|d|c|p at start of line '"
@@ -602,7 +602,6 @@ bool scene::parse_sgel(const string& s)
 void scene::get_properties(rvec& vals) const
 {
     node_table::const_iterator i, iend;
-    property_map::const_iterator j, jend;
     int k = 0;
     
     vals.resize(get_dof());
@@ -614,13 +613,6 @@ void scene::get_properties(rvec& vals) const
             vec3 trans = node->get_trans(*t);
             vals.segment(k, 3) = trans;
             k += 3;
-        }
-        
-        const numeric_properties_map& pm = node->get_numeric_properties();
-        numeric_properties_map::const_iterator j, jend;
-        for (j = pm.begin(), jend = pm.end(); j != jend; ++j)
-        {
-            vals(k++) = j->second;
         }
     }
 }
@@ -647,17 +639,6 @@ bool scene::set_properties(const rvec& vals)
             }
             n->set_trans(types[k1], trans);
         }
-        
-        const numeric_properties_map& pm = n->get_numeric_properties();
-        numeric_properties_map::const_iterator j, jend;
-        for (j = pm.begin(), jend = pm.end(); j != jend; ++j)
-        {
-            if (l >= vals.size())
-            {
-                return false;
-            }
-            n->set_property(j->first, vals(l++));
-        }
     }
     return true;
 }
@@ -667,23 +648,9 @@ int scene::get_dof() const
     int dof = 0;
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
-        dof += NUM_NATIVE_PROPS + nodes[i]->get_numeric_properties().size();
+        dof += NUM_NATIVE_PROPS;
     }
     return dof;
-}
-
-void velocity_hack(const sgnode* n, drawer* d)
-{
-    if (n->get_name() != "b1")
-    {
-        return;
-    }
-    vec3 pos = n->get_trans('p');
-    stringstream ss;
-    ss << "* vx_pred_line p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
-    ss << "* vz_pred_line p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
-    ss << "* pred_line    p " << pos(0) << " " << pos(1) << " " << pos(2) << endl;
-    d->send(ss.str());
 }
 
 void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
@@ -756,9 +723,8 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
             {
                 d->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
             }
-            velocity_hack(n, owner->get_drawer());
             break;
-        case sgnode::PROPERTY_CHANGED:
+        case sgnode::TAG_CHANGED:
             break;
     }
 }
@@ -802,6 +768,9 @@ void scene::proxy_get_children(map<string, cliproxy*>& c)
     
     c["properties"] = new memfunc_proxy<scene>(this, &scene::cli_props);
     c["properties"]->set_help("Get scene properties.");
+
+    c["tags"] = new memfunc_proxy<scene>(this, &scene::cli_tags);
+    c["tags"]->set_help("Get node tags.");
     
     c["distance"] = new memfunc_proxy<scene>(this, &scene::cli_dist);
     c["distance"]->set_help("Compute distance between nodes.")
@@ -829,6 +798,25 @@ void scene::proxy_get_children(map<string, cliproxy*>& c)
     c["clear"]->set_help("Delete all objects in scene except world");
 }
 
+void scene::cli_tags(const vector<string>& args, ostream& os) const
+{
+    table_printer t;
+
+    // For each node, add each property to the output
+    for (int i = 0, iend = nodes.size(); i < iend; ++i)
+    {
+        string name = nodes[i]->get_name();
+
+        const tag_map& tags = nodes[i]->get_all_tags();
+        tag_map::const_iterator ti;
+        for(ti = tags.begin(); ti != tags.end(); ti++){
+          t.add_row() << name + ':' + ti->first << ti->second;
+        }
+    }
+
+    t.print(os);
+}
+
 void scene::cli_props(const vector<string>& args, ostream& os) const
 {
     rvec vals;
@@ -851,12 +839,6 @@ void scene::cli_props(const vector<string>& args, ostream& os) const
         // Common properties
         for (int j = 0; j < common_props.size(); j++){
           t.add_row() << name + ':' + common_props[j] << vals(i++);
-        }
-
-        // Numeric properties (pos, rot, scale)
-        const numeric_properties_map& props = nodes[i]->get_numeric_properties();
-        for(numeric_properties_map::const_iterator j = props.begin(); j != props.end(); j++){
-          t.add_row() << name + ':' + j->first << vals(i++);
         }
     }
 
@@ -1110,23 +1092,17 @@ int scene::parse_object_query(std::vector<std::string>& f, std::string& result, 
     
     vec3 pos, rot, scale;
     node->get_trans(pos, rot, scale);
-    
-    const string_properties_map string_props = node->get_string_properties();
-    const numeric_properties_map numeric_props = node->get_numeric_properties();
+
+    const tag_map& tags = node->get_all_tags();
     
     stringstream ss;
     ss << "o " << name;
     ss << " p " << pos[0] << " " << pos[1] << " " << pos[2];
     ss << " r " << rot[0] << " " << rot[1] << " " << rot[2];
     ss << " s " << scale[0] << " " << scale[1] << " " << scale[2];
-    ss << " f " << (string_props.size() + numeric_props.size());
-    for (string_properties_map::const_iterator i = string_props.begin(); i != string_props.end(); i++)
-    {
-        ss << " " << i->first << " " << i->second;
-    }
-    for (numeric_properties_map::const_iterator i = numeric_props.begin(); i != numeric_props.end(); i++)
-    {
-        ss << " " << i->first << " " << i->second;
+    ss << " t " << tags.size();
+    for(tag_map::const_iterator i = tags.begin(); i != tags.end(); i++){
+      ss << "   " << i->first << " = " << i->second;
     }
     
     result = ss.str();
@@ -1141,8 +1117,8 @@ int scene::parse_objects_with_flag_query(std::vector<std::string>& f, std::strin
         return 1;
     }
     
-    string flagName = f[0];
-    string flagValue = f[1];
+    string tag_name = f[0];
+    string query_value = f[1];
     
     vector<string> nodeNames;
     
@@ -1150,11 +1126,9 @@ int scene::parse_objects_with_flag_query(std::vector<std::string>& f, std::strin
     this->get_all_nodes(nodes);
     for (vector<const sgnode*>::const_iterator i = nodes.begin(); i != nodes.end(); i++)
     {
-        const string_properties_map string_props = (*i)->get_string_properties();
-        string_properties_map::const_iterator prop_it = string_props.find(flagName);
-        if (prop_it != string_props.end() && prop_it->second == flagValue)
-        {
-            nodeNames.push_back((*i)->get_name());
+        string tag_value;
+        if((*i)->get_tag(tag_name, tag_value) && query_value == tag_value){
+          nodeNames.push_back((*i)->get_name());
         }
     }
     

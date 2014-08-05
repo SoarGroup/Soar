@@ -117,8 +117,8 @@ class all_nodes_filter : public filter, public sgnode_listener
                     break;
                 case sgnode::TRANSFORM_CHANGED:
                 case sgnode::SHAPE_CHANGED:
-                case sgnode::PROPERTY_CHANGED:
-                case sgnode::PROPERTY_DELETED:
+                case sgnode::TAG_CHANGED:
+                case sgnode::TAG_DELETED:
                     if (map_get(outputs, n, r))
                     {
                         change_output(r);
