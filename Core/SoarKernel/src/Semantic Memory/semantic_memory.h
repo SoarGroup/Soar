@@ -93,6 +93,7 @@ namespace soar
 
 			void print_memory(agent* theAgent, std::string** result_message);
 			void print_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string** result_message, unsigned int depth = 0, bool history = false);
+            void print_lti(agent* theAgent, const Symbol* lti, std::string** result_message, unsigned int depth = 0, bool history = false);
 
 			uint64_t lti_count();
 

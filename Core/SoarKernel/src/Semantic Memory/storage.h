@@ -33,6 +33,16 @@ namespace soar
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+        class storage_iterator : public std::iterator<std::input_iterator_tag, const Symbol*>
+        {
+        public:
+            virtual ~storage_iterator() {};
+            
+            virtual storage_iterator& operator++() = 0;
+            virtual bool operator==(const storage_iterator& rhs) = 0;
+            virtual bool operator!=(const storage_iterator& rhs) = 0;
+        };
+        
 		class storage
 		{
 		public:
@@ -55,6 +65,9 @@ namespace soar
 
 			virtual void reset() = 0;
 			virtual bool backup_to_file(std::string& file, std::string** error_message) = 0;
+            
+            virtual storage_iterator begin();
+            virtual const storage_iterator& end();
 		};
 	}
 }

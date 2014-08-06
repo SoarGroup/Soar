@@ -66,17 +66,18 @@ namespace soar
 
 		void semantic_memory::export_memory_to_graphviz(std::string** graphviz)
 		{
-
+            // TODO: add back graphviz support
 		}
 
 		void semantic_memory::export_lti_to_graphviz(const Symbol* lti, std::string** graphviz)
 		{
-            
-		}
-
-		void semantic_memory::print_memory(std::string** result_message)
+            // TODO: add back graphviz support
+        }
+        
+		void semantic_memory::print_memory(agent* theAgent, std::string** result_message)
 		{
-			
+            for (const Symbol* lti : backend)
+                print_lti(theAgent, lti, result_message, 0, false);
 		}
         
         bool semantic_memory::print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string** result_message, unsigned int depth, unsigned int max_depth, const tc_number tc)
@@ -148,6 +149,11 @@ namespace soar
             
             const Symbol* lti = backend->retrieve_lti(theAgent, lti_name, lti_number, result_message);
             
+            print_lti(theAgent, lti, result_message, depth, history);
+        }
+        
+        void semantic_memory::print_lti(agent* theAgent, const Symbol* lti, std::string** result_message, unsigned int depth, bool history)
+        {
             if (!lti->isa_lti)
             {
                 *result_message = new string;
