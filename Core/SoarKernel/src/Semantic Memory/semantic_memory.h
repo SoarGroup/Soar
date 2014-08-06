@@ -81,18 +81,18 @@ namespace soar
 			// Front for parse_cue, parse_retrieve, parse_remove
 			bool parse_agent_command(agent* theAgent, std::string** error_message);
 
-			bool parse_cue(agent* theAgent, const idSymbol* root_of_cue, std::string** result_message);
+			bool parse_cue(agent* theAgent, const Symbol* root_of_cue, std::string** result_message);
 
-			bool remove_lti(agent* theAgent, const idSymbol* lti_to_remove, std::string** result_message, bool force = false);
-			bool remove_ltis(agent* theAgent, const std::list<const idSymbol*> lti_to_remove, std::string** result_message, bool force = false);
+			bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, std::string** result_message, bool force = false);
+			bool remove_ltis(agent* theAgent, const std::list<const Symbol*> lti_to_remove, std::string** result_message, bool force = false);
 
-			bool retrieve_lti(agent* theAgent, const idSymbol* lti_to_retrieve, std::string** result_message);
+			bool retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string** result_message);
 
 			void export_memory_to_graphviz(std::string** graphviz);
-			void export_lti_to_graphviz(const idSymbol* lti, std::string** graphviz);
+			void export_lti_to_graphviz(const Symbol* lti, std::string** graphviz);
 
-			void print_memory(std::string** result_message);
-			void print_lti(const idSymbol* lti, std::string** result_message, unsigned int depth = 0, bool history = false);
+			void print_memory(agent* theAgent, std::string** result_message);
+			void print_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string** result_message, unsigned int depth = 0, bool history = false);
 
 			uint64_t lti_count();
 
@@ -119,6 +119,9 @@ namespace soar
 			////////////////////////////////////////////////////////////////////////////////
 			void lti_from_test(test t, std::list<Symbol*>* valid_ltis);
 			void lti_from_rhs_value(rhs_value rv, std::list<Symbol*>* valid_ltis);
+            
+            // Print + helpers
+            void print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string** result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);
 		};
 	}
 }

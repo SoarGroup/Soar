@@ -38,15 +38,15 @@ namespace soar
 		public:
 			virtual ~storage() {}
 
-			virtual bool parse_cue(agent* theAgent, const idSymbol* root_of_cue, std::string** result_message) = 0;
+			virtual bool parse_cue(agent* theAgent, const Symbol* root_of_cue, std::string** result_message) = 0;
 
-			virtual bool remove_lti(agent* theAgent, const idSymbol* lti_to_remove, bool force, std::string** result_message) = 0;
+			virtual bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, bool force, std::string** result_message) = 0;
 			virtual bool remove_lti(agent* theAgent, const char lti_letter, const uint64_t lti_number, bool force, std::string** result_message) = 0;
 
-			virtual bool retrieve_lti(agent* theAgent, const idSymbol* lti_to_retrieve, std::string** result_message) = 0;
-			virtual bool retrieve_lti(agent* theAgent, const char lti_letter, const uint64_t lti_number, std::string** result_message) = 0;
+			virtual const Symbol* retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string** result_message) = 0;
+			virtual const Symbol* retrieve_lti(agent* theAgent, const char lti_letter, const uint64_t lti_number, std::string** result_message) = 0;
 
-			virtual bool retrieve_all_ltis(agent* theAgent, std::list<const idSymbol*>* ltis) = 0;
+			virtual bool retrieve_all_ltis(agent* theAgent, std::list<const Symbol*>* ltis) = 0;
 
 			virtual uint64_t lti_count() = 0;
 

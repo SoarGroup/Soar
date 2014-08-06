@@ -106,9 +106,6 @@ typedef struct symbol_struct
     epmem_hash_id epmem_hash;
     uint64_t epmem_valid;
     
-    smem_hash_id smem_hash;
-    uint64_t smem_valid;
-    
 #ifndef SOAR_DEBUG_UTILITIES
     union
     {
@@ -210,20 +207,12 @@ struct idSymbol    : public Symbol
     struct wme_struct* epmem_time_wme;
     struct epmem_data_struct* epmem_info;
     
-    
-    Symbol* smem_header;
-    Symbol* smem_cmd_header;
-    Symbol* smem_result_header;
-    struct smem_data_struct* smem_info;
-    
-    
     struct gds_struct* gds;
     
     int saved_firing_type;
     struct ms_change_struct* ms_o_assertions;
     struct ms_change_struct* ms_i_assertions;
     struct ms_change_struct* ms_retractions;
-    
     
     /* --- fields used for Soar I/O stuff --- */
     ::cons* associated_output_links;
@@ -234,9 +223,8 @@ struct idSymbol    : public Symbol
     epmem_node_id epmem_id;
     uint64_t epmem_valid;
     
-    smem_lti_id smem_lti;
-    epmem_time_id smem_time_id;
-    uint64_t smem_valid;
+    // Semantic Memory
+    bool isa_lti;
     
     /*Agent::RL_Trace*/ void* rl_trace;
 };
@@ -268,8 +256,7 @@ inline bool Symbol::is_sti()
 };
 inline bool Symbol::is_lti()
 {
-    return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-            (id->smem_lti != NIL));
+    return symbol_type == IDENTIFIER_SYMBOL_TYPE && id->isa_lti;
 };
 
 inline bool Symbol::is_variablizable(Symbol* original_sym)
