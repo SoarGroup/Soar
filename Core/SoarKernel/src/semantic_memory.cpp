@@ -4717,6 +4717,8 @@ inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti
 			{
 				case SYM_CONSTANT_SYMBOL_TYPE:
 					smem_reverse_hash_str( my_agent, expand_q->column_int(3), temp_str2 );
+					temp_str2.insert(0, "|");
+					temp_str2.append("|");
 					break;
 
 				case INT_CONSTANT_SYMBOL_TYPE:
