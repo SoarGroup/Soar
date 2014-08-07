@@ -12,15 +12,25 @@ filter_table& get_filter_table()
     return inst;
 }
 
-// node filters
+// filters/node.cpp
 filter_table_entry* node_filter;
 filter_table_entry* all_nodes_filter;
 
-// distance filters
+// filters/distance.cpp
 filter_table_entry* distance_filter;
 filter_table_entry* distance_select_filter;
 filter_table_entry* closest_filter;
 filter_table_entry* farthest_filter;
+
+// filters/volume.cpp
+filter_table_entry* volume_filter;
+filter_table_entry* volume_select_filter;
+filter_table_entry* largest;
+filter_table_entry* smallest;
+filter_table_entry* larger;
+filter_table_entry* smaller;
+filter_table_entry* larger_select;
+filter_table_entry* smaller_select;
 
 filter_table::filter_table()
 {
@@ -31,6 +41,15 @@ filter_table::filter_table()
   add(distance_select_filter);
   add(closest_filter);
   add(farthest_filter);
+
+  add(volume_filter);
+  add(volume_select_filter);
+  add(largest);
+  add(smallest);
+  add(larger);
+  add(smaller);
+  add(larger_select);
+  add(smaller_select);
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*>& c)
