@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <list>
 #include <cstdlib>
 
 using namespace std;
@@ -35,22 +36,140 @@ namespace soar
 		}
 
 		// Front for parse_cue, parse_retrieve, parse_remove
-		bool semantic_memory::parse_agent_command(agent* theAgent, std::string** error_message)
+		void semantic_memory::parse_agent_command(agent* theAgent)
 		{
+            // Start at the bottom state and work our way up
+            const Symbol* state = theAgent->bottom_goal;
+            
+            // Transitive Closure Number
+            tc_number tc = get_new_tc_number(theAgent);
+            
+            soar_module::symbol_triple_list buffered_wme_changes;
+            
+            // While we have another state to parse
+            while (state != nullptr)
+            {
+                // Get the command link for the state
+                const Symbol* smem_command_link = state->id->smem_cmd_header;
+                
+                // Get the command wmes
+                list<wme*> command_wmes = wmes_of_id(smem_command_link);
+                
+                // Check if each is a command
+                enum {
+                    BAD = -1,
+                    NONE = 0,
+                    QUERY = 1,
+                    RETRIEVE = 2,
+                    STORE = 3
+                } command_type;
+                
+                command_type command = NONE;
+                string error_message = "Unknown Error";
+                int depth = 1;
+                
+                for (const wme* w : command_wmes)
+                {
+                    if (w->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE &&
+                        w->attr == theAgent->smem_sym_depth)
+                    {
+                        if (w->value->ic->value > 0)
+                            depth = w->value->ic->value;
+                        else
+                        {
+                            command = BAD;
+                            error_message = "Depth must be greater than 0, default is 1.";
+                            break;
+                        }
+                    }
+                    else if (w->value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+                    {
+                        command = BAD;
+                        error_message = "Non-Depth commands must have an identifier value for their wme.";
+                        break;
+                    }
+                        
+                    
+                    if (w->timetag > state->id->smem_info->last_cmd_time[query_slot] &&
+                        (w->attr == theAgent->smem_sym_query ||
+                         w->attr == theAgent->smem_sym_negquery ||
+                         w->attr == theAgent->smem_sym_prohibit))
+                    {
+                        // Potentially valid command
+                        if (command != NONE && command != QUERY)
+                        {
+                            command = BAD;
+                            error_message = "Commands must only ever be of one type.  You cannot mix retrieve(s), query(ies), and store(s).";
+                            break;
+                        }
+                        
+                        // Query
+                        state->id->smem_info->last_cmd_time[query_slot] = w->timetag;
+                        
+                        command = QUERY;
+                    }
+                    else if (w->timetag > state->id->smem_info->last_cmd_time[retrieve_slot] &&
+                             w->attr == theAgent->smem_sym_retrieve)
+                    {
+                        if (command != NONE && command != RETRIEVE)
+                        {
+                            command = BAD;
+                            error_message = "Commands must only ever be of one type.  You cannot mix retrieve(s), query(ies), and store(s).";
+                            break;
+                        }
+                        else if (!w->value->id->isa_lti)
+                        {
+                            command = BAD;
+                            error_message = "Retrieve commands can only ever have an LTI for their value.";
+                            break;
+                        }
+                        
+                        state->id->smem_info->last_cmd_time[retrieve_slot] = w->timetag;
 
+                        command = RETRIEVE;
+                    }
+                    else if (w->timetag > state->id->smem_info->last_cmd_time[store_slot] &&
+                             w->attr == theAgent->smem_sym_store)
+                    {
+                        if (command != NONE && command != STORE)
+                        {
+                            command = BAD;
+                            error_message = "Commands must only ever be of one type.  You cannot mix retrieve(s), query(ies), and store(s).";
+                            break;
+                        }
+                        
+                        state->id->smem_info->last_cmd_time[store_slot] = w->timetag;
+                        
+                        command = STORE;
+                    }
+                }
+                
+                if (command == BAD)
+                    buffered_add_error_message(theAgent, &buffered_wme_changes, state, error_message);
+                else if (command == QUERY)
+                    query(theAgent, command_wmes, &buffered_wme_changes));
+                else if (commmand == RETRIEVE)
+                    for (const wme* w : command_wmes)
+                        retrieve_lti(theAgent, w->value, &buffered_wme_changes);
+                else if (command == STORE)
+                    for (const wme* w : command_wmes)
+                        store_id(theAgent, w->value, &buffered_wme_changes);
+            }
+            
+            do_buffered_wme_changes(theAgent, &buffered_wme_changes);
 		}
-
-		bool semantic_memory::parse_cue(agent* theAgent, const Symbol* root_of_cue, std::string** result_message)
+    
+		bool semantic_memory::parse_cue(agent* theAgent, const Symbol* root_of_cue, std::string* result_message)
 		{
 			return backend->parse_cue(theAgent, root_of_cue, result_message);
 		}
 
-		bool semantic_memory::remove_lti(agent* theAgent, const Symbol* lti_to_remove, std::string** result_message, bool force)
+		bool semantic_memory::remove_lti(agent* theAgent, const Symbol* lti_to_remove, std::string* result_message, bool force)
 		{
 			return backend->remove_lti(theAgent, lti_to_remove, force, result_message);
 		}
 
-		bool semantic_memory::remove_ltis(agent* theAgent, const std::list<const Symbol*> lti_to_remove, std::string** result_message, bool force)
+		bool semantic_memory::remove_ltis(agent* theAgent, const std::list<const Symbol*> lti_to_remove, std::string* result_message, bool force)
 		{
 			for (const auto& id : lti_to_remove)
 				if (!backend->remove_lti(theAgent, id, force, result_message))
@@ -59,28 +178,28 @@ namespace soar
 			return true;
 		}
 
-		bool semantic_memory::retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string** result_message)
+		bool semantic_memory::retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string* result_message)
 		{
 			return backend->retrieve_lti(theAgent, lti_to_retrieve, result_message);
 		}
 
-		void semantic_memory::export_memory_to_graphviz(std::string** graphviz)
+		void semantic_memory::export_memory_to_graphviz(std::string* graphviz)
 		{
             // TODO: add back graphviz support
 		}
 
-		void semantic_memory::export_lti_to_graphviz(const Symbol* lti, std::string** graphviz)
+		void semantic_memory::export_lti_to_graphviz(const Symbol* lti, std::string* graphviz)
 		{
             // TODO: add back graphviz support
         }
         
-		void semantic_memory::print_memory(agent* theAgent, std::string** result_message)
+		void semantic_memory::print_memory(agent* theAgent, std::string* result_message)
 		{
             for (const Symbol* lti : backend)
                 print_lti(theAgent, lti, result_message, 0, false);
 		}
         
-        bool semantic_memory::print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string** result_message, unsigned int depth, unsigned int max_depth, const tc_number tc)
+        bool semantic_memory::print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc)
         {
             vector<wme*> list;
             
@@ -141,7 +260,7 @@ namespace soar
             }
         }
 
-		void semantic_memory::print_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string** result_message, unsigned int depth, bool history)
+		void semantic_memory::print_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string* result_message, unsigned int depth, bool history)
 		{
             // TODO: put back lti activation history
             
@@ -152,7 +271,7 @@ namespace soar
             print_lti(theAgent, lti, result_message, depth, history);
         }
         
-        void semantic_memory::print_lti(agent* theAgent, const Symbol* lti, std::string** result_message, unsigned int depth, bool history)
+        void semantic_memory::print_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, bool history)
         {
             if (!lti->isa_lti)
             {
@@ -304,7 +423,7 @@ namespace soar
 			backend->reset();
 		}
 
-		bool semantic_memory::backup_to_file(std::string& file, std::string** error_message)
+		bool semantic_memory::backup_to_file(std::string& file, std::string* error_message)
 		{
 			return backend->backup_to_file(file, error_message);
 		}

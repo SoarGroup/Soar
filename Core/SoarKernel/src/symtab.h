@@ -224,6 +224,11 @@ struct idSymbol    : public Symbol
     uint64_t epmem_valid;
     
     // Semantic Memory
+    Symbol* smem_header;
+    Symbol* smem_cmd_header;
+    Symbol* smem_result_header;
+    struct smem_data_struct* smem_info;
+    
     bool isa_lti;
     
     /*Agent::RL_Trace*/ void* rl_trace;

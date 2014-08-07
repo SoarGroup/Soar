@@ -48,7 +48,8 @@ namespace soar
 		public:
 			virtual ~storage() {}
 
-			virtual bool parse_cue(agent* theAgent, const Symbol* root_of_cue, std::string** result_message) = 0;
+			virtual bool query(agent* theAgent, const Symbol* root_of_cue, const Symbol* result, std::string** result_message) = 0;
+            virtual bool store(agent* theAgent, const Symbol* root_of_cue, std::string** result_message) = 0;
 
 			virtual bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, bool force, std::string** result_message) = 0;
 			virtual bool remove_lti(agent* theAgent, const char lti_letter, const uint64_t lti_number, bool force, std::string** result_message) = 0;
