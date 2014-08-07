@@ -156,6 +156,18 @@ namespace soar
                         store_id(theAgent, w->value, &buffered_wme_changes);
             }
             
+            if (mirroring)
+            {
+                for (const Symbol* sym : theAgent->smem_changed_ids)
+                {
+                    // require that the lti has at least one augmentation
+                    if (sym->id->slots)
+                        smem_soar_store(thisAgent, sym, store_recursive);
+                    
+                    symbol_remove_ref(thisAgent, (*it));
+                }
+            }
+            
             do_buffered_wme_changes(theAgent, &buffered_wme_changes);
 		}
     
