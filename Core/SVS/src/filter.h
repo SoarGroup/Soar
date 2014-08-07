@@ -616,7 +616,7 @@ class rank_filter : public typed_filter<double>
             double r;
             const filter_params* p;
 
-            bool changed;
+            bool changed = false;
           
             // Added inputs
             for (int i = input->first_added(); i < input->num_current(); ++i)
