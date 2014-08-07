@@ -34,6 +34,62 @@ namespace soar
 		{
 			return backend;
 		}
+        
+        void semantic_memory::query(agent* theAgent, const Symbol* state, list<const wme*>& command_wmes, soar_module::symbol_triple_list& buffered_wme_changes)
+        {
+            const Symbol* root_of_query = nullptr, *root_of_neg_query = nullptr;
+            std::list<const Symbol*> prohibit;
+            std::string result_message = "Unknown Result";
+            
+            for (const wme* w : command_wmes)
+            {
+                if (w->attr == theAgent->smem_sym_query)
+                {
+                    if (!root_of_query)
+                        root_of_query = w->value;
+                    else
+                    {
+                        buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have duplicate query objects");
+                        return;
+                    }
+                }
+                else if (w->attr == theAgent->smem_sym_negquery)
+                {
+                    if (!root_of_neg_query)
+                        root_of_neg_query = w->value;
+                    else
+                    {
+                        buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have duplicate negative query objects");
+                        return;
+                    }
+                }
+                else if (w->attr == theAgent->smem_sym_prohibit)
+                {
+                    if (!w->value->id->isa_lti)
+                    {
+                        buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot prohibit non-ltis");
+                        return;
+                    }
+                    
+                    prohibit.push_back(w->value);
+                }
+            }
+            
+            if (!root_of_query && !root_of_neg_query)
+                buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Query commands must have a (neg)query attribute");
+            else
+            {
+                const Symbol* result = backend->query(theAgent, root_of_query, root_of_neg_query, prohibit, &result_message);
+                
+                if (!result)
+                    buffered_add_error_message(theAgent, &buffered_wme_changes, state, result_message);
+                else
+                {
+                    buffered_add_success_message(theAgent, &buffered_wme_changes, state, result_message);
+                    buffered_add_success_result(theAgent, &buffered_wme_changes, state, result);
+                }
+            }
+        }
 
 		// Front for parse_cue, parse_retrieve, parse_remove
 		void semantic_memory::parse_agent_command(agent* theAgent)
