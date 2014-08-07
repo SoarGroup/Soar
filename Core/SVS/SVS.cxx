@@ -13,6 +13,7 @@
 #include "src/filters/distance_on_axis.cpp"
 #include "src/filters/intersect.cpp"
 #include "src/filters/node.cpp"
+#include "src/filters/tag_select.cpp"
 #include "src/filters/volume.cpp"
 
 #include "src/cliproxy.cpp"

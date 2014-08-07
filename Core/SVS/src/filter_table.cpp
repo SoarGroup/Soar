@@ -46,6 +46,8 @@ filter_table_entry* intersect_select_filter_entry();
 filter_table_entry* contain_filter_entry();
 filter_table_entry* contain_select_filter_entry();
 
+// filters/tag_select.cpp
+filter_table_entry* tag_select_filter_entry();
 
 filter_table::filter_table()
 {
@@ -76,6 +78,8 @@ filter_table::filter_table()
 
   add(contain_filter_entry());
   add(contain_select_filter_entry());
+
+  add(tag_select_filter_entry());
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*>& c)
