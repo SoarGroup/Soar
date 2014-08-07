@@ -8,8 +8,10 @@
 #include "src/commands/delnode.cpp"
 
 #include "src/filters/base_node_filters.cpp"
+#include "src/filters/contain.cpp"
 #include "src/filters/distance.cpp"
 #include "src/filters/distance_on_axis.cpp"
+#include "src/filters/intersect.cpp"
 #include "src/filters/node.cpp"
 #include "src/filters/volume.cpp"
 

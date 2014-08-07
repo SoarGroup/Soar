@@ -38,6 +38,15 @@ filter_table_entry* smaller_select_filter_entry();
 filter_table_entry* distance_on_axis_filter_entry();
 filter_table_entry* distance_on_axis_filter_select_entry();
 
+// filters/intersect.cpp
+filter_table_entry* intersect_filter_entry();
+filter_table_entry* intersect_select_filter_entry();
+
+// filters/contain.cpp
+filter_table_entry* contain_filter_entry();
+filter_table_entry* contain_select_filter_entry();
+
+
 filter_table::filter_table()
 {
   add(node_filter_entry());
@@ -61,6 +70,12 @@ filter_table::filter_table()
 
   add(distance_on_axis_filter_entry());
   add(distance_on_axis_select_filter_entry());
+
+  add(intersect_filter_entry());
+  add(intersect_select_filter_entry());
+
+  add(contain_filter_entry());
+  add(contain_select_filter_entry());
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*>& c)
