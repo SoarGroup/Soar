@@ -13,43 +13,54 @@ filter_table& get_filter_table()
 }
 
 // filters/node.cpp
-filter_table_entry* node_filter;
-filter_table_entry* all_nodes_filter;
+filter_table_entry* node_filter_entry();
+filter_table_entry* all_nodes_filter_entry();
+filter_table_entry* remove_node_filter_entry();
+filter_table_entry* node_centroid_filter_entry();
 
 // filters/distance.cpp
-filter_table_entry* distance_filter;
-filter_table_entry* distance_select_filter;
-filter_table_entry* closest_filter;
-filter_table_entry* farthest_filter;
+filter_table_entry* distance_filter_entry();
+filter_table_entry* distance_select_filter_entry();
+filter_table_entry* closest_filter_entry();
+filter_table_entry* farthest_filter_entry();
 
 // filters/volume.cpp
-filter_table_entry* volume_filter;
-filter_table_entry* volume_select_filter;
-filter_table_entry* largest;
-filter_table_entry* smallest;
-filter_table_entry* larger;
-filter_table_entry* smaller;
-filter_table_entry* larger_select;
-filter_table_entry* smaller_select;
+filter_table_entry* volume_filter_entry();
+filter_table_entry* volume_select_filter_entry();
+filter_table_entry* largest_filter_entry();
+filter_table_entry* smallest_filter_entry();
+filter_table_entry* larger_filter_entry();
+filter_table_entry* smaller_filter_entry();
+filter_table_entry* larger_select_filter_entry();
+filter_table_entry* smaller_select_filter_entry();
+
+// filters/distance_on_axis.cpp
+filter_table_entry* distance_on_axis_filter_entry();
+filter_table_entry* distance_on_axis_filter_select_entry();
 
 filter_table::filter_table()
 {
-  add(node_filter);
-  add(all_nodes_filter);
+  add(node_filter_entry());
+  add(all_nodes_filter_entry());
+  add(node_centroid_filter_entry());
+  add(remove_node_filter_entry());
 
-  add(distance_filter);
-  add(distance_select_filter);
-  add(closest_filter);
-  add(farthest_filter);
+  add(distance_filter_entry());
+  add(distance_select_filter_entry());
+  add(closest_filter_entry());
+  add(farthest_filter_entry());
 
-  add(volume_filter);
-  add(volume_select_filter);
-  add(largest);
-  add(smallest);
-  add(larger);
-  add(smaller);
-  add(larger_select);
-  add(smaller_select);
+  add(volume_filter_entry());
+  add(volume_select_filter_entry());
+  add(largest_filter_entry());
+  add(smallest_filter_entry());
+  add(larger_filter_entry());
+  add(smaller_filter_entry());
+  add(larger_select_filter_entry());
+  add(smaller_select_filter_entry());
+
+  add(distance_on_axis_filter_entry());
+  add(distance_on_axis_select_filter_entry());
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*>& c)

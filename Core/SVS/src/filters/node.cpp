@@ -219,7 +219,7 @@ filter* make_remove_node_filter(Symbol* root, soar_interface* si, scene* scn, fi
     return new remove_node_filter(root, si, input);
 }
 
-filter_table_entry* node_fill_entry()
+filter_table_entry* node_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "node";
@@ -228,7 +228,7 @@ filter_table_entry* node_fill_entry()
     return e;
 }
 
-filter_table_entry* all_nodes_fill_entry()
+filter_table_entry* all_nodes_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "all_nodes";
@@ -236,7 +236,7 @@ filter_table_entry* all_nodes_fill_entry()
     return e;
 }
 
-filter_table_entry* node_centroid_fill_entry()
+filter_table_entry* node_centroid_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "node_centroid";
@@ -245,7 +245,7 @@ filter_table_entry* node_centroid_fill_entry()
     return e;
 }
 
-filter_table_entry* remove_node_fill_entry()
+filter_table_entry* remove_node_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "remove_node";
