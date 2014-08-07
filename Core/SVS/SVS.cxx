@@ -7,8 +7,9 @@
 #include "src/commands/copy_node.cpp"
 #include "src/commands/delnode.cpp"
 
-#include "src/filters/node.cpp"
 #include "src/filters/base_node_filters.cpp"
+#include "src/filters/distance.cpp"
+#include "src/filters/node.cpp"
 
 #include "src/cliproxy.cpp"
 #include "src/command.cpp"

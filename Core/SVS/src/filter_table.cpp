@@ -12,81 +12,25 @@ filter_table& get_filter_table()
     return inst;
 }
 
-//filter_table_entry* intersect_fill_entry();
-//filter_table_entry* distance_fill_entry();
-//filter_table_entry* centroid_distance_fill_entry();
-//filter_table_entry* distance_xyz_fill_entry();
-//filter_table_entry* smaller_fill_entry();
-//filter_table_entry* linear_fill_entry();
-//filter_table_entry* bbox_fill_entry();
-//filter_table_entry* bbox_int_fill_entry();
-//filter_table_entry* bbox_contains_fill_entry();
-//filter_table_entry* ontop_fill_entry();
-//filter_table_entry* north_of_fill_entry();
-//filter_table_entry* south_of_fill_entry();
-//filter_table_entry* east_of_fill_entry();
-//filter_table_entry* west_of_fill_entry();
-//filter_table_entry* x_aligned_fill_entry();
-//filter_table_entry* y_aligned_fill_entry();
-//filter_table_entry* z_aligned_fill_entry();
-//filter_table_entry* above_fill_entry();
-//filter_table_entry* below_fill_entry();
-//filter_table_entry* node_fill_entry();
-//filter_table_entry* all_nodes_fill_entry();
-//filter_table_entry* node_centroid_fill_entry();
-//filter_table_entry* compare_fill_entry();
-//filter_table_entry* compare_nodes_fill_entry();
-//filter_table_entry* absval_fill_entry();
-//filter_table_entry* vec3_fill_entry();
-//filter_table_entry* max_fill_entry();
-//filter_table_entry* closest_fill_entry();
-//filter_table_entry* has_property_fill_entry();
-//filter_table_entry* occlusion_fill_entry();
-//filter_table_entry* dist_select_xyz_fill_entry();
-//filter_table_entry* overlap_fill_entry();
-//filter_table_entry* monitor_position_fill_entry();
-//filter_table_entry* monitor_volume_fill_entry();
-//filter_table_entry* remove_node_fill_entry();
-//filter_table_entry* higher_than_fill_entry();
+// node filters
+filter_table_entry* node_filter;
+filter_table_entry* all_nodes_filter;
+
+// distance filters
+filter_table_entry* distance_filter;
+filter_table_entry* distance_select_filter;
+filter_table_entry* closest_filter;
+filter_table_entry* farthest_filter;
 
 filter_table::filter_table()
 {
-    //add(intersect_fill_entry());
-    //add(distance_fill_entry());
-    //add(centroid_distance_fill_entry());
-    //add(distance_xyz_fill_entry());
-    //add(smaller_fill_entry());
-    //add(linear_fill_entry());
-    //add(bbox_fill_entry());
-    //add(bbox_int_fill_entry());
-    //add(bbox_contains_fill_entry());
-    //add(ontop_fill_entry());
-    //add(north_of_fill_entry());
-    //add(south_of_fill_entry());
-    //add(east_of_fill_entry());
-    //add(west_of_fill_entry());
-    //add(x_aligned_fill_entry());
-    //add(y_aligned_fill_entry());
-    //add(z_aligned_fill_entry());
-    //add(above_fill_entry());
-    //add(below_fill_entry());
-    //add(node_fill_entry());
-    //add(all_nodes_fill_entry());
-    //add(node_centroid_fill_entry());
-    //add(compare_fill_entry());
-    //add(compare_nodes_fill_entry());
-    //add(absval_fill_entry());
-    //add(vec3_fill_entry());
-    //add(max_fill_entry());
-    //add(closest_fill_entry());
-    //add(has_property_fill_entry());
-    //add(occlusion_fill_entry());
-    //add(dist_select_xyz_fill_entry());
-    //add(overlap_fill_entry());
-    //add(monitor_position_fill_entry());
-    //add(monitor_volume_fill_entry());
-    //add(remove_node_fill_entry());
-    //add(higher_than_fill_entry());
+  add(node_filter);
+  add(all_nodes_filter);
+
+  add(distance_filter);
+  add(distance_select_filter);
+  add(closest_filter);
+  add(farthest_filter);
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*>& c)
