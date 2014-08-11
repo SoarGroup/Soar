@@ -18,7 +18,7 @@
 #include "episodic_memory.h"
 #include "soar_module.h"
 #include "soar_instance.h"
-#include "lexer.h"
+#include "Lexer.h"
 
 debug_param_container::debug_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {

@@ -89,6 +89,13 @@ gp {gp*test9
 #(<s> ^[<var> att] <var>)
 #}
 
+#can use with dots
+gp {gp*test11
+(state <s> ^[att1 att2 <foo>].[bar baz qux] val)
+-->
+(<s> ^foo.[att3 att4] foo ^[att5 att6].bar bar)
+}
+
 ### Failure cases ###
 
 #gp {gp*fail1

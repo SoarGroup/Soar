@@ -26,7 +26,7 @@
 #include "debug.h"
 #include "kernel.h"
 #include "mem.h"
-#include "lexer.h"
+#include "Lexer.h"
 #include "symtab.h"
 #include "gdatastructs.h"
 #include "rhsfun.h"
@@ -76,7 +76,6 @@ void init_soar_agent(agent* thisAgent) {
   init_production_utilities(thisAgent);
   init_built_in_rhs_functions (thisAgent);
   init_rete (thisAgent);
-  init_lexer (thisAgent);
   init_firer (thisAgent);
   init_decider (thisAgent);
   init_soar_io (thisAgent);
@@ -163,9 +162,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->all_wmes_in_rete                   = NIL;
   newAgent->alpha_mem_id_counter               = 0;
-  newAgent->alternate_input_string             = NIL;
-  newAgent->alternate_input_suffix             = NIL;
-  newAgent->alternate_input_exit               = FALSE;/* Soar-Bugs #54 */
   newAgent->backtrace_number                   = 0;
   newAgent->beta_node_id_counter               = 0;
   newAgent->bottom_goal                        = NIL;
@@ -173,9 +169,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->chunk_count                        = 1;
   newAgent->chunk_free_problem_spaces          = NIL;
   newAgent->chunky_problem_spaces              = NIL;  /* AGR MVL1 */
-  strcpy(newAgent->chunk_name_prefix,"chunk");	/* ajc (5/14/02) */
+  strcpy(newAgent->chunk_name_prefix,"chunk");  /* ajc (5/14/02) */
   newAgent->context_slots_with_changed_acceptable_preferences = NIL;
-  newAgent->current_file                       = NIL;
   newAgent->current_phase                      = INPUT_PHASE;
   newAgent->applyPhase                         = FALSE;
   newAgent->current_symbol_hash_id             = 0;
@@ -196,7 +191,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->input_period                       = 0;     /* AGR REW1 */
   newAgent->input_cycle_flag                   = TRUE;  /* AGR REW1 */
   newAgent->justification_count                = 1;
-  newAgent->lex_alias                          = NIL;  /* AGR 568 */
   newAgent->link_update_mode                   = UPDATE_LINKS_NORMALLY;
   newAgent->locals_tc                          = 0;
   newAgent->max_chunks_reached                 = FALSE; /* MVP 6-24-94 */
@@ -208,7 +202,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->num_wmes_in_rete                   = 0;
   newAgent->potentials_tc                      = 0;
   newAgent->prev_top_state                     = NIL;
-  newAgent->print_prompt_flag                  = TRUE;
   newAgent->printer_output_column              = 1;
   newAgent->production_being_fired             = NIL;
   newAgent->productions_being_traced           = NIL;
@@ -218,7 +211,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->stop_soar                          = TRUE;
   newAgent->system_halted                      = FALSE;
   newAgent->token_additions                    = 0;
-  newAgent->top_dir_stack                      = NIL;   /* AGR 568 */
   newAgent->top_goal                           = NIL;
   newAgent->top_state                          = NIL;
   newAgent->wmes_to_add                        = NIL;
@@ -261,15 +253,6 @@ agent * create_soar_agent (char * agent_name) {                                 
      newAgent->if_no_sharing[i]=0;
   }
 
-  /* Initializing lexeme */
-  newAgent->lexeme.type = NULL_LEXEME;
-  newAgent->lexeme.string[0] = 0;
-  newAgent->lexeme.length = 0;
-  newAgent->lexeme.int_val = 0;
-  newAgent->lexeme.float_val = 0.0;
-  newAgent->lexeme.id_letter = 'A';
-  newAgent->lexeme.id_number = 0;
-
   reset_max_stats(newAgent);
 
   newAgent->real_time_tracker = 0;
@@ -277,10 +260,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   if(!getcwd(cur_path, MAXPATHLEN))
     print(newAgent, "Unable to set current directory while initializing agent.\n");
-  newAgent->top_dir_stack = static_cast<dir_stack_struct *>(malloc(sizeof(dir_stack_struct)));   /* AGR 568 */
-  newAgent->top_dir_stack->directory = static_cast<char *>(malloc(MAXPATHLEN*sizeof(char)));   /* AGR 568 */
-  newAgent->top_dir_stack->next = NIL;   /* AGR 568 */
-  strcpy(newAgent->top_dir_stack->directory, cur_path);   /* AGR 568 */
 
   /* changed all references of 'i', a var belonging to a previous for loop, to 'productionTypeCounter' to be unique
     stokesd Sept 10 2004*/
@@ -520,8 +499,6 @@ void destroy_soar_agent (agent * delete_agent)
 
   /* Free structures stored in agent structure */
   free(delete_agent->name);
-  free(delete_agent->top_dir_stack->directory);
-  free(delete_agent->top_dir_stack);
 
   /* Freeing the agent's multi attributes structure */
   multi_attribute* lastmattr = 0;
@@ -556,10 +533,6 @@ void destroy_soar_agent (agent * delete_agent)
   free_memory(delete_agent, delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
   free_memory(delete_agent, delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
   free_memory(delete_agent, delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
-
-  /* Releasing memory allocated in inital call to start_lex_from_file from init_lexer */
-  free_memory_block_for_string(delete_agent, delete_agent->current_file->filename);
-  free_memory (delete_agent, delete_agent->current_file, MISCELLANEOUS_MEM_USAGE);
 
   /* Releasing trace formats (needs to happen before tracing hashtables are released) */
   remove_trace_format (delete_agent, FALSE, FOR_ANYTHING_TF, NIL);

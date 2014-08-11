@@ -14,7 +14,7 @@
 #define OUTPUT_MANAGER_H_
 
 #include "kernel.h"
-#include "lexer.h"
+#include "agent.h"
 #include "soar_db.h"
 
 #define num_output_strings 10
