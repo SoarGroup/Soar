@@ -742,7 +742,7 @@ class passthru_filter : public map_filter<T>
             return false;
           }
           filter_val* fv = params->begin()->second;
-          return get_filter_param(fv, out);
+          return get_filter_val(fv, out);
         }
 };
 

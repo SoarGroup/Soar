@@ -20,6 +20,7 @@ filter_table_entry* node_position_filter_entry();
 filter_table_entry* node_rotation_filter_entry();
 filter_table_entry* node_scale_filter_entry();
 filter_table_entry* node_bbox_filter_entry();
+filter_table_entry* combine_nodes_filter_entry();
 
 // filters/distance.cpp
 filter_table_entry* distance_filter_entry();
@@ -61,6 +62,7 @@ filter_table::filter_table()
   add(node_rotation_filter_entry());
   add(node_scale_filter_entry());
   add(node_bbox_filter_entry());
+  add(combine_nodes_filter_entry());
 
   add(distance_filter_entry());
   add(distance_select_filter_entry());
@@ -435,7 +437,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
     }
     
     // The combine type check is a bit of a hack
-    if (itype == "concat" || ftype == "combine")
+    if (itype == "concat" || ftype == "combine_nodes")
     {
         input = new concat_filter_input();
     }

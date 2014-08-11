@@ -217,6 +217,14 @@ class node_trans_filter : public map_filter<vec3>
         char trans_type;
 };
 
+class combine_nodes_filter : public passthru_filter<sgnode*>
+{
+    public:
+        combine_nodes_filter(Symbol* root, soar_interface* si, filter_input* input)
+            : passthru_filter<sgnode*>(root, si, input)
+        {}
+};
+
 filter* make_node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_filter(root, si, scn, input);
@@ -250,6 +258,11 @@ filter* make_node_bbox_filter(Symbol* root, soar_interface* si, scene* scn, filt
 filter* make_remove_node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new remove_node_filter(root, si, input);
+}
+
+filter* make_combine_nodes_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+{
+    return new combine_nodes_filter(root, si, input);
 }
 
 filter_table_entry* node_filter_entry()
@@ -305,5 +318,13 @@ filter_table_entry* remove_node_filter_entry()
     filter_table_entry* e = new filter_table_entry;
     e->name = "remove_node";
     e->create = &make_remove_node_filter;
+    return e;
+}
+
+filter_table_entry* combine_nodes_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry;
+    e->name = "combine_nodes";
+    e->create = &make_combine_nodes_filter;
     return e;
 }
