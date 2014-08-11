@@ -16,7 +16,7 @@
 #include "kernel.h"
 #include "init_soar.h"
 #include "mem.h"
-#include "Lexer.h"
+#include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
 #include "agent.h"

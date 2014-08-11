@@ -17,7 +17,7 @@
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 #include "agent.h"
-#include "Lexer.h"
+#include "lexer.h"
 #include "print.h"
 #include "mem.h"
 #include "parser.h"

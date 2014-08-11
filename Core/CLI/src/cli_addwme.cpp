@@ -9,7 +9,7 @@
 #include "wma.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-#include "Lexer.h"
+#include "lexer.h"
 
 using namespace cli;
 using namespace sml;
