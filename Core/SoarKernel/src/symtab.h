@@ -257,7 +257,7 @@ inline bool Symbol::is_variablizable_constant()
 inline bool Symbol::is_sti()
 {
     return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-            (id->smem_lti == NIL));
+            (!id->isa_lti));
 };
 inline bool Symbol::is_lti()
 {

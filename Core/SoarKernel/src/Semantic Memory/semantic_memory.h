@@ -21,6 +21,7 @@
 
 #include <string>
 #include <list>
+#include <memory>
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -52,6 +53,11 @@ namespace soar
 //		typedefs for readability
 //
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef USE_MEM_POOL_ALLOCATORS
+        typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > pooled_symbol_set;
+#else
+        typedef std::set< Symbol* > smem_pooled_symbol_set;
+#endif
 
 		typedef struct ::condition_struct condition;
 		typedef struct ::action_struct action;
@@ -65,15 +71,21 @@ namespace soar
 
 		class semantic_memory
 		{
+            semantic_memory(storage* storage_container);
+            ~semantic_memory();
+            
+            static std::shared_ptr<semantic_memory> singleton;
+            
 		public:
 			////////////////////////////////////////////////////////////////////////////////
 			//
 			//		Public Declarations
 			//
 			////////////////////////////////////////////////////////////////////////////////
-
-			semantic_memory(storage* storage_container);
-			~semantic_memory();
+            static const std::shared_ptr<semantic_memory> create_singleton(storage* storage);
+            static const std::shared_ptr<semantic_memory> get_singleton();
+            
+            void reset(agent* theAgent, Symbol* state);
 
 			bool set_storage_container(storage* storage_container);
 			const storage* get_storage_container();

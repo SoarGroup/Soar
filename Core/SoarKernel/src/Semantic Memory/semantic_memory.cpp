@@ -11,6 +11,25 @@ namespace soar
 {
 	namespace semantic_memory
 	{
+        const std::shared_ptr<semantic_memory> semantic_memory::create_singleton(storage* storage)
+        {
+            if (singleton.get())
+                return singleton;
+            
+            unique_ptr<semantic_memory> smem(new semantic_memory(storage));
+            singleton = move(smem);
+            
+            return singleton;
+        }
+        
+        const std::shared_ptr<semantic_memory> semantic_memory::get_singleton()
+        {
+            if (!singleton.get())
+                return nullptr;
+            
+            return singleton;
+        }
+        
 		semantic_memory::semantic_memory(storage* storage_container)
 		: backend(storage_container)
 		{}

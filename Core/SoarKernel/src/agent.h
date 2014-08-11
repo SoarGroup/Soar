@@ -908,18 +908,7 @@ typedef struct agent_struct
     uint64_t epmem_validation;
     
     // smem
-    smem_param_container* smem_params;
-    smem_stat_container* smem_stats;
-    smem_timer_container* smem_timers;
-    
-    soar_module::sqlite_database* smem_db;
-    smem_statement_container* smem_stmts;
-    
-    uint64_t smem_validation;
-    int64_t smem_max_cycle;
-    
-    smem_pooled_symbol_set* smem_changed_ids;
-    bool smem_ignore_changes;
+    soar::semantic_memory::pooled_symbol_set* smem_changed_ids;
     
     // dynamic memory pools
     std::map< size_t, memory_pool* >* dyn_memory_pools;
