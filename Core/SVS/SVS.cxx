@@ -1,11 +1,10 @@
-#include "src/commands/addnode.cpp"
+#include "src/commands/add_node.cpp"
 #include "src/commands/extract.cpp"
-#include "src/commands/project.cpp"
 #include "src/commands/set_property.cpp"
 #include "src/commands/set_tag.cpp"
 #include "src/commands/delete_tag.cpp"
 #include "src/commands/copy_node.cpp"
-#include "src/commands/delnode.cpp"
+#include "src/commands/delete_node.cpp"
 
 #include "src/filters/base_node_filters.cpp"
 #include "src/filters/contain.cpp"

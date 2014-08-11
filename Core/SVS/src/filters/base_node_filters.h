@@ -53,7 +53,7 @@
  *    Returns:
  *      sgnode pair (a, b) from the inputs where node_comparison(a, b) is the highest
  *    Settings:
- *      set_prefer_higher(bool) - if false, returns the lowest node instead
+ *      set_select_highest(bool) - if false, returns the lowest node instead
  *
  *
  * Node Evaluation
@@ -83,7 +83,7 @@
  *    Returns:
  *      sgnode - node from input set a where node_evaluation(a) is the highest
  *    Settings:
- *      set_prefer_higher(bool) - if false, returns the lowest node instead
+ *      set_select_highest(bool) - if false, returns the lowest node instead
  *
  ******************************************************************************/
 #ifndef __BASE_NODE_FILTERS_H__
@@ -169,18 +169,13 @@ class node_comparison_rank_filter : public rank_filter {
   public:
     node_comparison_rank_filter(Symbol* root, soar_interface* si, 
         filter_input* input, node_comparison* comp)
-      : rank_filter(root, si, input), comp(comp), prefer_higher(true)
+      : rank_filter(root, si, input), comp(comp)
     {}
 
     bool rank(const filter_params* p, double& r);
 
-    void set_prefer_higher(bool pref_higher){
-      prefer_higher = pref_higher;
-    }
-
   private:
     node_comparison* comp;
-    bool prefer_higher;
 };
 
 ////// Node Evaluation Filters //////
@@ -223,18 +218,13 @@ class node_evaluation_rank_filter : public rank_filter {
   public:
     node_evaluation_rank_filter(Symbol* root, soar_interface* si, 
         filter_input* input, node_evaluation* eval)
-      : rank_filter(root, si, input), eval(eval), prefer_higher(true)
+      : rank_filter(root, si, input), eval(eval)
     {}
 
     bool rank(const filter_params* p, double& r);
 
-    void set_prefer_higher(bool pref_higher){
-      prefer_higher = pref_higher;
-    }
-
   private:
     node_evaluation* eval;
-    bool prefer_higher;
 };
 
 #endif //__BASE_NODE_FILTERS_H__

@@ -111,7 +111,7 @@ filter_table_entry* volume_select_filter_entry(){
 ////// filter smallest //////
 filter* make_smallest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input){
   node_evaluation_rank_filter* f = new node_evaluation_rank_filter(root, si, input, &evaluate_volume);
-  f->set_prefer_higher(false);
+  f->set_select_highest(false);
   return f;
 }
 
@@ -172,7 +172,7 @@ filter_table_entry* larger_select_filter_entry(){
 
 ////// filter smaller_select //////
 filter* make_smaller_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input){
-  return new node_test_filter(root, si, input, &smaller_test);
+  return new node_test_select_filter(root, si, input, &smaller_test);
 }
 
 filter_table_entry* smaller_select_filter_entry(){

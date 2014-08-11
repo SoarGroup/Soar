@@ -13,7 +13,6 @@ class extract_command : public command, public filter_input::listener
         extract_command(svs_state* state, Symbol* root, bool once)
             : command(state, root), root(root), state(state), fltr(NULL), res_root(NULL), first(true), once(once)
         {
-            //cout << padd() << "NEW EXTRACT COMMAND" << endl;
             si = state->get_svs()->get_soar_interface();
         }
         
@@ -99,11 +98,9 @@ class extract_command : public command, public filter_input::listener
             for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i)
             {
                 handle_output(out->get_current(i));
-                //cout << padd() << "Added output" << endl;
             }
             for (int i = 0, iend = out->num_removed(); i < iend; ++i)
             {
-                //cout << padd() << "Removed output" << endl;
                 filter_val* fv = out->get_removed(i);
                 record r;
                 if (!map_pop(records, fv, r))
@@ -114,7 +111,6 @@ class extract_command : public command, public filter_input::listener
             }
             for (int i = 0, iend = out->num_changed(); i < iend; ++i)
             {
-                //cout << padd() << "Changed output" << endl;
                 handle_output(out->get_changed(i));
             }
         }
@@ -147,7 +143,7 @@ class extract_command : public command, public filter_input::listener
             }
             else if (get_filter_val(v, bv))
             {
-                single_val = si->make_sym(bv ? "t" : "f");
+                single_val = si->make_sym(bv ? "true" : "false");
             }
             
             if (single_val != NULL)
@@ -169,7 +165,12 @@ class extract_command : public command, public filter_input::listener
             map<string, string>::const_iterator i, iend;
             for (i = rep.begin(), iend = rep.end(); i != iend; ++i)
             {
-                si->make_wme(subid, i->first, i->second);
+                double dval;
+                if(parse_double(i->second, dval)){
+                  si->make_wme(subid, i->first, dval);
+                } else {
+                  si->make_wme(subid, i->first, i->second);
+                }
             }
             return w;
         }
@@ -253,17 +254,14 @@ class extract_command : public command, public filter_input::listener
         
         void handle_output(filter_val* output)
         {
-            //cout << padd() << "extract_filter::handle_output " << endl;
             record* r;
             if ((r = map_getp(records, output)))
             {
-                //cout << padd() << "  replace existing wme" << endl;
                 si->remove_wme(r->val_wme);
                 r->val_wme = make_value_wme(output, r->rec_id);
             }
             else
             {
-                //cout << padd() << "  make new record" << endl;
                 make_record(output);
             }
         }
@@ -308,7 +306,6 @@ class extract_command : public command, public filter_input::listener
 
 command* _make_extract_command_(svs_state* state, Symbol* root)
 {
-    //cout << "MAKE EXTRACT COMMAND" << endl;
     return new extract_command(state, root, false);
 }
 

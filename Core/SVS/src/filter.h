@@ -18,6 +18,7 @@
 #include "sgnode.h"
 #include "soar_interface.h"
 
+using namespace std;
 
 /*
  Every filter generates a list of filter values as output, even if
@@ -70,18 +71,6 @@ class filter
 
         bool update();
 
-
-//TODO slightly less ugly hack
-        virtual int getAxis()
-        {
-            return -3;
-        }
-        
-        virtual int getComp()
-        {
-            return -3;
-        }
-        
         filter_output* get_output()
         {
           return &output;
@@ -103,9 +92,6 @@ class filter
             input->change(s);
         }
 
-        // Classes that inherit from filter are responsible for 
-        // handling output
-
         virtual void get_output_params(filter_val* v, const filter_params*& p){
           p = NULL;
         }
@@ -115,6 +101,8 @@ class filter
           output.clear();
         }
         
+        // Classes that inherit from filter are responsible for 
+        // handling output
         virtual bool update_outputs() = 0;
 
     private:
@@ -142,28 +130,30 @@ class typed_filter : public filter
             p = NULL;
           }
         }
-        
-        // Add an output to the filter for the given filter_params
-        void add_output(const filter_params* p, T v){
-          filter_val* fv = new filter_val_c<T>(v);
-          in2out[p] = fv;
-          out2in[fv] = p;
-          filter::add_output(fv);
-        }
 
-        // Change the filter output associated with the given filter_params
-        void update_output(const filter_params* p, T v){
+        // Set the filter output for a given filter_params input
+        void set_output(const filter_params* p, T v){
           filter_val* fv;
           if(map_get(in2out, p, fv)){
+            // Output already exists, 
+            // check to see if different, 
+            // and update if so
             T old_out;
+            get_filter_val(fv, old_out);
             if(v == old_out){
               return;
             }
             set_filter_val(fv, v);
             filter::change_output(fv);
+          } else {
+            // Output is new, add it
+            fv = new filter_val_c<T>(v);
+            in2out[p] = fv;
+            out2in[fv] = p;
+            filter::add_output(fv);
           }
         }
-
+        
         // Remove the filter output associated with the given filter_params
         void remove_output(const filter_params* p){
           filter_val* fv;
@@ -204,7 +194,8 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
     public:
         typed_filter(Symbol* root, soar_interface* si, filter_input* in)
           : filter(root, si, in)
-        {}
+        {
+        }
         
         virtual ~typed_filter(){
           clear_output();
@@ -218,35 +209,42 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
         }
 
         // Add an output to the filter for the given filter_params
-        void add_output(const filter_params* p, sgnode* v){
-          filter_val* fv = new filter_val_c<sgnode*>(v);
+        void set_output(const filter_params* p, sgnode* v){
+          filter_val* fv;
+          if(map_get(in2out, p, fv)){
+            // Already have an output for the given params
+            // If no difference, then don't do anything (return)
+            sgnode* old_out;
+            get_filter_val(fv, old_out);
+            if(v == old_out){
+              return;
+            }
+            remove_output(p);
+          } else if(v != NULL){
+            // Create a new output for the given sgnode
+            fv = new filter_val_c<sgnode*>(v);
+          }
+          if(v == NULL){
+            return;
+          }
 
+          // Check to see if we've seen the node before
           std::map<sgnode*, std::set<filter_val*> >::iterator o_it = outputs.find(v);
-          if(o_it != outputs.end()){
+          if(o_it == outputs.end()){
+            // First time seeing this node, add a listener to it
+            // and add it to the outputs map
             v->listen(this);
-            o_it->second.insert(fv);
+            outputs[v] = std::set<filter_val*>();
+            outputs[v].insert(fv);
           } else {
-            std::set<filter_val*> fv_set;
-            fv_set.insert(fv);
-            outputs[v] = fv_set;
+            // Already seen this, just register the fv
+            o_it->second.insert(fv);
           }
 
           in2out[p] = fv;
           out2in[fv] = p;
           filter::add_output(fv);
-        }
 
-        // Change the filter output associated with the given filter_params
-        void update_output(const filter_params* p, sgnode* v){
-          filter_val* fv;
-          if(map_get(in2out, p, fv)){
-            sgnode* old_out;
-            if(v == old_out){
-              return;
-            }
-            remove_output(p);
-            add_output(p, v);
-          }
         }
 
         // Remove the filter output associated with the given filter_params
@@ -288,18 +286,22 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
               if(node_it != outputs.end()){
                 for(fv_it = node_it->second.begin(); fv_it != node_it->second.end(); fv_it++){
                   if(map_get(out2in, *fv_it, params)){
-                    mark_stale(params);
+                    in2out.erase(params);
                   }
+                  out2in.erase(*fv_it);
+                  filter::remove_output(*fv_it);
                 }
+                outputs.erase(node_it);
               }
               break;
             case sgnode::TRANSFORM_CHANGED:
             case sgnode::SHAPE_CHANGED:
               // Find all outputs associated with the given input
               // and mark as changed
+              node_it = outputs.find(n);
               if(node_it != outputs.end()){
                 for(fv_it = node_it->second.begin(); fv_it != node_it->second.end(); fv_it++){
-                  change_output(*fv_it);
+                  filter::change_output(*fv_it);
                 }
               }
               break;
@@ -400,7 +402,7 @@ class map_filter : public typed_filter<T>
                 if(!compute(params, out)){
                   return false;
                 }
-                add_output(params, out);
+                set_output(params, out);
             }
             for (int i = 0; i < input->num_changed(); ++i)
             {
@@ -409,7 +411,7 @@ class map_filter : public typed_filter<T>
                 if(!compute(params, out)){
                   return false;
                 }
-                update_output(params, out);
+                set_output(params, out);
             }
             for (int i = 0; i < input->num_removed(); ++i)
             {
@@ -463,7 +465,7 @@ class select_filter : public typed_filter<T>
                 }
                 if(selected){
                   active_outputs.insert(params);
-                  add_output(params, out);
+                  set_output(params, out);
                 }
             }
             for (int i = 0; i < input->num_changed(); ++i)
@@ -477,7 +479,7 @@ class select_filter : public typed_filter<T>
                 if(set_has(active_outputs, params)){
                   if(selected){
                     // Previously and currently selected - update
-                    update_output(params, out);
+                    set_output(params, out);
                   } else {
                     // Previously but not currently selected - remove
                     active_outputs.erase(params);
@@ -487,13 +489,11 @@ class select_filter : public typed_filter<T>
                   if(selected){
                     // Not previously but currently selected - add
                     active_outputs.insert(params);
-                    add_output(params, out);
+                    set_output(params, out);
                   } else {
                     // Not previously or currently selected - do nothing
                   }
                 }
-                
-                update_output(params, out);
             }
             for (int i = 0; i < input->num_removed(); ++i)
             {
@@ -569,10 +569,10 @@ class reduce_filter : public typed_filter<T>
               }
             } else if(changed && active_output){
               // Changed value
-              update_output(NULL, value);
+              set_output(NULL, value);
             } else if(changed && !active_output){
               // New value
-              add_output(NULL, value);
+              set_output(NULL, value);
               active_output = true;
             }
             
@@ -603,10 +603,14 @@ class rank_filter : public typed_filter<double>
 {
     public:
         rank_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : typed_filter<double>(root, si, input), best_input(NULL)
+            : typed_filter<double>(root, si, input), best_input(NULL), select_highest(true)
         {}
         
         virtual bool rank(const filter_params* params, double& r) = 0;
+
+        void set_select_highest(bool sel_highest){
+          select_highest = sel_highest;
+        }
         
     private:
 
@@ -654,28 +658,31 @@ class rank_filter : public typed_filter<double>
             {
               // Calculate the best value
               const filter_params* cur_best = elems.begin()->first;
-              double max_val = elems.begin()->second;
+              double best_val = elems.begin()->second;
 
               std::map<const filter_params*, double>::iterator i;
               for(i = elems.begin(); i != elems.end(); i++){
-                if(i->second > max_val){
+                if(select_highest && i->second > best_val){
                   cur_best = i->first;
-                  max_val = i->second;
+                  best_val = i->second;
+                } else if(!select_highest && i->second < best_val){
+                  cur_best = i->first;
+                  best_val = i->second;
                 }
               }
 
               if(best_input == NULL){
                 // No previous output, add the current best
                 best_input = cur_best;
-                add_output(best_input, max_val);
+                set_output(best_input, best_val);
               } else if(cur_best != best_input){
                 // The best input has changed, remove the old and add the new
                 remove_output(best_input);
                 best_input = cur_best;
-                add_output(best_input, max_val);
+                set_output(best_input, best_val);
               } else {
                 // The best input is the same, update the value
-                update_output(best_input, max_val);
+                set_output(best_input, best_val);
               }
             } else if(changed && best_input != NULL){
               // Nothing to rank, remove existing output
@@ -688,6 +695,7 @@ class rank_filter : public typed_filter<double>
         
         std::map<const filter_params*, double> elems;
         const filter_params* best_input;
+        bool select_highest;
 };
 
 /*
@@ -704,7 +712,7 @@ class const_filter : public typed_filter<T>
         {
             if (!added)
             {
-                typed_filter<T>::add_output(NULL, v);
+                typed_filter<T>::set_output(NULL, v);
                 added = true;
             }
             return true;

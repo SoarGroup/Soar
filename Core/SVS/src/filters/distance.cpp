@@ -83,7 +83,7 @@ filter_table_entry* distance_select_filter_entry(){
 ////// filter closest //////
 filter* make_closest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input){
   node_comparison_rank_filter* f = new node_comparison_rank_filter(root, si, input, &compare_distance);
-  f->set_prefer_higher(false);
+  f->set_select_highest(false);
   return f;
 }
 

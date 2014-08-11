@@ -16,7 +16,10 @@ filter_table& get_filter_table()
 filter_table_entry* node_filter_entry();
 filter_table_entry* all_nodes_filter_entry();
 filter_table_entry* remove_node_filter_entry();
-filter_table_entry* node_centroid_filter_entry();
+filter_table_entry* node_position_filter_entry();
+filter_table_entry* node_rotation_filter_entry();
+filter_table_entry* node_scale_filter_entry();
+filter_table_entry* node_bbox_filter_entry();
 
 // filters/distance.cpp
 filter_table_entry* distance_filter_entry();
@@ -53,8 +56,11 @@ filter_table::filter_table()
 {
   add(node_filter_entry());
   add(all_nodes_filter_entry());
-  add(node_centroid_filter_entry());
   add(remove_node_filter_entry());
+  add(node_position_filter_entry());
+  add(node_rotation_filter_entry());
+  add(node_scale_filter_entry());
+  add(node_bbox_filter_entry());
 
   add(distance_filter_entry());
   add(distance_select_filter_entry());

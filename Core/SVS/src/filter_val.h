@@ -104,6 +104,31 @@ class filter_val_c : public filter_val    // c for concrete
         T v;
 };
 
+template<>
+void filter_val_c<vec3>::get_rep(std::map<std::string, std::string>& rep) const
+{
+    rep.clear();
+    rep["x"] = tostring(v[0]);
+    rep["y"] = tostring(v[1]);
+    rep["z"] = tostring(v[2]);
+}
+
+template<>
+void filter_val_c<bbox>::get_rep(std::map<std::string, std::string>& rep) const
+{
+    rep.clear();
+    vec3 min = v.get_min();
+    vec3 max = v.get_max();
+    rep["min-x"] = tostring(min[0]);
+    rep["min-y"] = tostring(min[1]);
+    rep["min-z"] = tostring(min[2]);
+    rep["max-x"] = tostring(max[0]);
+    rep["max-y"] = tostring(max[1]);
+    rep["max-z"] = tostring(max[2]);
+}
+
+
+
 //////////////////////////////////////
 // template specialization for sgnode
 //////////////////////////////////////

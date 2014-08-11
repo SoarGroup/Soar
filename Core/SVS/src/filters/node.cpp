@@ -135,7 +135,7 @@ class all_nodes_filter : public filter, public sgnode_listener
         filter_val* add_node(sgnode* n)
         {
             n->listen(this);
-            filter_val* r = new filter_val_c<const sgnode*>(n);
+            filter_val* r = new filter_val_c<sgnode*>(n);
             outputs[n] = r;
             add_output(r);
             return r;
@@ -179,24 +179,42 @@ class remove_node_filter : public select_filter<sgnode*>
         scene* scn;
 };
 
-class node_centroid_filter : public map_filter<vec3>
+class node_bbox_filter : public map_filter<bbox>
 {
     public:
-        node_centroid_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : map_filter<vec3>(root, si, input)
+        node_bbox_filter(Symbol* root, soar_interface* si, filter_input* input)
+            : map_filter<bbox>(root, si, input)
         {}
         
-        bool compute(const filter_params* params, vec3& out)
-        {
-            const sgnode* n;
-            if (!get_filter_param(this, params, "node", n))
-            {
+        bool compute(const filter_params* params, bbox& out){
+            sgnode* n;
+            if (!get_filter_param(this, params, "a", n)){
                 return false;
             }
             
-            out = n->get_centroid();
+            out = n->get_bounds();
             return true;
         }
+};
+
+class node_trans_filter : public map_filter<vec3>
+{
+    public:
+        node_trans_filter(Symbol* root, soar_interface* si, filter_input* input, char trans_type)
+            : map_filter<vec3>(root, si, input), trans_type(trans_type)
+        {}
+        
+        bool compute(const filter_params* params, vec3& out){
+            sgnode* n;
+            if (!get_filter_param(this, params, "a", n)){
+                return false;
+            }
+            
+            out = n->get_trans(trans_type);
+            return true;
+        }
+    private:
+        char trans_type;
 };
 
 filter* make_node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
@@ -209,9 +227,24 @@ filter* make_all_nodes_filter(Symbol* root, soar_interface* si, scene* scn, filt
     return new all_nodes_filter(root, si, scn);
 }
 
-filter* make_node_centroid_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_node_position_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
-    return new node_centroid_filter(root, si, input);
+    return new node_trans_filter(root, si, input, 'p');
+}
+
+filter* make_node_rotation_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+{
+    return new node_trans_filter(root, si, input, 'r');
+}
+
+filter* make_node_scale_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+{
+    return new node_trans_filter(root, si, input, 's');
+}
+
+filter* make_node_bbox_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+{
+    return new node_bbox_filter(root, si, input);
 }
 
 filter* make_remove_node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
@@ -223,7 +256,6 @@ filter_table_entry* node_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "node";
-    e->parameters.push_back("id");
     e->create = &make_node_filter;
     return e;
 }
@@ -236,12 +268,35 @@ filter_table_entry* all_nodes_filter_entry()
     return e;
 }
 
-filter_table_entry* node_centroid_filter_entry()
+filter_table_entry* node_position_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
-    e->name = "node_centroid";
-    e->parameters.push_back("node");
-    e->create = &make_node_centroid_filter;
+    e->name = "node_position";
+    e->create = &make_node_position_filter;
+    return e;
+}
+
+filter_table_entry* node_rotation_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry;
+    e->name = "node_rotation";
+    e->create = &make_node_rotation_filter;
+    return e;
+}
+
+filter_table_entry* node_scale_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry;
+    e->name = "node_scale";
+    e->create = &make_node_scale_filter;
+    return e;
+}
+
+filter_table_entry* node_bbox_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry;
+    e->name = "node_bbox";
+    e->create = &make_node_bbox_filter;
     return e;
 }
 
@@ -249,8 +304,6 @@ filter_table_entry* remove_node_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "remove_node";
-    e->parameters.push_back("a");
-    e->parameters.push_back("b");
     e->create = &make_remove_node_filter;
     return e;
 }

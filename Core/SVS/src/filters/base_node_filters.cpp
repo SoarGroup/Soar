@@ -1,6 +1,8 @@
 
 #include "filters/base_node_filters.h"
 
+#include <iostream>
+using namespace std;
 
 bool node_test_filter::compute(const filter_params* p, bool& out){
   sgnode* a;
@@ -11,6 +13,7 @@ bool node_test_filter::compute(const filter_params* p, bool& out){
     return false;
   }
   out = test(a, b, p);
+  cout << "Testing " << a->get_name() << " and " << b->get_name() << " = " << (out ? "T" : "F") << endl;
   return true;
 }
 
@@ -65,6 +68,7 @@ bool node_comparison_select_filter::compute(const filter_params* p, sgnode*& out
   }
 
   double res = comp(a, b, p);
+  
   out = b;
   select = (sel_min <= res && res <= sel_max);
   return true;
@@ -81,9 +85,6 @@ bool node_comparison_rank_filter::rank(const filter_params* p, double& r){
   }
 
   r = comp(a, b, p);
-  if(!prefer_higher){
-    r = -r;
-  }
   return true;
 }
 
@@ -130,9 +131,6 @@ bool node_evaluation_rank_filter::rank(const filter_params* p, double& r){
   }
 
   r = eval(a, p);
-  if(!prefer_higher){
-    r = -r;
-  }
   return true;
 }
 
