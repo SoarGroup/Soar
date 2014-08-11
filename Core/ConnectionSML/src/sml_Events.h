@@ -51,6 +51,7 @@ namespace sml {
 
 enum smlSystemEventId
 {
+    smlSYSTEM_EVENT_BAD = -1,
     smlEVENT_BEFORE_SHUTDOWN            = 1,
 	smlEVENT_AFTER_CONNECTION,
 	smlEVENT_SYSTEM_START,
@@ -63,6 +64,7 @@ enum smlSystemEventId
 
 enum smlRunEventId
 {
+    smlRUN_EVENT_BAD = -1,
     smlEVENT_BEFORE_SMALLEST_STEP = smlEVENT_LAST_SYSTEM_EVENT + 1,
     smlEVENT_AFTER_SMALLEST_STEP,
     smlEVENT_BEFORE_ELABORATION_CYCLE,
@@ -99,6 +101,7 @@ enum smlRunEventId
 
  enum smlProductionEventId
  {
+     smlPRODUCTION_EVENT_BAD = -1,
     // Production Manager
     smlEVENT_AFTER_PRODUCTION_ADDED = smlEVENT_LAST_RUN_EVENT + 1,
     smlEVENT_BEFORE_PRODUCTION_REMOVED,
@@ -110,6 +113,7 @@ enum smlRunEventId
 
 enum smlAgentEventId
 {
+    smlAGENT_EVENT_BAD = -1,
 	// Agent manager
     smlEVENT_AFTER_AGENT_CREATED = smlEVENT_LAST_PRODUCTION_EVENT + 1,
     smlEVENT_BEFORE_AGENT_DESTROYED,
@@ -121,6 +125,7 @@ enum smlAgentEventId
 
 enum smlWorkingMemoryEventId
 {
+    smlWORKING_MEMORY_EVENT_BAD = -1,
 	// Working memory changes
 	smlEVENT_OUTPUT_PHASE_CALLBACK = smlEVENT_LAST_AGENT_EVENT + 1,
 	smlEVENT_INPUT_PHASE_CALLBACK,			// This event is not currently available to clients -- listen for before/after input phase instead
@@ -129,6 +134,7 @@ enum smlWorkingMemoryEventId
 
 enum smlPrintEventId
 {
+    smlPRINT_EVENT_BAD = -1,
     // Error and print callbacks
 	smlEVENT_ECHO = smlEVENT_LAST_WM_EVENT + 1,
 	smlEVENT_FIRST_PRINT_EVENT = smlEVENT_ECHO,		// This is a "clever" way of reducing the print event number to 0..n for array indexing, see PrintListener buffers
@@ -150,6 +156,7 @@ enum smlRhsEventId
 
 enum smlXMLEventId
 {
+    smlXML_EVENT_BAD = -1,
 	smlEVENT_XML_TRACE_OUTPUT = smlEVENT_LAST_RHS_EVENT + 1,
 	smlEVENT_XML_INPUT_RECEIVED,		// Echo event for input wmes added by a client (so others can listen in)
 	smlEVENT_LAST_XML_EVENT = smlEVENT_XML_INPUT_RECEIVED
@@ -158,6 +165,7 @@ enum smlXMLEventId
 // Events that can be used by environments to trigger when the world should update
 enum smlUpdateEventId
 {
+    smlUPDATE_EVENT_BAD = -1,
 	smlEVENT_AFTER_ALL_OUTPUT_PHASES = smlEVENT_LAST_XML_EVENT + 1,	// All agents have completed output phase
 	smlEVENT_AFTER_ALL_GENERATED_OUTPUT,						// All agents have generated output (since run began)
 	smlEVENT_LAST_UPDATE_EVENT = smlEVENT_AFTER_ALL_GENERATED_OUTPUT
@@ -166,6 +174,7 @@ enum smlUpdateEventId
 // Events that pass a string as an argument
 enum smlStringEventId
 {
+    smlSTRING_EVENT_BAD = -1,
 	smlEVENT_EDIT_PRODUCTION = smlEVENT_LAST_UPDATE_EVENT + 1,	// Arg is "char const*" -- the name of the production to edit
 	smlEVENT_CLI_EXTENSION_MESSAGE,
   smlEVENT_LOAD_LIBRARY,

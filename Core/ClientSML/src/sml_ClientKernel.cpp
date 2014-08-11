@@ -2110,9 +2110,9 @@ bool Kernel::UnregisterForSystemEvent(int callbackID)
 	TestSystemCallback test(callbackID) ;
 
 	// Find the event ID for this callbackID
-	smlSystemEventId id = m_SystemEventMap.findFirstKeyByTest(&test, (smlSystemEventId)-1) ;
+	smlSystemEventId id = m_SystemEventMap.findFirstKeyByTest(&test, smlSYSTEM_EVENT_BAD) ;
 
-	if (id == -1)
+	if (id == smlSYSTEM_EVENT_BAD)
 		return false ;
 
 	// Remove the handler from our map
@@ -2137,9 +2137,9 @@ bool Kernel::UnregisterForStringEvent(int callbackID)
 	TestStringCallback test(callbackID) ;
 
 	// Find the event ID for this callbackID
-	smlStringEventId id = m_StringEventMap.findFirstKeyByTest(&test, (smlStringEventId)-1) ;
+	smlStringEventId id = m_StringEventMap.findFirstKeyByTest(&test, smlSTRING_EVENT_BAD) ;
 
-	if (id == -1)
+	if (id == smlSTRING_EVENT_BAD)
 		return false ;
 
 	// Remove the handler from our map
@@ -2164,9 +2164,9 @@ bool Kernel::UnregisterForUpdateEvent(int callbackID)
 	TestUpdateCallback test(callbackID) ;
 
 	// Find the event ID for this callbackID
-	smlUpdateEventId id = m_UpdateEventMap.findFirstKeyByTest(&test, (smlUpdateEventId)-1) ;
+	smlUpdateEventId id = m_UpdateEventMap.findFirstKeyByTest(&test, smlUPDATE_EVENT_BAD) ;
 
-	if (id == -1)
+	if (id == smlUPDATE_EVENT_BAD)
 		return false ;
 
 	// Remove the handler from our map
@@ -2190,9 +2190,9 @@ bool Kernel::UnregisterForAgentEvent(int callbackID)
 	TestAgentCallback test(callbackID) ;
 
 	// Find the event ID for this callbackID
-	smlAgentEventId id = m_AgentEventMap.findFirstKeyByTest(&test, (smlAgentEventId)-1) ;
+	smlAgentEventId id = m_AgentEventMap.findFirstKeyByTest(&test, smlAGENT_EVENT_BAD) ;
 
-	if (id == -1)
+	if (id == smlAGENT_EVENT_BAD)
 		return false ;
 
 	// Remove the handler from our map
