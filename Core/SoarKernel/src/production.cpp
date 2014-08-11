@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -1039,7 +1039,7 @@ production* make_production(agent* thisAgent,
             return NIL;
         }
 
-        if (!smem_valid_production(*lhs_top, *rhs_top))
+        if (!soar::semantic_memory::semantic_memory::get_singleton()->valid_production(*lhs_top, *rhs_top))
         {
             print(thisAgent, "ungrounded LTI in production\n");
             return NIL;

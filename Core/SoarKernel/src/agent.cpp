@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -102,8 +102,6 @@ void init_soar_agent(agent* thisAgent)
     
     init_memory_pool(thisAgent, &(thisAgent->epmem_wmes_pool), sizeof(epmem_wme_stack), "epmem_wmes");
     init_memory_pool(thisAgent, &(thisAgent->epmem_info_pool), sizeof(epmem_data), "epmem_id_data");
-    init_memory_pool(thisAgent, &(thisAgent->smem_wmes_pool), sizeof(smem_wme_stack), "smem_wmes");
-    init_memory_pool(thisAgent, &(thisAgent->smem_info_pool), sizeof(smem_data), "smem_id_data");
     
     init_memory_pool(thisAgent, &(thisAgent->epmem_literal_pool), sizeof(epmem_literal), "epmem_literals");
     init_memory_pool(thisAgent, &(thisAgent->epmem_pedge_pool), sizeof(epmem_pedge), "epmem_pedges");
@@ -112,8 +110,6 @@ void init_soar_agent(agent* thisAgent)
     
     thisAgent->epmem_params->exclusions->set_value("epmem");
     thisAgent->epmem_params->exclusions->set_value("smem");
-    
-    thisAgent->smem_params->base_incremental_threshes->set_string("10");
     
 #ifdef REAL_TIME_BEHAVIOR
     /* RMJ */
@@ -419,20 +415,7 @@ agent* create_soar_agent(char* agent_name)                                      
     newAgent->epmem_validation = 0;
     
     // smem initialization
-    newAgent->smem_params = new smem_param_container(newAgent);
-    newAgent->smem_stats = new smem_stat_container(newAgent);
-    newAgent->smem_timers = new smem_timer_container(newAgent);
-    
-    newAgent->smem_db = new soar_module::sqlite_database();
-    
-    newAgent->smem_validation = 0;
-    
-#ifdef USE_MEM_POOL_ALLOCATORS
-    newAgent->smem_changed_ids = new smem_pooled_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(newAgent));
-#else
-    newAgent->smem_changed_ids = new smem_pooled_symbol_set();
-#endif
-    newAgent->smem_ignore_changes = false;
+    newAgent->smem_changed_ids = new soar::semantic_memory::pooled_symbol_set();
     
     // statistics initialization
     newAgent->dc_stat_tracking = false;
@@ -509,14 +492,7 @@ void destroy_soar_agent(agent* delete_agent)
     
     
     // cleanup smem
-    smem_close(delete_agent);
     delete delete_agent->smem_changed_ids;
-    delete delete_agent->smem_params;
-    delete delete_agent->smem_stats;
-    delete delete_agent->smem_timers;
-    
-    delete delete_agent->smem_db;
-    
     delete delete_agent->svs;
     
     // cleanup statistics db

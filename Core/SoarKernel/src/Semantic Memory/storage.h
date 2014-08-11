@@ -48,7 +48,7 @@ namespace soar
 		public:
 			virtual ~storage() {}
 
-            virtual const Symbol* query(agent* theAgent, const Symbol* root_of_query, const Symbol* root_of_neg_query, std::list<const Symbol*>& prohibit, std::string* result_message) = 0;
+            virtual Symbol* query(agent* theAgent, const Symbol* root_of_query, const Symbol* root_of_neg_query, std::list<const Symbol*>& prohibit, std::string* result_message) = 0;
             virtual bool store(agent* theAgent, const Symbol* root_of_cue, std::string* result_message) = 0;
 
 			virtual bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, bool force, std::string* result_message) = 0;

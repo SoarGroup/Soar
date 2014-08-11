@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -124,10 +124,11 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
-    assert(((!w->id->is_identifier()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
-           
+    // TODO? Is this really necessary?
+//    assert(((!w->id->is_identifier()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
+//           ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
+//           ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
+//           
     push(thisAgent, w, thisAgent->wmes_to_add);
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {

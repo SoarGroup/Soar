@@ -59,7 +59,7 @@ if ((not tcl_libs.exists()) or (not tcl_headers.exists()) or
     print 'Tcl headers and libraries not found at ', tcl_platform_dir, ', not building TclSoarLib: ',
     Return()
 else:
-    print 'Tcl headers and libraries found at ', tcl_platform_dir, '.  Will build TclSoarLib.'
+    print 'TclSoarLib is buildable.'
 
 # A better way?
 #

@@ -34,7 +34,7 @@
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "episodic_memory.h"
-#include "Semantic Memory/semantic_memory.h"
+#include "semantic_memory.h"
 
 #include <string>
 #include <map>
@@ -908,7 +908,7 @@ typedef struct agent_struct
     uint64_t epmem_validation;
     
     // smem
-    soar::semantic_memory::pooled_symbol_set* smem_changed_ids;
+    std::set<Symbol*>* smem_changed_ids;
     
     // dynamic memory pools
     std::map< size_t, memory_pool* >* dyn_memory_pools;

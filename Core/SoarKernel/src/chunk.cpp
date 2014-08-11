@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -226,7 +226,7 @@ void variablize_symbol(agent* thisAgent, Symbol** sym)
     {
         return;    // only variablize identifiers
     }
-    if ((*sym)->id->smem_lti != NIL)                                    // don't variablize lti (long term identifiers)
+    if ((*sym)->id->isa_lti)                                    // don't variablize lti (long term identifiers)
     {
         (*sym)->tc_num = thisAgent->variablization_tc;
         (*sym)->id->variablization = (*sym);
@@ -1318,7 +1318,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             thisAgent->variablization_tc = get_new_tc_number(thisAgent);
             rhs = copy_and_variablize_result_list(thisAgent, results, true);
 
-            if (!smem_valid_production(top_cc->variablized_cond, rhs))
+            if (!soar::semantic_memory::semantic_memory::get_singleton()->valid_production(top_cc->variablized_cond, rhs))
             {
                 variablize = false;
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])

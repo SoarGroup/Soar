@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -317,9 +317,9 @@ Symbol* make_symbol_for_current_lexeme(agent* thisAgent, bool allow_lti)
             }
             else
             {
-                smem_lti_id lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                const Symbol* lti = soar::semantic_memory::semantic_memory::get_singleton()->lti_for_id(thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
 
-                if (lti_id == NIL)
+                if (lti == NIL)
                 {
                     char msg[BUFFER_MSG_SIZE];
                     strncpy(msg, "parser.c: Internal error:  invalid long-term identifier found in make_symbol_for_current_lexeme\n", BUFFER_MSG_SIZE);
@@ -327,9 +327,7 @@ Symbol* make_symbol_for_current_lexeme(agent* thisAgent, bool allow_lti)
                     abort_with_fatal_error(thisAgent, msg);
                 }
                 else
-                {
-                    return smem_lti_soar_make(thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-                }
+                    return const_cast<Symbol*>(lti);
             }
             break;
         default:
@@ -2074,9 +2072,9 @@ action* parse_rhs_action(agent* thisAgent)
     /* --- the action is a regular make action --- */
     if (id_lti)
     {
-        smem_lti_id lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+        const Symbol* lti = soar::semantic_memory::semantic_memory::get_singleton()->lti_for_id(thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
 
-        if (lti_id == NIL)
+        if (lti == NIL)
         {
             char msg[BUFFER_MSG_SIZE];
             strncpy(msg, "parser.c: Internal error:  invalid long-term identifier found in make_symbol_for_current_lexeme\n", BUFFER_MSG_SIZE);
@@ -2084,9 +2082,7 @@ action* parse_rhs_action(agent* thisAgent)
             abort_with_fatal_error(thisAgent, msg);
         }
         else
-        {
-            var = smem_lti_soar_make(thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-        }
+            var = const_cast<Symbol*>(lti);
     }
     else
     {

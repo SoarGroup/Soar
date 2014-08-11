@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -517,7 +517,7 @@ void rl_revert_template_id(agent* thisAgent)
 
 inline void rl_get_symbol_constant(Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants)
 {
-    if ((p_sym->symbol_type == VARIABLE_SYMBOL_TYPE) && ((i_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE) || (i_sym->id->smem_lti != NIL)))
+    if ((p_sym->symbol_type == VARIABLE_SYMBOL_TYPE) && ((i_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE) || (i_sym->id->isa_lti)))
     {
         constants->insert(std::make_pair(p_sym, i_sym));
     }

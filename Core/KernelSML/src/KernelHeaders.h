@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////
 
 // NOTE: Requires that portability.h be loaded first
-#include <portability.h>
+#include "portability.h"
 
 #include "kernel.h"
 #include "init_soar.h"

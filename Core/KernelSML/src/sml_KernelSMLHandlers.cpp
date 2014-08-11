@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /////////////////////////////////////////////////////////////////
 // KernelSML handlers file.
@@ -142,6 +142,9 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
 
         this->m_pRunScheduler->ScheduleAgentToRun(pAgentSML, true);
     }
+
+    /* -- Load user settings for this agent -- */
+    pAgentSML->ExecuteCommandLine("source settings.soar");
 
     // Return true if we got an agent constructed.
     return true ;

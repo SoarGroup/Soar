@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
 /*************************************************************************
@@ -370,7 +370,6 @@ void reset_statistics(agent* thisAgent)
 
     thisAgent->wma_timers->reset();
     thisAgent->epmem_timers->reset();
-    thisAgent->smem_timers->reset();
 
     thisAgent->wma_d_cycle_count = 0;
 }
@@ -469,7 +468,8 @@ bool reinitialize_soar(agent* thisAgent)
 
     /* Re-init episodic and semantic memory databases */
     epmem_reinit(thisAgent);
-    smem_reinit(thisAgent);
+    soar::semantic_memory::semantic_memory::destroy_singleton();
+    soar::semantic_memory::semantic_memory::create_singleton(nullptr);
 
     bool wma_was_enabled = wma_enabled(thisAgent);
     thisAgent->wma_params->activation->set_value(off);
@@ -489,7 +489,6 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->rl_stats->reset();
     thisAgent->wma_stats->reset();
     thisAgent->epmem_stats->reset();
-    thisAgent->smem_stats->reset();
     thisAgent->dyn_counters->clear();
 
     thisAgent->active_level = 0; /* Signal that everything should be retracted */
@@ -588,8 +587,6 @@ void do_one_top_level_phase(agent* thisAgent)
         thisAgent->reason_for_stopping = "System halted.";
         return;
     }
-
-    smem_attach(thisAgent);
 
     /*
      *  This code was commented by SoarTech with the addition of gSKI
@@ -751,10 +748,9 @@ void do_one_top_level_phase(agent* thisAgent)
                 do_preference_phase(thisAgent);
                 do_working_memory_phase(thisAgent);
 
-                if (smem_enabled(thisAgent))
-                {
-                    smem_go(thisAgent, true);
-                }
+                auto smem = soar::semantic_memory::semantic_memory::get_singleton();
+                if (smem)
+                    smem->parse_agent_command(thisAgent);
 
                 // allow epmem searches in proposal phase
                 // FIXME should turn this into a command line option
@@ -943,10 +939,9 @@ void do_one_top_level_phase(agent* thisAgent)
                 do_preference_phase(thisAgent);
                 do_working_memory_phase(thisAgent);
 
-                if (smem_enabled(thisAgent))
-                {
-                    smem_go(thisAgent, true);
-                }
+                auto smem = soar::semantic_memory::semantic_memory::get_singleton();
+                if (smem)
+                    smem->parse_agent_command(thisAgent);
 
                 /* Update accounting.  Moved here by KJC 04/05/05 */
                 thisAgent->e_cycle_count++;
@@ -1004,7 +999,7 @@ void do_one_top_level_phase(agent* thisAgent)
 
         /////////////////////////////////////////////////////////////////////////////////
         case OUTPUT_PHASE:
-
+        {
             if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
             {
                 print_phase(thisAgent, "\n--- Output Phase ---\n", 0);
@@ -1026,10 +1021,9 @@ void do_one_top_level_phase(agent* thisAgent)
 
             do_output_cycle(thisAgent);
 
-            if (smem_enabled(thisAgent))
-            {
-                smem_go(thisAgent, false);
-            }
+            auto smem = soar::semantic_memory::semantic_memory::get_singleton();
+            if (smem)
+                smem->parse_agent_command(thisAgent);
 
             ///////////////////////////////////////////////////////////////////
             assert(thisAgent->wma_d_cycle_count == thisAgent->d_cycle_count);
@@ -1150,19 +1144,7 @@ void do_one_top_level_phase(agent* thisAgent)
                     }
                 }
                 thisAgent->total_dc_epmem_time_sec = total_epmem_time;
-
-                double total_smem_time = thisAgent->smem_timers->total->value();
-                if (thisAgent->total_dc_smem_time_sec >= 0)
-                {
-                    double delta_smem_time = total_smem_time - thisAgent->total_dc_smem_time_sec;
-                    if (thisAgent->max_dc_smem_time_sec < delta_smem_time)
-                    {
-                        thisAgent->max_dc_smem_time_sec = delta_smem_time;
-                        thisAgent->max_dc_smem_time_cycle = thisAgent->d_cycle_count;
-                    }
-                }
-                thisAgent->total_dc_smem_time_sec = total_smem_time;
-
+                
 #endif // NO_TIMING_STUFF
 
                 uint64_t dc_wm_changes = thisAgent->wme_addition_count - thisAgent->start_dc_wme_addition_count;
@@ -1199,9 +1181,10 @@ void do_one_top_level_phase(agent* thisAgent)
             thisAgent->wma_d_cycle_count++;
             /* REW: end 09.15.96 */
             break;
-
+        }
         /////////////////////////////////////////////////////////////////////////////////
         case DECISION_PHASE:
+        {
             /* not yet cleaned up for 8.6.0 release */
 
             if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
@@ -1316,12 +1299,13 @@ void do_one_top_level_phase(agent* thisAgent)
             /* REW: end 28.07.96 */
 
             break;  /* end DECISION phase */
-
+        }
         /////////////////////////////////////////////////////////////////////////////////
-
         default: // 2/24/05: added default case to quell gcc compile warning
+        {
             assert(false && "Invalid phase enumeration value!");
             break;
+        }
 
     }  /* end switch stmt for current_phase */
 
@@ -1759,7 +1743,6 @@ void init_agent_memory(agent* thisAgent)
 
     thisAgent->wma_timers->reset();
     thisAgent->epmem_timers->reset();
-    thisAgent->smem_timers->reset();
 
     // This is an important part of the state of the agent for io purposes
     // (see io.cpp for details)

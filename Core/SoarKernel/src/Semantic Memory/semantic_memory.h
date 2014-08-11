@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <memory>
+#include <set>
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -53,12 +54,7 @@ namespace soar
 //		typedefs for readability
 //
 ////////////////////////////////////////////////////////////////////////////////
-#ifdef USE_MEM_POOL_ALLOCATORS
-        typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > pooled_symbol_set;
-#else
-        typedef std::set< Symbol* > smem_pooled_symbol_set;
-#endif
-
+        typedef std::set<Symbol*> pooled_symbol_set;
 		typedef struct ::condition_struct condition;
 		typedef struct ::action_struct action;
 		typedef struct ::agent_struct agent;
@@ -68,6 +64,15 @@ namespace soar
 //		Class Declarations
 //
 ////////////////////////////////////////////////////////////////////////////////
+        static int query_slot, retrieve_slot, store_slot;
+        
+        struct state_data
+        {
+            uint64_t last_cmd_time[3];
+            uint64_t last_cmd_count[3];
+            
+            std::list<preference*> wmes;
+        };
 
 		class semantic_memory
 		{
@@ -83,6 +88,7 @@ namespace soar
 			//
 			////////////////////////////////////////////////////////////////////////////////
             static const std::shared_ptr<semantic_memory> create_singleton(storage* storage);
+            static void destroy_singleton();
             static const std::shared_ptr<semantic_memory> get_singleton();
             
             void reset(agent* theAgent, Symbol* state);
@@ -91,21 +97,19 @@ namespace soar
 			const storage* get_storage_container();
 
 			// Front for parse_cue, parse_retrieve, parse_remove
-			bool parse_agent_command(agent* theAgent, std::string** error_message);
+            void parse_agent_command(agent* theAgent);
 
-			bool parse_cue(agent* theAgent, const Symbol* root_of_cue, std::string** result_message);
+			bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, std::string* result_message, bool force = false);
+			bool remove_ltis(agent* theAgent, const std::list<const Symbol*> lti_to_remove, std::string* result_message, bool force = false);
 
-			bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, std::string** result_message, bool force = false);
-			bool remove_ltis(agent* theAgent, const std::list<const Symbol*> lti_to_remove, std::string** result_message, bool force = false);
+			bool retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string* result_message);
 
-			bool retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string** result_message);
+			void export_memory_to_graphviz(std::string* graphviz);
+			void export_lti_to_graphviz(const Symbol* lti, std::string* graphviz);
 
-			void export_memory_to_graphviz(std::string** graphviz);
-			void export_lti_to_graphviz(const Symbol* lti, std::string** graphviz);
-
-			void print_memory(agent* theAgent, std::string** result_message);
-			void print_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string** result_message, unsigned int depth = 0, bool history = false);
-            void print_lti(agent* theAgent, const Symbol* lti, std::string** result_message, unsigned int depth = 0, bool history = false);
+			void print_memory(agent* theAgent, std::string* result_message);
+			void print_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string* result_message, unsigned int depth = 0, bool history = false);
+            void print_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth = 0, bool history = false);
 
 			uint64_t lti_count();
 
@@ -114,7 +118,7 @@ namespace soar
 
 			void reset_storage();
 
-			bool backup_to_file(std::string& file, std::string** error_message);
+			bool backup_to_file(std::string& file, std::string* error_message);
             
             ////////////////////////////////////////////////////////////////////////////////
             //
@@ -142,8 +146,13 @@ namespace soar
 			void lti_from_test(test t, std::list<Symbol*>* valid_ltis);
 			void lti_from_rhs_value(rhs_value rv, std::list<Symbol*>* valid_ltis);
             
+            void query(agent* theAgent, const Symbol* state, std::list<wme*>& command_wmes, soar_module::symbol_triple_list& buffered_wme_changes);
+            void buffered_add_error_message(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, std::string error_message);
+            void buffered_add_success_message(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, std::string success_message);
+            void buffered_add_success_result(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, Symbol* result);
+            
             // Print + helpers
-            void print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string** result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);
+            void print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);
 		};
 	}
 }

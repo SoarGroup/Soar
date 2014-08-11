@@ -85,7 +85,7 @@
 
 ====================================================================== */
 
-#include <portability.h>
+#include "portability.h"
 #include <stdlib.h>
 
 #include "rete.h"
@@ -1752,7 +1752,7 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
             if ((w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                     (w->value->id->epmem_id != EPMEM_NODEID_BAD) &&
                     (w->value->id->epmem_valid == thisAgent->epmem_validation) &&
-                    (!w->value->id->smem_lti))
+                    (!w->value->id->isa_lti))
             {
                 // add id ref count
                 (*thisAgent->epmem_id_ref_counts)[ w->value->id->epmem_id ]->insert(w);
@@ -1771,9 +1771,10 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
         }
     }
 
-    if ((w->id->id->smem_lti) && (!thisAgent->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->smem_params->mirroring->get_value() == on))
+    auto smem = soar::semantic_memory::semantic_memory::get_singleton();
+    if (w->id->id->isa_lti && smem && smem->is_mirroring())
     {
-        std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
+        std::pair< soar::semantic_memory::pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
         if (insert_result.second)
         {
             symbol_add_ref(thisAgent, w->id);
@@ -1787,7 +1788,7 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        bool lti = (w->value->id->smem_lti != NIL);
+        bool lti = (w->value->id->isa_lti);
 
         if ((w->epmem_id != EPMEM_NODEID_BAD) && (w->epmem_valid == thisAgent->epmem_validation))
         {
@@ -1928,9 +1929,10 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
         }
     }
 
-    if ((w->id->id->smem_lti) && (!thisAgent->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->smem_params->mirroring->get_value() == on))
+    auto smem = soar::semantic_memory::semantic_memory::get_singleton();
+    if ((w->id->id->isa_lti) && smem && smem->is_mirroring())
     {
-        std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
+        std::pair< soar::semantic_memory::pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
         if (insert_result.second)
         {
             symbol_add_ref(thisAgent, w->id);

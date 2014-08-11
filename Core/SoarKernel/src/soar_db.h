@@ -13,7 +13,7 @@
 #ifndef SOAR_DB_H
 #define SOAR_DB_H
 
-#include <portability.h>
+#include "portability.h"
 
 #include <list>
 #include <assert.h>

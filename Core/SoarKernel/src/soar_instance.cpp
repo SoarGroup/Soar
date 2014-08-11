@@ -137,7 +137,7 @@ std::string Soar_Instance::Message_Library(const char* pMessage)
         if (lMessage == "on")
         {
             libraryInfo->isOn = true;
-            resultString = lCLIExtensionName + " CLI module loaded and enabled.\n";
+            resultString = "\n" + lCLIExtensionName + " CLI module loaded and enabled.\n";
             m_Output_Manager->print_trace(resultString.c_str());
         }
         else if (lMessage == "off")

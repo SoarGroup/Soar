@@ -58,6 +58,14 @@ typedef uint64_t smem_lti_id;
 typedef uint64_t smem_hash_id;
 typedef uint64_t tc_number;
 
+namespace soar
+{
+    namespace semantic_memory
+    {
+        class state_data;
+    }
+}
+
 /* -- Forward declarations needed for symbol base struct -- */
 struct floatSymbol;
 struct idSymbol;
@@ -227,7 +235,7 @@ struct idSymbol    : public Symbol
     Symbol* smem_header;
     Symbol* smem_cmd_header;
     Symbol* smem_result_header;
-    struct smem_data_struct* smem_info;
+    soar::semantic_memory::state_data* smem_info;
     
     bool isa_lti;
     

@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -428,9 +428,6 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     sym->smem_header = NIL;
     sym->smem_cmd_header = NIL;
     sym->smem_result_header = NIL;
-    sym->smem_lti = NIL;
-    sym->smem_time_id = EPMEM_MEMID_NONE;
-    sym->smem_valid = NIL;
     
     sym->variablization = NIL;
     
@@ -465,8 +462,6 @@ Symbol* make_str_constant(agent* thisAgent, char const* name)
         sym->tc_num = 0;
         sym->epmem_hash = 0;
         sym->epmem_valid = 0;
-        sym->smem_hash = 0;
-        sym->smem_valid = 0;
         sym->name = make_memory_block_for_string(thisAgent, name);
         sym->production = NIL;
         sym->fc = NIL;
@@ -498,8 +493,6 @@ Symbol* make_int_constant(agent* thisAgent, int64_t value)
         sym->tc_num = 0;
         sym->epmem_hash = 0;
         sym->epmem_valid = 0;
-        sym->smem_hash = 0;
-        sym->smem_valid = 0;
         sym->value = value;
         sym->fc = NIL;
         sym->sc = NIL;
@@ -530,8 +523,6 @@ Symbol* make_float_constant(agent* thisAgent, double value)
         sym->tc_num = 0;
         sym->epmem_hash = 0;
         sym->epmem_valid = 0;
-        sym->smem_hash = 0;
-        sym->smem_valid = 0;
         sym->value = value;
         sym->ic = NIL;
         sym->sc = NIL;
@@ -625,7 +616,7 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
         if (sym->reference_count > 0)
         {
         
-            if (sym->id->smem_lti != NIL)
+            if (!sym->id->isa_lti)
             {
                 SNPRINTF(msg, 256,
                          "\t@%c%llu --> %llu\n",
@@ -668,7 +659,20 @@ bool reset_id_counters(agent* thisAgent)
     {
         // As long as all of the existing identifiers are long term identifiers (lti), there's no problem
         uint64_t ltis = 0;
-        do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, smem_count_ltis, &ltis);
+        auto count_ltis = [](agent* /*thisAgent*/, void* item, void* userdata)
+        {
+            Symbol* id = static_cast<symbol_struct*>(item);
+            
+            if (id->id->isa_lti)
+            {
+                uint64_t* counter = reinterpret_cast<uint64_t*>(userdata);
+                (*counter)++;
+            }
+            
+            return false;
+        };
+        
+        do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, count_ltis, &ltis);
         if (static_cast<uint64_t>(thisAgent->identifier_hash_table->count) != ltis)
         {
             print(thisAgent,  "Internal warning:  wanted to reset identifier generator numbers, but\n");
@@ -698,11 +702,6 @@ bool reset_id_counters(agent* thisAgent)
     for (i = 0; i < 26; i++)
     {
         thisAgent->id_counter[i] = 1;
-    }
-    
-    if (thisAgent->smem_db->get_status() == soar_module::connected)
-    {
-        smem_reset_id_counters(thisAgent);
     }
     
     return true ;

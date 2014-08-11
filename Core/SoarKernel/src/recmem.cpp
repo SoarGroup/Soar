@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -318,9 +318,9 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
          but this is natural Soar behavior and outside our perview.
 
          */
+        // TODO: test this? -Alex
         if ((result->is_identifier())
-                && (result->id->smem_lti != NIL) &&
-                (result->id->level == SMEM_LTI_UNKNOWN_LEVEL) &&
+                && (result->id->isa_lti) &&
                 (new_id_level > 0))
         {
             result->id->level = new_id_level;

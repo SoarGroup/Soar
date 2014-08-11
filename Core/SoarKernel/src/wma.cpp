@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -953,7 +953,7 @@ inline bool wma_forgetting_update_p_queue(agent* thisAgent)
                 {
                     (*current_p)->forget_cycle = WMA_FORGOTTEN_CYCLE;
                     
-                    if (!forget_only_lti || ((*current_p)->this_wme->id->id->smem_lti != NIL))
+                    if (!forget_only_lti || ((*current_p)->this_wme->id->id->isa_lti))
                     {
                         do_forget = true;
                         
@@ -1037,7 +1037,7 @@ inline bool wma_forgetting_naive_sweep(agent* thisAgent)
     
     for (wme* w = thisAgent->all_wmes_in_rete; w; w = w->rete_next)
     {
-        if (w->wma_decay_el && (!forget_only_lti || (w->id->id->smem_lti != NIL)))
+        if (w->wma_decay_el && (!forget_only_lti || (w->id->id->isa_lti)))
         {
             // to be forgotten, wme must...
             // - have been accessed (can't imagine why not, but just in case)

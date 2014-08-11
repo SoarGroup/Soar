@@ -1,4 +1,6 @@
 #include "semantic_memory.h"
+#include "wmem.h"
+#include "decide.h"
 
 #include <string>
 #include <vector>
@@ -16,6 +18,11 @@ namespace soar
             if (singleton.get())
                 return singleton;
             
+            if (storage == nullptr)
+            {
+                // Handle default case
+            }
+            
             unique_ptr<semantic_memory> smem(new semantic_memory(storage));
             singleton = move(smem);
             
@@ -28,6 +35,11 @@ namespace soar
                 return nullptr;
             
             return singleton;
+        }
+        
+        void semantic_memory::destroy_singleton()
+        {
+            singleton = nullptr;
         }
         
 		semantic_memory::semantic_memory(storage* storage_container)
@@ -54,7 +66,42 @@ namespace soar
 			return backend;
 		}
         
-        void semantic_memory::query(agent* theAgent, const Symbol* state, list<const wme*>& command_wmes, soar_module::symbol_triple_list& buffered_wme_changes)
+        void semantic_memory::buffered_add_error_message(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, std::string error_message)
+        {
+            Symbol* error_value = make_str_constant(theAgent, error_message.c_str());
+            buffered_wme_changes->push_back(new soar_module::symbol_triple(state->id->smem_result_header,
+                                                                           theAgent->smem_sym_failure,
+                                                                           error_value));
+            
+            symbol_add_ref(theAgent, state->id->smem_result_header);
+            symbol_add_ref(theAgent, theAgent->smem_sym_failure);
+            symbol_add_ref(theAgent, error_value);
+        }
+        
+        void semantic_memory::buffered_add_success_message(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, std::string success_message)
+        {
+            Symbol* success_value = make_str_constant(theAgent, success_message.c_str());
+            buffered_wme_changes->push_back(new soar_module::symbol_triple(state->id->smem_result_header,
+                                                                           theAgent->smem_sym_success,
+                                                                           success_value));
+            
+            symbol_add_ref(theAgent, state->id->smem_result_header);
+            symbol_add_ref(theAgent, theAgent->smem_sym_failure);
+            symbol_add_ref(theAgent, success_value);
+        }
+        
+        void semantic_memory::buffered_add_success_result(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, Symbol* result)
+        {
+            buffered_wme_changes->push_back(new soar_module::symbol_triple(state->id->smem_result_header,
+                                                                           theAgent->smem_sym_retrieved,
+                                                                           result));
+            
+            symbol_add_ref(theAgent, state->id->smem_result_header);
+            symbol_add_ref(theAgent, theAgent->smem_sym_failure);
+            symbol_add_ref(theAgent, result);
+        }
+        
+        void semantic_memory::query(agent* theAgent, const Symbol* state, list<wme*>& command_wmes, soar_module::symbol_triple_list& buffered_wme_changes)
         {
             const Symbol* root_of_query = nullptr, *root_of_neg_query = nullptr;
             std::list<const Symbol*> prohibit;
@@ -98,7 +145,7 @@ namespace soar
                 buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Query commands must have a (neg)query attribute");
             else
             {
-                const Symbol* result = backend->query(theAgent, root_of_query, root_of_neg_query, prohibit, &result_message);
+                Symbol* result = backend->query(theAgent, root_of_query, root_of_neg_query, prohibit, &result_message);
                 
                 if (!result)
                     buffered_add_error_message(theAgent, &buffered_wme_changes, state, result_message);
@@ -108,6 +155,17 @@ namespace soar
                     buffered_add_success_result(theAgent, &buffered_wme_changes, state, result);
                 }
             }
+        }
+        
+        list<wme*> wmes_of_id(const Symbol* id)
+        {
+            list<wme*> wmes;
+            
+            for (slot* s = id->id->slots; s != NIL; s = s->next)
+                for (wme* w = s->wmes; w != NIL; w = w->next)
+                    wmes.push_back(w);
+            
+            return wmes;
         }
 
 		// Front for parse_cue, parse_retrieve, parse_remove
@@ -137,11 +195,10 @@ namespace soar
                     QUERY = 1,
                     RETRIEVE = 2,
                     STORE = 3
-                } command_type;
+                } command = NONE;
                 
-                command_type command = NONE;
                 string error_message = "Unknown Error";
-                int depth = 1;
+                int64_t depth = 1;
                 
                 for (const wme* w : command_wmes)
                 {
@@ -222,10 +279,24 @@ namespace soar
                 if (command == BAD)
                     buffered_add_error_message(theAgent, &buffered_wme_changes, state, error_message);
                 else if (command == QUERY)
-                    query(theAgent, command_wmes, &buffered_wme_changes));
-                else if (commmand == RETRIEVE)
+                    query(theAgent, state, command_wmes, buffered_wme_changes);
+                else if (command == RETRIEVE)
+                {
+                    string* result = new string;
                     for (const wme* w : command_wmes)
-                        retrieve_lti(theAgent, w->value, &buffered_wme_changes);
+                    {
+                        bool success = retrieve_lti(theAgent, w->value, result);
+                        
+                        if (!success)
+                            buffered_add_error_message(theAgent, &buffered_wme_changes, state, *result);
+                        else
+                        {
+                            buffered_add_success_message(theAgent, &buffered_wme_changes, state, *result);
+                            buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value);
+                        }
+                    }
+                    delete result;
+                }
                 else if (command == STORE)
                     for (const wme* w : command_wmes)
                         store_id(theAgent, w->value, &buffered_wme_changes);
@@ -233,22 +304,17 @@ namespace soar
             
             if (mirroring)
             {
-                for (const Symbol* sym : theAgent->smem_changed_ids)
+                for (const Symbol* sym : *theAgent->smem_changed_ids)
                 {
                     // require that the lti has at least one augmentation
                     if (sym->id->slots)
-                        smem_soar_store(thisAgent, sym, store_recursive);
+                        smem_soar_store(theAgent, sym, store_recursive);
                     
-                    symbol_remove_ref(thisAgent, (*it));
+                    symbol_remove_ref(theAgent, (*it));
                 }
             }
             
             do_buffered_wme_changes(theAgent, &buffered_wme_changes);
-		}
-    
-		bool semantic_memory::parse_cue(agent* theAgent, const Symbol* root_of_cue, std::string* result_message)
-		{
-			return backend->parse_cue(theAgent, root_of_cue, result_message);
 		}
 
 		bool semantic_memory::remove_lti(agent* theAgent, const Symbol* lti_to_remove, std::string* result_message, bool force)
@@ -282,7 +348,7 @@ namespace soar
         
 		void semantic_memory::print_memory(agent* theAgent, std::string* result_message)
 		{
-            for (const Symbol* lti : backend)
+            for (const Symbol* lti : *backend)
                 print_lti(theAgent, lti, result_message, 0, false);
 		}
         
@@ -296,10 +362,10 @@ namespace soar
              Then we qsort the array and print it out.  94.12.13 */
             
             if (lti->id->tc_num == tc)
-                return;    // this has already been printed, so return RPM 4/07 bug 988
+                return true;    // this has already been printed, so return RPM 4/07 bug 988
             
             if (lti->id->depth > depth)
-                return;    // this can be reached via an equal or shorter path, so return without printing RPM 4/07 bug 988
+                return true;    // this can be reached via an equal or shorter path, so return without printing RPM 4/07 bug 988
             
             // if we're here, then we haven't printed this id yet, so print it
             depth = lti->id->depth; // set the depth to the depth via the shallowest path, RPM 4/07 bug 988
@@ -308,7 +374,7 @@ namespace soar
             lti->id->tc_num = tc;  // mark id as printed
             
             /* --- next, construct the array of wme pointers and sort them --- */
-            for (slot* s = lti->slots; s != NIL; s = s->next)
+            for (slot* s = lti->id->slots; s != NIL; s = s->next)
                 for (wme* w = s->wmes; w != NIL; w = w->next)
                     list.push_back(w);
             
@@ -325,8 +391,8 @@ namespace soar
             /* --- finally, print the sorted wmes and deallocate the array --- */
             for (const wme* w : list)
             {
-                print_spaces(thisAgent, indent);
-                print_wme(thisAgent, w);
+                print_spaces(theAgent, indent);
+                print_wme(theAgent, w);
             }
             
             // If there is still depth left, recurse
@@ -339,10 +405,10 @@ namespace soar
                     
                     if (value->id->isa_lti)
                         if (!retrieve_lti(theAgent, value->id, result_message))
-                            return;
+                            return false;
                     
-                    if (!print_augs_of_lti(thisAgent, value, result_message, depth - 1, maxdepth, tc))
-                        return;
+                    if (!print_augs_of_lti(theAgent, value, result_message, depth - 1, maxdepth, tc))
+                        return false;
                 }
             }
         }

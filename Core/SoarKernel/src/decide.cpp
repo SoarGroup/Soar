@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
 /*************************************************************************
@@ -2771,7 +2771,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     update_impasse_items(thisAgent, goal, NIL);  /* causes items & fake pref's to go away */
 
     epmem_reset(thisAgent, goal);
-    smem_reset(thisAgent, goal);
+    soar::semantic_memory::semantic_memory::get_singleton()->reset(thisAgent, goal);
 
     remove_wme_list_from_wm(thisAgent, goal->id->impasse_wmes);
     goal->id->impasse_wmes = NIL;
@@ -2838,8 +2838,6 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     symbol_remove_ref(thisAgent, goal->id->epmem_header);
     free_with_pool(&(thisAgent->epmem_info_pool), goal->id->epmem_info);
 
-    goal->id->smem_info->smem_wmes->~smem_wme_stack();
-    free_with_pool(&(thisAgent->smem_wmes_pool), goal->id->smem_info->smem_wmes);
     symbol_remove_ref(thisAgent, goal->id->smem_cmd_header);
     symbol_remove_ref(thisAgent, goal->id->smem_result_header);
     symbol_remove_ref(thisAgent, goal->id->smem_header);
@@ -2965,12 +2963,6 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->smem_info->last_cmd_time[1] = 0;
     id->id->smem_info->last_cmd_count[0] = 0;
     id->id->smem_info->last_cmd_count[1] = 0;
-    allocate_with_pool(thisAgent, &(thisAgent->smem_wmes_pool), &(id->id->smem_info->smem_wmes));
-#ifdef USE_MEM_POOL_ALLOCATORS
-    id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) smem_wme_stack(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
-#else
-    id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) smem_wme_stack();
-#endif
 
     /* --- invoke callback routine --- */
     soar_invoke_callbacks(thisAgent,

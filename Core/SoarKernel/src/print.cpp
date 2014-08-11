@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -280,7 +280,7 @@ char* symbol_to_string(agent* thisAgent, Symbol* sym,
                 dest = Output_Manager::Get_OM().get_printed_output_string();
                 dest_size = output_string_size; /* from agent.h */
             }
-            if (sym->id->smem_lti == NIL)
+            if (!sym->id->isa_lti)
             {
                 // NOT an lti (long term identifier), print like we always have
                 SNPRINTF(dest, dest_size, "%c%llu", sym->id->name_letter, static_cast<long long unsigned>(sym->id->name_number));
