@@ -625,7 +625,7 @@ void Lexer::skip_ahead_to_balanced_parentheses (int parentheses_level) {
   while (TRUE) {
     if (current_lexeme.type==EOF_LEXEME) return;
     if ((current_lexeme.type==R_PAREN_LEXEME) &&
-        (this->parentheses_level==parentheses_level)) return;
+        (parentheses_level==parentheses_level)) return;
     get_lexeme();
   }
 }
