@@ -8,7 +8,7 @@
 #ifndef SOARINSTANCE_H_
 #define SOARINSTANCE_H_
 
-#include <portability.h>
+#include "portability.h"
 #include <map>
 #include "Export.h"
 

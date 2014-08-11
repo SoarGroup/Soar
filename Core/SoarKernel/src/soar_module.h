@@ -13,7 +13,7 @@
 #ifndef SOAR_MODULE_H
 #define SOAR_MODULE_H
 
-#include <portability.h>
+#include "portability.h"
 
 #include <map>
 #include <string>
