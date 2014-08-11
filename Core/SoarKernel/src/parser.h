@@ -20,7 +20,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "Lexer.h"
+#include "lexer.h"
 #include "agent.h"
 
    typedef char Bool;

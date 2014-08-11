@@ -24,7 +24,7 @@
 #include "kernel.h"
 #include "mem.h"
 #include "print.h"
-#include "Lexer.h"
+#include "lexer.h"
 #include "rhsfun.h"
 #include "soar_rand.h"
 

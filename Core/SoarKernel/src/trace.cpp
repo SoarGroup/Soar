@@ -29,7 +29,7 @@
 #include "mem.h"
 #include "production.h"
 #include "kernel.h"
-#include "Lexer.h"
+#include "lexer.h"
 #include "symtab.h"
 #include "agent.h"
 #include "print.h"

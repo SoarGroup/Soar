@@ -35,7 +35,7 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 #include "debug.h"
-#include "Lexer.h"
+#include "lexer.h"
 
 #include <stdarg.h>
 

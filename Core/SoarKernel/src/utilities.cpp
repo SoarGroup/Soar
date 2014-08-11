@@ -14,7 +14,7 @@
 #include "wmem.h"
 #include "print.h"
 #include "xml.h"
-#include "Lexer.h"
+#include "lexer.h"
 
 #include <time.h>
 

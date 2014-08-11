@@ -101,7 +101,7 @@
 #include "init_soar.h"
 #include "instantiations.h"
 #include "rhsfun.h"
-#include "Lexer.h"
+#include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
 

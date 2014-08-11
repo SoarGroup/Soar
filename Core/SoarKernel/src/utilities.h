@@ -12,7 +12,7 @@
 #include <map>
 
 #include "soar_db.h"
-#include "Lexer.h"
+#include "lexer.h"
 
 /*
 *	This procedure parses a string to determine if it is a

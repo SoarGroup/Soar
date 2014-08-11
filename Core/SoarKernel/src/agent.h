@@ -27,7 +27,7 @@
 #include "kernel.h"
 #include "init_soar.h"
 #include "mem.h"
-#include "Lexer.h"
+#include "lexer.h"
 #include "callback.h"
 #include <map>
 
