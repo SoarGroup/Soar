@@ -11,7 +11,7 @@
  */
 
 #include <stdlib.h>
-#include "Lexer.h"
+#include "lexer.h"
 #include "print.h"
 #include "xml.h"
 
