@@ -27,7 +27,7 @@
 #include "kernel.h"
 #include "init_soar.h"
 #include "mem.h"
-#include "lexer.h"
+#include "Lexer.h"
 #include "callback.h"
 #include <map>
 
@@ -67,7 +67,6 @@ typedef union symbol_union Symbol;
 typedef struct hash_table_struct hash_table;
 typedef struct wme_struct wme;
 typedef struct memory_pool_struct memory_pool;
-typedef struct lexer_source_file_struct lexer_source_file;
 typedef struct production_struct production;
 typedef struct preference_struct preference;
 typedef struct pi_struct parent_inst;
@@ -78,26 +77,6 @@ typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
 
 class debug_param_container;
-
-// following def's moved here from old interface.h file  KJC nov 05
-/* AGR 568 begin */
-typedef struct expansion_node {
-  struct lexeme_info lexeme;
-  struct expansion_node *next;
-} expansion_node;
-
-typedef struct alias_struct {
-  char *alias;
-  struct expansion_node *expansion;
-  struct alias_struct *next;
-} alias_struct;
-
-typedef struct dir_stack_struct {
-  char *directory;
-  struct dir_stack_struct *next;
-} dir_stack_struct;
-/* AGR 568 end */
-
 
 /* This typedef makes soar_callback_array equivalent to an array of list
    pointers. Since it was used only one time, it has been commented out
@@ -252,13 +231,6 @@ typedef struct agent_struct {
   uint32_t       beta_node_id_counter;
   struct ms_change_struct * ms_assertions;  /* changes to match set */
   struct ms_change_struct * ms_retractions;
-
-  /* ----------------------- Lexer stuff -------------------------- */
-
-  lexer_source_file * current_file; /* file we're currently reading */
-  int                 current_char; /* holds current input character */
-  struct lexeme_info  lexeme;       /* holds current lexeme */
-  Bool                print_prompt_flag;
 
   /* ---------------- Predefined Symbols -------------------------
      Certain symbols are used so frequently that we create them at
@@ -728,6 +700,10 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* ------------------ Printing utilities stuff --------------------- */
 
+  //TODO: this isn't good enough. Arbitrary length should be acceptable.
+  #define MAX_LEXER_LINE_LENGTH 1000
+  //a little bigger to avoid any off-by-one-errors
+  #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5) 
   char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
   int                 printer_output_column;
   int                 saved_printer_output_column;
@@ -799,14 +775,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   //soar_callback_array soar_callbacks;
   ::list			      * soar_callbacks[NUMBER_OF_CALLBACKS];
-
-  const char        * alternate_input_string;
-  const char        * alternate_input_suffix;
-  Bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
-  expansion_node    * lex_alias;         /* AGR 568 */
-  Bool                load_errors_quit;  /* AGR 527c */
-  dir_stack_struct  * top_dir_stack;   /* AGR 568 */
-
 
   /* RCHONG: begin 10.11 */
   Bool       did_PE;
@@ -1065,19 +1033,6 @@ extern agent * create_soar_agent (char * name);
 extern void    destroy_soar_agent (agent* soar_agent);
 
 //void initialize_soar_agent(Kernel *thisKernel, agent* thisAgent);
-//
-/* Ideally, this should be in "lexer.h", but to avoid circular dependencies
-   among header files, I am forced to put it here. */
-#ifdef USE_MACROS
-#define reading_from_top_level(soar_agent) (!soar_agent->current_file->parent_file)
-#else
-
-inline Bool reading_from_top_level(agent* soarAgent)
-{
-   return (!soarAgent->current_file->parent_file);
-}
-
-#endif /* USE_MACROS */
 
 #ifdef __cplusplus
 //}

@@ -22,7 +22,7 @@
 #include "wmem.h"
 #include "print.h"
 #include "xml.h"
-#include "lexer.h"
+#include "Lexer.h"
 #include "instantiations.h"
 #include "rhsfun.h"
 #include "decide.h"
@@ -3154,7 +3154,7 @@ void smem_deallocate_chunk( agent *my_agent, smem_chunk *chunk, bool free_chunk 
 	}
 }
 
-inline std::string *smem_parse_lti_name( struct lexeme_info *lexeme, char *id_letter, uint64_t *id_number )
+inline std::string *smem_parse_lti_name( soar::Lexeme *lexeme, char *id_letter, uint64_t *id_number )
 {
 	std::string *return_val = new std::string;
 
@@ -3171,22 +3171,22 @@ inline std::string *smem_parse_lti_name( struct lexeme_info *lexeme, char *id_le
 	}
 	else
 	{
-		return_val->assign( (*lexeme).string );
+		return_val->assign( (*lexeme).string() );
 
-		(*id_letter) = static_cast<char>( toupper( (*lexeme).string[1] ) );
+		(*id_letter) = static_cast<char>( toupper( (*lexeme).string()[1] ) );
 		(*id_number) = 0;
 	}
 
 	return return_val;
 }
 
-inline Symbol *smem_parse_constant_attr( agent *my_agent, struct lexeme_info *lexeme )
+inline Symbol *smem_parse_constant_attr( agent *my_agent, soar::Lexeme *lexeme )
 {
 	Symbol *return_val = NIL;
 
 	if ( (*lexeme).type == SYM_CONSTANT_LEXEME )
 	{
-		return_val = make_sym_constant( my_agent, static_cast<const char *>( (*lexeme).string ) );
+		return_val = make_sym_constant( my_agent, static_cast<const char *>( (*lexeme).string() ) );
 	}
 	else if ( (*lexeme).type == INT_CONSTANT_LEXEME )
 	{
@@ -3200,7 +3200,7 @@ inline Symbol *smem_parse_constant_attr( agent *my_agent, struct lexeme_info *le
 	return return_val;
 }
 
-bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chunk_set *newbies )
+bool smem_parse_chunk( agent *my_agent, soar::Lexer* lexer, smem_str_to_chunk_map *chunks, smem_chunk_set *newbies )
 {
 	bool return_val = false;
 
@@ -3217,23 +3217,23 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 	//
 
 	// consume left paren
-	get_lexeme( my_agent );
+	lexer->get_lexeme();
 
-	if ( ( my_agent->lexeme.type == AT_LEXEME ) || ( my_agent->lexeme.type == IDENTIFIER_LEXEME ) || ( my_agent->lexeme.type == VARIABLE_LEXEME ) )
+	if ( ( lexer->current_lexeme.type == AT_LEXEME ) || ( lexer->current_lexeme.type == IDENTIFIER_LEXEME ) || ( lexer->current_lexeme.type == VARIABLE_LEXEME ) )
 	{
 		good_at = true;
 
-		if ( my_agent->lexeme.type == AT_LEXEME )
+		if ( lexer->current_lexeme.type == AT_LEXEME )
 		{
-			get_lexeme( my_agent );
+			lexer->get_lexeme();
 
-			good_at = ( my_agent->lexeme.type == IDENTIFIER_LEXEME );
+			good_at = ( lexer->current_lexeme.type == IDENTIFIER_LEXEME );
 		}
 
 		if ( good_at )
 		{
 			// save identifier
-			chunk_name = smem_parse_lti_name( &( my_agent->lexeme ), &( temp_letter ), &( temp_number ) );
+			chunk_name = smem_parse_lti_name( &( lexer->current_lexeme ), &( temp_letter ), &( temp_number ) );
 			new_chunk->lti_letter = temp_letter;
 			new_chunk->lti_number = temp_number;
 			new_chunk->lti_id = NIL;
@@ -3241,7 +3241,7 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 			new_chunk->slots = new smem_slot_map;
 
 			// consume id
-			get_lexeme( my_agent );
+			lexer->get_lexeme();
 
 			//
 
@@ -3255,27 +3255,27 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 			smem_slot *s;
 
 			// populate slots
-			while ( my_agent->lexeme.type == UP_ARROW_LEXEME )
+			while ( lexer->current_lexeme.type == UP_ARROW_LEXEME )
 			{
 				intermediate_parent = new_chunk;
 
 				// go on to attribute
-				get_lexeme( my_agent );
+				lexer->get_lexeme();
 
 				// get the appropriate constant type
-				chunk_attr = smem_parse_constant_attr( my_agent, &( my_agent->lexeme ) );
+				chunk_attr = smem_parse_constant_attr( my_agent, &( lexer->current_lexeme ) );
 
 				// if constant attribute, proceed to value
 				if ( chunk_attr != NIL )
 				{
 					// consume attribute
-					get_lexeme( my_agent );
+					lexer->get_lexeme();
 
 					// support for dot notation:
 					// when we encounter a dot, instantiate
 					// the previous attribute as a temporary
 					// identifier and use that as the parent
-					while ( my_agent->lexeme.type == PERIOD_LEXEME )
+					while ( lexer->current_lexeme.type == PERIOD_LEXEME )
 					{
 						// create a new chunk
 						temp_chunk = new smem_chunk;
@@ -3312,11 +3312,11 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 						temp_chunk = NULL;
 
 						// get the next attribute
-						get_lexeme( my_agent );
-						chunk_attr = smem_parse_constant_attr( my_agent, &( my_agent->lexeme ) );
+						lexer->get_lexeme();
+						chunk_attr = smem_parse_constant_attr( my_agent, &( lexer->current_lexeme ) );
 
 						// consume attribute
-						get_lexeme( my_agent );
+						lexer->get_lexeme();
 					}
 
 					if ( chunk_attr != NIL )
@@ -3327,33 +3327,33 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 						{
 							// value by type
 							chunk_value = NIL;
-							if ( my_agent->lexeme.type == SYM_CONSTANT_LEXEME )
+							if ( lexer->current_lexeme.type == SYM_CONSTANT_LEXEME )
 							{
 								chunk_value = new smem_chunk_value;
 								chunk_value->val_const.val_type = value_const_t;
-								chunk_value->val_const.val_value = make_sym_constant( my_agent, static_cast<const char *>( my_agent->lexeme.string ) );
+								chunk_value->val_const.val_value = make_sym_constant( my_agent, static_cast<const char *>( lexer->current_lexeme.string() ) );
 							}
-							else if ( my_agent->lexeme.type == INT_CONSTANT_LEXEME )
+							else if ( lexer->current_lexeme.type == INT_CONSTANT_LEXEME )
 							{
 								chunk_value = new smem_chunk_value;
 								chunk_value->val_const.val_type = value_const_t;
-								chunk_value->val_const.val_value = make_int_constant( my_agent, my_agent->lexeme.int_val );
+								chunk_value->val_const.val_value = make_int_constant( my_agent, lexer->current_lexeme.int_val );
 							}
-							else if ( my_agent->lexeme.type == FLOAT_CONSTANT_LEXEME )
+							else if ( lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME )
 							{
 								chunk_value = new smem_chunk_value;
 								chunk_value->val_const.val_type = value_const_t;
-								chunk_value->val_const.val_value = make_float_constant( my_agent, my_agent->lexeme.float_val );
+								chunk_value->val_const.val_value = make_float_constant( my_agent, lexer->current_lexeme.float_val );
 							}
-							else if ( ( my_agent->lexeme.type == AT_LEXEME ) || ( my_agent->lexeme.type == IDENTIFIER_LEXEME ) || ( my_agent->lexeme.type == VARIABLE_LEXEME ) )
+							else if ( ( lexer->current_lexeme.type == AT_LEXEME ) || ( lexer->current_lexeme.type == IDENTIFIER_LEXEME ) || ( lexer->current_lexeme.type == VARIABLE_LEXEME ) )
 							{
 								good_at = true;
 
-								if ( my_agent->lexeme.type == AT_LEXEME )
+								if ( lexer->current_lexeme.type == AT_LEXEME )
 								{
-									get_lexeme( my_agent );
+									lexer->get_lexeme();
 
-									good_at = ( my_agent->lexeme.type == IDENTIFIER_LEXEME );
+									good_at = ( lexer->current_lexeme.type == IDENTIFIER_LEXEME );
 								}
 
 								if ( good_at )
@@ -3363,7 +3363,7 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 									chunk_value->val_lti.val_type = value_lti_t;
 
 									// get key
-									temp_key2 = smem_parse_lti_name( &( my_agent->lexeme ), &( temp_letter ), &( temp_number ) );
+									temp_key2 = smem_parse_lti_name( &( lexer->current_lexeme ), &( temp_letter ), &( temp_number ) );
 
 									// search for an existing chunk
 									smem_str_to_chunk_map::iterator p = chunks->find( (*temp_key2) );
@@ -3401,7 +3401,7 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 							if ( chunk_value != NIL )
 							{
 								// consume
-								get_lexeme( my_agent );
+								lexer->get_lexeme();
 
 								// add to appropriate slot
 								s = smem_make_slot( intermediate_parent->slots, chunk_attr );
@@ -3413,10 +3413,10 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 								s->push_back( chunk_value );
 
 								// if this was the last attribute
-								if ( my_agent->lexeme.type == R_PAREN_LEXEME )
+								if ( lexer->current_lexeme.type == R_PAREN_LEXEME )
 								{
 									return_val = true;
-									get_lexeme( my_agent );
+									lexer->get_lexeme();
 									chunk_value = NIL;
 								}
 
@@ -3519,12 +3519,8 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **e
 	// parsing chunks requires an open semantic database
 	smem_attach( my_agent );
 
-	// copied primarily from cli_sp
-	my_agent->alternate_input_string = chunks_str;
-	my_agent->alternate_input_suffix = const_cast<char *>( ") " );
-	my_agent->current_char = ' ';
-	my_agent->alternate_input_exit = true;
-	set_lexer_allow_ids( my_agent, true );
+	soar::Lexer lexer(my_agent, chunks_str);
+	lexer.set_allow_ids(true);
 
     bool good_chunk = true;
 
@@ -3535,15 +3531,15 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **e
 	smem_chunk_set::iterator c_new;
 
 	// consume next token
-	get_lexeme( my_agent );
+	lexer.get_lexeme();
 
-	if ( my_agent->lexeme.type != L_PAREN_LEXEME )
+	if ( lexer.current_lexeme.type != L_PAREN_LEXEME )
 		good_chunk = false;
 
 	// while there are chunks to consume
-	while ( ( my_agent->lexeme.type == L_PAREN_LEXEME ) && ( good_chunk ) )
+	while ( ( lexer.current_lexeme.type == L_PAREN_LEXEME ) && ( good_chunk ) )
 	{
-		good_chunk = smem_parse_chunk( my_agent, &( chunks ), &( newbies ) );
+		good_chunk = smem_parse_chunk( my_agent, &lexer, &( chunks ), &( newbies ) );
 
 		if ( good_chunk )
 		{

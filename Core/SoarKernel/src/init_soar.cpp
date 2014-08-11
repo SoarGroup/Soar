@@ -201,11 +201,7 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[MAX_GOAL_DEPTH] = 100;  /* generate an interrupt so users can recover before exceed program stack*/
   thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = 100000000; /* default to 100MB.  Event generated when exceeded*/
 
-//#ifdef USE_X_DISPLAY
-//  thisAgent->sysparams[RESPOND_TO_LOAD_ERRORS_SYSPARAM] = FALSE;
-//#else
   thisAgent->sysparams[RESPOND_TO_LOAD_ERRORS_SYSPARAM] = TRUE;
-//#endif
 
 #ifdef ATTENTION_LAPSE
   /* RMJ */
@@ -1130,12 +1126,7 @@ void do_one_top_level_phase (agent* thisAgent)
 			 reinterpret_cast<soar_call_data>(DECISION_PHASE) );
 
 	  if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) {
-     //     #ifdef USE_TCL
 		  print_string (thisAgent, "\n");
-    //      #else
-		  //if(thisAgent->printer_output_column != 1)
-			 // print_string ("\n");
-    //      #endif /* USE_TCL */
 		  print_lowest_slot_in_context_stack (thisAgent);
 	  }
 
@@ -1160,11 +1151,7 @@ void do_one_top_level_phase (agent* thisAgent)
 			  static_cast<soar_call_data>(thisAgent->current_phase) );
 
 		  if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) {
-			  //                  #ifdef USE_TCL
 			  print_string (thisAgent, "\n");
-			  //                  #else
-			  //				  if(thisAgent->printer_output_column != 1) print_string ("\n");
-			  //                  #endif /* USE_TCL */
 			  print_lowest_slot_in_context_stack (thisAgent);
 		  }
 		  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
@@ -1458,23 +1445,6 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
 =================================================================== */
 
 extern char *getenv();
-
-/* AGR 536  Soar core dumped when it used filenames longer than 1000 chars
-   but shorter than MAXPATHLEN (from sys/param.h).  4-May-94  */
-
-// KJC Nov 05:  moved here from old interface.cpp, so could remove interface.* files
-void load_file (agent* thisAgent, char *file_name, FILE *already_open_file) {
-Bool old_print_prompt_flag;
-
-  old_print_prompt_flag = thisAgent->print_prompt_flag;
-  thisAgent->print_prompt_flag = FALSE;
-
-  start_lex_from_file (thisAgent, file_name, already_open_file);
-  //repeatedly_read_and_dispatch_commands (thisKernel, thisAgent);
-  stop_lex_from_file (thisAgent);
-
-  thisAgent->print_prompt_flag = old_print_prompt_flag;
-}
 
 /*
   RDF: 20020706 Added this for the gSKI project. This makes it so that

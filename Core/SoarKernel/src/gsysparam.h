@@ -31,6 +31,7 @@
 //extern "C"
 //{
 #endif
+#include "stdint.h"
 
 typedef char Bool;
 typedef unsigned char byte;

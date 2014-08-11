@@ -52,7 +52,7 @@
 #include "symtab.h"
 #include "decide.h"
 #include "production.h"
-#include "lexer.h"
+#include "Lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
 #include "utilities.h"
@@ -832,7 +832,7 @@ Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input
   Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
   Bool rereadable;
   
-  determine_possible_symbol_types_for_string (input_string,
+  soar::Lexer::determine_possible_symbol_types_for_string (input_string,
                                               strlen(input_string),
                                               &possible_id,
                                               &possible_var,

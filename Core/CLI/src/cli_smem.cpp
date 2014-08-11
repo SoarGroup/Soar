@@ -147,12 +147,12 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
 		if ( pAttr )
 		{
-			get_lexeme_from_string( agnt, pAttr->c_str() );
-			if ( agnt->lexeme.type == IDENTIFIER_LEXEME )
+            soar::Lexeme lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
+			if ( lexeme.type == IDENTIFIER_LEXEME )
 			{
 				if ( agnt->smem_db->get_status() == soar_module::connected )
 				{
-					lti_id = smem_lti_get_id( agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number );
+					lti_id = smem_lti_get_id( agnt, lexeme.id_letter, lexeme.id_number );
 
 					if ( ( lti_id != NIL ) && pVal )
 					{
@@ -295,12 +295,12 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
         if ( pAttr )
 		{
-			get_lexeme_from_string( agnt, pAttr->c_str() );
-			if ( agnt->lexeme.type == IDENTIFIER_LEXEME )
+			soar::Lexeme lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
+			if ( lexeme.type == IDENTIFIER_LEXEME )
 			{
 				if ( agnt->smem_db->get_status() == soar_module::connected )
 				{
-					lti_id = smem_lti_get_id( agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number );
+					lti_id = smem_lti_get_id( agnt, lexeme.id_letter, lexeme.id_number );
 
 					if ( ( lti_id != NIL ) && pVal )
 					{
