@@ -9,7 +9,7 @@
 //
 // The number of agents to create, wmes to update, and decision cycles to run can be changed at the beginning of the main function.
 
-#include "portability.h"
+#include <portability.h>
 #include "misc.h"
 
 #include <stdlib.h>

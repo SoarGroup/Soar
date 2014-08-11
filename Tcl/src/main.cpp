@@ -5,7 +5,7 @@
  *      Author: mazzin
  */
 
-#include "portability.h"
+#include <portability.h>
 #include "Export.h"
 #include "TclSoarLib.h"
 #include <string.h>

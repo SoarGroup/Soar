@@ -1,5 +1,5 @@
 #include <map>
-#include "portability.h"
+#include <portability.h>
 #include "cli_CommandLineInterface.h"
 
 using namespace cli;
