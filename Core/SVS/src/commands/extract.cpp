@@ -250,6 +250,7 @@ class extract_command : public command, public filter_input::listener
                 update_param_struct(r.params, si->get_wme_val(r.params_wme));
             }
             records[output] = r;
+            output->reset_dirty();
         }
         
         void handle_output(filter_val* output)
@@ -257,8 +258,11 @@ class extract_command : public command, public filter_input::listener
             record* r;
             if ((r = map_getp(records, output)))
             {
-                si->remove_wme(r->val_wme);
-                r->val_wme = make_value_wme(output, r->rec_id);
+                if(output->is_dirty()){
+                  si->remove_wme(r->val_wme);
+                  r->val_wme = make_value_wme(output, r->rec_id);
+                }
+                output->reset_dirty();
             }
             else
             {
