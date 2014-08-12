@@ -13,6 +13,7 @@ of things.
 ## Getting Started
 
 * Make sure you have a [GitHub account](https://github.com/signup/free)
+* Read [this](http://nvie.com/posts/a-successful-git-branching-model/) and [this](https://www.atlassian.com/git/workflows#!workflow-gitflow) for how we do git repos
 * If you are fixing an issue:
 	- Submit a ticket for your issue, assuming one does not already
 	exist.
@@ -25,12 +26,13 @@ of things.
 ## Making Changes
 
 * Create a branch from where you want to base your work.
-	- This is usually the master branch.
-	- If this isn't the master branch, ask someone in SoarGroup to
+	- This is usually the develop branch.
+	- If this isn't the develop branch, ask someone in SoarGroup to
 	make sure it's what you want.
-* To quickly create a branch based on master; `git checkout -b
-origin/my_contribution master`. Please avoid working directly on the
-`master` branch.
+* To quickly create a branch based on develop:
+
+`git checkout -b origin/my_contribution develop`
+
 * Make commits of [logically seperatable changesets](http://git-scm.com/book/en/Distributed-Git-Contributing-to-a-Project).
 	- "Don't code for a whole weekend on five different issues and
 	then submit them all as one massive commit on Monday."
@@ -51,11 +53,17 @@ tools like rebase can get confused if you run the two together.
 Further paragraphs come after blank lines.
 
 - Bullet points are okay, too
+- After all this is actually GitHub markdown parsed
 ````
 
-* Make sure you follow the coding style.  We, in general, try to use [Allman Style](https://en.wikipedia.org/wiki/Indent_style#Allman_style).
+* Make sure you follow the coding style:
+	- We, in general, try to use [Allman Style](https://en.wikipedia.org/wiki/Indent_style#Allman_style) or something close to it
+	- We also tend to use underlines ( _ ) in our names
+	- In addition, all files are lower cased.
 * Make sure you have added the necessary tests for your changes if you
 are fixing an issue.
+	- These can be found in Tests/
+* Make sure your items are namespaced if you're making new or big changes.
 * Run _all_ the tests to assure nothing was accidentally broken. If you
 break the project in your git pull request, Jenkins will let you know.
 Until Jenkins passes your pull request, it **WILL NOT** be merged in.
@@ -68,7 +76,7 @@ you are planning on trying to get it back into the main repository.
 
 ### Kernel Changes/Fixes
 
-The Soar Kernel is a very ancient and very optimized piece of code.  If
+The Soar Kernel is a very ancient and a very optimized piece of code.  If
 you are making changes to it, make sure that you are careful to not break
 anything.  Also, if you have some doubt whether you know what you are
 doing while modifying the kernel, talk with someone in Soar Group who
@@ -91,7 +99,6 @@ it in.
 * [How to GitHub: Fork, Branch, Track, Squash and Pull Request](https://gun.io/blog/how-to-github-fork-branch-and-pull-request/)
 * [Soar Home Page](http://sitemaker.umich.edu/soar/home)
 * [Soar Github Page](https://github.com/SoarGroup/Soar)
-* [Soar Google Code Wiki](https://code.google.com/p/soar/wiki/Home?tm=6)
 
 ## References
 
