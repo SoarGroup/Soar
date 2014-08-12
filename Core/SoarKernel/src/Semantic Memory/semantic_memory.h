@@ -23,6 +23,7 @@
 #include <list>
 #include <memory>
 #include <set>
+#include <unordered_set>
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -127,6 +128,9 @@ namespace soar
             ////////////////////////////////////////////////////////////////////////////////
             bool is_mirroring();
             void set_mirror(bool mirror);
+			
+			bool is_storing_recursively();
+			void set_store_recursive(bool recursive);
             
 		private:
 			////////////////////////////////////////////////////////////////////////////////
@@ -137,19 +141,29 @@ namespace soar
 
 			storage* backend;
             bool mirroring;
+			bool recursive;
+			
+			std::unordered_set<wme*> meta_wmes;
 
 			////////////////////////////////////////////////////////////////////////////////
 			//
 			//		Private Declarations
 			//
 			////////////////////////////////////////////////////////////////////////////////
+			
+			// Helper Functions
 			void lti_from_test(test t, std::list<Symbol*>* valid_ltis);
 			void lti_from_rhs_value(rhs_value rv, std::list<Symbol*>* valid_ltis);
             
             void query(agent* theAgent, const Symbol* state, std::list<wme*>& command_wmes, soar_module::symbol_triple_list& buffered_wme_changes);
+			
+			// Error/Success Handling
             void buffered_add_error_message(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, std::string error_message);
             void buffered_add_success_message(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, std::string success_message);
             void buffered_add_success_result(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, Symbol* result);
+			
+			// Buffered WME Processing
+			void process_buffered_wmes(agent* theAgent, const Symbol* state, soar_module::symbol_triple_list* buffered_wme_changes);
             
             // Print + helpers
             void print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);

@@ -45,8 +45,10 @@ namespace soar_module
         Symbol* id;
         Symbol* attr;
         Symbol* value;
-        
-        symbol_triple_struct(Symbol* new_id, Symbol* new_attr, Symbol* new_value): id(new_id), attr(new_attr), value(new_value) {}
+		
+        symbol_triple_struct(Symbol* new_id, Symbol* new_attr, Symbol* new_value)
+		: id(new_id), attr(new_attr), value(new_value)
+		{}
     } symbol_triple;
     typedef std::list< symbol_triple* > symbol_triple_list;
     

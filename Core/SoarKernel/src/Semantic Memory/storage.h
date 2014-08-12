@@ -49,7 +49,7 @@ namespace soar
 			virtual ~storage() {}
 
             virtual Symbol* query(agent* theAgent, const Symbol* root_of_query, const Symbol* root_of_neg_query, std::list<const Symbol*>& prohibit, std::string* result_message) = 0;
-            virtual bool store(agent* theAgent, const Symbol* root_of_cue, std::string* result_message) = 0;
+            virtual bool store(agent* theAgent, const Symbol* id, std::string* result_message, bool recursive) = 0;
 
 			virtual bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, bool force, std::string* result_message) = 0;
 			virtual bool remove_lti(agent* theAgent, const char lti_letter, const uint64_t lti_number, bool force, std::string* result_message) = 0;
