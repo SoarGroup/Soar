@@ -4673,6 +4673,12 @@ inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti
 		{
 			case SYM_CONSTANT_SYMBOL_TYPE:
 				smem_reverse_hash_str( my_agent, expand_q->column_int(1), temp_str );
+				
+				if (count(temp_str.begin(), temp_str.end(), ' ') > 0)
+				{
+					temp_str.insert(0, "|");
+					temp_str += '|';
+				}
 				break;
 
 			case INT_CONSTANT_SYMBOL_TYPE:
@@ -4713,8 +4719,12 @@ inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti
 			{
 				case SYM_CONSTANT_SYMBOL_TYPE:
 					smem_reverse_hash_str( my_agent, expand_q->column_int(3), temp_str2 );
-					temp_str2.insert(0, "|");
-					temp_str2.append("|");
+					
+					if (count(temp_str2.begin(), temp_str2.end(), ' ') > 0)
+					{
+						temp_str2.insert(0, "|");
+						temp_str2 += '|';
+					}
 					break;
 
 				case INT_CONSTANT_SYMBOL_TYPE:
