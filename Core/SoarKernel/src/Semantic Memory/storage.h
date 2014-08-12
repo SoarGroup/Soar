@@ -37,10 +37,14 @@ namespace soar
         {
         public:
             virtual ~storage_iterator() {};
+			
+			virtual Symbol* operator*() = 0;
             
             virtual storage_iterator& operator++() = 0;
             virtual bool operator==(const storage_iterator& rhs) = 0;
-            virtual bool operator!=(const storage_iterator& rhs) = 0;
+			
+            bool operator!=(const storage_iterator& rhs)
+			{ return !(*this == rhs); }
         };
         
 		class storage
@@ -54,8 +58,8 @@ namespace soar
 			virtual bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, bool force, std::string* result_message) = 0;
 			virtual bool remove_lti(agent* theAgent, const char lti_letter, const uint64_t lti_number, bool force, std::string* result_message) = 0;
 
-			virtual const Symbol* retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string* result_message) = 0;
-			virtual const Symbol* retrieve_lti(agent* theAgent, const char lti_letter, const uint64_t lti_number, std::string* result_message) = 0;
+			virtual Symbol* retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string* result_message) = 0;
+			virtual Symbol* retrieve_lti(agent* theAgent, const char lti_letter, const uint64_t lti_number, std::string* result_message) = 0;
 
 			virtual bool retrieve_all_ltis(agent* theAgent, std::list<const Symbol*>* ltis) = 0;
 
@@ -67,8 +71,8 @@ namespace soar
 			virtual void reset() = 0;
 			virtual bool backup_to_file(std::string& file, std::string* error_message) = 0;
             
-            virtual storage_iterator begin();
-            virtual const storage_iterator& end();
+            virtual storage_iterator* begin();
+            virtual storage_iterator* end();
 		};
 	}
 }

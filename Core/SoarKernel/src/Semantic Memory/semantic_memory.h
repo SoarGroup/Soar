@@ -88,10 +88,22 @@ namespace soar
 			//		Public Declarations
 			//
 			////////////////////////////////////////////////////////////////////////////////
-            static const std::shared_ptr<semantic_memory> create_singleton(storage* storage);
+			
+			// Statics
+			static const std::shared_ptr<semantic_memory> create_singleton(storage* storage);
             static void destroy_singleton();
             static const std::shared_ptr<semantic_memory> get_singleton();
-            
+			
+			// Class declaration
+			
+			struct buffered_wme
+			{
+				soar_module::symbol_triple* w;
+				std::list<wme*> justification;
+			};
+	
+			typedef std::list<buffered_wme*> buffered_wme_list;
+			
             void reset(agent* theAgent, Symbol* state);
 
 			bool set_storage_container(storage* storage_container);
@@ -110,7 +122,7 @@ namespace soar
 
 			void print_memory(agent* theAgent, std::string* result_message);
 			void print_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string* result_message, unsigned int depth = 0, bool history = false);
-            void print_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth = 0, bool history = false);
+            void print_lti(agent* theAgent, Symbol* lti, std::string* result_message, unsigned int depth = 0, bool history = false);
 
 			uint64_t lti_count();
 
@@ -155,18 +167,18 @@ namespace soar
 			void lti_from_test(test t, std::list<Symbol*>* valid_ltis);
 			void lti_from_rhs_value(rhs_value rv, std::list<Symbol*>* valid_ltis);
             
-            void query(agent* theAgent, const Symbol* state, std::list<wme*>& command_wmes, soar_module::symbol_triple_list& buffered_wme_changes);
+            void query(agent* theAgent, const Symbol* state, std::list<wme*>& command_wmes, buffered_wme_list& buffered_wme_changes);
 			
 			// Error/Success Handling
-            void buffered_add_error_message(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, std::string error_message);
-            void buffered_add_success_message(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, std::string success_message);
-            void buffered_add_success_result(agent* theAgent, soar_module::symbol_triple_list* buffered_wme_changes, const Symbol* state, Symbol* result);
+			void buffered_add_error_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string error_message, std::list<wme*> &justification);
+            void buffered_add_success_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string success_message, std::list<wme*> &justification);
+            void buffered_add_success_result(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* result, std::list<wme*> &justification);
 			
 			// Buffered WME Processing
-			void process_buffered_wmes(agent* theAgent, const Symbol* state, soar_module::symbol_triple_list* buffered_wme_changes);
+			void process_buffered_wmes(agent* theAgent, const Symbol* state, buffered_wme_list* buffered_wme_changes);
             
             // Print + helpers
-            void print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);
+			bool print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);
 		};
 	}
 }
