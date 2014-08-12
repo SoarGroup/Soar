@@ -3,6 +3,8 @@
 #include "decide.h"
 #include "print.h"
 #include "test.h"
+#include "instantiations.h"
+#include "prefmem.h"
 
 #include <string>
 #include <vector>
@@ -68,16 +70,14 @@ namespace soar
 			return backend;
 		}
 		
-		void semantic_memory::buffered_add_error_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string error_message, std::list<wme*> &justification)
+		void semantic_memory::buffered_add_error_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string error_message)
 		{
 			Symbol* error_value = make_str_constant(theAgent, error_message.c_str());
 			
-			buffered_wme* wme = new buffered_wme;
-			wme->w = new soar_module::symbol_triple(state->id->smem_result_header,
+			soar_module::symbol_triple* wme = new soar_module::symbol_triple(state->id->smem_result_header,
 													theAgent->smem_sym_failure,
 													error_value);
 			
-			wme->justification = justification;
 			buffered_wme_changes->push_back(wme);
 			
 			symbol_add_ref(theAgent, state->id->smem_result_header);
@@ -85,14 +85,12 @@ namespace soar
 			symbol_add_ref(theAgent, error_value);
 		}
 		
-		void semantic_memory::buffered_add_success_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string success_message, std::list<wme*> &justification)
+		void semantic_memory::buffered_add_success_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string success_message)
 		{
 			Symbol* success_value = make_str_constant(theAgent, success_message.c_str());
-			buffered_wme* wme = new buffered_wme;
-			wme->w = new soar_module::symbol_triple(state->id->smem_result_header,
+			soar_module::symbol_triple* wme = new soar_module::symbol_triple(state->id->smem_result_header,
 													theAgent->smem_sym_success,
 													success_value);
-			wme->justification = justification;
 			buffered_wme_changes->push_back(wme);
 			
 			symbol_add_ref(theAgent, state->id->smem_result_header);
@@ -100,13 +98,11 @@ namespace soar
 			symbol_add_ref(theAgent, success_value);
 		}
 		
-		void semantic_memory::buffered_add_success_result(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* result, std::list<wme*> &justification)
+		void semantic_memory::buffered_add_success_result(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* result)
 		{
-			buffered_wme* wme = new buffered_wme;
-			wme->w = new soar_module::symbol_triple(state->id->smem_result_header,
+			soar_module::symbol_triple* wme = new soar_module::symbol_triple(state->id->smem_result_header,
 													theAgent->smem_sym_retrieved,
 													result);
-			wme->justification = justification;
 			buffered_wme_changes->push_back(wme);
 			
 			symbol_add_ref(theAgent, state->id->smem_result_header);
@@ -128,7 +124,7 @@ namespace soar
 						root_of_query = w->value;
 					else
 					{
-						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have duplicate query objects", command_wmes);
+						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have duplicate query objects");
 						return;
 					}
 				}
@@ -138,7 +134,7 @@ namespace soar
 						root_of_neg_query = w->value;
 					else
 					{
-						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have duplicate negative query objects", command_wmes);
+						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have duplicate negative query objects");
 						return;
 					}
 				}
@@ -146,7 +142,7 @@ namespace soar
 				{
 					if (!w->value->id->isa_lti)
 					{
-						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot prohibit non-ltis", command_wmes);
+						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot prohibit non-ltis");
 						return;
 					}
 					
@@ -155,17 +151,17 @@ namespace soar
 			}
 			
 			if (!root_of_query && !root_of_neg_query)
-				buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Query commands must have a (neg)query attribute", command_wmes);
+				buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Query commands must have a (neg)query attribute");
 			else
 			{
 				Symbol* result = backend->query(theAgent, root_of_query, root_of_neg_query, prohibit, &result_message);
 				
 				if (!result)
-					buffered_add_error_message(theAgent, &buffered_wme_changes, state, result_message, command_wmes);
+					buffered_add_error_message(theAgent, &buffered_wme_changes, state, result_message);
 				else
 				{
-					buffered_add_success_message(theAgent, &buffered_wme_changes, state, result_message, command_wmes);
-					buffered_add_success_result(theAgent, &buffered_wme_changes, state, result, command_wmes);
+					buffered_add_success_message(theAgent, &buffered_wme_changes, state, result_message);
+					buffered_add_success_result(theAgent, &buffered_wme_changes, state, result);
 				}
 			}
 		}
@@ -185,21 +181,21 @@ namespace soar
 		void semantic_memory::parse_agent_command(agent* theAgent)
 		{
 			// Start at the bottom state and work our way up
-			const Symbol* state = theAgent->bottom_goal;
+			Symbol* state = theAgent->bottom_goal;
 			
-			// Transitive Closure Number
-			tc_number tc = get_new_tc_number(theAgent);
-			
-			buffered_wme_list buffered_wme_changes;
 			
 			// While we have another state to parse
 			while (state != nullptr)
 			{
+				buffered_wme_list buffered_wme_changes;
+
 				// Get the command link for the state
 				const Symbol* smem_command_link = state->id->smem_cmd_header;
 				
 				// Get the command wmes
 				list<wme*> command_wmes = wmes_of_id(smem_command_link);
+				
+				set<wme*> justification(command_wmes.begin(), command_wmes.end());
 				
 				// Check if each is a command
 				enum {
@@ -290,7 +286,7 @@ namespace soar
 				}
 				
 				if (command == BAD)
-					buffered_add_error_message(theAgent, &buffered_wme_changes, state, error_message, command_wmes);
+					buffered_add_error_message(theAgent, &buffered_wme_changes, state, error_message);
 				else if (command == QUERY)
 					query(theAgent, state, command_wmes, buffered_wme_changes);
 				else if (command == RETRIEVE)
@@ -301,11 +297,11 @@ namespace soar
 						bool success = retrieve_lti(theAgent, w->value, &result);
 						
 						if (!success)
-							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result, command_wmes);
+							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result);
 						else
 						{
-							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result, command_wmes);
-							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value, command_wmes);
+							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result);
+							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value);
 						}
 					}
 				}
@@ -318,14 +314,16 @@ namespace soar
 						bool success = backend->store(theAgent, w->value, &result, recursive);
 						
 						if (!success)
-							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result, command_wmes);
+							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result);
 						else
 						{
-							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result, command_wmes);
-							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value, command_wmes);
+							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result);
+							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value);
 						}
 					}
 				}
+				
+				process_buffered_wmes(theAgent, state, justification, &buffered_wme_changes);
 			}
 			
 			if (mirroring)
@@ -343,8 +341,6 @@ namespace soar
 					symbol_remove_ref(theAgent, sym);
 				}
 			}
-			
-			process_buffered_wmes(theAgent, state, &buffered_wme_changes);
 		}
 		
 		bool semantic_memory::remove_lti(agent* theAgent, const Symbol* lti_to_remove, std::string* result_message, bool force)
@@ -359,6 +355,11 @@ namespace soar
 					return false;
 			
 			return true;
+		}
+		
+		Symbol* semantic_memory::retrieve_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string* result_message)
+		{
+			return backend->retrieve_lti(theAgent, lti_name, lti_number, result_message);
 		}
 		
 		bool semantic_memory::retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string* result_message)
@@ -621,68 +622,61 @@ namespace soar
 			this->recursive = recursive;
 		}
 		
-		void semantic_memory::process_buffered_wmes(agent* theAgent, const Symbol* state, buffered_wme_list* buffered_wme_changes)
+		void semantic_memory::process_buffered_wmes(agent* theAgent, Symbol* state, std::set<wme*>& justification, buffered_wme_list* buffered_wme_changes)
 		{
 			if (buffered_wme_changes->empty())
 				return;
 			
-			instantiation* inst = soar_module::make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
+			soar_module::symbol_triple_list wmes;
+			
+			for (soar_module::symbol_triple* wme : *buffered_wme_changes)
+				wmes.push_back(wme);
+			
+			instantiation* inst = soar_module::make_fake_instantiation(theAgent, state, &justification, &wmes);
 			
 			for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
 			{
 				// add the preference to temporary memory
-				add_preference_to_tm(thisAgent, pref);
+				add_preference_to_tm(theAgent, pref);
 				// and add it to the list of preferences to be removed
 				// when the goal is removed
 				insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
 				pref->on_goal_list = true;
-				
-				if (meta)
-				{
-					// if this is a meta wme, then it is completely local
-					// to the state and thus we will manually remove it
-					// (via preference removal) when the time comes
-					state->id->smem_info->smem_wmes->push_back(pref);
-				}
 			}
 			
-			if (!meta)
+			// otherwise, we submit the fake instantiation to backtracing
+			// such as to potentially produce justifications that can follow
+			// it to future adventures (potentially on new states)
+			instantiation* my_justification_list = NIL;
+			chunk_instantiation(theAgent, inst, false, &my_justification_list);
+			
+			// if any justifications are created, assert their preferences manually
+			// (copied mainly from assert_new_preferences with respect to our circumstances)
+			if (my_justification_list != NIL)
 			{
-				// otherwise, we submit the fake instantiation to backtracing
-				// such as to potentially produce justifications that can follow
-				// it to future adventures (potentially on new states)
-				instantiation* my_justification_list = NIL;
-				chunk_instantiation(thisAgent, inst, false, &my_justification_list);
+				preference* just_pref = NIL;
+				instantiation* next_justification = NIL;
 				
-				// if any justifications are created, assert their preferences manually
-				// (copied mainly from assert_new_preferences with respect to our circumstances)
-				if (my_justification_list != NIL)
+				for (instantiation* my_justification = my_justification_list;
+					 my_justification != NIL;
+					 my_justification = next_justification)
 				{
-					preference* just_pref = NIL;
-					instantiation* next_justification = NIL;
+					next_justification = my_justification->next;
 					
-					for (instantiation* my_justification = my_justification_list;
-						 my_justification != NIL;
-						 my_justification = next_justification)
+					if (my_justification->in_ms)
+						insert_at_head_of_dll(my_justification->prod->instantiations, my_justification, next, prev);
+					
+					for (just_pref = my_justification->preferences_generated; just_pref != NIL; just_pref = just_pref->inst_next)
 					{
-						next_justification = my_justification->next;
+						add_preference_to_tm(theAgent, just_pref);
 						
-						if (my_justification->in_ms)
-						{
-							insert_at_head_of_dll(my_justification->prod->instantiations, my_justification, next, prev);
-						}
-						
-						for (just_pref = my_justification->preferences_generated; just_pref != NIL; just_pref = just_pref->inst_next)
-						{
-							add_preference_to_tm(thisAgent, just_pref);
-							if (wma_enabled(thisAgent))
-							{
-								wma_activate_wmes_in_pref(thisAgent, just_pref);
-							}
-						}
+						if (wma_enabled(theAgent))
+							wma_activate_wmes_in_pref(theAgent, just_pref);
 					}
 				}
 			}
+			
+			return;
 		}
 	}
 }

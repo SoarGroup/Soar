@@ -2519,7 +2519,7 @@ inline void _epmem_store_level(agent* thisAgent,
         
         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                 (((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->value->id->epmem_valid == thisAgent->epmem_validation)) &&
-                (!(*w_p)->value->id->smem_lti))
+                (!(*w_p)->value->id->isa_lti))
         {
             // prevent exclusions from being recorded
             if (thisAgent->epmem_params->exclusions->in_set((*w_p)->attr))
@@ -2624,7 +2624,7 @@ inline void _epmem_store_level(agent* thisAgent,
             value_known_apriori = (((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->value->id->epmem_valid == thisAgent->epmem_validation));
             
             // if long-term identifier as value, special processing (we may need to promote, we don't add to/take from any pools)
-            if ((*w_p)->value->id->smem_lti)
+            if ((*w_p)->value->id->isa_lti)
             {
                 // find the lti or add new one
 #ifdef DEBUG_EPMEM_WME_ADD
@@ -2898,7 +2898,7 @@ inline void _epmem_store_level(agent* thisAgent,
 #ifdef DEBUG_EPMEM_WME_ADD
                 fprintf(stderr, "   Incrementing and setting wme id to %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
-                if (!(*w_p)->value->id->smem_lti)
+                if (!(*w_p)->value->id->isa_lti)
                 {
                     // replace the epmem_id and wme id in the right place
                     (*thisAgent->epmem_id_replacement)[(*w_p)->epmem_id ] = my_id_repo2;
@@ -3234,7 +3234,7 @@ void epmem_new_episode(agent* thisAgent)
         {
             for (epmem_symbol_set::iterator p_it = thisAgent->epmem_promotions->begin(); p_it != thisAgent->epmem_promotions->end(); p_it++)
             {
-                if (((*p_it)->id->smem_time_id == time_counter) && ((*p_it)->id->smem_valid == thisAgent->epmem_validation))
+                if (((*p_it)->id->smem_info->time_id == time_counter) && (*p_it)->id->isa_lti)
                 {
                     _epmem_promote_id(thisAgent, (*p_it), time_counter);
                 }
@@ -3352,8 +3352,10 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
         }
         else
         {
-            Symbol* value = smem_lti_soar_make(thisAgent, smem_lti_get_id(thisAgent, val_letter, val_num), val_letter, val_num, parent->id->level);
-            
+			auto smem = soar::semantic_memory::semantic_memory::get_singleton();
+			std::string result;
+			Symbol* value = smem->retrieve_lti(thisAgent, val_letter, val_num, &result);
+			
             if (id_record)
             {
                 epmem_id_mapping::iterator rec_p = id_record->find(child_n_id);
@@ -3980,7 +3982,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
         literal->child_n_id = epmem_temporal_hash(thisAgent, value);
         leaf_literals.insert(literal);
     }
-    else if (value->id->smem_lti)     // WME is an LTI
+    else if (value->id->isa_lti)     // WME is an LTI
     {
         // if we can find the LTI node id, cache it; otherwise, return failure
         thisAgent->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>(value->id->name_letter));

@@ -186,8 +186,7 @@ void mark_slot_for_possible_removal(agent* thisAgent, slot* s)
 /* MMA 8-2012: Clear out and deallocate the CDPS. */
 void clear_CDPS(agent* thisAgent, slot* s)
 {
-
-    list* cond_current, *cond_old;
+	::list* cond_current, *cond_old;
     preference* pref;
     
     /* The CDPS should never exist on a top-level slot, so we do

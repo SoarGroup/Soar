@@ -23,7 +23,7 @@
 #include "prefmem.h"
 
 /* --- This just copies a consed list of tests. --- */
-list* copy_test_list(agent* thisAgent, cons* c)
+::list* copy_test_list(agent* thisAgent, cons* c)
 {
     cons* new_c;
     

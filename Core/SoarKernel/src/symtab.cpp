@@ -825,8 +825,8 @@ double get_number_from_symbol(Symbol* sym)
    incrementing the reference count on each symbol in the list.
 ---------------------------------------------------------------- */
 
-list* copy_symbol_list_adding_references(agent* thisAgent,
-        list* sym_list)
+::list* copy_symbol_list_adding_references(agent* thisAgent,
+										 ::list* sym_list)
 {
     cons* c, *first, *prev;
     
@@ -857,7 +857,7 @@ list* copy_symbol_list_adding_references(agent* thisAgent,
 ---------------------------------------------------------------- */
 
 void deallocate_symbol_list_removing_references(agent* thisAgent,
-        list* sym_list, long indent)
+												::list* sym_list, long indent)
 {
     cons* c;
     

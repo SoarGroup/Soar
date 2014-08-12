@@ -71,6 +71,8 @@ namespace soar
         {
             uint64_t last_cmd_time[3];
             uint64_t last_cmd_count[3];
+			
+			uint64_t time_id;
             
             std::list<preference*> wmes;
         };
@@ -78,11 +80,12 @@ namespace soar
 		class semantic_memory
 		{
             semantic_memory(storage* storage_container);
-            ~semantic_memory();
-            
+			
             static std::shared_ptr<semantic_memory> singleton;
             
 		public:
+			~semantic_memory();
+
 			////////////////////////////////////////////////////////////////////////////////
 			//
 			//		Public Declarations
@@ -95,14 +98,7 @@ namespace soar
             static const std::shared_ptr<semantic_memory> get_singleton();
 			
 			// Class declaration
-			
-			struct buffered_wme
-			{
-				soar_module::symbol_triple* w;
-				std::list<wme*> justification;
-			};
-	
-			typedef std::list<buffered_wme*> buffered_wme_list;
+			typedef std::list<soar_module::symbol_triple*> buffered_wme_list;
 			
             void reset(agent* theAgent, Symbol* state);
 
@@ -116,6 +112,7 @@ namespace soar
 			bool remove_ltis(agent* theAgent, const std::list<const Symbol*> lti_to_remove, std::string* result_message, bool force = false);
 
 			bool retrieve_lti(agent* theAgent, const Symbol* lti_to_retrieve, std::string* result_message);
+			Symbol* retrieve_lti(agent* theAgent, const char lti_name, const uint64_t lti_number, std::string* result_message);
 
 			void export_memory_to_graphviz(std::string* graphviz);
 			void export_lti_to_graphviz(const Symbol* lti, std::string* graphviz);
@@ -155,8 +152,6 @@ namespace soar
             bool mirroring;
 			bool recursive;
 			
-			std::unordered_set<wme*> meta_wmes;
-
 			////////////////////////////////////////////////////////////////////////////////
 			//
 			//		Private Declarations
@@ -170,12 +165,12 @@ namespace soar
             void query(agent* theAgent, const Symbol* state, std::list<wme*>& command_wmes, buffered_wme_list& buffered_wme_changes);
 			
 			// Error/Success Handling
-			void buffered_add_error_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string error_message, std::list<wme*> &justification);
-            void buffered_add_success_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string success_message, std::list<wme*> &justification);
-            void buffered_add_success_result(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* result, std::list<wme*> &justification);
+			void buffered_add_error_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string error_message);
+            void buffered_add_success_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string success_message);
+            void buffered_add_success_result(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* result);
 			
 			// Buffered WME Processing
-			void process_buffered_wmes(agent* theAgent, const Symbol* state, buffered_wme_list* buffered_wme_changes);
+			void process_buffered_wmes(agent* theAgent, Symbol* state, std::set<wme*>& justification, buffered_wme_list* buffered_wme_changes);
             
             // Print + helpers
 			bool print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);

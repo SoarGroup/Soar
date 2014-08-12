@@ -41,10 +41,6 @@ namespace soar
 			virtual Symbol* operator*() = 0;
             
             virtual storage_iterator& operator++() = 0;
-            virtual bool operator==(const storage_iterator& rhs) = 0;
-			
-            bool operator!=(const storage_iterator& rhs)
-			{ return !(*this == rhs); }
         };
         
 		class storage

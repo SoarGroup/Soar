@@ -158,6 +158,8 @@ elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('c
 else:
 	compiler = os.path.split(env['CXX'])[1]
 
+print compiler
+
 lsb_build = ('lsbc++' in env['CXX'])
 Export('compiler', 'lsb_build')
 
@@ -215,7 +217,8 @@ cflags.extend((GetOption('cflags') or '').split())
 lnflags.extend((GetOption('lnflags') or '').split())
 
 env.Replace(
-	CPPFLAGS=cflags,
+	CPPFLAGS=[cflags, env.get('CPPFLAGS', '')],
+	CXXFLAGS=['-std=c++11'],
 	LINKFLAGS=lnflags,
 	CPPPATH=[
 		'#Core/shared',
