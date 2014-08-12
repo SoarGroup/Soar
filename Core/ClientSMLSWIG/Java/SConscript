@@ -5,6 +5,7 @@
 import os
 import sys
 import itertools
+import subprocess
 import SCons.Script
 
 # adapted from http://www.scons.org/wiki/JavaNativeInterface
@@ -13,8 +14,8 @@ def ConfigureJNI(env):
 	if not base:
 		if sys.platform == 'darwin':
 			# Apple's OS X has its own special java base directory
-			base = '/System/Library/Frameworks/JavaVM.framework'
-
+			proc = subprocess.Popen('/usr/libexec/java_home', stdout=subprocess.PIPE)
+			base = proc.stdout.read().rstrip()
 		else:
 			# Search for the java compiler
 			p = env.WhereIs('javac')
@@ -44,7 +45,7 @@ def ConfigureJNI(env):
 			headers.append(os.path.join(base, 'include', 'linux'))
 		else:
 			return None
-	
+
 	return (headers, libs)
 
 def get_headers(d):
