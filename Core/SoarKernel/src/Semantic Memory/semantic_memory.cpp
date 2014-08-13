@@ -5,6 +5,7 @@
 #include "test.h"
 #include "instantiations.h"
 #include "prefmem.h"
+#include "parser.h"
 
 #include <string>
 #include <vector>
@@ -21,6 +22,8 @@ namespace soar
 {
 	namespace semantic_memory
 	{
+		std::shared_ptr<semantic_memory> semantic_memory::singleton = nullptr;
+		
 		const std::shared_ptr<semantic_memory> semantic_memory::create_singleton(storage* storage)
 		{
 			if (singleton.get())
@@ -49,7 +52,7 @@ namespace soar
 		semantic_memory::semantic_memory(storage* storage_container)
 		: backend(storage_container)
 		{}
-		
+				
 		semantic_memory::~semantic_memory()
 		{
 			delete backend;
@@ -479,7 +482,7 @@ namespace soar
 			return backend->lti_count();
 		}
 		
-		void lti_from_test(test t, std::list<Symbol*>* valid_ltis)
+		void semantic_memory::lti_from_test(test t, std::list<Symbol*>* valid_ltis)
 		{
 			if (test_is_blank_test(t))
 				return;
@@ -500,7 +503,7 @@ namespace soar
 					lti_from_test(static_cast<test>(c->first), valid_ltis);
 		}
 		
-		void lti_from_rhs_value(rhs_value rv, std::list<Symbol*>* valid_ltis)
+		void semantic_memory::lti_from_rhs_value(rhs_value rv, std::list<Symbol*>* valid_ltis)
 		{
 			if (rhs_value_is_symbol(rv))
 			{
@@ -622,6 +625,16 @@ namespace soar
 			this->recursive = recursive;
 		}
 		
+		bool semantic_memory::is_mirroring()
+		{
+			return mirroring;
+		}
+		
+		void semantic_memory::set_mirror(bool mirror)
+		{
+			mirroring = mirror;
+		}
+		
 		void semantic_memory::process_buffered_wmes(agent* theAgent, Symbol* state, std::set<wme*>& justification, buffered_wme_list* buffered_wme_changes)
 		{
 			if (buffered_wme_changes->empty())
@@ -677,6 +690,155 @@ namespace soar
 			}
 			
 			return;
+		}
+		
+		bool semantic_memory::parse_chunk(agent* thisAgent, std::list<soar_module::symbol_triple*>* chunks, std::string* error_message)
+		{
+			get_lexeme(thisAgent); // Consume the (
+			
+			soar_module::symbol_triple* triple;
+			Symbol* id, *attr, *value;
+			
+			if (thisAgent->lexeme.type == AT_LEXEME)
+				get_lexeme(thisAgent);
+			
+			if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+			{
+				if ((id = backend->retrieve_lti(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, error_message)) == nullptr)
+				{
+					// New LTI
+					id = make_new_identifier(thisAgent, thisAgent->lexeme.id_letter, 0, thisAgent->lexeme.id_number);
+					id->id->isa_lti = true;
+					id->id->smem_info->time_id = thisAgent->epmem_stats->time->get_value();
+					epmem_schedule_promotion(thisAgent, id);
+				}
+			}
+			else
+			{
+				*error_message = "Error, parent must be an ID!";
+				return false;
+			}
+			
+			get_lexeme(thisAgent); // Consume the ID
+			
+			if (thisAgent->lexeme.type != UP_ARROW_LEXEME)
+			{
+				*error_message = "Missing UP_ARROW_LEXEME!";
+				return false;
+			}
+			
+			get_lexeme(thisAgent); // Consume the ^
+			
+			if (thisAgent->lexeme.type == AT_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+			{
+				*error_message = "Error, attribute may not be an ID!";
+				return false;
+			}
+			
+			attr = make_symbol_for_current_lexeme(thisAgent, false);
+			value = make_symbol_for_current_lexeme(thisAgent, true);
+			
+			get_lexeme(thisAgent); // Consume the right parenthesis
+			
+			triple = new soar_module::symbol_triple(id, attr, value);
+			
+			chunks->push_back(triple);
+			return true;
+		}
+		
+		bool semantic_memory::parse_add_command(agent* theAgent, std::string add_command, std::string* error_message)
+		{
+			bool return_val = false;
+			uint64_t clause_count = 0;
+			
+			// parsing chunks requires an open semantic database
+			if (!backend)
+			{
+				*error_message = "Adding LTI(s) requires a backend!";
+				return false;
+			}
+			
+			// copied primarily from cli_sp
+			theAgent->alternate_input_string = add_command.c_str();
+			theAgent->alternate_input_suffix = const_cast<char*>(") ");
+			theAgent->current_char = ' ';
+			theAgent->alternate_input_exit = true;
+			set_lexer_allow_ids(theAgent, true);
+			
+			bool good_chunk = true;
+			
+			// consume next token
+			get_lexeme(theAgent);
+			
+			if (theAgent->lexeme.type != L_PAREN_LEXEME)
+				good_chunk = false;
+			
+			list<soar_module::symbol_triple*> chunks;
+			
+			// while there are chunks to consume
+			while (theAgent->lexeme.type == L_PAREN_LEXEME && good_chunk)
+				good_chunk = parse_chunk(theAgent, &chunks, error_message);
+			
+			if (good_chunk)
+			{
+				// Now we have a list of symbol_triples, we need to link them all together
+				// to form a graph structure we can pass onto our storage backend
+				
+				unordered_set<Symbol*> roots;
+				unordered_set<Symbol*> non_roots;
+				
+				for (auto triple : chunks)
+				{
+					if (roots.find(triple->id) == roots.end() &&
+						non_roots.find(triple->id) == non_roots.end())
+					{
+						// New "root"
+						// Never seen this before
+						roots.insert(triple->id);
+					}
+					else if (roots.find(triple->value) != roots.end())
+					{
+						// Found a link, no longer a root
+						non_roots.insert(triple->value);
+						roots.erase(roots.find(triple->value));
+					}
+					
+					for (slot* s = triple->id->id->slots; s != nullptr; s = s->next)
+					{
+						if (s->wmes != nullptr &&
+							s->wmes->attr == triple->attr)
+						{
+							wme* end = s->wmes;
+							while (end->next != nullptr) end = end->next;
+							
+							wme* new_wme = make_wme(theAgent, triple->id, triple->attr, triple->value, false);
+							end->next = new_wme;
+							new_wme->prev = end;
+							
+							break;
+						}
+					}
+				}
+				
+				if (roots.size() == 0) // one big loop!
+					roots.insert(*non_roots.begin());
+				
+				for (auto root : roots)
+				{
+					bool result = backend->store(theAgent, root, error_message, true);
+					
+					if (!result)
+					{
+						good_chunk = false;
+						break;
+					}
+				}
+			}
+			
+			for (auto chunk : chunks)
+				delete chunk;
+			
+			return good_chunk;
 		}
 	}
 }

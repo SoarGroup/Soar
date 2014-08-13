@@ -99,7 +99,8 @@ namespace soar
             semantic_memory(storage* storage_container);
 			
             static std::shared_ptr<semantic_memory> singleton;
-            
+			
+			friend class CommandLineInterface;
 		public:
 			~semantic_memory();
 
@@ -117,8 +118,6 @@ namespace soar
 			// Class declaration
 			typedef std::list<soar_module::symbol_triple*> buffered_wme_list;
 			
-            void reset(agent* theAgent, Symbol* state);
-
 			bool set_storage_container(storage* storage_container);
 			const storage* get_storage_container();
 
@@ -142,6 +141,8 @@ namespace soar
 
 			bool valid_production(condition* lhs, action* rhs);
 			const Symbol* lti_for_id(char lti_letter, uint64_t lti_number);
+			
+			bool parse_add_command(agent* theAgent, std::string add_commands, std::string* error_message);
 
 			void reset_storage();
 
@@ -188,7 +189,10 @@ namespace soar
 			
 			// Buffered WME Processing
 			void process_buffered_wmes(agent* theAgent, Symbol* state, std::set<wme*>& justification, buffered_wme_list* buffered_wme_changes);
-            
+			
+			// Add Command Parsing
+			bool parse_chunk(agent* thisAgent, std::list<soar_module::symbol_triple*>* chunks, std::string* error_message);
+			
             // Print + helpers
 			bool print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);
 		};
