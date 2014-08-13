@@ -127,7 +127,7 @@ namespace soar
 						root_of_query = w->value;
 					else
 					{
-						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have duplicate query objects");
+						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have multiple query objects");
 						return;
 					}
 				}
@@ -137,7 +137,7 @@ namespace soar
 						root_of_neg_query = w->value;
 					else
 					{
-						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have duplicate negative query objects");
+						buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Cannot have multiple negative query objects");
 						return;
 					}
 				}
