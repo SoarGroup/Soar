@@ -153,8 +153,8 @@ namespace soar
 				}
 			}
 			
-			if (!root_of_query && !root_of_neg_query)
-				buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Query commands must have a (neg)query attribute");
+			if (!root_of_query)
+				buffered_add_error_message(theAgent, &buffered_wme_changes, state, "Query commands must have a query attribute");
 			else
 			{
 				Symbol* result = backend->query(theAgent, root_of_query, root_of_neg_query, prohibit, &result_message);
