@@ -77,6 +77,23 @@ namespace soar
             std::list<preference*> wmes;
         };
 
+        struct activation_data
+        {
+            double activation_value; // This is the piece of metadata to sort by. It varies with each "time step".
+
+            //The below only make sense with respect to thisAgent->smem_max_cycle
+            std::list<uint64_t> activation_time_history; // These should only ever have 10 elements in them.
+            std::list<uint64_t> activation_touches_history; // These should only ever have 10 elements in them.
+            // The above two lists could also be allowed to have less than 10 elements until populated with sufficient activation.
+            // That or all zeros. Design choice.
+
+            uint64_t total_activation_num; // How many activations have occurred.
+            uint64_t first_activation_time; // When the first activation occurred.
+            //These two are for the petrov 2006 approximation.
+
+            uint64_t last_activation_time; // When the most recent activation occurred. It's just handy.
+        };
+
 		class semantic_memory
 		{
             semantic_memory(storage* storage_container);
