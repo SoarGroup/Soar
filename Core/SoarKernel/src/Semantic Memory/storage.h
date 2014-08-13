@@ -16,6 +16,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <list>
+#include <map>
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -42,6 +44,38 @@ namespace soar
             
             virtual storage_iterator& operator++() = 0;
         };
+		
+		class storage_preference
+		{
+			// Friend classes
+			// All storage containers must be listed here
+		public:
+			enum class storage_preference_type
+			{
+				string,
+				integer,
+				floating_point,
+				boolean
+			};
+			
+		private:
+			union
+			{
+				std::string string_value;
+				uint64_t int_value;
+				long double float_value;
+				bool bool_value;
+			} value;
+			
+			storage_preference_type type;
+		public:
+			const storage_preference_type get_type() { return type; }
+			
+			std::string string() { return value.string_value; }
+			uint64_t integer() { return value.int_value; }
+			long double floating_point() { return value.float_value; }
+			bool boolean() { return value.bool_value; }
+		};
         
 		class storage
 		{
@@ -67,8 +101,10 @@ namespace soar
 			virtual void reset() = 0;
 			virtual bool backup_to_file(std::string& file, std::string* error_message) = 0;
             
-            virtual storage_iterator* begin();
-            virtual storage_iterator* end();
+            virtual storage_iterator* begin() = 0;
+            virtual storage_iterator* end() = 0;
+			
+			virtual std::map<std::string, storage_preference> get_preferences() = 0;
 		};
 	}
 }
