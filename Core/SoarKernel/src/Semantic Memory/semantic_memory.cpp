@@ -117,7 +117,22 @@ namespace soar
 				delete backend;
 			
 			backend = storage_container;
-			
+
+			// max cycle
+            thisAgent->smem_max_cycle = static_cast<int64_t>(1);
+
+            // number of nodes
+            thisAgent->smem_stats->chunks->set_value(0);
+
+            // number of edges
+            thisAgent->smem_stats->slots->set_value(0);
+
+            // threshold (from user parameter value)
+                    //TODO
+
+            // activation mode (from user parameter value)
+                    //TODO: Just base-level now.
+
 			return true;
 		}
 		
