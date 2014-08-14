@@ -76,37 +76,6 @@ bool parse_verts(vector<string>& f, int& start, ptlist& verts, string& error)
     return true;
 }
 
-bool parse_transforms(vector<string>& f, int& start, vec3& pos, vec3& rot, vec3& scale, string& error)
-{
-    vec3 t;
-    char type;
-    
-    if (f[start] != "p" && f[start] != "r" && f[start] != "s")
-    {
-        error = "expecting p, r, or s";
-        return false;
-    }
-    type = f[start++][0];
-    if (!parse_vec3(f, start, t, error))
-    {
-        return false;
-    }
-    switch (type)
-    {
-        case 'p':
-            pos = t;
-            break;
-        case 'r':
-            rot = t;
-            break;
-        case 's':
-            scale = t;
-            break;
-        default:
-            assert(false);
-    }
-    return true;
-}
 
 scene::scene(const string& name, svs* owner)
     : name(name), owner(owner), draw(false), nodes(1)

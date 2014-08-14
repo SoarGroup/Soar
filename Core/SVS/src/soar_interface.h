@@ -7,6 +7,7 @@
 #include <vector>
 #include "portability.h"
 #include "wmem.h"
+#include "mat.h"
 
 tc_number get_new_tc_number(agent* thisAgent);
 extern Symbol* make_str_constant(agent* thisAgent, char const* name);
@@ -61,6 +62,8 @@ class soar_interface
         
         template<class T>
         bool         get_const_attr(Symbol* id, const std::string& attr, T& val);
+
+        bool         get_vec3(Symbol* id, const std::string& attr, vec3& val);
         
         Symbol*      get_wme_id(wme* w);
         Symbol*      get_wme_attr(wme* w);

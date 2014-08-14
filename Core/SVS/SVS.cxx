@@ -1,6 +1,6 @@
 #include "src/commands/add_node.cpp"
 #include "src/commands/extract.cpp"
-#include "src/commands/set_property.cpp"
+#include "src/commands/set_transform.cpp"
 #include "src/commands/set_tag.cpp"
 #include "src/commands/delete_tag.cpp"
 #include "src/commands/copy_node.cpp"

@@ -8,18 +8,21 @@
 
 using namespace std;
 
-class add_node_command : public command, public sgnode_listener
+enum GeometryType{
+  BOX, SPHERE, NONE, POINT
+};
+
+class add_node_command : public command
 {
     public:
         add_node_command(svs_state* state, Symbol* root)
-            : command(state, root), root(root), scn(state->get_scene()), node_filter(NULL), parent(NULL)
+            : command(state, root), root(root), scn(state->get_scene()), parent(NULL), first(true)
         {
             si = state->get_svs()->get_soar_interface();
         }
         
         ~add_node_command()
         {
-            reset();
         }
         
         string description()
@@ -27,157 +30,142 @@ class add_node_command : public command, public sgnode_listener
             return string("add_node");
         }
         
-        bool update_sub()
-        {
-            wme* parent_wme, *gen_wme;
-            bool c = changed();
-            
-            if (!parent || c)
-            {
-                reset();
-                if (!si->find_child_wme(root, "parent", parent_wme) ||
-                        !si->find_child_wme(root, "node", gen_wme))
-                {
-                    set_status("missing parameters");
+        bool update_sub(){
+            if (first){
+                first = false;
+                if (!parse()){
                     return false;
                 }
-                
-                string pname;
-                if (!get_symbol_value(si->get_wme_val(parent_wme), pname))
-                {
-                    set_status("parent name must be a string");
-                    return false;
-                }
-                if (!parent || parent->get_name() != pname)
-                {
-                    if (parent)
-                    {
-                        parent->unlisten(this);
-                    }
-                    
-                    if (!(parent = scn->get_node(pname)))
-                    {
-                        set_status("parent node doesn't exist");
-                        return false;
-                    }
-                    parent->listen(this);
-                }
-                
-                if ((node_filter = parse_filter_spec(si, si->get_wme_val(gen_wme), scn)) == NULL)
-                {
-                    set_status("incorrect node filter syntax");
-                    return false;
-                }
+                return add_node();
             }
-            if (node_filter)
-            {
-                if (!proc_changes())
-                {
-                    return false;
-                }
-                set_status("success");
-                return true;
-            }
-            return false;
+            return true;
         }
+
         
         bool early()
         {
             return false;
         }
         
-        void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
-        {
-            if (t == sgnode::DELETED)
-            {
-                parent = NULL;
-            }
-        }
         
     private:
-        bool proc_changes()
-        {
-            if (!node_filter->update())
-            {
-                set_status("error");
-                return false;
+        bool parse(){
+          // ^parent <id>
+          // The name of the parent to attach the node to
+          // Default is the root
+          string parent_name;
+          if(!si->get_const_attr(root, "parent", parent_name)){
+            parent = scn->get_root();
+          } else {
+            parent = scn->get_node(parent_name);
+            if(parent == NULL){
+              set_status("no parent node found");
+              return false;
             }
-            
-            filter_output* out = node_filter->get_output();
-            for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i)
-            {
-                if (!add_node(out->get_current(i)))
-                {
-                    return false;
-                }
-            }
-            for (int i = 0, iend = out->num_removed(); i < iend; ++i)
-            {
-                if (!del_node(out->get_removed(i)))
-                {
-                    return false;
-                }
-            }
-            out->clear_changes();
-            return true;
+          }
+
+          // ^id <id>
+          // The id to give the node
+          if(!si->get_const_attr(root, "id", node_name)){
+            set_status("no id specified");
+            return false;
+          }
+          if(scn->get_node(node_name)){
+            set_status("id already exists");
+            return false;
+          }
+
+          // ^position <vec3>
+          // ^rotation <vec3>
+          // ^scale <vec3>
+          // All optional - specify transforms on the node
+          vec3 trans;
+          if(si->get_vec3(root, "position", trans)){
+            transforms['p'] = trans;
+          }
+          if(si->get_vec3(root, "rotation", trans)){
+            transforms['r'] = trans;
+          }
+          if(si->get_vec3(root, "scale", trans)){
+            transforms['s'] = trans;
+          }
+
+          // ^geometry << box point sphere none >>
+          // Optional - default is none
+          // The geometry of the new node
+          string geom;
+          if(!si->get_const_attr(root, "geometry", geom)){
+            geom = "none";
+          }
+          if(geom == "box"){
+            geom_type = BOX;
+          } else if(geom == "point"){
+            geom_type = POINT;
+          } else if(geom == "sphere"){
+            geom_type = SPHERE;
+          } else {
+            geom_type = NONE;
+          }
+          return true;
         }
-        
-        bool add_node(filter_val* v)
-        {
+
+        bool add_node(){
             sgnode* n;
-            stringstream ss;
-            if (!get_filter_val(v, n))
-            {
-                set_status("filter output must be a node");
-                return false;
+            ptlist verts;
+
+            switch(geom_type){
+              case NONE:
+                n = new group_node(node_name, "object");
+                break;
+              case SPHERE:
+                n = new ball_node(node_name, "object", 1.0);
+                break;
+              case POINT:
+                verts.push_back(vec3(0, 0, 0));
+                n = new convex_node(node_name, "object", verts);
+                break;
+              case BOX:
+                verts = bbox_vertices();
+                n = new convex_node(node_name, "object", verts);
+                break;
             }
-            if (!scn->add_node(parent->get_name(), n))
-            {
-                ss << "error adding node " << n->get_name() << " to scene";
-                set_status(ss.str());
-                return false;
+
+            for(std::map<char, vec3>::iterator i = transforms.begin(); i != transforms.end(); i++){
+              n->set_trans(i->first, i->second);
             }
+
+            if(!scn->add_node(parent->get_name(), n)){
+              set_status("error adding node to scene");
+              return false;
+            }
+
+            set_status("success");
             return true;
         }
-        
-        bool del_node(filter_val* v)
-        {
-            sgnode* n;
-            stringstream ss;
-            if (!get_filter_val(v, n))
-            {
-                set_status("filter output must be a node");
-                return false;
+
+        ptlist bbox_vertices(){
+          ptlist pts;
+          for(double x = -.5; x <= .5; x += 1.0){
+            for(double y = -.5; y <= .5; y += 1.0){
+              for(double z = -.5; z <= .5; z += 1.0){
+                pts.push_back(vec3(x, y, z));
+              }
             }
-            if (!scn->del_node(n->get_name()))
-            {
-                ss << "error deleting node " << n->get_name() << " from scene";
-                set_status(ss.str());
-                return false;
-            }
-            return true;
+          }
+          return pts;
         }
-        
-        void reset()
-        {
-            if (parent)
-            {
-                parent->unlisten(this);
-            }
-            parent = NULL;
-            
-            if (node_filter)
-            {
-                delete node_filter;
-                node_filter = NULL;
-            }
-        }
-        
+
         scene*             scn;
         Symbol*            root;
         soar_interface*    si;
-        sgnode*            parent;
-        filter*            node_filter;
+
+        bool first;
+
+        GeometryType geom_type;
+        map<char, vec3> transforms;
+        sgnode* parent;
+        string node_name;
+      
 };
 
 command* _make_add_node_command_(svs_state* state, Symbol* root)

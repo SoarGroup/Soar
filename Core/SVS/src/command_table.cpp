@@ -21,7 +21,7 @@ command_table& get_command_table()
 command* _make_extract_command_(svs_state* state, Symbol* root);
 command* _make_extract_once_command_(svs_state* state, Symbol* root);
 command* _make_add_node_command_(svs_state* state, Symbol* root);
-command* _make_set_property_command_(svs_state* state, Symbol* root);
+command* _make_set_transform_command_(svs_state* state, Symbol* root);
 command* _make_set_tag_command_(svs_state* state, Symbol* root);
 command* _make_delete_tag_command_(svs_state* state, Symbol* root);
 command* _make_random_control_command_(svs_state* state, Symbol* root);
@@ -33,7 +33,7 @@ command_table::command_table()
     table["extract"] = &_make_extract_command_;
     table["extract_once"] = &_make_extract_once_command_;
     table["add_node"] = &_make_add_node_command_;
-    table["set_property"] = &_make_set_property_command_;
+    table["set_transform"] = &_make_set_transform_command_;
     table["set_tag"] = &_make_set_tag_command_;
     table["delete_tag"] = &_make_delete_tag_command_;
     table["copy_node"] = &_make_copy_node_command_;

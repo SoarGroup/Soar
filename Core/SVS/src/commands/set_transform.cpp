@@ -8,23 +8,23 @@
 
 using namespace std;
 
-class set_property_command : public command
+class set_transform_command : public command
 {
     public:
-        set_property_command(svs_state* state, Symbol* root)
+        set_transform_command(svs_state* state, Symbol* root)
             : command(state, root), root(root), first(true)
         {
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
         
-        ~set_property_command()
+        ~set_transform_command()
         {
         }
         
         string description()
         {
-            return string("property");
+            return string("transform");
         }
         
         bool update_sub()
@@ -49,11 +49,9 @@ class set_property_command : public command
                 return false;
             }
 
-            map<string, double>::iterator pi;
+            map<char, vec3>::iterator pi;
             for(pi = props.begin(); pi != props.end(); pi++){
-              char p = tolower(pi->first[0]);
-              int dim = tolower(pi->first[1]) - 'x';
-              n->set_native_property(p, dim, pi->second);
+              n->set_trans(pi->first, pi->second);
             }
             
             set_status("success");
@@ -81,13 +79,15 @@ class set_property_command : public command
                 return false;
             }
 
-            const char* native_props[] = { "px", "py", "pz", "rx", "ry", "rz", "sx", "sy", "sz" };
-            for(int i = 0; i < 9; i++){
-              double value;
-              if(si->find_child_wme(root, native_props[i], propwme) &&
-                  get_symbol_value(si->get_wme_val(propwme), value)){
-                props[native_props[i]] = value;
-              }
+            vec3 vec;
+            if(si->get_vec3(root, "position", vec)){
+              props['p'] = vec;
+            }
+            if(si->get_vec3(root, "rotation", vec)){
+              props['r'] = vec;
+            }
+            if(si->get_vec3(root, "scale", vec)){
+              props['s'] = vec;
             }
 
             return true;
@@ -99,11 +99,11 @@ class set_property_command : public command
         soar_interface* si;
         bool            first;
         string          id;
-        map<string, double> props;
+        map<char, vec3> props;
 
 };
 
-command* _make_set_property_command_(svs_state* state, Symbol* root)
+command* _make_set_transform_command_(svs_state* state, Symbol* root)
 {
-    return new set_property_command(state, root);
+    return new set_transform_command(state, root);
 }

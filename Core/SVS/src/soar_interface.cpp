@@ -108,6 +108,33 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_list& childs)
     return true;
 }
 
+
+bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val){
+  vec3 res;
+
+  // First find the vec3 wme
+  wme* vec3_wme;
+  if(!find_child_wme(id, attr.c_str(), vec3_wme)){
+    return false;
+  }
+  Symbol* vec3_root = get_wme_val(vec3_wme);
+
+  // Then find each dimension to make up the vec3
+  const char* dims[] = { "x", "y", "z" };
+  for(int d = 0; d < 3; d++){
+    wme* dim_wme;
+    double dim_val;
+    if(!find_child_wme(vec3_root, dims[d], dim_wme) 
+        || !get_symbol_value(get_wme_val(dim_wme), dim_val)){
+      return false;
+    }
+    res[d] = dim_val;
+  }
+  val = res;
+  return true;
+}
+
+
 bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
 {
     slot* s;

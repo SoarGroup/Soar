@@ -606,26 +606,3 @@ void sgnode::delete_tag(const std::string& tag_name){
   }
 }
 
-void sgnode::set_native_property(char type, int dim, double value)
-{
-    if (dim < 0 || dim > 2)
-    {
-        return;
-    }
-    switch (type)
-    {
-        case 'p':
-            pos[dim] = value;
-            set_transform_dirty();
-            break;
-        case 'r':
-            rot[dim] = value;
-            set_transform_dirty();
-            break;
-        case 's':
-            scale[dim] = value;
-            set_transform_dirty();
-            break;
-    }
-}
-

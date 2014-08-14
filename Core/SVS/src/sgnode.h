@@ -106,8 +106,6 @@ class sgnode : public cliproxy
         void set_tag(const std::string& tag_name, const std::string& tag_value);
         void delete_tag(const std::string& tag_name);
 
-        void set_native_property(char type, int dim, double value);
-        
     protected:
         void set_bounds(const bbox& b);
         virtual void update_shape() = 0;
