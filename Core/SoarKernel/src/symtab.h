@@ -236,6 +236,7 @@ struct idSymbol    : public Symbol
     Symbol* smem_cmd_header;
     Symbol* smem_result_header;
     soar::semantic_memory::state_data* smem_info;
+    soar::semantic_memory::activation_data* activation_info;
     
     bool isa_lti;
     
