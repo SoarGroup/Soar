@@ -181,6 +181,15 @@ namespace soar
 			symbol_add_ref(theAgent, result);
 		}
 		
+		void semantic_memory::add_activation_history(activation_data* activation_info)
+		{// This current just adds a single touch when a retrieval or query happens.
+		    activation_info->activation_time_history.pop_back;
+		    activation_info->activation_time_history.push_front(smem_cycle_age++);
+		    activation_info->activation_touches_history.pop_back;
+		    activation_info->activation_touches_history.push_front(1);
+		    activation_info->total_activation_num++;
+		}
+
 		void semantic_memory::query(agent* theAgent, const Symbol* state, list<wme*>& command_wmes, buffered_wme_list& buffered_wme_changes)
 		{
 			const Symbol* root_of_query = nullptr, *root_of_neg_query = nullptr;
@@ -231,7 +240,7 @@ namespace soar
 					buffered_add_error_message(theAgent, &buffered_wme_changes, state, result_message);
 				else
 				{
-				    result->activation_info->
+				    add_activation_history(result->activation_info);
 					buffered_add_success_message(theAgent, &buffered_wme_changes, state, result_message);
 					buffered_add_success_result(theAgent, &buffered_wme_changes, state, result);
 				}

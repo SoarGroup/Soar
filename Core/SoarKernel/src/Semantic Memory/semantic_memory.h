@@ -82,16 +82,16 @@ namespace soar
             double activation_value; // This is the piece of metadata to sort by. It varies with each "time step".
 
             //The below only make sense with respect to thisAgent->smem_max_cycle
-            std::list<uint64_t> activation_time_history; // These should only ever have 10 elements in them.
+            std::list<uint64_t> activation_time_history; // These should only ever have 10 elements in them. 1 = newest, 10 = oldest.
             std::list<uint64_t> activation_touches_history; // These should only ever have 10 elements in them.
             // The above two lists could also be allowed to have less than 10 elements until populated with sufficient activation.
-            // That or all zeros. Design choice.
+            // That or all zeros. Design choice. I'm picking all zeros. - scijones
 
             uint64_t total_activation_num; // How many activations have occurred.
             uint64_t first_activation_time; // When the first activation occurred.
             //These two are for the petrov 2006 approximation.
 
-            uint64_t last_activation_time; // When the most recent activation occurred. It's just handy.
+            //uint64_t last_activation_time; // When the most recent activation occurred. It's just handy.
         };
 
 		class semantic_memory
@@ -171,6 +171,7 @@ namespace soar
 			bool recursive;
 			uint64_t smem_cycle_age; //previously thisAgent->smem_max_cycle
 			
+
 			////////////////////////////////////////////////////////////////////////////////
 			//
 			//		Private Declarations
@@ -181,6 +182,7 @@ namespace soar
 			void lti_from_test(test t, std::list<Symbol*>* valid_ltis);
 			void lti_from_rhs_value(rhs_value rv, std::list<Symbol*>* valid_ltis);
             
+			void add_activation_history(activation_data*);// When a query or a retrieve occurs, add a touch to the LTI.
             void query(agent* theAgent, const Symbol* state, std::list<wme*>& command_wmes, buffered_wme_list& buffered_wme_changes);
 			
 			// Error/Success Handling
