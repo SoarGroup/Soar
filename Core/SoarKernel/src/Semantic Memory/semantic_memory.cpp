@@ -381,6 +381,7 @@ namespace soar
 							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result);
 						else
 						{
+						    add_activation_history(w->value->activation_info);
 							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result);
 							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value);
 						}
