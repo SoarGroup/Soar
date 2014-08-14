@@ -169,6 +169,7 @@ namespace soar
 			storage* backend;
             bool mirroring;
 			bool recursive;
+			uint64_t smem_cycle_age; //previously thisAgent->smem_max_cycle
 			
 			////////////////////////////////////////////////////////////////////////////////
 			//

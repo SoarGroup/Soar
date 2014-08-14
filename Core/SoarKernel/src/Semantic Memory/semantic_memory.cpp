@@ -119,7 +119,7 @@ namespace soar
 			backend = storage_container;
 
 			// max cycle
-            thisAgent->smem_max_cycle = static_cast<int64_t>(1);
+            smem_cycle_age = 1;
 
             // number of nodes
             thisAgent->smem_stats->chunks->set_value(0);
@@ -231,6 +231,7 @@ namespace soar
 					buffered_add_error_message(theAgent, &buffered_wme_changes, state, result_message);
 				else
 				{
+				    result->activation_info->
 					buffered_add_success_message(theAgent, &buffered_wme_changes, state, result_message);
 					buffered_add_success_result(theAgent, &buffered_wme_changes, state, result);
 				}
