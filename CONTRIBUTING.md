@@ -3,7 +3,7 @@
 Third-party patches/pull requests are great for Soar.  Soar is a very
 complicated Artificial Intelligence Framework and not everything we
 want to do gets done.  However, by using pull requests, people can
-help contribute to Soar and improve it in ways which we cannot.  We
+help contribute to Soar and improve it in ways that we cannot.  We
 want to make it easy to contribute to Soar, even though there are
 parts, such as the Kernel, which are very hard to contribute to.  In
 order to make this possible, there are a few guidelines that we need
@@ -13,12 +13,14 @@ of things.
 ## Getting Started
 
 * Make sure you have a [GitHub account](https://github.com/signup/free)
-* Read [this](http://nvie.com/posts/a-successful-git-branching-model/) and [this](https://www.atlassian.com/git/workflows#!workflow-gitflow) for how we do git repos
+* Read [this](http://nvie.com/posts/a-successful-git-branching-model/) and [this](https://www.atlassian.com/git/workflows#!workflow-gitflow) for
+  information on how our git repository is structured.
 * If you are fixing an issue:
-	- Submit a ticket for your issue, assuming one does not already
-	exist.
+	- Make sure there isn't already a ticket for the issue
+	- If there isn't, submit one before doing any work on fixing it.
 	- Clearly describe the issue including steps to reproduce when
-	it is a bug.
+	  it is a bug.  If you have any code which demonstrates the issue,
+          please include that as an attachment.
 	- Note the earliest version that you know has the issue
 		+ Ideally reference the commit which created the issue.
 * Fork the repository on GitHub
@@ -28,7 +30,7 @@ of things.
 * Create a branch from where you want to base your work.
 	- This is usually the develop branch.
 	- If this isn't the develop branch, ask someone in SoarGroup to
-	make sure it's what you want.
+	  make sure it's what you want.
 * To quickly create a branch based on develop:
 
 `git checkout -b origin/my_contribution develop`
@@ -59,28 +61,30 @@ Further paragraphs come after blank lines.
 * Make sure you follow the coding style:
 	- We, in general, try to use [Allman Style](https://en.wikipedia.org/wiki/Indent_style#Allman_style) or something close to it
 	- We also tend to use underlines ( _ ) in our names
-	- In addition, all files are lower cased.
-* Make sure you have added the necessary tests for your changes if you
-are fixing an issue.
-	- These can be found in Tests/
+	- In addition, all files are lower cased.  **Do not change file
+	  names without reason, especailly lower case to upper case**.
+* Make sure you have added the code demonstrating the issue as a test to
+  UnitTests.  This can be found in Tests/.
 * Make sure your items are namespaced if you're making new or big changes.
+	- Typically soar::[Name, ie. lexer or semantic_memory]
 * Run _all_ the tests to assure nothing was accidentally broken. If you
-break the project in your git pull request, Jenkins will let you know.
-Until Jenkins passes your pull request, it **WILL NOT** be merged in.
+  break the project in your git pull request, Jenkins [(our build system)](http://141.212.109.224:8080)
+  will let you know.  Until Jenkins passes your pull request, it **WILL NOT**
+  be merged in.
 
 ### Making Big Changes
 
 If you are making big changes, talk with someone in the Soar Group
-organization to ensure that what you are doing is worthwhile assuming
+organization to ensure that what you are doing is worthwhile, assuming
 you are planning on trying to get it back into the main repository.
 
 ### Kernel Changes/Fixes
 
-The Soar Kernel is a very ancient and a very optimized piece of code.  If
-you are making changes to it, make sure that you are careful to not break
-anything.  Also, if you have some doubt whether you know what you are
-doing while modifying the kernel, talk with someone in Soar Group who
-will happily help you out.
+The Soar Kernel is a very ancient (in computing terms) and a very optimized
+piece of code.  If you are making changes to it, make sure that you are
+careful to not break anything.  Also, if you have some doubt whether you
+know what you aredoing while modifying the kernel, talk with someone in
+Soar Group who will happily help you out.
 
 ## Submitting Changes
 
@@ -90,7 +94,8 @@ organization.
 	- Please describe what your pull request does in clear, concise,
 	and precise english.
 * If your pull request builds in Jenkins, then we will consider merging
-it in.
+  it in.  Don't worry if we take a little while to get around to it.  We
+  look at all pull requests but some may take longer than others to look at.
 
 # Additional Resources
 
