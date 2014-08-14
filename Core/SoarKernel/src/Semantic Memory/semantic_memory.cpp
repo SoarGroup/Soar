@@ -16,6 +16,59 @@
 
 extern void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number tc);
 
+////////////////////////////////////////////////////////////////////////////////
+//
+//		Missing Features from old SMem (Soar-9.4)
+//
+//	Timers
+//	Math Queries
+//	SQLite DB Backend
+//	Complete smem command (commented stuff out to make it work
+//	  and be a comparison)
+//	GraphViz Support
+//	Stats
+//
+//		Ported Functions from old SMem (Soar-9.4)
+//
+//	bool smem_enabled(agent* thisAgent); -> get_singleton()
+//	void smem_attach(agent* thisAgent); -> get_single()
+//
+//	bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg); -> parse_add_command()
+//	bool smem_parse_cues(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve); -> query()
+//	bool smem_parse_remove(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, bool force = false); -> remove_lti(s)()
+//
+//	void smem_visualize_store(agent* thisAgent, std::string* return_val); -> export_memory_to_graphviz()
+//	void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val); -> export_lti_to_graphviz()
+//	void smem_print_store(agent* thisAgent, std::string* return_val); -> print_memory()
+//	void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val, bool history = false); -> print_lti()
+//
+//	bool smem_count_ltis(agent* thisAgent, void* item, void* userdata); -> storage::lti_count()
+//	bool smem_valid_production(condition* lhs_top, action* rhs_top); -> valid_production()
+//
+//	smem_lti_id smem_lti_get_id(agent* thisAgent, char name_letter, uint64_t name_number); -> lti_for_id()
+//	Symbol* smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level); -> storage::store()
+//
+//	void smem_reset(agent* thisAgent, Symbol* state);	-> destroy_singleton()
+//														-> set_storage_container()
+//	void smem_close(agent* thisAgent);	-> destroy_singleton()
+//										-> set_storage_container()
+//	void smem_reinit(agent* thisAgent);	-> destroy_singleton()
+//										-> set_storage_container()
+//	void smem_reinit_cmd(agent* thisAgent); -> destroy_singleton()
+//											-> set_storage_container()
+//
+//	void smem_go(agent* thisAgent, bool store_only); -> parse_agent_command()
+//	bool smem_backup_db(agent* thisAgent, const char* file_name, std::string* err); -> backup_to_file
+//
+//	void smem_init_db(agent* thisAgent); -> semantic_memory::semantic_memory() (constructor)
+//										 -> set_storage_container()
+//
+//		Unported Functions from old SMem (Soar-9.4)
+//
+//	void smem_reset_id_counters(agent* thisAgent);
+//
+////////////////////////////////////////////////////////////////////////////////
+
 using namespace std;
 
 namespace soar
