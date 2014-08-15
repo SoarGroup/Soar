@@ -428,6 +428,7 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     sym->smem_header = NIL;
     sym->smem_cmd_header = NIL;
     sym->smem_result_header = NIL;
+    sym->activation_info = new soar::semantic_memory::activation_data();
     
     sym->variablization = NIL;
     

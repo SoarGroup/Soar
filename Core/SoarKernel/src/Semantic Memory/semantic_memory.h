@@ -92,6 +92,18 @@ namespace soar
             //These two are for the petrov 2006 approximation.
 
             //uint64_t last_activation_time; // When the most recent activation occurred. It's just handy.
+            activation_data()
+            {
+                activation_value = 0;
+                for(int i = 0; i < 10; i++)
+                {
+                    activation_time_history.push_front(0);
+                    activation_touches_history.push_front(0);
+                }
+                activation_time_history.push_front(0);
+                activation_touches_history.push_front(0);
+                uint64_t total_activation_num =0;
+            }
         };
 
 		class semantic_memory

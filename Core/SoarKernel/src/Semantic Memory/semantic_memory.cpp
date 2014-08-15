@@ -183,6 +183,10 @@ namespace soar
 		
 		void semantic_memory::add_activation_history(activation_data* activation_info)
 		{// This current just adds a single touch when a retrieval or query happens.
+		    if(activation_info->first_activation_time == 0)
+		    {
+		        activation_info->first_activation_time = smem_cycle_age;
+		    }
 		    activation_info->activation_time_history.pop_back;
 		    activation_info->activation_time_history.push_front(smem_cycle_age++);
 		    activation_info->activation_touches_history.pop_back;
