@@ -14,7 +14,7 @@
 #define OUTPUT_MANAGER_H_
 
 #include "kernel.h"
-#include "lexer.h"
+#include "agent.h"
 #include "soar_db.h"
 
 #define output_string_size MAX_LEXEME_LENGTH*2+10

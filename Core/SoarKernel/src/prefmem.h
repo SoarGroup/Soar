@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
 /* ---------------------------------------------------------------------
@@ -13,7 +13,7 @@
 
    Preference_add_ref() and preference_remove_ref() are macros for
    incrementing and decrementing the reference count on a preference.
-
+   
    Possibly_deallocate_preference_and_clones() checks whether a given
    preference and all its clones have reference_count 0, and deallocates
    them all if they do; it returns true if they were actually deallocated,
@@ -33,7 +33,7 @@
    matching values from TM, and deallocates the o-reject preferences when
    done.
 --------------------------------------------------------------------- */
-
+  
 #ifndef PREFMEM_H
 #define PREFMEM_H
 
@@ -164,15 +164,15 @@ extern bool possibly_deallocate_preference_and_clones(agent* thisAgent, preferen
 
 inline void preference_add_ref(preference* p)
 {
-    (p)->reference_count++;
+  (p)->reference_count++;
 }
 
 inline void preference_remove_ref(agent* thisAgent, preference* p)
 {
-    (p)->reference_count--;
-    if ((p)->reference_count == 0)
+  (p)->reference_count--;
+  if ((p)->reference_count == 0)
     {
-        possibly_deallocate_preference_and_clones(thisAgent, p);
+    possibly_deallocate_preference_and_clones(thisAgent, p);
     }
 }
 

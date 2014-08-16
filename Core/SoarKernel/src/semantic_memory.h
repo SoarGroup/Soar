@@ -13,7 +13,7 @@
 #ifndef SEMANTIC_MEMORY_H
 #define SEMANTIC_MEMORY_H
 
-#include <portability.h>
+#include "portability.h"
 
 #include <stack>
 #include <set>

@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
 /*************************************************************************

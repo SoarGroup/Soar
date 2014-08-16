@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <portability.h>
+#include "portability.h"
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
@@ -141,6 +141,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
             DoPopD();
         }
         path.insert(0, "Memory allocation failed: ");
+        fclose (pFile);
         return SetError("Failed to open file for reading: " + path);
     }
     
@@ -154,6 +155,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
             DoPopD();
         }
         path.insert(0, "Read failed: ");
+        fclose (pFile);
         return SetError("Failed to open file for reading: " + path);
     }
     buffer[lSize] = 0;

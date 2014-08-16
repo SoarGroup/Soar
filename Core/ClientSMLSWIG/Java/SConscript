@@ -5,6 +5,7 @@
 import os
 import sys
 import itertools
+import subprocess
 import SCons.Script
 
 # adapted from http://www.scons.org/wiki/JavaNativeInterface
@@ -13,8 +14,8 @@ def ConfigureJNI(env):
 	if not base:
 		if sys.platform == 'darwin':
 			# Apple's OS X has its own special java base directory
-			base = '/System/Library/Frameworks/JavaVM.framework'
-
+			proc = subprocess.Popen('/usr/libexec/java_home', stdout=subprocess.PIPE)
+			base = proc.stdout.read().rstrip()
 		else:
 			# Search for the java compiler
 			p = env.WhereIs('javac')
@@ -26,8 +27,15 @@ def ConfigureJNI(env):
 			base = os.path.split(jcdir)[0]
 
 	if sys.platform == 'darwin':
-		headers = [os.path.join(base, 'Headers')]
-		libs = [os.path.join(base, 'Libraries')]
+		if os.path.exists(os.path.join(base, 'Headers')):
+			# JDK 6
+			headers = [os.path.join(base, 'Headers')]
+			libs = [os.path.join(base, 'Libraries')]
+		else:
+			# JDK 7+
+			headers = [os.path.join(base, 'include')]
+			headers.append(os.path.join(base, 'include/darwin'))
+			libs = [os.path.join(base, 'lib')]
 	else:
 		headers = [os.path.join(base, 'include')]
 		libs = [os.path.join(base, 'lib')]
@@ -37,7 +45,7 @@ def ConfigureJNI(env):
 			headers.append(os.path.join(base, 'include', 'linux'))
 		else:
 			return None
-	
+
 	return (headers, libs)
 
 def get_headers(d):

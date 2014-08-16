@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
 /* ======================================================================
@@ -23,7 +23,7 @@
    FOR_OPERATORS_TF.  The "name_restriction" argument should be either
    a pointer to a symbol, if the trace format is  restricted to apply
    to objects with that name, or NIL if the format can apply to any object.
-
+   
    Print_all_trace_formats() prints out either all existing stack trace
    or object trace formats.
 

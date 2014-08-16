@@ -1,8 +1,8 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
 /*************************************************************************
@@ -15,7 +15,7 @@
  *
  * This file contains definitions and routines for dealing with the trace
  * formats used by Soar 6.  Trace format are specified by the user as
- * strings (with % escape sequences in them).  At entry time, Soar 6
+ * strings (with % escape sequences in them).  At entry time, Soar 6 
  * parses these strings into trace_format structures.
  *
  * =======================================================================
@@ -46,24 +46,24 @@ using namespace soar_TraceNames;
 
 enum trace_format_type
 {
-    STRING_TFT,                        /* print a string */
-    PERCENT_TFT,                       /* print a percent sign */
-    L_BRACKET_TFT,                     /* print a left bracket */
-    R_BRACKET_TFT,                     /* print a right bracket */
-    VALUES_TFT,                        /* print values of attr path or '*' */
-    VALUES_RECURSIVELY_TFT,            /* ditto only print recursively */
-    ATTS_AND_VALUES_TFT,               /* ditto only print attr's too */
-    ATTS_AND_VALUES_RECURSIVELY_TFT,   /* combination of the two above */
-    CURRENT_STATE_TFT,                 /* print current state */
-    CURRENT_OPERATOR_TFT,              /* print current operator */
-    DECISION_CYCLE_COUNT_TFT,          /* print # of dc's */
-    ELABORATION_CYCLE_COUNT_TFT,       /* print # of ec's */
-    IDENTIFIER_TFT,                    /* print identifier of object */
-    IF_ALL_DEFINED_TFT,                /* print subformat if it's defined */
-    LEFT_JUSTIFY_TFT,                  /* left justify the subformat */
-    RIGHT_JUSTIFY_TFT,                 /* right justify the subformat */
-    SUBGOAL_DEPTH_TFT,                 /* print # of subgoal depth */
-    REPEAT_SUBGOAL_DEPTH_TFT,          /* repeat subformat s.d. times */
+  STRING_TFT,                        /* print a string */
+  PERCENT_TFT,                       /* print a percent sign */
+  L_BRACKET_TFT,                     /* print a left bracket */
+  R_BRACKET_TFT,                     /* print a right bracket */
+  VALUES_TFT,                        /* print values of attr path or '*' */
+  VALUES_RECURSIVELY_TFT,            /* ditto only print recursively */
+  ATTS_AND_VALUES_TFT,               /* ditto only print attr's too */
+  ATTS_AND_VALUES_RECURSIVELY_TFT,   /* combination of the two above */
+  CURRENT_STATE_TFT,                 /* print current state */
+  CURRENT_OPERATOR_TFT,              /* print current operator */
+  DECISION_CYCLE_COUNT_TFT,          /* print # of dc's */
+  ELABORATION_CYCLE_COUNT_TFT,       /* print # of ec's */
+  IDENTIFIER_TFT,                    /* print identifier of object */
+  IF_ALL_DEFINED_TFT,                /* print subformat if it's defined */
+  LEFT_JUSTIFY_TFT,                  /* left justify the subformat */
+  RIGHT_JUSTIFY_TFT,                 /* right justify the subformat */
+  SUBGOAL_DEPTH_TFT,                 /* print # of subgoal depth */
+  REPEAT_SUBGOAL_DEPTH_TFT,          /* repeat subformat s.d. times */
     NEWLINE_TFT
 };                     /* print a newline */
 
@@ -72,14 +72,14 @@ enum trace_format_type
 typedef struct trace_format_struct
 {
     struct trace_format_struct* next; /* next in linked list of format items */
-    enum trace_format_type type;      /* what kind of item this is */
-    int num;                          /* for formats with extra numeric arg */
+  enum trace_format_type type;      /* what kind of item this is */
+  int num;                          /* for formats with extra numeric arg */
     union trace_format_data_union     /* data depending on trace format type */
     {
         char* string;                           /* string to print */
         struct trace_format_struct* subformat;  /* [subformat in brackets] */
         list* attribute_path;  /* list.of.attr.path.symbols (NIL if path is '*') */
-    } data;
+  } data;
 } trace_format;
 
 /* ----------------------------------------------------------------------
@@ -91,36 +91,36 @@ typedef struct trace_format_struct
 void deallocate_trace_format_list(agent* thisAgent, trace_format* tf)
 {
     trace_format* next;
-    
+  
     while (tf)
     {
         switch (tf->type)
         {
-            case STRING_TFT:
+    case STRING_TFT:
                 free_memory_block_for_string(thisAgent, tf->data.string);
-                break;
-                
-            case VALUES_TFT:
-            case VALUES_RECURSIVELY_TFT:
-            case ATTS_AND_VALUES_TFT:
-            case ATTS_AND_VALUES_RECURSIVELY_TFT:
+      break;
+      
+    case VALUES_TFT:
+    case VALUES_RECURSIVELY_TFT:
+    case ATTS_AND_VALUES_TFT:
+    case ATTS_AND_VALUES_RECURSIVELY_TFT:
                 deallocate_symbol_list_removing_references(thisAgent, tf->data.attribute_path);
-                break;
-                
-            case IF_ALL_DEFINED_TFT:
-            case LEFT_JUSTIFY_TFT:
-            case RIGHT_JUSTIFY_TFT:
-            case REPEAT_SUBGOAL_DEPTH_TFT:
+      break;
+      
+    case IF_ALL_DEFINED_TFT:
+    case LEFT_JUSTIFY_TFT:
+    case RIGHT_JUSTIFY_TFT:
+    case REPEAT_SUBGOAL_DEPTH_TFT:
                 deallocate_trace_format_list(thisAgent, tf->data.subformat);
-                break;
-                
-            default:
-                break; /* do nothing */
-        }
-        next = tf->next;
-        free_memory(thisAgent, tf, MISCELLANEOUS_MEM_USAGE);
-        tf = next;
+      break;
+      
+    default:
+      break; /* do nothing */
     }
+    next = tf->next;
+        free_memory(thisAgent, tf, MISCELLANEOUS_MEM_USAGE);
+    tf = next;
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -131,14 +131,14 @@ void deallocate_trace_format_list(agent* thisAgent, trace_format* tf)
    routine here.
 
    While parsing is in progress, the global variable "format" points to
-   the current character in the string.  This is advanced through the
+   the current character in the string.  This is advanced through the 
    string as parsing proceeds.  Parsing is done by recursive descent.
    If any parsing routine encouters an error, it sets the global variable
    "format_string_error_message" to be some appropriate error message,
    and leaves "format" pointing to the location of the error.
 
    Parse_attribute_path_in_brackets() reads "[attr.path.or.star]" and
-   returns the path (consed list, or NIL for the '*' path).
+   returns the path (consed list, or NIL for the '*' path).  
 
    Parse_pattern_in_brackets() reads "[subformat pattern]" and returns
    the trace format.
@@ -157,12 +157,12 @@ trace_format* parse_item_from_format_string(agent* thisAgent);
 trace_format* parse_format_string(agent* thisAgent, const char* string)
 {
     trace_format* first, *prev, *New;
-    
-    format = string;
-    format_string_error_message = NIL;
-    
-    prev = NIL;
-    first = NIL; /* unnecessary, but gcc -Wall warns without it */
+
+  format = string;
+  format_string_error_message = NIL;
+
+  prev = NIL;
+  first = NIL; /* unnecessary, but gcc -Wall warns without it */
     while (*format != 0)
     {
         New = parse_item_from_format_string(thisAgent);
@@ -175,7 +175,7 @@ trace_format* parse_format_string(agent* thisAgent, const char* string)
             else
             {
                 first = NIL;
-            }
+      }
             deallocate_trace_format_list(thisAgent, first);
             print(thisAgent, "Error:  bad trace format string: %s\n", string);
             if (format_string_error_message)
@@ -183,8 +183,8 @@ trace_format* parse_format_string(agent* thisAgent, const char* string)
                 print(thisAgent, "        %s\n", format_string_error_message);
                 print(thisAgent, "        Error found at: %s\n", format);
             }
-            return NIL;
-        }
+      return NIL;
+    }
         if (prev)
         {
             prev->next = New;
@@ -193,8 +193,8 @@ trace_format* parse_format_string(agent* thisAgent, const char* string)
         {
             first = New;
         }
-        prev = New;
-    }
+    prev = New;
+  }
     if (prev)
     {
         prev->next = NIL;
@@ -203,8 +203,8 @@ trace_format* parse_format_string(agent* thisAgent, const char* string)
     {
         first = NIL;
     }
-    
-    return first;
+  
+  return first;
 }
 
 list* parse_attribute_path_in_brackets(agent* thisAgent)
@@ -212,86 +212,86 @@ list* parse_attribute_path_in_brackets(agent* thisAgent)
     list* path;
     char name[MAX_LEXEME_LENGTH + 20], *ch;
     Symbol* sym;
-    
-    /* --- look for opening bracket --- */
+
+  /* --- look for opening bracket --- */
     if (*format != '[')
     {
-        format_string_error_message = "Expected '[' followed by attribute (path)";
-        return NIL;
-    }
-    format++;
-    
-    /* --- check for '*' (null path) --- */
+    format_string_error_message = "Expected '[' followed by attribute (path)";
+    return NIL;
+  }
+  format++;
+
+  /* --- check for '*' (null path) --- */
     if (*format == '*')
     {
-        path = NIL;
-        format++;
+    path = NIL;
+    format++;
     }
     else
     {
-        /* --- normal case: read the attribute path --- */
-        path = NIL;
+    /* --- normal case: read the attribute path --- */
+    path = NIL;
         while (true)
         {
-            ch = name;
+      ch = name;
             while ((*format != 0) && (*format != ']') && (*format != '.'))
             {
                 *ch++ = *format++;
             }
             if (*format == 0)
             {
-                format_string_error_message = "'[' without closing ']'";
+        format_string_error_message = "'[' without closing ']'";
                 deallocate_symbol_list_removing_references(thisAgent, path);
-                return NIL;
-            }
+        return NIL;
+      }
             if (ch == name)
             {
-                format_string_error_message = "null attribute found in attribute path";
+        format_string_error_message = "null attribute found in attribute path";
                 deallocate_symbol_list_removing_references(thisAgent, path);
-                return NIL;
-            }
-            *ch = 0;
+        return NIL;
+      }
+      *ch = 0;
             sym = make_str_constant(thisAgent, name);
             push(thisAgent, sym, path);
             if (*format == ']')
             {
                 break;
             }
-            format++;  /* skip past '.' */
-        }
-        path = destructively_reverse_list(path);
+      format++;  /* skip past '.' */
     }
-    
-    /* --- look for closing bracket --- */
+        path = destructively_reverse_list(path);
+  }
+
+  /* --- look for closing bracket --- */
     if (*format != ']')
     {
-        format_string_error_message = "'[' without closing ']'";
+    format_string_error_message = "'[' without closing ']'";
         deallocate_symbol_list_removing_references(thisAgent, path);
-        return NIL;
-    }
-    format++;
-    
-    return path;
+    return NIL;
+  }
+  format++;
+  
+  return path;
 }
 
 trace_format* parse_pattern_in_brackets(agent* thisAgent, bool read_opening_bracket)
 {
     trace_format* first, *prev, *New;
-    
-    /* --- look for opening bracket --- */
+
+  /* --- look for opening bracket --- */
     if (read_opening_bracket)
     {
         if (*format != '[')
         {
-            format_string_error_message = "Expected '[' followed by attribute path";
-            return NIL;
-        }
-        format++;
+      format_string_error_message = "Expected '[' followed by attribute path";
+      return NIL;
     }
-    
-    /* --- read pattern --- */
-    prev = NIL;
-    first = NIL; /* unnecessary, but gcc -Wall warns without it */
+    format++;
+  }
+
+  /* --- read pattern --- */
+  prev = NIL;
+  first = NIL; /* unnecessary, but gcc -Wall warns without it */
     while ((*format != 0) && (*format != ']'))
     {
         New = parse_item_from_format_string(thisAgent);
@@ -306,8 +306,8 @@ trace_format* parse_pattern_in_brackets(agent* thisAgent, bool read_opening_brac
                 first = NIL;
             }
             deallocate_trace_format_list(thisAgent, first);
-            return NIL;
-        }
+      return NIL;
+    }
         if (prev)
         {
             prev->next = New;
@@ -316,8 +316,8 @@ trace_format* parse_pattern_in_brackets(agent* thisAgent, bool read_opening_brac
         {
             first = New;
         }
-        prev = New;
-    }
+    prev = New;
+  }
     if (prev)
     {
         prev->next = NIL;
@@ -326,17 +326,17 @@ trace_format* parse_pattern_in_brackets(agent* thisAgent, bool read_opening_brac
     {
         first = NIL;
     }
-    
-    /* --- look for closing bracket --- */
+  
+  /* --- look for closing bracket --- */
     if (*format != ']')
     {
-        format_string_error_message = "'[' without closing ']'";
+    format_string_error_message = "'[' without closing ']'";
         deallocate_trace_format_list(thisAgent, first);
-        return NIL;
-    }
-    format++;
-    
-    return first;
+    return NIL;
+  }
+  format++;
+  
+  return first;
 }
 
 trace_format* parse_item_from_format_string(agent* thisAgent)
@@ -344,8 +344,8 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     trace_format* tf, *pattern;
     char* ch;
     list* attribute_path;
-    int n;
-    
+  int n;
+
     if (*format == 0)
     {
         return NIL;
@@ -356,289 +356,289 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     }
     if (*format == '[')
     {
-        format_string_error_message = "unexpected '[' character";
-        return NIL;
-    }
-    
+    format_string_error_message = "unexpected '[' character";
+    return NIL;
+  }
+
     if (*format != '%')
     {
         char buf[MAX_LEXEME_LENGTH + 20];
-        
-        ch = buf;
-        while ((*format != 0) && (*format != '%') &&
-                (*format != '[') && (*format != ']'))
+    
+    ch = buf;
+    while ((*format != 0) && (*format != '%') &&
+           (*format != '[') && (*format != ']'))
         {
-            *ch++ = *format++;
+      *ch++ = *format++;
         }
-        *ch = 0;
+    *ch = 0;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = STRING_TFT;
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = STRING_TFT;
         tf->data.string = make_memory_block_for_string(thisAgent, buf);
-        return tf;
-    }
-    
-    /* --- otherwise *format is '%', so parse the escape sequence --- */
-    
+    return tf;
+  }
+  
+  /* --- otherwise *format is '%', so parse the escape sequence --- */  
+
     if (!strncmp(format, "%v", 2))
     {
-        format += 2;
+    format += 2;
         attribute_path = parse_attribute_path_in_brackets(thisAgent);
         if (format_string_error_message)
         {
             return NIL;
         }
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = VALUES_TFT;
-        tf->data.attribute_path = attribute_path;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = VALUES_TFT;
+    tf->data.attribute_path = attribute_path;
+    return tf;
+  }
+                          
     if (!strncmp(format, "%o", 2))
     {
-        format += 2;
+    format += 2;
         attribute_path = parse_attribute_path_in_brackets(thisAgent);
         if (format_string_error_message)
         {
             return NIL;
         }
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = VALUES_RECURSIVELY_TFT;
-        tf->data.attribute_path = attribute_path;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = VALUES_RECURSIVELY_TFT;
+    tf->data.attribute_path = attribute_path;
+    return tf;
+  }
+                          
     if (!strncmp(format, "%av", 3))
     {
-        format += 3;
+    format += 3;
         attribute_path = parse_attribute_path_in_brackets(thisAgent);
         if (format_string_error_message)
         {
             return NIL;
         }
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = ATTS_AND_VALUES_TFT;
-        tf->data.attribute_path = attribute_path;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = ATTS_AND_VALUES_TFT;
+    tf->data.attribute_path = attribute_path;
+    return tf;
+  }
+                          
     if (!strncmp(format, "%ao", 3))
     {
-        format += 3;
+    format += 3;
         attribute_path = parse_attribute_path_in_brackets(thisAgent);
         if (format_string_error_message)
         {
             return NIL;
         }
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = ATTS_AND_VALUES_RECURSIVELY_TFT;
-        tf->data.attribute_path = attribute_path;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = ATTS_AND_VALUES_RECURSIVELY_TFT;
+    tf->data.attribute_path = attribute_path;
+    return tf;
+  }
+
     if (!strncmp(format, "%cs", 3))
     {
-        format += 3;
+    format += 3;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = CURRENT_STATE_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = CURRENT_STATE_TFT;
+    return tf;
+  }
+
     if (!strncmp(format, "%co", 3))
     {
-        format += 3;
+    format += 3;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = CURRENT_OPERATOR_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = CURRENT_OPERATOR_TFT;
+    return tf;
+  }
+
     if (!strncmp(format, "%dc", 3))
     {
-        format += 3;
+    format += 3;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = DECISION_CYCLE_COUNT_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = DECISION_CYCLE_COUNT_TFT;
+    return tf;
+  }
+
     if (!strncmp(format, "%ec", 3))
     {
-        format += 3;
+    format += 3;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = ELABORATION_CYCLE_COUNT_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = ELABORATION_CYCLE_COUNT_TFT;
+    return tf;
+  }
+
     if (!strncmp(format, "%%", 2))
     {
-        format += 2;
+    format += 2;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = PERCENT_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = PERCENT_TFT;
+    return tf;
+  }
+
     if (!strncmp(format, "%[", 2))
     {
-        format += 2;
+    format += 2;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = L_BRACKET_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = L_BRACKET_TFT;
+    return tf;
+  }
+
     if (!strncmp(format, "%]", 2))
     {
-        format += 2;
+    format += 2;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = R_BRACKET_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = R_BRACKET_TFT;
+    return tf;
+  }
+
     if (!strncmp(format, "%sd", 3))
     {
-        format += 3;
+    format += 3;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = SUBGOAL_DEPTH_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = SUBGOAL_DEPTH_TFT;
+    return tf;
+  }
+
     if (!strncmp(format, "%id", 3))
     {
-        format += 3;
+    format += 3;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = IDENTIFIER_TFT;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = IDENTIFIER_TFT;
+    return tf;
+  }
+
     if (! strncmp(format, "%ifdef", 6))
     {
-        format += 6;
+    format += 6;
         pattern = parse_pattern_in_brackets(thisAgent, true);
         if (format_string_error_message)
         {
             return NIL;
         }
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = IF_ALL_DEFINED_TFT;
-        tf->data.subformat = pattern;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = IF_ALL_DEFINED_TFT;
+    tf->data.subformat = pattern;
+    return tf;
+  }
+
     if (! strncmp(format, "%left", 5))
     {
-        format += 5;
+    format += 5;
         if (*format != '[')
         {
-            format_string_error_message = "Expected '[' after %left";
-            return NIL;
-        }
-        format++;
+      format_string_error_message = "Expected '[' after %left";
+      return NIL;
+    }
+    format++;
         if (! isdigit(*format))
         {
-            format_string_error_message = "Expected number with %left";
-            return NIL;
-        }
-        n = 0;
+      format_string_error_message = "Expected number with %left";
+      return NIL;
+    }
+    n = 0;
         while (isdigit(*format))
         {
             n = 10 * n + (*format++ - '0');
         }
         if (*format != ',')
         {
-            format_string_error_message = "Expected ',' after number in %left";
-            return NIL;
-        }
-        format++;
+      format_string_error_message = "Expected ',' after number in %left";
+      return NIL;
+    }
+    format++;
         pattern = parse_pattern_in_brackets(thisAgent, false);
         if (format_string_error_message)
         {
             return NIL;
         }
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = LEFT_JUSTIFY_TFT;
-        tf->num = n;
-        tf->data.subformat = pattern;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = LEFT_JUSTIFY_TFT;
+    tf->num = n;
+    tf->data.subformat = pattern;
+    return tf;
+  }
+
     if (! strncmp(format, "%right", 6))
     {
-        format += 6;
+    format += 6;
         if (*format != '[')
         {
-            format_string_error_message = "Expected '[' after %right";
-            return NIL;
-        }
-        format++;
+      format_string_error_message = "Expected '[' after %right";
+      return NIL;
+    }
+    format++;
         if (! isdigit(*format))
         {
-            format_string_error_message = "Expected number with %right";
-            return NIL;
-        }
-        n = 0;
+      format_string_error_message = "Expected number with %right";
+      return NIL;
+    }
+    n = 0;
         while (isdigit(*format))
         {
             n = 10 * n + (*format++ - '0');
         }
         if (*format != ',')
         {
-            format_string_error_message = "Expected ',' after number in %right";
-            return NIL;
-        }
-        format++;
+      format_string_error_message = "Expected ',' after number in %right";
+      return NIL;
+    }
+    format++;
         pattern = parse_pattern_in_brackets(thisAgent, false);
         if (format_string_error_message)
         {
             return NIL;
         }
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = RIGHT_JUSTIFY_TFT;
-        tf->num = n;
-        tf->data.subformat = pattern;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = RIGHT_JUSTIFY_TFT;
+    tf->num = n;
+    tf->data.subformat = pattern;
+    return tf;
+  }
+
     if (! strncmp(format, "%rsd", 4))
     {
-        format += 4;
+    format += 4;
         pattern = parse_pattern_in_brackets(thisAgent, true);
         if (format_string_error_message)
         {
             return NIL;
         }
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = REPEAT_SUBGOAL_DEPTH_TFT;
-        tf->data.subformat = pattern;
-        return tf;
-    }
-    
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = REPEAT_SUBGOAL_DEPTH_TFT;
+    tf->data.subformat = pattern;
+    return tf;
+  }
+
     if (!strncmp(format, "%nl", 3))
     {
-        format += 3;
+    format += 3;
         tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tf->type = NEWLINE_TFT;
-        return tf;
-    }
-    
-    /* --- if we haven't recognized it yet, we don't understand it --- */
-    format_string_error_message = "Unrecognized escape sequence";
-    return NIL;
+															 MISCELLANEOUS_MEM_USAGE));
+    tf->type = NEWLINE_TFT;
+    return tf;
+  }
+
+  /* --- if we haven't recognized it yet, we don't understand it --- */
+  format_string_error_message = "Unrecognized escape sequence";
+  return NIL;
 }
 
 /* ----------------------------------------------------------------------
@@ -651,24 +651,24 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
 void print_trace_format_list(agent* thisAgent, trace_format* tf)
 {
     cons* c;
-    
+
     for (; tf != NIL; tf = tf->next)
     {
         switch (tf->type)
         {
-            case STRING_TFT:
+    case STRING_TFT:
             {
                 char* s;
-                size_t i, len;
-                
+        size_t i, len;
+        
                 s = string_to_escaped_string(tf->data.string, '"', NULL);
                 len = strlen(s);
                 for (i = 1; i < len - 1; i++)
                 {
                     print(thisAgent, "%c", *(s + i));
                 }
-            }
-            break;
+      }
+      break;
             case PERCENT_TFT:
                 print_string(thisAgent, "%%");
                 break;
@@ -678,19 +678,19 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
             case R_BRACKET_TFT:
                 print_string(thisAgent, "%]");
                 break;
-                
-            case VALUES_TFT:
-            case VALUES_RECURSIVELY_TFT:
-            case ATTS_AND_VALUES_TFT:
-            case ATTS_AND_VALUES_RECURSIVELY_TFT:
+
+    case VALUES_TFT:
+    case VALUES_RECURSIVELY_TFT:
+    case ATTS_AND_VALUES_TFT:
+    case ATTS_AND_VALUES_RECURSIVELY_TFT:
                 if (tf->type == VALUES_TFT)
                 {
                     print_string(thisAgent, "%v[");
-                }
+        }
                 else if (tf->type == VALUES_RECURSIVELY_TFT)
                 {
                     print_string(thisAgent, "%o[");
-                }
+      }
                 else if (tf->type == ATTS_AND_VALUES_TFT)
                 {
                     print_string(thisAgent, "%av[");
@@ -715,8 +715,8 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
                     print_string(thisAgent, "*");
                 }
                 print_string(thisAgent, "]");
-                break;
-                
+      break;
+
             case CURRENT_STATE_TFT:
                 print_string(thisAgent, "%cs");
                 break;
@@ -732,15 +732,15 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
             case IDENTIFIER_TFT:
                 print_string(thisAgent, "%id");
                 break;
-                
-            case IF_ALL_DEFINED_TFT:
+
+    case IF_ALL_DEFINED_TFT:
                 print_string(thisAgent, "%ifdef[");
                 print_trace_format_list(thisAgent, tf->data.subformat);
                 print_string(thisAgent, "]");
-                break;
-                
-            case LEFT_JUSTIFY_TFT:
-            case RIGHT_JUSTIFY_TFT:
+      break;
+      
+    case LEFT_JUSTIFY_TFT:
+    case RIGHT_JUSTIFY_TFT:
                 if (tf->type == LEFT_JUSTIFY_TFT)
                 {
                     print_string(thisAgent, "%left[");
@@ -752,31 +752,31 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
                 print(thisAgent, "%d,", tf->num);
                 print_trace_format_list(thisAgent, tf->data.subformat);
                 print_string(thisAgent, "]");
-                break;
-                
+      break;
+
             case SUBGOAL_DEPTH_TFT:
                 print_string(thisAgent, "%sd");
                 break;
-                
-            case REPEAT_SUBGOAL_DEPTH_TFT:
+
+    case REPEAT_SUBGOAL_DEPTH_TFT:
                 print_string(thisAgent, "%rsd[");
                 print_trace_format_list(thisAgent, tf->data.subformat);
                 print_string(thisAgent, "]");
-                break;
-                
+      break;
+
             case NEWLINE_TFT:
                 print_string(thisAgent, "%nl");
                 break;
-                
-            default:
+
+    default:
             {
                 char msg[BUFFER_MSG_SIZE];
                 strncpy(msg, "Internal error: bad trace format type\n", BUFFER_MSG_SIZE);
-                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-                abort_with_fatal_error(thisAgent, msg);
-            }
-        }
+      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+      abort_with_fatal_error(thisAgent, msg);
+      }
     }
+  }
 }
 
 /* ======================================================================
@@ -805,10 +805,10 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
    format is intended, or false if the object trace format is intended.
    Their "type_restriction" argument should be one of FOR_ANYTHING_TF,
    ..., FOR_OPERATORS_TF .  The "name_restriction"
-   argument should be either a pointer to a symbol, if the trace format
+   argument should be either a pointer to a symbol, if the trace format 
    is restricted to apply to objects with that name, or NIL if the format
    can apply to any object.
-
+   
    Print_all_trace_formats() prints out either all existing stack trace
    or object trace formats.
 ====================================================================== */
@@ -817,9 +817,9 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
 
 typedef struct tracing_rule_struct
 {
-    /* Warning: this MUST be the first field, for the hash table routines */
+  /* Warning: this MUST be the first field, for the hash table routines */
     struct tracing_rule_struct* next_in_hash_bucket;
-    int type_restriction;      /* FOR_STATES_TF, etc. */
+  int type_restriction;      /* FOR_STATES_TF, etc. */
     Symbol* name_restriction;  /* points to name Symbol, or NIL */
     trace_format* format;      /* indicates the format to use */
 } tracing_rule;
@@ -835,7 +835,7 @@ inline uint32_t hash_name_restriction(Symbol* name, short num_bits)
 uint32_t tracing_rule_hash_function(void* item, short num_bits)
 {
     tracing_rule* tr;
-    
+  
     tr = static_cast<tracing_rule_struct*>(item);
     return hash_name_restriction(tr->name_restriction, num_bits);
 }
@@ -845,35 +845,35 @@ uint32_t tracing_rule_hash_function(void* item, short num_bits)
 
 void init_tracing(agent* thisAgent)
 {
-    int i;
-    
+  int i;
+
     for (i = 0; i < 3; i++)
     {
         thisAgent->object_tr_ht[i] = make_hash_table(thisAgent, 0, tracing_rule_hash_function);
         thisAgent->stack_tr_ht[i] = make_hash_table(thisAgent, 0, tracing_rule_hash_function);
-        thisAgent->object_tf_for_anything[i] = NIL;
-        thisAgent->stack_tf_for_anything[i] = NIL;
-    }
+    thisAgent->object_tf_for_anything[i] = NIL;
+    thisAgent->stack_tf_for_anything[i] = NIL;
+  }
 }
 
 trace_format* lookup_trace_format(agent* thisAgent,
                                   bool stack_trace,
-                                  int type_restriction,
+                                   int type_restriction,
                                   Symbol* name_restriction)
 {
-    uint32_t hash_value;
+  uint32_t hash_value;
     hash_table* ht;
     tracing_rule* tr;
-    
+
     if (name_restriction)
     {
-        if (stack_trace)
+    if (stack_trace)
         {
-            ht = thisAgent->stack_tr_ht[type_restriction];
+      ht = thisAgent->stack_tr_ht[type_restriction];
         }
-        else
+    else
         {
-            ht = thisAgent->object_tr_ht[type_restriction];
+      ht = thisAgent->object_tr_ht[type_restriction];
         }
         hash_value = hash_name_restriction(name_restriction, ht->log2size);
         tr = reinterpret_cast<tracing_rule*>(*(ht->buckets + hash_value));
@@ -882,39 +882,39 @@ trace_format* lookup_trace_format(agent* thisAgent,
             {
                 return tr->format;
             }
-        return NIL;
-    }
-    /* --- no name restriction --- */
-    if (stack_trace)
+    return NIL;
+  }
+  /* --- no name restriction --- */
+  if (stack_trace)
     {
-        return thisAgent->stack_tf_for_anything[type_restriction];
+    return thisAgent->stack_tf_for_anything[type_restriction];
     }
-    else
+  else
     {
-        return thisAgent->object_tf_for_anything[type_restriction];
+    return thisAgent->object_tf_for_anything[type_restriction];
     }
 }
 
 bool remove_trace_format(agent* thisAgent,
                          bool stack_trace,
-                         int type_restriction,
+                          int type_restriction,
                          Symbol* name_restriction)
 {
-    uint32_t hash_value;
+  uint32_t hash_value;
     hash_table* ht;
     tracing_rule* tr;
     trace_format** format;
-    
+
     if (name_restriction)
     {
-        if (stack_trace)
+    if (stack_trace)
         {
-            ht = thisAgent->stack_tr_ht[type_restriction];
+      ht = thisAgent->stack_tr_ht[type_restriction];
         }
-        else
+    else
         {
-            ht = thisAgent->object_tr_ht[type_restriction];
-        }
+      ht = thisAgent->object_tr_ht[type_restriction];
+  }
         hash_value = hash_name_restriction(name_restriction, ht->log2size);
         tr = reinterpret_cast<tracing_rule*>(*(ht->buckets + hash_value));
         for (; tr != NIL; tr = tr->next_in_hash_bucket)
@@ -932,74 +932,74 @@ bool remove_trace_format(agent* thisAgent,
         symbol_remove_ref(thisAgent, name_restriction);
         return true;
     }
-    /* --- no name restriction --- */
-    if (stack_trace)
+  /* --- no name restriction --- */
+  if (stack_trace)
     {
-        format = &(thisAgent->stack_tf_for_anything[type_restriction]);
+    format = &(thisAgent->stack_tf_for_anything[type_restriction]);
     }
-    else
+  else
     {
-        format = &(thisAgent->object_tf_for_anything[type_restriction]);
+    format = &(thisAgent->object_tf_for_anything[type_restriction]);
     }
     if (! *format)
     {
         return false;
     }
     deallocate_trace_format_list(thisAgent, *format);
-    *format = NIL;
+  *format = NIL;
     return true;
 }
 
 bool add_trace_format(agent* thisAgent,
                       bool stack_trace,
-                      int type_restriction,
+                       int type_restriction,
                       Symbol* name_restriction,
                       const char* format_string)
 {
     tracing_rule* tr;
     trace_format* new_tf;
     hash_table* ht;
-    
-    /* --- parse the format string into a trace_format --- */
+
+  /* --- parse the format string into a trace_format --- */
     new_tf = parse_format_string(thisAgent, format_string);
     if (!new_tf)
     {
         return false;
     }
-    
-    /* --- first remove any existing trace format with same conditions --- */
+
+  /* --- first remove any existing trace format with same conditions --- */
     remove_trace_format(thisAgent, stack_trace, type_restriction, name_restriction);
-    
-    /* --- now add the new one --- */
+
+  /* --- now add the new one --- */
     if (name_restriction)
     {
         symbol_add_ref(thisAgent, name_restriction);
-        if (stack_trace)
+    if (stack_trace)
         {
-            ht = thisAgent->stack_tr_ht[type_restriction];
+      ht = thisAgent->stack_tr_ht[type_restriction];
         }
-        else
+    else
         {
-            ht = thisAgent->object_tr_ht[type_restriction];
+      ht = thisAgent->object_tr_ht[type_restriction];
         }
         tr = static_cast<tracing_rule_struct*>(allocate_memory(thisAgent, sizeof(tracing_rule),
-                                               MISCELLANEOUS_MEM_USAGE));
-        tr->type_restriction = type_restriction;
-        tr->name_restriction = name_restriction;
-        tr->format = new_tf;
+															 MISCELLANEOUS_MEM_USAGE));
+    tr->type_restriction = type_restriction;
+    tr->name_restriction = name_restriction;
+    tr->format = new_tf;
         add_to_hash_table(thisAgent, ht, tr);
         return true;
-    }
-    /* --- no name restriction --- */
-    if (stack_trace)
+  }
+  /* --- no name restriction --- */
+  if (stack_trace)
     {
-        thisAgent->stack_tf_for_anything[type_restriction] = new_tf;
+    thisAgent->stack_tf_for_anything[type_restriction] = new_tf;
     }
-    else
+  else
     {
-        thisAgent->object_tf_for_anything[type_restriction] = new_tf;
+    thisAgent->object_tf_for_anything[type_restriction] = new_tf;
     }
-    
+
     return true;
 }
 
@@ -1008,11 +1008,11 @@ char tracing_object_letters[3] = {'*', 's', 'o'};
 void print_tracing_rule(agent* thisAgent, int type_restriction, Symbol* name_restriction,
                         trace_format* format)
 {
-    if (thisAgent->printing_stack_traces)
+  if (thisAgent->printing_stack_traces)
     {
         print_string(thisAgent, "stack-trace-format");
     }
-    else
+  else
     {
         print_string(thisAgent, "object-trace-format");
     }
@@ -1039,11 +1039,10 @@ void print_tracing_rule_tcl(agent* thisAgent, int type_restriction, Symbol* name
     print(thisAgent, "}\n");
 }
 
-
 bool print_trace_callback_fn(agent* thisAgent, void* item, void*)
 {
     tracing_rule* tr;
-    
+
     tr = static_cast<tracing_rule_struct*>(item);
     print_tracing_rule(thisAgent, tr->type_restriction, tr->name_restriction, tr->format);
     return false;
@@ -1052,26 +1051,26 @@ bool print_trace_callback_fn(agent* thisAgent, void* item, void*)
 bool print_trace_callback_fn_tcl(agent* thisAgent, void* item, void*)
 {
     tracing_rule* tr;
-    
+
     tr = static_cast<tracing_rule_struct*>(item);
     print_tracing_rule_tcl(thisAgent, tr->type_restriction, tr->name_restriction,
-                           tr->format);
+                          tr->format);
     return false;
 }
 
 void print_all_trace_formats(agent* thisAgent, bool stack_trace, FILE* f)
 {
-    int i;
-    
-    thisAgent->printing_stack_traces = stack_trace;
+  int i;
+
+  thisAgent->printing_stack_traces = stack_trace;
     if (stack_trace)
     {
         for (i = 0; i < 3; i++)
         {
-            if (thisAgent->stack_tf_for_anything[i])
+      if (thisAgent->stack_tf_for_anything[i])
             {
                 print_tracing_rule(thisAgent, i, NIL, thisAgent->stack_tf_for_anything[i]);
-            }
+    }
             do_for_all_items_in_hash_table(thisAgent, thisAgent->stack_tr_ht[i], print_trace_callback_fn, reinterpret_cast<void*>(f));
         }
     }
@@ -1079,28 +1078,28 @@ void print_all_trace_formats(agent* thisAgent, bool stack_trace, FILE* f)
     {
         for (i = 0; i < 3; i++)
         {
-            if (thisAgent->object_tf_for_anything[i])
+      if (thisAgent->object_tf_for_anything[i])
             {
                 print_tracing_rule(thisAgent, i, NIL, thisAgent->object_tf_for_anything[i]);
             }
             do_for_all_items_in_hash_table(thisAgent, thisAgent->object_tr_ht[i], print_trace_callback_fn, reinterpret_cast<void*>(f));
-        }
     }
+  }
 }
 
 void print_all_trace_formats_tcl(agent* thisAgent, bool stack_trace, FILE* f)
 {
-    int i;
-    
-    thisAgent->printing_stack_traces = stack_trace;
+  int i;
+
+  thisAgent->printing_stack_traces = stack_trace;
     if (stack_trace)
     {
         for (i = 0; i < 3; i++)
         {
-            if (thisAgent->stack_tf_for_anything[i])
+      if (thisAgent->stack_tf_for_anything[i])
             {
                 print_tracing_rule_tcl(thisAgent, i, NIL, thisAgent->stack_tf_for_anything[i]);
-            }
+    }
             do_for_all_items_in_hash_table(thisAgent, thisAgent->stack_tr_ht[i], print_trace_callback_fn_tcl, reinterpret_cast<void*>(f));
         }
     }
@@ -1108,59 +1107,59 @@ void print_all_trace_formats_tcl(agent* thisAgent, bool stack_trace, FILE* f)
     {
         for (i = 0; i < 3; i++)
         {
-            if (thisAgent->object_tf_for_anything[i])
+      if (thisAgent->object_tf_for_anything[i])
             {
                 print_tracing_rule_tcl(thisAgent, i, NIL, thisAgent->object_tf_for_anything[i]);
-            }
+    }
             do_for_all_items_in_hash_table(thisAgent, thisAgent->object_tr_ht[i], print_trace_callback_fn_tcl, reinterpret_cast<void*>(f));
         }
-    }
+  }
 }
 
 inline void set_print_trace_formats(agent* thisAgent)
 {
-    /* --- add default object trace formats --- */
+  /* --- add default object trace formats --- */
     add_trace_format(thisAgent, false, FOR_ANYTHING_TF, NIL,
-                     "%id %ifdef[(%v[name])]");
+                    "%id %ifdef[(%v[name])]");
     add_trace_format(thisAgent, false, FOR_STATES_TF, NIL,
-                     "%id %ifdef[(%v[attribute] %v[impasse])]");
-    /***********  enable when determine tagged output format
-    { Symbol *evaluate_object_sym;
+                    "%id %ifdef[(%v[attribute] %v[impasse])]");
+  /***********  enable when determine tagged output format 
+  { Symbol *evaluate_object_sym;
       evaluate_object_sym = make_str_constant (thisAgent, "evaluate-object");
       add_trace_format (thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
-                        "%id (evaluate-object %o[object])");
-      symbol_remove_ref (thisAgent, evaluate_object_sym);
-    }
-    *************/
-    /* --- add default stack trace formats --- */
+                      "%id (evaluate-object %o[object])");
+    symbol_remove_ref (thisAgent, evaluate_object_sym);
+  }
+  *************/
+ /* --- add default stack trace formats --- */
     add_trace_format(thisAgent, true, FOR_STATES_TF, NIL,
-                     "%right[6,%dc]: %rsd[   ]==>S: %cs");
+                    "%right[6,%dc]: %rsd[   ]==>S: %cs");
     add_trace_format(thisAgent, true, FOR_OPERATORS_TF, NIL,
-                     "%right[6,%dc]: %rsd[   ]   O: %co");
+                    "%right[6,%dc]: %rsd[   ]   O: %co");
 }
 inline void set_tagged_trace_formats(agent* thisAgent)
 {
-    // KJC 03/05:  trying this for tagged output
-    
-    /* --- add tagged object trace formats --- */
+  // KJC 03/05:  trying this for tagged output
+
+	  /* --- add tagged object trace formats --- */
     add_trace_format(thisAgent, false, FOR_ANYTHING_TF, NIL,
-                     "%id\" %ifdef[name=\"%v[name]\"]");
+                    "%id\" %ifdef[name=\"%v[name]\"]");
     add_trace_format(thisAgent, false, FOR_STATES_TF, NIL,
-                     "%id\" %ifdef[impasse_object=\"%v[attribute]\" impasse_type=\"%v[impasse]\"]");
-    /***********  enable when determine tagged output format
-    { Symbol *evaluate_object_sym;
+                    "%id\" %ifdef[impasse_object=\"%v[attribute]\" impasse_type=\"%v[impasse]\"]");
+  /***********  enable when determine tagged output format 
+  { Symbol *evaluate_object_sym;
       evaluate_object_sym = make_str_constant (thisAgent, "evaluate-object");
       add_trace_format (thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
-                        "%id (evaluate-object %o[object])");
-      symbol_remove_ref (thisAgent, evaluate_object_sym);
-    }
-    *************/
-    /* --- add tagged stack trace formats --- */
-    
+                      "%id (evaluate-object %o[object])");
+    symbol_remove_ref (thisAgent, evaluate_object_sym);
+  }
+  *************/
+ /* --- add tagged stack trace formats --- */
+
     add_trace_format(thisAgent, true, FOR_STATES_TF, NIL,
-                     "<state stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_state_id=\"%cs>");
+	                "<state stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_state_id=\"%cs>");
     add_trace_format(thisAgent, true, FOR_OPERATORS_TF, NIL,
-                     "<operator stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_operator_id=\"%co>");
+                    "<operator stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_operator_id=\"%co>");
 }
 
 
@@ -1205,8 +1204,8 @@ void add_values_of_attribute_path(agent* thisAgent,
     slot* s;
     wme* w;
     char* ch;
-    growable_string gs;
-    
+  growable_string gs;
+
     if (!path)    /* path is NIL, so we've reached the end of the path */
     {
         add_to_growable_string(thisAgent, result, " ");
@@ -1215,40 +1214,40 @@ void add_values_of_attribute_path(agent* thisAgent,
             gs = object_to_trace_string(thisAgent, object);
             add_to_growable_string(thisAgent, result, text_of_growable_string(gs));
             free_growable_string(thisAgent, gs);
-        }
+    }
         else
         {
             ch = symbol_to_string(thisAgent, object, true, NULL, 0);
             add_to_growable_string(thisAgent, result, ch);
         }
-        (*count)++;
-        return;
-    }
-    
-    /* --- not at end of path yet --- */
-    /* --- can't follow any more path segments off of a non-identifier --- */
+    (*count)++;
+    return;
+  }
+
+  /* --- not at end of path yet --- */
+  /* --- can't follow any more path segments off of a non-identifier --- */
     if (object->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
         return;
     }
-    
-    /* --- call this routine recursively on any wme matching the first segment
-       of the attribute path --- */
+
+  /* --- call this routine recursively on any wme matching the first segment
+     of the attribute path --- */
     for (w = object->id->impasse_wmes; w != NIL; w = w->next)
-        if (w->attr == path->first)
+    if (w->attr == path->first)
             add_values_of_attribute_path(thisAgent, w->value, path->rest, result, recursive,
-                                         count);
+                                    count);
     for (w = object->id->input_wmes; w != NIL; w = w->next)
-        if (w->attr == path->first)
+    if (w->attr == path->first)
             add_values_of_attribute_path(thisAgent, w->value, path->rest, result, recursive,
-                                         count);
+                                    count);
     s = find_slot(object, static_cast<symbol_struct*>(path->first));
     if (s)
     {
         for (w = s->wmes; w != NIL; w = w->next)
             add_values_of_attribute_path(thisAgent, w->value, path->rest, result, recursive,
-                                         count);
-    }
+                                    count);
+  }
 }
 
 /* ----------------------------------------------------------------
@@ -1265,8 +1264,8 @@ void add_trace_for_wme(agent* thisAgent,
                        bool recursive)
 {
     char* ch;
-    growable_string gs;
-    
+  growable_string gs;
+
     add_to_growable_string(thisAgent, result, " ");
     if (print_attribute)
     {
@@ -1274,7 +1273,7 @@ void add_trace_for_wme(agent* thisAgent,
         ch = symbol_to_string(thisAgent, w->attr, true, NULL, 0);
         add_to_growable_string(thisAgent, result, ch);
         add_to_growable_string(thisAgent, result, " ");
-    }
+  }
     if (recursive)
     {
         gs = object_to_trace_string(thisAgent, w->value);
@@ -1285,7 +1284,7 @@ void add_trace_for_wme(agent* thisAgent,
     {
         ch = symbol_to_string(thisAgent, w->value, true, NULL, 0);
         add_to_growable_string(thisAgent, result, ch);
-    }
+  }
 }
 
 /* ----------------------------------------------------------------
@@ -1305,15 +1304,15 @@ void add_trace_for_attribute_path(agent* thisAgent,
                                   bool print_attributes,
                                   bool recursive)
 {
-    growable_string values;
+  growable_string values;
     cons* c;
     char* ch;
-    int count;
+  int count;
     slot* s;
     wme* w;
-    
-    values = make_blank_growable_string(thisAgent);
-    
+
+  values = make_blank_growable_string(thisAgent);
+
     if (! path)
     {
         if (object->symbol_type != IDENTIFIER_SYMBOL_TYPE)
@@ -1338,18 +1337,18 @@ void add_trace_for_attribute_path(agent* thisAgent,
             add_to_growable_string(thisAgent, result, text_of_growable_string(values) + 1);
         }
         free_growable_string(thisAgent, values);
-        return;
-    }
-    
-    count = 0;
+    return;
+  }
+
+  count = 0;
     add_values_of_attribute_path(thisAgent, object, path, &values, recursive, &count);
     if (! count)
     {
         found_undefined = true;
         free_growable_string(thisAgent, values);
-        return;
-    }
-    
+    return;
+  }
+
     if (print_attributes)
     {
         add_to_growable_string(thisAgent, result, "^");
@@ -1360,8 +1359,8 @@ void add_trace_for_attribute_path(agent* thisAgent,
             if (c->rest)
             {
                 add_to_growable_string(thisAgent, result, ".");
-            }
-        }
+    }
+  }
         add_to_growable_string(thisAgent, result, " ");
     }
     if (length_of_growable_string(values) > 0)
@@ -1380,47 +1379,47 @@ void add_trace_for_attribute_path(agent* thisAgent,
 growable_string trace_format_list_to_string(agent* thisAgent, trace_format* tf, Symbol* object)
 {
 #define GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE 50
-    char buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE], *ch;
-    growable_string result, temp_gs;
-    int i;
-    
-    result = make_blank_growable_string(thisAgent);
-    
+  char buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE], *ch;
+  growable_string result, temp_gs;
+  int i;
+
+  result = make_blank_growable_string(thisAgent);
+
     for (; tf != NIL; tf = tf->next)
     {
         switch (tf->type)
         {
-            case STRING_TFT:
+    case STRING_TFT:
                 add_to_growable_string(thisAgent, &result, tf->data.string);
-                break;
-            case PERCENT_TFT:
+      break;
+    case PERCENT_TFT:
                 add_to_growable_string(thisAgent, &result, "%");
-                break;
-            case L_BRACKET_TFT:
+      break;
+    case L_BRACKET_TFT:
                 add_to_growable_string(thisAgent, &result, "[");
-                break;
-            case R_BRACKET_TFT:
+      break;
+    case R_BRACKET_TFT:
                 add_to_growable_string(thisAgent, &result, "]");
-                break;
-                
-            case VALUES_TFT:
+      break;
+
+    case VALUES_TFT:
                 add_trace_for_attribute_path(thisAgent, object, tf->data.attribute_path, &result,
                                              false, false);
-                break;
-            case VALUES_RECURSIVELY_TFT:
+      break;
+    case VALUES_RECURSIVELY_TFT:
                 add_trace_for_attribute_path(thisAgent, object, tf->data.attribute_path, &result,
                                              false, true);
-                break;
-            case ATTS_AND_VALUES_TFT:
+      break;
+    case ATTS_AND_VALUES_TFT:
                 add_trace_for_attribute_path(thisAgent, object, tf->data.attribute_path, &result,
                                              true, false);
-                break;
-            case ATTS_AND_VALUES_RECURSIVELY_TFT:
+      break;
+    case ATTS_AND_VALUES_RECURSIVELY_TFT:
                 add_trace_for_attribute_path(thisAgent, object, tf->data.attribute_path, &result,
                                              true, true);
-                break;
-                
-            case CURRENT_STATE_TFT:
+      break;
+
+    case CURRENT_STATE_TFT:
                 if (! tparams.current_s)
                 {
                     found_undefined = true;
@@ -1428,16 +1427,16 @@ growable_string trace_format_list_to_string(agent* thisAgent, trace_format* tf, 
                 else
                 {
                     temp_gs = object_to_trace_string(thisAgent, tparams.current_s);
-                    
-                    // KJC added to play with tagged output...
-                    //add_to_growable_string (thisAgent, &result, "id=");
-                    
+ 
+		// KJC added to play with tagged output...
+		//add_to_growable_string (thisAgent, &result, "id=");
+
                     add_to_growable_string(thisAgent, &result, text_of_growable_string(temp_gs));
-                    
+ 
                     free_growable_string(thisAgent, temp_gs);
-                }
-                break;
-            case CURRENT_OPERATOR_TFT:
+      }
+      break;
+    case CURRENT_OPERATOR_TFT:
                 if (! tparams.current_o)
                 {
                     found_undefined = true;
@@ -1447,55 +1446,55 @@ growable_string trace_format_list_to_string(agent* thisAgent, trace_format* tf, 
                     temp_gs = object_to_trace_string(thisAgent, tparams.current_o);
                     add_to_growable_string(thisAgent, &result, text_of_growable_string(temp_gs));
                     free_growable_string(thisAgent, temp_gs);
-                }
-                break;
-                
-            case DECISION_CYCLE_COUNT_TFT:
+      }
+      break;
+
+    case DECISION_CYCLE_COUNT_TFT:
                 if (tparams.allow_cycle_counts)
                 {
                     SNPRINTF(buf, GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%lu", static_cast<long unsigned int>(thisAgent->d_cycle_count));
-                    buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
+		buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
                     add_to_growable_string(thisAgent, &result, buf);
-                }
+      }
                 else
                 {
                     found_undefined = true;
                 }
-                break;
-            case ELABORATION_CYCLE_COUNT_TFT:
+      break;
+    case ELABORATION_CYCLE_COUNT_TFT:
                 if (tparams.allow_cycle_counts)
                 {
                     SNPRINTF(buf, GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%lu", static_cast<long unsigned int>(thisAgent->e_cycle_count));
-                    buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
+		buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
                     add_to_growable_string(thisAgent, &result, buf);
-                }
+      }
                 else
                 {
                     found_undefined = true;
                 }
-                break;
-                
-            case IDENTIFIER_TFT:
+      break;
+
+    case IDENTIFIER_TFT:
                 ch = symbol_to_string(thisAgent, object, true, NULL, 0);
                 add_to_growable_string(thisAgent, &result, ch);
-                break;
-                
-            case IF_ALL_DEFINED_TFT:
+      break;
+
+    case IF_ALL_DEFINED_TFT:
             {
                 bool saved_found_undefined;
-                saved_found_undefined = found_undefined;
+        saved_found_undefined = found_undefined;
                 found_undefined = false;
                 temp_gs = trace_format_list_to_string(thisAgent, tf->data.subformat, object);
-                if (! found_undefined)
+        if (! found_undefined)
                 {
                     add_to_growable_string(thisAgent, &result, text_of_growable_string(temp_gs));
                 }
                 free_growable_string(thisAgent, temp_gs);
-                found_undefined = saved_found_undefined;
-            }
-            break;
-            
-            case LEFT_JUSTIFY_TFT:
+        found_undefined = saved_found_undefined;
+      }
+      break;
+      
+    case LEFT_JUSTIFY_TFT:
                 temp_gs = trace_format_list_to_string(thisAgent, tf->data.subformat, object);
                 add_to_growable_string(thisAgent, &result, text_of_growable_string(temp_gs));
                 for (i = tf->num - length_of_growable_string(temp_gs); i > 0; i--)
@@ -1503,9 +1502,9 @@ growable_string trace_format_list_to_string(agent* thisAgent, trace_format* tf, 
                     add_to_growable_string(thisAgent, &result, " ");
                 }
                 free_growable_string(thisAgent, temp_gs);
-                break;
-                
-            case RIGHT_JUSTIFY_TFT:
+      break;
+
+    case RIGHT_JUSTIFY_TFT:
                 temp_gs = trace_format_list_to_string(thisAgent, tf->data.subformat, object);
                 for (i = tf->num - length_of_growable_string(temp_gs); i > 0; i--)
                 {
@@ -1513,51 +1512,51 @@ growable_string trace_format_list_to_string(agent* thisAgent, trace_format* tf, 
                 }
                 add_to_growable_string(thisAgent, &result, text_of_growable_string(temp_gs));
                 free_growable_string(thisAgent, temp_gs);
-                break;
-                
-            case SUBGOAL_DEPTH_TFT:
+      break;
+
+    case SUBGOAL_DEPTH_TFT:
                 if (tparams.current_s)
                 {
                     SNPRINTF(buf, GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE, "%u", tparams.current_s->id->level - 1);
-                    buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
+		buf[GROWABLE_STRING_TRACE_FORMAT_LIST_TO_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
                     add_to_growable_string(thisAgent, &result, buf);
                 }
                 else
                 {
                     found_undefined = true;
-                }
-                break;
-                
-            case REPEAT_SUBGOAL_DEPTH_TFT:
+      }
+      break;
+
+    case REPEAT_SUBGOAL_DEPTH_TFT:
                 if (tparams.current_s)
                 {
                     temp_gs = trace_format_list_to_string(thisAgent, tf->data.subformat, object);
                     for (i = tparams.current_s->id->level - 1; i > 0; i--)
                     {
                         add_to_growable_string(thisAgent, &result, text_of_growable_string(temp_gs));
-                    }
+      }
                     free_growable_string(thisAgent, temp_gs);
                 }
                 else
                 {
                     found_undefined = true;
                 }
-                break;
-                
-            case NEWLINE_TFT:
+      break;
+
+    case NEWLINE_TFT:
                 add_to_growable_string(thisAgent, &result, "\n");
-                break;
-                
-            default:
+      break;
+
+    default:
             {
                 char msg[BUFFER_MSG_SIZE];
                 strncpy(msg, "Internal error: bad trace format type\n", BUFFER_MSG_SIZE);
-                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-                abort_with_fatal_error(thisAgent, msg);
-            }
-        }
+      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+      abort_with_fatal_error(thisAgent, msg);
+      }
     }
-    return result;
+  }
+  return result;
 }
 
 /* ======================================================================
@@ -1577,23 +1576,23 @@ growable_string trace_format_list_to_string(agent* thisAgent, trace_format* tf, 
 
 
 /* prevents infinite loops when printing circular
-     structures */
+                               structures */
 
 trace_format* find_appropriate_trace_format(agent* thisAgent,
         bool stack_trace,
-        int type,
+                                             int type,
         Symbol* name)
 {
     trace_format* tf;
-    
-    /* --- first try to find the exact one --- */
+
+  /* --- first try to find the exact one --- */
     tf = lookup_trace_format(thisAgent, stack_trace, type, name);
     if (tf)
     {
         return tf;
     }
-    
-    /* --- failing that, try ignoring the type but retaining the name --- */
+
+  /* --- failing that, try ignoring the type but retaining the name --- */
     if (type != FOR_ANYTHING_TF)
     {
         tf = lookup_trace_format(thisAgent, stack_trace, FOR_ANYTHING_TF, name);
@@ -1601,9 +1600,9 @@ trace_format* find_appropriate_trace_format(agent* thisAgent,
         {
             return tf;
         }
-    }
-    
-    /* --- failing that, try ignoring the name but retaining the type --- */
+  }
+
+  /* --- failing that, try ignoring the name but retaining the type --- */
     if (name)
     {
         tf = lookup_trace_format(thisAgent, stack_trace, type, NIL);
@@ -1611,35 +1610,35 @@ trace_format* find_appropriate_trace_format(agent* thisAgent,
         {
             return tf;
         }
-    }
-    
-    /* --- last resort: find a format that applies to anything at all --- */
+  }
+
+  /* --- last resort: find a format that applies to anything at all --- */
     return lookup_trace_format(thisAgent, stack_trace, FOR_ANYTHING_TF, NIL);
 }
 
 growable_string object_to_trace_string(agent* thisAgent, Symbol* object)
 {
-    growable_string gs;
-    int type_of_object;
+  growable_string gs;
+  int type_of_object;
     trace_format* tf;
     Symbol* name;
-    struct tracing_parameters saved_tparams;
-    
-    /* --- If it's not an identifier, just print it as an atom.  Also, if it's
-       already being printed, print it as an atom to avoid getting into an
-       infinite loop. --- */
+  struct tracing_parameters saved_tparams;
+
+  /* --- If it's not an identifier, just print it as an atom.  Also, if it's
+     already being printed, print it as an atom to avoid getting into an
+     infinite loop. --- */
     if ((object->symbol_type != IDENTIFIER_SYMBOL_TYPE) ||
             (object->tc_num == thisAgent->tf_printing_tc))
     {
         gs = make_blank_growable_string(thisAgent);
         add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, object, true, NIL, 0));
-        return gs;
-    }
-    
-    /* --- mark it as being printed --- */
+    return gs;
+  }
+
+  /* --- mark it as being printed --- */
     object->tc_num = thisAgent->tf_printing_tc;
-    
-    /* --- determine the type and name of the object --- */
+
+  /* --- determine the type and name of the object --- */
     if (object->id->isa_goal)
     {
         type_of_object = FOR_STATES_TF;
@@ -1652,75 +1651,75 @@ growable_string object_to_trace_string(agent* thisAgent, Symbol* object)
     {
         type_of_object = FOR_ANYTHING_TF;
     }
-    
+
     name = find_name_of_object(thisAgent, object);
-    
-    /* --- find the trace format to use --- */
+
+  /* --- find the trace format to use --- */
     tf = find_appropriate_trace_format(thisAgent, false, type_of_object, name);
-    
-    /* --- now call trace_format_list_to_string() --- */
+
+  /* --- now call trace_format_list_to_string() --- */
     if (tf)
     {
-        saved_tparams = tparams;
-        tparams.current_s = tparams.current_o = NIL;
+    saved_tparams = tparams;
+    tparams.current_s = tparams.current_o = NIL;
         tparams.allow_cycle_counts = false;
         gs = trace_format_list_to_string(thisAgent, tf, object);
-        tparams = saved_tparams;
+    tparams = saved_tparams;
     }
     else
     {
-        /* --- no applicable trace format, so just print the object itself --- */
+    /* --- no applicable trace format, so just print the object itself --- */
         gs = make_blank_growable_string(thisAgent);
         add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, object, true, NIL, 0));
-    }
-    
+  }
+  
     object->tc_num = 0;  /* unmark it now that we're done */
-    return gs;
+  return gs;
 }
 
 growable_string selection_to_trace_string(agent* thisAgent,
         Symbol* object,
         Symbol* current_state,
-        int selection_type,
+                                           int selection_type,
         bool allow_cycle_counts)
 {
     trace_format* tf;
     Symbol* name;
-    growable_string gs;
-    struct tracing_parameters saved_tparams;
-    
-    /* --- find the problem space name --- */
-    name = NIL;
-    
-    /* --- find the trace format to use --- */
+  growable_string gs;
+  struct tracing_parameters saved_tparams;
+
+  /* --- find the problem space name --- */
+  name = NIL;
+
+  /* --- find the trace format to use --- */
     tf = find_appropriate_trace_format(thisAgent, true, selection_type, name);
-    
-    /* --- if there's no applicable trace format, print nothing --- */
+
+  /* --- if there's no applicable trace format, print nothing --- */
     if (!tf)
     {
         return make_blank_growable_string(thisAgent);
     }
-    
-    /* --- save/restore tparams, and call trace_format_list_to_string() --- */
-    saved_tparams = tparams;
-    tparams.current_s = tparams.current_o = NIL;
+
+  /* --- save/restore tparams, and call trace_format_list_to_string() --- */
+  saved_tparams = tparams;
+  tparams.current_s = tparams.current_o = NIL;
     if (current_state)
     {
-        tparams.current_s = current_state;
+    tparams.current_s = current_state;
         if (current_state->id->operator_slot->wmes)
         {
             tparams.current_o = current_state->id->operator_slot->wmes->value;
-        }
     }
-    tparams.allow_cycle_counts = allow_cycle_counts;
+  }
+  tparams.allow_cycle_counts = allow_cycle_counts;
     gs = trace_format_list_to_string(thisAgent, tf, object);
-    tparams = saved_tparams;
-    
-    return gs;
+  tparams = saved_tparams;
+  
+  return gs;
 }
 
 /* ======================================================================
-                   Printing Object and Stack Traces
+                   Printing Object and Stack Traces 
 
    Print_object_trace() takes an object (any symbol).  It prints
    the trace for that object.  Print_stack_trace() takes a (context)
@@ -1733,9 +1732,9 @@ growable_string selection_to_trace_string(agent* thisAgent,
 
 void print_object_trace(agent* thisAgent, Symbol* object)
 {
-    growable_string gs;
-    
-    thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
+  growable_string gs;
+
+  thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
     gs = object_to_trace_string(thisAgent, object);
     print_string(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
@@ -1744,95 +1743,95 @@ void print_object_trace(agent* thisAgent, Symbol* object)
 void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int slot_type, bool/*allow_cycle_counts*/)
 {
 
-    Symbol* current_o = 0;
-    
+	Symbol* current_o = 0;
+
     switch (slot_type)
     {
-        case FOR_STATES_TF:
-            //create XML trace for state object
+		case FOR_STATES_TF:
+			//create XML trace for state object
             xml_begin_tag(thisAgent, kTagState);
             xml_att_val(thisAgent, kState_StackLevel, state->id->level - 1);
             xml_att_val(thisAgent, kState_DecisionCycleCt, thisAgent->d_cycle_count);
             xml_att_val(thisAgent, kState_ID, object);
-            
-            // find impasse object and add it to XML
-            wme* w;
+			
+			// find impasse object and add it to XML
+			wme* w;
             for (w = object->id->impasse_wmes; w != NIL; w = w->next)
             {
                 if (w->attr == thisAgent->attribute_symbol)
                 {
                     xml_att_val(thisAgent, kState_ImpasseObject, w->value->sc->name);
-                    break;
-                }
-            }
-            
-            // find impasse type and add it to XML
+					break;
+				}
+			}
+
+			// find impasse type and add it to XML
             for (w = object->id->impasse_wmes; w != NIL; w = w->next)
             {
                 if (w->attr == thisAgent->impasse_symbol)
                 {
                     xml_att_val(thisAgent, kState_ImpasseType, w->value->sc->name);
-                    break;
-                }
-            }
-            
+					break;
+				}
+			}
+
             xml_end_tag(thisAgent, kTagState);
-            break;
-            
-        case FOR_OPERATORS_TF:
-            //create XML trace for operator object
+			break;
+
+		case FOR_OPERATORS_TF:
+			//create XML trace for operator object
             xml_begin_tag(thisAgent, kTagOperator);
             xml_att_val(thisAgent, kState_StackLevel, state->id->level - 1);
             xml_att_val(thisAgent, kOperator_DecisionCycleCt, thisAgent->d_cycle_count);
-            
+			
             if (state->id->operator_slot->wmes)
-            {
+			{
                 current_o = state->id->operator_slot->wmes->value;
-            }
+			}
             if (current_o)
             {
                 xml_att_val(thisAgent, kOperator_ID, current_o);
-                Symbol* name = find_name_of_object(thisAgent, current_o);
+				Symbol* name = find_name_of_object(thisAgent, current_o);
                 if (name)
-                {
+				{
                     xml_att_val(thisAgent, kOperator_Name, name);
-                }
-            }
-            
+				}
+			}
+			
             xml_end_tag(thisAgent, kTagOperator);
-            break;
-            
-        default:
-            // technically it looks like we should try to print a name here, but I think that is an artifact (at least it doesn't make sense for the XML)
-            break;
-    }
-    
-    /* These are the trace formats which I've directly implemented above
+			break;
+
+		default:
+			// technically it looks like we should try to print a name here, but I think that is an artifact (at least it doesn't make sense for the XML)
+			break;
+	}
+
+	/* These are the trace formats which I've directly implemented above
     add_trace_format (thisAgent, true, FOR_STATES_TF, NIL,
-                    "<state stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_state_id=\"%cs>");
+	                "<state stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_state_id=\"%cs>");
     add_trace_format (thisAgent, true, FOR_OPERATORS_TF, NIL,
                     "<operator stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_operator_id=\"%co>");
-    
+
     add_trace_format (thisAgent, false, FOR_ANYTHING_TF, NIL,
                     "%id\" %ifdef[name=\"%v[name]\"]");
     add_trace_format (thisAgent, false, FOR_STATES_TF, NIL,
                     "%id\" %ifdef[impasse_object=\"%v[attribute]\" impasse_type=\"%v[impasse]\"]");
-    */
+	*/
 }
 
 
 void print_stack_trace(agent* thisAgent, Symbol* object, Symbol* state, int slot_type,
                        bool allow_cycle_counts)
 {
-    growable_string gs;
-    
-    thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
+  growable_string gs;
+
+  thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
     gs = selection_to_trace_string(thisAgent, object, state, slot_type, allow_cycle_counts);
     print_string(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
-    
-    // RPM 5/05
-    print_stack_trace_xml(thisAgent, object, state, slot_type, allow_cycle_counts);
+
+  // RPM 5/05
+  print_stack_trace_xml(thisAgent, object, state, slot_type, allow_cycle_counts);
 }
 
 /* kjh(B1) begin */
@@ -1841,28 +1840,28 @@ void print_object_trace_using_provided_format_string(agent* thisAgent,
         Symbol* current_goal,
         char*   format_string)
 {
-    growable_string gs;
-    struct tracing_parameters saved_tparams;
+  growable_string gs;
+  struct tracing_parameters saved_tparams;
     trace_format* fs;
-    
-    fs = parse_format_string(thisAgent, format_string);
-    
-    thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
-    
-    saved_tparams = tparams;
-    
-    if (current_goal)
+ 
+  fs = parse_format_string(thisAgent, format_string);
+  
+  thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
+ 
+  saved_tparams = tparams;
+ 
+  if (current_goal) 
     {
-        tparams.current_s = current_goal;
+     tparams.current_s = current_goal;
     }
     tparams.allow_cycle_counts = true;
-    
+ 
     gs = trace_format_list_to_string(thisAgent, fs, object);
-    
-    tparams = saved_tparams;
-    
+ 
+  tparams = saved_tparams; 
+ 
     start_fresh_line(thisAgent);
-    
+ 
     print_string(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
 }
