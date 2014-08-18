@@ -59,7 +59,8 @@ enum TraceMode
     num_trace_modes
 };
 
-enum chunkNameFormats {
+enum chunkNameFormats
+{
     numberedFormat,
     longFormat,
     ruleFormat

@@ -85,7 +85,7 @@ void filter_output::node_update(sgnode* n, sgnode::change_type t, const std::str
         return;
     }
     const filter_val* fv = i->second;
-
+    
     switch (t)
     {
         case sgnode::CHILD_ADDED:
@@ -172,7 +172,7 @@ bool filter::update()
         output2params.clear();
         return false;
     }
-
+    
     if (!update_outputs())
     {
         output.clear();
@@ -193,7 +193,7 @@ bool map_filter::update_outputs()
 {
     const filter_input* input = get_input();
     vector<const filter_params*>::iterator j;
-
+    
     for (int i = input->first_added(); i < input->num_current(); ++i)
     {
         filter_val* v = NULL;
@@ -256,7 +256,7 @@ bool select_filter::update_outputs()
     const filter_input* input = get_input();
     vector<const filter_params*>::iterator j;
     bool error = false;
-
+    
     // Check all added
     for (int i = input->first_added(); i < input->num_current(); ++i)
     {
@@ -382,7 +382,7 @@ bool rank_filter::update_outputs()
         }
         assert(found);
     }
-
+    
     if (!elems.empty())
     {
         pair<double, const filter_params*> m = *max_element(elems.begin(), elems.end());

@@ -11,12 +11,12 @@ void read_list(soar_interface* si, Symbol* id, vector<string>& words)
 {
     slot* s;
     wme* w;
-
+    
     if (!id->is_identifier())
     {
         return;
     }
-
+    
     for (s = id->id->slots; s != NULL; s = s->next)
     {
         for (w = s->wmes; w != NULL; w = w->next)
@@ -34,19 +34,19 @@ model* parse_model_struct(soar_interface* si, Symbol* cmd, svs* owner)
 {
     wme* type_wme, *name_wme;
     string name, type;
-
+    
     if (!si->find_child_wme(cmd, "type", type_wme) ||
             !get_symbol_value(si->get_wme_val(type_wme), type))
     {
         return NULL;
     }
-
+    
     if (!si->find_child_wme(cmd, "name", name_wme) ||
             !get_symbol_value(si->get_wme_val(name_wme), name))
     {
         return NULL;
     }
-
+    
     return make_model(owner, name, type);
 }
 
@@ -58,21 +58,21 @@ class create_model_command : public command
         {
             si = svsp->get_soar_interface();
         }
-
+        
         string description()
         {
             return string("create model");
         }
-
+        
         bool update_sub()
         {
             string name;
-
+            
             if (!changed())
             {
                 return !broken;
             }
-
+            
             model* m = parse_model_struct(si, root, get_state()->get_svs());
             if (!m)
             {
@@ -91,13 +91,13 @@ class create_model_command : public command
             broken = false;
             return true;
         }
-
+        
         bool early()
         {
             return true;
         }
-
-
+        
+        
     private:
         svs*            svsp;
         soar_interface* si;
@@ -114,34 +114,34 @@ class assign_model_command : public command
         {
             si = state->get_svs()->get_soar_interface();
         }
-
+        
         ~assign_model_command()
         {
             mmdl->unassign_model(name);
         }
-
+        
         string description()
         {
             return string("activate model");
         }
-
+        
         bool early()
         {
             return true;
         }
-
+        
         bool update_sub()
         {
             int i;
             wme* w;
             vector<string> inputs, outputs;
             bool all_inputs = false;
-
+            
             if (!changed() && !broken)
             {
                 return true;
             }
-
+            
             if (!si->find_child_wme(root, "name", w) ||
                     !get_symbol_value(si->get_wme_val(w), name))
             {
@@ -149,7 +149,7 @@ class assign_model_command : public command
                 broken = true;
                 return false;
             }
-
+            
             if (si->find_child_wme(root, "inputs", w))
             {
                 string v;
@@ -166,7 +166,7 @@ class assign_model_command : public command
             {
                 read_list(si, si->get_wme_val(w), outputs);
             }
-
+            
             string error = mmdl->assign_model(name, inputs, all_inputs, outputs);
             if (error != "")
             {
@@ -174,12 +174,12 @@ class assign_model_command : public command
                 broken = true;
                 return false;
             }
-
+            
             set_status("success");
             broken = false;
             return true;
         }
-
+        
     private:
         soar_interface* si;
         Symbol*         root;

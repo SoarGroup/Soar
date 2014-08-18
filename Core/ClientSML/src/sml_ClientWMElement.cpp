@@ -14,7 +14,7 @@
 #include "sml_ClientAgent.h"
 #include "sml_ClientIdentifier.h"
 
-#include "sml_EmbeddedConnection.h"	// For direct methods
+#include "sml_EmbeddedConnection.h" // For direct methods
 #include "sml_ClientDirect.h"
 
 #include "assert.h"
@@ -23,44 +23,44 @@ using namespace sml ;
 
 WMElement::WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long long timeTag)
 {
-	m_TimeTag = timeTag;
-	m_Agent = pAgent;
-	m_ID = NULL;
-	// BADBAD: duplicated code in both ctors
-
-	// parent and attribute name can both be NULL if this is at the top of the tree.
-	if (pAttributeName)
+    m_TimeTag = timeTag;
+    m_Agent = pAgent;
+    m_ID = NULL;
+    // BADBAD: duplicated code in both ctors
+    
+    // parent and attribute name can both be NULL if this is at the top of the tree.
+    if (pAttributeName)
     {
-		m_AttributeName = pAttributeName ;
+        m_AttributeName = pAttributeName ;
     }
-
-	if (pID)
+    
+    if (pID)
     {
-		m_IDName = pID ;
+        m_IDName = pID ;
     }
-
-	if (pParentSymbol)
+    
+    if (pParentSymbol)
     {
-		m_ID = pParentSymbol ;
+        m_ID = pParentSymbol ;
     }
 }
 
 WMElement::~WMElement(void)
 {
-	//std::cout << "~WMElement: " << m_TimeTag << std::endl;
+    //std::cout << "~WMElement: " << m_TimeTag << std::endl;
 }
 
 // See comments in header.
 void WMElement::SetSymbol(IdentifierSymbol* p_ID)
 {
-	m_ID = p_ID;
-	m_IDName.assign(p_ID->GetIdentifierSymbol());
+    m_ID = p_ID;
+    m_IDName.assign(p_ID->GetIdentifierSymbol());
 }
 
 void WMElement::GenerateNewTimeTag()
 {
-	// Generate a new time tag for this wme
-	m_TimeTag = GetAgent()->GetWM()->GenerateTimeTag() ;
+    // Generate a new time tag for this wme
+    m_TimeTag = GetAgent()->GetWM()->GenerateTimeTag() ;
 }
 
 // Send over to the kernel again
@@ -68,30 +68,30 @@ void WMElement::Refresh()
 {
 #ifdef SML_DIRECT
 
-	if (GetAgent()->GetConnection()->IsDirectConnection())
-	{
+    if (GetAgent()->GetConnection()->IsDirectConnection())
+    {
         EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetAgent()->GetConnection());
         Direct_AgentSML_Handle agentSMLHandle = pConnection->DirectGetAgentSMLHandle(GetAgent()->GetAgentName());
-
-		// Add the new value immediately
+        
+        // Add the new value immediately
         DirectAdd(agentSMLHandle, GetTimeTag()) ;
-
-		// Return immediately, without adding it to the commit list.
-		return ;
-	}
+        
+        // Return immediately, without adding it to the commit list.
+        return ;
+    }
 #endif
-
-	GetAgent()->GetWM()->GetInputDeltaList()->AddWME(this) ;
+    
+    GetAgent()->GetWM()->GetInputDeltaList()->AddWME(this) ;
 }
 
 bool WMElement::DestroyWME()
 {
-	return this->m_Agent->GetWM()->DestroyWME(this);
+    return this->m_Agent->GetWM()->DestroyWME(this);
 }
 
 void WMElement::DebugString(std::string& result)
 {
-	std::stringstream ss;
-	ss << "(" << GetTimeTag() << ": " << GetIdentifierName() << " ^" << GetAttribute() << " " << GetValueAsString() << ")";
-	result.assign(ss.str());
+    std::stringstream ss;
+    ss << "(" << GetTimeTag() << ": " << GetIdentifierName() << " ^" << GetAttribute() << " " << GetValueAsString() << ")";
+    result.assign(ss.str());
 }

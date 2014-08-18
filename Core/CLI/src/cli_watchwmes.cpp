@@ -36,11 +36,11 @@ int RemoveWme(agent* thisAgent, wme* pWme)
     //    wme *w, *w2;
     //    Symbol *id;
     //    slot *s;
-
+    
     //    w = (wme *) the_wme;
-
+    
     Symbol* pId = pWme->id;
-
+    
     // remove w from whatever list of wmes it's on
     wme* pWme2;
     for (pWme2 = pId->id->input_wmes; pWme2 != NIL; pWme2 = pWme2->next)
@@ -48,54 +48,54 @@ int RemoveWme(agent* thisAgent, wme* pWme)
         {
             break;
         }
-
+        
     if (pWme2)
     {
         remove_from_dll(pId->id->input_wmes, pWme, next, prev);
     }
-
+    
     for (pWme2 = pId->id->impasse_wmes; pWme2 != NIL; pWme2 = pWme2->next)
         if (pWme == pWme2)
         {
             break;
         }
-
+        
     if (pWme2)
     {
         remove_from_dll(pId->id->impasse_wmes, pWme, next, prev);
     }
-
+    
     slot* s;
     for (s = pId->id->slots; s != NIL; s = s->next)
     {
-
+    
         for (pWme2 = s->wmes; pWme2 != NIL; pWme2 = pWme2->next)
             if (pWme == pWme2)
             {
                 break;
             }
-
+            
         if (pWme2)
         {
             remove_from_dll(s->wmes, pWme, next, prev);
         }
-
+        
         for (pWme2 = s->acceptable_preference_wmes; pWme2 != NIL; pWme2 = pWme2->next)
             if (pWme == pWme2)
             {
                 break;
             }
-
+            
         if (pWme2)
         {
             remove_from_dll(s->acceptable_preference_wmes, pWme, next, prev);
+        }
     }
-    }
-
+    
 #ifdef USE_CAPTURE_REPLAY
     // TODO: ommitted
 #endif // USE_CAPTURE_REPLAY
-
+    
     /* REW: begin 09.15.96 */
     if (pWme->gds)
     {
@@ -107,13 +107,13 @@ int RemoveWme(agent* thisAgent, wme* pWme)
         }
     }
     /* REW: end   09.15.96 */
-
+    
     // now remove w from working memory
     remove_wme_from_wm(thisAgent, pWme);
-
+    
     /* REW: begin 28.07.96 */
     /* See AddWme for description of what's going on here */
-
+    
     if (thisAgent->current_phase != INPUT_PHASE)
     {
 #ifndef NO_TIMING_STUFF
@@ -122,9 +122,9 @@ int RemoveWme(agent* thisAgent, wme* pWme)
         thisAgent->timers_phase.start();
 #endif // KERNEL_TIME_ONLY
 #endif // NO_TIMING_STUFF
-
+        
         /* do_buffered_wm_and_ownership_changes(); */
-
+        
 #ifndef NO_TIMING_STUFF
 #ifndef KERNEL_TIME_ONLY
         thisAgent->timers_phase.stop();
@@ -135,23 +135,25 @@ int RemoveWme(agent* thisAgent, wme* pWme)
         thisAgent->timers_kernel.start();
 #endif // NO_TIMING_STUFF
     }
-
-    /* note: 
+    
+    /* note:
     *  See note at the NO_TOP_LEVEL_REFS flag in soar_cAddWme
     */
-
+    
 #ifndef NO_TOP_LEVEL_REFS
     do_buffered_wm_and_ownership_changes(thisAgent);
 #endif // NO_TOP_LEVEL_REFS
-
+    
     return 0;
 }
 
 bool read_wme_filter_component(agent* thisAgent, const char* s, Symbol** sym)
 {
     soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, const_cast<char*>(s));
-    if (lexeme.type == IDENTIFIER_LEXEME) {
-        if ((*sym = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number)) == NIL) {
+    if (lexeme.type == IDENTIFIER_LEXEME)
+    {
+        if ((*sym = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number)) == NIL)
+        {
             return false;          /* Identifier does not exist */
         }
     }
@@ -159,7 +161,7 @@ bool read_wme_filter_component(agent* thisAgent, const char* s, Symbol** sym)
     {
         *sym = make_symbol_for_lexeme(thisAgent, &lexeme, false);
     }
-    // Added by voigtjr because if this function can 
+    // Added by voigtjr because if this function can
     // legally return success with *sym == 0, my logic in AddWmeFilter will be broken.
     assert(*sym);
     return true;
@@ -172,14 +174,14 @@ int AddWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrStrin
     {
         return -1;
     }
-
+    
     Symbol* pAttr = 0;
     if (!read_wme_filter_component(thisAgent, pAttrString, &pAttr))
     {
         symbol_remove_ref(thisAgent, pId);
         return -2;
     }
-
+    
     Symbol* pValue = 0;
     if (!read_wme_filter_component(thisAgent, pValueString, &pValue))
     {
@@ -187,21 +189,21 @@ int AddWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrStrin
         symbol_remove_ref(thisAgent, pAttr);
         return -3;
     }
-
+    
     /* check to see if such a filter has already been added: */
     cons* c;
     wme_filter* existing_wf;
     for (c = thisAgent->wme_filter_list; c != NIL; c = c->rest)
     {
-
+    
         existing_wf = static_cast<wme_filter*>(c->first);
-
+        
         // check for duplicate
-        if ((existing_wf->adds == adds) 
-            && (existing_wf->removes == removes)
-            && (existing_wf->id == pId) 
-            && (existing_wf->attr == pAttr)
-            && (existing_wf->value == pValue)) 
+        if ((existing_wf->adds == adds)
+                && (existing_wf->removes == removes)
+                && (existing_wf->id == pId)
+                && (existing_wf->attr == pAttr)
+                && (existing_wf->value == pValue))
         {
             symbol_remove_ref(thisAgent, pId);
             symbol_remove_ref(thisAgent, pAttr);
@@ -209,20 +211,20 @@ int AddWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrStrin
             return -4; // Filter already exists
         }
     }
-
+    
     wme_filter* wf = static_cast<wme_filter*>(allocate_memory(thisAgent, sizeof(wme_filter), MISCELLANEOUS_MEM_USAGE));
     wf->id = pId;
     wf->attr = pAttr;
     wf->value = pValue;
     wf->adds = adds;
     wf->removes = removes;
-
-    /* Rather than add refs for the new filter symbols and then remove refs 
+    
+    /* Rather than add refs for the new filter symbols and then remove refs
     * for the identical symbols created from the string parameters, skip
     * the two nullifying steps altogether and just return immediately
     * after pushing the new filter:
     */
-    push(thisAgent, wf, thisAgent->wme_filter_list);     
+    push(thisAgent, wf, thisAgent->wme_filter_list);
     return 0;
 }
 
@@ -233,14 +235,14 @@ int RemoveWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrSt
     {
         return -1;
     }
-
+    
     Symbol* pAttr = 0;
     if (!read_wme_filter_component(thisAgent, pAttrString, &pAttr))
     {
         symbol_remove_ref(thisAgent, pId);
         return -2;
     }
-
+    
     Symbol* pValue = 0;
     if (!read_wme_filter_component(thisAgent, pValueString, &pValue))
     {
@@ -248,19 +250,19 @@ int RemoveWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrSt
         symbol_remove_ref(thisAgent, pAttr);
         return -3;
     }
-
+    
     cons* c;
     cons** prev_cons_rest = &thisAgent->wme_filter_list;
     for (c = thisAgent->wme_filter_list; c != NIL; c = c->rest)
     {
         wme_filter* wf = static_cast<wme_filter*>(c->first);
-
+        
         // check for duplicate
-        if ((wf->adds == adds) 
-            && (wf->removes == removes)
-            && (wf->id == pId) 
-            && (wf->attr == pAttr)
-            && (wf->value == pValue)) 
+        if ((wf->adds == adds)
+                && (wf->removes == removes)
+                && (wf->id == pId)
+                && (wf->attr == pAttr)
+                && (wf->value == pValue))
         {
             *prev_cons_rest = c->rest;
             symbol_remove_ref(thisAgent, pId);
@@ -286,7 +288,7 @@ bool ResetWMEFilters(agent* thisAgent, bool adds, bool removes)
     cons** prev_cons_rest = &thisAgent->wme_filter_list;
     for (c = thisAgent->wme_filter_list; c != NIL; c = c->rest)
     {
-
+    
         wme_filter* wf = static_cast<wme_filter*>(c->first);
         if ((adds && wf->adds) || (removes && wf->removes))
         {
@@ -311,7 +313,7 @@ void ListWMEFilters(agent* thisAgent, bool adds, bool removes)
     for (c = thisAgent->wme_filter_list; c != NIL; c = c->rest)
     {
         wme_filter* wf = static_cast<wme_filter*>(c->first);
-
+        
         if ((adds && wf->adds) || (removes && wf->removes))
         {
             print_with_symbols(thisAgent, "wme filter: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
@@ -349,7 +351,7 @@ bool CommandLineInterface::DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeB
                 return SetError("That WME filter already exists.");
             }
             break;
-
+            
         case WATCH_WMES_REMOVE:
             if (!pIdString || !pAttributeString || !pValueString)
             {
@@ -373,33 +375,33 @@ bool CommandLineInterface::DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeB
                 return SetError("The specified WME filter was not found.");
             }
             break;
-
+            
         case WATCH_WMES_LIST:
             if (type.none())
             {
                 type.flip();
             }
-
+            
             ListWMEFilters(m_pAgentSML->GetSoarAgent(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
             break;
-
+            
         case WATCH_WMES_RESET:
             if (type.none())
             {
                 type.flip();
             }
-
+            
             retb = ResetWMEFilters(m_pAgentSML->GetSoarAgent(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
-
+            
             if (!retb)
             {
                 return SetError("The specified WME filter was not found.");
             }
             break;
-
+            
         default:
             return SetError("Invalid mode.");
     }
-
+    
     return true;
 }

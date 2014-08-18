@@ -1199,7 +1199,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
                 return dest;
             }
             
-            determine_possible_symbol_types_for_string(sc->name, strlen(sc->name),
+            soar::Lexer::determine_possible_symbol_types_for_string(sc->name, strlen(sc->name),
                     &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
                     
             has_angle_bracket = sc->name[0] == '<' || sc->name[strlen(sc->name) - 1] == '>';

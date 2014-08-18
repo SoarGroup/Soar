@@ -38,7 +38,7 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
 {
     node->listen(this);
     name_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_name());
-
+    
     if (node->is_group())
     {
         group_node* g = node->as_group();
@@ -47,14 +47,14 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
             add_child(g->get_child(i));
         }
     }
-
+    
     // Create wmes for all string properties
     const string_properties_map& str_props = node->get_string_properties();
     for (string_properties_map::const_iterator i = str_props.begin(); i != str_props.end(); i++)
     {
         set_property(i->first, i->second);
     }
-
+    
     // Create wmes for all numeric properties
     const numeric_properties_map& num_props = node->get_numeric_properties();
     for (numeric_properties_map::const_iterator i = num_props.begin(); i != num_props.end(); i++)
@@ -66,18 +66,18 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
 sgwme::~sgwme()
 {
     map<sgwme*, wme*>::iterator i;
-
+    
     if (node)
     {
         node->unlisten(this);
     }
     soarint->remove_wme(name_wme);
-
+    
     for (std::map<std::string, wme*>::iterator i = properties.begin(); i != properties.end(); i++)
     {
         soarint->remove_wme(i->second);
     }
-
+    
     for (i = childs.begin(); i != childs.end(); ++i)
     {
         i->first->parent = NULL;
@@ -126,7 +126,7 @@ void sgwme::add_child(sgnode* c)
     char letter;
     string cname = c->get_name();
     sgwme* child;
-
+    
     if (cname.size() == 0 || !isalpha(cname[0]))
     {
         letter = 'n';
@@ -136,7 +136,7 @@ void sgwme::add_child(sgnode* c)
         letter = cname[0];
     }
     wme* cid_wme = soarint->make_id_wme(id, "child");
-
+    
     child = new sgwme(soarint, soarint->get_wme_val(cid_wme), this, c);
     childs[child] = cid_wme;
 }
@@ -154,10 +154,10 @@ void sgwme::set_property(const std::string& propertyName, const WmeType& value)
         parentAtt = propertyName.substr(0, periodPos);
         att = propertyName.substr(periodPos + 1);
         wme* parentWME;
-
+        
         // First, we get the parent WME
         std::map<std::string, wme*>::iterator i = properties.find(parentAtt);
-
+        
         if (i == properties.end())
         {
             // First time seeing this parent WME, make a new one
@@ -176,10 +176,10 @@ void sgwme::set_property(const std::string& propertyName, const WmeType& value)
                 properties[parentAtt] = parentWME;
             }
         }
-
+        
         rootID = soarint->get_wme_val(parentWME);
     }
-
+    
     // Remove the old wme and add the new one
     std::map<std::string, wme*>::iterator i = properties.find(propertyName);
     if (i != properties.end())
@@ -194,10 +194,10 @@ void sgwme::update_property(const std::string& propertyName)
     wme* propWme;
     const string_properties_map& str_props = node->get_string_properties();
     const numeric_properties_map& num_props = node->get_numeric_properties();
-
+    
     string_properties_map::const_iterator str_it = str_props.find(propertyName);
     numeric_properties_map::const_iterator num_it = num_props.find(propertyName);
-
+    
     if (str_it != str_props.end())
     {
         // Make a wme with a string value
@@ -252,14 +252,14 @@ svs_state::svs_state(Symbol* state, svs_state* parent)
 svs_state::~svs_state()
 {
     command_set_it i, iend;
-
+    
     for (i = curr_cmds.begin(), iend = curr_cmds.end(); i != iend; ++i)
     {
         delete i->cmd;
     }
-
+    
     delete mmdl;
-
+    
     if (scn)
     {
         svsp->get_drawer()->delete_scene(scn->get_name());
@@ -271,7 +271,7 @@ void svs_state::init()
 {
     string name;
     common_syms& cs = si->get_common_syms();
-
+    
     state->get_id_name(name);
     svs_link = si->get_wme_val(si->make_id_wme(state, cs.svs));
     cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
@@ -341,7 +341,7 @@ void svs_state::process_cmds()
     wme_list all;
     wme_list::iterator all_it;
     si->get_child_wmes(cmd_link, all);
-
+    
     command_set live_commands;
     for (all_it = all.begin(); all_it != all.end(); all_it++)
     {
@@ -354,7 +354,7 @@ void svs_state::process_cmds()
             // Not an identifier, continue;
             continue;
         }
-
+        
         live_commands.insert(command_entry(cmdId, 0, *all_it));
     }
     // Do a diff on the curr_cmds list and the live_commands
@@ -391,7 +391,7 @@ void svs_state::process_cmds()
             live_it++;
         }
     }
-
+    
     // Delete the command
     vector<command_set_it>::iterator old_it;
     for (old_it = old_commands.begin(); old_it != old_commands.end(); old_it++)
@@ -400,7 +400,7 @@ void svs_state::process_cmds()
         delete old_cmd->cmd;
         curr_cmds.erase(old_cmd);
     }
-
+    
     // Add the new commands
     vector<command_set_it>::iterator new_it;
     for (new_it = new_commands.begin(); new_it != new_commands.end(); new_it++)
@@ -433,22 +433,22 @@ void svs_state::update_models()
     output_spec::const_iterator i;
     rvec curr_pvals, out;
     relation_table curr_rels;
-
+    
     if (level > 0)
     {
         /* No legitimate information to learn from imagined states */
         return;
     }
-
+    
     scn->get_properties(curr_pvals);
     get_output(out);
     curr_sig = scn->get_signature();
-
+    
     timer& t1 = timers.get_or_add("up_rels");
     t1.start();
     scn->get_relations(curr_rels);
     t1.stop();
-
+    
     // add an entry to the signature for the output
     scene_sig::entry out_entry;
     out_entry.id = -2;
@@ -459,7 +459,7 @@ void svs_state::update_models()
         out_entry.props.push_back(outspec->at(i).name);
     }
     curr_sig.add(out_entry);
-
+    
     if (prev_sig == curr_sig)
     {
         rvec x(prev_pvals.size() + out.size());
@@ -527,14 +527,14 @@ void svs_state::proxy_get_children(map<string, cliproxy*>& c)
     c["scene"]        = scn;
     c["output"]       = new memfunc_proxy<svs_state>(this, &svs_state::cli_out);
     c["output"]->set_help("Print current output.");
-
+    
     proxy_group* cmds = new proxy_group;
     command_set::const_iterator i;
     for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i)
     {
         cmds->add(i->id, i->cmd);
     }
-
+    
     c["command"] = cmds;
 }
 
@@ -581,7 +581,7 @@ svs::~svs()
     {
         delete scn_cache;
     }
-
+    
     delete si;
     map<string, model*>::iterator j;
     for (j = models.begin(); j != models.end(); ++j)
@@ -595,7 +595,7 @@ void svs::state_creation_callback(Symbol* state)
 {
     string type, msg;
     svs_state* s;
-
+    
     if (state_stack.empty())
     {
         if (scn_cache)
@@ -609,14 +609,14 @@ void svs::state_creation_callback(Symbol* state)
     {
         s = new svs_state(state, state_stack.back());
     }
-
+    
     state_stack.push_back(s);
 }
 
 void svs::state_deletion_callback(Symbol* state)
 {
     svs_state* s;
-    if (state_stack.size() == 0) return;
+    if (state_stack.size() == 0) { return; }
     s = state_stack.back();
     assert(state == s->get_state());
     if (state_stack.size() == 1)
@@ -654,11 +654,11 @@ void svs::proc_input(svs_state* s)
 void svs::output_callback()
 {
     function_timer t(timers.get_or_add("output"));
-
+    
     vector<svs_state*>::iterator i;
     string sgel;
     svs_state* topstate = state_stack.front();
-
+    
     for (i = state_stack.begin(); i != state_stack.end(); ++i)
     {
         (**i).process_cmds();
@@ -667,13 +667,13 @@ void svs::output_callback()
     {
         (**i).update_cmd_results(true);
     }
-
+    
     /* environment IO */
     rvec out;
     topstate->get_output(out);
-
+    
     assert(outspec.size() == out.size());
-
+    
     stringstream ss;
     for (int i = 0; i < outspec.size(); ++i)
     {
@@ -685,20 +685,20 @@ void svs::output_callback()
 void svs::input_callback()
 {
     function_timer t(timers.get_or_add("input"));
-
+    
     svs_state* topstate = state_stack.front();
     proc_input(topstate);
     if (use_models)
     {
         topstate->update_models();
     }
-
+    
     vector<svs_state*>::iterator i;
     for (i = state_stack.begin(); i != state_stack.end(); ++i)
     {
         (**i).update_cmd_results(false);
     }
-
+    
     if (record_movie)
     {
         static int frame = 0;
@@ -740,24 +740,24 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
     c["connect_viewer"]->set_help("Connect to a running viewer.")
     .add_arg("PORT", "TCP port (or file socket path in Linux) to connect to.")
     ;
-
+    
     c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);
     c["disconnect_viewer"]->set_help("Disconnect from viewer.");
-
+    
     c["use_models"]        = new memfunc_proxy<svs>(this, &svs::cli_use_models);
     c["use_models"]->set_help("Use model learning system.")
     .add_arg("[VALUE]", "New value. Must be (0|1|on|off|true|false).");
-
+    
     c["add_model"]         = new memfunc_proxy<svs>(this, &svs::cli_add_model);
     c["add_model"]->set_help("Add a model.")
     .add_arg("NAME", "Name of the model.")
     .add_arg("TYPE", "Type of the model.")
     .add_arg("[PATH]", "Path of file to load model from.");
-
+    
     c["timers"]            = &timers;
     c["loggers"]           = loggers;
     c["filters"]           = &get_filter_table();
-
+    
     proxy_group* model_group = new proxy_group;
     map<string, model*>::iterator i, iend;
     for (i = models.begin(), iend = models.end(); i != iend; ++i)
@@ -765,7 +765,7 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
         model_group->add(i->first, i->second);
     }
     c["model"] = model_group;
-
+    
     for (int j = 0, jend = state_stack.size(); j < jend; ++j)
     {
         c[state_stack[j]->get_name()] = state_stack[j];
@@ -776,18 +776,18 @@ bool svs::do_cli_command(const vector<string>& args, string& output)
 {
     stringstream ss;
     vector<string> rest;
-
+    
     if (args.size() < 2)
     {
         output = "specify path\n";
         return false;
     }
-
+    
     for (int i = 2, iend = args.size(); i < iend; ++i)
     {
         rest.push_back(args[i]);
     }
-
+    
     proxy_use(args[1], rest, ss);
     output = ss.str();
     return true;
@@ -825,14 +825,14 @@ int svs::parse_output_spec(const string& s)
     vector<double> vals(4);
     output_dim_spec sp;
     char* end;
-
+    
     split(s, "", fields);
     assert(fields[0] == "o");
     if ((fields.size() - 1) % 5 != 0)
     {
         return fields.size();
     }
-
+    
     output_spec new_spec;
     for (int i = 1; i < fields.size(); i += 5)
     {

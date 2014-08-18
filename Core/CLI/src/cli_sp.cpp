@@ -24,18 +24,18 @@ using namespace cli;
 bool CommandLineInterface::DoSP(const std::string& productionString)
 {
     // Load the production
-    agent* agnt = m_pAgentSML->GetSoarAgent();
-
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    
     production* p;
     unsigned char rete_addition_result = 0;
-    p = parse_production( agnt, productionString.c_str(), &rete_addition_result );
-
+    p = parse_production(thisAgent, productionString.c_str(), &rete_addition_result);
+    
     if (!p)
     {
         // There was an error, but duplicate production is just a warning
         if (rete_addition_result != DUPLICATE_PRODUCTION)
         {
-          return SetError("Production addition failed.");
+            return SetError("Production addition failed.");
         }
         // production ignored
         m_NumProductionsIgnored += 1;
@@ -46,7 +46,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString)
         {
             p->filename = make_memory_block_for_string(thisAgent, m_SourceFileStack.top().c_str());
         }
-
+        
         // production was sourced
         m_NumProductionsSourced += 1;
         if (m_RawOutput)

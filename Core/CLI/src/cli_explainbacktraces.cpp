@@ -29,9 +29,9 @@ using namespace sml;
 void ExplainListChunks(agent* thisAgent)
 {
     explain_chunk_str* chunk;
-
+    
     chunk = thisAgent->explain_chunk_list;
-
+    
     if (!chunk)
     {
         print(thisAgent, "No chunks/justifications built yet!\n");
@@ -52,78 +52,79 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
     // mode == -1 full
     // mode == 0 name
     // mode > 0 condition
-
+    
     soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, const_cast<char*>(pProduction));
-
-    if (lexeme.type != SYM_CONSTANT_LEXEME) {
+    
+    if (lexeme.type != SYM_CONSTANT_LEXEME)
+    {
         return false; // invalid production
     }
-
+    
     switch (mode)
     {
         case -1: // full
-            {
-                explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
+        {
+            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
             if (chunk)
             {
                 explain_trace_chunk(thisAgent, chunk);
             }
-            }
-            break;
+        }
+        break;
         case 0:
-            {
-                explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
+        {
+            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
             if (!chunk)
             {
                 return false;
             }
-
-                /* First print out the production in "normal" form */
-                print(thisAgent, "(sp %s\n  ", chunk->name);
+            
+            /* First print out the production in "normal" form */
+            print(thisAgent, "(sp %s\n  ", chunk->name);
             print_condition_list(thisAgent, chunk->conds, 2, false);
-                print(thisAgent, "\n-->\n   ");
+            print(thisAgent, "\n-->\n   ");
             print_action_list(thisAgent, chunk->actions, 3, false);
-                print(thisAgent, ")\n\n");
-
-                /* Then list each condition and the associated "ground" WME */
-                int i = 0;
-                condition* ground = chunk->all_grounds;
-
+            print(thisAgent, ")\n\n");
+            
+            /* Then list each condition and the associated "ground" WME */
+            int i = 0;
+            condition* ground = chunk->all_grounds;
+            
             for (condition* cond = chunk->conds; cond != NIL; cond = cond->next)
             {
-                    i++;
-                    print(thisAgent, " %2d : ", i);
-                    print_condition(thisAgent, cond);
-
-                    while (get_printer_output_column(thisAgent) < COLUMNS_PER_LINE - 40)
+                i++;
+                print(thisAgent, " %2d : ", i);
+                print_condition(thisAgent, cond);
+                
+                while (get_printer_output_column(thisAgent) < COLUMNS_PER_LINE - 40)
                 {
-                        print(thisAgent, " ");
+                    print(thisAgent, " ");
                 }
-
-                    print(thisAgent, " Ground :");
-                    print_condition(thisAgent, ground);
-                    print(thisAgent, "\n");
-                    ground = ground->next;
-                }
+                
+                print(thisAgent, " Ground :");
+                print_condition(thisAgent, ground);
+                print(thisAgent, "\n");
+                ground = ground->next;
             }
-            break;
+        }
+        break;
         default:
-            {
-                explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
+        {
+            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
             if (!chunk)
             {
                 return false;
             }
-
-                condition* ground = find_ground(thisAgent, chunk, mode);
+            
+            condition* ground = find_ground(thisAgent, chunk, mode);
             if (!ground)
             {
                 return false;
             }
-
-                explain_trace(thisAgent, lexeme.string(), chunk->backtrace, ground);
-            }
-            break;
+            
+            explain_trace(thisAgent, lexeme.string(), chunk->backtrace, ground);
+        }
+        break;
     }
     return true;
 }
@@ -135,7 +136,7 @@ bool CommandLineInterface::DoExplainBacktraces(const std::string* pProduction, c
     {
         return SetError("Condition number must be a non-negative integer.");
     }
-
+    
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (!pProduction)
     {
@@ -143,7 +144,7 @@ bool CommandLineInterface::DoExplainBacktraces(const std::string* pProduction, c
         ExplainListChunks(thisAgent);
         return true;
     }
-
+    
     ExplainChunks(thisAgent, pProduction->c_str(), condition);
     return true;
 }
