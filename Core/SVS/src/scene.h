@@ -40,22 +40,15 @@ class scene : public sgnode_listener, public cliproxy
         void get_all_nodes(std::vector<sgnode*>& nodes);
         void get_all_nodes(std::vector<const sgnode*>& nodes) const;
         
-        int get_dof() const;
-        
         bool add_node(const std::string& name, sgnode* n);
         bool del_node(const std::string& name);
         void clear();
         
-        void get_properties(rvec& vals) const;
-        bool set_properties(const rvec& vals);
         bool parse_sgel(const std::string& s);
         
         std::string parse_query(const std::string& query) const;
         
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info);
-        double get_convex_distance(const sgnode* a, const sgnode* b) const;
-        
-        bool intersects(const sgnode* a, const sgnode* b) const;
         
         std::string get_name() const
         {
@@ -87,7 +80,6 @@ class scene : public sgnode_listener, public cliproxy
         int parse_del(std::vector<std::string>& f, std::string& error);
         int parse_change(std::vector<std::string>& f, std::string& error);
         int parse_tag(std::vector<std::string>& f, std::string& error);
-        
         
         void cli_props(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_sgel(const std::vector<std::string>& args, std::ostream& os);

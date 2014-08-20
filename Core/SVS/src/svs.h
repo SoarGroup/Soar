@@ -55,21 +55,6 @@ class sgwme : public sgnode_listener
 
 class svs;
 
-/*
- A single output dimension is described by a name and minimum, maximum,
- default, and increment values.
-*/
-struct output_dim_spec
-{
-    std::string name;
-    double min;
-    double max;
-    double def;
-    double incr;
-};
-
-typedef std::vector<output_dim_spec> output_spec;
-
 struct command_entry
 {
     std::string id;
@@ -123,12 +108,6 @@ class svs_state : public cliproxy
         {
             return svsp;
         }
-        void set_output(const rvec& out);
-        bool get_output(rvec& out) const;
-        const output_spec* get_output_spec() const
-        {
-            return outspec;
-        }
         
         /*
          Should only be called by svs::state_deletion_callback to save top-state scene
@@ -139,7 +118,6 @@ class svs_state : public cliproxy
     private:
         void init();
         void collect_cmds(Symbol* id, std::set<wme*>& all_cmds);
-        void set_default_output();
         
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         void cli_out(const std::vector<std::string>& args, std::ostream& os);
@@ -162,11 +140,6 @@ class svs_state : public cliproxy
         
         /* command changes per decision cycle */
         command_set curr_cmds;
-        
-        rvec                     prev_pvals;
-        rvec                     next_out;
-        const output_spec*       outspec;
-        
 };
 
 
@@ -181,13 +154,8 @@ class svs : public svs_interface, public cliproxy
         void output_callback();
         void input_callback();
         void add_input(const std::string& in);
-        std::string get_output() const;
         std::string svs_query(const std::string& query);
         
-        const output_spec* get_output_spec()
-        {
-            return &outspec;
-        }
         soar_interface* get_soar_interface()
         {
             return si;
@@ -207,9 +175,11 @@ class svs : public svs_interface, public cliproxy
         {
             return svs::filter_dirty_bit;
         }
+
+        std::string get_output() const { return ""; }
+
     private:
         void proc_input(svs_state* s);
-        int  parse_output_spec(const std::string& s);
         
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         void cli_connect_viewer(const std::vector<std::string>& args, std::ostream& os);
@@ -219,7 +189,6 @@ class svs : public svs_interface, public cliproxy
         std::vector<svs_state*>   state_stack;
         std::vector<std::string>  env_inputs;
         std::string               env_output;
-        output_spec               outspec;
         mutable drawer*           draw;
         scene*                    scn_cache;      // temporarily holds top-state scene during init
         

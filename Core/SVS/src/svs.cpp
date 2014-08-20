@@ -180,13 +180,12 @@ svs_state::svs_state(svs* svsp, Symbol* state, soar_interface* si, scene* scn)
 {
     assert(state->is_top_state());
     state->get_id_name(name);
-    outspec = svsp->get_output_spec();
     init();
 }
 
 svs_state::svs_state(Symbol* state, svs_state* parent)
     : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
-      outspec(parent->outspec), level(parent->level + 1), scene_num(-1),
+      level(parent->level + 1), scene_num(-1),
       scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
     assert(state->get_parent_state() == parent->state);
@@ -211,7 +210,6 @@ svs_state::~svs_state()
 
 void svs_state::init()
 {
-    string name;
     common_syms& cs = si->get_common_syms();
     
     state->get_id_name(name);
@@ -259,10 +257,6 @@ void svs_state::update_scene_num()
 void svs_state::update_cmd_results(bool early)
 {
     command_set_it i;
-    if (early)
-    {
-        set_default_output();
-    }
     for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i)
     {
         if (i->cmd->early() == early)
@@ -365,71 +359,9 @@ void svs_state::clear_scene()
     scn->clear();
 }
 
-void svs_state::set_output(const rvec& out)
-{
-    assert(out.size() == outspec->size());
-    next_out = out;
-}
-
-void svs_state::set_default_output()
-{
-    next_out.resize(outspec->size());
-    for (int i = 0; i < outspec->size(); ++i)
-    {
-        next_out[i] = (*outspec)[i].def;
-    }
-}
-
-bool svs_state::get_output(rvec& out) const
-{
-    if (next_out.size() != outspec->size())
-    {
-        out.resize(outspec->size());
-        for (int i = 0; i < outspec->size(); ++i)
-        {
-            out[i] = (*outspec)[i].def;
-        }
-        return false;
-    }
-    else
-    {
-        out = next_out;
-        return true;
-    }
-}
-
 void svs_state::proxy_get_children(map<string, cliproxy*>& c)
 {
     c["scene"]        = scn;
-    c["output"]       = new memfunc_proxy<svs_state>(this, &svs_state::cli_out);
-    c["output"]->set_help("Print current output.");
-    
-    proxy_group* cmds = new proxy_group;
-    command_set::const_iterator i;
-    for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i)
-    {
-        cmds->add(i->id, i->cmd);
-    }
-    
-    c["command"] = cmds;
-}
-
-// add ability to set it?
-void svs_state::cli_out(const vector<string>& args, ostream& os)
-{
-    if (next_out.size() == 0)
-    {
-        os << "no output" << endl;
-    }
-    else
-    {
-        table_printer t;
-        for (int i = 0; i < next_out.size(); ++i)
-        {
-            t.add_row() << (*outspec)[i].name << next_out(i);
-        }
-        t.print(os);
-    }
 }
 
 void svs_state::disown_scene()
@@ -503,19 +435,8 @@ void svs::proc_input(svs_state* s)
     for (int i = 0; i < env_inputs.size(); ++i)
     {
         strip(env_inputs[i], " \t");
-        if (env_inputs[i][0] == 'o')
-        {
-            int err = parse_output_spec(env_inputs[i]);
-            if (err >= 0)
-            {
-                cerr << "error in output description at field " << err << endl;
-            }
-        }
-        else
-        {
-            s->get_scene()->parse_sgel(env_inputs[i]);
-            svs::mark_filter_dirty_bit();
-        }
+        s->get_scene()->parse_sgel(env_inputs[i]);
+        svs::mark_filter_dirty_bit();
     }
     env_inputs.clear();
 }
@@ -537,18 +458,6 @@ void svs::output_callback()
         (**i).update_cmd_results(true);
     }
     
-    /* environment IO */
-    rvec out;
-    topstate->get_output(out);
-    
-    assert(outspec.size() == out.size());
-    
-    stringstream ss;
-    for (int i = 0; i < outspec.size(); ++i)
-    {
-        ss << outspec[i].name << " " << out[i] << endl;
-    }
-    env_output = ss.str();
 }
 
 void svs::input_callback()
@@ -575,11 +484,6 @@ void svs::input_callback()
 void svs::add_input(const string& in)
 {
     split(in, "\n", env_inputs);
-}
-
-string svs::get_output() const
-{
-    return env_output;
 }
 
 string svs::svs_query(const string& query)
@@ -655,40 +559,5 @@ void svs::cli_connect_viewer(const vector<string>& args, ostream& os)
 void svs::cli_disconnect_viewer(const vector<string>& args, ostream& os)
 {
     draw->disconnect();
-}
-
-int svs::parse_output_spec(const string& s)
-{
-    vector<string> fields;
-    vector<double> vals(4);
-    output_dim_spec sp;
-    char* end;
-    
-    split(s, "", fields);
-    assert(fields[0] == "o");
-    if ((fields.size() - 1) % 5 != 0)
-    {
-        return fields.size();
-    }
-    
-    output_spec new_spec;
-    for (int i = 1; i < fields.size(); i += 5)
-    {
-        sp.name = fields[i];
-        for (int j = 0; j < 4; ++j)
-        {
-            if (!parse_double(fields[i + j + 1], vals[j]))
-            {
-                return i + j + 1;
-            }
-        }
-        sp.min = vals[0];
-        sp.max = vals[1];
-        sp.def = vals[2];
-        sp.incr = vals[3];
-        new_spec.push_back(sp);
-    }
-    outspec = new_spec;
-    return -1;
 }
 

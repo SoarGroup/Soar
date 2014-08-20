@@ -3,13 +3,12 @@
 
 #include <string>
 #include "soar_interface.h"
-#include "cliproxy.h"
 
 class svs_state;
 class scene;
 class filter;
 
-class command : public cliproxy
+class command
 {
     public:
         virtual std::string description() = 0;
@@ -46,7 +45,6 @@ class command : public cliproxy
         
     private:
         void parse_substructure(int& size, int& max_time);
-        void proxy_get_children(std::map<std::string, cliproxy*>& c);
         
         svs_state*      state;
         soar_interface* si;

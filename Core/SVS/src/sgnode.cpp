@@ -240,29 +240,27 @@ void sgnode::proxy_use_sub(const vector<string>& args, ostream& os)
     vec4 lr, wr;
     table_printer t, t1, t2, t3;
     
-    t.add_row() << "id:"     << id;
-    t.add_row() << "name:"   << name;
+    t.add_row() << "id:"   << name;
     t.add_row() << "type:"   << type;
     t.add_row() << "parent:" << (parent ? parent->get_name() : "none");
     t.print(os);
     
     os << endl << "Local transform:" << endl;
     update_transform();
-    ltransform.to_prs(lp, lr, ls);
     t1.add_row() << "pos:";
     for (int i = 0; i < 3; ++i)
     {
-        t1 << lp(i);
+        t1 << pos(i);
     }
     t1.add_row() << "rot:";
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 3; ++i)
     {
-        t1 << lr(i);
+        t1 << rot(i);
     }
     t1.add_row() << "scale:";
     for (int i = 0; i < 3; ++i)
     {
-        t1 << ls(i);
+        t1 << scale(i);
     }
     t1.print(os);
     
@@ -273,7 +271,7 @@ void sgnode::proxy_use_sub(const vector<string>& args, ostream& os)
     {
         t2 << wp(i);
     }
-    t2.add_row() << "rot:";
+    t2.add_row() << "rot (quaternion):";
     for (int i = 0; i < 4; ++i)
     {
         t2 << wr(i);

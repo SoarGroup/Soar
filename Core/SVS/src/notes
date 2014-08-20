@@ -38,6 +38,8 @@ class command
 FUTURE UPDATES:
   Timers
   Logging
-  CLI Filter testing
-  Extract all relations
+  Cli for filters
+  Cli for commands
+  Extract relations over cli
+  Output information
 

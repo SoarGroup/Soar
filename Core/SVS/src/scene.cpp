@@ -565,60 +565,6 @@ bool scene::parse_sgel(const string& s)
     return true;
 }
 
-void scene::get_properties(rvec& vals) const
-{
-    node_table::const_iterator i, iend;
-    int k = 0;
-    
-    vals.resize(get_dof());
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
-    {
-        const sgnode* node = nodes[i];
-        for (const char* t = "prs"; *t != '\0'; ++t)
-        {
-            vec3 trans = node->get_trans(*t);
-            vals.segment(k, 3) = trans;
-            k += 3;
-        }
-    }
-}
-
-bool scene::set_properties(const rvec& vals)
-{
-    const char* types = "prs";
-    vec3 trans;
-    int l = 0;
-    
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
-    {
-        sgnode* n = nodes[i];
-        int k1, k2;
-        for (k1 = 0; k1 < 3; ++k1)
-        {
-            for (k2 = 0; k2 < 3; ++k2)
-            {
-                if (l >= vals.size())
-                {
-                    return false;
-                }
-                trans(k2) = vals(l++);
-            }
-            n->set_trans(types[k1], trans);
-        }
-    }
-    return true;
-}
-
-int scene::get_dof() const
-{
-    int dof = 0;
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
-    {
-        dof += NUM_NATIVE_PROPS;
-    }
-    return dof;
-}
-
 void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
 {
     sgnode* child;
@@ -681,17 +627,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
     }
 }
 
-double scene::get_convex_distance(const sgnode* a, const sgnode* b) const
-{
-    return convex_distance(a, b);
-}
-
-bool scene::intersects(const sgnode* a, const sgnode* b) const
-{
-    return this->get_convex_distance(a, b) < INTERSECT_THRESH;
-}
-
-
 void scene::proxy_get_children(map<string, cliproxy*>& c)
 {
     c["world"] = root;
@@ -714,27 +649,22 @@ void scene::proxy_get_children(map<string, cliproxy*>& c)
 
 void scene::cli_props(const vector<string>& args, ostream& os) const
 {
-    rvec vals;
     table_printer t;
-
-    // Create list of properties common to all nodes
-    vector<string> common_props;
-    for (int j = 0; j < NUM_NATIVE_PROPS; ++j)
-    {
-        common_props.push_back(NATIVE_PROPS[j]);
-    }
-
-    get_properties(vals);
+    const char* props = "prs";
+    const char* axes = "xyz";
 
     // For each node, add each property to the output
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
         string name = nodes[i]->get_name();
 
-        // Common properties
-        for (int j = 0; j < common_props.size(); j++){
-          t.add_row() << name + ':' + common_props[j] << vals(i++);
+        for(int p = 0; p < 3; p++){
+          vec3 trans = nodes[i]->get_trans(props[p]);
+          for(int dim = 0; dim < 3; dim++){
+            t.add_row() << name + ':' + props[p] + axes[dim] << trans[dim];
+          }
         }
+
 
         const tag_map& tags = nodes[i]->get_all_tags();
         tag_map::const_iterator ti;
