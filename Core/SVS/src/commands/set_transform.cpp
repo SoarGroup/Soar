@@ -122,3 +122,15 @@ command* _make_set_transform_command_(svs_state* state, Symbol* root)
 {
     return new set_transform_command(state, root);
 }
+
+command_table_entry* set_transform_command_entry(){
+  command_table_entry* e = new command_table_entry();
+  e->name = "set_transform";
+  e->description = "Sets the transforms for a given node";
+  e->parameters["id"] = "Id of the node to change";
+  e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
+  e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
+  e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
+  e->create = &_make_set_transform_command_;
+  return e;
+}

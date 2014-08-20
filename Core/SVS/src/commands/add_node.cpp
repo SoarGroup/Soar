@@ -16,8 +16,7 @@
 #include <string>
 #include "command.h"
 #include "scene.h"
-#include "filter.h"
-#include "filter_table.h"
+#include "command_table.h"
 #include "svs.h"
 #include "symtab.h"
 
@@ -186,4 +185,18 @@ class add_node_command : public command
 command* _make_add_node_command_(svs_state* state, Symbol* root)
 {
     return new add_node_command(state, root);
+}
+
+command_table_entry* add_node_command_entry(){
+  command_table_entry* e = new command_table_entry();
+  e->name = "add_node";
+  e->description = "Create a new node and adds it to the scene";
+  e->parameters["id"] = "Id of the new node";
+  e->parameters["parent"] = "Id of the parent node to attach to";
+  e->parameters["geometry"] = "Either box, point, sphere, or none";
+  e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
+  e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
+  e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
+  e->create = &_make_add_node_command_;
+  return e;
 }

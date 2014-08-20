@@ -443,7 +443,6 @@ svs::svs(agent* a)
 {
     si = new soar_interface(a);
     draw = new drawer();
-    set_help("HELP");
 }
 
 bool svs::filter_dirty_bit = true;
@@ -603,6 +602,7 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
     c["disconnect_viewer"]->set_help("Disconnect from viewer.");
     
     c["filters"]           = &get_filter_table();
+    c["commands"]          = &get_command_table();
     
     for (int j = 0, jend = state_stack.size(); j < jend; ++j)
     {

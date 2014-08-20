@@ -114,3 +114,13 @@ command* _make_set_tag_command_(svs_state* state, Symbol* root)
     return new set_tag_command(state, root);
 }
 
+command_table_entry* set_tag_command_entry(){
+  command_table_entry* e = new command_table_entry();
+  e->name = "set_tag";
+  e->description = "Sets a tag on a given node (replaces existing)";
+  e->parameters["id"] = "Id of the node to tag";
+  e->parameters["tag_name"] = "Name of the tag to set";
+  e->parameters["tag_value"] = "Value of the tag to set";
+  e->create = &_make_set_tag_command_;
+  return e;
+}

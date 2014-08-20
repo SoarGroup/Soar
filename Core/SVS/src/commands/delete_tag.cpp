@@ -101,3 +101,13 @@ command* _make_delete_tag_command_(svs_state* state, Symbol* root)
 {
   return new delete_tag_command(state, root);
 }
+
+command_table_entry* delete_tag_command_entry(){
+  command_table_entry* e = new command_table_entry();
+  e->name = "delete_tag";
+  e->description = "Deletes a tag from a node";
+  e->parameters["id"] = "Id of the node";
+  e->parameters["tag_name"] = "Name of the tag to delete";
+  e->create = &_make_delete_tag_command_;
+  return e;
+}

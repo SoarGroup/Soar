@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <sstream>
 #include <limits>
+#include <iomanip>
 
 #include "command.h"
 #include "command_table.h"
@@ -18,26 +19,33 @@ command_table& get_command_table()
     return inst;
 }
 
-command* _make_extract_command_(svs_state* state, Symbol* root);
-command* _make_extract_once_command_(svs_state* state, Symbol* root);
-command* _make_add_node_command_(svs_state* state, Symbol* root);
-command* _make_set_transform_command_(svs_state* state, Symbol* root);
-command* _make_set_tag_command_(svs_state* state, Symbol* root);
-command* _make_delete_tag_command_(svs_state* state, Symbol* root);
-command* _make_random_control_command_(svs_state* state, Symbol* root);
-command* _make_copy_node_command_(svs_state* state, Symbol* root);
-command* _make_delete_node_command_(svs_state* state, Symbol* root);
+command_table_entry* extract_command_entry();
+command_table_entry* extract_once_command_entry();
+
+command_table_entry* add_node_command_entry();
+command_table_entry* copy_node_command_entry();
+command_table_entry* set_transform_command_entry();
+command_table_entry* delete_node_command_entry();
+
+command_table_entry* set_tag_command_entry();
+command_table_entry* delete_tag_command_entry();
+
 
 command_table::command_table()
 {
-    table["extract"] = &_make_extract_command_;
-    table["extract_once"] = &_make_extract_once_command_;
-    table["add_node"] = &_make_add_node_command_;
-    table["set_transform"] = &_make_set_transform_command_;
-    table["set_tag"] = &_make_set_tag_command_;
-    table["delete_tag"] = &_make_delete_tag_command_;
-    table["copy_node"] = &_make_copy_node_command_;
-    table["delete_node"] = &_make_delete_node_command_;
+    set_help("Prints out a list of all soar commands");
+
+    add(extract_command_entry());
+    add(extract_once_command_entry());
+
+    add(add_node_command_entry());
+    add(copy_node_command_entry());
+    add(set_transform_command_entry());
+    add(delete_node_command_entry());
+
+    add(set_tag_command_entry());
+    add(delete_tag_command_entry());
+
 }
 
 command* command_table::make_command(svs_state* state, wme* w)
@@ -57,10 +65,10 @@ command* command_table::make_command(svs_state* state, wme* w)
     }
     id = si->get_wme_val(w);
     
-    map<string, make_command_fp*>::iterator i = table.find(name);
+    map<string, command_table_entry*>::iterator i = table.find(name);
     if (i != table.end())
     {
-        return i->second(state, id);
+        return i->second->create(state, id);
     }
     else
     {
@@ -68,3 +76,42 @@ command* command_table::make_command(svs_state* state, wme* w)
     }
 }
 
+void command_table::add(command_table_entry* e){
+  table[e->name] = e;
+}
+
+void command_table::proxy_get_children(map<string, cliproxy*>& c)
+{
+    map<string, command_table_entry*>::iterator i, iend;
+    for (i = table.begin(), iend = table.end(); i != iend; ++i)
+    {
+        c[i->first] = i->second;
+    }
+}
+
+void command_table::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os){
+  os << "====================== COMMAND TABLE =======================" << endl;
+  map<string, command_table_entry*>::iterator i;
+  for(i = table.begin(); i != table.end(); i++){
+    os << "  " << setw(22) << left << i->first << " | " << i->second->description << endl;
+  }
+  os << "===========================================================" << endl;
+  os << "For specific command info, use the command 'svs commands.command_name'" << endl;
+}
+
+command_table_entry::command_table_entry()
+  : create(NULL), description("")
+{
+  set_help("Reports information about this command");
+}
+
+void command_table_entry::proxy_use_sub(const vector<string>& args, ostream& os)
+{
+    os << "Command: " << name << endl;
+    os << "  " << description << endl;
+    os << "  Parameters:" << endl;
+    map<string, string>::iterator i;
+    for(i = parameters.begin(); i != parameters.end(); i++){
+      os << "    " << setw(15) << left << i->first << " | " << i->second << endl;
+    }
+}

@@ -96,3 +96,12 @@ command* _make_delete_node_command_(svs_state* state, Symbol* root)
 {
     return new delete_node_command(state, root);
 }
+
+command_table_entry* delete_node_command_entry(){
+  command_table_entry* e = new command_table_entry();
+  e->name = "delete_node";
+  e->description = "Deletes the node from the scene";
+  e->parameters["id"] = "Id of the node to delete";
+  e->create = &_make_delete_node_command_;
+  return e;
+}

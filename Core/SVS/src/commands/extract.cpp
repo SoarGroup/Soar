@@ -333,3 +333,22 @@ command* _make_extract_once_command_(svs_state* state, Symbol* root)
     return new extract_command(state, root, true);
 }
 
+command_table_entry* extract_command_entry(){
+  command_table_entry* e = new command_table_entry();
+  e->name = "extract";
+  e->description = "Continually extracts a filter";
+  e->parameters["type"] = "Type of the filter to extract";
+  e->parameters["other"] = "See specific filter for other parameters";
+  e->create = &_make_extract_command_;
+  return e;
+}
+
+command_table_entry* extract_once_command_entry(){
+  command_table_entry* e = new command_table_entry();
+  e->name = "extract_once";
+  e->description = "Extracts a filter once";
+  e->parameters["type"] = "Type of the filter to extract";
+  e->parameters["other"] = "See specific filter for other parameters";
+  e->create = &_make_extract_once_command_;
+  return e;
+}

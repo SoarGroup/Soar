@@ -167,3 +167,17 @@ command* _make_copy_node_command_(svs_state* state, Symbol* root)
 {
     return new copy_node_command(state, root);
 }
+
+command_table_entry* copy_node_command_entry(){
+  command_table_entry* e = new command_table_entry();
+  e->name = "copy_node";
+  e->description = "Creates a copy of the given source node";
+  e->parameters["id"] = "Id of the new node";
+  e->parameters["source"] = "Id of the node to copy from";
+  e->parameters["parent"] = "[Optional] - Id of the parent node to attach to";
+  e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
+  e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
+  e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
+  e->create = &_make_copy_node_command_;
+  return e;
+}
