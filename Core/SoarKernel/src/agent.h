@@ -38,6 +38,7 @@
 
 #include <string>
 #include <map>
+#include <unordered_set>
 
 // JRV: Added to support XML management inside Soar
 // These handles should not be used directly, see xml.h
@@ -908,7 +909,7 @@ typedef struct agent_struct
     uint64_t epmem_validation;
     
     // smem
-    std::set<Symbol*>* smem_changed_ids;
+    std::unordered_set<Symbol*>* smem_changed_ids;
     
     // dynamic memory pools
     std::map< size_t, memory_pool* >* dyn_memory_pools;

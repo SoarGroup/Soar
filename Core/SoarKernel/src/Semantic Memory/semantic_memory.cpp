@@ -12,6 +12,8 @@
 #include <list>
 #include <cstdlib>
 
+#include "hash_storage.h"
+
 // Externs
 
 extern void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number tc);
@@ -75,7 +77,7 @@ namespace soar
 {
 	namespace semantic_memory
 	{
-		std::shared_ptr<semantic_memory> semantic_memory::singleton = nullptr;
+		std::shared_ptr<semantic_memory> semantic_memory::singleton = make_shared<semantic_memory>(new hash_storage);
 		
 		const std::shared_ptr<semantic_memory> semantic_memory::create_singleton(storage* storage)
 		{
@@ -85,6 +87,7 @@ namespace soar
 			if (storage == nullptr)
 			{
 				// Handle default case
+				storage = new hash_storage;
 			}
 			
 			singleton = std::unique_ptr<semantic_memory>(new semantic_memory(storage));
@@ -94,7 +97,10 @@ namespace soar
 		const std::shared_ptr<semantic_memory> semantic_memory::get_singleton()
 		{
 			if (!singleton.get())
-				return nullptr;
+			{
+				singleton = std::unique_ptr<semantic_memory>(new semantic_memory(new hash_storage));
+				std::cout << "Created Singleton" << std::endl;
+			}
 			
 			return singleton;
 		}
@@ -104,11 +110,16 @@ namespace soar
 		
 		semantic_memory::semantic_memory(storage* storage_container)
 		: backend(storage_container)
-		{}
+		{
+			std::cout << "Created backend: " << storage_container << std::endl;
+		}
 				
 		semantic_memory::~semantic_memory()
 		{
-			delete backend;
+			std::cout << "Destroyed" << std::endl;
+			
+			if (backend)
+				delete backend;
 		}
 		
 		bool semantic_memory::set_storage_container(storage* storage_container)
@@ -122,10 +133,10 @@ namespace soar
             smem_cycle_age = 1;
 
             // number of nodes
-            thisAgent->smem_stats->chunks->set_value(0);
+            //theAgent->smem_stats->chunks->set_value(0);
 
             // number of edges
-            thisAgent->smem_stats->slots->set_value(0);
+            //theAgent->smem_stats->slots->set_value(0);
 
             // threshold (from user parameter value)
                     //TODO
@@ -187,9 +198,9 @@ namespace soar
 		    {
 		        activation_info->first_activation_time = smem_cycle_age;
 		    }
-		    activation_info->activation_time_history.pop_back;
+		    activation_info->activation_time_history.pop_back();
 		    activation_info->activation_time_history.push_front(smem_cycle_age++);
-		    activation_info->activation_touches_history.pop_back;
+		    activation_info->activation_touches_history.pop_back();
 		    activation_info->activation_touches_history.push_front(1);
 		    activation_info->total_activation_num++;
 		}
@@ -197,7 +208,7 @@ namespace soar
 		void semantic_memory::query(agent* theAgent, const Symbol* state, list<wme*>& command_wmes, buffered_wme_list& buffered_wme_changes)
 		{
 			const Symbol* root_of_query = nullptr, *root_of_neg_query = nullptr;
-			std::list<const Symbol*> prohibit;
+			std::list<Symbol*> prohibit;
 			std::string result_message = "Unknown Result";
 			
 			for (const wme* w : command_wmes)
@@ -244,7 +255,7 @@ namespace soar
 					buffered_add_error_message(theAgent, &buffered_wme_changes, state, result_message);
 				else
 				{
-				    add_activation_history(result->activation_info);
+				    add_activation_history(result->id->activation_info);
 					buffered_add_success_message(theAgent, &buffered_wme_changes, state, result_message);
 					buffered_add_success_result(theAgent, &buffered_wme_changes, state, result);
 				}
@@ -385,7 +396,7 @@ namespace soar
 							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result);
 						else
 						{
-						    add_activation_history(w->value->activation_info);
+						    add_activation_history(w->value->id->activation_info);
 							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result);
 							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value);
 						}
@@ -403,7 +414,7 @@ namespace soar
 							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result);
 						else
 						{
-						    add_activation_history(w->value->activation_info);
+						    add_activation_history(w->value->id->activation_info);
 							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result);
 							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value);
 						}
@@ -466,8 +477,9 @@ namespace soar
 		
 		void semantic_memory::print_memory(agent* theAgent, std::string* result_message)
 		{
-			for (auto it = backend->begin(), end = backend->end(); it != end; ++it)
-				print_lti(theAgent, **it, result_message, 0, false);
+			auto end = backend->end();
+			for (auto it = backend->begin(); it != end; ++it)
+				print_lti(theAgent, *it, result_message, 0, false);
 		}
 		
 		bool semantic_memory::print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc)
@@ -492,11 +504,13 @@ namespace soar
 			lti->id->tc_num = tc;  // mark id as printed
 			
 			/* --- next, construct the array of wme pointers and sort them --- */
-			for (slot* s = lti->id->slots; s != NIL; s = s->next)
-				for (wme* w = s->wmes; w != NIL; w = w->next)
+			for (slot* s = lti->id->slots; s != nullptr; s = s->next)
+				for (wme* w = s->wmes; w != nullptr; w = w->next)
 					list.push_back(w);
 			
 			sort(list.begin(), list.end(), [](wme* p1, wme* p2) {
+				cout << "Comparison" << endl;
+				
 				char s1[MAX_LEXEME_LENGTH * 2 + 20], s2[MAX_LEXEME_LENGTH * 2 + 20];
 				
 				// passing null thisAgent is OK as long as dest is guaranteed != 0
@@ -509,8 +523,20 @@ namespace soar
 			/* --- finally, print the sorted wmes and deallocate the array --- */
 			for (wme* w : list)
 			{
-				print_spaces(theAgent, indent);
-				print_wme(theAgent, w);
+				cout << "WME: " << w << endl;
+				
+				for (int i = indent;i > 0;i--)
+					*result_message += ' ';
+				
+				*result_message += "(";
+				*result_message += to_string(w->timetag);
+				*result_message += ": ";
+				*result_message += w->id->to_string();
+				*result_message += " ^";
+				*result_message += w->attr->to_string();
+				*result_message += " ";
+				*result_message += w->value->to_string();
+				*result_message += " )\n";
 			}
 			
 			// If there is still depth left, recurse
@@ -689,9 +715,9 @@ namespace soar
 			return backend->lti_for_id(lti_letter, lti_number);
 		}
 		
-		void semantic_memory::reset_storage()
+		void semantic_memory::reset_storage(agent* theAgent)
 		{
-			backend->reset();
+			backend->reset(theAgent);
 		}
 		
 		bool semantic_memory::backup_to_file(std::string& file, std::string* error_message)
@@ -776,22 +802,37 @@ namespace soar
 			return;
 		}
 		
-		bool semantic_memory::parse_chunk(agent* thisAgent, std::list<soar_module::symbol_triple*>* chunks, std::string* error_message)
+		bool semantic_memory::parse_chunk(agent* thisAgent, std::list<soar_module::symbol_triple*>* chunks, std::string* error_message, std::map<uint64_t, uint64_t>& number_replacement)
 		{
 			get_lexeme(thisAgent); // Consume the (
 			
-			soar_module::symbol_triple* triple;
-			Symbol* id, *attr, *value;
+			soar_module::symbol_triple* triple = nullptr;
+			Symbol* id = nullptr, *attr = nullptr, *value = nullptr;
 			
 			if (thisAgent->lexeme.type == AT_LEXEME)
 				get_lexeme(thisAgent);
 			
-			if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+			if (thisAgent->lexeme.type == IDENTIFIER_LEXEME ||
+				thisAgent->lexeme.type == VARIABLE_LEXEME)
 			{
-				if ((id = backend->retrieve_lti(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, error_message)) == nullptr)
+				if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+					id = backend->retrieve_lti(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, error_message);
+				else if (thisAgent->lexeme.type == VARIABLE_LEXEME)
+					id = make_variable(thisAgent, thisAgent->lexeme.string);
+				
+				if (id == nullptr && number_replacement.find(thisAgent->lexeme.id_number) != number_replacement.end())
+					id = find_identifier(thisAgent, thisAgent->lexeme.id_letter, number_replacement[thisAgent->lexeme.id_number]);
+				
+				if (id == nullptr)
 				{
 					// New LTI
-					id = make_new_identifier(thisAgent, thisAgent->lexeme.id_letter, 0, thisAgent->lexeme.id_number);
+					id = make_new_identifier(thisAgent,
+											 thisAgent->lexeme.id_letter,
+											 0,
+											 0);
+					
+					number_replacement[thisAgent->lexeme.id_number] = id->id->name_number;
+					
 					id->id->isa_lti = true;
 					id->id->smem_info->time_id = thisAgent->epmem_stats->time->get_value();
 					epmem_schedule_promotion(thisAgent, id);
@@ -799,7 +840,7 @@ namespace soar
 			}
 			else
 			{
-				*error_message = "Error, parent must be an ID!";
+				*error_message = "parent must be an ID!";
 				return false;
 			}
 			
@@ -811,22 +852,57 @@ namespace soar
 				return false;
 			}
 			
-			get_lexeme(thisAgent); // Consume the ^
-			
-			if (thisAgent->lexeme.type == AT_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+			while (thisAgent->lexeme.type == UP_ARROW_LEXEME)
 			{
-				*error_message = "Error, attribute may not be an ID!";
-				return false;
+				get_lexeme(thisAgent); // Consume the ^
+				
+				if (thisAgent->lexeme.type == AT_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+				{
+					*error_message = "attribute may not be an ID!";
+					return false;
+				}
+				
+				attr = make_symbol_for_current_lexeme(thisAgent, false);
+				
+				get_lexeme(thisAgent); // Consume the attr
+				
+				if (thisAgent->lexeme.type == AT_LEXEME)
+					get_lexeme(thisAgent);
+				
+				if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+				{
+					value = backend->retrieve_lti(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, error_message);
+					
+					if (value == nullptr && number_replacement.find(thisAgent->lexeme.id_number) != number_replacement.end())
+						value = find_identifier(thisAgent, thisAgent->lexeme.id_letter, number_replacement[thisAgent->lexeme.id_number]);
+					
+					if (value == nullptr || !value->is_lti())
+					{
+						// New LTI
+						value = make_new_identifier(thisAgent,
+													thisAgent->lexeme.id_letter,
+													0,
+													0);
+						
+						number_replacement[thisAgent->lexeme.id_number] = value->id->name_number;
+						
+						value->id->isa_lti = true;
+						value->id->smem_info->time_id = thisAgent->epmem_stats->time->get_value();
+						epmem_schedule_promotion(thisAgent, value);
+					}
+				}
+				else
+					value = make_symbol_for_current_lexeme(thisAgent, true);
+				
+				get_lexeme(thisAgent); // Consume the value
+				get_lexeme(thisAgent); // Consume the right parenthesis
+				
+				triple = new soar_module::symbol_triple(id, attr, value);
+				cout << "New Triple: " << id->to_string() << " ^" << attr->to_string() << " " << value->to_string() << endl;
+				
+				chunks->push_back(triple);
 			}
 			
-			attr = make_symbol_for_current_lexeme(thisAgent, false);
-			value = make_symbol_for_current_lexeme(thisAgent, true);
-			
-			get_lexeme(thisAgent); // Consume the right parenthesis
-			
-			triple = new soar_module::symbol_triple(id, attr, value);
-			
-			chunks->push_back(triple);
 			return true;
 		}
 		
@@ -858,10 +934,11 @@ namespace soar
 				good_chunk = false;
 			
 			list<soar_module::symbol_triple*> chunks;
+			map<uint64_t, uint64_t> number_replacement;
 			
 			// while there are chunks to consume
 			while (theAgent->lexeme.type == L_PAREN_LEXEME && good_chunk)
-				good_chunk = parse_chunk(theAgent, &chunks, error_message);
+				good_chunk = parse_chunk(theAgent, &chunks, error_message, number_replacement);
 			
 			if (good_chunk)
 			{
@@ -870,9 +947,40 @@ namespace soar
 				
 				unordered_set<Symbol*> roots;
 				unordered_set<Symbol*> non_roots;
+				unordered_map<Symbol*, Symbol*> variable_to_lti;
+				
+				auto variable_to_lti_func = [variable_to_lti, theAgent](Symbol* s) mutable
+				{
+					auto it = variable_to_lti.find(s);
+					if (it != variable_to_lti.end())
+						return it->second;
+					else
+					{
+						// Make a new LTI for this variable
+						Symbol* id = make_new_identifier(theAgent,
+														 s->var->name[0],
+														 0, 0);
+						
+						id->id->isa_lti = true;
+						id->id->smem_info->time_id = theAgent->epmem_stats->time->get_value();
+						epmem_schedule_promotion(theAgent, id);
+						variable_to_lti[s] = id;
+						
+						return id;
+					}
+				};
 				
 				for (auto triple : chunks)
 				{
+					if (triple->value->is_variable())
+						triple->value = variable_to_lti_func(triple->value);
+					
+					if (triple->attr->is_variable())
+						triple->attr = variable_to_lti_func(triple->attr);
+					
+					if (triple->id->is_variable())
+						triple->id = variable_to_lti_func(triple->id);
+					
 					if (roots.find(triple->id) == roots.end() &&
 						non_roots.find(triple->id) == non_roots.end())
 					{
@@ -887,6 +995,10 @@ namespace soar
 						roots.erase(roots.find(triple->value));
 					}
 					
+					bool foundSlot = false;
+					wme* new_wme = make_wme(theAgent, triple->id, triple->attr, triple->value, false);
+					cout << "New WME" << endl;
+					
 					for (slot* s = triple->id->id->slots; s != nullptr; s = s->next)
 					{
 						if (s->wmes != nullptr &&
@@ -895,12 +1007,28 @@ namespace soar
 							wme* end = s->wmes;
 							while (end->next != nullptr) end = end->next;
 							
-							wme* new_wme = make_wme(theAgent, triple->id, triple->attr, triple->value, false);
 							end->next = new_wme;
 							new_wme->prev = end;
 							
+							foundSlot = true;
+							
 							break;
 						}
+					}
+					
+					if (!foundSlot)
+					{
+						cout << "Found slot" << endl;
+						if (!triple->id->id->slots)
+							triple->id->id->slots = new slot;
+						
+						slot* s = triple->id->id->slots;
+						
+						for (s = triple->id->id->slots;s->next != nullptr;s = s->next);
+						
+						s->wmes = new_wme;
+						new_wme->next = nullptr;
+						new_wme->prev = nullptr;
 					}
 				}
 				

@@ -28,7 +28,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempString;
 	auto smem = soar::semantic_memory::semantic_memory::get_singleton();
-    
+		
     if (!pOp)
     {
         // Print SMem Settings

@@ -63,6 +63,7 @@ namespace soar
     namespace semantic_memory
     {
         class state_data;
+		struct activation_data;
     }
 }
 

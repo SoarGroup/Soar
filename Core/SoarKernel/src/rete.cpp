@@ -1774,11 +1774,9 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
     auto smem = soar::semantic_memory::semantic_memory::get_singleton();
     if (w->id->id->isa_lti && smem && smem->is_mirroring())
     {
-        std::pair< soar::semantic_memory::pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
+        auto insert_result = thisAgent->smem_changed_ids->insert(w->id);
         if (insert_result.second)
-        {
             symbol_add_ref(thisAgent, w->id);
-        }
     }
 }
 
@@ -1932,11 +1930,9 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
     auto smem = soar::semantic_memory::semantic_memory::get_singleton();
     if ((w->id->id->isa_lti) && smem && smem->is_mirroring())
     {
-        std::pair< soar::semantic_memory::pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
+        auto insert_result = thisAgent->smem_changed_ids->insert(w->id);
         if (insert_result.second)
-        {
             symbol_add_ref(thisAgent, w->id);
-        }
     }
 
     /* --- remove w from all_wmes_in_rete --- */

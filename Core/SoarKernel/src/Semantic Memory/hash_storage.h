@@ -14,24 +14,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-// Specializations
-
-namespace std
-{
-	template<> struct greater<Symbol*> {
-		bool operator() ( const Symbol* k1, const Symbol* k2 ) const;
-	};
-	
-	template<> struct equal_to<Symbol*> {
-		bool operator() ( const Symbol* k1, const Symbol* k2 ) const;
-	};
-	
-	template<> struct hash<Symbol*>
-	{
-		inline size_t operator() (const Symbol* id) const;
-	};
-};
-
 // Hash Storage
 
 namespace soar
@@ -39,51 +21,57 @@ namespace soar
 	namespace semantic_memory
 	{
 		inline bool operator== (wme const& lhs, wme const& rhs);
-
-		class hash_storage_iterator : public storage_iterator
-		{
-		public:
-			virtual Symbol* operator*();
-			
-			virtual storage_iterator& operator++();
-		};
-		
+				
 		class hash_storage : public storage
 		{
 			// Hash functions
-			inline size_t hash_combine(size_t& seed, size_t& other);
-			inline size_t hash_sym(const Symbol* sym);
-			
 			struct hash_wme_wildcard : public std::hash<const wme*>
 			{
-				virtual inline size_t operator() (const wme* w) const;
+				virtual inline size_t operator() (const wme* w) const
+				{
+					return w->attr->hash_id;
+				}
 			};
 			
 			struct hash_wme : public std::hash<const wme*>
 			{
-				virtual inline size_t operator() (const wme* w) const;
+				virtual inline size_t operator() (const wme* w) const
+				{
+					return hash_combine(w->attr->hash_id, w->value->hash_id);
+				}
 			};
 			
 			struct equal_to_attr_value : public std::equal_to<const wme*>
 			{
-				bool operator() ( wme const *lhs, wme const *rhs ) const;
+				bool operator() ( wme const *lhs, wme const *rhs ) const
+				{
+					return	lhs->attr == rhs->attr &&
+							lhs->value == rhs->value;
+				}
 			};
 			
 			struct equal_to_attr : public std::equal_to<const wme*>
 			{
-				bool operator() ( wme const *lhs, wme const *rhs ) const;
+				bool operator() ( wme const *lhs, wme const *rhs ) const
+				{
+					return lhs->attr == rhs->attr;
+				}
 			};
 			
 			// Definitions
 
-			std::unordered_map<const wme*, std::unordered_set<const Symbol*>, hash_wme_wildcard, equal_to_attr> attr_map;
-			std::unordered_map<const wme*, std::unordered_set<const Symbol*>, hash_wme, equal_to_attr_value> attr_value_map;
-
+			std::unordered_map<const wme*, std::unordered_set<Symbol*>, hash_wme_wildcard, equal_to_attr> attr_map;
+			std::unordered_map<const wme*, std::unordered_set<Symbol*>, hash_wme, equal_to_attr_value> attr_value_map;
+			std::unordered_set<Symbol*> id_set;
+			std::list<Symbol*> id_list;
+			
+			std::list<Symbol*> id_cache;
+			
 		public:
 			hash_storage();
 			~hash_storage();
 			
-			virtual Symbol* query(agent* theAgent, const Symbol* root_of_query, const Symbol* root_of_neg_query, std::list<const Symbol*>& prohibit, std::string* result_message);
+			virtual Symbol* query(agent* theAgent, const Symbol* root_of_query, const Symbol* root_of_neg_query, std::list<Symbol*>& prohibit, std::string* result_message);
 			virtual bool store(agent* theAgent, const Symbol* id, std::string* result_message, bool recursive);
 			
 			virtual bool remove_lti(agent* theAgent, const Symbol* lti_to_remove, bool force, std::string* result_message);
@@ -96,14 +84,13 @@ namespace soar
 			
 			virtual uint64_t lti_count();
 			
-			virtual bool valid_production(condition* lhs, action* rhs);
 			virtual const Symbol* lti_for_id(char lti_letter, uint64_t lti_number);
 			
-			virtual void reset();
+			virtual void reset(agent* theAgent);
 			virtual bool backup_to_file(std::string& file, std::string* error_message);
 			
-			virtual storage_iterator* begin();
-			virtual storage_iterator* end();
+			virtual std::list<Symbol*>::iterator begin();
+			virtual std::list<Symbol*>::iterator end();
 			
 			virtual std::map<std::string, storage_preference> get_preferences();
 		};

@@ -23,7 +23,6 @@
 #include <list>
 #include <memory>
 #include <set>
-#include <unordered_set>
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -45,6 +44,73 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "storage.h"
+
+namespace soar
+{
+	namespace semantic_memory
+	{
+		struct activation_data
+		{
+			double activation_value; // This is the piece of metadata to sort by. It varies with each "time step".
+			
+			//The below only make sense with respect to thisAgent->smem_max_cycle
+			std::list<uint64_t> activation_time_history; // These should only ever have 10 elements in them. 1 = newest, 10 = oldest.
+			std::list<uint64_t> activation_touches_history; // These should only ever have 10 elements in them.
+			// The above two lists could also be allowed to have less than 10 elements until populated with sufficient activation.
+			// That or all zeros. Design choice. I'm picking all zeros. - scijones
+			
+			uint64_t total_activation_num; // How many activations have occurred.
+			uint64_t first_activation_time; // When the first activation occurred.
+			//These two are for the petrov 2006 approximation.
+			
+			//uint64_t last_activation_time; // When the most recent activation occurred. It's just handy.
+			activation_data()
+			{
+				activation_value = 0;
+				for(int i = 0; i < 10; i++)
+				{
+					activation_time_history.push_front(0);
+					activation_touches_history.push_front(0);
+				}
+				activation_time_history.push_front(0);
+				activation_touches_history.push_front(0);
+				uint64_t total_activation_num =0;
+			}
+		};
+		
+		inline size_t hash_combine(const size_t& seed, const size_t& other)
+		{
+			return seed ^ (other + 0x9e3779b9 + (seed<<6) + (seed>>2));
+		}
+	}
+}
+
+// Specializations
+
+namespace std
+{
+	template<> struct greater<Symbol*> {
+		bool operator()(const Symbol* k1, const Symbol* k2) const
+		{
+			return k1->id->activation_info->activation_value > k2->id->activation_info->activation_value;
+		}
+	};
+	
+	template<> struct equal_to<Symbol*> {
+		bool operator() ( const Symbol* k1, const Symbol* k2 ) const
+		{
+			return k1 == k2;
+		}
+	};
+	
+	template<> struct hash<Symbol*>
+	{
+		size_t operator() (const Symbol* idSymbol) const
+		{
+			return idSymbol->hash_id;
+		}
+	};
+}
 
 namespace soar
 {
@@ -77,43 +143,13 @@ namespace soar
             std::list<preference*> wmes;
         };
 
-        struct activation_data
-        {
-            double activation_value; // This is the piece of metadata to sort by. It varies with each "time step".
-
-            //The below only make sense with respect to thisAgent->smem_max_cycle
-            std::list<uint64_t> activation_time_history; // These should only ever have 10 elements in them. 1 = newest, 10 = oldest.
-            std::list<uint64_t> activation_touches_history; // These should only ever have 10 elements in them.
-            // The above two lists could also be allowed to have less than 10 elements until populated with sufficient activation.
-            // That or all zeros. Design choice. I'm picking all zeros. - scijones
-
-            uint64_t total_activation_num; // How many activations have occurred.
-            uint64_t first_activation_time; // When the first activation occurred.
-            //These two are for the petrov 2006 approximation.
-
-            //uint64_t last_activation_time; // When the most recent activation occurred. It's just handy.
-            activation_data()
-            {
-                activation_value = 0;
-                for(int i = 0; i < 10; i++)
-                {
-                    activation_time_history.push_front(0);
-                    activation_touches_history.push_front(0);
-                }
-                activation_time_history.push_front(0);
-                activation_touches_history.push_front(0);
-                uint64_t total_activation_num =0;
-            }
-        };
-
 		class semantic_memory
 		{
-            semantic_memory(storage* storage_container);
-			
             static std::shared_ptr<semantic_memory> singleton;
 			
 			friend class CommandLineInterface;
 		public:
+			semantic_memory(storage* storage_container);
 			~semantic_memory();
 
 			////////////////////////////////////////////////////////////////////////////////
@@ -156,7 +192,7 @@ namespace soar
 			
 			bool parse_add_command(agent* theAgent, std::string add_commands, std::string* error_message);
 
-			void reset_storage();
+			void reset_storage(agent* theAgent);
 
 			bool backup_to_file(std::string& file, std::string* error_message);
             
@@ -197,6 +233,8 @@ namespace soar
 			void add_activation_history(activation_data*);// When a query or a retrieve occurs, add a touch to the LTI.
             void query(agent* theAgent, const Symbol* state, std::list<wme*>& command_wmes, buffered_wme_list& buffered_wme_changes);
 			
+			void add_preferences_to_query_result(agent* theAgent, Symbol* root);
+			
 			// Error/Success Handling
 			void buffered_add_error_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string error_message);
             void buffered_add_success_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string success_message);
@@ -206,7 +244,7 @@ namespace soar
 			void process_buffered_wmes(agent* theAgent, Symbol* state, std::set<wme*>& justification, buffered_wme_list* buffered_wme_changes);
 			
 			// Add Command Parsing
-			bool parse_chunk(agent* thisAgent, std::list<soar_module::symbol_triple*>* chunks, std::string* error_message);
+			bool parse_chunk(agent* thisAgent, std::list<soar_module::symbol_triple*>* chunks, std::string* error_message, std::map<uint64_t, uint64_t>& number_replacement);
 			
             // Print + helpers
 			bool print_augs_of_lti(agent* theAgent, const Symbol* lti, std::string* result_message, unsigned int depth, unsigned int max_depth, const tc_number tc);

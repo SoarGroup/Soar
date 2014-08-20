@@ -107,7 +107,10 @@ void init_soar_agent(agent* thisAgent)
     init_memory_pool(thisAgent, &(thisAgent->epmem_pedge_pool), sizeof(epmem_pedge), "epmem_pedges");
     init_memory_pool(thisAgent, &(thisAgent->epmem_uedge_pool), sizeof(epmem_uedge), "epmem_uedges");
     init_memory_pool(thisAgent, &(thisAgent->epmem_interval_pool), sizeof(epmem_interval), "epmem_intervals");
-    
+	
+	init_memory_pool(thisAgent, &(thisAgent->smem_wmes_pool), sizeof(std::list<preference*>), "smem_wmes");
+	init_memory_pool(thisAgent, &(thisAgent->smem_info_pool), sizeof(soar::semantic_memory::state_data), "smem_id_data");
+	
     thisAgent->epmem_params->exclusions->set_value("epmem");
     thisAgent->epmem_params->exclusions->set_value("smem");
     
@@ -415,7 +418,7 @@ agent* create_soar_agent(char* agent_name)                                      
     newAgent->epmem_validation = 0;
     
     // smem initialization
-    newAgent->smem_changed_ids = new soar::semantic_memory::pooled_symbol_set();
+	newAgent->smem_changed_ids = new std::unordered_set<Symbol*>;
     
     // statistics initialization
     newAgent->dc_stat_tracking = false;
