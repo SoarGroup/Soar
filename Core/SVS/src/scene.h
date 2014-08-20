@@ -6,7 +6,6 @@
 #include <cassert>
 #include "sgnode.h"
 #include "common.h"
-#include "relation.h"
 #include "cliproxy.h"
 
 class svs;
@@ -62,7 +61,6 @@ class scene : public sgnode_listener, public cliproxy
         {
             return name;
         }
-        void get_relations(relation_table& rt) const;
         
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         
@@ -83,9 +81,6 @@ class scene : public sgnode_listener, public cliproxy
         bool         draw;
         
         
-        mutable relation_table cached_rels;
-        relation_table type_rels;
-        
         group_node* get_group(const std::string& name);
         
         int parse_add(std::vector<std::string>& f, std::string& error);
@@ -96,7 +91,6 @@ class scene : public sgnode_listener, public cliproxy
         
         void cli_props(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_sgel(const std::vector<std::string>& args, std::ostream& os);
-        void cli_relations(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_draw(const std::vector<std::string>& args, std::ostream& os);
         void cli_clear(const std::vector<std::string>& args, std::ostream& os);
         

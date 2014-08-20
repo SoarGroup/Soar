@@ -48,6 +48,9 @@ filter* make_intersect_filter(Symbol* root, soar_interface* si, scene* scn, filt
 filter_table_entry* intersect_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "intersect";
+  e->description = "Returns true if a intersects b";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
   e->create = &make_intersect_filter;
   return e;
 }
@@ -60,6 +63,9 @@ filter* make_intersect_select_filter(Symbol* root, soar_interface* si, scene* sc
 filter_table_entry* intersect_select_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "intersect_select";
+  e->description = "Selects b if a intersects b";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
   e->create = &make_intersect_select_filter;
   return e;
 }

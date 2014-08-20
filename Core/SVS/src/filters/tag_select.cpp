@@ -63,6 +63,10 @@ filter* make_tag_select_filter(Symbol* root, soar_interface* si, scene* scn, fil
 filter_table_entry* tag_select_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "tag_select";
+  e->description = "Outputs all nodes in a which have the given tag";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["tag_name"] = "Name of the tag to select";
+  e->parameters["tag_value"] = "Value of the tag to select";
   e->create = &make_tag_select_filter;
   return e;
 }

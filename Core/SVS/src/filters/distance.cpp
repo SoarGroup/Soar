@@ -64,6 +64,10 @@ filter* make_distance_filter(Symbol* root, soar_interface* si, scene* scn, filte
 filter_table_entry* distance_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "distance";
+  e->description = "Returns distance between a and b";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
+  e->parameters["distance_type"] = "Either centroid or hull";
   e->create = &make_distance_filter;
   return e;
 }
@@ -76,6 +80,12 @@ filter* make_distance_select_filter(Symbol* root, soar_interface* si, scene* scn
 filter_table_entry* distance_select_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "distance_select";
+  e->description = "Selects b if min <= dist(a, b) <= max";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
+  e->parameters["distance_type"] = "Either centroid or hull";
+  e->parameters["min"] = "minimum distance to select";
+  e->parameters["max"] = "maximum distance to select";
   e->create = &make_distance_select_filter;
   return e;
 }
@@ -90,6 +100,10 @@ filter* make_closest_filter(Symbol* root, soar_interface* si, scene* scn, filter
 filter_table_entry* closest_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "closest";
+  e->description = "Output node b closest to node a";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
+  e->parameters["distance_type"] = "Either centroid or hull";
   e->create = &make_closest_filter;
   return e;
 }
@@ -102,6 +116,10 @@ filter* make_farthest_filter(Symbol* root, soar_interface* si, scene* scn, filte
 filter_table_entry* farthest_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "farthest";
+  e->description = "Output node b farthest from node a"; 
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
+  e->parameters["distance_type"] = "Either centroid or hull";
   e->create = &make_farthest_filter;
   return e;
 }

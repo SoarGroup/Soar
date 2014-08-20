@@ -49,6 +49,10 @@ filter* make_distance_on_axis_filter(Symbol* root, soar_interface* si, scene* sc
 filter_table_entry* distance_on_axis_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "distance_on_axis";
+  e->description = "Output distance between a and b on given axis";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
+  e->parameters["axis"] = "Axis to measure distance on (xyz)";
   e->create = &make_distance_on_axis_filter;
   return e;
 }
@@ -61,6 +65,12 @@ filter* make_distance_on_axis_select_filter(Symbol* root, soar_interface* si, sc
 filter_table_entry* distance_on_axis_select_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "distance_on_axis_select";
+  e->description = "Select b if min <= dist(a, b, axis) <= max";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
+  e->parameters["axis"] = "Axis to measure distance on (xyz)";
+  e->parameters["min"] = "minimum distance to select";
+  e->parameters["max"] = "maximum distance to select";
   e->create = &make_distance_on_axis_select_filter;
   return e;
 }

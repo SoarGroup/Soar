@@ -443,6 +443,7 @@ svs::svs(agent* a)
 {
     si = new soar_interface(a);
     draw = new drawer();
+    set_help("HELP");
 }
 
 bool svs::filter_dirty_bit = true;

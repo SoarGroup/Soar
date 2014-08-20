@@ -92,6 +92,8 @@ filter* make_volume_filter(Symbol* root, soar_interface* si, scene* scn, filter_
 filter_table_entry* volume_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "volume";
+  e->description = "Returns volume of each node a";
+  e->parameters["a"] = "Sgnode a";
   e->create = &make_volume_filter;
   return e;
 }
@@ -104,6 +106,10 @@ filter* make_volume_select_filter(Symbol* root, soar_interface* si, scene* scn, 
 filter_table_entry* volume_select_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "volume_select";
+  e->description = "Select a if min <= volume(a) <= max";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["min"] = "minimum volume to select";
+  e->parameters["max"] = "maximum volume to select";
   e->create = &make_volume_select_filter;
   return e;
 }
@@ -118,6 +124,8 @@ filter* make_smallest_filter(Symbol* root, soar_interface* si, scene* scn, filte
 filter_table_entry* smallest_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "smallest";
+  e->description = "Select node a with the smallest volume";
+  e->parameters["a"] = "Sgnode a";
   e->create = &make_smallest_filter;
   return e;
 }
@@ -130,6 +138,8 @@ filter* make_largest_filter(Symbol* root, soar_interface* si, scene* scn, filter
 filter_table_entry* largest_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "largest";
+  e->description = "Select node a with the largest volume";
+  e->parameters["a"] = "Sgnode a";
   e->create = &make_largest_filter;
   return e;
 }
@@ -142,6 +152,9 @@ filter* make_larger_filter(Symbol* root, soar_interface* si, scene* scn, filter_
 filter_table_entry* larger_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "larger";
+  e->description = "Returns true if volume(a) > volume(b)";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
   e->create = &make_larger_filter;
   return e;
 }
@@ -154,6 +167,9 @@ filter* make_smaller_filter(Symbol* root, soar_interface* si, scene* scn, filter
 filter_table_entry* smaller_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "smaller";
+  e->description = "Returns true if volume(a) < volume(b)";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
   e->create = &make_smaller_filter;
   return e;
 }
@@ -166,6 +182,9 @@ filter* make_larger_select_filter(Symbol* root, soar_interface* si, scene* scn, 
 filter_table_entry* larger_select_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "larger_select";
+  e->description = "Select b if volume(a) > volume(b)";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
   e->create = &make_larger_select_filter;
   return e;
 }
@@ -178,6 +197,9 @@ filter* make_smaller_select_filter(Symbol* root, soar_interface* si, scene* scn,
 filter_table_entry* smaller_select_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "smaller_select";
+  e->description = "Select b if volume(a) < volume(b)";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
   e->create = &make_smaller_select_filter;
   return e;
 }

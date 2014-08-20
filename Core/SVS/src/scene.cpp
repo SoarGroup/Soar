@@ -623,7 +623,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
 {
     sgnode* child;
     group_node* g;
-    relation* tr;
     drawer* d = owner->get_drawer();
     
     if (t == sgnode::CHILD_ADDED)
@@ -638,14 +637,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
         child->listen(this);
         sgnode*& node = grow_vec(nodes);
         node = child;
-        
-        tr = map_getp(type_rels, child->get_type());
-        if (!tr)
-        {
-            tr = &type_rels[child->get_type()];
-            tr->reset(2);
-        }
-        tr->add(0, child->get_id());
         
         if (draw)
         {
@@ -668,11 +659,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
         case sgnode::DELETED:
             nodes.erase(nodes.begin() + i);
             
-            tr = map_getp(type_rels, n->get_type());
-            if (tr)
-            {
-                tr->del(0, i);
-            }
             if (draw && i != 0)
             {
                 d->del(name, n);
@@ -705,28 +691,6 @@ bool scene::intersects(const sgnode* a, const sgnode* b) const
     return this->get_convex_distance(a, b) < INTERSECT_THRESH;
 }
 
-void scene::get_relations(relation_table& rt) const
-{
-    vector<int> dirty_nodes;
-    
-    rt = type_rels;
-    
-    relation_table::iterator j, jend;
-    for (j = cached_rels.begin(), jend = cached_rels.end(); j != jend; ++j)
-    {
-        relation& r = j->second;
-        for (int k = 1, kend = r.arity(); k < kend; ++k)
-        {
-            r.filter(k, dirty_nodes, true);
-        }
-    }
-    get_filter_table().update_relations(this, dirty_nodes, 0, cached_rels);
-    
-    for (j = cached_rels.begin(), jend = cached_rels.end(); j != jend; ++j)
-    {
-        rt[j->first] = j->second;
-    }
-}
 
 void scene::proxy_get_children(map<string, cliproxy*>& c)
 {
@@ -738,13 +702,6 @@ void scene::proxy_get_children(map<string, cliproxy*>& c)
     c["sgel"] = new memfunc_proxy<scene>(this, &scene::cli_sgel);
     c["sgel"]->set_help("Modify scene graph with SGEL.")
     .add_arg("SGEL", "SGEL string (spaces are okay).")
-    ;
-    
-    c["relations"] = new memfunc_proxy<scene>(this, &scene::cli_relations);
-    c["relations"]->set_help("Prints all true relations if called without arguments, "
-                             "otherwise print only matching relations.")
-    .add_arg("[RELATION]", "Relation name pattern. Can be * for any.")
-    .add_arg("[PARAMS]",   "Argument patterns. Can be * for any.")
     ;
     
     c["draw"] = new memfunc_proxy<scene>(this, &scene::cli_draw);
@@ -799,92 +756,6 @@ void scene::cli_sgel(const vector<string>& args, ostream& os)
     parse_sgel(ss.str());
 }
 
-void scene::cli_relations(const vector<string>& args, ostream& os) const
-{
-    relation_table rels;
-    relation_table::const_iterator i, begin, end;
-    get_relations(rels);
-    bool print_names;
-    
-    if (!args.empty() && args[0] != "*")
-    {
-        begin = end = rels.find(args[0]);
-        if (end == rels.end())
-        {
-            os << "relation not found" << endl;
-            return;
-        }
-        else
-        {
-            ++end;
-        }
-        print_names = false;
-    }
-    else
-    {
-        begin = rels.begin();
-        end = rels.end();
-        print_names = true;
-    }
-    
-    vector<int> ids;
-    for (int j = 1; j < args.size(); ++j)
-    {
-        if (args[j] != "*")
-        {
-            const sgnode* n = get_node(args[j]);
-            if (!n)
-            {
-                os << "object " << args[j] << " not found" << endl;
-                return;
-            }
-            ids.push_back(n->get_id());
-        }
-        else
-        {
-            ids.push_back(-1);
-        }
-    }
-    
-    for (i = begin; i != end; ++i)
-    {
-        relation r = i->second;
-        int_tuple t(1);
-        
-        for (int j = 0, jend = min(int(ids.size()), r.arity() - 1); j < jend; ++j)
-        {
-            if (ids[j] != -1)
-            {
-                t[0] = ids[j];
-                r.filter(j + 1, t, false);
-            }
-        }
-        
-        if (r.empty())
-        {
-            continue;
-        }
-        
-        if (print_names)
-        {
-            os << i->first << endl;
-        }
-        
-        table_printer p;
-        relation::const_iterator j;
-        for (j = r.begin(); j != r.end(); ++j)
-        {
-            p.add_row();
-            for (int k = 1; k < j->size(); ++k)
-            {
-                const sgnode* n = get_node((*j)[k]);
-                assert(n != NULL);
-                p << n->get_name();
-            }
-        }
-        p.print(os);
-    }
-}
 
 void scene::cli_draw(const vector<string>& args, ostream& os)
 {

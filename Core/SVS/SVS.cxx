@@ -24,7 +24,6 @@
 #include "src/filter_input.cpp"
 #include "src/filter_table.cpp"
 #include "src/mat.cpp"
-#include "src/relation.cpp"
 #include "src/scene.cpp"
 #include "src/serialize.cpp"
 #include "src/sgnode.cpp"

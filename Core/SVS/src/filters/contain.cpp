@@ -40,6 +40,9 @@ filter* make_contain_filter(Symbol* root, soar_interface* si, scene* scn, filter
 filter_table_entry* contain_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "contain";
+  e->description = "Returns true if bbox(a) contains bbox(b)";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
   e->create = &make_contain_filter;
   return e;
 }
@@ -52,6 +55,9 @@ filter* make_contain_select_filter(Symbol* root, soar_interface* si, scene* scn,
 filter_table_entry* contain_select_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "contain_select";
+  e->description = "Output b if bbox(a) contains bbox(b)";
+  e->parameters["a"] = "Sgnode a";
+  e->parameters["b"] = "Sgnode b";
   e->create = &make_contain_select_filter;
   return e;
 }

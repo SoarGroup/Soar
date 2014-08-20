@@ -35,7 +35,9 @@ class cliproxy
 class command
   Base class for all commands that can be placed into working memory by the agent
 
-
-
-  
+FUTURE UPDATES:
+  Timers
+  Logging
+  CLI Filter testing
+  Extract all relations
 

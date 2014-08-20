@@ -7,7 +7,6 @@
 #include "soar_interface.h"
 #include "sgnode.h"
 #include "common.h"
-#include "relation.h"
 #include "svs_interface.h"
 #include "cliproxy.h"
 
@@ -164,7 +163,6 @@ class svs_state : public cliproxy
         /* command changes per decision cycle */
         command_set curr_cmds;
         
-        relation_table           prev_rels;
         rvec                     prev_pvals;
         rvec                     next_out;
         const output_spec*       outspec;

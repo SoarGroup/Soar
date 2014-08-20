@@ -269,6 +269,8 @@ filter_table_entry* node_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "node";
+    e->description = "Ouputs the node with the given id";
+    e->parameters["id"] = "Id of the node to output";
     e->create = &make_node_filter;
     return e;
 }
@@ -277,6 +279,7 @@ filter_table_entry* all_nodes_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "all_nodes";
+    e->description = "Outputs all nodes in the scene";
     e->create = &make_all_nodes_filter;
     return e;
 }
@@ -285,6 +288,8 @@ filter_table_entry* node_position_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "node_position";
+    e->description = "Outputs the position of each node a";
+    e->parameters["a"] = "Sgnode a";
     e->create = &make_node_position_filter;
     return e;
 }
@@ -293,6 +298,8 @@ filter_table_entry* node_rotation_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "node_rotation";
+    e->description = "Outputs the rotation of each node a";
+    e->parameters["a"] = "Sgnode a";
     e->create = &make_node_rotation_filter;
     return e;
 }
@@ -301,6 +308,8 @@ filter_table_entry* node_scale_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "node_scale";
+    e->description = "Outputs the scale of each node a";
+    e->parameters["a"] = "Sgnode a";
     e->create = &make_node_scale_filter;
     return e;
 }
@@ -309,6 +318,8 @@ filter_table_entry* node_bbox_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "node_bbox";
+    e->description = "Outputs the bounding box of each node a";
+    e->parameters["a"] = "Sgnode a";
     e->create = &make_node_bbox_filter;
     return e;
 }
@@ -317,6 +328,9 @@ filter_table_entry* remove_node_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "remove_node";
+    e->description = "Outputs all nodes in input a except for b";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b (only 1)";
     e->create = &make_remove_node_filter;
     return e;
 }
@@ -325,6 +339,8 @@ filter_table_entry* combine_nodes_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "combine_nodes";
+    e->description = "Outputs a single list concatenating all inputs a";
+    e->parameters["a"] = "Sgnode a, can be multiple filters";
     e->create = &make_combine_nodes_filter;
     return e;
 }
