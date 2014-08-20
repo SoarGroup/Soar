@@ -7,7 +7,6 @@
 #include "soar_interface.h"
 #include "sgnode.h"
 #include "common.h"
-#include "timer.h"
 #include "relation.h"
 #include "svs_interface.h"
 #include "cliproxy.h"
@@ -15,7 +14,6 @@
 class command;
 class scene;
 class drawer;
-class logger_set;
 
 /* working memory scene graph object - mediates between wmes and scene graph nodes */
 class sgwme : public sgnode_listener
@@ -171,9 +169,6 @@ class svs_state : public cliproxy
         rvec                     next_out;
         const output_spec*       outspec;
         
-        timer_set timers;
-        
-        logger_set* loggers;
 };
 
 
@@ -203,10 +198,6 @@ class svs : public svs_interface, public cliproxy
         {
             return draw;
         }
-        logger_set* get_loggers()
-        {
-            return loggers;
-        }
         
         bool do_cli_command(const std::vector<std::string>& args, std::string& output);
         
@@ -232,11 +223,8 @@ class svs : public svs_interface, public cliproxy
         std::string               env_output;
         output_spec               outspec;
         mutable drawer*           draw;
-        bool                      record_movie;
         scene*                    scn_cache;      // temporarily holds top-state scene during init
         
-        timer_set timers;
-        logger_set* loggers;
     public:
         static bool filter_dirty_bit;
 };

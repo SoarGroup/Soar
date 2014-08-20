@@ -10,7 +10,6 @@
 #include "cliproxy.h"
 
 class svs;
-class logger_set;
 
 
 // Returns true if the given property name is a native type
@@ -80,7 +79,6 @@ class scene : public sgnode_listener, public cliproxy
         std::string  name;
         group_node*  root;
         svs*         owner;
-        logger_set*  loggers;
         node_table   nodes;
         bool         draw;
         

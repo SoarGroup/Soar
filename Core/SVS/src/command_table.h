@@ -4,7 +4,6 @@
 #include <string>
 #include <map>
 #include "soar_interface.h"
-#include "timer.h"
 #include "cliproxy.h"
 
 class svs_state;

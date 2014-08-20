@@ -92,8 +92,6 @@ filter_table::filter_table()
 
 void filter_table::proxy_get_children(map<string, cliproxy*>& c)
 {
-    c["timers"] = &timers;
-    
     map<string, filter_table_entry*>::iterator i, iend;
     for (i = t.begin(), iend = t.end(); i != iend; ++i)
     {
@@ -314,10 +312,7 @@ void filter_table::update_relations(const scene* scn, const vector<int>& dirty, 
                 }
                 if (params_dirty)
                 {
-                    timer& t = timers.get_or_add(i->first.c_str());
-                    t.start();
                     bool pos = (*e->calc)(scn, args);
-                    t.stop();
                     if (pos)
                     {
                         if (e->ordered)

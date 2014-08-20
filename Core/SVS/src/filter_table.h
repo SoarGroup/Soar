@@ -10,7 +10,6 @@
 #include <fstream>
 #include <sstream>
 #include "common.h"
-#include "timer.h"
 #include "soar_interface.h"
 #include "relation.h"
 #include "cliproxy.h"
@@ -59,7 +58,6 @@ class filter_table : public cliproxy
         
         std::map<std::string, filter_table_entry*> t;
         
-        mutable timer_set timers;
 };
 
 /* Get the singleton instance */

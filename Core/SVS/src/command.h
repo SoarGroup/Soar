@@ -3,7 +3,6 @@
 
 #include <string>
 #include "soar_interface.h"
-#include "timer.h"
 #include "cliproxy.h"
 
 class svs_state;
@@ -18,7 +17,6 @@ class command : public cliproxy
         
         bool update()
         {
-            function_timer t(timers.get_or_add("update"));
             return update_sub();
         }
         
@@ -59,7 +57,6 @@ class command : public cliproxy
         int             prev_max_time;
         bool            first;
         
-        timer_set       timers;
 };
 
 #endif

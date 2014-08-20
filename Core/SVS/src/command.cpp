@@ -144,6 +144,5 @@ void command::set_status(const string& s)
 }
 
 void command::proxy_get_children(map<string, cliproxy*>& c){
-    //c["timers"] = &timers;
 }
 

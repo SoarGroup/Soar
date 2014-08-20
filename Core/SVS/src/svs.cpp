@@ -17,7 +17,6 @@
 #include "filter_table.h"
 #include "command_table.h"
 #include "drawer.h"
-#include "logger.h"
 
 #include "symtab.h"
 
@@ -182,7 +181,6 @@ svs_state::svs_state(svs* svsp, Symbol* state, soar_interface* si, scene* scn)
     assert(state->is_top_state());
     state->get_id_name(name);
     outspec = svsp->get_output_spec();
-    loggers = svsp->get_loggers();
     init();
 }
 
@@ -192,7 +190,6 @@ svs_state::svs_state(Symbol* state, svs_state* parent)
       scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
     assert(state->get_parent_state() == parent->state);
-    loggers = svsp->get_loggers();
     init();
 }
 
@@ -359,7 +356,6 @@ void svs_state::process_cmds()
         {
             string attr;
             get_symbol_value(si->get_wme_attr(new_cmd->cmd_wme), attr);
-            loggers->get(LOG_ERR) << "could not create command " << attr << endl;
         }
     }
 }
@@ -404,7 +400,6 @@ bool svs_state::get_output(rvec& out) const
 
 void svs_state::proxy_get_children(map<string, cliproxy*>& c)
 {
-    c["timers"]       = &timers;
     c["scene"]        = scn;
     c["output"]       = new memfunc_proxy<svs_state>(this, &svs_state::cli_out);
     c["output"]->set_help("Print current output.");
@@ -444,11 +439,10 @@ void svs_state::disown_scene()
 }
 
 svs::svs(agent* a)
-    : record_movie(false), scn_cache(NULL)
+    : scn_cache(NULL)
 {
     si = new soar_interface(a);
     draw = new drawer();
-    loggers = new logger_set(si);
 }
 
 bool svs::filter_dirty_bit = true;
@@ -570,13 +564,6 @@ void svs::input_callback()
         (**i).update_cmd_results(false);
     }
     
-    if (record_movie)
-    {
-        static int frame = 0;
-        stringstream ss;
-        ss << "save screen" << setfill('0') << setw(4) << frame++ << ".ppm";
-        draw->send(ss.str());
-    }
     svs::filter_dirty_bit = false;
 }
 
@@ -606,7 +593,6 @@ string svs::svs_query(const string& query)
 
 void svs::proxy_get_children(map<string, cliproxy*>& c)
 {
-    c["record_movie"]      = new bool_proxy(&record_movie, "Automatically take screenshots in viewer after every decision cycle.");
     c["connect_viewer"]    = new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
     c["connect_viewer"]->set_help("Connect to a running viewer.")
     .add_arg("PORT", "TCP port (or file socket path in Linux) to connect to.")
@@ -615,8 +601,6 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
     c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);
     c["disconnect_viewer"]->set_help("Disconnect from viewer.");
     
-    c["timers"]            = &timers;
-    c["loggers"]           = loggers;
     c["filters"]           = &get_filter_table();
     
     for (int j = 0, jend = state_stack.size(); j < jend; ++j)
