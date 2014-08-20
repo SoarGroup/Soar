@@ -2110,6 +2110,8 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 	// get the ^result header for this state
 	Symbol *result_header = state->id.smem_result_header;
 
+	std::cout << "installing lti with id " << lti_id << "!" << std::endl;
+
 	// get identifier if not known
 	bool lti_created_here = false;
 	if ( lti == NIL )
@@ -2157,6 +2159,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		soar_module::sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
 		Symbol *attr_sym;
 		Symbol *value_sym;
+		std::cout << "looking for children!" << std::endl;
 
 		// get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
 		expand_q->bind_int( 1, lti_id );
@@ -2164,6 +2167,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		{
 			// make the identifier symbol irrespective of value type
 			attr_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(0) ), static_cast<smem_hash_id>( expand_q->column_int(1) ) );
+			std::cout << attr_sym->sc.name << std::endl;
 
 			// identifier vs. constant
 			if ( expand_q->column_int( 6 ) != SMEM_AUGMENTATIONS_NULL )
@@ -2173,6 +2177,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 			else
 			{
 				value_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(2) ), static_cast<smem_hash_id>( expand_q->column_int(3) ) );
+				std::cout << value_sym->sc.name << std::endl;
 			}
 
 			// add wme
@@ -4083,43 +4088,6 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				{
 					smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
 				}
-
-				if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
-				{
-					// process preference assertion en masse
-					smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, retrieval_wmes );
-
-					// clear cache
-					{
-						soar_module::symbol_triple_list::iterator mw_it;
-
-						for ( mw_it=retrieval_wmes.begin(); mw_it!=retrieval_wmes.end(); mw_it++ )
-						{
-							symbol_remove_ref( my_agent, (*mw_it)->id );
-							symbol_remove_ref( my_agent, (*mw_it)->attr );
-							symbol_remove_ref( my_agent, (*mw_it)->value );
-
-							delete (*mw_it);
-						}
-						retrieval_wmes.clear();
-
-						for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
-						{
-							symbol_remove_ref( my_agent, (*mw_it)->id );
-							symbol_remove_ref( my_agent, (*mw_it)->attr );
-							symbol_remove_ref( my_agent, (*mw_it)->value );
-
-							delete (*mw_it);
-						}
-						meta_wmes.clear();
-					}
-
-					// process wm changes on this state
-					do_wm_phase = true;
-				}
-
-				// clear cue wmes
-				cue_wmes.clear();
 			}
 			else
 			{
@@ -4129,11 +4097,48 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				if ( my_agent->smem_stmts->lti_get_act->execute() == soar_module::row )
 				{
 					std::cout << "installing memory!" << std::endl;
-					smem_install_memory( my_agent, state, my_agent->smem_stmts->lti_get_t->column_int(0), NIL, false, meta_wmes, retrieval_wmes );
+					smem_install_memory( my_agent, state, my_agent->smem_stmts->lti_get_act->column_int(0), NIL, false, meta_wmes, retrieval_wmes );
 				}
 				my_agent->smem_stmts->lti_get_act->reinitialize();
 				spontaneously_retrieved = true;
 			}
+
+			if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
+			{
+				// process preference assertion en masse
+				smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, retrieval_wmes );
+
+				// clear cache
+				{
+					soar_module::symbol_triple_list::iterator mw_it;
+
+					for ( mw_it=retrieval_wmes.begin(); mw_it!=retrieval_wmes.end(); mw_it++ )
+					{
+						symbol_remove_ref( my_agent, (*mw_it)->id );
+						symbol_remove_ref( my_agent, (*mw_it)->attr );
+						symbol_remove_ref( my_agent, (*mw_it)->value );
+
+						delete (*mw_it);
+					}
+					retrieval_wmes.clear();
+
+					for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
+					{
+						symbol_remove_ref( my_agent, (*mw_it)->id );
+						symbol_remove_ref( my_agent, (*mw_it)->attr );
+						symbol_remove_ref( my_agent, (*mw_it)->value );
+
+						delete (*mw_it);
+					}
+					meta_wmes.clear();
+				}
+
+				// process wm changes on this state
+				do_wm_phase = true;
+			}
+
+			// clear cue wmes
+			cue_wmes.clear();
 		}
 		else
 		{
