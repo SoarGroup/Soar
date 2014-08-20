@@ -161,6 +161,10 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	// mirroring
 	mirroring = new soar_module::boolean_param( "mirroring", off, new smem_db_predicate< boolean >( my_agent ) );
 	add( mirroring );
+
+	// spontaneous retrieval frequency
+	spontaneous = new soar_module::integer_param( "spontaneous-retrieval-frequency", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
+	add( spontaneous );
 }
 
 //
@@ -377,9 +381,11 @@ void smem_statement_container::create_indices() {
 	add_structure( "CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)" );
 	add_structure( "CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter, soar_number)" );
 	add_structure( "CREATE INDEX smem_lti_t ON smem_lti (activations_last)" );
+	add_structure( "CREATE INDEX smem_lti_act ON smem_lti (activation_value)" );
 	add_structure( "CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id)" );
 	add_structure( "CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)" );
 	add_structure( "CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)" );
+	add_structure( "CREATE INDEX smem_augmentations_val ON smem_augmentations (value_constant_s_id)" );
 	add_structure( "CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)" );
 	add_structure( "CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)" );
 }
@@ -492,6 +498,9 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	lti_get_t = new soar_module::sqlite_statement( new_db, "SELECT lti_id FROM smem_lti WHERE activations_last=?" );
 	add ( lti_get_t );
+
+	lti_get_act = new soar_module::sqlite_statement( new_db, "SELECT lti_id FROM smem_lti ORDER BY activation_value DESC" );
+	add ( lti_get_act );
 
 	//
 
@@ -2105,17 +2114,20 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 	bool lti_created_here = false;
 	if ( lti == NIL )
 	{
+		std::cout << "looking for LTI!" << std::endl;
 		soar_module::sqlite_statement *q = my_agent->smem_stmts->lti_letter_num;
 
 		q->bind_int( 1, lti_id );
 		q->execute();
 
 		lti = smem_lti_soar_make( my_agent, lti_id, static_cast<char>( q->column_int( 0 ) ), static_cast<uint64_t>( q->column_int( 1 ) ), result_header->id.level );
+		std::cout << "found " << lti << "!" << std::endl;
 
 		q->reinitialize();
 
 		lti_created_here = true;
 	}
+
 
 	// activate lti
 	if ( activate_lti )
@@ -2133,6 +2145,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		// prematurely)
 		symbol_remove_ref( my_agent, lti );
 	}
+	std::cout << "pointing to LTI!" << std::endl;
 
 	// if no children, then retrieve children
 	// merge may override this behavior
@@ -3764,6 +3777,9 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	bool do_wm_phase = false;
 	bool mirroring_on = ( my_agent->smem_params->mirroring->get_value() == on );
 
+	bool spontaneously_retrieved = false;
+	my_agent->smem_spontaneous_counter += 1;
+
 	//
 
 	while ( state != NULL )
@@ -3839,8 +3855,9 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 
 
-			if ( new_cue )
+			if ( new_cue || ( wme_count == 0 && my_agent->smem_spontaneous_counter > my_agent->smem_params->mirroring->get_value() ) )
 			{
+				new_cue = true;
 				// clear old results
 				smem_clear_result( my_agent, state );
 
@@ -3849,256 +3866,274 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		}
 
 		// a command is issued if the cue is new
-		// and there is something on the cue
-		if ( new_cue && wme_count )
+		if ( new_cue )
 		{
-			cue_wmes.clear();
-			meta_wmes.clear();
-			retrieval_wmes.clear();
-
-			// initialize command vars
-			retrieve = NIL;
-			query = NIL;
-			negquery = NIL;
-			math = NIL;
-			store.clear();
-			prohibit.clear();
-			path = blank_slate;
-
-			// process top-level symbols
-			for ( w_p=cmds->begin(); w_p!=cmds->end(); w_p++ )
+			// if there is a command, process it
+			// otherwise, this smem link is now clear
+			// and we can do a spontaneous retrieval
+			if ( wme_count )
 			{
-				cue_wmes.insert( (*w_p) );
+				cue_wmes.clear();
+				meta_wmes.clear();
+				retrieval_wmes.clear();
 
+				// initialize command vars
+				retrieve = NIL;
+				query = NIL;
+				negquery = NIL;
+				math = NIL;
+				store.clear();
+				prohibit.clear();
+				path = blank_slate;
+
+				// process top-level symbols
+				for ( w_p=cmds->begin(); w_p!=cmds->end(); w_p++ )
+				{
+					cue_wmes.insert( (*w_p) );
+
+					if ( path != cmd_bad )
+					{
+						// collect information about known commands
+						if ( (*w_p)->attr == my_agent->smem_sym_retrieve )
+						{
+							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+								 ( path == blank_slate ) )
+							{
+								retrieve = (*w_p)->value;
+								path = cmd_retrieve;
+							}
+							else
+							{
+								path = cmd_bad;
+							}
+						}
+						else if ( (*w_p)->attr == my_agent->smem_sym_query )
+						{
+							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+								 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
+								 ( query == NIL ) )
+
+							{
+								query = (*w_p)->value;
+								path = cmd_query;
+							}
+							else
+							{
+								path = cmd_bad;
+							}
+						}
+						else if ( (*w_p)->attr == my_agent->smem_sym_negquery )
+						{
+							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+								 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
+								 ( negquery == NIL ) )
+
+							{
+								negquery = (*w_p)->value;
+								path = cmd_query;
+							}
+							else
+							{
+								path = cmd_bad;
+							}
+						}
+						else if ( (*w_p)->attr == my_agent->smem_sym_prohibit )
+						{
+							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+								 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
+								 ( (*w_p)->value->id.smem_lti != NIL ) )
+							{
+								prohibit.push_back( (*w_p)->value );
+								path = cmd_query;
+							}
+							else
+							{
+								path = cmd_bad;
+							}
+						}
+						else if ( (*w_p)->attr == my_agent->smem_sym_math_query )
+						{
+							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+							   ( ( path == blank_slate) || ( path == cmd_query ) ) &&
+							   ( math == NIL ) )
+							{
+								math = (*w_p)->value;
+								path = cmd_query;
+							}
+							else
+							{
+								path = cmd_bad;
+							}
+						}
+						else if ( (*w_p)->attr == my_agent->smem_sym_store )
+						{
+							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+								 ( ( path == blank_slate ) || ( path == cmd_store ) ) )
+							{
+								store.push_back( (*w_p)->value );
+								path = cmd_store;
+							}
+							else
+							{
+								path = cmd_bad;
+							}
+						}
+						else
+						{
+							path = cmd_bad;
+						}
+					}
+				}
+
+				// if on path 3 must have query/neg-query
+				if ( ( path == cmd_query ) && ( query == NULL ) )
+				{
+					path = cmd_bad;
+				}
+
+				// must be on a path
+				if ( path == blank_slate )
+				{
+					path = cmd_bad;
+				}
+
+				////////////////////////////////////////////////////////////////////////////
+				my_agent->smem_timers->api->stop();
+				////////////////////////////////////////////////////////////////////////////
+
+				// process command
 				if ( path != cmd_bad )
 				{
-					// collect information about known commands
-					if ( (*w_p)->attr == my_agent->smem_sym_retrieve )
-					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( path == blank_slate ) )
-						{
-							retrieve = (*w_p)->value;
-							path = cmd_retrieve;
-						}
-						else
-						{
-							path = cmd_bad;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->smem_sym_query )
-					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
-							 ( query == NIL ) )
+					// performing any command requires an initialized database
+					smem_attach( my_agent );
 
+					// retrieve
+					if ( path == cmd_retrieve )
+					{
+						if ( retrieve->id.smem_lti == NIL )
 						{
-							query = (*w_p)->value;
-							path = cmd_query;
+							// retrieve is not pointing to an lti!
+							smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, retrieve );
 						}
 						else
 						{
-							path = cmd_bad;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->smem_sym_negquery )
-					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
-							 ( negquery == NIL ) )
+							// status: success
+							smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
 
-						{
-							negquery = (*w_p)->value;
-							path = cmd_query;
-						}
-						else
-						{
-							path = cmd_bad;
+							// install memory directly onto the retrieve identifier
+							smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true, meta_wmes, retrieval_wmes );
+
+							// add one to the expansions stat
+							my_agent->smem_stats->expansions->set_value( my_agent->smem_stats->expansions->get_value() + 1 );
 						}
 					}
-					else if ( (*w_p)->attr == my_agent->smem_sym_prohibit )
+					// query
+					else if ( path == cmd_query )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
-							 ( (*w_p)->value->id.smem_lti != NIL ) )
+						smem_lti_set prohibit_lti;
+						smem_sym_list::iterator sym_p;
+
+						for ( sym_p=prohibit.begin(); sym_p!=prohibit.end(); sym_p++ )
 						{
-							prohibit.push_back( (*w_p)->value );
-							path = cmd_query;
+							prohibit_lti.insert( (*sym_p)->id.smem_lti );
 						}
-						else
-						{
-							path = cmd_bad;
-						}
+
+						smem_process_query( my_agent, state, query, negquery, math, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
+
+						// add one to the cbr stat
+						my_agent->smem_stats->cbr->set_value( my_agent->smem_stats->cbr->get_value() + 1 );
 					}
-					else if ( (*w_p)->attr == my_agent->smem_sym_math_query )
+					else if ( path == cmd_store )
 					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-						   ( ( path == blank_slate) || ( path == cmd_query ) ) &&
-						   ( math == NIL ) )
+						smem_sym_list::iterator sym_p;
+
+						////////////////////////////////////////////////////////////////////////////
+						my_agent->smem_timers->storage->start();
+						////////////////////////////////////////////////////////////////////////////
+
+						// start transaction (if not lazy)
+						if ( my_agent->smem_params->lazy_commit->get_value() == off )
 						{
-							math = (*w_p)->value;
-							path = cmd_query;
+							my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
 						}
-						else
+
+						for ( sym_p=store.begin(); sym_p!=store.end(); sym_p++ )
 						{
-							path = cmd_bad;
+							smem_soar_store( my_agent, (*sym_p), ( ( mirroring_on )?( store_recursive ):( store_level ) ) );
+
+							// status: success
+							smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
+
+							// add one to the store stat
+							my_agent->smem_stats->stores->set_value( my_agent->smem_stats->stores->get_value() + 1 );
 						}
-					}
-					else if ( (*w_p)->attr == my_agent->smem_sym_store )
-					{
-						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == blank_slate ) || ( path == cmd_store ) ) )
+
+						// commit transaction (if not lazy)
+						if ( my_agent->smem_params->lazy_commit->get_value() == off )
 						{
-							store.push_back( (*w_p)->value );
-							path = cmd_store;
+							my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
 						}
-						else
-						{
-							path = cmd_bad;
-						}
-					}
-					else
-					{
-						path = cmd_bad;
+
+						////////////////////////////////////////////////////////////////////////////
+						my_agent->smem_timers->storage->stop();
+						////////////////////////////////////////////////////////////////////////////
 					}
 				}
-			}
-
-			// if on path 3 must have query/neg-query
-			if ( ( path == cmd_query ) && ( query == NULL ) )
-			{
-				path = cmd_bad;
-			}
-
-			// must be on a path
-			if ( path == blank_slate )
-			{
-				path = cmd_bad;
-			}
-
-			////////////////////////////////////////////////////////////////////////////
-			my_agent->smem_timers->api->stop();
-			////////////////////////////////////////////////////////////////////////////
-
-			// process command
-			if ( path != cmd_bad )
-			{
-				// performing any command requires an initialized database
-				smem_attach( my_agent );
-
-				// retrieve
-				if ( path == cmd_retrieve )
+				else
 				{
-					if ( retrieve->id.smem_lti == NIL )
-					{
-						// retrieve is not pointing to an lti!
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, retrieve );
-					}
-					else
-					{
-						// status: success
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
-
-						// install memory directly onto the retrieve identifier
-						smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true, meta_wmes, retrieval_wmes );
-
-						// add one to the expansions stat
-						my_agent->smem_stats->expansions->set_value( my_agent->smem_stats->expansions->get_value() + 1 );
-					}
+					smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
 				}
-				// query
-				else if ( path == cmd_query )
+
+				if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
 				{
-					smem_lti_set prohibit_lti;
-					smem_sym_list::iterator sym_p;
+					// process preference assertion en masse
+					smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, retrieval_wmes );
 
-					for ( sym_p=prohibit.begin(); sym_p!=prohibit.end(); sym_p++ )
+					// clear cache
 					{
-						prohibit_lti.insert( (*sym_p)->id.smem_lti );
+						soar_module::symbol_triple_list::iterator mw_it;
+
+						for ( mw_it=retrieval_wmes.begin(); mw_it!=retrieval_wmes.end(); mw_it++ )
+						{
+							symbol_remove_ref( my_agent, (*mw_it)->id );
+							symbol_remove_ref( my_agent, (*mw_it)->attr );
+							symbol_remove_ref( my_agent, (*mw_it)->value );
+
+							delete (*mw_it);
+						}
+						retrieval_wmes.clear();
+
+						for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
+						{
+							symbol_remove_ref( my_agent, (*mw_it)->id );
+							symbol_remove_ref( my_agent, (*mw_it)->attr );
+							symbol_remove_ref( my_agent, (*mw_it)->value );
+
+							delete (*mw_it);
+						}
+						meta_wmes.clear();
 					}
 
-					smem_process_query( my_agent, state, query, negquery, math, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
-
-					// add one to the cbr stat
-					my_agent->smem_stats->cbr->set_value( my_agent->smem_stats->cbr->get_value() + 1 );
+					// process wm changes on this state
+					do_wm_phase = true;
 				}
-				else if ( path == cmd_store )
-				{
-					smem_sym_list::iterator sym_p;
 
-					////////////////////////////////////////////////////////////////////////////
-					my_agent->smem_timers->storage->start();
-					////////////////////////////////////////////////////////////////////////////
-
-					// start transaction (if not lazy)
-					if ( my_agent->smem_params->lazy_commit->get_value() == off )
-					{
-						my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
-					}
-
-					for ( sym_p=store.begin(); sym_p!=store.end(); sym_p++ )
-					{
-						smem_soar_store( my_agent, (*sym_p), ( ( mirroring_on )?( store_recursive ):( store_level ) ) );
-
-						// status: success
-						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
-
-						// add one to the store stat
-						my_agent->smem_stats->stores->set_value( my_agent->smem_stats->stores->get_value() + 1 );
-					}
-
-					// commit transaction (if not lazy)
-					if ( my_agent->smem_params->lazy_commit->get_value() == off )
-					{
-						my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
-					}
-
-					////////////////////////////////////////////////////////////////////////////
-					my_agent->smem_timers->storage->stop();
-					////////////////////////////////////////////////////////////////////////////
-				}
+				// clear cue wmes
+				cue_wmes.clear();
 			}
 			else
 			{
-				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
-			}
-
-			if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
-			{
-				// process preference assertion en masse
-				smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, retrieval_wmes );
-
-				// clear cache
+				std::cout << "spontaneously retrieving!" << std::endl;
+				// spontaneous retrieval
+				// get the LTI with the highest activation
+				if ( my_agent->smem_stmts->lti_get_act->execute() == soar_module::row )
 				{
-					soar_module::symbol_triple_list::iterator mw_it;
-
-					for ( mw_it=retrieval_wmes.begin(); mw_it!=retrieval_wmes.end(); mw_it++ )
-					{
-						symbol_remove_ref( my_agent, (*mw_it)->id );
-						symbol_remove_ref( my_agent, (*mw_it)->attr );
-						symbol_remove_ref( my_agent, (*mw_it)->value );
-
-						delete (*mw_it);
-					}
-					retrieval_wmes.clear();
-
-					for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
-					{
-						symbol_remove_ref( my_agent, (*mw_it)->id );
-						symbol_remove_ref( my_agent, (*mw_it)->attr );
-						symbol_remove_ref( my_agent, (*mw_it)->value );
-
-						delete (*mw_it);
-					}
-					meta_wmes.clear();
+					std::cout << "installing memory!" << std::endl;
+					smem_install_memory( my_agent, state, my_agent->smem_stmts->lti_get_t->column_int(0), NIL, false, meta_wmes, retrieval_wmes );
 				}
-
-				// process wm changes on this state
-				do_wm_phase = true;
+				my_agent->smem_stmts->lti_get_act->reinitialize();
+				spontaneously_retrieved = true;
 			}
-
-			// clear cue wmes
-			cue_wmes.clear();
 		}
 		else
 		{
@@ -4160,6 +4195,11 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		do_working_memory_phase( my_agent );
 
 		my_agent->smem_ignore_changes = false;
+	}
+
+	if ( spontaneously_retrieved )
+	{
+		my_agent->smem_spontaneous_counter = 0;
 	}
 }
 

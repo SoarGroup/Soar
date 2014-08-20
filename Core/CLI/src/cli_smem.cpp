@@ -53,6 +53,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         PrintCLIMessage_Section("Experimental", 40);
         PrintCLIMessage_Item("merge:", agnt->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", agnt->smem_params->mirroring, 40);
+        PrintCLIMessage_Item("spontaneous:", agnt->smem_params->spontaneous, 40);
         PrintCLIMessage("");
 
         return true;

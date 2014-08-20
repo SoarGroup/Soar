@@ -80,6 +80,8 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::boolean_param* mirroring;
 
+		soar_module::integer_param* spontaneous;
+
 		smem_param_container( agent *new_agent );
 };
 
@@ -233,6 +235,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *lti_access_get;
 		soar_module::sqlite_statement *lti_access_set;
 		soar_module::sqlite_statement *lti_get_t;
+		soar_module::sqlite_statement *lti_get_act;
 
 		soar_module::sqlite_statement *web_add;
 		soar_module::sqlite_statement *web_truncate;
