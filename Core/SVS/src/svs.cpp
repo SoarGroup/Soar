@@ -529,7 +529,6 @@ void svs::proc_input(svs_state* s)
 void svs::output_callback()
 {
     long time = getTime();
-    function_timer t(timers.get_or_add("output"));
     
     vector<svs_state*>::iterator i;
     string sgel;

@@ -1,3 +1,18 @@
+/**********************************************************
+ *
+ * File: commands/extract.cpp
+ * Contains:
+ *  class extract_command
+ *
+ *  Soar Command to extract a filter on the world
+ *    Name is either extract or extract_once
+ *  Parameters:
+ *    ^type <string> - type of the filter
+ *    ...  - additional filter-specific parameters
+ *
+ *  Implementation of soar parsing in filter_table.cpp
+ *    parse_filter_spec
+ **********************************************************/
 #include <iostream>
 #include "command.h"
 #include "filter.h"

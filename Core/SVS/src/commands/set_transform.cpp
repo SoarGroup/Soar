@@ -1,3 +1,18 @@
+/**********************************************************
+ *
+ * File: commands/set_transform.cpp
+ * Contains:
+ *  class set_transform_command
+ *  
+ *  Soar Command to change the transform of a node (pos/rot/scale)
+ *  Parameters:
+ *     ^id <string> - name of the node to change
+ *     ^position <vec3> [Optional] - desired position
+ *     ^rotation <vec3> [Optional] - desired rotation
+ *     ^scale <vec3> [Optional] - desired scale
+ *      (Can set any or all of these)
+ **********************************************************/
+
 #include <iostream>
 #include <string>
 #include <map>

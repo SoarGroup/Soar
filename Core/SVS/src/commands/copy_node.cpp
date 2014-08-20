@@ -1,3 +1,20 @@
+/**********************************************************
+ *
+ * File: commands/copy_node.cpp
+ * Contains:
+ *  class add_copy_command
+ *  
+ *  Soar Command to create a new node by copying an old one
+ *  Parameters:
+ *     ^id <string> - name to give the node, must not already exist
+ *     ^source <string> - name of the node to copy from
+ *     ^parent <string> [Optional] - parent to add the node to
+ *
+ *     ^position <vec3> [Optional] - position of the new node
+ *     ^rotation <vec3> [Optional] - rotation of the new node
+ *     ^scale <vec3> [Optional] - scale of the new node
+ *       (These transforms default to that of the source node)
+ **********************************************************/
 #include <iostream>
 #include <string>
 #include "command.h"
@@ -64,8 +81,8 @@ class copy_node_command : public command
             // source <id>
             // The id of the node to copy 
             string source_id;
-            if (!si->get_const_attr(root, "source-id", source_id)){
-              set_status("must specify a source-id");
+            if (!si->get_const_attr(root, "source", source_id)){
+              set_status("must specify a source");
               return false;
             }
             
@@ -84,6 +101,26 @@ class copy_node_command : public command
             if(scn->get_node(node_name)){
               set_status("Node already exists");
               return false;
+            }
+
+            // ^position <vec3>
+            // ^rotation <vec3>
+            // ^scale <vec3>
+            // All optional - specify transforms on the node
+            //   Default to those of the source node
+            transforms['p'] = source_node->get_trans('p');
+            transforms['r'] = source_node->get_trans('r');
+            transforms['s'] = source_node->get_trans('s');
+
+            vec3 trans;
+            if(si->get_vec3(root, "position", trans)){
+              transforms['p'] = trans;
+            }
+            if(si->get_vec3(root, "rotation", trans)){
+              transforms['r'] = trans;
+            }
+            if(si->get_vec3(root, "scale", trans)){
+              transforms['s'] = trans;
             }
 
             return true;
@@ -105,10 +142,10 @@ class copy_node_command : public command
             }
 
             parent->attach_child(dest_node);
-            
-            vec3 pos, rot, scale;
-            source_node->get_trans(pos, rot, scale);
-            dest_node->set_trans(pos, rot, scale);
+
+            dest_node->set_trans('p', transforms['p']);
+            dest_node->set_trans('r', transforms['r']);
+            dest_node->set_trans('s', transforms['s']);
             
             set_status("success");
             return true;
@@ -123,6 +160,7 @@ class copy_node_command : public command
         const sgnode* source_node;
         group_node* parent;
         string node_name;
+        map<char, vec3> transforms;
 };
 
 command* _make_copy_node_command_(svs_state* state, Symbol* root)

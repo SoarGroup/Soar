@@ -1,3 +1,18 @@
+/**********************************************************
+ *
+ * File: commands/add_node.cpp
+ * Contains:
+ *  class add_node_command
+ *  
+ *  Soar Command to add a node to the world
+ *  Parameters:
+ *     ^id <string> - name to give the node, must not already exist
+ *     ^parent <string> [Optional] - parent to add the node to
+ *     ^geometry << box point sphere none >> - geometry of new node
+ *     ^position <vec3> [Optional] - position of the new node
+ *     ^rotation <vec3> [Optional] - rotation of the new node
+ *     ^scale <vec3> [Optional] - scale of the new node
+ **********************************************************/
 #include <string>
 #include "command.h"
 #include "scene.h"

@@ -1,3 +1,15 @@
+/**********************************************************
+ *
+ * File: commands/delete_tag
+ * Contains:
+ *  class delete_tag
+ *  
+ *  Soar Command to delete a tag on a node
+ *  Parameters:
+ *     ^id <string> - name of the node to delete the tag on
+ *     ^tag_name <string> - name of the tag to delete
+ *
+ **********************************************************/
 #include <iostream>
 #include <string>
 #include "command.h"

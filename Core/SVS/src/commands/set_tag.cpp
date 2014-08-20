@@ -1,3 +1,16 @@
+/**********************************************************
+ *
+ * File: commands/set_tag.cpp
+ * Contains:
+ *  class set_tag_command
+ *  
+ *  Soar Command to set a tag on a node (key/val pair)
+ *    If the tag already exists, this replaces the existing value
+ *  Parameters:
+ *     ^id <string> - name of the node to set the tag on
+ *     ^tag_name <string> - name of the tag to set
+ *     ^tag_value <string> - value of the tag to set
+ **********************************************************/
 #include <iostream>
 #include <string>
 #include "command.h"

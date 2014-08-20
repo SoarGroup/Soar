@@ -1,3 +1,13 @@
+/**********************************************************
+ *
+ * File: commands/delete_node.cpp
+ * Contains:
+ *  class delete_node_command
+ *  
+ *  Soar Command to remove a node from the world
+ *  Parameters:
+ *     ^id <string> - name of the node to delete
+ **********************************************************/
 #include <string>
 #include "command.h"
 #include "scene.h"

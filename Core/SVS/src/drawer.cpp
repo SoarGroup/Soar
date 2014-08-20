@@ -154,6 +154,7 @@ void drawer::send(const string& s)
     {
         return;
     }
+    cout << "SEND: '" << s << "'" << endl;
     if (s[s.size() - 1] != '\n')
     {
         connected = sock->send(s + '\n');

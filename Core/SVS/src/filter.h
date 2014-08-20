@@ -1,3 +1,70 @@
+/**************************************************************
+ * 
+ * File: filter.h
+ * Contains:
+ *  The base classes of the different filter types
+ *
+ *  filter_input - see filter_input.h
+ *  filter_output - the output of the filter
+ *    A change_tracking_list of filter_vals 
+ *  filter_params - a single input into the filter
+ *    A list of key/value pairs
+ *    Access using the following function:
+ *      bool get_filter_param(filter* f, filter_params* p, string name, T& val)
+ *        filter* f - optional filter to add error messages to
+ *        filter_params* p - params to look through
+ *        string name - the name of the parameter
+ *        T& val - the value to set if found
+ *
+ *        Returns true if successfully found the parameter
+ *
+ *   filter
+ *     The base class for all filters
+ *     input - filter_input
+ *       Table which creates sets of filter_params
+ *     output - list of filter_vals
+ * 
+ *   typed_filter<T>
+ *     A filter where the output is a set of filter_vals of the same type
+ *     Contains a mapping from input filter_params to output vals
+ *     Most filters should override this
+ *     Specialization for sgnodes which listen to changes
+ * 
+ *   map_filter<T>
+ *     A filter where each input is mapped to exactly 1 output
+ *     subclasses should implement the compute function:
+ *       bool compute(filter_params* p, T& out)
+ *         Do the filter computation on the given set of filter_params
+ *           and set the output to the result
+ *         Return true if successful/false if error
+ * 
+ *   select_filter<T>
+ *     A filter where each input is mapped to 0 or 1 output
+ *     subclasses should implement the compute function:
+ *       bool compute(filter_params* p, T& out, bool& select)
+ *         Do the filter computation on the given set of filter_params
+ *           and set the output to the result
+ *         Set the select flag to true if the result should be output
+ *         Return true if successful/false if error
+ *         
+ *   rank_filter
+ *     A filter where all inputs are ranked and the one
+ *       with the highest value is output
+ *     subclasses should implement the rank function:
+ *       bool rank(filter_params* p, double& r)
+ *         Do the filter computation on the given set of filter params
+ *           and produce a ranking value (r)
+ *         Return true if successful/false if error
+ * 
+ *   const_filter<T>
+ *     A filter that returns a single output value
+ *     Not indended to be inherited
+ * 
+ *   passthru_filter<T>
+ *     A filter that passes each input directly to output
+ *     Designed to be used as a combine filter to combine nodes
+ * 
+****************************************************************/
 #ifndef FILTER_H
 #define FILTER_H
 
@@ -32,6 +99,13 @@ typedef change_tracking_list<filter_val> filter_output;
 */
 typedef std::vector<std::pair<std::string, filter_val*> > filter_params;
 
+/*
+ * Helper Function to access specific parameters
+ * (implementation after filter class)
+ *
+ * bool get_filter_param(filter* f, const filter_params* p, string name, T& val)
+ *
+ */
 
 /*
  The filter is the basic query unit in SVS. Each filter takes a list of
@@ -113,6 +187,55 @@ class filter
         Symbol* root;
         wme* status_wme;
 };
+
+/******************************
+ *
+ * get_filter_params
+ *   Useful helper function for looking up specific parameters
+ *     in a filter_params list
+ *********************************/
+
+template <typename T>
+inline bool get_filter_param(filter* f, const filter_params* params, const std::string& name, T& val)
+{
+    const filter_val* fv;
+    std::stringstream ss;
+    filter_params::const_iterator i;
+    bool found = false;
+    for (i = params->begin(); i != params->end(); ++i)
+    {
+        if (i->first == name)
+        {
+            fv = i->second;
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+    {
+        return false;
+    }
+    if (!get_filter_val(fv, val))
+    {
+        if (f)
+        {
+            ss << "parameter \"" << name << "\" has wrong type";
+            f->set_status(ss.str());
+        }
+        return false;
+    }
+    return true;
+}
+
+/***********************************************
+ * typed_filter
+ *   A slightly more advanced filter base class
+ *   Assumes a single type of output 
+ *     and a mapping between inputs and outputs
+ *   New types of filters should probably inherit from
+ *     this instead of filter directly
+ *     (This takes care of sgnode outputs as a special case)
+ ***********************************************/
 
 template <class T>
 class typed_filter : public filter
@@ -331,38 +454,6 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
 
 
 
-template <typename T>
-inline bool get_filter_param(filter* f, const filter_params* params, const std::string& name, T& val)
-{
-    const filter_val* fv;
-    std::stringstream ss;
-    filter_params::const_iterator i;
-    bool found = false;
-    for (i = params->begin(); i != params->end(); ++i)
-    {
-        if (i->first == name)
-        {
-            fv = i->second;
-            found = true;
-            break;
-        }
-    }
-    if (!found)
-    {
-        return false;
-    }
-    if (!get_filter_val(fv, val))
-    {
-        if (f)
-        {
-            ss << "parameter \"" << name << "\" has wrong type";
-            f->set_status(ss.str());
-        }
-        return false;
-    }
-    return true;
-}
-
 /*
  This type of filter assumes a one-to-one mapping of outputs to input
  parameter sets. It's also assumed that each output is only dependent
@@ -508,96 +599,6 @@ class select_filter : public typed_filter<T>
         std::set<const filter_params*> active_outputs;
 };
 
-
-/*
- This type of filter processes all inputs and produces a single
- output.
-*/
-template<typename T>
-class reduce_filter : public typed_filter<T>
-{
-    public:
-        reduce_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : typed_filter<T>(root, si, input), active_output(false)
-        {}
-        
-        virtual ~reduce_filter() {}
-        
-        bool update_outputs()
-        {
-            const filter_input* input = filter::get_input();
-            bool changed = false;
-            
-            for (int i = input->first_added(); i < input->num_current(); ++i)
-            {
-                if (!input_added(input->get_current(i)))
-                {
-                    return false;
-                }
-                changed = true;
-            }
-            for (int i = 0; i < input->num_changed(); ++i)
-            {
-                if (!input_changed(input->get_changed(i)))
-                {
-                    return false;
-                }
-                changed = true;
-            }
-            for (int i = 0; i < input->num_removed(); ++i)
-            {
-                if (!input_removed(input->get_removed(i)))
-                {
-                    return false;
-                }
-                changed = true;
-            }
-            
-            if (changed)
-            {
-                if (!calculate_value(value))
-                {
-                    return false;
-                }
-            }
-
-            if(input->num_current() == 0){
-              // No inputs - remove if active
-              if(active_output){
-                typed_filter<T>::remove_output(NULL);
-                active_output = false;
-              }
-            } else if(changed && active_output){
-              // Changed value
-              set_output(NULL, value);
-            } else if(changed && !active_output){
-              // New value
-              set_output(NULL, value);
-              active_output = true;
-            }
-            
-            return true;
-        }
-        
-    private:
-        /**
-         * Calculate the single output value and assign to val
-         * Return true if successful
-         */
-        virtual bool calculate_value(T& val) = 0;
-
-        /**
-         * These are called when the inputs change
-         * Use to keep a list of all the current inputs and
-         * respond to changes
-         */
-        virtual bool input_added(const filter_params* params) = 0;
-        virtual bool input_changed(const filter_params* params) = 0;
-        virtual bool input_removed(const filter_params* params) = 0;
-        
-        bool active_output;
-        T value;
-};
 
 class rank_filter : public typed_filter<double>
 {

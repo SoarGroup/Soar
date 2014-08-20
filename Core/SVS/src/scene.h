@@ -96,9 +96,7 @@ class scene : public sgnode_listener, public cliproxy
         int parse_tag(std::vector<std::string>& f, std::string& error);
         
         
-        void cli_tags(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_props(const std::vector<std::string>& args, std::ostream& os) const;
-        void cli_dist(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_sgel(const std::vector<std::string>& args, std::ostream& os);
         void cli_relations(const std::vector<std::string>& args, std::ostream& os) const;
         void cli_draw(const std::vector<std::string>& args, std::ostream& os);

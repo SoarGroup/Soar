@@ -738,15 +738,6 @@ void scene::proxy_get_children(map<string, cliproxy*>& c)
     c["properties"] = new memfunc_proxy<scene>(this, &scene::cli_props);
     c["properties"]->set_help("Get scene properties.");
 
-    c["tags"] = new memfunc_proxy<scene>(this, &scene::cli_tags);
-    c["tags"]->set_help("Get node tags.");
-    
-    c["distance"] = new memfunc_proxy<scene>(this, &scene::cli_dist);
-    c["distance"]->set_help("Compute distance between nodes.")
-    .add_arg("N1", "First node name.")
-    .add_arg("N2", "Second node name.")
-    ;
-    
     c["sgel"] = new memfunc_proxy<scene>(this, &scene::cli_sgel);
     c["sgel"]->set_help("Modify scene graph with SGEL.")
     .add_arg("SGEL", "SGEL string (spaces are okay).")
@@ -765,25 +756,6 @@ void scene::proxy_get_children(map<string, cliproxy*>& c)
     
     c["clear"] = new memfunc_proxy<scene>(this, &scene::cli_clear);
     c["clear"]->set_help("Delete all objects in scene except world");
-}
-
-void scene::cli_tags(const vector<string>& args, ostream& os) const
-{
-    table_printer t;
-
-    // For each node, add each property to the output
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
-    {
-        string name = nodes[i]->get_name();
-
-        const tag_map& tags = nodes[i]->get_all_tags();
-        tag_map::const_iterator ti;
-        for(ti = tags.begin(); ti != tags.end(); ti++){
-          t.add_row() << name + ':' + ti->first << ti->second;
-        }
-    }
-
-    t.print(os);
 }
 
 void scene::cli_props(const vector<string>& args, ostream& os) const
@@ -809,42 +781,15 @@ void scene::cli_props(const vector<string>& args, ostream& os) const
         for (int j = 0; j < common_props.size(); j++){
           t.add_row() << name + ':' + common_props[j] << vals(i++);
         }
+
+        const tag_map& tags = nodes[i]->get_all_tags();
+        tag_map::const_iterator ti;
+        for(ti = tags.begin(); ti != tags.end(); ti++){
+          t.add_row() << name + ':' + ti->first << ti->second;
+        }
     }
 
     t.print(os);
-}
-
-void scene::cli_dist(const vector<string>& args, ostream& os) const
-{
-    if (args.size() != 2)
-    {
-        os << "specify two nodes" << endl;
-        return;
-    }
-    
-    int i0 = -1, i1 = -1;
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
-    {
-        if (nodes[i]->get_name() == args[0])
-        {
-            i0 = i;
-        }
-        else if (nodes[i]->get_name() == args[1])
-        {
-            i1 = i;
-        }
-    }
-    if (i0 < 0)
-    {
-        os << "node " << args[0] << " does not exist" << endl;
-        return;
-    }
-    if (i1 < 0)
-    {
-        os << "node " << args[1] << " does not exist" << endl;
-        return;
-    }
-    os << get_convex_distance(nodes[i0], nodes[i1]) << endl;
 }
 
 void scene::cli_sgel(const vector<string>& args, ostream& os)
