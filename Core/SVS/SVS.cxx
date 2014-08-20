@@ -31,4 +31,3 @@
 #include "src/sgnode_algs.cpp"
 #include "src/soar_interface.cpp"
 #include "src/svs.cpp"
-#include "src/timer.cpp"
