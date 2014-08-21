@@ -21,20 +21,6 @@
 #include "symtab.h"
 
 using namespace std;
-#include <sys/time.h>
-#include <unistd.h>
-long getTime()
-{
-    struct timeval curTime;
-    gettimeofday(&curTime, NULL);
-    return (curTime.tv_sec % 1000) * 1000000 + curTime.tv_usec;
-}
-long recordTime(long startTime, const char* message)
-{
-    long curTime = getTime();
-    cout << message << " = " << (curTime - startTime) << endl;
-    return curTime;
-}
 
 typedef map<string, command*>::iterator cmd_iter;
 
@@ -271,7 +257,6 @@ void svs_state::update_cmd_results(bool early)
 
 void svs_state::process_cmds()
 {
-    long time = getTime();
     wme_list all;
     wme_list::iterator all_it;
     si->get_child_wmes(cmd_link, all);
@@ -344,7 +329,6 @@ void svs_state::process_cmds()
         if (c)
         {
             curr_cmds.insert(command_entry(new_cmd->id, c, 0));
-            svs::mark_filter_dirty_bit();
         }
         else
         {
@@ -377,7 +361,6 @@ svs::svs(agent* a)
     draw = new drawer();
 }
 
-bool svs::filter_dirty_bit = true;
 svs::~svs()
 {
     for (int i = 0, iend = state_stack.size(); i < iend; ++i)
@@ -436,15 +419,12 @@ void svs::proc_input(svs_state* s)
     {
         strip(env_inputs[i], " \t");
         s->get_scene()->parse_sgel(env_inputs[i]);
-        svs::mark_filter_dirty_bit();
     }
     env_inputs.clear();
 }
 
 void svs::output_callback()
 {
-    long time = getTime();
-    
     vector<svs_state*>::iterator i;
     string sgel;
     svs_state* topstate = state_stack.front();
@@ -460,10 +440,7 @@ void svs::output_callback()
     
 }
 
-void svs::input_callback()
-{
-    long time = getTime();
-    
+void svs::input_callback(){
     svs_state* topstate = state_stack.front();
     proc_input(topstate);
     
@@ -472,8 +449,6 @@ void svs::input_callback()
     {
         (**i).update_cmd_results(false);
     }
-    
-    svs::filter_dirty_bit = false;
 }
 
 /*

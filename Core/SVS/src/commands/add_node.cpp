@@ -8,7 +8,7 @@
  *  Parameters:
  *     ^id <string> - name to give the node, must not already exist
  *     ^parent <string> [Optional] - parent to add the node to
- *     ^geometry << box point sphere none >> - geometry of new node
+ *     ^geometry << box point sphere group >> - geometry of new node
  *     ^position <vec3> [Optional] - position of the new node
  *     ^rotation <vec3> [Optional] - rotation of the new node
  *     ^scale <vec3> [Optional] - scale of the new node
@@ -104,12 +104,12 @@ class add_node_command : public command
             transforms['s'] = trans;
           }
 
-          // ^geometry << box point sphere none >>
-          // Optional - default is none
+          // ^geometry << box point sphere group >>
+          // Optional - default is group
           // The geometry of the new node
           string geom;
           if(!si->get_const_attr(root, "geometry", geom)){
-            geom = "none";
+            geom = "group";
           }
           if(geom == "box"){
             geom_type = BOX;
@@ -129,18 +129,18 @@ class add_node_command : public command
 
             switch(geom_type){
               case NONE:
-                n = new group_node(node_name, "object");
+                n = new group_node(node_name);
                 break;
               case SPHERE:
-                n = new ball_node(node_name, "object", 1.0);
+                n = new ball_node(node_name, 1.0);
                 break;
               case POINT:
                 verts.push_back(vec3(0, 0, 0));
-                n = new convex_node(node_name, "object", verts);
+                n = new convex_node(node_name, verts);
                 break;
               case BOX:
                 verts = bbox_vertices();
-                n = new convex_node(node_name, "object", verts);
+                n = new convex_node(node_name, verts);
                 break;
             }
 
@@ -193,7 +193,7 @@ command_table_entry* add_node_command_entry(){
   e->description = "Create a new node and adds it to the scene";
   e->parameters["id"] = "Id of the new node";
   e->parameters["parent"] = "Id of the parent node to attach to";
-  e->parameters["geometry"] = "Either box, point, sphere, or none";
+  e->parameters["geometry"] = "Either box, point, sphere, or group";
   e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
   e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
   e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";

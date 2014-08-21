@@ -151,7 +151,7 @@ Commands:
     Parameters:
       ^id <string> - name to give the node, must not already exist
       ^parent <string> [Optional] - parent to add the node to
-      ^geometry << box point sphere none >> - geometry of new node
+      ^geometry << box point sphere group >> - geometry of new node
 
       ^position <vec3> [Optional] - position of the new node
       ^rotation <vec3> [Optional] - rotation of the new node
@@ -225,7 +225,7 @@ svs
 
 SGEL Commands
   add:
-    a <name> <type> <mods>*
+    a <name> <mods>*
   delete:
     d <name>
   change:

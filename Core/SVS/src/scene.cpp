@@ -79,7 +79,7 @@ bool parse_verts(vector<string>& f, int& start, ptlist& verts, string& error)
 scene::scene(const string& name, svs* owner)
     : name(name), owner(owner), draw(false), nodes(1)
 {
-    root = new group_node(root_name, "world");
+    root = new group_node(root_name);
     nodes[0] = root;
     root->listen(this);
 }
@@ -275,30 +275,30 @@ int scene::parse_add(vector<string>& f, string& error)
     int p;
     sgnode* n = NULL;
     group_node* par = NULL;
-    string name, type, mods;
+    string name, mods;
     vector<ptlist> vals;
     ptlist vertices;
     double radius;
     bool is_convex, is_ball;
     
-    if (f.size() < 2)
+    if (f.size() < 1)
     {
         return f.size();
     }
-    name = f[0], type = f[1];
+    name = f[0];
     if (get_node(name))
     {
         error = "node already exists";
         return 0;
     }
-    par = get_group(f[2]);
+    par = get_group(f[1]);
     if (!par)
     {
         error = "parent node does not exist, or is not group node";
         return 1;
     }
     
-    p = 3;
+    p = 2;
     if (!parse_mods(f, p, mods, vals, error))
     {
         return p;
@@ -331,15 +331,15 @@ int scene::parse_add(vector<string>& f, string& error)
     }
     else if (is_convex)
     {
-        n = new convex_node(name, type, vertices);
+        n = new convex_node(name, vertices);
     }
     else if (is_ball)
     {
-        n = new ball_node(name, type, radius);
+        n = new ball_node(name, radius);
     }
     else
     {
-        n = new group_node(name, type);
+        n = new group_node(name);
     }
     
     /*

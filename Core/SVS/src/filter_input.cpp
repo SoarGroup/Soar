@@ -115,20 +115,6 @@ void product_filter_input::combine(const input_table& inputs)
     {
         filter_output* o = inputs[i].in_fltr->get_output();
         
-//      cout << padd() << "  " << inputs[i].name << " = " << o << endl;
-//      cout << padd() << "  - Current: " << o->num_current() << endl;
-//      for(int j = 0; j < o->num_current(); j++){
-//          cout << padd() << "    * " << o->get_current(j)->toString() << endl;
-//      }
-//      cout << padd() << "  - Changed: " << o->num_changed() << endl;
-//      for(int j = 0; j < o->num_changed(); j++){
-//          cout << padd() << "    * " << o->get_changed(j)->toString() << endl;
-//      }
-//      cout << padd() << "  - Removed: " << o->num_removed() << endl;
-//      for(int j = 0; j < o->num_removed(); j++){
-//          cout << padd() << "    * " << o->get_removed(j)->toString() << endl;
-//      }
-
         for (int j = 0, jend = o->num_removed(); j < jend; ++j)
         {
             filter_val* r = o->get_removed(j);
@@ -149,7 +135,6 @@ void product_filter_input::combine(const input_table& inputs)
             val2params.erase(k);
         }
     }
-    //cout << padd() << "  finished deleting" << endl;
     
     for (int i = 0, iend = inputs.size(); i < iend; ++i)
     {
@@ -169,7 +154,6 @@ void product_filter_input::combine(const input_table& inputs)
             }
         }
     }
-    //cout << padd() << "  finished changing" << endl;
     gen_new_combinations(inputs);
 }
 

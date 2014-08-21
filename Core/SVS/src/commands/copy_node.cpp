@@ -133,12 +133,12 @@ class copy_node_command : public command
             const convex_node* sourceConvex = dynamic_cast<const convex_node*>(source_node);
             if (sourceBall){
                 double radius = sourceBall->get_radius();
-                dest_node = new ball_node(node_name, "object", radius);
+                dest_node = new ball_node(node_name, radius);
             } else if (sourceConvex) {
                 ptlist points(sourceConvex->get_verts());
-                dest_node = new convex_node(node_name, "object", points);
+                dest_node = new convex_node(node_name, points);
             } else {
-                dest_node = new group_node(node_name, "object");
+                dest_node = new group_node(node_name);
             }
 
             parent->attach_child(dest_node);

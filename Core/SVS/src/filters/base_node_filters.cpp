@@ -13,7 +13,6 @@ bool node_test_filter::compute(const filter_params* p, bool& out){
     return false;
   }
   out = test(a, b, p);
-  cout << "Testing " << a->get_name() << " and " << b->get_name() << " = " << (out ? "T" : "F") << endl;
   return true;
 }
 

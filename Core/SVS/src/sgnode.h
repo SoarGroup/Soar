@@ -31,7 +31,7 @@ class sgnode : public cliproxy
             TAG_DELETED
         };
         
-        sgnode(const std::string& name, const std::string& type, bool group);
+        sgnode(const std::string& name, bool group);
         virtual ~sgnode();
         
         /* copied node doesn't inherit listeners */
@@ -48,11 +48,6 @@ class sgnode : public cliproxy
         void set_name(const std::string& n)
         {
             name = n;
-        }
-        
-        const std::string& get_type() const
-        {
-            return type;
         }
         
         group_node* get_parent()
@@ -124,7 +119,6 @@ class sgnode : public cliproxy
         
         int         id;
         std::string name;
-        std::string type;
         group_node* parent;
         bool        group;
         vec3        pos;
@@ -150,7 +144,7 @@ class sgnode : public cliproxy
 class group_node : public sgnode
 {
     public:
-        group_node(const std::string& name, const std::string& type) : sgnode(name, type, true) {}
+        group_node(const std::string& name) : sgnode(name, true) {}
         ~group_node();
         
         sgnode* get_child(int i);
@@ -183,7 +177,7 @@ class group_node : public sgnode
 class geometry_node : public sgnode
 {
     public:
-        geometry_node(const std::string& name, const std::string& type) : sgnode(name, type, false) {}
+        geometry_node(const std::string& name) : sgnode(name, false) {}
         virtual ~geometry_node() {}
         void gjk_support(const vec3& dir, vec3& support) const;
         
@@ -202,7 +196,7 @@ class geometry_node : public sgnode
 class convex_node : public geometry_node
 {
     public:
-        convex_node(const std::string& name, const std::string& type, const ptlist& v);
+        convex_node(const std::string& name, const ptlist& v);
         
         const ptlist& get_verts() const
         {
@@ -228,7 +222,7 @@ class convex_node : public geometry_node
 class ball_node : public geometry_node
 {
     public:
-        ball_node(const std::string& name, const std::string& type, double radius);
+        ball_node(const std::string& name, double radius);
         void get_shape_sgel(std::string& s) const;
         
         double get_radius() const
