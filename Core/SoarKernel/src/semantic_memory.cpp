@@ -1696,7 +1696,7 @@ void smem_disconnect_chunk( agent *my_agent, smem_lti_id lti_id )
 	}
 }
 
-void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *children, bool remove_old_children = true, Symbol* print_id = NULL )
+void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate_lti = true)
 {
 	// if remove children, disconnect chunk -> no existing edges
 	// else, need to query number of existing edges
@@ -1875,6 +1875,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 	}
 
 	// now we can safely activate the lti
+	if ( activate_lti )
 	{
 		double lti_act = smem_lti_activate( my_agent, lti_id, true, new_edges , print_id);
 
@@ -3693,7 +3694,7 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **e
 			{
 				if ( (*c_new)->slots != NIL )
 				{
-					smem_store_chunk( my_agent, (*c_new)->lti_id, (*c_new)->slots, false );
+					smem_store_chunk( my_agent, (*c_new)->lti_id, (*c_new)->slots, false, NULL, false );
 				}
 			}
 
