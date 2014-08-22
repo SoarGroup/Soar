@@ -165,6 +165,18 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	// spontaneous retrieval frequency
 	spontaneous = new soar_module::integer_param( "spontaneous-retrieval-frequency", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
 	add( spontaneous );
+
+	// spreading depth
+	spreading_depth = new soar_module::integer_param( "spreading-depth", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
+	add( spreading_depth );
+
+	// spreading decay
+	spreading_decay = new soar_module::decimal_param( "spreading-decay", 0.75, new soar_module::btw_predicate<double>( 0, 1, true ), new smem_db_predicate<double>( my_agent ) );
+	add( spreading_decay );
+
+	// spreading threshold
+	spreading_thres = new soar_module::decimal_param( "spreading-threshold", 0.01, new soar_module::btw_predicate<double>( 0, 1, true ), new smem_db_predicate<double>( my_agent ) );
+	add( spreading_thres );
 }
 
 //
@@ -528,6 +540,9 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=? ORDER BY activation_value DESC" );
 	add( web_lti_all );
+
+	web_lti_no_attr = new soar_module::sqlite_statement( new_db, "SELECT lti_id FROM smem_augmentations w WHERE value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=?" );
+	add( web_lti_no_attr );
 
 	//
 
@@ -1292,21 +1307,77 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 		my_agent->smem_stmts->act_lti_child_ct_get->reinitialize();
 	}
 
-	// only if augmentation count is less than threshold do we associate with edges
-	if ( num_edges < static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() ) )
-	{
-		// activation_value=? WHERE lti=?
-		my_agent->smem_stmts->act_set->bind_double( 1, new_activation );
-		my_agent->smem_stmts->act_set->bind_int( 2, lti );
-		my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
-	}
 
-	// always associate activation with lti
+	// only spread if it's base-level (the others don't make sense)
+	if ( act_mode == smem_param_container::act_base )
 	{
-		// activation_value=? WHERE lti=?
-		my_agent->smem_stmts->act_lti_set->bind_double( 1, new_activation );
-		my_agent->smem_stmts->act_lti_set->bind_int( 2, lti );
-		my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
+		smem_lti_id temp_lti_id, child_lti_id;
+		double decayed_activation;
+		uint64_t depth;
+		smem_spreading_triple spreading_triple = {lti, new_activation, 0};
+
+		// iterate through augmentations and recurse on LTI children
+		// we don't recurse because we want to control how much activation is added
+		std::list<smem_spreading_triple> queue;
+		queue.push_back(spreading_triple);
+		while (!queue.empty())
+		{
+			// get the next LTI in line
+			spreading_triple = queue.front();
+			queue.pop_front();
+			temp_lti_id = spreading_triple.lti_id;
+			new_activation = spreading_triple.activation;
+			depth = spreading_triple.depth;
+
+			// push new activation to smem_augmentations if appropriate
+			// only if augmentation count is less than threshold do we associate with edges
+			if ( num_edges < static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() ) )
+			{
+				// activation_value=? WHERE lti=?
+				my_agent->smem_stmts->act_set->bind_double( 1, new_activation );
+				my_agent->smem_stmts->act_set->bind_int( 2, temp_lti_id );
+				my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+			}
+			// always push new activation to smem_lti
+			{
+				// activation_value=? WHERE lti=?
+				my_agent->smem_stmts->act_lti_set->bind_double( 1, new_activation );
+				my_agent->smem_stmts->act_lti_set->bind_int( 2, temp_lti_id );
+				my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
+			}
+
+			// only extend the queue if
+			// * the maximum depth has not been exceeded
+			// * the decayed activation is greater than the threshold
+			decayed_activation = new_activation * my_agent->smem_params->spreading_decay->get_value();
+			spreading_triple.activation = decayed_activation;
+			spreading_triple.depth = depth + 1;
+			if ( depth + 1 <= my_agent->smem_params->spreading_depth->get_value() &&
+					decayed_activation > my_agent->smem_params->spreading_thres->get_value() ) 
+			{
+				// push all children onto the queue
+				my_agent->smem_stmts->web_all->bind_int( 1, temp_lti_id );
+				while ( my_agent->smem_stmts->web_all->execute() == soar_module::row )
+				{
+					child_lti_id = my_agent->smem_stmts->web_all->column_int( 2 );
+					if ( child_lti_id != SMEM_AUGMENTATIONS_NULL )
+					{
+						spreading_triple.lti_id = child_lti_id;
+						queue.push_back(spreading_triple);
+					}
+				}
+				my_agent->smem_stmts->web_all->reinitialize();
+				// push all parents onto the queue
+				my_agent->smem_stmts->web_lti_no_attr->bind_int( 1, temp_lti_id );
+				while ( my_agent->smem_stmts->web_all->execute() == soar_module::row )
+				{
+					child_lti_id = my_agent->smem_stmts->web_all->column_int( 0 );
+					spreading_triple.lti_id = child_lti_id;
+					queue.push_back(spreading_triple);
+				}
+				my_agent->smem_stmts->web_lti_no_attr->reinitialize();
+			}
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -2111,20 +2182,16 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 	// get the ^result header for this state
 	Symbol *result_header = state->id.smem_result_header;
 
-	std::cout << "installing lti with id " << lti_id << "!" << std::endl;
-
 	// get identifier if not known
 	bool lti_created_here = false;
 	if ( lti == NIL )
 	{
-		std::cout << "looking for LTI!" << std::endl;
 		soar_module::sqlite_statement *q = my_agent->smem_stmts->lti_letter_num;
 
 		q->bind_int( 1, lti_id );
 		q->execute();
 
 		lti = smem_lti_soar_make( my_agent, lti_id, static_cast<char>( q->column_int( 0 ) ), static_cast<uint64_t>( q->column_int( 1 ) ), result_header->id.level );
-		std::cout << "found " << lti << "!" << std::endl;
 
 		q->reinitialize();
 
@@ -2148,7 +2215,6 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		// prematurely)
 		symbol_remove_ref( my_agent, lti );
 	}
-	std::cout << "pointing to LTI!" << std::endl;
 
 	// if no children, then retrieve children
 	// merge may override this behavior
@@ -2160,7 +2226,6 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		soar_module::sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
 		Symbol *attr_sym;
 		Symbol *value_sym;
-		std::cout << "looking for children!" << std::endl;
 
 		// get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
 		expand_q->bind_int( 1, lti_id );
@@ -2168,7 +2233,6 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 		{
 			// make the identifier symbol irrespective of value type
 			attr_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(0) ), static_cast<smem_hash_id>( expand_q->column_int(1) ) );
-			std::cout << attr_sym->sc.name << std::endl;
 
 			// identifier vs. constant
 			if ( expand_q->column_int( 6 ) != SMEM_AUGMENTATIONS_NULL )
@@ -2178,7 +2242,6 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 			else
 			{
 				value_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(2) ), static_cast<smem_hash_id>( expand_q->column_int(3) ) );
-				std::cout << value_sym->sc.name << std::endl;
 			}
 
 			// add wme
@@ -3861,7 +3924,10 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 
 
-			if ( new_cue || ( wme_count == 0 && my_agent->smem_spontaneous_counter > my_agent->smem_params->mirroring->get_value() ) )
+			if ( new_cue ||
+					( wme_count == 0 &&
+					  my_agent->smem_params->spontaneous->get_value() != 0 &&
+					  my_agent->smem_spontaneous_counter > my_agent->smem_params->spontaneous->get_value() ) )
 			{
 				new_cue = true;
 				// clear old results
@@ -4090,7 +4156,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
 				}
 			}
-			else
+			else if ( my_agent->smem_params->spontaneous->get_value() != 0 )
 			{
 				std::cout << "spontaneously retrieving!" << std::endl;
 				// spontaneous retrieval

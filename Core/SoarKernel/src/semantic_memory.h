@@ -81,6 +81,9 @@ class smem_param_container: public soar_module::param_container
 		soar_module::boolean_param* mirroring;
 
 		soar_module::integer_param* spontaneous;
+		soar_module::integer_param* spreading_depth;
+		soar_module::decimal_param* spreading_decay;
+		soar_module::decimal_param* spreading_thres;
 
 		smem_param_container( agent *new_agent );
 };
@@ -246,6 +249,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *web_attr_all;
 		soar_module::sqlite_statement *web_const_all;
 		soar_module::sqlite_statement *web_lti_all;
+		soar_module::sqlite_statement *web_lti_no_attr;
 
 		soar_module::sqlite_statement *web_attr_child;
 		soar_module::sqlite_statement *web_const_child;
@@ -400,6 +404,13 @@ struct smem_compare_activated_lti
 };
 
 typedef std::priority_queue< smem_activated_lti, std::vector<smem_activated_lti>, smem_compare_activated_lti> smem_prioritized_activated_lti_queue;
+
+typedef struct smem_spreading_triple_struct
+{
+	smem_lti_id lti_id;
+	double activation;
+	uint64_t depth;
+} smem_spreading_triple;
 
 //
 
