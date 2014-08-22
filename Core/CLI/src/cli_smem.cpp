@@ -59,19 +59,18 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 'a')
     {
-        std::string* err = NULL;
+        std::string* err = new std::string("");
         bool result = smem_parse_chunks(thisAgent, pAttr->c_str(), &(err));
         
         if (!result)
         {
             SetError(*err);
-            delete err;
         }
         else
         {
             PrintCLIMessage("Knowledge added to semantic memory.");
         }
-        
+        delete err;
         return result;
     }
     else if (pOp == 'b')
