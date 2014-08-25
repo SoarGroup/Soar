@@ -1968,13 +1968,19 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 	}
 
 	// now we can safely activate the lti
-	if ( activate_lti )
 	{
 		double lti_act = smem_lti_activate( my_agent, lti_id, true, new_edges , print_id);
 
-		if ( !after_above )
+		if ( activate_lti )
 		{
-			web_act = lti_act;
+			if ( !after_above )
+			{
+				web_act = lti_act;
+			}
+		}
+		else
+		{
+			web_act = 0.0;
 		}
 	}
 
