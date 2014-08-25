@@ -1233,6 +1233,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 
 	// get new activation value (depends upon bias)
 	double new_activation = 0.0;
+	double activation_delta = 0;
 	smem_param_container::act_choices act_mode = my_agent->smem_params->activation_mode->get_value();
 	if ( act_mode == smem_param_container::act_recency )
 	{
@@ -1285,6 +1286,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 		}
 		else
 		{
+			double old_activation = smem_lti_calc_base( my_agent, lti, time_now, prev_access_n, prev_access_1 );
 			if ( add_access )
 			{
 				my_agent->smem_stmts->history_push->bind_int( 1, time_now );
@@ -1293,6 +1295,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 			}
 
 			new_activation = smem_lti_calc_base( my_agent, lti, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
+			activation_delta = new_activation - old_activation;
 		}
 	}
 
@@ -1314,6 +1317,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 		smem_lti_id temp_lti_id, child_lti_id;
 		double decayed_activation;
 		uint64_t depth;
+		// JUSTIN FIXME this should be the DELTA between new and old, not the actual new value
 		smem_spreading_triple spreading_triple = {lti, new_activation, 0};
 
 		// iterate through augmentations and recurse on LTI children
@@ -1377,6 +1381,24 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 				}
 				my_agent->smem_stmts->web_lti_no_attr->reinitialize();
 			}
+		}
+	}
+	else
+	{
+		// only if augmentation count is less than threshold do we associate with edges
+		if ( num_edges < static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() ) )
+		{
+			// activation_value=? WHERE lti=?
+			my_agent->smem_stmts->act_set->bind_double( 1, new_activation );
+			my_agent->smem_stmts->act_set->bind_int( 2, lti );
+			my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+		}
+		// always associate activation with lti
+		{
+			// activation_value=? WHERE lti=?
+			my_agent->smem_stmts->act_lti_set->bind_double( 1, new_activation );
+			my_agent->smem_stmts->act_lti_set->bind_int( 2, lti );
+			my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
 		}
 	}
 
@@ -4158,12 +4180,12 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 			else if ( my_agent->smem_params->spontaneous->get_value() != 0 )
 			{
+				std::cout << "wme_count: " << wme_count << std::endl;
 				std::cout << "spontaneously retrieving!" << std::endl;
 				// spontaneous retrieval
 				// get the LTI with the highest activation
 				if ( my_agent->smem_stmts->lti_get_act->execute() == soar_module::row )
 				{
-					std::cout << "installing memory!" << std::endl;
 					smem_install_memory( my_agent, state, my_agent->smem_stmts->lti_get_act->column_int(0), NIL, false, meta_wmes, retrieval_wmes );
 				}
 				my_agent->smem_stmts->lti_get_act->reinitialize();
