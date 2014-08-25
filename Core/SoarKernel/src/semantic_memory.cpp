@@ -1131,8 +1131,11 @@ inline double smem_lti_calc_base( agent *my_agent, smem_lti_id lti, int64_t time
 
 		for ( int i=0; i<available_history; i++ )
 		{
-			sum += pow( static_cast<double>( time_now - my_agent->smem_stmts->history_get->column_int( i ) ),
-						static_cast<double>( -d ) );
+			double base = static_cast<double>( time_now - my_agent->smem_stmts->history_get->column_int( i ) );
+			if ( base > 0 )
+			{
+				sum += pow( base, static_cast<double>( -d ) );
+			}
 		}
 	}
 	my_agent->smem_stmts->history_get->reinitialize();
@@ -1232,8 +1235,10 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	}
 
 	// get new activation value (depends upon bias)
+	double old_activation = 0.0;
 	double new_activation = 0.0;
-	double activation_delta = 0;
+	double activation_delta = 0.0;
+	double activation_with_delta;
 	smem_param_container::act_choices act_mode = my_agent->smem_params->activation_mode->get_value();
 	if ( act_mode == smem_param_container::act_recency )
 	{
@@ -1283,10 +1288,11 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 			}
 
 			new_activation = 0;
+			activation_delta = 0;
 		}
 		else
 		{
-			double old_activation = smem_lti_calc_base( my_agent, lti, time_now, prev_access_n, prev_access_1 );
+			old_activation = smem_lti_calc_base( my_agent, lti, time_now, prev_access_n, prev_access_1 );
 			if ( add_access )
 			{
 				my_agent->smem_stmts->history_push->bind_int( 1, time_now );
@@ -1317,12 +1323,12 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 		smem_lti_id temp_lti_id, child_lti_id;
 		double decayed_activation;
 		uint64_t depth;
-		// JUSTIN FIXME this should be the DELTA between new and old, not the actual new value
-		smem_spreading_triple spreading_triple = {lti, new_activation, 0};
+		smem_spreading_triple spreading_triple = {lti, activation_delta, 0};
 
 		// iterate through augmentations and recurse on LTI children
 		// we don't recurse because we want to control how much activation is added
 		std::list<smem_spreading_triple> queue;
+		smem_lti_set visited;
 		queue.push_back(spreading_triple);
 		while (!queue.empty())
 		{
@@ -1330,58 +1336,82 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 			spreading_triple = queue.front();
 			queue.pop_front();
 			temp_lti_id = spreading_triple.lti_id;
-			new_activation = spreading_triple.activation;
+			activation_delta = spreading_triple.activation;
+			old_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now );
+			activation_with_delta = old_activation + activation_delta;
 			depth = spreading_triple.depth;
+			{
+				soar_module::sqlite_statement *lti_q = my_agent->smem_stmts->lti_letter_num;
+				lti_q->bind_int( 1, temp_lti_id );
+				lti_q->execute();
+				std::cout << "activating @" << static_cast<char>(lti_q->column_int(0)) << lti_q->column_int( 1 ) << " (id=" << temp_lti_id << ") at depth " << depth << ":" <<
+					" " << old_activation << " + " << activation_delta << " = " << activation_with_delta << std::endl;
+				lti_q->reinitialize();
+			}
 
 			// push new activation to smem_augmentations if appropriate
 			// only if augmentation count is less than threshold do we associate with edges
 			if ( num_edges < static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() ) )
 			{
 				// activation_value=? WHERE lti=?
-				my_agent->smem_stmts->act_set->bind_double( 1, new_activation );
+				my_agent->smem_stmts->act_set->bind_double( 1, activation_with_delta );
 				my_agent->smem_stmts->act_set->bind_int( 2, temp_lti_id );
 				my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
 			}
 			// always push new activation to smem_lti
 			{
 				// activation_value=? WHERE lti=?
-				my_agent->smem_stmts->act_lti_set->bind_double( 1, new_activation );
+				my_agent->smem_stmts->act_lti_set->bind_double( 1, activation_with_delta );
 				my_agent->smem_stmts->act_lti_set->bind_int( 2, temp_lti_id );
 				my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
 			}
 
 			// only extend the queue if
+			// * the LTI is actually being activated (ie. it's not just to update the activation value)
 			// * the maximum depth has not been exceeded
 			// * the decayed activation is greater than the threshold
-			decayed_activation = new_activation * my_agent->smem_params->spreading_decay->get_value();
+			decayed_activation = activation_delta * my_agent->smem_params->spreading_decay->get_value();
 			spreading_triple.activation = decayed_activation;
 			spreading_triple.depth = depth + 1;
-			if ( depth + 1 <= my_agent->smem_params->spreading_depth->get_value() &&
+			if ( add_access &&
+					depth < my_agent->smem_params->spreading_depth->get_value() &&
 					decayed_activation > my_agent->smem_params->spreading_thres->get_value() ) 
 			{
+				visited.insert(temp_lti_id);
+				std::cout << "	looking for neighbors" << std::endl;
 				// push all children onto the queue
 				my_agent->smem_stmts->web_all->bind_int( 1, temp_lti_id );
 				while ( my_agent->smem_stmts->web_all->execute() == soar_module::row )
 				{
 					child_lti_id = my_agent->smem_stmts->web_all->column_int( 2 );
-					if ( child_lti_id != SMEM_AUGMENTATIONS_NULL )
+					std::cout << "		found " << child_lti_id << std::endl;
+					if ( child_lti_id != SMEM_AUGMENTATIONS_NULL && visited.find(child_lti_id) == visited.end() )
 					{
+						std::cout << "		inserting child " << child_lti_id << std::endl;
 						spreading_triple.lti_id = child_lti_id;
 						queue.push_back(spreading_triple);
+						visited.insert(child_lti_id);
 					}
 				}
 				my_agent->smem_stmts->web_all->reinitialize();
 				// push all parents onto the queue
 				my_agent->smem_stmts->web_lti_no_attr->bind_int( 1, temp_lti_id );
-				while ( my_agent->smem_stmts->web_all->execute() == soar_module::row )
+				while ( my_agent->smem_stmts->web_lti_no_attr->execute() == soar_module::row )
 				{
-					child_lti_id = my_agent->smem_stmts->web_all->column_int( 0 );
-					spreading_triple.lti_id = child_lti_id;
-					queue.push_back(spreading_triple);
+					child_lti_id = my_agent->smem_stmts->web_lti_no_attr->column_int( 0 );
+					std::cout << "		found " << child_lti_id << std::endl;
+					if (visited.find(child_lti_id) == visited.end())
+					{
+						std::cout << "		inserting parent " << child_lti_id << std::endl;
+						spreading_triple.lti_id = child_lti_id;
+						queue.push_back(spreading_triple);
+						visited.insert(child_lti_id);
+					}
 				}
 				my_agent->smem_stmts->web_lti_no_attr->reinitialize();
 			}
 		}
+		std::cout << std::endl;
 	}
 	else
 	{
