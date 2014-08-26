@@ -4218,14 +4218,13 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
 				}
 			}
-			else if ( my_agent->smem_params->spontaneous->get_value() != 0 )
+			else if ( !store_only && my_agent->smem_params->spontaneous->get_value() != 0 && state == my_agent->top_goal )
 			{
-				std::cout << "wme_count: " << wme_count << std::endl;
-				std::cout << "spontaneously retrieving!" << std::endl;
 				// spontaneous retrieval
 				// get the LTI with the highest activation
 				if ( my_agent->smem_stmts->lti_get_act->execute() == soar_module::row )
 				{
+					std::cout << "spontaneously retrieving lti_id " << my_agent->smem_stmts->lti_get_act->column_int(0) << std::endl;
 					smem_install_memory( my_agent, state, my_agent->smem_stmts->lti_get_act->column_int(0), NIL, false, meta_wmes, retrieval_wmes );
 				}
 				my_agent->smem_stmts->lti_get_act->reinitialize();
