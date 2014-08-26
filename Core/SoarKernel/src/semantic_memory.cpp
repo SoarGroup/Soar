@@ -1205,7 +1205,6 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 
 		my_agent->smem_stats->act_updates->set_value( my_agent->smem_stats->act_updates->get_value() + 1 );
 	}
-	std::cout << "add_access=" << (add_access ? "true" : "false") << " time_now=" << time_now << std::endl;
 
 	// access information
 	uint64_t prev_access_n = 0;
@@ -1376,22 +1375,18 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 			decayed_activation = activation_delta * my_agent->smem_params->spreading_decay->get_value();
 			spreading_triple.activation = decayed_activation;
 			spreading_triple.depth = depth + 1;
-			std::cout << "	recursing conditions: " << add_access << (depth < my_agent->smem_params->spreading_depth->get_value()) << (decayed_activation > my_agent->smem_params->spreading_thres->get_value()) << std::endl;
 			if ( add_access &&
 					depth < my_agent->smem_params->spreading_depth->get_value() &&
 					decayed_activation > my_agent->smem_params->spreading_thres->get_value() ) 
 			{
 				visited.insert(temp_lti_id);
-				std::cout << "	looking for neighbors" << std::endl;
 				// push all children onto the queue
 				my_agent->smem_stmts->web_all->bind_int( 1, temp_lti_id );
 				while ( my_agent->smem_stmts->web_all->execute() == soar_module::row )
 				{
 					child_lti_id = my_agent->smem_stmts->web_all->column_int( 2 );
-					std::cout << "		found " << child_lti_id << std::endl;
 					if ( child_lti_id != SMEM_AUGMENTATIONS_NULL && visited.find(child_lti_id) == visited.end() )
 					{
-						std::cout << "		inserting child " << child_lti_id << std::endl;
 						spreading_triple.lti_id = child_lti_id;
 						queue.push_back(spreading_triple);
 						visited.insert(child_lti_id);
@@ -1403,10 +1398,8 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 				while ( my_agent->smem_stmts->web_lti_no_attr->execute() == soar_module::row )
 				{
 					child_lti_id = my_agent->smem_stmts->web_lti_no_attr->column_int( 0 );
-					std::cout << "		found " << child_lti_id << std::endl;
 					if (visited.find(child_lti_id) == visited.end())
 					{
-						std::cout << "		inserting parent " << child_lti_id << std::endl;
 						spreading_triple.lti_id = child_lti_id;
 						queue.push_back(spreading_triple);
 						visited.insert(child_lti_id);
@@ -1415,7 +1408,6 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 				my_agent->smem_stmts->web_lti_no_attr->reinitialize();
 			}
 		}
-		std::cout << std::endl;
 	}
 	else
 	{
