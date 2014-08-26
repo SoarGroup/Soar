@@ -1166,7 +1166,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	int64_t time_now;
 	if ( add_access )
 	{
-		time_now = my_agent->smem_max_cycle++;
+		time_now = ++(my_agent->smem_max_cycle);
 
 		if ( ( my_agent->smem_params->activation_mode->get_value() == smem_param_container::act_base ) &&
 			 ( my_agent->smem_params->base_update->get_value() == smem_param_container::bupt_incremental ) )
@@ -1205,6 +1205,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 
 		my_agent->smem_stats->act_updates->set_value( my_agent->smem_stats->act_updates->get_value() + 1 );
 	}
+	std::cout << "add_access=" << (add_access ? "true" : "false") << " time_now=" << time_now << std::endl;
 
 	// access information
 	uint64_t prev_access_n = 0;
@@ -1224,7 +1225,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 		}
 
 		// set new
-		if ( add_access )
+		if ( add_access || prev_access_n == 0)
 		{
 			my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
 			my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
@@ -1250,43 +1251,41 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	}
 	else if ( act_mode == smem_param_container::act_base )
 	{
-		// If this hasn't been activated before
+		// If this hasn't been activated before (we don't care about the value of add_access here)
 		if ( prev_access_n == 0 )
 		{
-			if ( add_access )
+			// If we pass an id to this function and that symbol actually has a wma_decay_element
+			if (id && ((wme*)id)->wma_decay_el)
 			{
-				// If we pass an id to this function and that symbol actually has a wma_decay_element
-				if (id && ((wme*)id)->wma_decay_el)
+				// then we should import the history from that decay element.
+				wma_decay_element* temp_el = ((wme*)id)->wma_decay_el;
+
+				// The first one uses an add.
+				my_agent->smem_stmts->history_add->bind_int(1,lti);
+				my_agent->smem_stmts->history_add->bind_int(2,temp_el->touches.access_history[ 0 ].d_cycle);
+				my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
+
+				// then we push the rest.
+				for ( int i=1; i<WMA_DECAY_HISTORY; i++ )
 				{
-					// then we should import the history from that decay element.
-					wma_decay_element* temp_el = ((wme*)id)->wma_decay_el;
-
-					// The first one uses an add.
-					my_agent->smem_stmts->history_add->bind_int(1,lti);
-					my_agent->smem_stmts->history_add->bind_int(2,temp_el->touches.access_history[ 0 ].d_cycle);
-					my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
-
-					// then we push the rest.
-					for ( int i=1; i<WMA_DECAY_HISTORY; i++ )
-					{
-						my_agent->smem_stmts->history_push->bind_int(1,lti);
-						my_agent->smem_stmts->history_push->bind_int(2,temp_el->touches.access_history[ i ].d_cycle);
-						my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
-					}
-
-					// Now, add the update from just now. ######## Potentially redundant?
-					my_agent->smem_stmts->history_push->bind_int( 1, lti );
-					my_agent->smem_stmts->history_push->bind_int( 2, time_now );
+					my_agent->smem_stmts->history_push->bind_int(1,lti);
+					my_agent->smem_stmts->history_push->bind_int(2,temp_el->touches.access_history[ i ].d_cycle);
 					my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
 				}
-				else
-				{
-					my_agent->smem_stmts->history_add->bind_int( 1, lti );
-					my_agent->smem_stmts->history_add->bind_int( 2, time_now );
-					my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
-				}
+
+				// Now, add the update from just now. FIXME Potentially redundant from rule matching?
+				my_agent->smem_stmts->history_push->bind_int( 1, lti );
+				my_agent->smem_stmts->history_push->bind_int( 2, time_now );
+				my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
+			}
+			else
+			{
+				my_agent->smem_stmts->history_add->bind_int( 1, lti );
+				my_agent->smem_stmts->history_add->bind_int( 2, time_now );
+				my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
 			}
 
+			old_activation = 0;
 			new_activation = 0;
 			activation_delta = 0;
 		}
@@ -1301,7 +1300,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 			}
 
 			new_activation = smem_lti_calc_base( my_agent, lti, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
-			activation_delta = new_activation - old_activation;
+			activation_delta = ( old_activation == SMEM_ACT_LOW ? 0 : new_activation - old_activation );
 		}
 	}
 
@@ -1336,8 +1335,12 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 			spreading_triple = queue.front();
 			queue.pop_front();
 			temp_lti_id = spreading_triple.lti_id;
-			activation_delta = spreading_triple.activation;
 			old_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now );
+			if ( old_activation == SMEM_ACT_LOW )
+			{
+				old_activation = 0.0;
+			}
+			activation_delta = spreading_triple.activation;
 			activation_with_delta = old_activation + activation_delta;
 			depth = spreading_triple.depth;
 			{
@@ -1373,6 +1376,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 			decayed_activation = activation_delta * my_agent->smem_params->spreading_decay->get_value();
 			spreading_triple.activation = decayed_activation;
 			spreading_triple.depth = depth + 1;
+			std::cout << "	recursing conditions: " << add_access << (depth < my_agent->smem_params->spreading_depth->get_value()) << (decayed_activation > my_agent->smem_params->spreading_thres->get_value()) << std::endl;
 			if ( add_access &&
 					depth < my_agent->smem_params->spreading_depth->get_value() &&
 					decayed_activation > my_agent->smem_params->spreading_thres->get_value() ) 
@@ -1999,7 +2003,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 
 	// now we can safely activate the lti
 	{
-		double lti_act = smem_lti_activate( my_agent, lti_id, true, new_edges , print_id);
+		double lti_act = smem_lti_activate( my_agent, lti_id, activate_lti, new_edges , print_id);
 
 		if ( activate_lti )
 		{
