@@ -4226,6 +4226,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					smem_install_memory( my_agent, state, my_agent->smem_stmts->lti_get_act->column_int(0), NIL, false, meta_wmes, retrieval_wmes );
 				}
 				my_agent->smem_stmts->lti_get_act->reinitialize();
+				// only set a boolean here to allow for spontaneous retrievals on different level goals
 				spontaneously_retrieved = true;
 			}
 
