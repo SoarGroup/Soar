@@ -54,7 +54,6 @@ typedef struct symbol_struct Symbol;
 typedef struct hash_table_struct hash_table;
 typedef struct wme_struct wme;
 typedef struct memory_pool_struct memory_pool;
-typedef struct lexer_source_file_struct lexer_source_file;
 typedef struct production_struct production;
 typedef struct preference_struct preference;
 typedef struct pi_struct parent_inst;
@@ -66,29 +65,6 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct select_info_struct select_info;
 class AgentOutput_Info;
 class debug_param_container;
-
-// following def's moved here from old interface.h file  KJC nov 05
-/* AGR 568 begin */
-typedef struct expansion_node
-{
-    struct lexeme_info lexeme;
-    struct expansion_node* next;
-} expansion_node;
-
-typedef struct alias_struct
-{
-    char* alias;
-    struct expansion_node* expansion;
-    struct alias_struct* next;
-} alias_struct;
-
-typedef struct dir_stack_struct
-{
-    char* directory;
-    struct dir_stack_struct* next;
-} dir_stack_struct;
-/* AGR 568 end */
-
 
 /* This typedef makes soar_callback_array equivalent to an array of list
    pointers. Since it was used only one time, it has been commented out
@@ -238,13 +214,6 @@ typedef struct agent_struct
     struct ms_change_struct* ms_assertions;   /* changes to match set */
     struct ms_change_struct* ms_retractions;
     
-    /* ----------------------- Lexer stuff -------------------------- */
-    
-    lexer_source_file* current_file;  /* file we're currently reading */
-    int                 current_char; /* holds current input character */
-    struct lexeme_info  lexeme;       /* holds current lexeme */
-    bool               print_prompt_flag;
-    
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at
        system startup time and never deallocate them.
@@ -344,6 +313,7 @@ typedef struct agent_struct
     Symbol*             smem_sym_prohibit;
     Symbol*             smem_sym_store;
     Symbol*             smem_sym_math_query;
+    Symbol*             smem_sym_depth;
     
     Symbol*             smem_sym_math_query_less;
     Symbol*             smem_sym_math_query_greater;
@@ -393,7 +363,7 @@ typedef struct agent_struct
     enum top_level_phase current_phase;
     
     /* --- to interrupt at the end of the current phase, set stop_soar to true
-       and reason_for_stopping to some appropriate string --- */
+     and reason_for_stopping to some appropriate string --- */
     bool               stop_soar;
     const char*           reason_for_stopping;
     
@@ -710,6 +680,13 @@ typedef struct agent_struct
     ::list*             promoted_ids;
     int                 link_update_mode;
     
+    /* ------------------ Printing utilities stuff --------------------- */
+    
+    //TODO: this isn't good enough. Arbitrary length should be acceptable.
+#define MAX_LEXER_LINE_LENGTH 1000
+    //a little bigger to avoid any off-by-one-errors
+#define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
+    
     /* ----------------------- Trace Formats -------------------------- */
     
     struct trace_format_struct* (object_tf_for_anything[3]);
@@ -777,14 +754,6 @@ typedef struct agent_struct
     
     //soar_callback_array soar_callbacks;
     ::list*                   soar_callbacks[NUMBER_OF_CALLBACKS];
-    
-    const char*         alternate_input_string;
-    const char*         alternate_input_suffix;
-    bool               alternate_input_exit; /* Soar-Bugs #54, TMH */
-    expansion_node*     lex_alias;         /* AGR 568 */
-    bool               load_errors_quit;  /* AGR 527c */
-    dir_stack_struct*   top_dir_stack;   /* AGR 568 */
-    
     
     /* RCHONG: begin 10.11 */
     bool      did_PE;
@@ -1012,14 +981,6 @@ inline void push(agent* thisAgent, P item, T*& list_header)
 extern void     init_soar_agent(agent* thisAgent);
 extern agent* create_soar_agent(char* name);
 extern void    destroy_soar_agent(agent* soar_agent);
-
-/* Ideally, this should be in "lexer.h", but to avoid circular dependencies
-   among header files, I am forced to put it here. */
-
-inline bool reading_from_top_level(agent* thisAgent)
-{
-    return (!thisAgent->current_file->parent_file);
-}
 
 #endif
 

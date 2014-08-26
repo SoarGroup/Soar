@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <portability.h>
+#include "portability.h"
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
@@ -51,25 +51,25 @@ bool read_attribute_from_string(agent* thisAgent, Symbol* id, char* the_lexeme, 
         the_lexeme++;
     }
     
-    get_lexeme_from_string(thisAgent, the_lexeme);
+    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, the_lexeme);
     
-    switch (thisAgent->lexeme.type)
+    switch (lexeme.type)
     {
         case SYM_CONSTANT_LEXEME:
-            attr_tmp = find_str_constant(thisAgent, thisAgent->lexeme.string);
+            attr_tmp = find_str_constant(thisAgent, lexeme.string());
             break;
         case INT_CONSTANT_LEXEME:
-            attr_tmp = find_int_constant(thisAgent, thisAgent->lexeme.int_val);
+            attr_tmp = find_int_constant(thisAgent, lexeme.int_val);
             break;
         case FLOAT_CONSTANT_LEXEME:
-            attr_tmp = find_float_constant(thisAgent, thisAgent->lexeme.float_val);
+            attr_tmp = find_float_constant(thisAgent, lexeme.float_val);
             break;
         case IDENTIFIER_LEXEME:
-            attr_tmp = find_identifier(thisAgent, thisAgent->lexeme.id_letter,
-                                       thisAgent->lexeme.id_number);
+            attr_tmp = find_identifier(thisAgent, lexeme.id_letter,
+                                       lexeme.id_number);
             break;
         case VARIABLE_LEXEME:
-            attr_tmp = read_identifier_or_context_variable(thisAgent);
+            attr_tmp = read_identifier_or_context_variable(thisAgent, &lexeme);
             if (!attr_tmp)
             {
                 return false;

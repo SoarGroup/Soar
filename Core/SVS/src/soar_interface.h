@@ -13,9 +13,6 @@ tc_number get_new_tc_number(agent* thisAgent);
 extern Symbol* make_str_constant(agent* thisAgent, char const* name);
 extern Symbol* make_int_constant(agent* thisAgent, int64_t value);
 extern Symbol* make_float_constant(agent* thisAgent, double value);
-extern bool get_symbol_value(Symbol* sym, std::string& v);
-extern bool get_symbol_value(Symbol* sym, long& v);
-extern bool get_symbol_value(Symbol* sym, double& v);
 
 typedef std::vector<wme*> wme_list;
 

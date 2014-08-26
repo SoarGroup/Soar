@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <portability.h>
+#include "portability.h"
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
@@ -149,17 +149,17 @@ int RemoveWme(agent* thisAgent, wme* pWme)
 
 bool read_wme_filter_component(agent* thisAgent, const char* s, Symbol** sym)
 {
-    get_lexeme_from_string(thisAgent, const_cast<char*>(s));
-    if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, const_cast<char*>(s));
+    if (lexeme.type == IDENTIFIER_LEXEME)
     {
-        if ((*sym = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number)) == NIL)
+        if ((*sym = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number)) == NIL)
         {
             return false;          /* Identifier does not exist */
         }
     }
     else
     {
-        *sym = make_symbol_for_current_lexeme(thisAgent, false);
+        *sym = make_symbol_for_lexeme(thisAgent, &lexeme, false);
     }
     // Added by voigtjr because if this function can
     // legally return success with *sym == 0, my logic in AddWmeFilter will be broken.

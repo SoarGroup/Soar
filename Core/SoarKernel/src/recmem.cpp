@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -783,12 +783,6 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->rete_wme = w;
     inst->reliable = true;
     inst->in_ms = true;
-    
-    /* REW: begin   09.15.96 */
-    /*  We want to initialize the GDS_evaluated_already flag
-     *  when a new instantiation is created.
-     */
-    
     inst->GDS_evaluated_already = false;
     
     if (thisAgent->soar_verbose_flag == true)
@@ -1484,26 +1478,14 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
             else if (inst->in_ms || pref->o_supported)
             {
                 /* --- normal case --- */
-                if (add_preference_to_tm(thisAgent, pref))
+                add_preference_to_tm(thisAgent, pref);
+                /* REW: begin 09.15.96 */
+                /* No knowledge retrieval necessary in Operand2 */
+                /* REW: end   09.15.96 */
+                
+                if (wma_enabled(thisAgent))
                 {
-                    /* REW: begin 09.15.96 */
-                    /* No knowledge retrieval necessary in Operand2 */
-                    /* REW: end   09.15.96 */
-                    
-                    if (wma_enabled(thisAgent))
-                    {
-                        wma_activate_wmes_in_pref(thisAgent, pref);
-                    }
-                }
-                else
-                {
-                    // NLD: the preference was o-supported, at
-                    // the top state, and was asserting an acceptable
-                    // preference for a WME that was already
-                    // o-supported. hence unnecessary.
-                    
-                    preference_add_ref(pref);
-                    preference_remove_ref(thisAgent, pref);
+                    wma_activate_wmes_in_pref(thisAgent, pref);
                 }
             }
             else

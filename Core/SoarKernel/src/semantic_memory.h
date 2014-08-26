@@ -13,7 +13,7 @@
 #ifndef SEMANTIC_MEMORY_H
 #define SEMANTIC_MEMORY_H
 
-#include <portability.h>
+#include "portability.h"
 
 #include <stack>
 #include <set>
@@ -451,7 +451,7 @@ typedef struct smem_vis_lti_struct
 //
 
 enum smem_query_levels { qry_search, qry_full };
-
+enum smem_install_type { wm_install, fake_install };
 
 //////////////////////////////////////////////////////////
 // Soar Functions (see cpp for comments)
@@ -461,11 +461,13 @@ extern bool smem_enabled(agent* thisAgent);
 extern void smem_attach(agent* thisAgent);
 
 extern bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg);
+extern bool smem_parse_cues(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
+extern bool smem_parse_remove(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, bool force = false);
 
 extern void smem_visualize_store(agent* thisAgent, std::string* return_val);
 extern void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val);
 extern void smem_print_store(agent* thisAgent, std::string* return_val);
-extern void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val);
+extern void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val, bool history = false);
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;

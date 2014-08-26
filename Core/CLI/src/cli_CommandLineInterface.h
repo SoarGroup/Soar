@@ -26,7 +26,7 @@
 #include "cli_Cli.h"
 #include "cli_Parser.h"
 #include "soar_module.h"
-
+#include "lexer.h"
 #include "Export.h"
 
 namespace soarxml
@@ -116,7 +116,7 @@ namespace cli
             virtual bool DoBreak(const char& mode, const std::string& production);
             virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
             virtual bool DoCD(const std::string* pDirectory = 0);
-            virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
+            virtual bool DoChunkNameFormat(const chunkNameFormats* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
             virtual bool DoCLIMessage(const std::string& pMessage);
             virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
             virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
@@ -319,7 +319,7 @@ namespace cli
 ===============================
 */
 extern bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme, Symbol** result_id);
-extern void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme);
-extern Symbol* read_identifier_or_context_variable(agent* thisAgent);
+extern soar::Lexeme get_lexeme_from_string(agent* thisAgent, const char* the_lexeme);
+extern Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme);
 
 #endif //COMMAND_LINE_INTERFACE_H

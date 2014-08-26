@@ -13,7 +13,7 @@
 #ifndef EPISODIC_MEMORY_H
 #define EPISODIC_MEMORY_H
 
-#include <portability.h>
+#include "portability.h"
 
 #include <map>
 #include <list>

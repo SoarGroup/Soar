@@ -328,19 +328,8 @@ filter_table_entry* remove_node_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
     e->name = "remove_node";
-    e->description = "Outputs all nodes in input a except for b";
-    e->parameters["a"] = "Sgnode a";
-    e->parameters["b"] = "Sgnode b (only 1)";
+    e->parameters.push_back("a");
+    e->parameters.push_back("b");
     e->create = &make_remove_node_filter;
-    return e;
-}
-
-filter_table_entry* combine_nodes_filter_entry()
-{
-    filter_table_entry* e = new filter_table_entry;
-    e->name = "combine_nodes";
-    e->description = "Outputs a single list concatenating all inputs a";
-    e->parameters["a"] = "Sgnode a, can be multiple filters";
-    e->create = &make_combine_nodes_filter;
     return e;
 }

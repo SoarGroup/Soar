@@ -1,0 +1,92 @@
+epmem --set learning on
+epmem --set trigger dc
+epmem --set graph-match-ordering mcv
+
+sp {propose*init
+    (state <s> ^superstate nil
+               -^name)
+-->
+    (<s> ^operator.name init)
+}
+
+sp {apply*init
+    (state <s> ^operator.name init)
+-->
+    (<s> ^name graph-match-unit
+         ^hamilton <hamilton>)
+
+    # taken from http://www.math.sunysb.edu/~tony/whatsnew/column/dna-0200/dna-abc2.html
+    # solution: Fresno, Albany, Dallas, Seattle, Omaha, Atlanta, Boston
+
+    # sql for city->node mapping:
+    # SELECT nu.parent_id, tsh.sym_const FROM edge_unique eu JOIN node_unique nu ON eu.q1=nu.parent_id JOIN temporal_symbol_hash tsh ON nu.value=tsh.id WHERE w=13;
+
+
+    (<hamilton> ^city <fresno>
+                ^city <seattle>
+                ^city <omaha> 
+                ^city <dallas>
+                ^city <albany>
+                ^city <atlanta>
+                ^city <boston>)
+    (<fresno> ^name Fresno ^to <seattle> <albany> <boston>)
+    (<seattle> ^name Seattle ^to <omaha> <dallas>)
+    (<omaha> ^name Omaha ^to <albany> <atlanta>)
+    (<albany> ^name Albany ^to <seattle> <dallas>)
+    (<dallas> ^name Dallas ^to <seattle> <albany>)
+    (<atlanta> ^name Atlanta ^to <dallas> <boston>)
+    (<boston> ^name Boston)
+}
+
+sp {graph-match-unit*propose*retrieve
+    (state <s> ^name graph-match-unit)
+-->
+    (<s> ^operator.name retrieve)
+}
+
+sp {graph-match-unit*apply*retrieve
+    (state <s> ^operator.name retrieve
+               ^epmem.command <ecmd>)
+-->
+    (<ecmd> ^query.hamilton.city <fresno>
+            ^before 2)
+    (<fresno> ^name Fresno
+              ^to.to.to.to.to.to.name Boston)
+}
+
+sp {graph-match-unit*apply*retrieve*success
+    (state <s> ^operator.name retrieve
+               ^epmem <epmem>)
+    (<epmem> ^command.query.hamilton.city (<fresno-n> ^to (<albany-n> ^to (<dallas-n> ^to (<seattle-n> ^to (<omaha-n> ^to (<atlanta-n> ^to <boston-n>))))))
+             ^result <result>)
+    (<result> ^success <query>
+              ^cue-size 2
+              ^match-cardinality 2
+              ^graph-match 1
+              ^mapping <mapping>
+              ^retrieved <retrieved>)
+    (<retrieved> ^hamilton <hamilton>)
+    (<hamilton> ^city (<fresno> ^name Fresno)
+                ^city (<albany> ^name Albany)
+                ^city (<dallas> ^name Dallas)
+                ^city (<seattle> ^name Seattle)
+                ^city (<omaha> ^name Omaha)
+                ^city (<atlanta> ^name Atlanta)
+                ^city (<boston> ^name Boston))
+    (<mapping> ^node (^cue <fresno-n> ^retrieved <fresno>)
+               ^node (^cue <albany-n> ^retrieved <albany>)
+               ^node (^cue <dallas-n> ^retrieved <dallas>)
+               ^node (^cue <seattle-n> ^retrieved <seattle>)
+               ^node (^cue <omaha-n> ^retrieved <omaha>)
+               ^node (^cue <atlanta-n> ^retrieved <atlanta>)
+               ^node (^cue <boston-n> ^retrieved <boston>))
+-->
+    (exec succeeded)
+    (halt)
+}
+
+sp {graph-match-unit*apply*retrieve*failure
+    (state <s> ^superstate.superstate.name graph-match-unit)
+-->
+    (halt)
+}

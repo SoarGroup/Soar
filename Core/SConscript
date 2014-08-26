@@ -70,6 +70,8 @@ else:
 Export('soarlib');
 lib_install = env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
 
+settings_install = env.Alias('settings', env.Install('$OUT_DIR', 'settings.soar'))
+
 # headers
 headers = []
 for d in ['ElementXML/src', 'ConnectionSML/src', 'ClientSML/src', 'shared']:

@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <portability.h>
+#include "portability.h"
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
@@ -390,6 +390,7 @@ void reset_old_binding_point(agent* thisAgent, list** bindings, list** current_b
 }
 
 void read_pattern_and_get_matching_productions(agent* thisAgent,
+        const char* lhs_str,
         list** current_pf_list,
         bool show_bindings,
         bool just_chunks,
@@ -406,7 +407,9 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
     current_binding_point = NIL;
     
     /*  print("Parsing as a lhs...\n"); */
-    clist = parse_lhs(thisAgent);
+    soar::Lexer lexer(thisAgent, lhs_str);
+    lexer.get_lexeme();
+    clist = parse_lhs(thisAgent, &lexer);
     if (!clist)
     {
         print(thisAgent, "Error: not a valid condition list.\n");
@@ -495,6 +498,7 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
 }
 
 void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
+        const char* rhs_string,
         list** current_pf_list,
         bool show_bindings,
         bool just_chunks,
@@ -513,7 +517,9 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
     current_binding_point = NIL;
     
     /*  print("Parsing as a rhs...\n"); */
-    parsed_ok = (parse_rhs(thisAgent, &alist) == true);
+    soar::Lexer lexer(thisAgent, rhs_string);
+    lexer.get_lexeme();
+    parsed_ok = (parse_rhs(thisAgent, &lexer, &alist) == true);
     if (!parsed_ok)
     {
         print(thisAgent, "Error: not a valid rhs.\n");
@@ -598,31 +604,19 @@ bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options,
     if (options.test(PRODUCTION_FIND_INCLUDE_LHS))
     {
         /* this patch failed for -rhs, so I removed altogether.  KJC 3/99 */
-        /* Soar-Bugs #54 TMH */
-        thisAgent->alternate_input_string = pattern.c_str();
-        thisAgent->alternate_input_suffix = ") ";
         
-        get_lexeme(thisAgent);
-        read_pattern_and_get_matching_productions(thisAgent,
+        read_pattern_and_get_matching_productions(thisAgent, pattern.c_str(),
                 &current_pf_list,
                 options.test(PRODUCTION_FIND_SHOWBINDINGS),
                 options.test(PRODUCTION_FIND_ONLY_CHUNKS),
                 options.test(PRODUCTION_FIND_NO_CHUNKS));
-        thisAgent->current_char = ' ';
     }
     if (options.test(PRODUCTION_FIND_INCLUDE_RHS))
     {
-        /* this patch failed for -rhs, so I removed altogether.  KJC 3/99 */
-        /* Soar-Bugs #54 TMH */
-        thisAgent->alternate_input_string = pattern.c_str();
-        thisAgent->alternate_input_suffix = ") ";
-        
-        get_lexeme(thisAgent);
-        read_rhs_pattern_and_get_matching_productions(thisAgent, &current_pf_list,
+        read_rhs_pattern_and_get_matching_productions(thisAgent, pattern.c_str(), &current_pf_list,
                 options.test(PRODUCTION_FIND_SHOWBINDINGS),
                 options.test(PRODUCTION_FIND_ONLY_CHUNKS),
                 options.test(PRODUCTION_FIND_NO_CHUNKS));
-        thisAgent->current_char = ' ';
     }
     if (current_pf_list == NIL)
     {

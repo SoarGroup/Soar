@@ -602,6 +602,9 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
     
     switch (t)
     {
+        case sgnode::CHILD_ADDED:
+        case sgnode::PROPERTY_DELETED:
+            break;
         case sgnode::DELETED:
             nodes.erase(nodes.begin() + i);
             

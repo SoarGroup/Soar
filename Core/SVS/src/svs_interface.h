@@ -15,6 +15,8 @@ class svs_interface
         virtual std::string get_output() const = 0;
         virtual std::string svs_query(const std::string& in) = 0;
         virtual bool do_cli_command(const std::vector<std::string>& args, std::string& output) = 0;
+        virtual bool is_enabled() = 0;
+        virtual void set_enabled(bool newSetting) = 0;
 };
 
 svs_interface* make_svs(agent* a);

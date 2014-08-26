@@ -170,6 +170,7 @@ typedef struct condition_struct
 typedef struct production_struct
 {
     Symbol* name;
+    char* original_rule_name;
     char* documentation;        /* pointer to memory block, or NIL */
     char* filename;             /* name of source file, or NIL.  kjh CUSP(b11) */
     uint64_t reference_count;
@@ -356,6 +357,7 @@ extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
 extern production* make_production(agent* thisAgent,
                                    byte type,
                                    Symbol* name,
+                                   char* original_rule_name,
                                    condition** lhs_top,
                                    condition** lhs_bottom,
                                    action** rhs_top,

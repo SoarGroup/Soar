@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -1012,6 +1012,7 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
 production* make_production(agent* thisAgent,
                             byte type,
                             Symbol* name,
+                            char* original_rule_name,
                             condition** lhs_top,
                             condition** lhs_bottom,
                             action** rhs_top,
@@ -1076,6 +1077,8 @@ production* make_production(agent* thisAgent,
     
     allocate_with_pool(thisAgent, &thisAgent->production_pool, &p);
     p->name = name;
+    p->original_rule_name = make_memory_block_for_string(thisAgent, original_rule_name);
+    
     if (name->sc->production)
     {
         print(thisAgent, "Internal error: make_production called with name %s\n",
@@ -1136,6 +1139,7 @@ void deallocate_production(agent* thisAgent, production* prod)
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     deallocate_symbol_list_removing_references(thisAgent, prod->rhs_unbound_variables);
     symbol_remove_ref(thisAgent, prod->name);
+    free_memory_block_for_string(thisAgent, prod->original_rule_name);
     if (prod->documentation)
     {
         free_memory_block_for_string(thisAgent, prod->documentation);

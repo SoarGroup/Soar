@@ -72,7 +72,7 @@ namespace cli
              * @param pPrefix Pointer to the new prefix, must not contain '*' character,
              *        null for query
              */
-            virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0) = 0;
+            virtual bool DoChunkNameFormat(const chunkNameFormats* chunkNameFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0) = 0;
             
             enum eLogMode
             {

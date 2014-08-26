@@ -19,6 +19,7 @@
 #include "filter_table.h"
 #include "svs.h"
 #include "soar_interface.h"
+#include "symtab.h"
 
 using namespace std;
 

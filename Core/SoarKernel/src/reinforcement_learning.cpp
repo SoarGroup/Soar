@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -683,7 +683,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
             
             // make new production
-            production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false);
+            production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &cond_bottom, &new_action, false);
             
             // set initial expected reward values
             {

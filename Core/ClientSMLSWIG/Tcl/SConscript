@@ -65,10 +65,10 @@ else:
 if ((not tcl_libs.exists()) or (not tcl_headers.exists()) or
     (not File(os.path.join(tcl_headers.abspath, 'tcl.h')).exists()) or
     (not File(os.path.join(tcl_libs.abspath, tcl_libname)).exists())) :
-    print 'Tcl headers and libraries not found at ', tcl_platform_dir, ', not building Tcl SML wrappers: ',
+    print 'Tcl headers and libraries not found at ' + tcl_platform_dir + ', not building Tcl SML wrappers.'
     Return()
 else:
-    print 'Tcl headers and libraries found at ', tcl_platform_dir, '.  Will build Tcl SML wrappers.'
+    print 'Tcl SML wrappers are buildable.'
 
 # dirs
 lib_install_dir = clone.Dir('$OUT_DIR')

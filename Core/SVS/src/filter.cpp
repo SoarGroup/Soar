@@ -28,7 +28,7 @@ string filter_val_c<sgnode*>::toString() const
 }
 
 
-/*******
+/*********
  * filter
  ********/
 

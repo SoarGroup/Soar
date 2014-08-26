@@ -17,7 +17,8 @@
 
 Soar_Instance::Soar_Instance() :
     m_Kernel(NULL),
-    m_default_soar_agent(NULL)
+    m_default_soar_agent(NULL),
+    chunkNameFormat(ruleFormat)
 {
     m_loadedLibraries = new std::map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::map< char*, Agent_Info*, cmp_str >();
@@ -136,7 +137,7 @@ std::string Soar_Instance::Message_Library(const char* pMessage)
         if (lMessage == "on")
         {
             libraryInfo->isOn = true;
-            resultString = lCLIExtensionName + " CLI module loaded and enabled.\n";
+            resultString = "\n" + lCLIExtensionName + " CLI module loaded and enabled.\n";
             m_Output_Manager->print_trace(resultString.c_str());
         }
         else if (lMessage == "off")

@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -25,6 +25,7 @@
    ==================================================================== */
 
 #include <stdlib.h>
+#include <cstring>
 
 #include "chunk.h"
 #include "symtab.h"
@@ -45,6 +46,7 @@
 #include "rete.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "soar_instance.h"
 #include "wma.h"
 #include "test.h"
 
@@ -931,20 +933,16 @@ Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr)
 
 Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
 {
-#define BUFFER_GEN_CHUNK_NAME_SIZE 512
-    char name[BUFFER_GEN_CHUNK_NAME_SIZE];
-#define BUFFER_IMPASS_NAME_SIZE 32
-    char impass_name[BUFFER_IMPASS_NAME_SIZE];
     Symbol* generated_name;
     Symbol* goal;
     byte impasse_type;
     preference* p;
     goal_stack_level lowest_result_level;
+    std::string lImpasseName;
+    std::stringstream lName;
     
-    if (!thisAgent->sysparams[USE_LONG_CHUNK_NAMES])
-        return (generate_new_str_constant(thisAgent, thisAgent->chunk_name_prefix,
-                                          &thisAgent->chunk_count));
-                                          
+    chunkNameFormats chunkNameFormat = Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format();
+    
     lowest_result_level = thisAgent->top_goal->id->level;
     for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
         if (p->id->id->level > lowest_result_level)
@@ -954,118 +952,151 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
         
     goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
     
-    if (goal)
+    switch (chunkNameFormat)
     {
-        impasse_type = type_of_existing_impasse(thisAgent, goal);
-        switch (impasse_type)
+        case numberedFormat:
         {
-            case NONE_IMPASSE_TYPE:
-#ifdef DEBUG_CHUNK_NAMES
-                print("Warning: impasse_type is NONE_IMPASSE_TYPE during chunk creation.\n");
-                xml_generate_warning(thisAgent, "Warning: impasse_type is NONE_IMPASSE_TYPE during chunk creation.");
-#endif
-                strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
-                break;
-            case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-                strncpy(impass_name, "cfailure", BUFFER_IMPASS_NAME_SIZE);
-                break;
-            case CONFLICT_IMPASSE_TYPE:
-                strncpy(impass_name, "conflict", BUFFER_IMPASS_NAME_SIZE);
-                break;
-            case TIE_IMPASSE_TYPE:
-                strncpy(impass_name, "tie", BUFFER_IMPASS_NAME_SIZE);
-                break;
-            case NO_CHANGE_IMPASSE_TYPE:
+            return (generate_new_str_constant(
+                        thisAgent,
+                        thisAgent->chunk_name_prefix,
+                        &thisAgent->chunk_count));
+        }
+        case longFormat:
+        {
+            if (goal)
             {
-                Symbol* sym;
-                
-                if ((sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol)) == NIL)
+                impasse_type = type_of_existing_impasse(thisAgent, goal);
+                switch (impasse_type)
                 {
-#ifdef DEBUG_CHUNK_NAMES
-                    // TODO: generate warning XML: I think we need to get a string for "do_print_for_identifier" and append it
-                    // but this seems low priority since it's not even included in a normal build
-                    print("Warning: Failed to find ^attribute impasse wme.\n");
-                    do_print_for_identifier(goal->id->lower_goal, 1, 0, 0);
-#endif
-                    strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
-                }
-                else if (sym == thisAgent->operator_symbol)
-                {
-                    strncpy(impass_name, "opnochange", BUFFER_IMPASS_NAME_SIZE);
-                }
-                else if (sym == thisAgent->state_symbol)
-                {
-                    strncpy(impass_name, "snochange", BUFFER_IMPASS_NAME_SIZE);
-                }
-                else
-                {
-#ifdef DEBUG_CHUNK_NAMES
-                    print("Warning: ^attribute impasse wme has unexpected value.\n");
-                    xml_generate_warning(thisAgent, "Warning: ^attribute impasse wme has unexpected value.");
-#endif
-                    strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
+                    case NONE_IMPASSE_TYPE:
+                        lImpasseName = "unknownimpasse";
+                        break;
+                    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+                        lImpasseName = "cfailure";
+                        break;
+                    case CONFLICT_IMPASSE_TYPE:
+                        lImpasseName = "conflict";
+                        break;
+                    case TIE_IMPASSE_TYPE:
+                        lImpasseName = "tie";
+                        break;
+                    case NO_CHANGE_IMPASSE_TYPE:
+                    {
+                        Symbol* sym;
+                        
+                        if ((sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol)) == NIL)
+                        {
+                            lImpasseName = "unknownimpasse";
+                        }
+                        else if (sym == thisAgent->operator_symbol)
+                        {
+                            lImpasseName = "opnochange";
+                        }
+                        else if (sym == thisAgent->state_symbol)
+                        {
+                            lImpasseName = "snochange";
+                        }
+                        else
+                        {
+                            lImpasseName = "unknownimpasse";
+                        }
+                    }
+                    break;
+                    default:
+                        lImpasseName = "unknownimpasse";
+                        break;
                 }
             }
+            else
+            {
+                lImpasseName = "unknownimpasse";
+            }
+            lName << thisAgent->chunk_name_prefix << "-" << thisAgent->chunk_count++ << "*" <<
+                  thisAgent->d_cycle_count << "*" << lImpasseName << "*" << thisAgent->chunks_this_d_cycle;
+                  
             break;
-            default:
-#ifdef DEBUG_CHUNK_NAMES
-                // TODO: generate warning XML: I think we need to create a buffer and SNPRINTF the impasse_type into it (since it's a byte)
-                // but this seems low priority since it's not even included in a normal build
-                print("Warning: encountered unknown impasse_type: %d.\n", impasse_type);
-                
-#endif
-                strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
-                break;
+        }
+        case ruleFormat:
+        {
+            std::string real_prod_name;
+            
+            lImpasseName.erase();
+            lName << thisAgent->chunk_name_prefix;
+            
+            thisAgent->chunk_count++;
+            if (goal)
+            {
+                impasse_type = type_of_existing_impasse(thisAgent, goal);
+                switch (impasse_type)
+                {
+                    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+                        lImpasseName = "cfo";
+                        break;
+                    case CONFLICT_IMPASSE_TYPE:
+                        lImpasseName = "con";
+                        break;
+                    case TIE_IMPASSE_TYPE:
+                        lImpasseName = "tie";
+                        break;
+                    case NO_CHANGE_IMPASSE_TYPE:
+                    {
+                        Symbol* sym;
+                        sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol);
+                        if (sym)
+                        {
+                            if (sym == thisAgent->operator_symbol)
+                            {
+                                lImpasseName = "onc";
+                            }
+                            else if (sym == thisAgent->state_symbol)
+                            {
+                                lImpasseName = "snc";
+                            }
+                        }
+                    }
+                    break;
+                    default:
+                        break;
+                }
+            }
+            
+            if (strstr(inst->prod->name->sc->name, thisAgent->chunk_name_prefix) != inst->prod->name->sc->name)
+            {
+                /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
+                lName << "-multi";
+            }
+            lName << "*" << inst->prod->original_rule_name;
+            if (!lImpasseName.empty())
+            {
+                lName << "*" << lImpasseName;
+            }
+            lName << "*t" << thisAgent->d_cycle_count << "-" << thisAgent->chunks_this_d_cycle;
         }
     }
-    else
-    {
-#ifdef DEBUG_CHUNK_NAMES
-        print("Warning: Failed to determine impasse type.\n");
-        xml_generate_warning(thisAgent, "Warning: Failed to determine impasse type.");
-#endif
-        strncpy(impass_name, "unknownimpasse", BUFFER_IMPASS_NAME_SIZE);
-    }
-    impass_name[BUFFER_IMPASS_NAME_SIZE - 1] = 0; /* ensure null termination */
-    
-    SNPRINTF(name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu",
-             thisAgent->chunk_name_prefix,
-             static_cast<long unsigned int>(thisAgent->chunk_count++),
-             static_cast<long unsigned int>(thisAgent->d_cycle_count),
-             impass_name,
-             static_cast<long unsigned int>(thisAgent->chunks_this_d_cycle)
-            );
-    name[BUFFER_GEN_CHUNK_NAME_SIZE - 1] = 0; /* ensure null termination */
-    
+    lImpasseName.erase();
+    if (lName.str().empty()) { return NULL; }
     
     /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
-    if (find_str_constant(thisAgent, name))
+    if (find_str_constant(thisAgent, lName.str().c_str()))
     {
-        uint64_t collision_count;
+        uint64_t collision_count = 1;
+        std::stringstream newLName;
         
-        collision_count = 1;
         print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
         xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
         do
         {
-            SNPRINTF(name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu*%lu",
-                     thisAgent->chunk_name_prefix,
-                     static_cast<long unsigned int>(thisAgent->chunk_count++),
-                     static_cast<long unsigned int>(thisAgent->d_cycle_count),
-                     impass_name,
-                     static_cast<long unsigned int>(thisAgent->chunks_this_d_cycle),
-                     static_cast<long unsigned int>(collision_count++)
-                    );
-            name[BUFFER_GEN_CHUNK_NAME_SIZE - 1] = 0; /* ensure null termination */
-            
+            newLName.str(lName.str().c_str());
+            newLName << "-" << collision_count++;
         }
-        while (find_str_constant(thisAgent, name));
+        while (find_str_constant(thisAgent, newLName.str().c_str()));
+        lName.str(newLName.str());
+        newLName.str("");
     }
     
-    generated_name = make_str_constant(thisAgent, name);
+    generated_name = make_str_constant(thisAgent, lName.str().c_str());
     return generated_name;
 }
-/* kjh (B14) end */
 
 bool should_variablize(agent* thisAgent, instantiation* inst)
 {
@@ -1305,15 +1336,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)
     {
-        /* kjh (B14) begin */
         thisAgent->chunks_this_d_cycle++;
         prod_name = generate_chunk_name_sym_constant(thisAgent, inst);
-        /* kjh (B14) end */
-        
-        /*   old way of generating chunk names ...
-        prod_name = generate_new_str_constant ("chunk-",&thisAgent->chunk_count);
-        thisAgent->chunks_this_d_cycle)++;
-        */
         
         prod_type = CHUNK_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
@@ -1326,6 +1350,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
     }
+    
+    
     
     /* AGR 617/634 begin */
     if (print_name)
@@ -1381,7 +1407,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     
     add_goal_or_impasse_tests(thisAgent, top_cc);
     
-    prod = make_production(thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs, false);
+    prod = make_production(thisAgent, prod_type, prod_name, inst->prod->name->sc->name, &lhs_top, &lhs_bottom, &rhs, false);
     
     if (!prod)
     {
@@ -1439,6 +1465,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         chunk_inst->reliable = reliable;
         
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
+        
         make_clones_of_results(thisAgent, results, chunk_inst);
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }

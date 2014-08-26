@@ -90,7 +90,7 @@
 
 class MTRand
 {
-// Data
+        // Data
     public:
         enum { N = 624 };       // length of state vector
         enum { SAVE = N + 1 };  // length of array for save()
@@ -103,7 +103,7 @@ class MTRand
         int left;          // number of values left before reload needed
         
         
-//Methods
+        //Methods
     public:
         MTRand(const uint32_t& oneSeed);    // initialize with a simple uint32
         MTRand(uint32_t* const bigSeed, uint32_t const seedLength = N);    // or an array
@@ -250,7 +250,7 @@ inline uint32_t MTRand::randInt()
     }
     --left;
     
-    register uint32_t s1;
+    uint32_t s1;
     s1 = *pNext++;
     s1 ^= (s1 >> 11);
     s1 ^= (s1 <<  7) & 0x9d2c5680U;
@@ -273,7 +273,7 @@ inline uint32_t MTRand::randInt(const uint32_t& n)
     uint32_t i;
     do
     {
-        i = randInt() & used;    // toss unused bits to shorten search
+        i = randInt() & used;  // toss unused bits to shorten search
     }
     while (i > n);
     return i;
@@ -373,9 +373,9 @@ inline void MTRand::initialize(const uint32_t seed)
     // See Knuth TAOCP Vol 2, 3rd Ed, p.106 for multiplier.
     // In previous versions, most significant bits (MSBs) of the seed affect
     // only MSBs of the state array.  Modified 9 Jan 2002 by Makoto Matsumoto.
-    register uint32_t* s = state;
-    register uint32_t* r = state;
-    register int i = 1;
+    uint32_t* s = state;
+    uint32_t* r = state;
+    int i = 1;
     *s++ = seed & 0xffffffffU;
     for (; i < N; ++i)
     {

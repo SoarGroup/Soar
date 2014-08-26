@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
 /*************************************************************************
@@ -254,7 +254,6 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
     thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = true;  /* AGR 627 */
     thisAgent->sysparams[EXPLAIN_SYSPARAM] = false; /* KJC 7/96 */
-    thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = true;  /* kjh(B14) */
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
     
@@ -655,8 +654,10 @@ void do_one_top_level_phase(agent* thisAgent)
                                       BEFORE_INPUT_PHASE_CALLBACK,
                                       reinterpret_cast<soar_call_data>(INPUT_PHASE));
                                       
-                thisAgent->svs->input_callback();
-                
+                if (thisAgent->svs->is_enabled())
+                {
+                    thisAgent->svs->input_callback();
+                }
                 do_input_cycle(thisAgent);
                 
                 thisAgent->run_phase_count++ ;
@@ -1017,8 +1018,10 @@ void do_one_top_level_phase(agent* thisAgent)
                                   BEFORE_OUTPUT_PHASE_CALLBACK,
                                   reinterpret_cast<soar_call_data>(OUTPUT_PHASE));
                                   
-            thisAgent->svs->output_callback();
-            
+            if (thisAgent->svs->is_enabled())
+            {
+                thisAgent->svs->output_callback();
+            }
             /** KJC June 05:  moved output function timers into do_output_cycle ***/
             
             do_output_cycle(thisAgent);
@@ -1657,24 +1660,6 @@ void run_for_n_selections_of_slot_at_level(agent* thisAgent, int64_t n,
 =================================================================== */
 
 extern char* getenv();
-
-/* AGR 536  Soar core dumped when it used filenames longer than 1000 chars
-   but shorter than MAXPATHLEN (from sys/param.h).  4-May-94  */
-
-// KJC Nov 05:  moved here from old interface.cpp, so could remove interface.* files
-void load_file(agent* thisAgent, char* file_name, FILE* already_open_file)
-{
-    bool old_print_prompt_flag;
-    
-    old_print_prompt_flag = thisAgent->print_prompt_flag;
-    thisAgent->print_prompt_flag = false;
-    
-    start_lex_from_file(thisAgent, file_name, already_open_file);
-    //repeatedly_read_and_dispatch_commands (thisKernel, thisAgent);
-    stop_lex_from_file(thisAgent);
-    
-    thisAgent->print_prompt_flag = old_print_prompt_flag;
-}
 
 /*
   RDF: 20020706 Added this for the gSKI project. This makes it so that

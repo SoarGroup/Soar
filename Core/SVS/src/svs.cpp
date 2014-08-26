@@ -535,4 +535,3 @@ void svs::cli_disconnect_viewer(const vector<string>& args, ostream& os)
 {
     draw->disconnect();
 }
-

@@ -1,3 +1,4 @@
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -410,7 +411,7 @@ typedef struct p_node_data_struct
 } p_node_data;
 
 #define O_LIST 0     /* only used in rete.cpp */
-#define I_LIST 1     /* values for prod->OPERAND_which_assert_list */
+#define I_LIST 1     /*   values for prod->OPERAND_which_assert_list */
 
 /* --- data for all except positive nodes --- */
 typedef struct non_pos_node_data_struct
@@ -8727,6 +8728,12 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             sym = reteload_symbol_from_index(thisAgent, f);
             symbol_add_ref(thisAgent, sym);
             prod->name = sym;
+            /* If this rule was a chunk, then original rule name might be different.  To
+             * avoid having to alter rete saving, we'll just make the original name after
+             * a rete load the same thing as a the saved name.  Side effect is minimal:
+             * longer chunk name on chunks based on chunks loaded from rete net, for
+             * example chunk*chunk-x2*apply-d12 instead of chunk-x3*apply*d12 */
+            prod->original_rule_name = make_memory_block_for_string(thisAgent, prod->name->sc->name);
             sym->sc->production = prod;
             if (reteload_one_byte(f))
             {

@@ -819,6 +819,7 @@ namespace sml
             
             void        SendSVSInput(const std::string& txt);
             std::string GetSVSOutput();
+            std::string SVSQuery(const std::string& q);
             
             /*************************************************************
             * @brief Get last command line result
