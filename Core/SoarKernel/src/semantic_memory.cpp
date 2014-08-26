@@ -397,7 +397,7 @@ void smem_statement_container::create_indices() {
 	add_structure( "CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id)" );
 	add_structure( "CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)" );
 	add_structure( "CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)" );
-	add_structure( "CREATE INDEX smem_augmentations_val ON smem_augmentations (value_constant_s_id)" );
+	add_structure( "CREATE INDEX smem_augmentations_val ON smem_augmentations (value_lti_id)" );
 	add_structure( "CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)" );
 	add_structure( "CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)" );
 }
