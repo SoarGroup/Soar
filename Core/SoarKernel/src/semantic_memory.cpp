@@ -3896,6 +3896,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	unsigned int time_slot = ( ( store_only )?(1):(0) );
 	uint64_t wme_count;
 	bool new_cue;
+	bool has_cue;
 
 	tc_number tc;
 
@@ -3922,6 +3923,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		// make sure this state has had some sort of change to the cmd
 		// NOTE: we only care one-level deep!
 		new_cue = false;
+		has_cue = false;
 		wme_count = 0;
 		cmds = NIL;
 		{
@@ -3945,6 +3947,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				{
 					for ( w_p=wmes->begin(); w_p!=wmes->end(); w_p++ )
 					{
+						has_cue = true;
 						if ( ( ( store_only ) && ( ( parent_level != 0 ) || ( (*w_p)->attr == my_agent->smem_sym_store ) ) ) ||
 							 ( ( !store_only ) && ( ( parent_level != 0 ) || ( (*w_p)->attr != my_agent->smem_sym_store ) ) ) )
 						{
@@ -3985,17 +3988,20 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				state->id.smem_info->last_cmd_count[ time_slot ] = wme_count;
 			}
 
-
+			// clear results if there is a new cue, or if there is nothing on the command link
+			// and it's past time for a spontaneous retrieval
 			if ( new_cue ||
-					( wme_count == 0 &&
-					  my_agent->smem_params->spontaneous->get_value() != 0 &&
-					  my_agent->smem_spontaneous_counter > my_agent->smem_params->spontaneous->get_value() ) )
+					(!new_cue && !has_cue &&
+					 my_agent->smem_params->spontaneous->get_value() != 0 &&
+					 my_agent->smem_spontaneous_counter > my_agent->smem_params->spontaneous->get_value() ) )
 			{
+				// clear old results if any exist
+				if ( !state->id.smem_info->smem_wmes->empty() )
+				{
+					smem_clear_result( my_agent, state );
+					do_wm_phase = true;
+				}
 				new_cue = true;
-				// clear old results
-				smem_clear_result( my_agent, state );
-
-				do_wm_phase = true;
 			}
 		}
 
