@@ -80,10 +80,13 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::boolean_param* mirroring;
 
-		soar_module::integer_param* spontaneous;
+		soar_module::boolean_param* unification;
+
 		soar_module::integer_param* spreading_depth;
 		soar_module::decimal_param* spreading_decay;
 		soar_module::decimal_param* spreading_thres;
+
+		soar_module::integer_param* spontaneous;
 
 		smem_param_container( agent *new_agent );
 };

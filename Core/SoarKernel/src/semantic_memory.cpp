@@ -162,9 +162,9 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	mirroring = new soar_module::boolean_param( "mirroring", off, new smem_db_predicate< boolean >( my_agent ) );
 	add( mirroring );
 
-	// spontaneous retrieval frequency
-	spontaneous = new soar_module::integer_param( "spontaneous-retrieval-frequency", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
-	add( spontaneous );
+	// activation unification (letting smem activation influence wm and vice versa)
+	unification = new soar_module::boolean_param( "activation-unification", off, new smem_db_predicate< boolean >( my_agent ) );
+	add( unification );
 
 	// spreading depth
 	spreading_depth = new soar_module::integer_param( "spreading-depth", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
@@ -177,6 +177,10 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	// spreading threshold
 	spreading_thres = new soar_module::decimal_param( "spreading-threshold", 0.01, new soar_module::btw_predicate<double>( 0, 1, true ), new smem_db_predicate<double>( my_agent ) );
 	add( spreading_thres );
+
+	// spontaneous retrieval frequency
+	spontaneous = new soar_module::integer_param( "spontaneous-retrieval-frequency", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
+	add( spontaneous );
 }
 
 //
@@ -1253,9 +1257,11 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 		// If this hasn't been activated before (we don't care about the value of add_access here)
 		if ( prev_access_n == 0 )
 		{
-			// If we pass an id to this function and that symbol actually has a wma_decay_element
-			if (id && ((wme*)id)->wma_decay_el)
+			// If activation unification is on, and we pass an id to this function, and that symbol actually has a wma_decay_element
+			if ( my_agent->smem_params->unification->get_value() &&
+					id && ((wme*)id)->wma_decay_el )
 			{
+				// JUSTIN FIXME check unification setting here
 				// then we should import the history from that decay element.
 				wma_decay_element* temp_el = ((wme*)id)->wma_decay_el;
 
