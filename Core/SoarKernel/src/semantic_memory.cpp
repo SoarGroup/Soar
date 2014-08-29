@@ -3991,7 +3991,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			if ( new_cue ||
 					(!new_cue && !has_cue &&
 					 my_agent->smem_params->spontaneous->get_value() != 0 &&
-					 my_agent->smem_spontaneous_counter > my_agent->smem_params->spontaneous->get_value() ) )
+					 my_agent->smem_spontaneous_counter >= my_agent->smem_params->spontaneous->get_value() ) )
 			{
 				// clear old results if any exist
 				if ( !state->id.smem_info->smem_wmes->empty() )
