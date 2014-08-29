@@ -1258,7 +1258,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 		if ( prev_access_n == 0 )
 		{
 			// If activation unification is on, and we pass an id to this function, and that symbol actually has a wma_decay_element
-			if ( my_agent->smem_params->unification->get_value() &&
+			if ( my_agent->smem_params->unification->get_value() == on &&
 					id && ((wme*)id)->wma_decay_el )
 			{
 				// JUSTIN FIXME check unification setting here

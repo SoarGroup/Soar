@@ -502,7 +502,7 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 			temp_el->forget_cycle = static_cast< wma_d_cycle >( -1 );
 
 			// If activation unification is on and the wme is an LTI, import the activation history
-			if ( my_agent->smem_params->unification->get_value() &&
+			if ( my_agent->smem_params->unification->get_value() == on &&
 					w->id->sc.common_symbol_info.symbol_type==IDENTIFIER_SYMBOL_TYPE )
 			{
 				smem_lti_activation_history(my_agent,smem_lti_get_id(my_agent,w->id->id.name_letter,w->id->id.name_number),temp_el);
@@ -1137,7 +1137,7 @@ inline void wma_update_decay_histories( agent* my_agent )
 	for ( wme_p=my_agent->wma_touched_elements->begin(); wme_p!=my_agent->wma_touched_elements->end(); wme_p++ )
 	{
 		// If activation unification is on and the wme is in SMEM, also update SMEM.
-		if ( my_agent->smem_params->unification->get_value() &&
+		if ( my_agent->smem_params->unification->get_value() == on &&
 				(*wme_p)->id->sc.common_symbol_info.symbol_type==IDENTIFIER_SYMBOL_TYPE )
 		{
 			smem_wma_lti_add_history(my_agent,smem_lti_get_id(my_agent,(*wme_p)->id->id.name_letter,(*wme_p)->id->id.name_number));
