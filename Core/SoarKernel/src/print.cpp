@@ -38,7 +38,6 @@
 #include "output_manager.h"
 #include "prefmem.h"
 #include "test.h"
-#include "lexer.h"
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -345,8 +344,7 @@ char* symbol_to_string(agent* thisAgent, Symbol* sym,
                 strncpy(dest, sym->sc->name, dest_size);
                 return dest;
             }
-            
-            soar::Lexer::determine_possible_symbol_types_for_string(sym->sc->name,
+            determine_possible_symbol_types_for_string(sym->sc->name,
                     strlen(sym->sc->name),
                     &possible_id,
                     &possible_var,
@@ -1200,6 +1198,7 @@ void print_preference(agent* thisAgent, preference* pref)
 }
 
 /* kjh(CUSP-B2) begin */
+
 extern "C" bool passes_wme_filtering(agent* thisAgent, wme* w, bool isAdd);
 void
 filtered_print_wme_add(agent* thisAgent, wme* w)
@@ -1223,6 +1222,7 @@ void filtered_print_wme_remove(agent* thisAgent, wme* w)
         xml_end_tag(thisAgent, kTagWMERemove);
     }
 }
+
 void print_wme(agent* thisAgent, wme* w)
 {
     print(thisAgent, "(%lu: ", w->timetag);

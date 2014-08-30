@@ -14,8 +14,8 @@ def ConfigureJNI(env):
 	if not base:
 		if sys.platform == 'darwin':
 			# Apple's OS X has its own special java base directory
-			proc = subprocess.Popen('/usr/libexec/java_home', stdout=subprocess.PIPE)
-			base = proc.stdout.read().rstrip()
+			base = '/System/Library/Frameworks/JavaVM.framework'
+
 		else:
 			# Search for the java compiler
 			p = env.WhereIs('javac')
