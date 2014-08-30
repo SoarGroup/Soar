@@ -93,6 +93,9 @@ namespace soar_module
 		inst->backtrace_number = 0;
 		inst->in_ms = FALSE;
 		inst->GDS_evaluated_already = FALSE;
+		inst->top_of_instantiated_conditions = NULL;
+		inst->bottom_of_instantiated_conditions = NULL;
+		inst->nots = NULL;
 
 		// create preferences
 		inst->preferences_generated = NULL;
