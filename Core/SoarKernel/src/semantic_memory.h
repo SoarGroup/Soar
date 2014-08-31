@@ -83,7 +83,6 @@ class smem_param_container: public soar_module::param_container
 		soar_module::boolean_param* unification;
 
 		soar_module::integer_param* spreading_depth;
-		soar_module::decimal_param* spreading_decay;
 		soar_module::decimal_param* spreading_thres;
 
 		soar_module::integer_param* spontaneous;
@@ -408,12 +407,7 @@ struct smem_compare_activated_lti
 
 typedef std::priority_queue< smem_activated_lti, std::vector<smem_activated_lti>, smem_compare_activated_lti> smem_prioritized_activated_lti_queue;
 
-typedef struct smem_spreading_triple_struct
-{
-	smem_lti_id lti_id;
-	double activation;
-	uint64_t depth;
-} smem_spreading_triple;
+typedef std::pair< smem_lti_id, uint64_t > smem_spreading_pair;
 
 //
 
