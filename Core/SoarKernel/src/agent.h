@@ -913,6 +913,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool smem_ignore_changes;
 
   int64_t smem_spontaneous_counter;
+  smem_lti_id smem_spontaneous_id;
 
   // dynamic memory pools
   std::map< size_t, memory_pool* >* dyn_memory_pools;

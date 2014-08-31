@@ -511,7 +511,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	lti_get_t = new soar_module::sqlite_statement( new_db, "SELECT lti_id FROM smem_lti WHERE activations_last=?" );
 	add ( lti_get_t );
 
-	lti_get_act = new soar_module::sqlite_statement( new_db, "SELECT lti_id FROM smem_lti ORDER BY activation_value DESC" );
+	lti_get_act = new soar_module::sqlite_statement( new_db, "SELECT lti_id, soar_letter, soar_number FROM smem_lti ORDER BY activation_value DESC" );
 	add ( lti_get_act );
 
 	//
@@ -1341,7 +1341,6 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 					}
 					else
 					{
-						// find the LTIs old activation
 						my_agent->smem_stmts->history_push->bind_int( 1, time_now );
 						my_agent->smem_stmts->history_push->bind_int( 2, temp_lti_id );
 						my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
@@ -1351,7 +1350,8 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 						}
 						else
 						{
-							new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now);
+							new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
+							// new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now);
 						}
 					}
 
@@ -1361,16 +1361,6 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 						my_agent->smem_stmts->lti_access_set->bind_int( 3, ( ( prev_access_n == 0 )?( time_now ):( prev_access_1 ) ) );
 						my_agent->smem_stmts->lti_access_set->bind_int( 4, temp_lti_id);
 						my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
-					}
-
-					// debugging stuff; delete when done
-					{
-						soar_module::sqlite_statement *lti_q = my_agent->smem_stmts->lti_letter_num;
-						lti_q->bind_int( 1, temp_lti_id );
-						lti_q->execute();
-						std::cout << "activating @" << static_cast<char>(lti_q->column_int(0)) << lti_q->column_int( 1 ) << " (id=" << temp_lti_id << ") at depth " << depth << " at time " << time_now << ":" <<
-							" new activation is " << new_activation << std::endl;
-						lti_q->reinitialize();
 					}
 				}
 
@@ -1389,6 +1379,15 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 					my_agent->smem_stmts->act_lti_set->bind_double( 1, new_activation );
 					my_agent->smem_stmts->act_lti_set->bind_int( 2, temp_lti_id );
 					my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
+				}
+
+				// debugging stuff; delete when done
+				{
+					soar_module::sqlite_statement *lti_q = my_agent->smem_stmts->lti_letter_num;
+					lti_q->bind_int( 1, temp_lti_id );
+					lti_q->execute();
+					std::cout << "new activation for @" << static_cast<char>(lti_q->column_int(0)) << lti_q->column_int( 1 ) << " (id=" << temp_lti_id << ") at depth " << depth << " at time " << time_now << " is " << new_activation << std::endl;
+					lti_q->reinitialize();
 				}
 
 				// only extend the queue if the maximum depth has not been exceeded
@@ -3918,6 +3917,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	bool do_wm_phase = false;
 	bool mirroring_on = ( my_agent->smem_params->mirroring->get_value() == on );
 
+	bool should_spontaneously_retrieve = false;
 	bool spontaneously_retrieved = false;
 	my_agent->smem_spontaneous_counter += 1;
 
@@ -3997,19 +3997,26 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				state->id.smem_info->last_cmd_count[ time_slot ] = wme_count;
 			}
 
-			// clear results if there is a new cue, or if there is nothing on the command link
-			// and it's past time for a spontaneous retrieval
-			if ( new_cue ||
-					(!new_cue && !has_cue &&
-					 my_agent->smem_params->spontaneous->get_value() != 0 &&
-					 my_agent->smem_spontaneous_counter >= my_agent->smem_params->spontaneous->get_value() ) )
+			// clear results if there is a new cue
+			if ( new_cue )
 			{
 				// clear old results if any exist
 				if ( !state->id.smem_info->smem_wmes->empty() )
 				{
+					std::cout << "clearing smem result (due to new cue)" << std::endl;
 					smem_clear_result( my_agent, state );
-					do_wm_phase = true;
 				}
+				do_wm_phase = true;
+			}
+
+			// set new_cue to true if we need to do a spontaneous retrieval
+			if ( !store_only && !new_cue && !has_cue &&
+					my_agent->smem_params->spontaneous->get_value() != 0 &&
+					my_agent->smem_spontaneous_counter >= my_agent->smem_params->spontaneous->get_value() &&
+					state == my_agent->top_goal )
+			{
+				std::cout << "setting new_cue to true" << std::endl;
+				should_spontaneously_retrieve = true;
 				new_cue = true;
 			}
 		}
@@ -4233,16 +4240,35 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
 				}
 			}
-			else if ( !store_only && my_agent->smem_params->spontaneous->get_value() != 0 && state == my_agent->top_goal )
+			else if ( should_spontaneously_retrieve )
 			{
 				// spontaneous retrieval
 				// get the LTI with the highest activation
-				if ( my_agent->smem_stmts->lti_get_act->execute() == soar_module::row )
+				std::cout << "looking for LTI to spontaneously retrieve" << std::endl;
+				soar_module::sqlite_statement *q = my_agent->smem_stmts->lti_get_act;
+				while ( q->execute() == soar_module::row )
 				{
-					std::cout << "spontaneously retrieving lti_id " << my_agent->smem_stmts->lti_get_act->column_int(0) << std::endl;
-					smem_install_memory( my_agent, state, my_agent->smem_stmts->lti_get_act->column_int(0), NIL, false, meta_wmes, retrieval_wmes );
+					smem_lti_id spontaneous_result = static_cast<smem_lti_id>(q->column_int(0));
+					if ( spontaneous_result == my_agent->smem_spontaneous_id )
+					{
+						std::cout << "stopping because the most activated LTI has not changed" << std::endl;
+						break;
+					}
+					else if ( find_identifier( my_agent, static_cast<char>( q->column_int( 1 ) ), static_cast<uint64_t>( q->column_int( 2 ) ) ) == NIL )
+					{
+						if ( !state->id.smem_info->smem_wmes->empty() )
+						{
+							std::cout << "clearing smem result (due to spontaneous retrieval)" << std::endl;
+							smem_clear_result( my_agent, state );
+						}
+						my_agent->smem_spontaneous_id = spontaneous_result;
+						std::cout << "spontaneously retrieving lti_id " << spontaneous_result << std::endl;
+						smem_install_memory( my_agent, state, spontaneous_result, NIL, false, meta_wmes, retrieval_wmes );
+						do_wm_phase = true;
+						break;
+					}
 				}
-				my_agent->smem_stmts->lti_get_act->reinitialize();
+				q->reinitialize();
 				// only set a boolean here to allow for spontaneous retrievals on different level goals
 				spontaneously_retrieved = true;
 			}
