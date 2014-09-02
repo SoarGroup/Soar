@@ -17,7 +17,7 @@
 
 using namespace std;
 
-const string root_name = "world";
+const string root_id = "world";
 
 /*
  Native properties are currently the position, rotation, and scaling
@@ -79,7 +79,7 @@ bool parse_verts(vector<string>& f, int& start, ptlist& verts, string& error)
 scene::scene(const string& name, svs* owner)
     : name(name), owner(owner), draw(false), nodes(1)
 {
-    root = new group_node(root_name);
+    root = new group_node(root_id);
     nodes[0] = root;
     root->listen(this);
 }
@@ -107,33 +107,7 @@ scene* scene::clone(const string& cname) const
     return c;
 }
 
-sgnode* scene::get_node(const string& name)
-{
-    node_table::iterator i, iend;
-    for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
-    {
-        if ((*i)->get_name() == name)
-        {
-            return *i;
-        }
-    }
-    return NULL;
-}
-
-const sgnode* scene::get_node(const string& name) const
-{
-    node_table::const_iterator i, iend;
-    for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
-    {
-        if ((*i)->get_name() == name)
-        {
-            return *i;
-        }
-    }
-    return NULL;
-}
-
-sgnode* scene::get_node(int id)
+sgnode* scene::get_node(const string& id)
 {
     node_table::iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
@@ -146,12 +120,12 @@ sgnode* scene::get_node(int id)
     return NULL;
 }
 
-const sgnode* scene::get_node(int id) const
+const sgnode* scene::get_node(const string& id) const
 {
     node_table::const_iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
     {
-        if ((*i)->get_id() == id)
+        if ((*i)->get_id() == name)
         {
             return *i;
         }
@@ -159,9 +133,9 @@ const sgnode* scene::get_node(int id) const
     return NULL;
 }
 
-group_node* scene::get_group(const string& name)
+group_node* scene::get_group(const string& id)
 {
-    sgnode* n = get_node(name);
+    sgnode* n = get_node(id);
     if (n)
     {
         return n->as_group();
@@ -187,9 +161,9 @@ void scene::get_all_nodes(vector<const sgnode*>& n) const
     }
 }
 
-bool scene::add_node(const string& name, sgnode* n)
+bool scene::add_node(const string& id, sgnode* n)
 {
-    group_node* par = get_group(name);
+    group_node* par = get_group(id);
     if (!par)
     {
         return false;
@@ -199,9 +173,9 @@ bool scene::add_node(const string& name, sgnode* n)
     return true;
 }
 
-bool scene::del_node(const string& name)
+bool scene::del_node(const string& id)
 {
-  sgnode* node = get_node(name);
+  sgnode* node = get_node(id);
   if(node)
   {
     delete node;
@@ -275,7 +249,7 @@ int scene::parse_add(vector<string>& f, string& error)
     int p;
     sgnode* n = NULL;
     group_node* par = NULL;
-    string name, mods;
+    string id, mods;
     vector<ptlist> vals;
     ptlist vertices;
     double radius;
@@ -285,8 +259,8 @@ int scene::parse_add(vector<string>& f, string& error)
     {
         return f.size();
     }
-    name = f[0];
-    if (get_node(name))
+    id = f[0];
+    if (get_node(id))
     {
         error = "node already exists";
         return 0;
@@ -331,15 +305,15 @@ int scene::parse_add(vector<string>& f, string& error)
     }
     else if (is_convex)
     {
-        n = new convex_node(name, vertices);
+        n = new convex_node(id, vertices);
     }
     else if (is_ball)
     {
-        n = new ball_node(name, radius);
+        n = new ball_node(id, radius);
     }
     else
     {
-        n = new group_node(name);
+        n = new group_node(id);
     }
     
     /*
@@ -365,7 +339,7 @@ int scene::parse_del(vector<string>& f, string& error)
 {
     if (f.size() < 1)
     {
-        error = "expecting node name";
+        error = "expecting node id";
         return f.size();
     }
     if (!del_node(f[0]))
@@ -387,7 +361,7 @@ int scene::parse_change(vector<string>& f, string& error)
     
     if (f.size() < 1)
     {
-        error = "expecting node name";
+        error = "expecting node id";
         return f.size();
     }
     if (!(n = get_node(f[0])))
@@ -436,127 +410,100 @@ int scene::parse_change(vector<string>& f, string& error)
 //   parses a tag command (command 't')
 //   f is a list of the parameters given
 //   Changed the format of the command to be
-//     t <name> <subcommand> <tag_name> <value?>
-//      <name> - name of the node
-//      <subcommand> - either 'a' for add, 'c' for change, or 'd' for delete
+//     t <subcommand> <id> <tag_name> <value?>
+//      <subcommand> - either add, change, or delete
+//      <id> - id of the node
 //      <tag_name> - the name of the tag
 //      <value?> - the value of the tag, needed for the add or change subcommands only
-int scene::parse_tag(vector<string>& f, string& error)
-{
+int scene::parse_tag(vector<string>& f, string& error){
     int p = 0;
     
-    // Parameter 1: Node Name
-    if (p >= f.size())
-    {
-        error = "Tag Command P1: Expecting node name";
+    // Parameter 1: subcommand
+    if (p >= f.size()){
+        error = "Tag Command P1: Expecting subcommand";
         return p;
     }
-    string name = f[p++];
-    
-    sgnode* node = get_node(name);
-    if (!node)
-    {
-        error = "Tag Command P1: Node " + name + " does not exist";
-        return (p - 1);
-    }
-    
-    // Parameter 2: Subcommand (a = add, d = delete, c = change)
-    if (p >= f.size() || f[p].length() == 0)
-    {
-        error = "Tag Command P2: Expecting subcommand";
+    string subcommand = f[p];
+    p++;
+
+    // Parameters 2: node id
+    if (p >= f.size()){
+        error = "Tag Command P2: Expecting node id";
         return p;
     }
-    char subcommand = tolower(f[p++][0]);
+    string id = f[p];
     
-    // Parameter 3: Tag Name
-    if (p >= f.size())
-    {
-        error = "Tag Command P3: Expecting property name";
+    sgnode* node = get_node(id);
+    if (!node){
+        error = "Tag Command P2: Node " + id + " does not exist";
         return p;
     }
-    string tag_name = f[p++];
-    
-    // Parameter 4 (For add/change): property value
-    string value;
-    if (subcommand == 'a' || subcommand == 'c')
-    {
-        if (p >= f.size())
-        {
-            error = "Tag Command P4: Expecting value for " + tag_name;
-            return p;
-        }
-        value = f[p++];
+    p++;
+
+    // Parameter 3: tag name
+    if (p >= f.size()){
+        error = "Tag Command P3: Expecting tag name";
+        return p;
     }
+    string tag_name = f[p];
+    p++;
+
+    // Parameter 4: tag value
+    string tag_value;
+    if (subcommand == "add" || subcommand == "change"){
+      if (p >= f.size()){
+          error = "Tag Command P4: Expecting tag value";
+          return p;
+      }
+      tag_value = f[p];
+    }
+    p++;
     
-    switch (subcommand)
-    {
-        case 'a':
-        // Add property
-        case 'c':
-            // Change property
-            node->set_tag(tag_name, value);
-            break;
-        case 'd':
-            // Delete property
-            node->delete_tag(tag_name);
-            break;
-        default:
-            error = "Tag Command P3: Unrecognized subcommand (Expecting a, c, d)";
-            return 2;
+    if (subcommand == "add"){
+      node->set_tag(tag_name, tag_value);
+    } else if(subcommand == "change"){
+      node->set_tag(tag_name, tag_value);
+    } else if(subcommand == "delete"){
+      node->delete_tag(tag_name);
+    } else {
+      error = "Tag Command P2: Unrecognized subcommand (Expecting add, change, delete)";
+      return 1;
     }
     
     return -1;
 }
 
-bool scene::parse_sgel(const string& s)
-{
-    vector<string> lines, fields;
-    vector<string>::iterator i;
-    char cmd;
-    int errfield;
-    string error;
-    
+bool scene::parse_sgel(const string& s){
+    vector<string> lines;
     split(s, "\n", lines);
-    for (i = lines.begin(); i != lines.end(); ++i)
-    {
+
+    vector<string>::iterator i;
+    for (i = lines.begin(); i != lines.end(); ++i){
+        vector<string> fields;
         split(*i, "", fields);
         
-        if (fields.size() == 0)
-        {
+        if (fields.size() == 0){
             continue;
         }
-        if (fields[0].size() != 1)
-        {
-            cerr << "expecting a|d|c|p at start of line '" << *i << "'" << endl;
-            return false;
-        }
-        
-        cmd = fields[0][0];
+
+        string cmd = fields[0];
         fields.erase(fields.begin());
-        error = "unknown error";
-        
-        switch (cmd)
-        {
-            case 'a':
-                errfield = parse_add(fields, error);
-                break;
-            case 'd':
-                errfield = parse_del(fields, error);
-                break;
-            case 'c':
-                errfield = parse_change(fields, error);
-                break;
-            case 't':
-                errfield = parse_tag(fields, error);
-                break;
-            default:
-                cerr << "expecting a|d|c|p at start of line '"
-                                      << *i << "'" << endl;
-                return false;
+
+        int errfield;
+        string error = "unknown error";
+        if(cmd == "add"){
+          errfield = parse_add(fields, error);
+        } else if(cmd == "delete"){
+          errfield = parse_del(fields, error);
+        } else if(cmd == "change"){
+          errfield = parse_change(fields, error);
+        } else if(cmd == "tag"){
+          errfield = parse_tag(fields, error);
+        } else {
+            cerr << "expecting add, delete, change, tag at start of line '" << *i << "'" << endl;
         }
         
-        if (errfield >= 0)
-        {
+        if (errfield >= 0){
             cerr << "error in field " << errfield + 1 << " of line '"
                                   << *i << "': " << error << endl;
             return false;
@@ -603,7 +550,8 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
     switch (t)
     {
         case sgnode::CHILD_ADDED:
-        case sgnode::PROPERTY_DELETED:
+        case sgnode::TAG_DELETED:
+        case sgnode::TAG_CHANGED:
             break;
         case sgnode::DELETED:
             nodes.erase(nodes.begin() + i);
@@ -624,8 +572,6 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
             {
                 d->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
             }
-            break;
-        case sgnode::TAG_CHANGED:
             break;
     }
 }
@@ -659,12 +605,12 @@ void scene::cli_props(const vector<string>& args, ostream& os) const
     // For each node, add each property to the output
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
-        string name = nodes[i]->get_name();
+        string id = nodes[i]->get_id();
 
         for(int p = 0; p < 3; p++){
           vec3 trans = nodes[i]->get_trans(props[p]);
           for(int dim = 0; dim < 3; dim++){
-            t.add_row() << name + ':' + props[p] + axes[dim] << trans[dim];
+            t.add_row() << id + ':' + props[p] + axes[dim] << trans[dim];
           }
         }
 
@@ -672,7 +618,7 @@ void scene::cli_props(const vector<string>& args, ostream& os) const
         const tag_map& tags = nodes[i]->get_all_tags();
         tag_map::const_iterator ti;
         for(ti = tags.begin(); ti != tags.end(); ti++){
-          t.add_row() << name + ':' + ti->first << ti->second;
+          t.add_row() << id + ':' + ti->first << ti->second;
         }
     }
 
@@ -797,8 +743,8 @@ int scene::parse_object_query(std::vector<std::string>& f, std::string& result, 
         return 1;
     }
     
-    string name = f[0];
-    const sgnode* node = this->get_node(name);
+    string id = f[0];
+    const sgnode* node = this->get_node(id);
     if (node == 0)
     {
         error = "Node not found";
@@ -811,7 +757,7 @@ int scene::parse_object_query(std::vector<std::string>& f, std::string& result, 
     const tag_map& tags = node->get_all_tags();
     
     stringstream ss;
-    ss << "o " << name;
+    ss << "o " << id;
     ss << " p " << pos[0] << " " << pos[1] << " " << pos[2];
     ss << " r " << rot[0] << " " << rot[1] << " " << rot[2];
     ss << " s " << scale[0] << " " << scale[1] << " " << scale[2];
@@ -835,7 +781,7 @@ int scene::parse_objects_with_flag_query(std::vector<std::string>& f, std::strin
     string tag_name = f[0];
     string query_value = f[1];
     
-    vector<string> nodeNames;
+    vector<string> nodeIds;
     
     vector<const sgnode*> nodes;
     this->get_all_nodes(nodes);
@@ -843,13 +789,13 @@ int scene::parse_objects_with_flag_query(std::vector<std::string>& f, std::strin
     {
         string tag_value;
         if((*i)->get_tag(tag_name, tag_value) && query_value == tag_value){
-          nodeNames.push_back((*i)->get_name());
+          nodeIds.push_back((*i)->get_id());
         }
     }
     
     stringstream ss;
-    ss << "objs " << nodeNames.size();
-    for (vector<string>::iterator i = nodeNames.begin(); i != nodeNames.end(); i++)
+    ss << "objs " << nodeIds.size();
+    for (vector<string>::iterator i = nodeIds.begin(); i != nodeIds.end(); i++)
     {
         ss << " " << *i;
     }

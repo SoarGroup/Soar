@@ -12,17 +12,11 @@
 
 using namespace std;
 
-/*
- Making this a global variable insures that all nodes in all scenes
- will have unique identifiers.
-*/
-int node_counter = 100;
-
 typedef vector<sgnode*>::iterator childiter;
 typedef vector<sgnode*>::const_iterator const_childiter;
 
-sgnode::sgnode(const string& name, bool group)
-    : name(name), parent(NULL), group(group), id(node_counter++),
+sgnode::sgnode(const string& id, bool group)
+    : parent(NULL), group(group), id(id),
       trans_dirty(true), shape_dirty(true), bounds_dirty(true),
       pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
 {
@@ -240,8 +234,8 @@ void sgnode::proxy_use_sub(const vector<string>& args, ostream& os)
     vec4 lr, wr;
     table_printer t, t1, t2, t3;
     
-    t.add_row() << "id:"   << name;
-    t.add_row() << "parent:" << (parent ? parent->get_name() : "none");
+    t.add_row() << "id:"   << id;
+    t.add_row() << "parent:" << (parent ? parent->get_id() : "none");
     t.print(os);
     
     os << endl << "Local transform:" << endl;
@@ -302,7 +296,7 @@ group_node::~group_node()
 
 sgnode* group_node::clone_sub() const
 {
-    group_node* c = new group_node(get_name());
+    group_node* c = new group_node(get_id());
     const_childiter i;
     for (i = children.begin(); i != children.end(); ++i)
     {
@@ -412,7 +406,7 @@ void group_node::proxy_get_children(map<string, cliproxy*>& c)
 {
     for (int i = 0, iend = children.size(); i < iend; ++i)
     {
-        c[children[i]->get_name()] = children[i];
+        c[children[i]->get_id()] = children[i];
     }
 }
 
@@ -448,13 +442,13 @@ void geometry_node::walk_geoms(std::vector<const geometry_node*>& g) const
     g.push_back(this);
 }
 
-convex_node::convex_node(const string& name, const ptlist& v)
-    : geometry_node(name), verts(v), world_verts_dirty(true)
+convex_node::convex_node(const string& id, const ptlist& v)
+    : geometry_node(id), verts(v), world_verts_dirty(true)
 {}
 
 sgnode* convex_node::clone_sub() const
 {
-    return new convex_node(get_name(), verts);
+    return new convex_node(get_id(), verts);
 }
 
 void convex_node::update_shape()
@@ -531,8 +525,8 @@ void convex_node::proxy_use_sub(const vector<string>& args, ostream& os)
     t.print(os);
 }
 
-ball_node::ball_node(const string& name, double radius)
-    : geometry_node(name), radius(radius)
+ball_node::ball_node(const string& id, double radius)
+    : geometry_node(id), radius(radius)
 {}
 
 void ball_node::get_shape_sgel(string& s) const
@@ -544,7 +538,7 @@ void ball_node::get_shape_sgel(string& s) const
 
 sgnode* ball_node::clone_sub() const
 {
-    return new ball_node(get_name(), radius);
+    return new ball_node(get_id(), radius);
 }
 
 /*

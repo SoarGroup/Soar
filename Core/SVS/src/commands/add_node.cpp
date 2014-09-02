@@ -6,7 +6,7 @@
  *  
  *  Soar Command to add a node to the world
  *  Parameters:
- *     ^id <string> - name to give the node, must not already exist
+ *     ^id <string> - id to give the node, must not already exist
  *     ^parent <string> [Optional] - parent to add the node to
  *     ^geometry << box point sphere group >> - geometry of new node
  *     ^position <vec3> [Optional] - position of the new node
@@ -65,13 +65,13 @@ class add_node_command : public command
     private:
         bool parse(){
           // ^parent <id>
-          // The name of the parent to attach the node to
+          // The id of the parent to attach the node to
           // Default is the root
-          string parent_name;
-          if(!si->get_const_attr(root, "parent", parent_name)){
+          string parent_id;
+          if(!si->get_const_attr(root, "parent", parent_id)){
             parent = scn->get_root();
           } else {
-            parent = scn->get_node(parent_name);
+            parent = scn->get_node(parent_id);
             if(parent == NULL){
               set_status("no parent node found");
               return false;
@@ -80,11 +80,11 @@ class add_node_command : public command
 
           // ^id <id>
           // The id to give the node
-          if(!si->get_const_attr(root, "id", node_name)){
+          if(!si->get_const_attr(root, "id", node_id)){
             set_status("no id specified");
             return false;
           }
-          if(scn->get_node(node_name)){
+          if(scn->get_node(node_id)){
             set_status("id already exists");
             return false;
           }
@@ -129,18 +129,18 @@ class add_node_command : public command
 
             switch(geom_type){
               case NONE:
-                n = new group_node(node_name);
+                n = new group_node(node_id);
                 break;
               case SPHERE:
-                n = new ball_node(node_name, 1.0);
+                n = new ball_node(node_id, 1.0);
                 break;
               case POINT:
                 verts.push_back(vec3(0, 0, 0));
-                n = new convex_node(node_name, verts);
+                n = new convex_node(node_id, verts);
                 break;
               case BOX:
                 verts = bbox_vertices();
-                n = new convex_node(node_name, verts);
+                n = new convex_node(node_id, verts);
                 break;
             }
 
@@ -148,7 +148,7 @@ class add_node_command : public command
               n->set_trans(i->first, i->second);
             }
 
-            if(!scn->add_node(parent->get_name(), n)){
+            if(!scn->add_node(parent->get_id(), n)){
               set_status("error adding node to scene");
               return false;
             }
@@ -178,7 +178,7 @@ class add_node_command : public command
         GeometryType geom_type;
         map<char, vec3> transforms;
         sgnode* parent;
-        string node_name;
+        string node_id;
       
 };
 

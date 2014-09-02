@@ -124,7 +124,7 @@ double centroid_distance(const sgnode* a, const sgnode* b){
   return (cb - ca).norm();
 }
 
-double distance_on_axis(const sgnode* a, const sgnode* b, int axis){
+double axis_distance(const sgnode* a, const sgnode* b, int axis){
   if(axis < 0 || axis > 2){
     return 0;
   }

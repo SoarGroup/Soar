@@ -9,7 +9,7 @@ double convex_distance(const sgnode* a, const sgnode* b);
 
 double centroid_distance(const sgnode* a, const sgnode* b);
 
-double distance_on_axis(const sgnode* a, const sgnode* b, int axis);
+double axis_distance(const sgnode* a, const sgnode* b, int axis);
 
 double bbox_volume(const sgnode* a);
 

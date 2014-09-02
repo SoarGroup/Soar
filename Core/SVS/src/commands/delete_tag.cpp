@@ -6,7 +6,7 @@
  *  
  *  Soar Command to delete a tag on a node
  *  Parameters:
- *     ^id <string> - name of the node to delete the tag on
+ *     ^id <string> - id of the node to delete the tag on
  *     ^tag_name <string> - name of the tag to delete
  *
  **********************************************************/

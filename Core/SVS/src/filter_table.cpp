@@ -37,9 +37,9 @@ filter_table_entry* smaller_filter_entry();
 filter_table_entry* larger_select_filter_entry();
 filter_table_entry* smaller_select_filter_entry();
 
-// filters/distance_on_axis.cpp
-filter_table_entry* distance_on_axis_filter_entry();
-filter_table_entry* distance_on_axis_filter_select_entry();
+// filters/axis_distance.cpp
+filter_table_entry* axis_distance_filter_entry();
+filter_table_entry* axis_distance_filter_select_entry();
 
 // filters/intersect.cpp
 filter_table_entry* intersect_filter_entry();
@@ -79,8 +79,8 @@ filter_table::filter_table()
   add(larger_select_filter_entry());
   add(smaller_select_filter_entry());
 
-  add(distance_on_axis_filter_entry());
-  add(distance_on_axis_select_filter_entry());
+  add(axis_distance_filter_entry());
+  add(axis_distance_select_filter_entry());
 
   add(intersect_filter_entry());
   add(intersect_select_filter_entry());

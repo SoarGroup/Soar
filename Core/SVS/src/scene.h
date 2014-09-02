@@ -32,10 +32,8 @@ class scene : public sgnode_listener, public cliproxy
         {
             return root;
         }
-        sgnode*       get_node(const std::string& name);
-        sgnode const* get_node(const std::string& name) const;
-        sgnode*       get_node(int id);
-        sgnode const* get_node(int id) const;
+        sgnode*       get_node(const std::string& id);
+        sgnode const* get_node(const std::string& id) const;
         
         void get_all_nodes(std::vector<sgnode*>& nodes);
         void get_all_nodes(std::vector<const sgnode*>& nodes) const;

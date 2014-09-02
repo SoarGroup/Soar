@@ -166,15 +166,18 @@ class svs : public svs_interface, public cliproxy
         }
         
         bool do_cli_command(const std::vector<std::string>& args, std::string& output);
+
+        bool is_enabled(){
+          return enabled;
+        }
+        void set_enabled(bool is_enabled){
+          enabled = is_enabled;
+        }
+
+        std::string get_output() const{
+          return "";
+        }
         
-        static void mark_filter_dirty_bit()
-        {
-            svs::filter_dirty_bit = true;
-        }
-        static bool get_filter_dirty_bit()
-        {
-            return svs::filter_dirty_bit;
-        }
     private:
         void proc_input(svs_state* s);
         
@@ -188,13 +191,8 @@ class svs : public svs_interface, public cliproxy
         std::string               env_output;
         mutable drawer*           draw;
         scene*                    scn_cache;      // temporarily holds top-state scene during init
-        
-        std::map<std::string, model*> models;
-        
-        timer_set timers;
-        logger_set* loggers;
-    public:
-        static bool filter_dirty_bit;
+
+        bool enabled;
 };
 
 #endif

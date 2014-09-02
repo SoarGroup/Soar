@@ -31,23 +31,17 @@ class sgnode : public cliproxy
             TAG_DELETED
         };
         
-        sgnode(const std::string& name, bool group);
+        sgnode(const std::string& id, bool group);
         virtual ~sgnode();
         
         /* copied node doesn't inherit listeners */
         virtual sgnode* clone() const;
         
-        int get_id() const
-        {
+        const std::string& get_id() const{
             return id;
         }
-        const std::string& get_name() const
-        {
-            return name;
-        }
-        void set_name(const std::string& n)
-        {
-            name = n;
+        void set_id(const std::string& new_id){
+            id = new_id;
         }
         
         group_node* get_parent()
@@ -117,8 +111,7 @@ class sgnode : public cliproxy
             send_update(t, s);
         }
         
-        int         id;
-        std::string name;
+        std::string id;
         group_node* parent;
         bool        group;
         vec3        pos;
@@ -144,7 +137,7 @@ class sgnode : public cliproxy
 class group_node : public sgnode
 {
     public:
-        group_node(const std::string& name) : sgnode(name, true) {}
+        group_node(const std::string& id) : sgnode(id, true) {}
         ~group_node();
         
         sgnode* get_child(int i);
@@ -177,7 +170,7 @@ class group_node : public sgnode
 class geometry_node : public sgnode
 {
     public:
-        geometry_node(const std::string& name) : sgnode(name, false) {}
+        geometry_node(const std::string& id) : sgnode(id, false) {}
         virtual ~geometry_node() {}
         void gjk_support(const vec3& dir, vec3& support) const;
         
@@ -196,7 +189,7 @@ class geometry_node : public sgnode
 class convex_node : public geometry_node
 {
     public:
-        convex_node(const std::string& name, const ptlist& v);
+        convex_node(const std::string& id, const ptlist& v);
         
         const ptlist& get_verts() const
         {
@@ -222,7 +215,7 @@ class convex_node : public geometry_node
 class ball_node : public geometry_node
 {
     public:
-        ball_node(const std::string& name, double radius);
+        ball_node(const std::string& id, double radius);
         void get_shape_sgel(std::string& s) const;
         
         double get_radius() const

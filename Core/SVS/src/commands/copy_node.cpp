@@ -6,8 +6,8 @@
  *  
  *  Soar Command to create a new node by copying an old one
  *  Parameters:
- *     ^id <string> - name to give the node, must not already exist
- *     ^source <string> - name of the node to copy from
+ *     ^id <string> - id to give the node, must not already exist
+ *     ^source <string> - id of the node to copy from
  *     ^parent <string> [Optional] - parent to add the node to
  *
  *     ^position <vec3> [Optional] - position of the new node
@@ -62,13 +62,13 @@ class copy_node_command : public command
         
         bool parse(){
             // ^parent <id>
-            // The name of the parent to attach the node to
+            // The id of the parent to attach the node to
             // Default is the root
-            string parent_name;
-            if(!si->get_const_attr(root, "parent", parent_name)){
+            string parent_id;
+            if(!si->get_const_attr(root, "parent", parent_id)){
               parent = scn->get_root();
             } else {
-              sgnode* parent_node = scn->get_node(parent_name);
+              sgnode* parent_node = scn->get_node(parent_id);
               if(parent_node == NULL){
                 set_status("no parent node found");
                 return false;
@@ -96,11 +96,11 @@ class copy_node_command : public command
 
             // id <id>
             // the id of the node to create
-            if(!si->get_const_attr(root, "id", node_name)){
+            if(!si->get_const_attr(root, "id", node_id)){
               set_status("^id must be specified");
               return false;
             }
-            if(scn->get_node(node_name)){
+            if(scn->get_node(node_id)){
               set_status("Node already exists");
               return false;
             }
@@ -135,12 +135,12 @@ class copy_node_command : public command
             const convex_node* sourceConvex = dynamic_cast<const convex_node*>(source_node);
             if (sourceBall){
                 double radius = sourceBall->get_radius();
-                dest_node = new ball_node(node_name, radius);
+                dest_node = new ball_node(node_id, radius);
             } else if (sourceConvex) {
                 ptlist points(sourceConvex->get_verts());
-                dest_node = new convex_node(node_name, points);
+                dest_node = new convex_node(node_id, points);
             } else {
-                dest_node = new group_node(node_name);
+                dest_node = new group_node(node_id);
             }
 
             parent->attach_child(dest_node);
@@ -161,7 +161,7 @@ class copy_node_command : public command
 
         const sgnode* source_node;
         group_node* parent;
-        string node_name;
+        string node_id;
         map<char, vec3> transforms;
 };
 

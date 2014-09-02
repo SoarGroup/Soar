@@ -97,7 +97,7 @@ void drawer::del(const string& scn, const sgnode* n)
     }
     
     stringstream ss;
-    ss << scn << " -" << n->get_name() << endl;
+    ss << scn << " -" << n->get_id() << endl;
     send(ss.str());
 }
 
@@ -113,7 +113,7 @@ void drawer::change(const string& scn, const sgnode* n, int props)
     stringstream ss;
     
     n->get_world_trans().to_prs(p, q, s);
-    ss << "+" << scn << " +" << n->get_name() << " ";
+    ss << "+" << scn << " +" << n->get_id() << " ";
     if (props & SHAPE)
     {
         string shape;

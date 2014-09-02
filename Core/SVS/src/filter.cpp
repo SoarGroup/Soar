@@ -17,7 +17,7 @@ using namespace std;
 void filter_val_c<sgnode*>::get_rep(map<string, string>& rep) const
 {
     rep.clear();
-    rep[""] = v->get_name();
+    rep[""] = v->get_id();
 }
 
 string filter_val_c<sgnode*>::toString() const

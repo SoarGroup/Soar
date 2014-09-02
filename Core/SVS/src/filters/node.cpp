@@ -12,7 +12,7 @@ using namespace std;
 typedef map<sgnode*, const filter_params*> node_param_map;
 
 /*
- This filter takes a "name" parameter and outputs a pointer to the node
+ This filter takes an "id" parameter and outputs a pointer to the node
  with that name in the scene graph.
 */
 class node_filter : public select_filter<sgnode*>
@@ -112,7 +112,7 @@ class all_nodes_filter : public filter, public sgnode_listener
                     }
                     else
                     {
-                        assert(n->get_name() == "world");
+                        assert(n->get_id() == "world");
                     }
                     break;
                 case sgnode::TRANSFORM_CHANGED:
@@ -125,7 +125,7 @@ class all_nodes_filter : public filter, public sgnode_listener
                     }
                     else
                     {
-                        assert(n->get_name() == "world");
+                        assert(n->get_id() == "world");
                     }
                     break;
             }
@@ -284,6 +284,27 @@ filter_table_entry* all_nodes_filter_entry()
     return e;
 }
 
+filter_table_entry* remove_node_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry;
+    e->name = "remove_node";
+    e->parameters["a"] = "A set of nodes";
+    e->parameters["id"] = "Id of the node to be removed from the input set a";
+    e->description = "Removes the node given by id from the node set a";
+    e->create = &make_remove_node_filter;
+    return e;
+}
+
+filter_table_entry* combine_nodes_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry;
+    e->name = "combine_nodes";
+    e->parameters["a"] = "Can be multiple input sets of nodes to combine";
+    e->description = "Combines nodes in all input sets into a single output set";
+    e->create = &make_combine_nodes_filter;
+    return e;
+}
+
 filter_table_entry* node_position_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry;
@@ -321,15 +342,5 @@ filter_table_entry* node_bbox_filter_entry()
     e->description = "Outputs the bounding box of each node a";
     e->parameters["a"] = "Sgnode a";
     e->create = &make_node_bbox_filter;
-    return e;
-}
-
-filter_table_entry* remove_node_filter_entry()
-{
-    filter_table_entry* e = new filter_table_entry;
-    e->name = "remove_node";
-    e->parameters.push_back("a");
-    e->parameters.push_back("b");
-    e->create = &make_remove_node_filter;
     return e;
 }

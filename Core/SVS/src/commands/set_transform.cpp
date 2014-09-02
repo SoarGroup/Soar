@@ -6,7 +6,7 @@
  *  
  *  Soar Command to change the transform of a node (pos/rot/scale)
  *  Parameters:
- *     ^id <string> - name of the node to change
+ *     ^id <string> - id of the node to change
  *     ^position <vec3> [Optional] - desired position
  *     ^rotation <vec3> [Optional] - desired rotation
  *     ^scale <vec3> [Optional] - desired scale

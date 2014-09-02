@@ -34,7 +34,7 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
     : soarint(si), id(ident), parent(parent), node(node)
 {
     node->listen(this);
-    name_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_name());
+    name_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_id());
     
     if (node->is_group())
     {
@@ -113,16 +113,16 @@ void sgwme::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
 void sgwme::add_child(sgnode* c)
 {
     char letter;
-    string cname = c->get_name();
+    string cid = c->get_id();
     sgwme* child;
     
-    if (cname.size() == 0 || !isalpha(cname[0]))
+    if (cid.size() == 0 || !isalpha(cid[0]))
     {
         letter = 'n';
     }
     else
     {
-        letter = cname[0];
+        letter = cid[0];
     }
     wme* cid_wme = soarint->make_id_wme(id, "child");
     
@@ -425,6 +425,9 @@ void svs::proc_input(svs_state* s)
 
 void svs::output_callback()
 {
+    if(!enabled){
+      return;
+    }
     vector<svs_state*>::iterator i;
     string sgel;
     svs_state* topstate = state_stack.front();
@@ -441,6 +444,9 @@ void svs::output_callback()
 }
 
 void svs::input_callback(){
+    if(!enabled){
+      return;
+    }
     svs_state* topstate = state_stack.front();
     proc_input(topstate);
     
