@@ -355,7 +355,7 @@ void svs_state::disown_scene()
 }
 
 svs::svs(agent* a)
-    : scn_cache(NULL)
+    : scn_cache(NULL), enabled(false)
 {
     si = new soar_interface(a);
     draw = new drawer();

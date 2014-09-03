@@ -411,7 +411,7 @@ int scene::parse_change(vector<string>& f, string& error)
 //   f is a list of the parameters given
 //   Changed the format of the command to be
 //     t <subcommand> <id> <tag_name> <value?>
-//      <subcommand> - either add, change, or delete
+//      <subcommand> - either add, change, or delete (we just test for the first character)
 //      <id> - id of the node
 //      <tag_name> - the name of the tag
 //      <value?> - the value of the tag, needed for the add or change subcommands only
@@ -423,7 +423,7 @@ int scene::parse_tag(vector<string>& f, string& error){
         error = "Tag Command P1: Expecting subcommand";
         return p;
     }
-    string subcommand = f[p];
+    char subcommand = f[p][0];
     p++;
 
     // Parameters 2: node id
@@ -450,7 +450,7 @@ int scene::parse_tag(vector<string>& f, string& error){
 
     // Parameter 4: tag value
     string tag_value;
-    if (subcommand == "add" || subcommand == "change"){
+    if (subcommand == 'a' || subcommand == 'c'){
       if (p >= f.size()){
           error = "Tag Command P4: Expecting tag value";
           return p;
@@ -459,15 +459,17 @@ int scene::parse_tag(vector<string>& f, string& error){
     }
     p++;
     
-    if (subcommand == "add"){
-      node->set_tag(tag_name, tag_value);
-    } else if(subcommand == "change"){
-      node->set_tag(tag_name, tag_value);
-    } else if(subcommand == "delete"){
-      node->delete_tag(tag_name);
-    } else {
-      error = "Tag Command P2: Unrecognized subcommand (Expecting add, change, delete)";
-      return 1;
+    switch (subcommand){
+      case 'a':
+      case 'c':
+        node->set_tag(tag_name, tag_value);
+        break;
+      case 'd':
+        node->delete_tag(tag_name);
+        break;
+      default:
+        error = "Tag Command P2: Unrecognized subcommand (Expecting add, change, delete)";
+        return 1;
     }
     
     return -1;
@@ -486,20 +488,25 @@ bool scene::parse_sgel(const string& s){
             continue;
         }
 
-        string cmd = fields[0];
+        char cmd = fields[0][0];
         fields.erase(fields.begin());
 
         int errfield;
         string error = "unknown error";
-        if(cmd == "add"){
-          errfield = parse_add(fields, error);
-        } else if(cmd == "delete"){
-          errfield = parse_del(fields, error);
-        } else if(cmd == "change"){
-          errfield = parse_change(fields, error);
-        } else if(cmd == "tag"){
-          errfield = parse_tag(fields, error);
-        } else {
+        switch(cmd){
+          case 'a':
+            errfield = parse_add(fields, error);
+            break;
+          case 'c':
+            errfield = parse_change(fields, error);
+            break;
+          case 'd':
+            errfield = parse_del(fields, error);
+            break;
+          case 't':
+            errfield = parse_tag(fields, error);
+            break;
+          default:
             cerr << "expecting add, delete, change, tag at start of line '" << *i << "'" << endl;
         }
         

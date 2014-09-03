@@ -71,9 +71,9 @@ class add_node_command : public command
           if(!si->get_const_attr(root, "parent", parent_id)){
             parent = scn->get_root();
           } else {
-            parent = scn->get_node(parent_id);
+            parent = scn->get_group(parent_id);
             if(parent == NULL){
-              set_status("no parent node found");
+              set_status("no parent group node found");
               return false;
             }
           }
@@ -177,7 +177,7 @@ class add_node_command : public command
 
         GeometryType geom_type;
         map<char, vec3> transforms;
-        sgnode* parent;
+        group_node* parent;
         string node_id;
       
 };

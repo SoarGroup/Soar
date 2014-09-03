@@ -34,6 +34,7 @@ class scene : public sgnode_listener, public cliproxy
         }
         sgnode*       get_node(const std::string& id);
         sgnode const* get_node(const std::string& id) const;
+        group_node* get_group(const std::string& id);
         
         void get_all_nodes(std::vector<sgnode*>& nodes);
         void get_all_nodes(std::vector<const sgnode*>& nodes) const;
@@ -71,8 +72,6 @@ class scene : public sgnode_listener, public cliproxy
         node_table   nodes;
         bool         draw;
         
-        
-        group_node* get_group(const std::string& name);
         
         int parse_add(std::vector<std::string>& f, std::string& error);
         int parse_del(std::vector<std::string>& f, std::string& error);

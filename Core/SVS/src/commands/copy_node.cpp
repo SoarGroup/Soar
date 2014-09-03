@@ -68,14 +68,9 @@ class copy_node_command : public command
             if(!si->get_const_attr(root, "parent", parent_id)){
               parent = scn->get_root();
             } else {
-              sgnode* parent_node = scn->get_node(parent_id);
-              if(parent_node == NULL){
-                set_status("no parent node found");
-                return false;
-              }
-              parent = dynamic_cast<group_node*>(parent_node);
+              parent = scn->get_group(parent_id);
               if(parent == NULL){
-                set_status("parent must be a group node");
+                set_status("no group node parent");
                 return false;
               }
             }
