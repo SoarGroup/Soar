@@ -297,9 +297,9 @@ inline void MTRand::seed(uint32_t* const bigSeed, const uint32_t seedLength)
     // in each element are discarded.
     // Just call seed() if you want to get array from /dev/urandom
     initialize(19650218U);
-    register int i = 1;
-    register uint32_t j = 0;
-    register int k = (N > seedLength ? N : seedLength);
+    int i = 1;
+    uint32_t j = 0;
+    int k = (N > seedLength ? N : seedLength);
     for (; k; --k)
     {
         state[i] =
@@ -346,9 +346,9 @@ inline void MTRand::seed()
     if (urandom)
     {
         uint32_t bigSeed[N];
-        register uint32_t* s = bigSeed;
-        register int i = N;
-        register bool success = true;
+        uint32_t* s = bigSeed;
+        int i = N;
+        bool success = true;
         while (success && i--)
             //success = fread( s++, sizeof(uint32_t), 1, urandom );
         {
@@ -389,8 +389,8 @@ inline void MTRand::reload()
 {
     // Generate N new values in state
     // Made clearer and faster by Matthew Bellew (matthew.bellew@home.com)
-    register uint32_t* p = state;
-    register int i;
+    uint32_t* p = state;
+    int i;
     for (i = N - M; i--; ++p)
     {
         *p = twist(p[M], p[0], p[1]);
@@ -433,9 +433,9 @@ inline uint32_t MTRand::hash(time_t t, clock_t c)
 
 inline void MTRand::save(uint32_t* saveArray) const
 {
-    register uint32_t* sa = saveArray;
-    register const uint32_t* s = state;
-    register int i = N;
+    uint32_t* sa = saveArray;
+    const uint32_t* s = state;
+    int i = N;
     for (; i--; *sa++ = *s++) {}
     *sa = left;
 }
@@ -443,9 +443,9 @@ inline void MTRand::save(uint32_t* saveArray) const
 
 inline void MTRand::load(uint32_t* const loadArray)
 {
-    register uint32_t* s = state;
-    register uint32_t* la = loadArray;
-    register int i = N;
+    uint32_t* s = state;
+    uint32_t* la = loadArray;
+    int i = N;
     for (; i--; *s++ = *la++) {}
     left = *la;
     pNext = &state[N - left];
@@ -454,8 +454,8 @@ inline void MTRand::load(uint32_t* const loadArray)
 
 inline std::ostream& operator<<(std::ostream& os, const MTRand& mtrand)
 {
-    register const uint32_t* s = mtrand.state;
-    register int i = mtrand.N;
+    const uint32_t* s = mtrand.state;
+    int i = mtrand.N;
     for (; i--; os << *s++ << "\t") {}
     return os << mtrand.left;
 }
@@ -463,8 +463,8 @@ inline std::ostream& operator<<(std::ostream& os, const MTRand& mtrand)
 
 inline std::istream& operator>>(std::istream& is, MTRand& mtrand)
 {
-    register uint32_t* s = mtrand.state;
-    register int i = mtrand.N;
+    uint32_t* s = mtrand.state;
+    int i = mtrand.N;
     for (; i--; is >> *s++) {}
     is >> mtrand.left;
     mtrand.pNext = &mtrand.state[mtrand.N - mtrand.left];

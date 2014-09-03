@@ -26,7 +26,7 @@
 #include "cli_Cli.h"
 #include "cli_Parser.h"
 #include "soar_module.h"
-#include "lexer.h"
+
 #include "Export.h"
 
 namespace soarxml
@@ -319,7 +319,7 @@ namespace cli
 ===============================
 */
 extern bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme, Symbol** result_id);
-extern soar::Lexeme get_lexeme_from_string(agent* thisAgent, const char* the_lexeme);
-extern Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme);
+extern void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme);
+extern Symbol* read_identifier_or_context_variable(agent* thisAgent);
 
 #endif //COMMAND_LINE_INTERFACE_H

@@ -973,11 +973,11 @@ TEST_DEFINITION(testAgent)
     //size_t pos = stats.find( "1 decision cycles" ) ;
     
     /*
-    if (pos == std::string.npos)
-    {
-        cout << "*** ERROR: Failed to interrupt Soar during a run." << endl ;
-        return false ;
-    }
+        if (pos == std::string.npos)
+        {
+            cout << "*** ERROR: Failed to interrupt Soar during a run." << endl ;
+            return false ;
+        }
     */
     CPPUNIT_ASSERT(m_pAgent->UnregisterForRunEvent(callback3));
     
@@ -1002,12 +1002,12 @@ TEST_DEFINITION(testSimpleCopy)
     
     /* Input structure for the test
     (S1 ^io I1)
-    (I1 ^input-link I3)
-    (I3 ^sentence S2)
-      (S2 ^newest yes ^num-words 3 ^sentence-num 1 ^word W1 ^word W2 ^word W3)
-        (W1 ^num-word 1 ^word the)
-        (W2 ^num-word 2 ^word cat)
-        (W3 ^num-word 3 ^word in)
+      (I1 ^input-link I3)
+        (I3 ^sentence S2)
+          (S2 ^newest yes ^num-words 3 ^sentence-num 1 ^word W1 ^word W2 ^word W3)
+            (W1 ^num-word 1 ^word the)
+            (W2 ^num-word 2 ^word cat)
+            (W3 ^num-word 3 ^word in)
     */
     
     sml::Identifier* map = m_pAgent->GetInputLink() ;
@@ -1065,8 +1065,7 @@ TEST_DEFINITION(testSimpleCopy)
     //std::cout << m_pAgent->ExecuteCommandLine("print --depth 5 s1 --tree") << std::endl;
     
     // Test the iterator
-    sml::Identifier* pOutputLink;
-    CPPUNIT_ASSERT(pOutputLink = m_pAgent->GetOutputLink());
+    sml::Identifier* pOutputLink = m_pAgent->GetOutputLink();
     sml::Identifier::ChildrenIter iter = pOutputLink->GetChildrenBegin();
     sml::WMElement* pTextOutputWME = 0;
     while (iter != pOutputLink->GetChildrenEnd())

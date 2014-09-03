@@ -8,7 +8,6 @@
 #include "wma.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-#include "lexer.h"
 
 using namespace cli;
 using namespace sml;
@@ -16,7 +15,6 @@ using namespace sml;
 bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    soar::Lexeme lexeme;
     
     // Get ID
     Symbol* pId = 0;
@@ -39,24 +37,26 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     }
     else
     {
-        lexeme = get_lexeme_from_string(thisAgent, attribute.c_str());
+        get_lexeme_from_string(thisAgent, attribute.c_str());
         
-        switch (lexeme.type)
+        switch (thisAgent->lexeme.type)
         {
             case SYM_CONSTANT_LEXEME:
-                pAttr = make_str_constant(thisAgent, lexeme.string());
+                pAttr = make_str_constant(thisAgent, thisAgent->lexeme.string);
                 break;
             case INT_CONSTANT_LEXEME:
-                pAttr = make_int_constant(thisAgent, lexeme.int_val);
+                pAttr = make_int_constant(thisAgent, thisAgent->lexeme.int_val);
                 break;
             case FLOAT_CONSTANT_LEXEME:
-                pAttr = make_float_constant(thisAgent, lexeme.float_val);
+                pAttr = make_float_constant(thisAgent, thisAgent->lexeme.float_val);
                 break;
             case IDENTIFIER_LEXEME:
             case VARIABLE_LEXEME:
-                pAttr = read_identifier_or_context_variable(thisAgent, &lexeme);
+                pAttr = read_identifier_or_context_variable(thisAgent);
                 if (!pAttr)
-                { return SetError("Invalid attribute."); }
+                {
+                    return SetError("Invalid attribute.");
+                }
                 symbol_add_ref(thisAgent, pAttr);
                 break;
             default:
@@ -72,21 +72,21 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     }
     else
     {
-        lexeme = get_lexeme_from_string(thisAgent, value.c_str());
-        switch (lexeme.type)
+        get_lexeme_from_string(thisAgent, value.c_str());
+        switch (thisAgent->lexeme.type)
         {
             case SYM_CONSTANT_LEXEME:
-                pValue = make_str_constant(thisAgent, lexeme.string());
+                pValue = make_str_constant(thisAgent, thisAgent->lexeme.string);
                 break;
             case INT_CONSTANT_LEXEME:
-                pValue = make_int_constant(thisAgent, lexeme.int_val);
+                pValue = make_int_constant(thisAgent, thisAgent->lexeme.int_val);
                 break;
             case FLOAT_CONSTANT_LEXEME:
-                pValue = make_float_constant(thisAgent, lexeme.float_val);
+                pValue = make_float_constant(thisAgent, thisAgent->lexeme.float_val);
                 break;
             case IDENTIFIER_LEXEME:
             case VARIABLE_LEXEME:
-                pValue = read_identifier_or_context_variable(thisAgent, &lexeme);
+                pValue = read_identifier_or_context_variable(thisAgent);
                 if (!pValue)
                 {
                     symbol_remove_ref(thisAgent, pAttr);

@@ -26,7 +26,6 @@
 
 #ifndef GSYSPARAM_H
 #define GSYSPARAM_H
-#include "stdint.h"
 
 typedef struct agent_struct agent;
 

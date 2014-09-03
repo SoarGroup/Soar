@@ -1,4 +1,3 @@
-#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -86,7 +85,7 @@
 
 ====================================================================== */
 
-#include <portability.h>
+#include "portability.h"
 #include <stdlib.h>
 
 #include "rete.h"
@@ -411,7 +410,7 @@ typedef struct p_node_data_struct
 } p_node_data;
 
 #define O_LIST 0     /* only used in rete.cpp */
-#define I_LIST 1     /*   values for prod->OPERAND_which_assert_list */
+#define I_LIST 1     /* values for prod->OPERAND_which_assert_list */
 
 /* --- data for all except positive nodes --- */
 typedef struct non_pos_node_data_struct

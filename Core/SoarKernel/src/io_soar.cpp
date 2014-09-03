@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -46,6 +46,7 @@
 #include "agent.h"
 #include "print.h"
 #include "init_soar.h"
+
 #include "wmem.h"
 #include "symtab.h"
 #include "decide.h"
@@ -53,6 +54,8 @@
 #include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+
+
 #include "wma.h"
 
 #include <ctype.h>
@@ -942,7 +945,7 @@ Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool rereadable;
     
-    soar::Lexer::determine_possible_symbol_types_for_string(input_string,
+    determine_possible_symbol_types_for_string(input_string,
             strlen(input_string),
             &possible_id,
             &possible_var,

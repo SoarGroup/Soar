@@ -1039,6 +1039,7 @@ void print_tracing_rule_tcl(agent* thisAgent, int type_restriction, Symbol* name
     print(thisAgent, "}\n");
 }
 
+
 bool print_trace_callback_fn(agent* thisAgent, void* item, void*)
 {
     tracing_rule* tr;
@@ -1125,8 +1126,8 @@ inline void set_print_trace_formats(agent* thisAgent)
                      "%id %ifdef[(%v[attribute] %v[impasse])]");
     /***********  enable when determine tagged output format
     { Symbol *evaluate_object_sym;
-        evaluate_object_sym = make_str_constant (thisAgent, "evaluate-object");
-        add_trace_format (thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
+      evaluate_object_sym = make_str_constant (thisAgent, "evaluate-object");
+      add_trace_format (thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
                         "%id (evaluate-object %o[object])");
       symbol_remove_ref (thisAgent, evaluate_object_sym);
     }
@@ -1148,8 +1149,8 @@ inline void set_tagged_trace_formats(agent* thisAgent)
                      "%id\" %ifdef[impasse_object=\"%v[attribute]\" impasse_type=\"%v[impasse]\"]");
     /***********  enable when determine tagged output format
     { Symbol *evaluate_object_sym;
-        evaluate_object_sym = make_str_constant (thisAgent, "evaluate-object");
-        add_trace_format (thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
+      evaluate_object_sym = make_str_constant (thisAgent, "evaluate-object");
+      add_trace_format (thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
                         "%id (evaluate-object %o[object])");
       symbol_remove_ref (thisAgent, evaluate_object_sym);
     }
@@ -1576,7 +1577,7 @@ growable_string trace_format_list_to_string(agent* thisAgent, trace_format* tf, 
 
 
 /* prevents infinite loops when printing circular
-                               structures */
+     structures */
 
 trace_format* find_appropriate_trace_format(agent* thisAgent,
         bool stack_trace,
