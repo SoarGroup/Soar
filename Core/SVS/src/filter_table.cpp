@@ -2,6 +2,8 @@
 #include "scene.h"
 #include "filter.h"
 #include "symtab.h"
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -39,7 +41,7 @@ filter_table_entry* smaller_select_filter_entry();
 
 // filters/axis_distance.cpp
 filter_table_entry* axis_distance_filter_entry();
-filter_table_entry* axis_distance_filter_select_entry();
+filter_table_entry* axis_distance_select_filter_entry();
 
 // filters/intersect.cpp
 filter_table_entry* intersect_filter_entry();
