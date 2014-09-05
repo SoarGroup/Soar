@@ -23,7 +23,7 @@
 using namespace std;
 
 enum GeometryType{
-  BOX, SPHERE, NONE, POINT
+  BOX, SPHERE, NONE, PT
 };
 
 class add_node_command : public command
@@ -114,7 +114,7 @@ class add_node_command : public command
           if(geom == "box"){
             geom_type = BOX;
           } else if(geom == "point"){
-            geom_type = POINT;
+            geom_type = PT;
           } else if(geom == "sphere"){
             geom_type = SPHERE;
           } else {
@@ -134,7 +134,7 @@ class add_node_command : public command
               case SPHERE:
                 n = new ball_node(node_id, 1.0);
                 break;
-              case POINT:
+              case PT:
                 verts.push_back(vec3(0, 0, 0));
                 n = new convex_node(node_id, verts);
                 break;
