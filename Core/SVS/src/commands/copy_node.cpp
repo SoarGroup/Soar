@@ -3,7 +3,7 @@
  * File: commands/copy_node.cpp
  * Contains:
  *  class add_copy_command
- *  
+ *
  *  Soar Command to create a new node by copying an old one
  *  Parameters:
  *     ^id <string> - id to give the node, must not already exist
@@ -23,6 +23,7 @@
 #include "scene.h"
 #include "soar_interface.h"
 #include "symtab.h"
+#include "command_table.h"
 
 using namespace std;
 
@@ -35,12 +36,12 @@ class copy_node_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-        
+
         string description()
         {
             return string("copy-node");
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -53,13 +54,13 @@ class copy_node_command : public command
             }
             return true;
         }
-        
-        
+
+
         bool early()
         {
             return false;
         }
-        
+
         bool parse(){
             // ^parent <id>
             // The id of the parent to attach the node to
@@ -76,13 +77,13 @@ class copy_node_command : public command
             }
 
             // source <id>
-            // The id of the node to copy 
+            // The id of the node to copy
             string source_id;
             if (!si->get_const_attr(root, "source", source_id)){
               set_status("must specify a source");
               return false;
             }
-            
+
             source_node = scn->get_node(source_id);
             if (!source_node) {
                 set_status("Could not find the given source node");
@@ -143,11 +144,11 @@ class copy_node_command : public command
             dest_node->set_trans('p', transforms['p']);
             dest_node->set_trans('r', transforms['r']);
             dest_node->set_trans('s', transforms['s']);
-            
+
             set_status("success");
             return true;
         }
-        
+
     private:
         Symbol*         root;
         scene*          scn;

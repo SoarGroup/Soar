@@ -1,12 +1,12 @@
 /**************************************************************
- * 
+ *
  * File: filter.h
  * Contains:
  *  The base classes of the different filter types
  *
  *  filter_input - see filter_input.h
  *  filter_output - the output of the filter
- *    A change_tracking_list of filter_vals 
+ *    A change_tracking_list of filter_vals
  *  filter_params - a single input into the filter
  *    A list of key/value pairs
  *    Access using the following function:
@@ -23,13 +23,13 @@
  *     input - filter_input
  *       Table which creates sets of filter_params
  *     output - list of filter_vals
- * 
+ *
  *   typed_filter<T>
  *     A filter where the output is a set of filter_vals of the same type
  *     Contains a mapping from input filter_params to output vals
  *     Most filters should override this
  *     Specialization for sgnodes which listen to changes
- * 
+ *
  *   map_filter<T>
  *     A filter where each input is mapped to exactly 1 output
  *     subclasses should implement the compute function:
@@ -37,7 +37,7 @@
  *         Do the filter computation on the given set of filter_params
  *           and set the output to the result
  *         Return true if successful/false if error
- * 
+ *
  *   select_filter<T>
  *     A filter where each input is mapped to 0 or 1 output
  *     subclasses should implement the compute function:
@@ -46,7 +46,7 @@
  *           and set the output to the result
  *         Set the select flag to true if the result should be output
  *         Return true if successful/false if error
- *         
+ *
  *   rank_filter
  *     A filter where all inputs are ranked and the one
  *       with the highest value is output
@@ -55,15 +55,15 @@
  *         Do the filter computation on the given set of filter params
  *           and produce a ranking value (r)
  *         Return true if successful/false if error
- * 
+ *
  *   const_filter<T>
  *     A filter that returns a single output value
  *     Not indended to be inherited
- * 
+ *
  *   passthru_filter<T>
  *     A filter that passes each input directly to output
  *     Designed to be used as a combine filter to combine nodes
- * 
+ *
 ****************************************************************/
 #ifndef FILTER_H
 #define FILTER_H
@@ -124,11 +124,11 @@ typedef std::vector<std::pair<std::string, filter_val*> > filter_params;
 class filter
 {
     public:
-    
+
         filter(Symbol* root, soar_interface* si, filter_input* in);
-        
+
         virtual ~filter();
-        
+
         void set_status(const std::string& msg);
 
         void add_output(filter_val* fv){
@@ -174,8 +174,8 @@ class filter
         virtual void clear_output(){
           output.clear();
         }
-        
-        // Classes that inherit from filter are responsible for 
+
+        // Classes that inherit from filter are responsible for
         // handling output
         virtual bool update_outputs() = 0;
 
@@ -230,7 +230,7 @@ inline bool get_filter_param(filter* f, const filter_params* params, const std::
 /***********************************************
  * typed_filter
  *   A slightly more advanced filter base class
- *   Assumes a single type of output 
+ *   Assumes a single type of output
  *     and a mapping between inputs and outputs
  *   New types of filters should probably inherit from
  *     this instead of filter directly
@@ -244,7 +244,7 @@ class typed_filter : public filter
         typed_filter(Symbol* root, soar_interface* si, filter_input* in)
           : filter(root, si, in)
         {}
-        
+
         virtual ~typed_filter(){}
 
         // Get the input filter_params associated with an output filter_val
@@ -258,8 +258,8 @@ class typed_filter : public filter
         void set_output(const filter_params* p, T v){
           filter_val* fv;
           if(map_get(in2out, p, fv)){
-            // Output already exists, 
-            // check to see if different, 
+            // Output already exists,
+            // check to see if different,
             // and update if so
             T old_out;
             get_filter_val(fv, old_out);
@@ -276,7 +276,7 @@ class typed_filter : public filter
             filter::add_output(fv);
           }
         }
-        
+
         // Remove the filter output associated with the given filter_params
         void remove_output(const filter_params* p){
           filter_val* fv;
@@ -308,7 +308,7 @@ class typed_filter : public filter
 /***********************************************
  * template specialization for typed_filter<sgnode*>
  * We want to listen to shape/transform changes
- *   for the nodes and pass the changes to the 
+ *   for the nodes and pass the changes to the
  *   output ctl
  ***********************************************/
 template <>
@@ -319,7 +319,7 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
           : filter(root, si, in)
         {
         }
-        
+
         virtual ~typed_filter(){
           clear_output();
         }
@@ -395,7 +395,7 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
             filter::remove_output(fv);
           }
         }
-        
+
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info){
           std::map<sgnode*, std::set<filter_val*> >::iterator node_it;
           std::set<filter_val*>::iterator fv_it;
@@ -403,7 +403,7 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
           switch(t){
             case sgnode::DELETED:
               n->unlisten(this);
-              // Find all the inputs associated with the given node and 
+              // Find all the inputs associated with the given node and
               // mark as stale
               node_it = outputs.find(n);
               if(node_it != outputs.end()){
@@ -428,6 +428,8 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
                 }
               }
               break;
+            default:
+                break;
           }
         }
 
@@ -468,24 +470,24 @@ class map_filter : public typed_filter<T>
         map_filter(Symbol* root, soar_interface* si, filter_input* input)
           : typed_filter<T>(root, si, input)
         {}
-        
+
         /*
          All created filter_vals are owned by the output list and cleaned
          up there, so don't do it here.
         */
         virtual ~map_filter() {}
-        
+
         /*
-         * Compute the output from parameters. 
-         * If compute is successful, set out to be the desired 
+         * Compute the output from parameters.
+         * If compute is successful, set out to be the desired
          * output value, and return true
          * If an error occurs, return false
          */
         virtual bool compute(const filter_params* params, T& out) = 0;
-        
+
         bool update_outputs(){
             const filter_input* input = filter::get_input();
-            
+
             for (int i = input->first_added(); i < input->num_current(); ++i)
             {
                 const filter_params* params = input->get_current(i);
@@ -493,7 +495,7 @@ class map_filter : public typed_filter<T>
                 if(!compute(params, out)){
                   return false;
                 }
-                set_output(params, out);
+                typed_filter<T>::set_output(params, out);
             }
             for (int i = 0; i < input->num_changed(); ++i)
             {
@@ -502,7 +504,7 @@ class map_filter : public typed_filter<T>
                 if(!compute(params, out)){
                   return false;
                 }
-                set_output(params, out);
+                typed_filter<T>::set_output(params, out);
             }
             for (int i = 0; i < input->num_removed(); ++i)
             {
@@ -515,8 +517,8 @@ class map_filter : public typed_filter<T>
 
 /*
  * This filter is very similar to a map filter, the only difference
- * being that every output must be selected, if for a given 
- * filter_params input the selected flag is set to false, then 
+ * being that every output must be selected, if for a given
+ * filter_params input the selected flag is set to false, then
  * there will be no output for that input set
  *
  * This is useful when returning a subset of the input
@@ -529,23 +531,23 @@ class select_filter : public typed_filter<T>
         select_filter(Symbol* root, soar_interface* si, filter_input* input)
           : typed_filter<T>(root, si, input)
         {}
-        
+
         virtual ~select_filter() {}
-        
+
         /*
-         * Compute the output from parameters. 
-         * If compute is successful, set out to be the desired 
+         * Compute the output from parameters.
+         * If compute is successful, set out to be the desired
          *   output value, and return true
          * If an error occurs, return false
          * The out value will only be added to the filter output
          *   if select is set to true
          */
         virtual bool compute(const filter_params* params, T& out, bool& select) = 0;
-        
-        
+
+
         bool update_outputs(){
             const filter_input* input = filter::get_input();
-            
+
             for (int i = input->first_added(); i < input->num_current(); ++i)
             {
                 const filter_params* params = input->get_current(i);
@@ -556,7 +558,7 @@ class select_filter : public typed_filter<T>
                 }
                 if(selected){
                   active_outputs.insert(params);
-                  set_output(params, out);
+                  typed_filter<T>::set_output(params, out);
                 }
             }
             for (int i = 0; i < input->num_changed(); ++i)
@@ -570,7 +572,7 @@ class select_filter : public typed_filter<T>
                 if(set_has(active_outputs, params)){
                   if(selected){
                     // Previously and currently selected - update
-                    set_output(params, out);
+                      typed_filter<T>::set_output(params, out);
                   } else {
                     // Previously but not currently selected - remove
                     active_outputs.erase(params);
@@ -580,7 +582,7 @@ class select_filter : public typed_filter<T>
                   if(selected){
                     // Not previously but currently selected - add
                     active_outputs.insert(params);
-                    set_output(params, out);
+                    typed_filter<T>::set_output(params, out);
                   } else {
                     // Not previously or currently selected - do nothing
                   }
@@ -606,13 +608,13 @@ class rank_filter : public typed_filter<double>
         rank_filter(Symbol* root, soar_interface* si, filter_input* input)
             : typed_filter<double>(root, si, input), best_input(NULL), select_highest(true)
         {}
-        
+
         virtual bool rank(const filter_params* params, double& r) = 0;
 
         void set_select_highest(bool sel_highest){
           select_highest = sel_highest;
         }
-        
+
     private:
 
         virtual bool update_outputs()
@@ -622,7 +624,7 @@ class rank_filter : public typed_filter<double>
             const filter_params* p;
 
             bool changed = false;
-          
+
             // Added inputs
             for (int i = input->first_added(); i < input->num_current(); ++i)
             {
@@ -634,7 +636,7 @@ class rank_filter : public typed_filter<double>
                 elems[p] = r;
                 changed = true;
             }
-            
+
             // Changed inputs
             for (int i = 0; i < input->num_changed(); ++i)
             {
@@ -654,7 +656,7 @@ class rank_filter : public typed_filter<double>
                 elems.erase(p);
                 changed = true;
             }
-            
+
             if (changed && !elems.empty())
             {
               // Calculate the best value
@@ -693,7 +695,7 @@ class rank_filter : public typed_filter<double>
 
             return true;
         }
-        
+
         std::map<const filter_params*, double> elems;
         const filter_params* best_input;
         bool select_highest;
@@ -707,8 +709,8 @@ class const_filter : public typed_filter<T>
 {
     public:
         const_filter(const T& v) : typed_filter<T>(NULL, NULL, NULL), added(false), v(v) {}
-        
-        
+
+
         bool update_outputs()
         {
             if (!added)
@@ -718,7 +720,7 @@ class const_filter : public typed_filter<T>
             }
             return true;
         }
-        
+
     private:
         T v;
         bool added;

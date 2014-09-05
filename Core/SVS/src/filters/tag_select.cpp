@@ -2,9 +2,9 @@
  *
  * file filters/tag_select.h
  *
- *  tag_select 
+ *  tag_select
  *    Parameters:
- *      sgnode a 
+ *      sgnode a
  *      string tag_name
  *      string tag_value
  *    Returns:
@@ -13,6 +13,8 @@
  ******************************************************************************/
 
 #include "filter.h"
+#include "scene.h"
+#include "filter_table.h"
 
 #include <string>
 

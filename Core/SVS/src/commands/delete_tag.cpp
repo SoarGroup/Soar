@@ -3,7 +3,7 @@
  * File: commands/delete_tag
  * Contains:
  *  class delete_tag
- *  
+ *
  *  Soar Command to delete a tag on a node
  *  Parameters:
  *     ^id <string> - id of the node to delete the tag on
@@ -16,6 +16,8 @@
 #include "filter.h"
 #include "svs.h"
 #include "scene.h"
+#include "command_table.h"
+#include "symtab.h"
 
 using namespace std;
 
@@ -28,13 +30,13 @@ class delete_tag_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-        
+
         ~delete_tag_command() {}
-        
+
         string description() {
             return string("delete_tag");
         }
-        
+
         bool update_sub(){
             if (first) {
                 first = false;
@@ -44,7 +46,7 @@ class delete_tag_command : public command
             } else {
                 return true;
             }
-            
+
             sgnode* n = scn->get_node(id);
             if (!n) {
                 set_status(string("Couldn't find node ") + id);
@@ -53,17 +55,17 @@ class delete_tag_command : public command
 
             n->delete_tag(tag_name);
             set_status("success");
-            
+
             return true;
         }
-        
+
         bool early() {
             return false;
         }
-        
+
         bool parse() {
             wme* idwme, *tagwme, *valwme;
-            
+
             // id - the id of the node to delete the tag from
             if (!si->find_child_wme(root, "id", idwme))
             {
@@ -74,7 +76,7 @@ class delete_tag_command : public command
                 set_status("object id must be a string");
                 return false;
             }
-            
+
             // tag_name - the name of the tag to delete
             if (!si->find_child_wme(root, "tag_name", tagwme)){
                 set_status("no tag_name specified");
@@ -87,7 +89,7 @@ class delete_tag_command : public command
 
             return true;
         }
-        
+
     private:
         Symbol*         root;
         scene*          scn;

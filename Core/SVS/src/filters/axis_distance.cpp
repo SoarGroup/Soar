@@ -27,6 +27,8 @@
  *********************************************************/
 #include "sgnode_algs.h"
 #include "filters/base_node_filters.h"
+#include "scene.h"
+#include "filter_table.h"
 
 #include <string>
 

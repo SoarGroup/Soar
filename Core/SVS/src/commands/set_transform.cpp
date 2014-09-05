@@ -3,7 +3,7 @@
  * File: commands/set_transform.cpp
  * Contains:
  *  class set_transform_command
- *  
+ *
  *  Soar Command to change the transform of a node (pos/rot/scale)
  *  Parameters:
  *     ^id <string> - id of the node to change
@@ -20,6 +20,8 @@
 #include "filter.h"
 #include "svs.h"
 #include "scene.h"
+#include "symtab.h"
+#include "command_table.h"
 
 using namespace std;
 
@@ -32,16 +34,16 @@ class set_transform_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-        
+
         ~set_transform_command()
         {
         }
-        
+
         string description()
         {
             return string("transform");
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -56,7 +58,7 @@ class set_transform_command : public command
             {
                 return true;
             }
-            
+
             sgnode* n = scn->get_node(id);
             if (!n)
             {
@@ -68,21 +70,21 @@ class set_transform_command : public command
             for(pi = props.begin(); pi != props.end(); pi++){
               n->set_trans(pi->first, pi->second);
             }
-            
+
             set_status("success");
-            
+
             return true;
         }
-        
+
         bool early()
         {
             return false;
         }
-        
+
         bool parse()
         {
             wme* idwme, *propwme;
-            
+
             if (!si->find_child_wme(root, "id", idwme))
             {
                 set_status("no object id specified");
@@ -107,7 +109,7 @@ class set_transform_command : public command
 
             return true;
         }
-        
+
     private:
         Symbol*         root;
         scene*          scn;

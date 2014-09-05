@@ -3,7 +3,7 @@
  * File: commands/set_tag.cpp
  * Contains:
  *  class set_tag_command
- *  
+ *
  *  Soar Command to set a tag on a node (key/val pair)
  *    If the tag already exists, this replaces the existing value
  *  Parameters:
@@ -17,6 +17,8 @@
 #include "filter.h"
 #include "svs.h"
 #include "scene.h"
+#include "symtab.h"
+#include "command_table.h"
 
 using namespace std;
 
@@ -29,13 +31,13 @@ class set_tag_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-        
+
         ~set_tag_command() {}
-        
+
         string description() {
             return string("set_tag");
         }
-        
+
         bool update_sub(){
             if (first) {
                 first = false;
@@ -45,7 +47,7 @@ class set_tag_command : public command
             } else {
                 return true;
             }
-            
+
             sgnode* n = scn->get_node(id);
             if (!n) {
                 set_status(string("Couldn't find node ") + id);
@@ -54,17 +56,17 @@ class set_tag_command : public command
 
             n->set_tag(tag_name, tag_value);
             set_status("success");
-            
+
             return true;
         }
-        
+
         bool early() {
             return false;
         }
-        
+
         bool parse() {
             wme* idwme, *tagwme, *valwme;
-            
+
             // id - the id of the node to set the tag of
             if (!si->find_child_wme(root, "id", idwme))
             {
@@ -75,7 +77,7 @@ class set_tag_command : public command
                 set_status("object id must be a string");
                 return false;
             }
-            
+
             // tag_name - the name of the tag to set
             if (!si->find_child_wme(root, "tag_name", tagwme)){
                 set_status("no tag_name specified");
@@ -85,7 +87,7 @@ class set_tag_command : public command
                 set_status("tag_name must be a string");
                 return false;
             }
-            
+
             // tag_value - the value of the tag to set
             if (!si->find_child_wme(root, "tag_value", valwme)){
                 set_status("no value specified");
@@ -98,7 +100,7 @@ class set_tag_command : public command
 
             return true;
         }
-        
+
     private:
         Symbol*         root;
         scene*          scn;
