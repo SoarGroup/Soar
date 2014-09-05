@@ -29,18 +29,20 @@
  *      set<sgnode> a
  *      set<sgnode> b
  *    Returns:
- *      The closest pair of nodes from a and b 
+ *      The closest pair of nodes from a and b
  *
  *  Filter farthest : node_comparison_rank_filter
  *    Parameters:
  *      set<sgnode> a
  *      set<sgnode> b
  *    Returns:
- *      The farthest pair of nodes from a and b 
+ *      The farthest pair of nodes from a and b
  *
  *********************************************************/
 #include "sgnode_algs.h"
 #include "filters/base_node_filters.h"
+#include "scene.h"
+#include "filter_table.h"
 
 #include <string>
 
@@ -116,7 +118,7 @@ filter* make_farthest_filter(Symbol* root, soar_interface* si, scene* scn, filte
 filter_table_entry* farthest_filter_entry(){
   filter_table_entry* e = new filter_table_entry();
   e->name = "farthest";
-  e->description = "Output node b farthest from node a"; 
+  e->description = "Output node b farthest from node a";
   e->parameters["a"] = "Sgnode a";
   e->parameters["b"] = "Sgnode b";
   e->parameters["distance_type"] = "Either centroid or hull";

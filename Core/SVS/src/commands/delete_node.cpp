@@ -3,7 +3,7 @@
  * File: commands/delete_node.cpp
  * Contains:
  *  class delete_node_command
- *  
+ *
  *  Soar Command to remove a node from the world
  *  Parameters:
  *     ^id <string> - id of the node to delete
@@ -15,6 +15,7 @@
 #include "svs.h"
 #include "soar_interface.h"
 #include "symtab.h"
+#include "command_table.h"
 
 using namespace std;
 
@@ -26,17 +27,17 @@ class delete_node_command : public command
         {
             si = state->get_svs()->get_soar_interface();
         }
-        
+
         string description()
         {
             return string("delete_node");
         }
-        
+
         bool early()
         {
             return false;
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -51,7 +52,7 @@ class delete_node_command : public command
             {
                 return true;
             }
-            
+
             if (scn->del_node(nodeId))
             {
                 set_status("success");
@@ -62,10 +63,10 @@ class delete_node_command : public command
                 set_status("Could not find the given node");
                 return false;
             }
-            
+
             return true;
         }
-        
+
     private:
         bool parse()
         {
@@ -76,17 +77,17 @@ class delete_node_command : public command
                 set_status("^id must be specified");
                 return false;
             }
-            
+
             // Get the value of the ^source-id wme
             if (!get_symbol_value(si->get_wme_val(idWme), nodeId))
             {
                 set_status("^id must be a string");
                 return false;
             }
-            
+
             return true;
         }
-        
+
         scene*             scn;
         Symbol*            root;
         soar_interface*    si;

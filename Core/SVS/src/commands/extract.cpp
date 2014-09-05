@@ -20,6 +20,7 @@
 #include "svs.h"
 #include "soar_interface.h"
 #include "symtab.h"
+#include "command_table.h"
 
 using namespace std;
 
@@ -31,7 +32,7 @@ class extract_command : public command, public filter_input::listener
         {
             si = state->get_svs()->get_soar_interface();
         }
-        
+
         ~extract_command()
         {
             if (fltr)
@@ -39,19 +40,19 @@ class extract_command : public command, public filter_input::listener
                 delete fltr;
             }
         }
-        
+
         string description()
         {
             return string("extract");
         }
-        
+
         bool update_sub()
         {
             if (!res_root)
             {
                 res_root = si->get_wme_val(si->make_id_wme(root, "result"));
             }
-            
+
             if (changed())
             {
                 clear_results();
@@ -59,7 +60,7 @@ class extract_command : public command, public filter_input::listener
                 {
                     delete fltr;
                 }
-                
+
                 fltr = parse_filter_spec(state->get_svs()->get_soar_interface(), root, state->get_scene());
                 if (!fltr)
                 {
@@ -69,7 +70,7 @@ class extract_command : public command, public filter_input::listener
                 fltr->listen_for_input(this);
                 first = true;
             }
-            
+
             if (fltr && (!once || first))
             {
                 if (!fltr->update())
@@ -83,12 +84,12 @@ class extract_command : public command, public filter_input::listener
             }
             return true;
         }
-        
+
         bool early()
         {
             return false;
         }
-        
+
         void reset_results()
         {
             clear_results();
@@ -99,13 +100,13 @@ class extract_command : public command, public filter_input::listener
             }
             out->clear_changes();
         }
-        
+
         void update_results()
         {
-        
+
             wme* w;
             filter_output* out = fltr->get_output();
-            
+
             for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i)
             {
                 handle_output(out->get_current(i));
@@ -125,7 +126,7 @@ class extract_command : public command, public filter_input::listener
                 handle_output(out->get_changed(i));
             }
         }
-        
+
         void clear_results()
         {
             record_map::iterator i, iend;
@@ -135,7 +136,7 @@ class extract_command : public command, public filter_input::listener
             }
             records.clear();
         }
-        
+
     private:
         wme* make_filter_val_wme(Symbol* id, const string& attr, filter_val* v)
         {
@@ -143,7 +144,7 @@ class extract_command : public command, public filter_input::listener
             double fv;
             bool bv;
             Symbol* single_val = NULL;
-            
+
             if (get_filter_val(v, iv))
             {
                 single_val = si->make_sym(iv);
@@ -156,12 +157,12 @@ class extract_command : public command, public filter_input::listener
             {
                 single_val = si->make_sym(bv ? "true" : "false");
             }
-            
+
             if (single_val != NULL)
             {
                 return si->make_wme(id, attr, single_val);
             }
-            
+
             map<string, string> rep;
             string def;
             v->get_rep(rep);
@@ -170,7 +171,7 @@ class extract_command : public command, public filter_input::listener
                 single_val = si->make_sym(def);
                 return si->make_wme(id, attr, single_val);
             }
-            
+
             wme* w = si->make_id_wme(id, attr);
             Symbol* subid = si->get_wme_val(w);
             map<string, string>::const_iterator i, iend;
@@ -185,14 +186,14 @@ class extract_command : public command, public filter_input::listener
             }
             return w;
         }
-        
+
         bool sym_reps_filter_val(Symbol* s, const filter_val* fv)
         {
             long fiv, siv;
             double ffv, sfv;
             bool fbv;
             string str;
-            
+
             if (get_filter_val(fv, fiv))
             {
                 return (get_symbol_value(s, siv) && siv == fiv);
@@ -205,17 +206,17 @@ class extract_command : public command, public filter_input::listener
             {
                 return (get_symbol_value(s, str) && ((fbv && str == "t") || (!fbv && str == "f")));
             }
-            
+
             map<string, string> rep;
             string def;
-            
+
             fv->get_rep(rep);
             if (map_get(rep, string(""), def))
             {
                 get_symbol_value(s, str);
                 return str == def;
             }
-            
+
             /*
              The filter_val has a struct representation. For now, always treat the symbol
              as being different. In the future, maybe compare the substructure of an id
@@ -224,12 +225,12 @@ class extract_command : public command, public filter_input::listener
             */
             return false;
         }
-        
+
         wme* make_value_wme(filter_val* v, Symbol* root)
         {
             return make_filter_val_wme(root, "value", v);
         }
-        
+
         void update_param_struct(const filter_params* p, Symbol* pid)
         {
             filter_params::const_iterator j;
@@ -247,7 +248,7 @@ class extract_command : public command, public filter_input::listener
                 }
             }
         }
-        
+
         void make_record(filter_val* output)
         {
             record r;
@@ -263,7 +264,7 @@ class extract_command : public command, public filter_input::listener
             records[output] = r;
             output->reset_dirty();
         }
-        
+
         void handle_output(filter_val* output)
         {
             record* r;
@@ -280,12 +281,12 @@ class extract_command : public command, public filter_input::listener
                 make_record(output);
             }
         }
-        
-        
+
+
         void handle_ctlist_change(const filter_params* p)
         {
             record_map::iterator i;
-            
+
             for (i = records.begin(); i != records.end(); ++i)
             {
                 if (i->second.params == p)
@@ -296,7 +297,7 @@ class extract_command : public command, public filter_input::listener
                 }
             }
         }
-        
+
         Symbol*         root;
         Symbol*         res_root;
         Symbol*         pos_root;  // identifier for positive atoms
@@ -305,7 +306,7 @@ class extract_command : public command, public filter_input::listener
         soar_interface* si;
         filter*         fltr;
         bool            first, once;
-        
+
         struct record
         {
             const filter_params* params;
@@ -314,7 +315,7 @@ class extract_command : public command, public filter_input::listener
             wme* params_wme;
             Symbol* rec_id;
         };
-        
+
         typedef map<filter_val*, record> record_map;
         record_map records;
 };
