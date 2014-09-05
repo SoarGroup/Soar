@@ -151,7 +151,7 @@ class remove_node_filter : public select_filter<sgnode*>
 {
     public:
         remove_node_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : select_filter<sgnode*>(root, si, input), scn(scn)
+            : select_filter<sgnode*>(root, si, input)
         {}
         
         bool compute(const filter_params* p, sgnode*& out, bool& select)
@@ -174,9 +174,6 @@ class remove_node_filter : public select_filter<sgnode*>
             select = (a != b);
             return true;
         }
-        
-    private:
-        scene* scn;
 };
 
 class node_bbox_filter : public map_filter<bbox>

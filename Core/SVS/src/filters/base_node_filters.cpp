@@ -58,12 +58,12 @@ bool node_comparison_select_filter::compute(const filter_params* p, sgnode*& out
 
   double sel_min;
   if(!get_filter_param(this, p, "min", sel_min)){
-    sel_min = min;
+    sel_min = range_min;
   }
 
   double sel_max;
   if(!get_filter_param(this, p, "max", sel_max)){
-    sel_max = max;
+    sel_max = range_max;
   }
 
   double res = comp(a, b, p);
@@ -107,12 +107,12 @@ bool node_evaluation_select_filter::compute(const filter_params* p, sgnode*& out
 
   double sel_min;
   if(!get_filter_param(this, p, "min", sel_min)){
-    sel_min = min;
+    sel_min = range_min;
   }
 
   double sel_max;
   if(!get_filter_param(this, p, "max", sel_max)){
-    sel_max = max;
+    sel_max = range_max;
   }
 
   double res = eval(a, p);
