@@ -41,7 +41,7 @@ inline void updateMultiAgent()
     else
         cout << endl << acc::Red << "Soar CLI in single agent mode.  Use " << acc::IYellow <<
              "create " << acc::Purple << "<agent-name>" << acc::Red << " to create another agent." << acc::Off << endl;
-             
+
     longestAgentName = 0;
     vector<Agent*>::iterator iter;
     for (iter = agents.begin(); iter != agents.end(); ++iter)
@@ -83,7 +83,7 @@ bool totalnesting(string line, int& result)
 {
     int nesting = 0;
     size_t p = line.find_first_of("{}|");
-    
+
     while (p != string::npos)
     {
         switch (line[p])
@@ -123,7 +123,7 @@ bool readcmd(string& result)
     int nestlvl, i, n;
     string line;
     stringstream cmd;
-    
+
     nestlvl = 0;
     while (getline(cin, line))
     {
@@ -142,7 +142,7 @@ bool readcmd(string& result)
             break;
         }
     }
-    
+
     if (nestlvl > 0)
     {
         return false;
@@ -175,7 +175,7 @@ void createagent(const char* agentname)
     currentAgent->SetOutputLinkChangeTracking(false);
     agents.push_back(currentAgent);
     cout << acc::Red << "Created agent " << agents.size() << " named " << agentname <<
-         ". Attempting to source " << agentname << ".soar:" << acc::Off << endl;
+         ". Attempting to source agent-specific init file: " << agentname << ".soar..." << acc::Off << endl;
     execcmd("source settings/" + string(agentname) + ".soar");
     updateMultiAgent();
 }
@@ -186,7 +186,7 @@ void printagents()
     {
         cout << acc::Red << "No agents currently exist." << acc::Off << endl;
     }
-    
+
     vector<Agent*>::iterator iter;
     int x = 1;
     cout << acc::Red << "===============" << acc::Off << endl;
@@ -255,7 +255,7 @@ void execcmd(const string& c)
 {
     bool isident = false;
     string out;
-    
+
     if (c == "exit")
     {
         sendAllAgentsCommand("halt");
@@ -290,7 +290,7 @@ void execcmd(const string& c)
     }
     else
     {
-    
+
         /* -- The following is a shortcut to allow the user to simply type an
          *    identifier on the command line to print it.  Not sure how
          *    useful this is, but it was in the old mincli but had a bug. -- */
@@ -315,7 +315,7 @@ void execcmd(const string& c)
         {
             pc = c;
         }
-        
+
         out = currentAgent->ExecuteCommandLine(pc.c_str());
         out = trim(out);
         cout << out;
@@ -325,7 +325,7 @@ void execcmd(const string& c)
 void repl()
 {
     string cmd, last;
-    
+
     while (cin)
     {
         cout << endl << acc::BIYellow << currentAgent->GetAgentName() << acc::BBlue << " % " << acc::Off;
@@ -377,7 +377,7 @@ string log_handler(smlRhsEventId id, void* userdata, Agent* thisAgent, char cons
     bool iscmd, append;
     string fn, text;
     int c;
-    
+
     iscmd = false;
     append = false;
     while (true)
@@ -398,7 +398,7 @@ string log_handler(smlRhsEventId id, void* userdata, Agent* thisAgent, char cons
     }
     while ((c = ss.get()) == ' ' || c == '\t');  // ignore leading whitespace
     ss.putback(c);
-    
+
     if (iscmd)
     {
         text = thisAgent->ExecuteCommandLine(args + ss.tellg());
@@ -407,7 +407,7 @@ string log_handler(smlRhsEventId id, void* userdata, Agent* thisAgent, char cons
     {
         text = (args + ss.tellg());
     }
-    
+
     f.open(fn.c_str(), ios_base::out | (append ? ios_base::app : ios_base::trunc));
     if (!f)
     {
@@ -431,7 +431,7 @@ int main(int argc, char* argv[])
     vector<string> sources;
     vector<string> cmds;
     vector<string>::iterator j;
-    
+
     for (i = 1; i < argc; ++i)
     {
         string a(argv[i]);
@@ -480,19 +480,19 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    
+
     if (parse_error)
     {
         cout << acc::Red << "Usage: " << acc::IYellow << argv[0] << " [-o] [-n <agent name>] [-p <port>] [-s <source>] <commands> ..." << acc::Off << endl;
         return 1;
     }
-    
+
     for (; i < argc; ++i)
     {
         cmds.push_back(argv[i]);
         interactive = false;
     }
-    
+
 //  pthread_setname_np("minCLI_main_thread");
 //  cout << "minCLI thread is " << tname2() << acc::Off << endl;
 
@@ -506,27 +506,27 @@ int main(int argc, char* argv[])
         cout << acc::Red << "Instantiating Soar.  (kernel in current thread (optimized) on port " << port << ")" << acc::Off << endl;
         kernel = Kernel::CreateKernelInCurrentThread(true, port);
     }
-    
+
     kernel->AddRhsFunction("exit", exit_handler, NULL);
     kernel->AddRhsFunction("log", log_handler, NULL);
-    
+
     createagent(agentname);
-    
+
     if (signal(stopsig, SIG_IGN) != SIG_IGN)
     {
         signal(stopsig, sighandler);
     }
-    
+
     for (j = sources.begin(); j != sources.end(); ++j)
     {
         execcmd("source " + *j);
     }
-    
+
     for (j = cmds.begin(); j != cmds.end(); ++j)
     {
         execcmd(*j);
     }
-    
+
     if (interactive)
     {
         repl();
