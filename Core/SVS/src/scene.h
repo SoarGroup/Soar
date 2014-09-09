@@ -39,8 +39,8 @@ class scene : public sgnode_listener, public cliproxy
         void get_all_nodes(std::vector<sgnode*>& nodes);
         void get_all_nodes(std::vector<const sgnode*>& nodes) const;
         
-        bool add_node(const std::string& name, sgnode* n);
-        bool del_node(const std::string& name);
+        bool add_node(const std::string& parent_id, sgnode* n);
+        bool del_node(const std::string& id);
         void clear();
         
         bool parse_sgel(const std::string& s);

@@ -77,10 +77,10 @@ bool parse_verts(vector<string>& f, int& start, ptlist& verts, string& error)
 
 
 scene::scene(const string& name, svs* owner)
-    : name(name), owner(owner), draw(false), nodes(1)
+    : name(name), owner(owner), draw(false)
 {
     root = new group_node(root_id);
-    nodes[0] = root;
+    nodes.push_back(root);
     root->listen(this);
 }
 
@@ -97,7 +97,12 @@ scene* scene::clone(const string& cname) const
     std::vector<sgnode*> node_clones;
     
     c = new scene(cname, owner);
+    // Remove empty root
+    c->root->unlisten(c);
+    c->nodes.clear();
     delete c->root;
+
+    // Replace with copy of root
     c->root = root->clone()->as_group(); // root->clone copies entire scene graph
     c->root->walk(c->nodes);
     for (int i = 0, iend = c->nodes.size(); i < iend; ++i)
@@ -125,7 +130,7 @@ const sgnode* scene::get_node(const string& id) const
     node_table::const_iterator i, iend;
     for (i = nodes.begin(), iend = nodes.end(); i != iend; ++i)
     {
-        if ((*i)->get_id() == name)
+        if ((*i)->get_id() == id)
         {
             return *i;
         }
@@ -161,9 +166,9 @@ void scene::get_all_nodes(vector<const sgnode*>& n) const
     }
 }
 
-bool scene::add_node(const string& id, sgnode* n)
+bool scene::add_node(const string& parent_id, sgnode* n)
 {
-    group_node* par = get_group(id);
+    group_node* par = get_group(parent_id);
     if (!par)
     {
         return false;
@@ -410,7 +415,7 @@ int scene::parse_change(vector<string>& f, string& error)
 //   parses a tag command (command 't')
 //   f is a list of the parameters given
 //   Changed the format of the command to be
-//     t <subcommand> <id> <tag_name> <value?>
+//     tag <subcommand> <id> <tag_name> <value?>
 //      <subcommand> - either add, change, or delete (we just test for the first character)
 //      <id> - id of the node
 //      <tag_name> - the name of the tag

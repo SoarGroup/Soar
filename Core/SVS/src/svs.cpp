@@ -34,7 +34,7 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
     : soarint(si), id(ident), parent(parent), node(node)
 {
     node->listen(this);
-    name_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_id());
+    id_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_id());
     
     if (node->is_group())
     {
@@ -60,7 +60,7 @@ sgwme::~sgwme()
     {
         node->unlisten(this);
     }
-    soarint->remove_wme(name_wme);
+    soarint->remove_wme(id_wme);
 
     map<string, wme*>::iterator ti;
     for(ti = tags.begin(); ti != tags.end(); ti++){
@@ -252,9 +252,6 @@ void svs_state::update_cmd_results(bool early)
     }
 }
 
-//#include <iostream>
-//using namespace std;
-
 void svs_state::process_cmds()
 {
     wme_list all;
@@ -409,6 +406,7 @@ void svs::state_deletion_callback(Symbol* state)
         scn_cache = s->get_scene();
         s->disown_scene();
     }
+
     delete s;
     state_stack.pop_back();
 }

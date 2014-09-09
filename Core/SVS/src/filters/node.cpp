@@ -151,24 +151,30 @@ class all_nodes_filter : public filter, public sgnode_listener
 class remove_node_filter : public select_filter<sgnode*>
 {
     public:
-        remove_node_filter(Symbol* root, soar_interface* si, filter_input* input)
+        remove_node_filter(Symbol* root, soar_interface* si, filter_input* input, scene* scn)
             : select_filter<sgnode*>(root, si, input), scn(scn)
         {}
 
         bool compute(const filter_params* p, sgnode*& out, bool& select)
         {
+
             sgnode* a;
-            sgnode* b;
+            string id;
 
             if (!get_filter_param(this, p, "a", a))
             {
                 set_status("expecting parameter a");
                 return false;
             }
-            if (!get_filter_param(this, p, "b", b))
+            if (!get_filter_param(this, p, "id", id))
             {
-                set_status("expecting parameter b");
+                set_status("expecting parameter id");
                 return false;
+            }
+            sgnode* b = scn->get_node(id);
+            if(!b){
+              set_status("The given node doesn't exist");
+              return false;
             }
 
             out = a;
@@ -258,7 +264,7 @@ filter* make_node_bbox_filter(Symbol* root, soar_interface* si, scene* scn, filt
 
 filter* make_remove_node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
-    return new remove_node_filter(root, si, input);
+    return new remove_node_filter(root, si, input, scn);
 }
 
 filter* make_combine_nodes_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)

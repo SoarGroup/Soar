@@ -44,7 +44,7 @@ class sgwme : public sgnode_listener
         sgwme*          parent;
         sgnode*         node;
         Symbol*         id;
-        wme*            name_wme;
+        wme*            id_wme;
         soar_interface* soarint;
         
         std::map<sgwme*, wme*> childs;

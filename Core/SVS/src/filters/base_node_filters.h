@@ -148,21 +148,21 @@ class node_comparison_select_filter : public select_filter<sgnode*> {
     node_comparison_select_filter(Symbol* root, soar_interface* si, 
         filter_input* input, node_comparison* comp)
       : select_filter<sgnode*>(root, si, input), comp(comp), 
-        min(-1000000000), max(1000000000)
+        range_min(-1000000000), range_max(1000000000)
     {}
 
     bool compute(const filter_params* p, sgnode*& out, bool& select);
 
     void set_min(bool sel_min){
-      min = sel_min;
+      range_min = sel_min;
     }
     void set_max(bool sel_max){
-      max = sel_max;
+      range_max = sel_max;
     }
   private:
     node_comparison* comp;
-    double min;
-    double max;
+    double range_min;
+    double range_max;
 };
 
 class node_comparison_rank_filter : public rank_filter {
@@ -197,21 +197,21 @@ class node_evaluation_select_filter : public select_filter<sgnode*> {
     node_evaluation_select_filter(Symbol* root, soar_interface* si, 
         filter_input* input, node_evaluation* eval)
       : select_filter<sgnode*>(root, si, input), eval(eval), 
-        min(-1000000000), max(1000000000)
+        range_min(-1000000000), range_max(1000000000)
     {}
 
     bool compute(const filter_params* p, sgnode*& out, bool& select);
 
     void set_min(bool sel_min){
-      min = sel_min;
+      range_min = sel_min;
     }
     void set_max(bool sel_max){
-      max = sel_max;
+      range_max = sel_max;
     }
   private:
     node_evaluation* eval;
-    double min;
-    double max;
+    double range_min;
+    double range_max;
 };
 
 class node_evaluation_rank_filter : public rank_filter {

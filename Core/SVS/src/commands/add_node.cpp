@@ -23,7 +23,7 @@
 using namespace std;
 
 enum GeometryType{
-  BOX, SPHERE, NONE, PT
+  BOX_GEOM, SPHERE_GEOM, NONE_GEOM, POINT_GEOM
 };
 
 class add_node_command : public command
@@ -112,13 +112,13 @@ class add_node_command : public command
             geom = "group";
           }
           if(geom == "box"){
-            geom_type = BOX;
+            geom_type = BOX_GEOM;
           } else if(geom == "point"){
-            geom_type = PT;
+            geom_type = POINT_GEOM;
           } else if(geom == "sphere"){
-            geom_type = SPHERE;
+            geom_type = SPHERE_GEOM;
           } else {
-            geom_type = NONE;
+            geom_type = NONE_GEOM;
           }
           return true;
         }
@@ -128,17 +128,17 @@ class add_node_command : public command
             ptlist verts;
 
             switch(geom_type){
-              case NONE:
+              case NONE_GEOM:
                 n = new group_node(node_id);
                 break;
-              case SPHERE:
+              case SPHERE_GEOM:
                 n = new ball_node(node_id, 1.0);
                 break;
-              case PT:
+              case POINT_GEOM:
                 verts.push_back(vec3(0, 0, 0));
                 n = new convex_node(node_id, verts);
                 break;
-              case BOX:
+              case BOX_GEOM:
                 verts = bbox_vertices();
                 n = new convex_node(node_id, verts);
                 break;
