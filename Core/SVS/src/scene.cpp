@@ -415,7 +415,7 @@ int scene::parse_change(vector<string>& f, string& error)
 //   parses a tag command (command 't')
 //   f is a list of the parameters given
 //   Changed the format of the command to be
-//     t <subcommand> <id> <tag_name> <value?>
+//     tag <subcommand> <id> <tag_name> <value?>
 //      <subcommand> - either add, change, or delete (we just test for the first character)
 //      <id> - id of the node
 //      <tag_name> - the name of the tag
