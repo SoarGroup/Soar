@@ -113,7 +113,6 @@ namespace cli
             virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
             virtual bool DoAlias(std::vector< std::string >* argv = 0);
             virtual bool DoAllocate(const std::string& pool, int blocks);
-            virtual bool DoBreak(const char& mode, const std::string& production);
             virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
             virtual bool DoCD(const std::string* pDirectory = 0);
             virtual bool DoChunkNameFormat(const chunkNameFormats* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
@@ -151,6 +150,7 @@ namespace cli
             virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
             virtual bool DoNumericIndifferentMode(bool query, const ni_mode mode);
             virtual bool DoOSupportMode(int mode = -1);
+            virtual bool DoPbreak(const char& mode, const std::string& production);
             virtual bool DoPopD();
             virtual bool DoPort();
             virtual bool DoPredict();

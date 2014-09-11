@@ -40,7 +40,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::AddWMECommand(*this));
     m_Parser.AddCommand(new cli::AliasCommand(*this));
     m_Parser.AddCommand(new cli::AllocateCommand(*this));
-    m_Parser.AddCommand(new cli::BreakCommand(*this));
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkNameFormatCommand(*this));
@@ -78,6 +77,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
     m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
     m_Parser.AddCommand(new cli::OSupportModeCommand(*this));
+    m_Parser.AddCommand(new cli::PbreakCommand(*this));
     m_Parser.AddCommand(new cli::PopDCommand(*this));
     m_Parser.AddCommand(new cli::PortCommand(*this));
     m_Parser.AddCommand(new cli::PredictCommand(*this));

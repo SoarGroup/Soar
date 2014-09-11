@@ -28,7 +28,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoBreak(const char& mode, const std::string& production)
+bool CommandLineInterface::DoPbreak(const char& mode, const std::string& production)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     
