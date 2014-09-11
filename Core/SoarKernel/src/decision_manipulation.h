@@ -15,8 +15,6 @@
 
 #include <string>
 
-
-
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
 

@@ -82,7 +82,7 @@ typedef struct ms_change_struct
     struct rete_node_struct* p_node;       /* for retractions, this can be NIL
                                             if the p_node has been excised */
     struct token_struct* tok;            /* for assertions only */
-    
+
     wme* w;                              /* for assertions only */
     struct instantiation_struct* inst;   /* for retractions only */
     /* REW: begin 08.20.97 */
