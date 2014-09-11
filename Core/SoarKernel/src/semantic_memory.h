@@ -182,6 +182,7 @@ class smem_timer_container: public soar_module::timer_container
 		soar_module::timer *total;
 		soar_module::timer *storage;
 		soar_module::timer *ncb_retrieval;
+		soar_module::timer *spontaneous;
 		soar_module::timer *query;
 		soar_module::timer *api;
 		soar_module::timer *init;

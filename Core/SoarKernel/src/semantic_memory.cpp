@@ -320,6 +320,9 @@ smem_timer_container::smem_timer_container( agent *new_agent ): soar_module::tim
 
 	act = new smem_timer( "three_activation", my_agent, soar_module::timer::three );
 	add( act );
+
+	spontaneous = new smem_timer( "smem_spontaneous", my_agent, soar_module::timer::two );
+	add( spontaneous );
 }
 
 //
@@ -4238,6 +4241,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 			else if ( should_spontaneously_retrieve )
 			{
+				my_agent->smem_timers->spontaneous->start();
 				// spontaneous retrieval
 				// get the LTI with the highest activation
 				//std::cout << "looking for LTI to spontaneously retrieve" << std::endl;
@@ -4267,6 +4271,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				q->reinitialize();
 				// only set a boolean here to allow for spontaneous retrievals on different level goals
 				spontaneously_retrieved = true;
+				my_agent->smem_timers->spontaneous->stop();
 			}
 
 			if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
