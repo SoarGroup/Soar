@@ -5555,8 +5555,8 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
     to_string(lti_number, temp_str);
     return_val->append(temp_str);
 
-	Bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
-	
+	bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
+
 	// get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
     expand_q->bind_int(1, lti_id);
     while (expand_q->execute() == soar_module::row)
@@ -5565,26 +5565,27 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
         switch (expand_q->column_int(0))
 		{
             case STR_CONSTANT_SYMBOL_TYPE:
+            {
                 smem_reverse_hash_str(thisAgent, expand_q->column_int(1), temp_str);
-				
+
 				if (count(temp_str.begin(), temp_str.end(), ' ') > 0)
 				{
 					temp_str.insert(0, "|");
 					temp_str += '|';
 					break;
 				}
-				
-				soar::Lexer::determine_possible_symbol_types_for_string(temp_str.c_str(),
-																		temp_str.length(),
+
+				determine_possible_symbol_types_for_string(temp_str.c_str(),
+																		strlen(temp_str.c_str()),
 																		&possible_id,
 																		&possible_var,
 																		&possible_sc,
 																		&possible_ic,
 																		&possible_fc,
 																		&is_rereadable);
-				
+
 				bool has_angle_bracket = temp_str[0] == '<' || temp_str[temp_str.length() - 1] == '>';
-				
+
 				if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
 					(!is_rereadable) ||
 					has_angle_bracket)
@@ -5633,16 +5634,17 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
             switch (expand_q->column_int(2))
 			{
                 case STR_CONSTANT_SYMBOL_TYPE:
+                {
                     smem_reverse_hash_str(thisAgent, expand_q->column_int(3), temp_str2);
-					
+
 					if (count(temp_str2.begin(), temp_str2.end(), ' ') > 0)
 					{
 						temp_str2.insert(0, "|");
 						temp_str2 += '|';
 						break;
 					}
-					
-					soar::Lexer::determine_possible_symbol_types_for_string(temp_str2.c_str(),
+
+					determine_possible_symbol_types_for_string(temp_str2.c_str(),
 																			temp_str2.length(),
 																			&possible_id,
 																			&possible_var,
@@ -5650,9 +5652,9 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
 																			&possible_ic,
 																			&possible_fc,
 																			&is_rereadable);
-					
+
 					bool has_angle_bracket = temp_str2[0] == '<' || temp_str2[temp_str2.length() - 1] == '>';
-					
+
 					if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
 						(!is_rereadable) ||
 						has_angle_bracket)
@@ -5681,7 +5683,7 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
 		}
 
         augmentations[ temp_str ].push_back(temp_str2);
-	}
+    }
 	expand_q->reinitialize();
 
 	// output augmentations nicely
