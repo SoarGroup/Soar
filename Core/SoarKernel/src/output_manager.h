@@ -73,13 +73,14 @@ class Output_Manager
 
         void init();
         void fill_mode_info();
-        bool debug_mode_enabled(TraceMode mode);
-        void    set_default_agent(agent* pSoarAgent);
-        agent* get_default_agent()
-        {
-            return m_defaultAgent;
-        };
+
         void set_dprint_enabled(bool activate);
+        bool debug_mode_enabled(TraceMode mode);
+
+        void set_default_agent(agent* pSoarAgent);
+        void clear_default_agent() { m_defaultAgent = NULL; }
+        agent* get_default_agent() { return m_defaultAgent; };
+
 
         /* Print functions that don't take an agent.  Will use default agent if necessary */
         void printv(const char* format, ...);
