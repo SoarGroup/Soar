@@ -14,9 +14,11 @@
  *     ^rotation <vec3> [Optional] - rotation of the new node
  *     ^scale <vec3> [Optional] - scale of the new node
  *       (These transforms default to that of the source node)
+ *     ^copy_tags <bool> [Optional] - whether to copy tags from source
  **********************************************************/
 #include <iostream>
 #include <string>
+#include <map>
 #include "command.h"
 #include "filter.h"
 #include "svs.h"
@@ -121,6 +123,14 @@ class copy_node_command : public command
               transforms['s'] = trans;
             }
 
+            // ^copy_tags << true false >>
+            copy_tags = false;
+            string copy_str;
+            if(si->get_const_attr(root, "copy_tags", copy_str) &&
+                copy_str == "true"){
+              copy_tags = true;
+            }
+
             return true;
         }
 
@@ -145,6 +155,14 @@ class copy_node_command : public command
             dest_node->set_trans('r', transforms['r']);
             dest_node->set_trans('s', transforms['s']);
 
+            if(copy_tags){
+              const tag_map& tags = source_node->get_all_tags();
+              tag_map::const_iterator tag_it;
+              for(tag_it = tags.begin(); tag_it != tags.end(); tag_it++){
+                dest_node->set_tag(tag_it->first, tag_it->second);
+              }
+            }
+
             set_status("success");
             return true;
         }
@@ -159,6 +177,7 @@ class copy_node_command : public command
         group_node* parent;
         string node_id;
         map<char, vec3> transforms;
+        bool copy_tags;
 };
 
 command* _make_copy_node_command_(svs_state* state, Symbol* root)
@@ -176,6 +195,7 @@ command_table_entry* copy_node_command_entry(){
   e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
   e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
   e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
+  e->parameters["copy_tags"] = "[Optional] - true/false to copy tags from source node";
   e->create = &_make_copy_node_command_;
   return e;
 }
