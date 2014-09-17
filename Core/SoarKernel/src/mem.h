@@ -135,8 +135,6 @@
 #include <stdlib.h> // malloc
 #endif // !_WIN32
 
-typedef struct agent_struct agent;
-
 extern void init_memory_utilities(agent* thisAgent);
 
 /* ----------------------- */
@@ -270,20 +268,20 @@ inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_p
     //  (at least, everything appears to work properly if you swap these lines):
     // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
     (p)->free_list =  *(void**)(*(dest_item_pointer));
-    
+
     fill_with_zeroes(*(dest_item_pointer), (p)->item_size);
     increment_used_count(p);
-    
+
 #else // !MEM_POOLS_ENABLED
     // this is for debugging -- it disables the memory pool usage and just allocates
     //  new memory every time.  If you want to use it, be sure to make the corresponding
     //  change to free_with_pool below
     *dest_item_pointer = static_cast< T* >(malloc(sizeof(T)));
-    
+
     // simply prevents compiler warnings when memory pools disabled
 //   thisAgent=thisAgent;
 //   p=p;
-    
+
 #endif // !MEM_POOLS_ENABLED
 }
 
@@ -295,13 +293,13 @@ inline void free_with_pool(memory_pool* p, T* item)
     *(void**)(item) = (p)->free_list;
     (p)->free_list = (void*)(item);
     decrement_used_count(p);
-    
+
 #else // !MEM_POOLS_ENABLED
     // this is for debugging -- it disables the memory pool usage and just deallocates
     //  the memory every time.  If you want to use it, be sure to make the corresponding
     //  change to allocate_with_pool above
     free(item);
-    
+
     // simply prevents compiler warnings when memory pools disabled
 //   p=p;
 #endif // !MEM_POOLS_ENABLED

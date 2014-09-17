@@ -34,6 +34,15 @@ To disable:
 
 % cli Tcl off
 
+IMPORTANT NOTE:
+
+If you'd like to have Tcl turned on automatically when Soar launches, add the 
+above command to your settings.soar file in the main Soar directory.  If you
+plan to source files that contain tcl commands, you must turn on tcl through the
+settings file or in a separate command issued prior to your source command.  Due
+to some technical limitation, Soar cannot currently source a file that both turns 
+on Tcl and uses it immediately.
+
 ===================
 Binary Installation
 ===================
@@ -81,12 +90,13 @@ Known Bugs
 Caveats
 =======
 
-1.	You cannot turn tcl on in a sourced file that has tcl code in it
+1.	You cannot turn tcl on and execute tcl code in the same file
 
 Soar cannot deal with such files because it does not load the tcl interpreter
-until the source command completes.  Future versions can remedy this issue.  A
-more immediate solution would be to have TclSoarLib automatically loaded on
-Soar launch, if it exists.
+until the source command completes.  If you'd like to have Tcl turned on 
+automatically when Soar launches, add a 'cli tcl on' command to your settings.soar 
+file in the main Soar directory.  You can also turn it on at the command line
+and then source your file.
 
 2.	Currently uses two aliasing mechanism
 

@@ -141,19 +141,19 @@ typedef struct wme_struct
     tc_number grounds_tc;                     /* for chunker use only */
     tc_number potentials_tc, locals_tc;
     struct preference_struct* chunker_bt_pref;
-    
+
     /* REW: begin 09.15.96 */
     struct gds_struct* gds;
     struct wme_struct* gds_next, *gds_prev; /* used for dll of wmes in gds */
     /* REW: end   09.15.96 */
-    
-    
+
+
     epmem_node_id epmem_id;
     uint64_t epmem_valid;
-    
+
     wma_decay_element* wma_decay_el;
     tc_number wma_tc_value;
-    
+
 } wme;
 
 inline void wme_add_ref(wme* w)

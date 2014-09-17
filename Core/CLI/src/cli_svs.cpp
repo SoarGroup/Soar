@@ -10,10 +10,10 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
 {
     std::string out;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    
+
     if (args.size() == 1)
     {
-        m_Result << "Soar Visual System is " << (thisAgent->svs->is_enabled() ? "enabled." : "disabled.");
+        m_Result << "Spatial Visual System is " << (thisAgent->svs->is_enabled() ? "enabled." : "disabled.");
         return true;
     }
     else if (args.size() == 2)
@@ -22,12 +22,12 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
         {
             if (thisAgent->svs->is_enabled())
             {
-                m_Result << "Soar Visual System is already enabled.";
+                m_Result << "Spatial Visual System is already enabled.";
             }
             else
             {
                 thisAgent->svs->set_enabled(true);
-                m_Result << "Soar Visual System enabled.";
+                m_Result << "Spatial Visual System enabled.";
             }
             return true;
         }
@@ -35,12 +35,12 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
         {
             if (!thisAgent->svs->is_enabled())
             {
-                m_Result << "Soar Visual System is already disabled.";
+                m_Result << "Spatial Visual System is already disabled.";
             }
             else
             {
                 thisAgent->svs->set_enabled(false);
-                m_Result << "Soar Visual System disabled.";
+                m_Result << "Spatial Visual System disabled.";
             }
             return true;
         }
@@ -60,7 +60,7 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
     }
     else
     {
-        m_Result << "Soar Visual System is currently disabled.  Please enable to execute SVS commands.";
+        m_Result << "Spatial Visual System is currently disabled.  Please enable to execute SVS commands.";
         return false;
     }
 }

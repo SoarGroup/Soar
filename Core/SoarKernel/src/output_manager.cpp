@@ -36,7 +36,7 @@ void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pS
 
     m_Kernel = pKernel;
     m_Soar_Instance = pSoarInstance;
-    
+
     if (db_dbg_mode || db_mode)
     {
         soar_module::sqlite_database* new_db = new soar_module::sqlite_database();
@@ -48,27 +48,27 @@ void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pS
 Output_Manager::Output_Manager()
 {
     fill_mode_info();
-    
+
     m_defaultAgent = NIL;
     m_params = new OM_Parameters();
     m_db = NIL;
-    
+
     next_output_string = 0;
-    
+
     print_enabled = OM_Init_print_enabled;
     dprint_enabled = OM_Init_dprint_enabled;
     db_mode = OM_Init_db_mode;
     stdout_mode = OM_Init_stdout_mode;
     file_mode = OM_Init_file_mode;
-    
+
     db_dbg_mode = OM_Init_db_dbg_mode;
     stdout_dbg_mode = OM_Init_stdout_dbg_mode;
     file_dbg_mode = OM_Init_file_dbg_mode;
-    
+
     /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best
      *    place to put it.  Leaving here for now. -- */
     NULL_SYM_STR = strdup("NULL");
-    
+
 }
 
 bool Output_Manager::debug_mode_enabled(TraceMode mode)
@@ -97,16 +97,36 @@ void Output_Manager::set_dprint_enabled(bool activate)
 Output_Manager::~Output_Manager()
 {
     free(NULL_SYM_STR);
-    
+
     for (int i = 0; i < num_trace_modes; i++)
     {
         delete mode_info[i].prefix;
     }
-    
+
     delete m_params;
     if (m_db)
     {
         delete m_db;
+    }
+}
+
+int Output_Manager::get_printer_output_column(agent* thisAgent)
+{
+    if (thisAgent)
+    {
+        return thisAgent->output_settings->printer_output_column;
+    } else {
+        return global_printer_output_column;
+    }
+}
+
+void Output_Manager::set_printer_output_column(agent* thisAgent, int pOutputColumn)
+{
+    if (thisAgent)
+    {
+        thisAgent->output_settings->printer_output_column = pOutputColumn;
+    } else {
+        global_printer_output_column = pOutputColumn;
     }
 }
 
@@ -116,49 +136,47 @@ void Output_Manager::start_fresh_line(agent* pSoarAgent)
     {
         pSoarAgent = m_defaultAgent;
     }
-    if (printer_output_column != 1)
+    if (global_printer_output_column != 1)
     {
         print_agent(pSoarAgent, "\n");
     }
 }
 
-void Output_Manager::update_printer_columns(agent* pSoarAgent, bool update_global, const char* msg)
+void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
 {
     const char* ch;
-    
-    if (pSoarAgent)
+
+    for (ch = msg; *ch != 0; ch++)
     {
-        for (ch = msg; *ch != 0; ch++)
+        if (*ch == '\n')
         {
-            if (*ch == '\n')
+            if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column = 1;
             }
-            else
+            if (stdout_mode)
+            {
+                global_printer_output_column = 1;
+            }
+        }
+        else
+        {
+            if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column++;
             }
-        }
-    }
-    if (update_global)
-    {
-        for (ch = msg; *ch != 0; ch++)
-        {
-            if (*ch == '\n')
+            if (stdout_mode)
             {
-                printer_output_column = 1;
-            }
-            else
-            {
-                printer_output_column++;
+                global_printer_output_column++;
             }
         }
     }
 }
+
 void Output_Manager::print_db_agent(agent* pSoarAgent, MessageType msgType, TraceMode mode, const char* msg)
 {
     soar_module::sqlite_statement*   target_statement = NIL;
-    
+
     if (((msgType == trace_msg) && mode_info[mode].trace_enabled) ||
             ((msgType == debug_msg) && mode_info[mode].debug_enabled))
     {
@@ -172,7 +190,7 @@ void Output_Manager::printv(const char* format, ...)
     {
         va_list args;
         char buf[PRINT_BUFSIZE];
-        
+
         va_start(args, format);
         vsprintf(buf, format, args);
         va_end(args);
@@ -184,7 +202,7 @@ void Output_Manager::printv_agent(agent* pSoarAgent, const char* format, ...)
 {
     va_list args;
     char buf[PRINT_BUFSIZE];
-    
+
     va_start(args, format);
     vsprintf(buf, format, args);
     va_end(args);
@@ -199,16 +217,16 @@ void Output_Manager::print_agent(agent* pSoarAgent, const char* msg)
         {
             soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(msg)));
         }
-        
+
         if (stdout_mode)
         {
             fputs(msg, stdout);
         }
-        
+
     }
-    
-    update_printer_columns(pSoarAgent, stdout_mode, msg);
-    
+
+    update_printer_columns(pSoarAgent, msg);
+
     if (db_mode)
     {
         m_db->print_db(trace_msg, mode_info[No_Mode].prefix->c_str(), msg);
@@ -219,7 +237,7 @@ void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, Trace
 {
     bool printer_column_updated = false;
     std::string newTrace;
-    
+
     if (mode_info[mode].debug_enabled && dprint_enabled)
     {
         if (!no_prefix)
@@ -238,16 +256,16 @@ void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, Trace
             {
                 soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(newTrace.c_str())));
             }
-            
+
             if (stdout_mode)
             {
                 fputs(newTrace.c_str(), stdout);
             }
-            
+
         }
-        
-        update_printer_columns(pSoarAgent, stdout_mode, msg);
-        
+
+        update_printer_columns(pSoarAgent, msg);
+
         if (db_mode)
         {
             m_db->print_db(debug_msg, mode_info[mode].prefix->c_str(), msg);
@@ -258,9 +276,9 @@ void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, Trace
 void Output_Manager::print_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode, bool no_prefix)
 {
     bool printer_column_updated = false;
-    
+
     std::string newTrace;
-    
+
     if (mode_info[mode].trace_enabled)
     {
         if (!no_prefix)
@@ -273,7 +291,7 @@ void Output_Manager::print_prefix_agent(agent* pSoarAgent, const char* msg, Trac
         {
             newTrace.assign(msg);
         }
-        
+
         print_agent(pSoarAgent, newTrace.c_str());
     }
 }
@@ -287,7 +305,7 @@ void Output_Manager::fill_mode_info()
     mode_info[TM_CHUNKING].prefix =               new std::string("Chunk ");
     mode_info[TM_RL].prefix =                     new std::string("RL    ");
     mode_info[TM_WMA].prefix =                    new std::string("WMA   ");
-    
+
     mode_info[DT_DEBUG].prefix =                      new std::string("Debug ");
     mode_info[DT_ID_LEAKING].prefix =                 new std::string("ID Leak ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =         new std::string("VrblzLHS");
@@ -315,7 +333,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_CONSTRAINTS].prefix =                new std::string("Cnstrnts");
     mode_info[DT_MERGE].prefix =                      new std::string("Merge Cs");
     mode_info[DT_FIX_CONDITIONS].prefix =             new std::string("Fix Cond");
-    
+
     mode_info[No_Mode].trace_enabled =                      TRACE_Init_No_Mode;
     mode_info[TM_EPMEM].trace_enabled =                     TRACE_Init_TM_EPMEM;
     mode_info[TM_SMEM].trace_enabled =                      TRACE_Init_TM_SMEM;
@@ -323,7 +341,7 @@ void Output_Manager::fill_mode_info()
     mode_info[TM_CHUNKING].trace_enabled =                  TRACE_Init_TM_CHUNKING;
     mode_info[TM_RL].trace_enabled =                        TRACE_Init_TM_RL;
     mode_info[TM_WMA].trace_enabled =                       TRACE_Init_TM_WMA;
-    
+
     mode_info[No_Mode].debug_enabled =                        TRACE_Init_DT_No_Mode;
     mode_info[DT_DEBUG].debug_enabled =                       TRACE_Init_DT_DEBUG;
     mode_info[DT_ID_LEAKING].debug_enabled =                  TRACE_Init_DT_ID_LEAKING;
@@ -350,7 +368,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_CONSTRAINTS].debug_enabled =                 TRACE_Init_DT_CONSTRAINTS;
     mode_info[DT_MERGE].debug_enabled =                       TRACE_Init_DT_MERGE;
     mode_info[DT_FIX_CONDITIONS].debug_enabled =              TRACE_Init_DT_FIX_CONDITIONS;
-    
+
 }
 
 

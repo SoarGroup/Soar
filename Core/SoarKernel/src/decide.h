@@ -35,7 +35,6 @@ typedef struct wme_struct wme;
 typedef struct slot_struct slot;
 typedef struct instantiation_struct instantiation;
 typedef struct preference_struct preference;
-typedef struct agent_struct agent;
 typedef struct cons_struct cons;
 typedef cons list;
 typedef struct dl_cons_struct dl_cons;
@@ -187,7 +186,7 @@ typedef struct slot_struct
                                              has changed + or ! pref's */
 
     wma_sym_reference_map* wma_val_references;
-    
+
 } slot;
 
 /* MMA 8-2012 */

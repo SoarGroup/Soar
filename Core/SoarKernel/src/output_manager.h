@@ -46,7 +46,7 @@ class AgentOutput_Info
 {
     public:
         AgentOutput_Info();
-        
+
         bool print_enabled, db_mode, callback_mode, file_mode;
         bool dprint_enabled, db_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
         int  printer_output_column;
@@ -58,7 +58,7 @@ class Output_Manager
 {
         friend class OM_DB;
         friend class cli::CommandLineInterface;
-        
+
     public:
         static Output_Manager& Get_OM()
         {
@@ -66,21 +66,22 @@ class Output_Manager
             return instance;
         }
         virtual ~Output_Manager();
-        
+
         void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
-        
+
         trace_mode_info mode_info[num_trace_modes];
-        
+
         void init();
         void fill_mode_info();
-        bool debug_mode_enabled(TraceMode mode);
-        void    set_default_agent(agent* pSoarAgent);
-        agent* get_default_agent()
-        {
-            return m_defaultAgent;
-        };
+
         void set_dprint_enabled(bool activate);
-        
+        bool debug_mode_enabled(TraceMode mode);
+
+        void set_default_agent(agent* pSoarAgent);
+        void clear_default_agent() { m_defaultAgent = NULL; }
+        agent* get_default_agent() { return m_defaultAgent; };
+
+
         /* Print functions that don't take an agent.  Will use default agent if necessary */
         void printv(const char* format, ...);
         void print_trace(const char* msg)
@@ -99,13 +100,13 @@ class Output_Manager
         {
             print_db_agent(m_defaultAgent, msgType, mode, msg);
         }
-        
+
         void printv_agent(agent* pSoarAgent, const char* format, ...);
         void print_agent(agent* pSoarAgent, const char* msg);
         void print_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode = No_Mode, bool no_prefix = false);
         void print_debug_agent(agent* pSoarAgent, const char* msg, TraceMode mode = No_Mode, bool no_prefix = false);
         void print_db_agent(agent* pSoarAgent, MessageType msgType, TraceMode mode, const char* msg);
-        
+
         char* get_printed_output_string()
         {
             if (++next_output_string == num_output_strings)
@@ -114,36 +115,30 @@ class Output_Manager
             }
             return printed_output_strings[next_output_string];
         }
-        
-        int get_printer_output_column(agent* thisAgent = NULL)
-        {
-            return printer_output_column;
-        }
-        void set_printer_output_column(agent* thisAgent, int pOutputColumn = 1)
-        {
-            printer_output_column = pOutputColumn;
-        }
+
+        int get_printer_output_column(agent* thisAgent = NULL);
+        void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
         void start_fresh_line(agent* pSoarAgent = NULL);
-        
+
         char* NULL_SYM_STR;
-        
+
     private:
-    
+
         Output_Manager();
-        
+
         /* The following two functions are declared but not implemented to avoid copies of singletons */
         Output_Manager(Output_Manager const&) {};
         void operator=(Output_Manager const&) {};
-        
+
         Soar_Instance*                            m_Soar_Instance;
         sml::Kernel*                              m_Kernel;
         agent*                                    m_defaultAgent;
         OM_Parameters*                            m_params;
         OM_DB*                                    m_db;
-        
+
         bool print_enabled, db_mode, stdout_mode, file_mode;
         bool dprint_enabled, db_dbg_mode, stdout_dbg_mode, file_dbg_mode;
-        
+
         /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
          *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
          *    function calls that use that buffer within one print statements.  There are
@@ -151,10 +146,10 @@ class Output_Manager
          *    does the job.  -- */
         char    printed_output_strings[output_string_size][num_output_strings];
         int64_t next_output_string;
-        
-        int     printer_output_column;
-        void    update_printer_columns(agent* pSoarAgent, bool update_global, const char* msg);
-        
+
+        int     global_printer_output_column;
+        void    update_printer_columns(agent* pSoarAgent, const char* msg);
+
 };
 
 #endif /* OUTPUT_MANAGER_H_ */

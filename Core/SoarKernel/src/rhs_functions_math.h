@@ -16,7 +16,6 @@
 #ifndef rhs_functions_math_H
 #define rhs_functions_math_H
 
-
 typedef struct agent_struct agent;
 
 extern void init_built_in_rhs_math_functions(agent* thisAgent);

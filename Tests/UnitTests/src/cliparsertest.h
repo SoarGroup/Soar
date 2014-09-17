@@ -25,10 +25,6 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoBreak(const char& mode, const std::string& production)
-        {
-            return false;
-        }
         virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0)
         {
             return false;
@@ -174,6 +170,10 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoOSupportMode(int mode = -1)
+        {
+            return false;
+        }
+        virtual bool DoPbreak(const char& mode, const std::string& production)
         {
             return false;
         }
