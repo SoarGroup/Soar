@@ -56,7 +56,7 @@ if [ "$filename" == "" ]; then
     else
 #       echo "Formatting file $file"
       #!/bin/bash
-      astyle "$file" --options="/Users/mazzin/git/Soar/SoarSuite/format_soar.astylerc"
+      astyle "$file" --options="format_soar.astylerc"
     fi
   done
 else
@@ -65,6 +65,6 @@ else
   else
 #     echo "Formatting file $filename"
     #!/bin/bash
-    astyle "$filename" --options="/Users/mazzin/git/Soar/SoarSuite/format_soar.astylerc"
+    astyle "$filename" --options="format_soar.astylerc"
   fi
 fi
