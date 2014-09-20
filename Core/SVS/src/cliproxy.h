@@ -22,8 +22,9 @@ class cliproxy
         void print_help(std::ostream& os) const;
         
         virtual void proxy_get_children(std::map<std::string, cliproxy*>& c) {}
-        virtual void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os) {
-          list_children(0, os);
+        virtual void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
+        {
+            list_children(0, os);
         }
         
         std::string help_text;

@@ -32,43 +32,51 @@
 
 using namespace std;
 
-bool intersect_test(sgnode* a, sgnode* b, const filter_params* p){
-  string int_type = "bbox";
-  get_filter_param(0, p, "intersect_type", int_type);
-  if(int_type == "hull"){
-    return convex_intersects(a, b);
-  } else {
-    return bbox_intersects(a, b);
-  }
+bool intersect_test(sgnode* a, sgnode* b, const filter_params* p)
+{
+    string int_type = "bbox";
+    get_filter_param(0, p, "intersect_type", int_type);
+    if (int_type == "hull")
+    {
+        return convex_intersects(a, b);
+    }
+    else
+    {
+        return bbox_intersects(a, b);
+    }
 }
 
 ////// filter intersect //////
-filter* make_intersect_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input){
-  return new node_test_filter(root, si, input, &intersect_test);
+filter* make_intersect_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+{
+    return new node_test_filter(root, si, input, &intersect_test);
 }
 
-filter_table_entry* intersect_filter_entry(){
-  filter_table_entry* e = new filter_table_entry();
-  e->name = "intersect";
-  e->description = "Returns true if a intersects b";
-  e->parameters["a"] = "Sgnode a";
-  e->parameters["b"] = "Sgnode b";
-  e->create = &make_intersect_filter;
-  return e;
+filter_table_entry* intersect_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry();
+    e->name = "intersect";
+    e->description = "Returns true if a intersects b";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b";
+    e->create = &make_intersect_filter;
+    return e;
 }
 
 ////// filter intersect_select //////
-filter* make_intersect_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input){
-  return new node_test_select_filter(root, si, input, &intersect_test);
+filter* make_intersect_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+{
+    return new node_test_select_filter(root, si, input, &intersect_test);
 }
 
-filter_table_entry* intersect_select_filter_entry(){
-  filter_table_entry* e = new filter_table_entry();
-  e->name = "intersect_select";
-  e->description = "Selects b if a intersects b";
-  e->parameters["a"] = "Sgnode a";
-  e->parameters["b"] = "Sgnode b";
-  e->create = &make_intersect_select_filter;
-  return e;
+filter_table_entry* intersect_select_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry();
+    e->name = "intersect_select";
+    e->description = "Selects b if a intersects b";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b";
+    e->create = &make_intersect_select_filter;
+    return e;
 }
 

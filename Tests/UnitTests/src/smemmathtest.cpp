@@ -12,7 +12,7 @@
 class SMemMathTest : public CPPUNIT_NS::TestCase
 {
         CPPUNIT_TEST_SUITE(SMemMathTest);    // The name of this class
-
+        
 #ifdef DO_SMEM_MATH_TESTS
         CPPUNIT_TEST(testSimpleCueBasedRetrieval);
         CPPUNIT_TEST(testSimpleNonCueBasedRetrieval);
@@ -43,15 +43,15 @@ class SMemMathTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testNegQueryNoHash);
 #endif
         CPPUNIT_TEST_SUITE_END();
-
+        
     public:
         void setUp();       // Called before each function outlined by CPPUNIT_TEST
         void tearDown();    // Called after each function outlined by CPPUNIT_TEST
-
+        
     protected:
-
+    
         void source(const std::string& path);
-
+        
         void testSimpleCueBasedRetrieval();
         void testSimpleNonCueBasedRetrieval();
         void testSimpleStore();
@@ -79,7 +79,7 @@ class SMemMathTest : public CPPUNIT_NS::TestCase
         void testNegQuery();
         void testNegStringFloat();
         void testNegQueryNoHash();
-
+        
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
         bool succeeded;
@@ -100,10 +100,10 @@ void SMemMathTest::setUp()
     pKernel = sml::Kernel::CreateKernelInNewThread() ;
     CPPUNIT_ASSERT(pKernel != NULL);
     CPPUNIT_ASSERT_MESSAGE(pKernel->GetLastErrorDescription(), !pKernel->HadError());
-
+    
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
-
+    
     succeeded = false;
     pKernel->AddRhsFunction("succeeded", Handlers::MySuccessHandler,  &succeeded) ;
 }

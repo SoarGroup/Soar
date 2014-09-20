@@ -278,8 +278,9 @@ void sgnode::proxy_use_sub(const vector<string>& args, ostream& os)
     
     tag_map::const_iterator ti;
     os << endl << "Tags:" << endl;
-    for(ti = tags.begin(); ti != tags.end(); ti++){
-      t3.add_row() << ti->first << ti->second;
+    for (ti = tags.begin(); ti != tags.end(); ti++)
+    {
+        t3.add_row() << ti->first << ti->second;
     }
     t3.print(os);
 }
@@ -576,24 +577,29 @@ void ball_node::proxy_use_sub(const vector<string>& args, ostream& os)
     os << endl << "radius: " << radius << endl;
 }
 
-const tag_map& sgnode::get_all_tags() const{
-  return tags;
+const tag_map& sgnode::get_all_tags() const
+{
+    return tags;
 }
 
-bool sgnode::get_tag(const std::string& tag_name, std::string& tag_value) const {
-  return map_get(tags, tag_name, tag_value);
+bool sgnode::get_tag(const std::string& tag_name, std::string& tag_value) const
+{
+    return map_get(tags, tag_name, tag_value);
 }
 
-void sgnode::set_tag(const std::string& tag_name, const std::string& tag_value){
-  tags[tag_name] = tag_value;
-  send_update(sgnode::TAG_CHANGED, tag_name);
+void sgnode::set_tag(const std::string& tag_name, const std::string& tag_value)
+{
+    tags[tag_name] = tag_value;
+    send_update(sgnode::TAG_CHANGED, tag_name);
 }
 
-void sgnode::delete_tag(const std::string& tag_name){
-  tag_map::iterator i = tags.find(tag_name);
-  if(i != tags.end()){
-    tags.erase(i);
-    send_update(sgnode::TAG_DELETED, tag_name);
-  }
+void sgnode::delete_tag(const std::string& tag_name)
+{
+    tag_map::iterator i = tags.find(tag_name);
+    if (i != tags.end())
+    {
+        tags.erase(i);
+        send_update(sgnode::TAG_DELETED, tag_name);
+    }
 }
 

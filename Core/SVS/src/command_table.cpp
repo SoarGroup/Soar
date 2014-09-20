@@ -34,18 +34,18 @@ command_table_entry* delete_tag_command_entry();
 command_table::command_table()
 {
     set_help("Prints out a list of all soar commands");
-
+    
     add(extract_command_entry());
     add(extract_once_command_entry());
-
+    
     add(add_node_command_entry());
     add(copy_node_command_entry());
     add(set_transform_command_entry());
     add(delete_node_command_entry());
-
+    
     add(set_tag_command_entry());
     add(delete_tag_command_entry());
-
+    
 }
 
 command* command_table::make_command(svs_state* state, wme* w)
@@ -76,8 +76,9 @@ command* command_table::make_command(svs_state* state, wme* w)
     }
 }
 
-void command_table::add(command_table_entry* e){
-  table[e->name] = e;
+void command_table::add(command_table_entry* e)
+{
+    table[e->name] = e;
 }
 
 void command_table::proxy_get_children(map<string, cliproxy*>& c)
@@ -89,20 +90,22 @@ void command_table::proxy_get_children(map<string, cliproxy*>& c)
     }
 }
 
-void command_table::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os){
-  os << "====================== COMMAND TABLE =======================" << endl;
-  map<string, command_table_entry*>::iterator i;
-  for(i = table.begin(); i != table.end(); i++){
-    os << "  " << setw(22) << left << i->first << " | " << i->second->description << endl;
-  }
-  os << "===========================================================" << endl;
-  os << "For specific command info, use the command 'svs commands.command_name'" << endl;
+void command_table::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
+{
+    os << "====================== COMMAND TABLE =======================" << endl;
+    map<string, command_table_entry*>::iterator i;
+    for (i = table.begin(); i != table.end(); i++)
+    {
+        os << "  " << setw(22) << left << i->first << " | " << i->second->description << endl;
+    }
+    os << "===========================================================" << endl;
+    os << "For specific command info, use the command 'svs commands.command_name'" << endl;
 }
 
 command_table_entry::command_table_entry()
-  : create(NULL), description("")
+    : create(NULL), description("")
 {
-  set_help("Reports information about this command");
+    set_help("Reports information about this command");
 }
 
 void command_table_entry::proxy_use_sub(const vector<string>& args, ostream& os)
@@ -111,7 +114,8 @@ void command_table_entry::proxy_use_sub(const vector<string>& args, ostream& os)
     os << "  " << description << endl;
     os << "  Parameters:" << endl;
     map<string, string>::iterator i;
-    for(i = parameters.begin(); i != parameters.end(); i++){
-      os << "    " << setw(15) << left << i->first << " | " << i->second << endl;
+    for (i = parameters.begin(); i != parameters.end(); i++)
+    {
+        os << "    " << setw(15) << left << i->first << " | " << i->second << endl;
     }
 }

@@ -89,7 +89,7 @@ class CPPUNIT_NS
             public:
                 virtual void tell(const bool&) = 0;
         };
-
+        
         class TestResult
         {
             public:
@@ -97,7 +97,7 @@ class CPPUNIT_NS
                 {
                     m_listeners.push_back(listener);
                 }
-
+                
                 void tell(const bool& result)
                 {
                     for (std::list<TestListener*>::iterator lt = m_listeners.begin(), lend = m_listeners.end(); lt != lend; ++lt)
@@ -105,18 +105,18 @@ class CPPUNIT_NS
                         (*lt)->tell(result);
                     }
                 }
-
+                
             private:
                 std::list<TestListener*> m_listeners;
         };
-
+        
         class TestCase
         {
                 virtual std::string get_class_name() const = 0;
                 virtual std::list<std::pair<std::string, CPPUnit_Function*> > get_tests() = 0;
                 virtual void setUp() {}
                 virtual void tearDown() {}
-
+                
             public:
                 virtual void run(TestResult& result)
                 {
@@ -141,7 +141,7 @@ class CPPUNIT_NS
                     }
                 }
         };
-
+        
         class TestResultCollector : public TestListener
         {
             public:
@@ -150,7 +150,7 @@ class CPPUNIT_NS
                       m_failures(0)
                 {
                 }
-
+                
                 bool wasSuccessful() const
                 {
                     return !m_failures;
@@ -163,17 +163,17 @@ class CPPUNIT_NS
                 {
                     return m_failures;
                 }
-
+                
             private:
                 void tell(const bool& result)
                 {
                     ++(result ? m_successes : m_failures);
                 }
-
+                
                 size_t m_successes;
                 size_t m_failures;
         };
-
+        
         class BriefTestProgressListener : public TestListener
         {
                 void tell(const bool& result)
@@ -181,7 +181,7 @@ class CPPUNIT_NS
                     std::cout << " : " << (result ? "OK" : "FAILED") << std::endl;
                 }
         };
-
+        
         class TestRunner
         {
             public:
@@ -189,7 +189,7 @@ class CPPUNIT_NS
                 {
                     tests.push_back(test);
                 }
-
+                
                 void run(TestResult& result)
                 {
                     for (std::list<TestCase*>::iterator tt = tests.begin(), tend = tests.end(); tt != tend; ++tt)
@@ -197,11 +197,11 @@ class CPPUNIT_NS
                         (*tt)->run(result);
                     }
                 }
-
+                
             private:
                 std::list<TestCase*> tests;
         };
-
+        
         class CompilerOutputter
         {
             public:
@@ -210,7 +210,7 @@ class CPPUNIT_NS
                       m_os(&os)
                 {
                 }
-
+                
                 void write() const
                 {
                     if (m_trc->wasSuccessful())
@@ -222,28 +222,28 @@ class CPPUNIT_NS
                         *m_os << "FAILURE (" << m_trc->successes() << " successful, " << m_trc->failures() << " failed)" << std::endl;
                     }
                 }
-
+                
             private:
                 const TestResultCollector* m_trc;
                 std::ostream* m_os;
         };
-
+        
         class TestFactoryRegistry
         {
                 TestFactoryRegistry(const TestFactoryRegistry&);
                 TestFactoryRegistry operator=(const TestFactoryRegistry&);
-
+                
                 TestFactoryRegistry() {}
                 ~TestFactoryRegistry() {}
-
+                
                 class TestCases : public TestCase
                 {
                         TestCases(const TestCases&);
                         TestCases operator =(const TestCases&);
-
+                        
                         TestCases() {}
                         ~TestCases() {}
-
+                        
                         std::string get_class_name() const
                         {
                             return "";
@@ -252,14 +252,14 @@ class CPPUNIT_NS
                         {
                             return std::list<std::pair<std::string, CPPUnit_Function*> >();
                         }
-
+                        
                     public:
                         static TestCases& get_TestCases()
                         {
                             static TestCases g_TestCases;
                             return g_TestCases;
                         }
-
+                        
                         void run(TestResult& result_)
                         {
                             TestResult& result = result_;
@@ -268,30 +268,30 @@ class CPPUNIT_NS
                                 (*tt)->run(result);
                             }
                         }
-
+                        
                         std::list<TestCase*> tests;
                 };
-
+                
             public:
                 static TestFactoryRegistry& getRegistry()
                 {
                     static TestFactoryRegistry g_TestFactoryRegistry;
                     return g_TestFactoryRegistry;
                 }
-
+                
                 TestCase* makeTest() const
                 {
                     return &TestCases::get_TestCases();
                 }
-
+                
                 void giveTest(TestCase* const test)
                 {
                     TestCases::get_TestCases().tests.push_back(test);
                 }
-
+                
             private:
         };
-
+        
 };
 
 #endif

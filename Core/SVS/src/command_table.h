@@ -15,15 +15,15 @@ class scene;
 
 class command_table_entry : public cliproxy
 {
-  public:
-    command_table_entry();
-    command* (*create)(svs_state*, Symbol*);
-
-    std::string name;
-    std::string description;
-    std::map<std::string, std::string> parameters;
-
-    void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os);
+    public:
+        command_table_entry();
+        command* (*create)(svs_state*, Symbol*);
+        
+        std::string name;
+        std::string description;
+        std::map<std::string, std::string> parameters;
+        
+        void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os);
 };
 
 

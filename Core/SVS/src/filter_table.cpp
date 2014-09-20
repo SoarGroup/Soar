@@ -56,41 +56,41 @@ filter_table_entry* tag_select_filter_entry();
 
 filter_table::filter_table()
 {
-  set_help("Prints out a list of all filter types.");
-
-  add(node_filter_entry());
-  add(all_nodes_filter_entry());
-  add(remove_node_filter_entry());
-  add(node_position_filter_entry());
-  add(node_rotation_filter_entry());
-  add(node_scale_filter_entry());
-  add(node_bbox_filter_entry());
-  add(combine_nodes_filter_entry());
-
-  add(distance_filter_entry());
-  add(distance_select_filter_entry());
-  add(closest_filter_entry());
-  add(farthest_filter_entry());
-
-  add(volume_filter_entry());
-  add(volume_select_filter_entry());
-  add(largest_filter_entry());
-  add(smallest_filter_entry());
-  add(larger_filter_entry());
-  add(smaller_filter_entry());
-  add(larger_select_filter_entry());
-  add(smaller_select_filter_entry());
-
-  add(axis_distance_filter_entry());
-  add(axis_distance_select_filter_entry());
-
-  add(intersect_filter_entry());
-  add(intersect_select_filter_entry());
-
-  add(contain_filter_entry());
-  add(contain_select_filter_entry());
-
-  add(tag_select_filter_entry());
+    set_help("Prints out a list of all filter types.");
+    
+    add(node_filter_entry());
+    add(all_nodes_filter_entry());
+    add(remove_node_filter_entry());
+    add(node_position_filter_entry());
+    add(node_rotation_filter_entry());
+    add(node_scale_filter_entry());
+    add(node_bbox_filter_entry());
+    add(combine_nodes_filter_entry());
+    
+    add(distance_filter_entry());
+    add(distance_select_filter_entry());
+    add(closest_filter_entry());
+    add(farthest_filter_entry());
+    
+    add(volume_filter_entry());
+    add(volume_select_filter_entry());
+    add(largest_filter_entry());
+    add(smallest_filter_entry());
+    add(larger_filter_entry());
+    add(smaller_filter_entry());
+    add(larger_select_filter_entry());
+    add(smaller_select_filter_entry());
+    
+    add(axis_distance_filter_entry());
+    add(axis_distance_select_filter_entry());
+    
+    add(intersect_filter_entry());
+    add(intersect_select_filter_entry());
+    
+    add(contain_filter_entry());
+    add(contain_select_filter_entry());
+    
+    add(tag_select_filter_entry());
 }
 
 void filter_table::proxy_get_children(map<string, cliproxy*>& c)
@@ -102,14 +102,16 @@ void filter_table::proxy_get_children(map<string, cliproxy*>& c)
     }
 }
 
-void filter_table::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os){
-  os << "====================== FILTER TABLE =======================" << endl;
-  map<string, filter_table_entry*>::iterator i;
-  for(i = t.begin(); i != t.end(); i++){
-    os << "  " << setw(22) << left << i->first << " | " << i->second->description << endl;
-  }
-  os << "===========================================================" << endl;
-  os << "For specific filter info, use the command 'svs filters.filter_name'" << endl;
+void filter_table::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
+{
+    os << "====================== FILTER TABLE =======================" << endl;
+    map<string, filter_table_entry*>::iterator i;
+    for (i = t.begin(); i != t.end(); i++)
+    {
+        os << "  " << setw(22) << left << i->first << " | " << i->second->description << endl;
+    }
+    os << "===========================================================" << endl;
+    os << "For specific filter info, use the command 'svs filters.filter_name'" << endl;
 }
 
 
@@ -142,8 +144,9 @@ void filter_table_entry::proxy_use_sub(const vector<string>& args, ostream& os)
     os << "  " << description << endl;
     os << "  Parameters:" << endl;
     map<string, string>::iterator i;
-    for(i = parameters.begin(); i != parameters.end(); i++){
-      os << "    " << setw(15) << left << i->first << " | " << i->second << endl;
+    for (i = parameters.begin(); i != parameters.end(); i++)
+    {
+        os << "    " << setw(15) << left << i->first << " | " << i->second << endl;
     }
 }
 /*

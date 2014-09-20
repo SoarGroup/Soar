@@ -3,7 +3,7 @@
  * File: commands/add_node.cpp
  * Contains:
  *  class add_node_command
- *  
+ *
  *  Soar Command to add a node to the world
  *  Parameters:
  *     ^id <string> - id to give the node, must not already exist
@@ -22,8 +22,9 @@
 
 using namespace std;
 
-enum GeometryType{
-  BOX_GEOM, SPHERE_GEOM, NONE_GEOM, POINT_GEOM
+enum GeometryType
+{
+    BOX_GEOM, SPHERE_GEOM, NONE_GEOM, POINT_GEOM
 };
 
 class add_node_command : public command
@@ -44,17 +45,20 @@ class add_node_command : public command
             return string("add_node");
         }
         
-        bool update_sub(){
-            if (first){
+        bool update_sub()
+        {
+            if (first)
+            {
                 first = false;
-                if (!parse()){
+                if (!parse())
+                {
                     return false;
                 }
                 return add_node();
             }
             return true;
         }
-
+        
         
         bool early()
         {
@@ -63,123 +67,149 @@ class add_node_command : public command
         
         
     private:
-        bool parse(){
-          // ^parent <id>
-          // The id of the parent to attach the node to
-          // Default is the root
-          string parent_id;
-          if(!si->get_const_attr(root, "parent", parent_id)){
-            parent = scn->get_root();
-          } else {
-            parent = scn->get_group(parent_id);
-            if(parent == NULL){
-              set_status("no parent group node found");
-              return false;
+        bool parse()
+        {
+            // ^parent <id>
+            // The id of the parent to attach the node to
+            // Default is the root
+            string parent_id;
+            if (!si->get_const_attr(root, "parent", parent_id))
+            {
+                parent = scn->get_root();
             }
-          }
-
-          // ^id <id>
-          // The id to give the node
-          if(!si->get_const_attr(root, "id", node_id)){
-            set_status("no id specified");
-            return false;
-          }
-          if(scn->get_node(node_id)){
-            set_status("id already exists");
-            return false;
-          }
-
-          // ^position <vec3>
-          // ^rotation <vec3>
-          // ^scale <vec3>
-          // All optional - specify transforms on the node
-          vec3 trans;
-          if(si->get_vec3(root, "position", trans)){
-            transforms['p'] = trans;
-          }
-          if(si->get_vec3(root, "rotation", trans)){
-            transforms['r'] = trans;
-          }
-          if(si->get_vec3(root, "scale", trans)){
-            transforms['s'] = trans;
-          }
-
-          // ^geometry << box point sphere group >>
-          // Optional - default is group
-          // The geometry of the new node
-          string geom;
-          if(!si->get_const_attr(root, "geometry", geom)){
-            geom = "group";
-          }
-          if(geom == "box"){
-            geom_type = BOX_GEOM;
-          } else if(geom == "point"){
-            geom_type = POINT_GEOM;
-          } else if(geom == "sphere"){
-            geom_type = SPHERE_GEOM;
-          } else {
-            geom_type = NONE_GEOM;
-          }
-          return true;
+            else
+            {
+                parent = scn->get_group(parent_id);
+                if (parent == NULL)
+                {
+                    set_status("no parent group node found");
+                    return false;
+                }
+            }
+            
+            // ^id <id>
+            // The id to give the node
+            if (!si->get_const_attr(root, "id", node_id))
+            {
+                set_status("no id specified");
+                return false;
+            }
+            if (scn->get_node(node_id))
+            {
+                set_status("id already exists");
+                return false;
+            }
+            
+            // ^position <vec3>
+            // ^rotation <vec3>
+            // ^scale <vec3>
+            // All optional - specify transforms on the node
+            vec3 trans;
+            if (si->get_vec3(root, "position", trans))
+            {
+                transforms['p'] = trans;
+            }
+            if (si->get_vec3(root, "rotation", trans))
+            {
+                transforms['r'] = trans;
+            }
+            if (si->get_vec3(root, "scale", trans))
+            {
+                transforms['s'] = trans;
+            }
+            
+            // ^geometry << box point sphere group >>
+            // Optional - default is group
+            // The geometry of the new node
+            string geom;
+            if (!si->get_const_attr(root, "geometry", geom))
+            {
+                geom = "group";
+            }
+            if (geom == "box")
+            {
+                geom_type = BOX_GEOM;
+            }
+            else if (geom == "point")
+            {
+                geom_type = POINT_GEOM;
+            }
+            else if (geom == "sphere")
+            {
+                geom_type = SPHERE_GEOM;
+            }
+            else
+            {
+                geom_type = NONE_GEOM;
+            }
+            return true;
         }
-
-        bool add_node(){
+        
+        bool add_node()
+        {
             sgnode* n;
             ptlist verts;
-
-            switch(geom_type){
-              case NONE_GEOM:
-                n = new group_node(node_id);
-                break;
-              case SPHERE_GEOM:
-                n = new ball_node(node_id, 1.0);
-                break;
-              case POINT_GEOM:
-                verts.push_back(vec3(0, 0, 0));
-                n = new convex_node(node_id, verts);
-                break;
-              case BOX_GEOM:
-                verts = bbox_vertices();
-                n = new convex_node(node_id, verts);
-                break;
+            
+            switch (geom_type)
+            {
+                case NONE_GEOM:
+                    n = new group_node(node_id);
+                    break;
+                case SPHERE_GEOM:
+                    n = new ball_node(node_id, 1.0);
+                    break;
+                case POINT_GEOM:
+                    verts.push_back(vec3(0, 0, 0));
+                    n = new convex_node(node_id, verts);
+                    break;
+                case BOX_GEOM:
+                    verts = bbox_vertices();
+                    n = new convex_node(node_id, verts);
+                    break;
             }
-
-            for(std::map<char, vec3>::iterator i = transforms.begin(); i != transforms.end(); i++){
-              n->set_trans(i->first, i->second);
+            
+            for (std::map<char, vec3>::iterator i = transforms.begin(); i != transforms.end(); i++)
+            {
+                n->set_trans(i->first, i->second);
             }
-
-            if(!scn->add_node(parent->get_id(), n)){
-              set_status("error adding node to scene");
-              return false;
+            
+            if (!scn->add_node(parent->get_id(), n))
+            {
+                set_status("error adding node to scene");
+                return false;
             }
-
+            
             set_status("success");
             return true;
         }
-
-        ptlist bbox_vertices(){
-          ptlist pts;
-          for(double x = -.5; x <= .5; x += 1.0){
-            for(double y = -.5; y <= .5; y += 1.0){
-              for(double z = -.5; z <= .5; z += 1.0){
-                pts.push_back(vec3(x, y, z));
-              }
+        
+        ptlist bbox_vertices()
+        {
+            ptlist pts;
+            for (double x = -.5; x <= .5; x += 1.0)
+            {
+                for (double y = -.5; y <= .5; y += 1.0)
+                {
+                    for (double z = -.5; z <= .5; z += 1.0)
+                    {
+                        pts.push_back(vec3(x, y, z));
+                    }
+                }
             }
-          }
-          return pts;
+            return pts;
         }
-
+        
         scene*             scn;
         Symbol*            root;
         soar_interface*    si;
-
+        
         bool first;
-
+        
         GeometryType geom_type;
         map<char, vec3> transforms;
         group_node* parent;
         string node_id;
-      
+        
 };
 
 command* _make_add_node_command_(svs_state* state, Symbol* root)
@@ -187,16 +217,17 @@ command* _make_add_node_command_(svs_state* state, Symbol* root)
     return new add_node_command(state, root);
 }
 
-command_table_entry* add_node_command_entry(){
-  command_table_entry* e = new command_table_entry();
-  e->name = "add_node";
-  e->description = "Create a new node and adds it to the scene";
-  e->parameters["id"] = "Id of the new node";
-  e->parameters["parent"] = "Id of the parent node to attach to";
-  e->parameters["geometry"] = "Either box, point, sphere, or group";
-  e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
-  e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
-  e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
-  e->create = &_make_add_node_command_;
-  return e;
+command_table_entry* add_node_command_entry()
+{
+    command_table_entry* e = new command_table_entry();
+    e->name = "add_node";
+    e->description = "Create a new node and adds it to the scene";
+    e->parameters["id"] = "Id of the new node";
+    e->parameters["parent"] = "Id of the parent node to attach to";
+    e->parameters["geometry"] = "Either box, point, sphere, or group";
+    e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
+    e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
+    e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
+    e->create = &_make_add_node_command_;
+    return e;
 }

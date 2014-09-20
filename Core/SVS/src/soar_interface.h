@@ -59,7 +59,7 @@ class soar_interface
         
         template<class T>
         bool         get_const_attr(Symbol* id, const std::string& attr, T& val);
-
+        
         bool         get_vec3(Symbol* id, const std::string& attr, vec3& val);
         
         Symbol*      get_wme_id(wme* w);

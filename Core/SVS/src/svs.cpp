@@ -44,11 +44,12 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
             add_child(g->get_child(i));
         }
     }
-
+    
     const tag_map& node_tags = node->get_all_tags();
     tag_map::const_iterator ti;
-    for(ti = node_tags.begin(); ti != node_tags.end(); ti++){
-      set_tag(ti->first, ti->second);
+    for (ti = node_tags.begin(); ti != node_tags.end(); ti++)
+    {
+        set_tag(ti->first, ti->second);
     }
 }
 
@@ -61,10 +62,11 @@ sgwme::~sgwme()
         node->unlisten(this);
     }
     soarint->remove_wme(id_wme);
-
+    
     map<string, wme*>::iterator ti;
-    for(ti = tags.begin(); ti != tags.end(); ti++){
-      soarint->remove_wme(ti->second);
+    for (ti = tags.begin(); ti != tags.end(); ti++)
+    {
+        soarint->remove_wme(ti->second);
     }
     
     for (i = childs.begin(); i != childs.end(); ++i)
@@ -134,10 +136,11 @@ void sgwme::set_tag(const string& tag_name, const string& tag_value)
 {
     Symbol* rootID = id;
     std::string att = tag_name;
-
+    
     wme* value_wme;
-    if(map_get(tags, tag_name, value_wme)){
-      soarint->remove_wme(value_wme);
+    if (map_get(tags, tag_name, value_wme))
+    {
+        soarint->remove_wme(value_wme);
     }
     tags[tag_name] = soarint->make_wme(rootID, att, tag_value);
 }
@@ -145,18 +148,20 @@ void sgwme::set_tag(const string& tag_name, const string& tag_value)
 void sgwme::update_tag(const string& tag_name)
 {
     string tag_value;
-    if(node->get_tag(tag_name, tag_value)){
-      set_tag(tag_name, tag_value);
+    if (node->get_tag(tag_name, tag_value))
+    {
+        set_tag(tag_name, tag_value);
     }
 }
 
 void sgwme::delete_tag(const string& tag_name)
 {
-  wme* value_wme;
-  if(map_get(tags, tag_name, value_wme)){
-    soarint->remove_wme(value_wme);
-    tags.erase(tag_name);
-  }
+    wme* value_wme;
+    if (map_get(tags, tag_name, value_wme))
+    {
+        soarint->remove_wme(value_wme);
+        tags.erase(tag_name);
+    }
 }
 
 
@@ -406,7 +411,7 @@ void svs::state_deletion_callback(Symbol* state)
         scn_cache = s->get_scene();
         s->disown_scene();
     }
-
+    
     delete s;
     state_stack.pop_back();
 }
@@ -423,8 +428,9 @@ void svs::proc_input(svs_state* s)
 
 void svs::output_callback()
 {
-    if(!enabled){
-      return;
+    if (!enabled)
+    {
+        return;
     }
     vector<svs_state*>::iterator i;
     string sgel;
@@ -441,9 +447,11 @@ void svs::output_callback()
     
 }
 
-void svs::input_callback(){
-    if(!enabled){
-      return;
+void svs::input_callback()
+{
+    if (!enabled)
+    {
+        return;
     }
     svs_state* topstate = state_stack.front();
     proc_input(topstate);

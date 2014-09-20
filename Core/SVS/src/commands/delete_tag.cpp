@@ -30,66 +30,78 @@ class delete_tag_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-
+        
         ~delete_tag_command() {}
-
-        string description() {
+        
+        string description()
+        {
             return string("delete_tag");
         }
-
-        bool update_sub(){
-            if (first) {
+        
+        bool update_sub()
+        {
+            if (first)
+            {
                 first = false;
-                if (!parse()) {
+                if (!parse())
+                {
                     return false;
                 }
-            } else {
+            }
+            else
+            {
                 return true;
             }
-
+            
             sgnode* n = scn->get_node(id);
-            if (!n) {
+            if (!n)
+            {
                 set_status(string("Couldn't find node ") + id);
                 return false;
             }
-
+            
             n->delete_tag(tag_name);
             set_status("success");
-
+            
             return true;
         }
-
-        bool early() {
+        
+        bool early()
+        {
             return false;
         }
-
-        bool parse() {
+        
+        bool parse()
+        {
             wme* idwme, *tagwme, *valwme;
-
+            
             // id - the id of the node to delete the tag from
             if (!si->find_child_wme(root, "id", idwme))
             {
                 set_status("no object id specified");
                 return false;
             }
-            if (!get_symbol_value(si->get_wme_val(idwme), id)){
+            if (!get_symbol_value(si->get_wme_val(idwme), id))
+            {
                 set_status("object id must be a string");
                 return false;
             }
-
+            
             // tag_name - the name of the tag to delete
-            if (!si->find_child_wme(root, "tag_name", tagwme)){
+            if (!si->find_child_wme(root, "tag_name", tagwme))
+            {
                 set_status("no tag_name specified");
                 return false;
             }
-            if (!get_symbol_value(si->get_wme_val(tagwme), tag_name)){
+            if (!get_symbol_value(si->get_wme_val(tagwme), tag_name))
+            {
                 set_status("tag_name must be a string");
                 return false;
             }
-
+            
             return true;
         }
-
+        
     private:
         Symbol*         root;
         scene*          scn;
@@ -101,15 +113,16 @@ class delete_tag_command : public command
 
 command* _make_delete_tag_command_(svs_state* state, Symbol* root)
 {
-  return new delete_tag_command(state, root);
+    return new delete_tag_command(state, root);
 }
 
-command_table_entry* delete_tag_command_entry(){
-  command_table_entry* e = new command_table_entry();
-  e->name = "delete_tag";
-  e->description = "Deletes a tag from a node";
-  e->parameters["id"] = "Id of the node";
-  e->parameters["tag_name"] = "Name of the tag to delete";
-  e->create = &_make_delete_tag_command_;
-  return e;
+command_table_entry* delete_tag_command_entry()
+{
+    command_table_entry* e = new command_table_entry();
+    e->name = "delete_tag";
+    e->description = "Deletes a tag from a node";
+    e->parameters["id"] = "Id of the node";
+    e->parameters["tag_name"] = "Name of the tag to delete";
+    e->create = &_make_delete_tag_command_;
+    return e;
 }

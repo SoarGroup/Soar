@@ -77,9 +77,10 @@ T& grow_vec(std::vector<T>& v)
 }
 
 template <typename A>
-inline bool set_has(const std::set<A>& s, const A& key){
-  typename std::set<A>::const_iterator i = s.find(key);
-  return (i != s.end());
+inline bool set_has(const std::set<A>& s, const A& key)
+{
+    typename std::set<A>::const_iterator i = s.find(key);
+    return (i != s.end());
 }
 
 template <typename A, typename B>

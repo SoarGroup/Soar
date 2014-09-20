@@ -12,7 +12,7 @@
 class EpmemTest : public CPPUNIT_NS::TestCase
 {
         CPPUNIT_TEST_SUITE(EpmemTest);   // The name of this class
-
+        
 #ifdef DO_EPMEM_TESTS
         CPPUNIT_TEST(testEpmemUnit);
         CPPUNIT_TEST(testHamiltonian);
@@ -20,20 +20,20 @@ class EpmemTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testSVSHard);
 #endif
         CPPUNIT_TEST_SUITE_END();
-
+        
     public:
         void setUp();       // Called before each function outlined by CPPUNIT_TEST
         void tearDown();    // Called after each function outlined by CPPUNIT_TEST
-
+        
     protected:
-
+    
         void source(const std::string& path);
-
+        
         void testEpmemUnit();
         void testHamiltonian();
         void testSVS();
         void testSVSHard();
-
+        
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
         bool succeeded;
@@ -54,10 +54,10 @@ void EpmemTest::setUp()
     pKernel = sml::Kernel::CreateKernelInNewThread() ;
     CPPUNIT_ASSERT(pKernel != NULL);
     CPPUNIT_ASSERT_MESSAGE(pKernel->GetLastErrorDescription(), !pKernel->HadError());
-
+    
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
-
+    
     succeeded = false;
     pKernel->AddRhsFunction("succeeded", Handlers::MySuccessHandler,  &succeeded) ;
 }

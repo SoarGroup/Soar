@@ -166,16 +166,19 @@ class svs : public svs_interface, public cliproxy
         }
         
         bool do_cli_command(const std::vector<std::string>& args, std::string& output);
-
-        bool is_enabled(){
-          return enabled;
+        
+        bool is_enabled()
+        {
+            return enabled;
         }
-        void set_enabled(bool is_enabled){
-          enabled = is_enabled;
+        void set_enabled(bool is_enabled)
+        {
+            enabled = is_enabled;
         }
-
-        std::string get_output() const{
-          return "";
+        
+        std::string get_output() const
+        {
+            return "";
         }
         
     private:
@@ -191,7 +194,7 @@ class svs : public svs_interface, public cliproxy
         std::string               env_output;
         mutable drawer*           draw;
         scene*                    scn_cache;      // temporarily holds top-state scene during init
-
+        
         bool enabled;
 };
 
