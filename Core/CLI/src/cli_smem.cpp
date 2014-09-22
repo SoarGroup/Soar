@@ -235,6 +235,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             PrintCLIMessage_Item("Queries:", agnt->smem_stats->cbr, 40);
             PrintCLIMessage_Item("Stores:", agnt->smem_stats->stores, 40);
             PrintCLIMessage_Item("Activation Updates:", agnt->smem_stats->act_updates, 40);
+            PrintCLIMessage_Item("Activation Accesses:", agnt->smem_stats->act_accesses, 40);
             PrintCLIMessage_Item("Mirrors:", agnt->smem_stats->mirrors, 40);
             PrintCLIMessage_Item("Nodes:", agnt->smem_stats->chunks, 40);
             PrintCLIMessage_Item("Edges:", agnt->smem_stats->slots, 40);

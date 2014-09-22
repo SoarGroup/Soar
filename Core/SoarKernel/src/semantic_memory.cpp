@@ -242,6 +242,10 @@ smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_
 	act_updates = new soar_module::integer_stat( "act_updates", 0, new soar_module::f_predicate<int64_t>() );
 	add( act_updates );
 
+	// accesses
+	act_accesses = new soar_module::integer_stat( "act_accesses", 0, new soar_module::f_predicate<int64_t>() );
+	add( act_accesses );
+
 	// mirrors
 	mirrors = new soar_module::integer_stat( "mirrors", 0, new soar_module::f_predicate<int64_t>() );
 	add( mirrors );
@@ -1361,6 +1365,8 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 						my_agent->smem_stmts->lti_access_set->bind_int( 4, temp_lti_id);
 						my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
 					}
+
+					my_agent->smem_stats->act_accesses->set_value( my_agent->smem_stats->act_accesses->get_value() + 1 );
 				}
 
 				// push new activation to smem_augmentations if appropriate
