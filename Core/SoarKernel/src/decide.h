@@ -186,7 +186,7 @@ typedef struct slot_struct
                                              has changed + or ! pref's */
 
     wma_sym_reference_map* wma_val_references;
-
+    
 } slot;
 
 /* MMA 8-2012 */

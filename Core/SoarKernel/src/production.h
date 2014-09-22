@@ -122,7 +122,7 @@ typedef struct bt_info_struct
     wme* wme_;                /* the actual wme that was matched */
     goal_stack_level level;   /* level (at firing time) of the id of the wme */
     preference* trace;        /* preference for BT, or NIL */
-
+    
     /* mvp 5-17-94 */
     ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
@@ -185,24 +185,24 @@ typedef struct production_struct
     struct instantiation_struct* instantiations; /* dll of inst's in MS */
     int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
     byte interrupt;                         /* SW: 7.31.03 */
-
+    
     struct
     {
         bool interrupt_break : 1;
         bool already_fired : 1;         /* RPM test workaround for bug #139 */
         bool rl_rule : 1;                   /* if true, is a Soar-RL rule */
     };
-
+    
     double rl_update_count;       /* number of (potentially fractional) updates to this rule */
     unsigned int rl_ref_count;    /* number of states referencing this rule in prev_op_rl_rules list */
-
+    
     // Per-input memory parameters for delta bar delta algorithm
     double rl_delta_bar_delta_beta;
     double rl_delta_bar_delta_h;
-
+    
     double rl_ecr;                // expected current reward (discounted reward)
     double rl_efr;                // expected future reward (discounted next state)
-
+    
     condition* rl_template_conds;
     rl_symbol_map_set* rl_template_instantiations;
 } production;

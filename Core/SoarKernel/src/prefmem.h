@@ -126,30 +126,30 @@ typedef struct preference_struct
     Symbol* value;
     Symbol* referent;
     struct slot_struct* slot;
-
+    
     /* dll of pref's of same type in same slot */
     struct preference_struct* next, *prev;
-
+    
     /* dll of all pref's in same slot */
     struct preference_struct* all_of_slot_next, *all_of_slot_prev;
-
+    
     /* dll of all pref's from the same match goal */
     struct preference_struct* all_of_goal_next, *all_of_goal_prev;
-
+    
     /* dll (without header) of cloned preferences (created when chunking) */
     struct preference_struct* next_clone, *prev_clone;
-
+    
     struct instantiation_struct* inst;
     struct preference_struct* inst_next, *inst_prev;
     struct preference_struct* next_candidate;
     struct preference_struct* next_result;
-
+    
     unsigned int total_preferences_for_candidate;
     double numeric_value;
     bool rl_contribution;
-
+    
     wma_pooled_wme_set* wma_o_set;
-
+    
 } preference;
 
 /* Needed in decide.cpp */

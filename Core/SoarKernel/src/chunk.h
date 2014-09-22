@@ -22,17 +22,17 @@ struct not_struct;
 typedef struct chunk_cond_struct
 {
     condition* cond;                /* points to the original condition */
-
+    
     condition* instantiated_cond;   /* points to cond in chunk instantiation */
     condition* variablized_cond;    /* points to cond in the actual chunk */
     condition* saved_prev_pointer_of_variablized_cond; /* don't ask */
-
+    
     /* dll of all cond's in a set (i.e., a chunk_cond_set, or the grounds) */
     struct chunk_cond_struct* next, *prev;
-
+    
     /* dll of cond's in this particular hash bucket for this set */
     struct chunk_cond_struct* next_in_bucket, *prev_in_bucket;
-
+    
     uint32_t hash_value;             /* equals hash_condition(cond) */
     uint32_t compressed_hash_value;  /* above, compressed to a few bits */
 } chunk_cond;

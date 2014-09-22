@@ -37,10 +37,12 @@ class sgnode : public cliproxy
         /* copied node doesn't inherit listeners */
         virtual sgnode* clone() const;
         
-        const std::string& get_id() const{
+        const std::string& get_id() const
+        {
             return id;
         }
-        void set_id(const std::string& new_id){
+        void set_id(const std::string& new_id)
+        {
             id = new_id;
         }
         
@@ -88,13 +90,13 @@ class sgnode : public cliproxy
         virtual void walk_geoms(std::vector<geometry_node*>& g) = 0;
         virtual void walk_geoms(std::vector<const geometry_node*>& g) const = 0;
         
-
+        
         // Accessors/Mutators for tags
         const tag_map& get_all_tags() const;
         bool get_tag(const std::string& tag_name, std::string& tag_value) const ;
         void set_tag(const std::string& tag_name, const std::string& tag_value);
         void delete_tag(const std::string& tag_name);
-
+        
     protected:
         void set_bounds(const bbox& b);
         virtual void update_shape() = 0;
@@ -129,7 +131,7 @@ class sgnode : public cliproxy
         mutable bool       trans_dirty;
         
         std::list<sgnode_listener*> listeners;
-
+        
         tag_map tags;
         
 };

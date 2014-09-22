@@ -118,34 +118,43 @@ double convex_distance(const sgnode* a, const sgnode* b)
     return *min_element(dists.begin(), dists.end());
 }
 
-double centroid_distance(const sgnode* a, const sgnode* b){
-  vec3 ca = a->get_centroid();
-  vec3 cb = b->get_centroid();
-  return (cb - ca).norm();
+double centroid_distance(const sgnode* a, const sgnode* b)
+{
+    vec3 ca = a->get_centroid();
+    vec3 cb = b->get_centroid();
+    return (cb - ca).norm();
 }
 
-double axis_distance(const sgnode* a, const sgnode* b, int axis){
-  if(axis < 0 || axis > 2){
-    return 0;
-  }
-  double mina = a->get_bounds().get_min()[axis];
-  double maxa = a->get_bounds().get_max()[axis];
-  double minb = b->get_bounds().get_min()[axis];
-  double maxb = b->get_bounds().get_max()[axis];
-
-  if(minb > maxa){
-    return (minb - maxa);
-  } else if(maxb < mina){
-    return (maxb - mina);
-  } else {
-    return 0;
-  }
+double axis_distance(const sgnode* a, const sgnode* b, int axis)
+{
+    if (axis < 0 || axis > 2)
+    {
+        return 0;
+    }
+    double mina = a->get_bounds().get_min()[axis];
+    double maxa = a->get_bounds().get_max()[axis];
+    double minb = b->get_bounds().get_min()[axis];
+    double maxb = b->get_bounds().get_max()[axis];
+    
+    if (minb > maxa)
+    {
+        return (minb - maxa);
+    }
+    else if (maxb < mina)
+    {
+        return (maxb - mina);
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 
-double bbox_volume(const sgnode* a){
-  bbox boxa = a->get_bounds();
-  return boxa.get_volume();
+double bbox_volume(const sgnode* a)
+{
+    bbox boxa = a->get_bounds();
+    return boxa.get_volume();
 }
 
 bool convex_intersects(const sgnode* a, const sgnode* b)
@@ -157,15 +166,17 @@ bool convex_intersects(const sgnode* a, const sgnode* b)
     return false;
 }
 
-bool bbox_intersects(const sgnode* a, const sgnode* b){
-  bbox boxa = a->get_bounds();
-  bbox boxb = b->get_bounds();
-  return boxa.intersects(boxb);
+bool bbox_intersects(const sgnode* a, const sgnode* b)
+{
+    bbox boxa = a->get_bounds();
+    bbox boxb = b->get_bounds();
+    return boxa.intersects(boxb);
 }
 
-bool bbox_contains(const sgnode* a, const sgnode* b){
-  bbox boxa = a->get_bounds();
-  bbox boxb = b->get_bounds();
-  return boxa.contains(boxb);
+bool bbox_contains(const sgnode* a, const sgnode* b)
+{
+    bbox boxa = a->get_bounds();
+    bbox boxb = b->get_bounds();
+    return boxa.contains(boxb);
 }
 

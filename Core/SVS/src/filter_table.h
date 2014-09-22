@@ -22,9 +22,9 @@ class filter_table_entry : public cliproxy
 {
     public:
         filter_table_entry();
-
+        
         filter* (*create)(Symbol*, soar_interface*, scene*, filter_input*);
-
+        
         std::string name;
         std::string description;
         std::map<std::string, std::string> parameters;

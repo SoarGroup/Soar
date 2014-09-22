@@ -27,17 +27,17 @@ class delete_node_command : public command
         {
             si = state->get_svs()->get_soar_interface();
         }
-
+        
         string description()
         {
             return string("delete_node");
         }
-
+        
         bool early()
         {
             return false;
         }
-
+        
         bool update_sub()
         {
             if (first)
@@ -52,7 +52,7 @@ class delete_node_command : public command
             {
                 return true;
             }
-
+            
             if (scn->del_node(nodeId))
             {
                 set_status("success");
@@ -63,10 +63,10 @@ class delete_node_command : public command
                 set_status("Could not find the given node");
                 return false;
             }
-
+            
             return true;
         }
-
+        
     private:
         bool parse()
         {
@@ -77,17 +77,17 @@ class delete_node_command : public command
                 set_status("^id must be specified");
                 return false;
             }
-
+            
             // Get the value of the ^source-id wme
             if (!get_symbol_value(si->get_wme_val(idWme), nodeId))
             {
                 set_status("^id must be a string");
                 return false;
             }
-
+            
             return true;
         }
-
+        
         scene*             scn;
         Symbol*            root;
         soar_interface*    si;
@@ -100,11 +100,12 @@ command* _make_delete_node_command_(svs_state* state, Symbol* root)
     return new delete_node_command(state, root);
 }
 
-command_table_entry* delete_node_command_entry(){
-  command_table_entry* e = new command_table_entry();
-  e->name = "delete_node";
-  e->description = "Deletes the node from the scene";
-  e->parameters["id"] = "Id of the node to delete";
-  e->create = &_make_delete_node_command_;
-  return e;
+command_table_entry* delete_node_command_entry()
+{
+    command_table_entry* e = new command_table_entry();
+    e->name = "delete_node";
+    e->description = "Deletes the node from the scene";
+    e->parameters["id"] = "Id of the node to delete";
+    e->create = &_make_delete_node_command_;
+    return e;
 }

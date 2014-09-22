@@ -101,13 +101,13 @@ scene* scene::clone(const string& cname) const
     c->root->unlisten(c);
     c->nodes.clear();
     delete c->root;
-
+    
     // Replace with copy of root
     c->root = root->clone()->as_group(); // root->clone copies entire scene graph
     c->root->walk(c->nodes);
     for (int i = 0, iend = c->nodes.size(); i < iend; ++i)
     {
-      c->nodes[i]->listen(c);
+        c->nodes[i]->listen(c);
     }
     return c;
 }
@@ -180,14 +180,14 @@ bool scene::add_node(const string& parent_id, sgnode* n)
 
 bool scene::del_node(const string& id)
 {
-  sgnode* node = get_node(id);
-  if(node)
-  {
-    delete node;
-    /* rest is handled in node_update */
-    return true;
-  }
-  return false;
+    sgnode* node = get_node(id);
+    if (node)
+    {
+        delete node;
+        /* rest is handled in node_update */
+        return true;
+    }
+    return false;
 }
 
 void scene::clear()
@@ -420,104 +420,117 @@ int scene::parse_change(vector<string>& f, string& error)
 //      <id> - id of the node
 //      <tag_name> - the name of the tag
 //      <value?> - the value of the tag, needed for the add or change subcommands only
-int scene::parse_tag(vector<string>& f, string& error){
+int scene::parse_tag(vector<string>& f, string& error)
+{
     int p = 0;
     
     // Parameter 1: subcommand
-    if (p >= f.size()){
+    if (p >= f.size())
+    {
         error = "Tag Command P1: Expecting subcommand";
         return p;
     }
     char subcommand = f[p][0];
     p++;
-
+    
     // Parameters 2: node id
-    if (p >= f.size()){
+    if (p >= f.size())
+    {
         error = "Tag Command P2: Expecting node id";
         return p;
     }
     string id = f[p];
     
     sgnode* node = get_node(id);
-    if (!node){
+    if (!node)
+    {
         error = "Tag Command P2: Node " + id + " does not exist";
         return p;
     }
     p++;
-
+    
     // Parameter 3: tag name
-    if (p >= f.size()){
+    if (p >= f.size())
+    {
         error = "Tag Command P3: Expecting tag name";
         return p;
     }
     string tag_name = f[p];
     p++;
-
+    
     // Parameter 4: tag value
     string tag_value;
-    if (subcommand == 'a' || subcommand == 'c'){
-      if (p >= f.size()){
-          error = "Tag Command P4: Expecting tag value";
-          return p;
-      }
-      tag_value = f[p];
+    if (subcommand == 'a' || subcommand == 'c')
+    {
+        if (p >= f.size())
+        {
+            error = "Tag Command P4: Expecting tag value";
+            return p;
+        }
+        tag_value = f[p];
     }
     p++;
     
-    switch (subcommand){
-      case 'a':
-      case 'c':
-        node->set_tag(tag_name, tag_value);
-        break;
-      case 'd':
-        node->delete_tag(tag_name);
-        break;
-      default:
-        error = "Tag Command P2: Unrecognized subcommand (Expecting add, change, delete)";
-        return 1;
+    switch (subcommand)
+    {
+        case 'a':
+        case 'c':
+            node->set_tag(tag_name, tag_value);
+            break;
+        case 'd':
+            node->delete_tag(tag_name);
+            break;
+        default:
+            error = "Tag Command P2: Unrecognized subcommand (Expecting add, change, delete)";
+            return 1;
     }
     
     return -1;
 }
 
-bool scene::parse_sgel(const string& s){
+bool scene::parse_sgel(const string& s)
+{
     vector<string> lines;
     split(s, "\n", lines);
-
+    
     vector<string>::iterator i;
-    for (i = lines.begin(); i != lines.end(); ++i){
+    for (i = lines.begin(); i != lines.end(); ++i)
+    {
         vector<string> fields;
         split(*i, "", fields);
         
-        if (fields.size() == 0){
+        if (fields.size() == 0)
+        {
             continue;
         }
-
+        
         char cmd = fields[0][0];
         fields.erase(fields.begin());
-
+        
         int errfield;
         string error = "unknown error";
-        switch(cmd){
-          case 'a':
-            errfield = parse_add(fields, error);
-            break;
-          case 'c':
-            errfield = parse_change(fields, error);
-            break;
-          case 'd':
-            errfield = parse_del(fields, error);
-            break;
-          case 't':
-            errfield = parse_tag(fields, error);
-            break;
-          default:
-            cerr << "expecting add, delete, change, tag at start of line '" << *i << "'" << endl;
+        switch (cmd)
+        {
+            case 'a':
+                errfield = parse_add(fields, error);
+                break;
+            case 'c':
+                errfield = parse_change(fields, error);
+                break;
+            case 'd':
+                errfield = parse_del(fields, error);
+                break;
+            case 't':
+                errfield = parse_tag(fields, error);
+                break;
+            default:
+                cerr << "expecting add, delete, change, tag at start of line '" << *i << "'" << endl;
         }
         
-        if (errfield >= 0){
+        if (errfield >= 0)
+        {
             cerr << "error in field " << errfield + 1 << " of line '"
-                                  << *i << "': " << error << endl;
+                 << *i << "': " << error << endl;
             return false;
         }
     }
@@ -594,7 +607,7 @@ void scene::proxy_get_children(map<string, cliproxy*>& c)
     
     c["properties"] = new memfunc_proxy<scene>(this, &scene::cli_props);
     c["properties"]->set_help("Get scene properties.");
-
+    
     c["sgel"] = new memfunc_proxy<scene>(this, &scene::cli_sgel);
     c["sgel"]->set_help("Modify scene graph with SGEL.")
     .add_arg("SGEL", "SGEL string (spaces are okay).")
@@ -613,27 +626,30 @@ void scene::cli_props(const vector<string>& args, ostream& os) const
     table_printer t;
     const char* props = "prs";
     const char* axes = "xyz";
-
+    
     // For each node, add each property to the output
     for (int i = 0, iend = nodes.size(); i < iend; ++i)
     {
         string id = nodes[i]->get_id();
-
-        for(int p = 0; p < 3; p++){
-          vec3 trans = nodes[i]->get_trans(props[p]);
-          for(int dim = 0; dim < 3; dim++){
-            t.add_row() << id + ':' + props[p] + axes[dim] << trans[dim];
-          }
+        
+        for (int p = 0; p < 3; p++)
+        {
+            vec3 trans = nodes[i]->get_trans(props[p]);
+            for (int dim = 0; dim < 3; dim++)
+            {
+                t.add_row() << id + ':' + props[p] + axes[dim] << trans[dim];
+            }
         }
-
-
+        
+        
         const tag_map& tags = nodes[i]->get_all_tags();
         tag_map::const_iterator ti;
-        for(ti = tags.begin(); ti != tags.end(); ti++){
-          t.add_row() << id + ':' + ti->first << ti->second;
+        for (ti = tags.begin(); ti != tags.end(); ti++)
+        {
+            t.add_row() << id + ':' + ti->first << ti->second;
         }
     }
-
+    
     t.print(os);
 }
 
@@ -765,7 +781,7 @@ int scene::parse_object_query(std::vector<std::string>& f, std::string& result, 
     
     vec3 pos, rot, scale;
     node->get_trans(pos, rot, scale);
-
+    
     const tag_map& tags = node->get_all_tags();
     
     stringstream ss;
@@ -774,8 +790,9 @@ int scene::parse_object_query(std::vector<std::string>& f, std::string& result, 
     ss << " r " << rot[0] << " " << rot[1] << " " << rot[2];
     ss << " s " << scale[0] << " " << scale[1] << " " << scale[2];
     ss << " t " << tags.size();
-    for(tag_map::const_iterator i = tags.begin(); i != tags.end(); i++){
-      ss << "   " << i->first << " = " << i->second;
+    for (tag_map::const_iterator i = tags.begin(); i != tags.end(); i++)
+    {
+        ss << "   " << i->first << " = " << i->second;
     }
     
     result = ss.str();
@@ -800,8 +817,9 @@ int scene::parse_objects_with_flag_query(std::vector<std::string>& f, std::strin
     for (vector<const sgnode*>::const_iterator i = nodes.begin(); i != nodes.end(); i++)
     {
         string tag_value;
-        if((*i)->get_tag(tag_name, tag_value) && query_value == tag_value){
-          nodeIds.push_back((*i)->get_id());
+        if ((*i)->get_tag(tag_name, tag_value) && query_value == tag_value)
+        {
+            nodeIds.push_back((*i)->get_id());
         }
     }
     

@@ -34,16 +34,16 @@ class set_transform_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-
+        
         ~set_transform_command()
         {
         }
-
+        
         string description()
         {
             return string("transform");
         }
-
+        
         bool update_sub()
         {
             if (first)
@@ -58,33 +58,34 @@ class set_transform_command : public command
             {
                 return true;
             }
-
+            
             sgnode* n = scn->get_node(id);
             if (!n)
             {
                 set_status(string("Couldn't find node ") + id);
                 return false;
             }
-
+            
             map<char, vec3>::iterator pi;
-            for(pi = props.begin(); pi != props.end(); pi++){
-              n->set_trans(pi->first, pi->second);
+            for (pi = props.begin(); pi != props.end(); pi++)
+            {
+                n->set_trans(pi->first, pi->second);
             }
-
+            
             set_status("success");
-
+            
             return true;
         }
-
+        
         bool early()
         {
             return false;
         }
-
+        
         bool parse()
         {
             wme* idwme, *propwme;
-
+            
             if (!si->find_child_wme(root, "id", idwme))
             {
                 set_status("no object id specified");
@@ -95,21 +96,24 @@ class set_transform_command : public command
                 set_status("object id must be a string");
                 return false;
             }
-
+            
             vec3 vec;
-            if(si->get_vec3(root, "position", vec)){
-              props['p'] = vec;
+            if (si->get_vec3(root, "position", vec))
+            {
+                props['p'] = vec;
             }
-            if(si->get_vec3(root, "rotation", vec)){
-              props['r'] = vec;
+            if (si->get_vec3(root, "rotation", vec))
+            {
+                props['r'] = vec;
             }
-            if(si->get_vec3(root, "scale", vec)){
-              props['s'] = vec;
+            if (si->get_vec3(root, "scale", vec))
+            {
+                props['s'] = vec;
             }
-
+            
             return true;
         }
-
+        
     private:
         Symbol*         root;
         scene*          scn;
@@ -117,7 +121,7 @@ class set_transform_command : public command
         bool            first;
         string          id;
         map<char, vec3> props;
-
+        
 };
 
 command* _make_set_transform_command_(svs_state* state, Symbol* root)
@@ -125,14 +129,15 @@ command* _make_set_transform_command_(svs_state* state, Symbol* root)
     return new set_transform_command(state, root);
 }
 
-command_table_entry* set_transform_command_entry(){
-  command_table_entry* e = new command_table_entry();
-  e->name = "set_transform";
-  e->description = "Sets the transforms for a given node";
-  e->parameters["id"] = "Id of the node to change";
-  e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
-  e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
-  e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
-  e->create = &_make_set_transform_command_;
-  return e;
+command_table_entry* set_transform_command_entry()
+{
+    command_table_entry* e = new command_table_entry();
+    e->name = "set_transform";
+    e->description = "Sets the transforms for a given node";
+    e->parameters["id"] = "Id of the node to change";
+    e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
+    e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
+    e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
+    e->create = &_make_set_transform_command_;
+    return e;
 }
