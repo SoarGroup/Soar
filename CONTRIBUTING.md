@@ -109,7 +109,7 @@ case**.
 
 * Run _all_ the tests to assure nothing was accidentally broken. If you
   break the project in your git pull request, Jenkins [(our build
-system)](http://141.212.109.224:8080)
+system)](http://daidalos.eecs.umich.edu:8080)
   will let you know.  Until Jenkins passes your pull request, it **WILL NOT**
   be merged in.
 
