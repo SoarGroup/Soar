@@ -33,6 +33,9 @@
 using namespace std;
 
 bool intersect_test(sgnode* a, sgnode* b, const filter_params* p){
+  if (a == b){
+    return true;
+  }
   string int_type = "bbox";
   get_filter_param(0, p, "intersect_type", int_type);
   if(int_type == "hull"){

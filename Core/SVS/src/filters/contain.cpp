@@ -31,6 +31,9 @@
 using namespace std;
 
 bool contain_test(sgnode* a, sgnode* b, const filter_params* p){
+  if(a == b){
+    return true;
+  }
   return bbox_contains(a, b);
 }
 
