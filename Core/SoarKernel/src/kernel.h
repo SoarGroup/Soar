@@ -81,7 +81,7 @@ typedef unsigned char byte;
 //#define SHARING_FACTORS           /* gather statistics on beta node sharing */
 //#define NULL_ACTIVATION_STATS     /* gather statistics on null activation */
 #ifndef NO_TIMING_STUFF
-//#define DETAILED_TIMING_STATS
+#define DETAILED_TIMING_STATS
 #endif
 
 //#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to supress compile-time o-support calculations */
