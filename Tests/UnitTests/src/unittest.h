@@ -13,6 +13,7 @@
 #define DO_FULL_TESTS
 #define DO_IO_TESTS
 #define DO_EPMEM_TESTS
+#define DO_SMEM_TESTS
 #define DO_SMEM_MATH_TESTS
 #define DO_MISC_TESTS
 #define DO_MULTIAGENT_TESTS
