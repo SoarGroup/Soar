@@ -1064,7 +1064,9 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
                 /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
                 lName << "-multi";
             }
-            lName << "*" << inst->prod->original_rule_name;
+            if (inst->prod && inst->prod->original_rule_name) {
+                lName << "*" << inst->prod->original_rule_name;
+            }
             if (!lImpasseName.empty())
             {
                 lName << "*" << lImpasseName;
@@ -1405,8 +1407,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     rhs = copy_and_variablize_result_list(thisAgent, results, variablize);
     
     add_goal_or_impasse_tests(thisAgent, top_cc);
-    
-    prod = make_production(thisAgent, prod_type, prod_name, inst->prod->name->sc->name, &lhs_top, &lhs_bottom, &rhs, false);
+
+    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : NULL), &lhs_top, &lhs_bottom, &rhs, false);
     
     if (!prod)
     {
