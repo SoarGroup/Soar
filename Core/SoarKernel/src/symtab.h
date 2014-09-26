@@ -207,7 +207,6 @@ struct idSymbol    : public Symbol
     Symbol* epmem_header;
     Symbol* epmem_cmd_header;
     Symbol* epmem_result_header;
-    struct wme_struct* epmem_time_wme;
     struct epmem_data_struct* epmem_info;
     
     
