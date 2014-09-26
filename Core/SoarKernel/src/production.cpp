@@ -1077,7 +1077,7 @@ production* make_production(agent* thisAgent,
     
     allocate_with_pool(thisAgent, &thisAgent->production_pool, &p);
     p->name = name;
-    p->original_rule_name = make_memory_block_for_string(thisAgent, original_rule_name);
+    p->original_rule_name = (original_rule_name ? make_memory_block_for_string(thisAgent, original_rule_name) : NULL);
     
     if (name->sc->production)
     {
