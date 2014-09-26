@@ -2941,6 +2941,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->epmem_info->last_cmd_count = 0;
     id->id->epmem_info->last_memory = EPMEM_MEMID_NONE;
     allocate_with_pool(thisAgent, &(thisAgent->epmem_wmes_pool), &(id->id->epmem_info->epmem_wmes));
+    allocate_with_pool(thisAgent, &(thisAgent->epmem_wmes_pool), &(id->id->epmem_info->epmem_time_wmes));
 #ifdef USE_MEM_POOL_ALLOCATORS
     id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) epmem_wme_stack(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
     id->id->epmem_info->epmem_time_wmes = new ( id->id->epmem_info->epmem_time_wmes ) epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) );
