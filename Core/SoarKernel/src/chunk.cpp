@@ -934,9 +934,9 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
 {
     Symbol* generated_name;
     Symbol* goal;
-  byte impasse_type;
+    byte impasse_type;
     preference* p;
-  goal_stack_level lowest_result_level;
+    goal_stack_level lowest_result_level;
     std::string lImpasseName;
     std::stringstream lName;
 
@@ -949,16 +949,16 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
             lowest_result_level = p->id->id->level;
         }
 
-  goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
+    goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
 
     switch (chunkNameFormat)
     {
         case numberedFormat:
         {
             return (generate_new_str_constant(
-                        thisAgent,
-                        thisAgent->chunk_name_prefix,
-                        &thisAgent->chunk_count));
+                thisAgent,
+                thisAgent->chunk_name_prefix,
+                &thisAgent->chunk_count));
         }
         case longFormat:
         {
@@ -967,20 +967,20 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
                 impasse_type = type_of_existing_impasse(thisAgent, goal);
                 switch (impasse_type)
                 {
-      case NONE_IMPASSE_TYPE:
+                    case NONE_IMPASSE_TYPE:
                         lImpasseName = "unknownimpasse";
-        break;
-      case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+                        break;
+                    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
                         lImpasseName = "cfailure";
-        break;
-      case CONFLICT_IMPASSE_TYPE:
+                        break;
+                    case CONFLICT_IMPASSE_TYPE:
                         lImpasseName = "conflict";
-        break;
-      case TIE_IMPASSE_TYPE:
+                        break;
+                    case TIE_IMPASSE_TYPE:
                         lImpasseName = "tie";
-        break;
-      case NO_CHANGE_IMPASSE_TYPE:
-        {
+                        break;
+                    case NO_CHANGE_IMPASSE_TYPE:
+                    {
                         Symbol* sym;
 
                         if ((sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol)) == NIL)
@@ -998,10 +998,10 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
                         else
                         {
                             lImpasseName = "unknownimpasse";
-          }
-        }
-        break;
-      default:
+                        }
+                    }
+                    break;
+                    default:
                         lImpasseName = "unknownimpasse";
                         break;
                 }
@@ -1011,14 +1011,14 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
                 lImpasseName = "unknownimpasse";
             }
             lName << thisAgent->chunk_name_prefix << "-" << thisAgent->chunk_count++ << "*" <<
-                  thisAgent->d_cycle_count << "*" << lImpasseName << "*" << thisAgent->chunks_this_d_cycle;
-                  
+                thisAgent->d_cycle_count << "*" << lImpasseName << "*" << thisAgent->chunks_this_d_cycle;
+
             break;
         }
         case ruleFormat:
         {
             std::string real_prod_name;
-            
+
             lImpasseName.erase();
             lName << thisAgent->chunk_name_prefix;
 
@@ -1055,16 +1055,16 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
                     }
                     break;
                     default:
-        break;
-    }
-  }
-
-            if (strstr(inst->prod->name->sc->name, thisAgent->chunk_name_prefix) != inst->prod->name->sc->name)
-            {
-                /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
-                lName << "-multi";
+                        break;
+                }
             }
-            if (inst->prod && inst->prod->original_rule_name) {
+
+            if (inst->prod) {
+                if (strstr(inst->prod->name->sc->name, thisAgent->chunk_name_prefix) != inst->prod->name->sc->name)
+                {
+                    /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
+                    lName << "-multi";
+                }
                 lName << "*" << inst->prod->original_rule_name;
             }
             if (!lImpasseName.empty())
@@ -1077,14 +1077,14 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
     lImpasseName.erase();
     if (lName.str().empty()) { return NULL; }
 
-  /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
+    /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
     if (find_str_constant(thisAgent, lName.str().c_str()))
     {
         uint64_t collision_count = 1;
         std::stringstream newLName;
 
         print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
-	xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
+        xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
         do
         {
             newLName.str(lName.str().c_str());
@@ -1093,10 +1093,10 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
         while (find_str_constant(thisAgent, newLName.str().c_str()));
         lName.str(newLName.str());
         newLName.str("");
-  }
+    }
 
     generated_name = make_str_constant(thisAgent, lName.str().c_str());
-  return generated_name;
+    return generated_name;
 }
 
 bool should_variablize(agent* thisAgent, instantiation* inst)
@@ -1352,8 +1352,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 		print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
 	}
 
-    
-    
+
+
 	/* AGR 617/634 begin */
 	if (print_name)
 	{
@@ -1408,7 +1408,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     add_goal_or_impasse_tests(thisAgent, top_cc);
 
-    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : NULL), &lhs_top, &lhs_bottom, &rhs, false);
+    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &lhs_top, &lhs_bottom, &rhs, false);
 
 	if (!prod)
 	{
@@ -1466,7 +1466,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 		chunk_inst->reliable = reliable;
 
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
-        
+
         make_clones_of_results(thisAgent, results, chunk_inst);
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
 	}
