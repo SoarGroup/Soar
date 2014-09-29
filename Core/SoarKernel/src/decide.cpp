@@ -2820,6 +2820,8 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     
     goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
     free_with_pool(&(thisAgent->epmem_wmes_pool), goal->id->epmem_info->epmem_wmes);
+    goal->id->epmem_info->epmem_time_wmes->~epmem_wme_stack();
+    free_with_pool(&(thisAgent->epmem_wmes_pool), goal->id->epmem_info->epmem_time_wmes);
     symbol_remove_ref(thisAgent, goal->id->epmem_cmd_header);
     symbol_remove_ref(thisAgent, goal->id->epmem_result_header);
     symbol_remove_ref(thisAgent, goal->id->epmem_header);
