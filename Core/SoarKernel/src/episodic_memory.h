@@ -532,8 +532,8 @@ extern void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, s
 extern void epmem_print_episode(agent* thisAgent, epmem_time_id memory_id, std::string* buf);
 
 // increment time wme
-extern inline void epmem_buffer_add_wme( agent* thisAgent, soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value );
-extern inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes );
+extern void epmem_buffer_add_wme( agent* thisAgent, soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value );
+extern void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes );
 
 //////////////////////////////////////////////////////////
 // Episodic Memory Search
