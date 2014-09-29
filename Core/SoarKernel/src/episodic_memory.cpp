@@ -1917,6 +1917,7 @@ void epmem_reset(agent* thisAgent, Symbol* state)
         // this will be called after prefs from goal are already removed,
         // so just clear out result stack
         data->epmem_wmes->clear();
+        data->epmem_time_wmes->clear();
         
         state = state->id->lower_goal;
     }
@@ -3254,7 +3255,7 @@ void epmem_new_episode(agent* thisAgent)
         {
             Symbol* state = thisAgent->bottom_goal;
             Symbol* my_time_sym = make_int_constant(thisAgent, time_counter + 1);
-
+            soar_module::wme_set conditions;
             
             while (state != NULL)
             {
@@ -3267,7 +3268,6 @@ void epmem_new_episode(agent* thisAgent)
                 soar_module::symbol_triple_list temp_list;
                 epmem_buffer_add_wme(thisAgent, temp_list, state->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym);
                 symbol_remove_ref(thisAgent, my_time_sym);
-                soar_module::wme_set conditions;
                 _epmem_process_buffered_wme_list( thisAgent, state, conditions, temp_list, state->id->epmem_info->epmem_time_wmes );
 
                 state = state->id->higher_goal;
