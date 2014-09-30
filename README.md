@@ -11,6 +11,6 @@ This is the code base for Soar, a cognitive architecture for developing systems 
 For binary builds of Soar you can get them in two places:
 
 * [Google Code - Stable Releases](https://code.google.com/p/soar/wiki/Downloads)
-* [Unstable "Nightlies"](http://141.212.109.224)
+* [Unstable "Nightlies"](http://soar-jenkins.eecs.umich.edu/)
 
 Note: For the nightlies there is no difference between non-scu and scu builds.
