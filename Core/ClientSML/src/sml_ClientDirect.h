@@ -25,7 +25,7 @@ extern "C" {
 // Forward declarations for these handles
 // (Actual declarations are in KernelSMLDirect.h)
 struct Direct_AgentSML_Struct ;
-typedef struct Direct_AgentSML_Struct *Direct_AgentSML_Handle ;
+typedef struct Direct_AgentSML_Struct* Direct_AgentSML_Handle ;
 
 #ifdef __cplusplus
 } // extern C

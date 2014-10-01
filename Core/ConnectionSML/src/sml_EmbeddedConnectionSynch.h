@@ -21,27 +21,37 @@ namespace sml
 
 // This version makes synchronous calls, which means for example that a "run" command
 // will be executed on the client's thread.
-class EmbeddedConnectionSynch : public EmbeddedConnection
-{
-public:
-	// Clients should not use this.  Use Connection::CreateEmbeddedConnection instead which creates
-	// a two-way connection.  This just creates a one-way object.
-	static EmbeddedConnection* CreateEmbeddedConnectionSynch() { return new EmbeddedConnectionSynch() ; }
-
-protected:
-	// Clients should not use this.  Use Connection::CreateEmbeddedConnection instead.
-	// Making it protected so you can't accidentally create one like this.
-	EmbeddedConnectionSynch() { } 
-
-public:
-	virtual ~EmbeddedConnectionSynch() { } 
-
-	virtual bool IsAsynchronous() { return false ; }
-	virtual void SendMsg(soarxml::ElementXML* pMsg) ;
-	virtual soarxml::ElementXML* GetResponseForID(char const* pID, bool wait) ;
-	virtual bool ReceiveMessages(bool /*allMessages*/)		{ ClearError() ; return false ; } 
-};
-
+    class EmbeddedConnectionSynch : public EmbeddedConnection
+    {
+        public:
+            // Clients should not use this.  Use Connection::CreateEmbeddedConnection instead which creates
+            // a two-way connection.  This just creates a one-way object.
+            static EmbeddedConnection* CreateEmbeddedConnectionSynch()
+            {
+                return new EmbeddedConnectionSynch() ;
+            }
+            
+        protected:
+            // Clients should not use this.  Use Connection::CreateEmbeddedConnection instead.
+            // Making it protected so you can't accidentally create one like this.
+            EmbeddedConnectionSynch() { }
+            
+        public:
+            virtual ~EmbeddedConnectionSynch() { }
+            
+            virtual bool IsAsynchronous()
+            {
+                return false ;
+            }
+            virtual void SendMsg(soarxml::ElementXML* pMsg) ;
+            virtual soarxml::ElementXML* GetResponseForID(char const* pID, bool wait) ;
+            virtual bool ReceiveMessages(bool /*allMessages*/)
+            {
+                ClearError() ;
+                return false ;
+            }
+    };
+    
 } // End of namespace
 
 #endif // SML_EMBEDDEDCONNECTION_H

@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ---------------------------------------------------------------------
@@ -21,33 +21,23 @@
    mark_slot_for_possible_removal().  We don't deallocate the slot
    right away, because there might still be wmes in it, or we might
    be about to add a new preference to it (through some later action
-   of the same production firing, for example).  At the end of the phase, 
-   we call remove_garbage_slots(), which scans through each marked slot 
+   of the same production firing, for example).  At the end of the phase,
+   we call remove_garbage_slots(), which scans through each marked slot
    and garbage collects it if it has no wmes or preferences.
 --------------------------------------------------------------------- */
 
 #ifndef TEMPMEM_H
 #define TEMPMEM_H
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-typedef char Bool;
-typedef union symbol_union Symbol;
+typedef struct symbol_struct Symbol;
 typedef struct slot_struct slot;
 typedef struct agent_struct agent;
 
-extern slot *find_slot (Symbol *id, Symbol *attr);
-extern slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr);
-extern void mark_slot_as_changed (agent* thisAgent, slot *s);
-extern void mark_slot_for_possible_removal (agent* thisAgent, slot *s);
-extern void remove_garbage_slots (agent* thisAgent);
-extern void clear_CDPS (agent* thisAgent, slot *s);
-
-#ifdef __cplusplus
-//}
-#endif
+extern slot* find_slot(Symbol* id, Symbol* attr);
+extern slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr);
+extern void mark_slot_as_changed(agent* thisAgent, slot* s);
+extern void mark_slot_for_possible_removal(agent* thisAgent, slot* s);
+extern void remove_garbage_slots(agent* thisAgent);
+extern void clear_CDPS(agent* thisAgent, slot* s);
 
 #endif

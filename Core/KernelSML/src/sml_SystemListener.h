@@ -29,38 +29,39 @@
 #include <string>
 #include <map>
 
-namespace sml {
-
-class Connection ;
-
-class SystemListener : public EventManager<smlSystemEventId>
+namespace sml
 {
-protected:
-	// The kernel
-	KernelSML* m_pKernelSML ;
 
-public:
-	SystemListener() {}
-
-	virtual ~SystemListener()
-	{
-		Clear() ;
-	}
-
-	// Initialize this listener
-	void Init(KernelSML* pKernelSML) ;
-
-	// Called when an event occurs in the kernel
-	virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) ;
-
-	// Returns true if this is the first connection listening for this event
-	virtual bool AddListener(smlSystemEventId eventID, Connection* pConnection) ;
-
-	// Returns true if at least one connection remains listening for this event
-	virtual bool RemoveListener(smlSystemEventId eventID, Connection* pConnection) ;
-
-} ;
-
+    class Connection ;
+    
+    class SystemListener : public EventManager<smlSystemEventId>
+    {
+        protected:
+            // The kernel
+            KernelSML* m_pKernelSML ;
+            
+        public:
+            SystemListener() {}
+            
+            virtual ~SystemListener()
+            {
+                Clear() ;
+            }
+            
+            // Initialize this listener
+            void Init(KernelSML* pKernelSML) ;
+            
+            // Called when an event occurs in the kernel
+            virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) ;
+            
+            // Returns true if this is the first connection listening for this event
+            virtual bool AddListener(smlSystemEventId eventID, Connection* pConnection) ;
+            
+            // Returns true if at least one connection remains listening for this event
+            virtual bool RemoveListener(smlSystemEventId eventID, Connection* pConnection) ;
+            
+    } ;
+    
 }
 
 #endif

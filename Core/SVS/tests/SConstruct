@@ -1,0 +1,84 @@
+import os
+
+jp = os.path.join
+
+HOME = os.environ['HOME']
+BUILD = jp(HOME, 'build/svs2')
+OUT = jp(HOME, 'svsout')
+SRC = jp('..', 'src')
+ALG = jp(SRC, 'algorithms')
+MDL = jp(SRC, 'models')
+
+if os.name == 'posix':
+	PLATFORM = jp(SRC, 'posix')
+else:
+	PLATFORM = jp(SRC, 'windows')
+
+env = Environment(
+	CPPPATH = os.environ.get('CPATH','').split(':') + [SRC, ALG, MDL, PLATFORM, '../eigen' ],
+	#CPPFLAGS = ['-Og', '-g', '-Wno-enum-compare'],
+	CPPFLAGS = ['-g', '-Wno-enum-compare'],
+	LINKFLAGS = ['-g'],
+	LIBPATH = os.environ.get('LD_LIBRARY_PATH', '').split(':'),
+	LIBS = [ 'opencv_core', 'opencv_ml' ],
+)
+
+def obj(names):
+	global env
+	
+	o = []
+	for n in names:
+		a = n + '.cpp'
+		b = n + '.o'
+		if os.path.exists(a):
+			o.append(env.StaticObject(source = a, target = jp(BUILD, b)))
+		elif os.path.exists(jp(SRC, a)):
+			o.append(env.StaticObject(source = jp(SRC, a), target = jp(BUILD, b)))
+		elif os.path.exists(jp(ALG, a)):
+			o.append(env.StaticObject(source = jp(ALG, a), target = jp(BUILD, 'alg', b)))
+		elif os.path.exists(jp(MDL, a)):
+			o.append(env.StaticObject(source = jp(MDL, a), target = jp(BUILD, 'mdl', b)))
+		elif os.path.exists(jp(PLATFORM, a)):
+			o.append(env.StaticObject(source = jp(PLATFORM, a), target = jp(BUILD, 'platform', b)))
+	
+	return o
+
+def exe(name, objs):
+	p = env.Program(jp(OUT, name), obj(objs))
+	env.Default(p)
+
+common = ['common', 'mat', 'serialize', 'timer', 'cliproxy', 'relation', 'platform_specific' ]
+
+run_lda          = common + ['lda', 'run_lda']
+run_foil         = common + ['foil', 'run_foil']
+test_foil        = common + ['foil', 'test_foil']
+test_intervalset = common + ['test_intervalset']
+test_csp         = common + ['foil', 'test_csp']
+combine_rels     = common + ['combine_rels']
+
+test_em = common + [
+	'scene_sig',
+	'drawer',
+	'ipcsocket',
+	'sgnode',
+	'model',
+	
+	'nn',
+	'lwr',
+	'linear',
+	'foil',
+	'lda',
+	'em',
+	'classifier',
+	'mode',
+	
+	'test_em',
+]
+
+#exe('run_lda', run_lda)
+exe('run_foil', run_foil)
+exe('combine_rels', combine_rels)
+#exe('test_foil', test_foil)
+#exe('test_intervalset', test_intervalset)
+#exe('test_csp', test_csp)
+exe('test_em', test_em)

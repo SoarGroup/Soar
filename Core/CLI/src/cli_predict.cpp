@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////
 // predict command file.
 //
-// Author: Jonathan Voigt, voigtjr@gmail.com, 
+// Author: Jonathan Voigt, voigtjr@gmail.com,
 //         Nate Derbinsky, nlderbin@umich.edu
 // Date  : 2007
 //
@@ -21,15 +21,19 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoPredict() 
+bool CommandLineInterface::DoPredict()
 {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
-    const char *prediction_result = predict_get( agnt );
-
-    if ( m_RawOutput )
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    const char* prediction_result = predict_get(thisAgent);
+    
+    if (m_RawOutput)
+    {
         m_Result << prediction_result;
+    }
     else
-        AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, prediction_result );
-
+    {
+        AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, prediction_result);
+    }
+    
     return true;
 }

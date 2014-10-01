@@ -4,7 +4,7 @@ Created-By: 1.6.0_26-b03 (Sun Microsystems Inc.)
 Title: soar-debugger
 Vendor: University of Michigan
 Date: February 24 2012 1742
-Version: 9.3.1
+Version: 9.4.0
 Built-By: jzxu
 Copyright: (c) The Regents of the University of Michigan, 2010
 Main-Class: edu.umich.soar.debugger.Application

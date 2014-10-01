@@ -1,0 +1,253 @@
+FILTERS:
+
+Base Filters:
+  filter
+    The base class for all filters
+    input - filter_input
+      Table which creates sets of filter_params
+    output - list of filter_vals
+
+  typed_filter<T>
+    A filter where the output is a set of filter_vals of the same type
+    Contains a mapping from input filter_params to output vals
+    Most filters should override this
+    Specialization for sgnodes which listen to changes
+
+  map_filter<T>
+    A filter where each input is mapped to exactly 1 output
+    subclasses should implement the compute function:
+      bool compute(filter_params* p, T& out)
+        Do the filter computation on the given set of filter_params
+          and set the output to the result
+        Return true if successful/false if error
+
+  select_filter<T>
+    A filter where each input is mapped to 0 or 1 output
+    subclasses should implement the compute function:
+      bool compute(filter_params* p, T& out, bool& select)
+        Do the filter computation on the given set of filter_params
+          and set the output to the result
+        Set the select flag to true if the result should be output
+        Return true if successful/false if error
+        
+  rank_filter
+    A filter where all inputs are ranked and the one
+      with the highest value is output
+    subclasses should implement the rank function:
+      bool rank(filter_params* p, double& r)
+        Do the filter computation on the given set of filter params
+          and produce a ranking value (r)
+        Return true if successful/false if error
+
+  const_filter<T>
+    A filter that returns a single output value
+    Not indended to be inherited
+
+  passthru_filter<T>
+    A filter that passes each input directly to output
+    Designed to be used as a combine filter to combine nodes
+
+
+Base Node Filters:
+  Node Test
+    bool node_test(node a, node b, filter_params* p)
+      Does a true/false test between the two nodes
+      (For example, intersection)
+
+    node_test_filter
+      For each pair a, b -> returns true/false result
+    node_test_select_filter
+      For each pair a, b -> returns b if node_test(a, b) = true
+      .set_select_true(false) - to select if the test fails
+
+  Node Comparison
+    double node_comparison(node a, node b, filter_params* p)
+      Returns the result of a comparison between the two
+      (For example, distance)
+
+    node_comparison_filter
+      For each pair a, b -> returns node_comparison(a, b)
+    node_comparison_select_filter
+      For each pair a, b ->
+        Returns b if min <= node_comparison(a, b) <= max
+      min and max set by filter_params or mutators set_min, set_max
+    node_comparison_rank_filter
+      Returns the pair a, b for which node_comparison(a, b) is the greatest
+      .set_select_highest(false) - to select the least instead
+
+  Node Evaluation
+    double node_evaluation(node a)
+      Returns the result of a computation on node a
+      (For example, volume)
+
+    node_evaluation_filter
+      For each node a -> returns node_evaluation(a)
+    node_evaluation_select_filter
+      For each node a ->
+        returns a if min <= node_evaluation(a) <= max
+      min and max set by filter_params or mutations set_min, set_max
+    node_evaluation_rank_filter
+      Returns node a for which node_evaluation(a) is the greatest
+      .set_select_highest(false) - to select the least instead
+
+Filters:
+  Node
+    node : select_filter<sgnode*>
+    all_nodes : filter
+
+    node_position : map_filter<vec3>
+    node_rotation : map_filter<vec3>
+    node_scale : map_filter<vec3>
+    node_bbox : map_filter<bbox>
+
+    combine_nodes : passthru_filter<sgnode*>
+    remove_node : select_filter<sgnode*>
+
+    
+
+  Distance
+    distance : node_comparison_filter
+    distance_select : node_comparison_select_filter
+    closest : node_comparison_rank_filter
+    farthest : node_comparison_rank_filter
+
+    Parameters:
+      ^distance_type << centroid hull >>
+
+  Distance on Axis
+    distance_on_axis : node_comparison_filter
+    distance_on_axis_select : node_comparison_select_filter
+
+    Parameters:
+      ^axis << x y z >>
+
+  Volume
+    volume : node_evaluation_filter
+    volume_select : node_evaluation_select_filter
+    largest : node_evaluation_rank_filter
+    smallest : node_evaluation_rank_filter
+    larger : node_test_filter
+    larger_select : node_test_select_filter
+    smaller : node_test_filter
+    smaller_select : node_test_select_filter
+
+
+  Contain
+    contain : node_test_filter
+    contain_select : node_test_select_filter
+
+  Intersect
+    intersect : node_test_filter
+    intersect_select : node_test_select_filter
+
+  Tag Select
+    tag_select : select_filter<sgnode*>
+
+
+
+Commands:
+  add_node
+    Soar Command to create a new node in the world
+    Parameters:
+      ^id <string> - name to give the node, must not already exist
+      ^parent <string> [Optional] - parent to add the node to
+      ^geometry << box point sphere group >> - geometry of new node
+
+      ^position <vec3> [Optional] - position of the new node
+      ^rotation <vec3> [Optional] - rotation of the new node
+      ^scale <vec3> [Optional] - scale of the new node
+
+  copy_node
+    Soar Command to create a new node by copying an old one
+    Parameters:
+      ^id <string> - name to give the node, must not already exist
+      ^source <string> - name of the node to copy from
+      ^parent <string> [Optional] - parent to add the node to
+ 
+      ^position <vec3> [Optional] - position of the new node
+      ^rotation <vec3> [Optional] - rotation of the new node
+      ^scale <vec3> [Optional] - scale of the new node
+        (These transforms default to that of the source node)
+  
+  set_transform
+    Soar Command to change the transform of a node (pos/rot/scale)
+    Parameters:
+      ^id <string> - name of the node to change
+      ^position <vec3> [Optional] - desired position
+      ^rotation <vec3> [Optional] - desired rotation
+      ^scale <vec3> [Optional] - desired scale
+       (Can set any or all of these)
+
+  delete_node
+    Soar Command to remove a node from the world
+    Parameters:
+      ^id <string> - name of the node to delete
+
+  set_tag
+    Soar Command to set a tag on a node (key/val pair)
+      If the tag already exists, this replaces the existing value
+    Parameters:
+      ^id <string> - name of the node to set the tag on
+      ^tag_name <string> - name of the tag to set
+      ^tag_value <string> - value of the tag to set
+
+  delete_tag
+    Soar Command to delete a tag on a node
+    Parameters:
+      ^id <string> - name of the node to delete the tag on
+      ^tag_name <string> - name of the tag to delete
+
+  extract
+    Soar Command to extract a filter on the world
+      Name is either extract or extract_once
+    Parameters:
+      ^type <string> - type of the filter
+      ...  - additional filter-specific parameters
+
+CLI:
+svs
+  dir or help
+  connect_viewer PORT - connect to a running viewer
+  disconnect_viewer - disconnect from the viewer
+  filters - displays a list of all filters
+    .filter_name - displays specific info about a filter
+  commands - displays a list of all commands
+    .command_name - displays specific infom about a command
+  state_stack[]
+    scene
+      world - sgnode
+        * more sgnodes
+      properties - properties
+      sgel string - sgel string
+      draw bool - draw in the viewer (can draw substates)
+      clear - remove all objects
+      
+
+SGEL Commands
+  add:
+    a <name> <mods>*
+  delete:
+    d <name>
+  change:
+    c <name> <mods>*
+    # (can change geometry if of the same type)
+    # (e.g. set radius of a ball node)
+  tag:
+    t <name> a|c|d <tag_name> <tag_value>
+    # (value not needed for delete)
+  mods:
+    p x y z - position
+    r x y z - rotation
+    s x y z - scaling
+    v <vec3>* - set of vertices for the geometry
+    b radius - ball node
+
+
+FUTURE UPDATES:
+  Timers
+  Logging
+  Cli for filters
+  Cli for commands
+  Extract relations over cli
+  Output information
+

@@ -15,7 +15,7 @@ import SCons.Script
 
 join = os.path.join
 
-SOAR_VERSION = "9.3.3"
+SOAR_VERSION = "9.4.0"
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
 DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
@@ -168,7 +168,8 @@ elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('c
 else:
 	compiler = os.path.split(env['CXX'])[1]
 
-Export('compiler')
+lsb_build = ('lsbc++' in env['CXX'])
+Export('compiler', 'lsb_build')
 
 cflags = []
 lnflags = []

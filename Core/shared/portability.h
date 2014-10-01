@@ -16,13 +16,13 @@
 #endif // not ( _WIN32 || _WINDOWS )
 
 #ifndef HAVE_ATOMICS
-static inline long atomic_inc( volatile long  *v )
+static inline long atomic_inc(volatile long*  v)
 {
-       return ++(*v);
+    return ++(*v);
 }
-static inline long atomic_dec( volatile long *v )
+static inline long atomic_dec(volatile long* v)
 {
-       return --(*v);
+    return --(*v);
 }
 #endif // HAVE_ATOMICS
 

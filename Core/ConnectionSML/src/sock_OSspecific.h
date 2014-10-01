@@ -5,18 +5,19 @@
 // Date  : ~2001
 //
 // The parts of the socket code that are specific to the operating system.
-// 
+//
 /////////////////////////////////////////////////////////////////
 
 #ifndef CT_OS_SPECIFIC_H
 #define CT_OS_SPECIFIC_H
 
 
-namespace sock {
+namespace sock
+{
 
-bool InitializeOperatingSystemSocketLibrary() ;
-bool TerminateOperatingSystemSocketLibrary() ;
-bool MakeSocketNonBlocking(SOCKET hSock) ;
+    bool InitializeOperatingSystemSocketLibrary() ;
+    bool TerminateOperatingSystemSocketLibrary() ;
+    bool MakeSocketNonBlocking(SOCKET hSock) ;
 } // Namespace
 
 #endif // CT_OS_SPECIFIC_H

@@ -5,80 +5,80 @@
 
 class CliParserTest : public CPPUNIT_NS::TestCase
 {
-    CPPUNIT_TEST_SUITE( CliParserTest );
+        CPPUNIT_TEST_SUITE(CliParserTest);
 #ifdef DO_CLIPARSER_TESTS
-    CPPUNIT_TEST( testEcho1 );
-    CPPUNIT_TEST( testEcho2 );
-    CPPUNIT_TEST( testEcho3 );
-    CPPUNIT_TEST( testEcho4 );
-    CPPUNIT_TEST( testEcho5 );
-    CPPUNIT_TEST( testEcho6 );
-    CPPUNIT_TEST( testEcho7 );
-
-    CPPUNIT_TEST( testMaxDCTime1 );
-    CPPUNIT_TEST( testMaxDCTime2 );
-    CPPUNIT_TEST( testMaxDCTime3 );
-    CPPUNIT_TEST( testMaxDCTime4 );
-    CPPUNIT_TEST( testMaxDCTime5 );
-    CPPUNIT_TEST( testMaxDCTime6 );
-    CPPUNIT_TEST( testMaxDCTime7 );
-    CPPUNIT_TEST( testMaxDCTime8 );
-    CPPUNIT_TEST( testMaxDCTime9 );
-    CPPUNIT_TEST( testMaxDCTime10 );
-    CPPUNIT_TEST( testMaxDCTime11 );
-    CPPUNIT_TEST( testMaxDCTime12 );
+        CPPUNIT_TEST(testEcho1);
+        CPPUNIT_TEST(testEcho2);
+        CPPUNIT_TEST(testEcho3);
+        CPPUNIT_TEST(testEcho4);
+        CPPUNIT_TEST(testEcho5);
+        CPPUNIT_TEST(testEcho6);
+        CPPUNIT_TEST(testEcho7);
+        
+        CPPUNIT_TEST(testMaxDCTime1);
+        CPPUNIT_TEST(testMaxDCTime2);
+        CPPUNIT_TEST(testMaxDCTime3);
+        CPPUNIT_TEST(testMaxDCTime4);
+        CPPUNIT_TEST(testMaxDCTime5);
+        CPPUNIT_TEST(testMaxDCTime6);
+        CPPUNIT_TEST(testMaxDCTime7);
+        CPPUNIT_TEST(testMaxDCTime8);
+        CPPUNIT_TEST(testMaxDCTime9);
+        CPPUNIT_TEST(testMaxDCTime10);
+        CPPUNIT_TEST(testMaxDCTime11);
+        CPPUNIT_TEST(testMaxDCTime12);
 #endif
-    CPPUNIT_TEST_SUITE_END();
-
-public:
-    CliParserTest()
-    {}
-    virtual ~CliParserTest() {}
-
-    void setUp();
-    void tearDown();
-
-protected:
-    soar::tokenizer tok;
-    cli::Parser* parser;
-
-    CliEcho echo;
-
-    void testEcho1();
-    void testEcho2();
-    void testEcho3();
-    void testEcho4();
-    void testEcho5();
-    void testEcho6();
-    void testEcho7();
-
-    CliMaxDCTime maxdctime;
-
-    void testMaxDCTime1();
-    void testMaxDCTime2();
-    void testMaxDCTime3();
-    void testMaxDCTime4();
-    void testMaxDCTime5();
-    void testMaxDCTime6();
-    void testMaxDCTime7();
-    void testMaxDCTime8();
-    void testMaxDCTime9();
-    void testMaxDCTime10();
-    void testMaxDCTime11();
-    void testMaxDCTime12();
-
-    void testSimpleCommand();
+        CPPUNIT_TEST_SUITE_END();
+        
+    public:
+        CliParserTest()
+        {}
+        virtual ~CliParserTest() {}
+        
+        void setUp();
+        void tearDown();
+        
+    protected:
+        soar::tokenizer tok;
+        cli::Parser* parser;
+        
+        CliEcho echo;
+        
+        void testEcho1();
+        void testEcho2();
+        void testEcho3();
+        void testEcho4();
+        void testEcho5();
+        void testEcho6();
+        void testEcho7();
+        
+        CliMaxDCTime maxdctime;
+        
+        void testMaxDCTime1();
+        void testMaxDCTime2();
+        void testMaxDCTime3();
+        void testMaxDCTime4();
+        void testMaxDCTime5();
+        void testMaxDCTime6();
+        void testMaxDCTime7();
+        void testMaxDCTime8();
+        void testMaxDCTime9();
+        void testMaxDCTime10();
+        void testMaxDCTime11();
+        void testMaxDCTime12();
+        
+        void testSimpleCommand();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( CliParserTest );
+CPPUNIT_TEST_SUITE_REGISTRATION(CliParserTest);
 
 void CliParserTest::setUp()
 {
     parser = new cli::Parser();
-
+    
     parser->AddCommand(new cli::EchoCommand(echo));
     parser->AddCommand(new cli::MaxDCTimeCommand(maxdctime));
-
+    
     tok.set_handler(parser);
 }
 

@@ -17,18 +17,20 @@ using namespace sml;
 // Might need this for windows dll.  Might also need some includes.
 #ifdef _WIN32
 
-BOOL APIENTRY DllMain( HANDLE hModule,          \
-                       DWORD  ul_reason_for_call, \
-                       LPVOID lpReserved)         \
-                                       {                                               \
-    return TRUE;                                 \
-                                       }
+BOOL APIENTRY DllMain(HANDLE hModule,          \
+                      DWORD  ul_reason_for_call, \
+                      LPVOID lpReserved)         \
+{
+    \
+    return TRUE;
+    \
+}
 
 #endif // _WIN32
 
 namespace TclSoar
 {
-    static TclSoarLib *gTclLib = NULL;
+    static TclSoarLib* gTclLib = NULL;
 }
 
 #ifdef __cplusplus
@@ -36,42 +38,42 @@ extern "C"
 #endif
 {
 
-    RHS_EXPORT void* sml_LibraryMessage(const char* pMessage, void* pMessageData)
+RHS_EXPORT void* sml_LibraryMessage(const char* pMessage, void* pMessageData)
+{
+    Kernel* lKernel;;
+    
+    /* -- create and delete should not be directly accessed by the user.  Ideally
+     *    we should pass in a parameter indicating whether the command originated
+     *    from the user or the soar code. -- */
+    if (!strcmp(pMessage, "delete"))
     {
-        Kernel *lKernel;;
-
-        /* -- create and delete should not be directly accessed by the user.  Ideally
-         *    we should pass in a parameter indicating whether the command originated
-         *    from the user or the soar code. -- */
-        if (!strcmp(pMessage, "delete"))
-        {
-            delete TclSoar::gTclLib;
-            TclSoar::gTclLib = NULL;
-            return ((void*) true);
-        }
-        else if (!strcmp(pMessage, "on"))
-        {
-            return ((void*) TclSoar::gTclLib->turnOn());
-
-        }
-        else if (!strcmp(pMessage, "off"))
-        {
-            return ((void*) TclSoar::gTclLib->turnOff());
-        }
-
-        return NULL;
+        delete TclSoar::gTclLib;
+        TclSoar::gTclLib = NULL;
+        return ((void*) true);
     }
-
-    RHS_EXPORT const char* sml_InitLibrary(Kernel* pKernel, int argc, char** argv)
+    else if (!strcmp(pMessage, "on"))
     {
-        if (!TclSoar::gTclLib)
-        {
-            TclSoar::gTclLib = new TclSoarLib(pKernel);
-            Soar_Instance::Get_Soar_Instance().Register_Library(pKernel, libName, sml_LibraryMessage);
-            TclSoar::gTclLib->init_TclSoarLib();
-        }
-        return "";
+        return ((void*) TclSoar::gTclLib->turnOn());
+        
     }
+    else if (!strcmp(pMessage, "off"))
+    {
+        return ((void*) TclSoar::gTclLib->turnOff());
+    }
+    
+    return NULL;
+}
+
+RHS_EXPORT const char* sml_InitLibrary(Kernel* pKernel, int argc, char** argv)
+{
+    if (!TclSoar::gTclLib)
+    {
+        TclSoar::gTclLib = new TclSoarLib(pKernel);
+        Soar_Instance::Get_Soar_Instance().Register_Library(pKernel, libName, sml_LibraryMessage);
+        TclSoar::gTclLib->init_TclSoarLib();
+    }
+    return "";
+}
 
 
 } // endif extern "C"

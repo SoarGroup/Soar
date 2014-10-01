@@ -90,92 +90,92 @@
 
 class MTRand
 {
-    // Data
-public:
-    enum { N = 624 };       // length of state vector
-    enum { SAVE = N + 1 };  // length of array for save()
-    
-protected:
-    enum { M = 397 };  // period parameter
-    
-    uint32_t state[N]; // internal state
-    uint32_t* pNext;   // next value to get from state
-    int left;          // number of values left before reload needed
-    
-    
-    //Methods
-public:
-    MTRand(const uint32_t& oneSeed);    // initialize with a simple uint32
-    MTRand(uint32_t* const bigSeed, uint32_t const seedLength = N);    // or an array
-    MTRand();  // auto-initialize with /dev/urandom or time() and clock()
-    
-    // Do NOT use for CRYPTOGRAPHY without securely hashing several returned
-    // values together, otherwise the generator state can be learned after
-    // reading 624 consecutive values.
-    
-    // Access to 32-bit random numbers
-    double rand();                          // real number in [0,1]
-    double rand(const double& n);           // real number in [0,n]
-    double randExc();                       // real number in [0,1)
-    double randExc(const double& n);        // real number in [0,n)
-    double randDblExc();                    // real number in (0,1)
-    double randDblExc(const double& n);     // real number in (0,n)
-    uint32_t randInt();                     // integer in [0,2^32-1]
-    uint32_t randInt(const uint32_t& n);    // integer in [0,n] for n < 2^32
-    double operator()()
-    {
-        return rand();    // same as rand()
-    }
-    
-    // Access to 53-bit random numbers (capacity of IEEE double precision)
-    double rand53();  // real number in [0,1)
-    
-    // Access to nonuniform random number distributions
-    double randNorm(const double& mean = 0.0, const double& stddeviation = 0.0);
-    
-    // Re-seeding functions with same behavior as initializers
-    void seed(const uint32_t oneSeed);
-    void seed(uint32_t* const bigSeed, const uint32_t seedLength = N);
-    void seed();
-    
-    // Saving and loading generator state
-    void save(uint32_t* saveArray) const;    // to array of size SAVE
-    void load(uint32_t* const loadArray);    // from such array
-    friend std::ostream& operator<<(std::ostream& os, const MTRand& mtrand);
-    friend std::istream& operator>>(std::istream& is, MTRand& mtrand);
-    
-protected:
-    void initialize(const uint32_t oneSeed);
-    void reload();
-    uint32_t hiBit(const uint32_t& u) const
-    {
-        return u & 0x80000000U;
-    }
-    uint32_t loBit(const uint32_t& u) const
-    {
-        return u & 0x00000001U;
-    }
-    uint32_t loBits(const uint32_t& u) const
-    {
-        return u & 0x7fffffffU;
-    }
-    uint32_t mixBits(const uint32_t& u, const uint32_t& v) const
-    {
-        return hiBit(u) | loBits(v);
-    }
+        // Data
+    public:
+        enum { N = 624 };       // length of state vector
+        enum { SAVE = N + 1 };  // length of array for save()
+        
+    protected:
+        enum { M = 397 };  // period parameter
+        
+        uint32_t state[N]; // internal state
+        uint32_t* pNext;   // next value to get from state
+        int left;          // number of values left before reload needed
+        
+        
+        //Methods
+    public:
+        MTRand(const uint32_t& oneSeed);    // initialize with a simple uint32
+        MTRand(uint32_t* const bigSeed, uint32_t const seedLength = N);    // or an array
+        MTRand();  // auto-initialize with /dev/urandom or time() and clock()
+        
+        // Do NOT use for CRYPTOGRAPHY without securely hashing several returned
+        // values together, otherwise the generator state can be learned after
+        // reading 624 consecutive values.
+        
+        // Access to 32-bit random numbers
+        double rand();                          // real number in [0,1]
+        double rand(const double& n);           // real number in [0,n]
+        double randExc();                       // real number in [0,1)
+        double randExc(const double& n);        // real number in [0,n)
+        double randDblExc();                    // real number in (0,1)
+        double randDblExc(const double& n);     // real number in (0,n)
+        uint32_t randInt();                     // integer in [0,2^32-1]
+        uint32_t randInt(const uint32_t& n);    // integer in [0,n] for n < 2^32
+        double operator()()
+        {
+            return rand();    // same as rand()
+        }
+        
+        // Access to 53-bit random numbers (capacity of IEEE double precision)
+        double rand53();  // real number in [0,1)
+        
+        // Access to nonuniform random number distributions
+        double randNorm(const double& mean = 0.0, const double& stddeviation = 0.0);
+        
+        // Re-seeding functions with same behavior as initializers
+        void seed(const uint32_t oneSeed);
+        void seed(uint32_t* const bigSeed, const uint32_t seedLength = N);
+        void seed();
+        
+        // Saving and loading generator state
+        void save(uint32_t* saveArray) const;    // to array of size SAVE
+        void load(uint32_t* const loadArray);    // from such array
+        friend std::ostream& operator<<(std::ostream& os, const MTRand& mtrand);
+        friend std::istream& operator>>(std::istream& is, MTRand& mtrand);
+        
+    protected:
+        void initialize(const uint32_t oneSeed);
+        void reload();
+        uint32_t hiBit(const uint32_t& u) const
+        {
+            return u & 0x80000000U;
+        }
+        uint32_t loBit(const uint32_t& u) const
+        {
+            return u & 0x00000001U;
+        }
+        uint32_t loBits(const uint32_t& u) const
+        {
+            return u & 0x7fffffffU;
+        }
+        uint32_t mixBits(const uint32_t& u, const uint32_t& v) const
+        {
+            return hiBit(u) | loBits(v);
+        }
 #ifdef _MSC_VER
 #pragma warning( push ) // save current warning settings
 #pragma warning( disable : 4146 ) // warning C4146: unary minus operator applied to unsigned type, result still unsigned
 #endif
-    uint32_t twist(const uint32_t& m, const uint32_t& s0, const uint32_t& s1) const
-    {
-        return m ^ (mixBits(s0, s1) >> 1) ^ (-loBit(s1) & 0x9908b0dfU);    // RPM 1/06 this line causes Visual Studio warning C4146, but is actually safe
-    }
+        uint32_t twist(const uint32_t& m, const uint32_t& s0, const uint32_t& s1) const
+        {
+            return m ^ (mixBits(s0, s1) >> 1) ^ (-loBit(s1) & 0x9908b0dfU);    // RPM 1/06 this line causes Visual Studio warning C4146, but is actually safe
+        }
 #ifdef _MSC_VER
 #pragma warning( pop ) // return warning settings to what they were
 #endif
-    
-    static uint32_t hash(time_t t, clock_t c);
+        
+        static uint32_t hash(time_t t, clock_t c);
 };
 
 
@@ -273,7 +273,7 @@ inline uint32_t MTRand::randInt(const uint32_t& n)
     uint32_t i;
     do
     {
-        i = randInt() & used;    // toss unused bits to shorten search
+        i = randInt() & used;  // toss unused bits to shorten search
     }
     while (i > n);
     return i;
@@ -303,7 +303,7 @@ inline void MTRand::seed(uint32_t* const bigSeed, const uint32_t seedLength)
     for (; k; --k)
     {
         state[i] =
-        state[i] ^ ((state[i - 1] ^ (state[i - 1] >> 30)) * 1664525U);
+            state[i] ^ ((state[i - 1] ^ (state[i - 1] >> 30)) * 1664525U);
         state[i] += (bigSeed[j] & 0xffffffffU) + j;
         state[i] &= 0xffffffffU;
         ++i;
@@ -321,7 +321,7 @@ inline void MTRand::seed(uint32_t* const bigSeed, const uint32_t seedLength)
     for (k = N - 1; k; --k)
     {
         state[i] =
-        state[i] ^ ((state[i - 1] ^ (state[i - 1] >> 30)) * 1566083941U);
+            state[i] ^ ((state[i - 1] ^ (state[i - 1] >> 30)) * 1566083941U);
         state[i] -= i;
         state[i] &= 0xffffffffU;
         ++i;

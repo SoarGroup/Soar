@@ -22,10 +22,10 @@ using namespace sock ;
 
 SocketLib::SocketLib()
 {
-	InitializeOperatingSystemSocketLibrary() ;
+    InitializeOperatingSystemSocketLibrary() ;
 }
 
 SocketLib::~SocketLib()
 {
-	TerminateOperatingSystemSocketLibrary() ;
+    TerminateOperatingSystemSocketLibrary() ;
 }

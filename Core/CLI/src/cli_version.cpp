@@ -25,17 +25,21 @@ using namespace sml;
 const char* kTimestamp = __TIME__;
 const char* kDatestamp = __DATE__;
 
-bool CommandLineInterface::DoVersion() {
+bool CommandLineInterface::DoVersion()
+{
 
     std::ostringstream timedatestamp;
     timedatestamp << kDatestamp << " " << kTimestamp;
     std::string sTimeDateStamp = timedatestamp.str();
-
-    if (m_RawOutput) {
+    
+    if (m_RawOutput)
+    {
         m_Result << sml_Names::kSoarVersionValue << "\n";
         m_Result << "Build date: " << sTimeDateStamp.c_str() << " " ;
-
-    } else {
+        
+    }
+    else
+    {
         std::string temp;
         int major = MAJOR_VERSION_NUMBER;
         int minor = MINOR_VERSION_NUMBER;

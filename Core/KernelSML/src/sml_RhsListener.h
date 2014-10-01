@@ -20,15 +20,16 @@
 #include <string>
 #include <map>
 
-namespace sml {
+namespace sml
+{
 
-class Connection ;
-class AgentSML ;
-
+    class Connection ;
+    class AgentSML ;
+    
 // Mapping from a rhs function name to the list of connections implementing that function
-typedef std::map< std::string, ConnectionList* >	RhsMap ;
-typedef RhsMap::iterator						RhsMapIter ;
-
+    typedef std::map< std::string, ConnectionList* >    RhsMap ;
+    typedef RhsMap::iterator                        RhsMapIter ;
+    
 //
 // NOTE: this class differs from the other listener classes in that it does not inherit from EventManager
 // The reason is because it's signatures for some functions are different (i.e. Add/RemoveListener).
@@ -43,58 +44,58 @@ typedef RhsMap::iterator						RhsMapIter ;
 //  RhsListener doesn't have.  However, RhsListener has no need for these things right now. If that changes in
 //  the future, we may revisit this decision.
 //
-class RhsListener
-{
-protected:
-	// Mapping from a rhs function name to the list of connections implementing that function
-	RhsMap	m_RhsMap ;
-
-	// Record if we've registered with the kernel to listen to RHS functions
-	bool m_bListeningRHS ;
-
-	// The kernel
-	KernelSML* m_pKernelSML ;
-
-public:
-	RhsListener()
-	{
-		m_bListeningRHS = false ;
-	}
-
-	virtual ~RhsListener()
-	{
-		Clear() ;
-	}
-
-	// Initialize this listener
-	void Init(KernelSML* pKernelSML) ;
-
-	// Release memory
-	virtual void Clear() ;
-
-	// Returns true if this is the first connection listening for this function name
-	void AddRhsListener(char const* pFunctionName, Connection* pConnection) ;
-
-	// Returns true if at least one connection remains listening for this function name
-	void RemoveRhsListener(char const* pFunctionName, Connection* pConnection) ;
-
-	virtual void RemoveAllListeners(Connection* pConnection) ;
-
-	// Returns the list of connections listening for this RHS function to fire
-	ConnectionList* GetRhsListeners(char const* pFunctionName) ;
-
-	// Called for a filter event
-	bool HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, char const* pArgument,
-						    std::string &pReturnValue);
-
-	// Called when a "RhsEvent" occurs in the kernel
-	virtual bool HandleEvent(smlRhsEventId eventId, AgentSML* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
-						     int maxLengthReturnValue, char* pReturnValue) ;
-
-	virtual bool ExecuteRhsCommand(AgentSML* pAgentSML, smlRhsEventId eventID, std::string const& functionName, std::string const& arguments, std::string* pResult) ;
-	virtual bool ExecuteCommandLine(AgentSML* pAgentSML, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue) ;
-} ;
-
+    class RhsListener
+    {
+        protected:
+            // Mapping from a rhs function name to the list of connections implementing that function
+            RhsMap  m_RhsMap ;
+            
+            // Record if we've registered with the kernel to listen to RHS functions
+            bool m_bListeningRHS ;
+            
+            // The kernel
+            KernelSML* m_pKernelSML ;
+            
+        public:
+            RhsListener()
+            {
+                m_bListeningRHS = false ;
+            }
+            
+            virtual ~RhsListener()
+            {
+                Clear() ;
+            }
+            
+            // Initialize this listener
+            void Init(KernelSML* pKernelSML) ;
+            
+            // Release memory
+            virtual void Clear() ;
+            
+            // Returns true if this is the first connection listening for this function name
+            void AddRhsListener(char const* pFunctionName, Connection* pConnection) ;
+            
+            // Returns true if at least one connection remains listening for this function name
+            void RemoveRhsListener(char const* pFunctionName, Connection* pConnection) ;
+            
+            virtual void RemoveAllListeners(Connection* pConnection) ;
+            
+            // Returns the list of connections listening for this RHS function to fire
+            ConnectionList* GetRhsListeners(char const* pFunctionName) ;
+            
+            // Called for a filter event
+            bool HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, char const* pArgument,
+                                   std::string& pReturnValue);
+                                   
+            // Called when a "RhsEvent" occurs in the kernel
+            virtual bool HandleEvent(smlRhsEventId eventId, AgentSML* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+                                     int maxLengthReturnValue, char* pReturnValue) ;
+                                     
+            virtual bool ExecuteRhsCommand(AgentSML* pAgentSML, smlRhsEventId eventID, std::string const& functionName, std::string const& arguments, std::string* pResult) ;
+            virtual bool ExecuteCommandLine(AgentSML* pAgentSML, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue) ;
+    } ;
+    
 }
 
 #endif

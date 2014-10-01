@@ -17,5 +17,5 @@ using namespace sml ;
 
 TagCommand::TagCommand()
 {
-	SetTagNameFast(sml_Names::kTagCommand) ;
+    SetTagNameFast(sml_Names::kTagCommand) ;
 }

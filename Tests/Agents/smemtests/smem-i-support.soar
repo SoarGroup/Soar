@@ -1,0 +1,60 @@
+smem --enable
+smem --add {
+   (<L1> ^value foo ^next <L2>)
+   (<L2> ^value bar)
+}
+
+sp {propose*init-agent
+   (state <s> ^superstate nil
+             -^result <cr>
+             -^name)
+-->
+   (<s> ^operator.name init-agent)
+}
+
+sp {apply*init-agent*name
+   (state <s> ^operator.name init-agent)
+-->
+   (<s> ^name smem-isupport-crash)
+}
+
+sp {apply*init-agent*query
+   (state <s> ^name smem-isupport-crash
+              ^smem.command <command>)
+-->
+   (<command> ^query.value foo)
+}
+
+sp {apply*init-agent*link-result
+   (state <s> ^name smem-isupport-crash
+              ^smem.result <sres>)
+   (<sres> ^success
+           ^retrieved <res>)
+-->
+   (<s> ^result <res>)
+}
+
+sp {propose*retrieve-lti
+   (state <s> ^name smem-isupport-crash
+              ^result.next <next>)
+   (<next> -^value)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name retrieve-lti
+         ^lti <next>)
+}
+
+sp {apply*retrieve-lti
+   (state <s> ^superstate.operator.lti <lti>
+              ^smem.command <scmd>)
+-->
+   (<scmd> ^retrieve <lti>)
+}
+
+sp {success
+   (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+   (exec succeeded)
+   (halt)
+}
+

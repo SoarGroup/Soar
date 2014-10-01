@@ -9,16 +9,16 @@
 // This class's HandleEvent method is called when
 // specific events occur within the kernel (copied from sml_Events.h):
 //
-//enum smlSystemEventId 
+//enum smlSystemEventId
 //{
 //    smlEVENT_BEFORE_SHUTDOWN            = 1,
-//	smlEVENT_AFTER_CONNECTION,
-//	smlEVENT_SYSTEM_START,
-//	smlEVENT_BEFORE_AGENTS_RUN_STEP,
-//	smlEVENT_SYSTEM_STOP,
-//	smlEVENT_INTERRUPT_CHECK,					// Chance for client to interrupt a run (designed to be low bandwidth)
-//	smlEVENT_SYSTEM_PROPERTY_CHANGED,			// A kernel-level parameter has been changed (note: no longer includes sysparams which are agent-level)
-//	smlEVENT_LAST_SYSTEM_EVENT = smlEVENT_SYSTEM_PROPERTY_CHANGED
+//  smlEVENT_AFTER_CONNECTION,
+//  smlEVENT_SYSTEM_START,
+//  smlEVENT_BEFORE_AGENTS_RUN_STEP,
+//  smlEVENT_SYSTEM_STOP,
+//  smlEVENT_INTERRUPT_CHECK,                   // Chance for client to interrupt a run (designed to be low bandwidth)
+//  smlEVENT_SYSTEM_PROPERTY_CHANGED,           // A kernel-level parameter has been changed (note: no longer includes sysparams which are agent-level)
+//  smlEVENT_LAST_SYSTEM_EVENT = smlEVENT_SYSTEM_PROPERTY_CHANGED
 //} ;
 /////////////////////////////////////////////////////////////////
 
@@ -37,98 +37,104 @@ using namespace sml ;
 bool SystemListener::AddListener(smlSystemEventId eventID, Connection* pConnection)
 {
     bool first = EventManager<smlSystemEventId>::BaseAddListener(eventID, pConnection) ;
-
-	/* DJP: System events can't be implemented below SML because the kernel itself is agent based (it has no concept of something larger than an agent)
-	if (first)
-	{
-		m_pKernelSML->GetKernel()->AddSystemListener(eventID, this) ;
-	}
-	*/
-
-	return first ;
+    
+    /* DJP: System events can't be implemented below SML because the kernel itself is agent based (it has no concept of something larger than an agent)
+    if (first)
+    {
+        m_pKernelSML->GetKernel()->AddSystemListener(eventID, this) ;
+    }
+    */
+    
+    return first ;
 }
 
 // Returns true if at least one connection remains listening for this event
 bool SystemListener::RemoveListener(smlSystemEventId eventID, Connection* pConnection)
 {
-	bool last = EventManager<smlSystemEventId>::BaseRemoveListener(eventID, pConnection) ;
-
-	/* DJP: System events can't be implemented below SML because the kernel itself is agent based (it has no concept of something larger than an agent)
-	if (last)
-	{
-		m_pKernelSML->GetKernel()->RemoveSystemListener(eventID, this) ;
-	}
-	*/
-
-	return last ;
+    bool last = EventManager<smlSystemEventId>::BaseRemoveListener(eventID, pConnection) ;
+    
+    /* DJP: System events can't be implemented below SML because the kernel itself is agent based (it has no concept of something larger than an agent)
+    if (last)
+    {
+        m_pKernelSML->GetKernel()->RemoveSystemListener(eventID, this) ;
+    }
+    */
+    
+    return last ;
 }
 
 // Initialize this listener
 void SystemListener::Init(KernelSML* pKernel)
 {
-	m_pKernelSML = pKernel ;
+    m_pKernelSML = pKernel ;
 }
 
 // Called when an event occurs in the kernel
 void SystemListener::OnKernelEvent(int eventIDIn, AgentSML* pAgentSML, void* /*pCallData*/)
 {
-	// All system events are currently implemented directly in kernel SML so there's
-	// no underlying kernel callbacks to connect to.
-	// If we ever change that, this is where the callbacks would come in.
-
-	smlSystemEventId eventID = static_cast<smlSystemEventId>(eventIDIn);
-
-	// The system start event can be suppressed by a client.
-	// This allows us to run a Soar agent without running the associated simulation
-	// (which should be listening for system-start/system-stop events).
-
-	// DJP May 2007: This was an earlier idea about how we'd control systems through SML.  I'm
-	// not sure this model (and these events) are relevant anymore.
-	if (eventID == smlEVENT_SYSTEM_START)
-	{
-		bool suppress = m_pKernelSML->IsSystemStartSuppressed() ;
-
-		// The flag is reset forcing the client to repeatedly suppress the system
-		// start event each time they wish to run Soar and not generate this event.
-		m_pKernelSML->SetSuppressSystemStart(false) ;
-
-		if (suppress)
-			return ;
-	}
-
-	// Similarly, system stop can be suppressed.
-	if (eventID == smlEVENT_SYSTEM_STOP)
-	{
-		bool suppress = m_pKernelSML->IsSystemStopSuppressed() ;
-
-		// Clear our flags that control this event
-		m_pKernelSML->RequireSystemStop(false) ;
-		m_pKernelSML->SetSuppressSystemStop(false) ;
-
-		if (suppress)
-			return ;
-	}
-
-	// Get the first listener for this event (or return if there are none)
-	ConnectionListIter connectionIter ;
-	if (!EventManager<smlSystemEventId>::GetBegin(eventID, &connectionIter))
-		return ;
-
-	// We need the first connection for when we're building the message.  Perhaps this is a sign that
-	// we shouldn't have rolled these methods into Connection.
-	Connection* pConnection = *connectionIter ;
-
-	// Convert eventID to a string
-	char const* eventString = m_pKernelSML->ConvertEventToString(eventID) ;
-
-	// Build the SML message we're doing to send.
-	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, eventString) ;
-
-	// Send the message out
-	AnalyzeXML response ;
-	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
-
-	// Clean up
-	delete pMsg ;
+    // All system events are currently implemented directly in kernel SML so there's
+    // no underlying kernel callbacks to connect to.
+    // If we ever change that, this is where the callbacks would come in.
+    
+    smlSystemEventId eventID = static_cast<smlSystemEventId>(eventIDIn);
+    
+    // The system start event can be suppressed by a client.
+    // This allows us to run a Soar agent without running the associated simulation
+    // (which should be listening for system-start/system-stop events).
+    
+    // DJP May 2007: This was an earlier idea about how we'd control systems through SML.  I'm
+    // not sure this model (and these events) are relevant anymore.
+    if (eventID == smlEVENT_SYSTEM_START)
+    {
+        bool suppress = m_pKernelSML->IsSystemStartSuppressed() ;
+        
+        // The flag is reset forcing the client to repeatedly suppress the system
+        // start event each time they wish to run Soar and not generate this event.
+        m_pKernelSML->SetSuppressSystemStart(false) ;
+        
+        if (suppress)
+        {
+            return ;
+        }
+    }
+    
+    // Similarly, system stop can be suppressed.
+    if (eventID == smlEVENT_SYSTEM_STOP)
+    {
+        bool suppress = m_pKernelSML->IsSystemStopSuppressed() ;
+        
+        // Clear our flags that control this event
+        m_pKernelSML->RequireSystemStop(false) ;
+        m_pKernelSML->SetSuppressSystemStop(false) ;
+        
+        if (suppress)
+        {
+            return ;
+        }
+    }
+    
+    // Get the first listener for this event (or return if there are none)
+    ConnectionListIter connectionIter ;
+    if (!EventManager<smlSystemEventId>::GetBegin(eventID, &connectionIter))
+    {
+        return ;
+    }
+    
+    // We need the first connection for when we're building the message.  Perhaps this is a sign that
+    // we shouldn't have rolled these methods into Connection.
+    Connection* pConnection = *connectionIter ;
+    
+    // Convert eventID to a string
+    char const* eventString = m_pKernelSML->ConvertEventToString(eventID) ;
+    
+    // Build the SML message we're doing to send.
+    soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+    pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, eventString) ;
+    
+    // Send the message out
+    AnalyzeXML response ;
+    SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+    
+    // Clean up
+    delete pMsg ;
 }

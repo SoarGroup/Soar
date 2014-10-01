@@ -19,7 +19,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoUnalias(std::vector<std::string>& argv) 
+bool CommandLineInterface::DoUnalias(std::vector<std::string>& argv)
 {
     m_Parser.GetAliases().SetAlias(argv);
     return true;
