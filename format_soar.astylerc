@@ -5,6 +5,7 @@
 --pad-oper
 --pad-header
 --unpad-paren
+--fill-empty-lines
 --add-brackets
 --add-one-line-brackets
 --keep-one-line-blocks

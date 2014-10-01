@@ -83,7 +83,7 @@ bool larger_test(sgnode* a, sgnode* b, const filter_params* p)
 {
     if (a == b)
     {
-      return false;
+        return false;
     }
     return bbox_volume(a) > bbox_volume(b);
 }
@@ -92,7 +92,7 @@ bool smaller_test(sgnode* a, sgnode* b, const filter_params* p)
 {
     if (a == b)
     {
-      return false;
+        return false;
     }
     return bbox_volume(a) < bbox_volume(b);
 }
