@@ -1960,19 +1960,6 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         id->id->epmem_result_header = make_new_identifier(thisAgent, 'R', level);
         soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_result, id->id->epmem_result_header);
         
-        {
-            int64_t my_time = static_cast<int64_t>(thisAgent->epmem_stats->time->get_value());
-            if (my_time == 0)
-            {
-                // special case: pre-initialization
-                my_time = 1;
-            }
-            
-            Symbol* my_time_sym = make_int_constant(thisAgent, my_time);
-            id->id->epmem_time_wme = soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym);
-            symbol_remove_ref(thisAgent, my_time_sym);
-        }
-        
         id->id->smem_header = make_new_identifier(thisAgent, 'S', level);
         soar_module::add_module_wme(thisAgent, id, thisAgent->smem_sym, id->id->smem_header);
         id->id->smem_cmd_header = make_new_identifier(thisAgent, 'C', level);
@@ -2833,6 +2820,8 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     
     goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
     free_with_pool(&(thisAgent->epmem_wmes_pool), goal->id->epmem_info->epmem_wmes);
+    goal->id->epmem_info->epmem_time_wmes->~epmem_wme_stack();
+    free_with_pool(&(thisAgent->epmem_wmes_pool), goal->id->epmem_info->epmem_time_wmes);
     symbol_remove_ref(thisAgent, goal->id->epmem_cmd_header);
     symbol_remove_ref(thisAgent, goal->id->epmem_result_header);
     symbol_remove_ref(thisAgent, goal->id->epmem_header);
@@ -2954,11 +2943,32 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->epmem_info->last_cmd_count = 0;
     id->id->epmem_info->last_memory = EPMEM_MEMID_NONE;
     allocate_with_pool(thisAgent, &(thisAgent->epmem_wmes_pool), &(id->id->epmem_info->epmem_wmes));
+    allocate_with_pool(thisAgent, &(thisAgent->epmem_wmes_pool), &(id->id->epmem_info->epmem_time_wmes));
 #ifdef USE_MEM_POOL_ALLOCATORS
     id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) epmem_wme_stack(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
+    id->id->epmem_info->epmem_time_wmes = new ( id->id->epmem_info->epmem_time_wmes ) epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) );
 #else
     id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) epmem_wme_stack();
+    id->id->epmem_info->epmem_time_wmes = new ( id->id->epmem_info->epmem_time_wmes ) epmem_wme_stack();
 #endif
+
+    // create time wme; this may be after the various metadata structures are allocated
+    {
+        int64_t my_time = static_cast<int64_t>(thisAgent->epmem_stats->time->get_value());
+        if (my_time == 0)
+        {
+            // special case: pre-initialization
+            my_time = 1;
+        }
+        
+        {
+          Symbol* my_time_sym = make_int_constant( thisAgent, my_time );
+          soar_module::symbol_triple_list temp_list;
+          epmem_buffer_add_wme(thisAgent, temp_list, id->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym);
+          soar_module::wme_set conditions;
+          _epmem_process_buffered_wme_list( thisAgent, id, conditions, temp_list, id->id->epmem_info->epmem_time_wmes );
+        }
+    }
     
     allocate_with_pool(thisAgent, &(thisAgent->smem_info_pool), &(id->id->smem_info));
     id->id->smem_info->last_cmd_time[0] = 0;

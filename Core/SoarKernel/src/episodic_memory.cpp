@@ -1875,14 +1875,14 @@ void epmem_reinit(agent* thisAgent)
  * Notes        : Removes any WMEs produced by EpMem resulting from
  *                a command
  **************************************************************************/
-void epmem_clear_result(agent* thisAgent, Symbol* state)
+void epmem_clear_result(agent* thisAgent, epmem_wme_stack* wme_list)
 {
     preference* pref;
     
-    while (!state->id->epmem_info->epmem_wmes->empty())
+    while (!wme_list->empty())
     {
-        pref = state->id->epmem_info->epmem_wmes->back();
-        state->id->epmem_info->epmem_wmes->pop_back();
+        pref = wme_list->back();
+        wme_list->pop_back();
         
         if (pref->in_tm)
         {
@@ -1917,6 +1917,7 @@ void epmem_reset(agent* thisAgent, Symbol* state)
         // this will be called after prefs from goal are already removed,
         // so just clear out result stack
         data->epmem_wmes->clear();
+        data->epmem_time_wmes->clear();
         
         state = state->id->lower_goal;
     }
@@ -3254,15 +3255,20 @@ void epmem_new_episode(agent* thisAgent)
         {
             Symbol* state = thisAgent->bottom_goal;
             Symbol* my_time_sym = make_int_constant(thisAgent, time_counter + 1);
+            soar_module::wme_set conditions;
             
             while (state != NULL)
             {
-                if (state->id->epmem_time_wme != NIL)
+                if (state->id->epmem_info->epmem_time_wmes != NIL)
                 {
-                    soar_module::remove_module_wme(thisAgent, state->id->epmem_time_wme);
+                    epmem_clear_result(thisAgent, state->id->epmem_info->epmem_time_wmes);
                 }
                 
-                state->id->epmem_time_wme = soar_module::add_module_wme(thisAgent, state->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym);
+                // state->id->epmem_time_wme = soar_module::add_module_wme( thisAgent, state->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym );
+                soar_module::symbol_triple_list temp_list;
+                epmem_buffer_add_wme(thisAgent, temp_list, state->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym);
+                symbol_remove_ref(thisAgent, my_time_sym);
+                _epmem_process_buffered_wme_list( thisAgent, state, conditions, temp_list, state->id->epmem_info->epmem_time_wmes );
                 
                 state = state->id->higher_goal;
             }
@@ -5967,7 +5973,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
             if (new_cue)
             {
                 // clear old results
-                epmem_clear_result(thisAgent, state);
+                epmem_clear_result(thisAgent, state->id->epmem_info->epmem_wmes);
                 
                 do_wm_phase = true;
             }

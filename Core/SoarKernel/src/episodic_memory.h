@@ -449,6 +449,7 @@ typedef struct epmem_data_struct
     epmem_time_id last_memory;                              // last retrieved memory
     
     epmem_wme_stack* epmem_wmes;                            // preferences generated in last epmem
+    epmem_wme_stack* epmem_time_wmes;                       // preferences for the ^present_id wme
 } epmem_data;
 
 // lookup tables to facilitate shared identifiers
@@ -529,6 +530,10 @@ extern void epmem_init_db(agent* thisAgent, bool readonly = false);
 // visualization
 extern void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, std::string* buf);
 extern void epmem_print_episode(agent* thisAgent, epmem_time_id memory_id, std::string* buf);
+
+// increment time wme
+extern void epmem_buffer_add_wme( agent* thisAgent, soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value );
+extern void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes );
 
 //////////////////////////////////////////////////////////
 // Episodic Memory Search
