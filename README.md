@@ -9,7 +9,7 @@ This is the code base for Soar, a cognitive architecture for developing systems 
 
 For binary builds of Soar you can get them in two places:
 
-* [Google Code - Stable Releases](http://soar.eecs.umich.edu/articles/downloads/soar-suite)
-* [Unstable "Nightlies"](http://soar-jenkins.eecs.umich.edu)
+* [Official Releases](http://soar.eecs.umich.edu/articles/downloads/soar-suite)
+* [Latest Successful Development Build](http://soar-jenkins.eecs.umich.edu)
 
-Note: For the nightlies there is no difference between non-scu and scu builds.
+Note: For the developmental builds, the non-scu and scu versions are equivalent.

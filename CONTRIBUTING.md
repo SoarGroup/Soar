@@ -109,7 +109,7 @@ case**.
 
 * Run _all_ the tests to assure nothing was accidentally broken. If you
   break the project in your git pull request, Jenkins [(our build
-system)](http://daidalos.eecs.umich.edu:8080)
+system)](http://soar-jenkins.eecs.umich.edu:8080)
   will let you know.  Until Jenkins passes your pull request, it **WILL NOT**
   be merged in.
 
@@ -131,7 +131,7 @@ organization.
 documentation](http://help.github.com/send-pull-requests/)
 * [How to GitHub: Fork, Branch, Track, Squash and Pull
 Request](https://gun.io/blog/how-to-github-fork-branch-and-pull-request/)
-* [Soar Home Page](http://sitemaker.umich.edu/soar/home)
+* [Soar Home Page](http://soar.eecs.umich.edu/)
 * [Soar Github Page](https://github.com/SoarGroup/Soar)
 
 ## References
