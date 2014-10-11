@@ -24,17 +24,17 @@ bool CommandLineInterface::DoSoarNews()
 {
 
     m_Result << "This is Soar ";
-
+    
     // Make DoVersion print its result to the result string
     bool rawOutputSave = m_RawOutput;
     m_RawOutput = true;
     DoVersion();
     m_RawOutput = rawOutputSave;
-
+    
     m_Result << ".\n";
     m_Result << "Please visit the Soar home page at\n\thttp://soar.eecs.umich.edu/\n";
     m_Result << "Please see the release notes included in this release for more information.";
-
+    
     return true;
 }
 
