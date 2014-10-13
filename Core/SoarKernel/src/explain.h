@@ -13,7 +13,6 @@
 #ifndef EXPLAIN_H
 #define EXPLAIN_H
 
-
 typedef signed short goal_stack_level;
 typedef struct condition_struct condition;
 typedef struct action_struct action;

@@ -642,7 +642,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
         }
     }
     // architectural
-    else if (!o_only && !w->preference)
+    else if (!o_only && !w->preference && (w->reference_count != 0))
     {
         // only action is to add it to the o_set
         if (o_set)
@@ -756,7 +756,7 @@ inline void wma_forgetting_add_to_p_queue(agent* thisAgent, wma_decay_element* d
 #endif
             newbie->insert(decay_el);
             
-            thisAgent->wma_forget_pq->insert(std::make_pair< wma_d_cycle, wma_decay_set* >(new_cycle, newbie));
+            thisAgent->wma_forget_pq->insert(std::make_pair(new_cycle, newbie));
         }
         else
         {
