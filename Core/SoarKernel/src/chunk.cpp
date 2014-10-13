@@ -718,7 +718,7 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
     preference* p;
     goal_stack_level lowest_result_level;
 
-    if (!thisAgent->sysparams[USE_LONG_CHUNK_NAMES])
+//    if (!thisAgent->sysparams[USE_LONG_CHUNK_NAMES])
         return (generate_new_str_constant(thisAgent, thisAgent->chunk_name_prefix,
                                           &thisAgent->chunk_count));
 

@@ -81,65 +81,62 @@ typedef struct agent_struct agent;
 /* ===== explain_flag =====  KJC 7/96 */
 #define EXPLAIN_SYSPARAM                         27
 
-/* kjh(B14) */
-#define USE_LONG_CHUNK_NAMES                     28
-
 /* REW:  10.22.97 */
-#define TRACE_OPERAND2_REMOVALS_SYSPARAM         29
+#define TRACE_OPERAND2_REMOVALS_SYSPARAM         28
 
 /* RMJ */
-#define REAL_TIME_SYSPARAM                       30
+#define REAL_TIME_SYSPARAM                       29
 
 /* RMJ */
-#define ATTENTION_LAPSE_ON_SYSPARAM              31
+#define ATTENTION_LAPSE_ON_SYSPARAM              30
 
 /* KJC 3/01 limit number of cycles in run_til_output */
-#define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           32
+#define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           31
 
-#define TRACE_INDIFFERENT_SYSPARAM               33
+#define TRACE_INDIFFERENT_SYSPARAM               32
 
 /* rmarinie 11/04 */
-#define TIMERS_ENABLED                           34
+#define TIMERS_ENABLED                           33
 
-#define MAX_GOAL_DEPTH                           35
+#define MAX_GOAL_DEPTH                           34
 
 /* KJC 8/06:  generate warning and event if memory usage exceeds this value */
-#define MAX_MEMORY_USAGE_SYSPARAM                36
+#define MAX_MEMORY_USAGE_SYSPARAM                35
 
 /* NLD: auto-reduction of exploration parameters */
-#define USER_SELECT_REDUCE_SYSPARAM              37
+#define USER_SELECT_REDUCE_SYSPARAM              36
 
 /* NLD: Soar-RL trace information */
-#define TRACE_RL_SYSPARAM                        38
+#define TRACE_RL_SYSPARAM                        37
 
 /* JRV: Bug 1087: Chunk through local negations */
-#define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM   39
+#define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM   38
 
 /* New waterfall model: trace waterfall events */
-#define TRACE_WATERFALL_SYSPARAM                 40
+#define TRACE_WATERFALL_SYSPARAM                 39
 
 /* NLD: WMA trace information */
-#define TRACE_WMA_SYSPARAM                       41
+#define TRACE_WMA_SYSPARAM                       40
 
 /* NLD: EpMem trace information */
-#define TRACE_EPMEM_SYSPARAM                     42
+#define TRACE_EPMEM_SYSPARAM                     41
 
 /* NLD: SMem trace information */
-#define TRACE_SMEM_SYSPARAM                      43
+#define TRACE_SMEM_SYSPARAM                      42
 
 /* JRV: GDS */
-#define TRACE_GDS_SYSPARAM                       44
+#define TRACE_GDS_SYSPARAM                       43
 
 /* JRV: Break on long decision cycle time */
-#define DECISION_CYCLE_MAX_USEC_INTERRUPT        45
+#define DECISION_CYCLE_MAX_USEC_INTERRUPT        44
 
 /* MMA: Chunk over evaluation rules in subgoals */
-#define CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM  46
+#define CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM  45
 
-#define TRACE_PARSER 47
+#define TRACE_PARSER 46
 
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  47
+#define HIGHEST_SYSPARAM_NUMBER                  46
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

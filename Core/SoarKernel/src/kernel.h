@@ -46,7 +46,6 @@ extern void print(agent* thisAgent, const char* format, ...);
 //#define DEBUG_SLOTS       /* -- Get slot printouts -- */
 //#define DEBUG_GDS         /* -- Low level GDS debug information -- */
 //#define DEBUG_PREFS       /* -- Preference printouts -- */
-//#define DEBUG_SLOTS       /* -- Slot printouts -- */
 //#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
 
 
@@ -79,14 +78,15 @@ typedef unsigned char byte;
 #define O_REJECTS_FIRST
 #define BUG_139_WORKAROUND
 #define DISCARD_CHUNK_VARNAMES true
-//#define TOKEN_SHARING_STATS
-//#define TOKEN_SHARING_STATS
-//#define SHARING_FACTORS
+//#define TOKEN_SHARING_STATS       /* get statistics on token counts with and without sharing */
+//#define SHARING_FACTORS           /* gather statistics on beta node sharing */
+//#define NULL_ACTIVATION_STATS     /* gather statistics on null activation */
 #ifndef NO_TIMING_STUFF
 //#define DETAILED_TIMING_STATS
 #endif
 
-// #define DO_COMPILE_TIME_O_SUPPORT_CALCS /* comment out the following line to supress compile-time o-support calculations */
+//#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to supress compile-time o-support calculations */
+//#define LIST_COMPILE_TIME_O_SUPPORT_FAILURES   /* get printouts of names of productions that can't be fully compile-time o-support evaluated*/
 
 /* ---------------- Experimental modes.  Probably don't work any more -------------- */
 //#define REAL_TIME_BEHAVIOR
@@ -124,7 +124,7 @@ typedef unsigned char byte;
  *    the current and new values differ.  This option may add a small run time
  *    cost, since two loops are made through the preferences list.
  *
- *  - discard_chunk_varnames: Set to false to preserve variable names in chunks
+ *  - DISCARD_CHUNK_VARNAMES: Set to false to preserve variable names in chunks
  *    within the rete.  This takes extra memory.
  *
  *  - TOKEN_SHARING_STATS: Get statistics on token counts in rete with and

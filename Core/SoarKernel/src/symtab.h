@@ -56,7 +56,6 @@ typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 typedef uint64_t smem_lti_id;
 typedef uint64_t smem_hash_id;
-typedef uint64_t tc_number;
 
 /* -- Forward declarations needed for symbol base struct -- */
 struct floatSymbol;
@@ -102,28 +101,28 @@ typedef struct symbol_struct
     uint64_t retesave_symindex;
     uint32_t hash_id;
     tc_number tc_num;
-    
+
     epmem_hash_id epmem_hash;
     uint64_t epmem_valid;
-    
+
     smem_hash_id smem_hash;
     uint64_t smem_valid;
-    
+
 #ifndef SOAR_DEBUG_UTILITIES
     union
     {
 #endif
-    
+
         floatSymbol* fc;
         idSymbol*    id;
         varSymbol*   var;
         intSymbol*   ic;
         strSymbol*   sc;
-        
+
 #ifndef SOAR_DEBUG_UTILITIES
     };
 #endif
-    
+
     bool is_identifier();
     bool is_variable();
     bool is_constant();
@@ -144,7 +143,7 @@ typedef struct symbol_struct
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
     const char* type_string();
     char* to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
-    
+
     struct symbol_struct*   get_parent_state();
 } Symbol;
 
@@ -173,70 +172,70 @@ struct idSymbol    : public Symbol
 {
     uint64_t name_number;
     char name_letter;
-    
+
     bool isa_goal;
     bool isa_impasse;
-    
+
     bool did_PE;
-    
+
     unsigned short isa_operator;
-    
+
     bool allow_bottom_up_chunks;
-    
+
     /* --- ownership, promotion, demotion, & garbage collection stuff --- */
     bool could_be_a_link_from_below;
     goal_stack_level level;
     goal_stack_level promotion_level;
     uint64_t link_count;
     dl_cons* unknown_level;
-    
+
     struct slot_struct* slots;  /* dll of slots for this identifier */
-    
+
     /* --- fields used only on goals and impasse identifiers --- */
     struct wme_struct* impasse_wmes;
-    
+
     /* --- fields used only on goals --- */
     Symbol* higher_goal, *lower_goal;
     struct slot_struct* operator_slot;
     struct preference_struct* preferences_from_goal;
-    
+
     Symbol* reward_header;
     struct rl_data_struct* rl_info;
-    
+
     Symbol* epmem_header;
     Symbol* epmem_cmd_header;
     Symbol* epmem_result_header;
     struct wme_struct* epmem_time_wme;
     struct epmem_data_struct* epmem_info;
-    
-    
+
+
     Symbol* smem_header;
     Symbol* smem_cmd_header;
     Symbol* smem_result_header;
     struct smem_data_struct* smem_info;
-    
-    
+
+
     struct gds_struct* gds;
-    
+
     int saved_firing_type;
     struct ms_change_struct* ms_o_assertions;
     struct ms_change_struct* ms_i_assertions;
     struct ms_change_struct* ms_retractions;
-    
-    
+
+
     /* --- fields used for Soar I/O stuff --- */
     ::cons* associated_output_links;
     struct wme_struct* input_wmes;
-    
+
     int depth;
-    
+
     epmem_node_id epmem_id;
     uint64_t epmem_valid;
-    
+
     smem_lti_id smem_lti;
     epmem_time_id smem_time_id;
     uint64_t smem_valid;
-    
+
     /*Agent::RL_Trace*/ void* rl_trace;
 };
 
@@ -278,9 +277,9 @@ inline bool Symbol::is_variablizable(Symbol* original_sym)
     {
         return true;
     }
-    
+
     return (original_sym->is_variable() && !is_variable());
-    
+
 };
 
 inline bool Symbol::is_constant_or_marked_variable(tc_number tc)
@@ -513,7 +512,7 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
 #else
     //dprint(DT_REFCOUNT_ADDS, "%*sADD-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count + 1);
 #endif
-    
+
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
     std::string strName(x->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
@@ -522,7 +521,7 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
         //dprint(DT_ID_LEAKING, "-- | %s(%lld) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
-    
+
     (x)->reference_count++;
 }
 
@@ -542,7 +541,7 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
     //dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
 #endif
     (x)->reference_count--;
-    
+
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
     std::string strName(x->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
@@ -551,7 +550,7 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
         //dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
-    
+
     assert((x)->reference_count >= 0);
     if ((x)->reference_count == 0)
     {
@@ -578,7 +577,7 @@ inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x, long in
 #else
     //dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF UNNECESSARY %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
 #endif
-    
+
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
     std::string strName(x->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)

@@ -7,27 +7,24 @@
 
 /*************************************************************************
  *
- *  file:  rhsfun_math.cpp
+ *  file:  rhs_functions_math.cpp
  *
  * =======================================================================
  *  Support routines for doing math in the RHS of productions.
- *  Need more comments here.  Nothing in soarkernel.h either.
- *
- *
  * =======================================================================
  */
 
 #include <stdlib.h>
 
+#include "rhs_functions_math.h"
 #include "symtab.h"
 #include "kernel.h"
 #include "mem.h"
 #include "print.h"
 #include "lexer.h"
-#include "rhs.h"
 #include "soar_rand.h"
+#include "rhs.h"
 #include "rhs_functions.h"
-#include "rhs_functions_math.h"
 
 #include <math.h>
 
@@ -180,7 +177,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     
     if (!args)
     {
-        print(thisAgent,  "Error: '-' function called with no arguments\n");
+        print(thisAgent, "Error: '-' function called with no arguments\n");
         return NIL;
     }
     
@@ -271,7 +268,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     
     if (!args)
     {
-        print(thisAgent,  "Error: '/' function called with no arguments\n");
+        print(thisAgent, "Error: '/' function called with no arguments\n");
         return NIL;
     }
     
@@ -303,7 +300,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         {
             return make_float_constant(thisAgent, 1.0 / f);
         }
-        print(thisAgent,  "Error: attempt to divide ('/') by zero.\n");
+        print(thisAgent, "Error: attempt to divide ('/') by zero.\n");
         return NIL;
     }
     
@@ -328,7 +325,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             }
             else
             {
-                print(thisAgent,  "Error: attempt to divide ('/') by zero.\n");
+                print(thisAgent, "Error: attempt to divide ('/') by zero.\n");
                 return NIL;
             }
         }
@@ -340,7 +337,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             }
             else
             {
-                print(thisAgent,  "Error: attempt to divide ('/') by zero.\n");
+                print(thisAgent, "Error: attempt to divide ('/') by zero.\n");
                 return NIL;
             }
         }
@@ -376,7 +373,7 @@ Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     
     if (arg2->ic->value == 0)
     {
-        print(thisAgent,  "Error: attempt to divide ('div') by zero.\n");
+        print(thisAgent, "Error: attempt to divide ('div') by zero.\n");
         return NIL;
     }
     
@@ -414,7 +411,7 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     
     if (arg2->ic->value == 0)
     {
-        print(thisAgent,  "Error: attempt to divide ('mod') by zero.\n");
+        print(thisAgent, "Error: attempt to divide ('mod') by zero.\n");
         return NIL;
     }
     
@@ -436,7 +433,7 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'sin' function called with no arguments\n");
+        print(thisAgent, "Error: 'sin' function called with no arguments\n");
         return NIL;
     }
     
@@ -471,7 +468,7 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'cos' function called with no arguments\n");
+        print(thisAgent, "Error: 'cos' function called with no arguments\n");
         return NIL;
     }
     
@@ -505,7 +502,7 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'sqrt' function called with no arguments\n");
+        print(thisAgent, "Error: 'sqrt' function called with no arguments\n");
         return NIL;
     }
     
@@ -542,7 +539,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
             
     if (!args)
     {
-        print(thisAgent,  "Error: 'atan2' function called with no arguments\n");
+        print(thisAgent, "Error: 'atan2' function called with no arguments\n");
         return NIL;
     }
     
@@ -560,7 +557,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     
     if (!args->rest)
     {
-        print(thisAgent,  "Error: 'atan2' function called with only one argument\n");
+        print(thisAgent, "Error: 'atan2' function called with only one argument\n");
         return NIL;
     }
     
@@ -577,7 +574,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     c = args->rest;
     if (c->rest)
     {
-        print(thisAgent,  "Error: 'atan2' function called with more than two arguments.\n");
+        print(thisAgent, "Error: 'atan2' function called with more than two arguments.\n");
         return NIL;
     }
     arg = static_cast<symbol_struct*>(c->first);
@@ -606,7 +603,7 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
             
     if (!args)
     {
-        print(thisAgent,  "Error: 'abs' function called with no arguments\n");
+        print(thisAgent, "Error: 'abs' function called with no arguments\n");
         return NIL;
     }
     
@@ -642,13 +639,13 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'int' function called with no arguments.\n");
+        print(thisAgent, "Error: 'int' function called with no arguments.\n");
         return NIL;
     }
     
     if (args->rest)
     {
-        print(thisAgent,  "Error: 'int' takes exactly 1 argument.\n");
+        print(thisAgent, "Error: 'int' takes exactly 1 argument.\n");
         return NIL;
     }
     
@@ -670,10 +667,10 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         int64_t int_val;
         
         errno = 0;
-        int_val = strtol(sym->to_string(), NULL, 10);
+        int_val = strtol(symbol_to_string(thisAgent, sym, false, NIL, 0), NULL, 10);
         if (errno)
         {
-            print(thisAgent,  "Error: bad integer (%y) given to 'int' RHS function\n",
+            print(thisAgent, "Error: bad integer (%y) given to 'int' RHS function\n",
                   sym);
             return NIL;
         }
@@ -691,7 +688,7 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return make_int_constant(thisAgent, static_cast<int64_t>(int_part));
     }
     
-    print(thisAgent,  "Error: unknown symbol type (%y) given to 'int' RHS function\n",
+    print(thisAgent, "Error: unknown symbol type (%y) given to 'int' RHS function\n",
           sym);
     return NIL;
 }
@@ -711,13 +708,13 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'float' function called with no arguments.\n");
+        print(thisAgent, "Error: 'float' function called with no arguments.\n");
         return NIL;
     }
     
     if (args->rest)
     {
-        print(thisAgent,  "Error: 'float' takes exactly 1 argument.\n");
+        print(thisAgent, "Error: 'float' takes exactly 1 argument.\n");
         return NIL;
     }
     
@@ -739,10 +736,10 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         double float_val;
         
         errno = 0;
-        float_val = strtod(sym->to_string(), NULL);
+        float_val = strtod(symbol_to_string(thisAgent, sym, false, NIL, 0), NULL);
         if (errno)
         {
-            print(thisAgent,  "Error: bad float (%y) given to 'float' RHS function\n",
+            print(thisAgent, "Error: bad float (%y) given to 'float' RHS function\n",
                   sym);
             return NIL;
         }
@@ -758,7 +755,7 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         return make_float_constant(thisAgent, static_cast<double>(sym->ic->value));
     }
     
-    print(thisAgent,  "Error: unknown symbol type (%y) given to 'float' RHS function\n",
+    print(thisAgent, "Error: unknown symbol type (%y) given to 'float' RHS function\n",
           sym);
     return NIL;
 }
@@ -868,14 +865,14 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'round_off_heading' function called with no arguments\n");
+        print(thisAgent, "Error: 'round_off_heading' function called with no arguments\n");
         return NIL;
     }
     
     if (!args->rest)
     {
         /* --- only one argument --- */
-        print(thisAgent,  "Error: 'round_off_heading' function called with only one argument.\n");
+        print(thisAgent, "Error: 'round_off_heading' function called with only one argument.\n");
         return NIL;
     }
     
@@ -894,7 +891,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
     if (c->rest)
     {
         /* --- more than two arguments --- */
-        print(thisAgent,  "Error: 'round_off_heading' function called with more than two arguments.\n");
+        print(thisAgent, "Error: 'round_off_heading' function called with more than two arguments.\n");
         return NIL;
     }
     arg = static_cast<Symbol*>(c->first);
@@ -937,14 +934,14 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'round_off' function called with no arguments\n");
+        print(thisAgent, "Error: 'round_off' function called with no arguments\n");
         return NIL;
     }
     
     if (!args->rest)
     {
         /* --- only one argument --- */
-        print(thisAgent,  "Error: 'round_off' function called with only one argument.\n");
+        print(thisAgent, "Error: 'round_off' function called with only one argument.\n");
         return NIL;
     }
     
@@ -963,7 +960,7 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
     if (c->rest)
     {
         /* --- more than two arguments --- */
-        print(thisAgent,  "Error: 'round_off' function called with more than two arguments.\n");
+        print(thisAgent, "Error: 'round_off' function called with more than two arguments.\n");
         return NIL;
     }
     arg = static_cast<Symbol*>(c->first);
@@ -1122,7 +1119,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'compute-heading' function called with no arguments\n");
+        print(thisAgent, "Error: 'compute-heading' function called with no arguments\n");
         return NIL;
     }
     
@@ -1156,7 +1153,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
     
     if (count != 4)
     {
-        print(thisAgent,  "Error: 'compute-heading' takes exactly 4 arguments.\n");
+        print(thisAgent, "Error: 'compute-heading' takes exactly 4 arguments.\n");
         return NIL;
     }
     
@@ -1191,7 +1188,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
     
     if (!args)
     {
-        print(thisAgent,  "Error: 'compute-range' function called with no arguments\n");
+        print(thisAgent, "Error: 'compute-range' function called with no arguments\n");
         return NIL;
     }
     
@@ -1225,7 +1222,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
     
     if (count != 4)
     {
-        print(thisAgent,  "Error: 'compute-range' takes exactly 4 arguments.\n");
+        print(thisAgent, "Error: 'compute-range' takes exactly 4 arguments.\n");
         return NIL;
     }
     
