@@ -18,10 +18,10 @@
 #include "sml_AgentSML.h"
 
 #include "agent.h"
-#include "stats.h" // for timer_value
+#include "stats.h"
 #include "print.h"
 #include "rete.h" // for get_node_count_statistics
-//#include "soar_db.h"
+#include "soar_db.h"
 
 extern const char* bnode_type_names[256];
 
@@ -384,6 +384,78 @@ void CommandLineInterface::GetSystemStats()
              << std::setw(8) << apply_phase_total_time << " "
              << std::setw(8) << output_phase_total_time << "  | "
              << std::setw(10) << derived_total_cpu_time << "\n\n";
+             
+#ifdef DETAILED_TIMING_STATS
+    double match_sum = thisAgent->timers_match_cpu_time[INPUT_PHASE].get_sec()
+                       + thisAgent->timers_match_cpu_time[PROPOSE_PHASE].get_sec()
+                       + thisAgent->timers_match_cpu_time[APPLY_PHASE].get_sec()
+                       + thisAgent->timers_match_cpu_time[PREFERENCE_PHASE].get_sec()
+                       + thisAgent->timers_match_cpu_time[WM_PHASE].get_sec()
+                       + thisAgent->timers_match_cpu_time[OUTPUT_PHASE].get_sec()
+                       + thisAgent->timers_match_cpu_time[DECISION_PHASE].get_sec();
+    double own_sum = thisAgent->timers_ownership_cpu_time[INPUT_PHASE].get_sec()
+                     + thisAgent->timers_ownership_cpu_time[PROPOSE_PHASE].get_sec()
+                     + thisAgent->timers_ownership_cpu_time[APPLY_PHASE].get_sec()
+                     + thisAgent->timers_ownership_cpu_time[PREFERENCE_PHASE].get_sec()
+                     + thisAgent->timers_ownership_cpu_time[WM_PHASE].get_sec()
+                     + thisAgent->timers_ownership_cpu_time[OUTPUT_PHASE].get_sec()
+                     + thisAgent->timers_ownership_cpu_time[DECISION_PHASE].get_sec();
+    double chunk_sum = thisAgent->timers_chunking_cpu_time[INPUT_PHASE].get_sec()
+                       + thisAgent->timers_chunking_cpu_time[PROPOSE_PHASE].get_sec()
+                       + thisAgent->timers_chunking_cpu_time[APPLY_PHASE].get_sec()
+                       + thisAgent->timers_chunking_cpu_time[PREFERENCE_PHASE].get_sec()
+                       + thisAgent->timers_chunking_cpu_time[WM_PHASE].get_sec()
+                       + thisAgent->timers_chunking_cpu_time[OUTPUT_PHASE].get_sec()
+                       + thisAgent->timers_chunking_cpu_time[DECISION_PHASE].get_sec();
+    double gds_sum = thisAgent->timers_gds_cpu_time[INPUT_PHASE].get_sec()
+                     + thisAgent->timers_gds_cpu_time[PROPOSE_PHASE].get_sec()
+                     + thisAgent->timers_gds_cpu_time[APPLY_PHASE].get_sec()
+                     + thisAgent->timers_gds_cpu_time[PREFERENCE_PHASE].get_sec()
+                     + thisAgent->timers_gds_cpu_time[WM_PHASE].get_sec()
+                     + thisAgent->timers_gds_cpu_time[OUTPUT_PHASE].get_sec()
+                     + thisAgent->timers_gds_cpu_time[DECISION_PHASE].get_sec();
+                     
+    m_Result << "Detailed Timing Stats:   " << "\n\n";
+    m_Result << "=============================================================================|===========\n";
+    m_Result << "Phases:        Input   Propose   Decide   Apply    Pref     WrkMem    Output |     Totals\n";
+    m_Result << "=============================================================================|===========\n";
+    m_Result << "Match:      "
+             << std::setw(8)  << thisAgent->timers_match_cpu_time[INPUT_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_match_cpu_time[PROPOSE_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_match_cpu_time[DECISION_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_match_cpu_time[APPLY_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_match_cpu_time[OUTPUT_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_match_cpu_time[PREFERENCE_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_match_cpu_time[WM_PHASE].get_sec() << "  | "
+             << std::setw(10) << match_sum << "\n";
+    m_Result << "Ownership:  "
+             << std::setw(8)  << thisAgent->timers_ownership_cpu_time[INPUT_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_ownership_cpu_time[PROPOSE_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_ownership_cpu_time[DECISION_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_ownership_cpu_time[APPLY_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_ownership_cpu_time[PREFERENCE_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_ownership_cpu_time[WM_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_ownership_cpu_time[OUTPUT_PHASE].get_sec() << "  | "
+             << std::setw(10) << own_sum << "\n";
+    m_Result << "Chunking:   "
+             << std::setw(8)  << thisAgent->timers_chunking_cpu_time[INPUT_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_chunking_cpu_time[PROPOSE_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_chunking_cpu_time[DECISION_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_chunking_cpu_time[APPLY_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_chunking_cpu_time[PREFERENCE_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_chunking_cpu_time[WM_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_chunking_cpu_time[OUTPUT_PHASE].get_sec() << "  | "
+             << std::setw(10) << chunk_sum << "\n";
+    m_Result << "GDS:        "
+             << std::setw(8)  << thisAgent->timers_gds_cpu_time[INPUT_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_gds_cpu_time[PROPOSE_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_gds_cpu_time[DECISION_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_gds_cpu_time[APPLY_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_gds_cpu_time[PREFERENCE_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_gds_cpu_time[WM_PHASE].get_sec() << " "
+             << std::setw(8)  << thisAgent->timers_gds_cpu_time[OUTPUT_PHASE].get_sec() << "  | "
+             << std::setw(10) << gds_sum << "\n";
+#endif // DETAILED_TIMING_STATS
              
     m_Result << "Values from single timers:\n";
     

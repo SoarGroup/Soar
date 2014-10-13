@@ -104,7 +104,7 @@ struct lexeme_info
     uint64_t id_number;                 /* for IDENTIFIER_LEXEME's */
 };
 
-extern void determine_possible_symbol_types_for_string(char* s,
+extern void determine_possible_symbol_types_for_string(const char* s,
         size_t length_of_s,
         bool* possible_id,
         bool* possible_var,

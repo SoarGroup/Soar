@@ -253,7 +253,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         soar_module::param* my_param = thisAgent->wma_params->get(pAttr->c_str());
         if (!my_param)
         {
-            return SetError("Invalid attribute.");
+            return SetError("Invalid activation setting.");
         }
         
         char* temp2 = my_param->get_string();
@@ -312,12 +312,12 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         soar_module::param* my_param = thisAgent->wma_params->get(pAttr->c_str());
         if (!my_param)
         {
-            return SetError("Invalid attribute.");
+            return SetError("Invalid activation setting.");
         }
         
         if (!my_param->validate_string(pVal->c_str()))
         {
-            return SetError("Invalid value.");
+            return SetError("Invalid value for activation setting.");
         }
         
         bool result = my_param->set_string(pVal->c_str());

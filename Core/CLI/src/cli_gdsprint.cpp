@@ -49,9 +49,9 @@ bool CommandLineInterface::DoGDSPrint()
             print_with_symbols(thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
             if (w->acceptable)
             {
-                print(thisAgent,  " +");
+                print_string(thisAgent, " +");
             }
-            print(thisAgent,  ")");
+            print_string(thisAgent, ")");
             print(thisAgent,  "\n");
         }
     }
@@ -69,9 +69,9 @@ bool CommandLineInterface::DoGDSPrint()
                 print_with_symbols(thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
                 if (w->acceptable)
                 {
-                    print(thisAgent,  " +");
+                    print_string(thisAgent, " +");
                 }
-                print(thisAgent,  ")");
+                print_string(thisAgent, ")");
                 print(thisAgent,  "\n");
             }
             

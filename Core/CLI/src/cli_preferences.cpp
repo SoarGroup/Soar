@@ -24,6 +24,7 @@
 #include "trace.h"
 #include "wmem.h"
 #include "decide.h"
+#include "output_manager.h"
 #include "prefmem.h"
 
 using namespace cli;
@@ -112,7 +113,7 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
                                  wme_trace_type wtt,
                                  double* selection_probability = 0)
 {
-    print(thisAgent,  "  ");
+    print_string(thisAgent, "  ");
     if (pref->attr == thisAgent->operator_symbol)
     {
         print_object_trace(thisAgent, pref->value);
@@ -131,7 +132,7 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
     }
     if (selection_probability)
     {
-        char dest[MAX_LEXEME_LENGTH * 2 + 10]; /* from agent.h */
+        char dest[output_string_size]; /* from agent.h */
         SNPRINTF(dest, sizeof(dest), "%#.16g", pref->numeric_value);
         dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
         {
@@ -313,7 +314,7 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
                         {
                             if (s->preferences[i])
                             {
-                                // thisAgent->OutputManager->print( "\n%ss:\n", preference_name[i]);
+                                // print(thisAgent, "\n%ss:\n", preference_name[i]);
                                 for (p = s->preferences[i]; p; p = p->next)
                                 {
                                     if (p->value == id)

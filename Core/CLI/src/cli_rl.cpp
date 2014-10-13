@@ -217,7 +217,7 @@ bool CommandLineInterface::DoRL(const char pOp, const std::string* pAttr, const 
         soar_module::param* my_param = thisAgent->rl_params->get(pAttr->c_str());
         if (!my_param)
         {
-            return SetError("Invalid attribute.");
+            return SetError("Invalid setting.");
         }
         
         CLI_DoRL_print(*this, m_RawOutput, m_Result,
@@ -230,12 +230,12 @@ bool CommandLineInterface::DoRL(const char pOp, const std::string* pAttr, const 
         soar_module::param* my_param = thisAgent->rl_params->get(pAttr->c_str());
         if (!my_param)
         {
-            return SetError("Invalid attribute.");
+            return SetError("Invalid setting.");
         }
         
         if (!my_param->validate_string(pVal->c_str()))
         {
-            return SetError("Invalid value.");
+            return SetError("Invalid value for setting.");
         }
         
         if (!my_param->set_string(pVal->c_str()))

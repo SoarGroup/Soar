@@ -210,6 +210,7 @@ bool actions_are_equal_with_bindings(agent* thisAgent, action* a1, action* a2, l
     return false;
 }
 
+
 #define dealloc_and_return(thisAgent,x,y) { deallocate_test(thisAgent, x) ; return (y) ; }
 
 bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list** bindings)

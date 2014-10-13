@@ -33,7 +33,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     Symbol* pAttr = 0;
     if (attribute == "*")
     {
-        pAttr = make_new_identifier(thisAgent, 'I', pId->id->level, NIL);
+        pAttr = make_new_identifier(thisAgent, 'I', pId->id->level);
     }
     else
     {
@@ -68,7 +68,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     Symbol* pValue = 0;
     if (value == "*")
     {
-        pValue = make_new_identifier(thisAgent, 'I', pId->id->level, NIL);
+        pValue = make_new_identifier(thisAgent, 'I', pId->id->level);
     }
     else
     {

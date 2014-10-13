@@ -178,7 +178,7 @@ bool CommandLineInterface::DoIndifferentSelection(const char pOp, const std::str
         {
             if (!exploration_valid_parameter(thisAgent, p1->c_str()))
             {
-                return SetError("Invalid attribute.");
+                return SetError("Invalid parameter.");
             }
             
             const char* policy_name = exploration_convert_reduction_policy(exploration_get_reduction_policy(thisAgent, p1->c_str()));
@@ -210,12 +210,12 @@ bool CommandLineInterface::DoIndifferentSelection(const char pOp, const std::str
     {
         if (!exploration_valid_parameter(thisAgent, p1->c_str()))
         {
-            return SetError("Invalid attribute.");
+            return SetError("Invalid exploration parameter.");
         }
         
         if (!exploration_valid_reduction_policy(thisAgent, p1->c_str(), p2->c_str()))
         {
-            return SetError("Invalid attribute.");
+            return SetError("Invalid exploration reduction policy.");
         }
         
         if (!p3)

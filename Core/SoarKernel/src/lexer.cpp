@@ -54,8 +54,6 @@
  */
 /* ======================================================================
                              lexer.c
-
-    See comments in soarkernel.h for an overview.
    ====================================================================== */
 
 #include <stdlib.h>
@@ -248,11 +246,7 @@ void get_next_char(agent* thisAgent)
 
 ====================================================================== */
 
-/*#define record_position_of_start_of_lexeme() { \
-  thisAgent->current_file->column_of_start_of_last_lexeme = \
-    thisAgent->current_file->current_column - 1; \
-  thisAgent->current_file->line_of_start_of_last_lexeme = \
-    thisAgent->current_file->current_line; }*/
+
 inline void record_position_of_start_of_lexeme(agent* thisAgent)
 {
     thisAgent->current_file->column_of_start_of_last_lexeme =
@@ -261,16 +255,6 @@ inline void record_position_of_start_of_lexeme(agent* thisAgent)
         thisAgent->current_file->current_line;
 }
 
-/*  redefined for Soar 7, want case-sensitivity to match Tcl.  KJC 5/96
-#define store_and_advance() { \
-  thisAgent->lexeme.string[thisAgent->lexeme.length++] = (isupper((char)thisAgent->current_char) ? \
-                                    tolower((char)thisAgent->current_char) : \
-                                    (char)thisAgent->current_char); \
-  get_next_char(); }
-#define store_and_advance() { \
-  thisAgent->lexeme.string[thisAgent->lexeme.length++] = \
-    (char)thisAgent->current_char; \
-  get_next_char(); }*/
 inline void store_and_advance(agent* thisAgent)
 {
     thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
@@ -999,7 +983,6 @@ void get_lexeme(agent* thisAgent)
     }
     /* --- no more whitespace, so go get the actual lexeme --- */
     record_position_of_start_of_lexeme(thisAgent);
-    
     if (thisAgent->current_char != EOF)
     {
         (*(lexer_routines[static_cast<unsigned char>(thisAgent->current_char)]))(thisAgent);
@@ -1205,7 +1188,7 @@ void print_location_of_most_recent_lexeme(agent* thisAgent)
         }
         if (thisAgent->current_file->buffer[strlen(thisAgent->current_file->buffer) - 1] == '\n')
         {
-            print(thisAgent,  thisAgent->current_file->buffer);
+            print_string(thisAgent, thisAgent->current_file->buffer);
         }
         else
         {
@@ -1213,9 +1196,9 @@ void print_location_of_most_recent_lexeme(agent* thisAgent)
         }
         for (i = 0; i < thisAgent->current_file->column_of_start_of_last_lexeme; i++)
         {
-            print(thisAgent,  "-");
+            print_string(thisAgent, "-");
         }
-        print(thisAgent,  "^\n");
+        print_string(thisAgent, "^\n");
         
         if (! reading_from_top_level(thisAgent))
         {
@@ -1321,7 +1304,7 @@ bool get_lexer_allow_ids(agent* thisAgent)
   special lexeme like "+", changing upper to lower case, etc.
 ====================================================================== */
 
-void determine_possible_symbol_types_for_string(char* s,
+void determine_possible_symbol_types_for_string(const char* s,
         size_t length_of_s,
         bool* possible_id,
         bool* possible_var,
@@ -1330,7 +1313,7 @@ void determine_possible_symbol_types_for_string(char* s,
         bool* possible_fc,
         bool* rereadable)
 {
-    char* ch;
+    const char* ch;
     bool all_alphanum;
     
     *possible_id = false;

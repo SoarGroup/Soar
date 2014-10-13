@@ -70,16 +70,16 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
     {
         if (full_prod)
         {
-            print(thisAgent,  "# source file: ");
+            print_string(thisAgent, "# source file: ");
         }
 
         if (prod->filename)
         {
-            print(thisAgent,  prod->filename);
+            print_string(thisAgent, prod->filename);
         }
         else
         {
-            print(thisAgent,  "_unknown_");
+            print_string(thisAgent, "_unknown_");
         }
 
         if (full_prod)
@@ -88,7 +88,7 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
         }
         else
         {
-            print(thisAgent,  ": ");
+            print_string(thisAgent, ": ");
         }
     }
 
@@ -205,10 +205,10 @@ void neatly_print_wme_augmentation_of_id(agent* thisAgent, wme* w, int indentati
 
     if (get_printer_output_column(thisAgent) + (ch - buf) >= 80)
     {
-        print(thisAgent,  "\n");
+        start_fresh_line(thisAgent);
         print_spaces(thisAgent, indentation + 6);
     }
-    print(thisAgent,  buf);
+    print_string(thisAgent, buf);
 }
 
 // RPM 4/07: Note, mark_depths_augs_of_id must be called before the root call to print_augs_of_id
@@ -227,7 +227,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (id->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    if (!id->is_identifier())
     {
         return;
     }
@@ -388,7 +388,7 @@ void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number t
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (id->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    if (!id->is_identifier())
     {
         return;
     }
@@ -678,7 +678,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                             print_with_symbols(thisAgent, " ^%y %y", w->attr, w->value);
                             if (w->acceptable)
                             {
-                                print(thisAgent,  " +");
+                                print_string(thisAgent, " +");
                             }
 
                             // this handles xml case for the wme
@@ -689,7 +689,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 
                     if (!intern)
                     {
-                        print(thisAgent,  ")\n");
+                        print_string(thisAgent, ")\n");
                     }
                     ++iter;
                 }

@@ -41,9 +41,6 @@ bool CommandLineInterface::DoSP(const std::string& productionString)
     // TODO: This should not be needed, FIX!
     // contents of gSKI ProductionManager::soarAlternateInput function:
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    Symbol* sym;
-    cons* c, *next_c;
-    
     soarAlternateInput(thisAgent, productionString.c_str(), const_cast<char*>(") "), true);
     set_lexer_allow_ids(thisAgent, false);
     get_lexeme(thisAgent);
@@ -79,9 +76,6 @@ bool CommandLineInterface::DoSP(const std::string& productionString)
             m_Result << '*';
         }
     }
-//    thisAgent->OutputManager->print( "Debug | Cleaning up parser syms!!!!\n");
-//    deallocate_symbol_list_removing_references(thisAgent, thisAgent->parser_syms);
-//    thisAgent->parser_syms = NIL;
     return true;
 }
 
