@@ -283,7 +283,7 @@ namespace soarxml
             *************************************************************************/
             void MustBe(char const* pValue)
             {
-                if (!(m_TokenValue.compare(pValue) == 0))
+                if (m_TokenValue.compare(pValue) != 0)
                 {
                     RecordError("Looking for " + std::string(pValue) + " instead found " + GetTokenValue()) ;
                 }
