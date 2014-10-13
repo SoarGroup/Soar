@@ -19,20 +19,20 @@
 #include "print.h"
 #include "agent.h"
 #include "instantiations.h"
-#include "test.h"
-#include "rhs_functions.h"
 #include "rete.h"
 #include "reorder.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "output_manager.h"
 #include "prefmem.h"
 #include "wmem.h"
 #include "soar_instance.h"
+#include "test.h"
 
 inline void dprint_string(TraceMode mode, const char* message, bool noPrefix = false)
 {
     Output_Manager::Get_OM().print_debug(message, mode, noPrefix);
 }
-
 
 void dprint(TraceMode mode, const char* format, ...)
 {
@@ -50,6 +50,7 @@ void dprint(TraceMode mode, const char* format, ...)
     va_end(args);
     
     dprint_string(mode, buf);
+    
 }
 
 void dprint_noprefix(TraceMode mode, const char* format, ...)

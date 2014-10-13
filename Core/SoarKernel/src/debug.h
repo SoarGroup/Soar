@@ -16,20 +16,19 @@
 
 ------------------------------------------------------------------ */
 
-#include "portability.h"
-
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
+#include "portability.h"
 #include "kernel.h"
 #include "soar_db.h"
+#include "soar_module.h"
+#include "Export.h"
 
 #include <string>
 
 #define OLD_DUPLICATE_CHUNK_METHOD
 #define IGNORE_GDS_ERROR
-
-using namespace soar_module;
 
 #ifdef SOAR_DEBUG_UTILITIES
 
@@ -106,13 +105,13 @@ extern bool check_symbol_in_test(agent* thisAgent, test t, const char* message =
 /**
  * @brief Contains the parameters for the debug command
  */
-class debug_param_container: public param_container
+class debug_param_container: public soar_module::param_container
 {
     public:
     
-        debug_param_container(agent* new_agent);
+        soar_module::boolean_param* epmem_commands, *smem_commands, *sql_commands, *use_new_chunking;
         
-        boolean_param* epmem_commands, *smem_commands, *sql_commands, *use_new_chunking;
+        debug_param_container(agent* new_agent);
         
 };
 

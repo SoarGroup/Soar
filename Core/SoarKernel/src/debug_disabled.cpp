@@ -8,10 +8,11 @@
 
 #include "portability.h"
 #include "kernel.h"
+#include "debug.h"
 
 #ifndef SOAR_DEBUG_UTILITIES
 
-#include "soar_db.h"
+//#include "soar_db.h"
 
 typedef char* rhs_value;
 typedef struct test_struct test_info;
@@ -24,6 +25,7 @@ typedef char varnames;
 typedef struct node_varnames_struct node_varnames;
 typedef struct identity_struct identity_info;
 
+/* -- Empty functions that should get optimized away in the release build -- */
 extern void dprint(TraceMode mode, const char* format, ...) {}
 extern void dprint_noprefix(TraceMode mode, const char* format, ...) {}
 extern void dprint_test_simple(test t, const char* pre_string, const char* post_string) {}

@@ -35,13 +35,13 @@
 
 using namespace soar_module;
 
-debug_param_container::debug_param_container(agent* new_agent): param_container(new_agent)
+debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
-    epmem_commands = new boolean_param("epmem", on, new f_predicate<boolean>());
-    smem_commands = new boolean_param("smem", on, new f_predicate<boolean>());
-    sql_commands = new boolean_param("sql", off, new f_predicate<boolean>());
-    use_new_chunking = new boolean_param("chunk", on, new f_predicate<boolean>());
-    
+    epmem_commands = new soar_module::boolean_param("epmem", off, new soar_module::f_predicate<boolean>());
+    smem_commands = new soar_module::boolean_param("smem", off, new soar_module::f_predicate<boolean>());
+    sql_commands = new soar_module::boolean_param("sql", off, new soar_module::f_predicate<boolean>());
+    use_new_chunking = new soar_module::boolean_param("chunk", on, new soar_module::f_predicate<boolean>());
+
     add(epmem_commands);
     add(smem_commands);
     add(sql_commands);
@@ -252,7 +252,6 @@ void debug_test(int type)
     {
         return;
     }
-    
     switch (type)
     {
         case 1:
