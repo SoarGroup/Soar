@@ -824,7 +824,7 @@ void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme)
     
     if (sym_constant_end_found)
     {
-        thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
+        thisAgent->lexeme.type = STR_CONSTANT_LEXEME;
     }
     else
     {

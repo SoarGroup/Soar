@@ -45,7 +45,7 @@
  *
  *  Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
  *  be read.  If false, things that look like identifiers will be returned
- *  as SYM_CONSTANT_LEXEME's instead.
+ *  as STR_CONSTANT_LEXEME's instead.
  *
  *  BUGBUG There are still problems with Soar not being very friendly
  *  when users have typos in productions, particularly with mismatched
@@ -395,7 +395,7 @@ bool determine_type_of_constituent_string(agent* thisAgent)
     
     if (possible_sc)
     {
-        thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
+        thisAgent->lexeme.type = STR_CONSTANT_LEXEME;
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
             if ((thisAgent->lexeme.string[0] == '<') ||
@@ -783,7 +783,7 @@ void lex_constituent_string(agent* thisAgent)
 
 void lex_vbar(agent* thisAgent)
 {
-    thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
+    thisAgent->lexeme.type = STR_CONSTANT_LEXEME;
     get_next_char(thisAgent);
     do
     {
@@ -1273,7 +1273,7 @@ void fake_rparen_at_next_end_of_line(agent* thisAgent)
 
   This routine should be called to tell the lexer whether to allow
   identifiers to be read.  If false, things that look like identifiers
-  will be returned as SYM_CONSTANT_LEXEME's instead.
+  will be returned as STR_CONSTANT_LEXEME's instead.
 ====================================================================== */
 
 void set_lexer_allow_ids(agent* thisAgent, bool allow_identifiers)

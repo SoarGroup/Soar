@@ -298,7 +298,7 @@ Symbol* make_symbol_for_current_lexeme(agent* thisAgent, bool allow_lti)
 {
     switch (thisAgent->lexeme.type)
     {
-        case SYM_CONSTANT_LEXEME:
+        case STR_CONSTANT_LEXEME:
             return make_str_constant(thisAgent, thisAgent->lexeme.string);
         case VARIABLE_LEXEME:
             return make_variable(thisAgent, thisAgent->lexeme.string);
@@ -423,7 +423,7 @@ test parse_relational_test(agent* thisAgent)
     /* --- read variable or constant --- */
     switch (thisAgent->lexeme.type)
     {
-        case SYM_CONSTANT_LEXEME:
+        case STR_CONSTANT_LEXEME:
         case INT_CONSTANT_LEXEME:
         case FLOAT_CONSTANT_LEXEME:
         case VARIABLE_LEXEME:
@@ -479,7 +479,7 @@ test parse_disjunction_test(agent* thisAgent)
     {
         switch (thisAgent->lexeme.type)
         {
-            case SYM_CONSTANT_LEXEME:
+            case STR_CONSTANT_LEXEME:
             case INT_CONSTANT_LEXEME:
             case FLOAT_CONSTANT_LEXEME:
                 push(thisAgent, make_symbol_for_current_lexeme(thisAgent, false), ct->data.disjunction_list);
@@ -974,7 +974,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, char first_letter_if_no_id
     get_lexeme(thisAgent);
     
     /* --- look for goal/impasse indicator --- */
-    if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+    if (thisAgent->lexeme.type == STR_CONSTANT_LEXEME)
     {
         if (!strcmp(thisAgent->lexeme.string, "state"))
         {
@@ -1489,7 +1489,7 @@ rhs_value parse_rhs_value(agent* thisAgent)
     // Check for long term identifier notation
     bool id_lti = parse_lti(thisAgent);
     
-    if ((thisAgent->lexeme.type == SYM_CONSTANT_LEXEME) ||
+    if ((thisAgent->lexeme.type == STR_CONSTANT_LEXEME) ||
             (thisAgent->lexeme.type == INT_CONSTANT_LEXEME) ||
             (thisAgent->lexeme.type == FLOAT_CONSTANT_LEXEME) ||
             (thisAgent->lexeme.type == VARIABLE_LEXEME) ||
@@ -2231,7 +2231,7 @@ production* parse_production(agent* thisAgent, unsigned char* rete_addition_resu
     reset_placeholder_variable_generator(thisAgent);
     
     /* --- read production name --- */
-    if (thisAgent->lexeme.type != SYM_CONSTANT_LEXEME)
+    if (thisAgent->lexeme.type != STR_CONSTANT_LEXEME)
     {
         print(thisAgent, "Expected symbol for production name\n");
         print_location_of_most_recent_lexeme(thisAgent);
@@ -2263,7 +2263,7 @@ production* parse_production(agent* thisAgent, unsigned char* rete_addition_resu
     interrupt_on_match = false;
     while (true)
     {
-        if (thisAgent->lexeme.type != SYM_CONSTANT_LEXEME)
+        if (thisAgent->lexeme.type != STR_CONSTANT_LEXEME)
         {
             break;
         }

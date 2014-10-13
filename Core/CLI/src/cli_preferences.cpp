@@ -55,7 +55,7 @@ bool read_attribute_from_string(agent* thisAgent, Symbol* id, char* the_lexeme, 
     
     switch (thisAgent->lexeme.type)
     {
-        case SYM_CONSTANT_LEXEME:
+        case STR_CONSTANT_LEXEME:
             attr_tmp = find_str_constant(thisAgent, thisAgent->lexeme.string);
             break;
         case INT_CONSTANT_LEXEME:

@@ -38,7 +38,7 @@
 
   Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
   be read.  If false, things that look like identifiers will be returned
-  as SYM_CONSTANT_LEXEME's instead.
+  as STR_CONSTANT_LEXEME's instead.
 ====================================================================== */
 
 #ifndef LEXER_H
@@ -57,7 +57,7 @@ enum lexer_token_type
     EOF_LEXEME,                        /* end-of-file */
     IDENTIFIER_LEXEME,                 /* identifier */
     VARIABLE_LEXEME,                   /* variable */
-    SYM_CONSTANT_LEXEME,               /* symbolic constant */
+    STR_CONSTANT_LEXEME,               /* symbolic constant */
     INT_CONSTANT_LEXEME,               /* integer constant */
     FLOAT_CONSTANT_LEXEME,             /* floating point constant */
     L_PAREN_LEXEME,                    /* "(" */

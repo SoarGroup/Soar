@@ -3431,7 +3431,7 @@ inline Symbol* smem_parse_constant_attr(agent* thisAgent, struct lexeme_info* le
 {
     Symbol* return_val = NIL;
     
-    if ((*lexeme).type == SYM_CONSTANT_LEXEME)
+    if ((*lexeme).type == STR_CONSTANT_LEXEME)
     {
         return_val = make_str_constant(thisAgent, static_cast<const char*>((*lexeme).string));
     }
@@ -3574,7 +3574,7 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
                         {
                             // value by type
                             chunk_value = NIL;
-                            if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+                            if (thisAgent->lexeme.type == STR_CONSTANT_LEXEME)
                             {
                                 chunk_value = new smem_chunk_value;
                                 chunk_value->val_const.val_type = value_const_t;
@@ -4029,7 +4029,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                 do //Add value by type
                 {
                     value = NIL;
-                    if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+                    if (thisAgent->lexeme.type == STR_CONSTANT_LEXEME)
                     {
                         value = make_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
                         get_lexeme(thisAgent);
@@ -4341,7 +4341,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                 
                 Symbol* attribute = NIL;
                 
-                if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+                if (thisAgent->lexeme.type == STR_CONSTANT_LEXEME)
                 {
                     attribute = find_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
                 }
@@ -4371,7 +4371,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     do //Add value by type
                     {
                         value = NIL;
-                        if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+                        if (thisAgent->lexeme.type == STR_CONSTANT_LEXEME)
                         {
                             value = find_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
                             get_lexeme(thisAgent);

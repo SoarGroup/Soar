@@ -482,7 +482,7 @@ int read_pattern_component(agent* thisAgent, Symbol** dest_sym)
     }
     switch (thisAgent->lexeme.type)
     {
-        case SYM_CONSTANT_LEXEME:
+        case STR_CONSTANT_LEXEME:
             *dest_sym = find_str_constant(thisAgent, thisAgent->lexeme.string);
             return 2;
         case INT_CONSTANT_LEXEME:
@@ -602,7 +602,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     
     switch (thisAgent->lexeme.type)
     {
-        case SYM_CONSTANT_LEXEME:
+        case STR_CONSTANT_LEXEME:
             do_print_for_production_name(thisAgent, arg, intern, print_filename, full_prod);
             break;
             
