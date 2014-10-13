@@ -28,8 +28,8 @@
    to setup all the built-in functions.
 ==================================================================== */
 
-#ifndef RHSFUN_H
-#define RHSFUN_H
+#ifndef RHS_FUNCTIONS_H
+#define RHS_FUNCTIONS_H
 
 typedef unsigned char byte;
 typedef struct agent_struct agent;

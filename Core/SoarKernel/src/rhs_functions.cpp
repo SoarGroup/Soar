@@ -10,7 +10,7 @@
  *  file:  rhsfun.cpp
  *
  * =======================================================================
- *                   RHS Function Management for Soar 6
+ *                   RHS Function Management
  *
  * The system maintains a list of available RHS functions.  Functions
  * can appear on the RHS of productions either as values (in make actions
@@ -38,6 +38,7 @@
 #include <stdlib.h>
 
 #include "rhs_functions.h"
+#include "rhs_functions_math.h"
 #include "kernel.h"
 #include "print.h"
 #include "mem.h"
@@ -159,7 +160,6 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
     symbol_remove_ref(thisAgent, name);
 }
 
-
 /* ====================================================================
 
                Code for Executing Built-In RHS Functions
@@ -185,7 +185,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
            version of it --- */
         string = arg->to_string();
         add_to_growable_string(thisAgent, &gs, string); // for XML generation
-        print(thisAgent,  string);
+        print_string(thisAgent, string);
     }
     
     xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
@@ -761,7 +761,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     /* Getting the argument symbol */
     Symbol* baseid = static_cast<Symbol*>(args->first);
-    if (baseid->symbol_type != 1)
+    if (!baseid->is_identifier())
     {
         return make_str_constant(thisAgent, "*symbol not id*");
     }
