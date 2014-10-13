@@ -31,7 +31,6 @@
 typedef unsigned char byte;
 typedef struct cons_struct cons;
 typedef struct wme_struct wme;
-typedef struct agent_struct agent;
 typedef struct callback_struct soar_callback;
 typedef cons list;
 typedef struct symbol_struct Symbol;

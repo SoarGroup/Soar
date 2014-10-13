@@ -16,9 +16,6 @@
 #ifndef CONSISTENCY_H
 #define CONSISTENCY_H
 
-
-
-
 typedef signed short goal_stack_level;
 typedef struct slot_struct slot;
 typedef struct wme_struct wme;

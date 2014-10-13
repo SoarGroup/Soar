@@ -309,8 +309,7 @@ enum SOAR_CALLBACK_TYPE             // if you change this, update soar_callback_
   SYSTEM_PARAMETER_CHANGED_CALLBACK
 
    This function is called after any change to one of the agent system
-   parameters (e.g., learn on/off).  See soarkernel.h for a list of these
-   system parameters.  The "call_data" argument is an "int" which
+   parameters (e.g., learn on/off). The "call_data" argument is an "int" which
    indicates which system parameter is being changed.  This function
    should examine the new value of the parameter by looking at the
    appropriate agent variable.  (For most parameters, this means
@@ -337,7 +336,6 @@ typedef void (*soar_callback_fn)(agent*,
 typedef void (*soar_callback_free_fn)(soar_callback_data);  // JRV 2008 This is a function pointer used to free the user data but currently nobody uses it
 typedef struct cons_struct cons;
 typedef cons list;
-typedef struct agent_struct agent;
 
 #include <string>
 

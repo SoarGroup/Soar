@@ -554,14 +554,14 @@ void soar_pop_callback(agent* thisAgent,
     
     if (head == NULL)
     {
-        print(thisAgent,  "Attempt to remove non-existant callback.\n");
+        print_string(thisAgent, "Attempt to remove non-existant callback.\n");
         return;
     }
     
     if ((callback_type == PRINT_CALLBACK)
             && (head->rest == NULL))
     {
-        print(thisAgent,  "Attempt to remove last print callback. Ignored.\n");
+        print_string(thisAgent, "Attempt to remove last print callback. Ignored.\n");
         return;
     }
     
