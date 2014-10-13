@@ -73,6 +73,7 @@ extern "C" class EXPORT TclSoarLib
         
         std::string& EscapeTclString(const char* in, std::string& out);
         int GlobalEval(const std::string& command, std::string& result);
+        int GlobalDirEval(const std::string& command, std::string& result);
 };
 } // extern "C"
 
