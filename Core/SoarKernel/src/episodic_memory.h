@@ -645,8 +645,8 @@ struct epmem_interval_comparator
         }
         else
         {
-            // arbitrarily put starts before ends
-            return (a->is_end_point == EPMEM_RANGE_START);
+            // put ends before starts so intervals are closed first
+            return (a->is_end_point == EPMEM_RANGE_END);
         }
     }
 };
