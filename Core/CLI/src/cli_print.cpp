@@ -36,16 +36,16 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
     // We don't want to keep printing forever (in case we're in a state no change cascade).
     const int maxStates = 500;
     int stateCount = 0 ;
-    
+
     for (Symbol* g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
     {
         stateCount++ ;
-        
+
         if (stateCount > maxStates)
         {
             continue ;
         }
-        
+
         if (print_states)
         {
             print_stack_trace(thisAgent, g, g, FOR_STATES_TF, false);
@@ -57,7 +57,7 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
             print(thisAgent,  "\n");
         }
     }
-    
+
     if (stateCount > maxStates)
     {
         print(thisAgent,  "...Stack goes on for another %d states\n", stateCount - maxStates);
@@ -72,7 +72,7 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
         {
             print(thisAgent,  "# source file: ");
         }
-        
+
         if (prod->filename)
         {
             print(thisAgent,  prod->filename);
@@ -81,7 +81,7 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
         {
             print(thisAgent,  "_unknown_");
         }
-        
+
         if (full_prod)
         {
             print(thisAgent,  "\n");
@@ -91,7 +91,7 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
             print(thisAgent,  ": ");
         }
     }
-    
+
     if (full_prod)
     {
         print_production(thisAgent, prod, intern);
@@ -99,7 +99,7 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
     else
     {
         print_with_symbols(thisAgent, "%y ", prod->name);
-        
+
         if (prod->rl_rule)
         {
             // Do extra logging if this agent is in delta bar delta mode.
@@ -126,7 +126,7 @@ void print_productions_of_type(agent* thisAgent, bool intern, bool print_filenam
 void print_rl_rules(agent* thisAgent, bool intern, bool print_filename, bool full_prod)
 {
     assert(thisAgent);
-    
+
     for (production* prod = thisAgent->all_productions_of_type[ DEFAULT_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next)
     {
         if (prod->rl_rule)
@@ -134,7 +134,7 @@ void print_rl_rules(agent* thisAgent, bool intern, bool print_filename, bool ful
             do_print_for_production(thisAgent, prod, intern, print_filename, full_prod);
         }
     }
-    
+
     for (production* prod = thisAgent->all_productions_of_type[ USER_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next)
     {
         if (prod->rl_rule)
@@ -142,7 +142,7 @@ void print_rl_rules(agent* thisAgent, bool intern, bool print_filename, bool ful
             do_print_for_production(thisAgent, prod, intern, print_filename, full_prod);
         }
     }
-    
+
     for (production* prod = thisAgent->all_productions_of_type[ CHUNK_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next)
     {
         if (prod->rl_rule)
@@ -156,16 +156,16 @@ void print_rl_rules(agent* thisAgent, bool intern, bool print_filename, bool ful
 int compare_attr(const void* e1, const void* e2)
 {
     wme** p1, **p2;
-    
+
     char s1[MAX_LEXEME_LENGTH * 2 + 20], s2[MAX_LEXEME_LENGTH * 2 + 20];
-    
+
     p1 = (wme**) e1;
     p2 = (wme**) e2;
-    
+
     // passing null thisAgent is OK as long as dest is guaranteed != 0
     (*p1)->attr->to_string(true, s1, MAX_LEXEME_LENGTH * 2 + 20);
     (*p2)->attr->to_string(true, s2, MAX_LEXEME_LENGTH * 2 + 20);
-    
+
     return strcmp(s1, s2);
 }
 
@@ -174,9 +174,9 @@ int compare_attr(const void* e1, const void* e2)
 void neatly_print_wme_augmentation_of_id(agent* thisAgent, wme* w, int indentation)
 {
     char buf[NEATLY_PRINT_BUF_SIZE], *ch;
-    
+
     xml_object(thisAgent, w);
-    
+
     strcpy(buf, " ^");
     ch = buf;
     while (*ch)
@@ -202,7 +202,7 @@ void neatly_print_wme_augmentation_of_id(agent* thisAgent, wme* w, int indentati
             ch++;
         }
     }
-    
+
     if (get_printer_output_column(thisAgent) + (ch - buf) >= 80)
     {
         print(thisAgent,  "\n");
@@ -217,21 +217,21 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
 {
     slot* s;
     wme* w;
-    
+
     wme** list;    /* array of WME pointers, AGR 652 */
     int num_attr;  /* number of attributes, AGR 652 */
     int attr;      /* attribute index, AGR 652 */
-    
+
     /* AGR 652  The plan is to go through the list of WMEs and find out how
     many there are.  Then we malloc an array of that many pointers.
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
-    
+
     if (id->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
         return;
     }
-    if (id->id->tc_num == tc)
+    if (id->tc_num == tc)
     {
         return;    // this has already been printed, so return RPM 4/07 bug 988
     }
@@ -239,14 +239,14 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
     {
         return;    // this can be reached via an equal or shorter path, so return without printing RPM 4/07 bug 988
     }
-    
+
     // if we're here, then we haven't printed this id yet, so print it
-    
+
     depth = id->id->depth; // set the depth to the depth via the shallowest path, RPM 4/07 bug 988
     int indent = (maxdepth - depth) * 2; // set the indent based on how deep we are, RPM 4/07 bug 988
-    
-    id->id->tc_num = tc;  // mark id as printed
-    
+
+    id->tc_num = tc;  // mark id as printed
+
     /* --- first, count all direct augmentations of this id --- */
     num_attr = 0;
     for (w = id->id->impasse_wmes; w != NIL; w = w->next)
@@ -268,7 +268,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
             num_attr++;
         }
     }
-    
+
     /* --- next, construct the array of wme pointers and sort them --- */
     list = (wme**)allocate_memory(thisAgent, num_attr * sizeof(wme*), MISCELLANEOUS_MEM_USAGE);
     attr = 0;
@@ -292,10 +292,10 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
         }
     }
     qsort(list, num_attr, sizeof(wme*), compare_attr);
-    
-    
+
+
     /* --- finally, print the sorted wmes and deallocate the array --- */
-    
+
     // RPM 4/07 If this is a tree print, then for each wme in the list, print it and its children
     if (tree)
     {
@@ -311,7 +311,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
             {
                 print_wme_without_timetag(thisAgent, w);
             }
-            
+
             if (depth > 1)
             {
                 // we're not done yet
@@ -329,7 +329,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
         {
             w = list[attr];
             print_spaces(thisAgent, indent);
-            
+
             if (intern)
             {
                 print_wme(thisAgent, w);
@@ -337,24 +337,24 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
             else
             {
                 print_with_symbols(thisAgent, "(%y", id);
-                
+
                 // XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
                 // <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
                 xml_begin_tag(thisAgent, soar_TraceNames::kWME_Id);
                 xml_att_val(thisAgent, soar_TraceNames::kWME_Id, id);
-                
+
                 for (attr = 0; attr < num_attr; attr++)
                 {
                     w = list[attr];
                     neatly_print_wme_augmentation_of_id(thisAgent, w, indent);
                 }
-                
+
                 xml_end_tag(thisAgent, soar_TraceNames::kWME_Id);
-                
+
                 print(thisAgent,  ")\n");
             }
         }
-        
+
         // If there is still depth left, recurse
         if (depth > 1)
         {
@@ -367,7 +367,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
             }
         }
     }
-    
+
     // deallocate the array
     free_memory(thisAgent, list, MISCELLANEOUS_MEM_USAGE);
 }
@@ -382,30 +382,30 @@ void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number t
 {
     slot* s;
     wme* w;
-    
+
     /* AGR 652  The plan is to go through the list of WMEs and find out how
     many there are.  Then we malloc an array of that many pointers.
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
-    
+
     if (id->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
         return;
     }
-    if (id->id->tc_num == tc && id->id->depth >= depth)
+    if (id->tc_num == tc && id->id->depth >= depth)
     {
         return;    // this has already been printed at an equal-or-lower depth, RPM 4/07 bug 988
     }
-    
+
     id->id->depth = depth; // set the depth of this id
-    id->id->tc_num = tc;
-    
+    id->tc_num = tc;
+
     /* --- if depth<=1, we're done --- */
     if (depth <= 1)
     {
         return;
     }
-    
+
     /* --- call this routine recursively --- */
     for (w = id->id->input_wmes; w != NIL; w = w->next)
     {
@@ -435,7 +435,7 @@ void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number t
 void do_print_for_identifier(agent* thisAgent, Symbol* id, int depth, bool intern, bool tree)
 {
     tc_number tc;
-    
+
     // RPM 4/07: first mark the nodes with their shallowest depth
     //           then print them at their shallowest depth
     tc = get_new_tc_number(thisAgent);
@@ -447,7 +447,7 @@ void do_print_for_identifier(agent* thisAgent, Symbol* id, int depth, bool inter
 void do_print_for_production_name(agent* thisAgent, const char* prod_name, bool intern, bool print_filename, bool full_prod)
 {
     Symbol* sym;
-    
+
     sym = find_str_constant(thisAgent, thisAgent->lexeme.string);
     if (sym && sym->sc->production)
     {
@@ -515,14 +515,14 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent)
     Symbol* id, *attr, *value;
     int id_result, attr_result, value_result;
     bool acceptable;
-    
+
     if (thisAgent->lexeme.type != L_PAREN_LEXEME)
     {
         print(thisAgent,  "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", thisAgent->lexeme.string, thisAgent->current_char);
         return NIL;
     }
     parentheses_level = current_lexer_parentheses_level(thisAgent);
-    
+
     get_lexeme(thisAgent);
     id_result = read_pattern_component(thisAgent, &id);
     if (! id_result)
@@ -567,7 +567,7 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent)
         skip_ahead_to_balanced_parentheses(thisAgent, parentheses_level - 1);
         return NIL;
     }
-    
+
     wmes = NIL;
     for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
@@ -597,15 +597,15 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     Symbol* id;
     wme* w;
     list* wmes;
-    
+
     get_lexeme_from_string(thisAgent, arg);
-    
+
     switch (thisAgent->lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
             do_print_for_production_name(thisAgent, arg, intern, print_filename, full_prod);
             break;
-            
+
         case INT_CONSTANT_LEXEME:
             for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
             {
@@ -620,7 +620,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                 print(thisAgent,  "No wme %ld in working memory.", thisAgent->lexeme.int_val);
             }
             break;
-            
+
         case IDENTIFIER_LEXEME:
         case VARIABLE_LEXEME:
             id = read_identifier_or_context_variable(thisAgent);
@@ -629,7 +629,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                 do_print_for_identifier(thisAgent, id, depth, intern, tree);
             }
             break;
-            
+
         case QUOTED_STRING_LEXEME:
             /* Soar-Bugs #54 TMH */
             soar_alternate_input(thisAgent, arg, ") ", true);
@@ -656,14 +656,14 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                 {
                     std::list<wme*> wmelist = iter->second;
                     std::list<wme*>::iterator wmeiter = wmelist.begin();
-                    
+
                     // If we're printing internally, we just print the wme
                     // taken from print_wme_without_timetag
                     if (!intern)
                     {
                         print_with_symbols(thisAgent, "(%y", iter->first);
                     }
-                    
+
                     while (wmeiter != wmelist.end())
                     {
                         wme* w = *wmeiter;
@@ -680,13 +680,13 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                             {
                                 print(thisAgent,  " +");
                             }
-                            
+
                             // this handles xml case for the wme
                             xml_object(thisAgent, w, XML_WME_NO_TIMETAG);
                         }
                         ++wmeiter;
                     }
-                    
+
                     if (!intern)
                     {
                         print(thisAgent,  ")\n");
@@ -703,7 +703,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
             }
             free_list(thisAgent, wmes);
             break;
-            
+
         default:
             // TODO: Report error? Unrecognized arg?
             return;
@@ -717,7 +717,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
     {
         depth = thisAgent->default_wme_depth;
     }
-    
+
     if (options.test(PRINT_STACK))
     {
         // if neither states option nor operators option are set, set them both
@@ -726,30 +726,30 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
             options.set(PRINT_STATES);
             options.set(PRINT_OPERATORS);
         }
-        
+
         print_stack_trace(thisAgent, options.test(PRINT_STATES), options.test(PRINT_OPERATORS));
         return true;
     }
-    
+
     // Cache the flags since it makes function calls huge
     bool intern = options.test(PRINT_INTERNAL);
     bool tree = options.test(PRINT_TREE);
     bool filename = options.test(PRINT_FILENAME);
     bool full = options.test(PRINT_FULL) || intern; // internal implies full
     bool exact = options.test(PRINT_EXACT);
-    
+
     if (pArg)
     {
         // Default with arg is full print
         full = !options.test(PRINT_NAME);
-        
+
         // Watch out, this case handles all args identifier/pattern/timetag/production_name
         m_VarPrint = options.test(PRINT_VARPRINT); // This is a member because it affects the print callback.
         print_symbol(thisAgent, pArg->c_str(), filename, intern, tree, full, depth, exact);
         m_VarPrint = false;
         return true;
     }
-    
+
     // Print all productions if there are no other production flags set
     if (options.test(PRINT_ALL) ||
             (!options.test(PRINT_CHUNKS) &&
@@ -766,7 +766,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
         //options.set(PRINT_RL);     // these aren't really a different "type", it's just extra data
         options.set(PRINT_TEMPLATE);
     }
-    
+
     if (options.test(PRINT_CHUNKS))
     {
         print_productions_of_type(thisAgent, intern, filename, full, CHUNK_PRODUCTION_TYPE);
@@ -791,6 +791,6 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
     {
         print_productions_of_type(thisAgent, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
     }
-    
+
     return true;
 }
