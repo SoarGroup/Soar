@@ -27,6 +27,7 @@
 #include "wmem.h"
 #include "rhs.h"
 #include "decide.h"
+#include "output_manager.h"
 
 using namespace cli;
 using namespace sml;
@@ -157,14 +158,14 @@ int compare_attr(const void* e1, const void* e2)
 {
     wme** p1, **p2;
 
-    char s1[MAX_LEXEME_LENGTH * 2 + 20], s2[MAX_LEXEME_LENGTH * 2 + 20];
+    char s1[output_string_size + 10], s2[output_string_size + 10];
 
     p1 = (wme**) e1;
     p2 = (wme**) e2;
 
     // passing null thisAgent is OK as long as dest is guaranteed != 0
-    (*p1)->attr->to_string(true, s1, MAX_LEXEME_LENGTH * 2 + 20);
-    (*p2)->attr->to_string(true, s2, MAX_LEXEME_LENGTH * 2 + 20);
+    (*p1)->attr->to_string(true, s1, output_string_size + 10);
+    (*p2)->attr->to_string(true, s2, output_string_size + 10);
 
     return strcmp(s1, s2);
 }
