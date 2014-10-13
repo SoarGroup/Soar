@@ -32,9 +32,8 @@
 #include "agent.h"
 #include "backtrace.h"
 #include "production.h"
-
-#include "print.h"
 #include "rhs.h"
+#include "print.h"
 
 /* Define the "local" globals if that makes sense.
    (Only accessed in this file)
@@ -46,11 +45,6 @@
    static backtrace_str     *explain_backtrace_list;
    static char explain_chunk_name[256] = { '\0' };
    AGR 564 */
-
-/* AGR 564  This bug report came complete with fixes from Frank Koss.
-   So, I just implemented the fixes.  The files with changes in them
-   for this bug are explain.c, explain.h,
-   init_soar.c, interface.c, and soarkernel.h.  AGR 564 2-May-94  */
 
 /***************************************************************************
  * Function     : init_explain
@@ -351,13 +345,13 @@ void explain_trace_chunk(agent* thisAgent, explain_chunk_str* chunk)
         {
             print(thisAgent,  "The result preference is not stored, sorry.\n");
         }
-        print(thisAgent,  "\nGrounds:\n");
+        print_string(thisAgent, "\nGrounds:\n");
         print_list_of_conditions(thisAgent, prod->grounds);
-        print(thisAgent,  "\nPotentials:\n");
+        print_string(thisAgent, "\nPotentials:\n");
         print_list_of_conditions(thisAgent, prod->potentials);
-        print(thisAgent,  "\nLocals:\n");
+        print_string(thisAgent, "\nLocals:\n");
         print_list_of_conditions(thisAgent, prod->locals);
-        print(thisAgent,  "\nNegateds:\n");
+        print_string(thisAgent, "\nNegateds:\n");
         print_list_of_conditions(thisAgent, prod->negated);
         prod = prod -> next_backtrace;
         print(thisAgent,  "\n\n");

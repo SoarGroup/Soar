@@ -124,9 +124,9 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
-    assert(((w->id->symbol_type != IDENTIFIER_SYMBOL_TYPE) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((w->attr->symbol_type != IDENTIFIER_SYMBOL_TYPE) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((w->value->symbol_type != IDENTIFIER_SYMBOL_TYPE) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
+    assert(((!w->id->is_identifier()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
+           ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
+           ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
            
     push(thisAgent, w, thisAgent->wmes_to_add);
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -143,7 +143,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 {
     push(thisAgent, w, thisAgent->wmes_to_remove);
     
-    if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    if (w->value->is_identifier())
     {
         post_link_removal(thisAgent, w->id, w->value);
         if (w->attr == thisAgent->operator_symbol)
@@ -204,7 +204,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-    soar_process_timer local_timer;
+    soar_timer local_timer;
     local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
 #endif
 #endif
