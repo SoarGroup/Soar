@@ -31,29 +31,17 @@ int longestAgentName = 0;
 
 void execcmd(const string& c);
 
-inline void print_arrow_indent()
-{
-    cout << acc::BIBlue << "==> " << acc::Off;
-}
 inline void updateMultiAgent()
 {
     multiAgent = (agents.size() > 1);
     if (multiAgent)
-    {
-        print_arrow_indent();
-        cout << acc::BIYellow << "m" << acc::BBlue << "CLI " << acc::Off << "in " << acc::IYellow << "multiple agent mode" << acc::Off << "." << endl;
-        print_arrow_indent();
-        cout << "Use " << acc::BBlue << "list " << acc::Off << "or " << acc::BBlue << "[switch|create|delete] " << acc::IYellow << "<agent-name>" << acc::Off <<
+        cout << endl << acc::Red << "Soar CLI in multiple agent mode.  Use " << acc::IYellow <<
+             "list or [switch|create|delete] " << acc::Purple << "<agent-name>" << acc::Red <<
              " to manage agents." << acc::Off << endl;
-    }
     else
-    {
-        print_arrow_indent();
-        cout << acc::BIYellow << "m" << acc::BBlue << "CLI " << acc::Off << "in " << acc::IYellow << "single agent mode" << acc::Off << "." << endl;
-        print_arrow_indent();
-        cout << "Use " << acc::BBlue << "create " << acc::IYellow << "<agent-name>" << acc::Off <<
-             " to create another agent." << acc::Off << endl;
-    }
+        cout << endl << acc::Red << "Soar CLI in single agent mode.  Use " << acc::IYellow <<
+             "create " << acc::Purple << "<agent-name>" << acc::Red << " to create another agent." << acc::Off << endl;
+             
     longestAgentName = 0;
     vector<Agent*>::iterator iter;
     for (iter = agents.begin(); iter != agents.end(); ++iter)
@@ -182,22 +170,13 @@ void printcb(smlPrintEventId id, void* userData, Agent* a, char const* message)
 
 void createagent(const char* agentname)
 {
-
-    print_arrow_indent();
-    cout << "Creating agent named " << acc::IYellow << agentname << acc::Off << endl;
-    
     currentAgent = kernel->CreateAgent(agentname);
     currentAgent->RegisterForPrintEvent(smlEVENT_PRINT, printcb, NULL);
     currentAgent->SetOutputLinkChangeTracking(false);
     agents.push_back(currentAgent);
-    
-    
-    print_arrow_indent();
-    cout << "Attempting to source default files: " << acc::IYellow << "aliases.soar, settings,soar, and " << agentname << ".soar" << acc::Off << endl;
-    string cmd = "source settings/" + string(agentname) + ".soar";
-    currentAgent->ExecuteCommandLine("source settings/aliases.soar", false);
-    currentAgent->ExecuteCommandLine("source settings/settings.soar", false);
-    currentAgent->ExecuteCommandLine(cmd.c_str(), false);
+    cout << acc::Red << "Created agent " << agents.size() << " named " << agentname <<
+         ". Attempting to source agent-specific init file: " << agentname << ".soar..." << acc::Off << endl;
+    execcmd("source settings/" + string(agentname) + ".soar");
     updateMultiAgent();
 }
 
@@ -223,17 +202,16 @@ void switchagent(const char* agentname)
 {
     vector<Agent*>::iterator iter;
     int x = 1;
-    print_arrow_indent();
     for (iter = agents.begin(); iter != agents.end(); ++iter, ++x)
     {
         if (!strcmp((*iter)->GetAgentName(), agentname))
         {
             currentAgent = (*iter);
-            cout << "Current agent is now " << acc::IYellow << (*iter)->GetAgentName() << acc::Off << "." << endl;
+            cout << acc::Red << "Switched to agent " << x << " named " << (*iter)->GetAgentName() << "." << acc::Off << endl;
             return;
         }
     }
-    cout << acc::Red << "Could not find agent named " << acc::IYellow << agentname << acc::Red << "." << acc::Off << endl;
+    cout << acc::Red << "Could not find agent named " << agentname << "." << acc::Off << endl;
 }
 
 void deleteagent(const char* agentname)
@@ -248,23 +226,20 @@ void deleteagent(const char* agentname)
             {
                 currentAgent = NULL;
             }
-            print_arrow_indent();
-            cout << "Destroying agent " << x << " named " << acc::IYellow << (*iter)->GetAgentName() << acc::Off << "." << endl;
+            cout << acc::Red << "Destroying agent " << x << " named " << (*iter)->GetAgentName() << "." << acc::Off << endl;
             kernel->DestroyAgent(*iter);
             agents.erase(iter);
             printagents();
             if (!currentAgent && agents.size())
             {
                 currentAgent = agents.front();
-                print_arrow_indent();
-                cout << "Switched to agent 1 named " << acc::IYellow << currentAgent->GetAgentName() << acc::Off << "." << endl;
+                cout << acc::Red << "Switched to agent 1 named " << currentAgent->GetAgentName() << "." << acc::Off << endl;
             }
             updateMultiAgent();
             return;
         }
     }
-    print_arrow_indent();
-    cout << acc::Red << "Could not find agent named " << acc::IYellow << agentname << acc::Red << "." << acc::Off << endl;
+    cout << acc::Red << "Could not find agent named " << agentname << "." << acc::Off << endl;
 }
 
 void sendAllAgentsCommand(const char* cmd)
@@ -359,9 +334,10 @@ void repl()
             cout << acc::BIRed << "Huh?" << acc::Off << endl;
             continue;
         }
-        if (!cin)
+        if (!cin.good())
         {
-            return;
+            cin.clear(); //clear the error flags
+            cin.sync(); //flush the input buffer
         }
         if (cmd.empty() && !last.empty())
         {
@@ -373,7 +349,7 @@ void repl()
             execcmd(cmd);
         }
     }
-//    cout << acc::Off << endl;
+    cout << acc::Off << endl;
 }
 
 void sighandler(int sig)
@@ -386,7 +362,7 @@ void sighandler(int sig)
     signal(stopsig, sighandler);
 }
 
-string exit_handler(smlRhsEventId id, void* userdata, Agent* myAgent, char const* fname, char const* args)
+string exit_handler(smlRhsEventId id, void* userdata, Agent* thisAgent, char const* fname, char const* args)
 {
     int code = atoi(args);
     kernel->Shutdown();
@@ -394,7 +370,7 @@ string exit_handler(smlRhsEventId id, void* userdata, Agent* myAgent, char const
     exit(code);
 }
 
-string log_handler(smlRhsEventId id, void* userdata, Agent* myAgent, char const* fname, char const* args)
+string log_handler(smlRhsEventId id, void* userdata, Agent* thisAgent, char const* fname, char const* args)
 {
     istringstream ss(args);
     ofstream f;
@@ -425,7 +401,7 @@ string log_handler(smlRhsEventId id, void* userdata, Agent* myAgent, char const*
     
     if (iscmd)
     {
-        text = myAgent->ExecuteCommandLine(args + ss.tellg());
+        text = thisAgent->ExecuteCommandLine(args + ss.tellg());
     }
     else
     {
@@ -520,16 +496,14 @@ int main(int argc, char* argv[])
 //  pthread_setname_np("minCLI_main_thread");
 //  cout << "minCLI thread is " << tname2() << acc::Off << endl;
 
-    cout << acc::Red << "=== " << acc::BIYellow << "m" << acc::BBlue << "CLI " << acc::Red << "starting " << acc::IYellow << "Soar " << acc::BBlue << "9.4" << acc::Red << " ===" << acc::Off << endl;
-    print_arrow_indent();
     if (listen)
     {
-        cout << "Kernel is in " << acc::IYellow << "new thread" << acc::Off << " on port " << acc::IYellow << port << acc::Off << "." << endl;
+        cout << acc::Red << "Instantiating Soar.  (kernel in new thread, port " << port << ")" << acc::Off << endl;
         kernel = Kernel::CreateKernelInNewThread(port);
     }
     else
     {
-        cout << "Kernel is in "  << acc::IYellow << "current thread" << acc::Off << " (optimized) on port " << acc::IYellow << port << acc::Off << "." << endl;
+        cout << acc::Red << "Instantiating Soar.  (kernel in current thread (optimized) on port " << port << ")" << acc::Off << endl;
         kernel = Kernel::CreateKernelInCurrentThread(true, port);
     }
     
