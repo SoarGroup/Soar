@@ -49,6 +49,7 @@
 typedef struct test_struct test_info;
 typedef test_info* test;
 typedef char* rhs_value;
+typedef unsigned char byte;
 typedef byte wme_trace_type;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
@@ -58,8 +59,6 @@ typedef struct preference_struct preference;
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef struct symbol_struct Symbol;
-
-extern void dprint(TraceMode mode, const char* format, ...);
 
 typedef struct wme_filter_struct
 {
@@ -74,12 +73,14 @@ extern void start_log_file(agent* thisAgent, char* filename, bool append);
 extern void stop_log_file(agent* thisAgent);
 extern void print_string_to_log_file_only(agent* thisAgent, char* string);
 
+extern void start_fresh_line(agent* thisAgent);
 extern int  get_printer_output_column(agent* thisAgent);
 extern void tell_printer_that_output_column_has_been_reset(agent* thisAgent);
 
 extern void start_redirection_to_file(agent* thisAgent, FILE* already_opened_file);
 extern void stop_redirection_to_file(agent* thisAgent);
 
+extern void print_string(agent* thisAgent, const char* s);
 extern void print_phase(agent* thisAgent, const char* s, bool end_phase);
 
 extern void print(agent* thisAgent, const char* format, ...);
@@ -110,6 +111,11 @@ extern void filtered_print_wme_add(agent* thisAgent, wme* w);
    '"ab\"c"'.  This is used for printing quoted strings and for printing
    symbols using |vbar| notation.
 
+   Symbol_to_string() converts a symbol to a string.  The "rereadable"
+   parameter indicates whether a rereadable representation is desired.
+   Normally symbols are printed rereadably, but for (write) and Text I/O,
+   we don't want this.
+
    Test_to_string() takes a test and produces a string representation.
 
    Rhs_value_to_string() takes an rhs_value and produces a string
@@ -117,8 +123,7 @@ extern void filtered_print_wme_add(agent* thisAgent, wme* w);
 ----------------------------------------------------------------------- */
 
 extern char* string_to_escaped_string(char* s, char first_and_last_char, char* dest);
-extern char* rhs_value_to_string(rhs_value rv, char* dest = NIL, size_t dest_size = 0);
-extern char preference_to_char(byte type);
+extern char* rhs_value_to_string(rhs_value rv, char* dest = NULL, size_t dest_size = 0);
 
 inline char bool_to_char(bool b)
 {
@@ -131,6 +136,9 @@ inline char bool_to_char(bool b)
         return 'F';
     }
 }
+
+extern char* symbol_to_string(agent* thisAgent, Symbol* sym, bool rereadable, char* dest, size_t dest_size);
+extern char const* symbol_to_typeString(agent* thisAgent, Symbol* sym);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production
@@ -179,6 +187,7 @@ extern void print_production(agent* thisAgent, production* p, bool internal);
 
 extern void print_condition(agent* thisAgent, condition* cond);
 extern void print_action(agent* thisAgent, action* a);
+extern char preference_to_char(byte type);
 extern void print_preference(agent* thisAgent, preference* pref);
 extern void print_wme(agent* thisAgent, wme* w);
 extern void print_wme_without_timetag(agent* thisAgent, wme* w);
@@ -187,6 +196,7 @@ extern void print_instantiation_with_wmes(agent* thisAgent,
         instantiation* inst,
         wme_trace_type wtt,
         int action);
+
 extern void print_list_of_conditions(agent* thisAgent, condition* cond);
 
 extern void print_sysparam_trace(agent* thisAgent, int64_t sysParamIndex, const char* format, ...);

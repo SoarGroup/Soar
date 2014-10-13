@@ -1,4 +1,3 @@
-#include <portability.h>
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -60,7 +59,7 @@
 
 /* ======================================================================
 
-                      Rete Net Routines for Soar 6
+                      Rete Net Routines
 
    TABLE OF CONTENTS (each part is labeled "SECTION" in the code)
 
@@ -86,12 +85,13 @@
 
 ====================================================================== */
 
+#include "portability.h"
 #include <stdlib.h>
 
 #include "rete.h"
+#include "kernel.h"
 #include "mem.h"
 #include "wmem.h"
-
 #include "explain.h"
 #include "symtab.h"
 #include "agent.h"
@@ -132,7 +132,13 @@
 #endif
 #endif
 
+
+
 using namespace soar_TraceNames;
+
+
+
+
 
 /* **********************************************************************
 
@@ -156,7 +162,7 @@ inline bool var_locations_equal(var_location v1, var_location v2)
 
 /* --- extract field (id/attr/value) from wme --- */
 /* WARNING: this relies on the id/attr/value fields being consecutive in
-   the wme structure (defined in soarkernel.h) */
+   the wme structure */
 /*#define field_from_wme(wme,field_num) \
   ( (&((wme)->id))[(field_num)] )*/
 
@@ -9208,7 +9214,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                     }
                 }
                 *ch = 0;
-                if (thisAgent->printer_output_column + (ch - temp) >= COLUMNS_PER_LINE)
+                if (get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
                 {
                     //print_string (thisAgent, "\n");
                     //print_spaces (thisAgent, indent+6);

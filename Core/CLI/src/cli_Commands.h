@@ -140,98 +140,6 @@ namespace cli
             AllocateCommand& operator=(const AllocateCommand&);
     };
     
-    class BreakCommand : public cli::ParserCommand
-    {
-        public:
-            BreakCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~BreakCommand() {}
-            virtual const char* GetString() const
-            {
-                return "break";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: break [-cps] production_name";
-            }
-            
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'c', "clear", OPTARG_NONE},
-                    {'p', "print", OPTARG_NONE},
-                    {'s', "set",   OPTARG_NONE},
-                    {0, 0, OPTARG_NONE} // null
-                };
-                
-                char option = 0;
-                
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-                    
-                    if (option != 0)
-                    {
-                        return cli.SetError("break takes only one option at a time.");
-                    }
-                    option = static_cast<char>(opt.GetOption());
-                }
-                
-                switch (option)
-                {
-                    case 'c':
-                    case 's':
-                        if (argv.size() != 3)
-                        {
-                            return cli.SetError("break --set/--clear takes exactly one argument.");
-                        }
-                        
-                        // case: clear the interrupt flag on the production
-                        return cli.DoBreak(option, argv[2]);
-                        
-                    case 'p':
-                        if (argv.size() != 2)
-                        {
-                            return cli.SetError("break --print takes no arguments.");
-                        }
-                        
-                        // case: set the interrupt flag on the production
-                        return cli.DoBreak('p', "");
-                        
-                    default:
-                        if (argv.size() == 1)
-                        {
-                            return cli.DoBreak('p', "");
-                        }
-                        else if (argv.size() == 2)
-                        {
-                            return cli.DoBreak('s', argv[1]);
-                        }
-                        else
-                        {
-                            return cli.SetError("break used incorrectly.");
-                        }
-                }
-                
-                // bad: no option, but more than one argument
-                return cli.SetError("break takes exactly one argument.");
-            }
-            
-        private:
-            cli::Cli& cli;
-            
-            BreakCommand& operator=(const BreakCommand&);
-    };
-    
     class CaptureInputCommand : public cli::ParserCommand
     {
         public:
@@ -362,8 +270,9 @@ namespace cli
                 {
                     {'c', "count",        OPTARG_OPTIONAL},
                     {'l', "long",        OPTARG_NONE},
+                    {'n', "numbered", OPTARG_NONE},
                     {'p', "prefix",        OPTARG_OPTIONAL},
-                    {'s', "short",        OPTARG_NONE},
+                    {'r', "rule",     OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
                 
@@ -372,7 +281,7 @@ namespace cli
                 int64_t count = -1;
                 bool patternFlag = false;
                 std::string pattern;
-                bool longFormat = true;
+                chunkNameFormats chunkFormat = ruleFormat;
                 
                 for (;;)
                 {
@@ -407,11 +316,15 @@ namespace cli
                             break;
                         case 'l':
                             changeFormat = true;
-                            longFormat = true;
+                            chunkFormat = longFormat;
                             break;
-                        case 's':
+                        case 'r':
                             changeFormat = true;
-                            longFormat = false;
+                            chunkFormat = ruleFormat;
+                            break;
+                        case 'n':
+                            changeFormat = true;
+                            chunkFormat = numberedFormat;
                             break;
                     }
                 }
@@ -421,7 +334,7 @@ namespace cli
                     return cli.SetError(GetSyntax());
                 }
                 
-                return cli.DoChunkNameFormat(changeFormat ? &longFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
+                return cli.DoChunkNameFormat(changeFormat ? &chunkFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
             }
             
         private:
@@ -2581,6 +2494,98 @@ namespace cli
             OSupportModeCommand& operator=(const OSupportModeCommand&);
     };
     
+    class PbreakCommand : public cli::ParserCommand
+    {
+        public:
+            PbreakCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~PbreakCommand() {}
+            virtual const char* GetString() const
+            {
+                return "pbreak";
+            }
+            virtual const char* GetSyntax() const
+            {
+                return "Syntax: pbreak [-cps] production_name";
+            }
+            
+            virtual bool Parse(std::vector< std::string >& argv)
+            {
+                cli::Options opt;
+                OptionsData optionsData[] =
+                {
+                    {'c', "clear", OPTARG_NONE},
+                    {'p', "print", OPTARG_NONE},
+                    {'s', "set",   OPTARG_NONE},
+                    {0, 0, OPTARG_NONE} // null
+                };
+                
+                char option = 0;
+                
+                for (;;)
+                {
+                    if (!opt.ProcessOptions(argv, optionsData))
+                    {
+                        return cli.SetError(opt.GetError().c_str());
+                    }
+                    
+                    if (opt.GetOption() == -1)
+                    {
+                        break;
+                    }
+                    
+                    if (option != 0)
+                    {
+                        return cli.SetError("pbreak takes only one option at a time.");
+                    }
+                    option = static_cast<char>(opt.GetOption());
+                }
+                
+                switch (option)
+                {
+                    case 'c':
+                    case 's':
+                        if (argv.size() != 3)
+                        {
+                            return cli.SetError("pbreak --set/--clear takes exactly one argument.");
+                        }
+                        
+                        // case: clear the interrupt flag on the production
+                        return cli.DoPbreak(option, argv[2]);
+                        
+                    case 'p':
+                        if (argv.size() != 2)
+                        {
+                            return cli.SetError("pbreak --print takes no arguments.");
+                        }
+                        
+                        // case: set the interrupt flag on the production
+                        return cli.DoPbreak('p', "");
+                        
+                    default:
+                        if (argv.size() == 1)
+                        {
+                            return cli.DoPbreak('p', "");
+                        }
+                        else if (argv.size() == 2)
+                        {
+                            return cli.DoPbreak('s', argv[1]);
+                        }
+                        else
+                        {
+                            return cli.SetError("pbreak used incorrectly.");
+                        }
+                }
+                
+                // bad: no option, but more than one argument
+                return cli.SetError("pbreak takes exactly one argument.");
+            }
+            
+        private:
+            cli::Cli& cli;
+            
+            PbreakCommand& operator=(const PbreakCommand&);
+    };
+    
     class PopDCommand : public cli::ParserCommand
     {
         public:
@@ -3896,8 +3901,11 @@ namespace cli
                     {'e', "enable",     OPTARG_NONE},
                     {'e', "on",         OPTARG_NONE},
                     {'g', "get",        OPTARG_NONE},
+                    {'h', "history",    OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'i', "init",       OPTARG_NONE},
                     {'p', "print",      OPTARG_NONE},
+                    {'q', "query",      OPTARG_NONE},//Testing/unstable - 23-7-2014
+                    {'r', "remove",     OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'s', "set",        OPTARG_NONE},
                     {'S', "stats",      OPTARG_NONE},
                     {'t', "timers",     OPTARG_NONE},
@@ -3963,6 +3971,17 @@ namespace cli
                         return cli.DoSMem(option, &(argv[2]));
                     }
                     
+                    case 'h':
+                    {
+                        // case: history only accepts 1 non-option argument
+                        if (!opt.CheckNumNonOptArgs(1, 1))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+                        
+                        return cli.DoSMem(option, &(argv[2]), 0);
+                    }
+                    
                     case 'i':
                     case 'e':
                     case 'd':
@@ -3993,6 +4012,38 @@ namespace cli
                         }
                         
                         return cli.DoSMem(option, &(argv[2]), &(argv[3]));
+                    }
+                    
+                    case 'q':
+                    {
+                        // case: query requires one non-option argument, but can have a depth argument
+                        if (!opt.CheckNumNonOptArgs(1, 2))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+                        
+                        if (opt.GetNonOptionArguments() == 1)
+                        {
+                            return cli.DoSMem(option, &(argv[2]));
+                        }
+                        
+                        return cli.DoSMem(option, &(argv[2]), &(argv[3]));// This is the case of "depth".
+                    }
+                    
+                    case 'r':
+                    {
+                        // case: remove requires one non-option argument, but can have a "force" argument
+                        if (!opt.CheckNumNonOptArgs(1, 2))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+                        
+                        if (opt.GetNonOptionArguments() == 1)
+                        {
+                            return cli.DoSMem(option, &(argv[2]));
+                        }
+                        
+                        return cli.DoSMem(option, &(argv[2]), &(argv[3]));//
                     }
                     
                     case 's':
@@ -5587,6 +5638,30 @@ namespace cli
             cli::Cli& cli;
             
             WMACommand& operator=(const WMACommand&);
+    };
+    
+    class SVSCommand : public cli::ParserCommand
+    {
+        public:
+            SVSCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~SVSCommand() {}
+            virtual const char* GetString() const
+            {
+                return "svs";
+            }
+            virtual const char* GetSyntax() const
+            {
+                return "Syntax: svs <elements to inspect>\n"
+                       "        svs [--enable | -e | --on | --disable | -d | --off]";
+            }
+            
+            virtual bool Parse(std::vector< std::string >& argv)
+            {
+                return cli.DoSVS(argv);
+            }
+            
+        private:
+            cli::Cli& cli;
     };
     
 }

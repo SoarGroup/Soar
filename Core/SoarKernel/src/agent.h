@@ -40,7 +40,6 @@
 // These handles should not be used directly, see xml.h
 typedef void* xml_handle;
 
-
 /* RBD Need more comments here, or should this stuff be here at all? */
 
 #define UPDATE_LINKS_NORMALLY 0
@@ -62,6 +61,7 @@ typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
 typedef struct rhs_function_struct rhs_function;
 typedef struct select_info_struct select_info;
+class AgentOutput_Info;
 class debug_param_container;
 class Output_Manager;
 class Variablization_Manager;
@@ -125,6 +125,7 @@ typedef struct alpha_mem_struct alpha_mem;
 typedef struct token_struct token;
 
 class stats_statement_container;
+class svs_interface;
 
 typedef struct agent_struct
 {
@@ -342,6 +343,15 @@ typedef struct agent_struct
     Symbol*             smem_sym_negquery;
     Symbol*             smem_sym_prohibit;
     Symbol*             smem_sym_store;
+    Symbol*             smem_sym_math_query;
+    Symbol*             smem_sym_depth;
+    
+    Symbol*             smem_sym_math_query_less;
+    Symbol*             smem_sym_math_query_greater;
+    Symbol*             smem_sym_math_query_less_or_equal;
+    Symbol*             smem_sym_math_query_greater_or_equal;
+    Symbol*             smem_sym_math_query_max;
+    Symbol*             smem_sym_math_query_min;
     
     
     /* ----------------------- Symbol table stuff -------------------------- */
@@ -461,8 +471,7 @@ typedef struct agent_struct
     /* ----------------------- Timing statistics -------------------------- */
     
     /*
-    For Soar 7, the timing code has been completely revamped.  When the compile
-    flag NO_TIMING_STUFF is not set, statistics will be now be collected on the
+    When the compile flag NO_TIMING_STUFF is off, statistics will be collected on
     total cpu time, total kernel time, time spent in the individual phases of a
     decision cycle, time spent executing the input and output functions, and time
     spent executing callbacks (or monitors).  When the DETAILED_TIMING_STATS flag
@@ -577,7 +586,7 @@ typedef struct agent_struct
     /* accumulated cpu time spent in various parts of the system */
     /* only used if DETAILED_TIMING_STATS is #def'd in kernel.h */
 #ifdef DETAILED_TIMING_STATS
-    soar_process_timer timers_gds;                                        // start_gds_tv
+    soar_timer timers_gds;                                        // start_gds_tv
     soar_timer_accumulator timers_ownership_cpu_time[NUM_PHASE_TYPES];    // ownership_cpu_time
     soar_timer_accumulator timers_chunking_cpu_time[NUM_PHASE_TYPES];     // chunking_cpu_time
     soar_timer_accumulator timers_match_cpu_time[NUM_PHASE_TYPES];        // match_cpu_time
@@ -700,10 +709,6 @@ typedef struct agent_struct
     tc_number           walk_tc_number;
     ::list*             promoted_ids;
     int                 link_update_mode;
-    
-    /* ------------------ Printing utilities stuff --------------------- */
-    int                 printer_output_column;
-    int                 saved_printer_output_column;
     
     /* ----------------------- Trace Formats -------------------------- */
     
@@ -873,6 +878,8 @@ typedef struct agent_struct
     
     // parser symbol clean-up list
     ::list*             parser_syms;
+
+    AgentOutput_Info* output_settings;
     // epmem
     epmem_param_container* epmem_params;
     epmem_stat_container* epmem_stats;
@@ -980,6 +987,7 @@ typedef struct agent_struct
         std::map<std::vector<std::string>, Entry> split;
     };
     std::map<goal_stack_level, RL_Trace> rl_trace;
+    svs_interface* svs;
 } agent;
 /*************** end of agent struct *****/
 

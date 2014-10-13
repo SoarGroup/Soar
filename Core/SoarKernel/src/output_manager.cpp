@@ -16,29 +16,21 @@
 #include "output_manager.h"
 #include "output_manager_db.h"
 #include "output_manager_params.h"
+#include "print.h"
+#include "agent.h"
 
-void initAgentOutputInfo(AgentOutput_Info* pInfo)
-{
-
-    pInfo->soarAgent = NULL;
-    pInfo->clientAgent = NULL;
+AgentOutput_Info::AgentOutput_Info() :
+    print_enabled(OM_Init_print_enabled),
+    dprint_enabled(OM_Init_dprint_enabled),
+    db_mode(OM_Init_db_mode),
+    callback_mode(OM_Init_callback_mode),
+    file_mode(OM_Init_file_mode),
+    db_dbg_mode(OM_Init_db_dbg_mode),
+    callback_dbg_mode(OM_Init_callback_dbg_mode),
+    file_dbg_mode(OM_Init_file_dbg_mode),
+    printer_output_column(1)
+{}
     
-    pInfo->print_enabled = true;
-    pInfo->dprint_enabled = true;
-    
-    pInfo->db_mode = false;
-    pInfo->XML_mode = true;
-    pInfo->callback_mode = true;
-    pInfo->stdout_mode = true;
-    pInfo->file_mode = false;
-    pInfo->db_dbg_mode = false;
-    pInfo->XML_dbg_mode = true;
-    pInfo->callback_dbg_mode = true;
-    pInfo->stdout_dbg_mode = true;
-    pInfo->file_dbg_mode = false;
-    
-}
-
 void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
 {
 
@@ -58,28 +50,23 @@ Output_Manager::Output_Manager()
     fill_mode_info();
     
     m_defaultAgent = NIL;
-    m_agent_table = new std::map< agent*, AgentOutput_Info* >();
     m_params = new OM_Parameters();
     m_db = NIL;
     
     next_output_string = 0;
     
-    print_enabled = true;
-    dprint_enabled = true;
-    
+    print_enabled = OM_Init_print_enabled;
+    dprint_enabled = OM_Init_dprint_enabled;
     db_mode = OM_Init_db_mode;
-    XML_mode = OM_Init_XML_mode;
-    callback_mode = OM_Init_callback_mode;
     stdout_mode = OM_Init_stdout_mode;
     file_mode = OM_Init_file_mode;
+    
     db_dbg_mode = OM_Init_db_dbg_mode;
-    XML_dbg_mode = OM_Init_XML_dbg_mode;
-    callback_dbg_mode = OM_Init_callback_dbg_mode;
     stdout_dbg_mode = OM_Init_stdout_dbg_mode;
     file_dbg_mode = OM_Init_file_dbg_mode;
     
     /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best
-     *    place to put for now. -- */
+     *    place to put it.  Leaving here for now. -- */
     NULL_SYM_STR = strdup("NULL");
     
 }
@@ -116,34 +103,78 @@ Output_Manager::~Output_Manager()
         delete mode_info[i].prefix;
     }
     
-    for (std::map< agent*, AgentOutput_Info* >::iterator it = (*m_agent_table).begin(); it != (*m_agent_table).end(); ++it)
-    {
-        delete it->second;
-    }
-    m_agent_table->clear();
-    
-    delete m_agent_table;
     delete m_params;
     if (m_db)
     {
         delete m_db;
     }
 }
+    
+int Output_Manager::get_printer_output_column(agent* thisAgent)
+{
+    if (thisAgent)
+    {
+        return thisAgent->output_settings->printer_output_column;
+    }
+    else
+    {
+        return global_printer_output_column;
+    }
+}
 
+void Output_Manager::set_printer_output_column(agent* thisAgent, int pOutputColumn)
+{
+    if (thisAgent)
+    {
+        thisAgent->output_settings->printer_output_column = pOutputColumn;
+    }
+    else
+    {
+        global_printer_output_column = pOutputColumn;
+    }
+}
 
+void Output_Manager::start_fresh_line(agent* pSoarAgent)
+{
+    if (!pSoarAgent)
+    {
+        pSoarAgent = m_defaultAgent;
+    }
+    if (global_printer_output_column != 1)
+    {
+        print_agent(pSoarAgent, "\n");
+    }
+}
 
-inline bool Output_Manager::update_printer_column(const char* msg)
+void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
 {
     const char* ch;
     
     for (ch = msg; *ch != 0; ch++)
     {
-//    if (*ch=='\n')
-//      thisAgent->printer_output_column = 1;
-//    else
-//      thisAgent->printer_output_column++;
+        if (*ch == '\n')
+        {
+            if (pSoarAgent)
+            {
+                pSoarAgent->output_settings->printer_output_column = 1;
+            }
+            if (stdout_mode)
+            {
+                global_printer_output_column = 1;
+            }
+        }
+        else
+        {
+            if (pSoarAgent)
+            {
+                pSoarAgent->output_settings->printer_output_column++;
+            }
+            if (stdout_mode)
+            {
+                global_printer_output_column++;
+            }
+        }
     }
-    return true;
 }
 
 void Output_Manager::store_refcount(Symbol* sym, const char* callers, bool isAdd)
@@ -164,13 +195,16 @@ void Output_Manager::print_db_agent(agent* pSoarAgent, MessageType msgType, Trac
 
 void Output_Manager::printv(const char* format, ...)
 {
+    if (m_defaultAgent)
+    {
     va_list args;
     char buf[PRINT_BUFSIZE];
     
     va_start(args, format);
     vsprintf(buf, format, args);
     va_end(args);
-    print_trace_agent(m_defaultAgent, buf);
+        print_agent(m_defaultAgent, buf);
+    }
 }
 
 void Output_Manager::printv_agent(agent* pSoarAgent, const char* format, ...)
@@ -181,74 +215,30 @@ void Output_Manager::printv_agent(agent* pSoarAgent, const char* format, ...)
     va_start(args, format);
     vsprintf(buf, format, args);
     va_end(args);
-    print_trace_agent(pSoarAgent, buf);
+    print_agent(pSoarAgent, buf);
 }
 
-void Output_Manager::print_trace_agent(agent* pSoarAgent, const char* msg)
+void Output_Manager::print_agent(agent* pSoarAgent, const char* msg)
 {
-    bool printer_column_updated = false;
-    
-    if (callback_mode && pSoarAgent)
+    if (print_enabled)
     {
-        printer_column_updated = update_printer_column(msg);
+        if (pSoarAgent && pSoarAgent->output_settings->callback_mode && pSoarAgent->output_settings->print_enabled)
+    {
         soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(msg)));
     }
     
     if (stdout_mode)
     {
-        if (!printer_column_updated)
-        {
-            printer_column_updated = update_printer_column(msg);
+            fputs(msg, stdout);
         }
-        printer_column_updated = true;
-        fputs(msg, stdout);
+        
     }
+    
+    update_printer_columns(pSoarAgent, msg);
     
     if (db_mode)
     {
         m_db->print_db(trace_msg, mode_info[No_Mode].prefix->c_str(), msg);
-    }
-    
-}
-
-void Output_Manager::print_trace_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode, bool no_prefix)
-{
-    bool printer_column_updated = false;
-    
-    std::string newTrace;
-    
-    if (mode_info[mode].trace_enabled)
-    {
-        if (!no_prefix)
-        {
-            newTrace.assign(mode_info[mode].prefix->c_str());
-            newTrace.append("| ");
-            newTrace.append(msg);
-        }
-        else
-        {
-            newTrace.assign(msg);
-        }
-        
-        if (callback_mode && pSoarAgent)
-        {
-            printer_column_updated = update_printer_column(newTrace.c_str());
-            soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(newTrace.c_str())));
-        }
-        
-        if (stdout_mode)
-        {
-            if (!printer_column_updated)
-            {
-                printer_column_updated = update_printer_column(newTrace.c_str());
-            }
-            fputs(newTrace.c_str(), stdout);
-        }
-        
-        if (db_mode)
-        {
-            m_db->print_db(trace_msg, mode_info[mode].prefix->c_str(), msg);
-        }
     }
 }
 
@@ -269,27 +259,50 @@ void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, Trace
         {
             newTrace.assign(msg);
         }
-        if (callback_dbg_mode && pSoarAgent)
+        if (dprint_enabled)
         {
-            printer_column_updated = update_printer_column(newTrace.c_str());
-            /* MToDo | Need default agent */
+            if (pSoarAgent && pSoarAgent->output_settings->callback_mode && pSoarAgent->output_settings->dprint_enabled)
+        {
             soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(newTrace.c_str())));
         }
         
-        if (stdout_dbg_mode)
+        if (stdout_mode)
         {
-            if (!printer_column_updated)
-            {
-                printer_column_updated = update_printer_column(newTrace.c_str());
+                fputs(newTrace.c_str(), stdout);
             }
-            fputs(newTrace.c_str(), stdout);
+            
         }
         
-        if (db_dbg_mode)
+        update_printer_columns(pSoarAgent, msg);
+        
+        if (db_mode)
         {
             m_db->print_db(debug_msg, mode_info[mode].prefix->c_str(), msg);
         }
     }
+}
+
+void Output_Manager::print_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode, bool no_prefix)
+{
+    bool printer_column_updated = false;
+    
+    std::string newTrace;
+    
+    if (mode_info[mode].trace_enabled)
+    {
+        if (!no_prefix)
+        {
+            newTrace.assign(mode_info[mode].prefix->c_str());
+            newTrace.append("| ");
+            newTrace.append(msg);
+        }
+        else
+        {
+            newTrace.assign(msg);
+        }
+        
+        print_agent(pSoarAgent, newTrace.c_str());
+            }
 }
 
 void Output_Manager::fill_mode_info()

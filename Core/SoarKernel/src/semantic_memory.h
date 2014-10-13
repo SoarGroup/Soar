@@ -461,6 +461,8 @@ extern Symbol* smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_l
 extern void smem_reset(agent* thisAgent, Symbol* state);
 extern void smem_reset_id_counters(agent* thisAgent);
 extern void smem_close(agent* thisAgent);
+extern void smem_reinit(agent* thisAgent);
+extern void smem_reinit_cmd(agent* thisAgent);
 
 // perform smem actions
 extern void smem_go(agent* thisAgent, bool store_only);

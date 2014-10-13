@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
 /*************************************************************************
@@ -32,6 +32,7 @@
 #include "io_soar.h"
 #include "rete.h"
 
+
 #include "xml.h"
 #include "stats.h"
 
@@ -43,6 +44,7 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "variablization_manager.h"
+#include "svs_interface.h"
 #include "output_manager.h"
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
@@ -122,7 +124,6 @@ void abort_with_fatal_error_noagent(const char* msg)
     
     assert(false);
 }
-
 /* ===================================================================
 
                         Signal Handling
@@ -235,7 +236,6 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
     thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = true;  /* AGR 627 */
     thisAgent->sysparams[EXPLAIN_SYSPARAM] = false; /* KJC 7/96 */
-    thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = true;  /* kjh(B14) */
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
     
@@ -449,9 +449,9 @@ bool reinitialize_soar(agent* thisAgent)
     set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               false);
     set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      false);
     
-    /* Close episodic and semantic memory database and clean up */
-    epmem_close(thisAgent);
-    smem_close(thisAgent);
+    /* Re-init episodic and semantic memory databases */
+    epmem_reinit(thisAgent);
+    smem_reinit(thisAgent);
     
     bool wma_was_enabled = wma_enabled(thisAgent);
     thisAgent->wma_params->activation->set_value(off);
@@ -637,6 +637,10 @@ void do_one_top_level_phase(agent* thisAgent)
                                       BEFORE_INPUT_PHASE_CALLBACK,
                                       reinterpret_cast<soar_call_data>(INPUT_PHASE));
                                       
+                if (thisAgent->svs->is_enabled())
+                {
+                    thisAgent->svs->input_callback();
+                }
                 do_input_cycle(thisAgent);
                 
                 thisAgent->run_phase_count++ ;
@@ -997,6 +1001,10 @@ void do_one_top_level_phase(agent* thisAgent)
                                   BEFORE_OUTPUT_PHASE_CALLBACK,
                                   reinterpret_cast<soar_call_data>(OUTPUT_PHASE));
                                   
+            if (thisAgent->svs->is_enabled())
+            {
+                thisAgent->svs->output_callback();
+            }
             /** KJC June 05:  moved output function timers into do_output_cycle ***/
             
             do_output_cycle(thisAgent);
@@ -1216,7 +1224,7 @@ void do_one_top_level_phase(agent* thisAgent)
                                   
             if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
             {
-                print(thisAgent,  "\n");
+                print_string(thisAgent, "\n");
                 print_lowest_slot_in_context_stack(thisAgent);
             }
             
@@ -1639,7 +1647,7 @@ void init_agent_memory(agent* thisAgent)
     create_top_goal(thisAgent);
     if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
     {
-        print(thisAgent,  "\n");
+        print_string(thisAgent, "\n");
         print_lowest_slot_in_context_stack(thisAgent);
     }
     thisAgent->current_phase = INPUT_PHASE;

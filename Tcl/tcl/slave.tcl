@@ -53,14 +53,14 @@ proc buildExecuteCommandArgumentString { name argList } {
 # @param commands List of Soar command names
 proc defineSoarCommands { commands } {
   global printCommandResults
-
+  
   foreach name $commands {
     proc $name {args} "
-         global output_buffer
-         set r \[executeCommandLine \[buildExecuteCommandArgumentString $name \$args\]\]
-         appendOutputBuffer \$r
-         return \"\"
-      "
+    global output_buffer
+    set r \[executeCommandLine \[buildExecuteCommandArgumentString $name \$args\]\]
+    appendOutputBuffer \$r
+    return \"\"
+    "
   }
 }
 
@@ -124,6 +124,7 @@ defineSoarCommands [set allSoarCommands {
    set-library-location
    set-stop-phase
    smem
+   soar
    soarnews
    sp
    srand
@@ -138,7 +139,7 @@ defineSoarCommands [set allSoarCommands {
    watch
    watch-wmes
    wma
-}]
+ }]
 
 global outputStringsStack currentOutputStringsProc
 
@@ -156,12 +157,12 @@ proc discardOutputStringsProc {message} {}
 proc output-strings-destination {args} {
   global outputStringsStack currentOutputStringsProc
   global _agentName
-
+  
   set n [llength $args]
   if { $n == 0 } {
     error "Not enough arguments to output-strings-destination"
   }
-
+  
   set arg0 [lindex $args 0]
   if { $arg0 == "-push" } {
     set arg1 [lindex $args 1]
@@ -186,18 +187,18 @@ proc output-strings-destination {args} {
     } else {
       error "output-strings-destination stack is empty"
     }
-
+    
   } else {
     error "Unrecognized argument '$arg0'"
   }
-
+  
   #puts "stack is $outputStringsStack"
   #puts "proc is $outputStringsStack"
 }
 
 proc printCallback { message } {
   global currentOutputStringsProc
-
+  
   # Since currentOutputStringsProc may be a list, we have to append
   # message to the end of it. We can't use concat because, if message
   # has spaces, then it will be treated as a list rather than a single
@@ -216,7 +217,7 @@ proc printCallback { message } {
 proc reconfigureOutput {} {
   if {[info proc puts] != "puts"} {
     rename puts builtInPuts
-
+    
     proc puts {args} {
       # We need to see if there are any parameters to puts and handle
       # according.  We'll ignore any channel arguments.  Following logic
@@ -235,7 +236,7 @@ proc reconfigureOutput {} {
       #   - Param 1: -no-newline
       #   - Param 2: channel
       #   - Param 3: string to output
-
+      
       set n [llength $args]
       set addNewLine 1
       set strIndex 0
@@ -254,7 +255,7 @@ proc reconfigureOutput {} {
           set strIndex 1
         }
       }
-
+      
       set putOutput [join [lindex $args $strIndex]]
       if ($addNewLine) {
         append putOutput "\n"
@@ -274,17 +275,16 @@ proc source {arg} {
   set dir [file dir $arg]
   set file [file tail $arg]
   global _agentName
-
+  
   pushd $dir
-
+  
   # Source the file in the global scope and catch any errors so
   # we can properly clean up the directory stack with popd
   if { [catch {uplevel #0 builtInSource $file} errorMessage] } {
-    set savedInfo [einfo]
     popd
-    error $errorMessage $savedInfo
+    error $errorMessage
   }
-
+  
   popd
   return ""
 }
@@ -306,9 +306,9 @@ set print_alias_switch "on"
 
 proc alias {{name ""} args} {
   global defined_aliases print_alias_switch
-
+  
   if {[string compare $name ""] == 0} {
-    lsort [set defined_aliases]
+    puts [lsort [set defined_aliases]]
   } elseif {[string compare $args ""] == 0} {
     set position [lsearch -exact $defined_aliases $name]
     if {$position >= 0} {
@@ -333,7 +333,7 @@ proc alias {{name ""} args} {
       puts "Alias Error: \"$name\" already exists as a previously defined alias or command.\nNew alias not created.\n"
     } else {
       set defined_aliases [linsert $defined_aliases 0 $name]
-
+      
       uplevel #0 "proc $name {args} {
         if {\$args == \"\"} {
           $args
@@ -357,10 +357,6 @@ proc unalias {name} {
   } else {
     puts "Error: There is no alias named \"$name\"."
   }
-}
-
-proc upeval {expression} {
-  uplevel #0 eval $expression
 }
 
 proc initializeSlave {} {

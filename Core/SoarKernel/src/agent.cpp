@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -23,11 +23,11 @@
 #include <map>
 
 #include "agent.h"
+#include "debug.h"
 #include "kernel.h"
 #include "mem.h"
 #include "lexer.h"
 #include "symtab.h"
-
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "instantiations.h"
@@ -53,9 +53,10 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-#include "debug.h"
 #include "soar_instance.h"
 #include "variablization_manager.h"
+#include "output_manager.h"
+#include "svs_interface.h"
 
 /* ===================================================================
 
@@ -137,6 +138,8 @@ void init_soar_agent(agent* thisAgent)
                      
     reset_statistics(thisAgent);
     
+    thisAgent->svs = make_svs(thisAgent);
+    
     /* RDF: For gSKI */
     init_agent_memory(thisAgent);
     /* END */
@@ -210,7 +213,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->potentials_tc                      = 0;
     thisAgent->prev_top_state                     = NIL;
     thisAgent->print_prompt_flag                  = true;
-    thisAgent->printer_output_column              = 1;
     thisAgent->production_being_fired             = NIL;
     thisAgent->productions_being_traced           = NIL;
     thisAgent->promoted_ids                       = NIL;
@@ -390,6 +392,7 @@ agent* create_soar_agent(char* agent_name)                                      
     
     // debug module parameters
     thisAgent->debug_params = new debug_param_container(thisAgent);
+    thisAgent->output_settings = new AgentOutput_Info();
     
 #ifdef USE_MEM_POOL_ALLOCATORS
     thisAgent->epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
@@ -504,15 +507,22 @@ void destroy_soar_agent(agent* delete_agent)
     
     delete delete_agent->smem_db;
     
+    delete delete_agent->svs;
+    
     // cleanup statistics db
     stats_close(delete_agent);
     delete delete_agent->stats_db;
     delete_agent->stats_db = 0;
     
+    delete delete_agent->debug_params;
+    delete delete_agent->output_settings;
+    
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
     
     remove_built_in_rhs_functions(delete_agent);
+    
+    getSoarInstance()->Delete_Agent(delete_agent->name);
     
     /* Free structures stored in agent structure */
     free(delete_agent->name);

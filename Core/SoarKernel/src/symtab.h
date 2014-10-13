@@ -40,6 +40,7 @@
 #include "mem.h"
 #include <assert.h>
 #include <map>
+#include <sstream>
 
 #ifdef SOAR_DEBUG_UTILITIES
 /* MToDo | Temporary debugging code.  Remove.
@@ -49,15 +50,13 @@
 #endif
 
 typedef signed short goal_stack_level;
-typedef struct cons_struct cons;
-typedef struct dl_cons_struct dl_cons;
-typedef cons list;
 typedef struct instantiation_struct instantiation;
 typedef int64_t epmem_node_id;
 typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 typedef uint64_t smem_lti_id;
 typedef uint64_t smem_hash_id;
+typedef uint64_t tc_number;
 
 /* -- Forward declarations needed for symbol base struct -- */
 struct floatSymbol;
@@ -134,10 +133,19 @@ typedef struct symbol_struct
     bool is_variablizable(symbol_struct* original_sym);
     bool is_constant_or_marked_variable(tc_number tc);
     bool is_in_tc(tc_number tc);
-    void mark_if_unmarked(agent* thisAgent, tc_number tc, list** sym_list);
+    bool        is_string();
+    bool        is_int();
+    bool        is_float();
+    bool        is_state();
+    bool        is_top_state();
+    tc_number   get_tc_num();
+    void        set_tc_num(tc_number n);
+    bool        get_id_name(std::string& n);
+    void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
     const char* type_string();
     char* to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
     
+    struct symbol_struct*   get_parent_state();
 } Symbol;
 
 struct floatSymbol : public Symbol
@@ -158,7 +166,7 @@ struct varSymbol   : public Symbol
     char* name;
     Symbol* current_binding_value;
     uint64_t gensym_number;
-    ::list* rete_binding_locations;
+    ::cons* rete_binding_locations;
 };
 
 struct idSymbol    : public Symbol
@@ -217,7 +225,7 @@ struct idSymbol    : public Symbol
     
     
     /* --- fields used for Soar I/O stuff --- */
-    ::list* associated_output_links;
+    ::cons* associated_output_links;
     struct wme_struct* input_wmes;
     
     int depth;
@@ -295,10 +303,94 @@ inline bool Symbol::is_in_tc(tc_number tc)
     }
 };
 
+inline bool Symbol::is_string()
+{
+    return (symbol_type == STR_CONSTANT_SYMBOL_TYPE);
+}
+
+inline bool Symbol::is_int()
+{
+    return (symbol_type == INT_CONSTANT_SYMBOL_TYPE);
+}
+
+inline bool Symbol::is_float()
+{
+    return (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE);
+}
+
+inline bool Symbol::is_state()
+{
+    return (is_identifier() && id->isa_goal);
+}
+
+inline bool Symbol::is_top_state()
+{
+    return (is_state() && (id->higher_goal == NULL));
+}
+inline tc_number Symbol::get_tc_num()
+{
+    return tc_num;
+}
+
+inline void Symbol::set_tc_num(tc_number n)
+{
+    tc_num = n;
+}
+inline Symbol* Symbol::get_parent_state()
+{
+    return id->higher_goal;
+}
+inline bool Symbol::get_id_name(std::string& n)
+{
+    std::stringstream ss;
+    if (!is_identifier())
+    {
+        return false;
+    }
+    ss << id->name_letter << id->name_number;
+    n = ss.str();
+    return true;
+}
+
+inline bool get_symbol_value(Symbol* sym, std::string& v)
+{
+    if (sym->is_string())
+    {
+        v = sym->to_string();
+        return true;
+    }
+    return false;
+}
+
+inline bool get_symbol_value(Symbol* sym, long& v)
+{
+    if (sym->is_int())
+    {
+        v = sym->ic->value;
+        return true;
+    }
+    return false;
+}
+
+inline bool get_symbol_value(Symbol* sym, double& v)
+{
+    if (sym->is_float())
+    {
+        v = sym->fc->value;
+        return true;
+    }
+    if (sym->is_int())
+    {
+        v = static_cast<double>(sym->ic->value);
+        return true;
+    }
+    return false;
+}
+
 /* -- mark_if_unmarked set the tc number to the new tc and add the symbol to the list passed in -- */
 
 template <typename P, typename T> void push(agent* thisAgent, P item, T*& list_header);
-inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, list** sym_list)
+inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list)
 {
     if (tc_num != tc)
     {
@@ -376,8 +468,8 @@ extern Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stac
 extern Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t* counter);
 
 extern void deallocate_symbol(agent* thisAgent, Symbol* sym, long indent = 0);
-extern void deallocate_symbol_list_removing_references(agent* thisAgent, ::list* sym_list, long indent = 0);
-::list* copy_symbol_list_adding_references(agent* thisAgent, ::list* sym_list);
+extern void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons* sym_list, long indent = 0);
+::cons* copy_symbol_list_adding_references(agent* thisAgent, ::cons* sym_list);
 
 extern Symbol* find_variable(agent* thisAgent, const char* name);
 extern Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
@@ -417,9 +509,9 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    dprint(DT_REFCOUNT_ADDS, "ADD-REF %s -> %lld\n", x->to_string(), (x)->reference_count + 1);
+    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %s -> %lld\n", x->to_string(), (x)->reference_count + 1);
 #else
-    dprint(DT_REFCOUNT_ADDS, "%*sADD-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count + 1);
+    //dprint(DT_REFCOUNT_ADDS, "%*sADD-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count + 1);
 #endif
     
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -427,7 +519,7 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("add_ref");
-        dprint(DT_ID_LEAKING, "-- | %s(%lld) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_ID_LEAKING, "-- | %s(%lld) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
     
@@ -445,9 +537,9 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    dprint(DT_REFCOUNT_REMS, "REMOVE-REF %s -> %lld\n", x->to_string(), (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %s -> %lld\n", x->to_string(), (x)->reference_count - 1);
 #else
-    dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
 #endif
     (x)->reference_count--;
     
@@ -456,7 +548,7 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("remove_ref");
-        dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
     
@@ -482,9 +574,9 @@ inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x, long in
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %s -> %lld\n", x->to_string(), (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %s -> %lld\n", x->to_string(), (x)->reference_count - 1);
 #else
-    dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF UNNECESSARY %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF UNNECESSARY %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
 #endif
     
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -492,7 +584,7 @@ inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x, long in
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("remove_ref");
-        dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
     (x)->reference_count--;

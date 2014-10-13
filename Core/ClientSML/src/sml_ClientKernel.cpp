@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /////////////////////////////////////////////////////////////////
 // Kernel class
@@ -111,8 +111,8 @@ static void InitSoarHandler(smlAgentEventId /*id*/, void* /*pUserData*/, Agent* 
 }
 
 /*************************************************************
-* @brief Called when an init-soar event happens so we know
-*        to refresh the input/output links.
+* @brief Called when a dynamically linked library is called
+*    so we can load it into memory and initialize it.
 *************************************************************/
 static std::string LoadLibraryHandler(smlStringEventId /*id*/, void* /*pUserData*/, Kernel* pKernel, char const* pString)
 {
@@ -2268,9 +2268,9 @@ bool Kernel::UnregisterForSystemEvent(int callbackID)
     TestSystemCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlSystemEventId id = m_SystemEventMap.findFirstKeyByTest(&test, (smlSystemEventId) - 1) ;
+    smlSystemEventId id = m_SystemEventMap.findFirstKeyByTest(&test, smlSYSTEM_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlSYSTEM_EVENT_BAD)
     {
         return false ;
     }
@@ -2297,9 +2297,9 @@ bool Kernel::UnregisterForStringEvent(int callbackID)
     TestStringCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlStringEventId id = m_StringEventMap.findFirstKeyByTest(&test, (smlStringEventId) - 1) ;
+    smlStringEventId id = m_StringEventMap.findFirstKeyByTest(&test, smlSTRING_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlSTRING_EVENT_BAD)
     {
         return false ;
     }
@@ -2326,9 +2326,9 @@ bool Kernel::UnregisterForUpdateEvent(int callbackID)
     TestUpdateCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlUpdateEventId id = m_UpdateEventMap.findFirstKeyByTest(&test, (smlUpdateEventId) - 1) ;
+    smlUpdateEventId id = m_UpdateEventMap.findFirstKeyByTest(&test, smlUPDATE_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlUPDATE_EVENT_BAD)
     {
         return false ;
     }
@@ -2354,9 +2354,9 @@ bool Kernel::UnregisterForAgentEvent(int callbackID)
     TestAgentCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlAgentEventId id = m_AgentEventMap.findFirstKeyByTest(&test, (smlAgentEventId) - 1) ;
+    smlAgentEventId id = m_AgentEventMap.findFirstKeyByTest(&test, smlAGENT_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlAGENT_EVENT_BAD)
     {
         return false ;
     }
@@ -2549,4 +2549,36 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     }
     
     return resultString;
+}
+
+void Kernel::SendSVSInput(const char* agentName, const std::string& txt)
+{
+    AnalyzeXML response;
+    GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SVSInput, agentName, sml_Names::kParamLine, txt.c_str());
+}
+
+std::string Kernel::GetSVSOutput(const char* agentName)
+{
+    AnalyzeXML response;
+    if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SVSOutput, agentName, sml_Names::kParamLine, NULL))
+    {
+        return response.GetResultString();
+    }
+    else
+    {
+        return "";
+    }
+}
+
+std::string Kernel::SVSQuery(const char* agentName, const std::string& q)
+{
+    AnalyzeXML response;
+    if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SVSQuery, agentName, sml_Names::kParamLine, q.c_str()))
+    {
+        return response.GetResultString();
+    }
+    else
+    {
+        return "";
+    }
 }

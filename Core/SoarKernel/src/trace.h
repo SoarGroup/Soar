@@ -54,9 +54,7 @@ extern bool add_trace_format(agent* thisAgent, bool stack_trace, int type_restri
 extern bool remove_trace_format(agent* thisAgent, bool stack_trace, int type_restriction,
                                 Symbol* name_restriction);
 extern void print_all_trace_formats(agent* thisAgent, bool stack_trace);
-
 extern void print_all_trace_formats_tcl(bool stack_trace);
-
 extern void print_object_trace(agent* thisAgent, Symbol* object);
 extern void print_stack_trace(agent* thisAgent, Symbol* object, Symbol* state, int slot_type,
                               bool allow_cycle_counts);
@@ -64,4 +62,3 @@ extern void print_stack_trace(agent* thisAgent, Symbol* object, Symbol* state, i
 extern char* help_on_trace_format_escapes[];
 
 #endif
-

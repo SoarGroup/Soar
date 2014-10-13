@@ -8,9 +8,10 @@
 #ifndef SOARINSTANCE_H_
 #define SOARINSTANCE_H_
 
-#include <portability.h>
+#include "portability.h"
 #include <map>
 #include "Export.h"
+#include "enums.h"
 
 namespace sml
 {
@@ -19,6 +20,7 @@ namespace sml
 }
 
 class Output_Manager;
+typedef struct agent_struct agent;
 
 typedef void* (*MessageFunction)(const char* pMessage, void* pMessageData);
 typedef struct Soar_Loaded_Library_struct
@@ -31,7 +33,6 @@ typedef struct Soar_Loaded_Library_struct
  *    to the AgentSML structure. (Does this mean we require
  *    that CLI modules are only used within embedded kernels?)
  *     -- */
-typedef struct agent_struct agent;
 
 typedef struct Agent_Info_Struct
 {
@@ -90,6 +91,9 @@ class EXPORT Soar_Instance
         
         void CLI_Debug_Print(const char* text);
         
+        chunkNameFormats Get_Chunk_Name_Format() {return chunkNameFormat;};
+        void Set_Chunk_Name_Format(chunkNameFormats pChunkNameFormat) {chunkNameFormat = pChunkNameFormat;};
+        
     private:
     
         Soar_Instance();
@@ -105,6 +109,7 @@ class EXPORT Soar_Instance
         std::map< char*, Agent_Info*, cmp_str>* m_agent_table;
         std::map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;
         
+        chunkNameFormats chunkNameFormat;
         Agent_Info* Get_Agent_Info(char* pAgentName);
         void Print_Agent_Table();
         

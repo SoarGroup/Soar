@@ -10,20 +10,24 @@
 #ifndef INIT_SOAR_H
 #define INIT_SOAR_H
 
-
 typedef signed short goal_stack_level;
 typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;
 
 extern void set_sysparam(agent* thisAgent, int param_number, int64_t new_value);
+
 extern void reset_statistics(agent* thisAgent);
 extern void setup_signal_handling(void);
+
 
 /* ---------------------------------------------------------------------
                             Exiting Soar
 
    Exit_soar() and abort_with_fatal_error() both terminate Soar, closing
-   the log file before exiting.
+   the log file before exiting.  Abort_with_fatal_error() also prints
+   an error message before exiting.  Just_before_exit_soar() calls the
+   Soar cleanup functions but does not actually exit.  This is useful
+   for interfaces that do their own exiting.
 --------------------------------------------------------------------- */
 
 extern void abort_with_fatal_error(agent* thisAgent, const char*);

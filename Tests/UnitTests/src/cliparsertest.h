@@ -25,10 +25,6 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoBreak(const char& mode, const std::string& production)
-        {
-            return false;
-        }
         virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0)
         {
             return false;
@@ -37,7 +33,7 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0)
+        virtual bool DoChunkNameFormat(const chunkNameFormats* chunkNameFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0)
         {
             return false;
         }
@@ -174,6 +170,10 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoOSupportMode(int mode = -1)
+        {
+            return false;
+        }
+        virtual bool DoPbreak(const char& mode, const std::string& production)
         {
             return false;
         }
@@ -318,6 +318,10 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoWMA(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0)
+        {
+            return false;
+        }
+        virtual bool DoSVS(const std::vector<std::string>& args)
         {
             return false;
         }

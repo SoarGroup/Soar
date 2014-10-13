@@ -36,9 +36,10 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     int numArgs = 0;
     std::ostringstream tempString;
     std::string err, sub_command;
-    
+
     if (!argv)
     {
+        Output_Manager *l_OutputManager = &Output_Manager::Get_OM();
         PrintCLIMessage_Header("Debug", 40);
         PrintCLIMessage_Section("Settings", 40);
         PrintCLIMessage_Item("epmem:", thisAgent->debug_params->epmem_commands, 40);
@@ -46,35 +47,35 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
         PrintCLIMessage_Item("sql:", thisAgent->debug_params->sql_commands, 40);
         PrintCLIMessage_Item("use_new_chunking:", thisAgent->debug_params->use_new_chunking, 40);
         PrintCLIMessage_Section("Debug Database Storage", 40);
-        PrintCLIMessage_Item("database:", m_OutputManager->m_params->database, 40);
-        PrintCLIMessage_Item("append-database:", m_OutputManager->m_params->append_db, 40);
-        PrintCLIMessage_Item("path:", m_OutputManager->m_params->path, 40);
+        PrintCLIMessage_Item("database:", l_OutputManager->m_params->database, 40);
+        PrintCLIMessage_Item("append-database:", l_OutputManager->m_params->append_db, 40);
+        PrintCLIMessage_Item("path:", l_OutputManager->m_params->path, 40);
         PrintCLIMessage_Section("Performance", 40);
-        PrintCLIMessage_Item("lazy-commit:", m_OutputManager->m_params->lazy_commit, 40);
-        PrintCLIMessage_Item("page-size:", m_OutputManager->m_params->page_size, 40);
-        PrintCLIMessage_Item("cache-size:", m_OutputManager->m_params->cache_size, 40);
-        PrintCLIMessage_Item("optimization:", m_OutputManager->m_params->opt, 40);
+        PrintCLIMessage_Item("lazy-commit:", l_OutputManager->m_params->lazy_commit, 40);
+        PrintCLIMessage_Item("page-size:", l_OutputManager->m_params->page_size, 40);
+        PrintCLIMessage_Item("cache-size:", l_OutputManager->m_params->cache_size, 40);
+        PrintCLIMessage_Item("optimization:", l_OutputManager->m_params->opt, 40);
         PrintCLIMessage_Section("Trace Output", 40);
-        PrintCLIMessage_Item("db_mode:", m_OutputManager->m_params->db_mode, 40);
-        PrintCLIMessage_Item("XML_mode:", m_OutputManager->m_params->XML_mode, 40);
-        PrintCLIMessage_Item("callback_mode:", m_OutputManager->m_params->callback_mode, 40);
-        PrintCLIMessage_Item("stdout_mode:", m_OutputManager->m_params->stdout_mode, 40);
-        PrintCLIMessage_Item("file_mode:", m_OutputManager->m_params->file_mode, 40);
+        PrintCLIMessage_Item("db_mode:", l_OutputManager->m_params->db_mode, 40);
+        PrintCLIMessage_Item("XML_mode:", l_OutputManager->m_params->XML_mode, 40);
+        PrintCLIMessage_Item("callback_mode:", l_OutputManager->m_params->callback_mode, 40);
+        PrintCLIMessage_Item("stdout_mode:", l_OutputManager->m_params->stdout_mode, 40);
+        PrintCLIMessage_Item("file_mode:", l_OutputManager->m_params->file_mode, 40);
         PrintCLIMessage_Section("Debug Output", 40);
-        PrintCLIMessage_Item("db_dbg_mode:", m_OutputManager->m_params->db_dbg_mode, 40);
-        PrintCLIMessage_Item("XML_dbg_mode:", m_OutputManager->m_params->XML_dbg_mode, 40);
-        PrintCLIMessage_Item("callback_dbg_mode:", m_OutputManager->m_params->callback_dbg_mode, 40);
-        PrintCLIMessage_Item("stdout_dbg_mode:", m_OutputManager->m_params->stdout_dbg_mode, 40);
-        PrintCLIMessage_Item("file_dbg_mode:", m_OutputManager->m_params->file_dbg_mode, 40);
+        PrintCLIMessage_Item("db_dbg_mode:", l_OutputManager->m_params->db_dbg_mode, 40);
+        PrintCLIMessage_Item("XML_dbg_mode:", l_OutputManager->m_params->XML_dbg_mode, 40);
+        PrintCLIMessage_Item("callback_dbg_mode:", l_OutputManager->m_params->callback_dbg_mode, 40);
+        PrintCLIMessage_Item("stdout_dbg_mode:", l_OutputManager->m_params->stdout_dbg_mode, 40);
+        PrintCLIMessage_Item("file_dbg_mode:", l_OutputManager->m_params->file_dbg_mode, 40);
         PrintCLIMessage("");
-        
+
         result = true;
         goto print_syntax;
     }
-    
+
     numArgs = argv->size() - 1;
     sub_command = argv->front();
-    
+
     if (numArgs == 1)
     {
         if (sub_command[0] == 'g')
@@ -117,7 +118,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
         {
             std::string parameter_name = argv->at(1);
             std::string parameter_value = argv->at(2);
-            
+
             soar_module::param* my_param = thisAgent->debug_params->get(parameter_name.c_str());
             if (!my_param)
             {
@@ -133,9 +134,9 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
                 SetError(tempString.str().c_str());
                 goto print_syntax;
             }
-            
+
             bool result = my_param->set_string(parameter_value.c_str());
-            
+
             if (!result)
             {
                 SetError("Debug| Could not set parameter!");
@@ -175,7 +176,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             SetError(tempString.str().c_str());
             goto print_syntax;
         }
-        
+
         return result;
     }
     else if (numArgs == 0)
@@ -191,14 +192,14 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             SetError(tempString.str().c_str());
             goto print_syntax;
         }
-        
+
         return result;
     }
-    
+
     tempString.str("");
     tempString << "Debug| Invalid number of parameters (" << numArgs << ") to command " << sub_command << ".";
     SetError(tempString.str().c_str());
-    
+
 print_syntax:
 
     PrintCLIMessage("\nSyntax: Debug [init|dberr]");
@@ -239,8 +240,8 @@ void CommandLineInterface::Run_DC(agent* thisAgent, int run_count)
         {'u', "update",            cli::OPTARG_NONE},
         {0, 0, cli::OPTARG_NONE}
     };
-    
+
     cli::Cli::RunBitset options(0);
     DoRun(options, run_count, cli::Cli::RUN_INTERLEAVE_DEFAULT);
-    
+
 }

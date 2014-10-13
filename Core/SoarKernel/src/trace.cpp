@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -11,14 +11,12 @@
  *
  * =======================================================================
  *
- *                   Trace Format Routines for Soar 6
+ *                   Trace Format Routines
  *
  * This file contains definitions and routines for dealing with the trace
  * formats used by Soar 6.  Trace format are specified by the user as
  * strings (with % escape sequences in them).  At entry time, Soar 6
  * parses these strings into trace_format structures.
- *
- * see soarkernel.h for more comments.
  *
  * =======================================================================
  */
@@ -34,12 +32,11 @@
 #include "agent.h"
 #include "print.h"
 #include "init_soar.h"
-
+#include "decide.h"
 #include "tempmem.h"
 #include "wmem.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
-#include "decide.h"
 
 #include <ctype.h>
 
@@ -673,13 +670,13 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
             }
             break;
             case PERCENT_TFT:
-                print(thisAgent,  "%%");
+                print_string(thisAgent, "%%");
                 break;
             case L_BRACKET_TFT:
-                print(thisAgent,  "%[");
+                print_string(thisAgent, "%[");
                 break;
             case R_BRACKET_TFT:
-                print(thisAgent,  "%]");
+                print_string(thisAgent, "%]");
                 break;
                 
             case VALUES_TFT:
@@ -688,87 +685,87 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
             case ATTS_AND_VALUES_RECURSIVELY_TFT:
                 if (tf->type == VALUES_TFT)
                 {
-                    print(thisAgent,  "%v[");
+                    print_string(thisAgent, "%v[");
                 }
                 else if (tf->type == VALUES_RECURSIVELY_TFT)
                 {
-                    print(thisAgent,  "%o[");
+                    print_string(thisAgent, "%o[");
                 }
                 else if (tf->type == ATTS_AND_VALUES_TFT)
                 {
-                    print(thisAgent,  "%av[");
+                    print_string(thisAgent, "%av[");
                 }
                 else
                 {
-                    print(thisAgent,  "%ao[");
+                    print_string(thisAgent, "%ao[");
                 }
                 if (tf->data.attribute_path)
                 {
                     for (c = tf->data.attribute_path; c != NIL; c = c->rest)
                     {
-                        print(thisAgent,  static_cast<Symbol*>(c->first)->sc->name);
+                        print_string(thisAgent, static_cast<Symbol*>(c->first)->sc->name);
                         if (c->rest)
                         {
-                            print(thisAgent,  ".");
+                            print_string(thisAgent, ".");
                         }
                     }
                 }
                 else
                 {
-                    print(thisAgent,  "*");
+                    print_string(thisAgent, "*");
                 }
-                print(thisAgent,  "]");
+                print_string(thisAgent, "]");
                 break;
                 
             case CURRENT_STATE_TFT:
-                print(thisAgent,  "%cs");
+                print_string(thisAgent, "%cs");
                 break;
             case CURRENT_OPERATOR_TFT:
-                print(thisAgent,  "%co");
+                print_string(thisAgent, "%co");
                 break;
             case DECISION_CYCLE_COUNT_TFT:
-                print(thisAgent,  "%dc");
+                print_string(thisAgent, "%dc");
                 break;
             case ELABORATION_CYCLE_COUNT_TFT:
-                print(thisAgent,  "%ec");
+                print_string(thisAgent, "%ec");
                 break;
             case IDENTIFIER_TFT:
-                print(thisAgent,  "%id");
+                print_string(thisAgent, "%id");
                 break;
                 
             case IF_ALL_DEFINED_TFT:
-                print(thisAgent,  "%ifdef[");
+                print_string(thisAgent, "%ifdef[");
                 print_trace_format_list(thisAgent, tf->data.subformat);
-                print(thisAgent,  "]");
+                print_string(thisAgent, "]");
                 break;
                 
             case LEFT_JUSTIFY_TFT:
             case RIGHT_JUSTIFY_TFT:
                 if (tf->type == LEFT_JUSTIFY_TFT)
                 {
-                    print(thisAgent,  "%left[");
+                    print_string(thisAgent, "%left[");
                 }
                 else
                 {
-                    print(thisAgent,  "%right[");
+                    print_string(thisAgent, "%right[");
                 }
                 print(thisAgent,  "%d,", tf->num);
                 print_trace_format_list(thisAgent, tf->data.subformat);
-                print(thisAgent,  "]");
+                print_string(thisAgent, "]");
                 break;
                 
             case SUBGOAL_DEPTH_TFT:
-                print(thisAgent,  "%sd");
+                print_string(thisAgent, "%sd");
                 break;
                 
             case REPEAT_SUBGOAL_DEPTH_TFT:
-                print(thisAgent,  "%rsd[");
+                print_string(thisAgent, "%rsd[");
                 print_trace_format_list(thisAgent, tf->data.subformat);
-                print(thisAgent,  "]");
+                print_string(thisAgent, "]");
                 break;
                 
             case NEWLINE_TFT:
-                print(thisAgent,  "%nl");
+                print_string(thisAgent, "%nl");
                 break;
                 
             default:
@@ -807,7 +804,7 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
    a "stack_trace" argument, which should be true if the stack trace
    format is intended, or false if the object trace format is intended.
    Their "type_restriction" argument should be one of FOR_ANYTHING_TF,
-   ..., FOR_OPERATORS_TF (see soarkernel.h).  The "name_restriction"
+   ..., FOR_OPERATORS_TF .  The "name_restriction"
    argument should be either a pointer to a symbol, if the trace format
    is restricted to apply to objects with that name, or NIL if the format
    can apply to any object.
@@ -1013,19 +1010,18 @@ void print_tracing_rule(agent* thisAgent, int type_restriction, Symbol* name_res
 {
     if (thisAgent->printing_stack_traces)
     {
-        print(thisAgent,  "stack-trace-format");
+        print_string(thisAgent, "stack-trace-format");
     }
     else
     {
-        print(thisAgent,  "object-trace-format");
+        print_string(thisAgent, "object-trace-format");
     }
-    
     print(thisAgent,  " :add %c ", tracing_object_letters[type_restriction]);
     if (name_restriction)
     {
         print_with_symbols(thisAgent, "%y ", name_restriction);
     }
-    print(thisAgent,  "\"");
+    print_string(thisAgent, "\"");
     print_trace_format_list(thisAgent, format);
     print(thisAgent,  "\"\n");
 }
@@ -1038,10 +1034,11 @@ void print_tracing_rule_tcl(agent* thisAgent, int type_restriction, Symbol* name
     {
         print_with_symbols(thisAgent, "%y ", name_restriction);
     }
-    print(thisAgent,  "{");
+    print_string(thisAgent, "{");
     print_trace_format_list(thisAgent, format);
     print(thisAgent,  "}\n");
 }
+
 
 bool print_trace_callback_fn(agent* thisAgent, void* item, void*)
 {
@@ -1119,7 +1116,6 @@ void print_all_trace_formats_tcl(agent* thisAgent, bool stack_trace, FILE* f)
         }
     }
 }
-
 
 inline void set_print_trace_formats(agent* thisAgent)
 {
@@ -1741,7 +1737,7 @@ void print_object_trace(agent* thisAgent, Symbol* object)
     
     thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
     gs = object_to_trace_string(thisAgent, object);
-    print(thisAgent,  text_of_growable_string(gs));
+    print_string(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
 }
 
@@ -1786,6 +1782,14 @@ void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int 
         case FOR_OPERATORS_TF:
             //create XML trace for operator object
             xml_begin_tag(thisAgent, kTagOperator);
+            /* -- Prior to Soar 9.4, the following line printed (object->id.level - 1)
+             *    instead of (state->id->level - 1).  This was causing the
+             *    unit test to fail.  Changing it to state seems to make sense in this
+             *    context, since the level of the state should also be the level of the
+             *    operator.  (Could be wrong about this.)
+             *    Leaving this comment because it's possible that the real problem is
+             *    that the level of the operator isn't being set somewhere else to
+             *    the proper value. - MMA 9-2014*/
             xml_att_val(thisAgent, kState_StackLevel, state->id->level - 1);
             xml_att_val(thisAgent, kOperator_DecisionCycleCt, thisAgent->d_cycle_count);
             
@@ -1832,7 +1836,7 @@ void print_stack_trace(agent* thisAgent, Symbol* object, Symbol* state, int slot
     
     thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
     gs = selection_to_trace_string(thisAgent, object, state, slot_type, allow_cycle_counts);
-    print(thisAgent,  text_of_growable_string(gs));
+    print_string(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
     
     // RPM 5/05
@@ -1865,12 +1869,9 @@ void print_object_trace_using_provided_format_string(agent* thisAgent,
     
     tparams = saved_tparams;
     
-    if (thisAgent->printer_output_column != 1)
-    {
-        print(thisAgent,  "\n");
-    }
+    start_fresh_line(thisAgent);
     
-    print(thisAgent,  text_of_growable_string(gs));
+    print_string(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
 }
 /* kjh(B1) end */

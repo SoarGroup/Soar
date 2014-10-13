@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /////////////////////////////////////////////////////////////////
 // OSspecific class
@@ -53,7 +53,7 @@ public:
 //   HANDLE mutex;
 //
 //public:
-//	WindowsMutex()			{ mutex = CreateMutex(NULL, false, NULL); }
+//	WindowsMutex()			{ mutex = CreateMutex(NULL, FALSE, NULL); }
 //	virtual ~WindowsMutex() { CloseHandle(mutex); }
 //	void Lock()				{ WaitForSingleObject(mutex, INFINITE); }
 //	void Unlock()			{ ReleaseMutex(mutex) ; }
@@ -71,7 +71,7 @@ protected:
 	HANDLE m_Event ;
 
 public:
-	WindowsEvent()					{ m_Event = CreateEvent(NULL, false, false, NULL); }
+	WindowsEvent()					{ m_Event = CreateEvent(NULL, FALSE, FALSE, NULL); }
 	virtual ~WindowsEvent()			{ CloseHandle(m_Event) ; }
 	void WaitForEventForever()		{ WaitForSingleObject(m_Event, INFINITE); }
 	//The timeout is seconds + milliseconds, where milliseconds < 1000
@@ -106,6 +106,8 @@ static void* LinuxThreadFunc(void* thread_args) {
     delete threadArgs;
 	return 0;	
 }
+//#include <string>
+//#include <iostream>
 
 void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
 {
@@ -121,6 +123,13 @@ void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
 
     pthread_create(&t,&attr,LinuxThreadFunc,threadArgs);
 
+/*    static char mtid='a';
+    std::string new_name("SoarThread-");
+    new_name += mtid;
+    mtid++;
+    std::cout << "BeginThread creating thread named " << new_name << std::endl;
+    pthread_setname_np(new_name.c_str());
+*/
     pthread_attr_destroy(&attr);
 }
 

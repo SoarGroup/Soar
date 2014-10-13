@@ -59,6 +59,13 @@ enum TraceMode
     num_trace_modes
 };
 
+enum chunkNameFormats
+{
+    numberedFormat,
+    longFormat,
+    ruleFormat
+};
+
 enum MessageType
 {
     debug_msg,
@@ -178,6 +185,22 @@ inline bool preference_is_binary(byte p)
 {
     return (p > 8);
 }
+
+extern const char* preference_name[NUM_PREFERENCE_TYPES];
+
+
+/* --- types of conditions --- */
+#define POSITIVE_CONDITION 0
+#define NEGATIVE_CONDITION 1
+#define CONJUNCTIVE_NEGATION_CONDITION 2
+
+#define UNDECLARED_SUPPORT 0
+#define DECLARED_O_SUPPORT 1
+#define DECLARED_I_SUPPORT 2
+
+#define PE_PRODS 0
+#define IE_PRODS 1
+#define NO_SAVED_PRODS -1
 
 /* ------------------------------------------------------------------------
 

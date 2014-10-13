@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /////////////////////////////////////////////////////////////////
 // Agent class
@@ -545,9 +545,9 @@ bool Agent::UnregisterForRunEvent(int callbackID)
     TestRunCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlRunEventId id = m_RunEventMap.findFirstKeyByTest(&test, (smlRunEventId) - 1) ;
+    smlRunEventId id = m_RunEventMap.findFirstKeyByTest(&test, smlRUN_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlRUN_EVENT_BAD)
     {
         return false ;
     }
@@ -607,9 +607,9 @@ bool Agent::UnregisterForOutputNotification(int callbackID)
     TestOutputNotificationCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlWorkingMemoryEventId id = m_OutputNotificationMap.findFirstKeyByTest(&test, (smlWorkingMemoryEventId) - 1) ;
+    smlWorkingMemoryEventId id = m_OutputNotificationMap.findFirstKeyByTest(&test, smlWORKING_MEMORY_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlWORKING_MEMORY_EVENT_BAD)
     {
         return false ;
     }
@@ -737,9 +737,9 @@ bool Agent::UnregisterForProductionEvent(int callbackID)
     TestProductionCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlProductionEventId id = m_ProductionEventMap.findFirstKeyByTest(&test, (smlProductionEventId) - 1) ;
+    smlProductionEventId id = m_ProductionEventMap.findFirstKeyByTest(&test, smlPRODUCTION_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlPRODUCTION_EVENT_BAD)
     {
         return false ;
     }
@@ -793,9 +793,9 @@ bool Agent::UnregisterForPrintEvent(int callbackID)
     TestPrintCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlPrintEventId id = m_PrintEventMap.findFirstKeyByTest(&test, (smlPrintEventId) - 1) ;
+    smlPrintEventId id = m_PrintEventMap.findFirstKeyByTest(&test, smlPRINT_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlPRINT_EVENT_BAD)
     {
         return false ;
     }
@@ -931,9 +931,9 @@ bool Agent::UnregisterForXMLEvent(int callbackID)
     TestXMLCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlXMLEventId id = m_XMLEventMap.findFirstKeyByTest(&test, (smlXMLEventId) - 1) ;
+    smlXMLEventId id = m_XMLEventMap.findFirstKeyByTest(&test, smlXML_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlXML_EVENT_BAD)
     {
         return false ;
     }
@@ -1580,4 +1580,19 @@ char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
         }
     }
     return pClientIdentifier;
+}
+
+void Agent::SendSVSInput(const std::string& txt)
+{
+    GetKernel()->SendSVSInput(GetAgentName(), txt);
+}
+
+std::string Agent::SVSQuery(const std::string& q)
+{
+    return GetKernel()->SVSQuery(GetAgentName(), q);
+}
+
+std::string Agent::GetSVSOutput()
+{
+    return GetKernel()->GetSVSOutput(GetAgentName());
 }

@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <portability.h>
+#include "portability.h"
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
@@ -28,13 +28,13 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoBreak(const char& mode, const std::string& production)
+bool CommandLineInterface::DoPbreak(const char& mode, const std::string& production)
 {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
     
     if (mode == 's' || mode == 'c')
     {
-        Symbol* sym = find_str_constant(agnt, production.c_str());
+        Symbol* sym = find_str_constant(thisAgent, production.c_str());
         rete_node* prod = (sym && sym->sc->production) ? sym->sc->production->p_node : 0;
         
         if (!prod)
@@ -59,7 +59,7 @@ bool CommandLineInterface::DoBreak(const char& mode, const std::string& producti
         
         for (int i = 0; i != NUM_PRODUCTION_TYPES; ++i)
         {
-            for (struct production_struct* prod = agnt->all_productions_of_type[i]; prod; prod = prod->next)
+            for (struct production_struct* prod = thisAgent->all_productions_of_type[i]; prod; prod = prod->next)
             {
                 if (prod->interrupt_break)
                 {

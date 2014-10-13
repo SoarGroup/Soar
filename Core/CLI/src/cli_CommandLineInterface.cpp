@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 #include "cli_CommandLineInterface.h"
 #include "sml_Utils.h"
@@ -19,7 +19,6 @@
 #include "sml_AgentSML.h"
 #include "XMLTrace.h"
 #include "KernelHeaders.h"
-#include "output_manager.h"
 
 #include "agent.h"
 #include "xml.h"
@@ -36,13 +35,11 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_VarPrint        = false;
     m_GPMax           = 20000;
     m_XMLResult       = new XMLTrace() ;
-    m_OutputManager   = &Output_Manager::Get_OM();
     
     // parser takes ownership and deletes commands in its destructor
     m_Parser.AddCommand(new cli::AddWMECommand(*this));
     m_Parser.AddCommand(new cli::AliasCommand(*this));
     m_Parser.AddCommand(new cli::AllocateCommand(*this));
-    m_Parser.AddCommand(new cli::BreakCommand(*this));
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkNameFormatCommand(*this));
@@ -80,6 +77,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
     m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
     m_Parser.AddCommand(new cli::OSupportModeCommand(*this));
+    m_Parser.AddCommand(new cli::PbreakCommand(*this));
     m_Parser.AddCommand(new cli::PopDCommand(*this));
     m_Parser.AddCommand(new cli::PortCommand(*this));
     m_Parser.AddCommand(new cli::PredictCommand(*this));
@@ -115,6 +113,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::WatchCommand(*this));
     m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
     m_Parser.AddCommand(new cli::WMACommand(*this));
+    m_Parser.AddCommand(new cli::SVSCommand(*this));
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface()
@@ -670,8 +669,7 @@ void get_context_var_info(agent* thisAgent, Symbol** dest_goal,
                           Symbol** dest_attr_of_slot,
                           Symbol** dest_current_value)
 {
-    Symbol* g;
-    Symbol* v;
+    Symbol* v, *g;
     int levels_up;
     wme* w;
     
@@ -833,8 +831,6 @@ void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme)
         determine_type_of_constituent_string(thisAgent);
     }
 }
-
-
 
 Symbol* read_identifier_or_context_variable(agent* thisAgent)
 {

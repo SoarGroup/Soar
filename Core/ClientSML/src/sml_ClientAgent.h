@@ -817,6 +817,10 @@ namespace sml
             *************************************************************/
             bool ExecuteCommandLineXML(char const* pCommandLine, ClientAnalyzedXML* pResponse) ;
             
+            void        SendSVSInput(const std::string& txt);
+            std::string GetSVSOutput();
+            std::string SVSQuery(const std::string& q);
+            
             /*************************************************************
             * @brief Get last command line result
             *

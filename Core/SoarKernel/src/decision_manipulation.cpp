@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -18,9 +18,10 @@
 
 #include "agent.h"
 #include "soar_rand.h"
-#include "prefmem.h"
+
 #include "decide.h"
 #include "misc.h"
+#include "prefmem.h"
 
 /***************************************************************************
  * Function     : select_init

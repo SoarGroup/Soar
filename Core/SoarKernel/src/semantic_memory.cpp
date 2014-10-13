@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -15,7 +15,6 @@
  */
 
 #include "semantic_memory.h"
-
 #include "agent.h"
 #include "prefmem.h"
 #include "symtab.h"
@@ -2861,6 +2860,23 @@ void smem_close(agent* thisAgent)
     }
 }
 
+void smem_reinit_cmd(agent* thisAgent)
+{
+    smem_close(thisAgent);
+//    smem_init_db(thisAgent);
+}
+
+void smem_reinit(agent* thisAgent)
+{
+    if (thisAgent->smem_db->get_status() == soar_module::connected)
+    {
+        if (thisAgent->smem_params->append_db->get_value() == off)
+        {
+            smem_close(thisAgent);
+            smem_init_db(thisAgent);
+        }
+    }
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

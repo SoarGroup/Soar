@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
 /*************************************************************************
@@ -11,12 +11,13 @@
  *  file:  decide.cpp
  *
  * =======================================================================
- *  Decider and  Associated Routines for Soar 6
+ *  Decider and Associated Routines
  *
  *  This file contains the decider as well as routine for managing
  *  slots, and the garbage collection of disconnected WMEs.
  * =======================================================================
  */
+
 
 #include "decide.h"
 
@@ -44,11 +45,12 @@
 #include "decision_manipulation.h"
 #include "wma.h"
 #include "misc.h"
-#include "test.h"
-#include "debug.h"
 
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#include "svs_interface.h"
+#include "test.h"
+#include "debug.h"
 
 #include "assert.h"
 
@@ -651,7 +653,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         ids_to_walk.pop_back();
         
         /* --- if id is already marked, do nothing --- */
-        if (id->id->tc_num == thisAgent->mark_tc_number)
+        if (id->tc_num == thisAgent->mark_tc_number)
         {
             continue;
         }
@@ -664,7 +666,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         }
         
         /* --- mark id, so we won't do it again later --- */
-        id->id->tc_num = thisAgent->mark_tc_number;
+        id->tc_num = thisAgent->mark_tc_number;
         
         /* --- update range of goal stack levels we'll need to walk --- */
         if (id->id->level < thisAgent->highest_level_anything_could_fall_from)
@@ -747,7 +749,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
 inline bool level_update_needed(agent* thisAgent, Symbol* sym)
 {
-    return ((sym->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (sym->id->tc_num != thisAgent->walk_tc_number));
+    return ((sym->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (sym->tc_num != thisAgent->walk_tc_number));
 }
 
 void walk_and_update_levels(agent* thisAgent, Symbol* root)
@@ -771,7 +773,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
         ids_to_walk.pop_back();
         
         /* --- mark id so we don't walk it twice --- */
-        id->id->tc_num = thisAgent->walk_tc_number;
+        id->tc_num = thisAgent->walk_tc_number;
         
         /* --- if we already know its level, and it's higher up, then exit --- */
         if ((! id->id->unknown_level) && (id->id->level < thisAgent->walk_level))
@@ -942,7 +944,7 @@ void do_buffered_link_changes(agent* thisAgent)
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-    soar_process_timer local_timer;
+    soar_timer local_timer;
     local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
 #endif
 #endif
@@ -1066,12 +1068,12 @@ void build_rl_trace(agent* const& thisAgent, preference* const& candidates, pref
         {
             const production* const& prod = cand->inst->prod;
             
-//       std::cerr << "rl-trace: " << cand->inst->prod->name->sc.name << std::endl;
+//       std::cerr << "rl-trace: " << cand->inst->prod->name->sc->name << std::endl;
 
-//       for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+//       for(preference *pref = cand->inst->match_goal->id->operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
 //         production * const &prod2 = pref->inst->prod;
 //         if(cand->value == pref->value && prod2->rl_rule) {
-//           std::cerr << "rl-trace: +" << prod2->name->sc.name << std::endl;
+//           std::cerr << "rl-trace: +" << prod2->name->sc->name << std::endl;
 //         }
 //       }
 
@@ -2381,7 +2383,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
             if (cand->value->decider_flag == ALREADY_EXISTING_WME_DECIDER_FLAG)
             {
                 /* REW: begin 11.22.97 */
-                /* thisAgent->OutputManager->print( "\n This WME was marked as already existing...."); print_wme(cand->value->decider_wme); */
+                /* print(thisAgent, "\n This WME was marked as already existing...."); print_wme(cand->value->decider_wme); */
                 
                 /* REW: end   11.22.97 */
                 cand->value->decider_wme->preference = cand;
@@ -2389,20 +2391,14 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
             else
             {
                 if (cand->o_supported && (cand->inst->match_goal_level != 1) &&
-                        !cand->inst->match_goal->id->gds && (cand->inst->match_goal_level != cand->id->id->level))
+                        (cand->inst->match_goal->id->gds == NIL) &&
+                        (cand->inst->match_goal_level != cand->id->id->level))
                 {
-#ifdef IGNORE_GDS_ERROR
-                    dprint_noprefix(DT_GDS, "\n");
-                    dprint(DT_GDS, "wme from duplicate production detected!  Skipping gds processing for newly made wme %s ^%s %s %s (id level = %d, mg level = %d)\n",
-                           cand->id->to_string(), cand->attr->to_string(), cand->value->to_string(),
-                           (cand->o_supported ? ":o-support" : ":i-support"),
-                           cand->id->id->level, cand->inst->match_goal_level);
-                    dprint(DT_GDS, "Generated from preference created by instantiation:\n");
-                    dprint_instantiation(DT_GDS, cand->inst, "           ");
+                    /* -- WME from duplicate production.  Skipping GDS processing for new wme.  This avoids
+                     *    creating a GDS for a WME level different from the instantiation level.  This
+                     *    solution seems to work well, but it's possible that there are subtle aspects
+                     *    of the GDS that aren't being appreciated.  See comments below. -- */
                     continue;
-#else
-                    abort_with_fatal_error(thisAgent, "**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n");
-#endif
                 }
                 else
                 {
@@ -2511,6 +2507,11 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         }
                         else
                         {
+                            /* -- Should not be able to get here any more with new clause checking for this
+                             *    cumulative state earlier. Leaving comment in case this solution doesn't
+                             *    prove to be sufficient and we need to do something more complex, as
+                             *    described in the previous comment by REW. -- */
+                            
                             // If this happens, we better be halted, see chunk.cpp:chunk_instantiation
                             // This can happen if a chunk can't be created, because then the match level
                             // of the preference instantiation can map back to the original matching
@@ -2518,39 +2519,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                             // Normally, there would be a chunk or justification firing at the higher
                             // goal with a match level equal to the id level.
                             // See more comments in chunk_instantiation.
-                            
-                            if (!thisAgent->system_halted)
-                            {
-                                /* Should not be able to get here any more with new clause checking for this
-                                 * cumulative state earlier. */
-                                assert(false);
-                                /* MToDo | This is disabled for now.  When we have duplicate chunks, this
-                                 *         part of the code is causing Soar to halt.  Perhaps the assumption
-                                 *         about the chunk appearing first in the GDS list is being violated.
-                                 *         Until we have time to figure out, disabling.  Above seems to imply
-                                 *         that the main negative repurcussion is a possible memory leak. */
-#ifdef IGNORE_GDS_ERROR
-                                dprint(DT_DEBUG, "**** Wanted to create a GDS for a WME level different from the instantiation level...SHOULD BE exiting....****\n");
-                                if (!thisAgent->system_halted)
-                                {
-                                    free_parent_list(thisAgent);
                                 }
-#ifndef NO_TIMING_STUFF
-#ifdef DETAILED_TIMING_STATS
-                                thisAgent->timers_gds.stop();
-                                thisAgent->timers_gds_cpu_time[thisAgent->current_phase].update(thisAgent->timers_gds);
-#endif
-#endif
-                                /* REW: end   11.25.96 */
-                                /* REW: end   09.15.96 */
-                                
-                                add_wme_to_wm(thisAgent, w);
-                                continue;
-#else
-                                abort_with_fatal_error(thisAgent, "**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n");
-#endif
-                            }
-                        }
                     } /* end if no GDS yet for goal... */
                     
                     /* Loop over all the preferences for this WME:
@@ -2570,7 +2539,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         for (pref = w->preference; pref != NIL; pref = pref->next)
                         {
 #ifdef DEBUG_GDS_HIGH
-                            thisAgent->out->print(thisAgent,  "\n\n   ");
+                            print(thisAgent, "\n\n   ");
                             print_preference(pref);
                             print(thisAgent,  "   Goal level of preference: %d\n",
                                   pref->id->id->level);
@@ -2893,6 +2862,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     symbol_remove_ref(thisAgent, goal->id->smem_header);
     free_with_pool(&(thisAgent->smem_info_pool), goal->id->smem_info);
     
+    thisAgent->svs->state_deletion_callback(goal);
     
     /* REW: BUG
      * Tentative assertions can exist for removed goals.  However, it looks
@@ -2938,7 +2908,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
         /* Creating a sub-goal (or substate) */
         id = create_new_impasse(thisAgent, true, thisAgent->bottom_goal,
                                 attr_of_impasse, impasse_type,
-                                static_cast<goal_stack_level>(thisAgent->bottom_goal->id->level + 1))->id;
+                                static_cast<goal_stack_level>(thisAgent->bottom_goal->id->level + 1));
         id->id->higher_goal = thisAgent->bottom_goal;
         thisAgent->bottom_goal->id->lower_goal = id;
         thisAgent->bottom_goal = id;
@@ -2965,7 +2935,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
         /* Creating the top state */
         id = create_new_impasse(thisAgent, true, thisAgent->nil_symbol,
                                 NIL, NONE_IMPASSE_TYPE,
-                                TOP_GOAL_LEVEL)->id;
+                                TOP_GOAL_LEVEL);
         thisAgent->top_goal = id;
         thisAgent->bottom_goal = id;
         thisAgent->top_state = thisAgent->top_goal;
@@ -3023,6 +2993,8 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     soar_invoke_callbacks(thisAgent,
                           CREATE_NEW_CONTEXT_CALLBACK,
                           static_cast<soar_call_data>(id));
+                          
+    thisAgent->svs->state_creation_callback(id);
 }
 
 /* ------------------------------------------------------------------
@@ -3533,7 +3505,7 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
 
     parent_inst* new_pi, *curr_pi;
     
-    /* thisAgent->OutputManager->print( "UNIQUE DLL:         scanning parent list...\n"); */
+    /* print(thisAgent, "UNIQUE DLL:         scanning parent list...\n"); */
     
     for (curr_pi = thisAgent->parent_list_head;
             curr_pi;
@@ -4105,7 +4077,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
         char msgbuf[256];
         memset(msgbuf, 0, 256);
         snprintf_with_symbols(thisAgent, msgbuf, 255, "Removing state %y because element in GDS changed. WME: ", w->gds->goal);
-        print(thisAgent,  msgbuf);
+        print_string(thisAgent, msgbuf);
         
         xml_begin_tag(thisAgent, soar_TraceNames::kTagVerbose);
         xml_att_val(thisAgent, soar_TraceNames::kTypeString, msgbuf);

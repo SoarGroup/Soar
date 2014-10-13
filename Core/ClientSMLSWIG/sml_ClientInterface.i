@@ -114,6 +114,7 @@
 #include "sml_ClientXML.h"
 #include "sml_ClientTraceXML.h"
 #include "sml_ClientAnalyzedXML.h"
+#include "soar_instance.h"
 %}
 
 //
@@ -140,6 +141,8 @@
 %include "sml_ClientXML.h"
 %include "sml_ClientTraceXML.h"
 %include "sml_ClientAnalyzedXML.h"
+%include "soar_instance.h"
+
 
 %{
 // Check for memory leaks

@@ -22,6 +22,7 @@
 // Forward declare so clients can use this
 struct ElementXML_InterfaceStruct;
 typedef ElementXML_InterfaceStruct* ElementXML_Handle ;
+class Soar_Instance;
 
 namespace sock
 {
@@ -338,6 +339,8 @@ namespace sml
             static Kernel* CreateKernelInNewThread(int portToListenOn = kDefaultSMLPort) ;
             
             int GetListenerPort();
+            
+            Soar_Instance* m_SoarInstance;
             
             /*************************************************************
             * @brief Creates a connection to a receiver that is in a different
@@ -983,6 +986,9 @@ namespace sml
             *************************************************************/
             static Kernel* CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn) ;
             
+            void        SendSVSInput(const char* agentName, const std::string& txt);
+            std::string GetSVSOutput(const char* agentName);
+            std::string SVSQuery(const char* agentName, const std::string& q);
     };
     
 }//closes namespace
