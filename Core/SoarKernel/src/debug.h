@@ -16,7 +16,7 @@
 
 ------------------------------------------------------------------ */
 
-#include <portability.h>
+#include "portability.h"
 
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H

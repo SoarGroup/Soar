@@ -12,7 +12,6 @@
 #ifndef SML_AGENT_SML_H
 #define SML_AGENT_SML_H
 
-//#include "sml_AgentListener.h"
 #include "sml_ProductionListener.h"
 #include "sml_RunListener.h"
 #include "sml_PrintListener.h"
@@ -24,7 +23,6 @@
 
 
 // Forward definitions for kernel
-typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 typedef struct cons_struct list;
 typedef struct wme_struct wme;

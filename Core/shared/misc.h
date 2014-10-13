@@ -43,7 +43,7 @@ inline void normalize_separators(std::string& path)
 template<class T> std::string& to_string(const T& x, std::string& dest, int precision = 16, bool floatfixed = false)
 {
     static std::ostringstream o;
-
+    
     // get value into stream
     if (floatfixed)
     {
@@ -53,7 +53,7 @@ template<class T> std::string& to_string(const T& x, std::string& dest, int prec
     {
         o << std::setprecision(precision) << x;
     }
-
+    
     dest.assign(o.str());
     o.str("");
     return dest;
@@ -221,9 +221,9 @@ struct Dangerous_Pointer_Cast
             Given_Type given;
             Goal_Type goal;
         } caster;
-
+        
         caster.given = given;
-
+        
         return caster.goal;
     }
 };
@@ -241,12 +241,12 @@ class soar_timer
         {
             raw_per_usec = get_raw_time_per_usec();
         }
-
+        
         void set_enabled(int64_t* new_enabled)
         {
             enabled_ptr = new_enabled;
         }
-
+        
         void start()
         {
             if ((!enabled_ptr) || (*enabled_ptr))
@@ -254,7 +254,7 @@ class soar_timer
                 t1 = get_raw_time();
             }
         }
-
+        
         void stop()
         {
             if ((!enabled_ptr) || (*enabled_ptr))
@@ -263,12 +263,12 @@ class soar_timer
                 elapsed = t2 - t1;
             }
         }
-
+        
         void reset()
         {
             t1 = elapsed = 0;
         }
-
+        
         uint64_t get_usec()
         {
             if ((!enabled_ptr) || (*enabled_ptr))
@@ -277,12 +277,12 @@ class soar_timer
             }
             return 0;
         }
-
+        
     private:
         uint64_t t1, elapsed;
         double raw_per_usec;
         int64_t* enabled_ptr;
-
+        
         soar_timer(const soar_timer&);
         soar_timer& operator=(const soar_timer&);
 };
@@ -293,34 +293,34 @@ class soar_timer_accumulator
 {
     private:
         uint64_t total;
-
+        
     public:
         soar_timer_accumulator() : total(0) {}
-
+        
         // Reset the accumulated time to zero.
         void reset()
         {
             total = 0;
         }
-
+        
         // Add the timer's last interval to the accumulated time.
         void update(soar_timer& timer)
         {
             total += timer.get_usec();
         }
-
+        
         // Return seconds as a double.
         double get_sec()
         {
             return total / 1000000.0;
         }
-
+        
         // Return microseconds.
         uint64_t get_usec()
         {
             return total;
         }
-
+        
         // Return milliseconds, truncated by integer division (not rounded).
         uint64_t get_msec()
         {

@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /////////////////////////////////////////////////////////////////
 // AgentSML class file.
@@ -22,6 +22,7 @@
 #include "KernelHeaders.h"
 #include "xml.h"
 #include "soar_rand.h"
+#include "soar_instance.h"
 
 #ifdef _DEBUG
 // Comment this in to debug init-soar and inputwme::update calls
@@ -43,7 +44,7 @@ AgentSML::AgentSML(KernelSML* pKernelSML, agent* pAgent)
     m_pAgentRunCallback->SetAgentSML(this) ;
     
     m_pCaptureFile = 0;
-    Soar_Instance::Get_Soar_Instance().Register_Soar_AgentSML(pAgent->name, this);
+    getSoarInstance()->Register_Soar_AgentSML(pAgent->name, this);
     
 }
 

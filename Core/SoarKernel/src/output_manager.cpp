@@ -30,7 +30,7 @@ AgentOutput_Info::AgentOutput_Info() :
     file_dbg_mode(OM_Init_file_dbg_mode),
     printer_output_column(1)
 {}
-    
+
 void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
 {
 
@@ -109,7 +109,7 @@ Output_Manager::~Output_Manager()
         delete m_db;
     }
 }
-    
+
 int Output_Manager::get_printer_output_column(agent* thisAgent)
 {
     if (thisAgent)
@@ -197,12 +197,12 @@ void Output_Manager::printv(const char* format, ...)
 {
     if (m_defaultAgent)
     {
-    va_list args;
-    char buf[PRINT_BUFSIZE];
-    
-    va_start(args, format);
-    vsprintf(buf, format, args);
-    va_end(args);
+        va_list args;
+        char buf[PRINT_BUFSIZE];
+        
+        va_start(args, format);
+        vsprintf(buf, format, args);
+        va_end(args);
         print_agent(m_defaultAgent, buf);
     }
 }
@@ -223,12 +223,12 @@ void Output_Manager::print_agent(agent* pSoarAgent, const char* msg)
     if (print_enabled)
     {
         if (pSoarAgent && pSoarAgent->output_settings->callback_mode && pSoarAgent->output_settings->print_enabled)
-    {
-        soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(msg)));
-    }
-    
-    if (stdout_mode)
-    {
+        {
+            soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(msg)));
+        }
+        
+        if (stdout_mode)
+        {
             fputs(msg, stdout);
         }
         
@@ -262,12 +262,12 @@ void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, Trace
         if (dprint_enabled)
         {
             if (pSoarAgent && pSoarAgent->output_settings->callback_mode && pSoarAgent->output_settings->dprint_enabled)
-        {
-            soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(newTrace.c_str())));
-        }
-        
-        if (stdout_mode)
-        {
+            {
+                soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(newTrace.c_str())));
+            }
+            
+            if (stdout_mode)
+            {
                 fputs(newTrace.c_str(), stdout);
             }
             
@@ -302,7 +302,7 @@ void Output_Manager::print_prefix_agent(agent* pSoarAgent, const char* msg, Trac
         }
         
         print_agent(pSoarAgent, newTrace.c_str());
-            }
+    }
 }
 
 void Output_Manager::fill_mode_info()

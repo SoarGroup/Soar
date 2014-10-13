@@ -2519,7 +2519,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                             // Normally, there would be a chunk or justification firing at the higher
                             // goal with a match level equal to the id level.
                             // See more comments in chunk_instantiation.
-                                }
+                        }
                     } /* end if no GDS yet for goal... */
                     
                     /* Loop over all the preferences for this WME:

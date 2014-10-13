@@ -71,7 +71,7 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
             }
         }
         else
-    {
+        {
             AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format() == longFormat) ? sml_Names::kTrue : sml_Names::kFalse);
         }
     }

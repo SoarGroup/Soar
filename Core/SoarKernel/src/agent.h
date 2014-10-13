@@ -878,7 +878,7 @@ typedef struct agent_struct
     
     // parser symbol clean-up list
     ::list*             parser_syms;
-
+    
     AgentOutput_Info* output_settings;
     // epmem
     epmem_param_container* epmem_params;

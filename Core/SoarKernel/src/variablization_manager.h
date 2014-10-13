@@ -8,7 +8,7 @@
 #ifndef VARIABLIZATION_MANAGER_H_
 #define VARIABLIZATION_MANAGER_H_
 
-#include <portability.h>
+#include "portability.h"
 #include <set>
 #include "symtab.h"
 #include "test.h"
