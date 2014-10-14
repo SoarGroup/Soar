@@ -49,67 +49,6 @@ void init_production_utilities(agent* thisAgent)
     init_reorderer(thisAgent);
 }
 
-/* ********************************************************************
-
-           Utility Routines for Various Parts of Productions
-
-******************************************************************** */
-
-/* ====================================================================
-
-              Utilities for Symbols and Lists of Symbols
-
-==================================================================== */
-
-/* -----------------------------------------------------------------
-   Find first letter of test, or '*' if nothing appropriate.
-   (See comments on first_letter_from_symbol for more explanation.)
------------------------------------------------------------------ */
-
-char first_letter_from_test(test t)
-{
-    complex_test* ct;
-    cons* c;
-    char ch;
-    
-    if (test_is_blank_test(t))
-    {
-        return '*';
-    }
-    if (test_is_blank_or_equality_test(t))
-    {
-        return first_letter_from_symbol(referent_of_equality_test(t));
-    }
-    
-    ct = complex_test_from_test(t);
-    switch (ct->type)
-    {
-        case GOAL_ID_TEST:
-            return 's';
-        case IMPASSE_ID_TEST:
-            return 'i';
-        case CONJUNCTIVE_TEST:
-            for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                ch = first_letter_from_test(static_cast<char*>(c->first));
-                if (ch != '*')
-                {
-                    return ch;
-                }
-            }
-            return '*';
-        default:  /* disjunction tests, and relational tests other than equality */
-            return '*';
-    }
-}
-
-
-/* =================================================================
-
-                  Utility Routines for Conditions
-
-================================================================= */
-
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).
 ---------------------------------------------------------------- */
@@ -118,7 +57,7 @@ void deallocate_condition_list(agent* thisAgent,
                                condition* cond_list)
 {
     condition* c;
-    
+
     while (cond_list)
     {
         c = cond_list;
@@ -145,14 +84,14 @@ condition* copy_condition(agent* thisAgent,
                           condition* cond)
 {
     condition* New;
-    
+
     if (!cond)
     {
         return NIL;
     }
     allocate_with_pool(thisAgent, &thisAgent->condition_pool, &New);
     New->type = cond->type;
-    
+
     switch (cond->type)
     {
         case POSITIVE_CONDITION:
@@ -183,7 +122,7 @@ void copy_condition_list(agent* thisAgent,
                          condition** dest_bottom)
 {
     condition* New, *prev;
-    
+
     prev = NIL;
     while (top_cond)
     {
@@ -248,7 +187,7 @@ bool conditions_are_equal(condition* c1, condition* c2)
                 return false;
             }
             return true;
-            
+
         case CONJUNCTIVE_NEGATION_CONDITION:
             for (c1 = c1->data.ncc.top, c2 = c2->data.ncc.top;
                     ((c1 != NIL) && (c2 != NIL));
@@ -275,7 +214,7 @@ uint32_t hash_condition(agent* thisAgent,
 {
     uint32_t result;
     condition* c;
-    
+
     switch (cond->type)
     {
         case POSITIVE_CONDITION:
@@ -336,7 +275,7 @@ void deallocate_list_of_nots(agent* thisAgent,
                              not_struct* nots)
 {
     not_struct* temp;
-    
+
     while (nots)
     {
         temp = nots;
@@ -373,7 +312,7 @@ tc_number get_new_tc_number(agent* thisAgent)
 {
     /* This was originally a global variable. For the present I'll move it here,
        but it probably belongs in kernel_struct. */
-    
+
     thisAgent->current_tc_number++;
     if (thisAgent->current_tc_number == 0)
     {
@@ -444,7 +383,7 @@ void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
 {
     cons* next;
     Symbol* sym;
-    
+
     while (id_list)
     {
         sym = static_cast<symbol_struct*>(id_list->first);
@@ -459,7 +398,7 @@ void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
 {
     cons* next;
     Symbol* sym;
-    
+
     while (var_list)
     {
         sym = static_cast<symbol_struct*>(var_list->first);
@@ -485,12 +424,12 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     cons* c;
     Symbol* referent;
     complex_test* ct;
-    
+
     if (test_is_blank_test(t))
     {
         return;
     }
-    
+
     if (test_is_blank_or_equality_test(t))
     {
         referent = referent_of_equality_test(t);
@@ -500,7 +439,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
         }
         return;
     }
-    
+
     ct = complex_test_from_test(t);
     if (ct->type == CONJUNCTIVE_TEST)
     {
@@ -527,7 +466,7 @@ void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_lis
         tc_number tc, list** var_list)
 {
     condition* c;
-    
+
     for (c = cond_list; c != NIL; c = c->next)
     {
         add_bound_variables_in_condition(thisAgent, c, tc, var_list);
@@ -549,12 +488,12 @@ void add_all_variables_in_test(agent* thisAgent, test t,
     cons* c;
     Symbol* referent;
     complex_test* ct;
-    
+
     if (test_is_blank_test(t))
     {
         return;
     }
-    
+
     if (test_is_blank_or_equality_test(t))
     {
         referent = referent_of_equality_test(t);
@@ -564,23 +503,23 @@ void add_all_variables_in_test(agent* thisAgent, test t,
         }
         return;
     }
-    
+
     ct = complex_test_from_test(t);
-    
+
     switch (ct->type)
     {
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
         case DISJUNCTION_TEST:
             break;
-            
+
         case CONJUNCTIVE_TEST:
             for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
             {
                 add_all_variables_in_test(thisAgent, static_cast<char*>(c->first), tc, var_list);
             }
             break;
-            
+
         default:
             /* --- relational tests other than equality --- */
             referent = ct->data.referent;
@@ -615,7 +554,7 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
         tc_number tc, list** var_list)
 {
     condition* c;
-    
+
     for (c = cond_list; c != NIL; c = c->next)
     {
         add_all_variables_in_condition(thisAgent, c, tc, var_list);
@@ -642,7 +581,7 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
     list* fl;
     cons* c;
     Symbol* sym;
-    
+
     if (rhs_value_is_symbol(rv))
     {
         /* --- ordinary values (i.e., symbols) --- */
@@ -667,7 +606,7 @@ void add_all_variables_in_action(agent* thisAgent, action* a,
                                  tc_number tc, list** var_list)
 {
     Symbol* id;
-    
+
     if (a->type == MAKE_ACTION)
     {
         /* --- ordinary make actions --- */
@@ -694,7 +633,7 @@ void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_numb
                                       list** var_list)
 {
     action* a;
-    
+
     for (a = actions; a != NIL; a = a->next)
     {
         add_all_variables_in_action(thisAgent, a, tc, var_list);
@@ -748,18 +687,18 @@ void add_test_to_tc(agent* thisAgent, test t, tc_number tc,
 {
     cons* c;
     complex_test* ct;
-    
+
     if (test_is_blank_test(t))
     {
         return;
     }
-    
+
     if (test_is_blank_or_equality_test(t))
     {
         add_symbol_to_tc(thisAgent, referent_of_equality_test(t), tc, id_list, var_list);
         return;
     }
-    
+
     ct = complex_test_from_test(t);
     if (ct->type == CONJUNCTIVE_TEST)
     {
@@ -816,7 +755,7 @@ bool test_is_in_tc(test t, tc_number tc)
 {
     cons* c;
     complex_test* ct;
-    
+
     if (test_is_blank_test(t))
     {
         return false;
@@ -825,7 +764,7 @@ bool test_is_in_tc(test t, tc_number tc)
     {
         return symbol_is_in_tc(referent_of_equality_test(t), tc);
     }
-    
+
     ct = complex_test_from_test(t);
     if (ct->type == CONJUNCTIVE_TEST)
     {
@@ -845,12 +784,12 @@ bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc)
     bool anything_changed;
     bool result;
     list* new_ids, *new_vars;
-    
+
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
         return test_is_in_tc(cond->data.tests.id_test, tc);
     }
-    
+
     /* --- conjunctive negations:  keep trying to add stuff to the TC --- */
     new_ids = NIL;
     new_vars = NIL;
@@ -874,7 +813,7 @@ bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc)
             break;
         }
     }
-    
+
     /* --- complete TC found, look for anything that didn't get hit --- */
     result = true;
     for (c = cond->data.ncc.top; c != NIL; c = c->next)
@@ -882,11 +821,11 @@ bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc)
         {
             result = false;
         }
-        
+
     /* --- unmark identifiers and variables that we just marked --- */
     unmark_identifiers_and_free_list(thisAgent, new_ids);
     unmark_variables_and_free_list(thisAgent, new_vars);
-    
+
     return result;
 }
 
@@ -926,7 +865,7 @@ void reset_variable_generator(agent* thisAgent,
     list* var_list;
     cons* c;
     int i;
-    
+
     /* --- reset counts, and increment the gensym number --- */
     for (i = 0; i < 26; i++)
     {
@@ -938,7 +877,7 @@ void reset_variable_generator(agent* thisAgent,
         reset_variable_gensym_numbers(thisAgent);
         thisAgent->current_variable_gensym_number = 1;
     }
-    
+
     /* --- mark all variables in the given conds and actions --- */
     tc = get_new_tc_number(thisAgent);
     var_list = NIL;
@@ -957,7 +896,7 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
     char name[GENERATE_NEW_VARIABLE_BUFFER_SIZE];
     Symbol* New;
     char first_letter;
-    
+
     first_letter = *prefix;
     if (isalpha(first_letter))
     {
@@ -970,13 +909,13 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
     {
         first_letter = 'v';
     }
-    
+
     while (true)
     {
         SNPRINTF(name, GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
                  static_cast<long unsigned int>(thisAgent->gensymed_variable_count[first_letter - 'a']++));
         name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-        
+
         New = make_variable(thisAgent, name);
         if (New->var->gensym_number != thisAgent->current_variable_gensym_number)
         {
@@ -984,7 +923,7 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
         }
         symbol_remove_ref(thisAgent, New);
     }
-    
+
     New->var->current_binding_value = NIL;
     New->var->gensym_number = thisAgent->current_variable_gensym_number;
     return New;
@@ -1021,10 +960,10 @@ production* make_production(agent* thisAgent,
     production* p;
     tc_number tc;
     action* a;
-    
-    
+
+
     thisAgent->name_of_production_being_reordered = name->sc->name;
-    
+
     if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
         reset_variable_generator(thisAgent, *lhs_top, *rhs_top);
@@ -1038,13 +977,13 @@ production* make_production(agent* thisAgent,
         {
             return NIL;
         }
-        
+
         if (!smem_valid_production(*lhs_top, *rhs_top))
         {
             print(thisAgent, "ungrounded LTI in production\n");
             return NIL;
         }
-        
+
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
         calculate_compile_time_o_support(*lhs_top, *rhs_top);
 #ifdef LIST_COMPILE_TIME_O_SUPPORT_FAILURES
@@ -1074,11 +1013,11 @@ production* make_production(agent* thisAgent,
             a->support = UNKNOWN_SUPPORT;
         }
     }
-    
+
     allocate_with_pool(thisAgent, &thisAgent->production_pool, &p);
     p->name = name;
     p->original_rule_name = make_memory_block_for_string(thisAgent, original_rule_name);
-    
+
     if (name->sc->production)
     {
         print(thisAgent, "Internal error: make_production called with name %s\n",
@@ -1100,7 +1039,7 @@ production* make_production(agent* thisAgent,
     p->rhs_unbound_variables = NIL; /* the Rete fills this in */
     p->instantiations = NIL;
     p->interrupt = false;
-    
+
     // Soar-RL stuff
     p->rl_update_count = 0.0;
     p->rl_delta_bar_delta_beta = -3.0;
@@ -1120,9 +1059,9 @@ production* make_production(agent* thisAgent,
     }
     p->rl_template_conds = NIL;
     p->rl_template_instantiations = NIL;
-    
+
     rl_update_template_tracking(thisAgent, name->sc->name);
-    
+
     return p;
 }
 
@@ -1149,7 +1088,7 @@ void deallocate_production(agent* thisAgent, production* prod)
     {
         free_memory_block_for_string(thisAgent, prod->filename);
     }
-    
+
     if (prod->rl_template_conds)
     {
         deallocate_condition_list(thisAgent, prod->rl_template_conds);
@@ -1158,7 +1097,7 @@ void deallocate_production(agent* thisAgent, production* prod)
     {
         delete prod->rl_template_instantiations;
     }
-    
+
     free_with_pool(&thisAgent->production_pool, prod);
 }
 
@@ -1169,19 +1108,19 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
         remove_pwatch(thisAgent, prod);
     }
     remove_from_dll(thisAgent->all_productions_of_type[prod->type], prod, next, prev);
-    
+
     // Remove reference from apoptosis object store
     if ((prod->type == CHUNK_PRODUCTION_TYPE) && (thisAgent->rl_params) && (thisAgent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none))
     {
         thisAgent->rl_prods->remove_object(prod);
     }
-    
+
     // Remove RL-related pointers to this production
     if (prod->rl_rule)
     {
         rl_remove_refs_for_prod(thisAgent, prod);
     }
-    
+
     thisAgent->num_productions_of_type[prod->type]--;
     if (print_sharp_sign)
     {
