@@ -29,13 +29,12 @@
 
 #include "kernel.h"
 
-
 typedef unsigned char byte;
 typedef struct symbol_struct Symbol;
 typedef struct wme_struct wme;
+typedef struct slot_struct slot;
 typedef struct instantiation_struct instantiation;
 typedef struct preference_struct preference;
-typedef struct agent_struct agent;
 typedef struct cons_struct cons;
 typedef cons list;
 typedef struct dl_cons_struct dl_cons;
@@ -167,23 +166,20 @@ typedef struct slot_struct
                                              has changed + or ! pref's */
 
     wma_sym_reference_map* wma_val_references;
-    
+
 } slot;
 
 extern void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to);
 extern void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to);
 
 extern void mark_context_slot_as_acceptable_preference_changed(agent* thisAgent, slot* s);
+extern void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s);
 
-void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s);
-void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to);
-void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to);
-
-void elaborate_gds(agent* thisAgent);
-void gds_invalid_so_remove_goal(agent* thisAgent, wme* w);
-void free_parent_list(agent* thisAgent);
-void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst);
-void create_gds_for_goal(agent* thisAgent, Symbol* goal);
+extern void elaborate_gds(agent* thisAgent);
+extern void gds_invalid_so_remove_goal(agent* thisAgent, wme* w);
+extern void free_parent_list(agent* thisAgent);
+extern void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst);
+extern void create_gds_for_goal(agent* thisAgent, Symbol* goal);
 extern void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w);
 
 extern int GDS_PrintCmd(/****ClientData****/ int clientData,

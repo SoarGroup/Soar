@@ -1943,7 +1943,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 {
     Symbol* id;
     
-    id = make_new_identifier(thisAgent, (isa_goal ? 'S' : 'I'), level, NIL);
+    id = make_new_identifier(thisAgent, (isa_goal ? 'S' : 'I'), level);
     post_link_addition(thisAgent, NIL, id);   /* add the special link */
     
     add_impasse_wme(thisAgent, id, thisAgent->type_symbol, isa_goal ? thisAgent->state_symbol : thisAgent->impasse_symbol,
@@ -1952,14 +1952,14 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
     if (isa_goal)
     {
         add_impasse_wme(thisAgent, id, thisAgent->superstate_symbol, object, NIL);
-        id->id->reward_header = make_new_identifier(thisAgent, 'R', level, NIL);
+        id->id->reward_header = make_new_identifier(thisAgent, 'R', level);
         soar_module::add_module_wme(thisAgent, id, thisAgent->rl_sym_reward_link, id->id->reward_header);
         
-        id->id->epmem_header = make_new_identifier(thisAgent, 'E', level, NIL);
+        id->id->epmem_header = make_new_identifier(thisAgent, 'E', level);
         soar_module::add_module_wme(thisAgent, id, thisAgent->epmem_sym, id->id->epmem_header);
-        id->id->epmem_cmd_header = make_new_identifier(thisAgent, 'C', level, NIL);
+        id->id->epmem_cmd_header = make_new_identifier(thisAgent, 'C', level);
         soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_cmd, id->id->epmem_cmd_header);
-        id->id->epmem_result_header = make_new_identifier(thisAgent, 'R', level, NIL);
+        id->id->epmem_result_header = make_new_identifier(thisAgent, 'R', level);
         soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_result, id->id->epmem_result_header);
         
         {
@@ -1975,11 +1975,11 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
             symbol_remove_ref(thisAgent, my_time_sym);
         }
         
-        id->id->smem_header = make_new_identifier(thisAgent, 'S', level, NIL);
+        id->id->smem_header = make_new_identifier(thisAgent, 'S', level);
         soar_module::add_module_wme(thisAgent, id, thisAgent->smem_sym, id->id->smem_header);
-        id->id->smem_cmd_header = make_new_identifier(thisAgent, 'C', level, NIL);
+        id->id->smem_cmd_header = make_new_identifier(thisAgent, 'C', level);
         soar_module::add_module_wme(thisAgent, id->id->smem_header, thisAgent->smem_sym_cmd, id->id->smem_cmd_header);
-        id->id->smem_result_header = make_new_identifier(thisAgent, 'R', level, NIL);
+        id->id->smem_result_header = make_new_identifier(thisAgent, 'R', level);
         soar_module::add_module_wme(thisAgent, id->id->smem_header, thisAgent->smem_sym_result, id->id->smem_result_header);
         
     }
@@ -3556,7 +3556,7 @@ void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
         char msgbuf[256];
         memset(msgbuf, 0, 256);
         snprintf_with_symbols(thisAgent, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
-        print(thisAgent,  msgbuf);
+        print_string(thisAgent,  msgbuf);
         
         xml_begin_tag(thisAgent, kTagVerbose);
         xml_att_val(thisAgent, kTypeString, msgbuf);
