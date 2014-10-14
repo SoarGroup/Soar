@@ -13,34 +13,35 @@ class SMemMathTest : public CPPUNIT_NS::TestCase
 {
         CPPUNIT_TEST_SUITE(SMemMathTest);    // The name of this class
         
-//  CPPUNIT_TEST( testSimpleCueBasedRetrieval );
-//  CPPUNIT_TEST( testSimpleNonCueBasedRetrieval );
-//  CPPUNIT_TEST( testSimpleStore );
-//  CPPUNIT_TEST( testTrivialMathQuery );
-//  CPPUNIT_TEST( testBadMathQuery );
-//  CPPUNIT_TEST( testMaxQuery );
-//  CPPUNIT_TEST( testMaxMixedTypes );
-//  CPPUNIT_TEST( testMaxMultivalued );
-//  CPPUNIT_TEST( testMin );
-//  CPPUNIT_TEST( testMaxNegQuery );
-//  CPPUNIT_TEST( testGreater );
-//  CPPUNIT_TEST( testLess );
-//  CPPUNIT_TEST( testGreaterOrEqual );
-//  CPPUNIT_TEST( testLessOrEqual );
-//  CPPUNIT_TEST( testLessWithNeg );
-//  CPPUNIT_TEST( testLessNoSolution );
-//  CPPUNIT_TEST( testMirroring );
-//  CPPUNIT_TEST( testMergeAdd );
-//  CPPUNIT_TEST( testMergeNone );
-//  CPPUNIT_TEST( testSimpleStoreMultivaluedAttribute );
-//  CPPUNIT_TEST( testSimpleFloat );
-//  CPPUNIT_TEST( testMaxDoublePrecision_Irrational );
-//  CPPUNIT_TEST( testMaxDoublePrecision );
-//  CPPUNIT_TEST( testSimpleNonCueBasedRetrievalOfNonExistingLTI );
-//  CPPUNIT_TEST( testNegQuery );
-//  CPPUNIT_TEST( testNegStringFloat );
-//  CPPUNIT_TEST( testNegQueryNoHash );
-
+#ifdef DO_SMEM_MATH_TESTS
+        CPPUNIT_TEST(testSimpleCueBasedRetrieval);
+        CPPUNIT_TEST(testSimpleNonCueBasedRetrieval);
+        CPPUNIT_TEST(testSimpleStore);
+        CPPUNIT_TEST(testTrivialMathQuery);
+        CPPUNIT_TEST(testBadMathQuery);
+        CPPUNIT_TEST(testMaxQuery);
+        CPPUNIT_TEST(testMaxMixedTypes);
+        CPPUNIT_TEST(testMaxMultivalued);
+        CPPUNIT_TEST(testMin);
+        CPPUNIT_TEST(testMaxNegQuery);
+        CPPUNIT_TEST(testGreater);
+        CPPUNIT_TEST(testLess);
+        CPPUNIT_TEST(testGreaterOrEqual);
+        CPPUNIT_TEST(testLessOrEqual);
+        CPPUNIT_TEST(testLessWithNeg);
+        CPPUNIT_TEST(testLessNoSolution);
+        CPPUNIT_TEST(testMirroring);
+        CPPUNIT_TEST(testMergeAdd);
+        CPPUNIT_TEST(testMergeNone);
+        CPPUNIT_TEST(testSimpleStoreMultivaluedAttribute);
+        CPPUNIT_TEST(testSimpleFloat);
+        CPPUNIT_TEST(testMaxDoublePrecision_Irrational);
+        CPPUNIT_TEST(testMaxDoublePrecision);
+        CPPUNIT_TEST(testSimpleNonCueBasedRetrievalOfNonExistingLTI);
+        CPPUNIT_TEST(testNegQuery);
+        CPPUNIT_TEST(testNegStringFloat);
+        CPPUNIT_TEST(testNegQueryNoHash);
+#endif
         CPPUNIT_TEST_SUITE_END();
         
     public:
@@ -88,7 +89,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SMemMathTest);
 
 void SMemMathTest::source(const std::string& path)
 {
-    pAgent->LoadProductions((std::string("test_agents/smemtests/") + path).c_str());
+    pAgent->LoadProductions((std::string("test_agents/smem-math-tests/") + path).c_str());
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
 }
 
@@ -104,7 +105,7 @@ void SMemMathTest::setUp()
     CPPUNIT_ASSERT(pAgent != NULL);
     
     succeeded = false;
-//    pKernel->AddRhsFunction( "succeeded", Handlers::MySuccessHandler,  &succeeded) ;
+    pKernel->AddRhsFunction("succeeded", Handlers::MySuccessHandler,  &succeeded) ;
 }
 
 void SMemMathTest::tearDown()

@@ -28,7 +28,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testPreferenceDeallocation);
 #ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(testInstiationDeallocationStackOverflow);
-//    CPPUNIT_TEST( testSmemArithmetic );
+        CPPUNIT_TEST(testSmemArithmetic);
 #endif
         /* This test has not been kept up to date.  Disabled for quite some time
          *
