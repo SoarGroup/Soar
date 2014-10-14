@@ -1,40 +1,9 @@
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
-/*************************************************************************
- *
- *  file:  rhsfun.cpp
- *
- * =======================================================================
- *                   RHS Function Management
- *
- * The system maintains a list of available RHS functions.  Functions
- * can appear on the RHS of productions either as values (in make actions
- * or as arguments to other function calls) or as stand-alone actions
- * (e.g., "write" and "halt").  When a function is executed, its C code
- * is called with one parameter--a (consed) list of the arguments (symbols).
- * The C function should return either a symbol (if all goes well) or NIL
- * (if an error occurred, or if the function is a stand-alone action).
- *
- * All available RHS functions should be setup at system startup time via
- * calls to add_rhs_function().  It takes as arguments the name of the
- * function (a symbol), a pointer to the corresponding C function, the
- * number of arguments the function expects (-1 if the function can take
- * any number of arguments), and flags indicating whether the function can
- * be a RHS value or a stand-alone action.
- *
- * Lookup_rhs_function() takes a symbol and returns the corresponding
- * rhs_function structure (or NIL if there is no such function).
- *
- * Init_built_in_rhs_functions() should be called at system startup time
- * to setup all the built-in functions.
- * =======================================================================
- */
-
+#include "portability.h"
 #include <stdlib.h>
 
 #include "kernel.h"
@@ -77,7 +46,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 {
     cons* c;
     list* fl;
-    
+
     if (rhs_value_is_reteloc(rv))
     {
         return;
@@ -109,7 +78,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
 {
     cons* c, *new_c, *prev_new_c;
     list* fl, *new_fl;
-    
+
     if (rhs_value_is_reteloc(rv))
     {
         return rv;
@@ -148,7 +117,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
 void deallocate_action_list(agent* thisAgent, action* actions)
 {
     action* a;
-    
+
     while (actions)
     {
         a = actions;
@@ -173,8 +142,9 @@ void deallocate_action_list(agent* thisAgent, action* actions)
 }
 
 /* -----------------------------------------------------------------
-   Find first letter of rhs_value, or '*' if nothing appropriate.
-   (See comments on first_letter_from_symbol for more explanation.)
+ * Looks through an rhs_value, returns appropriate first letter for
+ * a dummy variable to follow it.  Returns '*' if none found.
+ * (See comments on first_letter_from_symbol for more explanation.)
 ----------------------------------------------------------------- */
 
 char first_letter_from_rhs_value(rhs_value rv)
@@ -184,5 +154,84 @@ char first_letter_from_rhs_value(rhs_value rv)
         return first_letter_from_symbol(rhs_value_to_symbol(rv));
     }
     return '*'; /* function calls, reteloc's, unbound variables */
+}
+
+/* =====================================================================
+
+   Finding all variables from rhs_value's, actions, and action lists
+
+   These routines collect all the variables in rhs_value's, etc.  Their
+   "var_list" arguments should either be NIL or else should point to
+   the header of the list of marked variables being constructed.
+
+   Warning: These are part of the reorderer and handle only productions
+   in non-reteloc, etc. format.  They don't handle reteloc's or
+   RHS unbound variables.
+===================================================================== */
+
+void add_all_variables_in_rhs_value(agent* thisAgent,
+                                    rhs_value rv, tc_number tc,
+                                    list** var_list)
+{
+    list* fl;
+    cons* c;
+    Symbol* sym;
+
+    if (rhs_value_is_symbol(rv))
+    {
+        /* --- ordinary values (i.e., symbols) --- */
+        sym = rhs_value_to_symbol(rv);
+        if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
+        {
+            mark_variable_if_unmarked(thisAgent, sym, tc, var_list);
+        }
+    }
+    else
+    {
+        /* --- function calls --- */
+        fl = rhs_value_to_funcall_list(rv);
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            add_all_variables_in_rhs_value(thisAgent, static_cast<char*>(c->first), tc, var_list);
+        }
+    }
+}
+
+void add_all_variables_in_action(agent* thisAgent, action* a,
+                                 tc_number tc, list** var_list)
+{
+    Symbol* id;
+
+    if (a->type == MAKE_ACTION)
+    {
+        /* --- ordinary make actions --- */
+        id = rhs_value_to_symbol(a->id);
+        if (id->is_variable())
+        {
+            mark_variable_if_unmarked(thisAgent, id, tc, var_list);
+        }
+        add_all_variables_in_rhs_value(thisAgent, a->attr, tc, var_list);
+        add_all_variables_in_rhs_value(thisAgent, a->value, tc, var_list);
+        if (preference_is_binary(a->preference_type))
+        {
+            add_all_variables_in_rhs_value(thisAgent, a->referent, tc, var_list);
+        }
+    }
+    else
+    {
+        /* --- function call actions --- */
+        add_all_variables_in_rhs_value(thisAgent, a->value, tc, var_list);
+    }
+}
+
+void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc,
+                                      list** var_list)
+{
+    action* a;
+
+    for (a = actions; a != NIL; a = a->next)
+    {
+        add_all_variables_in_action(thisAgent, a, tc, var_list);
+    }
 }
 

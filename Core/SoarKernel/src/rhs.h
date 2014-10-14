@@ -39,93 +39,6 @@ typedef unsigned char byte;
 typedef unsigned short rete_node_level;
 typedef char* rhs_value;
 
-/* ------------------------------------ */
-/* Utilities for actions and RHS values */
-/* ------------------------------------ */
-
-/* --- Deallocates the given rhs_value. --- */
-extern void deallocate_rhs_value(agent* thisAgent, rhs_value rv);
-
-/* --- Returns a new copy of the given rhs_value. --- */
-extern rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv);
-
-/* --- Deallocates the given action (singly-linked) list. --- */
-extern void deallocate_action_list(agent* thisAgent, action* actions);
-
-/* --- Looks through an rhs_value, returns appropriate first letter for a
-   dummy variable to follow it.  Returns '*' if none found. --- */
-extern char first_letter_from_rhs_value(rhs_value rv);
-
-
-
-inline bool rhs_value_is_symbol(rhs_value rv)
-{
-    return (reinterpret_cast<uintptr_t>(rv) & 3) == 0;
-}
-
-inline bool rhs_value_is_funcall(rhs_value rv)
-{
-    return (reinterpret_cast<uintptr_t>(rv) & 3) == 1;
-}
-
-inline bool rhs_value_is_reteloc(rhs_value rv)
-{
-    return (reinterpret_cast<uintptr_t>(rv) & 3) == 2;
-}
-
-inline bool rhs_value_is_unboundvar(rhs_value rv)
-{
-    return (reinterpret_cast<uintptr_t>(rv) & 3) == 3;
-}
-
-/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
-   do the reference count update */
-inline rhs_value symbol_to_rhs_value(Symbol* sym)
-{
-    return reinterpret_cast<rhs_value>(sym);
-}
-
-inline rhs_value funcall_list_to_rhs_value(::list* fl)
-{
-    return reinterpret_cast<rhs_value>(reinterpret_cast<char*>(fl) + 1);
-}
-
-inline rhs_value reteloc_to_rhs_value(byte field_num, rete_node_level levels_up)
-{
-    return reinterpret_cast<rhs_value>(levels_up << 4) + (field_num << 2) + 2;
-}
-
-inline rhs_value unboundvar_to_rhs_value(uint64_t n)
-{
-    return reinterpret_cast<rhs_value>((n << 2) + 3);
-}
-
-inline Symbol* rhs_value_to_symbol(rhs_value rv)
-{
-    return reinterpret_cast<Symbol*>(rv);
-}
-
-inline ::list* rhs_value_to_funcall_list(rhs_value rv)
-{
-    return reinterpret_cast< ::list* >(reinterpret_cast<char*>(rv) - 1);
-}
-
-inline uint8_t rhs_value_to_reteloc_field_num(rhs_value rv)
-{
-    return static_cast<uint8_t>((reinterpret_cast<uintptr_t>(rv) >> 2) & 3);
-}
-
-inline uint16_t rhs_value_to_reteloc_levels_up(rhs_value rv)
-{
-    return static_cast<uint16_t>((reinterpret_cast<uintptr_t>(rv) >> 4) & 0xFFFF);
-}
-
-inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
-{
-    return static_cast<uint64_t>((reinterpret_cast<uintptr_t>(rv) >> 2));
-}
-
-
 /* -------------------------------------------------------------------
                              RHS Actions
 
@@ -163,7 +76,6 @@ inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
 #define O_SUPPORT 1
 #define I_SUPPORT 2
 
-
 typedef unsigned char byte;
 
 typedef struct action_struct
@@ -178,5 +90,82 @@ typedef struct action_struct
     rhs_value value;   /* for FUNCALL_ACTION's, this holds the funcall */
     rhs_value referent;
 } action;
+
+extern rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv);
+
+extern void deallocate_rhs_value(agent* thisAgent, rhs_value rv);
+extern void deallocate_action_list(agent* thisAgent, action* actions);
+
+void add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc, ::list** var_list);
+void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc, list** var_list);
+
+extern char first_letter_from_rhs_value(rhs_value rv);
+
+inline bool rhs_value_is_symbol(rhs_value rv)
+{
+    return (reinterpret_cast<uintptr_t>(rv) & 3) == 0;
+}
+
+inline bool rhs_value_is_funcall(rhs_value rv)
+{
+    return (reinterpret_cast<uintptr_t>(rv) & 3) == 1;
+}
+
+inline bool rhs_value_is_reteloc(rhs_value rv)
+{
+    return (reinterpret_cast<uintptr_t>(rv) & 3) == 2;
+}
+
+inline bool rhs_value_is_unboundvar(rhs_value rv)
+{
+    return (reinterpret_cast<uintptr_t>(rv) & 3) == 3;
+}
+
+inline Symbol* rhs_value_to_symbol(rhs_value rv)
+{
+    return reinterpret_cast<Symbol*>(rv);
+}
+
+inline ::list* rhs_value_to_funcall_list(rhs_value rv)
+{
+    return reinterpret_cast< ::list* >(reinterpret_cast<char*>(rv) - 1);
+}
+
+inline uint8_t rhs_value_to_reteloc_field_num(rhs_value rv)
+{
+    return static_cast<uint8_t>((reinterpret_cast<uintptr_t>(rv) >> 2) & 3);
+}
+
+inline uint16_t rhs_value_to_reteloc_levels_up(rhs_value rv)
+{
+    return static_cast<uint16_t>((reinterpret_cast<uintptr_t>(rv) >> 4) & 0xFFFF);
+}
+
+inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
+{
+    return static_cast<uint64_t>((reinterpret_cast<uintptr_t>(rv) >> 2));
+}
+
+/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
+   do the reference count update */
+inline rhs_value symbol_to_rhs_value(Symbol* sym)
+{
+    return reinterpret_cast<rhs_value>(sym);
+}
+
+inline rhs_value unboundvar_to_rhs_value(uint64_t n)
+{
+    return reinterpret_cast<rhs_value>((n << 2) + 3);
+}
+
+inline rhs_value funcall_list_to_rhs_value(::list* fl)
+{
+    return reinterpret_cast<rhs_value>(reinterpret_cast<char*>(fl) + 1);
+}
+
+inline rhs_value reteloc_to_rhs_value(byte field_num, rete_node_level levels_up)
+{
+    return reinterpret_cast<rhs_value>(levels_up << 4) + (field_num << 2) + 2;
+}
 
 #endif
