@@ -97,7 +97,7 @@ namespace soar_module
             int ctotal = sqlite3_column_count(statement);
             int res = 0;
             const char* val;
-            //          std::string val;
+//                  std::string val;
             
             fprintf(stderr, "----------------------------\n%s\n----------------------------\n", table_name);
             while (1)
@@ -108,9 +108,9 @@ namespace soar_module
                 {
                     for (int i = 0; i < ctotal; i++)
                     {
-                        //                val.assign((const char *)sqlite3_column_text(statement, i));
-                        //                if (val)
-                        //                  fprintf(stderr, "%s ", val.c_str());
+//                              val.assign((const char *)sqlite3_column_text(statement, i));
+//                              if (val)
+//                                  fprintf(stderr, "%s ", val.c_str());
                         val = reinterpret_cast<const char*>(sqlite3_column_text(statement, i));
                         if (val)
                         {

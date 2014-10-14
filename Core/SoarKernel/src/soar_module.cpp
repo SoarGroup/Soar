@@ -17,7 +17,6 @@
 #include "soar_module.h"
 
 #include "agent.h"
-
 #include "instantiations.h"
 #include "tempmem.h"
 #include "prefmem.h"
@@ -28,8 +27,8 @@
 #include "wmem.h"
 #include "agent.h"
 #include "soar_TraceNames.h"
-#include "test.h"
 #include "wma.h"
+#include "test.h"
 #include "wmem.h"
 
 //wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
@@ -95,6 +94,8 @@ namespace soar_module
         inst->backtrace_number = 0;
         inst->in_ms = false;
         inst->GDS_evaluated_already = false;
+        inst->top_of_instantiated_conditions = NULL;
+        inst->bottom_of_instantiated_conditions = NULL;
         
         // create preferences
         inst->preferences_generated = NULL;

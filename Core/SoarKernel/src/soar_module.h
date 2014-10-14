@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <cmath>
 
+#include "kernel.h"
 #include "misc.h"
 #include "symtab.h"
 //#include "mem.h"

@@ -21,7 +21,7 @@
 #include "soar_module.h"
 #include "sqlite3.h"
 
-#define DEBUG_SQL_ERRORS
+//#define DEBUG_SQL_ERRORS
 //#define DEBUG_SQL_QUERIES
 
 #ifdef DEBUG_SQL_QUERIES
@@ -32,7 +32,6 @@ static void trace(void* /*arg*/, const char* query)
     fprintf(stderr, "Query: %s\n", query);
 }
 #endif
-
 
 // separates this functionality
 // just for Soar modules
@@ -300,12 +299,13 @@ namespace soar_module
             {
                 set_errno(SQLITE_OK);
             }
-            
             virtual ~sqlite_database() {}
+            
             inline sqlite3* get_db()
             {
                 return my_db;
             }
+            
             void connect(const char* file_name, int flags = (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
             void disconnect();
             bool backup(const char* file_name, std::string* err);
@@ -328,12 +328,12 @@ namespace soar_module
                 return sqlite3_libversion();
             }
             
+            
             inline bool sql_execute(const char* sql);
             inline bool sql_simple_get_int(const char* sql, int64_t& return_value);
             inline bool sql_simple_get_float(const char* sql, double& return_value);
             inline bool sql_simple_get_string(const char* sql, std::string& return_value);
             inline bool sql_is_new_db(bool& return_value);
-            
     };
     
     
@@ -542,6 +542,7 @@ namespace soar_module
                 }
             }
     };
+    
     
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
