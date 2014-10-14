@@ -11,7 +11,7 @@
  *
  * ====================================================================
  * Memory allocation and deallocation, string, linked list, and resizable
- * hash table utilities for Soar 6.  see soarkernel.h for more comments
+ * hash table utilities.
  * Init_memory_utilities() should be called before any of these routines
  * are used.
  * =======================================================================
@@ -228,7 +228,7 @@ void free_growable_string(agent* thisAgent, growable_string gs)
    we add another big block to the pool.
 
    Init_memory_pool() should be called to initialize a memory_pool
-   structure before it is used.  After that, the macro forms [see soarkernel.h]
+   structure before it is used.  After that, the macro forms
    allocate_with_pool (&mem_pool, &pointer_to_be_set_to_new_item) and
    free_with_pool (&mem_pool, pointer_to_item)
    are used to allocate and free items.  Print_memory_pool_statistics()
@@ -268,8 +268,8 @@ void add_block_to_memory_pool(agent* thisAgent, memory_pool* p)
     soar_invoke_callbacks(thisAgent, thisAgent,
     MAX_MEMORY_USAGE_CALLBACK,
     (soar_call_data) NULL);
-    thisAgent->OutputManager->print( "%8lu bytes total memory allocated\n", total);
-    thisAgent->OutputManager->print( "exceeds total allowed for Soar: %8lu bytes \n",
+    print (thisAgent, "%8lu bytes total memory allocated\n", total);
+    print (thisAgent, "exceeds total allowed for Soar: %8lu bytes \n",
     thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
     }
     

@@ -5,19 +5,9 @@
  * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
-/*************************************************************************
- *
- *  file:  prefmem.cpp
- *
- * =======================================================================
- *  NOTE:  need some comments here
- * =======================================================================
- */
-
 /* ======================================================================
-        Preference Memory routines for Soar 6
+        Preference Memory routines
    ====================================================================== */
-
 
 #include <stdlib.h>
 #include "mem.h"
@@ -128,7 +118,7 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     p->g_ids.value = g_ids.value;
     
 #ifdef DEBUG_PREFS
-    thisAgent->OutputManager->print("\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
+    print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
     print_preference(thisAgent, p);
 #endif
     
@@ -146,7 +136,7 @@ void deallocate_preference(agent* thisAgent, preference* pref)
 {
 
 #ifdef DEBUG_PREFS
-    thisAgent->OutputManager->print("\nDeallocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(pref));
+    print(thisAgent, "\nDeallocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(pref));
     print_preference(thisAgent, pref);
     if (pref->reference_count != 0)     /* --- sanity check --- */
     {
@@ -286,34 +276,15 @@ bool remove_preference_from_clones(agent* thisAgent, preference* pref)
    hence temporary memory).
 ------------------------------------------------------------------------ */
 
-bool add_preference_to_tm(agent* thisAgent, preference* pref)
+void add_preference_to_tm(agent* thisAgent, preference* pref)
 {
 #ifdef DEBUG_PREFS
-    thisAgent->OutputManager->print("\nAdd preference at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
+    print(thisAgent, "\nAdd preference at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
     print_preference(thisAgent, pref);
 #endif
     
     slot* s = make_slot(thisAgent, pref->id, pref->attr);
     preference* p2;
-    
-    if (!s->isa_context_slot && pref->o_supported && (pref->type == ACCEPTABLE_PREFERENCE_TYPE) && (pref->inst->match_goal == thisAgent->top_state))
-    {
-        bool already_top_o_supported = false;
-        
-        for (p2 = s->all_preferences; (p2 && !already_top_o_supported); p2 = p2->all_of_slot_next)
-        {
-            if ((p2->value == pref->value) && p2->o_supported && (p2->inst->match_goal == thisAgent->top_state))
-            {
-                already_top_o_supported = true;
-            }
-        }
-        
-        if (already_top_o_supported)
-        {
-            // NLD: if it is suspected that this code is causing an issue, simply comment out the following line to debug.
-            return false;
-        }
-    }
     
     pref->slot = s;
     
@@ -430,8 +401,6 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
     {
         mark_context_slot_as_acceptable_preference_changed(thisAgent, s);
     }
-    
-    return true;
 }
 
 /* ------------------------------------------------------------------------
@@ -445,7 +414,7 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
     s = pref->slot;
     
 #ifdef DEBUG_PREFS
-    thisAgent->OutputManager->print("\nRemove preference at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
+    print(thisAgent, "\nRemove preference at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
     print_preference(thisAgent, pref);
 #endif
     
@@ -504,7 +473,7 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
                                    a clone of some other pref we're about to
                                    remove */
 #ifdef DEBUG_PREFS
-        thisAgent->OutputManager->print("\nO-reject posted at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
+        print(thisAgent, "\nO-reject posted at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
         print_preference(thisAgent, pref);
 #endif
     }

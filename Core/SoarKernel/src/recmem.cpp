@@ -29,6 +29,7 @@
 #include <stdlib.h>
 
 
+//#include "instantiations.h"
 #include "kernel.h"
 #include "mem.h"
 #include "symtab.h"
@@ -46,11 +47,11 @@
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "xml.h"
+#include "decide.h"
 #include "soar_TraceNames.h"
 #include "consistency.h"
 #include "misc.h"
 #include "soar_module.h"
-#include "decide.h"
 
 #include "assert.h"
 #include <string> // SBW 8/4/08
@@ -1520,26 +1521,14 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
             else if (inst->in_ms || pref->o_supported)
             {
                 /* --- normal case --- */
-                if (add_preference_to_tm(thisAgent, pref))
+                add_preference_to_tm(thisAgent, pref);
+                /* REW: begin 09.15.96 */
+                /* No knowledge retrieval necessary in Operand2 */
+                /* REW: end   09.15.96 */
+                
+                if (wma_enabled(thisAgent))
                 {
-                    /* REW: begin 09.15.96 */
-                    /* No knowledge retrieval necessary in Operand2 */
-                    /* REW: end   09.15.96 */
-                    
-                    if (wma_enabled(thisAgent))
-                    {
-                        wma_activate_wmes_in_pref(thisAgent, pref);
-                    }
-                }
-                else
-                {
-                    // NLD: the preference was o-supported, at
-                    // the top state, and was asserting an acceptable
-                    // preference for a WME that was already
-                    // o-supported. hence unnecessary.
-                    
-                    preference_add_ref(pref);
-                    preference_remove_ref(thisAgent, pref);
+                    wma_activate_wmes_in_pref(thisAgent, pref);
                 }
             }
             else
