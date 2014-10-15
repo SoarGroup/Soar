@@ -51,6 +51,13 @@
 
 #include <ctype.h>
 
+not_struct* get_nots_for_instantiated_conditions(agent* thisAgent,
+        list* instantiations_with_nots,
+        tc_number tc_of_grounds);
+void variablize_nots_and_insert_into_conditions(agent* thisAgent,
+        not_struct* nots,
+        condition* conds);
+
 using namespace soar_TraceNames;
 
 /* =====================================================================

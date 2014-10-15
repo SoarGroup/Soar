@@ -386,5 +386,7 @@ inline void production_remove_ref(agent* thisAgent, production* p)
         deallocate_production(thisAgent, p);
     }
 }
+void mark_variable_if_unmarked(agent* thisAgent, Symbol* v,
+                                      tc_number tc, list** var_list);
 
 #endif

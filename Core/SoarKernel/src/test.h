@@ -65,6 +65,9 @@ typedef struct complex_test_struct
 /* Utilities for tests */
 /* ------------------- */
 
+extern void add_all_variables_in_test(agent* thisAgent, test t,
+                                      tc_number tc, list** var_list);
+
 extern void add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc,
                                         ::list** var_list);
 extern void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc,
