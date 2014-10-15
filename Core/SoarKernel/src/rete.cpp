@@ -109,8 +109,8 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "test.h"
-#include "variablization_manager.h"
 #include "decide.h"
+#include "variablization_manager.h"
 
 #include "assert.h"
 
@@ -833,7 +833,6 @@ inline void update_stats_for_destroying_node(agent* thisAgent, rete_node* node)
 
 
 
-/* REW: begin 08.20.97 */
 
 Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* msc)
 {
@@ -955,7 +954,6 @@ void print_retraction(agent* thisAgent, ms_change* msc)
     }
 }
 
-/* REW: end   08.20.97 */
 
 
 bool any_assertions_or_retractions_ready(agent* thisAgent)
@@ -963,7 +961,6 @@ bool any_assertions_or_retractions_ready(agent* thisAgent)
 
     Symbol* goal;
 
-    /* REW: begin 08.20.97 */
     /* Determining if assertions or retractions are ready require looping over
     all goals in Waterfall/Operand2 */
 
@@ -991,7 +988,6 @@ bool any_assertions_or_retractions_ready(agent* thisAgent)
     ready to fire or retract */
 
     return false;
-    /* REW: end   08.20.97 */
 }
 
 
@@ -1020,8 +1016,6 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
 {
     ms_change* msc = NIL;
 
-    /* REW: begin 09.15.96 */
-    /* REW: begin 08.20.97 */
 
     /* In Waterfall, we return only assertions that match in the
     currently active goal */
@@ -1083,8 +1077,6 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
                       the procedure. */
 
     }
-    /* REW: end   08.20.97 */
-    /* REW: end   09.15.96 */
 
     remove_from_dll(msc->p_node->b.p.tentative_assertions, msc,
                     next_of_node, prev_of_node);
@@ -1181,7 +1173,6 @@ bool get_next_retraction(agent* thisAgent, instantiation** inst)
 
 
 
-/* REW: begin 08.20.97 */
 
 /* Retract an instantiation on the nil goal list.  If there are no
    retractions on the nil goal retraction list, return false.  This
@@ -1218,7 +1209,6 @@ bool get_next_nil_goal_retraction(agent* thisAgent, instantiation** inst)
 
 }
 
-/* REW: end   08.20.97 */
 
 
 
@@ -3965,7 +3955,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 
     /* KJC 1/28/98  left these comments in to support REW comments below
     but commented out the operand_mode code  */
-    /* RCHONG: begin 10.11 */
     /*
 
     in operand, we don't want to refract the instantiation.  consider
@@ -3988,15 +3977,11 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     refracted_inst = NIL;
     }
     */
-    /* RCHONG: end 10.11 */
-
-    /* REW: begin 09.15.96 */
     /* In Operand2, for now, we want both chunks and justifications to be
     treated as refracted instantiations, at least for now.  At some point,
     this issue needs to be re-visited for chunks that immediately match with
     a different instantiation and a different type of support than the
     original, chunk-creating instantion. */
-    /* REW: end   09.15.96 */
 
 
     /* --- handle initial refraction by adding it to tentative_retractions --- */
@@ -4008,7 +3993,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         allocate_with_pool(thisAgent, &thisAgent->ms_change_pool, &msc);
         msc->inst = refracted_inst;
         msc->p_node = p_node;
-        /* REW: begin 08.20.97 */
         /* Because the RETE 'artificially' refracts this instantiation (ie, it is
         not actually firing -- the original instantiation fires but not the
         chunk), we make the refracted instantiation of the chunk a nil_goal
@@ -4030,7 +4014,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 
         insert_at_head_of_dll(thisAgent->nil_goal_retractions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end   08.20.97 */
 
 #ifdef BUG_139_WORKAROUND
         msc->p_node->b.p.prod->already_fired = 0;       /* RPM workaround for bug #139; mark prod as not fired yet */
@@ -4058,7 +4041,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             msc = p_node->b.p.tentative_retractions;
             p_node->b.p.tentative_retractions = NIL;
             remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
-            /* REW: begin 10.03.97 */ /* BUGFIX 2.125 */
             if (msc->goal)
             {
                 remove_from_dll(msc->goal->id->ms_retractions, msc,
@@ -4069,7 +4051,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                 remove_from_dll(thisAgent->nil_goal_retractions,
                                 msc, next_in_level, prev_in_level);
             }
-            /* REW: end   10.03.97 */
 
 
             free_with_pool(&thisAgent->ms_change_pool, msc);
@@ -4704,7 +4685,7 @@ Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
 
 bool error_rete_test_routine(agent* thisAgent, rete_test* rt, token* left, wme* w);
 #define ertr error_rete_test_routine
-bool ((*(rete_test_routines[256]))
+bool((*(rete_test_routines[256]))
       (agent* thisAgent, rete_test* rt, token* left, wme* w)) =
 {
     ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr,
@@ -4869,7 +4850,8 @@ bool constant_greater_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, tok
     return static_cast<bool>(compare_symbols(s1, s2) > 0);
 }
 
-bool constant_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/, wme* w)
+bool constant_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
+        wme* w)
 {
     Symbol* s1, *s2;
 
@@ -4878,7 +4860,8 @@ bool constant_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* r
     return static_cast<bool>(compare_symbols(s1, s2) <= 0);
 }
 
-bool constant_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/, wme* w)
+bool constant_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
+        wme* w)
 {
     Symbol* s1, *s2;
 
@@ -4887,7 +4870,8 @@ bool constant_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test
     return static_cast<bool>(compare_symbols(s1, s2) >= 0);
 }
 
-bool constant_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/, wme* w)
+bool constant_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
+        wme* w)
 {
     Symbol* s1, *s2;
 
@@ -4918,7 +4902,8 @@ bool variable_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token
     return (s1 == s2);
 }
 
-bool variable_not_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left, wme* w)
+bool variable_not_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
+        wme* w)
 {
     Symbol* s1, *s2;
     int i;
@@ -5060,7 +5045,8 @@ bool variable_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
 
 ************************************************************************ */
 
-void positive_node_left_addition(agent* thisAgent, rete_node* node, token* New, Symbol* hash_referent);
+void positive_node_left_addition(agent* thisAgent, rete_node* node, token* New,
+                                 Symbol* hash_referent);
 void unhashed_positive_node_left_addition(agent* thisAgent, rete_node* node, token* New);
 
 void rete_error_left(agent* thisAgent, rete_node* node, token* /*t*/, wme* /*w*/)
@@ -6139,7 +6125,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         remove_from_dll(node->b.p.tentative_retractions, msc,
                         next_of_node, prev_of_node);
         remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
-        /* REW: begin 08.20.97 */
         if (msc->goal)
         {
             remove_from_dll(msc->goal->id->ms_retractions, msc,
@@ -6160,7 +6145,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 msc, next_in_level, prev_in_level);
             }
         }
-        /* REW: end   08.20.97 */
 
         free_with_pool(&thisAgent->ms_change_pool, msc);
 #ifdef DEBUG_RETE_PNODES
@@ -6182,13 +6166,9 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->w = w;
     msc->p_node = node;
     msc->inst = NIL;  /* just for safety */
-    /* REW: begin 08.20.97 */
     /* initialize goal regardless of run mode */
     msc->level = 0;
     msc->goal = NIL;
-    /* REW: end   08.20.97 */
-
-    /* RCHONG: begin 10.11 */
 
     /*  (this is a RCHONG comment, but might also apply to Operand2...?)
 
@@ -6209,15 +6189,12 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     /* operand code removed 1/22/99 - kjc */
 
-    /* REW: begin 09.15.96 */
-    /* REW: begin 08.20.97 */
     /* Find the goal and level for this ms change */
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 #ifdef DEBUG_WATERFALL
     print("\n    Level of goal is  %d", msc->level);
 #endif
-    /* REW: end 08.20.97 */
 
     prod_type = IE_PRODS;
 
@@ -6460,10 +6437,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         insert_at_head_of_dll(thisAgent->ms_o_assertions, msc, next, prev);
 
-        /* REW: begin 08.20.97 */
         insert_at_head_of_dll(msc->goal->id->ms_o_assertions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end   08.20.97 */
 
 
         node->b.p.prod->OPERAND_which_assert_list = O_LIST;
@@ -6483,10 +6458,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         insert_at_head_of_dll(thisAgent->ms_i_assertions,
                               msc, next, prev);
 
-        /* REW: end 08.20.97 */
         insert_at_head_of_dll(msc->goal->id->ms_i_assertions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end 08.20.97 */
 
         node->b.p.prod->OPERAND_which_assert_list = I_LIST;
 
@@ -6499,7 +6472,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             xml_generate_verbose(thisAgent, buf);
         }
     }
-    /* REW: end   09.15.96 */
 
     // :interrupt
     if (node->b.p.prod->interrupt)
@@ -6567,26 +6539,20 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 }
             }
 
-            /* REW: begin 09.15.96 */
             if (node->b.p.prod->OPERAND_which_assert_list == O_LIST)
             {
                 remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
-                /* REW: begin 08.20.97 */
                 /* msc already defined for the assertion so the goal should be defined
                 as well. */
                 remove_from_dll(msc->goal->id->ms_o_assertions, msc,
                                 next_in_level, prev_in_level);
-                /* REW: end   08.20.97 */
             }
             else if (node->b.p.prod->OPERAND_which_assert_list == I_LIST)
             {
                 remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
-                /* REW: begin 08.20.97 */
                 remove_from_dll(msc->goal->id->ms_i_assertions, msc,
                                 next_in_level, prev_in_level);
-                /* REW: end   08.20.97 */
             }
-            /* REW: end   09.15.96 */
 
             free_with_pool(&thisAgent->ms_change_pool, msc);
 #ifdef DEBUG_RETE_PNODES
@@ -6620,14 +6586,11 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->p_node = node;
         msc->tok = NIL;     /* just for safety */
         msc->w = NIL;       /* just for safety */
-        /* REW: begin 08.20.97 */
         msc->level = 0;     /* just for safety */
         msc->goal = NIL;    /* just for safety */
-        /* REW: end   08.20.97 */
         insert_at_head_of_dll(node->b.p.tentative_retractions, msc,
                               next_of_node, prev_of_node);
 
-        /* REW: begin 08.20.97 */
         /* Determine what the goal of the msc is and add it to that
         goal's list of retractions */
         msc->goal = find_goal_for_match_set_change_retraction(msc);
@@ -6709,13 +6672,11 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             }
         }
 #endif
-        /* REW: end   08.20.97 */
 
         activation_exit_sanity_check();
         return;
     }
 
-    /* REW: begin 09.15.96 */
 
     if (thisAgent->soar_verbose_flag == true)
     {
@@ -6725,7 +6686,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         xml_generate_verbose(thisAgent, buf);
     }
 
-    /* REW: end   09.15.96 */
 #ifdef BUG_139_WORKAROUND
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
@@ -8980,11 +8940,9 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 if (msc->inst->prod)
                 {
-                    /* REW: begin 10.22.97 */
                     if ((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
                                                      ms_trace, msc->goal)) != NIL)
                     {
-                        /* REW: end   10.22.97 */
                         tmp->count++;
                     }
                     else
@@ -8994,10 +8952,8 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                         tmp->sym = msc->inst->prod->name;
                         tmp->count = 1;
                         tmp->next = ms_trace;
-                        /* REW: begin 08.20.97 */
                         /* Add match goal to the print of the matching production */
                         tmp->goal = msc->goal;
-                        /* REW: end   08.20.97 */
                         ms_trace = tmp;
                     }
                 }
@@ -9010,7 +8966,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 tmp = ms_trace;
                 ms_trace = tmp->next;
                 print_with_symbols(thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first assertion
                 inspected, even though there can be multiple assertions at
 
@@ -9024,7 +8979,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, " [NIL] ");
                 }
-                /* REW: end  08.20.97 */
                 if (tmp->count > 1)
                 {
                     print(thisAgent, "(%d)\n", tmp->count);
@@ -9065,7 +9019,7 @@ void xml_whole_token(agent* thisAgent, token* t, wme_trace_type wtt)
         {
             xml_object(thisAgent, t->w);
         }
-        //if (wtt!=NONE_WME_TRACE) thisAgent->OutputManager->print( " ");
+        //if (wtt!=NONE_WME_TRACE) print (thisAgent, " ");
     }
 }
 
@@ -9079,6 +9033,7 @@ bool xml_pick_conds_with_matching_id_test(dl_cons* dc, agent* thisAgent)
     }
     return tests_are_equal(thisAgent->id_test_to_match, cond->data.tests.id_test, false);
 }
+
 
 #define XML_CONDITION_LIST_TEMP_SIZE 10000
 void xml_condition_list(agent* thisAgent, condition* conds,
@@ -9123,7 +9078,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
     {
         if (did_one_line_already)
         {
-            //thisAgent->OutputManager->print( "\n");
+            //print (thisAgent, "\n");
             //print_spaces (thisAgent, indent);
         }
         else
@@ -9186,7 +9141,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
             }
 
-            //print_string (thisAgent, test_to_string (id_test, NULL, 0));
+            //print_string (thisAgent, test_to_string(id_test, NULL, 0));
             //xml_test(thisAgent, kConditionId, id_test) ;
             xml_att_val(thisAgent, kConditionId, test_to_string(id_test, NULL, 0)) ;
             deallocate_test(thisAgent, thisAgent->id_test_to_match);
@@ -9304,12 +9259,12 @@ void xml_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
     }
     else
     {
-        //thisAgent->OutputManager->print( "[dummy production]");
+        //print (thisAgent, "[dummy production]");
         xml_att_val(thisAgent, kProduction_Name, "[dummy_production]");
 
     }
 
-    //thisAgent->OutputManager->print( "\n");
+    //print (thisAgent, "\n");
 
     if (wtt == NONE_WME_TRACE)
     {
@@ -9336,7 +9291,7 @@ void xml_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
             switch (wtt)
             {
                 case TIMETAG_WME_TRACE:
-                    //thisAgent->OutputManager->print( " %lu", cond->bt.wme_->timetag);
+                    //print (thisAgent, " %lu", cond->bt.wme_->timetag);
 
                     xml_begin_tag(thisAgent, kTagWME);
                     xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
@@ -9346,19 +9301,19 @@ void xml_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
                 case FULL_WME_TRACE:
                     if (action != RETRACTING)
                     {
-                        //thisAgent->OutputManager->print( " ");
+                        //print (thisAgent, " ");
                         xml_object(thisAgent, cond->bt.wme_);
                     }
                     else
                     {
                         // Not all conds available when retracting, depending on DO_TOP_LEVEL_REF_CTS
 #ifdef DO_TOP_LEVEL_REF_CTS
-                        //thisAgent->OutputManager->print( " ");
+                        //print (thisAgent, " ");
                         xml_object(thisAgent, cond->bt.wme_);
 #else
 
                         // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
-                        //thisAgent->OutputManager->print( " %lu", cond->bt.wme_->timetag);
+                        //print (thisAgent, " %lu", cond->bt.wme_->timetag);
 
                         xml_begin_tag(thisAgent, kTagWME);
                         xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
@@ -9401,10 +9356,9 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
 
     /* --- Print assertions --- */
 
-    /* REW: begin 09.15.96 */
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT)
     {
-        //thisAgent->OutputManager->print( "O Assertions:\n");
+        //print (thisAgent, "O Assertions:\n");
         xml_begin_tag(thisAgent, kOAssertions) ;
 
         for (msc = thisAgent->ms_o_assertions; msc != NIL; msc = msc->next)
@@ -9416,24 +9370,20 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 xml_att_val(thisAgent, kName, msc->p_node->b.p.prod->name) ;
                 xml_att_val(thisAgent, kGoal, msc->goal) ;
                 //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 //print_with_symbols(thisAgent, " [%y] ", msc->goal);
 
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 xml_whole_token(thisAgent, &temp_token, wtt);
-                //thisAgent->OutputManager->print( "\n");
+                //print (thisAgent, "\n");
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
@@ -9442,10 +9392,8 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -9465,17 +9413,15 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 //if (tmp->count > 1)
-                //  thisAgent->OutputManager->print( "(%d)\n", tmp->count);
+                //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
-                //  thisAgent->OutputManager->print( "\n");
+                //  print(thisAgent, "\n");
                 free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
@@ -9485,7 +9431,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
 
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT)
     {
-        //thisAgent->OutputManager->print( "I Assertions:\n");
+        //print (thisAgent, "I Assertions:\n");
         xml_begin_tag(thisAgent, kIAssertions) ;
         for (msc = thisAgent->ms_i_assertions; msc != NIL; msc = msc->next)
         {
@@ -9493,27 +9439,23 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             if (wtt != NONE_WME_TRACE)
             {
                 //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 //print_with_symbols(thisAgent, " [%y] ", msc->goal);
                 xml_begin_tag(thisAgent, kTagProduction) ;
                 xml_att_val(thisAgent, kName, msc->p_node->b.p.prod->name) ;
                 xml_att_val(thisAgent, kGoal, msc->goal) ;
 
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 xml_whole_token(thisAgent, &temp_token, wtt);
-                //thisAgent->OutputManager->print( "\n");
+                //print (thisAgent, "\n");
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
@@ -9523,10 +9465,8 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -9546,17 +9486,15 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 //if (tmp->count > 1)
-                //  thisAgent->OutputManager->print( "(%d)\n", tmp->count);
+                //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
-                //  thisAgent->OutputManager->print( "\n");
+                //  print(thisAgent, "\n");
 
                 free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
@@ -9564,29 +9502,26 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
         }
     }
     xml_end_tag(thisAgent, kIAssertions) ;
-    /* REW: end   09.15.96 */
 
     if (mst == MS_ASSERT_RETRACT || mst == MS_RETRACT)
     {
         xml_begin_tag(thisAgent, kRetractions) ;
-        //thisAgent->OutputManager->print( "Retractions:\n");
+        //print (thisAgent, "Retractions:\n");
         for (msc = thisAgent->ms_retractions; msc != NIL; msc = msc->next)
         {
             if (wtt != NONE_WME_TRACE)
             {
-                //thisAgent->OutputManager->print( "  ");
+                //print (thisAgent, "  ");
                 xml_instantiation_with_wmes(thisAgent, msc->inst, wtt, -1);
-                //thisAgent->OutputManager->print( "\n");
+                //print (thisAgent, "\n");
             }
             else
             {
                 if (msc->inst->prod)
                 {
-                    /* REW: begin 10.22.97 */
                     if ((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
                                                      ms_trace, msc->goal)) != NIL)
                     {
-                        /* REW: end   10.22.97 */
                         tmp->count++;
                     }
                     else
@@ -9596,10 +9531,8 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                         tmp->sym = msc->inst->prod->name;
                         tmp->count = 1;
                         tmp->next = ms_trace;
-                        /* REW: begin 08.20.97 */
                         /* Add match goal to the print of the matching production */
                         tmp->goal = msc->goal;
-                        /* REW: end   08.20.97 */
                         ms_trace = tmp;
                     }
                 }
@@ -9626,7 +9559,6 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first assertion
                 inspected, even though there can be multiple assertions at
 
@@ -9635,12 +9567,11 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 //if (tmp->goal)
                 //  print_with_symbols(thisAgent, " [%y] ", tmp->goal);
                 //else
-                //  thisAgent->OutputManager->print( " [NIL] ");
-                /* REW: end  08.20.97 */
+                //  print(thisAgent, " [NIL] ");
                 //if(tmp->count > 1)
-                //  thisAgent->OutputManager->print( "(%d)\n", tmp->count);
+                //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
-                //  thisAgent->OutputManager->print( "\n");
+                //  print(thisAgent, "\n");
                 free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
@@ -9713,19 +9644,19 @@ int64_t xml_aux(agent* thisAgent,    /* current agent */
     {
         /* --- recursively print match counts for the NCC subconditions --- */
         xml_begin_tag(thisAgent, kTagConjunctive_Negation_Condition) ;
-        //thisAgent->OutputManager->print( "    -{\n");
+        //print (thisAgent, "    -{\n");
         xml_aux(thisAgent, real_parent_node(node->b.cn.partner),
                 parent,
                 cond->data.ncc.bottom,
                 wtt,
                 indent + 5);
         //print_spaces (thisAgent, indent);
-        //thisAgent->OutputManager->print( "%s }\n", match_count_string);
+        //print (thisAgent, "%s }\n", match_count_string);
         xml_end_tag(thisAgent, kTagConjunctive_Negation_Condition) ;
     }
     else
     {
-        //thisAgent->OutputManager->print( "%s", match_count_string);
+        //print (thisAgent, "%s", match_count_string);
         xml_condition(thisAgent, cond);
 
         // DJP: This is a trick to let us insert more attributes into xml_condition().
@@ -9741,7 +9672,7 @@ int64_t xml_aux(agent* thisAgent,    /* current agent */
         }
         xml_move_current_to_parent(thisAgent) ;
 
-        //thisAgent->OutputManager->print( "\n");
+        //print (thisAgent, "\n");
         /* --- if this is the first match-failure (0 matches), print info on
            matches for left and right --- */
         if (matches_one_level_up && (!matches_at_this_level))
@@ -9750,7 +9681,7 @@ int64_t xml_aux(agent* thisAgent,    /* current agent */
             {
                 //print_spaces (thisAgent, indent);
                 xml_begin_tag(thisAgent, kTagLeftMatches) ;
-                //thisAgent->OutputManager->print( "*** Matches For Left ***\n");
+                //print (thisAgent, "*** Matches For Left ***\n");
                 parent_tokens = get_all_left_tokens_emerging_from_node(thisAgent, parent);
                 for (t = parent_tokens; t != NIL; t = t->next_of_node)
                 {
@@ -9758,20 +9689,20 @@ int64_t xml_aux(agent* thisAgent,    /* current agent */
                     xml_begin_tag(thisAgent, kTagToken) ;
                     xml_whole_token(thisAgent, t, wtt);
                     xml_end_tag(thisAgent, kTagToken) ;
-                    //thisAgent->OutputManager->print( "\n");
+                    //print (thisAgent, "\n");
                 }
                 deallocate_token_list(thisAgent, parent_tokens);
                 xml_end_tag(thisAgent, kTagLeftMatches) ;
                 //print_spaces (thisAgent, indent);
-                //thisAgent->OutputManager->print( "*** Matches for Right ***\n");
+                //print (thisAgent, "*** Matches for Right ***\n");
                 xml_begin_tag(thisAgent, kTagRightMatches) ;
                 //print_spaces (thisAgent, indent);
                 for (rm = node->b.posneg.alpha_mem_->right_mems; rm != NIL;
                         rm = rm->next_in_am)
                 {
-                    //if (wtt==TIMETAG_WME_TRACE) thisAgent->OutputManager->print( "%lu", rm->w->timetag);
+                    //if (wtt==TIMETAG_WME_TRACE) print (thisAgent, "%lu", rm->w->timetag);
                     //else if (wtt==FULL_WME_TRACE) print_wme (thisAgent, rm->w);
-                    //thisAgent->OutputManager->print( " ");
+                    //print (thisAgent, " ");
                     if (wtt == TIMETAG_WME_TRACE)
                     {
                         xml_att_val(thisAgent, kWME_TimeTag, rm->w->timetag);
@@ -9782,7 +9713,7 @@ int64_t xml_aux(agent* thisAgent,    /* current agent */
                     }
                 }
                 xml_end_tag(thisAgent, kTagRightMatches) ;
-                //thisAgent->OutputManager->print( "\n");
+                //print (thisAgent, "\n");
             }
         } /* end of if (matches_one_level_up ...) */
     }
@@ -9804,7 +9735,7 @@ void xml_partial_match_information(agent* thisAgent, rete_node* p_node, wme_trac
     n = xml_aux(thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);
     xml_att_val(thisAgent, kMatches, n) ;
-    //thisAgent->OutputManager->print( "\n%d complete matches.\n", n);
+    //print (thisAgent, "\n%d complete matches.\n", n);
     if (n && (wtt != NONE_WME_TRACE))
     {
         print(thisAgent, "*** Complete Matches ***\n");
@@ -9812,7 +9743,7 @@ void xml_partial_match_information(agent* thisAgent, rete_node* p_node, wme_trac
         for (t = tokens; t != NIL; t = t->next_of_node)
         {
             xml_whole_token(thisAgent, t, wtt);
-            //thisAgent->OutputManager->print( "\n");
+            //print (thisAgent, "\n");
         }
         deallocate_token_list(thisAgent, tokens);
     }
