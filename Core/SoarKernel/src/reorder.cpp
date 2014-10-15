@@ -22,7 +22,6 @@
 #include "reorder.h"
 #include "kernel.h"
 #include "rhs.h"
-
 #include "production.h"
 #include "mem.h"
 #include "symtab.h"
@@ -139,9 +138,10 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         /* --- there are remaining_actions but none can be legally added --- */
         print(thisAgent,  "Error: production %s has a bad RHS--\n",
               thisAgent->name_of_production_being_reordered);
-        print(thisAgent,  "       Either it creates structure not connected to anything\n");
-        print(thisAgent,  "       else in WM, or it tries to pass an unbound variable as\n");
-        print(thisAgent,  "       an argument to a function.\n");
+        print(thisAgent, "       Either it creates a variable that is not tested in a\n");
+        print(thisAgent, "       positive condition on the LHS (negative conditions\n");
+        print(thisAgent, "       don't count) or it tries to pass an unbound variable\n");
+        print(thisAgent, "       as an argument to a function.\n");
         /* --- reconstruct list of all actions --- */
         if (last_action)
         {
@@ -251,7 +251,7 @@ bool legal_to_execute_action(action* a, tc_number tc)
 void print_saved_test(agent* thisAgent, saved_test* st)
 {
     print_with_symbols(thisAgent, "  Index: %y  Test: ", st->var);
-    print(thisAgent,  test_to_string(st->the_test, NULL, 0));
+    print_string(thisAgent, test_to_string(st->the_test, NULL, 0));
 }
 
 void print_saved_test_list(agent* thisAgent, saved_test* st)
@@ -324,7 +324,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             if (!sym)
             {
                 sym = generate_new_variable(thisAgent, "dummy-");
-                //New = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
+                //MToDoRefcnt This used to be: New = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
                 New = make_test(thisAgent, sym, EQUALITY_TEST);
                 c->first = New;
                 c->rest = ct->data.conjunct_list;
@@ -1333,7 +1333,6 @@ void reorder_condition_list(agent* thisAgent,
     saved_test* saved_tests;
     
     saved_tests = simplify_condition_list(thisAgent, *top_of_conds);
-    
     reorder_simplified_conditions(thisAgent, top_of_conds, bottom_of_conds, roots, tc,
                                   reorder_nccs);
     dprint(DT_REORDERER, "After Reorder Conditons:\n");

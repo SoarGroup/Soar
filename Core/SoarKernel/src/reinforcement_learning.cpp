@@ -30,12 +30,12 @@
 #include "tempmem.h"
 #include "print.h"
 #include "xml.h"
-#include "recmem.h"
 #include "test.h"
+#include "recmem.h"
+#include "decide.h"
+#include "prefmem.h"
 #include "debug.h"
 #include "variablization_manager.h"
-#include "prefmem.h"
-#include "decide.h"
 
 extern Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
 extern void dprint_production(TraceMode mode, production* prod);
@@ -332,7 +332,7 @@ bool rl_valid_template(production* prod)
             }
             else if (a->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
             {
-                if (rhs_value_is_symbol(a->referent) && (rhs_value_to_symbol(a->referent)->symbol_type == VARIABLE_SYMBOL_TYPE))
+                if (rhs_value_is_symbol(a->referent) && (rhs_value_to_symbol(a->referent)->id->is_variable()))
                 {
                     var_pref = true;
                 }
@@ -473,6 +473,7 @@ int rl_get_template_id(const char* prod_name)
     }
 
     // make sure id is a valid natural number
+    
     std::string id_str = temp.substr(last_star + 1);
     if (!is_whole_number(id_str.c_str()))
     {
@@ -518,7 +519,7 @@ inline void rl_get_symbol_constant(Symbol* p_sym, Symbol* i_sym, rl_symbol_map* 
 {
     if ((p_sym->symbol_type == VARIABLE_SYMBOL_TYPE) && ((i_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE) || (i_sym->id->smem_lti != NIL)))
     {
-        constants->insert(std::make_pair< Symbol*, Symbol* >(p_sym, i_sym));
+        constants->insert(std::make_pair(p_sym, i_sym));
     }
 }
 

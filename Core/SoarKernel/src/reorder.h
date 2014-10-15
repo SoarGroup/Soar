@@ -39,4 +39,3 @@ extern list* collect_root_variables(agent* thisAgent, condition*, tc_number, boo
 
 #endif
 
-

@@ -29,7 +29,7 @@
 #include <stdlib.h>
 
 
-//#include "instantiations.h"
+#include "instantiations.h"
 #include "kernel.h"
 #include "mem.h"
 #include "symtab.h"
@@ -52,6 +52,7 @@
 #include "consistency.h"
 #include "misc.h"
 #include "soar_module.h"
+#include "variablization_manager.h"
 
 #include "assert.h"
 #include <string> // SBW 8/4/08
@@ -76,6 +77,7 @@ typedef std::list< condition* > cond_mpool_list;
  couple of global STL lists to get this information
  from the rhs function to this preference adding code)*/
 wme* glbDeepCopyWMEs = NULL;
+
 
 /* --------------------------------------------------------------------------
                  Build context-dependent preference set
@@ -316,7 +318,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
          but this is natural Soar behavior and outside our perview.
         
          */
-        if ((result->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+        if ((result->is_identifier())
                 && (result->id->smem_lti != NIL) &&
                 (result->id->level == SMEM_LTI_UNKNOWN_LEVEL) &&
                 (new_id_level > 0))
@@ -343,14 +345,14 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
         
         if (!sym)
         {
-            sym = make_new_identifier(thisAgent, new_id_letter, new_id_level, NIL);
+            sym = make_new_identifier(thisAgent, new_id_letter, new_id_level);
             *(thisAgent->rhs_variable_bindings + index) = sym;
             return sym;
         }
-        else if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
+        else if (sym->is_variable())
         {
             new_id_letter = *(sym->var->name + 1);
-            sym = make_new_identifier(thisAgent, new_id_letter, new_id_level, NIL);
+            sym = make_new_identifier(thisAgent, new_id_letter, new_id_level);
             *(thisAgent->rhs_variable_bindings + index) = sym;
             return sym;
         }
@@ -467,7 +469,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     {
         goto abort_execute_action;
     }
-    if (id->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    if (!id->is_identifier())
     {
         print_with_symbols(thisAgent,
                            "Error: RHS makes a preference for %y (not an identifier)\n",
@@ -538,7 +540,6 @@ abort_execute_action: /* control comes here when some error occurred */
     {
         symbol_remove_ref(thisAgent, referent);
     }
-    
     return NIL;
 }
 
@@ -745,8 +746,6 @@ void init_firer(agent* thisAgent)
                      sizeof(instantiation), "instantiation");
 }
 
-/* --- Macro returning true iff we're supposed to trace firings for the
- given instantiation, which should have the "prod" field filled in. --- */
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
 {
     return ((inst)->prod
@@ -761,7 +760,6 @@ inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
  newly_created_instantiations.  It also calls chunk_instantiation() to
  do any necessary chunk or justification building.
  ----------------------------------------------------------------------- */
-#include "variablization_manager.h"
 void create_instantiation(agent* thisAgent, production* prod,
                           struct token_struct* tok, wme* w)
 {
@@ -822,6 +820,7 @@ void create_instantiation(agent* thisAgent, production* prod,
                                  &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
                                  ((prod->type != TEMPLATE_PRODUCTION_TYPE) ? ALL_ORIGINALS : JUST_INEQUALITIES));
                                  
+    /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
             cond = cond->next)
     {
@@ -836,10 +835,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     trace_it = trace_firings_of_inst(thisAgent, inst);
     if (trace_it)
     {
-        if (get_printer_output_column(thisAgent) != 1)
-        {
-            print(thisAgent,  "\n");    /* AGR 617/634 */
-        }
+        start_fresh_line(thisAgent);
         print(thisAgent,  "Firing ");
         print_instantiation_with_wmes(thisAgent, inst,
                                       static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
@@ -1328,10 +1324,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
             {
                 if (!retracted_a_preference)
                 {
-                    if (get_printer_output_column(thisAgent) != 1)
-                    {
-                        print(thisAgent,  "\n");    /* AGR 617/634 */
-                    }
+                    start_fresh_line(thisAgent);
                     print(thisAgent,  "Retracting ");
                     print_instantiation_with_wmes(thisAgent, inst,
                                                   static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),

@@ -38,9 +38,9 @@
 #include "reorder.h"
 #include "rete.h"
 #include "xml.h"
+#include "decide.h"
 #include "test.h"
 #include "prefmem.h"
-#include "decide.h"
 
 /* -----------------------------------------------------------------------
                   O-Support Transitive Closure Routines
@@ -53,8 +53,8 @@
    to the TC.  (Note that the rhs_prefs shouldn't be modified between the
    begin_os_tc() call and the last add_to_os_tc() call.)
 
-   Each identifier in the TC is marked with common.tc_num=o_support_tc; the
-   caller can check for TC membership by looking at common.tc_num on any id.
+   Each identifier in the TC is marked with id.tc_num=o_support_tc; the
+   caller can check for TC membership by looking at id.tc_num on any id.
 ----------------------------------------------------------------------- */
 
 /* This prototype is needed by the following macros. */
@@ -320,10 +320,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     preference* pref;
     wme* w;
     condition* c;
-
-
-    /* RCHONG: begin 10.11 */
-
     action*    act;
     bool      o_support, op_elab;
     bool      operator_proposal;
@@ -331,9 +327,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     int       pass;
     wme*       lowest_goal_wme;
 
-    /* RCHONG: end 10.11 */
-
-    /* REW: begin 09.15.96 */
     if (thisAgent->soar_verbose_flag == true)
     {
         printf("\n      in calculate_support_for_instantiation_preferences:");
@@ -639,7 +632,7 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
                      (pref->type == REQUIRE_PREFERENCE_TYPE)) &&
                     (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE))
             {
-                pref->value->id->tc_num = thisAgent->o_support_tc;
+                pref->value->tc_num = thisAgent->o_support_tc;
                 anything_added = true;
             }
         }
@@ -661,12 +654,12 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
                 anything_added = true;
                 if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
                 {
-                    pref->value->id->tc_num = thisAgent->o_support_tc;
+                    pref->value->tc_num = thisAgent->o_support_tc;
                 }
                 if ((preference_is_binary(pref->type)) &&
                         (pref->referent->symbol_type == IDENTIFIER_SYMBOL_TYPE))
                 {
-                    pref->referent->id->tc_num = thisAgent->o_support_tc;
+                    pref->referent->tc_num = thisAgent->o_support_tc;
                 }
             }
         }

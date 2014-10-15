@@ -19,7 +19,6 @@
 #include <vector>
 
 #include "soar_module.h"
-
 #include "chunk.h"
 #include "production.h"
 

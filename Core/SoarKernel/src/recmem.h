@@ -29,7 +29,6 @@
    from the rhs function to this prefference adding code)*/
 extern wme* glbDeepCopyWMEs;
 
-
 typedef signed short goal_stack_level;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
