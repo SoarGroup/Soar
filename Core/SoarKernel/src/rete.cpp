@@ -832,7 +832,6 @@ inline void update_stats_for_destroying_node(agent* thisAgent, rete_node* node)
 
 
 
-/* REW: begin 08.20.97 */
 
 Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* msc)
 {
@@ -954,7 +953,6 @@ void print_retraction(agent* thisAgent, ms_change* msc)
     }
 }
 
-/* REW: end   08.20.97 */
 
 
 bool any_assertions_or_retractions_ready(agent* thisAgent)
@@ -962,7 +960,6 @@ bool any_assertions_or_retractions_ready(agent* thisAgent)
 
     Symbol* goal;
 
-    /* REW: begin 08.20.97 */
     /* Determining if assertions or retractions are ready require looping over
     all goals in Waterfall/Operand2 */
 
@@ -990,7 +987,6 @@ bool any_assertions_or_retractions_ready(agent* thisAgent)
     ready to fire or retract */
 
     return false;
-    /* REW: end   08.20.97 */
 }
 
 
@@ -1019,8 +1015,6 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
 {
     ms_change* msc = NIL;
 
-    /* REW: begin 09.15.96 */
-    /* REW: begin 08.20.97 */
 
     /* In Waterfall, we return only assertions that match in the
     currently active goal */
@@ -1082,8 +1076,6 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
                       the procedure. */
 
     }
-    /* REW: end   08.20.97 */
-    /* REW: end   09.15.96 */
 
     remove_from_dll(msc->p_node->b.p.tentative_assertions, msc,
                     next_of_node, prev_of_node);
@@ -1180,8 +1172,6 @@ bool get_next_retraction(agent* thisAgent, instantiation** inst)
 
 
 
-/* REW: begin 08.20.97 */
-
 /* Retract an instantiation on the nil goal list.  If there are no
    retractions on the nil goal retraction list, return false.  This
    procedure is only called in Operand2 mode, so there is no need for
@@ -1217,7 +1207,6 @@ bool get_next_nil_goal_retraction(agent* thisAgent, instantiation** inst)
 
 }
 
-/* REW: end   08.20.97 */
 
 
 
@@ -4054,7 +4043,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 
     /* KJC 1/28/98  left these comments in to support REW comments below
     but commented out the operand_mode code  */
-    /* RCHONG: begin 10.11 */
     /*
 
     in operand, we don't want to refract the instantiation.  consider
@@ -4077,15 +4065,12 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     refracted_inst = NIL;
     }
     */
-    /* RCHONG: end 10.11 */
 
-    /* REW: begin 09.15.96 */
     /* In Operand2, for now, we want both chunks and justifications to be
     treated as refracted instantiations, at least for now.  At some point,
     this issue needs to be re-visited for chunks that immediately match with
     a different instantiation and a different type of support than the
     original, chunk-creating instantion. */
-    /* REW: end   09.15.96 */
 
 
     /* --- handle initial refraction by adding it to tentative_retractions --- */
@@ -4097,7 +4082,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         allocate_with_pool(thisAgent, &thisAgent->ms_change_pool, &msc);
         msc->inst = refracted_inst;
         msc->p_node = p_node;
-        /* REW: begin 08.20.97 */
         /* Because the RETE 'artificially' refracts this instantiation (ie, it is
         not actually firing -- the original instantiation fires but not the
         chunk), we make the refracted instantiation of the chunk a nil_goal
@@ -4119,7 +4103,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 
         insert_at_head_of_dll(thisAgent->nil_goal_retractions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end   08.20.97 */
 
 #ifdef BUG_139_WORKAROUND
         msc->p_node->b.p.prod->already_fired = 0;       /* RPM workaround for bug #139; mark prod as not fired yet */
@@ -4147,7 +4130,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             msc = p_node->b.p.tentative_retractions;
             p_node->b.p.tentative_retractions = NIL;
             remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
-            /* REW: begin 10.03.97 */ /* BUGFIX 2.125 */
             if (msc->goal)
             {
                 remove_from_dll(msc->goal->id->ms_retractions, msc,
@@ -4158,7 +4140,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                 remove_from_dll(thisAgent->nil_goal_retractions,
                                 msc, next_in_level, prev_in_level);
             }
-            /* REW: end   10.03.97 */
 
 
             free_with_pool(&thisAgent->ms_change_pool, msc);
@@ -4361,86 +4342,6 @@ abort_var_bound_in_reconstructed_conds:
         abort_with_fatal_error(thisAgent, msg);
     }
     return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
-
-/* ----------------------------------------------------------------------
-                               Collect Nots
-
-   When we build the instantiated conditions for a production being
-   fired, we also record all the "<>" tests between pairs of identifiers.
-   (This information is used during chunking.)  This procedure looks for
-   any such <> tests in the given Rete test list (from the "other tests"
-   at a Rete node), and adds records of them to the global variable
-   nots_found_in_production.  "Right_wme" is the wme that matched
-   the current condition; "cond" is the currently-being-reconstructed
-   condition.
----------------------------------------------------------------------- */
-
-//not_struct *nots_found_in_production; /* collected <> tests */
-
-void collect_nots(agent* thisAgent,
-                  rete_test* rt,
-                  wme* right_wme,
-                  condition* cond,
-                  not_struct*& nots_found_in_production)
-{
-    not_struct* new_not;
-    Symbol* right_sym;
-    Symbol* referent;
-
-    for (; rt != NIL; rt = rt->next)
-    {
-
-        if (! test_is_not_equal_test(rt->type))
-        {
-            continue;
-        }
-
-        right_sym = field_from_wme(right_wme, rt->right_field_num);
-
-        if (right_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-        {
-            continue;
-        }
-
-        if (rt->type == CONSTANT_RELATIONAL_RETE_TEST +
-                RELATIONAL_NOT_EQUAL_RETE_TEST)
-        {
-            referent = rt->data.constant_referent;
-            if (referent->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-            {
-                continue;
-            }
-            allocate_with_pool(thisAgent, &thisAgent->not_pool, &new_not);
-            new_not->next = nots_found_in_production;
-            nots_found_in_production = new_not;
-            new_not->s1 = right_sym;
-            symbol_add_ref(thisAgent, right_sym);
-            new_not->s2 = referent;
-            symbol_add_ref(thisAgent, referent);
-            continue;
-        }
-
-        if (rt->type == VARIABLE_RELATIONAL_RETE_TEST +
-                RELATIONAL_NOT_EQUAL_RETE_TEST)
-        {
-            referent = var_bound_in_reconstructed_conds(thisAgent, cond,
-                       rt->data.variable_referent.field_num,
-                       rt->data.variable_referent.levels_up);
-            if (referent->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-            {
-                continue;
-            }
-            allocate_with_pool(thisAgent, &thisAgent->not_pool, &new_not);
-            new_not->next = nots_found_in_production;
-            nots_found_in_production = new_not;
-            new_not->s1 = right_sym;
-            symbol_add_ref(thisAgent, right_sym);
-            new_not->s2 = referent;
-            symbol_add_ref(thisAgent, referent);
-            continue;
-        }
-    }
 }
 
 /* ----------------------------------------------------------------------
@@ -4862,35 +4763,12 @@ bool((*(rete_test_routines[256]))
     ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr
 };
 
-/*#define match_left_and_right(rete_test,left,w) \
-  ( (*(rete_test_routines[(rete_test)->type])) \
-    ((rete_test),(left),(w)) )*/
 inline bool match_left_and_right(agent* thisAgent, rete_test* _rete_test,
                                  token* left, wme* w)
 {
     return ((*(rete_test_routines[(_rete_test)->type])) \
             (thisAgent, (_rete_test), (left), (w)));
 }
-
-/* This macro cannot be easily converted to an inline function.
-   Some additional changes are required.
-*/
-/*
-#define numeric_comparison_between_symbols(s1,s2,comparator_op) ( \
-  ( ((s1)->symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
-    (((s1)->ic->value) comparator_op ((s2)->ic->value)) : \
-  ( ((s1)->symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
-    (((s1)->ic->value) comparator_op ((s2)->fc->value)) : \
-  ( ((s1)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
-    (((s1)->fc->value) comparator_op ((s2)->ic->value)) : \
-  ( ((s1)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
-    (((s1)->fc->value) comparator_op ((s2)->fc->value)) : \
-  false )
-*/
 
 /* Note:  "=" and "<>" tests always return false when one argument is
    an integer and the other is a floating point number */
@@ -6304,7 +6182,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         remove_from_dll(node->b.p.tentative_retractions, msc,
                         next_of_node, prev_of_node);
         remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
-        /* REW: begin 08.20.97 */
         if (msc->goal)
         {
             remove_from_dll(msc->goal->id->ms_retractions, msc,
@@ -6325,7 +6202,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 msc, next_in_level, prev_in_level);
             }
         }
-        /* REW: end   08.20.97 */
 
         free_with_pool(&thisAgent->ms_change_pool, msc);
 #ifdef DEBUG_RETE_PNODES
@@ -6347,13 +6223,9 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->w = w;
     msc->p_node = node;
     msc->inst = NIL;  /* just for safety */
-    /* REW: begin 08.20.97 */
     /* initialize goal regardless of run mode */
     msc->level = 0;
     msc->goal = NIL;
-    /* REW: end   08.20.97 */
-
-    /* RCHONG: begin 10.11 */
 
     /*  (this is a RCHONG comment, but might also apply to Operand2...?)
 
@@ -6372,17 +6244,12 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     */
 
-    /* operand code removed 1/22/99 - kjc */
-
-    /* REW: begin 09.15.96 */
-    /* REW: begin 08.20.97 */
     /* Find the goal and level for this ms change */
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 #ifdef DEBUG_WATERFALL
     print("\n    Level of goal is  %d", msc->level);
 #endif
-    /* REW: end 08.20.97 */
 
     prod_type = IE_PRODS;
 
@@ -6625,11 +6492,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         insert_at_head_of_dll(thisAgent->ms_o_assertions, msc, next, prev);
 
-        /* REW: begin 08.20.97 */
         insert_at_head_of_dll(msc->goal->id->ms_o_assertions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end   08.20.97 */
-
 
         node->b.p.prod->OPERAND_which_assert_list = O_LIST;
 
@@ -6648,10 +6512,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         insert_at_head_of_dll(thisAgent->ms_i_assertions,
                               msc, next, prev);
 
-        /* REW: end 08.20.97 */
         insert_at_head_of_dll(msc->goal->id->ms_i_assertions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end 08.20.97 */
 
         node->b.p.prod->OPERAND_which_assert_list = I_LIST;
 
@@ -6664,7 +6526,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             xml_generate_verbose(thisAgent, buf);
         }
     }
-    /* REW: end   09.15.96 */
 
     // :interrupt
     if (node->b.p.prod->interrupt)
@@ -6732,27 +6593,20 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 }
             }
 
-            /* REW: begin 09.15.96 */
             if (node->b.p.prod->OPERAND_which_assert_list == O_LIST)
             {
                 remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
-                /* REW: begin 08.20.97 */
                 /* msc already defined for the assertion so the goal should be defined
                 as well. */
                 remove_from_dll(msc->goal->id->ms_o_assertions, msc,
                                 next_in_level, prev_in_level);
-                /* REW: end   08.20.97 */
             }
             else if (node->b.p.prod->OPERAND_which_assert_list == I_LIST)
             {
                 remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
-                /* REW: begin 08.20.97 */
                 remove_from_dll(msc->goal->id->ms_i_assertions, msc,
                                 next_in_level, prev_in_level);
-                /* REW: end   08.20.97 */
             }
-            /* REW: end   09.15.96 */
-
             free_with_pool(&thisAgent->ms_change_pool, msc);
 #ifdef DEBUG_RETE_PNODES
             print_with_symbols(thisAgent, "\nRemoving tentative assertion: %y",
@@ -6785,14 +6639,11 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->p_node = node;
         msc->tok = NIL;     /* just for safety */
         msc->w = NIL;       /* just for safety */
-        /* REW: begin 08.20.97 */
         msc->level = 0;     /* just for safety */
         msc->goal = NIL;    /* just for safety */
-        /* REW: end   08.20.97 */
         insert_at_head_of_dll(node->b.p.tentative_retractions, msc,
                               next_of_node, prev_of_node);
 
-        /* REW: begin 08.20.97 */
         /* Determine what the goal of the msc is and add it to that
         goal's list of retractions */
         msc->goal = find_goal_for_match_set_change_retraction(msc);
@@ -6874,13 +6725,11 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             }
         }
 #endif
-        /* REW: end   08.20.97 */
 
         activation_exit_sanity_check();
         return;
     }
 
-    /* REW: begin 09.15.96 */
 
     if (thisAgent->soar_verbose_flag == true)
     {
@@ -6890,7 +6739,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         xml_generate_verbose(thisAgent, buf);
     }
 
-    /* REW: end   09.15.96 */
 #ifdef BUG_139_WORKAROUND
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
@@ -8969,10 +8817,8 @@ typedef struct match_set_trace
     Symbol* sym;
     int        count;
     struct match_set_trace* next;
-    /* REW: begin 08.20.97 */
     /* Add match goal to the print of the matching production */
     Symbol* goal;
-    /* REW: end   08.20.97 */
 } MS_trace;
 
 MS_trace* in_ms_trace(Symbol* sym, MS_trace* trace)
@@ -8988,7 +8834,6 @@ MS_trace* in_ms_trace(Symbol* sym, MS_trace* trace)
     return 0;
 }
 
-/* REW: begin 10.22.97 */
 MS_trace* in_ms_trace_same_goal(Symbol* sym, MS_trace* trace, Symbol* goal)
 {
     MS_trace* tmp;
@@ -9001,7 +8846,6 @@ MS_trace* in_ms_trace_same_goal(Symbol* sym, MS_trace* trace, Symbol* goal)
     }
     return 0;
 }
-/* REW: end   10.22.97 */
 
 void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
 {
@@ -9012,7 +8856,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
     /* --- Print assertions --- */
 
 
-    /* REW: begin 09.15.96 */
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT)
     {
         print(thisAgent, "O Assertions:\n");
@@ -9022,10 +8865,8 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             if (wtt != NONE_WME_TRACE)
             {
                 print_with_symbols(thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 print_with_symbols(thisAgent, " [%y] ", msc->goal);
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 print_whole_token(thisAgent, &temp_token, wtt);
@@ -9033,11 +8874,9 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
@@ -9046,10 +8885,8 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -9062,13 +8899,11 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 tmp = ms_trace;
                 ms_trace = tmp->next;
                 print_with_symbols(thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 if (tmp->count > 1)
                 {
                     print(thisAgent, "(%d)\n", tmp->count);
@@ -9091,10 +8926,8 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             if (wtt != NONE_WME_TRACE)
             {
                 print_with_symbols(thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 print_with_symbols(thisAgent, " [%y] ", msc->goal);
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 print_whole_token(thisAgent, &temp_token, wtt);
@@ -9102,11 +8935,9 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
@@ -9116,10 +8947,8 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -9132,13 +8961,11 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 tmp = ms_trace;
                 ms_trace = tmp->next;
                 print_with_symbols(thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 if (tmp->count > 1)
                 {
                     print(thisAgent, "(%d)\n", tmp->count);
@@ -9151,7 +8978,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
         }
     }
-    /* REW: end   09.15.96 */
 
     /* --- Print retractions --- */
     if (mst == MS_ASSERT_RETRACT || mst == MS_RETRACT)
@@ -9169,11 +8995,9 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 if (msc->inst->prod)
                 {
-                    /* REW: begin 10.22.97 */
                     if ((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
                                                      ms_trace, msc->goal)) != NIL)
                     {
-                        /* REW: end   10.22.97 */
                         tmp->count++;
                     }
                     else
@@ -9183,10 +9007,8 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                         tmp->sym = msc->inst->prod->name;
                         tmp->count = 1;
                         tmp->next = ms_trace;
-                        /* REW: begin 08.20.97 */
                         /* Add match goal to the print of the matching production */
                         tmp->goal = msc->goal;
-                        /* REW: end   08.20.97 */
                         ms_trace = tmp;
                     }
                 }
@@ -9199,7 +9021,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 tmp = ms_trace;
                 ms_trace = tmp->next;
                 print_with_symbols(thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first assertion
                 inspected, even though there can be multiple assertions at
 
@@ -9213,7 +9034,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, " [NIL] ");
                 }
-                /* REW: end  08.20.97 */
                 if (tmp->count > 1)
                 {
                     print(thisAgent, "(%d)\n", tmp->count);
@@ -9591,7 +9411,6 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
 
     /* --- Print assertions --- */
 
-    /* REW: begin 09.15.96 */
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT)
     {
         //print (thisAgent, "O Assertions:\n");
@@ -9606,11 +9425,9 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 xml_att_val(thisAgent, kName, msc->p_node->b.p.prod->name) ;
                 xml_att_val(thisAgent, kGoal, msc->goal) ;
                 //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 //print_with_symbols(thisAgent, " [%y] ", msc->goal);
 
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 xml_whole_token(thisAgent, &temp_token, wtt);
@@ -9619,11 +9436,9 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
@@ -9632,10 +9447,8 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -9655,13 +9468,11 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 //if (tmp->count > 1)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
@@ -9683,14 +9494,12 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             if (wtt != NONE_WME_TRACE)
             {
                 //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 //print_with_symbols(thisAgent, " [%y] ", msc->goal);
                 xml_begin_tag(thisAgent, kTagProduction) ;
                 xml_att_val(thisAgent, kName, msc->p_node->b.p.prod->name) ;
                 xml_att_val(thisAgent, kGoal, msc->goal) ;
 
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 xml_whole_token(thisAgent, &temp_token, wtt);
@@ -9699,11 +9508,9 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
@@ -9713,10 +9520,8 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -9736,13 +9541,11 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 //if (tmp->count > 1)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
@@ -9754,7 +9557,6 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
         }
     }
     xml_end_tag(thisAgent, kIAssertions) ;
-    /* REW: end   09.15.96 */
 
     if (mst == MS_ASSERT_RETRACT || mst == MS_RETRACT)
     {
@@ -9772,11 +9574,9 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 if (msc->inst->prod)
                 {
-                    /* REW: begin 10.22.97 */
                     if ((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
                                                      ms_trace, msc->goal)) != NIL)
                     {
-                        /* REW: end   10.22.97 */
                         tmp->count++;
                     }
                     else
@@ -9786,10 +9586,8 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                         tmp->sym = msc->inst->prod->name;
                         tmp->count = 1;
                         tmp->next = ms_trace;
-                        /* REW: begin 08.20.97 */
                         /* Add match goal to the print of the matching production */
                         tmp->goal = msc->goal;
-                        /* REW: end   08.20.97 */
                         ms_trace = tmp;
                     }
                 }
@@ -9816,7 +9614,6 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first assertion
                 inspected, even though there can be multiple assertions at
 
@@ -9826,7 +9623,6 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 //  print_with_symbols(thisAgent, " [%y] ", tmp->goal);
                 //else
                 //  print(thisAgent, " [NIL] ");
-                /* REW: end  08.20.97 */
                 //if(tmp->count > 1)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
@@ -10168,3 +9964,83 @@ void init_rete(agent* thisAgent)
                        RELATIONAL_SAME_TYPE_RETE_TEST] =
                            variable_same_type_rete_test_routine;
 }
+/* ----------------------------------------------------------------------
+                               Collect Nots
+
+   When we build the instantiated conditions for a production being
+   fired, we also record all the "<>" tests between pairs of identifiers.
+   (This information is used during chunking.)  This procedure looks for
+   any such <> tests in the given Rete test list (from the "other tests"
+   at a Rete node), and adds records of them to the global variable
+   nots_found_in_production.  "Right_wme" is the wme that matched
+   the current condition; "cond" is the currently-being-reconstructed
+   condition.
+---------------------------------------------------------------------- */
+
+//not_struct *nots_found_in_production; /* collected <> tests */
+
+void collect_nots(agent* thisAgent,
+                  rete_test* rt,
+                  wme* right_wme,
+                  condition* cond,
+                  not_struct*& nots_found_in_production)
+{
+    not_struct* new_not;
+    Symbol* right_sym;
+    Symbol* referent;
+
+    for (; rt != NIL; rt = rt->next)
+    {
+
+        if (! test_is_not_equal_test(rt->type))
+        {
+            continue;
+        }
+
+        right_sym = field_from_wme(right_wme, rt->right_field_num);
+
+        if (right_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+        {
+            continue;
+        }
+
+        if (rt->type == CONSTANT_RELATIONAL_RETE_TEST +
+                RELATIONAL_NOT_EQUAL_RETE_TEST)
+        {
+            referent = rt->data.constant_referent;
+            if (referent->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+            {
+                continue;
+            }
+            allocate_with_pool(thisAgent, &thisAgent->not_pool, &new_not);
+            new_not->next = nots_found_in_production;
+            nots_found_in_production = new_not;
+            new_not->s1 = right_sym;
+            symbol_add_ref(thisAgent, right_sym);
+            new_not->s2 = referent;
+            symbol_add_ref(thisAgent, referent);
+            continue;
+        }
+
+        if (rt->type == VARIABLE_RELATIONAL_RETE_TEST +
+                RELATIONAL_NOT_EQUAL_RETE_TEST)
+        {
+            referent = var_bound_in_reconstructed_conds(thisAgent, cond,
+                       rt->data.variable_referent.field_num,
+                       rt->data.variable_referent.levels_up);
+            if (referent->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+            {
+                continue;
+            }
+            allocate_with_pool(thisAgent, &thisAgent->not_pool, &new_not);
+            new_not->next = nots_found_in_production;
+            nots_found_in_production = new_not;
+            new_not->s1 = right_sym;
+            symbol_add_ref(thisAgent, right_sym);
+            new_not->s2 = referent;
+            symbol_add_ref(thisAgent, referent);
+            continue;
+        }
+    }
+}
+
