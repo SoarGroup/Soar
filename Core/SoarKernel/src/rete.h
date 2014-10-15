@@ -147,9 +147,6 @@ Symbol* var_bound_in_reconstructed_original_conds(
 #define CN_PARTNER_BNODE        0x43
 #define P_BNODE                 0x44
 
-/* --- dll of all wmes currently in the rete:  this is needed to
-       initialize newly created alpha memories --- */
-/* wme *all_wmes_in_rete; (moved to glob_vars.h) */
 
 /* --- structure of each alpha memory --- */
 typedef struct alpha_mem_struct
