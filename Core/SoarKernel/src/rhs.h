@@ -91,6 +91,11 @@ typedef struct action_struct
     rhs_value referent;
 } action;
 
+typedef struct binding_structure
+{
+    Symbol* from, *to;
+} Binding;
+
 extern rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv);
 
 extern void deallocate_rhs_value(agent* thisAgent, rhs_value rv);
