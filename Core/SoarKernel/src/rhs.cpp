@@ -10,12 +10,13 @@
  *               Utility Routines for Actions and RHS Values
  *
  * ================================================================= */
+#include "portability.h"
+#include <stdlib.h>
 
 #include "rhs.h"
-#include "production.h"
 #include "kernel.h"
-#include "agent.h"
 #include "print.h"
+#include "agent.h"
 #include "production.h"
 #include "variablization_manager.h"
 #include "test.h"
@@ -215,7 +216,7 @@ void add_all_variables_in_action(agent* thisAgent, action* a,
     {
         /* --- ordinary make actions --- */
         id = rhs_value_to_symbol(a->id);
-        if (id->symbol_type == VARIABLE_SYMBOL_TYPE)
+        if (id->is_variable())
         {
             id->mark_if_unmarked(thisAgent, tc, var_list);
         }
