@@ -2820,6 +2820,39 @@ void deallocate_node_varnames(agent* thisAgent,
     }
 }
 
+/* ----------------------------------------------------------------------
+                          Add Varnames to Test
+
+   This routine adds (an equality test for) each variable in "vn" to
+   the given test "t", destructively modifying t.  This is used for
+   restoring the original variables to test in a hand-coded production
+   when we reconstruct its conditions.
+---------------------------------------------------------------------- */
+
+void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
+{
+    test New;
+    cons* c;
+
+    if (vn == NIL)
+    {
+        return;
+    }
+    if (varnames_is_one_var(vn))
+    {
+        New = make_equality_test(varnames_to_one_var(vn));
+        add_new_test_to_test(thisAgent, t, New);
+    }
+    else
+    {
+        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
+        {
+            New = make_equality_test(static_cast<Symbol*>(c->first));
+            add_new_test_to_test(thisAgent, t, New);
+        }
+    }
+}
+
 /* -------------------------------------------------------------------
      Creating the Node Varnames Structures for a List of Conditions
 
@@ -4262,27 +4295,6 @@ void excise_production_from_rete(agent* thisAgent, production* p)
 ********************************************************************** */
 
 /* ----------------------------------------------------------------------
-                      Add Gensymmed Equality Test
-
-   This routine destructively modifies a given test, adding to it a test
-   for equality with a new gensym variable.
----------------------------------------------------------------------- */
-
-void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter)
-{
-    Symbol* New;
-    test eq_test;
-    char prefix[2];
-
-    prefix[0] = first_letter;
-    prefix[1] = 0;
-    New = generate_new_variable(thisAgent, prefix);
-    eq_test = make_equality_test(New);
-    symbol_remove_ref(thisAgent, New);
-    add_new_test_to_test(thisAgent, t, eq_test);
-}
-
-/* ----------------------------------------------------------------------
                      Var Bound in Reconstructed Conds
 
    We're reconstructing the conditions for a production in top-down
@@ -4349,140 +4361,6 @@ abort_var_bound_in_reconstructed_conds:
         abort_with_fatal_error(thisAgent, msg);
     }
     return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
-
-/* ----------------------------------------------------------------------
-                      Add Rete Test List to Tests
-
-   Given the additional Rete tests (besides the hashed equality test) at
-   a certain node, we need to convert them into the equivalent tests in
-   the conditions being reconstructed.  This procedure does this -- it
-   destructively modifies the given currently-being-reconstructed-cond
-   by adding any necessary extra tests to its three field tests.
----------------------------------------------------------------------- */
-
-void add_rete_test_list_to_tests(agent* thisAgent,
-                                 condition* cond, /* current cond */
-                                 rete_test* rt)
-{
-    Symbol* referent;
-    test New;
-    complex_test* new_ct;
-    byte test_type;
-
-    for (; rt != NIL; rt = rt->next)
-    {
-
-        if (rt->type == ID_IS_GOAL_RETE_TEST)
-        {
-            allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            New = make_test_from_complex_test(new_ct);
-            new_ct->type = GOAL_ID_TEST;
-        }
-        else if (rt->type == ID_IS_IMPASSE_RETE_TEST)
-        {
-            allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            New = make_test_from_complex_test(new_ct);
-            new_ct->type = IMPASSE_ID_TEST;
-        }
-        else if (rt->type == DISJUNCTION_RETE_TEST)
-        {
-            allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            New = make_test_from_complex_test(new_ct);
-            new_ct->type = DISJUNCTION_TEST;
-            new_ct->data.disjunction_list =
-                copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
-        }
-        else if (test_is_constant_relational_test(rt->type))
-        {
-            test_type =
-                relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
-            referent = rt->data.constant_referent;
-            symbol_add_ref(thisAgent, referent);
-            if (test_type == EQUAL_TEST_TYPE)
-            {
-                New = make_equality_test_without_adding_reference(referent);
-            }
-            else
-            {
-                allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-                New = make_test_from_complex_test(new_ct);
-                new_ct->type = test_type;
-                new_ct->data.referent = referent;
-            }
-        }
-        else if (test_is_variable_relational_test(rt->type))
-        {
-            test_type =
-                relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
-            if (! rt->data.variable_referent.levels_up)
-            {
-                /* --- before calling var_bound_in_reconstructed_conds, make sure
-                   there's an equality test in the referent location (add one if
-                   there isn't one already there), otherwise there'd be no variable
-                   there to test against --- */
-                if (rt->data.variable_referent.field_num == 0)
-                {
-                    if (! test_includes_equality_test_for_symbol
-                            (cond->data.tests.id_test, NIL))
-                    {
-                        add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
-                    }
-                }
-                else if (rt->data.variable_referent.field_num == 1)
-                {
-                    if (! test_includes_equality_test_for_symbol
-                            (cond->data.tests.attr_test, NIL))
-                    {
-                        add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
-                    }
-                }
-                else
-                {
-                    if (! test_includes_equality_test_for_symbol
-                            (cond->data.tests.value_test, NIL))
-                        add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
-                                                    first_letter_from_test(cond->data.tests.attr_test));
-                }
-            }
-            referent = var_bound_in_reconstructed_conds(thisAgent, cond,
-                       rt->data.variable_referent.field_num,
-                       rt->data.variable_referent.levels_up);
-            symbol_add_ref(thisAgent, referent);
-            if (test_type == EQUAL_TEST_TYPE)
-            {
-                New = make_equality_test_without_adding_reference(referent);
-            }
-            else
-            {
-                allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-                New = make_test_from_complex_test(new_ct);
-                new_ct->type = test_type;
-                new_ct->data.referent = referent;
-            }
-        }
-        else
-        {
-            char msg[BUFFER_MSG_SIZE];
-            strncpy(msg, "Error: bad test_type in add_rete_test_to_test\n", BUFFER_MSG_SIZE);
-            msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-            abort_with_fatal_error(thisAgent, msg);
-            New = NIL; /* unreachable, but without it gcc -Wall warns here */
-        }
-
-        if (rt->right_field_num == 0)
-        {
-            add_new_test_to_test(thisAgent, &(cond->data.tests.id_test), New);
-        }
-        else if (rt->right_field_num == 2)
-        {
-            add_new_test_to_test(thisAgent, &(cond->data.tests.value_test), New);
-        }
-        else
-        {
-            add_new_test_to_test(thisAgent, &(cond->data.tests.attr_test), New);
-        }
-    }
 }
 
 /* ----------------------------------------------------------------------
@@ -4563,60 +4441,6 @@ void collect_nots(agent* thisAgent,
             continue;
         }
     }
-}
-
-/* ----------------------------------------------------------------------
-                          Add Varnames to Test
-
-   This routine adds (an equality test for) each variable in "vn" to
-   the given test "t", destructively modifying t.  This is used for
-   restoring the original variables to test in a hand-coded production
-   when we reconstruct its conditions.
----------------------------------------------------------------------- */
-
-void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
-{
-    test New;
-    cons* c;
-
-    if (vn == NIL)
-    {
-        return;
-    }
-    if (varnames_is_one_var(vn))
-    {
-        New = make_equality_test(varnames_to_one_var(vn));
-        add_new_test_to_test(thisAgent, t, New);
-    }
-    else
-    {
-        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
-        {
-            New = make_equality_test(static_cast<Symbol*>(c->first));
-            add_new_test_to_test(thisAgent, t, New);
-        }
-    }
-}
-
-/* ----------------------------------------------------------------------
-                      Add Hash Info to ID Test
-
-   This routine adds an equality test to the id field test in a given
-   condition, destructively modifying that id test.  The equality test
-   is the one appropriate for the given hash location (field_num/levels_up).
----------------------------------------------------------------------- */
-
-void add_hash_info_to_id_test(agent* thisAgent,
-                              condition* cond,
-                              byte field_num,
-                              rete_node_level levels_up)
-{
-    Symbol* temp;
-    test New;
-
-    temp = var_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
-    New = make_equality_test(temp);
-    add_new_test_to_test(thisAgent, &(cond->data.tests.id_test), New);
 }
 
 /* ----------------------------------------------------------------------

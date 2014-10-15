@@ -103,21 +103,21 @@ inline list* varnames_to_var_list(varnames* x)
 
 /* --- tells where to find a variable --- */
 typedef unsigned short rete_node_level;
-Symbol* var_bound_in_reconstructed_conds(
-    agent* thisAgent,
-    condition* cond,
-    byte where_field_num,
-    rete_node_level where_levels_up);
-test var_test_bound_in_reconstructed_conds(
-    agent* thisAgent,
-    condition* cond,
-    byte where_field_num,
-    rete_node_level where_levels_up);
-Symbol* var_bound_in_reconstructed_original_conds(
-    agent* thisAgent,
-    condition* cond,
-    byte where_field_num,
-    rete_node_level where_levels_up);
+//Symbol* var_bound_in_reconstructed_conds(
+//    agent* thisAgent,
+//    condition* cond,
+//    byte where_field_num,
+//    rete_node_level where_levels_up);
+//test var_test_bound_in_reconstructed_conds(
+//    agent* thisAgent,
+//    condition* cond,
+//    byte where_field_num,
+//    rete_node_level where_levels_up);
+//Symbol* var_bound_in_reconstructed_original_conds(
+//    agent* thisAgent,
+//    condition* cond,
+//    byte where_field_num,
+//    rete_node_level where_levels_up);
 
 /* ----------------------------------------------------------------------
 

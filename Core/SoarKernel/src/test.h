@@ -205,4 +205,8 @@ inline void quickly_deallocate_test(agent* thisAgent, test t)
     }
 }
 
+void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
+void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
+void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
+
 #endif
