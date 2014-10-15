@@ -26,10 +26,10 @@
 
 #include <stdlib.h>
 #include <cstring>
-#include <ctype.h>
 
 #include "kernel.h"
 #include "chunk.h"
+
 #include "symtab.h"
 #include "wmem.h"
 #include "agent.h"
@@ -51,6 +51,8 @@
 #include "test.h"
 #include "debug.h"
 #include "variablization_manager.h"
+
+#include <ctype.h>
 
 
 using namespace soar_TraceNames;
@@ -76,7 +78,7 @@ inline void add_results_if_needed(agent* thisAgent, Symbol* sym)
 {
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         if (((sym)->id->level >= thisAgent->results_match_goal_level) &&
-                ((sym)->id->tc_num != thisAgent->results_tc_number))
+                ((sym)->tc_num != thisAgent->results_tc_number))
         {
             add_results_for_id(thisAgent, sym);
         }
@@ -443,7 +445,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
        to the grounds --- */
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print(thisAgent,  "\n\n*** Adding Grounded Negated Conditions ***\n");
+        print_string(thisAgent, "\n\n*** Adding Grounded Negated Conditions ***\n");
     }
 
     while (thisAgent->negated_set.all)
@@ -455,7 +457,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
             /* --- negated cond is in the TC, so add it to the grounds --- */
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
-                print(thisAgent,  "\n-->Moving to grounds: ");
+                print_string(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
             cc->instantiated_cond = copy_condition(thisAgent, cc->cond);
@@ -954,7 +956,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-    soar_process_timer local_timer;
+    soar_timer local_timer;
     local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
 #endif
 #endif
@@ -1052,10 +1054,10 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
-            print(thisAgent,  "\nFor result preference ");
+            print_string(thisAgent, "\nFor result preference ");
             xml_begin_tag(thisAgent, kTagBacktraceResult);
             print_preference(thisAgent, pref);
-            print(thisAgent,  " ");
+            print_string(thisAgent, " ");
         }
         backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0);
 
@@ -1101,6 +1103,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         thisAgent->chunks_this_d_cycle++;
         prod_name = generate_chunk_name_str_constant(thisAgent, inst);
+
         prod_type = CHUNK_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
         print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
@@ -1115,11 +1118,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (print_name)
     {
-        if (get_printer_output_column(thisAgent) != 1)
-        {
-            print(thisAgent,  "\n");
-        }
-//      print_with_symbols (thisAgent, "Building %y\n", prod_name);
+        start_fresh_line(thisAgent);
+        print_with_symbols(thisAgent, "Building %y", prod_name);
 
         xml_begin_tag(thisAgent, kTagLearning);
         xml_begin_tag(thisAgent, kTagProduction);
@@ -1134,7 +1134,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
-            print(thisAgent,  "Warning: chunk has no grounds, ignoring it.\n");
+            print_string(thisAgent, " Warning: chunk has no grounds, ignoring it.");
             xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
         }
 
@@ -1250,9 +1250,11 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
 
         chunk_inst->GDS_evaluated_already = false;  /* REW:  09.15.96 */
+
         chunk_inst->reliable = reliable;
 
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
+
         make_clones_of_results(thisAgent, results, chunk_inst);
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
