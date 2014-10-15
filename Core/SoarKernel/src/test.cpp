@@ -27,6 +27,8 @@
 #include "wmem.h"
 #include "prefmem.h"
 
+void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field);
+
 /* =================================================================
 
                       Utility Routines for Tests
@@ -48,37 +50,6 @@ list* copy_test_list(agent* thisAgent, cons* c)
     new_c->first = copy_test(thisAgent, static_cast<test>(c->first));
     new_c->rest = copy_test_list(thisAgent, c->rest);
     return new_c;
-}
-
-inline bool is_test_type_with_no_referent(TestType test_type)
-{
-    return ((test_type == DISJUNCTION_TEST) ||
-            (test_type == CONJUNCTIVE_TEST) ||
-            (test_type == GOAL_ID_TEST) ||
-            (test_type == IMPASSE_ID_TEST));
-}
-
-test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
-{
-    test new_ct;
-
-    allocate_with_pool(thisAgent, &thisAgent->test_pool, &new_ct);
-
-    new_ct->type = test_type;
-    new_ct->data.referent = sym;
-    new_ct->original_test = NULL;
-
-    /* MToDo| Should limit creation of identity to only tests that need them.
-     *        For example, STIs and tests read during initial parse don't
-     *        need identity. */
-    new_ct->identity = new identity_info;
-
-    if (sym)
-    {
-        symbol_add_ref(thisAgent, sym);
-    }
-
-    return new_ct;
 }
 
 /* ----------------------------------------------------------------
@@ -277,61 +248,6 @@ void deallocate_test(agent* thisAgent, test t, long indent)
 
     free_with_pool(&thisAgent->test_pool, t);
     dprint(DT_DEALLOCATES, "%*sDEALLOCATE test done.\n", indent, "");
-}
-
-/* -- delete_test_from_conjunct
- *
- * Requires: A valid conjunctive test t (i.e. has at least two tests in it)
- *           a cons item pDeleteItem that is a constituent test of t
- * Modifies: t
- * Effects:  Deallocates the cons pDeleteItem and the test within it
- *           If only one test remains after deletion, it will deallocate
- *           conjunctive test t and replace with the remaining test.
- *
- *           Returns the next item in the conjunct list.  Null if it
- *           was the last one.
- */
-::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem)
-{
-    ::list* prev, *next;
-    next = pDeleteItem->rest;
-
-    /* -- Fix links in conjunct list -- */
-    if ((*t)->data.conjunct_list == pDeleteItem)
-    {
-        // Change head of conjunct list to point to rest
-        (*t)->data.conjunct_list = pDeleteItem->rest;
-    }
-    else
-    {
-        // Iterate from head of list to find the previous item and fix its link
-        prev = (*t)->data.conjunct_list;
-        while (prev->rest != pDeleteItem)
-        {
-            prev = prev->rest;
-        }
-        prev->rest = pDeleteItem->rest;
-    }
-
-    // Delete the item
-    deallocate_test(thisAgent, static_cast<test>(pDeleteItem->first));
-    free_cons(thisAgent, pDeleteItem);
-
-    /* If there were no more tests to process (next == null) and there is only
-     * one remaining test left in cons list, then change from a conjunctive
-     * test to a single test */
-    if (!next && ((*t)->data.conjunct_list->rest == NULL))
-    {
-        test old_conjunct = (*t);
-        (*t) = static_cast<test>((*t)->data.conjunct_list->first);
-        free_cons(thisAgent, old_conjunct->data.conjunct_list);
-        old_conjunct->data.conjunct_list = NULL;
-        deallocate_test(thisAgent, old_conjunct);
-        /* -- There are no remaining tests in conjunct list, so return NULL --*/
-        return NULL;
-    }
-
-    return next;
 }
 
 /* ----------------------------------------------------------------
@@ -725,76 +641,6 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
     }
 }
 
-/* -- copy_non_identical_test
- *
- * Requires:  add_me is a non-conjunctive list.
- * Modifies:  t
- * Effect:    This function iterates through the target's tests and compares
- *            the non-conjunctive test to it.  If it never finds a match, it
- *            adds the test to the target's test
- */
-void copy_non_identical_test(agent* thisAgent, test* t, test add_me, bool considerIdentity = false)
-{
-    test target_test;
-    cons* c;
-
-    target_test = *t;
-    if (add_me->type == EQUALITY_TEST)
-    {
-        dprint_test(DT_MERGE, add_me, true, false, false, "          ...test is an equality test.  Skipping: ", "\n");
-    }
-    else
-    {
-        if (target_test->type != CONJUNCTIVE_TEST)
-        {
-            if (tests_identical(target_test, add_me))
-            {
-                dprint_test(DT_MERGE, add_me, true, false, false, "          ...test already exists.  Skipping: ", "\n");
-                return;
-            }
-        }
-        else
-        {
-            for (c = target_test->data.conjunct_list; c != NIL; c = c->rest)
-                if (tests_identical(static_cast<test>(c->first), add_me))
-                {
-                    dprint_test(DT_MERGE, add_me, true, false, false, "          ...test already exists.  Skipping: ", "\n");
-                    return;
-                }
-        }
-        dprint_test(DT_MERGE, add_me, true, false, false, "          ...found test to copy: ", "\n");
-        add_test(thisAgent, t, copy_test(thisAgent, add_me));
-    }
-}
-
-/* -- copy_non_identical_tests
- *
- * Requires:  two lists
- * Modifies:  t
- * Effect:    This function copies any tests from add_me that aren't already in t
- *
- *    Note: Unlike add_test_if_not_already_there, this
- *          function does not deallocate the original test and also
- *          considers two constant tests that have different identities
- *          as non-identical.
- */
-void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity)
-{
-    cons* c;
-
-    if (add_me->type != CONJUNCTIVE_TEST)
-    {
-        copy_non_identical_test(thisAgent, t, add_me);
-    }
-    else
-    {
-        for (c = add_me->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            copy_non_identical_test(thisAgent, t, static_cast<test>(c->first));
-        }
-    }
-}
-
 /* ----------------------------------------------------------------
    Returns a hash value for the given test.
 ---------------------------------------------------------------- */
@@ -885,20 +731,6 @@ bool test_includes_equality_test_for_symbol(test t, Symbol* sym)
             }
     }
     return false;
-}
-
-/* ----------------------------------------------------------------
-   Returns true iff the test contains a test for a variable
-   symbol.  Assumes test is not a conjunctive one and does not
-   try to search them.
----------------------------------------------------------------- */
-bool test_is_variable(agent* thisAgent, test t)
-{
-    if (!t || !test_has_referent(t))
-    {
-        return false;
-    }
-    return (t->data.referent->is_variable());
 }
 
 /* ----------------------------------------------------------------
@@ -1015,108 +847,6 @@ test equality_var_test_found_in_test(test t)
     return NULL;
 }
 
-
-/* No longer used, but could be again in the future */
-void cache_eq_test(test t)
-{
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        t->eq_test = equality_test_found_in_test(t);
-        t->eq_test->eq_test = t->eq_test;
-    }
-    else if (t->type == EQUALITY_TEST)
-    {
-        t->eq_test = t;
-    }
-    else
-    {
-        t->eq_test = NULL;
-    }
-}
-
-/* -- find_original_equality_in_conjunctive_test
- *
- *    This function will find the first equality test in the original
- *    tests of a conjunctive test, preferring equality tests on variables
- *    over equality tests on literal constants.
- *
- *    Note: This function will only return an equality test on a literal
- *    constant only after it does a complete scan of the conjunction and
- *    determines that there doesn't exist an equality test on a variable
- *    symbol. -- */
-
-test find_original_equality_test_preferring_vars(test t, bool useOriginals)
-{
-
-    cons* c;
-    test ct, found_literal = NULL, foundTest = NULL;
-
-    if (t)
-    {
-        switch (t->type)
-        {
-
-            case EQUALITY_TEST:
-                if (useOriginals)
-                {
-                    return find_original_equality_test_preferring_vars(t->original_test, false);
-                }
-                else
-                {
-                    assert(t->data.referent);
-                    return t;
-                }
-                break;
-
-            case CONJUNCTIVE_TEST:
-                for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-                {
-                    ct = static_cast<test>(c->first);
-                    assert(ct);
-                    if (useOriginals)
-                    {
-                        foundTest = find_original_equality_test_preferring_vars(ct->original_test, false);
-                        if (foundTest)
-                        {
-                            assert(foundTest->data.referent);
-                            if (foundTest->data.referent->is_variable())
-                            {
-                                return foundTest;
-                            }
-                            else
-                            {
-                                found_literal = foundTest;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (ct->type == EQUALITY_TEST)
-                        {
-                            assert(ct->data.referent);
-                            if (ct->data.referent->is_variable())
-                            {
-                                return ct;
-                            }
-                            else
-                            {
-                                found_literal = ct;
-                            }
-                        }
-                    }
-                }
-                /* -- At this point, we have not found an equality test on a variable.  If
-                 *    we have found one on a literal, we return it -- */
-                return found_literal;
-                break;
-            default:
-                break;
-        }
-    }
-    return NULL;
-}
-
-
 /* =====================================================================
 
    Finding all variables from tests, conditions, and condition lists
@@ -1185,53 +915,6 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
             add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list);
-        }
-    }
-}
-
-
-void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field)
-{
-    cons* c;
-    test orig_test;
-
-    if (test_is_blank(t))
-    {
-        return;
-    }
-
-    if (t->type == EQUALITY_TEST)
-    {
-        if (t->original_test && t->original_test->data.referent->symbol_type == VARIABLE_SYMBOL_TYPE)
-        {
-            orig_test = find_original_equality_test_preferring_vars(t, true);
-            if (orig_test && orig_test->data.referent->is_variable())
-            {
-                dprint(DT_IDENTITY_PROP, "Caching original symbol and wme in identity for \"%s\": %s + %s\n",
-                       t->data.referent->to_string(), orig_test->data.referent->to_string(),
-                       (w ? "WME" : "No WME"));
-                t->identity->original_var = orig_test->data.referent;
-                symbol_add_ref(thisAgent, t->identity->original_var);
-            }
-        }
-        else
-        {
-            dprint(DT_IDENTITY_PROP, "No original test for \"%s\".  Cannot set identity's original var!\n", t->data.referent->to_string());
-        }
-        if (!t->identity->grounding_wme)
-        {
-            t->identity->grounding_wme = w;
-        }
-        if (t->identity->grounding_field == NO_ELEMENT)
-        {
-            t->identity->grounding_field = default_field;
-        }
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            fill_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field);
         }
     }
 }
@@ -1395,7 +1078,6 @@ void add_rete_test_list_to_tests(agent* thisAgent,
         }
     }
 }
-
 
 /* ----------------------------------------------------------------------
                       Add Hash Info to ID Test
@@ -2133,7 +1815,23 @@ void add_additional_tests_and_originals(agent* thisAgent,
     dprint_test(DT_ADD_CONSTRAINTS_ORIG_TESTS, cond->data.tests.value_test, true, true, false, "          ", "\n");
 }
 
-/* UITODO| Make this method of Test */
+/* UITODO| Make these methods of test */
+
+/* ----------------------------------------------------------------
+   Returns true iff the test contains a test for a variable
+   symbol.  Assumes test is not a conjunctive one and does not
+   try to search them.
+---------------------------------------------------------------- */
+bool test_is_variable(agent* thisAgent, test t)
+{
+    if (!t || !test_has_referent(t))
+    {
+        return false;
+    }
+    return (t->data.referent->is_variable());
+}
+
+
 char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
 {
     cons* c;
@@ -2359,5 +2057,307 @@ const char* test_type_to_string_brief(byte test_type, const char* equality_str)
             break;
     }
     return "UNDEFINED TEST TYPE";
+}
+
+inline bool is_test_type_with_no_referent(TestType test_type)
+{
+    return ((test_type == DISJUNCTION_TEST) ||
+            (test_type == CONJUNCTIVE_TEST) ||
+            (test_type == GOAL_ID_TEST) ||
+            (test_type == IMPASSE_ID_TEST));
+}
+
+test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
+{
+    test new_ct;
+
+    allocate_with_pool(thisAgent, &thisAgent->test_pool, &new_ct);
+
+    new_ct->type = test_type;
+    new_ct->data.referent = sym;
+    new_ct->original_test = NULL;
+
+    /* MToDo| Should limit creation of identity to only tests that need them.
+     *        For example, STIs and tests read during initial parse don't
+     *        need identity. */
+    new_ct->identity = new identity_info;
+
+    if (sym)
+    {
+        symbol_add_ref(thisAgent, sym);
+    }
+
+    return new_ct;
+}
+
+/* -- delete_test_from_conjunct
+ *
+ * Requires: A valid conjunctive test t (i.e. has at least two tests in it)
+ *           a cons item pDeleteItem that is a constituent test of t
+ * Modifies: t
+ * Effects:  Deallocates the cons pDeleteItem and the test within it
+ *           If only one test remains after deletion, it will deallocate
+ *           conjunctive test t and replace with the remaining test.
+ *
+ *           Returns the next item in the conjunct list.  Null if it
+ *           was the last one.
+ */
+::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem)
+{
+    ::list* prev, *next;
+    next = pDeleteItem->rest;
+
+    /* -- Fix links in conjunct list -- */
+    if ((*t)->data.conjunct_list == pDeleteItem)
+    {
+        // Change head of conjunct list to point to rest
+        (*t)->data.conjunct_list = pDeleteItem->rest;
+    }
+    else
+    {
+        // Iterate from head of list to find the previous item and fix its link
+        prev = (*t)->data.conjunct_list;
+        while (prev->rest != pDeleteItem)
+        {
+            prev = prev->rest;
+        }
+        prev->rest = pDeleteItem->rest;
+    }
+
+    // Delete the item
+    deallocate_test(thisAgent, static_cast<test>(pDeleteItem->first));
+    free_cons(thisAgent, pDeleteItem);
+
+    /* If there were no more tests to process (next == null) and there is only
+     * one remaining test left in cons list, then change from a conjunctive
+     * test to a single test */
+    if (!next && ((*t)->data.conjunct_list->rest == NULL))
+    {
+        test old_conjunct = (*t);
+        (*t) = static_cast<test>((*t)->data.conjunct_list->first);
+        free_cons(thisAgent, old_conjunct->data.conjunct_list);
+        old_conjunct->data.conjunct_list = NULL;
+        deallocate_test(thisAgent, old_conjunct);
+        /* -- There are no remaining tests in conjunct list, so return NULL --*/
+        return NULL;
+    }
+
+    return next;
+}
+
+/* -- copy_non_identical_test
+ *
+ * Requires:  add_me is a non-conjunctive list.
+ * Modifies:  t
+ * Effect:    This function iterates through the target's tests and compares
+ *            the non-conjunctive test to it.  If it never finds a match, it
+ *            adds the test to the target's test
+ */
+void copy_non_identical_test(agent* thisAgent, test* t, test add_me, bool considerIdentity = false)
+{
+    test target_test;
+    cons* c;
+
+    target_test = *t;
+    if (add_me->type == EQUALITY_TEST)
+    {
+        dprint_test(DT_MERGE, add_me, true, false, false, "          ...test is an equality test.  Skipping: ", "\n");
+    }
+    else
+    {
+        if (target_test->type != CONJUNCTIVE_TEST)
+        {
+            if (tests_identical(target_test, add_me))
+            {
+                dprint_test(DT_MERGE, add_me, true, false, false, "          ...test already exists.  Skipping: ", "\n");
+                return;
+            }
+        }
+        else
+        {
+            for (c = target_test->data.conjunct_list; c != NIL; c = c->rest)
+                if (tests_identical(static_cast<test>(c->first), add_me))
+                {
+                    dprint_test(DT_MERGE, add_me, true, false, false, "          ...test already exists.  Skipping: ", "\n");
+                    return;
+                }
+        }
+        dprint_test(DT_MERGE, add_me, true, false, false, "          ...found test to copy: ", "\n");
+        add_test(thisAgent, t, copy_test(thisAgent, add_me));
+    }
+}
+
+/* -- copy_non_identical_tests
+ *
+ * Requires:  two lists
+ * Modifies:  t
+ * Effect:    This function copies any tests from add_me that aren't already in t
+ *
+ *    Note: Unlike add_test_if_not_already_there, this
+ *          function does not deallocate the original test and also
+ *          considers two constant tests that have different identities
+ *          as non-identical.
+ */
+void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity)
+{
+    cons* c;
+
+    if (add_me->type != CONJUNCTIVE_TEST)
+    {
+        copy_non_identical_test(thisAgent, t, add_me);
+    }
+    else
+    {
+        for (c = add_me->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            copy_non_identical_test(thisAgent, t, static_cast<test>(c->first));
+        }
+    }
+}
+
+/* -- find_original_equality_in_conjunctive_test
+ *
+ *    This function will find the first equality test in the original
+ *    tests of a conjunctive test, preferring equality tests on variables
+ *    over equality tests on literal constants.
+ *
+ *    Note: This function will only return an equality test on a literal
+ *    constant only after it does a complete scan of the conjunction and
+ *    determines that there doesn't exist an equality test on a variable
+ *    symbol. -- */
+
+test find_original_equality_test_preferring_vars(test t, bool useOriginals)
+{
+
+    cons* c;
+    test ct, found_literal = NULL, foundTest = NULL;
+
+    if (t)
+    {
+        switch (t->type)
+        {
+
+            case EQUALITY_TEST:
+                if (useOriginals)
+                {
+                    return find_original_equality_test_preferring_vars(t->original_test, false);
+                }
+                else
+                {
+                    assert(t->data.referent);
+                    return t;
+                }
+                break;
+
+            case CONJUNCTIVE_TEST:
+                for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+                {
+                    ct = static_cast<test>(c->first);
+                    assert(ct);
+                    if (useOriginals)
+                    {
+                        foundTest = find_original_equality_test_preferring_vars(ct->original_test, false);
+                        if (foundTest)
+                        {
+                            assert(foundTest->data.referent);
+                            if (foundTest->data.referent->is_variable())
+                            {
+                                return foundTest;
+                            }
+                            else
+                            {
+                                found_literal = foundTest;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (ct->type == EQUALITY_TEST)
+                        {
+                            assert(ct->data.referent);
+                            if (ct->data.referent->is_variable())
+                            {
+                                return ct;
+                            }
+                            else
+                            {
+                                found_literal = ct;
+                            }
+                        }
+                    }
+                }
+                /* -- At this point, we have not found an equality test on a variable.  If
+                 *    we have found one on a literal, we return it -- */
+                return found_literal;
+                break;
+            default:
+                break;
+        }
+    }
+    return NULL;
+}
+
+/* No longer used, but could be again in the future */
+void cache_eq_test(test t)
+{
+    if (t->type == CONJUNCTIVE_TEST)
+    {
+        t->eq_test = equality_test_found_in_test(t);
+        t->eq_test->eq_test = t->eq_test;
+    }
+    else if (t->type == EQUALITY_TEST)
+    {
+        t->eq_test = t;
+    }
+    else
+    {
+        t->eq_test = NULL;
+    }
+}
+
+void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field)
+{
+    cons* c;
+    test orig_test;
+
+    if (test_is_blank(t))
+    {
+        return;
+    }
+
+    if (t->type == EQUALITY_TEST)
+    {
+        if (t->original_test && t->original_test->data.referent->symbol_type == VARIABLE_SYMBOL_TYPE)
+        {
+            orig_test = find_original_equality_test_preferring_vars(t, true);
+            if (orig_test && orig_test->data.referent->is_variable())
+            {
+                dprint(DT_IDENTITY_PROP, "Caching original symbol and wme in identity for \"%s\": %s + %s\n",
+                       t->data.referent->to_string(), orig_test->data.referent->to_string(),
+                       (w ? "WME" : "No WME"));
+                t->identity->original_var = orig_test->data.referent;
+                symbol_add_ref(thisAgent, t->identity->original_var);
+            }
+        }
+        else
+        {
+            dprint(DT_IDENTITY_PROP, "No original test for \"%s\".  Cannot set identity's original var!\n", t->data.referent->to_string());
+        }
+        if (!t->identity->grounding_wme)
+        {
+            t->identity->grounding_wme = w;
+        }
+        if (t->identity->grounding_field == NO_ELEMENT)
+        {
+            t->identity->grounding_field = default_field;
+        }
+    }
+    else if (t->type == CONJUNCTIVE_TEST)
+    {
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            fill_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field);
+        }
+    }
 }
 

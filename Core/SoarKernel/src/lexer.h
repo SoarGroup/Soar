@@ -46,7 +46,6 @@
 
 #include <stdio.h>  // Needed for FILE token below
 
-
 typedef struct agent_struct agent;
 
 #define MAX_LEXER_LINE_LENGTH 1000

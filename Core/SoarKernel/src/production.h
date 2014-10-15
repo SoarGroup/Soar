@@ -60,21 +60,23 @@
 
 #include "portability.h"
 #include "kernel.h"
-#include <map>
-#include <set>
 
 typedef char* rhs_value;
 typedef unsigned char byte;
 typedef struct action_struct action;
+typedef struct condition_struct condition;
 typedef struct cons_struct cons;
 typedef struct agent_struct agent;
 typedef cons list;
 typedef struct symbol_struct Symbol;
-typedef struct preference_struct preference;
 typedef struct wme_struct wme;
+typedef struct preference_struct preference;
 typedef signed short goal_stack_level;
 typedef struct test_struct test_info;
 typedef test_info* test;
+
+#include <map>
+#include <set>
 
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
 typedef std::set< rl_symbol_map > rl_symbol_map_set;
@@ -157,7 +159,6 @@ typedef struct condition_struct
         } tests;                           /* for positive, negative cond's only */
         ncc_info ncc;                        /* for ncc's only */
     } data;
-
     bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
     reorder_info reorder;  /* used only during reordering */
 } condition;
@@ -200,7 +201,6 @@ typedef struct production_struct
 
     condition* rl_template_conds;
     rl_symbol_map_set* rl_template_instantiations;
-
 } production;
 
 /* ========================================================================
@@ -219,7 +219,7 @@ typedef struct multi_attributes_struct
     struct multi_attributes_struct* next;
 } multi_attribute;
 
-void init_production_utilities(agent* thisAgent);
+extern void init_production_utilities(agent* thisAgent);
 
 /* ------------------------ */
 /* Utilities for conditions */
@@ -229,20 +229,20 @@ void init_production_utilities(agent* thisAgent);
 void deallocate_condition(agent* thisAgent, condition* cond);
 
 /* --- Deallocates a condition list (including any NCC's and tests in it). */
-void deallocate_condition_list(agent* thisAgent, condition* cond_list);
+extern void deallocate_condition_list(agent* thisAgent, condition* cond_list);
 
 /* --- Initializes substructures of the given condition to default values. --- */
 extern void init_condition(condition* cond);
 
 /* --- Returns a new copy of the given condition. --- */
-condition* copy_condition(agent* thisAgent, condition* cond);
+extern condition* copy_condition(agent* thisAgent, condition* cond);
 
 /* --- Returns a new copy of the given condition without any relational tests --- */
 condition* copy_condition_without_relational_constraints(agent* thisAgent, condition* cond);
 
 /* --- Copies the given condition list, returning pointers to the
    top-most and bottom-most conditions in the new copy. --- */
-void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
+extern void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
                          condition** dest_bottom);
 
 void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
@@ -250,10 +250,11 @@ void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number 
 void unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
 
 /* --- Returns true iff the two conditions are identical. --- */
-bool conditions_are_equal(condition* c1, condition* c2);
+extern bool conditions_are_equal(condition* c1, condition* c2);
 
 /* --- Returns a hash value for the given condition. --- */
-uint32_t hash_condition(agent* thisAgent, condition* cond);
+extern uint32_t hash_condition(agent* thisAgent, condition* cond);
+
 
 bool canonical_cond_greater(condition* c1, condition* c2);
 
@@ -264,7 +265,7 @@ bool canonical_cond_greater(condition* c1, condition* c2);
    Get_new_tc_number() is called from lots of places.  Any time we need
    to mark a set of identifiers and/or variables, we get a new tc_number
    by calling this routine, then proceed to mark various ids or vars
-   by setting the sym->common.tc_num.
+   by setting the sym->tc_num or sym->tc_num fields.
 
    Sometimes in addition to marking symbols using their tc_num fields,
    we also want to build up a list of the symbols we've marked.  So,
@@ -297,14 +298,15 @@ bool canonical_cond_greater(condition* c1, condition* c2);
 -------------------------------------------------------------------- */
 
 tc_number get_new_tc_number(agent* thisAgent);
-void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
+
+extern void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
                       ::list** id_list, ::list** var_list);
-void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
+extern void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
                     ::list** id_list, ::list** var_list);
-void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
+extern void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
                       ::list** id_list, ::list** var_list);
-bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc);
-bool action_is_in_tc(action* a, tc_number tc);
+extern bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc);
+extern bool action_is_in_tc(action* a, tc_number tc);
 
 /* --------------------------------------------------------------------
                          Variable Generator
@@ -323,10 +325,10 @@ bool action_is_in_tc(action* a, tc_number tc);
    name.  The prefix string should not include the opening "<".
 -------------------------------------------------------------------- */
 
-void reset_variable_generator(agent* thisAgent,
+extern void reset_variable_generator(agent* thisAgent,
                               condition* conds_with_vars_to_avoid,
                               action* actions_with_vars_to_avoid);
-Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
+extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
 
 /* -------------------------------------------------------------------
                          Production Management
@@ -357,7 +359,7 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
     the production_remove_ref() macro.
 ------------------------------------------------------------------- */
 
-production* make_production(agent* thisAgent,
+extern production* make_production(agent* thisAgent,
                             byte type,
                             Symbol* name,
                             char* original_rule_name,
@@ -367,12 +369,12 @@ production* make_production(agent* thisAgent,
                             bool reorder_nccs,
                             preference* results = NULL);
 
-void deallocate_production(agent* thisAgent, production* prod);
-void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);
-void excise_all_productions_of_type(agent* thisAgent,
+extern void deallocate_production(agent* thisAgent, production* prod);
+extern void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);
+extern void excise_all_productions_of_type(agent* thisAgent,
                                     byte type,
                                     bool print_sharp_sign);
-void excise_all_productions(agent* thisAgent,
+extern void excise_all_productions(agent* thisAgent,
                             bool print_sharp_sign);
 
 inline void production_add_ref(production* p)

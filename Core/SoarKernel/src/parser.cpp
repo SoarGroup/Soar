@@ -10,7 +10,7 @@
  *  file:  parser.cpp
  *
  * =======================================================================
- *                  Production (SP) Parser for Soar 6
+ *                  Production (SP) Parser
  *
  * There are two top-level routines here:  init_parser(), which
  * should be called at startup time, and parse_production(), which
@@ -38,7 +38,6 @@
 #include "reinforcement_learning.h"
 #include "semantic_memory.h"
 #include "test.h"
-
 #include <ctype.h>
 
 /* =================================================================
@@ -160,7 +159,6 @@ void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol** sym)
     var = (*sym)->var->current_binding_value;
     symbol_remove_ref(thisAgent, (*sym));
     *sym = var;
-    
     if (!just_created)
     {
         symbol_add_ref(thisAgent, var);
@@ -472,6 +470,7 @@ test parse_relational_test(agent* thisAgent)
             /* MToDoRefCnt | make_symbol_for_current_lexeme already increases.  So decrease here or use a new version of make_test without refcount */
             symbol_remove_ref(thisAgent, referent);
             return t;
+            
         default:
             print(thisAgent,  "Expected variable or constant for test\n");
             print_location_of_most_recent_lexeme(thisAgent);
@@ -553,10 +552,9 @@ test parse_test(agent* thisAgent)
     {
         return parse_simple_test(thisAgent);
     }
-    
     /* --- parse and return conjunctive test --- */
-    t = make_blank_test();
     get_lexeme(thisAgent);
+    t = make_blank_test();
     do
     {
         temp = parse_simple_test(thisAgent);
@@ -909,6 +907,10 @@ condition* parse_attr_value_tests(agent* thisAgent)
         if (id_test_to_use)
         {
             c->data.tests.id_test = copy_test(thisAgent, id_test_to_use);
+        }
+        else
+        {
+            c->data.tests.id_test = NIL;
         }
         c->data.tests.attr_test = attr_test;
         id_test_to_use = make_placeholder_test(thisAgent, first_letter_from_test(attr_test));
@@ -1554,7 +1556,7 @@ bool is_preference_lexeme(enum lexer_token_type test_lexeme)
                Parse Preference Specifier Without Referent
 
    Parses a <preference-specifier>.  Returns the appropriate
-   xxx_PREFERENCE_TYPE (see soarkernel.h).
+   xxx_PREFERENCE_TYPE
 
    Note:  in addition to the grammar below, if there is no preference
    specifier given, then this routine returns ACCEPTABLE_PREFERENCE_TYPE.
@@ -2078,6 +2080,7 @@ action* parse_rhs_action(agent* thisAgent)
         }
         all_actions = make_action(thisAgent);
         all_actions->type = FUNCALL_ACTION;
+        all_actions->next = NIL; /* MToDo | Added from 9.4.  Needed? */
         all_actions->value = funcall_value;
         return all_actions;
     }

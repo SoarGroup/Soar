@@ -103,22 +103,8 @@ typedef struct binding_structure
     Symbol* from, *to;
 } Binding;
 
-/* -- Functions to create RHS -- */
-extern action* make_action(agent* thisAgent);
-extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var = NULL, uint64_t pG_ID = 0);
-extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var = NULL, uint64_t pG_ID = 0);
-
 /* -- Copy functions -- */
 rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv);
-rhs_value create_RHS_value(agent* thisAgent,
-                           rhs_value rv,
-                           condition* cond,
-                           char first_letter,
-                           AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
-action* create_RHS_action_list(agent* thisAgent,
-                               action* actions,
-                               condition* cond,
-                               AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
 
 /* -- Deallocation functions -- */
 void deallocate_rhs_value(agent* thisAgent, rhs_value rv);
@@ -219,5 +205,21 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
         return (rv1 == rv2);
     }
 }
+
+/* -- Functions to create RHS -- */
+extern action* make_action(agent* thisAgent);
+extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var = NULL, uint64_t pG_ID = 0);
+extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var = NULL, uint64_t pG_ID = 0);
+
+rhs_value create_RHS_value(agent* thisAgent,
+                           rhs_value rv,
+                           condition* cond,
+                           char first_letter,
+                           AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
+action* create_RHS_action_list(agent* thisAgent,
+                               action* actions,
+                               condition* cond,
+                               AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
+
 
 #endif /* RHS_H_ */

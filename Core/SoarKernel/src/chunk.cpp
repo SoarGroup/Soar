@@ -70,7 +70,17 @@ using namespace soar_TraceNames;
    Add_results_for_id() adds any preferences for the given identifier.
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
-inline void add_results_if_needed(agent* thisAgent, Symbol* sym);
+void add_results_for_id(agent* thisAgent, Symbol* id);
+
+inline void add_results_if_needed(agent* thisAgent, Symbol* sym)
+{
+    if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+        if (((sym)->id->level >= thisAgent->results_match_goal_level) &&
+                ((sym)->id->tc_num != thisAgent->results_tc_number))
+        {
+            add_results_for_id(thisAgent, sym);
+        }
+}
 
 extern void add_pref_to_results(agent* thisAgent, preference* pref)
 {
@@ -172,16 +182,6 @@ void add_results_for_id(agent* thisAgent, Symbol* id)
             add_pref_to_results(thisAgent, pref);
         }
     }
-}
-
-inline void add_results_if_needed(agent* thisAgent, Symbol* sym)
-{
-    if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-        if (((sym)->id->level >= thisAgent->results_match_goal_level) &&
-                ((sym)->id->tc_num != thisAgent->results_tc_number))
-        {
-            add_results_for_id(thisAgent, sym);
-        }
 }
 
 preference* get_results_for_instantiation(agent* thisAgent, instantiation* inst)
