@@ -115,6 +115,16 @@
 
 #include <sstream>
 
+void collect_nots(agent* thisAgent,
+                  rete_test* rt,
+                  wme* right_wme,
+                  condition* cond,
+                  not_struct*& nots_found_in_production);
+
+action* copy_action_list_and_substitute_varnames(agent* thisAgent,
+         action* actions,
+         condition* cond);
+
 /* ----------- handle inter-switch dependencies ----------- */
 
 /* --- TOKEN_SHARING_STATS requires SHARING_FACTORS --- */
@@ -4495,142 +4505,6 @@ void rete_node_to_conditions(agent* thisAgent,
             }
         }
     }
-}
-
-/* -------------------------------------------------------------------
-             Reconstructing the RHS Actions of a Production
-
-   When we print a production (but not when we fire one), we have to
-   reconstruct the RHS actions.  This is because many of the variables
-   in the RHS have been replaced by references to Rete locations (i.e.,
-   rather than specifying <v>, we specify "value field 3 levels up"
-   or "the 7th RHS unbound variable".  The routines below copy rhs_value's
-   and actions, and substitute variable names for such references.
-   For RHS unbound variables, we gensym new variable names.
-------------------------------------------------------------------- */
-
-rhs_value copy_rhs_value_and_substitute_varnames(agent* thisAgent,
-        rhs_value rv,
-        condition* cond,
-        char first_letter)
-{
-    cons* c, *new_c, *prev_new_c;
-    list* fl, *new_fl;
-    Symbol* sym;
-    int64_t index;
-    char prefix[2];
-
-    if (rhs_value_is_reteloc(rv))
-    {
-        sym = var_bound_in_reconstructed_conds(thisAgent, cond,
-                                               rhs_value_to_reteloc_field_num(rv),
-                                               rhs_value_to_reteloc_levels_up(rv));
-        symbol_add_ref(thisAgent, sym);
-        return symbol_to_rhs_value(sym);
-    }
-
-    if (rhs_value_is_unboundvar(rv))
-    {
-        index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
-        if (! *(thisAgent->rhs_variable_bindings + index))
-        {
-            prefix[0] = first_letter;
-            prefix[1] = 0;
-
-            sym = generate_new_variable(thisAgent, prefix);
-            *(thisAgent->rhs_variable_bindings + index) = sym;
-
-            if (thisAgent->highest_rhs_unboundvar_index < index)
-            {
-                thisAgent->highest_rhs_unboundvar_index = index;
-            }
-        }
-        else
-        {
-            sym = *(thisAgent->rhs_variable_bindings + index);
-            symbol_add_ref(thisAgent, sym);
-        }
-        return symbol_to_rhs_value(sym);
-    }
-
-    if (rhs_value_is_funcall(rv))
-    {
-        fl = rhs_value_to_funcall_list(rv);
-        allocate_cons(thisAgent, &new_fl);
-        new_fl->first = fl->first;
-        prev_new_c = new_fl;
-        for (c = fl->rest; c != NIL; c = c->rest)
-        {
-            allocate_cons(thisAgent, &new_c);
-            new_c->first = copy_rhs_value_and_substitute_varnames(thisAgent,
-                           static_cast<char*>(c->first),
-                           cond, first_letter);
-            prev_new_c->rest = new_c;
-            prev_new_c = new_c;
-        }
-        prev_new_c->rest = NIL;
-        return funcall_list_to_rhs_value(new_fl);
-    }
-    else
-    {
-        symbol_add_ref(thisAgent, rhs_value_to_symbol(rv));
-        return rv;
-    }
-}
-
-action* copy_action_list_and_substitute_varnames(agent* thisAgent,
-        action* actions,
-        condition* cond)
-{
-    action* old, *New, *prev, *first;
-    char first_letter;
-
-    prev = NIL;
-    first = NIL;  /* unneeded, but without it gcc -Wall warns here */
-    old = actions;
-    while (old)
-    {
-        allocate_with_pool(thisAgent, &thisAgent->action_pool, &New);
-        if (prev)
-        {
-            prev->next = New;
-        }
-        else
-        {
-            first = New;
-        }
-        prev = New;
-        New->type = old->type;
-        New->preference_type = old->preference_type;
-        New->support = old->support;
-        if (old->type == FUNCALL_ACTION)
-        {
-            New->value = copy_rhs_value_and_substitute_varnames(thisAgent,
-                         old->value, cond,
-                         'v');
-        }
-        else
-        {
-            New->id = copy_rhs_value_and_substitute_varnames(thisAgent, old->id, cond, 's');
-            New->attr = copy_rhs_value_and_substitute_varnames(thisAgent, old->attr, cond, 'a');
-            first_letter = first_letter_from_rhs_value(New->attr);
-            New->value = copy_rhs_value_and_substitute_varnames(thisAgent, old->value, cond,
-                         first_letter);
-            if (preference_is_binary(old->preference_type))
-                New->referent = copy_rhs_value_and_substitute_varnames(thisAgent, old->referent,
-                                cond, first_letter);
-        }
-        old = old->next;
-    }
-    if (prev)
-    {
-        prev->next = NIL;
-    }
-    else
-    {
-        first = NIL;
-    }
-    return first;
 }
 
 /* -----------------------------------------------------------------------
@@ -10042,5 +9916,141 @@ void collect_nots(agent* thisAgent,
             continue;
         }
     }
+}
+
+/* -------------------------------------------------------------------
+             Reconstructing the RHS Actions of a Production
+
+   When we print a production (but not when we fire one), we have to
+   reconstruct the RHS actions.  This is because many of the variables
+   in the RHS have been replaced by references to Rete locations (i.e.,
+   rather than specifying <v>, we specify "value field 3 levels up"
+   or "the 7th RHS unbound variable".  The routines below copy rhs_value's
+   and actions, and substitute variable names for such references.
+   For RHS unbound variables, we gensym new variable names.
+------------------------------------------------------------------- */
+
+rhs_value copy_rhs_value_and_substitute_varnames(agent* thisAgent,
+        rhs_value rv,
+        condition* cond,
+        char first_letter)
+{
+    cons* c, *new_c, *prev_new_c;
+    list* fl, *new_fl;
+    Symbol* sym;
+    int64_t index;
+    char prefix[2];
+
+    if (rhs_value_is_reteloc(rv))
+    {
+        sym = var_bound_in_reconstructed_conds(thisAgent, cond,
+                                               rhs_value_to_reteloc_field_num(rv),
+                                               rhs_value_to_reteloc_levels_up(rv));
+        symbol_add_ref(thisAgent, sym);
+        return symbol_to_rhs_value(sym);
+    }
+
+    if (rhs_value_is_unboundvar(rv))
+    {
+        index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
+        if (! *(thisAgent->rhs_variable_bindings + index))
+        {
+            prefix[0] = first_letter;
+            prefix[1] = 0;
+
+            sym = generate_new_variable(thisAgent, prefix);
+            *(thisAgent->rhs_variable_bindings + index) = sym;
+
+            if (thisAgent->highest_rhs_unboundvar_index < index)
+            {
+                thisAgent->highest_rhs_unboundvar_index = index;
+            }
+        }
+        else
+        {
+            sym = *(thisAgent->rhs_variable_bindings + index);
+            symbol_add_ref(thisAgent, sym);
+        }
+        return symbol_to_rhs_value(sym);
+    }
+
+    if (rhs_value_is_funcall(rv))
+    {
+        fl = rhs_value_to_funcall_list(rv);
+        allocate_cons(thisAgent, &new_fl);
+        new_fl->first = fl->first;
+        prev_new_c = new_fl;
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            allocate_cons(thisAgent, &new_c);
+            new_c->first = copy_rhs_value_and_substitute_varnames(thisAgent,
+                           static_cast<char*>(c->first),
+                           cond, first_letter);
+            prev_new_c->rest = new_c;
+            prev_new_c = new_c;
+        }
+        prev_new_c->rest = NIL;
+        return funcall_list_to_rhs_value(new_fl);
+    }
+    else
+    {
+        symbol_add_ref(thisAgent, rhs_value_to_symbol(rv));
+        return rv;
+    }
+}
+
+action* copy_action_list_and_substitute_varnames(agent* thisAgent,
+        action* actions,
+        condition* cond)
+{
+    action* old, *New, *prev, *first;
+    char first_letter;
+
+    prev = NIL;
+    first = NIL;  /* unneeded, but without it gcc -Wall warns here */
+    old = actions;
+    while (old)
+    {
+        allocate_with_pool(thisAgent, &thisAgent->action_pool, &New);
+        if (prev)
+        {
+            prev->next = New;
+        }
+        else
+        {
+            first = New;
+        }
+        prev = New;
+        New->type = old->type;
+        New->preference_type = old->preference_type;
+        New->support = old->support;
+        if (old->type == FUNCALL_ACTION)
+        {
+            New->value = copy_rhs_value_and_substitute_varnames(thisAgent,
+                         old->value, cond,
+                         'v');
+        }
+        else
+        {
+            New->id = copy_rhs_value_and_substitute_varnames(thisAgent, old->id, cond, 's');
+            New->attr = copy_rhs_value_and_substitute_varnames(thisAgent, old->attr, cond, 'a');
+            first_letter = first_letter_from_rhs_value(New->attr);
+            New->value = copy_rhs_value_and_substitute_varnames(thisAgent, old->value, cond,
+                         first_letter);
+            if (preference_is_binary(old->preference_type))
+                New->referent = copy_rhs_value_and_substitute_varnames(thisAgent, old->referent,
+                                cond, first_letter);
+        }
+        old = old->next;
+    }
+    if (prev)
+    {
+        prev->next = NIL;
+    }
+    else
+    {
+        first = NIL;
+    }
+    return first;
 }
 
