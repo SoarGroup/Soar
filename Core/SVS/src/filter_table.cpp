@@ -58,6 +58,10 @@ filter_table_entry* occlusion_filter_entry();
 filter_table_entry* overlap_filter_entry();
 filter_table_entry* contain_select_filter_entry();
 
+// filters/monitor_object.cpp
+filter_table_entry* monitor_position_filter_entry();
+filter_table_entry* monitor_volume_filter_entry();
+
 // filters/tag_select.cpp
 filter_table_entry* tag_select_filter_entry();
 
@@ -102,6 +106,9 @@ filter_table::filter_table()
 		add(overlap_filter_entry());
 		add(overlap_select_filter_entry());
     
+		add(monitor_volume_filter_entry());
+		add(monitor_position_filter_entry());
+
     add(tag_select_filter_entry());
 }
 

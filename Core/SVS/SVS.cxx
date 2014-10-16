@@ -12,6 +12,7 @@
 #include "src/filters/contain.cpp"
 #include "src/filters/distance.cpp"
 #include "src/filters/intersect.cpp"
+#include "src/filters/monitor_object.cpp"
 #include "src/filters/node.cpp"
 #include "src/filters/occlusion.cpp"
 #include "src/filters/overlap.cpp"
