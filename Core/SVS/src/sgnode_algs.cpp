@@ -12,6 +12,13 @@
 #include <iostream>
 using namespace std;
 
+typedef std::vector<const sgnode*> c_sgnode_list;
+typedef std::set<const sgnode*> c_sgnode_set;
+typedef std::vector<const geometry_node*> c_geom_node_list;
+typedef std::vector<view_line> view_line_list;
+
+/****** Support functions for CCD *******/
+
 void point_ccd_support(const void* obj, const ccd_vec3_t* dir, ccd_vec3_t* v)
 {
     const vec3* point = static_cast<const vec3*>(obj);
@@ -37,6 +44,7 @@ void geom_ccd_support(const void* obj, const ccd_vec3_t* dir, ccd_vec3_t* v)
     }
 }
 
+// Gets convex_distance between two geometry nodes //
 double geom_convex_dist(const geometry_node* a, const geometry_node* b)
 {
     ccd_t ccd;
@@ -52,6 +60,7 @@ double geom_convex_dist(const geometry_node* a, const geometry_node* b)
     return dist > 0.0 ? dist : 0.0;
 }
 
+// Gets convex distance between a point and a geometry node //
 double point_geom_convex_dist(const vec3& p, const geometry_node* g)
 {
     ccd_t ccd;
@@ -67,6 +76,7 @@ double point_geom_convex_dist(const vec3& p, const geometry_node* g)
     return dist > 0.0 ? dist : 0.0;
 }
 
+// Gets the convex distance between two sgnodes //
 double convex_distance(const sgnode* a, const sgnode* b)
 {
     vector<const geometry_node*> g1, g2;
@@ -118,6 +128,7 @@ double convex_distance(const sgnode* a, const sgnode* b)
     return *min_element(dists.begin(), dists.end());
 }
 
+// Returns the euclidean distance between the centroids of two nodes //
 double centroid_distance(const sgnode* a, const sgnode* b)
 {
     vec3 ca = a->get_centroid();
@@ -125,6 +136,16 @@ double centroid_distance(const sgnode* a, const sgnode* b)
     return (cb - ca).norm();
 }
 
+/*
+ * Returns the distance between two nodes along a given axis
+ *   using their bounding boxes
+ *
+ * Returns a negative distance if node a is higher than node b
+ * Returns a positive distance if node a is lower than node b
+ * Returns 0 if node a and node b overlap on the axis
+ *
+ * Axis should be 0 for x-axis, 1 for y-axis, 2 for z-axis 
+ */
 double axis_distance(const sgnode* a, const sgnode* b, int axis)
 {
     if (axis < 0 || axis > 2)
@@ -150,13 +171,15 @@ double axis_distance(const sgnode* a, const sgnode* b, int axis)
     }
 }
 
-
+// Returns the volume of the node's bounding box //
 double bbox_volume(const sgnode* a)
 {
     bbox boxa = a->get_bounds();
     return boxa.get_volume();
 }
 
+// Returns true if the convex hull of node a 
+//   intersects the convex hull of node b
 bool convex_intersects(const sgnode* a, const sgnode* b)
 {
     if (a->get_bounds().intersects(b->get_bounds()))
@@ -166,6 +189,8 @@ bool convex_intersects(const sgnode* a, const sgnode* b)
     return false;
 }
 
+// Returns true if the bounding box of node a
+//   intersects the bounding box of node b
 bool bbox_intersects(const sgnode* a, const sgnode* b)
 {
     bbox boxa = a->get_bounds();
@@ -173,6 +198,8 @@ bool bbox_intersects(const sgnode* a, const sgnode* b)
     return boxa.intersects(boxb);
 }
 
+// Returns true if the bounding box of node a 
+//   contains the bounding box of node b
 bool bbox_contains(const sgnode* a, const sgnode* b)
 {
     bbox boxa = a->get_bounds();
@@ -180,10 +207,13 @@ bool bbox_contains(const sgnode* a, const sgnode* b)
     return boxa.contains(boxb);
 }
 
-/*  overlap(sgnode* n1, sgnode* n2)
- * This will estimate the percentage of node 1 that is contained within node 2
- * Using random sampling 
+/*  
+ * Returns the estimated percentage of node n1 
+ *   that is contained within node n2
+ *   using random sampling
+ *
  * Result = # Samples that are contained in n1 and n2 / # Samples contained in n1
+ *   (where it tries to get the requested number of samples)
  */
 double convex_overlap(const sgnode* n1, const sgnode* n2, int nsamples){
 	if(n1 == n2 || n1->has_descendent(n2) || n2->has_descendent(n1)){
@@ -276,3 +306,100 @@ double convex_overlap(const sgnode* n1, const sgnode* n2, int nsamples){
 		return numIntersections / (double)numSamples;
 	}
 }
+
+
+// Creates a view_line consisting of a convex node with the given name
+//   which represents a line segment between the two given points
+view_line create_view_line(const string& name, const vec3& p1, const vec3& p2){
+	vec3 dPosOver2 = (p2 - p1)/2;	// Vector from eye to vertex
+	vec3 center = p1 + dPosOver2;	// Point halfway between eye and vertex
+
+	ptlist linePoints;
+	linePoints.push_back(dPosOver2);
+	linePoints.push_back(-dPosOver2);
+
+	convex_node* line = new convex_node(name, linePoints);
+	line->set_trans('p', center);
+
+	return view_line(line, false);
+}
+
+// Build up a list of view lines that go from the eye point to each vertex in the target object
+// view_line.first is a convex_node that actually represents the line
+// view_line.second is a bool which is T if that view line is occluded by another object
+void calc_view_lines(const sgnode* target, const sgnode* eye, view_line_list& view_lines){
+	vec3 eyePos = eye->get_centroid();
+//	std::cout << "EYE: " << eyePos[0] << ", " << eyePos[1] << ", " << eyePos[2] << std::endl;
+
+	// Create a view_line for the centroid
+	//std::string name = "_centroid_line_";
+	//view_lines.push_back(create_view_line(name, eyePos, target->get_centroid()));
+
+	c_geom_node_list geom_nodes;
+	target->walk_geoms(geom_nodes);
+
+	// Go through each vertex in the node and create a view_line to that vertex
+	for(c_geom_node_list::const_iterator i = geom_nodes.begin(); i != geom_nodes.end(); i++){
+		const convex_node* c_node = dynamic_cast<const convex_node*>(*i);
+		if(c_node){
+			const ptlist& verts = c_node->get_world_verts();
+			for(ptlist::const_iterator i = verts.begin(); i != verts.end(); i++){
+				//std::cout << "Point " << view_lines.size() << ": " << (*i)[0] << ", " << (*i)[1] << ", " << (*i)[2] << endl;
+				std::string name = "_temp_line_" + tostring(view_lines.size());
+				view_lines.push_back(create_view_line(name, eyePos, *i));
+			}
+		}
+	}
+}
+
+
+// Returns the percentage of given view lines are intersected by an object in occludingNodes
+double convex_occlusion(view_line_list& view_lines, const c_sgnode_list& occluders){
+	if(view_lines.size() == 0){
+		return 0;
+	}
+	if(occluders.size() == 0){
+		return 0;
+	}
+
+	// Go through every other object in the given set and see if it occludes any view lines
+	int num_occluded = 0;
+
+	for(view_line_list::iterator i = view_lines.begin(); i != view_lines.end(); i++){
+		i->second = false;
+	}
+
+	for(c_sgnode_list::const_iterator i = occluders.begin(); i != occluders.end(); i++){
+		const sgnode* n = *i;
+		//std::cout << "Testing Object " << n->get_id() << std::endl;
+		for(view_line_list::iterator j = view_lines.begin(); j != view_lines.end(); j++){
+			view_line& view_line = *j;
+			if(view_line.second){
+				// Already occluded, don't bother checking again
+				continue;
+			}
+			double dist = convex_distance(n, view_line.first);
+			if(dist <= 0){
+				if(n->get_id() == "arm"){
+					//std::cout << "ARM OCCLUSION!" << std::endl;
+				}
+				//std::cout << "Occlusion detected" << std::endl;
+				//std::cout << "  " << j->first->get_id() << std::endl;
+				//std::cout << "  " << n->get_id() << std::endl; 
+
+				view_line.second = true;
+				num_occluded++;
+			}
+		}
+	}
+
+	// Count the number of view lines occluded and return the fraction
+	return ((double)num_occluded)/view_lines.size();
+}
+
+double convex_occlusion(const sgnode* a, const sgnode* eye, const std::vector<const sgnode*>& occluders){
+	view_line_list view_lines;
+	calc_view_lines(a, eye, view_lines);
+	return convex_occlusion(view_lines, occluders);
+}
+
