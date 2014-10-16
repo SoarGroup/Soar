@@ -30,7 +30,6 @@
 using namespace cli;
 using namespace sml;
 
-
 int RemoveWme(agent* thisAgent, wme* pWme)
 {
     //    wme *w, *w2;
@@ -294,7 +293,7 @@ bool ResetWMEFilters(agent* thisAgent, bool adds, bool removes)
         {
             *prev_cons_rest = c->rest;
             print_with_symbols(thisAgent, "Removed: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
-            print(thisAgent, "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
+            print(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
             symbol_remove_ref(thisAgent, wf->id);
             symbol_remove_ref(thisAgent, wf->attr);
             symbol_remove_ref(thisAgent, wf->value);
@@ -317,7 +316,7 @@ void ListWMEFilters(agent* thisAgent, bool adds, bool removes)
         if ((adds && wf->adds) || (removes && wf->removes))
         {
             print_with_symbols(thisAgent, "wme filter: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
-            print(thisAgent, "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
+            print(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
         }
     }
 }

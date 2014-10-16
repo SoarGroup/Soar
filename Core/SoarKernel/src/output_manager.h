@@ -116,6 +116,7 @@ class Output_Manager
             return printed_output_strings[next_output_string];
         }
         
+        void store_refcount(Symbol* sym, const char* trace, bool isAdd);
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
         void start_fresh_line(agent* pSoarAgent = NULL);
@@ -145,7 +146,7 @@ class Output_Manager
          *    probably better approaches, but this avoided revising a lot of other code and
          *    does the job.  -- */
         char    printed_output_strings[output_string_size][num_output_strings];
-        int64_t next_output_string;
+        int64_t                         next_output_string;
         
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);

@@ -794,22 +794,22 @@ void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme)
 {
     int i;
     const char* c;
-    bool sym_constant_start_found = false;
-    bool sym_constant_end_found = false;
+    bool STR_CONSTANT_start_found = false;
+    bool STR_CONSTANT_end_found = false;
     
     for (c = the_lexeme, i = 0; *c; c++, i++)
     {
         if (*c == '|')
         {
-            if (!sym_constant_start_found)
+            if (!STR_CONSTANT_start_found)
             {
                 i--;
-                sym_constant_start_found = true;
+                STR_CONSTANT_start_found = true;
             }
             else
             {
                 i--;
-                sym_constant_end_found = true;
+                STR_CONSTANT_end_found = true;
             }
         }
         else
@@ -822,7 +822,7 @@ void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme)
     
     thisAgent->lexeme.length = i;
     
-    if (sym_constant_end_found)
+    if (STR_CONSTANT_end_found)
     {
         thisAgent->lexeme.type = STR_CONSTANT_LEXEME;
     }
@@ -842,7 +842,7 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent)
         id = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
         if (!id)
         {
-            print(thisAgent, "There is no identifier %c%lu.\n", thisAgent->lexeme.id_letter,
+            print(thisAgent,  "There is no identifier %c%lu.\n", thisAgent->lexeme.id_letter,
                   thisAgent->lexeme.id_number);
             print_location_of_most_recent_lexeme(thisAgent);
             return NIL;
@@ -854,27 +854,26 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent)
         get_context_var_info(thisAgent, &g, &attr, &value);
         if (!attr)
         {
-            print(thisAgent, "Expected identifier (or context variable)\n");
+            print(thisAgent,  "Expected identifier (or context variable)\n");
             print_location_of_most_recent_lexeme(thisAgent);
             return NIL;
         }
         if (!value)
         {
-            print(thisAgent, "There is no current %s.\n", thisAgent->lexeme.string);
+            print(thisAgent,  "There is no current %s.\n", thisAgent->lexeme.string);
             print_location_of_most_recent_lexeme(thisAgent);
             return NIL;
         }
         if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         {
-            print(thisAgent, "The current %s ", thisAgent->lexeme.string);
+            print(thisAgent,  "The current %s ", thisAgent->lexeme.string);
             print_with_symbols(thisAgent, "(%y) is not an identifier.\n", value);
             print_location_of_most_recent_lexeme(thisAgent);
             return NIL;
         }
         return value;
     }
-    print(thisAgent, "Expected identifier (or context variable)\n");
+    print(thisAgent,  "Expected identifier (or context variable)\n");
     print_location_of_most_recent_lexeme(thisAgent);
     return NIL;
 }
-

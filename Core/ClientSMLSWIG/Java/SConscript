@@ -10,70 +10,70 @@ import SCons.Script
 
 # adapted from http://www.scons.org/wiki/JavaNativeInterface
 def ConfigureJNI(env):
-	base = os.environ.get('JAVA_HOME')
-	if not base:
-		if sys.platform == 'darwin':
-			# Apple's OS X has its own special java base directory
-			base = '/System/Library/Frameworks/JavaVM.framework'
+    base = os.environ.get('JAVA_HOME')
+    if not base:
+        if sys.platform == 'darwin':
+            # Apple's OS X has its own special java base directory
+            base = '/System/Library/Frameworks/JavaVM.framework'
 
-		else:
-			# Search for the java compiler
-			p = env.WhereIs('javac')
-			if not p:
-				return None
-			jcdir = os.path.dirname(os.path.realpath(p))
-			# assuming the compiler found is in some directory like
-			# /usr/jdkX.X/bin/javac, java's home directory is /usr/jdkX.X
-			base = os.path.split(jcdir)[0]
+        else:
+            # Search for the java compiler
+            p = env.WhereIs('javac')
+            if not p:
+                return None
+            jcdir = os.path.dirname(os.path.realpath(p))
+            # assuming the compiler found is in some directory like
+            # /usr/jdkX.X/bin/javac, java's home directory is /usr/jdkX.X
+            base = os.path.split(jcdir)[0]
 
-	if sys.platform == 'darwin':
-		if os.path.exists(os.path.join(base, 'Headers')):
-			# JDK 6
-			headers = [os.path.join(base, 'Headers')]
-			libs = [os.path.join(base, 'Libraries')]
-		else:
-			# JDK 7+
-			headers = [os.path.join(base, 'include')]
-			headers.append(os.path.join(base, 'include/darwin'))
-			libs = [os.path.join(base, 'lib')]
-	else:
-		headers = [os.path.join(base, 'include')]
-		libs = [os.path.join(base, 'lib')]
-		if sys.platform == 'win32':
-			headers.append(os.path.join(base, 'include', 'win32'))
-		elif sys.platform.startswith('linux'):
-			headers.append(os.path.join(base, 'include', 'linux'))
-		else:
-			return None
+    if sys.platform == 'darwin':
+        if os.path.exists(os.path.join(base, 'Headers')):
+            # JDK 6
+            headers = [os.path.join(base, 'Headers')]
+            libs = [os.path.join(base, 'Libraries')]
+        else:
+            # JDK 7+
+            headers = [os.path.join(base, 'include')]
+            headers.append(os.path.join(base, 'include/darwin'))
+            libs = [os.path.join(base, 'lib')]
+    else:
+        headers = [os.path.join(base, 'include')]
+        libs = [os.path.join(base, 'lib')]
+        if sys.platform == 'win32':
+            headers.append(os.path.join(base, 'include', 'win32'))
+        elif sys.platform.startswith('linux'):
+            headers.append(os.path.join(base, 'include', 'linux'))
+        else:
+            return None
 
-	return (headers, libs)
+    return (headers, libs)
 
 def get_headers(d):
-	chain = itertools.chain.from_iterable
-	return list(chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d)))
+    chain = itertools.chain.from_iterable
+    return list(chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d)))
 
 Import('env', 'compiler')
 config = ConfigureJNI(env)
 if config == None:
-	print "Could not configure Java. If you know where java is on your system,"
-	print "set environment variable JAVA_HOME to point to the directory containing"
-	print "the Java include, bin, and lib directories."
-	Return()
+    print "Could not configure Java. If you know where java is on your system,"
+    print "set environment variable JAVA_HOME to point to the directory containing"
+    print "the Java include, bin, and lib directories."
+    Return()
 
 clone = env.Clone()
 clone.Append(
-	CPPPATH = config[0],
-	LIBPATH = config[1],
+    CPPPATH = config[0],
+    LIBPATH = config[1],
 )
 
 if compiler == 'g++':
-	if clone['VISHIDDEN']:
-		clone['CPPFLAGS'].remove('-fvisibility=hidden')
-		clone.Append(CPPFLAGS = ['-fvisibility=default'])
-	clone.Append(CPPFLAGS = '-Wno-unused -fno-strict-aliasing'.split())
+    if clone['VISHIDDEN']:
+        clone['CPPFLAGS'].remove('-fvisibility=hidden')
+        clone.Append(CPPFLAGS = ['-fvisibility=default'])
+    clone.Append(CPPFLAGS = '-Wno-unused -fno-strict-aliasing'.split())
 
 if sys.platform == 'darwin':
-	clone.Append(SHLINKFLAGS = ' -framework JavaVM')
+    clone.Append(SHLINKFLAGS = ' -framework JavaVM')
 
 name = 'Java_sml_ClientInterface'
 interface = clone.File(name + '.i')
@@ -88,34 +88,34 @@ fake_java_target = '#fake_java_target'
 # This builder will insert extra dependencies during the COMPILATION stage
 # adapted from http://scons.org/wiki/DynamicSourceGenerator
 def late_java_builder(target, source, env):
-	if not os.path.isdir(srcdir.abspath):
-		print('source directory does not exist',srcdir.abspath)
-		sys.exit(1)
-	
-	clone.Java(classdir, srcdir)
-	clone['JARCHDIR'] = classdir
-	smljar = clone.Jar(jar, classdir)
-	env.Depends(smljar, fake_java_target)
-	install = env.Install(os.path.join(env['OUT_DIR'], 'java'), smljar)
-	Alias(java_target, install)
+    if not os.path.isdir(srcdir.abspath):
+        print('source directory does not exist',srcdir.abspath)
+        sys.exit(1)
+    
+    clone.Java(classdir, srcdir)
+    clone['JARCHDIR'] = classdir
+    smljar = clone.Jar(jar, classdir)
+    env.Depends(smljar, fake_java_target)
+    install = env.Install(os.path.join(env['OUT_DIR'], 'java'), smljar)
+    Alias(java_target, install)
 
 clone.Append(BUILDERS = {'LateJavaBuilder' : Builder(action=late_java_builder)})
 
 headers = []
 for d in 'ClientSML ConnectionSML ElementXML'.split():
-	headers += get_headers(env.Dir(os.path.join('#Core', d, 'src')).abspath)
+    headers += get_headers(env.Dir(os.path.join('#Core', d, 'src')).abspath)
 
 swig_deps = [interface] + headers
 incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in clone['CPPPATH'])
 swig_cmd = 'swig %s -o "%s" -c++ -java -Wall -package sml -outdir "%s" "%s"' % (incs, wrapper.abspath, smldir.abspath, interface)
 if not GetOption('verbose'):
-	swig_cmd = '@' + swig_cmd
+    swig_cmd = '@' + swig_cmd
 clone.Command(wrapper, swig_deps, [Mkdir(smldir), swig_cmd])
 
 clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
 if sys.platform == 'darwin':
-	# have to call it Java_sml_ClientInterface.jnilib instead of the usual .dylib
-	name += '.jnilib'
+    # have to call it Java_sml_ClientInterface.jnilib instead of the usual .dylib
+    name += '.jnilib'
 shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files in Windows
 lib_install = clone.Install(env['OUT_DIR'], shlib)
 

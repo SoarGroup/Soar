@@ -902,7 +902,7 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
         {
             double prob = *i / exptotal;
             print_with_symbols(thisAgent, "\n Candidate %y:  ", c->value);
-            print(thisAgent, "Value (Sum) = %f, (Prob) = %f", c->numeric_value, prob);
+            print(thisAgent,  "Value (Sum) = %f, (Prob) = %f", c->numeric_value, prob);
             xml_begin_tag(thisAgent, kTagCandidate);
             xml_att_val(thisAgent, kCandidateName, c->value);
             xml_att_val(thisAgent, kCandidateType, kCandidateTypeSum);
@@ -939,7 +939,7 @@ preference* exploration_epsilon_greedy_select(agent* thisAgent, preference* cand
         for (const preference* cand = candidates; cand; cand = cand->next_candidate)
         {
             print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);
-            print(thisAgent, "Value (Sum) = %f", cand->numeric_value);
+            print(thisAgent,  "Value (Sum) = %f", cand->numeric_value);
             xml_begin_tag(thisAgent, kTagCandidate);
             xml_att_val(thisAgent, kCandidateName, cand->value);
             xml_att_val(thisAgent, kCandidateType, kCandidateTypeSum);

@@ -925,7 +925,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
     
     // Now create the wme
     Symbol* pIDSymbol   = get_io_identifier(m_agent, idLetter, idNumber) ;
-    Symbol* pAttrSymbol = get_io_sym_constant(m_agent, pAttribute) ;
+    Symbol* pAttrSymbol = get_io_str_constant(m_agent, pAttribute) ;
     
     CHECK_RET_FALSE(pIDSymbol) ;
     CHECK_RET_FALSE(pAttrSymbol) ;
@@ -955,7 +955,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
 bool AgentSML::AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag)
 {
     // Creating a wme with a string constant value
-    Symbol* pValueSymbol = get_io_sym_constant(m_agent, pValue) ;
+    Symbol* pValueSymbol = get_io_str_constant(m_agent, pValue) ;
     
     if (CaptureQuery())
     {
@@ -1187,7 +1187,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
     
     if (pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        this->RemoveID(symbol_to_string(GetSoarAgent(), pWME->value, true, 0, 0)) ;
+        this->RemoveID(pWME->value->to_string(true)) ;
     }
     
     RemoveWmeFromWmeMap(pWME);
@@ -1544,6 +1544,7 @@ bool AgentSML::CaptureInputWME(const CapturedAction& ca)
 
 void AgentSML::ReplayInputWMEs()
 {
+    /* MToDo | These prints seem to be the only ones in the sml files.  Should they be using another mechanism? */
     if (m_CapturedActions.empty())
     {
         print(m_agent, "\n\nWarning: end of replay has been reached.\n");

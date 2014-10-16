@@ -22,6 +22,7 @@ Soar_Instance::Soar_Instance() :
 {
     m_loadedLibraries = new std::map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::map< char*, Agent_Info*, cmp_str >();
+    dprint(DT_SOAR_INSTANCE, "======================= Soar instance created =======================\n");
 }
 
 void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
@@ -36,11 +37,13 @@ void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
 
 Soar_Instance::~Soar_Instance()
 {
+    dprint(DT_SOAR_INSTANCE, "======================= Destroying Soar instance =======================\n");
     m_Kernel = NULL;
     m_default_soar_agent = NULL;
     
     for (std::map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
     {
+        dprint(DT_SOAR_INSTANCE, "Sending CLI module %s a DELETE command.\n", it->first.c_str());
         it->second->libMessageFunction("delete", NULL);
     }
     for (std::map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
@@ -56,6 +59,8 @@ Soar_Instance::~Soar_Instance()
     }
     m_agent_table->clear();
     delete m_agent_table;
+    
+    dprint(DT_SOAR_INSTANCE, "======================= Soar instance destroyed =======================\n");
 }
 
 void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction)
@@ -78,6 +83,9 @@ void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName,
         new_library->libMessageFunction = pMessageFunction;
         new_library->isOn = false;
         (*m_loadedLibraries)[lLibName] = new_library;
+        
+        dprint(DT_SOAR_INSTANCE, "CLI Extension %s registered.\n", lLibName.c_str());
+        
     }
 }
 

@@ -52,10 +52,13 @@
 #include "consistency.h"
 #include "misc.h"
 #include "soar_module.h"
+#include "variablization_manager.h"
 
 #include "assert.h"
 #include <string> // SBW 8/4/08
 #include <list>
+
+extern void dprint_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref,  const char* indent_string, int pref_list_type);
 
 using namespace soar_TraceNames;
 
@@ -68,9 +71,6 @@ typedef std::list<condition*,
 typedef std::list< instantiation* > inst_mpool_list;
 typedef std::list< condition* > cond_mpool_list;
 #endif
-
-/* Uncomment the following line to get instantiation printouts */
-/* #define DEBUG_INSTANTIATIONS */
 
 /* TEMPORARY HACK (Ideally this should be doable through
  the external kernel interface but for now using a
@@ -444,8 +444,9 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     return result;
 }
 
-preference* execute_action(agent* thisAgent, action* a,
-                           struct token_struct* tok, wme* w)
+preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok, wme* w,
+                           rhs_value original_id, rhs_value original_attr, rhs_value original_value,
+                           condition* cond)
 {
     Symbol* id, *attr, *value, *referent;
     char first_letter;
@@ -463,7 +464,6 @@ preference* execute_action(agent* thisAgent, action* a,
     attr = NIL;
     value = NIL;
     referent = NIL;
-    
     id = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
     if (!id)
     {
@@ -512,9 +512,17 @@ preference* execute_action(agent* thisAgent, action* a,
         goto abort_execute_action;
     }
     
-    return make_preference(thisAgent, a->preference_type, id, attr, value,
-                           referent);
-                           
+    /* -- We don't need to store original vars for referents bc they are operator preference knowledge and should always be operator IDs -- */
+    return make_preference(thisAgent, a->preference_type, id, attr, value, referent,
+                           soar_module::symbol_triple(
+                               ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_original_symbol(original_id) : NULL),
+                               ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_original_symbol(original_attr) : NULL),
+                               ((original_value && !rhs_value_is_funcall(a->value)) ? rhs_value_to_original_symbol(original_value) : NULL)),
+                           soar_module::g_id_triple(
+                               ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_g_id(original_id) : 0),
+                               ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_g_id(original_attr) : 0),
+                               ((original_value && !rhs_value_is_funcall(a->value)) ? rhs_value_to_g_id(original_value) : 0)));
+                               
 abort_execute_action: /* control comes here when some error occurred */
     if (id)
     {
@@ -752,14 +760,13 @@ inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
  newly_created_instantiations.  It also calls chunk_instantiation() to
  do any necessary chunk or justification building.
  ----------------------------------------------------------------------- */
-
 void create_instantiation(agent* thisAgent, production* prod,
                           struct token_struct* tok, wme* w)
 {
     instantiation* inst;
     condition* cond;
     preference* pref;
-    action* a;
+    action* a, *a2, *rhs_vars;
     cons* c;
     bool need_to_do_support_calculations;
     bool trace_it;
@@ -783,28 +790,36 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->rete_wme = w;
     inst->reliable = true;
     inst->in_ms = true;
-    inst->GDS_evaluated_already = false;
     
+    /*  We want to initialize the GDS_evaluated_already flag
+     *  when a new instantiation is created.
+     */
+    
+    inst->GDS_evaluated_already = false;
+    dprint_noprefix(DT_FUNC_PRODUCTIONS, "\n");
+    dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+    dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() called for %s\n", inst->prod->name->to_string());
+    dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
                            inst->prod->name);
         char buf[256];
         SNPRINTF(buf, 254, "in create_instantiation: %s",
-                 symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+                 inst->prod->name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
     }
-    /* REW: end   09.15.96 */
     
     thisAgent->production_being_fired = inst->prod;
     prod->firing_count++;
     thisAgent->production_firing_count++;
     
     /* --- build the instantiated conditions, and bind LHS variables --- */
-    p_node_to_conditions_and_nots(thisAgent, prod->p_node, tok, w,
-                                  &(inst->top_of_instantiated_conditions),
-                                  &(inst->bottom_of_instantiated_conditions), &(inst->nots), NIL);
-                                  
+    p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
+                                 &(inst->top_of_instantiated_conditions),
+                                 &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
+                                 ((prod->type != TEMPLATE_PRODUCTION_TYPE) ? ALL_ORIGINALS : JUST_INEQUALITIES));
+                                 
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
             cond = cond->next)
@@ -821,7 +836,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     if (trace_it)
     {
         start_fresh_line(thisAgent);
-        print(thisAgent, "Firing ");
+        print(thisAgent,  "Firing ");
         print_instantiation_with_wmes(thisAgent, inst,
                                       static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
                                       0);
@@ -844,25 +859,26 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- phase has changed to output by printing the arrow --- */
     if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
     {
-        print(thisAgent, " -->\n");
+        print(thisAgent,  " -->\n");
         xml_object(thisAgent, kTagActionSideMarker);
     }
     
     /* --- execute the RHS actions, collect the results --- */
     inst->preferences_generated = NIL;
     need_to_do_support_calculations = false;
-    for (a = prod->action_list; a != NIL; a = a->next)
+    for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next)
     {
-    
+        /* MToDo | Disabled this assert.  May re-enable later when testing. rhs_vars should not be able to differ from action_list */
+//    if ((a && !a2) || (!a && a2))
+//      assert(false);
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
-            pref = execute_action(thisAgent, a, tok, w);
+            pref = execute_action(thisAgent, a, tok, w, a2->id, a2->attr, a2->value, inst->top_of_instantiated_conditions);
         }
         else
         {
             pref = NIL;
-            /*Symbol *result = */rl_build_template_instantiation(thisAgent,
-                    inst, tok, w);
+            /*Symbol *result = */rl_build_template_instantiation(thisAgent, inst, tok, w);
         }
         
         /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
@@ -919,7 +935,7 @@ void create_instantiation(agent* thisAgent, production* prod,
             {
                 wme* tempwme = glbDeepCopyWMEs;
                 pref = make_preference(thisAgent, a->preference_type,
-                                       tempwme->id, tempwme->attr, tempwme->value, 0);
+                                       tempwme->id, tempwme->attr, tempwme->value, NULL);
                 glbDeepCopyWMEs = tempwme->next;
                 deallocate_wme(thisAgent, tempwme);
             }
@@ -950,7 +966,7 @@ void create_instantiation(agent* thisAgent, production* prod,
         for (pref = inst->preferences_generated; pref != NIL;
                 pref = pref->inst_next)
         {
-            print(thisAgent, " ");
+            print(thisAgent,  " ");
             print_preference(thisAgent, pref);
         }
     }
@@ -960,11 +976,37 @@ void create_instantiation(agent* thisAgent, production* prod,
     
     thisAgent->production_being_fired = NIL;
     
+    dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
+    dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation created: \n");
+    dprint_cond_prefs(DT_PRINT_INSTANTIATIONS, inst->top_of_instantiated_conditions, inst->preferences_generated, "          ", 1);
+    
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, false,
                         &(thisAgent->newly_created_instantiations));
                         
-    /* MVP 6-8-94 */
+    /* -- We no longer needs the original variable to g_id table.  It was built up while
+     *    propagating identities in the instantiation and used to add identity information
+     *    to NCCs and match RHS variables with LHS variables.  Both are done at this
+     *    point -- */
+    thisAgent->variablizationManager->clear_ovar_gid_table();
+    
+    /* -- clear the original var references that we cached in the preference in
+     *    execute_action but did not increase their refcount -- */
+//  for (pref = inst->preferences_generated; pref != NIL;
+//      pref = pref->inst_next) {
+//    pref->original_symbols.id = NIL;
+//    pref->original_symbols.attr = NIL;
+//    pref->original_symbols.value = NIL;
+//  }
+
+    /* MToDoRefCnt | Note that the 9.3.2 did not deallocate the action list. */
+    deallocate_action_list(thisAgent, rhs_vars);
+    
+    dprint(DT_PRINT_INSTANTIATIONS, "=========================================================\n");
+    dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() finished for %s\n", inst->prod->name->to_string());
+    dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+    
+    
     if (!thisAgent->system_halted)
     {
         /* --- invoke callback function --- */
@@ -1075,12 +1117,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         assert(inst);
         ++next_iter;
         
-#ifdef DEBUG_INSTANTIATIONS
-        if (inst->prod)
-        {
-            print_with_symbols(thisAgent, "\nDeallocate instantiation of %y", inst->prod->name);
-        }
-#endif
+        dprint(DT_DEALLOCATES, "Deallocate instantiation of %s\n", (inst->prod ? inst->prod->name->to_string() : "no production name!!! (bug?)"));
         
         level = inst->match_goal_level;
         
@@ -1246,7 +1283,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         
         deallocate_condition_list(thisAgent,
                                   temp->top_of_instantiated_conditions);
-        deallocate_list_of_nots(thisAgent, temp->nots);
         if (temp->prod)
         {
             production_remove_ref(thisAgent, temp->prod);
@@ -1289,19 +1325,19 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
                 if (!retracted_a_preference)
                 {
                     start_fresh_line(thisAgent);
-                    print(thisAgent, "Retracting ");
+                    print(thisAgent,  "Retracting ");
                     print_instantiation_with_wmes(thisAgent, inst,
                                                   static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
                                                   1);
                     if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
                     {
-                        print(thisAgent, " -->\n");
+                        print(thisAgent,  " -->\n");
                         xml_object(thisAgent, kTagActionSideMarker);
                     }
                 }
                 if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
                 {
-                    print(thisAgent, " ");
+                    print(thisAgent,  " ");
                     print_preference(thisAgent, pref);
                 }
             }
@@ -1453,7 +1489,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
                                "\n      asserting instantiation: %y\n", inst->prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "asserting instantiation: %s",
-                     symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+                     inst->prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
         }
         /* REW: end   09.15.96 */
@@ -1595,13 +1631,13 @@ void do_preference_phase(agent* thisAgent)
         
         if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
         {
-            print(thisAgent, "\n--- Inner Elaboration Phase, active level %d",
+            print(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
                   thisAgent->active_level);
             if (thisAgent->active_goal)
             {
                 print_with_symbols(thisAgent, " (%y)", thisAgent->active_goal);
             }
-            print(thisAgent, " ---\n");
+            print(thisAgent,  " ---\n");
         }
         
         thisAgent->newly_created_instantiations = NIL;
@@ -1671,7 +1707,7 @@ void do_preference_phase(agent* thisAgent)
         {
             if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
             {
-                print(thisAgent, " inner elaboration loop at bottom goal.\n");
+                print(thisAgent,  " inner elaboration loop at bottom goal.\n");
             }
             break;
         }

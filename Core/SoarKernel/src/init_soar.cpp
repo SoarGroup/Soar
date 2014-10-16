@@ -43,6 +43,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#include "variablization_manager.h"
 #include "svs_interface.h"
 #include "output_manager.h"
 
@@ -68,34 +69,20 @@ int64_t lapse_duration;
 
                             Exiting Soar
 
-   Exit_soar() and abort_with_fatal_error(msg) both terminate Soar, closing
-   the log file before exiting.  Abort_with_fatal_error(msg) also prints
+   Abort_with_fatal_error(msg) terminates Soar, closing
+   the log file before exiting.  It also prints
    an error message and tries to write a file before exiting.
 =================================================================== */
 
-// JRV: these functions are no longer used with SML
-//void just_before_exit_soar (agent* thisAgent) {
-//  soar_invoke_callbacks(thisAgent,
-//          SYSTEM_TERMINATION_CALLBACK,
-//          (soar_call_data) true);
-//}
-
-//void exit_soar (agent* thisAgent) {
-////#ifdef _WINDOWS
-////  print(thisAgent, "Cannot exit from Soar via the command line.\n");
-////#else
-//  just_before_exit_soar(thisAgent);
-//  exit (0);
-////#endif
-//}
+/* MToDo | May also want to close debug and other databases here -- */
 
 void abort_with_fatal_error(agent* thisAgent, const char* msg)
 {
     FILE* f;
     const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
     
-    print(thisAgent, "%s", msg);
-    print(thisAgent, "%s", warning);
+    print(thisAgent,  "%s", msg);
+    print(thisAgent,  "%s", warning);
     
     fprintf(stderr, "%s", msg);
     fprintf(stderr, "%s", warning);
@@ -110,11 +97,6 @@ void abort_with_fatal_error(agent* thisAgent, const char* msg)
     
     assert(false);
     
-    // Since we're no longer terminating, should we be invoking this event?
-    // Note that this is a soar callback, not a gSKI callback, so it isn't being used for now anyway
-    //soar_invoke_callbacks(thisAgent,
-    //  SYSTEM_TERMINATION_CALLBACK,
-    //  (soar_call_data) false);
 }
 
 /* -- A version for use when the current agent variable is not available == */
@@ -204,7 +186,7 @@ void set_sysparam(agent* thisAgent, int param_number, int64_t new_value)
 {
     if ((param_number < 0) || (param_number > HIGHEST_SYSPARAM_NUMBER))
     {
-        print(thisAgent, "Internal error: tried to set bad sysparam #: %d\n", param_number);
+        print(thisAgent,  "Internal error: tried to set bad sysparam #: %d\n", param_number);
         return;
     }
     thisAgent->sysparams[param_number] = new_value;
@@ -491,6 +473,7 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->epmem_stats->reset();
     thisAgent->smem_stats->reset();
     thisAgent->dyn_counters->clear();
+    thisAgent->variablizationManager->reinit();
     
     thisAgent->active_level = 0; /* Signal that everything should be retracted */
     thisAgent->FIRING_TYPE = IE_PRODS;
@@ -1249,53 +1232,11 @@ void do_one_top_level_phase(agent* thisAgent)
             thisAgent->e_cycles_this_d_cycle = 0;
             thisAgent->pe_cycles_this_d_cycle = 0;
             
-            /* REW: begin 09.15.96 */
-#ifdef AGRESSIVE_ONC
-            /* test for Operator NC, if true, generate substate and go to OUTPUT */
-            if ((thisAgent->ms_o_assertions == NIL) &&
-                    (thisAgent->bottom_goal->id->operator_slot->wmes != NIL))
+            if (epmem_enabled(thisAgent) && (thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_selection))
             {
-            
-                soar_invoke_callbacks(thisAgent, thisAgent,
-                                      BEFORE_DECISION_PHASE_CALLBACK,
-                                      static_cast<soar_call_data>(thisAgent->current_phase));
-                                      
-                do_decision_phase(thisAgent);
-                
-                soar_invoke_callbacks(thisAgent, thisAgent, AFTER_DECISION_PHASE_CALLBACK,
-                                      static_cast<soar_call_data>(thisAgent->current_phase));
-                                      
-                if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
-                {
-                    print_string(thisAgent, "\n");
-                    print_lowest_slot_in_context_stack(thisAgent);
-                }
-                if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-                {
-                    print_phase(thisAgent, "\n--- END Decision Phase ---\n", 1);
-                }
-                
-                /* set phase to OUTPUT */
-                thisAgent->current_phase = OUTPUT_PHASE;
-                
-                /* REW: begin 28.07.96 */
-#ifndef NO_TIMING_STUFF
-                thisAgent->timers_phase.stop();
-                thisAgent->timers_decision_cycle_phase[DECISION_PHASE].update(thisAgent->timers_phase);
-#endif
-                /* REW: end 28.07.96 */
-                
-                break;
-                
+                epmem_go(thisAgent);
             }
-            else
-#endif //AGRESSIVE_ONC
             
-                if (epmem_enabled(thisAgent) && (thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_selection))
-                {
-                    epmem_go(thisAgent);
-                }
-                
             {
                 if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
                 {
@@ -1356,7 +1297,7 @@ void do_one_top_level_phase(agent* thisAgent)
     {
         if (thisAgent->reason_for_stopping)
         {
-            print(thisAgent, "\n%s\n", thisAgent->reason_for_stopping);
+            print(thisAgent,  "\n%s\n", thisAgent->reason_for_stopping);
         }
     }
 }

@@ -50,6 +50,7 @@
 #include "semantic_memory.h"
 #include "svs_interface.h"
 #include "test.h"
+#include "debug.h"
 
 #include "assert.h"
 
@@ -64,6 +65,7 @@ typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >
 typedef std::list< Symbol* > symbol_list;
 #endif
 
+extern void dprint_instantiation(TraceMode mode, instantiation* inst, const char* indent_string);
 
 /* REW: 2003-01-06 A temporary helper function */
 
@@ -75,7 +77,7 @@ void print_candidates(agent* thisAgent, preference* candidates)
     for (cand = candidates; cand != NIL; cand = cand->next_candidate)
     {
         max_count++;
-        print(thisAgent, "\n Candidate %d", cand);
+        print(thisAgent,  "\n Candidate %d", cand);
         print_with_symbols(thisAgent, "\n    %y %y %y", cand->id, cand->attr, cand->value);
         if (max_count > 10)
         {
@@ -325,7 +327,7 @@ void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to)
 {
 
     /* --- don't add links to goals/impasses, except the special one
-    (NIL,goal) --- */
+       (NIL,goal) --- */
     if ((to->id->isa_goal || to->id->isa_impasse) && from)
     {
         return;
@@ -347,7 +349,7 @@ void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to)
     
     if (!from)
     {
-        return;  /* if adding a special link, we're done */
+        return;    /* if adding a special link, we're done */
     }
     
     /* --- if adding link from same level, ignore it --- */
@@ -989,7 +991,7 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
     
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print(thisAgent, "--> Adding preference to CDPS: ");
+        print(thisAgent,  "--> Adding preference to CDPS: ");
         print_preference(thisAgent, pref);
     }
     
@@ -1044,7 +1046,7 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
     }
     else if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
+        print(thisAgent,  "--> equivalent pref already exists.  Not adding.\n");
     }
     
 }
@@ -1084,8 +1086,8 @@ void build_rl_trace(agent* const& thisAgent, preference* const& candidates, pref
                 {
                     if (cand->value == w->id)
                     {
-                        const std::string attr = symbol_to_string(thisAgent, w->attr, false, NIL, 0);
-                        const std::string value = symbol_to_string(thisAgent, w->value, false, NIL, 0);
+                        const std::string attr = w->attr->to_string();
+                        const std::string value = w->value->to_string();
 //             std::cerr << "rl-trace: ^" << attr << ' ' << value << std::endl;
 
                         if (attr == "name")
@@ -1253,21 +1255,21 @@ byte run_preference_semantics(agent* thisAgent,
     
         print(thisAgent,
               "\n-------------------------------\nRUNNING PREFERENCE SEMANTICS...\n-------------------------------\n");
-        print(thisAgent, "All Preferences for slot:");
+        print(thisAgent,  "All Preferences for slot:");
         
         for (int i = 0; i < NUM_PREFERENCE_TYPES; i++)
         {
             if (s->preferences[i])
             {
-                print(thisAgent, "\n   %ss:\n", preference_name[i]);
+                print(thisAgent,  "\n   %ss:\n", preference_name[i]);
                 for (p = s->preferences[i]; p; p = p->next)
                 {
-                    print(thisAgent, "   ");
+                    print(thisAgent,  "   ");
                     print_preference(thisAgent, p);
                 }
             }
         }
-        print(thisAgent, "-------------------------------\n");
+        print(thisAgent,  "-------------------------------\n");
     }
     
     /* === Requires === */
@@ -1321,7 +1323,7 @@ byte run_preference_semantics(agent* thisAgent,
         
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
-            print(thisAgent, "--> Adding preference to CDPS: ");
+            print(thisAgent,  "--> Adding preference to CDPS: ");
             print_preference(thisAgent, candidates);
         }
         
@@ -2140,14 +2142,13 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->in_ms = false;
     /* --- make the fake condition --- */
     allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
+    init_condition(cond);
     cond->type = POSITIVE_CONDITION;
-    cond->next = cond->prev = NIL;
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
-    inst->nots = NIL;
-    cond->data.tests.id_test = make_equality_test(ap_wme->id);
-    cond->data.tests.attr_test = make_equality_test(ap_wme->attr);
-    cond->data.tests.value_test = make_equality_test(ap_wme->value);
+    cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
+    cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
+    cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
     cond->test_for_acceptable_preference = true;
     cond->bt.wme_ = ap_wme;
 #ifdef DO_TOP_LEVEL_REF_CTS
@@ -2159,8 +2160,6 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     }
 #endif
     cond->bt.level = ap_wme->id->id->level;
-    cond->bt.trace = NIL;
-    cond->bt.CDPS = NIL;
     
     /* --- return the fake preference --- */
     return pref;
@@ -2401,6 +2400,16 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                      *    of the GDS that aren't being appreciated.  See comments below. -- */
                     continue;
                 }
+                else
+                {
+                    dprint_noprefix(DT_GDS, "\n");
+                    dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %s ^%s %s %s (id level = %d, mg level = %d)\n",
+                           cand->id->to_string(), cand->attr->to_string(), cand->value->to_string(),
+                           (cand->o_supported ? ":o-support" : ":i-support"),
+                           cand->id->id->level, cand->inst->match_goal_level);
+                    dprint(DT_GDS, "Generated from preference created by instantiation:\n");
+                    dprint_instantiation(DT_GDS, cand->inst, "           ");
+                }
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);
                 w->preference = cand;
@@ -2450,43 +2459,51 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 
                 if ((w->preference->o_supported == true) && (w->preference->inst->match_goal_level != 1))
                 {
+                    dprint(DT_GDS, "Checking GDS necessary for wme %lld: %s ^%s %s %s (id level = %d)\n",
+                           w->timetag, w->id->to_string(), w->attr->to_string(), w->value->to_string(),
+                           (w->preference->o_supported ? ":o-support" : ":i-support"),
+                           w->preference->id->id->level);
+                    dprint(DT_GDS, "Generated from preference created by instantiation:\n");
+                    dprint_instantiation(DT_GDS, w->preference->inst);
+                    
                     if (w->preference->inst->match_goal->id->gds == NIL)
                     {
                         /* If there is no GDS yet for this goal,
-                         * then we need to create one */
+                        * then we need to create one */
+                        dprint(DT_GDS, "Creating new GDS for match goal...\n");
                         if (w->preference->inst->match_goal_level == w->preference->id->id->level)
                         {
                             /*
-                             * NLD: BUG when the system has already halted and this code is reached, Soar will
-                             * report a memory leak because the elaborate_gds call below will not execute (notice the
-                             * check for system_halted), and hence the gds for this goal will not be populated,
-                             * leading to the gds struct not being freed on quit.
-                             *
-                             * I'm not sure if this situation will come up anymore (after r12593), so not doing
-                             * anything about it. However, if it does, this can lead to a memory leak. I know
-                             * it can add up between calls to init-soar, but I'm not sure if it can increase
-                             * more frequently than that.
-                             */
+                            * NLD: BUG when the system has already halted and this code is reached, Soar will
+                            * report a memory leak because the elaborate_gds call below will not execute (notice the
+                            * check for system_halted), and hence the gds for this goal will not be populated,
+                            * leading to the gds struct not being freed on quit.
+                            *
+                            * I'm not sure if this situation will come up anymore (after r12593), so not doing
+                            * anything about it. However, if it does, this can lead to a memory leak. I know
+                            * it can add up between calls to init-soar, but I'm not sure if it can increase
+                            * more frequently than that.
+                            */
                             create_gds_for_goal(thisAgent, w->preference->inst->match_goal);
                             
                             /* REW: BUG When chunks and result instantiations both create
-                             * preferences for the same WME, then we only want to create
-                             * the GDS for the highest goal.  Right now I ensure that we
-                             * elaborate the correct GDS with the tests in the loop just
-                             * below this code, but the GDS creation above assumes that
-                             * the chunk will be first on the GDS list.  This order
-                             * appears to be always true, although I am not 100% certain
-                             * (I think it occurs this way because the chunk is
-                             * necessarily added to the instantiation list after the
-                             * original instantiation and lists get built such older items
-                             * appear further from the head of the list) . If not true,
-                             * then we need to keep track of any GDS's that get created
-                             * here to remove them later if we find a higher match goal
-                             * for the WME. For now, the program just exits in this
-                             * situation; otherwise, we would build a GDS for the wrong
-                             * level and never elaborate it (resulting in a memory
-                             * leak).
-                             */
+                            * preferences for the same WME, then we only want to create
+                            * the GDS for the highest goal.  Right now I ensure that we
+                            * elaborate the correct GDS with the tests in the loop just
+                            * below this code, but the GDS creation above assumes that
+                            * the chunk will be first on the GDS list.  This order
+                            * appears to be always true, although I am not 100% certain
+                            * (I think it occurs this way because the chunk is
+                            * necessarily added to the instantiation list after the
+                            * original instantiation and lists get built such older items
+                            * appear further from the head of the list) . If not true,
+                            * then we need to keep track of any GDS's that get created
+                            * here to remove them later if we find a higher match goal
+                            * for the WME. For now, the program just exits in this
+                            * situation; otherwise, we would build a GDS for the wrong
+                            * level and never elaborate it (resulting in a memory
+                            * leak).
+                            */
                         }
                         else
                         {
@@ -2506,14 +2523,14 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                     } /* end if no GDS yet for goal... */
                     
                     /* Loop over all the preferences for this WME:
-                     *   If the instantiation that lead to the preference has not
-                     *         been already explored; OR
-                     *   If the instantiation is not an subgoal instantiation
-                     *          for a chunk instantiation we are already exploring
-                     *   Then
-                     *      Add the instantiation to a list of instantiations that
-                     *          will be explored in elaborate_gds().
-                     */
+                    *   If the instantiation that lead to the preference has not
+                    *         been already explored; OR
+                    *   If the instantiation is not an subgoal instantiation
+                    *          for a chunk instantiation we are already exploring
+                    *   Then
+                    *      Add the instantiation to a list of instantiations that
+                    *          will be explored in elaborate_gds().
+                    */
                     
                     // Added halt test because chunk_instantiation can cause problems,
                     // see comment a few lines above and in chunk_instantiation.
@@ -2523,8 +2540,8 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         {
 #ifdef DEBUG_GDS_HIGH
                             print(thisAgent, "\n\n   ");
-                            print_preference(thisAgent, pref);
-                            print(thisAgent, "   Goal level of preference: %d\n",
+                            print_preference(pref);
+                            print(thisAgent,  "   Goal level of preference: %d\n",
                                   pref->id->id->level);
 #endif
                                   
@@ -2533,7 +2550,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 #ifdef DEBUG_GDS_HIGH
                                 print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
                                                    pref->inst->prod->name);
-                                print(thisAgent, "is %d\n", pref->inst->match_goal_level);
+                                print(thisAgent,  "is %d\n", pref->inst->match_goal_level);
 #endif
                                 if (pref->inst->match_goal_level > pref->id->id->level)
                                 {
@@ -2561,7 +2578,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         }  /* end of forloop over preferences for this wme */
                         
 #ifdef DEBUG_GDS_HIGH
-                        print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
+                        print(thisAgent,  "\n    CALLING ELABORATE GDS....\n");
 #endif
                         elaborate_gds(thisAgent);
                         
@@ -2569,7 +2586,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         
                         free_parent_list(thisAgent);
 #ifdef DEBUG_GDS_HIGH
-                        print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
+                        print(thisAgent,  "    FINISHED ELABORATING GDS.\n\n");
 #endif
                     } /* end if not halted */
                 }  /* end if w->preference->o_supported == true ... */
@@ -2904,8 +2921,8 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
             // KJC note: we actually halt, because there is no interrupt function in SoarKernel
             // in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
             // then the interrupt is generated and system_halted is set to false so the user can recover.
-            print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n", thisAgent->sysparams[MAX_GOAL_DEPTH]);
-            print(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+            print(thisAgent,  "\nGoal stack depth exceeded %d on a no-change impasse.\n", thisAgent->sysparams[MAX_GOAL_DEPTH]);
+            print(thisAgent,  "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
             xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
             xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
             thisAgent->stop_soar = true;
@@ -3382,11 +3399,11 @@ void do_working_memory_phase(agent* thisAgent)
             switch (thisAgent->FIRING_TYPE)
             {
                 case PE_PRODS:
-                    print(thisAgent, "\t--- Change Working Memory (PE) ---\n", 0);
+                    print(thisAgent,  "\t--- Change Working Memory (PE) ---\n", 0);
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
                     break;
                 case IE_PRODS:
-                    print(thisAgent, "\t--- Change Working Memory (IE) ---\n", 0);
+                    print(thisAgent,  "\t--- Change Working Memory (IE) ---\n", 0);
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
                     break;
             }
@@ -3434,7 +3451,7 @@ void clear_goal_stack(agent* thisAgent)
     }
     
     remove_existing_context_and_descendents(thisAgent, thisAgent->top_goal);
-    thisAgent->highest_goal_whose_context_changed = NIL;  /* nothing changed                                                                yet */
+    thisAgent->highest_goal_whose_context_changed = NIL;  /* nothing changed yet */
     do_buffered_wm_and_ownership_changes(thisAgent);
     thisAgent->top_state = NIL;
     thisAgent->active_goal = NIL;
@@ -3445,32 +3462,19 @@ void clear_goal_stack(agent* thisAgent)
 void print_lowest_slot_in_context_stack(agent* thisAgent)
 {
 
-    /* REW: begin 10.24.97 */
-    /* This doesn't work yet so for now just print the last selection */
-    /*  if (thisAgent->waitsnc &&
-    *   thisAgent->waitsnc_detect) {
-    * thisAgent->waitsnc_detect = false;
-    * print_stack_trace (thisAgent->wait_symbol,
-    *                    thisAgent->bottom_goal, FOR_OPERATORS_TF, true);
-    * print(thisAgent, "\n waiting");
-    * return;
-    *  }
-    */
-    /* REW: end   10.24.97 */
-    
     if (thisAgent->bottom_goal->id->operator_slot->wmes)
+    {
         print_stack_trace(thisAgent, thisAgent->bottom_goal->id->operator_slot->wmes->value,
                           thisAgent->bottom_goal, FOR_OPERATORS_TF, true);
                           
-                          
-    /* RCHONG: begin 10.11 */
-    /*
-    this coded is needed just so that when an ONC is created in OPERAND
-    (i.e. if the previous goal's operator slot is not empty), it's stack
-    trace line doesn't get a number.  this is done because in OPERAND,
-    ONCs are detected for "free".
-    */
-    
+        /*
+        this coded is needed just so that when an ONC is created in OPERAND
+        (i.e. if the previous goal's operator slot is not empty), it's stack
+        trace line doesn't get a number.  this is done because in OPERAND,
+        ONCs are detected for "free".
+        */
+        
+    }
     else
     {
     
@@ -3494,15 +3498,7 @@ void print_lowest_slot_in_context_stack(agent* thisAgent)
             }
         }
     }
-    
-    /* RCHONG: end 10.11 */
-    
 }
-
-
-
-
-/* REW: begin 09.15.96 */
 
 void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
 {
@@ -3548,24 +3544,24 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
 /* JC ADDED:  Added this function to make one place for wme's being added to
  *   the GDS.  Callback for wme added to GDS is made here.
  */
-void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
+void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
 {
     /* Set the correct GDS for this wme (wme's point to their gds) */
     wme_to_add->gds = gds;
     insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
     
-    if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_GDS_SYSPARAM])
+    if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
         memset(msgbuf, 0, 256);
-        snprintf_with_symbols(agentPtr, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
-        print_string(agentPtr, msgbuf);
+        snprintf_with_symbols(thisAgent, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
+        print_string(thisAgent,  msgbuf);
         
-        xml_begin_tag(agentPtr, kTagVerbose);
-        xml_att_val(agentPtr, kTypeString, msgbuf);
-        print_wme(agentPtr, wme_to_add); // prints XML, too
-        xml_end_tag(agentPtr, kTagVerbose);
+        xml_begin_tag(thisAgent, kTagVerbose);
+        xml_att_val(thisAgent, kTypeString, msgbuf);
+        print_wme(thisAgent, wme_to_add); // prints XML, too
+        xml_end_tag(thisAgent, kTagVerbose);
     }
 }
 
@@ -3592,7 +3588,7 @@ void elaborate_gds(agent* thisAgent)
         
 #ifdef DEBUG_GDS
         print_with_symbols(thisAgent, "\n      EXPLORING INSTANTIATION: %y\n", curr_pi->inst->prod->name);
-        print(thisAgent, "      ");
+        print(thisAgent,  "      ");
         print_instantiation_with_wmes(thisAgent, curr_pi->inst , TIMETAG_WME_TRACE, -1);
 #endif
         
@@ -3612,13 +3608,13 @@ void elaborate_gds(agent* thisAgent)
             pref_for_this_wme      = wme_matching_this_cond->preference;
             
 #ifdef DEBUG_GDS
-            print(thisAgent, "\n       wme_matching_this_cond at goal_level = %d : ",
+            print(thisAgent,  "\n       wme_matching_this_cond at goal_level = %d : ",
                   wme_goal_level);
             print_wme(thisAgent, wme_matching_this_cond);
             
             if (pref_for_this_wme)
             {
-                print(thisAgent, "       pref_for_this_wme                        : ");
+                print(thisAgent,  "       pref_for_this_wme                        : ");
                 print_preference(thisAgent, pref_for_this_wme);
             }
 #endif
@@ -3635,11 +3631,11 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                 if (pref_for_this_wme == NIL)
                 {
-                    print(thisAgent, "         this wme has no preferences (it's an arch-created wme)\n");
+                    print(thisAgent,  "         this wme has no preferences (it's an arch-created wme)\n");
                 }
                 else if (wme_goal_level < inst->match_goal_level)
                 {
-                    print(thisAgent, "         this wme is in the supergoal\n");
+                    print(thisAgent,  "         this wme is in the supergoal\n");
                 }
                 print_with_symbols(thisAgent, "inst->match_goal [%y]\n" , inst->match_goal);
 #endif
@@ -3668,7 +3664,7 @@ void elaborate_gds(agent* thisAgent)
                             free_with_pool(&(thisAgent->gds_pool), wme_matching_this_cond->gds);
                             
 #ifdef DEBUG_GDS
-                            print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+                            print(thisAgent,  "\n  REMOVING GDS FROM MEMORY.");
 #endif
                         }
                         
@@ -3680,7 +3676,7 @@ void elaborate_gds(agent* thisAgent)
                         //                     wme_matching_this_cond, gds_next,
                         //                     gds_prev);
 #ifdef DEBUG_GDS
-                        print(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+                        print(thisAgent,  "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
 #endif
                         
                     }
@@ -3697,7 +3693,7 @@ void elaborate_gds(agent* thisAgent)
                         */
                         if (inst->match_goal_level == 1)
                         {
-                            print(thisAgent, "\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+                            print(thisAgent,  "\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
                         }
                         
                         fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
@@ -3712,7 +3708,7 @@ void elaborate_gds(agent* thisAgent)
                             free_with_pool(&(thisAgent->gds_pool), wme_matching_this_cond->gds);
                             
 #ifdef DEBUG_GDS
-                            print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+                            print(thisAgent,  "\n  REMOVING GDS FROM MEMORY.");
 #endif
                         }
                         /* JC ADDED: Separate adding wme to GDS as a function */
@@ -3723,7 +3719,7 @@ void elaborate_gds(agent* thisAgent)
                         //                     wme_matching_this_cond, gds_next,
                         //                     gds_prev);
 #ifdef DEBUG_GDS
-                        print(thisAgent, "\n       ....switching from old to new GDS list....\n");
+                        print(thisAgent,  "\n       ....switching from old to new GDS list....\n");
 #endif
                         wme_matching_this_cond->gds = inst->match_goal->id->gds;
                     }
@@ -3743,7 +3739,7 @@ void elaborate_gds(agent* thisAgent)
                     
                     if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
                     {
-                        print(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
+                        print(thisAgent,  "\nDEBUG DEBUG : The new header should never have a prev value.\n");
                     }
 #ifdef DEBUG_GDS
                     print_with_symbols(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal);
@@ -3752,7 +3748,7 @@ void elaborate_gds(agent* thisAgent)
                 
                 
 #ifdef DEBUG_GDS
-                print(thisAgent, "            Added WME to GDS for goal = %d",
+                print(thisAgent,  "            Added WME to GDS for goal = %d",
                       wme_matching_this_cond->gds->goal->id->level);
                 print_with_symbols(thisAgent, " [%y]\n", wme_matching_this_cond->gds->goal);
 #endif
@@ -3766,7 +3762,7 @@ void elaborate_gds(agent* thisAgent)
                 if (pref_for_this_wme->o_supported == true)
                 {
 #ifdef DEBUG_GDS
-                    print(thisAgent, "         this wme is local and o-supported\n");
+                    print(thisAgent,  "         this wme is local and o-supported\n");
 #endif
                     continue;
                 }
@@ -3780,7 +3776,7 @@ void elaborate_gds(agent* thisAgent)
                     if (inst->match_goal_level == 1)
                     {
 #ifdef DEBUG_GDS
-                        print(thisAgent, "         don't back up through top state\n");
+                        print(thisAgent,  "         don't back up through top state\n");
                         if (inst->prod)
                             if (inst->prod->name)
                             {
@@ -3793,7 +3789,7 @@ void elaborate_gds(agent* thisAgent)
                     else   /* (inst->match_goal_level != 1) */
                     {
 #ifdef DEBUG_GDS
-                        print(thisAgent, "         this wme is local and i-supported\n");
+                        print(thisAgent,  "         this wme is local and i-supported\n");
 #endif
                         s = find_slot(pref_for_this_wme->id, pref_for_this_wme->attr);
                         if (s == NIL)
@@ -3801,7 +3797,7 @@ void elaborate_gds(agent* thisAgent)
                             /* this must be an arch-wme from a fake instantiation */
                             
 #ifdef DEBUG_GDS
-                            print(thisAgent, "here's the wme with no slot:\t");
+                            print(thisAgent,  "here's the wme with no slot:\t");
                             print_wme(thisAgent, pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme_);
 #endif
                             
@@ -3837,7 +3833,7 @@ void elaborate_gds(agent* thisAgent)
                                             free_with_pool(&(thisAgent->gds_pool), fake_inst_wme_cond->gds);
                                             
 #ifdef DEBUG_GDS
-                                            print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+                                            print(thisAgent,  "\n  REMOVING GDS FROM MEMORY.");
 #endif
                                         }
                                         
@@ -3848,7 +3844,7 @@ void elaborate_gds(agent* thisAgent)
                                         //                                 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
                                         //                                                       fake_inst_wme_cond, gds_next, gds_prev);
 #ifdef DEBUG_GDS
-                                        print(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+                                        print(thisAgent,  "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
 #endif
                                     }
                                     else if (fake_inst_wme_cond->gds->goal->id->level > inst->match_goal_level)
@@ -3863,7 +3859,7 @@ void elaborate_gds(agent* thisAgent)
                                         */
                                         if (inst->match_goal_level == 1)
                                         {
-                                            print(thisAgent, "\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+                                            print(thisAgent,  "\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
                                         }
                                         
                                         fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
@@ -3878,7 +3874,7 @@ void elaborate_gds(agent* thisAgent)
                                             free_with_pool(&(thisAgent->gds_pool), fake_inst_wme_cond->gds);
                                             
 #ifdef DEBUG_GDS
-                                            print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+                                            print(thisAgent,  "\n  REMOVING GDS FROM MEMORY.");
 #endif
                                         }
                                         
@@ -3890,7 +3886,7 @@ void elaborate_gds(agent* thisAgent)
                                         //                                    fake_inst_wme_cond, gds_next,
                                         //                                    gds_prev);
 #ifdef DEBUG_GDS
-                                        print(thisAgent, "\n       .....switching from old to new GDS list....\n");
+                                        print(thisAgent,  "\n       .....switching from old to new GDS list....\n");
 #endif
                                         fake_inst_wme_cond->gds = inst->match_goal->id->gds;
                                     }
@@ -3911,14 +3907,14 @@ void elaborate_gds(agent* thisAgent)
                                     
                                     if (fake_inst_wme_cond->gds->wmes_in_gds->gds_prev)
                                     {
-                                        print(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
+                                        print(thisAgent,  "\nDEBUG DEBUG : The new header should never have a prev value.\n");
                                     }
 #ifdef DEBUG_GDS
                                     print_with_symbols(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal);
 #endif
                                 }
 #ifdef DEBUG_GDS
-                                print(thisAgent, "            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id->level);
+                                print(thisAgent,  "            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id->level);
                                 print_with_symbols(thisAgent, " [%y]\n",
                                                    fake_inst_wme_cond->gds->goal);
 #endif
@@ -3932,7 +3928,7 @@ void elaborate_gds(agent* thisAgent)
                             {
                             
 #ifdef DEBUG_GDS
-                                print(thisAgent, "           looking at pref for the wme: ");
+                                print(thisAgent,  "           looking at pref for the wme: ");
                                 print_preference(thisAgent, pref);
 #endif
                                 
@@ -3989,7 +3985,7 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                                     else
                                     {
-                                        print(thisAgent, "           the inst producing this pref was already explored; skipping it\n");
+                                        print(thisAgent,  "           the inst producing this pref was already explored; skipping it\n");
                                     }
 #endif
                                     
@@ -3997,7 +3993,7 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                                 else
                                 {
-                                    print(thisAgent, "        this inst is for a pref with a differnt value than the condition WME; skippint it\n");
+                                    print(thisAgent,  "        this inst is for a pref with a differnt value than the condition WME; skippint it\n");
                                 }
 #endif
                             }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/
@@ -4040,7 +4036,7 @@ void elaborate_gds(agent* thisAgent)
     {
     
 #ifdef DEBUG_GDS
-        print(thisAgent, "\n    RECURSING using these parents:\n");
+        print(thisAgent,  "\n    RECURSING using these parents:\n");
         for (curr_pi = thisAgent->parent_list_head;
                 curr_pi;
                 curr_pi = curr_pi->next)
@@ -4136,7 +4132,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
         {
             if (s->isa_context_slot && !s->changed)
             {
-                s->changed = reinterpret_cast<dl_cons*>(1); // use non-zero value to indicate change, see definition of slot::changed
+                s->changed = reinterpret_cast<dl_cons*>(1);    // use non-zero value to indicate change, see definition of slot::changed
             }
         }
     }

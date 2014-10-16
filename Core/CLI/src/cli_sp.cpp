@@ -22,7 +22,7 @@
 using namespace cli;
 
 // FIXME: copied from gSKI
-void soarAlternateInput(agent* ai_agent, const char*  ai_string, char*  ai_suffix, bool  ai_exit)
+void soarAlternateInput(agent* ai_agent, const char*  ai_string, char*  ai_suffix, bool   ai_exit)
 {
     // Side effects:
     //    The soar agents alternate input values are updated and its

@@ -5,6 +5,11 @@
 #include <stdint.h>
 
 typedef uint64_t epmem_time_id;
+//#enum ni_mode;
+//#namespace sml
+//#{
+//#    enum smlPhase;
+//#}
 
 namespace cli
 {

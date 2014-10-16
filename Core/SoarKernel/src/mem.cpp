@@ -65,7 +65,7 @@ void* allocate_memory(agent* thisAgent, size_t size, int usage_code)
         abort_with_fatal_error(thisAgent, msg);
     }
     
-    fill_with_garbage(p, size);
+    fill_with_zeroes(p, size);
     
     *(reinterpret_cast<size_t*>(p)) = size;
     p += sizeof(size_t);
@@ -112,16 +112,16 @@ void print_memory_statistics(agent* thisAgent)
         total += thisAgent->memory_for_usage[i];
     }
     
-    print(thisAgent, "%8lu bytes total memory allocated\n", total);
-    print(thisAgent, "%8lu bytes statistics overhead\n",
+    print(thisAgent,  "%8lu bytes total memory allocated\n", total);
+    print(thisAgent,  "%8lu bytes statistics overhead\n",
           thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE]);
-    print(thisAgent, "%8lu bytes for strings\n",
+    print(thisAgent,  "%8lu bytes for strings\n",
           thisAgent->memory_for_usage[STRING_MEM_USAGE]);
-    print(thisAgent, "%8lu bytes for hash tables\n",
+    print(thisAgent,  "%8lu bytes for hash tables\n",
           thisAgent->memory_for_usage[HASH_TABLE_MEM_USAGE]);
-    print(thisAgent, "%8lu bytes for various memory pools\n",
+    print(thisAgent,  "%8lu bytes for various memory pools\n",
           thisAgent->memory_for_usage[POOL_MEM_USAGE]);
-    print(thisAgent, "%8lu bytes for miscellaneous other things\n",
+    print(thisAgent,  "%8lu bytes for miscellaneous other things\n",
           thisAgent->memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
 }
 

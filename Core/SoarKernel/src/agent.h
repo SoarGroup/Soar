@@ -20,10 +20,7 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#ifndef GSYSPARAMS_H
-#include"gsysparam.h"
-#endif
-
+#include "gsysparam.h"
 #include "kernel.h"
 #include "init_soar.h"
 #include "soar_module.h"
@@ -66,6 +63,8 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct select_info_struct select_info;
 class AgentOutput_Info;
 class debug_param_container;
+class Output_Manager;
+class Variablization_Manager;
 
 // following def's moved here from old interface.h file  KJC nov 05
 /* AGR 568 begin */
@@ -124,7 +123,6 @@ typedef signed short goal_stack_level;
 
 typedef struct alpha_mem_struct alpha_mem;
 typedef struct token_struct token;
-typedef char* test;
 
 class stats_statement_container;
 class svs_interface;
@@ -243,7 +241,10 @@ typedef struct agent_struct
     lexer_source_file* current_file;  /* file we're currently reading */
     int                 current_char; /* holds current input character */
     struct lexeme_info  lexeme;       /* holds current lexeme */
-    bool               print_prompt_flag;
+    bool                print_prompt_flag;
+    Symbol*             current_production_name;
+    
+    Variablization_Manager* variablizationManager;
     
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at
@@ -281,7 +282,6 @@ typedef struct agent_struct
     Symbol*             to_context_variable;
     Symbol*             ts_context_variable;
     Symbol*             type_symbol;
-    Symbol*             wait_symbol;   /* REW:  10.24.97 */
     
     Symbol*             item_count_symbol; // SBW 5/07
     Symbol*             non_numeric_count_symbol; // NLD 11/11
@@ -388,18 +388,18 @@ typedef struct agent_struct
     /* --- stuff for "input-period" command --- */
     /* --- in Soar8, input runs once at beginning of D cycle, no matter what */
     int                 input_period;      /* AGR REW1 */
-    bool               input_cycle_flag;  /* AGR REW1 */
+    bool                input_cycle_flag;  /* AGR REW1 */
     
     /* --- current top level phase --- */
     enum top_level_phase current_phase;
     
     /* --- to interrupt at the end of the current phase, set stop_soar to true
-     and reason_for_stopping to some appropriate string --- */
-    bool               stop_soar;
+       and reason_for_stopping to some appropriate string --- */
+    bool                stop_soar;
     const char*           reason_for_stopping;
     
     /* --- the RHS action (halt) sets this true --- */
-    bool               system_halted;
+    bool                system_halted;
     
     /* --- stuff for max-chunks (which is a sysparam) --- */
     uint64_t       chunks_this_d_cycle; /* # chunks built this DC */
@@ -616,7 +616,6 @@ typedef struct agent_struct
     uint64_t            justification_count;
     ::list*             grounds;
     tc_number           grounds_tc;
-    ::list*             instantiations_with_nots;
     ::list*             locals;
     tc_number           locals_tc;
     ::list*             positive_potentials;
@@ -625,18 +624,18 @@ typedef struct agent_struct
     preference*         results;
     goal_stack_level    results_match_goal_level;
     tc_number           results_tc_number;
-    tc_number           variablization_tc;
     preference*         extra_result_prefs_from_instantiation;
-    bool               quiescence_t_flag;
+    bool                quiescence_t_flag;
     char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
     
     /* ----------------------- Misc. top-level stuff -------------------------- */
     
     memory_pool         action_pool;
-    memory_pool         complex_test_pool;
+    memory_pool         test_pool;
     memory_pool         condition_pool;
     memory_pool         not_pool;
     memory_pool         production_pool;
+    memory_pool         rhs_symbol_pool;
     
     /* ----------------------- Reorderer stuff -------------------------- */
     
@@ -659,7 +658,7 @@ typedef struct agent_struct
     explain_chunk_str* explain_chunk_list;          /* AGR 564 */
     char                explain_chunk_name[256];    /* AGR 564 */
     /* made explain_flag EXPLAIN_SYSPARAM instead, KJC 7/96 */
-    /* bool               explain_flag; */
+    /* bool                explain_flag; */
     
     /* ----------------------- Firer stuff -------------------------- */
     
@@ -715,7 +714,7 @@ typedef struct agent_struct
     
     struct trace_format_struct* (object_tf_for_anything[3]);
     struct hash_table_struct* (object_tr_ht[3]);
-    bool               printing_stack_traces;
+    bool                printing_stack_traces;
     struct trace_format_struct* (stack_tf_for_anything[3]);
     struct hash_table_struct* (stack_tr_ht[3]);
     tc_number           tf_printing_tc;
@@ -741,7 +740,7 @@ typedef struct agent_struct
     memory_pool         output_link_pool;
     tc_number           output_link_tc_num;
     
-    bool               output_link_changed;
+    bool                output_link_changed;
     
     Symbol*             io_header;
     wme*                io_header_link;
@@ -781,15 +780,15 @@ typedef struct agent_struct
     
     const char*         alternate_input_string;
     const char*         alternate_input_suffix;
-    bool               alternate_input_exit; /* Soar-Bugs #54, TMH */
+    bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
     expansion_node*     lex_alias;         /* AGR 568 */
-    bool               load_errors_quit;  /* AGR 527c */
+    bool                load_errors_quit;  /* AGR 527c */
     dir_stack_struct*   top_dir_stack;   /* AGR 568 */
     
     
     /* RCHONG: begin 10.11 */
-    bool      did_PE;
-    bool      soar_verbose_flag;
+    bool       did_PE;
+    bool       soar_verbose_flag;
     int        FIRING_TYPE;
     Symbol*     PE_level;
     
@@ -828,11 +827,11 @@ typedef struct agent_struct
     goal_stack_level next_change_level;
     
     /* delineate btwn Pref/WM(propose) and Pref/WM(apply) KJC 10.05.98 */
-    bool      applyPhase;
+    bool       applyPhase;
     
     /* REW: begin 10.24.97 */
-    bool      waitsnc;
-    bool      waitsnc_detect;
+    bool       waitsnc;
+    bool       waitsnc_detect;
     /* REW: end   10.24.97 */
     
     /* JC ADDED: Need to store RHS functions here so that agent's don't step on each other */
@@ -876,6 +875,10 @@ typedef struct agent_struct
     
     // debug parameters
     debug_param_container* debug_params;
+    
+    // parser symbol clean-up list
+    ::list*             parser_syms;
+    
     AgentOutput_Info* output_settings;
     // epmem
     epmem_param_container* epmem_params;
@@ -1011,8 +1014,8 @@ inline void push(agent* thisAgent, P item, T*& list_header)
 }
 
 extern void     init_soar_agent(agent* thisAgent);
-extern agent* create_soar_agent(char* name);
-extern void    destroy_soar_agent(agent* soar_agent);
+extern agent*   create_soar_agent(char* name);
+extern void     destroy_soar_agent(agent* soar_agent);
 
 /* Ideally, this should be in "lexer.h", but to avoid circular dependencies
    among header files, I am forced to put it here. */

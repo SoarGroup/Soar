@@ -64,6 +64,7 @@
 #include "src/cli_srand.cpp"
 #include "src/cli_stats.cpp"
 #include "src/cli_stopsoar.cpp"
+#include "src/cli_svs.cpp"
 #include "src/cli_time.cpp"
 #include "src/cli_timers.cpp"
 #include "src/cli_unalias.cpp"

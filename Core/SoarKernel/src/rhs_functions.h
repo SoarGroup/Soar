@@ -57,8 +57,6 @@ extern void add_rhs_function(agent* thisAgent,
                              bool can_be_rhs_value,
                              bool can_be_stand_alone_action,
                              void* user_data);
-
-
 extern void remove_rhs_function(agent* thisAgent, Symbol* name);
 extern rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name);
 extern void init_built_in_rhs_functions(agent* thisAgent);

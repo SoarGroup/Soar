@@ -36,7 +36,10 @@
 #ifndef WMEM_H
 #define WMEM_H
 
+#include "enums.h"
+
 typedef uint64_t tc_number;
+typedef signed short goal_stack_level;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
@@ -113,14 +116,36 @@ extern Symbol* find_name_of_object(agent* thisAgent, Symbol* id);
      dependent for more than one goal, then it will point to the GDS
      of the highest goal.
 
-
-
-
    Reference counts on wmes:
       +1 if the wme is currently in WM
       +1 for each instantiation condition that points to it (bt.wme)
    We deallocate a wme when its reference count goes to 0.
 ------------------------------------------------------------------------ */
+
+
+/* This struct holds a set of unique grounding id's for a wme. This is
+ * used during chunking to determine when two constants have the same semantic
+ * grounding.  Note that different substates will have different sets of grounding
+ * ids for the same wme.  That's why this we have the next field to maintain a list
+ * of grounding IDs.  This is to insure that we don't enforce equalities between
+ * variablized constants that happen to be identical or were even copied around in
+ * higher level states if the problem-solving in the substate did not require them
+ * to be equal */
+
+typedef struct grounding_struct
+{
+    uint64_t grounding_id[3];
+    goal_stack_level level;
+    grounding_struct* next;
+    
+    grounding_struct(goal_stack_level new_level, grounding_struct* new_next)
+        : level(new_level), next(new_next)
+    {
+        grounding_id[ID_ELEMENT] = 0;
+        grounding_id[ATTR_ELEMENT] = 0;
+        grounding_id[VALUE_ELEMENT] = 0;
+    }
+} grounding_info;
 
 typedef struct wme_struct
 {
@@ -142,11 +167,10 @@ typedef struct wme_struct
     tc_number potentials_tc, locals_tc;
     struct preference_struct* chunker_bt_pref;
     
-    /* REW: begin 09.15.96 */
-    struct gds_struct* gds;
-    struct wme_struct* gds_next, *gds_prev; /* used for dll of wmes in gds */
-    /* REW: end   09.15.96 */
+    grounding_info* ground_id_list;           /* used for chunking (see struct above) */
     
+    struct gds_struct* gds;
+    struct wme_struct* gds_next, *gds_prev;   /* used for dll of wmes in gds */
     
     epmem_node_id epmem_id;
     uint64_t epmem_valid;

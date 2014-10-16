@@ -382,161 +382,6 @@ char* symbol_to_string(agent* thisAgent, Symbol* sym,
     return NIL; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
-{
-
-
-    cons* c;
-    complex_test* ct;
-    char* ch;
-    
-    if (!dest)
-    {
-        dest = Output_Manager::Get_OM().get_printed_output_string();
-        dest_size = output_string_size; /* from agent.h */
-    }
-    ch = dest;
-    
-    if (!t)
-    {
-        strncpy(dest, "[BLANK TEST]", dest_size);   /* this should never get executed */
-        dest[dest_size - 1] = 0; /* ensure null termination */
-        return dest;
-    }
-    
-    if (test_is_blank_or_equality_test(t))
-    {
-        return referent_of_equality_test(t)->to_string(true, dest, dest_size);
-    }
-    
-    ct = complex_test_from_test(t);
-    
-    switch (ct->type)
-    {
-        case EQUALITY_TEST:
-            if (show_equality)
-            {
-                strncpy(ch, "= ", dest_size - (ch - dest));
-                ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-                while (*ch)
-                {
-                    ch++;
-                }
-                ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            }
-            else
-            {
-                return (ct->data.referent->to_string(true, dest, dest_size));
-            }
-            break;
-        case NOT_EQUAL_TEST:
-            strncpy(ch, "<> ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
-            ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case LESS_TEST:
-            strncpy(ch, "< ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
-            ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case GREATER_TEST:
-            strncpy(ch, "> ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
-            ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case LESS_OR_EQUAL_TEST:
-            strncpy(ch, "<= ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
-            ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case GREATER_OR_EQUAL_TEST:
-            strncpy(ch, ">= ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
-            ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case SAME_TYPE_TEST:
-            strncpy(ch, "<=> ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
-            ct->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case DISJUNCTION_TEST:
-            strncpy(ch, "<< ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
-            for (c = ct->data.disjunction_list; c != NIL; c = c->rest)
-            {
-                static_cast<symbol_struct*>(c->first)->to_string(true, ch, dest_size - (ch - dest));
-                while (*ch)
-                {
-                    ch++;
-                }
-                *(ch++) = ' ';
-            }
-            strncpy(ch, ">>", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            break;
-        case CONJUNCTIVE_TEST:
-            strncpy(ch, "{ ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
-            for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                test_to_string(static_cast<char*>(c->first), ch, dest_size - (ch - dest));
-                while (*ch)
-                {
-                    ch++;
-                }
-                *(ch++) = ' ';
-            }
-            strncpy(ch, "}", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            break;
-        case GOAL_ID_TEST:
-            strncpy(dest, "[GOAL ID TEST]", dest_size - (ch - dest));  /* this should never get executed */
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            break;
-        case IMPASSE_ID_TEST:
-            strncpy(dest, "[IMPASSE ID TEST]", dest_size - (ch - dest));  /* this should never get executed */
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            break;
-        default:
-            strncpy(ch, "INVALID TEST!", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            break;
-    }
-    return dest;
-}
-
 char* rhs_value_to_string(rhs_value rv, char* dest, size_t dest_size)
 {
     cons* c;
@@ -1094,8 +939,8 @@ void print_production(agent* thisAgent, production* p, bool internal)
     /*
     --- print the LHS and RHS ---
     */
-    p_node_to_conditions_and_nots(thisAgent, p->p_node, NIL, NIL,
-                                  &top, &bottom, NIL, &rhs);
+    p_node_to_conditions_and_rhs(thisAgent, p->p_node, NIL, NIL,
+                                 &top, &bottom, &rhs);
     inline_print_string(thisAgent, "   ");
     
     xml_begin_tag(thisAgent, kTagConditions);
@@ -1157,7 +1002,6 @@ void print_action(agent* thisAgent, action* a)
     a->next = old_next;
 }
 
-
 void print_preference(agent* thisAgent, preference* pref)
 {
     char pref_type = preference_to_char(pref->type);
@@ -1196,8 +1040,6 @@ void print_preference(agent* thisAgent, preference* pref)
     xml_end_tag(thisAgent, kTagPreference);
     
 }
-
-/* kjh(CUSP-B2) begin */
 
 extern "C" bool passes_wme_filtering(agent* thisAgent, wme* w, bool isAdd);
 void
@@ -1251,8 +1093,7 @@ void print_wme_without_timetag(agent* thisAgent, wme* w)
     {
         inline_print_string(thisAgent, " +");
     }
-    inline_print_string(thisAgent, ")");
-    print(thisAgent, "\n");
+    inline_print_string(thisAgent, ")\n");
     
     // <wme id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
     xml_object(thisAgent, w, XML_WME_NO_TIMETAG);
@@ -1341,7 +1182,7 @@ void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
                 case FULL_WME_TRACE:
                     // Not all conds and wme_'s available when retracting, depending on DO_TOP_LEVEL_REF_CTS
 #ifdef DO_TOP_LEVEL_REF_CTS
-                    print(thisAgent, " ");
+                    print(thisAgent,  " ");
                     print_wme(thisAgent, cond->bt.wme_);
 #else
                     if (action != RETRACTING && cond->bt.level > TOP_GOAL_LEVEL)
@@ -1477,7 +1318,7 @@ bool wme_filter_component_match(Symbol* filterComponent, Symbol* wmeComponent)
 
 ===========================
 */
-bool passes_wme_filtering(agent* thisAgent, wme* w, bool isAdd)
+extern "C" bool passes_wme_filtering(agent* thisAgent, wme* w, bool isAdd)
 {
     cons* c;
     wme_filter* wf;

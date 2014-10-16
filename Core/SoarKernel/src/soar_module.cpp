@@ -29,8 +29,10 @@
 #include "soar_TraceNames.h"
 #include "wma.h"
 #include "test.h"
+#include "wmem.h"
 
-wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
+//wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
+//typedef struct agent_struct agent;
 
 namespace soar_module
 {
@@ -94,7 +96,6 @@ namespace soar_module
         inst->GDS_evaluated_already = false;
         inst->top_of_instantiated_conditions = NULL;
         inst->bottom_of_instantiated_conditions = NULL;
-        inst->nots = NULL;
         
         // create preferences
         inst->preferences_generated = NULL;
@@ -125,6 +126,7 @@ namespace soar_module
             {
                 // construct the condition
                 allocate_with_pool(thisAgent, &(thisAgent->condition_pool), &cond);
+                init_condition(cond);
                 cond->type = POSITIVE_CONDITION;
                 cond->prev = prev_cond;
                 cond->next = NULL;
@@ -136,11 +138,10 @@ namespace soar_module
                 {
                     inst->top_of_instantiated_conditions = cond;
                     inst->bottom_of_instantiated_conditions = cond;
-                    inst->nots = NULL;
                 }
-                cond->data.tests.id_test = make_equality_test((*c_it)->id);
-                cond->data.tests.attr_test = make_equality_test((*c_it)->attr);
-                cond->data.tests.value_test = make_equality_test((*c_it)->value);
+                cond->data.tests.id_test = make_test(thisAgent, (*c_it)->id, EQUALITY_TEST);
+                cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST);
+                cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST);
                 cond->test_for_acceptable_preference = (*c_it)->acceptable;
                 cond->bt.wme_ = (*c_it);
                 

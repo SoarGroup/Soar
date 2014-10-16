@@ -74,7 +74,7 @@ void add_rhs_function(agent* thisAgent,
     
     if ((!can_be_rhs_value) && (!can_be_stand_alone_action))
     {
-        print(thisAgent, "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
+        print(thisAgent,  "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
         return;
     }
     
@@ -183,7 +183,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         arg = static_cast<symbol_struct*>(args->first);
         /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
-        string = symbol_to_string(thisAgent, arg, false, NIL, 0);
+        string = arg->to_string();
         add_to_growable_string(thisAgent, &gs, string); // for XML generation
         print_string(thisAgent, string);
     }
@@ -198,7 +198,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 /* --------------------------------------------------------------------
                                 Crlf
 
-   Just returns a sym_constant whose print name is a line feed.
+   Just returns a str_constant whose print name is a line feed.
 -------------------------------------------------------------------- */
 
 Symbol* crlf_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
@@ -225,7 +225,7 @@ Symbol* halt_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_da
 /* --------------------------------------------------------------------
                          Make-constant-symbol
 
-   Returns a newly generated sym_constant.  If no arguments are given,
+   Returns a newly generated str_constant.  If no arguments are given,
    the constant will start with "constant".  If one or more arguments
    are given, the constant will start with a string equal to the
    concatenation of those arguments.
@@ -245,7 +245,7 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, voi
     {
         for (c = args; c != NIL; c = c->rest)
         {
-            string = symbol_to_string(thisAgent, static_cast<symbol_struct*>(c->first), false, NIL, 0);
+            string = static_cast<symbol_struct*>(c->first)->to_string();
             buf << string;
         }
     }
@@ -260,7 +260,7 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, voi
 /* --------------------------------------------------------------------
                                Timestamp
 
-   Returns a newly generated sym_constant whose name is a representation
+   Returns a newly generated str_constant whose name is a representation
    of the current local time.
 -------------------------------------------------------------------- */
 
@@ -338,11 +338,11 @@ Symbol*
 capitalize_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     char* symbol_to_capitalize;
-    Symbol* sym;
+    Symbol* sym, * returnSym;
     
     if (!args)
     {
-        print(thisAgent, "Error: 'capitalize-symbol' function called with no arguments.\n");
+        print(thisAgent,  "Error: 'capitalize-symbol' function called with no arguments.\n");
         return NIL;
     }
     
@@ -355,14 +355,15 @@ capitalize_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     
     if (args->rest)
     {
-        print(thisAgent, "Error: 'capitalize-symbol' takes exactly 1 argument.\n");
+        print(thisAgent,  "Error: 'capitalize-symbol' takes exactly 1 argument.\n");
         return NIL;
     }
     
-    symbol_to_capitalize = symbol_to_string(thisAgent, sym, false, NIL, 0);
-    symbol_to_capitalize = savestring(symbol_to_capitalize);
+    symbol_to_capitalize = strdup(sym->to_string());
     *symbol_to_capitalize = static_cast<char>(toupper(*symbol_to_capitalize));
-    return make_str_constant(thisAgent, symbol_to_capitalize);
+    returnSym = make_str_constant(thisAgent, symbol_to_capitalize);
+    free(symbol_to_capitalize);
+    return returnSym;
 }
 
 /* AGR 520 begin     6-May-94 */
@@ -439,7 +440,7 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     
     if (!args)
     {
-        print(thisAgent, "Error: 'ifeq' function called with no arguments\n");
+        print(thisAgent,  "Error: 'ifeq' function called with no arguments\n");
         return NIL;
     }
     
@@ -468,11 +469,11 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     char* symbol_to_trim;
-    Symbol* sym;
+    Symbol* sym, *returnSym;
     
     if (!args)
     {
-        print(thisAgent, "Error: 'trim' function called with no arguments.\n");
+        print(thisAgent,  "Error: 'trim' function called with no arguments.\n");
         return NIL;
     }
     
@@ -486,12 +487,14 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     
     if (args->rest)
     {
-        print(thisAgent, "Error: 'trim' takes exactly 1 argument.\n");
+        print(thisAgent,  "Error: 'trim' takes exactly 1 argument.\n");
         return NIL;
     }
     
-    symbol_to_trim = symbol_to_string(thisAgent, sym, false, NIL, 0);
-    symbol_to_trim = savestring(symbol_to_trim);
+//  symbol_to_trim = sym->to_string();
+//  symbol_to_trim = savestring( symbol_to_trim );
+
+    symbol_to_trim = strdup(sym->to_string());
     
     std::string str(symbol_to_trim);
     size_t start_pos = str.find_first_not_of(" \t\n");
@@ -506,7 +509,10 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
         str = str.substr(start_pos, end_pos - start_pos + 1);
     }
     
-    return make_str_constant(thisAgent, str.c_str());
+    returnSym = make_str_constant(thisAgent, str.c_str());
+    free(symbol_to_trim);
+    return returnSym;
+    
 }
 
 Symbol* strlen_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
@@ -518,7 +524,7 @@ Symbol* strlen_rhs_function_code(agent* thisAgent, list* args, void* /*user_data
     
     /* --- Note use of false here--print the symbol itself, not a rereadable
        version of it --- */
-    string = symbol_to_string(thisAgent, arg, false, NIL, 0);
+    string = arg->to_string();
     
     return make_int_constant(thisAgent, static_cast<int64_t>(strlen(string)));
 }
@@ -537,7 +543,7 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_
     
     if (!args)
     {
-        print(thisAgent, "Error: 'dont-learn' function called with no arg.\n");
+        print(thisAgent,  "Error: 'dont-learn' function called with no arg.\n");
         return NIL;
     }
     
@@ -554,7 +560,7 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_
     
     if (args->rest)
     {
-        print(thisAgent, "Error: 'dont-learn' takes exactly 1 argument.\n");
+        print(thisAgent,  "Error: 'dont-learn' takes exactly 1 argument.\n");
         return NIL;
     }
     
@@ -580,7 +586,7 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
     
     if (!args)
     {
-        print(thisAgent, "Error: 'force-learn' function called with no arg.\n");
+        print(thisAgent,  "Error: 'force-learn' function called with no arg.\n");
         return NIL;
     }
     
@@ -598,7 +604,7 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
     
     if (args->rest)
     {
-        print(thisAgent, "Error: 'force-learn' takes exactly 1 argument.\n");
+        print(thisAgent,  "Error: 'force-learn' takes exactly 1 argument.\n");
         return NIL;
     }
     
@@ -645,9 +651,7 @@ void recursive_wme_copy(agent* thisAgent,
         else
         {
             /* Make a new id symbol */
-            new_attr = make_new_identifier(thisAgent,
-                                           curwme->attr->id->name_letter,
-                                           1);
+            new_attr = make_new_identifier(thisAgent, curwme->attr->id->name_letter, 1, NIL);
             made_new_attr_symbol = true;
         }
         
@@ -670,9 +674,7 @@ void recursive_wme_copy(agent* thisAgent,
         else
         {
             /* Make a new id symbol */
-            new_value = make_new_identifier(thisAgent,
-                                            curwme->value->id->name_letter,
-                                            1);
+            new_value = make_new_identifier(thisAgent, curwme->value->id->name_letter, 1, NIL);
             made_new_value_symbol = true;
         }
         
@@ -765,7 +767,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     }
     
     /* Making the new root identifier symbol */
-    Symbol* retval = make_new_identifier(thisAgent, 'D', 1);
+    Symbol* retval = make_new_identifier(thisAgent, 'D', 1, NIL);
     
     /* Now processing the wme's associated with the passed in symbol */
     std::map<Symbol*, Symbol*> processedSymbols;
@@ -775,7 +777,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
                                processedSymbols);
                                
                                
-    return retval;;
+    return retval;
 }
 
 /* --------------------------------------------------------------------
@@ -795,7 +797,7 @@ Symbol* count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         arg = static_cast<symbol_struct*>(args->first);
         /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
-        string = symbol_to_string(thisAgent, arg, false, NIL, 0);
+        string = arg->to_string();
         (*thisAgent->dyn_counters)[ string ]++;
     }
     

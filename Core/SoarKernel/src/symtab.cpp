@@ -432,8 +432,6 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     sym->smem_time_id = EPMEM_MEMID_NONE;
     sym->smem_valid = NIL;
     
-    sym->variablization = NIL;
-    
     sym->rl_trace = NIL;
     
     sym->fc = NIL;
@@ -1089,6 +1087,7 @@ void release_predefined_symbols(agent* thisAgent)
     release_helper(thisAgent, &(thisAgent->smem_sym_success));
     release_helper(thisAgent, &(thisAgent->smem_sym_failure));
     release_helper(thisAgent, &(thisAgent->smem_sym_bad_cmd));
+    release_helper(thisAgent, &(thisAgent->smem_sym_depth));
     
     release_helper(thisAgent, &(thisAgent->smem_sym_retrieve));
     release_helper(thisAgent, &(thisAgent->smem_sym_query));

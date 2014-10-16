@@ -25,20 +25,23 @@
 #include "kernel.h"
 #include "cli_Cli.h"
 #include "cli_Parser.h"
-#include "soar_module.h"
-
 #include "Export.h"
+
+namespace soar_module
+{
+    class named_object;
+}
 
 namespace soarxml
 {
-    class ElementXML ;
+    class ElementXML;
     class XMLTrace;
 }
 
 namespace sml
 {
     class KernelSML;
-    class Connection ;
+    class Connection;
     class AgentSML;
 }
 
@@ -298,7 +301,7 @@ namespace cli
 } // namespace cli
 
 /*
-*   This procedure parses a string to determine if it is a
+* This procedure parses a string to determine if it is a
 *      lexeme for an identifier or context variable.
 *
 *      Many interface routines take identifiers as arguments.
@@ -311,10 +314,10 @@ namespace cli
 *      variable), an error message is printed and NIL is returned.
 *
 * Results:
-*   Pointer to a symbol for the variable or NIL.
+* Pointer to a symbol for the variable or NIL.
 *
 * Side effects:
-*   None.
+* None.
 *
 ===============================
 */

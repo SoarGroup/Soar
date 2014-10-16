@@ -109,19 +109,19 @@ wma_param_container::wma_param_container(agent* new_agent): soar_module::param_c
     add(activation);
     
     // decay-rate
-    decay_rate = new wma_decay_param("decay-rate", -0.5, new soar_module::btw_predicate<double>(0, 1, true), new wma_activation_predicate<double>(new_agent));
+    decay_rate = new wma_decay_param("decay-rate", -0.5, new soar_module::btw_predicate<double>(0, 1, true), new wma_activation_predicate<double>(thisAgent));
     add(decay_rate);
     
     // decay-thresh
-    decay_thresh = new wma_decay_param("decay-thresh", -2.0, new soar_module::gt_predicate<double>(0, false), new wma_activation_predicate<double>(new_agent));
+    decay_thresh = new wma_decay_param("decay-thresh", -2.0, new soar_module::gt_predicate<double>(0, false), new wma_activation_predicate<double>(thisAgent));
     add(decay_thresh);
     
     // do we compute an approximation of the distant references?
-    petrov_approx = new soar_module::boolean_param("petrov-approx", off, new wma_activation_predicate<boolean>(new_agent));
+    petrov_approx = new soar_module::boolean_param("petrov-approx", off, new wma_activation_predicate<boolean>(thisAgent));
     add(petrov_approx);
     
     // are WMEs removed from WM when activation gets too low?
-    forgetting = new soar_module::constant_param<forgetting_choices>("forgetting", disabled, new wma_activation_predicate<forgetting_choices>(new_agent));
+    forgetting = new soar_module::constant_param<forgetting_choices>("forgetting", disabled, new wma_activation_predicate<forgetting_choices>(thisAgent));
     forgetting->add_mapping(disabled, "off");
     forgetting->add_mapping(naive, "naive");
     forgetting->add_mapping(bsearch, "bsearch");
@@ -129,13 +129,13 @@ wma_param_container::wma_param_container(agent* new_agent): soar_module::param_c
     add(forgetting);
     
     // which WMEs are removed?
-    forget_wme = new soar_module::constant_param<forget_wme_choices>("forget-wme", all, new wma_activation_predicate<forget_wme_choices>(new_agent));
+    forget_wme = new soar_module::constant_param<forget_wme_choices>("forget-wme", all, new wma_activation_predicate<forget_wme_choices>(thisAgent));
     forget_wme->add_mapping(all, "all");
     forget_wme->add_mapping(lti, "lti");
     add(forget_wme);
     
     // fake forgetting?
-    fake_forgetting = new soar_module::boolean_param("fake-forgetting", off, new wma_activation_predicate<boolean>(new_agent));
+    fake_forgetting = new soar_module::boolean_param("fake-forgetting", off, new wma_activation_predicate<boolean>(thisAgent));
     add(fake_forgetting);
     
     // timer level
@@ -145,7 +145,7 @@ wma_param_container::wma_param_container(agent* new_agent): soar_module::param_c
     add(timers);
     
     // max size of power cache
-    max_pow_cache = new soar_module::integer_param("max-pow-cache", 10, new soar_module::gt_predicate< int64_t >(0, false), new wma_activation_predicate< int64_t >(new_agent));
+    max_pow_cache = new soar_module::integer_param("max-pow-cache", 10, new soar_module::gt_predicate< int64_t >(0, false), new wma_activation_predicate< int64_t >(thisAgent));
     add(max_pow_cache);
 };
 
@@ -570,7 +570,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
                 msg.append(temp);
                 msg.append("\n");
                 
-                print(thisAgent, msg.c_str());
+                print(thisAgent,  msg.c_str());
                 xml_generate_warning(thisAgent, msg.c_str());
             }
         }
@@ -702,7 +702,7 @@ void wma_remove_decay_element(agent* thisAgent, wme* w)
             
             msg.append("\n");
             
-            print(thisAgent, msg.c_str());
+            print(thisAgent,  msg.c_str());
             xml_generate_warning(thisAgent, msg.c_str());
         }
         
@@ -1169,7 +1169,7 @@ inline void wma_update_decay_histories(agent* thisAgent)
             
             msg.append("\n");
             
-            print(thisAgent, msg.c_str());
+            print(thisAgent,  msg.c_str());
             xml_generate_warning(thisAgent, msg.c_str());
         }
         
@@ -1351,7 +1351,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
                 {
                     const char* msg = "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n";
                     
-                    print(thisAgent, const_cast<char*>(msg));
+                    print(thisAgent,  const_cast<char*>(msg));
                     xml_generate_message(thisAgent, const_cast<char*>(msg));
                 }
                 
@@ -1370,7 +1370,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
                 {
                     const char* msg = "\nWMA: END FORGOTTEN WME LIST\n\n";
                     
-                    print(thisAgent, const_cast<char*>(msg));
+                    print(thisAgent,  const_cast<char*>(msg));
                     xml_generate_message(thisAgent, const_cast<char*>(msg));
                 }
             }

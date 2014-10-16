@@ -55,10 +55,8 @@
 #define RETE_H
 
 #include <stdio.h>  // Needed for FILE token below
+#include "kernel.h"
 
-struct not_struct;
-
-typedef unsigned char byte;
 typedef byte wme_trace_type;
 typedef byte ms_trace_type;
 typedef struct instantiation_struct instantiation;
@@ -72,9 +70,9 @@ typedef struct symbol_struct Symbol;
 typedef struct cons_struct cons;
 typedef char varnames;
 typedef cons list;
-//typedef struct test_struct test_info;
-//typedef test_info* test;
-//extern void abort_with_fatal_error_noagent(const char* msg);
+typedef struct test_struct test_info;
+typedef test_info* test;
+extern void abort_with_fatal_error_noagent(const char* msg);
 
 inline varnames* one_var_to_varnames(Symbol* x)
 {
@@ -103,21 +101,21 @@ inline list* varnames_to_var_list(varnames* x)
 
 /* --- tells where to find a variable --- */
 typedef unsigned short rete_node_level;
-//Symbol* var_bound_in_reconstructed_conds(
-//    agent* thisAgent,
-//    condition* cond,
-//    byte where_field_num,
-//    rete_node_level where_levels_up);
-//test var_test_bound_in_reconstructed_conds(
-//    agent* thisAgent,
-//    condition* cond,
-//    byte where_field_num,
-//    rete_node_level where_levels_up);
-//Symbol* var_bound_in_reconstructed_original_conds(
-//    agent* thisAgent,
-//    condition* cond,
-//    byte where_field_num,
-//    rete_node_level where_levels_up);
+Symbol* var_bound_in_reconstructed_conds(
+    agent* thisAgent,
+    condition* cond,
+    byte where_field_num,
+    rete_node_level where_levels_up);
+test var_test_bound_in_reconstructed_conds(
+    agent* thisAgent,
+    condition* cond,
+    byte where_field_num,
+    rete_node_level where_levels_up);
+Symbol* var_bound_in_reconstructed_original_conds(
+    agent* thisAgent,
+    condition* cond,
+    byte where_field_num,
+    rete_node_level where_levels_up);
 
 /* ----------------------------------------------------------------------
 
@@ -252,7 +250,7 @@ typedef struct non_pos_node_data_struct
 typedef struct rete_node_struct
 {
     byte node_type;                  /* tells what kind of node this is */
-
+    
     /* -- used only on hashed nodes -- */
     /* field_num: 0=id, 1=attr, 2=value */
     byte left_hash_loc_field_num;
@@ -260,11 +258,11 @@ typedef struct rete_node_struct
     rete_node_level left_hash_loc_levels_up;
     /* node_id: used for hash function */
     uint32_t node_id;
-
+    
 #ifdef SHARING_FACTORS
     uint64_t sharing_factor;
 #endif
-
+    
     struct rete_node_struct* parent;       /* points to parent node */
     struct rete_node_struct* first_child;  /* used for dll of all children, */
     struct rete_node_struct* next_sibling; /*   regardless of unlinking status */
@@ -399,14 +397,14 @@ extern void excise_production_from_rete(agent* thisAgent, production* p);
 extern void add_wme_to_rete(agent* thisAgent, wme* w);
 extern void remove_wme_from_rete(agent* thisAgent, wme* w);
 
-extern void p_node_to_conditions_and_nots(agent* thisAgent,
+extern void p_node_to_conditions_and_rhs(agent* thisAgent,
         struct rete_node_struct* p_node,
         struct token_struct* tok,
         wme* w,
         condition** dest_top_cond,
         condition** dest_bottom_cond,
-        not_struct** dest_nots,
-        action** dest_rhs);
+        action** dest_rhs,
+        AddAdditionalTestsMode additional_tests = DONT_ADD_TESTS);
 extern Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
                                         byte field_num,
                                         struct token_struct* tok, wme* w);
@@ -440,66 +438,66 @@ extern void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t);
 
 --------------------------------------------------------------------- */
 
-//inline TestType relational_test_type_to_test_type(byte test_type)
-//{
-//    /* we don't need ...[equal test] */
-//    switch (test_type)
-//    {
-//        case RELATIONAL_EQUAL_RETE_TEST:
-//            return EQUALITY_TEST;
-//            break;
-//        case RELATIONAL_NOT_EQUAL_RETE_TEST:
-//            return NOT_EQUAL_TEST;
-//            break;
-//        case RELATIONAL_LESS_RETE_TEST:
-//            return LESS_TEST;
-//            break;
-//        case RELATIONAL_GREATER_RETE_TEST:
-//            return GREATER_TEST;
-//            break;
-//        case RELATIONAL_LESS_OR_EQUAL_RETE_TEST:
-//            return LESS_OR_EQUAL_TEST;
-//            break;
-//        case RELATIONAL_GREATER_OR_EQUAL_RETE_TEST:
-//            return GREATER_OR_EQUAL_TEST;
-//            break;
-//        case RELATIONAL_SAME_TYPE_RETE_TEST:
-//            return SAME_TYPE_TEST;
-//            break;
-//        default:
-//            break;
-//    }
-//    char msg[BUFFER_MSG_SIZE];
-//    abort_with_fatal_error_noagent("Bad test_type in add_rete_test_to_test!!!\n");
-//    return EQUALITY_TEST;
-//}
-//inline byte test_type_to_relational_test_type(byte test_type)
-//{
-//    /* we don't need ...[equal test] */
-//    switch (test_type)
-//    {
-//        case NOT_EQUAL_TEST:
-//            return RELATIONAL_NOT_EQUAL_RETE_TEST;
-//            break;
-//        case LESS_TEST:
-//            return RELATIONAL_LESS_RETE_TEST;
-//            break;
-//        case GREATER_TEST:
-//            return RELATIONAL_GREATER_RETE_TEST;
-//            break;
-//        case LESS_OR_EQUAL_TEST:
-//            return RELATIONAL_LESS_OR_EQUAL_RETE_TEST;
-//            break;
-//        case GREATER_OR_EQUAL_TEST:
-//            return RELATIONAL_GREATER_OR_EQUAL_RETE_TEST;
-//            break;
-//        case SAME_TYPE_TEST:
-//            return RELATIONAL_SAME_TYPE_RETE_TEST;
-//            break;
-//        default:
-//            break;
-//    }
-//    return 255;
-//}
+inline TestType relational_test_type_to_test_type(byte test_type)
+{
+    /* we don't need ...[equal test] */
+    switch (test_type)
+    {
+        case RELATIONAL_EQUAL_RETE_TEST:
+            return EQUALITY_TEST;
+            break;
+        case RELATIONAL_NOT_EQUAL_RETE_TEST:
+            return NOT_EQUAL_TEST;
+            break;
+        case RELATIONAL_LESS_RETE_TEST:
+            return LESS_TEST;
+            break;
+        case RELATIONAL_GREATER_RETE_TEST:
+            return GREATER_TEST;
+            break;
+        case RELATIONAL_LESS_OR_EQUAL_RETE_TEST:
+            return LESS_OR_EQUAL_TEST;
+            break;
+        case RELATIONAL_GREATER_OR_EQUAL_RETE_TEST:
+            return GREATER_OR_EQUAL_TEST;
+            break;
+        case RELATIONAL_SAME_TYPE_RETE_TEST:
+            return SAME_TYPE_TEST;
+            break;
+        default:
+            break;
+    }
+    char msg[BUFFER_MSG_SIZE];
+    abort_with_fatal_error_noagent("Bad test_type in add_rete_test_to_test!!!\n");
+    return EQUALITY_TEST;
+}
+inline byte test_type_to_relational_test_type(byte test_type)
+{
+    /* we don't need ...[equal test] */
+    switch (test_type)
+    {
+        case NOT_EQUAL_TEST:
+            return RELATIONAL_NOT_EQUAL_RETE_TEST;
+            break;
+        case LESS_TEST:
+            return RELATIONAL_LESS_RETE_TEST;
+            break;
+        case GREATER_TEST:
+            return RELATIONAL_GREATER_RETE_TEST;
+            break;
+        case LESS_OR_EQUAL_TEST:
+            return RELATIONAL_LESS_OR_EQUAL_RETE_TEST;
+            break;
+        case GREATER_OR_EQUAL_TEST:
+            return RELATIONAL_GREATER_OR_EQUAL_RETE_TEST;
+            break;
+        case SAME_TYPE_TEST:
+            return RELATIONAL_SAME_TYPE_RETE_TEST;
+            break;
+        default:
+            break;
+    }
+    return 255;
+}
 
 #endif

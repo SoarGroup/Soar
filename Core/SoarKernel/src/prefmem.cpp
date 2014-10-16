@@ -55,10 +55,15 @@ const char* preference_name[] =
    with the given id/attribute/value/referent.  (Referent is only used
    for binary preferences.)  The preference is not yet added to preference
    memory, however.
+
+   The last three parameters are original variable names used by the chunker
+   and are optional/have default nil values.
 ---------------------------------------------------------------------- */
 
 preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* attr,
-                            Symbol* value, Symbol* referent)
+                            Symbol* value, Symbol* referent,
+                            const soar_module::symbol_triple originals,
+                            const soar_module::g_id_triple g_ids)
 {
     preference* p;
     
@@ -73,12 +78,44 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     p->value = value;
     p->referent = referent;
     p->slot = NIL;
-    p->next_clone = NIL;
-    p->prev_clone = NIL;
     p->total_preferences_for_candidate = 0;
     p->numeric_value = 0;
     p->rl_contribution = false;
     p->wma_o_set = NIL;
+    p->next_clone = NIL;
+    p->prev_clone = NIL;
+    p->next = NIL;
+    p->prev = NIL;
+    p->inst_next = NIL;
+    p->inst_prev = NIL;
+    p->inst_next = NIL;
+    p->inst_prev = NIL;
+    p->all_of_slot_next = NIL;
+    p->all_of_slot_prev = NIL;
+    p->all_of_goal_next = NIL;
+    p->all_of_goal_prev = NIL;
+    p->next_candidate = NIL;
+    p->next_result = NIL;
+    
+    p->original_symbols.id = originals.id;
+    p->original_symbols.attr = originals.attr;
+    p->original_symbols.value = originals.value;
+    if (originals.id)
+    {
+        symbol_add_ref(thisAgent, originals.id);
+    }
+    if (originals.attr)
+    {
+        symbol_add_ref(thisAgent, originals.attr);
+    }
+    if (originals.value)
+    {
+        symbol_add_ref(thisAgent, originals.value);
+    }
+    
+    p->g_ids.id = g_ids.id;
+    p->g_ids.attr = g_ids.attr;
+    p->g_ids.value = g_ids.value;
     
 #ifdef DEBUG_PREFS
     print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
@@ -128,7 +165,18 @@ void deallocate_preference(agent* thisAgent, preference* pref)
     {
         symbol_remove_ref(thisAgent, pref->referent);
     }
-    
+    if (pref->original_symbols.id)
+    {
+        symbol_remove_ref(thisAgent, pref->original_symbols.id);
+    }
+    if (pref->original_symbols.attr)
+    {
+        symbol_remove_ref(thisAgent, pref->original_symbols.attr);
+    }
+    if (pref->original_symbols.value)
+    {
+        symbol_remove_ref(thisAgent, pref->original_symbols.value);
+    }
     if (pref->wma_o_set)
     {
         wma_remove_pref_o_set(thisAgent, pref);

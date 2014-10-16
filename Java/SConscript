@@ -9,42 +9,42 @@ import subprocess as sub
 # adds all files and directories under directory source[1] to the jar
 # source[0], creating a new jar target[0].
 def AddResources(target, source, env):
-	src_jar = source[0].abspath
-	tgt_jar = target[0].abspath
-	Execute(Copy(tgt_jar, src_jar))
-	resource_dir = source[1].srcnode().abspath
-	files = ' '.join('-C %s %s' % (resource_dir, f) for f in os.listdir(resource_dir))
-	cmd = 'jar uf %s %s' % (tgt_jar, files)
-	return os.system(cmd)
+    src_jar = source[0].abspath
+    tgt_jar = target[0].abspath
+    Execute(Copy(tgt_jar, src_jar))
+    resource_dir = source[1].srcnode().abspath
+    files = ' '.join('-C %s %s' % (resource_dir, f) for f in os.listdir(resource_dir))
+    cmd = 'jar uf %s %s' % (tgt_jar, files)
+    return os.system(cmd)
 
 Import('env')
 java_env = env.Clone()
 
 if not java_env.WhereIs('java') or not java_env.WhereIs('swig'):
-	Return()
+    Return()
 
 try:
-	p = sub.Popen(['java', '-version'], stderr = sub.PIPE)
-	ver_str = p.stderr.readline().split()[-1].strip('"')
-	p.wait()
+    p = sub.Popen(['java', '-version'], stderr = sub.PIPE)
+    ver_str = p.stderr.readline().split()[-1].strip('"')
+    p.wait()
 except OSError:
-	print >>sys.stderr, 'Error running java'
-	Exit(1)
-	
+    print >>sys.stderr, 'Error running java'
+    Exit(1)
+    
 ver = '.'.join(ver_str.split('.')[:2])
 if ver == '1.7' or ver == '1.8':
-	# scons 2.0.1 claims that jdk 1.7 is not supported, but tricking it into
-	# thinking it's 1.6 seems to work fine
-	ver = '1.6'
+    # scons 2.0.1 claims that jdk 1.7 is not supported, but tricking it into
+    # thinking it's 1.6 seems to work fine
+    ver = '1.6'
 java_env['JAVAVERSION'] = ver
 
 java_env['SML'] = env.File(os.path.join(env['OUT_DIR'], 'java', 'sml.jar'))
 if os.name == 'nt':
-	java_env['SEP'] = ';'
+    java_env['SEP'] = ';'
 else:
-	java_env['SEP'] = ':'
+    java_env['SEP'] = ':'
 
 Export('java_env', 'AddResources')
 
 for d in ['Debugger', 'DebuggerAPI', 'SMLJava']:
-	SConscript(os.path.join(d, 'SConscript'))
+    SConscript(os.path.join(d, 'SConscript'))

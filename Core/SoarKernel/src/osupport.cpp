@@ -91,14 +91,14 @@ void add_to_os_tc(agent* thisAgent, Symbol* id, bool isa_state)
     slot* s;
     preference* pref;
     wme* w;
-    
+
     /* --- if id is already in the TC, exit; else mark it as in the TC --- */
     if (id->tc_num == thisAgent->o_support_tc)
     {
         return;
     }
     id->tc_num = thisAgent->o_support_tc;
-    
+
     /* --- scan through all preferences and wmes for all slots for this id --- */
     for (w = id->id->input_wmes; w != NIL; w = w->next)
     {
@@ -165,15 +165,14 @@ bool test_has_id_in_os_tc(agent* thisAgent, test t, Symbol* excluded_sym)
 {
     cons* c;
     Symbol* referent;
-    complex_test* ct;
-    
-    if (test_is_blank_test(t))
+
+    if (test_is_blank(t))
     {
         return false;
     }
-    if (test_is_blank_or_equality_test(t))
+    if (t->type == EQUALITY_TEST)
     {
-        referent = referent_of_equality_test(t);
+        referent = t->data.referent;
         if (referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
             if (referent->tc_num == thisAgent->o_support_tc)
                 if (referent != excluded_sym)
@@ -182,11 +181,10 @@ bool test_has_id_in_os_tc(agent* thisAgent, test t, Symbol* excluded_sym)
                 }
         return false;
     }
-    ct = complex_test_from_test(t);
-    if (ct->type == CONJUNCTIVE_TEST)
+    else if (t->type == CONJUNCTIVE_TEST)
     {
-        for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            if (test_has_id_in_os_tc(thisAgent, static_cast<char*>(c->first), excluded_sym))
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            if (test_has_id_in_os_tc(thisAgent, static_cast<test>(c->first), excluded_sym))
             {
                 return true;
             }
@@ -253,7 +251,7 @@ bool id_or_value_of_condition_list_is_in_os_tc(agent* thisAgent, condition* cond
 bool is_state_id(agent* thisAgent, Symbol* sym, Symbol* match_state)
 {
     Symbol* c;
-    
+
     for (c = thisAgent->top_goal; c != match_state; c = c->id->lower_goal)
     {
         if (sym == c)
@@ -261,7 +259,7 @@ bool is_state_id(agent* thisAgent, Symbol* sym, Symbol* match_state)
             return true;
         }
     }
-    
+
     if (sym == match_state)
     {
         return true;
@@ -323,12 +321,12 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     wme* w;
     condition* c;
     action*    act;
-    bool     o_support, op_elab;
-    bool     operator_proposal;
+    bool      o_support, op_elab;
+    bool      operator_proposal;
     char      action_attr[50];
     int       pass;
     wme*       lowest_goal_wme;
-    
+
     if (thisAgent->soar_verbose_flag == true)
     {
         printf("\n      in calculate_support_for_instantiation_preferences:");
@@ -336,7 +334,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     }
     o_support = false;
     op_elab = false;
-    
+
     if (inst->prod->declared_support == DECLARED_O_SUPPORT)
     {
         o_support = true;
@@ -347,15 +345,15 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     }
     else if (inst->prod->declared_support == UNDECLARED_SUPPORT)
     {
-    
+
         /*
         check if the instantiation is proposing an operator.  if it
         is, then this instantiation is i-supported.
          */
-        
+
         operator_proposal = false;
         instantiation* non_variabilized_inst = original_inst ? original_inst : inst;
-        
+
         if (non_variabilized_inst->rete_wme)
         {
             for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next)
@@ -378,61 +376,60 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                     {
                         /* -- Not sure rhs id can even be a symbol at this point.  Temporary test here.  If this case does exist,
                          *    assert will be ignored in optimized build, so behavior should not be affected by this case. -- */
-                        print(thisAgent, "Debug | Unexpected symbol in calculate_support_for_instantiation_preferences(). Please report"
+                        print(thisAgent, "ERROR!  Unexpected symbol in calculate_support_for_instantiation_preferences(). Please report"
                               " to Soar Umich group.\n");
                         assert(false);
                     }
                 }
             }
         }
-        
-        
+
         if (operator_proposal == false)
         {
-        
+
             /*
             an operator wasn't being proposed, so now we need to test if
             the operator is being tested on the LHS.
-            
+
             i'll need to make two passes over the wmes that pertain to
             this instantiation.  the first pass looks for the lowest goal
             identifier.  the second pass looks for a wme of the form:
-            
+
             (<lowest-goal-id> ^operator ...)
-            
+
             if such a wme is found, then this o-support = true; false otherwise.
-            
+
             this code is essentially identical to that in
             p_node_left_addition() in rete.c.
-            
+
             BUGBUG this check only looks at positive conditions.  we
             haven't really decided what testing the absence of the
             operator will do.  this code assumes that such a productions
             (instantiation) would get i-support.
             */
-            
+
             lowest_goal_wme = NIL;
-            
+
             for (pass = 0; pass != 2; pass++)
             {
-            
+
                 for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
                 {
                     if (c->type == POSITIVE_CONDITION)
                     {
                         w = c->bt.wme_;
-                        
+
                         if (pass == 0)
                         {
-                        
+
                             if (w->id->id->isa_goal == true)
                             {
-                            
+
                                 if (lowest_goal_wme == NIL)
                                 {
                                     lowest_goal_wme = w;
                                 }
-                                
+
                                 else
                                 {
                                     if (w->id->id->level > lowest_goal_wme->id->id->level)
@@ -441,9 +438,9 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                                     }
                                 }
                             }
-                            
+
                         }
-                        
+
                         else
                         {
                             if ((w->attr == thisAgent->operator_symbol) &&
@@ -452,7 +449,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                             {
                                 if (thisAgent->o_support_calculation_type == 3 || thisAgent->o_support_calculation_type == 4)
                                 {
-                                
+
                                     /* iff RHS has only operator elaborations
                                     then it's IE_PROD, otherwise PE_PROD, so
                                     look for non-op-elabs in the actions  KJC 1/00 */
@@ -487,58 +484,58 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                                 }
                             }
                         }
-                        
-                        
-                        
+
+
+
                     }
                 }
             }
         }
     }
-    
-    
+
+
     /* KJC 01/00: Warn if operator elabs mixed w/ applications */
     if ((thisAgent->o_support_calculation_type == 3
             || thisAgent->o_support_calculation_type == 4)
             && (o_support == true))
     {
-    
+
         if (op_elab == true)
         {
-        
+
             /* warn user about mixed actions */
             if (thisAgent->o_support_calculation_type == 3)
             {
-            
+
                 print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod->name);
-                
+
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-                add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+                add_to_growable_string(thisAgent, &gs, inst->prod->name->to_string(true));
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
-                
+
                 o_support = true;
             }
             else if (thisAgent->o_support_calculation_type == 4)
             {
                 print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod->name);
-                
+
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
-                add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+                add_to_growable_string(thisAgent, &gs, inst->prod->name->to_string(true));
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
-                
+
                 o_support = false;
             }
         }
     }
-    
+
     /*
     assign every preference the correct support
     */
-    
+
     for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
         pref->o_supported = o_support;
@@ -592,11 +589,11 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
     preference* rhs, *pref;
     wme* w;
     condition* lhs, *c;
-    
+
     lhs = inst->top_of_instantiated_conditions;
     rhs = inst->preferences_generated;
     match_state = inst->match_goal;
-    
+
     /* --- First, check whether rule 2 or 3 applies. --- */
     rule_2_or_3 = false;
     for (c = lhs; c != NIL; c = c->next)
@@ -612,13 +609,13 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
             break;
         }
     }
-    
+
     /* --- Initialize all pref's according to rules 2 and 3 --- */
     for (pref = rhs; pref != NIL; pref = pref->inst_next)
     {
         pref->o_supported = rule_2_or_3;
     }
-    
+
     /* --- If they didn't apply, check rule 4 --- */
     if (! rule_2_or_3)
     {
@@ -667,7 +664,7 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
             }
         }
     }
-    
+
     /* --- Finally, use rule 1, which overrides all the other rules. --- */
     for (pref = rhs; pref != NIL; pref = pref->inst_next)
         if ((pref->id == match_state) &&
@@ -701,51 +698,45 @@ yes_no_maybe test_is_for_symbol(test t, Symbol* sym)
     cons* c;
     yes_no_maybe temp;
     bool maybe_found;
-    complex_test* ct;
     Symbol* referent;
-    
-    if (test_is_blank_test(t))
+
+    if (test_is_blank(t))
     {
         return MAYBE;
     }
-    
-    if (test_is_blank_or_equality_test(t))
+
+    switch (t->type)
     {
-        referent = referent_of_equality_test(t);
-        if (referent == sym)
-        {
-            return YES;
-        }
-        if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
-        {
-            return MAYBE;
-        }
-        if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
-        {
-            return MAYBE;
-        }
-        return NO;
-    }
-    
-    ct = complex_test_from_test(t);
-    
-    switch (ct->type)
-    {
+        case EQUALITY_TEST:
+            referent = t->data.referent;
+            if (referent == sym)
+            {
+                return YES;
+            }
+            if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
+            {
+                return MAYBE;
+            }
+            if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
+            {
+                return MAYBE;
+            }
+            return NO;
         case DISJUNCTION_TEST:
             if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
             {
                 return MAYBE;
             }
-            if (member_of_list(sym, ct->data.disjunction_list))
+            if (member_of_list(sym, t->data.disjunction_list))
             {
                 return MAYBE;
             }
             return NO;
         case CONJUNCTIVE_TEST:
             maybe_found = false;
-            for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
-                temp = test_is_for_symbol(static_cast<char*>(c->first), sym);
+                temp = test_is_for_symbol(static_cast<test>(c->first), sym);
                 if (temp == YES)
                 {
                     return YES;
@@ -781,7 +772,7 @@ list* find_known_goals(agent* thisAgent, condition* lhs)
     tc_number tc;
     list* vars;
     condition* c;
-    
+
     tc = get_new_tc_number(thisAgent);
     vars = NIL;
     for (c = lhs; c != NIL; c = c->next)
@@ -821,11 +812,11 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
     cons* c, *prev_c, *next_c;
     Symbol* result;
     condition* cond;
-    
+
     /* --- find root variables --- */
     tc = get_new_tc_number(thisAgent);
     roots = collect_root_variables(thisAgent, lhs, tc, false);
-    
+
     /* --- intersect roots with known_goals, producing root_goals --- */
     root_goals = NIL;
     num_root_goals = 0;
@@ -836,7 +827,7 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
             num_root_goals++;
         }
     free_list(thisAgent, roots);
-    
+
     /* --- if more than one goal, remove any with "^object nil" --- */
     if (num_root_goals > 1)
     {
@@ -880,7 +871,7 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
             }
         } /* end of for (cond) loop */
     }
-    
+
     /* --- if there's only one root goal, that's it! --- */
     if (num_root_goals == 1)
     {
@@ -890,7 +881,7 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
     {
         result = NIL;
     }
-    
+
     /* --- clean up and return result --- */
     free_list(thisAgent, root_goals);
     return result;
@@ -916,7 +907,7 @@ Symbol* find_thing_off_goal(agent* thisAgent, condition* lhs,
     list* vars;
     tc_number tc;
     Symbol* result;
-    
+
     for (c = lhs; c != NIL; c = c->next)
     {
         if (c->type != POSITIVE_CONDITION)
@@ -992,7 +983,7 @@ bool match_state_tests_non_operator_slot(agent* thisAgent, condition* conds,
         Symbol* match_state)
 {
     yes_no_maybe ynm;
-    
+
     for (; conds != NIL; conds = conds->next)
     {
         switch (conds->type)
@@ -1036,7 +1027,7 @@ void add_tc_through_lhs_and_rhs(agent* thisAgent, condition* lhs, action* rhs,
     condition* c;
     action* a;
     bool anything_changed;
-    
+
     for (c = lhs; c != NIL; c = c->next)
     {
         c->already_in_tc = false;
@@ -1045,7 +1036,7 @@ void add_tc_through_lhs_and_rhs(agent* thisAgent, condition* lhs, action* rhs,
     {
         a->already_in_tc = false;
     }
-    
+
     /* --- keep trying to add new stuff to the tc --- */
     while (true)
     {
@@ -1093,14 +1084,14 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
     yes_no_maybe ynm;
     bool operator_found, possible_operator_found;
     tc_number tc;
-    
+
     /* --- initialize:  mark all rhs actions as "unknown" --- */
     for (a = rhs; a != NIL; a = a->next)
         if (a->type == MAKE_ACTION)
         {
             a->support = UNKNOWN_SUPPORT;
         }
-        
+
     /* --- if "operator" doesn't appear in any LHS attribute slot, and there
     are no RHS +/! makes for "operator", then nothing gets support --- */
     operator_found = false;
@@ -1161,7 +1152,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
         }
         return;
     }
-    
+
     /* --- find known goals; RHS augmentations of goals get no support --- */
     known_goals = find_known_goals(thisAgent, lhs);
     /* SBH: In NNPSCM, the only RHS-goal augmentations that can't get support are
@@ -1182,7 +1173,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             }
         }
     }
-    
+
     /* --- find match goal, state, and operator --- */
     match_state = find_compile_time_match_goal(thisAgent, lhs, known_goals);
     free_list(thisAgent, known_goals);
@@ -1256,7 +1247,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             return;
         }
     }
-    
+
     /* --- calculate LHS support predicates --- */
     lhs_oa_support = MAYBE;
     if (match_operator)
@@ -1269,17 +1260,17 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             lhs_oa_support = YES;
         }
     }
-    
+
     lhs_oc_support = MAYBE;
     lhs_om_support = MAYBE;
-    
+
     /* SBH 7/1/94 #2 */
     /* For NNPSCM, must test that there is a test of a non-operator slot off
     of the match_state. */
     if (match_state_tests_non_operator_slot(thisAgent, lhs, match_state))
     {
         /* end SBH 7/1/94 #2 */
-        
+
         lhs_oc_support = YES;
         for (cond = lhs; cond != NIL; cond = cond->next)
         {
@@ -1300,18 +1291,18 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             break;
         }
     }
-    
+
     if (lhs_oa_support == YES)      /* --- look for RHS o-a support --- */
     {
         /* --- do TC(match_state) --- */
         tc = get_new_tc_number(thisAgent);
         add_symbol_to_tc(thisAgent, match_state, tc, NIL, NIL);
         add_tc_through_lhs_and_rhs(thisAgent, lhs, rhs, tc, NIL, NIL);
-        
+
         /* --- any action with id in the TC gets support --- */
         for (a = rhs; a != NIL; a = a->next)
         {
-        
+
             if (action_is_in_tc(a, tc))
             {
                 /* SBH 7/1/94 Avoid resetting of support that was previously set to I_SUPPORT. */
@@ -1338,7 +1329,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             /* end SBH 7/1/94 */
         }
     }
-    
+
     if (lhs_oc_support == YES)      /* --- look for RHS o-c support --- */
     {
         /* --- do TC(rhs operators) --- */
@@ -1363,15 +1354,15 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             }
         }
         add_tc_through_lhs_and_rhs(thisAgent, lhs, rhs, tc, NIL, NIL);
-        
+
         /* --- any action with id in the TC gets support --- */
         for (a = rhs; a != NIL; a = a->next)
         {
-        
-        
+
+
             if (action_is_in_tc(a, tc))
             {
-            
+
                 /* SBH 6/7/94:
                 Make sure the action is not already marked as "I_SUPPORT".  This
                 avoids giving o-support in the case where the operator
@@ -1384,8 +1375,8 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
                     a->support = O_SUPPORT;
                 }
                 /* End SBH 6/7/94 */
-                
-                
+
+
                 /* REW: begin 09.15.96 */
                 /* in operand, operator proposals are now only i-supported.*/
                 if (thisAgent->soar_verbose_flag == true)
@@ -1395,11 +1386,11 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
                 }
                 a->support = I_SUPPORT;
                 /* REW: end   09.15.96 */
-                
+
             }
         }
     }
-    
+
     if (lhs_om_support == YES)      /* --- look for RHS o-m support --- */
     {
         /* --- do TC(lhs operators) --- */
@@ -1419,7 +1410,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             }
         }
         add_tc_through_lhs_and_rhs(thisAgent, lhs, rhs, tc, NIL, NIL);
-        
+
         /* --- any action with id in the TC gets support --- */
         for (a = rhs; a != NIL; a = a->next)
         {

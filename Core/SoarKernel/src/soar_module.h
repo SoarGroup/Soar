@@ -26,6 +26,7 @@
 #include "kernel.h"
 #include "misc.h"
 #include "symtab.h"
+//#include "mem.h"
 
 typedef struct wme_struct wme;
 typedef struct preference_struct preference;
@@ -49,6 +50,15 @@ namespace soar_module
         symbol_triple_struct(Symbol* new_id, Symbol* new_attr, Symbol* new_value): id(new_id), attr(new_attr), value(new_value) {}
     } symbol_triple;
     typedef std::list< symbol_triple* > symbol_triple_list;
+    
+    typedef struct g_id_triple_struct
+    {
+        uint64_t id;
+        uint64_t attr;
+        uint64_t value;
+        
+        g_id_triple_struct(uint64_t new_id, uint64_t new_attr, uint64_t new_value): id(new_id), attr(new_attr), value(new_value) {}
+    } g_id_triple;
     
     wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
     void remove_module_wme(agent* thisAgent, wme* w);
@@ -777,6 +787,8 @@ namespace soar_module
     // all statistics have a name and
     // can be retrieved generically
     // via strings
+    // Refactored from stat to statistic to avoid a conflict with a Tcl structure
+    // of the same name.
     class statistic: public named_object
     {
         public:

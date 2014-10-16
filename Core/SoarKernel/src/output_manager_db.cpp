@@ -293,7 +293,7 @@ void OM_DB::init_db()
     
     if (m_Debug_DB->get_status() != soar_module::disconnected)
     {
-        m_OM->print_trace("Debug | ERROR:  Cannot initialize debug database.  It is already connected!");
+        m_OM->print_trace("ERROR:  Cannot initialize debug database.  It is already connected!");
         m_OM->db_mode = saved_db_mode;
         m_OM->db_dbg_mode = saved_db_dbg_mode;
         return;
@@ -303,12 +303,12 @@ void OM_DB::init_db()
     if (m_OM->m_params->database->get_value() == soar_module::memory)
     {
         db_path = ":memory:";
-        m_OM->print_trace("Debug | Initializing debug database in cpu memory.\n");
+        m_OM->print_trace("Initializing debug database in cpu memory.\n");
     }
     else
     {
         db_path = m_OM->m_params->path->get_value();
-        m_OM->printv("Debug | Initializing debug database at %s\n", db_path);
+        m_OM->printv("Initializing debug database at %s\n", db_path);
     }
     
     // attempt connection
@@ -321,7 +321,7 @@ void OM_DB::init_db()
     
     if (m_Debug_DB->get_status() == soar_module::problem)
     {
-        m_OM->printv("Debug | Database Error: %s\n", m_Debug_DB->get_errmsg());
+        m_OM->printv("Database Error: %s\n", m_Debug_DB->get_errmsg());
         /* -  Return and leaved db modes off -- */
         return;
     }
@@ -417,11 +417,11 @@ void OM_DB::increment_message_count(MessageType msgType)
 void OM_DB::store_refcount(Symbol* sym, const char* callers, bool isAdd)
 {
     increment_message_count(refcnt_msg);
-    //  printv("Storing refcount %lld %s %s\n", message_count, sym->to_string(thisAgent), callers);
+    //  printv("Storing refcount %lld %s %s\n", message_count, sym->to_string(), callers);
     //  if (message_count == 1874)
     //    printv("Problem case reached %lld.\n", message_count);
     add_refcnt_message->bind_int(1, message_count);
-    //  add_refcnt_message->bind_text( 2, sym->to_string(thisAgent));
+    //  add_refcnt_message->bind_text( 2, sym->to_string());
     add_refcnt_message->bind_text(3, callers);
     //  add_refcnt_message->bind_int( 4, sym->reference_count );
     //  add_refcnt_message->bind_int( 5, (isAdd ? (sym->reference_count + 1) : (sym->reference_count - 1)));

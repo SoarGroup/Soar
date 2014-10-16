@@ -177,6 +177,11 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
     }
 }
 
+void Output_Manager::store_refcount(Symbol* sym, const char* callers, bool isAdd)
+{
+    m_db->store_refcount(sym, callers, isAdd);
+}
+
 void Output_Manager::print_db_agent(agent* pSoarAgent, MessageType msgType, TraceMode mode, const char* msg)
 {
     soar_module::sqlite_statement*   target_statement = NIL;
@@ -310,30 +315,30 @@ void Output_Manager::fill_mode_info()
     mode_info[TM_RL].prefix =                     new std::string("RL    ");
     mode_info[TM_WMA].prefix =                    new std::string("WMA   ");
     
-    mode_info[DT_DEBUG].prefix =                      new std::string("Debug ");
+    mode_info[DT_DEBUG].prefix =                      new std::string("Debug   ");
     mode_info[DT_ID_LEAKING].prefix =                 new std::string("ID Leak ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =         new std::string("VrblzLHS");
     mode_info[DT_ADD_CONSTRAINTS_ORIG_TESTS].prefix = new std::string("Add Orig");
     mode_info[DT_RHS_VARIABLIZATION].prefix =         new std::string("VrblzRHS");
     mode_info[DT_PRINT_INSTANTIATIONS].prefix =       new std::string("PrntInst");
     mode_info[DT_ADD_TEST_TO_TEST].prefix =           new std::string("Add Test");
-    mode_info[DT_DEALLOCATES].prefix =                new std::string("Memory");
-    mode_info[DT_DEALLOCATE_SYMBOLS].prefix =         new std::string("Memory");
-    mode_info[DT_REFCOUNT_ADDS].prefix =              new std::string("RefCnt");
-    mode_info[DT_REFCOUNT_REMS].prefix =              new std::string("RefCnt");
+    mode_info[DT_DEALLOCATES].prefix =                new std::string("Memory  ");
+    mode_info[DT_DEALLOCATE_SYMBOLS].prefix =         new std::string("Memory  ");
+    mode_info[DT_REFCOUNT_ADDS].prefix =              new std::string("RefCnt  ");
+    mode_info[DT_REFCOUNT_REMS].prefix =              new std::string("RefCnt  ");
     mode_info[DT_VARIABLIZATION_MANAGER].prefix =     new std::string("VrblzMgr");
-    mode_info[DT_PARSER].prefix =                     new std::string("Parser");
+    mode_info[DT_PARSER].prefix =                     new std::string("Parser  ");
     mode_info[DT_FUNC_PRODUCTIONS].prefix =           new std::string("FuncCall");
     mode_info[DT_OVAR_MAPPINGS].prefix =              new std::string("OVar Map");
     mode_info[DT_REORDERER].prefix =                  new std::string("Reorder ");
     mode_info[DT_BACKTRACE].prefix =                  new std::string("BackTrce");
     mode_info[DT_SAVEDVARS].prefix =                  new std::string("SavedVar");
-    mode_info[DT_GDS].prefix =                        new std::string("GDS   ");
+    mode_info[DT_GDS].prefix =                        new std::string("GDS     ");
     mode_info[DT_RL_VARIABLIZATION].prefix =          new std::string("Vrblz RL");
     mode_info[DT_NCC_VARIABLIZATION].prefix =         new std::string("VrblzNCC");
-    mode_info[DT_IDENTITY_PROP].prefix =              new std::string("IDProp");
+    mode_info[DT_IDENTITY_PROP].prefix =              new std::string("ID Prop ");
     mode_info[DT_SOAR_INSTANCE].prefix =              new std::string("SoarInst");
-    mode_info[DT_CLI_LIBRARIES].prefix =              new std::string("CLILib");
+    mode_info[DT_CLI_LIBRARIES].prefix =              new std::string("CLI Lib ");
     mode_info[DT_CONSTRAINTS].prefix =                new std::string("Cnstrnts");
     mode_info[DT_MERGE].prefix =                      new std::string("Merge Cs");
     mode_info[DT_FIX_CONDITIONS].prefix =             new std::string("Fix Cond");

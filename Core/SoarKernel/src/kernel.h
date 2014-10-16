@@ -12,7 +12,7 @@
  *     want to use debugging traces/modes or the CLI debug command. Individual debug
  *     #defines are found in debug_defines.h -- */
 
-//#define SOAR_DEBUG_UTILITIES
+#define SOAR_DEBUG_UTILITIES
 
 #include "enums.h"
 typedef struct agent_struct agent;
@@ -66,6 +66,7 @@ extern void print(agent* thisAgent, const char* format, ...);
 #define PRINT_BUFSIZE 5000   /* --- size of output buffer for a calls to print routines --- */
 #define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
 
+typedef uint64_t tc_number;
 typedef unsigned char byte;
 
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */

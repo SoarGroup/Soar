@@ -177,11 +177,11 @@ trace_format* parse_format_string(agent* thisAgent, const char* string)
                 first = NIL;
             }
             deallocate_trace_format_list(thisAgent, first);
-            print(thisAgent, "Error:  bad trace format string: %s\n", string);
+            print(thisAgent,  "Error:  bad trace format string: %s\n", string);
             if (format_string_error_message)
             {
-                print(thisAgent, "        %s\n", format_string_error_message);
-                print(thisAgent, "        Error found at: %s\n", format);
+                print(thisAgent,  "        %s\n", format_string_error_message);
+                print(thisAgent,  "        Error found at: %s\n", format);
             }
             return NIL;
         }
@@ -665,7 +665,7 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
                 len = strlen(s);
                 for (i = 1; i < len - 1; i++)
                 {
-                    print(thisAgent, "%c", *(s + i));
+                    print(thisAgent,  "%c", *(s + i));
                 }
             }
             break;
@@ -749,7 +749,7 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
                 {
                     print_string(thisAgent, "%right[");
                 }
-                print(thisAgent, "%d,", tf->num);
+                print(thisAgent,  "%d,", tf->num);
                 print_trace_format_list(thisAgent, tf->data.subformat);
                 print_string(thisAgent, "]");
                 break;
@@ -1016,27 +1016,27 @@ void print_tracing_rule(agent* thisAgent, int type_restriction, Symbol* name_res
     {
         print_string(thisAgent, "object-trace-format");
     }
-    print(thisAgent, " :add %c ", tracing_object_letters[type_restriction]);
+    print(thisAgent,  " :add %c ", tracing_object_letters[type_restriction]);
     if (name_restriction)
     {
         print_with_symbols(thisAgent, "%y ", name_restriction);
     }
     print_string(thisAgent, "\"");
     print_trace_format_list(thisAgent, format);
-    print(thisAgent, "\"\n");
+    print(thisAgent,  "\"\n");
 }
 
 void print_tracing_rule_tcl(agent* thisAgent, int type_restriction, Symbol* name_restriction,
                             trace_format* format)
 {
-    print(thisAgent, "%c ", tracing_object_letters[type_restriction]);
+    print(thisAgent,  "%c ", tracing_object_letters[type_restriction]);
     if (name_restriction)
     {
         print_with_symbols(thisAgent, "%y ", name_restriction);
     }
     print_string(thisAgent, "{");
     print_trace_format_list(thisAgent, format);
-    print(thisAgent, "}\n");
+    print(thisAgent,  "}\n");
 }
 
 
@@ -1218,7 +1218,7 @@ void add_values_of_attribute_path(agent* thisAgent,
         }
         else
         {
-            ch = symbol_to_string(thisAgent, object, true, NULL, 0);
+            ch = object->to_string(true, NULL, 0);
             add_to_growable_string(thisAgent, result, ch);
         }
         (*count)++;
@@ -1271,7 +1271,7 @@ void add_trace_for_wme(agent* thisAgent,
     if (print_attribute)
     {
         add_to_growable_string(thisAgent, result, "^");
-        ch = symbol_to_string(thisAgent, w->attr, true, NULL, 0);
+        ch = w->attr->to_string(true);
         add_to_growable_string(thisAgent, result, ch);
         add_to_growable_string(thisAgent, result, " ");
     }
@@ -1283,7 +1283,7 @@ void add_trace_for_wme(agent* thisAgent,
     }
     else
     {
-        ch = symbol_to_string(thisAgent, w->value, true, NULL, 0);
+        ch = w->value->to_string(true);
         add_to_growable_string(thisAgent, result, ch);
     }
 }
@@ -1355,7 +1355,7 @@ void add_trace_for_attribute_path(agent* thisAgent,
         add_to_growable_string(thisAgent, result, "^");
         for (c = path; c != NIL; c = c->rest)
         {
-            ch = symbol_to_string(thisAgent, static_cast<symbol_struct*>(c->first), true, NULL, 0);
+            ch = static_cast<symbol_struct*>(c->first)->to_string(true);
             add_to_growable_string(thisAgent, result, ch);
             if (c->rest)
             {
@@ -1476,7 +1476,7 @@ growable_string trace_format_list_to_string(agent* thisAgent, trace_format* tf, 
                 break;
                 
             case IDENTIFIER_TFT:
-                ch = symbol_to_string(thisAgent, object, true, NULL, 0);
+                ch = object->to_string(true);
                 add_to_growable_string(thisAgent, &result, ch);
                 break;
                 
@@ -1632,7 +1632,7 @@ growable_string object_to_trace_string(agent* thisAgent, Symbol* object)
             (object->tc_num == thisAgent->tf_printing_tc))
     {
         gs = make_blank_growable_string(thisAgent);
-        add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, object, true, NIL, 0));
+        add_to_growable_string(thisAgent, &gs, object->to_string(true));
         return gs;
     }
     
@@ -1671,7 +1671,7 @@ growable_string object_to_trace_string(agent* thisAgent, Symbol* object)
     {
         /* --- no applicable trace format, so just print the object itself --- */
         gs = make_blank_growable_string(thisAgent);
-        add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, object, true, NIL, 0));
+        add_to_growable_string(thisAgent, &gs, object->to_string(true));
     }
     
     object->tc_num = 0;  /* unmark it now that we're done */
@@ -1741,7 +1741,7 @@ void print_object_trace(agent* thisAgent, Symbol* object)
     free_growable_string(thisAgent, gs);
 }
 
-void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int slot_type, bool/*allow_cycle_counts*/)
+void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int slot_type, bool /*allow_cycle_counts*/)
 {
 
     Symbol* current_o = 0;

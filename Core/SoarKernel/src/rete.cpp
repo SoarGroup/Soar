@@ -110,20 +110,11 @@
 #include "semantic_memory.h"
 #include "test.h"
 #include "decide.h"
+#include "variablization_manager.h"
 
 #include "assert.h"
 
 #include <sstream>
-
-void collect_nots(agent* thisAgent,
-                  rete_test* rt,
-                  wme* right_wme,
-                  condition* cond,
-                  not_struct*& nots_found_in_production);
-
-action* copy_action_list_and_substitute_varnames(agent* thisAgent,
-         action* actions,
-         condition* cond);
 
 /* ----------- handle inter-switch dependencies ----------- */
 
@@ -903,7 +894,7 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
         char msg[BUFFER_MSG_SIZE];
         print_with_symbols(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
         SNPRINTF(msg, BUFFER_MSG_SIZE, "\nError: Did not find goal for ms_change assertion: %s\n",
-                 symbol_to_string(thisAgent, msc->p_node->b.p.prod->name, true, NIL, 0));
+                 msc->p_node->b.p.prod->name->to_string(true));
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
@@ -1177,6 +1168,7 @@ bool get_next_retraction(agent* thisAgent, instantiation** inst)
     free_with_pool(&thisAgent->ms_change_pool, msc);
     return true;
 }
+
 
 
 
@@ -2649,16 +2641,15 @@ void bind_variables_in_test(agent* thisAgent,
                             list** varlist)
 {
     Symbol* referent;
-    complex_test* ct;
     cons* c;
 
-    if (test_is_blank_test(t))
+    if (test_is_blank(t))
     {
         return;
     }
-    if (test_is_blank_or_equality_test(t))
+    if (t->type == EQUALITY_TEST)
     {
-        referent = referent_of_equality_test(t);
+        referent = t->data.referent;
         if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
         {
             return;
@@ -2671,11 +2662,9 @@ void bind_variables_in_test(agent* thisAgent,
         push(thisAgent, referent, *varlist);
         return;
     }
-
-    ct = complex_test_from_test(t);
-    if (ct->type == CONJUNCTIVE_TEST)
-        for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            bind_variables_in_test(thisAgent, static_cast<char*>(c->first),
+    else if (t->type == CONJUNCTIVE_TEST)
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            bind_variables_in_test(thisAgent, static_cast<test>(c->first),
                                    depth, field_num, dense, varlist);
 }
 
@@ -2832,6 +2821,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
 {
     test New;
     cons* c;
+    Symbol* temp;
 
     if (vn == NIL)
     {
@@ -2839,15 +2829,19 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     }
     if (varnames_is_one_var(vn))
     {
-        New = make_equality_test(varnames_to_one_var(vn));
-        add_new_test_to_test(thisAgent, t, New);
+        temp = varnames_to_one_var(vn);
+        dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_varnames_to_test adding varname %s.\n", temp->var->name);
+        New = make_test(thisAgent, temp, EQUALITY_TEST);
+        add_test(thisAgent, t, New);
     }
     else
     {
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
-            New = make_equality_test(static_cast<Symbol*>(c->first));
-            add_new_test_to_test(thisAgent, t, New);
+            temp = static_cast<Symbol*>(c->first);
+            dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_varnames_to_test adding varname %s.\n", temp->var->name);
+            New =  make_test(thisAgent, temp, EQUALITY_TEST);
+            add_test(thisAgent, t, New);
         }
     }
 }
@@ -2869,15 +2863,14 @@ varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
 {
     cons* c;
     Symbol* referent;
-    complex_test* ct;
 
-    if (test_is_blank_test(t))
+    if (test_is_blank(t))
     {
         return starting_vn;
     }
-    if (test_is_blank_or_equality_test(t))
+    if (t->type == EQUALITY_TEST)
     {
-        referent = referent_of_equality_test(t);
+        referent = t->data.referent;
         if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
             if (! var_is_bound(referent))
             {
@@ -2885,13 +2878,10 @@ varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
             }
         return starting_vn;
     }
-
-    ct = complex_test_from_test(t);
-
-    if (ct->type == CONJUNCTIVE_TEST)
+    else if (t->type == CONJUNCTIVE_TEST)
     {
-        for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            starting_vn = add_unbound_varnames_in_test(thisAgent, static_cast<char*>(c->first),
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            starting_vn = add_unbound_varnames_in_test(thisAgent, static_cast<test>(c->first),
                           starting_vn);
     }
     return starting_vn;
@@ -3000,98 +2990,6 @@ node_varnames* get_nvn_for_condition_list(agent* thisAgent,
 
 
 /* ---------------------------------------------------------------------
-
-       Test Type <---> Relational (Rete) Test Type Conversion Tables
-
-   These tables convert from xxx_TEST's (defined in test.h for various
-   kinds of complex_test's) to xxx_RETE_TEST's (defined in rete.cpp for
-   the different kinds of Rete tests), and vice-versa.  We might just
-   use the same set of constants for both purposes, but we want to be
-   able to do bit-twiddling on the RETE_TEST types.
-
-   (This stuff probably doesn't belong under "Building the Rete Net",
-   but I wasn't sure where else to put it.)
---------------------------------------------------------------------- */
-
-//
-// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
-//
-byte test_type_to_relational_test_type[256] =
-{
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
-};
-
-//
-// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
-//
-byte relational_test_type_to_test_type[256] =
-{
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
-};
-
-/* Warning: the two items below must not be the same as any xxx_TEST's defined
-   in test.h for the types of complex_test's */
-#define EQUAL_TEST_TYPE 254
-#define ERROR_TEST_TYPE 255
-
-void init_test_type_conversion_tables(void)
-{
-    /* This is to avoid multiple initializations. (This may not yet thread-safe.) */
-    static bool bInit = false;
-    if (bInit)
-    {
-        return;
-    }
-    bInit = true;
-
-    /* we don't need ...[equal test] */
-    test_type_to_relational_test_type[NOT_EQUAL_TEST] =   RELATIONAL_NOT_EQUAL_RETE_TEST;
-    test_type_to_relational_test_type[LESS_TEST] =    RELATIONAL_LESS_RETE_TEST;
-    test_type_to_relational_test_type[GREATER_TEST] =    RELATIONAL_GREATER_RETE_TEST;
-    test_type_to_relational_test_type[LESS_OR_EQUAL_TEST] =    RELATIONAL_LESS_OR_EQUAL_RETE_TEST;
-    test_type_to_relational_test_type[GREATER_OR_EQUAL_TEST] =    RELATIONAL_GREATER_OR_EQUAL_RETE_TEST;
-    test_type_to_relational_test_type[SAME_TYPE_TEST] =    RELATIONAL_SAME_TYPE_RETE_TEST;
-
-    relational_test_type_to_test_type[RELATIONAL_EQUAL_RETE_TEST] =    EQUAL_TEST_TYPE;
-    relational_test_type_to_test_type[RELATIONAL_NOT_EQUAL_RETE_TEST] =    NOT_EQUAL_TEST;
-    relational_test_type_to_test_type[RELATIONAL_LESS_RETE_TEST] =    LESS_TEST;
-    relational_test_type_to_test_type[RELATIONAL_GREATER_RETE_TEST] =    GREATER_TEST;
-    relational_test_type_to_test_type[RELATIONAL_LESS_OR_EQUAL_RETE_TEST] =    LESS_OR_EQUAL_TEST;
-    relational_test_type_to_test_type[RELATIONAL_GREATER_OR_EQUAL_RETE_TEST] =    GREATER_OR_EQUAL_TEST;
-    relational_test_type_to_test_type[RELATIONAL_SAME_TYPE_RETE_TEST] =    SAME_TYPE_TEST;
-}
-
-/* ------------------------------------------------------------------------
                          Add Rete Tests for Test
 
    This is used for converting tests (from conditions) into the appropriate
@@ -3123,70 +3021,64 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
     where.var_location_struct::levels_up = 0;
     cons* c;
     rete_test* new_rt;
-    complex_test* ct;
     Symbol* referent;
 
-    if (test_is_blank_test(t))
+    if (test_is_blank(t))
     {
         return;
     }
 
-    if (test_is_blank_or_equality_test(t))
+    switch (t->type)
     {
-        referent = referent_of_equality_test(t);
+        case EQUALITY_TEST:
+            referent = t->data.referent;
 
-        /* --- if constant test and alpha=NIL, install alpha test --- */
-        if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
-                (*alpha_constant == NIL))
-        {
-            *alpha_constant = referent;
-            return;
-        }
+            /* --- if constant test and alpha=NIL, install alpha test --- */
+            if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
+                    (*alpha_constant == NIL))
+            {
+                *alpha_constant = referent;
+                return;
+            }
 
-        /* --- if constant, make = constant test --- */
-        if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-        {
+            /* --- if constant, make = constant test --- */
+            if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
+            {
+                allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
+                new_rt->right_field_num = field_num;
+                new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
+                new_rt->data.constant_referent = referent;
+                symbol_add_ref(thisAgent, referent);
+                new_rt->next = *rt;
+                *rt = new_rt;
+                return;
+            }
+
+            /* --- variable: if binding is for current field, do nothing --- */
+            if (! find_var_location(referent, current_depth, &where))
+            {
+                char msg[BUFFER_MSG_SIZE];
+                print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
+                                   referent);
+                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
+                         referent->to_string(true));
+                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+                abort_with_fatal_error(thisAgent, msg);
+            }
+            if ((where.levels_up == 0) && (where.field_num == field_num))
+            {
+                return;
+            }
+
+            /* --- else make variable equality test --- */
             allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
             new_rt->right_field_num = field_num;
-            new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
-            new_rt->data.constant_referent = referent;
-            symbol_add_ref(thisAgent, referent);
+            new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
+            new_rt->data.variable_referent = where;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
-        }
-
-        /* --- variable: if binding is for current field, do nothing --- */
-        if (! find_var_location(referent, current_depth, &where))
-        {
-            char msg[BUFFER_MSG_SIZE];
-            print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                               referent);
-            SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                     symbol_to_string(thisAgent, referent, true, NIL, 0));
-            msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-            abort_with_fatal_error(thisAgent, msg);
-        }
-        if ((where.levels_up == 0) && (where.field_num == field_num))
-        {
-            return;
-        }
-
-        /* --- else make variable equality test --- */
-        allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
-        new_rt->right_field_num = field_num;
-        new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
-        new_rt->data.variable_referent = where;
-        new_rt->next = *rt;
-        *rt = new_rt;
-        return;
-    }
-
-    ct = complex_test_from_test(t);
-
-    switch (ct->type)
-    {
-
+            break;
         case NOT_EQUAL_TEST:
         case LESS_TEST:
         case GREATER_TEST:
@@ -3194,33 +3086,33 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         case GREATER_OR_EQUAL_TEST:
         case SAME_TYPE_TEST:
             /* --- if constant, make constant test --- */
-            if (ct->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
+            if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
             {
                 allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
                 new_rt->right_field_num = field_num;
                 new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
-                               test_type_to_relational_test_type[ct->type];
-                new_rt->data.constant_referent = ct->data.referent;
-                symbol_add_ref(thisAgent, ct->data.referent);
+                               test_type_to_relational_test_type(t->type);
+                new_rt->data.constant_referent = t->data.referent;
+                symbol_add_ref(thisAgent, t->data.referent);
                 new_rt->next = *rt;
                 *rt = new_rt;
                 return;
             }
             /* --- else make variable test --- */
-            if (! find_var_location(ct->data.referent, current_depth, &where))
+            if (! find_var_location(t->data.referent, current_depth, &where))
             {
                 char msg[BUFFER_MSG_SIZE];
                 print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                                   ct->data.referent);
+                                   t->data.referent);
                 SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                         symbol_to_string(thisAgent, ct->data.referent, true, NIL, 0));
+                         t->data.referent->to_string(true));
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
                 abort_with_fatal_error(thisAgent, msg);
             }
             allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
-                           test_type_to_relational_test_type[ct->type];
+                           test_type_to_relational_test_type(t->type);
             new_rt->data.variable_referent = where;
             new_rt->next = *rt;
             *rt = new_rt;
@@ -3231,15 +3123,15 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             new_rt->right_field_num = field_num;
             new_rt->type = DISJUNCTION_RETE_TEST;
             new_rt->data.disjunction_list =
-                copy_symbol_list_adding_references(thisAgent, ct->data.disjunction_list);
+                copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
             new_rt->next = *rt;
             *rt = new_rt;
             return;
 
         case CONJUNCTIVE_TEST:
-            for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
-                add_rete_tests_for_test(thisAgent, static_cast<char*>(c->first),
+                add_rete_tests_for_test(thisAgent, static_cast<test>(c->first),
                                         current_depth, field_num, rt, alpha_constant);
             }
             return;
@@ -3264,9 +3156,10 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         {
             char msg[BUFFER_MSG_SIZE];
             SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: found bad test type %d while building rete\n",
-                     ct->type);
+                     t->type);
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
             abort_with_fatal_error(thisAgent, msg);
+            break;
         }
     } /* end of switch statement */
 } /* end of function add_rete_tests_for_test() */
@@ -3801,22 +3694,31 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
         {
             return false;
         }
-        if (a1->id != a2->id)
+        if (!rhs_values_equal(a1->id, a2->id))
         {
             return false;
         }
-        if (a1->attr != a2->attr)
+        if (!rhs_values_equal(a1->attr, a2->attr))
         {
             return false;
         }
-        if (a1->value != a2->value)
+        if (!rhs_values_equal(a1->value, a2->value))
         {
             return false;
         }
+//    if (a1->id != a2->id) return false;
+//    if (a1->attr != a2->attr) return false;
+//    if (a1->value != a2->value) return false;
         if (preference_is_binary(a1->preference_type))
-            if (a1->referent != a2->referent)
+//      if (a1->referent != a2->referent)
+            if (!rhs_values_equal(a1->referent, a2->referent))
             {
                 bool stop = true;
+                /* MToDo | Might need to look at this when doing templates...
+                 *         Normally if referents aren't the same, will return false. The
+                 *         following block seems to allow function to return true when rl_chunk_stop
+                 *         is enabled, the two rhs_values are different numeric symbols and
+                 *         each action list has only that one action.  Not sure why. -- */
                 if (rl_chunk_stop)
                 {
                     if (rhs_value_is_symbol(a1->referent) && rhs_value_is_symbol(a2->referent))
@@ -4033,13 +3935,13 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             std::stringstream output;
             output << "\nIgnoring "
-                   << symbol_to_string(thisAgent, p->name, true, 0, 0)
+                   << p->name->to_string(true)
                    << " because it is a duplicate of "
-                   << symbol_to_string(thisAgent, p_node->b.p.prod->name, true, 0, 0)
+                   << p_node->b.p.prod->name->to_string(true)
                    << " ";
             xml_generate_warning(thisAgent, output.str().c_str());
 
-            print_with_symbols(thisAgent, "\nIgnoring %y because it is a duplicate of %y ",
+            print_with_symbols(thisAgent, "Ignoring %y because it is a duplicate of %y\n",
                                p->name, p_node->b.p.prod->name);
         }
         deallocate_symbol_list_removing_references(thisAgent, rhs_unbound_vars_for_new_prod);
@@ -4075,7 +3977,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     refracted_inst = NIL;
     }
     */
-
     /* In Operand2, for now, we want both chunks and justifications to be
     treated as refracted instantiations, at least for now.  At some point,
     this issue needs to be re-visited for chunks that immediately match with
@@ -4162,25 +4063,20 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     }
 
     /* --- if not a chunk, store variable name information --- */
-    if ((p->type == CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES)
-    {
-        p->p_node->b.p.parents_nvn = NIL;
-        p->rhs_unbound_variables = NIL;
-        deallocate_symbol_list_removing_references(thisAgent, rhs_unbound_vars_for_new_prod);
-    }
-    else
-    {
-        p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
-        p->rhs_unbound_variables =
-            destructively_reverse_list(rhs_unbound_vars_for_new_prod);
-    }
+    /* MToDo | Disabling throwing out of chunk variable names now.  A chunk based on an instantiation
+     *         from a chunk may need them as original variables. May not be necessary.  Recheck later. */
+//  if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
+//      p->p_node->b.p.parents_nvn = NIL;
+//      p->rhs_unbound_variables = NIL;
+//      deallocate_symbol_list_removing_references (thisAgent, rhs_unbound_vars_for_new_prod);
+//  } else {
+    p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
+    p->rhs_unbound_variables =
+        destructively_reverse_list(rhs_unbound_vars_for_new_prod);
+//  }
 
     /* --- invoke callback functions --- */
     soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));
-
-    //#ifdef _WINDOWS
-    //        add_production_to_stat_lists(new_prod);
-    //#endif
 
     return production_addition_result;
 }
@@ -4198,10 +4094,6 @@ void excise_production_from_rete(agent* thisAgent, production* p)
     ms_change* msc;
 
     soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(p));
-
-//#ifdef _WINDOWS
-//        remove_production_from_stat_lists(prod_to_be_excised);
-//#endif
 
     p_node = p->p_node;
     p->p_node = NIL;      /* mark production as not being in the rete anymore */
@@ -4302,7 +4194,6 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         rete_node_level where_levels_up)
 {
     test t;
-    complex_test* ct;
     cons* c;
 
     while (where_levels_up)
@@ -4324,23 +4215,21 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         t = cond->data.tests.value_test;
     }
 
-    if (test_is_blank_test(t))
+    if (test_is_blank(t))
     {
         goto abort_var_bound_in_reconstructed_conds;
     }
-    if (test_is_blank_or_equality_test(t))
+    if (t->type == EQUALITY_TEST)
     {
-        return referent_of_equality_test(t);
+        return t->data.referent;
     }
-
-    ct = complex_test_from_test(t);
-    if (ct->type == CONJUNCTIVE_TEST)
+    else if (t->type == CONJUNCTIVE_TEST)
     {
-        for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            if ((! test_is_blank_test(static_cast<test>(c->first))) &&
-                    (test_is_blank_or_equality_test(static_cast<test>(c->first))))
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            if ((! test_is_blank(static_cast<test>(c->first))) &&
+                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
             {
-                return referent_of_equality_test(static_cast<test>(c->first));
+                return static_cast<test>(c->first)->data.referent;
             }
     }
 
@@ -4353,6 +4242,108 @@ abort_var_bound_in_reconstructed_conds:
     }
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
+
+
+test var_test_bound_in_reconstructed_conds(
+    agent* thisAgent,
+    condition* cond,
+    byte where_field_num,
+    rete_node_level where_levels_up)
+{
+    test t;
+    cons* c;
+
+    while (where_levels_up)
+    {
+        where_levels_up--;
+        cond = cond->prev;
+    }
+
+    if (where_field_num == 0)
+    {
+        t = cond->data.tests.id_test;
+    }
+    else if (where_field_num == 1)
+    {
+        t = cond->data.tests.attr_test;
+    }
+    else
+    {
+        t = cond->data.tests.value_test;
+    }
+
+    if (test_is_blank(t))
+    {
+        goto abort_var_test_bound_in_reconstructed_conds;
+    }
+    if (t->type == EQUALITY_TEST)
+    {
+        return t;
+    }
+    else if (t->type == CONJUNCTIVE_TEST)
+    {
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            if ((! test_is_blank(static_cast<test>(c->first))) &&
+                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
+            {
+                return static_cast<test>(c->first);
+            }
+    }
+
+abort_var_test_bound_in_reconstructed_conds:
+    {
+        char msg[BUFFER_MSG_SIZE];
+        strncpy(msg, "Internal error in var_test_bound_in_reconstructed_conds\n", BUFFER_MSG_SIZE);
+        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+        abort_with_fatal_error(thisAgent, msg);
+    }
+    return 0; /* unreachable, but without it, gcc -Wall warns here */
+}
+
+Symbol* var_bound_in_reconstructed_original_conds(
+    agent* thisAgent,
+    condition* cond,
+    byte where_field_num,
+    rete_node_level where_levels_up)
+{
+    test t, lTest;
+    cons* c;
+
+    while (where_levels_up)
+    {
+        where_levels_up--;
+        cond = cond->prev;
+    }
+
+    if (where_field_num == 0)
+    {
+        t = cond->data.tests.id_test;
+    }
+    else if (where_field_num == 1)
+    {
+        t = cond->data.tests.attr_test;
+    }
+    else
+    {
+        t = cond->data.tests.value_test;
+    }
+
+    lTest = find_original_equality_test_preferring_vars(t, true);
+    assert(lTest && lTest->type == EQUALITY_TEST);
+
+    return (lTest->data.referent);
+
+abort_var_bound_in_reconstructed_conds:
+    {
+        char msg[BUFFER_MSG_SIZE];
+        strncpy(msg, "Internal error in var_bound_in_reconstructed_original_conds\n", BUFFER_MSG_SIZE);
+        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+        abort_with_fatal_error(thisAgent, msg);
+    }
+    return 0; /* unreachable, but without it, gcc -Wall warns here */
+}
+
+
 
 /* ----------------------------------------------------------------------
                           Rete Node To Conditions
@@ -4369,10 +4360,15 @@ abort_var_bound_in_reconstructed_conds:
    for the "cutoff" node and higher.  "Dest_top_cond" and "dest_bottom_cond"
    get filled in with the highest and lowest conditions built by this
    procedure.
+
+   additional_tests indicates whether we want to add original variables
+   and tests to the condition generated (for chunk creation) and false if
+   we just want the bound equality tests.
+
 ---------------------------------------------------------------------- */
 
-/* NOTE: clean this procedure up somehow? */
-
+/* MToDo | Remove */
+#include "debug.h"
 void rete_node_to_conditions(agent* thisAgent,
                              rete_node* node,
                              node_varnames* nvn,
@@ -4382,12 +4378,13 @@ void rete_node_to_conditions(agent* thisAgent,
                              condition* conds_for_cutoff_and_up,
                              condition** dest_top_cond,
                              condition** dest_bottom_cond,
-                             not_struct*& nots_found_in_production)
+                             AddAdditionalTestsMode additional_tests)
 {
     condition* cond;
     alpha_mem* am;
 
     allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
+    init_condition(cond);
     if (real_parent_node(node) == cutoff)
     {
         cond->prev = conds_for_cutoff_and_up; /* if this is the top of an NCC, this
@@ -4403,7 +4400,7 @@ void rete_node_to_conditions(agent* thisAgent,
                                 tok ? tok->w : NIL,
                                 conds_for_cutoff_and_up,
                                 dest_top_cond, &(cond->prev),
-                                nots_found_in_production);
+                                additional_tests);
         cond->prev->next = cond;
     }
     cond->next = NIL;
@@ -4412,6 +4409,7 @@ void rete_node_to_conditions(agent* thisAgent,
     if (node->node_type == CN_BNODE)
     {
         cond->type = CONJUNCTIVE_NEGATION_CONDITION;
+        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
         rete_node_to_conditions(thisAgent, node->b.cn.partner->parent,
                                 nvn ? nvn->data.bottom_of_subconditions : NIL,
                                 node->parent,
@@ -4420,39 +4418,68 @@ void rete_node_to_conditions(agent* thisAgent,
                                 cond->prev,
                                 &(cond->data.ncc.top),
                                 &(cond->data.ncc.bottom),
-                                nots_found_in_production);
+                                additional_tests);
         cond->data.ncc.top->prev = NIL;
     }
     else
     {
+        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
         if (bnode_is_positive(node->node_type))
         {
             cond->type = POSITIVE_CONDITION;
+            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered: ");
         }
         else
         {
             cond->type = NEGATIVE_CONDITION;
+            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.");
         }
 
         if (w && (cond->type == POSITIVE_CONDITION))
         {
-            /* --- make simple tests and collect nots --- */
-            cond->data.tests.id_test = make_equality_test(w->id);
-            cond->data.tests.attr_test = make_equality_test(w->attr);
-            cond->data.tests.value_test = make_equality_test(w->value);
+            /* --- make equality test for bound symbols.  then add additional tests  --- */
+
+            cond->data.tests.id_test = make_test(thisAgent, w->id, EQUALITY_TEST);
+            cond->data.tests.attr_test = make_test(thisAgent, w->attr, EQUALITY_TEST);
+            cond->data.tests.value_test = make_test(thisAgent, w->value, EQUALITY_TEST);
+
             cond->test_for_acceptable_preference = w->acceptable;
             cond->bt.wme_ = w;
-            if (node->b.posneg.other_tests) /* don't bother if there are no tests*/
-                collect_nots(thisAgent, node->b.posneg.other_tests, w, cond,
-                             nots_found_in_production);
+
+            if (additional_tests != DONT_ADD_TESTS)
+            {
+                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, additional_tests);
+            }
+            dprint_condition(DT_NCC_VARIABLIZATION, cond, "", true, false, true);
         }
         else
         {
+            /* -- Note: This portion normally used for printing productions but if this is a simple
+             *    negative condition (but not NCC) and w exists, the same code is used to print
+             *    out those conditions (since they don't require bindings and use original variables
+             *    just like when printing a production). */
+
+            dprint_noprefix(DT_NCC_VARIABLIZATION, "\n");
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 0 Starting condition:");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond, "", true, false, true);
+
             am = node->b.posneg.alpha_mem_;
-            cond->data.tests.id_test = make_blank_or_equality_test(am->id);
-            cond->data.tests.attr_test = make_blank_or_equality_test(am->attr);
-            cond->data.tests.value_test = make_blank_or_equality_test(am->value);
+            if (am->id)
+            {
+                cond->data.tests.id_test = make_test(thisAgent, am->id, EQUALITY_TEST);
+            }
+            if (am->attr)
+            {
+                cond->data.tests.attr_test = make_test(thisAgent, am->attr, EQUALITY_TEST);
+            }
+            if (am->value)
+            {
+                cond->data.tests.value_test = make_test(thisAgent, am->value, EQUALITY_TEST);
+            }
             cond->test_for_acceptable_preference = am->acceptable;
+
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 1 After add_varnames_to_test:");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond, "", true, false, true);
 
             if (nvn)
             {
@@ -4462,6 +4489,8 @@ void rete_node_to_conditions(agent* thisAgent,
                                      &(cond->data.tests.attr_test));
                 add_varnames_to_test(thisAgent, nvn->data.fields.value_varnames,
                                      &(cond->data.tests.value_test));
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 1b NVN true.After add_varnames_to_test:");
+                dprint_condition(DT_NCC_VARIABLIZATION, cond, "", true, false, true);
             }
 
             /* --- on hashed nodes, add equality test for the hash function --- */
@@ -4478,12 +4507,25 @@ void rete_node_to_conditions(agent* thisAgent,
                                          node->parent->left_hash_loc_levels_up);
             }
 
-            /* --- if there are other tests, add them too --- */
-            if (node->b.posneg.other_tests)
-            {
-                add_rete_test_list_to_tests(thisAgent, cond, node->b.posneg.other_tests);
-            }
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 2 After add_hash_info_to_id_test: ");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond, "", true, false, true);
 
+            if (additional_tests != DONT_ADD_TESTS)
+            {
+                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, additional_tests);
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: ");
+                dprint_condition(DT_NCC_VARIABLIZATION, cond, "", true, false, true);
+            }
+            else
+            {
+                /* --- if there are other tests, add them too --- */
+                if (node->b.posneg.other_tests)
+                {
+                    add_rete_test_list_to_tests(thisAgent, cond, node->b.posneg.other_tests);
+                }
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 3b No Need to add originals. After add_rete_test_list_to_tests: ");
+                dprint_condition(DT_NCC_VARIABLIZATION, cond, "", true, false, true);
+            }
             /* --- if we threw away the variable names, make sure there's some
                equality test in each of the three fields --- */
             if (! nvn)
@@ -4503,12 +4545,14 @@ void rete_node_to_conditions(agent* thisAgent,
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
                                                 first_letter_from_test(cond->data.tests.attr_test));
             }
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 4 After gensymmed equality test: ");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond, "", true, false, true);
         }
     }
 }
 
 /* -----------------------------------------------------------------------
-                     P Node to Conditions and Nots
+                          P Node to Conditions
                        Get Symbol From Rete Loc
 
    P_node_to_conditions_and_nots() takes a p_node and (optionally) a
@@ -4524,42 +4568,69 @@ void rete_node_to_conditions(agent* thisAgent,
    resolving references in RHS actions to variables bound on the LHS.
 ----------------------------------------------------------------------- */
 
-void p_node_to_conditions_and_nots(agent* thisAgent,
-                                   rete_node* p_node,
-                                   token* tok,
-                                   wme* w,
-                                   condition** dest_top_cond,
-                                   condition** dest_bottom_cond,
-                                   not_struct** dest_nots,
-                                   action** dest_rhs)
+void p_node_to_conditions_and_rhs(agent* thisAgent,
+                                  rete_node* p_node,
+                                  token* tok,
+                                  wme* w,
+                                  condition** dest_top_cond,
+                                  condition** dest_bottom_cond,
+                                  action** dest_rhs,
+                                  AddAdditionalTestsMode additional_tests)
 {
     cons* c;
     Symbol** cell;
     int64_t index;
     production* prod;
+    goal_stack_level lowest_level_so_far, match_level;
+    condition* cond;
 
     prod = p_node->b.p.prod;
 
-    not_struct* nots_found_in_production = NIL;
     if (tok == NIL)
     {
         w = NIL;    /* just for safety */
     }
+    dprint(DT_FUNC_PRODUCTIONS, "p_node_to_conditions_and_rhs reconstructing LHS.\n");
     reset_variable_generator(thisAgent, NIL, NIL);  /* we'll be gensymming new vars */
     rete_node_to_conditions(thisAgent,
                             p_node->parent,
                             p_node->b.p.parents_nvn,
                             thisAgent->dummy_top_node,
                             tok, w, NIL,
-                            dest_top_cond, dest_bottom_cond,
-                            nots_found_in_production);
-    if (tok)
+                            dest_top_cond,
+                            dest_bottom_cond,
+                            additional_tests);
+
+    if (additional_tests != DONT_ADD_TESTS)
     {
-        *dest_nots = nots_found_in_production;
+        /* -- Now that conditions are created, we must propagate identity information
+         *    constants from their wme's to their tests. Match level is needed to
+         *    access proper identity information, since an identity ID is specific
+         *    to a particular substate level. We also pass in whether the condition
+         *    list has any negative or negative conjunctive conditions.  If there are
+         *    none, the identity propagation function does not need to propagate
+         *    identities to the wme-less negative conjunctions and hence does not
+         *    need to maintain a mapping of original variables to grounding id's.-- */
+
+        lowest_level_so_far = -1;
+        for (cond = (*dest_top_cond); cond != NIL; cond = cond->next)
+            if (cond->type == POSITIVE_CONDITION)
+            {
+                if (cond->bt.wme_->id->id->isa_goal)
+                    if (cond->bt.wme_->id->id->level > lowest_level_so_far)
+                    {
+                        lowest_level_so_far = cond->bt.wme_->id->id->level;
+                    }
+            }
+
+        match_level = ((lowest_level_so_far != -1) ? lowest_level_so_far : ATTRIBUTE_IMPASSE_LEVEL);
+        dprint(DT_IDENTITY_PROP, "Match level is %d.\n", match_level);
+
+        propagate_identity(thisAgent, (*dest_top_cond), match_level);
     }
-    nots_found_in_production = NIL; /* just for safety */
     if (dest_rhs)
     {
+        dprint(DT_FUNC_PRODUCTIONS, "p_node_to_conditions_and_rhs reconstructing RHS.\n");
         thisAgent->highest_rhs_unboundvar_index = -1;
         if (prod->rhs_unbound_variables)
         {
@@ -4570,9 +4641,7 @@ void p_node_to_conditions_and_nots(agent* thisAgent,
                 thisAgent->highest_rhs_unboundvar_index++;
             }
         }
-        *dest_rhs = copy_action_list_and_substitute_varnames(thisAgent,
-                    prod->action_list,
-                    *dest_bottom_cond);
+        *dest_rhs = create_RHS_action_list(thisAgent, prod->action_list, *dest_bottom_cond, additional_tests);
         index = 0;
         cell = thisAgent->rhs_variable_bindings;
         while (index++ <= thisAgent->highest_rhs_unboundvar_index)
@@ -4617,7 +4686,7 @@ Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
 bool error_rete_test_routine(agent* thisAgent, rete_test* rt, token* left, wme* w);
 #define ertr error_rete_test_routine
 bool((*(rete_test_routines[256]))
-     (agent* thisAgent, rete_test* rt, token* left, wme* w)) =
+      (agent* thisAgent, rete_test* rt, token* left, wme* w)) =
 {
     ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr,
     ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr,
@@ -6118,6 +6187,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     */
 
+    /* operand code removed 1/22/99 - kjc */
+
     /* Find the goal and level for this ms change */
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
@@ -6320,7 +6391,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 // XML generation
                                 growable_string gs = make_blank_growable_string(thisAgent);
                                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-                                add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+                                add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
                                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                                 free_growable_string(thisAgent, gs);
 
@@ -6335,7 +6406,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 // XML generation
                                 growable_string gs = make_blank_growable_string(thisAgent);
                                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
-                                add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+                                add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
                                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                                 free_growable_string(thisAgent, gs);
 
@@ -6369,6 +6440,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         insert_at_head_of_dll(msc->goal->id->ms_o_assertions,
                               msc, next_in_level, prev_in_level);
 
+
         node->b.p.prod->OPERAND_which_assert_list = O_LIST;
 
         if (thisAgent->soar_verbose_flag == true)
@@ -6376,7 +6448,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
                                node->b.p.prod->name);
             char buf[256];
-            SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+            SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
         }
     }
@@ -6396,7 +6468,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
                                node->b.p.prod->name);
             char buf[256];
-            SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+            SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
         }
     }
@@ -6481,6 +6553,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 remove_from_dll(msc->goal->id->ms_i_assertions, msc,
                                 next_in_level, prev_in_level);
             }
+
             free_with_pool(&thisAgent->ms_change_pool, msc);
 #ifdef DEBUG_RETE_PNODES
             print_with_symbols(thisAgent, "\nRemoving tentative assertion: %y",
@@ -6536,7 +6609,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             valid, even though, for retractions caused by goal removals, the
             goal will be removed at the next WM phase. (You can see this by
             printing the identifier for the goal in the elaboration cycle
-            after goal removal.  It's still there, although nothing is attacjed
+            after goal removal.  It's still there, although nothing is attached
             to it.  One elab later, the identifier itself is removed.)  Because
             Waterfall needs to know if the goal is valid or not, I look at the
             link_count on the symbol.  A link_count of 0 is the trigger for the
@@ -6609,7 +6682,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         print_with_symbols(thisAgent, "\n%y: ", node->b.p.prod->name);
         char buf[256];
-        SNPRINTF(buf, 254, "%s: ", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+        SNPRINTF(buf, 254, "%s: ", node->b.p.prod->name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
     }
 
@@ -6824,11 +6897,11 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
      1 byte: 0 (null termination for the above string)
      1 byte: format version number (current version is version 3)
 
-     4 bytes: number of sym_constants
+     4 bytes: number of str_constants
      4 bytes: number of variables
      4 bytes: number of int_constants
      4 bytes: number of float_constants
-       names of all sym_constants (each a null-terminated string)
+       names of all str_constants (each a null-terminated string)
        names of all variables (each a null-terminated string)
        values of all int_constants (each as a null-terminated ASCII string)
        values of all float_constants (each as a null-terminated ASCII string)
@@ -7015,11 +7088,11 @@ void reteload_string(FILE* f)
    has index number 1, the second has number 2, etc.  Retesave_symbol_table()
    saves the whole symbol table, using the following format:
 
-       4 bytes: number of sym_constants
+       4 bytes: number of str_constants
        4 bytes: number of variables
        4 bytes: number of int_constants
        4 bytes: number of float_constants
-         names of all sym_constants (each a null-terminated string)
+         names of all str_constants (each a null-terminated string)
          names of all variables (each a null-terminated string)
          values of all int_constants (each as a null-term. ASCII string)
          values of all float_constants (each as a null-term. ASCII string)
@@ -7040,7 +7113,7 @@ bool retesave_symbol_and_assign_index(agent* thisAgent, void* item, void* userda
     sym = static_cast<symbol_struct*>(item);
     thisAgent->current_retesave_symindex++;
     sym->retesave_symindex = thisAgent->current_retesave_symindex;
-    retesave_string(symbol_to_string(thisAgent, sym, false, NIL, 0), f);
+    retesave_string(sym->to_string(), f);
     return false;
 }
 
@@ -7065,17 +7138,17 @@ void retesave_symbol_table(agent* thisAgent, FILE* f)
 
 void reteload_all_symbols(agent* thisAgent, FILE* f)
 {
-    uint64_t num_sym_constants, num_variables;
+    uint64_t num_str_constants, num_variables;
     uint64_t num_int_constants, num_float_constants;
     Symbol** current_place_in_symtab;
     uint64_t i;
 
-    num_sym_constants = reteload_eight_bytes(f);
+    num_str_constants = reteload_eight_bytes(f);
     num_variables = reteload_eight_bytes(f);
     num_int_constants = reteload_eight_bytes(f);
     num_float_constants = reteload_eight_bytes(f);
 
-    thisAgent->reteload_num_syms = num_sym_constants + num_variables + num_int_constants
+    thisAgent->reteload_num_syms = num_str_constants + num_variables + num_int_constants
                                    + num_float_constants;
 
     /* --- allocate memory for the symbol table --- */
@@ -7084,7 +7157,7 @@ void reteload_all_symbols(agent* thisAgent, FILE* f)
 
     /* --- read in all the symbols from the file --- */
     current_place_in_symtab = thisAgent->reteload_symbol_table;
-    for (i = 0; i < num_sym_constants; i++)
+    for (i = 0; i < num_str_constants; i++)
     {
         reteload_string(f);
         *(current_place_in_symtab++) = make_str_constant(thisAgent, reteload_string_buf);
@@ -7134,7 +7207,7 @@ void reteload_free_symbol_table(agent* thisAgent)
 
     for (i = 0; i < thisAgent->reteload_num_syms; i++)
     {
-        symbol_remove_ref(thisAgent, *(thisAgent->reteload_symbol_table + i));
+        symbol_remove_ref(thisAgent, (*(thisAgent->reteload_symbol_table + i)));
     }
     free_memory(thisAgent, thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
 }
@@ -7436,16 +7509,16 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
     {
         case 0:
             sym = reteload_symbol_from_index(thisAgent, f);
-            symbol_add_ref(thisAgent, sym);
-            rv = symbol_to_rhs_value(sym);
+            /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
+            //symbol_add_ref(thisAgent, sym);
+            rv = allocate_rhs_value_for_symbol(thisAgent, sym);
             break;
         case 1:
             funcall_list = NIL;
             sym = reteload_symbol_from_index(thisAgent, f);
 
-            /* NLD: 4/30/2011
-             * I'm fairly certain function calls do not need an added ref.
-             *
+            /* MToDoRefCnt | Nate: I'm fairly certain function calls do not need an added ref.
+            *
              * I traced through production parsing and the RHS function name is not kept around there. Instead, it "finds" the symbol
              * (as opposed to "make", which adds a ref) and uses that to hash to the existing RHS function structure (which keeps a
              * ref on the symbol name). The initial symbol ref comes from init_built_in_rhs_functions (+1 ref) and then is removed
@@ -7453,15 +7526,17 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
              *
              * The parallel in rete-net loading is the symbol table that is loaded in via reteload_all_symbols (+1 ref) and then freed
              * in reteload_free_symbol_table (-1 ref).
+                 *
+                 * - NLD: 4/30/2011
              */
-            // symbol_add_ref (thisAgent, sym);
+            // symbol_add_ref(thisAgent, sym);
 
             rf = lookup_rhs_function(thisAgent, sym);
             if (!rf)
             {
                 char msg[BUFFER_MSG_SIZE];
                 print_with_symbols(thisAgent, "Error: can't load this file because it uses an undefined RHS function %y\n", sym);
-                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: can't load this file because it uses an undefined RHS function %s\n", symbol_to_string(thisAgent, sym, true, NIL, 0));
+                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: can't load this file because it uses an undefined RHS function %s\n", sym->to_string(true));
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
                 abort_with_fatal_error(thisAgent, msg);
             }
@@ -7538,15 +7613,12 @@ action* reteload_rhs_action(agent* thisAgent, FILE* f)
 {
     action* a;
 
-    allocate_with_pool(thisAgent, &thisAgent->action_pool, &a);
+    a = make_action(thisAgent);
     a->type = reteload_one_byte(f);
     a->preference_type = reteload_one_byte(f);
     a->support = reteload_one_byte(f);
     if (a->type == FUNCALL_ACTION)
     {
-        a->id = NIL;
-        a->attr = NIL;
-        a->referent = NIL;
         a->value = reteload_rhs_value(thisAgent, f);
     }
     else     /* MAKE_ACTION's */
@@ -8326,7 +8398,7 @@ void get_all_node_count_stats(agent* thisAgent)
     //for (i=0; i<256; i++)
     //  if (thisAgent->rete_node_counts[i] &&
     //      (*bnode_type_names[i] == 0)) {
-    //    print (thisAgent, "Internal eror: unknown node type [%d] has nonzero count.\n",i);
+    //    thisAgent->OutputManager->print( "Internal eror: unknown node type [%d] has nonzero count.\n",i);
     //  }
     init_bnode_type_names(thisAgent);
 
@@ -8661,9 +8733,9 @@ void print_partial_match_information(agent* thisAgent, rete_node* p_node,
     condition* top_cond, *bottom_cond;
     int64_t n;
     token* tokens, *t;
-
-    p_node_to_conditions_and_nots(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
-                                  NIL, NIL);
+    /* MToDo | Does matches command need to pull complex conditions.  Probably not. */
+    p_node_to_conditions_and_rhs(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+                                 NIL);
     n = ppmi_aux(thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                  wtt, 0);
     print(thisAgent, "\n%d complete matches.\n", n);
@@ -8691,7 +8763,6 @@ typedef struct match_set_trace
     Symbol* sym;
     int        count;
     struct match_set_trace* next;
-    /* Add match goal to the print of the matching production */
     Symbol* goal;
 } MS_trace;
 
@@ -9110,7 +9181,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
 
                 // Reset the ch pointer
                 ch = temp ;
-                if (! test_is_blank_test(c->data.tests.value_test))
+                if (! test_is_blank(c->data.tests.value_test))
                 {
                     *(ch++) = ' ';
                     test_to_string(c->data.tests.value_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
@@ -9658,8 +9729,9 @@ void xml_partial_match_information(agent* thisAgent, rete_node* p_node, wme_trac
     token* tokens, *t;
 
     xml_begin_tag(thisAgent, kTagProduction) ;
-    p_node_to_conditions_and_nots(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
-                                  NIL, NIL);
+    /* MToDo | Does matches command need to pull complex conditions.  Probably not. */
+    p_node_to_conditions_and_rhs(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+                                 NIL);
     n = xml_aux(thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);
     xml_att_val(thisAgent, kMatches, n) ;
@@ -9782,8 +9854,6 @@ void init_rete(agent* thisAgent)
 
     bInit = true;
 
-    init_test_type_conversion_tables();
-
     init_bnode_type_names(thisAgent);
 
     init_left_and_right_addition_routines();
@@ -9838,219 +9908,3 @@ void init_rete(agent* thisAgent)
                        RELATIONAL_SAME_TYPE_RETE_TEST] =
                            variable_same_type_rete_test_routine;
 }
-/* ----------------------------------------------------------------------
-                               Collect Nots
-
-   When we build the instantiated conditions for a production being
-   fired, we also record all the "<>" tests between pairs of identifiers.
-   (This information is used during chunking.)  This procedure looks for
-   any such <> tests in the given Rete test list (from the "other tests"
-   at a Rete node), and adds records of them to the global variable
-   nots_found_in_production.  "Right_wme" is the wme that matched
-   the current condition; "cond" is the currently-being-reconstructed
-   condition.
----------------------------------------------------------------------- */
-
-//not_struct *nots_found_in_production; /* collected <> tests */
-
-void collect_nots(agent* thisAgent,
-                  rete_test* rt,
-                  wme* right_wme,
-                  condition* cond,
-                  not_struct*& nots_found_in_production)
-{
-    not_struct* new_not;
-    Symbol* right_sym;
-    Symbol* referent;
-
-    for (; rt != NIL; rt = rt->next)
-    {
-
-        if (! test_is_not_equal_test(rt->type))
-        {
-            continue;
-        }
-
-        right_sym = field_from_wme(right_wme, rt->right_field_num);
-
-        if (right_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-        {
-            continue;
-        }
-
-        if (rt->type == CONSTANT_RELATIONAL_RETE_TEST +
-                RELATIONAL_NOT_EQUAL_RETE_TEST)
-        {
-            referent = rt->data.constant_referent;
-            if (referent->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-            {
-                continue;
-            }
-            allocate_with_pool(thisAgent, &thisAgent->not_pool, &new_not);
-            new_not->next = nots_found_in_production;
-            nots_found_in_production = new_not;
-            new_not->s1 = right_sym;
-            symbol_add_ref(thisAgent, right_sym);
-            new_not->s2 = referent;
-            symbol_add_ref(thisAgent, referent);
-            continue;
-        }
-
-        if (rt->type == VARIABLE_RELATIONAL_RETE_TEST +
-                RELATIONAL_NOT_EQUAL_RETE_TEST)
-        {
-            referent = var_bound_in_reconstructed_conds(thisAgent, cond,
-                       rt->data.variable_referent.field_num,
-                       rt->data.variable_referent.levels_up);
-            if (referent->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-            {
-                continue;
-            }
-            allocate_with_pool(thisAgent, &thisAgent->not_pool, &new_not);
-            new_not->next = nots_found_in_production;
-            nots_found_in_production = new_not;
-            new_not->s1 = right_sym;
-            symbol_add_ref(thisAgent, right_sym);
-            new_not->s2 = referent;
-            symbol_add_ref(thisAgent, referent);
-            continue;
-        }
-    }
-}
-
-/* -------------------------------------------------------------------
-             Reconstructing the RHS Actions of a Production
-
-   When we print a production (but not when we fire one), we have to
-   reconstruct the RHS actions.  This is because many of the variables
-   in the RHS have been replaced by references to Rete locations (i.e.,
-   rather than specifying <v>, we specify "value field 3 levels up"
-   or "the 7th RHS unbound variable".  The routines below copy rhs_value's
-   and actions, and substitute variable names for such references.
-   For RHS unbound variables, we gensym new variable names.
-------------------------------------------------------------------- */
-
-rhs_value copy_rhs_value_and_substitute_varnames(agent* thisAgent,
-        rhs_value rv,
-        condition* cond,
-        char first_letter)
-{
-    cons* c, *new_c, *prev_new_c;
-    list* fl, *new_fl;
-    Symbol* sym;
-    int64_t index;
-    char prefix[2];
-
-    if (rhs_value_is_reteloc(rv))
-    {
-        sym = var_bound_in_reconstructed_conds(thisAgent, cond,
-                                               rhs_value_to_reteloc_field_num(rv),
-                                               rhs_value_to_reteloc_levels_up(rv));
-        symbol_add_ref(thisAgent, sym);
-        return symbol_to_rhs_value(sym);
-    }
-
-    if (rhs_value_is_unboundvar(rv))
-    {
-        index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
-        if (! *(thisAgent->rhs_variable_bindings + index))
-        {
-            prefix[0] = first_letter;
-            prefix[1] = 0;
-
-            sym = generate_new_variable(thisAgent, prefix);
-            *(thisAgent->rhs_variable_bindings + index) = sym;
-
-            if (thisAgent->highest_rhs_unboundvar_index < index)
-            {
-                thisAgent->highest_rhs_unboundvar_index = index;
-            }
-        }
-        else
-        {
-            sym = *(thisAgent->rhs_variable_bindings + index);
-            symbol_add_ref(thisAgent, sym);
-        }
-        return symbol_to_rhs_value(sym);
-    }
-
-    if (rhs_value_is_funcall(rv))
-    {
-        fl = rhs_value_to_funcall_list(rv);
-        allocate_cons(thisAgent, &new_fl);
-        new_fl->first = fl->first;
-        prev_new_c = new_fl;
-        for (c = fl->rest; c != NIL; c = c->rest)
-        {
-            allocate_cons(thisAgent, &new_c);
-            new_c->first = copy_rhs_value_and_substitute_varnames(thisAgent,
-                           static_cast<char*>(c->first),
-                           cond, first_letter);
-            prev_new_c->rest = new_c;
-            prev_new_c = new_c;
-        }
-        prev_new_c->rest = NIL;
-        return funcall_list_to_rhs_value(new_fl);
-    }
-    else
-    {
-        symbol_add_ref(thisAgent, rhs_value_to_symbol(rv));
-        return rv;
-    }
-}
-
-action* copy_action_list_and_substitute_varnames(agent* thisAgent,
-        action* actions,
-        condition* cond)
-{
-    action* old, *New, *prev, *first;
-    char first_letter;
-
-    prev = NIL;
-    first = NIL;  /* unneeded, but without it gcc -Wall warns here */
-    old = actions;
-    while (old)
-    {
-        allocate_with_pool(thisAgent, &thisAgent->action_pool, &New);
-        if (prev)
-        {
-            prev->next = New;
-        }
-        else
-        {
-            first = New;
-        }
-        prev = New;
-        New->type = old->type;
-        New->preference_type = old->preference_type;
-        New->support = old->support;
-        if (old->type == FUNCALL_ACTION)
-        {
-            New->value = copy_rhs_value_and_substitute_varnames(thisAgent,
-                         old->value, cond,
-                         'v');
-        }
-        else
-        {
-            New->id = copy_rhs_value_and_substitute_varnames(thisAgent, old->id, cond, 's');
-            New->attr = copy_rhs_value_and_substitute_varnames(thisAgent, old->attr, cond, 'a');
-            first_letter = first_letter_from_rhs_value(New->attr);
-            New->value = copy_rhs_value_and_substitute_varnames(thisAgent, old->value, cond,
-                         first_letter);
-            if (preference_is_binary(old->preference_type))
-                New->referent = copy_rhs_value_and_substitute_varnames(thisAgent, old->referent,
-                                cond, first_letter);
-        }
-        old = old->next;
-    }
-    if (prev)
-    {
-        prev->next = NIL;
-    }
-    else
-    {
-        first = NIL;
-    }
-    return first;
-}
-

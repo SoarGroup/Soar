@@ -268,10 +268,10 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'c', "count",    OPTARG_OPTIONAL},
-                    {'l', "long",     OPTARG_NONE},
+                    {'c', "count",        OPTARG_OPTIONAL},
+                    {'l', "long",        OPTARG_NONE},
                     {'n', "numbered", OPTARG_NONE},
-                    {'p', "prefix",   OPTARG_OPTIONAL},
+                    {'p', "prefix",        OPTARG_OPTIONAL},
                     {'r', "rule",     OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };

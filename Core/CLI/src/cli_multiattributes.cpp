@@ -50,11 +50,11 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
         {
             // Arbitrary buffer and size
             char attributeName[1024];
-            symbol_to_string(thisAgent, maList->symbol, true, attributeName, 1024);
+            maList->symbol->to_string(true, attributeName, 1024);
             
             if (m_RawOutput)
             {
-                m_Result  << maList->value << "\t" << symbol_to_string(thisAgent, maList->symbol, true, attributeName, 1024) << "\n";
+                m_Result  << maList->value << "\t" << maList->symbol->to_string(true, attributeName, 1024) << std::endl;
                 
             }
             else

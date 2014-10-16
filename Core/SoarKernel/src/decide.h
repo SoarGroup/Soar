@@ -51,17 +51,8 @@ typedef std::set< wme* > wma_pooled_wme_set;
 typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 #endif
 
-extern void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to);
-extern void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to);
-
-extern void mark_context_slot_as_acceptable_preference_changed(agent* thisAgent, slot* s);
-
-void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s);
-void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to);
-void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to);
-
 /* ------------------------------------------------------------------------
-                 Goal Dependency Set
+           Goal Dependency Set
 
    The Goal Dependency Set is a data structure used in Operand2 to maintain
    the integrity of a subgoal with respect to changes in supergoal WMEs.
@@ -98,17 +89,6 @@ typedef struct gds_struct
     Symbol* goal;                /* pointer to the goal for the dependency set */
     wme* wmes_in_gds;            /* pointer to the dll of WMEs in GDS of goal */
 } goal_dependency_set;
-
-void elaborate_gds(agent* thisAgent);
-void gds_invalid_so_remove_goal(agent* thisAgent, wme* w);
-void free_parent_list(agent* thisAgent);
-void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst);
-void create_gds_for_goal(agent* thisAgent, Symbol* goal);
-extern void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w);
-
-extern int GDS_PrintCmd(/****ClientData****/ int clientData,
-        /****Tcl_Interp****/ void* interp,
-        int argc, char* argv[]);
 
 /* ------------------------------------------------------------------------
                                 Slots
@@ -173,7 +153,7 @@ typedef struct slot_struct
     wme* acceptable_preference_wmes;  /* dll of acceptable pref. wmes */
     preference* all_preferences;      /* dll of all pref's in the slot */
     preference* preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
-    ::list* CDPS;                               /* list of prefs in the CDPS to backtrace through */
+    ::list* CDPS;                     /* list of prefs in the CDPS to backtrace through */
     Symbol* impasse_id;               /* NIL if slot is not impassed */
     bool isa_context_slot;
     byte impasse_type;
@@ -186,14 +166,29 @@ typedef struct slot_struct
                                              has changed + or ! pref's */
 
     wma_sym_reference_map* wma_val_references;
-    
+
 } slot;
 
-/* MMA 8-2012 */
+extern void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to);
+extern void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to);
+
+extern void mark_context_slot_as_acceptable_preference_changed(agent* thisAgent, slot* s);
+extern void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s);
+
+extern void elaborate_gds(agent* thisAgent);
+extern void gds_invalid_so_remove_goal(agent* thisAgent, wme* w);
+extern void free_parent_list(agent* thisAgent);
+extern void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst);
+extern void create_gds_for_goal(agent* thisAgent, Symbol* goal);
+extern void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w);
+
+extern int GDS_PrintCmd(/****ClientData****/ int clientData,
+        /****Tcl_Interp****/ void* interp,
+        int argc, char* argv[]);
+
 void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value = true);
 void rl_update_for_one_candidate(agent* thisAgent, slot* s, bool consistency, preference* candidates);
 extern byte run_preference_semantics(agent* thisAgent, slot* s, preference** result_candidates, bool consistency = false, bool predict = false);
-/* MMA end */
 
 /* ---------------------------------------------------------------------
                       Top-Level Decider Routines
@@ -224,15 +219,10 @@ extern void create_top_goal(agent* thisAgent);
 extern void clear_goal_stack(agent* thisAgent);
 extern void print_lowest_slot_in_context_stack(agent* thisAgent);
 
-/* These prototypes moved here from consistency.cpp -ajc (5/3/02) */
 extern void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal);
 extern byte type_of_existing_impasse(agent* thisAgent, Symbol* goal);
 extern Symbol* attribute_of_existing_impasse(agent* thisAgent, Symbol* goal);
-
-/* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
 extern byte type_of_existing_impasse(agent* thisAgent, Symbol* goal);
-
-// SBW 5/07 added prototype
 unsigned int count_candidates(preference* candidates);
 
 #endif

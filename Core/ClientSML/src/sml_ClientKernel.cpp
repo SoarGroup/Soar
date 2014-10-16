@@ -77,12 +77,12 @@ Kernel::Kernel(Connection* pConnection)
     }
     
     /* voigtjr, rmarinie
-    *
-    * Upon further tinkering, we have discovered that the use of the code within
-    * the following symbol on Linux is no longer necessary, and, in fact, causes
-    * problems, but we are leaving it in in case our analysis turns out to be
-    * incorrect.
-    */
+     *
+     * Upon further tinkering, we have discovered that the use of the code within
+     * the following symbol on Linux is no longer necessary, and, in fact, causes
+     * problems, but we are leaving it in in case our analysis turns out to be
+     * incorrect.
+     */
     
 //#ifdef LINUX_STATIC_LINK
     // On Linux the linker only makes a single pass through the libraries
@@ -817,22 +817,22 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
     // we try to get the current agent list
     if (pKernel->HadError())
     {
-        return pKernel ;
+        return pKernel;
     }
     
     // Register for "calls" from the kernel.
     pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
     
     // Register for important events
-    pKernel->InitEvents() ;
+    pKernel->InitEvents();
     
     // Initialize our time tags
-    pKernel->InitializeTimeTagCounter() ;
+    pKernel->InitializeTimeTagCounter();
     
     // Get the current list of active agents
-    pKernel->UpdateAgentList() ;
+    pKernel->UpdateAgentList();
     
-    return pKernel ;
+    return pKernel;
 }
 
 /*************************************************************

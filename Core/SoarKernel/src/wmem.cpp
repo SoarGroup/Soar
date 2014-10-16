@@ -29,9 +29,9 @@
 #include "tempmem.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
-
 #include "wma.h"
 #include "episodic_memory.h"
+#include "variablization_manager.h"
 
 using namespace soar_TraceNames;
 
@@ -67,9 +67,9 @@ void reset_wme_timetags(agent* thisAgent)
 {
     if (thisAgent->num_existing_wmes != 0)
     {
-        print(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\n");
-        print(thisAgent, "there are still some wmes allocated. (Probably a memory leak.)\n");
-        print(thisAgent, "(Leaving timetag numbers alone.)\n");
+        print(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
+        print(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
+        print(thisAgent,  "(Leaving timetag numbers alone.)\n");
         xml_generate_warning(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
         return;
     }
@@ -102,20 +102,20 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->rete_next = NIL;
     w->rete_prev = NIL;
     
-    /* REW: begin 09.15.96 */
     /* When we first create a WME, it had no gds value.
        Do this for ALL wmes, regardless of the operand mode, so that no undefined pointers
        are floating around. */
     w->gds = NIL;
     w->gds_prev = NIL;
     w->gds_next = NIL;
-    /* REW: end 09.15.96 */
     
     w->wma_decay_el = NIL;
     w->wma_tc_value = 0;
     
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
+    
+    w->ground_id_list = NIL;
     
     return w;
 }
@@ -256,7 +256,7 @@ void do_buffered_wm_changes(agent* thisAgent)
                 if (w == cr->first)
                 {
                     const char* const kWarningMessage = "WARNING: WME added and removed in same phase : ";
-                    print(thisAgent, const_cast< char* >(kWarningMessage));
+                    print(thisAgent,  const_cast< char* >(kWarningMessage));
                     xml_begin_tag(thisAgent, kTagWarning);
                     xml_att_val(thisAgent, kTypeString, kWarningMessage);
                     print_wme(thisAgent, w);
@@ -319,6 +319,17 @@ void deallocate_wme(agent* thisAgent, wme* w)
     symbol_remove_ref(thisAgent, w->id);
     symbol_remove_ref(thisAgent, w->attr);
     symbol_remove_ref(thisAgent, w->value);
+    
+    grounding_info* g_next, *g;
+    
+    /* -- See if we already have ground IDs for this goal level -- */
+    
+    for (g = w->ground_id_list; g; g = g_next)
+    {
+        g_next = g->next;
+        delete g;
+    }
+    
     free_with_pool(&thisAgent->wme_pool, w);
     thisAgent->num_existing_wmes--;
 }

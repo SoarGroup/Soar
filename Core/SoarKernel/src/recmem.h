@@ -39,12 +39,10 @@ typedef struct wme_struct wme;
 extern void init_firer(agent* thisAgent);
 extern void do_preference_phase(agent* thisAgent);
 
-/* RBD Definitely need more comments here */
 extern preference* find_clone_for_level(preference* p, goal_stack_level level);
 extern void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
         bool need_to_do_support_calculations, instantiation* original_inst);
 
-/* MMA 9-12 */
 extern void build_CDPS(agent* thisAgent, instantiation* inst);
 
 extern void deallocate_instantiation(agent* thisAgent, instantiation* inst);

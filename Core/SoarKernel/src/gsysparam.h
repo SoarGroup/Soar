@@ -133,8 +133,10 @@ typedef struct agent_struct agent;
 /* MMA: Chunk over evaluation rules in subgoals */
 #define CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM  45
 
+#define TRACE_PARSER 46
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  45
+#define HIGHEST_SYSPARAM_NUMBER                  46
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()
@@ -144,6 +146,6 @@ typedef struct agent_struct agent;
 extern void init_sysparams(agent* thisAgent);
 extern void set_sysparam(agent* thisAgent, int param_number, int64_t new_value);
 
-#define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
+
 
 #endif
