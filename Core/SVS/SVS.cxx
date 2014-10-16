@@ -4,6 +4,7 @@
 #include "src/commands/set_tag.cpp"
 #include "src/commands/delete_tag.cpp"
 #include "src/commands/copy_node.cpp"
+#include "src/commands/copy_transform.cpp"
 #include "src/commands/delete_node.cpp"
 
 #include "src/filters/base_node_filters.cpp"
