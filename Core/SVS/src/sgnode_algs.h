@@ -19,4 +19,6 @@ bool bbox_intersects(const sgnode* a, const sgnode* b);
 
 bool bbox_contains(const sgnode* a, const sgnode* b);
 
+double convex_overlap(const sgnode* a, const sgnode* b, int nsamples);
+
 #endif

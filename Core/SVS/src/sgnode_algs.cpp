@@ -180,3 +180,99 @@ bool bbox_contains(const sgnode* a, const sgnode* b)
     return boxa.contains(boxb);
 }
 
+/*  overlap(sgnode* n1, sgnode* n2)
+ * This will estimate the percentage of node 1 that is contained within node 2
+ * Using random sampling 
+ * Result = # Samples that are contained in n1 and n2 / # Samples contained in n1
+ */
+double convex_overlap(const sgnode* n1, const sgnode* n2, int nsamples){
+	if(n1 == n2 || n1->has_descendent(n2) || n2->has_descendent(n1)){
+		// Something is weird, the given nodes are part of the same object
+		return 0;
+	}
+
+	vector<const geometry_node*> g1, g2;
+	n1->walk_geoms(g1);
+	n2->walk_geoms(g2);
+
+	if(g2.empty()){
+		// Node 2 is a point, so return 0
+		return 0;
+	}
+
+	if(g1.empty()){
+		// Node 1 is a point
+		vec3 pt = n1->get_centroid();
+		for(int i = 0, iend = g2.size(); i < iend; i++){
+			double dist = point_geom_convex_dist(pt, g2[i]);
+			//std::cout << "  pt-geom dist: " << dist << std::endl;
+			if(dist <= 0){
+				// Node 1's point is contained within node 2
+				return 1;
+			}
+		}
+		// Node 1's point is not contained within node 2
+		return 0;
+	}
+
+	// Early exit, first check if they intersect at all
+	double dist = convex_distance(n1, n2);
+	if(dist > 0){
+		// No intersection
+		return 0;
+	}
+
+	ccd_t ccd;
+
+	CCD_INIT(&ccd);
+	ccd.support1 = point_ccd_support;
+	ccd.support2 = geom_ccd_support;
+	ccd.max_iterations = 100;
+	ccd.dist_tolerance = INTERSECT_THRESH;
+
+	bbox bounds = n1->get_bounds();
+
+	int numSamples = 0;
+	int numIntersections = 0;
+	int numIters = 0;
+
+	// Generate random points within node 1, and test if within node 2
+	while(numSamples < nsamples && numIters < 100000){
+		numIters++;
+		vec3 randPt = bounds.get_random_point();
+
+		bool inNode1 = false;
+		for(int i = 0, iend = g1.size(); i < iend; i++){
+			double dist = ccdGJKDist(&randPt, g1[i], &ccd);
+			if(dist <= 0){
+				inNode1 = true;
+				break;
+			}
+		}
+		if(!inNode1){
+			continue;
+		}
+
+		numSamples++;
+
+		bool inNode2 = false;
+		for(int j = 0, jend = g2.size(); j < jend; j++){
+			double dist = ccdGJKDist(&randPt, g2[j], &ccd);
+			if(dist <= 0){
+				inNode2 = true;
+				break;
+			}
+		}
+		if(!inNode2){
+			continue;
+		}
+
+		numIntersections++;
+	}
+
+	if(numSamples == 0){
+		return 0;
+	} else {
+		return numIntersections / (double)numSamples;
+	}
+}
