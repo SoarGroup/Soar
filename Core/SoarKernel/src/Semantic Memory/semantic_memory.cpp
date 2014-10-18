@@ -155,41 +155,91 @@ namespace soar
 		void semantic_memory::buffered_add_error_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string error_message)
 		{
 			Symbol* error_value = make_str_constant(theAgent, error_message.c_str());
-			
+
 			soar_module::symbol_triple* wme = new soar_module::symbol_triple(state->id->smem_result_header,
-													theAgent->smem_sym_failure,
-													error_value);
-			
+																			 theAgent->smem_sym_failure,
+																			 error_value);
+
 			buffered_wme_changes->push_back(wme);
-			
+
 			symbol_add_ref(theAgent, state->id->smem_result_header);
 			symbol_add_ref(theAgent, theAgent->smem_sym_failure);
 			symbol_add_ref(theAgent, error_value);
 		}
 		
-		void semantic_memory::buffered_add_success_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string success_message)
+		void semantic_memory::buffered_add_error(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state,  Symbol* command_type, Symbol* command, std::string error_message)
 		{
-			Symbol* success_value = make_str_constant(theAgent, success_message.c_str());
+			Symbol* error_value = make_str_constant(theAgent, error_message.c_str());
+			Symbol* error_failure_id = make_new_identifier(theAgent, 'F', state->id->level);
+			
 			soar_module::symbol_triple* wme = new soar_module::symbol_triple(state->id->smem_result_header,
-													theAgent->smem_sym_success,
-													success_value);
+																			 theAgent->smem_sym_failure,
+																			 error_failure_id);
+			
+			soar_module::symbol_triple* wme2 = new soar_module::symbol_triple(error_failure_id,
+																			 theAgent->smem_sym_failure,
+																			 error_value);
+
+			
+			soar_module::symbol_triple* wme3 = new soar_module::symbol_triple(error_failure_id,
+																			 command_type,
+																			 command);
+			
 			buffered_wme_changes->push_back(wme);
+			buffered_wme_changes->push_back(wme2);
+			buffered_wme_changes->push_back(wme3);
 			
 			symbol_add_ref(theAgent, state->id->smem_result_header);
 			symbol_add_ref(theAgent, theAgent->smem_sym_failure);
-			symbol_add_ref(theAgent, success_value);
+			symbol_add_ref(theAgent, error_failure_id);
+			
+			symbol_add_ref(theAgent, error_failure_id);
+			symbol_add_ref(theAgent, theAgent->smem_sym_failure);
+			symbol_add_ref(theAgent, error_value);
+			
+			
+			symbol_add_ref(theAgent, error_failure_id);
+			symbol_add_ref(theAgent, command_type);
+			symbol_add_ref(theAgent, command);
 		}
 		
-		void semantic_memory::buffered_add_success_result(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* result)
+		void semantic_memory::buffered_add_success(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* command_type, Symbol* command, std::string success_message, Symbol* success_result)
 		{
+			Symbol* success_value = success_result;
+			
+			if (!success_value)
+				success_value = make_str_constant(theAgent, success_message.c_str());
+			
+			Symbol* success_id = make_new_identifier(theAgent, 'S', state->id->level);
+			
 			soar_module::symbol_triple* wme = new soar_module::symbol_triple(state->id->smem_result_header,
-													theAgent->smem_sym_retrieved,
-													result);
+																			 theAgent->smem_sym_success,
+																			 success_id);
+			
+			soar_module::symbol_triple* wme2 = new soar_module::symbol_triple(success_id,
+																			  theAgent->smem_sym_success,
+																			  success_value);
+			
+			soar_module::symbol_triple* wme3 = new soar_module::symbol_triple(success_id,
+																			  command_type,
+																			  command);
+			
 			buffered_wme_changes->push_back(wme);
+			buffered_wme_changes->push_back(wme2);
+			buffered_wme_changes->push_back(wme3);
 			
 			symbol_add_ref(theAgent, state->id->smem_result_header);
 			symbol_add_ref(theAgent, theAgent->smem_sym_failure);
-			symbol_add_ref(theAgent, result);
+			symbol_add_ref(theAgent, success_id);
+			
+			symbol_add_ref(theAgent, success_id);
+			symbol_add_ref(theAgent, theAgent->smem_sym_failure);
+			symbol_add_ref(theAgent, success_value);
+			
+			
+			symbol_add_ref(theAgent, success_id);
+			symbol_add_ref(theAgent, command_type);
+			symbol_add_ref(theAgent, command);
 		}
 		
 		void semantic_memory::add_activation_history(activation_data* activation_info)
@@ -207,7 +257,7 @@ namespace soar
 
 		void semantic_memory::query(agent* theAgent, const Symbol* state, list<wme*>& command_wmes, buffered_wme_list& buffered_wme_changes)
 		{
-			const Symbol* root_of_query = nullptr, *root_of_neg_query = nullptr;
+			Symbol* root_of_query = nullptr, *root_of_neg_query = nullptr;
 			std::list<Symbol*> prohibit;
 			std::string result_message = "Unknown Result";
 			
@@ -252,12 +302,11 @@ namespace soar
 				Symbol* result = backend->query(theAgent, root_of_query, root_of_neg_query, prohibit, &result_message);
 				
 				if (!result)
-					buffered_add_error_message(theAgent, &buffered_wme_changes, state, result_message);
+					buffered_add_error(theAgent, &buffered_wme_changes, state, theAgent->smem_sym_query, root_of_query, result_message);
 				else
 				{
 				    add_activation_history(result->id->activation_info);
-					buffered_add_success_message(theAgent, &buffered_wme_changes, state, result_message);
-					buffered_add_success_result(theAgent, &buffered_wme_changes, state, result);
+					buffered_add_success(theAgent, &buffered_wme_changes, state, theAgent->smem_sym_query, root_of_query, result_message, result);
 				}
 			}
 		}
@@ -393,12 +442,11 @@ namespace soar
 						bool success = retrieve_lti(theAgent, w->value, &result);
 						
 						if (!success)
-							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result);
+							buffered_add_error(theAgent, &buffered_wme_changes, state, theAgent->smem_sym_retrieve, w->value,result);
 						else
 						{
 						    add_activation_history(w->value->id->activation_info);
-							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result);
-							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value);
+							buffered_add_success(theAgent, &buffered_wme_changes, state, theAgent->smem_sym_retrieve, w->value, result);
 						}
 					}
 				}
@@ -411,17 +459,19 @@ namespace soar
 						bool success = backend->store(theAgent, w->value, &result, recursive);
 						
 						if (!success)
-							buffered_add_error_message(theAgent, &buffered_wme_changes, state, result);
+							buffered_add_error(theAgent, &buffered_wme_changes, state, theAgent->smem_sym_store, w->value,result);
 						else
 						{
 						    add_activation_history(w->value->id->activation_info);
-							buffered_add_success_message(theAgent, &buffered_wme_changes, state, result);
-							buffered_add_success_result(theAgent, &buffered_wme_changes, state, w->value);
+							epmem_schedule_promotion(theAgent, w->value);
+
+							buffered_add_success(theAgent, &buffered_wme_changes, state, theAgent->smem_sym_store, w->value, result);
 						}
 					}
 				}
 				
 				process_buffered_wmes(theAgent, state, justification, &buffered_wme_changes);
+				state = state->id->higher_goal;
 			}
 			
 			if (mirroring)

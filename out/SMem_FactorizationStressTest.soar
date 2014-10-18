@@ -1,0 +1,14 @@
+# This file enables EpMem use in the Factorization test
+
+epmem --set learning off
+#smem --set learning on
+
+learn --off
+
+sp {elaboration*enable-smem
+   (state <s> ^name)
+-->
+   (<s> ^using-smem true)
+}
+
+source SingleFileFactorizationStressTest.soar

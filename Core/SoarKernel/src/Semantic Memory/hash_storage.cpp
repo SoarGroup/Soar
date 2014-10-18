@@ -89,9 +89,12 @@ namespace soar
 				for (wme* w = s->wmes;w != nullptr;w = w->next)
 					cue.insert(w);
 			
-			for (slot* s = root_of_neg_query->id->slots;s != nullptr;s = s->next)
-				for (wme* w = s->wmes;w != nullptr;w = w->next)
-					neg_cue.insert(w);
+			if (root_of_neg_query)
+			{
+				for (slot* s = root_of_neg_query->id->slots;s != nullptr;s = s->next)
+					for (wme* w = s->wmes;w != nullptr;w = w->next)
+						neg_cue.insert(w);
+			}
 			
 			auto it = cue.begin();
 			auto cue_end = cue.end();
@@ -110,7 +113,10 @@ namespace soar
 					jt = attr_map.find(*it);
 					
 					if (jt == attr_map.end())
+					{
+						*result_message = "Could not find any object matching query.";
 						return nullptr;
+					}
 				}
 				else
 				{
@@ -118,7 +124,10 @@ namespace soar
 					jt = attr_value_map.find(*it);
 					
 					if (jt == attr_value_map.end())
+					{
+						*result_message = "Could not find any object matching query.";
 						return nullptr;
+					}
 				}
 				
 				cue_sets.insert(&jt->second);
@@ -135,7 +144,10 @@ namespace soar
 					jt = attr_map.find(*it);
 					
 					if (jt == attr_map.end())
+					{
+						*result_message = "Could not find any object matching query.";
 						return nullptr;
+					}
 				}
 				else
 				{
@@ -143,7 +155,10 @@ namespace soar
 					jt = attr_value_map.find(*it);
 					
 					if (jt == attr_value_map.end())
+					{
+						*result_message = "Could not find any object matching query.";
 						return nullptr;
+					}
 				}
 				
 				neg_cue_sets.insert(&jt->second);
@@ -191,10 +206,16 @@ namespace soar
 			unordered_set_diff_intersection(intersection, prohibit_set);
 			
 			if (!intersection.size())
+			{
+				*result_message = "Could not find any object matching query and neg query.";
 				return nullptr;
+			}
 			
 			if (sorted)
+			{
+				*result_message = "Success!";
 				return intersection.front();
+			}
 			
 			Symbol* highest = *intersection.begin();
 			
@@ -204,8 +225,11 @@ namespace soar
 					highest = id;
 			}
 			
+			*result_message = "Success!";
 			return highest;
 		}
+		
+		
 		
 		bool hash_storage::store(agent* theAgent, const Symbol* id, std::string* result_message, bool recursive)
 		{
@@ -217,9 +241,12 @@ namespace soar
 			for (slot* s = id->id->slots;s != nullptr; s = s->next)
 				for (wme* w = s->wmes;w != nullptr; w = w->next)
 				{
+					cout << "Storing: " << id->id->to_string() << " ^" << w->attr->to_string() << " " << w->value->to_string() << endl;
+					
 					attr_map[w].insert(const_cast<Symbol*>(id));
 					attr_value_map[w].insert(const_cast<Symbol*>(id));
 					
+					wme_add_ref(w);
 					symbol_add_ref(theAgent, w->attr);
 					
 					if (recursive &&
@@ -229,8 +256,13 @@ namespace soar
 						store(theAgent, w->value, result_message, recursive);
 					else if (!w->value->is_identifier() || !recursive)
 						symbol_add_ref(theAgent, w->value);
-						
 				}
+			
+			id->id->isa_lti = true;
+			
+			*result_message = "Success! Added LTI: @";
+			*result_message += id->id->name_letter;
+			*result_message += std::to_string(id->id->name_number);
 			
 			return true;
 		}
