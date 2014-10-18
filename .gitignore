@@ -182,9 +182,9 @@ DerivedData
 
 # User-specific files
 *.suo
-*.user
-*.sln.docstates
-
+*.vcxproj
+*.vcxproj.filters
+*.sln
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -365,10 +365,6 @@ UpgradeLog*.htm
 FakesAssemblies/
 
 
-### SCons ###
-# for projects that use SCons for building: http://http://www.scons.org/
-.sconsign.dblite
-
 ### OSX ###
 .DS_Store
 .AppleDouble
@@ -408,30 +404,13 @@ Temporary Items
 /config.log
 /.gitignore*
 /.cproject
-/.project
+.project
 /.pydevproject
 /.sconsign.dblite
-/format_*
 /out
 out/
 build/
 user-env*.*
 build_*.*
-/Release/Shuffler*
 **/*.pyc
 *.pyc
-Documentation/ManualSource/*.aux
-Documentation/ManualSource/funclist.tex
-Documentation/ManualSource/manual.glo
-Documentation/ManualSource/manual.idx
-Documentation/ManualSource/manual.ilg
-Documentation/ManualSource/manual.ind
-Documentation/ManualSource/manual.lof
-Documentation/ManualSource/manual.log
-Documentation/ManualSource/manual.out
-Documentation/ManualSource/manual.pdf
-Documentation/ManualSource/manual.toc
-Documentation/ManualSource/wikicmd/tex/
-Documentation/ManualSource/wikicmd/wiki/
-
-Soar/

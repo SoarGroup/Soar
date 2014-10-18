@@ -13,6 +13,7 @@ class SMemMathTest : public CPPUNIT_NS::TestCase
 {
         CPPUNIT_TEST_SUITE(SMemMathTest);    // The name of this class
         
+#ifdef DO_SMEM_MATH_TESTS
         CPPUNIT_TEST(testSimpleCueBasedRetrieval);
         CPPUNIT_TEST(testSimpleNonCueBasedRetrieval);
         CPPUNIT_TEST(testSimpleStore);
@@ -40,7 +41,7 @@ class SMemMathTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testNegQuery);
         CPPUNIT_TEST(testNegStringFloat);
         CPPUNIT_TEST(testNegQueryNoHash);
-        
+#endif
         CPPUNIT_TEST_SUITE_END();
         
     public:
@@ -88,7 +89,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SMemMathTest);
 
 void SMemMathTest::source(const std::string& path)
 {
-    pAgent->LoadProductions((std::string("test_agents/smemtests/") + path).c_str());
+    pAgent->LoadProductions((std::string("test_agents/smem-math-tests/") + path).c_str());
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
 }
 

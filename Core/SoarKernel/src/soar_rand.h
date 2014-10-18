@@ -90,7 +90,7 @@
 
 class MTRand
 {
-// Data
+        // Data
     public:
         enum { N = 624 };       // length of state vector
         enum { SAVE = N + 1 };  // length of array for save()
@@ -103,7 +103,7 @@ class MTRand
         int left;          // number of values left before reload needed
         
         
-//Methods
+        //Methods
     public:
         MTRand(const uint32_t& oneSeed);    // initialize with a simple uint32
         MTRand(uint32_t* const bigSeed, uint32_t const seedLength = N);    // or an array
@@ -273,7 +273,7 @@ inline uint32_t MTRand::randInt(const uint32_t& n)
     uint32_t i;
     do
     {
-        i = randInt() & used;    // toss unused bits to shorten search
+        i = randInt() & used;  // toss unused bits to shorten search
     }
     while (i > n);
     return i;

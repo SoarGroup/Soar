@@ -110,51 +110,73 @@ Output_Manager::~Output_Manager()
     }
 }
 
+int Output_Manager::get_printer_output_column(agent* thisAgent)
+{
+    if (thisAgent)
+    {
+        return thisAgent->output_settings->printer_output_column;
+    }
+    else
+    {
+        return global_printer_output_column;
+    }
+}
+
+void Output_Manager::set_printer_output_column(agent* thisAgent, int pOutputColumn)
+{
+    if (thisAgent)
+    {
+        thisAgent->output_settings->printer_output_column = pOutputColumn;
+    }
+    else
+    {
+        global_printer_output_column = pOutputColumn;
+    }
+}
+
 void Output_Manager::start_fresh_line(agent* pSoarAgent)
 {
     if (!pSoarAgent)
     {
         pSoarAgent = m_defaultAgent;
     }
-    if (printer_output_column != 1)
+    if (global_printer_output_column != 1)
     {
         print_agent(pSoarAgent, "\n");
     }
 }
 
-void Output_Manager::update_printer_columns(agent* pSoarAgent, bool update_global, const char* msg)
+void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
 {
     const char* ch;
     
-    if (pSoarAgent)
+    for (ch = msg; *ch != 0; ch++)
     {
-        for (ch = msg; *ch != 0; ch++)
+        if (*ch == '\n')
         {
-            if (*ch == '\n')
+            if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column = 1;
             }
-            else
+            if (stdout_mode)
+            {
+                global_printer_output_column = 1;
+            }
+        }
+        else
+        {
+            if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column++;
             }
-        }
-    }
-    if (update_global)
-    {
-        for (ch = msg; *ch != 0; ch++)
-        {
-            if (*ch == '\n')
+            if (stdout_mode)
             {
-                printer_output_column = 1;
-            }
-            else
-            {
-                printer_output_column++;
+                global_printer_output_column++;
             }
         }
     }
 }
+
 void Output_Manager::print_db_agent(agent* pSoarAgent, MessageType msgType, TraceMode mode, const char* msg)
 {
     soar_module::sqlite_statement*   target_statement = NIL;
@@ -207,7 +229,7 @@ void Output_Manager::print_agent(agent* pSoarAgent, const char* msg)
         
     }
     
-    update_printer_columns(pSoarAgent, stdout_mode, msg);
+    update_printer_columns(pSoarAgent, msg);
     
     if (db_mode)
     {
@@ -246,7 +268,7 @@ void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, Trace
             
         }
         
-        update_printer_columns(pSoarAgent, stdout_mode, msg);
+        update_printer_columns(pSoarAgent, msg);
         
         if (db_mode)
         {

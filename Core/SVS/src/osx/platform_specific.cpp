@@ -7,7 +7,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ctime>
-#include "timer.h"
 #include "common.h"
 
 using namespace std;

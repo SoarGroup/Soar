@@ -65,6 +65,14 @@ def vc_version():
 	print 'cannot identify compiler version'
 	Exit(1)
 
+#run cl (MSVC compiler) and return the target architecture (x64 or x86)
+def cl_target_arch():
+    cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    for line in cl.stdout:
+        if re.search('x64', line):
+            return 'x64'
+    return 'x86'
+
 def Mac_m64_Capable():
 	return execute('sysctl -n hw.optional.x86_64'.split()).strip() == '1'
 
@@ -124,10 +132,12 @@ AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable 
 
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 
-
 msvc_version = "12.0"
+cl_target_architecture = ''
 if sys.platform == 'win32':
-	msvc_version = vc_version()
+    msvc_version = vc_version()
+    cl_target_architecture = cl_target_arch()
+    print "MSVC compiler target architecture is", cl_target_architecture
 
 env = Environment(
 	MSVC_VERSION=msvc_version,
@@ -258,22 +268,19 @@ Export('env')
 g_msvs_variant = 'Debug|Win32'
 
 if 'MSVSSolution' in env['BUILDERS']:
-	msvs_projs = []
-	Export('msvs_projs')
+    msvs_projs = []
+    Export('msvs_projs')
 
-	cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-	for line in cl.stdout:
-		if re.search('x64', line):
-			if GetOption('opt'):
-				g_msvs_variant = 'Release|x64'
-			else:
-				g_msvs_variant = 'Debug|x64'
-		else:
-			if GetOption('opt'):
-				g_msvs_variant = 'Release|Win32'
-			else:
-				g_msvs_variant = 'Debug|Win32'
-		break
+    if (cl_target_architecture == 'x64'):
+        if GetOption('opt'):
+            g_msvs_variant = 'Release|x64'
+        else:
+            g_msvs_variant = 'Debug|x64'
+    else:
+        if GetOption('opt'):
+            g_msvs_variant = 'Release|Win32'
+        else:
+            g_msvs_variant = 'Debug|Win32'
 
 Export('g_msvs_variant')
 

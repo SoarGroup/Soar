@@ -13,7 +13,16 @@
 ################
 # User aliases #
 ################
-
+alias cnf               chunk-name-format
+alias ea                excise --all
+alias ec                excise --chunks
+alias m                 matches
+alias pf                production-find
+alias ps                print --stack
+alias quit              exit
+alias r                 run
+alias s                 run 1
+alias wmes              print -depth 0 -internal
 alias ebc explain-backtraces -c
 alias ep epmem
 alias eps epmem -S

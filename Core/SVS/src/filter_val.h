@@ -37,6 +37,8 @@ class filter_val
         virtual filter_val& operator=(const filter_val& rhs) = 0;
         virtual bool operator==(const filter_val& rhs) const = 0;
         virtual std::string toString() const = 0;
+        virtual bool is_dirty() const = 0;
+        virtual void reset_dirty() = 0;
 };
 
 
@@ -49,7 +51,7 @@ template <typename T>
 class filter_val_c : public filter_val    // c for concrete
 {
     public:
-        filter_val_c(const T& v) : v(v) {}
+        filter_val_c(const T& v) : v(v), dirty(true) {}
         virtual ~filter_val_c() {}
         
         void get_rep(std::map<std::string, std::string>& rep) const
@@ -69,6 +71,10 @@ class filter_val_c : public filter_val    // c for concrete
         {
             const filter_val_c<T>* c = dynamic_cast<const filter_val_c<T>*>(&rhs);
             assert(c);
+            if (v != c->v)
+            {
+                dirty = true;
+            }
             v = c->v;
             return *this;
         }
@@ -90,6 +96,10 @@ class filter_val_c : public filter_val    // c for concrete
         
         void set_value(const T& n)
         {
+            if (v != n)
+            {
+                dirty = true;
+            }
             v = n;
         }
         
@@ -100,9 +110,45 @@ class filter_val_c : public filter_val    // c for concrete
             return ss.str();
         }
         
+        bool is_dirty() const
+        {
+            return dirty;
+        }
+        
+        void reset_dirty()
+        {
+            dirty = false;
+        }
+        
     private:
         T v;
+        bool dirty;
 };
+
+template<>
+void inline filter_val_c<vec3>::get_rep(std::map<std::string, std::string>& rep) const
+{
+    rep.clear();
+    rep["x"] = tostring(v[0]);
+    rep["y"] = tostring(v[1]);
+    rep["z"] = tostring(v[2]);
+}
+
+template<>
+void inline filter_val_c<bbox>::get_rep(std::map<std::string, std::string>& rep) const
+{
+    rep.clear();
+    vec3 min = v.get_min();
+    vec3 max = v.get_max();
+    rep["min-x"] = tostring(min[0]);
+    rep["min-y"] = tostring(min[1]);
+    rep["min-z"] = tostring(min[2]);
+    rep["max-x"] = tostring(max[0]);
+    rep["max-y"] = tostring(max[1]);
+    rep["max-z"] = tostring(max[2]);
+}
+
+
 
 //////////////////////////////////////
 // template specialization for sgnode
@@ -114,7 +160,7 @@ template <>
 class filter_val_c<sgnode*> : public filter_val
 {
     public:
-        filter_val_c(sgnode* v) : v(v) {}
+        filter_val_c(sgnode* v) : v(v), dirty(true) {}
         virtual ~filter_val_c() {}
         
         filter_val* clone() const
@@ -126,6 +172,10 @@ class filter_val_c<sgnode*> : public filter_val
         {
             const sgnode_filter_val* c = dynamic_cast<const sgnode_filter_val*>(&rhs);
             assert(c);
+            if (v != c->v)
+            {
+                dirty = true;
+            }
             v = c->v;
             return *this;
         }
@@ -147,7 +197,21 @@ class filter_val_c<sgnode*> : public filter_val
         
         void set_value(sgnode* n)
         {
+            if (v != n)
+            {
+                dirty = true;
+            }
             v = n;
+        }
+        
+        bool is_dirty() const
+        {
+            return dirty;
+        }
+        
+        void reset_dirty()
+        {
+            dirty = false;
         }
         
         // Implementation is at top of file filter.cpp
@@ -158,62 +222,7 @@ class filter_val_c<sgnode*> : public filter_val
         
     private:
         sgnode* v;
-};
-
-//////////////////////////////////////
-// template specialization for const sgnode*
-//////////////////////////////////////
-
-typedef filter_val_c<const sgnode*> c_sgnode_filter_val;
-
-template <>
-class filter_val_c<const sgnode*> : public filter_val
-{
-    public:
-        filter_val_c(const sgnode* v) : v(v) {}
-        virtual ~filter_val_c() {}
-        
-        filter_val* clone() const
-        {
-            return new c_sgnode_filter_val(v);
-        }
-        
-        filter_val& operator=(const filter_val& rhs)
-        {
-            const c_sgnode_filter_val* c = dynamic_cast<const c_sgnode_filter_val*>(&rhs);
-            assert(c);
-            v = c->v;
-            return *this;
-        }
-        
-        bool operator==(const filter_val& rhs) const
-        {
-            const c_sgnode_filter_val* c = dynamic_cast<const c_sgnode_filter_val*>(&rhs);
-            if (!c)
-            {
-                return false;
-            }
-            return v == c->v;
-        }
-        
-        const sgnode* get_value() const
-        {
-            return v;
-        }
-        
-        void set_value(const sgnode* n)
-        {
-            v = n;
-        }
-        
-        // Implementation is at top of file filter.cpp
-        void get_rep(std::map<std::string, std::string>& rep) const;
-        
-        // Implementation is at top of file filter.cpp
-        std::string toString() const;
-        
-    private:
-        const sgnode* v;
+        bool dirty;
 };
 
 /*

@@ -1,74 +1,86 @@
-#include <iostream>
-#include <map>
-#include "filter.h"
-#include "filter_table.h"
-#include "common.h"
+/***************************************************
+ *
+ * File: filters/intersect.cpp
+ *
+ * Intersect Filters
+ *  bool intersect_test(sgnode* a, sgnode* b, fp* p)
+ *    Returns true if a intersects b
+ *    intersect_type << bbox hull >>
+ *      what kind of intersection to test for, defaults to bbox
+ *
+ *  Filter intersect : node_test_filter
+ *    Parameters:
+ *      sgnode a
+ *      sgnode b
+ *    Returns
+ *      bool - true if a intersects b
+ *
+ *  Filter intersect_select : node_test_select_filter
+ *    Parameters:
+ *      sgnode a
+ *      sgnode b
+ *    Returns:
+ *      sgnode b - if a intersects b
+ *
+ *********************************************************/
+#include "sgnode_algs.h"
+#include "filters/base_node_filters.h"
 #include "scene.h"
+#include "filter_table.h"
+
+#include <string>
 
 using namespace std;
 
-class intersect_filter : public typed_map_filter<bool>
+bool intersect_test(sgnode* a, sgnode* b, const filter_params* p)
 {
-    public:
-        intersect_filter(Symbol* root, soar_interface* si, filter_input* input, scene* scn)
-            : typed_map_filter<bool>(root, si, input), scn(scn) {}
-            
-        bool compute(const filter_params* p, bool adding, bool& res, bool& changed)
-        {
-            bool newres;
-            const sgnode* a, *b;
-            
-            if (!get_filter_param(this, p, "a", a))
-            {
-                return false;
-            }
-            if (!get_filter_param(this, p, "b", b))
-            {
-                return false;
-            }
-            
-            if (scn->tracking_distances())
-            {
-                newres = scn->intersects(a, b);
-            }
-            else
-            {
-                newres = intersects(a, b);
-            }
-            changed = (res != newres);
-            res = newres;
-            return true;
-        }
-        
-    private:
-        scene* scn;
-        
-};
+    if (a == b)
+    {
+        return true;
+    }
+    string int_type = "bbox";
+    get_filter_param(0, p, "intersect_type", int_type);
+    if (int_type == "hull")
+    {
+        return convex_intersects(a, b);
+    }
+    else
+    {
+        return bbox_intersects(a, b);
+    }
+}
 
+////// filter intersect //////
 filter* make_intersect_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
-    return new intersect_filter(root, si, input, scn);
+    return new node_test_filter(root, si, input, &intersect_test);
 }
 
-bool standalone_intersect(const scene* scn, const vector<const sgnode*>& args)
+filter_table_entry* intersect_filter_entry()
 {
-    assert(args.size() == 2);
-    if (scn->tracking_distances())
-    {
-        return scn->intersects(args[0], args[1]);
-    }
-    return intersects(args[0], args[1]);
-}
-
-filter_table_entry* intersect_fill_entry()
-{
-    filter_table_entry* e = new filter_table_entry;
+    filter_table_entry* e = new filter_table_entry();
     e->name = "intersect";
-    e->parameters.push_back("a");
-    e->parameters.push_back("b");
-    e->ordered = false;
-    e->allow_repeat = false;
+    e->description = "Returns true if a intersects b";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b";
     e->create = &make_intersect_filter;
-    e->calc = &standalone_intersect;
     return e;
 }
+
+////// filter intersect_select //////
+filter* make_intersect_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+{
+    return new node_test_select_filter(root, si, input, &intersect_test);
+}
+
+filter_table_entry* intersect_select_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry();
+    e->name = "intersect_select";
+    e->description = "Selects b if a intersects b";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b";
+    e->create = &make_intersect_select_filter;
+    return e;
+}
+

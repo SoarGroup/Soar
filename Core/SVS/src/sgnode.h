@@ -14,9 +14,7 @@ class sgnode_listener;
 class group_node;
 class geometry_node;
 
-
-typedef std::map<std::string, std::string> string_properties_map;
-typedef std::map<std::string, double> numeric_properties_map;
+typedef std::map<std::string, std::string> tag_map;
 
 class sgnode : public cliproxy
 {
@@ -29,32 +27,23 @@ class sgnode : public cliproxy
             DELETED,        // sent from destructor
             TRANSFORM_CHANGED,
             SHAPE_CHANGED,
-            PROPERTY_CHANGED,
-            PROPERTY_DELETED
+            TAG_CHANGED,
+            TAG_DELETED
         };
         
-        sgnode(const std::string& name, const std::string& type, bool group);
+        sgnode(const std::string& id, bool group);
         virtual ~sgnode();
         
         /* copied node doesn't inherit listeners */
         virtual sgnode* clone() const;
         
-        int get_id() const
+        const std::string& get_id() const
         {
             return id;
         }
-        const std::string& get_name() const
+        void set_id(const std::string& new_id)
         {
-            return name;
-        }
-        void set_name(const std::string& n)
-        {
-            name = n;
-        }
-        
-        const std::string& get_type() const
-        {
-            return type;
+            id = new_id;
         }
         
         group_node* get_parent()
@@ -101,23 +90,12 @@ class sgnode : public cliproxy
         virtual void walk_geoms(std::vector<geometry_node*>& g) = 0;
         virtual void walk_geoms(std::vector<const geometry_node*>& g) const = 0;
         
-        // AM: accessors/mutators for node properties
-        const string_properties_map&  get_string_properties() const
-        {
-            return string_props;
-        }
-        const numeric_properties_map& get_numeric_properties() const
-        {
-            return numeric_props;
-        }
-        void set_property(const std::string& propertyName, const std::string& value);
-        void set_property(const std::string& propertyName, double value);
-        bool get_property(const std::string& propertyName, std::string& value) const;
-        bool get_property(const std::string& propertyName, double& value) const;
-        void delete_property(const std::string& propertyName);
-        void set_native_property(char type, int dim, double value);
         
-        void adjust_size(std::vector<const sgnode*> targets);
+        // Accessors/Mutators for tags
+        const tag_map& get_all_tags() const;
+        bool get_tag(const std::string& tag_name, std::string& tag_value) const ;
+        void set_tag(const std::string& tag_name, const std::string& tag_value);
+        void delete_tag(const std::string& tag_name);
         
     protected:
         void set_bounds(const bbox& b);
@@ -135,9 +113,7 @@ class sgnode : public cliproxy
             send_update(t, s);
         }
         
-        int         id;
-        std::string name;
-        std::string type;
+        std::string id;
         group_node* parent;
         bool        group;
         vec3        pos;
@@ -156,16 +132,14 @@ class sgnode : public cliproxy
         
         std::list<sgnode_listener*> listeners;
         
-        // AM: Maps that hold both numeric and string properties
-        string_properties_map string_props;
-        numeric_properties_map numeric_props;
+        tag_map tags;
         
 };
 
 class group_node : public sgnode
 {
     public:
-        group_node(const std::string& name, const std::string& type) : sgnode(name, type, true) {}
+        group_node(const std::string& id) : sgnode(id, true) {}
         ~group_node();
         
         sgnode* get_child(int i);
@@ -198,7 +172,7 @@ class group_node : public sgnode
 class geometry_node : public sgnode
 {
     public:
-        geometry_node(const std::string& name, const std::string& type) : sgnode(name, type, false) {}
+        geometry_node(const std::string& id) : sgnode(id, false) {}
         virtual ~geometry_node() {}
         void gjk_support(const vec3& dir, vec3& support) const;
         
@@ -217,7 +191,7 @@ class geometry_node : public sgnode
 class convex_node : public geometry_node
 {
     public:
-        convex_node(const std::string& name, const std::string& type, const ptlist& v);
+        convex_node(const std::string& id, const ptlist& v);
         
         const ptlist& get_verts() const
         {
@@ -243,7 +217,7 @@ class convex_node : public geometry_node
 class ball_node : public geometry_node
 {
     public:
-        ball_node(const std::string& name, const std::string& type, double radius);
+        ball_node(const std::string& id, double radius);
         void get_shape_sgel(std::string& s) const;
         
         double get_radius() const
@@ -268,9 +242,5 @@ class sgnode_listener
     public:
         virtual void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info) = 0;
 };
-
-double convex_distance(const sgnode* n1, const sgnode* n2);
-bool intersects(const sgnode* n1, const sgnode* n2);
-double overlap(const sgnode* n1, const sgnode* n2);
 
 #endif

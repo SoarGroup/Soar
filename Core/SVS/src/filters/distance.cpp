@@ -1,130 +1,143 @@
-#include "filter.h"
-#include "filter_table.h"
+/***************************************************
+ *
+ * File: filters/distance.cpp
+ *
+ * Distance Filters
+ *  double compare_distance(sgnode* a, sgnode* b, fp* p)
+ *    Returns the distance between nodes a and b
+ *    Optional parameter distance_type << centroid hull >>
+ *      Default is centroid
+ *
+ * Filter distance : node_comparison_filter
+ *   Parameters:
+ *    sgnode a
+ *    sgnode b
+ *   Returns:
+ *    double - distance between a and b
+ *
+ * Filter distance_select : node_comparison_select_filter
+ *   Parameters:
+ *    sgnode a
+ *    sgnode b
+ *    double min [optional - default = -INF]
+ *    double max [optional - default = +INF]
+ *   Returns:
+ *    sgnode b if min <= dist(a, b) <= max
+ *
+ *  Filter closest : node_comparison_rank_filter
+ *    Parameters:
+ *      set<sgnode> a
+ *      set<sgnode> b
+ *    Returns:
+ *      The closest pair of nodes from a and b
+ *
+ *  Filter farthest : node_comparison_rank_filter
+ *    Parameters:
+ *      set<sgnode> a
+ *      set<sgnode> b
+ *    Returns:
+ *      The farthest pair of nodes from a and b
+ *
+ *********************************************************/
+#include "sgnode_algs.h"
+#include "filters/base_node_filters.h"
 #include "scene.h"
-#include "common.h"
+#include "filter_table.h"
+
+#include <string>
 
 using namespace std;
 
-class distance_filter : public typed_map_filter<double>
+double compare_distance(sgnode* a, sgnode* b, const filter_params* p)
 {
-    public:
-        distance_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
-            : typed_map_filter<double>(root, si, input), scn(scn)
-        {}
-        
-        bool compute(const filter_params* params, bool adding, double& res, bool& changed)
-        {
-            double newres;
-            const sgnode* a, *b;
-            
-            if (!get_filter_param(this, params, "a", a) ||
-                    !get_filter_param(this, params, "b", b))
-            {
-                return false;
-            }
-            
-            newres = scn->get_convex_distance(a, b);
-            if ((changed = (newres != res)))
-            {
-                res = newres;
-            }
-            return true;
-        }
-    private:
-        scene* scn;
-};
-
-filter* make_distance_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
-{
-    return new distance_filter(root, si, scn, input);
+    if (a == b)
+    {
+        return 0;
+    }
+    string dist_type = "centroid";
+    get_filter_param(0, p, "distance_type", dist_type);
+    if (dist_type == "hull")
+    {
+        return convex_distance(a, b);
+    }
+    else
+    {
+        return centroid_distance(a, b);
+    }
 }
 
-filter_table_entry* distance_fill_entry()
+///// filter distance //////
+filter* make_distance_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
-    filter_table_entry* e = new filter_table_entry;
+    return new node_comparison_filter(root, si, input, &compare_distance);
+}
+
+filter_table_entry* distance_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry();
     e->name = "distance";
+    e->description = "Returns distance between a and b";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b";
+    e->parameters["distance_type"] = "Either centroid or hull";
     e->create = &make_distance_filter;
     return e;
 }
 
-class centroid_distance_filter : public typed_map_filter<double>
+///// filter distance_select //////
+filter* make_distance_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
-    public:
-        centroid_distance_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : typed_map_filter<double>(root, si, input)
-        {}
-        
-        bool compute(const filter_params* params, bool adding, double& res, bool& changed)
-        {
-            double newres;
-            const sgnode* a, *b;
-            
-            if (!get_filter_param(this, params, "a", a) ||
-                    !get_filter_param(this, params, "b", b))
-            {
-                return false;
-            }
-            
-            newres = (a->get_centroid() - b->get_centroid()).norm();
-            if ((changed = (newres != res)))
-            {
-                res = newres;
-            }
-            return true;
-        }
-};
-
-filter* make_centroid_distance_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
-{
-    return new centroid_distance_filter(root, si, input);
+    return new node_comparison_select_filter(root, si, input, &compare_distance);
 }
 
-filter_table_entry* centroid_distance_fill_entry()
+filter_table_entry* distance_select_filter_entry()
 {
-    filter_table_entry* e = new filter_table_entry;
-    e->name = "centroid_distance";
-    e->create = &make_centroid_distance_filter;
+    filter_table_entry* e = new filter_table_entry();
+    e->name = "distance_select";
+    e->description = "Selects b if min <= dist(a, b) <= max";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b";
+    e->parameters["distance_type"] = "Either centroid or hull";
+    e->parameters["min"] = "minimum distance to select";
+    e->parameters["max"] = "maximum distance to select";
+    e->create = &make_distance_select_filter;
     return e;
 }
 
-class closest_filter : public rank_filter
-{
-    public:
-        closest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
-            : rank_filter(root, si, input), scn(scn)
-        {}
-        
-        bool rank(const filter_params* params, double& rank)
-        {
-            const sgnode* a, *b;
-            
-            if (!get_filter_param(this, params, "a", a) ||
-                    !get_filter_param(this, params, "b", b))
-            {
-                return false;
-            }
-            
-            rank = -scn->get_convex_distance(a, b);
-            if (a == b)
-            {
-                // Don't want the closest to report the given node
-                rank = -1000000000;
-            }
-            return true;
-        }
-    private:
-        scene* scn;
-};
-
+////// filter closest //////
 filter* make_closest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
 {
-    return new closest_filter(root, si, scn, input);
+    node_comparison_rank_filter* f = new node_comparison_rank_filter(root, si, input, &compare_distance);
+    f->set_select_highest(false);
+    return f;
 }
 
-filter_table_entry* closest_fill_entry()
+filter_table_entry* closest_filter_entry()
 {
-    filter_table_entry* e = new filter_table_entry;
+    filter_table_entry* e = new filter_table_entry();
     e->name = "closest";
+    e->description = "Output node b closest to node a";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b";
+    e->parameters["distance_type"] = "Either centroid or hull";
     e->create = &make_closest_filter;
+    return e;
+}
+
+////// filter farthest //////
+filter* make_farthest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+{
+    return new node_comparison_rank_filter(root, si, input, &compare_distance);
+}
+
+filter_table_entry* farthest_filter_entry()
+{
+    filter_table_entry* e = new filter_table_entry();
+    e->name = "farthest";
+    e->description = "Output node b farthest from node a";
+    e->parameters["a"] = "Sgnode a";
+    e->parameters["b"] = "Sgnode b";
+    e->parameters["distance_type"] = "Either centroid or hull";
+    e->create = &make_farthest_filter;
     return e;
 }

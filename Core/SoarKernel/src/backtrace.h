@@ -20,7 +20,6 @@
 #ifndef BACKTRACE_H
 #define BACKTRACE_H
 
-
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef signed short goal_stack_level;

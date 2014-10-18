@@ -1,3 +1,18 @@
+/**********************************************************
+ *
+ * File: commands/extract.cpp
+ * Contains:
+ *  class extract_command
+ *
+ *  Soar Command to extract a filter on the world
+ *    Name is either extract or extract_once
+ *  Parameters:
+ *    ^type <string> - type of the filter
+ *    ...  - additional filter-specific parameters
+ *
+ *  Implementation of soar parsing in filter_table.cpp
+ *    parse_filter_spec
+ **********************************************************/
 #include <iostream>
 #include "command.h"
 #include "filter.h"
@@ -5,6 +20,7 @@
 #include "svs.h"
 #include "soar_interface.h"
 #include "symtab.h"
+#include "command_table.h"
 
 using namespace std;
 
@@ -14,7 +30,6 @@ class extract_command : public command, public filter_input::listener
         extract_command(svs_state* state, Symbol* root, bool once)
             : command(state, root), root(root), state(state), fltr(NULL), res_root(NULL), first(true), once(once)
         {
-            //cout << padd() << "NEW EXTRACT COMMAND" << endl;
             si = state->get_svs()->get_soar_interface();
         }
         
@@ -33,11 +48,6 @@ class extract_command : public command, public filter_input::listener
         
         bool update_sub()
         {
-            if (!once && !first && !svs::get_filter_dirty_bit())
-            {
-                // XXX: Don't update results if the dirty bit is not set
-                return true;
-            }
             if (!res_root)
             {
                 res_root = si->get_wme_val(si->make_id_wme(root, "result"));
@@ -100,11 +110,9 @@ class extract_command : public command, public filter_input::listener
             for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i)
             {
                 handle_output(out->get_current(i));
-                //cout << padd() << "Added output" << endl;
             }
             for (int i = 0, iend = out->num_removed(); i < iend; ++i)
             {
-                //cout << padd() << "Removed output" << endl;
                 filter_val* fv = out->get_removed(i);
                 record r;
                 if (!map_pop(records, fv, r))
@@ -115,7 +123,6 @@ class extract_command : public command, public filter_input::listener
             }
             for (int i = 0, iend = out->num_changed(); i < iend; ++i)
             {
-                //cout << padd() << "Changed output" << endl;
                 handle_output(out->get_changed(i));
             }
         }
@@ -148,7 +155,7 @@ class extract_command : public command, public filter_input::listener
             }
             else if (get_filter_val(v, bv))
             {
-                single_val = si->make_sym(bv ? "t" : "f");
+                single_val = si->make_sym(bv ? "true" : "false");
             }
             
             if (single_val != NULL)
@@ -170,7 +177,15 @@ class extract_command : public command, public filter_input::listener
             map<string, string>::const_iterator i, iend;
             for (i = rep.begin(), iend = rep.end(); i != iend; ++i)
             {
-                si->make_wme(subid, i->first, i->second);
+                double dval;
+                if (parse_double(i->second, dval))
+                {
+                    si->make_wme(subid, i->first, dval);
+                }
+                else
+                {
+                    si->make_wme(subid, i->first, i->second);
+                }
             }
             return w;
         }
@@ -250,21 +265,23 @@ class extract_command : public command, public filter_input::listener
                 update_param_struct(r.params, si->get_wme_val(r.params_wme));
             }
             records[output] = r;
+            output->reset_dirty();
         }
         
         void handle_output(filter_val* output)
         {
-            //cout << padd() << "extract_filter::handle_output " << endl;
             record* r;
             if ((r = map_getp(records, output)))
             {
-                //cout << padd() << "  replace existing wme" << endl;
-                si->remove_wme(r->val_wme);
-                r->val_wme = make_value_wme(output, r->rec_id);
+                if (output->is_dirty())
+                {
+                    si->remove_wme(r->val_wme);
+                    r->val_wme = make_value_wme(output, r->rec_id);
+                }
+                output->reset_dirty();
             }
             else
             {
-                //cout << padd() << "  make new record" << endl;
                 make_record(output);
             }
         }
@@ -309,7 +326,6 @@ class extract_command : public command, public filter_input::listener
 
 command* _make_extract_command_(svs_state* state, Symbol* root)
 {
-    //cout << "MAKE EXTRACT COMMAND" << endl;
     return new extract_command(state, root, false);
 }
 
@@ -318,3 +334,24 @@ command* _make_extract_once_command_(svs_state* state, Symbol* root)
     return new extract_command(state, root, true);
 }
 
+command_table_entry* extract_command_entry()
+{
+    command_table_entry* e = new command_table_entry();
+    e->name = "extract";
+    e->description = "Continually extracts a filter";
+    e->parameters["type"] = "Type of the filter to extract";
+    e->parameters["other"] = "See specific filter for other parameters";
+    e->create = &_make_extract_command_;
+    return e;
+}
+
+command_table_entry* extract_once_command_entry()
+{
+    command_table_entry* e = new command_table_entry();
+    e->name = "extract_once";
+    e->description = "Extracts a filter once";
+    e->parameters["type"] = "Type of the filter to extract";
+    e->parameters["other"] = "See specific filter for other parameters";
+    e->create = &_make_extract_once_command_;
+    return e;
+}

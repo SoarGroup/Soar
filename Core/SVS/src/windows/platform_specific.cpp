@@ -4,7 +4,6 @@
 #include <windows.h>
 #include <iostream>
 #include <ws2tcpip.h>
-#include "timer.h"
 
 using namespace std;
 

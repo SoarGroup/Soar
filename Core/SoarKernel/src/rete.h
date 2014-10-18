@@ -58,7 +58,6 @@
 
 struct not_struct;
 
-
 typedef unsigned char byte;
 typedef byte wme_trace_type;
 typedef byte ms_trace_type;

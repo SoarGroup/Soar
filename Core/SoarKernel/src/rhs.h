@@ -34,7 +34,6 @@
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;
 typedef cons list;
-typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 typedef unsigned char byte;
 typedef unsigned short rete_node_level;
@@ -166,8 +165,6 @@ inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
 
 
 typedef unsigned char byte;
-
-typedef struct agent_struct agent;
 
 typedef struct action_struct
 {

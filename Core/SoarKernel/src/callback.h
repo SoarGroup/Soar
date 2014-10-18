@@ -326,7 +326,6 @@ typedef const char* soar_callback_id;
 typedef void* soar_callback_data;
 typedef void* soar_call_data;
 typedef int    soar_callback_event_id;
-
 typedef struct agent_struct agent;
 
 typedef void (*soar_callback_fn)(agent*,
@@ -336,7 +335,6 @@ typedef void (*soar_callback_fn)(agent*,
 typedef void (*soar_callback_free_fn)(soar_callback_data);  // JRV 2008 This is a function pointer used to free the user data but currently nobody uses it
 typedef struct cons_struct cons;
 typedef cons list;
-typedef struct agent_struct agent;
 
 #include <string>
 

@@ -1,0 +1,64 @@
+epmem --set learning on
+epmem --set trigger dc
+
+sp {propose*init
+    (state <s> ^superstate nil
+               -^name)
+-->
+    (<s> ^operator.name init)
+}
+
+sp {apply*init
+    (state <s> ^operator.name init)
+-->
+    (<s> ^name svs
+         ^state <state>)
+    (<state> ^position <x1>
+             ^position <x2>
+             ^plocation <x1>)
+    (<x1> ^id x1)
+    (<x2> ^id x2)
+}
+
+sp {svs*propose*retrieve
+    (state <s> ^name svs)
+-->
+    (<s> ^operator.name retrieve)
+}
+
+sp {svs*apply*retrieve*query
+    (state <s> ^operator.name retrieve
+               ^epmem.command <cmd>)
+-->
+    (<cmd> ^query.state <q>)
+    (<q> ^position <x1>
+         ^position <x2>
+         ^plocation <x2>)
+    (<x1> ^id x1)
+    (<x2> ^id x2)
+}
+
+sp {svs*apply*retrieve*success
+    (state <s> ^operator.name retrieve
+               ^epmem <epmem>)
+    (<epmem> ^command <cmd>
+             ^result <res>)
+    (<cmd> ^query <query>)
+    (<res> ^success <query>
+           ^match-cardinality 1)
+-->
+    (exec succeeded)
+    (halt)
+}
+
+sp {svs*apply*retrieve*failure
+    (state <s> ^operator.name retrieve
+               ^epmem <epmem>)
+    (<epmem> ^command <cmd>
+             ^result <res>)
+    (<cmd> ^query <query>)
+    (<res> ^success <query>
+           ^match-cardinality {<> 1})
+-->
+    (halt)
+}

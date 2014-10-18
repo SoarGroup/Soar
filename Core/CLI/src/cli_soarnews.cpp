@@ -32,8 +32,8 @@ bool CommandLineInterface::DoSoarNews()
     m_RawOutput = rawOutputSave;
     
     m_Result << ".\n";
-    m_Result << "Please visit the Soar home page at\n\thttp://sitemaker.umich.edu/soar/\n";
-    m_Result << "Please see the announce.txt file included in the Documentation folder with this release for more information.";
+    m_Result << "Please visit the Soar home page at\n\thttp://soar.eecs.umich.edu/\n";
+    m_Result << "Please see the release notes included in this release for more information.";
     
     return true;
 }

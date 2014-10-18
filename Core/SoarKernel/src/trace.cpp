@@ -1782,6 +1782,14 @@ void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int 
         case FOR_OPERATORS_TF:
             //create XML trace for operator object
             xml_begin_tag(thisAgent, kTagOperator);
+            /* -- Prior to Soar 9.4, the following line printed (object->id.level - 1)
+             *    instead of (state->id->level - 1).  This was causing the
+             *    unit test to fail.  Changing it to state seems to make sense in this
+             *    context, since the level of the state should also be the level of the
+             *    operator.  (Could be wrong about this.)
+             *    Leaving this comment because it's possible that the real problem is
+             *    that the level of the operator isn't being set somewhere else to
+             *    the proper value. - MMA 9-2014*/
             xml_att_val(thisAgent, kState_StackLevel, state->id->level - 1);
             xml_att_val(thisAgent, kOperator_DecisionCycleCt, thisAgent->d_cycle_count);
             

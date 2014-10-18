@@ -175,9 +175,7 @@ void createagent(const char* agentname)
     currentAgent->SetOutputLinkChangeTracking(false);
     agents.push_back(currentAgent);
     cout << acc::Red << "Created agent " << agents.size() << " named " << agentname <<
-         ". Attempting to source " << agentname << ".soar:" << acc::Off << endl;
-    execcmd("source settings/settings.soar");
-    execcmd("source settings/aliases.soar");
+         ". Attempting to source agent-specific init file: " << agentname << ".soar..." << acc::Off << endl;
     execcmd("source settings/" + string(agentname) + ".soar");
     updateMultiAgent();
 }

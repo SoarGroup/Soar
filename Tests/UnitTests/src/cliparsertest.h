@@ -8,7 +8,7 @@ class CliAdapter : public cli::Cli
 {
     public:
         virtual ~CliAdapter() {}
-
+        
         virtual bool SetError(const std::string& error)
         {
             return false;
@@ -22,10 +22,6 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoAllocate(const std::string& pool, int blocks)
-        {
-            return false;
-        }
-        virtual bool DoBreak(const char& mode, const std::string& production)
         {
             return false;
         }
@@ -174,6 +170,10 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoOSupportMode(int mode = -1)
+        {
+            return false;
+        }
+        virtual bool DoPbreak(const char& mode, const std::string& production)
         {
             return false;
         }
@@ -331,13 +331,13 @@ class CliEcho : public CliAdapter
 {
     public:
         virtual ~CliEcho() {}
-
+        
         void SetExpected(unsigned numArgs, bool newLine)
         {
             this->numArgs = numArgs;
             this->newLine = newLine;
         }
-
+        
         virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline)
         {
             return (argv.size() == numArgs) && (echoNewline == newLine);
@@ -351,12 +351,12 @@ class CliMaxDCTime : public CliAdapter
 {
     public:
         virtual ~CliMaxDCTime() {}
-
+        
         void SetExpected(int n)
         {
             this->n = n;
         }
-
+        
         virtual bool DoMaxDCTime(const int n)
         {
             return this->n == n;

@@ -37,8 +37,6 @@
 #ifndef PREFMEM_H
 #define PREFMEM_H
 
-
-
 typedef unsigned char byte;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
