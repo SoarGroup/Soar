@@ -564,6 +564,9 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
 
 void garbage_collect_id(agent* thisAgent, Symbol* id)
 {
+	if (id->id->isa_lti)
+		return;
+	
     slot* s;
     preference* pref, *next_pref;
 

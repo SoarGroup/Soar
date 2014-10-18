@@ -237,9 +237,8 @@ namespace soar
 			
 			// Error/Success Handling
 			void buffered_add_error_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string error_message);
-
-			void buffered_add_error(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* command_type, Symbol* command, std::string error_message);
-			void buffered_add_success(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* command_type, Symbol* command, std::string success_message, Symbol* success_result = nullptr);
+            void buffered_add_success_message(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, std::string success_message);
+            void buffered_add_success_result(agent* theAgent, buffered_wme_list* buffered_wme_changes, const Symbol* state, Symbol* result);
 			
 			// Buffered WME Processing
 			void process_buffered_wmes(agent* theAgent, Symbol* state, std::set<wme*>& justification, buffered_wme_list* buffered_wme_changes);

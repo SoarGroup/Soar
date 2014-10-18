@@ -241,8 +241,6 @@ namespace soar
 			for (slot* s = id->id->slots;s != nullptr; s = s->next)
 				for (wme* w = s->wmes;w != nullptr; w = w->next)
 				{
-					cout << "Storing: " << id->id->to_string() << " ^" << w->attr->to_string() << " " << w->value->to_string() << endl;
-					
 					attr_map[w].insert(const_cast<Symbol*>(id));
 					attr_value_map[w].insert(const_cast<Symbol*>(id));
 					

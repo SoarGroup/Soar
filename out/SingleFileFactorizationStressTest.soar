@@ -588,8 +588,8 @@ sp {apply*clean-up-substates*remove-factorization-object
               ^factorization-object <fo>)
    (<fo> ^number <n>)
 -->
-   (write |Factored | <n> |: |)
-   (write (cmd |print| |--depth| |2| <fo>))
+	#(write |Factored | <n> |: |)
+	#(write (cmd |print| |--depth| |2| <fo>))
    (<s> ^factorization-object <fo> -)
 }
 
