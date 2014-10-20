@@ -306,7 +306,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             return SetError("Invalid setting for SMem parameter.");
         }
 
-        soar_module::db_choices last_db_mode = thisAgent->smem_params->database->get_value();
+        smem_param_container::db_choices last_db_mode = thisAgent->smem_params->database->get_value();
         bool result = my_param->set_string(pVal->c_str());
 
         if (!result)

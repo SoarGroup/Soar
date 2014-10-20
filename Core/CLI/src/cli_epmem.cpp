@@ -165,7 +165,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
             return SetError("Invalid setting for epmem parameter.");
         }
 
-        soar_module::db_choices last_db_mode = thisAgent->epmem_params->database->get_value();
+        epmem_param_container::db_choices last_db_mode = thisAgent->epmem_params->database->get_value();
         bool result = my_param->set_string(pVal->c_str());
 
         if (!result)

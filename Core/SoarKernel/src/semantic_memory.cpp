@@ -78,9 +78,9 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     add(learning);
 
     // database
-    database = new soar_module::constant_param<soar_module::db_choices>("database", soar_module::memory, new soar_module::f_predicate<soar_module::db_choices>());
-    database->add_mapping(soar_module::memory, "memory");
-    database->add_mapping(soar_module::file, "file");
+    database = new soar_module::constant_param<db_choices>("database", memory, new soar_module::f_predicate<db_choices>());
+    database->add_mapping(memory, "memory");
+    database->add_mapping(file, "file");
     add(database);
 
     // append database or dump data on init
@@ -104,14 +104,14 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     add(timers);
 
     // page_size
-    page_size = new soar_module::constant_param<soar_module::page_choices>("page-size", soar_module::page_8k, new smem_db_predicate<soar_module::page_choices>(thisAgent));
-    page_size->add_mapping(soar_module::page_1k, "1k");
-    page_size->add_mapping(soar_module::page_2k, "2k");
-    page_size->add_mapping(soar_module::page_4k, "4k");
-    page_size->add_mapping(soar_module::page_8k, "8k");
-    page_size->add_mapping(soar_module::page_16k, "16k");
-    page_size->add_mapping(soar_module::page_32k, "32k");
-    page_size->add_mapping(soar_module::page_64k, "64k");
+    page_size = new soar_module::constant_param<page_choices>("page-size", page_8k, new smem_db_predicate<page_choices>(thisAgent));
+    page_size->add_mapping(page_1k, "1k");
+    page_size->add_mapping(page_2k, "2k");
+    page_size->add_mapping(page_4k, "4k");
+    page_size->add_mapping(page_8k, "8k");
+    page_size->add_mapping(page_16k, "16k");
+    page_size->add_mapping(page_32k, "32k");
+    page_size->add_mapping(page_64k, "64k");
     add(page_size);
 
     // cache_size
@@ -119,9 +119,9 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     add(cache_size);
 
     // opt
-    opt = new soar_module::constant_param<soar_module::opt_choices>("optimization", soar_module::opt_speed, new smem_db_predicate<soar_module::opt_choices>(thisAgent));
-    opt->add_mapping(soar_module::opt_safety, "safety");
-    opt->add_mapping(soar_module::opt_speed, "performance");
+    opt = new soar_module::constant_param<opt_choices>("optimization", opt_speed, new smem_db_predicate<opt_choices>(thisAgent));
+    opt->add_mapping(opt_safety, "safety");
+    opt->add_mapping(opt_speed, "performance");
     add(opt);
 
     // thresh
@@ -2916,7 +2916,7 @@ void smem_switch_to_memory_db(agent* thisAgent, std::string& buf)
 {
     print_sysparam_trace(thisAgent, 0, buf.c_str());
     thisAgent->smem_db->disconnect();
-    thisAgent->smem_params->database->set_value(soar_module::memory);
+    thisAgent->smem_params->database->set_value(smem_param_container::memory);
     smem_init_db(thisAgent);
 }
 
@@ -3003,7 +3003,7 @@ void smem_init_db(agent* thisAgent)
     const char* db_path;
     bool tabula_rasa;
 
-    if (thisAgent->smem_params->database->get_value() == soar_module::memory)
+    if (thisAgent->smem_params->database->get_value() == smem_param_container::memory)
     {
         db_path = ":memory:";
         tabula_rasa = true;
@@ -3132,31 +3132,31 @@ void smem_init_db(agent* thisAgent)
             {
                 switch (thisAgent->smem_params->page_size->get_value())
                 {
-                    case (soar_module::page_1k):
+                    case (smem_param_container::page_1k):
                         thisAgent->smem_db->sql_execute("PRAGMA page_size = 1024");
                         break;
 
-                    case (soar_module::page_2k):
+                    case (smem_param_container::page_2k):
                         thisAgent->smem_db->sql_execute("PRAGMA page_size = 2048");
                         break;
 
-                    case (soar_module::page_4k):
+                    case (smem_param_container::page_4k):
                         thisAgent->smem_db->sql_execute("PRAGMA page_size = 4096");
                         break;
 
-                    case (soar_module::page_8k):
+                    case (smem_param_container::page_8k):
                         thisAgent->smem_db->sql_execute("PRAGMA page_size = 8192");
                         break;
 
-                    case (soar_module::page_16k):
+                    case (smem_param_container::page_16k):
                         thisAgent->smem_db->sql_execute("PRAGMA page_size = 16384");
                         break;
 
-                    case (soar_module::page_32k):
+                    case (smem_param_container::page_32k):
                         thisAgent->smem_db->sql_execute("PRAGMA page_size = 32768");
                         break;
 
-                    case (soar_module::page_64k):
+                    case (smem_param_container::page_64k):
                         thisAgent->smem_db->sql_execute("PRAGMA page_size = 65536");
                         break;
                 }
@@ -3173,7 +3173,7 @@ void smem_init_db(agent* thisAgent)
             }
 
             // optimization
-            if (thisAgent->smem_params->opt->get_value() == soar_module::opt_speed)
+            if (thisAgent->smem_params->opt->get_value() == smem_param_container::opt_speed)
             {
                 // synchronous - don't wait for writes to complete (can corrupt the db in case unexpected crash during transaction)
                 thisAgent->smem_db->sql_execute("PRAGMA synchronous = OFF");

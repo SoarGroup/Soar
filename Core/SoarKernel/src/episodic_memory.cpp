@@ -112,9 +112,9 @@ epmem_param_container::epmem_param_container(agent* new_agent): soar_module::par
     ////////////////////
 
     // database
-    database = new soar_module::constant_param<soar_module::db_choices>("database", soar_module::memory, new soar_module::f_predicate<soar_module::db_choices>());
-    database->add_mapping(soar_module::memory, "memory");
-    database->add_mapping(soar_module::file, "file");
+    database = new soar_module::constant_param<db_choices>("database", memory, new soar_module::f_predicate<db_choices>());
+    database->add_mapping(memory, "memory");
+    database->add_mapping(file, "file");
     add(database);
 
     // append database or dump data on init
@@ -122,11 +122,11 @@ epmem_param_container::epmem_param_container(agent* new_agent): soar_module::par
     add(append_db);
 
     // path
-    path = new soar_module::path_param("path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>(), thisAgent);
+    path = new epmem_path_param("path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>(), thisAgent);
     add(path);
 
     // auto-commit
-    lazy_commit = new soar_module::boolean_param("lazy-commit", on, new soar_module::db_predicate<boolean>(thisAgent));
+    lazy_commit = new soar_module::boolean_param("lazy-commit", on, new epmem_db_predicate<boolean>(thisAgent));
     add(lazy_commit);
 
     ////////////////////
@@ -155,24 +155,24 @@ epmem_param_container::epmem_param_container(agent* new_agent): soar_module::par
     add(timers);
 
     // page_size
-    page_size = new soar_module::constant_param<soar_module::page_choices>("page-size", soar_module::page_8k, new soar_module::db_predicate<soar_module::page_choices>(thisAgent));
-    page_size->add_mapping(soar_module::page_1k, "1k");
-    page_size->add_mapping(soar_module::page_2k, "2k");
-    page_size->add_mapping(soar_module::page_4k, "4k");
-    page_size->add_mapping(soar_module::page_8k, "8k");
-    page_size->add_mapping(soar_module::page_16k, "16k");
-    page_size->add_mapping(soar_module::page_32k, "32k");
-    page_size->add_mapping(soar_module::page_64k, "64k");
+    page_size = new soar_module::constant_param<page_choices>("page-size", page_8k, new epmem_db_predicate<page_choices>(thisAgent));
+    page_size->add_mapping(epmem_param_container::page_1k, "1k");
+    page_size->add_mapping(epmem_param_container::page_2k, "2k");
+    page_size->add_mapping(epmem_param_container::page_4k, "4k");
+    page_size->add_mapping(epmem_param_container::page_8k, "8k");
+    page_size->add_mapping(epmem_param_container::page_16k, "16k");
+    page_size->add_mapping(epmem_param_container::page_32k, "32k");
+    page_size->add_mapping(epmem_param_container::page_64k, "64k");
     add(page_size);
 
     // cache_size
-    cache_size = new soar_module::integer_param("cache-size", 10000, new soar_module::gt_predicate<int64_t>(1, true), new soar_module::db_predicate<int64_t>(thisAgent));
+    cache_size = new soar_module::integer_param("cache-size", 10000, new soar_module::gt_predicate<int64_t>(1, true), new epmem_db_predicate<int64_t>(thisAgent));
     add(cache_size);
 
     // opt
-    opt = new soar_module::constant_param<soar_module::opt_choices>("optimization", soar_module::opt_speed, new soar_module::db_predicate<soar_module::opt_choices>(thisAgent));
-    opt->add_mapping(soar_module::opt_safety, "safety");
-    opt->add_mapping(soar_module::opt_speed, "performance");
+    opt = new soar_module::constant_param<opt_choices>("optimization", epmem_param_container::opt_speed, new epmem_db_predicate<opt_choices>(thisAgent));
+    opt->add_mapping(epmem_param_container::opt_safety, "safety");
+    opt->add_mapping(epmem_param_container::opt_speed, "performance");
     add(opt);
 
 
@@ -192,6 +192,32 @@ epmem_param_container::epmem_param_container(agent* new_agent): soar_module::par
     merge->add_mapping(merge_add, "add");
     add(merge);
 }
+
+//
+
+epmem_path_param::epmem_path_param(const char* new_name, const char* new_value, soar_module::predicate<const char*>* new_val_pred, soar_module::predicate<const char*>* new_prot_pred, agent* new_agent): soar_module::string_param(new_name, new_value, new_val_pred, new_prot_pred), thisAgent(new_agent) {}
+
+void epmem_path_param::set_value(const char* new_value)
+{
+    /* Removed automatic switching to disk database mode when first setting path.  Now
+       that switching databases and database modes on the fly seems to work, there's
+       no need to attach special significance to the first time the path is set.
+       MMA 2013 */
+
+    value->assign(new_value);
+}
+
+//
+
+template <typename T>
+epmem_db_predicate<T>::epmem_db_predicate(agent* new_agent): soar_module::agent_predicate<T>(new_agent) {}
+
+template <typename T>
+bool epmem_db_predicate<T>::operator()(T /*val*/)
+{
+    return (this->thisAgent->epmem_db->get_status() == soar_module::connected);
+}
+
 
 /***************************************************************************
  * Function     : epmem_enabled
@@ -529,7 +555,7 @@ epmem_hash_id epmem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fai
 epmem_stat_container::epmem_stat_container(agent* new_agent): soar_module::stat_container(new_agent)
 {
     // time
-    time = new epmem_time_id_stat("time", 0, new soar_module::db_predicate<epmem_time_id>(thisAgent));
+    time = new epmem_time_id_stat("time", 0, new epmem_db_predicate<epmem_time_id>(thisAgent));
     add(time);
 
     // db-lib-version
@@ -585,39 +611,39 @@ epmem_stat_container::epmem_stat_container(agent* new_agent): soar_module::stat_
     add(qry_lits);
 
     // next-id
-    next_id = new epmem_node_id_stat("next-id", 0, new soar_module::db_predicate<epmem_node_id>(thisAgent));
+    next_id = new epmem_node_id_stat("next-id", 0, new epmem_db_predicate<epmem_node_id>(thisAgent));
     add(next_id);
 
     // rit-offset-1
-    rit_offset_1 = new soar_module::integer_stat("rit-offset-1", 0, new soar_module::db_predicate<int64_t>(thisAgent));
+    rit_offset_1 = new soar_module::integer_stat("rit-offset-1", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_offset_1);
 
     // rit-left-root-1
-    rit_left_root_1 = new soar_module::integer_stat("rit-left-root-1", 0, new soar_module::db_predicate<int64_t>(thisAgent));
+    rit_left_root_1 = new soar_module::integer_stat("rit-left-root-1", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_left_root_1);
 
     // rit-right-root-1
-    rit_right_root_1 = new soar_module::integer_stat("rit-right-root-1", 0, new soar_module::db_predicate<int64_t>(thisAgent));
+    rit_right_root_1 = new soar_module::integer_stat("rit-right-root-1", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_right_root_1);
 
     // rit-min-step-1
-    rit_min_step_1 = new soar_module::integer_stat("rit-min-step-1", 0, new soar_module::db_predicate<int64_t>(thisAgent));
+    rit_min_step_1 = new soar_module::integer_stat("rit-min-step-1", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_min_step_1);
 
     // rit-offset-2
-    rit_offset_2 = new soar_module::integer_stat("rit-offset-2", 0, new soar_module::db_predicate<int64_t>(thisAgent));
+    rit_offset_2 = new soar_module::integer_stat("rit-offset-2", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_offset_2);
 
     // rit-left-root-2
-    rit_left_root_2 = new soar_module::integer_stat("rit-left-root-2", 0, new soar_module::db_predicate<int64_t>(thisAgent));
+    rit_left_root_2 = new soar_module::integer_stat("rit-left-root-2", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_left_root_2);
 
     // rit-right-root-2
-    rit_right_root_2 = new soar_module::integer_stat("rit-right-root-2", 0, new soar_module::db_predicate<int64_t>(thisAgent));
+    rit_right_root_2 = new soar_module::integer_stat("rit-right-root-2", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_right_root_2);
 
     // rit-min-step-2
-    rit_min_step_2 = new soar_module::integer_stat("rit-min-step-2", 0, new soar_module::db_predicate<int64_t>(thisAgent));
+    rit_min_step_2 = new soar_module::integer_stat("rit-min-step-2", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_min_step_2);
 
 
@@ -847,7 +873,7 @@ epmem_common_statement_container::epmem_common_statement_container(agent* new_ag
     soar_module::sqlite_database* new_db = new_agent->epmem_db;
 
     // Drop tables in the database if append setting is off.  (Tried DELETE before, but it had problems.)
-    if ((new_agent->epmem_params->database->get_value() != soar_module::memory) &&
+    if ((new_agent->epmem_params->database->get_value() != epmem_param_container::memory) &&
             (new_agent->epmem_params->append_db->get_value() == off))
     {
         drop_graph_tables();
@@ -1829,7 +1855,7 @@ void epmem_reinit(agent* thisAgent)
 {
     if (thisAgent->epmem_db->get_status() == soar_module::connected)
     {
-        if ((thisAgent->epmem_params->database->get_value() == soar_module::memory))
+        if ((thisAgent->epmem_params->database->get_value() == epmem_param_container::memory))
         {
             if (thisAgent->epmem_params->append_db->get_value() == off)
             {
@@ -1905,7 +1931,7 @@ void epmem_switch_db_mode(agent* thisAgent, std::string& buf, bool readonly)
 {
     print_sysparam_trace(thisAgent, 0, buf.c_str());
     thisAgent->epmem_db->disconnect();
-    thisAgent->epmem_params->database->set_value(soar_module::memory);
+    thisAgent->epmem_params->database->set_value(epmem_param_container::memory);
     epmem_init_db(thisAgent, readonly);
 }
 
@@ -1951,7 +1977,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
     ////////////////////////////////////////////////////////////////////////////
 
     const char* db_path;
-    if (thisAgent->epmem_params->database->get_value() == soar_module::memory)
+    if (thisAgent->epmem_params->database->get_value() == epmem_param_container::memory)
     {
         db_path = ":memory:";
         print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Initializing episodic memory database in cpu memory.\n");
@@ -2055,31 +2081,31 @@ void epmem_init_db(agent* thisAgent, bool readonly)
             {
                 switch (thisAgent->epmem_params->page_size->get_value())
                 {
-                    case (soar_module::page_1k):
+                    case (epmem_param_container::page_1k):
                         thisAgent->epmem_db->sql_execute("PRAGMA page_size = 1024");
                         break;
 
-                    case (soar_module::page_2k):
+                    case (epmem_param_container::page_2k):
                         thisAgent->epmem_db->sql_execute("PRAGMA page_size = 2048");
                         break;
 
-                    case (soar_module::page_4k):
+                    case (epmem_param_container::page_4k):
                         thisAgent->epmem_db->sql_execute("PRAGMA page_size = 4096");
                         break;
 
-                    case (soar_module::page_8k):
+                    case (epmem_param_container::page_8k):
                         thisAgent->epmem_db->sql_execute("PRAGMA page_size = 8192");
                         break;
 
-                    case (soar_module::page_16k):
+                    case (epmem_param_container::page_16k):
                         thisAgent->epmem_db->sql_execute("PRAGMA page_size = 16384");
                         break;
 
-                    case (soar_module::page_32k):
+                    case (epmem_param_container::page_32k):
                         thisAgent->epmem_db->sql_execute("PRAGMA page_size = 32768");
                         break;
 
-                    case (soar_module::page_64k):
+                    case (epmem_param_container::page_64k):
                         thisAgent->epmem_db->sql_execute("PRAGMA page_size = 65536");
                         break;
                 }
@@ -2097,7 +2123,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
             }
 
             // optimization
-            if (thisAgent->epmem_params->opt->get_value() == soar_module::opt_speed)
+            if (thisAgent->epmem_params->opt->get_value() == epmem_param_container::opt_speed)
             {
                 // synchronous - don't wait for writes to complete (can corrupt the db in case unexpected crash during transaction)
                 thisAgent->epmem_db->sql_execute("PRAGMA synchronous = OFF");
@@ -2480,16 +2506,16 @@ inline void _epmem_store_level(agent* thisAgent,
     bool good_recurse = false;
 
 #ifdef DEBUG_EPMEM_WME_ADD
-    fprintf(stderr, "==================================================\nEPWME| _epmem_store_level called for parent_id %d\n==================================================\n", (unsigned int) parent_id);
+    fprintf(stderr, "==================================================\nDEBUG _epmem_store_level called for parent_id %d\n==================================================\n", (unsigned int) parent_id);
 #endif
 
     // find WME ID for WMEs whose value is an identifier and has a known epmem id (prevents ordering issues with unknown children)
     for (w_p = w_b; w_p != w_e; w_p++)
     {
-#ifdef DEBUG_EPMEM_WME_ADD
-        fprintf(stderr, "EPWME| processing reservation for wme (types: %d %d %d)\n",
-                (*w_p)->id->symbol_type, (*w_p)->attr->symbol_type, (*w_p)->value->symbol_type);
-#endif
+//      #ifdef DEBUG_EPMEM_WME_ADD
+//      fprintf(stderr, "DEBUG epmem.2132: _epmem_store_level processing wme (types: %d %d %d)\n",
+//              (*w_p)->id->symbol_type,  (*w_p)->attr->var->symbol_type,  (*w_p)->value->symbol_type);
+//      #endif
         // skip over WMEs already in the system
         if (((*w_p)->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->epmem_valid == thisAgent->epmem_validation))
         {
@@ -2510,7 +2536,7 @@ inline void _epmem_store_level(agent* thisAgent,
             fprintf(stderr, "--------------------------------------------\nReserving WME: %d ^%s %s\n",
                     (unsigned int) parent_id, symbol_to_string(thisAgent, (*w_p)->attr, true, NIL, 0), symbol_to_string(thisAgent, (*w_p)->value, true, NIL, 0));
 #endif
-                    
+
             // if still here, create reservation (case 1)
 #ifdef DEBUG_EPMEM_WME_ADD
             fprintf(stderr, "   wme is known.  creating reservation.\n");
@@ -2566,14 +2592,14 @@ inline void _epmem_store_level(agent* thisAgent,
     for (w_p = w_b; w_p != w_e; w_p++)
     {
 #ifdef DEBUG_EPMEM_WME_ADD
-        fprintf(stderr, "--------------------------------------------\nEPWME| Adding WME: %d ^%s %s\n",
-                (unsigned int) parent_id, (*w_p)->attr->to_string(true), (*w_p)->value->to_string(true));
+        fprintf(stderr, "--------------------------------------------\nProcessing WME: %d ^%s %s\n",
+                (unsigned int) parent_id, symbol_to_string(thisAgent, (*w_p)->attr, true, NIL, 0), symbol_to_string(thisAgent, (*w_p)->value, true, NIL, 0));
 #endif
         // skip over WMEs already in the system
         if (((*w_p)->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->epmem_valid == thisAgent->epmem_validation))
         {
 #ifdef DEBUG_EPMEM_WME_ADD
-            fprintf(stderr, "EPWME|   WME already in system with id %d.\n", (unsigned int)(*w_p)->epmem_id);
+            fprintf(stderr, "   WME already in system with id %d.\n", (unsigned int)(*w_p)->epmem_id);
 #endif
             continue;
         }
@@ -2582,7 +2608,7 @@ inline void _epmem_store_level(agent* thisAgent,
         if (thisAgent->epmem_params->exclusions->in_set((*w_p)->attr))
         {
 #ifdef DEBUG_EPMEM_WME_ADD
-            fprintf(stderr, "EPWME|   WME excluded.  Skipping.\n");
+            fprintf(stderr, "   WME excluded.  Skipping.\n");
 #endif
             continue;
         }
@@ -2590,7 +2616,7 @@ inline void _epmem_store_level(agent* thisAgent,
         if ((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         {
 #ifdef DEBUG_EPMEM_WME_ADD
-            fprintf(stderr, "EPWME|   WME value is IDENTIFER.\n");
+            fprintf(stderr, "   WME value is IDENTIFIER.\n");
 #endif
             (*w_p)->epmem_valid = thisAgent->epmem_validation;
             (*w_p)->epmem_id = EPMEM_NODEID_BAD;
@@ -2607,7 +2633,7 @@ inline void _epmem_store_level(agent* thisAgent,
             {
                 // find the lti or add new one
 #ifdef DEBUG_EPMEM_WME_ADD
-                fprintf(stderr, "EPWME|   Value is an LTI  Doing processing we haven't looked at!\n");
+                fprintf(stderr, "   Value is an LTI  Doing processing we haven't looked at!\n");
 #endif
                 if (!value_known_apriori)
                 {
@@ -2635,7 +2661,7 @@ inline void _epmem_store_level(agent* thisAgent,
                         epmem_set_variable(thisAgent, var_next_id, (*w_p)->value->id->epmem_id + 1);
 
 #ifdef DEBUG_EPMEM_WME_ADD
-                        fprintf(stderr, "EPWME|   Adding new n_id and setting wme id to %d for VALUE which is lti %c%d\n", (unsigned int)(*w_p)->value->id->epmem_id, (*w_p)->value->id->name_letter, (unsigned int)(*w_p)->value->id->name_number);
+                        fprintf(stderr, "   Adding new n_id and setting wme id to %d for VALUE which is lti %c%d\n", (unsigned int)(*w_p)->value->id->epmem_id, (*w_p)->value->id->name_letter, (unsigned int)(*w_p)->value->id->name_number);
 #endif
 
                         // Update the node database with the new n_id
@@ -2682,14 +2708,14 @@ inline void _epmem_store_level(agent* thisAgent,
                 if (value_known_apriori)
                 {
 #ifdef DEBUG_EPMEM_WME_ADD
-                    fprintf(stderr, "EPWME|   WME is known.  Looking for reservation.\n");
+                    fprintf(stderr, "   WME is known.  Looking for reservation.\n");
 #endif
                     r_p = id_reservations.find((*w_p));
 
                     if (r_p != id_reservations.end())
                     {
 #ifdef DEBUG_EPMEM_WME_ADD
-                        fprintf(stderr, "EPWME|   Found existing reservation.\n");
+                        fprintf(stderr, "   Found existing reservation.\n");
 #endif
                         // restore reservation info
                         my_hash = r_p->second->my_hash;
@@ -2700,7 +2726,7 @@ inline void _epmem_store_level(agent* thisAgent,
                             (*w_p)->epmem_id = r_p->second->my_id;
                             (*thisAgent->epmem_id_replacement)[(*w_p)->epmem_id ] = my_id_repo2;
 #ifdef DEBUG_EPMEM_WME_ADD
-                            fprintf(stderr, "EPWME|   Assigning id from existing pool: %d\n", (unsigned int)(*w_p)->epmem_id);
+                            fprintf(stderr, "   Assigning id from existing pool: %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
                         }
 
@@ -2712,7 +2738,7 @@ inline void _epmem_store_level(agent* thisAgent,
                     else
                     {
 #ifdef DEBUG_EPMEM_WME_ADD
-                        fprintf(stderr, "EPWME|   No reservation found.  Looking for shared identifier at same level.\n");
+                        fprintf(stderr, "   No reservation found.  Looking for shared identifier at same level.\n");
 #endif
                         // get temporal hash
                         if ((*w_p)->acceptable)
@@ -2738,7 +2764,7 @@ inline void _epmem_store_level(agent* thisAgent,
                                         (*my_id_repo)->erase(pool_p);
                                         (*thisAgent->epmem_id_replacement)[(*w_p)->epmem_id ] = (*my_id_repo);
 #ifdef DEBUG_EPMEM_WME_ADD
-                                        fprintf(stderr, "EPWME|   Assigning id from existing pool: %d\n", (unsigned int)(*w_p)->epmem_id);
+                                        fprintf(stderr, "   Assigning id from existing pool: %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
                                         break;
                                     }
@@ -2748,7 +2774,7 @@ inline void _epmem_store_level(agent* thisAgent,
                         else
                         {
 #ifdef DEBUG_EPMEM_WME_ADD
-                            fprintf(stderr, "EPWME|   No pool.  Creating a new one.\n");
+                            fprintf(stderr, "   No pool.  Creating a new one.\n");
 #endif
                             // add repository
                             (*my_id_repo) = new epmem_id_pool;
@@ -2762,7 +2788,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 else
                 {
 #ifdef DEBUG_EPMEM_WME_ADD
-                    fprintf(stderr, "EPWME|   WME is unknown.  Looking for id in repo pool.\n");
+                    fprintf(stderr, "   WME is unknown.  Looking for id in repo pool.\n");
 #endif
                     // UNKNOWN identifier
                     new_identifiers.insert((*w_p)->value);
@@ -2806,7 +2832,7 @@ inline void _epmem_store_level(agent* thisAgent,
                                     (*thisAgent->epmem_id_replacement)[(*w_p)->epmem_id ] = (*my_id_repo);
 
 #ifdef DEBUG_EPMEM_WME_ADD
-                                    fprintf(stderr, "EPWME|   Assigning id from existing pool %d.\n", (unsigned int)(*w_p)->epmem_id);
+                                    fprintf(stderr, "   Assigning id from existing pool %d.\n", (unsigned int)(*w_p)->epmem_id);
 #endif
                                     break;
                                 }
@@ -2816,7 +2842,7 @@ inline void _epmem_store_level(agent* thisAgent,
                     else
                     {
 #ifdef DEBUG_EPMEM_WME_ADD
-                        fprintf(stderr, "EPWME|   No pool.  Creating a new one.\n");
+                        fprintf(stderr, "   No pool.  Creating a new one.\n");
 #endif
                         // add repository
                         (*my_id_repo) = new epmem_id_pool;
@@ -2831,7 +2857,7 @@ inline void _epmem_store_level(agent* thisAgent,
             if ((*w_p)->epmem_id == EPMEM_NODEID_BAD)
             {
 #ifdef DEBUG_EPMEM_WME_ADD
-                fprintf(stderr, "EPWME|   No success, adding wme to database.\n");
+                fprintf(stderr, "   No success, adding wme to database.");
 #endif
                 // can't use value_known_apriori, since value may have been assigned (lti, id repository via case 3)
                 if (((*w_p)->value->id->epmem_id == EPMEM_NODEID_BAD) || ((*w_p)->value->id->epmem_valid != thisAgent->epmem_validation))
@@ -2843,7 +2869,7 @@ inline void _epmem_store_level(agent* thisAgent,
                     epmem_set_variable(thisAgent, var_next_id, (*w_p)->value->id->epmem_id + 1);
 
 #ifdef DEBUG_EPMEM_WME_ADD
-                    fprintf(stderr, "EPWME|   Adding new n_id and setting wme id for VALUE to %d \n", (unsigned int)(*w_p)->value->id->epmem_id);
+                    fprintf(stderr, "   Adding new n_id and setting wme id for VALUE to %d\n", (unsigned int)(*w_p)->value->id->epmem_id);
 #endif
                     // Update the node database with the new n_id
                     thisAgent->epmem_stmts_graph->add_node->bind_int(1, (*w_p)->value->id->epmem_id);
@@ -2875,7 +2901,7 @@ inline void _epmem_store_level(agent* thisAgent,
 
                 (*w_p)->epmem_id = static_cast<epmem_node_id>(thisAgent->epmem_db->last_insert_rowid());
 #ifdef DEBUG_EPMEM_WME_ADD
-                fprintf(stderr, "EPWME|   Incrementing and setting wme id to %d \n", (unsigned int)(*w_p)->epmem_id);
+                fprintf(stderr, "   Incrementing and setting wme id to %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
                 if (!(*w_p)->value->id->smem_lti)
                 {
@@ -2891,7 +2917,7 @@ inline void _epmem_store_level(agent* thisAgent,
             else
             {
 #ifdef DEBUG_EPMEM_WME_ADD
-                fprintf(stderr, "EPWME|   No success but already has id, so don't remove.\n");
+                fprintf(stderr, "   No success but already has id, so don't remove.\n");
 #endif
                 // definitely don't remove
                 (*thisAgent->epmem_edge_removals)[(*w_p)->epmem_id ] = false;
@@ -2937,14 +2963,14 @@ inline void _epmem_store_level(agent* thisAgent,
         else
         {
 #ifdef DEBUG_EPMEM_WME_ADD
-            fprintf(stderr, "EPWME|   WME value is a CONSTANT.\n");
+            fprintf(stderr, "   WME value is a CONSTANT.\n");
 #endif
 
             // have we seen this node in this database?
             if (((*w_p)->epmem_id == EPMEM_NODEID_BAD) || ((*w_p)->epmem_valid != thisAgent->epmem_validation))
             {
 #ifdef DEBUG_EPMEM_WME_ADD
-                fprintf(stderr, "EPWME|   This is a new wme.\n");
+                fprintf(stderr, "   This is a new wme.\n");
 #endif
 
                 (*w_p)->epmem_id = EPMEM_NODEID_BAD;
@@ -2957,7 +2983,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 {
                     // parent_n_id=? AND attribute_s_id=? AND value_s_id=?
 #ifdef DEBUG_EPMEM_WME_ADD
-                    fprintf(stderr, "EPWME|   Looking for id of a duplicate entry in epmem_wmes_constant.\n");
+                    fprintf(stderr, "   Looking for id of a duplicate entry in epmem_wmes_constant.\n");
 #endif
                     thisAgent->epmem_stmts_graph->find_epmem_wmes_constant->bind_int(1, parent_id);
                     thisAgent->epmem_stmts_graph->find_epmem_wmes_constant->bind_int(2, my_hash);
@@ -2975,8 +3001,8 @@ inline void _epmem_store_level(agent* thisAgent,
                 if ((*w_p)->epmem_id == EPMEM_NODEID_BAD)
                 {
 #ifdef DEBUG_EPMEM_WME_ADD
-                    fprintf(stderr, "EPWME|   No duplicate wme found in epmem_wmes_constant.  Adding wme to table!\n");
-                    fprintf(stderr, "EPWME|   Performing database insertion: %d %d %d\n",
+                    fprintf(stderr, "   No duplicate wme found in epmem_wmes_constant.  Adding wme to table!!!!\n");
+                    fprintf(stderr, "   Performing database insertion: %d %d %d\n",
                             (unsigned int) parent_id, (unsigned int) my_hash, (unsigned int) my_hash2);
 #endif
                     // insert (parent_n_id, attribute_s_id, value_s_id)
@@ -2987,7 +3013,7 @@ inline void _epmem_store_level(agent* thisAgent,
 
                     (*w_p)->epmem_id = (epmem_node_id) thisAgent->epmem_db->last_insert_rowid();
 #ifdef DEBUG_EPMEM_WME_ADD
-                    fprintf(stderr, "EPWME|   Setting wme id from last row to  %d \n", (unsigned int)(*w_p)->epmem_id);
+                    fprintf(stderr, "   Setting wme id from last row to %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
                     // new nodes definitely start
                     epmem_node.push((*w_p)->epmem_id);
@@ -2997,8 +3023,8 @@ inline void _epmem_store_level(agent* thisAgent,
                 else
                 {
 #ifdef DEBUG_EPMEM_WME_ADD
-                    fprintf(stderr, "EPWME|   Node found in database, definitely don't remove.\n");
-                    fprintf(stderr, "EPWME|   Setting wme id from existing node to  %d \n", (unsigned int)(*w_p)->epmem_id);
+                    fprintf(stderr, "   Node found in database, definitely don't remove.\n");
+                    fprintf(stderr, "   Setting wme id from existing node to %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
                     // definitely don't remove
                     (*thisAgent->epmem_node_removals)[(*w_p)->epmem_id ] = false;
@@ -3033,7 +3059,7 @@ void epmem_new_episode(agent* thisAgent)
     epmem_time_id time_counter = thisAgent->epmem_stats->time->get_value();
 
     // provide trace output
-    print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM,  "EpMem| NEW EPISODE: %ld\n", static_cast<long int>(time_counter));
+    print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM,  "New episodic memory recorded for time %ld.\n", static_cast<long int>(time_counter));
 
     // perform storage
     {
@@ -5015,7 +5041,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                     epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
                 }
 
-                print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "EpMem| Considering episode (time, cardinality, score) (%lld, %ld, %f)\n", static_cast<long long int>(current_episode), current_cardinality, current_score);
+                print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Considering episode (time, cardinality, score) (%lld, %ld, %f)\n", static_cast<long long int>(current_episode), current_cardinality, current_score);
 
                 // if
                 // * the current time is still before any new intervals
