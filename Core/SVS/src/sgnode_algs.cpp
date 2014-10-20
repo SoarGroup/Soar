@@ -189,6 +189,16 @@ bool convex_intersects(const sgnode* a, const sgnode* b)
     return false;
 }
 
+bool convex_intersects(const sgnode* n, const std::vector<const sgnode*>& intersectors){
+	std::vector<const sgnode*>::const_iterator i;
+	for(i = intersectors.begin(); i != intersectors.end(); i++){
+		if(convex_intersects(n, *i)){
+			return true;
+		}
+	}
+	return false;
+}
+
 // Returns true if the bounding box of node a
 //   intersects the bounding box of node b
 bool bbox_intersects(const sgnode* a, const sgnode* b)
@@ -403,3 +413,161 @@ double convex_occlusion(const sgnode* a, const sgnode* eye, const std::vector<co
 	return convex_occlusion(view_lines, occluders);
 }
 
+///////////////// adjusting nodes ///////////////
+// Used to make sure bounding boxes dont overlap
+vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d2, int d3){
+	vec3 scale = n->get_trans('s');
+	vec3 tempScale = scale;
+	//cout << "Adjusting on dims: " << d1 << ", " << d2 << ", " << d3 << endl;
+
+	// Simple binary search, finds it within 1%
+	double min = 0.001, max = 1.0;
+	for(int i = 0; i < 8; i++){
+		double s = (max + min)/2;
+		tempScale[d1] = scale[d1] * s;
+		tempScale[d2] = scale[d2] * s;
+		tempScale[d3] = scale[d3] * s;
+		n->set_trans('s', tempScale);
+		//cout << "  Test " << s << ": ";
+		if(convex_intersects(n, targets)){
+			//cout << "I" << endl;
+			max = s;
+		} else {
+			//cout << "N" << endl;
+			min = s;
+		}
+	}
+
+	tempScale[d1] = scale[d1] * min * .98;
+	tempScale[d2] = scale[d2] * min * .98;
+	tempScale[d3] = scale[d3] * min * .98;
+	//cout << "Final Result: " << min << endl;
+	return tempScale;
+}
+
+vec3 adjust_single_dim(sgnode* n, std::vector<const sgnode*> targets, int dim){
+	return adjust_on_dims(n, targets, dim, dim, dim);
+}
+
+vec3 adjust_two_dims(sgnode* n, std::vector<const sgnode*> targets, int dim){
+	return adjust_on_dims(n, targets, (dim+1)%3, (dim+2)%3, (dim+2)%3);
+}
+
+vec3 adjust_all_dims(sgnode* n, std::vector<const sgnode*> targets){
+	return adjust_on_dims(n, targets, 0, 1, 2);
+}
+
+void adjust_sgnode_size(sgnode* n, std::vector<const sgnode*> targets){
+	std::vector<const sgnode*> intersectors;
+	std::vector<const sgnode*>::iterator i;
+	// Find all the nodes that actually intersect the original sized object
+	//cout << "Intersectors: " << endl;
+	for(i = targets.begin(); i != targets.end(); i++){
+		if(*i == n){
+			continue;
+		}
+		if(!convex_intersects(n, *i)){
+			continue;
+		}
+		//cout << "  " << (*i)->get_name() << endl;
+		intersectors.push_back(*i);
+	}
+	if(intersectors.size() == 0){
+		//cout << "No Intersectors" << endl;
+		// Don't need to adjust at all
+		return;
+	}
+	//cout << "Generating centroid" << endl;
+
+	// Check to see if the centroid is already inside another object
+	ptlist centroid_pt;
+	centroid_pt.push_back(n->get_centroid());
+	convex_node* centroid = new convex_node("temp-centroid", centroid_pt);
+	if(convex_intersects(centroid, intersectors)){
+		//cout << "Centroid is intersected" << endl;
+		// Something is very wrong, the centroid is inside another object, just quit
+		delete centroid;
+		return;
+	}
+	delete centroid;
+
+	//cout << "Copying points" << endl;
+
+	// Now do the actual adjustment, on a copy of the original node
+	// Copy all the points from this node
+	sgnode* copied_node = n->clone();
+
+	vec3 scale = n->get_trans('s');
+	vec3 tempScale = scale;
+	vec3 newScale = scale;
+
+	//cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
+
+	int freeDim = -1;
+	// Test each dimension to see if just 1 needs to be adjusted
+	for(int d = 0; d < 3; d++){
+		tempScale[d] = scale[d] * .001;
+		copied_node->set_trans('s', tempScale);
+		if(!convex_intersects(copied_node, intersectors)){
+			if(freeDim == -1){
+				freeDim = d;
+			} else {
+				freeDim = -1;
+				break;
+			}
+		}
+		tempScale = scale;
+	}
+	tempScale = scale;
+	copied_node->set_trans('s', scale);
+	//cout << "Free Dim: " << freeDim << endl;
+	if(freeDim != -1){
+		newScale = adjust_single_dim(copied_node, intersectors, freeDim);
+	} else {
+		for(int d = 0; d < 3; d++){
+			int d1 = (d+1)%3;
+			int d2 = (d+2)%3;
+			tempScale[d1] = scale[d1] * .001;
+			tempScale[d2] = scale[d2] * .001;
+			copied_node->set_trans('s', tempScale);
+			if(!convex_intersects(copied_node, intersectors)){
+				if(freeDim == -1){
+					freeDim = d;
+				} else {
+					freeDim = -1;
+					break;
+				}
+			}
+			tempScale = scale;
+		}
+		tempScale = scale;
+		copied_node->set_trans('s', scale);
+		//cout << "Free Dim: " << freeDim << endl;
+		if(freeDim != -1){
+			newScale = adjust_two_dims(copied_node, intersectors, freeDim);
+		} else {
+			newScale = adjust_all_dims(copied_node, intersectors);
+		}
+	}
+	//cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
+	//cout << "New Scale: " << newScale[0] << ", " << newScale[1] << ", " << newScale[2] << endl;
+	n->set_trans('s', newScale);
+	delete copied_node;
+}
+
+void adjust_sgnode_size(sgnode* n, scene* scn){
+	std::vector<const sgnode*> targets;
+	std::vector<const sgnode*> all;
+	scn->get_all_nodes(all);
+	for(std::vector<const sgnode*>::const_iterator i = all.begin(); i != all.end(); i++){
+		if(*i == n){
+			continue;
+		}
+		std::string tag_name = "object-source";
+		std::string tag_val;
+		if((*i)->get_tag(tag_name, tag_val) && tag_val == "belief"){
+			targets.push_back(*i);
+		}
+	}
+	adjust_sgnode_size(n, targets);
+}

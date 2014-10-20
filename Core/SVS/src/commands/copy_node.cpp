@@ -23,6 +23,7 @@
 #include "filter.h"
 #include "svs.h"
 #include "scene.h"
+#include "sgnode_algs.h"
 #include "soar_interface.h"
 #include "symtab.h"
 #include "command_table.h"
@@ -144,6 +145,15 @@ class copy_node_command : public command
             {
                 copy_tags = true;
             }
+
+
+						// adjust << true false >>
+						adjust = false;
+						string adjust_str;
+						if(si->get_const_attr(root, "adjust", adjust_str) &&
+								adjust_str == "true"){
+							adjust = true;
+						}
             
             return true;
         }
@@ -184,6 +194,10 @@ class copy_node_command : public command
                     dest_node->set_tag(tag_it->first, tag_it->second);
                 }
             }
+
+						if(adjust){
+							adjust_sgnode_size(dest_node, scn);
+						}
             
             set_status("success");
             return true;
@@ -200,6 +214,7 @@ class copy_node_command : public command
         string node_id;
         map<char, vec3> transforms;
         bool copy_tags;
+				bool adjust;
 };
 
 command* _make_copy_node_command_(svs_state* state, Symbol* root)

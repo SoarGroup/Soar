@@ -24,6 +24,7 @@
 #include "soar_interface.h"
 #include "symtab.h"
 #include "command_table.h"
+#include "sgnode_algs.h"
 
 using namespace std;
 
@@ -132,6 +133,14 @@ class copy_transform_command : public command
 						{
 							copy_scl = false;
 						}
+
+						// adjust << true false >>
+						adjust = false;
+						string adjust_str;
+						if(si->get_const_attr(root, "adjust", adjust_str) &&
+								(adjust_str == "yes" || adjust_str == "true")){
+							adjust = true;
+						}
             
             return true;
         }
@@ -150,6 +159,10 @@ class copy_transform_command : public command
 						{
 							dest_node->set_trans('s', source_node->get_trans('s'));
 						}
+						if(adjust)
+						{
+							adjust_sgnode_size(dest_node, scn);
+						}
             
             set_status("success");
             return true;
@@ -166,6 +179,7 @@ class copy_transform_command : public command
 				bool copy_pos;
 				bool copy_rot;
 				bool copy_scl;
+				bool adjust;
 };
 
 command* _make_copy_transform_command_(svs_state* state, Symbol* root)
