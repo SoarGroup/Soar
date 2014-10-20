@@ -32,6 +32,7 @@ typedef cons list;
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 typedef signed short goal_stack_level;
+typedef uint64_t tc_number;
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
 /* identity_info is a struct used to hold the original symbol and grounding

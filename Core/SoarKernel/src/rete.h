@@ -236,7 +236,7 @@ typedef struct p_node_data_struct
     struct ms_change_struct* tentative_retractions;
 } p_node_data;
 
-#define O_LIST 0     /* moved here from soarkernel.h.  only used in rete.cpp */
+#define O_LIST 0
 #define I_LIST 1     /*   values for prod->OPERAND_which_assert_list */
 
 /* --- data for all except positive nodes --- */
@@ -250,7 +250,7 @@ typedef struct non_pos_node_data_struct
 typedef struct rete_node_struct
 {
     byte node_type;                  /* tells what kind of node this is */
-    
+
     /* -- used only on hashed nodes -- */
     /* field_num: 0=id, 1=attr, 2=value */
     byte left_hash_loc_field_num;
@@ -258,11 +258,11 @@ typedef struct rete_node_struct
     rete_node_level left_hash_loc_levels_up;
     /* node_id: used for hash function */
     uint32_t node_id;
-    
+
 #ifdef SHARING_FACTORS
     uint64_t sharing_factor;
 #endif
-    
+
     struct rete_node_struct* parent;       /* points to parent node */
     struct rete_node_struct* first_child;  /* used for dll of all children, */
     struct rete_node_struct* next_sibling; /*   regardless of unlinking status */

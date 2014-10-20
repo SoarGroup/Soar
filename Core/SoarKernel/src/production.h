@@ -63,6 +63,7 @@
 
 typedef char* rhs_value;
 typedef unsigned char byte;
+typedef uint64_t tc_number;
 typedef struct action_struct action;
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;

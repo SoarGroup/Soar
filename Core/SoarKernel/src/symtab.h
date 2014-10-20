@@ -56,6 +56,7 @@ typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 typedef uint64_t smem_lti_id;
 typedef uint64_t smem_hash_id;
+typedef uint64_t tc_number;
 
 /* -- Forward declarations needed for symbol base struct -- */
 struct floatSymbol;

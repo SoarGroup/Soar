@@ -34,17 +34,17 @@ typedef struct condition_struct condition;
 typedef struct cons_struct cons;
 typedef cons list;
 typedef struct symbol_struct Symbol;
+typedef unsigned short rete_node_level;
+typedef uint64_t tc_number;
 
+typedef char* rhs_value;
 typedef struct rhs_struct
 {
     Symbol* referent;
     Symbol* original_rhs_variable;
     uint64_t g_id;
 } rhs_info;
-
 typedef rhs_info* rhs_symbol;
-typedef char* rhs_value;
-typedef unsigned short rete_node_level;
 
 /* -------------------------------------------------------------------
                              RHS Actions
