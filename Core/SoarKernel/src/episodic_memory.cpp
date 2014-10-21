@@ -501,7 +501,7 @@ inline void epmem_reverse_hash_print(agent* thisAgent, epmem_hash_id s_id_lookup
 
 ************************************************************************** */
 
-epmem_hash_id epmem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fail = true)
+epmem_hash_id epmem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fail)
 {
     epmem_hash_id return_val = NIL;
 
@@ -5907,14 +5907,16 @@ void epmem_respond_to_cmd(agent* thisAgent)
     bool new_cue;
 
     bool do_wm_phase = false;
+    dprint(DT_EPMEM_CMD, "===== Starting epmem_respond_to_cmd =====\n");
 
     while (state != NULL)
     {
+        dprint(DT_EPMEM_CMD, "=== Processing state %s\n", state->to_string());
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->epmem_timers->api->start();
         ////////////////////////////////////////////////////////////////////////////
-
         // make sure this state has had some sort of change to the cmd
+        dprint(DT_EPMEM_CMD, "--- Checking for a change to a command...\n");
         new_cue = false;
         wme_count = 0;
         cmds = NULL;
@@ -5931,6 +5933,8 @@ void epmem_respond_to_cmd(agent* thisAgent)
                 // get state
                 parent_sym = syms.front();
                 syms.pop();
+
+                dprint(DT_EPMEM_CMD, "--- ...checking sym.%s\n", parent_sym->to_string());
 
                 // get children of the current identifier
                 wmes = epmem_get_augs_of_id(parent_sym, tc);
@@ -5983,6 +5987,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
         // and there is something on the cue
         if (new_cue && wme_count)
         {
+            dprint(DT_EPMEM_CMD, "--- Processing new epmem command...\n");
             _epmem_respond_to_cmd_parse(thisAgent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes);
 
             ////////////////////////////////////////////////////////////////////////////
@@ -5995,9 +6000,11 @@ void epmem_respond_to_cmd(agent* thisAgent)
             // process command
             if (good_cue)
             {
+                dprint(DT_EPMEM_CMD, "--- ...good cue.\n");
                 // retrieve
                 if (path == 1)
                 {
+                    dprint(DT_EPMEM_CMD, "--- ...retrieve command.  Installing memory.\n");
                     epmem_install_memory(thisAgent, state, retrieve, meta_wmes, retrieval_wmes);
 
                     // add one to the ncbr stat
@@ -6008,6 +6015,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
                 {
                     if (next)
                     {
+                        dprint(DT_EPMEM_CMD, "--- ...next command.  Installing memory.\n");
                         epmem_install_memory(thisAgent, state, epmem_next_episode(thisAgent, state->id->epmem_info->last_memory), meta_wmes, retrieval_wmes);
 
                         // add one to the next stat
@@ -6015,6 +6023,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
                     }
                     else
                     {
+                        dprint(DT_EPMEM_CMD, "--- ...previous command.  Installing memory.\n");
                         epmem_install_memory(thisAgent, state, epmem_previous_episode(thisAgent, state->id->epmem_info->last_memory), meta_wmes, retrieval_wmes);
 
                         // add one to the prev stat
@@ -6023,16 +6032,19 @@ void epmem_respond_to_cmd(agent* thisAgent)
 
                     if (state->id->epmem_info->last_memory == EPMEM_MEMID_NONE)
                     {
+                        dprint(DT_EPMEM_CMD, "--- ...adding failure result wmes.\n");
                         epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_failure, ((next) ? (next) : (previous)));
                     }
                     else
                     {
+                        dprint(DT_EPMEM_CMD, "--- ...adding success result wmes.\n");
                         epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_success, ((next) ? (next) : (previous)));
                     }
                 }
                 // query
                 else if (path == 3)
                 {
+                    dprint(DT_EPMEM_CMD, "--- ...query command.  Processing.\n");
                     epmem_process_query(thisAgent, state, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes);
 
                     // add one to the cbr stat
@@ -6041,19 +6053,23 @@ void epmem_respond_to_cmd(agent* thisAgent)
             }
             else
             {
+                dprint(DT_EPMEM_CMD, "--- ...adding bad command result wmes.\n");
                 epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_status, thisAgent->epmem_sym_bad_cmd);
             }
 
             // clear prohibit list
+            dprint(DT_EPMEM_CMD, "--- ...clearing prohibit list.\n");
             prohibit.clear();
 
             if (!retrieval_wmes.empty() || !meta_wmes.empty())
             {
+                dprint(DT_EPMEM_CMD, "--- ...adding retrieved and architectural wmes.\n");
                 // process preference assertion en masse
                 epmem_process_buffered_wmes(thisAgent, state, cue_wmes, meta_wmes, retrieval_wmes);
 
                 // clear cache
                 {
+                    dprint(DT_EPMEM_CMD, "--- ...clearing buffer cache.\n");
                     soar_module::symbol_triple_list::iterator mw_it;
 
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
@@ -6083,6 +6099,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
 
             // clear cue wmes
             cue_wmes.clear();
+            dprint(DT_EPMEM_CMD, "--- ...done processing epmem command.\n");
         }
         else
         {
@@ -6097,21 +6114,27 @@ void epmem_respond_to_cmd(agent* thisAgent)
             delete cmds;
         }
 
+        dprint(DT_EPMEM_CMD, "=== Done processing state %s.  Proceeding to next goal up.\n", state->to_string());
+
         state = state->id->higher_goal;
     }
 
+    dprint(DT_EPMEM_CMD, "=== Checking if we need to do working memory phase...\n");
     if (do_wm_phase)
     {
+        dprint(DT_EPMEM_CMD, "=== ...doing working memory phase.\n");
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->epmem_timers->wm_phase->start();
         ////////////////////////////////////////////////////////////////////////////
 
         do_working_memory_phase(thisAgent);
 
+        dprint(DT_EPMEM_CMD, "=== ...finished working memory phase.\n");
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->epmem_timers->wm_phase->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
+    dprint(DT_EPMEM_CMD, "===== Done excuting epmem_respond_to_cmd =====\n");
 }
 
 /***************************************************************************

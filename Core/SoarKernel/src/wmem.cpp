@@ -20,7 +20,6 @@
 #include "wmem.h"
 #include "kernel.h"
 #include "agent.h"
-
 #include "symtab.h"
 #include "decide.h"
 #include "io_soar.h"
@@ -32,6 +31,7 @@
 #include "wma.h"
 #include "episodic_memory.h"
 #include "variablization_manager.h"
+#include "debug.h"
 
 using namespace soar_TraceNames;
 
@@ -79,7 +79,7 @@ void reset_wme_timetags(agent* thisAgent)
 wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable)
 {
     wme* w;
-    
+
     thisAgent->num_existing_wmes++;
     allocate_with_pool(thisAgent, &thisAgent->wme_pool, &w);
     w->id = id;
@@ -96,27 +96,27 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->grounds_tc = 0;
     w->potentials_tc = 0;
     w->locals_tc = 0;
-    
+
     w->next = NIL;
     w->prev = NIL;
     w->rete_next = NIL;
     w->rete_prev = NIL;
-    
+
     /* When we first create a WME, it had no gds value.
        Do this for ALL wmes, regardless of the operand mode, so that no undefined pointers
        are floating around. */
     w->gds = NIL;
     w->gds_prev = NIL;
     w->gds_next = NIL;
-    
+
     w->wma_decay_el = NIL;
     w->wma_tc_value = 0;
-    
+
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
-    
+
     w->ground_id_list = NIL;
-    
+
     return w;
 }
 
@@ -127,7 +127,7 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
     assert(((!w->id->is_identifier()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
            ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
            ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
-           
+
     push(thisAgent, w, thisAgent->wmes_to_add);
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
@@ -142,7 +142,7 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
 void remove_wme_from_wm(agent* thisAgent, wme* w)
 {
     push(thisAgent, w, thisAgent->wmes_to_remove);
-    
+
     if (w->value->is_identifier())
     {
         post_link_removal(thisAgent, w->id, w->value);
@@ -152,7 +152,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
             w->value->id->isa_operator--;
         }
     }
-    
+
     /* REW: begin 09.15.96 */
     /* When we remove a WME, we always have to determine if it's on a GDS, and, if
     so, after removing the WME, if there are no longer any WMEs on the GDS,
@@ -161,7 +161,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
     {
         fast_remove_from_dll(w->gds->wmes_in_gds, w, wme, gds_next, gds_prev);
         /* printf("\nRemoving WME on some GDS"); */
-        
+
         if (!w->gds->wmes_in_gds)
         {
             if (w->gds->goal)
@@ -178,18 +178,18 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 void remove_wme_list_from_wm(agent* thisAgent, wme* w, bool updateWmeMap)
 {
     wme* next_w;
-    
+
     while (w)
     {
         next_w = w->next;
-        
+
         if (updateWmeMap)
         {
             soar_invoke_callbacks(thisAgent, INPUT_WME_GARBAGE_COLLECTED_CALLBACK, static_cast< soar_call_data >(w));
             //remove_wme_from_wmeMap (thisAgent, w);
         }
         remove_wme_from_wm(thisAgent, w);
-        
+
         w = next_w;
     }
 }
@@ -201,40 +201,53 @@ void do_buffered_wm_changes(agent* thisAgent)
     /*
     void filtered_print_wme_add(wme *w), filtered_print_wme_remove(wme *w);
     */
-    
+
+    dprint(DT_EPMEM_CMD, "Doing buffered WM changes...\n");
+
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     soar_timer local_timer;
     local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
 #endif
 #endif
-    
+
     /* --- if no wme changes are buffered, do nothing --- */
     if (!thisAgent->wmes_to_add && !thisAgent->wmes_to_remove)
     {
+        dprint(DT_EPMEM_CMD, "...nothing to do.\n");
         return;
     }
-    
+
     /* --- call output module in case any changes are output link changes --- */
+    dprint(DT_EPMEM_CMD, "...calling output module.\n");
     inform_output_module_of_wm_changes(thisAgent, thisAgent->wmes_to_add,
                                        thisAgent->wmes_to_remove);
-                                       
+
     /* --- invoke callback routine.  wmes_to_add and wmes_to_remove can   --- */
     /* --- be fetched from the agent structure.                           --- */
+    dprint(DT_EPMEM_CMD, "...invoking callbacks.\n");
     soar_invoke_callbacks(thisAgent, WM_CHANGES_CALLBACK, 0);
-    
+
     /* --- stuff wme changes through the rete net --- */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     local_timer.start();
 #endif
 #endif
+    dprint(DT_EPMEM_CMD, "...adding wmes_to_add to rete.\n");
     for (c = thisAgent->wmes_to_add; c != NIL; c = c->rest)
     {
+        dprint(DT_EPMEM_CMD, "...adding ");
+        dprint_wme(DT_EPMEM_CMD, static_cast<wme_struct*>(c->first));
+        dprint_noprefix(DT_EPMEM_CMD, "\n");
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
+    dprint(DT_EPMEM_CMD, "...removing wmes_to_remove from rete.\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
     {
+        dprint(DT_EPMEM_CMD, "...removing ");
+        dprint_wme(DT_EPMEM_CMD, static_cast<wme_struct*>(c->first));
+        dprint_noprefix(DT_EPMEM_CMD, "\n");
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
 #ifndef NO_TIMING_STUFF
@@ -243,6 +256,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     thisAgent->timers_match_cpu_time[thisAgent->current_phase].update(local_timer);
 #endif
 #endif
+    dprint(DT_EPMEM_CMD, "...warn if watching wmes.\n");
     /* --- warn if watching wmes and same wme was added and removed -- */
     if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
     {
@@ -265,8 +279,9 @@ void do_buffered_wm_changes(agent* thisAgent)
             }
         }
     }
-    
-    
+
+
+    dprint(DT_EPMEM_CMD, "...printing trace and cleaning up for additions.\n");
     /* --- do tracing and cleanup stuff --- */
     for (c = thisAgent->wmes_to_add; c != NIL; c = next_c)
     {
@@ -279,11 +294,12 @@ void do_buffered_wm_changes(agent* thisAgent)
              */
             filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
         }
-        
+
         wme_add_ref(w);
         free_cons(thisAgent, c);
         thisAgent->wme_addition_count++;
     }
+    dprint(DT_EPMEM_CMD, "...printing trace and cleaning up for removals.\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = next_c)
     {
         next_c = c->rest;
@@ -295,11 +311,12 @@ void do_buffered_wm_changes(agent* thisAgent)
              */
             filtered_print_wme_remove(thisAgent, w);   /* kjh(CUSP-B2) begin */
         }
-        
+
         wme_remove_ref(thisAgent, w);
         free_cons(thisAgent, c);
         thisAgent->wme_removal_count++;
     }
+    dprint(DT_EPMEM_CMD, "Finished doing buffered WM changes\n");
     thisAgent->wmes_to_add = NIL;
     thisAgent->wmes_to_remove = NIL;
 }
@@ -310,26 +327,26 @@ void deallocate_wme(agent* thisAgent, wme* w)
     print_with_symbols(thisAgent, "\nDeallocate wme: ");
     print_wme(thisAgent, w);
 #endif
-    
+
     if (wma_enabled(thisAgent))
     {
         wma_remove_decay_element(thisAgent, w);
     }
-    
+
     symbol_remove_ref(thisAgent, w->id);
     symbol_remove_ref(thisAgent, w->attr);
     symbol_remove_ref(thisAgent, w->value);
-    
+
     grounding_info* g_next, *g;
-    
+
     /* -- See if we already have ground IDs for this goal level -- */
-    
+
     for (g = w->ground_id_list; g; g = g_next)
     {
         g_next = g->next;
         delete g;
     }
-    
+
     free_with_pool(&thisAgent->wme_pool, w);
     thisAgent->num_existing_wmes--;
 }
@@ -337,7 +354,7 @@ void deallocate_wme(agent* thisAgent, wme* w)
 Symbol* find_name_of_object(agent* thisAgent, Symbol* object)
 {
     slot* s;
-    
+
     if (object->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
         return NIL;
