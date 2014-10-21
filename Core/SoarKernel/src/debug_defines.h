@@ -62,7 +62,7 @@
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_FIX_CONDITIONS              false
 
-#define TRACE_Init_DT_EPMEM_CMD                   false
+#define TRACE_Init_DT_EPMEM_CMD                   true
 
 /* -- Output can be sent to the following listeners: debug database,
  *    XML, print callback, stdout, and/or a file. -- */

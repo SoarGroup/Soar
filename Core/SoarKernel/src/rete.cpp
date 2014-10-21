@@ -5302,7 +5302,7 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
         int levels_up;
         token* t;
 
-        dprint(DT_EPMEM_CMD, "...getting referent.\n");
+//        dprint(DT_EPMEM_CMD, "...getting referent.\n");
         levels_up = node->left_hash_loc_levels_up;
         if (levels_up == 1)
         {
@@ -5321,7 +5321,7 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
     hv = node->node_id ^ referent->hash_id;
 
     /* --- build new left token, add it to the hash table --- */
-    dprint(DT_EPMEM_CMD, "...building left token.\n");
+//    dprint(DT_EPMEM_CMD, "...building left token.\n");
     token_added(node);
     allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
     new_left_token(New, node, tok, w);
@@ -5336,10 +5336,10 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
 
     am = node->b.posneg.alpha_mem_;
 
-    dprint(DT_EPMEM_CMD, "...checking whether to link to right.\n");
+//    dprint(DT_EPMEM_CMD, "...checking whether to link to right.\n");
     if (node_is_right_unlinked(node))
     {
-        dprint(DT_EPMEM_CMD, "...relinking to right.\n");
+//        dprint(DT_EPMEM_CMD, "...relinking to right.\n");
         relink_to_right_mem(node);
         if (am->right_mems == NIL)
         {
@@ -5350,11 +5350,11 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
     }
 
     /* --- look through right memory for matches --- */
-    dprint(DT_EPMEM_CMD, "...looking through right memories for matches.\n");
+//    dprint(DT_EPMEM_CMD, "...looking through right memories for matches.\n");
     right_hv = am->am_id ^ referent->hash_id;
     for (rm = right_ht_bucket(thisAgent, right_hv); rm != NIL; rm = rm->next_in_bucket)
     {
-        dprint(DT_EPMEM_CMD, "...checking match on ");
+//        dprint(DT_EPMEM_CMD, "...checking match on ");
         dprint_wme(DT_EPMEM_CMD, rm->w, false);
         dprint_noprefix(DT_EPMEM_CMD, "\n");
         if (rm->am != am)
@@ -5369,7 +5369,7 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
         failed_a_test = false;
         for (rt = node->b.posneg.other_tests; rt != NIL; rt = rt->next)
         {
-            dprint(DT_EPMEM_CMD, "...against another.\n");
+//            dprint(DT_EPMEM_CMD, "...against another.\n");
 //            dprint_wme(DT_EPMEM_CMD, rm->w, false);
 //            dprint_noprefix(DT_EPMEM_CMD, "\n");
             if (! match_left_and_right(thisAgent, rt, New, rm->w))
@@ -5383,7 +5383,7 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
             continue;
         }
         /* --- match found, so call each child node --- */
-        dprint(DT_EPMEM_CMD, "...Match found.  Calling left_addtion against each child node.\n");
+        dprint(DT_EPMEM_CMD, "...Match found.  Calling mp_node_left_addition against each child node.\n");
         for (child = node->first_child; child != NIL; child = child->next_sibling)
         {
             (*(left_addition_routines[child->node_type]))(thisAgent, child, New, rm->w);
