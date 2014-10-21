@@ -56,6 +56,7 @@ enum TraceMode
     DT_CONSTRAINTS,
     DT_MERGE,
     DT_FIX_CONDITIONS,
+    DT_EPMEM_CMD,
     num_trace_modes
 };
 
