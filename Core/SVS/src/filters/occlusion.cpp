@@ -37,7 +37,7 @@
 
 using namespace std;
 
-typedef map<const filter_params*, const sgnode*> element_map;
+typedef map<const filter_params*, sgnode*> element_map;
 
 
 class occlusion_filter : public typed_filter<double> {
@@ -84,7 +84,7 @@ private:
 			if(!initialize(params)){
 				return false;
 			}
-			const sgnode* b;
+			sgnode* b;
 			if(!get_filter_param(this, params, "b", b)){
 				set_status("expecting parameter b");
 				return false;
@@ -97,7 +97,7 @@ private:
 		for (int i = 0; i < input->num_changed(); ++i)
 		{
 			params = input->get_changed(i);
-			const sgnode* b;
+			sgnode* b;
 			if(!get_filter_param(this, params, "b", b)){
 				set_status("Error getting parameter b");
 				return false;
@@ -128,8 +128,8 @@ private:
 
 	scene* scn;
 
-	const sgnode* a;
-	const sgnode* eye;
+	sgnode* a;
+	sgnode* eye;
 	vector<view_line> view_lines; // Set of lines from eye to vertices of a
 	element_map nodes;  // Set of nodes to check as occluders
 };

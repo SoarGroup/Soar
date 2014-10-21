@@ -33,8 +33,8 @@
 
 using namespace std;
 
-typedef std::map<const sgnode*, double> vol_map;
-typedef std::map<const sgnode*, vec3> pos_map;
+typedef std::map<sgnode*, double> vol_map;
+typedef std::map<sgnode*, vec3> pos_map;
 
 class monitor_volume_filter : public map_filter<double> {
 public:
@@ -44,7 +44,7 @@ public:
 	}
 
 	bool compute(const filter_params *p, double& out) {
-		const sgnode *a;
+		sgnode *a;
 
 		if (!get_filter_param(this, p, "a", a)) {
 			set_status("expecting parameter a");
@@ -79,7 +79,7 @@ public:
 	}
 
 	bool compute(const filter_params *p, double& out) {
-		const sgnode *a;
+		sgnode *a;
 
 		if (!get_filter_param(this, p, "a", a)) {
 			set_status("expecting parameter a");
