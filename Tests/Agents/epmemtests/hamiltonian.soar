@@ -1,6 +1,9 @@
 epmem --set learning on
 epmem --set trigger dc
 epmem --set graph-match-ordering mcv
+# MToDo | Remove verbose command.  Enabled for debugging.
+verbose -e
+
 
 sp {propose*init
     (state <s> ^superstate nil
