@@ -178,6 +178,13 @@ double bbox_volume(const sgnode* a)
     return boxa.get_volume();
 }
 
+// Returns the volume of a node according to the scale transform //
+double scale_volume(const sgnode* a)
+{
+	vec3 scale = a->get_trans('s');
+	return scale[0] * scale[1] * scale[2];
+}
+
 // Returns true if the convex hull of node a 
 //   intersects the convex hull of node b
 bool convex_intersects(const sgnode* a, const sgnode* b)

@@ -15,6 +15,8 @@ double axis_distance(const sgnode* a, const sgnode* b, int axis);
 
 double bbox_volume(const sgnode* a);
 
+double scale_volume(const sgnode* a);
+
 bool convex_intersects(const sgnode* a, const sgnode* b);
 
 bool bbox_intersects(const sgnode* a, const sgnode* b);
