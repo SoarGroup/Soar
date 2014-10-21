@@ -41,16 +41,16 @@ void dprint(TraceMode mode, const char* format, ...)
     {
         return;
     }
-    
+
     va_list args;
     char buf[PRINT_BUFSIZE];
-    
+
     va_start(args, format);
     vsprintf(buf, format, args);
     va_end(args);
-    
+
     dprint_string(mode, buf);
-    
+
 }
 
 void dprint_noprefix(TraceMode mode, const char* format, ...)
@@ -60,14 +60,14 @@ void dprint_noprefix(TraceMode mode, const char* format, ...)
     {
         return;
     }
-    
+
     va_list args;
     char buf[PRINT_BUFSIZE];
-    
+
     va_start(args, format);
     vsprintf(buf, format, args);
     va_end(args);
-    
+
     dprint_string(mode, buf, true);
 }
 
@@ -77,7 +77,7 @@ void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string, c
     {
         return;
     }
-    
+
     if (i->original_var)
     {
         dprint_noprefix(mode, "%s%s", pre_string, i->original_var->to_string());
@@ -86,7 +86,7 @@ void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string, c
     {
         dprint_noprefix(mode, "%s", pre_string);
     }
-    
+
     if (i->grounding_id > 0)
     {
         if (i->original_var)
@@ -104,6 +104,53 @@ void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string, c
     }
 }
 
+void dprint_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity)
+{
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
+    {
+        return;
+    }
+    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    if (!debug_agent)
+    {
+        return;
+    }
+
+    bool lFoundIdentity;
+    if (pOnlyWithIdentity)
+    {
+        grounding_info* g = w->ground_id_list;
+        lFoundIdentity = false;
+        for (; g && !lFoundIdentity; g = g->next)
+        {
+            if ((g->grounding_id[0] > 0) || (g->grounding_id[1] > 0) || (g->grounding_id[2] > 0))
+            {
+                lFoundIdentity = true;
+            }
+        }
+    }
+    if (!pOnlyWithIdentity || (pOnlyWithIdentity && lFoundIdentity))
+    {
+        dprint_noprefix(mode, "(%llu: ", w->timetag);
+        dprint_noprefix(mode, "%s ^%s %s", w->id->to_string(), w->attr->to_string(), w->value->to_string());
+        if (w->acceptable)
+        {
+            dprint_noprefix(mode, " +");
+        }
+        dprint_noprefix(mode, "): [");
+        grounding_info* g = w->ground_id_list;
+        for (; g; g = g->next)
+        {
+            dprint_noprefix(mode, "%hi: g%llu g%llu g%llu", g->level, g->grounding_id[0], g->grounding_id[1], g->grounding_id[2]);
+            if (g->next)
+            {
+                dprint_noprefix(mode, ", ");
+            }
+        }
+        dprint_noprefix(mode, "]");
+    }
+}
+
 void dprint_wmes(TraceMode mode, bool pOnlyWithIdentity)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
@@ -115,7 +162,7 @@ void dprint_wmes(TraceMode mode, bool pOnlyWithIdentity)
     {
         return;
     }
-    
+
     wme* w;
     dprint_noprefix(mode, "--------------------------- WMEs --------------------------\n");
     bool lFoundIdentity;
@@ -163,17 +210,17 @@ void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original,
     {
         return;
     }
-    
+
     cons* c;
     const char* no_type_test_fstring, *type_test_fstring;
-    
-    
+
+
     if (!t)
     {
         dprint_noprefix(mode, "%sNIL%s", pre_string, post_string);
         return;
     }
-    
+
     if (t->type == CONJUNCTIVE_TEST)
     {
         dprint_noprefix(mode, "%s{ ", pre_string);
@@ -184,7 +231,7 @@ void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original,
         dprint_noprefix(mode, " }%s", post_string);
         return;
     }
-    
+
     if (print_actual)
     {
         no_type_test_fstring = "%s%s";
@@ -215,7 +262,7 @@ void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original,
             return;
         }
     }
-    
+
     if (print_original)
     {
         if (t->original_test)
@@ -241,7 +288,7 @@ void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original,
             }
         }
     }
-    
+
     if (print_identity)
     {
         if (print_actual)
@@ -254,7 +301,7 @@ void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original,
             dprint_identity(mode, t->identity, "[", "]");
         }
     }
-    
+
     dprint_noprefix(mode, "%s", post_string);
 }
 
@@ -262,12 +309,12 @@ void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original,
 bool dprint_sym(agent* thisAgent, void* item, void* vMode)
 {
     TraceMode mode = * static_cast < TraceMode* >(vMode);
-    
+
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
     {
         return false;
     }
-    
+
     dprint(mode,  "%s (%lld)\n", static_cast<symbol_struct*>(item)->to_string(true), static_cast<symbol_struct*>(item)->reference_count);
     return false;
 }
@@ -283,7 +330,7 @@ void dprint_identifiers(TraceMode mode)
     {
         return;
     }
-    
+
     dprint(mode,  "--- Identifiers: ---\n");
     do_for_all_items_in_hash_table(debug_agent, debug_agent->identifier_hash_table, dprint_sym, &mode);
 }
@@ -299,7 +346,7 @@ void dprint_variables(TraceMode mode)
     {
         return;
     }
-    
+
     dprint(mode,  "--- Variables: ---\n");
     do_for_all_items_in_hash_table(debug_agent, debug_agent->variable_hash_table, dprint_sym, &mode);
 }
@@ -315,8 +362,8 @@ void debug_print_db_err(TraceMode mode)
     {
         return;
     }
-    
-    
+
+
     print_sysparam_trace(debug_agent, 0, "Debug| Printing database status/errors...\n");
 //  if (debug_agent->debug_params->epmem_commands->get_value() == on)
 //  {
@@ -355,7 +402,7 @@ void debug_print_epmem_table(const char* table_name, TraceMode mode)
     {
         return;
     }
-    
+
 //  if (!db_err_epmem_db)
 //  {
 //    if ((debug_agent->epmem_db) && ( debug_agent->epmem_db->get_status() == soar_module::connected ))
@@ -384,7 +431,7 @@ void debug_print_smem_table(const char* table_name, TraceMode mode)
     {
         return;
     }
-    
+
 //  if (!db_err_smem_db)
 //  {
 //    if (debug_agent->smem_db && ( debug_agent->smem_db->get_status() == soar_module::connected ))
@@ -404,7 +451,7 @@ void debug_print_smem_table(const char* table_name, TraceMode mode)
 void dprint_current_lexeme(TraceMode mode)
 {
     std::string lex_type_string;
-    
+
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
     {
         return;
@@ -414,7 +461,7 @@ void dprint_current_lexeme(TraceMode mode)
     {
         return;
     }
-    
+
     switch (debug_agent->lexeme.type)
     {
         case EOF_LEXEME:
@@ -517,7 +564,7 @@ void dprint_current_lexeme(TraceMode mode)
             break;
     }
     dprint(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), debug_agent->lexeme.string);
-    
+
 }
 
 void dprint_condition_cons(TraceMode mode, cons* c, bool print_actual, bool print_original, bool print_identity, const char* pre_string)
@@ -535,8 +582,8 @@ void dprint_condition(TraceMode mode, condition* cond, const char* indent_string
     {
         return;
     }
-    
-    
+
+
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
         dprint_noprefix(mode, "%s(", indent_string);
@@ -562,7 +609,7 @@ void dprint_condition_list(TraceMode mode, condition* top_cond, const char* inde
     {
         return;
     }
-    
+
     condition* cond;
     int64_t count = 0;
     for (cond = top_cond; cond != NIL; cond = cond->next)
@@ -580,8 +627,8 @@ void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = N
     {
         return;
     }
-    
-    
+
+
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
     cons* c;
@@ -599,7 +646,7 @@ void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = N
     }
     else if (rhs_value_is_symbol(rv))
     {
-    
+
         /* -- rhs symbol -- */
         rsym = rhs_value_to_rhs_symbol(rv);
         dprint_noprefix(mode, "%s [%s %llu]", rsym->referent->to_string(), rsym->original_rhs_variable->to_string(), rsym->g_id);
@@ -624,7 +671,7 @@ void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = N
         /* -- function call -- */
         fl = rhs_value_to_funcall_list(rv);
         rf = static_cast<rhs_function_struct*>(fl->first);
-        
+
         dprint_noprefix(mode, "(");
         if (!strcmp(rf->name->sc->name, "+"))
         {
@@ -638,7 +685,7 @@ void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = N
         {
             dprint_noprefix(mode, "(", rf->name->to_string());
         }
-        
+
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             dprint_noprefix(mode, " ");
@@ -654,7 +701,7 @@ void dprint_action(TraceMode mode, action* a, const char* indent_string)
     {
         return;
     }
-    
+
     if (a->type == FUNCALL_ACTION)
     {
         dprint_noprefix(mode, "%s(funcall ", indent_string);
@@ -681,9 +728,9 @@ void dprint_action_list(TraceMode mode, action* action_list, const char* indent_
     {
         return;
     }
-    
+
     action* a = NIL;
-    
+
     for (a = action_list; a != NIL; a = a->next)
     {
         dprint_action(mode, a);
@@ -701,7 +748,7 @@ void dprint_action_list_old(TraceMode mode, action* top_action, const char* inde
     {
         return;
     }
-    
+
 //  dprint_noprefix(mode, "           ");
     print_action_list(debug_agent, top_action, strlen(indent_string), false);
 }
@@ -711,12 +758,12 @@ void dprint_preferences(TraceMode mode, preference* top_pref, const char* indent
 {
     preference* pref;
     char pref_type;
-    
+
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
     {
         return;
     }
-    
+
     for (pref = top_pref; pref != NIL;)
     {
         pref_type = preference_to_char(pref->type);
@@ -780,7 +827,7 @@ void dprint_production(TraceMode mode, production* prod)
     {
         return;
     }
-    
+
     if (prod)
     {
         print_production(debug_agent, prod, false);
@@ -793,31 +840,31 @@ void dprint_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref
     {
         return;
     }
-    
-    
+
+
     dprint_noprefix(mode, "%s--------------------------- Match --------------------------\n", indent_string);
     dprint_condition_list(mode, top_cond, indent_string, true, false, false);
     dprint_noprefix(mode, "%s-->\n", indent_string);
     dprint_preferences(mode, top_pref, indent_string, true, false, false, pref_list_type);
-    
+
     dprint_noprefix(mode, "%s-------------------------- Original ------------------------\n", indent_string);
     dprint_condition_list(mode, top_cond, indent_string, false, true, false);
     dprint_noprefix(mode, "%s-->\n", indent_string);
     dprint_preferences(mode, top_pref, indent_string, false, true, false, pref_list_type);
-    
+
     dprint_noprefix(mode, "%s------------------------- Identity -------------------------\n", indent_string);
     dprint_condition_list(mode, top_cond, indent_string, true, false, true);
     dprint_noprefix(mode, "%s-->\n", indent_string);
     dprint_preferences(mode, top_pref, indent_string, false, false, true, pref_list_type);
-    
+
     dprint_noprefix(mode, "%s\n", indent_string);
-    
+
 }
 
 void dprint_cond_results(TraceMode mode, condition* top_cond, preference* top_pref,  const char* indent_string)
 {
     dprint_cond_prefs(mode, top_cond, top_pref, indent_string, 2);
-    
+
 }
 
 void dprint_cond_actions(TraceMode mode, condition* top_cond, action* top_action,  const char* indent_string)
@@ -826,25 +873,25 @@ void dprint_cond_actions(TraceMode mode, condition* top_cond, action* top_action
     {
         return;
     }
-    
-    
+
+
     dprint_noprefix(mode, "%s--------------------------- Match --------------------------\n", indent_string);
     dprint_condition_list(mode, top_cond, indent_string, true, false, false);
     dprint_noprefix(mode, "%s-->\n", indent_string);
     dprint_action_list(mode, top_action, indent_string);
-    
+
     dprint_noprefix(mode, "%s-------------------------- Original ------------------------\n", indent_string);
     dprint_condition_list(mode, top_cond, indent_string, false, true, false);
     dprint_noprefix(mode, "%s-->\n", indent_string);
     dprint_action_list(mode, top_action, indent_string);
-    
+
     dprint_noprefix(mode, "%s------------------------- Identity -------------------------\n", indent_string);
     dprint_condition_list(mode, top_cond, indent_string, true, false, true);
     dprint_noprefix(mode, "%s-->\n", indent_string);
     dprint_action_list(mode, top_action, indent_string);
-    
+
     dprint_noprefix(mode, "%s\n", indent_string);
-    
+
 }
 
 void dprint_instantiation(TraceMode mode, instantiation* inst, const char* indent_string)
@@ -853,8 +900,8 @@ void dprint_instantiation(TraceMode mode, instantiation* inst, const char* inden
     {
         return;
     }
-    
-    
+
+
     if (inst->prod)
     {
         dprint_noprefix(mode, "%sMatched %s ", indent_string, inst->prod->name->to_string());
@@ -865,7 +912,7 @@ void dprint_instantiation(TraceMode mode, instantiation* inst, const char* inden
     }
     dprint_noprefix(mode, "in state %s (level %d)\n", inst->match_goal->to_string(), inst->match_goal_level);
     dprint_cond_prefs(mode, inst->top_of_instantiated_conditions, inst->preferences_generated, indent_string);
-    
+
 }
 
 void add_inst_of_type(agent* thisAgent, unsigned int productionType, std::vector<instantiation*>& instantiation_list)
@@ -888,16 +935,16 @@ void dprint_all_inst(TraceMode mode)
     {
         return;
     }
-    
+
     dprint_noprefix(mode,  "--- Instantiations: ---\n");
-    
+
     std::vector<instantiation*> instantiation_list;
     add_inst_of_type(debug_agent, CHUNK_PRODUCTION_TYPE, instantiation_list);
     add_inst_of_type(debug_agent, DEFAULT_PRODUCTION_TYPE, instantiation_list);
     add_inst_of_type(debug_agent, JUSTIFICATION_PRODUCTION_TYPE, instantiation_list);
     add_inst_of_type(debug_agent, USER_PRODUCTION_TYPE, instantiation_list);
     add_inst_of_type(debug_agent, TEMPLATE_PRODUCTION_TYPE, instantiation_list);
-    
+
     for (int y = 0; y < instantiation_list.size(); y++)
     {
         dprint_noprefix(mode, "========================================= Instantiation %d\n", y);
@@ -911,8 +958,8 @@ void dprint_saved_test(TraceMode mode, saved_test* st)
     {
         return;
     }
-    
-    
+
+
     dprint(mode, "  Index: %y  Test: ", st->var->to_string());
     dprint_test(mode, st->the_test);
     dprint(mode,  "\n");
@@ -924,8 +971,8 @@ void dprint_saved_test_list(TraceMode mode, saved_test* st)
     {
         return;
     }
-    
-    
+
+
     while (st)
     {
         dprint_saved_test(mode, st);
@@ -936,13 +983,13 @@ void dprint_saved_test_list(TraceMode mode, saved_test* st)
 void dprint_varnames(TraceMode mode, varnames* var_names)
 {
     cons* c;;
-    
+
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
     {
         return;
     }
-    
-    
+
+
     if (!var_names)
     {
         dprint_noprefix(mode, "None.");;
@@ -968,8 +1015,8 @@ void dprint_varnames_node(TraceMode mode, node_varnames* var_names_node)
     {
         return;
     }
-    
-    
+
+
     if (!var_names_node)
     {
         dprint_noprefix(mode, "varnames node empty.\n");
@@ -977,7 +1024,7 @@ void dprint_varnames_node(TraceMode mode, node_varnames* var_names_node)
     else
     {
         dprint(mode, "varnames for node = ID: ");
-        
+
         dprint_varnames(mode, var_names_node->data.fields.id_varnames);
         dprint_noprefix(mode, " | Attr: ");
         dprint_varnames(mode, var_names_node->data.fields.attr_varnames);

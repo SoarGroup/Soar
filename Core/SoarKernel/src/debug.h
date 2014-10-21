@@ -82,6 +82,7 @@ extern void dprint_varnames_node(TraceMode mode, node_varnames* var_names_node);
 extern void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string = "", const char* post_string = "");
 extern void dprint_all_inst(TraceMode mode);
 extern void dprint_wmes(TraceMode mode, bool pOnlyWithIdentity = false);
+extern void dprint_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity = false);
 
 extern void debug_init_db(agent* thisAgent);
 extern void debug_print_db_err(TraceMode mode = DT_DEBUG);
@@ -108,11 +109,11 @@ extern bool check_symbol_in_test(agent* thisAgent, test t, const char* message =
 class debug_param_container: public soar_module::param_container
 {
     public:
-    
+
         soar_module::boolean_param* epmem_commands, *smem_commands, *sql_commands, *use_new_chunking;
-        
+
         debug_param_container(agent* new_agent);
-        
+
 };
 
 #endif
