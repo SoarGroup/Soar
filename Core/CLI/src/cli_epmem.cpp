@@ -129,7 +129,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
     {
         epmem_reinit_cmd(thisAgent);
         PrintCLIMessage("Episodic memory system re-initialized.");
-        if ((thisAgent->epmem_params->database->get_value() != soar_module::memory) &&
+        if ((thisAgent->epmem_params->database->get_value() != epmem_param_container::memory) &&
                 (thisAgent->epmem_params->append_db->get_value() == on))
         {
             PrintCLIMessage("Note: There was no effective change to episodic memory contents \n"
