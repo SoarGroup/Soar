@@ -280,11 +280,16 @@ void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original,
         {
             if (print_actual)
             {
-                dprint_noprefix(mode, " (0)");
+                dprint_test(mode, t, true, false, false, " (", "*)");
             }
             else
             {
-                dprint_noprefix(mode, "%sNULL", pre_string);
+                dprint_test(mode, t, true, false, false, pre_string, "*");
+//                dprint_noprefix(mode, " (0)");
+//            }
+//            else
+//            {
+//                dprint_noprefix(mode, "%sNULL", pre_string);
             }
         }
     }
