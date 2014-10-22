@@ -1195,11 +1195,11 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     {
         /* MToDo | We can probably eliminate generating id's for level 1 to level 1 matches here */
         g->grounding_id[f] = get_gid_from_pref_for_field(w->preference, f);
-        dprint_noprefix(DT_IDENTITY_PROP, "Found preference g_id %llu...", g->grounding_id[f]);
+        dprint(DT_IDENTITY_PROP, "Found preference g_id %llu...", g->grounding_id[f]);
     }
     else
     {
-        dprint_noprefix(DT_IDENTITY_PROP, "No preference found for g_id %llu...", g->grounding_id[f]);
+        dprint(DT_IDENTITY_PROP, "No preference found for g_id %llu...", g->grounding_id[f]);
     }
     if (g->grounding_id[f] == 0)
     {
@@ -1247,7 +1247,16 @@ inline Symbol* get_wme_element(wme* w, WME_Field f)
     return NULL;
 }
 
-inline void add_identity_to_test(agent* thisAgent,
+inline void add_unification_constraint(agent* thisAgent, test* t, uint64_t gid)
+{
+    test new_test = copy_test(thisAgent, (*t));
+    new_test->identity->grounding_id = gid;
+    add_test(thisAgent, t, new_test);
+    dprint(DT_FIX_CONDITIONS, "Added unifying equality test between two symbols.  Test is now: ");
+    dprint_test(DT_FIX_CONDITIONS, (*t), true, false, true, "", "\n");
+}
+
+inline void add_identity_and_unifications_to_test(agent* thisAgent,
                                  test* t,
                                  WME_Field default_f,
                                  goal_stack_level level)
@@ -1268,7 +1277,7 @@ inline void add_identity_to_test(agent* thisAgent,
             for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
             {
                 test ct = static_cast<test>(c->first);
-                add_identity_to_test(thisAgent, &ct, default_f, level);
+                add_identity_and_unifications_to_test(thisAgent, &ct, default_f, level);
             }
             break;
 
@@ -1295,10 +1304,12 @@ inline void add_identity_to_test(agent* thisAgent,
                         if (existing_gid)
                         {
                             dprint(DT_IDENTITY_PROP, "Symbol %s(%llu) already has grounding id %llu.\n", sym->to_string(), (*t)->identity->grounding_id, existing_gid);
-                            test new_test = copy_test(thisAgent, (*t));
-                            new_test->identity->grounding_id = existing_gid;
-                            add_test(thisAgent, t, new_test);
-                            dprint_test(DT_IDENTITY_PROP, (*t), true, false, true, "Added equality test between two symbols.  Test is now: ", "\n");
+                            add_unification_constraint(thisAgent, t, existing_gid);
+//                            test new_test = copy_test(thisAgent, (*t));
+//                            new_test->identity->grounding_id = existing_gid;
+//                            add_test(thisAgent, t, new_test);
+//                            dprint(DT_IDENTITY_PROP, "Added unifying equality test between two symbols.  Test is now: ");
+//                            dprint_test(DT_IDENTITY_PROP, (*t), true, false, true, "", "\n");
                         }
                     }
                 }
@@ -1406,9 +1417,9 @@ void propagate_identity(agent* thisAgent,
                 /* -- The last parameter determines whether to cache g_ids for NCCs.  We
                  *    only need to do this when negative conditions exist (has_negative_conds == true)
                  *    and this isn't a recursive call on an NCC list (use_negation_lookup = true) -- */
-                add_identity_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level);
-                add_identity_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
-                add_identity_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
+                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level);
+                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
+                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
             }
             dprint(DT_IDENTITY_PROP, "Condition is now:\n");
             dprint_condition(DT_IDENTITY_PROP, c, "          ", true, false, true);
