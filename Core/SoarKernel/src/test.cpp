@@ -1169,7 +1169,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
             dprint_noprefix(DT_IDENTITY_PROP, "found grounding struct...");
             if (g->grounding_id[f] == 0)
             {
-                dprint_noprefix(DT_IDENTITY_PROP, "but no g_id exists for field %hi.  Must retrieve or create.\n", f);
+                dprint_noprefix(DT_IDENTITY_PROP, "but no g_id exists for field %hi.  Must retrieve or create.", f);
                 create_grounding_info = false;
                 break;
             }
@@ -1180,6 +1180,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
             }
         }
     }
+    dprint_noprefix(DT_IDENTITY_PROP, "\n");
 
     /* -- Create new grounding info with unique IDs for this goal level and
      *    add to head of ground_id_list -- */

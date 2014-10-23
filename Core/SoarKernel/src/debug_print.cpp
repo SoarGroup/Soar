@@ -243,10 +243,10 @@ void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original,
                 dprint_noprefix(mode, no_type_test_fstring, pre_string, test_type_to_string_brief(t->type));
                 break;
             case DISJUNCTION_TEST:
-                dprint_noprefix(mode, "<< ");
+                dprint_noprefix(mode, "%s<< ", pre_string);
                 for (c = t->data.disjunction_list; c != NIL; c = c->rest)
                 {
-                    dprint_noprefix(mode, no_type_test_fstring, pre_string, static_cast<symbol_struct*>(c->first)->to_string());
+                    dprint_noprefix(mode, no_type_test_fstring, static_cast<symbol_struct*>(c->first)->to_string(), " ");
                 }
                 dprint_noprefix(mode, ">>");
                 break;

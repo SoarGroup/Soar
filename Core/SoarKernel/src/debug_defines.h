@@ -40,8 +40,8 @@
 //--
 #define TRACE_Init_DT_GDS                         false
 #define TRACE_Init_DT_PARSER                      false
-#define TRACE_Init_DT_FUNC_PRODUCTIONS            false
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
+#define TRACE_Init_DT_FUNC_PRODUCTIONS            true
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            false
 #define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  false
@@ -55,12 +55,12 @@
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_OVAR_MAPPINGS               false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
-#define TRACE_Init_DT_IDENTITY_PROP               false
+#define TRACE_Init_DT_IDENTITY_PROP               true
 #define TRACE_Init_DT_SOAR_INSTANCE               false
 #define TRACE_Init_DT_CLI_LIBRARIES               false
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_MERGE                       false
-#define TRACE_Init_DT_FIX_CONDITIONS              false
+#define TRACE_Init_DT_FIX_CONDITIONS              true
 
 #define TRACE_Init_DT_EPMEM_CMD                   false
 
