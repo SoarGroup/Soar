@@ -106,15 +106,11 @@ void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string, c
 
 void dprint_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
-    {
-        return;
-    }
+    if (!w) return;
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
-    if (!debug_agent)
-    {
-        return;
-    }
+    if (!debug_agent) return;
+
 
     bool lFoundIdentity;
     if (pOnlyWithIdentity)

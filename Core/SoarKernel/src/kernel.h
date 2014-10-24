@@ -32,7 +32,7 @@ extern void print(agent* thisAgent, const char* format, ...);
  *    the debug database -- */
 //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
-#define DEBUG_EPMEM_WME_ADD
+//#define DEBUG_EPMEM_WME_ADD
 
 //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
 #define MEM_POOLS_ENABLED 1
