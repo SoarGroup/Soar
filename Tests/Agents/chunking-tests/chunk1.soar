@@ -1,0 +1,43 @@
+## Chaining example with binding from local state that coincidentally
+# matches a different binding.  Both vars on rhs.  One should be reversed
+# while the other shouldn't be.
+
+source "setup.soar"
+
+sp {apply1a
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-current 1)
+-->
+    (<s> ^substate-output 9)}
+
+sp {apply1b
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate.test-item { > 8 < 10 >= <var-ungrounded> <var> }
+               ^superstate.test-item { <= <var> <var2> }
+               ^substate-output <var-ungrounded>
+               ^superstate <ss>)
+    (<ss> ^test-current 1)
+-->
+    (<ss> ^result1a <var-ungrounded>
+          ^result1b <var>
+          ^result1c <var2>
+          ^result1d <unbound>
+          ^test-done 1)
+    (<unbound> ^foo bar)
+        (exec succeeded)
+    (halt)
+    }
+
+#sp {chunk*apply1b*t3-1
+#    :chunk
+#    (state <s1> ^test-current 1 ^superstate nil
+#          ^test-current <t1> ^test-final { <t2> >= <t1> }
+#          ^test-item <t3>
+#          ^test-item { <t4> > 8 < 10 >= 9 >= <t3> })
+#    -->
+#    (<s1> ^result1a 9 + ^result1b <t4> + ^result1c <t3> + ^result1d <r1> +
+#           ^test-done 1 +)
+#    (<r

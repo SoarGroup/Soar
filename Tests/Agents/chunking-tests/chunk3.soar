@@ -1,0 +1,23 @@
+## Two LHS items, one is a constant and should not be variablized
+sp {apply3
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-item { < 8 <var> }
+          ^test-item 7
+          ^test-current 1)
+-->
+    (<ss> ^result3 <var>
+          ^test-done 1)
+        (exec succeeded)
+    (halt)
+}
+          
+#sp {chunk*apply3*t6-1
+#              :chunk
+#              (state <s1> ^test-current 3 ^test-item 7 ^superstate nil
+#                    ^test-current <t1> ^test-final { <t2> >= <t1> }
+#                    ^test-item { <t3> < 8 })
+#              -->
+#    (<s1> ^result3 <t3> + ^test-done 3 +)
+#}
