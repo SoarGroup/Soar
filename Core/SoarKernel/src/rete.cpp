@@ -132,14 +132,7 @@
 #endif
 #endif
 
-
-
 using namespace soar_TraceNames;
-void dprint_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity);
-
-
-
-
 
 /* **********************************************************************
 
@@ -1454,7 +1447,6 @@ void add_wme_to_aht(agent* thisAgent, hash_table* ht, uint32_t hash_value, wme* 
 
     hash_value = hash_value & masks_for_n_low_order_bits[ht->log2size];
     am = reinterpret_cast<alpha_mem*>(*(ht->buckets + hash_value));
-    dprint(DT_EPMEM_CMD, "Starting add_wme_to_aht\n");
     while (am != NIL)
     {
         if (wme_matches_alpha_mem(w, am))
@@ -1468,12 +1460,10 @@ void add_wme_to_aht(agent* thisAgent, hash_table* ht, uint32_t hash_value, wme* 
                 next = node->b.posneg.next_from_alpha_mem;
                 (*(right_addition_routines[node->node_type]))(thisAgent, node, w);
             }
-            dprint(DT_EPMEM_CMD, "Done with add_wme_to_aht\n");
             return; /* only one possible alpha memory per table could match */
         }
         am = am->next_in_hash_table;
     }
-    dprint(DT_EPMEM_CMD, "Done with add_wme_to_aht\n");
 }
 
 /* We cannot use 'xor' as the name of a function because it is defined in UNIX. */
@@ -1488,10 +1478,6 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
 {
     uint32_t hi, ha, hv;
 
-    dprint(DT_EPMEM_CMD, "===== Adding wme to rete =====\n");
-    dprint_wme(DT_EPMEM_CMD, w, false);
-    dprint_noprefix(DT_EPMEM_CMD, "\n");
-
     /* --- add w to all_wmes_in_rete --- */
     insert_at_head_of_dll(thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);
     thisAgent->num_wmes_in_rete++;
@@ -1500,7 +1486,6 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
     w->right_mems = NIL;
     w->tokens = NIL;
 
-    dprint(DT_EPMEM_CMD, "- Adding to alpha mems in 8 tables.\n");
     /* --- add w to the appropriate alpha_mem in each of 8 possible tables --- */
     hi = w->id->hash_id;
     ha = w->attr->hash_id;
@@ -1508,47 +1493,26 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
 
     if (w->acceptable)
     {
-        dprint_noprefix(DT_EPMEM_CMD, "1");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[8],  xor_op(0, 0, 0), w);
-        dprint_noprefix(DT_EPMEM_CMD, "2");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[9],  xor_op(hi, 0, 0), w);
-        dprint_noprefix(DT_EPMEM_CMD, "3");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[10], xor_op(0, ha, 0), w);
-        dprint_noprefix(DT_EPMEM_CMD, "4");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[11], xor_op(hi, ha, 0), w);
-        dprint_noprefix(DT_EPMEM_CMD, "5");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[12], xor_op(0, 0, hv), w);
-        dprint_noprefix(DT_EPMEM_CMD, "6");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[13], xor_op(hi, 0, hv), w);
-        dprint_noprefix(DT_EPMEM_CMD, "7");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[14], xor_op(0, ha, hv), w);
-        dprint_noprefix(DT_EPMEM_CMD, "8");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[15], xor_op(hi, ha, hv), w);
-        dprint_noprefix(DT_EPMEM_CMD, "9");
     }
     else
     {
-        dprint_noprefix(DT_EPMEM_CMD, "a");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[0],  xor_op(0, 0, 0), w);
-        dprint_noprefix(DT_EPMEM_CMD, "b");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[1],  xor_op(hi, 0, 0), w);
-        dprint_noprefix(DT_EPMEM_CMD, "c");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[2],  xor_op(0, ha, 0), w);
-        dprint_noprefix(DT_EPMEM_CMD, "d");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[3],  xor_op(hi, ha, 0), w);
-        dprint_noprefix(DT_EPMEM_CMD, "e");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[4],  xor_op(0, 0, hv), w);
-        dprint_noprefix(DT_EPMEM_CMD, "f");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[5],  xor_op(hi, 0, hv), w);
-        dprint_noprefix(DT_EPMEM_CMD, "g");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[6],  xor_op(0, ha, hv), w);
-        dprint_noprefix(DT_EPMEM_CMD, "h");
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi, ha, hv), w);
-        dprint_noprefix(DT_EPMEM_CMD, "i");
     }
-    dprint_noprefix(DT_EPMEM_CMD, "\n");
-
-    dprint(DT_EPMEM_CMD, "- Updating for epmem...\n");
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
     {
@@ -1577,7 +1541,6 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
         }
     }
 
-    dprint(DT_EPMEM_CMD, "- Updating for smem...\n");
     if ((w->id->id->smem_lti) && (!thisAgent->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->smem_params->mirroring->get_value() == on))
     {
         std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
@@ -5292,9 +5255,6 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
     rete_test* rt;
     bool failed_a_test;
 
-    dprint(DT_EPMEM_CMD, "Starting mp_node_left_addition for wme ");
-    dprint_wme(DT_EPMEM_CMD, w, false);
-    dprint_noprefix(DT_EPMEM_CMD, "\n");
     activation_entry_sanity_check();
     left_node_activation(node, true);
 
@@ -5302,7 +5262,6 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
         int levels_up;
         token* t;
 
-//        dprint(DT_EPMEM_CMD, "...getting referent.\n");
         levels_up = node->left_hash_loc_levels_up;
         if (levels_up == 1)
         {
@@ -5321,7 +5280,6 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
     hv = node->node_id ^ referent->hash_id;
 
     /* --- build new left token, add it to the hash table --- */
-//    dprint(DT_EPMEM_CMD, "...building left token.\n");
     token_added(node);
     allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
     new_left_token(New, node, tok, w);
@@ -5336,10 +5294,8 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
 
     am = node->b.posneg.alpha_mem_;
 
-//    dprint(DT_EPMEM_CMD, "...checking whether to link to right.\n");
     if (node_is_right_unlinked(node))
     {
-//        dprint(DT_EPMEM_CMD, "...relinking to right.\n");
         relink_to_right_mem(node);
         if (am->right_mems == NIL)
         {
@@ -5350,13 +5306,9 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
     }
 
     /* --- look through right memory for matches --- */
-//    dprint(DT_EPMEM_CMD, "...looking through right memories for matches.\n");
     right_hv = am->am_id ^ referent->hash_id;
     for (rm = right_ht_bucket(thisAgent, right_hv); rm != NIL; rm = rm->next_in_bucket)
     {
-//        dprint(DT_EPMEM_CMD, "...checking match on ");
-        dprint_wme(DT_EPMEM_CMD, rm->w, false);
-        dprint_noprefix(DT_EPMEM_CMD, "\n");
         if (rm->am != am)
         {
             continue;
@@ -5369,9 +5321,6 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
         failed_a_test = false;
         for (rt = node->b.posneg.other_tests; rt != NIL; rt = rt->next)
         {
-//            dprint(DT_EPMEM_CMD, "...against another.\n");
-//            dprint_wme(DT_EPMEM_CMD, rm->w, false);
-//            dprint_noprefix(DT_EPMEM_CMD, "\n");
             if (! match_left_and_right(thisAgent, rt, New, rm->w))
             {
                 failed_a_test = true;
@@ -5383,15 +5332,11 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
             continue;
         }
         /* --- match found, so call each child node --- */
-        dprint(DT_EPMEM_CMD, "...Match found.  Calling mp_node_left_addition against each child node.\n");
         for (child = node->first_child; child != NIL; child = child->next_sibling)
         {
             (*(left_addition_routines[child->node_type]))(thisAgent, child, New, rm->w);
         }
     }
-    dprint(DT_EPMEM_CMD, "Done with mp_node_left_addition for wme ");
-    dprint_wme(DT_EPMEM_CMD, w, false);
-    dprint_noprefix(DT_EPMEM_CMD, "\n");
     activation_exit_sanity_check();
 }
 
@@ -5576,9 +5521,6 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
     bool failed_a_test;
     rete_node* child;
 
-    dprint(DT_EPMEM_CMD, "Starting mp_node_right_addition for wme ");
-    dprint_wme(DT_EPMEM_CMD, w, false);
-    dprint_noprefix(DT_EPMEM_CMD, "\n");
     activation_entry_sanity_check();
     right_node_activation(node, true);
 
@@ -5596,10 +5538,8 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
     referent = w->id;
     hv = node->node_id ^ referent->hash_id;
 
-    dprint(DT_EPMEM_CMD, "Starting loops\n");
     for (tok = left_ht_bucket(thisAgent, hv); tok != NIL; tok = tok->a.ht.next_in_bucket)
     {
-        dprint(DT_EPMEM_CMD, "Loop 1\n");
         if (tok->node != node)
         {
             continue;
@@ -5612,7 +5552,6 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         failed_a_test = false;
         for (rt = node->b.posneg.other_tests; rt != NIL; rt = rt->next)
         {
-            dprint(DT_EPMEM_CMD, "Loop 2\n");
             if (! match_left_and_right(thisAgent, rt, tok, w))
             {
                 failed_a_test = true;
@@ -5626,7 +5565,6 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         /* --- match found, so call each child node --- */
         for (child = node->first_child; child != NIL; child = child->next_sibling)
         {
-            dprint(DT_EPMEM_CMD, "Loop 3\n");
             (*(left_addition_routines[child->node_type]))(thisAgent, child, tok, w);
         }
     }
