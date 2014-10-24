@@ -15,7 +15,7 @@ class EpmemTest : public CPPUNIT_NS::TestCase
 
 #ifdef DO_EPMEM_TESTS
         CPPUNIT_TEST(testEpmemUnit);
-//        CPPUNIT_TEST(testHamiltonian);
+        CPPUNIT_TEST(testHamiltonian);
         CPPUNIT_TEST(testSVS);
         CPPUNIT_TEST(testSVSHard);
 #endif

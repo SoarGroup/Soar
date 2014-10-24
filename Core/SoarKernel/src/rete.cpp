@@ -132,13 +132,7 @@
 #endif
 #endif
 
-
-
 using namespace soar_TraceNames;
-
-
-
-
 
 /* **********************************************************************
 
@@ -1519,7 +1513,6 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[6],  xor_op(0, ha, hv), w);
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi, ha, hv), w);
     }
-
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
     {
@@ -5327,11 +5320,13 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
         }
         failed_a_test = false;
         for (rt = node->b.posneg.other_tests; rt != NIL; rt = rt->next)
+        {
             if (! match_left_and_right(thisAgent, rt, New, rm->w))
             {
                 failed_a_test = true;
                 break;
             }
+        }
         if (failed_a_test)
         {
             continue;
@@ -5556,11 +5551,13 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         }
         failed_a_test = false;
         for (rt = node->b.posneg.other_tests; rt != NIL; rt = rt->next)
+        {
             if (! match_left_and_right(thisAgent, rt, tok, w))
             {
                 failed_a_test = true;
                 break;
             }
+        }
         if (failed_a_test)
         {
             continue;
