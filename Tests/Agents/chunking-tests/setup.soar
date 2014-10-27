@@ -15,6 +15,7 @@ sp {init-superstate
     (<tp3> ^foo <tp> ^foo <tp2>)
     (<tp> ^value 9 8)
     (<tp2> ^value <dummy1> <dummy2>)
+    (write (crlf) |Starting chunking unit test.|)
 }
 
 sp {propose*top

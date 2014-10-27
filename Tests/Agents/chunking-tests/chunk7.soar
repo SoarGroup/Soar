@@ -1,0 +1,33 @@
+# Chaining example with binding from top state,
+# - Also has rhs constant 7 that matches rhs vars <var> and <var2>.
+
+sp {apply7a
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-item <var2>
+          ^test-item { < <var2> <var> }
+          ^test-current 1)
+-->
+    (<ss> ^substate-output 5)}
+
+sp {apply7b
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ssb>
+              )
+    (<ssb> ^substate-output <var2>
+           ^test-item { > <var2> <var> }
+           ^test-current 1)
+-->
+    (<s> ^result7a <var> ^result7b <var2>)}
+
+sp {apply7c
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ssc>
+               ^result7a <var> ^result7b <var2>)
+    (<ssc> ^test-current 1)
+-->
+    (<ssc> ^result7a <var> ^result7b <var2> ^result7c 7
+           ^test-done 1)}

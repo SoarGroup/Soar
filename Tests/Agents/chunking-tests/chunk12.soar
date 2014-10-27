@@ -1,0 +1,13 @@
+# Tests that are one link deep
+sp {apply*12
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-item <val>
+          ^test-param2.foo.value <val>
+          ^test-param2.foo.value {<> <val> <val2>}
+          ^test-current 1)
+-->
+    (<ss> ^result12a <val> ^result12b <val2>
+          ^test-done 1)}
+

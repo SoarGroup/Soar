@@ -1,0 +1,10 @@
+sp {chunk*apply14b*t3-1
+    :chunk
+    (state <s1> ^test-param <t1>
+                ^test-item { <t3> > 3 })
+    -->
+    (<s1> ^result14-ungrounded-num 3 + ^result14-ungrounded-id <r1> +
+           ^result14-grounded-id <t1> + ^result14-grounded-num <t3> +
+           ^test-done 14 +)
+    (<r1> ^sub-item <s2> + ^number 5 +)
+}

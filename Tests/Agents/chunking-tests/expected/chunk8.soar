@@ -1,0 +1,9 @@
+sp {chunk*apply8*t12-1
+    :chunk
+    (state <s1> ^test-current 8 ^superstate nil ^test-current <t1>
+          ^test-final { <t2> >= <t1> } ^test-param <t3>
+          ^test-param { <t4> <> <t3> })
+    -->
+    (<s1> ^result8a <t3> + ^sub8 <s2> + ^test-done 8 +)
+    (<s2> ^result8b <t4> +)
+}

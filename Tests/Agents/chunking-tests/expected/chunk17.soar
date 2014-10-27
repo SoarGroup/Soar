@@ -1,0 +1,7 @@
+sp {chunk*apply18b*t11-1
+    :chunk
+    (state <s1> ^test-id <t3>)
+    -->
+    (<s1> ^result18a <r1> + ^result18b <t3> + ^result18c <r1> +
+           ^result18d <t3> + ^test-done 18 +)
+}

@@ -1,0 +1,81 @@
+# Negative conditions
+
+sp {apply21a
+    (state <s> ^operator <o>
+               ^superstate <ss>)
+    (<ss> -^test-things
+           ^test-current 1)
+-->
+    (<ss> ^result true)
+}
+
+sp {apply21b
+    (state <s> ^operator <o>
+               ^superstate <ss>)
+    (<ss> ^test-item { > <y> <x> }
+          ^test-item <y>
+         -^foo { > <x> }
+          ^test-current 1)
+-->
+    (<ss> ^result <y>)
+}
+
+# Negative conjunctive conditions
+
+sp {apply21c
+    (state <s> ^operator <o>
+               ^superstate <ss>)
+    (<ss> ^test-current 1)
+   -{(<ss> ^test-item 9 ^test-item 10)}
+-->
+    (<ss> ^result true)
+}
+
+sp {apply21d
+    (state <s> ^operator <o>
+               ^superstate <ss>)
+    (<ss> ^test-item { > <y> <x> }
+          ^test-item <y>
+          ^test-current 1)
+         -{(<ss> ^test-item {> <x> } ^test-item 10)}
+-->
+    (<ss> ^result <x>)
+}
+
+sp {apply21e
+    (state <s> ^operator <o>
+               ^superstate <ss>)
+    (<ss> ^test-item { > <y> <x> }
+          ^test-item { <> <x> <y> }
+          ^test-current 1)
+         -{(<ss> ^test-item { > <x> > <y> <max> }
+                 ^foo <max>
+                 ^bar <x>)}
+-->
+    (<ss> ^highest <x> ^second-highest <y> ^unbound <max>)
+}
+
+
+sp {apply21f1
+    (state <s> ^superstate <ss>
+               ^operator)
+    (<ss> ^test-item <y>
+          ^test-item { < <y> <x> }
+          ^test-current 1)
+         -{(<ss> ^test-item { <> <x> <> <y> <dupe> })}
+-->
+    (<s> ^lowest <x>)
+}
+
+sp {apply21f2
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^lowest <low>)
+    (<ss> ^test-item <y>
+          ^test-item { > <y> <x> }
+          ^test-current 1)
+         -{(<ss> ^test-item { <> <x> > <x> <dupe> })}
+-->
+    (<ss> ^highest <x> ^lowest <low>
+          ^test-done 1)
+}

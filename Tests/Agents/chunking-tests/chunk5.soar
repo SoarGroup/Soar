@@ -1,0 +1,11 @@
+# Less than with two bindings
+sp {apply5
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-item <val>
+          ^test-item { < <val> <var> }
+          ^test-current 1)
+-->
+    (<ss> ^small5 <var> ^big5 <val>
+          ^test-done 1)}

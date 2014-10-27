@@ -1,0 +1,11 @@
+# Numeric inequality
+sp {apply4
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-item { < 9 <val> }
+          ^test-item { <> <val> <val2> }
+          ^test-current 1)
+-->
+    (<ss> ^result4a <val> ^result4b <val2>
+          ^test-done 1)}

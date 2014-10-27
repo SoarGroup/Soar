@@ -1,0 +1,20 @@
+# Test where RHS item should not be variablized and is never variablized on LHS (like example 14 with identifiers)
+# was 16
+sp {apply13a
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-current 1)
+-->
+    (<s> ^substate-output <ungrounded>)}
+
+sp {apply13b
+    (state <s> ^name substate
+               ^operator.name test
+               ^substate-output <var-ungrounded>
+               ^superstate <ss>)
+    (<ss> ^test-current 1)
+-->
+    (<ss> ^result13a <var-ungrounded>
+          ^test-done 1)}
+

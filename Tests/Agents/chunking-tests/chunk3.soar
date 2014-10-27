@@ -9,15 +9,5 @@ sp {apply3
 -->
     (<ss> ^result3 <var>
           ^test-done 1)
-        (exec succeeded)
     (halt)
 }
-          
-#sp {chunk*apply3*t6-1
-#              :chunk
-#              (state <s1> ^test-current 3 ^test-item 7 ^superstate nil
-#                    ^test-current <t1> ^test-final { <t2> >= <t1> }
-#                    ^test-item { <t3> < 8 })
-#              -->
-#    (<s1> ^result3 <t3> + ^test-done 3 +)
-#}

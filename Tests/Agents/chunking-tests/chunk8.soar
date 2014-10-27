@@ -1,0 +1,13 @@
+# Inequality with identifiers, two RHS actions
+sp {apply8
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-param { <> <t2> <t1> }
+          ^test-param <t2>
+          ^test-current 1)
+-->
+    (<ss> ^result8a <t2> ^sub8 <sb>
+          ^test-done 1)
+    (<sb> ^result8b <t1>)}
+

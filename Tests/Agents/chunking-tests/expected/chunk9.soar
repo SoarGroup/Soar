@@ -1,0 +1,7 @@
+sp {chunk*apply9b*t13-1
+    :chunk
+    (state <s1> ^test-param <t3>
+                ^test-param { <t4> <=> <t3> })
+    -->
+    (<s1> ^result9c <t3> + ^result9d <t4> + ^test-done 9 +)
+}

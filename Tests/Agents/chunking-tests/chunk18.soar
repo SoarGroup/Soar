@@ -1,0 +1,13 @@
+# NCC tests
+
+sp {apply19
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> -^test-item { > <max> <supermax>}
+           ^test-item <max>
+           ^test-current 1)
+-->
+    (<ss> ^result19a <supermax>
+          ^result19b <max>
+          ^test-done 1)}
