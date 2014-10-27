@@ -1,6 +1,6 @@
 # NCC tests
 
-sp {apply20
+sp {apply19
     (state <s> ^name substate
                ^operator.name test
                ^superstate <ss>)
@@ -8,8 +8,8 @@ sp {apply20
           ^test-item <max>)
          -{(<ss> ^test-item 20)}
 -->
-    (<ss> ^result20a <min>
-          ^result20b <max>
+    (<ss> ^result19a <min>
+          ^result19b <max>
           ^test-done 1)}
 
 #run

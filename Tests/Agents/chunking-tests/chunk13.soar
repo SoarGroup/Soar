@@ -1,4 +1,5 @@
 # Test where RHS item should not be variablized and is never variablized on LHS (like example 14 with identifiers)
+# RHS should still be a variable b/c it becomes an unground one
 # was 16
 sp {apply13a
     (state <s> ^name substate

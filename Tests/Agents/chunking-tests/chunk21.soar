@@ -1,13 +1,52 @@
-sp {apply21-init-rl
-    (state <s> ^superstate <ss>
-               ^operator <o>)
-    (<ss> ^test-current 1)
+sp {init-rl
+    (state <s> ^superstate nil)
 -->
-    (<ss> ^rl-item 0.9 0.7
-          ^rl-id <tp> <tp2>
-          ^test-done 1)
+    (<s> ^rl-item 0.9 0.7
+         ^rl-id <tp> <tp2>
+         ^test-done 1)
     (<tp> ^value 0.9 0.8)
     (<tp2> ^value <dummy1> <dummy2>)
+}
+
+sp {template1
+    :template
+    (state <s> ^operator <o> +
+               ^rl-item <v>)
+-->
+    (<s> ^operator <o> = <v>)
+}
+
+sp {template2
+    :template
+    (state <s> ^operator <o> +
+               ^rl-id.value <v>)
+-->
+    (<s> ^operator <o> = <v>)
+}
+
+sp {template3
+    :template
+    (state <s> ^operator <o> +
+               ^rl-item <v>
+               ^rl-id.value <v>)
+-->
+    (<s> ^operator <o> = 0)
+#    (<s> ^foo bar)
+}
+
+# Note:  Setting numeric preference to <v> in following production
+#        will crash soar.  Long-standing bug.
+
+sp {template4
+    :template
+    (state <s> ^operator <o> +
+               ^rl-item <i>
+               ^rl-item {<> <i> <i2>}
+               ^rl-id <id>
+               ^rl-id {<> <id> <id2> })
+    (<id> ^value <v>)
+-->
+    (<s> ^operator <o> = 0)
 }
 
 #run
