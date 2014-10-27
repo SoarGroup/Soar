@@ -8,6 +8,12 @@ sp {init-rl
     (<tp2> ^value <dummy1> <dummy2>)
 }
 
+#sp {propose
+#    (state <s> ^superstate nil)
+#-->
+#    (<s> ^operator <o> +)
+#}
+#  
 sp {template1
     :template
     (state <s> ^operator <o> +
