@@ -1,0 +1,14 @@
+sp {apply21-init-rl
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<ss> ^test-current 1)
+-->
+    (<ss> ^rl-item 0.9 0.7
+          ^rl-id <tp> <tp2>
+          ^test-done 1)
+    (<tp> ^value 0.9 0.8)
+    (<tp2> ^value <dummy1> <dummy2>)
+}
+
+#run
+#ctf expected/chunk21.soar print -cf

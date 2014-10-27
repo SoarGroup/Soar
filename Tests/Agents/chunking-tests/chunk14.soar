@@ -1,0 +1,29 @@
+# Test with unbound consts and ids on LHS tests and RHS
+# RHS items also makes extra results
+# was 17
+sp {apply14a
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+-->
+    (<s> ^data1 <ungrounded> ^data2 3)
+    (<ungrounded> ^number 5
+                  ^sub-item <sub>)}
+
+sp {apply14b
+    (state <s> ^operator.name test
+               ^data2 <data-num>
+               ^data1 <data-id>
+               ^superstate <ss>)
+    (<ss> ^test-item { > <data-num> <num> }
+          ^test-param { <> <data-id> <id> })
+-->
+    (<ss> ^result14-ungrounded-num <data-num>
+          ^result14-ungrounded-id <data-id>
+          ^result14-grounded-id <id>
+          ^result14-grounded-num <num>
+          ^test-done 1)
+}
+
+#run
+#ctf expected/chunk14.soar print -cf

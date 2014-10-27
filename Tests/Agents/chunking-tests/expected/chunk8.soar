@@ -1,0 +1,10 @@
+sp {chunk-multi*apply8*onc*t3-1
+    :chunk
+    (state <s1> ^superstate nil ^test-param <t2> ^test-param { <> <t2> <t1> })
+    -->
+    (<s1> ^result8a <t2> + ^sub8 <s2> + ^test-done 1 +)
+    (<s2> ^result8b <t1> +)
+}
+
+
+

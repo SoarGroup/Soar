@@ -1,0 +1,15 @@
+# Two bindings that can match the same thing
+
+sp {apply10
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-param <p1>
+          ^test-param <p2>)
+-->
+    (<ss> ^result10a <p1> ^result10b <p2>
+          ^test-done 1)}
+
+
+#run
+#ctf expected/chunk10.soar print -cf

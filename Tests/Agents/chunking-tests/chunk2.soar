@@ -1,0 +1,16 @@
+# disjunction greater than another value, unbound rhs
+
+sp {apply2
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-item { <test> << 8 9 >> > <min>}
+          ^test-item <min>)
+-->
+    (<ss> ^result2a <test>
+          ^result2b <unbound>
+          ^test-done 1)
+}
+
+#run
+#ctf expected/chunk2.soar print -cf

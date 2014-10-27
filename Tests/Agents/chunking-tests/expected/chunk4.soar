@@ -1,0 +1,10 @@
+sp {chunk-multi*apply4*onc*t3-1
+    :chunk
+    (state <s1> ^superstate nil ^test-item <c2>
+          ^test-item { < 9 <> <c2> <c1> })
+    -->
+    (<s1> ^result4a <c1> + ^result4b <c2> + ^test-done 1 +)
+}
+
+
+

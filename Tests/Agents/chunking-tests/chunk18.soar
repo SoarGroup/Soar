@@ -1,0 +1,15 @@
+# NCC tests
+
+sp {apply18
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> -^test-item { > <max> <supermax>}
+           ^test-item <max> )
+-->
+    (<ss> ^result18a <supermax>
+          ^result18b <max>
+          ^test-done 1)}
+
+#run
+#ctf expected/chunk18.soar print -cf

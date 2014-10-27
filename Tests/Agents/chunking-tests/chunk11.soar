@@ -1,0 +1,18 @@
+# Tests that are one link deep with no placeholders
+sp {apply*11
+    (state <s> ^name substate
+               ^operator <o>
+               ^superstate <ss>)
+    (<o> ^name test)
+    (<ss> ^test-item <val>
+          ^test-param2.foo <tp>)
+    (<tp> ^value <val>
+          ^value {<> <val> <val2>})
+
+-->
+    (<ss> ^result11a <val> ^result11b <val2>
+          ^test-done 1)}
+
+
+#run
+#ctf expected/chunk11.soar print -cf

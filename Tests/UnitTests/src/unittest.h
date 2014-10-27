@@ -9,6 +9,7 @@
 
 #define DO_ALIAS_TESTS
 #define DO_CLIPARSER_TESTS
+#define DO_CHUNKING_TESTS
 #define DO_ELEMENTXML_TESTS
 #define DO_FULL_TESTS
 #define DO_IO_TESTS

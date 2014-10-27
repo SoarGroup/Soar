@@ -1,0 +1,15 @@
+## Two LHS items, one is a constant and should not be variablized
+sp {apply3
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-item { < 8 <var> }
+          ^test-item 7)
+-->
+    (<ss> ^result3 <var>
+          ^test-done 1)
+    (halt)
+}
+
+#run
+#ctf expected/chunk3.soar print -cf

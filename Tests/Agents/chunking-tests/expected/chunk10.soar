@@ -1,0 +1,15 @@
+# Not sure if second chunk should be generated
+sp {chunk*apply10*t3-1
+    :chunk
+    (state <s1> 0 ^superstate nil ^test-current <t2> ^test-final { <t3> >= <t2> }
+                 ^test-param <t1> ^test-param <t1>)
+    -->
+    (<s1> ^result10a <t1> + ^result10b <t1> + ^test-done 10 +)
+
+sp {chunk*apply10*t3-2
+    :chunk
+    (state <s1> 0 ^superstate nil ^test-current <t1> ^test-final { <t2> >= <t1> }
+                ^test-param <t3> ^test-param <t4>)
+    -->
+    (<s1> ^result10a <t4> + ^result10b <t3> + ^test-done 10 +)
+}
