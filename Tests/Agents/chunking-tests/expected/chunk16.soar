@@ -1,11 +1,13 @@
-sp {chunk*apply16b*t7-1
+sp {chunk-multi*apply16b*onc*t3-1
     :chunk
-    (state <s1> 6 6 ^superstate nil
-          ^test-current <t1> ^test-final { <t2> >= <t1> })
+    (state <s1> ^superstate nil)
     -->
-    (<s1> ^result16a <r1> + ^result16b <u1> + ^test-done 16 +)
-    (<r1> ^operator <o1> + ^name substate + ^ungrounded-identifier2 <u1> +
-           ^ungrounded-identifier1 <r1> +)
-    (<o1> 6 + ^name test +)
-    (<u1> ^foo bar +)
+    (<s1> ^result16a <s2> + ^result16b <n1> + ^test-done 1 +)
+    (<s2> ^operator <o1> + ^name substate + ^ungrounded-identifier2 <n1> +
+           ^ungrounded-identifier1 <s2> +)
+    (<o1> ^name test +)
+    (<n1> ^foo bar +)
 }
+
+
+

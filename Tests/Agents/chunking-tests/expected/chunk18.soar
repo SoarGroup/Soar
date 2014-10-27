@@ -1,8 +1,10 @@
-sp {chunk-multi*apply19*onc*t58-1
+sp {chunk-multi*apply18*onc*t3-1
     :chunk
-    (state <s1> 9 ^superstate nil ^test-item <c3>
-          -^test-item { > <c3> <supermax> } ^test-final <c2>
-          ^test-current { <= <c2> <c1> })
+    (state <s1> ^superstate nil ^test-item <c1>
+          -^test-item { > <c1> <supermax> })
     -->
-    (<s1> ^result19a <s2> + ^result19b <c3> + ^test-done 19 +)
+    (<s1> ^result18a <s2> + ^result18b <c1> + ^test-done 1 +)
 }
+
+
+
