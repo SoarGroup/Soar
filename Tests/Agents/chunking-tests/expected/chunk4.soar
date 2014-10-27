@@ -1,8 +1,10 @@
-sp {chunk*apply4*t7-1
-              :chunk
-    (state <s1> ^test-current 1 ^superstate nil ^test-current <t1>
-                ^test-final { <t2> >= <t1> } ^test-item <t3>
-                ^test-item { <t4> < 9 <> <t3> })
--->
-    (<s1> ^result4a <t4> + ^result4b <t3> + ^test-done 1 +)
+sp {chunk-multi*apply4*onc*t3-1
+    :chunk
+    (state <s1> ^superstate nil ^test-item <c2>
+          ^test-item { < 9 <> <c2> <c1> })
+    -->
+    (<s1> ^result4a <c1> + ^result4b <c2> + ^test-done 1 +)
 }
+
+
+

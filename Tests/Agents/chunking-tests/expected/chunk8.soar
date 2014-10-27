@@ -1,9 +1,10 @@
-sp {chunk*apply8*t12-1
+sp {chunk-multi*apply8*onc*t3-1
     :chunk
-    (state <s1> ^test-current 8 ^superstate nil ^test-current <t1>
-          ^test-final { <t2> >= <t1> } ^test-param <t3>
-          ^test-param { <t4> <> <t3> })
+    (state <s1> ^superstate nil ^test-param <t2> ^test-param { <> <t2> <t1> })
     -->
-    (<s1> ^result8a <t3> + ^sub8 <s2> + ^test-done 8 +)
-    (<s2> ^result8b <t4> +)
+    (<s1> ^result8a <t2> + ^sub8 <s2> + ^test-done 1 +)
+    (<s2> ^result8b <t1> +)
 }
+
+
+

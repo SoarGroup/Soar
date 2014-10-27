@@ -1,6 +1,6 @@
 sp {chunk*apply15b*t5-1
     :chunk
-    (state <s1> ^test-current 15 ^test-current 15 ^superstate nil
+    (state <s1> 5 5 ^superstate nil
           ^test-current <t1> ^test-final { <t2> >= <t1> })
     -->
     (<s1> ^result15a 9 + ^test-done 15 +)

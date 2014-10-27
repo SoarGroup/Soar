@@ -1,23 +1,24 @@
 # Test with ungrounded identifier in relational test (instead of constant in example 1)
 # was 15
-sp {apply18a
+sp {apply17a
     (state <s> ^name substate
                ^operator.name test
                ^superstate <ss>)
-    (<ss> ^test-current 1)
 -->
     (<s> ^substate-output <ungrounded>)}
 
-sp {apply18b
+sp {apply17b
     (state <s> ^name substate
                ^operator.name test
                ^superstate.test-id {<> <id-ungrounded> <id> }
                ^substate-output <id-ungrounded>
                ^superstate <ss>)
-    (<ss> ^test-current 1)
 -->
-    (<ss> ^result18a <id-ungrounded>
-          ^result18b <id>
-          ^result18c <id-ungrounded>
-          ^result18d <id>
+    (<ss> ^result17a <id-ungrounded>
+          ^result17b <id>
+          ^result17c <id-ungrounded>
+          ^result17d <id>
           ^test-done 1)}
+
+#run
+#ctf expected/chunk17.soar print -cf

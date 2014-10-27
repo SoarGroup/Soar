@@ -4,7 +4,6 @@ sp {apply13a
     (state <s> ^name substate
                ^operator.name test
                ^superstate <ss>)
-    (<ss> ^test-current 1)
 -->
     (<s> ^substate-output <ungrounded>)}
 
@@ -13,8 +12,9 @@ sp {apply13b
                ^operator.name test
                ^substate-output <var-ungrounded>
                ^superstate <ss>)
-    (<ss> ^test-current 1)
 -->
     (<ss> ^result13a <var-ungrounded>
           ^test-done 1)}
 
+#run
+#ctf expected/chunk13.soar print -cf

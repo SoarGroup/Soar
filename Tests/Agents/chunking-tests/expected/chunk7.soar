@@ -1,43 +1,25 @@
-sp {chunk*apply7c*t5-3
+sp {chunk-multi*apply7c*onc*t3-3
     :chunk
-    (state <s1> ^substate-output <s2>
-                ^test-item { <t3> > <s2> })
+    (state <s1> ^superstate nil ^substate-output <c2>
+          ^test-item { > <c2> <c1> })
     -->
-    (<s1> ^result7a 9 + ^result7b 5 + ^result7c 7 + ^test-done 7 +)
+    (<s1> ^result7a <c1> + ^result7b <c2> + ^result7c 7 + ^test-done 1 +)
 }
 
-sp {chunk*apply7c*t5-2
+sp {chunk-multi*apply7c*onc*t3-2
     :chunk
-    (state <s1> ^substate-output <s2>
-                ^substate-output <s3>
-          ^test-item { <t3> > <s2> }
-          ^test-item { <t4> > <s3> })
+    (state <s1> ^superstate nil ^substate-output <c2>
+          ^test-item { > <c2> <c3> } ^test-item { > <c2> <c1> })
     -->
-    (<s1> ^result7a 7 + ^result7b 5 + ^result7c 7 + ^test-done 7 +)
+    (<s1> ^result7a <c3> + ^result7b <c2> + ^result7c 7 + ^test-done 1 +)
 }
 
-sp {chunk*apply7a*t5-1
+sp {chunk-multi*apply7a*onc*t3-1
     :chunk
-    (state <s1> ^test-item <t3>
-                ^test-item { <t4> > <t3> })
-    -->
-    (<s1> ^substate-output 5 +)
-}
-sp {chunk*apply7a*t10-1
-    :chunk
-    (state <s1> ^test-current 7 ^superstate nil ^test-current <t1> ^test-final { <t2> >= <t1> }
-          ^test-item <t3>
-          ^test-item { <t4> > <t3> })
+    (state <s1> ^superstate nil ^test-item <c2> ^test-item { > <c2> <c1> })
     -->
     (<s1> ^substate-output 5 +)
 }
 
-sp {chunk*apply7c*t10-2
-    :chunk
-    (state <s1> ^test-current 7 ^test-current 7 ^test-current 7
-          ^superstate nil ^test-current <t1> ^test-final { <t2> >= <t1> }
-          ^substate-output <s2>
-          ^test-item { <t3> > <s2> })
-    -->
-    (<s1> ^result7a <t3> + ^result7b <s2> + ^result7c 7 + ^test-done 7 +)
-}
+
+

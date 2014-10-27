@@ -9,9 +9,7 @@ sp {init-superstate
          ^test-param2 <tp3>
          ^test-current 1
          ^bar blue
-         ^test-id <ti>
-         ^test-start 1 ^test-final 1
-         ^run 1 ^run-final 1)
+         ^test-id <ti>)
     (<tp3> ^foo <tp> ^foo <tp2>)
     (<tp> ^value 9 8)
     (<tp2> ^value <dummy1> <dummy2>)
@@ -19,57 +17,25 @@ sp {init-superstate
 }
 
 sp {propose*top
-    (state <s> ^test-start <num>)
+    (state <s> ^superstate nil)
 -->
     (<s> ^operator <o>)
-    (<o> ^name do-tests)
+    (<o> ^name do-test)
 }
 
 sp {apply*test-done
-    (state <s> ^test-current <num> ^test-final { < <num> <num-final> }
-               ^run <run> ^run-final { < <run> <run-final> })
+    (state <s> ^superstate nil ^test-done)
 -->
-    (write (crlf) |Finished final test | <num-final> | of run | <run-final> |.  Stopping.| (crlf))
-    (interrupt)
-    #   (halt)
+    (write (crlf) |Chunk produced. Test completed.|)
+    (exec succeeded)
+    (halt)
 }
 
-sp {apply*start-test
-    (state <s> ^operator.name do-tests
-              -^test-current
-               ^test-start <start>)
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
 -->
-    (<s> ^test-current <start> + )
-    (write (crlf) |Starting test count at | <start> |.| (crlf))
-}
-
-sp {apply*increment-test
-    (state <s> ^operator.name do-tests
-               ^test-current { <= <done-num> <num>}
-               ^test-done <done-num>)
--->
-    (write (crlf) |Incrementing test.  done-num is | <done-num> |, current is | <num> |.| (crlf))
-    (<s> ^test-current <num> -
-         ^test-current (+ <done-num> 1) +
-         ^test-done <done-num> -)
-    (write (crlf) |Incrementing test count to | ( + <num> 1) |.| (crlf))
-    #   (interrupt)
-}
-
-sp {apply*reset-test
-    (state <s> ^operator.name do-tests
-               ^test-start <start>
-               ^test-current { > <final-num> <num>}
-               ^test-final <final-num>
-               ^run { <= <run-final> <run> }
-               ^run-final <run-final>)
--->
-    (<s> ^test-current <num> -
-         ^test-current <start> +
-         ^run <run> -
-         ^run (+ <run> 1) +)
-    (write (crlf) |Incrementing run count to | ( + <run> 1) |. Resetting test count to | <start> |.| (crlf))
-    (cmd excise -c)
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (halt)
 }
 
 sp {init-substate
@@ -78,14 +44,7 @@ sp {init-substate
     (<s> ^name substate)}
 
 sp {propose*test
-    (state <s> ^name substate ^superstate <ss>)
-    (<ss> ^test-final <end> ^test-current { <= <end> <num> })
+    (state <s> ^name substate)
 -->
     (<s> ^operator <o> +)
-    (<o> ^name test ^test-current <num>)}
-
-sp {apply*test
-    (state <s> ^operator <o>)
-    (<o> ^name test ^test-current <num>)
--->
-    (write (crlf) (crlf) |Performing test | <num> |!!!| (crlf) (crlf))}
+    (<o> ^name test)}

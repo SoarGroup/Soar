@@ -1,7 +1,9 @@
 sp {chunk-multi*apply3*onc*t3-1
     :chunk
-    (state <s1> ^test-current 1 ^test-item 7 ^superstate nil ^test-final <c2>
-          ^test-current { <= <c2> <c1> } ^test-item { < 8 <c3> })
+    (state <s1> ^test-item 7 ^superstate nil ^test-item { < 8 <c1> })
     -->
-    (<s1> ^result3 <c3> + ^test-done 1 +)
-    }
+    (<s1> ^result3 <c1> + ^test-done 1 +)
+}
+
+
+

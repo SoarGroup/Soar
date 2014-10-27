@@ -4,10 +4,12 @@ sp {apply3
                ^operator.name test
                ^superstate <ss>)
     (<ss> ^test-item { < 8 <var> }
-          ^test-item 7
-          ^test-current 1)
+          ^test-item 7)
 -->
     (<ss> ^result3 <var>
           ^test-done 1)
     (halt)
 }
+
+#run
+#ctf expected/chunk3.soar print -cf

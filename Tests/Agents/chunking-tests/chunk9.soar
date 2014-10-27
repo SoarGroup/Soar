@@ -4,8 +4,7 @@ sp {apply9a
                ^operator.name test
                ^superstate <ss>)
     (<ss> ^test-param { <=> <t2> <t1> }
-          ^test-item <t2>
-          ^test-current 1)
+          ^test-item <t2>)
 -->
     (<ss> ^result9a <t2> ^sub9 <sb>)
     (<sb> ^result9b <t1>)}
@@ -15,9 +14,11 @@ sp {apply9b
                ^operator.name test
                ^superstate <ss>)
     (<ss> ^test-param { <=> <t2> <t1> }
-          ^test-param <t2>
-          ^test-current 1)
+          ^test-param <t2>)
 -->
     (<ss> ^result9c <t2> ^result9d <t1>
           ^test-done 1)}
 
+
+#run
+#ctf expected/chunk9.soar print -cf

@@ -1,19 +1,21 @@
 sp {chunk-multi*apply1b*onc*t3-2
-    (state <s1> ^test-current 1 ^superstate nil ^test-final <c2>
-          ^test-current { <= <c2> <c1> } ^test-item <c4>
-          ^test-item { > 8 < 10 >= 9 >= <c4> <c3> })
+    :chunk
+    (state <s1> ^superstate nil ^test-item <c2>
+          ^test-item { > 8 < 10 >= 9 >= <c2> <c1> })
     -->
-    (<s1> ^result1a 9 + ^result1b <c3> + ^result1c <c4> + ^result1d <u1> +
+    (<s1> ^result1a 9 + ^result1b <c1> + ^result1c <c2> + ^result1d <u1> +
            ^test-done 1 +)
     (<u1> ^foo bar +)
 }
 
 sp {chunk-multi*apply1b*onc*t3-1
-    (state <s1> ^test-current 1 ^superstate nil ^test-final <c2>
-          ^test-current { <= <c2> <c1> }
-          ^test-item { > 8 < 10 >= 9 >= <c3> <c3> })
+    :chunk
+    (state <s1> ^superstate nil ^test-item { > 8 < 10 >= 9 >= <c1> <c1> })
     -->
-    (<s1> ^result1a 9 + ^result1b <c3> + ^result1c <c3> + ^result1d <u1> +
+    (<s1> ^result1a 9 + ^result1b <c1> + ^result1c <c1> + ^result1d <u1> +
            ^test-done 1 +)
     (<u1> ^foo bar +)
 }
+
+
+

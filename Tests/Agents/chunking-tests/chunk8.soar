@@ -4,10 +4,12 @@ sp {apply8
                ^operator.name test
                ^superstate <ss>)
     (<ss> ^test-param { <> <t2> <t1> }
-          ^test-param <t2>
-          ^test-current 1)
+          ^test-param <t2> )
 -->
     (<ss> ^result8a <t2> ^sub8 <sb>
           ^test-done 1)
     (<sb> ^result8b <t1>)}
 
+
+#run
+#ctf expected/chunk8.soar print -cf

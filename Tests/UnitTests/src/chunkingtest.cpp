@@ -154,7 +154,7 @@ void ChunkTest::testChunk6()
 
 void ChunkTest::testChunk7()
 {
-    build_and_check_chunk("chunk7.soar", 8, 1);
+    build_and_check_chunk("chunk7.soar", 8, 3);
 }
 
 void ChunkTest::testChunk8()
@@ -164,12 +164,12 @@ void ChunkTest::testChunk8()
 
 void ChunkTest::testChunk9()
 {
-    build_and_check_chunk("chunk9.soar", 8, 1);
+    build_and_check_chunk("chunk9.soar", 8, 2);
 }
 
 void ChunkTest::testChunk10()
 {
-    build_and_check_chunk("chunk10.soar", 8, 1);
+    build_and_check_chunk("chunk10.soar", 8, 2);
 }
 
 void ChunkTest::testChunk11()
@@ -179,7 +179,7 @@ void ChunkTest::testChunk11()
 
 void ChunkTest::testChunk12()
 {
-    build_and_check_chunk("chunk12.soar", 8, 1);
+    build_and_check_chunk("chunk12.soar", 8, 2);
 }
 
 void ChunkTest::testChunk13()
@@ -219,7 +219,7 @@ void ChunkTest::testChunk19()
 
 void ChunkTest::testChunk20()
 {
-    build_and_check_chunk("chunk20.soar", 8, 1);
+    build_and_check_chunk("chunk20.soar", 8, 6);
 }
 
 void ChunkTest::testChunk21()
@@ -229,5 +229,5 @@ void ChunkTest::testChunk21()
 
 void ChunkTest::testChunk22()
 {
-    build_and_check_chunk("chunk22.soar", 8, 1);
+    build_and_check_chunk("chunk22.soar", 8, 0);
 }

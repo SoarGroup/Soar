@@ -6,9 +6,7 @@ source "setup.soar"
 
 sp {apply1a
     (state <s> ^name substate
-               ^operator.name test
-               ^superstate <ss>)
-    (<ss> ^test-current 1)
+               ^operator.name test)
 -->
     (<s> ^substate-output 9)}
 
@@ -19,7 +17,6 @@ sp {apply1b
                ^superstate.test-item { <= <var> <var2> }
                ^substate-output <var-ungrounded>
                ^superstate <ss>)
-    (<ss> ^test-current 1)
 -->
     (<ss> ^result1a <var-ungrounded>
           ^result1b <var>
@@ -27,6 +24,7 @@ sp {apply1b
           ^result1d <unbound>
           ^test-done 1)
     (<unbound> ^foo bar)
-        (exec succeeded)
-    (halt)
     }
+
+#run
+#ctf expected/chunk1.soar print -cf

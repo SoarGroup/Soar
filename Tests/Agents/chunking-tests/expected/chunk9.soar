@@ -1,7 +1,16 @@
-sp {chunk*apply9b*t13-1
+sp {chunk-multi*apply9b*onc*t3-2
     :chunk
-    (state <s1> ^test-param <t3>
-                ^test-param { <t4> <=> <t3> })
+    (state <s1> ^superstate nil ^test-param <t2> ^test-param { <=> <t2> <t1> })
     -->
-    (<s1> ^result9c <t3> + ^result9d <t4> + ^test-done 9 +)
+    (<s1> ^result9c <t2> + ^result9d <t1> + ^test-done 1 +)
 }
+
+sp {chunk-multi*apply9b*onc*t3-1
+    :chunk
+    (state <s1> ^superstate nil ^test-param { <=> <t1> <t1> })
+    -->
+    (<s1> ^result9c <t1> + ^result9d <t1> + ^test-done 1 +)
+}
+
+
+

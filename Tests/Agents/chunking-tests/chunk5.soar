@@ -4,8 +4,10 @@ sp {apply5
                ^operator.name test
                ^superstate <ss>)
     (<ss> ^test-item <val>
-          ^test-item { < <val> <var> }
-          ^test-current 1)
+          ^test-item { < <val> <var> })
 -->
     (<ss> ^small5 <var> ^big5 <val>
           ^test-done 1)}
+
+#run
+#ctf expected/chunk5.soar print -cf

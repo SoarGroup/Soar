@@ -5,9 +5,10 @@ sp {apply*12
                ^superstate <ss>)
     (<ss> ^test-item <val>
           ^test-param2.foo.value <val>
-          ^test-param2.foo.value {<> <val> <val2>}
-          ^test-current 1)
+          ^test-param2.foo.value {<> <val> <val2>})
 -->
     (<ss> ^result12a <val> ^result12b <val2>
           ^test-done 1)}
 
+#run
+#ctf expected/chunk12.soar print -cf

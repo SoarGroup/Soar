@@ -5,7 +5,6 @@ sp {apply14a
     (state <s> ^name substate
                ^operator.name test
                ^superstate <ss>)
-    (<ss> ^test-current 1)
 -->
     (<s> ^data1 <ungrounded> ^data2 3)
     (<ungrounded> ^number 5
@@ -17,8 +16,7 @@ sp {apply14b
                ^data1 <data-id>
                ^superstate <ss>)
     (<ss> ^test-item { > <data-num> <num> }
-          ^test-param { <> <data-id> <id> }
-          ^test-current 1)
+          ^test-param { <> <data-id> <id> })
 -->
     (<ss> ^result14-ungrounded-num <data-num>
           ^result14-ungrounded-id <data-id>
@@ -26,3 +24,6 @@ sp {apply14b
           ^result14-grounded-num <num>
           ^test-done 1)
 }
+
+#run
+#ctf expected/chunk14.soar print -cf

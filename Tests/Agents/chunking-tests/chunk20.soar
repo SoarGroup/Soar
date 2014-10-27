@@ -79,3 +79,6 @@ sp {apply21f2
     (<ss> ^highest <x> ^lowest <low>
           ^test-done 1)
 }
+
+#run
+#ctf expected/chunk20.soar print -cf

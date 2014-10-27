@@ -6,19 +6,16 @@ sp {apply7a
                ^operator.name test
                ^superstate <ss>)
     (<ss> ^test-item <var2>
-          ^test-item { < <var2> <var> }
-          ^test-current 1)
+          ^test-item { < <var2> <var> } )
 -->
     (<ss> ^substate-output 5)}
 
 sp {apply7b
     (state <s> ^name substate
                ^operator.name test
-               ^superstate <ssb>
-              )
+               ^superstate <ssb>)
     (<ssb> ^substate-output <var2>
-           ^test-item { > <var2> <var> }
-           ^test-current 1)
+           ^test-item { > <var2> <var> })
 -->
     (<s> ^result7a <var> ^result7b <var2>)}
 
@@ -27,7 +24,9 @@ sp {apply7c
                ^operator.name test
                ^superstate <ssc>
                ^result7a <var> ^result7b <var2>)
-    (<ssc> ^test-current 1)
 -->
     (<ssc> ^result7a <var> ^result7b <var2> ^result7c 7
            ^test-done 1)}
+
+#run
+#ctf expected/chunk7.soar print -cf
