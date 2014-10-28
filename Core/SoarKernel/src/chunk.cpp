@@ -1166,17 +1166,18 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         thisAgent->variablizationManager->variablize_relational_constraints();
 
         thisAgent->variablizationManager->install_cached_constraints(lhs_top);
-
-        dprint(DT_MERGE, "Polishing variablized conditions: \n");
-
-        thisAgent->variablizationManager->fix_conditions(lhs_top);
-#ifndef MERGE_CONDITIONS_EARLY
-        thisAgent->variablizationManager->merge_conditions(lhs_top);
-#endif
-        dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
-        dprint_condition_list(DT_CONSTRAINTS, lhs_top, "");
-
     }
+
+    /* -- Clean up unification constraints and merge redundant conditions
+     *    Note that this is needed even for justifications -- */
+    dprint(DT_MERGE, "Polishing variablized conditions: \n");
+
+    thisAgent->variablizationManager->fix_conditions(lhs_top);
+#ifndef MERGE_CONDITIONS_EARLY
+    thisAgent->variablizationManager->merge_conditions(lhs_top);
+#endif
+    dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
+    dprint_condition_list(DT_CONSTRAINTS, lhs_top, "");
 
     dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
     dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS action list:\n");
