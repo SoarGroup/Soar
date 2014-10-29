@@ -226,7 +226,3 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
     //  print_variablization_table();
 }
 
-void Variablization_Manager::update_g_ids(instantiation* inst)
-{
-
-}
