@@ -1326,7 +1326,7 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
             break;
     }
     /* -- We no longer need the wme and didn't increase refcount, so discard reference -- */
-    (*t)->identity->grounding_wme = NULL;
+//    (*t)->identity->grounding_wme = NULL;
 }
 
 inline void add_identity_to_negative_test(agent* thisAgent,
@@ -1386,7 +1386,7 @@ inline void add_identity_to_negative_test(agent* thisAgent,
             break;
     }
     /* -- We no longer need the wme and didn't increase refcount, so discard reference -- */
-    t->identity->grounding_wme = NULL;
+//    t->identity->grounding_wme = NULL;
 }
 
 void propagate_identity(agent* thisAgent,

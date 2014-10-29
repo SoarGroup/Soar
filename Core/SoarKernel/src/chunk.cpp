@@ -935,7 +935,7 @@ bool should_variablize(agent* thisAgent, instantiation* inst)
 ==================================================================== */
 
 
-void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list)
+void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list, bool update_grounding_ids)
 {
     goal_stack_level grounds_level;
     preference* results, *pref;
@@ -995,6 +995,16 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
     dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() called...\n");
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+
+    if (update_grounding_ids)
+    {
+        //thisAgent->variablizationManager->update_g_ids(inst);
+        //lhs_top, chunk_inst
+        propagate_identity(thisAgent, inst->top_of_instantiated_conditions, inst->match_goal_level);
+//        thisAgent->variablizationManager->fix_conditions(lhs_top);
+//        thisAgent->variablizationManager->clear_variablization_tables();
+//        thisAgent->variablizationManager->clear_cached_constraints();
+    }
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1361,14 +1371,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     thisAgent->variablizationManager->clear_variablization_tables();
     thisAgent->variablizationManager->clear_cached_constraints();
-
-    /* MVP 6-8-94 */
-    if (!thisAgent->max_chunks_reached)
-    {
-        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantation...\n");
-        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-        chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list);
-    }
+    thisAgent->variablizationManager->clear_ovar_gid_table();
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -1376,6 +1379,15 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->timers_chunking_cpu_time[thisAgent->current_phase].update(local_timer);
 #endif
 #endif
+
+    if (!thisAgent->max_chunks_reached)
+    {
+        dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
+        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantation...\n");
+        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+        chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list, true);
+    }
+
 
     dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
@@ -1385,6 +1397,7 @@ chunking_done:
     {}
     thisAgent->variablizationManager->clear_variablization_tables();
     thisAgent->variablizationManager->clear_cached_constraints();
+    thisAgent->variablizationManager->clear_ovar_gid_table();
 
     dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
