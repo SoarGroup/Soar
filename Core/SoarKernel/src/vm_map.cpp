@@ -63,7 +63,7 @@ void Variablization_Manager::clear_variablization_tables()
         delete it->second;
     }
     sym_to_var_map->clear();
-    
+
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing grounding_id->variablization map...\n");
     /* -- Clear grounding_id->variablization map -- */
     for (std::map< uint64_t, variablization* >::iterator it = (*g_id_to_var_map).begin(); it != (*g_id_to_var_map).end(); ++it)
@@ -86,7 +86,7 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
     {
         return NULL;
     }
-    
+
     std::map< uint64_t, variablization* >::iterator iter = (*g_id_to_var_map).find(index_id);
     if (iter != (*g_id_to_var_map).end())
     {
@@ -143,7 +143,7 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym)
     {
         dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in orig_var variablization table for %s\n",
                iter->second, index_sym->to_string());
-               
+
         return iter->second;
     }
     else
@@ -151,7 +151,7 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym)
         dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in orig_var variablization table.\n", index_sym->to_string());
         print_ovar_gid_propogation_table(DT_VARIABLIZATION_MANAGER);
     }
-    
+
     return 0;
 }
 
@@ -184,14 +184,14 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
            instantiated_sym->to_string(),
            identity ? identity->grounding_id : 0,
            variable->to_string());
-           
+
     new_variablization = new variablization;
     new_variablization->instantiated_symbol = instantiated_sym;
     new_variablization->variablized_symbol = variable;
     symbol_add_ref(thisAgent, instantiated_sym);
     symbol_add_ref(thisAgent, variable);
     new_variablization->grounding_id = identity ? identity->grounding_id : 0;
-    
+
     if (instantiated_sym->is_sti())
     {
         /* -- STI may have more than one original symbol (mostly due to the fact
@@ -203,7 +203,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
          *    identifier symbol will have already been replaced with a variable,
          *    so we must use the variable instead to look up variablization info.
          *    This may not be necessary after we resurrect the old NOT code. -- */
-        
+
         (*sym_to_var_map)[instantiated_sym] = new_variablization;
         (*sym_to_var_map)[variable] = copy_variablization(thisAgent, new_variablization);
         dprint_noprefix(DT_VARIABLIZATION_MANAGER, "Created symbol_to_var_map ([%s] and [%s] to new variablization.\n",
@@ -211,11 +211,11 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
     }
     else if (identity)
     {
-    
+
         /* -- A constant symbol is being variablized, so store variablization info
          *    indexed by the constant's grounding id. -- */
         (*g_id_to_var_map)[identity->grounding_id] = new_variablization;
-        
+
         dprint_noprefix(DT_VARIABLIZATION_MANAGER, "Created g_id_to_var_map[%llu] to new variablization.\n",
                         identity->grounding_id);
     }
@@ -224,4 +224,9 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
         assert(false);
     }
     //  print_variablization_table();
+}
+
+void Variablization_Manager::update_g_ids(instantiation* inst)
+{
+
 }

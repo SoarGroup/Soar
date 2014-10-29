@@ -1,10 +1,12 @@
-sp {chunk-multi*apply22-init-rl*onc*t62-1
+sp {chunk-multi*apply21-init-rl*onc*t3-1
     :chunk
-    (state <s1> ^test-current 22 ^superstate nil ^test-final <c2>
-          ^test-current { <= <c2> <c1> })
+    (state <s1> ^test-current 1 ^superstate nil)
     -->
     (<s1> ^rl-item 0.9 + ^rl-item 0.7 + ^rl-id <t1> + ^rl-id <t2> +
-           ^test-done 22 +)
+           ^test-done 1 +)
     (<t1> ^value 0.9 + ^value 0.8 +)
     (<t2> ^value <d1> + ^value <d2> +)
 }
+
+
+

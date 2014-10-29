@@ -1,55 +1,52 @@
-sp {chunk-multi*apply21f2*onc*t60-6
+sp {chunk-multi*apply21f2*onc*t3-6
     :chunk
-    (state <s1> ^test-current 21 ^superstate nil ^test-item <c1>
+    (state <s1> ^test-current 1 ^superstate nil ^test-item <c1>
           -^test-item { <> <c1> > <c1> <dupe> } ^test-item { < <c1> <c2> }
-          -^test-item { <> <c2> <> <c1> <dupe> } ^test-final { >= 21 <c4> }
-          ^test-current { <= <c4> <c3> })
+          -^test-item { <> <c2> <> <c1> <dupe> })
     -->
-    (<s1> ^highest <c1> + ^lowest <c2> + ^test-done 21 +)
+    (<s1> ^highest <c1> + ^lowest <c2> + ^test-done 1 +)
 }
 
-sp {chunk-multi*apply21a*onc*t60-5
+sp {chunk-multi*apply21e*onc*t3-5
     :chunk
-    (state <s1> ^test-current 21 -^test-things <t*1> ^superstate nil
-          ^test-final <c2> ^test-current { <= <c2> <c1> })
+    (state <s1> ^test-current 1 ^superstate nil ^test-item <c2>
+          ^test-item { > <c2> <> <c2> <c1> })
+   -{ (<s1> ^bar <c1> ^foo { > <c1> > <c2> <max> } ^test-item <max>)}
     -->
-    (<s1> ^result true +)
+    (<s1> ^highest <c1> + ^second-highest <c2> + ^unbound <m1> +)
 }
 
-sp {chunk-multi*apply21e*onc*t60-4
+sp {chunk-multi*apply21d*onc*t3-4
     :chunk
-    (state <s1> ^test-current 21 ^superstate nil ^test-final <c2>
-          ^test-current { <= <c2> <c1> } ^test-item <c4>
-          ^test-item { > <c4> <> <c4> <c3> })
-   -{ (<s1> ^bar <c3> ^foo { > <c3> > <c4> <max> } ^test-item <max>)}
+    (state <s1> ^test-current 1 ^superstate nil ^test-item <c2>
+          ^test-item { < <c2> <c1> })
+   -{ (<s1> ^test-item 10 ^test-item { > <c2> <t*1> })}
     -->
-    (<s1> ^highest <c3> + ^second-highest <c4> + ^unbound <m1> +)
+    (<s1> ^result <c2> +)
 }
 
-sp {chunk-multi*apply21d*onc*t60-3
+sp {chunk-multi*apply21b*onc*t3-3
     :chunk
-    (state <s1> ^test-current 21 ^superstate nil ^test-item <c4>
-          ^test-final <c2> ^test-current { <= <c2> <c1> }
-          ^test-item { < <c4> <c3> })
-   -{ (<s1> ^test-item 10 ^test-item { > <c4> <t*1> })}
+    (state <s1> ^test-current 1 ^superstate nil ^test-item <c2>
+          -^foo { > <c2> <f*1> } ^test-item { < <c2> <c1> })
     -->
-    (<s1> ^result <c4> +)
+    (<s1> ^result <c1> +)
 }
 
-sp {chunk-multi*apply21b*onc*t60-2
+sp {chunk-multi*apply21c*onc*t3-2
     :chunk
-    (state <s1> ^test-current 21 ^superstate nil ^test-item <c4>
-          -^foo { > <c4> <f*1> } ^test-final <c2>
-          ^test-current { <= <c2> <c1> } ^test-item { < <c4> <c3> })
-    -->
-    (<s1> ^result <c3> +)
-}
-
-sp {chunk-multi*apply21c*onc*t60-1
-    :chunk
-    (state <s1> ^test-current 21 ^superstate nil ^test-final <c2>
-          ^test-current { <= <c2> <c1> })
+    (state <s1> ^test-current 1 ^superstate nil)
    -{ (<s1> ^test-item 10 ^test-item 9)}
     -->
     (<s1> ^result true +)
 }
+
+sp {chunk-multi*apply21a*onc*t3-1
+    :chunk
+    (state <s1> ^test-current 1 -^test-things <t*1> ^superstate nil)
+    -->
+    (<s1> ^result true +)
+}
+
+
+

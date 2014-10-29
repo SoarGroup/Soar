@@ -1,20 +1,21 @@
- Not sure which is correct
-
-sp {chunk*apply*12*t5-1
+sp {chunk-multi*apply*12*onc*t3-2
     :chunk
-    (state <s1> 2 ^superstate nil ^test-current <t2> ^test-final { <t3> >= <t2> }
-                ^test-param <t1> ^test-param <t1> ^test-item <c1>)
-    (<t1> ^value <c1> ^value { <v1> <> <c1> })
+    (state <s1> ^superstate nil ^test-param2 <t3> ^test-item <c1>)
+    (<t3> ^foo <t1> ^foo <t2>)
+    (<t2> ^value <c1>)
+    (<t1> ^value { <> <c1> <d1> })
     -->
-    (<s1> ^result12a <c1> + ^result12b <v1> + ^test-done 12 +)
+    (<s1> ^result12a <c1> + ^result12b <d1> + ^test-done 1 +)
 }
 
-sp {chunk*apply*12*t5-2
+sp {chunk-multi*apply*12*onc*t3-1
     :chunk
-    (state <s1> 2 ^superstate nil ^test-current <t2> ^test-final { <t3> >= <t2> }
-                ^test-param <t1> ^test-param <t4> ^test-item <c1>)
-    (<t1> ^value <c1>)
-    (<t4> ^value { <v1> <> <c1> })
+    (state <s1> ^superstate nil ^test-param2 <t2> ^test-item <c2>)
+    (<t2> ^foo <t1>)
+    (<t1> ^value <c2> ^value { <> <c2> <c1> })
     -->
-    (<s1> ^result12a <c1> + ^result12b <v1> + ^test-done 12 +)
+    (<s1> ^result12a <c2> + ^result12b <c1> + ^test-done 1 +)
 }
+
+
+
