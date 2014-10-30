@@ -934,6 +934,18 @@ bool should_variablize(agent* thisAgent, instantiation* inst)
    chunk-free-problem-spaces, ^quiescence t, etc.)
 ==================================================================== */
 
+inline void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
+{
+    thisAgent->variablizationManager->clear_variablization_tables();
+    thisAgent->variablizationManager->clear_cached_constraints();
+    thisAgent->variablizationManager->clear_ovar_gid_table();
+    if (prod_name)
+    {
+        dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
+        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+        symbol_remove_ref(thisAgent, prod_name);
+    }
+}
 
 void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list, bool update_grounding_ids)
 {
@@ -942,7 +954,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     action* rhs;
     production* prod;
     instantiation* chunk_inst;
-    Symbol* prod_name;
+    Symbol* prod_name=NULL;
     byte prod_type;
     bool print_name, print_prod;
     byte rete_addition_result;
@@ -998,12 +1010,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (update_grounding_ids)
     {
-        //thisAgent->variablizationManager->update_g_ids(inst);
-        //lhs_top, chunk_inst
+        dprint(DT_IDENTITY_PROP, "Re-propagating identity for potentially different match level.\n");
         propagate_identity(thisAgent, inst->top_of_instantiated_conditions, inst->match_goal_level);
-//        thisAgent->variablizationManager->fix_conditions(lhs_top);
-//        thisAgent->variablizationManager->clear_variablization_tables();
-//        thisAgent->variablizationManager->clear_cached_constraints();
     }
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
@@ -1166,8 +1174,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     lhs_top = top_cc->variablized_cond;
     lhs_bottom = bottom_cc->variablized_cond;
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "chunk_instantiation variablizing following chunk instantiation: \n");
-    dprint_cond_results(DT_PRINT_INSTANTIATIONS, lhs_top, results);
+    dprint(DT_VARIABLIZATION_MANAGER,  "chunk_instantiation variablizing following chunk instantiation: \n");
+    dprint_cond_results(DT_VARIABLIZATION_MANAGER, lhs_top, results);
 
     if (variablize)
     {
@@ -1178,13 +1186,17 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         thisAgent->variablizationManager->install_cached_constraints(lhs_top);
     }
 
+    dprint(DT_VARIABLIZATION_MANAGER,  "chunk_instantiation variablizing following chunk instantiation: \n");
+    dprint_cond_results(DT_VARIABLIZATION_MANAGER, lhs_top, results);
     /* -- Clean up unification constraints and merge redundant conditions
      *    Note that this is needed even for justifications -- */
-    dprint(DT_MERGE, "Polishing variablized conditions: \n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions: \n");
 
     thisAgent->variablizationManager->fix_conditions(lhs_top);
+    thisAgent->variablizationManager->fix_conditions(top_cc->instantiated_cond, true);
 #ifndef MERGE_CONDITIONS_EARLY
     thisAgent->variablizationManager->merge_conditions(lhs_top);
+    thisAgent->variablizationManager->merge_conditions(top_cc->instantiated_cond);
 #endif
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_condition_list(DT_CONSTRAINTS, lhs_top, "");
@@ -1369,9 +1381,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     chunk_inst->next = (*custom_inst_list);
     (*custom_inst_list) = chunk_inst;
 
-    thisAgent->variablizationManager->clear_variablization_tables();
-    thisAgent->variablizationManager->clear_cached_constraints();
-    thisAgent->variablizationManager->clear_ovar_gid_table();
+    chunk_instantiation_cleanup(thisAgent, prod_name);
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -1386,6 +1396,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantation...\n");
         dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
         chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list, true);
+        return;
     }
 
 
@@ -1394,14 +1405,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     return;
 
 chunking_done:
-    {}
-    thisAgent->variablizationManager->clear_variablization_tables();
-    thisAgent->variablizationManager->clear_cached_constraints();
-    thisAgent->variablizationManager->clear_ovar_gid_table();
-
-    dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
-    dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-    symbol_remove_ref(thisAgent, prod_name);
+    {
+        chunk_instantiation_cleanup(thisAgent, prod_name);
+    }
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS

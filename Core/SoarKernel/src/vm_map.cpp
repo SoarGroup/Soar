@@ -90,14 +90,14 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
     std::map< uint64_t, variablization* >::iterator iter = (*g_id_to_var_map).find(index_id);
     if (iter != (*g_id_to_var_map).end())
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in g_id variablization table: %s/%s\n", index_id,
+        dprint(DT_LHS_VARIABLIZATION, "...found %llu in g_id variablization table: %s/%s\n", index_id,
                iter->second->variablized_symbol->to_string(), iter->second->instantiated_symbol->to_string());
         return iter->second;
     }
     else
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "...did not find %llu in g_id variablization table.\n", index_id);
-        print_variablization_tables(DT_VARIABLIZATION_MANAGER, 2);
+        dprint(DT_LHS_VARIABLIZATION, "...did not find %llu in g_id variablization table.\n", index_id);
+        print_variablization_tables(DT_LHS_VARIABLIZATION, 2);
         return NULL;
     }
 }
@@ -107,14 +107,14 @@ variablization* Variablization_Manager::get_variablization_for_symbol(std::map< 
     std::map< Symbol*, variablization* >::iterator iter = (*pMap).find(index_sym);
     if (iter != (*pMap).end())
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "...found %s in variablization table: %s/%s\n", index_sym->to_string(),
+        dprint(DT_LHS_VARIABLIZATION, "...found %s in variablization table: %s/%s\n", index_sym->to_string(),
                iter->second->variablized_symbol->to_string(), iter->second->instantiated_symbol->to_string());
         return iter->second;
     }
     else
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in variablization table.\n", index_sym->to_string());
-        print_variablization_tables(DT_VARIABLIZATION_MANAGER, 1);
+        dprint(DT_LHS_VARIABLIZATION, "...did not find %s in variablization table.\n", index_sym->to_string());
+        print_variablization_tables(DT_LHS_VARIABLIZATION, 1);
         return NULL;
     }
 }
@@ -141,15 +141,15 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym)
     std::map< Symbol*, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
     if (iter != (*orig_var_to_g_id_map).end())
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "...found %llu in orig_var variablization table for %s\n",
+        dprint(DT_LHS_VARIABLIZATION, "...found %llu in orig_var variablization table for %s\n",
                iter->second, index_sym->to_string());
 
         return iter->second;
     }
     else
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "...did not find %s in orig_var variablization table.\n", index_sym->to_string());
-        print_ovar_gid_propogation_table(DT_VARIABLIZATION_MANAGER);
+        dprint(DT_LHS_VARIABLIZATION, "...did not find %s in orig_var variablization table.\n", index_sym->to_string());
+        print_ovar_gid_propogation_table(DT_LHS_VARIABLIZATION);
     }
 
     return 0;
@@ -180,7 +180,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 {
     variablization* new_variablization;
     assert(instantiated_sym && variable);
-    dprint(DT_VARIABLIZATION_MANAGER, "Storing variablization for %s(%llu) to %s.\n",
+    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %s(%llu) to %s.\n",
            instantiated_sym->to_string(),
            identity ? identity->grounding_id : 0,
            variable->to_string());
@@ -206,7 +206,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 
         (*sym_to_var_map)[instantiated_sym] = new_variablization;
         (*sym_to_var_map)[variable] = copy_variablization(thisAgent, new_variablization);
-        dprint_noprefix(DT_VARIABLIZATION_MANAGER, "Created symbol_to_var_map ([%s] and [%s] to new variablization.\n",
+        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created symbol_to_var_map ([%s] and [%s] to new variablization.\n",
                         instantiated_sym->to_string(), variable->to_string());
     }
     else if (identity)
@@ -216,7 +216,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
          *    indexed by the constant's grounding id. -- */
         (*g_id_to_var_map)[identity->grounding_id] = new_variablization;
 
-        dprint_noprefix(DT_VARIABLIZATION_MANAGER, "Created g_id_to_var_map[%llu] to new variablization.\n",
+        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created g_id_to_var_map[%llu] to new variablization.\n",
                         identity->grounding_id);
     }
     else

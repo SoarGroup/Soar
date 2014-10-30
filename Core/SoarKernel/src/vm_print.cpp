@@ -18,16 +18,16 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
     dprint(mode, "------------------------------------\n");
     dprint(mode, "            Merge Map\n");
     dprint(mode, "------------------------------------\n");
-    
+
     if (cond_merge_map->size() == 0)
     {
-        dprint(mode, "EMPTY MAP");
+        dprint(mode, "EMPTY MAP\n");
     }
-    
+
     std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >::iterator iter_id;
     std::map< Symbol*, std::map< Symbol*, condition*> >::iterator iter_attr;
     std::map< Symbol*, condition*>::iterator iter_value;
-    
+
     for (iter_id = cond_merge_map->begin(); iter_id != cond_merge_map->end(); ++iter_id)
     {
         dprint(DT_MERGE, "%s conditions: \n", iter_id->first->to_string());
@@ -39,7 +39,7 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
             }
         }
     }
-    
+
     dprint(mode, "------------------------------------\n");
 }
 void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bool printHeader)
@@ -50,17 +50,17 @@ void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bo
         dprint(mode, "OrigVariable to g_id Propagation Map\n");
         dprint(mode, "------------------------------------\n");
     }
-    
+
     if (orig_var_to_g_id_map->size() == 0)
     {
-        dprint(mode, "EMPTY MAP");
+        dprint(mode, "EMPTY MAP\n");
     }
-    
+
     for (std::map< Symbol*, uint64_t >::iterator it = (*orig_var_to_g_id_map).begin(); it != (*orig_var_to_g_id_map).end(); ++it)
     {
         dprint(mode, "%s -> %llu\n", it->first->to_string(), it->second);
     }
-    
+
 }
 
 void Variablization_Manager::print_cached_constraints(TraceMode mode)
@@ -68,14 +68,14 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
     dprint(mode, "------------------------------------\n");
     dprint(mode, "           STI Constraint Map\n");
     dprint(mode, "------------------------------------\n");
-    
+
     if (sti_constraints->size() == 0)
     {
-        dprint(mode, "EMPTY MAP");
+        dprint(mode, "EMPTY MAP\n");
     }
-    
+
     cons* c;
-    
+
     for (std::map< Symbol*, ::list* >::iterator it = sti_constraints->begin(); it != sti_constraints->end(); ++it)
     {
         c = it->second;
@@ -91,7 +91,7 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
     dprint(mode, "------------------------------------\n");
     if (constant_constraints->size() == 0)
     {
-        dprint(mode, "EMPTY MAP");
+        dprint(mode, "EMPTY MAP\n");
     }
     for (std::map< uint64_t, ::list* >::iterator it = constant_constraints->begin(); it != constant_constraints->end(); ++it)
     {
@@ -122,7 +122,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
 //            dprint(mode, "------------------------------------\n");
         if (sym_to_var_map->size() == 0)
         {
-            dprint(mode, "EMPTY MAP");
+            dprint(mode, "EMPTY MAP\n");
         }
         for (std::map< Symbol*, variablization* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
         {
@@ -137,7 +137,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
 //            dprint(mode, "------------------------------------\n");
         if (g_id_to_var_map->size() == 0)
         {
-            dprint(mode, "EMPTY MAP");
+            dprint(mode, "EMPTY MAP\n");
         }
         for (std::map< uint64_t, variablization* >::iterator it = (*g_id_to_var_map).begin(); it != (*g_id_to_var_map).end(); ++it)
         {

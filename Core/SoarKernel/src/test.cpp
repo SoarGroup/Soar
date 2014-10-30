@@ -97,6 +97,10 @@ test copy_test(agent* thisAgent, test t)
     new_ct->identity->grounding_id = t->identity->grounding_id;
     new_ct->identity->grounding_field = t->identity->grounding_field;
     new_ct->identity->grounding_wme = t->identity->grounding_wme;
+    if (new_ct->identity->grounding_wme)
+    {
+        wme_add_ref(new_ct->identity->grounding_wme);
+    }
 
     return new_ct;
 }
@@ -238,6 +242,10 @@ void deallocate_test(agent* thisAgent, test t, long indent)
         if (t->identity->original_var)
         {
             symbol_remove_ref(thisAgent, t->identity->original_var);
+        }
+        if (t->identity->grounding_wme)
+        {
+            wme_remove_ref(thisAgent, t->identity->grounding_wme);
         }
         delete t->identity;
     }
@@ -1147,6 +1155,14 @@ inline uint64_t get_gid_from_pref_for_field(preference* p, WME_Field f)
     return 0;
 }
 
+inline const char* field_to_string(WME_Field f)
+{
+    if (f == ID_ELEMENT) return "ID";
+    if (f == ATTR_ELEMENT) return "attribute";
+    if (f == VALUE_ELEMENT) return "value";
+    return "NO-ELEMENT";
+}
+
 inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_level pLevel)
 {
     if (!w)
@@ -1154,9 +1170,8 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         return 0;
     }
 
-    dprint(DT_IDENTITY_PROP, "Getting g_id for wme (%s ^%s %s):%d at level %hi...",
-           w->id->to_string(), w->attr->to_string(), w->value->to_string(),
-           f, pLevel);
+    dprint(DT_IDENTITY_PROP, "- %s g_id requested for (%s ^%s %s) at level %hi...\n",
+        field_to_string(f), w->id->to_string(), w->attr->to_string(), w->value->to_string(), pLevel);
 
     grounding_info* g = w->ground_id_list;
 
@@ -1166,21 +1181,20 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     {
         if (g->level == pLevel)
         {
-            dprint_noprefix(DT_IDENTITY_PROP, "found grounding struct...");
+            dprint(DT_IDENTITY_PROP, "- found grounding struct for level %hi: (%llu ^%llu %llu)\n", pLevel, g->grounding_id[ID_ELEMENT], g->grounding_id[ATTR_ELEMENT], g->grounding_id[VALUE_ELEMENT]);
             if (g->grounding_id[f] == 0)
             {
-                dprint_noprefix(DT_IDENTITY_PROP, "but no g_id exists for field %hi.  Must retrieve or create.", f);
+                dprint(DT_IDENTITY_PROP, "-- will attempt to retrieve via propagation or create a new g_id for %s element.\n", field_to_string(f));
                 create_grounding_info = false;
                 break;
             }
             else
             {
-                dprint_noprefix(DT_IDENTITY_PROP, "Returning id for field %hi: %llu\n", f, g->grounding_id[f]);
+                dprint(DT_IDENTITY_PROP, "-- returning g_id %llu\n", g->grounding_id[f]);
                 return g->grounding_id[f];
             }
         }
     }
-    dprint_noprefix(DT_IDENTITY_PROP, "\n");
 
     /* -- Create new grounding info with unique IDs for this goal level and
      *    add to head of ground_id_list -- */
@@ -1196,20 +1210,23 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     {
         /* MToDo | We can probably eliminate generating id's for level 1 to level 1 matches here */
         g->grounding_id[f] = get_gid_from_pref_for_field(w->preference, f);
-        dprint(DT_IDENTITY_PROP, "Found preference g_id %llu...", g->grounding_id[f]);
+        dprint(DT_IDENTITY_PROP, "- propagating g_id %llu from wme preference at the same level...", g->grounding_id[f]);
     }
     else
     {
-        dprint(DT_IDENTITY_PROP, "No preference found for g_id %llu...", g->grounding_id[f]);
+        if (!w->preference)
+            dprint(DT_IDENTITY_PROP, "- not propagating.  No preference found for wme...");
+        else
+            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level...");
     }
     if (g->grounding_id[f] == 0)
     {
         g->grounding_id[f] = thisAgent->variablizationManager->get_new_ground_id();
-        dprint_noprefix(DT_IDENTITY_PROP, "creating g_id for field %hi: ", f);
+        dprint_noprefix(DT_IDENTITY_PROP, "generating new g_id ");
     }
     else
     {
-        dprint_noprefix(DT_IDENTITY_PROP, "Valid.  Returning ");
+        dprint_noprefix(DT_IDENTITY_PROP, "returning existing g_id ");
     }
     dprint_noprefix(DT_IDENTITY_PROP, "%llu\n", g->grounding_id[f]);
     return g->grounding_id[f];
@@ -1298,13 +1315,13 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                 if (!sym->is_sti())
                 {
                     (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field, level);
-                    dprint(DT_IDENTITY_PROP, "Setting grounding ID for symbol %s to %llu.\n", sym->to_string(), (*t)->identity->grounding_id);
+                    dprint(DT_IDENTITY_PROP, "- Setting g_id for %s to %llu.\n", sym->to_string(), (*t)->identity->grounding_id);
                     if (((*t)->identity->grounding_id > 0) && (*t)->identity->original_var)
                     {
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
                         if (existing_gid)
                         {
-                            dprint(DT_IDENTITY_PROP, "Symbol %s(%llu) already has grounding id %llu.\n", sym->to_string(), (*t)->identity->grounding_id, existing_gid);
+                            dprint(DT_IDENTITY_PROP, "- %s(%llu) already has g_id %llu.\n", sym->to_string(), (*t)->identity->grounding_id, existing_gid);
                             add_unification_constraint(thisAgent, t, existing_gid);
 //                            test new_test = copy_test(thisAgent, (*t));
 //                            new_test->identity->grounding_id = existing_gid;
@@ -1316,12 +1333,12 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                 }
                 else
                 {
-                    dprint(DT_IDENTITY_PROP, "Will not generate grounding ID b/c symbol %s is STI.\n", sym->to_string());
+                    dprint(DT_IDENTITY_PROP, "- Skipping %s.  No g_id necessary for STI.\n", sym->to_string());
                 }
             }
             else
             {
-                dprint(DT_IDENTITY_PROP, "Will not generate grounding ID b/c no sym retrieved from wme in add_identity_to_test!\n");
+                dprint(DT_IDENTITY_PROP, "- Skipping.  No %s sym retrieved from wme in add_identity_and_unifications_to_test!\n", field_to_string((*t)->identity->grounding_field));
             }
             break;
     }
@@ -1342,11 +1359,11 @@ inline void add_identity_to_negative_test(agent* thisAgent,
         case DISJUNCTION_TEST:
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
-            dprint(DT_IDENTITY_PROP, "Will not propagate grounding ID for NC b/c test type does not take a referent.\n");
+            dprint(DT_IDENTITY_PROP, "Will not propagate g_id for NC b/c test type does not take a referent.\n");
             break;
 
         case CONJUNCTIVE_TEST:
-            dprint(DT_IDENTITY_PROP, "Propagating grounding IDs to NCC...\n");
+            dprint(DT_IDENTITY_PROP, "Propagating g_ids to NCC...\n");
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
                 add_identity_to_negative_test(thisAgent, static_cast<test>(c->first), default_f);
@@ -1371,17 +1388,17 @@ inline void add_identity_to_negative_test(agent* thisAgent,
                 {
                     // Recall grounding id using
                     t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym);
-                    dprint(DT_IDENTITY_PROP, "Setting grounding ID for symbol %s to %llu.\n", sym->to_string(), t->identity->grounding_id);
+                    dprint(DT_IDENTITY_PROP, "Setting g_id for %s to %llu.\n", sym->to_string(), t->identity->grounding_id);
                     assert(t->identity->grounding_id > 0);
                 }
                 else
                 {
-                    dprint(DT_IDENTITY_PROP, "Could not propagate grounding ID for NC b/c symbol %s is STI or variable.\n", sym->to_string());
+                    dprint(DT_IDENTITY_PROP, "Could not propagate g_id for NC b/c symbol %s is STI or variable.\n", sym->to_string());
                 }
             }
             else
             {
-                dprint(DT_IDENTITY_PROP, "Will not propagate grounding ID for NC b/c no referent in add_identity_to_negative_test (or one with no original variable)!\n");
+                dprint(DT_IDENTITY_PROP, "Will not propagate g_id for NC b/c no referent in add_identity_to_negative_test (or one with no original variable)!\n");
             }
             break;
     }
@@ -1739,6 +1756,10 @@ void add_additional_tests_and_originals(agent* thisAgent,
                         {
                             dprint(DT_IDENTITY_PROP, "Adding wme and test/symbol type information for relational test against \"%s\n", original_referent->to_string());
                             chunk_test->identity->grounding_wme = get_wme_for_referent(cond,  rt->data.variable_referent.levels_up);
+                            if (chunk_test->identity->grounding_wme)
+                            {
+                                wme_add_ref(chunk_test->identity->grounding_wme);
+                            }
                             chunk_test->identity->grounding_field = static_cast<WME_Field>(rt->data.variable_referent.field_num);
                             if (original_referent->is_variable())
                             {
@@ -2344,20 +2365,24 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
             orig_test = find_original_equality_test_preferring_vars(t, true);
             if (orig_test && orig_test->data.referent->is_variable())
             {
-                dprint(DT_IDENTITY_PROP, "Caching original symbol and wme in identity for \"%s\": %s + %s\n",
-                       t->data.referent->to_string(), orig_test->data.referent->to_string(),
-                       (w ? "WME" : "No WME"));
+//                dprint(DT_IDENTITY_PROP, "Caching original symbol and wme in identity for \"%s\": %s + %s\n",
+//                       t->data.referent->to_string(), orig_test->data.referent->to_string(),
+//                       (w ? "WME" : "No WME"));
                 t->identity->original_var = orig_test->data.referent;
                 symbol_add_ref(thisAgent, t->identity->original_var);
             }
         }
         else
         {
-            dprint(DT_IDENTITY_PROP, "No original test for \"%s\".  Cannot set identity's original var!\n", t->data.referent->to_string());
+//            dprint(DT_IDENTITY_PROP, "No original test for \"%s\".  Cannot set identity's original var!\n", t->data.referent->to_string());
         }
         if (!t->identity->grounding_wme)
         {
             t->identity->grounding_wme = w;
+            if (w)
+            {
+                wme_add_ref(w);
+            }
         }
         if (t->identity->grounding_field == NO_ELEMENT)
         {

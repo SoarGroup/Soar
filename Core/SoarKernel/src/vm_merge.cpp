@@ -31,7 +31,7 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
     std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >::iterator iter_id;
     std::map< Symbol*, std::map< Symbol*, condition*> >::iterator iter_attr;
     std::map< Symbol*, condition*>::iterator iter_value;
-    
+
     dprint(DT_MERGE, "...looking for id equality test %s\n", pCond->data.tests.id_test->eq_test->data.referent->to_string());
     iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);
     if (iter_id != cond_merge_map->end())
@@ -41,7 +41,7 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
         if (iter_attr != iter_id->second.end())
         {
             dprint(DT_MERGE, "...Found.  Looking  for value equality test %s\n", pCond->data.tests.value_test->eq_test->data.referent->to_string());
-            
+
             iter_value = iter_attr->second.find(pCond->data.tests.value_test->eq_test->data.referent);
             if (iter_value != iter_attr->second.end())
             {
@@ -62,7 +62,7 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
     {
         dprint(DT_MERGE, "...no previously seen similar condition with that ID element.\n");
     }
-    
+
     return NULL;
 }
 
@@ -99,7 +99,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint(DT_MERGE, "# of conditions = %lld\n", old_num_conds);
     dprint(DT_MERGE, "======================\n");
-    
+
     condition* found_cond, *next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond; ++current_cond)
     {
@@ -110,13 +110,13 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
         {
             /* -- Check if there already exists a condition with the same
              *    equality tests for all three elements of the condition. -- */
-            
+
             found_cond = get_previously_seen_cond(cond);
             if (found_cond)
             {
                 /* -- Add tests in this condition to the already seen condition -- */
                 merge_values_in_conds(found_cond, cond);
-                
+
                 /* -- Delete the redundant condition -- */
                 if (last_cond)
                 {
@@ -170,7 +170,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %lld\n", new_num_conds);
     dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %lld conditions! (%lld - %lld)\n" : "No decrease in number of conditions. [%lld = (%lld - %lld)]\n"), cond_diff, old_num_conds, new_num_conds);
-    
+
     clear_merge_map();
     dprint(DT_MERGE, "===========================\n");
     dprint(DT_MERGE, "= Done Merging Conditions =\n");

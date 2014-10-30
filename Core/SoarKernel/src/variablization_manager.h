@@ -67,7 +67,7 @@ class Variablization_Manager
         void cache_constraints_in_cond(condition* c);
         void install_cached_constraints(condition* cond);
 
-        void fix_conditions(condition* top_cond);
+        void fix_conditions(condition* top_cond, bool ignore_ungroundeds = false);
         void consolidate_variables(condition* top_cond, tc_number tc_num);
         void merge_conditions(condition* top_cond);
 
@@ -115,7 +115,7 @@ class Variablization_Manager
         void      set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
         void      update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
         void      consolidate_variables_in_test(test t, tc_number tc_num);
-        void      remove_redundancies_and_ungroundeds(test* t, tc_number tc_num);
+        void      remove_redundancies_and_ungroundeds(test* t, tc_number tc_num, bool ignore_ungroundeds);
 
         void      merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
