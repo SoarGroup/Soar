@@ -474,6 +474,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
              *         so I changed to just copy_condition... */
 //      cc->variablized_cond = copy_condition_without_relational_constraints (thisAgent, cc->cond);
             cc->variablized_cond = copy_condition(thisAgent, cc->cond);
+            cc->variablized_cond->instantiated_cond = cc->instantiated_cond;
             if (prev_cc)
             {
                 prev_cc->next = cc;
@@ -1292,8 +1293,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     /* -- Clean up unification constraints and merge redundant conditions
      *    Note that this is needed even for justifications -- */
     dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions: \n");
-
     thisAgent->variablizationManager->fix_conditions(lhs_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Polishing instantiated conditions: \n");
+    dprint_condition_list(DT_CONSTRAINTS, top_cc->instantiated_cond);
     thisAgent->variablizationManager->fix_conditions(top_cc->instantiated_cond, true);
 #ifndef MERGE_CONDITIONS_EARLY
     thisAgent->variablizationManager->merge_conditions(lhs_top, &top_cc);
