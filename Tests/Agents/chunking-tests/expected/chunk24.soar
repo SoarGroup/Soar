@@ -1,8 +1,19 @@
-sp {chunk-multi*apply21e*onc*t3-5
+sp {chunk-multi*apply21e*onc*t3-1
     :chunk
     (state <s1> ^test-current 1 ^superstate nil ^test-item <c2>
           ^test-item { > <c2> <> <c2> <c1> })
    -{ (<s1> ^bar <c1> ^foo { > <c1> > <c2> <max> } ^test-item <max>)}
     -->
-    (<s1> ^highest <c1> + ^second-highest <c2> + ^unbound <m1> + ^test-done 1 +)
+    (<s1> ^highest <c1> + ^second-highest <c2> + ^unbound <m1> +
+           ^test-done 1 +)
 }
+
+# MToDo | Crashes 9.5.  Logically equivalent.
+#sp {chunk-multi*apply21e*onc*t3-5
+#    :chunk
+#    (state <s1> ^test-current 1 ^superstate nil ^test-item <c2>
+#          ^test-item { > <c2> <> <c2> <c1> })
+#   -{ (<s1> ^bar <c1> ^foo { > <c1> > <c2> <max> } ^test-item <max>)}
+#    -->
+#    (<s1> ^highest <c1> + ^second-highest <c2> + ^unbound <m1> + ^test-done 1 +)
+#}
