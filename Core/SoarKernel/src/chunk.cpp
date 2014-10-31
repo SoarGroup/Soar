@@ -609,10 +609,12 @@ void clean_up_chunk_conditions(agent* thisAgent, chunk_cond** top_cc)
     /* --- Step 1:  swap prev pointers out of variablized conds into chunk_conds,
        and swap pointer to the corresponding instantiated conds into the
        variablized conds' prev pointers --- */
+    dprint(DT_MERGE, "Cleaning up chunk_conds...\n");
     for (cc = *top_cc; cc != NIL; cc = cc->next)
     {
         if (!cc->instantiated_cond)
         {
+            dprint(DT_MERGE, "Found a chunk_cond that needs deleting.\n");
             if (cc->prev)
             {
                 cc->prev->next = cc->next;
@@ -1041,12 +1043,6 @@ inline void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
     thisAgent->variablizationManager->clear_variablization_tables();
     thisAgent->variablizationManager->clear_cached_constraints();
     thisAgent->variablizationManager->clear_ovar_gid_table();
-    if (prod_name)
-    {
-        dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
-        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-        symbol_remove_ref(thisAgent, prod_name);
-    }
 }
 
 void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list, bool update_grounding_ids)
@@ -1103,7 +1099,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     results = get_results_for_instantiation(thisAgent, inst);
     if (!results)
     {
-        goto chunking_done;
+        goto chunking_abort;
     }
 
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
@@ -1258,7 +1254,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
         }
 
-        goto chunking_done;
+        goto chunking_abort;
     }
 
     if (thisAgent->chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]))
@@ -1270,7 +1266,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         }
         thisAgent->max_chunks_reached = true;
 
-        goto chunking_done;
+        goto chunking_abort;
     }
 
     lhs_top = top_cc->variablized_cond;
@@ -1357,7 +1353,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         thisAgent->stop_soar = true;
         thisAgent->system_halted = true;
 
-        goto chunking_done;
+        goto chunking_abort;
     }
 
     {
@@ -1504,9 +1500,15 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     return;
 
-chunking_done:
+chunking_abort:
     {
         chunk_instantiation_cleanup(thisAgent, prod_name);
+        if (prod_name)
+        {
+            dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
+            dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+            symbol_remove_ref(thisAgent, prod_name);
+        }
     }
 
 #ifndef NO_TIMING_STUFF
