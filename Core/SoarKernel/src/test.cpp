@@ -99,7 +99,7 @@ test copy_test(agent* thisAgent, test t)
     new_ct->identity->grounding_wme = t->identity->grounding_wme;
     if (new_ct->identity->grounding_wme)
     {
-        wme_add_ref(new_ct->identity->grounding_wme);
+//        wme_add_ref(new_ct->identity->grounding_wme);
     }
 
     return new_ct;
@@ -245,7 +245,7 @@ void deallocate_test(agent* thisAgent, test t, long indent)
         }
         if (t->identity->grounding_wme)
         {
-            wme_remove_ref(thisAgent, t->identity->grounding_wme);
+//            wme_remove_ref(thisAgent, t->identity->grounding_wme);
         }
         delete t->identity;
     }
@@ -1758,7 +1758,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
                             chunk_test->identity->grounding_wme = get_wme_for_referent(cond,  rt->data.variable_referent.levels_up);
                             if (chunk_test->identity->grounding_wme)
                             {
-                                wme_add_ref(chunk_test->identity->grounding_wme);
+//                                wme_add_ref(chunk_test->identity->grounding_wme);
                             }
                             chunk_test->identity->grounding_field = static_cast<WME_Field>(rt->data.variable_referent.field_num);
                             if (original_referent->is_variable())
@@ -2381,7 +2381,7 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
             t->identity->grounding_wme = w;
             if (w)
             {
-                wme_add_ref(w);
+//                wme_add_ref(w);
             }
         }
         if (t->identity->grounding_field == NO_ELEMENT)
