@@ -1,0 +1,18 @@
+# Negative conjunctive conditions
+
+sp {apply21e
+    (state <s> ^operator <o>
+               ^superstate <ss>)
+    (<ss> ^test-item { > <y> <x> }
+          ^test-item { <> <x> <y> }
+          ^test-current 1)
+         -{(<ss> ^test-item { > <x> > <y> <max> }
+                 ^foo <max>
+                 ^bar <x>)}
+-->
+    (<ss> ^highest <x> ^second-highest <y> ^unbound <max> ^test-done 1)
+}
+
+
+#run
+#ctf expected/chunk24.soar print -cf

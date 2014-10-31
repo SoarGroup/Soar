@@ -1,0 +1,6 @@
+sp {chunk-multi*apply21c*onc*t3-2
+    (state <s1> ^test-current 1 ^superstate nil)
+   -{ (<s1> ^test-item 10 ^test-item 9)}
+    -->
+    (<s1> ^result true + ^test-done 1 +)
+}

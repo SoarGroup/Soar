@@ -1,0 +1,27 @@
+# Negative conjunctive conditions
+sp {apply21f1
+    (state <s> ^superstate <ss>
+               ^operator)
+    (<ss> ^test-item <y>
+          ^test-item { < <y> <x> }
+          ^test-current 1)
+         -{(<ss> ^test-item { <> <x> <> <y> <dupe> })}
+-->
+    (<s> ^lowest <x>)
+}
+
+sp {apply21f2
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^lowest <low>)
+    (<ss> ^test-item <y>
+          ^test-item { > <y> <x> }
+          ^test-current 1)
+         -{(<ss> ^test-item { <> <x> > <x> <dupe> })}
+-->
+    (<ss> ^highest <x> ^lowest <low>
+          ^test-done 1)
+}
+
+#run
+#ctf expected/chunk25.soar print -cf

@@ -36,6 +36,10 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testChunk20);
         CPPUNIT_TEST(testChunk21);
         CPPUNIT_TEST(testChunk22);
+        CPPUNIT_TEST(testChunk23);
+        CPPUNIT_TEST(testChunk24);
+        CPPUNIT_TEST(testChunk25);
+        CPPUNIT_TEST(testChunk26);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -46,7 +50,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
     protected:
 
         void source(const std::string& path);
-        void build_and_check_chunk(const std::string& path, int64_t decisions, int64_t num_excised);
+        void build_and_check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks);
 
         void testChunk1();
         void testChunk2();
@@ -70,6 +74,10 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void testChunk20();
         void testChunk21();
         void testChunk22();
+        void testChunk23();
+        void testChunk24();
+        void testChunk25();
+        void testChunk26();
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -84,7 +92,7 @@ void ChunkTest::source(const std::string& path)
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
 }
 
-void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions, int64_t num_excised)
+void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks)
 {
     source(path.c_str());
     pAgent->RunSelf(decisions, sml::sml_DECISION);
@@ -93,7 +101,10 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
     {
         sml::ClientAnalyzedXML response;
         pAgent->ExecuteCommandLineXML((std::string("source test_agents/chunking-tests/expected/") + path).c_str(), &response);
-        CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1) == num_excised);
+        int excised, ignored;
+        excised = response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1);
+        ignored = response.GetArgInt(sml::sml_Names::kParamIgnoredProductionCount, -1);
+        CPPUNIT_ASSERT((excised + ignored) == expected_chunks);
     }
 }
 
@@ -219,7 +230,7 @@ void ChunkTest::testChunk19()
 
 void ChunkTest::testChunk20()
 {
-    build_and_check_chunk("chunk20.soar", 8, 6);
+    build_and_check_chunk("chunk20.soar", 8, 1);
 }
 
 void ChunkTest::testChunk21()
@@ -229,5 +240,25 @@ void ChunkTest::testChunk21()
 
 void ChunkTest::testChunk22()
 {
-    build_and_check_chunk("chunk22.soar", 8, 0);
+    build_and_check_chunk("chunk22.soar", 8, 1);
+}
+
+void ChunkTest::testChunk23()
+{
+    build_and_check_chunk("chunk23.soar", 8, 1);
+}
+
+void ChunkTest::testChunk24()
+{
+    build_and_check_chunk("chunk24.soar", 8, 1);
+}
+
+void ChunkTest::testChunk25()
+{
+    build_and_check_chunk("chunk25.soar", 8, 1);
+}
+
+void ChunkTest::testChunk26()
+{
+    build_and_check_chunk("chunk26.soar", 8, 0);
 }
