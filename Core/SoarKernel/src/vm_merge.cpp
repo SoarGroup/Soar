@@ -90,7 +90,25 @@ inline int64_t count_conditions(condition* top_cond)
     return count;
 }
 
-void Variablization_Manager::merge_conditions(condition* top_cond)
+inline void delete_instantiated_condition(agent* thisAgent, condition* c, chunk_cond** top_cc)
+{
+    condition* del_cond = c->instantiated_cond;
+    if (c->instantiated_cond->prev)
+    {
+        c->instantiated_cond->prev->next = c->instantiated_cond->next;
+    } else {
+//        assert((*top_cc) == c->instantiated_cond);
+//        *top_cc = c->instantiated_cond->next;
+    }
+    if (c->instantiated_cond->next)
+    {
+        c->instantiated_cond->next->prev = c->instantiated_cond->prev;
+    }
+    deallocate_condition(thisAgent, c->instantiated_cond);
+    c->instantiated_cond = NULL;
+}
+
+void Variablization_Manager::merge_conditions(condition* top_cond, chunk_cond** top_cc)
 {
     dprint(DT_MERGE, "======================\n");
     dprint(DT_MERGE, "= Merging Conditions =\n");
@@ -123,6 +141,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
                     /* -- Not at the head of the list -- */
                     dprint(DT_MERGE, "...deleting non-head item.\n");
                     last_cond->next = cond->next;
+                    delete_instantiated_condition(thisAgent, cond, top_cc);
                     deallocate_condition(thisAgent, cond);
                     if (last_cond->next)
                     {

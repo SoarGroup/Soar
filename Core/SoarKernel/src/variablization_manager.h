@@ -17,6 +17,7 @@ typedef struct condition_struct condition;
 typedef struct action_struct action;
 typedef struct preference_struct preference;
 typedef char* rhs_value;
+typedef struct chunk_cond_struct chunk_cond;
 
 typedef struct variablization_struct
 {
@@ -69,7 +70,7 @@ class Variablization_Manager
 
         void fix_conditions(condition* top_cond, bool ignore_ungroundeds = false);
         void consolidate_variables(condition* top_cond, tc_number tc_num);
-        void merge_conditions(condition* top_cond);
+        void merge_conditions(condition* top_cond, chunk_cond** top_cc);
 
         void      variablize_relational_constraints();
 

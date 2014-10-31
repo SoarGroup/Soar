@@ -96,7 +96,7 @@ void deallocate_condition_list(agent* thisAgent,
 
 extern void init_condition(condition* cond)
 {
-    cond->next = cond->prev = NIL;
+    cond->next = cond->prev = cond->instantiated_cond = NIL;
     cond->bt.trace = NIL;
     cond->bt.CDPS = NIL;
     cond->data.tests.id_test = NIL;
@@ -157,6 +157,7 @@ condition* copy_condition(agent* thisAgent,
     allocate_with_pool(thisAgent, &thisAgent->condition_pool, &New);
     init_condition(New);
     New->type = cond->type;
+    New->instantiated_cond = cond->instantiated_cond;
 
     switch (cond->type)
     {

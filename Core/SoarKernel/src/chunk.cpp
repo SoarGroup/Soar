@@ -418,8 +418,17 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
         dprint_condition(DT_BACKTRACE, ground);
         cc->cond = ground;
         cc->instantiated_cond = copy_condition(thisAgent, cc->cond);
-        cc->variablized_cond = copy_condition(thisAgent, cc->cond);
-//    cc->variablized_cond = copy_condition_without_relational_constraints (thisAgent, cc->cond);
+//        cc->variablized_cond = copy_condition(thisAgent, cc->cond);
+        cc->variablized_cond = copy_condition_without_relational_constraints (thisAgent, cc->cond);
+
+        /*-- Store a link from the variablized condition to the instantiated
+         *   condition.  Used during merging if the chunker needs
+         *   to delete a redundant condition.  Also used to reorder
+         *   instantiated condition to match the re-ordered variablized
+         *   conditions list (required by the rete.)
+         */
+        cc->variablized_cond->instantiated_cond = cc->instantiated_cond;
+
         if (prev_cc)
         {
             prev_cc->next = cc;
@@ -592,7 +601,99 @@ void add_goal_or_impasse_tests(agent* thisAgent, chunk_cond* all_ccs)
    back in.
 -------------------------------------------------------------------- */
 
-void reorder_instantiated_conditions(chunk_cond* top_cc,
+void clean_up_chunk_conditions(agent* thisAgent, chunk_cond** top_cc)
+{
+    chunk_cond* cc;
+
+    /* --- Step 1:  swap prev pointers out of variablized conds into chunk_conds,
+       and swap pointer to the corresponding instantiated conds into the
+       variablized conds' prev pointers --- */
+    for (cc = *top_cc; cc != NIL; cc = cc->next)
+    {
+        if (!cc->instantiated_cond)
+        {
+            if (cc->prev)
+            {
+                cc->prev->next = cc->next;
+            } else {
+                assert(cc = *top_cc);
+                *top_cc = cc->next;
+            }
+            if (cc->next)
+            {
+                cc->next->prev = cc->prev;
+            }
+            free_with_pool(&thisAgent->chunk_cond_pool, cc);
+        }
+    }
+}
+
+inline condition* get_prev_positive_condition(condition* c)
+{
+    if (c)
+    {
+        c = c->prev;
+        while (c)
+        {
+            if (c->instantiated_cond) break;
+            c = c->prev;
+        }
+    }
+    return c;
+}
+
+inline condition* get_next_positive_condition(condition* c)
+{
+    if (c)
+    {
+        c = c->next;
+        while (c)
+        {
+            if (c->instantiated_cond) break;
+            c = c->next;
+        }
+    }
+    return c;
+}
+
+void reorder_instantiated_conditions(condition* top_cond,
+                                     chunk_cond* top_cc,
+                                     condition** dest_inst_top,
+                                     condition** dest_inst_bottom)
+{
+    dprint(DT_MERGE, "Re-ordering...\n");
+    dprint_condition_list(DT_MERGE, top_cc->instantiated_cond, "", true, false, true);
+    dprint(DT_MERGE, "..to match...\n");
+    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+
+    condition* c, *p, *n;
+    for (c = top_cond; c != NIL; c = c->next)
+    {
+        if (c->instantiated_cond)
+        {
+            p = get_prev_positive_condition(c);
+            n = get_next_positive_condition(c);
+            if (!n)
+            {
+                c->instantiated_cond->next = NULL;
+                *dest_inst_bottom = c->instantiated_cond;
+            } else {
+                c->instantiated_cond->next = n->instantiated_cond;
+            }
+            if (!p)
+            {
+                c->instantiated_cond->prev = NULL;
+                *dest_inst_top = c->instantiated_cond;
+            } else {
+                c->instantiated_cond->prev = p->instantiated_cond;
+            }
+        }
+    }
+    dprint(DT_MERGE, "Result:\n");
+    dprint_condition_list(DT_MERGE, *dest_inst_top, "", true, false, true);
+}
+
+void reorder_instantiated_conditions2(chunk_cond* top_cc,
                                      condition** dest_inst_top,
                                      condition** dest_inst_bottom)
 {
@@ -1195,8 +1296,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->fix_conditions(lhs_top);
     thisAgent->variablizationManager->fix_conditions(top_cc->instantiated_cond, true);
 #ifndef MERGE_CONDITIONS_EARLY
-    thisAgent->variablizationManager->merge_conditions(lhs_top);
-    thisAgent->variablizationManager->merge_conditions(top_cc->instantiated_cond);
+    thisAgent->variablizationManager->merge_conditions(lhs_top, &top_cc);
+    clean_up_chunk_conditions(thisAgent, &top_cc);
+//    thisAgent->variablizationManager->merge_conditions(top_cc->instantiated_cond);
 #endif
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_condition_list(DT_CONSTRAINTS, lhs_top, "");
@@ -1259,7 +1361,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         condition* inst_lhs_top = 0, *inst_lhs_bottom = 0;
 
-        reorder_instantiated_conditions(top_cc, &inst_lhs_top, &inst_lhs_bottom);
+        reorder_instantiated_conditions(lhs_top, top_cc, &inst_lhs_top, &inst_lhs_bottom);
 
         /* Record the list of grounds in the order they will appear in the chunk. */
         if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -1285,7 +1387,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered instantiation: \n");
     dprint_cond_prefs(DT_PRINT_INSTANTIATIONS, chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
 
-    /* RBD 4/6/95 Need to copy cond's and actions for the production here,
+    /* Need to copy cond's and actions for the production here,
     otherwise some of the variables might get deallocated by the call to
     add_production_to_rete() when it throws away chunk variable names. */
     if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -1392,16 +1494,12 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (!thisAgent->max_chunks_reached)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
         dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantation...\n");
-        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
         chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list, true);
         return;
     }
 
 
-    dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
-    dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
     return;
 
 chunking_done:

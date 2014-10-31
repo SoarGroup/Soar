@@ -162,6 +162,7 @@ typedef struct condition_struct
     } data;
     bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
     reorder_info reorder;  /* used only during reordering */
+    struct condition_struct* instantiated_cond;
 } condition;
 
 typedef struct production_struct
