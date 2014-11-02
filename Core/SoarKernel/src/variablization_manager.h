@@ -70,7 +70,7 @@ class Variablization_Manager
 
         void fix_conditions(condition* top_cond, bool ignore_ungroundeds = false);
         void consolidate_variables(condition* top_cond, tc_number tc_num);
-        void merge_conditions(condition* top_cond, chunk_cond** top_cc);
+        void merge_conditions(condition* top_cond);
 
         void      variablize_relational_constraints();
 

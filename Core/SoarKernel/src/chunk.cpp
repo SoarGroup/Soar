@@ -1294,9 +1294,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint_condition_list(DT_CONSTRAINTS, top_cc->instantiated_cond);
     thisAgent->variablizationManager->fix_conditions(top_cc->instantiated_cond, true);
 #ifndef MERGE_CONDITIONS_EARLY
-    thisAgent->variablizationManager->merge_conditions(lhs_top, &top_cc);
+    thisAgent->variablizationManager->merge_conditions(lhs_top);
     clean_up_chunk_conditions(thisAgent, &top_cc);
-//    thisAgent->variablizationManager->merge_conditions(top_cc->instantiated_cond);
 #endif
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_condition_list(DT_CONSTRAINTS, lhs_top, "");
