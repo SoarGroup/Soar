@@ -696,53 +696,6 @@ void reorder_instantiated_conditions(condition* top_cond,
     dprint_condition_list(DT_MERGE, *dest_inst_top, "", true, false, true);
 }
 
-void reorder_instantiated_conditions2(chunk_cond* top_cc,
-                                     condition** dest_inst_top,
-                                     condition** dest_inst_bottom)
-{
-    chunk_cond* cc;
-
-    /* --- Step 1:  swap prev pointers out of variablized conds into chunk_conds,
-       and swap pointer to the corresponding instantiated conds into the
-       variablized conds' prev pointers --- */
-    for (cc = top_cc; cc != NIL; cc = cc->next)
-    {
-        cc->saved_prev_pointer_of_variablized_cond = cc->variablized_cond->prev;
-        cc->variablized_cond->prev = cc->instantiated_cond;
-    }
-
-    /* --- Step 2:  do the reordering of the instantiated conds --- */
-    for (cc = top_cc; cc != NIL; cc = cc->next)
-    {
-        if (cc->variablized_cond->next)
-        {
-            cc->instantiated_cond->next = cc->variablized_cond->next->prev;
-        }
-        else
-        {
-            cc->instantiated_cond->next = NIL;
-            *dest_inst_bottom = cc->instantiated_cond;
-        }
-
-        if (cc->saved_prev_pointer_of_variablized_cond)
-        {
-            cc->instantiated_cond->prev =
-                cc->saved_prev_pointer_of_variablized_cond->prev;
-        }
-        else
-        {
-            cc->instantiated_cond->prev = NIL;
-            *dest_inst_top = cc->instantiated_cond;
-        }
-    }
-
-    /* --- Step 3:  restore the prev pointers on variablized conds --- */
-    for (cc = top_cc; cc != NIL; cc = cc->next)
-    {
-        cc->variablized_cond->prev = cc->saved_prev_pointer_of_variablized_cond;
-    }
-}
-
 /* --------------------------------------------------------------------
                        Make Clones of Results
 

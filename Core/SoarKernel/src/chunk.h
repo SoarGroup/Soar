@@ -26,7 +26,6 @@ typedef struct chunk_cond_struct
 
     condition* instantiated_cond;   /* points to cond in chunk instantiation */
     condition* variablized_cond;    /* points to cond in the actual chunk */
-    condition* saved_prev_pointer_of_variablized_cond; /* don't ask */
 
     /* dll of all cond's in a set (i.e., a chunk_cond_set, or the grounds) */
     struct chunk_cond_struct* next, *prev;
