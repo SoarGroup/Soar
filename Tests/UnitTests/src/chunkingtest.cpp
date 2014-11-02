@@ -40,6 +40,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testChunk24);
         CPPUNIT_TEST(testChunk25);
         CPPUNIT_TEST(testChunk26);
+        CPPUNIT_TEST(testChunk27);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -78,6 +79,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void testChunk24();
         void testChunk25();
         void testChunk26();
+        void testChunk27();
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -122,7 +124,6 @@ void ChunkTest::setUp()
     succeeded = false;
     pKernel->AddRhsFunction("succeeded", Handlers::MySuccessHandler,  &succeeded) ;
 
-    source("setup.soar");
 }
 
 void ChunkTest::tearDown()
@@ -135,130 +136,160 @@ void ChunkTest::tearDown()
 
 void ChunkTest::testChunk1()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk1.soar", 4, 2);
 }
 
 void ChunkTest::testChunk2()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk2.soar", 8, 1);
 }
 
 void ChunkTest::testChunk3()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk3.soar", 8, 1);
 }
 
 void ChunkTest::testChunk4()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk4.soar", 8, 1);
 }
 
 void ChunkTest::testChunk5()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk5.soar", 8, 1);
 }
 
 void ChunkTest::testChunk6()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk6.soar", 8, 1);
 }
 
 void ChunkTest::testChunk7()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk7.soar", 8, 3);
 }
 
 void ChunkTest::testChunk8()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk8.soar", 8, 1);
 }
 
 void ChunkTest::testChunk9()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk9.soar", 8, 2);
 }
 
 void ChunkTest::testChunk10()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk10.soar", 8, 2);
 }
 
 void ChunkTest::testChunk11()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk11.soar", 8, 1);
 }
 
 void ChunkTest::testChunk12()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk12.soar", 8, 2);
 }
 
 void ChunkTest::testChunk13()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk13.soar", 8, 1);
 }
 
 void ChunkTest::testChunk14()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk14.soar", 8, 1);
 }
 
 void ChunkTest::testChunk15()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk15.soar", 8, 1);
 }
 
 void ChunkTest::testChunk16()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk16.soar", 8, 1);
 }
 
 void ChunkTest::testChunk17()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk17.soar", 8, 1);
 }
 
 void ChunkTest::testChunk18()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk18.soar", 8, 1);
 }
 
 void ChunkTest::testChunk19()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk19.soar", 8, 1);
 }
 
 void ChunkTest::testChunk20()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk20.soar", 8, 1);
 }
 
 void ChunkTest::testChunk21()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk21.soar", 8, 1);
 }
 
 void ChunkTest::testChunk22()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk22.soar", 8, 1);
 }
 
 void ChunkTest::testChunk23()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk23.soar", 8, 1);
 }
 
 void ChunkTest::testChunk24()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk24.soar", 8, 1);
 }
 
 void ChunkTest::testChunk25()
 {
+    source("setup.soar");
     build_and_check_chunk("chunk25.soar", 8, 1);
 }
 
 void ChunkTest::testChunk26()
 {
     build_and_check_chunk("chunk26.soar", 8, 0);
+}
+
+void ChunkTest::testChunk27()
+{
+    build_and_check_chunk("chunk27.soar", 8, 1);
 }
