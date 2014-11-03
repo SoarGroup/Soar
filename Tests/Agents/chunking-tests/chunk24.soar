@@ -1,6 +1,6 @@
 # Negative conjunctive conditions
 
-sp {apply21e
+sp {apply24
     (state <s> ^operator <o>
                ^superstate <ss>)
     (<ss> ^test-item { > <y> <x> }

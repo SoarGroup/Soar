@@ -1,4 +1,4 @@
-sp {chunk-multi*apply1b*onc*t3-2
+sp {chunk*apply1b*onc*t3-2
     :chunk
     (state <s1> ^superstate nil ^test-item <c2>
           ^test-item { > 8 < 10 >= 9 >= <c2> <c1> })
@@ -8,7 +8,7 @@ sp {chunk-multi*apply1b*onc*t3-2
     (<u1> ^foo bar +)
 }
 
-sp {chunk-multi*apply1b*onc*t3-1
+sp {chunk*apply1b*onc*t3-1
     :chunk
     (state <s1> ^superstate nil ^test-item { > 8 < 10 >= 9 >= <c1> <c1> })
     -->

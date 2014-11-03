@@ -1,4 +1,4 @@
-sp {chunk-multi*apply8*onc*t3-1
+sp {chunk*apply8*onc*t3-1
     :chunk
     (state <s1> ^superstate nil ^test-param <t2> ^test-param { <> <t2> <t1> })
     -->

@@ -1,4 +1,4 @@
-sp {chunk-multi*apply14b*onc*t3-1
+sp {chunk*apply14b*onc*t3-1
     :chunk
     (state <s1> ^superstate nil ^test-param <t1> ^test-item { > 3 <c1> })
     -->

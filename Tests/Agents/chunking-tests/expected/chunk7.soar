@@ -1,4 +1,4 @@
-sp {chunk-multi*apply7c*onc*t3-3
+sp {chunk*apply7c*onc*t3-3
     :chunk
     (state <s1> ^superstate nil ^substate-output <c2>
           ^test-item { > <c2> <c1> })
@@ -6,7 +6,7 @@ sp {chunk-multi*apply7c*onc*t3-3
     (<s1> ^result7a <c1> + ^result7b <c2> + ^result7c 7 + ^test-done 1 +)
 }
 
-sp {chunk-multi*apply7c*onc*t3-2
+sp {chunk*apply7c*onc*t3-2
     :chunk
     (state <s1> ^superstate nil ^substate-output <c2>
           ^test-item { > <c2> <c3> } ^test-item { > <c2> <c1> })
@@ -14,7 +14,7 @@ sp {chunk-multi*apply7c*onc*t3-2
     (<s1> ^result7a <c3> + ^result7b <c2> + ^result7c 7 + ^test-done 1 +)
 }
 
-sp {chunk-multi*apply7a*onc*t3-1
+sp {chunk*apply7a*onc*t3-1
     :chunk
     (state <s1> ^superstate nil ^test-item <c2> ^test-item { > <c2> <c1> })
     -->

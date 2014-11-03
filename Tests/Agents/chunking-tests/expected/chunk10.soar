@@ -1,11 +1,11 @@
-sp {chunk-multi*apply10*onc*t3-2
+sp {chunk*apply10*onc*t3-2
     :chunk
     (state <s1> ^superstate nil ^test-param <t2> ^test-param <t1>)
     -->
     (<s1> ^result10a <t1> + ^result10b <t2> + ^test-done 1 +)
 }
 
-sp {chunk-multi*apply10*onc*t3-1
+sp {chunk*apply10*onc*t3-1
     :chunk
     (state <s1> ^superstate nil ^test-param <t1>)
     -->

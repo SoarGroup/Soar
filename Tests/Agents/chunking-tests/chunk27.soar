@@ -1,8 +1,6 @@
 learn --on
 learn --only
 
-watch --learn 2
-
 sp {all*elaborate*name
    (state <s> ^superstate.operator.name <name>)
 -->
