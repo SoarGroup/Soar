@@ -366,7 +366,6 @@ extern production* make_production(agent* thisAgent,
                             Symbol* name,
                             char* original_rule_name,
                             condition** lhs_top,
-                            condition** lhs_bottom,
                             action** rhs_top,
                             bool reorder_nccs,
                             preference* results = NULL);

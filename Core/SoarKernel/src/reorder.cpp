@@ -82,12 +82,12 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     action* first_action, *last_action;
     action* a, *prev_a;
     bool result_flag;
-    
+
     new_bound_vars = NIL;
     remaining_actions = *action_list;
     first_action = NIL;
     last_action = NIL;
-    
+
     while (remaining_actions)
     {
         /* --- scan through remaining_actions, look for one that's legal --- */
@@ -132,7 +132,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         /* --- add new variables from a to new_bound_vars --- */
         add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars);
     }
-    
+
     if (remaining_actions)
     {
         /* --- there are remaining_actions but none can be legally added --- */
@@ -157,10 +157,10 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     {
         result_flag = true;
     }
-    
+
     /* --- unmark variables that we just marked --- */
     unmark_variables_and_free_list(thisAgent, new_bound_vars);
-    
+
     /* --- return final result --- */
     *action_list = first_action;
     return result_flag;
@@ -171,7 +171,7 @@ bool all_variables_in_rhs_value_bound(rhs_value rv, tc_number tc)
     cons* c;
     list* fl;
     Symbol* sym;
-    
+
     if (rhs_value_is_funcall(rv))
     {
         /* --- function calls --- */
@@ -270,10 +270,10 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     saved_test* saved;
     Symbol* var, *sym;
     cons* c, *prev_c, *next_c;
-    
+
     dprint(DT_REORDERER, "Simplifying test ");
     dprint_test(DT_REORDERER, (*t), true, false, false, "", "");
-    
+
     if (test_is_blank(*t))
     {
         sym = generate_new_variable(thisAgent, "dummy-");
@@ -286,9 +286,9 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
         dprint(DT_REORDERER, "...equality...skipping....\n");
         return old_sts;
     }
-    
+
     ct = *t;
-    
+
     switch (ct->type)
     {
         case EQUALITY_TEST:
@@ -379,7 +379,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 c = next_c;
             }
             break;
-            
+
         default:
             /* -- for goal/impasse, disjunction, and non-equality relational tests,
              *    add a dummy variable and use that as an index to a new entry in the
@@ -411,7 +411,7 @@ saved_test* simplify_condition_list(agent* thisAgent, condition* conds_list)
 {
     condition* c;
     saved_test* sts;
-    
+
     sts = NIL;
     dprint(DT_REORDERER, "==============================\n");
     dprint(DT_REORDERER, "=   Simplifying Conditions   =\n");
@@ -482,7 +482,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
     saved_test* st, *prev_st, *next_st;
     bool added_it;
     Symbol* referent;
-    
+
     dprint(DT_REORDERER, "Looking for saved tests for: ");
     dprint_test(DT_REORDERER, (*t), true, false, false, "", "\n");
 //  dprint_saved_test_list (DT_REORDERER, tests_to_restore);
@@ -493,10 +493,10 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
     {
         next_st = st->next;
         added_it = false;
-        
+
         dprint(DT_REORDERER, "...comparing with: %s --> ", st->var->to_string());
         dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "...");
-        
+
         switch (st->the_test->type)
         {
             case GOAL_ID_TEST:
@@ -579,7 +579,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 {
     condition* cond;
     list* new_vars;
-    
+
     dprint(DT_REORDERER, "===============================\n");
     dprint(DT_REORDERER, "=    Restoring Saved Tests    =\n");
     dprint(DT_REORDERER, "===============================\n");
@@ -587,7 +587,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
     dprint_condition_list(DT_REORDERER, conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-    
+
     new_vars = NIL;
     for (cond = conds_list; cond != NIL; cond = cond->next)
     {
@@ -603,45 +603,45 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
         }
 #endif
         bool neg = cond->type == NEGATIVE_CONDITION;
-        
+
         dprint(DT_REORDERER, "Starting Saved Tests:\n");
         dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-        
+
         dprint(DT_REORDERER, "Restoring saved tests for cond's id:\n");
         tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.id_test), true, tc, tests_to_restore, neg);
-        
+
         dprint(DT_REORDERER, "After ID Saved Tests:\n");
         dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-        
+
         add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &new_vars);
-        
+
         dprint(DT_REORDERER, "Restoring saved tests for cond's attr:\n");
         tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.attr_test), false, tc, tests_to_restore, neg);
-        
+
         dprint(DT_REORDERER, "After attr Saved Tests:\n");
         dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-        
+
         add_bound_variables_in_test(thisAgent, cond->data.tests.attr_test, tc, &new_vars);
-        
+
         dprint(DT_REORDERER, "Restoring saved tests for cond's value:\n");
         tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.value_test), false, tc, tests_to_restore, neg);
-        
+
         dprint(DT_REORDERER, "After value Saved Tests:\n");
         dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-        
+
         add_bound_variables_in_test(thisAgent, cond->data.tests.value_test, tc, &new_vars);
-        
+
         dprint(DT_REORDERER, "Current Saved Tests:\n");
         dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     }
-    
+
     dprint(DT_REORDERER, "===============================\n");
     dprint(DT_REORDERER, "Final Conditons:\n");
     dprint_condition_list(DT_REORDERER, conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     dprint(DT_REORDERER, "========= end  restore ========\n");
-    
+
     if (tests_to_restore)
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
@@ -652,7 +652,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
             print_saved_test_list(thisAgent, tests_to_restore);
             // TODO: XML tagged output -- how to create this string?
             // KJC TODO:  need a tagged output version of print_saved_test_list
-            
+
             // XML generation
             growable_string gs = make_blank_growable_string(thisAgent);
             add_to_growable_string(thisAgent, &gs, "Warning:  in production ");
@@ -663,7 +663,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
             //   2) write a version which generates XML tags/attributes, so we get "typed" output for this warning
             //      i.e. "<warning><string value="beginning of message"></string><test att="val"></test><string value="rest of message"></string></warning>
             xml_generate_warning(thisAgent, text_of_growable_string(gs));
-            
+
             free_growable_string(thisAgent, gs);
         }
         /* ought to deallocate the saved tests, but who cares */
@@ -699,12 +699,12 @@ list* collect_vars_tested_by_test_that_are_bound(agent* thisAgent, test t,
 {
     cons* c;
     Symbol* referent;
-    
+
     if (test_is_blank(t))
     {
         return starting_list;
     }
-    
+
     switch (t->type)
     {
         case GOAL_ID_TEST:
@@ -735,7 +735,7 @@ list* collect_vars_tested_by_cond_that_are_bound(agent* thisAgent,
         list* starting_list)
 {
     condition* c;
-    
+
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
         /* --- conjuctive negations --- */
@@ -760,7 +760,7 @@ void fill_in_vars_requiring_bindings(agent* thisAgent, condition* cond_list, tc_
 {
     list* new_bound_vars;
     condition* c;
-    
+
     /* --- add anything bound in a positive condition at this level --- */
     new_bound_vars = NIL;
     for (c = cond_list; c != NIL; c = c->next)
@@ -768,7 +768,7 @@ void fill_in_vars_requiring_bindings(agent* thisAgent, condition* cond_list, tc_
         {
             add_bound_variables_in_condition(thisAgent, c, tc, &new_bound_vars);
         }
-        
+
     /* --- scan through negated and NC cond's, fill in stuff --- */
     for (c = cond_list; c != NIL; c = c->next)
     {
@@ -780,7 +780,7 @@ void fill_in_vars_requiring_bindings(agent* thisAgent, condition* cond_list, tc_
             fill_in_vars_requiring_bindings(thisAgent, c->data.ncc.top, tc);
         }
     }
-    
+
     unmark_variables_and_free_list(thisAgent, new_bound_vars);
 }
 
@@ -788,7 +788,7 @@ void remove_vars_requiring_bindings(agent* thisAgent,
                                     condition* cond_list)
 {
     condition* c;
-    
+
     /* --- scan through negated and NC cond's, remove lists from them --- */
     for (c = cond_list; c != NIL; c = c->next)
     {
@@ -827,28 +827,28 @@ list* collect_root_variables(agent* thisAgent,
     cons* c;
     condition* cond;
     bool found_goal_impasse_test;
-    
+
     /* --- find everthing that's in the value slot of some condition --- */
     new_vars_from_value_slot = NIL;
     for (cond = cond_list; cond != NIL; cond = cond->next)
         if (cond->type == POSITIVE_CONDITION)
             add_bound_variables_in_test(thisAgent, cond->data.tests.value_test, tc,
                                         &new_vars_from_value_slot);
-                                        
+
     /* --- now see what else we can add by throwing in the id slot --- */
     new_vars_from_id_slot = NIL;
     for (cond = cond_list; cond != NIL; cond = cond->next)
         if (cond->type == POSITIVE_CONDITION)
             add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc,
                                         &new_vars_from_id_slot);
-                                        
+
     /* --- unmark everything we just marked --- */
     unmark_variables_and_free_list(thisAgent, new_vars_from_value_slot);
     for (c = new_vars_from_id_slot; c != NIL; c = c->rest)
     {
         static_cast<Symbol*>(c->first)->tc_num = 0;
     }
-    
+
     /* --- make sure each root var has some condition with goal/impasse --- */
     if (allow_printing_warnings && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
     {
@@ -876,7 +876,7 @@ list* collect_root_variables(agent* thisAgent,
                       thisAgent->name_of_production_being_reordered);
                 print_with_symbols(thisAgent, "%y is not connected to any goal or impasse.\n",
                                    static_cast<Symbol*>(c->first));
-                                   
+
                 // XML geneneration
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "Warning: On the LHS of production ");
@@ -886,11 +886,11 @@ list* collect_root_variables(agent* thisAgent,
                 add_to_growable_string(thisAgent, &gs, " is not connected to any goal or impasse.");
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
-                
+
             }
         }
     }
-    
+
     return new_vars_from_id_slot;
 }
 
@@ -920,12 +920,12 @@ bool test_covered_by_bound_vars(test t, tc_number tc, list* extra_vars)
 {
     cons* c;
     Symbol* referent;
-    
+
     if (test_is_blank(t))
     {
         return false;
     }
-    
+
     if (t->type == EQUALITY_TEST)
     {
         referent = t->data.referent;
@@ -939,7 +939,7 @@ bool test_covered_by_bound_vars(test t, tc_number tc, list* extra_vars)
         }
         return false;
     }
-    
+
     if (t->type == CONJUNCTIVE_TEST)
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
@@ -985,7 +985,7 @@ int64_t cost_of_adding_condition(agent* thisAgent,
 {
     cons* c;
     int64_t result;
-    
+
     /* --- handle the common simple case quickly up front --- */
     if ((! root_vars_not_bound_yet) &&
             (cond->type == POSITIVE_CONDITION) &&
@@ -996,7 +996,7 @@ int64_t cost_of_adding_condition(agent* thisAgent,
             (cond->data.tests.attr_test->type == EQUALITY_TEST) &&
             (cond->data.tests.value_test->type == EQUALITY_TEST))
     {
-    
+
         if (!(cond->data.tests.id_test->data.referent->is_constant_or_marked_variable(tc)))
         {
             return MAX_COST;
@@ -1008,7 +1008,7 @@ int64_t cost_of_adding_condition(agent* thisAgent,
         {
             result =  BF_FOR_ATTRIBUTES;
         }
-        
+
         if (!(cond->data.tests.value_test->data.referent->is_constant_or_marked_variable(tc)))
         {
             if (cond->test_for_acceptable_preference)
@@ -1022,7 +1022,7 @@ int64_t cost_of_adding_condition(agent* thisAgent,
         }
         return result;
     } /* --- end of common simple case --- */
-    
+
     if (cond->type == POSITIVE_CONDITION)
     {
         /* --- for pos cond's, check what's bound, etc. --- */
@@ -1082,7 +1082,7 @@ int64_t find_lowest_cost_lookahead(agent* thisAgent,
     condition* c;
     int64_t min_cost, cost;
     list* new_vars;
-    
+
     new_vars = NIL;
     add_bound_variables_in_condition(thisAgent, chosen, tc, &new_vars);
     min_cost = MAX_COST + 1;
@@ -1118,14 +1118,12 @@ int64_t find_lowest_cost_lookahead(agent* thisAgent,
 
 void reorder_condition_list(agent* thisAgent,
                             condition** top_of_conds,
-                            condition** bottom_of_conds,
                             list* roots,
                             tc_number tc,
                             bool reorder_nccs);
 
 void reorder_simplified_conditions(agent* thisAgent,
                                    condition** top_of_conds,
-                                   condition** bottom_of_conds,
                                    list* roots,
                                    tc_number bound_vars_tc_number,
                                    bool reorder_nccs)
@@ -1137,21 +1135,21 @@ void reorder_simplified_conditions(agent* thisAgent,
     int64_t cost = 0;
     int64_t min_cost = 0;
     list* new_vars;
-    
+
     remaining_conds = *top_of_conds;
     first_cond = NIL;
     last_cond = NIL;
     new_vars = NIL;
-    
+
     /* repeat:  scan through remaining_conds
                 rate each one
                 if tie, call lookahead routine
                 add min-cost item to conds
     */
-    
+
     dprint(DT_REORDERER, "==================================\n");
     dprint(DT_REORDERER, "Re-ordering simplified conditions:\n");
-//  dprint(DT_REORDERER, "Before Reorder Conditons:\n");
+//  dprint(DT_REORDERER, "Before Reorder Conditions:\n");
     dprint_condition_list(DT_REORDERER, *top_of_conds);
     dprint(DT_REORDERER, "Saved Tests:\n");
 //  dprint_saved_test_list (DT_REORDERER, saved_tests);
@@ -1182,7 +1180,7 @@ void reorder_simplified_conditions(agent* thisAgent,
                                           canonical order. */
         }
         dprint(DT_REORDERER, "...cost is %lld\n", min_cost);
-        
+
         /* --- if min_cost==MAX_COST, print error message --- */
         if ((min_cost == MAX_COST) &&
                 thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
@@ -1191,7 +1189,7 @@ void reorder_simplified_conditions(agent* thisAgent,
                   thisAgent->name_of_production_being_reordered);
             print(thisAgent,  "     The LHS conditions are not all connected.\n");
             /* BUGBUG I'm not sure whether this can ever happen. */
-            
+
             // XML geneneration
             growable_string gs = make_blank_growable_string(thisAgent);
             add_to_growable_string(thisAgent, &gs, "Warning:  in production ");
@@ -1199,7 +1197,7 @@ void reorder_simplified_conditions(agent* thisAgent,
             add_to_growable_string(thisAgent, &gs, "\n     The LHS conditions are not all connected.");
             xml_generate_warning(thisAgent, text_of_growable_string(gs));
             free_growable_string(thisAgent, gs);
-            
+
         }
         /* --- if more than one min-cost item, and cost>1, do lookahead --- */
         if ((min_cost > 1) && (min_cost_conds->reorder.next_min_cost))
@@ -1237,7 +1235,7 @@ void reorder_simplified_conditions(agent* thisAgent,
                     }
                 }
                 /*******************************************************************/
-                
+
             }
         }
         /*******************************************************************/
@@ -1261,7 +1259,7 @@ void reorder_simplified_conditions(agent* thisAgent,
             }
         }
         /*******************************************************************/
-        
+
         /* --- install the first item in the min-cost set --- */
         chosen = min_cost_conds;
         dprint_condition(DT_REORDERER, chosen, "...reorderer adding chosen item: ", true, false, true);
@@ -1277,7 +1275,7 @@ void reorder_simplified_conditions(agent* thisAgent,
         /* Note: args look weird on the next line, because we're really
            inserting the chosen item at the *end* of the list */
         insert_at_head_of_dll(last_cond, chosen, prev, next);
-        
+
         /* --- if a conjunctive negation, recursively reorder its conditions --- */
         if ((chosen->type == CONJUNCTIVE_NEGATION_CONDITION) && reorder_nccs)
         {
@@ -1286,17 +1284,16 @@ void reorder_simplified_conditions(agent* thisAgent,
             ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top,
                                                bound_vars_tc_number, true);
             reorder_condition_list(thisAgent, &(chosen->data.ncc.top),
-                                   &(chosen->data.ncc.bottom),
                                    ncc_roots,
                                    bound_vars_tc_number,
                                    reorder_nccs);
             free_list(thisAgent, ncc_roots);
         }
-        
+
         /* --- update set of bound variables for newly added condition --- */
         dprint(DT_REORDERER, "...updating bound variables in chosen condition.\n");
         add_bound_variables_in_condition(thisAgent, chosen, bound_vars_tc_number, &new_vars);
-        
+
         /* --- if all roots are bound, set roots=NIL: don't need 'em anymore --- */
         if (roots)
         {
@@ -1311,13 +1308,12 @@ void reorder_simplified_conditions(agent* thisAgent,
                 roots = NIL;
             }
         }
-        
+
     } /* end of while (remaining_conds) */
-    
+
     dprint(DT_REORDERER, "...unmarking variables.\n");
     unmark_variables_and_free_list(thisAgent, new_vars);
     *top_of_conds = first_cond;
-    *bottom_of_conds = last_cond;
     dprint(DT_REORDERER, "==================================\n");
     dprint(DT_REORDERER, "======== Done re-ordering ========\n");
     dprint(DT_REORDERER, "==================================\n");
@@ -1325,16 +1321,14 @@ void reorder_simplified_conditions(agent* thisAgent,
 
 void reorder_condition_list(agent* thisAgent,
                             condition** top_of_conds,
-                            condition** bottom_of_conds,
                             list* roots,
                             tc_number tc, /* for vars bound outside */
                             bool reorder_nccs)
 {
     saved_test* saved_tests;
-    
+
     saved_tests = simplify_condition_list(thisAgent, *top_of_conds);
-    reorder_simplified_conditions(thisAgent, top_of_conds, bottom_of_conds, roots, tc,
-                                  reorder_nccs);
+    reorder_simplified_conditions(thisAgent, top_of_conds, roots, tc, reorder_nccs);
     dprint(DT_REORDERER, "After Reorder Conditons:\n");
     dprint_condition_list(DT_REORDERER, *top_of_conds);
     dprint(DT_REORDERER, "Saved Tests:\n");
@@ -1352,14 +1346,14 @@ bool test_tests_for_root(test t, list* roots)
 
     cons* c;
     Symbol* referent;
-    
+
     /* Gather variables from test. */
-    
+
     if (test_is_blank(t))
     {
         return false;
     }
-    
+
     switch (t->type)
     {
         case GOAL_ID_TEST:
@@ -1367,7 +1361,7 @@ bool test_tests_for_root(test t, list* roots)
         case DISJUNCTION_TEST:
             return false;
             break;
-            
+
         case CONJUNCTIVE_TEST:
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
                 if (test_tests_for_root(static_cast<test>(c->first), roots))
@@ -1376,7 +1370,7 @@ bool test_tests_for_root(test t, list* roots)
                 }
             return false;
             break;
-            
+
         default:
             /* --- relational tests other than equality --- */
             referent = t->data.referent;
@@ -1423,13 +1417,13 @@ bool test_tests_for_root(test t, list* roots)
 bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, tc_number tc)
 {
     cons* c;
-    
+
     // we only care about relational tests other than equality
     if (test_is_blank(t))
     {
         return true;
     }
-    
+
     switch (t->type)
     {
         case EQUALITY_TEST:
@@ -1437,7 +1431,7 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
         case IMPASSE_ID_TEST:
         case DISJUNCTION_TEST:
             break;
-            
+
         case CONJUNCTIVE_TEST:
             // we do need to loop over conjunctive tests, however
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
@@ -1446,7 +1440,7 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
                     return false;
                 }
             break;
-            
+
         default:
             /* --- relational tests other than equality --- */
             if (t->data.referent->symbol_type == VARIABLE_SYMBOL_TYPE)
@@ -1470,7 +1464,7 @@ bool check_negative_relational_test_bindings(agent* thisAgent, condition* cond_l
     list* bound_vars = NIL;   // this list necessary pop variables bound inside ncc's out of scope on return
     condition* c;
     bool ret = true;
-    
+
     /* --- add anything bound in a positive condition at this level --- */
     /* --- recurse in to NCCs --- */
     for (c = cond_list; ret && c != NIL; c = c->next)
@@ -1484,7 +1478,7 @@ bool check_negative_relational_test_bindings(agent* thisAgent, condition* cond_l
             ret = check_negative_relational_test_bindings(thisAgent, c->data.ncc.top, tc);
         }
     }
-    
+
     /* --- find referents of non-equality tests in conjunctive tests in negated conditions ---*/
     for (c = cond_list; ret && c != NIL; c = c->next)
     {
@@ -1495,22 +1489,21 @@ bool check_negative_relational_test_bindings(agent* thisAgent, condition* cond_l
             ret = ret && check_unbound_negative_relational_test_referents(thisAgent, c->data.tests.value_test, tc);
         }
     }
-    
+
     // unmark anything bound on this level
     unmark_variables_and_free_list(thisAgent, bound_vars);
     return ret;
 }
 
-void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
-        condition** /*lhs_bottom*/, list* roots)
+void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top, list* roots)
 {
     condition* cond;
     bool a, b;
     test temp;
-    
+
     a = false;
     b = false;
-    
+
     for (cond = *lhs_top; cond != NIL; cond = cond->next)
     {
         if ((cond->type == POSITIVE_CONDITION) &&
@@ -1525,28 +1518,27 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top,
-                 condition** lhs_bottom, bool reorder_nccs)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs)
 {
     tc_number tc;
     list* roots;
-    
+
     tc = get_new_tc_number(thisAgent);
     /* don't mark any variables, since nothing is bound outside the LHS */
-    
+
     roots = collect_root_variables(thisAgent, *lhs_top, tc, true);
-    
-    
+
+
     /* SBH/MVP 6-24-94 Fix to include only root "STATE" test in the LHS of a chunk.*/
     if (roots)
     {
-        remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, lhs_bottom, roots);
+        remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);
     }
-    
+
     if (!roots)
     {
         condition* cond;
-        
+
         for (cond = *lhs_top; cond != NIL; cond = cond->next)
         {
             if ((cond->type == POSITIVE_CONDITION) &&
@@ -1561,7 +1553,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top,
             }
         }
     }
-    
+
     if (!roots)
     {
         print(thisAgent,  "Error:  in production %s,\n", thisAgent->name_of_production_being_reordered);
@@ -1569,12 +1561,12 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top,
         /* hmmm... most people aren't going to understand this error message */
         return false;
     }
-    
+
     fill_in_vars_requiring_bindings(thisAgent, *lhs_top, tc);
-    reorder_condition_list(thisAgent, lhs_top, lhs_bottom, roots, tc, reorder_nccs);
+    reorder_condition_list(thisAgent, lhs_top, roots, tc, reorder_nccs);
     remove_vars_requiring_bindings(thisAgent, *lhs_top);
     free_list(thisAgent, roots);
-    
+
     return check_negative_relational_test_bindings(thisAgent, *lhs_top, get_new_tc_number(thisAgent));
 }
 

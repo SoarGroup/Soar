@@ -473,7 +473,7 @@ int rl_get_template_id(const char* prod_name)
     }
 
     // make sure id is a valid natural number
-    
+
     std::string id_str = temp.substr(last_star + 1);
     if (!is_whole_number(id_str.c_str()))
     {
@@ -681,7 +681,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             action* new_action = thisAgent->variablizationManager->make_variablized_rl_action(id, attr, value, referent);
 
             // make new production
-            production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &cond_bottom, &new_action, false);
+            production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false);
 
             thisAgent->variablizationManager->clear_data();
 

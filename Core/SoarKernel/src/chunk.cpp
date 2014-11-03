@@ -410,8 +410,8 @@ inline void add_cond(condition** c, condition** prev, condition** first)
 
 void build_chunk_conds_for_grounds_and_add_negateds(
                             agent* thisAgent,
-                            condition** inst_top, condition** inst_bottom,
-                            condition** vrblz_top, condition** vrblz_bottom,
+                            condition** inst_top,
+                            condition** vrblz_top,
                             tc_number tc_to_use, bool* reliable)
 {
     cons* c;
@@ -518,9 +518,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     }
 
     *inst_top = first_inst;
-    *inst_bottom = prev_inst;
     *vrblz_top = first_vrblz;
-    *vrblz_bottom = prev_vrblz;
 
     dprint(DT_CONSTRAINTS, "Instantiated Conditions: \n");
     dprint_condition_list(DT_CONSTRAINTS, *inst_top, "");
@@ -974,11 +972,11 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     byte prod_type;
     bool print_name, print_prod;
     byte rete_addition_result;
-    condition* inst_top, *inst_bottom;
-    condition* vrblz_top, *vrblz_bottom;
+    condition* inst_top;
+    condition* vrblz_top;
     bool reliable = true;
     bool variablize;
-    inst_top = inst_top = vrblz_top = vrblz_bottom = NULL;
+    inst_top = vrblz_top = NULL;
 
     explain_chunk_str temp_explain_chunk;
     memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
@@ -1128,7 +1126,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
-        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &inst_bottom, &vrblz_top, &vrblz_bottom, tc_for_grounds, &reliable);
+        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable);
     }
 
     variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
@@ -1230,7 +1228,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_PRINT_INSTANTIATIONS,  "chunk instantiation created variablized rule: \n");
     dprint_cond_actions(DT_PRINT_INSTANTIATIONS, vrblz_top, rhs);
 
-    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &vrblz_bottom, &rhs, false);
+    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "chunk instantiation created reordered rule: \n");
     dprint_cond_actions(DT_PRINT_INSTANTIATIONS, vrblz_top, rhs);

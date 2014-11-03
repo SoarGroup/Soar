@@ -770,7 +770,6 @@ production* make_production(agent* thisAgent,
                             Symbol* name,
                             char* original_rule_name,
                             condition** lhs_top,
-                            condition** lhs_bottom,
                             action** rhs_top,
                             bool reorder_nccs,
                             preference* results)
@@ -792,7 +791,7 @@ production* make_production(agent* thisAgent,
         {
             return NIL;
         }
-        if (! reorder_lhs(thisAgent, lhs_top, lhs_bottom, reorder_nccs))
+        if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs))
         {
             return NIL;
         }

@@ -2402,7 +2402,7 @@ production* parse_production(agent* thisAgent, unsigned char* rete_addition_resu
     lhs_top = lhs;
     for (lhs_bottom = lhs; lhs_bottom->next != NIL; lhs_bottom = lhs_bottom->next);
     dprint(DT_PARSER, "Parse OK.  Making production.\n");
-    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &lhs_bottom, &rhs, true);
+    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true);
 
     if (!p)
     {
