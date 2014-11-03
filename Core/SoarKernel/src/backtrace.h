@@ -20,11 +20,6 @@
 #ifndef BACKTRACE_H
 #define BACKTRACE_H
 
-// Setting to experiment with when to merge conditions
-//#define MERGE_CONDITIONS_EARLY
-//#define BT_MERGE_USE_IDENTITY 1
-#define BT_MERGE_USE_IDENTITY 0
-
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef signed short goal_stack_level;

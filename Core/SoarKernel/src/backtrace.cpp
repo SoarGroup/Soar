@@ -86,85 +86,6 @@ using namespace soar_TraceNames;
 /* -- This version of the add functions combines the tests from two conditions if they both
  *    match the same wme.  Experimental. -- */
 
-#ifdef MERGE_CONDITIONS_EARLY
-inline condition* find_cond_for_match_wme(agent* thisAgent, wme* matched_wme, ::list* search_list)
-{
-    assert(matched_wme && search_list);
-    dprint(DT_BACKTRACE, "Looking in search_list...\n");
-    
-    for (cons* c = search_list; c ; c = c->rest)
-    {
-        dprint(DT_BACKTRACE, "Comparing:\n");
-        dprint_condition(DT_BACKTRACE, static_cast<condition*>(c->first));
-        if (static_cast<condition*>(c->first)->bt.wme_ == matched_wme)
-        {
-            dprint(DT_BACKTRACE, "Equivalent!  Condition is in list.\n");
-            return static_cast<condition*>(c->first);
-        }
-        else
-        {
-            dprint(DT_BACKTRACE, "Not a match.\n");
-        }
-    }
-    dprint(DT_BACKTRACE, "Condition not found in list.  Big bug b/c it's marked!\n");
-    dprint_condition_cons(DT_BACKTRACE, search_list);
-    assert(false);
-    return NIL;
-}
-
-inline void add_to_grounds(agent* thisAgent, condition* cond)
-{
-    cons* c;
-    if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
-    {
-        (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
-        dprint(DT_BACKTRACE, "Pushing condition to ground list:\n");
-        dprint_condition(DT_BACKTRACE, cond);
-        push(thisAgent, (cond), thisAgent->grounds);
-    }
-    else
-    {
-        condition* first_condition = find_cond_for_match_wme(thisAgent, (cond)->bt.wme_, thisAgent->grounds);
-        copy_non_identical_tests(thisAgent, &(first_condition->data.tests.value_test), cond->data.tests.value_test, BT_MERGE_USE_IDENTITY);
-        copy_non_identical_tests(thisAgent, &(first_condition->data.tests.attr_test), cond->data.tests.attr_test, BT_MERGE_USE_IDENTITY);
-    }
-}
-
-inline void add_to_potentials(agent* thisAgent, condition* cond)
-{
-    if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)
-    {
-        (cond)->bt.wme_->potentials_tc = thisAgent->potentials_tc;
-        (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
-        push(thisAgent, (cond), thisAgent->positive_potentials);
-    }
-    else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace)
-    {
-        push(thisAgent, (cond), thisAgent->positive_potentials);
-    }
-}
-
-inline void add_to_locals(agent* thisAgent, condition* cond)
-{
-    if ((cond)->bt.wme_->locals_tc != thisAgent->locals_tc)
-    {
-        (cond)->bt.wme_->locals_tc = thisAgent->locals_tc;
-        (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
-        push(thisAgent, (cond), thisAgent->locals);
-    }
-    else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace)
-    {
-        push(thisAgent, (cond), thisAgent->locals);
-    }
-}
-
-#else
-
-/* MToDo | MERGE_CONDITIONS_EARLY is false.  So add all conditions during
- *         backtracing and merge after variablization.  We implemented
- *         while dealing with two different issues.  It seems only one
- *         is needed now.  Figure out which and eliminate one.  */
-
 inline void add_to_grounds(agent* thisAgent, condition* cond)
 {
     cons* c;
@@ -196,8 +117,6 @@ inline void add_to_locals(agent* thisAgent, condition* cond)
     push(thisAgent, (cond), thisAgent->locals);
 }
 
-#endif
-
 /* -------------------------------------------------------------------
                      Backtrace Through Instantiation
 
@@ -222,7 +141,7 @@ void print_consed_list_of_conditions(agent* thisAgent, list* c, int indent)
         {
             print(thisAgent,  "\n      ");
         }
-        
+
         /* mvp 5-17-94 */
         print_spaces(thisAgent, indent);
         print_condition(thisAgent, static_cast<condition_struct*>(c->first));
@@ -238,7 +157,7 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
         {
             print(thisAgent,  "\n      ");
         }
-        
+
         /* mvp 5-17-94 */
         print_spaces(thisAgent, indent);
         print(thisAgent,  "     ");
@@ -263,10 +182,10 @@ void backtrace_through_instantiation(agent* thisAgent,
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
     backtrace_str temp_explain_backtrace;
-    
+
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-    
+
         /* mvp 5-17-94 */
         print_spaces(thisAgent, indent);
         print(thisAgent,  "... BT through instantiation of ");
@@ -278,7 +197,7 @@ void backtrace_through_instantiation(agent* thisAgent,
         {
             print_string(thisAgent, "[dummy production]\n");
         }
-        
+
         xml_begin_tag(thisAgent, kTagBacktrace);
         if (inst->prod)
         {
@@ -288,15 +207,15 @@ void backtrace_through_instantiation(agent* thisAgent,
         {
             xml_att_val(thisAgent, kProduction_Name, "[dummy production]");
         }
-        
+
     }
-    
+
     /* --- if the instantiation has already been BT'd, don't repeat it --- */
     if (inst->backtrace_number == thisAgent->backtrace_number)
     {
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
-        
+
             /* mvp 5-17-94 */
             print_spaces(thisAgent, indent);
             print_string(thisAgent, "(We already backtraced through this instantiation.)\n");
@@ -306,7 +225,7 @@ void backtrace_through_instantiation(agent* thisAgent,
         return;
     }
     inst->backtrace_number = thisAgent->backtrace_number;
-    
+
     /* Record information on the production being backtraced through */
     /* if (thisAgent->explain_flag) { */
     if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -320,12 +239,12 @@ void backtrace_through_instantiation(agent* thisAgent,
         {
             temp_explain_backtrace.result = false;
         }
-        
+
         temp_explain_backtrace.grounds    = NIL;
         temp_explain_backtrace.potentials = NIL;
         temp_explain_backtrace.locals     = NIL;
         temp_explain_backtrace.negated    = NIL;
-        
+
         if (inst->prod)
         {
             strncpy(temp_explain_backtrace.prod_name, inst->prod->name->sc->name, BUFFER_PROD_NAME_SIZE);
@@ -335,30 +254,30 @@ void backtrace_through_instantiation(agent* thisAgent,
             strncpy(temp_explain_backtrace.prod_name, "Dummy production", BUFFER_PROD_NAME_SIZE);
         }
         (temp_explain_backtrace.prod_name)[BUFFER_PROD_NAME_SIZE - 1] = 0; /* ensure null termination */
-        
+
         temp_explain_backtrace.next_backtrace = NULL;
     }
-    
+
     if (!inst->reliable)
     {
         *reliable = false;
     }
-    
+
     /* --- mark transitive closure of each higher goal id that was tested in
        the id field of a top-level positive condition --- */
     tc = get_new_tc_number(thisAgent);
     tc2 = get_new_tc_number(thisAgent);
     need_another_pass = false;
-    
+
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
         Symbol* id, *value;
-        
+
         if (c->type != POSITIVE_CONDITION)
         {
             continue;
         }
-        
+
 //    dprint(DT_CONSTRAINTS, "Backtracing through condition: ");
 //    dprint_condition(DT_CONSTRAINTS, c, "", true, false, true);
         /* -- We copy any relational constraints found in this condition into a temporary map.
@@ -368,9 +287,9 @@ void backtrace_through_instantiation(agent* thisAgent,
          *    the chunk or not.  Since the constraint was necessary for the problem-solving
          *    -- */
         thisAgent->variablizationManager->cache_constraints_in_cond(c);
-        
+
         id = c->data.tests.id_test->data.referent;
-        
+
         if (id->tc_num == tc)
         {
             /* --- id is already in the TC, so add in the value --- */
@@ -409,14 +328,14 @@ void backtrace_through_instantiation(agent* thisAgent,
             id->tc_num = tc2;
         }
     }
-    
+
     /* --- if necessary, make more passes to get the complete TC through the
        top-level positive conditions (recall that they're all super-simple
        wme tests--all three fields are equality tests --- */
     while (need_another_pass)
     {
         Symbol* value;
-        
+
         need_another_pass = false;
         for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
         {
@@ -437,20 +356,20 @@ void backtrace_through_instantiation(agent* thisAgent,
                 }
         } /* end of for loop */
     } /* end of while loop */
-    
+
     /* --- scan through conditions, collect grounds, potentials, & locals --- */
     grounds_to_print = NIL;
     pots_to_print = NIL;
     locals_to_print = NIL;
     negateds_to_print = NIL;
-    
+
     /* Record the conds in the print_lists even if not going to be printed */
-    
+
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
         if (c->type == POSITIVE_CONDITION)
         {
-        
+
             /* --- positive cond's are grounds, potentials, or locals --- */
             if (c->data.tests.id_test->data.referent->tc_num == tc)
             {
@@ -494,19 +413,19 @@ void backtrace_through_instantiation(agent* thisAgent,
             }
         }
     } /* end of for loop */
-    
+
     dprint(DT_BACKTRACE, "Grounds in backtrace:\n");
     dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
-    
+
     /* Now record the sets of conditions.  Note that these are not necessarily */
     /* the final resting place for these wmes.  In particular potentials may   */
     /* move over to become grounds, but since all we really need for explain is*/
     /* the list of wmes, this will do as a place to record them.               */
-    
+
     if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
         explain_add_temp_to_backtrace_list(thisAgent, &temp_explain_backtrace, grounds_to_print,
                                            pots_to_print, locals_to_print, negateds_to_print);
-                                           
+
     /* --- if tracing BT, print the resulting conditions, etc. --- */
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
@@ -536,16 +455,16 @@ void backtrace_through_instantiation(agent* thisAgent,
         xml_end_tag(thisAgent, kTagNegated);
         print(thisAgent,  "\n");
         /* mvp done */
-        
+
         xml_begin_tag(thisAgent, kTagNots);
         xml_end_tag(thisAgent, kTagNot);
         xml_end_tag(thisAgent, kTagNots);
         xml_end_tag(thisAgent, kTagBacktrace);
     }
-    
+
     /* Moved these free's down to here, to ensure they are cleared even if we're
        not printing these lists     */
-    
+
     free_list(thisAgent, grounds_to_print);
     free_list(thisAgent, pots_to_print);
     free_list(thisAgent, locals_to_print);
@@ -566,20 +485,20 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
     cons* c, *CDPS;
     condition* cond;
     preference* bt_pref, *p;
-    
+
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
         print_string(thisAgent, "\n\n*** Tracing Locals ***\n");
         xml_begin_tag(thisAgent, kTagLocals);
     }
-    
+
     while (thisAgent->locals)
     {
         c = thisAgent->locals;
         thisAgent->locals = thisAgent->locals->rest;
         cond = static_cast<condition_struct*>(c->first);
         free_cons(thisAgent, c);
-        
+
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
             print_string(thisAgent, "\nFor local ");
@@ -587,15 +506,15 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
             print_wme(thisAgent, cond->bt.wme_);
             print_string(thisAgent, " ");
         }
-        
+
         bt_pref = find_clone_for_level(cond->bt.trace,
                                        static_cast<goal_stack_level>(grounds_level + 1));
         /* --- if it has a trace at this level, backtrace through it --- */
         if (bt_pref)
         {
-        
+
             backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0);
-            
+
             /* MMA 8-2012: Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
             {
@@ -609,7 +528,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                         print_preference(thisAgent, p);
                     }
                     backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6);
-                    
+
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
                         xml_end_tag(thisAgent, kTagCDPSPreference);
@@ -617,14 +536,14 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                 }
             }
             /* MMA 8-2012 end */
-            
+
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
                 xml_end_tag(thisAgent, kTagLocal);
             }
             continue;
         }
-        
+
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
             print_string(thisAgent, "...no trace, can't BT");
@@ -650,7 +569,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
             }
             continue;
         }
-        
+
         /* --- otherwise add it to the potential set --- */
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -659,14 +578,14 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
             xml_end_tag(thisAgent, kTagAddToPotentials);
         }
         add_to_potentials(thisAgent, cond);
-        
+
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
             xml_end_tag(thisAgent, kTagLocal);
         }
-        
+
     } /* end of while locals loop */
-    
+
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
         xml_end_tag(thisAgent, kTagLocals);
@@ -688,20 +607,20 @@ void trace_grounded_potentials(agent* thisAgent)
     cons* c, *next_c, *prev_c;
     condition* pot;
     bool need_another_pass;
-    
+
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
         print_string(thisAgent, "\n\n*** Tracing Grounded Potentials ***\n");
         xml_begin_tag(thisAgent, kTagGroundedPotentials);
     }
-    
+
     /* --- setup the tc of the ground set --- */
     tc = get_new_tc_number(thisAgent);
     for (c = thisAgent->grounds; c != NIL; c = c->rest)
     {
         add_cond_to_tc(thisAgent, static_cast<condition_struct*>(c->first), tc, NIL, NIL);
     }
-    
+
     need_another_pass = true;
     while (need_another_pass)
     {
@@ -747,7 +666,7 @@ void trace_grounded_potentials(agent* thisAgent)
             }
         } /* end of for c */
     } /* end of while need_another_pass */
-    
+
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
         xml_end_tag(thisAgent, kTagGroundedPotentials);
@@ -772,13 +691,13 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
     cons* pots_to_bt;
     condition* potential;
     preference* bt_pref, *p;
-    
+
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
         print_string(thisAgent, "\n\n*** Tracing Ungrounded Potentials ***\n");
         xml_begin_tag(thisAgent, kTagUngroundedPotentials);
     }
-    
+
     /* --- scan through positive potentials, pick out the ones that have
        a preference we can backtrace through --- */
     pots_to_bt = NIL;
@@ -807,7 +726,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
             prev_c = c;
         }
     }
-    
+
     /* --- if none to BT, exit --- */
     if (!pots_to_bt)
     {
@@ -817,7 +736,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
         }
         return false;
     }
-    
+
     /* --- backtrace through each one --- */
     while (pots_to_bt)
     {
@@ -834,9 +753,9 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
         }
         bt_pref = find_clone_for_level(potential->bt.trace,
                                        static_cast<goal_stack_level>(grounds_level + 1));
-                                       
+
         backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0);
-        
+
         /* MMA 8-2012: now backtrace through CDPS of potentials */
         if (potential->bt.CDPS)
         {
@@ -850,7 +769,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                     print_preference(thisAgent, p);
                 }
                 backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6);
-                
+
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
                     xml_end_tag(thisAgent, kTagCDPSPreference);
@@ -858,18 +777,18 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
             }
         }
         /* MMA end */
-        
+
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
             xml_end_tag(thisAgent, kTagUngroundedPotential);
         }
     }
-    
+
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
         xml_end_tag(thisAgent, kTagUngroundedPotentials);
     }
-    
+
     return true;
 }
 
@@ -880,12 +799,12 @@ void report_local_negation(agent* thisAgent, condition* c)
         // use the same code as the backtracing above
         list* negated_to_print = NIL;
         push(thisAgent, c, negated_to_print);
-        
+
         print_string(thisAgent, "\n*** Chunk won't be formed due to local negation in backtrace ***\n");
         xml_begin_tag(thisAgent, kTagLocalNegation);
         print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
         xml_end_tag(thisAgent, kTagLocalNegation);
-        
+
         free_list(thisAgent, negated_to_print);
     }
 }
