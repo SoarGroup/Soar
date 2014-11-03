@@ -974,11 +974,11 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     byte prod_type;
     bool print_name, print_prod;
     byte rete_addition_result;
-    condition* lhs_top, *lhs_bottom;
     condition* inst_top, *inst_bottom;
     condition* vrblz_top, *vrblz_bottom;
     bool reliable = true;
     bool variablize;
+    inst_top = inst_top = vrblz_top = vrblz_bottom = NULL;
 
     explain_chunk_str temp_explain_chunk;
     memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
@@ -1024,8 +1024,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
     dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() called...\n");
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-
-    lhs_top = lhs_bottom = inst_top = inst_top = vrblz_top = vrblz_bottom = NULL;
 
     if (update_grounding_ids)
     {
@@ -1190,32 +1188,29 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         goto chunking_abort;
     }
 
-    lhs_top = vrblz_top;
-    lhs_bottom = vrblz_bottom;
-
     dprint(DT_VARIABLIZATION_MANAGER,  "chunk_instantiation variablizing following chunk instantiation: \n");
-    dprint_cond_results(DT_VARIABLIZATION_MANAGER, lhs_top, results);
+    dprint_cond_results(DT_VARIABLIZATION_MANAGER, vrblz_top, results);
 
     if (variablize)
     {
-        reset_variable_generator(thisAgent, lhs_top, NIL);
-        thisAgent->variablizationManager->variablize_condition_list(lhs_top);
+        reset_variable_generator(thisAgent, vrblz_top, NIL);
+        thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
         thisAgent->variablizationManager->variablize_relational_constraints();
 
-        thisAgent->variablizationManager->install_cached_constraints(lhs_top);
+        thisAgent->variablizationManager->install_cached_constraints(vrblz_top);
     }
 
     dprint(DT_VARIABLIZATION_MANAGER,  "chunk_instantiation variablizing following chunk instantiation: \n");
-    dprint_cond_results(DT_VARIABLIZATION_MANAGER, lhs_top, results);
+    dprint_cond_results(DT_VARIABLIZATION_MANAGER, vrblz_top, results);
     /* -- Clean up unification constraints and merge redundant conditions
      *    Note that this is needed even for justifications -- */
     dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions: \n");
-    thisAgent->variablizationManager->fix_conditions(lhs_top);
+    thisAgent->variablizationManager->fix_conditions(vrblz_top);
 #ifndef MERGE_CONDITIONS_EARLY
-    thisAgent->variablizationManager->merge_conditions(lhs_top);
+    thisAgent->variablizationManager->merge_conditions(vrblz_top);
 #endif
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
-    dprint_condition_list(DT_CONSTRAINTS, lhs_top, "");
+    dprint_condition_list(DT_CONSTRAINTS, vrblz_top, "");
 
     dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
     dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS action list:\n");
@@ -1228,22 +1223,22 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
     dprint_condition_list(DT_CONSTRAINTS, inst_top);
     dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n");
-    dprint_condition_list(DT_CONSTRAINTS, lhs_top);
+    dprint_condition_list(DT_CONSTRAINTS, vrblz_top);
 
-    add_goal_or_impasse_tests(thisAgent, inst_top, lhs_top);
+    add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "chunk instantiation created variablized rule: \n");
-    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, lhs_top, rhs);
+    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, vrblz_top, rhs);
 
-    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &lhs_top, &lhs_bottom, &rhs, false);
+    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &vrblz_bottom, &rhs, false);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "chunk instantiation created reordered rule: \n");
-    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, lhs_top, rhs);
+    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, vrblz_top, rhs);
 
     if (!prod)
     {
         print(thisAgent,  "\nUnable to reorder this chunk:\n  ");
-        print_condition_list(thisAgent, lhs_top, 2, false);
+        print_condition_list(thisAgent, vrblz_top, 2, false);
         print(thisAgent,  "\n  -->\n   ");
         print_action_list(thisAgent, rhs, 3, false);
         print(thisAgent,  "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
@@ -1265,7 +1260,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         condition* inst_lhs_top = 0, *inst_lhs_bottom = 0;
 
-        reorder_instantiated_conditions(lhs_top, &inst_lhs_top, &inst_lhs_bottom);
+        reorder_instantiated_conditions(vrblz_top, &inst_lhs_top, &inst_lhs_bottom);
 
         /* Record the list of grounds in the order they will appear in the chunk. */
         if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -1298,13 +1293,13 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         condition* new_top = 0;
         condition* new_bottom = 0;
-        copy_condition_list(thisAgent, lhs_top, &new_top, &new_bottom);
+        copy_condition_list(thisAgent, vrblz_top, &new_top, &new_bottom);
         temp_explain_chunk.conds = new_top;
         //temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
         temp_explain_chunk.actions = copy_action_list(thisAgent, rhs);
     }
     /* MToDo | Remove the print_name parameter disabling here. */
-    rete_addition_result = add_production_to_rete(thisAgent, prod, lhs_top, chunk_inst, print_name || true);
+    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name || true);
 
     dprint(DT_PRINT_INSTANTIATIONS, "Add production to rete result: %s\n",
            ((rete_addition_result == DUPLICATE_PRODUCTION) ? "Duplicate production!" :
@@ -1338,7 +1333,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_PRINT_INSTANTIATIONS, "=========================================================\n");
 
     /* --- deallocate chunks conds and variablized conditions --- */
-    deallocate_condition_list(thisAgent, lhs_top);
+    deallocate_condition_list(thisAgent, vrblz_top);
     /* MToDo | Do we need to deallocate the rhs here? It doesn't seem to be done anywhere.*/
 
     if (print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
