@@ -434,8 +434,8 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         dprint_condition(DT_BACKTRACE, ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
-        c_inst = copy_condition(thisAgent, ground);
-        c_vrblz = copy_condition_without_relational_constraints (thisAgent, ground);
+        c_inst = copy_condition_without_relational_constraints(thisAgent, ground);
+        c_vrblz = copy_condition(thisAgent, c_inst);
 
         /*-- Store a link from the variablized condition to the instantiated
          *   condition.  Used during merging if the chunker needs
@@ -1211,9 +1211,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
      *    Note that this is needed even for justifications -- */
     dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions: \n");
     thisAgent->variablizationManager->fix_conditions(lhs_top);
-    dprint(DT_VARIABLIZATION_MANAGER, "Polishing instantiated conditions: \n");
-    dprint_condition_list(DT_CONSTRAINTS, inst_top);
-    thisAgent->variablizationManager->fix_conditions(inst_top, true);
 #ifndef MERGE_CONDITIONS_EARLY
     thisAgent->variablizationManager->merge_conditions(lhs_top);
 #endif
