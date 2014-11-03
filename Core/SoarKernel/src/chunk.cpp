@@ -831,7 +831,6 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
             {
                 if (strstr(inst->prod->name->sc->name, thisAgent->chunk_name_prefix) == inst->prod->name->sc->name)
                 {
-                    dprint(DT_DEBUG, "Multi-chunk: %s, %s = %s\n", inst->prod->name->sc->name, thisAgent->chunk_name_prefix, strstr(inst->prod->name->sc->name, thisAgent->chunk_name_prefix));
                     /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
                     lName << "-multi";
                 }
