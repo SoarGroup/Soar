@@ -85,6 +85,7 @@ class Variablization_Manager
         void print_tables();
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
+        void print_substitution_map(TraceMode mode);
         void print_ovar_gid_propogation_table(TraceMode mode, bool printHeader = false);
 
         Variablization_Manager(agent* myAgent);

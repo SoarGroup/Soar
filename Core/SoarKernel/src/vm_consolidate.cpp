@@ -57,7 +57,13 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
             {
                 dprint_test(DT_FIX_CONDITIONS, t, true, false, true, "          Test needing substitution found:: ", "\n");
                 found_test = get_substitution(t->data.referent);
-                assert(found_test);
+                if (!found_test)
+                {
+                    print_variablization_tables(DT_FIX_CONDITIONS);
+                    print_substitution_map(DT_FIX_CONDITIONS);
+                    assert(false);
+                }
+                //assert(found_test);
                 symbol_remove_ref(thisAgent, t->data.referent);
                 symbol_add_ref(thisAgent, found_test->data.referent);
                 t->data.referent = found_test->data.referent;
