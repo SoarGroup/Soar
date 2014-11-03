@@ -92,20 +92,20 @@ inline int64_t count_conditions(condition* top_cond)
 
 inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 {
-    condition* del_cond = c->instantiated_cond;
-    if (c->instantiated_cond->prev)
+    condition* del_cond = c->counterpart;
+    if (c->counterpart->prev)
     {
-        c->instantiated_cond->prev->next = c->instantiated_cond->next;
+        c->counterpart->prev->next = c->counterpart->next;
     } else {
-//        assert((*top_cc) == c->instantiated_cond);
-//        *top_cc = c->instantiated_cond->next;
+//        assert((*top_cc) == c->counterpart);
+//        *top_cc = c->counterpart->next;
     }
-    if (c->instantiated_cond->next)
+    if (c->counterpart->next)
     {
-        c->instantiated_cond->next->prev = c->instantiated_cond->prev;
+        c->counterpart->next->prev = c->counterpart->prev;
     }
-    deallocate_condition(thisAgent, c->instantiated_cond);
-    c->instantiated_cond = NULL;
+    deallocate_condition(thisAgent, c->counterpart);
+    c->counterpart = NULL;
 }
 
 void Variablization_Manager::merge_conditions(condition* top_cond)
