@@ -594,35 +594,6 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
    back in.
 -------------------------------------------------------------------- */
 
-inline condition* get_prev_positive_condition(condition* c)
-{
-    if (c)
-    {
-        c = c->prev;
-        while (c)
-        {
-            if (c->counterpart) break;
-            c = c->prev;
-        }
-    }
-    return c;
-}
-
-inline condition* get_next_positive_condition(condition* c)
-{
-    if (c)
-    {
-        c = c->next;
-        while (c)
-        {
-            if (c->counterpart) break;
-            c = c->next;
-        }
-    }
-    return c;
-}
-
-/* MToDo | Can remove top_cc parameter.  Only used to print comparison now. */
 void reorder_instantiated_conditions(condition* top_cond,
                                      condition** dest_inst_top,
                                      condition** dest_inst_bottom)
@@ -637,8 +608,8 @@ void reorder_instantiated_conditions(condition* top_cond,
     {
         if (c->counterpart)
         {
-            p = get_prev_positive_condition(c);
-            n = get_next_positive_condition(c);
+            p = c->prev;
+            n = c->next;
             if (!n)
             {
                 c->counterpart->next = NULL;
