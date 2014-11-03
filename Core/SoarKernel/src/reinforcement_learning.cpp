@@ -332,7 +332,7 @@ bool rl_valid_template(production* prod)
             }
             else if (a->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
             {
-                if (rhs_value_is_symbol(a->referent) && (rhs_value_to_symbol(a->referent)->id->is_variable()))
+                if (rhs_value_is_symbol(a->referent) && (rhs_value_to_symbol(a->referent)->is_variable()))
                 {
                     var_pref = true;
                 }
