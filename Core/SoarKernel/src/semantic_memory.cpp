@@ -3752,9 +3752,7 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
     // parsing chunks requires an open semantic database
     smem_attach(thisAgent);
 
-    // copied primarily from cli_sp
-    thisAgent->lexer_input_string = chunks_str;
-    thisAgent->current_char = ' ';
+    set_lexer_input(thisAgent, chunks_str);
     set_lexer_allow_ids(thisAgent, true);
 
     bool good_chunk = true;
@@ -3884,9 +3882,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     //Parsing requires an open semantic database.
     smem_attach(thisAgent);
 
-    //Next 5 lines copied as in smem_parse_chunks.
-    thisAgent->lexer_input_string = chunks_str;
-    thisAgent->current_char = ' ';
+    set_lexer_input(thisAgent, chunks_str);
     set_lexer_allow_ids(thisAgent, true);
 
     bool good_cue = true;   // This is a success or failure flag that will be checked periodically
@@ -4196,9 +4192,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
     //parsing chunks requires an open semantic database
     smem_attach(thisAgent);
 
-    //copied primarily from cli_sp
-    thisAgent->lexer_input_string = chunks_str;
-    thisAgent->current_char = ' ';
+    set_lexer_input(thisAgent, chunks_str);
     set_lexer_allow_ids(thisAgent, true);//This is the end of the incantation.
 
     get_lexeme(thisAgent);

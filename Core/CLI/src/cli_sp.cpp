@@ -21,23 +21,11 @@
 
 using namespace cli;
 
-// FIXME: copied from gSKI
-void setLexerInput(agent* ai_agent, const char*  ai_string)
-{
-    // Side effects:
-    //    The soar agents alternate input values are updated and its
-    //      current character is reset to a whitespace value.
-    ai_agent->lexer_input_string = const_cast<char*>(ai_string);
-    // whitespace forces immediate read of first line
-    ai_agent->current_char = ' ';
-    return;
-}
-
 bool CommandLineInterface::DoSP(const std::string& productionString)
 {
     // Load the production
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    setLexerInput(thisAgent, productionString.c_str());
+    set_lexer_input(thisAgent, productionString.c_str());
     set_lexer_allow_ids(thisAgent, false);
     get_lexeme(thisAgent);
 
@@ -46,7 +34,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString)
     p = parse_production(thisAgent, &rete_addition_result);
 
     set_lexer_allow_ids(thisAgent, true);
-    setLexerInput( thisAgent, NULL);
+    set_lexer_input( thisAgent, NULL);
 
     if (!p)
     {

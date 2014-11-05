@@ -987,6 +987,7 @@ inline void push(agent* thisAgent, P item, T*& list_header)
 extern void     init_soar_agent(agent* thisAgent);
 extern agent*   create_soar_agent(char* name);
 extern void     destroy_soar_agent(agent* soar_agent);
+void set_lexer_input(agent* thisAgent, const char* input);
 
 #endif
 
