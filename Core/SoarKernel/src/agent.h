@@ -218,7 +218,6 @@ typedef struct agent_struct
     int                 parentheses_level; //0 means top level, no left paren's seen
     int                 current_char; /* holds current input character */
     struct lexeme_info  lexeme;       /* holds current lexeme */
-    bool                print_prompt_flag;
     Symbol*             current_production_name;
 
     Variablization_Manager* variablizationManager;
