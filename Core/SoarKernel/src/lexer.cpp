@@ -95,7 +95,7 @@ void start_lex_from_file(agent* thisAgent, const char* filename,
                          FILE* already_opened_file)
 {
     lexer_source_file* lsf;
-    
+
     lsf = static_cast<lexer_source_file_struct*>(allocate_memory(thisAgent, sizeof(lexer_source_file),
             MISCELLANEOUS_MEM_USAGE));
     lsf->saved_lexeme = thisAgent->lexeme;
@@ -118,7 +118,7 @@ void start_lex_from_file(agent* thisAgent, const char* filename,
 void stop_lex_from_file(agent* thisAgent)
 {
     lexer_source_file* lsf;
-    
+
     if (reading_from_top_level(thisAgent))
     {
         print(thisAgent,  "Internal error: tried to stop_lex_from_file at top level\n");
@@ -128,7 +128,7 @@ void stop_lex_from_file(agent* thisAgent)
     thisAgent->current_file = thisAgent->current_file->parent_file;
     thisAgent->current_char = lsf->saved_current_char;
     thisAgent->lexeme = lsf->saved_lexeme;
-    
+
     free_memory_block_for_string(thisAgent, lsf->filename);
     free_memory(thisAgent, lsf, MISCELLANEOUS_MEM_USAGE);
 }
@@ -143,7 +143,7 @@ void stop_lex_from_file(agent* thisAgent)
 void get_next_char(agent* thisAgent)
 {
     char* s;
-    
+
     if (thisAgent->alternate_input_exit &&
             (thisAgent->alternate_input_string == NULL) &&
             (thisAgent->alternate_input_suffix == NULL))
@@ -152,11 +152,11 @@ void get_next_char(agent* thisAgent)
         //assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
         return;
     }
-    
+
     if (thisAgent->alternate_input_string != NULL)
     {
         thisAgent->current_char = *thisAgent->alternate_input_string++;
-        
+
         if (thisAgent->current_char == '\0')
         {
             thisAgent->alternate_input_string = NIL;
@@ -167,18 +167,18 @@ void get_next_char(agent* thisAgent)
     else if (thisAgent->alternate_input_suffix != NULL)
     {
         thisAgent->current_char = *thisAgent->alternate_input_suffix++;
-        
+
         if (thisAgent->current_char == '\0')
         {
             thisAgent->alternate_input_suffix = NIL;
-            
+
             if (thisAgent->alternate_input_exit)
             {
                 thisAgent->current_char = EOF;
                 //assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
                 return;
             }
-            
+
             thisAgent->current_char = thisAgent->current_file->buffer
                                       [thisAgent->current_file->current_column++];
         }
@@ -188,12 +188,12 @@ void get_next_char(agent* thisAgent)
         thisAgent->current_char = thisAgent->current_file->buffer
                                   [thisAgent->current_file->current_column++];
     }
-    
+
     if (thisAgent->current_char)
     {
         return;
     }
-    
+
     if ((thisAgent->current_file->current_column == BUFSIZE) &&
             (thisAgent->current_file->buffer[BUFSIZE - 2] != '\n') &&
             (thisAgent->current_file->buffer[BUFSIZE - 2] != EOF))
@@ -204,12 +204,12 @@ void get_next_char(agent* thisAgent)
                  MAX_LEXER_LINE_LENGTH, thisAgent->current_file->filename,
                  static_cast<long long unsigned>(thisAgent->current_file->current_line));
         msg[511] = 0; /* ensure null termination */
-        
+
         abort_with_fatal_error(thisAgent, msg);
     }
-    
+
     s = fgets(thisAgent->current_file->buffer, BUFSIZE, thisAgent->current_file->file);
-    
+
     if (s)
     {
         thisAgent->current_file->current_line++;
@@ -273,7 +273,7 @@ void read_constituent_string(agent* thisAgent)
     char* buf;
     int i, len;
 #endif
-    
+
     while ((thisAgent->current_char != EOF) &&
             constituent_char[static_cast<unsigned char>(thisAgent->current_char)])
     {
@@ -303,7 +303,7 @@ void read_rest_of_floating_point_number(agent* thisAgent)
         }
     }
     finish(thisAgent);
-    
+
 #ifdef __SC__
     if (strcmp("soar>", thisAgent->lexeme.string))  /* if the lexeme doesn't equal "soar>" */
     {
@@ -329,7 +329,7 @@ bool determine_type_of_constituent_string(agent* thisAgent)
 {
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool rereadable;
-    
+
     determine_possible_symbol_types_for_string(thisAgent->lexeme.string,
             thisAgent->lexeme.length,
             &possible_id,
@@ -338,13 +338,13 @@ bool determine_type_of_constituent_string(agent* thisAgent)
             &possible_ic,
             &possible_fc,
             &rereadable);
-            
+
     if (possible_var)
     {
         thisAgent->lexeme.type = VARIABLE_LEXEME;
         return true;
     }
-    
+
     if (possible_ic)
     {
         errno = 0;
@@ -358,7 +358,7 @@ bool determine_type_of_constituent_string(agent* thisAgent)
         }
         return (errno == 0);
     }
-    
+
     if (possible_fc)
     {
         errno = 0;
@@ -372,7 +372,7 @@ bool determine_type_of_constituent_string(agent* thisAgent)
         }
         return (errno == 0);
     }
-    
+
     if (thisAgent->current_file->allow_ids && possible_id)
     {
         // long term identifiers start with @
@@ -394,7 +394,7 @@ bool determine_type_of_constituent_string(agent* thisAgent)
         }
         return (errno == 0);
     }
-    
+
     if (possible_sc)
     {
         thisAgent->lexeme.type = STR_CONSTANT_LEXEME;
@@ -410,7 +410,7 @@ bool determine_type_of_constituent_string(agent* thisAgent)
         }
         return true;
     }
-    
+
     thisAgent->lexeme.type = QUOTED_STRING_LEXEME;
     return true;
 }
@@ -529,7 +529,7 @@ void lex_equal(agent* thisAgent)
 {
     /* Lexeme might be "=", or symbol */
     /* Note: this routine relies on = being a constituent character */
-    
+
     read_constituent_string(thisAgent);
     if (thisAgent->lexeme.length == 1)
     {
@@ -543,7 +543,7 @@ void lex_ampersand(agent* thisAgent)
 {
     /* Lexeme might be "&", or symbol */
     /* Note: this routine relies on & being a constituent character */
-    
+
     read_constituent_string(thisAgent);
     if (thisAgent->lexeme.length == 1)
     {
@@ -576,7 +576,7 @@ void lex_greater(agent* thisAgent)
 {
     /* Lexeme might be ">", ">=", ">>", or symbol */
     /* Note: this routine relies on =,> being constituent characters */
-    
+
     read_constituent_string(thisAgent);
     if (thisAgent->lexeme.length == 1)
     {
@@ -603,7 +603,7 @@ void lex_less(agent* thisAgent)
 {
     /* Lexeme might be "<", "<=", "<=>", "<>", "<<", or variable */
     /* Note: this routine relies on =,<,> being constituent characters */
-    
+
     read_constituent_string(thisAgent);
     if (thisAgent->lexeme.length == 1)
     {
@@ -637,7 +637,7 @@ void lex_less(agent* thisAgent)
         }
     }
     determine_type_of_constituent_string(thisAgent);
-    
+
 }
 
 void lex_period(agent* thisAgent)
@@ -664,7 +664,7 @@ void lex_plus(agent* thisAgent)
     /* Note: this routine relies on various things being constituent chars */
     int i;
     bool could_be_floating_point;
-    
+
     read_constituent_string(thisAgent);
     /* --- if we stopped at '.', it might be a floating-point number, so be
        careful to check for this case --- */
@@ -695,7 +695,7 @@ void lex_minus(agent* thisAgent)
     /* Note: this routine relies on various things being constituent chars */
     int i;
     bool could_be_floating_point;
-    
+
     read_constituent_string(thisAgent);
     /* --- if we stopped at '.', it might be a floating-point number, so be
        careful to check for this case --- */
@@ -732,7 +732,7 @@ void lex_digit(agent* thisAgent)
 {
     int i;
     bool could_be_floating_point;
-    
+
     read_constituent_string(thisAgent);
     /* --- if we stopped at '.', it might be a floating-point number, so be
        careful to check for this case --- */
@@ -914,26 +914,17 @@ void lex_dollar (void) {
 void get_lexeme(agent* thisAgent)
 {
 
-    /* AGR 568 begin */
-    if (thisAgent->lex_alias)
-    {
-        thisAgent->lexeme = thisAgent->lex_alias->lexeme;
-        thisAgent->lex_alias = thisAgent->lex_alias->next;
-        return;
-    }
-    /* AGR 568 end */
-    
     thisAgent->lexeme.length = 0;
     thisAgent->lexeme.string[0] = 0;
-    
+
     /* AGR 534  The only time a prompt should be printed out is if there's
        a command being expected; ie. the prompt shouldn't print out if we're
        in the middle of entering a production.  So if we're in the middle of
        entering a production, then the parentheses level will be > 0, so that's
        the criteria we will use.  AGR  5-Apr-94  */
-    
+
     thisAgent->load_errors_quit = false;  /* AGR 527c */
-    
+
     while (thisAgent->load_errors_quit == false)   /* AGR 527c */
     {
         if (thisAgent->current_char == EOF)
@@ -953,7 +944,7 @@ void get_lexeme(agent* thisAgent)
             get_next_char(thisAgent);
             continue;
         }
-        
+
         if (thisAgent->current_char == ';')
         {
             /* --- skip the semi-colon, forces newline in TCL --- */
@@ -991,10 +982,10 @@ void get_lexeme(agent* thisAgent)
     {
         lex_eof(thisAgent);
     }
-    
+
     dprint(DT_PARSER, "Parser| get_lexeme read ");
     dprint_current_lexeme(DT_PARSER);
-    
+
 }
 
 /* ======================================================================
@@ -1014,13 +1005,13 @@ void get_lexeme(agent* thisAgent)
 void init_lexer(agent* thisAgent)
 {
     static bool initialized = false;
-    
+
     if (!initialized)
     {
         initialized = true;
-        
+
         unsigned int i;
-        
+
         /* --- setup constituent_char array --- */
         char extra_constituents[] = "$%&*+-/:<=>?_@";
         for (i = 0; i < 256; i++)
@@ -1039,18 +1030,18 @@ void init_lexer(agent* thisAgent)
                 constituent_char[i] = (isalnum(i) != 0);
             }
         }
-        
+
         //  for (i=0; i<strlen(extra_constituents); i++)
         //  {
         //    constituent_char[(int)extra_constituents[i]]=true;
         //  }
-        
+
         /* --- setup whitespace array --- */
         for (i = 0; i < 256; i++)
         {
             whitespace[i] = (isspace(i) != 0);
         }
-        
+
         /* --- setup number_starters array --- */
         for (i = 0; i < 256; i++)
         {
@@ -1069,7 +1060,7 @@ void init_lexer(agent* thisAgent)
                     number_starters[i] = (isdigit(i) != 0);
             }
         }
-        
+
         /* --- setup lexer_routines array --- */
         //
         // I go to some effort here to insure that values do not
@@ -1146,7 +1137,7 @@ void init_lexer(agent* thisAgent)
                         lexer_routines[i] = lex_digit;
                         continue;
                     }
-                    
+
                     if (constituent_char[i])
                     {
                         lexer_routines[i] = lex_constituent_string;
@@ -1155,7 +1146,7 @@ void init_lexer(agent* thisAgent)
             }
         }
     }
-    
+
     /* --- initially we're reading from the standard input --- */
     start_lex_from_file(thisAgent, "[standard input]", stdin);
 }
@@ -1175,7 +1166,7 @@ void init_lexer(agent* thisAgent)
 void print_location_of_most_recent_lexeme(agent* thisAgent)
 {
     int i;
-    
+
     if (thisAgent->current_file->line_of_start_of_last_lexeme ==
             thisAgent->current_file->current_line)
     {
@@ -1199,7 +1190,7 @@ void print_location_of_most_recent_lexeme(agent* thisAgent)
             print_string(thisAgent, "-");
         }
         print_string(thisAgent, "^\n");
-        
+
         if (! reading_from_top_level(thisAgent))
         {
             //respond_to_load_errors (thisAgent); /* AGR 527a */
@@ -1208,12 +1199,12 @@ void print_location_of_most_recent_lexeme(agent* thisAgent)
                 thisAgent->current_char = EOF;
             }
         }
-        
+
         /* AGR 527a  The respond_to_load_errors call came too early (above),
            and the "continue" prompt appeared before the offending line was printed
            out, so the respond_to_load_errors call was moved here.
            AGR 26-Apr-94 */
-        
+
     }
     else
     {
@@ -1315,14 +1306,14 @@ void determine_possible_symbol_types_for_string(const char* s,
 {
     const char* ch;
     bool all_alphanum;
-    
+
     *possible_id = false;
     *possible_var = false;
     *possible_sc = false;
     *possible_ic = false;
     *possible_fc = false;
     *rereadable = false;
-    
+
     /* --- check if it's an integer or floating point number --- */
     if (number_starters[static_cast<unsigned char>(*s)])
     {
@@ -1364,14 +1355,14 @@ void determine_possible_symbol_types_for_string(const char* s,
             }
         }
     }
-    
+
     /* --- make sure it's entirely constituent characters --- */
     for (ch = s; *ch != 0; ch++)
         if (! constituent_char[static_cast<unsigned char>(*ch)])
         {
             return;
         }
-        
+
     /* --- check for rereadability --- */
     all_alphanum = true;
     for (ch = s; *ch != '\0'; ch++)
@@ -1388,16 +1379,16 @@ void determine_possible_symbol_types_for_string(const char* s,
     {
         *rereadable = true;
     }
-    
+
     /* --- any string of constituents could be a sym constant --- */
     *possible_sc = true;
-    
+
     /* --- check whether it's a variable --- */
     if ((*s == '<') && (*(s + length_of_s - 1) == '>'))
     {
         *possible_var = true;
     }
-    
+
     /* --- check if it's an identifier --- */
     // long term identifiers start with @
     if (*s == '@')
