@@ -220,7 +220,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->stop_soar                          = true;
     thisAgent->system_halted                      = false;
     thisAgent->token_additions                    = 0;
-    thisAgent->top_dir_stack                      = NIL;   /* AGR 568 */
     thisAgent->top_goal                           = NIL;
     thisAgent->top_state                          = NIL;
     thisAgent->wmes_to_add                        = NIL;
@@ -282,10 +281,6 @@ agent* create_soar_agent(char* agent_name)                                      
     {
         print(thisAgent,  "Unable to set current directory while initializing agent.\n");
     }
-    thisAgent->top_dir_stack = static_cast<dir_stack_struct*>(malloc(sizeof(dir_stack_struct)));    /* AGR 568 */
-    thisAgent->top_dir_stack->directory = static_cast<char*>(malloc(MAXPATHLEN * sizeof(char)));  /* AGR 568 */
-    thisAgent->top_dir_stack->next = NIL;   /* AGR 568 */
-    strcpy(thisAgent->top_dir_stack->directory, cur_path);   /* AGR 568 */
 
     for (int productionTypeCounter = 0; productionTypeCounter < NUM_PRODUCTION_TYPES; productionTypeCounter++)
     {
@@ -525,8 +520,6 @@ void destroy_soar_agent(agent* delete_agent)
 
     /* Free structures stored in agent structure */
     free(delete_agent->name);
-    free(delete_agent->top_dir_stack->directory);
-    free(delete_agent->top_dir_stack);
 
     /* Freeing the agent's multi attributes structure */
     multi_attribute* lastmattr = 0;

@@ -66,16 +66,6 @@ class debug_param_container;
 class Output_Manager;
 class Variablization_Manager;
 
-// following def's moved here from old interface.h file  KJC nov 05
-/* AGR 568 begin */
-typedef struct dir_stack_struct
-{
-    char* directory;
-    struct dir_stack_struct* next;
-} dir_stack_struct;
-/* AGR 568 end */
-
-
 /* This typedef makes soar_callback_array equivalent to an array of list
    pointers. Since it was used only one time, it has been commented out
    here and spelled out completely in that particular instance -ajc
@@ -769,7 +759,6 @@ typedef struct agent_struct
     const char*         alternate_input_suffix;
     bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
     bool                load_errors_quit;  /* AGR 527c */
-    dir_stack_struct*   top_dir_stack;   /* AGR 568 */
 
 
     /* RCHONG: begin 10.11 */
