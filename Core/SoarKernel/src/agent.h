@@ -758,7 +758,6 @@ typedef struct agent_struct
     const char*         alternate_input_string;
     const char*         alternate_input_suffix;
     bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
-    bool                load_errors_quit;  /* AGR 527c */
 
 
     /* RCHONG: begin 10.11 */
