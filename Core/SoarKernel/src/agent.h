@@ -991,13 +991,5 @@ extern void     init_soar_agent(agent* thisAgent);
 extern agent*   create_soar_agent(char* name);
 extern void     destroy_soar_agent(agent* soar_agent);
 
-/* Ideally, this should be in "lexer.h", but to avoid circular dependencies
-   among header files, I am forced to put it here. */
-
-inline bool reading_from_top_level(agent* thisAgent)
-{
-    return (!thisAgent->current_file->parent_file);
-}
-
 #endif
 
