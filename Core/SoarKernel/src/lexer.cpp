@@ -125,8 +125,7 @@ void get_next_char(agent* thisAgent)
 {
     char* s;
 
-    if (thisAgent->alternate_input_exit &&
-            (thisAgent->alternate_input_string == NULL) &&
+    if ((thisAgent->alternate_input_string == NULL) &&
             (thisAgent->alternate_input_suffix == NULL))
     {
         thisAgent->current_char = EOF;
@@ -152,63 +151,12 @@ void get_next_char(agent* thisAgent)
         if (thisAgent->current_char == '\0')
         {
             thisAgent->alternate_input_suffix = NIL;
-
-            if (thisAgent->alternate_input_exit)
-            {
-                thisAgent->current_char = EOF;
-                //assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
-                return;
-            }
-
-            thisAgent->current_char = thisAgent->current_file->buffer
-                                      [thisAgent->current_file->current_column++];
-        }
-    }
-    else
-    {
-        thisAgent->current_char = thisAgent->current_file->buffer
-                                  [thisAgent->current_file->current_column++];
-    }
-
-    if (thisAgent->current_char)
-    {
-        return;
-    }
-
-    if ((thisAgent->current_file->current_column == BUFSIZE) &&
-            (thisAgent->current_file->buffer[BUFSIZE - 2] != '\n') &&
-            (thisAgent->current_file->buffer[BUFSIZE - 2] != EOF))
-    {
-        char msg[512];
-        SNPRINTF(msg, 512,
-                 "lexer.c: Error:  line too long (max allowed is %d chars)\nFile %s, line %llu\n",
-                 MAX_LEXER_LINE_LENGTH, thisAgent->current_file->filename,
-                 static_cast<long long unsigned>(thisAgent->current_file->current_line));
-        msg[511] = 0; /* ensure null termination */
-
-        abort_with_fatal_error(thisAgent, msg);
-    }
-
-    s = fgets(thisAgent->current_file->buffer, BUFSIZE, thisAgent->current_file->file);
-
-    if (s)
-    {
-        thisAgent->current_file->current_line++;
-        tell_printer_that_output_column_has_been_reset(thisAgent);
-    }
-    else
-    {
-        /* s==NIL means immediate eof encountered or read error occurred */
-        if (! feof(thisAgent->current_file->file))
-        {
-            assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
+            thisAgent->current_char = EOF;
+            //assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
             return;
         }
-        thisAgent->current_file->buffer[0] = 0;
     }
-    thisAgent->current_char = thisAgent->current_file->buffer[0];
-    thisAgent->current_file->current_column = 1;
-}
+ }
 
 /* ======================================================================
 
@@ -1035,33 +983,36 @@ void init_lexer(agent* thisAgent)
 
 void print_location_of_most_recent_lexeme(agent* thisAgent)
 {
-    int i;
+    //TODO: below was commented out because file input isn't used anymore.
+    //write something else to track input line, column and offset
 
-    if (thisAgent->current_file->line_of_start_of_last_lexeme ==
-            thisAgent->current_file->current_line)
-    {
-        /* --- error occurred on current line, so print out the line --- */
-        if (thisAgent->current_file->buffer[strlen(thisAgent->current_file->buffer) - 1] == '\n')
-        {
-            print_string(thisAgent, thisAgent->current_file->buffer);
-        }
-        else
-        {
-            print(thisAgent,  "%s\n", thisAgent->current_file->buffer);
-        }
-        for (i = 0; i < thisAgent->current_file->column_of_start_of_last_lexeme; i++)
-        {
-            print_string(thisAgent, "-");
-        }
-        print_string(thisAgent, "^\n");
-    }
-    else
-    {
-        /* --- error occurred on a previous line, so just give the position --- */
-        print(thisAgent,  "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
-              thisAgent->current_file->line_of_start_of_last_lexeme,
-              thisAgent->current_file->column_of_start_of_last_lexeme + 1);
-    }
+    // int i;
+
+    // if (thisAgent->current_file->line_of_start_of_last_lexeme ==
+    //         thisAgent->current_file->current_line)
+    // {
+    //     /* --- error occurred on current line, so print out the line --- */
+    //     if (thisAgent->current_file->buffer[strlen(thisAgent->current_file->buffer) - 1] == '\n')
+    //     {
+    //         print_string(thisAgent, thisAgent->current_file->buffer);
+    //     }
+    //     else
+    //     {
+    //         print(thisAgent,  "%s\n", thisAgent->current_file->buffer);
+    //     }
+    //     for (i = 0; i < thisAgent->current_file->column_of_start_of_last_lexeme; i++)
+    //     {
+    //         print_string(thisAgent, "-");
+    //     }
+    //     print_string(thisAgent, "^\n");
+    // }
+    // else
+    // {
+    //     /* --- error occurred on a previous line, so just give the position --- */
+    //     print(thisAgent,  "File %s, line %lu, column %lu.\n", thisAgent->current_file->filename,
+    //           thisAgent->current_file->line_of_start_of_last_lexeme,
+    //           thisAgent->current_file->column_of_start_of_last_lexeme + 1);
+    // }
 }
 
 /* ======================================================================

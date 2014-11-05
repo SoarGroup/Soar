@@ -3756,7 +3756,6 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
     thisAgent->alternate_input_string = chunks_str;
     thisAgent->alternate_input_suffix = const_cast<char*>(") ");
     thisAgent->current_char = ' ';
-    thisAgent->alternate_input_exit = true;
     set_lexer_allow_ids(thisAgent, true);
 
     bool good_chunk = true;
@@ -3890,7 +3889,6 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     thisAgent->alternate_input_string = chunks_str;
     thisAgent->alternate_input_suffix = const_cast<char*>(")");
     thisAgent->current_char = ' ';
-    thisAgent->alternate_input_exit = true;
     set_lexer_allow_ids(thisAgent, true);
 
     bool good_cue = true;   // This is a success or failure flag that will be checked periodically
@@ -4204,7 +4202,6 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
     thisAgent->alternate_input_string = chunks_str;
     thisAgent->alternate_input_suffix = const_cast<char*>(") ");
     thisAgent->current_char = ' ';
-    thisAgent->alternate_input_exit = true;
     set_lexer_allow_ids(thisAgent, true);//This is the end of the incantation.
 
     get_lexeme(thisAgent);

@@ -169,7 +169,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->alpha_mem_id_counter               = 0;
     thisAgent->alternate_input_string             = NIL;
     thisAgent->alternate_input_suffix             = NIL;
-    thisAgent->alternate_input_exit               = false;/* Soar-Bugs #54 */
     thisAgent->backtrace_number                   = 0;
     thisAgent->beta_node_id_counter               = 0;
     thisAgent->bottom_goal                        = NIL;
