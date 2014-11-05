@@ -756,8 +756,6 @@ typedef struct agent_struct
     ::list*                   soar_callbacks[NUMBER_OF_CALLBACKS];
 
     const char*         lexer_input_string;
-    const char*         lexer_input_suffix;
-
 
     /* RCHONG: begin 10.11 */
     bool       did_PE;

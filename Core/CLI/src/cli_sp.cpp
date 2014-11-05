@@ -22,13 +22,13 @@
 using namespace cli;
 
 // FIXME: copied from gSKI
-void soarAlternateInput(agent* ai_agent, const char*  ai_string, char*  ai_suffix)
+void setLexerInput(agent* ai_agent, const char*  ai_string)
 {
     // Side effects:
     //    The soar agents alternate input values are updated and its
     //      current character is reset to a whitespace value.
     ai_agent->lexer_input_string = const_cast<char*>(ai_string);
-    ai_agent->lexer_input_suffix = ai_suffix;
+    // whitespace forces immediate read of first line
     ai_agent->current_char = ' ';
     return;
 }
@@ -36,13 +36,8 @@ void soarAlternateInput(agent* ai_agent, const char*  ai_string, char*  ai_suffi
 bool CommandLineInterface::DoSP(const std::string& productionString)
 {
     // Load the production
-    // voigtjr: note: this TODO from gSKI:
-    // TODO: This should not be needed, FIX!
-    // contents of gSKI ProductionManager::soarAlternateInput function:
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    soarAlternateInput(thisAgent, productionString.c_str(), const_cast<char*>(") "));
-    // whitespace forces immediate read of first line
-    thisAgent->current_char = ' ';
+    setLexerInput(thisAgent, productionString.c_str());
     set_lexer_allow_ids(thisAgent, false);
     get_lexeme(thisAgent);
 
@@ -51,7 +46,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString)
     p = parse_production(thisAgent, &rete_addition_result);
 
     set_lexer_allow_ids(thisAgent, true);
-    soarAlternateInput(thisAgent, 0, 0);
+    setLexerInput( thisAgent, NULL);
 
     if (!p)
     {

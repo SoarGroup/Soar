@@ -583,10 +583,10 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent)
     return wmes;
 }
 
-void soar_alternate_input(agent* ai_agent, const char* ai_string, const char* ai_suffix)
+void set_lexer_input(agent* ai_agent, const char* ai_string)
 {
     ai_agent->lexer_input_string = ai_string;
-    ai_agent->lexer_input_suffix = ai_suffix;
+    // whitespace forces immediate read of first line
     ai_agent->current_char = ' ';
     return;
 }
@@ -631,15 +631,10 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
             break;
 
         case QUOTED_STRING_LEXEME:
-            /* Soar-Bugs #54 TMH */
-            soar_alternate_input(thisAgent, arg, ") ");
-            /* ((agent *)clientData)->lexer_input_string = argv[next_arg];
-            * ((agent *)clientData)->lexer_input_suffix = ") ";
-            */
+            set_lexer_input(thisAgent, arg);
             get_lexeme(thisAgent);
             wmes = read_pattern_and_get_matching_wmes(thisAgent);
-            soar_alternate_input(thisAgent, NIL, NIL);
-            thisAgent->current_char = ' ';
+            set_lexer_input(thisAgent, NULL);
             if (exact)
             {
                 // When printing exact, we want to list only those wmes who match.

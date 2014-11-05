@@ -168,7 +168,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->all_wmes_in_rete                   = NIL;
     thisAgent->alpha_mem_id_counter               = 0;
     thisAgent->lexer_input_string                 = NIL;
-    thisAgent->lexer_input_suffix                 = NIL;
     thisAgent->parentheses_level                  = 0;
     thisAgent->allow_ids                          = true;
     thisAgent->backtrace_number                   = 0;

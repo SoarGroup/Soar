@@ -3754,7 +3754,6 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
 
     // copied primarily from cli_sp
     thisAgent->lexer_input_string = chunks_str;
-    thisAgent->lexer_input_suffix = const_cast<char*>(") ");
     thisAgent->current_char = ' ';
     set_lexer_allow_ids(thisAgent, true);
 
@@ -3887,7 +3886,6 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
     //Next 5 lines copied as in smem_parse_chunks.
     thisAgent->lexer_input_string = chunks_str;
-    thisAgent->lexer_input_suffix = const_cast<char*>(")");
     thisAgent->current_char = ' ';
     set_lexer_allow_ids(thisAgent, true);
 
@@ -4200,7 +4198,6 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
 
     //copied primarily from cli_sp
     thisAgent->lexer_input_string = chunks_str;
-    thisAgent->lexer_input_suffix = const_cast<char*>(") ");
     thisAgent->current_char = ' ';
     set_lexer_allow_ids(thisAgent, true);//This is the end of the incantation.
 

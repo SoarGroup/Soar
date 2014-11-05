@@ -587,7 +587,6 @@ bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options,
         /* this patch failed for -rhs, so I removed altogether.  KJC 3/99 */
         /* Soar-Bugs #54 TMH */
         thisAgent->lexer_input_string = pattern.c_str();
-        thisAgent->lexer_input_suffix = ") ";
 
         get_lexeme(thisAgent);
         read_pattern_and_get_matching_productions(thisAgent,
@@ -602,7 +601,6 @@ bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options,
         /* this patch failed for -rhs, so I removed altogether.  KJC 3/99 */
         /* Soar-Bugs #54 TMH */
         thisAgent->lexer_input_string = pattern.c_str();
-        thisAgent->lexer_input_suffix = ") ";
 
         get_lexeme(thisAgent);
         read_rhs_pattern_and_get_matching_productions(thisAgent, &current_pf_list,

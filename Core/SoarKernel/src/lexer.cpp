@@ -84,36 +84,21 @@ void get_next_char(agent* thisAgent)
 {
     char* s;
 
-    if ((thisAgent->lexer_input_string == NULL) &&
-            (thisAgent->lexer_input_suffix == NULL))
+    if(thisAgent->current_char == EOF)
     {
-        thisAgent->current_char = EOF;
-        //assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
         return;
     }
-
-    if (thisAgent->lexer_input_string != NULL)
+    if (thisAgent->lexer_input_string == NULL)
     {
-        thisAgent->current_char = *thisAgent->lexer_input_string++;
-
-        if (thisAgent->current_char == '\0')
-        {
-            thisAgent->lexer_input_string = NIL;
-            thisAgent->current_char =
-                *thisAgent->lexer_input_suffix++;
-        }
+        thisAgent->current_char = EOF;
+        return;
     }
-    else if (thisAgent->lexer_input_suffix != NULL)
+    thisAgent->current_char = *thisAgent->lexer_input_string++;
+    if (thisAgent->current_char == '\0')
     {
-        thisAgent->current_char = *thisAgent->lexer_input_suffix++;
-
-        if (thisAgent->current_char == '\0')
-        {
-            thisAgent->lexer_input_suffix = NIL;
-            thisAgent->current_char = EOF;
-            //assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
-            return;
-        }
+        thisAgent->lexer_input_string = NIL;
+        thisAgent->current_char = EOF;
+        return;
     }
  }
 
