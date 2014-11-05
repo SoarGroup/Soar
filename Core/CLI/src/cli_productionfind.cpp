@@ -31,7 +31,7 @@ using namespace sml;
 void free_binding_list(agent* thisAgent, list* bindings)
 {
     cons* c;
-    
+
     for (c = bindings; c != NIL; c = c->rest)
     {
         free_memory(thisAgent, c->first, MISCELLANEOUS_MEM_USAGE);
@@ -42,7 +42,7 @@ void free_binding_list(agent* thisAgent, list* bindings)
 void print_binding_list(agent* thisAgent, list* bindings)
 {
     cons* c;
-    
+
     for (c = bindings ; c != NIL ; c = c->rest)
     {
         print_with_symbols(thisAgent, "   (%y -> %y)\n", static_cast<Binding*>(c->first)->from, static_cast<Binding*>(c->first)->to);
@@ -52,7 +52,7 @@ void print_binding_list(agent* thisAgent, list* bindings)
 void reset_old_binding_point(agent* thisAgent, list** bindings, list** current_binding_point)
 {
     cons* c, *c_next;
-    
+
     c = *bindings;
     while (c != *current_binding_point)
     {
@@ -61,14 +61,14 @@ void reset_old_binding_point(agent* thisAgent, list** bindings, list** current_b
         free_cons(thisAgent, c);
         c = c_next;
     }
-    
+
     bindings = current_binding_point;
 }
 
 Symbol* get_binding(Symbol* f, list* bindings)
 {
     cons* c;
-    
+
     for (c = bindings; c != NIL; c = c->rest)
     {
         if (static_cast<Binding*>(c->first)->from == f)
@@ -83,12 +83,12 @@ bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol* s1, Symbol* s2, l
 {
     Binding* b;
     Symbol* bvar;
-    
+
     if ((s1 == s2) && (s1->symbol_type != VARIABLE_SYMBOL_TYPE))
     {
         return true;
     }
-    
+
     /* "*" matches everything. */
     if ((s1->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
             (!strcmp(s1->sc->name, "*")))
@@ -100,8 +100,8 @@ bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol* s1, Symbol* s2, l
     {
         return true;
     }
-    
-    
+
+
     if ((s1->symbol_type != VARIABLE_SYMBOL_TYPE) ||
             (s2->symbol_type != VARIABLE_SYMBOL_TYPE))
     {
@@ -146,21 +146,21 @@ bool actions_are_equal_with_bindings(agent* thisAgent, action* a1, action* a2, l
     {
         return false;
     }
-    
+
     /* Both are make_actions. */
-    
+
     if (a1->preference_type != a2->preference_type)
     {
         return false;
     }
-    
+
     if (!symbols_are_equal_with_bindings(thisAgent, rhs_value_to_symbol(a1->id),
                                          rhs_value_to_symbol(a2->id),
                                          bindings))
     {
         return false;
     }
-    
+
     if ((rhs_value_is_symbol(a1->attr)) && (rhs_value_is_symbol(a2->attr)))
     {
         if (!symbols_are_equal_with_bindings(thisAgent, rhs_value_to_symbol(a1->attr),
@@ -180,9 +180,9 @@ bool actions_are_equal_with_bindings(agent* thisAgent, action* a1, action* a2, l
         //               }
         //            }
     }
-    
+
     /* Values are different. They are rhs_value's. */
-    
+
     if ((rhs_value_is_symbol(a1->value)) && (rhs_value_is_symbol(a2->value)))
     {
         if (symbols_are_equal_with_bindings(thisAgent, rhs_value_to_symbol(a1->value),
@@ -217,21 +217,21 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list**
 {
     cons* c1, *c2;
     bool goal_test, impasse_test;
-    
+
     /* DJP 4/3/96 -- The problem here is that sometimes test2 was being copied      */
     /*               and sometimes it wasn't.  If it was copied, the copy was never */
     /*               deallocated.  There's a few choices about how to fix this.  I  */
     /*               decided to just create a copy always and then always           */
     /*               deallocate it before returning.  Added a macro to do that.     */
-    
+
     test t2;
-    
+
     /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
     if (test_is_blank(t1))
     {
         return (test_is_blank(test2) == 0);
     }
-    
+
     /* If the pattern doesn't include "(state", but the test from the
     * production does, strip it out of the production's.
     */
@@ -264,12 +264,12 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list**
             }
         }
     }
-    
+
     if (t1->type != t2->type)
     {
         dealloc_and_return(thisAgent, t2, false);
     }
-    
+
     switch (t1->type)
     {
         case GOAL_ID_TEST:
@@ -344,7 +344,7 @@ bool conditions_are_equal_with_bindings(agent* thisAgent, condition* c1, conditi
             }
             if (! tests_are_equal_with_bindings(thisAgent, c1->data.tests.attr_test,
                                                 c2->data.tests.attr_test, bindings))
-                                                
+
             {
                 return false;
             }
@@ -358,7 +358,7 @@ bool conditions_are_equal_with_bindings(agent* thisAgent, condition* c1, conditi
                 return false;
             }
             return true;
-            
+
         case CONJUNCTIVE_NEGATION_CONDITION:
             for (c1 = c1->data.ncc.top, c2 = c2->data.ncc.top;
                     ((c1 != NIL) && (c2 != NIL));
@@ -387,11 +387,11 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
     production* prod;
     list* bindings, *current_binding_point;
     bool match, match_this_c;
-    
-    
+
+
     bindings = NIL;
     current_binding_point = NIL;
-    
+
     /*  print("Parsing as a lhs...\n"); */
     clist = parse_lhs(thisAgent);
     if (!clist)
@@ -405,16 +405,16 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
     print_condition_list(clist,0,false);
     print("\nMatches:\n");
     */
-    
+
     /* For the moment match against productions of all types (user,chunk,default, justification).     Later on the type should be a parameter.
     */
-    
+
     for (i = 0; i < NUM_PRODUCTION_TYPES; i++)
         if ((i == CHUNK_PRODUCTION_TYPE && !no_chunks) ||
                 (i != CHUNK_PRODUCTION_TYPE && !just_chunks))
             for (prod = thisAgent->all_productions_of_type[i]; prod != NIL; prod = prod->next)
             {
-            
+
                 /* Now the complicated part. */
                 /* This is basically a full graph-match.  Like the rete.  Yikes! */
                 /* Actually it's worse, because there are so many different KINDS of
@@ -424,22 +424,22 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
                 (i.e. with make-wme's), see what matches all of them, and then
                 yank out the fake stuff.  But that won't work for RHS or for
                 negateds.       */
-                
+
                 /* Also note that we need bindings for every production.  Very expensive
                 (but don't necc. need to save them -- maybe can just print them as we go). */
-                
+
                 match = true;
                 /* MToDo | Can we use with last param = true (add complex conditions) -- */
                 p_node_to_conditions_and_rhs(thisAgent, prod->p_node, NIL, NIL, &top, &bottom, NIL);
-                
+
                 free_binding_list(thisAgent, bindings);
                 bindings = NIL;
-                
+
                 for (c = clist; c != NIL; c = c->next)
                 {
                     match_this_c = false;
                     current_binding_point = bindings;
-                    
+
                     for (pc = top; pc != NIL; pc = pc->next)
                     {
                         if (conditions_are_equal_with_bindings(thisAgent, c, pc, &bindings))
@@ -495,10 +495,10 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
     bool match, match_this_a, parsed_ok;
     action* rhs;
     condition* top_cond, *bottom_cond;
-    
+
     bindings = NIL;
     current_binding_point = NIL;
-    
+
     /*  print("Parsing as a rhs...\n"); */
     parsed_ok = (parse_rhs(thisAgent, &alist) == true);
     if (!parsed_ok)
@@ -507,13 +507,13 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
         current_pf_list = NIL;
         return;
     }
-    
+
     /*
     print("Valid RHS:\n");
     print_action_list(alist,0,false);
     print("\nMatches:\n");
     */
-    
+
     for (i = 0; i < NUM_PRODUCTION_TYPES; i++)
     {
         if ((i == CHUNK_PRODUCTION_TYPE && !no_chunks) || (i != CHUNK_PRODUCTION_TYPE && !just_chunks))
@@ -521,10 +521,10 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
             for (prod = thisAgent->all_productions_of_type[i]; prod != NIL; prod = prod->next)
             {
                 match = true;
-                
+
                 free_binding_list(thisAgent, bindings);
                 bindings = NIL;
-                
+
                 /* MToDo | Can we use with last param = true (add complex conditions) -- */
                 p_node_to_conditions_and_rhs(thisAgent, prod->p_node, NIL, NIL, &top_cond, &bottom_cond, &rhs);
                 deallocate_condition_list(thisAgent, top_cond);
@@ -532,7 +532,7 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
                 {
                     match_this_a = false;
                     current_binding_point = bindings;
-                    
+
                     for (pa = rhs; pa != NIL; pa = pa->next)
                     {
                         if (actions_are_equal_with_bindings(thisAgent, a, pa, &bindings))
@@ -553,7 +553,7 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
                         break;
                     }
                 }
-                
+
                 deallocate_action_list(thisAgent, rhs);
                 if (match)
                 {
@@ -581,14 +581,14 @@ bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options,
 {
     list* current_pf_list = 0;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    
+
     if (options.test(PRODUCTION_FIND_INCLUDE_LHS))
     {
         /* this patch failed for -rhs, so I removed altogether.  KJC 3/99 */
         /* Soar-Bugs #54 TMH */
-        thisAgent->alternate_input_string = pattern.c_str();
-        thisAgent->alternate_input_suffix = ") ";
-        
+        thisAgent->lexer_input_string = pattern.c_str();
+        thisAgent->lexer_input_suffix = ") ";
+
         get_lexeme(thisAgent);
         read_pattern_and_get_matching_productions(thisAgent,
                 &current_pf_list,
@@ -601,9 +601,9 @@ bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options,
     {
         /* this patch failed for -rhs, so I removed altogether.  KJC 3/99 */
         /* Soar-Bugs #54 TMH */
-        thisAgent->alternate_input_string = pattern.c_str();
-        thisAgent->alternate_input_suffix = ") ";
-        
+        thisAgent->lexer_input_string = pattern.c_str();
+        thisAgent->lexer_input_suffix = ") ";
+
         get_lexeme(thisAgent);
         read_rhs_pattern_and_get_matching_productions(thisAgent, &current_pf_list,
                 options.test(PRODUCTION_FIND_SHOWBINDINGS),
@@ -615,7 +615,7 @@ bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options,
     {
         print(thisAgent,  "No matches.\n");
     }
-    
+
     free_list(thisAgent, current_pf_list);
     return true;
 }

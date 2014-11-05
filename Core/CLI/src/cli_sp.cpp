@@ -27,8 +27,8 @@ void soarAlternateInput(agent* ai_agent, const char*  ai_string, char*  ai_suffi
     // Side effects:
     //    The soar agents alternate input values are updated and its
     //      current character is reset to a whitespace value.
-    ai_agent->alternate_input_string = const_cast<char*>(ai_string);
-    ai_agent->alternate_input_suffix = ai_suffix;
+    ai_agent->lexer_input_string = const_cast<char*>(ai_string);
+    ai_agent->lexer_input_suffix = ai_suffix;
     ai_agent->current_char = ' ';
     return;
 }
