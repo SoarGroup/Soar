@@ -167,8 +167,10 @@ agent* create_soar_agent(char* agent_name)                                      
 
     thisAgent->all_wmes_in_rete                   = NIL;
     thisAgent->alpha_mem_id_counter               = 0;
-    thisAgent->lexer_input_string             = NIL;
-    thisAgent->lexer_input_suffix             = NIL;
+    thisAgent->lexer_input_string                 = NIL;
+    thisAgent->lexer_input_suffix                 = NIL;
+    thisAgent->parentheses_level                  = 0;
+    thisAgent->allow_ids                          = true;
     thisAgent->backtrace_number                   = 0;
     thisAgent->beta_node_id_counter               = 0;
     thisAgent->bottom_goal                        = NIL;
@@ -178,7 +180,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->chunky_problem_spaces              = NIL;  /* AGR MVL1 */
     strcpy(thisAgent->chunk_name_prefix, "chunk"); /* ajc (5/14/02) */
     thisAgent->context_slots_with_changed_acceptable_preferences = NIL;
-    thisAgent->current_file                       = NIL;
     thisAgent->current_phase                      = INPUT_PHASE;
     thisAgent->applyPhase                         = false;
     thisAgent->current_symbol_hash_id             = 0;
@@ -555,10 +556,6 @@ void destroy_soar_agent(agent* delete_agent)
     free_memory(delete_agent, delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
     free_memory(delete_agent, delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
     free_memory(delete_agent, delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
-
-    /* Releasing memory allocated in inital call to start_lex_from_file from init_lexer */
-    free_memory_block_for_string(delete_agent, delete_agent->current_file->filename);
-    free_memory(delete_agent, delete_agent->current_file, MISCELLANEOUS_MEM_USAGE);
 
     /* Releasing trace formats (needs to happen before tracing hashtables are released) */
     remove_trace_format(delete_agent, false, FOR_ANYTHING_TF, NIL);

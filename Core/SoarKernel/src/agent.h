@@ -51,7 +51,6 @@ typedef struct symbol_struct Symbol;
 typedef struct hash_table_struct hash_table;
 typedef struct wme_struct wme;
 typedef struct memory_pool_struct memory_pool;
-typedef struct lexer_source_file_struct lexer_source_file;
 typedef struct production_struct production;
 typedef struct preference_struct preference;
 typedef struct pi_struct parent_inst;
@@ -215,7 +214,8 @@ typedef struct agent_struct
 
     /* ----------------------- Lexer stuff -------------------------- */
 
-    lexer_source_file* current_file;  /* file we're currently reading */
+    bool                allow_ids;
+    int                 parentheses_level; //0 means top level, no left paren's seen
     int                 current_char; /* holds current input character */
     struct lexeme_info  lexeme;       /* holds current lexeme */
     bool                print_prompt_flag;

@@ -6,20 +6,13 @@
 /* ======================================================================
                              lexer.h
 
-  The lexer reads files and returns a stream of lexemes.  Get_lexeme() is
+  The lexer reads strings and returns a stream of lexemes.  Get_lexeme() is
   the main routine; it looks for the next lexeme in the input, and stores
   it in the global variable "lexeme".  See the structure definition below.
 
   Restrictions:  the lexer cannot read individual input lines longer than
   MAX_LEXER_LINE_LENGTH characters.  Thus, a single lexeme can't be longer
   than that either.
-
-  The lexer maintains a stack of files being read, in order to handle nested
-  loads.  Start_lex_from_file() and stop_lex_from_file() push and pop the
-  stack.  Immediately after start_lex_from_file(), the current lexeme (global
-  variable) is undefined.  Immediately after stop_lex_from_file(), the
-  current lexeme is automatically restored to whatever it was just before
-  the corresponding start_lex_from_file() call.
 
   Determine_possible_symbol_types_for_string() is a utility routine which
   figures out what kind(s) of symbol a given string could represent.
@@ -89,6 +82,8 @@ enum lexer_token_type
                                                if a longer one is added, be
                                                sure to update this! */
 
+// TODO: is there anything that prevents the max length from being exceeded?
+// that would be a memory error.
 struct lexeme_info
 {
     enum lexer_token_type type;         /* what kind of lexeme it is */
@@ -110,9 +105,6 @@ extern void determine_possible_symbol_types_for_string(const char* s,
         bool* rereadable);
 
 extern void init_lexer(agent* thisAgent);
-extern void start_lex_from_file(agent* thisAgent, const char* filename,
-                                FILE* already_opened_file);
-extern void stop_lex_from_file(agent* thisAgent);
 
 extern void get_lexeme(agent* thisAgent);
 extern void print_location_of_most_recent_lexeme(agent* thisAgent);
@@ -128,23 +120,5 @@ extern bool determine_type_of_constituent_string(agent* thisAgent);
 /* (RBD) the rest of this stuff shouldn't be in the module interface... */
 
 #define BUFSIZE (MAX_LEXER_LINE_LENGTH+2) /* +2 for newline and null at end */
-
-/* --- we'll use one of these structures for each file being read --- */
-
-typedef struct lexer_source_file_struct
-{
-    struct lexer_source_file_struct* parent_file;
-    char* filename;
-    FILE* file;
-    bool allow_ids;
-    int parentheses_level;    /* 0 means top level, no left paren's seen */
-    int current_column;       /* column number of next char to read (0-based) */
-    uint64_t current_line;   /* line number of line in buffer (1-based) */
-    int column_of_start_of_last_lexeme;   /* (used for error messages) */
-    uint64_t line_of_start_of_last_lexeme;
-    char buffer[BUFSIZE];              /* holds text of current input line */
-    struct lexeme_info saved_lexeme;   /* save/restore it during nested loads */
-    int saved_current_char;           /* save/restore this too */
-} lexer_source_file;
 
 #endif // LEXER_H
