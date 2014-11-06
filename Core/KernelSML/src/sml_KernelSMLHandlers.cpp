@@ -37,6 +37,12 @@
 #include <sstream>
 #include "xml.h"
 
+// TODO: this is twice declared; here and output_manager.h
+// TODO: this isn't good enough. Arbitrary length should be acceptable.
+#define MAX_LEXER_LINE_LENGTH 1000
+// a little bigger to avoid any off-by-one-errors
+#define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
+
 using namespace sml ;
 
 void KernelSML::BuildCommandMap()

@@ -10,17 +10,10 @@
   the main routine; it looks for the next lexeme in the input, and stores
   it in the member variable "lexeme".
 
-  Restrictions:  the lexer cannot read individual input lines longer than
-  MAX_LEXER_LINE_LENGTH characters.  Thus, a single lexeme can't be longer
-  than that either.
 ====================================================================== */
 
 #ifndef LEXER_H
 #define LEXER_H
-
-#define MAX_LEXER_LINE_LENGTH 1000
-//a little bigger to avoid any off-by-one-errors
-#define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
 
 /**
  * Types of tokens read by the lexer
@@ -62,14 +55,19 @@ enum lexer_token_type {
 
 namespace soar
 {
-    //TODO: is there anything that prevents the max length from being exceeded?
-    //that would be a memory error.
     /**
      * A class representing a single lexeme.
      */
     class Lexeme {
         friend class Lexer;
     public:
+        Lexeme() :
+            type(NULL_LEXEME),
+            int_val(0),
+            float_val(0.0),
+            id_letter('A'),
+            id_number(0){}
+        ~Lexeme(){}
         enum lexer_token_type type;         /**< what kind of lexeme it is */
         int length;                         /**< length of the above string */
         int64_t int_val;                    /**< for INT_CONSTANT_LEXEME's */
@@ -79,13 +77,14 @@ namespace soar
         /**
          * @return the text of the lexeme
          */
-        const char* string(){return lex_string;}
+        const char* string(){return lex_string.c_str();}
         /**
          * @return the length of the lexeme string
          */
-        int size(){return length;}
+        int size(){return lex_string.length();}
     private:
-        char lex_string[MAX_LEXEME_LENGTH+1];/**< text of the lexeme */
+        /** text of the lexeme */
+        std::string lex_string;
 };
 
     class Lexer
