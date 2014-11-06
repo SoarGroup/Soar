@@ -79,7 +79,7 @@ namespace soar
         /**
          * @return the text of the lexeme
          */
-        char* string(){return lex_string;}
+        const char* string(){return lex_string;}
         /**
          * @return the length of the lexeme string
          */

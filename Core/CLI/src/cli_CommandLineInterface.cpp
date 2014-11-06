@@ -666,7 +666,7 @@ void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int
     PrintCLIMessage(&tempString);
 }
 
-void get_context_var_info(agent* thisAgent, char* var_name,
+void get_context_var_info(agent* thisAgent, const char* var_name,
                           Symbol** dest_goal,
                           Symbol** dest_attr_of_slot,
                           Symbol** dest_current_value)

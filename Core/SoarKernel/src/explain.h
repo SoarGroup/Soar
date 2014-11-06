@@ -53,14 +53,14 @@ extern void explain_add_temp_to_backtrace_list(agent* thisAgent, backtrace_str* 
 extern void explain_add_temp_to_chunk_list(agent* thisAgent, explain_chunk_str* temp);
 extern void free_explain_chunk(agent* thisAgent, explain_chunk_str* chunk);
 extern void reset_explain(agent* thisAgent);
-extern explain_chunk_str* find_chunk(agent* thisAgent, explain_chunk_str* chunk, char* name);
+extern explain_chunk_str* find_chunk(agent* thisAgent, explain_chunk_str* chunk, const char* name);
 extern condition* find_ground(agent* thisAgent, explain_chunk_str* chunk, int number);
 extern void explain_trace_chunk(agent* thisAgent, explain_chunk_str* chunk);
-extern void explain_trace_named_chunk(agent* thisAgent, char* chunk_name);
+extern void explain_trace_named_chunk(agent* thisAgent, const char* chunk_name);
 extern condition* explain_find_cond(condition* target, condition* cond_list);
-extern void explain_trace(agent* thisAgent, char* chunk_name, backtrace_str* prod_list, condition* ground);
-extern void explain_chunk(agent* thisAgent, char* chunk_name, int cond_number);
-extern void explain_cond_list(agent* thisAgent, char* chunk_name);
+extern void explain_trace(agent* thisAgent, const char* chunk_name, backtrace_str* prod_list, condition* ground);
+extern void explain_chunk(agent* thisAgent, const char* chunk_name, int cond_number);
+extern void explain_cond_list(agent* thisAgent, const char* chunk_name);
 extern void explain_list_chunks(agent* thisAgent);
 extern void explain_full_trace(agent* thisAgent);
 
@@ -80,10 +80,10 @@ typedef struct ms_change_struct
     struct rete_node_struct* p_node;       /* for retractions, this can be NIL
                                             if the p_node has been excised */
     struct token_struct* tok;            /* for assertions only */
-    
+
     wme* w;                              /* for assertions only */
     struct instantiation_struct* inst;   /* for retractions only */
-    
+
     Symbol* goal;
     goal_stack_level level;              /* Level of the match of the assertion or retraction */
     struct ms_change_struct* next_in_level; /* dll for goal level */
