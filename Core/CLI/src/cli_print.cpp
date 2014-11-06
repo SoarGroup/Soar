@@ -508,7 +508,7 @@ int read_pattern_component(agent* thisAgent, lexeme_info* lexeme, Symbol** dest_
     }
 }
 
-list* read_pattern_and_get_matching_wmes(agent* thisAgent, soar::Lexer* lexer)
+list* read_pattern_and_get_matching_wmes(agent* thisAgent, const char* pattern)
 {
     int parentheses_level;
     list* wmes;
@@ -516,56 +516,57 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent, soar::Lexer* lexer)
     Symbol* id, *attr, *value;
     int id_result, attr_result, value_result;
     bool acceptable;
-
-    if (lexer->current_lexeme.type != L_PAREN_LEXEME)
+    soar::Lexer lexer(thisAgent, pattern);
+    lexer.get_lexeme();
+    if (lexer.current_lexeme.type!=L_PAREN_LEXEME)
     {
-        print(thisAgent,  "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", lexer->current_lexeme.string, lexer->current_char);
+        print(thisAgent,  "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", lexer.current_lexeme.string, lexer.current_char);
         return NIL;
     }
-    parentheses_level = lexer->current_parentheses_level();
+    parentheses_level = lexer.current_parentheses_level();
 
-    lexer->get_lexeme();
-    id_result = read_pattern_component(thisAgent, &(lexer->current_lexeme), &id);
+    lexer.get_lexeme();
+    id_result = read_pattern_component(thisAgent, &(lexer.current_lexeme), &id);
     if (! id_result)
     {
-        lexer->skip_ahead_to_balanced_parentheses(parentheses_level - 1);
+        lexer.skip_ahead_to_balanced_parentheses(parentheses_level - 1);
         return NIL;
     }
-    lexer->get_lexeme();
-    if (lexer->current_lexeme.type != UP_ARROW_LEXEME)
+    lexer.get_lexeme();
+    if (lexer.current_lexeme.type != UP_ARROW_LEXEME)
     {
         print(thisAgent,  "Expected ^ in wme pattern\n");
-        lexer->skip_ahead_to_balanced_parentheses(parentheses_level - 1);
+        lexer.skip_ahead_to_balanced_parentheses(parentheses_level - 1);
         return NIL;
     }
-    lexer->get_lexeme();
-    attr_result = read_pattern_component(thisAgent, &(lexer->current_lexeme), &attr);
+    lexer.get_lexeme();
+    attr_result = read_pattern_component(thisAgent, &(lexer.current_lexeme), &attr);
     if (! attr_result)
     {
-        lexer->skip_ahead_to_balanced_parentheses(parentheses_level - 1);
+        lexer.skip_ahead_to_balanced_parentheses(parentheses_level - 1);
         return NIL;
     }
-    lexer->get_lexeme();
-    value_result = read_pattern_component(thisAgent, &(lexer->current_lexeme), &value);
+    lexer.get_lexeme();
+    value_result = read_pattern_component(thisAgent, &(lexer.current_lexeme), &value);
     if (! value_result)
     {
-        lexer->skip_ahead_to_balanced_parentheses(parentheses_level - 1);
+        lexer.skip_ahead_to_balanced_parentheses(parentheses_level - 1);
         return NIL;
     }
-    lexer->get_lexeme();
-    if (lexer->current_lexeme.type == PLUS_LEXEME)
+    lexer.get_lexeme();
+    if (lexer.current_lexeme.type == PLUS_LEXEME)
     {
         acceptable = true;
-        lexer->get_lexeme();
+        lexer.get_lexeme();
     }
     else
     {
         acceptable = false;
     }
-    if (lexer->current_lexeme.type != R_PAREN_LEXEME)
+    if (lexer.current_lexeme.type != R_PAREN_LEXEME)
     {
         print(thisAgent,  "Expected ')' to end wme pattern\n");
-        lexer->skip_ahead_to_balanced_parentheses(parentheses_level - 1);
+        lexer.skip_ahead_to_balanced_parentheses(parentheses_level - 1);
         return NIL;
     }
 
@@ -624,9 +625,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 
         case QUOTED_STRING_LEXEME:
         {
-            soar::Lexer lexer(thisAgent, arg);
-            lexer.get_lexeme();
-            wmes = read_pattern_and_get_matching_wmes(thisAgent, &lexer);
+            wmes = read_pattern_and_get_matching_wmes(thisAgent, arg);
             if (exact)
             {
                 // When printing exact, we want to list only those wmes who match.
