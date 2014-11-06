@@ -8,27 +8,11 @@
 
   The lexer reads strings and returns a stream of lexemes.  Get_lexeme() is
   the main routine; it looks for the next lexeme in the input, and stores
-  it in the global variable "lexeme".  See the structure definition below.
+  it in the member variable "lexeme".
 
   Restrictions:  the lexer cannot read individual input lines longer than
   MAX_LEXER_LINE_LENGTH characters.  Thus, a single lexeme can't be longer
   than that either.
-
-  Determine_possible_symbol_types_for_string() is a utility routine which
-  figures out what kind(s) of symbol a given string could represent.
-
-  Print_location_of_most_recent_lexeme() is used to print an indication
-  of where a parser error occurred.  It tries to print out the current
-  source line with a pointer to where the error was detected.
-
-  Current_lexer_parentheses_level() returns the current level of parentheses
-  nesting (0 means no open paren's have been encountered).
-  Skip_ahead_to_balanced_parentheses() eats lexemes until the appropriate
-  closing paren is found (0 means eat until back at the top level).
-
-  Set_lexer_allow_ids() tells the lexer whether to allow identifiers to
-  be read.  If false, things that look like identifiers will be returned
-  as STR_CONSTANT_LEXEME's instead.
 ====================================================================== */
 
 #ifndef LEXER_H
@@ -38,100 +22,144 @@
 //a little bigger to avoid any off-by-one-errors
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
 
+/**
+ * Types of tokens read by the lexer
+ */
 enum lexer_token_type {
-  EOF_LEXEME,                        /* end-of-file */
-  IDENTIFIER_LEXEME,                 /* identifier */
-  VARIABLE_LEXEME,                   /* variable */
-  STR_CONSTANT_LEXEME,               /* string constant */
-  INT_CONSTANT_LEXEME,               /* integer constant */
-  FLOAT_CONSTANT_LEXEME,             /* floating point constant */
-  L_PAREN_LEXEME,                    /* "(" */
-  R_PAREN_LEXEME,                    /* ")" */
-  L_BRACE_LEXEME,                    /* "{" */
-  R_BRACE_LEXEME,                    /* "}" */
-  PLUS_LEXEME,                       /* "+" */
-  MINUS_LEXEME,                      /* "-" */
-  RIGHT_ARROW_LEXEME,                /* "-->" */
-  GREATER_LEXEME,                    /* ">" */
-  LESS_LEXEME,                       /* "<" */
-  EQUAL_LEXEME,                      /* "=" */
-  LESS_EQUAL_LEXEME,                 /* "<=" */
-  GREATER_EQUAL_LEXEME,              /* ">=" */
-  NOT_EQUAL_LEXEME,                  /* "<>" */
-  LESS_EQUAL_GREATER_LEXEME,         /* "<=>" */
-  LESS_LESS_LEXEME,                  /* "<<" */
-  GREATER_GREATER_LEXEME,            /* ">>" */
-  AMPERSAND_LEXEME,                  /* "&" */
-  AT_LEXEME,                         /* "@" */
-  TILDE_LEXEME,                      /* "~" */
-  UP_ARROW_LEXEME,                   /* "^" */
-  EXCLAMATION_POINT_LEXEME,          /* "!" */
-  COMMA_LEXEME,                      /* "," */
-  PERIOD_LEXEME,                     /* "." */
-  QUOTED_STRING_LEXEME,              /* string in double quotes */
-  DOLLAR_STRING_LEXEME,              /* string for shell escape */
-  NULL_LEXEME };                     /* Initial value */
-
-#define LENGTH_OF_LONGEST_SPECIAL_LEXEME 3  /* length of "-->" and "<=>"--
-                                               if a longer one is added, be
-                                               sure to update this! */
+  EOF_LEXEME,                        /**< end-of-file */
+  IDENTIFIER_LEXEME,                 /**< identifier */
+  VARIABLE_LEXEME,                   /**< variable */
+  STR_CONSTANT_LEXEME,               /**< string constant */
+  INT_CONSTANT_LEXEME,               /**< integer constant */
+  FLOAT_CONSTANT_LEXEME,             /**< floating point constant */
+  L_PAREN_LEXEME,                    /**< "(" */
+  R_PAREN_LEXEME,                    /**< ")" */
+  L_BRACE_LEXEME,                    /**< "{" */
+  R_BRACE_LEXEME,                    /**< "}" */
+  PLUS_LEXEME,                       /**< "+" */
+  MINUS_LEXEME,                      /**< "-" */
+  RIGHT_ARROW_LEXEME,                /**< "-->" */
+  GREATER_LEXEME,                    /**< ">" */
+  LESS_LEXEME,                       /**< "<" */
+  EQUAL_LEXEME,                      /**< "=" */
+  LESS_EQUAL_LEXEME,                 /**< "<=" */
+  GREATER_EQUAL_LEXEME,              /**< ">=" */
+  NOT_EQUAL_LEXEME,                  /**< "<>" */
+  LESS_EQUAL_GREATER_LEXEME,         /**< "<=>" */
+  LESS_LESS_LEXEME,                  /**< "<<" */
+  GREATER_GREATER_LEXEME,            /**< ">>" */
+  AMPERSAND_LEXEME,                  /**< "&" */
+  AT_LEXEME,                         /**< "@" */
+  TILDE_LEXEME,                      /**< "~" */
+  UP_ARROW_LEXEME,                   /**< "^" */
+  EXCLAMATION_POINT_LEXEME,          /**< "!" */
+  COMMA_LEXEME,                      /**< "," */
+  PERIOD_LEXEME,                     /**< "." */
+  QUOTED_STRING_LEXEME,              /**< string in double quotes */
+  DOLLAR_STRING_LEXEME,              /**< string for shell escape */
+  NULL_LEXEME                        /**< Initial value */
+};
 
 //TODO: is there anything that prevents the max length from being exceeded?
 //that would be a memory error.
+/**
+ * A structure representing a single lexeme.
+ */
 struct lexeme_info {
-  enum lexer_token_type type;         /* what kind of lexeme it is */
-  char string[MAX_LEXEME_LENGTH+1];   /* text of the lexeme */
-  int length;                         /* length of the above string */
-  int64_t int_val;                     /* for INT_CONSTANT_LEXEME's */
-  double float_val;                    /* for FLOAT_CONSTANT_LEXEME's */
-  char id_letter;                     /* for IDENTIFIER_LEXEME's */
-  uint64_t id_number;                 /* for IDENTIFIER_LEXEME's */
+  enum lexer_token_type type;         /**< what kind of lexeme it is */
+  char string[MAX_LEXEME_LENGTH+1];   /**< text of the lexeme */
+  int length;                         /**< length of the above string */
+  int64_t int_val;                    /**< for INT_CONSTANT_LEXEME's */
+  double float_val;                   /**< for FLOAT_CONSTANT_LEXEME's */
+  char id_letter;                     /**< for IDENTIFIER_LEXEME's */
+  uint64_t id_number;                 /**< for IDENTIFIER_LEXEME's */
 };
-
-/* (RBD) the rest of this stuff shouldn't be in the module interface... */
-
-#define BUFSIZE (MAX_LEXER_LINE_LENGTH+2) /* +2 for newline and null at end */
 
 namespace soar
 {
     class Lexer
     {
     public:
-        Lexer(agent* thisAgent, const char*);
-        virtual ~Lexer() {};
-        /*
+        /**
+         *  Create a new lexer that reads and lexes input.
+         *  @param agent TODO: Currently required for printing
+         *  purposes; should refactor and pass in a printer object
+         *  of some kind
+         *  @param input the string to lex
+         */
+        Lexer(agent* thisAgent, const char* input);
+        ~Lexer() {};
+        /**
          * Read the input and set the current lexeme.
          */
         void get_lexeme();
-        /*
+        /**
          * Tell the lexer whether to allow identifiers to be read.
-         * If false, things that look like identifiers will be returned
-         * as SYM_CONSTANT_LEXEME's instead.
+         * @param allow True to allow identifiers to be read; false
+         * to set the type of any identifier lexeme to SYM_CONSTANT_LEXEME
+         * instead.
          */
-        void set_allow_ids(bool);
+        void set_allow_ids(bool allow);
         bool get_allow_ids();
-
+        /**
+         *  Print an out the current source line and column; useful for
+         *  error messages. TODO: it's a no-op for now.
+         */
         void print_location_of_most_recent_lexeme ();
+        /**
+         * Return the current level of parentheses nesting (0 means
+         * no open paren's have been encountered).
+         */
         int current_parentheses_level ();
+        /**
+         * Eat lexemes until current_parentheses_level matches the input
+         * integer (0 means eat until back at the top level).
+         */
         void skip_ahead_to_balanced_parentheses (int parentheses_level);
-        bool determine_type_of_constituent_string ();
+        /**
+         * Figure out what kind(s) of symbol a given string could represent.
+         * The result is stored in the input pointer variables.
+         * @param s The string to analyze
+         * @param length_of_s
+         * @param possible_id Could the string be an identifier?
+         * @param possible_var Could the string be a variable?
+         * @param possible_sc Could the string be a symbolic constant?
+         * @param possible_ic Could the string be an integer constant?
+         * @param possible_fc Could the string be a float constant?
+         * @param rereadable Set to TRUE if the lexer would read the given
+         * string as a symbol with exactly the same name (as opposed to
+         * treating it as a special lexeme like "+", changing upper to lower
+         * case, etc.)
+         */
         static void determine_possible_symbol_types_for_string (
           const char *s,
           size_t length_of_s,
           bool *possible_id,
           bool *possible_var,
-          bool *possible_sc,
-          bool *possible_ic,
-          bool *possible_fc,
+          bool *possible_sc, //sym constant
+          bool *possible_ic, //int constant
+          bool *possible_fc, //float constant
           bool *rereadable);
 
-        int                 parentheses_level;//0 means top level, no left paren's seen
+        bool determine_type_of_constituent_string ();
+        /**
+         * The last character read from the input string
+         */
         int                 current_char;     // holds current input character
+        /**
+         * The last lexeme read from the input string (set by get_lexeme()).
+         */
         struct lexeme_info  current_lexeme;   // holds current lexeme
     private:
         const char*         production_string;
+        //0 means top level, no left parens seen
+        int                 parentheses_level;
         bool                allow_ids;
         agent*              thisAgent;
+
+        //length of "-->" and "<=>". If a longer one is added, be
+        //sure to update this!
+        static const int length_of_longest_special_lexeme = 3;
 
         //structures required for lexing
         static bool initialized;
@@ -140,15 +168,12 @@ namespace soar
         static bool number_starters[256]; //character can initiate a number
         typedef void(soar::Lexer::*lex_func_ptr)();
         static lex_func_ptr lexer_routines[256];
-
+        //initializes all lexing structures once at startup
         static bool init ();
 
         void get_next_char ();
-        void record_position_of_start_of_lexeme();
-        void store_and_advance();
-        void finish();
-        void read_constituent_string ();
-        void read_rest_of_floating_point_number ();
+        void consume_whitespace_and_comments();
+
         void lex_unknown ();
         void lex_eof ();
         void lex_at ();
@@ -171,7 +196,12 @@ namespace soar
         void lex_constituent_string ();
         void lex_vbar ();
         void lex_quote ();
-        void consume_whitespace_and_comments();
+
+        void record_position_of_start_of_lexeme();
+        void store_and_advance();
+        void finish();
+        void read_constituent_string ();
+        void read_rest_of_floating_point_number ();
     };
 }
 
