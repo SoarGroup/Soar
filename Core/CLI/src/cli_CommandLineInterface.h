@@ -26,6 +26,7 @@
 #include "cli_Cli.h"
 #include "cli_Parser.h"
 #include "Export.h"
+#include "lexer.h"
 
 namespace soar_module
 {
@@ -49,27 +50,27 @@ namespace cli
 {
     // Define the stack for pushd/popd
     typedef std::stack<std::string> StringStack;
-    
+
     // Define the list for structured responses
     typedef std::list<soarxml::ElementXML*> ElementXMLList;
     typedef ElementXMLList::iterator        ElementXMLListIter;
-    
+
     // for nested command calls
     struct CallData
     {
         CallData(sml::AgentSML* pAgent, bool rawOutput) : pAgent(pAgent), rawOutput(rawOutput) {}
-        
+
         sml::AgentSML* pAgent;
         bool rawOutput;
     };
-    
+
     class CommandLineInterface : public sml::KernelCallback, public cli::Cli
     {
         public:
-        
+
             EXPORT CommandLineInterface();
             EXPORT virtual ~CommandLineInterface();
-            
+
             /*************************************************************
             * @brief Set the kernel this command line module is interfacing with.
             *         Also has the side effect of setting the home directory to
@@ -78,7 +79,7 @@ namespace cli
             * @param pKernelSML The pointer to the KernelSML object, optional, used to disable print callbacks
             *************************************************************/
             EXPORT void SetKernel(sml::KernelSML* pKernelSML = 0);
-            
+
             /*************************************************************
             * @brief Process a command.  Give it a command line and it will parse
             *         and execute the command using system calls.
@@ -90,14 +91,14 @@ namespace cli
             * @param pResponse Pointer to XML response object
             *************************************************************/
             EXPORT bool DoCommand(sml::Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, soarxml::ElementXML* pResponse);
-            
+
             /*************************************************************
             * @brief Returns true if the given command should always be echoed (to any listeners)
             *        The current implementation doesn't support aliases or short forms of the commands.
             * @param pCommandLine    The command line being tested
             *************************************************************/
             EXPORT bool ShouldEchoCommand(char const* pCommandLine) ;
-            
+
             /*************************************************************
             * @brief Methods to create an XML element by starting a tag, adding attributes and
             *         closing the tag.
@@ -112,7 +113,7 @@ namespace cli
             bool XMLMoveCurrentToParent() ;
             bool XMLMoveCurrentToChild(int index) ;
             bool XMLMoveCurrentToLastChild() ;
-            
+
             virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
             virtual bool DoAlias(std::vector< std::string >* argv = 0);
             virtual bool DoAllocate(const std::string& pool, int blocks);
@@ -190,27 +191,27 @@ namespace cli
             virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
             virtual bool DoWMA(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
             bool DoSVS(const std::vector<std::string>& args);
-            
+
             // utility for kernel SML
             bool IsLogOpen();
-            
+
             bool GetCurrentWorkingDirectory(std::string& directory);
-            
+
             virtual bool SetError(const std::string& error);
             virtual bool AppendError(const std::string& error);
-            
+
             void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
             void AppendArgTag(const char* pParam, const char* pType, const std::string& value);
-            
+
             void AppendArgTagFast(const char* pParam, const char* pType, const char* pValue);
             void AppendArgTagFast(const char* pParam, const char* pType, const std::string& value);
-            
+
             void PrependArgTag(const char* pParam, const char* pType, const char* pValue);
             void PrependArgTag(const char* pParam, const char* pType, const std::string& value);
-            
+
             void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
             void PrependArgTagFast(const char* pParam, const char* pType, const std::string& value);
-            
+
             /*************************************************************
             * @brief Prints message via either m_RawOutput or AppendArgTagFast
             *************************************************************/
@@ -221,59 +222,59 @@ namespace cli
             void PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf = true);
             void PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf = true);
             void PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf = true);
-            
+
         protected:
-        
+
             void Run_DC(agent* thisAgent, int run_count);
             void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults);
-            
+
             void SetTrapPrintCallbacks(bool setting);
-            
+
             virtual void OnKernelEvent(int eventID, sml::AgentSML* pAgentSML, void* pCallData) ;
-            
+
             /*************************************************************
             * @brief Standard parsing of -h and --help flags.  Returns
             *         true if the flag is present.
             *************************************************************/
             bool CheckForHelp(std::vector<std::string>& argv);
-            
+
             /*************************************************************
             * @brief Add the contents of the helpFile file to m_Result.
             *        Return true if successful, set error and return false if not.
             *************************************************************/
             bool GetHelpString(const std::string& helpFile);
-            
+
             /*************************************************************
             * @brief This is a utility function used by DoLS
             *************************************************************/
             void PrintFilename(const std::string& name, bool isDirectory);
-            
+
             /*************************************************************
             * @brief clears m_XMLResult
             *************************************************************/
             void XMLResultToResponse(char const* pCommandName) ;
-            
+
             void GetSystemStats(); // for stats
             void GetMemoryStats(); // for stats
             void GetMaxStats(); // for stats
             void GetReteStats(); // for stats
             void GetAgentStats(); // for stats
-            
+
             bool Evaluate(const char* pInput); // source, formerly StreamSource
-            
+
             // These help manage nested CLI calls
             void PushCall(CallData callData);
             void PopCall();
-            
+
             // For help system
             bool ListHelpTopics(const std::string& directory, std::list< std::string >& topics);
-            
+
             // stats, allocate
             void GetMemoryPoolStatistics();
-            
+
             void PrintSourceSummary(int sourced, const std::list< std::string >& excised, int ignored);
             bool Source(const char* input, bool printFileStack = false);
-            
+
             std::ostringstream      m_Result;                     // Raw output from the command
             bool                    m_RawOutput;                  // True if we want string output.
             std::string             m_LastError;                  // Last error
@@ -322,7 +323,7 @@ namespace cli
 ===============================
 */
 extern bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme, Symbol** result_id);
-extern void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme);
-extern Symbol* read_identifier_or_context_variable(agent* thisAgent);
+extern lexeme_info get_lexeme_from_string(agent* thisAgent, const char* the_lexeme);
+extern Symbol* read_identifier_or_context_variable(agent* thisAgent, lexeme_info* lexeme);
 
 #endif //COMMAND_LINE_INTERFACE_H

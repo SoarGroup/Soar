@@ -25,7 +25,6 @@
 #include "init_soar.h"
 #include "soar_module.h"
 #include "mem.h"
-#include "lexer.h"
 #include "callback.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
@@ -212,12 +211,6 @@ typedef struct agent_struct
     struct ms_change_struct* ms_assertions;   /* changes to match set */
     struct ms_change_struct* ms_retractions;
 
-    /* ----------------------- Lexer stuff -------------------------- */
-
-    bool                allow_ids;
-    int                 parentheses_level; //0 means top level, no left paren's seen
-    int                 current_char; /* holds current input character */
-    struct lexeme_info  lexeme;       /* holds current lexeme */
     Symbol*             current_production_name;
 
     Variablization_Manager* variablizationManager;
@@ -754,8 +747,6 @@ typedef struct agent_struct
     //soar_callback_array soar_callbacks;
     ::list*                   soar_callbacks[NUMBER_OF_CALLBACKS];
 
-    const char*         lexer_input_string;
-
     /* RCHONG: begin 10.11 */
     bool       did_PE;
     bool       soar_verbose_flag;
@@ -986,7 +977,6 @@ inline void push(agent* thisAgent, P item, T*& list_header)
 extern void     init_soar_agent(agent* thisAgent);
 extern agent*   create_soar_agent(char* name);
 extern void     destroy_soar_agent(agent* soar_agent);
-void set_lexer_input(agent* thisAgent, const char* input);
 
 #endif
 

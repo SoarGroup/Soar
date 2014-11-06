@@ -449,7 +449,7 @@ void debug_print_smem_table(const char* table_name, TraceMode mode)
 //  db_err_smem_db->print_table(table_name);
 }
 
-void dprint_current_lexeme(TraceMode mode)
+void dprint_current_lexeme(TraceMode mode, soar::Lexer* lexer)
 {
     std::string lex_type_string;
 
@@ -463,7 +463,7 @@ void dprint_current_lexeme(TraceMode mode)
         return;
     }
 
-    switch (debug_agent->lexeme.type)
+    switch (lexer->current_lexeme.type)
     {
         case EOF_LEXEME:
             lex_type_string = "EOF_LEXEME";
@@ -564,7 +564,7 @@ void dprint_current_lexeme(TraceMode mode)
         default:
             break;
     }
-    dprint(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), debug_agent->lexeme.string);
+    dprint(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), lexer->current_lexeme.string);
 
 }
 

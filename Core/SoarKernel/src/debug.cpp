@@ -62,7 +62,7 @@ void debug_test_structs()
     {
         return;
     }
-    
+
     Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
     Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, NIL);
     Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, NIL);
@@ -95,7 +95,7 @@ void debug_test_structs()
     Symbol* newInt06 = make_int_constant(debug_agent, 6);
     Symbol* newInt07 = make_int_constant(debug_agent, 7);
     Symbol* newInt08 = make_int_constant(debug_agent, 8);
-    
+
     test idEqTest01 = make_test(debug_agent, newID01, EQUALITY_TEST);
     test idEqTest02 = make_test(debug_agent, newID02, EQUALITY_TEST);
     test idEqTest03 = make_test(debug_agent, newID03, EQUALITY_TEST);
@@ -129,22 +129,22 @@ void debug_test_structs()
     test intEqTest07 = make_test(debug_agent, newInt07, EQUALITY_TEST);
     test intEqTest08 = make_test(debug_agent, newInt08, EQUALITY_TEST);
     test blankTest = make_blank_test();
-    
-    
+
+
     test dest, add_me;
-    
+
     /* Test 1 - Bug in last version */
     //  dest = copy_test(debug_agent, idEqTest01);
     //  add_test(debug_agent, &blankTest, dest, varEqTest01);
     //  deallocate_test(debug_agent, dest);
-    
+
     dest = copy_test(debug_agent, idEqTest01);
     dest->original_test = copy_test(debug_agent, varEqTest01);
     add_me = copy_test(debug_agent, idEqTest02);
     add_me->original_test = copy_test(debug_agent, varEqTest01);
     add_test(debug_agent, &dest, add_me);
     add_test(debug_agent, &dest, idEqTest03);
-    
+
     deallocate_test(debug_agent, dest);
     deallocate_test(debug_agent, idEqTest01);
     deallocate_test(debug_agent, idEqTest02);
@@ -183,7 +183,7 @@ void debug_test_structs()
 void debug_test_find_delete_sym(agent* debug_agent, test* dest, Symbol* sym)
 {
     ::list* c;
-    
+
     dprint_test(DT_DEBUG, (*dest), true, false, false, "Starting tests: ", "\n");
     dprint(DT_DEBUG, "Looking for %s.  Comparing against...", sym->to_string());
     c = (*dest)->data.conjunct_list;
@@ -202,7 +202,7 @@ void debug_test_find_delete_sym(agent* debug_agent, test* dest, Symbol* sym)
         }
     }
     dprint_test(DT_DEBUG, (*dest), true, false, false, "Final tests: ", "\n");
-    
+
 }
 
 void debug_test_delete_conjuncts()
@@ -213,34 +213,34 @@ void debug_test_delete_conjuncts()
     {
         return;
     }
-    
+
     dprint(DT_DEBUG, "Delete conjunct test.  Creating tests...\n");
-    
+
     Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
     Symbol* newStr01 = make_str_constant(debug_agent, "attr1");
     Symbol* newInt01 = make_int_constant(debug_agent, 1);
     Symbol* newInt02 = make_int_constant(debug_agent, 2);
-    
+
     test dest = NULL;
     add_test(debug_agent, &dest, make_test(debug_agent, newID01, EQUALITY_TEST));
     add_test(debug_agent, &dest, make_test(debug_agent, newStr01, EQUALITY_TEST));
     add_test(debug_agent, &dest, make_test(debug_agent, newInt01, GREATER_OR_EQUAL_TEST));
     add_test(debug_agent, &dest, make_test(debug_agent, newInt02, LESS_TEST));
     add_test(debug_agent, &dest, make_test(debug_agent, NULL, GOAL_ID_TEST));
-    
+
     debug_test_find_delete_sym(debug_agent, &dest, NULL);
     debug_test_find_delete_sym(debug_agent, &dest, newInt01);
     debug_test_find_delete_sym(debug_agent, &dest, newID01);
     debug_test_find_delete_sym(debug_agent, &dest, newStr01);
-    
+
     dprint(DT_DEBUG, "Deallocating tests and finishing...\n");
     deallocate_test(debug_agent, dest);
-    
+
     symbol_remove_ref(debug_agent, newID01);
     symbol_remove_ref(debug_agent, newStr01);
     symbol_remove_ref(debug_agent, newInt01);
     symbol_remove_ref(debug_agent, newInt02);
-    
+
 //    print_internal_symbols(debug_agent);
 
 }
@@ -270,15 +270,15 @@ void debug_test(int type)
         case 4:
             debug_test_delete_conjuncts();
             break;
-            
+
         case 5:
             dprint_all_inst(DT_DEBUG);
             break;
-            
+
         case 6:
             dprint_wmes(DT_DEBUG);
             break;
-            
+
     }
 }
 
@@ -294,14 +294,14 @@ void dprint_sym(char* sym_string)
         std::stringstream convert(convertStr);
         int newInt;
         double newFloat;
-        
+
         agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
         if (!debug_agent)
         {
             return;
         }
-        
-        determine_possible_symbol_types_for_string(sym_string,
+
+        soar::Lexer::determine_possible_symbol_types_for_string(sym_string,
                 static_cast<size_t>(strlen(sym_string)),
                 &possible_id,
                 &possible_var,
@@ -309,7 +309,7 @@ void dprint_sym(char* sym_string)
                 &possible_ic,
                 &possible_fc,
                 &rereadable);
-                
+
         if (possible_id)
         {
             newSym = find_identifier(debug_agent, toupper(sym_string[0]), strtol(&sym_string[1], NULL, 10));
@@ -443,17 +443,17 @@ std::string get_stacktrace(const char* prefix)
     // you can change the size of the array to increase the depth of
     // the stack summarized in the string returned
     void* addrlist[7];
-    
+
     // retrieve current stack addresses
     int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
-    
+
     if (addrlen == 0)
     {
         return std::string("<empty, possibly corrupt>");
     }
-    
+
     char** symbollist = backtrace_symbols(addrlist, addrlen);
-    
+
     // allocate string which will be filled with the demangled function name
     size_t funcnamesize = 256;
     char* funcname = (char*)malloc(funcnamesize);

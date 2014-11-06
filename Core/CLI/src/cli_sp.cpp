@@ -25,16 +25,10 @@ bool CommandLineInterface::DoSP(const std::string& productionString)
 {
     // Load the production
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    set_lexer_input(thisAgent, productionString.c_str());
-    set_lexer_allow_ids(thisAgent, false);
-    get_lexeme(thisAgent);
 
     production* p;
     unsigned char rete_addition_result = 0;
-    p = parse_production(thisAgent, &rete_addition_result);
-
-    set_lexer_allow_ids(thisAgent, true);
-    set_lexer_input( thisAgent, NULL);
+    p = parse_production(thisAgent, productionString.c_str(), &rete_addition_result);
 
     if (!p)
     {
