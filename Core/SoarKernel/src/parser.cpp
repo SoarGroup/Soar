@@ -312,14 +312,14 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
     {
         case STR_CONSTANT_LEXEME:
         {
-            newSymbol = make_str_constant(thisAgent, lexeme->string);
+            newSymbol = make_str_constant(thisAgent, lexeme->string());
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
             //print(thisAgent, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
             return newSymbol;
         }
         case VARIABLE_LEXEME:
         {
-            newSymbol = make_variable(thisAgent, lexeme->string);
+            newSymbol = make_variable(thisAgent, lexeme->string());
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
             //print(thisAgent, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
             return newSymbol;
@@ -369,7 +369,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         default:
         {
             char msg[BUFFER_MSG_SIZE];
-            SNPRINTF(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_lexeme\n, lexeme->string=%s\n", lexeme->string);
+            SNPRINTF(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_lexeme\n, lexeme->string()=%s\n", lexeme->string());
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
             abort_with_fatal_error(thisAgent, msg);
             break;
@@ -996,13 +996,13 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
     /* --- look for goal/impasse indicator --- */
     if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
     {
-        if (!strcmp(lexer->current_lexeme.string, "state"))
+        if (!strcmp(lexer->current_lexeme.string(), "state"))
         {
             id_goal_impasse_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
             lexer->get_lexeme();
             first_letter_if_no_id_given = 's';
         }
-        else if (!strcmp(lexer->current_lexeme.string, "impasse"))
+        else if (!strcmp(lexer->current_lexeme.string(), "impasse"))
         {
             id_goal_impasse_test = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
             lexer->get_lexeme();
@@ -1409,18 +1409,18 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     }
     else
     {
-        fun_name = find_str_constant(thisAgent, lexer->current_lexeme.string);
+        fun_name = find_str_constant(thisAgent, lexer->current_lexeme.string());
     }
     if (!fun_name)
     {
-        print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string);
+        print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     rf = lookup_rhs_function(thisAgent, fun_name);
     if (!rf)
     {
-        print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string);
+        print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -1429,14 +1429,14 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     if (is_stand_alone_action && (! rf->can_be_stand_alone_action))
     {
         print(thisAgent,  "Function %s cannot be used as a stand-alone action\n",
-              lexer->current_lexeme.string);
+              lexer->current_lexeme.string());
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     if ((! is_stand_alone_action) && (! rf->can_be_rhs_value))
     {
         print(thisAgent,  "Function %s can only be used as a stand-alone action\n",
-              lexer->current_lexeme.string);
+              lexer->current_lexeme.string());
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -2108,7 +2108,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     }
     else
     {
-        var = make_variable(thisAgent, lexer->current_lexeme.string);
+        var = make_variable(thisAgent, lexer->current_lexeme.string());
 //    push (thisAgent, (var), thisAgent->parser_syms);
     }
 
@@ -2260,7 +2260,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
         lexer.print_location_of_most_recent_lexeme();
         return NIL;
     }
-    name = make_str_constant(thisAgent, lexer.current_lexeme.string);
+    name = make_str_constant(thisAgent, lexer.current_lexeme.string());
     lexer.get_lexeme();
 
     /* --- if there's already a prod with this name, excise it --- */
@@ -2272,7 +2272,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     /* --- read optional documentation string --- */
     if (lexer.current_lexeme.type == QUOTED_STRING_LEXEME)
     {
-        documentation = make_memory_block_for_string(thisAgent, lexer.current_lexeme.string);
+        documentation = make_memory_block_for_string(thisAgent, lexer.current_lexeme.string());
         lexer.get_lexeme();
     }
     else
@@ -2290,37 +2290,37 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
         {
             break;
         }
-        if (!strcmp(lexer.current_lexeme.string, ":o-support"))
+        if (!strcmp(lexer.current_lexeme.string(), ":o-support"))
         {
             declared_support = DECLARED_O_SUPPORT;
             lexer.get_lexeme();
             continue;
         }
-        if (!strcmp(lexer.current_lexeme.string, ":i-support"))
+        if (!strcmp(lexer.current_lexeme.string(), ":i-support"))
         {
             declared_support = DECLARED_I_SUPPORT;
             lexer.get_lexeme();
             continue;
         }
-        if (!strcmp(lexer.current_lexeme.string, ":chunk"))
+        if (!strcmp(lexer.current_lexeme.string(), ":chunk"))
         {
             prod_type = CHUNK_PRODUCTION_TYPE;
             lexer.get_lexeme();
             continue;
         }
-        if (!strcmp(lexer.current_lexeme.string, ":default"))
+        if (!strcmp(lexer.current_lexeme.string(), ":default"))
         {
             prod_type = DEFAULT_PRODUCTION_TYPE;
             lexer.get_lexeme();
             continue;
         }
-        if (!strcmp(lexer.current_lexeme.string, ":template"))
+        if (!strcmp(lexer.current_lexeme.string(), ":template"))
         {
             prod_type = TEMPLATE_PRODUCTION_TYPE;
             lexer.get_lexeme();
             continue;
         }
-        if (!strcmp(lexer.current_lexeme.string, ":interrupt"))
+        if (!strcmp(lexer.current_lexeme.string(), ":interrupt"))
         {
             interrupt_on_match = true;
             lexer.get_lexeme();

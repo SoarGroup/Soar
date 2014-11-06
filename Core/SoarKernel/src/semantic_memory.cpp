@@ -3403,9 +3403,9 @@ inline std::string* smem_parse_lti_name(soar::Lexeme* lexeme, char* id_letter, u
     }
     else
     {
-        return_val->assign((*lexeme).string);
+        return_val->assign((*lexeme).string());
 
-        (*id_letter) = static_cast<char>(toupper((*lexeme).string[1]));
+        (*id_letter) = static_cast<char>(toupper((*lexeme).string()[1]));
         (*id_number) = 0;
     }
 
@@ -3418,7 +3418,7 @@ inline Symbol* smem_parse_constant_attr(agent* thisAgent, soar::Lexeme* lexeme)
 
     if ((*lexeme).type == STR_CONSTANT_LEXEME)
     {
-        return_val = make_str_constant(thisAgent, static_cast<const char*>((*lexeme).string));
+        return_val = make_str_constant(thisAgent, static_cast<const char*>((*lexeme).string()));
     }
     else if ((*lexeme).type == INT_CONSTANT_LEXEME)
     {
@@ -3561,7 +3561,7 @@ bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_ma
                             {
                                 chunk_value = new smem_chunk_value;
                                 chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = make_str_constant(thisAgent, static_cast<const char*>(lexer->current_lexeme.string));
+                                chunk_value->val_const.val_value = make_str_constant(thisAgent, static_cast<const char*>(lexer->current_lexeme.string()));
                             }
                             else if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
                             {
@@ -3911,9 +3911,9 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
             if (good_cue)
             {
-                root_cue_id = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string[1], 1);
-                cue_ids[lexer.current_lexeme.string] = root_cue_id;
-                negative_cues = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string[1], 1);
+                root_cue_id = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[1], 1);
+                cue_ids[lexer.current_lexeme.string()] = root_cue_id;
+                negative_cues = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[1], 1);
             }
             else
             {
@@ -3926,7 +3926,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         else
         {
             //If this isn't the first time around, then this better be the same as the root_cue_id variable.
-            good_cue = cue_ids[lexer.current_lexeme.string] == root_cue_id;
+            good_cue = cue_ids[lexer.current_lexeme.string()] == root_cue_id;
             if (!good_cue)
             {
                 (*err_msg)->append("Error: Additional clauses must share same variable.\n");//Spit out that additional clauses must share the same variable as the original cue variable.
@@ -4004,7 +4004,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     value = NIL;
                     if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                     {
-                        value = make_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string));
+                        value = make_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
                         lexer.get_lexeme();
                     }
                     else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
@@ -4037,12 +4037,12 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     else if (lexer.current_lexeme.type == VARIABLE_LEXEME || lexer.current_lexeme.type == IDENTIFIER_LEXEME)
                     {
                         std::map<std::basic_string<char>, Symbol*>::iterator value_iterator;
-                        value_iterator = cue_ids.find(lexer.current_lexeme.string);
+                        value_iterator = cue_ids.find(lexer.current_lexeme.string());
 
                         if (value_iterator == cue_ids.end())
                         {
-                            value = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string[0], 1);
-                            cue_ids[lexer.current_lexeme.string] = value; //Keep track of created symbols for deletion later.
+                            value = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[0], 1);
+                            cue_ids[lexer.current_lexeme.string()] = value; //Keep track of created symbols for deletion later.
                         }
                         lexer.get_lexeme();
                     }
@@ -4311,7 +4311,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
 
                 if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                 {
-                    attribute = find_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string));
+                    attribute = find_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
                 }
                 else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                 {
@@ -4341,7 +4341,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                         value = NIL;
                         if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                         {
-                            value = find_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string));
+                            value = find_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
                             lexer.get_lexeme();
                         }
                         else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)

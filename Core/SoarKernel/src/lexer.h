@@ -68,15 +68,21 @@ namespace soar
      * A class representing a single lexeme.
      */
     class Lexeme {
+        friend class Lexer;
     public:
         enum lexer_token_type type;         /**< what kind of lexeme it is */
-        char string[MAX_LEXEME_LENGTH+1];   /**< text of the lexeme */
         int length;                         /**< length of the above string */
         int64_t int_val;                    /**< for INT_CONSTANT_LEXEME's */
         double float_val;                   /**< for FLOAT_CONSTANT_LEXEME's */
         char id_letter;                     /**< for IDENTIFIER_LEXEME's */
         uint64_t id_number;                 /**< for IDENTIFIER_LEXEME's */
-    };
+        /**
+         * @return the text of the lexeme
+         */
+        char* string(){return lex_string;}
+    private:
+        char lex_string[MAX_LEXEME_LENGTH+1];/**< text of the lexeme */
+};
 
     class Lexer
     {

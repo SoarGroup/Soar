@@ -773,7 +773,7 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
 
     if (lexeme.type == VARIABLE_LEXEME)
     {
-        get_context_var_info(thisAgent, lexeme.string, &g, &attr, &value);
+        get_context_var_info(thisAgent, lexeme.string(), &g, &attr, &value);
 
         if ((!attr) || (!value))
         {
@@ -819,7 +819,7 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexe
     }
     if (lexeme->type == VARIABLE_LEXEME)
     {
-        get_context_var_info(thisAgent, lexeme->string, &g, &attr, &value);
+        get_context_var_info(thisAgent, lexeme->string(), &g, &attr, &value);
         if (!attr)
         {
             print(thisAgent,  "Expected identifier (or context variable)\n");
@@ -828,13 +828,13 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexe
         }
         if (!value)
         {
-            print(thisAgent,  "There is no current %s.\n", lexeme->string);
+            print(thisAgent,  "There is no current %s.\n", lexeme->string());
             // lexer->print_location_of_most_recent_lexeme();
             return NIL;
         }
         if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         {
-            print(thisAgent,  "The current %s ", lexeme->string);
+            print(thisAgent,  "The current %s ", lexeme->string());
             print_with_symbols(thisAgent, "(%y) is not an identifier.\n", value);
             // lexer->print_location_of_most_recent_lexeme();
             return NIL;

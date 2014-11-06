@@ -64,7 +64,7 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
     {
         case -1: // full
         {
-            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string);
+            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
             if (chunk)
             {
                 explain_trace_chunk(thisAgent, chunk);
@@ -73,7 +73,7 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
         break;
         case 0:
         {
-            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string);
+            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
             if (!chunk)
             {
                 return false;
@@ -110,7 +110,7 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
         break;
         default:
         {
-            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string);
+            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
             if (!chunk)
             {
                 return false;
@@ -122,7 +122,7 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
                 return false;
             }
 
-            explain_trace(thisAgent, lexeme.string, chunk->backtrace, ground);
+            explain_trace(thisAgent, lexeme.string(), chunk->backtrace, ground);
         }
         break;
     }

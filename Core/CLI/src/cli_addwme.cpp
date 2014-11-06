@@ -44,7 +44,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
         switch (lexeme.type)
         {
             case STR_CONSTANT_LEXEME:
-                pAttr = make_str_constant(thisAgent, lexeme.string);
+                pAttr = make_str_constant(thisAgent, lexeme.string());
                 break;
             case INT_CONSTANT_LEXEME:
                 pAttr = make_int_constant(thisAgent, lexeme.int_val);
@@ -78,7 +78,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
         switch (lexeme.type)
         {
             case STR_CONSTANT_LEXEME:
-                pValue = make_str_constant(thisAgent, lexeme.string);
+                pValue = make_str_constant(thisAgent, lexeme.string());
                 break;
             case INT_CONSTANT_LEXEME:
                 pValue = make_int_constant(thisAgent, lexeme.int_val);

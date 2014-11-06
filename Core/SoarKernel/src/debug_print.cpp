@@ -564,7 +564,7 @@ void dprint_current_lexeme(TraceMode mode, soar::Lexer* lexer)
         default:
             break;
     }
-    dprint(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), lexer->current_lexeme.string);
+    dprint(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), lexer->current_lexeme.string());
 
 }
 
