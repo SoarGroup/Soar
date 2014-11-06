@@ -104,6 +104,7 @@
 #include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "output_manager.h"
 
 #include "reinforcement_learning.h"
 #include "episodic_memory.h"

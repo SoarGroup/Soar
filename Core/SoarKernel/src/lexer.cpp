@@ -14,6 +14,7 @@
 #include "lexer.h"
 #include "print.h"
 #include "xml.h"
+#include "misc.h"
 
 #include <math.h>
 #include <ctype.h>
@@ -108,7 +109,7 @@ bool Lexer::determine_type_of_constituent_string () {
 
     if (possible_var) {
         current_lexeme.type = VARIABLE_LEXEME;
-        return TRUE;
+        return true;
     }
 
     if (possible_ic) {
@@ -165,11 +166,11 @@ bool Lexer::determine_type_of_constituent_string () {
                 xml_generate_warning(thisAgent, "Warning: Suspicious string constant");
             }
         }
-        return TRUE;
+        return true;
     }
 
     current_lexeme.type = QUOTED_STRING_LEXEME;
-    return TRUE;
+    return true;
 }
 
 /* ======================================================================
@@ -301,7 +302,7 @@ void Lexer::lex_plus () {
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
   if (current_char=='.') {
-    could_be_floating_point = TRUE;
+    could_be_floating_point = true;
     for (i=1; i<current_lexeme.length(); i++)
       if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = FALSE;
     if (could_be_floating_point) read_rest_of_floating_point_number();
@@ -320,7 +321,7 @@ void Lexer::lex_minus () {
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
   if (current_char=='.') {
-    could_be_floating_point = TRUE;
+    could_be_floating_point = true;
     for (i=1; i<current_lexeme.length(); i++)
       if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = FALSE;
     if (could_be_floating_point) read_rest_of_floating_point_number();
@@ -341,7 +342,7 @@ void Lexer::lex_digit () {
   /* --- if we stopped at '.', it might be a floating-point number, so be
      careful to check for this case --- */
   if (current_char=='.') {
-    could_be_floating_point = TRUE;
+    could_be_floating_point = true;
     for (i=1; i<current_lexeme.length(); i++)
       if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = FALSE;
     if (could_be_floating_point) read_rest_of_floating_point_number();
@@ -380,7 +381,7 @@ void Lexer::lex_vbar () {
     } else {
       store_and_advance();
     }
-  } while(TRUE);
+  } while(true);
 }
 
 void Lexer::lex_quote () {
@@ -404,7 +405,7 @@ void Lexer::lex_quote () {
     } else {
       store_and_advance();
     }
-  } while(TRUE);
+  } while(true);
 }
 
 /* ======================================================================
@@ -431,7 +432,7 @@ void Lexer::get_lexeme () {
 void Lexer::consume_whitespace_and_comments()
 {
   // loop until whitespace and comments are gone
-  while (TRUE) {
+  while (true) {
     if (current_char==EOF) break;
     if (whitespace[static_cast<unsigned char>(current_char)]) {
       get_next_char();
@@ -473,7 +474,7 @@ bool Lexer::init ()
     //
     if((strchr(extra_constituents, i) != 0) && i != 0)
     {
-      constituent_char[i]=TRUE;
+      constituent_char[i]=true;
     }
     else
     {
@@ -493,13 +494,13 @@ bool Lexer::init ()
     switch(i)
     {
     case '+':
-       number_starters[(int)'+']=TRUE;
+       number_starters[(int)'+']=true;
        break;
     case '-':
-       number_starters[(int)'-']=TRUE;
+       number_starters[(int)'-']=true;
        break;
     case '.':
-       number_starters[(int)'.']=TRUE;
+       number_starters[(int)'.']=true;
        break;
     default:
        number_starters[i] = (isdigit(i) != 0);
@@ -619,7 +620,7 @@ int Lexer::current_parentheses_level () {
 }
 
 void Lexer::skip_ahead_to_balanced_parentheses (int parentheses_level) {
-  while (TRUE) {
+  while (true) {
     if (current_lexeme.type==EOF_LEXEME) return;
     if ((current_lexeme.type==R_PAREN_LEXEME) &&
         (this->parentheses_level==parentheses_level)) return;
@@ -653,7 +654,7 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
         while (isdigit(*ch))
             ch++;                               /* string of digits */
         if ((*ch==0)&&(isdigit(*(ch-1))))
-            *possible_ic = TRUE;
+            *possible_ic = true;
         if (*ch=='.') {
             ch++;                               /* decimal point */
             while (isdigit(*ch))
@@ -666,7 +667,7 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
                     ch++;                       /* string of digits */
             }
             if (*ch==0)
-                *possible_fc = TRUE;
+                *possible_fc = true;
         }
     }
 
@@ -676,7 +677,7 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
             return;
 
     /* --- check for rereadability --- */
-    all_alphanum = TRUE;
+    all_alphanum = true;
     for (ch=s; *ch!='\0'; ch++) {
         if (!isalnum(*ch)) {
             all_alphanum = FALSE;
@@ -687,15 +688,15 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
          (length_of_s > length_of_longest_special_lexeme) ||
          ((length_of_s==1)&&(*s=='*')) )
     {
-        *rereadable = TRUE;
+        *rereadable = true;
     }
 
     /* --- any string of constituents could be a sym constant --- */
-    *possible_sc = TRUE;
+    *possible_sc = true;
 
     /* --- check whether it's a variable --- */
     if ((*s=='<')&&(*(s+length_of_s-1)=='>'))
-        *possible_var = TRUE;
+        *possible_var = true;
 
     /* --- check if it's an identifier --- */
     // long term identifiers start with @
@@ -709,7 +710,7 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
         while (isdigit(*ch))
             ch++;
         if (*ch=='\0')
-            *possible_id = TRUE;
+            *possible_id = true;
     }
 }
 

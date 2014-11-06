@@ -15,6 +15,10 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <string>
+#include "stdint.h"
+#include "agent.h"
+
 /**
  * Types of tokens read by the lexer
  */
