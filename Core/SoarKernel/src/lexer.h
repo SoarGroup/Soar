@@ -141,7 +141,6 @@ namespace soar
           bool *possible_fc, //float constant
           bool *rereadable);
 
-        bool determine_type_of_constituent_string ();
         /**
          * The last character read from the input string
          */
@@ -197,6 +196,7 @@ namespace soar
         void lex_vbar ();
         void lex_quote ();
 
+        bool determine_type_of_constituent_string ();
         void record_position_of_start_of_lexeme();
         void store_and_advance();
         void finish();

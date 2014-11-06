@@ -794,49 +794,9 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
 
 lexeme_info get_lexeme_from_string(agent* thisAgent, const char* lex_string)
 {
-    int i;
-    const char* c;
-    bool STR_CONSTANT_start_found = false;
-    bool STR_CONSTANT_end_found = false;
-    lexeme_info lexeme;
-
-    for (c = lex_string, i = 0; *c; c++, i++)
-    {
-        if (*c == '|')
-        {
-            if (!STR_CONSTANT_start_found)
-            {
-                i--;
-                STR_CONSTANT_start_found = true;
-            }
-            else
-            {
-                i--;
-                STR_CONSTANT_end_found = true;
-            }
-        }
-        else
-        {
-            lexeme.string[i] = *c;
-        }
-    }
-
-    lexeme.string[i] = '\0'; /* Null terminate lexeme string */
-
-    lexeme.length = i;
-
-    if (STR_CONSTANT_end_found)
-    {
-        lexeme.type = STR_CONSTANT_LEXEME;
-        return lexeme;
-    }
-    else
-    {
-        soar::Lexer lexer(thisAgent, lex_string);
-        lexer.current_lexeme = lexeme;
-        lexer.determine_type_of_constituent_string();
-        return lexer.current_lexeme;
-    }
+    soar::Lexer lexer(thisAgent, lex_string);
+    lexer.get_lexeme();
+    return lexer.current_lexeme;
 }
 
 Symbol* read_identifier_or_context_variable(agent* thisAgent, lexeme_info* lexeme)
