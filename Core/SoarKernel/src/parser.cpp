@@ -41,6 +41,7 @@
 #include <ctype.h>
 
 using soar::Lexer;
+using soar::Lexeme;
 
 /* =================================================================
                    Placeholder (Dummy) Variables
@@ -303,7 +304,7 @@ const char* help_on_lhs_grammar[] =
 
 ================================================================= */
 
-Symbol* make_symbol_for_lexeme(agent* thisAgent, lexeme_info* lexeme, bool allow_lti)
+Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
 {
     Symbol* newSymbol;
 

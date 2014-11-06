@@ -60,23 +60,24 @@ enum lexer_token_type {
   NULL_LEXEME                        /**< Initial value */
 };
 
-//TODO: is there anything that prevents the max length from being exceeded?
-//that would be a memory error.
-/**
- * A structure representing a single lexeme.
- */
-struct lexeme_info {
-  enum lexer_token_type type;         /**< what kind of lexeme it is */
-  char string[MAX_LEXEME_LENGTH+1];   /**< text of the lexeme */
-  int length;                         /**< length of the above string */
-  int64_t int_val;                    /**< for INT_CONSTANT_LEXEME's */
-  double float_val;                   /**< for FLOAT_CONSTANT_LEXEME's */
-  char id_letter;                     /**< for IDENTIFIER_LEXEME's */
-  uint64_t id_number;                 /**< for IDENTIFIER_LEXEME's */
-};
-
 namespace soar
 {
+    //TODO: is there anything that prevents the max length from being exceeded?
+    //that would be a memory error.
+    /**
+     * A class representing a single lexeme.
+     */
+    class Lexeme {
+    public:
+        enum lexer_token_type type;         /**< what kind of lexeme it is */
+        char string[MAX_LEXEME_LENGTH+1];   /**< text of the lexeme */
+        int length;                         /**< length of the above string */
+        int64_t int_val;                    /**< for INT_CONSTANT_LEXEME's */
+        double float_val;                   /**< for FLOAT_CONSTANT_LEXEME's */
+        char id_letter;                     /**< for IDENTIFIER_LEXEME's */
+        uint64_t id_number;                 /**< for IDENTIFIER_LEXEME's */
+    };
+
     class Lexer
     {
     public:
@@ -148,7 +149,7 @@ namespace soar
         /**
          * The last lexeme read from the input string (set by get_lexeme()).
          */
-        struct lexeme_info  current_lexeme;   // holds current lexeme
+        Lexeme current_lexeme;   // holds current lexeme
     private:
         const char*         production_string;
         //0 means top level, no left parens seen

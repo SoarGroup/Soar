@@ -755,7 +755,7 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
     Symbol* id;
     Symbol* g, *attr, *value;
 
-    lexeme_info lexeme = get_lexeme_from_string(thisAgent, lex_string);
+    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, lex_string);
 
     if (lexeme.type == IDENTIFIER_LEXEME)
     {
@@ -792,14 +792,14 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
     return false;
 }
 
-lexeme_info get_lexeme_from_string(agent* thisAgent, const char* lex_string)
+soar::Lexeme get_lexeme_from_string(agent* thisAgent, const char* lex_string)
 {
     soar::Lexer lexer(thisAgent, lex_string);
     lexer.get_lexeme();
     return lexer.current_lexeme;
 }
 
-Symbol* read_identifier_or_context_variable(agent* thisAgent, lexeme_info* lexeme)
+Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme)
 {
     Symbol* id;
     Symbol* g, *attr, *value;

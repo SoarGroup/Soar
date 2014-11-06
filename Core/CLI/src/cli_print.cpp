@@ -445,7 +445,7 @@ void do_print_for_identifier(agent* thisAgent, Symbol* id, int depth, bool inter
     print_augs_of_id(thisAgent, id, depth, depth, intern, tree, tc);
 }
 
-void do_print_for_production_name(agent* thisAgent, lexeme_info* lexeme, const char* prod_name, bool intern, bool print_filename, bool full_prod)
+void do_print_for_production_name(agent* thisAgent, soar::Lexeme* lexeme, const char* prod_name, bool intern, bool print_filename, bool full_prod)
 {
     Symbol* sym;
 
@@ -475,7 +475,7 @@ void do_print_for_wme(agent* thisAgent, wme* w, int depth, bool intern, bool tre
 
 /* --- Read and consume one pattern element.  Return 0 if error, 1 if "*",
 otherwise return 2 and set dest_sym to find_symbol() result. --- */
-int read_pattern_component(agent* thisAgent, lexeme_info* lexeme, Symbol** dest_sym)
+int read_pattern_component(agent* thisAgent, soar::Lexeme* lexeme, Symbol** dest_sym)
 {
     if (strcmp(lexeme->string, "*") == 0)
     {
@@ -591,7 +591,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     wme* w;
     list* wmes;
 
-    lexeme_info lexeme = get_lexeme_from_string(thisAgent, arg);
+    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, arg);
 
     switch (lexeme.type)
     {
