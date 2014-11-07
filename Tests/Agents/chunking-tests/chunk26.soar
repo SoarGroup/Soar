@@ -54,6 +54,13 @@ sp {template4
 -->
     (<s> ^operator <o> = 0)
 }
+
+sp {propose*stop
+   (state <s> ^superstate.superstate nil)
+-->
+#    (success)
+    (halt)
+}
 ##
 #run
 #ctf expected/chunk26.soar print -rf
