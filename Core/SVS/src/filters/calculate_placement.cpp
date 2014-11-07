@@ -3,26 +3,26 @@
  * File: filters/calculate_placement.cpp
  *
  * Calculate Placement Filter
- * 	given two nodes, find a position for the second relative to the first
+ * 	given two nodes, find a position for the first relative to the second
  * 	that satisfies axis separation constraints, 
  * 	taking bounding boxes into consideration
  * 	E.g. calculate a position so that an object is on top of another, 
  *
  * Filter calculate_placement : map_filter<vec3>
  *   Parameters:
- *    sgnode a - the reference node
- *    sgnode b - the node being placed
+ *    sgnode a - the node being placed
+ *    sgnode b - the reference node
  *    x_axis_separation FLOAT [Optional] - Default is 0 (aligned)
  *    y_axis_separation FLOAT [Optional] - Default is 0 (aligned)
  *    z_axis_separation FLOAT [Optional] - Default is 0 (aligned)
  *   Returns:
- *    vec3 - a position at which to place node b such that the given 
+ *    vec3 - a position at which to place node a such that the given 
  *    	axis separation constraints are satisfied
  *   Notes on separations:
  *   	The separation is a constraint on what the distance between 
  *   	the two nodes should be along the given axis (using bounding boxes)
- *   		A positive distance indicates node b is higher up on the axis, 
- *   		A negative distance indicates node b is lower down on the axis, 
+ *   		A positive distance indicates node a is higher up on the axis, 
+ *   		A negative distance indicates node a is lower down on the axis, 
  *   		A distance of 0 indicates they are aligned on that axis (share the same value)
  *
  *********************************************************/
@@ -47,15 +47,15 @@ vec3 calculate_placement(const sgnode* a, const sgnode* b, double xsep, double y
 	for(int dim = 0; dim < 3; dim++){
 		// For each dimension/axis
 		if(sep[dim] > 0){
-			// Pos of b = Max bound of a + separation distance + distance from min bound to centroid of b
-			pos[dim] = maxa[dim] + sep[dim] + (pb[dim] - minb[dim]);
+			// Pos of a = Max bound of b + separation distance + distance from min bound to centroid of a
+			pos[dim] = maxb[dim] + sep[dim] + (pa[dim] - mina[dim]);
 		} else if(sep[dim] == 0){
-			// Pos of b = pos of a (aligned)
-			pos[dim] = pa[dim];
+			// Pos of a = pos of b (aligned)
+			pos[dim] = pb[dim];
 		} else {
-			// Pos of b = min bound of a - separation distance - distance from centroid to max bound of b
+			// Pos of a = min bound of b - separation distance - distance from centroid to max bound of a
 			// (note separation distance is negative, so we add it)
-			pos[dim] = mina[dim] + sep[dim] - (maxb[dim] - pb[dim]);
+			pos[dim] = minb[dim] + sep[dim] - (maxa[dim] - pa[dim]);
 		}
 	}
 	return pos;
@@ -112,9 +112,9 @@ filter_table_entry* calculate_placement_filter_entry()
 {
     filter_table_entry* e = new filter_table_entry();
     e->name = "calculate_placement";
-    e->description = "Outputs a position for node b that satisfies the axis separation constraints relative to node a";
-    e->parameters["a"] = "Sgnode a";
-    e->parameters["b"] = "Sgnode b";
+    e->description = "Outputs a position for node a that satisfies the axis separation constraints relative to node b";
+    e->parameters["a"] = "The node being placed";
+    e->parameters["b"] = "The node acting as a reference to place node a";
     e->parameters["x_axis_separation"] = "Desired separation between a and b along the x axis (default is 0)";
     e->parameters["y_axis_separation"] = "Desired separation between a and b along the y axis (default is 0)";
     e->parameters["z_axis_separation"] = "Desired separation between a and b along the z axis (default is 0)";

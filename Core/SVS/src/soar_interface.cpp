@@ -114,20 +114,17 @@ using namespace std;
 bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
 {
     vec3 res;
-		cout << "Looking for vec3 for " << attr << endl;
     
     // First find the vec3 wme
     wme* vec3_wme;
     if (!find_child_wme(id, attr.c_str(), vec3_wme))
     {
-			cout << "attribute not found" << endl;
         return false;
     }
     Symbol* vec3_root = get_wme_val(vec3_wme);
 
 		string vec_id_name;
 		vec3_root->get_id_name(vec_id_name);
-		cout << "id found: " << vec_id_name << endl;
     
     // Then find each dimension to make up the vec3
     string dims[] = { "x", "y", "z" };
@@ -137,12 +134,10 @@ bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
         double dim_val;
         if (!find_child_wme(vec3_root, dims[d].c_str(), dim_wme))
 				{
-					cout << "child " << dims[d] << " not found" << endl;
 					return false;
 				}
 				if( !get_symbol_value(get_wme_val(dim_wme), dim_val))
         {
-					cout << "value for " << dims[d] << " not a double" << endl;
           return false;
         }
         res[d] = dim_val;
