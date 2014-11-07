@@ -161,7 +161,7 @@ bool Lexer::determine_type_of_constituent_string () {
             if ( (current_lexeme.lex_string[0] == '<') ||
                  (current_lexeme.lex_string[current_lexeme.length()-1] == '>') )
             {
-                print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", current_lexeme.lex_string);
+                print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", current_lexeme.string());
                 print_location_of_most_recent_lexeme();
                 xml_generate_warning(thisAgent, "Warning: Suspicious string constant");
             }
