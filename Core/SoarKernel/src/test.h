@@ -62,7 +62,7 @@ typedef struct identity_struct
     uint64_t      grounding_id;
     WME_Field     grounding_field;
     wme*           grounding_wme;
-    identity_struct() : original_var(NULL), grounding_id(0), grounding_field(NO_ELEMENT), grounding_wme(NULL) {}
+    identity_struct() : original_var(NULL), grounding_id(NON_GENERALIZABLE), grounding_field(NO_ELEMENT), grounding_wme(NULL) {}
 } identity_info;
 
 /* -- test_info stores information about a test.  If nil, the test is

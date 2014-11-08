@@ -1182,15 +1182,15 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_condition_list(DT_CONSTRAINTS, vrblz_top, "");
 
-    dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
-    dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS action list:\n");
-    dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Variablizing RHS action list:\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
 
     rhs = thisAgent->variablizationManager->variablize_results(results, variablize);
 
-    dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
-    dprint(DT_RHS_VARIABLIZATION, "Done variablizing RHS action list.\n");
-    dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Done variablizing RHS action list.\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
     dprint_condition_list(DT_CONSTRAINTS, inst_top);

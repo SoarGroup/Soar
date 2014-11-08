@@ -76,6 +76,13 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
     {
         /* MToDo | Identity currently exists for all tests.  This isn't necessary until we change that */
         assert(identity);
+//        if (identity->grounding_id == NON_GENERALIZABLE)
+//        {
+//            /* -- This symbol has been marked as non-generalizable, for
+//             *    example because it is an LTI retrieved in a substate -- */
+//            dprint(DT_LHS_VARIABLIZATION, "...not variablizing because test marked as non-generalizable.\n");
+//            return;
+//        }
         var_info = get_variablization(identity->grounding_id);
     }
     else
@@ -150,7 +157,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
         {
             dprint(DT_RHS_VARIABLIZATION, "...searching for original var %s in variablization orig var table...\n", original_var->to_string());
             g_id = get_gid_for_orig_var(original_var);
-            if (g_id > 0)
+            if (g_id != NON_GENERALIZABLE)
             {
                 found_variablization = get_variablization(g_id);
             }
@@ -172,7 +179,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
         else
         {
             dprint(DT_RHS_VARIABLIZATION, "...is a literal constant.  Not variablizing!\n");
-            rs->g_id = 0;
+            rs->g_id = NON_GENERALIZABLE;
             return;
         }
     }
@@ -214,7 +221,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
         /* MToDo | Remove.  Is this even possible?  Won't this be caught by not having an original var above? */
         dprint(DT_RHS_VARIABLIZATION, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
     }
-    rs->g_id = 0;
+    rs->g_id = NON_GENERALIZABLE;
 }
 
 /* ============================================================================

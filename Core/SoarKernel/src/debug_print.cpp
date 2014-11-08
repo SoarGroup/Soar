@@ -87,7 +87,7 @@ void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string, c
         dprint_noprefix(mode, "%s", pre_string);
     }
 
-    if (i->grounding_id > 0)
+    if (i->grounding_id != NON_GENERALIZABLE)
     {
         if (i->original_var)
         {
