@@ -129,8 +129,7 @@ typedef struct symbol_struct
     bool is_constant();
     bool is_lti();
     bool is_sti();
-    bool is_variablizable_constant();
-    bool is_variablizable(symbol_struct* original_sym);
+    bool is_variablizable_constant(symbol_struct* original_sym);
     bool is_constant_or_marked_variable(tc_number tc);
     bool is_in_tc(tc_number tc);
     bool        is_string();
@@ -254,12 +253,6 @@ inline bool Symbol::is_constant()
             (symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
             (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE));
 };
-inline bool Symbol::is_variablizable_constant()
-{
-    return ((symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
-            (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) ||
-            (symbol_type == STR_CONSTANT_SYMBOL_TYPE));
-};
 inline bool Symbol::is_sti()
 {
     return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
@@ -271,13 +264,8 @@ inline bool Symbol::is_lti()
             (id->smem_lti != NIL));
 };
 
-inline bool Symbol::is_variablizable(Symbol* original_sym)
+inline bool Symbol::is_variablizable_constant(Symbol* original_sym)
 {
-
-    if (is_sti())
-    {
-        return true;
-    }
 
     return (original_sym->is_variable() && !is_variable());
 

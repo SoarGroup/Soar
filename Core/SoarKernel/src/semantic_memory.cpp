@@ -27,6 +27,7 @@
 #include "decide.h"
 #include "test.h"
 #include "tempmem.h"
+#include "variablization_manager.h"
 
 #include <list>
 #include <map>
@@ -787,7 +788,10 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
         // it to future adventures (potentially on new states)
         instantiation* my_justification_list = NIL;
         dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from _smem_process_buffered_wme_list...\n");
+//        thisAgent->variablizationManager->add_ltis_to_dnvl_for_conditions(inst->top_of_instantiated_conditions);
+        thisAgent->variablizationManager->add_ltis_to_dnvl_for_prefs(inst->preferences_generated);
         chunk_instantiation(thisAgent, inst, false, &my_justification_list, true);
+        thisAgent->variablizationManager->clear_dnvl();
 
         // if any justifications are created, assert their preferences manually
         // (copied mainly from assert_new_preferences with respect to our circumstances)

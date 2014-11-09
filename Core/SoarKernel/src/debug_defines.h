@@ -12,10 +12,10 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-#define DEBUG_FREE_SETTINGS
+//#define DEBUG_FREE_SETTINGS
 //#define DEBUG_MINIMAL_SETTINGS
 //#define DEBUG_REFCOUNT_SETTINGS
-//#define DEBUG_UNITTEST_SETTINGS
+#define DEBUG_UNITTEST_SETTINGS
 
 #ifdef DEBUG_FREE_SETTINGS
 /* -- Which trace messages should be printed -- */
@@ -48,14 +48,14 @@
 #define TRACE_Init_DT_SAVEDVARS                   false
 #define TRACE_Init_DT_REORDERER                   false
 //--
-#define TRACE_Init_DT_BACKTRACE                   true
+#define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_OVAR_MAPPINGS               false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
-#define TRACE_Init_DT_IDENTITY_PROP               false
+#define TRACE_Init_DT_IDENTITY_PROP               true
 #define TRACE_Init_DT_SOAR_INSTANCE               false
 #define TRACE_Init_DT_CLI_LIBRARIES               false
 #define TRACE_Init_DT_CONSTRAINTS                 false

@@ -33,6 +33,7 @@ void Variablization_Manager::clear_data()
     clear_variablization_tables();
     clear_merge_map();
     clear_substitution_map();
+    clear_dnvl();
 }
 
 void Variablization_Manager::clear_ovar_gid_table()
@@ -226,3 +227,14 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
     //  print_variablization_table();
 }
 
+void Variablization_Manager::clear_dnvl() { dnvl_set->clear();  }
+void Variablization_Manager::add_dnvl(Symbol* sym) {
+    dprint(DT_IDENTITY_PROP, "...adding symbol %s.\n", sym->to_string());
+    dnvl_set->insert(sym);
+}
+bool Variablization_Manager::is_in_dnvl(Symbol* sym)
+{
+    std::set< Symbol* >::iterator iter;
+    iter = dnvl_set->find(sym);
+    return (iter != dnvl_set->end());
+}
