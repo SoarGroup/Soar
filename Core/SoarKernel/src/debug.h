@@ -60,6 +60,7 @@ typedef struct identity_struct identity_info;
 
 extern void dprint(TraceMode mode, const char* format, ...);
 extern void dprint_noprefix(TraceMode mode, const char* format, ...);
+extern void dprint_start_fresh_line(TraceMode mode);
 extern void dprint_test_simple(test t, const char* pre_string, const char* post_string);
 extern void dprint_test_old(TraceMode mode, test t, const char* indent_string = "          ", const char* conj_indent_string = "+ ");
 extern void dprint_test(TraceMode mode, test t, bool print_actual = true, bool print_original = true, bool print_identity = false, const char* pre_string = "", const char* post_string = "");

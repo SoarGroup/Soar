@@ -71,6 +71,17 @@ void dprint_noprefix(TraceMode mode, const char* format, ...)
     dprint_string(mode, buf, true);
 }
 
+void dprint_start_fresh_line(TraceMode mode)
+{
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
+    {
+        return;
+    }
+    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    if (!debug_agent) return;
+    Output_Manager::Get_OM().start_fresh_line(debug_agent);
+}
+
 void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string, const char* post_string)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode))

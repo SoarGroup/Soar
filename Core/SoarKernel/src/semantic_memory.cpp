@@ -762,7 +762,6 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
     }
 
     instantiation* inst = soar_module::make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
-
     for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
     {
         // add the preference to temporary memory

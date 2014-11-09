@@ -1052,7 +1052,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         reset_backtrace_list(thisAgent);
     }
 
-    dprint(DT_CONSTRAINTS,  "Backtracing through instantiation...\n");
+    dprint(DT_BACKTRACE,  "Backtracing through instantiations that produced result preferences...\n");
+    dprint_cond_results(DT_BACKTRACE, NULL, pref);
     /* --- backtrace through the instantiation that produced each result --- */
     for (pref = results; pref != NIL; pref = pref->next_result)
     {
@@ -1071,9 +1072,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         }
     }
 
-    dprint(DT_CONSTRAINTS,  "Backtracing through instantiation DONE.\n");
+    dprint(DT_BACKTRACE,  "Backtracing results DONE.\n");
 
-    dprint(DT_BACKTRACE, "Grounds after backtracing:\n");
+    dprint(DT_BACKTRACE, "Grounds:\n");
     dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
 
     while (true)

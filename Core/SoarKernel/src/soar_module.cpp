@@ -30,6 +30,7 @@
 #include "wma.h"
 #include "test.h"
 #include "wmem.h"
+#include "debug.h"
 
 //wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
 //typedef struct agent_struct agent;
@@ -81,6 +82,9 @@ namespace soar_module
 
     instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
     {
+        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+        dprint(DT_FUNC_PRODUCTIONS, "make_fake_instantiation() called.\n");
+        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
         // make fake instantiation
         instantiation* inst;
         allocate_with_pool(thisAgent, &(thisAgent->instantiation_pool), &inst);
@@ -177,6 +181,7 @@ namespace soar_module
             }
         }
 
+        dprint_instantiation(DT_PRINT_INSTANTIATIONS, inst);
         return inst;
     }
 
