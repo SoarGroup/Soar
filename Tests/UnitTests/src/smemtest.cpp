@@ -15,7 +15,7 @@ class SMemTest : public CPPUNIT_NS::TestCase
 
 #ifdef DO_SMEM_TESTS
         CPPUNIT_TEST(testISupport);
-//        CPPUNIT_TEST(testISupportWithLearning);
+        CPPUNIT_TEST(testISupportWithLearning);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
