@@ -22,6 +22,23 @@
  *    Settings:
  *      set_select_true(bool) - whether the filter selects nodes if the test is true or false
  *
+ * node_select_range_filter
+ *   Generic base filter used when you want to select a node
+ *   based on a numerical value falling within a specified range
+ *
+ *   Default range is unbounded and default is to include the min/max
+ *    Functions:
+ *      set_range_from_params(filter_params* p)
+ *        extracts filter_vals from the filter_params to setup the range
+ *      bool falls_in_range(double v)
+ *        returns true if the given value falls within the range 
+ *        (satisfies min and max constraints)
+ *    Settings:
+ *      set_min(double) - change the default min value
+ *      set_max(double) - change the default max value
+ *      set_include_min(bool) - if true, lower bound is >=, otherwise >
+ *      set_include_max(bool) - if true, upper bound is <=, otherwise <
+ *
  *
  * Node Comparison
  *  double node_comparison(sgnode* a, sgnode* b, fp* p)
@@ -42,9 +59,6 @@
  *      max [Optional - defaults to +INF]
  *    Returns:
  *      sgnode b - if min <= node_comparison(a, b) <= max
- *    Settings:
- *      set_min(double) - change the default min value
- *      set_max(double) - change the default max value
  *
  *  node_comparison_rank_filter
  *    Parameters:
@@ -98,6 +112,43 @@ typedef double node_comparison(sgnode* a, sgnode* b, const filter_params* p);
 
 typedef double node_evaluation(sgnode* a, const filter_params* p);
 
+////// Node Select Range Filter //////
+class node_select_range_filter : public select_filter<sgnode*>
+{
+    public:
+        node_select_range_filter(Symbol* root, soar_interface* si,
+                                      filter_input* input)
+            : select_filter<sgnode*>(root, si, input),
+              range_min(-1000000000), range_max(1000000000),
+							include_min(true), include_max(true)
+        {}
+        
+        void set_min(bool sel_min)
+        {
+            range_min = sel_min;
+        }
+        void set_max(bool sel_max)
+        {
+            range_max = sel_max;
+        }
+				void set_include_min(bool inc_min)
+				{
+						include_min = inc_min;
+				}
+				void set_include_max(bool inc_max)
+				{
+						include_max = inc_max;
+				}
+				void set_range_from_params(const filter_params* p);
+				bool falls_in_range(double val);
+
+    private:
+        double range_min;
+        double range_max;
+				bool include_min;
+				bool include_max;
+};
+
 /////// Node Test Filters //////
 class node_test_filter : public map_filter<bool>
 {
@@ -147,29 +198,19 @@ class node_comparison_filter : public map_filter<double>
         node_comparison* comp;
 };
 
-class node_comparison_select_filter : public select_filter<sgnode*>
+
+class node_comparison_select_filter : public node_select_range_filter
 {
     public:
         node_comparison_select_filter(Symbol* root, soar_interface* si,
                                       filter_input* input, node_comparison* comp)
-            : select_filter<sgnode*>(root, si, input), comp(comp),
-              range_min(-1000000000), range_max(1000000000)
+            : node_select_range_filter(root, si, input), comp(comp)
         {}
         
         bool compute(const filter_params* p, sgnode*& out, bool& select);
         
-        void set_min(bool sel_min)
-        {
-            range_min = sel_min;
-        }
-        void set_max(bool sel_max)
-        {
-            range_max = sel_max;
-        }
     private:
         node_comparison* comp;
-        double range_min;
-        double range_max;
 };
 
 class node_comparison_rank_filter : public rank_filter
@@ -201,29 +242,18 @@ class node_evaluation_filter : public map_filter<double>
         node_evaluation* eval;
 };
 
-class node_evaluation_select_filter : public select_filter<sgnode*>
+class node_evaluation_select_filter : public node_select_range_filter
 {
     public:
         node_evaluation_select_filter(Symbol* root, soar_interface* si,
                                       filter_input* input, node_evaluation* eval)
-            : select_filter<sgnode*>(root, si, input), eval(eval),
-              range_min(-1000000000), range_max(1000000000)
+            : node_select_range_filter(root, si, input), eval(eval)
         {}
         
         bool compute(const filter_params* p, sgnode*& out, bool& select);
-        
-        void set_min(bool sel_min)
-        {
-            range_min = sel_min;
-        }
-        void set_max(bool sel_max)
-        {
-            range_max = sel_max;
-        }
+
     private:
         node_evaluation* eval;
-        double range_min;
-        double range_max;
 };
 
 class node_evaluation_rank_filter : public rank_filter
