@@ -53,6 +53,7 @@ class smem_param_container: public soar_module::param_container
 
 		enum merge_choices { merge_none, merge_add };
 		enum act_choices { act_recency, act_frequency, act_base };
+		enum act_trigger_choices { rule_condition, rule_result, smem_store, smem_store_child, smem_result, smem_result_child, epmem_result };
 
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
@@ -81,6 +82,8 @@ class smem_param_container: public soar_module::param_container
 		soar_module::boolean_param* mirroring;
 
 		soar_module::boolean_param* unification;
+
+		soar_module::constant_set_param<act_trigger_choices>* act_triggers;
 
 		soar_module::integer_param* spreading_depth;
 

@@ -487,6 +487,128 @@ namespace soar_module
 	// these are easy definitions for sets
 	typedef primitive_set_param< int64_t > int_set_param;
 
+	// a string_set param maintains a set of strings
+	template <typename T>
+	class constant_set_param: public param
+	{
+		protected:
+			std::string *value;
+			std::set<T> *my_set;
+			std::map<T, const char *> *value_to_string;
+			std::map<std::string, T> *string_to_value;
+			predicate<T> *prot_pred;
+
+		public:
+			constant_set_param( const char *new_name, predicate<T> *new_prot_pred ): param( new_name ), value( new std::string ), my_set( new std::set<T>() ), value_to_string( new std::map<T, const char *>() ), string_to_value( new std::map<std::string, T> ), prot_pred( new_prot_pred ) {}
+
+			virtual ~constant_set_param()
+			{
+				delete value;
+				delete my_set;
+				delete value_to_string;
+				delete string_to_value;
+				delete prot_pred;
+			}
+
+			virtual char *get_string()
+			{
+				char *return_val = new char[ value->length() + 1 ];
+				strcpy( return_val, value->c_str() );
+				return_val[ value->length() ] = '\0';
+
+				return return_val;
+			}
+
+			virtual bool set_string( const char *new_string )
+			{
+				typename std::map<std::string, T>::iterator p;
+				std::string temp_str( new_string );
+
+				p = string_to_value->find( temp_str );
+
+				if ( ( p == string_to_value->end() ) || (*prot_pred)( p->second ) )
+				{
+					return false;
+				}
+				else
+				{
+					set_value( p->second );
+					return true;
+				}
+			}
+
+			virtual bool validate_string( const char *new_string )
+			{
+				typename std::map<std::string, T>::iterator p;
+				std::string temp_str( new_string );
+
+				p = string_to_value->find( temp_str );
+
+				return ( p != string_to_value->end() );
+			}
+
+			virtual bool in_set( T test_val )
+			{
+				return ( my_set->find( test_val ) != my_set->end() );
+			}
+
+			virtual void set_value( T new_value )
+			{
+				typename std::map<T, const char *>::iterator it;
+				typename std::set<T>::iterator p = my_set->find( new_value );
+				if ( p != my_set->end() )
+				{
+					my_set->erase( p );
+
+					// regenerate value from scratch
+					value->clear();
+					for ( p=my_set->begin(); p!=my_set->end(); )
+					{
+						it = value_to_string->find( new_value );
+						assert(it != value_to_string->end());
+						value->append( it->second );
+
+						p++;
+
+						if ( p != my_set->end() )
+							value->append( ", " );
+					}
+				}
+				else
+				{
+					my_set->insert(new_value);
+					if ( !value->empty() )
+					{
+						value->append( ", " );
+					}
+					it = value_to_string->find( new_value );
+					assert(it != value_to_string->end());
+					value->append( it->second );
+				}
+			}
+
+			virtual typename std::set<T>::iterator set_begin()
+			{
+				return my_set->begin();
+			}
+
+			virtual typename std::set<T>::iterator set_end()
+			{
+				return my_set->end();
+			}
+
+			virtual void add_mapping( T val, const char *str )
+			{
+				std::string my_string( str );
+
+				// string to value
+				(*string_to_value)[ my_string ] = val;
+
+				// value to string
+				(*value_to_string)[ val ] = str;
+			}
+	};
+
 	// a sym_set param maintains a set of strings
 	class sym_set_param: public param
 	{
@@ -609,7 +731,9 @@ namespace soar_module
 					my_set->insert( my_sym );
 
 					if ( !value->empty() )
+					{
 						value->append( ", " );
+					}
 
 					value->append( my_sym->sc.name );
 				}
@@ -646,7 +770,9 @@ namespace soar_module
 				p = value_to_string->find( value );
 
 				if ( p == value_to_string->end() )
+				{
 					return NULL;
+				}
 				else
 				{
 					size_t len = strlen( p->second );

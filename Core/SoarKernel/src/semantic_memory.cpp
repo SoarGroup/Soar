@@ -166,6 +166,17 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	unification = new soar_module::boolean_param( "activation-unification", off, new smem_db_predicate< boolean >( my_agent ) );
 	add( unification );
 
+	// activation triggers
+	act_triggers = new soar_module::constant_set_param<act_trigger_choices>( "activation-triggers", new soar_module::f_predicate<act_trigger_choices> );
+	act_triggers->add_mapping( rule_condition, "rule-condition" );
+	act_triggers->add_mapping( rule_result, "rule-result" );
+	act_triggers->add_mapping( smem_store, "smem-store" );
+	act_triggers->add_mapping( smem_store_child, "smem-store-child" );
+	act_triggers->add_mapping( smem_result, "smem-result" );
+	act_triggers->add_mapping( smem_result_child, "smem-result-child" );
+	act_triggers->add_mapping( epmem_result, "epmem-result" );
+	add( act_triggers );
+
 	// spreading depth
 	spreading_depth = new soar_module::integer_param( "spreading-depth", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
 	add( spreading_depth );

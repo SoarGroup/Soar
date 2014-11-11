@@ -110,6 +110,8 @@ void init_soar_agent(agent* thisAgent) {
   thisAgent->epmem_params->exclusions->set_value( "smem" );
 
   thisAgent->smem_params->base_incremental_threshes->set_string( "10" );
+  thisAgent->smem_params->act_triggers->set_value( smem_param_container::smem_store );
+  thisAgent->smem_params->act_triggers->set_value( smem_param_container::smem_result );
 
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
