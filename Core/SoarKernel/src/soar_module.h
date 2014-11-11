@@ -468,7 +468,7 @@ namespace soar_module
 				}
 			}
 
-			virtual bool in_set( T test_val )
+			virtual bool contains( T test_val )
 			{
 				return ( my_set->find( test_val ) != my_set->end() );
 			}
@@ -547,7 +547,7 @@ namespace soar_module
 				return ( p != string_to_value->end() );
 			}
 
-			virtual bool in_set( T test_val )
+			virtual bool contains( T test_val )
 			{
 				return ( my_set->find( test_val ) != my_set->end() );
 			}
@@ -663,7 +663,7 @@ namespace soar_module
 
 			//
 
-			virtual bool in_set( Symbol *test_sym )
+			virtual bool contains( Symbol *test_sym )
 			{
 				bool return_val = false;
 

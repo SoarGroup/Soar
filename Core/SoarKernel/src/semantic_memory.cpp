@@ -132,10 +132,6 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	merge->add_mapping( merge_add, "add" );
 	add( merge );
 
-	// activate_on_query
-	activate_on_query = new soar_module::boolean_param( "activate-on-query", on, new soar_module::f_predicate<boolean>() );
-	add( activate_on_query );
-
 	// activation_mode
 	activation_mode = new soar_module::constant_param<act_choices>( "activation-mode", act_recency, new soar_module::f_predicate<act_choices>() );
 	activation_mode->add_mapping( act_recency, "recency" );
@@ -161,10 +157,6 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	// mirroring
 	mirroring = new soar_module::boolean_param( "mirroring", off, new smem_db_predicate< boolean >( my_agent ) );
 	add( mirroring );
-
-	// activation unification (letting smem activation influence wm and vice versa)
-	unification = new soar_module::boolean_param( "activation-unification", off, new smem_db_predicate< boolean >( my_agent ) );
-	add( unification );
 
 	// activation triggers
 	act_triggers = new soar_module::constant_set_param<act_trigger_choices>( "activation-triggers", new soar_module::f_predicate<act_trigger_choices> );
@@ -1070,54 +1062,6 @@ inline Symbol* smem_reverse_hash( agent* my_agent, byte symbol_type, smem_hash_i
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-
-
-
-
-// This function provides a working memory decay element with the history of some LTI.
-void smem_lti_activation_history(agent *my_agent, smem_lti_id lti, wma_decay_element* wma_decay_el)
-{
-	if (lti == NIL) return;
-
-	// First, we need to figure out how much history we have.
-	my_agent->smem_stmts->lti_access_get->bind_int( 1, lti );
-	my_agent->smem_stmts->lti_access_get->execute();
-	uint64_t n = my_agent->smem_stmts->lti_access_get->column_int( 0 );
-	int result[n];
-
-	// Then, we get the history.
-	my_agent->smem_stmts->history_get->bind_int(1, lti);
-	my_agent->smem_stmts->history_get->execute();
-
-
-	// We want to include smem history up to the point of working memory's history capacity.
-	wma_decay_el->touches.history_ct = (n<WMA_DECAY_HISTORY) ? n : WMA_DECAY_HISTORY;
-	wma_decay_el->touches.next_p = (n>0)?((n<WMA_DECAY_HISTORY) ? n-1 : WMA_DECAY_HISTORY-1):0;
-
-	// This actually puts in the SMEM history.
-	for ( int i=0; i<WMA_DECAY_HISTORY; i++ )
-	{
-		if (i < n)
-		{
-			wma_decay_el->touches.access_history[i].d_cycle = static_cast<int>(my_agent->smem_stmts->history_get->column_int(i));
-
-			// This is not yet principled. When queries are made into SMEM, I simply call it one reference.
-			wma_decay_el->touches.access_history[i].num_references = 1;
-		}
-		else
-		{
-			wma_decay_el->touches.access_history[i].d_cycle = 0;
-			wma_decay_el->touches.access_history[i].num_references = 0;
-		}
-	}
-	//These are based on having one reference per smem-referenced cycle.
-	wma_decay_el->touches.history_references = (n<WMA_DECAY_HISTORY) ? n : WMA_DECAY_HISTORY;
-	wma_decay_el->touches.total_references = n;
-	wma_decay_el->touches.first_reference = static_cast<int>(my_agent->smem_stmts->history_get->column_int(0));
-	my_agent->smem_stmts->lti_access_get->reinitialize();
-
-}
-
 inline double smem_lti_calc_base( agent *my_agent, smem_lti_id lti, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0 )
 {
 	double sum = 0.0;
@@ -1171,22 +1115,25 @@ inline double smem_lti_calc_base( agent *my_agent, smem_lti_id lti, int64_t time
 //       just when storing a new chunk (default is a
 //       big number that should never come up naturally
 //       and if it does, satisfies thresholding behavior).
-inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX, Symbol* id = NULL )
+inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_access, uint64_t num_edges )
 {
+	std::cout << "calling smem_lti_activate with lti_id = " << lti << std::endl;
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->act->start();
 	////////////////////////////////////////////////////////////////////////////
 
+	// set the internal time (for activation decay purposes)
+	// if we are adding an access, we want to get updated values for activation first
+	// this is done by calling smem_lti_activate recursively *without* adding access
 	int64_t time_now;
 	if ( add_access )
 	{
 		time_now = ++(my_agent->smem_max_cycle);
-
 		if ( ( my_agent->smem_params->activation_mode->get_value() == smem_param_container::act_base ) &&
 			 ( my_agent->smem_params->base_update->get_value() == smem_param_container::bupt_incremental ) )
 		{
 			int64_t time_diff;
-
+			std::list< smem_lti_id > to_update;
 			for ( std::set< int64_t >::iterator b=my_agent->smem_params->base_incremental_threshes->set_begin(); b!=my_agent->smem_params->base_incremental_threshes->set_end(); b++ )
 			{
 				if ( *b > 0 )
@@ -1195,15 +1142,12 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 
 					if ( time_diff > 0 )
 					{
-						std::list< smem_lti_id > to_update;
-
 						my_agent->smem_stmts->lti_get_t->bind_int( 1, time_diff );
 						while ( my_agent->smem_stmts->lti_get_t->execute() == soar_module::row )
 						{
 							to_update.push_back( static_cast< smem_lti_id >( my_agent->smem_stmts->lti_get_t->column_int(0) ) );
 						}
 						my_agent->smem_stmts->lti_get_t->reinitialize();
-
 						for ( std::list< smem_lti_id >::iterator it=to_update.begin(); it!=to_update.end(); it++ )
 						{
 							smem_lti_activate( my_agent, (*it), false );
@@ -1216,8 +1160,18 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	else
 	{
 		time_now = my_agent->smem_max_cycle;
-
 		my_agent->smem_stats->act_updates->set_value( my_agent->smem_stats->act_updates->get_value() + 1 );
+	}
+
+	// get number of augmentations (if not supplied)
+	if ( num_edges == SMEM_ACT_MAX )
+	{
+		my_agent->smem_stmts->act_lti_child_ct_get->bind_int( 1, lti );
+		my_agent->smem_stmts->act_lti_child_ct_get->execute();
+
+		num_edges = my_agent->smem_stmts->act_lti_child_ct_get->column_int( 0 );
+
+		my_agent->smem_stmts->act_lti_child_ct_get->reinitialize();
 	}
 
 	// access information
@@ -1248,66 +1202,12 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 		}
 	}
 
-	// get number of augmentations (if not supplied)
-	if ( num_edges == SMEM_ACT_MAX )
-	{
-		my_agent->smem_stmts->act_lti_child_ct_get->bind_int( 1, lti );
-		my_agent->smem_stmts->act_lti_child_ct_get->execute();
-
-		num_edges = my_agent->smem_stmts->act_lti_child_ct_get->column_int( 0 );
-
-		my_agent->smem_stmts->act_lti_child_ct_get->reinitialize();
-	}
-
 	// get new activation value (depends upon bias)
 	double new_activation = 0.0;
+	double return_activation_val = 0.0;
 	smem_param_container::act_choices act_mode = my_agent->smem_params->activation_mode->get_value();
-	if ( act_mode == smem_param_container::act_recency )
+	if ( act_mode == smem_param_container::act_base )
 	{
-		new_activation = static_cast<double>( time_now );
-	}
-	else if ( act_mode == smem_param_container::act_frequency )
-	{
-		new_activation = static_cast<double>( prev_access_n + ( ( add_access )?(1):(0) ) );
-	}
-	else if ( act_mode == smem_param_container::act_base )
-	{
-		// Activation unification. If
-		// * unification is enabled
-		// * this LTI has not been activated before (we don't care about add_access because we're initializing it)
-		// * an (WME) id was passed to this function
-		// * and that id has a decay history
-		// then import that history as smem accesses
-		if ( prev_access_n == 0 )
-		{
-			if ( my_agent->smem_params->unification->get_value() == on &&
-					id && ((wme*)id)->wma_decay_el )
-			{
-				// then we should import the history from that decay element.
-				wma_decay_element* temp_el = ((wme*)id)->wma_decay_el;
-
-				// The first one uses an add.
-				my_agent->smem_stmts->history_add->bind_int(1,lti);
-				my_agent->smem_stmts->history_add->bind_int(2,temp_el->touches.access_history[ 0 ].d_cycle);
-				my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
-
-				// then we push the rest.
-				for ( int i=1; i<WMA_DECAY_HISTORY; i++ )
-				{
-					my_agent->smem_stmts->history_push->bind_int(1,lti);
-					my_agent->smem_stmts->history_push->bind_int(2,temp_el->touches.access_history[ i ].d_cycle);
-					my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
-				}
-
-				// Now, add the update from just now. FIXME Potentially redundant from rule matching?
-				my_agent->smem_stmts->history_push->bind_int( 1, lti );
-				my_agent->smem_stmts->history_push->bind_int( 2, time_now );
-				my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
-			}
-
-			new_activation = 0;
-		}
-
 		// spreading activation
 		{
 			smem_lti_id temp_lti_id, child_lti_id;
@@ -1344,6 +1244,8 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 
 				if ( add_access )
 				{
+					std::cout << "smem_lti_activate adding access for lti_id = " << lti;
+
 					// if this LTI has never been activated before, use history_add
 					// otherwise, use history_push
 					if ( prev_access_n == 0 )
@@ -1369,6 +1271,12 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 						}
 					}
 
+					if (depth == 0) {
+						return_activation_val = new_activation;
+						std::cout << " (new activation = " << new_activation << ")";
+					}
+					std::cout << std::endl;
+
 					{
 						my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
 						my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
@@ -1389,7 +1297,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 					my_agent->smem_stmts->act_set->bind_int( 2, temp_lti_id );
 					my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
 				}
-				// always push new activation to smem_lti
+				// always associate activation with lti
 				{
 					// activation_value=? WHERE lti=?
 					my_agent->smem_stmts->act_lti_set->bind_double( 1, new_activation );
@@ -1436,13 +1344,21 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 					my_agent->smem_stmts->web_lti_no_attr->reinitialize();
 				}
 			}
+
+			new_activation = return_activation_val;
 		}
 	}
-
-
-	// update the activation if it's not base level
-	if ( act_mode != smem_param_container::act_base )
+	else
 	{
+		if ( act_mode == smem_param_container::act_recency )
+		{
+			new_activation = static_cast<double>( time_now );
+		}
+		else if ( act_mode == smem_param_container::act_frequency )
+		{
+			new_activation = static_cast<double>( prev_access_n + ( ( add_access )?(1):(0) ) );
+		}
+
 		// only if augmentation count is less than threshold do we associate with edges
 		if ( num_edges < static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() ) )
 		{
@@ -1466,15 +1382,6 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 
 	return new_activation;
 }
-
-/* When a wme has wma and it references some lti and that wme is activated, this
- * function is called to also add this activation history to smem, if it isn't already added.
- */
-void smem_wma_lti_add_history(agent *my_agent, smem_lti_id lti) {
-	if (lti == NIL) return;
-	smem_lti_activate(my_agent,lti,true);
-}
-
 
 
 //////////////////////////////////////////////////////////
@@ -1990,58 +1897,6 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 		}
 	}
 
-	// activation function assumes proper thresholding state
-	// thus, consider four cases of augmentation counts (w.r.t. thresh)
-	// 1. before=below, after=below: good (activation will update smem_augmentations)
-	// 2. before=below, after=above: need to update smem_augmentations->inf
-	// 3. before=after, after=below: good (activation will update smem_augmentations, free transition)
-	// 4. before=after, after=after: good (activation won't touch smem_augmentations)
-	//
-	// hence, we detect + handle case #2 here
-	uint64_t new_edges = ( existing_edges + const_new.size() + lti_new.size() );
-	bool after_above;
-	double web_act = static_cast<double>( SMEM_ACT_MAX );
-	{
-		uint64_t thresh = static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() );
-		after_above = ( new_edges >= thresh );
-
-		// if before below
-		if ( existing_edges < thresh )
-		{
-			if ( after_above )
-			{
-				// update smem_augmentations to inf
-				my_agent->smem_stmts->act_set->bind_double( 1, web_act );
-				my_agent->smem_stmts->act_set->bind_int( 2, lti_id );
-				my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
-			}
-		}
-	}
-
-	// update edge counter
-	{
-		my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 1, new_edges );
-		my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 2, lti_id );
-		my_agent->smem_stmts->act_lti_child_ct_set->execute( soar_module::op_reinit );
-	}
-
-	// now we can safely activate the lti
-	{
-		double lti_act = smem_lti_activate( my_agent, lti_id, activate_lti, new_edges , print_id);
-
-		if ( activate_lti )
-		{
-			if ( !after_above )
-			{
-				web_act = lti_act;
-			}
-		}
-		else
-		{
-			web_act = 0.0;
-		}
-	}
-
 	// insert new edges, update counters
 	{
 		// attr/const pairs
@@ -2055,7 +1910,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 					my_agent->smem_stmts->web_add->bind_int( 2, p->first );
 					my_agent->smem_stmts->web_add->bind_int( 3, p->second );
 					my_agent->smem_stmts->web_add->bind_int( 4, SMEM_AUGMENTATIONS_NULL );
-					my_agent->smem_stmts->web_add->bind_double( 5, web_act );
+					my_agent->smem_stmts->web_add->bind_double( 5, 0 ); // this activation is a placeholder, will be updated below
 					my_agent->smem_stmts->web_add->execute( soar_module::op_reinit );
 				}
 
@@ -2093,8 +1948,13 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 					my_agent->smem_stmts->web_add->bind_int( 2, p->first );
 					my_agent->smem_stmts->web_add->bind_int( 3, SMEM_AUGMENTATIONS_NULL );
 					my_agent->smem_stmts->web_add->bind_int( 4, p->second );
-					my_agent->smem_stmts->web_add->bind_double( 5, web_act );
+					my_agent->smem_stmts->web_add->bind_double( 5, 0 ); // this activation is a placeholder, will be updated below
 					my_agent->smem_stmts->web_add->execute( soar_module::op_reinit );
+				}
+
+				std::cout << "checking smem_store_child for activating LTI with lti_id = " << p->second << std::endl;
+				if (activate_lti && my_agent->smem_params->act_triggers->contains(smem_param_container::smem_store_child)) {
+					smem_lti_activate( my_agent, p->second, true);
 				}
 
 				// update counter
@@ -2145,6 +2005,36 @@ void smem_store_chunk( agent *my_agent, smem_lti_id lti_id, smem_slot_map *child
 		{
 			my_agent->smem_stats->slots->set_value( my_agent->smem_stats->slots->get_value() + ( const_new.size() + lti_new.size() ) );
 		}
+	}
+
+	// update edge counter
+	uint64_t new_edges = ( existing_edges + const_new.size() + lti_new.size() );
+	{
+		my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 1, new_edges );
+		my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 2, lti_id );
+		my_agent->smem_stmts->act_lti_child_ct_set->execute( soar_module::op_reinit );
+	}
+
+	// separately deal with activation if the number of augmentations is large (> thresh)
+	// smem_lti_activate will only touch smem_augmentations if new_edges <= thresh
+	// if new_edges <= thresh, smem_lti_activate will update smem_augmentations
+	// if the number of edges has always been > thresh, smem_augmentations will already be set
+	// so we only need to consider the case where the edges were <= thresh but are now > thresh
+	{
+		uint64_t thresh = static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() );
+		if ( existing_edges < thresh && new_edges >= thresh )
+		{
+			// update smem_augmentations to inf
+			my_agent->smem_stmts->act_set->bind_double( 1, static_cast<double>( SMEM_ACT_MAX ) );
+			my_agent->smem_stmts->act_set->bind_int( 2, lti_id );
+			my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+		}
+	}
+
+	// now we can safely activate the lti
+	{
+		std::cout << "checking smem_store for activating LTI with lti_id = " << lti_id << std::endl;
+		double lti_act = smem_lti_activate( my_agent, lti_id, activate_lti && my_agent->smem_params->act_triggers->contains(smem_param_container::smem_store), new_edges );
 	}
 }
 
@@ -2288,7 +2178,10 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 	// activate lti
 	if ( activate_lti )
 	{
-		smem_lti_activate( my_agent, lti_id, true );
+		std::cout << "checking smem_result for activating LTI with lti_id = " << lti_id << std::endl;
+		if (my_agent->smem_params->act_triggers->contains(smem_param_container::smem_result)) {
+			smem_lti_activate( my_agent, lti_id, true );
+		}
 	}
 
 	// point retrieved to lti
@@ -2323,7 +2216,13 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id lti_id, Sy
 			// identifier vs. constant
 			if ( expand_q->column_int( 6 ) != SMEM_AUGMENTATIONS_NULL )
 			{
-				value_sym = smem_lti_soar_make( my_agent, static_cast<smem_lti_id>( expand_q->column_int( 6 ) ), static_cast<char>( expand_q->column_int( 4 ) ), static_cast<uint64_t>( expand_q->column_int( 5 ) ), lti->id.level );
+				smem_lti_id lti_id = static_cast<smem_lti_id>( expand_q->column_int( 6 ) );
+				value_sym = smem_lti_soar_make( my_agent, lti_id, static_cast<char>( expand_q->column_int( 4 ) ), static_cast<uint64_t>( expand_q->column_int( 5 ) ), lti->id.level );
+
+				std::cout << "checking smem_result_child for activating LTI with lti_id " << lti_id << std::endl;
+				if (activate_lti && my_agent->smem_params->act_triggers->contains(smem_param_container::smem_result_child)) {
+					smem_lti_activate( my_agent, lti_id, true );
+				}
 			}
 			else
 			{
@@ -2964,7 +2863,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, S
 			my_agent->smem_timers->query->stop();
 			////////////////////////////////////////////////////////////////////////////
 
-			smem_install_memory( my_agent, state, king_id, NIL, ( my_agent->smem_params->activate_on_query->get_value() == on ), meta_wmes, retrieval_wmes );
+			smem_install_memory( my_agent, state, king_id, NIL, true, meta_wmes, retrieval_wmes );
 		}
 		else
 		{

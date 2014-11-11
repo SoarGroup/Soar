@@ -2479,7 +2479,7 @@ inline void _epmem_store_level( agent* my_agent,
 				( !(*w_p)->value->id.smem_lti ) )
 		{
 			// prevent exclusions from being recorded
-			if ( my_agent->epmem_params->exclusions->in_set( (*w_p)->attr ) )
+			if ( my_agent->epmem_params->exclusions->contains( (*w_p)->attr ) )
 			{
 				continue;
 			}
@@ -2557,7 +2557,7 @@ inline void _epmem_store_level( agent* my_agent,
 		}
 
 		// prevent exclusions from being recorded
-		if ( my_agent->epmem_params->exclusions->in_set( (*w_p)->attr ) )
+		if ( my_agent->epmem_params->exclusions->contains( (*w_p)->attr ) )
 		{
 			#ifdef DEBUG_EPMEM_WME_ADD
 			fprintf(stderr, "   WME excluded.  Skipping.\n");
@@ -3308,7 +3308,12 @@ inline void _epmem_install_id_wme( agent* my_agent, Symbol* parent, Symbol* attr
 		}
 		else
 		{
-			Symbol* value = smem_lti_soar_make( my_agent, smem_lti_get_id( my_agent, val_letter, val_num ), val_letter, val_num, parent->id.level );
+			smem_lti_id lti_id = smem_lti_get_id( my_agent, val_letter, val_num );
+			Symbol* value = smem_lti_soar_make( my_agent, lti_id, val_letter, val_num, parent->id.level );
+			std::cout << "checking epmem_result for activating LTI with lti_id = " << lti_id << std::endl;
+			if ( my_agent->smem_params->act_triggers->contains(smem_param_container::epmem_result) ) {
+				smem_lti_activate( my_agent, lti_id, true );
+			}
 
 			if ( id_record )
 			{

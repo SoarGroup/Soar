@@ -137,6 +137,18 @@ void add_wme_to_wm (agent* thisAgent, wme *w)
 	push (thisAgent, w, thisAgent->wmes_to_add);
 	if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) 
 	{
+		// check for non-NULL production (to make sure the instantiation is not fake, like from smem... those dirty lying bastards)
+		if (w->preference &&
+				w->preference->inst &&
+				w->preference->inst->prod &&
+				w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE &&
+				w->value->id.smem_lti) {
+			std::cout << "checking rule-result for activating LTI " << w->value->id.smem_lti << std::endl;
+			if (thisAgent->smem_params->act_triggers->contains(smem_param_container::rule_result)) {
+				smem_lti_activate( thisAgent, w->value->id.smem_lti, true );
+			}
+		}
+
 		post_link_addition (thisAgent, w->id, w->value);
 		if (w->attr == thisAgent->operator_symbol) 
 		{

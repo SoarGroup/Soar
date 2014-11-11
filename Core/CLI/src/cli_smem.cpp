@@ -40,7 +40,6 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         PrintCLIMessage_Item("lazy-commit:", agnt->smem_params->lazy_commit, 40);
         PrintCLIMessage_Section("Activation", 40);
         PrintCLIMessage_Item("activation-mode:", agnt->smem_params->activation_mode, 40);
-        PrintCLIMessage_Item("activate-on-query:", agnt->smem_params->activate_on_query, 40);
         PrintCLIMessage_Item("base-decay:", agnt->smem_params->base_decay, 40);
         PrintCLIMessage_Item("base-update-policy:", agnt->smem_params->base_update, 40);
         PrintCLIMessage_Item("base-incremental-threshes:", agnt->smem_params->base_incremental_threshes, 40);
@@ -53,7 +52,6 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         PrintCLIMessage_Section("Experimental", 40);
         PrintCLIMessage_Item("merge:", agnt->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", agnt->smem_params->mirroring, 40);
-        PrintCLIMessage_Item("activation-unification:", agnt->smem_params->unification, 40);
         PrintCLIMessage_Item("activation-triggers:", agnt->smem_params->act_triggers, 40);
         PrintCLIMessage_Item("spreading-depth:", agnt->smem_params->spreading_depth, 40);
         PrintCLIMessage_Item("spontaneous:", agnt->smem_params->spontaneous, 40);

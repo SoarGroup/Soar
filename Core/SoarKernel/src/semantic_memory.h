@@ -70,7 +70,6 @@ class smem_param_container: public soar_module::param_container
 		soar_module::integer_param *thresh;
 
 		soar_module::constant_param<merge_choices>* merge;
-		soar_module::boolean_param* activate_on_query;
 		soar_module::constant_param<act_choices>* activation_mode;
 		soar_module::decimal_param* base_decay;
 
@@ -80,8 +79,6 @@ class smem_param_container: public soar_module::param_container
 		soar_module::int_set_param* base_incremental_threshes;
 
 		soar_module::boolean_param* mirroring;
-
-		soar_module::boolean_param* unification;
 
 		soar_module::constant_set_param<act_trigger_choices>* act_triggers;
 
@@ -490,6 +487,8 @@ extern bool smem_valid_production( condition *lhs_top, action *rhs_top );
 
 extern smem_lti_id smem_lti_get_id( agent *my_agent, char name_letter, uint64_t name_number );
 extern Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level );
+
+extern double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX );
 
 extern void smem_reset( agent *my_agent, Symbol *state );
 extern void smem_reset_id_counters( agent *my_agent );
