@@ -1383,6 +1383,40 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	return new_activation;
 }
 
+// based on wma_activate_wmes_tested_in_prods
+void smem_activate_ltis_tested_in_prods( agent* my_agent )
+{
+	ms_change *msc;
+	token temp_token, *t;
+
+	for ( msc=my_agent->ms_o_assertions; msc!=NIL; msc=msc->next )
+	{
+		temp_token.parent = msc->tok;
+		temp_token.w = msc->w;
+
+		for (t = &temp_token; t != my_agent->dummy_top_token; t = t->parent)
+		{
+			if (t->w != NIL && t->w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE && t->w->value->id.smem_lti)
+			{
+				smem_lti_activate( my_agent, t->w->value->id.smem_lti, true );
+			}
+		}
+	}
+
+	for ( msc=my_agent->ms_i_assertions; msc!=NIL; msc=msc->next )
+	{
+		temp_token.parent = msc->tok;
+		temp_token.w = msc->w;
+
+		for (t = &temp_token; t != my_agent->dummy_top_token; t = t->parent)
+		{
+			if (t->w != NIL && t->w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE && t->w->value->id.smem_lti)
+			{
+				smem_lti_activate( my_agent, t->w->value->id.smem_lti, true );
+			}
+		}
+	}
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

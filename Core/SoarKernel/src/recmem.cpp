@@ -27,6 +27,7 @@
  */
 
 #include <stdlib.h>
+#include <iostream>
 
 #include "gdatastructs.h"
 #include "instantiations.h"
@@ -1364,6 +1365,10 @@ void do_preference_phase(agent* thisAgent) {
 
 	if (wma_enabled(thisAgent)) {
 		wma_activate_wmes_tested_in_prods(thisAgent);
+	}
+	std::cout << "checking rule-condition for activating LTIs" << std::endl;
+	if (thisAgent->smem_params->act_triggers->contains(smem_param_container::rule_condition)) {
+	  smem_activate_ltis_tested_in_prods( thisAgent );
 	}
 
 	/* New waterfall model: */
