@@ -38,13 +38,19 @@ bool test_axis_relation(const sgnode* a, const sgnode* b, int axis, double top, 
 		bool less, bool aligned, bool greater)
 {
 	double dist = axis_distance(a, b, axis);
-	if(less && -top < dist && dist < -bot){
-		return true;
-	}
 	if(aligned && dist == 0.0){
 		return true;
 	}
+	if(less && -top < dist && dist < -bot){
+		return true;
+	}
+	if(less && aligned && -top < dist && dist <= 0.0){
+		return true;
+	}
 	if(greater && bot < dist && dist < top){
+		return true;
+	}
+	if(greater && aligned && 0.0 <= dist && dist < top){
 		return true;
 	}
 	return false;
