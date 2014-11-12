@@ -43,6 +43,9 @@ filter_table_entry* smaller_select_filter_entry();
 filter_table_entry* axis_distance_filter_entry();
 filter_table_entry* axis_distance_select_filter_entry();
 
+// filters/axis_relation.cpp
+filter_table_entry* axis_relation_select_filter_entry();
+
 // filters/calculate_placement.cpp
 filter_table_entry* calculate_placement_filter_entry();
 
@@ -97,6 +100,8 @@ filter_table::filter_table()
     
     add(axis_distance_filter_entry());
     add(axis_distance_select_filter_entry());
+
+		add(axis_relation_select_filter_entry());
 
 		add(calculate_placement_filter_entry());
     

@@ -8,6 +8,7 @@
 #include "src/commands/delete_node.cpp"
 
 #include "src/filters/axis_distance.cpp"
+#include "src/filters/axis_relation.cpp"
 #include "src/filters/base_node_filters.cpp"
 #include "src/filters/calculate_placement.cpp"
 #include "src/filters/contain.cpp"
