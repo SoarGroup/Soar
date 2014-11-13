@@ -76,7 +76,7 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
         {
             for (iter_value = iter_attr->second.begin(); iter_value != iter_attr->second.end(); ++iter_value)
             {
-                dprint_condition(DT_MERGE, iter_value->second, "   ", true, false, true);
+                dprint_condition(DT_MERGE, iter_value->second, "   ");
             }
         }
     }

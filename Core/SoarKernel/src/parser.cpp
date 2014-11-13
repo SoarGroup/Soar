@@ -814,10 +814,10 @@ condition* parse_value_test_star(agent* thisAgent, char first_letter)
         /* --- build condition using the new value test --- */
         allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
         init_condition(c);
-        insert_at_head_of_dll(new_conds, c, next, prev);
         c->type = POSITIVE_CONDITION;
         c->data.tests.value_test = value_test;
         c->test_for_acceptable_preference = acceptable;
+        insert_at_head_of_dll(new_conds, c, next, prev);
         /* --- add new conditions to the end of the list --- */
         if (last_c)
         {

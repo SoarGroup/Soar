@@ -35,8 +35,8 @@ extern void print(agent* thisAgent, const char* format, ...);
 //#define DEBUG_EPMEM_WME_ADD
 
 //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
-#define MEM_POOLS_ENABLED 1
-#define USE_MEM_POOL_ALLOCATORS 1
+//#define MEM_POOLS_ENABLED 1
+//#define USE_MEM_POOL_ALLOCATORS 1
 
 //#define DEBUG_CHUNK_NAMES
 //#define DEBUG_RETE_PNODES
@@ -71,7 +71,7 @@ typedef unsigned char byte;
 
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */
 
-//#define MEMORY_POOL_STATS
+#define MEMORY_POOL_STATS
 
 //#define NO_TIMING_STUFF
 //#define DO_TOP_LEVEL_REF_CTS

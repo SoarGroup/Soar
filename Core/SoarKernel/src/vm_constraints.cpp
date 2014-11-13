@@ -22,28 +22,28 @@ void Variablization_Manager::variablize_relational_constraints()
     ::list* c;
     std::map< Symbol*, ::list* >* variablized_sti_constraints = new std::map< Symbol*, ::list* >;
     std::map< uint64_t, ::list* >* variablized_constant_constraints = new std::map< uint64_t, ::list* >;
-    
+
     dprint(DT_CONSTRAINTS, "=============================================\n");
     dprint(DT_CONSTRAINTS, "Variablizing relational constraints.\n");
     dprint(DT_CONSTRAINTS, "(1) Variablizing relational constraints for short-term identifiers.\n");
     dprint_wmes(DT_CONSTRAINTS, true);
-    
-    
+
+
     /* -- Replace sti constraints with variablized version and delete any ungrounded tests and
      *    any constraints whose symbol key has not been variablized during the equality
      *    variablization pass. -- */
     for (std::map< Symbol*, ::list* >::iterator it = sti_constraints->begin(); it != sti_constraints->end(); ++it)
     {
-    
+
         dprint(DT_CONSTRAINTS, "Looking for variablization for equality symbol %s.\n", it->first->to_string());
         found_variablization = get_variablization(it->first);
-        
+
         if (found_variablization)
         {
             dprint(DT_CONSTRAINTS, "...found grounding.  Variablizing constraint list.\n", it->first->to_string());
-            
+
             variablize_cached_constraints_for_symbol(&(it->second));
-            
+
             /* -- If at least one relational constraint remains in the list, add to variablized constraint
              *    list, using the variablized equality symbol -- */
             if (it->second)
@@ -67,24 +67,24 @@ void Variablization_Manager::variablize_relational_constraints()
             it->second = NULL;
         }
     }
-    
+
     sti_constraints->clear();
     sti_constraints = variablized_sti_constraints;
-    
+
     /* -- Replace constant constraints with variablized version.  Delete only constraints whose symbol key
      *    has not been variablized during the equality variablization pass. -- */
     dprint(DT_CONSTRAINTS, "(2) Variablizing relational constraints for constant symbols.\n");
     for (std::map< uint64_t, ::list* >::iterator it = constant_constraints->begin(); it != constant_constraints->end(); ++it)
     {
-    
+
         dprint(DT_CONSTRAINTS, "Looking for variablization for equality g_id %llu.\n", it->first);
         found_variablization = get_variablization(it->first);
-        
+
         if (found_variablization)
         {
             dprint(DT_CONSTRAINTS, "...found grounding for grounding id %llu.  Variablizing constraint list.\n", it->first);
             variablize_cached_constraints_for_symbol(&(it->second));
-            
+
             /* -- If at least one relational constraint remains in the list, add to variablized constraint
              *    list, using the variablized equality symbol -- */
             /* MToDo | Don't think this is possible for constants  Checking.  Remove */
@@ -110,13 +110,13 @@ void Variablization_Manager::variablize_relational_constraints()
             it->second = NULL;
         }
     }
-    
+
     /* -- Replace constant constraints with variablized version. -- */
     constant_constraints->clear();
     constant_constraints = variablized_constant_constraints;
-    
+
     dprint(DT_CONSTRAINTS, "Done variablizing relational constraints.\n");
-    
+
 }
 
 void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** constraint_list)
@@ -125,10 +125,10 @@ void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** c
     cons* c, *c_next, *c_last;
     test t;
     bool success;
-    
+
     /* MToDo | Remove.  Quick check to see if it is hanging here somehow. */
     int64_t debug_count = 0;
-    
+
     c = (*constraint_list);
     c_last = NULL;
     while (c)
@@ -138,7 +138,7 @@ void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** c
         t = static_cast<test>(c->first);
         // Should not be possible to be a conjunctive test
         assert(t->type != CONJUNCTIVE_TEST);
-        
+
         success = variablize_test_by_lookup(&(t), false);
         if (!success)
         {
@@ -174,7 +174,7 @@ void Variablization_Manager::clear_cached_constraints()
         free_list(thisAgent, it->second);
     }
     sti_constraints->clear();
-    
+
     for (std::map< uint64_t, ::list* >::iterator it = constant_constraints->begin(); it != constant_constraints->end(); ++it)
     {
         free_list(thisAgent, it->second);
@@ -187,7 +187,7 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
     dprint(DT_CONSTRAINTS, "Adding relational constraint %s to %s.\n", test_to_string(relational_test), test_to_string(equality_test));
     ::list* new_list = NULL;
     test copied_test = copy_test(thisAgent, relational_test);
-    
+
     if (equality_test->data.referent->is_sti())
     {
         std::map< Symbol*, ::list* >::iterator iter = (*sti_constraints).find(equality_test->data.referent);
@@ -233,7 +233,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         assert(t->type == EQUALITY_TEST);
         return;
     }
-    
+
     test equality_test = NULL, referent_test, ctest;
     cons* c;
     for (c = t->data.conjunct_list; c != NIL; c = c->rest)
@@ -271,7 +271,7 @@ void Variablization_Manager::cache_constraints_in_cond(condition* c)
 {
     /* Don't need to do id element.  It should always be an equality test */
     //  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
-    dprint_condition(DT_CONSTRAINTS, c, "Caching relational constraints in condition: ", true, false, true);
+    dprint_condition(DT_CONSTRAINTS, c, "Caching relational constraints in condition: ");
     cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
 }
@@ -282,12 +282,12 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     {
         return;
     }
-    
+
     cons* c;
     test eq_test, ct;
     Symbol* eq_symbol;
     variablization* found_variablization;
-    
+
     eq_test = equality_test_found_in_test(*t);
     assert(eq_test);
     eq_symbol = eq_test->data.referent;
@@ -366,23 +366,23 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
     dprint(DT_CONSTRAINTS, "install_relational_constraints called...\n");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
-    
+
     /* MToDo | Vast majority of constraints will be on value element.  Making this work with a pass for
      *         values followed by attributes could be faster. */
-    
+
     while (cond && ((sti_constraints->size() > 0) || (constant_constraints->size() > 0)))
     {
         if (cond->type == POSITIVE_CONDITION)
         {
             dprint(DT_CONSTRAINTS, "Adding for positive condition ");
-            dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
+            dprint_condition(DT_CONSTRAINTS, cond, "");
             install_cached_constraints_for_test(&cond->data.tests.attr_test);
             install_cached_constraints_for_test(&cond->data.tests.value_test);
         }
         else
         {
             dprint(DT_CONSTRAINTS, (cond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition " : "Skipping for negative conjunctive condition:\n");
-            dprint_condition(DT_CONSTRAINTS, cond, "", true, false, true);
+            dprint_condition(DT_CONSTRAINTS, cond, "");
         }
         cond = cond->next;
     }

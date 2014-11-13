@@ -271,15 +271,15 @@ void backtrace_through_instantiation(agent* thisAgent,
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
-        Symbol* id, *value;
+        Symbol* thisID, *value;
 
         if (c->type != POSITIVE_CONDITION)
         {
             continue;
         }
 
-//    dprint(DT_CONSTRAINTS, "Backtracing through condition: ");
-//    dprint_condition(DT_CONSTRAINTS, c, "", true, false, true);
+    dprint(DT_BACKTRACE, "Backtracing through condition: ");
+    dprint_condition(DT_BACKTRACE, c, "   ");
         /* -- We copy any relational constraints found in this condition into a temporary map.
          *    When backtracing is complete and we are building the chunk conditions, we will
          *    add all of the relational constraints found while backtracing into the final
@@ -288,9 +288,9 @@ void backtrace_through_instantiation(agent* thisAgent,
          *    -- */
         thisAgent->variablizationManager->cache_constraints_in_cond(c);
 
-        id = c->data.tests.id_test->data.referent;
+        thisID = c->data.tests.id_test->data.referent;
 
-        if (id->tc_num == tc)
+        if (thisID->tc_num == tc)
         {
             /* --- id is already in the TC, so add in the value --- */
             value = c->data.tests.value_test->data.referent;
@@ -305,10 +305,10 @@ void backtrace_through_instantiation(agent* thisAgent,
                 value->tc_num = tc;
             }
         }
-        else if ((id->id->isa_goal) && (c->bt.level <= grounds_level))
+        else if ((thisID->id->isa_goal) && (c->bt.level <= grounds_level))
         {
             /* --- id is a higher goal id that was tested: so add id to the TC --- */
-            id->tc_num = tc;
+            thisID->tc_num = tc;
             value = c->data.tests.value_test->data.referent;
             if (value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
             {
@@ -325,7 +325,7 @@ void backtrace_through_instantiation(agent* thisAgent,
         {
             /* --- as far as we know so far, id shouldn't be in the tc: so mark it
                with number "tc2" to indicate that it's been seen already --- */
-            id->tc_num = tc2;
+            thisID->tc_num = tc2;
         }
     }
 
@@ -364,6 +364,7 @@ void backtrace_through_instantiation(agent* thisAgent,
     negateds_to_print = NIL;
 
     /* Record the conds in the print_lists even if not going to be printed */
+    dprint(DT_BACKTRACE, "Backtracing collecting grounds, potentials and locals...\n");
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
@@ -374,7 +375,7 @@ void backtrace_through_instantiation(agent* thisAgent,
             if (c->data.tests.id_test->data.referent->tc_num == tc)
             {
                 dprint(DT_BACKTRACE, "Backtracing adding ground condition...\n");
-                dprint_condition(DT_BACKTRACE, c);
+                dprint_condition(DT_BACKTRACE, c, "   ");
                 add_to_grounds(thisAgent, c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
                         thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -384,6 +385,8 @@ void backtrace_through_instantiation(agent* thisAgent,
             }
             else if (c->bt.level <= grounds_level)
             {
+                dprint(DT_BACKTRACE, "Backtracing adding potential condition...\n");
+                dprint_condition(DT_BACKTRACE, c, "   ");
                 add_to_potentials(thisAgent, c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
                         thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -393,6 +396,8 @@ void backtrace_through_instantiation(agent* thisAgent,
             }
             else
             {
+                dprint(DT_BACKTRACE, "Backtracing adding local condition...\n");
+                dprint_condition(DT_BACKTRACE, c, "   ");
                 add_to_locals(thisAgent, c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
                         thisAgent->sysparams[EXPLAIN_SYSPARAM])
@@ -403,6 +408,8 @@ void backtrace_through_instantiation(agent* thisAgent,
         }
         else
         {
+            dprint(DT_BACKTRACE, "Backtracing adding negated condition...\n");
+            dprint_condition(DT_BACKTRACE, c, "   ");
             /* --- negative or nc cond's are either grounds or potentials --- */
             add_to_chunk_cond_set(thisAgent, &thisAgent->negated_set,
                                   make_chunk_cond_for_negated_condition(thisAgent, c));
@@ -414,8 +421,12 @@ void backtrace_through_instantiation(agent* thisAgent,
         }
     } /* end of for loop */
 
-    dprint(DT_BACKTRACE, "Grounds in backtrace:\n");
-    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
+    dprint(DT_BACKTRACE, "Grounds:\n");
+    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds, true, true, true);
+    dprint(DT_BACKTRACE, "Potentials:\n");
+    dprint_condition_cons(DT_BACKTRACE, thisAgent->positive_potentials, true, true, true);
+    dprint(DT_BACKTRACE, "Locals:\n");
+    dprint_condition_cons(DT_BACKTRACE, thisAgent->locals, true, true, true);
 
     /* Now record the sets of conditions.  Note that these are not necessarily */
     /* the final resting place for these wmes.  In particular potentials may   */

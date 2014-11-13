@@ -1174,7 +1174,10 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         field_to_string(f), w->timetag, w->id->to_string(), w->attr->to_string(), w->value->to_string(), pLevel);
 
     grounding_info* g = w->ground_id_list;
-
+    if (!g)
+    {
+        dprint(DT_IDENTITY_PROP, "- no grounding struct at level %hi.\n", pLevel);
+    }
     /* -- See if we already have ground IDs for this goal level -- */
     bool create_grounding_info = true;
     for (; g; g = g->next)
@@ -1217,7 +1220,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         if (!w->preference)
             dprint(DT_IDENTITY_PROP, "- not propagating.  No preference found for wme...");
         else
-            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level...");
+            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %hi...", w->id->id->level);
     }
     if (g->grounding_id[f] == 0)
     {
@@ -1426,7 +1429,7 @@ void propagate_identity(agent* thisAgent,
         if (c->type == POSITIVE_CONDITION)
         {
             dprint(DT_IDENTITY_PROP, "Propagating identity for condition: ");
-            dprint_condition(DT_IDENTITY_PROP, c, "", true, false, true);
+            dprint_condition(DT_IDENTITY_PROP, c, "");
 
             if (use_negation_lookup)
             {
@@ -1446,7 +1449,7 @@ void propagate_identity(agent* thisAgent,
                 add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
             }
             dprint(DT_IDENTITY_PROP, "Condition is now:\n");
-            dprint_condition(DT_IDENTITY_PROP, c, "          ", true, false, true);
+            dprint_condition(DT_IDENTITY_PROP, c, "          ");
         }
         else
         {
@@ -1463,21 +1466,21 @@ void propagate_identity(agent* thisAgent,
             if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for NCC.  Calling propagate_identity recursively.\n");
-                dprint_condition(DT_IDENTITY_PROP, c, "", true, false, true);
+                dprint_condition(DT_IDENTITY_PROP, c, "");
 
                 propagate_identity(thisAgent, c->data.ncc.top, level, true);
             }
             else if (c->type == NEGATIVE_CONDITION)
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for negative condition: ");
-                dprint_condition(DT_IDENTITY_PROP, c, "", true, false, true);
+                dprint_condition(DT_IDENTITY_PROP, c, "");
                 add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT);
                 add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT);
                 add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
             }
 
             dprint(DT_IDENTITY_PROP, "Condition is now:\n");
-            dprint_condition(DT_IDENTITY_PROP, c, "          ", true, false, true);
+            dprint_condition(DT_IDENTITY_PROP, c, "          ");
 
         }
     }

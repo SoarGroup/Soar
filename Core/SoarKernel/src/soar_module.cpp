@@ -144,14 +144,37 @@ namespace soar_module
                     inst->bottom_of_instantiated_conditions = cond;
                 }
                 cond->data.tests.id_test = make_test(thisAgent, (*c_it)->id, EQUALITY_TEST);
-                cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST);
-                cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST);
+                cond->data.tests.id_test->original_test = copy_test(thisAgent, cond->data.tests.id_test);
                 cond->data.tests.id_test->identity->grounding_wme = (*c_it);
-                cond->data.tests.attr_test->identity->grounding_wme = (*c_it);
-                cond->data.tests.value_test->identity->grounding_wme = (*c_it);
                 cond->data.tests.id_test->identity->grounding_field = ID_ELEMENT;
+                cond->data.tests.id_test->identity->original_var = cond->data.tests.id_test->original_test->data.referent;
+                if ((*c_it)->id->is_lti())
+                {
+                    /* Approach 1:  Give the same LTI the same g_id across instantiations
+                     *              See if grounding id exists for this lti.  If so, set g_id to it.
+                     *              If not, get grounding id and store mapping of it.
+                     *
+                     *              May want to make sure that grounding id isn't requested if identity is already set to
+                     *              one.  If that seems expensive, can try adding this grounding id to wme.
+                     *
+                     * Approach 2:  Give the same LTI the same original_var across instantiation
+                     *
+                     * Approach 3:  Set the g_id of all LTIs to UNVARIABLIZABLE and make sure it's being used right.
+                     *              Basically merge in the other branch.
+                     */
+                }
+                cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST);
+                cond->data.tests.attr_test->original_test = copy_test(thisAgent, cond->data.tests.attr_test);
+                cond->data.tests.attr_test->identity->grounding_wme = (*c_it);
                 cond->data.tests.attr_test->identity->grounding_field = ATTR_ELEMENT;
+                cond->data.tests.attr_test->identity->original_var = cond->data.tests.attr_test->original_test->data.referent;
+
+                cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST);
+                cond->data.tests.value_test->original_test = copy_test(thisAgent, cond->data.tests.value_test);
+                cond->data.tests.value_test->identity->grounding_wme = (*c_it);
                 cond->data.tests.value_test->identity->grounding_field = VALUE_ELEMENT;
+                cond->data.tests.value_test->identity->original_var = cond->data.tests.value_test->original_test->data.referent;
+
                 cond->test_for_acceptable_preference = (*c_it)->acceptable;
                 cond->bt.wme_ = (*c_it);
 

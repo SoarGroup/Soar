@@ -114,6 +114,7 @@ inline bool test_has_referent(test t)
     return ((t->type != DISJUNCTION_TEST) && (t->type != GOAL_ID_TEST) &&
             (t->type != IMPASSE_ID_TEST) && (t->type != CONJUNCTIVE_TEST));
 };
+/* MToDo | Is this really necessary? */
 inline test make_blank_test()
 {
     return static_cast<test>(0);

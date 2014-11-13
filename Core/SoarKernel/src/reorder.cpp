@@ -1262,7 +1262,7 @@ void reorder_simplified_conditions(agent* thisAgent,
 
         /* --- install the first item in the min-cost set --- */
         chosen = min_cost_conds;
-        dprint_condition(DT_REORDERER, chosen, "...reorderer adding chosen item: ", true, false, true);
+        dprint_condition(DT_REORDERER, chosen, "...reorderer adding chosen item: ");
         dprint(DT_REORDERER, "Before removing condition:\n");
         dprint_condition_list(DT_REORDERER, remaining_conds);
         remove_from_dll(remaining_conds, chosen, next, prev);
