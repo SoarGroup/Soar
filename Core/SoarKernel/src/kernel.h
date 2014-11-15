@@ -38,18 +38,15 @@ extern void print(agent* thisAgent, const char* format, ...);
 //#define MEM_POOLS_ENABLED 1
 //#define USE_MEM_POOL_ALLOCATORS 1
 
-//#define DEBUG_CHUNK_NAMES
+#define DEBUG_PREFS         /* -- Preference printouts -- */
 //#define DEBUG_RETE_PNODES
 //#define DEBUG_WATERFALL
-//#define DEBUG_WMES        /* -- Get slot printouts -- */
 //#define DEBUG_LINKS       /* -- Get links, gc printouts -- */
-//#define DEBUG_SLOTS       /* -- Get slot printouts -- */
-//#define DEBUG_GDS         /* -- Low level GDS debug information -- */
-//#define DEBUG_PREFS       /* -- Preference printouts -- */
 //#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
 
-
-/* For high-level information on the instantiations that created an
+/* -- Low level GDS debug information -- */
+//#define DEBUG_GDS
+/* -- High-level information on the instantiations that created an
  * o-supported element and lead to the elaboration of the GDS */
 //#define DEBUG_GDS_HIGH
 

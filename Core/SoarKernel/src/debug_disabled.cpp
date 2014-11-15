@@ -41,7 +41,12 @@ void dprint_cond_actions(TraceMode mode, condition* top_cond, action* top_action
 void dprint_cond_results(TraceMode mode, condition* top_cond, preference* top_pref, const char* indent_string = "          ") {}
 void dprint_production(TraceMode mode, production* prod) {}
 void dprint_identifiers(TraceMode mode) {}
-void dprint_condition_cons(TraceMode mode, cons* c, bool print_actual = true, bool print_original = true, bool print_identity = false, const char* pre_string = "") {}
+void dprint_preference(TraceMode mode, preference* pref, const char* indent_string, bool print_actual = true, bool print_original = false, bool print_identity = true);
+void dprint_preferences(TraceMode mode, preference* top_pref, const char* indent_string = "           ", bool print_actual = true, bool print_original = false, bool print_identity = true, int pref_list_type = 1);
+void dprint_production(TraceMode mode, production* prod);
+void dprint_identifiers(TraceMode mode);
+void dprint_condition_cons(TraceMode mode, cons* c, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "");
+void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = NIL, wme* w = NIL);
 void dprint_saved_test_list(TraceMode mode, saved_test* st) {}
 void dprint_varnames(TraceMode mode, varnames* var_names) {}
 void dprint_varnames_node(TraceMode mode, node_varnames* var_names_node) {}

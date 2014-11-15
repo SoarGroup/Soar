@@ -1165,7 +1165,7 @@ inline const char* field_to_string(WME_Field f)
 
 inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_level pLevel)
 {
-    if (!w)
+    if (!w || (pLevel == TOP_GOAL_LEVEL))
     {
         return NON_GENERALIZABLE;
     }
@@ -2118,7 +2118,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->type = test_type;
     new_ct->data.referent = sym;
     new_ct->original_test = NULL;
-
+    new_ct->eq_test = NULL;
     /* MToDo| Should limit creation of identity to only tests that need them.
      *        For example, STIs and tests read during initial parse don't
      *        need identity. */

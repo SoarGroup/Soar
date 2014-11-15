@@ -408,7 +408,7 @@ void backtrace_through_instantiation(agent* thisAgent,
         }
         else
         {
-            dprint(DT_BACKTRACE, "Backtracing adding negated condition...\n");
+            dprint(DT_BACKTRACE, "Backtracing adding negated condition...c->type is %d\n", c->type);
             dprint_condition(DT_BACKTRACE, c, "   ");
             /* --- negative or nc cond's are either grounds or potentials --- */
             add_to_chunk_cond_set(thisAgent, &thisAgent->negated_set,

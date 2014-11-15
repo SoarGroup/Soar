@@ -73,10 +73,12 @@ extern void dprint_instantiation(TraceMode mode, instantiation* inst, const char
 extern void dprint_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref, const char* indent_string = "          ", int print_inst_prefs = 1);
 extern void dprint_cond_actions(TraceMode mode, condition* top_cond, action* top_action, const char* indent_string = "          ");
 extern void dprint_cond_results(TraceMode mode, condition* top_cond, preference* top_pref, const char* indent_string = "          ");
+extern void dprint_preference(TraceMode mode, preference* pref, const char* indent_string, bool print_actual = true, bool print_original = false, bool print_identity = true);
 extern void dprint_preferences(TraceMode mode, preference* top_pref, const char* indent_string = "           ", bool print_actual = true, bool print_original = false, bool print_identity = true, int pref_list_type = 1);
 extern void dprint_production(TraceMode mode, production* prod);
 extern void dprint_identifiers(TraceMode mode);
-extern void dprint_condition_cons(TraceMode mode, cons* c, bool print_actual = true, bool print_original = true, bool print_identity = false, const char* pre_string = "");
+extern void dprint_condition_cons(TraceMode mode, cons* c, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "");
+extern void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = NIL, wme* w = NIL);
 extern void dprint_saved_test_list(TraceMode mode, saved_test* st);
 extern void dprint_varnames(TraceMode mode, varnames* var_names);
 extern void dprint_varnames_node(TraceMode mode, node_varnames* var_names_node);

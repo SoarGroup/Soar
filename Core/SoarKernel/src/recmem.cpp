@@ -1119,7 +1119,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         assert(inst);
         ++next_iter;
 
-        dprint(DT_DEALLOCATES, "Deallocate instantiation of %s\n", (inst->prod ? inst->prod->name->to_string() : "no production name!!! (bug?)"));
+        dprint(DT_DEALLOCATES, "Deallocating instantiation of %s\n", (inst->prod ? inst->prod->name->to_string() : "no production name!!! (bug?)"));
 
         level = inst->match_goal_level;
 

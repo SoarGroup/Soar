@@ -20,6 +20,7 @@
 #include "production.h"
 #include "variablization_manager.h"
 #include "test.h"
+#include "debug.h"
 
 Symbol* var_bound_in_reconstructed_conds(
     agent* thisAgent,
@@ -47,6 +48,10 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 {
     cons* c;
     list* fl;
+
+    dprint(DT_DEALLOCATES, "Deallocating rhs value ");
+    dprint_rhs_value(DT_DEALLOCATES, rv);
+    dprint_noprefix(DT_DEALLOCATES, "\n");
 
     if (rhs_value_is_reteloc(rv))
     {

@@ -323,10 +323,8 @@ void do_buffered_wm_changes(agent* thisAgent)
 
 void deallocate_wme(agent* thisAgent, wme* w)
 {
-#ifdef DEBUG_WMES
-    print_with_symbols(thisAgent, "\nDeallocate wme: ");
-    print_wme(thisAgent, w);
-#endif
+    dprint(DT_DEALLOCATES, "Deallocating wme ");
+    dprint_wme(DT_DEALLOCATES, w);
 
     if (wma_enabled(thisAgent))
     {
