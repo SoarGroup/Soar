@@ -83,7 +83,7 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
     buf[sizeof(buf) - 1] = '\0';
 
     v = make_variable(thisAgent, buf);
-    //print(thisAgent, "Adding variable lexeme to parser strings %s\n", (v)->to_string());
+    dprint(DT_PARSER, "Adding variable lexeme to parser strings %s\n", (v)->to_string());
     push(thisAgent, (v), thisAgent->parser_syms);
     /* --- indicate that there is no corresponding "real" variable yet --- */
     v->var->current_binding_value = NIL;
@@ -311,28 +311,28 @@ Symbol* make_symbol_for_current_lexeme(agent* thisAgent, bool allow_lti)
         {
             newSymbol = make_str_constant(thisAgent, thisAgent->lexeme.string);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            //print(thisAgent, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+            dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
             return newSymbol;
         }
         case VARIABLE_LEXEME:
         {
             newSymbol = make_variable(thisAgent, thisAgent->lexeme.string);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            //print(thisAgent, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+            dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
             return newSymbol;
         }
         case INT_CONSTANT_LEXEME:
         {
             newSymbol = make_int_constant(thisAgent, thisAgent->lexeme.int_val);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            //print(thisAgent, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+            dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
             return newSymbol;
         }
         case FLOAT_CONSTANT_LEXEME:
         {
             newSymbol =  make_float_constant(thisAgent, thisAgent->lexeme.float_val);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            //print(thisAgent, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+            dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
             return newSymbol;
         }
         case IDENTIFIER_LEXEME:
@@ -349,6 +349,7 @@ Symbol* make_symbol_for_current_lexeme(agent* thisAgent, bool allow_lti)
 
                 if (lti_id == NIL)
                 {
+                    dprint(DT_PARSER, "Could not find LTI @%s%lld.\n", thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
                     char msg[BUFFER_MSG_SIZE];
                     strncpy(msg, "parser.c: Internal error:  invalid long-term identifier found in make_symbol_for_current_lexeme\n", BUFFER_MSG_SIZE);
                     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -358,7 +359,7 @@ Symbol* make_symbol_for_current_lexeme(agent* thisAgent, bool allow_lti)
                 {
                     newSymbol =  smem_lti_soar_make(thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
                     push(thisAgent, (newSymbol), thisAgent->parser_syms);
-                    //print(thisAgent, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+                    dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
                     return newSymbol;
                 }
             }
@@ -447,8 +448,7 @@ test parse_relational_test(agent* thisAgent)
             test_type = EQUALITY_TEST;
             break;
         default:
-            dprint(DT_PARSER, "Unexpected type in parse_relational_test!!!\n");
-            assert(false);
+            test_type = EQUALITY_TEST;
             break;
     }
 
@@ -1841,7 +1841,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Symbol* id,
         /* --- read referent --- */
         if (preference_is_binary(preference_type))
         {
-            print(thisAgent,  "\nERROR: in Soar8, binary preference illegal for non-operator.");
+            print(thisAgent,  "\nERROR: Binary preference illegal for non-operator.");
 
             /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
                      correctly before we print */
@@ -1862,8 +1862,8 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Symbol* id,
         if ((preference_type != ACCEPTABLE_PREFERENCE_TYPE) &&
                 (preference_type != REJECT_PREFERENCE_TYPE))
         {
-            print(thisAgent,  "\nWARNING: in Soar8, the only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.\n");
-            xml_generate_warning(thisAgent, "WARNING: in Soar8, the only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.");
+            print(thisAgent,  "\nWARNING: The only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.\n");
+            xml_generate_warning(thisAgent, "WARNING: The only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.");
 
             /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
                      correctly before we print */
