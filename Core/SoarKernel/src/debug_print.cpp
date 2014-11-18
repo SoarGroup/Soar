@@ -575,7 +575,7 @@ void dprint_current_lexeme(TraceMode mode)
         default:
             break;
     }
-    dprint(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), debug_agent->lexeme.string);
+    dprint_noprefix(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), debug_agent->lexeme.string);
 
 }
 
