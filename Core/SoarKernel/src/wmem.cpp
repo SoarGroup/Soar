@@ -143,7 +143,6 @@ void add_wme_to_wm (agent* thisAgent, wme *w)
 				w->preference->inst->prod &&
 				w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE &&
 				w->value->id.smem_lti) {
-			std::cout << "checking rule-result for activating LTI " << w->value->id.smem_lti << std::endl;
 			if (thisAgent->smem_params->act_triggers->contains(smem_param_container::rule_result)) {
 				smem_lti_activate( thisAgent, w->value->id.smem_lti, true );
 			}

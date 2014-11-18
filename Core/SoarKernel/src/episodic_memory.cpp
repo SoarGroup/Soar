@@ -3310,7 +3310,6 @@ inline void _epmem_install_id_wme( agent* my_agent, Symbol* parent, Symbol* attr
 		{
 			smem_lti_id lti_id = smem_lti_get_id( my_agent, val_letter, val_num );
 			Symbol* value = smem_lti_soar_make( my_agent, lti_id, val_letter, val_num, parent->id.level );
-			std::cout << "checking epmem_result for activating LTI with lti_id = " << lti_id << std::endl;
 			if ( my_agent->smem_params->act_triggers->contains(smem_param_container::epmem_result) ) {
 				smem_lti_activate( my_agent, lti_id, true );
 			}
