@@ -268,10 +268,10 @@ void backtrace_through_instantiation(agent* thisAgent,
     tc = get_new_tc_number(thisAgent);
     tc2 = get_new_tc_number(thisAgent);
     need_another_pass = false;
+    Symbol* thisID, *value;
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
-        Symbol* thisID, *value;
 
         if (c->type != POSITIVE_CONDITION)
         {
@@ -288,12 +288,12 @@ void backtrace_through_instantiation(agent* thisAgent,
          *    -- */
         thisAgent->variablizationManager->cache_constraints_in_cond(c);
 
-        thisID = c->data.tests.id_test->data.referent;
+        thisID = equality_test_found_in_test(c->data.tests.id_test)->data.referent;
 
         if (thisID->tc_num == tc)
         {
             /* --- id is already in the TC, so add in the value --- */
-            value = c->data.tests.value_test->data.referent;
+            value = equality_test_found_in_test(c->data.tests.value_test)->data.referent;
             if (value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
             {
                 /* --- if we already saw it before, we're going to have to go back
@@ -309,7 +309,7 @@ void backtrace_through_instantiation(agent* thisAgent,
         {
             /* --- id is a higher goal id that was tested: so add id to the TC --- */
             thisID->tc_num = tc;
-            value = c->data.tests.value_test->data.referent;
+            value = equality_test_found_in_test(c->data.tests.value_test)->data.referent;
             if (value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
             {
                 /* --- if we already saw it before, we're going to have to go back
@@ -334,8 +334,6 @@ void backtrace_through_instantiation(agent* thisAgent,
        wme tests--all three fields are equality tests --- */
     while (need_another_pass)
     {
-        Symbol* value;
-
         need_another_pass = false;
         for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
         {
@@ -343,11 +341,12 @@ void backtrace_through_instantiation(agent* thisAgent,
             {
                 continue;
             }
-            if (c->data.tests.id_test->data.referent->tc_num != tc)
+            thisID = equality_test_found_in_test(c->data.tests.id_test)->data.referent;
+            if (thisID->tc_num != tc)
             {
                 continue;
             }
-            value = c->data.tests.value_test->data.referent;
+            value = equality_test_found_in_test(c->data.tests.value_test)->data.referent;
             if (value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
                 if (value->tc_num != tc)
                 {
@@ -370,9 +369,10 @@ void backtrace_through_instantiation(agent* thisAgent,
     {
         if (c->type == POSITIVE_CONDITION)
         {
+            thisID = equality_test_found_in_test(c->data.tests.id_test)->data.referent;
 
             /* --- positive cond's are grounds, potentials, or locals --- */
-            if (c->data.tests.id_test->data.referent->tc_num == tc)
+            if (thisID->tc_num == tc)
             {
                 dprint(DT_BACKTRACE, "Backtracing adding ground condition...\n");
                 dprint_condition(DT_BACKTRACE, c, "   ");
@@ -564,11 +564,14 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
         }
         /* --- for augmentations of the local goal id, either handle the
            "^quiescence t" test or discard it --- */
-        if (cond->data.tests.id_test->data.referent->id->isa_goal)
+        Symbol* thisID = equality_test_found_in_test(cond->data.tests.id_test)->data.referent;
+        Symbol* thisAttr = equality_test_found_in_test(cond->data.tests.attr_test)->data.referent;
+        Symbol* thisValue = equality_test_found_in_test(cond->data.tests.value_test)->data.referent;
+        if (thisID->id->isa_goal)
         {
-            if ((cond->data.tests.attr_test->data.referent ==
+            if ((thisAttr ==
                     thisAgent->quiescence_symbol) &&
-                    (cond->data.tests.value_test->data.referent ==
+                    (thisValue ==
                      thisAgent->t_symbol) &&
                     (! cond->test_for_acceptable_preference))
             {

@@ -38,7 +38,7 @@ extern void print(agent* thisAgent, const char* format, ...);
 //#define MEM_POOLS_ENABLED 1
 //#define USE_MEM_POOL_ALLOCATORS 1
 
-#define DEBUG_PREFS         /* -- Preference printouts -- */
+//#define DEBUG_PREFS         /* -- Preference printouts -- */
 //#define DEBUG_RETE_PNODES
 //#define DEBUG_WATERFALL
 //#define DEBUG_LINKS       /* -- Get links, gc printouts -- */

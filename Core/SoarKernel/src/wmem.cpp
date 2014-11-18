@@ -325,7 +325,7 @@ void deallocate_wme(agent* thisAgent, wme* w)
 {
     dprint(DT_DEALLOCATES, "Deallocating wme ");
     dprint_wme(DT_DEALLOCATES, w);
-
+    dprint_noprefix(DT_DEALLOCATES, "\n");
     if (wma_enabled(thisAgent))
     {
         wma_remove_decay_element(thisAgent, w);
