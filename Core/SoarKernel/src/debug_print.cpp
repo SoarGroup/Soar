@@ -460,7 +460,7 @@ void debug_print_smem_table(const char* table_name, TraceMode mode)
 //  db_err_smem_db->print_table(table_name);
 }
 
-void dprint_current_lexeme(TraceMode mode)
+void dprint_current_lexeme(TraceMode mode, soar::Lexer* lexer)
 {
     std::string lex_type_string;
 
@@ -474,7 +474,7 @@ void dprint_current_lexeme(TraceMode mode)
         return;
     }
 
-    switch (debug_agent->lexeme.type)
+    switch (lexer->current_lexeme.type)
     {
         case EOF_LEXEME:
             lex_type_string = "EOF_LEXEME";
@@ -575,7 +575,7 @@ void dprint_current_lexeme(TraceMode mode)
         default:
             break;
     }
-    dprint_noprefix(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), debug_agent->lexeme.string);
+    dprint_noprefix(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), lexer->current_lexeme.string());
 
 }
 
@@ -773,40 +773,40 @@ void dprint_preference(TraceMode mode, preference* pref, const char* indent_stri
     {
         return;
     }
-    pref_type = preference_to_char(pref->type);
-    if (print_actual)
-    {
-        dprint_noprefix(mode, "%s(%s ^%s %s)", indent_string,
-                        (pref->id ? pref->id->to_string() : ""),
-                        (pref->attr ? pref->attr->to_string() : ""),
-                        (pref->value ? pref->value->to_string() : "")
-                       );
-    }
-    else if (print_original)
-    {
-        dprint_noprefix(mode, "%s(%s ^%s %s)", indent_string,
-                        (pref->original_symbols.id ? pref->original_symbols.id->to_string() : "#"),
-                        (pref->original_symbols.attr ? pref->original_symbols.attr->to_string() : "#"),
-                        (pref->original_symbols.value ? pref->original_symbols.value->to_string() : "#")
-                       );
-    }
-    else if (print_identity)
-    {
-        dprint_noprefix(mode, "%s(%s(g%llu) ^%s[g%llu] %s[g%llu])", indent_string,
-                        (pref->id ? pref->id->to_string() : ""), pref->g_ids.id,
-                        (pref->attr ? pref->attr->to_string() : ""), pref->g_ids.attr,
-                        (pref->value ? pref->value->to_string() : ""), pref->g_ids.value
-                       );
-    }
-    dprint_noprefix(mode, " %c", pref_type);
-    if (preference_is_binary(pref->type))
-    {
-        dprint_noprefix(mode, " %s", pref->referent->to_string());
-    }
-    if (pref->o_supported)
-    {
-        dprint_noprefix(mode, " :O ");
-    }
+        pref_type = preference_to_char(pref->type);
+        if (print_actual)
+        {
+            dprint_noprefix(mode, "%s(%s ^%s %s)", indent_string,
+                            (pref->id ? pref->id->to_string() : ""),
+                            (pref->attr ? pref->attr->to_string() : ""),
+                            (pref->value ? pref->value->to_string() : "")
+                           );
+        }
+        else if (print_original)
+        {
+            dprint_noprefix(mode, "%s(%s ^%s %s)", indent_string,
+                            (pref->original_symbols.id ? pref->original_symbols.id->to_string() : "#"),
+                            (pref->original_symbols.attr ? pref->original_symbols.attr->to_string() : "#"),
+                            (pref->original_symbols.value ? pref->original_symbols.value->to_string() : "#")
+                           );
+        }
+        else if (print_identity)
+        {
+            dprint_noprefix(mode, "%s(%s(g%llu) ^%s[g%llu] %s[g%llu])", indent_string,
+                            (pref->id ? pref->id->to_string() : ""), pref->g_ids.id,
+                            (pref->attr ? pref->attr->to_string() : ""), pref->g_ids.attr,
+                            (pref->value ? pref->value->to_string() : ""), pref->g_ids.value
+                           );
+        }
+        dprint_noprefix(mode, " %c", pref_type);
+        if (preference_is_binary(pref->type))
+        {
+            dprint_noprefix(mode, " %s", pref->referent->to_string());
+        }
+        if (pref->o_supported)
+        {
+            dprint_noprefix(mode, " :O ");
+        }
 }
 
 // Use pref_list_type = 0 to print a single pref

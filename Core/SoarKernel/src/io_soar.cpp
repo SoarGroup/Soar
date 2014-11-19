@@ -945,7 +945,7 @@ Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool rereadable;
 
-    determine_possible_symbol_types_for_string(input_string,
+    soar::Lexer::determine_possible_symbol_types_for_string(input_string,
             strlen(input_string),
             &possible_id,
             &possible_var,

@@ -44,32 +44,32 @@ bool read_attribute_from_string(agent* thisAgent, Symbol* id, char* the_lexeme, 
 {
     Symbol* attr_tmp;
     slot* s;
-    
+
     /* skip optional '^' if present.  KJC added to Ken's code */
     if (*the_lexeme == '^')
     {
         the_lexeme++;
     }
-    
-    get_lexeme_from_string(thisAgent, the_lexeme);
-    
-    switch (thisAgent->lexeme.type)
+
+    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, the_lexeme);
+
+    switch (lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
-            attr_tmp = find_str_constant(thisAgent, thisAgent->lexeme.string);
+            attr_tmp = find_str_constant(thisAgent, lexeme.string());
             break;
         case INT_CONSTANT_LEXEME:
-            attr_tmp = find_int_constant(thisAgent, thisAgent->lexeme.int_val);
+            attr_tmp = find_int_constant(thisAgent, lexeme.int_val);
             break;
         case FLOAT_CONSTANT_LEXEME:
-            attr_tmp = find_float_constant(thisAgent, thisAgent->lexeme.float_val);
+            attr_tmp = find_float_constant(thisAgent, lexeme.float_val);
             break;
         case IDENTIFIER_LEXEME:
-            attr_tmp = find_identifier(thisAgent, thisAgent->lexeme.id_letter,
-                                       thisAgent->lexeme.id_number);
+            attr_tmp = find_identifier(thisAgent, lexeme.id_letter,
+                                       lexeme.id_number);
             break;
         case VARIABLE_LEXEME:
-            attr_tmp = read_identifier_or_context_variable(thisAgent);
+            attr_tmp = read_identifier_or_context_variable(thisAgent, &lexeme);
             if (!attr_tmp)
             {
                 return false;
@@ -187,13 +187,13 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
     preference* p;
     wme* w;
     int i;
-    
+
     if (!read_id_or_context_var_from_string(thisAgent, szId, &id))
     {
         print(thisAgent,  "Could not find the id '%s'\n", szId);
         return -1;
     }
-    
+
     /// This is badbad style using the literal string, but it all has to
     /// change soon, so I'll cheat for now.  If we have an ID that isn't a
     /// state (goal), then don't use the default ^operator.  Instead, search
@@ -229,13 +229,13 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
             }
         }
     }
-    
+
     // We have one of three cases now, as of v8.6.3
     //     1.  --object is specified:  return prefs for all wmes comprising object ID
     //                    (--depth not yet implemented...)
     //     2.  non-state ID is given:  return prefs for wmes whose <val> is ID
     //     3.  default (no args):  return prefs of slot (id, attr)  <s> ^operator
-    
+
     if (object)
     {
         // step thru dll of slots for ID, printing prefs for each one
@@ -280,7 +280,7 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
         {
             print_wme(thisAgent, w);
         }
-        
+
         return 0;
     }
     else if (!id->id->isa_goal && !attr)
@@ -343,10 +343,10 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
         }
         return 0;
     }
-    
+
     //print prefs for specified slot
     print_with_symbols(thisAgent, "\nPreferences for %y ^%y:\n", id, attr);
-    
+
     for (i = 0; i < NUM_PREFERENCE_TYPES; i++)
     {
         if (s->preferences[i])
@@ -358,7 +358,7 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
             }
         }
     }
-    
+
     if (id->id->isa_goal && !strcmp(szAttr, "operator"))
     {
         // voigtjr march 2010
@@ -367,13 +367,13 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
         // returns a list of candidates without deciding which one in the event of indifference
         preference* cand = 0;
         byte impasse_type = run_preference_semantics(thisAgent, s, &cand, true);
-        
+
         // if the impasse isn't NONE_IMPASSE_TYPE, there's an impasse and we don't want to print anything
         // if we have no candidates, we don't want to print anything
         if ((impasse_type == NONE_IMPASSE_TYPE) && cand)
         {
             print(thisAgent,  "\nselection probabilities:\n");
-            
+
             for (p = cand; p; p = p->next_candidate)
             {
                 double prob = exploration_probability_according_to_policy(thisAgent, s, cand, p);
@@ -381,40 +381,40 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
             }
         }
     }
-    
+
     return 0;
 }
 
 bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool object, const std::string* pId, const std::string* pAttribute)
 {
     static const int PREFERENCES_BUFFER_SIZE = 128;
-    
+
     char id[PREFERENCES_BUFFER_SIZE];
     char attr[PREFERENCES_BUFFER_SIZE];
-    
+
     const char* idString = pId ? pId->c_str() : 0;
     const char* attrString = pAttribute ? pAttribute->c_str() : 0;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    
+
     // Establish defaults
     thisAgent->bottom_goal->to_string(true, id, PREFERENCES_BUFFER_SIZE);
     thisAgent->operator_symbol->to_string(true, attr, PREFERENCES_BUFFER_SIZE);
-    
+
     // Override defaults
     if (idString)
     {
         strncpy(id, idString, PREFERENCES_BUFFER_SIZE);
-        
+
         // Notice: attrString arg ignored if no idString passed
         if (attrString)
         {
             strncpy(attr, attrString, PREFERENCES_BUFFER_SIZE);
         }
     }
-    
+
     bool print_productions = false;
     wme_trace_type wtt = NONE_WME_TRACE;
-    
+
     switch (detail)
     {
         case PREFERENCES_ONLY:
@@ -436,7 +436,7 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
             wtt = FULL_WME_TRACE;
             break;
     }
-    
+
     if (soar_ecPrintPreferences(thisAgent, id, attr, object, print_productions, wtt))
     {
         return SetError("An Error occured trying to print the prefs.");

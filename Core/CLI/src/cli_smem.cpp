@@ -145,10 +145,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (pAttr)
         {
-            get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, pAttr->c_str());
+            if (lexeme.type == IDENTIFIER_LEXEME)
             {
-                lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
             }
             if (lti_id == NIL)
             {
@@ -199,12 +199,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (pAttr)
         {
-            get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, pAttr->c_str());
+            if (lexeme.type == IDENTIFIER_LEXEME)
             {
                 if (thisAgent->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                    lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
 
                     if ((lti_id != NIL) && pVal)
                     {
@@ -421,12 +421,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (pAttr)
         {
-            get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, pAttr->c_str());
+            if (lexeme.type == IDENTIFIER_LEXEME)
             {
                 if (thisAgent->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                    lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
 
                     if ((lti_id != NIL) && pVal)
                     {
