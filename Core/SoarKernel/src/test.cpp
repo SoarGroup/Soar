@@ -455,7 +455,7 @@ bool tests_are_equal(test t1, test t2, bool neg)
             return false;
         }
 
-        if (t1->data.referent == t2->data.referent) /* Warning: this relies on the representation of tests */
+        if (t1->data.referent == t2->data.referent)
         {
             return true;
         }
