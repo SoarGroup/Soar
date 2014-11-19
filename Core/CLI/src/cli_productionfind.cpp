@@ -506,7 +506,7 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
     /*  print("Parsing as a rhs...\n"); */
     soar::Lexer lexer(thisAgent, rhs_string);
     lexer.get_lexeme();
-    parsed_ok = (parse_rhs(thisAgent, &lexer, &alist) == TRUE);
+    parsed_ok = (parse_rhs(thisAgent, &lexer, &alist) == true);
     if (!parsed_ok)
     {
         print(thisAgent,  "Error: not a valid rhs.\n");
