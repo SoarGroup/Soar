@@ -554,7 +554,7 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
         {
             continue;
         }
-        id = cc->data.tests.id_test->data.referent;
+        id = equality_test_found_in_test(cc->data.tests.id_test)->data.referent;
         if ((id->id->isa_goal || id->id->isa_impasse) &&
                 (id->tc_num != tc))
         {
@@ -1172,7 +1172,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
      *    Note that this is needed even for justifications -- */
     thisAgent->variablizationManager->fix_conditions(vrblz_top);
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
-    thisAgent->variablizationManager->fix_conditions(inst_top, true);
+    //thisAgent->variablizationManager->fix_conditions(inst_top, true);
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_condition_list(DT_CONSTRAINTS, vrblz_top, "", true, true, true);

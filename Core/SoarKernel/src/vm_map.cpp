@@ -227,11 +227,16 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
     //  print_variablization_table();
 }
 
-void Variablization_Manager::clear_dnvl() { dnvl_set->clear();  }
-void Variablization_Manager::add_dnvl(Symbol* sym) {
+void Variablization_Manager::clear_dnvl() 
+{ 
+    dnvl_set->clear();  
+}
+void Variablization_Manager::add_dnvl(Symbol* sym) 
+{
     dprint(DT_IDENTITY_PROP, "...adding symbol %s.\n", sym->to_string());
     dnvl_set->insert(sym);
 }
+
 bool Variablization_Manager::is_in_dnvl(Symbol* sym)
 {
     std::set< Symbol* >::iterator iter;
