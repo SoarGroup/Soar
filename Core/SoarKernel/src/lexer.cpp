@@ -304,7 +304,7 @@ void Lexer::lex_plus () {
   if (current_char=='.') {
     could_be_floating_point = true;
     for (i=1; i<current_lexeme.length(); i++)
-      if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = FALSE;
+      if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = false;
     if (could_be_floating_point) read_rest_of_floating_point_number();
   }
   if (current_lexeme.length()==1) { current_lexeme.type = PLUS_LEXEME; return; }
@@ -323,7 +323,7 @@ void Lexer::lex_minus () {
   if (current_char=='.') {
     could_be_floating_point = true;
     for (i=1; i<current_lexeme.length(); i++)
-      if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = FALSE;
+      if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = false;
     if (could_be_floating_point) read_rest_of_floating_point_number();
   }
   if (current_lexeme.length()==1) { current_lexeme.type = MINUS_LEXEME; return; }
@@ -344,7 +344,7 @@ void Lexer::lex_digit () {
   if (current_char=='.') {
     could_be_floating_point = true;
     for (i=1; i<current_lexeme.length(); i++)
-      if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = FALSE;
+      if (! isdigit(current_lexeme.lex_string[i])) could_be_floating_point = false;
     if (could_be_floating_point) read_rest_of_floating_point_number();
   }
   determine_type_of_constituent_string();
@@ -639,12 +639,12 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
     const char *ch;
     bool all_alphanum;
 
-    *possible_id = FALSE;
-    *possible_var = FALSE;
-    *possible_sc = FALSE;
-    *possible_ic = FALSE;
-    *possible_fc = FALSE;
-    *rereadable = FALSE;
+    *possible_id = false;
+    *possible_var = false;
+    *possible_sc = false;
+    *possible_ic = false;
+    *possible_fc = false;
+    *rereadable = false;
 
     /* --- check if it's an integer or floating point number --- */
     if (number_starters[static_cast<unsigned char>(*s)]) {
@@ -680,7 +680,7 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
     all_alphanum = true;
     for (ch=s; *ch!='\0'; ch++) {
         if (!isalnum(*ch)) {
-            all_alphanum = FALSE;
+            all_alphanum = false;
             break;
         }
     }
