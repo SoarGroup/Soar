@@ -53,6 +53,7 @@
 #include "misc.h"
 #include "soar_module.h"
 #include "variablization_manager.h"
+#include "debug.h"
 
 #include "assert.h"
 #include <string> // SBW 8/4/08
@@ -796,7 +797,7 @@ void create_instantiation(agent* thisAgent, production* prod,
      */
 
     inst->GDS_evaluated_already = false;
-    dprint_noprefix(DT_FUNC_PRODUCTIONS, "\n");
+    dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
     dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() called for %s\n", inst->prod->name->to_string());
     dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
@@ -976,6 +977,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     thisAgent->production_being_fired = NIL;
 
+    dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
     dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
     dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation created: \n");
     dprint_cond_prefs(DT_PRINT_INSTANTIATIONS, inst->top_of_instantiated_conditions, inst->preferences_generated, "          ", 1);
@@ -1117,7 +1119,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         assert(inst);
         ++next_iter;
 
-        dprint(DT_DEALLOCATES, "Deallocate instantiation of %s\n", (inst->prod ? inst->prod->name->to_string() : "no production name!!! (bug?)"));
+        dprint(DT_DEALLOCATES, "Deallocating instantiation of %s\n", (inst->prod ? inst->prod->name->to_string() : "no production name!!! (bug?)"));
 
         level = inst->match_goal_level;
 

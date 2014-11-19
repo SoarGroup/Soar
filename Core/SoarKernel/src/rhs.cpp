@@ -20,6 +20,7 @@
 #include "production.h"
 #include "variablization_manager.h"
 #include "test.h"
+#include "debug.h"
 
 Symbol* var_bound_in_reconstructed_conds(
     agent* thisAgent,
@@ -48,17 +49,22 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     cons* c;
     list* fl;
 
+    dprint(DT_DEALLOCATES, "Deallocating rhs value ");
+
     if (rhs_value_is_reteloc(rv))
     {
+        dprint_noprefix(DT_DEALLOCATES, "reteloc. Ignoring.\n");
         return;
     }
     if (rhs_value_is_unboundvar(rv))
     {
+        dprint_noprefix(DT_DEALLOCATES, "unboundvar.  Ignoring.\n");
         return;
     }
     if (rhs_value_is_funcall(rv))
     {
-        fl = rhs_value_to_funcall_list(rv);
+        dprint_noprefix(DT_DEALLOCATES, "which is a function call.\n");
+       fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             deallocate_rhs_value(thisAgent, static_cast<char*>(c->first));
@@ -68,6 +74,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
+        dprint_noprefix(DT_DEALLOCATES, "%s(%s)\n", r->referent->to_string(), r->original_rhs_variable->to_string());
         if (r->referent)
         {
             symbol_remove_ref(thisAgent, r->referent);

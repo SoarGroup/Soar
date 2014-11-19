@@ -28,6 +28,8 @@
 #define DECIDE_H
 
 #include "kernel.h"
+#include <set>
+#include <map>
 
 typedef unsigned char byte;
 typedef struct symbol_struct Symbol;

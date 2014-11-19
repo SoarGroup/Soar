@@ -41,6 +41,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testChunk25);
         CPPUNIT_TEST(testChunk26);
         CPPUNIT_TEST(testChunk27);
+        CPPUNIT_TEST(testChunk28);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -80,6 +81,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void testChunk25();
         void testChunk26();
         void testChunk27();
+        void testChunk28();
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -292,4 +294,9 @@ void ChunkTest::testChunk26()
 void ChunkTest::testChunk27()
 {
     build_and_check_chunk("chunk27.soar", 8, 1);
+}
+
+void ChunkTest::testChunk28()
+{
+    build_and_check_chunk("chunk28.soar", 8, 1);
 }

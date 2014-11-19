@@ -50,16 +50,14 @@ class Variablization_Manager
 {
     public:
 
-        uint64_t get_new_ground_id()
-        {
-            return (++ground_id_counter);
-        };
+        uint64_t get_new_ground_id() { return (++ground_id_counter); };
 
         void clear_ovar_gid_table();
         void clear_cached_constraints();
         void clear_variablization_tables();
         void clear_merge_map();
         void clear_substitution_map();
+        void clear_dnvl();
         void clear_data();
         void reinit();
 
@@ -71,6 +69,9 @@ class Variablization_Manager
         void fix_conditions(condition* top_cond, bool ignore_ungroundeds = false);
         void consolidate_variables(condition* top_cond, tc_number tc_num);
         void merge_conditions(condition* top_cond);
+
+        void add_ltis_to_dnvl_for_conditions(condition* top_cond);
+        void add_ltis_to_dnvl_for_prefs(preference* prefs);
 
         void      variablize_relational_constraints();
 
@@ -87,6 +88,7 @@ class Variablization_Manager
         void print_merge_map(TraceMode mode);
         void print_substitution_map(TraceMode mode);
         void print_ovar_gid_propogation_table(TraceMode mode, bool printHeader = false);
+        void print_dnvl_set(TraceMode mode);
 
         Variablization_Manager(agent* myAgent);
         ~Variablization_Manager();
@@ -127,6 +129,10 @@ class Variablization_Manager
         void variablize_cached_constraints_for_symbol(::list** constraint_list);
         void install_cached_constraints_for_test(test* t);
 
+        void add_dnvl(Symbol* sym);
+        bool is_in_dnvl(Symbol* sym);
+        void add_ltis_to_dnvl_for_test(test t);
+
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
@@ -144,6 +150,8 @@ class Variablization_Manager
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
         std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >* cond_merge_map;
         std::map< Symbol*, test >* substitution_map;
+
+        std::set< Symbol* >* dnvl_set;
 
         /* -- A counter for the next grounding id to assign. 0 is the default
          *    value and not considered a valid grounding id. -- */

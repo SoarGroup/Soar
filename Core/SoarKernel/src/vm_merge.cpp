@@ -45,7 +45,7 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
             iter_value = iter_attr->second.find(pCond->data.tests.value_test->eq_test->data.referent);
             if (iter_value != iter_attr->second.end())
             {
-                dprint_condition(DT_MERGE, iter_value->second, "          ...found similar condition: ", true, false, false);
+                dprint_condition(DT_MERGE, iter_value->second, "          ...found similar condition: ");
                 return iter_value->second;
             }
             else
@@ -113,7 +113,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     dprint(DT_MERGE, "======================\n");
     dprint(DT_MERGE, "= Merging Conditions =\n");
     dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, false);
+    dprint_condition_list(DT_MERGE, top_cond, "          ");
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint(DT_MERGE, "# of conditions = %lld\n", old_num_conds);
     dprint(DT_MERGE, "======================\n");
@@ -122,7 +122,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     for (condition* cond = top_cond; cond; ++current_cond)
     {
         dprint(DT_MERGE, "Processing condition %lld: ", current_cond);
-        dprint_condition(DT_MERGE, cond, "", true, false, false);
+        dprint_condition(DT_MERGE, cond, "");
         next_cond = cond->next;
         if (cond->type == POSITIVE_CONDITION)
         {
@@ -184,7 +184,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
         dprint(DT_MERGE, "...done merging this constraint.\n");
     }
     dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "          ", true, false, false);
+    dprint_condition_list(DT_MERGE, top_cond, "          ");
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %lld\n", new_num_conds);

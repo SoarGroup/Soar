@@ -13,6 +13,26 @@
 #include "print.h"
 #include "debug.h"
 
+void Variablization_Manager::print_dnvl_set(TraceMode mode)
+{
+    dprint(mode, "------------------------------------\n");
+    dprint(mode, "       Do Not Variablize List\n");
+    dprint(mode, "------------------------------------\n");
+
+    if (dnvl_set->size() == 0)
+    {
+        dprint(mode, "EMPTY SET\n");
+    }
+
+    std::set< Symbol*>::iterator iter;
+    int d_cnt = 1;
+    for (iter = dnvl_set->begin(); iter != dnvl_set->end(); ++iter, ++d_cnt)
+    {
+        dprint(mode, "%i %s\n", d_cnt, (*iter)->to_string());
+    }
+
+    dprint(mode, "------------------------------------\n");
+}
 void Variablization_Manager::print_substitution_map(TraceMode mode)
 {
     dprint(mode, "------------------------------------\n");
@@ -56,7 +76,7 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
         {
             for (iter_value = iter_attr->second.begin(); iter_value != iter_attr->second.end(); ++iter_value)
             {
-                dprint_condition(DT_MERGE, iter_value->second, "   ", true, false, true);
+                dprint_condition(DT_MERGE, iter_value->second, "   ");
             }
         }
     }

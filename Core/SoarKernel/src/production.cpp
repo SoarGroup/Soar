@@ -33,7 +33,7 @@
 #include "reinforcement_learning.h"
 #include "test.h"
 #include "chunk.h"
-
+#include "debug.h"
 #include <ctype.h>
 
 extern void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original, bool print_identity, const char* pre_string, const char* post_string);
@@ -54,6 +54,7 @@ void init_production_utilities(agent* thisAgent)
 
 void deallocate_condition(agent* thisAgent, condition* cond)
 {
+    dprint_condition(DT_DEALLOCATES, cond, "Deallocating condition ");
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
         deallocate_condition_list(thisAgent, cond->data.ncc.top);

@@ -521,9 +521,9 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     *vrblz_top = first_vrblz;
 
     dprint(DT_CONSTRAINTS, "Instantiated Conditions: \n");
-    dprint_condition_list(DT_CONSTRAINTS, *inst_top, "");
+    dprint_condition_list(DT_CONSTRAINTS, *inst_top, "", true, true, true);
     dprint(DT_CONSTRAINTS, "Variablized conditions: \n");
-    dprint_condition_list(DT_CONSTRAINTS, *vrblz_top, "");
+    dprint_condition_list(DT_CONSTRAINTS, *vrblz_top, "", true, true, true);
 }
 
 /* --------------------------------------------------------------------
@@ -554,7 +554,7 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
         {
             continue;
         }
-        id = cc->data.tests.id_test->data.referent;
+        id = equality_test_found_in_test(cc->data.tests.id_test)->data.referent;
         if ((id->id->isa_goal || id->id->isa_impasse) &&
                 (id->tc_num != tc))
         {
@@ -585,13 +585,6 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
       VCond->Icond->prev = VCond->prev->Icond
    (with some extra checks for the first and last VCond in the list).
 
-   The problem with this is that it takes an extra 4 bytes per condition,
-   for the "ICond" field.  Conditions were taking up a lot of memory in
-   my test cases, so I wanted to shrink them.  This routine avoids needing
-   the 4 extra bytes by using the following trick:  first "swap out" 4
-   bytes from each VCond; then use that 4 bytes for the "ICond" field.
-   Now run the above algorithm.  Finally, swap those original 4 bytes
-   back in.
 -------------------------------------------------------------------- */
 
 void reorder_instantiated_conditions(condition* top_cond,
@@ -1052,7 +1045,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         reset_backtrace_list(thisAgent);
     }
 
-    dprint(DT_CONSTRAINTS,  "Backtracing through instantiation...\n");
+    dprint(DT_BACKTRACE,  "Backtracing through instantiations that produced result preferences...\n");
+    dprint_cond_results(DT_BACKTRACE, NULL, pref);
     /* --- backtrace through the instantiation that produced each result --- */
     for (pref = results; pref != NIL; pref = pref->next_result)
     {
@@ -1071,10 +1065,10 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         }
     }
 
-    dprint(DT_CONSTRAINTS,  "Backtracing through instantiation DONE.\n");
+    dprint(DT_BACKTRACE,  "Backtracing results DONE.\n");
 
-    dprint(DT_BACKTRACE, "Grounds after backtracing:\n");
-    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
+    dprint(DT_BACKTRACE, "Grounds:\n");
+    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds, true, true, true );
 
     while (true)
     {
@@ -1087,7 +1081,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     }
 
     dprint(DT_BACKTRACE, "Grounds after tracing:\n");
-    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
+    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds, true, true, true);
 
     thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
 
@@ -1178,24 +1172,25 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
      *    Note that this is needed even for justifications -- */
     thisAgent->variablizationManager->fix_conditions(vrblz_top);
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
+    //thisAgent->variablizationManager->fix_conditions(inst_top, true);
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
-    dprint_condition_list(DT_CONSTRAINTS, vrblz_top, "");
+    dprint_condition_list(DT_CONSTRAINTS, vrblz_top, "", true, true, true);
 
-    dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
-    dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS action list:\n");
-    dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Variablizing RHS action list:\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
 
     rhs = thisAgent->variablizationManager->variablize_results(results, variablize);
 
-    dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
-    dprint(DT_RHS_VARIABLIZATION, "Done variablizing RHS action list.\n");
-    dprint(DT_RHS_VARIABLIZATION, "==========================================\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Done variablizing RHS action list.\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
-    dprint_condition_list(DT_CONSTRAINTS, inst_top);
+    dprint_condition_list(DT_CONSTRAINTS, inst_top, "", true, true, true);
     dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n");
-    dprint_condition_list(DT_CONSTRAINTS, vrblz_top);
+    dprint_condition_list(DT_CONSTRAINTS, vrblz_top, "", true, true, true);
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 

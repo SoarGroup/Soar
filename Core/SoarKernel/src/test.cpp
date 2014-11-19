@@ -1165,16 +1165,19 @@ inline const char* field_to_string(WME_Field f)
 
 inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_level pLevel)
 {
-    if (!w)
+    if (!w || (pLevel == TOP_GOAL_LEVEL))
     {
-        return 0;
+        return NON_GENERALIZABLE;
     }
 
-    dprint(DT_IDENTITY_PROP, "- %s g_id requested for (%s ^%s %s) at level %hi...\n",
-        field_to_string(f), w->id->to_string(), w->attr->to_string(), w->value->to_string(), pLevel);
+    dprint(DT_IDENTITY_PROP, "- %s g_id requested for (%llu: %s ^%s %s) at level %hi...\n",
+        field_to_string(f), w->timetag, w->id->to_string(), w->attr->to_string(), w->value->to_string(), pLevel);
 
     grounding_info* g = w->ground_id_list;
-
+    if (!g)
+    {
+        dprint(DT_IDENTITY_PROP, "- no grounding struct at level %hi.\n", pLevel);
+    }
     /* -- See if we already have ground IDs for this goal level -- */
     bool create_grounding_info = true;
     for (; g; g = g->next)
@@ -1217,7 +1220,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         if (!w->preference)
             dprint(DT_IDENTITY_PROP, "- not propagating.  No preference found for wme...");
         else
-            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level...");
+            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %hi...", w->id->id->level);
     }
     if (g->grounding_id[f] == 0)
     {
@@ -1316,19 +1319,19 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                 {
                     (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field, level);
                     dprint(DT_IDENTITY_PROP, "- Setting g_id for %s to %llu.\n", sym->to_string(), (*t)->identity->grounding_id);
-                    if (((*t)->identity->grounding_id > 0) && (*t)->identity->original_var)
+                    if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
                     {
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
                         if (existing_gid)
                         {
                             dprint(DT_IDENTITY_PROP, "- %s(%llu) already has g_id %llu.\n", sym->to_string(), (*t)->identity->grounding_id, existing_gid);
                             add_unification_constraint(thisAgent, t, existing_gid);
-//                            test new_test = copy_test(thisAgent, (*t));
-//                            new_test->identity->grounding_id = existing_gid;
-//                            add_test(thisAgent, t, new_test);
-//                            dprint(DT_IDENTITY_PROP, "Added unifying equality test between two symbols.  Test is now: ");
-//                            dprint_test(DT_IDENTITY_PROP, (*t), true, false, true, "", "\n");
                         }
+                    }
+                    else
+                    {
+                        dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for %s. %s.\n", sym->to_string(),
+                            ((*t)->identity->grounding_id == NON_GENERALIZABLE) ? "Marked ungeneralizable" : "No original var");
                     }
                 }
                 else
@@ -1386,10 +1389,16 @@ inline void add_identity_to_negative_test(agent* thisAgent,
             {
                 if (!sym->is_sti() && !sym->is_variable())
                 {
-                    // Recall grounding id using
-                    t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym);
-                    dprint(DT_IDENTITY_PROP, "Setting g_id for %s to %llu.\n", sym->to_string(), t->identity->grounding_id);
-                    assert(t->identity->grounding_id > 0);
+                    // Recall grounding id using original var
+//                    if (t->identity->grounding_id != NON_GENERALIZABLE)
+//                    {
+                        t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym);
+                        dprint(DT_IDENTITY_PROP, "Setting g_id for %s to %llu.\n", sym->to_string(), t->identity->grounding_id);
+//                    }
+//                    else
+//                    {
+//                        dprint(DT_IDENTITY_PROP, "Could not propagate g_id for NC b/c symbol %s is marked ungeneralizable.\n", sym->to_string());
+//                    }
                 }
                 else
                 {
@@ -1420,7 +1429,7 @@ void propagate_identity(agent* thisAgent,
         if (c->type == POSITIVE_CONDITION)
         {
             dprint(DT_IDENTITY_PROP, "Propagating identity for condition: ");
-            dprint_condition(DT_IDENTITY_PROP, c, "", true, false, true);
+            dprint_condition(DT_IDENTITY_PROP, c, "");
 
             if (use_negation_lookup)
             {
@@ -1440,7 +1449,7 @@ void propagate_identity(agent* thisAgent,
                 add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
             }
             dprint(DT_IDENTITY_PROP, "Condition is now:\n");
-            dprint_condition(DT_IDENTITY_PROP, c, "          ", true, false, true);
+            dprint_condition(DT_IDENTITY_PROP, c, "          ");
         }
         else
         {
@@ -1457,21 +1466,21 @@ void propagate_identity(agent* thisAgent,
             if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for NCC.  Calling propagate_identity recursively.\n");
-                dprint_condition(DT_IDENTITY_PROP, c, "", true, false, true);
+                dprint_condition(DT_IDENTITY_PROP, c, "");
 
                 propagate_identity(thisAgent, c->data.ncc.top, level, true);
             }
             else if (c->type == NEGATIVE_CONDITION)
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for negative condition: ");
-                dprint_condition(DT_IDENTITY_PROP, c, "", true, false, true);
+                dprint_condition(DT_IDENTITY_PROP, c, "");
                 add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT);
                 add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT);
                 add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
             }
 
             dprint(DT_IDENTITY_PROP, "Condition is now:\n");
-            dprint_condition(DT_IDENTITY_PROP, c, "          ", true, false, true);
+            dprint_condition(DT_IDENTITY_PROP, c, "          ");
 
         }
     }
@@ -2109,7 +2118,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->type = test_type;
     new_ct->data.referent = sym;
     new_ct->original_test = NULL;
-
+    new_ct->eq_test = NULL;
     /* MToDo| Should limit creation of identity to only tests that need them.
      *        For example, STIs and tests read during initial parse don't
      *        need identity. */

@@ -71,6 +71,17 @@ void dprint_noprefix(TraceMode mode, const char* format, ...)
     dprint_string(mode, buf, true);
 }
 
+void dprint_start_fresh_line(TraceMode mode)
+{
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
+    {
+        return;
+    }
+    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    if (!debug_agent) return;
+    Output_Manager::Get_OM().start_fresh_line(debug_agent);
+}
+
 void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string, const char* post_string)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
@@ -87,7 +98,7 @@ void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string, c
         dprint_noprefix(mode, "%s", pre_string);
     }
 
-    if (i->grounding_id > 0)
+    if (i->grounding_id != NON_GENERALIZABLE)
     {
         if (i->original_var)
         {
@@ -564,7 +575,7 @@ void dprint_current_lexeme(TraceMode mode)
         default:
             break;
     }
-    dprint(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), debug_agent->lexeme.string);
+    dprint_noprefix(mode,  "%s: \"%s\"\n", lex_type_string.c_str(), debug_agent->lexeme.string);
 
 }
 
@@ -622,7 +633,7 @@ void dprint_condition_list(TraceMode mode, condition* top_cond, const char* inde
     return;
 }
 
-void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = NIL, wme* w = NIL)
+void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok, wme* w)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
     {
@@ -754,6 +765,50 @@ void dprint_action_list_old(TraceMode mode, action* top_action, const char* inde
     print_action_list(debug_agent, top_action, strlen(indent_string), false);
 }
 
+void dprint_preference(TraceMode mode, preference* pref, const char* indent_string, bool print_actual, bool print_original, bool print_identity)
+{
+    char pref_type;
+
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode))
+    {
+        return;
+    }
+    pref_type = preference_to_char(pref->type);
+    if (print_actual)
+    {
+        dprint_noprefix(mode, "%s(%s ^%s %s)", indent_string,
+                        (pref->id ? pref->id->to_string() : ""),
+                        (pref->attr ? pref->attr->to_string() : ""),
+                        (pref->value ? pref->value->to_string() : "")
+                       );
+    }
+    else if (print_original)
+    {
+        dprint_noprefix(mode, "%s(%s ^%s %s)", indent_string,
+                        (pref->original_symbols.id ? pref->original_symbols.id->to_string() : "#"),
+                        (pref->original_symbols.attr ? pref->original_symbols.attr->to_string() : "#"),
+                        (pref->original_symbols.value ? pref->original_symbols.value->to_string() : "#")
+                       );
+    }
+    else if (print_identity)
+    {
+        dprint_noprefix(mode, "%s(%s(g%llu) ^%s[g%llu] %s[g%llu])", indent_string,
+                        (pref->id ? pref->id->to_string() : ""), pref->g_ids.id,
+                        (pref->attr ? pref->attr->to_string() : ""), pref->g_ids.attr,
+                        (pref->value ? pref->value->to_string() : ""), pref->g_ids.value
+                       );
+    }
+    dprint_noprefix(mode, " %c", pref_type);
+    if (preference_is_binary(pref->type))
+    {
+        dprint_noprefix(mode, " %s", pref->referent->to_string());
+    }
+    if (pref->o_supported)
+    {
+        dprint_noprefix(mode, " :O ");
+    }
+}
+
 // Use pref_list_type = 0 to print a single pref
 void dprint_preferences(TraceMode mode, preference* top_pref, const char* indent_string, bool print_actual, bool print_original, bool print_identity, int pref_list_type)
 {
@@ -767,40 +822,7 @@ void dprint_preferences(TraceMode mode, preference* top_pref, const char* indent
 
     for (pref = top_pref; pref != NIL;)
     {
-        pref_type = preference_to_char(pref->type);
-        if (print_actual)
-        {
-            dprint_noprefix(mode, "%s(%s ^%s %s)", indent_string,
-                            (pref->id ? pref->id->to_string() : ""),
-                            (pref->attr ? pref->attr->to_string() : ""),
-                            (pref->value ? pref->value->to_string() : "")
-                           );
-        }
-        else if (print_original)
-        {
-            dprint_noprefix(mode, "%s(%s ^%s %s)", indent_string,
-                            (pref->original_symbols.id ? pref->original_symbols.id->to_string() : "#"),
-                            (pref->original_symbols.attr ? pref->original_symbols.attr->to_string() : "#"),
-                            (pref->original_symbols.value ? pref->original_symbols.value->to_string() : "#")
-                           );
-        }
-        else if (print_identity)
-        {
-            dprint_noprefix(mode, "%s(%s(g%llu) ^%s[g%llu] %s[g%llu])", indent_string,
-                            (pref->id ? pref->id->to_string() : ""), pref->g_ids.id,
-                            (pref->attr ? pref->attr->to_string() : ""), pref->g_ids.attr,
-                            (pref->value ? pref->value->to_string() : ""), pref->g_ids.value
-                           );
-        }
-        dprint_noprefix(mode, " %c", pref_type);
-        if (preference_is_binary(pref->type))
-        {
-            dprint_noprefix(mode, " %s", pref->referent->to_string());
-        }
-        if (pref->o_supported)
-        {
-            dprint_noprefix(mode, " :O ");
-        }
+        dprint_preference(mode, pref, indent_string, print_actual, print_original, print_identity);
         dprint_noprefix(mode, ")\n");
         if (pref_list_type == 1)
         {

@@ -62,7 +62,7 @@ typedef struct identity_struct
     uint64_t      grounding_id;
     WME_Field     grounding_field;
     wme*           grounding_wme;
-    identity_struct() : original_var(NULL), grounding_id(0), grounding_field(NO_ELEMENT), grounding_wme(NULL) {}
+    identity_struct() : original_var(NULL), grounding_id(NON_GENERALIZABLE), grounding_field(NO_ELEMENT), grounding_wme(NULL) {}
 } identity_info;
 
 /* -- test_info stores information about a test.  If nil, the test is
@@ -114,6 +114,7 @@ inline bool test_has_referent(test t)
     return ((t->type != DISJUNCTION_TEST) && (t->type != GOAL_ID_TEST) &&
             (t->type != IMPASSE_ID_TEST) && (t->type != CONJUNCTIVE_TEST));
 };
+/* MToDo | Is this really necessary? */
 inline test make_blank_test()
 {
     return static_cast<test>(0);
