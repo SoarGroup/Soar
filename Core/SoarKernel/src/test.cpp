@@ -1218,9 +1218,13 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     else
     {
         if (!w->preference)
+        {
             dprint(DT_IDENTITY_PROP, "- not propagating.  No preference found for wme...");
+        }
         else
+        {
             dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %hi...", w->id->id->level);
+        }
     }
     if (g->grounding_id[f] == 0)
     {

@@ -12,10 +12,10 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-//#define DEBUG_FREE_SETTINGS
+#define DEBUG_FREE_SETTINGS
 //#define DEBUG_FULL_SETTINGS
 //#define DEBUG_REFCOUNT_SETTINGS
-#define DEBUG_UNITTEST_SETTINGS
+//#define DEBUG_UNITTEST_SETTINGS
 
 #ifdef DEBUG_FREE_SETTINGS
 /* -- Which trace messages should be printed -- */
@@ -39,7 +39,7 @@
 #define TRACE_Init_DT_ID_LEAKING                  false
 //--
 #define TRACE_Init_DT_GDS                         false
-#define TRACE_Init_DT_PARSER                      true
+#define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_FUNC_PRODUCTIONS            false
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
 //--
@@ -73,15 +73,15 @@
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_db_mode           off
 #define OM_Init_XML_mode          off
-#define OM_Init_callback_mode     off
-#define OM_Init_stdout_mode       on
+#define OM_Init_callback_mode     on
+#define OM_Init_stdout_mode       off
 #define OM_Init_file_mode         off
 
 /* -- Which output debug listeners should be initially turned on -- */
 #define OM_Init_db_dbg_mode       off
 #define OM_Init_XML_dbg_mode      off
-#define OM_Init_callback_dbg_mode off
-#define OM_Init_stdout_dbg_mode   on
+#define OM_Init_callback_dbg_mode on
+#define OM_Init_stdout_dbg_mode   off
 #define OM_Init_file_dbg_mode     off
 #endif
 

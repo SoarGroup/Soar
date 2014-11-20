@@ -58,6 +58,13 @@ typedef char varnames;
 typedef struct node_varnames_struct node_varnames;
 typedef struct identity_struct identity_info;
 
+#ifdef SOAR_DEBUG_UTILITIES
+#define dprint_macro(mode, format, args...) dprint (mode, format , ##args)
+#else
+#define dprint_macro(mode, format, args...) { }
+//#define dprint_macro(mode, format, args...) ((void)0)
+#endif
+
 extern void dprint(TraceMode mode, const char* format, ...);
 extern void dprint_noprefix(TraceMode mode, const char* format, ...);
 extern void dprint_start_fresh_line(TraceMode mode);

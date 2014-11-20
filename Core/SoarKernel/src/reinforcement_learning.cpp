@@ -38,7 +38,6 @@
 #include "variablization_manager.h"
 
 extern Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
-extern void dprint_production(TraceMode mode, production* prod);
 
 /////////////////////////////////////////////////////
 // Parameters

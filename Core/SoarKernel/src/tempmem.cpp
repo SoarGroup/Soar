@@ -26,7 +26,7 @@
 #include "agent.h"
 #include "prefmem.h"
 #include "decide.h"
-
+#include "debug.h"
 
 /* **********************************************************************
 

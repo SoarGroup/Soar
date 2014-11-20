@@ -48,12 +48,227 @@ debug_param_container::debug_param_container(agent* new_agent): soar_module::par
     add(use_new_chunking);
 }
 
-#ifdef SOAR_DEBUG_UTILITIES
-
 #include "sqlite3.h"
 
 #define DEBUG_BUFFER_SIZE 5000
-extern void print_test(agent* thisAgent, test t, const char* indent_string = "          ", const char* conj_indent_string = "+ ");
+
+#define dprint_testspeed(format, args...) dprint (DT_DEBUG, format , ##args)
+//#define dprint_testspeed(format, args...) dprint_macro (DT_DEBUG, format , ##args)
+//#define dprint_testspeed(format, args...) print (debug_agent, format , ##args)
+//#define dprint_testspeed(format, args...) Output_Manager::Get_OM().printv_agent(debug_agent, format , ##args)
+//#define dprint_testspeed(format, args...) thisOutput_Manager->printv_agent(debug_agent, format , ##args)
+
+void test_print_speed()
+{
+    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    if (!debug_agent)
+    {
+        return;
+    }
+
+    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID04  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID05  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID06  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID07  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID08  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newStr01 = make_str_constant(debug_agent, "attr1");
+    Symbol* newStr02 = make_str_constant(debug_agent, "attr2");
+    Symbol* newStr03 = make_str_constant(debug_agent, "attr3");
+    Symbol* newStr04 = make_str_constant(debug_agent, "attr4");
+    Symbol* newStr05 = make_str_constant(debug_agent, "str1");
+    Symbol* newStr06 = make_str_constant(debug_agent, "str2");
+    Symbol* newStr07 = make_str_constant(debug_agent, "str3");
+    Symbol* newStr08 = make_str_constant(debug_agent, "str4");
+    Symbol* newVar01 = make_variable(debug_agent, "var1");
+    Symbol* newVar02 = make_variable(debug_agent, "var2");
+    Symbol* newVar03 = make_variable(debug_agent, "var3");
+    Symbol* newVar04 = make_variable(debug_agent, "var4");
+    Symbol* newVar05 = make_variable(debug_agent, "var5");
+    Symbol* newVar06 = make_variable(debug_agent, "var6");
+    Symbol* newVar07 = make_variable(debug_agent, "var7");
+    Symbol* newVar08 = make_variable(debug_agent, "var8");
+    Symbol* newInt01 = make_int_constant(debug_agent, 1);
+    Symbol* newInt02 = make_int_constant(debug_agent, 2);
+    Symbol* newInt03 = make_int_constant(debug_agent, 3);
+    Symbol* newInt04 = make_int_constant(debug_agent, 4);
+    Symbol* newInt05 = make_int_constant(debug_agent, 5);
+    Symbol* newInt06 = make_int_constant(debug_agent, 6);
+    Symbol* newInt07 = make_int_constant(debug_agent, 7);
+    Symbol* newInt08 = make_int_constant(debug_agent, 8);
+    Symbol* newFloat01 = make_float_constant(debug_agent, 1.1231);
+    Symbol* newFloat02 = make_float_constant(debug_agent, 2.3);
+    Symbol* newFloat03 = make_float_constant(debug_agent, 3.3);
+    Symbol* newFloat04 = make_float_constant(debug_agent, 4.1783000421);
+    Symbol* newFloat05 = make_float_constant(debug_agent, 5.5555);
+    Symbol* newFloat06 = make_float_constant(debug_agent, 6.66);
+    Symbol* newFloat07 = make_float_constant(debug_agent, 7.1234567890);
+    Symbol* newFloat08 = make_float_constant(debug_agent, 8.00000000001);
+
+    uint64_t num_iterations = 1000;
+
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("This is just a plain string.\n");
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Identifier: %s\n", newID01->to_string());
+        dprint_testspeed("Identifier: %s\n", newID02->to_string());
+        dprint_testspeed("Identifier: %s\n", newID03->to_string());
+        dprint_testspeed("Identifier: %s\n", newID04->to_string());
+        dprint_testspeed("Identifier: %s\n", newID05->to_string());
+        dprint_testspeed("Identifier: %s\n", newID06->to_string());
+        dprint_testspeed("Identifier: %s\n", newID07->to_string());
+        dprint_testspeed("Identifier: %s\n", newID08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Identifiers: %s %s %s %s %s %s %s %s\n",
+            newID01->to_string(), newID02->to_string(), newID03->to_string(), newID04->to_string(),
+            newID05->to_string(), newID06->to_string(), newID07->to_string(), newID08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("String: %s\n", newStr01->to_string());
+        dprint_testspeed("String: %s\n", newStr02->to_string());
+        dprint_testspeed("String: %s\n", newStr03->to_string());
+        dprint_testspeed("String: %s\n", newStr04->to_string());
+        dprint_testspeed("String: %s\n", newStr05->to_string());
+        dprint_testspeed("String: %s\n", newStr06->to_string());
+        dprint_testspeed("String: %s\n", newStr07->to_string());
+        dprint_testspeed("String: %s\n", newStr08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Strings: %s %s %s %s %s %s %s %s\n",
+            newStr01->to_string(), newStr02->to_string(), newStr03->to_string(), newStr04->to_string(),
+            newStr05->to_string(), newStr06->to_string(), newStr07->to_string(), newStr08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Variable: %s\n", newVar01->to_string());
+        dprint_testspeed("Variable: %s\n", newVar02->to_string());
+        dprint_testspeed("Variable: %s\n", newVar03->to_string());
+        dprint_testspeed("Variable: %s\n", newVar04->to_string());
+        dprint_testspeed("Variable: %s\n", newVar05->to_string());
+        dprint_testspeed("Variable: %s\n", newVar06->to_string());
+        dprint_testspeed("Variable: %s\n", newVar07->to_string());
+        dprint_testspeed("Variable: %s\n", newVar08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Variables: %s %s %s %s %s %s %s %s\n",
+            newVar01->to_string(), newVar02->to_string(), newVar03->to_string(), newVar04->to_string(),
+            newVar05->to_string(), newVar06->to_string(), newVar07->to_string(), newVar08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Integer: %s\n", newInt01->to_string());
+        dprint_testspeed("Integer: %s\n", newInt02->to_string());
+        dprint_testspeed("Integer: %s\n", newInt03->to_string());
+        dprint_testspeed("Integer: %s\n", newInt04->to_string());
+        dprint_testspeed("Integer: %s\n", newInt05->to_string());
+        dprint_testspeed("Integer: %s\n", newInt06->to_string());
+        dprint_testspeed("Integer: %s\n", newInt07->to_string());
+        dprint_testspeed("Integer: %s\n", newInt08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Integers: %s %s %s %s %s %s %s %s\n",
+            newInt01->to_string(), newInt02->to_string(), newInt03->to_string(), newInt04->to_string(),
+            newInt05->to_string(), newInt06->to_string(), newInt07->to_string(), newInt08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Float: %s\n", newFloat01->to_string());
+        dprint_testspeed("Float: %s\n", newFloat02->to_string());
+        dprint_testspeed("Float: %s\n", newFloat03->to_string());
+        dprint_testspeed("Float: %s\n", newFloat04->to_string());
+        dprint_testspeed("Float: %s\n", newFloat05->to_string());
+        dprint_testspeed("Float: %s\n", newFloat06->to_string());
+        dprint_testspeed("Float: %s\n", newFloat07->to_string());
+        dprint_testspeed("Float: %s\n", newFloat08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Floats: %s %s %s %s %s %s %s %s\n",
+            newFloat01->to_string(), newFloat02->to_string(), newFloat03->to_string(), newFloat04->to_string(),
+            newFloat05->to_string(), newFloat06->to_string(), newFloat07->to_string(), newFloat08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Identifier: %s\n", newID01->to_string());
+        dprint_testspeed("String: %s\n", newStr01->to_string());
+        dprint_testspeed("Variable: %s\n", newVar01->to_string());
+        dprint_testspeed("Integer: %s\n", newInt01->to_string());
+        dprint_testspeed("Float: %s\n", newFloat01->to_string());
+
+        dprint_testspeed("Identifier: %s\n", newID02->to_string());
+        dprint_testspeed("String: %s\n", newStr02->to_string());
+        dprint_testspeed("Variable: %s\n", newVar02->to_string());
+        dprint_testspeed("Integer: %s\n", newInt02->to_string());
+        dprint_testspeed("Float: %s\n", newFloat02->to_string());
+
+        dprint_testspeed("Identifier: %s\n", newID03->to_string());
+        dprint_testspeed("String: %s\n", newStr03->to_string());
+        dprint_testspeed("Variable: %s\n", newVar03->to_string());
+        dprint_testspeed("Integer: %s\n", newInt03->to_string());
+        dprint_testspeed("Float: %s\n", newFloat03->to_string());
+
+        dprint_testspeed("Identifier: %s\n", newID04->to_string());
+        dprint_testspeed("String: %s\n", newStr04->to_string());
+        dprint_testspeed("Variable: %s\n", newVar04->to_string());
+        dprint_testspeed("Integer: %s\n", newInt04->to_string());
+        dprint_testspeed("Float: %s\n", newFloat04->to_string());
+
+        dprint_testspeed("Identifier: %s\n", newID05->to_string());
+        dprint_testspeed("String: %s\n", newStr05->to_string());
+        dprint_testspeed("Variable: %s\n", newVar05->to_string());
+        dprint_testspeed("Integer: %s\n", newInt05->to_string());
+        dprint_testspeed("Float: %s\n", newFloat05->to_string());
+
+        dprint_testspeed("Identifier: %s\n", newID06->to_string());
+        dprint_testspeed("String: %s\n", newStr06->to_string());
+        dprint_testspeed("Variable: %s\n", newVar06->to_string());
+        dprint_testspeed("Integer: %s\n", newInt06->to_string());
+        dprint_testspeed("Float: %s\n", newFloat06->to_string());
+
+        dprint_testspeed("Identifier: %s\n", newID07->to_string());
+        dprint_testspeed("String: %s\n", newStr07->to_string());
+        dprint_testspeed("Variable: %s\n", newVar07->to_string());
+        dprint_testspeed("Integer: %s\n", newInt07->to_string());
+        dprint_testspeed("Float: %s\n", newFloat07->to_string());
+
+        dprint_testspeed("Identifier: %s\n", newID08->to_string());
+        dprint_testspeed("String: %s\n", newStr08->to_string());
+        dprint_testspeed("Variable: %s\n", newVar08->to_string());
+        dprint_testspeed("Integer: %s\n", newInt08->to_string());
+        dprint_testspeed("Float: %s\n", newFloat08->to_string());
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Mixed: %s %s %s %s %s\n", newID01->to_string(), newStr01->to_string(),
+            newVar01->to_string(), newInt01->to_string(), newFloat01->to_string());
+        dprint_testspeed("Mixed: %s %s %s %s %s\n", newID02->to_string(), newStr02->to_string(),
+            newVar02->to_string(), newInt02->to_string(), newFloat01->to_string());
+        dprint_testspeed("Mixed: %s %s %s %s %s\n", newID03->to_string(), newStr03->to_string(),
+            newVar03->to_string(), newInt03->to_string(), newFloat01->to_string());
+        dprint_testspeed("Mixed: %s %s %s %s %s\n", newID04->to_string(), newStr04->to_string(),
+            newVar04->to_string(), newInt04->to_string(), newFloat01->to_string());
+        dprint_testspeed("Mixed: %s %s %s %s %s\n", newID05->to_string(), newStr05->to_string(),
+            newVar05->to_string(), newInt05->to_string(), newFloat01->to_string());
+        dprint_testspeed("Mixed: %s %s %s %s %s\n", newID06->to_string(), newStr06->to_string(),
+            newVar06->to_string(), newInt06->to_string(), newFloat01->to_string());
+        dprint_testspeed("Mixed: %s %s %s %s %s\n", newID07->to_string(), newStr07->to_string(),
+            newVar07->to_string(), newInt07->to_string(), newFloat01->to_string());
+        dprint_testspeed("Mixed: %s %s %s %s %s\n", newID08->to_string(), newStr08->to_string(),
+            newVar08->to_string(), newInt08->to_string(), newFloat01->to_string());
+    }
+
+}
 
 void debug_test_structs()
 {
@@ -279,6 +494,14 @@ void debug_test(int type)
             dprint_wmes(DT_DEBUG);
             break;
 
+        case 7:
+            dprint(DT_DEBUG, "Trying dprintf with no arguments.");
+            dprint(DT_DEBUG, "Trying dprintf with 1 string argument %s", "MAZIN");
+            break;
+        case 8:
+            test_print_speed();
+            break;
+
     }
 }
 
@@ -476,10 +699,4 @@ std::string get_stacktrace(const char* prefix)
     free(symbollist);
     return return_string;
 }
-#else
-std::string get_stacktrace(const char* prefix)
-{
-    return "";
-}
-#endif
 #endif

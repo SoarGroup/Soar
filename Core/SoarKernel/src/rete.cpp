@@ -112,6 +112,7 @@
 #include "test.h"
 #include "decide.h"
 #include "variablization_manager.h"
+#include "debug.h"
 
 #include "assert.h"
 

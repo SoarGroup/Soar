@@ -38,6 +38,8 @@
 #include "reinforcement_learning.h"
 #include "semantic_memory.h"
 #include "test.h"
+#include "debug.h"
+
 #include <ctype.h>
 
 using soar::Lexer;

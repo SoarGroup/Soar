@@ -28,6 +28,7 @@
 #include "test.h"
 #include "tempmem.h"
 #include "variablization_manager.h"
+#include "debug.h"
 
 #include <list>
 #include <map>
