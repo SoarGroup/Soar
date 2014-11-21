@@ -174,7 +174,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( spreading_depth );
 
 	// spontaneous retrieval frequency
-	spontaneous = new soar_module::integer_param( "spontaneous-retrieval-frequency", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
+	spontaneous = new soar_module::integer_param( "spontaneous-frequency", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>( my_agent ) );
 	add( spontaneous );
 }
 
