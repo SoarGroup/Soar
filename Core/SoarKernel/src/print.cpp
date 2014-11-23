@@ -168,6 +168,13 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
             {
                 ch++;
             }
+        } else if (*(format + 1) == 't')
+        {
+            test_to_string(va_arg(args, test), ch, count - (ch - dest) );
+            while (*ch)
+            {
+                ch++;
+            }
         }
         else
         {
