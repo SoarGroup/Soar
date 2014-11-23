@@ -218,6 +218,20 @@ void Output_Manager::printv_agent(agent* pSoarAgent, const char* format, ...)
     print_agent(pSoarAgent, buf);
 }
 
+void Output_Manager::printv_y(const char* format, ...)
+{
+    if (m_defaultAgent)
+    {
+        va_list args;
+        char buf[PRINT_BUFSIZE];
+
+        va_start(args, format);
+        vsnprintf_with_symbols(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+        va_end(args);
+        print_agent(m_defaultAgent, buf);
+    }
+}
+
 void Output_Manager::print_agent(agent* pSoarAgent, const char* msg)
 {
     if (print_enabled)

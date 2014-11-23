@@ -44,6 +44,28 @@
 
 using namespace soar_TraceNames;
 
+void print_string_old (agent* thisAgent, const char *s) {
+    const char *ch;
+
+    for (ch=s; *ch!=0; ch++) {
+        if (*ch=='\n')
+        {}
+        else
+        {}
+    }
+
+    soar_invoke_callbacks(thisAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(s)));
+}
+
+void print_old (agent* thisAgent, const char *format, ...) {
+  va_list args;
+  char buf[5000];
+
+  va_start (args, format);
+  vsprintf (buf, format, args);
+  va_end (args);
+  print_string_old (thisAgent, buf);
+}
 /* -------------------------------------------------------------------
    Print_string() and print_spaces() do the obvious things.
    Print() is exactly like printf() in C, except it prints to both

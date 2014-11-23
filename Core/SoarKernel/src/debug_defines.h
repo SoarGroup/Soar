@@ -73,15 +73,15 @@
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_db_mode           off
 #define OM_Init_XML_mode          off
-#define OM_Init_callback_mode     on
-#define OM_Init_stdout_mode       off
+#define OM_Init_callback_mode     off
+#define OM_Init_stdout_mode       on
 #define OM_Init_file_mode         off
 
 /* -- Which output debug listeners should be initially turned on -- */
 #define OM_Init_db_dbg_mode       off
 #define OM_Init_XML_dbg_mode      off
-#define OM_Init_callback_dbg_mode on
-#define OM_Init_stdout_dbg_mode   off
+#define OM_Init_callback_dbg_mode off
+#define OM_Init_stdout_dbg_mode   on
 #define OM_Init_file_dbg_mode     off
 #endif
 

@@ -107,6 +107,7 @@ class Output_Manager
         }
 
         void printv_agent(agent* pSoarAgent, const char* format, ...);
+        void printv_y(const char* format, ...);
         void print_agent(agent* pSoarAgent, const char* msg);
         void print_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode = No_Mode, bool no_prefix = false);
         void print_debug_agent(agent* pSoarAgent, const char* msg, TraceMode mode = No_Mode, bool no_prefix = false);

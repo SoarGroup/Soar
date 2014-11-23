@@ -87,11 +87,12 @@ extern void print(agent* thisAgent, const char* format, ...);
 extern void print_with_symbols(agent* thisAgent, const char* format, ...);
 extern void print_spaces(agent* thisAgent, int n);
 extern void snprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, ...);
+extern void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, va_list args);
 
 extern void filtered_print_wme_remove(agent* thisAgent, wme* w);
 extern void filtered_print_wme_add(agent* thisAgent, wme* w);
 
-
+extern void print_old (agent* thisAgent, const char *format, ...);
 
 /* ------------------------------------------------------------------------
                 String to Escaped String Conversion

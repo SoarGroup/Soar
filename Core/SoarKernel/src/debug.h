@@ -61,11 +61,12 @@ typedef struct identity_struct identity_info;
 #ifdef SOAR_DEBUG_UTILITIES
 #define dprint_macro(mode, format, args...) dprint (mode, format , ##args)
 #else
-#define dprint_macro(mode, format, args...) { }
-//#define dprint_macro(mode, format, args...) ((void)0)
+//#define dprint_macro(mode, format, args...) { }
+#define dprint_macro(mode, format, args...) ((void)0)
 #endif
 
 extern void dprint(TraceMode mode, const char* format, ...);
+extern void dprint_y(TraceMode mode, const char* format, ...);
 extern void dprint_noprefix(TraceMode mode, const char* format, ...);
 extern void dprint_start_fresh_line(TraceMode mode);
 extern void dprint_test_simple(test t, const char* pre_string, const char* post_string);

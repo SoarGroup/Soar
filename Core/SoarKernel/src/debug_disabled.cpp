@@ -29,6 +29,7 @@ typedef struct identity_struct identity_info;
 /* -- Empty functions that should get optimized away in the release build -- */
 void dprint_start_fresh_line(TraceMode mode) {}
 void dprint(TraceMode mode, const char* format, ...) {}
+void dprint_y(TraceMode mode, const char* format, ...) {}
 void dprint_noprefix(TraceMode mode, const char* format, ...) {}
 void dprint_test_simple(test t, const char* pre_string, const char* post_string) {}
 void dprint_test_old(TraceMode mode, test t, const char* indent_string , const char* conj_indent_string) {}

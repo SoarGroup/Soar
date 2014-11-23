@@ -53,6 +53,24 @@ void dprint(TraceMode mode, const char* format, ...)
 
 }
 
+void dprint_y(TraceMode mode, const char* format, ...)
+{
+    Output_Manager *OM = &Output_Manager::Get_OM();
+    if (!OM->debug_mode_enabled(mode)) return;
+    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    if (!debug_agent) return;
+
+    va_list args;
+    char buf[PRINT_BUFSIZE];
+
+    va_start(args, format);
+    vsnprintf_with_symbols(debug_agent, buf, PRINT_BUFSIZE, format, args);
+    va_end(args);
+
+    OM->print_agent(debug_agent, buf);
+
+}
+
 void dprint_noprefix(TraceMode mode, const char* format, ...)
 {
 

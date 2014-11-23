@@ -21,6 +21,8 @@
 #include "soar_module.h"
 #include "lexer.h"
 #include "soar_instance.h"
+#include "print.h"
+#include "output_manager.h"
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -52,9 +54,18 @@ debug_param_container::debug_param_container(agent* new_agent): soar_module::par
 
 #define DEBUG_BUFFER_SIZE 5000
 
-#define dprint_testspeed(format, args...) dprint (DT_DEBUG, format , ##args)
+static Output_Manager* thisOutput_Manager = NULL;
+
+//#define dprint_testspeed(format, args...) dprint (DT_DEBUG, format , ##args)
+#define dprint_testspeed(format, args...) dprint_y (DT_DEBUG, format , ##args)
+//#define dprint_testspeed(format, args...) Output_Manager::Get_OM().printv_y (format , ##args)
+
 //#define dprint_testspeed(format, args...) dprint_macro (DT_DEBUG, format , ##args)
+
 //#define dprint_testspeed(format, args...) print (debug_agent, format , ##args)
+//#define dprint_testspeed(format, args...) print_with_symbols (debug_agent, format , ##args)
+//#define dprint_testspeed(format, args...) print_old (debug_agent, format , ##args)
+
 //#define dprint_testspeed(format, args...) Output_Manager::Get_OM().printv_agent(debug_agent, format , ##args)
 //#define dprint_testspeed(format, args...) thisOutput_Manager->printv_agent(debug_agent, format , ##args)
 
@@ -65,6 +76,7 @@ void test_print_speed()
     {
         return;
     }
+    thisOutput_Manager = &(Output_Manager::Get_OM());
 
     Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
     Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, NIL);
@@ -107,7 +119,7 @@ void test_print_speed()
     Symbol* newFloat07 = make_float_constant(debug_agent, 7.1234567890);
     Symbol* newFloat08 = make_float_constant(debug_agent, 8.00000000001);
 
-    uint64_t num_iterations = 1000;
+    uint64_t num_iterations = 10000;
 
     for (int i=0; i< num_iterations; ++i)
     {
@@ -268,6 +280,219 @@ void test_print_speed()
             newVar08->to_string(), newInt08->to_string(), newFloat01->to_string());
     }
 
+}
+
+void test_print_speed_y()
+{
+
+    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    if (!debug_agent)
+    {
+        return;
+    }
+    thisOutput_Manager = &(Output_Manager::Get_OM());
+
+    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID04  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID05  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID06  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID07  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID08  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newStr01 = make_str_constant(debug_agent, "attr1");
+    Symbol* newStr02 = make_str_constant(debug_agent, "attr2");
+    Symbol* newStr03 = make_str_constant(debug_agent, "attr3");
+    Symbol* newStr04 = make_str_constant(debug_agent, "attr4");
+    Symbol* newStr05 = make_str_constant(debug_agent, "str1");
+    Symbol* newStr06 = make_str_constant(debug_agent, "str2");
+    Symbol* newStr07 = make_str_constant(debug_agent, "str3");
+    Symbol* newStr08 = make_str_constant(debug_agent, "str4");
+    Symbol* newVar01 = make_variable(debug_agent, "var1");
+    Symbol* newVar02 = make_variable(debug_agent, "var2");
+    Symbol* newVar03 = make_variable(debug_agent, "var3");
+    Symbol* newVar04 = make_variable(debug_agent, "var4");
+    Symbol* newVar05 = make_variable(debug_agent, "var5");
+    Symbol* newVar06 = make_variable(debug_agent, "var6");
+    Symbol* newVar07 = make_variable(debug_agent, "var7");
+    Symbol* newVar08 = make_variable(debug_agent, "var8");
+    Symbol* newInt01 = make_int_constant(debug_agent, 1);
+    Symbol* newInt02 = make_int_constant(debug_agent, 2);
+    Symbol* newInt03 = make_int_constant(debug_agent, 3);
+    Symbol* newInt04 = make_int_constant(debug_agent, 4);
+    Symbol* newInt05 = make_int_constant(debug_agent, 5);
+    Symbol* newInt06 = make_int_constant(debug_agent, 6);
+    Symbol* newInt07 = make_int_constant(debug_agent, 7);
+    Symbol* newInt08 = make_int_constant(debug_agent, 8);
+    Symbol* newFloat01 = make_float_constant(debug_agent, 1.1231);
+    Symbol* newFloat02 = make_float_constant(debug_agent, 2.3);
+    Symbol* newFloat03 = make_float_constant(debug_agent, 3.3);
+    Symbol* newFloat04 = make_float_constant(debug_agent, 4.1783000421);
+    Symbol* newFloat05 = make_float_constant(debug_agent, 5.5555);
+    Symbol* newFloat06 = make_float_constant(debug_agent, 6.66);
+    Symbol* newFloat07 = make_float_constant(debug_agent, 7.1234567890);
+    Symbol* newFloat08 = make_float_constant(debug_agent, 8.00000000001);
+
+    uint64_t num_iterations = 10000;
+
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("This is just a plain string.\n");
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Identifier: %y\n", newID01);
+        dprint_testspeed("Identifier: %y\n", newID02);
+        dprint_testspeed("Identifier: %y\n", newID03);
+        dprint_testspeed("Identifier: %y\n", newID04);
+        dprint_testspeed("Identifier: %y\n", newID05);
+        dprint_testspeed("Identifier: %y\n", newID06);
+        dprint_testspeed("Identifier: %y\n", newID07);
+        dprint_testspeed("Identifier: %y\n", newID08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Identifiers: %y %y %y %y %y %y %y %y\n",
+            newID01, newID02, newID03, newID04,
+            newID05, newID06, newID07, newID08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("String: %y\n", newStr01);
+        dprint_testspeed("String: %y\n", newStr02);
+        dprint_testspeed("String: %y\n", newStr03);
+        dprint_testspeed("String: %y\n", newStr04);
+        dprint_testspeed("String: %y\n", newStr05);
+        dprint_testspeed("String: %y\n", newStr06);
+        dprint_testspeed("String: %y\n", newStr07);
+        dprint_testspeed("String: %y\n", newStr08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Strings: %y %y %y %y %y %y %y %y\n",
+            newStr01, newStr02, newStr03, newStr04,
+            newStr05, newStr06, newStr07, newStr08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Variable: %y\n", newVar01);
+        dprint_testspeed("Variable: %y\n", newVar02);
+        dprint_testspeed("Variable: %y\n", newVar03);
+        dprint_testspeed("Variable: %y\n", newVar04);
+        dprint_testspeed("Variable: %y\n", newVar05);
+        dprint_testspeed("Variable: %y\n", newVar06);
+        dprint_testspeed("Variable: %y\n", newVar07);
+        dprint_testspeed("Variable: %y\n", newVar08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Variables: %y %y %y %y %y %y %y %y\n",
+            newVar01, newVar02, newVar03, newVar04,
+            newVar05, newVar06, newVar07, newVar08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Integer: %y\n", newInt01);
+        dprint_testspeed("Integer: %y\n", newInt02);
+        dprint_testspeed("Integer: %y\n", newInt03);
+        dprint_testspeed("Integer: %y\n", newInt04);
+        dprint_testspeed("Integer: %y\n", newInt05);
+        dprint_testspeed("Integer: %y\n", newInt06);
+        dprint_testspeed("Integer: %y\n", newInt07);
+        dprint_testspeed("Integer: %y\n", newInt08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Integers: %y %y %y %y %y %y %y %y\n",
+            newInt01, newInt02, newInt03, newInt04,
+            newInt05, newInt06, newInt07, newInt08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Float: %y\n", newFloat01);
+        dprint_testspeed("Float: %y\n", newFloat02);
+        dprint_testspeed("Float: %y\n", newFloat03);
+        dprint_testspeed("Float: %y\n", newFloat04);
+        dprint_testspeed("Float: %y\n", newFloat05);
+        dprint_testspeed("Float: %y\n", newFloat06);
+        dprint_testspeed("Float: %y\n", newFloat07);
+        dprint_testspeed("Float: %y\n", newFloat08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Floats: %y %y %y %y %y %y %y %y\n",
+            newFloat01, newFloat02, newFloat03, newFloat04,
+            newFloat05, newFloat06, newFloat07, newFloat08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Identifier: %y\n", newID01);
+        dprint_testspeed("String: %y\n", newStr01);
+        dprint_testspeed("Variable: %y\n", newVar01);
+        dprint_testspeed("Integer: %y\n", newInt01);
+        dprint_testspeed("Float: %y\n", newFloat01);
+
+        dprint_testspeed("Identifier: %y\n", newID02);
+        dprint_testspeed("String: %y\n", newStr02);
+        dprint_testspeed("Variable: %y\n", newVar02);
+        dprint_testspeed("Integer: %y\n", newInt02);
+        dprint_testspeed("Float: %y\n", newFloat02);
+
+        dprint_testspeed("Identifier: %y\n", newID03);
+        dprint_testspeed("String: %y\n", newStr03);
+        dprint_testspeed("Variable: %y\n", newVar03);
+        dprint_testspeed("Integer: %y\n", newInt03);
+        dprint_testspeed("Float: %y\n", newFloat03);
+
+        dprint_testspeed("Identifier: %y\n", newID04);
+        dprint_testspeed("String: %y\n", newStr04);
+        dprint_testspeed("Variable: %y\n", newVar04);
+        dprint_testspeed("Integer: %y\n", newInt04);
+        dprint_testspeed("Float: %y\n", newFloat04);
+
+        dprint_testspeed("Identifier: %y\n", newID05);
+        dprint_testspeed("String: %y\n", newStr05);
+        dprint_testspeed("Variable: %y\n", newVar05);
+        dprint_testspeed("Integer: %y\n", newInt05);
+        dprint_testspeed("Float: %y\n", newFloat05);
+
+        dprint_testspeed("Identifier: %y\n", newID06);
+        dprint_testspeed("String: %y\n", newStr06);
+        dprint_testspeed("Variable: %y\n", newVar06);
+        dprint_testspeed("Integer: %y\n", newInt06);
+        dprint_testspeed("Float: %y\n", newFloat06);
+
+        dprint_testspeed("Identifier: %y\n", newID07);
+        dprint_testspeed("String: %y\n", newStr07);
+        dprint_testspeed("Variable: %y\n", newVar07);
+        dprint_testspeed("Integer: %y\n", newInt07);
+        dprint_testspeed("Float: %y\n", newFloat07);
+
+        dprint_testspeed("Identifier: %y\n", newID08);
+        dprint_testspeed("String: %y\n", newStr08);
+        dprint_testspeed("Variable: %y\n", newVar08);
+        dprint_testspeed("Integer: %y\n", newInt08);
+        dprint_testspeed("Float: %y\n", newFloat08);
+    }
+    for (int i=0; i< num_iterations; ++i)
+    {
+        dprint_testspeed("Mixed: %y %y %y %y %y\n", newID01, newStr01,
+            newVar01, newInt01, newFloat01);
+        dprint_testspeed("Mixed: %y %y %y %y %y\n", newID02, newStr02,
+            newVar02, newInt02, newFloat01);
+        dprint_testspeed("Mixed: %y %y %y %y %y\n", newID03, newStr03,
+            newVar03, newInt03, newFloat01);
+        dprint_testspeed("Mixed: %y %y %y %y %y\n", newID04, newStr04,
+            newVar04, newInt04, newFloat01);
+        dprint_testspeed("Mixed: %y %y %y %y %y\n", newID05, newStr05,
+            newVar05, newInt05, newFloat01);
+        dprint_testspeed("Mixed: %y %y %y %y %y\n", newID06, newStr06,
+            newVar06, newInt06, newFloat01);
+        dprint_testspeed("Mixed: %y %y %y %y %y\n", newID07, newStr07,
+            newVar07, newInt07, newFloat01);
+        dprint_testspeed("Mixed: %y %y %y %y %y\n", newID08, newStr08,
+            newVar08, newInt08, newFloat01);
+    }
 }
 
 void debug_test_structs()
@@ -501,7 +726,9 @@ void debug_test(int type)
         case 8:
             test_print_speed();
             break;
-
+        case 9:
+            test_print_speed_y();
+            break;
     }
 }
 
