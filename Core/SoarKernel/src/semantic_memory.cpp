@@ -3943,6 +3943,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				if ( !state->id.smem_info->smem_wmes->empty() )
 				{
 					smem_clear_result( my_agent, state );
+					my_agent->smem_spontaneous_id = NIL;
 				}
 				do_wm_phase = true;
 			}

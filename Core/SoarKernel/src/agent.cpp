@@ -404,7 +404,7 @@ agent * create_soar_agent (char * agent_name) {                                 
 #endif
   newAgent->smem_ignore_changes = false;
   newAgent->smem_spontaneous_counter = 0;
-  newAgent->smem_spontaneous_id = 0;
+  newAgent->smem_spontaneous_id = NIL;
 
   // statistics initialization
   newAgent->dc_stat_tracking = false;
