@@ -1228,7 +1228,6 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 				// prevent spreading from affecting this LTI again
 				visited.insert(temp_lti_id);
 
-
 				// get the history of this LTI
 				{
 					my_agent->smem_stmts->lti_access_get->bind_int( 1, temp_lti_id );
@@ -1263,8 +1262,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 						}
 						else
 						{
-							new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
-							// new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now);
+							new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now+1, prev_access_n+1, prev_access_1 );
 						}
 					}
 
@@ -4879,7 +4877,7 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 	return_val->append( return_val2 );
 }
 
-inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string *return_val )
+inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string *return_val, std::list<uint64_t>* history = NIL )
 {
 	std::set< smem_lti_id > next;
 
@@ -5057,6 +5055,24 @@ inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti
 	return_val->append( "]" );
 	return_val->append( ")\n" );
 
+    if (history != NIL)
+    {
+        std::ostringstream temp_string;
+        return_val->append("SMem Access Cycle History\n");
+        return_val->append("[-");
+        for (std::list<uint64_t>::iterator history_item = (*history).begin(); history_item != (*history).end(); ++history_item)
+        {
+            if (history_item != (*history).begin())
+            {
+                return_val->append(", -");
+            }
+            temp_string << ((int64_t)my_agent->smem_max_cycle-(int64_t)*history_item);
+            return_val->append(temp_string.str());
+            temp_string.str("");
+        }
+        return_val->append("]\n");
+    }
+
 	return next;
 }
 
@@ -5071,7 +5087,7 @@ void smem_print_store( agent *my_agent, std::string *return_val )
 	q->reinitialize();
 }
 
-void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val )
+void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val, bool history )
 {
     std::set< smem_lti_id > visited;
 	std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;
@@ -5084,8 +5100,9 @@ void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, st
 
 	soar_module::sqlite_statement* lti_q = my_agent->smem_stmts->lti_letter_num;
 	soar_module::sqlite_statement* act_q = my_agent->smem_stmts->vis_lti_act;
+	soar_module::sqlite_statement* hist_q = my_agent->smem_stmts->history_get;
+	soar_module::sqlite_statement* lti_access_q = my_agent->smem_stmts->lti_access_get;
 	unsigned int i;
-
 
 	// initialize queue/set
 	to_visit.push( std::make_pair( lti_id, 1u ) );
@@ -5110,7 +5127,34 @@ void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, st
 			act_q->bind_int( 1, c.first );
 			act_q->execute();
 
-			next = _smem_print_lti( my_agent, c.first, static_cast<char>( lti_q->column_int( 0 ) ), static_cast<uint64_t>( lti_q->column_int( 1 ) ), act_q->column_double( 0 ), return_val );
+            //Look up activation history.
+            std::list<uint64_t> access_history;
+            if (history)
+            {
+                lti_access_q->bind_int(1, c.first);
+                lti_access_q->execute();
+                uint64_t n = lti_access_q->column_int(0);
+                lti_access_q->reinitialize();
+                hist_q->bind_int(1, c.first);
+                hist_q->execute();
+                for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
+                {
+                    if (hist_q->column_int(i) != 0)
+                    {
+                        access_history.push_back(hist_q->column_int(i));
+                    }
+                }
+                hist_q->reinitialize();
+            }
+
+            if (history && !access_history.empty())
+            {
+                next = _smem_print_lti(my_agent, c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val, &(access_history));
+            }
+            else
+            {
+                next = _smem_print_lti(my_agent, c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val);
+            }
 
 			// done with lookup
 			lti_q->reinitialize();

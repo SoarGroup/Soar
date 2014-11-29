@@ -119,6 +119,52 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         PrintCLIMessage_Item("", my_param, 0);
         return true;
     }
+    else if ( pOp == 'h' )
+    {
+        smem_lti_id lti_id = NIL;
+        uint64_t depth = 1;
+        bool history = true;
+        smem_attach(agnt);
+
+        if (agnt->smem_db->get_status() != soar_module::connected)
+        {
+            return SetError("Semantic memory database not connected.");
+        }
+
+        if (pAttr)
+        {
+            soar::Lexeme lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
+            if ( lexeme.type == IDENTIFIER_LEXEME )
+            {
+                    if ( agnt->smem_db->get_status() == soar_module::connected )
+                    {
+                            lti_id = smem_lti_get_id( agnt, lexeme.id_letter, lexeme.id_number );
+
+                            if ( ( lti_id != NIL ) && pVal )
+                            {
+                                    from_c_string( depth, pVal->c_str() );
+                            }
+                    }
+            }
+            if (lti_id == NIL)
+            {
+                return SetError("LTI not found");
+            }
+        }
+
+        std::string viz;
+
+        smem_print_lti(agnt, lti_id, depth, &(viz), history);
+
+        if (viz.empty())
+        {
+            return SetError("Could not find information on LTI.");
+        }
+
+        PrintCLIMessage_Header("Semantic Memory", 40);
+        PrintCLIMessage(&viz);
+        return true;
+    }
     else if ( pOp == 'i' )
     {
         // Because of LTIs, re-initializing requires all other memories to be reinitialized.
@@ -149,7 +195,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
 		if ( pAttr )
 		{
-            soar::Lexeme lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
+                        soar::Lexeme lexeme = get_lexeme_from_string( agnt, pAttr->c_str() );
 			if ( lexeme.type == IDENTIFIER_LEXEME )
 			{
 				if ( agnt->smem_db->get_status() == soar_module::connected )

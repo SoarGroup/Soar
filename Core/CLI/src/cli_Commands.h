@@ -3177,6 +3177,7 @@ namespace cli
                 {'e', "enable",     OPTARG_NONE},
                 {'e', "on",         OPTARG_NONE},
                 {'g', "get",        OPTARG_NONE},
+                {'h', "history",    OPTARG_NONE},
                 {'i', "init",       OPTARG_NONE},
 				{'p', "print",      OPTARG_NONE},
                 {'s', "set",        OPTARG_NONE},
@@ -3226,6 +3227,17 @@ namespace cli
                     if (!opt.CheckNumNonOptArgs(1, 1)) return cli.SetError( opt.GetError().c_str());
 
                     return cli.DoSMem( option, &( argv[2] ) );
+                }
+
+            case 'h':
+                {
+                    // case: history only accepts 1 non-option argument
+                    if (!opt.CheckNumNonOptArgs(1, 1))
+                    {
+                    return cli.SetError(opt.GetError().c_str());
+                    }
+
+                    return cli.DoSMem(option, &(argv[2]), 0);
                 }
 
             case 'i':
