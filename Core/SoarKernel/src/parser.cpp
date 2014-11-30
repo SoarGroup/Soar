@@ -88,7 +88,7 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
     buf[sizeof(buf) - 1] = '\0';
 
     v = make_variable(thisAgent, buf);
-    dprint(DT_PARSER, "Adding variable lexeme to parser strings %s\n", (v)->to_string());
+    dprint(DT_PARSER, "Adding variable lexeme to parser strings %y\n", v);
     push(thisAgent, (v), thisAgent->parser_syms);
     /* --- indicate that there is no corresponding "real" variable yet --- */
     v->var->current_binding_value = NIL;
@@ -154,12 +154,12 @@ void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol** sym)
         prefix[1] = '*';
         prefix[2] = 0;
         (*sym)->var->current_binding_value = generate_new_variable(thisAgent, prefix);
-        dprint(DT_PARSER, "Substituting for placeholder %s with newly generated %s.\n", (*sym)->to_string(), (*sym)->var->current_binding_value->to_string());
+        dprint(DT_PARSER, "Substituting for placeholder %y with newly generated %y.\n", (*sym), (*sym)->var->current_binding_value);
         just_created = true;
     }
     else
     {
-        dprint(DT_PARSER, "Substituting for placeholder %s with existing %s.\n", (*sym)->to_string(), (*sym)->var->current_binding_value->to_string());
+        dprint(DT_PARSER, "Substituting for placeholder %y with existing %y.\n", (*sym), (*sym)->var->current_binding_value);
     }
     var = (*sym)->var->current_binding_value;
     symbol_remove_ref(thisAgent, (*sym));
@@ -316,28 +316,28 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         {
             newSymbol = make_str_constant(thisAgent, lexeme->string());
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+            dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case VARIABLE_LEXEME:
         {
             newSymbol = make_variable(thisAgent, lexeme->string());
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+            dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case INT_CONSTANT_LEXEME:
         {
             newSymbol = make_int_constant(thisAgent, lexeme->int_val);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+            dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case FLOAT_CONSTANT_LEXEME:
         {
             newSymbol =  make_float_constant(thisAgent, lexeme->float_val);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+            dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case IDENTIFIER_LEXEME:
@@ -364,7 +364,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
                 {
                     newSymbol =  smem_lti_soar_make(thisAgent, lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
                     push(thisAgent, (newSymbol), thisAgent->parser_syms);
-                    dprint(DT_PARSER, "Adding lexeme to parser strings %s\n", newSymbol->to_string());
+                    dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
                     return newSymbol;
                 }
             }

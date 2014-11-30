@@ -4445,7 +4445,7 @@ void rete_node_to_conditions(agent* thisAgent,
             {
                 add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, additional_tests);
             }
-            dprint_condition(DT_NCC_VARIABLIZATION, cond, "");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond);
         }
         else
         {
@@ -4456,7 +4456,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             dprint_noprefix(DT_NCC_VARIABLIZATION, "\n");
             dprint(DT_NCC_VARIABLIZATION, "-> RETE 0 Starting condition:");
-            dprint_condition(DT_NCC_VARIABLIZATION, cond, "");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond);
 
             am = node->b.posneg.alpha_mem_;
             if (am->id)
@@ -4474,7 +4474,7 @@ void rete_node_to_conditions(agent* thisAgent,
             cond->test_for_acceptable_preference = am->acceptable;
 
             dprint(DT_NCC_VARIABLIZATION, "-> RETE 1 After add_varnames_to_test:");
-            dprint_condition(DT_NCC_VARIABLIZATION, cond, "");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond);
 
             if (nvn)
             {
@@ -4485,7 +4485,7 @@ void rete_node_to_conditions(agent* thisAgent,
                 add_varnames_to_test(thisAgent, nvn->data.fields.value_varnames,
                                      &(cond->data.tests.value_test));
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 1b NVN true.After add_varnames_to_test:");
-                dprint_condition(DT_NCC_VARIABLIZATION, cond, "");
+                dprint_condition(DT_NCC_VARIABLIZATION, cond);
             }
 
             /* --- on hashed nodes, add equality test for the hash function --- */
@@ -4503,13 +4503,13 @@ void rete_node_to_conditions(agent* thisAgent,
             }
 
             dprint(DT_NCC_VARIABLIZATION, "-> RETE 2 After add_hash_info_to_id_test: ");
-            dprint_condition(DT_NCC_VARIABLIZATION, cond, "");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond);
 
             if (additional_tests != DONT_ADD_TESTS)
             {
                 add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: ");
-                dprint_condition(DT_NCC_VARIABLIZATION, cond, "");
+                dprint_condition(DT_NCC_VARIABLIZATION, cond);
             }
             else
             {
@@ -4519,7 +4519,7 @@ void rete_node_to_conditions(agent* thisAgent,
                     add_rete_test_list_to_tests(thisAgent, cond, node->b.posneg.other_tests);
                 }
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3b No Need to add originals. After add_rete_test_list_to_tests: ");
-                dprint_condition(DT_NCC_VARIABLIZATION, cond, "");
+                dprint_condition(DT_NCC_VARIABLIZATION, cond);
             }
             /* --- if we threw away the variable names, make sure there's some
                equality test in each of the three fields --- */
@@ -4541,7 +4541,7 @@ void rete_node_to_conditions(agent* thisAgent,
                                                 first_letter_from_test(cond->data.tests.attr_test));
             }
             dprint(DT_NCC_VARIABLIZATION, "-> RETE 4 After gensymmed equality test: ");
-            dprint_condition(DT_NCC_VARIABLIZATION, cond, "");
+            dprint_condition(DT_NCC_VARIABLIZATION, cond);
         }
     }
 }

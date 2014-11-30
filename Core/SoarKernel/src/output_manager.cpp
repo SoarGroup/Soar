@@ -53,6 +53,12 @@ Output_Manager::Output_Manager()
     m_params = new OM_Parameters();
     m_db = NIL;
 
+    m_print_actual = true;
+    m_print_original = false;
+    m_print_identity = true;
+    m_pre_string = NULL;
+    m_post_string = NULL;
+
     next_output_string = 0;
 
     print_enabled = OM_Init_print_enabled;
@@ -71,32 +77,11 @@ Output_Manager::Output_Manager()
 
 }
 
-bool Output_Manager::debug_mode_enabled(TraceMode mode)
-{
-    return mode_info[mode].debug_enabled;
-}
-
-void Output_Manager::set_default_agent(agent* pSoarAgent)
-{
-    std::string errString;
-    if (!pSoarAgent)
-    {
-        errString = "OutputManager passed an empty default agent!\n";
-        print_debug_agent(pSoarAgent, errString.c_str(), DT_DEBUG);
-    }
-    m_defaultAgent = pSoarAgent;
-};
-
-void Output_Manager::set_dprint_enabled(bool activate)
-{
-    //printv("Debug printing %s.\n", (activate ? "enabled" : "disabled"));
-    dprint_enabled = activate;
-}
-
-
 Output_Manager::~Output_Manager()
 {
     free(NULL_SYM_STR);
+    if (m_pre_string) free(m_pre_string);
+    if (m_post_string) free(m_post_string);
 
     for (int i = 0; i < num_trace_modes; i++)
     {
@@ -109,6 +94,18 @@ Output_Manager::~Output_Manager()
         delete m_db;
     }
 }
+
+
+void Output_Manager::set_default_agent(agent* pSoarAgent)
+{
+    std::string errString;
+    if (!pSoarAgent)
+    {
+        errString = "OutputManager passed an empty default agent!\n";
+        printa_prefix(DT_DEBUG, pSoarAgent, errString.c_str());
+    }
+    m_defaultAgent = pSoarAgent;
+};
 
 int Output_Manager::get_printer_output_column(agent* thisAgent)
 {
@@ -142,7 +139,7 @@ void Output_Manager::start_fresh_line(agent* pSoarAgent)
     }
     if (global_printer_output_column != 1)
     {
-        print_agent(pSoarAgent, "\n");
+        printa(pSoarAgent, "\n");
     }
 }
 
@@ -182,18 +179,18 @@ void Output_Manager::store_refcount(Symbol* sym, const char* callers, bool isAdd
     m_db->store_refcount(sym, callers, isAdd);
 }
 
-void Output_Manager::print_db_agent(agent* pSoarAgent, MessageType msgType, TraceMode mode, const char* msg)
+void Output_Manager::printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg)
 {
     soar_module::sqlite_statement*   target_statement = NIL;
 
-    if (((msgType == trace_msg) && mode_info[mode].trace_enabled) ||
-            ((msgType == debug_msg) && mode_info[mode].debug_enabled))
+    if (((msgType == trace_msg) && mode_info[mode].enabled) ||
+            ((msgType == debug_msg) && mode_info[mode].enabled))
     {
         m_db->print_db(msgType, mode_info[mode].prefix->c_str(), msg);
     }
 }
 
-void Output_Manager::printv(const char* format, ...)
+void Output_Manager::print_f(const char* format, ...)
 {
     if (m_defaultAgent)
     {
@@ -203,11 +200,11 @@ void Output_Manager::printv(const char* format, ...)
         va_start(args, format);
         vsprintf(buf, format, args);
         va_end(args);
-        print_agent(m_defaultAgent, buf);
+        printa(m_defaultAgent, buf);
     }
 }
 
-void Output_Manager::printv_agent(agent* pSoarAgent, const char* format, ...)
+void Output_Manager::printa_f(agent* pSoarAgent, const char* format, ...)
 {
     va_list args;
     char buf[PRINT_BUFSIZE];
@@ -215,10 +212,21 @@ void Output_Manager::printv_agent(agent* pSoarAgent, const char* format, ...)
     va_start(args, format);
     vsprintf(buf, format, args);
     va_end(args);
-    print_agent(pSoarAgent, buf);
+    printa(pSoarAgent, buf);
 }
 
-void Output_Manager::printv_y(const char* format, ...)
+void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
+{
+    va_list args;
+    char buf[PRINT_BUFSIZE];
+
+    va_start(args, format);
+    vsnprintf_with_symbols(pSoarAgent, buf, PRINT_BUFSIZE, format, args);
+    va_end(args);
+    printa(pSoarAgent, buf);
+}
+
+void Output_Manager::print_sf(const char* format, ...)
 {
     if (m_defaultAgent)
     {
@@ -228,11 +236,11 @@ void Output_Manager::printv_y(const char* format, ...)
         va_start(args, format);
         vsnprintf_with_symbols(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
         va_end(args);
-        print_agent(m_defaultAgent, buf);
+        printa(m_defaultAgent, buf);
     }
 }
 
-void Output_Manager::print_agent(agent* pSoarAgent, const char* msg)
+void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 {
     if (print_enabled)
     {
@@ -256,67 +264,15 @@ void Output_Manager::print_agent(agent* pSoarAgent, const char* msg)
     }
 }
 
-void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, TraceMode mode, bool no_prefix)
+void Output_Manager::printa_prefix(TraceMode mode, agent* pSoarAgent, const char* msg)
 {
-    bool printer_column_updated = false;
     std::string newTrace;
 
-    if (mode_info[mode].debug_enabled && dprint_enabled)
-    {
-        if (!no_prefix)
-        {
-            newTrace.assign(mode_info[mode].prefix->c_str());
-            newTrace.append("| ");
-            newTrace.append(msg);
-        }
-        else
-        {
-            newTrace.assign(msg);
-        }
-        if (dprint_enabled)
-        {
-            if (pSoarAgent && pSoarAgent->output_settings->callback_mode && pSoarAgent->output_settings->dprint_enabled)
-            {
-                soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(newTrace.c_str())));
-            }
+    newTrace.assign(mode_info[mode].prefix->c_str());
+    newTrace.append("| ");
+    newTrace.append(msg);
 
-            if (stdout_mode)
-            {
-                fputs(newTrace.c_str(), stdout);
-            }
-
-        }
-
-        update_printer_columns(pSoarAgent, msg);
-
-        if (db_mode)
-        {
-            m_db->print_db(debug_msg, mode_info[mode].prefix->c_str(), msg);
-        }
-    }
-}
-
-void Output_Manager::print_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode, bool no_prefix)
-{
-    bool printer_column_updated = false;
-
-    std::string newTrace;
-
-    if (mode_info[mode].trace_enabled)
-    {
-        if (!no_prefix)
-        {
-            newTrace.assign(mode_info[mode].prefix->c_str());
-            newTrace.append("| ");
-            newTrace.append(msg);
-        }
-        else
-        {
-            newTrace.assign(msg);
-        }
-
-        print_agent(pSoarAgent, newTrace.c_str());
-    }
+    printa(pSoarAgent, newTrace.c_str());
 }
 
 void Output_Manager::fill_mode_info()
@@ -358,41 +314,41 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_FIX_CONDITIONS].prefix =             new std::string("Fix Cond");
     mode_info[DT_EPMEM_CMD].prefix =                  new std::string("EpMem Go");
 
-    mode_info[No_Mode].trace_enabled =                      TRACE_Init_No_Mode;
-    mode_info[TM_EPMEM].trace_enabled =                     TRACE_Init_TM_EPMEM;
-    mode_info[TM_SMEM].trace_enabled =                      TRACE_Init_TM_SMEM;
-    mode_info[TM_LEARNING].trace_enabled =                  TRACE_Init_TM_LEARNING;
-    mode_info[TM_CHUNKING].trace_enabled =                  TRACE_Init_TM_CHUNKING;
-    mode_info[TM_RL].trace_enabled =                        TRACE_Init_TM_RL;
-    mode_info[TM_WMA].trace_enabled =                       TRACE_Init_TM_WMA;
+    mode_info[No_Mode].enabled =                      TRACE_Init_No_Mode;
+    mode_info[TM_EPMEM].enabled =                     TRACE_Init_TM_EPMEM;
+    mode_info[TM_SMEM].enabled =                      TRACE_Init_TM_SMEM;
+    mode_info[TM_LEARNING].enabled =                  TRACE_Init_TM_LEARNING;
+    mode_info[TM_CHUNKING].enabled =                  TRACE_Init_TM_CHUNKING;
+    mode_info[TM_RL].enabled =                        TRACE_Init_TM_RL;
+    mode_info[TM_WMA].enabled =                       TRACE_Init_TM_WMA;
 
-    mode_info[No_Mode].debug_enabled =                        TRACE_Init_DT_No_Mode;
-    mode_info[DT_DEBUG].debug_enabled =                       TRACE_Init_DT_DEBUG;
-    mode_info[DT_ID_LEAKING].debug_enabled =                  TRACE_Init_DT_ID_LEAKING;
-    mode_info[DT_LHS_VARIABLIZATION].debug_enabled =          TRACE_Init_DT_LHS_VARIABLIZATION;
-    mode_info[DT_ADD_CONSTRAINTS_ORIG_TESTS].debug_enabled =  TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS;
-    mode_info[DT_RHS_VARIABLIZATION].debug_enabled =          TRACE_Init_DT_RHS_VARIABLIZATION;
-    mode_info[DT_PRINT_INSTANTIATIONS].debug_enabled =        TRACE_Init_DT_PRINT_INSTANTIATIONS;
-    mode_info[DT_ADD_TEST_TO_TEST].debug_enabled =            TRACE_Init_DT_ADD_TEST_TO_TEST;
-    mode_info[DT_DEALLOCATES].debug_enabled =                 TRACE_Init_DT_DEALLOCATES;
-    mode_info[DT_DEALLOCATE_SYMBOLS].debug_enabled =          TRACE_Init_DT_DEALLOCATE_SYMBOLS;
-    mode_info[DT_REFCOUNT_ADDS].debug_enabled =               TRACE_Init_DT_REFCOUNT_ADDS;
-    mode_info[DT_REFCOUNT_REMS].debug_enabled =               TRACE_Init_DT_REFCOUNT_REMS;
-    mode_info[DT_VARIABLIZATION_MANAGER].debug_enabled =      TRACE_Init_DT_VARIABLIZATION_MANAGER;
-    mode_info[DT_PARSER].debug_enabled =                      TRACE_Init_DT_PARSER;
-    mode_info[DT_FUNC_PRODUCTIONS].debug_enabled =            TRACE_Init_DT_FUNC_PRODUCTIONS;
-    mode_info[DT_OVAR_MAPPINGS].debug_enabled =               TRACE_Init_DT_OVAR_MAPPINGS;
-    mode_info[DT_REORDERER].debug_enabled =                   TRACE_Init_DT_REORDERER;
-    mode_info[DT_BACKTRACE].debug_enabled =                   TRACE_Init_DT_BACKTRACE;
-    mode_info[DT_SAVEDVARS].debug_enabled =                   TRACE_Init_DT_SAVEDVARS;
-    mode_info[DT_GDS].debug_enabled =                         TRACE_Init_DT_GDS;
-    mode_info[DT_RL_VARIABLIZATION].debug_enabled =           TRACE_Init_DT_RL_VARIABLIZATION;
-    mode_info[DT_NCC_VARIABLIZATION].debug_enabled =          TRACE_Init_DT_NCC_VARIABLIZATION;
-    mode_info[DT_IDENTITY_PROP].debug_enabled =               TRACE_Init_DT_IDENTITY_PROP;
-    mode_info[DT_CONSTRAINTS].debug_enabled =                 TRACE_Init_DT_CONSTRAINTS;
-    mode_info[DT_MERGE].debug_enabled =                       TRACE_Init_DT_MERGE;
-    mode_info[DT_FIX_CONDITIONS].debug_enabled =              TRACE_Init_DT_FIX_CONDITIONS;
-    mode_info[DT_EPMEM_CMD].debug_enabled =                   TRACE_Init_DT_EPMEM_CMD;
+    mode_info[No_Mode].enabled =                        TRACE_Init_DT_No_Mode;
+    mode_info[DT_DEBUG].enabled =                       TRACE_Init_DT_DEBUG;
+    mode_info[DT_ID_LEAKING].enabled =                  TRACE_Init_DT_ID_LEAKING;
+    mode_info[DT_LHS_VARIABLIZATION].enabled =          TRACE_Init_DT_LHS_VARIABLIZATION;
+    mode_info[DT_ADD_CONSTRAINTS_ORIG_TESTS].enabled =  TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS;
+    mode_info[DT_RHS_VARIABLIZATION].enabled =          TRACE_Init_DT_RHS_VARIABLIZATION;
+    mode_info[DT_PRINT_INSTANTIATIONS].enabled =        TRACE_Init_DT_PRINT_INSTANTIATIONS;
+    mode_info[DT_ADD_TEST_TO_TEST].enabled =            TRACE_Init_DT_ADD_TEST_TO_TEST;
+    mode_info[DT_DEALLOCATES].enabled =                 TRACE_Init_DT_DEALLOCATES;
+    mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          TRACE_Init_DT_DEALLOCATE_SYMBOLS;
+    mode_info[DT_REFCOUNT_ADDS].enabled =               TRACE_Init_DT_REFCOUNT_ADDS;
+    mode_info[DT_REFCOUNT_REMS].enabled =               TRACE_Init_DT_REFCOUNT_REMS;
+    mode_info[DT_VARIABLIZATION_MANAGER].enabled =      TRACE_Init_DT_VARIABLIZATION_MANAGER;
+    mode_info[DT_PARSER].enabled =                      TRACE_Init_DT_PARSER;
+    mode_info[DT_FUNC_PRODUCTIONS].enabled =            TRACE_Init_DT_FUNC_PRODUCTIONS;
+    mode_info[DT_OVAR_MAPPINGS].enabled =               TRACE_Init_DT_OVAR_MAPPINGS;
+    mode_info[DT_REORDERER].enabled =                   TRACE_Init_DT_REORDERER;
+    mode_info[DT_BACKTRACE].enabled =                   TRACE_Init_DT_BACKTRACE;
+    mode_info[DT_SAVEDVARS].enabled =                   TRACE_Init_DT_SAVEDVARS;
+    mode_info[DT_GDS].enabled =                         TRACE_Init_DT_GDS;
+    mode_info[DT_RL_VARIABLIZATION].enabled =           TRACE_Init_DT_RL_VARIABLIZATION;
+    mode_info[DT_NCC_VARIABLIZATION].enabled =          TRACE_Init_DT_NCC_VARIABLIZATION;
+    mode_info[DT_IDENTITY_PROP].enabled =               TRACE_Init_DT_IDENTITY_PROP;
+    mode_info[DT_CONSTRAINTS].enabled =                 TRACE_Init_DT_CONSTRAINTS;
+    mode_info[DT_MERGE].enabled =                       TRACE_Init_DT_MERGE;
+    mode_info[DT_FIX_CONDITIONS].enabled =              TRACE_Init_DT_FIX_CONDITIONS;
+    mode_info[DT_EPMEM_CMD].enabled =                   TRACE_Init_DT_EPMEM_CMD;
 
 }
 

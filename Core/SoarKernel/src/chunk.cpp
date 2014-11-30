@@ -521,9 +521,9 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     *vrblz_top = first_vrblz;
 
     dprint(DT_CONSTRAINTS, "Instantiated Conditions: \n");
-    dprint_condition_list(DT_CONSTRAINTS, *inst_top, "", true, true, true);
+    dprint_condition_list(DT_CONSTRAINTS, *inst_top);
     dprint(DT_CONSTRAINTS, "Variablized conditions: \n");
-    dprint_condition_list(DT_CONSTRAINTS, *vrblz_top, "", true, true, true);
+    dprint_condition_list(DT_CONSTRAINTS, *vrblz_top);
 }
 
 /* --------------------------------------------------------------------
@@ -592,9 +592,9 @@ void reorder_instantiated_conditions(condition* top_cond,
                                      condition** dest_inst_bottom)
 {
     dprint(DT_MERGE, "Re-ordering...\n");
-    dprint_condition_list(DT_MERGE, top_cond->counterpart, "", true, false, true);
+    dprint_condition_list(DT_MERGE, top_cond->counterpart);
     dprint(DT_MERGE, "..to match...\n");
-    dprint_condition_list(DT_MERGE, top_cond, "", true, false, true);
+    dprint_condition_list(DT_MERGE, top_cond);
 
     condition* c, *p, *n;
     for (c = top_cond; c != NIL; c = c->next)
@@ -620,7 +620,7 @@ void reorder_instantiated_conditions(condition* top_cond,
         }
     }
     dprint(DT_MERGE, "Result:\n");
-    dprint_condition_list(DT_MERGE, *dest_inst_top, "", true, false, true);
+    dprint_condition_list(DT_MERGE, *dest_inst_top);
 }
 
 /* --------------------------------------------------------------------
@@ -1068,7 +1068,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_BACKTRACE,  "Backtracing results DONE.\n");
 
     dprint(DT_BACKTRACE, "Grounds:\n");
-    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds, true, true, true );
+    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
 
     while (true)
     {
@@ -1081,7 +1081,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     }
 
     dprint(DT_BACKTRACE, "Grounds after tracing:\n");
-    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds, true, true, true);
+    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
 
     thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
 
@@ -1125,7 +1125,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         xml_end_tag(thisAgent, kTagProduction);
         xml_end_tag(thisAgent, kTagLearning);
     }
-    dprint(DT_FUNC_PRODUCTIONS, "Backtracing done.  Building chunk %s\n", prod_name->to_string());
+    dprint(DT_FUNC_PRODUCTIONS, "Backtracing done.  Building chunk %y\n", prod_name);
 
     /* --- if there aren't any grounds, exit --- */
     if (!inst_top)
@@ -1175,7 +1175,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     //thisAgent->variablizationManager->fix_conditions(inst_top, true);
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
-    dprint_condition_list(DT_CONSTRAINTS, vrblz_top, "", true, true, true);
+    dprint_condition_list(DT_CONSTRAINTS, vrblz_top);
 
     dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
     dprint(DT_VARIABLIZATION_MANAGER, "Variablizing RHS action list:\n");
@@ -1188,9 +1188,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
-    dprint_condition_list(DT_CONSTRAINTS, inst_top, "", true, true, true);
+    dprint_condition_list(DT_CONSTRAINTS, inst_top);
     dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n");
-    dprint_condition_list(DT_CONSTRAINTS, vrblz_top, "", true, true, true);
+    dprint_condition_list(DT_CONSTRAINTS, vrblz_top);
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
@@ -1251,7 +1251,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     }
 
     dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered instantiation: \n");
-    dprint_cond_prefs(DT_PRINT_INSTANTIATIONS, chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
+    dprint_cond_prefs_inst(DT_PRINT_INSTANTIATIONS, chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
 
     /* Need to copy cond's and actions for the production here,
     otherwise some of the variables might get deallocated by the call to
@@ -1364,7 +1364,7 @@ chunking_abort:
         chunk_instantiation_cleanup(thisAgent, prod_name);
         if (prod_name)
         {
-            dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %s\n", prod_name->to_string());
+            dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %y\n", prod_name);
             dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
             symbol_remove_ref(thisAgent, prod_name);
         }

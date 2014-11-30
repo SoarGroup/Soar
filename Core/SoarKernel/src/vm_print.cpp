@@ -28,7 +28,7 @@ void Variablization_Manager::print_dnvl_set(TraceMode mode)
     int d_cnt = 1;
     for (iter = dnvl_set->begin(); iter != dnvl_set->end(); ++iter, ++d_cnt)
     {
-        dprint(mode, "%i %s\n", d_cnt, (*iter)->to_string());
+        dprint(mode, "%i %y\n", d_cnt, (*iter));
     }
 
     dprint(mode, "------------------------------------\n");
@@ -48,7 +48,7 @@ void Variablization_Manager::print_substitution_map(TraceMode mode)
 
     for (iter = substitution_map->begin(); iter != substitution_map->end(); ++iter)
     {
-        dprint(mode, "%s -> %s\n", iter->first->to_string(), test_to_string(iter->second));
+        dprint(mode, "%y -> %t\n", iter->first, iter->second);
     }
 
     dprint(mode, "------------------------------------\n");
@@ -71,12 +71,13 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
 
     for (iter_id = cond_merge_map->begin(); iter_id != cond_merge_map->end(); ++iter_id)
     {
-        dprint(DT_MERGE, "%s conditions: \n", iter_id->first->to_string());
+        dprint(DT_MERGE, "%y conditions: \n", iter_id->first);
         for (iter_attr = iter_id->second.begin(); iter_attr != iter_id->second.end(); ++iter_attr)
         {
             for (iter_value = iter_attr->second.begin(); iter_value != iter_attr->second.end(); ++iter_value)
             {
-                dprint_condition(DT_MERGE, iter_value->second, "   ");
+                dprint(DT_MERGE, "   ");
+                dprint_condition(DT_MERGE, iter_value->second);
             }
         }
     }
@@ -99,7 +100,7 @@ void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bo
 
     for (std::map< Symbol*, uint64_t >::iterator it = (*orig_var_to_g_id_map).begin(); it != (*orig_var_to_g_id_map).end(); ++it)
     {
-        dprint(mode, "%s -> %llu\n", it->first->to_string(), it->second);
+        dprint(mode, "%y -> %llu\n", it->first, it->second);
     }
 
 }
@@ -122,8 +123,7 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
         c = it->second;
         while (c)
         {
-            dprint(mode, "%s: ", it->first->to_string());
-            dprint_test(mode, static_cast<test>(c->first), true, false, true, " ", "\n");
+            dprint(mode, "%y: %t\n", it->first, static_cast<test>(c->first));
             c = c->rest;
         }
     }
@@ -139,8 +139,7 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
         c = it->second;
         while (c)
         {
-            dprint(mode, "%llu: ", it->first);
-            dprint_test(mode, static_cast<test>(c->first), true, false, true, " ", "\n");
+            dprint(mode, "%llu: %t\n ", it->first, static_cast<test>(c->first));
             c = c->rest;
         }
     }
@@ -167,8 +166,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         }
         for (std::map< Symbol*, variablization* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
         {
-            dprint(mode, "%s -> %s/%s\n", it->first->to_string(),
-                   it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string());
+            dprint(mode, "%y -> %y/%y\n", it->first, it->second->variablized_symbol, it->second->instantiated_symbol);
         }
     }
     if ((whichTable == 0) || (whichTable == 2))
@@ -182,8 +180,8 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         }
         for (std::map< uint64_t, variablization* >::iterator it = (*g_id_to_var_map).begin(); it != (*g_id_to_var_map).end(); ++it)
         {
-            dprint(mode, "%llu -> %s/%s\n", it->first,
-                   it->second->variablized_symbol->to_string(), it->second->instantiated_symbol->to_string());
+            dprint(mode, "%llu -> %y/%y\n", it->first,
+                   it->second->variablized_symbol, it->second->instantiated_symbol);
         }
     }
     if ((whichTable == 0) || (whichTable == 3))

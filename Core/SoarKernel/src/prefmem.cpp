@@ -134,8 +134,8 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
 
 void deallocate_preference(agent* thisAgent, preference* pref)
 {
-
-    dprint_preference(DT_DEALLOCATES, pref, "Deallocating preference ");
+    dprint(DT_DEALLOCATES, "Deallocating preference ");
+    dprint_preference(DT_DEALLOCATES, pref);
     assert(pref->reference_count == 0);
 
     /* --- remove it from the list of pref's for its match goal --- */

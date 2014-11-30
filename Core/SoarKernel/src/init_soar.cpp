@@ -81,11 +81,8 @@ void abort_with_fatal_error(agent* thisAgent, const char* msg)
     FILE* f;
     const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
 
-    print(thisAgent,  "%s", msg);
-    print(thisAgent,  "%s", warning);
-
-    fprintf(stderr, "%s", msg);
-    fprintf(stderr, "%s", warning);
+    Output_Manager::Get_OM().print(msg);
+    Output_Manager::Get_OM().print(warning);
 
     xml_generate_error(thisAgent, msg);
     xml_generate_error(thisAgent, warning);
@@ -106,16 +103,8 @@ void abort_with_fatal_error_noagent(const char* msg)
     FILE* f;
     const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
 
-    /* MToDo | Send error message to all clients, not just default one.
-     *         May not want to be a debug message either. */
-    if (Output_Manager::Get_OM().debug_mode_enabled(DT_DEBUG))
-    {
-        Output_Manager::Get_OM().print_debug(msg, DT_DEBUG, true);
-        Output_Manager::Get_OM().print_debug(warning, DT_DEBUG, true);
-    }
-
-//  fprintf (stderr,"%s",msg);
-//  fprintf (stderr,"%s",warning);å
+    Output_Manager::Get_OM().print(msg);
+    Output_Manager::Get_OM().print(warning);
 
     f = fopen("soarerror", "w");
     fprintf(f, "%s", msg);

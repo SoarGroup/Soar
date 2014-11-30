@@ -12,8 +12,8 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-#define DEBUG_FREE_SETTINGS
-//#define DEBUG_FULL_SETTINGS
+//#define DEBUG_FREE_SETTINGS
+#define DEBUG_FULL_SETTINGS
 //#define DEBUG_REFCOUNT_SETTINGS
 //#define DEBUG_UNITTEST_SETTINGS
 

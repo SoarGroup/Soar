@@ -24,6 +24,7 @@
 #include "soar_db.h"
 #include "soar_module.h"
 #include "Export.h"
+#include "output_manager.h"
 
 #include <string>
 
@@ -47,53 +48,86 @@ static void trace_sql(void* /*arg*/, const char* query)
 #endif
 #endif
 
-typedef char* rhs_value;
-typedef struct test_struct test_info;
-typedef test_info* test;
-typedef struct condition_struct condition;
-typedef struct action_struct action;
-typedef struct production_struct production;
-typedef struct saved_test_struct saved_test;
-typedef char varnames;
-typedef struct node_varnames_struct node_varnames;
-typedef struct identity_struct identity_info;
-
 #ifdef SOAR_DEBUG_UTILITIES
-#define dprint_macro(mode, format, args...) dprint (mode, format , ##args)
+    #define dprint_set_params(mode, args...) Output_Manager::Get_OM().set_dprint_params (mode , ##args)
+    #define dprint_clear_params(mode, args...) Output_Manager::Get_OM().clear_dprint_params (mode , ##args)
+    #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
+    #define dprint_noprefix(mode, args...) Output_Manager::Get_OM().debug_print_sf_noprefix (mode , ##args)
+    #define dprint_start_fresh_line(mode) Output_Manager::Get_OM().debug_start_fresh_line (mode)
+    #define dprint_test_simple(t) \
+            Output_Manager::Get_OM().print_test_simple (t)
+    #define dprint_test_old(mode, t) \
+            Output_Manager::Get_OM().print_test_old (mode, t)
+    #define dprint_test(mode, t) \
+            Output_Manager::Get_OM().print_test (mode, t)
+    #define dprint_current_lexeme(mode) Output_Manager::Get_OM().print_current_lexeme (mode)
+    #define dprint_condition_list(mode, top_cond) \
+            Output_Manager::Get_OM().print_condition_list (mode, top_cond)
+    #define dprint_condition(mode, cond) \
+            Output_Manager::Get_OM().print_condition (mode, cond)
+    #define dprint_action_list(mode, action_list) \
+            Output_Manager::Get_OM().print_action_list( mode, action_list)
+    #define dprint_action(mode, a) Output_Manager::Get_OM().print_action (mode, a)
+    #define dprint_instantiation(mode, inst) \
+            Output_Manager::Get_OM().print_instantiation (mode, inst)
+    #define dprint_cond_prefs_inst(mode, top_cond, top_pref) \
+            Output_Manager::Get_OM().print_cond_prefs (mode, top_cond, top_pref)
+    #define dprint_cond_prefs_result(mode, top_cond, top_pref) \
+            Output_Manager::Get_OM().print_cond_results (mode, top_cond, top_pref)
+    #define dprint_cond_actions(mode, top_cond, top_action) \
+            Output_Manager::Get_OM().print_cond_actions (mode, top_cond, top_action)
+    #define dprint_cond_results(mode, top_cond, top_pref) \
+            Output_Manager::Get_OM().print_cond_results (mode, top_cond, top_pref)
+    #define dprint_preferences(mode, top_pref, pref_list_type) \
+            Output_Manager::Get_OM().debug_print_preferences (mode, top_pref, pref_list_type)
+    #define dprint_preference(mode, pref...) \
+            Output_Manager::Get_OM().debug_print_preference (mode, pref)
+    #define dprint_production(mode, prod) Output_Manager::Get_OM().debug_print_production (mode, prod)
+    #define dprint_identifiers(mode) Output_Manager::Get_OM().print_identifiers (mode)
+    #define dprint_condition_cons(mode, c) \
+            Output_Manager::Get_OM().print_condition_cons (mode, c)
+    #define dprint_rhs_value(mode, rv, tok, w) Output_Manager::Get_OM().print_rhs_value (mode, rv, tok, w)
+    #define dprint_saved_test_list(mode, st) Output_Manager::Get_OM().print_saved_test_list (mode, st)
+    #define dprint_varnames_node(mode, var_names_node) Output_Manager::Get_OM().print_varnames_node (mode, var_names_node)
+    #define dprint_varnames(mode, var_names) Output_Manager::Get_OM().print_varnames (mode, var_names)
+    #define dprint_identity(mode, i) Output_Manager::Get_OM().print_identity (mode, i)
+    #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
+    #define dprint_wmes(mode, pOnlyWithIdentity) Output_Manager::Get_OM().print_wmes (mode, pOnlyWithIdentity)
+    #define dprint_wme(mode, w) Output_Manager::Get_OM().print_wme (mode, w, false)
+    #define dprint(mode, format, args...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
 #else
-//#define dprint_macro(mode, format, args...) { }
-#define dprint_macro(mode, format, args...) ((void)0)
+    //#define dprint_macro(mode, format, args...) { }
+    #define dprint(mode, format, args...) ((void)0)
+    #define dprint_y(mode, format, ...) ((void)0)
+    #define dprint_noprefix(mode, format, ...) ((void)0)
+    #define dprint_start_fresh_line(mode) ((void)0)
+    #define dprint_test_simple(t) ((void)0)
+    #define dprint_test_old(mode, t) ((void)0)
+    #define dprint_test(mode, t) ((void)0)
+    #define dprint_current_lexeme(mode) ((void)0)
+    #define dprint_condition(mode, cond) ((void)0)
+    #define dprint_condition_list(mode, top_cond) ((void)0)
+    #define dprint_action(mode, a) ((void)0)
+    #define dprint_action_list(mode, action_list) ((void)0)
+    #define dprint_instantiation(mode, inst) ((void)0)
+    #define dprint_cond_prefs_inst(mode, top_cond, top_pref) ((void)0)
+    #define dprint_cond_result(mode, top_cond, top_pref) ((void)0)
+    #define dprint_cond_actions(mode, top_cond, top_action) ((void)0)
+    #define dprint_cond_results(mode, top_cond, top_pref) ((void)0)
+    #define dprint_preference(mode, pref) ((void)0)
+    #define dprint_preferences(mode, top_pref, pref_list_type) ((void)0)
+    #define dprint_production(mode, prod) ((void)0)
+    #define dprint_identifiers(mode) ((void)0)
+    #define dprint_condition_cons(mode, c) ((void)0)
+    #define dprint_rhs_value(mode, rv, tok, w) ((void)0)
+    #define dprint_saved_test_list(mode, st) ((void)0)
+    #define dprint_varnames(mode, var_names) ((void)0)
+    #define dprint_varnames_node(mode, var_names_node) ((void)0)
+    #define dprint_identity(mode, i) ((void)0)
+    #define dprint_all_inst(mode) ((void)0)
+    #define dprint_wmes(mode, pOnlyWithIdentity) ((void)0)
+    #define dprint_wme(mode, w) ((void)0)
 #endif
-
-extern void dprint(TraceMode mode, const char* format, ...);
-extern void dprint_y(TraceMode mode, const char* format, ...);
-extern void dprint_noprefix(TraceMode mode, const char* format, ...);
-extern void dprint_start_fresh_line(TraceMode mode);
-extern void dprint_test_simple(test t, const char* pre_string, const char* post_string);
-extern void dprint_test_old(TraceMode mode, test t, const char* indent_string = "          ", const char* conj_indent_string = "+ ");
-extern void dprint_test(TraceMode mode, test t, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "", const char* post_string = "");
-extern void dprint_current_lexeme(TraceMode mode);
-extern void dprint_condition(TraceMode mode, condition* cond, const char* indent_string = "          ", bool print_actual = true, bool print_original = false, bool print_identity = true);
-extern void dprint_condition_list(TraceMode mode, condition* top_cond, const char* indent_string = "          ", bool print_actual = true, bool print_original = false, bool print_identity = true);
-extern void dprint_action(TraceMode mode, action* a, const char* indent_string = "           ");
-extern void dprint_action_list(TraceMode mode, action* action_list, const char* indent_string = "           ");
-extern void dprint_instantiation(TraceMode mode, instantiation* inst, const char* indent_string = "          ");
-extern void dprint_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref, const char* indent_string = "          ", int print_inst_prefs = 1);
-extern void dprint_cond_actions(TraceMode mode, condition* top_cond, action* top_action, const char* indent_string = "          ");
-extern void dprint_cond_results(TraceMode mode, condition* top_cond, preference* top_pref, const char* indent_string = "          ");
-extern void dprint_preference(TraceMode mode, preference* pref, const char* indent_string, bool print_actual = true, bool print_original = false, bool print_identity = true);
-extern void dprint_preferences(TraceMode mode, preference* top_pref, const char* indent_string = "           ", bool print_actual = true, bool print_original = false, bool print_identity = true, int pref_list_type = 1);
-extern void dprint_production(TraceMode mode, production* prod);
-extern void dprint_identifiers(TraceMode mode);
-extern void dprint_condition_cons(TraceMode mode, cons* c, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "");
-extern void dprint_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = NIL, wme* w = NIL);
-extern void dprint_saved_test_list(TraceMode mode, saved_test* st);
-extern void dprint_varnames(TraceMode mode, varnames* var_names);
-extern void dprint_varnames_node(TraceMode mode, node_varnames* var_names_node);
-extern void dprint_identity(TraceMode mode, identity_info* i, const char* pre_string = "", const char* post_string = "");
-extern void dprint_all_inst(TraceMode mode);
-extern void dprint_wmes(TraceMode mode, bool pOnlyWithIdentity = false);
-extern void dprint_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity = false);
 
 extern void debug_init_db(agent* thisAgent);
 extern void debug_print_db_err(TraceMode mode = DT_DEBUG);

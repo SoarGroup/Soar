@@ -248,22 +248,6 @@ bool legal_to_execute_action(action* a, tc_number tc)
 
 ===================================================================== */
 
-void print_saved_test(agent* thisAgent, saved_test* st)
-{
-    print_with_symbols(thisAgent, "  Index: %y  Test: ", st->var);
-    print_string(thisAgent, test_to_string(st->the_test, NULL, 0));
-}
-
-void print_saved_test_list(agent* thisAgent, saved_test* st)
-{
-    while (st)
-    {
-        print_saved_test(thisAgent, st);
-        print(thisAgent,  "\n");
-        st = st->next;
-    }
-}
-
 saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
 {
     test ct, New, subtest;
@@ -272,7 +256,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     cons* c, *prev_c, *next_c;
 
     dprint(DT_REORDERER, "Simplifying test ");
-    dprint_test(DT_REORDERER, (*t), true, false, false, "", "");
+    dprint_test(DT_REORDERER, (*t));
 
     if (test_is_blank(*t))
     {
@@ -282,7 +266,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
         /* -- generate variable already creates refcount -- */
         symbol_remove_ref(thisAgent, sym);
         dprint_noprefix(DT_REORDERER, "\n");
-        dprint(DT_REORDERER, "...returning by reference dummy equality test with %s.\n", sym->to_string());
+        dprint(DT_REORDERER, "...returning by reference dummy equality test with %y.\n", sym);
         dprint(DT_REORDERER, "...equality...skipping....\n");
         return old_sts;
     }
@@ -313,11 +297,11 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 {
                     if (subtest->data.referent->is_constant() && sym && sym->is_variable())
                     {
-                        dprint(DT_REORDERER, "...found equality test on %s.  Skipping because we already have variable index.\n", subtest->data.referent->to_string());
+                        dprint(DT_REORDERER, "...found equality test on %y.  Skipping because we already have variable index.\n", subtest->data.referent);
                         continue;
                     }
                     sym = subtest->data.referent;
-                    dprint(DT_REORDERER, "...found equality symbol on %s.  Setting as index.\n", sym->to_string());
+                    dprint(DT_REORDERER, "...found equality symbol on %y.  Setting as index.\n", sym);
                 }
             }
             /* --- if no equality test was found, generate a dummy variable for it --- */
@@ -329,7 +313,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 c->first = New;
                 c->rest = ct->data.conjunct_list;
                 ct->data.conjunct_list = c;
-                dprint(DT_REORDERER, "...no equality symbol found.  Generated EQ test for %s and added to beginning of t's conjunct list.\n", sym->to_string());
+                dprint(DT_REORDERER, "...no equality symbol found.  Generated EQ test for %y and added to beginning of t's conjunct list.\n", sym);
             }
             /* -- moves all tests except equality in this conjunction list to the saved test
              *    list passed in.
@@ -367,9 +351,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                         ct->data.conjunct_list = next_c;
                     }
                     dprint_noprefix(DT_REORDERER, "\n");
-                    dprint(DT_REORDERER, "...spliced test ");
-                    dprint_test(DT_REORDERER, subtest, true, false, false, "", "");
-                    dprint_noprefix(DT_REORDERER, " out of t's conjunct list and saved to saved_tests with index %s.\n", sym->to_string());
+                    dprint(DT_REORDERER, "...spliced test %t out of t's conjunct list and saved to saved_tests with index %y.\n", subtest, sym);
                     free_cons(thisAgent, c);
                 }
                 else
@@ -401,7 +383,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             saved->the_test = *t;
             *t = New;
             dprint(DT_REORDERER, "...goal/impasse, disjunction or non-equality relational tests...\n");
-            dprint(DT_REORDERER, "... generated EQ test with dummy variable %s using dummy variable as index %s.\n", var->to_string());
+            dprint(DT_REORDERER, "... generated EQ test with dummy variable %y using dummy variable as index.\n", var);
             break;
     }
     return old_sts;
@@ -484,7 +466,8 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
     Symbol* referent;
 
     dprint(DT_REORDERER, "Looking for saved tests for: ");
-    dprint_test(DT_REORDERER, (*t), true, false, false, "", "\n");
+    dprint_test(DT_REORDERER, (*t));
+    dprint(DT_REORDERER, "\n");
 //  dprint_saved_test_list (DT_REORDERER, tests_to_restore);
 
     prev_st = NIL;
@@ -494,8 +477,9 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
         next_st = st->next;
         added_it = false;
 
-        dprint(DT_REORDERER, "...comparing with: %s --> ", st->var->to_string());
-        dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "...");
+        dprint(DT_REORDERER, "...comparing with: %y --> ", st->var);
+        dprint_test(DT_REORDERER, st->the_test);
+        dprint(DT_REORDERER, "...");
 
         switch (st->the_test->type)
         {
@@ -510,9 +494,10 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 dprint_noprefix(DT_REORDERER, "test is goal/impasse/disj...\n");
                 if (test_includes_equality_test_for_symbol(*t, st->var))
                 {
-                    dprint(DT_REORDERER, "Found match with  using index var %s: ", st->var->to_string());
-                    dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "\n");
-                    dprint(DT_REORDERER, "Removing entry with index %s and adding test.\n", st->var->to_string());
+                    dprint(DT_REORDERER, "Found match with  using index var %y: ", st->var);
+                    dprint_test(DT_REORDERER, st->the_test);
+                    dprint(DT_REORDERER, "\n");
+                    dprint(DT_REORDERER, "Removing entry with index %y and adding test.\n", st->var);
                     add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                     added_it = true;
                 }
@@ -522,8 +507,9 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 referent = st->the_test->data.referent;
                 if (test_includes_equality_test_for_symbol(*t, st->var))
                 {
-                    dprint(DT_REORDERER, "Found match using index var %s: ", st->var->to_string());
-                    dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "\n");
+                    dprint(DT_REORDERER, "Found match using index var %y: ", st->var);
+                    dprint_test(DT_REORDERER, st->the_test);
+                    dprint(DT_REORDERER, "\n");
                     if (referent->is_constant_or_marked_variable(bound_vars_tc_number) ||
                             (st->var == referent))
                     {
@@ -534,8 +520,9 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 }
                 else if (test_includes_equality_test_for_symbol(*t, referent))
                 {
-                    dprint(DT_REORDERER, "Found match using referent %s: ", referent->to_string());
-                    dprint_test(DT_REORDERER, st->the_test, true, false, false, "", "\n");
+                    dprint(DT_REORDERER, "Found match using referent %y: ", referent);
+                    dprint_test(DT_REORDERER, st->the_test);
+                    dprint(DT_REORDERER, "\n");
                     if (st->var->is_constant_or_marked_variable(bound_vars_tc_number) ||
                             (st->var == referent))
                     {
@@ -649,7 +636,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
             print(thisAgent,  "\nWarning:  in production %s,\n",
                   thisAgent->name_of_production_being_reordered);
             print(thisAgent,  "      ignoring test(s) whose referent is unbound:\n");
-            print_saved_test_list(thisAgent, tests_to_restore);
+//            print_saved_test_list(thisAgent, tests_to_restore);
             // TODO: XML tagged output -- how to create this string?
             // KJC TODO:  need a tagged output version of print_saved_test_list
 
@@ -1262,7 +1249,8 @@ void reorder_simplified_conditions(agent* thisAgent,
 
         /* --- install the first item in the min-cost set --- */
         chosen = min_cost_conds;
-        dprint_condition(DT_REORDERER, chosen, "...reorderer adding chosen item: ");
+        dprint(DT_REORDERER, "...reorderer adding chosen item: ");
+        dprint_condition(DT_REORDERER, chosen);
         dprint(DT_REORDERER, "Before removing condition:\n");
         dprint_condition_list(DT_REORDERER, remaining_conds);
         remove_from_dll(remaining_conds, chosen, next, prev);

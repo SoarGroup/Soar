@@ -65,10 +65,6 @@ typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >
 typedef std::list< Symbol* > symbol_list;
 #endif
 
-extern void dprint_instantiation(TraceMode mode, instantiation* inst, const char* indent_string);
-
-/* REW: 2003-01-06 A temporary helper function */
-
 void print_candidates(agent* thisAgent, preference* candidates)
 {
     preference* cand = 0;
@@ -2426,12 +2422,13 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 else
                 {
                     dprint_noprefix(DT_GDS, "\n");
-                    dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %s ^%s %s %s (id level = %d, mg level = %d)\n",
-                           cand->id->to_string(), cand->attr->to_string(), cand->value->to_string(),
+                    dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %y ^%y %y %s (id level = %d, mg level = %d)\n",
+                           cand->id, cand->attr, cand->value,
                            (cand->o_supported ? ":o-support" : ":i-support"),
                            cand->id->id->level, cand->inst->match_goal_level);
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n");
-                    dprint_instantiation(DT_GDS, cand->inst, "           ");
+                    dprint_set_params(DT_GDS, "           ");
+                    dprint_instantiation(DT_GDS, cand->inst);
                 }
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);
@@ -2482,8 +2479,8 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 
                 if ((w->preference->o_supported == true) && (w->preference->inst->match_goal_level != 1))
                 {
-                    dprint(DT_GDS, "Checking GDS necessary for wme %lld: %s ^%s %s %s (id level = %d)\n",
-                           w->timetag, w->id->to_string(), w->attr->to_string(), w->value->to_string(),
+                    dprint(DT_GDS, "Checking GDS necessary for wme %lld: %y ^%y %y %s (id level = %d)\n",
+                           w->timetag, w->id, w->attr, w->value,
                            (w->preference->o_supported ? ":o-support" : ":i-support"),
                            w->preference->id->id->level);
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n");
@@ -2674,10 +2671,10 @@ void decide_non_context_slots(agent* thisAgent)
         dc = thisAgent->changed_slots;
         thisAgent->changed_slots = thisAgent->changed_slots->next;
         s = static_cast<slot_struct*>(dc->item);
-        dprint(DT_EPMEM_CMD, "Deciding non-context slot (%s ^%s ?)\n", s->id->to_string(), s->attr->to_string());
+        dprint(DT_EPMEM_CMD, "Deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
         decide_non_context_slot(thisAgent, s);
         s->changed = NIL;
-        dprint(DT_EPMEM_CMD, "Done deciding non-context slot (%s ^%s ?)\n", s->id->to_string(), s->attr->to_string());
+        dprint(DT_EPMEM_CMD, "Done deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
         free_with_pool(&thisAgent->dl_cons_pool, dc);
     }
     dprint(DT_EPMEM_CMD, "Done deciding non-context slots.\n");

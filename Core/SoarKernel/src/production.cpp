@@ -36,8 +36,6 @@
 #include "debug.h"
 #include <ctype.h>
 
-extern void dprint_test(TraceMode mode, test t, bool print_actual, bool print_original, bool print_identity, const char* pre_string, const char* post_string);
-
 void init_production_utilities(agent* thisAgent)
 {
     init_memory_pool(thisAgent, &thisAgent->test_pool, sizeof(test_info), "test");
@@ -54,7 +52,8 @@ void init_production_utilities(agent* thisAgent)
 
 void deallocate_condition(agent* thisAgent, condition* cond)
 {
-    dprint_condition(DT_DEALLOCATES, cond, "Deallocating condition ");
+    dprint(DT_DEALLOCATES, "Deallocating condition ");
+    dprint_condition(DT_DEALLOCATES, cond);
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
         deallocate_condition_list(thisAgent, cond->data.ncc.top);
@@ -83,10 +82,13 @@ void deallocate_condition_list(agent* thisAgent,
         }
         else     /* positive and negative conditions */
         {
-            dprint(DT_DEALLOCATES, "Deallocating condition: ");
-            dprint_test(DT_DEALLOCATES, c->data.tests.id_test, true, false, true, "(", " ");
-            dprint_test(DT_DEALLOCATES, c->data.tests.attr_test, true, false, true, "^", "");
-            dprint_test(DT_DEALLOCATES, c->data.tests.value_test, true, false, true, " ", ")\n");
+            dprint(DT_DEALLOCATES, "Deallocating condition: (");
+            dprint_test(DT_DEALLOCATES, c->data.tests.id_test);
+            dprint_noprefix(DT_DEALLOCATES, " ^");
+            dprint_test(DT_DEALLOCATES, c->data.tests.attr_test);
+            dprint_noprefix(DT_DEALLOCATES, " ");
+            dprint_test(DT_DEALLOCATES, c->data.tests.value_test);
+            dprint_noprefix(DT_DEALLOCATES, ")\n");
             deallocate_test(thisAgent, c->data.tests.id_test);
             deallocate_test(thisAgent, c->data.tests.attr_test);
             deallocate_test(thisAgent, c->data.tests.value_test);
@@ -924,7 +926,7 @@ void deallocate_production(agent* thisAgent, production* prod)
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
 {
     dprint(DT_DEALLOCATES, "=======================\n");
-    dprint(DT_DEALLOCATES, "Excising production %s.\n", prod->name->to_string());
+    dprint(DT_DEALLOCATES, "Excising production %y.\n", prod->name);
     if (prod->trace_firings)
     {
         remove_pwatch(thisAgent, prod);

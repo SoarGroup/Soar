@@ -699,7 +699,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
                 new_production->rl_efr = init_value;
             }
             dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n");
-            dprint_cond_actions(DT_RL_VARIABLIZATION, cond_top, new_action, "          ");
+            dprint_set_params(DT_RL_VARIABLIZATION, "          ");
+            dprint_cond_actions(DT_RL_VARIABLIZATION, cond_top, new_action);
             // attempt to add to rete, remove if duplicate
             /* MToDo | Normally fifth parameter, warn_on_duplicate, set to false.  Turned on for debugging. */
             if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, true) == DUPLICATE_PRODUCTION)

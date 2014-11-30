@@ -59,8 +59,6 @@
 #include <string> // SBW 8/4/08
 #include <list>
 
-extern void dprint_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref,  const char* indent_string, int pref_list_type);
-
 using namespace soar_TraceNames;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
@@ -799,7 +797,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->GDS_evaluated_already = false;
     dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-    dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() called for %s\n", inst->prod->name->to_string());
+    dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() called for %y\n", inst->prod->name);
     dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
     if (thisAgent->soar_verbose_flag == true)
     {
@@ -980,7 +978,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
     dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
     dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation created: \n");
-    dprint_cond_prefs(DT_PRINT_INSTANTIATIONS, inst->top_of_instantiated_conditions, inst->preferences_generated, "          ", 1);
+    dprint_set_params(DT_PRINT_INSTANTIATIONS, "          ");
+    dprint_cond_prefs_inst(DT_PRINT_INSTANTIATIONS, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, false,
@@ -1005,7 +1004,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     deallocate_action_list(thisAgent, rhs_vars);
 
     dprint(DT_PRINT_INSTANTIATIONS, "=========================================================\n");
-    dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() finished for %s\n", inst->prod->name->to_string());
+    dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() finished for %y\n", inst->prod->name);
     dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
 
 
@@ -1119,7 +1118,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         assert(inst);
         ++next_iter;
 
-        dprint(DT_DEALLOCATES, "Deallocating instantiation of %s\n", (inst->prod ? inst->prod->name->to_string() : "no production name!!! (bug?)"));
+        dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod ? inst->prod->name : NULL);
 
         level = inst->match_goal_level;
 

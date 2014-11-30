@@ -42,7 +42,7 @@ void Variablization_Manager::clear_ovar_gid_table()
     /* -- Clear original variable map -- */
     for (std::map< Symbol*, uint64_t >::iterator it = (*orig_var_to_g_id_map).begin(); it != (*orig_var_to_g_id_map).end(); ++it)
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s -> %llu\n", it->first->to_string(), it->second);
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %y -> %llu\n", it->first, it->second);
         symbol_remove_ref(thisAgent, it->first);
     }
     orig_var_to_g_id_map->clear();
@@ -55,10 +55,10 @@ void Variablization_Manager::clear_variablization_tables()
     /* -- Clear symbol->variablization map -- */
     for (std::map< Symbol*, variablization* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %s -> %s(%lld)/%s(%lld)\n",
-               it->first->to_string(),
-               it->second->instantiated_symbol->to_string(), it->second->instantiated_symbol->reference_count,
-               it->second->variablized_symbol->to_string(),  it->second->variablized_symbol->reference_count);
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %y -> %y(%lld)/%y(%lld)\n",
+               it->first,
+               it->second->instantiated_symbol, it->second->instantiated_symbol->reference_count,
+               it->second->variablized_symbol,  it->second->variablized_symbol->reference_count);
         symbol_remove_ref(thisAgent, it->second->instantiated_symbol);
         symbol_remove_ref(thisAgent, it->second->variablized_symbol);
         delete it->second;
@@ -69,10 +69,10 @@ void Variablization_Manager::clear_variablization_tables()
     /* -- Clear grounding_id->variablization map -- */
     for (std::map< uint64_t, variablization* >::iterator it = (*g_id_to_var_map).begin(); it != (*g_id_to_var_map).end(); ++it)
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %llu -> %s(%lld)/%s(%lld)\n",
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %llu -> %y(%lld)/%y(%lld)\n",
                it->first,
-               it->second->instantiated_symbol->to_string(), it->second->instantiated_symbol->reference_count,
-               it->second->variablized_symbol->to_string(),  it->second->variablized_symbol->reference_count);
+               it->second->instantiated_symbol, it->second->instantiated_symbol->reference_count,
+               it->second->variablized_symbol,  it->second->variablized_symbol->reference_count);
         symbol_remove_ref(thisAgent, it->second->instantiated_symbol);
         symbol_remove_ref(thisAgent, it->second->variablized_symbol);
         delete it->second;
@@ -91,8 +91,8 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
     std::map< uint64_t, variablization* >::iterator iter = (*g_id_to_var_map).find(index_id);
     if (iter != (*g_id_to_var_map).end())
     {
-        dprint(DT_LHS_VARIABLIZATION, "...found %llu in g_id variablization table: %s/%s\n", index_id,
-               iter->second->variablized_symbol->to_string(), iter->second->instantiated_symbol->to_string());
+        dprint(DT_LHS_VARIABLIZATION, "...found %llu in g_id variablization table: %y/%y\n", index_id,
+               iter->second->variablized_symbol, iter->second->instantiated_symbol);
         return iter->second;
     }
     else
@@ -108,13 +108,13 @@ variablization* Variablization_Manager::get_variablization_for_symbol(std::map< 
     std::map< Symbol*, variablization* >::iterator iter = (*pMap).find(index_sym);
     if (iter != (*pMap).end())
     {
-        dprint(DT_LHS_VARIABLIZATION, "...found %s in variablization table: %s/%s\n", index_sym->to_string(),
-               iter->second->variablized_symbol->to_string(), iter->second->instantiated_symbol->to_string());
+        dprint(DT_LHS_VARIABLIZATION, "...found %y in variablization table: %y/%y\n", index_sym,
+               iter->second->variablized_symbol, iter->second->instantiated_symbol);
         return iter->second;
     }
     else
     {
-        dprint(DT_LHS_VARIABLIZATION, "...did not find %s in variablization table.\n", index_sym->to_string());
+        dprint(DT_LHS_VARIABLIZATION, "...did not find %y in variablization table.\n", index_sym);
         print_variablization_tables(DT_LHS_VARIABLIZATION, 1);
         return NULL;
     }
@@ -142,14 +142,14 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym)
     std::map< Symbol*, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
     if (iter != (*orig_var_to_g_id_map).end())
     {
-        dprint(DT_LHS_VARIABLIZATION, "...found %llu in orig_var variablization table for %s\n",
-               iter->second, index_sym->to_string());
+        dprint(DT_LHS_VARIABLIZATION, "...found %llu in orig_var variablization table for %y\n",
+               iter->second, index_sym);
 
         return iter->second;
     }
     else
     {
-        dprint(DT_LHS_VARIABLIZATION, "...did not find %s in orig_var variablization table.\n", index_sym->to_string());
+        dprint(DT_LHS_VARIABLIZATION, "...did not find %y in orig_var variablization table.\n", index_sym);
         print_ovar_gid_propogation_table(DT_LHS_VARIABLIZATION);
     }
 
@@ -161,7 +161,7 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     std::map< Symbol*, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
     if (iter == (*orig_var_to_g_id_map).end())
     {
-        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %s to %llu\n", index_sym->to_string(), index_g_id);
+        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %llu\n", index_sym, index_g_id);
         (*orig_var_to_g_id_map)[index_sym] = index_g_id;
         symbol_add_ref(thisAgent, index_sym);
         return 0;
@@ -169,8 +169,8 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     else
     {
         dprint(DT_OVAR_MAPPINGS,
-               "...%llu already exists in orig_var variablization table for %s.  add_orig_var_to_gid_mapping returning false.\n",
-               iter->second, index_sym->to_string());
+               "...%llu already exists in orig_var variablization table for %y.  add_orig_var_to_gid_mapping returning false.\n",
+               iter->second, index_sym);
     }
     return iter->second;
 }
@@ -181,10 +181,10 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 {
     variablization* new_variablization;
     assert(instantiated_sym && variable);
-    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %s(%llu) to %s.\n",
-           instantiated_sym->to_string(),
+    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(%llu) to %y.\n",
+           instantiated_sym,
            identity ? identity->grounding_id : 0,
-           variable->to_string());
+           variable);
 
     new_variablization = new variablization;
     new_variablization->instantiated_symbol = instantiated_sym;
@@ -207,8 +207,8 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 
         (*sym_to_var_map)[instantiated_sym] = new_variablization;
         (*sym_to_var_map)[variable] = copy_variablization(thisAgent, new_variablization);
-        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created symbol_to_var_map ([%s] and [%s] to new variablization.\n",
-                        instantiated_sym->to_string(), variable->to_string());
+        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created symbol_to_var_map ([%y] and [%y] to new variablization.\n",
+                        instantiated_sym, variable);
     }
     else if (identity)
     {
@@ -227,13 +227,13 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
     //  print_variablization_table();
 }
 
-void Variablization_Manager::clear_dnvl() 
-{ 
-    dnvl_set->clear();  
-}
-void Variablization_Manager::add_dnvl(Symbol* sym) 
+void Variablization_Manager::clear_dnvl()
 {
-    dprint(DT_IDENTITY_PROP, "...adding symbol %s.\n", sym->to_string());
+    dnvl_set->clear();
+}
+void Variablization_Manager::add_dnvl(Symbol* sym)
+{
+    dprint(DT_IDENTITY_PROP, "...adding symbol %y.\n", sym);
     dnvl_set->insert(sym);
 }
 

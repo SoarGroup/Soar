@@ -5917,7 +5917,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
 
     while (state != NULL)
     {
-        dprint(DT_EPMEM_CMD, "=== Processing state %s\n", state->to_string());
+        dprint(DT_EPMEM_CMD, "=== Processing state %y\n", state);
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->epmem_timers->api->start();
         ////////////////////////////////////////////////////////////////////////////
@@ -5940,7 +5940,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
                 parent_sym = syms.front();
                 syms.pop();
 
-                dprint(DT_EPMEM_CMD, "--- ...checking sym.%s\n", parent_sym->to_string());
+                dprint(DT_EPMEM_CMD, "--- ...checking sym.%y\n", parent_sym);
 
                 // get children of the current identifier
                 wmes = epmem_get_augs_of_id(parent_sym, tc);
@@ -6120,7 +6120,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
             delete cmds;
         }
 
-        dprint(DT_EPMEM_CMD, "=== Done processing state %s.  Proceeding to next goal up.\n", state->to_string());
+        dprint(DT_EPMEM_CMD, "=== Done processing state %y.  Proceeding to next goal up.\n", state);
 
         state = state->id->higher_goal;
     }

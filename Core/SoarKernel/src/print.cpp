@@ -110,7 +110,7 @@ void tell_printer_that_output_column_has_been_reset(agent* thisAgent)
 
 void print_string(agent* thisAgent, const char* s)
 {
-    Output_Manager::Get_OM().print_agent(thisAgent, s);
+    Output_Manager::Get_OM().printa(thisAgent, s);
 }
 
 /* MToDo | This is just a test to see if previously inlined version is faster
@@ -118,7 +118,7 @@ void print_string(agent* thisAgent, const char* s)
 
 inline void inline_print_string(agent* thisAgent, const char* s)
 {
-    Output_Manager::Get_OM().print_agent(thisAgent, s);
+    Output_Manager::Get_OM().printa(thisAgent, s);
 }
 /* ---------------------------------------------------------------
                Print, Print_with_symbols, Print_spaces
@@ -143,6 +143,7 @@ void print(agent* thisAgent, const char* format, ...)
 void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, va_list args)
 {
     char* ch;
+    Symbol* sym;
 
     ch = dest;
     while (true)
@@ -163,11 +164,13 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
                 the difference between the address of ch and
                 the address of the beginning of the buffer
                 */
-            (va_arg(args, Symbol*))->to_string(true, ch, count - (ch - dest));
+            sym = va_arg(args, Symbol*);
+            (sym)->to_string(true, ch, count - (ch - dest));
             while (*ch)
             {
                 ch++;
             }
+            format += 2;
         } else if (*(format + 1) == 't')
         {
             test_to_string(va_arg(args, test), ch, count - (ch - dest) );
@@ -175,12 +178,12 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
             {
                 ch++;
             }
+            format += 2;
         }
         else
         {
-            *(ch++) = '%';
+            *(ch++) = *(format++);
         }
-        format += 2;
     }
     *ch = 0;
 }

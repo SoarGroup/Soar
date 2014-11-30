@@ -17,6 +17,17 @@
 #include "lexer.h"
 #include "soar_db.h"
 
+typedef char* rhs_value;
+typedef struct test_struct test_info;
+typedef test_info* test;
+typedef struct condition_struct condition;
+typedef struct action_struct action;
+typedef struct production_struct production;
+typedef struct saved_test_struct saved_test;
+typedef char varnames;
+typedef struct node_varnames_struct node_varnames;
+typedef struct identity_struct identity_info;
+
 // TODO: this isn't good enough. Arbitrary length should be acceptable.
 #define MAX_LEXER_LINE_LENGTH 1000
 // a little bigger to avoid any off-by-one-errors
@@ -27,9 +38,8 @@
 
 typedef struct trace_mode_info_struct
 {
-    std::string* prefix;
-    bool debug_enabled;
-    bool trace_enabled;
+        std::string* prefix;
+        bool enabled;
 } trace_mode_info;
 
 namespace sml
@@ -72,63 +82,6 @@ class Output_Manager
         }
         virtual ~Output_Manager();
 
-        void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
-
-        trace_mode_info mode_info[num_trace_modes];
-
-        void init();
-        void fill_mode_info();
-
-        void set_dprint_enabled(bool activate);
-        bool debug_mode_enabled(TraceMode mode);
-
-        void set_default_agent(agent* pSoarAgent);
-        void clear_default_agent() { m_defaultAgent = NULL; }
-        agent* get_default_agent() { return m_defaultAgent; };
-
-
-        /* Print functions that don't take an agent.  Will use default agent if necessary */
-        void printv(const char* format, ...);
-        void print_trace(const char* msg)
-        {
-            print_agent(m_defaultAgent, msg);
-        }
-        void print_trace_prefix(const char* msg, TraceMode mode = No_Mode, bool no_prefix = false)
-        {
-            print_prefix_agent(m_defaultAgent, msg, mode, no_prefix);
-        }
-        void print_debug(const char* msg, TraceMode mode = No_Mode, bool no_prefix = false)
-        {
-            print_debug_agent(m_defaultAgent, msg, mode, no_prefix);
-        }
-        void print_db(MessageType msgType, TraceMode mode, const char* msg)
-        {
-            print_db_agent(m_defaultAgent, msgType, mode, msg);
-        }
-
-        void printv_agent(agent* pSoarAgent, const char* format, ...);
-        void printv_y(const char* format, ...);
-        void print_agent(agent* pSoarAgent, const char* msg);
-        void print_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode = No_Mode, bool no_prefix = false);
-        void print_debug_agent(agent* pSoarAgent, const char* msg, TraceMode mode = No_Mode, bool no_prefix = false);
-        void print_db_agent(agent* pSoarAgent, MessageType msgType, TraceMode mode, const char* msg);
-
-        char* get_printed_output_string()
-        {
-            if (++next_output_string == num_output_strings)
-            {
-                next_output_string = 0;
-            }
-            return printed_output_strings[next_output_string];
-        }
-
-        void store_refcount(Symbol* sym, const char* trace, bool isAdd);
-        int get_printer_output_column(agent* thisAgent = NULL);
-        void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
-        void start_fresh_line(agent* pSoarAgent = NULL);
-
-        char* NULL_SYM_STR;
-
     private:
 
         Output_Manager();
@@ -146,6 +99,9 @@ class Output_Manager
         bool print_enabled, db_mode, stdout_mode, file_mode;
         bool dprint_enabled, db_dbg_mode, stdout_dbg_mode, file_dbg_mode;
 
+        bool m_print_actual, m_print_original, m_print_identity;
+        char* m_pre_string, *m_post_string;
+
         /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
          *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
          *    function calls that use that buffer within one print statements.  There are
@@ -156,6 +112,103 @@ class Output_Manager
 
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
+
+    public:
+
+        void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
+
+        trace_mode_info mode_info[num_trace_modes];
+
+        void init();
+        void fill_mode_info();
+
+        void set_dprint_enabled(bool activate) { dprint_enabled = activate; }
+        bool debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
+
+        void set_default_agent(agent* pSoarAgent);
+        void clear_default_agent() { m_defaultAgent = NULL; }
+        agent* get_default_agent() { return m_defaultAgent; }
+
+
+        /* Core printing functions */
+        void printa(agent* pSoarAgent, const char* msg);
+        void printa_prefix(TraceMode mode, agent* pSoarAgent, const char* msg);
+        void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
+
+        /* Core variadic printing functions */
+        void printa_f(agent* pSoarAgent, const char* format, ...);
+        void printa_sf(agent* pSoarAgent, const char* format, ...);
+
+        /* Print functions that will use default agent if set */
+        void print(const char* msg) { if (m_defaultAgent) printa(m_defaultAgent, msg); }
+        void print_prefix(TraceMode mode, const char* msg) { if (m_defaultAgent) printa_prefix(mode, m_defaultAgent, msg); }
+        void print_f(const char* format, ...);
+        void print_sf(const char* format, ...);
+
+        /* Versions that will check debug mode and only print if set */
+        void debug_print(TraceMode mode, const char* msg);
+        void debug_print_f(TraceMode mode, const char* format, ...);
+        void debug_print_sf(TraceMode mode, const char* format, ...);
+        void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
+        void debug_start_fresh_line(TraceMode mode);
+
+        char* get_printed_output_string()
+        {
+            if (++next_output_string == num_output_strings)
+            {
+                next_output_string = 0;
+            }
+            return printed_output_strings[next_output_string];
+        }
+
+        void store_refcount(Symbol* sym, const char* trace, bool isAdd);
+        int get_printer_output_column(agent* thisAgent = NULL);
+        void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
+        void start_fresh_line(agent* pSoarAgent = NULL);
+
+        void set_dprint_params(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
+        {
+            if (!debug_mode_enabled(mode) || !dprint_enabled) return;
+            m_print_actual = pActual;
+            m_print_original = pOriginal;
+            m_print_identity = p_Identity;
+            if (pPre) m_pre_string = strdup(pPre);
+            if (pPost) m_pre_string = strdup(pPost);
+        }
+        void clear_dprint_params(TraceMode mode) { set_dprint_params(mode); }
+
+        void debug_print_production(TraceMode mode, production* prod);
+        void debug_print_preference(TraceMode mode, preference* pref, const char* indent_string="", bool print_actual = true, bool print_original = false, bool print_identity = true);
+        void debug_print_preflist_inst(TraceMode mode, preference* top_pref, const char* indent_string = "           ", bool print_actual = true, bool print_original = false, bool print_identity = true);
+        void debug_print_preflist_result(TraceMode mode, preference* top_pref, const char* indent_string = "           ", bool print_actual = true, bool print_original = false, bool print_identity = true);
+
+        void print_test_simple(test t, const char* pre_string="", const char* post_string="");
+        void print_test_old(TraceMode mode, test t, const char* indent_string = "          ", const char* conj_indent_string = "+ ");
+        void print_test(TraceMode mode, test t, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "", const char* post_string = "");
+        void print_current_lexeme(TraceMode mode, soar::Lexer* lexer);
+        void print_condition(TraceMode mode, condition* cond, const char* indent_string = "          ", bool print_actual = true, bool print_original = false, bool print_identity = true);
+        void print_condition_list(TraceMode mode, condition* top_cond, const char* indent_string = "          ", bool print_actual = true, bool print_original = false, bool print_identity = true);
+        void print_action(TraceMode mode, action* a, const char* indent_string = "           ");
+        void print_action_list(TraceMode mode, action* action_list, const char* indent_string = "           ");
+        void print_instantiation(TraceMode mode, instantiation* inst, const char* indent_string = "          ");
+        void print_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref);
+        void print_cond_actions(TraceMode mode, condition* top_cond, action* top_action);
+        void print_cond_results(TraceMode mode, condition* top_cond, preference* top_pref);
+        void print_identifiers(TraceMode mode);
+        void print_condition_cons(TraceMode mode, cons* c, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "");
+        void print_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = NIL, wme* w = NIL);
+        void print_saved_test(TraceMode mode, saved_test* st);
+        void print_saved_test_list(TraceMode mode, saved_test* st);
+        void print_varnames(TraceMode mode, varnames* var_names);
+        void print_varnames_node(TraceMode mode, node_varnames* var_names_node);
+        void print_identity(TraceMode mode, identity_info* i, const char* pre_string = "", const char* post_string = "");
+        void print_all_inst(TraceMode mode);
+        void print_variables(TraceMode mode);
+        void print_wmes(TraceMode mode, bool pOnlyWithIdentity = false);
+        void print_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity = false);
+
+        void debug_find_and_print_sym(char* find_string);
+        char* NULL_SYM_STR;
 
 };
 

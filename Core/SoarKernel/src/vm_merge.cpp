@@ -32,20 +32,21 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
     std::map< Symbol*, std::map< Symbol*, condition*> >::iterator iter_attr;
     std::map< Symbol*, condition*>::iterator iter_value;
 
-    dprint(DT_MERGE, "...looking for id equality test %s\n", pCond->data.tests.id_test->eq_test->data.referent->to_string());
+    dprint(DT_MERGE, "...looking for id equality test %y\n", pCond->data.tests.id_test->eq_test->data.referent);
     iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);
     if (iter_id != cond_merge_map->end())
     {
-        dprint(DT_MERGE, "...Found.  Looking  for attr equality test %s\n", pCond->data.tests.attr_test->eq_test->data.referent->to_string());
+        dprint(DT_MERGE, "...Found.  Looking  for attr equality test %y\n", pCond->data.tests.attr_test->eq_test->data.referent);
         iter_attr = iter_id->second.find(pCond->data.tests.attr_test->eq_test->data.referent);
         if (iter_attr != iter_id->second.end())
         {
-            dprint(DT_MERGE, "...Found.  Looking  for value equality test %s\n", pCond->data.tests.value_test->eq_test->data.referent->to_string());
+            dprint(DT_MERGE, "...Found.  Looking  for value equality test %y\n", pCond->data.tests.value_test->eq_test->data.referent);
 
             iter_value = iter_attr->second.find(pCond->data.tests.value_test->eq_test->data.referent);
             if (iter_value != iter_attr->second.end())
             {
-                dprint_condition(DT_MERGE, iter_value->second, "          ...found similar condition: ");
+                dprint(DT_MERGE, "          ...found similar condition: ");
+                dprint_condition(DT_MERGE, iter_value->second);
                 return iter_value->second;
             }
             else
@@ -113,7 +114,9 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     dprint(DT_MERGE, "======================\n");
     dprint(DT_MERGE, "= Merging Conditions =\n");
     dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "          ");
+    dprint_set_params(DT_MERGE, "          ");
+    dprint_condition_list(DT_MERGE, top_cond);
+    dprint_clear_params(DT_MERGE);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint(DT_MERGE, "# of conditions = %lld\n", old_num_conds);
     dprint(DT_MERGE, "======================\n");
@@ -122,7 +125,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     for (condition* cond = top_cond; cond; ++current_cond)
     {
         dprint(DT_MERGE, "Processing condition %lld: ", current_cond);
-        dprint_condition(DT_MERGE, cond, "");
+        dprint_condition(DT_MERGE, cond);
         next_cond = cond->next;
         if (cond->type == POSITIVE_CONDITION)
         {
@@ -184,7 +187,9 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
         dprint(DT_MERGE, "...done merging this constraint.\n");
     }
     dprint(DT_MERGE, "======================\n");
-    dprint_condition_list(DT_MERGE, top_cond, "          ");
+    dprint_set_params(DT_MERGE, "          ");
+    dprint_condition_list(DT_MERGE, top_cond);
+    dprint_clear_params(DT_MERGE);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %lld\n", new_num_conds);

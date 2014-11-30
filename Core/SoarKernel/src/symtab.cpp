@@ -551,7 +551,7 @@ Symbol* make_float_constant(agent* thisAgent, double value)
 void deallocate_symbol(agent* thisAgent, Symbol* sym, long indent)
 {
 
-//    dprint(DT_DEALLOCATE_SYMBOLS, "%*sDEALLOCATE symbol %s\n", indent, "", sym->to_string());
+//    dprint(DT_DEALLOCATE_SYMBOLS, "%*sDEALLOCATE symbol %y\n", indent, "", sym);
 
     switch (sym->symbol_type)
     {

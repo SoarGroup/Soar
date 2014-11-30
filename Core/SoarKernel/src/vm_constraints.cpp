@@ -35,12 +35,12 @@ void Variablization_Manager::variablize_relational_constraints()
     for (std::map< Symbol*, ::list* >::iterator it = sti_constraints->begin(); it != sti_constraints->end(); ++it)
     {
 
-        dprint(DT_CONSTRAINTS, "Looking for variablization for equality symbol %s.\n", it->first->to_string());
+        dprint(DT_CONSTRAINTS, "Looking for variablization for equality symbol %y.\n", it->first);
         found_variablization = get_variablization(it->first);
 
         if (found_variablization)
         {
-            dprint(DT_CONSTRAINTS, "...found grounding.  Variablizing constraint list.\n", it->first->to_string());
+            dprint(DT_CONSTRAINTS, "...found grounding.  Variablizing constraint list.\n");
 
             variablize_cached_constraints_for_symbol(&(it->second));
 
@@ -59,7 +59,7 @@ void Variablization_Manager::variablize_relational_constraints()
             c = it->second;
             while (c)
             {
-                dprint(DT_CONSTRAINTS, "...deallocating test %s\n", test_to_string(static_cast<test>(c->first)));
+                dprint(DT_CONSTRAINTS, "...deallocating test %t\n", static_cast<test>(c->first));
                 deallocate_test(thisAgent, static_cast<test>(c->first));
                 c = c->rest;
             }
@@ -195,14 +195,14 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
         {
             push(thisAgent, (copied_test), new_list);
             (*sti_constraints)[equality_test->data.referent] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+            dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%y] + %t\n", equality_test->data.referent, copied_test);
         }
         else
         {
             new_list = (*sti_constraints)[equality_test->data.referent];
             push(thisAgent, (copied_test), new_list);
             (*sti_constraints)[equality_test->data.referent] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%s] + %s\n", equality_test->data.referent->to_string(), test_to_string(copied_test));
+            dprint(DT_CONSTRAINTS, "ADDED (*sti_constraints)[%y] + %t\n", equality_test->data.referent, copied_test);
         }
     }
     else
@@ -212,14 +212,14 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
         {
             push(thisAgent, (copied_test), new_list);
             (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%llu] + %s\n", equality_test->identity->grounding_id, test_to_string(copied_test));
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%llu] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
         else
         {
             new_list = (*constant_constraints)[equality_test->identity->grounding_id];
             push(thisAgent, (copied_test), new_list);
             (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%llu] + %s\n", equality_test->identity->grounding_id, test_to_string(copied_test));
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%llu] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
     }
 }
@@ -271,7 +271,8 @@ void Variablization_Manager::cache_constraints_in_cond(condition* c)
 {
     /* Don't need to do id element.  It should always be an equality test */
     //  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
-    dprint_condition(DT_CONSTRAINTS, c, "Caching relational constraints in condition: ");
+    dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: ");
+    dprint_condition(DT_CONSTRAINTS, c);
     cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
 }
@@ -291,24 +292,24 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     eq_test = equality_test_found_in_test(*t);
     assert(eq_test);
     eq_symbol = eq_test->data.referent;
-    dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %s(%llu).\n", eq_symbol->to_string(), eq_test->identity ? eq_test->identity->grounding_id : 0);
+    dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %y(%llu).\n", eq_symbol, eq_test->identity ? eq_test->identity->grounding_id : 0);
     if (!eq_test->identity || (eq_test->identity->grounding_id == 0))
     {
         dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Using symbol to look up.\n");
         found_variablization = get_variablization(eq_symbol);
         if (found_variablization)
         {
-            dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %s.\n", found_variablization->variablized_symbol->to_string());
+            dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %y.\n", found_variablization->variablized_symbol);
             print_cached_constraints(DT_CONSTRAINTS);
             std::map< Symbol*, ::list* >::iterator iter = (*sti_constraints).find(eq_symbol);
             if (iter != (*sti_constraints).end())
             {
-                dprint(DT_CONSTRAINTS, "...adding relational constraint list for symbol %s...\n", eq_symbol->to_string());
+                dprint(DT_CONSTRAINTS, "...adding relational constraint list for symbol %y...\n", eq_symbol);
                 c = iter->second;
                 while (c)
                 {
                     ct = static_cast<test>(c->first);
-                    dprint_test(DT_CONSTRAINTS, ct, true, false, true, "...adding", "\n");
+                    dprint(DT_CONSTRAINTS, "...adding %t\n", ct);
                     add_test(thisAgent, t, ct);
                     c = c->rest;
                 }
@@ -331,17 +332,17 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
         found_variablization = get_variablization(eq_test->identity->grounding_id);
         if (found_variablization)
         {
-            dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %s.\n", found_variablization->variablized_symbol->to_string());
+            dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %y.\n", found_variablization->variablized_symbol);
             print_cached_constraints(DT_CONSTRAINTS);
             std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(eq_test->identity->grounding_id);
             if (iter != (*constant_constraints).end())
             {
-                dprint(DT_CONSTRAINTS, "...adding relational constraint list for symbol %s...\n", eq_symbol->to_string());
+                dprint(DT_CONSTRAINTS, "...adding relational constraint list for symbol %y...\n", eq_symbol);
                 c = iter->second;
                 while (c)
                 {
                     ct = static_cast<test>(c->first);
-                    dprint_test(DT_CONSTRAINTS, ct, true, false, true, "...adding ", "\n");
+                    dprint(DT_CONSTRAINTS, "...adding %t\n", ct);
                     add_test(thisAgent, t, ct);
                     c = c->rest;
                 }
@@ -375,14 +376,14 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
         if (cond->type == POSITIVE_CONDITION)
         {
             dprint(DT_CONSTRAINTS, "Adding for positive condition ");
-            dprint_condition(DT_CONSTRAINTS, cond, "");
+            dprint_condition(DT_CONSTRAINTS, cond);
             install_cached_constraints_for_test(&cond->data.tests.attr_test);
             install_cached_constraints_for_test(&cond->data.tests.value_test);
         }
         else
         {
             dprint(DT_CONSTRAINTS, (cond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition " : "Skipping for negative conjunctive condition:\n");
-            dprint_condition(DT_CONSTRAINTS, cond, "");
+            dprint_condition(DT_CONSTRAINTS, cond);
         }
         cond = cond->next;
     }
