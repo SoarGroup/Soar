@@ -548,10 +548,10 @@ Symbol* make_float_constant(agent* thisAgent, double value)
 
 ------------------------------------------------------------------- */
 
-void deallocate_symbol(agent* thisAgent, Symbol* sym, long indent)
+void deallocate_symbol(agent* thisAgent, Symbol* sym)
 {
 
-//    dprint(DT_DEALLOCATE_SYMBOLS, "%*sDEALLOCATE symbol %y\n", indent, "", sym);
+//    dprint(DT_DEALLOCATE_SYMBOLS, "DEALLOCATE symbol %y\n", sym);
 
     switch (sym->symbol_type)
     {
@@ -856,7 +856,7 @@ list* copy_symbol_list_adding_references(agent* thisAgent,
 ---------------------------------------------------------------- */
 
 void deallocate_symbol_list_removing_references(agent* thisAgent,
-        list* sym_list, long indent)
+        list* sym_list)
 {
     cons* c;
 
@@ -867,7 +867,7 @@ void deallocate_symbol_list_removing_references(agent* thisAgent,
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
         symbol_remove_ref(thisAgent, static_cast<Symbol*>(c->first));
 #else
-        symbol_remove_ref(thisAgent, static_cast<Symbol*>(c->first), indent);
+        symbol_remove_ref(thisAgent, static_cast<Symbol*>(c->first));
 #endif
         free_cons(thisAgent, c);
     }

@@ -133,7 +133,7 @@ test find_original_equality_test_preferring_vars(test t, bool useOriginals = fal
 
 test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
-void deallocate_test(agent* thisAgent, test t, long indent = 0);
+void deallocate_test(agent* thisAgent, test t);
 
 test copy_test(agent* thisAgent, test t);
 test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);

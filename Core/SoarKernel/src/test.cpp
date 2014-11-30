@@ -191,11 +191,11 @@ test copy_test_without_relationals(agent* thisAgent, test t)
    Deallocates a test.
 ---------------------------------------------------------------- */
 
-void deallocate_test(agent* thisAgent, test t, long indent)
+void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
-    dprint(DT_DEALLOCATES, "%*sDEALLOCATE test %s\n", indent, "", test_to_string(t));
+    dprint(DT_DEALLOCATES, "DEALLOCATE test %s\n", test_to_string(t));
     if (test_is_blank(t))
     {
         return;
@@ -207,17 +207,17 @@ void deallocate_test(agent* thisAgent, test t, long indent)
         case IMPASSE_ID_TEST:
             break;
         case DISJUNCTION_TEST:
-            deallocate_symbol_list_removing_references(thisAgent, t->data.disjunction_list, (indent + 2));
+            deallocate_symbol_list_removing_references(thisAgent, t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            dprint(DT_DEALLOCATES, "%*sDEALLOCATE conjunctive test\n", indent, "");
+            dprint(DT_DEALLOCATES, "DEALLOCATE conjunctive test\n");
             c = t->data.conjunct_list;
             while (c)
             {
                 next_c = c->rest;
                 test tt;
                 tt = static_cast<test>(c->first);
-                deallocate_test(thisAgent, static_cast<test>(c->first), (indent + 2));
+                deallocate_test(thisAgent, static_cast<test>(c->first));
                 free_cons(thisAgent, c);
                 c = next_c;
             }
@@ -226,14 +226,14 @@ void deallocate_test(agent* thisAgent, test t, long indent)
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
             symbol_remove_ref(thisAgent, t->data.referent);
 #else
-            symbol_remove_ref(thisAgent, t->data.referent, (indent + 2));
+            symbol_remove_ref(thisAgent, t->data.referent);
 #endif
             break;
     }
     if (t->original_test)
     {
-        dprint(DT_DEALLOCATES, "%*sDEALLOCATE original test %s\n", indent, "", test_to_string(t->original_test));
-        deallocate_test(thisAgent, t->original_test, (indent + 2));
+        dprint(DT_DEALLOCATES, "DEALLOCATE original test %s\n", test_to_string(t->original_test));
+        deallocate_test(thisAgent, t->original_test);
     }
     /* -- MToDo | All tests should have identity for now, so we shouldn't need to check this.  Leaving in for now to see
      *            if other unit tests fail.  -- */
@@ -255,7 +255,7 @@ void deallocate_test(agent* thisAgent, test t, long indent)
     t->eq_test = NULL;
 
     free_with_pool(&thisAgent->test_pool, t);
-    dprint(DT_DEALLOCATES, "%*sDEALLOCATE test done.\n", indent, "");
+    dprint(DT_DEALLOCATES, "DEALLOCATE test done.\n");
 }
 
 /* ----------------------------------------------------------------
