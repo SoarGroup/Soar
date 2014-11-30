@@ -158,14 +158,46 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
             break;
         }
         /* --- handle the %-thingy --- */
-        if (*(format + 1) == 'y')
+        /* the size of the remaining buffer (after ch) is
+            the difference between the address of ch and
+            the address of the beginning of the buffer
+         */
+        if (*(format + 1) == 's')
         {
-            /* the size of the remaining buffer (after ch) is
-                the difference between the address of ch and
-                the address of the beginning of the buffer
-                */
+            char *ch2 = va_arg(args, char *);
+            if (ch2)
+            {
+                //SNPRINTF(ch, count - (ch - dest), "%s", va_arg(args, char *));
+                strcpy(ch, ch2);
+                while (*ch)
+                {
+                    ch++;
+                }
+            }
+            format += 2;
+        } else if (*(format + 1) == 'y')
+        {
             sym = va_arg(args, Symbol*);
-            (sym)->to_string(true, ch, count - (ch - dest));
+            if (sym)
+            {
+                (sym)->to_string(true, ch, count - (ch - dest));
+                while (*ch)
+                {
+                    ch++;
+                }
+            }
+            format += 2;
+        } else if (*(format + 1) == 'i')
+        {
+            SNPRINTF(ch, count - (ch - dest), "%lld", va_arg(args, int64_t));
+            while (*ch)
+            {
+                ch++;
+            }
+            format += 2;
+        } else if (*(format + 1) == 'u')
+        {
+            SNPRINTF(ch, count - (ch - dest), "%llu", va_arg(args, uint64_t));
             while (*ch)
             {
                 ch++;
@@ -179,8 +211,7 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
                 ch++;
             }
             format += 2;
-        }
-        else
+        } else
         {
             *(ch++) = *(format++);
         }

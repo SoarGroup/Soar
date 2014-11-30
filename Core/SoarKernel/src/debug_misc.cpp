@@ -217,6 +217,12 @@ void debug_test(int type)
     {
         return;
     }
+
+    Symbol* sym  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    test t = make_test(debug_agent, sym, GREATER_TEST);
+    int64_t i1=-23;
+    uint64_t ui1=33;
+
     switch (type)
     {
         case 1:
@@ -245,8 +251,16 @@ void debug_test(int type)
             break;
 
         case 7:
-            dprint(DT_DEBUG, "Trying dprintf with no arguments.");
-            dprint(DT_DEBUG, "Trying dprintf with 1 string argument %s", "MAZIN");
+
+
+            dprint(DT_DEBUG, "Trying dprintf with symbol %y\n", sym);
+            dprint(DT_DEBUG, "Trying dprintf with test %t\n", t);
+            dprint(DT_DEBUG, "Trying dprintf with string %s\n", "MAZIN");
+            dprint(DT_DEBUG, "Trying dprintf with int64_t %i\n", i1);
+            dprint(DT_DEBUG, "Trying dprintf with uint64_t %u\n", ui1);
+            dprint(DT_DEBUG, "Trying dprintf with all %y %t %s %i %u\n", sym, t, "MAZIN", i1, ui1);
+            symbol_remove_ref(debug_agent, sym);
+            deallocate_test(debug_agent, t);
             break;
         case 8:
             test_print_speed();
