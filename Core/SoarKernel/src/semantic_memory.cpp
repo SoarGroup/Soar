@@ -4177,10 +4177,18 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 			else if ( should_spontaneously_retrieve )
 			{
-				my_agent->smem_timers->spontaneous->start();
 				// spontaneous retrieval
+				my_agent->smem_timers->spontaneous->start();
+				soar_module::sqlite_statement *q;
+				// update the activation of all LTIs first (yes, I know this is expensive)
+				q = my_agent->smem_stmts->lti_get_act;
+				while ( q->execute() == soar_module::row )
+				{
+					smem_lti_activate( my_agent, q->column_int( 0 ), false );
+				}
+				q->reinitialize();
 				// get the LTI with the highest activation
-				soar_module::sqlite_statement *q = my_agent->smem_stmts->lti_get_act;
+				q = my_agent->smem_stmts->lti_get_act;
 				while ( q->execute() == soar_module::row )
 				{
 					smem_lti_id spontaneous_result = static_cast<smem_lti_id>(q->column_int(0));
