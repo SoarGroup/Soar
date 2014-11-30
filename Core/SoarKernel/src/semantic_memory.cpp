@@ -1177,29 +1177,6 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	uint64_t prev_access_n = 0;
 	uint64_t prev_access_t = 0;
 	uint64_t prev_access_1 = 0;
-	{
-		// get old (potentially useful below)
-		{
-			my_agent->smem_stmts->lti_access_get->bind_int( 1, lti );
-			my_agent->smem_stmts->lti_access_get->execute();
-
-			prev_access_n = my_agent->smem_stmts->lti_access_get->column_int( 0 );
-			prev_access_t = my_agent->smem_stmts->lti_access_get->column_int( 1 );
-			prev_access_1 = my_agent->smem_stmts->lti_access_get->column_int( 2 );
-
-			my_agent->smem_stmts->lti_access_get->reinitialize();
-		}
-
-		// set new
-		if ( add_access || prev_access_n == 0)
-		{
-			my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
-			my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
-			my_agent->smem_stmts->lti_access_set->bind_int( 3, ( ( prev_access_n == 0 )?( time_now ):( prev_access_1 ) ) );
-			my_agent->smem_stmts->lti_access_set->bind_int( 4, lti );
-			my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
-		}
-	}
 
 	// get new activation value (depends upon bias)
 	double new_activation = 0.0;
@@ -1240,45 +1217,43 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 					my_agent->smem_stmts->lti_access_get->reinitialize();
 				}
 
-				if ( add_access )
+				// if this LTI has never been activated before, use history_add
+				// otherwise, use history_push
+				if (add_access)
 				{
-					// if this LTI has never been activated before, use history_add
-					// otherwise, use history_push
 					if ( prev_access_n == 0 )
 					{
 						my_agent->smem_stmts->history_add->bind_int( 1, temp_lti_id );
 						my_agent->smem_stmts->history_add->bind_int( 2, time_now );
 						my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
-						new_activation = 0;
 					}
 					else
 					{
 						my_agent->smem_stmts->history_push->bind_int( 1, time_now );
 						my_agent->smem_stmts->history_push->bind_int( 2, temp_lti_id );
 						my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
-						if ( smem_lti_calc_base( my_agent, temp_lti_id, time_now ) == SMEM_ACT_LOW )
-						{
-							new_activation = 0;
-						}
-						else
-						{
-							new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now+1, prev_access_n+1, prev_access_1 );
-						}
 					}
 
-					if (depth == 0) {
-						return_activation_val = new_activation;
-					}
+					my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
+					my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
+					my_agent->smem_stmts->lti_access_set->bind_int( 3, ( ( prev_access_n == 0 )?( time_now ):( prev_access_1 ) ) );
+					my_agent->smem_stmts->lti_access_set->bind_int( 4, temp_lti_id);
+					my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
+				}
 
-					{
-						my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
-						my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
-						my_agent->smem_stmts->lti_access_set->bind_int( 3, ( ( prev_access_n == 0 )?( time_now ):( prev_access_1 ) ) );
-						my_agent->smem_stmts->lti_access_set->bind_int( 4, temp_lti_id);
-						my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
-					}
+				if ( prev_access_n == 0 )
+				{
+					new_activation = 0;
+				}
+				else
+				{
+					new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
+				}
 
-					my_agent->smem_stats->act_accesses->set_value( my_agent->smem_stats->act_accesses->get_value() + 1 );
+				my_agent->smem_stats->act_accesses->set_value( my_agent->smem_stats->act_accesses->get_value() + 1 );
+
+				if (depth == 0) {
+					return_activation_val = new_activation;
 				}
 
 				// push new activation to smem_augmentations if appropriate
@@ -1342,6 +1317,30 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	}
 	else
 	{
+		{
+			// get old (potentially useful below)
+			{
+				my_agent->smem_stmts->lti_access_get->bind_int( 1, lti );
+				my_agent->smem_stmts->lti_access_get->execute();
+
+				prev_access_n = my_agent->smem_stmts->lti_access_get->column_int( 0 );
+				prev_access_t = my_agent->smem_stmts->lti_access_get->column_int( 1 );
+				prev_access_1 = my_agent->smem_stmts->lti_access_get->column_int( 2 );
+
+				my_agent->smem_stmts->lti_access_get->reinitialize();
+			}
+
+			// set new
+			if ( add_access )
+			{
+				my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
+				my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
+				my_agent->smem_stmts->lti_access_set->bind_int( 3, ( ( prev_access_n == 0 )?( time_now ):( prev_access_1 ) ) );
+				my_agent->smem_stmts->lti_access_set->bind_int( 4, lti );
+				my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
+			}
+		}
+
 		if ( act_mode == smem_param_container::act_recency )
 		{
 			new_activation = static_cast<double>( time_now );
