@@ -59,39 +59,30 @@ static void trace_sql(void* /*arg*/, const char* query)
             Output_Manager::Get_OM().print_condition_list (mode, top_cond)
     #define dprint_condition(mode, cond) \
             Output_Manager::Get_OM().print_condition (mode, cond)
-    #define dprint_action_list(mode, action_list) \
-            Output_Manager::Get_OM().print_action_list( mode, action_list)
     #define dprint_action(mode, a) Output_Manager::Get_OM().print_action (mode, a)
     #define dprint_instantiation(mode, inst) \
             Output_Manager::Get_OM().print_instantiation (mode, inst)
     #define dprint_cond_prefs_inst(mode, top_cond, top_pref) \
             Output_Manager::Get_OM().print_cond_prefs (mode, top_cond, top_pref)
-    #define dprint_cond_prefs_result(mode, top_cond, top_pref) \
-            Output_Manager::Get_OM().print_cond_results (mode, top_cond, top_pref)
     #define dprint_cond_actions(mode, top_cond, top_action) \
             Output_Manager::Get_OM().print_cond_actions (mode, top_cond, top_action)
     #define dprint_cond_results(mode, top_cond, top_pref) \
             Output_Manager::Get_OM().print_cond_results (mode, top_cond, top_pref)
-    #define dprint_preferences(mode, top_pref, pref_list_type) \
-            Output_Manager::Get_OM().debug_print_preferences (mode, top_pref, pref_list_type)
     #define dprint_preference(mode, pref...) \
             Output_Manager::Get_OM().debug_print_preference (mode, pref)
     #define dprint_production(mode, prod) Output_Manager::Get_OM().debug_print_production (mode, prod)
     #define dprint_identifiers(mode) Output_Manager::Get_OM().print_identifiers (mode)
     #define dprint_condition_cons(mode, c) \
             Output_Manager::Get_OM().print_condition_cons (mode, c)
-    #define dprint_rhs_value(mode, rv, tok, w) Output_Manager::Get_OM().print_rhs_value (mode, rv, tok, w)
     #define dprint_saved_test_list(mode, st) Output_Manager::Get_OM().print_saved_test_list (mode, st)
     #define dprint_varnames_node(mode, var_names_node) Output_Manager::Get_OM().print_varnames_node (mode, var_names_node)
     #define dprint_varnames(mode, var_names) Output_Manager::Get_OM().print_varnames (mode, var_names)
-    #define dprint_identity(mode, i) Output_Manager::Get_OM().print_identity (mode, i)
     #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
     #define dprint_wmes(mode, pOnlyWithIdentity) Output_Manager::Get_OM().print_wmes (mode, pOnlyWithIdentity)
     #define dprint_wme(mode, w) Output_Manager::Get_OM().print_wme (mode, w, false)
     #define dprint(mode, format, args...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
 #else
     //#define dprint_macro(mode, format, args...) { }
-    #define dprint(mode, format, args...) ((void)0)
     #define dprint_y(mode, format, ...) ((void)0)
     #define dprint_noprefix(mode, format, ...) ((void)0)
     #define dprint_start_fresh_line(mode) ((void)0)
@@ -99,25 +90,21 @@ static void trace_sql(void* /*arg*/, const char* query)
     #define dprint_condition(mode, cond) ((void)0)
     #define dprint_condition_list(mode, top_cond) ((void)0)
     #define dprint_action(mode, a) ((void)0)
-    #define dprint_action_list(mode, action_list) ((void)0)
     #define dprint_instantiation(mode, inst) ((void)0)
     #define dprint_cond_prefs_inst(mode, top_cond, top_pref) ((void)0)
-    #define dprint_cond_result(mode, top_cond, top_pref) ((void)0)
     #define dprint_cond_actions(mode, top_cond, top_action) ((void)0)
     #define dprint_cond_results(mode, top_cond, top_pref) ((void)0)
     #define dprint_preference(mode, pref) ((void)0)
-    #define dprint_preferences(mode, top_pref, pref_list_type) ((void)0)
     #define dprint_production(mode, prod) ((void)0)
     #define dprint_identifiers(mode) ((void)0)
     #define dprint_condition_cons(mode, c) ((void)0)
-    #define dprint_rhs_value(mode, rv, tok, w) ((void)0)
     #define dprint_saved_test_list(mode, st) ((void)0)
     #define dprint_varnames(mode, var_names) ((void)0)
     #define dprint_varnames_node(mode, var_names_node) ((void)0)
-    #define dprint_identity(mode, i) ((void)0)
     #define dprint_all_inst(mode) ((void)0)
     #define dprint_wmes(mode, pOnlyWithIdentity) ((void)0)
     #define dprint_wme(mode, w) ((void)0)
+    #define dprint(mode, format, args...) ((void)0)
 #endif
 
 extern void debug_init_db(agent* thisAgent);
