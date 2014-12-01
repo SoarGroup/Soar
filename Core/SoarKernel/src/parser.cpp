@@ -354,7 +354,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
 
                 if (lti_id == NIL)
                 {
-                    dprint(DT_PARSER, "Could not find LTI @%s%lld.\n", lexeme->id_letter, lexeme->id_number);
+                    dprint(DT_PARSER, "Could not find LTI @%s%i.\n", lexeme->id_letter, lexeme->id_number);
                     char msg[BUFFER_MSG_SIZE];
                     strncpy(msg, "parser.c: Internal error:  invalid long-term identifier found in make_symbol_for_lexeme\n", BUFFER_MSG_SIZE);
                     msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */

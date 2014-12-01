@@ -100,7 +100,7 @@ void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bo
 
     for (std::map< Symbol*, uint64_t >::iterator it = (*orig_var_to_g_id_map).begin(); it != (*orig_var_to_g_id_map).end(); ++it)
     {
-        dprint(mode, "%y -> %llu\n", it->first, it->second);
+        dprint(mode, "%y -> %u\n", it->first, it->second);
     }
 
 }
@@ -139,7 +139,7 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
         c = it->second;
         while (c)
         {
-            dprint(mode, "%llu: %t\n ", it->first, static_cast<test>(c->first));
+            dprint(mode, "%u: %t\n ", it->first, static_cast<test>(c->first));
             c = c->rest;
         }
     }
@@ -180,7 +180,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         }
         for (std::map< uint64_t, variablization* >::iterator it = (*g_id_to_var_map).begin(); it != (*g_id_to_var_map).end(); ++it)
         {
-            dprint(mode, "%llu -> %y/%y\n", it->first,
+            dprint(mode, "%u -> %y/%y\n", it->first,
                    it->second->variablized_symbol, it->second->instantiated_symbol);
         }
     }

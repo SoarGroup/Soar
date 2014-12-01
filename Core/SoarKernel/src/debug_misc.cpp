@@ -142,30 +142,24 @@ void debug_test_structs()
 void debug_test_find_delete_sym(agent* debug_agent, test* dest, Symbol* sym)
 {
     ::list* c;
-    dprint(DT_DEBUG, "Starting tests: ");
-    dprint_test(DT_DEBUG, (*dest));
-    dprint_noprefix(DT_DEBUG, "\n");
+    dprint(DT_DEBUG, "Starting tests: %t\n", (*dest));
     dprint(DT_DEBUG, "Looking for %y.  Comparing against...", sym);
     c = (*dest)->data.conjunct_list;
     while (c)
     {
-        dprint_test(DT_DEBUG, static_cast<test>(c->first));
+        dprint(DT_DEBUG, "%t", static_cast<test>(c->first));
         if (static_cast<test>(c->first)->data.referent == sym)
         {
             dprint_noprefix(DT_DEBUG, "<-- FOUND\n");
             c = delete_test_from_conjunct(debug_agent, dest, c);
-            dprint_noprefix(DT_DEBUG, "...after deletion: ");
-            dprint_test(DT_DEBUG, (*dest));
-            dprint_noprefix(DT_DEBUG, "\n");
+            dprint_noprefix(DT_DEBUG, "...after deletion: %t\n", (*dest));
         }
         else
         {
             c = c->rest;
         }
     }
-    dprint(DT_DEBUG, "Final tests: ");
-    dprint_test(DT_DEBUG, (*dest));
-    dprint_noprefix(DT_DEBUG, "\n");
+    dprint(DT_DEBUG, "Final tests: %t\n", (*dest));
 }
 
 void debug_test_delete_conjuncts()
@@ -254,11 +248,14 @@ void debug_test(int type)
 
 
             dprint(DT_DEBUG, "Trying dprintf with symbol %y\n", sym);
+            dprint(DT_DEBUG, "Trying dprintf with null symbol %y\n", NULL);
             dprint(DT_DEBUG, "Trying dprintf with test %t\n", t);
             dprint(DT_DEBUG, "Trying dprintf with string %s\n", "MAZIN");
+            dprint(DT_DEBUG, "Trying dprintf with char %c\n", 'z');
+            dprint(DT_DEBUG, "Trying dprintf with empty string %s\n", "");
             dprint(DT_DEBUG, "Trying dprintf with int64_t %i\n", i1);
             dprint(DT_DEBUG, "Trying dprintf with uint64_t %u\n", ui1);
-            dprint(DT_DEBUG, "Trying dprintf with all %y %t %s %i %u\n", sym, t, "MAZIN", i1, ui1);
+            dprint(DT_DEBUG, "Trying dprintf with all %y %y %t %s %s %c %i %u\n", sym, NULL, t, "MAZIN", "", 'z', i1, ui1);
             symbol_remove_ref(debug_agent, sym);
             deallocate_test(debug_agent, t);
             break;

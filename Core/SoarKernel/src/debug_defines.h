@@ -12,8 +12,8 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-//#define DEBUG_FREE_SETTINGS
-#define DEBUG_FULL_SETTINGS
+#define DEBUG_FREE_SETTINGS
+//#define DEBUG_FULL_SETTINGS
 //#define DEBUG_REFCOUNT_SETTINGS
 //#define DEBUG_UNITTEST_SETTINGS
 
@@ -30,7 +30,7 @@
 
 /* -- Which debug messages should be printed -- */
 #define TRACE_Init_DT_No_Mode                     true
-#define TRACE_Init_DT_DEBUG                       true
+#define TRACE_Init_DT_DEBUG                       false
 //--
 #define TRACE_Init_DT_REFCOUNT_ADDS               false
 #define TRACE_Init_DT_REFCOUNT_REMS               false
@@ -40,8 +40,8 @@
 //--
 #define TRACE_Init_DT_GDS                         false
 #define TRACE_Init_DT_PARSER                      false
-#define TRACE_Init_DT_FUNC_PRODUCTIONS            false
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
+#define TRACE_Init_DT_FUNC_PRODUCTIONS            true
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            false
 #define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  false

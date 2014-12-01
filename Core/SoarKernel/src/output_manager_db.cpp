@@ -417,7 +417,7 @@ void OM_DB::increment_message_count(MessageType msgType)
 void OM_DB::store_refcount(Symbol* sym, const char* callers, bool isAdd)
 {
     increment_message_count(refcnt_msg);
-    //  print_sf("Storing refcount %lld %y %s\n", message_count, sym, callers);
+    //  print_sf("Storing refcount %i %y %s\n", message_count, sym, callers);
     add_refcnt_message->bind_int(1, message_count);
     //  add_refcnt_message->bind_text( 2, sym->to_string());
     add_refcnt_message->bind_text(3, callers);
@@ -438,7 +438,7 @@ void OM_DB::print_db(MessageType msgType, const char* prefix, const char* msg)
          *           make sure it's not empty before incrementing and adding. -- */
 
         increment_message_count(msgType);
-        //print_sf(thisAgent, "Inserting msg %lld %s| %s\n", message_count, mode_to_prefix(mode), msg);
+        //print_sf(thisAgent, "Inserting msg %i %s| %s\n", message_count, mode_to_prefix(mode), msg);
 
         if (msgType == trace_msg)
         {

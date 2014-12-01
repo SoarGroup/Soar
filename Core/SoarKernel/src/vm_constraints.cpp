@@ -77,12 +77,12 @@ void Variablization_Manager::variablize_relational_constraints()
     for (std::map< uint64_t, ::list* >::iterator it = constant_constraints->begin(); it != constant_constraints->end(); ++it)
     {
 
-        dprint(DT_CONSTRAINTS, "Looking for variablization for equality g_id %llu.\n", it->first);
+        dprint(DT_CONSTRAINTS, "Looking for variablization for equality g_id %u.\n", it->first);
         found_variablization = get_variablization(it->first);
 
         if (found_variablization)
         {
-            dprint(DT_CONSTRAINTS, "...found grounding for grounding id %llu.  Variablizing constraint list.\n", it->first);
+            dprint(DT_CONSTRAINTS, "...found grounding for grounding id %u.  Variablizing constraint list.\n", it->first);
             variablize_cached_constraints_for_symbol(&(it->second));
 
             /* -- If at least one relational constraint remains in the list, add to variablized constraint
@@ -212,14 +212,14 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
         {
             push(thisAgent, (copied_test), new_list);
             (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%llu] + %t\n", equality_test->identity->grounding_id, copied_test);
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%u] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
         else
         {
             new_list = (*constant_constraints)[equality_test->identity->grounding_id];
             push(thisAgent, (copied_test), new_list);
             (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%llu] + %t\n", equality_test->identity->grounding_id, copied_test);
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%u] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
     }
 }
@@ -292,7 +292,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     eq_test = equality_test_found_in_test(*t);
     assert(eq_test);
     eq_symbol = eq_test->data.referent;
-    dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %y(%llu).\n", eq_symbol, eq_test->identity ? eq_test->identity->grounding_id : 0);
+    dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %y(%u).\n", eq_symbol, eq_test->identity ? eq_test->identity->grounding_id : 0);
     if (!eq_test->identity || (eq_test->identity->grounding_id == 0))
     {
         dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Using symbol to look up.\n");

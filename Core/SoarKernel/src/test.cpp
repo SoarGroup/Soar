@@ -1170,7 +1170,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         return NON_GENERALIZABLE;
     }
 
-//    dprint(DT_IDENTITY_PROP, "- %s g_id requested for (%llu: %y ^%y %y) at level %hi...\n",
+//    dprint(DT_IDENTITY_PROP, "- %s g_id requested for (%u: %y ^%y %y) at level %i...\n",
 //        field_to_string(f), w->timetag, w->id, w->attr, w->value, pLevel);
     dprint(DT_IDENTITY_PROP, "- g_id requested for (%y ^%y %y) at level ...\n", w->id, w->attr, w->value);
 
@@ -1185,7 +1185,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     {
         if (g->level == pLevel)
         {
-            dprint(DT_IDENTITY_PROP, "- found grounding struct for level %hi: (%llu ^%llu %llu)\n", pLevel, g->grounding_id[ID_ELEMENT], g->grounding_id[ATTR_ELEMENT], g->grounding_id[VALUE_ELEMENT]);
+            dprint(DT_IDENTITY_PROP, "- found grounding struct for level %i: (%u ^%u %u)\n", pLevel, g->grounding_id[ID_ELEMENT], g->grounding_id[ATTR_ELEMENT], g->grounding_id[VALUE_ELEMENT]);
             if (g->grounding_id[f] == 0)
             {
                 dprint(DT_IDENTITY_PROP, "-- will attempt to retrieve via propagation or create a new g_id for %s element.\n", field_to_string(f));
@@ -1194,7 +1194,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
             }
             else
             {
-                dprint(DT_IDENTITY_PROP, "-- returning g_id %llu\n", g->grounding_id[f]);
+                dprint(DT_IDENTITY_PROP, "-- returning g_id %u\n", g->grounding_id[f]);
                 return g->grounding_id[f];
             }
         }
@@ -1214,7 +1214,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     {
         /* MToDo | We can probably eliminate generating id's for level 1 to level 1 matches here */
         g->grounding_id[f] = get_gid_from_pref_for_field(w->preference, f);
-        dprint(DT_IDENTITY_PROP, "- propagating g_id %llu from wme preference at the same level...", g->grounding_id[f]);
+        dprint(DT_IDENTITY_PROP, "- propagating g_id %u from wme preference at the same level...", g->grounding_id[f]);
     }
     else
     {
@@ -1236,7 +1236,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     {
         dprint_noprefix(DT_IDENTITY_PROP, "returning existing g_id ");
     }
-    dprint_noprefix(DT_IDENTITY_PROP, "%llu\n", g->grounding_id[f]);
+    dprint_noprefix(DT_IDENTITY_PROP, "%u\n", g->grounding_id[f]);
     return g->grounding_id[f];
 }
 
@@ -1322,13 +1322,13 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                 if (!sym->is_sti())
                 {
                     (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field, level);
-                    dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %llu.\n", sym, (*t)->identity->grounding_id);
+                    dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %i.\n", sym, (*t)->identity->grounding_id);
                     if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
                     {
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
                         if (existing_gid)
                         {
-                            dprint(DT_IDENTITY_PROP, "- %y(%llu) already has g_id %llu.\n", sym, (*t)->identity->grounding_id, existing_gid);
+                            dprint(DT_IDENTITY_PROP, "- %y(%i) already has g_id %i.\n", sym, (*t)->identity->grounding_id, existing_gid);
                             add_unification_constraint(thisAgent, t, existing_gid);
                         }
                     }
@@ -1397,7 +1397,7 @@ inline void add_identity_to_negative_test(agent* thisAgent,
 //                    if (t->identity->grounding_id != NON_GENERALIZABLE)
 //                    {
                         t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym);
-                        dprint(DT_IDENTITY_PROP, "Setting g_id for %y to %llu.\n", sym, t->identity->grounding_id);
+                        dprint(DT_IDENTITY_PROP, "Setting g_id for %y to %i.\n", sym, t->identity->grounding_id);
 //                    }
 //                    else
 //                    {

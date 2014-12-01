@@ -497,9 +497,9 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %lld\n", x, (x)->reference_count + 1);
+    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
 #else
-    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %lld\n", x, (x)->reference_count + 1);
+    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
 #endif
 
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -507,7 +507,7 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x)
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("add_ref");
-        //dprint(DT_ID_LEAKING, "-- | %s(%lld) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
 
@@ -525,9 +525,9 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %lld\n", x, (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
 #else
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %lld\n", x, (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
 #endif
     (x)->reference_count--;
 
@@ -536,7 +536,7 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("remove_ref");
-        //dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_DEBUG, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
 
@@ -562,9 +562,9 @@ inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %y -> %lld\n", x, (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %y -> %u\n", x, (x)->reference_count - 1);
 #else
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %y -> %lld\n", x, (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %y -> %u\n", x, (x)->reference_count - 1);
 #endif
 
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -572,7 +572,7 @@ inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x)
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("remove_ref");
-        //dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_DEBUG, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
     (x)->reference_count--;

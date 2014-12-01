@@ -42,7 +42,7 @@ void Variablization_Manager::clear_ovar_gid_table()
     /* -- Clear original variable map -- */
     for (std::map< Symbol*, uint64_t >::iterator it = (*orig_var_to_g_id_map).begin(); it != (*orig_var_to_g_id_map).end(); ++it)
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %y -> %llu\n", it->first, it->second);
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %y -> %u\n", it->first, it->second);
         symbol_remove_ref(thisAgent, it->first);
     }
     orig_var_to_g_id_map->clear();
@@ -55,7 +55,7 @@ void Variablization_Manager::clear_variablization_tables()
     /* -- Clear symbol->variablization map -- */
     for (std::map< Symbol*, variablization* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %y -> %y(%lld)/%y(%lld)\n",
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %y -> %y(%u)/%y(%u)\n",
                it->first,
                it->second->instantiated_symbol, it->second->instantiated_symbol->reference_count,
                it->second->variablized_symbol,  it->second->variablized_symbol->reference_count);
@@ -69,7 +69,7 @@ void Variablization_Manager::clear_variablization_tables()
     /* -- Clear grounding_id->variablization map -- */
     for (std::map< uint64_t, variablization* >::iterator it = (*g_id_to_var_map).begin(); it != (*g_id_to_var_map).end(); ++it)
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %llu -> %y(%lld)/%y(%lld)\n",
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %u -> %y(%u)/%y(%u)\n",
                it->first,
                it->second->instantiated_symbol, it->second->instantiated_symbol->reference_count,
                it->second->variablized_symbol,  it->second->variablized_symbol->reference_count);
@@ -91,13 +91,13 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
     std::map< uint64_t, variablization* >::iterator iter = (*g_id_to_var_map).find(index_id);
     if (iter != (*g_id_to_var_map).end())
     {
-        dprint(DT_LHS_VARIABLIZATION, "...found %llu in g_id variablization table: %y/%y\n", index_id,
+        dprint(DT_LHS_VARIABLIZATION, "...found %u in g_id variablization table: %y/%y\n", index_id,
                iter->second->variablized_symbol, iter->second->instantiated_symbol);
         return iter->second;
     }
     else
     {
-        dprint(DT_LHS_VARIABLIZATION, "...did not find %llu in g_id variablization table.\n", index_id);
+        dprint(DT_LHS_VARIABLIZATION, "...did not find %u in g_id variablization table.\n", index_id);
         print_variablization_tables(DT_LHS_VARIABLIZATION, 2);
         return NULL;
     }
@@ -142,7 +142,7 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym)
     std::map< Symbol*, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
     if (iter != (*orig_var_to_g_id_map).end())
     {
-        dprint(DT_LHS_VARIABLIZATION, "...found %llu in orig_var variablization table for %y\n",
+        dprint(DT_LHS_VARIABLIZATION, "...found %u in orig_var variablization table for %y\n",
                iter->second, index_sym);
 
         return iter->second;
@@ -161,7 +161,7 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     std::map< Symbol*, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
     if (iter == (*orig_var_to_g_id_map).end())
     {
-        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %llu\n", index_sym, index_g_id);
+        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %u\n", index_sym, index_g_id);
         (*orig_var_to_g_id_map)[index_sym] = index_g_id;
         symbol_add_ref(thisAgent, index_sym);
         return 0;
@@ -169,7 +169,7 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     else
     {
         dprint(DT_OVAR_MAPPINGS,
-               "...%llu already exists in orig_var variablization table for %y.  add_orig_var_to_gid_mapping returning false.\n",
+               "...%u already exists in orig_var variablization table for %y.  add_orig_var_to_gid_mapping returning false.\n",
                iter->second, index_sym);
     }
     return iter->second;
@@ -181,7 +181,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 {
     variablization* new_variablization;
     assert(instantiated_sym && variable);
-    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(%llu) to %y.\n",
+    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(%u) to %y.\n",
            instantiated_sym,
            identity ? identity->grounding_id : 0,
            variable);
@@ -217,7 +217,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
          *    indexed by the constant's grounding id. -- */
         (*g_id_to_var_map)[identity->grounding_id] = new_variablization;
 
-        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created g_id_to_var_map[%llu] to new variablization.\n",
+        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created g_id_to_var_map[%u] to new variablization.\n",
                         identity->grounding_id);
     }
     else

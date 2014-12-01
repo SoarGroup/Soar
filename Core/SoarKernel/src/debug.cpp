@@ -58,8 +58,8 @@ bool check_symbol(agent* thisAgent, Symbol* sym, const char* message)
     std::string strName(sym->to_string());
     if (strName == DEBUG_CHECK_SYMBOL)
     {
-        //    dprint(DT_DEBUG, "%sFound %s(%lld) | %s\n", message, strName.c_str(), sym->reference_count, get_refcount_stacktrace_string().c_str());
-        dprint(DT_DEBUG, "%sFound %s(%lld) | %s\n", message, strName.c_str(), sym->reference_count, "");
+        //    dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, get_refcount_stacktrace_string().c_str());
+        dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, "");
         return true;
     }
 #endif

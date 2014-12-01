@@ -82,13 +82,8 @@ void deallocate_condition_list(agent* thisAgent,
         }
         else     /* positive and negative conditions */
         {
-            dprint(DT_DEALLOCATES, "Deallocating condition: (");
-            dprint_test(DT_DEALLOCATES, c->data.tests.id_test);
-            dprint_noprefix(DT_DEALLOCATES, " ^");
-            dprint_test(DT_DEALLOCATES, c->data.tests.attr_test);
-            dprint_noprefix(DT_DEALLOCATES, " ");
-            dprint_test(DT_DEALLOCATES, c->data.tests.value_test);
-            dprint_noprefix(DT_DEALLOCATES, ")\n");
+            dprint(DT_DEALLOCATES, "Deallocating condition: ");
+            dprint_condition(DT_DEALLOCATES, c);
             deallocate_test(thisAgent, c->data.tests.id_test);
             deallocate_test(thisAgent, c->data.tests.attr_test);
             deallocate_test(thisAgent, c->data.tests.value_test);

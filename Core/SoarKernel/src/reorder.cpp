@@ -255,8 +255,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     Symbol* var, *sym;
     cons* c, *prev_c, *next_c;
 
-    dprint(DT_REORDERER, "Simplifying test ");
-    dprint_test(DT_REORDERER, (*t));
+    dprint(DT_REORDERER, "Simplifying test %t", (*t));
 
     if (test_is_blank(*t))
     {
@@ -465,9 +464,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
     bool added_it;
     Symbol* referent;
 
-    dprint(DT_REORDERER, "Looking for saved tests for: ");
-    dprint_test(DT_REORDERER, (*t));
-    dprint(DT_REORDERER, "\n");
+    dprint(DT_REORDERER, "Looking for saved tests for: %t\n", (*t));
 //  dprint_saved_test_list (DT_REORDERER, tests_to_restore);
 
     prev_st = NIL;
@@ -477,9 +474,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
         next_st = st->next;
         added_it = false;
 
-        dprint(DT_REORDERER, "...comparing with: %y --> ", st->var);
-        dprint_test(DT_REORDERER, st->the_test);
-        dprint(DT_REORDERER, "...");
+        dprint(DT_REORDERER, "...comparing with: %y --> %t...", st->var, st->the_test);
 
         switch (st->the_test->type)
         {
@@ -494,9 +489,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 dprint_noprefix(DT_REORDERER, "test is goal/impasse/disj...\n");
                 if (test_includes_equality_test_for_symbol(*t, st->var))
                 {
-                    dprint(DT_REORDERER, "Found match with  using index var %y: ", st->var);
-                    dprint_test(DT_REORDERER, st->the_test);
-                    dprint(DT_REORDERER, "\n");
+                    dprint(DT_REORDERER, "Found match with  using index var %y: %t\n", st->var, st->the_test);
                     dprint(DT_REORDERER, "Removing entry with index %y and adding test.\n", st->var);
                     add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                     added_it = true;
@@ -507,9 +500,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 referent = st->the_test->data.referent;
                 if (test_includes_equality_test_for_symbol(*t, st->var))
                 {
-                    dprint(DT_REORDERER, "Found match using index var %y: ", st->var);
-                    dprint_test(DT_REORDERER, st->the_test);
-                    dprint(DT_REORDERER, "\n");
+                    dprint(DT_REORDERER, "Found match using index var %y: %t\n", st->var, st->the_test);
                     if (referent->is_constant_or_marked_variable(bound_vars_tc_number) ||
                             (st->var == referent))
                     {
@@ -520,11 +511,8 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 }
                 else if (test_includes_equality_test_for_symbol(*t, referent))
                 {
-                    dprint(DT_REORDERER, "Found match using referent %y: ", referent);
-                    dprint_test(DT_REORDERER, st->the_test);
-                    dprint(DT_REORDERER, "\n");
-                    if (st->var->is_constant_or_marked_variable(bound_vars_tc_number) ||
-                            (st->var == referent))
+                    dprint(DT_REORDERER, "Found match using referent %y: %t\n", referent, st->the_test);
+                    if (st->var->is_constant_or_marked_variable(bound_vars_tc_number) || (st->var == referent))
                     {
                         dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
@@ -1166,7 +1154,7 @@ void reorder_simplified_conditions(agent* thisAgent,
                                           Without the tie set we can't check the
                                           canonical order. */
         }
-        dprint(DT_REORDERER, "...cost is %lld\n", min_cost);
+        dprint(DT_REORDERER, "...cost is %i\n", min_cost);
 
         /* --- if min_cost==MAX_COST, print error message --- */
         if ((min_cost == MAX_COST) &&

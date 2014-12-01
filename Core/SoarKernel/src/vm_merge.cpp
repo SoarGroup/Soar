@@ -118,13 +118,13 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     dprint_condition_list(DT_MERGE, top_cond);
     dprint_clear_params(DT_MERGE);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
-    dprint(DT_MERGE, "# of conditions = %lld\n", old_num_conds);
+    dprint(DT_MERGE, "# of conditions = %i\n", old_num_conds);
     dprint(DT_MERGE, "======================\n");
 
     condition* found_cond, *next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond; ++current_cond)
     {
-        dprint(DT_MERGE, "Processing condition %lld: ", current_cond);
+        dprint(DT_MERGE, "Processing condition %i: ", current_cond);
         dprint_condition(DT_MERGE, cond);
         next_cond = cond->next;
         if (cond->type == POSITIVE_CONDITION)
@@ -192,8 +192,8 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     dprint_clear_params(DT_MERGE);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
-    dprint(DT_MERGE, "# of conditions = %lld\n", new_num_conds);
-    dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %lld conditions! (%lld - %lld)\n" : "No decrease in number of conditions. [%lld = (%lld - %lld)]\n"), cond_diff, old_num_conds, new_num_conds);
+    dprint(DT_MERGE, "# of conditions = %i\n", new_num_conds);
+    dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %i conditions! (%i - %i)\n" : "No decrease in number of conditions. [%i = (%i - %i)]\n"), cond_diff, old_num_conds, new_num_conds);
 
     clear_merge_map();
     dprint(DT_MERGE, "===========================\n");

@@ -123,7 +123,7 @@ void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, te
 
         if (iter->second == sacrificeSymTest->identity->grounding_id)
         {
-            dprint_noprefix(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: %y = g%llu -> g%llu.\n", iter->first, iter->second, survivorSymTest->identity->grounding_id);
+            dprint_noprefix(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: %y = g%u -> g%u.\n", iter->first, iter->second, survivorSymTest->identity->grounding_id);
             iter->second = survivorSymTest->identity->grounding_id;
         }
     }
@@ -132,7 +132,7 @@ void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, te
 // Requires:  Two equality tests
 void Variablization_Manager::set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num)
 {
-    dprint_noprefix(DT_FIX_CONDITIONS, "Storing substitution %y(g%llu)->%y(g%llu) (tc_num %llu)...\n",
+    dprint_noprefix(DT_FIX_CONDITIONS, "Storing substitution %y(g%u)->%y(g%u) (tc_num %u)...\n",
                     sacrificeSymTest->data.referent, sacrificeSymTest->identity->grounding_id,
                     survivorSymTest->data.referent, survivorSymTest->identity->grounding_id,
                     tc_num);
@@ -164,7 +164,7 @@ void Variablization_Manager::set_substitution(test sacrificeSymTest, test surviv
     {
         if (iter->second->data.referent == sacrificeSymTest->data.referent)
         {
-            dprint_noprefix(DT_FIX_CONDITIONS, "...found substitution that needs updated: %y = %y (g%llu).\n", iter->first, iter->second->data.referent, survivorSymTest->identity->grounding_id);
+            dprint_noprefix(DT_FIX_CONDITIONS, "...found substitution that needs updated: %y = %y (g%u).\n", iter->first, iter->second->data.referent, survivorSymTest->identity->grounding_id);
             iter->second = survivorSymTest;
         }
     }

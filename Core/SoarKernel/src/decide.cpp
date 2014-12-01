@@ -2479,7 +2479,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 
                 if ((w->preference->o_supported == true) && (w->preference->inst->match_goal_level != 1))
                 {
-                    dprint(DT_GDS, "Checking GDS necessary for wme %lld: %y ^%y %y %s (id level = %d)\n",
+                    dprint(DT_GDS, "Checking GDS necessary for wme %i: %y ^%y %y %s (id level = %i)\n",
                            w->timetag, w->id, w->attr, w->value,
                            (w->preference->o_supported ? ":o-support" : ":i-support"),
                            w->preference->id->id->level);

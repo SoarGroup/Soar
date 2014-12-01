@@ -142,7 +142,7 @@ void print(agent* thisAgent, const char* format, ...)
 
 void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, va_list args)
 {
-    char* ch;
+    char* ch, ch2;
     Symbol* sym;
 
     ch = dest;
@@ -185,6 +185,8 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
                 {
                     ch++;
                 }
+            } else {
+                *(ch++) = '#';
             }
             format += 2;
         } else if (*(format + 1) == 'i')
@@ -206,6 +208,15 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
         } else if (*(format + 1) == 't')
         {
             test_to_string(va_arg(args, test), ch, count - (ch - dest) );
+            while (*ch)
+            {
+                ch++;
+            }
+            format += 2;
+        } else if (*(format + 1) == 'c')
+        {
+            ch2 = static_cast<char>(va_arg(args, int));
+            SNPRINTF(ch, count - (ch - dest), "%c", ch2);
             while (*ch)
             {
                 ch++;

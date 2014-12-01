@@ -123,7 +123,7 @@ class Output_Manager
         void fill_mode_info();
 
         void set_dprint_enabled(bool activate) { dprint_enabled = activate; }
-        bool debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
+        bool debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled && dprint_enabled; }
 
         void set_default_agent(agent* pSoarAgent);
         void clear_default_agent() { m_defaultAgent = NULL; }

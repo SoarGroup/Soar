@@ -72,7 +72,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
     Symbol* var;
     variablization* var_info;
 
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing %y(g%llu)...\n",
+    dprint(DT_LHS_VARIABLIZATION, "Variablizing %y(g%u)...\n",
            (*sym),
            (identity ? identity->grounding_id : 0));
 

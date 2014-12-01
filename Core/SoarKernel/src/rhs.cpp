@@ -22,12 +22,6 @@
 #include "test.h"
 #include "debug.h"
 
-Symbol* var_bound_in_reconstructed_conds(
-    agent* thisAgent,
-    condition* cond,
-    byte where_field_num,
-    rete_node_level where_levels_up);
-
 Symbol* var_bound_in_reconstructed_original_conds(
     agent* thisAgent,
     condition* cond,
@@ -380,7 +374,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
         sym = t->data.referent;
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y(%y %llu) from reteloc.\n", sym, original_sym, t->identity->grounding_id);
+        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y[%y g%u] from reteloc.\n", sym, original_sym, t->identity->grounding_id);
         /* MToDo | Might not need to regenerate original sym and just use t->identity->orig_var */
         assert(original_sym == t->identity->original_var);
         return allocate_rhs_value_for_symbol(thisAgent, sym, original_sym, t->identity->grounding_id);
@@ -443,7 +437,7 @@ rhs_value create_RHS_value(agent* thisAgent,
     {
         /* -- rv is a rhs_symbol -- */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y, g%llu) from rhs_symbol (literal RHS constant).\n",
+        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y, g%u) from rhs_symbol (literal RHS constant).\n",
                         rs->referent, rs->original_rhs_variable, rs->g_id);
         original_sym = (add_original_vars != DONT_ADD_TESTS) ? rs->original_rhs_variable : NULL;
         uint64_t g_id = (add_original_vars != DONT_ADD_TESTS) ? rs->g_id : 0;
@@ -531,7 +525,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->original_rhs_variable = pOrig_var;
     new_rhs_symbol->g_id = pG_ID;
-    dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %llu to new rhs_symbol %y(%y).\n" : ""), pG_ID, sym, pOrig_var);
+    dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %i to new rhs_symbol %y(%y).\n" : ""), pG_ID, sym, pOrig_var);
 
     /* -- Must always increase original_sym refcount if it exists because this function
      *    is only called when the newly generate rhs value is created with a brand new
