@@ -19,6 +19,8 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
+#define SOAR_DEBUG_PRINTING
+
 #include "portability.h"
 #include "kernel.h"
 #include "soar_db.h"
@@ -28,27 +30,22 @@
 
 #include <string>
 
-#define OLD_DUPLICATE_CHUNK_METHOD
-#define IGNORE_GDS_ERROR
-
-#ifdef SOAR_DEBUG_UTILITIES
-
-//extern sqlite_database  *db_err_epmem_db, *db_err_smem_db;
-//extern agent *debug_agent;
-
 #ifdef DEBUG_EPMEM_SQL
-static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
-{
-    fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);
-}
-static void trace_sql(void* /*arg*/, const char* query)
-{
-    fprintf(stderr, "Query: %s\n", query);
-}
+    static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
+    {
+        fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);
+    }
+    static void trace_sql(void* /*arg*/, const char* query)
+    {
+        fprintf(stderr, "Query: %s\n", query);
+    }
 #endif
-#endif
+#ifdef SOAR_DEBUG_PRINTING
 
-#ifdef SOAR_DEBUG_UTILITIES
+    //extern sqlite_database  *db_err_epmem_db, *db_err_smem_db;
+    //extern agent *debug_agent;
+
+
     #define dprint_set_params(mode, args...) Output_Manager::Get_OM().set_dprint_params (mode , ##args)
     #define dprint_clear_params(mode, args...) Output_Manager::Get_OM().clear_dprint_params (mode , ##args)
     #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)

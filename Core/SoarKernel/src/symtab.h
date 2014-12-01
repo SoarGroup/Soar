@@ -42,12 +42,10 @@
 #include <map>
 #include <sstream>
 
-#ifdef SOAR_DEBUG_UTILITIES
 /* MToDo | Temporary debugging code.  Remove.
            Allows refcount debug trace for a single, hardcoded ID.
            Quicker than using full refcount inventory system. */
 //#define DEBUG_TRACE_REFCOUNT_FOR "R7"
-#endif
 
 typedef signed short goal_stack_level;
 typedef struct instantiation_struct instantiation;
@@ -109,7 +107,7 @@ typedef struct symbol_struct
     smem_hash_id smem_hash;
     uint64_t smem_valid;
 
-#ifndef SOAR_DEBUG_UTILITIES
+#ifdef SOAR_RELEASE_VERSION
     union
     {
 #endif
@@ -120,7 +118,7 @@ typedef struct symbol_struct
         intSymbol*   ic;
         strSymbol*   sc;
 
-#ifndef SOAR_DEBUG_UTILITIES
+#ifdef SOAR_RELEASE_VERSION
     };
 #endif
 
@@ -444,8 +442,8 @@ extern void create_predefined_symbols(agent* thisAgent);
 extern void release_predefined_symbols(agent* thisAgent);
 extern void print_internal_symbols(agent* thisAgent);
 
-#ifdef SOAR_DEBUG_UTILITIES
-extern void debug_store_refcount(Symbol* sym, bool isAdd);
+#ifndef SOAR_RELEASE_VERSION
+    extern void debug_store_refcount(Symbol* sym, bool isAdd);
 #endif
 
 extern Symbol* make_variable(agent* thisAgent, const char* name);

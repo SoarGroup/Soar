@@ -1321,14 +1321,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         excise_production(thisAgent, prod, false);
     }
 
-    /* MToDo | Possible fix for GDS bug.  Before, it changed in_ms to false for duplicate
-     *         productions.  Don't fully understand the repercussions of this. */
-
-#ifdef OLD_DUPLICATE_CHUNK_METHOD
     if (rete_addition_result != REFRACTED_INST_MATCHED)
-#else
-    if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH)
-#endif
     {
         /* --- It didn't match or was a duplicate production, so tell the firer it didn't
          *     match, so it'll only assert the o-supported preferences --- */

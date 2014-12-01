@@ -8,48 +8,52 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-/* --  The following should be commented out for release versions or if you don't
- *     want to use debugging traces/modes or the CLI debug command. Individual debug
- *     #defines are found in debug_defines.h -- */
-
-#define SOAR_DEBUG_UTILITIES
-
 #include "enums.h"
 typedef struct agent_struct agent;
 extern void print(agent* thisAgent, const char* format, ...);
 
-/* -- Enables tracing functions that print SQL processing and errors -- */
-//#define DEBUG_EPMEM_SQL
+//#define SOAR_RELEASE_VERSION
 
-/* -- Enables the printing of the call trace within debug messages.  Tested
- *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
- *    but not tested. Does not work on Windows. -- */
-//#define DEBUG_MAC_STACKTRACE
 
-/* -- Enables extensive refcount and deallocation data tracking into
- *    the debug database -- */
-//#define DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifndef SOAR_RELEASE_VERSION
+    /* --  The following enables debugging traces/modes. Individual debug
+     *     #defines are found in debug_defines.h -- */
+    #define SOAR_DEBUG_PRINTING
 
-//#define DEBUG_EPMEM_WME_ADD
+    /* -- Enables tracing functions that print SQL processing and errors -- */
+    //#define DEBUG_EPMEM_SQL
 
-//#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
-//#define MEM_POOLS_ENABLED 1
-//#define USE_MEM_POOL_ALLOCATORS 1
+    /* -- Enables the printing of the call trace within debug messages.  Tested
+     *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
+     *    but not tested. Does not work on Windows. -- */
+    //#define DEBUG_MAC_STACKTRACE
 
-//#define DEBUG_PREFS         /* -- Preference printouts -- */
-//#define DEBUG_RETE_PNODES
-//#define DEBUG_WATERFALL
-//#define DEBUG_LINKS       /* -- Get links, gc printouts -- */
-//#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
+    /* -- Enables extensive refcount and deallocation data tracking into
+     *    the debug database -- */
+    //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
-/* -- Low level GDS debug information -- */
-//#define DEBUG_GDS
+    //#define DEBUG_EPMEM_WME_ADD
+
+    //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
+    //#define MEM_POOLS_ENABLED 1
+    //#define USE_MEM_POOL_ALLOCATORS 1
+
+    //#define DEBUG_PREFS         /* -- Preference printouts -- */
+    //#define DEBUG_RETE_PNODES
+    //#define DEBUG_WATERFALL
+    //#define DEBUG_LINKS       /* -- Get links, gc printouts -- */
+    //#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
+
+    /* -- Low level GDS debug information -- */
+    //#define DEBUG_GDS
+
 /* -- High-level information on the instantiations that created an
- * o-supported element and lead to the elaboration of the GDS */
-//#define DEBUG_GDS_HIGH
+     * o-supported element and lead to the elaboration of the GDS */
+    //#define DEBUG_GDS_HIGH
+#endif
 
 /* -------------------------------------------------- */
-/*              Global type declarations, etc.        */
+/*     Global constants, type declarations, etc.      */
 /* -------------------------------------------------- */
 
 #define BUFFER_MSG_SIZE 128
@@ -80,7 +84,7 @@ typedef unsigned char byte;
 //#define DETAILED_TIMING_STATS
 #endif
 
-//#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to supress compile-time o-support calculations */
+//#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to suppress compile-time o-support calculations */
 //#define LIST_COMPILE_TIME_O_SUPPORT_FAILURES   /* get printouts of names of productions that can't be fully compile-time o-support evaluated*/
 
 /* ---------------- Experimental modes.  Probably don't work any more -------------- */
