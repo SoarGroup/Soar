@@ -54,12 +54,6 @@ static void trace_sql(void* /*arg*/, const char* query)
     #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
     #define dprint_noprefix(mode, args...) Output_Manager::Get_OM().debug_print_sf_noprefix (mode , ##args)
     #define dprint_start_fresh_line(mode) Output_Manager::Get_OM().debug_start_fresh_line (mode)
-    #define dprint_test_simple(t) \
-            Output_Manager::Get_OM().print_test_simple (t)
-    #define dprint_test_old(mode, t) \
-            Output_Manager::Get_OM().print_test_old (mode, t)
-    #define dprint_test(mode, t) \
-            Output_Manager::Get_OM().print_test (mode, t)
     #define dprint_current_lexeme(mode) Output_Manager::Get_OM().print_current_lexeme (mode)
     #define dprint_condition_list(mode, top_cond) \
             Output_Manager::Get_OM().print_condition_list (mode, top_cond)
@@ -101,9 +95,6 @@ static void trace_sql(void* /*arg*/, const char* query)
     #define dprint_y(mode, format, ...) ((void)0)
     #define dprint_noprefix(mode, format, ...) ((void)0)
     #define dprint_start_fresh_line(mode) ((void)0)
-    #define dprint_test_simple(t) ((void)0)
-    #define dprint_test_old(mode, t) ((void)0)
-    #define dprint_test(mode, t) ((void)0)
     #define dprint_current_lexeme(mode) ((void)0)
     #define dprint_condition(mode, cond) ((void)0)
     #define dprint_condition_list(mode, top_cond) ((void)0)

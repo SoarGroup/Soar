@@ -178,30 +178,28 @@ class Output_Manager
         void clear_dprint_params(TraceMode mode) { set_dprint_params(mode); }
 
         void debug_print_production(TraceMode mode, production* prod);
-        void debug_print_preference(TraceMode mode, preference* pref, const char* indent_string="", bool print_actual = true, bool print_original = false, bool print_identity = true);
-        void debug_print_preflist_inst(TraceMode mode, preference* top_pref, const char* indent_string = "           ", bool print_actual = true, bool print_original = false, bool print_identity = true);
-        void debug_print_preflist_result(TraceMode mode, preference* top_pref, const char* indent_string = "           ", bool print_actual = true, bool print_original = false, bool print_identity = true);
+        void debug_print_preference(TraceMode mode, preference* pref);
+        void debug_print_preflist_inst(TraceMode mode, preference* top_pref);
+        void debug_print_preflist_result(TraceMode mode, preference* top_pref);
 
-        void print_test_simple(test t, const char* pre_string="", const char* post_string="");
-        void print_test_old(TraceMode mode, test t, const char* indent_string = "          ", const char* conj_indent_string = "+ ");
-        void print_test(TraceMode mode, test t, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "", const char* post_string = "");
+        void print_test(TraceMode mode, test t, bool pActual = true, bool pOriginal = false, bool pIdentity = true, const char* pre_string = "", const char* post_string = "");
+        void print_identity(TraceMode mode, identity_info* i, const char* pre_string = "", const char* post_string = "");
         void print_current_lexeme(TraceMode mode, soar::Lexer* lexer);
-        void print_condition(TraceMode mode, condition* cond, const char* indent_string = "          ", bool print_actual = true, bool print_original = false, bool print_identity = true);
-        void print_condition_list(TraceMode mode, condition* top_cond, const char* indent_string = "          ", bool print_actual = true, bool print_original = false, bool print_identity = true);
-        void print_action(TraceMode mode, action* a, const char* indent_string = "           ");
-        void print_action_list(TraceMode mode, action* action_list, const char* indent_string = "           ");
-        void print_instantiation(TraceMode mode, instantiation* inst, const char* indent_string = "          ");
+        void print_condition(TraceMode mode, condition* cond);
+        void print_condition_list(TraceMode mode, condition* top_cond);
+        void print_action(TraceMode mode, action* a);
+        void print_action_list(TraceMode mode, action* action_list);
+        void print_instantiation(TraceMode mode, instantiation* inst);
         void print_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref);
         void print_cond_actions(TraceMode mode, condition* top_cond, action* top_action);
         void print_cond_results(TraceMode mode, condition* top_cond, preference* top_pref);
         void print_identifiers(TraceMode mode);
-        void print_condition_cons(TraceMode mode, cons* c, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "");
+        void print_condition_cons(TraceMode mode, cons* c);
         void print_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = NIL, wme* w = NIL);
         void print_saved_test(TraceMode mode, saved_test* st);
         void print_saved_test_list(TraceMode mode, saved_test* st);
         void print_varnames(TraceMode mode, varnames* var_names);
         void print_varnames_node(TraceMode mode, node_varnames* var_names_node);
-        void print_identity(TraceMode mode, identity_info* i, const char* pre_string = "", const char* post_string = "");
         void print_all_inst(TraceMode mode);
         void print_variables(TraceMode mode);
         void print_wmes(TraceMode mode, bool pOnlyWithIdentity = false);

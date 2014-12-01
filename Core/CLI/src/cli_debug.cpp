@@ -55,13 +55,11 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
         PrintCLIMessage_Item("optimization:", l_OutputManager->m_params->opt, 40);
         PrintCLIMessage_Section("Trace Output", 40);
         PrintCLIMessage_Item("db_mode:", l_OutputManager->m_params->db_mode, 40);
-        PrintCLIMessage_Item("XML_mode:", l_OutputManager->m_params->XML_mode, 40);
         PrintCLIMessage_Item("callback_mode:", l_OutputManager->m_params->callback_mode, 40);
         PrintCLIMessage_Item("stdout_mode:", l_OutputManager->m_params->stdout_mode, 40);
         PrintCLIMessage_Item("file_mode:", l_OutputManager->m_params->file_mode, 40);
         PrintCLIMessage_Section("Debug Output", 40);
         PrintCLIMessage_Item("db_dbg_mode:", l_OutputManager->m_params->db_dbg_mode, 40);
-        PrintCLIMessage_Item("XML_dbg_mode:", l_OutputManager->m_params->XML_dbg_mode, 40);
         PrintCLIMessage_Item("callback_dbg_mode:", l_OutputManager->m_params->callback_dbg_mode, 40);
         PrintCLIMessage_Item("stdout_dbg_mode:", l_OutputManager->m_params->stdout_dbg_mode, 40);
         PrintCLIMessage_Item("file_dbg_mode:", l_OutputManager->m_params->file_dbg_mode, 40);

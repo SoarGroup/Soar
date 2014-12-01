@@ -30,7 +30,7 @@
 void Output_Manager::debug_print(TraceMode mode, const char* msg)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
     printa_prefix(mode, m_defaultAgent, msg);
 }
@@ -38,7 +38,7 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 void Output_Manager::debug_print_f(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
 
     va_list args;
@@ -55,7 +55,7 @@ void Output_Manager::debug_print_f(TraceMode mode, const char* format, ...)
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
 
     va_list args;
@@ -72,7 +72,7 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
 
     va_list args;
@@ -89,7 +89,7 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
 void Output_Manager::debug_start_fresh_line(TraceMode mode)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
     start_fresh_line(m_defaultAgent);
 }
@@ -103,7 +103,7 @@ void Output_Manager::print_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity)
 {
     if (!w) return;
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
 
 
@@ -145,7 +145,7 @@ void Output_Manager::print_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity)
 void Output_Manager::print_wmes(TraceMode mode, bool pOnlyWithIdentity)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
 
     wme* w;
@@ -188,7 +188,7 @@ void Output_Manager::print_wmes(TraceMode mode, bool pOnlyWithIdentity)
 }
 
 /* UITODO| Make this method of Test */
-void Output_Manager::print_test(TraceMode mode, test t, bool print_actual, bool print_original, bool pIdentity, const char* pPre_string, const char* pPost_string)
+void Output_Manager::print_test(TraceMode mode, test t, bool pActual, bool pOriginal, bool pIdentity, const char* pPre_string, const char* pPost_string)
 {
     cons* c;
     const char* no_type_test_fstring, *type_test_fstring;
@@ -205,13 +205,13 @@ void Output_Manager::print_test(TraceMode mode, test t, bool print_actual, bool 
         print_sf("%s{ ", pPre_string);
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            print_test(mode, static_cast<test>(c->first), print_actual, print_original, pIdentity, "", (c->rest != NULL ? ", " : ""));
+            print_test(mode, static_cast<test>(c->first), "", (c->rest != NULL ? ", " : ""));
         }
         print_sf(" }%s", pPost_string);
         return;
     }
 
-    if (print_actual)
+    if (pActual)
     {
         no_type_test_fstring = "%y%s";
         type_test_fstring = "%s%s%y";
@@ -235,18 +235,18 @@ void Output_Manager::print_test(TraceMode mode, test t, bool print_actual, bool 
                                 t->data.referent);
                 break;
         }
-        if (!print_original && !pIdentity)
+        if (!pOriginal && !pIdentity)
         {
             print_sf("%s", pPost_string);
             return;
         }
     }
 
-    if (print_original)
+    if (pOriginal)
     {
         if (t->original_test)
         {
-            if (!print_actual)
+            if (!pActual)
             {
                 print_sf("%s%t", pPre_string, t->original_test);
             } else {
@@ -255,13 +255,13 @@ void Output_Manager::print_test(TraceMode mode, test t, bool print_actual, bool 
         }
         else
         {
-            if (!print_actual)
+            if (!pActual)
             {
                 print_sf("%s%t*", pPre_string, t->original_test);
             } else {
                 print_sf(" (%t*)", t->original_test);
             }
-            if (print_actual)
+            if (pActual)
             {
                 print_test(mode, t, true, false, false, " (", "*)");
             }
@@ -279,7 +279,7 @@ void Output_Manager::print_test(TraceMode mode, test t, bool print_actual, bool 
 
     if (pIdentity)
     {
-        if (!print_actual)
+        if (!pActual)
         {
             print(pPre_string);
         }
@@ -303,7 +303,7 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 void Output_Manager::print_identifiers(TraceMode mode)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
 
     print("--- Identifiers: ---\n");
@@ -313,7 +313,7 @@ void Output_Manager::print_identifiers(TraceMode mode)
 void Output_Manager::print_variables(TraceMode mode)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
 
     print("--- Variables: ---\n");
@@ -509,37 +509,37 @@ void Output_Manager::print_current_lexeme(TraceMode mode, soar::Lexer* lexer)
 
 }
 
-void Output_Manager::print_condition_cons(TraceMode mode, cons* c, bool print_actual, bool print_original, bool print_identity, const char* pre_string)
+void Output_Manager::print_condition_cons(TraceMode mode, cons* c)
 {
     if (!debug_mode_enabled(mode)) return;
 
     while (c)
     {
-        print_condition(mode, static_cast<condition_struct*>(c->first), pre_string, print_actual, print_original, print_identity);
+        print_condition(mode, static_cast<condition_struct*>(c->first));
         c = c->rest;
     }
 }
 
-void Output_Manager::print_condition(TraceMode mode, condition* cond, const char* indent_string, bool print_actual, bool print_original, bool print_identity)
+void Output_Manager::print_condition(TraceMode mode, condition* cond)
 {
     if (!debug_mode_enabled(mode)) return;
 
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
-        print_sf("%s(%t %s ^%t %t)\n",
-            indent_string, cond->data.tests.id_test,
+        print_sf("(%t %s ^%t %t)\n",
+            cond->data.tests.id_test,
             (cond->type == NEGATIVE_CONDITION) ? "-": NULL,
             cond->data.tests.attr_test, cond->data.tests.value_test);
     }
     else
     {
-        print_sf("%s-{\n", indent_string);
-        print_condition_list(mode, cond->data.ncc.top, indent_string, print_actual, print_original, print_identity);
-        print_sf("%s }\n", indent_string);
+        print("%s-{\n");
+        print_condition_list(mode, cond->data.ncc.top);
+        print("}\n");
     }
 }
 
-void Output_Manager::print_condition_list(TraceMode mode, condition* top_cond, const char* indent_string, bool print_actual, bool print_original, bool print_identity)
+void Output_Manager::print_condition_list(TraceMode mode, condition* top_cond)
 {
     if (!debug_mode_enabled(mode)) return;
 
@@ -548,8 +548,8 @@ void Output_Manager::print_condition_list(TraceMode mode, condition* top_cond, c
     for (cond = top_cond; cond != NIL; cond = cond->next)
     {
         assert(cond != cond->next);
-        print_sf("%s%i: ", indent_string, ++count);
-        print_condition(mode, cond, "", print_actual, print_original, print_identity);
+        print_sf("%s%i: ", m_pre_string, ++count);
+        print_condition(mode, cond);
     }
     return;
 }
@@ -630,19 +630,19 @@ void Output_Manager::print_rhs_value(TraceMode mode, rhs_value rv, struct token_
     }
 }
 
-void Output_Manager::print_action(TraceMode mode, action* a, const char* indent_string)
+void Output_Manager::print_action(TraceMode mode, action* a)
 {
     if (!debug_mode_enabled(mode)) return;
 
     if (a->type == FUNCALL_ACTION)
     {
-        print_sf("%s(funcall ", indent_string);
+        print_sf("%s(funcall ", m_pre_string);
         print_rhs_value(mode, a->value);
         print_sf(")\n");
     }
     else
     {
-        print_sf("%s(", indent_string);
+        print_sf("%s(", m_pre_string);
         print_rhs_value(mode, a->id);
         print_sf(" ^");
         print_rhs_value(mode, a->attr);
@@ -654,7 +654,7 @@ void Output_Manager::print_action(TraceMode mode, action* a, const char* indent_
     }
 }
 
-void Output_Manager::print_action_list(TraceMode mode, action* action_list, const char* indent_string)
+void Output_Manager::print_action_list(TraceMode mode, action* action_list)
 {
     if (!debug_mode_enabled(mode)) return;
 
@@ -666,27 +666,27 @@ void Output_Manager::print_action_list(TraceMode mode, action* action_list, cons
     }
 }
 
-void Output_Manager::debug_print_preference(TraceMode mode, preference* pref, const char* indent_string, bool print_actual, bool print_original, bool print_identity)
+void Output_Manager::debug_print_preference(TraceMode mode, preference* pref)
 {
     char pref_type;
 
     if (!debug_mode_enabled(mode)) return;
 
     pref_type = preference_to_char(pref->type);
-    if (print_actual)
+    if (m_print_actual)
     {
-        print_sf("%s(%y ^%y %y)", indent_string, pref->id, pref->attr, pref->value);
+        print_sf("%s(%y ^%y %y)", m_pre_string, pref->id, pref->attr, pref->value);
     }
-    else if (print_original)
+    else if (m_print_original)
     {
-        print_sf("%s(%y ^%y %y)", indent_string, pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value);
+        print_sf("%s(%y ^%y %y)", m_pre_string, pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value);
     }
-    else if (print_identity)
+    else if (m_print_identity)
     {
-        print_sf("%s(g%u ^g%u g%u)", indent_string, pref->g_ids.id, pref->g_ids.attr, pref->g_ids.value);
+        print_sf("%s(g%u ^g%u g%u)", m_pre_string, pref->g_ids.id, pref->g_ids.attr, pref->g_ids.value);
     }
     print_sf(" %c", pref_type);
-    if (print_actual && preference_is_binary(pref->type))
+    if (m_print_actual && preference_is_binary(pref->type))
     {
         print_sf(" %y", pref->referent);
     }
@@ -696,7 +696,7 @@ void Output_Manager::debug_print_preference(TraceMode mode, preference* pref, co
     }
 }
 
-void Output_Manager::debug_print_preflist_inst(TraceMode mode, preference* top_pref, const char* indent_string, bool print_actual, bool print_original, bool print_identity)
+void Output_Manager::debug_print_preflist_inst(TraceMode mode, preference* top_pref)
 {
     preference* pref;
     char pref_type;
@@ -705,13 +705,13 @@ void Output_Manager::debug_print_preflist_inst(TraceMode mode, preference* top_p
 
     for (pref = top_pref; pref != NIL;)
     {
-        debug_print_preference(mode, pref, indent_string, print_actual, print_original, print_identity);
+        debug_print_preference(mode, pref);
         print_sf(")\n");
         pref = pref->inst_next;
     }
 }
 
-void Output_Manager::debug_print_preflist_result(TraceMode mode, preference* top_pref, const char* indent_string, bool print_actual, bool print_original, bool print_identity)
+void Output_Manager::debug_print_preflist_result(TraceMode mode, preference* top_pref)
 {
     preference* pref;
     char pref_type;
@@ -720,7 +720,7 @@ void Output_Manager::debug_print_preflist_result(TraceMode mode, preference* top
 
     for (pref = top_pref; pref != NIL;)
     {
-        debug_print_preference(mode, pref, indent_string, print_actual, print_original, print_identity);
+        debug_print_preference(mode, pref);
         print_sf(")\n");
         pref = pref->next_result;
     }
@@ -729,7 +729,7 @@ void Output_Manager::debug_print_preflist_result(TraceMode mode, preference* top
 void Output_Manager::debug_print_production(TraceMode mode, production* prod)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
     if (!m_defaultAgent) return;
 
     if (prod)
@@ -746,26 +746,29 @@ void Output_Manager::print_cond_prefs(TraceMode mode, condition* top_cond, prefe
     if (m_print_actual)
     {
         print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string);
+        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_inst(mode, top_pref, m_pre_string);
+        debug_print_preflist_inst(mode, top_pref);
     }
     if (m_print_original)
     {
         print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string, false, true, false);
+        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_inst(mode, top_pref, m_pre_string, false, true, false);
+        debug_print_preflist_inst(mode, top_pref);
     }
     if (m_print_identity)
     {
         print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string, false, false, true);
+        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_inst(mode, top_pref, m_pre_string, false, false, true);
+        debug_print_preflist_inst(mode, top_pref);
     }
     print_sf("%s\n", m_pre_string);
-
+    clear_dprint_params(mode);
 }
 
 void Output_Manager::print_cond_results(TraceMode mode, condition* top_cond, preference* top_pref)
@@ -776,25 +779,29 @@ void Output_Manager::print_cond_results(TraceMode mode, condition* top_cond, pre
     if (m_print_actual)
     {
         print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string);
+        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_result(mode, top_pref, m_pre_string, true, false, false);
+        debug_print_preflist_result(mode, top_pref);
     }
     if (m_print_original)
     {
         print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string, false, true, false);
+        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_result(mode, top_pref, m_pre_string, false, true, false);
+        debug_print_preflist_result(mode, top_pref);
     }
     if (m_print_identity)
     {
         print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string, true, false, true);
+        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_result(mode, top_pref, m_pre_string, false, false, true);
+        debug_print_preflist_result(mode, top_pref);
     }
     print_sf("%s\n", m_pre_string);
+    clear_dprint_params(mode);
 }
 
 void Output_Manager::print_cond_actions(TraceMode mode, condition* top_cond, action* top_action)
@@ -804,29 +811,32 @@ void Output_Manager::print_cond_actions(TraceMode mode, condition* top_cond, act
     if (m_print_actual)
     {
         print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string, true, false, false);
+        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        print_action_list(mode, top_action, m_pre_string);
+        print_action_list(mode, top_action);
     }
     if (m_print_original)
     {
+        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
         print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string, false, true, false);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        print_action_list(mode, top_action, m_pre_string);
+        print_action_list(mode, top_action);
     }
     if (m_print_identity)
     {
+        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
         print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond, m_pre_string, true, false, true);
+        print_condition_list(mode, top_cond);
         print_sf("%s-->\n", m_pre_string);
-        print_action_list(mode, top_action, m_pre_string);
+        print_action_list(mode, top_action);
     }
     print_sf("%s\n", m_pre_string);
-
+    clear_dprint_params(mode);
 }
 
-void Output_Manager::print_instantiation(TraceMode mode, instantiation* inst, const char* indent_string)
+void Output_Manager::print_instantiation(TraceMode mode, instantiation* inst)
 {
     if (!debug_mode_enabled(mode)) return;
 
@@ -857,7 +867,6 @@ void add_inst_of_type(agent* thisAgent, unsigned int productionType, std::vector
 void Output_Manager::print_all_inst(TraceMode mode)
 {
     if (!debug_mode_enabled(mode)) return;
-    //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
     if (!m_defaultAgent) return;
 
     print_sf( "--- Instantiations: ---\n");
@@ -872,7 +881,7 @@ void Output_Manager::print_all_inst(TraceMode mode)
     for (int y = 0; y < instantiation_list.size(); y++)
     {
         print_sf("========================================= Instantiation %d\n", y);
-        print_instantiation(mode, instantiation_list[y], "");
+        print_instantiation(mode, instantiation_list[y]);
     }
 }
 
@@ -953,7 +962,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         int newInt;
         double newFloat;
 
-        //agent* m_defaultAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+
         if (!m_defaultAgent)
         {
             return;

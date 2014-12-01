@@ -274,8 +274,6 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
 //  dprint(DT_ADD_TEST_TO_TEST, "add_test()<-- %s\n", get_stacktrace().c_str());
     dprint(DT_ADD_TEST_TO_TEST, "          %t\n", *dest_test_address);
     dprint(DT_ADD_TEST_TO_TEST, "          %t\n", new_test);
-//    dprint_test(DT_ADD_TEST_TO_TEST, *dest_test_address, true, false, true, "          ", "\n");
-//    dprint_test(DT_ADD_TEST_TO_TEST, new_test, true, false, true, "        + ", "\n");
 
     if (test_is_blank(new_test))
     {
@@ -287,7 +285,6 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
     {
         *dest_test_address = new_test;
         dprint(DT_ADD_TEST_TO_TEST, "        = %t\n", *dest_test_address);
-//        dprint_test(DT_ADD_TEST_TO_TEST, *dest_test_address, true, false, true, "        = ", "\n");
         return;
     }
 
@@ -310,7 +307,6 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
     destination->data.conjunct_list = c;
 
     dprint(DT_ADD_TEST_TO_TEST, "        = %t\n", *dest_test_address);
-//    dprint_test(DT_ADD_TEST_TO_TEST, *dest_test_address, true, false, true, "        = ", "\n");
 }
 
 /* -- This function is a special purpose function for adding relational tests to another test. It
@@ -1821,7 +1817,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
 
     }
 
-    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test (without identity): \n          %t\n          %t\n          %t\n",
+    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test (without identity): (%t ^%t %t)\n",
         cond->data.tests.id_test, cond->data.tests.attr_test, cond->data.tests.value_test);
 
     fill_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT);
@@ -1830,7 +1826,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_additional_tests_and_originals finished for %s.\n",
            thisAgent->newly_created_instantiations->prod->name->sc->name);
-    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test: \n          %t\n          %t\n          %t\n",
+    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test: (%t ^%t %t)\n",
         cond->data.tests.id_test, cond->data.tests.attr_test, cond->data.tests.value_test);
 }
 

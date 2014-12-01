@@ -4422,12 +4422,12 @@ void rete_node_to_conditions(agent* thisAgent,
         if (bnode_is_positive(node->node_type))
         {
             cond->type = POSITIVE_CONDITION;
-            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered: ");
+            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
         }
         else
         {
             cond->type = NEGATIVE_CONDITION;
-            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.");
+            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
         }
 
         if (w && (cond->type == POSITIVE_CONDITION))

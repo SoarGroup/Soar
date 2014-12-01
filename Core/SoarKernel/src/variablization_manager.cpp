@@ -697,9 +697,9 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
 
     if (variablize)
     {
-        dprint(DT_RHS_VARIABLIZATION, "          Variablizing preference for ");
+        dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for ");
         dprint_preference(DT_RHS_VARIABLIZATION, result);
-        dprint(DT_IDENTITY_PROP, "Setting g_ids for action and variablizing results...\n");
+        dprint(DT_IDENTITY_PROP, "\nSetting g_ids for action and variablizing results...\n");
 
         thisAgent->variablizationManager->variablize_rhs_symbol(a->id, result->original_symbols.id);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->attr, result->original_symbols.attr);
@@ -708,7 +708,7 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
         {
             thisAgent->variablizationManager->variablize_rhs_symbol(a->referent, NULL);
         }
-        dprint(DT_RHS_VARIABLIZATION, "          Variablized result: ");
+        dprint(DT_RHS_VARIABLIZATION, "Variablized result: ");
         dprint_action(DT_RHS_VARIABLIZATION, a);
     }
     else
