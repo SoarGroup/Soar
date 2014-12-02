@@ -76,7 +76,7 @@ Output_Manager::~Output_Manager()
 
     for (int i = 0; i < num_trace_modes; i++)
     {
-        delete mode_info[i].prefix;
+        free(mode_info[i].prefix);
     }
 
     delete m_params;
@@ -93,7 +93,7 @@ void Output_Manager::set_default_agent(agent* pSoarAgent)
     if (!pSoarAgent)
     {
         errString = "OutputManager passed an empty default agent!\n";
-        printa_prefix(DT_DEBUG, pSoarAgent, errString.c_str());
+        debug_print(DT_DEBUG, errString.c_str());
     }
     m_defaultAgent = pSoarAgent;
 };
@@ -173,42 +173,42 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
 
 void Output_Manager::fill_mode_info()
 {
-    mode_info[No_Mode].prefix =                       new std::string("        ");
-    mode_info[TM_EPMEM].prefix =                      new std::string("EpMem   ");
-    mode_info[TM_SMEM].prefix =                       new std::string("SMem    ");
-    mode_info[TM_LEARNING].prefix =                   new std::string("Learn   ");
-    mode_info[TM_CHUNKING].prefix =                   new std::string("Chunk   ");
-    mode_info[TM_RL].prefix =                         new std::string("RL      ");
-    mode_info[TM_WMA].prefix =                        new std::string("WMA     ");
+    mode_info[No_Mode].prefix =                       strdup("        | ");
+    mode_info[TM_EPMEM].prefix =                      strdup("EpMem   | ");
+    mode_info[TM_SMEM].prefix =                       strdup("SMem    | ");
+    mode_info[TM_LEARNING].prefix =                   strdup("Learn   | ");
+    mode_info[TM_CHUNKING].prefix =                   strdup("Chunk   | ");
+    mode_info[TM_RL].prefix =                         strdup("RL      | ");
+    mode_info[TM_WMA].prefix =                        strdup("WMA     | ");
 
-    mode_info[DT_DEBUG].prefix =                      new std::string("Debug   ");
-    mode_info[DT_ID_LEAKING].prefix =                 new std::string("ID Leak ");
-    mode_info[DT_LHS_VARIABLIZATION].prefix =         new std::string("VrblzLHS");
-    mode_info[DT_ADD_CONSTRAINTS_ORIG_TESTS].prefix = new std::string("Add Orig");
-    mode_info[DT_RHS_VARIABLIZATION].prefix =         new std::string("VrblzRHS");
-    mode_info[DT_PRINT_INSTANTIATIONS].prefix =       new std::string("PrntInst");
-    mode_info[DT_ADD_TEST_TO_TEST].prefix =           new std::string("Add Test");
-    mode_info[DT_DEALLOCATES].prefix =                new std::string("Memory  ");
-    mode_info[DT_DEALLOCATE_SYMBOLS].prefix =         new std::string("Memory  ");
-    mode_info[DT_REFCOUNT_ADDS].prefix =              new std::string("RefCnt  ");
-    mode_info[DT_REFCOUNT_REMS].prefix =              new std::string("RefCnt  ");
-    mode_info[DT_VARIABLIZATION_MANAGER].prefix =     new std::string("VrblzMgr");
-    mode_info[DT_PARSER].prefix =                     new std::string("Parser  ");
-    mode_info[DT_FUNC_PRODUCTIONS].prefix =           new std::string("FuncCall");
-    mode_info[DT_OVAR_MAPPINGS].prefix =              new std::string("OVar Map");
-    mode_info[DT_REORDERER].prefix =                  new std::string("Reorder ");
-    mode_info[DT_BACKTRACE].prefix =                  new std::string("BackTrce");
-    mode_info[DT_SAVEDVARS].prefix =                  new std::string("SavedVar");
-    mode_info[DT_GDS].prefix =                        new std::string("GDS     ");
-    mode_info[DT_RL_VARIABLIZATION].prefix =          new std::string("Vrblz RL");
-    mode_info[DT_NCC_VARIABLIZATION].prefix =         new std::string("VrblzNCC");
-    mode_info[DT_IDENTITY_PROP].prefix =              new std::string("ID Prop ");
-    mode_info[DT_SOAR_INSTANCE].prefix =              new std::string("SoarInst");
-    mode_info[DT_CLI_LIBRARIES].prefix =              new std::string("CLI Lib ");
-    mode_info[DT_CONSTRAINTS].prefix =                new std::string("Cnstrnts");
-    mode_info[DT_MERGE].prefix =                      new std::string("Merge Cs");
-    mode_info[DT_FIX_CONDITIONS].prefix =             new std::string("Fix Cond");
-    mode_info[DT_EPMEM_CMD].prefix =                  new std::string("EpMem Go");
+    mode_info[DT_DEBUG].prefix =                      strdup("Debug   | ");
+    mode_info[DT_ID_LEAKING].prefix =                 strdup("ID Leak | ");
+    mode_info[DT_LHS_VARIABLIZATION].prefix =         strdup("VrblzLHS| ");
+    mode_info[DT_ADD_CONSTRAINTS_ORIG_TESTS].prefix = strdup("Add Orig| ");
+    mode_info[DT_RHS_VARIABLIZATION].prefix =         strdup("VrblzRHS| ");
+    mode_info[DT_PRINT_INSTANTIATIONS].prefix =       strdup("PrntInst| ");
+    mode_info[DT_ADD_TEST_TO_TEST].prefix =           strdup("Add Test| ");
+    mode_info[DT_DEALLOCATES].prefix =                strdup("Memory  | ");
+    mode_info[DT_DEALLOCATE_SYMBOLS].prefix =         strdup("Memory  | ");
+    mode_info[DT_REFCOUNT_ADDS].prefix =              strdup("RefCnt  | ");
+    mode_info[DT_REFCOUNT_REMS].prefix =              strdup("RefCnt  | ");
+    mode_info[DT_VARIABLIZATION_MANAGER].prefix =     strdup("VrblzMgr| ");
+    mode_info[DT_PARSER].prefix =                     strdup("Parser  | ");
+    mode_info[DT_FUNC_PRODUCTIONS].prefix =           strdup("FuncCall| ");
+    mode_info[DT_OVAR_MAPPINGS].prefix =              strdup("OVar Map| ");
+    mode_info[DT_REORDERER].prefix =                  strdup("Reorder | ");
+    mode_info[DT_BACKTRACE].prefix =                  strdup("BackTrce| ");
+    mode_info[DT_SAVEDVARS].prefix =                  strdup("SavedVar| ");
+    mode_info[DT_GDS].prefix =                        strdup("GDS     | ");
+    mode_info[DT_RL_VARIABLIZATION].prefix =          strdup("Vrblz RL| ");
+    mode_info[DT_NCC_VARIABLIZATION].prefix =         strdup("VrblzNCC| ");
+    mode_info[DT_IDENTITY_PROP].prefix =              strdup("ID Prop | ");
+    mode_info[DT_SOAR_INSTANCE].prefix =              strdup("SoarInst| ");
+    mode_info[DT_CLI_LIBRARIES].prefix =              strdup("CLI Lib | ");
+    mode_info[DT_CONSTRAINTS].prefix =                strdup("Cnstrnts| ");
+    mode_info[DT_MERGE].prefix =                      strdup("Merge Cs| ");
+    mode_info[DT_FIX_CONDITIONS].prefix =             strdup("Fix Cond| ");
+    mode_info[DT_EPMEM_CMD].prefix =                  strdup("EpMem Go| ");
 
     mode_info[No_Mode].enabled =                      TRACE_Init_No_Mode;
     mode_info[TM_EPMEM].enabled =                     TRACE_Init_TM_EPMEM;

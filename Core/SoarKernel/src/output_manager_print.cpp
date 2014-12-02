@@ -27,31 +27,6 @@
 #include "soar_instance.h"
 #include "test.h"
 
-void Output_Manager::print_f(const char* format, ...)
-{
-    if (m_defaultAgent)
-    {
-        va_list args;
-        char buf[PRINT_BUFSIZE];
-
-        va_start(args, format);
-        vsprintf(buf, format, args);
-        va_end(args);
-        printa(m_defaultAgent, buf);
-    }
-}
-
-void Output_Manager::printa_f(agent* pSoarAgent, const char* format, ...)
-{
-    va_list args;
-    char buf[PRINT_BUFSIZE];
-
-    va_start(args, format);
-    vsprintf(buf, format, args);
-    va_end(args);
-    printa(pSoarAgent, buf);
-}
-
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
 {
     va_list args;
@@ -95,20 +70,9 @@ void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 
         if (db_mode)
         {
-            m_db->print_db(trace_msg, mode_info[No_Mode].prefix->c_str(), msg);
+            m_db->print_db(trace_msg, mode_info[No_Mode].prefix, msg);
         }
     }
-}
-
-void Output_Manager::printa_prefix(TraceMode mode, agent* pSoarAgent, const char* msg)
-{
-    std::string newTrace;
-
-    newTrace.assign(mode_info[mode].prefix->c_str());
-    newTrace.append("| ");
-    newTrace.append(msg);
-
-    printa(pSoarAgent, newTrace.c_str());
 }
 
 void Output_Manager::printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg)
@@ -118,7 +82,7 @@ void Output_Manager::printa_database(TraceMode mode, agent* pSoarAgent, MessageT
     if (((msgType == trace_msg) && mode_info[mode].enabled) ||
             ((msgType == debug_msg) && mode_info[mode].enabled))
     {
-        m_db->print_db(msgType, mode_info[mode].prefix->c_str(), msg);
+        m_db->print_db(msgType, mode_info[mode].prefix, msg);
     }
 }
 
@@ -127,43 +91,21 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
     if (!debug_mode_enabled(mode)) return;
 
     if (!m_defaultAgent) return;
-    printa_prefix(mode, m_defaultAgent, msg);
-}
 
-void Output_Manager::debug_print_f(TraceMode mode, const char* format, ...)
-{
-    if (!debug_mode_enabled(mode)) return;
-
-    if (!m_defaultAgent) return;
-
-    va_list args;
     char buf[PRINT_BUFSIZE];
-
-    va_start(args, format);
-    vsprintf(buf, format, args);
-    va_end(args);
-
-    printa_prefix(mode, m_defaultAgent, buf);
-
+    strcpy(buf, mode_info[mode].prefix);
+    int s = strlen(buf);
+    strcpy((buf + s), msg);
+    printa(m_defaultAgent, buf);
 }
-void Output_Manager::vsnprintf(TraceMode mode, agent* thisAgent, char* dest, size_t count, const char* format, va_list args)
+
+void Output_Manager::vsnprintf(agent* thisAgent, char* dest, size_t count, const char* format, va_list args)
 {
     char* ch;
-    const char* ch_prefix;
     char c;
     Symbol* sym;
 
     ch = dest;
-//    ch_prefix = mode_info[mode].prefix->c_str();
-//    while ((*ch_prefix != 0))
-//    {
-//        *(ch++) = *(ch_prefix++);
-//    }
-
-//    strcpy(ch, mode_info[mode].prefix->c_str());
-//    while (*ch) ch++;
-//    *(ch++) = '|';
-//    *(ch++) = ' ';
 
     while (true)
     {
@@ -240,23 +182,12 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
     va_list args;
     char buf[PRINT_BUFSIZE];
 
+    strcpy(buf, mode_info[mode].prefix);
+    int s = strlen(buf);
     va_start(args, format);
-    vsnprintf_with_symbols(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+    vsnprintf(m_defaultAgent, (buf+s), PRINT_BUFSIZE, format, args);
     va_end(args);
-    printa_prefix(mode, m_defaultAgent, buf);
-//
-//    int s = mode_info[mode].prefix->size();
-//    char buf[PRINT_BUFSIZE];
-//    strcpy(buf, mode_info[mode].prefix->c_str());
-//    va_start(args, format);
-//    vsnprintf_with_symbols(m_defaultAgent, (buf+s+1), PRINT_BUFSIZE, format, args);
-//    va_end(args);
-//    printa(m_defaultAgent, buf);
-
-//    va_start(args, format);
-//    vsnprintf(mode, m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
-//    va_end(args);
-//    printa(m_defaultAgent, buf);
+    printa(m_defaultAgent, buf);
 }
 
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
@@ -269,7 +200,7 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
     char buf[PRINT_BUFSIZE];
 
     va_start(args, format);
-    vsnprintf_with_symbols(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+    vsnprintf(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
     va_end(args);
 
     printa(m_defaultAgent, buf);
@@ -1124,11 +1055,11 @@ void Output_Manager::print_varnames_node(TraceMode mode, node_varnames* var_name
 
     if (!var_names_node)
     {
-        print_sf("varnames node empty.\n");
+        print("varnames node empty.\n");
     }
     else
     {
-        print_f("varnames for node = ID: ");
+        print("varnames for node = ID: ");
 
         print_varnames(mode, var_names_node->data.fields.id_varnames);
         print_sf(" | Attr: ");
@@ -1216,7 +1147,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
     }
     if (newSym)
     {
-        debug_print_f(DT_DEBUG,
+        debug_print_sf(DT_DEBUG,
                "%y:\n"
                "  type     = %s\n"
                "  refcount = %d\n"
@@ -1228,6 +1159,6 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
     }
     else
     {
-        debug_print_f(DT_DEBUG, "No symbol %s found.\n", find_string);
+        debug_print_sf(DT_DEBUG, "No symbol %s found.\n", find_string);
     }
 }

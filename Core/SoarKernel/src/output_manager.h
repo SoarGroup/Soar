@@ -39,7 +39,7 @@ typedef struct identity_struct identity_info;
 
 typedef struct trace_mode_info_struct
 {
-        std::string* prefix;
+        char* prefix;
         bool enabled;
 } trace_mode_info;
 
@@ -117,7 +117,7 @@ class Output_Manager
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
 
-        void vsnprintf(TraceMode mode, agent* thisAgent, char* dest, size_t count, const char* format, va_list args);
+        void vsnprintf(agent* thisAgent, char* dest, size_t count, const char* format, va_list args);
 
     public:
 
@@ -137,22 +137,18 @@ class Output_Manager
 
         /* Core printing functions */
         void printa(agent* pSoarAgent, const char* msg);
-        void printa_prefix(TraceMode mode, agent* pSoarAgent, const char* msg);
-        void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
-
-        /* Core variadic printing functions */
-        void printa_f(agent* pSoarAgent, const char* format, ...);
         void printa_sf(agent* pSoarAgent, const char* format, ...);
+        void start_fresh_line(agent* pSoarAgent = NULL);
 
         /* Print functions that will use default agent if set */
         void print(const char* msg) { if (m_defaultAgent) printa(m_defaultAgent, msg); }
-        void print_prefix(TraceMode mode, const char* msg) { if (m_defaultAgent) printa_prefix(mode, m_defaultAgent, msg); }
-        void print_f(const char* format, ...);
         void print_sf(const char* format, ...);
+
+        /* Print to database */
+        void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
 
         /* Versions that will check debug mode and only print if set */
         void debug_print(TraceMode mode, const char* msg);
-        void debug_print_f(TraceMode mode, const char* format, ...);
         void debug_print_sf(TraceMode mode, const char* format, ...);
         void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
         void debug_start_fresh_line(TraceMode mode);
@@ -170,7 +166,6 @@ class Output_Manager
 
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
-        void start_fresh_line(agent* pSoarAgent = NULL);
 
         void set_dprint_params(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
         {

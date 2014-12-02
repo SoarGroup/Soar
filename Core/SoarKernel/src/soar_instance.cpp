@@ -75,7 +75,7 @@ void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName,
     {
         if (!pMessageFunction)
         {
-            m_Output_Manager->print_f("Library did not pass in a message function.  Not registering.\n");
+            m_Output_Manager->print("Library did not pass in a message function.  Not registering.\n");
             return;
         }
 
@@ -220,12 +220,12 @@ void Soar_Instance::Delete_Agent(char* pAgentName)
 
 void Soar_Instance::Print_Agent_Table()
 {
-    m_Output_Manager->print_f("------------------------------------\n");
-    m_Output_Manager->print_f("------------ Agent Table -----------\n");
-    m_Output_Manager->print_f("------------------------------------\n");
+    m_Output_Manager->print("------------------------------------\n");
+    m_Output_Manager->print("------------ Agent Table -----------\n");
+    m_Output_Manager->print("------------------------------------\n");
     for (std::map< char*, Agent_Info*, cmp_str >::iterator it = (*m_agent_table).begin(); it != (*m_agent_table).end(); ++it)
     {
-        m_Output_Manager->print_f("%s -> %s\n", it->first, it->second->soarAgentSML->GetSoarAgent()->name);
+        m_Output_Manager->print_sf("%s -> %s\n", it->first, it->second->soarAgentSML->GetSoarAgent()->name);
     }
 }
 

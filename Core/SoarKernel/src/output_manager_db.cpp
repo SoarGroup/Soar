@@ -269,7 +269,7 @@ void OM_DB::close_db()
 {
     if (m_Debug_DB->get_status() == soar_module::connected)
     {
-        m_OM->debug_print_f(DT_DEBUG, "Closing database %s.\n", m_OM->m_params->path->get_value());
+        m_OM->debug_print_sf(DT_DEBUG, "Closing database %s.\n", m_OM->m_params->path->get_value());
         // if lazy, commit
         if (m_OM->m_params->lazy_commit->get_value() == on)
         {
@@ -302,7 +302,7 @@ void OM_DB::init_db()
     else
     {
         db_path = m_OM->m_params->path->get_value();
-        m_OM->print_f("Initializing debug database at %s\n", db_path);
+        m_OM->print_sf("Initializing debug database at %s\n", db_path);
     }
 
     // attempt connection
@@ -315,7 +315,7 @@ void OM_DB::init_db()
 
     if (m_Debug_DB->get_status() == soar_module::problem)
     {
-        m_OM->print_f("Database Error: %s\n", m_Debug_DB->get_errmsg());
+        m_OM->print_sf("Database Error: %s\n", m_Debug_DB->get_errmsg());
         /* -  Return and leaved db modes off -- */
         return;
     }
