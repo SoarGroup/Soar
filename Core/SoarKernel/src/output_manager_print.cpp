@@ -22,10 +22,107 @@
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "output_manager.h"
+#include "output_manager_db.h"
 #include "prefmem.h"
 #include "wmem.h"
 #include "soar_instance.h"
 #include "test.h"
+
+void Output_Manager::print_f(const char* format, ...)
+{
+    if (m_defaultAgent)
+    {
+        va_list args;
+        char buf[PRINT_BUFSIZE];
+
+        va_start(args, format);
+        vsprintf(buf, format, args);
+        va_end(args);
+        printa(m_defaultAgent, buf);
+    }
+}
+
+void Output_Manager::printa_f(agent* pSoarAgent, const char* format, ...)
+{
+    va_list args;
+    char buf[PRINT_BUFSIZE];
+
+    va_start(args, format);
+    vsprintf(buf, format, args);
+    va_end(args);
+    printa(pSoarAgent, buf);
+}
+
+void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
+{
+    va_list args;
+    char buf[PRINT_BUFSIZE];
+
+    va_start(args, format);
+    vsnprintf_with_symbols(pSoarAgent, buf, PRINT_BUFSIZE, format, args);
+    va_end(args);
+    printa(pSoarAgent, buf);
+}
+
+void Output_Manager::print_sf(const char* format, ...)
+{
+    if (m_defaultAgent)
+    {
+        va_list args;
+        char buf[PRINT_BUFSIZE];
+
+        va_start(args, format);
+        vsnprintf_with_symbols(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+        va_end(args);
+        printa(m_defaultAgent, buf);
+    }
+}
+
+void Output_Manager::printa(agent* pSoarAgent, const char* msg)
+{
+    if (print_enabled)
+    {
+        if (pSoarAgent && pSoarAgent->output_settings->callback_mode && pSoarAgent->output_settings->print_enabled)
+        {
+            soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(msg)));
+        }
+
+        if (stdout_mode)
+        {
+            fputs(msg, stdout);
+        }
+
+    }
+
+    update_printer_columns(pSoarAgent, msg);
+
+    if (db_mode)
+    {
+        m_db->print_db(trace_msg, mode_info[No_Mode].prefix->c_str(), msg);
+    }
+}
+
+void Output_Manager::printa_prefix(TraceMode mode, agent* pSoarAgent, const char* msg)
+{
+    std::string newTrace;
+
+    newTrace.assign(mode_info[mode].prefix->c_str());
+    newTrace.append("| ");
+    newTrace.append(msg);
+
+    printa(pSoarAgent, newTrace.c_str());
+}
+
+void Output_Manager::printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg)
+{
+    soar_module::sqlite_statement*   target_statement = NIL;
+
+    if (((msgType == trace_msg) && mode_info[mode].enabled) ||
+            ((msgType == debug_msg) && mode_info[mode].enabled))
+    {
+        m_db->print_db(msgType, mode_info[mode].prefix->c_str(), msg);
+    }
+}
 
 void Output_Manager::debug_print(TraceMode mode, const char* msg)
 {
@@ -65,7 +162,8 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
     vsnprintf_with_symbols(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
     va_end(args);
 
-    printa_prefix(mode, m_defaultAgent, buf);
+//    printa_prefix(mode, m_defaultAgent, buf);
+    printa(m_defaultAgent, buf);
 
 }
 

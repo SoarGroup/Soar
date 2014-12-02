@@ -16,6 +16,7 @@
 #include "kernel.h"
 #include "lexer.h"
 #include "soar_db.h"
+#include "output_manager_db.h"
 
 typedef char* rhs_value;
 typedef struct test_struct test_info;
@@ -161,7 +162,8 @@ class Output_Manager
             return printed_output_strings[next_output_string];
         }
 
-        void store_refcount(Symbol* sym, const char* trace, bool isAdd);
+        void store_refcount(Symbol* sym, const char* callers, bool isAdd) { m_db->store_refcount(sym, callers, isAdd); }
+
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
         void start_fresh_line(agent* pSoarAgent = NULL);
