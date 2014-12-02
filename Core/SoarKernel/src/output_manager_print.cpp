@@ -12,7 +12,6 @@
 
 ------------------------------------------------------------------ */
 
-#include "debug.h"
 #include "rhs.h"
 #include "print.h"
 #include "agent.h"
@@ -80,25 +79,24 @@ void Output_Manager::print_sf(const char* format, ...)
 
 void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 {
-    if (print_enabled)
+    if (pSoarAgent)
     {
-        if (pSoarAgent && pSoarAgent->output_settings->callback_mode && pSoarAgent->output_settings->print_enabled)
+        if (!pSoarAgent->output_settings->print_enabled) return;
+        if (pSoarAgent->output_settings->callback_mode)
         {
             soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(msg)));
         }
-
-        if (stdout_mode)
+        if (pSoarAgent->output_settings->stdout_mode)
         {
             fputs(msg, stdout);
         }
 
-    }
+        update_printer_columns(pSoarAgent, msg);
 
-    update_printer_columns(pSoarAgent, msg);
-
-    if (db_mode)
-    {
-        m_db->print_db(trace_msg, mode_info[No_Mode].prefix->c_str(), msg);
+        if (db_mode)
+        {
+            m_db->print_db(trace_msg, mode_info[No_Mode].prefix->c_str(), msg);
+        }
     }
 }
 
@@ -148,6 +146,90 @@ void Output_Manager::debug_print_f(TraceMode mode, const char* format, ...)
     printa_prefix(mode, m_defaultAgent, buf);
 
 }
+void Output_Manager::vsnprintf(TraceMode mode, agent* thisAgent, char* dest, size_t count, const char* format, va_list args)
+{
+    char* ch;
+    const char* ch_prefix;
+    char c;
+    Symbol* sym;
+
+    ch = dest;
+//    ch_prefix = mode_info[mode].prefix->c_str();
+//    while ((*ch_prefix != 0))
+//    {
+//        *(ch++) = *(ch_prefix++);
+//    }
+
+//    strcpy(ch, mode_info[mode].prefix->c_str());
+//    while (*ch) ch++;
+//    *(ch++) = '|';
+//    *(ch++) = ' ';
+
+    while (true)
+    {
+        /* --- copy anything up to the first "%" --- */
+        while ((*format != '%') && (*format != 0))
+        {
+            *(ch++) = *(format++);
+        }
+        if (*format == 0)
+        {
+            break;
+        }
+        /* --- handle the %-thingy --- */
+        /* the size of the remaining buffer (after ch) is
+            the difference between the address of ch and
+            the address of the beginning of the buffer
+         */
+        if (*(format + 1) == 's')
+        {
+            char *ch2 = va_arg(args, char *);
+            if (ch2)
+            {
+                //SNPRINTF(ch, count - (ch - dest), "%s", va_arg(args, char *));
+                strcpy(ch, ch2);
+                while (*ch) ch++;
+            }
+            format += 2;
+        } else if (*(format + 1) == 'y')
+        {
+            sym = va_arg(args, Symbol*);
+            if (sym)
+            {
+                (sym)->to_string(true, ch, count - (ch - dest));
+                while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
+            format += 2;
+        } else if (*(format + 1) == 'i')
+        {
+            SNPRINTF(ch, count - (ch - dest), "%lld", va_arg(args, int64_t));
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == 'u')
+        {
+            SNPRINTF(ch, count - (ch - dest), "%llu", va_arg(args, uint64_t));
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == 't')
+        {
+            test_to_string(va_arg(args, test), ch, count - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == 'c')
+        {
+            c = static_cast<char>(va_arg(args, int));
+            SNPRINTF(ch, count - (ch - dest), "%c", c);
+            while (*ch) ch++;
+            format += 2;
+        } else
+        {
+            *(ch++) = *(format++);
+        }
+    }
+    *ch = 0;
+}
 
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 {
@@ -161,10 +243,20 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
     va_start(args, format);
     vsnprintf_with_symbols(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
     va_end(args);
+    printa_prefix(mode, m_defaultAgent, buf);
+//
+//    int s = mode_info[mode].prefix->size();
+//    char buf[PRINT_BUFSIZE];
+//    strcpy(buf, mode_info[mode].prefix->c_str());
+//    va_start(args, format);
+//    vsnprintf_with_symbols(m_defaultAgent, (buf+s+1), PRINT_BUFSIZE, format, args);
+//    va_end(args);
+//    printa(m_defaultAgent, buf);
 
-//    printa_prefix(mode, m_defaultAgent, buf);
-    printa(m_defaultAgent, buf);
-
+//    va_start(args, format);
+//    vsnprintf(mode, m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+//    va_end(args);
+//    printa(m_defaultAgent, buf);
 }
 
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)

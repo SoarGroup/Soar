@@ -27,7 +27,6 @@
 #include "symtab.h"
 #include "init_soar.h"
 #include "wmem.h"
-#include "debug.h"
 #include "rete.h"
 #include "rhs.h"
 #include "rhs_functions.h"
@@ -948,7 +947,6 @@ void print_production(agent* thisAgent, production* p, bool internal)
     condition* top, *bottom;
     action* rhs;
 
-    Output_Manager::Get_OM().set_dprint_enabled(false);
     /*
     --- print "sp" and production name ---
     */
@@ -1031,7 +1029,6 @@ void print_production(agent* thisAgent, production* p, bool internal)
     xml_end_tag(thisAgent, kTagProduction);
 
     deallocate_action_list(thisAgent, rhs);
-    Output_Manager::Get_OM().set_dprint_enabled(true);
 }
 
 /* ------------------------------------------------------------------

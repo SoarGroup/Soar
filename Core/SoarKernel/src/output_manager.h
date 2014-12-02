@@ -63,8 +63,9 @@ class AgentOutput_Info
     public:
         AgentOutput_Info();
 
-        bool print_enabled, db_mode, callback_mode, file_mode;
-        bool dprint_enabled, db_dbg_mode, callback_dbg_mode, stdout_dbg_mode, file_dbg_mode;
+        bool print_enabled;
+        bool callback_mode, stdout_mode, db_mode;
+        bool callback_dbg_mode, stdout_dbg_mode, db_dbg_mode;
         int  printer_output_column;
 } ;
 
@@ -97,9 +98,10 @@ class Output_Manager
         OM_Parameters*                            m_params;
         OM_DB*                                    m_db;
 
-        bool print_enabled, db_mode, stdout_mode, file_mode;
-        bool dprint_enabled, db_dbg_mode, stdout_dbg_mode, file_dbg_mode;
+        /* -- Global toggles for database, standard out and file output -- */
+        bool db_mode, stdout_mode;
 
+        /* -- Settings for how tests are printed (actual, original production tests, test identity) -- */
         bool m_print_actual, m_print_original, m_print_identity;
         char* m_pre_string, *m_post_string;
 
@@ -108,11 +110,14 @@ class Output_Manager
          *    function calls that use that buffer within one print statements.  There are
          *    probably better approaches, but this avoided revising a lot of other code and
          *    does the job.  -- */
-        char    printed_output_strings[output_string_size][num_output_strings];
-        int64_t                         next_output_string;
+        char        printed_output_strings[output_string_size][num_output_strings];
+        int64_t     next_output_string;
 
+        /* -- The following tracks column of the next character to print if Soar is writing to cout --*/
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
+
+        void vsnprintf(TraceMode mode, agent* thisAgent, char* dest, size_t count, const char* format, va_list args);
 
     public:
 
@@ -123,8 +128,7 @@ class Output_Manager
         void init();
         void fill_mode_info();
 
-        void set_dprint_enabled(bool activate) { dprint_enabled = activate; }
-        bool debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled && dprint_enabled; }
+        bool debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
 
         void set_default_agent(agent* pSoarAgent);
         void clear_default_agent() { m_defaultAgent = NULL; }
@@ -170,7 +174,7 @@ class Output_Manager
 
         void set_dprint_params(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
         {
-            if (!debug_mode_enabled(mode) || !dprint_enabled) return;
+            if (!debug_mode_enabled(mode)) return;
             m_print_actual = pActual;
             m_print_original = pOriginal;
             m_print_identity = p_Identity;

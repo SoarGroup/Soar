@@ -18,7 +18,7 @@ extern void print(agent* thisAgent, const char* format, ...);
 #ifndef SOAR_RELEASE_VERSION
     /* --  The following enables debugging traces/modes. Individual debug
      *     #defines are found in debug_defines.h -- */
-    #define SOAR_DEBUG_PRINTING
+    //#define SOAR_DEBUG_PRINTING
 
     /* -- Enables tracing functions that print SQL processing and errors -- */
     //#define DEBUG_EPMEM_SQL

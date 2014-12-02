@@ -64,23 +64,16 @@
 
 #define TRACE_Init_DT_EPMEM_CMD                   false
 
-/* -- Output can be sent to the following listeners: debug database,
- *    XML, print callback, stdout, and/or a file. -- */
-
-#define OM_Init_print_enabled on
-#define OM_Init_dprint_enabled on
-
 /* -- Which output listeners should be initially turned on -- */
+#define OM_Init_print_enabled     on
 #define OM_Init_db_mode           off
-#define OM_Init_callback_mode     off
-#define OM_Init_stdout_mode       on
-#define OM_Init_file_mode         off
+#define OM_Init_callback_mode     on
+#define OM_Init_stdout_mode       off
 
 /* -- Which output debug listeners should be initially turned on -- */
 #define OM_Init_db_dbg_mode       off
-#define OM_Init_callback_dbg_mode off
-#define OM_Init_stdout_dbg_mode   on
-#define OM_Init_file_dbg_mode     off
+#define OM_Init_callback_dbg_mode on
+#define OM_Init_stdout_dbg_mode   off
 #endif
 
 #ifdef DEBUG_FULL_SETTINGS
@@ -135,23 +128,16 @@
 
 #define TRACE_Init_DT_EPMEM_CMD                   true
 
-/* -- Output can be sent to the following listeners: debug database,
- *    XML, print callback, stdout, and/or a file. -- */
-
-#define OM_Init_print_enabled on
-#define OM_Init_dprint_enabled on
-
 /* -- Which output listeners should be initially turned on -- */
+#define OM_Init_print_enabled     on
 #define OM_Init_db_mode           off
 #define OM_Init_callback_mode     off
 #define OM_Init_stdout_mode       on
-#define OM_Init_file_mode         off
 
 /* -- Which output debug listeners should be initially turned on -- */
 #define OM_Init_db_dbg_mode       off
 #define OM_Init_callback_dbg_mode off
 #define OM_Init_stdout_dbg_mode   on
-#define OM_Init_file_dbg_mode     off
 #endif
 
 #ifdef DEBUG_REFCOUNT_SETTINGS
@@ -205,24 +191,18 @@
 
 #define TRACE_Init_DT_EPMEM_CMD                   false
 
-/* -- Output can be sent to the following listeners: debug database,
- *    XML, print callback, stdout, and/or a file. -- */
-
-#define OM_Init_print_enabled on
-#define OM_Init_dprint_enabled on
-
 /* -- Which output listeners should be initially turned on -- */
+#define OM_Init_print_enabled     on
 #define OM_Init_db_mode           on
 #define OM_Init_callback_mode     off
 #define OM_Init_stdout_mode       on
-#define OM_Init_file_mode         off
 
 /* -- Which output debug listeners should be initially turned on -- */
 #define OM_Init_db_dbg_mode       on
 #define OM_Init_callback_dbg_mode off
 #define OM_Init_stdout_dbg_mode   off
-#define OM_Init_file_dbg_mode     off
 #endif
+
 #ifdef DEBUG_UNITTEST_SETTINGS
 /* ------------------------------------------------------------------------------------
  * -- MToDo | Remove these. Just a quick set of init settings for unit tests and TSP --
@@ -274,23 +254,16 @@
 
 #define TRACE_Init_DT_EPMEM_CMD                   false
 
-/* -- Output can be sent to the following listeners: debug database,
- *    XML, print callback, stdout, and/or a file. -- */
-
-#define OM_Init_print_enabled on
-#define OM_Init_dprint_enabled off
-
 /* -- Which output listeners should be initially turned on -- */
+#define OM_Init_print_enabled     on
 #define OM_Init_db_mode           off
 #define OM_Init_callback_mode     on
 #define OM_Init_stdout_mode       off
-#define OM_Init_file_mode         off
 
 /* -- Which output debug listeners should be initially turned on -- */
 #define OM_Init_db_dbg_mode       off
 #define OM_Init_callback_dbg_mode off
 #define OM_Init_stdout_dbg_mode   off
-#define OM_Init_file_dbg_mode     off
 #endif
 
 #endif /* DEBUG_DEFINES_H_ */

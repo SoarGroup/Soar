@@ -79,7 +79,8 @@
     #define dprint_wme(mode, w) Output_Manager::Get_OM().print_wme (mode, w, false)
     #define dprint(mode, format, args...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
 #else
-    //#define dprint_macro(mode, format, args...) { }
+    #define dprint_set_params(mode, args...) ((void)0)
+    #define dprint_clear_params(mode, args...) ((void)0)
     #define dprint_y(mode, format, ...) ((void)0)
     #define dprint_noprefix(mode, format, ...) ((void)0)
     #define dprint_start_fresh_line(mode) ((void)0)

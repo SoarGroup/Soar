@@ -14,7 +14,6 @@
 #include "output_manager.h"
 #include "output_manager_params.h"
 
-#include "debug.h"
 #include "debug_defines.h"
 
 OM_DB::OM_DB(soar_module::sqlite_database* pDebugDB)
@@ -33,9 +32,6 @@ OM_DB::~OM_DB()
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
     compile_refcount_summary();
 #endif
-
-//  m_Debug_DB->
-
 }
 
 void OM_DB::create_db()
@@ -287,15 +283,13 @@ void OM_DB::close_db()
 
 void OM_DB::init_db()
 {
-    bool saved_db_mode = m_OM->db_mode, saved_db_dbg_mode = m_OM->db_dbg_mode;
+    bool saved_db_mode = m_OM->db_mode;
     m_OM->db_mode = false;
-    m_OM->db_dbg_mode = false;
 
     if (m_Debug_DB->get_status() != soar_module::disconnected)
     {
         m_OM->print("ERROR:  Cannot initialize debug database.  It is already connected!");
         m_OM->db_mode = saved_db_mode;
-        m_OM->db_dbg_mode = saved_db_dbg_mode;
         return;
     }
 
@@ -402,7 +396,6 @@ void OM_DB::init_db()
             begin->execute(soar_module::op_reinit);
         }
         m_OM->db_mode = saved_db_mode;
-        m_OM->db_dbg_mode = saved_db_dbg_mode;
     }
 }
 

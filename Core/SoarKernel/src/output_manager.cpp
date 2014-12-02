@@ -11,7 +11,6 @@
  */
 
 #include "callback.h"
-#include "debug.h"
 #include "debug_defines.h"
 #include "output_manager.h"
 #include "output_manager_db.h"
@@ -21,13 +20,12 @@
 
 AgentOutput_Info::AgentOutput_Info() :
     print_enabled(OM_Init_print_enabled),
-    dprint_enabled(OM_Init_dprint_enabled),
-    db_mode(OM_Init_db_mode),
     callback_mode(OM_Init_callback_mode),
-    file_mode(OM_Init_file_mode),
-    db_dbg_mode(OM_Init_db_dbg_mode),
+    stdout_mode(OM_Init_stdout_mode),
+    db_mode(OM_Init_db_mode),
     callback_dbg_mode(OM_Init_callback_dbg_mode),
-    file_dbg_mode(OM_Init_file_dbg_mode),
+    stdout_dbg_mode(OM_Init_stdout_dbg_mode),
+    db_dbg_mode(OM_Init_db_dbg_mode),
     printer_output_column(1)
 {}
 
@@ -37,7 +35,7 @@ void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pS
     m_Kernel = pKernel;
     m_Soar_Instance = pSoarInstance;
 
-    if (db_dbg_mode || db_mode)
+    if (db_mode)
     {
         soar_module::sqlite_database* new_db = new soar_module::sqlite_database();
         m_db = new OM_DB(new_db);
@@ -61,15 +59,8 @@ Output_Manager::Output_Manager()
 
     next_output_string = 0;
 
-    print_enabled = OM_Init_print_enabled;
-    dprint_enabled = OM_Init_dprint_enabled;
     db_mode = OM_Init_db_mode;
     stdout_mode = OM_Init_stdout_mode;
-    file_mode = OM_Init_file_mode;
-
-    db_dbg_mode = OM_Init_db_dbg_mode;
-    stdout_dbg_mode = OM_Init_stdout_dbg_mode;
-    file_dbg_mode = OM_Init_file_dbg_mode;
 
     /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best
      *    place to put it.  Leaving here for now. -- */
@@ -154,8 +145,11 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
             if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column = 1;
-            }
-            if (stdout_mode)
+                if (pSoarAgent->output_settings->stdout_mode)
+                {
+                    global_printer_output_column = 1;
+                }
+            } else if (stdout_mode)
             {
                 global_printer_output_column = 1;
             }
@@ -165,8 +159,11 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
             if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column++;
-            }
-            if (stdout_mode)
+                if (pSoarAgent->output_settings->stdout_mode)
+                {
+                    global_printer_output_column++;
+                }
+            } else if (stdout_mode)
             {
                 global_printer_output_column++;
             }

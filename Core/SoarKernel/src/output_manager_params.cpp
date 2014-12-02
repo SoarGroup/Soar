@@ -35,13 +35,11 @@ OM_Parameters::OM_Parameters(): soar_module::param_container(NULL)
     opt->add_mapping(soar_module::opt_speed, "performance");
 
     db_mode = new soar_module::boolean_param("db_mode", OM_Init_db_mode, new soar_module::f_predicate<boolean>());
-    callback_mode = new soar_module::boolean_param("db_mode", OM_Init_callback_mode, new soar_module::f_predicate<boolean>());
+    callback_mode = new soar_module::boolean_param("callback_mode", OM_Init_callback_mode, new soar_module::f_predicate<boolean>());
     stdout_mode = new soar_module::boolean_param("stdout_mode", OM_Init_stdout_mode, new soar_module::f_predicate<boolean>());
-    file_mode = new soar_module::boolean_param("file_mode", OM_Init_file_mode, new soar_module::f_predicate<boolean>());
     db_dbg_mode = new soar_module::boolean_param("db_dbg_mode", OM_Init_db_dbg_mode, new soar_module::f_predicate<boolean>());
-    callback_dbg_mode = new soar_module::boolean_param("db_dbg_mode", OM_Init_callback_dbg_mode, new soar_module::f_predicate<boolean>());
+    callback_dbg_mode = new soar_module::boolean_param("callback_dbg_mode", OM_Init_callback_dbg_mode, new soar_module::f_predicate<boolean>());
     stdout_dbg_mode = new soar_module::boolean_param("stdout_dbg_mode", OM_Init_stdout_dbg_mode, new soar_module::f_predicate<boolean>());
-    file_dbg_mode = new soar_module::boolean_param("file_dbg_mode", OM_Init_file_dbg_mode, new soar_module::f_predicate<boolean>());
 
     add(database);
     add(append_db);
@@ -53,10 +51,8 @@ OM_Parameters::OM_Parameters(): soar_module::param_container(NULL)
     add(db_mode);
     add(callback_mode);
     add(stdout_mode);
-    add(file_mode);
     add(db_dbg_mode);
     add(callback_dbg_mode);
     add(stdout_dbg_mode);
-    add(file_dbg_mode);
 
 }

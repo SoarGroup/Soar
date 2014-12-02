@@ -6,8 +6,9 @@
 
 static Output_Manager* thisOutput_Manager = NULL;
 
-//#define test_print_function(format, args...) dprint (DT_DEBUG, format , ##args)
-#define test_print_function(format, args...) Output_Manager::Get_OM().debug_print_sf (DT_DEBUG, format , ##args)
+#define test_print_function(format, args...) dprint (DT_DEBUG, format , ##args)
+//#define test_print_function(format, args...) Output_Manager::Get_OM().debug_print_sf (DT_DEBUG, format , ##args)
+//#define test_print_function(format, args...) Output_Manager::Get_OM().debug_print_sf_noprefix (DT_DEBUG, format , ##args)
 //#define test_print_function(format, args...) Output_Manager::Get_OM().print_sf (format , ##args)
 
 //#define test_print_function(format, args...) print (debug_agent, format , ##args)
