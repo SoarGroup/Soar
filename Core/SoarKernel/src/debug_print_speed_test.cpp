@@ -1,22 +1,24 @@
 #include "debug.h"
 #include "soar_instance.h"
+#include "print.h"
 
 #define DEBUG_BUFFER_SIZE 5000
 
 static Output_Manager* thisOutput_Manager = NULL;
 
-#define test_print_function(format, args...) dprint (DT_DEBUG, format , ##args)
-//#define test_print_function(format, args...) dprint_y (DT_DEBUG, format , ##args)
-//#define test_print_function(format, args...) Output_Manager::Get_OM().printv_y (format , ##args)
-
-//#define test_print_function(format, args...) dprint_macro (DT_DEBUG, format , ##args)
+//#define test_print_function(format, args...) dprint (DT_DEBUG, format , ##args)
+#define test_print_function(format, args...) Output_Manager::Get_OM().debug_print_sf (DT_DEBUG, format , ##args)
+//#define test_print_function(format, args...) Output_Manager::Get_OM().print_sf (format , ##args)
 
 //#define test_print_function(format, args...) print (debug_agent, format , ##args)
 //#define test_print_function(format, args...) print_with_symbols (debug_agent, format , ##args)
 //#define test_print_function(format, args...) print_old (debug_agent, format , ##args)
 
-//#define test_print_function(format, args...) Output_Manager::Get_OM().printv_agent(debug_agent, format , ##args)
-//#define test_print_function(format, args...) thisOutput_Manager->printv_agent(debug_agent, format , ##args)
+//#define test_print_function(format, args...) Output_Manager::Get_OM().printa_sf(debug_agent, format , ##args)
+//#define test_print_function(format, args...) thisOutput_Manager->printa_sf(debug_agent, format , ##args)
+
+//#define test_print_function(format, args...) dprint_y (DT_DEBUG, format , ##args)
+//#define test_print_function(format, args...) dprint_macro (DT_DEBUG, format , ##args)
 
 void test_print_speed()
 {
