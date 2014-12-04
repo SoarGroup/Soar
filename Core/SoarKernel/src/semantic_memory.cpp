@@ -3811,7 +3811,7 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **e
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_respond_to_cmd( agent *my_agent, bool store_only )
+void smem_respond_to_cmd( agent *my_agent, bool no_query )
 {
 
     smem_attach(my_agent);
@@ -3830,14 +3830,14 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 	Symbol *query;
 	Symbol *negquery;
-	Symbol *retrieve;
 	Symbol *math;
+	smem_sym_list retrieve;
 	smem_sym_list prohibit;
 	smem_sym_list store;
 
 	enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store } path;
 
-	unsigned int time_slot = ( ( store_only )?(1):(0) );
+	unsigned int time_slot = ( ( no_query )?(1):(0) );
 	uint64_t wme_count;
 	bool new_cue;
 	bool has_cue;
@@ -3893,8 +3893,11 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					for ( w_p=wmes->begin(); w_p!=wmes->end(); w_p++ )
 					{
 						has_cue = true;
-						if ( ( ( store_only ) && ( ( parent_level != 0 ) || ( (*w_p)->attr == my_agent->smem_sym_store ) ) ) ||
-							 ( ( !store_only ) && ( ( parent_level != 0 ) || ( (*w_p)->attr != my_agent->smem_sym_store ) ) ) )
+						// save the latest WME timetag
+						// if it's no_query, then save the largest time tag between the command itself (store or retrieve) and the arguments
+						// if it's not no_query, then save the largest time tag between everything by the store command
+						// this second one is convoluted, but it prevents a later store from blocking an earlier query (I think) JNHL 2014-12-04
+						if ( !no_query || ( ( parent_level != 0 ) || ( (*w_p)->attr == my_agent->smem_sym_store ) || ( (*w_p)->attr == my_agent->smem_sym_retrieve ) ) )
 						{
 							wme_count++;
 
@@ -3946,7 +3949,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 
 			// set new_cue to true if we need to do a spontaneous retrieval
-			if ( !store_only && !new_cue && !has_cue &&
+			if ( !no_query && !new_cue && !has_cue &&
 					my_agent->smem_params->spontaneous->get_value() != 0 &&
 					my_agent->smem_spontaneous_counter >= my_agent->smem_params->spontaneous->get_value() &&
 					state == my_agent->top_goal )
@@ -3969,12 +3972,12 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				retrieval_wmes.clear();
 
 				// initialize command vars
-				retrieve = NIL;
 				query = NIL;
 				negquery = NIL;
 				math = NIL;
 				store.clear();
 				prohibit.clear();
+				retrieve.clear();
 				path = blank_slate;
 
 				// process top-level symbols
@@ -3988,9 +3991,9 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						if ( (*w_p)->attr == my_agent->smem_sym_retrieve )
 						{
 							if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-								 ( path == blank_slate ) )
+								 ( ( path == blank_slate ) || ( path == cmd_retrieve ) ) )
 							{
-								retrieve = (*w_p)->value;
+								retrieve.push_back( (*w_p)->value );
 								path = cmd_retrieve;
 							}
 							else
@@ -4101,21 +4104,25 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					// retrieve
 					if ( path == cmd_retrieve )
 					{
-						if ( retrieve->id.smem_lti == NIL )
+						smem_sym_list::iterator sym_p;
+						for ( sym_p=retrieve.begin(); sym_p!=retrieve.end(); sym_p++ )
 						{
-							// retrieve is not pointing to an lti!
-							smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, retrieve );
-						}
-						else
-						{
-							// status: success
-							smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
+							if ( (*sym_p)->id.smem_lti == NIL )
+							{
+								// symbol is not an lti!
+								smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, (*sym_p) );
+							}
+							else
+							{
+								// status: success
+								smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
 
-							// install memory directly onto the retrieve identifier
-							smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true, meta_wmes, retrieval_wmes );
+								// install memory directly onto the retrieve identifier
+								smem_install_memory( my_agent, state, (*sym_p)->id.smem_lti, (*sym_p), true, meta_wmes, retrieval_wmes );
 
-							// add one to the expansions stat
-							my_agent->smem_stats->expansions->set_value( my_agent->smem_stats->expansions->get_value() + 1 );
+								// add one to the expansions stat
+								my_agent->smem_stats->expansions->set_value( my_agent->smem_stats->expansions->get_value() + 1 );
+							}
 						}
 					}
 					// query
@@ -4264,7 +4271,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		state = state->id.higher_goal;
 	}
 
-	if ( store_only && mirroring_on && ( !my_agent->smem_changed_ids->empty() ) )
+	if ( no_query && mirroring_on && ( !my_agent->smem_changed_ids->empty() ) )
 	{
 		////////////////////////////////////////////////////////////////////////////
 		my_agent->smem_timers->storage->start();
@@ -4319,13 +4326,13 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	}
 }
 
-void smem_go( agent *my_agent, bool store_only )
+void smem_go( agent *my_agent, bool no_query )
 {
 	my_agent->smem_timers->total->start();
 
 #ifndef SMEM_EXPERIMENT
 
-	smem_respond_to_cmd( my_agent, store_only );
+	smem_respond_to_cmd( my_agent, no_query );
 
 #else // SMEM_EXPERIMENT
 
