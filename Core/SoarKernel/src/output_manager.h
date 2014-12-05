@@ -117,7 +117,8 @@ class Output_Manager
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
 
-        void vsnprintf(agent* thisAgent, char* dest, size_t count, const char* format, va_list args);
+        void vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args);
+        void sprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
 
     public:
 
@@ -179,7 +180,7 @@ class Output_Manager
         void clear_dprint_params(TraceMode mode) { set_dprint_params(mode); }
 
         void debug_print_production(TraceMode mode, production* prod);
-        void debug_print_preference(TraceMode mode, preference* pref);
+        char* pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size);
         void debug_print_preflist_inst(TraceMode mode, preference* top_pref);
         void debug_print_preflist_result(TraceMode mode, preference* top_pref);
 

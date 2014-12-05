@@ -1851,17 +1851,18 @@ char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
 {
     cons* c;
     char* ch;
+    Output_Manager* OM = &Output_Manager::Get_OM();
 
     if (!dest)
     {
-        dest = Output_Manager::Get_OM().get_printed_output_string();
+        dest = OM->get_printed_output_string();
         dest_size = output_string_size; /* from agent.h */
     }
     ch = dest;
 
     if (test_is_blank(t))
     {
-        strncpy(dest, "[BLANK TEST]", dest_size);   /* this should never get executed */
+        strcpy(dest, "[BLANK TEST]");   /* this should never get executed */
         dest[dest_size - 1] = 0; /* ensure null termination */
         return dest;
     }
@@ -1871,80 +1872,48 @@ char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
         case EQUALITY_TEST:
             if (show_equality)
             {
-                strncpy(ch, "= ", dest_size - (ch - dest));
-                ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-                while (*ch)
-                {
-                    ch++;
-                }
+                strcpy(ch, "= ");
+                ch += 2;
                 t->data.referent->to_string(true, ch, dest_size - (ch - dest));
             }
             else
             {
-                return (t->data.referent->to_string(true, dest, dest_size));
+                t->data.referent->to_string(true, dest, dest_size);
             }
             break;
         case NOT_EQUAL_TEST:
-            strncpy(ch, "<> ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
+            strcpy(ch, "<> ");
+            ch += 3;
             t->data.referent->to_string(true, ch, dest_size - (ch - dest));
             break;
         case LESS_TEST:
-            strncpy(ch, "< ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
+            strcpy(ch, "< ");
+            ch += 2;
             t->data.referent->to_string(true, ch, dest_size - (ch - dest));
             break;
         case GREATER_TEST:
-            strncpy(ch, "> ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
+            strcpy(ch, "> ");
+            ch += 2;
             t->data.referent->to_string(true, ch, dest_size - (ch - dest));
             break;
         case LESS_OR_EQUAL_TEST:
-            strncpy(ch, "<= ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
+            strcpy(ch, "<= ");
+            ch += 3;
             t->data.referent->to_string(true, ch, dest_size - (ch - dest));
             break;
         case GREATER_OR_EQUAL_TEST:
-            strncpy(ch, ">= ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
+            strcpy(ch, ">= ");
+            ch += 3;
             t->data.referent->to_string(true, ch, dest_size - (ch - dest));
             break;
         case SAME_TYPE_TEST:
-            strncpy(ch, "<=> ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
+            strcpy(ch, "<=> ");
+            ch += 4;
             t->data.referent->to_string(true, ch, dest_size - (ch - dest));
             break;
         case DISJUNCTION_TEST:
-            strncpy(ch, "<< ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
+            strcpy(ch, "<< ");
+            ch += 3;
             for (c = t->data.disjunction_list; c != NIL; c = c->rest)
             {
                 static_cast<symbol_struct*>(c->first)->to_string(true, ch, dest_size - (ch - dest));
@@ -1954,16 +1923,13 @@ char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
                 }
                 *(ch++) = ' ';
             }
-            strncpy(ch, ">>", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+            strcpy(ch, ">>");
+            ch += 2;
+            *ch = 0;
             break;
         case CONJUNCTIVE_TEST:
-            strncpy(ch, "{ ", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
-            while (*ch)
-            {
-                ch++;
-            }
+            strcpy(ch, "{ ");
+            ch += 2;
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
                 test_to_string(static_cast<test>(c->first), ch, dest_size - (ch - dest));
@@ -1973,22 +1939,21 @@ char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
                 }
                 *(ch++) = ' ';
             }
-            strncpy(ch, "}", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+            strcpy(ch, "}");
+            ch++;
+            *ch = 0;
             break;
         case GOAL_ID_TEST:
-            strncpy(dest, "[GOAL ID TEST]", dest_size - (ch - dest));  /* this should never get executed */
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+            strcpy(dest, "[GOAL ID TEST]");  /* this should never get executed */
             break;
         case IMPASSE_ID_TEST:
-            strncpy(dest, "[IMPASSE ID TEST]", dest_size - (ch - dest));  /* this should never get executed */
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+            strcpy(dest, "[IMPASSE ID TEST]");  /* this should never get executed */
             break;
         default:
-            strncpy(ch, "INVALID TEST!", dest_size - (ch - dest));
-            ch[dest_size - (ch - dest) - 1] = 0; /* ensure null termination */
+            strcpy(ch, "INVALID TEST!");   /* this should never get executed */
             break;
     }
+    dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 }
 

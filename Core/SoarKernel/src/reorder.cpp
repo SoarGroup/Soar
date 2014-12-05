@@ -349,7 +349,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     {
                         ct->data.conjunct_list = next_c;
                     }
-                    dprint_noprefix(DT_REORDERER, "\n");
+                    dprint_start_fresh_line(DT_REORDERER);
                     dprint(DT_REORDERER, "...spliced test %t out of t's conjunct list and saved to saved_tests with index %y.\n", subtest, sym);
                     free_cons(thisAgent, c);
                 }

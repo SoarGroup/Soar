@@ -33,7 +33,7 @@ void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
     char buf[PRINT_BUFSIZE];
 
     va_start(args, format);
-    vsnprintf_with_symbols(pSoarAgent, buf, PRINT_BUFSIZE, format, args);
+    vsnprint_sf(pSoarAgent, buf, PRINT_BUFSIZE, format, args);
     va_end(args);
     printa(pSoarAgent, buf);
 }
@@ -46,7 +46,7 @@ void Output_Manager::print_sf(const char* format, ...)
         char buf[PRINT_BUFSIZE];
 
         va_start(args, format);
-        vsnprintf_with_symbols(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+        vsnprint_sf(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
         va_end(args);
         printa(m_defaultAgent, buf);
     }
@@ -99,7 +99,7 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
     printa(m_defaultAgent, buf);
 }
 
-void Output_Manager::vsnprintf(agent* thisAgent, char* dest, size_t count, const char* format, va_list args)
+void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args)
 {
     char* ch;
     char c;
@@ -126,7 +126,7 @@ void Output_Manager::vsnprintf(agent* thisAgent, char* dest, size_t count, const
         if (*(format + 1) == 's')
         {
             char *ch2 = va_arg(args, char *);
-            if (ch2)
+            if (ch2 && strlen(ch2))
             {
                 //SNPRINTF(ch, count - (ch - dest), "%s", va_arg(args, char *));
                 strcpy(ch, ch2);
@@ -138,7 +138,7 @@ void Output_Manager::vsnprintf(agent* thisAgent, char* dest, size_t count, const
             sym = va_arg(args, Symbol*);
             if (sym)
             {
-                (sym)->to_string(true, ch, count - (ch - dest));
+                (sym)->to_string(true, ch, dest_size - (ch - dest));
                 while (*ch) ch++;
             } else {
                 *(ch++) = '#';
@@ -146,23 +146,28 @@ void Output_Manager::vsnprintf(agent* thisAgent, char* dest, size_t count, const
             format += 2;
         } else if (*(format + 1) == 'i')
         {
-            SNPRINTF(ch, count - (ch - dest), "%lld", va_arg(args, int64_t));
+            SNPRINTF(ch, dest_size - (ch - dest), "%lld", va_arg(args, int64_t));
             while (*ch) ch++;
             format += 2;
         } else if (*(format + 1) == 'u')
         {
-            SNPRINTF(ch, count - (ch - dest), "%llu", va_arg(args, uint64_t));
+            SNPRINTF(ch, dest_size - (ch - dest), "%llu", va_arg(args, uint64_t));
             while (*ch) ch++;
             format += 2;
         } else if (*(format + 1) == 't')
         {
-            test_to_string(va_arg(args, test), ch, count - (ch - dest) );
+            test_to_string(va_arg(args, test_info *), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == 'p')
+        {
+            pref_to_string(thisAgent, va_arg(args, preference *), ch, dest_size - (ch - dest) );
             while (*ch) ch++;
             format += 2;
         } else if (*(format + 1) == 'c')
         {
             c = static_cast<char>(va_arg(args, int));
-            SNPRINTF(ch, count - (ch - dest), "%c", c);
+            SNPRINTF(ch, dest_size - (ch - dest), "%c", c);
             while (*ch) ch++;
             format += 2;
         } else
@@ -171,6 +176,14 @@ void Output_Manager::vsnprintf(agent* thisAgent, char* dest, size_t count, const
         }
     }
     *ch = 0;
+}
+
+void Output_Manager::sprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vsnprint_sf(thisAgent, dest, dest_size, format, args);
+    va_end(args);
 }
 
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
@@ -185,7 +198,7 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
     strcpy(buf, mode_info[mode].prefix);
     int s = strlen(buf);
     va_start(args, format);
-    vsnprintf(m_defaultAgent, (buf+s), PRINT_BUFSIZE, format, args);
+    vsnprint_sf(m_defaultAgent, (buf+s), PRINT_BUFSIZE, format, args);
     va_end(args);
     printa(m_defaultAgent, buf);
 }
@@ -200,7 +213,7 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
     char buf[PRINT_BUFSIZE];
 
     va_start(args, format);
-    vsnprintf(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+    vsnprint_sf(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
     va_end(args);
 
     printa(m_defaultAgent, buf);
@@ -787,34 +800,44 @@ void Output_Manager::print_action_list(TraceMode mode, action* action_list)
     }
 }
 
-void Output_Manager::debug_print_preference(TraceMode mode, preference* pref)
+char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size)
 {
     char pref_type;
 
-    if (!debug_mode_enabled(mode)) return;
+    if (!dest)
+    {
+        dest_size = output_string_size; /* from agent.h */;
+        dest = get_printed_output_string();
+    }
 
     pref_type = preference_to_char(pref->type);
     if (m_print_actual)
     {
-        print_sf("%s(%y ^%y %y)", m_pre_string, pref->id, pref->attr, pref->value);
+        sprint_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string, pref->id, pref->attr, pref->value,
+            preference_to_char(pref->type),
+            (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
+            (pref->o_supported) ? " :O " : NULL);
+        return dest;
     }
     else if (m_print_original)
     {
-        print_sf("%s(%y ^%y %y)", m_pre_string, pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value);
+        sprint_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string,
+            pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value,
+            preference_to_char(pref->type),
+            (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
+            (pref->o_supported) ? " :O " : NULL);
+        return dest;
     }
     else if (m_print_identity)
     {
-        print_sf("%s(g%u ^g%u g%u)", m_pre_string, pref->g_ids.id, pref->g_ids.attr, pref->g_ids.value);
+        sprint_sf(thisAgent, dest, dest_size, "%s(g%u ^g%u g%u) %c %y%s", m_pre_string,
+            pref->g_ids.id, pref->g_ids.attr, pref->g_ids.value,
+            preference_to_char(pref->type),
+            (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
+            (pref->o_supported) ? " :O " : NULL);
+        return dest;
     }
-    print_sf(" %c", pref_type);
-    if (m_print_actual && preference_is_binary(pref->type))
-    {
-        print_sf(" %y", pref->referent);
-    }
-    if (pref->o_supported)
-    {
-        print_sf(" :O ");
-    }
+    return NULL;
 }
 
 void Output_Manager::debug_print_preflist_inst(TraceMode mode, preference* top_pref)
@@ -826,8 +849,7 @@ void Output_Manager::debug_print_preflist_inst(TraceMode mode, preference* top_p
 
     for (pref = top_pref; pref != NIL;)
     {
-        debug_print_preference(mode, pref);
-        print_sf(")\n");
+        print_sf("%p\n", pref);
         pref = pref->inst_next;
     }
 }
@@ -841,8 +863,7 @@ void Output_Manager::debug_print_preflist_result(TraceMode mode, preference* top
 
     for (pref = top_pref; pref != NIL;)
     {
-        debug_print_preference(mode, pref);
-        print_sf(")\n");
+        print_sf("%p\n", pref);
         pref = pref->next_result;
     }
 }
@@ -990,7 +1011,7 @@ void Output_Manager::print_all_inst(TraceMode mode)
     if (!debug_mode_enabled(mode)) return;
     if (!m_defaultAgent) return;
 
-    print_sf( "--- Instantiations: ---\n");
+    print( "--- Instantiations: ---\n");
 
     std::vector<instantiation*> instantiation_list;
     add_inst_of_type(m_defaultAgent, CHUNK_PRODUCTION_TYPE, instantiation_list);
@@ -1032,7 +1053,7 @@ void Output_Manager::print_varnames(TraceMode mode, varnames* var_names)
 
     if (!var_names)
     {
-        print_sf("None.");;
+        print("None.");;
     }
     else if (varnames_is_one_var(var_names))
     {

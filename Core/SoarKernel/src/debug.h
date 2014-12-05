@@ -65,8 +65,6 @@
             Output_Manager::Get_OM().print_cond_actions (mode, top_cond, top_action)
     #define dprint_cond_results(mode, top_cond, top_pref) \
             Output_Manager::Get_OM().print_cond_results (mode, top_cond, top_pref)
-    #define dprint_preference(mode, pref...) \
-            Output_Manager::Get_OM().debug_print_preference (mode, pref)
     #define dprint_production(mode, prod) Output_Manager::Get_OM().debug_print_production (mode, prod)
     #define dprint_identifiers(mode) Output_Manager::Get_OM().print_identifiers (mode)
     #define dprint_condition_cons(mode, c) \
@@ -92,7 +90,6 @@
     #define dprint_cond_prefs_inst(mode, top_cond, top_pref) ((void)0)
     #define dprint_cond_actions(mode, top_cond, top_action) ((void)0)
     #define dprint_cond_results(mode, top_cond, top_pref) ((void)0)
-    #define dprint_preference(mode, pref) ((void)0)
     #define dprint_production(mode, prod) ((void)0)
     #define dprint_identifiers(mode) ((void)0)
     #define dprint_condition_cons(mode, c) ((void)0)

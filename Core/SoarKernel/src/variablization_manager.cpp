@@ -697,8 +697,8 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
 
     if (variablize)
     {
-        dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for ");
-        dprint_preference(DT_RHS_VARIABLIZATION, result);
+        dprint_set_params(DT_RHS_VARIABLIZATION, "");
+        dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint(DT_IDENTITY_PROP, "\nSetting g_ids for action and variablizing results...\n");
 
         thisAgent->variablizationManager->variablize_rhs_symbol(a->id, result->original_symbols.id);

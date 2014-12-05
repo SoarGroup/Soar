@@ -22,14 +22,14 @@ void debug_test_structs()
         return;
     }
 
-    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID04  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID05  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID06  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID07  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID08  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID04  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID05  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID06  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID07  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID08  = make_new_identifier(debug_agent, 'Z', 1, 1);
     Symbol* newStr01 = make_str_constant(debug_agent, "attr1");
     Symbol* newStr02 = make_str_constant(debug_agent, "attr2");
     Symbol* newStr03 = make_str_constant(debug_agent, "attr3");
@@ -173,7 +173,7 @@ void debug_test_delete_conjuncts()
 
     dprint(DT_DEBUG, "Delete conjunct test.  Creating tests...\n");
 
-    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, 1);
     Symbol* newStr01 = make_str_constant(debug_agent, "attr1");
     Symbol* newInt01 = make_int_constant(debug_agent, 1);
     Symbol* newInt02 = make_int_constant(debug_agent, 2);
@@ -212,7 +212,7 @@ void debug_test(int type)
         return;
     }
 
-    Symbol* sym  = make_new_identifier(debug_agent, 'M', 1, NIL);
+    Symbol* sym  = make_new_identifier(debug_agent, 'M', 1, 1);
     test t = make_test(debug_agent, sym, GREATER_TEST);
     int64_t i1=-23;
     uint64_t ui1=33;
@@ -245,8 +245,6 @@ void debug_test(int type)
             break;
 
         case 7:
-
-
             dprint(DT_DEBUG, "Trying dprintf with symbol %y\n", sym);
             dprint(DT_DEBUG, "Trying dprintf with null symbol %y\n", NULL);
             dprint(DT_DEBUG, "Trying dprintf with test %t\n", t);

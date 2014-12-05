@@ -1124,7 +1124,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             {
                 return var->name;
             }
-            strncpy(dest, var->name, dest_size);
+            strcpy(dest, var->name);
             dest[dest_size - 1] = 0; /* ensure null termination */
             return dest;
 
@@ -1194,7 +1194,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
                 {
                     return sc->name;
                 }
-                strncpy(dest, sc->name, dest_size);
+                strcpy(dest, sc->name);
                 return dest;
             }
 
@@ -1215,13 +1215,13 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             {
                 return sc->name;
             }
-            strncpy(dest, sc->name, dest_size);
+            strcpy(dest, sc->name);
             return dest;
 
         default:
         {
             char msg[BUFFER_MSG_SIZE];
-            strncpy(msg, "Internal Soar Error:  symbol->to_string() called on bad symbol!\n", BUFFER_MSG_SIZE);
+            strcpy(msg, "Internal Soar Error:  symbol->to_string() called on bad symbol!\n");
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
             abort_with_fatal_error_noagent(msg);
             break;

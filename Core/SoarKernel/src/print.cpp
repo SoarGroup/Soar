@@ -141,8 +141,7 @@ void print(agent* thisAgent, const char* format, ...)
 
 void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, va_list args)
 {
-    char* ch, ch2;
-    Symbol* sym;
+    char* ch;
 
     ch = dest;
     while (true)
@@ -157,73 +156,23 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
             break;
         }
         /* --- handle the %-thingy --- */
-        /* the size of the remaining buffer (after ch) is
-            the difference between the address of ch and
-            the address of the beginning of the buffer
-         */
-        if (*(format + 1) == 's')
+        if (*(format + 1) == 'y')
         {
-            char *ch2 = va_arg(args, char *);
-            if (ch2)
-            {
-                //SNPRINTF(ch, count - (ch - dest), "%s", va_arg(args, char *));
-                strcpy(ch, ch2);
-                while (*ch)
-                {
-                    ch++;
-                }
-            }
-            format += 2;
-        } else if (*(format + 1) == 'y')
-        {
-            sym = va_arg(args, Symbol*);
-            if (sym)
-            {
-                (sym)->to_string(true, ch, count - (ch - dest));
-                while (*ch)
-                {
-                    ch++;
-                }
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'i')
-        {
-            SNPRINTF(ch, count - (ch - dest), "%lld", va_arg(args, int64_t));
+            /* the size of the remaining buffer (after ch) is
+                the difference between the address of ch and
+                the address of the beginning of the buffer
+                */
+            (va_arg(args, Symbol*))->to_string(true, ch, count - (ch - dest));
             while (*ch)
             {
                 ch++;
             }
             format += 2;
-        } else if (*(format + 1) == 'u')
+        }
+        else
         {
-            SNPRINTF(ch, count - (ch - dest), "%llu", va_arg(args, uint64_t));
-            while (*ch)
-            {
-                ch++;
-            }
-            format += 2;
-        } else if (*(format + 1) == 't')
-        {
-            test_to_string(va_arg(args, test), ch, count - (ch - dest) );
-            while (*ch)
-            {
-                ch++;
-            }
-            format += 2;
-        } else if (*(format + 1) == 'c')
-        {
-            ch2 = static_cast<char>(va_arg(args, int));
-            SNPRINTF(ch, count - (ch - dest), "%c", ch2);
-            while (*ch)
-            {
-                ch++;
-            }
-            format += 2;
-        } else
-        {
-            *(ch++) = *(format++);
+            *(ch++) = '%';
+            format++;
         }
     }
     *ch = 0;

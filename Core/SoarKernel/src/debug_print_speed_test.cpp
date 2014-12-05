@@ -30,14 +30,14 @@ void test_print_speed()
     }
     thisOutput_Manager = &(Output_Manager::Get_OM());
 
-    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID04  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID05  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID06  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID07  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID08  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID04  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID05  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID06  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID07  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID08  = make_new_identifier(debug_agent, 'Z', 1, 1);
     Symbol* newStr01 = make_str_constant(debug_agent, "attr1");
     Symbol* newStr02 = make_str_constant(debug_agent, "attr2");
     Symbol* newStr03 = make_str_constant(debug_agent, "attr3");
@@ -244,14 +244,14 @@ void test_print_speed_y()
     }
     thisOutput_Manager = &(Output_Manager::Get_OM());
 
-    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID04  = make_new_identifier(debug_agent, 'M', 1, NIL);
-    Symbol* newID05  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID06  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID07  = make_new_identifier(debug_agent, 'Z', 1, NIL);
-    Symbol* newID08  = make_new_identifier(debug_agent, 'Z', 1, NIL);
+    Symbol* newID01  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID02  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID03  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID04  = make_new_identifier(debug_agent, 'M', 1, 1);
+    Symbol* newID05  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID06  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID07  = make_new_identifier(debug_agent, 'Z', 1, 1);
+    Symbol* newID08  = make_new_identifier(debug_agent, 'Z', 1, 1);
     Symbol* newStr01 = make_str_constant(debug_agent, "attr1");
     Symbol* newStr02 = make_str_constant(debug_agent, "attr2");
     Symbol* newStr03 = make_str_constant(debug_agent, "attr3");
