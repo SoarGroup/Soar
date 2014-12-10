@@ -79,15 +79,14 @@ void Variablization_Manager::consolidate_variables(condition* top_cond, tc_numbe
     dprint(DT_FIX_CONDITIONS, "= Consolidating variables in tests =\n");
     dprint(DT_FIX_CONDITIONS, "====================================\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
-    dprint_condition_list(DT_FIX_CONDITIONS, top_cond);
+    dprint(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
     dprint(DT_FIX_CONDITIONS, "====================================\n");
 
     condition* next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond;)
     {
-        dprint(DT_FIX_CONDITIONS, "Fixing condition: ");
-        dprint_condition(DT_FIX_CONDITIONS, cond);
+        dprint(DT_FIX_CONDITIONS, "Fixing condition: %l\n", cond);
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -105,7 +104,7 @@ void Variablization_Manager::consolidate_variables(condition* top_cond, tc_numbe
     }
     dprint(DT_FIX_CONDITIONS, "=========================================\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
-    dprint_condition_list(DT_FIX_CONDITIONS, top_cond);
+    dprint(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
     dprint(DT_FIX_CONDITIONS, "=========================================\n");
     dprint(DT_FIX_CONDITIONS, "= Done consolidating variables in tests =\n");
@@ -248,7 +247,7 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
     dprint(DT_FIX_CONDITIONS, "= Finding redundancies =\n");
     dprint(DT_FIX_CONDITIONS, "========================\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
-    dprint_condition_list(DT_FIX_CONDITIONS, top_cond);
+    dprint(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
     dprint(DT_FIX_CONDITIONS, "========================\n");
 
@@ -258,8 +257,7 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
     condition* next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond;)
     {
-        dprint(DT_FIX_CONDITIONS, "Finding redundancies in condition: ");
-        dprint_condition(DT_FIX_CONDITIONS, cond);
+        dprint(DT_FIX_CONDITIONS, "Finding redundancies in condition: %l\n", cond);
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -282,7 +280,7 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
 
     dprint(DT_FIX_CONDITIONS, "=============================\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
-    dprint_condition_list(DT_FIX_CONDITIONS, top_cond);
+    dprint(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
     dprint(DT_FIX_CONDITIONS, "=============================\n");
     dprint(DT_FIX_CONDITIONS, "= Done finding redundancies =\n");

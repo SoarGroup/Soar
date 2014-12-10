@@ -117,8 +117,6 @@ extern void print_old (agent* thisAgent, const char *format, ...);
    Normally symbols are printed rereadably, but for (write) and Text I/O,
    we don't want this.
 
-   Test_to_string() takes a test and produces a string representation.
-
    Rhs_value_to_string() takes an rhs_value and produces a string
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
@@ -158,8 +156,6 @@ extern char const* symbol_to_typeString(agent* thisAgent, Symbol* sym);
    Print_production() prints a given production, optionally using internal
    format.
 
-   print_test() print a verbose representation of a test for use during
-   debugging.  test_to_string() can be used to print tests more generally.
 ----------------------------------------------------------------------- */
 
 extern void print_condition_list(agent* thisAgent, condition* conds, int indent, bool internal);

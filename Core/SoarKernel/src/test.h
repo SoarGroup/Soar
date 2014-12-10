@@ -157,8 +157,6 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list*
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
 
 /* UITODO| Make this method of Test */
-char* test_to_string(test t, char* dest = NIL, size_t dest_size = 0, bool show_equality = false);
 const char* test_type_to_string(byte test_type);
-const char* test_type_to_string_brief(byte test_type, const char* equality_str = "");
 
 #endif /* TEST_H_ */

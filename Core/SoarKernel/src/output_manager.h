@@ -117,8 +117,17 @@ class Output_Manager
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
 
+        char* action_to_string(agent* thisAgent, action* a, char* dest = NULL, size_t dest_size = 0);
+        char* action_list_to_string(agent* thisAgent, action* action_list, char* dest = NULL, size_t dest_size = 0);
+        char* condition_to_string(agent* thisAgent, condition* cond, char* dest = NULL, size_t dest_size = 0);
+        char* condition_cons_to_string(agent* thisAgent, cons* c, char* dest = NULL, size_t dest_size = 0);
+        char* condition_list_to_string(agent* thisAgent, condition* top_cond, char* dest = NULL, size_t dest_size = 0);
+        char* pref_to_string(agent* thisAgent, preference* pref, char* dest = NULL, size_t dest_size = 0);
+        char* rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest = NULL, size_t dest_size = 0, struct token_struct* tok = NIL, wme* w = NIL);
+        char* test_to_string(test t, char* dest = NIL, size_t dest_size = 0, bool show_equality = false);
+        const char* test_type_to_string_brief(byte test_type, const char* equality_str = "");
+
         void vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args);
-        void sprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
 
     public:
 
@@ -139,11 +148,13 @@ class Output_Manager
         /* Core printing functions */
         void printa(agent* pSoarAgent, const char* msg);
         void printa_sf(agent* pSoarAgent, const char* format, ...);
+        void sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
         void start_fresh_line(agent* pSoarAgent = NULL);
 
         /* Print functions that will use default agent if set */
         void print(const char* msg) { if (m_defaultAgent) printa(m_defaultAgent, msg); }
         void print_sf(const char* format, ...);
+        void sprint_sf(char* dest, size_t dest_size, const char* format, ...);
 
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
@@ -180,24 +191,16 @@ class Output_Manager
         void clear_dprint_params(TraceMode mode) { set_dprint_params(mode); }
 
         void debug_print_production(TraceMode mode, production* prod);
-        char* pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size);
         void debug_print_preflist_inst(TraceMode mode, preference* top_pref);
         void debug_print_preflist_result(TraceMode mode, preference* top_pref);
 
-        void print_test(TraceMode mode, test t, bool pActual = true, bool pOriginal = false, bool pIdentity = true, const char* pre_string = "", const char* post_string = "");
         void print_identity(TraceMode mode, identity_info* i, const char* pre_string = "", const char* post_string = "");
         void print_current_lexeme(TraceMode mode, soar::Lexer* lexer);
-        void print_condition(TraceMode mode, condition* cond);
-        void print_condition_list(TraceMode mode, condition* top_cond);
-        void print_action(TraceMode mode, action* a);
-        void print_action_list(TraceMode mode, action* action_list);
         void print_instantiation(TraceMode mode, instantiation* inst);
         void print_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref);
-        void print_cond_actions(TraceMode mode, condition* top_cond, action* top_action);
+        void print_cond_actions(TraceMode mode, agent* thisAgent, condition* top_cond, action* top_action);
         void print_cond_results(TraceMode mode, condition* top_cond, preference* top_pref);
         void print_identifiers(TraceMode mode);
-        void print_condition_cons(TraceMode mode, cons* c);
-        void print_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok = NIL, wme* w = NIL);
         void print_saved_test(TraceMode mode, saved_test* st);
         void print_saved_test_list(TraceMode mode, saved_test* st);
         void print_varnames(TraceMode mode, varnames* var_names);

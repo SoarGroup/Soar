@@ -195,7 +195,7 @@ void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
-    dprint(DT_DEALLOCATES, "DEALLOCATE test %s\n", test_to_string(t));
+    dprint(DT_DEALLOCATES, "DEALLOCATE test %t\n", t);
     if (test_is_blank(t))
     {
         return;
@@ -232,7 +232,7 @@ void deallocate_test(agent* thisAgent, test t)
     }
     if (t->original_test)
     {
-        dprint(DT_DEALLOCATES, "DEALLOCATE original test %s\n", test_to_string(t->original_test));
+        dprint(DT_DEALLOCATES, "DEALLOCATE original test %t\n", t->original_test);
         deallocate_test(thisAgent, t->original_test);
     }
     /* -- MToDo | All tests should have identity for now, so we shouldn't need to check this.  Leaving in for now to see
@@ -1428,8 +1428,7 @@ void propagate_identity(agent* thisAgent,
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_IDENTITY_PROP, "Propagating identity for condition: ");
-            dprint_condition(DT_IDENTITY_PROP, c);
+            dprint(DT_IDENTITY_PROP, "Propagating identity for condition: %l", c);
 
             if (use_negation_lookup)
             {
@@ -1448,9 +1447,8 @@ void propagate_identity(agent* thisAgent,
                 add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
                 add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
             }
-            dprint(DT_IDENTITY_PROP, "Condition is now:\n");
             dprint_set_params(DT_IDENTITY_PROP, "          ");
-            dprint_condition(DT_IDENTITY_PROP, c);
+            dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
             dprint_clear_params(DT_IDENTITY_PROP);
         }
         else
@@ -1467,23 +1465,20 @@ void propagate_identity(agent* thisAgent,
 
             if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
             {
-                dprint(DT_IDENTITY_PROP, "Propagating identity for NCC.  Calling propagate_identity recursively.\n");
-                dprint_condition(DT_IDENTITY_PROP, c);
+                dprint(DT_IDENTITY_PROP, "Propagating identity for NCC.  Calling propagate_identity recursively.\n%c\n", c);
 
                 propagate_identity(thisAgent, c->data.ncc.top, level, true);
             }
             else if (c->type == NEGATIVE_CONDITION)
             {
-                dprint(DT_IDENTITY_PROP, "Propagating identity for negative condition: ");
-                dprint_condition(DT_IDENTITY_PROP, c);
+                dprint(DT_IDENTITY_PROP, "Propagating identity for negative condition: %l", c);
                 add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT);
                 add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT);
                 add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
             }
 
-            dprint(DT_IDENTITY_PROP, "Condition is now:\n");
             dprint_set_params(DT_IDENTITY_PROP, "          ");
-            dprint_condition(DT_IDENTITY_PROP, c);
+            dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
             dprint_clear_params(DT_IDENTITY_PROP);
 
         }
@@ -1535,7 +1530,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_additional_tests_and_originals called for %s (mode = %s).\n",
            thisAgent->newly_created_instantiations->prod->name->sc->name,
            ((additional_tests == ALL_ORIGINALS) ? "ALL" : ((additional_tests == JUST_INEQUALITIES) ? "JUST INEQUALITIES" : "NONE")));
-    dprint_condition(DT_ADD_CONSTRAINTS_ORIG_TESTS, cond);
+    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "%l\n", cond);
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "AM: (%y ^%y %y)\n", am->id , am->attr, am->value);
 
     if (additional_tests == ALL_ORIGINALS)
@@ -1846,117 +1841,6 @@ bool test_is_variable(agent* thisAgent, test t)
     return (t->data.referent->is_variable());
 }
 
-
-char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
-{
-    cons* c;
-    char* ch;
-    Output_Manager* OM = &Output_Manager::Get_OM();
-
-    if (!dest)
-    {
-        dest = OM->get_printed_output_string();
-        dest_size = output_string_size; /* from agent.h */
-    }
-    ch = dest;
-
-    if (test_is_blank(t))
-    {
-        strcpy(dest, "[BLANK TEST]");   /* this should never get executed */
-        dest[dest_size - 1] = 0; /* ensure null termination */
-        return dest;
-    }
-
-    switch (t->type)
-    {
-        case EQUALITY_TEST:
-            if (show_equality)
-            {
-                strcpy(ch, "= ");
-                ch += 2;
-                t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            }
-            else
-            {
-                t->data.referent->to_string(true, dest, dest_size);
-            }
-            break;
-        case NOT_EQUAL_TEST:
-            strcpy(ch, "<> ");
-            ch += 3;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case LESS_TEST:
-            strcpy(ch, "< ");
-            ch += 2;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case GREATER_TEST:
-            strcpy(ch, "> ");
-            ch += 2;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case LESS_OR_EQUAL_TEST:
-            strcpy(ch, "<= ");
-            ch += 3;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case GREATER_OR_EQUAL_TEST:
-            strcpy(ch, ">= ");
-            ch += 3;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case SAME_TYPE_TEST:
-            strcpy(ch, "<=> ");
-            ch += 4;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case DISJUNCTION_TEST:
-            strcpy(ch, "<< ");
-            ch += 3;
-            for (c = t->data.disjunction_list; c != NIL; c = c->rest)
-            {
-                static_cast<symbol_struct*>(c->first)->to_string(true, ch, dest_size - (ch - dest));
-                while (*ch)
-                {
-                    ch++;
-                }
-                *(ch++) = ' ';
-            }
-            strcpy(ch, ">>");
-            ch += 2;
-            *ch = 0;
-            break;
-        case CONJUNCTIVE_TEST:
-            strcpy(ch, "{ ");
-            ch += 2;
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                test_to_string(static_cast<test>(c->first), ch, dest_size - (ch - dest));
-                while (*ch)
-                {
-                    ch++;
-                }
-                *(ch++) = ' ';
-            }
-            strcpy(ch, "}");
-            ch++;
-            *ch = 0;
-            break;
-        case GOAL_ID_TEST:
-            strcpy(dest, "[GOAL ID TEST]");  /* this should never get executed */
-            break;
-        case IMPASSE_ID_TEST:
-            strcpy(dest, "[IMPASSE ID TEST]");  /* this should never get executed */
-            break;
-        default:
-            strcpy(ch, "INVALID TEST!");   /* this should never get executed */
-            break;
-    }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
-}
-
 /* UITODO| Make this method of Test. */
 const char* test_type_to_string(byte test_type)
 {
@@ -1994,46 +1878,6 @@ const char* test_type_to_string(byte test_type)
             break;
         case EQUALITY_TEST:
             return "EQUALITY_TEST";
-            break;
-    }
-    return "UNDEFINED TEST TYPE";
-}
-
-
-/* UITODO| Make this method of Test */
-const char* test_type_to_string_brief(byte test_type, const char* equality_str)
-{
-    switch (test_type)
-    {
-        case NOT_EQUAL_TEST:
-            return "!= ";
-            break;
-        case LESS_TEST:
-            return "< ";
-            break;
-        case GREATER_TEST:
-            return "> ";
-            break;
-        case LESS_OR_EQUAL_TEST:
-            return "<= ";
-            break;
-        case GREATER_OR_EQUAL_TEST:
-            return ">= ";
-            break;
-        case SAME_TYPE_TEST:
-            return "<=> ";
-            break;
-        case CONJUNCTIVE_TEST:
-            return "{ }";
-            break;
-        case GOAL_ID_TEST:
-            return "IS_G_ID ";
-            break;
-        case IMPASSE_ID_TEST:
-            return "IS_IMPASSE ";
-            break;
-        case EQUALITY_TEST:
-            return equality_str;
             break;
     }
     return "UNDEFINED TEST TYPE";

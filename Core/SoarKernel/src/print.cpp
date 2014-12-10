@@ -230,7 +230,6 @@ void print_spaces(agent* thisAgent, int n)
    '"ab\"c"'.  This is used for printing quoted strings and for printing
    symbols using |vbar| notation.
 
-   Test_to_string() takes a test and produces a string representation.
    Rhs_value_to_string() takes an rhs_value and produces a string
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
@@ -556,6 +555,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
     condition* c;
     bool removed_goal_test, removed_impasse_test;
     test id_test;
+    char c_id_test[PRINT_BUFSIZE];
 
     if (!conds)
     {
@@ -648,8 +648,9 @@ void print_condition_list(agent* thisAgent, condition* conds,
             xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
         }
 
-        inline_print_string(thisAgent, test_to_string(id_test, NULL, 0));
-        xml_att_val(thisAgent, kConditionId, test_to_string(id_test, NULL, 0));
+        Output_Manager::Get_OM().sprinta_sf(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
+        inline_print_string(thisAgent, c_id_test);
+        xml_att_val(thisAgent, kConditionId, c_id_test);
         deallocate_test(thisAgent, thisAgent->id_test_to_match);
         deallocate_test(thisAgent, id_test);
 
@@ -682,7 +683,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
                 {
                     ch++;
                 }
-                test_to_string(c->data.tests.attr_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+                Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.attr_test);
                 while (*ch)
                 {
                     ch++;
@@ -690,7 +691,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
                 if (c->data.tests.value_test)
                 {
                     *(ch++) = ' ';
-                    test_to_string(c->data.tests.value_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+                    Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.value_test);
                     while (*ch)
                     {
                         ch++;

@@ -52,8 +52,7 @@ void init_production_utilities(agent* thisAgent)
 
 void deallocate_condition(agent* thisAgent, condition* cond)
 {
-    dprint(DT_DEALLOCATES, "Deallocating condition ");
-    dprint_condition(DT_DEALLOCATES, cond);
+    dprint(DT_DEALLOCATES, "Deallocating condition %l\n", cond);
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
         deallocate_condition_list(thisAgent, cond->data.ncc.top);
@@ -82,8 +81,7 @@ void deallocate_condition_list(agent* thisAgent,
         }
         else     /* positive and negative conditions */
         {
-            dprint(DT_DEALLOCATES, "Deallocating condition: ");
-            dprint_condition(DT_DEALLOCATES, c);
+            dprint(DT_DEALLOCATES, "Deallocating condition: %l", c);
             deallocate_test(thisAgent, c->data.tests.id_test);
             deallocate_test(thisAgent, c->data.tests.attr_test);
             deallocate_test(thisAgent, c->data.tests.value_test);

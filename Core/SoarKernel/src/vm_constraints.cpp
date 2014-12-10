@@ -102,7 +102,7 @@ void Variablization_Manager::variablize_relational_constraints()
             c = it->second;
             while (c)
             {
-                dprint(DT_CONSTRAINTS, "...deallocating test %s\n", test_to_string(static_cast<test>(c->first)));
+                dprint(DT_CONSTRAINTS, "...deallocating test %t\n", static_cast<test>(c->first));
                 deallocate_test(thisAgent, static_cast<test>(c->first));
                 c = c->rest;
             }
@@ -184,7 +184,7 @@ void Variablization_Manager::clear_cached_constraints()
 
 void Variablization_Manager::cache_constraint(test equality_test, test relational_test)
 {
-    dprint(DT_CONSTRAINTS, "Adding relational constraint %s to %s.\n", test_to_string(relational_test), test_to_string(equality_test));
+    dprint(DT_CONSTRAINTS, "Adding relational constraint %t to %t.\n", relational_test, equality_test);
     ::list* new_list = NULL;
     test copied_test = copy_test(thisAgent, relational_test);
 
@@ -269,10 +269,9 @@ void Variablization_Manager::cache_constraints_in_test(test t)
 
 void Variablization_Manager::cache_constraints_in_cond(condition* c)
 {
-    /* Don't need to do id element.  It should always be an equality test */
+    /* MToDo| Verify we don't need to do id element.  It should always be an equality test */
     //  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
-    dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: ");
-    dprint_condition(DT_CONSTRAINTS, c);
+    dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
     cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
 }
@@ -375,22 +374,20 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
     {
         if (cond->type == POSITIVE_CONDITION)
         {
-            dprint(DT_CONSTRAINTS, "Adding for positive condition ");
-            dprint_condition(DT_CONSTRAINTS, cond);
+            dprint(DT_CONSTRAINTS, "Adding for positive condition %l\n", cond);
             install_cached_constraints_for_test(&cond->data.tests.attr_test);
             install_cached_constraints_for_test(&cond->data.tests.value_test);
         }
         else
         {
-            dprint(DT_CONSTRAINTS, (cond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition " : "Skipping for negative conjunctive condition:\n");
-            dprint_condition(DT_CONSTRAINTS, cond);
+            dprint(DT_CONSTRAINTS, (cond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition %l\n" : "Skipping for negative conjunctive condition:\n%l", cond);
         }
         cond = cond->next;
     }
     dprint(DT_CONSTRAINTS, "install_relational_constraints done adding constraints.  Final tables:\n");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
-    dprint_condition_list(DT_CONSTRAINTS, cond);
+    dprint(DT_CONSTRAINTS, "%1", cond);
     dprint(DT_CONSTRAINTS, "=============================================\n");
 }
 

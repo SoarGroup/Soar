@@ -4445,7 +4445,7 @@ void rete_node_to_conditions(agent* thisAgent,
             {
                 add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, additional_tests);
             }
-            dprint_condition(DT_NCC_VARIABLIZATION, cond);
+            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
         else
         {
@@ -4455,8 +4455,7 @@ void rete_node_to_conditions(agent* thisAgent,
              *    just like when printing a production). */
 
             dprint_noprefix(DT_NCC_VARIABLIZATION, "\n");
-            dprint(DT_NCC_VARIABLIZATION, "-> RETE 0 Starting condition:");
-            dprint_condition(DT_NCC_VARIABLIZATION, cond);
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 0 Starting condition: %l\n", cond);
 
             am = node->b.posneg.alpha_mem_;
             if (am->id)
@@ -4473,8 +4472,7 @@ void rete_node_to_conditions(agent* thisAgent,
             }
             cond->test_for_acceptable_preference = am->acceptable;
 
-            dprint(DT_NCC_VARIABLIZATION, "-> RETE 1 After add_varnames_to_test:");
-            dprint_condition(DT_NCC_VARIABLIZATION, cond);
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 1 After add_varnames_to_test: %l\n", cond);
 
             if (nvn)
             {
@@ -4484,8 +4482,7 @@ void rete_node_to_conditions(agent* thisAgent,
                                      &(cond->data.tests.attr_test));
                 add_varnames_to_test(thisAgent, nvn->data.fields.value_varnames,
                                      &(cond->data.tests.value_test));
-                dprint(DT_NCC_VARIABLIZATION, "-> RETE 1b NVN true.After add_varnames_to_test:");
-                dprint_condition(DT_NCC_VARIABLIZATION, cond);
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 1b NVN true.After add_varnames_to_test: %l\n", cond);
             }
 
             /* --- on hashed nodes, add equality test for the hash function --- */
@@ -4502,14 +4499,12 @@ void rete_node_to_conditions(agent* thisAgent,
                                          node->parent->left_hash_loc_levels_up);
             }
 
-            dprint(DT_NCC_VARIABLIZATION, "-> RETE 2 After add_hash_info_to_id_test: ");
-            dprint_condition(DT_NCC_VARIABLIZATION, cond);
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 2 After add_hash_info_to_id_test: %l\n", cond);
 
             if (additional_tests != DONT_ADD_TESTS)
             {
                 add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, additional_tests);
-                dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: ");
-                dprint_condition(DT_NCC_VARIABLIZATION, cond);
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else
             {
@@ -4518,8 +4513,7 @@ void rete_node_to_conditions(agent* thisAgent,
                 {
                     add_rete_test_list_to_tests(thisAgent, cond, node->b.posneg.other_tests);
                 }
-                dprint(DT_NCC_VARIABLIZATION, "-> RETE 3b No Need to add originals. After add_rete_test_list_to_tests: ");
-                dprint_condition(DT_NCC_VARIABLIZATION, cond);
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 3b No Need to add originals. After add_rete_test_list_to_tests: %l\n", cond);
             }
             /* --- if we threw away the variable names, make sure there's some
                equality test in each of the three fields --- */
@@ -4540,8 +4534,7 @@ void rete_node_to_conditions(agent* thisAgent,
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
                                                 first_letter_from_test(cond->data.tests.attr_test));
             }
-            dprint(DT_NCC_VARIABLIZATION, "-> RETE 4 After gensymmed equality test: ");
-            dprint_condition(DT_NCC_VARIABLIZATION, cond);
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 4 After gensymmed equality test: %l\n", cond);
         }
     }
 }
@@ -9044,6 +9037,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
     condition* c;
     bool removed_goal_test, removed_impasse_test;
     test id_test;
+    char c_id_test[PRINT_BUFSIZE];
 
     if (!conds)
     {
@@ -9140,9 +9134,10 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
             }
 
-            //print_string (thisAgent, test_to_string(id_test, NULL, 0));
+            Output_Manager::Get_OM().sprinta_sf(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
+            //print_string(thisAgent, c_id_test);
             //xml_test(thisAgent, kConditionId, id_test) ;
-            xml_att_val(thisAgent, kConditionId, test_to_string(id_test, NULL, 0)) ;
+            xml_att_val(thisAgent, kConditionId, c_id_test);
             deallocate_test(thisAgent, thisAgent->id_test_to_match);
             deallocate_test(thisAgent, id_test);
 
@@ -9169,7 +9164,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 {
                     ch++;
                 }
-                test_to_string(c->data.tests.attr_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+                Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.attr_test);
                 while (*ch)
                 {
                     ch++;
@@ -9183,7 +9178,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 if (! test_is_blank(c->data.tests.value_test))
                 {
                     *(ch++) = ' ';
-                    test_to_string(c->data.tests.value_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+                    Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.value_test);
                     while (*ch)
                     {
                         ch++;

@@ -45,8 +45,7 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
             iter_value = iter_attr->second.find(pCond->data.tests.value_test->eq_test->data.referent);
             if (iter_value != iter_attr->second.end())
             {
-                dprint(DT_MERGE, "          ...found similar condition: ");
-                dprint_condition(DT_MERGE, iter_value->second);
+                dprint(DT_MERGE, "          ...found similar condition: %l\n", iter_value->second);
                 return iter_value->second;
             }
             else
@@ -115,7 +114,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     dprint(DT_MERGE, "= Merging Conditions =\n");
     dprint(DT_MERGE, "======================\n");
     dprint_set_params(DT_MERGE, "          ");
-    dprint_condition_list(DT_MERGE, top_cond);
+    dprint(DT_MERGE, "%1", top_cond);
     dprint_clear_params(DT_MERGE);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint(DT_MERGE, "# of conditions = %i\n", old_num_conds);
@@ -124,8 +123,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     condition* found_cond, *next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond; ++current_cond)
     {
-        dprint(DT_MERGE, "Processing condition %i: ", current_cond);
-        dprint_condition(DT_MERGE, cond);
+        dprint(DT_MERGE, "Processing condition %i: %l\n", current_cond, cond);
         next_cond = cond->next;
         if (cond->type == POSITIVE_CONDITION)
         {
@@ -188,7 +186,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     }
     dprint(DT_MERGE, "======================\n");
     dprint_set_params(DT_MERGE, "          ");
-    dprint_condition_list(DT_MERGE, top_cond);
+    dprint(DT_MERGE, "%1", top_cond);
     dprint_clear_params(DT_MERGE);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;

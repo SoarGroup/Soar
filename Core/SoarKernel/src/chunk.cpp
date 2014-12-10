@@ -430,8 +430,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         ground = static_cast<condition_struct*>(c->first);
         free_cons(thisAgent, c);
         /* --- make the instantiated condition --- */
-        dprint(DT_BACKTRACE, "   processing ground condition: ");
-        dprint_condition(DT_BACKTRACE, ground);
+        dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
         c_inst = copy_condition_without_relational_constraints(thisAgent, ground);
@@ -521,9 +520,9 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     *vrblz_top = first_vrblz;
 
     dprint(DT_CONSTRAINTS, "Instantiated Conditions: \n");
-    dprint_condition_list(DT_CONSTRAINTS, *inst_top);
+    dprint(DT_CONSTRAINTS, "%1", *inst_top);
     dprint(DT_CONSTRAINTS, "Variablized conditions: \n");
-    dprint_condition_list(DT_CONSTRAINTS, *vrblz_top);
+    dprint(DT_CONSTRAINTS, "%1", *vrblz_top);
 }
 
 /* --------------------------------------------------------------------
@@ -592,9 +591,9 @@ void reorder_instantiated_conditions(condition* top_cond,
                                      condition** dest_inst_bottom)
 {
     dprint(DT_MERGE, "Re-ordering...\n");
-    dprint_condition_list(DT_MERGE, top_cond->counterpart);
+    dprint(DT_MERGE, "%1", top_cond->counterpart);
     dprint(DT_MERGE, "..to match...\n");
-    dprint_condition_list(DT_MERGE, top_cond);
+    dprint(DT_MERGE, "%1", top_cond);
 
     condition* c, *p, *n;
     for (c = top_cond; c != NIL; c = c->next)
@@ -620,7 +619,7 @@ void reorder_instantiated_conditions(condition* top_cond,
         }
     }
     dprint(DT_MERGE, "Result:\n");
-    dprint_condition_list(DT_MERGE, *dest_inst_top);
+    dprint(DT_MERGE, "%1", *dest_inst_top);
 }
 
 /* --------------------------------------------------------------------
@@ -1068,7 +1067,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_BACKTRACE,  "Backtracing results DONE.\n");
 
     dprint(DT_BACKTRACE, "Grounds:\n");
-    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
+    dprint(DT_BACKTRACE, "%3", thisAgent->grounds);
 
     while (true)
     {
@@ -1081,7 +1080,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     }
 
     dprint(DT_BACKTRACE, "Grounds after tracing:\n");
-    dprint_condition_cons(DT_BACKTRACE, thisAgent->grounds);
+    dprint(DT_BACKTRACE, "%3", thisAgent->grounds);
 
     thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
 
@@ -1175,7 +1174,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     //thisAgent->variablizationManager->fix_conditions(inst_top, true);
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
-    dprint_condition_list(DT_CONSTRAINTS, vrblz_top);
+    dprint(DT_CONSTRAINTS, "%1", vrblz_top);
 
     dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
     dprint(DT_VARIABLIZATION_MANAGER, "Variablizing RHS action list:\n");
@@ -1188,19 +1187,19 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
-    dprint_condition_list(DT_CONSTRAINTS, inst_top);
+    dprint(DT_CONSTRAINTS, "%1", inst_top);
     dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n");
-    dprint_condition_list(DT_CONSTRAINTS, vrblz_top);
+    dprint(DT_CONSTRAINTS, "%1", vrblz_top);
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "chunk instantiation created variablized rule: \n");
-    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, vrblz_top, rhs);
+    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, thisAgent, vrblz_top, rhs);
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "chunk instantiation created reordered rule: \n");
-    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, vrblz_top, rhs);
+    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, thisAgent, vrblz_top, rhs);
 
     if (!prod)
     {

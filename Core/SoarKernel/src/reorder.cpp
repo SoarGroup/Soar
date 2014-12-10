@@ -396,7 +396,7 @@ saved_test* simplify_condition_list(agent* thisAgent, condition* conds_list)
     sts = NIL;
     dprint(DT_REORDERER, "==============================\n");
     dprint(DT_REORDERER, "=   Simplifying Conditions   =\n");
-    dprint_condition_list(DT_REORDERER, conds_list);
+    dprint(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "==============================\n");
     for (c = conds_list; c != NIL; c = c->next)
     {
@@ -418,7 +418,7 @@ saved_test* simplify_condition_list(agent* thisAgent, condition* conds_list)
     }
     dprint(DT_REORDERER, "======== end  simplify =======\n");
     dprint(DT_REORDERER, "Simplified Conditions:\n");
-    dprint_condition_list(DT_REORDERER, conds_list);
+    dprint(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, sts);
     dprint(DT_REORDERER, "======== end  simplify =======\n");
@@ -559,7 +559,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
     dprint(DT_REORDERER, "=    Restoring Saved Tests    =\n");
     dprint(DT_REORDERER, "===============================\n");
     dprint(DT_REORDERER, "Simplified Conditons:\n");
-    dprint_condition_list(DT_REORDERER, conds_list);
+    dprint(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
 
@@ -612,7 +612,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
     dprint(DT_REORDERER, "===============================\n");
     dprint(DT_REORDERER, "Final Conditons:\n");
-    dprint_condition_list(DT_REORDERER, conds_list);
+    dprint(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     dprint(DT_REORDERER, "========= end  restore ========\n");
@@ -1125,7 +1125,7 @@ void reorder_simplified_conditions(agent* thisAgent,
     dprint(DT_REORDERER, "==================================\n");
     dprint(DT_REORDERER, "Re-ordering simplified conditions:\n");
 //  dprint(DT_REORDERER, "Before Reorder Conditions:\n");
-    dprint_condition_list(DT_REORDERER, *top_of_conds);
+    dprint(DT_REORDERER, "%1", *top_of_conds);
     dprint(DT_REORDERER, "Saved Tests:\n");
 //  dprint_saved_test_list (DT_REORDERER, saved_tests);
     dprint(DT_REORDERER, "==================================\n");
@@ -1237,13 +1237,10 @@ void reorder_simplified_conditions(agent* thisAgent,
 
         /* --- install the first item in the min-cost set --- */
         chosen = min_cost_conds;
-        dprint(DT_REORDERER, "...reorderer adding chosen item: ");
-        dprint_condition(DT_REORDERER, chosen);
-        dprint(DT_REORDERER, "Before removing condition:\n");
-        dprint_condition_list(DT_REORDERER, remaining_conds);
+        dprint(DT_REORDERER, "...reorderer adding chosen item: %l\n", chosen);
+        dprint(DT_REORDERER, "Before removing condition:\n%1", remaining_conds);
         remove_from_dll(remaining_conds, chosen, next, prev);
-        dprint(DT_REORDERER, "After removing condition:\n");
-        dprint_condition_list(DT_REORDERER, remaining_conds);
+        dprint(DT_REORDERER, "After removing condition:\n%1", remaining_conds);
         if (!first_cond)
         {
             first_cond = chosen;
@@ -1306,7 +1303,7 @@ void reorder_condition_list(agent* thisAgent,
     saved_tests = simplify_condition_list(thisAgent, *top_of_conds);
     reorder_simplified_conditions(thisAgent, top_of_conds, roots, tc, reorder_nccs);
     dprint(DT_REORDERER, "After Reorder Conditons:\n");
-    dprint_condition_list(DT_REORDERER, *top_of_conds);
+    dprint(DT_REORDERER, "%1", *top_of_conds);
     dprint(DT_REORDERER, "Saved Tests:\n");
     restore_and_deallocate_saved_tests(thisAgent, *top_of_conds, tc, saved_tests);
 }
@@ -1423,10 +1420,9 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
             {
                 if (t->data.referent->tc_num != tc)
                 {
-                    print(thisAgent,
-                          "Error: production %s has an unbound referent in negated relational test %s",
-                          thisAgent->name_of_production_being_reordered,
-                          test_to_string(t, NULL, 0));
+                    Output_Manager::Get_OM().printa_sf(thisAgent,
+                          "Error: production %s has an unbound referent in negated relational test %t.\n",
+                          thisAgent->name_of_production_being_reordered, t);
                     return false;
                 }
             }

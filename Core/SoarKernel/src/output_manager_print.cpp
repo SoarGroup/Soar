@@ -38,20 +38,6 @@ void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
     printa(pSoarAgent, buf);
 }
 
-void Output_Manager::print_sf(const char* format, ...)
-{
-    if (m_defaultAgent)
-    {
-        va_list args;
-        char buf[PRINT_BUFSIZE];
-
-        va_start(args, format);
-        vsnprint_sf(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
-        va_end(args);
-        printa(m_defaultAgent, buf);
-    }
-}
-
 void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 {
     if (pSoarAgent)
@@ -159,9 +145,34 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             test_to_string(va_arg(args, test_info *), ch, dest_size - (ch - dest) );
             while (*ch) ch++;
             format += 2;
+        } else if (*(format + 1) == 'l')
+        {
+            condition_to_string(thisAgent, va_arg(args, condition*), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == 'a')
+        {
+            action_to_string(thisAgent, va_arg(args, action *), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
         } else if (*(format + 1) == 'p')
         {
             pref_to_string(thisAgent, va_arg(args, preference *), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == '1')
+        {
+            condition_list_to_string(thisAgent, va_arg(args, condition *), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == '2')
+        {
+            action_list_to_string(thisAgent, va_arg(args, action *), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == '3')
+        {
+            condition_cons_to_string(thisAgent, va_arg(args, cons*), ch, dest_size - (ch - dest) );
             while (*ch) ch++;
             format += 2;
         } else if (*(format + 1) == 'c')
@@ -178,12 +189,23 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
     *ch = 0;
 }
 
-void Output_Manager::sprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
+void Output_Manager::sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
     vsnprint_sf(thisAgent, dest, dest_size, format, args);
     va_end(args);
+}
+
+void Output_Manager::sprint_sf(char* dest, size_t dest_size, const char* format, ...)
+{
+    if (m_defaultAgent)
+    {
+        va_list args;
+        va_start(args, format);
+        vsnprint_sf(m_defaultAgent, dest, dest_size, format, args);
+        va_end(args);
+    }
 }
 
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
@@ -322,105 +344,152 @@ void Output_Manager::print_wmes(TraceMode mode, bool pOnlyWithIdentity)
 }
 
 /* UITODO| Make this method of Test */
-void Output_Manager::print_test(TraceMode mode, test t, bool pActual, bool pOriginal, bool pIdentity, const char* pPre_string, const char* pPost_string)
+const char* Output_Manager::test_type_to_string_brief(byte test_type, const char* equality_str)
+{
+    switch (test_type)
+    {
+        case NOT_EQUAL_TEST:
+            return "!= ";
+            break;
+        case LESS_TEST:
+            return "< ";
+            break;
+        case GREATER_TEST:
+            return "> ";
+            break;
+        case LESS_OR_EQUAL_TEST:
+            return "<= ";
+            break;
+        case GREATER_OR_EQUAL_TEST:
+            return ">= ";
+            break;
+        case SAME_TYPE_TEST:
+            return "<=> ";
+            break;
+        case CONJUNCTIVE_TEST:
+            return "{ }";
+            break;
+        case GOAL_ID_TEST:
+            return "IS_G_ID ";
+            break;
+        case IMPASSE_ID_TEST:
+            return "IS_IMPASSE ";
+            break;
+        case EQUALITY_TEST:
+            return equality_str;
+            break;
+    }
+    return "UNDEFINED TEST TYPE";
+}
+
+/* UITODO| Make this method of Test */
+char* Output_Manager::test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
 {
     cons* c;
-    const char* no_type_test_fstring, *type_test_fstring;
+    char* ch;
 
-
-    if (!t)
+    if (!dest)
     {
-        print_sf("%NULL%s", pPre_string, pPost_string);
-        return;
+        dest = get_printed_output_string();
+        dest_size = output_string_size; /* from agent.h */
+    }
+    ch = dest;
+
+    if (test_is_blank(t))
+    {
+        strcpy(dest, "[BLANK TEST]");   /* this should never get executed */
+        dest[dest_size - 1] = 0; /* ensure null termination */
+        return dest;
     }
 
-    if (t->type == CONJUNCTIVE_TEST)
+    switch (t->type)
     {
-        print_sf("%s{ ", pPre_string);
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            print_test(mode, static_cast<test>(c->first), "", (c->rest != NULL ? ", " : ""));
-        }
-        print_sf(" }%s", pPost_string);
-        return;
-    }
-
-    if (pActual)
-    {
-        no_type_test_fstring = "%y%s";
-        type_test_fstring = "%s%s%y";
-        switch (t->type)
-        {
-            case GOAL_ID_TEST:
-            case IMPASSE_ID_TEST:
-                print_sf(no_type_test_fstring, pPre_string, test_type_to_string_brief(t->type));
-                break;
-            case DISJUNCTION_TEST:
-                print_sf("%s<< ", pPre_string);
-                for (c = t->data.disjunction_list; c != NIL; c = c->rest)
-                {
-                    print_sf(no_type_test_fstring, static_cast<symbol_struct*>(c->first), " ");
-                }
-                print_sf(">>");
-                break;
-            default:
-                print_sf(type_test_fstring, pPre_string,
-                                test_type_to_string_brief(t->type),
-                                t->data.referent);
-                break;
-        }
-        if (!pOriginal && !pIdentity)
-        {
-            print_sf("%s", pPost_string);
-            return;
-        }
-    }
-
-    if (pOriginal)
-    {
-        if (t->original_test)
-        {
-            if (!pActual)
+        case EQUALITY_TEST:
+            if (show_equality)
             {
-                print_sf("%s%t", pPre_string, t->original_test);
-            } else {
-                print_sf(" (%t)", t->original_test);
-            }
-        }
-        else
-        {
-            if (!pActual)
-            {
-                print_sf("%s%t*", pPre_string, t->original_test);
-            } else {
-                print_sf(" (%t*)", t->original_test);
-            }
-            if (pActual)
-            {
-                print_test(mode, t, true, false, false, " (", "*)");
+                strcpy(ch, "= ");
+                ch += 2;
+                t->data.referent->to_string(true, ch, dest_size - (ch - dest));
             }
             else
             {
-                print_test(mode, t, true, false, false, pPre_string, "*");
-//                printv_y(" (0)");
-//            }
-//            else
-//            {
-//                printv_y("%sNULL", pre_string);
+                t->data.referent->to_string(true, dest, dest_size);
             }
-        }
+            break;
+        case NOT_EQUAL_TEST:
+            strcpy(ch, "<> ");
+            ch += 3;
+            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
+            break;
+        case LESS_TEST:
+            strcpy(ch, "< ");
+            ch += 2;
+            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
+            break;
+        case GREATER_TEST:
+            strcpy(ch, "> ");
+            ch += 2;
+            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
+            break;
+        case LESS_OR_EQUAL_TEST:
+            strcpy(ch, "<= ");
+            ch += 3;
+            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
+            break;
+        case GREATER_OR_EQUAL_TEST:
+            strcpy(ch, ">= ");
+            ch += 3;
+            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
+            break;
+        case SAME_TYPE_TEST:
+            strcpy(ch, "<=> ");
+            ch += 4;
+            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
+            break;
+        case DISJUNCTION_TEST:
+            strcpy(ch, "<< ");
+            ch += 3;
+            for (c = t->data.disjunction_list; c != NIL; c = c->rest)
+            {
+                static_cast<symbol_struct*>(c->first)->to_string(true, ch, dest_size - (ch - dest));
+                while (*ch)
+                {
+                    ch++;
+                }
+                *(ch++) = ' ';
+            }
+            strcpy(ch, ">>");
+            ch += 2;
+            *ch = 0;
+            break;
+        case CONJUNCTIVE_TEST:
+            strcpy(ch, "{ ");
+            ch += 2;
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            {
+                test_to_string(static_cast<test>(c->first), ch, dest_size - (ch - dest));
+                while (*ch)
+                {
+                    ch++;
+                }
+                *(ch++) = ' ';
+            }
+            strcpy(ch, "}");
+            ch++;
+            *ch = 0;
+            break;
+        case GOAL_ID_TEST:
+            strcpy(dest, "[GOAL ID TEST]");  /* this should never get executed */
+            break;
+        case IMPASSE_ID_TEST:
+            strcpy(dest, "[IMPASSE ID TEST]");  /* this should never get executed */
+            break;
+        default:
+            strcpy(ch, "INVALID TEST!");   /* this should never get executed */
+            break;
     }
-
-    if (pIdentity)
-    {
-        if (!pActual)
-        {
-            print(pPre_string);
-        }
-        print_sf("[%y g%u]", t->identity->original_var, t->identity->grounding_id);
-    }
-
-    print(pPost_string);
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
 
@@ -643,54 +712,68 @@ void Output_Manager::print_current_lexeme(TraceMode mode, soar::Lexer* lexer)
 
 }
 
-void Output_Manager::print_condition_cons(TraceMode mode, cons* c)
+char* Output_Manager::condition_cons_to_string(agent* thisAgent, cons* c, char* dest, size_t dest_size)
 {
-    if (!debug_mode_enabled(mode)) return;
+    char* ch=dest;
 
     while (c)
     {
-        print_condition(mode, static_cast<condition_struct*>(c->first));
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%i: %l\n", m_pre_string, static_cast<condition_struct*>(c->first));
+        while (*ch) ch++;
         c = c->rest;
     }
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
-void Output_Manager::print_condition(TraceMode mode, condition* cond)
+char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, char* dest, size_t dest_size)
 {
-    if (!debug_mode_enabled(mode)) return;
-
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
-        print_sf("(%t %s ^%t %t)\n",
+        sprinta_sf(thisAgent, dest, dest_size, "(%t %s ^%t %t)\n",
             cond->data.tests.id_test,
             (cond->type == NEGATIVE_CONDITION) ? "-": NULL,
             cond->data.tests.attr_test, cond->data.tests.value_test);
     }
     else
     {
-        print("%s-{\n");
-        print_condition_list(mode, cond->data.ncc.top);
-        print("}\n");
+        sprinta_sf(thisAgent, dest, dest_size, "-{\n%c2}\n", cond->data.ncc.top);
     }
+
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
-void Output_Manager::print_condition_list(TraceMode mode, condition* top_cond)
+char* Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_cond, char* dest, size_t dest_size)
 {
-    if (!debug_mode_enabled(mode)) return;
-
     condition* cond;
+    char* ch=dest;
     int64_t count = 0;
+
     for (cond = top_cond; cond != NIL; cond = cond->next)
     {
         assert(cond != cond->next);
-        print_sf("%s%i: ", m_pre_string, ++count);
-        print_condition(mode, cond);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%i: %l\n", m_pre_string, ++count, cond);
+        while (*ch) ch++;
     }
-    return;
+
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
-void Output_Manager::print_rhs_value(TraceMode mode, rhs_value rv, struct token_struct* tok, wme* w)
+char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest, size_t dest_size, struct token_struct* tok, wme* w)
 {
-    if (!debug_mode_enabled(mode)) return;
+    char* ch;
+
+    if (!dest)
+    {
+        dest = get_printed_output_string();
+        dest_size = output_string_size; /* from agent.h */
+    }
+    ch = dest;
+
+    if (!thisAgent) thisAgent = m_defaultAgent;
+    assert(thisAgent);
 
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
@@ -700,12 +783,14 @@ void Output_Manager::print_rhs_value(TraceMode mode, rhs_value rv, struct token_
     int i;
     if (!rv)
     {
-        print_sf("#");
+        *(ch++) = '#';
+        *ch = 0;
     }
     else if (rhs_value_is_unboundvar(rv))
     {
         /* -- unbound variable -- */
-        print_sf("<unbound-var>");
+        strcpy(dest, "<unbound-var>");
+        dest[dest_size - 1] = 0; /* ensure null termination */
     }
     else if (rhs_value_is_symbol(rv))
     {
@@ -714,11 +799,11 @@ void Output_Manager::print_rhs_value(TraceMode mode, rhs_value rv, struct token_
         rsym = rhs_value_to_rhs_symbol(rv);
         if (this->m_print_actual)
         {
-            print_sf("%y", rsym->referent);
+            sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->referent);
         } else if (m_print_original) {
-            print_sf("%y", rsym->original_rhs_variable);
+            sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->original_rhs_variable);
         } else if (m_print_identity) {
-            print_sf("%u", rsym->g_id);
+            sprinta_sf(thisAgent, dest, dest_size, "%u", rsym->g_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -729,11 +814,12 @@ void Output_Manager::print_rhs_value(TraceMode mode, rhs_value rv, struct token_
             sym = get_symbol_from_rete_loc(
                       rhs_value_to_reteloc_levels_up(rv),
                       rhs_value_to_reteloc_field_num(rv), tok, w);
-            print_sf("%y(reteloc)", sym);
+            sprinta_sf(thisAgent, dest, dest_size, "%y (reteloc)", sym);
         }
         else
         {
-            print_sf("(rete-loc no tok/w)");
+            strcpy(dest, "(rete-loc no tok/w)");
+            dest[dest_size - 1] = 0; /* ensure null termination */
         }
     }
     else
@@ -753,51 +839,94 @@ void Output_Manager::print_rhs_value(TraceMode mode, rhs_value rv, struct token_
 //        }
 //        else
 //        {
-            print_sf("(%y", rf->name);
+//            print_sf("(%y", rf->name);
 //        }
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%y", rf->name);
+        while (*ch) ch++;
+
         for (c = fl->rest; c != NIL; c = c->rest)
         {
-            print_sf(" ");
-            this->print_rhs_value(mode, static_cast<rhs_value>(c->first));
+            *(ch++) = ' ';
+            rhs_value_to_string(thisAgent, static_cast<rhs_value>(c->first), ch, dest_size - (ch - dest), tok, w);
+            while (*ch) ch++;
         }
-        print_sf(")");
+        *(ch++) = ')';
+        *(ch++) = 0;
     }
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
-void Output_Manager::print_action(TraceMode mode, action* a)
+char* Output_Manager::action_to_string(agent* thisAgent, action* a, char* dest, size_t dest_size)
 {
-    if (!debug_mode_enabled(mode)) return;
+    char* ch;
+
+//    if (!dest)
+//    {
+//        dest = get_printed_output_string();
+//        dest_size = output_string_size; /* from agent.h */
+//    }
+    ch = dest;
+
+//    if (!thisAgent) thisAgent = m_defaultAgent;
+    assert(thisAgent);
 
     if (a->type == FUNCALL_ACTION)
     {
-        print_sf("%s(funcall ", m_pre_string);
-        print_rhs_value(mode, a->value);
-        print_sf(")\n");
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(funcall ", m_pre_string);
+        while (*ch) ch++;
+        rhs_value_to_string(thisAgent, a->value, ch, dest_size - (ch - dest), NULL, NULL);
+        while (*ch) ch++;
+        strcpy(ch, ")");
     }
     else
     {
-        print_sf("%s(", m_pre_string);
-        print_rhs_value(mode, a->id);
-        print_sf(" ^");
-        print_rhs_value(mode, a->attr);
-        print_sf(" ");
-        print_rhs_value(mode, a->value);
-        print_sf(" ref: ");
-        print_rhs_value(mode, a->referent);
-        print_sf(")\n");
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(", m_pre_string);
+        rhs_value_to_string(thisAgent, a->id, ch, dest_size - (ch - dest), NULL, NULL);
+        while (*ch) ch++;
+        strcpy(ch, " ^");
+        ch += 2;
+        rhs_value_to_string(thisAgent, a->attr, ch, dest_size - (ch - dest), NULL, NULL);
+        while (*ch) ch++;
+        strcpy(ch++, " ");
+        rhs_value_to_string(thisAgent, a->value, ch, dest_size - (ch - dest), NULL, NULL);
+        while (*ch) ch++;
+        strcpy(ch, " ref: ");
+        ch += 6;
+        rhs_value_to_string(thisAgent, a->referent, ch, dest_size - (ch - dest), NULL, NULL);
+        while (*ch) ch++;
+        strcpy(ch, ")");
     }
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
-void Output_Manager::print_action_list(TraceMode mode, action* action_list)
+char* Output_Manager::action_list_to_string(agent* thisAgent, action* action_list, char* dest, size_t dest_size)
 {
-    if (!debug_mode_enabled(mode)) return;
+    if (!dest)
+    {
+        dest = get_printed_output_string();
+        dest_size = output_string_size; /* from agent.h */
+    }
+
+    if (!thisAgent) thisAgent = m_defaultAgent;
+    assert(thisAgent);
+
 
     action* a = NIL;
+    char* ch = dest;
 
     for (a = action_list; a != NIL; a = a->next)
     {
-        print_action(mode, a);
+        action_to_string(thisAgent, a, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        *(ch++) = '\n';
+        *ch = 0;
+
     }
+
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
 char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size)
@@ -813,7 +942,7 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
     pref_type = preference_to_char(pref->type);
     if (m_print_actual)
     {
-        sprint_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string, pref->id, pref->attr, pref->value,
+        sprinta_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string, pref->id, pref->attr, pref->value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
@@ -821,7 +950,7 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
     }
     else if (m_print_original)
     {
-        sprint_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string,
+        sprinta_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string,
             pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
@@ -830,7 +959,7 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
     }
     else if (m_print_identity)
     {
-        sprint_sf(thisAgent, dest, dest_size, "%s(g%u ^g%u g%u) %c %y%s", m_pre_string,
+        sprinta_sf(thisAgent, dest, dest_size, "%s(g%u ^g%u g%u) %c %y%s", m_pre_string,
             pref->g_ids.id, pref->g_ids.attr, pref->g_ids.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
@@ -884,33 +1013,33 @@ void Output_Manager::print_cond_prefs(TraceMode mode, condition* top_cond, prefe
 {
     if (!debug_mode_enabled(mode)) return;
 
-    /* MToDo | Only print headers and latter two if that setting is on */
-    if (m_print_actual)
-    {
-        print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
-        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_inst(mode, top_pref);
-    }
-    if (m_print_original)
-    {
-        print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
-        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_inst(mode, top_pref);
-    }
-    if (m_print_identity)
-    {
-        print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
-        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_inst(mode, top_pref);
-    }
-    print_sf("%s\n", m_pre_string);
-    clear_dprint_params(mode);
+//    /* MToDo | Only print headers and latter two if that setting is on */
+//    if (m_print_actual)
+//    {
+//        print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
+//        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
+//        condition_list_to_string(mode, top_cond);
+//        print_sf("%s-->\n", m_pre_string);
+//        debug_print_preflist_inst(mode, top_pref);
+//    }
+//    if (m_print_original)
+//    {
+//        print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
+//        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
+//        condition_list_to_string(mode, top_cond);
+//        print_sf("%s-->\n", m_pre_string);
+//        debug_print_preflist_inst(mode, top_pref);
+//    }
+//    if (m_print_identity)
+//    {
+//        print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
+//        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
+//        condition_list_to_string(mode, top_cond);
+//        print_sf("%s-->\n", m_pre_string);
+//        debug_print_preflist_inst(mode, top_pref);
+//    }
+//    print_sf("%s\n", m_pre_string);
+//    clear_dprint_params(mode);
 }
 
 void Output_Manager::print_cond_results(TraceMode mode, condition* top_cond, preference* top_pref)
@@ -918,63 +1047,70 @@ void Output_Manager::print_cond_results(TraceMode mode, condition* top_cond, pre
     if (!debug_mode_enabled(mode)) return;
 
     /* MToDo | Only print headers and latter two if that setting is on */
-    if (m_print_actual)
-    {
-        print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
-        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_result(mode, top_pref);
-    }
-    if (m_print_original)
-    {
-        print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
-        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_result(mode, top_pref);
-    }
-    if (m_print_identity)
-    {
-        print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
-        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        debug_print_preflist_result(mode, top_pref);
-    }
-    print_sf("%s\n", m_pre_string);
-    clear_dprint_params(mode);
+//    if (m_print_actual)
+//    {
+//        print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
+//        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
+//        condition_list_to_string(mode, top_cond);
+//        print_sf("%s-->\n", m_pre_string);
+//        debug_print_preflist_result(mode, top_pref);
+//    }
+//    if (m_print_original)
+//    {
+//        print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
+//        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
+//        condition_list_to_string(mode, top_cond);
+//        print_sf("%s-->\n", m_pre_string);
+//        debug_print_preflist_result(mode, top_pref);
+//    }
+//    if (m_print_identity)
+//    {
+//        print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
+//        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
+//        condition_list_to_string(mode, top_cond);
+//        print_sf("%s-->\n", m_pre_string);
+//        debug_print_preflist_result(mode, top_pref);
+//    }
+//    print_sf("%s\n", m_pre_string);
+//    clear_dprint_params(mode);
 }
 
-void Output_Manager::print_cond_actions(TraceMode mode, condition* top_cond, action* top_action)
+void Output_Manager::print_cond_actions(TraceMode mode, agent* thisAgent, condition* top_cond, action* top_action)
 {
     if (!debug_mode_enabled(mode)) return;
 
+    char* dest = get_printed_output_string();
+    size_t dest_size = output_string_size;
+    char* ch = dest;
+
     if (m_print_actual)
     {
-        print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s--------------------------- Match --------------------------\n", m_pre_string);
         set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        print_action_list(mode, top_action);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
     }
     if (m_print_original)
     {
         set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
-        print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        print_action_list(mode, top_action);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-------------------------- Original ------------------------\n", m_pre_string);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
     }
     if (m_print_identity)
     {
         set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
-        print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
-        print_condition_list(mode, top_cond);
-        print_sf("%s-->\n", m_pre_string);
-        print_action_list(mode, top_action);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s------------------------- Identity -------------------------\n", m_pre_string);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
     }
-    print_sf("%s\n", m_pre_string);
+//    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s\n", m_pre_string);
     clear_dprint_params(mode);
 }
 
@@ -1042,6 +1178,20 @@ void Output_Manager::print_saved_test_list(TraceMode mode, saved_test* st)
     {
         print_saved_test(mode, st);
         st = st->next;
+    }
+}
+
+void Output_Manager::print_sf(const char* format, ...)
+{
+    if (m_defaultAgent)
+    {
+        va_list args;
+        char buf[PRINT_BUFSIZE];
+
+        va_start(args, format);
+        vsnprint_sf(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+        va_end(args);
+        printa(m_defaultAgent, buf);
     }
 }
 
