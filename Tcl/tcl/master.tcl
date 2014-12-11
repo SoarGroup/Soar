@@ -94,6 +94,7 @@ proc smlfilter {agentName commandLine} {
   $slave eval clearOutputBuffer
   # That evaluates the command within the child interpreter for this agent
   if { [catch {$slave eval [concat uplevel #0 puts [list \[$commandLine\]]]} returnVal] } {
+    catch {$slave eval [list executeCommandLine $commandLine]} returnVal
     $slave eval [list appendOutputBuffer $returnVal]
   }
   
