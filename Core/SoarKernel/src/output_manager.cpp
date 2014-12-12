@@ -98,11 +98,11 @@ void Output_Manager::set_default_agent(agent* pSoarAgent)
     m_defaultAgent = pSoarAgent;
 };
 
-int Output_Manager::get_printer_output_column(agent* thisAgent)
+int Output_Manager::get_printer_output_column(agent* pSoarAgent)
 {
-    if (thisAgent)
+    if (pSoarAgent)
     {
-        return thisAgent->output_settings->printer_output_column;
+        return pSoarAgent->output_settings->printer_output_column;
     }
     else
     {
@@ -128,7 +128,7 @@ void Output_Manager::start_fresh_line(agent* pSoarAgent)
     {
         pSoarAgent = m_defaultAgent;
     }
-    if (global_printer_output_column != 1)
+    if ((global_printer_output_column != 1) || (pSoarAgent->output_settings->printer_output_column != 1))
     {
         printa(pSoarAgent, "\n");
     }

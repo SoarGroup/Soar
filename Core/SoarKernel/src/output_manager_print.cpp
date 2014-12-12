@@ -167,6 +167,13 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             SNPRINTF(ch, dest_size - (ch - dest), "%d", va_arg(args, int));
             while (*ch) ch++;
             format += 2;
+        } else if (*(format + 1) == 'f')
+        {
+            if (thisAgent->output_settings->printer_output_column != 1)
+            {
+                *(ch++) = '\n';
+            }
+            format += 2;
         } else if (*(format + 1) == '1')
         {
             condition_list_to_string(thisAgent, va_arg(args, condition *), ch, dest_size - (ch - dest) );
@@ -279,7 +286,11 @@ void Output_Manager::debug_start_fresh_line(TraceMode mode)
     if (!debug_mode_enabled(mode)) return;
 
     if (!m_defaultAgent) return;
-    start_fresh_line(m_defaultAgent);
+    if ((global_printer_output_column != 1) || (m_defaultAgent->output_settings->printer_output_column != 1))
+    {
+        printa(m_defaultAgent, "\n");
+    }
+
 }
 
 char* Output_Manager::wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size, bool pOnlyWithIdentity)
