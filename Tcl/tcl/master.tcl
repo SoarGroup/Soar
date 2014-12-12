@@ -57,9 +57,9 @@ proc createSlave {agentName} {
   # Initialize slave interpreter
   $slave eval [list initializeSlave]
   
-  # Source tcl-based alias file (overrides Soar aliases currently!)
-  if { [catch {$slave eval source aliases.tcl} result] } {
-    puts "ERROR: Failed to load aliases.tcl:\n$result"
+  # Source tcl-setup file (can override Soar commands/aliases!)
+  if { [catch {$slave eval source tcl-setup.soar} result] } {
+    puts "ERROR: Failed to load tcl-setup.soar:\n$result"
   }
   popd
   
