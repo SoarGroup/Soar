@@ -237,11 +237,13 @@ void debug_test(int type)
             break;
 
         case 5:
+            /* -- Print all instantiations -- */
             dprint_all_inst(DT_DEBUG);
             break;
 
         case 6:
-            dprint_wmes(DT_DEBUG, true);
+            /* -- Print all wme's that have identities requested -- */
+            dprint(DT_DEBUG, "%8");
             break;
 
         case 7:

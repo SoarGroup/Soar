@@ -2477,8 +2477,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 
                 if ((w->preference->o_supported == true) && (w->preference->inst->match_goal_level != 1))
                 {
-                    dprint(DT_GDS, "Checking GDS necessary for wme %u: %y ^%y %y %s (id level = %i)\n",
-                           w->timetag, w->id, w->attr, w->value,
+                    dprint(DT_GDS, "Checking GDS necessary for wme %w: %s (level = %d)\n", w,
                            (w->preference->o_supported ? ":o-support" : ":i-support"),
                            w->preference->id->id->level);
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n");
@@ -2573,7 +2572,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                                 if (pref->inst->match_goal_level > pref->id->id->level)
                                 {
 #ifdef DEBUG_GDS_HIGH
-                                    print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
+                                    print_with_symbols(thisAgent, "        %y is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
 #endif
 
                                 }

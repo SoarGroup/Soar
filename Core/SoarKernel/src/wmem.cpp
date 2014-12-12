@@ -237,17 +237,13 @@ void do_buffered_wm_changes(agent* thisAgent)
     dprint(DT_EPMEM_CMD, "...adding wmes_to_add to rete.\n");
     for (c = thisAgent->wmes_to_add; c != NIL; c = c->rest)
     {
-        dprint(DT_EPMEM_CMD, "...adding ");
-        dprint_wme(DT_EPMEM_CMD, static_cast<wme_struct*>(c->first));
-        dprint_noprefix(DT_EPMEM_CMD, "\n");
+        dprint(DT_EPMEM_CMD, "...adding %w\n", static_cast<wme_struct*>(c->first));
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
     dprint(DT_EPMEM_CMD, "...removing wmes_to_remove from rete.\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
     {
-        dprint(DT_EPMEM_CMD, "...removing ");
-        dprint_wme(DT_EPMEM_CMD, static_cast<wme_struct*>(c->first));
-        dprint_noprefix(DT_EPMEM_CMD, "\n");
+        dprint(DT_EPMEM_CMD, "...removing %w\n", static_cast<wme_struct*>(c->first));
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
 #ifndef NO_TIMING_STUFF
@@ -323,9 +319,7 @@ void do_buffered_wm_changes(agent* thisAgent)
 
 void deallocate_wme(agent* thisAgent, wme* w)
 {
-    dprint(DT_DEALLOCATES, "Deallocating wme ");
-    dprint_wme(DT_DEALLOCATES, w);
-    dprint_noprefix(DT_DEALLOCATES, "\n");
+    dprint(DT_DEALLOCATES, "Deallocating wme %w\n", w);
     if (wma_enabled(thisAgent))
     {
         wma_remove_decay_element(thisAgent, w);

@@ -58,8 +58,6 @@
     #define dprint_varnames_node(mode, var_names_node) Output_Manager::Get_OM().print_varnames_node (mode, var_names_node)
     #define dprint_varnames(mode, var_names) Output_Manager::Get_OM().print_varnames (mode, var_names)
     #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
-    #define dprint_wmes(mode, pOnlyWithIdentity) Output_Manager::Get_OM().print_wmes (mode, pOnlyWithIdentity)
-    #define dprint_wme(mode, w) Output_Manager::Get_OM().print_wme (mode, w, false)
 #else
     #define dprint(mode, format, args...) ((void)0)
     #define dprint_set_params(mode, args...) ((void)0)
@@ -75,8 +73,6 @@
     #define dprint_varnames(mode, var_names) ((void)0)
     #define dprint_varnames_node(mode, var_names_node) ((void)0)
     #define dprint_all_inst(mode) ((void)0)
-    #define dprint_wmes(mode, pOnlyWithIdentity) ((void)0)
-    #define dprint_wme(mode, w) ((void)0)
 #endif
 
 extern void debug_init_db(agent* thisAgent);

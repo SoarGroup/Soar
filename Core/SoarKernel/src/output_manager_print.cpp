@@ -26,7 +26,7 @@
 #include "wmem.h"
 #include "soar_instance.h"
 #include "test.h"
-#define PRINT_BUFSIZE 70000   /* --- size of output buffer for a calls to print routines --- */
+//#define PRINT_BUFSIZE 70000   /* --- size of output buffer for a calls to print routines --- */
 
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
 {
@@ -88,11 +88,7 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 
 void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args)
 {
-    char* ch;
-    char c;
-    Symbol* sym;
-
-    ch = dest;
+    char* ch = dest;
 
     while (true)
     {
@@ -122,7 +118,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == 'y')
         {
-            sym = va_arg(args, Symbol*);
+            Symbol* sym = va_arg(args, Symbol*);
             if (sym)
             {
                 (sym)->to_string(true, ch, dest_size - (ch - dest));
@@ -161,6 +157,16 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             pref_to_string(thisAgent, va_arg(args, preference *), ch, dest_size - (ch - dest) );
             while (*ch) ch++;
             format += 2;
+        } else if (*(format + 1) == 'w')
+        {
+            wme_to_string(thisAgent, va_arg(args, wme *), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == 'd')
+        {
+            SNPRINTF(ch, dest_size - (ch - dest), "%d", va_arg(args, int));
+            while (*ch) ch++;
+            format += 2;
         } else if (*(format + 1) == '1')
         {
             condition_list_to_string(thisAgent, va_arg(args, condition *), ch, dest_size - (ch - dest) );
@@ -196,10 +202,14 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             instantiation_to_string(thisAgent, va_arg(args, instantiation*), ch, dest_size - (ch - dest) );
             while (*ch) ch++;
             format += 2;
-
+        } else if (*(format + 1) == '8')
+        {
+            WM_to_string(thisAgent, ch, dest_size - (ch - dest), true);
+            while (*ch) ch++;
+            format += 2;
         } else if (*(format + 1) == 'c')
         {
-            c = static_cast<char>(va_arg(args, int));
+            char c = static_cast<char>(va_arg(args, int));
             SNPRINTF(ch, dest_size - (ch - dest), "%c", c);
             while (*ch) ch++;
             format += 2;
@@ -272,18 +282,10 @@ void Output_Manager::debug_start_fresh_line(TraceMode mode)
     start_fresh_line(m_defaultAgent);
 }
 
-void Output_Manager::print_identity(TraceMode mode, identity_info* i, const char* pre_string, const char* post_string)
+char* Output_Manager::wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size, bool pOnlyWithIdentity)
 {
-    print_sf("%s%y %u%s", i->original_var, i->grounding_id);
-}
-
-void Output_Manager::print_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity)
-{
-    if (!w) return;
-    if (!debug_mode_enabled(mode)) return;
-
-    if (!m_defaultAgent) return;
-
+    assert(thisAgent && dest && w);
+    char* ch = dest;
 
     bool lFoundIdentity;
     if (pOnlyWithIdentity)
@@ -300,69 +302,43 @@ void Output_Manager::print_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity)
     }
     if (!pOnlyWithIdentity || (pOnlyWithIdentity && lFoundIdentity))
     {
-        print_sf("(%u: ", w->timetag);
-        print_sf("%y ^%y %y", w->id, w->attr, w->value);
-        if (w->acceptable)
-        {
-            print_sf(" +");
-        }
-        print_sf("): [");
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(t%u: %y ^%y %y%s",
+            w->timetag, w->id, w->attr, w->value,
+            (w->acceptable ? " +) [" : ") ["));
+        while (*ch) ch++;
+
         grounding_info* g = w->ground_id_list;
         for (; g; g = g->next)
         {
-            print_sf("%i: g%u g%u g%u", g->level, g->grounding_id[0], g->grounding_id[1], g->grounding_id[2]);
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "l%d: g%u g%u g%u", g->level, g->grounding_id[0], g->grounding_id[1], g->grounding_id[2]);
+            while (*ch) ch++;
             if (g->next)
             {
-                print_sf(", ");
+                strcpy(ch, ", ");
+                ch += 2;
             }
         }
-        print_sf("]");
+        *(ch++) = ']';
+        *ch = 0;
     }
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
-void Output_Manager::print_wmes(TraceMode mode, bool pOnlyWithIdentity)
+char* Output_Manager::WM_to_string(agent* thisAgent, char* dest, size_t dest_size, bool pOnlyWithIdentity)
 {
-    if (!debug_mode_enabled(mode)) return;
+    assert(thisAgent && dest);
+    char* ch = dest;
 
-    if (!m_defaultAgent) return;
-
-    wme* w;
-    print_sf("--------------------------- WMEs --------------------------\n");
-    bool lFoundIdentity;
-    for (w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
+    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- WMEs --------------------------\n");
+    while (*ch) ch++;
+    for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        if (pOnlyWithIdentity)
-        {
-            grounding_info* g = w->ground_id_list;
-            lFoundIdentity = false;
-            for (; g && !lFoundIdentity; g = g->next)
-            {
-                if ((g->grounding_id[0] > 0) || (g->grounding_id[1] > 0) || (g->grounding_id[2] > 0))
-                {
-                    lFoundIdentity = true;
-                }
-            }
-        }
-        if (!pOnlyWithIdentity || (pOnlyWithIdentity && lFoundIdentity))
-        {
-            print_sf("(%u: %y ^y %y", w->timetag, w->id, w->attr, w->value);
-            if (w->acceptable)
-            {
-                print(" +");
-            }
-            print_sf("): [");
-            grounding_info* g = w->ground_id_list;
-            for (; g; g = g->next)
-            {
-                print_sf("%i: g%u g%u g%u", g->level, g->grounding_id[0], g->grounding_id[1], g->grounding_id[2]);
-                if (g->next)
-                {
-                    print_sf(", ");
-                }
-            }
-            print_sf("]\n");
-        }
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%w\n", w);
+        while (*ch) ch++;
     }
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
 /* UITODO| Make this method of Test */
@@ -785,17 +761,8 @@ char* Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_
 
 char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest, size_t dest_size, struct token_struct* tok, wme* w)
 {
-    char* ch;
-
-    if (!dest)
-    {
-        dest = get_printed_output_string();
-        dest_size = output_string_size; /* from agent.h */
-    }
-    ch = dest;
-
-    if (!thisAgent) thisAgent = m_defaultAgent;
-    assert(thisAgent);
+    assert(thisAgent && dest);
+    char* ch = dest;
 
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
@@ -881,17 +848,8 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
 
 char* Output_Manager::action_to_string(agent* thisAgent, action* a, char* dest, size_t dest_size)
 {
-    char* ch;
-
-//    if (!dest)
-//    {
-//        dest = get_printed_output_string();
-//        dest_size = output_string_size; /* from agent.h */
-//    }
-    ch = dest;
-
-//    if (!thisAgent) thisAgent = m_defaultAgent;
-    assert(thisAgent);
+    assert(thisAgent && dest && a);
+    char* ch = dest;
 
     if (a->type == FUNCALL_ACTION)
     {
@@ -925,18 +883,10 @@ char* Output_Manager::action_to_string(agent* thisAgent, action* a, char* dest, 
 
 char* Output_Manager::action_list_to_string(agent* thisAgent, action* action_list, char* dest, size_t dest_size)
 {
-    if (!dest)
-    {
-        dest = get_printed_output_string();
-        dest_size = output_string_size; /* from agent.h */
-    }
-
-    if (!thisAgent) thisAgent = m_defaultAgent;
-    assert(thisAgent);
-
+    assert(thisAgent && dest && action_list);
+    char* ch = dest;
 
     action* a = NIL;
-    char* ch = dest;
 
     for (a = action_list; a != NIL; a = a->next)
     {
@@ -953,15 +903,8 @@ char* Output_Manager::action_list_to_string(agent* thisAgent, action* action_lis
 
 char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size)
 {
-    char pref_type;
+    assert(thisAgent && dest && pref);
 
-    if (!dest)
-    {
-        dest_size = output_string_size; /* from agent.h */;
-        dest = get_printed_output_string();
-    }
-
-    pref_type = preference_to_char(pref->type);
     if (m_print_actual)
     {
         sprinta_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string, pref->id, pref->attr, pref->value,

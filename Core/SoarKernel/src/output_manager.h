@@ -132,6 +132,8 @@ class Output_Manager
         char* rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest, size_t dest_size, struct token_struct* tok = NIL, wme* w = NIL);
         char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality = false);
         const char* test_type_to_string_brief(byte test_type, const char* equality_str = "");
+        char* wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size, bool pOnlyWithIdentity = false);
+        char* WM_to_string(agent* thisAgent, char* dest, size_t dest_size, bool pOnlyWithIdentity = true);
 
         void vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args);
 
@@ -203,7 +205,6 @@ class Output_Manager
 
         void debug_print_production(TraceMode mode, production* prod);
 
-        void print_identity(TraceMode mode, identity_info* i, const char* pre_string = "", const char* post_string = "");
         void print_current_lexeme(TraceMode mode, soar::Lexer* lexer);
         void print_identifiers(TraceMode mode);
         void print_saved_test(TraceMode mode, saved_test* st);
@@ -212,8 +213,6 @@ class Output_Manager
         void print_varnames_node(TraceMode mode, node_varnames* var_names_node);
         void print_all_inst(TraceMode mode);
         void print_variables(TraceMode mode);
-        void print_wmes(TraceMode mode, bool pOnlyWithIdentity = false);
-        void print_wme(TraceMode mode, wme* w, bool pOnlyWithIdentity = false);
 
         void debug_find_and_print_sym(char* find_string);
         char* NULL_SYM_STR;

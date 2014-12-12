@@ -1166,9 +1166,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         return NON_GENERALIZABLE;
     }
 
-//    dprint(DT_IDENTITY_PROP, "- %s g_id requested for (%u: %y ^%y %y) at level %i...\n",
-//        field_to_string(f), w->timetag, w->id, w->attr, w->value, pLevel);
-    dprint(DT_IDENTITY_PROP, "- g_id requested for (%y ^%y %y) at level ...\n", w->id, w->attr, w->value);
+    dprint(DT_IDENTITY_PROP, "- g_id requested for %s of %w at level %d...\n", field_to_string(f), w, pLevel);
 
     grounding_info* g = w->ground_id_list;
     if (!g)

@@ -26,7 +26,7 @@ void Variablization_Manager::variablize_relational_constraints()
     dprint(DT_CONSTRAINTS, "=============================================\n");
     dprint(DT_CONSTRAINTS, "Variablizing relational constraints.\n");
     dprint(DT_CONSTRAINTS, "(1) Variablizing relational constraints for short-term identifiers.\n");
-    dprint_wmes(DT_CONSTRAINTS, true);
+    dprint(DT_CONSTRAINTS, "%8"); // Prints all wmes with identities
 
 
     /* -- Replace sti constraints with variablized version and delete any ungrounded tests and
