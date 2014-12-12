@@ -44,20 +44,14 @@
 
     //extern sqlite_database  *db_err_epmem_db, *db_err_smem_db;
 
+    #define dprint(mode, format, args...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
     #define dprint_set_params(mode, args...) Output_Manager::Get_OM().set_dprint_params (mode , ##args)
     #define dprint_clear_params(mode, args...) Output_Manager::Get_OM().clear_dprint_params (mode , ##args)
     #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
     #define dprint_noprefix(mode, args...) Output_Manager::Get_OM().debug_print_sf_noprefix (mode , ##args)
     #define dprint_start_fresh_line(mode) Output_Manager::Get_OM().debug_start_fresh_line (mode)
+
     #define dprint_current_lexeme(mode) Output_Manager::Get_OM().print_current_lexeme (mode)
-    #define dprint_instantiation(mode, inst) \
-            Output_Manager::Get_OM().print_instantiation (mode, inst)
-    #define dprint_cond_prefs_inst(mode, top_cond, top_pref) \
-            Output_Manager::Get_OM().print_cond_prefs (mode, top_cond, top_pref)
-    #define dprint_cond_actions(mode, thisagent, top_cond, top_action) \
-            Output_Manager::Get_OM().print_cond_actions (mode, thisagent, top_cond, top_action)
-    #define dprint_cond_results(mode, top_cond, top_pref) \
-            Output_Manager::Get_OM().print_cond_results (mode, top_cond, top_pref)
     #define dprint_production(mode, prod) Output_Manager::Get_OM().debug_print_production (mode, prod)
     #define dprint_identifiers(mode) Output_Manager::Get_OM().print_identifiers (mode)
     #define dprint_saved_test_list(mode, st) Output_Manager::Get_OM().print_saved_test_list (mode, st)
@@ -66,18 +60,15 @@
     #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
     #define dprint_wmes(mode, pOnlyWithIdentity) Output_Manager::Get_OM().print_wmes (mode, pOnlyWithIdentity)
     #define dprint_wme(mode, w) Output_Manager::Get_OM().print_wme (mode, w, false)
-    #define dprint(mode, format, args...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
 #else
+    #define dprint(mode, format, args...) ((void)0)
     #define dprint_set_params(mode, args...) ((void)0)
     #define dprint_clear_params(mode, args...) ((void)0)
     #define dprint_y(mode, format, ...) ((void)0)
     #define dprint_noprefix(mode, format, ...) ((void)0)
     #define dprint_start_fresh_line(mode) ((void)0)
+
     #define dprint_current_lexeme(mode) ((void)0)
-    #define dprint_instantiation(mode, inst) ((void)0)
-    #define dprint_cond_prefs_inst(mode, top_cond, top_pref) ((void)0)
-    #define dprint_cond_actions(mode, top_cond, top_action) ((void)0)
-    #define dprint_cond_results(mode, top_cond, top_pref) ((void)0)
     #define dprint_production(mode, prod) ((void)0)
     #define dprint_identifiers(mode) ((void)0)
     #define dprint_saved_test_list(mode, st) ((void)0)
@@ -86,7 +77,6 @@
     #define dprint_all_inst(mode) ((void)0)
     #define dprint_wmes(mode, pOnlyWithIdentity) ((void)0)
     #define dprint_wme(mode, w) ((void)0)
-    #define dprint(mode, format, args...) ((void)0)
 #endif
 
 extern void debug_init_db(agent* thisAgent);

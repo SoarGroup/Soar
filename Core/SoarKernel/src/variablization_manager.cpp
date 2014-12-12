@@ -773,9 +773,8 @@ void Variablization_Manager::add_ltis_to_dnvl_for_prefs(preference* prefs)
         return;
     }
 
-    dprint(DT_IDENTITY_PROP, "Adding LTIs to for preference: %y ^%y %y %y\n",
-        prefs->id, prefs->attr, prefs->value,
-        (preference_is_binary(prefs->type) && prefs->referent ? prefs->referent : NULL));
+    dprint(DT_IDENTITY_PROP, "Adding LTIs to for preference: %p\n",
+        prefs);
 
     if (prefs->id && (prefs->id->is_lti())) { add_dnvl(prefs->id); }
     if (prefs->attr && (prefs->attr->is_lti())) { add_dnvl(prefs->attr); }

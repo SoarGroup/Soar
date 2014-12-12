@@ -196,7 +196,7 @@ namespace soar_module
             }
         }
 
-        dprint_instantiation(DT_PRINT_INSTANTIATIONS, inst);
+        dprint(DT_GDS, "%7", inst);
         return inst;
     }
 

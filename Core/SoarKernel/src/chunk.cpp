@@ -1044,8 +1044,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         reset_backtrace_list(thisAgent);
     }
 
-    dprint(DT_BACKTRACE,  "Backtracing through instantiations that produced result preferences...\n");
-    dprint_cond_results(DT_BACKTRACE, NULL, pref);
+    dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6", NULL, pref);
     /* --- backtrace through the instantiation that produced each result --- */
     for (pref = results; pref != NIL; pref = pref->next_result)
     {
@@ -1064,10 +1063,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         }
     }
 
-    dprint(DT_BACKTRACE,  "Backtracing results DONE.\n");
-
-    dprint(DT_BACKTRACE, "Grounds:\n");
-    dprint(DT_BACKTRACE, "%3", thisAgent->grounds);
+    dprint(DT_BACKTRACE, "Backtracing through results DONE.\n");
+    dprint(DT_BACKTRACE, "Grounds:\n%3", thisAgent->grounds);
 
     while (true)
     {
@@ -1079,8 +1076,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         }
     }
 
-    dprint(DT_BACKTRACE, "Grounds after tracing:\n");
-    dprint(DT_BACKTRACE, "%3", thisAgent->grounds);
+    dprint(DT_BACKTRACE, "Tracing DONE.\n");
+    dprint(DT_BACKTRACE, "Grounds after tracing:\n%3", thisAgent->grounds);
 
     thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
 
@@ -1142,7 +1139,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
-            print(thisAgent,  "Warning: reached max-chunks! Halting system.\n");
+            print(thisAgent, "Warning: reached max-chunks! Halting system.\n");
             xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
         }
         thisAgent->max_chunks_reached = true;
@@ -1150,8 +1147,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         goto chunking_abort;
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER,  "chunk_instantiation variablizing following chunk instantiation: \n");
-    dprint_cond_results(DT_VARIABLIZATION_MANAGER, vrblz_top, results);
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following chunk instantiation: \n%6", vrblz_top, results);
 
     if (variablize)
     {
@@ -1162,8 +1158,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         thisAgent->variablizationManager->install_cached_constraints(vrblz_top);
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER,  "chunk_instantiation variablizing following chunk instantiation: \n");
-    dprint_cond_results(DT_VARIABLIZATION_MANAGER, vrblz_top, results);
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following chunk instantiation: \n%6", vrblz_top, results);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions: \n");
 
@@ -1193,24 +1188,22 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "chunk instantiation created variablized rule: \n");
-    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, thisAgent, vrblz_top, rhs);
+    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created variablized rule: \n%4", vrblz_top, rhs);
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "chunk instantiation created reordered rule: \n");
-    dprint_cond_actions(DT_PRINT_INSTANTIATIONS, thisAgent, vrblz_top, rhs);
+    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered rule: \n%4", vrblz_top, rhs);
 
     if (!prod)
     {
-        print(thisAgent,  "\nUnable to reorder this chunk:\n  ");
+        print(thisAgent, "\nUnable to reorder this chunk:\n  ");
         print_condition_list(thisAgent, vrblz_top, 2, false);
-        print(thisAgent,  "\n  -->\n   ");
+        print(thisAgent, "\n  -->\n   ");
         print_action_list(thisAgent, rhs, 3, false);
-        print(thisAgent,  "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-        print(thisAgent,  "manual, subsection \"revising the substructure of a previous result\".\n\n");
-        print(thisAgent,  "Check that the rules are not revising substructure of a result matched only\n");
-        print(thisAgent,  "through the local state.\n");
+        print(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+        print(thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n\n");
+        print(thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
+        print(thisAgent, "through the local state.\n");
 
         deallocate_condition_list(thisAgent, vrblz_top);
         deallocate_condition_list(thisAgent, inst_top);
@@ -1249,8 +1242,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
 
-    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered instantiation: \n");
-    dprint_cond_prefs_inst(DT_PRINT_INSTANTIATIONS, chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
+    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
 
     /* Need to copy cond's and actions for the production here,
     otherwise some of the variables might get deallocated by the call to
@@ -1304,7 +1296,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
-        print(thisAgent,  "\n");
+        print(thisAgent, "\n");
         xml_begin_tag(thisAgent, kTagLearning);
         print_production(thisAgent, prod, false);
         xml_end_tag(thisAgent, kTagLearning);

@@ -117,14 +117,20 @@ class Output_Manager
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
 
-        char* action_to_string(agent* thisAgent, action* a, char* dest = NULL, size_t dest_size = 0);
-        char* action_list_to_string(agent* thisAgent, action* action_list, char* dest = NULL, size_t dest_size = 0);
-        char* condition_to_string(agent* thisAgent, condition* cond, char* dest = NULL, size_t dest_size = 0);
-        char* condition_cons_to_string(agent* thisAgent, cons* c, char* dest = NULL, size_t dest_size = 0);
-        char* condition_list_to_string(agent* thisAgent, condition* top_cond, char* dest = NULL, size_t dest_size = 0);
-        char* pref_to_string(agent* thisAgent, preference* pref, char* dest = NULL, size_t dest_size = 0);
-        char* rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest = NULL, size_t dest_size = 0, struct token_struct* tok = NIL, wme* w = NIL);
-        char* test_to_string(test t, char* dest = NIL, size_t dest_size = 0, bool show_equality = false);
+        char* action_to_string(agent* thisAgent, action* a, char* dest, size_t dest_size);
+        char* action_list_to_string(agent* thisAgent, action* action_list, char* dest, size_t dest_size);
+        char* condition_to_string(agent* thisAgent, condition* cond, char* dest, size_t dest_size);
+        char* condition_cons_to_string(agent* thisAgent, cons* c, char* dest, size_t dest_size);
+        char* condition_list_to_string(agent* thisAgent, condition* top_cond, char* dest, size_t dest_size);
+        char* cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size);
+        char* cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, char* dest, size_t dest_size);
+        char* cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size);
+        char* instantiation_to_string(agent* thisAgent, instantiation* inst, char* dest, size_t dest_size);
+        char* pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size);
+        char* preflist_inst_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size);
+        char* preflist_result_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size);
+        char* rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest, size_t dest_size, struct token_struct* tok = NIL, wme* w = NIL);
+        char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality = false);
         const char* test_type_to_string_brief(byte test_type, const char* equality_str = "");
 
         void vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args);
@@ -179,27 +185,26 @@ class Output_Manager
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
 
-        void set_dprint_params(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
+        void set_print_params(const char* pPre = NULL, const char* pPost = NULL, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
         {
-            if (!debug_mode_enabled(mode)) return;
             m_print_actual = pActual;
             m_print_original = pOriginal;
             m_print_identity = p_Identity;
             if (pPre) m_pre_string = strdup(pPre);
             if (pPost) m_pre_string = strdup(pPost);
         }
-        void clear_dprint_params(TraceMode mode) { set_dprint_params(mode); }
+        void set_dprint_params(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
+        {
+            if (debug_mode_enabled(mode)) set_print_params(pPre, pPost, pActual, pOriginal, p_Identity);
+        }
+
+        void clear_print_params() { set_print_params(); }
+        void clear_dprint_params(TraceMode mode) { if (debug_mode_enabled(mode)) set_print_params(); }
 
         void debug_print_production(TraceMode mode, production* prod);
-        void debug_print_preflist_inst(TraceMode mode, preference* top_pref);
-        void debug_print_preflist_result(TraceMode mode, preference* top_pref);
 
         void print_identity(TraceMode mode, identity_info* i, const char* pre_string = "", const char* post_string = "");
         void print_current_lexeme(TraceMode mode, soar::Lexer* lexer);
-        void print_instantiation(TraceMode mode, instantiation* inst);
-        void print_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref);
-        void print_cond_actions(TraceMode mode, agent* thisAgent, condition* top_cond, action* top_action);
-        void print_cond_results(TraceMode mode, condition* top_cond, preference* top_pref);
         void print_identifiers(TraceMode mode);
         void print_saved_test(TraceMode mode, saved_test* st);
         void print_saved_test_list(TraceMode mode, saved_test* st);

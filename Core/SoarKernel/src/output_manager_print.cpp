@@ -26,6 +26,7 @@
 #include "wmem.h"
 #include "soar_instance.h"
 #include "test.h"
+#define PRINT_BUFSIZE 70000   /* --- size of output buffer for a calls to print routines --- */
 
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
 {
@@ -175,6 +176,27 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             condition_cons_to_string(thisAgent, va_arg(args, cons*), ch, dest_size - (ch - dest) );
             while (*ch) ch++;
             format += 2;
+        } else if (*(format + 1) == '4')
+        {
+            cond_actions_to_string(thisAgent, va_arg(args, condition*), va_arg(args, action*), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == '5')
+        {
+            cond_prefs_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == '6')
+        {
+            cond_results_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == '7')
+        {
+            instantiation_to_string(thisAgent, va_arg(args, instantiation*), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+
         } else if (*(format + 1) == 'c')
         {
             c = static_cast<char>(va_arg(args, int));
@@ -718,7 +740,7 @@ char* Output_Manager::condition_cons_to_string(agent* thisAgent, cons* c, char* 
 
     while (c)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%i: %l\n", m_pre_string, static_cast<condition_struct*>(c->first));
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s: %l\n", m_pre_string, static_cast<condition_struct*>(c->first));
         while (*ch) ch++;
         c = c->rest;
     }
@@ -969,32 +991,33 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
     return NULL;
 }
 
-void Output_Manager::debug_print_preflist_inst(TraceMode mode, preference* top_pref)
+char* Output_Manager::preflist_inst_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size)
 {
-    preference* pref;
-    char pref_type;
+    char* ch = dest;
 
-    if (!debug_mode_enabled(mode)) return;
-
-    for (pref = top_pref; pref != NIL;)
+    for (preference* pref = top_pref; pref != NIL;)
     {
-        print_sf("%p\n", pref);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%p\n", pref);
+        while (*ch) ch++;
         pref = pref->inst_next;
     }
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
+
 }
 
-void Output_Manager::debug_print_preflist_result(TraceMode mode, preference* top_pref)
+char* Output_Manager::preflist_result_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size)
 {
-    preference* pref;
-    char pref_type;
+    char* ch = dest;
 
-    if (!debug_mode_enabled(mode)) return;
-
-    for (pref = top_pref; pref != NIL;)
+    for (preference* pref = top_pref; pref != NIL;)
     {
-        print_sf("%p\n", pref);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%p\n", pref);
+        while (*ch) ch++;
         pref = pref->next_result;
     }
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
 void Output_Manager::debug_print_production(TraceMode mode, production* prod)
@@ -1009,126 +1032,170 @@ void Output_Manager::debug_print_production(TraceMode mode, production* prod)
     }
 }
 
-void Output_Manager::print_cond_prefs(TraceMode mode, condition* top_cond, preference* top_pref)
+char* Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size)
 {
-    if (!debug_mode_enabled(mode)) return;
-
-//    /* MToDo | Only print headers and latter two if that setting is on */
-//    if (m_print_actual)
-//    {
-//        print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
-//        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
-//        condition_list_to_string(mode, top_cond);
-//        print_sf("%s-->\n", m_pre_string);
-//        debug_print_preflist_inst(mode, top_pref);
-//    }
-//    if (m_print_original)
-//    {
-//        print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
-//        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
-//        condition_list_to_string(mode, top_cond);
-//        print_sf("%s-->\n", m_pre_string);
-//        debug_print_preflist_inst(mode, top_pref);
-//    }
-//    if (m_print_identity)
-//    {
-//        print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
-//        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
-//        condition_list_to_string(mode, top_cond);
-//        print_sf("%s-->\n", m_pre_string);
-//        debug_print_preflist_inst(mode, top_pref);
-//    }
-//    print_sf("%s\n", m_pre_string);
-//    clear_dprint_params(mode);
-}
-
-void Output_Manager::print_cond_results(TraceMode mode, condition* top_cond, preference* top_pref)
-{
-    if (!debug_mode_enabled(mode)) return;
+    char* ch=dest;
 
     /* MToDo | Only print headers and latter two if that setting is on */
-//    if (m_print_actual)
-//    {
-//        print_sf("%s--------------------------- Match --------------------------\n", m_pre_string);
-//        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
-//        condition_list_to_string(mode, top_cond);
-//        print_sf("%s-->\n", m_pre_string);
-//        debug_print_preflist_result(mode, top_pref);
-//    }
-//    if (m_print_original)
-//    {
-//        print_sf("%s-------------------------- Original ------------------------\n", m_pre_string);
-//        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
-//        condition_list_to_string(mode, top_cond);
-//        print_sf("%s-->\n", m_pre_string);
-//        debug_print_preflist_result(mode, top_pref);
-//    }
-//    if (m_print_identity)
-//    {
-//        print_sf("%s------------------------- Identity -------------------------\n", m_pre_string);
-//        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
-//        condition_list_to_string(mode, top_cond);
-//        print_sf("%s-->\n", m_pre_string);
-//        debug_print_preflist_result(mode, top_pref);
-//    }
-//    print_sf("%s\n", m_pre_string);
-//    clear_dprint_params(mode);
-}
-
-void Output_Manager::print_cond_actions(TraceMode mode, agent* thisAgent, condition* top_cond, action* top_action)
-{
-    if (!debug_mode_enabled(mode)) return;
-
-    char* dest = get_printed_output_string();
-    size_t dest_size = output_string_size;
-    char* ch = dest;
-
     if (m_print_actual)
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s--------------------------- Match --------------------------\n", m_pre_string);
-        set_dprint_params(mode, m_pre_string, m_post_string, true, false, false);
+        while (*ch) ch++;
+        set_print_params(m_pre_string, m_post_string, true, false, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
+        preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+    }
+    if (m_print_original)
+    {
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-------------------------- Original ------------------------\n", m_pre_string);
+        while (*ch) ch++;
+        set_print_params(m_pre_string, m_post_string, false, true, false);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
+        preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+    }
+    if (m_print_identity)
+    {
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s------------------------- Identity -------------------------\n", m_pre_string);
+        while (*ch) ch++;
+        set_print_params(m_pre_string, m_post_string, false, false, true);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
+        preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+    }
+
+    clear_print_params();
+
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
+}
+
+char* Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size)
+{
+    char* ch=dest;
+
+    /* MToDo | Only print headers and latter two if that setting is on */
+    if (m_print_actual)
+    {
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s--------------------------- Match --------------------------\n", m_pre_string);
+        while (*ch) ch++;
+        set_print_params(m_pre_string, m_post_string, true, false, false);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
+        preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+    }
+    if (m_print_original)
+    {
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-------------------------- Original ------------------------\n", m_pre_string);
+        while (*ch) ch++;
+        set_print_params(m_pre_string, m_post_string, false, true, false);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
+        preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+    }
+    if (m_print_identity)
+    {
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s------------------------- Identity -------------------------\n", m_pre_string);
+        while (*ch) ch++;
+        set_print_params(m_pre_string, m_post_string, false, false, true);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
+        preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+    }
+
+    clear_print_params();
+
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
+}
+
+char* Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, char* dest, size_t dest_size)
+{
+    char* ch=dest;
+
+    /* MToDo | Only print headers and latter two if that setting is on */
+    if (m_print_actual)
+    {
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s--------------------------- Match --------------------------\n", m_pre_string);
+        while (*ch) ch++;
+        set_print_params(m_pre_string, m_post_string, true, false, false);
+        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
         action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
         while (*ch) ch++;
     }
     if (m_print_original)
     {
-        set_dprint_params(mode, m_pre_string, m_post_string, false, true, false);
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-------------------------- Original ------------------------\n", m_pre_string);
+        while (*ch) ch++;
+        set_print_params(m_pre_string, m_post_string, false, true, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
         action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
         while (*ch) ch++;
     }
     if (m_print_identity)
     {
-        set_dprint_params(mode, m_pre_string, m_post_string, false, false, true);
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s------------------------- Identity -------------------------\n", m_pre_string);
+        set_print_params(m_pre_string, m_post_string, false, false, true);
+        while (*ch) ch++;
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
+        while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
+        while (*ch) ch++;
         action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
         while (*ch) ch++;
     }
-//    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s\n", m_pre_string);
-    clear_dprint_params(mode);
+
+    clear_print_params();
+
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
-void Output_Manager::print_instantiation(TraceMode mode, instantiation* inst)
+char* Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* inst, char* dest, size_t dest_size)
 {
-    if (!debug_mode_enabled(mode)) return;
+    char* ch=dest;
 
     if (inst->prod)
     {
-        print_sf("%sMatched %y ", m_pre_string, inst->prod->name);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%sMatched %y ", m_pre_string, inst->prod->name);
+        while (*ch) ch++;
     }
     else
     {
-        print_sf("%sMatched nothing (dummy production?) \n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%sMatched nothing (dummy production?) \n", m_pre_string);
+        while (*ch) ch++;
     }
-    print_sf("in state %y (level %i)\n", inst->match_goal, inst->match_goal_level);
-    print_cond_prefs(mode, inst->top_of_instantiated_conditions, inst->preferences_generated);
+    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "in state %y (level %i)\n", inst->match_goal, inst->match_goal_level);
+    while (*ch) ch++;
+    cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, ch, dest_size - (ch - dest));
 
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
 }
 
 void add_inst_of_type(agent* thisAgent, unsigned int productionType, std::vector<instantiation*>& instantiation_list)
@@ -1159,7 +1226,7 @@ void Output_Manager::print_all_inst(TraceMode mode)
     for (int y = 0; y < instantiation_list.size(); y++)
     {
         print_sf("========================================= Instantiation %d\n", y);
-        print_instantiation(mode, instantiation_list[y]);
+//        instantiation_to_string(mode, instantiation_list[y]);
     }
 }
 

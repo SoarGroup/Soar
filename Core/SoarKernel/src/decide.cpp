@@ -2422,13 +2422,11 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 else
                 {
                     dprint_noprefix(DT_GDS, "\n");
-                    dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %y ^%y %y %s (id level = %d, mg level = %d)\n",
-                           cand->id, cand->attr, cand->value,
-                           (cand->o_supported ? ":o-support" : ":i-support"),
-                           cand->id->id->level, cand->inst->match_goal_level);
+                    dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
+                           cand, cand->id->id->level, cand->inst->match_goal_level);
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n");
                     dprint_set_params(DT_GDS, "           ");
-                    dprint_instantiation(DT_GDS, cand->inst);
+                    dprint(DT_GDS, "%7", cand->inst);
                 }
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);
@@ -2479,12 +2477,12 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 
                 if ((w->preference->o_supported == true) && (w->preference->inst->match_goal_level != 1))
                 {
-                    dprint(DT_GDS, "Checking GDS necessary for wme %i: %y ^%y %y %s (id level = %i)\n",
+                    dprint(DT_GDS, "Checking GDS necessary for wme %u: %y ^%y %y %s (id level = %i)\n",
                            w->timetag, w->id, w->attr, w->value,
                            (w->preference->o_supported ? ":o-support" : ":i-support"),
                            w->preference->id->id->level);
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n");
-                    dprint_instantiation(DT_GDS, w->preference->inst);
+                    dprint(DT_GDS, "%7", w->preference->inst);
 
                     if (w->preference->inst->match_goal->id->gds == NIL)
                     {
