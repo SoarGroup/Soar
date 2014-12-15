@@ -1194,6 +1194,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 			// we don't recurse because we want to control how much activation is added
 			std::list<smem_spreading_pair> queue;
 			smem_lti_set visited;
+			visited.insert(lti);
 			queue.push_back( std::make_pair(lti, 0) );
 			while (!queue.empty())
 			{
@@ -1203,7 +1204,6 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 				queue.pop_front();
 
 				// prevent spreading from affecting this LTI again
-				visited.insert(temp_lti_id);
 
 				// get the history of this LTI
 				{
