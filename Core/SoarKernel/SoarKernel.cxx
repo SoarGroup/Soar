@@ -22,6 +22,7 @@
 #include "src/output_manager_db.cpp"
 #include "src/output_manager_params.cpp"
 #include "src/output_manager_print.cpp"
+#include "src/output_manager_to_string.cpp"
 #include "src/parser.cpp"
 #include "src/prefmem.cpp"
 #include "src/print.cpp"
