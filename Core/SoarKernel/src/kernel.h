@@ -12,7 +12,7 @@
  *     want to use debugging traces/modes or the CLI debug command. Individual debug
  *     #defines are found in debug_defines.h -- */
 
-#define SOAR_DEBUG_UTILITIES
+//#define SOAR_DEBUG_UTILITIES
 
 #include "enums.h"
 typedef struct agent_struct agent;

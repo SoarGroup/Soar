@@ -23,6 +23,7 @@
 #include "kernel.h"
 #include "soar_db.h"
 #include "soar_module.h"
+#include "lexer.h"
 #include "Export.h"
 
 #include <string>
@@ -64,7 +65,7 @@ extern void dprint_start_fresh_line(TraceMode mode);
 extern void dprint_test_simple(test t, const char* pre_string, const char* post_string);
 extern void dprint_test_old(TraceMode mode, test t, const char* indent_string = "          ", const char* conj_indent_string = "+ ");
 extern void dprint_test(TraceMode mode, test t, bool print_actual = true, bool print_original = false, bool print_identity = true, const char* pre_string = "", const char* post_string = "");
-extern void dprint_current_lexeme(TraceMode mode);
+extern void dprint_current_lexeme(TraceMode mode, soar::Lexer* lexer);
 extern void dprint_condition(TraceMode mode, condition* cond, const char* indent_string = "          ", bool print_actual = true, bool print_original = false, bool print_identity = true);
 extern void dprint_condition_list(TraceMode mode, condition* top_cond, const char* indent_string = "          ", bool print_actual = true, bool print_original = false, bool print_identity = true);
 extern void dprint_action(TraceMode mode, action* a, const char* indent_string = "           ");
