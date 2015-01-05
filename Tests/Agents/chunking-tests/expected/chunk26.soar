@@ -1,37 +1,37 @@
-sp {rl*template2*8
+sp {answer*rl*template2*8
     (state <s1> ^rl-id <t1> ^operator <o1> +)
     (<t1> ^value 0.8)
     -->
     (<s1> ^operator <o1> = 0.8)
 }
 
-sp {rl*template2*7
+sp {answer*rl*template2*7
     (state <s1> ^rl-id <t1> ^operator <o1> +)
     (<t1> ^value 0.9)
     -->
     (<s1> ^operator <o1> = 0.9)
 }
 
-sp {rl*template1*6
+sp {answer*rl*template1*6
     (state <s1> ^rl-item 0.9 ^operator <o1> +)
     -->
     (<s1> ^operator <o1> = 0.9)
 }
 
-sp {rl*template3*5
+sp {answer*rl*template3*5
     (state <s1> ^rl-item 0.9 ^rl-id <t1> ^operator <o1> +)
     (<t1> ^value 0.9)
     -->
     (<s1> ^operator <o1> = 0)
 }
 
-sp {rl*template1*4
+sp {answer*rl*template1*4
     (state <s1> ^rl-item 0.7 ^operator <o1> +)
     -->
     (<s1> ^operator <o1> = 0.7)
 }
 
-sp {rl*template4*3
+sp {answer*rl*template4*3
     (state <s1> ^rl-item 0.7 ^rl-item 0.9 ^rl-id <t2> ^rl-id { <> <t2> <t1> }
           ^operator <o1> +)
     (<t2> ^value 0.8)
@@ -39,7 +39,7 @@ sp {rl*template4*3
     (<s1> ^operator <o1> = 0)
 }
 
-sp {rl*template4*2
+sp {answer*rl*template4*2
     (state <s1> ^rl-item 0.7 ^rl-item 0.9 ^rl-id <t2> ^rl-id { <> <t2> <t1> }
           ^operator <o1> +)
     (<t2> ^value 0.9)
@@ -47,7 +47,7 @@ sp {rl*template4*2
     (<s1> ^operator <o1> = 0)
 }
 
-sp {rl*template4*1
+sp {answer*rl*template4*1
     (state <s1> ^rl-item 0.7 ^rl-item 0.9 ^rl-id <t2> ^rl-id { <> <t2> <t1> }
           ^operator <o1> +)
     (<t2> ^value <d1>)

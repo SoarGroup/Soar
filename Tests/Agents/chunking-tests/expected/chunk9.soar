@@ -1,12 +1,10 @@
-sp {chunk*apply9b*onc*t3-2
-    :chunk
+sp {answer*chunk*apply9b*onc*t3-2
     (state <s1> ^superstate nil ^test-param <t2> ^test-param { <=> <t2> <t1> })
     -->
     (<s1> ^result9c <t2> + ^result9d <t1> + ^test-done 1 +)
 }
 
-sp {chunk*apply9b*onc*t3-1
-    :chunk
+sp {answer*chunk*apply9b*onc*t3-1
     (state <s1> ^superstate nil ^test-param { <=> <t1> <t1> })
     -->
     (<s1> ^result9c <t1> + ^result9d <t1> + ^test-done 1 +)

@@ -1,5 +1,4 @@
-sp {chunk*apply16b*onc*t3-1
-    :chunk
+sp {answer*chunk*apply16b*onc*t3-1
     (state <s1> ^superstate nil)
     -->
     (<s1> ^result16a <s2> + ^result16b <n1> + ^test-done 1 +)

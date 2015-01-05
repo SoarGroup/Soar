@@ -1,5 +1,4 @@
-sp {chunk*apply14b*onc*t3-1
-    :chunk
+sp {answer*chunk*apply14b*onc*t3-1
     (state <s1> ^superstate nil ^test-param <t1> ^test-item { > 3 <c1> })
     -->
     (<s1> ^result14-ungrounded-num 3 + ^result14-ungrounded-id <u1> +

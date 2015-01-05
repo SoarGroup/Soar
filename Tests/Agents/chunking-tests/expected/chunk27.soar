@@ -1,5 +1,4 @@
-sp {chunk*condition-match*elaborate*results*snc*t3-1
-    :chunk
+sp {answer*chunk*condition-match*elaborate*results*snc*t3-1
     (state <s1> ^topstate <s1> ^superstate nil ^condition <c1> ^object <n1>)
     (<c1> ^name { << red blue >> <c2> })
     (<n1> ^linguistic-desc <d1>)
