@@ -105,10 +105,15 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
     {
         sml::ClientAnalyzedXML response;
         pAgent->ExecuteCommandLineXML((std::string("source test_agents/chunking-tests/expected/") + path).c_str(), &response);
-        int excised, ignored;
-        excised = response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1);
+        int sourced, excised, ignored;
         ignored = response.GetArgInt(sml::sml_Names::kParamIgnoredProductionCount, -1);
-        CPPUNIT_ASSERT((excised + ignored) == expected_chunks);
+        if (ignored != expected_chunks)
+        {
+            sourced = response.GetArgInt(sml::sml_Names::kParamSourcedProductionCount, -1);
+            excised = response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1);
+            std::cout << "      FAILED:  Expected to ignore " << expected_chunks << ": sourced " << sourced << ", excised " << excised << ", ignored " << ignored;
+        }
+        CPPUNIT_ASSERT(ignored == expected_chunks);
     }
 }
 
