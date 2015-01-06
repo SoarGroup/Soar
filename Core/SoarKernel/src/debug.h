@@ -33,11 +33,11 @@
 #ifdef DEBUG_EPMEM_SQL
     static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
     {
-        fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);
+    fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);
     }
     static void trace_sql(void* /*arg*/, const char* query)
     {
-        fprintf(stderr, "Query: %s\n", query);
+    fprintf(stderr, "Query: %s\n", query);
     }
 #endif
 #ifdef SOAR_DEBUG_PRINTING

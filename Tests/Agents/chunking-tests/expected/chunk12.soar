@@ -1,5 +1,4 @@
-sp {chunk*apply*12*onc*t3-2
-    :chunk
+sp {answer*chunk*apply*12*onc*t3-2
     (state <s1> ^superstate nil ^test-param2 <t3> ^test-item <c1>)
     (<t3> ^foo <t1> ^foo <t2>)
     (<t2> ^value <c1>)
@@ -8,8 +7,7 @@ sp {chunk*apply*12*onc*t3-2
     (<s1> ^result12a <c1> + ^result12b <d1> + ^test-done 1 +)
 }
 
-sp {chunk*apply*12*onc*t3-1
-    :chunk
+sp {answer*chunk*apply*12*onc*t3-1
     (state <s1> ^superstate nil ^test-param2 <t2> ^test-item <c2>)
     (<t2> ^foo <t1>)
     (<t1> ^value <c2> ^value { <> <c2> <c1> })

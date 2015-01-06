@@ -1,5 +1,4 @@
-sp {chunk*apply4*onc*t3-1
-    :chunk
+sp {answer*chunk*apply4*onc*t3-1
     (state <s1> ^superstate nil ^test-item <c2>
           ^test-item { < 9 <> <c2> <c1> })
     -->

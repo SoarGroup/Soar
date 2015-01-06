@@ -1,5 +1,4 @@
-sp {chunk-multi*apply18*onc*t3-1
-    :chunk
+sp {answer*chunk-multi*apply18*onc*t3-1
     (state <s1> ^superstate nil ^test-item <c1>
           -^test-item { > <c1> <supermax> })
     -->

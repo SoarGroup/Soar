@@ -1,5 +1,4 @@
-sp {chunk-multi*apply21f2*onc*t3-6
-    :chunk
+sp {answer*chunk-multi*apply21f2*onc*t3-6
     (state <s1> ^test-current 1 ^superstate nil ^test-item <c1>
           -^test-item { <> <c1> > <c1> <dupe> } ^test-item { < <c1> <c2> }
           -^test-item { <> <c2> <> <c1> <dupe> })

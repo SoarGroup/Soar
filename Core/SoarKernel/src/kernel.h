@@ -24,12 +24,12 @@ extern void print(agent* thisAgent, const char* format, ...);
     //#define DEBUG_EPMEM_SQL
 
     /* -- Enables the printing of the call trace within debug messages.  Tested
-     *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
-     *    but not tested. Does not work on Windows. -- */
+ *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
+ *    but not tested. Does not work on Windows. -- */
     //#define DEBUG_MAC_STACKTRACE
 
     /* -- Enables extensive refcount and deallocation data tracking into
-     *    the debug database -- */
+ *    the debug database -- */
     //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
     //#define DEBUG_EPMEM_WME_ADD
@@ -48,7 +48,7 @@ extern void print(agent* thisAgent, const char* format, ...);
     //#define DEBUG_GDS
 
 /* -- High-level information on the instantiations that created an
-     * o-supported element and lead to the elaboration of the GDS */
+ * o-supported element and lead to the elaboration of the GDS */
     //#define DEBUG_GDS_HIGH
 #endif
 

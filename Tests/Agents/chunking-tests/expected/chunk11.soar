@@ -1,5 +1,4 @@
-sp {chunk-multi*apply*11*onc*t3-1
-    :chunk
+sp {answer*chunk-multi*apply*11*onc*t3-1
     (state <s1> ^superstate nil ^test-param2 <t2> ^test-item <c2>)
     (<t2> ^foo <t1>)
     (<t1> ^value <c2> ^value { <> <c2> <c1> })

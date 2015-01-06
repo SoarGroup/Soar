@@ -1,5 +1,4 @@
-sp {chunk-multi*apply21d*onc*t3-4
-    :chunk
+sp {answer*chunk-multi*apply21d*onc*t3-4
     (state <s1> ^test-current 1 ^superstate nil ^test-item <c2>
           ^test-item { < <c2> <c1> })
    -{ (<s1> ^test-item 10 ^test-item { > <c2> <t*1> })}

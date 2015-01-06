@@ -2,8 +2,6 @@
 # matches a different binding.  Both vars on rhs.  One should be reversed
 # while the other shouldn't be.
 
-source "setup.soar"
-
 sp {apply1a
     (state <s> ^name substate
                ^operator.name test)
