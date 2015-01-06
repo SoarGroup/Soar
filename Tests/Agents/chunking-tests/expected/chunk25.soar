@@ -1,7 +1,10 @@
-sp {answer*chunk-multi*apply21f2*onc*t3-6
+sp {answer*chunk*apply21f2*onc*t3-1
     (state <s1> ^test-current 1 ^superstate nil ^test-item <c1>
           -^test-item { <> <c1> > <c1> <dupe> } ^test-item { < <c1> <c2> }
           -^test-item { <> <c2> <> <c1> <dupe> })
     -->
     (<s1> ^highest <c1> + ^lowest <c2> + ^test-done 1 +)
 }
+
+
+

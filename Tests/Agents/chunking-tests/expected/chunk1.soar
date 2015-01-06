@@ -1,5 +1,4 @@
 sp {answer*chunk*apply1b*onc*t3-2
-    :chunk
     (state <s1> ^superstate nil ^test-item <c2>
           ^test-item { > 8 < 10 >= 9 >= <c2> <c1> })
     -->
@@ -9,7 +8,6 @@ sp {answer*chunk*apply1b*onc*t3-2
 }
 
 sp {answer*chunk*apply1b*onc*t3-1
-    :chunk
     (state <s1> ^superstate nil ^test-item { > 8 < 10 >= 9 >= <c1> <c1> })
     -->
     (<s1> ^result1a 9 + ^result1b <c1> + ^result1c <c1> + ^result1d <u1> +
