@@ -51,9 +51,15 @@ Output_Manager::Output_Manager()
     m_params = new OM_Parameters();
     m_db = NIL;
 
-    m_print_actual = true;
-    m_print_original = false;
-    m_print_identity = true;
+    #ifndef SOAR_RELEASE_VERSION
+        m_print_actual = true;
+        m_print_original = false;
+        m_print_identity = true;
+    #else
+        m_print_actual = true;
+        m_print_original = false;
+        m_print_identity = false;
+    #endif
     m_pre_string = NULL;
     m_post_string = NULL;
 
