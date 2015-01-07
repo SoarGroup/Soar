@@ -75,13 +75,11 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
 
 void Variablization_Manager::consolidate_variables(condition* top_cond, tc_number tc_num)
 {
-    dprint(DT_FIX_CONDITIONS, "====================================\n");
-    dprint(DT_FIX_CONDITIONS, "= Consolidating variables in tests =\n");
-    dprint(DT_FIX_CONDITIONS, "====================================\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Consolidating variables in tests =\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
     dprint(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
-    dprint(DT_FIX_CONDITIONS, "====================================\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintAfter, "");
 
     condition* next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond;)
@@ -102,13 +100,11 @@ void Variablization_Manager::consolidate_variables(condition* top_cond, tc_numbe
         cond = next_cond;
 //        dprint(DT_FIX_CONDITIONS, "...done fixing condition.\n");
     }
-    dprint(DT_FIX_CONDITIONS, "=========================================\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
     dprint(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
-    dprint(DT_FIX_CONDITIONS, "=========================================\n");
-    dprint(DT_FIX_CONDITIONS, "= Done consolidating variables in tests =\n");
-    dprint(DT_FIX_CONDITIONS, "=========================================\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done consolidating variables in tests =\n");
 
 }
 
@@ -243,13 +239,11 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_num
 
 void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ungroundeds)
 {
-    dprint(DT_FIX_CONDITIONS, "========================\n");
-    dprint(DT_FIX_CONDITIONS, "= Finding redundancies =\n");
-    dprint(DT_FIX_CONDITIONS, "========================\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Finding redundancies =\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
     dprint(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
-    dprint(DT_FIX_CONDITIONS, "========================\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintAfter, "");
 
     // get new tc_num to mark any variables that need to be substituted
     tc_number tc_num = get_new_tc_number(thisAgent);;
@@ -278,13 +272,11 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
     consolidate_variables(top_cond, tc_num);
     clear_substitution_map();
 
-    dprint(DT_FIX_CONDITIONS, "=============================\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
     dprint(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
-    dprint(DT_FIX_CONDITIONS, "=============================\n");
-    dprint(DT_FIX_CONDITIONS, "= Done finding redundancies =\n");
-    dprint(DT_FIX_CONDITIONS, "=============================\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done finding redundancies =\n");
 }
 
 

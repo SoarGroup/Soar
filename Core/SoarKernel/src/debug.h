@@ -50,7 +50,9 @@
     #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
     #define dprint_noprefix(mode, args...) Output_Manager::Get_OM().debug_print_sf_noprefix (mode , ##args)
     #define dprint_start_fresh_line(mode) Output_Manager::Get_OM().debug_start_fresh_line (mode)
+    #define dprint_header(mode, h, args...) Output_Manager::Get_OM().debug_print_header (mode , h , ##args)
 
+    /* -- The rest of these should all be migrated to soar format strings -- */
     #define dprint_current_lexeme(mode) Output_Manager::Get_OM().print_current_lexeme (mode)
     #define dprint_production(mode, prod) Output_Manager::Get_OM().debug_print_production (mode, prod)
     #define dprint_identifiers(mode) Output_Manager::Get_OM().print_identifiers (mode)
@@ -65,6 +67,7 @@
     #define dprint_y(mode, format, ...) ((void)0)
     #define dprint_noprefix(mode, format, ...) ((void)0)
     #define dprint_start_fresh_line(mode) ((void)0)
+    #define dprint_header(mode, h, args...) ((void)0)
 
     #define dprint_current_lexeme(mode) ((void)0)
     #define dprint_production(mode, prod) ((void)0)

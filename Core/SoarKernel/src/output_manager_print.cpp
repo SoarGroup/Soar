@@ -264,7 +264,6 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-
     if (!m_defaultAgent) return;
 
     va_list args;
@@ -281,7 +280,6 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-
     if (!m_defaultAgent) return;
 
     va_list args;
@@ -295,11 +293,32 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
 
 }
 
+void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...)
+{
+    if (!debug_mode_enabled(mode)) return;
+    if (!m_defaultAgent) return;
+
+    if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
+        debug_print(mode, "=========================================================\n");
+    va_list args;
+    char buf[PRINT_BUFSIZE];
+
+    strcpy(buf, mode_info[mode].prefix);
+    int s = strlen(buf);
+    va_start(args, format);
+    vsnprint_sf(m_defaultAgent, (buf+s), PRINT_BUFSIZE, format, args);
+    va_end(args);
+    printa(m_defaultAgent, buf);
+    if ((whichHeaders == PrintBoth) || (whichHeaders == PrintAfter))
+        debug_print(mode, "=========================================================\n");
+}
+
 void Output_Manager::debug_start_fresh_line(TraceMode mode)
 {
     if (!debug_mode_enabled(mode)) return;
 
     if (!m_defaultAgent) return;
+
     if ((global_printer_output_column != 1) || (m_defaultAgent->output_settings->printer_output_column != 1))
     {
         printa(m_defaultAgent, "\n");

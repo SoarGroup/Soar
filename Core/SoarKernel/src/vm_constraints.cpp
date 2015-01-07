@@ -23,8 +23,7 @@ void Variablization_Manager::variablize_relational_constraints()
     std::map< Symbol*, ::list* >* variablized_sti_constraints = new std::map< Symbol*, ::list* >;
     std::map< uint64_t, ::list* >* variablized_constant_constraints = new std::map< uint64_t, ::list* >;
 
-    dprint(DT_CONSTRAINTS, "=============================================\n");
-    dprint(DT_CONSTRAINTS, "Variablizing relational constraints.\n");
+    dprint_header(DT_CONSTRAINTS, PrintBefore, "Variablizing relational constraints.\n");
     dprint(DT_CONSTRAINTS, "(1) Variablizing relational constraints for short-term identifiers.\n");
     dprint(DT_CONSTRAINTS, "%8"); // Prints all wmes with identities
 
@@ -362,8 +361,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
 
 void Variablization_Manager::install_cached_constraints(condition* cond)
 {
-    dprint(DT_CONSTRAINTS, "=============================================\n");
-    dprint(DT_CONSTRAINTS, "install_relational_constraints called...\n");
+    dprint_header(DT_CONSTRAINTS, PrintBefore, "install_relational_constraints called...\n");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
 
@@ -388,6 +386,6 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
     dprint(DT_CONSTRAINTS, "%1", cond);
-    dprint(DT_CONSTRAINTS, "=============================================\n");
+    dprint_header(DT_CONSTRAINTS, PrintAfter, "");
 }
 

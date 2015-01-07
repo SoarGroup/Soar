@@ -394,10 +394,9 @@ saved_test* simplify_condition_list(agent* thisAgent, condition* conds_list)
     saved_test* sts;
 
     sts = NIL;
-    dprint(DT_REORDERER, "==============================\n");
-    dprint(DT_REORDERER, "=   Simplifying Conditions   =\n");
-    dprint(DT_REORDERER, "%1", conds_list);
-    dprint(DT_REORDERER, "==============================\n");
+    dprint_header(DT_REORDERER, PrintBefore, "=   Simplifying Conditions   =\n");
+    dprint_header(DT_REORDERER, PrintAfter, "%1", conds_list);
+
     for (c = conds_list; c != NIL; c = c->next)
     {
 //#define CONSIDER_NEGATIVE 1
@@ -416,12 +415,12 @@ saved_test* simplify_condition_list(agent* thisAgent, condition* conds_list)
             sts = simplify_test(thisAgent, &(c->data.tests.value_test), sts);
         }
     }
-    dprint(DT_REORDERER, "======== end  simplify =======\n");
+    dprint(DT_REORDERER, "...done simplifying.  Final results:\n");
     dprint(DT_REORDERER, "Simplified Conditions:\n");
     dprint(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, sts);
-    dprint(DT_REORDERER, "======== end  simplify =======\n");
+    dprint_header(DT_REORDERER, PrintAfter, "");
     return sts;
 }
 
@@ -555,9 +554,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
     condition* cond;
     list* new_vars;
 
-    dprint(DT_REORDERER, "===============================\n");
-    dprint(DT_REORDERER, "=    Restoring Saved Tests    =\n");
-    dprint(DT_REORDERER, "===============================\n");
+    dprint_header(DT_REORDERER, PrintBoth, "=    Restoring Saved Tests    =\n");
     dprint(DT_REORDERER, "Simplified Conditons:\n");
     dprint(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
@@ -610,12 +607,11 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
         dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     }
 
-    dprint(DT_REORDERER, "===============================\n");
-    dprint(DT_REORDERER, "Final Conditons:\n");
+    dprint_header(DT_REORDERER, PrintBefore, "Final Conditons:\n");
     dprint(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-    dprint(DT_REORDERER, "========= end  restore ========\n");
+    dprint_header(DT_REORDERER, PrintAfter, "= end restore saved tests =\n");
 
     if (tests_to_restore)
     {
@@ -1122,13 +1118,12 @@ void reorder_simplified_conditions(agent* thisAgent,
                 add min-cost item to conds
     */
 
-    dprint(DT_REORDERER, "==================================\n");
-    dprint(DT_REORDERER, "Re-ordering simplified conditions:\n");
+    dprint_header(DT_REORDERER, PrintBefore, "Re-ordering simplified conditions:\n");
 //  dprint(DT_REORDERER, "Before Reorder Conditions:\n");
     dprint(DT_REORDERER, "%1", *top_of_conds);
     dprint(DT_REORDERER, "Saved Tests:\n");
 //  dprint_saved_test_list (DT_REORDERER, saved_tests);
-    dprint(DT_REORDERER, "==================================\n");
+    dprint_header(DT_REORDERER, PrintAfter, "");
     while (remaining_conds)
     {
         dprint(DT_REORDERER, "Processing one of remaining conds...\n");
@@ -1287,9 +1282,7 @@ void reorder_simplified_conditions(agent* thisAgent,
     dprint(DT_REORDERER, "...unmarking variables.\n");
     unmark_variables_and_free_list(thisAgent, new_vars);
     *top_of_conds = first_cond;
-    dprint(DT_REORDERER, "==================================\n");
-    dprint(DT_REORDERER, "======== Done re-ordering ========\n");
-    dprint(DT_REORDERER, "==================================\n");
+    dprint_header(DT_REORDERER, PrintBoth, "= Done re-ordering =\n");
 }
 
 void reorder_condition_list(agent* thisAgent,

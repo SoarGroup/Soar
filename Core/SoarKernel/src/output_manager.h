@@ -171,6 +171,7 @@ class Output_Manager
         void debug_print(TraceMode mode, const char* msg);
         void debug_print_sf(TraceMode mode, const char* format, ...);
         void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
+        void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
         void debug_start_fresh_line(TraceMode mode);
 
         char* get_printed_output_string()

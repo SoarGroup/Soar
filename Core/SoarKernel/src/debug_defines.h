@@ -13,9 +13,9 @@
 #define DEBUG_SCHEMA_VERSION "0.1"
 
 //#define DEBUG_FREE_SETTINGS
-//#define DEBUG_FULL_SETTINGS
+#define DEBUG_FULL_SETTINGS
 //#define DEBUG_REFCOUNT_SETTINGS
-#define DEBUG_UNITTEST_SETTINGS
+//#define DEBUG_UNITTEST_SETTINGS
 
 #ifdef DEBUG_FREE_SETTINGS
 /* -- Which trace messages should be printed -- */
