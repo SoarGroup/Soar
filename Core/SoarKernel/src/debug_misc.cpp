@@ -16,7 +16,7 @@
 
 void debug_test_structs()
 {
-    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
     if (!debug_agent)
     {
         return;
@@ -165,7 +165,7 @@ void debug_test_find_delete_sym(agent* debug_agent, test* dest, Symbol* sym)
 void debug_test_delete_conjuncts()
 {
 
-    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
     if (!debug_agent)
     {
         return;
@@ -206,7 +206,7 @@ extern void test_print_speed();
 extern void test_print_speed_y();
 void debug_test(int type)
 {
-    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
     if (!debug_agent)
     {
         return;

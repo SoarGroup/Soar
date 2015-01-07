@@ -23,7 +23,7 @@ static Output_Manager* thisOutput_Manager = NULL;
 
 void test_print_speed()
 {
-    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
     if (!debug_agent)
     {
         return;
@@ -237,7 +237,7 @@ void test_print_speed()
 void test_print_speed_y()
 {
 
-    agent* debug_agent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
     if (!debug_agent)
     {
         return;

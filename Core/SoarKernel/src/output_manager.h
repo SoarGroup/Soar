@@ -98,7 +98,10 @@ class Output_Manager
         OM_Parameters*                            m_params;
         OM_DB*                                    m_db;
 
-        /* -- Global toggles for database, standard out and file output -- */
+        /* -- Array for each trace output mode.  Contains prefix strings and whether enabled -- */
+        trace_mode_info mode_info[num_trace_modes];
+
+        /* -- Global toggles for database, standard out -- */
         bool db_mode, stdout_mode;
 
         /* -- Settings for how tests are printed (actual, original production tests, test identity) -- */
@@ -116,6 +119,8 @@ class Output_Manager
         /* -- The following tracks column of the next character to print if Soar is writing to cout --*/
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
+
+        void fill_mode_info();
 
         char* action_to_string(agent* thisAgent, action* a, char* dest, size_t dest_size);
         char* action_list_to_string(agent* thisAgent, action* action_list, char* dest, size_t dest_size);
@@ -141,14 +146,9 @@ class Output_Manager
 
         void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
 
-        trace_mode_info mode_info[num_trace_modes];
-
-        void init();
-        void fill_mode_info();
-
         bool debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
 
-        void set_default_agent(agent* pSoarAgent);
+        void set_default_agent(agent* pSoarAgent) { assert(pSoarAgent); m_defaultAgent = pSoarAgent; };
         void clear_default_agent() { m_defaultAgent = NULL; }
         agent* get_default_agent() { return m_defaultAgent; }
 
@@ -166,6 +166,7 @@ class Output_Manager
 
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
+        void store_refcount(Symbol* sym, const char* callers, bool isAdd) { m_db->store_refcount(sym, callers, isAdd); }
 
         /* Versions that will check debug mode and only print if set */
         void debug_print(TraceMode mode, const char* msg);
@@ -182,8 +183,6 @@ class Output_Manager
             }
             return printed_output_strings[next_output_string];
         }
-
-        void store_refcount(Symbol* sym, const char* callers, bool isAdd) { m_db->store_refcount(sym, callers, isAdd); }
 
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
@@ -204,6 +203,7 @@ class Output_Manager
         void clear_print_params() { set_print_params(); }
         void clear_dprint_params(TraceMode mode) { if (debug_mode_enabled(mode)) set_print_params(); }
 
+        /* -- The following should all be refactored into to_string functions to be used with format strings -- */
         void debug_print_production(TraceMode mode, production* prod);
 
         void print_current_lexeme(TraceMode mode, soar::Lexer* lexer);
@@ -215,6 +215,7 @@ class Output_Manager
         void print_all_inst(TraceMode mode);
         void print_variables(TraceMode mode);
 
+        /* -- Should be moved elsewhere -- */
         void debug_find_and_print_sym(char* find_string);
         char* NULL_SYM_STR;
 

@@ -889,7 +889,7 @@ void Output_Manager::print_variables(TraceMode mode)
 void debug_print_db_err(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
-    agent* thisAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     if (!thisAgent) return;
 
     print_sysparam_trace(thisAgent, 0, "Debug| Printing database status/errors...\n");
@@ -922,7 +922,7 @@ void debug_print_db_err(TraceMode mode)
 void debug_print_epmem_table(const char* table_name, TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
-    //agent* thisAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    //agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
 //    if (!thisAgent) return;
 
 //  if (!db_err_epmem_db)
@@ -945,7 +945,7 @@ void debug_print_epmem_table(const char* table_name, TraceMode mode)
 void debug_print_smem_table(const char* table_name, TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
-    //agent* thisAgent = Soar_Instance::Get_Soar_Instance().Get_Default_Agent();
+    //agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
 //    if (!thisAgent) return;
 
 //  if (!db_err_smem_db)

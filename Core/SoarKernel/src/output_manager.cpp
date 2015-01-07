@@ -87,17 +87,6 @@ Output_Manager::~Output_Manager()
 }
 
 
-void Output_Manager::set_default_agent(agent* pSoarAgent)
-{
-    std::string errString;
-    if (!pSoarAgent)
-    {
-        errString = "OutputManager passed an empty default agent!\n";
-        debug_print(DT_DEBUG, errString.c_str());
-    }
-    m_defaultAgent = pSoarAgent;
-};
-
 int Output_Manager::get_printer_output_column(agent* pSoarAgent)
 {
     if (pSoarAgent)
