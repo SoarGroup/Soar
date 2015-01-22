@@ -76,9 +76,9 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
 void Variablization_Manager::consolidate_variables(condition* top_cond, tc_number tc_num)
 {
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Consolidating variables in tests =\n");
-    dprint_set_params(DT_FIX_CONDITIONS, "          ");
+    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint(DT_FIX_CONDITIONS, "%1", top_cond);
-    dprint_clear_params(DT_FIX_CONDITIONS);
+    dprint_clear_indents(DT_FIX_CONDITIONS);
     dprint_header(DT_FIX_CONDITIONS, PrintAfter, "");
 
     condition* next_cond, *last_cond = NULL;
@@ -101,9 +101,9 @@ void Variablization_Manager::consolidate_variables(condition* top_cond, tc_numbe
 //        dprint(DT_FIX_CONDITIONS, "...done fixing condition.\n");
     }
     dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
-    dprint_set_params(DT_FIX_CONDITIONS, "          ");
+    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint(DT_FIX_CONDITIONS, "%1", top_cond);
-    dprint_clear_params(DT_FIX_CONDITIONS);
+    dprint_clear_indents(DT_FIX_CONDITIONS);
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done consolidating variables in tests =\n");
 
 }
@@ -240,9 +240,9 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_num
 void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ungroundeds)
 {
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Finding redundancies =\n");
-    dprint_set_params(DT_FIX_CONDITIONS, "          ");
+    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint(DT_FIX_CONDITIONS, "%1", top_cond);
-    dprint_clear_params(DT_FIX_CONDITIONS);
+    dprint_clear_indents(DT_FIX_CONDITIONS);
     dprint_header(DT_FIX_CONDITIONS, PrintAfter, "");
 
     // get new tc_num to mark any variables that need to be substituted
@@ -273,9 +273,9 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
     clear_substitution_map();
 
     dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
-    dprint_set_params(DT_FIX_CONDITIONS, "          ");
+    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint(DT_FIX_CONDITIONS, "%1", top_cond);
-    dprint_clear_params(DT_FIX_CONDITIONS);
+    dprint_clear_indents(DT_FIX_CONDITIONS);
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done finding redundancies =\n");
 }
 

@@ -1445,9 +1445,9 @@ void propagate_identity(agent* thisAgent,
                 add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
                 add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
             }
-            dprint_set_params(DT_IDENTITY_PROP, "          ");
+            dprint_set_indents(DT_IDENTITY_PROP, "          ");
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
-            dprint_clear_params(DT_IDENTITY_PROP);
+            dprint_clear_indents(DT_IDENTITY_PROP);
         }
         else
         {
@@ -1475,9 +1475,9 @@ void propagate_identity(agent* thisAgent,
                 add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
             }
 
-            dprint_set_params(DT_IDENTITY_PROP, "          ");
+            dprint_set_indents(DT_IDENTITY_PROP, "          ");
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
-            dprint_clear_params(DT_IDENTITY_PROP);
+            dprint_clear_indents(DT_IDENTITY_PROP);
 
         }
     }

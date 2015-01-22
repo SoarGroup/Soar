@@ -45,8 +45,10 @@
     //extern sqlite_database  *db_err_epmem_db, *db_err_smem_db;
 
     #define dprint(mode, format, args...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
-    #define dprint_set_params(mode, args...) Output_Manager::Get_OM().set_dprint_params (mode , ##args)
-    #define dprint_clear_params(mode, args...) Output_Manager::Get_OM().clear_dprint_params (mode , ##args)
+    #define dprint_set_indents(mode, args...) Output_Manager::Get_OM().set_dprint_indents (mode , ##args)
+    #define dprint_set_test_format(mode, args...) Output_Manager::Get_OM().set_dprint_test_format (mode , ##args)
+    #define dprint_clear_indents(mode, args...) Output_Manager::Get_OM().clear_dprint_indents (mode , ##args)
+    #define dprint_clear_test_format(mode, args...) Output_Manager::Get_OM().clear_dprint_test_format (mode , ##args)
     #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##args)
     #define dprint_noprefix(mode, args...) Output_Manager::Get_OM().debug_print_sf_noprefix (mode , ##args)
     #define dprint_start_fresh_line(mode) Output_Manager::Get_OM().debug_start_fresh_line (mode)
@@ -62,8 +64,10 @@
     #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
 #else
     #define dprint(mode, format, args...) ((void)0)
-    #define dprint_set_params(mode, args...) ((void)0)
-    #define dprint_clear_params(mode, args...) ((void)0)
+    #define dprint_set_indents(mode, args...) ((void)0)
+    #define dprint_set_test_format(mode, args...) ((void)0)
+    #define dprint_clear_indents(mode, args...) ((void)0)
+    #define dprint_clear_test_format(mode, args...) ((void)0)
     #define dprint_y(mode, format, ...) ((void)0)
     #define dprint_noprefix(mode, format, ...) ((void)0)
     #define dprint_start_fresh_line(mode) ((void)0)

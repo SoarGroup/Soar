@@ -37,6 +37,16 @@ typedef struct identity_struct identity_info;
 #define output_string_size MAX_LEXEME_LENGTH*2+10
 #define num_output_strings 10
 
+#ifndef SOAR_RELEASE_VERSION
+    #define OM_Default_print_actual true;
+    #define OM_Default_print_original true;
+    #define OM_Default_print_identity true;
+#else
+    #define OM_Default_print_actual true;
+    #define OM_Default_print_original false;
+    #define OM_Default_print_identity false;
+#endif
+
 typedef struct trace_mode_info_struct
 {
         char* prefix;
@@ -187,21 +197,63 @@ class Output_Manager
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
 
-        void set_print_params(const char* pPre = NULL, const char* pPost = NULL, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
+        void set_print_indents(const char* pPre = NULL, const char* pPost = NULL)
+        {
+            if (pPre)
+            {
+                if (m_pre_string) free(m_pre_string);
+                if (strlen(pPre) > 0)
+                {
+                    m_pre_string = strdup(pPre);
+                }
+                else
+                {
+                    m_pre_string = NULL;
+                }
+            }
+            if (pPost)
+            {
+                if (m_post_string) free(m_post_string);
+                if (strlen(pPost) > 0)
+                {
+                    m_post_string = strdup(pPost);
+                }
+                else
+                {
+                    m_post_string = NULL;
+                }
+            }
+        }
+        void set_print_test_format(bool pActual, bool pOriginal, bool p_Identity)
         {
             m_print_actual = pActual;
             m_print_original = pOriginal;
             m_print_identity = p_Identity;
-            if (pPre) m_pre_string = strdup(pPre);
-            if (pPost) m_pre_string = strdup(pPost);
-        }
-        void set_dprint_params(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
-        {
-            if (debug_mode_enabled(mode)) set_print_params(pPre, pPost, pActual, pOriginal, p_Identity);
         }
 
-        void clear_print_params() { set_print_params(); }
-        void clear_dprint_params(TraceMode mode) { if (debug_mode_enabled(mode)) set_print_params(); }
+        void clear_print_test_format()
+        {
+            m_print_actual = OM_Default_print_actual;
+            m_print_original = OM_Default_print_original;
+            m_print_identity = OM_Default_print_identity;
+        }
+        void clear_print_indents() { set_print_indents(); }
+
+        void set_dprint_indents(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL)
+        {
+            if (debug_mode_enabled(mode)) set_print_indents(pPre, pPost);
+        }
+        void set_dprint_test_format(TraceMode mode, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
+        {
+            if (debug_mode_enabled(mode)) set_print_test_format(pActual, pOriginal, p_Identity);
+        }
+        void clear_dprint_indents(TraceMode mode)
+        {
+            if (debug_mode_enabled(mode)) clear_print_indents();
+        }
+        void clear_dprint_test_format(TraceMode mode) {
+            if (debug_mode_enabled(mode)) clear_print_test_format();
+        }
 
         /* -- The following should all be refactored into to_string functions to be used with format strings -- */
         void debug_print_production(TraceMode mode, production* prod);

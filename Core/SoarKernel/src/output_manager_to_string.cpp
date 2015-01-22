@@ -252,18 +252,41 @@ char* Output_Manager::condition_cons_to_string(agent* thisAgent, cons* c, char* 
 
 char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, char* dest, size_t dest_size)
 {
+    char* ch=dest;
+
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
-        sprinta_sf(thisAgent, dest, dest_size, "(%t %s ^%t %t)\n",
-            cond->data.tests.id_test,
-            (cond->type == NEGATIVE_CONDITION) ? "-": NULL,
-            cond->data.tests.attr_test, cond->data.tests.value_test);
+        if (m_print_actual)
+        {
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%t %s^%t %t)",
+                cond->data.tests.id_test,
+                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
+                cond->data.tests.attr_test, cond->data.tests.value_test);
+            while (*ch) ch++;
+        }
+        if (m_print_original) {
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y %s^%y %y)",
+                (m_print_actual) ? ", " : NULL,
+                cond->data.tests.id_test->identity->original_var,
+                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
+                cond->data.tests.attr_test->identity->original_var, cond->data.tests.value_test->identity->original_var);
+            while (*ch) ch++;
+        }
+        if (m_print_identity) {
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(g%u %s^g%u g%u)",
+                (m_print_actual || m_print_original) ? ", " : NULL,
+                cond->data.tests.id_test->identity->grounding_id,
+                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
+                cond->data.tests.attr_test->identity->grounding_id, cond->data.tests.value_test->identity->grounding_id);
+            while (*ch) ch++;
+        }
+        *(ch++) = '\n';
+        *(ch++) = 0;
     }
     else
     {
         sprinta_sf(thisAgent, dest, dest_size, "-{\n%c2}\n", cond->data.ncc.top);
     }
-
     dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 }
@@ -277,7 +300,7 @@ char* Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_
     for (cond = top_cond; cond != NIL; cond = cond->next)
     {
         assert(cond != cond->next);
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%i: %l\n", m_pre_string, ++count, cond);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%i: %l", m_pre_string, ++count, cond);
         while (*ch) ch++;
     }
 
@@ -508,42 +531,43 @@ char* Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond
     /* MToDo | Only print headers and latter two if that setting is on */
     if (m_print_actual)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s--------------------------- Match --------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
         while (*ch) ch++;
-        set_print_params(m_pre_string, m_post_string, true, false, false);
+        set_print_test_format(true, false, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
         while (*ch) ch++;
         preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
     if (m_print_original)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-------------------------- Original ------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "-------------------------- Original ------------------------\n");
         while (*ch) ch++;
-        set_print_params(m_pre_string, m_post_string, false, true, false);
+        set_print_test_format(false, true, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
         while (*ch) ch++;
         preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
     if (m_print_identity)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s------------------------- Identity -------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
         while (*ch) ch++;
-        set_print_params(m_pre_string, m_post_string, false, false, true);
+        set_print_test_format(false, false, true);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
         while (*ch) ch++;
         preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
-
-    clear_print_params();
 
     dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
@@ -556,42 +580,43 @@ char* Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_co
     /* MToDo | Only print headers and latter two if that setting is on */
     if (m_print_actual)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s--------------------------- Match --------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
         while (*ch) ch++;
-        set_print_params(m_pre_string, m_post_string, true, false, false);
+        set_print_test_format(true, false, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
         while (*ch) ch++;
         preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
     if (m_print_original)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-------------------------- Original ------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "-------------------------- Original ------------------------\n");
         while (*ch) ch++;
-        set_print_params(m_pre_string, m_post_string, false, true, false);
+        set_print_test_format(false, true, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
         while (*ch) ch++;
         preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
     if (m_print_identity)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s------------------------- Identity -------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
         while (*ch) ch++;
-        set_print_params(m_pre_string, m_post_string, false, false, true);
+        set_print_test_format(false, false, true);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
         while (*ch) ch++;
         preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
-
-    clear_print_params();
 
     dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
@@ -604,32 +629,34 @@ char* Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_co
     /* MToDo | Only print headers and latter two if that setting is on */
     if (m_print_actual)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s--------------------------- Match --------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
         while (*ch) ch++;
-        set_print_params(m_pre_string, m_post_string, true, false, false);
+        set_print_test_format(true, false, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
         while (*ch) ch++;
         action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
     if (m_print_original)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-------------------------- Original ------------------------\n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "-------------------------- Original ------------------------\n");
         while (*ch) ch++;
-        set_print_params(m_pre_string, m_post_string, false, true, false);
+        set_print_test_format(false, true, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
         while (*ch) ch++;
         action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
     if (m_print_identity)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s------------------------- Identity -------------------------\n", m_pre_string);
-        set_print_params(m_pre_string, m_post_string, false, false, true);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
+        set_print_test_format(false, false, true);
         while (*ch) ch++;
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
@@ -637,9 +664,8 @@ char* Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_co
         while (*ch) ch++;
         action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
         while (*ch) ch++;
+        clear_print_test_format();
     }
-
-    clear_print_params();
 
     dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;

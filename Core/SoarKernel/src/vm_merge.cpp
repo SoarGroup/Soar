@@ -111,9 +111,9 @@ inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 void Variablization_Manager::merge_conditions(condition* top_cond)
 {
     dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n");
-    dprint_set_params(DT_MERGE, "          ");
+    dprint_set_indents(DT_MERGE, "          ");
     dprint(DT_MERGE, "%1", top_cond);
-    dprint_clear_params(DT_MERGE);
+    dprint_clear_indents(DT_MERGE);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint_header(DT_MERGE, PrintAfter, "# of conditions = %i\n", old_num_conds);
 
@@ -182,9 +182,9 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
         dprint(DT_MERGE, "...done merging this constraint.\n");
     }
     dprint_header(DT_MERGE, PrintBefore, "");
-    dprint_set_params(DT_MERGE, "          ");
+    dprint_set_indents(DT_MERGE, "          ");
     dprint(DT_MERGE, "%1", top_cond);
-    dprint_clear_params(DT_MERGE);
+    dprint_clear_indents(DT_MERGE);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %i\n", new_num_conds);
