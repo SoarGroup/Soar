@@ -918,8 +918,7 @@ void deallocate_production(agent* thisAgent, production* prod)
 
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
 {
-    dprint(DT_DEALLOCATES, "=======================\n");
-    dprint(DT_DEALLOCATES, "Excising production %y.\n", prod->name);
+    dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
     if (prod->trace_firings)
     {
         remove_pwatch(thisAgent, prod);
@@ -949,7 +948,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     }
     prod->name->sc->production = NIL;
     production_remove_ref(thisAgent, prod);
-    dprint(DT_DEALLOCATES, "=======================\n");
+    dprint_header(DT_DEALLOCATES, PrintAfter, "");
 }
 
 void excise_all_productions_of_type(agent* thisAgent,

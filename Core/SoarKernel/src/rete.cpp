@@ -4578,7 +4578,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     {
         w = NIL;    /* just for safety */
     }
-//    dprint(DT_FUNC_PRODUCTIONS, "p_node_to_conditions_and_rhs reconstructing LHS.\n");
+//    dprint(DT_LHS_VARIABLIZATION, "p_node_to_conditions_and_rhs reconstructing LHS.\n");
     reset_variable_generator(thisAgent, NIL, NIL);  /* we'll be gensymming new vars */
     rete_node_to_conditions(thisAgent,
                             p_node->parent,
@@ -4618,7 +4618,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     }
     if (dest_rhs)
     {
-//        dprint(DT_FUNC_PRODUCTIONS, "p_node_to_conditions_and_rhs reconstructing RHS.\n");
+//        dprint(DT_RHS_VARIABLIZATION, "p_node_to_conditions_and_rhs reconstructing RHS.\n");
         thisAgent->highest_rhs_unboundvar_index = -1;
         if (prod->rhs_unbound_variables)
         {

@@ -51,9 +51,9 @@ Output_Manager::Output_Manager()
     m_params = new OM_Parameters();
     m_db = NIL;
 
-    m_print_actual = true;
-    m_print_original = false;
-    m_print_identity = true;
+    m_print_actual = OM_Default_print_actual;
+    m_print_original = OM_Default_print_original;
+    m_print_identity = OM_Default_print_identity;
     m_pre_string = NULL;
     m_post_string = NULL;
 
@@ -86,17 +86,6 @@ Output_Manager::~Output_Manager()
     }
 }
 
-
-void Output_Manager::set_default_agent(agent* pSoarAgent)
-{
-    std::string errString;
-    if (!pSoarAgent)
-    {
-        errString = "OutputManager passed an empty default agent!\n";
-        debug_print(DT_DEBUG, errString.c_str());
-    }
-    m_defaultAgent = pSoarAgent;
-};
 
 int Output_Manager::get_printer_output_column(agent* pSoarAgent)
 {

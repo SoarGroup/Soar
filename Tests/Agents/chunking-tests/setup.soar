@@ -5,7 +5,7 @@ sp {init-superstate
     (state <s> ^superstate nil)
 -->
     (<s> ^test-item 9 7
-         ^test-param <tp> <tp2>
+         ^test-param <tp> <tp2> <tp3>
          ^test-param2 <tp3>
          ^test-current 1
          ^bar blue

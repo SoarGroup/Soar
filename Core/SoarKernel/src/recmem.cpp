@@ -796,9 +796,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     inst->GDS_evaluated_already = false;
     dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
-    dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-    dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() called for %y\n", inst->prod->name);
-    dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
+    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "create_instantiation() called for %y\n", inst->prod->name);
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
@@ -978,7 +976,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
     dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
     dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation created: \n");
-    dprint_set_params(DT_PRINT_INSTANTIATIONS, "          ");
+    dprint_set_indents(DT_PRINT_INSTANTIATIONS, "          ");
     dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
@@ -1003,10 +1001,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* MToDoRefCnt | Note that the 9.3.2 did not deallocate the action list. */
     deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint(DT_PRINT_INSTANTIATIONS, "=========================================================\n");
-    dprint(DT_FUNC_PRODUCTIONS, "create_instantiation() finished for %y\n", inst->prod->name);
-    dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-
+    dprint_header(DT_PRINT_INSTANTIATIONS, PrintBoth, "create_instantiation() finished for %y\n", inst->prod->name);
 
     if (!thisAgent->system_halted)
     {

@@ -17,12 +17,11 @@
 
 Soar_Instance::Soar_Instance() :
     m_Kernel(NULL),
-    m_default_soar_agent(NULL),
     chunkNameFormat(ruleFormat)
 {
     m_loadedLibraries = new std::map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::map< char*, Agent_Info*, cmp_str >();
-    dprint(DT_SOAR_INSTANCE, "======================= Soar instance created =======================\n");
+    dprint_header(DT_SOAR_INSTANCE, PrintBoth, "= Soar instance created =\n");
 }
 
 void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
@@ -37,9 +36,8 @@ void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
 
 Soar_Instance::~Soar_Instance()
 {
-    dprint(DT_SOAR_INSTANCE, "======================= Destroying Soar instance =======================\n");
+    dprint_header(DT_SOAR_INSTANCE, PrintBefore, "= Destroying Soar instance =\n");
     m_Kernel = NULL;
-    m_default_soar_agent = NULL;
 
     for (std::map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
     {
@@ -60,7 +58,7 @@ Soar_Instance::~Soar_Instance()
     m_agent_table->clear();
     delete m_agent_table;
 
-    dprint(DT_SOAR_INSTANCE, "======================= Soar instance destroyed =======================\n");
+    dprint_header(DT_SOAR_INSTANCE, PrintAfter, "= Soar instance destroyed =\n");
 }
 
 void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction)
@@ -174,7 +172,6 @@ void Soar_Instance::Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoa
     /* -- If only agent, make sure it's the default agent for soar debug printing. -- */
     if (m_agent_table->size() == 1)
     {
-        m_default_soar_agent = pSoarAgentSML->GetSoarAgent();
         m_Output_Manager->set_default_agent(pSoarAgentSML->GetSoarAgent());
     }
 }
@@ -205,12 +202,10 @@ void Soar_Instance::Delete_Agent(char* pAgentName)
         {
             if (m_agent_table->size() > 0)
             {
-                m_default_soar_agent = (*m_agent_table).begin()->second->soarAgentSML->GetSoarAgent();
                 m_Output_Manager->set_default_agent((*m_agent_table).begin()->second->soarAgentSML->GetSoarAgent());
             }
             else
             {
-                m_default_soar_agent = NULL;
                 m_Output_Manager->clear_default_agent();
             }
         }

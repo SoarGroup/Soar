@@ -982,9 +982,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         goto chunking_abort;
     }
 
-    dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-    dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() called...\n");
-    dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "chunk_instantiation() called...\n");
 
     if (update_grounding_ids)
     {
@@ -1180,15 +1178,11 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
-    dprint(DT_VARIABLIZATION_MANAGER, "Variablizing RHS action list:\n");
-    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
+    dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list:\n");
 
     rhs = thisAgent->variablizationManager->variablize_results(results, variablize);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
-    dprint(DT_VARIABLIZATION_MANAGER, "Done variablizing RHS action list.\n");
-    dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
+    dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS action list.\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
     dprint_noprefix(DT_CONSTRAINTS, "%1", inst_top);
@@ -1295,9 +1289,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         }
     }
 
-    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created final production: \n");
+    dprint_header(DT_PRINT_INSTANTIATIONS, PrintBefore, "chunk instantiation created final production: \n");
     dprint_production(DT_PRINT_INSTANTIATIONS, (rete_addition_result != DUPLICATE_PRODUCTION) ? prod : NIL);
-    dprint(DT_PRINT_INSTANTIATIONS, "=========================================================\n");
+    dprint_header(DT_PRINT_INSTANTIATIONS, PrintAfter, "");
 
     /* --- deallocate chunks conds and variablized conditions --- */
     deallocate_condition_list(thisAgent, vrblz_top);
@@ -1357,8 +1351,7 @@ chunking_abort:
         chunk_instantiation_cleanup(thisAgent, prod_name);
         if (prod_name)
         {
-            dprint(DT_FUNC_PRODUCTIONS, "chunk_instantiation() done building chunk %y\n", prod_name);
-            dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+            dprint_header(DT_FUNC_PRODUCTIONS, PrintAfter, "chunk_instantiation() done building chunk %y\n", prod_name);
             symbol_remove_ref(thisAgent, prod_name);
         }
     }

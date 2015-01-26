@@ -82,9 +82,8 @@ namespace soar_module
 
     instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
-        dprint(DT_FUNC_PRODUCTIONS, "make_fake_instantiation() called.\n");
-        dprint(DT_FUNC_PRODUCTIONS, "=========================================================\n");
+        dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "make_fake_instantiation() called.\n");
+
         // make fake instantiation
         instantiation* inst;
         allocate_with_pool(thisAgent, &(thisAgent->instantiation_pool), &inst);
