@@ -521,7 +521,7 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
         {
             dprint(DT_NCC_VARIABLIZATION, "-------------======-----------\n");
             dprint(DT_NCC_VARIABLIZATION, "Variablizing LHS negative conjunctive condition:\n");
-            dprint(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
+            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
             variablize_condition_list(cond->data.ncc.top, false);
         }
     }
@@ -658,7 +658,7 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
         {
             dprint(DT_RL_VARIABLIZATION, "-------------======-----------\n");
             dprint(DT_RL_VARIABLIZATION, "Variablizing RL LHS negative conjunctive condition:\n");
-            dprint(DT_RL_VARIABLIZATION, "%1", cond->data.ncc.top);
+            dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond->data.ncc.top);
             variablize_rl_condition_list(cond->data.ncc.top, false);
         }
     }
@@ -752,7 +752,7 @@ void Variablization_Manager::add_ltis_to_dnvl_for_conditions(condition* top_cond
         else
         {
             dprint(DT_NCC_VARIABLIZATION, "Adding for negative conjunctive condition:\n");
-            dprint(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
+            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
             add_ltis_to_dnvl_for_conditions(cond->data.ncc.top);
         }
     }

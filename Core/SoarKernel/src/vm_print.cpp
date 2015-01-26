@@ -138,7 +138,7 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
         c = it->second;
         while (c)
         {
-            dprint(mode, "%u: %t\n ", it->first, static_cast<test>(c->first));
+            dprint(mode, "%u: %t\n", it->first, static_cast<test>(c->first));
             c = c->rest;
         }
     }

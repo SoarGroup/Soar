@@ -79,7 +79,7 @@ void Variablization_Manager::consolidate_variables(condition* top_cond, tc_numbe
     dprint(DT_FIX_CONDITIONS, "= Consolidating variables in tests =\n");
     dprint(DT_FIX_CONDITIONS, "====================================\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
-    dprint(DT_FIX_CONDITIONS, "%1", top_cond);
+    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
     dprint(DT_FIX_CONDITIONS, "====================================\n");
 
@@ -104,7 +104,7 @@ void Variablization_Manager::consolidate_variables(condition* top_cond, tc_numbe
     }
     dprint(DT_FIX_CONDITIONS, "=========================================\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
-    dprint(DT_FIX_CONDITIONS, "%1", top_cond);
+    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
     dprint(DT_FIX_CONDITIONS, "=========================================\n");
     dprint(DT_FIX_CONDITIONS, "= Done consolidating variables in tests =\n");
@@ -247,7 +247,7 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
     dprint(DT_FIX_CONDITIONS, "= Finding redundancies =\n");
     dprint(DT_FIX_CONDITIONS, "========================\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
-    dprint(DT_FIX_CONDITIONS, "%1", top_cond);
+    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
     dprint(DT_FIX_CONDITIONS, "========================\n");
 
@@ -280,7 +280,7 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
 
     dprint(DT_FIX_CONDITIONS, "=============================\n");
     dprint_set_params(DT_FIX_CONDITIONS, "          ");
-    dprint(DT_FIX_CONDITIONS, "%1", top_cond);
+    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_params(DT_FIX_CONDITIONS);
     dprint(DT_FIX_CONDITIONS, "=============================\n");
     dprint(DT_FIX_CONDITIONS, "= Done finding redundancies =\n");

@@ -231,6 +231,11 @@ void Variablization_Manager::cache_constraints_in_test(test t)
     if (t->type != CONJUNCTIVE_TEST)
     {
         assert(t->type == EQUALITY_TEST);
+        if (t->data.referent->is_constant())
+        {
+            dprint(DT_CONSTRAINTS, "Adding equality test as a relational test: %t\n", t);
+            cache_constraint(t, t);
+        }
         return;
     }
 
@@ -251,6 +256,11 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         switch (ctest->type)
         {
             case EQUALITY_TEST:
+                if (ctest->data.referent->is_constant())
+                {
+                    dprint(DT_CONSTRAINTS, "Adding equality test as a relational test: %t %t\n", equality_test, ctest);
+                    cache_constraint(equality_test, ctest);
+                }
                 break;
             case GREATER_TEST:
             case GREATER_OR_EQUAL_TEST:
@@ -272,7 +282,8 @@ void Variablization_Manager::cache_constraints_in_cond(condition* c)
     /* MToDo| Verify we don't need to do id element.  It should always be an equality test */
     //  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
-    cache_constraints_in_test(c->data.tests.attr_test);
+    /* MToDo| Re-enable attribute constraint caching here.  Disabled just to simplify debugging for now */
+//    cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
 }
 
@@ -387,7 +398,7 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
     dprint(DT_CONSTRAINTS, "install_relational_constraints done adding constraints.  Final tables:\n");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
-    dprint(DT_CONSTRAINTS, "%1", cond);
+    dprint_noprefix(DT_CONSTRAINTS, "%1", cond);
     dprint(DT_CONSTRAINTS, "=============================================\n");
 }
 

@@ -114,7 +114,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     dprint(DT_MERGE, "= Merging Conditions =\n");
     dprint(DT_MERGE, "======================\n");
     dprint_set_params(DT_MERGE, "          ");
-    dprint(DT_MERGE, "%1", top_cond);
+    dprint_noprefix(DT_MERGE, "%1", top_cond);
     dprint_clear_params(DT_MERGE);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint(DT_MERGE, "# of conditions = %i\n", old_num_conds);
@@ -186,7 +186,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
     }
     dprint(DT_MERGE, "======================\n");
     dprint_set_params(DT_MERGE, "          ");
-    dprint(DT_MERGE, "%1", top_cond);
+    dprint_noprefix(DT_MERGE, "%1", top_cond);
     dprint_clear_params(DT_MERGE);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;

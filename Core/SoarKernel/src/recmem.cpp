@@ -979,7 +979,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
     dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation created: \n");
     dprint_set_params(DT_PRINT_INSTANTIATIONS, "          ");
-    dprint(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, false,

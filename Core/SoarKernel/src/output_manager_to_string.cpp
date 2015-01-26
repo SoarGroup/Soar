@@ -79,7 +79,7 @@ char* Output_Manager::WM_to_string(agent* thisAgent, char* dest, size_t dest_siz
     while (*ch) ch++;
     for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%w\n", w);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "          %w\n", w);
         while (*ch) ch++;
     }
     dest[dest_size - 1] = 0; /* ensure null termination */
@@ -254,14 +254,14 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
 {
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
-        sprinta_sf(thisAgent, dest, dest_size, "(%t %s ^%t %t)\n",
+        sprinta_sf(thisAgent, dest, dest_size, "(%t %s ^%t %t)",
             cond->data.tests.id_test,
             (cond->type == NEGATIVE_CONDITION) ? "-": NULL,
             cond->data.tests.attr_test, cond->data.tests.value_test);
     }
     else
     {
-        sprinta_sf(thisAgent, dest, dest_size, "-{\n%c2}\n", cond->data.ncc.top);
+        sprinta_sf(thisAgent, dest, dest_size, "-{\n%c2}", cond->data.ncc.top);
     }
 
     dest[dest_size - 1] = 0; /* ensure null termination */

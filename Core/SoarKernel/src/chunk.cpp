@@ -520,9 +520,9 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     *vrblz_top = first_vrblz;
 
     dprint(DT_CONSTRAINTS, "Instantiated Conditions: \n");
-    dprint(DT_CONSTRAINTS, "%1", *inst_top);
+    dprint_noprefix(DT_CONSTRAINTS, "%1", *inst_top);
     dprint(DT_CONSTRAINTS, "Variablized conditions: \n");
-    dprint(DT_CONSTRAINTS, "%1", *vrblz_top);
+    dprint_noprefix(DT_CONSTRAINTS, "%1", *vrblz_top);
 }
 
 /* --------------------------------------------------------------------
@@ -591,9 +591,9 @@ void reorder_instantiated_conditions(condition* top_cond,
                                      condition** dest_inst_bottom)
 {
     dprint(DT_MERGE, "Re-ordering...\n");
-    dprint(DT_MERGE, "%1", top_cond->counterpart);
+    dprint_noprefix(DT_MERGE, "%1", top_cond->counterpart);
     dprint(DT_MERGE, "..to match...\n");
-    dprint(DT_MERGE, "%1", top_cond);
+    dprint_noprefix(DT_MERGE, "%1", top_cond);
 
     condition* c, *p, *n;
     for (c = top_cond; c != NIL; c = c->next)
@@ -619,7 +619,7 @@ void reorder_instantiated_conditions(condition* top_cond,
         }
     }
     dprint(DT_MERGE, "Result:\n");
-    dprint(DT_MERGE, "%1", *dest_inst_top);
+    dprint_noprefix(DT_MERGE, "%1", *dest_inst_top);
 }
 
 /* --------------------------------------------------------------------
@@ -992,6 +992,15 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         propagate_identity(thisAgent, inst->top_of_instantiated_conditions, inst->match_goal_level);
     }
 
+    dprint(DT_CONSTRAINTS, "Caching constraints in base conditions...\n");
+    for (condition* c = inst->top_of_instantiated_conditions; c; c = c->next)
+    {
+        if (c->type == POSITIVE_CONDITION)
+        {
+            thisAgent->variablizationManager->cache_constraints_in_cond(c);
+        }
+    }
+
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
         Symbol* g;
@@ -1113,7 +1122,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     if (print_name)
     {
         start_fresh_line(thisAgent);
-        print_with_symbols(thisAgent, "Building %y", prod_name);
+        print_with_symbols(thisAgent, "Building rule %y\n", prod_name);
 
         xml_begin_tag(thisAgent, kTagLearning);
         xml_begin_tag(thisAgent, kTagProduction);
@@ -1169,7 +1178,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->fix_conditions(inst_top, true);
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
-    dprint(DT_CONSTRAINTS, "%1", vrblz_top);
+    dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
 
     dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
     dprint(DT_VARIABLIZATION_MANAGER, "Variablizing RHS action list:\n");
@@ -1182,9 +1191,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_VARIABLIZATION_MANAGER, "==========================================\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
-    dprint(DT_CONSTRAINTS, "%1", inst_top);
+    dprint_noprefix(DT_CONSTRAINTS, "%1", inst_top);
     dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n");
-    dprint(DT_CONSTRAINTS, "%1", vrblz_top);
+    dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
