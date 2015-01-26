@@ -280,7 +280,6 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
                 cond->data.tests.attr_test->identity->grounding_id, cond->data.tests.value_test->identity->grounding_id);
             while (*ch) ch++;
         }
-        *(ch++) = '\n';
         *(ch++) = 0;
     }
     else
@@ -300,7 +299,7 @@ char* Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_
     for (cond = top_cond; cond != NIL; cond = cond->next)
     {
         assert(cond != cond->next);
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%i: %l", m_pre_string, ++count, cond);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%i: %l\n", m_pre_string, ++count, cond);
         while (*ch) ch++;
     }
 

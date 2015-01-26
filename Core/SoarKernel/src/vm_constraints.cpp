@@ -211,14 +211,14 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
         {
             push(thisAgent, (copied_test), new_list);
             (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%u] + %t\n", equality_test->identity->grounding_id, copied_test);
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[g%u] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
         else
         {
             new_list = (*constant_constraints)[equality_test->identity->grounding_id];
             push(thisAgent, (copied_test), new_list);
             (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%u] + %t\n", equality_test->identity->grounding_id, copied_test);
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[g%u] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
     }
 }
@@ -232,7 +232,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         assert(t->type == EQUALITY_TEST);
         if (t->data.referent->is_constant())
         {
-            dprint(DT_CONSTRAINTS, "Adding equality test as a relational test: %t\n", t);
+            dprint(DT_CONSTRAINTS, "...adding equality test as a relational test: %t\n", t);
             cache_constraint(t, t);
         }
         return;
@@ -257,7 +257,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
             case EQUALITY_TEST:
                 if (ctest->data.referent->is_constant())
                 {
-                    dprint(DT_CONSTRAINTS, "Adding equality test as a relational test: %t %t\n", equality_test, ctest);
+                    dprint(DT_CONSTRAINTS, "...adding equality test as a relational test: %t %t\n", equality_test, ctest);
                     cache_constraint(equality_test, ctest);
                 }
                 break;
