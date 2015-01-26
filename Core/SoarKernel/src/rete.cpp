@@ -4578,7 +4578,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     {
         w = NIL;    /* just for safety */
     }
-    dprint(DT_FUNC_PRODUCTIONS, "p_node_to_conditions_and_rhs reconstructing LHS.\n");
+//    dprint(DT_FUNC_PRODUCTIONS, "p_node_to_conditions_and_rhs reconstructing LHS.\n");
     reset_variable_generator(thisAgent, NIL, NIL);  /* we'll be gensymming new vars */
     rete_node_to_conditions(thisAgent,
                             p_node->parent,
@@ -4612,13 +4612,13 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
             }
 
         match_level = ((lowest_level_so_far != -1) ? lowest_level_so_far : ATTRIBUTE_IMPASSE_LEVEL);
-        dprint(DT_IDENTITY_PROP, "Match level is %d.\n", match_level);
+//        dprint(DT_IDENTITY_PROP, "Match level is %d.\n", match_level);
 
         propagate_identity(thisAgent, (*dest_top_cond), match_level);
     }
     if (dest_rhs)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "p_node_to_conditions_and_rhs reconstructing RHS.\n");
+//        dprint(DT_FUNC_PRODUCTIONS, "p_node_to_conditions_and_rhs reconstructing RHS.\n");
         thisAgent->highest_rhs_unboundvar_index = -1;
         if (prod->rhs_unbound_variables)
         {
