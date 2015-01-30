@@ -451,6 +451,8 @@ char const* const sml_Names::kCommand_GetListenerPort       = "get_listener_port
 // command line interface
 char const* const sml_Names::kCommand_CommandLine        = "cmdline" ;
 
+#ifndef NO_SVS
 char const* const sml_Names::kCommand_SVSInput   = "svs_input";
 char const* const sml_Names::kCommand_SVSOutput  = "svs_output";
 char const* const sml_Names::kCommand_SVSQuery  = "svs_query";
+#endif

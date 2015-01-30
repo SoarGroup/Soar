@@ -63,7 +63,9 @@ class FullTests : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testConvertIdentifier);
         CPPUNIT_TEST(testOutputLinkRemovalOrdering);
         CPPUNIT_TEST(testNegatedConjunctiveTestReorder);
+#ifndef NO_SVS
         CPPUNIT_TEST(testSVS);
+#endif
         CPPUNIT_TEST(testPreferenceSemantics);                  // bug 234
         CPPUNIT_TEST(testNegatedConjunctiveChunkLoopBug510);    // bug 510
         CPPUNIT_TEST(testNegatedConjunctiveTestUnbound);        // bug 517
@@ -118,7 +120,9 @@ class FullTests : public CPPUNIT_NS::TestCase
         TEST_DECLARATION(testGDSBug1144);
         TEST_DECLARATION(testGDSBug1011);
         TEST_DECLARATION(testLearn);
+#ifndef NO_SVS
         TEST_DECLARATION(testSVS);
+#endif
         TEST_DECLARATION(testPreferenceSemantics);
         TEST_DECLARATION(testMatchTimeInterrupt);
         TEST_DECLARATION(testNegatedConjunctiveTestReorder);
@@ -1639,12 +1643,14 @@ TEST_DEFINITION(testLearn)
     }
 }
 
+#ifndef NO_SVS
 TEST_DEFINITION(testSVS)
 {
     m_pKernel->AddRhsFunction("test-failure", Handlers::MyRhsFunctionFailureHandler, 0) ;
     loadProductions("test_agents/testSVS.soar");
     m_pAgent->ExecuteCommandLine("run");
 }
+#endif
 
 TEST_DEFINITION(testPreferenceSemantics)
 {
